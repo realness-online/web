@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Cloud, sync_later } from '@/persistance/Cloud'
-import { Storage } from '@/persistance/Storage'
 
+// Only mock external I/O - everything else uses real implementations
 vi.mock('@/utils/serverless', () => ({
   current_user: { value: { uid: 'test-user' } },
   upload: vi.fn(() => Promise.resolve()),
@@ -9,51 +8,20 @@ vi.mock('@/utils/serverless', () => ({
   move: vi.fn(() => Promise.resolve())
 }))
 
-vi.mock('@/utils/itemid', () => ({
-  as_filename: vi.fn(id => {
-    const parts = id.split('/').filter(p => p)
-    if (parts.length >= 3) {
-      const type = parts[1]
-      const timestamp = parts[2]
-      const component_types = [
-        'shadows',
-        'sediment',
-        'sand',
-        'gravel',
-        'rocks',
-        'boulders'
-      ]
-      if (component_types.includes(type)) {
-        const layer_name = type
-        if (parts.length === 4) {
-          return `people/${parts[0]}/posters/${parts[3]}/${timestamp}-${layer_name}.html.gz`
-        }
-        return `people/${parts[0]}/posters/${timestamp}-${layer_name}.html.gz`
-      }
-      if (type === 'posters') {
-        if (parts.length === 4) {
-          return `people/${parts[0]}/posters/${parts[3]}/${timestamp}.html.gz`
-        }
-        return `people/${parts[0]}/posters/${timestamp}.html.gz`
-      }
-    }
-    return 'test-filename.html.gz'
-  }),
-  as_type: vi.fn(() => 'posters'),
-  as_path_parts: vi.fn(id => {
-    const parts = id.split('/').filter(p => p)
-    return parts
-  })
-}))
-
 vi.mock('idb-keyval', () => ({
-  get: vi.fn(() => Promise.resolve([])),
+  get: vi.fn(() => Promise.resolve(null)),
   set: vi.fn(() => Promise.resolve()),
   del: vi.fn(() => Promise.resolve())
 }))
 
 vi.mock('@/persistance/Directory', () => ({
-  as_directory: vi.fn(() => Promise.resolve({ id: 'test-directory' })),
+  as_directory: vi.fn(() =>
+    Promise.resolve({
+      id: 'test-directory',
+      items: [],
+      archive: []
+    })
+  ),
   load_directory_from_network: vi.fn(() => Promise.resolve({ items: [] }))
 }))
 
@@ -66,12 +34,62 @@ vi.mock('@/utils/upload-processor', () => ({
   )
 }))
 
+// Use real itemid functions - no mocking needed
+
 vi.mock('@/utils/numbers', () => ({
   SIZE: {
     MAX: 10,
     MID: 5
   }
 }))
+
+// Mock Storage to prevent circular dependency - Storage uses Cloud at module load time
+// Other modules (like sync.js) import Storage, which would trigger the issue
+vi.mock('@/persistance/Storage', () => ({
+  Storage: class {
+    constructor(itemid) {
+      this.id = itemid
+      this.type = 'posters'
+    }
+    save() {}
+    delete() {}
+    sync() {
+      return Promise.resolve([])
+    }
+    optimize() {}
+  },
+  Poster: class {},
+  Cutout: class {},
+  Shadow: class {},
+  Me: class {},
+  Relation: class {},
+  Statement: class {},
+  Event: class {},
+  Offline: class {},
+  History: class {}
+}))
+
+// Import Cloud and Large - these are what we're testing
+import { Cloud, sync_later } from '@/persistance/Cloud'
+import { Large } from '@/persistance/Large'
+import { upload, remove, move } from '@/utils/serverless'
+import { get, set, del } from 'idb-keyval'
+import { load_directory_from_network } from '@/persistance/Directory'
+
+// Create a minimal Storage class for testing - don't import the real one
+// to avoid circular dependency issues
+class Storage {
+  constructor(itemid) {
+    this.id = itemid
+    this.type = 'posters'
+  }
+  save() {}
+  delete() {}
+  sync() {
+    return Promise.resolve([])
+  }
+  optimize() {}
+}
 
 class TestCloudClass extends Cloud(Storage) {
   constructor(itemid) {
@@ -100,6 +118,27 @@ describe('@/persistance/Cloud', () => {
     cloud_instance = new TestCloudClass('/+1234567890/posters/1234567890')
   })
 
+  describe('with Large mixin', () => {
+    let large_cloud_instance
+
+    beforeEach(() => {
+      const LargeCloud = Large(Cloud(Storage))
+      large_cloud_instance = new LargeCloud('/+1234567890/posters/1234567890')
+    })
+
+    it('uses get_storage_path from Large mixin', async () => {
+      const mock_items = { outerHTML: '<div>test</div>' }
+
+      await large_cloud_instance.to_network(mock_items)
+
+      expect(upload).toHaveBeenCalled()
+
+      const upload_call = upload.mock.calls[0]
+      const path = upload_call[0]
+      expect(path).toContain('people/+1234567890/posters/1234567890')
+    })
+  })
+
   describe('Cloud Mixin', () => {
     it('adds cloud functionality to base class', () => {
       expect(cloud_instance).toBeInstanceOf(Storage)
@@ -121,7 +160,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.to_network(mock_items)
 
-      const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalledWith(
         'people/+1234567890/posters/1234567890.html.gz',
         'compressed-data',
@@ -137,7 +175,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.to_network(mock_items)
 
-      const { upload } = await import('@/utils/serverless')
       expect(cloud_instance.get_storage_path).toHaveBeenCalled()
       expect(upload).toHaveBeenCalledWith(
         'people/+1234567890/posters/1234567890.html.gz',
@@ -152,7 +189,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.to_network(mock_items)
 
-      const { set } = await import('idb-keyval')
       expect(set).toHaveBeenCalledWith('sync:offline', [
         { id: '/+1234567890/posters/1234567890', action: 'save' }
       ])
@@ -169,7 +205,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.save()
 
-      const { upload } = await import('@/utils/serverless')
       expect(upload).toHaveBeenCalled()
     })
 
@@ -178,7 +213,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.save()
 
-      const { upload } = await import('@/utils/serverless')
       expect(upload).not.toHaveBeenCalled()
     })
   })
@@ -187,7 +221,6 @@ describe('@/persistance/Cloud', () => {
     it('deletes from network when online', async () => {
       await cloud_instance.delete()
 
-      const { remove } = await import('@/utils/serverless')
       expect(remove).toHaveBeenCalledWith(
         'people/+1234567890/posters/1234567890.html.gz'
       )
@@ -200,7 +233,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.delete()
 
-      const { remove } = await import('@/utils/serverless')
       expect(cloud_instance.get_storage_path).toHaveBeenCalled()
       expect(remove).toHaveBeenCalledWith(
         'people/+1234567890/posters/1234567890.html.gz'
@@ -212,7 +244,6 @@ describe('@/persistance/Cloud', () => {
 
       await cloud_instance.delete()
 
-      const { set } = await import('idb-keyval')
       expect(set).toHaveBeenCalledWith('sync:offline', [
         { id: '/+1234567890/posters/1234567890', action: 'delete' }
       ])
@@ -238,21 +269,13 @@ describe('@/persistance/Cloud', () => {
         ]
       }
 
-      const { load_directory_from_network } = await import(
-        '@/persistance/Directory'
-      )
       load_directory_from_network
         .mockResolvedValueOnce(mock_directory)
         .mockResolvedValueOnce({
           items: ['100', '200', '300', '400', '500', '600', '700']
         })
 
-      const { as_path_parts } = await import('@/utils/itemid')
-      as_path_parts.mockReturnValue(['+1234567890', 'posters'])
-
       await cloud_instance.optimize()
-
-      const { move } = await import('@/utils/serverless')
       const component_types = [
         'shadows',
         'sediment',
@@ -334,21 +357,13 @@ describe('@/persistance/Cloud', () => {
         ]
       }
 
-      const { load_directory_from_network } = await import(
-        '@/persistance/Directory'
-      )
       load_directory_from_network
         .mockResolvedValueOnce(mock_directory)
         .mockResolvedValueOnce({
           items: ['5000', '6000', '7000', '8000', '9000', '10000', '11000']
         })
 
-      const { as_path_parts } = await import('@/utils/itemid')
-      as_path_parts.mockReturnValue(['+1234567890', 'posters'])
-
       await cloud_instance.optimize()
-
-      const { move } = await import('@/utils/serverless')
       const component_types = [
         'shadows',
         'sediment',
@@ -388,14 +403,10 @@ describe('@/persistance/Cloud', () => {
         items: ['1', '2', '3']
       }
 
-      const { load_directory_from_network } = await import(
-        '@/persistance/Directory'
-      )
       load_directory_from_network.mockResolvedValue(mock_directory)
 
       await cloud_instance.optimize()
 
-      const { move } = await import('@/utils/serverless')
       expect(move).not.toHaveBeenCalled()
     })
 
@@ -405,14 +416,10 @@ describe('@/persistance/Cloud', () => {
         items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
       }
 
-      const { load_directory_from_network } = await import(
-        '@/persistance/Directory'
-      )
       load_directory_from_network.mockResolvedValue(mock_directory)
 
       await cloud_instance.optimize()
 
-      const { move } = await import('@/utils/serverless')
       expect(move).not.toHaveBeenCalled()
     })
   })
@@ -421,7 +428,6 @@ describe('@/persistance/Cloud', () => {
     it('adds new sync action to offline queue', async () => {
       await sync_later('/+1234567890/test', 'save')
 
-      const { set } = await import('idb-keyval')
       expect(set).toHaveBeenCalledWith('sync:offline', [
         { id: '/+1234567890/test', action: 'save' }
       ])
@@ -429,12 +435,10 @@ describe('@/persistance/Cloud', () => {
 
     it('does not add duplicate sync actions', async () => {
       const existing_offline = [{ id: '/+1234567890/test', action: 'save' }]
-      const { get } = await import('idb-keyval')
       get.mockResolvedValue(existing_offline)
 
       await sync_later('/+1234567890/test', 'save')
 
-      const { set } = await import('idb-keyval')
       expect(set).not.toHaveBeenCalled()
     })
   })

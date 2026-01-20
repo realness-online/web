@@ -22,7 +22,7 @@ export const Large = superclass =>
     }
 
     /**
-     * Get storage path for large files (uses folder structure)
+     * Get storage path for large files i
      * @returns {Promise<string>}
      */
     async get_storage_path() {
@@ -37,19 +37,19 @@ export const Large = superclass =>
 
         if (archive) {
           if (layer_name) return `${archive}-${layer_name}.html.gz`
-          return `${archive}/index.html.gz`
+          return `${archive}.html.gz`
         }
         if (layer_name) return `${poster_filename}-${layer_name}.html.gz`
-        return `${poster_filename}/index.html.gz`
+        return `${poster_filename}.html.gz`
       }
 
       let filename = this.id
       if (this.id.startsWith('/+')) filename = `people${this.id}`
 
       const archive = await as_archive(this.id)
-      if (archive) return `${archive}/index.html.gz`
+      if (archive) return `${archive}.html.gz`
 
-      return `${filename}/index.html.gz`
+      return `${filename}.html.gz`
     }
 
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {

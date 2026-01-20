@@ -9,7 +9,14 @@
     extract_all_layers
   } from '@/utils/svg-to-psd'
   import icon from '@/components/icon'
-  import { ref, inject, onMounted as on_mounted, onUnmounted as on_unmounted, h, createApp } from 'vue'
+  import {
+    ref,
+    inject,
+    onMounted as on_mounted,
+    onUnmounted as on_unmounted,
+    h,
+    createApp
+  } from 'vue'
   const props = defineProps({
     itemid: {
       type: String,
@@ -278,7 +285,11 @@
     await download_psd(svg)
   }
 
-  const render_complete_poster_to_canvas = async (svg_element, width, height) => {
+  const render_complete_poster_to_canvas = async (
+    svg_element,
+    width,
+    height
+  ) => {
     const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
 
     const hidden_elements = svg_clone.querySelectorAll(
@@ -396,6 +407,8 @@
       const ctx = canvas.getContext('2d')
       ctx.putImageData(layer.imageData, 0, 0)
 
+      // Sequential processing required for file downloads
+      // eslint-disable-next-line no-await-in-loop
       const blob = await canvas.convertToBlob({ type: 'image/png' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -430,9 +443,17 @@
     const canvas = await render_complete_poster_to_canvas(svg, width, height)
     const ctx = canvas.getContext('2d')
 
-    const icon_size = Math.round(width * 0.02)
-    const icon_padding = Math.round(width * 0.01)
-    await draw_icon_on_canvas(ctx, 'realness', icon_padding, icon_padding, icon_size)
+    const ICON_SIZE_RATIO = 0.02
+    const ICON_PADDING_RATIO = 0.01
+    const icon_size = Math.round(width * ICON_SIZE_RATIO)
+    const icon_padding = Math.round(width * ICON_PADDING_RATIO)
+    await draw_icon_on_canvas(
+      ctx,
+      'realness',
+      icon_padding,
+      icon_padding,
+      icon_size
+    )
 
     const blob = await canvas.convertToBlob({ type: 'image/png' })
     const url = URL.createObjectURL(blob)
@@ -460,10 +481,7 @@
 
 <template>
   <nav ref="button_ref">
-    <a
-      @click="toggle_menu"
-      title="Download"
-      aria-label="Download options">
+    <a @click="toggle_menu" title="Download" aria-label="Download options">
       <icon name="download" />
     </a>
     <menu v-if="menu_open" ref="menu_ref">

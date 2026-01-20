@@ -96,11 +96,15 @@ import {
   test_user
 } from '../mocks/helpers/user'
 
+const set_working = vi.fn()
+
 const fake_props = {
   global: {
-    stubs: ['router-link', 'router-view']
-  },
-  props: { config: {} }
+    stubs: ['router-link', 'router-view'],
+    provide: {
+      set_working
+    }
+  }
 }
 const statement = {
   id: '/+16282281824',
@@ -122,7 +126,7 @@ describe('@/components/sync', () => {
       avatar: '/+16282281824/avatars/1578929551564',
       visited: '2020-03-03T17:37:22.943Z'
     }
-    wrapper = shallowMount(sync)
+    wrapper = shallowMount(sync, fake_props)
     await flush()
   })
 
@@ -144,8 +148,10 @@ describe('@/components/sync', () => {
     })
     describe('person', () => {
       it('Does nothing unless there is a person', async () => {
-        const props = { ...fake_props }
-        props.props.person = person
+        const props = {
+          ...fake_props,
+          props: { person }
+        }
         wrapper = await shallowMount(sync, props)
         wrapper.setProps({ person: null })
         const save_spy = vi.spyOn(Me.prototype, 'save')
@@ -257,7 +263,7 @@ describe('@/use/sync', () => {
 
   beforeEach(() => {
     setup_current_user()
-    wrapper = shallowMount(sync)
+    wrapper = shallowMount(sync, fake_props)
   })
 
   afterEach(() => {

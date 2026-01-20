@@ -2,6 +2,7 @@
 /** @typedef {import('@/persistance/Storage').Storage} Storage */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
+import { Networkable } from '@/persistance/Networkable'
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { as_filename, as_type, as_path_parts } from '@/utils/itemid'
@@ -32,14 +33,13 @@ const networkable = [
  * @returns {T}
  */
 export const Cloud = superclass =>
-  class extends superclass {
+  class extends Networkable(superclass) {
     constructor(...args) {
       super(...args)
     }
 
     async to_network(items) {
       if (navigator.onLine && current_user.value) {
-        // Use custom path if available (Large files use folder structure)
         const path =
           typeof this['get_storage_path'] === 'function'
             ? await this['get_storage_path']()

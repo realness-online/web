@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 import {
   is_vector_id,
   is_vector,
@@ -19,6 +21,19 @@ import { recent_item_first } from '@/utils/sorting'
 vi.mock('@/persistance/Directory')
 vi.mock('@/utils/itemid')
 vi.mock('@/utils/sorting')
+
+// Helper to test composables in proper Vue context
+function with_setup(composable) {
+  let result
+  const app = defineComponent({
+    setup() {
+      result = composable()
+      return () => {}
+    }
+  })
+  mount(app)
+  return result
+}
 
 describe('poster utils', () => {
   describe('is_vector_id', () => {
@@ -278,7 +293,7 @@ describe('poster utils', () => {
 
     beforeEach(() => {
       vi.clearAllMocks()
-      posters_composable = use_posters()
+      posters_composable = with_setup(use_posters)
     })
 
     describe('for_person', () => {

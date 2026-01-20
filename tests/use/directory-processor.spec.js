@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 import { use } from '@/use/directory-processor'
 import { count_image_files } from '@/utils/image-files'
 
@@ -35,6 +36,19 @@ vi.mock('@/utils/image-files', () => ({
   ),
   poster_filename: vi.fn(name => name.replace(/\.[^.]+$/, '.svg'))
 }))
+
+// Helper to test composables in proper Vue context
+function with_setup(composable) {
+  let result
+  const app = defineComponent({
+    setup() {
+      result = composable()
+      return () => {}
+    }
+  })
+  mount(app)
+  return result
+}
 
 describe('directory-processor composable', () => {
   let processor
@@ -122,7 +136,7 @@ describe('directory-processor composable', () => {
       return Promise.resolve()
     })
 
-    processor = use()
+    processor = with_setup(use)
   })
 
   afterEach(() => {
