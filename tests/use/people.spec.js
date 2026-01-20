@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
-import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 
 // Mock localStorage BEFORE importing the module
 beforeAll(() => {
@@ -51,6 +52,19 @@ vi.mock('@/persistance/Storage', () => ({
   }))
 }))
 
+// Helper to test composables in proper Vue context
+function with_setup(composable) {
+  let result
+  const app = defineComponent({
+    setup() {
+      result = composable()
+      return () => {}
+    }
+  })
+  mount(app)
+  return result
+}
+
 describe('people composable', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -58,13 +72,13 @@ describe('people composable', () => {
 
   describe('use()', () => {
     it('initializes with empty people and phonebook arrays', () => {
-      const { people, phonebook } = use()
+      const { people, phonebook } = with_setup(use)
       expect(people.value).toEqual([])
       expect(phonebook.value).toEqual([])
     })
 
     it('person computed returns first person in array', () => {
-      const { people, person, load_person } = use()
+      const { people, person, load_person } = with_setup(use)
       expect(person.value).toBeUndefined()
 
       people.value.push({ id: '/+1234', name: 'Test' })
@@ -72,7 +86,7 @@ describe('people composable', () => {
     })
 
     it('load_person adds person to people array', async () => {
-      const { people, load_person } = use()
+      const { people, load_person } = with_setup(use)
       await load_person({ id: '/+1234' })
 
       expect(people.value).toHaveLength(1)
@@ -81,7 +95,7 @@ describe('people composable', () => {
     })
 
     it('load_people loads multiple people', async () => {
-      const { people, load_people } = use()
+      const { people, load_people } = with_setup(use)
       await load_people([{ id: '/+1234' }, { id: '/+5678' }])
 
       expect(people.value).toHaveLength(2)

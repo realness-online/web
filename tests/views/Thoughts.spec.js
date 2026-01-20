@@ -82,6 +82,7 @@ vi.mock('@/utils/preference', () => ({
 
 describe('Thoughts', () => {
   let wrapper
+  const set_working = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -97,6 +98,9 @@ describe('Thoughts', () => {
 
     wrapper = shallowMount(Thoughts, {
       global: {
+        provide: {
+          set_working
+        },
         stubs: {
           icon: true,
           'logo-as-link': true,

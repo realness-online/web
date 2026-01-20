@@ -11,6 +11,11 @@ config.global.stubs = {
   'router-view': true
 }
 
+// Provide set_working globally for all tests
+config.global.provide = {
+  set_working: vi.fn()
+}
+
 // Global test configuration for Composition API
 config.global.config = {
   globalProperties: {
