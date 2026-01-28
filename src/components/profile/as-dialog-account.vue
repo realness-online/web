@@ -2,13 +2,7 @@
   import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
   import icon from '@/components/icon'
-  import {
-    ref,
-    computed,
-    onMounted as mounted,
-    watch,
-    watchEffect as watch_effect
-  } from 'vue'
+  import { ref, computed, onMounted as mounted, watch } from 'vue'
   import { current_user, sign_off, me } from '@/utils/serverless'
   import { useRoute as use_route } from 'vue-router'
   import { use_me } from '@/use/people'
@@ -60,21 +54,6 @@
     { immediate: true }
   )
 
-  watch_effect(() => {
-    if (current_user.value && !is_valid_name.value && form.value) {
-      show_sign_in.value = false
-      is_mobile_form_visible.value = false
-      form.value.showModal()
-    }
-  })
-
-  watch_effect(() => {
-    if (current_user.value && is_valid_name.value && form.value?.open) {
-      show_sign_in.value = false
-      form.value.close()
-    }
-  })
-
   mounted(() => {
     if (route.hash === '#account' && form.value) {
       show_sign_in.value = false
@@ -82,8 +61,6 @@
       form.value.showModal()
       form.value.focus()
     }
-    if (current_user.value && !is_valid_name.value && form.value)
-      form.value.showModal()
   })
 
   defineExpose({ show: show_form })

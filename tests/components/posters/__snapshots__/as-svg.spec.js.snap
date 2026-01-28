@@ -1,17 +1,153 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`] = `
-<icon-stub
-  name="working"
+<svg
+  class=""
+  itemid="/+16282281824/posters/559666932867"
+  itemscope=""
+  itemtype="/posters"
+  preserveAspectRatio="xMidYMid meet"
   tabindex="-1"
-/>
+  viewBox="0 0 16 16"
+>
+  <g>
+    <use
+      href="#16282281824-shadows-559666932867"
+      itemprop="shadow"
+    />
+    <rect
+      fill="url(#lightbar)"
+      height="200%"
+      id="lightbar-back"
+      style="opacity: 0; visibility: hidden;"
+      width="200%"
+      x="-11%"
+      y="0"
+    />
+    
+    <!--v-if-->
+    
+    <rect
+      fill="url(#lightbar)"
+      height="200%"
+      id="lightbar-front"
+      style="opacity: 0; visibility: hidden;"
+      width="200%"
+      x="-61%"
+      y="0"
+    />
+  </g>
+  <defs>
+    <symbol
+      id="grid-overlay"
+      viewBox="0 0 1 1"
+    >
+      <rect
+        height="0.33"
+        width="1.00"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="1.00"
+        y="0.33"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="1.00"
+        y="0.66"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="0.33"
+        x="0.33"
+        y="0.33"
+      />
+    </symbol>
+    <!--v-if-->
+    <as-masks-stub
+      itemid="/+16282281824/posters/559666932867"
+    />
+  </defs>
+  <!--v-if-->
+</svg>
 `;
 
 exports[`@/components/posters/as-svg.vue > Renders > Can show a poster immediatly 1`] = `
-<icon-stub
+<svg
+  class=""
   immediate="true"
-  name="working"
+  itemid="/+16282281824/posters/559666932867"
+  itemscope=""
+  itemtype="/posters"
   poster="[object Object]"
+  preserveAspectRatio="xMidYMid meet"
   tabindex="-1"
-/>
+  viewBox="0 0 16 16"
+>
+  <g>
+    <use
+      href="#16282281824-shadows-559666932867"
+      itemprop="shadow"
+    />
+    <rect
+      fill="url(#lightbar)"
+      height="200%"
+      id="lightbar-back"
+      style="opacity: 0; visibility: hidden;"
+      width="200%"
+      x="-11%"
+      y="0"
+    />
+    
+    <!--v-if-->
+    
+    <rect
+      fill="url(#lightbar)"
+      height="200%"
+      id="lightbar-front"
+      style="opacity: 0; visibility: hidden;"
+      width="200%"
+      x="-61%"
+      y="0"
+    />
+  </g>
+  <defs>
+    <symbol
+      id="grid-overlay"
+      viewBox="0 0 1 1"
+    >
+      <rect
+        height="0.33"
+        width="1.00"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="1.00"
+        y="0.33"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="1.00"
+        y="0.66"
+      />
+      <rect
+        height="0.33"
+        rx="0.011"
+        width="0.33"
+        x="0.33"
+        y="0.33"
+      />
+    </symbol>
+    <!--v-if-->
+    <as-masks-stub
+      itemid="/+16282281824/posters/559666932867"
+    />
+  </defs>
+  <!--v-if-->
+</svg>
 `;

@@ -97,6 +97,13 @@
       }
     }
 
+    if (vector.value && vector.value.regular) {
+      await tick()
+      emit('show', vector.value)
+      shown.value = true
+      working.value = false
+    }
+
     if (!vector.value.cutouts) {
       vector.value.cutouts = {}
       const cutout_promises = geology_layers.map(async layer => {
@@ -109,14 +116,7 @@
         const { html } = await load_from_cache(layer_id)
         if (html) vector.value.cutouts[layer] = true
       })
-      await Promise.all(cutout_promises)
-    }
-
-    await tick()
-    if (vector.value && vector.value.regular) {
-      emit('show', vector.value)
-      shown.value = true
-      working.value = false
+      Promise.all(cutout_promises)
     }
   }
 

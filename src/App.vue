@@ -49,6 +49,13 @@
   const fps = useFps()
   provide('fps', fps)
 
+  /** @param {boolean} active */
+  const set_working = active => {
+    if (active) status.value = 'working'
+    else status.value = null
+  }
+  provide('set_working', set_working)
+
   const {
     vVectorizer,
     image_picker,
@@ -204,13 +211,6 @@
     if (active) status.value = 'working'
     else status.value = null
   }
-
-  /** @param {boolean} active */
-  const set_working = active => {
-    if (active) status.value = 'working'
-    else status.value = null
-  }
-  provide('set_working', set_working)
   const online = () => {
     document
       .querySelectorAll('[contenteditable]')

@@ -2,7 +2,6 @@
 /** @typedef {import('@/persistance/Storage').Storage} Storage */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { Networkable } from '@/persistance/Networkable'
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { as_filename, as_type, as_path_parts } from '@/utils/itemid'
@@ -33,7 +32,7 @@ const networkable = [
  * @returns {T}
  */
 export const Cloud = superclass =>
-  class extends Networkable(superclass) {
+  class extends superclass {
     constructor(...args) {
       super(...args)
     }
@@ -99,19 +98,12 @@ export const Cloud = superclass =>
         const sorted_items = items.sort((a, b) => Number(b) - Number(a))
         const index = sorted_items.length - 1
         const archive_directory = sorted_items[index]
-        const archive = []
         const to_archive = sorted_items.splice(-SIZE.MID)
         const path = as_path_parts(this.id)
         const [author] = path
+        let had_partial_failure = false
 
-        const moves = to_archive.flatMap(timestamp => {
-          const poster_move = move(
-            item_type,
-            timestamp,
-            archive_directory,
-            `/${author}`
-          ).then(success => success && archive.push(timestamp))
-
+        const archive_poster = async timestamp => {
           if (item_type === 'posters' && author) {
             const component_types = [
               'shadows',
@@ -121,25 +113,63 @@ export const Cloud = superclass =>
               'rocks',
               'boulders'
             ]
-            const component_moves = component_types.map(component_type =>
-              move(
-                component_type,
-                timestamp,
-                archive_directory,
-                `/${author}`
-              ).then(success => success && archive.push(timestamp))
-            )
-            return [poster_move, ...component_moves]
+            const move_promises = [
+              {
+                type: item_type,
+                promise: move(
+                  item_type,
+                  timestamp,
+                  archive_directory,
+                  `/${author}`
+                )
+              },
+              ...component_types.map(component_type => ({
+                type: component_type,
+                promise: move(
+                  component_type,
+                  timestamp,
+                  archive_directory,
+                  `/${author}`
+                )
+              }))
+            ]
+            const results = await Promise.all(move_promises.map(m => m.promise))
+            const failed = move_promises.filter((_, i) => !results[i])
+            if (failed.length > 0) {
+              if (failed.length < move_promises.length)
+                had_partial_failure = true
+              console.error(
+                `[optimize] Failed to move components for poster ${timestamp}:`,
+                failed.map(f => f.type)
+              )
+            }
+            return results.every(success => success === true)
           }
 
-          return [poster_move]
-        })
+          return move(item_type, timestamp, archive_directory, `/${author}`)
+        }
 
-        await Promise.all(moves)
+        const run_batch = () => Promise.all(to_archive.map(archive_poster))
 
-        const check_directory = await load_directory_from_network(this.id)
-        const { items: check_items } = check_directory
-        if (check_items.length > SIZE.MAX) await this.optimize()
+        let archive_results = await run_batch()
+        let successfully_archived_count = archive_results.filter(
+          success => success === true
+        ).length
+
+        if (successfully_archived_count === 0) {
+          await load_directory_from_network(this.id)
+          archive_results = await run_batch()
+          successfully_archived_count = archive_results.filter(
+            success => success === true
+          ).length
+        }
+
+        if (successfully_archived_count > 0) {
+          const check_directory = await load_directory_from_network(this.id)
+          const { items: check_items } = check_directory
+          if (!had_partial_failure && check_items.length > SIZE.MAX)
+            await this.optimize()
+        }
       }
     }
   }

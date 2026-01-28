@@ -189,6 +189,7 @@
         id="verification-code"
         v-model="code"
         type="tel"
+        inputmode="numeric"
         required
         autocomplete="one-time-code"
         placeholder="Verification Code"
