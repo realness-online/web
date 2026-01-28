@@ -104,6 +104,7 @@ export default defineConfig({
     root: '.',
     globals: true,
     environment: 'happy-dom',
+    reporters: ['verbose'],
     include: ['tests/**/*.spec.js'],
     exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**'],
     testTimeout: 30000,

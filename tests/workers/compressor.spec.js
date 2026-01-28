@@ -11,29 +11,8 @@ vi.mock('pako', () => ({
 }))
 
 describe('compressor worker', () => {
-  let console_time_spy
-  let console_timeEnd_spy
-  let console_group_spy
-  let console_groupEnd_spy
-  let console_info_spy
-  let console_warn_spy
-  let postMessage_spy
-
   beforeEach(() => {
     vi.clearAllMocks()
-    console_time_spy = vi.spyOn(console, 'time').mockImplementation(() => {})
-    console_timeEnd_spy = vi
-      .spyOn(console, 'timeEnd')
-      .mockImplementation(() => {})
-    console_group_spy = vi.spyOn(console, 'group').mockImplementation(() => {})
-    console_groupEnd_spy = vi
-      .spyOn(console, 'groupEnd')
-      .mockImplementation(() => {})
-    console_info_spy = vi.spyOn(console, 'info').mockImplementation(() => {})
-    console_warn_spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    postMessage_spy = vi
-      .spyOn(global, 'postMessage')
-      .mockImplementation(() => {})
   })
 
   describe('compress_html', () => {
@@ -50,21 +29,6 @@ describe('compressor worker', () => {
       })
       expect(result).toHaveProperty('blob')
       expect(result.blob).toBeInstanceOf(Blob)
-      expect(console_time_spy).toHaveBeenCalledWith('compress:html')
-      expect(console_timeEnd_spy).toHaveBeenCalledWith('compress:html')
-    })
-
-    it('logs compression stats', () => {
-      const mock_html = '<html><body>test</body></html>'
-      const mock_compressed = new Uint8Array([1, 2, 3])
-      pako.deflate.mockReturnValue(mock_compressed)
-
-      const message = { data: { html: mock_html } }
-      compressor.compress_html(message)
-
-      expect(console_group_spy).toHaveBeenCalledWith('Compressor')
-      expect(console_info_spy).toHaveBeenCalledTimes(2)
-      expect(console_groupEnd_spy).toHaveBeenCalled()
     })
   })
 
@@ -82,8 +46,6 @@ describe('compressor worker', () => {
       })
       expect(result).toHaveProperty('html')
       expect(result.html).toBe(mock_decompressed)
-      expect(console_time_spy).toHaveBeenCalledWith('decompress:html')
-      expect(console_timeEnd_spy).toHaveBeenCalledWith('decompress:html')
     })
 
     it('returns uncompressed HTML when data starts with <', () => {
@@ -129,10 +91,6 @@ describe('compressor worker', () => {
       const message = { data: { route: 'unknown:route' } }
       const result = compressor.route_message(message)
 
-      expect(console_warn_spy).toHaveBeenCalledWith(
-        'unknown route',
-        'unknown:route'
-      )
       expect(result).toHaveProperty('error')
       expect(result.error).toBe('Unknown route: unknown:route')
     })

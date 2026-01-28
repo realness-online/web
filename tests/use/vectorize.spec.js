@@ -106,6 +106,9 @@ vi.mock('@/persistance/Storage', () => ({
     async save() {
       return Promise.resolve()
     }
+    async optimize() {
+      return Promise.resolve()
+    }
   },
   Shadow: class {
     constructor(id) {

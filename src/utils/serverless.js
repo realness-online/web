@@ -18,7 +18,12 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import { load_from_network, load } from '@/utils/itemid'
+import {
+  load_from_network,
+  load,
+  as_poster_id,
+  as_archive
+} from '@/utils/itemid'
 import { from_e64, default_person } from '@/use/people'
 
 import { get, set } from 'idb-keyval'
@@ -79,13 +84,36 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
   ]
   const is_component = component_types.includes(type)
 
-  let old_location, new_location
+  let old_location, new_location, old_storage_path, new_storage_path
   if (is_component) {
-    old_location = /** @type {Id} */ (`${author}/${type}/${id}`)
-    new_location = /** @type {Id} */ (`${author}/${type}/${archive_id}/${id}`)
+    const component_itemid = /** @type {Id} */ (`${author}/${type}/${id}`)
+    old_location = component_itemid
+    new_location = component_itemid
+
+    const poster_id = as_poster_id(component_itemid)
+    if (!poster_id) return false
+
+    const existing_archive = await as_archive(poster_id)
+    const poster_filename = poster_id.startsWith('/+')
+      ? `people${poster_id}`
+      : poster_id
+
+    if (existing_archive)
+      old_storage_path = `${existing_archive}-${type}.html.gz`
+    else old_storage_path = `${poster_filename}-${type}.html.gz`
+
+    const archived_poster_id = /** @type {Id} */ (
+      `${author}/posters/${archive_id}/${id}`
+    )
+    const archived_poster_filename = archived_poster_id.startsWith('/+')
+      ? `people${archived_poster_id}`
+      : archived_poster_id
+    new_storage_path = `${archived_poster_filename}-${type}.html.gz`
   } else {
     old_location = /** @type {Id} */ (`${author}/${type}/${id}`)
     new_location = /** @type {Id} */ (`${author}/${type}/${archive_id}/${id}`)
+    old_storage_path = await as_filename(old_location)
+    new_storage_path = await as_filename(new_location)
   }
   const local_id = old_location
 
@@ -100,23 +128,23 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
   let upload_successful = false
   const { compressed, metadata } = await prepare_upload_html(html)
   try {
-    await upload(await as_filename(new_location), compressed, metadata)
+    await upload(new_storage_path, compressed, metadata)
     upload_successful = true
 
-    await remove(await as_filename(old_location))
-    console.info(`Moved ${old_location} to ${new_location}`)
+    await remove(old_storage_path)
+    console.info(`Moved ${old_storage_path} to ${new_storage_path}`)
     return true
   } catch (error) {
     if (upload_successful)
       try {
-        await remove(await as_filename(new_location))
+        await remove(new_storage_path)
         await set(old_location, html)
-        console.info(`Rolled back upload of ${new_location}`)
+        console.info(`Rolled back upload of ${new_storage_path}`)
       } catch (cleanup_error) {
-        console.error(`Failed to cleanup ${new_location}`, cleanup_error)
+        console.error(`Failed to cleanup ${new_storage_path}`, cleanup_error)
       }
 
-    console.error(`Failed to move ${type} ${old_location}`, error)
+    console.error(`Failed to move ${type} ${old_storage_path}`, error)
     return false
   }
 }

@@ -1,5 +1,4 @@
 <script setup>
-  import Icon from '@/components/icon'
   import AsMasks from '@/components/posters/as-masks'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
@@ -58,7 +57,6 @@
   const {
     query,
     aspect_ratio,
-    working,
     show,
     focusable,
     vector,
@@ -99,7 +97,6 @@
     else {
       intersecting.value = true
       vector.value = props.sync_poster
-      working.value = false
       emit('show', vector.value)
     }
   })
@@ -108,9 +105,8 @@
     if (props.sync_poster) {
       intersecting.value = true
       vector.value = props.sync_poster
-      working.value = false
       emit('show', vector.value)
-    }
+    } else if (props.sync_poster === null) vector.value = null
   })
 
   const drama_back_visible = computed(() => drama_back.value)
@@ -203,13 +199,13 @@
 
   unmounted(() => {
     if (ken_burns_timer) clearTimeout(ken_burns_timer)
+    vector.value = null
   })
 </script>
 
 <template>
-  <icon v-if="working" ref="trigger" name="working" :tabindex="focusable" />
   <svg
-    v-else
+    ref="trigger"
     :id="query()"
     itemscope
     itemtype="/posters"
