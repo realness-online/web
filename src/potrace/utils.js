@@ -260,7 +260,9 @@ export const render_curve = (curve, scale = 1) => {
   const starting_point = curve.c[(curve.n - 1) * 3 + 2]
   let path = `M ${fixed(starting_point.x * scale)} ${fixed(starting_point.y * scale)} `
 
-  curve.tag.forEach((tag, i) => {
+  const tag_length = curve.tag.length
+  for (let i = 0; i < tag_length; i++) {
+    const tag = curve.tag[i]
     const i3 = i * 3
     const p0 = curve.c[i3]
     const p1 = curve.c[i3 + 1]
@@ -274,7 +276,7 @@ export const render_curve = (curve, scale = 1) => {
       path += `L ${fixed(p1.x * scale)} ${fixed(p1.y * scale)} `
       path += `${fixed(p2.x * scale)} ${fixed(p2.y * scale)} `
     }
-  })
+  }
 
   return path
 }

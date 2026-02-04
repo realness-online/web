@@ -63,7 +63,8 @@
     intersecting,
     is_hovered,
     viewbox,
-    should_ken_burns
+    should_ken_burns,
+    ken_burns_position
   } = use_poster()
 
   const trigger = ref(null)
@@ -89,10 +90,8 @@
   mounted(() => {
     if (!props.sync_poster)
       use_intersect(trigger, ([{ isIntersecting }]) => {
-        if (isIntersecting) {
-          intersecting.value = true
-          show()
-        }
+        intersecting.value = isIntersecting
+        if (isIntersecting) show()
       })
     else {
       intersecting.value = true
@@ -118,6 +117,11 @@
 
   const ken_burns_ready = ref(false)
   const ken_burns_timer = null
+
+  const ken_burns_class = computed(() => {
+    if (!should_ken_burns.value) return null
+    return `ken-burns-${ken_burns_position.value}`
+  })
 
   const OPACITY_HALF = 0.5
   const OPACITY_FULL = 1
@@ -220,7 +224,7 @@
       hovered: is_hovered,
       'hide-cursor': hide_cursor
     }">
-    <g>
+    <g :class="ken_burns_class">
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect
         id="lightbar-back"
@@ -427,6 +431,9 @@
       &.ken-burns-right {
         animation: ken-burns-right 30s ease-in-out;
       }
+    }
+    &:not(.animate) > g[class*='ken-burns'] {
+      animation-play-state: paused;
     }
     & rect#lightbar-back,
     & rect#lightbar-front,

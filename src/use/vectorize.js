@@ -436,6 +436,8 @@ export const use = () => {
       progress: progress_value
     })
     new_vector.value.cutout.push(cutout_path)
+    // Force Vue reactivity by reassigning the array
+    new_vector.value.cutout = [...new_vector.value.cutout]
   }
 
   const flush_pending_tracer_paths = () => {

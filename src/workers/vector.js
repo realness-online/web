@@ -1,7 +1,6 @@
 /** @typedef {import('@/potrace/index.js').FillStrategy} FillStrategy */
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/utils/colors'
-import { to_kb } from '@/utils/numbers'
 import { optimize } from 'svgo/browser'
 
 const RGBA_COMPONENTS = 4
@@ -142,7 +141,6 @@ export const is_stop = stop => {
 }
 
 export const make_vector = message => {
-  console.time('make:vector')
   const { image_data } = message.data
 
   const poster = as_paths(image_data, potrace_options)
@@ -157,12 +155,10 @@ export const make_vector = message => {
     viewbox: `0 0 ${poster.width} ${poster.height}`
   }
 
-  console.timeEnd('make:vector')
   return { vector }
 }
 
 export const make_gradient = message => {
-  console.time('make:gradient')
   const { image_data } = message.data
 
   // Create a temporary canvas to work with the image data
@@ -176,21 +172,14 @@ export const make_gradient = message => {
     radial: as_radial_gradient(canvas)
   }
 
-  console.timeEnd('make:gradient')
   return { gradients }
 }
 
 export const optimize_vector = message => {
-  console.time('optimize:vector')
-  console.group('Optimizer')
-  console.info(`before: ${to_kb(message.data.vector)}kb`)
   const optimized = optimize(
     message.data.vector,
     /** @type {any} */ (svgo_options)
   )
-  console.info(`after: ${to_kb(optimized.data)}kb`)
-  console.groupEnd()
-  console.timeEnd('optimize:vector')
   return { vector: optimized.data }
 }
 

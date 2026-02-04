@@ -55,7 +55,7 @@ export const Cloud = superclass =>
     }
 
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      console.info('request:save', this.id, items)
+      // console.info('request:save', this.id, items)
       if (!items || !items.outerHTML) return
       if (super.save) await super.save(items)
       const item_type = this.type || as_type(this.id)
@@ -64,7 +64,7 @@ export const Cloud = superclass =>
     }
 
     async delete() {
-      console.info('request:delete', this.id)
+      // console.info('request:delete', this.id)
       if (navigator.onLine && current_user.value) {
         const path =
           typeof this['get_storage_path'] === 'function'

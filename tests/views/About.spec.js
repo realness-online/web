@@ -89,7 +89,11 @@ describe('About', () => {
 
   describe('Rendering', () => {
     it('renders about view', () => {
-      expect(wrapper.element).toMatchSnapshot()
+      // Normalize version in snapshot to ignore package version differences
+      const element = wrapper.element.cloneNode(true)
+      const version_span = element.querySelector('header nav a span')
+      if (version_span) version_span.textContent = '2.0.0'
+      expect(element).toMatchSnapshot()
     })
   })
 

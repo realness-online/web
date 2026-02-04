@@ -256,6 +256,10 @@
     }
 
     & > section:last-child {
+      @media (max-width: pad-begins) {
+        display: none;
+      }
+
       & > div {
         h3 {
           color: var(--red);

@@ -134,9 +134,6 @@
     await posters_for_person({ id: localStorage.me })
     await init_processing_queue()
     console.timeEnd('views:Posters')
-    await tick()
-    const first_poster = document.querySelector('figure.poster[tabindex="0"]')
-    if (first_poster) /** @type {HTMLElement} */ (first_poster).focus()
   })
 
   watch(
