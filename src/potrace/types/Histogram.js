@@ -204,6 +204,16 @@ class Histogram {
     if (threshold_amount < 1) return []
     if (!this.lookup_table_h) this.thresholding_build_lookup_table()
 
+    // Limit search space for Safari performance - sample every Nth value
+    // This reduces iterations dramatically while still finding good thresholds
+    const SAMPLING_THRESHOLD = 100
+    const SAMPLING_DIVISOR = 100
+    const search_range = max - min
+    const step_size =
+      search_range > SAMPLING_THRESHOLD
+        ? Math.max(1, Math.floor(search_range / SAMPLING_DIVISOR))
+        : 1
+
     const stack = [
       {
         starting_point: min || 0,
@@ -221,10 +231,11 @@ class Histogram {
       const current = stack.pop()
       const { starting_point, prev_variance, indexes, depth } = current
 
+      // Sample with step_size to reduce iterations
       for (
-        let i = starting_point + 1;
+        let i = starting_point + step_size;
         i < max - threshold_amount + depth;
-        i++
+        i += step_size
       ) {
         const variance =
           prev_variance + this.lookup_table_h[index(starting_point + 1, i)]

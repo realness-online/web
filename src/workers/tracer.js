@@ -34,7 +34,6 @@ const init_tracer = async () => {
 }
 
 export const make_trace = message => {
-  console.time('make:trace')
   const { image_data } = message.data
 
   is_processing = false
@@ -80,7 +79,6 @@ export const make_trace = message => {
         const progress = converter.progress()
 
         if (result === 'complete') {
-          console.timeEnd('make:trace')
           converter.free()
           converter = null
           self.postMessage({
@@ -113,7 +111,6 @@ export const make_trace = message => {
       // If still processing, schedule next chunk
       if (is_processing) setTimeout(process_chunk, 0)
     } catch (error) {
-      console.timeEnd('make:trace')
       console.error('Error in processing loop:', error)
       self.postMessage({
         type: 'error',

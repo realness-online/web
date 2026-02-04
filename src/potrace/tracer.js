@@ -124,18 +124,20 @@ export const trace_path = (black_map, start_point, turn_policy) => {
 export const xor_path = (black_map, path) => {
   let y1 = path.points[0].y
   const { len } = path
+  const { width, data } = black_map
 
   for (let i = 1; i < len; i++) {
-    const { x } = path.points[i]
-    const { y } = path.points[i]
+    const point = path.points[i]
+    const { x, y } = point
 
     if (y !== y1) {
       const min_y = Math.min(y1, y)
       const { max_x } = path
+      const base_index = width * min_y
 
       for (let j = x; j < max_x; j++) {
-        const indx = black_map.point_to_index(j, min_y)
-        black_map.data[indx] = black_map.data[indx] ? 0 : 1
+        const indx = base_index + j
+        data[indx] = data[indx] ? 0 : 1
       }
       y1 = y
     }

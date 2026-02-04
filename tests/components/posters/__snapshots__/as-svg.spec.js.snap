@@ -10,7 +10,9 @@ exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`
   tabindex="-1"
   viewBox="0 0 16 16"
 >
-  <g>
+  <g
+    class=""
+  >
     <use
       href="#16282281824-shadows-559666932867"
       itemprop="shadow"
@@ -87,7 +89,9 @@ exports[`@/components/posters/as-svg.vue > Renders > Can show a poster immediatl
   tabindex="-1"
   viewBox="0 0 16 16"
 >
-  <g>
+  <g
+    class=""
+  >
     <use
       href="#16282281824-shadows-559666932867"
       itemprop="shadow"

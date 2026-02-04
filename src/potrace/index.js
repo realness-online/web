@@ -220,7 +220,6 @@ class Potrace {
       threshold,
       this.#params.blackOnWhite
     )
-
     this.#pathlist = trace_all_paths(
       black_map,
       this.#params.turnPolicy,
@@ -1327,7 +1326,8 @@ class Potrace {
    * 6. Optionally optimizes curves for better rendering
    */
   #process_path() {
-    for (let i = 0; i < this.#pathlist.length; i++) {
+    const pathlist_length = this.#pathlist.length
+    for (let i = 0; i < pathlist_length; i++) {
       const path = this.#pathlist[i]
       if (!path.points || path.points.length === 0 || path.len === 0) continue
 
@@ -1528,25 +1528,30 @@ class Potrace {
         : null
     const threshold_value = this.#param_threshold()
     const fullRange = Math.abs(threshold_value - (blackOnWhite ? 0 : RGB_MAX))
+    const result = []
+    const colorStops_length = colorStops.length
 
-    return colorStops.map((threshold, index) => {
+    for (let index = 0; index < colorStops_length; index++) {
+      const threshold = colorStops[index]
       let nextValue
-      if (index + 1 === colorStops.length)
+      if (index + 1 === colorStops_length)
         nextValue = blackOnWhite ? -1 : COLOR_SPACE_SIZE
       else nextValue = colorStops[index + 1]
 
       const rangeStart = Math.round(blackOnWhite ? nextValue + 1 : threshold)
       const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
-      const factor = index / (colorStops.length - 1)
+      const factor = index / (colorStops_length - 1)
       const intervalSize = rangeEnd - rangeStart
       const stats = histogram.get_stats(rangeStart, rangeEnd)
       let color = -1
 
-      if (stats.pixels === 0)
-        return {
+      if (stats.pixels === 0) {
+        result.push({
           value: threshold,
           colorIntensity: 0
-        }
+        })
+        continue
+      }
 
       switch (colorSelectionStrat) {
         case Potrace.FILL_SPREAD:
@@ -1587,14 +1592,16 @@ class Potrace {
               rangeEnd
             )
 
-      return {
+      result.push({
         value: threshold,
         colorIntensity:
           color === -1
             ? 0
             : this.#calc_color_intensity_value(color, blackOnWhite)
-      }
-    })
+      })
+    }
+
+    return result
   }
 
   /**
@@ -1633,10 +1640,12 @@ class Potrace {
     const threshold = this.#param_threshold()
     const lookingForDarkPixels = this.#params.blackOnWhite
 
-    steps.forEach(item => {
+    const steps_length = steps.length
+    for (let i = 0; i < steps_length; i++) {
+      const item = steps[i]
       if (colorStops.indexOf(item) === -1 && utils.between(item, 0, RGB_MAX))
         colorStops.push(item)
-    })
+    }
 
     if (!colorStops.length) colorStops.push(threshold)
 
@@ -1803,9 +1812,9 @@ class Potrace {
 
     let tag = '<path itemprop="path" d="'
 
-    this.#pathlist.forEach(path => {
-      tag += utils.render_curve(path.curve, 1)
-    })
+    const pathlist_length = this.#pathlist.length
+    for (let i = 0; i < pathlist_length; i++)
+      tag += utils.render_curve(this.#pathlist[i].curve, 1)
 
     tag += '" style="fill-rule:evenodd"/>'
 
@@ -1832,11 +1841,17 @@ class Potrace {
     this.#set_parameters({ blackOnWhite })
 
     let actualPrevLayersOpacity = 0
+    const result = []
+    const ranges_length = ranges.length
 
-    return ranges.map(colorStop => {
+    for (let i = 0; i < ranges_length; i++) {
+      const colorStop = ranges[i]
       const thisLayerOpacity = colorStop.colorIntensity
 
-      if (thisLayerOpacity === 0) return ''
+      if (thisLayerOpacity === 0) {
+        result.push('')
+        continue
+      }
 
       let calculatedOpacity =
         !actualPrevLayersOpacity || thisLayerOpacity === 1
@@ -1870,8 +1885,10 @@ class Potrace {
       )
       element = utils.set_html_attr(element, 'fill', `rgb(${c}, ${c}, ${c})`)
 
-      return canBeIgnored ? '' : element
-    })
+      result.push(canBeIgnored ? '' : element)
+    }
+
+    return result
   }
 
   /**
@@ -1891,9 +1908,11 @@ class Potrace {
       this.#processed = true
     }
 
-    return this.#pathlist
-      .map(path => utils.render_curve(path.curve, 1))
-      .join('')
+    let d = ''
+    const pathlist_length = this.#pathlist.length
+    for (let i = 0; i < pathlist_length; i++)
+      d += utils.render_curve(this.#pathlist[i].curve, 1)
+    return d
   }
 
   /**
@@ -1912,39 +1931,42 @@ class Potrace {
     this.#set_parameters({ blackOnWhite })
 
     let actualPrevLayersOpacity = 0
+    const result = []
+    const ranges_length = ranges.length
 
-    return ranges
-      .map(colorStop => {
-        const thisLayerOpacity = colorStop.colorIntensity
+    for (let index = 0; index < ranges_length; index++) {
+      const colorStop = ranges[index]
+      const thisLayerOpacity = colorStop.colorIntensity
 
-        if (thisLayerOpacity === 0) return null
+      if (thisLayerOpacity === 0) continue
 
-        let calculatedOpacity =
-          !actualPrevLayersOpacity || thisLayerOpacity === 1
-            ? thisLayerOpacity
-            : (actualPrevLayersOpacity - thisLayerOpacity) /
-              (actualPrevLayersOpacity - 1)
+      let calculatedOpacity =
+        !actualPrevLayersOpacity || thisLayerOpacity === 1
+          ? thisLayerOpacity
+          : (actualPrevLayersOpacity - thisLayerOpacity) /
+            (actualPrevLayersOpacity - 1)
 
-        calculatedOpacity = utils.clamp(
-          parseFloat(calculatedOpacity.toFixed(3)),
-          0,
-          1
-        )
-        actualPrevLayersOpacity =
-          actualPrevLayersOpacity +
-          (1 - actualPrevLayersOpacity) * calculatedOpacity
+      calculatedOpacity = utils.clamp(
+        parseFloat(calculatedOpacity.toFixed(3)),
+        0,
+        1
+      )
+      actualPrevLayersOpacity =
+        actualPrevLayersOpacity +
+        (1 - actualPrevLayersOpacity) * calculatedOpacity
 
-        this.#set_parameters({ threshold: colorStop.value })
+      this.#set_parameters({ threshold: colorStop.value })
+      const path_tag = this.get_path_tag()
+      const d_match = path_tag.match(/d="([^"]+)"/)
+      const d = d_match ? d_match[1] : ''
 
-        const path_data = this.get_path_tag()
-        const d_match = path_data.match(/d="([^"]+)"/)
-        const d = d_match ? d_match[1] : ''
-        return {
-          d,
-          fillOpacity: calculatedOpacity.toFixed(3)
-        }
+      result.push({
+        d,
+        fillOpacity: calculatedOpacity.toFixed(3)
       })
-      .filter(item => item !== null)
+    }
+
+    return result
   }
 
   /**
