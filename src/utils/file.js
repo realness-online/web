@@ -3,4 +3,8 @@
  * Not supported in Firefox or Safari. Requires secure context (HTTPS).
  * @returns {Promise<FileSystemDirectoryHandle>}
  */
-export const get_file_system = () => window.showDirectoryPicker()
+const win =
+  /** @type {Window & { showDirectoryPicker?: () => Promise<FileSystemDirectoryHandle> }} */ (
+    window
+  )
+export const get_file_system = () => win.showDirectoryPicker()
