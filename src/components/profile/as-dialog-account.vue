@@ -97,6 +97,7 @@
     }
   }
   dialog#account {
+    z-index: 9;
     border: 3px solid red;
     border-radius: base-line *.5;
     padding: base-line;

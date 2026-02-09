@@ -59,17 +59,6 @@
   /**
    * @param {Id} itemid
    */
-  const toggle_menu = itemid => {
-    posters.value.forEach(poster => {
-      if (poster.menu) poster.menu = false
-    })
-    const poster = posters.value.find(poster => poster.id === itemid)
-    if (poster) poster.menu = !poster.menu
-  }
-
-  /**
-   * @param {Id} itemid
-   */
   const focus_poster = itemid => {
     const svg_element = document.querySelector(`svg[itemid="${itemid}"]`)
     if (!svg_element) return
@@ -84,7 +73,6 @@
    */
   const handle_poster_click = itemid => {
     focus_poster(itemid)
-    toggle_menu(itemid)
   }
 
   const picker = itemid => {
@@ -156,8 +144,10 @@
       <header>
         <h1>Delete Poster</h1>
       </header>
-      <p><i>Created:</i></p>
-      <p>{{ as_day_time_year(as_created_at(poster_to_remove.id)) }}</p>
+      <p>
+        <i>Created:</i>
+        {{ as_day_time_year(as_created_at(poster_to_remove.id)) }}
+      </p>
       <menu>
         <button class="cancel" @click="cancel_remove">Cancel</button>
         <button class="delete" @click="confirmed_remove">Delete</button>
@@ -188,6 +178,7 @@
         :key="poster.id"
         :itemid="poster.id"
         :menu="poster.menu"
+        :slice="poster.slice"
         tabindex="0"
         :class="{
           'selecting-event': poster.picker,

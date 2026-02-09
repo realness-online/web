@@ -31,7 +31,6 @@
     gravel,
     sand,
     sediment,
-    slice,
     storytelling,
     aspect_ratio_mode
   } from '@/utils/preference'
@@ -47,6 +46,10 @@
       required: false,
       default: null,
       validator: is_vector
+    },
+    slice: {
+      type: Boolean,
+      default: undefined
     }
   })
   const emit = defineEmits({
@@ -56,16 +59,31 @@
   })
   const {
     query,
-    aspect_ratio,
     show,
     focusable,
     vector,
     intersecting,
     is_hovered,
     viewbox,
-    should_ken_burns,
-    ken_burns_position
+    ken_burns_position,
+    working
   } = use_poster()
+
+  const poster_slice = computed(() => props.slice ?? false)
+  const use_meet = ref(false)
+
+  const aspect_ratio = computed(() =>
+    use_meet.value ? 'xMidYMid meet' : 'xMidYMid slice'
+  )
+
+  const handle_click = () => {
+    use_meet.value = !use_meet.value
+    emit('click', true)
+  }
+
+  const should_ken_burns = computed(
+    () => storytelling.value && poster_slice.value
+  )
 
   const trigger = ref(null)
   const animate = computed(
@@ -108,12 +126,23 @@
     } else if (props.sync_poster === null) vector.value = null
   })
 
-  const drama_back_visible = computed(() => drama_back.value)
-  const drama_front_visible = computed(() => drama_front.value)
+  const is_loading = computed(() => {
+    if (!intersecting.value) return false
+    if (working.value) return true
+    if (!vector.value) return true
+    if (!vector.value.regular) return true
+    return false
+  })
+  const drama_back_visible = computed(
+    () => drama_back.value || is_loading.value
+  )
+  const drama_front_visible = computed(
+    () => drama_front.value || is_loading.value
+  )
 
   const shadow_layer_displayed = computed(() => fill.value || stroke.value)
 
-  const hide_cursor = computed(() => slice.value && storytelling.value)
+  const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
   const ken_burns_ready = ref(false)
   const ken_burns_timer = null
@@ -178,7 +207,7 @@
   })
 
   const svg_style = computed(() => {
-    if (slice.value && aspect_ratio_mode.value !== 'auto')
+    if (poster_slice.value && aspect_ratio_mode.value !== 'auto')
       return { aspectRatio: aspect_ratio_mode.value }
     return {}
   })
@@ -223,7 +252,8 @@
       landscape,
       hovered: is_hovered,
       'hide-cursor': hide_cursor
-    }">
+    }"
+    @click="handle_click">
     <g :class="ken_burns_class">
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect

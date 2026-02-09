@@ -88,7 +88,7 @@
     color: red
     font-size: base-line
     text-shadow: -0.66px -0.66px .51px blue
-    z-index: 1000
+    z-index: 8
     font-family: monospace
     display: flex
     flex-direction: column

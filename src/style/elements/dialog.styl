@@ -29,8 +29,17 @@ dialog[open]::backdrop {
 }
 
 dialog.confirm {
-  z-index: 1000;
+  z-index: 9;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
   & > article {
+    max-width: 100%
+    @media (orientation: portrait) and (max-width: pad-begins) {
+      min-width: calc(100vw - var(--base-line) * 3)
+    }
     header {
       padding: base-line;
       display: flex;

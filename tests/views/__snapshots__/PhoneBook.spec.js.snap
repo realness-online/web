@@ -22,7 +22,7 @@ exports[`@/views/PhoneBook > Renders > renders phone book view 1`] = `
     class="profile-list"
   >
     
-    <div
+    <figure
       class="profile-stub"
     />
     

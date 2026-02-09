@@ -101,8 +101,8 @@ describe('@/views/Posters', () => {
         stubs: {
           icon: true,
           'as-figure': {
-            template: '<div class="poster-stub"></div>',
-            props: ['itemid']
+            template: '<figure class="poster-stub"></figure>',
+            props: ['itemid', 'slice', 'menu']
           },
           'as-svg': true,
           'as-menu-author': true,
@@ -144,8 +144,8 @@ describe('@/views/Posters', () => {
           stubs: {
             icon: true,
             'as-figure': {
-              template: '<div class="poster-stub"></div>',
-              props: ['itemid']
+              template: '<figure class="poster-stub"></figure>',
+              props: ['itemid', 'slice', 'menu']
             },
             'as-svg': true,
             'as-menu-author': true,
@@ -192,33 +192,28 @@ describe('@/views/Posters', () => {
       expect(wrapper.vm.delete_dialog.close).toHaveBeenCalled()
     })
 
-    it('toggles menu for poster', async () => {
-      const poster1 = {
+    it('focuses poster when clicked', async () => {
+      const poster = {
         id: '/+14151234356/posters/1',
         menu: false,
         type: 'posters'
       }
-      const poster2 = {
-        id: '/+14151234356/posters/2',
-        menu: true,
-        type: 'posters'
-      }
-      wrapper.vm.posters.value = [poster1, poster2]
+      wrapper.vm.posters.value = [poster]
 
-      wrapper.vm.toggle_menu('/+14151234356/posters/1')
+      const mock_svg = document.createElement('svg')
+      mock_svg.setAttribute('itemid', '/+14151234356/posters/1')
+      const mock_figure = document.createElement('figure')
+      mock_figure.className = 'poster'
+      mock_figure.tabIndex = 0
+      mock_figure.appendChild(mock_svg)
+      document.body.appendChild(mock_figure)
+
+      wrapper.vm.handle_poster_click('/+14151234356/posters/1')
       await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 10))
 
-      const found1 = wrapper.vm.posters.value.find(
-        p => p.id === '/+14151234356/posters/1'
-      )
-      const found2 = wrapper.vm.posters.value.find(
-        p => p.id === '/+14151234356/posters/2'
-      )
-      expect(found1).toBeTruthy()
-      expect(found1.menu).toBe(true)
-      expect(found2).toBeTruthy()
-      expect(found2.menu).toBe(false)
+      expect(document.activeElement).toBe(mock_figure)
+
+      document.body.removeChild(mock_figure)
     })
 
     it('focuses poster element', () => {
@@ -248,18 +243,14 @@ describe('@/views/Posters', () => {
       mock_svg.setAttribute('itemid', '/+14151234356/posters/1')
       const mock_figure = document.createElement('figure')
       mock_figure.className = 'poster'
+      mock_figure.tabIndex = 0
       mock_figure.appendChild(mock_svg)
       document.body.appendChild(mock_figure)
 
       wrapper.vm.handle_poster_click('/+14151234356/posters/1')
       await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 10))
 
-      const found = wrapper.vm.posters.value.find(
-        p => p.id === '/+14151234356/posters/1'
-      )
-      expect(found).toBeTruthy()
-      expect(found.menu).toBe(true)
+      expect(document.activeElement).toBe(mock_figure)
 
       document.body.removeChild(mock_figure)
     })

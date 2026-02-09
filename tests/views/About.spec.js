@@ -75,11 +75,14 @@ describe('About', () => {
         },
         stubs: {
           'as-figure': {
-            template: '<div class="poster-stub"></div>',
+            template: '<figure class="poster-stub"></figure>',
             props: ['itemid']
           },
           icon: true,
-          preference: true,
+          preference: {
+            template: '<fieldset class="preference-stub"></fieldset>',
+            props: ['name', 'title', 'subtitle', 'show_state']
+          },
           'call-to-action': true,
           'logo-as-link': true
         }

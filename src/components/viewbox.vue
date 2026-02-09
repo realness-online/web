@@ -63,7 +63,7 @@
     color: blue;
     font-size: smaller;
     text-shadow: -0.66px -0.66px .51px red;
-    z-index: 10;
+    z-index: 6;
     font-family: monospace;
     display: flex;
     flex-direction: column;

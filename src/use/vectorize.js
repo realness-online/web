@@ -549,7 +549,11 @@ export const use = () => {
       const index = queue_items.value.findIndex(item => item.id === next.id)
       if (index !== -1) queue_items.value[index].status = 'processing'
 
-      await vectorize(next.resized_blob, next.id)
+      const image_blob =
+        next.resized_blob instanceof ArrayBuffer
+          ? new Blob([next.resized_blob], { type: 'image/jpeg' })
+          : next.resized_blob
+      await vectorize(image_blob, next.id)
       mutex.unlock()
     } catch (error) {
       console.error('Error processing queue item:', error)

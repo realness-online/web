@@ -53,8 +53,13 @@
 
   mounted(() => {
     const { queue_item } = props
-    if (queue_item?.resized_blob)
-      thumbnail_url.value = URL.createObjectURL(queue_item.resized_blob)
+    if (queue_item?.resized_blob) {
+      const blob =
+        queue_item.resized_blob instanceof ArrayBuffer
+          ? new Blob([queue_item.resized_blob], { type: 'image/jpeg' })
+          : queue_item.resized_blob
+      thumbnail_url.value = URL.createObjectURL(blob)
+    }
   })
 
   unmounted(() => {

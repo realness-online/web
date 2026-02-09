@@ -4,6 +4,9 @@
   import AsSymbol from '@/components/posters/as-symbol'
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   import Icon from '@/components/icon'
+  import AsLink from '@/components/profile/as-link'
+  import AsDownload from '@/components/download-vector'
+  import AsMessenger from '@/components/profile/as-messenger'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   import {
@@ -11,7 +14,8 @@
     as_author,
     load_from_cache,
     load,
-    as_layer_id
+    as_layer_id,
+    as_created_at
   } from '@/utils/itemid'
   import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -27,8 +31,11 @@
     rocks,
     gravel,
     sand,
-    sediment
+    sediment,
+    menu
   } from '@/utils/preference'
+  import { as_time } from '@/utils/date'
+  import { current_user } from '@/utils/serverless'
   import {
     ref,
     computed,
@@ -47,6 +54,10 @@
     menu: {
       type: Boolean,
       default: false
+    },
+    slice: {
+      type: Boolean,
+      default: undefined
     }
   })
   const emit = defineEmits({
@@ -56,6 +67,14 @@
   const poster = ref(null)
   const vector = ref(null)
   const person = ref(null)
+  const menu_open = ref(false)
+  const posted_at = computed(() =>
+    as_time(new Date(as_created_at(/** @type {Id} */ (props.itemid))))
+  )
+
+  const vector_click = () => {
+    if (menu.value) menu_open.value = !menu_open.value
+  }
   const symbol_loaded = ref({
     boulders: false,
     rocks: false,
@@ -122,7 +141,8 @@
 
   provide('vector', vector)
   watch_effect(async () => {
-    if (props.menu && !person.value) {
+    const should_load_person = props.menu || menu_open.value
+    if (should_load_person && !person.value) {
       const author_id = as_author(/** @type {Id} */ (props.itemid))
       // False positive: sequential assignment after async load
       // eslint-disable-next-line require-atomic-updates
@@ -151,34 +171,50 @@
 
 <template>
   <figure ref="poster" class="poster">
-    <as-svg :itemid="itemid" @show="on_show" :focusable="false" />
+    <as-svg
+      :itemid="itemid"
+      :slice="slice"
+      @show="on_show"
+      @click="vector_click"
+      :focusable="false" />
     <icon v-if="working" name="working" />
     <svg v-if="shown" style="display: none">
       <as-symbol-shadow />
       <as-symbol
         v-if="cutout && boulders && vector?.cutouts?.boulders"
-        :itemid="as_layer_id(itemid, 'boulders')" />
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'boulders')" />
       <as-symbol
         v-if="cutout && rocks && vector?.cutouts?.rocks"
-        :itemid="as_layer_id(itemid, 'rocks')" />
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'rocks')" />
       <as-symbol
         v-if="cutout && gravel && vector?.cutouts?.gravel"
-        :itemid="as_layer_id(itemid, 'gravel')" />
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'gravel')" />
       <as-symbol
         v-if="cutout && sand && vector?.cutouts?.sand"
-        :itemid="as_layer_id(itemid, 'sand')" />
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sand')" />
       <as-symbol
         v-if="cutout && sediment && vector?.cutouts?.sediment"
-        :itemid="as_layer_id(itemid, 'sediment')" />
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sediment')" />
     </svg>
-    <figcaption>
-      <slot v-if="menu" />
+    <figcaption v-if="menu_open">
+      <slot>
+        <menu>
+          <as-link :itemid="/** @type {Id} */ (itemid)">
+            <time>{{ posted_at }}</time>
+          </as-link>
+          <as-download :itemid="/** @type {Id} */ (itemid)" />
+          <as-messenger
+            v-if="current_user"
+            :itemid="/** @type {Id} */ (itemid)" />
+        </menu>
+      </slot>
     </figcaption>
   </figure>
 </template>
 
 <style lang="stylus">
   figure.poster {
+    position: relative;
     min-height: 512px;
     border-radius: round((base-line * .03), 2);
     grid-row-start: span 2;
@@ -191,7 +227,6 @@
     &:focus {
       outline: 0.25px solid red;
       outline-offset: base-line * 0.25;
-      animation: focus-fade 1.2s ease-in-out;
     }
     @media (orientation: landscape), (min-width: page-width) {
       &:has(svg.landscape) {
@@ -221,7 +256,6 @@
     svg {
       z-index: 1;
       &[itemscope] {
-        transition-property: all;
         position: relative;
       }
       &.working {
@@ -241,20 +275,20 @@
       height: round(base-line * 6);
     }
     & > figcaption {
+      position: absolute;
+      bottom: base-line;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      pointer-events: none;
 
       menu {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: base-line;
-        padding: base-line;
-        height: auto;
         & > a {
           z-index: 2;
           position: relative;
           &.profile {
             animation-name: fade-in;
-            animation-duration: 0.01s;
+            animation-duration: 0.1s;
             padding: base-line * .33;
             background: black-transparent;
             border-radius: base-line * .25;
@@ -274,43 +308,7 @@
             }
           }
         }
-        & > button {
-          background: rgba(0, 0, 0, 0.3);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: base-line * 0.25;
-          padding: base-line * 0.25 base-line * 0.5;
-          cursor: pointer;
-          color: inherit;
-          font-size: larger;
-          line-height: 1;
-          opacity: 0.7;
-          min-width: base-line * 1.5;
-          text-align: center;
-
-          &:hover {
-            opacity: 1;
-            background: rgba(0, 0, 0, 0.5);
-          }
-
-          &:focus {
-            outline: 0.25px solid currentColor;
-            outline-offset: base-line * 0.25;
-            opacity: 1;
-          }
-        }
       }
-    }
-  }
-
-  @keyframes focus-fade {
-    0% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      opacity: 1;
     }
   }
 </style>

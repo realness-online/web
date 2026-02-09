@@ -252,26 +252,165 @@
       close_menu()
   }
 
+  const is_ios_safari = () => {
+    const ua = navigator.userAgent
+    const is_ios = /iPad|iPhone|iPod/.test(ua)
+    const is_safari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua)
+    return is_ios && is_safari
+  }
+
   const download_psd = async (svg_element, filename, buffer) => {
+    console.info('[PSD Download] Starting', { has_buffer: !!buffer, filename })
+
+    const is_ios = is_ios_safari()
+    console.info('[PSD Download] Platform detection', {
+      is_ios_safari: is_ios,
+      user_agent: navigator.userAgent,
+      platform: navigator.platform
+    })
+
     let psd_buffer = buffer
     let psd_filename = filename
 
     if (!psd_buffer) {
+      console.info('[PSD Download] Generating PSD buffer...')
       set_working(true)
-      psd_filename = filename || (await get_psd_name())
-      psd_buffer = await render_svg_layers_to_psd(svg_element, props.itemid)
-      set_working(false)
-    }
+      const start_time = performance.now()
 
+      try {
+        psd_filename = filename || (await get_psd_name())
+        console.info('[PSD Download] Filename resolved', { psd_filename })
+
+        console.info('[PSD Download] Calling render_svg_layers_to_psd...')
+        const target_width = is_ios_safari() ? null : undefined
+        psd_buffer = await render_svg_layers_to_psd(
+          svg_element,
+          props.itemid,
+          target_width
+        )
+
+        const generation_time = performance.now() - start_time
+        console.info('[PSD Download] PSD generation complete', {
+          buffer_size: psd_buffer.length,
+          buffer_type: psd_buffer.constructor.name,
+          generation_time_ms: Math.round(generation_time)
+        })
+      } catch (error) {
+        console.error('[PSD Download] PSD generation failed:', error)
+        console.error('[PSD Download] Error stack:', error.stack)
+        set_working(false)
+        return
+      }
+      set_working(false)
+    } else
+      console.info('[PSD Download] Using provided buffer', {
+        buffer_size: psd_buffer.length
+      })
+
+    console.info('[PSD Download] Creating blob...')
     const blob = new Blob([psd_buffer], { type: 'image/vnd.adobe.photoshop' })
+    const BYTES_PER_KB = 1024
+    const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+    console.info('[PSD Download] Blob created', {
+      blob_size: blob.size,
+      blob_type: blob.type,
+      blob_size_mb: (blob.size / BYTES_PER_MB).toFixed(2)
+    })
+
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = psd_filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    const URL_PREVIEW_LENGTH = 50
+    console.info('[PSD Download] Object URL created', {
+      url: `${url.substring(0, URL_PREVIEW_LENGTH)}...`
+    })
+
+    if (is_ios) {
+      console.info('[PSD Download] Using iOS Safari download method')
+
+      console.info('[PSD Download] Attempting window.open first...')
+      try {
+        const new_window = window.open(url, '_blank')
+        console.info('[PSD Download] window.open result', {
+          new_window: !!new_window,
+          window_closed: new_window?.closed
+        })
+
+        if (new_window) {
+          console.info('[PSD Download] New window opened')
+          return
+        }
+      } catch (error) {
+        console.error('[PSD Download] window.open failed:', error)
+      }
+
+      console.info('[PSD Download] Falling back to visible download link')
+      const a = document.createElement('a')
+      a.href = url
+      a.download = psd_filename
+      a.target = '_blank'
+
+      a.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 1rem 2rem;
+        background: red;
+        color: white;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        z-index: 6;
+        font-size: 1.2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      `
+      a.textContent = `Tap to download ${psd_filename}`
+      a.id = 'ios-psd-download-link'
+
+      document.body.appendChild(a)
+      const HREF_PREVIEW_LENGTH = 50
+      console.info('[PSD Download] Visible anchor element created', {
+        href: `${a.href.substring(0, HREF_PREVIEW_LENGTH)}...`,
+        download: a.download,
+        target: a.target
+      })
+
+      a.addEventListener('click', () => {
+        console.info('[PSD Download] User tapped download link')
+      })
+
+      try {
+        console.info(
+          '[PSD Download] Attempting programmatic click on visible link...'
+        )
+        a.click()
+        console.info('[PSD Download] Programmatic click dispatched')
+      } catch (error) {
+        console.error('[PSD Download] Programmatic click failed:', error)
+      }
+    } else {
+      console.info('[PSD Download] Using standard download method')
+      const a = document.createElement('a')
+      a.href = url
+      a.download = psd_filename
+      document.body.appendChild(a)
+
+      const ANCHOR_HREF_PREVIEW_LENGTH = 50
+      console.info('[PSD Download] Anchor element created', {
+        href: `${a.href.substring(0, ANCHOR_HREF_PREVIEW_LENGTH)}...`,
+        download: a.download
+      })
+
+      try {
+        a.click()
+        console.info('[PSD Download] Download triggered')
+      } catch (error) {
+        console.error('[PSD Download] Standard download failed:', error)
+      }
+
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      console.info('[PSD Download] Download complete')
+    }
   }
 
   const download_psd_handler = async event => {
@@ -279,8 +418,21 @@
     event.stopPropagation()
     close_menu()
 
+    console.info('[PSD Download] Handler called', { itemid: props.itemid })
+
     const svg = document.getElementById(as_query_id(props.itemid))
-    if (!svg || !(svg instanceof SVGSVGElement)) return
+    if (!svg || !(svg instanceof SVGSVGElement)) {
+      console.error('[PSD Download] SVG element not found', {
+        query_id: as_query_id(props.itemid)
+      })
+      return
+    }
+
+    console.info('[PSD Download] SVG found', {
+      viewbox: svg.viewBox.baseVal.toString(),
+      width: svg.width.baseVal.value,
+      height: svg.height.baseVal.value
+    })
 
     await download_psd(svg)
   }
@@ -524,7 +676,7 @@
       background: black-transparent;
       border-radius: base-line * 0.25;
       standard-shadow: boop;
-      z-index: 10;
+      z-index: 6;
       & > a {
         position: relative;
         padding: base-line * 0.25 base-line * 0.5;
