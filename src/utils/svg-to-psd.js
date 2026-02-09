@@ -4,6 +4,21 @@ import { as_layer_id, as_query_id, as_fragment_id } from '@/utils/itemid'
 
 const FOUR_K_WIDTH = 3840
 
+const is_ios = () => {
+  const ua = navigator.userAgent
+  return /iPad|iPhone|iPod/.test(ua)
+}
+
+const REDUCED_WIDTH_IOS = 1920
+
+const get_target_width = () => {
+  if (is_ios()) {
+    console.info('[PSD Generation] iOS detected - using reduced resolution')
+    return REDUCED_WIDTH_IOS
+  }
+  return FOUR_K_WIDTH
+}
+
 /**
  * Extract core layers (light, regular, medium, bold) from shadows symbol
  * @param {SVGSVGElement} svg_element - The SVG element
@@ -104,13 +119,33 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
     ctx.drawImage(img, 0, 0, width, height)
 
     const image_data = ctx.getImageData(0, 0, width, height)
+
     URL.revokeObjectURL(svg_url)
+    img.src = ''
+
+    const BYTES_PER_KB = 1024
+    const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+    const memory_mb = (image_data.data.length / BYTES_PER_MB).toFixed(2)
+    console.info(`[PSD Generation] Extracted ${layer_name} layer`, {
+      size_mb: memory_mb,
+      dimensions: `${width}x${height}`
+    })
 
     layers.push({
       name: layer_name.charAt(0).toUpperCase() + layer_name.slice(1),
       imageData: image_data
     })
   }
+
+  const BYTES_PER_KB = 1024
+  const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+  const total_memory_mb = layers
+    .reduce((sum, layer) => sum + layer.imageData.data.length / BYTES_PER_MB, 0)
+    .toFixed(2)
+  console.info('[PSD Generation] Core layers complete', {
+    count: layers.length,
+    total_memory_mb
+  })
 
   return layers
 }
@@ -202,13 +237,33 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
     ctx.drawImage(img, 0, 0, width, height)
 
     const image_data = ctx.getImageData(0, 0, width, height)
+
     URL.revokeObjectURL(svg_url)
+    img.src = ''
+
+    const BYTES_PER_KB = 1024
+    const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+    const memory_mb = (image_data.data.length / BYTES_PER_MB).toFixed(2)
+    console.info(`[PSD Generation] Extracted ${layer_name} cutout layer`, {
+      size_mb: memory_mb,
+      dimensions: `${width}x${height}`
+    })
 
     layers.push({
       name: layer_name.charAt(0).toUpperCase() + layer_name.slice(1),
       imageData: image_data
     })
   }
+
+  const BYTES_PER_KB = 1024
+  const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+  const total_memory_mb = layers
+    .reduce((sum, layer) => sum + layer.imageData.data.length / BYTES_PER_MB, 0)
+    .toFixed(2)
+  console.info('[PSD Generation] Cutout layers complete', {
+    count: layers.length,
+    total_memory_mb
+  })
 
   return layers
 }
@@ -223,29 +278,71 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
 export const render_svg_layers_to_psd = async (
   svg_element,
   poster_id,
-  target_width = FOUR_K_WIDTH
+  target_width = null
 ) => {
+  const effective_width = target_width || get_target_width()
+
+  console.info('[PSD Generation] Starting render_svg_layers_to_psd', {
+    poster_id,
+    requested_width: target_width,
+    effective_width,
+    is_ios: is_ios(),
+    viewbox: svg_element.viewBox.baseVal.toString()
+  })
+
   const viewbox = svg_element.viewBox.baseVal
   const aspect_ratio = viewbox.width / viewbox.height
-  const width = target_width
-  const height = Math.round(target_width / aspect_ratio)
+  const width = effective_width
+  const height = Math.round(effective_width / aspect_ratio)
 
+  const BYTES_PER_PIXEL = 4
+  const LAYER_COUNT_ESTIMATE = 10
+  const BYTES_PER_KB = 1024
+  const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+  const estimated_memory_mb = (
+    (width * height * BYTES_PER_PIXEL * LAYER_COUNT_ESTIMATE) /
+    BYTES_PER_MB
+  ).toFixed(2)
+  console.info('[PSD Generation] Estimated memory usage', {
+    width,
+    height,
+    estimated_mb: estimated_memory_mb
+  })
+
+  console.info('[PSD Generation] Dimensions calculated', {
+    width,
+    height,
+    aspect_ratio
+  })
+
+  console.info('[PSD Generation] Extracting core layers...')
   const core_layers = await extract_core_layers(
     svg_element,
     poster_id,
     width,
     height
   )
+  console.info('[PSD Generation] Core layers extracted', {
+    count: core_layers.length,
+    names: core_layers.map(l => l.name)
+  })
 
+  console.info('[PSD Generation] Extracting cutout layers...')
   const cutout_layers = await extract_cutout_layers(
     svg_element,
     poster_id,
     width,
     height
   )
+  console.info('[PSD Generation] Cutout layers extracted', {
+    count: cutout_layers.length,
+    names: cutout_layers.map(l => l.name)
+  })
 
-  if (core_layers.length === 0 && cutout_layers.length === 0)
+  if (core_layers.length === 0 && cutout_layers.length === 0) {
+    console.error('[PSD Generation] No layers found to export')
     throw new Error('No layers found to export')
+  }
 
   const shadow_group = {
     name: 'Shadows',
@@ -275,9 +372,31 @@ export const render_svg_layers_to_psd = async (
     children: [shadow_group, cutout_group]
   }
 
-  const buffer = writePsd(psd)
+  console.info('[PSD Generation] PSD structure created', {
+    width,
+    height,
+    shadow_layers: shadow_group.children.length,
+    cutout_layers: cutout_group.children.length
+  })
 
-  return new Uint8Array(buffer)
+  console.info('[PSD Generation] Writing PSD buffer...')
+  const write_start = performance.now()
+  /** @type {ArrayBuffer} */
+  const buffer = writePsd(psd)
+  const write_time = performance.now() - write_start
+
+  const uint8_array = new Uint8Array(buffer)
+  console.info('[PSD Generation] PSD buffer written', {
+    buffer_size: uint8_array.length,
+    buffer_size_mb: (uint8_array.length / BYTES_PER_MB).toFixed(2),
+    write_time_ms: Math.round(write_time)
+  })
+  console.info('[PSD Generation] Converted to Uint8Array', {
+    length: uint8_array.length,
+    type: uint8_array.constructor.name
+  })
+
+  return uint8_array
 }
 
 /**

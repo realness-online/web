@@ -19,7 +19,7 @@ exports[`Statements > Rendering > renders statements view 1`] = `
         Statements
       </h1>
     </header>
-    <div
+    <section
       class="as-days-stub"
       itemscope=""
     >
@@ -32,7 +32,7 @@ exports[`Statements > Rendering > renders statements view 1`] = `
       />
       
       
-    </div>
+    </section>
   </article>
   <!--v-if-->
   <!--v-if-->

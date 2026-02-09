@@ -254,7 +254,7 @@
           right: 0
           max-height: 200px
           overflow-y: auto
-          z-index: 100
+          z-index: 7
           border: 1px solid black
           background-color: white
           padding: (base-line * 0.25)

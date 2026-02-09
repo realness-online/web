@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "dev-1",
+  "version": "2.0.2",
   "private": false,
   "type": "module",
   "keywords": [
@@ -21,7 +21,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "dev:workers": "rollup -c workers.config.js --watch",
-    "build": "npm run build:wasm && vite build",
+    "build": "npm run build:icons && npm run build:wasm && vite build",
+    "build:icons": "node scripts/generate-icons.js",
     "build:workers": "rollup -c workers.config.js",
     "serve": "vite preview",
     "serve:https": "serve dist",

@@ -35,7 +35,7 @@ exports[`About > Rendering > renders about view 1`] = `
            Once you save your creations, they will integrate into any workflow that uses SVG. 
         </p>
       </header>
-      <div
+      <figure
         class="poster-stub"
       />
     </section>
@@ -49,7 +49,7 @@ exports[`About > Rendering > renders about view 1`] = `
       </h2>
     </header>
     <section>
-      <div
+      <figure
         class="poster-stub"
       />
       <header>
@@ -161,7 +161,7 @@ exports[`About > Rendering > renders about view 1`] = `
       </h2>
     </header>
     <section>
-      <div
+      <figure
         class="poster-stub"
       />
       <header>
@@ -294,7 +294,7 @@ exports[`About > Rendering > renders about view 1`] = `
       </h2>
     </header>
     <section>
-      <div
+      <figure
         class="poster-stub"
       />
       <header>
@@ -451,37 +451,36 @@ exports[`About > Rendering > renders about view 1`] = `
       <h2>
         Gallery
       </h2>
-      <preference-stub
-        name="fill"
+      <fieldset
+        class="preference-stub"
       />
-      <preference-stub
-        name="stroke"
+      <fieldset
+        class="preference-stub"
       />
-      <preference-stub
-        name="drama"
+      <fieldset
+        class="preference-stub"
       />
-      <preference-stub
-        name="cutout"
+      <fieldset
+        class="preference-stub"
       />
-      <preference-stub
-        name="animate"
+      <fieldset
+        class="preference-stub"
       />
-      <preference-stub
-        name="info"
-        title="Show frames per second and viewbox info"
+      <fieldset
+        class="preference-stub"
       />
     </header>
     
-    <div
+    <figure
       class="poster-stub"
     />
-    <div
+    <figure
       class="poster-stub"
     />
-    <div
+    <figure
       class="poster-stub"
     />
-    <div
+    <figure
       class="poster-stub"
     />
     

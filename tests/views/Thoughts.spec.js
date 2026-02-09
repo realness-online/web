@@ -105,16 +105,17 @@ describe('Thoughts', () => {
           icon: true,
           'logo-as-link': true,
           'as-days': {
-            template: '<div class="as-days-stub"><slot :items="[]" /></div>',
+            template:
+              '<section class="as-days-stub"><slot :items="[]" /></section>',
             props: ['working', 'posters', 'statements']
           },
           'thought-as-article': {
-            template: '<div class="article-stub"></div>',
+            template: '<article class="article-stub"></article>',
             props: ['statements', 'verbose'],
             emits: ['show']
           },
           'poster-as-figure': {
-            template: '<div class="poster-stub"></div>',
+            template: '<figure class="poster-stub"></figure>',
             props: ['itemid'],
             emits: ['show']
           }

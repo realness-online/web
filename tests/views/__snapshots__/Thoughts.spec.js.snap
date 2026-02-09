@@ -16,7 +16,7 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
   <h1>
     Thoughts
   </h1>
-  <div
+  <section
     class="as-days-stub"
   >
     
@@ -30,6 +30,6 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     
     
     
-  </div>
+  </section>
 </section>
 `;

@@ -14,6 +14,7 @@
   import AsStatement from '@/components/statements/as-div'
   import AsAvatar from '@/components/posters/as-svg'
   import AsMessenger from '@/components/profile/as-messenger'
+  import { menu } from '@/utils/preference'
 
   const props = defineProps({
     statements: {
@@ -74,7 +75,9 @@
     }
   }
 
-  const click = () => (all.value = all.value ? null : 'all')
+  const click = () => {
+    if (menu.value) all.value = all.value ? null : 'all'
+  }
 
   const show = () => emit('show', props.statements)
 

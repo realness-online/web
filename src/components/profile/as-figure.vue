@@ -21,11 +21,16 @@
     }
   })
   const router = use_router()
-  const { relations } = use_me()
+  const { relations, me } = use_me()
 
   const is_me = computed(() => {
     if (localStorage.me === props.person.id) return true
     return false
+  })
+
+  const person = computed(() => {
+    if (me.value && me.value.id === props.person.id) return me.value
+    return props.person
   })
 
   const avatar_click = () => {

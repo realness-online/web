@@ -95,7 +95,7 @@ describe('Statements', () => {
           'logo-as-link': true,
           'as-days': {
             template:
-              '<div class="as-days-stub"><slot :thoughts="mockThoughts" /></div>',
+              '<section class="as-days-stub"><slot :thoughts="mockThoughts" /></section>',
             props: ['itemid', 'paginate', 'statements'],
             setup() {
               const mockThoughts = [
@@ -110,7 +110,7 @@ describe('Statements', () => {
             }
           },
           'thought-as-article': {
-            template: '<div class="article-stub"></div>',
+            template: '<article class="article-stub"></article>',
             props: ['statements', 'editable'],
             emits: ['show']
           }

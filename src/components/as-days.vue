@@ -184,7 +184,7 @@
           position: absolute
           top: base-line
           left: base-line
-          z-index: 10
+          z-index: 6
           & > h4
             color: blue
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8)

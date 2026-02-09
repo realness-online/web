@@ -3,27 +3,52 @@
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import { ref, computed, inject } from 'vue'
-  import { get_file_system } from '@/utils/file'
   import { get_command_description } from '@/utils/keymaps'
+  import * as preferences from '@/utils/preference'
 
   const key_commands = inject('key-commands')
-  const set_posters_folder = () => get_file_system()
   const settings = ref(null)
+  const dialog_open = ref(false)
 
-  const aspect_ratio_display = computed(() => 'auto')
+  const command_to_preference_name = command => {
+    if (!command.startsWith('pref::Toggle_')) return null
+    const name = command.replace('pref::Toggle_', '')
+    return name.charAt(0).toLowerCase() + name.slice(1)
+  }
+
+  const is_preference_active = command => {
+    const pref_name = command_to_preference_name(command)
+    if (!pref_name) return false
+    const pref = preferences[pref_name]
+    if (!pref) return false
+    return pref.value
+  }
+
+  const is_dialog_open = computed(() => dialog_open.value)
+
+  const is_key_active = cmd => {
+    if (cmd.command === 'ui::Open_Settings') return is_dialog_open.value
+    return is_preference_active(cmd.command)
+  }
 
   const show_settings = () => {
     if (!settings.value) return
 
-    if (settings.value.open) settings.value.close()
-    else {
+    if (settings.value.open) {
+      settings.value.close()
+      dialog_open.value = false
+    } else {
       settings.value.showModal()
       settings.value.focus()
+      dialog_open.value = true
     }
   }
 
   const handle_click = event => {
-    if (event.target === settings.value) settings.value.close()
+    if (event.target === settings.value) {
+      settings.value.close()
+      dialog_open.value = false
+    }
   }
 
   // Group commands by keyboard rows
@@ -77,9 +102,13 @@
 
 <template>
   <a id="toggle-preferences" @click="show_settings">
-    <icon name="gear" />
+    <icon name="corner" />
   </a>
-  <dialog id="preferences" ref="settings" @click="handle_click">
+  <dialog
+    id="preferences"
+    ref="settings"
+    @click="handle_click"
+    @close="dialog_open = false">
     <header>
       <h1>Preferences</h1>
     </header>
@@ -89,61 +118,24 @@
         <h2>Settings</h2>
       </header>
       <menu>
-        <preference name="animate" title="Animate posters" />
+        <preference name="cutout" title="Display top layer of color cutouts" />
         <preference
-          name="slice"
-          title="Slice poster aspect ratio"
-          subtitle="Use 'slice' instead of 'meet' to fill the container">
-          <div class="aspect-ratio-info">
-            <p>Current: {{ aspect_ratio_display }}</p>
-            <p class="subtitle">Press 'r' to cycle, 'shift+r' to reverse</p>
-          </div>
-        </preference>
-        <preference name="fill" title="Use a gradient to fill up your poster">
-          <preference name="bold" />
-          <preference name="medium" />
-          <preference name="regular" />
-          <preference name="light" />
-          <preference name="background" />
-        </preference>
-
+          name="fill"
+          title="Fill your shadow layer with gradients."
+          subtitle="Shadows live behind the cutouts and tie the poster together; like the sun moving accross the sky" />
         <preference
           name="stroke"
-          title="Outline your graphic with a stroke in relevant color" />
-        <preference name="cutout" title="Display cutouts of the poster">
-          <preference name="boulders" />
-          <preference name="rocks" />
-          <preference name="gravel" />
-          <preference name="sand" />
-          <preference name="sediment" />
-        </preference>
+          title="Outline your shadow layer with a stroke" />
+
         <preference name="drama" title="Dynamic lighting" />
         <preference
           name="adobe"
           hidden
           title="Posters download with HEX (#FFF000) values for color" />
         <preference
-          hidden
-          name="simple"
-          title="Download posters with simple readable ids" />
-        <preference
-          hidden
-          name="filesystem"
-          title="Sync posters with a directory"
-          subtitle="On an iphone this will save piture and exif info that you can sync on the a desktop machine"
-          @on="set_posters_folder" />
-
-        <preference
-          name="info"
-          title="Show frames per second and other diagnostics" />
-        <preference
-          name="storytelling"
-          title="Storytelling (side-scroll) view"
-          subtitle="Show content in a horizontal, story-like format. Portraits animate up/down." />
-        <preference
-          name="show_menu"
-          title="Show menu indicator"
-          subtitle="Display '...' button on posters to access download options. Press 'm' to toggle." />
+          name="animate"
+          title="Animate posters"
+          subtitle="This one loves a big strong GPU" />
       </menu>
     </section>
 
@@ -163,7 +155,9 @@
           <h4>{{ row }}</h4>
           <ul>
             <li v-for="cmd in commands" :key="`${context}-${row}-${cmd.key}`">
-              <kbd>{{ cmd.key }}</kbd>
+              <kbd v-bind="is_key_active(cmd) ? { 'data-active': '' } : {}">{{
+                cmd.key
+              }}</kbd>
               <span>{{ cmd.description }}</span>
             </li>
           </ul>
@@ -178,7 +172,7 @@
     position: fixed;
     bottom: base-line;
     left: base-line;
-    z-index: 1000;
+    z-index: 9;
     svg.gear.icon {
       width: base-line;
       height: base-line;
@@ -206,6 +200,16 @@
 
       overflow-y: auto;
       padding: 0 base-line;
+
+      @media (max-width: pad-begins) {
+        max-width: 100vw;
+        width: 100vw;
+        margin: 0;
+        border-radius: 0;
+        grid-template-columns: 1fr;
+        gap: base-line;
+        padding: 0 base-line;
+      }
     }
 
     & > header {
@@ -227,8 +231,10 @@
     }
 
     @media (max-width: pad-begins) {
-      grid-template-columns: 1fr;
-      gap: base-line;
+      max-width: 100vw;
+      width: 100vw;
+      margin: 0;
+      border-radius: 0;
     }
 
     & > section {
@@ -282,6 +288,11 @@
               margin: 0;
               padding: round((base-line / 4), 2) round((base-line / 2), 2);
               font-family: 'Monaco', 'Menlo', monospace;
+              transition: box-shadow 0.3s ease, border-color 0.3s ease;
+              &[data-active] {
+                border-color: green;
+                box-shadow: 0 0 round((base-line / 2), 2) green;
+              }
             }
 
             span {

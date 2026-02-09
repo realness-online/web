@@ -29,7 +29,7 @@ exports[`@/views/Posters > Rendering > renders posters view 1`] = `
       
       
       
-      <div
+      <figure
         class="poster-stub"
         tabindex="0"
       />

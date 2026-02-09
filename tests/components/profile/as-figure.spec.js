@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
 import { vi } from 'vitest'
+import { ref } from 'vue'
 import as_figure from '@/components/profile/as-figure'
 
 // Mock localStorage
@@ -22,17 +23,21 @@ vi.mock('vue-router', () => ({
 }))
 
 // Mock the use/people composable
-vi.mock('@/use/people', () => ({
-  use_me: () => ({
-    relations: []
-  }),
-  is_person: maybe => {
-    if (typeof maybe !== 'object') return false
-    if (maybe.type !== 'person') return false
-    if (!maybe.id) return false
-    return true
+vi.mock('@/use/people', async () => {
+  const { ref } = await import('vue')
+  return {
+    use_me: () => ({
+      me: ref(null),
+      relations: []
+    }),
+    is_person: maybe => {
+      if (typeof maybe !== 'object') return false
+      if (maybe.type !== 'person') return false
+      if (!maybe.id) return false
+      return true
+    }
   }
-}))
+})
 
 describe('@/component/profile/as-figure.vue', () => {
   let person, wrapper

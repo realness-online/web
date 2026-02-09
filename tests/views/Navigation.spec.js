@@ -24,7 +24,7 @@ describe('@/views/Navigation', () => {
           'router-link': true,
           icon: true,
           'statement-as-textarea': {
-            template: '<div class="red"></div>',
+            template: '<textarea class="red"></textarea>',
             emits: ['toggle-keyboard']
           }
         }

@@ -33,7 +33,7 @@ export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
 
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
-export const show_menu = storage('show_menu', false)
+export const menu = storage('menu', true)
 
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)

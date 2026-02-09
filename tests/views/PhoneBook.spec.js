@@ -55,7 +55,7 @@ describe('@/views/PhoneBook', () => {
           icon: true,
           'logo-as-link': true,
           'as-figure': {
-            template: '<div class="profile-stub"></div>',
+            template: '<figure class="profile-stub"></figure>',
             props: ['person']
           },
           'sign-on': true,

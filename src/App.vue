@@ -39,7 +39,7 @@
     grid_overlay,
     aspect_ratio_mode,
     slice_alignment,
-    show_menu
+    menu
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -160,9 +160,7 @@
     else if (current === 'ymin') slice_alignment.value = 'ymid'
   })
   register_preference('pref::Toggle_Grid', grid_overlay)
-  register('pref::Toggle_Show_Menu', () => {
-    show_menu.value = !show_menu.value
-  })
+  register_preference('pref::Toggle_Menu', menu)
 
   // Watch aspect_ratio_mode and update CSS variable
   watch(aspect_ratio_mode, new_value => {
@@ -191,6 +189,10 @@
   })
   register('ui::Open_Account', () => {
     account_dialog.value?.show()
+  })
+  register('ui::Clear_Sync_Time', () => {
+    delete localStorage.sync_time
+    console.info('Sync time cleared from localStorage')
   })
   register('ui::Toggle_Presentation', () =>
     !document.fullscreenElement

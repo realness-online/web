@@ -1,4 +1,5 @@
 <script setup>
+  import { computed } from 'vue'
   import * as preferences from '@/utils/preference'
   const props = defineProps({
     name: {
@@ -12,9 +13,18 @@
     subtitle: {
       type: String,
       required: false
+    },
+    show_state: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   })
   const preference = preferences[props.name]
+  const state_text = computed(() => {
+    if (!props.show_state) return ''
+    return preference.value ? ' (on)' : ' (off)'
+  })
   const toggle = () => {
     const new_state = !preference.value
     preference.value = new_state
@@ -36,13 +46,19 @@
       preferences.light.value = true
       preferences.background.value = true
     }
+
+    // Special logic: when toggling drama, sync drama_back and drama_front
+    if (props.name === 'drama') {
+      preferences.drama_back.value = new_state
+      preferences.drama_front.value = new_state
+    }
   }
 </script>
 
 <template>
   <fieldset class="preference">
     <div>
-      <h4>{{ name }}</h4>
+      <h4>{{ name }}{{ state_text }}</h4>
       <label class="switch">
         <input
           :checked="preference"

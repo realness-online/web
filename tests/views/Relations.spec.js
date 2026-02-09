@@ -57,7 +57,7 @@ describe('Relations', () => {
         stubs: {
           icon: true,
           'as-figure': {
-            template: '<div class="profile-stub"></div>',
+            template: '<figure class="profile-stub"></figure>',
             props: ['person']
           },
           'router-link': true

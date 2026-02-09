@@ -20,7 +20,7 @@ exports[`Relations > renders relations view 1`] = `
     class="profile-list"
   >
     
-    <div
+    <figure
       class="profile-stub"
     />
     
