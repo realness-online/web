@@ -632,7 +632,7 @@
 </script>
 
 <template>
-  <nav ref="button_ref">
+  <nav class="download-vector" ref="button_ref">
     <a @click="toggle_menu" title="Download" aria-label="Download options">
       <icon name="download" />
     </a>
@@ -656,7 +656,7 @@
 </template>
 
 <style lang="stylus">
-  nav {
+  nav.download-vector {
     position: relative;
 
     & > a:first-child {

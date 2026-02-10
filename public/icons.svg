@@ -311,6 +311,6 @@
     </pattern>
   </defs>
 
-  <rect id="realness-extra" width="100%" height="100%" fill="url(#realness-animated-pattern)" />
+  <!-- <rect id="realness-extra" width="100%" height="100%" fill="url(#realness-animated-pattern)" /> -->
   <use href="#realness" viewBox="0 0 1 1" preserveAspectRatio="xMidYMid meet" />
 </svg>
