@@ -35,8 +35,10 @@ const {
   mock_slice_alignment
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
+  const create_template_ref = value =>
+    Object.assign(create_ref(value), { __v_isRef: true })
   return {
-    mock_image_picker: create_ref(null),
+    mock_image_picker: create_template_ref(null),
     mock_register: vi.fn(),
     mock_register_preference: vi.fn(),
     mock_fill: create_ref(false),
