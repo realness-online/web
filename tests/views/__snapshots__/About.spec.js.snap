@@ -466,9 +466,6 @@ exports[`About > Rendering > renders about view 1`] = `
       <fieldset
         class="preference-stub"
       />
-      <fieldset
-        class="preference-stub"
-      />
     </header>
     
     <figure

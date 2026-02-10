@@ -665,12 +665,14 @@
 
     menu {
       position: absolute;
-      bottom: 100%;
-      right: 0;
-      margin-bottom: base-line * 0.25;
+      top: 0;
+      left: 100%;
+      margin-left: base-line * 0.25;
+      max-width: min(calc(100vw - base-line * 4), base-line * 15);
       display: flex;
+      flex-wrap: wrap;
       font-size: larger;
-      flex-direction: column;
+      flex-direction: row;
       gap: base-line * 0.25;
       padding: base-line * 0.25;
       background: black-transparent;

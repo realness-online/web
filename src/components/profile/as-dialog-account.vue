@@ -2,17 +2,14 @@
   import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
   import icon from '@/components/icon'
-  import { ref, computed, onMounted as mounted, watch } from 'vue'
+  import { ref, computed, watch } from 'vue'
   import { current_user, sign_off, me } from '@/utils/serverless'
   import { useRoute as use_route } from 'vue-router'
-  import { use_me } from '@/use/people'
-
   const form = ref(null)
   const name = computed(() => me.value?.name || 'account')
   const route = use_route()
   const show_sign_in = ref(false)
   const is_mobile_form_visible = ref(false)
-  const { is_valid_name } = use_me()
 
   const show_form = () => {
     if (!form.value) return
@@ -25,7 +22,7 @@
     }
   }
   const dialog_click = event => {
-    if (event.target === form.value && is_valid_name.value) form.value.close()
+    if (event.target === form.value) form.value.close()
   }
 
   const signed_in = () => {
@@ -50,18 +47,8 @@
         form.value.showModal()
         form.value.focus()
       }
-    },
-    { immediate: true }
-  )
-
-  mounted(() => {
-    if (route.hash === '#account' && form.value) {
-      show_sign_in.value = false
-      is_mobile_form_visible.value = false
-      form.value.showModal()
-      form.value.focus()
     }
-  })
+  )
 
   defineExpose({ show: show_form })
 </script>
