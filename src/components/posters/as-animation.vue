@@ -71,6 +71,7 @@
 
     const is_arrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight'
     if (!is_arrow) return
+    if (event.ctrlKey || event.altKey || event.metaKey) return
 
     event.preventDefault()
 

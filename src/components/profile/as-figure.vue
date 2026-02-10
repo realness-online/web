@@ -7,7 +7,7 @@
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
   import { useRouter as use_router } from 'vue-router'
-  import { computed, ref } from 'vue'
+  import { computed, ref, provide } from 'vue'
   import { use_me, is_person } from '@/use/people'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
@@ -45,6 +45,8 @@
 
   const vector = ref(null)
   const shown = ref(false)
+
+  provide('vector', vector)
 
   const on_show = shown_vector => {
     if (!shown_vector) return

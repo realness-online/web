@@ -76,8 +76,12 @@
     await tick()
     const captcha_element = document.getElementById('captcha')
     working.value = true
+    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
     human.value = new Recaptcha(auth.value, captcha_element, {
       size: 'invisible',
+      theme,
       callback: text_human_verify_code
     })
     human.value.verify()

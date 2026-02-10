@@ -22,7 +22,7 @@
     is_click,
     geology_layers
   } from '@/use/poster'
-  import { cutout, menu } from '@/utils/preference'
+  import { cutout } from '@/utils/preference'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
   import {
@@ -62,7 +62,7 @@
   )
 
   const vector_click = () => {
-    if (menu.value) menu_open.value = !menu_open.value
+    menu_open.value = !menu_open.value
   }
   const symbol_loaded = ref({
     boulders: false,
@@ -174,13 +174,15 @@
     <figcaption v-if="menu_open">
       <slot>
         <menu>
-          <as-link :itemid="/** @type {Id} */ (itemid)">
+          <as-link v-if="current_user" :itemid="/** @type {Id} */ (itemid)">
             <time>{{ posted_at }}</time>
           </as-link>
-          <as-download :itemid="/** @type {Id} */ (itemid)" />
-          <as-messenger
-            v-if="current_user"
-            :itemid="/** @type {Id} */ (itemid)" />
+          <span class="actions">
+            <as-messenger
+              v-if="current_user"
+              :itemid="/** @type {Id} */ (itemid)" />
+            <as-download :itemid="/** @type {Id} */ (itemid)" />
+          </span>
         </menu>
       </slot>
     </figcaption>
@@ -251,37 +253,59 @@
     }
     & > figcaption {
       position: absolute;
-      bottom: base-line;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
       z-index: 3;
       pointer-events: none;
 
       menu {
-        & > a {
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: base-line;
+        & > a,
+        & > nav,
+        & > button,
+        & > fieldset,
+        & > span.actions {
+          pointer-events: auto;
+        }
+        & > span.actions {
+          display: flex;
+          gap: base-line;
+          align-items: center;
+        }
+        & > a.profile {
           z-index: 2;
           position: relative;
-          &.profile {
-            animation-name: fade-in;
-            animation-duration: 0.1s;
-            padding: base-line * .33;
-            background: black-transparent;
-            border-radius: base-line * .25;
-            standard-shadow: boop;
-            position: absolute;
-            top: base-line;
-            left: base-line;
-            & > address {
-              & > h3:first-of-type {
-                margin-right: base-line * .333;
-              }
-              & > h3,
-              & > time {
-                color: blue;
-                line-height: 1;
-              }
+          animation-name: fade-in;
+          animation-duration: 0.1s;
+          padding: base-line * .33;
+          background: black-transparent;
+          border-radius: base-line * .25;
+          standard-shadow: boop;
+          & > address {
+            & > h3:first-of-type {
+              margin-right: base-line * .333;
+            }
+            & > h3,
+            & > time {
+              color: blue;
+              line-height: 1;
             }
           }
+        }
+        & > span.actions > nav,
+        & > span.actions > a {
+          standard-shadow: boop;
+        }
+        & > a.profile > svg,
+        & > span.actions svg {
+          fill: green;
         }
       }
     }

@@ -334,13 +334,10 @@
       <header>
         <h2>Gallery</h2>
         <preference name="fill" />
-        <preference name="stroke" />
-        <preference name="drama" />
         <preference name="cutout" />
+        <preference name="drama" />
+        <preference name="stroke" />
         <preference name="animate" />
-        <preference
-          name="info"
-          title="Show frames per second and viewbox info" />
       </header>
       <as-figure
         v-for="poster in posters"
@@ -403,7 +400,8 @@
             text-align: center;
         & > figure.poster
           @media (min-width: pad-begins)
-            width: 50dvw
+            flex: 1
+            min-width: 0
             height: 100%
           &:has(svg.landscape)
             @media (min-width: pad-begins)
@@ -420,7 +418,6 @@
       border-radius: base-line
       display: flex
       justify-content: space-between
-      // margin-top: base-line
       padding base-line
       @media (min-width: pad-begins)
         margin: base-line
@@ -471,7 +468,8 @@
           align-items: stretch
         & > figure.poster
           @media (min-width: pad-begins)
-            width: 40dvw
+            flex: 1
+            min-width: 0
             height: 100%
           &:has(svg.landscape)
             @media (min-width: pad-begins)
@@ -520,7 +518,14 @@
       // min-height: 100vh
       standard-grid: gentle
       & > header
-        width:100%
+        width: 100%
+      & > figure.poster
+        min-height: 0
+        display: flex
+        flex-direction: column
+        & > svg
+          flex: 1
+          min-height: 0
       & > svg
         border-radius: base-line * 0.21
         height: 100%
