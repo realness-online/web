@@ -19,7 +19,7 @@
     </header>
     <nav>
       <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
-        Pea
+        Statements
       </router-link>
       <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
         Events
@@ -31,7 +31,6 @@
         Phonebook
       </router-link>
       <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
-        leaf
       </router-link>
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>

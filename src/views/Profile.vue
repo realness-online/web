@@ -4,6 +4,7 @@
   import AsDownload from '@/components/download-vector'
   import AsFigure from '@/components/profile/as-figure'
   import AsAvatar from '@/components/posters/as-svg'
+  import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsMessenger from '@/components/profile/as-messenger'
   import ThoughtAsArticle from '@/components/statements/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
@@ -12,8 +13,12 @@
   import { use as use_statements, slot_key } from '@/use/statement'
   import { use_posters } from '@/use/poster'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { onMounted as mounted } from 'vue'
+  import { ref, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
+  /** @typedef {import('@/types').Id} Id */
+  import { as_layer_id, load_from_cache } from '@/utils/itemid'
+  import { geology_layers } from '@/use/poster'
+  import { get } from 'idb-keyval'
 
   const route = use_route()
   const id = from_e64(route.params.phone_number)
@@ -32,6 +37,30 @@
     ])
     console.info('views:Profile', id)
   })
+
+  const vector = ref(null)
+  const shown = ref(false)
+
+  const on_show = shown_vector => {
+    if (!shown_vector) return
+    vector.value = shown_vector
+    if (!vector.value.cutouts) {
+      vector.value.cutouts = {}
+      geology_layers.forEach(layer => {
+        const layer_id = as_layer_id(
+          /** @type {Id} */ (person.value?.avatar),
+          layer
+        )
+        get(layer_id).then(html_string => {
+          if (html_string) vector.value.cutouts[layer] = true
+        })
+        load_from_cache(layer_id).then(({ html }) => {
+          if (html) vector.value.cutouts[layer] = true
+        })
+      })
+    }
+    shown.value = true
+  }
 </script>
 
 <template>
@@ -41,7 +70,15 @@
       <logo-as-link />
     </header>
     <div>
-      <as-avatar v-if="person && person.avatar" :itemid="person.avatar" />
+      <as-avatar
+        v-if="person && person.avatar"
+        :itemid="person.avatar"
+        @show="on_show" />
+      <as-poster-symbol
+        v-if="person?.avatar && shown"
+        :itemid="person.avatar"
+        :vector="vector"
+        :shown="shown" />
       <menu v-if="person && person.avatar">
         <as-download v-if="person.avatar" :itemid="person.avatar" />
         <as-messenger :itemid="person.id" />

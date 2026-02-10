@@ -14,6 +14,7 @@ exports[`Profile > renders profile view 1`] = `
   <div>
     <!--v-if-->
     <!--v-if-->
+    <!--v-if-->
   </div>
   <!--v-if-->
   <as-days-stub

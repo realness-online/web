@@ -1,9 +1,6 @@
 <script setup>
-  /* eslint-disable vue/no-static-inline-styles */
   import AsSvg from '@/components/posters/as-svg'
-  import AsSymbol from '@/components/posters/as-symbol'
-  import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
-  import Icon from '@/components/icon'
+  import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsLink from '@/components/profile/as-link'
   import AsDownload from '@/components/download-vector'
   import AsMessenger from '@/components/profile/as-messenger'
@@ -25,15 +22,7 @@
     is_click,
     geology_layers
   } from '@/use/poster'
-  import {
-    cutout,
-    boulders,
-    rocks,
-    gravel,
-    sand,
-    sediment,
-    menu
-  } from '@/utils/preference'
+  import { cutout, menu } from '@/utils/preference'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
   import {
@@ -177,25 +166,11 @@
       @show="on_show"
       @click="vector_click"
       :focusable="false" />
-    <icon v-if="working" name="working" />
-    <svg v-if="shown" style="display: none">
-      <as-symbol-shadow />
-      <as-symbol
-        v-if="cutout && boulders && vector?.cutouts?.boulders"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'boulders')" />
-      <as-symbol
-        v-if="cutout && rocks && vector?.cutouts?.rocks"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'rocks')" />
-      <as-symbol
-        v-if="cutout && gravel && vector?.cutouts?.gravel"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'gravel')" />
-      <as-symbol
-        v-if="cutout && sand && vector?.cutouts?.sand"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sand')" />
-      <as-symbol
-        v-if="cutout && sediment && vector?.cutouts?.sediment"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sediment')" />
-    </svg>
+    <as-poster-symbol
+      v-if="shown"
+      :itemid="itemid"
+      :vector="vector"
+      :shown="shown" />
     <figcaption v-if="menu_open">
       <slot>
         <menu>

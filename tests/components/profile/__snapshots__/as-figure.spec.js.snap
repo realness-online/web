@@ -7,6 +7,7 @@ exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile
   <icon-stub
     name="silhouette"
   />
+  <!--v-if-->
   <figcaption>
     <as-address-stub
       editable="false"
