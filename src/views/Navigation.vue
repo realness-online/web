@@ -31,6 +31,7 @@
         Phonebook
       </router-link>
       <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
+        thoughts
       </router-link>
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>

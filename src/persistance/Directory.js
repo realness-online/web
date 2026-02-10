@@ -93,6 +93,7 @@ export const build_local_directory = async itemid => {
  * @returns {Promise<Directory | null>}
  */
 export const load_directory_from_network = async itemid => {
+  if (itemid.startsWith('/+/')) return null
   if (navigator.onLine && current_user.value) {
     const [author, type, , archive = null] = as_path_parts(itemid)
 

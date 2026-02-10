@@ -219,8 +219,8 @@
     </symbol>
     <symbol id="realness" viewBox="-20 -20 232 232" preserveAspectRatio="xMidYMid meet">
       <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
-      <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" x="104" />
-      <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" y="69" />
+      <rect fill="hsla(181, 36%, 57%, 0.75)" width="88" height="54" rx="8" x="104" />
+      <rect fill="hsla(181, 36%, 57%, 0.75)" width="88" height="54" rx="8" y="69" />
       <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="69" />
       <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" y="138" />
       <rect fill="hsla(353, 83%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="138" />
@@ -235,12 +235,7 @@
     <filter id="stage-filter" color-interpolation-filters="sRGB" y="0">
       <pattern id="tile" patternUnits="userSpaceOnUse" preserveAspectRatio="xMidYMid slice" width="21" height="34"
         viewBox="0 0 192 192">
-        <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
-        <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" x="104" />
-        <rect fill="hsla(136, 47%, 57%, 0.75)" width="88" height="54" rx="8" y="69" />
-        <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="69" />
-        <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" y="138" />
-        <rect fill="hsla(353, 83%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="138" />
+        <use href="#realness" width="192" height="192" />
       </pattern>
       <radialGradient id="l" cx="50%" cy="200%" fy="0" r="201%">
         <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.1" />
