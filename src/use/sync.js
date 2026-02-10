@@ -226,6 +226,7 @@ const get_index_hash = async itemid =>
  * @returns {Promise<any>}
  */
 export const fresh_metadata = async itemid => {
+  if (itemid.startsWith('/+/')) return DOES_NOT_EXIST
   await mutex.lock()
   try {
     const index = (await get('sync:index')) || {}

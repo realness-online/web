@@ -132,6 +132,47 @@
             color: blue;
           }
         }
+        & > figure.poster > figcaption {
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          transform: none;
+          & > menu {
+            pointer-events: auto;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-template-rows: auto 1fr auto;
+            gap: base-line;
+            padding: base-line;
+            border-radius: base-line;
+
+            height: 100%;
+            box-sizing: border-box;
+            & > a.profile {
+              grid-column: 1;
+              grid-row: 1;
+              justify-self: start;
+            }
+            & > nav {
+              grid-column: 2;
+              grid-row: 3;
+              display: flex;
+              gap: base-line;
+              align-items: center;
+              standard-shadow: boop;
+            }
+            & > a.phone {
+              grid-column: 3;
+              grid-row: 3;
+              standard-shadow: boop;
+            }
+            & > a > svg,
+            & > nav > a > svg {
+              fill: green;
+            }
+          }
+        }
       }
     }
     .working {

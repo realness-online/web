@@ -13,7 +13,7 @@
   import { use as use_statements, slot_key } from '@/use/statement'
   import { use_posters } from '@/use/poster'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, provide, onMounted as mounted } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
@@ -40,6 +40,7 @@
 
   const vector = ref(null)
   const shown = ref(false)
+  provide('vector', vector)
 
   const on_show = shown_vector => {
     if (!shown_vector) return

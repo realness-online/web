@@ -301,6 +301,7 @@ export const is_history = itemid => {
  *                                    or null if not found in either location
  */
 export const as_archive = async itemid => {
+  if (itemid.startsWith('/+/')) return null
   const directory = await as_directory(itemid)
   if (!directory) return null
 

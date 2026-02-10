@@ -90,10 +90,7 @@
     await tick()
     authorizer.value = await sign_in(auth.value, full_phone.value, human.value)
     const verifier = document.querySelector('#verification-code')
-    if (verifier) {
-      verifier.scrollIntoView(false)
-      verifier.focus()
-    }
+    if (verifier) verifier.scrollIntoView(false)
   }
 
   const sign_in_with_code = async () => {
