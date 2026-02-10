@@ -2,16 +2,19 @@ import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
 import as_figure from '@/components/posters/as-figure'
 
-const { mock_menu } = vi.hoisted(() => {
+const { mock_menu, mock_cutout } = vi.hoisted(() => {
   const create_ref = value => ({ value })
+  const create_watchable = value =>
+    Object.assign(create_ref(value), { __v_isRef: true })
   return {
-    mock_menu: create_ref(false)
+    mock_menu: create_watchable(false),
+    mock_cutout: create_watchable(false)
   }
 })
 
 vi.mock('@/utils/preference', () => ({
   menu: mock_menu,
-  cutout: { value: false },
+  cutout: mock_cutout,
   boulders: { value: false },
   rocks: { value: false },
   gravel: { value: false },
