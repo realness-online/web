@@ -39,7 +39,9 @@ const create_worker_config = filename => ({
               },
               {
                 src: 'artifacts/wasm/tracer.js',
-                dest: 'src/wasm'
+                dest: 'src/wasm',
+                transform: contents =>
+                  Buffer.concat([Buffer.from('// @ts-nocheck\n'), contents])
               }
             ],
             hook: 'writeBundle'
