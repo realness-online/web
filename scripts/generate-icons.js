@@ -42,23 +42,20 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
   fs.unlinkSync(temp_svg_path)
 }
 
-const ICON_SIZE_SMALL = 192
+const ICON_SIZE_SMALL = 180
+const ICON_SIZE_MEDIUM = 192
 const ICON_SIZE_LARGE = 512
+const ICON_SIZES = [ICON_SIZE_SMALL, ICON_SIZE_MEDIUM, ICON_SIZE_LARGE]
 
 const generate_all_icons = async () => {
   const icons_svg_path = path.join(__dirname, '../public/icons.svg')
   const icons_svg = fs.readFileSync(icons_svg_path, 'utf-8')
   const public_dir = path.join(__dirname, '../public')
 
-  await generate_icon_png(
-    ICON_SIZE_SMALL,
-    path.join(public_dir, '192.png'),
-    icons_svg
-  )
-  await generate_icon_png(
-    ICON_SIZE_LARGE,
-    path.join(public_dir, '512.png'),
-    icons_svg
+  await Promise.all(
+    ICON_SIZES.map(size =>
+      generate_icon_png(size, path.join(public_dir, `${size}.png`), icons_svg)
+    )
   )
 }
 

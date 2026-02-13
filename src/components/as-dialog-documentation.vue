@@ -1,19 +1,24 @@
 <script setup>
-  /* eslint-disable vue/no-v-html */
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, nextTick, watch, onMounted as mounted } from 'vue'
   import { marked } from 'marked'
   import { gfmHeadingId } from 'marked-gfm-heading-id'
   import DOMPurify from 'dompurify'
 
   const dialog = ref(null)
+  const content_ref = ref(null)
   const toc_items = ref([])
   const rendered_content = ref('')
   const current_file = ref('documentation')
 
-  const show_modal = () => {
+  const show_modal = async () => {
     if (!dialog.value) return
     if (dialog.value.open) dialog.value.close()
-    else dialog.value.showModal()
+    else {
+      dialog.value.showModal()
+      await nextTick()
+      if (content_ref.value && rendered_content.value)
+        content_ref.value.innerHTML = rendered_content.value
+    }
   }
 
   const handle_click = event => {
@@ -67,6 +72,11 @@
     rendered_content.value = sanitized
   }
 
+  watch(rendered_content, html => {
+    if (content_ref.value && html && dialog.value?.open)
+      content_ref.value.innerHTML = html
+  })
+
   mounted(() => load_markdown_content('documentation.md'))
 
   defineExpose({ show: show_modal })
@@ -89,8 +99,8 @@
           {{ item.title }}
         </a>
       </nav>
-      <!-- Markdown content sanitized with DOMPurify before rendering -->
-      <section class="content" v-html="rendered_content" />
+      <!-- Markdown content: manual innerHTML on open avoids Safari dialog+v-html rendering bug -->
+      <section ref="content_ref" class="content" />
     </article>
   </dialog>
 </template>

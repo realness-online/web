@@ -169,11 +169,11 @@ describe('@/views/Navigation', () => {
       const phonebook_link = wrapper.find('router-link-stub[to="/phonebook"]')
       const thoughts_link = wrapper.find('router-link-stub[to="/thoughts"]')
 
-      expect(statements_link.classes()).toContain('black')
-      expect(events_link.classes()).toContain('green')
+      expect(statements_link.classes()).toContain('sediment')
+      expect(events_link.classes()).toContain('sediment')
       expect(posters_link.classes()).toContain('green')
-      expect(phonebook_link.classes()).toContain('blue')
-      expect(thoughts_link.classes()).toContain('blue')
+      expect(phonebook_link.classes()).toContain('green')
+      expect(thoughts_link.classes()).toContain('black')
     })
 
     it('applies correct class to statement textarea', () => {

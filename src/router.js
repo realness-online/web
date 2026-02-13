@@ -12,12 +12,12 @@ import About from '@/views/About'
 const routes = [
   { path: '/', component: Navigation },
   { path: '/posters', component: Posters },
-  { path: '/thoughts', component: Thoughts },
+  { path: '/thoughts', component: Statements },
   { path: '/events', component: Events },
   { path: '/relations', component: Relations },
   { path: '/phonebook', component: PhoneBook },
   { path: '/profile', component: Profile },
-  { path: '/statements', component: Statements },
+  { path: '/statements', component: Thoughts },
   { path: '/about', component: About },
   { path: '/:phone_number', component: Profile }
 ]

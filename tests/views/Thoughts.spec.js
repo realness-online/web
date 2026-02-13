@@ -140,8 +140,8 @@ describe('Thoughts', () => {
       expect(wrapper.find('header').exists()).toBe(true)
     })
 
-    it('renders h1 with Thoughts title', () => {
-      expect(wrapper.find('h1').text()).toBe('Thoughts')
+    it('renders h1 with Statements title', () => {
+      expect(wrapper.find('h1').text()).toBe('Statements')
     })
 
     it('shows working state initially', () => {
