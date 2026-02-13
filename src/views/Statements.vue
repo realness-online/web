@@ -39,7 +39,7 @@
     </header>
     <article class="editable statements">
       <header>
-        <h1 v-if="!working">Statements</h1>
+        <h1 v-if="!working">Thoughts</h1>
       </header>
       <as-days
         v-slot="thoughts"
@@ -64,7 +64,7 @@
     </footer>
     <article v-if="statements?.length > 1" class="earlier statements">
       <header>
-        <h1>Earlier Statements</h1>
+        <h1>Earlier Thoughts</h1>
       </header>
       <as-days v-slot="thoughts" :statements="statements" :paginate="false">
         <thought-as-article

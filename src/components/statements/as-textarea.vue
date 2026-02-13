@@ -80,6 +80,7 @@
     v-model="statement_text"
     cols="1"
     rows="1"
+    class="black"
     placeholder=">"
     :spellcheck="true"
     @input="adjust_height"
@@ -104,8 +105,6 @@
       caret-color: red;
       cursor: pointer;
       transition-property: color, border-radius, text-align;
-      color: red;
-      background-color: red;
       min-height: base-line;
       @media (prefers-color-scheme: dark) {
         color: white-text;
@@ -121,7 +120,7 @@
     }
     & button#done {
       color: white-text;
-      border-color: red;
+      border-color: black;
       border-radius: base-line;
       padding: base-line;
       position: fixed;
@@ -142,7 +141,7 @@
       height: fit-content;
       padding: 0;
       svg {
-        fill: red;
+        fill: white-text;
       }
     }
     &.posting button#done {
@@ -171,7 +170,7 @@
       padding: 0;
       border-radius: 0;
       &::placeholder {
-        color: red;
+        color: white;
         text-align: left;
         @media (prefers-color-scheme: light) {
           color: red;

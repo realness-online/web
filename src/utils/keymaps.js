@@ -103,11 +103,11 @@ export const default_keymap = [
       'pref::Toggle_Sand': 'Sand visible',
       'pref::Toggle_Sediment': 'Sediment visible',
       'nav::Go_Home': 'To home',
-      'nav::Go_Statements': 'To statements',
+      'nav::Go_Statements': 'To thoughts',
       'nav::Go_Events': 'To events',
       'nav::Go_Posters': 'To posters',
       'nav::Go_Phonebook': 'To phonebook',
-      'nav::Go_Thoughts': 'To thoughts',
+      'nav::Go_Thoughts': 'To statements',
       'nav::Go_About': 'Learn more about the app and read the documentation'
     }
   },

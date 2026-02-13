@@ -14,7 +14,7 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     />
   </header>
   <h1>
-    Thoughts
+    Statements
   </h1>
   <section
     class="as-days-stub"

@@ -16,7 +16,7 @@ exports[`Statements > Rendering > renders statements view 1`] = `
   >
     <header>
       <h1>
-        Statements
+        Thoughts
       </h1>
     </header>
     <section

@@ -18,20 +18,24 @@
       <router-link id="about" to="/about" tabindex="-1">?</router-link>
     </header>
     <nav>
-      <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
-        Statements
+      <router-link v-if="!posting" to="/thoughts" class="black" tabindex="-1">
+        Thoughts
       </router-link>
-      <router-link v-if="!posting" to="/events" class="green" tabindex="-1">
-        Events
+      <router-link v-if="!posting" to="/phonebook" class="green" tabindex="-1">
+        Phonebook
       </router-link>
       <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
         Posters
       </router-link>
-      <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
-        Phonebook
+      <router-link v-if="!posting" to="/events" class="sediment" tabindex="-1">
+        Events
       </router-link>
-      <router-link v-if="!posting" to="/thoughts" class="blue" tabindex="-1">
-        thoughts
+      <router-link
+        v-if="!posting"
+        to="/statements"
+        class="sediment"
+        tabindex="-1">
+        Statements
       </router-link>
       <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
     </nav>

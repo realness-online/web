@@ -22,6 +22,17 @@ html
   @media (prefers-color-scheme: dark)
     &::placeholder
       color: black
+.sediment
+  background-color: sediment
+  border-color: sediment
+  color: lighten(sediment, 75%)
+  -webkit-tap-highlight-color: sediment
+  &::placeholder
+    color: lighten(sediment, 75%)
+  @media (prefers-color-scheme: dark)
+    background-color: darken(sediment, 20%)
+    color: white-text
+    border-color: darken(sediment, 15%)
 .red
   background-color: red
   border-color: red

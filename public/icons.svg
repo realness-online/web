@@ -218,12 +218,12 @@
       <circle cy="64" cx="365" r="64" />
     </symbol>
     <symbol id="realness" viewBox="-20 -20 232 232" preserveAspectRatio="xMidYMid meet">
-      <rect fill="hsla(300,  1%, 33%, 0.75)" width="88" height="54" rx="8" />
-      <rect fill="hsla(181, 36%, 57%, 0.75)" width="88" height="54" rx="8" x="104" />
-      <rect fill="hsla(181, 36%, 57%, 0.75)" width="88" height="54" rx="8" y="69" />
-      <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="69" />
-      <rect fill="hsla(203, 58%, 57%, 0.75)" width="88" height="54" rx="8" y="138" />
-      <rect fill="hsla(353, 83%, 57%, 0.75)" width="88" height="54" rx="8" x="104" y="138" />
+      <rect fill="hsla(0, 0%, 32%, 1)" width="88" height="54" rx="8" />
+      <rect fill="hsla(180, 30%, 45%, 1)" width="88" height="54" rx="8" x="104" />
+      <rect fill="hsla(180, 30%, 45%, 1)" width="88" height="54" rx="8" y="69" />
+      <rect fill="hsla(0, 30%, 45%, 1)" width="88" height="54" rx="8" x="104" y="69" />
+      <rect fill="hsla(0, 30%, 45%, 1)" width="88" height="54" rx="8" y="138" />
+      <rect fill="hsla(0, 0%, 32%, 1)" width="88" height="54" rx="8" x="104" y="138" />
     </symbol>
   </defs>
   <defs id="filters">

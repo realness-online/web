@@ -74,7 +74,7 @@
       <icon name="nothing" />
       <logo-as-link tabindex="-1" />
     </header>
-    <h1>Thoughts</h1>
+    <h1>Statements</h1>
     <as-days
       v-slot="items"
       :working="working"
