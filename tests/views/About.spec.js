@@ -173,7 +173,7 @@ describe('About', () => {
       const { use_posters } = await import('@/use/poster')
       const posters = use_posters().posters
       expect(posters.value.length).toBeGreaterThan(0)
-      const poster_figures = wrapper.findAll('as-figure-stub')
+      const poster_figures = wrapper.findAll('figure')
       expect(poster_figures.length).toBeGreaterThan(0)
     })
   })
