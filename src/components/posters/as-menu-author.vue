@@ -48,8 +48,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: base-line;
-    padding: base-line;
+    gap: base-line * 0.5;
+    padding: base-line * 0.5;
+    margin: base-line;
     height: auto;
     border-radius: base-line
     background: black-transparent;

@@ -12,11 +12,10 @@ import {
   as_filename,
   as_created_at,
   as_query_id,
-  is_itemid,
-  load_from_cache
+  is_itemid
 } from '@/utils/itemid'
 import { prepare_upload_html } from '@/utils/upload-processor'
-import { del, get } from 'idb-keyval'
+import { get } from 'idb-keyval'
 
 /**
  * @interface
@@ -56,13 +55,6 @@ export class Storage {
 class Cached extends Large(Cloud(Storage)) {
   async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
     await super.save(items)
-
-    if (navigator.onLine && current_user.value) {
-      // After successful network save, prefetch from network to populate HTTP cache
-      // without storing to IndexedDB
-      await load_from_cache(this.id)
-      await del(this.id)
-    }
   }
 }
 

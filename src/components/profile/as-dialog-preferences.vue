@@ -298,6 +298,9 @@
             span {
               color: var(--white-text);
               font-size: smaller;
+              @media (prefers-color-scheme: light) {
+                color: black;
+              }
             }
           }
         }
@@ -319,10 +322,14 @@
     p {
       margin: base-line * 0.25 0;
       font-size: smaller;
-      &.subtitle {
-        color: var(--white-text);
-        opacity: 0.75;
-      }
+        &.subtitle {
+          color: var(--white-text);
+          opacity: 0.75;
+          @media (prefers-color-scheme: light) {
+            color: black;
+            opacity: 0.85;
+          }
+        }
     }
   }
 </style>

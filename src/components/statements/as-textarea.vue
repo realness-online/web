@@ -81,7 +81,7 @@
     cols="1"
     rows="1"
     class="black"
-    placeholder=">"
+    placeholder="✏️"
     :spellcheck="true"
     @input="adjust_height"
     @focusout="prepare_statement"

@@ -21,10 +21,19 @@ const extract_realness_symbol = icons_svg => {
   return { symbol_content, viewbox }
 }
 
-const generate_icon_png = async (size, output_path, icons_svg) => {
-  const { symbol_content, viewbox } = extract_realness_symbol(icons_svg)
+const SAFE_ZONE_PADDING = 0.15
+const ICON_SIZE_SMALL = 192
+const ICON_SIZE_LARGE = 512
+const ICON_SIZES = [ICON_SIZE_SMALL, ICON_SIZE_LARGE]
 
-  const svg_content = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${viewbox}">
+const generate_icon_png = async (size, output_path, icons_svg) => {
+  const { symbol_content } = extract_realness_symbol(icons_svg)
+  const content_size = ICON_SIZE_SMALL
+  const padded_size = content_size / (1 - SAFE_ZONE_PADDING * 2)
+  const inset = (padded_size - content_size) / 2
+  const padded_viewbox = `-${inset} -${inset} ${padded_size} ${padded_size}`
+
+  const svg_content = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${padded_viewbox}">
   ${symbol_content}
 </svg>`
 
@@ -41,11 +50,6 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
   fs.writeFileSync(output_path, buffer)
   fs.unlinkSync(temp_svg_path)
 }
-
-const ICON_SIZE_SMALL = 180
-const ICON_SIZE_MEDIUM = 192
-const ICON_SIZE_LARGE = 512
-const ICON_SIZES = [ICON_SIZE_SMALL, ICON_SIZE_MEDIUM, ICON_SIZE_LARGE]
 
 const generate_all_icons = async () => {
   const icons_svg_path = path.join(__dirname, '../public/icons.svg')

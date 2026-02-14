@@ -6,10 +6,11 @@
   import { current_user, sign_off, me } from '@/utils/serverless'
   import { useRoute as use_route } from 'vue-router'
   const form = ref(null)
-  const name = computed(() => me.value?.name || 'account')
+  const name = computed(() => me.value?.name || 'sign on')
   const route = use_route()
   const show_sign_in = ref(false)
   const is_mobile_form_visible = ref(false)
+  const just_signed_in = ref(false)
 
   const show_form = () => {
     if (!form.value) return
@@ -27,6 +28,7 @@
 
   const signed_in = () => {
     show_sign_in.value = false
+    just_signed_in.value = true
   }
 
   const on_showing_mobile = visible => {
@@ -36,6 +38,7 @@
   const on_close = () => {
     show_sign_in.value = false
     is_mobile_form_visible.value = false
+    just_signed_in.value = false
   }
 
   watch(
@@ -61,7 +64,7 @@
       v-else
       @signed_in="signed_in"
       @showing_mobile="on_showing_mobile" />
-    <fieldset v-if="current_user" id="sign-off">
+    <fieldset v-if="current_user && !just_signed_in" id="sign-off">
       <legend>Sign off</legend>
       <button @click="sign_off">
         <icon name="arrow" />

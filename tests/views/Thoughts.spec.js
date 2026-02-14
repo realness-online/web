@@ -38,7 +38,8 @@ vi.mock('@/use/people', () => ({
     relations: mock_relations
   }),
   use_me: () => ({
-    relations: mock_relations
+    relations: mock_relations,
+    blocked: ref([])
   })
 }))
 
