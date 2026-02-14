@@ -35,7 +35,7 @@ export default defineConfig({
     )
   },
   server: {
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     port: 8080,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
@@ -43,6 +43,11 @@ export default defineConfig({
     https: {
       key: fs.readFileSync('localhost-key.pem'),
       cert: fs.readFileSync('localhost.pem')
+    },
+    hmr: {
+      host: 'realness.local',
+      port: 8080,
+      protocol: 'wss'
     },
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
@@ -69,10 +74,11 @@ export default defineConfig({
     vue(),
     wasm(),
     vite_pwa({
+      devOptions: { enabled: false },
+      filename: 'service.worker.js',
       workbox: {
         maximumFileSizeToCacheInBytes: 4000000
       },
-      filename: 'service.worker.js',
       minify: true,
       includeAssets: ['vector.worker.js', 'fonts/*.woff2', 'icons.svg'],
       manifest: {
@@ -80,7 +86,7 @@ export default defineConfig({
         background_color: '#151518',
         name: 'Realness',
         short_name: 'Realness',
-        description: 'Realness Online',
+        description: 'Realness',
         scope: '/',
         orientation: 'portrait',
         theme_color: '#151518',

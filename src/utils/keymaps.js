@@ -83,8 +83,7 @@ export const default_keymap = [
       'pref::Toggle_Background': 'Background fill on posters',
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',
-      'pref::Toggle_Animate':
-        'Poster animation. This one is subtle and a bit of a resource dragon',
+      'pref::Toggle_Animate': 'Poster animation',
       'pref::Toggle_Info': 'FPS and animation info',
       'pref::Toggle_Storytelling': 'Storytelling (side-scroll) view',
       'pref::Toggle_Slice': 'Poster aspect ratio (meet/slice)',

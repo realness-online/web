@@ -7,10 +7,12 @@
     watchEffect as watch,
     onMounted as mounted,
     onUnmounted as unmounted,
+    nextTick as tick,
     ref,
     computed,
     provide
   } from 'vue'
+  import { useMediaQuery } from '@vueuse/core'
   import {
     use as use_poster,
     is_vector,
@@ -65,7 +67,6 @@
     intersecting,
     is_hovered,
     viewbox,
-    ken_burns_position,
     working
   } = use_poster()
 
@@ -80,10 +81,6 @@
     use_meet.value = !use_meet.value
     emit('click', true)
   }
-
-  const should_ken_burns = computed(
-    () => storytelling.value && poster_slice.value
-  )
 
   const trigger = ref(null)
   const animate = computed(
@@ -105,7 +102,7 @@
 
   provide('vector', vector)
 
-  mounted(() => {
+  mounted(async () => {
     if (!props.sync_poster)
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
@@ -115,6 +112,19 @@
       intersecting.value = true
       vector.value = props.sync_poster
       emit('show', vector.value)
+    }
+    await tick()
+    touch_target = trigger.value
+    if (touch_target) {
+      touch_target.addEventListener('touchstart', on_touch_start, {
+        passive: true
+      })
+      touch_target.addEventListener('touchmove', on_touch_move, {
+        passive: false
+      })
+      touch_target.addEventListener('touchend', on_touch_end, {
+        passive: true
+      })
     }
   })
 
@@ -144,13 +154,80 @@
 
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
-  const ken_burns_ready = ref(false)
-  const ken_burns_timer = null
+  const orientation_portrait = useMediaQuery('(orientation: portrait)')
+  const can_pan = computed(
+    () =>
+      orientation_portrait.value &&
+      landscape.value &&
+      !use_meet.value &&
+      !storytelling.value
+  )
+  const pan_offset = ref(0)
+  const touch_start_x = ref(0)
+  const touch_start_y = ref(0)
+  const pan_start_offset = ref(0)
+  const gesture_is_pan = ref(false)
+  const gesture_decided = ref(false)
 
-  const ken_burns_class = computed(() => {
-    if (!should_ken_burns.value) return null
-    return `ken-burns-${ken_burns_position.value}`
+  const max_pan_px = computed(() => {
+    if (!can_pan.value || !trigger.value || !vector.value) return 0
+    const rect = trigger.value.getBoundingClientRect()
+    const [, , content_width, content_height] = vector.value.viewbox
+      .split(' ')
+      .map(Number)
+    const content_aspect = content_width / content_height
+    const container_aspect = rect.width / rect.height
+    if (content_aspect <= container_aspect) return 0
+    const scale = rect.height / content_height
+    const scaled_width = content_width * scale
+    const overflow = scaled_width - rect.width
+    return Math.max(0, overflow / 2)
   })
+
+  const pan_style = computed(() =>
+    can_pan.value ? { transform: `translateX(${pan_offset.value}px)` } : {}
+  )
+
+  const GESTURE_THRESHOLD = 8
+
+  const on_touch_start = event => {
+    if (!can_pan.value || !event.touches.length) return
+    const [touch] = event.touches
+    touch_start_x.value = touch.clientX
+    touch_start_y.value = touch.clientY
+    pan_start_offset.value = pan_offset.value
+    gesture_decided.value = false
+    gesture_is_pan.value = false
+  }
+
+  const on_touch_move = event => {
+    if (!can_pan.value || !event.touches.length) return
+    const [touch] = event.touches
+    const delta_x = touch.clientX - touch_start_x.value
+    const delta_y = touch.clientY - touch_start_y.value
+    if (!gesture_decided.value) {
+      const abs_x = Math.abs(delta_x)
+      const abs_y = Math.abs(delta_y)
+      if (abs_x > GESTURE_THRESHOLD || abs_y > GESTURE_THRESHOLD) {
+        gesture_decided.value = true
+        gesture_is_pan.value = abs_x > abs_y
+      }
+    }
+    if (!gesture_is_pan.value) return
+    event.preventDefault()
+    const raw = pan_start_offset.value + delta_x
+    pan_offset.value = Math.max(
+      -max_pan_px.value,
+      Math.min(max_pan_px.value, raw)
+    )
+  }
+
+  const on_touch_end = () => {
+    gesture_decided.value = false
+    gesture_is_pan.value = false
+  }
+
+  let touch_target = null
 
   const OPACITY_HALF = 0.5
   const OPACITY_FULL = 1
@@ -224,15 +301,13 @@
     return { opacity: OPACITY_FULL, visibility: 'visible' }
   })
 
-  watch(() => {
-    if (should_ken_burns.value && !ken_burns_ready.value)
-      ken_burns_ready.value = true
-    else if (!should_ken_burns.value) ken_burns_ready.value = false
-  })
-
   unmounted(() => {
-    if (ken_burns_timer) clearTimeout(ken_burns_timer)
     vector.value = null
+    if (touch_target) {
+      touch_target.removeEventListener('touchstart', on_touch_start)
+      touch_target.removeEventListener('touchmove', on_touch_move)
+      touch_target.removeEventListener('touchend', on_touch_end)
+    }
   })
 </script>
 
@@ -254,7 +329,7 @@
       'hide-cursor': hide_cursor
     }"
     @click="handle_click">
-    <g :class="ken_burns_class">
+    <g :style="pan_style">
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect
         id="lightbar-back"
@@ -309,114 +384,6 @@
     }
   }
 
-  @keyframes ken-burns-top {
-    0% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
-    }
-    25% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(var(--ken-burns-range));
-    }
-    75% {
-      transform: translateY(0);
-    }
-    100% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
-    }
-  }
-
-  @keyframes ken-burns-middle {
-    0% {
-      transform: translateY(0);
-    }
-    25% {
-      transform: translateY(var(--ken-burns-range));
-    }
-    50% {
-      transform: translateY(0);
-    }
-    75% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
-    }
-    100% {
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes ken-burns-bottom {
-    0% {
-      transform: translateY(var(--ken-burns-range));
-    }
-    25% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(calc(var(--ken-burns-range) * -1));
-    }
-    75% {
-      transform: translateY(0);
-    }
-    100% {
-      transform: translateY(var(--ken-burns-range));
-    }
-  }
-
-  @keyframes ken-burns-left {
-    0% {
-      transform: translateX(var(--ken-burns-range));
-    }
-    25% {
-      transform: translateX(0);
-    }
-    50% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
-    }
-    75% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(var(--ken-burns-range));
-    }
-  }
-
-  @keyframes ken-burns-center {
-    0% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(var(--ken-burns-range));
-    }
-    50% {
-      transform: translateX(0);
-    }
-    75% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes ken-burns-right {
-    0% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
-    }
-    25% {
-      transform: translateX(0);
-    }
-    50% {
-      transform: translateX(var(--ken-burns-range));
-    }
-    75% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(calc(var(--ken-burns-range) * -1));
-    }
-  }
-
   /* aspect-ratio: 2.76 / 1 // also film  28 years later used*/
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 1.618 / 1 // golden-ratio */
@@ -427,6 +394,7 @@
     min-height: 512px;
     height: 100%;
     width: 100%;
+    overflow: hidden;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
@@ -441,30 +409,6 @@
       cursor: none;
     }
 
-    & > g {
-      transform-origin: center center;
-      &.ken-burns-top {
-        animation: ken-burns-top 20s ease-in-out infinite;
-      }
-      &.ken-burns-middle {
-        animation: ken-burns-middle 20s ease-in-out infinite;
-      }
-      &.ken-burns-bottom {
-        animation: ken-burns-bottom 20s ease-in-out infinite;
-      }
-      &.ken-burns-left {
-        animation: ken-burns-left 30s ease-in-out infinite;
-      }
-      &.ken-burns-center {
-        animation: ken-burns-center 30s ease-in-out infinite;
-      }
-      &.ken-burns-right {
-        animation: ken-burns-right 30s ease-in-out;
-      }
-    }
-    &:not(.animate) > g[class*='ken-burns'] {
-      animation-play-state: paused;
-    }
     & rect#lightbar-back,
     & rect#lightbar-front,
     & > rect:first-of-type,

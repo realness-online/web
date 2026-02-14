@@ -7,10 +7,7 @@
 import {
   ref,
   computed,
-  watch,
   inject,
-  onMounted as mounted,
-  onUnmounted as unmounted,
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
@@ -25,11 +22,7 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-import {
-  slice as slice_preference,
-  storytelling,
-  slice_alignment
-} from '@/utils/preference'
+import { slice as slice_preference, slice_alignment } from '@/utils/preference'
 
 export const geology_layers = [
   'sediment',
@@ -39,12 +32,8 @@ export const geology_layers = [
   'boulders'
 ]
 
-// Pan range calculation constants
-const PERCENTAGE_MAX = 100
-const HALF_DIVISOR = 2
-
 // Composable manages poster display, editing, layers, SVG manipulation, and animations
-// eslint-disable-next-line max-lines-per-function
+
 export const use = () => {
   const { props, emit } = current_instance()
   const vector = ref(null)
@@ -57,20 +46,10 @@ export const use = () => {
   const magic_keys = useMagicKeys()
 
   const aspect_toggle = ref(false)
-  const ken_burns_vertical_position = ref(
-    ['top', 'middle', 'bottom'][Math.floor(Math.random() * 3)]
-  )
-  const ken_burns_horizontal_position = ref(
-    ['left', 'center', 'right'][Math.floor(Math.random() * 3)]
-  )
-  const ken_burns_axis = ref('y')
 
   const is_hovered = ref(false)
 
   const { x, y, pressure } = use_pointer({ target: vector_element })
-
-  const ken_burns_signal = ref(0)
-  let orientation_media = null
 
   const original_viewbox = computed(() => {
     if (!vector.value) return { x: 0, y: 0, width: 16, height: 16 }
@@ -98,69 +77,6 @@ export const use = () => {
   })
 
   const itemid = computed(() => props.itemid)
-
-  const should_ken_burns = computed(
-    () => storytelling.value && slice_preference.value
-  )
-
-  const ken_burns_range = computed(() => {
-    ken_burns_signal.value
-    if (!vector_element.value || !vector.value) return 0
-
-    const viewbox_parts = vector.value.viewbox.split(' ').map(Number)
-    const [, , content_width, content_height] = viewbox_parts
-    const content_aspect = content_width / content_height
-
-    const container_rect = vector_element.value.getBoundingClientRect()
-    const container_aspect = container_rect.width / container_rect.height
-
-    // Vertical panning: available when content is taller than container
-    const vertical_range = (() => {
-      if (content_aspect < container_aspect) {
-        const scale = container_rect.width / content_width
-        const scaled_height = content_height * scale
-        const overflow = scaled_height - container_rect.height
-        const pan_range =
-          (overflow / HALF_DIVISOR / scaled_height) * PERCENTAGE_MAX
-        return Math.max(0, pan_range)
-      }
-      return 0
-    })()
-
-    // Horizontal panning: available when content is wider than container
-    const horizontal_range = (() => {
-      if (content_aspect > container_aspect) {
-        const scale = container_rect.height / content_height
-        const scaled_width = content_width * scale
-        const overflow = scaled_width - container_rect.width
-        const pan_range =
-          (overflow / HALF_DIVISOR / scaled_width) * PERCENTAGE_MAX
-        return Math.max(0, pan_range)
-      }
-      return 0
-    })()
-
-    // Choose axis with available range
-    if (vertical_range > 0) {
-      ken_burns_axis.value = 'y'
-      return vertical_range
-    }
-    if (horizontal_range > 0) {
-      ken_burns_axis.value = 'x'
-      return horizontal_range
-    }
-    return 0
-  })
-
-  const ken_burns_position = computed(() => {
-    if (ken_burns_axis.value === 'x') return ken_burns_horizontal_position.value
-
-    return ken_burns_vertical_position.value
-  })
-
-  const bump_ken_burns = () => {
-    ken_burns_signal.value += 1
-  }
 
   const landscape = computed(() => {
     if (!vector.value) return false
@@ -209,13 +125,6 @@ export const use = () => {
     menu.value = !menu.value
     emit('click', menu.value)
   }
-
-  mounted(() => {
-    if (!window?.matchMedia) return
-    orientation_media = window.matchMedia('(orientation: portrait)')
-    orientation_media.addEventListener('change', bump_ken_burns)
-    bump_ken_burns()
-  })
 
   const show = async () => {
     if (!vector.value) {
@@ -279,16 +188,6 @@ export const use = () => {
     console.info('cutout_end', event)
   }
 
-  watch(
-    () => storytelling.value,
-    () => bump_ken_burns()
-  )
-
-  unmounted(() => {
-    if (orientation_media)
-      orientation_media.removeEventListener('change', bump_ken_burns)
-  })
-
   return {
     vector,
     vector_element,
@@ -331,11 +230,7 @@ export const use = () => {
     touch_end,
     cutout_start,
     cutout_end,
-    aspect_toggle,
-    should_ken_burns,
-    ken_burns_range,
-    ken_burns_position,
-    ken_burns_axis
+    aspect_toggle
   }
 }
 

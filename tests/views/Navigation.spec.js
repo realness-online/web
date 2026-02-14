@@ -24,7 +24,8 @@ describe('@/views/Navigation', () => {
           'router-link': true,
           icon: true,
           'statement-as-textarea': {
-            template: '<textarea class="red"></textarea>',
+            template:
+              '<textarea id="wat" class="black" placeholder="✏️"></textarea><button id="done"></button>',
             emits: ['toggle-keyboard']
           }
         }
@@ -174,11 +175,6 @@ describe('@/views/Navigation', () => {
       expect(posters_link.classes()).toContain('green')
       expect(phonebook_link.classes()).toContain('green')
       expect(thoughts_link.classes()).toContain('black')
-    })
-
-    it('applies correct class to statement textarea', () => {
-      const textarea = wrapper.find('as-textarea-stub')
-      expect(textarea.classes()).toContain('red')
     })
   })
 
