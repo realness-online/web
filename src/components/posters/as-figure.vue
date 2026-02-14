@@ -242,21 +242,6 @@
       &[itemscope] {
         position: relative;
       }
-      &.working {
-        min-height: 512px;
-        padding: base-line * 6;
-        margin-top: base-line;
-        max-width: round(base-line * 6);
-      }
-    }
-    svg.icon.working {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 3;
-      width: round(base-line * 6);
-      height: round(base-line * 6);
     }
     & > figcaption {
       position: absolute;

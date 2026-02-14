@@ -1,18 +1,27 @@
 #!/bin/bash
 
-# Generate localhost SSL certificates
-# This script creates self-signed certificates for local development
+# Generate localhost SSL certificates for local development.
+# Includes realness.local for LAN access from phone/tablet.
 
+if command -v mkcert &> /dev/null; then
+    echo "Resetting mkcert root CA..."
+    mkcert -uninstall 2>/dev/null || true
+    rm -rf "$(mkcert -CAROOT)"
+fi
+
+rm -f localhost.pem localhost-key.pem rootCA.pem
 echo "Generating localhost SSL certificates..."
 
 # Check if mkcert is available (preferred method)
 if command -v mkcert &> /dev/null; then
-    echo "Using mkcert to generate certificates..."
+    echo "Using mkcert..."
     mkcert -install
-    mkcert localhost 127.0.0.1 ::1
-    mv localhost+2.pem localhost.pem
-    mv localhost+2-key.pem localhost-key.pem
-    echo "Certificates generated successfully with mkcert!"
+    mkcert -key-file localhost-key.pem -cert-file localhost.pem localhost 127.0.0.1 ::1 realness.local
+    cp "$(mkcert -CAROOT)/rootCA.pem" ./rootCA.pem
+    echo "Certificates generated successfully!"
+    echo ""
+    echo "LAN access: https://realness.local:8080"
+    echo "Install rootCA.pem on your phone to avoid cert warnings (Files → this project → rootCA.pem)"
 else
     echo "mkcert not found, using OpenSSL..."
 
@@ -34,3 +43,4 @@ fi
 echo "Certificate files created:"
 echo "- localhost.pem (certificate)"
 echo "- localhost-key.pem (private key)"
+echo "- rootCA.pem (install on phone for LAN access)"

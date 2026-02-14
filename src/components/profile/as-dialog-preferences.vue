@@ -188,27 +188,43 @@
     pointer-events: none;
   }
 
+  main#realness:has(article.thought:focus-within) > a#toggle-preferences {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   dialog#preferences {
-    padding-top: 0;
-    margin-bottom: base-line * 2;
+    margin: base-line;
     max-width: 90vw;
-    max-height: 90vh;
+    border-radius: base-line;
+
     &[open] {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: base-line * 2;
-
       overflow-y: auto;
       padding: 0 base-line;
+    }
 
-      @media (max-width: pad-begins) {
-        max-width: 100vw;
-        width: 100vw;
-        margin: 0;
-        border-radius: 0;
+    @media (max-width: pad-begins) {
+      position: fixed;
+      top: inset(top, base-line * 3);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: 0;
+      max-width: 100%;
+      width: 100%;
+      border-radius: base-line base-line 0 0;
+      overscroll-behavior-y: contain;
+      &[open] {
         grid-template-columns: 1fr;
         gap: base-line;
-        padding: 0 base-line;
+        padding: 0 base-line inset(bottom) base-line;
+      }
+      & > section:last-child {
+        display: none;
       }
     }
 
@@ -230,20 +246,12 @@
       }
     }
 
-    @media (max-width: pad-begins) {
-      max-width: 100vw;
-      width: 100vw;
-      margin: 0;
-      border-radius: 0;
-    }
-
     & > section {
       & > header > h2 {
         color: var(--red);
         margin-bottom: base-line;
         padding-bottom: round((base-line / 2), 2);
         border-bottom: 1px solid var(--red);
-
       }
     }
 
@@ -262,10 +270,6 @@
     }
 
     & > section:last-child {
-      @media (max-width: pad-begins) {
-        display: none;
-      }
-
       & > div {
         h3 {
           color: var(--red);
@@ -306,30 +310,14 @@
         }
       }
     }
-  }
 
-  a {
-    color: green;
-    border-color: green;
-  }
-  h1, svg.icon {
-    color: red;
-    fill: red;
-  }
-
-  .aspect-ratio-info {
-    margin-top: base-line * 0.5;
-    p {
-      margin: base-line * 0.25 0;
-      font-size: smaller;
-        &.subtitle {
-          color: var(--white-text);
-          opacity: 0.75;
-          @media (prefers-color-scheme: light) {
-            color: black;
-            opacity: 0.85;
-          }
-        }
+    a {
+      color: green;
+      border-color: green;
+    }
+    h1, svg.icon {
+      color: red;
+      fill: red;
     }
   }
 </style>

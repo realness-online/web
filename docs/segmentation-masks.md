@@ -48,7 +48,6 @@ With structured segmentation data (items list + depth layers), you can:
 **Depth-based parallax:**
 
 - Foreground moves faster than background
-- Ken Burns that respects depth layers
 - 3D-like depth perception
 
 **Subject-following Ken Burns:**

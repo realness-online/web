@@ -37,7 +37,7 @@
         tabindex="-1">
         Statements
       </router-link>
-      <statement-as-textarea class="red" @toggle-keyboard="toggle_keyboard" />
+      <statement-as-textarea @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
       <a

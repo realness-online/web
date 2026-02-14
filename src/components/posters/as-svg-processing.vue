@@ -8,6 +8,7 @@
     onUnmounted as unmounted,
     inject
   } from 'vue'
+  import Icon from '@/components/icon'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
@@ -81,6 +82,7 @@
       :src="thumbnail_url"
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
+    <icon name="working" />
 
     <as-svg
       v-if="show_processing_svg"
@@ -191,11 +193,7 @@
     height: fit-content;
     grid-row-start: span 2;
     outline: 1px solid var(--green);
-    @media (orientation: landscape), (min-width: page-width) {
-      &.landscape {
-        grid-column-start: span 2;
-      }
-    }
+
     & > img {
       grid-area: overlay;
       opacity: 0.33;
@@ -204,61 +202,30 @@
       height: 100%;
       object-fit: cover;
     }
-
-    & > svg {
+    & > svg.icon {
+      grid-area: overlay;
+      width: base-line * 6;
+      height: base-line * 2;
+      color: var(--green);
+      pointer-events: none;
+      z-index: 3;
+      opacity: 1;
+      transition: opacity 0.4s ease-in;
+      animation: working-pulse 1.5s ease-in-out infinite;
+      @starting-style {
+        opacity: 0;
+      }
+    }
+    & > svg:not(.icon) {
       grid-area: overlay;
       color: var(--green);
       pointer-events: none;
-    }
-
-    & > figcaption {
-      grid-area: overlay;
-      align-self: end;
       z-index: 3;
-      padding: calc(var(--base-line) * 0.5);
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: calc(var(--base-line) * 0.25);
     }
 
-    & > figcaption span {
-      font-size: smaller;
-      color: var(--green);
-    }
-
-    & > figcaption meter {
-      display: block;
-      width: 100%;
-      height: 12px;
-      -webkit-appearance: none;
-      appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 6px;
-      background: rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-
-      &::-webkit-meter-bar {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-      }
-
-      &::-webkit-meter-optimum-value {
-        background: var(--green);
-        border-radius: 6px;
-        transition: width 0.2s linear;
-      }
-
-      &::-moz-meter-bar {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-      }
-
-      &::-moz-meter-optimum::-moz-meter-bar {
-        background: var(--green);
-        border-radius: 6px;
+    @media (orientation: landscape), (min-width: page-width) {
+      &.landscape {
+        grid-column-start: span 2;
       }
     }
   }
