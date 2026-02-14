@@ -17,7 +17,7 @@
 <style lang="stylus">
   svg.icon {
     fill: currentColor
-    standard-shadow: boop;
+    // standard-shadow: boop;
     &:active {
       transform: scale(0.95);
       outline: 1px double currentColor;

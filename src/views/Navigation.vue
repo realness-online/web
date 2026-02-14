@@ -54,6 +54,7 @@
 <style lang="stylus">
 
   section#navigation.page {
+    user-select: none;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -84,6 +85,12 @@
         top: inset(top,  base-line);
         right: base-line;
       }
+    }
+    &:focus-within > header > a#about,
+    &:focus-within > header > a#toggle-account {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
     &.posting {
       align-self: start;

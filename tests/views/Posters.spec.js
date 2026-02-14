@@ -71,7 +71,8 @@ vi.mock('@/persistance/Storage', () => ({
 // Mock preference utils
 vi.mock('@/utils/preference', () => ({
   storytelling: { value: false },
-  slice: { value: false }
+  slice: { value: false },
+  menu: { value: true }
 }))
 
 // Mock utils/itemid

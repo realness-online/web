@@ -30,7 +30,7 @@ exports[`@/views/Posters > Rendering > renders posters view 1`] = `
       
       
       <figure
-        class="poster-stub"
+        class="poster-stub fill-screen"
         tabindex="0"
       />
       

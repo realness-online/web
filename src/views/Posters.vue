@@ -18,7 +18,7 @@
   import { use_posters } from '@/use/poster'
 
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, slice } from '@/utils/preference'
+  import { storytelling, slice, menu } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -177,12 +177,12 @@
         v-for="poster in posters"
         :key="poster.id"
         :itemid="poster.id"
-        :menu="poster.menu"
+        :menu="menu"
         :slice="poster.slice"
         tabindex="0"
         :class="{
           'selecting-event': poster.picker,
-          'fill-screen': poster.menu
+          'fill-screen': menu
         }"
         @click="handle_poster_click(poster.id)"
         @show="poster_shown">

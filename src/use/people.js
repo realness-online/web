@@ -15,6 +15,17 @@ export const default_person = {
   type: 'person'
 }
 const relations = ref(undefined)
+const blocked = ref([])
+
+const blocked_key = () => `${localStorage.me}/blocked`
+export const load_blocked = () => {
+  if (!localStorage.me) return
+  try {
+    blocked.value = JSON.parse(localStorage.getItem(blocked_key()) || '[]')
+  } catch {
+    blocked.value = []
+  }
+}
 
 export const use = () => {
   const set_working = inject('set_working')
@@ -44,8 +55,8 @@ export const use = () => {
     try {
       working.value = true
       if (set_working) set_working(true)
-      // Clear existing entries
       phonebook.value = []
+      load_blocked()
 
       const people = await directory('/people/')
       if (!people?.prefixes?.length) {
@@ -68,9 +79,13 @@ export const use = () => {
         })
       )
 
-      // Filter out nulls and add unique entries
+      // Filter out nulls, duplicates, and blocked
+      const blocked_ids = new Set(blocked.value)
       phonebook.value = loaded_people.filter(
-        person => person && !phonebook.value.some(p => p.id === person.id)
+        person =>
+          person &&
+          !phonebook.value.some(p => p.id === person.id) &&
+          !blocked_ids.has(person.id)
       )
 
       // Re-enable sorting
@@ -88,14 +103,31 @@ export const use = () => {
     people,
     person,
     load_phonebook,
-    phonebook
+    phonebook,
+    blocked
   }
 }
 export const use_me = () => {
-  if (is_browser)
+  if (is_browser) {
     list(/** @type {Id} */ (`${localStorage.me}/relations`)).then(list => {
       relations.value = list
     })
+    load_blocked()
+  }
+
+  const block_person = person_id => {
+    if (!localStorage.me) return
+    if (!blocked.value.includes(person_id)) {
+      blocked.value = [...blocked.value, person_id]
+      localStorage.setItem(blocked_key(), JSON.stringify(blocked.value))
+    }
+  }
+
+  const unblock_person = person_id => {
+    if (!localStorage.me) return
+    blocked.value = blocked.value.filter(id => id !== person_id)
+    localStorage.setItem(blocked_key(), JSON.stringify(blocked.value))
+  }
 
   const save = async () => {
     await tick()
@@ -113,7 +145,10 @@ export const use_me = () => {
     is_valid_name,
     relations,
     save,
-    me
+    me,
+    blocked,
+    block_person,
+    unblock_person
   }
 }
 export const get_my_itemid = type => {

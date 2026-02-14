@@ -62,6 +62,7 @@
   )
 
   const vector_click = () => {
+    if (!props.menu) return
     menu_open.value = !menu_open.value
   }
   const symbol_loaded = ref({
@@ -138,6 +139,12 @@
       if (author_id) person.value = await load(/** @type {Id} */ (author_id))
     }
   })
+  watch(
+    () => props.menu,
+    menu_enabled => {
+      if (!menu_enabled) menu_open.value = false
+    }
+  )
   watch(cutout, new_value => {
     if (!new_value)
       symbol_loaded.value = {
