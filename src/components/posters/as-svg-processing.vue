@@ -82,7 +82,7 @@
       :src="thumbnail_url"
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
-    <icon name="working" />
+    <icon v-if="is_currently_processing" name="working" />
 
     <as-svg
       v-if="show_processing_svg"

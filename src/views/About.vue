@@ -333,8 +333,8 @@
     <section>
       <header>
         <h2>Gallery</h2>
-        <preference name="fill" />
-        <preference name="cutout" />
+        <preference name="shadow" />
+        <preference name="mosaic" />
         <preference name="drama" />
         <preference name="stroke" />
         <preference name="animate" />

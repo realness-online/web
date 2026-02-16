@@ -165,14 +165,12 @@ export const move = async (type, id, archive_id) => {
 
     // Remove old file
     await remove(old_location)
-    console.info(`Moved ${old_location} to ${new_location}`)
     return true
   } catch (error) {
     // Cleanup if upload succeeded but remove failed
     if (upload_successful)
       try {
         await remove(/** @type {Id} */ (new_location))
-        console.info(`Rolled back upload of ${new_location}`)
       } catch (cleanup_error) {
         console.error(`Failed to cleanup ${new_location}`, cleanup_error)
       }

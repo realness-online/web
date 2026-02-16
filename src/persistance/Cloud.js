@@ -4,7 +4,7 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename, as_type, as_path_parts } from '@/utils/itemid'
+import { as_filename, as_type, as_path_parts, as_archive } from '@/utils/itemid'
 import { has_archive } from '@/types'
 import { mutex } from '@/utils/algorithms'
 import {
@@ -26,6 +26,29 @@ const networkable = [
   'rocks',
   'boulders'
 ]
+
+const poster_component_types = [
+  'shadows',
+  'sediment',
+  'sand',
+  'gravel',
+  'rocks',
+  'boulders'
+]
+
+/**
+ * @param {Id} poster_id
+ * @returns {Promise<string[]>}
+ */
+const get_poster_delete_paths = async poster_id => {
+  let base = poster_id.startsWith('/+') ? `people${poster_id}` : poster_id
+  const archive = await as_archive(poster_id)
+  if (archive) base = archive
+  return [
+    `${base}.html.gz`,
+    ...poster_component_types.map(type => `${base}-${type}.html.gz`)
+  ]
+}
 
 /**
  * @template {new (...args: any[]) => Storage} T
@@ -65,13 +88,19 @@ export const Cloud = superclass =>
     }
 
     async delete() {
-      // console.info('request:delete', this.id)
       if (navigator.onLine && current_user.value) {
-        const path =
-          typeof this['get_storage_path'] === 'function'
-            ? await this['get_storage_path']()
-            : await as_filename(this.id)
-        await remove(path)
+        const item_type = this.type || as_type(this.id)
+        if (item_type === 'posters') {
+          const paths = await get_poster_delete_paths(this.id)
+          console.info('[poster:delete] transaction:', paths)
+          await Promise.all(paths.map(path => remove(path)))
+        } else {
+          const path =
+            typeof this['get_storage_path'] === 'function'
+              ? await this['get_storage_path']()
+              : await as_filename(this.id)
+          await remove(path)
+        }
       } else await sync_later(this.id, 'delete')
 
       if (super.delete) super.delete()

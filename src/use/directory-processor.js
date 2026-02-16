@@ -26,8 +26,6 @@ export const use = () => {
       current_preview.value = null
       completed_poster.value = null
 
-      console.info('🗂️ Starting directory processing...')
-
       const source_dir = await /** @type {any} */ (window).showDirectoryPicker({
         mode: 'read',
         startIn: 'pictures',
@@ -35,7 +33,6 @@ export const use = () => {
       })
 
       progress.value.total = await count_image_files(source_dir.entries())
-      console.info(`📂 Found ${progress.value.total} images to process`)
 
       const posters_dir = await source_dir.getDirectoryHandle('posters', {
         create: true
@@ -45,7 +42,6 @@ export const use = () => {
         if (handle.kind !== 'file' || !is_image_file(name)) continue
 
         progress.value.current_file = name
-        console.info(`🖼️ Processing file: ${name}`)
 
         const file = await handle.getFile()
         const image_url = URL.createObjectURL(file)
@@ -103,19 +99,15 @@ export const use = () => {
           if (new_gradients.value) new_gradients.value = null
 
           progress.value.current++
-          console.info(`✅ Saved poster: ${poster_name}`)
         } catch (error) {
           console.error(`❌ Failed to process ${name}:`, error)
         } finally {
           URL.revokeObjectURL(image_url)
         }
       }
-
-      console.info('🎉 Directory processing complete!')
     } catch (error) {
       console.error('❌ Directory processing failed:', error)
     } finally {
-      // eslint-disable-next-line require-atomic-updates
       progress.value = {
         total: 0,
         current: 0,

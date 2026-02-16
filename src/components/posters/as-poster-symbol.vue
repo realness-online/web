@@ -5,7 +5,7 @@
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   import { as_layer_id } from '@/utils/itemid'
   import {
-    cutout,
+    mosaic,
     boulders,
     rocks,
     gravel,
@@ -30,27 +30,27 @@
 </script>
 
 <template>
-  <svg v-if="shown" style="display: none; content-visibility: hidden">
+  <svg v-if="shown" style="display: none; visibility: hidden">
     <defs>
       <as-symbol-shadow />
       <as-symbol
-        v-if="cutout && boulders && vector?.cutouts?.boulders"
+        v-if="mosaic && boulders && vector?.cutouts?.boulders"
         :key="as_layer_id(/** @type {Id} */ (itemid), 'boulders')"
         :itemid="as_layer_id(/** @type {Id} */ (itemid), 'boulders')" />
       <as-symbol
-        v-if="cutout && rocks && vector?.cutouts?.rocks"
+        v-if="mosaic && rocks && vector?.cutouts?.rocks"
         :key="as_layer_id(/** @type {Id} */ (itemid), 'rocks')"
         :itemid="as_layer_id(/** @type {Id} */ (itemid), 'rocks')" />
       <as-symbol
-        v-if="cutout && gravel && vector?.cutouts?.gravel"
+        v-if="mosaic && gravel && vector?.cutouts?.gravel"
         :key="as_layer_id(/** @type {Id} */ (itemid), 'gravel')"
         :itemid="as_layer_id(/** @type {Id} */ (itemid), 'gravel')" />
       <as-symbol
-        v-if="cutout && sand && vector?.cutouts?.sand"
+        v-if="mosaic && sand && vector?.cutouts?.sand"
         :key="as_layer_id(/** @type {Id} */ (itemid), 'sand')"
         :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sand')" />
       <as-symbol
-        v-if="cutout && sediment && vector?.cutouts?.sediment"
+        v-if="mosaic && sediment && vector?.cutouts?.sediment"
         :key="as_layer_id(/** @type {Id} */ (itemid), 'sediment')"
         :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sediment')" />
     </defs>

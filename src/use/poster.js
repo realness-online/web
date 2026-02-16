@@ -137,56 +137,36 @@ export const use = () => {
   }
 
   const focus = layer => {
-    console.info('focus', layer)
     get_active_path()
     emit('focus', layer)
   }
 
-  const focus_cutout = event => {
-    console.info('focus_cutout', event)
-  }
+  const focus_cutout = _event => {}
 
-  const down = event => {
-    console.info('down', event)
-  }
+  const down = _event => {}
 
-  const move = event => {
-    console.info('move', event)
-  }
+  const move = _event => {}
 
   const up = () => {
     is_dragging = false
     is_hovered.value = false
-    console.info('up', is_dragging, is_hovered.value)
   }
 
   const wheel = _event => {}
 
   const reset = () => {}
 
-  const touch_dist = touches => {
-    console.info('touch_dist', touches)
-  }
+  const touch_dist = _touches => {}
 
-  const touch_start = event => {
-    console.info('touch_start', event)
-  }
+  const touch_start = _event => {}
 
-  const touch_move = event => {
-    console.info('touch_move', event)
-  }
+  const touch_move = _event => {}
 
-  const touch_end = event => {
-    console.info('touch_end', event)
-  }
+  const touch_end = _event => {}
 
-  const cutout_start = (event, index) => {
-    console.info('cutout_start', event, index)
-  }
+  const cutout_start = (_event, _index) => {}
 
-  const cutout_end = event => {
-    console.info('cutout_end', event)
-  }
+  const cutout_end = _event => {}
 
   return {
     vector,

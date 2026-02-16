@@ -132,14 +132,12 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
     upload_successful = true
 
     await remove(old_storage_path)
-    console.info(`Moved ${old_storage_path} to ${new_storage_path}`)
     return true
   } catch (error) {
     if (upload_successful)
       try {
         await remove(new_storage_path)
         await set(old_location, html)
-        console.info(`Rolled back upload of ${new_storage_path}`)
       } catch (cleanup_error) {
         console.error(`Failed to cleanup ${new_storage_path}`, cleanup_error)
       }

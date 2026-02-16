@@ -5,8 +5,10 @@
     ref,
     watch,
     nextTick as tick,
-    inject
+    inject,
+    provide
   } from 'vue'
+  import { use_delegated_pan } from '@/use/delegated-pan'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
@@ -35,6 +37,8 @@
 
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
+  const article_ref = ref(null)
+  provide('pan_delegator', use_delegated_pan(article_ref))
 
   /**
    * @param {Id} id
@@ -45,13 +49,13 @@
     delete_dialog.value.showModal()
   }
 
-  const confirmed_remove = () => {
+  const confirmed_remove = async () => {
     delete_dialog.value.close()
     posters.value = posters.value.filter(
       item => poster_to_remove.value.id !== item.id
     )
     const poster = new Poster(poster_to_remove.value.id)
-    poster.delete()
+    await poster.delete()
   }
 
   const cancel_remove = () => delete_dialog.value.close()
@@ -167,7 +171,7 @@
       <logo-as-link tabindex="-1" />
     </header>
 
-    <article @focusin="handle_focus">
+    <article ref="article_ref" @focusin="handle_focus">
       <as-svg-processing
         v-for="item in queue_items"
         :key="item.id"

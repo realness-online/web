@@ -7,10 +7,16 @@
  * @property {Object} data.vector
  */
 
-import { ref, computed, onUnmounted as dismount, nextTick as tick } from 'vue'
+import {
+  ref,
+  computed,
+  onUnmounted as dismount,
+  inject,
+  nextTick as tick
+} from 'vue'
 import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
-import { to_kb, IMAGE } from '@/utils/numbers'
+import { IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
 import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
@@ -318,10 +324,8 @@ export const save_poster = async (id, element = null, cutouts = null) => {
 // Breaking into smaller pieces would scatter tightly coupled logic
 // eslint-disable-next-line max-lines-per-function
 export const use = () => {
-  const IMAGE_ACCEPT =
-    'image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml'
   const router = use_router()
-  const image_picker = ref(/** @type {HTMLInputElement | null} */ (null))
+  const image_picker = inject('image-picker', ref(null))
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
@@ -402,34 +406,21 @@ export const use = () => {
     workers_mounted.value = false
   }
 
-  const ensure_image_picker = () => {
-    if (image_picker.value) return image_picker.value
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = IMAGE_ACCEPT
-    input.className = 'poster picker'
-    input.style.display = 'none'
-    input.addEventListener('change', listener)
-    document.body.appendChild(input)
-    image_picker.value = input
-    return input
-  }
-
   const select_photo = () => {
-    const picker = ensure_image_picker()
-    picker.removeAttribute('capture')
-    picker.setAttribute('multiple', '')
-    picker.click()
+    if (!image_picker.value) return
+    image_picker.value.removeAttribute('capture')
+    image_picker.value.setAttribute('multiple', '')
+    image_picker.value.click()
   }
   const open_selfie_camera = () => {
-    const picker = ensure_image_picker()
-    picker.setAttribute('capture', 'user')
-    picker.click()
+    if (!image_picker.value) return
+    image_picker.value.setAttribute('capture', 'user')
+    image_picker.value.click()
   }
   const open_camera = () => {
-    const picker = ensure_image_picker()
-    picker.setAttribute('capture', 'environment')
-    picker.click()
+    if (!image_picker.value) return
+    image_picker.value.setAttribute('capture', 'environment')
+    image_picker.value.click()
   }
 
   /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
@@ -656,6 +647,10 @@ export const use = () => {
     }
   }
 
+  const v_vectorizer = {
+    mounted: input => input.addEventListener('change', listener)
+  }
+
   /**
    * @param {File|Blob} image
    * @param {string} [itemid]
@@ -760,7 +755,6 @@ export const use = () => {
    */
   const exif_logger = tags => {
     const cloned = structuredClone(tags)
-    console.info('EXIF: ', `${to_kb(cloned)}kb`, cloned)
     return cloned
   }
 
@@ -932,6 +926,7 @@ export const use = () => {
     unmount_workers()
   })
   return {
+    vVectorizer: v_vectorizer,
     can_add,
     select_photo,
     open_selfie_camera,

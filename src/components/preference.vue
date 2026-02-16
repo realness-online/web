@@ -28,8 +28,8 @@
   const apply = new_state => {
     preference.value = new_state
 
-    // Special logic: when turning cutout ON, enable all geology layers
-    if (props.name === 'cutout' && new_state) {
+    // Special logic: when turning mosaic ON, enable all geology layers
+    if (props.name === 'mosaic' && new_state) {
       preferences.boulders.value = true
       preferences.rocks.value = true
       preferences.gravel.value = true
@@ -37,8 +37,8 @@
       preferences.sediment.value = true
     }
 
-    // Special logic: when turning fill ON, enable all shadow layers
-    if (props.name === 'fill' && new_state) {
+    // Special logic: when turning shadow ON, enable all shadow layers
+    if (props.name === 'shadow' && new_state) {
       preferences.bold.value = true
       preferences.medium.value = true
       preferences.regular.value = true

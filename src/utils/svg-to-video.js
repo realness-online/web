@@ -1,5 +1,4 @@
 /** @typedef {import('@/types').Id} Id */
-import { nextTick } from 'vue'
 import {
   Output,
   MovOutputFormat,
@@ -12,11 +11,9 @@ import {
 const DEFAULT_FPS = 24
 const MAX_DURATION_SECONDS = 172
 const MS_PER_SECOND = 1000
-const PERCENTAGE_MULTIPLIER = 100
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
-const LOG_INTERVAL_FRAMES = 100
-const PROGRESS_LOG_INTERVAL = 50
+const PROGRESS_HALF = 0.5
 
 /**
  * @typedef {Object} VideoEncoderConfig
@@ -66,23 +63,9 @@ const get_animation_duration = animation_speed => {
 const setup_file_system_api = async suggested_filename => {
   const use_file_system_api = 'showSaveFilePicker' in window
 
-  if (!use_file_system_api) {
-    console.info(
-      '[Video] File System Access API not supported - using memory buffer (Blob download)'
-    )
-    return { file_handle: null, writable_stream: null }
-  }
+  if (!use_file_system_api) return { file_handle: null, writable_stream: null }
 
-  if (!suggested_filename) {
-    console.info(
-      '[Video] No suggested filename provided - using memory buffer (Blob download)'
-    )
-    return { file_handle: null, writable_stream: null }
-  }
-
-  console.info(
-    '[Video] File System Access API detected - attempting direct file write'
-  )
+  if (!suggested_filename) return { file_handle: null, writable_stream: null }
 
   try {
     const file_handle = await /** @type {any} */ (window).showSaveFilePicker({
@@ -95,16 +78,9 @@ const setup_file_system_api = async suggested_filename => {
       ]
     })
     const writable_stream = await file_handle.createWritable()
-    console.info(
-      '[Video] Using File System Access API - writing directly to disk (memory efficient)'
-    )
     return { file_handle, writable_stream }
   } catch (error) {
-    if (error.name === 'AbortError')
-      console.info(
-        '[Video] File System Access API cancelled by user - falling back to memory buffer'
-      )
-    else
+    if (error.name !== 'AbortError')
       console.warn(
         '[Video] File System Access API error, using memory buffer:',
         error
@@ -166,6 +142,65 @@ const setup_canvas_and_encoder = (
   return { canvas, ctx, output, canvas_source }
 }
 
+const parse_dur = dur_str => {
+  if (!dur_str) return 1
+  return parseFloat(String(dur_str).replace('s', '')) || 1
+}
+
+const apply_animation_state = (svg_element, current_time) => {
+  const animate_elements = svg_element.querySelectorAll('animate')
+  animate_elements.forEach(anim => {
+    const dur = parse_dur(anim.getAttribute('dur'))
+    const values_str = anim.getAttribute('values')
+    const attribute_name = anim.getAttribute('attributeName')
+    const href = anim.getAttribute('href') || anim.getAttribute('xlink:href')
+
+    if (!values_str || !attribute_name || !href) return
+
+    const target_id = href.replace(/^#/, '')
+    let target = svg_element.querySelector(`[id="${target_id}"]`)
+    if (!target && target_id.includes('-')) {
+      const parts = target_id.split('-')
+      const last = parts.pop()
+      const shadows_id = [...parts, 'shadows', last].join('-')
+      target = svg_element.querySelector(`[id="${shadows_id}"]`)
+    }
+    if (!target) return
+
+    const values = values_str.split(';').map(v => v.trim())
+    if (values.length < 2) return
+
+    const cycle_time = current_time % dur
+    const progress = Math.min(cycle_time / dur, 1)
+    const value_index = Math.min(
+      Math.floor(progress * (values.length - 1)),
+      values.length - 2
+    )
+    const next_index = value_index + 1
+    const local_progress = progress * (values.length - 1) - value_index
+
+    const current_value = values[value_index]
+    const next_value = values[next_index]
+    if (!current_value || !next_value) return
+
+    const current_num = parseFloat(current_value)
+    const next_num = parseFloat(next_value)
+    const unit = current_value.match(/%|px|em$/)?.[0] || ''
+
+    if (!isNaN(current_num) && !isNaN(next_num)) {
+      const interpolated =
+        current_num + (next_num - current_num) * local_progress
+      target.setAttribute(attribute_name, `${interpolated}${unit}`)
+    } else
+      target.setAttribute(
+        attribute_name,
+        local_progress < PROGRESS_HALF ? current_value : next_value
+      )
+  })
+
+  animate_elements.forEach(el => el.remove())
+}
+
 /**
  * Capture a single SVG frame to canvas
  * @param {SVGSVGElement} svg_element - SVG element to capture
@@ -182,11 +217,6 @@ const capture_svg_frame = async (
   canvas_height,
   current_time
 ) => {
-  svg_element.setCurrentTime(current_time)
-
-  await nextTick()
-  await nextTick()
-
   const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
   svg_clone.setAttribute('width', String(canvas_width))
   svg_clone.setAttribute('height', String(canvas_height))
@@ -202,6 +232,11 @@ const capture_svg_frame = async (
       })
     }
   }
+
+  const vue_components = svg_clone.querySelectorAll('as-animation')
+  vue_components.forEach(el => el.replaceWith(...el.children))
+
+  apply_animation_state(svg_clone, current_time)
 
   const svg_data = new XMLSerializer().serializeToString(svg_clone)
   const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
@@ -449,18 +484,8 @@ export const render_svg_to_video_blob = async (
   canvas_width = canvas_width + (canvas_width % 2)
   canvas_height = canvas_height + (canvas_height % 2)
 
-  const total_frames = Math.ceil(duration * fps)
-
-  console.info('[Video] Starting video render', {
-    duration,
-    fps,
-    total_frames,
-    canvas_width,
-    canvas_height,
-    animation_speed
-  })
-
-  const render_start = performance.now()
+  const frames_per_second = 3
+  const total_frames = Math.ceil(duration * frames_per_second)
 
   const { ctx, output, canvas_source } = setup_canvas_and_encoder(
     canvas_width,
@@ -473,12 +498,10 @@ export const render_svg_to_video_blob = async (
   await output.start()
 
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
-    const current_time = current_frame / fps
-
-    if (current_frame % LOG_INTERVAL_FRAMES === 0)
-      console.info(
-        `[Video] Capturing frame ${current_frame}, time: ${current_time.toFixed(3)}s`
-      )
+    const current_time =
+      current_frame === total_frames - 1
+        ? duration
+        : current_frame / frames_per_second
 
     // eslint-disable-next-line no-await-in-loop
     await capture_svg_frame(
@@ -495,8 +518,6 @@ export const render_svg_to_video_blob = async (
     try {
       // eslint-disable-next-line no-await-in-loop
       await canvas_source.add(timestamp, frame_duration)
-      if (current_frame % LOG_INTERVAL_FRAMES === 0)
-        console.info(`[Video] Frame ${current_frame} added successfully`)
     } catch (error) {
       console.error(`[Video] Error adding frame ${current_frame}:`, error)
       canvas_source.close()
@@ -504,42 +525,17 @@ export const render_svg_to_video_blob = async (
     }
 
     if (on_progress) on_progress(current_frame + 1, total_frames)
-
-    if (
-      current_frame % PROGRESS_LOG_INTERVAL === 0 ||
-      current_frame === total_frames - 1
-    ) {
-      const progress =
-        ((current_frame + 1) / total_frames) * PERCENTAGE_MULTIPLIER
-      console.info(
-        `[Video] Frame ${current_frame + 1}/${total_frames} (${progress.toFixed(1)}%)`
-      )
-    }
   }
-
-  console.info(`[Video] All frames captured: ${total_frames}/${total_frames}`)
 
   canvas_source.close()
 
   await output.finalize()
 
-  const total_time = performance.now() - render_start
-
-  if (writable_stream && file_handle) {
-    console.info(
-      `[Video] Video saved directly to file via File System Access API in ${total_time.toFixed(0)}ms (memory efficient)`
-    )
-    return null
-  }
+  if (writable_stream && file_handle) return null
 
   const buffer_target = /** @type {BufferTarget} */ (output.target)
   if (!buffer_target.buffer) throw new Error('Output buffer is null')
   const blob = new Blob([buffer_target.buffer], { type: 'video/quicktime' })
-
-  const bytes_per_mb = BYTES_PER_KB * BYTES_PER_KB
-  console.info(
-    `[Video] Video render complete: ${(blob.size / bytes_per_mb).toFixed(2)}MB blob created in ${total_time.toFixed(0)}ms (using memory buffer)`
-  )
 
   return blob
 }

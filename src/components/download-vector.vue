@@ -8,6 +8,11 @@
     render_svg_layers_to_psd,
     extract_all_layers
   } from '@/utils/svg-to-psd'
+  import {
+    render_svg_to_video_blob,
+    download_video
+  } from '@/utils/svg-to-video'
+  import { animation_speed } from '@/utils/preference'
   import icon from '@/components/icon'
   import {
     ref,
@@ -34,6 +39,9 @@
   const menu_ref = ref(null)
   const button_ref = ref(null)
   const set_working = inject('set_working')
+  const video_exporting = ref(false)
+  const video_progress = ref(0)
+  const video_total = ref(0)
 
   const normalize_ids_for_download = svg => {
     const id_map = new Map()
@@ -231,6 +239,19 @@
     return facts
   }
 
+  const get_video_name = async () => {
+    const info = props.itemid.split('/')
+    const author_id = `/${info[1]}`
+    const time = as_day_and_time(Number(info[3]))
+    const creator = await load(author_id)
+    const facts = `${time}.mov`
+    if (creator?.name) {
+      const safe_name = creator.name.replace(/\s+/g, '_')
+      return `${safe_name}_${facts}`
+    }
+    return facts
+  }
+
   const toggle_menu = event => {
     event.preventDefault()
     event.stopPropagation()
@@ -242,6 +263,7 @@
   }
 
   const handle_click_outside = event => {
+    if (video_exporting.value) return
     if (
       menu_open.value &&
       menu_ref.value &&
@@ -260,41 +282,22 @@
   }
 
   const download_psd = async (svg_element, filename, buffer) => {
-    console.info('[PSD Download] Starting', { has_buffer: !!buffer, filename })
-
     const is_ios = is_ios_safari()
-    console.info('[PSD Download] Platform detection', {
-      is_ios_safari: is_ios,
-      user_agent: navigator.userAgent,
-      platform: navigator.platform
-    })
 
     let psd_buffer = buffer
     let psd_filename = filename
 
     if (!psd_buffer) {
-      console.info('[PSD Download] Generating PSD buffer...')
       set_working(true)
-      const start_time = performance.now()
 
       try {
         psd_filename = filename || (await get_psd_name())
-        console.info('[PSD Download] Filename resolved', { psd_filename })
-
-        console.info('[PSD Download] Calling render_svg_layers_to_psd...')
         const target_width = is_ios_safari() ? null : undefined
         psd_buffer = await render_svg_layers_to_psd(
           svg_element,
           props.itemid,
           target_width
         )
-
-        const generation_time = performance.now() - start_time
-        console.info('[PSD Download] PSD generation complete', {
-          buffer_size: psd_buffer.length,
-          buffer_type: psd_buffer.constructor.name,
-          generation_time_ms: Math.round(generation_time)
-        })
       } catch (error) {
         console.error('[PSD Download] PSD generation failed:', error)
         console.error('[PSD Download] Error stack:', error.stack)
@@ -302,47 +305,21 @@
         return
       }
       set_working(false)
-    } else
-      console.info('[PSD Download] Using provided buffer', {
-        buffer_size: psd_buffer.length
-      })
+    }
 
-    console.info('[PSD Download] Creating blob...')
     const blob = new Blob([psd_buffer], { type: 'image/vnd.adobe.photoshop' })
-    const BYTES_PER_KB = 1024
-    const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
-    console.info('[PSD Download] Blob created', {
-      blob_size: blob.size,
-      blob_type: blob.type,
-      blob_size_mb: (blob.size / BYTES_PER_MB).toFixed(2)
-    })
 
     const url = URL.createObjectURL(blob)
-    const URL_PREVIEW_LENGTH = 50
-    console.info('[PSD Download] Object URL created', {
-      url: `${url.substring(0, URL_PREVIEW_LENGTH)}...`
-    })
 
     if (is_ios) {
-      console.info('[PSD Download] Using iOS Safari download method')
-
-      console.info('[PSD Download] Attempting window.open first...')
       try {
         const new_window = window.open(url, '_blank')
-        console.info('[PSD Download] window.open result', {
-          new_window: !!new_window,
-          window_closed: new_window?.closed
-        })
 
-        if (new_window) {
-          console.info('[PSD Download] New window opened')
-          return
-        }
+        if (new_window) return
       } catch (error) {
         console.error('[PSD Download] window.open failed:', error)
       }
 
-      console.info('[PSD Download] Falling back to visible download link')
       const a = document.createElement('a')
       a.href = url
       a.download = psd_filename
@@ -367,49 +344,26 @@
       a.id = 'ios-psd-download-link'
 
       document.body.appendChild(a)
-      const HREF_PREVIEW_LENGTH = 50
-      console.info('[PSD Download] Visible anchor element created', {
-        href: `${a.href.substring(0, HREF_PREVIEW_LENGTH)}...`,
-        download: a.download,
-        target: a.target
-      })
-
-      a.addEventListener('click', () => {
-        console.info('[PSD Download] User tapped download link')
-      })
 
       try {
-        console.info(
-          '[PSD Download] Attempting programmatic click on visible link...'
-        )
         a.click()
-        console.info('[PSD Download] Programmatic click dispatched')
       } catch (error) {
         console.error('[PSD Download] Programmatic click failed:', error)
       }
     } else {
-      console.info('[PSD Download] Using standard download method')
       const a = document.createElement('a')
       a.href = url
       a.download = psd_filename
       document.body.appendChild(a)
 
-      const ANCHOR_HREF_PREVIEW_LENGTH = 50
-      console.info('[PSD Download] Anchor element created', {
-        href: `${a.href.substring(0, ANCHOR_HREF_PREVIEW_LENGTH)}...`,
-        download: a.download
-      })
-
       try {
         a.click()
-        console.info('[PSD Download] Download triggered')
       } catch (error) {
         console.error('[PSD Download] Standard download failed:', error)
       }
 
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      console.info('[PSD Download] Download complete')
     }
   }
 
@@ -417,8 +371,6 @@
     event.preventDefault()
     event.stopPropagation()
     close_menu()
-
-    console.info('[PSD Download] Handler called', { itemid: props.itemid })
 
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) {
@@ -428,13 +380,60 @@
       return
     }
 
-    console.info('[PSD Download] SVG found', {
-      viewbox: svg.viewBox.baseVal.toString(),
-      width: svg.width.baseVal.value,
-      height: svg.height.baseVal.value
-    })
-
     await download_psd(svg)
+  }
+
+  const download_video_handler = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    const figure = svg.closest('figure.poster')
+    if (!figure) return
+
+    const rect = figure.getBoundingClientRect()
+    const aspect_ratio = rect.width / rect.height
+    const target_smallest_side = 1080
+    const video_width =
+      aspect_ratio >= 1
+        ? Math.round(target_smallest_side * aspect_ratio)
+        : target_smallest_side
+    const video_height =
+      aspect_ratio >= 1
+        ? target_smallest_side
+        : Math.round(target_smallest_side / aspect_ratio)
+
+    video_exporting.value = true
+    video_progress.value = 0
+    video_total.value = 0
+    set_working(true)
+    svg.unpauseAnimations()
+
+    try {
+      const video_filename = await get_video_name()
+      const blob = await render_svg_to_video_blob(svg, {
+        fps: 24,
+        animation_speed: animation_speed.value,
+        width: video_width,
+        height: video_height,
+        suggested_filename: video_filename,
+        on_progress: (frame, total) => {
+          video_progress.value = frame
+          video_total.value = total
+        }
+      })
+      download_video(blob, video_filename)
+    } catch (error) {
+      console.error('Failed to render video:', error)
+    } finally {
+      video_exporting.value = false
+      video_progress.value = 0
+      video_total.value = 0
+      set_working(false)
+      close_menu()
+    }
   }
 
   const render_complete_poster_to_canvas = async (
@@ -637,8 +636,14 @@
       <icon name="download" />
     </a>
     <menu v-if="menu_open" ref="menu_ref">
-      <a @click="download_svg_handler" title="Download SVG">SVG</a>
       <a
+        v-if="!video_exporting"
+        @click="download_svg_handler"
+        title="Download SVG">
+        SVG
+      </a>
+      <a
+        v-if="!video_exporting"
         @click="download_png_handler"
         title="Download PNG"
         aria-label="Download full poster as PNG">
@@ -646,11 +651,22 @@
         PNG
       </a>
       <a
+        v-if="!video_exporting"
         @click="download_psd_handler"
         title="Download PSD"
         aria-label="Download PSD">
         PSD
       </a>
+      <a
+        v-if="!video_exporting"
+        @click="download_video_handler"
+        title="Download video"
+        aria-label="Download animated video">
+        Video
+      </a>
+      <span v-else class="video-progress">
+        {{ video_progress }}/{{ video_total }} frames
+      </span>
     </menu>
   </nav>
 </template>
@@ -665,14 +681,13 @@
 
     menu {
       position: absolute;
-      top: 0;
-      left: 100%;
-      margin-left: base-line * 0.25;
+      bottom: 100%;
+      left: 0;
+      margin-bottom: base-line * 0.25;
       max-width: min(calc(100vw - base-line * 4), base-line * 15);
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       font-size: larger;
-      flex-direction: row;
       gap: base-line * 0.25;
       padding: base-line * 0.25;
       background: black-transparent;
@@ -702,6 +717,11 @@
           pointer-events: auto;
           z-index: 1;
         }
+      }
+
+      .video-progress {
+        padding: base-line * 0.25 base-line * 0.5;
+        opacity: 0.9;
       }
     }
   }

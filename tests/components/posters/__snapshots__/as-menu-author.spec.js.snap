@@ -9,11 +9,11 @@ exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a po
       name="remove"
     />
   </a>
-  <as-button-stub
-    itemid="/+14151234356/posters/1737178477987"
-  />
   <!--v-if-->
   <download-vector-stub
+    itemid="/+14151234356/posters/1737178477987"
+  />
+  <as-button-stub
     itemid="/+14151234356/posters/1737178477987"
   />
 </menu>

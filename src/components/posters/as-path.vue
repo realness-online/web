@@ -9,7 +9,10 @@
   } from 'vue'
   import { is_path } from '@/use/path'
   import { is_vector_id } from '@/use/poster'
-  import { stroke as stroke_pref, fill as fill_pref } from '@/utils/preference'
+  import {
+    stroke as stroke_pref,
+    shadow as shadow_pref
+  } from '@/utils/preference'
   const props = defineProps({
     itemprop: {
       type: String,
@@ -57,7 +60,7 @@
   })
   const show_fill = computed(() => {
     if (new_poster.value) return true
-    return fill_pref.value
+    return shadow_pref.value
   })
   const path = ref(null)
   const fill = ref(undefined)

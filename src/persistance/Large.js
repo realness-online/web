@@ -53,10 +53,7 @@ export const Large = superclass =>
     }
 
     async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      if (!items) {
-        console.info(`Unable to find ${this.id}`)
-        return
-      }
+      if (!items) return
       await set(this.id, items.outerHTML)
       const path = as_directory_id(this.id)
       const directory = await get(path)
@@ -80,6 +77,7 @@ export const Large = superclass =>
       if (super.save) await super.save(items)
     }
     async delete() {
+      await super.delete()
       const path = as_directory_id(this.id)
       const directory = await get(path)
       await del(this.id)
@@ -89,6 +87,5 @@ export const Large = superclass =>
         )
         await set(path, directory)
       }
-      if (super.delete) await super.delete()
     }
   }

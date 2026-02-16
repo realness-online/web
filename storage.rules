@@ -3,7 +3,9 @@ service firebase.storage {
   match /b/{bucket}/o {
     match /people/{mobile}/{all_files=**} {
       allow read: if mobile == '+16282281824';
-      allow read: if request.auth != null;
+      allow read: if request.auth != null
+        && (request.auth.token.phone_number == mobile
+          || !all_files.matches('relations/.*'));
       allow write, delete: if request.auth.token.phone_number == mobile;
     }
   }

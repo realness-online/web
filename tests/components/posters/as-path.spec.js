@@ -22,7 +22,7 @@ vi.mock('@/use/poster', () => ({
 // Mock preferences
 vi.mock('@/utils/preference', () => ({
   stroke: { value: '#000000' },
-  fill: { value: '#ffffff' }
+  shadow: { value: '#ffffff' }
 }))
 
 describe('@/components/posters/as-path.vue', () => {

@@ -207,25 +207,20 @@ describe('@/persistance/Cloud', () => {
   })
 
   describe('delete method', () => {
-    it('deletes from network when online', async () => {
+    it('deletes poster and all component files from network when online', async () => {
       await cloud_instance.delete()
 
-      expect(remove).toHaveBeenCalledWith(
-        'people/+1234567890/posters/1234567890.html.gz'
-      )
-    })
-
-    it('uses get_storage_path when available', async () => {
-      cloud_instance.get_storage_path = vi.fn(() =>
-        Promise.resolve('people/+1234567890/posters/1234567890.html.gz')
-      )
-
-      await cloud_instance.delete()
-
-      expect(cloud_instance.get_storage_path).toHaveBeenCalled()
-      expect(remove).toHaveBeenCalledWith(
-        'people/+1234567890/posters/1234567890.html.gz'
-      )
+      const expected_paths = [
+        'people/+1234567890/posters/1234567890.html.gz',
+        'people/+1234567890/posters/1234567890-shadows.html.gz',
+        'people/+1234567890/posters/1234567890-sediment.html.gz',
+        'people/+1234567890/posters/1234567890-sand.html.gz',
+        'people/+1234567890/posters/1234567890-gravel.html.gz',
+        'people/+1234567890/posters/1234567890-rocks.html.gz',
+        'people/+1234567890/posters/1234567890-boulders.html.gz'
+      ]
+      expect(remove).toHaveBeenCalledTimes(7)
+      expected_paths.forEach(path => expect(remove).toHaveBeenCalledWith(path))
     })
 
     it('queues for later when offline', async () => {

@@ -6,9 +6,9 @@ export const drama_back = storage('drama_back', false)
 export const drama_front = storage('drama_front', false)
 export const slice = storage('slice', false)
 
-export const fill = storage('fill', true)
+export const shadow = storage('shadow', true)
 export const stroke = storage('stroke', false)
-export const cutout = storage('cutout', true)
+export const mosaic = storage('mosaic', true)
 
 export const bold = storage('bold', true)
 export const medium = storage('medium', true)

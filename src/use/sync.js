@@ -21,7 +21,6 @@ import {
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statement'
 import { current_user, location, metadata } from '@/utils/serverless'
-import { format_time_remaining } from '@/utils/date'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex } from '@/utils/algorithms'
 import {
@@ -257,7 +256,6 @@ export const sync_offline_actions = async () => {
           if (html) await new Relation().save({ outerHTML: html })
         } else await new Offline(item.id).save()
       else if (item.action === 'delete') await new Offline(item.id).delete()
-      else console.info('weird:unknown-offline-action', item.action, item.id)
     }
     /* eslint-enable no-await-in-loop */
     await del('sync:offline')
@@ -323,8 +321,6 @@ export const i_am_fresh = () => {
   }
   const time_left = JS_TIME.EIGHT_HOURS - synced
   const am_i_fresh = time_left > 0
-  if (am_i_fresh)
-    console.info('i_am_fresh for', format_time_remaining(time_left))
   return am_i_fresh
 }
 
