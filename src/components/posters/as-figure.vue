@@ -115,17 +115,18 @@
 
     if (!vector.value.cutouts) {
       vector.value.cutouts = {}
-      const cutout_promises = geology_layers.map(async layer => {
-        const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
-        const html_string = await get(layer_id)
-        if (html_string) {
-          vector.value.cutouts[layer] = true
-          return
-        }
-        const { html } = await load_from_cache(layer_id)
-        if (html) vector.value.cutouts[layer] = true
-      })
-      Promise.all(cutout_promises)
+      await Promise.all(
+        geology_layers.map(async layer => {
+          const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
+          const html_string = await get(layer_id)
+          if (html_string) vector.value.cutouts[layer] = true
+          else {
+            const { html } = await load_from_cache(layer_id)
+            if (html) vector.value.cutouts[layer] = true
+          }
+          await tick()
+        })
+      )
     }
   }
 
@@ -200,6 +201,8 @@
   figure.poster {
     position: relative;
     min-height: 512px;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 512px;
     border-radius: round((base-line * .03), 2);
     grid-row-start: span 2;
     scroll-margin: 50vh;

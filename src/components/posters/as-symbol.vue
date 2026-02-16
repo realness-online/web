@@ -1,6 +1,6 @@
 <script setup>
   /* eslint-disable vue/no-v-html */
-  import { ref, onMounted as mounted, watch } from 'vue'
+  import { ref, shallowRef, onMounted as mounted, watch } from 'vue'
   import { load_from_cache } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -13,7 +13,7 @@
   })
 
   const element = ref(null)
-  const symbol_content = ref('')
+  const symbol_content = shallowRef('')
   const symbol_id = ref('')
   const symbol_viewbox = ref('')
 
@@ -36,7 +36,13 @@
   }
 
   mounted(load_symbol)
-  watch(() => props.itemid, load_symbol)
+  watch(
+    () => props.itemid,
+    () => {
+      symbol_content.value = ''
+      load_symbol()
+    }
+  )
 </script>
 
 <template>

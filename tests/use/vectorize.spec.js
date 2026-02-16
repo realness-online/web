@@ -1,25 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ref, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
-
-const image_picker_ref = ref({
-  files: [],
-  value: '',
-  click: vi.fn(),
-  setAttribute: vi.fn(),
-  removeAttribute: vi.fn()
-})
-
-vi.mock('vue', async importOriginal => {
-  const actual = await importOriginal()
-  return {
-    ...actual,
-    inject: vi.fn((key, defaultValue) => {
-      if (key === 'image-picker') return image_picker_ref
-      return defaultValue
-    })
-  }
-})
 
 import {
   use,
@@ -246,14 +227,6 @@ describe('vectorize composable', () => {
     const Queue = await import('@/persistance/Queue')
     Queue.get_all.mockResolvedValue([])
     Queue.get_next.mockResolvedValue(null)
-
-    image_picker_ref.value = {
-      files: [],
-      value: '',
-      click: vi.fn(),
-      setAttribute: vi.fn(),
-      removeAttribute: vi.fn()
-    }
 
     const result = with_setup(() => use())
     vectorize_instance = result.instance

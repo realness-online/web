@@ -1,11 +1,11 @@
 <script setup>
   import Icon from '@/components/icon'
   import StatementAsTextarea from '@/components/statements/as-textarea'
-  import { ref, inject } from 'vue'
+  import { inject } from 'vue'
   import AccountDialog from '@/components/profile/as-dialog-account'
+  import { posting } from '@/use/posting'
 
   const open_camera = inject('open_camera')
-  const posting = ref(false)
   const toggle_keyboard = () => {
     posting.value = !posting.value
   }
@@ -14,8 +14,10 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
-      <account-dialog />
-      <router-link id="about" to="/about" tabindex="-1">?</router-link>
+      <account-dialog v-if="!posting" />
+      <router-link v-if="!posting" id="about" to="/about" tabindex="-1"
+        >?</router-link
+      >
     </header>
     <nav>
       <router-link v-if="!posting" to="/thoughts" class="black" tabindex="-1">
@@ -54,7 +56,13 @@
 <style lang="stylus">
 
   section#navigation.page {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
     user-select: none;
+    min-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -84,9 +92,13 @@
         position: fixed;
         top: inset(top,  base-line);
         right: base-line;
+        font-weight:bold;
+        font-size: base-line * 1.44;
+        padding: base-line * 0.5;
+        -webkit-user-select: none;
+        user-select: none;
       }
     }
-    &:focus-within > header > a#about,
     &:focus-within > header > a#toggle-account {
       opacity: 0;
       visibility: hidden;
@@ -155,6 +167,10 @@
             color: #fff;
           }
         }
+      }
+      & > textarea {
+        -webkit-user-select: text;
+        user-select: text;
       }
       & > a {
         @media (prefers-color-scheme: light) {

@@ -5,6 +5,9 @@ exports[`@/components/sync > Render > Renders sync component 1`] = `
   hidden=""
 >
   <!--v-if-->
+  <as-meta-stub
+    people=""
+  />
   <as-days-stub
     events=""
     itemid="/+16282281824/statements"
