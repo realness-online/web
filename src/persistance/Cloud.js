@@ -15,6 +15,7 @@ import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = [
   'person',
+  'relations',
   'statements',
   'posters',
   'events',

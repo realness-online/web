@@ -7,13 +7,7 @@
  * @property {Object} data.vector
  */
 
-import {
-  ref,
-  computed,
-  onUnmounted as dismount,
-  inject,
-  nextTick as tick
-} from 'vue'
+import { ref, computed, onUnmounted as dismount, nextTick as tick } from 'vue'
 import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
 import { to_kb, IMAGE } from '@/utils/numbers'
@@ -324,8 +318,10 @@ export const save_poster = async (id, element = null, cutouts = null) => {
 // Breaking into smaller pieces would scatter tightly coupled logic
 // eslint-disable-next-line max-lines-per-function
 export const use = () => {
+  const IMAGE_ACCEPT =
+    'image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml'
   const router = use_router()
-  const image_picker = inject('image-picker', ref(null))
+  const image_picker = ref(/** @type {HTMLInputElement | null} */ (null))
   const working = ref(false)
   const vectorizer = ref(null)
   const gradienter = ref(null)
@@ -406,18 +402,34 @@ export const use = () => {
     workers_mounted.value = false
   }
 
+  const ensure_image_picker = () => {
+    if (image_picker.value) return image_picker.value
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = IMAGE_ACCEPT
+    input.className = 'poster picker'
+    input.style.display = 'none'
+    input.addEventListener('change', listener)
+    document.body.appendChild(input)
+    image_picker.value = input
+    return input
+  }
+
   const select_photo = () => {
-    image_picker.value.removeAttribute('capture')
-    image_picker.value.setAttribute('multiple', '')
-    image_picker.value.click()
+    const picker = ensure_image_picker()
+    picker.removeAttribute('capture')
+    picker.setAttribute('multiple', '')
+    picker.click()
   }
   const open_selfie_camera = () => {
-    image_picker.value.setAttribute('capture', 'user')
-    image_picker.value.click()
+    const picker = ensure_image_picker()
+    picker.setAttribute('capture', 'user')
+    picker.click()
   }
   const open_camera = () => {
-    image_picker.value.setAttribute('capture', 'environment')
-    image_picker.value.click()
+    const picker = ensure_image_picker()
+    picker.setAttribute('capture', 'environment')
+    picker.click()
   }
 
   /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
@@ -618,6 +630,10 @@ export const use = () => {
   const listener = async () => {
     if (!image_picker.value?.files) return
     const files = Array.from(image_picker.value.files)
+    if (image_picker.value) {
+      image_picker.value.removeAttribute('capture')
+      image_picker.value.removeAttribute('multiple')
+    }
     if (files.length === 0) return
 
     const image_files = files.filter(file =>
@@ -637,15 +653,6 @@ export const use = () => {
       await add_to_queue(image_files)
       router.push('/posters')
       if (image_picker.value) image_picker.value.value = ''
-    }
-  }
-
-  const vVectorizer = {
-    /**
-     * @param {Object} input
-     */
-    mounted: input => {
-      input.addEventListener('change', listener)
     }
   }
 
@@ -930,7 +937,6 @@ export const use = () => {
     open_selfie_camera,
     open_camera,
     image_picker,
-    vVectorizer,
     vectorize,
     vectorizer,
     gradienter,

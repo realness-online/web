@@ -177,7 +177,7 @@ The sign-on process uses phone number authentication with name setup for new use
 
 The relations view shows a list of people you follow with quick access back to the [phonebook](#phonebook). Each relation gets a profile card, and you can navigate directly to individual [profiles](#profile) from here.
 
-Relations are stored locally with no server-side friend suggestions. You control your network completely, and everything works offline.
+Relations sync across your devices. You control your network completely.
 
 ---
 

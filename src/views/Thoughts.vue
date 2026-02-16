@@ -103,9 +103,17 @@
     display: flex;
     flex-direction: column;
     @media (max-width: pad-begins) {
-      & > figure.poster {
-        margin-left: -(base-line);
-        margin-right: -(base-line);
+      & > section.as-days {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      & > section.as-days article.day > header {
+        padding-left: base-line;
+        padding-right: base-line;
+      }
+      & > section.as-days article.thought {
+        padding-left: base-line;
+        padding-right: base-line;
       }
     }
     & > header {

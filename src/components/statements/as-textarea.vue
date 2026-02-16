@@ -16,10 +16,7 @@
     textarea.focus()
     await tick()
     setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       textarea.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
@@ -56,7 +53,6 @@
   const { register } = use_keymap('Statement')
   register('statement::Save', () => prepare_statement())
   register('statement::New_Line', () => {
-    // Add new line to textarea
     const textarea = document.querySelector('textarea#wat')
     if (textarea) {
       const start = textarea.selectionStart
@@ -148,11 +144,14 @@
       display: block;
     }
     &.posting textarea#wat {
+      position: fixed;
+      top: inset(top, base-line * 3);
+      right: inset(right, base-line);
+      bottom: inset(bottom, base-line * 4);
+      left: inset(left, base-line);
       font-size: 1.25em;
       font-weight: normal;
       padding: 0;
-      grid-column: 1 / span 2;
-      grid-row: 1 / span 3;
       text-align: left;
       border-top: none;
       border-radius: 0;

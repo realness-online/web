@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import Navigation from '@/views/Navigation'
+import { posting } from '@/use/posting'
 
-// Mock the composable
 const mock_open_camera = vi.fn()
 vi.mock('@/use/vectorize', () => ({
   use: () => ({
@@ -10,24 +10,56 @@ vi.mock('@/use/vectorize', () => ({
   })
 }))
 
+vi.mock('@/use/statement', () => ({
+  use: () => ({
+    save: vi.fn()
+  })
+}))
+
+vi.mock('@/use/key-commands', () => ({
+  use_keymap: () => ({
+    register: vi.fn()
+  })
+}))
+
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ hash: '', path: '/', params: {}, query: {} }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() })
+}))
+
+Object.defineProperty(document, 'querySelector', {
+  value: vi.fn(() => ({
+    focus: vi.fn(),
+    scrollIntoView: vi.fn(),
+    style: {},
+    value: '',
+    selectionStart: 0,
+    selectionEnd: 0
+  })),
+  writable: true
+})
+
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true
+})
+
 describe('@/views/Navigation', () => {
   let wrapper
 
   beforeEach(() => {
     vi.clearAllMocks()
-    wrapper = shallowMount(Navigation, {
+    posting.value = false
+    wrapper = mount(Navigation, {
       global: {
         provide: {
           open_camera: mock_open_camera
         },
         stubs: {
           'router-link': true,
-          icon: true,
-          'statement-as-textarea': {
-            template:
-              '<textarea id="wat" class="black" placeholder="✏️"></textarea><button id="done"></button>',
-            emits: ['toggle-keyboard']
-          }
+          'account-dialog': { template: '<span></span>' },
+          'as-dialog-account': { template: '<span></span>' },
+          icon: true
         }
       }
     })
@@ -80,7 +112,7 @@ describe('@/views/Navigation', () => {
     })
 
     it('renders statement textarea component', () => {
-      const textarea = wrapper.find('as-textarea-stub')
+      const textarea = wrapper.find('textarea#wat')
       expect(textarea.exists()).toBe(true)
     })
 
@@ -93,56 +125,53 @@ describe('@/views/Navigation', () => {
 
   describe('Posting State', () => {
     it('shows posting class when posting is true', async () => {
-      wrapper.vm.posting = true
+      posting.value = true
       await wrapper.vm.$nextTick()
       expect(wrapper.find('#navigation').classes()).toContain('posting')
     })
 
     it('hides posting class when posting is false', async () => {
-      wrapper.vm.posting = false
+      posting.value = false
       await wrapper.vm.$nextTick()
       expect(wrapper.find('#navigation').classes()).not.toContain('posting')
     })
 
     it('hides router links when posting', async () => {
-      // First check links exist when not posting
       const initial_links_count = wrapper.findAll('router-link-stub').length
       expect(initial_links_count).toBeGreaterThan(0)
 
-      // Set posting to true
-      wrapper.vm.posting = true
+      posting.value = true
       await wrapper.vm.$nextTick()
 
-      // Most links should be hidden when posting (v-if="!posting"), but about link remains
       const router_links = wrapper.findAll('router-link-stub')
-      expect(router_links.length).toBe(1) // Only the about link
-      expect(router_links[0].attributes('id')).toBe('about')
+      expect(router_links.length).toBe(0)
     })
 
     it('hides footer when posting', async () => {
-      wrapper.vm.posting = true
+      posting.value = true
       await wrapper.vm.$nextTick()
       const footer = wrapper.find('footer')
-      expect(footer.exists()).toBe(false) // Footer should be hidden when posting
+      expect(footer.exists()).toBe(false)
     })
   })
 
   describe('Toggle Keyboard Functionality', () => {
     it('toggles posting state', async () => {
-      expect(wrapper.vm.posting).toBe(false)
+      expect(posting.value).toBe(false)
 
       await wrapper.vm.toggle_keyboard()
-      expect(wrapper.vm.posting).toBe(true)
+      expect(posting.value).toBe(true)
 
       await wrapper.vm.toggle_keyboard()
-      expect(wrapper.vm.posting).toBe(false)
+      expect(posting.value).toBe(false)
     })
 
     it('handles toggle-keyboard event from textarea', async () => {
-      const textarea = wrapper.find('as-textarea-stub')
-      await textarea.trigger('toggle-keyboard')
+      const textarea = wrapper.find('textarea#wat')
+      await textarea.trigger('focusin')
+      await wrapper.vm.$nextTick()
 
-      expect(wrapper.vm.posting).toBe(true)
+      expect(posting.value).toBe(true)
     })
   })
 

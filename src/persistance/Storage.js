@@ -91,7 +91,7 @@ export class Me extends Cloud(Local(Storage)) {
 }
 
 /** @extends {Storage} */
-export class Relation extends Local(Storage) {
+export class Relation extends Cloud(Local(Storage)) {
   constructor() {
     super(/** @type {Id} */ (`${localStorage.me}/relations`))
   }

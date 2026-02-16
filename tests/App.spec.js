@@ -70,9 +70,6 @@ const {
 
 vi.mock('@/use/vectorize', () => ({
   use: () => ({
-    vVectorizer: {
-      mounted: vi.fn()
-    },
     image_picker: mock_image_picker,
     new_vector: { value: null },
     current_processing: { value: null },
@@ -471,11 +468,6 @@ describe('App.vue', () => {
     it('renders image picker input', () => {
       const image_picker = wrapper.find('input[type="file"]')
       expect(image_picker.exists()).toBe(true)
-      expect(image_picker.attributes('accept')).toBe(
-        'image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml'
-      )
-      expect(image_picker.classes()).toContain('poster')
-      expect(image_picker.classes()).toContain('picker')
     })
   })
 

@@ -156,18 +156,19 @@
 
   const orientation_portrait = useMediaQuery('(orientation: portrait)')
   const can_pan = computed(
-    () =>
-      orientation_portrait.value &&
-      landscape.value &&
-      !use_meet.value &&
-      !storytelling.value
+    () => orientation_portrait.value && !use_meet.value && !storytelling.value
   )
   const pan_offset = ref(0)
+  const panning = ref(false)
   const touch_start_x = ref(0)
   const touch_start_y = ref(0)
   const pan_start_offset = ref(0)
   const gesture_is_pan = ref(false)
   const gesture_decided = ref(false)
+  const RUBBER_RESISTANCE = 0.25
+  const MAX_OVERFLOW_PX = 80
+  const EDGE_ZONE_PX = 32
+  const touch_in_edge_zone = ref(false)
 
   const max_pan_px = computed(() => {
     if (!can_pan.value || !trigger.value || !vector.value) return 0
@@ -184,17 +185,22 @@
     return Math.max(0, overflow / 2)
   })
 
-  const pan_style = computed(() =>
-    can_pan.value ? { transform: `translateX(${pan_offset.value}px)` } : {}
-  )
+  const pan_style = computed(() => {
+    if (!can_pan.value) return {}
+    const transform = `translateX(${pan_offset.value}px)`
+    const transition = panning.value ? 'none' : 'transform 0.25s ease-out'
+    return { transform, transition }
+  })
 
   const GESTURE_THRESHOLD = 8
 
   const on_touch_start = event => {
     if (!can_pan.value || !event.touches.length) return
+    panning.value = true
     const [touch] = event.touches
     touch_start_x.value = touch.clientX
     touch_start_y.value = touch.clientY
+    touch_in_edge_zone.value = touch.clientX < EDGE_ZONE_PX
     pan_start_offset.value = pan_offset.value
     gesture_decided.value = false
     gesture_is_pan.value = false
@@ -210,19 +216,37 @@
       const abs_y = Math.abs(delta_y)
       if (abs_x > GESTURE_THRESHOLD || abs_y > GESTURE_THRESHOLD) {
         gesture_decided.value = true
-        gesture_is_pan.value = abs_x > abs_y
+        gesture_is_pan.value = !touch_in_edge_zone.value && abs_x > abs_y
       }
     }
     if (!gesture_is_pan.value) return
     event.preventDefault()
     const raw = pan_start_offset.value + delta_x
-    pan_offset.value = Math.max(
-      -max_pan_px.value,
-      Math.min(max_pan_px.value, raw)
-    )
+    const max = max_pan_px.value
+    let value
+    if (raw > max) {
+      const overflow = Math.min(
+        (raw - max) * RUBBER_RESISTANCE,
+        MAX_OVERFLOW_PX
+      )
+      value = max + overflow
+    } else if (raw < -max) {
+      const overflow = Math.min(
+        (-max - raw) * RUBBER_RESISTANCE,
+        MAX_OVERFLOW_PX
+      )
+      value = -max - overflow
+    } else value = raw
+
+    pan_offset.value = value
   }
 
   const on_touch_end = () => {
+    panning.value = false
+    if (gesture_is_pan.value) {
+      const max = max_pan_px.value
+      pan_offset.value = Math.max(-max, Math.min(max, pan_offset.value))
+    }
     gesture_decided.value = false
     gesture_is_pan.value = false
   }

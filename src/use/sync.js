@@ -1,8 +1,23 @@
 /** @typedef {import('@/types').Id} Id */
 import { get, del, set, keys } from 'idb-keyval'
-import { as_filename, as_author, load, is_itemid } from '@/utils/itemid'
+import {
+  as_filename,
+  as_author,
+  load,
+  load_from_network,
+  type_as_list,
+  is_itemid
+} from '@/utils/itemid'
+import { get_item } from '@/utils/item'
 import { build_local_directory } from '@/persistance/Directory'
-import { Offline, Statement, Event, Poster, Me } from '@/persistance/Storage'
+import {
+  Offline,
+  Relation,
+  Statement,
+  Event,
+  Poster,
+  Me
+} from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statement'
 import { current_user, location, metadata } from '@/utils/serverless'
@@ -47,6 +62,7 @@ export const use = () => {
       localStorage.sync_time = new Date().toISOString()
       await prune()
       await sync_me()
+      await sync_relations()
       await sync_statements()
       await sync_events()
       await sync_posters_directory()
@@ -137,6 +153,47 @@ export const use = () => {
   /**
    * @returns {Promise<void>}
    */
+  const sync_relations = async () => {
+    const itemid = get_my_itemid('relations')
+    await fresh_metadata(itemid)
+    const index_hash = await get_index_hash(itemid)
+    let local_html = localStorage.getItem(itemid)
+    if (!local_html) local_html = await get(itemid)
+    const local_hash = local_html ? await create_hash(local_html) : null
+
+    if (local_html && !index_hash) {
+      const local_item = get_item(local_html, itemid)
+      if (local_item) {
+        relations.value = type_as_list(local_item)
+        await tick()
+        const elements = sync_element.value?.querySelector(
+          `[itemid="${itemid}"]`
+        )
+        if (elements) await new Relation().save(elements)
+      }
+      return
+    }
+
+    if (!index_hash) return
+
+    if (local_hash !== index_hash) {
+      localStorage.removeItem(itemid)
+      await del(itemid)
+      const cloud_item = await load_from_network(itemid)
+      if (cloud_item) {
+        relations.value = type_as_list(cloud_item)
+        await tick()
+        const elements = sync_element.value?.querySelector(
+          `[itemid="${itemid}"]`
+        )
+        if (elements) await new Relation().save(elements)
+      }
+    }
+  }
+
+  /**
+   * @returns {Promise<void>}
+   */
   const sync_events = async () => {
     const event_storage = new Event()
     const itemid = get_my_itemid('events')
@@ -158,9 +215,8 @@ export const use = () => {
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
-    relations.value = await load(
-      /** @type {Id} */ (`${localStorage.me}/relations`)
-    )
+    const item = await load(/** @type {Id} */ (`${localStorage.me}/relations`))
+    relations.value = type_as_list(item)
   })
 
   dismount(() => {
@@ -191,14 +247,19 @@ export const sync_offline_actions = async () => {
   const offline = await get('sync:offline')
   if (offline) {
     // Sequential processing required: operations must complete before starting next
+    /* eslint-disable no-await-in-loop */
     while (offline.length) {
       const item = offline.pop()
-      // eslint-disable-next-line no-await-in-loop
-      if (item.action === 'save') await new Offline(item.id).save()
-      // eslint-disable-next-line no-await-in-loop
+
+      if (item.action === 'save')
+        if (item.id.endsWith('/relations')) {
+          const html = localStorage.getItem(item.id)
+          if (html) await new Relation().save({ outerHTML: html })
+        } else await new Offline(item.id).save()
       else if (item.action === 'delete') await new Offline(item.id).delete()
       else console.info('weird:unknown-offline-action', item.action, item.id)
     }
+    /* eslint-enable no-await-in-loop */
     await del('sync:offline')
   }
 

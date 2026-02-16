@@ -55,6 +55,9 @@ vi.mock('@/persistance/Storage', () => ({
     save: vi.fn(() => Promise.resolve()),
     delete: vi.fn(() => Promise.resolve())
   })),
+  Relation: vi.fn().mockImplementation(() => ({
+    save: vi.fn(() => Promise.resolve())
+  })),
   Statement: vi.fn().mockImplementation(() => ({
     sync: vi.fn(() => Promise.resolve([])),
     save: vi.fn(() => Promise.resolve()),

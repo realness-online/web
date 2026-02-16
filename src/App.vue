@@ -15,6 +15,7 @@
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
+  import { posting } from '@/use/posting'
   import {
     fill,
     stroke,
@@ -261,7 +262,7 @@
     <router-view />
     <sync @active="sync_active" />
     <fps-component v-if="info" />
-    <dialog-preferences ref="preferences_dialog" />
+    <dialog-preferences v-if="!posting" ref="preferences_dialog" />
     <dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
@@ -275,6 +276,13 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 
 <style lang="stylus">
+  body:has(main#realness:has(section#navigation)) {
+    overflow: hidden;
+  }
+  main#realness:has(section#navigation) {
+    overflow: hidden;
+    height: 100dvh;
+  }
   main#realness {
     border: (base-line / 16) solid transparent;
     border-radius (base-line / 16);

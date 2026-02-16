@@ -254,13 +254,11 @@
         gap: base-line;
         scroll-behavior: smooth;
         height: 100vh;
-        scroll-snap-type: x proximity;
         align-items: center;
         justify-content: start;
         & > figure.poster {
           height: 100%;
           flex-shrink: 0;
-          scroll-snap-align: center;
           min-width: 100vw;
           animation: none;
           display: flex;

@@ -25,8 +25,7 @@
     if (!props.show_state) return ''
     return preference.value ? ' (on)' : ' (off)'
   })
-  const toggle = () => {
-    const new_state = !preference.value
+  const apply = new_state => {
     preference.value = new_state
 
     // Special logic: when turning cutout ON, enable all geology layers
@@ -53,6 +52,8 @@
       preferences.drama_front.value = new_state
     }
   }
+
+  const on_change = event => apply(event.target.checked)
 </script>
 
 <template>
@@ -63,8 +64,10 @@
         <input
           :checked="preference"
           :name="name"
+          role="switch"
           type="checkbox"
-          @click="toggle" />
+          switch
+          @change="on_change" />
         <span class="slider"></span>
       </label>
     </div>
