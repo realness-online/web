@@ -2,8 +2,8 @@
   import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted, computed } from 'vue'
   import {
-    fill as fill_pref,
-    cutout as cutout_pref,
+    shadow as shadow_pref,
+    mosaic as mosaic_pref,
     stroke as stroke_pref
   } from '@/utils/preference'
   const props = defineProps({
@@ -31,7 +31,7 @@
     if (props.rect?.fill) fill_value.value = props.rect?.fill
   })
   const background_fill = computed(() => {
-    if (!fill_pref.value && !cutout_pref.value && stroke_pref.value)
+    if (!shadow_pref.value && !mosaic_pref.value && stroke_pref.value)
       return '#808080'
     return fill_value.value
   })

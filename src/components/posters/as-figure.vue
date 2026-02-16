@@ -22,7 +22,7 @@
     is_click,
     geology_layers
   } from '@/use/poster'
-  import { cutout } from '@/utils/preference'
+  import { mosaic } from '@/utils/preference'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
   import {
@@ -146,7 +146,7 @@
       if (!menu_enabled) menu_open.value = false
     }
   )
-  watch(cutout, new_value => {
+  watch(mosaic, new_value => {
     if (!new_value)
       symbol_loaded.value = {
         boulders: false,
@@ -252,6 +252,9 @@
       left: 0;
       right: 0;
       bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
       transform: none;
       z-index: 3;
       pointer-events: none;

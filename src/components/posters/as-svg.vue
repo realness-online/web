@@ -10,7 +10,8 @@
     nextTick as tick,
     ref,
     computed,
-    provide
+    provide,
+    inject
   } from 'vue'
   import { useMediaQuery } from '@vueuse/core'
   import {
@@ -25,9 +26,9 @@
     animate as animate_pref,
     drama_back,
     drama_front,
-    fill,
+    shadow,
     stroke,
-    cutout,
+    mosaic,
     boulders,
     rocks,
     gravel,
@@ -114,18 +115,6 @@
       emit('show', vector.value)
     }
     await tick()
-    touch_target = trigger.value
-    if (touch_target) {
-      touch_target.addEventListener('touchstart', on_touch_start, {
-        passive: true
-      })
-      touch_target.addEventListener('touchmove', on_touch_move, {
-        passive: false
-      })
-      touch_target.addEventListener('touchend', on_touch_end, {
-        passive: true
-      })
-    }
   })
 
   watch(() => {
@@ -150,7 +139,7 @@
     () => drama_front.value || is_loading.value
   )
 
-  const shadow_layer_displayed = computed(() => fill.value || stroke.value)
+  const shadow_layer_displayed = computed(() => shadow.value || stroke.value)
 
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
@@ -158,18 +147,6 @@
   const can_pan = computed(
     () => orientation_portrait.value && !use_meet.value && !storytelling.value
   )
-  const pan_offset = ref(0)
-  const panning = ref(false)
-  const touch_start_x = ref(0)
-  const touch_start_y = ref(0)
-  const pan_start_offset = ref(0)
-  const gesture_is_pan = ref(false)
-  const gesture_decided = ref(false)
-  const RUBBER_RESISTANCE = 0.25
-  const MAX_OVERFLOW_PX = 80
-  const EDGE_ZONE_PX = 32
-  const touch_in_edge_zone = ref(false)
-
   const max_pan_px = computed(() => {
     if (!can_pan.value || !trigger.value || !vector.value) return 0
     const rect = trigger.value.getBoundingClientRect()
@@ -185,73 +162,28 @@
     return Math.max(0, overflow / 2)
   })
 
+  const pan_delegator = inject('pan_delegator', null)
+  let pan_offset
+  let panning
+  let pan_unregister = null
+
+  if (pan_delegator) {
+    const delegated = pan_delegator.register(trigger, {
+      get_can_pan: () => can_pan.value,
+      get_max_pan_px: () => max_pan_px.value
+    })
+    ;({ pan_offset, panning, unregister: pan_unregister } = delegated)
+  } else {
+    pan_offset = ref(0)
+    panning = ref(false)
+  }
+
   const pan_style = computed(() => {
     if (!can_pan.value) return {}
     const transform = `translateX(${pan_offset.value}px)`
     const transition = panning.value ? 'none' : 'transform 0.25s ease-out'
     return { transform, transition }
   })
-
-  const GESTURE_THRESHOLD = 8
-
-  const on_touch_start = event => {
-    if (!can_pan.value || !event.touches.length) return
-    panning.value = true
-    const [touch] = event.touches
-    touch_start_x.value = touch.clientX
-    touch_start_y.value = touch.clientY
-    touch_in_edge_zone.value = touch.clientX < EDGE_ZONE_PX
-    pan_start_offset.value = pan_offset.value
-    gesture_decided.value = false
-    gesture_is_pan.value = false
-  }
-
-  const on_touch_move = event => {
-    if (!can_pan.value || !event.touches.length) return
-    const [touch] = event.touches
-    const delta_x = touch.clientX - touch_start_x.value
-    const delta_y = touch.clientY - touch_start_y.value
-    if (!gesture_decided.value) {
-      const abs_x = Math.abs(delta_x)
-      const abs_y = Math.abs(delta_y)
-      if (abs_x > GESTURE_THRESHOLD || abs_y > GESTURE_THRESHOLD) {
-        gesture_decided.value = true
-        gesture_is_pan.value = !touch_in_edge_zone.value && abs_x > abs_y
-      }
-    }
-    if (!gesture_is_pan.value) return
-    event.preventDefault()
-    const raw = pan_start_offset.value + delta_x
-    const max = max_pan_px.value
-    let value
-    if (raw > max) {
-      const overflow = Math.min(
-        (raw - max) * RUBBER_RESISTANCE,
-        MAX_OVERFLOW_PX
-      )
-      value = max + overflow
-    } else if (raw < -max) {
-      const overflow = Math.min(
-        (-max - raw) * RUBBER_RESISTANCE,
-        MAX_OVERFLOW_PX
-      )
-      value = -max - overflow
-    } else value = raw
-
-    pan_offset.value = value
-  }
-
-  const on_touch_end = () => {
-    panning.value = false
-    if (gesture_is_pan.value) {
-      const max = max_pan_px.value
-      pan_offset.value = Math.max(-max, Math.min(max, pan_offset.value))
-    }
-    gesture_decided.value = false
-    gesture_is_pan.value = false
-  }
-
-  let touch_target = null
 
   const OPACITY_HALF = 0.5
   const OPACITY_FULL = 1
@@ -270,7 +202,7 @@
     geology_layers.forEach(layer => {
       const pref = layer_preferences[layer]
       const visible =
-        cutout.value && pref.value && vector.value?.cutouts?.[layer]
+        mosaic.value && pref.value && vector.value?.cutouts?.[layer]
       const fragment = props.itemid
         ? as_fragment_id(
             as_layer_id(
@@ -327,11 +259,7 @@
 
   unmounted(() => {
     vector.value = null
-    if (touch_target) {
-      touch_target.removeEventListener('touchstart', on_touch_start)
-      touch_target.removeEventListener('touchmove', on_touch_move)
-      touch_target.removeEventListener('touchend', on_touch_end)
-    }
+    if (pan_unregister) pan_unregister()
   })
 </script>
 

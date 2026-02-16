@@ -26,7 +26,6 @@
   }
 
   const prepare_statement = async () => {
-    console.info('prepare_statement')
     emit('toggle-keyboard')
     const textarea = document.querySelector('textarea#wat')
     textarea.style.height = ''
@@ -40,8 +39,6 @@
     await save(trimmed)
 
     if (statement_text.value === text) statement_text.value = null
-
-    console.info('create:Statement')
   }
 
   const adjust_height = event => {

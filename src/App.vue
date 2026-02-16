@@ -17,9 +17,9 @@
   import { use_keymap } from '@/use/key-commands'
   import { posting } from '@/use/posting'
   import {
-    fill,
+    shadow,
     stroke,
-    cutout,
+    mosaic,
     drama,
     drama_back,
     drama_front,
@@ -85,9 +85,9 @@
   const { register, register_preference } = use_keymap('Global')
   const magic_keys = useMagicKeys()
 
-  register('pref::Toggle_Fill', () => {
-    const new_state = !fill.value
-    fill.value = new_state
+  register('pref::Toggle_Shadow', () => {
+    const new_state = !shadow.value
+    shadow.value = new_state
     if (new_state) {
       bold.value = true
       medium.value = true
@@ -98,9 +98,9 @@
   })
 
   register_preference('pref::Toggle_Stroke', stroke)
-  register('pref::Toggle_Cutout', () => {
-    const new_state = !cutout.value
-    cutout.value = new_state
+  register('pref::Toggle_Mosaic', () => {
+    const new_state = !mosaic.value
+    mosaic.value = new_state
     if (new_state) {
       boulders.value = true
       rocks.value = true
@@ -193,7 +193,6 @@
   })
   register('ui::Clear_Sync_Time', () => {
     delete localStorage.sync_time
-    console.info('Sync time cleared from localStorage')
   })
   register('ui::Toggle_Presentation', () =>
     !document.fullscreenElement
@@ -296,7 +295,7 @@
 
       &::before {
         content: '';
-        position: absolute;
+        position: fixed;
         top: 0;
         right: 0;
         bottom: 0;

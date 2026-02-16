@@ -71,19 +71,19 @@ Each poster is a layered SVG vector graphic with multiple components that give y
 - **Fill Gradients** - Eighteen color gradients automatically extracted from your photo that you can apply to any layer
 - **Stroke Outlines** - Vector paths that trace the edges of shapes for definition and emphasis
 - **Background** - Optional fill that can be toggled on/off to frame your poster
-- **Cutouts** - Special transparent areas that let background content show through, creating windows in your poster
+- **Mosaic** - Special transparent areas that let background content show through, creating windows in your poster
 
-**Cutouts Layer**:
+**Mosaic Layer**:
 
-The cutouts layer is generated using the vtracer algorithm and creates transparent windows through your poster. Each cutout is a vector path with:
+The mosaic layer is generated using the vtracer algorithm and creates transparent windows through your poster. Each mosaic element is a vector path with:
 
-- **Interactive Touch Response** - Cutouts respond to touch with brightness and saturation effects that create visual feedback
-- **Auto-hide Animation** - After interaction, cutouts automatically return to their base state over 3 seconds
-- **Opacity Control** - Cutouts have a default 50% opacity that increases to 75% on hover and 100% on active touch
-- **Visual Effects** - Brightness and saturation filters create dramatic lighting effects when interacting with cutouts
-- **Toggle Visibility** - Use <kbd>G</kbd> to show/hide all cutouts across your posters
+- **Interactive Touch Response** - Mosaic elements respond to touch with brightness and saturation effects that create visual feedback
+- **Auto-hide Animation** - After interaction, mosaic elements automatically return to their base state over 3 seconds
+- **Opacity Control** - Mosaic elements have a default 50% opacity that increases to 75% on hover and 100% on active touch
+- **Visual Effects** - Brightness and saturation filters create dramatic lighting effects when interacting with mosaic elements
+- **Toggle Visibility** - Use <kbd>G</kbd> to show/hide all mosaic across your posters
 
-Cutouts are perfect for creating layered compositions, overlaying on other content, or adding interactive elements to your posters. They're generated automatically from your photo's contrast areas and provide a unique way to frame and highlight different parts of your image.
+Mosaic is perfect for creating layered compositions, overlaying on other content, or adding interactive elements to your posters. It's generated automatically from your photo's contrast areas and provides a unique way to frame and highlight different parts of your image.
 
 **Interactive Features**:
 
@@ -96,7 +96,7 @@ Cutouts are perfect for creating layered compositions, overlaying on other conte
 
 Posters are downloaded in the state of the UI So that what you see is what you download. Playing these preferences let you create various effects - from solid fills to outline-only looks, or combinations that give you maximum flexibility.
 
-The cutout system creates transparent windows through your poster, perfect for overlaying on other content or creating layered compositions. Cutouts respond to touch with brightness and saturation effects, making them interactive elements.
+The mosaic system creates transparent windows through your poster, perfect for overlaying on other content or creating layered compositions. Mosaic elements respond to touch with brightness and saturation effects, making them interactive elements.
 
 The animation system uses your GPU to create flowing color transitions that make static images feel alive. Combined with the lightbar effect, you can create cinematic moments that draw attention and add emotional impact.
 
@@ -112,8 +112,8 @@ Each poster includes a download menu with multiple format options. The green pul
 
 - **SVG** - Vector format perfect for web, scalable to any size without quality loss. Exports the current state of all visible layers.
 - **PNG** - Full poster rendered as a single high-resolution PNG (4K width). Includes the Realness icon watermark in the corner. Great for sharing on social media or printing.
-- **PNG Layers** (icon on PNG option) - Downloads each layer as a separate PNG file. Core layers (Background, Light, Regular, Medium, Bold) and cutout layers (Sediment, Sand, Gravel, Rocks, Boulders) are exported individually. Perfect for compositing in other tools or creating custom layer arrangements.
-- **PSD** - Photoshop document with all layers organized into groups. Ready to open directly in Procreate, Affinity Designer, or Adobe Photoshop. Includes both shadow layers (organized under "Shadows" group) and cutout layers (organized under "Cutouts" group). Each layer is fully editable with proper transparency and organization.
+- **PNG Layers** (icon on PNG option) - Downloads each layer as a separate PNG file. Core layers (Background, Light, Regular, Medium, Bold) and mosaic layers (Sediment, Sand, Gravel, Rocks, Boulders) are exported individually. Perfect for compositing in other tools or creating custom layer arrangements.
+- **PSD** - Photoshop document with all layers organized into groups. Ready to open directly in Procreate, Affinity Designer, or Adobe Photoshop. Includes both shadow layers (organized under "Shadows" group) and mosaic layers (organized under "Mosaic" group). Each layer is fully editable with proper transparency and organization.
 
 All downloads respect your current visibility settings, so hidden layers won't appear in the exported files. Downloads are rendered at 4K resolution for maximum quality.
 
@@ -188,7 +188,7 @@ Relations sync across your devices. You control your network completely.
 You can download posters directly as PSD files for use in Procreate. Click the download icon on any poster and select **PSD** from the menu. The PSD file includes all layers organized into groups:
 
 - **Shadows Group** - Contains Background, Light, Regular, Medium, and Bold layers
-- **Cutouts Group** - Contains Sediment, Sand, Gravel, Rocks, and Boulders layers
+- **Mosaic Group** - Contains Sediment, Sand, Gravel, Rocks, and Boulders layers
 
 Each layer is exported as a separate editable layer in the PSD, giving you full control in Procreate. The PSD files are optimized for creative workflows and maintain all layer structure from Realness.
 
@@ -229,7 +229,7 @@ The desktop version maintains the same functionality as the web version, But let
 
 The _settings_ Dialog <kbd>.</kbd> is accessed from the bottom left of the app.
 
-Here you can manage visual preferences like fill, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
+Here you can manage visual preferences like shadow, stroke, emboss, and animate settings that control how [posters](#posters) are viewed and downloaded.
 
 All preferences are stored locally with no server-side sync, giving you control over your settings while working offline.
 
@@ -265,9 +265,9 @@ All preferences are stored locally with no server-side sync, giving you control 
 
 <kbd>D</kbd> - Toggle Dramatic lighting
 
-<kbd>F</kbd> - Toggle Shadow Fill
+<kbd>F</kbd> - Toggle Shadow
 
-<kbd>G</kbd> - Toggle Cutouts
+<kbd>G</kbd> - Toggle Mosaic
 
 ---
 
@@ -297,9 +297,9 @@ All preferences are stored locally with no server-side sync, giving you control 
 
 ---
 
-<kbd>1</kbd> - Toggle Cutouts
+<kbd>1</kbd> - Toggle Mosaic
 
-<kbd>2</kbd> - Toggle Fill
+<kbd>2</kbd> - Toggle Shadow
 
 <kbd>3</kbd> - Toggle Stroke
 
@@ -339,7 +339,7 @@ Realness does not use any artificial intelligence or machine learning. All vecto
 
 Posters are generated using:
 
-- **[vtracer](https://github.com/visioncortex/vtracer)** - Creates the poster cutouts
+- **[vtracer](https://github.com/visioncortex/vtracer)** - Creates the poster mosaic
 - **[potrace](http://potrace.sourceforge.net/)** - creates shadow layers
 
 You are free to use posters however you wish.

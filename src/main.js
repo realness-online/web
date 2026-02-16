@@ -8,10 +8,6 @@ import { key_commands_plugin } from '@/plugins/key-commands'
 const { me } = localStorage
 if (!me) localStorage.me = '/+'
 
-const update_service_worker = registerSW({
-  onOfflineReady() {
-    console.info('offline-ready', update_service_worker)
-  }
-})
+if (location.hostname !== 'realness.local') registerSW({ onOfflineReady() {} })
 
 createApp(App).use(router).use(key_commands_plugin).mount('body')

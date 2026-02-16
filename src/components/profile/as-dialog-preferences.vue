@@ -118,11 +118,11 @@
         <h2>Settings</h2>
       </header>
       <menu>
-        <preference name="cutout" title="Display top layer of color cutouts" />
+        <preference name="mosaic" title="Display top layer of color mosaic" />
         <preference
-          name="fill"
-          title="Fill your shadow layer with gradients."
-          subtitle="Shadows live behind the cutouts and tie the poster together; like the sun moving accross the sky" />
+          name="shadow"
+          title="Shadow layer with gradients."
+          subtitle="Shadows live behind the mosaic and tie the poster together; like the sun moving accross the sky" />
         <preference
           name="stroke"
           title="Outline your shadow layer with a stroke" />
@@ -143,15 +143,15 @@
       <header>
         <h2>Keymap</h2>
       </header>
-      <div
+      <article
         v-for="(context_commands, context) in commands_by_context"
-        :key="context"
-        class="command-group">
-        <h3>{{ context }}</h3>
+        :key="context">
+        <header>
+          <h3>{{ context }}</h3>
+        </header>
         <div
           v-for="(commands, row) in context_commands"
-          :key="`${context}-${row}`"
-          class="row-group">
+          :key="`${context}-${row}`">
           <h4>{{ row }}</h4>
           <ul>
             <li v-for="cmd in commands" :key="`${context}-${row}-${cmd.key}`">
@@ -162,7 +162,7 @@
             </li>
           </ul>
         </div>
-      </div>
+      </article>
     </section>
   </dialog>
 </template>
@@ -270,14 +270,14 @@
     }
 
     & > section:last-child {
-      & > div {
-        h3 {
+      & > article {
+        header h3 {
           color: var(--red);
           margin-top: base-line;
           margin-bottom: round((base-line / 2), 2);
-
         }
-        ul {
+
+        div ul {
           list-style: none;
 
           li {

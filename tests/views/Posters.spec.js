@@ -180,7 +180,7 @@ describe('@/views/Posters', () => {
         { id: '/+14151234356/posters/0987654321', type: 'posters' }
       ]
 
-      wrapper.vm.confirmed_remove()
+      await wrapper.vm.confirmed_remove()
       await wrapper.vm.$nextTick()
 
       expect(posters.value.length).toBeLessThan(initial_length + 2)

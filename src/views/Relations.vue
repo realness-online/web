@@ -9,7 +9,6 @@
 
   mounted(async () => {
     await load_people(relations.value)
-    console.info('views:Relations')
   })
 </script>
 

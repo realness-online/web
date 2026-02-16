@@ -23,8 +23,21 @@
   const fragment = add =>
     `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
+  const SYNC_DURATIONS = [4, 43, 86, 172] // eslint-disable-line no-magic-numbers -- divisors of 172 for sync
+
+  const sync_duration = base_duration => {
+    const nearest = SYNC_DURATIONS.reduce((prev, curr) =>
+      Math.abs(curr - base_duration) < Math.abs(prev - base_duration)
+        ? curr
+        : prev
+    )
+    return nearest
+  }
+
   /**
-   * Calculates duration based on animation speed preference
+   * Calculates duration based on animation speed preference.
+   * Uses sync-friendly durations (divisors of 172) so all animations
+   * return to start together for smooth looping.
    * @param {number} base_duration - Base duration in seconds
    * @returns {string} Duration string with speed multiplier applied
    */
@@ -37,7 +50,8 @@
       glacial: 8
     }
     const multiplier = speed_multipliers[animation_speed.value] || 1
-    return `${base_duration * multiplier}s`
+    const sync_base = sync_duration(base_duration)
+    return `${sync_base * multiplier}s`
   }
 
   const static_stroke_opacity = '0.90'

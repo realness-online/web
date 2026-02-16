@@ -9,9 +9,9 @@ const {
   mock_image_picker,
   mock_register,
   mock_register_preference,
-  mock_fill,
+  mock_shadow,
   mock_stroke,
-  mock_cutout,
+  mock_mosaic,
   mock_drama,
   mock_drama_back,
   mock_drama_front,
@@ -41,9 +41,9 @@ const {
     mock_image_picker: create_template_ref(null),
     mock_register: vi.fn(),
     mock_register_preference: vi.fn(),
-    mock_fill: create_ref(false),
+    mock_shadow: create_ref(false),
     mock_stroke: create_ref(false),
-    mock_cutout: create_ref(false),
+    mock_mosaic: create_ref(false),
     mock_drama: create_ref(false),
     mock_drama_back: create_ref(false),
     mock_drama_front: create_ref(false),
@@ -110,9 +110,9 @@ vi.mock('vue-router', () => ({
 vi.mock('@/utils/preference', async () => {
   const { ref } = await import('vue')
   // Create real Vue refs for reactivity (watchers need real refs)
-  const fill_ref = ref(false)
+  const shadow_ref = ref(false)
   const stroke_ref = ref(false)
-  const cutout_ref = ref(false)
+  const mosaic_ref = ref(false)
   const drama_ref = ref(false)
   const drama_back_ref = ref(false)
   const drama_front_ref = ref(false)
@@ -136,10 +136,10 @@ vi.mock('@/utils/preference', async () => {
   const slice_alignment_ref = ref('ymid')
 
   // Sync hoisted objects to proxy the refs
-  Object.defineProperty(mock_fill, 'value', {
-    get: () => fill_ref.value,
+  Object.defineProperty(mock_shadow, 'value', {
+    get: () => shadow_ref.value,
     set: v => {
-      fill_ref.value = v
+      shadow_ref.value = v
     }
   })
   Object.defineProperty(mock_stroke, 'value', {
@@ -148,10 +148,10 @@ vi.mock('@/utils/preference', async () => {
       stroke_ref.value = v
     }
   })
-  Object.defineProperty(mock_cutout, 'value', {
-    get: () => cutout_ref.value,
+  Object.defineProperty(mock_mosaic, 'value', {
+    get: () => mosaic_ref.value,
     set: v => {
-      cutout_ref.value = v
+      mosaic_ref.value = v
     }
   })
   Object.defineProperty(mock_drama, 'value', {
@@ -282,9 +282,9 @@ vi.mock('@/utils/preference', async () => {
   })
 
   return {
-    fill: fill_ref,
+    shadow: shadow_ref,
     stroke: stroke_ref,
-    cutout: cutout_ref,
+    mosaic: mosaic_ref,
     drama: drama_ref,
     drama_back: drama_back_ref,
     drama_front: drama_front_ref,
@@ -329,9 +329,9 @@ describe('App.vue', () => {
     })
 
     // Reset preference refs
-    mock_fill.value = false
+    mock_shadow.value = false
     mock_stroke.value = false
-    mock_cutout.value = false
+    mock_mosaic.value = false
     mock_drama.value = false
     mock_drama_back.value = false
     mock_drama_front.value = false
@@ -535,16 +535,16 @@ describe('App.vue', () => {
   })
 
   describe('Preference Handlers', () => {
-    describe('Toggle_Fill', () => {
-      it('toggles fill preference', () => {
-        const handler = registered_handlers['pref::Toggle_Fill']
+    describe('Toggle_Shadow', () => {
+      it('toggles shadow preference', () => {
+        const handler = registered_handlers['pref::Toggle_Shadow']
         expect(handler).toBeDefined()
         handler()
-        expect(mock_fill.value).toBe(true)
+        expect(mock_shadow.value).toBe(true)
       })
 
-      it('enables all shadow layers when fill is turned on', () => {
-        const handler = registered_handlers['pref::Toggle_Fill']
+      it('enables all shadow layers when shadow is turned on', () => {
+        const handler = registered_handlers['pref::Toggle_Shadow']
         handler()
         expect(mock_bold.value).toBe(true)
         expect(mock_medium.value).toBe(true)
@@ -554,16 +554,16 @@ describe('App.vue', () => {
       })
     })
 
-    describe('Toggle_Cutout', () => {
-      it('toggles cutout preference', () => {
-        const handler = registered_handlers['pref::Toggle_Cutout']
+    describe('Toggle_Mosaic', () => {
+      it('toggles mosaic preference', () => {
+        const handler = registered_handlers['pref::Toggle_Mosaic']
         expect(handler).toBeDefined()
         handler()
-        expect(mock_cutout.value).toBe(true)
+        expect(mock_mosaic.value).toBe(true)
       })
 
-      it('enables all geology layers when cutout is turned on', () => {
-        const handler = registered_handlers['pref::Toggle_Cutout']
+      it('enables all geology layers when mosaic is turned on', () => {
+        const handler = registered_handlers['pref::Toggle_Mosaic']
         handler()
         expect(mock_boulders.value).toBe(true)
         expect(mock_rocks.value).toBe(true)

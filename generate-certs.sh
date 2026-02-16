@@ -3,6 +3,12 @@
 # Generate localhost SSL certificates for local development.
 # Includes realness.local for LAN access from phone/tablet.
 
+if ! grep -q 'realness.local' /etc/hosts 2>/dev/null; then
+  echo "realness.local is not in /etc/hosts. Add it for local access:"
+  echo "  echo '127.0.0.1 realness.local' | sudo tee -a /etc/hosts"
+  echo ""
+fi
+
 if command -v mkcert &> /dev/null; then
     echo "Resetting mkcert root CA..."
     mkcert -uninstall 2>/dev/null || true

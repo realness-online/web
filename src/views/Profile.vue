@@ -35,7 +35,6 @@
       posters_for_person({ id }),
       statements_for_person({ id })
     ])
-    console.info('views:Profile', id)
   })
 
   const vector = ref(null)

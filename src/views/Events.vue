@@ -41,7 +41,6 @@
     events.value = await get_upcoming_events()
     working.value = false
     if (set_working) set_working(false)
-    console.info('views:events', events.value.length)
   })
 </script>
 
