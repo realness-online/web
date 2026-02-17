@@ -69,6 +69,12 @@
   const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.33')
   const path_length = ref(0)
+  const stroke_dasharray = {
+    light: '8, 16',
+    regular: '13, 21',
+    medium: '18, 26',
+    bold: '4, 32'
+  }
   const path_style = computed(() => ({
     opacity: props.visible ? 1 : 0,
     visibility: props.visible ? 'visible' : 'hidden'
@@ -105,11 +111,14 @@
     :fill-rule="show_fill ? 'evenodd' : undefined"
     :style="path_style" />
   <use
+    :id="`${props.id}-stroke`"
     :href="`#${props.id}`"
     fill="none"
     :stroke="stroke"
     :stroke-opacity="stroke_opacity"
     :stroke-width="stroke_width"
+    stroke-dashoffset="0"
+    :stroke-dasharray="stroke_dasharray[props.itemprop]"
     :style="{
       opacity: show_stroke && props.visible ? 1 : 0,
       visibility: show_stroke && props.visible ? 'visible' : 'hidden'

@@ -1,5 +1,6 @@
 <script setup>
-  import { as_day_and_time } from '@/utils/date'
+  import { as_day_and_time_for_filename } from '@/utils/date'
+  import { as_created_at } from '@/utils/itemid'
   import { hsl_to_hex } from '@/utils/color-converters'
   import { hsla_to_color } from '@/utils/colors'
   import { load, as_query_id } from '@/utils/itemid'
@@ -214,11 +215,13 @@
   }
 
   const get_vector_name = async () => {
-    const info = props.itemid.split('/')
-    const author_id = `/${info[1]}`
-    const time = as_day_and_time(Number(info[3]))
-    const creator = await load(author_id)
-    const facts = `${time}.svg`
+    const created = as_created_at(props.itemid)
+    if (!created) return 'poster.svg'
+    const path = props.itemid.split('/')
+    const author_id = path[1] ? `/${path[1]}` : ''
+    const creator = author_id ? await load(author_id) : null
+    const time = as_day_and_time_for_filename(created)
+    const facts = `${time}_${created}.svg`
     if (creator?.name) {
       const safe_name = creator.name.replace(/\s+/g, '_')
       return `${safe_name}_${facts}`
@@ -227,11 +230,13 @@
   }
 
   const get_psd_name = async () => {
-    const info = props.itemid.split('/')
-    const author_id = `/${info[1]}`
-    const time = as_day_and_time(Number(info[3]))
-    const creator = await load(author_id)
-    const facts = `${time}.psd`
+    const created = as_created_at(props.itemid)
+    if (!created) return 'poster.psd'
+    const path = props.itemid.split('/')
+    const author_id = path[1] ? `/${path[1]}` : ''
+    const creator = author_id ? await load(author_id) : null
+    const time = as_day_and_time_for_filename(created)
+    const facts = `${time}_${created}.psd`
     if (creator?.name) {
       const safe_name = creator.name.replace(/\s+/g, '_')
       return `${safe_name}_${facts}`
@@ -240,11 +245,13 @@
   }
 
   const get_video_name = async () => {
-    const info = props.itemid.split('/')
-    const author_id = `/${info[1]}`
-    const time = as_day_and_time(Number(info[3]))
-    const creator = await load(author_id)
-    const facts = `${time}.mov`
+    const created = as_created_at(props.itemid)
+    if (!created) return 'poster.mov'
+    const path = props.itemid.split('/')
+    const author_id = path[1] ? `/${path[1]}` : ''
+    const creator = author_id ? await load(author_id) : null
+    const time = as_day_and_time_for_filename(created)
+    const facts = `${time}_${created}.mov`
     if (creator?.name) {
       const safe_name = creator.name.replace(/\s+/g, '_')
       return `${safe_name}_${facts}`
@@ -390,11 +397,8 @@
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) return
 
-    const figure = svg.closest('figure.poster')
-    if (!figure) return
-
-    const rect = figure.getBoundingClientRect()
-    const aspect_ratio = rect.width / rect.height
+    const viewbox = svg.viewBox.baseVal
+    const aspect_ratio = viewbox.width / viewbox.height
     const target_smallest_side = 1080
     const video_width =
       aspect_ratio >= 1

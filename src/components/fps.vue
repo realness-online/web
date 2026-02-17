@@ -12,6 +12,7 @@
     aspect_ratio_mode,
     slice
   } from '@/utils/preference'
+  import { BASE_DURATION } from '@/utils/animation-config'
 
   const FPS_GOOD_THRESHOLD = 51
   const FPS_MIN_ACCEPTABLE = 24
@@ -42,7 +43,7 @@
   }))
 
   const animation_time = ref(0)
-  const max_cycle_time = 172 // Longest animation cycle in seconds
+  const max_cycle_time = BASE_DURATION
 
   let frame_id = null
 

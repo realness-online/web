@@ -10,6 +10,7 @@
     animation_speed,
     aspect_ratio_mode
   } from '@/utils/preference'
+  import { BASE_DURATION } from '@/utils/animation-config'
 
   const animation_status = computed(() => {
     if (!animate.value) return 'off'
@@ -19,7 +20,7 @@
   const aspect_ratio = computed(() => aspect_ratio_mode.value || 'auto')
 
   const animation_time = ref(0)
-  const max_cycle_time = 172 // Longest animation cycle in seconds
+  const max_cycle_time = BASE_DURATION
 
   let frame_id = null
 
