@@ -1,6 +1,6 @@
 <script setup>
-  import { as_day_and_time } from '@/utils/date'
-  import { load, as_query_id } from '@/utils/itemid'
+  import { as_day_and_time_for_filename } from '@/utils/date'
+  import { load, as_query_id, as_created_at } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   import icon from '@/components/icon'
   import { ref, computed, inject, onMounted } from 'vue'
@@ -73,13 +73,8 @@
     const svg = document.getElementById(as_query_id(props.itemid))
     if (!svg || !(svg instanceof SVGSVGElement)) return
 
-    // Find the figure element containing the SVG
-    const figure = svg.closest('figure.poster')
-    if (!figure) return
-
-    // Get rendered dimensions from figure to calculate aspect ratio
-    const rect = figure.getBoundingClientRect()
-    const aspect_ratio = rect.width / rect.height
+    const viewbox = svg.viewBox.baseVal
+    const aspect_ratio = viewbox.width / viewbox.height
 
     // Set smallest side to 1080px, scale other side proportionally
     const target_smallest_side = 1080
@@ -130,11 +125,13 @@
   }
 
   const get_video_name = async () => {
-    const info = props.itemid.split('/')
-    const author_id = `/${info[1]}`
-    const time = as_day_and_time(Number(info[3]))
-    const creator = await load(author_id)
-    const facts = `${time}.mov`
+    const created = as_created_at(props.itemid)
+    if (!created) return 'poster.mov'
+    const path = props.itemid.split('/')
+    const author_id = path[1] ? `/${path[1]}` : ''
+    const creator = author_id ? await load(author_id) : null
+    const time = as_day_and_time_for_filename(created)
+    const facts = `${time}_${created}.mov`
     if (creator?.name) {
       const safe_name = creator.name.replace(/\s+/g, '_')
       return `${safe_name}_${facts}`

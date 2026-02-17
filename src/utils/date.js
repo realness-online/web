@@ -22,6 +22,7 @@ const format_as_day_and_time = {
   month: /** @type {'long'} */ ('long'),
   hour: /** @type {'numeric'} */ ('numeric'),
   minute: /** @type {'numeric'} */ ('numeric'),
+  second: /** @type {'numeric'} */ ('numeric'),
   hour12: true
 }
 const format_as_day_time_year = {
@@ -31,6 +32,7 @@ const format_as_day_time_year = {
   year: /** @type {'numeric'} */ ('numeric'),
   hour: /** @type {'numeric'} */ ('numeric'),
   minute: /** @type {'numeric'} */ ('numeric'),
+  second: /** @type {'numeric'} */ ('numeric'),
   hour12: true
 }
 
@@ -83,6 +85,12 @@ export function as_day(date) {
 }
 export function as_day_and_time(date) {
   return as_time(date, format_as_day_and_time)
+}
+
+/** Filename-safe date/time with seconds; colons replaced for Windows compatibility */
+export function as_day_and_time_for_filename(date) {
+  const formatted = as_time(date, format_as_day_and_time)
+  return formatted.replace(/:/g, '-')
 }
 
 export function as_day_time_year(date) {

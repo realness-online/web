@@ -18,6 +18,9 @@ exports[`@/components/posters/as-path.vue > Renders > a path from one provided 1
   <use
     fill="none"
     href="#test-path"
+    id="test-path-stroke"
+    stroke-dasharray="13, 21"
+    stroke-dashoffset="0"
     stroke-opacity="0.90"
     stroke-width="0.33"
     style="opacity: 1; visibility: visible;"

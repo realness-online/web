@@ -2,13 +2,15 @@
   /** @typedef {import('@/types').Id} Id */
   import {
     ref,
+    computed,
     watchEffect,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
-  import { as_fragment_id } from '@/utils/itemid'
+  import { as_fragment_id, as_layer_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   import { animate, stroke, animation_speed } from '@/utils/preference'
+  import { SYNC_DURATIONS } from '@/utils/animation-config'
 
   const props = defineProps({
     id: {
@@ -19,11 +21,19 @@
     }
   })
 
-  /** @param {string} add */
-  const fragment = add =>
+  const shadow_id = computed(() =>
+    as_layer_id(/** @type {Id} */ (props.id), 'shadows')
+  )
+
+  /** @param {string} add - Targets gradients, patterns (poster id) */
+  const fragment_pattern = add =>
     `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
-  const SYNC_DURATIONS = [4, 43, 86, 172] // eslint-disable-line no-magic-numbers -- divisors of 172 for sync
+  /** @param {string} add - Targets path elements in shadow symbol */
+  const fragment = add => `${as_fragment_id(shadow_id.value)}-${add}`
+
+  /** @param {string} add - Targets use elements (stroke) in shadow symbol */
+  const fragment_stroke = add => `${fragment(add)}-stroke`
 
   const sync_duration = base_duration => {
     const nearest = SYNC_DURATIONS.reduce((prev, curr) =>
@@ -36,7 +46,7 @@
 
   /**
    * Calculates duration based on animation speed preference.
-   * Uses sync-friendly durations (divisors of 172) so all animations
+   * Uses sync-friendly durations (divisors of 180) so all animations
    * return to start together for smooth looping.
    * @param {number} base_duration - Base duration in seconds
    * @returns {string} Duration string with speed multiplier applied
@@ -144,99 +154,91 @@
   <animate ref="animation_group" itemprop="timeline">
     <animate v-if="stroke" class="stroke animation" id="stroke-animation">
       <animate
-        :href="fragment('light')"
+        :href="fragment_stroke('light')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        :dur="duration(5)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
-        :href="fragment('regular')"
+        :href="fragment_stroke('regular')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        :dur="duration(8)"
+        :dur="duration(30)"
         begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
-        :href="fragment('medium')"
+        :href="fragment_stroke('medium')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        :dur="duration(13)"
+        :dur="duration(30)"
         begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
       <animate
-        :href="fragment('bold')"
+        :href="fragment_stroke('bold')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
-        :dur="duration(11)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_stroke_opacity};0.1;${static_stroke_opacity}`" />
 
       <animate
-        :href="fragment('light')"
+        :href="fragment_stroke('light')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        :dur="duration(10)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_stroke_width};0.1;0.45;${static_stroke_width}`" />
       <animate
-        :href="fragment('regular')"
+        :href="fragment_stroke('regular')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        :dur="duration(14)"
+        :dur="duration(30)"
         begin="0s"
         :values="`${static_stroke_width};0.66;0.1;${static_stroke_width}`" />
       <animate
-        :href="fragment('medium')"
+        :href="fragment_stroke('medium')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        :dur="duration(8)"
+        :dur="duration(30)"
         begin="0s"
         :values="`${static_stroke_width};0.1;0.77;0.1;${static_stroke_width}`" />
       <animate
-        :href="fragment('bold')"
+        :href="fragment_stroke('bold')"
         attributeName="stroke-width"
         repeatCount="indefinite"
-        :dur="duration(10)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_stroke_width};0.1;0.66;0.1;${static_stroke_width}`" />
 
       <animate
-        :href="fragment('light')"
+        :href="fragment_stroke('light')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        :dur="duration(8)"
+        :dur="duration(18)"
         begin="0s"
-        values="0;-24"
-        keyTimes="0;1"
-        keySplines="0.4 0 0.6 1" />
+        values="0;-24;0" />
       <animate
-        :href="fragment('regular')"
+        :href="fragment_stroke('regular')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        :dur="duration(12)"
+        :dur="duration(30)"
         begin="0s"
-        values="0;-34"
-        keyTimes="0;1"
-        keySplines="0.4 0 0.6 1" />
+        values="0;-34;0" />
       <animate
-        :href="fragment('medium')"
+        :href="fragment_stroke('medium')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        :dur="duration(6)"
+        :dur="duration(30)"
         begin="0s"
-        values="0;-44"
-        keyTimes="0;1"
-        keySplines="0.4 0 0.6 1" />
+        values="0;-44;0" />
       <animate
-        :href="fragment('bold')"
+        :href="fragment_stroke('bold')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
-        :dur="duration(8)"
+        :dur="duration(60)"
         begin="0s"
-        values="0;-56"
-        keyTimes="0;1"
-        keySplines="0.4 0 0.6 1" />
+        values="0;-56;0" />
     </animate>
 
     <animate id="default-animation">
@@ -244,14 +246,14 @@
         :href="fragment('light')"
         attributeName="fill-opacity"
         repeatCount="indefinite"
-        :dur="duration(12)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.21;${static_fill_opacity}`" />
       <animate
         :href="fragment('medium')"
         attributeName="fill-opacity"
         repeatCount="indefinite"
-        :dur="duration(24)"
+        :dur="duration(18)"
         begin="0s"
         :values="`${static_fill_opacity};0.6;${static_fill_opacity};0.5;${static_fill_opacity}`" />
       <animate
@@ -263,70 +265,70 @@
         :values="`${static_fill_opacity};0.75;${static_fill_opacity};0.6;0.8;${static_fill_opacity};`" />
 
       <animate
-        :href="fragment('radial-background')"
+        :href="fragment_pattern('radial-background')"
         attributeName="cx"
         repeatCount="indefinite"
         :dur="duration(68)"
         begin="0s"
         values="0%;150%;-50%;200%;0%" />
       <animate
-        :href="fragment('radial-background')"
+        :href="fragment_pattern('radial-background')"
         attributeName="cy"
         repeatCount="indefinite"
         :dur="duration(110)"
         begin="0s"
         values="0%;200%;-25%;150%;0%" />
       <animate
-        :href="fragment('vertical-light')"
+        :href="fragment_pattern('vertical-light')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(110)"
         begin="0s"
         values="0%;-50%;150%;200%;0%" />
       <animate
-        :href="fragment('vertical-light')"
+        :href="fragment_pattern('vertical-light')"
         attributeName="y1"
         repeatCount="indefinite"
-        :dur="duration(172)"
+        :dur="duration(180)"
         begin="0s"
         values="0%;250%;-75%;175%;0%" />
       <animate
-        :href="fragment('horizontal-regular')"
+        :href="fragment_pattern('horizontal-regular')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(68)"
         begin="0s"
         values="0%;200%;-100%;300%;0%" />
       <animate
-        :href="fragment('horizontal-regular')"
+        :href="fragment_pattern('horizontal-regular')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(110)"
         begin="0s"
         values="0%;-50%;200%;150%;0%" />
       <animate
-        :href="fragment('vertical-medium')"
+        :href="fragment_pattern('vertical-medium')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(68)"
         begin="0s"
         values="0%;175%;-75%;225%;0%" />
       <animate
-        :href="fragment('vertical-medium')"
+        :href="fragment_pattern('vertical-medium')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(110)"
         begin="0s"
         values="0%;300%;-100%;200%;0%" />
       <animate
-        :href="fragment('vertical-bold')"
+        :href="fragment_pattern('vertical-bold')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(68)"
         begin="0s"
         values="0%;-100%;200%;300%;0%" />
       <animate
-        :href="fragment('vertical-bold')"
+        :href="fragment_pattern('vertical-bold')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(110)"
@@ -334,14 +336,14 @@
         values="0%;250%;-150%;175%;0%" />
 
       <animate
-        :href="fragment('radial')"
+        :href="fragment_pattern('radial')"
         attributeName="cx"
         repeatCount="indefinite"
         :dur="duration(84)"
         begin="0s"
         values="0%;200%;-100%;250%;0%" />
       <animate
-        :href="fragment('radial')"
+        :href="fragment_pattern('radial')"
         attributeName="cy"
         repeatCount="indefinite"
         :dur="duration(134)"
@@ -349,14 +351,14 @@
         values="0%;-75%;300%;150%;0%" />
 
       <animate
-        :href="fragment('vertical-background')"
+        :href="fragment_pattern('vertical-background')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(76)"
         begin="0s"
         values="0%;300%;-150%;200%;0%" />
       <animate
-        :href="fragment('vertical-background')"
+        :href="fragment_pattern('vertical-background')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(122)"
@@ -364,14 +366,14 @@
         values="0%;175%;-100%;250%;0%" />
 
       <animate
-        :href="fragment('horizontal-light')"
+        :href="fragment_pattern('horizontal-light')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(94)"
         begin="0s"
         values="0%;-100%;250%;300%;0%" />
       <animate
-        :href="fragment('horizontal-light')"
+        :href="fragment_pattern('horizontal-light')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(146)"
@@ -379,14 +381,14 @@
         values="0%;300%;-200%;175%;0%" />
 
       <animate
-        :href="fragment('horizontal-medium')"
+        :href="fragment_pattern('horizontal-medium')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(58)"
         begin="0s"
         values="0%;225%;-125%;275%;0%" />
       <animate
-        :href="fragment('horizontal-medium')"
+        :href="fragment_pattern('horizontal-medium')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(102)"
@@ -394,14 +396,14 @@
         values="0%;-150%;250%;200%;0%" />
 
       <animate
-        :href="fragment('horizontal-bold')"
+        :href="fragment_pattern('horizontal-bold')"
         attributeName="x1"
         repeatCount="indefinite"
         :dur="duration(72)"
         begin="0s"
         values="0%;350%;-200%;300%;0%" />
       <animate
-        :href="fragment('horizontal-bold')"
+        :href="fragment_pattern('horizontal-bold')"
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(116)"
@@ -412,7 +414,7 @@
         href="#lightbar-back"
         attributeName="fill-opacity"
         repeatCount="indefinite"
-        :dur="duration(5)"
+        :dur="duration(18)"
         begin="0s"
         values="1;0.66;1"
         keyTimes="0;0.33;1"
@@ -421,7 +423,7 @@
         href="#lightbar-front"
         attributeName="fill-opacity"
         repeatCount="indefinite"
-        :dur="duration(5)"
+        :dur="duration(30)"
         begin="0s"
         values="1;0.66;1"
         keyTimes="0;0.66;1"
@@ -440,21 +442,6 @@
   svg.animate {
     & g[itemprop='animation'] animate {
       animation-play-state: running;
-    }
-    & path[itemprop] {
-      stroke-dashoffset: 0;
-    }
-    & path[itemprop='light'] {
-      stroke-dasharray: 8, 16;
-    }
-    & path[itemprop='regular'] {
-      stroke-dasharray: 13, 21;
-    }
-    & path[itemprop='medium'] {
-      stroke-dasharray: 18, 26;
-    }
-    & path[itemprop='bold'] {
-      stroke-dasharray: 4, 32;
     }
     & path[itemprop='cutout'] {
       filter: brightness(1) saturate(1);

@@ -25,6 +25,7 @@ import ExifReader from 'exifreader'
 
 import * as Queue from '@/persistance/Queue'
 import { Poster, Cutout, Shadow } from '@/persistance/Storage'
+import { get, set } from 'idb-keyval'
 
 const new_vector = ref(null)
 const new_gradients = ref(null)
@@ -278,7 +279,6 @@ export const save_poster = async (id, element = null, cutouts = null) => {
   const created_at = as_created_at(id)
   if (created_at) {
     const path = as_directory_id(id)
-    const { get, set } = await import('idb-keyval')
     const directory = await get(path)
     if (directory && directory.items) {
       if (!directory.items.includes(created_at)) {

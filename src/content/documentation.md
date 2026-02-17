@@ -113,7 +113,7 @@ Each poster includes a download menu with multiple format options. The green pul
 - **SVG** - Vector format perfect for web, scalable to any size without quality loss. Exports the current state of all visible layers.
 - **PNG** - Full poster rendered as a single high-resolution PNG (4K width). Includes the Realness icon watermark in the corner. Great for sharing on social media or printing.
 - **PNG Layers** (icon on PNG option) - Downloads each layer as a separate PNG file. Core layers (Background, Light, Regular, Medium, Bold) and mosaic layers (Sediment, Sand, Gravel, Rocks, Boulders) are exported individually. Perfect for compositing in other tools or creating custom layer arrangements.
-- **PSD** - Photoshop document with all layers organized into groups. Ready to open directly in Procreate, Affinity Designer, or Adobe Photoshop. Includes both shadow layers (organized under "Shadows" group) and mosaic layers (organized under "Mosaic" group). Each layer is fully editable with proper transparency and organization.
+- **PSD** - Photoshop document with all layers organized into groups. Ready to open directly in Procreate, Affinity Designer, or Adobe Photoshop. Includes shadow layers (Shadows group), stroke layers (Stroke group), and mosaic layers (Mosaic group). Each layer is fully editable with proper transparency and organization.
 
 All downloads respect your current visibility settings, so hidden layers won't appear in the exported files. Downloads are rendered at 4K resolution for maximum quality.
 
@@ -188,6 +188,7 @@ Relations sync across your devices. You control your network completely.
 You can download posters directly as PSD files for use in Procreate. Click the download icon on any poster and select **PSD** from the menu. The PSD file includes all layers organized into groups:
 
 - **Shadows Group** - Contains Background, Light, Regular, Medium, and Bold layers
+- **Stroke Group** - Contains Light Stroke, Regular Stroke, Medium Stroke, and Bold Stroke layers (outline paths only)
 - **Mosaic Group** - Contains Sediment, Sand, Gravel, Rocks, and Boulders layers
 
 Each layer is exported as a separate editable layer in the PSD, giving you full control in Procreate. The PSD files are optimized for creative workflows and maintain all layer structure from Realness.

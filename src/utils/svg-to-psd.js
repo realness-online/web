@@ -129,6 +129,136 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
   return layers
 }
 
+const stroke_layer_names = ['light', 'regular', 'medium', 'bold']
+
+/**
+ * Extract stroke-only layers from shadows symbol (outline paths, no fill)
+ * @param {SVGSVGElement} svg_element - The SVG element
+ * @param {Id} poster_id - Poster itemid
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ * @returns {Promise<Array<{name: string, imageData: ImageData}>>}
+ */
+const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
+  const layers = []
+  const shadow_layer_id = as_layer_id(poster_id, 'shadows')
+  const shadow_fragment = as_fragment_id(shadow_layer_id)
+
+  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+
+  const hidden_elements = svg_clone.querySelectorAll(
+    '[style*="visibility: hidden"]'
+  )
+  hidden_elements.forEach(el => el.remove())
+
+  const vue_components = svg_clone.querySelectorAll('as-animation')
+  vue_components.forEach(component => component.remove())
+
+  const lightbar_elements = svg_clone.querySelectorAll(
+    '[id^="lightbar"], rect[fill*="lightbar"]'
+  )
+  lightbar_elements.forEach(el => el.remove())
+
+  const cutout_use_elements = svg_clone.querySelectorAll(
+    'use[itemprop="sediment"], use[itemprop="sand"], use[itemprop="gravel"], use[itemprop="rocks"], use[itemprop="boulders"]'
+  )
+  cutout_use_elements.forEach(el => el.remove())
+
+  svg_clone.setAttribute('width', String(width))
+  svg_clone.setAttribute('height', String(height))
+  svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  const figure = svg_element.closest('figure.poster')
+  const cutout_layer_names = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
+  const cutout_symbol_ids = new Set(
+    cutout_layer_names.map(layer_name =>
+      as_query_id(as_layer_id(poster_id, layer_name))
+    )
+  )
+  if (figure) {
+    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+    if (hidden_svg) {
+      const symbols = hidden_svg.querySelectorAll('symbol')
+      let defs = svg_clone.querySelector('defs')
+      if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
+        svg_clone.appendChild(defs)
+      }
+      symbols.forEach(symbol => {
+        const symbol_id = symbol.getAttribute('id')
+        if (!cutout_symbol_ids.has(symbol_id)) {
+          const symbol_clone = symbol.cloneNode(true)
+          defs.appendChild(symbol_clone)
+        }
+      })
+    }
+  }
+
+  for (const layer_name of stroke_layer_names) {
+    const layer_clone = /** @type {SVGSVGElement} */ (svg_clone.cloneNode(true))
+
+    const use_shadow = layer_clone.querySelector(
+      `use[href="${shadow_fragment}"]`
+    )
+    if (!use_shadow) continue
+
+    const shadow_symbol = layer_clone.querySelector(
+      `symbol[id="${as_query_id(shadow_layer_id)}"]`
+    )
+    if (!shadow_symbol) continue
+
+    const path = shadow_symbol.querySelector(`[itemprop="${layer_name}"]`)
+    if (!path) continue
+
+    const path_id = path.getAttribute('id')
+    if (!path_id) continue
+
+    const stroke_use = [...shadow_symbol.querySelectorAll('use')].find(
+      use =>
+        (use.getAttribute('href') || use.getAttribute('xlink:href') || '') ===
+        `#${path_id}`
+    )
+    if (!stroke_use) continue
+
+    path.setAttribute('fill', 'none')
+    path.removeAttribute('fill-opacity')
+    path.removeAttribute('fill-rule')
+
+    const to_keep = new Set([path, stroke_use])
+    ;[...shadow_symbol.children].forEach(child => {
+      if (!to_keep.has(child)) child.remove()
+    })
+
+    const svg_data = new XMLSerializer().serializeToString(layer_clone)
+    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
+    const svg_url = URL.createObjectURL(svg_blob)
+
+    const img = new Image()
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+      img.src = svg_url
+    })
+
+    const canvas = new OffscreenCanvas(width, height)
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0, width, height)
+
+    const image_data = ctx.getImageData(0, 0, width, height)
+
+    URL.revokeObjectURL(svg_url)
+    img.src = ''
+
+    layers.push({
+      name: `${layer_name.charAt(0).toUpperCase() + layer_name.slice(1)} Stroke`,
+      imageData: image_data
+    })
+  }
+
+  return layers
+}
+
 /**
  * Extract cutout layers (sediment, sand, gravel, rocks, boulders)
  * @param {SVGSVGElement} svg_element - The SVG element
@@ -262,7 +392,18 @@ export const render_svg_layers_to_psd = async (
     height
   )
 
-  if (core_layers.length === 0 && cutout_layers.length === 0) {
+  const stroke_layers = await extract_stroke_layers(
+    svg_element,
+    poster_id,
+    width,
+    height
+  )
+
+  if (
+    core_layers.length === 0 &&
+    cutout_layers.length === 0 &&
+    stroke_layers.length === 0
+  ) {
     console.error('[PSD Generation] No layers found to export')
     throw new Error('No layers found to export')
   }
@@ -270,6 +411,17 @@ export const render_svg_layers_to_psd = async (
   const shadow_group = {
     name: 'Shadows',
     children: core_layers.map(({ name, imageData }) => ({
+      name,
+      opacity: 1,
+      left: 0,
+      top: 0,
+      imageData
+    }))
+  }
+
+  const stroke_group = {
+    name: 'Stroke',
+    children: stroke_layers.map(({ name, imageData }) => ({
       name,
       opacity: 1,
       left: 0,
@@ -289,10 +441,14 @@ export const render_svg_layers_to_psd = async (
     }))
   }
 
+  const groups = [shadow_group]
+  if (stroke_layers.length > 0) groups.push(stroke_group)
+  groups.push(cutout_group)
+
   const psd = {
     width,
     height,
-    children: [shadow_group, cutout_group]
+    children: groups
   }
 
   /** @type {ArrayBuffer} */

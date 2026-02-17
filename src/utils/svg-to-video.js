@@ -6,10 +6,11 @@ import {
   StreamTarget,
   CanvasSource
 } from 'mediabunny'
+import { FRAMES_PER_SECOND, BASE_DURATION } from '@/utils/animation-config'
 
 // Video encoding constants
 const DEFAULT_FPS = 24
-const MAX_DURATION_SECONDS = 172
+const MAX_DURATION_SECONDS = BASE_DURATION
 const MS_PER_SECOND = 1000
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
@@ -43,7 +44,6 @@ const PROGRESS_HALF = 0.5
  * @returns {number} Duration in seconds
  */
 const get_animation_duration = animation_speed => {
-  const base_duration = 172
   const speed_multipliers = {
     fast: 0.5,
     normal: 1,
@@ -52,7 +52,7 @@ const get_animation_duration = animation_speed => {
     glacial: 8
   }
   const multiplier = speed_multipliers[animation_speed] || 1
-  return base_duration * multiplier
+  return BASE_DURATION * multiplier
 }
 
 /**
@@ -147,6 +147,20 @@ const parse_dur = dur_str => {
   return parseFloat(String(dur_str).replace('s', '')) || 1
 }
 
+const find_stroke_use_for_path = (path_el, root) => {
+  const path_id = path_el.getAttribute('id')
+  if (!path_id) return null
+  const href_matches = use_el =>
+    (use_el.getAttribute('href') || use_el.getAttribute('xlink:href') || '') ===
+      `#${path_id}` ||
+    (use_el.getAttribute('href') || use_el.getAttribute('xlink:href') || '') ===
+      `url(#${path_id})`
+  const symbol = path_el.closest('symbol')
+  return symbol
+    ? [...symbol.querySelectorAll('use')].find(href_matches)
+    : [...root.querySelectorAll('use')].find(href_matches)
+}
+
 const apply_animation_state = (svg_element, current_time) => {
   const animate_elements = svg_element.querySelectorAll('animate')
   animate_elements.forEach(anim => {
@@ -166,6 +180,14 @@ const apply_animation_state = (svg_element, current_time) => {
       target = svg_element.querySelector(`[id="${shadows_id}"]`)
     }
     if (!target) return
+
+    const is_stroke_attr =
+      attribute_name === 'stroke-dashoffset' ||
+      attribute_name === 'stroke-dasharray'
+    if (is_stroke_attr && target.tagName === 'path') {
+      const stroke_use = find_stroke_use_for_path(target, svg_element)
+      if (stroke_use) target = stroke_use
+    }
 
     const values = values_str.split(';').map(v => v.trim())
     if (values.length < 2) return
@@ -236,6 +258,19 @@ const capture_svg_frame = async (
   const vue_components = svg_clone.querySelectorAll('as-animation')
   vue_components.forEach(el => el.replaceWith(...el.children))
 
+  const stroke_dasharrays = {
+    light: '8, 16',
+    regular: '13, 21',
+    medium: '18, 26',
+    bold: '4, 32'
+  }
+  Object.entries(stroke_dasharrays).forEach(([itemprop, value]) => {
+    svg_clone.querySelectorAll(`path[itemprop="${itemprop}"]`).forEach(path => {
+      const stroke_use = find_stroke_use_for_path(path, svg_clone)
+      if (stroke_use) stroke_use.setAttribute('stroke-dasharray', value)
+    })
+  })
+
   apply_animation_state(svg_clone, current_time)
 
   const svg_data = new XMLSerializer().serializeToString(svg_clone)
@@ -263,7 +298,7 @@ const capture_svg_frame = async (
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
- * @param {number} [options.max_duration=172] - Maximum animation duration in seconds
+ * @param {number} [options.max_duration=180] - Maximum animation duration in seconds
  * @param {number} [options.width] - Canvas width (defaults to SVG viewBox width)
  * @param {number} [options.height] - Canvas height (defaults to SVG viewBox height)
  * @returns {Promise<HTMLVideoElement>} Video element with the rendered animation
@@ -365,7 +400,7 @@ export const render_svg_to_video = (
  * @param {HTMLCanvasElement} canvas - Target canvas element
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
- * @param {number} [options.max_duration=172] - Maximum animation duration in seconds
+ * @param {number} [options.max_duration=180] - Maximum animation duration in seconds
  * @param {Function} [options.on_frame] - Callback called for each frame
  * @returns {Promise<void>}
  */
@@ -484,8 +519,7 @@ export const render_svg_to_video_blob = async (
   canvas_width = canvas_width + (canvas_width % 2)
   canvas_height = canvas_height + (canvas_height % 2)
 
-  const frames_per_second = 3
-  const total_frames = Math.ceil(duration * frames_per_second)
+  const total_frames = Math.floor(duration * FRAMES_PER_SECOND) + 1
 
   const { ctx, output, canvas_source } = setup_canvas_and_encoder(
     canvas_width,
@@ -498,10 +532,7 @@ export const render_svg_to_video_blob = async (
   await output.start()
 
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
-    const current_time =
-      current_frame === total_frames - 1
-        ? duration
-        : current_frame / frames_per_second
+    const current_time = current_frame / FRAMES_PER_SECOND
 
     // eslint-disable-next-line no-await-in-loop
     await capture_svg_frame(
