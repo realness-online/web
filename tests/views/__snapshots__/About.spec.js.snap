@@ -9,10 +9,7 @@ exports[`About > Rendering > renders about view 1`] = `
     <nav>
       <logo-as-link-stub />
       <a>
-        Documentation 
-        <span>
-          2.0.0
-        </span>
+        Documentation
       </a>
     </nav>
     <section

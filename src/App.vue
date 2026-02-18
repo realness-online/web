@@ -17,6 +17,11 @@
   import { use_keymap } from '@/use/key-commands'
   import { posting } from '@/use/posting'
   import {
+    ANIMATION_SPEEDS,
+    ANIMATION_SPEED_LEGACY,
+    DEFAULT_ANIMATION_SPEED
+  } from '@/utils/animation-config'
+  import {
     shadow,
     stroke,
     mosaic,
@@ -34,6 +39,7 @@
     sand,
     sediment,
     animate,
+    animation_speed,
     info,
     storytelling,
     slice,
@@ -133,6 +139,18 @@
     drama.value = drama_back.value || drama_front.value
   })
   register_preference('pref::Toggle_Animate', animate)
+  register('pref::Cycle_Animation_Speed', () => {
+    const current =
+      ANIMATION_SPEED_LEGACY[animation_speed.value] ||
+      animation_speed.value ||
+      DEFAULT_ANIMATION_SPEED
+    const current_index = ANIMATION_SPEEDS.indexOf(current)
+    const is_reverse = magic_keys.shift.value
+    const next_index = is_reverse
+      ? (current_index - 1 + ANIMATION_SPEEDS.length) % ANIMATION_SPEEDS.length
+      : (current_index + 1) % ANIMATION_SPEEDS.length
+    animation_speed.value = ANIMATION_SPEEDS[next_index]
+  })
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Slice', slice)

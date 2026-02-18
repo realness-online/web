@@ -1,4 +1,5 @@
 import { useStorage as storage } from '@vueuse/core'
+import { DEFAULT_ANIMATION_SPEED } from '@/utils/animation-config'
 
 export const animate = storage('animate', false)
 export const drama = storage('drama', false)
@@ -25,7 +26,10 @@ export const sediment = storage('sediment', true)
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
 
-export const animation_speed = storage('animation_speed', 'normal') //fast normal slow very_slow glacial
+export const animation_speed = storage(
+  'animation_speed',
+  DEFAULT_ANIMATION_SPEED
+)
 
 export const grid_overlay = storage('grid_overlay', false)
 
@@ -34,6 +38,8 @@ export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
 export const menu = storage('menu', true)
+
+export const sync_folder = storage('sync_folder', false)
 
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)

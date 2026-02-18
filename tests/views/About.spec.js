@@ -116,11 +116,10 @@ describe('About', () => {
       expect(wrapper.find('section.hero h1').text()).toBe('Realness')
     })
 
-    it('renders documentation link with version', () => {
+    it('renders documentation link', () => {
       const doc_link = wrapper.find('a')
       expect(doc_link.exists()).toBe(true)
       expect(doc_link.text()).toContain('Documentation')
-      expect(doc_link.text()).toContain(import.meta.env.PACKAGE_VERSION || '')
     })
 
     it('renders articles for different sections', () => {

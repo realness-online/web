@@ -45,6 +45,7 @@ export const default_keymap = [
 
       'Home Row': '',
       a: 'pref::Toggle_Animate',
+      A: 'pref::Cycle_Animation_Speed',
       s: 'pref::Toggle_Stroke',
       d: 'pref::Toggle_Drama',
       D: 'pref::Cycle_Drama',
@@ -84,6 +85,7 @@ export const default_keymap = [
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',
       'pref::Toggle_Animate': 'Poster animation',
+      'pref::Cycle_Animation_Speed': 'Cycle animation speed',
       'pref::Toggle_Info': 'FPS and animation info',
       'pref::Toggle_Storytelling': 'Storytelling (side-scroll) view',
       'pref::Toggle_Slice': 'Poster aspect ratio (meet/slice)',

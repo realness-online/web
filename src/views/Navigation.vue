@@ -5,6 +5,8 @@
   import AccountDialog from '@/components/profile/as-dialog-account'
   import { posting } from '@/use/posting'
 
+  const version = import.meta.env.PACKAGE_VERSION
+  const version_parts = version.split('.')
   const open_camera = inject('open_camera')
   const toggle_keyboard = () => {
     posting.value = !posting.value
@@ -15,9 +17,12 @@
   <section id="navigation" class="page" :class="{ posting }">
     <header>
       <account-dialog v-if="!posting" />
-      <router-link v-if="!posting" id="about" to="/about" tabindex="-1"
-        >?</router-link
-      >
+      <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
+        <span>{{ version_parts[0] }}</span>
+        <span>?</span>
+        <span>{{ version_parts[1] }}</span>
+        <span>{{ version_parts[2] }}</span>
+      </router-link>
     </header>
     <nav>
       <router-link v-if="!posting" to="/thoughts" class="black" tabindex="-1">
@@ -92,11 +97,44 @@
         position: fixed;
         top: inset(top,  base-line);
         right: base-line;
-        font-weight:bold;
+        font-weight: bold;
         font-size: base-line * 1.44;
-        padding: base-line * 0.5;
+
         -webkit-user-select: none;
         user-select: none;
+        display: grid;
+        grid-template-columns: auto auto auto;
+        grid-template-rows: auto auto;
+        align-items: baseline;
+        & > span {
+          font-size: 0.266em;
+          vertical-align: sub;
+          opacity: 0.67;
+        }
+        & > span:first-child {
+          grid-column: 1;
+          grid-row: 1;
+          margin-right: 0.1em;
+          margin-left: -(base-line * 0.25);
+        }
+        & > span:nth-child(2) {
+          grid-column: 2;
+          grid-row: 1;
+          font-size: 1em;
+          opacity: 1;
+        }
+        & > span:nth-child(3) {
+          grid-column: 2;
+          grid-row: 2;
+          justify-self: center;
+          transform: translateY(-(base-line * 0.25));
+        }
+        & > span:last-child {
+          grid-column: 3;
+          grid-row: 1;
+          margin-left: 0.1em;
+          margin-right: -(base-line * 0.25);
+        }
       }
     }
     &:focus-within > header > a#toggle-account {
