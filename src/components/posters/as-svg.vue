@@ -78,6 +78,53 @@
     use_meet.value ? 'xMidYMid meet' : 'xMidYMid slice'
   )
 
+  const HOLD_MS = 250
+  const held_layer = ref(null)
+  let hold_timer = null
+  let was_hold = false
+  let cancelled = false
+
+  const layer_from_target = el => {
+    const use_el = el?.closest?.('use[itemprop]')
+    if (!use_el) return null
+    const prop = use_el.getAttribute('itemprop')
+    if (prop === 'shadow' || geology_layers.includes(prop)) return prop
+    return null
+  }
+
+  const handle_pointerdown = event => {
+    was_hold = false
+    cancelled = false
+    if (hold_timer) clearTimeout(hold_timer)
+    const layer = layer_from_target(event.target)
+    hold_timer = setTimeout(() => {
+      hold_timer = null
+      was_hold = true
+      held_layer.value = layer
+    }, HOLD_MS)
+  }
+
+  const handle_pointerup = () => {
+    if (hold_timer) {
+      clearTimeout(hold_timer)
+      hold_timer = null
+    }
+    if (cancelled) return
+    if (was_hold) {
+      held_layer.value = null
+      was_hold = false
+      return
+    }
+    handle_click()
+  }
+
+  const handle_pointerleave = () => {
+    if (hold_timer) clearTimeout(hold_timer)
+    hold_timer = null
+    cancelled = true
+    held_layer.value = null
+  }
+
   const handle_click = () => {
     use_meet.value = !use_meet.value
     emit('click', true)
@@ -280,7 +327,11 @@
       hovered: is_hovered,
       'hide-cursor': hide_cursor
     }"
-    @click="handle_click">
+    :data-held-layer="held_layer || undefined"
+    @pointerdown="handle_pointerdown"
+    @pointerup="handle_pointerup"
+    @pointerleave="handle_pointerleave"
+    @pointercancel="handle_pointerleave">
     <g :style="pan_style">
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect
@@ -322,7 +373,7 @@
       <as-gradients v-if="valid_vector" :vector="valid_vector" />
       <as-masks :itemid="itemid" />
     </defs>
-    <as-animation v-if="vector" :id="itemid" />
+    <as-animation v-if="vector" :id="itemid" :paused="!animate" />
   </svg>
 </template>
 
@@ -380,8 +431,6 @@
     & use[itemprop='rocks'],
     & use[itemprop='boulders'] {
       opacity: 0.5;
-      filter: saturate(100%) brightness(100%);
-      will-change: opacity, filter, display;
       transition:
         filter 0.44s ease-in-out,
         opacity 0.44s ease-out,
@@ -397,12 +446,23 @@
         filter: saturate(113%) brightness(108%);
       }
       &:active {
-        /* cursor: grabbing; */
         filter: saturate(166%) brightness(130%);
       }
       &:focus {
         filter: saturate(150%) brightness(118%);
       }
+    }
+
+    &[data-held-layer='sediment'] use[itemprop='sediment'],
+    &[data-held-layer='sand'] use[itemprop='sand'],
+    &[data-held-layer='gravel'] use[itemprop='gravel'],
+    &[data-held-layer='rocks'] use[itemprop='rocks'],
+    &[data-held-layer='boulders'] use[itemprop='boulders'] {
+      filter: saturate(166%) brightness(130%);
+    }
+
+    &[data-held-layer='shadow'] use[itemprop='shadow'] {
+      opacity: 0.85;
     }
 
     /* Accessibility: no motion */

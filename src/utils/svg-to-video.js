@@ -6,7 +6,11 @@ import {
   StreamTarget,
   CanvasSource
 } from 'mediabunny'
-import { FRAMES_PER_SECOND, BASE_DURATION } from '@/utils/animation-config'
+import {
+  FRAMES_PER_SECOND,
+  BASE_DURATION,
+  ANIMATION_SPEED_MULTIPLIERS
+} from '@/utils/animation-config'
 
 // Video encoding constants
 const DEFAULT_FPS = 24
@@ -15,6 +19,9 @@ const MS_PER_SECOND = 1000
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
 const PROGRESS_HALF = 0.5
+const EASE_BEZIER_ITERATIONS = 12
+const EASE_BEZIER_TOLERANCE = 1e-6
+const KEY_SPLINE_PARTS = 4
 
 /**
  * @typedef {Object} VideoEncoderConfig
@@ -40,18 +47,11 @@ const PROGRESS_HALF = 0.5
 
 /**
  * Calculates animation duration based on animation speed preference
- * @param {string} animation_speed - Animation speed: 'fast', 'normal', 'slow', 'very_slow', 'glacial'
+ * @param {string} animation_speed - See ANIMATION_SPEEDS in animation-config
  * @returns {number} Duration in seconds
  */
 const get_animation_duration = animation_speed => {
-  const speed_multipliers = {
-    fast: 0.5,
-    normal: 1,
-    slow: 2,
-    very_slow: 4,
-    glacial: 8
-  }
-  const multiplier = speed_multipliers[animation_speed] || 1
+  const multiplier = ANIMATION_SPEED_MULTIPLIERS[animation_speed] || 1
   return BASE_DURATION * multiplier
 }
 
@@ -147,6 +147,51 @@ const parse_dur = dur_str => {
   return parseFloat(String(dur_str).replace('s', '')) || 1
 }
 
+const cubic_bezier_at = (t, p1x, p1y, p2x, p2y) => {
+  const mt = 1 - t
+  const mt2 = mt * mt
+  const t2 = t * t
+  const t3 = t2 * t
+  return {
+    x: 3 * mt2 * t * p1x + 3 * mt * t2 * p2x + t3,
+    y: 3 * mt2 * t * p1y + 3 * mt * t2 * p2y + t3
+  }
+}
+
+const ease_bezier = (t, p1x, p1y, p2x, p2y) => {
+  if (t <= 0) return 0
+  if (t >= 1) return 1
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < EASE_BEZIER_ITERATIONS; i++) {
+    const mid = (lo + hi) / 2
+    const pt = cubic_bezier_at(mid, p1x, p1y, p2x, p2y)
+    if (Math.abs(pt.x - t) < EASE_BEZIER_TOLERANCE) return pt.y
+    if (pt.x < t) lo = mid
+    else hi = mid
+  }
+  return cubic_bezier_at((lo + hi) / 2, p1x, p1y, p2x, p2y).y
+}
+
+const parse_key_times = str => {
+  if (!str) return null
+  return str
+    .split(';')
+    .map(v => parseFloat(v.trim()))
+    .filter(n => !isNaN(n))
+}
+
+const parse_key_splines = str => {
+  if (!str) return null
+  return str
+    .split(';')
+    .map(segment => {
+      const parts = segment.trim().split(/\s+/).map(parseFloat)
+      return parts.length === KEY_SPLINE_PARTS ? parts : null
+    })
+    .filter(Boolean)
+}
+
 const find_stroke_use_for_path = (path_el, root) => {
   const path_id = path_el.getAttribute('id')
   if (!path_id) return null
@@ -194,15 +239,35 @@ const apply_animation_state = (svg_element, current_time) => {
 
     const cycle_time = current_time % dur
     const progress = Math.min(cycle_time / dur, 1)
-    const value_index = Math.min(
-      Math.floor(progress * (values.length - 1)),
-      values.length - 2
+    const key_times = parse_key_times(
+      anim.getAttribute('keyTimes') || anim.getAttribute('keytimes')
     )
-    const next_index = value_index + 1
-    const local_progress = progress * (values.length - 1) - value_index
+    const key_splines_raw =
+      anim.getAttribute('keySplines') || anim.getAttribute('keysplines')
+    const key_splines = parse_key_splines(key_splines_raw)
+
+    const times =
+      key_times && key_times.length === values.length
+        ? key_times
+        : values.map((_, i) => i / (values.length - 1))
+
+    let value_index = times.length - 2
+    let local_progress = 1
+    for (let i = 0; i < times.length - 1; i++)
+      if (progress <= times[i + 1]) {
+        value_index = i
+        const seg_dur = times[i + 1] - times[i]
+        local_progress = seg_dur <= 0 ? 0 : (progress - times[i]) / seg_dur
+        break
+      }
+
+    const spline = key_splines && key_splines[value_index]
+    const eased_progress = spline
+      ? ease_bezier(local_progress, spline[0], spline[1], spline[2], spline[3])
+      : local_progress
 
     const current_value = values[value_index]
-    const next_value = values[next_index]
+    const next_value = values[value_index + 1]
     if (!current_value || !next_value) return
 
     const current_num = parseFloat(current_value)
@@ -211,12 +276,12 @@ const apply_animation_state = (svg_element, current_time) => {
 
     if (!isNaN(current_num) && !isNaN(next_num)) {
       const interpolated =
-        current_num + (next_num - current_num) * local_progress
+        current_num + (next_num - current_num) * eased_progress
       target.setAttribute(attribute_name, `${interpolated}${unit}`)
     } else
       target.setAttribute(
         attribute_name,
-        local_progress < PROGRESS_HALF ? current_value : next_value
+        eased_progress < PROGRESS_HALF ? current_value : next_value
       )
   })
 

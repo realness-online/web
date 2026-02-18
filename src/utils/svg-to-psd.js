@@ -10,6 +10,7 @@ const is_ios = () => {
 }
 
 const REDUCED_WIDTH_IOS = 1920
+const OPACITY_FOREGROUND_LAYER = 0.9
 
 const get_target_width = () => {
   if (is_ios()) return REDUCED_WIDTH_IOS
@@ -22,7 +23,7 @@ const get_target_width = () => {
  * @param {Id} poster_id - Poster itemid
  * @param {number} width - Canvas width
  * @param {number} height - Canvas height
- * @returns {Promise<Array<{name: string, imageData: ImageData}>>}
+ * @returns {Promise<Array<{name: string, imageData: ImageData, opacity: number}>>}
  */
 const extract_core_layers = async (svg_element, poster_id, width, height) => {
   const layers = []
@@ -97,6 +98,7 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
     layer_elements.forEach(el => {
       const itemprop = el.getAttribute('itemprop')
       if (itemprop !== layer_name) el.remove()
+      else if (itemprop !== 'background') el.setAttribute('fill-opacity', '1')
     })
 
     const svg_data = new XMLSerializer().serializeToString(layer_clone)
@@ -120,9 +122,12 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
     URL.revokeObjectURL(svg_url)
     img.src = ''
 
+    const layer_opacity =
+      layer_name === 'background' ? 1 : OPACITY_FOREGROUND_LAYER
     layers.push({
       name: layer_name.charAt(0).toUpperCase() + layer_name.slice(1),
-      imageData: image_data
+      imageData: image_data,
+      opacity: layer_opacity
     })
   }
 
@@ -137,7 +142,7 @@ const stroke_layer_names = ['light', 'regular', 'medium', 'bold']
  * @param {Id} poster_id - Poster itemid
  * @param {number} width - Canvas width
  * @param {number} height - Canvas height
- * @returns {Promise<Array<{name: string, imageData: ImageData}>>}
+ * @returns {Promise<Array<{name: string, imageData: ImageData, opacity: number}>>}
  */
 const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
   const layers = []
@@ -223,6 +228,7 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
     path.setAttribute('fill', 'none')
     path.removeAttribute('fill-opacity')
     path.removeAttribute('fill-rule')
+    stroke_use.setAttribute('stroke-opacity', '1')
 
     const to_keep = new Set([path, stroke_use])
     ;[...shadow_symbol.children].forEach(child => {
@@ -252,7 +258,8 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
 
     layers.push({
       name: `${layer_name.charAt(0).toUpperCase() + layer_name.slice(1)} Stroke`,
-      imageData: image_data
+      imageData: image_data,
+      opacity: 0.9
     })
   }
 
@@ -265,7 +272,7 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
  * @param {Id} poster_id - Poster itemid
  * @param {number} width - Canvas width
  * @param {number} height - Canvas height
- * @returns {Promise<Array<{name: string, imageData: ImageData}>>}
+ * @returns {Promise<Array<{name: string, imageData: ImageData, opacity: number}>>}
  */
 const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
   const layers = []
@@ -327,7 +334,15 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
     all_uses.forEach(use => {
       const href = use.getAttribute('href')
       if (href !== layer_fragment) use.remove()
+      else use.setAttribute('style', 'opacity: 1')
     })
+    const cutout_symbol = layer_clone.querySelector(
+      `symbol[id="${as_query_id(layer_id)}"]`
+    )
+    if (cutout_symbol)
+      cutout_symbol.querySelectorAll('path').forEach(p => {
+        p.setAttribute('fill-opacity', '1')
+      })
 
     const svg_data = new XMLSerializer().serializeToString(layer_clone)
     const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
@@ -352,7 +367,8 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
 
     layers.push({
       name: layer_name.charAt(0).toUpperCase() + layer_name.slice(1),
-      imageData: image_data
+      imageData: image_data,
+      opacity: 0.5
     })
   }
 
@@ -410,9 +426,9 @@ export const render_svg_layers_to_psd = async (
 
   const shadow_group = {
     name: 'Shadows',
-    children: core_layers.map(({ name, imageData }) => ({
+    children: core_layers.map(({ name, imageData, opacity = 1 }) => ({
       name,
-      opacity: 1,
+      opacity,
       left: 0,
       top: 0,
       imageData
@@ -421,9 +437,9 @@ export const render_svg_layers_to_psd = async (
 
   const stroke_group = {
     name: 'Stroke',
-    children: stroke_layers.map(({ name, imageData }) => ({
+    children: stroke_layers.map(({ name, imageData, opacity = 1 }) => ({
       name,
-      opacity: 1,
+      opacity,
       left: 0,
       top: 0,
       imageData
@@ -432,9 +448,9 @@ export const render_svg_layers_to_psd = async (
 
   const cutout_group = {
     name: 'Mosaic',
-    children: cutout_layers.map(({ name, imageData }) => ({
+    children: cutout_layers.map(({ name, imageData, opacity = 1 }) => ({
       name,
-      opacity: 1,
+      opacity,
       left: 0,
       top: 0,
       imageData
@@ -464,7 +480,7 @@ export const render_svg_layers_to_psd = async (
  * @param {SVGSVGElement} svg_element - The SVG element with poster
  * @param {Id} poster_id - Poster itemid
  * @param {number} [target_width] - Target width in pixels (defaults to 4K: 3840)
- * @returns {Promise<Array<{name: string, imageData: ImageData}>>}
+ * @returns {Promise<Array<{name: string, imageData: ImageData, opacity: number}>>}
  */
 export const extract_all_layers = async (
   svg_element,

@@ -182,7 +182,7 @@
         :key="poster.id"
         :itemid="poster.id"
         :menu="menu"
-        :slice="poster.slice"
+        :slice="slice"
         tabindex="0"
         :class="{
           'selecting-event': poster.picker,

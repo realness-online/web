@@ -7,7 +7,6 @@
   import LogoAsLink from '@/components/logo-as-link'
   import { use_posters } from '@/use/poster'
   sessionStorage.about = true
-  const version = import.meta.env.PACKAGE_VERSION
   const { posters, for_person: posters_for_admin } = use_posters()
 
   const documentation = inject('documentation')
@@ -24,9 +23,7 @@
     <header>
       <nav>
         <logo-as-link />
-        <a @click="show_documentation"
-          >Documentation <span>{{ version }}</span></a
-        >
+        <a @click="show_documentation">Documentation</a>
       </nav>
       <section class="hero">
         <header>
@@ -366,10 +363,6 @@
         display: flex
         justify-content: space-between
         margin-bottom: base-line * 2
-        & > a > span
-          font-size:small
-          font-weight: 400
-          color: green
         svg.icon
           fill: blue
       & > section.hero

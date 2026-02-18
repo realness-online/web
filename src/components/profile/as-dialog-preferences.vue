@@ -5,6 +5,13 @@
   import { ref, computed, inject } from 'vue'
   import { get_command_description } from '@/utils/keymaps'
   import * as preferences from '@/utils/preference'
+  import {
+    sync_folder_supported,
+    use as use_sync_folder
+  } from '@/use/sync-folder'
+
+  const sync_folder_supported_value = sync_folder_supported()
+  const { sync_folder, sync_folder_name } = use_sync_folder()
 
   const key_commands = inject('key-commands')
   const settings = ref(null)
@@ -136,6 +143,21 @@
           name="animate"
           title="Animate posters"
           subtitle="This one loves a big strong GPU" />
+
+        <preference
+          v-if="sync_folder_supported_value"
+          name="sync_folder"
+          :title="
+            sync_folder_name
+              ? null
+              : 'Export full output (PSD, movie, SVG, PNG, layered PNG) to a folder'
+          ">
+          <p v-if="sync_folder_name">
+            Export full output (PSD, movie, SVG, PNG, layered PNG) to
+            <span class="location">{{ sync_folder_name }}</span>
+          </p>
+          <button type="button" @click="sync_folder">Choose folder</button>
+        </preference>
       </menu>
     </section>
 
@@ -158,7 +180,7 @@
               <kbd v-bind="is_key_active(cmd) ? { 'data-active': '' } : {}">{{
                 cmd.key
               }}</kbd>
-              <span>{{ cmd.description }}</span>
+              <b>{{ cmd.description }}</b>
             </li>
           </ul>
         </div>
@@ -271,22 +293,22 @@
 
     & > section:last-child {
       & > article {
-        header h3 {
+        & > header h3 {
           color: var(--red);
           margin-top: base-line;
           margin-bottom: round((base-line / 2), 2);
         }
 
-        div ul {
+        & > div ul {
           list-style: none;
 
-          li {
+          & > li {
             display: flex;
             align-items: center;
             gap: base-line;
             margin-bottom: round((base-line / 2), 2);
 
-            kbd {
+            & > kbd {
               standard-border: red
               flex-shrink: 0;
               margin: 0;
@@ -299,7 +321,7 @@
               }
             }
 
-            span {
+            & > span {
               color: var(--white-text);
               font-size: smaller;
               @media (prefers-color-scheme: light) {

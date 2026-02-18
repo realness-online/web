@@ -1,9 +1,9 @@
 <script setup>
-  import { as_day_and_time_for_filename } from '@/utils/date'
-  import { as_created_at } from '@/utils/itemid'
-  import { hsl_to_hex } from '@/utils/color-converters'
-  import { hsla_to_color } from '@/utils/colors'
-  import { load, as_query_id } from '@/utils/itemid'
+  import {
+    build_download_svg,
+    get_filename_for_poster
+  } from '@/utils/export-poster'
+  import { as_query_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
   import {
     render_svg_layers_to_psd,
@@ -44,147 +44,6 @@
   const video_progress = ref(0)
   const video_total = ref(0)
 
-  const normalize_ids_for_download = svg => {
-    const id_map = new Map()
-
-    const all_elements = svg.querySelectorAll('[id]')
-    all_elements.forEach(el => {
-      const old_id = el.getAttribute('id')
-      if (!old_id) return
-
-      const itemprop = el.getAttribute('itemprop')
-      let new_id = null
-
-      if (itemprop) {
-        const layer_names = [
-          'light',
-          'regular',
-          'medium',
-          'bold',
-          'sediment',
-          'sand',
-          'gravel',
-          'rocks',
-          'boulders',
-          'shadow',
-          'background'
-        ]
-        if (layer_names.includes(itemprop)) new_id = itemprop
-      }
-
-      if (!new_id) {
-        const itemid = el.getAttribute('itemid')
-        if (itemid) {
-          const parts = itemid.split('/')
-          if (parts.length >= 3) {
-            const [, , layer_type] = parts
-            const layer_names = [
-              'shadows',
-              'sediment',
-              'sand',
-              'gravel',
-              'rocks',
-              'boulders'
-            ]
-            if (layer_names.includes(layer_type))
-              new_id = layer_type === 'shadows' ? 'shadows' : layer_type
-          }
-        }
-      }
-
-      if (new_id && new_id !== old_id) {
-        id_map.set(old_id, new_id)
-        el.setAttribute('id', new_id)
-      }
-    })
-
-    const href_elements = svg.querySelectorAll('[href]')
-    href_elements.forEach(el => {
-      const href = el.getAttribute('href')
-      if (href && href.startsWith('#')) {
-        const old_id = href.substring(1)
-        const new_id = id_map.get(old_id)
-        if (new_id) el.setAttribute('href', `#${new_id}`)
-      }
-    })
-
-    const url_attrs = ['fill', 'stroke', 'mask']
-    url_attrs.forEach(attr => {
-      const elements = svg.querySelectorAll(`[${attr}]`)
-      elements.forEach(el => {
-        const value = el.getAttribute(attr)
-        if (value && value.includes('url(#')) {
-          const match = value.match(/url\(#([^)]+)\)/)
-          if (match) {
-            const [, old_id] = match
-            const new_id = id_map.get(old_id)
-            if (new_id)
-              el.setAttribute(
-                attr,
-                value.replace(`url(#${old_id})`, `url(#${new_id})`)
-              )
-          }
-        }
-      })
-    })
-  }
-
-  const build_download_svg = svg_element => {
-    const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
-
-    const use_elements = svg_clone.querySelectorAll('use[href]')
-    const referenced_ids = new Set()
-    use_elements.forEach(use_el => {
-      const href = use_el.getAttribute('href')
-      if (href && href.startsWith('#')) referenced_ids.add(href.substring(1))
-    })
-
-    const figure = svg_element.closest('figure.poster')
-    if (figure) {
-      const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-      if (hidden_svg) {
-        const symbols = hidden_svg.querySelectorAll('symbol')
-        let defs = svg_clone.querySelector('defs')
-        if (!defs) {
-          defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-          svg_clone.appendChild(defs)
-        }
-        symbols.forEach(symbol => {
-          const symbol_id = symbol.getAttribute('id')
-          if (symbol_id && referenced_ids.has(symbol_id)) {
-            const symbol_clone = /** @type {SVGSymbolElement} */ (
-              symbol.cloneNode(true)
-            )
-            defs.appendChild(symbol_clone)
-          }
-        })
-      }
-    }
-
-    const hidden_elements = svg_clone.querySelectorAll(
-      '[style*="visibility: hidden"]'
-    )
-    hidden_elements.forEach(el => {
-      el.remove()
-    })
-
-    const style_elements = svg_clone.querySelectorAll('[style]')
-    style_elements.forEach(el => {
-      el.removeAttribute('style')
-    })
-
-    const vue_components = svg_clone.querySelectorAll('as-animation')
-    vue_components.forEach(component => component.remove())
-
-    svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-    normalize_ids_for_download(svg_clone)
-
-    if (localStorage.adobe) adobe(svg_clone)
-
-    return svg_clone
-  }
-
   const download_svg_handler = event => {
     event.preventDefault()
     event.stopPropagation()
@@ -203,60 +62,6 @@
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  }
-
-  const adobe = svg => {
-    const convert = svg.querySelectorAll('[stop-color]')
-    convert.forEach(element => {
-      const hsla = element.getAttribute('stop-color')
-      const c = hsla_to_color(hsla)
-      element.setAttribute('stop-color', hsl_to_hex(c.h, c.s, c.l))
-    })
-  }
-
-  const get_vector_name = async () => {
-    const created = as_created_at(props.itemid)
-    if (!created) return 'poster.svg'
-    const path = props.itemid.split('/')
-    const author_id = path[1] ? `/${path[1]}` : ''
-    const creator = author_id ? await load(author_id) : null
-    const time = as_day_and_time_for_filename(created)
-    const facts = `${time}_${created}.svg`
-    if (creator?.name) {
-      const safe_name = creator.name.replace(/\s+/g, '_')
-      return `${safe_name}_${facts}`
-    }
-    return facts
-  }
-
-  const get_psd_name = async () => {
-    const created = as_created_at(props.itemid)
-    if (!created) return 'poster.psd'
-    const path = props.itemid.split('/')
-    const author_id = path[1] ? `/${path[1]}` : ''
-    const creator = author_id ? await load(author_id) : null
-    const time = as_day_and_time_for_filename(created)
-    const facts = `${time}_${created}.psd`
-    if (creator?.name) {
-      const safe_name = creator.name.replace(/\s+/g, '_')
-      return `${safe_name}_${facts}`
-    }
-    return facts
-  }
-
-  const get_video_name = async () => {
-    const created = as_created_at(props.itemid)
-    if (!created) return 'poster.mov'
-    const path = props.itemid.split('/')
-    const author_id = path[1] ? `/${path[1]}` : ''
-    const creator = author_id ? await load(author_id) : null
-    const time = as_day_and_time_for_filename(created)
-    const facts = `${time}_${created}.mov`
-    if (creator?.name) {
-      const safe_name = creator.name.replace(/\s+/g, '_')
-      return `${safe_name}_${facts}`
-    }
-    return facts
   }
 
   const toggle_menu = event => {
@@ -298,7 +103,8 @@
       set_working(true)
 
       try {
-        psd_filename = filename || (await get_psd_name())
+        psd_filename =
+          filename || (await get_filename_for_poster(props.itemid, 'psd'))
         const target_width = is_ios_safari() ? null : undefined
         psd_buffer = await render_svg_layers_to_psd(
           svg_element,
@@ -416,7 +222,7 @@
     svg.unpauseAnimations()
 
     try {
-      const video_filename = await get_video_name()
+      const video_filename = await get_filename_for_poster(props.itemid, 'mov')
       const blob = await render_svg_to_video_blob(svg, {
         fps: 24,
         animation_speed: animation_speed.value,
@@ -625,7 +431,7 @@
   }
 
   on_mounted(async () => {
-    file_name.value = await get_vector_name()
+    file_name.value = await get_filename_for_poster(props.itemid, 'svg')
     document.addEventListener('click', handle_click_outside)
   })
 
