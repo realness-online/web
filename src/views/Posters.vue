@@ -5,10 +5,8 @@
     ref,
     watch,
     nextTick as tick,
-    inject,
-    provide
+    inject
   } from 'vue'
-  import { use_delegated_pan } from '@/use/delegated-pan'
   import Icon from '@/components/icon'
   import AsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
@@ -38,7 +36,6 @@
   const poster_to_remove = ref(null)
   const delete_dialog = ref(null)
   const article_ref = ref(null)
-  provide('pan_delegator', use_delegated_pan(article_ref))
 
   /**
    * @param {Id} id

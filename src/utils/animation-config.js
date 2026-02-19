@@ -3,15 +3,15 @@
 export const FRAMES_PER_SECOND = 3
 export const BASE_DURATION = 180
 
-/** Canonical speed names in cycle order (fastest to slowest) */
+/** Canonical speed names in cycle order (slowest to fastest) */
 export const ANIMATION_SPEEDS = [
-  'sprint',
-  'stride',
-  'stroll',
-  'amble',
-  'crawl',
+  'freeze',
   'drift',
-  'freeze'
+  'crawl',
+  'amble',
+  'stroll',
+  'stride',
+  'sprint'
 ]
 
 /** Multiplier for each speed (duration = base * multiplier). Includes legacy aliases. */

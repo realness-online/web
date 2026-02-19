@@ -6,6 +6,7 @@
   import { current_user, sign_off, me } from '@/utils/serverless'
   import { useRoute as use_route } from 'vue-router'
   const form = ref(null)
+  const is_open = ref(false)
   const name = computed(() => me.value?.name || 'sign on')
   const route = use_route()
   const show_sign_in = ref(false)
@@ -18,7 +19,8 @@
     else {
       show_sign_in.value = false
       is_mobile_form_visible.value = false
-      form.value.showModal()
+      is_open.value = true
+      form.value.show()
       form.value.focus()
     }
   }
@@ -36,18 +38,26 @@
   }
 
   const on_close = () => {
+    is_open.value = false
     show_sign_in.value = false
     is_mobile_form_visible.value = false
     just_signed_in.value = false
   }
 
   watch(
+    () => current_user.value,
+    (user, was) => {
+      if (user && !was && form.value?.open) just_signed_in.value = true
+    }
+  )
+  watch(
     () => route.hash,
     new_hash => {
       if (new_hash === '#account' && form.value) {
         show_sign_in.value = false
         is_mobile_form_visible.value = false
-        form.value.showModal()
+        is_open.value = true
+        form.value.show()
         form.value.focus()
       }
     }
@@ -64,20 +74,30 @@
       v-else
       @signed_in="signed_in"
       @showing_mobile="on_showing_mobile" />
-    <fieldset v-if="current_user && !just_signed_in" id="sign-off">
+    <fieldset
+      v-if="
+        current_user &&
+        !just_signed_in &&
+        (!show_sign_in || is_mobile_form_visible)
+      "
+      id="sign-off">
       <legend>Sign off</legend>
       <button @click="sign_off">
         <icon name="arrow" />
       </button>
     </fieldset>
   </dialog>
+  <div v-if="is_open" @click="form?.close()" />
 </template>
 
 <style lang="stylus">
+  body:has(dialog#account[open]) {
+    overflow: hidden;
+  }
   #navigation a#toggle-account {
     display: block;
     position: fixed;
-    top: inset(top,  base-line);
+    top: safe_inset(top, base-line)
     left: base-line;
     & > span {
       margin-left: base-line * .5;
@@ -88,7 +108,7 @@
   }
   dialog#account {
     z-index: 9;
-    position: fixed;
+    position: fixed
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -96,6 +116,13 @@
     border: 3px solid red;
     border-radius: base-line *.5;
     padding: base-line;
+
+    & + div {
+      position: fixed
+      inset: 0
+      z-index: 8;
+      background-color: black-transparent
+    }
     & > a {
       position: absolute;
       top: base-line * .5;

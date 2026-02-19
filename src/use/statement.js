@@ -10,13 +10,13 @@ import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 
 const links = ['http://', 'https://']
-const my_statements = ref([])
+const my_thoughts = ref([])
 let loading_promise = null
 
 export const use = () => {
   const set_working = inject('set_working')
   const authors = ref([])
-  const statements = ref(null)
+  const thoughts = ref(null)
 
   /**
    * @param {Statement[]} thought
@@ -24,7 +24,7 @@ export const use = () => {
   const thought_shown = async thought => {
     const oldest = thought[thought.length - 1]
     const author = as_author(oldest.id)
-    const author_statements = statements.value.filter(
+    const author_statements = thoughts.value.filter(
       statement => author === as_author(statement.id)
     )
     const author_oldest = author_statements[author_statements.length - 1]
@@ -46,7 +46,7 @@ export const use = () => {
           /** @type {Id} */ (`${author_obj.id}/statements/${next}`)
         )
         author_obj.viewed.push(next)
-        statements.value = [...statements.value, ...next_statements]
+        thoughts.value = [...thoughts.value, ...next_statements]
       }
     }
   }
@@ -58,9 +58,9 @@ export const use = () => {
     if (set_working) set_working(true)
     const statement_id = /** @type {Id} */ (`${query.id}/statements`)
     const their_statements = await list(statement_id)
-    if (statements.value)
-      statements.value = [...statements.value, ...their_statements]
-    else statements.value = their_statements
+    if (thoughts.value)
+      thoughts.value = [...thoughts.value, ...their_statements]
+    else thoughts.value = their_statements
     const existing_author = authors.value.find(a => a.id === query.id)
     if (existing_author) existing_author.viewed = ['index']
     else
@@ -79,7 +79,7 @@ export const use = () => {
       id: `${localStorage.me}/statements/${new Date().getTime()}`
     }
     if (!statement || links.some(link => statement.includes(link))) return
-    my_statements.value.push(post)
+    my_thoughts.value.push(post)
     await tick()
     await new Statement().save(
       document.querySelector(`[itemid="${localStorage.me}/statements"]`)
@@ -92,7 +92,7 @@ export const use = () => {
       list(/** @type {Id} */ (`${localStorage.me}/statements`))
     if (!loading_promise) loading_promise = promise
 
-    my_statements.value = await promise
+    my_thoughts.value = await promise
     if (loading_promise === promise) loading_promise = null
     authors.value.push({
       id: localStorage.me,
@@ -103,8 +103,8 @@ export const use = () => {
 
   return {
     authors,
-    statements,
-    my_statements,
+    thoughts,
+    my_thoughts,
     for_person,
     save,
     thought_shown

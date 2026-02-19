@@ -46,6 +46,10 @@ export const as_filename = async itemid => {
     if (archive) return `${archive}.html.gz`
     return `${filename}.html.gz`
   } else if (is_history(itemid)) return `${filename}.html.gz`
+  else if (item_type === 'relations') {
+    const base = filename.replace(/\/relations$/, '')
+    return `${base}/relations.html.gz`
+  }
 
   return `${filename}/index.html.gz`
 }

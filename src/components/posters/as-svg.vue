@@ -13,7 +13,7 @@
     provide,
     inject
   } from 'vue'
-  import { useMediaQuery } from '@vueuse/core'
+  import { useDocumentVisibility, useMediaQuery } from '@vueuse/core'
   import {
     use as use_poster,
     is_vector,
@@ -131,8 +131,12 @@
   }
 
   const trigger = ref(null)
+  const visibility = useDocumentVisibility()
   const animate = computed(
-    () => animate_pref.value === true && intersecting.value
+    () =>
+      animate_pref.value === true &&
+      intersecting.value &&
+      visibility.value === 'visible'
   )
   const landscape = computed(() => {
     if (!vector.value) return false

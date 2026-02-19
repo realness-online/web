@@ -11,7 +11,6 @@
     provide
   } from 'vue'
   import { useFps, useMagicKeys } from '@vueuse/core'
-  import { init_serverless } from '@/utils/serverless'
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
@@ -145,10 +144,12 @@
       animation_speed.value ||
       DEFAULT_ANIMATION_SPEED
     const current_index = ANIMATION_SPEEDS.indexOf(current)
-    const is_reverse = magic_keys.shift.value
-    const next_index = is_reverse
-      ? (current_index - 1 + ANIMATION_SPEEDS.length) % ANIMATION_SPEEDS.length
-      : (current_index + 1) % ANIMATION_SPEEDS.length
+    const go_slower = magic_keys.shift.value
+    const at_slowest = current_index === 0
+    const at_fastest = current_index === ANIMATION_SPEEDS.length - 1
+    let next_index
+    if (go_slower) next_index = at_slowest ? 1 : current_index - 1
+    else next_index = at_fastest ? current_index - 1 : current_index + 1
     animation_speed.value = ANIMATION_SPEEDS[next_index]
   })
   register_preference('pref::Toggle_Info', info)
@@ -243,7 +244,7 @@
       ?.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
-  mounted(async () => {
+  mounted(() => {
     const has_drama_back = localStorage.getItem('drama_back') !== null
     const has_drama_front = localStorage.getItem('drama_front') !== null
     if (!has_drama_back && !has_drama_front && drama.value) {
@@ -266,7 +267,6 @@
     if (!sessionStorage.about) router.push('/about')
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
-    await init_serverless()
   })
   dismount(() => {
     window.removeEventListener('online', online)

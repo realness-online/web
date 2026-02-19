@@ -23,95 +23,101 @@ vi.mock('@/use/key-commands', () => ({
   })
 }))
 
-// Mock statement composable
-const mock_my_statements = ref([
+// Mock people composable
+const mock_people = ref([])
+const mock_relations = ref([
   {
-    id: '/+14151234356/statements/1',
-    type: 'statements',
-    created_at: Date.now()
-  },
-  {
-    id: '/+14151234356/statements/2',
-    type: 'statements',
-    created_at: Date.now() - 86400000
+    id: '/+14151234356/people/1',
+    type: 'person'
   }
 ])
 
-const mock_statements = ref([])
+vi.mock('@/use/people', () => ({
+  use: () => ({
+    people: mock_people,
+    relations: mock_relations
+  }),
+  use_me: () => ({
+    relations: mock_relations,
+    blocked: ref([])
+  })
+}))
+
+// Mock statement composable
+const mock_thoughts = ref([])
 const mock_thought_shown = vi.fn()
+const mock_statements_for_person = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('@/use/statement', () => ({
   use: () => ({
-    my_statements: mock_my_statements,
-    statements: mock_statements,
+    for_person: mock_statements_for_person,
+    thoughts: mock_thoughts,
     thought_shown: mock_thought_shown
-  })
+  }),
+  slot_key: vi.fn(id => id)
 }))
 
-// Mock people composable
-vi.mock('@/use/people', () => ({
-  get_my_itemid: vi.fn(type => `/+14151234356/${type}`)
+// Mock poster composable
+const mock_posters = ref([])
+const mock_poster_shown = vi.fn()
+const mock_posters_for_person = vi.fn().mockResolvedValue(undefined)
+
+vi.mock('@/use/poster', () => ({
+  use_posters: () => ({
+    for_person: mock_posters_for_person,
+    poster_shown: mock_poster_shown,
+    posters: mock_posters
+  }),
+  is_vector_id: vi.fn().mockReturnValue(true),
+  is_url_query: vi.fn().mockReturnValue(true),
+  is_rect: vi.fn().mockReturnValue(true),
+  is_vector: vi.fn().mockReturnValue(true),
+  is_focus: vi.fn().mockReturnValue(true),
+  is_click: vi.fn().mockReturnValue(true)
 }))
 
-// Mock serverless utils
-vi.mock('@/utils/serverless', () => ({
-  current_user: ref({
-    id: '/+14151234356',
-    type: 'person'
-  })
-}))
-
-// Mock vue-router
-const mock_push = vi.fn()
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
-    push: mock_push
-  })
+// Mock preference utils
+vi.mock('@/utils/preference', () => ({
+  storytelling: ref(false)
 }))
 
 describe('Statements', () => {
   let wrapper
+  const set_working = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mock_statements.value = []
-    mock_my_statements.value = [
+    mock_people.value = []
+    mock_thoughts.value = []
+    mock_posters.value = []
+    mock_relations.value = [
       {
-        id: '/+14151234356/statements/1',
-        type: 'statements',
-        created_at: Date.now()
-      },
-      {
-        id: '/+14151234356/statements/2',
-        type: 'statements',
-        created_at: Date.now() - 86400000
+        id: '/+14151234356/people/1',
+        type: 'person'
       }
     ]
 
     wrapper = shallowMount(Statements, {
       global: {
+        provide: {
+          set_working
+        },
         stubs: {
           icon: true,
           'logo-as-link': true,
           'as-days': {
             template:
-              '<section class="as-days-stub"><slot :thoughts="mockThoughts" /></section>',
-            props: ['itemid', 'paginate', 'statements'],
-            setup() {
-              const mockThoughts = [
-                [
-                  {
-                    id: '/+14151234356/statements/1',
-                    type: 'statements'
-                  }
-                ]
-              ]
-              return { mockThoughts }
-            }
+              '<section class="as-days-stub"><slot :items="[]" /></section>',
+            props: ['working', 'posters', 'thoughts']
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
-            props: ['statements', 'editable'],
+            props: ['thoughts', 'verbose'],
+            emits: ['show']
+          },
+          'poster-as-figure': {
+            template: '<figure class="poster-stub"></figure>',
+            props: ['itemid'],
             emits: ['show']
           }
         }
@@ -135,83 +141,41 @@ describe('Statements', () => {
       expect(wrapper.find('header').exists()).toBe(true)
     })
 
-    it('renders editable statements article', () => {
-      expect(wrapper.find('article.editable.statements').exists()).toBe(true)
+    it('renders h1 with Statements title', () => {
+      expect(wrapper.find('h1').text()).toBe('Statements')
     })
 
     it('shows working state initially', () => {
-      expect(wrapper.vm.working).toBeDefined()
-      const initial_working = wrapper.vm.working
-      expect(typeof initial_working).toBe('boolean')
+      expect(wrapper.vm.working).toBe(true)
     })
   })
 
   describe('Functionality', () => {
-    it('registers key commands on mount', () => {
-      expect(mock_register).toHaveBeenCalledWith(
-        'statement::Save',
-        expect.any(Function)
-      )
-      expect(mock_register).toHaveBeenCalledWith(
-        'statement::Cancel',
-        expect.any(Function)
-      )
-    })
-
-    it('sets statements to last editable on mount', async () => {
+    it('fills statements with relations on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_statements.value.length).toBe(1)
-      const last_index = mock_my_statements.value.length - 1
-      expect(mock_statements.value[0].id).toBe(
-        mock_my_statements.value[last_index].id
-      )
+      expect(mock_statements_for_person).toHaveBeenCalled()
+      expect(mock_posters_for_person).toHaveBeenCalled()
     })
 
-    it('sets working to false after mount', async () => {
+    it('adds current user to people list', async () => {
+      await wrapper.vm.$nextTick()
+      await new Promise(resolve => setTimeout(resolve, 10))
+      expect(mock_people.value.some(p => p.id === '/+14151234356')).toBe(true)
+    })
+
+    it('sets working to false after fill_statements completes', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
       expect(wrapper.vm.working).toBe(false)
     })
 
-    it('navigates home when home button is clicked', async () => {
-      mock_my_statements.value = []
+    it('adds storytelling class when storytelling preference is true', async () => {
+      const { storytelling } = await import('@/utils/preference')
+      storytelling.value = true
       await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 10))
-      const home_button = wrapper.find('button[aria-label="Home"]')
-      if (home_button.exists()) {
-        await home_button.trigger('click')
-        expect(mock_push).toHaveBeenCalledWith({ path: '/' })
-      }
-    })
-
-    it('shows footer message when no statements', async () => {
-      mock_my_statements.value = []
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 10))
-      const footer = wrapper.find('footer.message')
-      expect(footer.exists()).toBe(true)
-    })
-
-    it('renders earlier statements section when multiple statements exist', async () => {
-      mock_statements.value = [
-        {
-          id: '/+14151234356/statements/1',
-          type: 'statements'
-        },
-        {
-          id: '/+14151234356/statements/2',
-          type: 'statements'
-        }
-      ]
-      await wrapper.vm.$nextTick()
-      const earlier_section = wrapper.find('article.earlier.statements')
-      expect(earlier_section.exists()).toBe(true)
-    })
-
-    it('adds signed-in class when current_user exists', () => {
       expect(wrapper.find('section#statements').classes()).toContain(
-        'signed-in'
+        'storytelling'
       )
     })
   })

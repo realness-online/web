@@ -39,7 +39,7 @@ export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } } 
 export const use = () => {
   const { emit } = current_instance()
   const { me, relations } = use_me()
-  const { my_statements: statements } = use_statements()
+  const { my_thoughts } = use_statements()
   const events = ref(null)
   const sync_element = ref(null)
   const sync_poster = ref(null)
@@ -139,8 +139,8 @@ export const use = () => {
     const hash = await create_hash(elements.outerHTML)
     if (index_hash !== hash) {
       const synced = await persistance.sync()
-      statements.value = synced || []
-      if (statements.value.length) {
+      my_thoughts.value = synced || []
+      if (my_thoughts.value.length) {
         await tick()
         await persistance.save(elements)
         localStorage.removeItem('/+/statements')

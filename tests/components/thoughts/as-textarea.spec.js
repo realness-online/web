@@ -1,8 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
-import wat from '@/components/statements/as-textarea'
+import wat from '@/components/thoughts/as-textarea'
 
-// Mock the composables and utilities
 vi.mock('@/use/statement', () => ({
   use: () => ({
     save: vi.fn()
@@ -15,7 +14,6 @@ vi.mock('@/use/key-commands', () => ({
   }))
 }))
 
-// Mock document methods
 Object.defineProperty(document, 'querySelector', {
   value: vi.fn(() => ({
     focus: vi.fn(),
@@ -29,7 +27,7 @@ Object.defineProperty(window, 'scrollTo', {
   writable: true
 })
 
-describe('@/components/statements/as-textarea.vue', () => {
+describe('@/components/thoughts/as-textarea.vue', () => {
   let wrapper
 
   beforeEach(() => {
@@ -43,7 +41,7 @@ describe('@/components/statements/as-textarea.vue', () => {
   })
 
   describe('Renders', () => {
-    it('A textarea for statement input', () => {
+    it('A textarea for thought input', () => {
       expect(wrapper.find('textarea#wat').exists()).toBe(true)
     })
 
@@ -55,8 +53,8 @@ describe('@/components/statements/as-textarea.vue', () => {
   })
 
   describe('Props and Data', () => {
-    it('has statement_text ref', () => {
-      expect(wrapper.vm.statement_text).toBeDefined()
+    it('has thought_text ref', () => {
+      expect(wrapper.vm.thought_text).toBeDefined()
     })
   })
 
@@ -68,9 +66,9 @@ describe('@/components/statements/as-textarea.vue', () => {
       })
     })
 
-    describe('#prepare_statement', () => {
+    describe('#prepare_thought', () => {
       it('exists as a function', () => {
-        expect(typeof wrapper.vm.prepare_statement).toBe('function')
+        expect(typeof wrapper.vm.prepare_thought).toBe('function')
       })
     })
   })

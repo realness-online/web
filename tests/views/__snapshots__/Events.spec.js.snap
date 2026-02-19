@@ -22,7 +22,7 @@ exports[`@/views/Events > Rendering > renders events component 1`] = `
     id="tonight"
     paginate="false"
     posters=""
-    statements=""
+    thoughts=""
     working="false"
   />
   <footer>

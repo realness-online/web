@@ -14,7 +14,7 @@ exports[`@/components/sync > Render > Renders sync component 1`] = `
     itemscope=""
     paginate="false"
     posters=""
-    statements=""
+    thoughts=""
     working="false"
   />
   <!--v-if-->

@@ -111,7 +111,7 @@ describe('@/views/Navigation', () => {
       expect(about_link).toBeTruthy()
     })
 
-    it('renders statement textarea component', () => {
+    it('renders thought textarea component', () => {
       const textarea = wrapper.find('textarea#wat')
       expect(textarea.exists()).toBe(true)
     })

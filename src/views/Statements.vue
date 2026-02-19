@@ -1,122 +1,144 @@
 <script setup>
+  import { ref, inject, onMounted as mounted } from 'vue'
   import Icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsDays from '@/components/as-days'
-  import ThoughtAsArticle from '@/components/statements/as-article'
+  import ThoughtAsArticle from '@/components/thoughts/as-article'
+  import PosterAsFigure from '@/components/posters/as-figure'
 
-  import { current_user } from '@/utils/serverless'
-  import { use as use_statements } from '@/use/statement'
-  import { get_my_itemid } from '@/use/people'
-
-  import { ref, onMounted as mounted } from 'vue'
-  import { useRouter as use_router } from 'vue-router'
+  import { use as use_statements, slot_key } from '@/use/statement'
+  import { use as use_people, use_me } from '@/use/people'
+  import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
+  import { storytelling } from '@/utils/preference'
 
   console.time('views:Statements')
+
+  const set_working = inject('set_working')
   const working = ref(true)
-  const router = use_router()
-  const { my_statements, statements, thought_shown } = use_statements()
-  const home = () => router.push({ path: '/' })
+  const statements_ref = ref(null)
 
-  const { register } = use_keymap('Statements')
+  const { people } = use_people()
+  const {
+    for_person: statements_for_person,
+    thoughts,
+    thought_shown
+  } = use_statements()
+  const {
+    for_person: posters_for_person,
+    poster_shown,
+    posters
+  } = use_posters()
+  const { relations } = use_me()
 
-  register('statement::Save', () => {})
-  register('statement::Cancel', () => {})
+  const fill_statements = async () => {
+    if (relations.value) people.value = [...relations.value]
+    const me = {
+      id: localStorage.me,
+      type: 'person'
+    }
+    people.value.push(me)
+    await Promise.all(
+      people.value.map(async relation => {
+        await Promise.all([
+          statements_for_person({ id: relation.id }),
+          posters_for_person({ id: relation.id })
+        ])
+      })
+    )
+  }
 
-  mounted(() => {
-    const last_editable = my_statements.value.length - 1
-    statements.value = [my_statements.value[last_editable]]
+  use_keymap('Statements')
+
+  mounted(async () => {
+    if (set_working) set_working(true)
+    await fill_statements()
     working.value = false
+    if (set_working) set_working(false)
     console.timeEnd('views:Statements')
   })
 </script>
 
 <template>
-  <section id="statements" :class="{ 'signed-in': current_user }" class="page">
+  <section
+    id="statements"
+    ref="statements_ref"
+    class="page"
+    :class="{ storytelling: storytelling }">
     <header>
-      <icon name="nothin" />
-      <logo-as-link />
+      <icon name="nothing" />
+      <logo-as-link tabindex="-1" />
     </header>
-    <article class="editable statements">
-      <header>
-        <h1 v-if="!working">Thoughts</h1>
-      </header>
-      <as-days
-        v-slot="thoughts"
-        itemscope
-        :itemid="get_my_itemid('statements')"
-        :paginate="false"
-        :statements="my_statements">
+    <h1>Statements</h1>
+    <as-days
+      v-slot="items"
+      :working="working"
+      :posters="posters"
+      :thoughts="thoughts">
+      <template v-for="item in items">
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :key="slot_key(item.id)"
+          :itemid="item.id"
+          @show="poster_shown" />
         <thought-as-article
-          v-for="thought in thoughts"
-          :key="thought[0].id"
-          :statements="thought"
-          editable
+          v-else
+          :key="slot_key(item)"
+          :thoughts="item"
+          verbose
           @show="thought_shown" />
-      </as-days>
-    </article>
-    <footer v-if="!my_statements?.length && !working" class="message">
-      <p>
-        Say some stuff via the <button aria-label="Home" @click="home" /> button
-        on the homepage
-        <br />
-      </p>
-    </footer>
-    <article v-if="statements?.length > 1" class="earlier statements">
-      <header>
-        <h1>Earlier Thoughts</h1>
-      </header>
-      <as-days v-slot="thoughts" :statements="statements" :paginate="false">
-        <thought-as-article
-          v-for="thought in thoughts"
-          :key="thought[0].id"
-          :statements="thought"
-          @show="thought_shown" />
-      </as-days>
-    </article>
+      </template>
+    </as-days>
   </section>
 </template>
 
 <style lang="stylus">
-  section#statements
-    svg.icon
-      fill: red
-    a
-    button
-    time
-      color: red
-      border-color: red
-    & > article.statements
-      &.earlier .day:first-of-type
-        display: none
-      & > header
-        h1
-          width: 100%
-          margin-top: 0
-          text-align: center
-          padding: 0 base-line base-line base-line
-          line-height: 1
-      & > section.as-days
-        padding-top: 0
-        h4
-          margin: base-line 0 0 0
-        article.day p[itemprop="statement"]:focus
-          font-weight: bolder
-          outline: 0px
-    & > footer
-      text-align: center
-      padding: 0 base-line
-      & > p
-        margin: auto
-        max-width: inherit
-        & > button
-          background-color: red
-          border-width: 1px
-          border-radius: 0.2em
-          height: 1em
-          width: 1.66em
-    @media (prefers-color-scheme: dark)
-      h1, h4, svg.background
-        color: red
-        fill: red
+  section#statements {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    @media (max-width: pad-begins) {
+      & > section.as-days {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      & > section.as-days article.day > header {
+        padding-left: base-line;
+        padding-right: base-line;
+      }
+      & > section.as-days article.thought {
+        padding-left: base-line;
+        padding-right: base-line;
+      }
+    }
+    & > header {
+      & > h1 {
+        width:auto;
+        color: blue;
+      }
+      & > a:hover > svg {
+        fill: green;
+        transition-timing-function: ease-out;
+      }
+      & > a > svg {
+        fill: blue;
+      }
+    }
+    & > nav {
+      display: none;
+    }
+    & > section.as-days {
+      & > article.day {
+        margin-bottom: base-line;
+        @media (prefers-color-scheme: dark) {
+          & > header h4, figure.poster > svg.background {
+            color: blue;
+          }
+        }
+      }
+    }
+    .working {
+      fill: blue;
+    }
+  }
 </style>

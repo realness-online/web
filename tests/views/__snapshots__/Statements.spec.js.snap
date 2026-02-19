@@ -2,39 +2,34 @@
 
 exports[`Statements > Rendering > renders statements view 1`] = `
 <section
-  class="signed-in page"
+  class="page"
   id="statements"
 >
   <header>
     <icon-stub
-      name="nothin"
+      name="nothing"
     />
-    <logo-as-link-stub />
+    <logo-as-link-stub
+      tabindex="-1"
+    />
   </header>
-  <article
-    class="editable statements"
+  <h1>
+    Statements
+  </h1>
+  <section
+    class="as-days-stub"
   >
-    <header>
-      <h1>
-        Thoughts
-      </h1>
-    </header>
-    <section
-      class="as-days-stub"
-      itemscope=""
-    >
-      
-      
-      <as-article-stub
-        editable="true"
-        statements="[object Object]"
-        verbose="false"
-      />
-      
-      
-    </section>
-  </article>
-  <!--v-if-->
-  <!--v-if-->
+    
+    
+    
+    <as-article-stub
+      editable="false"
+      thoughts=""
+      verbose="true"
+    />
+    
+    
+    
+  </section>
 </section>
 `;

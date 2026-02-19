@@ -26,11 +26,11 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       'Number Row': '',
-      1: 'nav::Go_Thoughts',
+      1: 'nav::Go_Statements',
       2: 'nav::Go_Posters',
-      3: 'nav::Go_Statements',
-      4: 'nav::Go_Events',
-      5: 'nav::Go_Phonebook',
+      3: 'nav::Go_Thoughts',
+      4: 'nav::Go_Phonebook',
+      5: 'nav::Go_Events',
       6: 'nav::Go_About',
       0: 'nav::Go_Home',
 
@@ -104,11 +104,11 @@ export const default_keymap = [
       'pref::Toggle_Sand': 'Sand visible',
       'pref::Toggle_Sediment': 'Sediment visible',
       'nav::Go_Home': 'To home',
-      'nav::Go_Statements': 'To thoughts',
+      'nav::Go_Statements': 'To statements',
       'nav::Go_Events': 'To events',
       'nav::Go_Posters': 'To posters',
       'nav::Go_Phonebook': 'To phonebook',
-      'nav::Go_Thoughts': 'To statements',
+      'nav::Go_Thoughts': 'To thoughts',
       'nav::Go_About': 'Learn more about the app and read the documentation'
     }
   },
@@ -153,20 +153,6 @@ export const default_keymap = [
     }
   },
 
-  {
-    context: 'Thoughts',
-    use_key_equivalents: true,
-    bindings: {
-      up: 'thoughts::Previous_Item',
-      down: 'thoughts::Next_Item',
-      enter: 'thoughts::Open_Item'
-    },
-    descriptions: {
-      'thoughts::Previous_Item': 'Previous item',
-      'thoughts::Next_Item': 'Next item',
-      'thoughts::Open_Item': 'Open selected item'
-    }
-  },
   {
     context: 'Events',
     use_key_equivalents: true,

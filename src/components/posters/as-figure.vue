@@ -25,6 +25,7 @@
   import { mosaic } from '@/utils/preference'
   import { as_time } from '@/utils/date'
   import { current_user } from '@/utils/serverless'
+  import { use_delegated_pan } from '@/use/delegated-pan'
   import {
     ref,
     computed,
@@ -54,6 +55,7 @@
     show: is_vector
   })
   const poster = ref(null)
+  provide('pan_delegator', use_delegated_pan(poster))
   const vector = ref(null)
   const person = ref(null)
   const menu_open = ref(false)

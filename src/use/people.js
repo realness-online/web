@@ -58,7 +58,7 @@ export const use = () => {
       phonebook.value = []
       load_blocked()
 
-      const people = await directory('/people/')
+      const people = await directory('people/')
       if (!people?.prefixes?.length) {
         working.value = false
         if (set_working) set_working(false)

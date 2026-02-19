@@ -97,8 +97,8 @@ describe('statement composable', () => {
           viewed: ['index']
         }
       ])
-      expect(statement_instance.statements.value).toBe(null)
-      expect(statement_instance.my_statements.value).toEqual([])
+      expect(statement_instance.thoughts.value).toBe(null)
+      expect(statement_instance.my_thoughts.value).toEqual([])
     })
   })
 
@@ -114,7 +114,7 @@ describe('statement composable', () => {
       await statement_instance.for_person(person)
 
       expect(list).toHaveBeenCalledWith('/+1234/statements')
-      expect(statement_instance.statements.value).toEqual(mock_statements)
+      expect(statement_instance.thoughts.value).toEqual(mock_statements)
     })
 
     it('sets person viewed to index', async () => {
@@ -142,28 +142,28 @@ describe('statement composable', () => {
       const { list } = await import('@/utils/itemid')
       list.mockResolvedValue([{ id: '/+1234/statements/1000' }])
 
-      statement_instance.statements.value = [{ id: '/+5678/statements/2000' }]
+      statement_instance.thoughts.value = [{ id: '/+5678/statements/2000' }]
 
       const person = { id: '/+1234', type: 'person' }
       await statement_instance.for_person(person)
 
-      expect(statement_instance.statements.value).toHaveLength(2)
+      expect(statement_instance.thoughts.value).toHaveLength(2)
     })
   })
 
   describe('save', () => {
     it('saves statement with trimmed text', async () => {
       const { Statement } = await import('@/persistance/Storage')
-      const initial_length = statement_instance.my_statements.value.length
+      const initial_length = statement_instance.my_thoughts.value.length
 
       await statement_instance.save('  Hello World  ')
 
-      expect(statement_instance.my_statements.value.length).toBe(
+      expect(statement_instance.my_thoughts.value.length).toBe(
         initial_length + 1
       )
       const last_statement =
-        statement_instance.my_statements.value[
-          statement_instance.my_statements.value.length - 1
+        statement_instance.my_thoughts.value[
+          statement_instance.my_thoughts.value.length - 1
         ]
       expect(last_statement.statement).toBe('Hello World')
     })
@@ -171,7 +171,7 @@ describe('statement composable', () => {
     it('generates id with timestamp', async () => {
       await statement_instance.save('Test')
 
-      const statements = statement_instance.my_statements.value
+      const statements = statement_instance.my_thoughts.value
       const saved_id = statements[statements.length - 1].id
       const timestamp = Number(saved_id.split('/').pop())
 
@@ -211,7 +211,7 @@ describe('statement composable', () => {
   describe('thought_shown', () => {
     it('requires non-empty thought array', async () => {
       const thought = [{ id: '/+1234/statements/1000', statement: 'Test' }]
-      statement_instance.statements.value = [thought[0]]
+      statement_instance.thoughts.value = [thought[0]]
 
       // Function will try to find author and filter statements
       await statement_instance.thought_shown(thought)

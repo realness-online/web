@@ -91,7 +91,7 @@ vi.mock('@/use/people', () => ({
 
 vi.mock('@/use/statement', () => ({
   use: () => ({
-    my_statements: ref([])
+    my_thoughts: ref([])
   })
 }))
 

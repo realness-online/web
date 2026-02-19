@@ -231,7 +231,7 @@
 
     @media (max-width: pad-begins) {
       position: fixed;
-      top: inset(top, base-line * 3);
+      top: safe_inset(top, base-line * 3);
       bottom: 0;
       left: 0;
       right: 0;
@@ -243,7 +243,7 @@
       &[open] {
         grid-template-columns: 1fr;
         gap: base-line;
-        padding: 0 base-line inset(bottom) base-line;
+        padding: 0 base-line safe_inset(bottom) base-line;
       }
       & > section:last-child {
         display: none;
