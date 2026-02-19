@@ -11,13 +11,13 @@
   import { load, as_author, as_created_at } from '@/utils/itemid'
   import { as_time } from '@/utils/date'
   import Icon from '@/components/Icon'
-  import AsStatement from '@/components/statements/as-div'
+  import AsThought from '@/components/thoughts/as-thought'
   import AsAvatar from '@/components/posters/as-svg'
   import AsMessenger from '@/components/profile/as-messenger'
   import { menu } from '@/utils/preference'
 
   const props = defineProps({
-    statements: {
+    thoughts: {
       /** @type {import('vue').PropType<Statement[]>} */
       type: Array,
       required: true
@@ -35,11 +35,11 @@
   })
 
   const emit = defineEmits({
-    show: (/** @type {Statement[]} */ statements) => Array.isArray(statements),
-    focused: (/** @type {Statement} */ statement) =>
-      statement && typeof statement === 'object',
-    blurred: (/** @type {Statement} */ statement) =>
-      statement && typeof statement === 'object'
+    show: (/** @type {Statement[]} */ thoughts) => Array.isArray(thoughts),
+    focused: (/** @type {Statement} */ thought) =>
+      thought && typeof thought === 'object',
+    blurred: (/** @type {Statement} */ thought) =>
+      thought && typeof thought === 'object'
   })
 
   const observer = ref(null)
@@ -48,7 +48,7 @@
   const focused = ref(false)
   const el = ref(null)
   const thought_starts_at = computed(() =>
-    as_time(as_created_at(props.statements[0].id))
+    as_time(as_created_at(props.thoughts[0].id))
   )
 
   mounted(() => {
@@ -58,7 +58,7 @@
     })
     observer.value.observe(el.value)
     if (props.verbose) {
-      const author_id = as_author(props.statements[0].id)
+      const author_id = as_author(props.thoughts[0].id)
       if (author_id) load(author_id).then(result => (author.value = result))
     }
   })
@@ -79,19 +79,19 @@
     if (menu.value) all.value = all.value ? null : 'all'
   }
 
-  const show = () => emit('show', props.statements)
+  const show = () => emit('show', props.thoughts)
 
-  const has_focus = statement => {
+  const has_focus = thought => {
     focused.value = true
-    emit('focused', statement)
+    emit('focused', thought)
   }
 
   const BLUR_DELAY_MS = 750
 
-  const has_blurred = statement => {
+  const has_blurred = thought => {
     focused.value = false
     setTimeout(() => {
-      if (!focused.value) emit('blurred', statement)
+      if (!focused.value) emit('blurred', thought)
     }, BLUR_DELAY_MS)
   }
 </script>
@@ -114,11 +114,11 @@
     <header v-else>
       <time>{{ thought_starts_at }}</time>
     </header>
-    <as-statement
-      v-for="statement in statements"
-      :key="statement.id"
+    <as-thought
+      v-for="thought in thoughts"
+      :key="thought.id"
       itemprop="statements"
-      :statement="statement"
+      :thought="thought"
       :editable="editable"
       @focused="has_focus"
       @blurred="has_blurred" />

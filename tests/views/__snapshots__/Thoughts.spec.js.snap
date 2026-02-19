@@ -7,29 +7,27 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
 >
   <header>
     <icon-stub
-      name="nothing"
+      name="nothin"
     />
-    <logo-as-link-stub
-      tabindex="-1"
-    />
+    <logo-as-link-stub />
   </header>
-  <h1>
-    Statements
-  </h1>
-  <section
-    class="as-days-stub"
+  <article
+    class="editable thoughts"
   >
-    
-    
-    
-    <as-article-stub
-      editable="false"
-      statements=""
-      verbose="true"
-    />
-    
-    
-    
-  </section>
+    <header>
+      <h1>
+        Thoughts
+      </h1>
+    </header>
+    <section
+      class="as-days-stub"
+      itemscope=""
+    >
+      
+      
+    </section>
+  </article>
+  <!--v-if-->
+  <!--v-if-->
 </section>
 `;

@@ -1,51 +1,47 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import AsDiv from '@/components/statements/as-div.vue'
-import { get_item } from '@/utils/item'
-
-describe('@/components/statements/as-div', () => {
+import AsThought from '@/components/thoughts/as-thought.vue'
+describe('@/components/thoughts/as-thought', () => {
   let wrapper
-  const mock_statement = {
-    id: 'test-statement',
+  const mock_thought = {
+    id: 'test-thought',
     statement: 'Test content',
     content: 'Test content',
     html: '<div>Test content</div>'
   }
 
   beforeEach(() => {
-    wrapper = shallowMount(AsDiv, {
+    wrapper = shallowMount(AsThought, {
       props: {
-        statement: mock_statement
+        thought: mock_thought
       }
     })
   })
 
   describe('Rendering', () => {
-    it('renders statement content', () => {
-      expect(wrapper.html()).toContain(mock_statement.content)
+    it('renders thought content', () => {
+      expect(wrapper.html()).toContain(mock_thought.content)
     })
 
     it('applies correct classes', () => {
-      // Component doesn't have a statement class
       expect(wrapper.classes()).toEqual([])
     })
   })
 
   describe('Content Processing', () => {
     it('processes HTML content', async () => {
-      // Component doesn't have process_html method
       expect(wrapper.html()).toContain('Test content')
     })
 
     it('sanitizes HTML content', async () => {
       const unsafe_content = '<script>alert("xss")</script>Test'
-      const safe_statement = {
-        ...mock_statement,
+      const safe_thought = {
+        ...mock_thought,
         html: unsafe_content
       }
 
-      wrapper = shallowMount(AsDiv, {
-        props: { statement: safe_statement }
+      wrapper = shallowMount(AsThought, {
+        props: { thought: safe_thought }
       })
 
       await wrapper.vm.$nextTick()
@@ -54,16 +50,19 @@ describe('@/components/statements/as-div', () => {
   })
 
   describe('Interaction Handling', () => {
-    it('emits click events', async () => {
-      await wrapper.trigger('click')
-      expect(wrapper.emitted('click')).toBeTruthy()
+    it('emits focused when contenteditable receives focus', async () => {
+      wrapper = shallowMount(AsThought, {
+        props: { thought: mock_thought, editable: true }
+      })
+      await wrapper.find('p[contenteditable]').trigger('focus')
+      expect(wrapper.emitted('focused')).toBeTruthy()
     })
 
     it('handles content updates', async () => {
       const updated_content = 'Updated content'
       await wrapper.setProps({
-        statement: {
-          ...mock_statement,
+        thought: {
+          ...mock_thought,
           statement: updated_content
         }
       })
@@ -73,9 +72,9 @@ describe('@/components/statements/as-div', () => {
 
   describe('Error Handling', () => {
     it('handles missing content', () => {
-      wrapper = shallowMount(AsDiv, {
+      wrapper = shallowMount(AsThought, {
         props: {
-          statement: { id: 'test' }
+          thought: { id: 'test' }
         }
       })
       expect(wrapper.html()).toBeTruthy()
@@ -83,10 +82,10 @@ describe('@/components/statements/as-div', () => {
 
     it('handles malformed HTML', async () => {
       const malformed_html = '<div>Unclosed tag'
-      wrapper = shallowMount(AsDiv, {
+      wrapper = shallowMount(AsThought, {
         props: {
-          statement: {
-            ...mock_statement,
+          thought: {
+            ...mock_thought,
             html: malformed_html
           }
         }

@@ -30,7 +30,7 @@ describe('@/components/as-days', () => {
   beforeEach(() => {
     wrapper = shallowMount(AsDays, {
       props: {
-        statements: [],
+        thoughts: [],
         posters: [],
         events: [],
         paginate: true,
@@ -60,12 +60,12 @@ describe('@/components/as-days', () => {
   })
 
   describe('Props', () => {
-    it('accepts statements prop', () => {
-      const statements = [{ id: '/+16282281824/statements/123' }]
+    it('accepts thoughts prop', () => {
+      const thoughts = [{ id: '/+16282281824/statements/123' }]
       wrapper = shallowMount(AsDays, {
-        props: { statements }
+        props: { thoughts }
       })
-      expect(wrapper.props('statements')).toEqual(statements)
+      expect(wrapper.props('thoughts')).toEqual(thoughts)
     })
 
     it('accepts posters prop', () => {

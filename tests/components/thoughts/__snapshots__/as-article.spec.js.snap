@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`@/components/statements/as-article.vue > Renders > Loads the statement author if verbose is true 1`] = `
+exports[`@/components/thoughts/as-article.vue > Renders > Loads the thought author if verbose is true 1`] = `
 <article
   class="thought"
 >
@@ -10,21 +10,21 @@ exports[`@/components/statements/as-article.vue > Renders > Loads the statement 
     </time>
   </header>
   
-  <as-div-stub
+  <as-thought-stub
     editable="false"
     itemprop="statements"
-    statement="[object Object]"
+    thought="[object Object]"
   />
-  <as-div-stub
+  <as-thought-stub
     editable="false"
     itemprop="statements"
-    statement="[object Object]"
+    thought="[object Object]"
   />
   
 </article>
 `;
 
-exports[`@/components/statements/as-article.vue > Renders > Render a statement as an article element 1`] = `
+exports[`@/components/thoughts/as-article.vue > Renders > Render a thought as an article element 1`] = `
 <article
   class="thought"
 >
@@ -34,15 +34,15 @@ exports[`@/components/statements/as-article.vue > Renders > Render a statement a
     </time>
   </header>
   
-  <as-div-stub
+  <as-thought-stub
     editable="false"
     itemprop="statements"
-    statement="[object Object]"
+    thought="[object Object]"
   />
-  <as-div-stub
+  <as-thought-stub
     editable="false"
     itemprop="statements"
-    statement="[object Object]"
+    thought="[object Object]"
   />
   
 </article>

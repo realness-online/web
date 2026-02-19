@@ -64,15 +64,15 @@
 
 @keyframes absolute-slide-down
   from
-    top: inset(top, -(base-line * 2))
-    left: inset(left)
+    top: safe_inset(top, -(base-line * 2))
+    left: safe_inset(left)
     transform: translate3d(0, -100%, 0)
     visibility: visible
   to
     transform: translate3d(0, 0, 0)
     position: absolute
-    top: inset(top, 0)
-    left: inset(left, 0)
+    top: safe_inset(top, 0)
+    left: safe_inset(left, 0)
 
 @keyframes absolute-slide-up
   from

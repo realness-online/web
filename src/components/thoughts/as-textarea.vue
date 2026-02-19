@@ -6,7 +6,7 @@
 
   const emit = defineEmits(['toggle-keyboard'])
   const { save } = use()
-  const statement_text = ref(null)
+  const thought_text = ref(null)
 
   const SCROLL_DELAY_MS = 100
 
@@ -25,12 +25,12 @@
     }, SCROLL_DELAY_MS)
   }
 
-  const prepare_statement = async () => {
+  const prepare_thought = async () => {
     emit('toggle-keyboard')
     const textarea = document.querySelector('textarea#wat')
     textarea.style.height = ''
-    const text = statement_text.value
-    statement_text.value = null
+    const text = thought_text.value
+    thought_text.value = null
     if (typeof text !== 'string') return
 
     const trimmed = text.trim()
@@ -38,7 +38,7 @@
 
     await save(trimmed)
 
-    if (statement_text.value === text) statement_text.value = null
+    if (thought_text.value === text) thought_text.value = null
   }
 
   const adjust_height = event => {
@@ -47,9 +47,9 @@
     textarea.style.height = `${textarea.scrollHeight}px`
   }
 
-  const { register } = use_keymap('Statement')
-  register('statement::Save', () => prepare_statement())
-  register('statement::New_Line', () => {
+  const { register } = use_keymap('Thoughts')
+  register('thought::Save', () => prepare_thought())
+  register('thought::New_Line', () => {
     const textarea = document.querySelector('textarea#wat')
     if (textarea) {
       const start = textarea.selectionStart
@@ -60,8 +60,8 @@
       adjust_height({ target: textarea })
     }
   })
-  register('statement::Cancel', () => {
-    statement_text.value = null
+  register('thought::Cancel', () => {
+    thought_text.value = null
     emit('toggle-keyboard')
   })
 </script>
@@ -70,14 +70,14 @@
   <textarea
     id="wat"
     v-bind="$attrs"
-    v-model="statement_text"
+    v-model="thought_text"
     cols="1"
     rows="1"
     class="black"
     placeholder="✏️"
     :spellcheck="true"
     @input="adjust_height"
-    @focusout="prepare_statement"
+    @focusout="prepare_thought"
     @focusin="focused" />
   <button id="done">
     <icon name="finished" />

@@ -164,17 +164,25 @@ export const init_serverless = () => {
   else console.error('Firebase app initialization failed')
 
   storage.value = get_storage(app.value)
-  auth_changed(auth.value, async user => {
-    if (user) {
-      current_user.value = user
-      localStorage.me = from_e64(current_user.value.phoneNumber)
-      me.value.id = localStorage.me
-      const maybe_me = await load_from_network(localStorage.me)
-      if (maybe_me) {
-        me.value = maybe_me
-        const html = await get(localStorage.me)
-        if (html) localStorage.setItem(localStorage.me, html)
+
+  return new Promise(resolve => {
+    let resolved = false
+    auth_changed(auth.value, async user => {
+      if (user) {
+        current_user.value = user
+        localStorage.me = from_e64(current_user.value.phoneNumber)
+        me.value.id = localStorage.me
+        const maybe_me = await load_from_network(localStorage.me)
+        if (maybe_me) {
+          me.value = maybe_me
+          const html = await get(localStorage.me)
+          if (html) localStorage.setItem(localStorage.me, html)
+        }
+      } else current_user.value = null
+      if (!resolved) {
+        resolved = true
+        resolve()
       }
-    } else current_user.value = null
+    })
   })
 }

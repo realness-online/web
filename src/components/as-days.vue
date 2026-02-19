@@ -18,7 +18,7 @@
 
   // Props
   const props = defineProps({
-    statements: {
+    thoughts: {
       type: Array,
       required: false,
       default: () => []
@@ -57,7 +57,7 @@
 
   const thoughts = computed(() => {
     let thought_list = []
-    const people = statements_by_people(props.statements)
+    const people = statements_by_people(props.thoughts)
     people.forEach(statements => {
       thought_list = [...thought_list, ...as_thoughts(statements)]
     })
@@ -116,7 +116,7 @@
 
   watch(
     () => ({
-      statements: props.statements,
+      thoughts: props.thoughts,
       posters: props.posters,
       events: props.events
     }),

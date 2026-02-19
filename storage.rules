@@ -1,12 +1,18 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /people/{mobile}/{all_files=**} {
-      allow read: if mobile == '+16282281824';
-      allow read: if request.auth != null
-        && (request.auth.token.phone_number == mobile
-          || !all_files.matches('relations/.*'));
-      allow write, delete: if request.auth.token.phone_number == mobile;
+    match /people/{mobile}/relations.html.gz {
+      allow read, write, delete: if request.auth != null
+        && request.auth.token.phone_number == mobile;
+    }
+    match /people/{path=**} {
+      allow read: if !path.matches('relations.html.gz');
+    }
+    match /people/{mobile}/{path=**} {
+      allow read: if path != 'relations.html.gz'
+        || request.auth != null && request.auth.token.phone_number == mobile;
+      allow write, delete: if request.auth != null
+        && request.auth.token.phone_number == mobile;
     }
   }
 }

@@ -2,7 +2,7 @@
   import { Statement } from '@/persistance/Storage'
   import { ref } from 'vue'
   const props = defineProps({
-    statement: {
+    thought: {
       type: Object,
       required: true
     },
@@ -20,20 +20,20 @@
    */
   const save = async () => {
     const possibly_changed = is_editable.value?.textContent?.trim()
-    if (props.statement.statement !== possibly_changed) {
+    if (props.thought.statement !== possibly_changed) {
       const statement = new Statement()
       await statement.save()
     }
-    emit('blurred', props.statement)
+    emit('blurred', props.thought)
   }
 
   const focused = () => {
-    emit('focused', props.statement)
+    emit('focused', props.thought)
   }
 </script>
 
 <template>
-  <div itemscope :itemid="statement.id">
+  <div itemscope :itemid="thought.id">
     <p
       v-if="editable"
       ref="is_editable"
@@ -42,10 +42,10 @@
       itemprop="statement"
       @focus="focused"
       @blur.prevent="save">
-      {{ statement.statement }}
+      {{ thought.statement }}
     </p>
-    <p v-else itemprop="statement">{{ statement.statement }}</p>
-    <meta v-if="statement.why" itemprop="why" :content="statement.why" />
-    <meta v-if="statement.where" itemprop="where" :content="statement.where" />
+    <p v-else itemprop="statement">{{ thought.statement }}</p>
+    <meta v-if="thought.why" itemprop="why" :content="thought.why" />
+    <meta v-if="thought.where" itemprop="where" :content="thought.where" />
   </div>
 </template>

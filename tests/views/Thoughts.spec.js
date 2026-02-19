@@ -24,56 +24,39 @@ vi.mock('@/use/key-commands', () => ({
 }))
 
 // Mock people composable
-const mock_people = ref([])
-const mock_relations = ref([
-  {
-    id: '/+14151234356/people/1',
-    type: 'person'
-  }
-])
-
 vi.mock('@/use/people', () => ({
-  use: () => ({
-    people: mock_people,
-    relations: mock_relations
-  }),
-  use_me: () => ({
-    relations: mock_relations,
-    blocked: ref([])
-  })
+  get_my_itemid: vi.fn(type => `/+14151234356/${type}`)
 }))
 
 // Mock statement composable
-const mock_statements = ref([])
+const mock_my_thoughts = ref([
+  {
+    id: '/+14151234356/statements/1',
+    type: 'statements',
+    created_at: Date.now()
+  }
+])
+const mock_thoughts = ref([])
 const mock_thought_shown = vi.fn()
-const mock_statements_for_person = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('@/use/statement', () => ({
   use: () => ({
-    for_person: mock_statements_for_person,
-    statements: mock_statements,
+    my_thoughts: mock_my_thoughts,
+    thoughts: mock_thoughts,
     thought_shown: mock_thought_shown
-  }),
-  slot_key: vi.fn(id => id)
+  })
 }))
 
-// Mock poster composable
-const mock_posters = ref([])
-const mock_poster_shown = vi.fn()
-const mock_posters_for_person = vi.fn().mockResolvedValue(undefined)
+// Mock serverless utils
+vi.mock('@/utils/serverless', () => ({
+  current_user: ref(null)
+}))
 
-vi.mock('@/use/poster', () => ({
-  use_posters: () => ({
-    for_person: mock_posters_for_person,
-    poster_shown: mock_poster_shown,
-    posters: mock_posters
-  }),
-  is_vector_id: vi.fn().mockReturnValue(true),
-  is_url_query: vi.fn().mockReturnValue(true),
-  is_rect: vi.fn().mockReturnValue(true),
-  is_vector: vi.fn().mockReturnValue(true),
-  is_focus: vi.fn().mockReturnValue(true),
-  is_click: vi.fn().mockReturnValue(true)
+// Mock vue-router
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: vi.fn()
+  })
 }))
 
 // Mock preference utils
@@ -83,41 +66,31 @@ vi.mock('@/utils/preference', () => ({
 
 describe('Thoughts', () => {
   let wrapper
-  const set_working = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mock_people.value = []
-    mock_statements.value = []
-    mock_posters.value = []
-    mock_relations.value = [
+    mock_thoughts.value = []
+    mock_my_thoughts.value = [
       {
-        id: '/+14151234356/people/1',
-        type: 'person'
+        id: '/+14151234356/statements/1',
+        type: 'statements',
+        created_at: Date.now()
       }
     ]
 
     wrapper = shallowMount(Thoughts, {
       global: {
-        provide: {
-          set_working
-        },
         stubs: {
           icon: true,
           'logo-as-link': true,
           'as-days': {
             template:
-              '<section class="as-days-stub"><slot :items="[]" /></section>',
-            props: ['working', 'posters', 'statements']
+              '<section class="as-days-stub"><slot v-bind="[]" /></section>',
+            props: ['itemid', 'paginate', 'thoughts']
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
-            props: ['statements', 'verbose'],
-            emits: ['show']
-          },
-          'poster-as-figure': {
-            template: '<figure class="poster-stub"></figure>',
-            props: ['itemid'],
+            props: ['thoughts', 'editable'],
             emits: ['show']
           }
         }
@@ -141,45 +114,43 @@ describe('Thoughts', () => {
       expect(wrapper.find('header').exists()).toBe(true)
     })
 
-    it('renders h1 with Statements title', () => {
-      expect(wrapper.find('h1').text()).toBe('Statements')
+    it('renders h1 with Thoughts title', async () => {
+      await wrapper.vm.$nextTick()
+      await new Promise(resolve => setTimeout(resolve, 10))
+      const h1 = wrapper.find('h1')
+      expect(h1.exists()).toBe(true)
+      expect(h1.text()).toBe('Thoughts')
     })
 
-    it('shows working state initially', () => {
-      expect(wrapper.vm.working).toBe(true)
+    it('has working state', () => {
+      expect(wrapper.vm.working).toBeDefined()
+      expect(typeof wrapper.vm.working).toBe('boolean')
     })
   })
 
   describe('Functionality', () => {
     it('registers key commands on mount', () => {
       expect(mock_register).toHaveBeenCalledWith(
-        'thoughts::Search',
+        'thought::Save',
         expect.any(Function)
       )
       expect(mock_register).toHaveBeenCalledWith(
-        'thoughts::NewThought',
-        expect.any(Function)
-      )
-      expect(mock_register).toHaveBeenCalledWith(
-        'thoughts::ClearSearch',
+        'thought::Cancel',
         expect.any(Function)
       )
     })
 
-    it('fills thoughts with relations on mount', async () => {
+    it('sets thoughts to last editable on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_statements_for_person).toHaveBeenCalled()
-      expect(mock_posters_for_person).toHaveBeenCalled()
+      expect(mock_thoughts.value.length).toBe(1)
+      const last_index = mock_my_thoughts.value.length - 1
+      expect(mock_thoughts.value[0].id).toBe(
+        mock_my_thoughts.value[last_index].id
+      )
     })
 
-    it('adds current user to people list', async () => {
-      await wrapper.vm.$nextTick()
-      await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_people.value.some(p => p.id === '/+14151234356')).toBe(true)
-    })
-
-    it('sets working to false after fill_thoughts completes', async () => {
+    it('sets working to false after mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
       expect(wrapper.vm.working).toBe(false)

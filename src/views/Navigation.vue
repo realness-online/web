@@ -1,6 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
-  import StatementAsTextarea from '@/components/statements/as-textarea'
+  import ThoughtAsTextarea from '@/components/thoughts/as-textarea'
   import { inject } from 'vue'
   import AccountDialog from '@/components/profile/as-dialog-account'
   import { posting } from '@/use/posting'
@@ -44,7 +44,7 @@
         tabindex="-1">
         Statements
       </router-link>
-      <statement-as-textarea @toggle-keyboard="toggle_keyboard" />
+      <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
     </nav>
     <footer v-if="!posting">
       <a
@@ -95,7 +95,7 @@
       }
       & > a#about {
         position: fixed;
-        top: inset(top,  base-line);
+        top: safe_inset(top,  base-line);
         right: base-line;
         font-weight: bold;
         font-size: base-line * 1.44;
@@ -144,7 +144,7 @@
     }
     &.posting {
       align-self: start;
-      margin-top: inset(top);
+      margin-top: safe_inset(top);
       height: inherit;
       @media (max-width: pad-begins) {
         align-items: flex-start;

@@ -37,7 +37,7 @@
   const fps_style = computed(() => ({
     '--animate': animate.value ? 1 : 0,
     '--slice': slice.value ? 1 : 0,
-    '--animate-color': animate.value ? 'red' : 'grey',
+    '--animate-color': animate.value ? 'var(--blue)' : 'grey',
     '--slice-color': slice.value ? 'yellow' : 'grey',
     '--fps-color': fps_color.value
   }))
@@ -85,10 +85,10 @@
     right: base-line * .5
     padding: base-line * .5
     border-radius: base-line * .5
-    background: rgba(0, 0, 0, 0.66)
-    color: red
+    background: rgba(0, 0, 0, 0.9)
+    color: var(--white-text)
     font-size: base-line
-    text-shadow: -0.66px -0.66px .51px blue
+    text-shadow: 0 0 2px black
     z-index: 8
     font-family: monospace
     display: flex
@@ -126,11 +126,10 @@
         background: blue
     > output
       font-size: 66%
-      opacity: 0.5 !important
     > output:nth-of-type(1)
       color: var(--animate-color)
-      opacity: calc(var(--animate) * 1 + (1 - var(--animate)) * 0.5)
+      opacity: calc(var(--animate) * 1 + (1 - var(--animate)) * 0.7)
     > output:nth-of-type(2)
       color: var(--slice-color)
-      opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.5)
+      opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.7)
 </style>

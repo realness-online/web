@@ -6,7 +6,7 @@
   import AsAvatar from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsMessenger from '@/components/profile/as-messenger'
-  import ThoughtAsArticle from '@/components/statements/as-article'
+  import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
 
@@ -23,7 +23,7 @@
   const route = use_route()
   const id = from_e64(route.params.phone_number)
   const {
-    statements,
+    thoughts,
     thought_shown,
     for_person: statements_for_person
   } = use_statements()
@@ -85,7 +85,7 @@
       </menu>
     </div>
     <as-figure v-if="person" :person="person" />
-    <as-days v-slot="items" :posters="posters" :statements="statements">
+    <as-days v-slot="items" :posters="posters" :thoughts="thoughts">
       <template v-for="item in items">
         <poster-as-figure
           v-if="item.type === 'posters'"
@@ -94,7 +94,7 @@
         <thought-as-article
           v-else
           :key="slot_key(item)"
-          :statements="item"
+          :thoughts="item"
           @show="thought_shown" />
       </template>
     </as-days>
@@ -110,7 +110,7 @@
       & > a
         -webkit-tap-highlight-color: blue
         z-index: 2
-        top: inset(top)
+        top: safe_inset(top)
         right: base-line
         position: absolute
     & > div
