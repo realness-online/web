@@ -29,7 +29,8 @@ const mock_use_poster = vi.hoisted(() => {
 vi.mock('@/use/poster', () => ({
   use: mock_use_poster,
   is_vector: vi.fn(() => true),
-  is_vector_id: vi.fn(() => true)
+  is_vector_id: vi.fn(() => true),
+  is_svg_valid: vi.fn(() => true)
 }))
 
 vi.mock('@/utils/preference', () => ({

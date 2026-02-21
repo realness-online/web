@@ -16,7 +16,8 @@ vi.mock('@/use/path', () => ({
 
 // Mock poster composable
 vi.mock('@/use/poster', () => ({
-  is_vector_id: vi.fn().mockReturnValue(true)
+  is_vector_id: vi.fn().mockReturnValue(true),
+  is_svg_valid: vi.fn().mockReturnValue(true)
 }))
 
 // Mock preferences

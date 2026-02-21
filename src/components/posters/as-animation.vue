@@ -4,16 +4,18 @@
     ref,
     computed,
     watchEffect,
+    watch,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
   import { as_fragment_id, as_layer_id } from '@/utils/itemid'
-  import { is_vector_id } from '@/use/poster'
-  import { stroke, animation_speed } from '@/utils/preference'
+  import { is_vector_id, is_svg_valid } from '@/use/poster'
+  import { stroke, animation_speed, adaptive_enabled } from '@/utils/preference'
   import {
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
   } from '@/utils/animation-config'
+  import { run_duration, pause_duration } from '@/use/animation-performance'
 
   const props = defineProps({
     id: {
@@ -22,12 +24,23 @@
       /** @type {(id: string) => id is Id} */
       validator: is_vector_id
     },
+    /** SVGSVGElement from parent. Required for animation control. */
+    svg: {
+      type: Object,
+      required: true,
+      validator: is_svg_valid
+    },
     /** When true, SVG SMIL is paused (e.g. poster off-screen or animate preference off) */
     paused: {
       type: Boolean,
       default: true
     }
   })
+
+  const adaptive_paused = ref(false)
+  const effective_paused = computed(
+    () => props.paused || (adaptive_enabled.value && adaptive_paused.value)
+  )
 
   const shadow_id = computed(() =>
     as_layer_id(/** @type {Id} */ (props.id), 'shadows')
@@ -75,8 +88,6 @@
   const STEP_SIZE_DEFAULT = 0.5
   const MOMENTUM_FACTOR = 0.5
 
-  const animation_group = ref(null)
-
   let last_key_time = 0
   let key_press_count = 0
   let last_key = null
@@ -89,11 +100,6 @@
    * @param {KeyboardEvent} event
    */
   const handle_keydown = event => {
-    if (!animation_group.value) return
-
-    const svg_element = animation_group.value.closest('svg')
-    if (!svg_element) return
-
     const is_arrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight'
     if (!is_arrow) return
     if (event.ctrlKey || event.altKey || event.metaKey) return
@@ -125,34 +131,74 @@
     )
     const step = Math.min(base_step * (1 + momentum_multiplier), MAX_STEP_SIZE)
 
-    const current_time = svg_element.getCurrentTime()
+    const current_time = props.svg.getCurrentTime()
     const direction = event.key === 'ArrowRight' ? 1 : -1
     const new_time = Math.max(0, current_time + step * direction)
 
-    svg_element.setCurrentTime(new_time)
+    props.svg.setCurrentTime(new_time)
   }
 
   watchEffect(() => {
-    if (!animation_group.value) return
-
-    const svg_element = animation_group.value.closest('svg')
-    if (!svg_element) return
-
-    if (props.paused) svg_element.pauseAnimations()
-    else svg_element.unpauseAnimations()
+    if (effective_paused.value) props.svg.pauseAnimations()
+    else props.svg.unpauseAnimations()
   })
+
+  let raf_id = null
+  let cycle_start = 0
+  let phase = 'run'
+
+  const tick = now => {
+    if (props.paused) {
+      raf_id = requestAnimationFrame(tick)
+      return
+    }
+
+    const MS_PER_SECOND = 1000
+    const elapsed = (now - cycle_start) / MS_PER_SECOND
+
+    if (adaptive_enabled.value)
+      if (phase === 'run') {
+        if (elapsed >= run_duration.value) {
+          phase = 'pause'
+          adaptive_paused.value = true
+          cycle_start = now
+        }
+      } else if (elapsed >= pause_duration.value) {
+        const current = props.svg.getCurrentTime()
+        props.svg.setCurrentTime(current + pause_duration.value)
+        adaptive_paused.value = false
+        phase = 'run'
+        cycle_start = now
+      }
+
+    raf_id = requestAnimationFrame(tick)
+  }
+
+  watch(
+    () => props.paused,
+    (paused, was_paused) => {
+      if (!paused && was_paused) {
+        cycle_start = performance.now()
+        phase = 'run'
+        adaptive_paused.value = false
+      }
+    }
+  )
 
   mounted(() => {
     window.addEventListener('keydown', handle_keydown)
+    cycle_start = performance.now()
+    raf_id = requestAnimationFrame(tick)
   })
 
   unmounted(() => {
     window.removeEventListener('keydown', handle_keydown)
+    if (raf_id) cancelAnimationFrame(raf_id)
   })
 </script>
 
 <template>
-  <animate ref="animation_group" itemprop="timeline">
+  <animate itemprop="timeline">
     <animate v-if="stroke" class="stroke animation" id="stroke-animation">
       <animate
         :href="fragment_stroke('light')"

@@ -95,7 +95,7 @@
       }
       & > a#about {
         position: fixed;
-        top: safe_inset(top,  base-line);
+        top: env(safe-area-inset-top);
         right: base-line;
         font-weight: bold;
         font-size: base-line * 1.44;

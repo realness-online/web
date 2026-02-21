@@ -70,6 +70,7 @@ vi.mock('@/use/poster', () => ({
   })),
   is_vector: vi.fn(() => true),
   is_vector_id: vi.fn(() => true),
+  is_svg_valid: vi.fn(() => true),
   is_rect: vi.fn(rect => {
     if (rect === null || rect === undefined) return true
     if (typeof rect !== 'object') return false

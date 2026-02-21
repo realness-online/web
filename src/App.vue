@@ -1,8 +1,14 @@
 <script setup>
   import sync from '@/components/sync'
-  import DialogPreferences from '@/components/profile/as-dialog-preferences.vue'
-  import DialogDocumentation from '@/components/as-dialog-documentation.vue'
-  import FpsComponent from '@/components/fps'
+  import { defineAsyncComponent } from 'vue'
+  const DialogPreferences = defineAsyncComponent(
+    () => import('@/components/profile/as-dialog-preferences.vue')
+  )
+  const DialogDocumentation = defineAsyncComponent(
+    () => import('@/components/as-dialog-documentation.vue')
+  )
+  const FpsComponent = defineAsyncComponent(() => import('@/components/fps'))
+  import WorkingBorder from '@/components/working-border.vue'
   import {
     ref,
     watch,
@@ -11,6 +17,7 @@
     provide
   } from 'vue'
   import { useFps, useMagicKeys } from '@vueuse/core'
+  import '@/use/animation-performance'
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
@@ -55,10 +62,12 @@
   const fps = useFps()
   provide('fps', fps)
 
+  const working_count = ref(0)
   /** @param {boolean} active */
   const set_working = active => {
-    if (active) status.value = 'working'
-    else status.value = null
+    if (active) working_count.value++
+    else if (working_count.value > 0) working_count.value--
+    status.value = working_count.value > 0 ? 'working' : null
   }
   provide('set_working', set_working)
 
@@ -144,12 +153,7 @@
       animation_speed.value ||
       DEFAULT_ANIMATION_SPEED
     const current_index = ANIMATION_SPEEDS.indexOf(current)
-    const go_slower = magic_keys.shift.value
-    const at_slowest = current_index === 0
-    const at_fastest = current_index === ANIMATION_SPEEDS.length - 1
-    let next_index
-    if (go_slower) next_index = at_slowest ? 1 : current_index - 1
-    else next_index = at_fastest ? current_index - 1 : current_index + 1
+    const next_index = (current_index + 1) % ANIMATION_SPEEDS.length
     animation_speed.value = ANIMATION_SPEEDS[next_index]
   })
   register_preference('pref::Toggle_Info', info)
@@ -228,15 +232,12 @@
   register('nav::Go_About', () => router.push('/about'))
 
   /** @param {boolean} active */
-  const sync_active = active => {
-    if (active) status.value = 'working'
-    else status.value = null
-  }
+  const sync_active = active => set_working(active)
   const online = () => {
     document
       .querySelectorAll('[contenteditable]')
       ?.forEach(e => e.setAttribute('contenteditable', 'true'))
-    status.value = null
+    status.value = working_count.value > 0 ? 'working' : null
   }
   const offline = () => {
     document
@@ -276,6 +277,9 @@
 
 <template>
   <main id="realness" :class="status">
+    <teleport to="body">
+      <working-border v-if="status === 'working'" />
+    </teleport>
     <router-view />
     <sync @active="sync_active" />
     <fps-component v-if="info" />
@@ -307,28 +311,10 @@
       border-color: var(--yellow);
     }
     &.working {
+      border-width: (base-line * 0.1);
       border-color: var(--green);
+      border-radius: (base-line * 3);
       position: relative;
-      will-change: opacity, transform;
-
-      &::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        border: (base-line / 16) solid var(--green);
-        border-radius: (base-line / 16);
-        pointer-events: none;
-        will-change: opacity, transform;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-        animation-name: pulsing;
-        animation-duration: 2.33s;
-        animation-timing-function: ease-in-out;
-        animation-iteration-count: infinite;
-      }
     }
     & > h6 {
       text-shadow: 1px 1px 1.25px var(--black-background);

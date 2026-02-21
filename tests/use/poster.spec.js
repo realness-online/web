@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils'
 import {
   is_vector_id,
   is_vector,
+  is_svg_valid,
   is_click,
   is_focus,
   is_rect,
@@ -36,6 +37,25 @@ function with_setup(composable) {
 }
 
 describe('poster utils', () => {
+  describe('is_svg_valid', () => {
+    it('returns true for SVGSVGElement in document', () => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      document.body.appendChild(svg)
+      expect(is_svg_valid(svg)).toBe(true)
+      document.body.removeChild(svg)
+    })
+
+    it('returns false for detached SVG', () => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      expect(is_svg_valid(svg)).toBe(false)
+    })
+
+    it('returns false for non-SVG', () => {
+      expect(is_svg_valid(null)).toBe(false)
+      expect(is_svg_valid(document.createElement('div'))).toBe(false)
+    })
+  })
+
   describe('is_vector_id', () => {
     it('returns true for valid itemid with created_at', () => {
       vi.mocked(as_created_at).mockReturnValue('1234567890')

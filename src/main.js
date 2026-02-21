@@ -10,7 +10,5 @@ const { me } = localStorage
 if (!me) localStorage.me = '/+'
 
 if (location.hostname !== 'realness.local') registerSW({ onOfflineReady() {} })
-;(async () => {
-  await init_serverless()
-  createApp(App).use(router).use(key_commands_plugin).mount('body')
-})()
+init_serverless()
+createApp(App).use(router).use(key_commands_plugin).mount('body')

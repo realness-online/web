@@ -1,25 +1,16 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import Events from '@/views/Events'
-import Thoughts from '@/views/Thoughts'
-import Posters from '@/views/Posters'
-import Statements from '@/views/Statements'
-import Navigation from '@/views/Navigation'
-import Profile from '@/views/Profile'
-import Relations from '@/views/Relations'
-import PhoneBook from '@/views/PhoneBook'
-import About from '@/views/About'
 
 const routes = [
-  { path: '/', component: Navigation },
-  { path: '/posters', component: Posters },
-  { path: '/thoughts', component: Thoughts },
-  { path: '/events', component: Events },
-  { path: '/relations', component: Relations },
-  { path: '/phonebook', component: PhoneBook },
-  { path: '/profile', component: Profile },
-  { path: '/statements', component: Statements },
-  { path: '/about', component: About },
-  { path: '/:phone_number', component: Profile }
+  { path: '/', component: () => import('@/views/Navigation') },
+  { path: '/posters', component: () => import('@/views/Posters') },
+  { path: '/thoughts', component: () => import('@/views/Thoughts') },
+  { path: '/events', component: () => import('@/views/Events') },
+  { path: '/relations', component: () => import('@/views/Relations') },
+  { path: '/phonebook', component: () => import('@/views/PhoneBook') },
+  { path: '/profile', component: () => import('@/views/Profile') },
+  { path: '/statements', component: () => import('@/views/Statements') },
+  { path: '/about', component: () => import('@/views/About') },
+  { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]
 const router = createRouter({
   history: createWebHistory(),

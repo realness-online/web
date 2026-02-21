@@ -116,13 +116,9 @@
     ref="settings"
     @click="handle_click"
     @close="dialog_open = false">
-    <header>
-      <h1>Preferences</h1>
-    </header>
-
     <section>
       <header>
-        <h2>Settings</h2>
+        <h1>Settings</h1>
       </header>
       <menu>
         <preference name="mosaic" title="Display top layer of color mosaic" />
@@ -204,12 +200,7 @@
     }
   }
 
-  :fullscreen a#toggle-preferences {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
+  :fullscreen a#toggle-preferences,
   main#realness:has(article.thought:focus-within) > a#toggle-preferences {
     opacity: 0;
     visibility: hidden;
@@ -217,81 +208,52 @@
   }
 
   dialog#preferences {
-    margin: base-line;
-    max-width: 90vw;
+    margin: (base-line * 0.5);
+    margin-top: base-line * 3;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--base-line) * 5);
     border-radius: base-line;
+    overscroll-behavior-y: contain;
 
     &[open] {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: base-line * 2;
+      grid-template-columns: 1fr;
+      gap: base-line;
       overflow-y: auto;
-      padding: 0 base-line;
-    }
-
-    @media (max-width: pad-begins) {
-      position: fixed;
-      top: safe_inset(top, base-line * 3);
-      bottom: 0;
-      left: 0;
-      right: 0;
-      margin: 0;
-      max-width: 100%;
-      width: 100%;
-      border-radius: base-line base-line 0 0;
-      overscroll-behavior-y: contain;
-      &[open] {
-        grid-template-columns: 1fr;
-        gap: base-line;
-        padding: 0 base-line safe_inset(bottom) base-line;
-      }
-      & > section:last-child {
-        display: none;
-      }
-    }
-
-    & > header {
-      grid-column: 1 / -1;
-      & > h1 {
-        margin-top: base-line;
-        text-align: center;
-      }
-      & > a {
-        position: absolute;
-        top: base-line * .5;
-        right: base-line * .5;
-        svg.icon {
-          fill: black;
-          width: base-line ;
-          height: base-line;
-        }
-      }
-    }
-
-    & > section {
-      & > header > h2 {
-        color: var(--red);
-        margin-bottom: base-line;
-        padding-bottom: round((base-line / 2), 2);
-        border-bottom: 1px solid var(--red);
-      }
-    }
-
-    & > section:first-child {
-      menu {
-        margin: 0;
-        padding: 0;
-        & > *:not(:last-child) {
-          height: 100%;
-          list-style: none;
-        }
-        & > h4 {
-          margin-top: base-line;
-        }
-      }
     }
 
     & > section:last-child {
+      display: none;
+    }
+
+    @media (min-width: pad-begins) {
+      margin: base-line;
+      margin-top: 0;
+      max-width: 90vw;
+      max-height: 80vh;
+      &[open] {
+        grid-template-columns: 1fr 1fr;
+        gap: base-line * 2;
+        padding: 0 base-line;
+      }
+      & > section:last-child {
+        display: block;
+      }
+    }
+
+    & > section:first-child menu {
+      margin: 0;
+      padding: 0;
+    }
+
+    & > section:last-child {
+      & > header h2 {
+        color: var(--red);
+        margin-bottom: round((base-line / 2), 2);
+        padding-bottom: round((base-line / 2), 2);
+        border-bottom: 1px solid var(--red);
+      }
+
       & > article {
         & > header h3 {
           color: var(--red);
@@ -333,10 +295,6 @@
       }
     }
 
-    a {
-      color: green;
-      border-color: green;
-    }
     h1, svg.icon {
       color: red;
       fill: red;

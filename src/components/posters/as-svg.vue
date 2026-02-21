@@ -377,7 +377,11 @@
       <as-gradients v-if="valid_vector" :vector="valid_vector" />
       <as-masks :itemid="itemid" />
     </defs>
-    <as-animation v-if="vector" :id="itemid" :paused="!animate" />
+    <as-animation
+      v-if="vector && trigger"
+      :svg="trigger"
+      :id="itemid"
+      :paused="!animate" />
   </svg>
 </template>
 

@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import { vi } from 'vitest'
 import as_figure from '@/components/posters/as-figure'
 
@@ -21,6 +21,20 @@ vi.mock('@/utils/preference', () => ({
   sand: { value: false },
   sediment: { value: false }
 }))
+
+vi.mock('idb-keyval', () => ({
+  get: vi.fn().mockResolvedValue(null),
+  set: vi.fn().mockResolvedValue(undefined),
+  del: vi.fn().mockResolvedValue(undefined)
+}))
+
+vi.mock('@/utils/itemid', async importOriginal => {
+  const mod = await importOriginal()
+  return {
+    ...mod,
+    load_from_cache: vi.fn().mockResolvedValue({ item: null, html: null })
+  }
+})
 
 // Mock poster data instead of using non-existent get_item
 const poster = {
@@ -57,6 +71,22 @@ describe('@/component/posters/as-figure.vue', () => {
         mock_menu.value = true
         expect(mock_menu.value).toBe(true)
       })
+    })
+  })
+
+  describe('Shadow load recovery', () => {
+    it('clears loading state when shadow load returns null', async () => {
+      const vector_without_shadows = {
+        id: poster.id,
+        viewbox: '0 0 100 100',
+        width: 100,
+        height: 100
+      }
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      as_svg.vm.$emit('show', vector_without_shadows)
+      await flushPromises()
+
+      expect(wrapper.find('figure.poster').exists()).toBe(true)
     })
   })
 })

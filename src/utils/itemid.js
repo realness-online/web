@@ -63,12 +63,11 @@ export const load_from_network = async itemid => {
 
   if (url) {
     const response = await fetch(url)
+    if (!response.ok) return null
 
-    // Check Content-Encoding header
     const content_encoding = response.headers.get('Content-Encoding')
     const compressed_html = await response.arrayBuffer()
     let html = null
-    // If no content encoding or 'identity', data is already decompressed
     if (!content_encoding || content_encoding === 'identity')
       html = new TextDecoder().decode(compressed_html)
     else html = await decompress_html(compressed_html)
@@ -91,12 +90,11 @@ export const load_from_cache = async itemid => {
 
   if (url) {
     const response = await fetch(url)
+    if (!response.ok) return { item: null, html: null }
 
-    // Check Content-Encoding header
     const content_encoding = response.headers.get('Content-Encoding')
     const compressed_html = await response.arrayBuffer()
     let html = null
-    // If no content encoding or 'identity', data is already decompressed
     if (!content_encoding || content_encoding === 'identity')
       html = new TextDecoder().decode(compressed_html)
     else html = await decompress_html(compressed_html)

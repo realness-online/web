@@ -340,6 +340,12 @@ const load_archive_posters = async (author_id, archive_id) => {
 }
 
 /**
+ * @returns {boolean}
+ */
+export const is_svg_valid = v =>
+  v instanceof SVGSVGElement && document.contains(v)
+
+/**
  * @param {Id} itemid
  * @returns {boolean}
  */
