@@ -80,7 +80,12 @@ const setup_file_system_api = async suggested_filename => {
     const writable_stream = await file_handle.createWritable()
     return { file_handle, writable_stream }
   } catch (error) {
-    if (error.name !== 'AbortError')
+    const has_abort =
+      error &&
+      typeof error === 'object' &&
+      'name' in error &&
+      error.name === 'AbortError'
+    if (!has_abort)
       console.warn(
         '[Video] File System Access API error, using memory buffer:',
         error

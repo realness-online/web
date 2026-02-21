@@ -8,7 +8,7 @@ import {
 } from '@/utils/image-files'
 
 export const use = () => {
-  const { new_vector, new_gradients, process_photo } = use_vectorize()
+  const { new_vector, new_gradients, vectorize } = use_vectorize()
   const set_working = inject('set_working')
   const progress = ref({
     total: 0,
@@ -48,7 +48,7 @@ export const use = () => {
         const image_url = URL.createObjectURL(file)
 
         try {
-          await process_photo(image_url)
+          await vectorize(file, null)
 
           // Wait for new_vector to be set by the vectorization process
           if (!new_vector.value)

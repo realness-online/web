@@ -13,6 +13,22 @@ declare module '*.vue' {
   export default component
 }
 
+declare module 'pako' {
+  export function deflate(
+    data: Uint8Array | string,
+    options?: { level?: number }
+  ): Uint8Array
+  export function inflate(
+    data: Uint8Array,
+    options?: { to?: 'string' }
+  ): Uint8Array | string
+  export default { deflate, inflate }
+}
+
+declare module 'country-code-emoji' {
+  export function countryCodeEmoji(countryCode: string): string
+}
+
 declare module 'virtual:pwa-register' {
   export interface RegisterSWOptions {
     immediate?: boolean
