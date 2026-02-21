@@ -4,7 +4,9 @@ import utils from '@/potrace/utils'
 /**
  * Represents a bitmap image as a 1-dimensional array of pixel values
  */
+/** @typedef {import('./Histogram').default} Histogram */
 class Bitmap {
+  /** @type {Histogram | null} */
   #histogram = null
 
   /** @type {number} Width of the bitmap in pixels */
@@ -80,10 +82,10 @@ class Bitmap {
 
     if (point_or_x instanceof Point) {
       _x = point_or_x.x
-      _y = point_or_x.y
+      _y = point_or_x.y ?? 0
     } else {
       _x = point_or_x
-      _y = y
+      _y = y ?? 0
     }
 
     if (!utils.between(_x, 0, this.width) || !utils.between(_y, 0, this.height))
@@ -109,7 +111,7 @@ class Bitmap {
 
   /**
    * Sets the histogram for this bitmap
-   * @param {import('./Histogram').default} histogram - Histogram instance
+   * @param {Histogram} histogram - Histogram instance
    */
   set_histogram = histogram => {
     this.#histogram = histogram

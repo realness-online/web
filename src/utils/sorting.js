@@ -6,7 +6,7 @@
 import { as_created_at } from '@/utils/itemid'
 
 /**
- * @param {any} thing
+ * @param {{id: Id} | Array<{id: Id}>} thing
  * @returns {Id}
  */
 export const get_id = thing => {
@@ -20,7 +20,7 @@ export const get_id = thing => {
  * @returns {number}
  */
 export const recent_id_first = (first, second) =>
-  as_created_at(second) - as_created_at(first)
+  (as_created_at(second) ?? 0) - (as_created_at(first) ?? 0)
 
 /**
  * @param {Item} first
@@ -28,7 +28,7 @@ export const recent_id_first = (first, second) =>
  * @returns {number}
  */
 export const recent_item_first = (first, second) =>
-  as_created_at(second.id) - as_created_at(first.id)
+  (as_created_at(second.id) ?? 0) - (as_created_at(first.id) ?? 0)
 
 /**
  * @param {Person} first

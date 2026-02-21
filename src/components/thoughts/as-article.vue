@@ -1,7 +1,5 @@
 <script setup>
-  /**
-   * @typedef {import('@/persistance/Storage').Statement} Statement
-   */
+  /** @typedef {import('@/types').Statement_Item} Statement_Item */
   import {
     ref,
     computed,
@@ -18,7 +16,7 @@
 
   const props = defineProps({
     thoughts: {
-      /** @type {import('vue').PropType<Statement[]>} */
+      /** @type {import('vue').PropType<Statement_Item[]>} */
       type: Array,
       required: true
     },
@@ -35,10 +33,10 @@
   })
 
   const emit = defineEmits({
-    show: (/** @type {Statement[]} */ thoughts) => Array.isArray(thoughts),
-    focused: (/** @type {Statement} */ thought) =>
+    show: (/** @type {Statement_Item[]} */ thoughts) => Array.isArray(thoughts),
+    focused: (/** @type {Statement_Item} */ thought) =>
       thought && typeof thought === 'object',
-    blurred: (/** @type {Statement} */ thought) =>
+    blurred: (/** @type {Statement_Item} */ thought) =>
       thought && typeof thought === 'object'
   })
 

@@ -289,7 +289,7 @@ export const countries = Object.values(country_list).map(country => ({
 
 /**
  * @param {string} code
- * @returns {Country_Phone}
+ * @returns {Country_Phone | undefined}
  */
 export const country = code => countries.find(country => country.code === code)
 
@@ -320,7 +320,7 @@ export const parse_phone = (full_phone, country) =>
  */
 export const get_country_from_phone = phone_string => {
   const parsed = parse_number(phone_string)
-  return parsed?.country
+  return parsed?.country ?? ''
 }
 
 export { as_you_type }

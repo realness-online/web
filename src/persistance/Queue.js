@@ -6,7 +6,7 @@ import { get, set, del, keys } from 'idb-keyval'
  * @typedef {Object} QueueItem
  * @property {Id} id
  * @property {Id} itemid
- * @property {Blob | ArrayBuffer} resized_blob
+ * @property {Blob | ArrayBuffer | null} resized_blob
  * @property {'pending' | 'processing' | 'complete' | 'error'} status
  * @property {string} [svg_html]
  * @property {number} progress

@@ -52,7 +52,9 @@ export const Large = superclass =>
       return `${filename}.html.gz`
     }
 
-    async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+    async save(
+      items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
+    ) {
       if (!items) return
       await set(this.id, items.outerHTML)
       const path = as_directory_id(this.id)
@@ -74,7 +76,7 @@ export const Large = superclass =>
           await set(path, new_directory)
         }
 
-      if (super.save) await super.save(items)
+      await super.save(items)
     }
     async delete() {
       await super.delete()

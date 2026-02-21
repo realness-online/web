@@ -113,9 +113,9 @@ describe('layer composable', () => {
       expect(result.getAttribute('itemprop')).toBe('regular')
     })
 
-    it('throws error when settings element not found', () => {
+    it('returns null when settings element not found', () => {
       document.body.innerHTML = ''
-      expect(() => settings_query('nonexistent')).toThrow()
+      expect(settings_query('nonexistent')).toBeNull()
     })
   })
 

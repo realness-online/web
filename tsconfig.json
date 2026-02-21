@@ -9,7 +9,7 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "strict": false, // TODO: enable
-    "strictNullChecks": false, // TODO: enable
+    "strictNullChecks": true,
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,

@@ -27,11 +27,15 @@ import * as Queue from '@/persistance/Queue'
 import { Poster, Cutout, Shadow } from '@/persistance/Storage'
 import { get, set } from 'idb-keyval'
 
-const new_vector = ref(null)
-const new_gradients = ref(null)
+const new_vector = ref(/** @type {PosterType | null} */ (null))
+const new_gradients = ref(
+  /** @type {{horizontal?: string[], vertical?: string[], radial?: string[]} | null} */ (
+    null
+  )
+)
 const progress = ref(0)
-const current_item_id = ref(null)
-const source_image_url = ref(null)
+const current_item_id = ref(/** @type {Id | null} */ (null))
+const source_image_url = ref(/** @type {string | null} */ (null))
 
 // Queue state
 const queue_items = ref(/** @type {QueueItem[]} */ ([]))
@@ -104,6 +108,7 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
 
   const canvas = new OffscreenCanvas(new_width, new_height)
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('Failed to get 2d context')
   ctx.drawImage(image, 0, 0, new_width, new_height)
   return ctx.getImageData(0, 0, new_width, new_height)
 }
@@ -144,7 +149,7 @@ export const resize_to_blob = async file => {
     } catch (error) {
       URL.revokeObjectURL(url)
       throw new Error(
-        `Failed to process image (${file.name}): ${error.message}`
+        `Failed to process image (${file.name}): ${error instanceof Error ? error.message : String(error)}`
       )
     }
     URL.revokeObjectURL(url)
@@ -153,7 +158,7 @@ export const resize_to_blob = async file => {
       bitmap = await createImageBitmap(file)
     } catch (error) {
       throw new Error(
-        `File too large for browser to process (${file.name}): ${error.message}. Try resizing the image first or using a smaller file.`
+        `File too large for browser to process (${file.name}): ${error instanceof Error ? error.message : String(error)}. Try resizing the image first or using a smaller file.`
       )
     }
 
@@ -162,6 +167,7 @@ export const resize_to_blob = async file => {
 
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)
   const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to get 2d context')
   ctx.putImageData(image_data, 0, 0)
 
   const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
@@ -186,6 +192,7 @@ const load_queue = async () => {
  * @returns {Object} Cutouts organized by layer with symbol elements
  */
 export const sort_cutouts_into_layers = (vector, id) => {
+  /** @type {{sediment: Element[], sand: Element[], gravel: Element[], rocks: Element[], boulders: Element[]}} */
   const cutouts = {
     sediment: [],
     sand: [],
@@ -194,15 +201,21 @@ export const sort_cutouts_into_layers = (vector, id) => {
     boulders: []
   }
 
-  vector.cutout.forEach(cutout => {
+  let cutout_list
+  if (Array.isArray(vector.cutout)) cutout_list = vector.cutout
+  else if (vector.cutout !== null && vector.cutout !== undefined)
+    cutout_list = [vector.cutout]
+  else cutout_list = []
+  cutout_list.forEach(cutout => {
+    if (!(cutout instanceof Element)) return
     cutout.removeAttribute('itemprop')
     cutout.removeAttribute('tabindex')
-    const progress = parseInt(cutout.getAttribute('data-progress') || 0)
+    const progress_val = parseInt(cutout.getAttribute('data-progress') || '0')
 
-    if (progress < 60) cutouts.sediment.push(cutout)
-    else if (progress < 70) cutouts.sand.push(cutout)
-    else if (progress < 80) cutouts.gravel.push(cutout)
-    else if (progress < 90) cutouts.rocks.push(cutout)
+    if (progress_val < 60) cutouts.sediment.push(cutout)
+    else if (progress_val < 70) cutouts.sand.push(cutout)
+    else if (progress_val < 80) cutouts.gravel.push(cutout)
+    else if (progress_val < 90) cutouts.rocks.push(cutout)
     else cutouts.boulders.push(cutout)
   })
 
@@ -236,9 +249,13 @@ export const sort_cutouts_into_layers = (vector, id) => {
  * @param {Element} [element] - Optional DOM element to save
  * @param {Object.<string, SVGSymbolElement>} [cutouts] - Optional cutout symbols by layer
  */
-export const save_poster = async (id, element = null, cutouts = null) => {
+export const save_poster = async (
+  id,
+  element = undefined,
+  cutouts = undefined
+) => {
   await tick()
-  const poster_element = element || document.querySelector(`[itemid="${id}"]`)
+  const poster_element = element ?? document.querySelector(`[itemid="${id}"]`)
 
   if (!poster_element) {
     console.warn(`[save_poster] Could not find element for ${id}`)
@@ -325,12 +342,15 @@ export const save_poster = async (id, element = null, cutouts = null) => {
 // eslint-disable-next-line max-lines-per-function
 export const use = () => {
   const router = use_router()
-  const image_picker = inject('image-picker', ref(null))
+  const image_picker = inject(
+    'image-picker',
+    ref(/** @type {HTMLInputElement | null} */ (null))
+  )
   const working = ref(false)
-  const vectorizer = ref(null)
-  const gradienter = ref(null)
-  const tracer = ref(null)
-  const optimizer = ref(null)
+  const vectorizer = ref(/** @type {Worker | null} */ (null))
+  const gradienter = ref(/** @type {Worker | null} */ (null))
+  const tracer = ref(/** @type {Worker | null} */ (null))
+  const optimizer = ref(/** @type {Worker | null} */ (null))
   const is_mounted = ref(true)
   const workers_mounted = ref(false)
   const can_add = computed(() => {
@@ -343,7 +363,9 @@ export const use = () => {
    * @param {QueueItem} item
    */
   const cleanup_queue_item = item => {
-    if (item?.resized_blob) item.resized_blob = null
+    if (item?.resized_blob)
+      /** @type {Blob | ArrayBuffer | null} */
+      item.resized_blob = null
   }
 
   const mount_workers = () => {
@@ -371,10 +393,14 @@ export const use = () => {
     gradienter.value = new Worker('/vector.worker.js')
     tracer.value = new Worker('/tracer.worker.js')
     optimizer.value = new Worker('/vector.worker.js')
-    vectorizer.value.addEventListener('message', vectorized)
-    gradienter.value.addEventListener('message', gradientized)
-    tracer.value.addEventListener('message', traced)
-    optimizer.value.addEventListener('message', optimized)
+    const v = vectorizer.value
+    const g = gradienter.value
+    const t = tracer.value
+    const o = optimizer.value
+    if (v) v.addEventListener('message', vectorized)
+    if (g) g.addEventListener('message', gradientized)
+    if (t) t.addEventListener('message', traced)
+    if (o) o.addEventListener('message', optimized)
 
     workers_mounted.value = true
   }
@@ -433,14 +459,19 @@ export const use = () => {
   }
 
   const add_cutout_path = (path_data, progress_value) => {
-    if (!new_vector.value.cutout) new_vector.value.cutout = []
+    const vec = new_vector.value
+    if (!vec) return
+    const existing = vec.cutout
+    let cutout_list
+    if (Array.isArray(existing)) cutout_list = existing
+    else if (existing) cutout_list = [existing]
+    else cutout_list = []
     const cutout_path = make_cutout_path({
       ...path_data,
       progress: progress_value
     })
-    new_vector.value.cutout.push(cutout_path)
-    // Force Vue reactivity by reassigning the array
-    new_vector.value.cutout = [...new_vector.value.cutout]
+    cutout_list.push(cutout_path)
+    vec.cutout = [...cutout_list]
   }
 
   const flush_pending_tracer_paths = () => {
@@ -455,19 +486,16 @@ export const use = () => {
   }
 
   const handle_tracer_complete = async () => {
-    if (new_vector.value && !new_vector.value.optimized)
-      new_vector.value.completed = true
+    const vec = new_vector.value
+    if (vec && !vec.optimized) vec.completed = true
 
-    if (current_item_id.value && new_gradients.value && new_vector.value) {
-      await tick()
-      const element = document.getElementById(
-        as_query_id(current_item_id.value)
-      )
-      optimizer.value.postMessage({
-        route: 'optimize:vector',
-        vector: element.outerHTML
-      })
-    }
+    const cid = current_item_id.value
+    const opt = optimizer.value
+    if (!cid || !new_gradients.value || !vec || !opt) return
+    await tick()
+    const element = document.getElementById(as_query_id(cid))
+    if (!element) return
+    opt.postMessage({ route: 'optimize:vector', vector: element.outerHTML })
   }
 
   /**
@@ -515,7 +543,7 @@ export const use = () => {
       } catch (error) {
         console.error(
           `Failed to add ${file.name || 'file'} to queue:`,
-          error.message
+          error instanceof Error ? error.message : String(error)
         )
       }
     }
@@ -556,10 +584,14 @@ export const use = () => {
         next.resized_blob instanceof ArrayBuffer
           ? new Blob([next.resized_blob], { type: 'image/jpeg' })
           : next.resized_blob
+      if (!image_blob) return
       await vectorize(image_blob, next.id)
       mutex.unlock()
     } catch (error) {
-      console.error('Error processing queue item:', error)
+      console.error(
+        'Error processing queue item:',
+        error instanceof Error ? error.message : String(error)
+      )
       const failed_item = current_processing.value
       if (failed_item) {
         await Queue.update(failed_item.id, { status: 'error' })
@@ -653,14 +685,14 @@ export const use = () => {
 
   /**
    * @param {File|Blob} image
-   * @param {string} [itemid]
+   * @param {Id | null} [itemid]
    */
-  const vectorize = async (image, itemid = null) => {
+  const vectorize = async (image, itemid) => {
     if (!vectorizer.value) mount_workers()
 
     working.value = true
     progress.value = 0
-    current_item_id.value = itemid
+    current_item_id.value = itemid ?? null
     clear_tracer_pending()
 
     let image_data
@@ -684,6 +716,7 @@ export const use = () => {
       if (is_pre_resized) {
         const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
+        if (!ctx) throw new Error('Failed to get 2d context')
         ctx.drawImage(bitmap, 0, 0)
         image_data = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
       } else image_data = resize_image(bitmap)
@@ -696,24 +729,24 @@ export const use = () => {
           const tags = await ExifReader.load(image, { expanded: true })
           exif = exif_logger(tags)
         } catch (error) {
-          console.warn('Failed to parse EXIF data:', error.message)
+          console.warn(
+            'Failed to parse EXIF data:',
+            error instanceof Error ? error.message : String(error)
+          )
           exif = {}
         }
     }
 
-    vectorizer.value.postMessage({
-      route: 'make:vector',
-      image_data,
-      exif
-    })
-    gradienter.value.postMessage({
-      route: 'make:gradient',
-      image_data
-    })
-    tracer.value.postMessage({
-      route: 'make:trace',
-      image_data
-    })
+    const v = vectorizer.value
+    const g = gradienter.value
+    const t = tracer.value
+    if (!v || !g || !t) {
+      working.value = false
+      return
+    }
+    v.postMessage({ route: 'make:vector', image_data, exif })
+    g.postMessage({ route: 'make:gradient', image_data })
+    t.postMessage({ route: 'make:trace', image_data })
   }
 
   /**
@@ -734,6 +767,7 @@ export const use = () => {
           img.height || DEFAULT_CANVAS_DIMENSION
         )
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
+        if (!ctx) throw new Error('Failed to get 2d context')
         ctx.drawImage(img, 0, 0)
         URL.revokeObjectURL(svg_url)
         const bitmap = await createImageBitmap(canvas)
@@ -763,9 +797,10 @@ export const use = () => {
    */
   const vectorized = async response => {
     if (!is_mounted.value) return
+    const cid = current_item_id.value
+    if (!cid) return
     const { vector } = response.data
-
-    vector.id = current_item_id.value
+    vector.id = cid
     vector.type = 'posters'
     vector.light = make_path(vector.light)
     vector.regular = make_path(vector.regular)
@@ -832,19 +867,25 @@ export const use = () => {
         await handle_tracer_complete()
         break
       case 'error':
-        console.error('Tracer error:', message.error)
+        const err = message.data?.error ?? message.error
+        console.error(
+          'Tracer error:',
+          err instanceof Error ? err.message : String(err)
+        )
         break
     }
   }
 
   const optimized = async message => {
     if (!is_mounted.value) return
-    const id = /** @type {Id} */ (current_item_id.value)
+    const id = current_item_id.value
+    const vec = new_vector.value
+    if (!id || !vec) return
     const optimized_data = get_item(message.data.vector, id)
 
     clear_vector_paths()
 
-    const poster = /** @type {PosterType} */ (new_vector.value)
+    const poster = vec
     const optimized_poster = /** @type {PosterType} */ (
       /** @type {unknown} */ (optimized_data)
     )
@@ -860,7 +901,7 @@ export const use = () => {
     poster.cutouts = cutouts
 
     const element = document.querySelector(`svg[itemid="${id}"]`)
-    await save_poster(id, element, cutouts)
+    await save_poster(id, element ?? undefined, cutouts)
 
     completed_posters.value.push(id)
 
@@ -883,21 +924,22 @@ export const use = () => {
    * The old paths become detached when replaced by optimized versions
    */
   const clear_vector_paths = () => {
-    if (!new_vector.value) return
-    new_vector.value.light = null
-    new_vector.value.regular = null
-    new_vector.value.medium = null
-    new_vector.value.bold = null
-    if (new_vector.value.cutout) {
-      new_vector.value.cutout.length = 0
-      new_vector.value.cutout = null
-    }
-    if (new_vector.value.cutouts) {
-      Object.keys(new_vector.value.cutouts).forEach(key => {
-        new_vector.value.cutouts[key] = null
-      })
-      new_vector.value.cutouts = null
-    }
+    const vec = new_vector.value
+    if (!vec) return
+    vec.light = /** @type {import('@/types').Path} */ (
+      /** @type {unknown} */ (undefined)
+    )
+    vec.regular = /** @type {import('@/types').Path} */ (
+      /** @type {unknown} */ (undefined)
+    )
+    vec.medium = /** @type {import('@/types').Path} */ (
+      /** @type {unknown} */ (undefined)
+    )
+    vec.bold = /** @type {import('@/types').Path} */ (
+      /** @type {unknown} */ (undefined)
+    )
+    vec.cutout = undefined
+    vec.cutouts = undefined
   }
 
   /**

@@ -211,12 +211,11 @@ class Potrace {
    * 4. Stores resulting paths in pathlist
    */
   #bitmap_to_pathlist() {
-    const threshold = calculate_threshold(
-      this.#luminance_data,
-      this.#params.threshold
-    )
+    const luminance = this.#luminance_data
+    if (!luminance) throw new Error('Image not loaded')
+    const threshold = calculate_threshold(luminance, this.#params.threshold)
     const black_map = apply_threshold(
-      this.#luminance_data,
+      luminance,
       threshold,
       this.#params.blackOnWhite
     )
@@ -1542,7 +1541,13 @@ class Potrace {
       const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
       const factor = index / (colorStops_length - 1)
       const intervalSize = rangeEnd - rangeStart
-      const stats = histogram.get_stats(rangeStart, rangeEnd)
+      const stats = histogram
+        ? histogram.get_stats(rangeStart, rangeEnd)
+        : {
+            pixels: 1,
+            levels: { mean: 0, median: 0, stdDev: 0, unique: 0 },
+            pixelsPerLevel: { mean: 0, median: 0, peak: 0 }
+          }
       let color = -1
 
       if (stats.pixels === 0) {
@@ -1564,11 +1569,13 @@ class Potrace {
               factor
           break
         case Potrace.FILL_DOMINANT:
-          color = histogram.get_dominant_color(
-            rangeStart,
-            rangeEnd,
-            utils.clamp(intervalSize, 1, 5)
-          )
+          color = histogram
+            ? histogram.get_dominant_color(
+                rangeStart,
+                rangeEnd,
+                utils.clamp(intervalSize, 1, 5)
+              )
+            : stats.levels.mean
           break
         case Potrace.FILL_MEAN:
           color = stats.levels.mean
@@ -1610,12 +1617,15 @@ class Potrace {
    * Retrieves the image histogram. If it doesn't exist, creates and initializes it.
    */
   #get_image_histogram() {
-    // If histogram doesn't exist yet, create it
-    if (!this.#luminance_data.histogram()) {
-      const histogram = new Histogram(this.#luminance_data)
-      this.#luminance_data.set_histogram(histogram)
+    const luminance = this.#luminance_data
+    if (!luminance) throw new Error('Image not loaded')
+    const existing = luminance.histogram()
+    if (!existing) {
+      const histogram = new Histogram(luminance)
+      luminance.set_histogram(histogram)
+      return histogram
     }
-    return this.#luminance_data.histogram()
+    return existing
   }
 
   /**
@@ -1989,8 +1999,10 @@ class Potrace {
    */
   create_paths(image_data) {
     this.#load_image(image_data)
-    const { width } = this.#luminance_data
-    const { height } = this.#luminance_data
+    const luminance = this.#luminance_data
+    if (!luminance) throw new Error('Image not loaded')
+    const { width } = luminance
+    const { height } = luminance
     const dark = !this.#params.blackOnWhite
     const paths = this.as_curves()
     return { width, height, dark, paths }

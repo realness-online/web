@@ -20,9 +20,12 @@ export const use = () => {
     show
   } = poster_data || {}
   const new_vector = inject('new_vector', ref(null))
-  const vector_from_context = inject('vector', null)
+  const vector_from_context = inject(
+    'vector',
+    /** @type {import('vue').Ref<Poster | null> | null} */ (null)
+  )
 
-  const loaded_vector = ref(null)
+  const loaded_vector = ref(/** @type {Poster | null} */ (null))
 
   const active_vector = computed(() => {
     if (vector_from_context?.value) return vector_from_context.value
@@ -96,7 +99,7 @@ export const use = () => {
     if (!final_vector.value && vector_id.value && show) show()
     else if (!final_vector.value && vector_id.value && !loaded_vector.value)
       load(vector_id.value).then(poster => {
-        loaded_vector.value = poster
+        loaded_vector.value = /** @type {Poster | null} */ (poster)
       })
   })
 

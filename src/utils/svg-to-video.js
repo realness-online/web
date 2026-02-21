@@ -109,6 +109,7 @@ const setup_canvas_and_encoder = (
   canvas.width = canvas_width
   canvas.height = canvas_height
   const ctx = canvas.getContext('2d', { willReadFrequently: false })
+  if (!ctx) throw new Error('Failed to get 2d context')
 
   const target = writable_stream
     ? new StreamTarget(writable_stream, {
@@ -383,6 +384,7 @@ export const render_svg_to_video = (
   canvas.width = canvas_width
   canvas.height = canvas_height
   const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to get 2d context')
 
   const frame_duration = MS_PER_SECOND / fps
   const total_frames = Math.ceil(max_duration * fps)
@@ -480,6 +482,7 @@ export const render_svg_to_canvas = (
     throw new Error('Canvas must be an HTMLCanvasElement')
 
   const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to get 2d context')
   const frame_duration = MS_PER_SECOND / fps
   const total_frames = Math.ceil(max_duration * fps)
 

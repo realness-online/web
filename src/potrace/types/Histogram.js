@@ -41,9 +41,12 @@ class Histogram {
   }
 
   // Use regular properties for better performance in hot paths
+  /** @type {any[] | null} */
   sorted_indexes = null
   cached_stats = {}
+  /** @type {Float64Array | null} */
   lookup_table_h = null
+  /** @type {Uint8Array|Uint16Array|Uint32Array|null} */
   data = null
   pixels = 0
 
@@ -123,6 +126,7 @@ class Histogram {
     if (!refresh && this.sorted_indexes) return this.sorted_indexes
 
     const { data } = this
+    if (!data) return []
     const { indexes } = Histogram.SHARED_ARRAYS
 
     // Traditional for loop is faster than forEach
@@ -154,16 +158,18 @@ class Histogram {
     h.fill(0)
 
     // Use traditional for loops for better performance
+    const data_arr = this.data
+    if (!data_arr) return new Float64Array(0)
     for (let i = 1; i < COLOR_DEPTH; ++i) {
       const idx = index(i, i)
-      const tmp = this.data[i] / pixels_total
+      const tmp = data_arr[i] / pixels_total
 
       p[idx] = tmp
       s[idx] = i * tmp
     }
 
     for (let i = 1; i < COLOR_DEPTH - 1; ++i) {
-      const tmp = this.data[i + 1] / pixels_total
+      const tmp = data_arr[i + 1] / pixels_total
       const idx = index(1, i)
 
       p[idx + 1] = p[idx] + tmp
@@ -197,7 +203,7 @@ class Histogram {
    * @param [levelMax=255] - histogram segment end
    * @returns {number[]}
    */
-  multilevel_thresholding(amount, level_min, level_max) {
+  multilevel_thresholding(amount, level_min = 0, level_max = COLOR_RANGE_END) {
     const [min, max] = normalize_min_max(level_min, level_max)
     const threshold_amount = Math.min(max - min - 2, ~~amount)
 
@@ -225,10 +231,12 @@ class Histogram {
       }
     ]
 
+    /** @type {{max_sig: number, color_stops: number[] | null}} */
     const best_result = { max_sig: 0, color_stops: null }
 
     while (stack.length > 0) {
       const current = stack.pop()
+      if (!current) break
       const { starting_point, prev_variance, indexes, depth } = current
 
       // Sample with step_size to reduce iterations
@@ -237,8 +245,9 @@ class Histogram {
         i < max - threshold_amount + depth;
         i += step_size
       ) {
-        const variance =
-          prev_variance + this.lookup_table_h[index(starting_point + 1, i)]
+        const lookup = this.lookup_table_h
+        if (!lookup) return best_result.color_stops || []
+        const variance = prev_variance + lookup[index(starting_point + 1, i)]
         indexes[depth] = i
 
         if (depth + 1 < threshold_amount)
@@ -251,8 +260,10 @@ class Histogram {
             color_stops: current.color_stops
           })
         else {
-          const total_variance =
-            variance + this.lookup_table_h[index(i + 1, max)]
+          const lookup_h = this.lookup_table_h
+          const total_variance = lookup_h
+            ? variance + lookup_h[index(i + 1, max)]
+            : variance
           if (total_variance > best_result.max_sig) {
             best_result.max_sig = total_variance
             best_result.color_stops = indexes.slice()
@@ -289,6 +300,7 @@ class Histogram {
     const tol = tolerance || 1
 
     const colors = this.data
+    if (!colors) return -1
     let dominant_index = -1
     let dominant_value = -1
     let tmp
@@ -335,6 +347,12 @@ class Histogram {
       return this.cached_stats[`${min}-${max}`]
 
     const { data } = this
+    if (!data)
+      return {
+        levels: { mean: 0, median: 0, stdDev: 0, unique: 0 },
+        pixelsPerLevel: { mean: 0, median: 0, peak: 0 },
+        pixels: 0
+      }
     const sorted_indexes = this.get_sorted_indexes(false)
 
     let pixels_total = 0

@@ -52,7 +52,8 @@ export const is_directory_id = str => {
  * @returns {maybe is Directory}
  */
 export const is_directory = maybe =>
-  Boolean(maybe) &&
+  maybe !== null &&
+  maybe !== undefined &&
   typeof maybe === 'object' &&
   'id' in maybe &&
   'types' in maybe &&
@@ -133,7 +134,7 @@ export const as_directory = async itemid => {
   const cached = await get(path)
   if (cached) {
     const local_directory = await build_local_directory(itemid)
-    const local_items = local_directory.items || []
+    const local_items = local_directory?.items ?? []
     const cached_items = cached.items || []
     const merged_items = [...new Set([...cached_items, ...local_items])]
     if (merged_items.length !== cached_items.length)

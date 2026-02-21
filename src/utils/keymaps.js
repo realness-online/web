@@ -235,6 +235,7 @@ export const parse_key_combination = key_string => {
 export const normalize_key_for_platform = key_string => {
   const platform = get_platform()
   const platform_map = platform_keymaps[platform]
+  if (!platform_map) return key_string
 
   let normalized = key_string
   Object.entries(platform_map).forEach(([modifier, platform_modifier]) => {
@@ -269,12 +270,13 @@ export const validate_keymap_runtime = (keymap = default_keymap) => {
 
       // Track used commands
       const command_str = Array.isArray(command) ? command[0] : command
-      used_commands.add(command_str)
+      if (command_str !== null && command_str !== undefined)
+        used_commands.add(command_str)
 
       // Track key usage across contexts
       if (!used_keys.has(key)) used_keys.set(key, [])
-
-      used_keys.get(key).push(context_name)
+      const key_contexts = used_keys.get(key)
+      if (key_contexts) key_contexts.push(context_name)
     })
   })
 
@@ -300,6 +302,7 @@ export const validate_keymap_runtime = (keymap = default_keymap) => {
  * @returns {Object} Statistics object
  */
 export const get_keymap_stats = (keymap = default_keymap) => {
+  /** @type {{ total_contexts: number, total_bindings: number, contexts: string[], commands: string[] }} */
   const stats = {
     total_contexts: keymap.length,
     total_bindings: 0,
@@ -318,7 +321,8 @@ export const get_keymap_stats = (keymap = default_keymap) => {
 
     Object.entries(context_config.bindings || {}).forEach(([, command]) => {
       const command_str = Array.isArray(command) ? command[0] : command
-      commands_set.add(command_str)
+      if (command_str !== null && command_str !== undefined)
+        commands_set.add(command_str)
     })
   })
 

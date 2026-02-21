@@ -1,8 +1,11 @@
 /** @typedef {import('@/types').Poster} Poster */
+/** @typedef {import('@/types').Path} Path */
 /** @typedef {import('@/types').Relation} Relation */
 /** @typedef {import('@/types').PersonQuery} PersonQuery */
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
+/** @typedef {Poster & {path?: Path | Path[]}} VectorLike */
 
 import {
   ref,
@@ -35,8 +38,10 @@ export const geology_layers = [
 // Composable manages poster display, editing, layers, SVG manipulation, and animations
 
 export const use = () => {
-  const { props, emit } = current_instance()
-  const vector = ref(null)
+  const instance = current_instance()
+  const props = instance?.props ?? {}
+  const emit = instance?.emit ?? (() => {})
+  const vector = ref(/** @type {VectorLike | null} */ (null))
   const vector_element = ref(null)
   const intersecting = ref(false)
   const working = ref(true)
@@ -87,9 +92,11 @@ export const use = () => {
   })
 
   const path = computed(() => {
-    if (working.value || vector) return null
-    if (Array.isArray(vector.value.path)) return vector.value.path
-    return [vector.value.path]
+    if (working.value || !vector.value) return null
+    const v = vector.value
+    if (Array.isArray(v.path)) return v.path
+    if (v.path) return [v.path]
+    return null
   })
 
   const viewbox = computed(() => {
@@ -129,7 +136,8 @@ export const use = () => {
   const show = async () => {
     if (!vector.value) {
       const poster = await load(/** @type {Id} */ (props.itemid))
-      if (!vector.value) vector.value = poster
+      if (!vector.value && poster)
+        vector.value = /** @type {VectorLike} */ (poster)
     }
     await tick()
     working.value = false
@@ -216,8 +224,8 @@ export const use = () => {
 
 export const use_posters = () => {
   const set_working = inject('set_working')
-  const posters = ref([])
-  const authors = ref([])
+  const posters = ref(/** @type {Item[]} */ ([]))
+  const authors = ref(/** @type {Relation[]} */ ([]))
 
   /**
    * @param {PersonQuery} query
@@ -227,11 +235,12 @@ export const use_posters = () => {
     const directory = await as_directory(
       /** @type {Id} */ (`${query.id}/posters`)
     )
+    if (!directory) return
     directory.items.forEach(created_at => {
       const poster_id = `${query.id}/posters/${created_at}`
       if (!posters.value.find(p => p.id === poster_id))
         posters.value.push({
-          id: poster_id,
+          id: /** @type {Id} */ (poster_id),
           type: 'posters'
         })
     })
@@ -255,17 +264,17 @@ export const use_posters = () => {
    */
   const poster_shown = async poster => {
     const author_id = as_author(poster.id)
+    if (!author_id) return
 
     const author_posters = posters.value.filter(
       p => author_id === as_author(p.id)
     )
+    const oldest = author_posters[author_posters.length - 1]
+    if (!oldest) return
 
     const is_oldest_poster =
-      as_created_at(poster.id) ===
-      as_created_at(author_posters[author_posters.length - 1].id)
-
+      as_created_at(poster.id) === as_created_at(oldest.id)
     if (!is_oldest_poster) return
-
     const author = authors.value.find(relation => relation.id === author_id)
     if (!author) return
 
@@ -279,7 +288,7 @@ export const use_posters = () => {
       author_id,
       /** @type {number} */ (Number(next_archive))
     )
-    posters.value.push(...new_posters)
+    posters.value.push(.../** @type {Item[]} */ (new_posters))
     posters.value.sort(recent_item_first)
     author.viewed.push(next_archive)
   }
@@ -321,6 +330,7 @@ const load_archive_posters = async (author_id, archive_id) => {
   const archive = await as_directory(
     /** @type {Id} */ (`${author_id}/posters/${archive_id}/`)
   )
+  if (!archive) return []
   return /** @type {Poster[]} */ (
     archive.items.map(created_at => ({
       id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
@@ -355,24 +365,23 @@ export const is_vector_id = itemid => {
 }
 
 /**
- * @param {Poster} vector
+ * @param {Poster & {path?: unknown}} vector
  * @returns {boolean}
  */
 export const is_vector = vector => {
   if (!vector || typeof vector !== 'object') return false
   if (!is_vector_id(vector.id)) return false
-  if (/** @type {any} */ (vector).path) return false
+  if (vector.path) return false
   if (!vector.viewbox) return false
   if (!vector.height || !vector.width) return false
 
-  const { gradients } = /** @type {any} */ (vector)
+  const { gradients } = vector
   if (gradients) {
     if (!gradients.width) return false
     if (!gradients.height) return false
     if (!gradients.radial) return false
   }
-  const { type } = /** @type {any} */ (vector)
-  if (type === 'posters') return true
+  if (vector.type === 'posters') return true
   return false
 }
 

@@ -1,5 +1,7 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
+/** @typedef {import('@/types').Person} Person */
+/** @typedef {import('@/types').Relation} Relation */
 import { ref, computed, inject, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
@@ -14,8 +16,8 @@ export const default_person = {
   id: is_browser ? localStorage.me : null,
   type: 'person'
 }
-const relations = ref(undefined)
-const blocked = ref([])
+const relations = ref(/** @type {Relation[]} */ ([]))
+const blocked = ref(/** @type {Id[]} */ ([]))
 
 const blocked_key = () => `${localStorage.me}/blocked`
 export const load_blocked = () => {
@@ -29,9 +31,9 @@ export const load_blocked = () => {
 
 export const use = () => {
   const set_working = inject('set_working')
-  const phonebook = ref([])
+  const phonebook = ref(/** @type {Person[]} */ ([]))
   const working = ref(true)
-  const people = ref([])
+  const people = ref(/** @type {Item[]} */ ([]))
   const person = computed(() => people.value[0])
 
   /**
@@ -40,7 +42,7 @@ export const use = () => {
    */
   const load_person = async person => {
     const item = await load(person.id)
-    people.value.push(item)
+    if (item) people.value.push(item)
   }
 
   /**
@@ -73,7 +75,11 @@ export const use = () => {
             )
             return person || null
           } catch (err) {
-            console.error('Failed to load person:', phone_number.name, err)
+            console.error(
+              'Failed to load person:',
+              phone_number.name,
+              err instanceof Error ? err.message : String(err)
+            )
             return null
           }
         })
@@ -81,17 +87,25 @@ export const use = () => {
 
       // Filter out nulls, duplicates, and blocked
       const blocked_ids = new Set(blocked.value)
-      phonebook.value = loaded_people.filter(
-        person =>
-          person &&
-          !phonebook.value.some(p => p.id === person.id) &&
-          !blocked_ids.has(person.id)
+      const seen = new Set()
+      phonebook.value = /** @type {Person[]} */ (
+        /** @type {unknown} */ (
+          loaded_people.filter(person => {
+            if (!person || blocked_ids.has(person.id)) return false
+            if (seen.has(person.id)) return false
+            seen.add(person.id)
+            return true
+          })
+        )
       )
 
       // Re-enable sorting
       phonebook.value.sort(recent_visit_first)
     } catch (err) {
-      console.error('Failed to load phonebook:', err)
+      console.error(
+        'Failed to load phonebook:',
+        err instanceof Error ? err.message : String(err)
+      )
     } finally {
       working.value = false
       if (set_working) set_working(false)
@@ -109,13 +123,13 @@ export const use = () => {
 }
 export const use_me = () => {
   if (is_browser) {
-    list(/** @type {Id} */ (`${localStorage.me}/relations`)).then(list => {
-      relations.value = list
+    list(/** @type {Id} */ (`${localStorage.me}/relations`)).then(items => {
+      relations.value = /** @type {Relation[]} */ (items)
     })
     load_blocked()
   }
 
-  const block_person = person_id => {
+  const block_person = /** @param {Id} person_id */ person_id => {
     if (!localStorage.me) return
     if (!blocked.value.includes(person_id)) {
       blocked.value = [...blocked.value, person_id]
@@ -131,13 +145,14 @@ export const use_me = () => {
 
   const save = async () => {
     await tick()
-    await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
+    const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
+    if (me_el) await new Me().save(me_el)
   }
   const is_valid_name = computed(() => {
     if (!current_user.value) return false
-    if (!me.value) return false
-    if (!me.value.name) return false
-    if (me.value.name.length < 3) return false
+    const me_val = me.value
+    if (!me_val?.name) return false
+    if (me_val.name.length < 3) return false
     return true
   })
 
@@ -154,7 +169,7 @@ export const use_me = () => {
 export const get_my_itemid = type => {
   if (!is_browser) return null
   if (type) return `${localStorage.me}/${type}`
-  return localStorage.me
+  return localStorage.me ?? null
 }
 export const as_phone_number = (id = '/+1') => id.substring(2)
 export const from_e64 = e64_number => `/${e64_number}`

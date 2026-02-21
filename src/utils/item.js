@@ -21,6 +21,7 @@ export function hydrate(item_as_string = '') {
 export const get_item = (elements, itemid) => {
   if (!elements) return null
   const fragment = typeof elements === 'string' ? hydrate(elements) : elements
+  if (!fragment) return null
   let main_element = fragment.querySelector(`[itemid="${itemid}"]`)
   if (!main_element) main_element = fragment.querySelector('[itemid]')
   if (!main_element) return null
@@ -78,48 +79,46 @@ export const get_itemprops = item => {
   }
   return props
 }
+/** @type {Record<string, (el: Element) => string | Element | undefined>} */
+const tag_value_handlers = {
+  script: () => undefined,
+  style: () => undefined,
+  a: el => el.getAttribute('href') ?? undefined,
+  area: el => el.getAttribute('href') ?? undefined,
+  link: el => el.getAttribute('href') ?? undefined,
+  use: el => el.getAttribute('href') ?? undefined,
+  audio: el => el.getAttribute('src') ?? undefined,
+  iframe: el => el.getAttribute('src') ?? undefined,
+  source: el => el.getAttribute('src') ?? undefined,
+  track: el => el.getAttribute('src') ?? undefined,
+  video: el => el.getAttribute('src') ?? undefined,
+  img: el => el.getAttribute('src') ?? undefined,
+  embed: el => el.getAttribute('src') ?? undefined,
+  data: el => el.getAttribute('value') ?? undefined,
+  meter: el => el.getAttribute('value') ?? undefined,
+  input: el => el.getAttribute('value') ?? undefined,
+  textarea: el => el.getAttribute('value') ?? undefined,
+  select: el => el.getAttribute('value') ?? undefined,
+  svg: el => el,
+  path: el => el,
+  rect: el => el,
+  stop: el => el,
+  g: el => el.innerHTML,
+  defs: el => el.innerHTML,
+  object: el => /** @type {HTMLObjectElement} */ (el).data
+}
+
 /**
  * @param {Element} element
  * @returns {string | Element | undefined}
  */
 export const itemprop_value = element => {
-  if (element.hasAttribute('content')) return element.getAttribute('content')
-  if (element.hasAttribute('datetime')) return element.getAttribute('datetime')
-  switch (element.tagName.toLowerCase()) {
-    case 'script':
-    case 'style':
-      return undefined
-    case 'a':
-    case 'area':
-    case 'link':
-    case 'use':
-      return element.getAttribute('href')
-    case 'audio':
-    case 'iframe':
-    case 'source':
-    case 'track':
-    case 'video':
-    case 'img':
-    case 'embed':
-      return element.getAttribute('src')
-    case 'data':
-    case 'meter':
-    case 'input':
-    case 'textarea':
-    case 'select':
-      return element.getAttribute('value')
-    case 'svg':
-    case 'path':
-    case 'rect':
-    case 'stop':
-      return element
-    case 'g':
-    case 'defs':
-      return element.innerHTML
-    case 'object':
-      return /** @type {HTMLObjectElement} */ (element).data
-    default:
-      return element.textContent.trim()
-  }
+  if (element.hasAttribute('content'))
+    return element.getAttribute('content') ?? undefined
+  if (element.hasAttribute('datetime'))
+    return element.getAttribute('datetime') ?? undefined
+  const handler = tag_value_handlers[element.tagName.toLowerCase()]
+  if (handler) return handler(element)
+  return (element.textContent ?? '').trim()
 }
 export default get_item

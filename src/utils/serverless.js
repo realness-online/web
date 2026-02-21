@@ -30,22 +30,40 @@ import { get, set } from 'idb-keyval'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { as_filename } from '@/utils/itemid'
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
 
-export const me = ref(undefined)
-export const app = ref(undefined)
-export const auth = ref(undefined)
-export const storage = ref(undefined)
-export const current_user = ref(undefined)
+export const me = ref(
+  /** @type {import('@/types').MeItem | undefined} */ (undefined)
+)
+export const app = ref(
+  /** @type {import('firebase/app').FirebaseApp | undefined} */ (undefined)
+)
+export const auth = ref(
+  /** @type {import('firebase/auth').Auth | undefined} */ (undefined)
+)
+export const storage = ref(
+  /** @type {import('firebase/storage').FirebaseStorage | undefined} */ (
+    undefined
+  )
+)
+export const current_user = ref(
+  /** @type {import('firebase/auth').User | null | undefined} */ (undefined)
+)
 
 export const Recaptcha = RecaptchaVerifier
 export const sign_in = signInWithPhoneNumber
-export const sign_off = () => sign_out(auth.value)
+export const sign_off = () => {
+  if (auth.value) sign_out(auth.value)
+}
 
 // storage methods
 /**
  * @param {string} path
  */
-export const location = path => reference(storage.value, path)
+export const location = path => {
+  if (!storage.value) throw new Error('Storage not initialized')
+  return reference(storage.value, path)
+}
 export const metadata = path => get_metadata(location(path))
 /**
  * @param {string} path
@@ -67,7 +85,12 @@ export const remove = async (/** @type {string} */ path) => {
   try {
     await delete_file(location(path))
   } catch (e) {
-    if (e.code === 'storage/object-not-found')
+    if (
+      e &&
+      typeof e === 'object' &&
+      'code' in e &&
+      /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+    )
       console.warn(path, 'already deleted')
     else throw e
   }
@@ -139,16 +162,24 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
         await remove(new_storage_path)
         await set(old_location, html)
       } catch (cleanup_error) {
-        console.error(`Failed to cleanup ${new_storage_path}`, cleanup_error)
+        console.error(
+          `Failed to cleanup ${new_storage_path}`,
+          cleanup_error instanceof Error
+            ? cleanup_error.message
+            : String(cleanup_error)
+        )
       }
 
-    console.error(`Failed to move ${type} ${old_storage_path}`, error)
+    console.error(
+      `Failed to move ${type} ${old_storage_path}`,
+      error instanceof Error ? error.message : String(error)
+    )
     return false
   }
 }
 
 export const init_serverless = () => {
-  me.value = default_person
+  me.value = /** @type {Item} */ (/** @type {unknown} */ (default_person))
   const init = {
     apiKey: String(import.meta.env.VITE_API_KEY || ''),
     appId: String(import.meta.env.VITE_APP_ID || ''),
@@ -163,25 +194,34 @@ export const init_serverless = () => {
   if (firebase_app) auth.value = init_auth(firebase_app)
   else console.error('Firebase app initialization failed')
 
-  storage.value = get_storage(app.value)
+  if (app.value) storage.value = get_storage(app.value)
 
   return new Promise(resolve => {
     let resolved = false
+    if (!auth.value) {
+      resolve(undefined)
+      return
+    }
     auth_changed(auth.value, async user => {
       if (user) {
         current_user.value = user
-        localStorage.me = from_e64(current_user.value.phoneNumber)
-        me.value.id = localStorage.me
+        const phone = user.phoneNumber
+        if (phone) localStorage.me = from_e64(phone)
+        if (me.value) me.value.id = localStorage.me
         const maybe_me = await load_from_network(localStorage.me)
         if (maybe_me) {
+          // Intentional: replace me with network result
+          // eslint-disable-next-line require-atomic-updates
           me.value = maybe_me
           const html = await get(localStorage.me)
           if (html) localStorage.setItem(localStorage.me, html)
         }
-      } else current_user.value = null
+      } else
+        current_user.value =
+          /** @type {import('firebase/auth').User | null} */ (null)
       if (!resolved) {
         resolved = true
-        resolve()
+        resolve(undefined)
       }
     })
   })

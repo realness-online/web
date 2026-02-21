@@ -35,9 +35,8 @@ export class Storage {
   }
 
   /**
-   * @param {Element | {outerHTML: string}} [items]
+   * @param {Element | {outerHTML: string} | null} [items]
    */
-
   save(items) {}
   delete() {}
   /**
@@ -53,8 +52,10 @@ export class Storage {
  * @extends {Storage}
  */
 class Cached extends Large(Cloud(Storage)) {
-  async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-    await super.save(items)
+  async save(
+    items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
+  ) {
+    await super.save(items ?? undefined)
   }
 }
 
@@ -81,12 +82,17 @@ export class Me extends Cloud(Local(Storage)) {
     super(localStorage.me)
   }
 
-  async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+  async save(
+    items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
+  ) {
     if (!current_user.value) return
-    if (!me.value) return
-    if (!me.value.name || me.value.name.length < 3) return
-    if (!me.value.visited) return
-    await super.save(items)
+    const me_val =
+      /** @type {{name?: string, visited?: string} | null | undefined} */ (
+        me.value
+      )
+    if (!me_val || !me_val.name || me_val.name.length < 3 || !me_val.visited)
+      return
+    await super.save(items ?? undefined)
   }
 }
 

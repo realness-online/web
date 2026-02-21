@@ -1,4 +1,6 @@
 /** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Sync_Deps} Sync_Deps */
+/** @typedef {import('@/types').Sync_Offline_Item} Sync_Offline_Item */
 import { get, del, set, keys } from 'idb-keyval'
 import {
   as_filename,
@@ -34,16 +36,11 @@ import {
 } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 
-export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
+/** @type {import('@/types').Sync_Index_Entry} */
+export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } }
 
 /**
- * @param {object} deps
- * @param {import('vue').Ref} deps.sync_element
- * @param {import('vue').Ref} deps.relations
- * @param {import('vue').Ref} deps.my_thoughts
- * @param {import('vue').Ref} deps.events
- * @param {import('vue').Ref} deps.me
- * @param {Function} deps.emit
+ * @param {Sync_Deps} deps
  * @returns {() => Promise<void>}
  */
 const create_play = deps => async () => {
@@ -85,16 +82,21 @@ const create_play = deps => async () => {
   }
 }
 
+/** @param {Sync_Deps} deps @returns {Promise<void>} */
 const visit = async deps => {
-  const visit_digit = new Date(deps.me.value.visited).getTime()
-  if (!deps.me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
-    deps.me.value.visited = new Date().toISOString()
+  const visited = deps.me.value?.visited
+  const visit_digit = new Date(visited ?? 0).getTime()
+  if (!visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
+    if (deps.me.value) deps.me.value.visited = new Date().toISOString()
     await tick()
-    await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
+    const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
+    if (me_el) await new Me().save(me_el)
   }
 }
 
+/** @param {Sync_Deps} deps @returns {Promise<void>} */
 const prune = async deps => {
+  /** @param {Id} id */
   const is_stranger = id => {
     const friends = [
       ...deps.relations.value,
@@ -122,11 +124,15 @@ const prune = async deps => {
   )
 }
 
+/** @param {Sync_Deps} deps @returns {Promise<void|null>} */
 const sync_statements = async deps => {
-  const persistance = new Statement()
   const itemid = get_my_itemid('statements')
+  if (!itemid) return null
+  const persistance = new Statement()
   const index_hash = await get_index_hash(itemid)
-  const elements = deps.sync_element.value.querySelector(`[itemid="${itemid}"]`)
+  const elements = deps.sync_element.value?.querySelector(
+    `[itemid="${itemid}"]`
+  )
   if (!elements || !elements.outerHTML) return null
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
@@ -142,18 +148,22 @@ const sync_statements = async deps => {
   await persistance.optimize()
 }
 
+/** @param {Sync_Deps} deps @returns {Promise<void>} */
 const sync_relations = async deps => {
   const itemid = get_my_itemid('relations')
+  if (!itemid) return
   await fresh_metadata(itemid)
   const index_hash = await get_index_hash(itemid)
-  let local_html = localStorage.getItem(itemid)
-  if (!local_html) local_html = await get(itemid)
-  const local_hash = local_html ? await create_hash(local_html) : null
+  const local_html = localStorage.getItem(itemid) ?? (await get(itemid))
+  const local_hash =
+    typeof local_html === 'string' ? await create_hash(local_html) : null
 
   if (local_html && !index_hash) {
     const local_item = get_item(local_html, itemid)
     if (local_item) {
-      deps.relations.value = type_as_list(local_item)
+      deps.relations.value = /** @type {import('@/types').Relation[]} */ (
+        type_as_list(local_item)
+      )
       await tick()
       const elements = deps.sync_element.value?.querySelector(
         `[itemid="${itemid}"]`
@@ -170,7 +180,9 @@ const sync_relations = async deps => {
     await del(itemid)
     const cloud_item = await load_from_network(itemid)
     if (cloud_item) {
-      deps.relations.value = type_as_list(cloud_item)
+      deps.relations.value = /** @type {import('@/types').Relation[]} */ (
+        type_as_list(cloud_item)
+      )
       await tick()
       const elements = deps.sync_element.value?.querySelector(
         `[itemid="${itemid}"]`
@@ -180,11 +192,15 @@ const sync_relations = async deps => {
   }
 }
 
+/** @param {Sync_Deps} deps @returns {Promise<void>} */
 const sync_events = async deps => {
-  const event_storage = new Event()
   const itemid = get_my_itemid('events')
+  if (!itemid) return
+  const event_storage = new Event()
   const index_hash = await get_index_hash(itemid)
-  const elements = deps.sync_element.value.querySelector(`[itemid="${itemid}"]`)
+  const elements = deps.sync_element.value?.querySelector(
+    `[itemid="${itemid}"]`
+  )
   if (!elements) return
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
@@ -199,8 +215,10 @@ const sync_events = async deps => {
   }
 }
 
+/** @returns {import('@/types').Sync_Return} */
 export const use = () => {
-  const { emit } = current_instance()
+  const instance = current_instance()
+  const emit = instance?.emit ?? (() => {})
   const { me, relations } = use_me()
   const { my_thoughts } = use_statements()
   const events = ref(null)
@@ -208,14 +226,23 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
 
-  const deps = { sync_element, relations, my_thoughts, events, me, emit }
+  const deps = /** @type {Sync_Deps} */ ({
+    sync_element,
+    relations,
+    my_thoughts,
+    events,
+    me,
+    emit
+  })
   const play = create_play(deps)
 
   mounted(async () => {
     document.addEventListener('visibilitychange', play)
     window.addEventListener('online', play)
     const item = await load(/** @type {Id} */ (`${localStorage.me}/relations`))
-    relations.value = type_as_list(item)
+    relations.value = /** @type {import('@/types').Relation[]} */ (
+      type_as_list(item)
+    )
   })
 
   dismount(() => {
@@ -243,12 +270,12 @@ export const sync_offline_actions = async () => {
   if (!navigator.onLine) return
 
   // Handle offline queue (includes both anonymous and logged-in statements)
+  /** @type {Sync_Offline_Item[]|undefined} */
   const offline = await get('sync:offline')
   if (offline) {
-    // Sequential processing required: operations must complete before starting next
     /* eslint-disable no-await-in-loop */
     while (offline.length) {
-      const item = offline.pop()
+      const item = /** @type {Sync_Offline_Item} */ (offline.pop())
 
       if (item.action === 'save')
         if (item.id.endsWith('/relations')) {
@@ -277,12 +304,16 @@ export const sync_offline_actions = async () => {
   }
 }
 
+/**
+ * @param {Id} itemid
+ * @returns {Promise<string|null|undefined>}
+ */
 const get_index_hash = async itemid =>
   ((await get('sync:index')) || {})[itemid]?.customMetadata?.hash
 
 /**
  * @param {Id} itemid
- * @returns {Promise<any>}
+ * @returns {Promise<import('@/types').Sync_Index_Entry>}
  */
 export const fresh_metadata = async itemid => {
   if (itemid.startsWith('/+/')) return DOES_NOT_EXIST
@@ -294,7 +325,13 @@ export const fresh_metadata = async itemid => {
     try {
       network = await metadata(path)
     } catch (e) {
-      if (e.code === 'storage/object-not-found') network = DOES_NOT_EXIST
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+      )
+        network = DOES_NOT_EXIST
       else throw e
     }
     if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
@@ -324,25 +361,21 @@ export const i_am_fresh = () => {
   return am_i_fresh
 }
 
-/**
- * @returns {Promise<void>}
- */
+/** @returns {Promise<void>} */
 export const sync_me = async () => {
   const id = get_my_itemid()
+  if (!id) return
   const index_hash = await get_index_hash(id)
-  let my_info = localStorage.getItem(id)
-  if (!my_info) my_info = await get(id)
-  if (!my_info || !index_hash) return
+  const my_info = localStorage.getItem(id) ?? (await get(id))
+  if (typeof my_info !== 'string' || !index_hash) return
   const hash = await create_hash(my_info)
   if (hash !== index_hash) {
     localStorage.removeItem(id)
-    del(id)
+    await del(id)
   }
 }
 
-/**
- * @returns {Promise<void>}
- */
+/** @returns {Promise<void>} */
 export const sync_posters_directory = async () => {
   const me = get_my_itemid()
   if (!me) return

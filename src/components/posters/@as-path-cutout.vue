@@ -7,9 +7,10 @@
 
   const { cutout } = defineProps({
     cutout: {
+      /** @type {import('vue').PropType<Cutout>} */
       type: Object,
       required: true,
-      validator: (/** @type {any} */ value) => {
+      validator: value => {
         if (!value || typeof value !== 'object') return false
         if (typeof value.d !== 'string') return false
         if (typeof value.fill !== 'string') return false

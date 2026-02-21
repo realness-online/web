@@ -70,20 +70,20 @@ export const Cloud = superclass =>
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
         const directory = await as_directory(this.id)
-
+        if (!directory) return response
         await del(directory.id)
-
         return response
       } else if (current_user.value || localStorage.me)
         await sync_later(this.id, 'save')
     }
 
-    async save(items = document.querySelector(`[itemid="${this.id}"]`)) {
-      // console.info('request:save', this.id, items)
+    async save(
+      items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
+    ) {
       if (!items || !items.outerHTML) return
-      if (super.save) await super.save(items)
+      await super.save(items)
       const item_type = this.type || as_type(this.id)
-      if (networkable.includes(item_type))
+      if (item_type && networkable.includes(item_type))
         await this.to_network(items.outerHTML)
     }
 
@@ -103,7 +103,7 @@ export const Cloud = superclass =>
         }
       } else await sync_later(this.id, 'delete')
 
-      if (super.delete) super.delete()
+      super.delete()
     }
 
     /**
@@ -111,7 +111,7 @@ export const Cloud = superclass =>
      * @returns {Promise<void>}
      */
     async optimize() {
-      if (super.optimize) await super.optimize()
+      await super.optimize()
       const item_type = this.type || as_type(this.id)
       if (
         !item_type ||
@@ -196,7 +196,7 @@ export const Cloud = superclass =>
 
         if (successfully_archived_count > 0) {
           const check_directory = await load_directory_from_network(this.id)
-          const { items: check_items } = check_directory
+          const check_items = check_directory?.items ?? []
           if (!had_partial_failure && check_items.length > SIZE.MAX)
             await this.optimize()
         }

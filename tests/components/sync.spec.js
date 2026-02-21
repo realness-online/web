@@ -82,6 +82,14 @@ vi.mock('@/persistance/Cloud', () => ({
   }
 }))
 
+vi.mock('@/utils/serverless', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    url: vi.fn(() => Promise.resolve(null))
+  }
+})
+
 // Now import everything else
 import { shallowMount, mount, flushPromises as flush } from '@vue/test-utils'
 import { get, set } from 'idb-keyval'
