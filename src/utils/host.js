@@ -32,7 +32,15 @@ const ensure_dir = async path => {
   try {
     await mkdir(path, { recursive: true })
   } catch (error) {
-    if (error.code !== 'EEXIST') throw error
+    if (
+      !(
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'EEXIST'
+      )
+    )
+      throw error
   }
   return path
 }
@@ -61,7 +69,13 @@ export const metadata = async itemid => {
       contentEncoding: 'gzip'
     }
   } catch (error) {
-    if (error.code === 'ENOENT') return null
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      return null
     throw error
   }
 }
@@ -94,7 +108,13 @@ export const url = async itemid => {
     await stat(file_path)
     return `http://localhost:${process.env.LOCAL_SERVER_PORT || 3000}/api/${itemid}` // eslint-disable-line no-magic-numbers
   } catch (error) {
-    if (error.code === 'ENOENT') return null
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      return null
     throw error
   }
 }
@@ -123,7 +143,13 @@ export const directory = async itemid => {
 
     return { items, prefixes }
   } catch (error) {
-    if (error.code === 'ENOENT') return { items: [], prefixes: [] }
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      return { items: [], prefixes: [] }
     throw error
   }
 }
@@ -137,7 +163,13 @@ export const remove = async itemid => {
     const file_path = await location(itemid)
     await unlink(file_path)
   } catch (error) {
-    if (error.code === 'ENOENT') console.warn(itemid, 'already deleted')
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      console.warn(itemid, 'already deleted')
     else throw error
   }
 }
@@ -192,7 +224,13 @@ export const load_item = async itemid => {
     const html_string = html_data.toString('utf-8')
     return get_item(html_string, itemid)
   } catch (error) {
-    if (error.code === 'ENOENT') return null
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      return null
     throw error
   }
 }
@@ -208,7 +246,13 @@ export const load_html = async itemid => {
     const html_data = await gunzip_async(compressed_data)
     return html_data.toString('utf-8')
   } catch (error) {
-    if (error.code === 'ENOENT') return null
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    )
+      return null
     throw error
   }
 }

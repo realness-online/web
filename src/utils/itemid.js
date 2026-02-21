@@ -162,7 +162,12 @@ export const as_download_url = async itemid => {
   try {
     return await url(await as_filename(itemid))
   } catch (e) {
-    if (e.code === 'storage/object-not-found') {
+    if (
+      e &&
+      typeof e === 'object' &&
+      'code' in e &&
+      e.code === 'storage/object-not-found'
+    ) {
       console.warn(itemid, '=>', await as_filename(itemid))
       index[itemid] = DOES_NOT_EXIST
       await set('sync:index', index)
@@ -280,9 +285,12 @@ export const type_as_list = item => {
   if (!item) return []
   const type = as_type(item.id)
   if (!type) return []
-  const list = item[type]
+  const list = /** @type {Record<string, unknown>} */ (item)[type]
   if (list && Array.isArray(list)) return list
-  else if (list) return [list]
+  else if (list) {
+    const as_item = /** @type {Item} */ (list)
+    return [as_item]
+  }
   return []
 }
 /**

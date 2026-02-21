@@ -16,7 +16,7 @@ vi.mock('@/use/vectorize', () => ({
   use: () => ({
     new_vector: mock_new_vector,
     new_gradients: mock_new_gradients,
-    process_photo: mock_process_photo
+    vectorize: mock_process_photo
   })
 }))
 
@@ -221,7 +221,7 @@ describe('directory-processor composable', () => {
     it('processes image files and skips non-image files', async () => {
       await processor.process_directory()
       expect(mock_process_photo).toHaveBeenCalledTimes(2)
-      expect(mock_process_photo).toHaveBeenCalledWith('blob:mock-url')
+      expect(mock_process_photo).toHaveBeenCalledWith(expect.any(File), null)
     })
 
     it('updates current_file during processing', async () => {

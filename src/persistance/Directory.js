@@ -147,7 +147,13 @@ export const as_directory = async itemid => {
     try {
       directory = await load_directory_from_network(itemid)
     } catch (e) {
-      if (e.code === 'storage/unauthorized') return directory
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        e.code === 'storage/unauthorized'
+      )
+        return directory
       throw e
     }
 

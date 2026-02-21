@@ -114,7 +114,7 @@ export const make_trace = message => {
       console.error('Error in processing loop:', error)
       self.postMessage({
         type: 'error',
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       })
       is_processing = false
     }
@@ -150,7 +150,9 @@ self.addEventListener('message', async event => {
     self.postMessage({ data: reply })
   } catch (error) {
     console.error('Error in message handler:', error)
-    self.postMessage({ error: error.message })
+    self.postMessage({
+      error: error instanceof Error ? error.message : String(error)
+    })
   }
 })
 

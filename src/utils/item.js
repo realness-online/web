@@ -62,6 +62,7 @@ export const get_itemprops = item => {
     else if (prop.hasAttribute('itemscope')) value = make_item(prop)
     if (value) {
       const name = prop.getAttribute('itemprop')
+      if (!name) return
       const has_value = props[name]
       if (has_value)
         if (Array.isArray(has_value)) has_value.push(value)
