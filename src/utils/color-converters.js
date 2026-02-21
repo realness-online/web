@@ -92,7 +92,10 @@ export const rgb_to_hex = (red, green, blue, alpha) => {
     if (!parsed) throw new TypeError('Invalid or unsupported color format.')
 
     is_percent = false
-    ;[r, g, b, a] = parsed
+    r = parsed[0] ?? r
+    g = parsed[1] ?? g
+    b = parsed[2] ?? b
+    a = parsed[3] ?? a
   } else if (a !== undefined && typeof a === 'string') a = Number.parseFloat(a)
 
   if (
@@ -200,12 +203,16 @@ const hsl_to_rgb = (h, s, l) => {
     r = c
     g = 0
     b = x
+  } else {
+    r = c
+    g = 0
+    b = x
   }
 
   return [
-    Math.round((r + m) * RGB_MAX),
-    Math.round((g + m) * RGB_MAX),
-    Math.round((b + m) * RGB_MAX)
+    Math.round(((r ?? 0) + m) * RGB_MAX),
+    Math.round(((g ?? 0) + m) * RGB_MAX),
+    Math.round(((b ?? 0) + m) * RGB_MAX)
   ]
 }
 

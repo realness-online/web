@@ -1,6 +1,6 @@
 export const mutex = {
   locked: false,
-  queue: [],
+  queue: /** @type {Array<(value?: void) => void>} */ ([]),
   lock: async () => {
     if (mutex.locked)
       await new Promise(resolve => {

@@ -123,7 +123,13 @@ export const load = async (itemid, me = localStorage.me) => {
   try {
     item = await load_from_network(itemid)
   } catch (e) {
-    if (e.code === 'storage/unauthorized') return null
+    if (
+      e &&
+      typeof e === 'object' &&
+      'code' in e &&
+      /** @type {{code?: string}} */ (e).code === 'storage/unauthorized'
+    )
+      return null
     throw e
   }
   if (item) return item
@@ -184,9 +190,9 @@ export const as_path_parts = itemid => {
   if (path[0].length === 0) path.shift()
   if (itemid.endsWith('/')) {
     //is a directory
-    const [author, type, created = null, archive = null] = path
-    if (!created && !archive) return [author, type, 'index', null]
-    if (created) return [author, type, null, created]
+    const [author, type, created, archive] = path
+    if (!created && !archive) return [author, type, 'index', '']
+    if (created) return [author, type, '', created]
   }
   return path
 }
@@ -233,10 +239,11 @@ export const as_type = itemid => {
 }
 
 /**
- * @param {Id} itemid
+ * @param {Id | null} itemid
  * @returns {Created | null}
  */
 export const as_created_at = itemid => {
+  if (!itemid) return null
   const path = as_path_parts(itemid)
   const path_length = path.length
   const PATH_WITH_TYPE = 3
@@ -263,7 +270,7 @@ export const as_query_id = itemid =>
 export const as_fragment_id = itemid => `#${as_query_id(itemid)}`
 
 /**
- * @param {Item} item
+ * @param {Item | null | undefined} item
  * @returns {Item[]}
  */
 export const type_as_list = item => {
@@ -271,7 +278,9 @@ export const type_as_list = item => {
   // the microdata spec requires properties values to
   // single value and iterable
   if (!item) return []
-  const list = item[as_type(item.id)]
+  const type = as_type(item.id)
+  if (!type) return []
+  const list = item[type]
   if (list && Array.isArray(list)) return list
   else if (list) return [list]
   return []

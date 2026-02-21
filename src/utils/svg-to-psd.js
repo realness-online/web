@@ -73,7 +73,7 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
       }
       symbols.forEach(symbol => {
         const symbol_id = symbol.getAttribute('id')
-        if (!cutout_symbol_ids.has(symbol_id)) {
+        if (symbol_id && !cutout_symbol_ids.has(symbol_id)) {
           const symbol_clone = symbol.cloneNode(true)
           defs.appendChild(symbol_clone)
         }
@@ -115,6 +115,7 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
 
     const canvas = new OffscreenCanvas(width, height)
     const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Failed to get 2d context')
     ctx.drawImage(img, 0, 0, width, height)
 
     const image_data = ctx.getImageData(0, 0, width, height)
@@ -191,7 +192,7 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
       }
       symbols.forEach(symbol => {
         const symbol_id = symbol.getAttribute('id')
-        if (!cutout_symbol_ids.has(symbol_id)) {
+        if (symbol_id && !cutout_symbol_ids.has(symbol_id)) {
           const symbol_clone = symbol.cloneNode(true)
           defs.appendChild(symbol_clone)
         }
@@ -249,6 +250,7 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
 
     const canvas = new OffscreenCanvas(width, height)
     const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Failed to get 2d context')
     ctx.drawImage(img, 0, 0, width, height)
 
     const image_data = ctx.getImageData(0, 0, width, height)
@@ -358,6 +360,7 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
 
     const canvas = new OffscreenCanvas(width, height)
     const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Failed to get 2d context')
     ctx.drawImage(img, 0, 0, width, height)
 
     const image_data = ctx.getImageData(0, 0, width, height)
@@ -385,7 +388,7 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
 export const render_svg_layers_to_psd = async (
   svg_element,
   poster_id,
-  target_width = null
+  target_width
 ) => {
   const effective_width = target_width || get_target_width()
 

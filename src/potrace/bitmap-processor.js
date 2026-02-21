@@ -43,8 +43,10 @@ export const image_data_to_luminance = image_data => {
  * @returns {number} Threshold value (0-255)
  */
 export const calculate_threshold = (bitmap, threshold_option) => {
-  if (threshold_option === 'auto' || threshold_option === -1)
-    return bitmap.histogram().auto_threshold() || ALPHA_TRANSPARENCY_THRESHOLD
+  if (threshold_option === 'auto' || threshold_option === -1) {
+    const threshold = bitmap.histogram()?.auto_threshold()
+    return threshold ?? ALPHA_TRANSPARENCY_THRESHOLD
+  }
 
   return threshold_option
 }

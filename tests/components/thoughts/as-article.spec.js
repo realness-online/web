@@ -1,5 +1,10 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { vi } from 'vitest'
+
+vi.mock('@/utils/serverless', () => ({
+  url: vi.fn(() => Promise.resolve(null))
+}))
+
 import as_article from '@/components/thoughts/as-article'
 import AsThought from '@/components/thoughts/as-thought'
 import vector_mock from './mixin_mock'

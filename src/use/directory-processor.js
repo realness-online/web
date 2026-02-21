@@ -17,7 +17,8 @@ export const use = () => {
     current_file: ''
   })
   const current_preview = ref(null)
-  const completed_poster = ref(null)
+  /** @typedef {import('@/types').Poster} Poster */
+  const completed_poster = ref(/** @type {Poster | null} */ (null))
 
   const process_directory = async () => {
     try {
@@ -55,25 +56,26 @@ export const use = () => {
               const stop = watch(new_vector, () => {
                 if (new_vector.value) {
                   stop()
-                  resolve()
+                  resolve(undefined)
                 }
               })
             })
 
           completed_poster.value = new_vector.value
-
-          if (!completed_poster.value.optimized) {
+          const poster = completed_poster.value
+          if (!poster?.optimized) {
             const { optimize: optimize_poster, vector: vector_ref } =
               use_optimizer(completed_poster)
+            if (!poster) return
             optimize_poster()
-            if (!vector_ref.value.optimized)
+            if (!vector_ref.value?.optimized)
               await new Promise(resolve => {
                 const stop = watch(
                   () => vector_ref.value?.optimized,
                   optimized => {
                     if (optimized) {
                       stop()
-                      resolve()
+                      resolve(undefined)
                     }
                   }
                 )
@@ -83,7 +85,9 @@ export const use = () => {
             completed_poster.value = vector_ref.value
           }
 
-          const svg_data = completed_poster.value.toString()
+          const final_poster = completed_poster.value
+          if (!final_poster) return
+          const svg_data = final_poster.toString()
           const poster_name = poster_filename(name)
           const poster_file = await posters_dir.getFileHandle(poster_name, {
             create: true

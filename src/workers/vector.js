@@ -164,6 +164,7 @@ export const make_gradient = message => {
   // Create a temporary canvas to work with the image data
   const canvas = new OffscreenCanvas(image_data.width, image_data.height)
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('Failed to get 2d context')
   ctx.putImageData(image_data, 0, 0)
 
   const gradients = {

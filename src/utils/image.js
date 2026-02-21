@@ -19,6 +19,7 @@ export const size = (image, target_size = IMAGE.TARGET_SIZE) => {
 
   const canvas = new OffscreenCanvas(new_width, new_height)
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('Failed to get 2d context')
   ctx.drawImage(image, 0, 0, new_width, new_height)
   return canvas
 }

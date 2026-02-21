@@ -80,7 +80,7 @@ export const is_use = path => {
 export const is_url_query = _query => true
 export const settings_query = name => {
   const settings = document.querySelector('[itemscope][itemtype=/settings]')
-  return settings.querySelector(`[itemprop="${name}"]`)
+  return settings?.querySelector(`[itemprop="${name}"]`) ?? null
 }
 
 export const create_use_element = () => document.createElementNS(svg_ns, 'use')

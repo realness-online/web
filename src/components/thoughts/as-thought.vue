@@ -1,8 +1,10 @@
 <script setup>
+  /** @typedef {import('@/types').Statement_Item} Statement_Item */
   import { Statement } from '@/persistance/Storage'
   import { ref } from 'vue'
   const props = defineProps({
     thought: {
+      /** @type {import('vue').PropType<Statement_Item>} */
       type: Object,
       required: true
     },

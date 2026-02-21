@@ -32,6 +32,20 @@
  */
 
 /**
+ * @typedef {Object} Trace_Result
+ * @property {Array<{d: string, fill: string, stroke: string, stroke_width: number}>} paths
+ */
+
+/**
+ * @typedef {Object} Poster_Gradients
+ * @property {number} width
+ * @property {number} height
+ * @property {string[]} radial
+ * @property {string[]} [horizontal]
+ * @property {string[]} [vertical]
+ */
+
+/**
  * @typedef {Object} Poster
  * @property {Id} id
  * @property {Rect} background
@@ -39,14 +53,24 @@
  * @property {Path} regular
  * @property {Path} medium
  * @property {Path} bold
- * @property {Path[] | Path} cutout
+ * @property {Path[] | Path | undefined} [cutout]
  * @property {Object.<string, SVGSymbolElement>} [cutouts] - Cutouts organized by layer
+ * @property {boolean} [completed] - Runtime flag during vectorization
  * @property {number} width
  * @property {number} height
  * @property {string} viewbox
  * @property {boolean} optimized
- * @property {Object} [trace] - Traced paths with color quantization
- * @property {Array<{d: string, fill: string, stroke: string, stroke_width: number}>} trace.paths
+ * @property {Trace_Result} [trace] - Traced paths with color quantization
+ * @property {Poster_Gradients} [gradients]
+ * @property {Type} [type]
+ */
+
+/**
+ * @typedef {Object} MeItem
+ * @property {Id} id
+ * @property {Type} type
+ * @property {string} [name]
+ * @property {string} [visited]
  */
 
 /**
@@ -60,7 +84,7 @@
  * @property {string} name
  * @property {string} avatar
  * @property {string[]} viewed
- * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} visited - ISO 8601 UTC date string
+ * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`|null} [visited] - ISO 8601 UTC date string
  */
 
 /**
@@ -69,6 +93,14 @@
  * @property {string} name
  * @property {string} [avatar]
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
+ */
+
+/**
+ * @typedef {Object} Statement_Item
+ * @property {Id} id
+ * @property {string} [statement]
+ * @property {string} [why]
+ * @property {string} [where]
  */
 
 /** @type {readonly ['posters', 'statements', 'events', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
@@ -134,6 +166,43 @@ export const has_history = /** @type {readonly ['statements', 'events']} */ (
  * @property {boolean} use_key_equivalents - Use platform-specific key equivalents
  * @property {Object.<string, string|Array>} bindings - Key to command mappings
  * @property {Object.<string, string>} [descriptions] - Command descriptions for this context
+ */
+
+/**
+ * @typedef {Object} Sync_Deps
+ * @property {import('vue').Ref<HTMLElement|null>} sync_element
+ * @property {import('vue').Ref<Relation[]>} relations
+ * @property {import('vue').Ref<Item[]>} my_thoughts
+ * @property {import('vue').Ref<Item[]|null>} events
+ * @property {import('vue').Ref<{visited?: string}|undefined>} me
+ * @property {(event: string, ...args: unknown[]) => void} emit
+ */
+
+/**
+ * @typedef {Object} Sync_Offline_Item
+ * @property {'save'|'delete'} action
+ * @property {Id} id
+ */
+
+/**
+ * @typedef {Object} Sync_Index_Custom_Metadata
+ * @property {string|null} [hash]
+ */
+
+/**
+ * @typedef {Object} Sync_Index_Entry
+ * @property {Object|null} [updated]
+ * @property {Sync_Index_Custom_Metadata} [customMetadata]
+ */
+
+/**
+ * @typedef {Object} Sync_Return
+ * @property {import('vue').Ref<Array|null>} events
+ * @property {import('vue').Ref<HTMLElement|null>} sync_element
+ * @property {import('vue').Ref<HTMLElement|null>} sync_poster
+ * @property {() => Promise<void>} sync_offline_actions
+ * @property {() => Promise<void>} sync_posters_directory
+ * @property {() => Promise<void>} sync_me
  */
 
 export {}

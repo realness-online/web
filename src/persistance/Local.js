@@ -8,7 +8,7 @@
  */
 export const Local = superclass =>
   class extends superclass {
-    save(items = document.querySelector(`[itemid="${this.id}"]`)) {
+    save(items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined) {
       if (items) localStorage.setItem(this.id, items.outerHTML)
     }
   }

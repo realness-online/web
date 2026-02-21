@@ -121,6 +121,7 @@ export const prepare_and_render_frames = async message => {
       const temp_bitmap = await createImageBitmap(svg_blob)
       const canvas = new OffscreenCanvas(canvas_width, canvas_height)
       const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Failed to get 2d context')
       ctx.drawImage(temp_bitmap, 0, 0, canvas_width, canvas_height)
       temp_bitmap.close()
       // eslint-disable-next-line no-await-in-loop

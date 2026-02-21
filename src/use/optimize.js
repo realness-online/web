@@ -4,14 +4,17 @@ import get_item from '@/utils/item'
 import { as_query_id } from '@/utils/itemid'
 
 export const use = (vector, on_complete) => {
-  const optimizer = ref(null)
+  const optimizer = ref(/** @type {Worker | null} */ (null))
   const optimize = () => {
     if (optimizer.value) optimizer.value.terminate()
     optimizer.value = new Worker('/vector.worker.js')
-    optimizer.value.addEventListener('message', optimized)
+    const worker = optimizer.value
+    if (!worker) return
+    worker.addEventListener('message', optimized)
     tick().then(() => {
       const element = document.getElementById(as_query_id(vector.value.id))
-      optimizer.value.postMessage({
+      if (!element) return
+      worker.postMessage({
         route: 'optimize:vector',
         vector: element.outerHTML
       })
@@ -30,12 +33,14 @@ export const use = (vector, on_complete) => {
       poster.cutout = optimized_item.cutout
       poster.optimized = true
     }
-    optimizer.value.removeEventListener('message', optimized)
+    if (optimizer.value)
+      optimizer.value.removeEventListener('message', optimized)
 
     if (on_complete) on_complete()
   }
   dismount(() => {
-    if (optimizer.value) optimizer.value.terminate()
+    const worker = optimizer.value
+    if (worker) worker.terminate()
   })
   return {
     optimize,

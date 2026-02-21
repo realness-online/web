@@ -113,11 +113,14 @@ describe('people composable', () => {
     })
 
     it('save function creates Me instance and calls save', async () => {
+      const me_el = document.createElement('div')
+      me_el.setAttribute('itemid', '/+14151234356')
+      document.body.appendChild(me_el)
       const { save } = use_me()
       await save()
-
       const { Me } = await import('@/persistance/Storage')
       expect(Me).toHaveBeenCalled()
+      document.body.removeChild(me_el)
     })
 
     it('returns relations ref', () => {

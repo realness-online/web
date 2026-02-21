@@ -7,4 +7,8 @@ const win =
   /** @type {Window & { showDirectoryPicker?: () => Promise<FileSystemDirectoryHandle> }} */ (
     window
   )
-export const get_file_system = () => win.showDirectoryPicker()
+export const get_file_system = () => {
+  const fn = win.showDirectoryPicker
+  if (!fn) throw new Error('showDirectoryPicker not supported')
+  return fn.call(win)
+}
