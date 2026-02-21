@@ -35,6 +35,7 @@ vi.mock('@/use/poster', () => ({
     poster_shown: vi.fn()
   }),
   is_vector_id: vi.fn().mockReturnValue(true),
+  is_svg_valid: vi.fn().mockReturnValue(true),
   is_url_query: vi.fn().mockReturnValue(true),
   is_rect: vi.fn().mockReturnValue(true),
   is_vector: vi.fn().mockReturnValue(true),

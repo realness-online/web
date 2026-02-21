@@ -134,6 +134,7 @@ vi.mock('@/utils/preference', async () => {
   const menu_ref = ref(false)
   const aspect_ratio_mode_ref = ref('auto')
   const slice_alignment_ref = ref('ymid')
+  const adaptive_enabled_ref = ref(true)
 
   // Sync hoisted objects to proxy the refs
   Object.defineProperty(mock_shadow, 'value', {
@@ -306,7 +307,8 @@ vi.mock('@/utils/preference', async () => {
     grid_overlay: grid_overlay_ref,
     menu: menu_ref,
     aspect_ratio_mode: aspect_ratio_mode_ref,
-    slice_alignment: slice_alignment_ref
+    slice_alignment: slice_alignment_ref,
+    adaptive_enabled: adaptive_enabled_ref
   }
 })
 

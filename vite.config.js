@@ -24,7 +24,8 @@ export default defineConfig({
             '@firebase/firestore',
             '@firebase/storage'
           ],
-          utilities: ['libphonenumber-js', 'exifreader']
+          utilities: ['exifreader'],
+          libphonenumber: ['libphonenumber-js']
         }
       }
     }

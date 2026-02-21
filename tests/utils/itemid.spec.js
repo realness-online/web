@@ -5,10 +5,21 @@ import {
   is_itemid,
   as_poster_id,
   as_layer_name,
-  as_layer_id
+  as_layer_id,
+  load_from_cache,
+  load_from_network
 } from '@/utils/itemid'
 import { get } from 'idb-keyval'
 vi.mock('idb-keyval')
+vi.mock('@/utils/serverless', () => ({
+  url: vi.fn().mockResolvedValue('https://example.com/file.html.gz'),
+  current_user: { value: null },
+  directory: vi.fn(),
+  me: { value: undefined },
+  app: { value: undefined },
+  auth: { value: undefined },
+  storage: { value: undefined }
+}))
 const directory = {
   id: '/+16282281824/posters/index/',
   types: [],
@@ -361,6 +372,48 @@ describe('@/utils/itemid', () => {
     it('constructs sand layer ID from poster ID', () => {
       const result = as_layer_id('/+16282281824/posters/1737178477987', 'sand')
       expect(result).toBe('/+16282281824/sand/1737178477987')
+    })
+  })
+
+  describe('load_from_cache and load_from_network', () => {
+    it('returns null item and html when fetch returns 404', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      })
+
+      const result = await load_from_cache(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/shadows/1737178477987'
+        )
+      )
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_network returns null when fetch returns 404', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      })
+
+      const result = await load_from_network(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/shadows/1737178477987'
+        )
+      )
+
+      expect(result).toBeNull()
     })
   })
 })

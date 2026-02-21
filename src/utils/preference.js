@@ -41,6 +41,8 @@ export const menu = storage('menu', true)
 
 export const sync_folder = storage('sync_folder', false)
 
+export const adaptive_enabled = storage('adaptive_animation', true)
+
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)
 // export const filesystem = storage('filesystem', false)

@@ -36,6 +36,169 @@ import { JS_TIME } from '@/utils/numbers'
 
 export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } } // Explicitly setting null to indicate that this file doesn't exist
 
+/**
+ * @param {object} deps
+ * @param {import('vue').Ref} deps.sync_element
+ * @param {import('vue').Ref} deps.relations
+ * @param {import('vue').Ref} deps.my_thoughts
+ * @param {import('vue').Ref} deps.events
+ * @param {import('vue').Ref} deps.me
+ * @param {Function} deps.emit
+ * @returns {() => Promise<void>}
+ */
+const create_play = deps => async () => {
+  if (!current_user.value) return
+  if (document.visibilityState !== 'visible') return
+  const did_emit = navigator.onLine && !!current_user.value
+  if (did_emit) deps.emit('active', true)
+  try {
+    console.time('sync:offline_actions')
+    await sync_offline_actions()
+    console.timeEnd('sync:offline_actions')
+    if (!navigator.onLine || !current_user.value) return
+    if (!i_am_fresh()) {
+      localStorage.sync_time = new Date().toISOString()
+      console.time('sync:prune')
+      await prune(deps)
+      console.timeEnd('sync:prune')
+      console.time('sync:sync_me')
+      await sync_me()
+      console.timeEnd('sync:sync_me')
+      console.time('sync:sync_relations')
+      await sync_relations(deps)
+      console.timeEnd('sync:sync_relations')
+      console.time('sync:sync_statements')
+      await sync_statements(deps)
+      console.timeEnd('sync:sync_statements')
+      console.time('sync:sync_events')
+      await sync_events(deps)
+      console.timeEnd('sync:sync_events')
+      console.time('sync:sync_posters_directory')
+      await sync_posters_directory()
+      console.timeEnd('sync:sync_posters_directory')
+    }
+    console.time('sync:visit')
+    await visit(deps)
+    console.timeEnd('sync:visit')
+  } finally {
+    if (did_emit) deps.emit('active', false)
+  }
+}
+
+const visit = async deps => {
+  const visit_digit = new Date(deps.me.value.visited).getTime()
+  if (!deps.me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
+    deps.me.value.visited = new Date().toISOString()
+    await tick()
+    await new Me().save(document.querySelector(`[itemid="${localStorage.me}"]`))
+  }
+}
+
+const prune = async deps => {
+  const is_stranger = id => {
+    const friends = [
+      ...deps.relations.value,
+      { id: localStorage.me, type: 'person' }
+    ]
+    return !friends.some(r => r.id === id)
+  }
+  const everything = /** @type {Id[]} */ (await keys())
+  await Promise.all(
+    everything.map(async itemid => {
+      if (itemid.endsWith('/')) {
+        await del(itemid)
+        return
+      }
+      if (!is_itemid(/** @type {string} */ (itemid))) return
+      if (is_stranger(/** @type {Id} */ (as_author(itemid)))) {
+        await del(itemid)
+        return
+      }
+      const network = await fresh_metadata(itemid)
+      if (!network?.customMetadata) return
+      const hash = await create_hash(await get(itemid))
+      if (network.customMetadata.hash !== hash) await del(itemid)
+    })
+  )
+}
+
+const sync_statements = async deps => {
+  const persistance = new Statement()
+  const itemid = get_my_itemid('statements')
+  const index_hash = await get_index_hash(itemid)
+  const elements = deps.sync_element.value.querySelector(`[itemid="${itemid}"]`)
+  if (!elements || !elements.outerHTML) return null
+  const hash = await create_hash(elements.outerHTML)
+  if (index_hash !== hash) {
+    const synced = await persistance.sync()
+    // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
+    deps.my_thoughts.value = synced || []
+    if (deps.my_thoughts.value.length) {
+      await tick()
+      await persistance.save(elements)
+      localStorage.removeItem('/+/statements')
+    }
+  }
+  await persistance.optimize()
+}
+
+const sync_relations = async deps => {
+  const itemid = get_my_itemid('relations')
+  await fresh_metadata(itemid)
+  const index_hash = await get_index_hash(itemid)
+  let local_html = localStorage.getItem(itemid)
+  if (!local_html) local_html = await get(itemid)
+  const local_hash = local_html ? await create_hash(local_html) : null
+
+  if (local_html && !index_hash) {
+    const local_item = get_item(local_html, itemid)
+    if (local_item) {
+      deps.relations.value = type_as_list(local_item)
+      await tick()
+      const elements = deps.sync_element.value?.querySelector(
+        `[itemid="${itemid}"]`
+      )
+      if (elements) await new Relation().save(elements)
+    }
+    return
+  }
+
+  if (!index_hash) return
+
+  if (local_hash !== index_hash) {
+    localStorage.removeItem(itemid)
+    await del(itemid)
+    const cloud_item = await load_from_network(itemid)
+    if (cloud_item) {
+      deps.relations.value = type_as_list(cloud_item)
+      await tick()
+      const elements = deps.sync_element.value?.querySelector(
+        `[itemid="${itemid}"]`
+      )
+      if (elements) await new Relation().save(elements)
+    }
+  }
+}
+
+const sync_events = async deps => {
+  const event_storage = new Event()
+  const itemid = get_my_itemid('events')
+  const index_hash = await get_index_hash(itemid)
+  const elements = deps.sync_element.value.querySelector(`[itemid="${itemid}"]`)
+  if (!elements) return
+  const hash = await create_hash(elements.outerHTML)
+  if (index_hash !== hash) {
+    const synced_events = await event_storage.sync()
+    // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
+    deps.events.value = synced_events || []
+    if (deps.events.value.length) {
+      await tick()
+      await event_storage.save(elements)
+      localStorage.removeItem('/+/events')
+    }
+  }
+}
+
 export const use = () => {
   const { emit } = current_instance()
   const { me, relations } = use_me()
@@ -45,171 +208,8 @@ export const use = () => {
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
 
-  /**
-   * @returns {Promise<void>}
-   */
-  const play = async () => {
-    if (!current_user.value) return
-    if (document.visibilityState !== 'visible') return
-    if (navigator.onLine && current_user.value) emit('active', true)
-    await sync_offline_actions()
-    if (!navigator.onLine || !current_user.value) {
-      emit('active', false)
-      return
-    }
-    if (!i_am_fresh()) {
-      localStorage.sync_time = new Date().toISOString()
-      await prune()
-      await sync_me()
-      await sync_relations()
-      await sync_statements()
-      await sync_events()
-      await sync_posters_directory()
-      emit('active', false)
-    } else emit('active', false)
-
-    await visit()
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const visit = async () => {
-    const visit_digit = new Date(me.value.visited).getTime()
-
-    if (!me.value.visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
-      me.value.visited = new Date().toISOString()
-      await tick()
-      await new Me().save(
-        document.querySelector(`[itemid="${localStorage.me}"]`)
-      )
-    }
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const prune = async () => {
-    const everything = /** @type {Id[]} */ (await keys())
-    await Promise.all(
-      everything.map(async itemid => {
-        if (itemid.endsWith('/')) {
-          await del(itemid)
-          return
-        }
-        if (!is_itemid(/** @type {string} */ (itemid))) return
-        if (is_stranger(/** @type {Id} */ (as_author(itemid)))) {
-          await del(itemid)
-          return
-        }
-        const network = await fresh_metadata(itemid)
-        if (!network?.customMetadata) return
-        const hash = await create_hash(await get(itemid))
-        if (network.customMetadata.hash !== hash) await del(itemid)
-      })
-    )
-  }
-
-  /**
-   * @param {Id} id
-   * @returns {boolean}
-   */
-  const is_stranger = id => {
-    const friends = [...relations.value]
-    friends.push({
-      id: localStorage.me,
-      type: 'person'
-    })
-    const is_friend = friends.some(relation => {
-      if (relation.id === id) return true
-      return false
-    })
-    return !is_friend
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_statements = async () => {
-    const persistance = new Statement()
-    const itemid = get_my_itemid('statements')
-    const index_hash = await get_index_hash(itemid)
-    const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
-    if (!elements || !elements.outerHTML) return null // nothing local so we'll let it load on request
-    const hash = await create_hash(elements.outerHTML)
-    if (index_hash !== hash) {
-      const synced = await persistance.sync()
-      my_thoughts.value = synced || []
-      if (my_thoughts.value.length) {
-        await tick()
-        await persistance.save(elements)
-        localStorage.removeItem('/+/statements')
-      }
-    }
-    await persistance.optimize()
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_relations = async () => {
-    const itemid = get_my_itemid('relations')
-    await fresh_metadata(itemid)
-    const index_hash = await get_index_hash(itemid)
-    let local_html = localStorage.getItem(itemid)
-    if (!local_html) local_html = await get(itemid)
-    const local_hash = local_html ? await create_hash(local_html) : null
-
-    if (local_html && !index_hash) {
-      const local_item = get_item(local_html, itemid)
-      if (local_item) {
-        relations.value = type_as_list(local_item)
-        await tick()
-        const elements = sync_element.value?.querySelector(
-          `[itemid="${itemid}"]`
-        )
-        if (elements) await new Relation().save(elements)
-      }
-      return
-    }
-
-    if (!index_hash) return
-
-    if (local_hash !== index_hash) {
-      localStorage.removeItem(itemid)
-      await del(itemid)
-      const cloud_item = await load_from_network(itemid)
-      if (cloud_item) {
-        relations.value = type_as_list(cloud_item)
-        await tick()
-        const elements = sync_element.value?.querySelector(
-          `[itemid="${itemid}"]`
-        )
-        if (elements) await new Relation().save(elements)
-      }
-    }
-  }
-
-  /**
-   * @returns {Promise<void>}
-   */
-  const sync_events = async () => {
-    const event_storage = new Event()
-    const itemid = get_my_itemid('events')
-    const index_hash = await get_index_hash(itemid)
-    const elements = sync_element.value.querySelector(`[itemid="${itemid}"]`)
-    if (!elements) return
-    const hash = await create_hash(elements.outerHTML)
-    if (index_hash !== hash) {
-      const synced_events = await event_storage.sync()
-      events.value = synced_events || []
-      if (events.value.length) {
-        await tick()
-        await event_storage.save(elements)
-        localStorage.removeItem('/+/events')
-      }
-    }
-  }
+  const deps = { sync_element, relations, my_thoughts, events, me, emit }
+  const play = create_play(deps)
 
   mounted(async () => {
     document.addEventListener('visibilitychange', play)

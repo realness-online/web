@@ -89,22 +89,26 @@
       const shadow_id = as_layer_id(/** @type {Id} */ (props.itemid), 'shadows')
       let html_string = await get(shadow_id)
       let pattern = null
-      if (!html_string) {
-        const { item, html } = await load_from_cache(shadow_id)
-        if (html) html_string = html
-        if (item) pattern = item
-      }
-      if (!pattern && html_string) pattern = get_item(html_string, shadow_id)
+      try {
+        if (!html_string) {
+          const { item, html } = await load_from_cache(shadow_id)
+          if (html) html_string = html
+          if (item) pattern = item
+        }
+        if (!pattern && html_string) pattern = get_item(html_string, shadow_id)
 
-      if (pattern) {
-        const pattern_data = /** @type {Poster} */ (
-          /** @type {unknown} */ (pattern)
-        )
-        vector.value.light = pattern_data.light
-        vector.value.regular = pattern_data.regular
-        vector.value.medium = pattern_data.medium
-        vector.value.bold = pattern_data.bold
-        vector.value.background = pattern_data.background
+        if (pattern) {
+          const pattern_data = /** @type {Poster} */ (
+            /** @type {unknown} */ (pattern)
+          )
+          vector.value.light = pattern_data.light
+          vector.value.regular = pattern_data.regular
+          vector.value.medium = pattern_data.medium
+          vector.value.bold = pattern_data.bold
+          vector.value.background = pattern_data.background
+        }
+      } catch {
+        // Shadows failed to load; continue with degraded display
       }
     }
 
@@ -112,10 +116,10 @@
       await tick()
       emit('show', vector.value)
       shown.value = true
-      working.value = false
     }
+    working.value = false
 
-    if (!vector.value.cutouts) {
+    if (vector.value && !vector.value.cutouts) {
       vector.value.cutouts = {}
       await Promise.all(
         geology_layers.map(async layer => {

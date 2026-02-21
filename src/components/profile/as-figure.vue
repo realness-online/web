@@ -100,6 +100,8 @@
 
 <style lang="stylus">
   figure.profile {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 96px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
