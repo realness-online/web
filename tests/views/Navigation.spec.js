@@ -85,7 +85,7 @@ describe('@/views/Navigation', () => {
 
       // Check for specific routes
       const statements_link = router_links.find(
-        link => link.attributes('to') === '/thoughts'
+        link => link.attributes('to') === '/'
       )
       const events_link = router_links.find(
         link => link.attributes('to') === '/events'
@@ -193,7 +193,7 @@ describe('@/views/Navigation', () => {
 
   describe('CSS Classes', () => {
     it('applies correct classes to router links', () => {
-      const statements_link = wrapper.find('router-link-stub[to="/thoughts"]')
+      const statements_link = wrapper.find('router-link-stub[to="/"]')
       const events_link = wrapper.find('router-link-stub[to="/events"]')
       const posters_link = wrapper.find('router-link-stub[to="/posters"]')
       const phonebook_link = wrapper.find('router-link-stub[to="/phonebook"]')

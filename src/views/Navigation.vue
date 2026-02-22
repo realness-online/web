@@ -37,11 +37,7 @@
       <router-link v-if="!posting" to="/events" class="sediment" tabindex="-1">
         Events
       </router-link>
-      <router-link
-        v-if="!posting"
-        to="/thoughts"
-        class="sediment"
-        tabindex="-1">
+      <router-link v-if="!posting" to="/" class="sediment" tabindex="-1">
         Thoughts
       </router-link>
       <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
