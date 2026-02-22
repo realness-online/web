@@ -224,7 +224,7 @@
   )
 
   register('nav::Go_Home', () => router.push('/'))
-  register('nav::Go_Statements', () => router.push('/thoughts'))
+  register('nav::Go_Statements', () => router.push('/'))
   register('nav::Go_Events', () => router.push('/events'))
   register('nav::Go_Posters', () => router.push('/posters'))
   register('nav::Go_Phonebook', () => router.push('/phonebook'))

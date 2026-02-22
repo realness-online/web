@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <router-link class="logo" to="/" tabindex="-1">
+  <router-link class="logo" to="/navigation" tabindex="-1">
     <icon name="realness" />
   </router-link>
 </template>

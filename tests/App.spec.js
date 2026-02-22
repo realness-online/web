@@ -766,7 +766,7 @@ describe('App.vue', () => {
     it('navigates to statements', () => {
       const handler = registered_handlers['nav::Go_Statements']
       handler()
-      expect(mock_router_push).toHaveBeenCalledWith('/thoughts')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
     })
 
     it('navigates to events', () => {
