@@ -15,13 +15,13 @@ import { build_local_directory } from '@/persistance/Directory'
 import {
   Offline,
   Relation,
-  Statement,
+  Thought,
   Event,
   Poster,
   Me
 } from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
-import { use as use_statements } from '@/use/statement'
+import { use as use_thoughts } from '@/use/thought'
 import { current_user, location, metadata } from '@/utils/serverless'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex } from '@/utils/algorithms'
@@ -64,9 +64,9 @@ const create_play = deps => async () => {
       console.time('sync:sync_relations')
       await sync_relations(deps)
       console.timeEnd('sync:sync_relations')
-      console.time('sync:sync_statements')
-      await sync_statements(deps)
-      console.timeEnd('sync:sync_statements')
+      console.time('sync:sync_thoughts')
+      await sync_thoughts(deps)
+      console.timeEnd('sync:sync_thoughts')
       console.time('sync:sync_events')
       await sync_events(deps)
       console.timeEnd('sync:sync_events')
@@ -125,10 +125,10 @@ const prune = async deps => {
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<void|null>} */
-const sync_statements = async deps => {
-  const itemid = get_my_itemid('statements')
+const sync_thoughts = async deps => {
+  const itemid = get_my_itemid('thoughts')
   if (!itemid) return null
-  const persistance = new Statement()
+  const persistance = new Thought()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
     `[itemid="${itemid}"]`
@@ -142,7 +142,7 @@ const sync_statements = async deps => {
     if (deps.my_thoughts.value.length) {
       await tick()
       await persistance.save(elements)
-      localStorage.removeItem('/+/statements')
+      localStorage.removeItem('/+/thoughts')
     }
   }
   await persistance.optimize()
@@ -220,7 +220,7 @@ export const use = () => {
   const instance = current_instance()
   const emit = instance?.emit ?? (() => {})
   const { me, relations } = use_me()
-  const { my_thoughts } = use_statements()
+  const { my_thoughts } = use_thoughts()
   const events = ref(null)
   const sync_element = ref(null)
   const sync_poster = ref(null)
@@ -269,7 +269,7 @@ export const use = () => {
 export const sync_offline_actions = async () => {
   if (!navigator.onLine) return
 
-  // Handle offline queue (includes both anonymous and logged-in statements)
+  // Handle offline queue (includes both anonymous and logged-in thoughts)
   /** @type {Sync_Offline_Item[]|undefined} */
   const offline = await get('sync:offline')
   if (offline) {

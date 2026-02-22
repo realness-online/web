@@ -5,7 +5,7 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
 
   import { current_user } from '@/utils/serverless'
-  import { use as use_statements } from '@/use/statement'
+  import { use as use_thoughts } from '@/use/thought'
   import { get_my_itemid } from '@/use/people'
 
   import { ref, onMounted as mounted } from 'vue'
@@ -16,7 +16,7 @@
   console.time('views:Thoughts')
   const working = ref(true)
   const router = use_router()
-  const { my_thoughts, thoughts, thought_shown } = use_statements()
+  const { my_thoughts, thoughts, statement_shown } = use_thoughts()
   const home = () => router.push({ path: '/' })
 
   const { register } = use_keymap('Thoughts')
@@ -48,15 +48,15 @@
       <as-days
         v-slot="day_thoughts"
         itemscope
-        :itemid="get_my_itemid('statements')"
+        :itemid="get_my_itemid('thoughts')"
         :paginate="false"
         :thoughts="my_thoughts">
         <thought-as-article
-          v-for="thought in day_thoughts"
-          :key="thought[0].id"
-          :thoughts="thought"
+          v-for="stmt in day_thoughts"
+          :key="stmt[0].id"
+          :statements="stmt"
           editable
-          @show="thought_shown" />
+          @show="statement_shown" />
       </as-days>
     </article>
     <footer v-if="!my_thoughts?.length && !working" class="message">
@@ -72,10 +72,10 @@
       </header>
       <as-days v-slot="day_thoughts" :thoughts="thoughts" :paginate="false">
         <thought-as-article
-          v-for="thought in day_thoughts"
-          :key="thought[0].id"
-          :thoughts="thought"
-          @show="thought_shown" />
+          v-for="stmt in day_thoughts"
+          :key="stmt[0].id"
+          :statements="stmt"
+          @show="statement_shown" />
       </as-days>
     </article>
   </section>
@@ -104,7 +104,7 @@
         padding-top: 0
         h4
           margin: base-line 0 0 0
-        article.day p[itemprop="statement"]:focus
+        article.day p[itemprop="thought"]:focus
           font-weight: bolder
           outline: 0px
     & > footer

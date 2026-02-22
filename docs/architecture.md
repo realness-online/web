@@ -11,7 +11,7 @@ Realness is a progressive web app. It is serverless and static. All of the heavy
 ### Storage Strategy
 
 - **Small items** (< 21KB) → `localStorage` (preferences, viewbox coordinates, friend groups, events)
-- **Large items** (> 21KB) → `idb-keyval` (IndexedDB) (posters, statements, user data)
+- **Large items** (> 21KB) → `idb-keyval` (IndexedDB) (posters, thoughts, user data)
 - **Size thresholds**: MIN=21KB, MID=34KB, MAX=55KB
 - **No server dependency** - Everything works offline
 - **Persistent state** - View states, preferences, and data survive page reloads
@@ -38,7 +38,7 @@ We use Vue.js, workers, Firebase Auth & Storage primarily. Design is applied wit
 
 ### Data structure
 
-Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Statements`, `Events`, and `Posters`
+Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Thoughts`, `Events`, and `Posters`
 
 ```
 

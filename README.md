@@ -43,7 +43,7 @@ Realness creates expressive vector graphics from your designs and photos. It wor
 Realness provides **full functionality without any tracking**, working solely on the client:
 
 - **localStorage** - Small data (preferences, viewbox coordinates, friend groups)
-- **IndexedDB** - Large data (posters, statements, events)
+- **IndexedDB** - Large data (posters, thoughts, events)
 - **No server dependency** - Everything works offline
 - **Persistent state** - View states, preferences, and data survive page reloads
 - **No analytics** - No tracking, no monitoring, no data collection

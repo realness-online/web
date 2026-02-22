@@ -1,10 +1,10 @@
 <script setup>
-  /** @typedef {import('@/types').Statement_Item} Statement_Item */
-  import { Statement } from '@/persistance/Storage'
-  import { ref } from 'vue'
+  /** @typedef {import('@/types').Thought_Item} Thought_Item */
+  import { Thought } from '@/persistance/Storage'
+  import { ref, computed } from 'vue'
   const props = defineProps({
     thought: {
-      /** @type {import('vue').PropType<Statement_Item>} */
+      /** @type {import('vue').PropType<Thought_Item>} */
       type: Object,
       required: true
     },
@@ -16,15 +16,18 @@
   })
   const emit = defineEmits(['blurred', 'focused'])
   const is_editable = ref(null)
+  const thought_text = computed(
+    () => props.thought.thought ?? props.thought.statement ?? ''
+  )
 
   /**
    * @returns {Promise<void>}
    */
   const save = async () => {
     const possibly_changed = is_editable.value?.textContent?.trim()
-    if (props.thought.statement !== possibly_changed) {
-      const statement = new Statement()
-      await statement.save()
+    if (thought_text.value !== possibly_changed) {
+      const thought = new Thought()
+      await thought.save()
     }
     emit('blurred', props.thought)
   }
@@ -41,12 +44,12 @@
       ref="is_editable"
       :spellcheck="true"
       :contenteditable="true"
-      itemprop="statement"
+      itemprop="thought"
       @focus="focused"
       @blur.prevent="save">
-      {{ thought.statement }}
+      {{ thought_text }}
     </p>
-    <p v-else itemprop="statement">{{ thought.statement }}</p>
+    <p v-else itemprop="thought">{{ thought_text }}</p>
     <meta v-if="thought.why" itemprop="why" :content="thought.why" />
     <meta v-if="thought.where" itemprop="where" :content="thought.where" />
   </div>

@@ -6,7 +6,7 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
 
-  import { use as use_statements, slot_key } from '@/use/statement'
+  import { use as use_thoughts, slot_key } from '@/use/thought'
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
@@ -20,10 +20,10 @@
 
   const { people } = use_people()
   const {
-    for_person: statements_for_person,
+    for_person: thoughts_for_person,
     thoughts,
-    thought_shown
-  } = use_statements()
+    statement_shown
+  } = use_thoughts()
   const {
     for_person: posters_for_person,
     poster_shown,
@@ -41,7 +41,7 @@
     await Promise.all(
       people.value.map(async relation => {
         await Promise.all([
-          statements_for_person({ id: relation.id }),
+          thoughts_for_person({ id: relation.id }),
           posters_for_person({ id: relation.id })
         ])
       })
@@ -84,9 +84,9 @@
         <thought-as-article
           v-else
           :key="slot_key(item)"
-          :thoughts="item"
+          :statements="item"
           verbose
-          @show="thought_shown" />
+          @show="statement_shown" />
       </template>
     </as-days>
   </section>

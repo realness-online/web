@@ -8,7 +8,7 @@
 
 ## Data Model
 
-- **Thoughts:** a 13 minute window of context. Maybe with a Poster, Events, Statements or the full soup.
+- **Thoughts:** the feed view — 13 minute windows of statements (atomic text), posters, and events.
 - **Structure:**
   - `microdata` (HTML/DOM structure, itemid, itemtype, itemprop)
 - **Source:**

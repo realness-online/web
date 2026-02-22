@@ -43,16 +43,16 @@ vi.mock('@/use/people', () => ({
   })
 }))
 
-// Mock statement composable
+// Mock thought composable
 const mock_thoughts = ref([])
-const mock_thought_shown = vi.fn()
-const mock_statements_for_person = vi.fn().mockResolvedValue(undefined)
+const mock_statement_shown = vi.fn()
+const mock_thoughts_for_person = vi.fn().mockResolvedValue(undefined)
 
-vi.mock('@/use/statement', () => ({
+vi.mock('@/use/thought', () => ({
   use: () => ({
-    for_person: mock_statements_for_person,
+    for_person: mock_thoughts_for_person,
     thoughts: mock_thoughts,
-    thought_shown: mock_thought_shown
+    statement_shown: mock_statement_shown
   }),
   slot_key: vi.fn(id => id)
 }))
@@ -113,7 +113,7 @@ describe('Statements', () => {
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
-            props: ['thoughts', 'verbose'],
+            props: ['statements', 'verbose'],
             emits: ['show']
           },
           'poster-as-figure': {
@@ -155,7 +155,7 @@ describe('Statements', () => {
     it('fills statements with relations on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_statements_for_person).toHaveBeenCalled()
+      expect(mock_thoughts_for_person).toHaveBeenCalled()
       expect(mock_posters_for_person).toHaveBeenCalled()
     })
 

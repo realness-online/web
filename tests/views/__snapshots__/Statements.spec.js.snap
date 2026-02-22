@@ -24,7 +24,7 @@ exports[`Statements > Rendering > renders statements view 1`] = `
     
     <as-article-stub
       editable="false"
-      thoughts=""
+      statements=""
       verbose="true"
     />
     

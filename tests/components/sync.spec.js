@@ -7,7 +7,7 @@ vi.mock('@/persistance/Storage', () => ({
       this.id = itemid
     }
   },
-  Statements: class {
+  Thought: class {
     constructor(itemid) {
       this.id = itemid
     }
@@ -44,9 +44,9 @@ vi.mock('@/persistance/Storage', () => ({
       // Transform anonymous IDs to user IDs (matching real implementation)
       let { id } = this
       if (id.startsWith('/+/')) {
-        // Parse the path: /+/statements/123 -> ['', '+', 'statements', '123']
+        // Parse the path: /+/thoughts/123 -> ['', '+', 'thoughts', '123']
         const parts = id.split('/').filter(Boolean)
-        const type = parts[1] // 'statements' or 'posters'
+        const type = parts[1] // 'thoughts' or 'posters'
         const created_at = parts[2] // '123' or timestamp
         id = `${localStorage.me}/${type}/${created_at}`
         this.id = id
@@ -96,7 +96,7 @@ import { get, set } from 'idb-keyval'
 import * as itemid from '@/utils/itemid'
 import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
-import { Storage, Statements, Me, Poster, Offline } from '@/persistance/Storage'
+import { Storage, Thought, Me, Poster, Offline } from '@/persistance/Storage'
 import { Cloud } from '@/persistance/Cloud'
 import {
   setup_current_user,
@@ -116,8 +116,8 @@ const fake_props = {
 }
 const statement = {
   id: '/+16282281824',
-  type: 'statements',
-  statement: 'I like to move it'
+  type: 'thoughts',
+  thought: 'I like to move it'
 }
 let current_user = {
   phoneNumber: '+16282281824'
@@ -220,13 +220,13 @@ describe('@/components/sync', () => {
         })
 
         const anonymous_statement = {
-          id: '/+/statements/123',
+          id: '/+/thoughts/123',
           action: 'save',
           type: 'statement',
           statement: 'Test anonymous statement'
         }
         await set('sync:offline', [anonymous_statement])
-        await set('/+/statements/123', '<div>test</div>')
+        await set('/+/thoughts/123', '<div>test</div>')
 
         await sync_worker.sync_offline_actions()
 
@@ -299,7 +299,7 @@ describe('Offline Storage', () => {
   })
 
   it('Handles anonymous statement IDs', async () => {
-    const anonymous_id = '/+/statements/123'
+    const anonymous_id = '/+/thoughts/123'
     const statement_html = '<div>Test statement</div>'
 
     await set(anonymous_id, statement_html)
@@ -321,7 +321,7 @@ describe('Offline Storage', () => {
   })
 
   it('Does not transform already transformed IDs', async () => {
-    const user_id = '/+16282281824/statements/123'
+    const user_id = '/+16282281824/thoughts/123'
     const statement_html = `<div itemid="${user_id}">Already transformed</div>`
 
     await set(user_id, statement_html)
@@ -332,7 +332,7 @@ describe('Offline Storage', () => {
   })
 
   it('Does nothing when content is not found', async () => {
-    const anonymous_id = '/+/statements/not-found'
+    const anonymous_id = '/+/thoughts/not-found'
     const offline = new Offline(anonymous_id)
     const result = await offline.save()
 

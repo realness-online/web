@@ -6,11 +6,11 @@
   import AsAddress from '@/components/profile/as-address'
   import ProfileAsMeta from '@/components/profile/as-meta'
   import { use as use_sync } from '@/use/sync'
-  import { use as use_statements } from '@/use/statement'
+  import { use as use_thoughts } from '@/use/thought'
   import { use_me, get_my_itemid } from '@/use/people'
   defineEmits(['active'])
   const { me, relations } = use_me()
-  const { my_thoughts: my_editable_thoughts } = use_statements()
+  const { my_thoughts: my_editable_thoughts } = use_thoughts()
   const { events, sync_element: sync, sync_poster } = use_sync()
 </script>
 
@@ -20,15 +20,15 @@
     <profile-as-meta v-if="relations" :people="relations" />
     <as-days
       v-if="my_editable_thoughts"
-      v-slot="thoughts"
+      v-slot="statements"
       itemscope
-      :itemid="get_my_itemid('statements')"
+      :itemid="get_my_itemid('thoughts')"
       :thoughts="my_editable_thoughts"
       :paginate="false">
       <thought-as-article
-        v-for="thought in thoughts"
-        :key="thought[0].id"
-        :thoughts="thought" />
+        v-for="stmt in statements"
+        :key="stmt[0].id"
+        :statements="stmt" />
     </as-days>
     <events-list
       v-if="events"

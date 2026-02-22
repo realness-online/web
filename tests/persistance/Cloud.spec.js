@@ -344,7 +344,7 @@ describe('@/persistance/Cloud', () => {
     })
 
     it('does not optimize non-archive types', async () => {
-      cloud_instance.type = 'statements'
+      cloud_instance.type = 'thoughts'
       const mock_directory = {
         items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
       }

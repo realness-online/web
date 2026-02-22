@@ -159,7 +159,7 @@ describe('poster utils', () => {
       vi.mocked(as_created_at).mockReturnValue('1234567890')
       const vector = {
         id: '/user/posters/1234567890',
-        type: 'statements',
+        type: 'thoughts',
         viewbox: '0 0 100 100',
         width: 100,
         height: 100

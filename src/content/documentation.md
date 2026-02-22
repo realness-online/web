@@ -17,11 +17,11 @@ enabling EXIF, and Model Context Protocol integration will provide an elegent in
 
 ### What You Can Do
 
-Start by [signing up](#sign-on) with your phone number and creating an avatar to join the community. Once you're in, you can begin creating [thoughts](#thoughts) that become trains of thought as you add to them over time.
+Start by [signing up](#sign-on) with your phone number and creating an avatar to join the community. Once you're in, you can begin creating [statements](#statements) that become trains as you add to them over time.
 
 Take pictures and develop them into [vector graphics](#posters) that you can use as posters - each one is a digital paintbrush with eighteen gradients to pull colors from. Download and share these posters with your creative workflow.
 
-Connect with others by browsing the [phonebook](#phonebook) to find people you may know on Realness. Add them to your network and view their content in your [feed](#statements), where you'll see a chronological stream of posters and thoughts from everyone you follow.
+Connect with others by browsing the [phonebook](#phonebook) to find people you may know on Realness. Add them to your network and view their content in your [feed](#thoughts), where you'll see a chronological stream of statements and posters from everyone you follow.
 
 View upcoming [events](#events); create your own. When something moves you, reach out directly - there are no likes or comments here, just genuine connection through animated posters and text messaging to people you care about.
 
@@ -35,7 +35,7 @@ You can sync Realness across all your devices. Take a picture on your phone and 
 
 [Main home screen](/)
 
-The navigation provides quick access to all major sections of the app. You'll find the camera for creating [posters](#posters), a writing interface for [thoughts](#thoughts), version information, help links, and account dialog access right from the main screen.
+The navigation provides quick access to all major sections of the app. You'll find the camera for creating [posters](#posters), a writing interface for [statements](#statements), version information, help links, and account dialog access right from the main screen.
 
 All navigation works offline, with camera access for poster creation and local thought storage. There's no tracking or analytics - everything stays on your device.
 
@@ -119,19 +119,19 @@ All downloads respect your current visibility settings, so hidden layers won't a
 
 ---
 
-## Statements
+## Thoughts
 
-The statements view shows a chronological feed of [posters](#posters) and thoughts from everyone you follow. The feed combines content from all your [relations](#relations) with real-time updates from local storage.
+The thoughts view shows a chronological feed of [posters](#posters) and statements from everyone you follow. Thoughts are statements and posters combined. The feed combines content from all your [relations](#relations) with real-time updates from local storage.
 
-Time is organized into thoughts. for thirteen minutes after a poster is created or you make a statement your additional posters and thoughts will be added to this thought. each new poster resets the timer. so you can keep a thought going or just let it go. You can view a timeline of all content from you and your relations.
+Time is organized into trains. for thirteen minutes after a poster is created or you make a statement your additional posters and statements will be added to this train. each new poster resets the timer. so you can keep a thought going or just let it go. You can view a timeline of all content from you and your relations.
 
 ---
 
-## Thoughts
+## Statements
 
-The thoughts interface lets you write and edit your statements. Content is organized by thoughts into days and integrates seamlessly with your [statements](#statements) feed.
+The statements interface lets you write and edit your statements. Content is organized into days and integrates seamlessly with your [thoughts](#thoughts) feed.
 
-Thoughts work offline. You don't have to sign in to make them, but they are shared once you [sign in](#sign-on)
+Statements work offline. You don't have to sign in to make them, but they are shared once you [sign in](#sign-on)
 
 All content is stored locally and works completely offline. There are no server-side feed algorithms - you control what content appears in your timeline.
 
@@ -236,11 +236,11 @@ All preferences are stored locally with no server-side sync, giving you control 
 
 <kbd>0</kbd> - Go to home
 
-<kbd>1</kbd> - Go to statements
+<kbd>1</kbd> - Go to thoughts
 
 <kbd>2</kbd> - Go to posters
 
-<kbd>3</kbd> - Go to thoughts
+<kbd>3</kbd> - Go to statements
 
 <kbd>4</kbd> - Go to phonebook
 
@@ -304,7 +304,7 @@ All preferences are stored locally with no server-side sync, giving you control 
 
 ---
 
-<kbd>4</kbd> - Go To Statements
+<kbd>4</kbd> - Go To Phonebook
 
 <kbd>5</kbd> - Go To Posters
 

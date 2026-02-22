@@ -4,7 +4,7 @@ import {
   Poster,
   Me,
   Relation,
-  Statement,
+  Thought,
   Event,
   Offline,
   History
@@ -122,23 +122,20 @@ describe('@/persistance/Storage', () => {
     })
   })
 
-  describe('Statement Class', () => {
-    let statement
+  describe('Thought Class', () => {
+    let thought
 
     beforeEach(() => {
-      // Mock localStorage.me
       Object.defineProperty(window, 'localStorage', {
-        value: {
-          me: '/+1234567890'
-        },
+        value: { me: '/+1234567890' },
         writable: true
       })
-      statement = new Statement()
+      thought = new Thought()
     })
 
-    it('extends Storage with statements path', () => {
-      expect(statement).toBeInstanceOf(Storage)
-      expect(statement.id).toBe('/+1234567890/statements')
+    it('extends Storage with thoughts path', () => {
+      expect(thought).toBeInstanceOf(Storage)
+      expect(thought.id).toBe('/+1234567890/thoughts')
     })
   })
 

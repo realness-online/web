@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fresh_metadata } from '@/use/sync'
-import { Statement } from '@/persistance/Storage'
+import { Thought } from '@/persistance/Storage'
 import { metadata, location } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { create_hash } from '@/utils/upload-processor'
@@ -17,7 +17,7 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 vi.mock('@/persistance/Storage', () => ({
-  Statement: vi.fn().mockImplementation(() => ({
+  Thought: vi.fn().mockImplementation(() => ({
     sync: vi.fn(),
     save: vi.fn(),
     optimize: vi.fn()
@@ -34,10 +34,10 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn()
 }))
 
-describe('Sync Statements', () => {
-  const mock_itemid = '/+14151234356/statements'
+describe('Sync Thoughts', () => {
+  const mock_itemid = '/+14151234356/thoughts'
   const mock_elements = {
-    outerHTML: '<div itemid="/+14151234356/statements">Test statements</div>'
+    outerHTML: '<div itemid="/+14151234356/thoughts">Test thoughts</div>'
   }
   const mock_sync_element = {
     value: {
@@ -68,19 +68,19 @@ describe('Sync Statements', () => {
       get.mockResolvedValue({}) // Empty sync index
       create_hash.mockResolvedValue('local-hash-123')
 
-      const mock_statement = {
-        sync: vi.fn().mockResolvedValue([]), // Returns empty array (no data)
+      const mock_thought = {
+        sync: vi.fn().mockResolvedValue([]),
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_thought)
 
-      // Mock the sync_statements function context
+      // Mock the sync_thoughts function context
       const sync_element = mock_sync_element.value
       const statements = { value: [] }
 
       // Simulate the sync_statements logic
-      const persistance = new Statement()
+      const persistance = new Thought()
       const itemid = mock_itemid
       const index_hash = await get_index_hash(itemid)
       const elements = sync_element.querySelector(`[itemid="${itemid}"]`)
@@ -98,7 +98,7 @@ describe('Sync Statements', () => {
       }
 
       // Verify the bug: sync appeared to run but got no data
-      expect(mock_statement.sync).toHaveBeenCalled()
+      expect(mock_thought.sync).toHaveBeenCalled()
       expect(statements.value.length).toBe(0)
     })
 
@@ -137,10 +137,10 @@ describe('Sync Statements', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Simulate Device B sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -269,11 +269,11 @@ describe('Sync Statements', () => {
       // Setup: Server file exists with statements
       const server_statements = [
         {
-          id: '/+14151234356/statements/1234567890',
+          id: '/+14151234356/thoughts/1234567890',
           statement: 'Test statement 1'
         },
         {
-          id: '/+14151234356/statements/1234567891',
+          id: '/+14151234356/thoughts/1234567891',
           statement: 'Test statement 2'
         }
       ]
@@ -291,7 +291,7 @@ describe('Sync Statements', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -299,7 +299,7 @@ describe('Sync Statements', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -337,7 +337,7 @@ describe('Sync Statements', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -345,7 +345,7 @@ describe('Sync Statements', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -379,7 +379,7 @@ describe('Sync Statements', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -387,7 +387,7 @@ describe('Sync Statements', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -419,7 +419,7 @@ describe('Sync Statements', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -427,7 +427,7 @@ describe('Sync Statements', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -460,14 +460,14 @@ describe('Sync Statements', () => {
       const mock_statement = {
         sync: vi.fn().mockResolvedValue([
           {
-            id: '/+14151234356/statements/1234567890',
+            id: '/+14151234356/thoughts/1234567890',
             statement: 'Test statement'
           }
         ]), // Returns data
         save: vi.fn().mockRejectedValue(new Error('QuotaExceededError')), // Save fails
         optimize: vi.fn()
       }
-      Statement.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(() => mock_statement)
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -475,7 +475,7 @@ describe('Sync Statements', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Statement()
+      const persistance = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
