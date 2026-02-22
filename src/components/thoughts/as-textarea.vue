@@ -1,7 +1,7 @@
 <script setup>
   import Icon from '@/components/icon'
   import { ref, nextTick as tick } from 'vue'
-  import { use } from '@/use/statement'
+  import { use } from '@/use/thought'
   import { use_keymap } from '@/use/key-commands'
 
   const emit = defineEmits(['toggle-keyboard'])

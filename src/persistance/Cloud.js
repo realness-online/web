@@ -16,7 +16,7 @@ import { SIZE } from '@/utils/numbers'
 const networkable = [
   'person',
   'relations',
-  'statements',
+  'thoughts',
   'posters',
   'events',
   'shadows',

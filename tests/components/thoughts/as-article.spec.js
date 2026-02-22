@@ -9,13 +9,13 @@ import as_article from '@/components/thoughts/as-article'
 import AsThought from '@/components/thoughts/as-thought'
 import vector_mock from './mixin_mock'
 
-const statement = {
-  statement: 'I am saying it',
-  id: '/+14151234356/statements/1557614404580'
+const thought = {
+  thought: 'I am saying it',
+  id: '/+14151234356/thoughts/1557614404580'
 }
-const older_statement = {
-  statement: 'I can say all the stuff',
-  id: '/+14151234356/statements/1553460776031'
+const older_thought = {
+  thought: 'I can say all the stuff',
+  id: '/+14151234356/thoughts/1553460776031'
 }
 
 describe('@/components/thoughts/as-article.vue', () => {
@@ -31,7 +31,7 @@ describe('@/components/thoughts/as-article.vue', () => {
       })
     )
     wrapper = await shallowMount(as_article, {
-      props: { thoughts: [statement, older_statement] }
+      props: { statements: [thought, older_thought] }
     })
     await flushPromises()
   })
@@ -45,7 +45,7 @@ describe('@/components/thoughts/as-article.vue', () => {
       wrapper = await shallowMount(as_article, {
         props: {
           verbose: true,
-          thoughts: [statement, older_statement]
+          statements: [thought, older_thought]
         }
       })
       expect(wrapper.element).toMatchSnapshot()
@@ -61,12 +61,12 @@ describe('@/components/thoughts/as-article.vue', () => {
 
   describe('Focus handling', () => {
     it('Emits focused when thought receives focus', () => {
-      wrapper.findComponent(AsThought).vm.$emit('focused', statement)
+      wrapper.findComponent(AsThought).vm.$emit('focused', thought)
       expect(wrapper.emitted('focused')).toBeTruthy()
     })
     it('Emits blurred when thought loses focus after delay', () => {
       vi.useFakeTimers()
-      wrapper.findComponent(AsThought).vm.$emit('blurred', statement)
+      wrapper.findComponent(AsThought).vm.$emit('blurred', thought)
       vi.runAllTimers()
       expect(wrapper.emitted('blurred')).toBeTruthy()
       vi.useRealTimers()
@@ -74,8 +74,8 @@ describe('@/components/thoughts/as-article.vue', () => {
     it('Does not emit blurred when focus moves to another thought', () => {
       vi.useFakeTimers()
       const thoughts = wrapper.findAllComponents(AsThought)
-      thoughts[0].vm.$emit('blurred', statement)
-      thoughts[1].vm.$emit('focused', older_statement)
+      thoughts[0].vm.$emit('blurred', thought)
+      thoughts[1].vm.$emit('focused', older_thought)
       vi.runAllTimers()
       expect(wrapper.emitted('blurred')).toBeFalsy()
       vi.useRealTimers()

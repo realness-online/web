@@ -10,7 +10,7 @@ exports[`@/components/sync > Render > Renders sync component 1`] = `
   />
   <as-days-stub
     events=""
-    itemid="/+16282281824/statements"
+    itemid="/+16282281824/thoughts"
     itemscope=""
     paginate="false"
     posters=""

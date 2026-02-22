@@ -179,15 +179,15 @@ export const as_download_url = async itemid => {
 
 /**
  * Splits an item ID path into its constituent parts
- * @param {Id} itemid - The full item path (e.g. '/+123456/statements/789')
+ * @param {Id} itemid - The full item path (e.g. '/+123456/thoughts/789')
  * @returns {string[]} Array of path parts where:
  *   [0] = author ID (e.g. '+123456')
- *   [1] = item type (e.g. 'statements', 'events', 'posters', etc.)
+ *   [1] = item type (e.g. 'thoughts', 'events', 'posters', etc.)
  *   [2] = created_at timestamp (if applicable)
  * @example
- * as_path_parts('/+123456/statements/789') // ['+123456', 'statements', '789']
+ * as_path_parts('/+123456/thoughts/789') // ['+123456', 'thoughts', '789']
  * as_path_parts('/+123456') // ['+123456']
- * as_path_parts('/+123456/statements/789/') // ['+123456', 'statements', null, '789']
+ * as_path_parts('/+123456/thoughts/789/') // ['+123456', 'thoughts', null, '789']
  */
 export const as_path_parts = itemid => {
   if (!itemid || typeof itemid !== 'string') return []
@@ -237,6 +237,7 @@ export const as_author = itemid => {
  */
 export const as_type = itemid => {
   const path = as_path_parts(itemid)
+  if (path[1] === 'statements') return 'thoughts'
   if (path[1] && types.includes(/** @type {Type} */ (path[1])))
     return /** @type {Type} */ (path[1])
   if (itemid.startsWith('/+')) return 'person'
@@ -279,15 +280,14 @@ export const as_fragment_id = itemid => `#${as_query_id(itemid)}`
  * @returns {Item[]}
  */
 export const type_as_list = item => {
-  // Returns a list even if loading the item fails
-  // the microdata spec requires properties values to
-  // single value and iterable
   if (!item) return []
   const type = as_type(item.id)
   if (!type) return []
-  const list = /** @type {Record<string, unknown>} */ (item)[type]
+  let list = /** @type {Record<string, unknown>} */ (item)[type]
+  if (!list && type === 'thoughts')
+    list = /** @type {Record<string, unknown>} */ (item).statements
   if (list && Array.isArray(list)) return list
-  else if (list) {
+  if (list) {
     const as_item = /** @type {Item} */ (list)
     return [as_item]
   }

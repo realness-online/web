@@ -28,22 +28,22 @@ vi.mock('@/use/people', () => ({
   get_my_itemid: vi.fn(type => `/+14151234356/${type}`)
 }))
 
-// Mock statement composable
+// Mock thought composable
 const mock_my_thoughts = ref([
   {
-    id: '/+14151234356/statements/1',
-    type: 'statements',
+    id: '/+14151234356/thoughts/1',
+    type: 'thoughts',
     created_at: Date.now()
   }
 ])
 const mock_thoughts = ref([])
-const mock_thought_shown = vi.fn()
+const mock_statement_shown = vi.fn()
 
-vi.mock('@/use/statement', () => ({
+vi.mock('@/use/thought', () => ({
   use: () => ({
     my_thoughts: mock_my_thoughts,
     thoughts: mock_thoughts,
-    thought_shown: mock_thought_shown
+    statement_shown: mock_statement_shown
   })
 }))
 
@@ -72,8 +72,8 @@ describe('Thoughts', () => {
     mock_thoughts.value = []
     mock_my_thoughts.value = [
       {
-        id: '/+14151234356/statements/1',
-        type: 'statements',
+        id: '/+14151234356/thoughts/1',
+        type: 'thoughts',
         created_at: Date.now()
       }
     ]
@@ -90,7 +90,7 @@ describe('Thoughts', () => {
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
-            props: ['thoughts', 'editable'],
+            props: ['statements', 'editable'],
             emits: ['show']
           }
         }

@@ -69,7 +69,7 @@ storage/
 │       ├── posters/
 │       │   ├── 123456.html.gz
 │       │   └── 789012.html.gz
-│       └── statements/
+│       └── thoughts/
 │           └── 345678.html.gz
 └── .sync-state.json
 ```

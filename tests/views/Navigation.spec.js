@@ -10,7 +10,7 @@ vi.mock('@/use/vectorize', () => ({
   })
 }))
 
-vi.mock('@/use/statement', () => ({
+vi.mock('@/use/thought', () => ({
   use: () => ({
     save: vi.fn()
   })
@@ -85,7 +85,7 @@ describe('@/views/Navigation', () => {
 
       // Check for specific routes
       const statements_link = router_links.find(
-        link => link.attributes('to') === '/statements'
+        link => link.attributes('to') === '/thoughts'
       )
       const events_link = router_links.find(
         link => link.attributes('to') === '/events'
@@ -97,7 +97,7 @@ describe('@/views/Navigation', () => {
         link => link.attributes('to') === '/phonebook'
       )
       const thoughts_link = router_links.find(
-        link => link.attributes('to') === '/thoughts'
+        link => link.attributes('to') === '/statements'
       )
       const about_link = router_links.find(
         link => link.attributes('to') === '/about'
@@ -193,11 +193,11 @@ describe('@/views/Navigation', () => {
 
   describe('CSS Classes', () => {
     it('applies correct classes to router links', () => {
-      const statements_link = wrapper.find('router-link-stub[to="/statements"]')
+      const statements_link = wrapper.find('router-link-stub[to="/thoughts"]')
       const events_link = wrapper.find('router-link-stub[to="/events"]')
       const posters_link = wrapper.find('router-link-stub[to="/posters"]')
       const phonebook_link = wrapper.find('router-link-stub[to="/phonebook"]')
-      const thoughts_link = wrapper.find('router-link-stub[to="/thoughts"]')
+      const thoughts_link = wrapper.find('router-link-stub[to="/statements"]')
 
       expect(statements_link.classes()).toContain('sediment')
       expect(events_link.classes()).toContain('sediment')

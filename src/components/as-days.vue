@@ -7,7 +7,7 @@
   } from '@/utils/sorting'
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { as_thoughts, thoughts_sort } from '@/use/statement'
+  import { as_statements, statements_sort } from '@/use/thought'
   import {
     ref,
     computed,
@@ -55,14 +55,14 @@
     return days.value
   })
 
-  const thoughts = computed(() => {
-    let thought_list = []
-    const people = statements_by_people(props.thoughts)
-    people.forEach(statements => {
-      thought_list = [...thought_list, ...as_thoughts(statements)]
+  const statements = computed(() => {
+    let statement_list = []
+    const people = thoughts_by_people(props.thoughts)
+    people.forEach(their_thoughts => {
+      statement_list = [...statement_list, ...as_statements(their_thoughts)]
     })
-    thought_list.sort(thoughts_sort)
-    return thought_list
+    statement_list.sort(statements_sort)
+    return statement_list
   })
 
   const check_intersection = entries => {
@@ -75,15 +75,15 @@
     })
   }
 
-  const statements_by_people = statements => {
+  const thoughts_by_people = thoughts => {
     const people = new Map()
-    if (!statements) return []
-    statements.forEach(item => {
+    if (!thoughts) return []
+    thoughts.forEach(item => {
       const author = as_author(item.id)
-      let statements = people.get(author)
-      if (!statements) statements = []
-      statements.push(item)
-      people.set(author, statements)
+      let their_thoughts = people.get(author)
+      if (!their_thoughts) their_thoughts = []
+      their_thoughts.push(item)
+      people.set(author, their_thoughts)
     })
     return people
   }
@@ -94,7 +94,7 @@
       const page = [...this.entries()].sort(recent_date_first)
       yield* page
     }
-    thoughts.value.forEach(thought => insert_into_day(thought, new_days))
+    statements.value.forEach(stmt => insert_into_day(stmt, new_days))
     props.posters.forEach(poster => insert_into_day(poster, new_days))
     props.events.forEach(happening => insert_into_day(happening, new_days))
     days.value = new_days

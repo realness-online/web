@@ -104,9 +104,9 @@ export class Relation extends Cloud(Local(Storage)) {
 }
 
 /** @extends {Storage} */
-export class Statement extends Paged(Cloud(Local(Storage))) {
+export class Thought extends Paged(Cloud(Local(Storage))) {
   constructor() {
-    super(/** @type {Id} */ (`${localStorage.me}/statements`))
+    super(/** @type {Id} */ (`${localStorage.me}/thoughts`))
   }
 }
 

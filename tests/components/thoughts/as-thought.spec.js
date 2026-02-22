@@ -5,7 +5,7 @@ describe('@/components/thoughts/as-thought', () => {
   let wrapper
   const mock_thought = {
     id: 'test-thought',
-    statement: 'Test content',
+    thought: 'Test content',
     content: 'Test content',
     html: '<div>Test content</div>'
   }
@@ -63,7 +63,7 @@ describe('@/components/thoughts/as-thought', () => {
       await wrapper.setProps({
         thought: {
           ...mock_thought,
-          statement: updated_content
+          thought: updated_content
         }
       })
       expect(wrapper.html()).toContain(updated_content)

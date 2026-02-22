@@ -130,7 +130,7 @@ Bugs surfaced when enabling `strictNullChecks`, grouped by file and severity.
 
 ### Pending (not yet fixed)
 
-Remaining errors as of last run: ~185 across 15 files. Heaviest: statement.js (21), poster.js (27).
+Remaining errors as of last run: ~185 across 15 files. Heaviest: thought.js, poster.js (27).
 
 ### Vectorize.js (fixed)
 
@@ -148,7 +148,7 @@ Remaining errors as of last run: ~185 across 15 files. Heaviest: statement.js (2
 ### Sync.js (fixed)
 
 - sync_element.value?.querySelector – optional chaining
-- get_my_itemid null guards in sync_statements, sync_relations, sync_events, sync_me
+- get_my_itemid null guards in sync_thoughts, sync_relations, sync_events, sync_me
 - visit: deps.me.value?.visited, guard before assigning
 - Me().save: guard for querySelector null
 - del(id): add missing await in sync_me

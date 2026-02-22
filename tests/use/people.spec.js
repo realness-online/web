@@ -137,7 +137,7 @@ describe('people composable', () => {
 
       it('appends type to localStorage.me', () => {
         expect(get_my_itemid('posters')).toBe('/+14151234356/posters')
-        expect(get_my_itemid('statements')).toBe('/+14151234356/statements')
+        expect(get_my_itemid('thoughts')).toBe('/+14151234356/thoughts')
       })
     })
 

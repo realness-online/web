@@ -25,8 +25,8 @@
       </router-link>
     </header>
     <nav>
-      <router-link v-if="!posting" to="/thoughts" class="black" tabindex="-1">
-        Thoughts
+      <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
+        Statements
       </router-link>
       <router-link v-if="!posting" to="/phonebook" class="green" tabindex="-1">
         Phonebook
@@ -39,10 +39,10 @@
       </router-link>
       <router-link
         v-if="!posting"
-        to="/statements"
+        to="/thoughts"
         class="sediment"
         tabindex="-1">
-        Statements
+        Thoughts
       </router-link>
       <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
     </nav>
@@ -200,20 +200,10 @@
         padding: base-line;
         border-radius: base-line;
         text-align: right;
-        &::placeholder {
-          @media (prefers-color-scheme: light) {
-            color: #fff;
-          }
-        }
       }
       & > textarea {
         -webkit-user-select: text;
         user-select: text;
-      }
-      & > a {
-        @media (prefers-color-scheme: light) {
-          color: #fff;
-        }
       }
     }
     & > footer {

@@ -58,7 +58,7 @@ vi.mock('@/persistance/Storage', () => ({
   Relation: vi.fn().mockImplementation(() => ({
     save: vi.fn(() => Promise.resolve())
   })),
-  Statement: vi.fn().mockImplementation(() => ({
+  Thought: vi.fn().mockImplementation(() => ({
     sync: vi.fn(() => Promise.resolve([])),
     save: vi.fn(() => Promise.resolve()),
     optimize: vi.fn(() => Promise.resolve())
@@ -89,7 +89,7 @@ vi.mock('@/use/people', () => ({
   })
 }))
 
-vi.mock('@/use/statement', () => ({
+vi.mock('@/use/thought', () => ({
   use: () => ({
     my_thoughts: ref([])
   })
@@ -167,12 +167,12 @@ describe('sync composable', () => {
       const { Offline } = await import('@/persistance/Storage')
 
       get.mockResolvedValueOnce([
-        { action: 'save', id: '/+1234/statements/1000' }
+        { action: 'save', id: '/+1234/thoughts/1000' }
       ])
 
       await sync_offline_actions()
 
-      expect(Offline).toHaveBeenCalledWith('/+1234/statements/1000')
+      expect(Offline).toHaveBeenCalledWith('/+1234/thoughts/1000')
       expect(del).toHaveBeenCalledWith('sync:offline')
     })
 
@@ -181,12 +181,12 @@ describe('sync composable', () => {
       const { Offline } = await import('@/persistance/Storage')
 
       get.mockResolvedValueOnce([
-        { action: 'delete', id: '/+1234/statements/1000' }
+        { action: 'delete', id: '/+1234/thoughts/1000' }
       ])
 
       await sync_offline_actions()
 
-      expect(Offline).toHaveBeenCalledWith('/+1234/statements/1000')
+      expect(Offline).toHaveBeenCalledWith('/+1234/thoughts/1000')
     })
 
     it('handles anonymous posters', async () => {
@@ -217,7 +217,7 @@ describe('sync composable', () => {
         customMetadata: { hash: 'test123' }
       })
 
-      const result = await fresh_metadata('/+1234/statements/1000')
+      const result = await fresh_metadata('/+1234/thoughts/1000')
 
       expect(result.customMetadata.hash).toBe('test123')
       expect(set).toHaveBeenCalledWith('sync:index', expect.any(Object))
@@ -230,7 +230,7 @@ describe('sync composable', () => {
       error.code = 'storage/object-not-found'
       metadata.mockRejectedValueOnce(error)
 
-      const result = await fresh_metadata('/+1234/statements/1000')
+      const result = await fresh_metadata('/+1234/thoughts/1000')
 
       expect(result).toEqual(DOES_NOT_EXIST)
     })
@@ -238,7 +238,7 @@ describe('sync composable', () => {
     it('uses mutex for thread safety', async () => {
       const { mutex } = await import('@/utils/algorithms')
 
-      await fresh_metadata('/+1234/statements/1000')
+      await fresh_metadata('/+1234/thoughts/1000')
 
       expect(mutex.lock).toHaveBeenCalled()
       expect(mutex.unlock).toHaveBeenCalled()

@@ -3,9 +3,9 @@ import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
 
 // Mock the composables and utilities
-vi.mock('@/use/statement', () => ({
-  as_thoughts: vi.fn(() => []),
-  thoughts_sort: vi.fn()
+vi.mock('@/use/thought', () => ({
+  as_statements: vi.fn(() => []),
+  statements_sort: vi.fn()
 }))
 
 vi.mock('@/utils/sorting', () => ({
@@ -61,7 +61,7 @@ describe('@/components/as-days', () => {
 
   describe('Props', () => {
     it('accepts thoughts prop', () => {
-      const thoughts = [{ id: '/+16282281824/statements/123' }]
+      const thoughts = [{ id: '/+16282281824/thoughts/123' }]
       wrapper = shallowMount(AsDays, {
         props: { thoughts }
       })
@@ -104,8 +104,8 @@ describe('@/components/as-days', () => {
       expect(wrapper.vm.filtered_days).toBeDefined()
     })
 
-    it('has thoughts computed property', () => {
-      expect(wrapper.vm.thoughts).toBeDefined()
+    it('has statements computed property', () => {
+      expect(wrapper.vm.statements).toBeDefined()
     })
   })
 })

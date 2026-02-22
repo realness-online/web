@@ -12,12 +12,12 @@ exports[`@/components/thoughts/as-article.vue > Renders > Loads the thought auth
   
   <as-thought-stub
     editable="false"
-    itemprop="statements"
+    itemprop="thoughts"
     thought="[object Object]"
   />
   <as-thought-stub
     editable="false"
-    itemprop="statements"
+    itemprop="thoughts"
     thought="[object Object]"
   />
   
@@ -36,12 +36,12 @@ exports[`@/components/thoughts/as-article.vue > Renders > Render a thought as an
   
   <as-thought-stub
     editable="false"
-    itemprop="statements"
+    itemprop="thoughts"
     thought="[object Object]"
   />
   <as-thought-stub
     editable="false"
-    itemprop="statements"
+    itemprop="thoughts"
     thought="[object Object]"
   />
   

@@ -73,9 +73,9 @@ describe('@/utils/itemid', () => {
       expect(result).toBe('people/+16282281824/index.html.gz')
     })
 
-    it('generates correct path for statements', async () => {
-      const result = await as_filename('/+16282281824/statements')
-      expect(result).toBe('people/+16282281824/statements/index.html.gz')
+    it('generates correct path for thoughts', async () => {
+      const result = await as_filename('/+16282281824/thoughts')
+      expect(result).toBe('people/+16282281824/thoughts/index.html.gz')
     })
 
     it('generates correct path for brand new poster', async () => {
@@ -206,9 +206,9 @@ describe('@/utils/itemid', () => {
   describe('item id validation', () => {
     it('validates correct item ids', () => {
       expect(is_itemid('/+16282281824/events')).toBe(true)
-      expect(is_itemid('/+16282281824/statements')).toBe(true)
+      expect(is_itemid('/+16282281824/thoughts')).toBe(true)
       expect(is_itemid('/+16282281824/posters/1737178477987')).toBe(true)
-      expect(is_itemid('/+16282281824/statements/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/thoughts/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/events/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/relations/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/me/1737178477987')).toBe(true)

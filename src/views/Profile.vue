@@ -10,7 +10,7 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
 
-  import { use as use_statements, slot_key } from '@/use/statement'
+  import { use as use_thoughts, slot_key } from '@/use/thought'
   import { use_posters } from '@/use/poster'
   import { use as use_person, from_e64 } from '@/use/people'
   import { ref, provide, onMounted as mounted } from 'vue'
@@ -24,16 +24,16 @@
   const id = from_e64(route.params.phone_number)
   const {
     thoughts,
-    thought_shown,
-    for_person: statements_for_person
-  } = use_statements()
+    statement_shown,
+    for_person: thoughts_for_person
+  } = use_thoughts()
   const { posters, for_person: posters_for_person } = use_posters()
   const { load_person, person } = use_person()
   mounted(async () => {
     await Promise.all([
       load_person({ id }),
       posters_for_person({ id }),
-      statements_for_person({ id })
+      thoughts_for_person({ id })
     ])
   })
 
@@ -94,8 +94,8 @@
         <thought-as-article
           v-else
           :key="slot_key(item)"
-          :thoughts="item"
-          @show="thought_shown" />
+          :statements="item"
+          @show="statement_shown" />
       </template>
     </as-days>
   </section>

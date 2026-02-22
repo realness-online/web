@@ -1,5 +1,6 @@
 <script setup>
-  /** @typedef {import('@/types').Statement_Item} Statement_Item */
+  /** @typedef {import('@/types').Thought_Item} Thought_Item */
+  /** @typedef {import('@/types').Statement} Statement */
   import {
     ref,
     computed,
@@ -15,8 +16,8 @@
   import { menu } from '@/utils/preference'
 
   const props = defineProps({
-    thoughts: {
-      /** @type {import('vue').PropType<Statement_Item[]>} */
+    statements: {
+      /** @type {import('vue').PropType<Statement>} */
       type: Array,
       required: true
     },
@@ -33,10 +34,10 @@
   })
 
   const emit = defineEmits({
-    show: (/** @type {Statement_Item[]} */ thoughts) => Array.isArray(thoughts),
-    focused: (/** @type {Statement_Item} */ thought) =>
+    show: (/** @type {Statement} */ stmt) => Array.isArray(stmt),
+    focused: (/** @type {Thought_Item} */ thought) =>
       thought && typeof thought === 'object',
-    blurred: (/** @type {Statement_Item} */ thought) =>
+    blurred: (/** @type {Thought_Item} */ thought) =>
       thought && typeof thought === 'object'
   })
 
@@ -46,7 +47,7 @@
   const focused = ref(false)
   const el = ref(null)
   const thought_starts_at = computed(() =>
-    as_time(as_created_at(props.thoughts[0].id))
+    as_time(as_created_at(props.statements[0].id))
   )
 
   mounted(() => {
@@ -56,7 +57,7 @@
     })
     observer.value.observe(el.value)
     if (props.verbose) {
-      const author_id = as_author(props.thoughts[0].id)
+      const author_id = as_author(props.statements[0].id)
       if (author_id) load(author_id).then(result => (author.value = result))
     }
   })
@@ -77,7 +78,7 @@
     if (menu.value) all.value = all.value ? null : 'all'
   }
 
-  const show = () => emit('show', props.thoughts)
+  const show = () => emit('show', props.statements)
 
   const has_focus = thought => {
     focused.value = true
@@ -113,9 +114,9 @@
       <time>{{ thought_starts_at }}</time>
     </header>
     <as-thought
-      v-for="thought in thoughts"
+      v-for="thought in statements"
       :key="thought.id"
-      itemprop="statements"
+      itemprop="thoughts"
       :thought="thought"
       :editable="editable"
       @focused="has_focus"

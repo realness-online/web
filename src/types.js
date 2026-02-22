@@ -96,17 +96,19 @@
  */
 
 /**
- * @typedef {Object} Statement_Item
+ * @typedef {Object} Thought_Item
  * @property {Id} id
- * @property {string} [statement]
+ * @property {string} [thought]
  * @property {string} [why]
  * @property {string} [where]
  */
 
-/** @type {readonly ['posters', 'statements', 'events', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
+/** @typedef {Thought_Item[]} Statement */
+
+/** @type {readonly ['posters', 'thoughts', 'events', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
 export const types = [
   'posters',
-  'statements',
+  'thoughts',
   'events',
   'relations',
   'me',
@@ -126,8 +128,8 @@ export const has_archive = /** @type {readonly ['posters']} */ (
   /** @type {unknown} */ (types.slice(0, 1))
 )
 
-/** @type {readonly ['statements', 'events']} */
-export const has_history = /** @type {readonly ['statements', 'events']} */ (
+/** @type {readonly ['thoughts', 'events']} */
+export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
   /** @type {unknown} */ (types.slice(1, 3))
 )
 
