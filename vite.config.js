@@ -37,7 +37,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 8080,
+    port: 443,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
     },
@@ -47,12 +47,13 @@ export default defineConfig({
     },
     hmr: {
       host: 'realness.local',
-      port: 8080,
+      port: 443,
       protocol: 'wss'
     },
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin'
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Access-Control-Allow-Private-Network': 'true'
     }
   },
   resolve: {
