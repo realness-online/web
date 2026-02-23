@@ -210,7 +210,7 @@ export default [
         'kebab-case',
         {
           registeredComponentsOnly: false,
-          ignores: []
+          ignores: ['Motion']
         }
       ],
       'vue/html-comment-content-spacing': ['error', 'always'],

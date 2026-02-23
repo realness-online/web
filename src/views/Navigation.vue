@@ -1,22 +1,13 @@
 <script setup>
-  import Icon from '@/components/icon'
-  import ThoughtAsTextarea from '@/components/thoughts/as-textarea'
-  import { inject } from 'vue'
-  import AccountDialog from '@/components/profile/as-dialog-account'
   import { posting } from '@/use/posting'
 
   const version = import.meta.env.PACKAGE_VERSION
   const version_parts = version.split('.')
-  const open_camera = inject('open_camera')
-  const toggle_keyboard = () => {
-    posting.value = !posting.value
-  }
 </script>
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <header>
-      <account-dialog v-if="!posting" />
       <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>
@@ -24,10 +15,7 @@
         <span>{{ version_parts[2] }}</span>
       </router-link>
     </header>
-    <nav>
-      <router-link v-if="!posting" to="/statements" class="black" tabindex="-1">
-        Statements
-      </router-link>
+    <nav hidden>
       <router-link v-if="!posting" to="/phonebook" class="green" tabindex="-1">
         Phonebook
       </router-link>
@@ -40,17 +28,7 @@
       <router-link v-if="!posting" to="/" class="sediment" tabindex="-1">
         Thoughts
       </router-link>
-      <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
     </nav>
-    <footer v-if="!posting">
-      <a
-        id="camera"
-        tabindex="3"
-        @click="open_camera"
-        @keydown.enter="open_camera">
-        <icon name="camera" />
-      </a>
-    </footer>
   </section>
 </template>
 
@@ -61,14 +39,22 @@
     -webkit-user-select: none;
     user-select: none;
     min-height: 100dvh;
-    overflow: hidden;
+    background: linear-gradient(
+      to bottom,
+      var(--sediment) 0%,
+      var(--sand) 25%,
+      var(--gravel) 50%,
+      var(--rocks) 75%,
+      var(--boulders) 100%
+    );
+
     overscroll-behavior: none;
     touch-action: none;
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
-    max-width: page-width;
+
     @media (max-width: pad-begins) and (orientation: portrait) {
       padding: 0 base-line;
     }
@@ -133,20 +119,12 @@
         }
       }
     }
-    &:focus-within > header > a#toggle-account {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
     &.posting {
       align-self: start;
       margin-top: safe_inset(top);
       height: inherit;
       @media (max-width: pad-begins) {
         align-items: flex-start;
-      }
-      & > footer {
-        height: 50dvh;
       }
       & > nav {
         width: 100%;
@@ -200,43 +178,6 @@
       & > textarea {
         -webkit-user-select: text;
         user-select: text;
-      }
-    }
-    & > footer {
-      padding: 0;
-      & > a {
-        margin: 0;
-        padding: 0;
-      }
-      #camera {
-        border-radius: base-line;
-        padding: base-line * 0.5;
-        position: fixed;
-        bottom: base-line;
-        right: s('calc( 50% - %s)', (base-line * 1.5));
-        z-index: 4;
-        &:focus {
-          outline: 2px solid yellow
-        }
-        svg {
-          fill: red;
-        }
-      }
-      & > a:first-of-type {
-        color: blue;
-        padding: 0;
-        margin: 0;
-        border: none;
-        font-size: 0.66em;
-      }
-      & > a {
-        color: blue;
-        right: base-line;
-      }
-      & > menu {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
       }
     }
   }

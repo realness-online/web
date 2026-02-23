@@ -46,6 +46,7 @@
   const author = ref(null)
   const focused = ref(false)
   const el = ref(null)
+  const thought_refs = ref([])
   const thought_starts_at = computed(() =>
     as_time(as_created_at(props.statements[0].id))
   )
@@ -74,8 +75,13 @@
     }
   }
 
-  const click = () => {
-    if (menu.value) all.value = all.value ? null : 'all'
+  const click = e => {
+    if (menu.value && !props.editable) all.value = all.value ? null : 'all'
+    if (props.editable && !e.target.closest('[contenteditable="true"]')) {
+      const refs = thought_refs.value
+      const first = Array.isArray(refs) ? refs[0] : refs
+      first?.focus_editor?.()
+    }
   }
 
   const show = () => emit('show', props.statements)
@@ -116,6 +122,7 @@
     <as-thought
       v-for="thought in statements"
       :key="thought.id"
+      ref="thought_refs"
       itemprop="thoughts"
       :thought="thought"
       :editable="editable"

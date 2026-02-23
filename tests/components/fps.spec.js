@@ -10,7 +10,6 @@ vi.mock('@vueuse/core', () => ({
 }))
 
 vi.mock('@/utils/preference', () => ({
-  adaptive_enabled: ref(true),
   animate: ref(false),
   animation_speed: ref('normal'),
   aspect_ratio_mode: ref('auto'),
@@ -73,14 +72,13 @@ describe('fps component', () => {
     wrapper.unmount()
   })
 
-  it('shows fps number, animation status, adaptive toggle and aspect ratio', () => {
+  it('shows fps number, animation status and aspect ratio', () => {
     const wrapper = mount(Fps)
     expect(wrapper.find('aside#fps > div > output').text()).toMatch(/\d+ fps/)
     const outputs = wrapper.findAll('aside#fps > output')
-    expect(outputs).toHaveLength(3)
+    expect(outputs).toHaveLength(2)
     expect(outputs[0].text()).toContain('anim:')
-    expect(outputs[1].text()).toContain('adaptive:')
-    expect(outputs[2].text()).toContain('aspect:')
+    expect(outputs[1].text()).toContain('aspect:')
     wrapper.unmount()
   })
 })

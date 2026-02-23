@@ -8,7 +8,6 @@
   } from 'vue'
   import { useFps } from '@vueuse/core'
   import {
-    adaptive_enabled,
     animate,
     animation_speed,
     aspect_ratio_mode,
@@ -42,10 +41,6 @@
     if (!animate.value) return 'anim:off'
     return `anim:${animation_speed.value}`
   })
-
-  const toggle_adaptive = () => {
-    adaptive_enabled.value = !adaptive_enabled.value
-  }
 
   const aspect_ratio = computed(() => aspect_ratio_mode.value || 'auto')
 
@@ -125,14 +120,6 @@
       {{ animation_time.toFixed(0) }}s / {{ max_cycle_time }}s
     </meter>
     <output>{{ animation_status }}</output>
-    <output
-      role="button"
-      tabindex="0"
-      @click="toggle_adaptive"
-      @keydown.enter="toggle_adaptive"
-      @keydown.space.prevent="toggle_adaptive"
-      >adaptive: {{ adaptive_enabled ? 'on' : 'off' }}</output
-    >
     <output>aspect: {{ aspect_ratio }}</output>
   </aside>
 </template>
@@ -140,7 +127,7 @@
 <style lang="stylus">
   aside#fps
     position: fixed
-    bottom: base-line * .5
+    bottom: base-line * 6
     right: base-line * .5
     padding: base-line * .5
     border-radius: base-line * .5
@@ -197,10 +184,6 @@
       color: var(--animate-color)
       opacity: calc(var(--animate) * 1 + (1 - var(--animate)) * 0.7)
     > output:nth-of-type(2)
-      cursor: pointer
-      &:hover
-        text-decoration: underline
-    > output:nth-of-type(3)
       color: var(--slice-color)
       opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.7)
 </style>

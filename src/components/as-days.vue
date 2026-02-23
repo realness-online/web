@@ -151,7 +151,7 @@
       <header v-if="!is_today(date)">
         <h4>{{ as_day(date) }}</h4>
       </header>
-      <slot v-for="item in day" :item="item" />
+      <slot :day="day" :date="date" />
     </article>
   </section>
 </template>
@@ -216,6 +216,8 @@
     & > article.day
       margin-top: base-line
       standard-grid: hi
+      @media (min-width: page-width-large)
+        grid-template-columns: repeat(auto-fill, minmax(525px, 1fr))
       &:focus
         outline: none
       & > header

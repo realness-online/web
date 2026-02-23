@@ -228,6 +228,9 @@
       standard-grid: gentle;
       grid-auto-flow: row;
       grid-gap: base-line;
+      @media (min-width: page-width-large) {
+        grid-template-columns: repeat(auto-fill, minmax(525px, 1fr));
+      }
       padding-bottom: base-line * 3;
       scroll-behavior: smooth;
       @media (max-width: pad-begins) {

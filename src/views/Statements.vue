@@ -8,7 +8,7 @@
   import { use as use_thoughts } from '@/use/thought'
   import { get_my_itemid } from '@/use/people'
 
-  import { ref, onMounted as mounted } from 'vue'
+  import { ref, provide, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
   import { use_keymap } from '@/use/key-commands'
   import { storytelling } from '@/utils/preference'
@@ -16,7 +16,9 @@
   console.time('views:Thoughts')
   const working = ref(true)
   const router = use_router()
-  const { my_thoughts, thoughts, statement_shown } = use_thoughts()
+  const { my_thoughts, thoughts, statement_shown, update_thought } =
+    use_thoughts()
+  provide('update_thought', update_thought)
   const home = () => router.push({ path: '/' })
 
   const { register } = use_keymap('Thoughts')
@@ -46,13 +48,13 @@
         <h1 v-if="!working">Statements</h1>
       </header>
       <as-days
-        v-slot="day_thoughts"
+        v-slot="{ day }"
         itemscope
         :itemid="get_my_itemid('thoughts')"
         :paginate="false"
         :thoughts="my_thoughts">
         <thought-as-article
-          v-for="stmt in day_thoughts"
+          v-for="stmt in day"
           :key="stmt[0].id"
           :statements="stmt"
           editable
@@ -70,9 +72,9 @@
       <header>
         <h1>Earlier Thoughts</h1>
       </header>
-      <as-days v-slot="day_thoughts" :thoughts="thoughts" :paginate="false">
+      <as-days v-slot="{ day }" :thoughts="thoughts" :paginate="false">
         <thought-as-article
-          v-for="stmt in day_thoughts"
+          v-for="stmt in day"
           :key="stmt[0].id"
           :statements="stmt"
           @show="statement_shown" />

@@ -38,10 +38,9 @@ export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
 export const menu = storage('menu', true)
+export const footer_visible = storage('footer_visible', true)
 
 export const sync_folder = storage('sync_folder', false)
-
-export const adaptive_enabled = storage('adaptive_animation', true)
 
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)

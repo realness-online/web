@@ -94,11 +94,7 @@
   body:has(dialog#account[open]) {
     overflow: hidden;
   }
-  #navigation a#toggle-account {
-    display: block;
-    position: fixed;
-    top: safe_inset(top, base-line)
-    left: base-line;
+  a#toggle-account {
     & > span {
       margin-left: base-line * .5;
       line-height: 0;

@@ -85,17 +85,10 @@
       </menu>
     </div>
     <as-figure v-if="person" :person="person" />
-    <as-days v-slot="items" :posters="posters" :thoughts="thoughts">
-      <template v-for="item in items">
-        <poster-as-figure
-          v-if="item.type === 'posters'"
-          :key="slot_key(item.id)"
-          :itemid="item.id" />
-        <thought-as-article
-          v-else
-          :key="slot_key(item)"
-          :statements="item"
-          @show="statement_shown" />
+    <as-days v-slot="{ day }" :posters="posters" :thoughts="thoughts">
+      <template v-for="item in day" :key="slot_key(item)">
+        <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
+        <thought-as-article v-else :statements="item" @show="statement_shown" />
       </template>
     </as-days>
   </section>
