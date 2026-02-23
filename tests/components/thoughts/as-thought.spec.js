@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsThought from '@/components/thoughts/as-thought.vue'
+
+const mount_options = {
+  global: {
+    provide: { update_thought: vi.fn() }
+  }
+}
+
 describe('@/components/thoughts/as-thought', () => {
   let wrapper
   const mock_thought = {
@@ -12,9 +19,8 @@ describe('@/components/thoughts/as-thought', () => {
 
   beforeEach(() => {
     wrapper = shallowMount(AsThought, {
-      props: {
-        thought: mock_thought
-      }
+      props: { thought: mock_thought },
+      ...mount_options
     })
   })
 
@@ -41,7 +47,8 @@ describe('@/components/thoughts/as-thought', () => {
       }
 
       wrapper = shallowMount(AsThought, {
-        props: { thought: safe_thought }
+        props: { thought: safe_thought },
+        ...mount_options
       })
 
       await wrapper.vm.$nextTick()
@@ -52,7 +59,8 @@ describe('@/components/thoughts/as-thought', () => {
   describe('Interaction Handling', () => {
     it('emits focused when contenteditable receives focus', async () => {
       wrapper = shallowMount(AsThought, {
-        props: { thought: mock_thought, editable: true }
+        props: { thought: mock_thought, editable: true },
+        ...mount_options
       })
       await wrapper.find('p[contenteditable]').trigger('focus')
       expect(wrapper.emitted('focused')).toBeTruthy()
@@ -73,9 +81,8 @@ describe('@/components/thoughts/as-thought', () => {
   describe('Error Handling', () => {
     it('handles missing content', () => {
       wrapper = shallowMount(AsThought, {
-        props: {
-          thought: { id: 'test' }
-        }
+        props: { thought: { id: 'test' } },
+        ...mount_options
       })
       expect(wrapper.html()).toBeTruthy()
     })
@@ -88,7 +95,8 @@ describe('@/components/thoughts/as-thought', () => {
             ...mock_thought,
             html: malformed_html
           }
-        }
+        },
+        ...mount_options
       })
       await wrapper.vm.$nextTick()
       expect(wrapper.html()).toBeTruthy()

@@ -6,11 +6,34 @@
 /** @typedef {import('@/types').Statement} Statement */
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
+import { hydrate } from '@/utils/item'
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Thought } from '@/persistance/Storage'
 import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
+
+/**
+ * @param {Id} thought_id
+ * @param {string} new_content
+ * @returns {Promise<boolean>}
+ */
+export const update_single_thought = async (thought_id, new_content) => {
+  const storage_key = /** @type {Id} */ (`${localStorage.me}/thoughts`)
+  const stored = localStorage.getItem(storage_key)
+  if (!stored) return false
+  const fragment = hydrate(stored)
+  if (!fragment) return false
+  const thought_el = fragment.querySelector(`[itemid="${thought_id}"]`)
+  if (!thought_el) return false
+  const p = thought_el.querySelector('[itemprop="thought"]')
+  if (!p) return false
+  p.textContent = new_content
+  const section = fragment.firstElementChild
+  if (!section) return false
+  await new Thought().save(/** @type {Element} */ (section))
+  return true
+}
 
 const links = ['http://', 'https://']
 const my_thoughts = ref(/** @type {Item[]} */ ([]))
@@ -96,6 +119,19 @@ export const use = () => {
     )
   }
 
+  /**
+   * @param {Id} thought_id
+   * @param {string} new_content
+   */
+  const update_thought = async (thought_id, new_content) => {
+    const ok = await update_single_thought(thought_id, new_content)
+    if (!ok) return
+    const patch = t =>
+      t.id === thought_id ? { ...t, thought: new_content } : t
+    my_thoughts.value = my_thoughts.value.map(patch)
+    if (thoughts.value) thoughts.value = thoughts.value.map(patch)
+  }
+
   mounted(async () => {
     const promise =
       loading_promise || list(/** @type {Id} */ (`${localStorage.me}/thoughts`))
@@ -155,7 +191,8 @@ export const use = () => {
     my_thoughts,
     for_person,
     save,
-    statement_shown
+    statement_shown,
+    update_thought
   }
 }
 

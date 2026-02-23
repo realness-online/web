@@ -8,7 +8,6 @@ const routes = [
   { path: '/relations', component: () => import('@/views/Relations') },
   { path: '/phonebook', component: () => import('@/views/PhoneBook') },
   { path: '/profile', component: () => import('@/views/Profile') },
-  { path: '/statements', component: () => import('@/views/Statements') },
   { path: '/about', component: () => import('@/views/About') },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]

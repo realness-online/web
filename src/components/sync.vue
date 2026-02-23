@@ -1,4 +1,5 @@
 <script setup>
+  import { provide } from 'vue'
   import AsDays from '@/components/as-days'
   import EventsList from '@/components/events/as-list'
   import UnsyncedPoster from '@/components/posters/as-svg'
@@ -10,7 +11,8 @@
   import { use_me, get_my_itemid } from '@/use/people'
   defineEmits(['active'])
   const { me, relations } = use_me()
-  const { my_thoughts: my_editable_thoughts } = use_thoughts()
+  const { my_thoughts: my_editable_thoughts, update_thought } = use_thoughts()
+  provide('update_thought', update_thought)
   const { events, sync_element: sync, sync_poster } = use_sync()
 </script>
 
@@ -20,13 +22,13 @@
     <profile-as-meta v-if="relations" :people="relations" />
     <as-days
       v-if="my_editable_thoughts"
-      v-slot="statements"
+      v-slot="{ day }"
       itemscope
       :itemid="get_my_itemid('thoughts')"
       :thoughts="my_editable_thoughts"
       :paginate="false">
       <thought-as-article
-        v-for="stmt in statements"
+        v-for="stmt in day"
         :key="stmt[0].id"
         :statements="stmt" />
     </as-days>

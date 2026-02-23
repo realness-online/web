@@ -52,8 +52,8 @@
     </header>
     <h1>Events</h1>
     <icon v-show="working" name="working" />
-    <as-days id="tonight" v-slot="items" :paginate="false" :events="events">
-      <as-figure v-for="item in items" :key="item.url" :itemid="item.url" />
+    <as-days id="tonight" v-slot="{ day }" :paginate="false" :events="events">
+      <as-figure v-for="item in day" :key="item.url" :itemid="item.url" />
     </as-days>
     <footer v-if="!events.length">
       <p class="message">

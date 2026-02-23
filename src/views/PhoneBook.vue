@@ -2,7 +2,6 @@
   import icon from '@/components/icon'
   import LogoAsLink from '@/components/logo-as-link'
   import AsFigure from '@/components/profile/as-figure'
-  import AsDialogAccount from '@/components/profile/as-dialog-account'
 
   const open_account = () => {
     window.location.hash = '#account'
@@ -28,7 +27,6 @@
 
 <template>
   <section id="directory" class="page">
-    <as-dialog-account />
     <header>
       <logo-as-link />
       <router-link v-if="current_user" to="/relations">
@@ -53,9 +51,6 @@
 <style lang="stylus">
   section#directory
     padding-bottom: base-line * 2
-    // Hide global account toggle anchor on this page to keep header unchanged
-    a#toggle-account
-      display: none
     & > header > a > svg.heart
       fill: blue
     & > svg.working

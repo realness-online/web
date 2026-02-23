@@ -65,8 +65,10 @@ const mock_statement_shown = vi.fn()
 vi.mock('@/use/thought', () => ({
   use: () => ({
     thoughts: mock_thoughts,
+    my_thoughts: mock_thoughts,
     statement_shown: mock_statement_shown,
-    for_person: mock_thoughts_for_person
+    for_person: mock_thoughts_for_person,
+    update_thought: vi.fn()
   }),
   slot_key: vi.fn(id => id)
 }))

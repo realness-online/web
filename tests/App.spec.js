@@ -32,7 +32,8 @@ const {
   mock_grid_overlay,
   mock_menu,
   mock_aspect_ratio_mode,
-  mock_slice_alignment
+  mock_slice_alignment,
+  mock_footer_visible
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_template_ref = value =>
@@ -64,7 +65,8 @@ const {
     mock_grid_overlay: create_ref(false),
     mock_menu: create_ref(false),
     mock_aspect_ratio_mode: create_ref('auto'),
-    mock_slice_alignment: create_ref('ymid')
+    mock_slice_alignment: create_ref('ymid'),
+    mock_footer_visible: create_ref(true)
   }
 })
 
@@ -97,7 +99,9 @@ vi.mock('@vueuse/core', () => ({
   useFps: vi.fn(() => ({ value: 60 })),
   useMagicKeys: vi.fn(() => ({
     shift: { value: false }
-  }))
+  })),
+  useFullscreen: vi.fn(() => ({ isFullscreen: { value: false } })),
+  useActiveElement: vi.fn(() => ({ value: null }))
 }))
 
 const mock_router_push = vi.fn()
@@ -134,7 +138,7 @@ vi.mock('@/utils/preference', async () => {
   const menu_ref = ref(false)
   const aspect_ratio_mode_ref = ref('auto')
   const slice_alignment_ref = ref('ymid')
-  const adaptive_enabled_ref = ref(true)
+  const footer_visible_ref = ref(true)
 
   // Sync hoisted objects to proxy the refs
   Object.defineProperty(mock_shadow, 'value', {
@@ -281,6 +285,12 @@ vi.mock('@/utils/preference', async () => {
       slice_alignment_ref.value = v
     }
   })
+  Object.defineProperty(mock_footer_visible, 'value', {
+    get: () => footer_visible_ref.value,
+    set: v => {
+      footer_visible_ref.value = v
+    }
+  })
 
   return {
     shadow: shadow_ref,
@@ -308,7 +318,7 @@ vi.mock('@/utils/preference', async () => {
     menu: menu_ref,
     aspect_ratio_mode: aspect_ratio_mode_ref,
     slice_alignment: slice_alignment_ref,
-    adaptive_enabled: adaptive_enabled_ref
+    footer_visible: footer_visible_ref
   }
 })
 
@@ -790,7 +800,7 @@ describe('App.vue', () => {
     it('navigates to thoughts', () => {
       const handler = registered_handlers['nav::Go_Thoughts']
       handler()
-      expect(mock_router_push).toHaveBeenCalledWith('/statements')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
     })
 
     it('navigates to about', () => {

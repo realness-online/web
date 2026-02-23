@@ -109,7 +109,7 @@
 
 <template>
   <a id="toggle-preferences" @click="show_settings">
-    <icon name="corner" />
+    <icon name="gear" />
   </a>
   <dialog
     id="preferences"
@@ -187,29 +187,17 @@
 
 <style lang="stylus">
   a#toggle-preferences {
-    position: fixed;
-    bottom: base-line;
-    left: base-line;
-    z-index: 9;
-    svg.gear.icon {
-      width: base-line;
-      height: base-line;
+    svg.icon {
+      width: base-line * 2;
+      height: base-line * 2;
       fill: black;
       stroke: blue;
       stroke-width: 0.25px;
     }
   }
 
-  :fullscreen a#toggle-preferences,
-  main#realness:has(article.thought:focus-within) > a#toggle-preferences {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
   dialog#preferences {
-    margin: (base-line * 0.5);
-    margin-top: base-line * 3;
+    margin: (base-line * 2);
     max-width: 100%;
     max-height: calc(100dvh - var(--base-line) * 5);
     border-radius: base-line;
@@ -227,10 +215,9 @@
     }
 
     @media (min-width: pad-begins) {
-      margin: base-line;
-      margin-top: 0;
+      margin:  auto;
       max-width: 90vw;
-      max-height: 80vh;
+      max-height: 85vh;
       &[open] {
         grid-template-columns: 1fr 1fr;
         gap: base-line * 2;

@@ -99,6 +99,7 @@
  * @typedef {Object} Thought_Item
  * @property {Id} id
  * @property {string} [thought]
+ * @property {string} [statement] - legacy
  * @property {string} [why]
  * @property {string} [where]
  */

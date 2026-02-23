@@ -1,21 +1,18 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
   import {
-    ref,
     computed,
     watchEffect,
-    watch,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
   import { as_fragment_id, as_layer_id } from '@/utils/itemid'
   import { is_vector_id, is_svg_valid } from '@/use/poster'
-  import { stroke, animation_speed, adaptive_enabled } from '@/utils/preference'
+  import { stroke, animation_speed } from '@/utils/preference'
   import {
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
   } from '@/utils/animation-config'
-  import { run_duration, pause_duration } from '@/use/animation-performance'
 
   const props = defineProps({
     id: {
@@ -36,11 +33,6 @@
       default: true
     }
   })
-
-  const adaptive_paused = ref(false)
-  const effective_paused = computed(
-    () => props.paused || (adaptive_enabled.value && adaptive_paused.value)
-  )
 
   const shadow_id = computed(() =>
     as_layer_id(/** @type {Id} */ (props.id), 'shadows')
@@ -139,61 +131,16 @@
   }
 
   watchEffect(() => {
-    if (effective_paused.value) props.svg.pauseAnimations()
+    if (props.paused) props.svg.pauseAnimations()
     else props.svg.unpauseAnimations()
   })
 
-  let raf_id = null
-  let cycle_start = 0
-  let phase = 'run'
-
-  const tick = now => {
-    if (props.paused) {
-      raf_id = requestAnimationFrame(tick)
-      return
-    }
-
-    const MS_PER_SECOND = 1000
-    const elapsed = (now - cycle_start) / MS_PER_SECOND
-
-    if (adaptive_enabled.value)
-      if (phase === 'run') {
-        if (elapsed >= run_duration.value) {
-          phase = 'pause'
-          adaptive_paused.value = true
-          cycle_start = now
-        }
-      } else if (elapsed >= pause_duration.value) {
-        const current = props.svg.getCurrentTime()
-        props.svg.setCurrentTime(current + pause_duration.value)
-        adaptive_paused.value = false
-        phase = 'run'
-        cycle_start = now
-      }
-
-    raf_id = requestAnimationFrame(tick)
-  }
-
-  watch(
-    () => props.paused,
-    (paused, was_paused) => {
-      if (!paused && was_paused) {
-        cycle_start = performance.now()
-        phase = 'run'
-        adaptive_paused.value = false
-      }
-    }
-  )
-
   mounted(() => {
     window.addEventListener('keydown', handle_keydown)
-    cycle_start = performance.now()
-    raf_id = requestAnimationFrame(tick)
   })
 
   unmounted(() => {
     window.removeEventListener('keydown', handle_keydown)
-    if (raf_id) cancelAnimationFrame(raf_id)
   })
 </script>
 

@@ -41,6 +41,7 @@ export const default_keymap = [
       r: 'pref::Cycle_Aspect_Ratio',
       R: 'pref::Cycle_Aspect_Ratio',
       M: 'pref::Toggle_Menu',
+      h: 'pref::Toggle_Footer',
       p: 'ui::Toggle_Presentation',
 
       'Home Row': '',
@@ -79,6 +80,7 @@ export const default_keymap = [
       'ui::Clear_Sync_Time': 'Clear sync time from localStorage',
       'pref::Toggle_Shadow': 'Shadow gradient on posters',
       'pref::Toggle_Menu': 'Show poster menu on click',
+      'pref::Toggle_Footer': 'Show/hide global footer',
       'pref::Toggle_Stroke': 'Stroke outline on posters',
       'pref::Toggle_Mosaic': 'Mosaic display on posters',
       'pref::Toggle_Background': 'Background fill on posters',

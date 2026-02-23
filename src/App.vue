@@ -4,20 +4,32 @@
   const DialogPreferences = defineAsyncComponent(
     () => import('@/components/profile/as-dialog-preferences.vue')
   )
+  const DialogAccount = defineAsyncComponent(
+    () => import('@/components/profile/as-dialog-account.vue')
+  )
   const DialogDocumentation = defineAsyncComponent(
     () => import('@/components/as-dialog-documentation.vue')
   )
   const FpsComponent = defineAsyncComponent(() => import('@/components/fps'))
+  const ThoughtAsTextarea = defineAsyncComponent(
+    () => import('@/components/thoughts/as-textarea')
+  )
   import WorkingBorder from '@/components/working-border.vue'
+  import Icon from '@/components/icon'
   import {
     ref,
+    computed,
     watch,
     onUnmounted as dismount,
     onMounted as mounted,
     provide
   } from 'vue'
-  import { useFps, useMagicKeys } from '@vueuse/core'
-  import '@/use/animation-performance'
+  import {
+    useFps,
+    useMagicKeys,
+    useFullscreen,
+    useActiveElement
+  } from '@vueuse/core'
   import { useRouter as use_router } from 'vue-router'
   import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
@@ -52,7 +64,8 @@
     grid_overlay,
     aspect_ratio_mode,
     slice_alignment,
-    menu
+    menu,
+    footer_visible
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -93,6 +106,20 @@
 
   const documentation = ref(null)
   provide('documentation', documentation)
+
+  const toggle_keyboard = () => {
+    posting.value = !posting.value
+  }
+
+  const { isFullscreen } = useFullscreen()
+  const active_el = useActiveElement()
+  const thought_has_focus = computed(
+    () => !!active_el.value?.closest?.('article.thought')
+  )
+  const footer_scroll_active = computed(
+    () =>
+      footer_visible.value && !isFullscreen.value && !thought_has_focus.value
+  )
 
   const preferences_dialog = ref(null)
   const account_dialog = ref(null)
@@ -185,6 +212,7 @@
   })
   register_preference('pref::Toggle_Grid', grid_overlay)
   register_preference('pref::Toggle_Menu', menu)
+  register_preference('pref::Toggle_Footer', footer_visible)
 
   // Watch aspect_ratio_mode and update CSS variable
   watch(aspect_ratio_mode, new_value => {
@@ -228,7 +256,7 @@
   register('nav::Go_Events', () => router.push('/events'))
   register('nav::Go_Posters', () => router.push('/posters'))
   register('nav::Go_Phonebook', () => router.push('/phonebook'))
-  register('nav::Go_Thoughts', () => router.push('/statements'))
+  register('nav::Go_Thoughts', () => router.push('/'))
   register('nav::Go_About', () => router.push('/about'))
 
   /** @param {boolean} active */
@@ -246,6 +274,8 @@
     status.value = 'offline'
   }
   mounted(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches)
+      sessionStorage.about = true
     const has_drama_back = localStorage.getItem('drama_back') !== null
     const has_drama_front = localStorage.getItem('drama_front') !== null
     if (!has_drama_back && !has_drama_front && drama.value) {
@@ -259,13 +289,6 @@
       aspect_ratio === 'auto' ? 'auto' : aspect_ratio
     )
 
-    const is_standalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator['standalone'] || // for iOS
-      document.referrer.includes('android-app://')
-
-    if (is_standalone) sessionStorage.about = true
-    if (!sessionStorage.about) router.push('/about')
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
   })
@@ -276,14 +299,41 @@
 </script>
 
 <template>
-  <main id="realness" :class="status">
+  <main
+    id="realness"
+    :class="[
+      status,
+      {
+        posting,
+        'footer-hidden': !footer_visible,
+        'footer-scroll-active': footer_scroll_active
+      }
+    ]">
     <teleport to="body">
       <working-border v-if="status === 'working'" />
     </teleport>
     <router-view />
     <sync @active="sync_active" />
     <fps-component v-if="info" />
-    <dialog-preferences v-if="!posting" ref="preferences_dialog" />
+    <button
+      v-if="!isFullscreen && !thought_has_focus"
+      type="button"
+      :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
+      @click="footer_visible = !footer_visible" />
+    <footer id="global-footer">
+      <template v-if="!posting">
+        <dialog-preferences ref="preferences_dialog" />
+        <a
+          id="camera"
+          tabindex="0"
+          @click="open_camera"
+          @keydown.enter="open_camera">
+          <icon name="camera" />
+        </a>
+        <dialog-account ref="account_dialog" />
+      </template>
+      <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
+    </footer>
     <dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
@@ -297,13 +347,7 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 
 <style lang="stylus">
-  body:has(main#realness:has(section#navigation)) {
-    overflow: hidden;
-  }
-  main#realness:has(section#navigation) {
-    overflow: hidden;
-    height: 100dvh;
-  }
+
   main#realness {
     border: (base-line / 16) solid transparent;
     border-radius (base-line / 16);
@@ -322,6 +366,97 @@
       display: none;
       top: 0;
       left: var(--base-line);
+    }
+  }
+  @keyframes footer-scroll-visibility {
+    0%, 100% {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+    5%, 95% {
+      opacity: 0;
+      transform: translateY(100%);
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+  footer#global-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9;
+    background-color: var(--black-transparent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: base-line;
+    padding: base-line;
+    padding-bottom: s('calc(var(--base-line) + env(safe-area-inset-bottom, 0))');
+    pointer-events: none;
+    & > * {
+      pointer-events: auto;
+    }
+    & a#toggle-preferences {
+      position: static;
+      color: var(--sediment);
+      svg {
+        fill: var(--sediment);
+        stroke: var(--sediment);
+      }
+    }
+    & a#toggle-account {
+      position: static;
+      color: var(--gravel);
+    }
+    & a#camera {
+      color: var(--red);
+      svg {
+        fill: var(--red);
+      }
+      &:focus {
+        outline: 2px solid var(--red);
+      }
+    }
+  }
+  @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
+    main#realness.footer-scroll-active > footer#global-footer {
+      animation: footer-scroll-visibility linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0% 5%, 95% 100%;
+    }
+  }
+  main#realness:not(.footer-scroll-active) > footer#global-footer {
+    animation: none;
+    transform: translateY(100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+  }
+  main#realness > button {
+    position: fixed;
+    bottom: base-line * 0.25;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: base-line * 4;
+    height: base-line * 0.5;
+    padding: 0 0 env(safe-area-inset-bottom, 0) 0;
+    border: none;
+    border-radius: base-line;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    pointer-events: auto;
+    background-color: var(--black-transparent);
+    box-shadow: 0 0 base-line var(--black-transparent);
+    &:hover {
+      background-color: var(--black-background);
+    }
+    &:focus {
+      outline: 2px solid var(--red);
     }
   }
 </style>

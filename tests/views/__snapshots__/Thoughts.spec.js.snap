@@ -9,8 +9,9 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     <icon-stub
       name="nothing"
     />
-    <logo-as-link-stub
+    <router-link-stub
       tabindex="-1"
+      to="/posters"
     />
   </header>
   <h1>
@@ -18,9 +19,12 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
   </h1>
   <section
     class="as-days-stub"
+    itemid="/+14151234356/thoughts"
+    itemscope=""
   >
     
     
   </section>
+  <!--v-if-->
 </section>
 `;

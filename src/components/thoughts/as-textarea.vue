@@ -85,7 +85,7 @@
 </template>
 
 <style lang="stylus">
-  section#navigation.page {
+  main#realness footer#global-footer {
     & textarea#wat {
       padding: base-line;
       border-radius: base-line;
@@ -95,7 +95,9 @@
       transition-duration: 0.3s;
       user-select: text;
       border-style: solid;
-      caret-color: red;
+      caret-color: var(--rocks);
+      color: var(--rocks);
+      border-color: var(--rocks);
       cursor: pointer;
       transition-property: color, border-radius, text-align;
       min-height: base-line;
@@ -105,15 +107,13 @@
       &::placeholder {
         transition-property: all;
         font-family: inherit;
-        color: white-text;
-        @media (prefers-color-scheme: light) {
-          color: black-background;
-        }
+        color: var(--rocks);
+        opacity: 0.8;
       }
     }
     & button#done {
-      color: white-text;
-      border-color: black;
+      color: var(--boulders);
+      border-color: var(--boulders);
       border-radius: base-line;
       padding: base-line;
       position: fixed;
@@ -128,24 +128,28 @@
       display: none;
       border: none;
       position: absolute;
-      top: inset(top, base-line);
-      right: inset(right, base-line);
+      top: safe_inset(top, base-line);
+      right: safe_inset(right, base-line);
       width: fit-content;
       height: fit-content;
       padding: 0;
       svg {
-        fill: white-text;
+        fill: var(--boulders);
       }
     }
-    &.posting button#done {
+  }
+  main#realness.posting footer#global-footer {
+    & button#done {
       display: block;
     }
-    &.posting textarea#wat {
+    & textarea#wat {
+      color: var(--rocks);
+      caret-color: var(--rocks);
       position: fixed;
-      top: inset(top, base-line * 3);
-      right: inset(right, base-line);
-      bottom: inset(bottom, base-line * 4);
-      left: inset(left, base-line);
+      top: safe_inset(top, base-line * 3);
+      right: safe_inset(right, base-line);
+      bottom: safe_inset(bottom, base-line * 4);
+      left: safe_inset(left, base-line);
       font-size: 1.25em;
       font-weight: normal;
       padding: 0;
@@ -166,11 +170,9 @@
       padding: 0;
       border-radius: 0;
       &::placeholder {
-        color: white;
+        color: var(--rocks);
         text-align: left;
-        @media (prefers-color-scheme: light) {
-          color: red;
-        }
+        opacity: 0.8;
       }
     }
   }
