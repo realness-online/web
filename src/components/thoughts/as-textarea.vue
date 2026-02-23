@@ -1,6 +1,6 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { ref, nextTick as tick } from 'vue'
+  import { ref } from 'vue'
   import { use } from '@/use/thought'
   import { use_keymap } from '@/use/key-commands'
 
@@ -8,21 +8,8 @@
   const { save } = use()
   const thought_text = ref(null)
 
-  const SCROLL_DELAY_MS = 100
-
-  const focused = async () => {
+  const focused = () => {
     emit('toggle-keyboard')
-    const textarea = document.querySelector('textarea#wat')
-    textarea.focus()
-    await tick()
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      textarea.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-      })
-    }, SCROLL_DELAY_MS)
   }
 
   const prepare_thought = async () => {
@@ -92,6 +79,7 @@
       text-align: right;
       resize: none;
       appearance: none;
+      background-color: var(--black-transparent);
       transition-duration: 0.3s;
       user-select: text;
       border-style: solid;
@@ -157,7 +145,7 @@
       border-top: none;
       border-radius: 0;
       border-width: 0;
-      background-color: transparent;
+      background-color: var(--black-transparent);
       outline: 0;
       transition-duration: .3s;
       transition-property: border-radius, text-align;

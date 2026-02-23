@@ -1,20 +1,9 @@
 <script setup>
   import { posting } from '@/use/posting'
-
-  const version = import.meta.env.PACKAGE_VERSION
-  const version_parts = version.split('.')
 </script>
 
 <template>
   <section id="navigation" class="page" :class="{ posting }">
-    <header>
-      <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
-        <span>{{ version_parts[0] }}</span>
-        <span>?</span>
-        <span>{{ version_parts[1] }}</span>
-        <span>{{ version_parts[2] }}</span>
-      </router-link>
-    </header>
     <nav hidden>
       <router-link v-if="!posting" to="/phonebook" class="green" tabindex="-1">
         Phonebook
@@ -61,63 +50,6 @@
     @media (max-height: pad-begins) and (orientation: landscape) {
       height: auto;
       max-width: none;
-    }
-    & > header {
-      padding: 0;
-      :fullscreen & {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-      @media (min-width: pad-begins) {
-        top: env(safe-area-inset-top) !important;
-      }
-      &:hover, &:active {
-        opacity: 1;
-      }
-      & > a#about {
-        position: fixed;
-        top: env(safe-area-inset-top);
-        right: base-line;
-        font-weight: bold;
-        font-size: base-line * 1.44;
-
-        -webkit-user-select: none;
-        user-select: none;
-        display: grid;
-        grid-template-columns: auto auto auto;
-        grid-template-rows: auto auto;
-        align-items: baseline;
-        & > span {
-          font-size: 0.266em;
-          vertical-align: sub;
-          opacity: 0.67;
-        }
-        & > span:first-child {
-          grid-column: 1;
-          grid-row: 1;
-          margin-right: 0.1em;
-          margin-left: -(base-line * 0.25);
-        }
-        & > span:nth-child(2) {
-          grid-column: 2;
-          grid-row: 1;
-          font-size: 1em;
-          opacity: 1;
-        }
-        & > span:nth-child(3) {
-          grid-column: 2;
-          grid-row: 2;
-          justify-self: center;
-          transform: translateY(-(base-line * 0.25));
-        }
-        & > span:last-child {
-          grid-column: 3;
-          grid-row: 1;
-          margin-left: 0.1em;
-          margin-right: -(base-line * 0.25);
-        }
-      }
     }
     &.posting {
       align-self: start;

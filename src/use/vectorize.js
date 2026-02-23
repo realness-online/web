@@ -14,7 +14,6 @@ import {
   inject,
   nextTick as tick
 } from 'vue'
-import { useRouter as use_router } from 'vue-router'
 import { create_path_element } from '@/use/path'
 import { IMAGE } from '@/utils/numbers'
 import { mutex } from '@/utils/algorithms'
@@ -341,7 +340,6 @@ export const save_poster = async (
 // Breaking into smaller pieces would scatter tightly coupled logic
 // eslint-disable-next-line max-lines-per-function
 export const use = () => {
-  const router = use_router()
   const image_picker = inject(
     'image-picker',
     ref(/** @type {HTMLInputElement | null} */ (null))
@@ -674,7 +672,6 @@ export const use = () => {
 
     if (image_files.length > 0) {
       await add_to_queue(image_files)
-      router.push('/posters')
       if (image_picker.value) image_picker.value.value = ''
     }
   }

@@ -76,13 +76,11 @@ describe('@/views/Navigation', () => {
       const events_link = router_links.find(l => link_to(l) === '/events')
       const posters_link = router_links.find(l => link_to(l) === '/posters')
       const phonebook_link = router_links.find(l => link_to(l) === '/phonebook')
-      const about_link = router_links.find(l => link_to(l) === '/about')
 
       expect(thoughts_link).toBeTruthy()
       expect(events_link).toBeTruthy()
       expect(posters_link).toBeTruthy()
       expect(phonebook_link).toBeTruthy()
-      expect(about_link).toBeTruthy()
     })
   })
 
@@ -144,18 +142,6 @@ describe('@/views/Navigation', () => {
       router_links.forEach(link => {
         expect(link.attributes('tabindex')).toBe('-1')
       })
-    })
-
-    it('sets correct tabindex on about link', () => {
-      const link_to = link => {
-        const to = link.attributes('to') ?? link.props('to')
-        return typeof to === 'string' ? to : to?.path
-      }
-      const about_link = wrapper
-        .findAll('router-link-stub')
-        .find(l => link_to(l) === '/about')
-      expect(about_link).toBeTruthy()
-      expect(about_link.attributes('tabindex')).toBe('-1')
     })
   })
 })

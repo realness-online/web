@@ -116,10 +116,6 @@
   const thought_has_focus = computed(
     () => !!active_el.value?.closest?.('article.thought')
   )
-  const footer_scroll_active = computed(
-    () =>
-      footer_visible.value && !isFullscreen.value && !thought_has_focus.value
-  )
 
   const preferences_dialog = ref(null)
   const account_dialog = ref(null)
@@ -305,8 +301,7 @@
       status,
       {
         posting,
-        'footer-hidden': !footer_visible,
-        'footer-scroll-active': footer_scroll_active
+        'footer-hidden': !footer_visible
       }
     ]">
     <teleport to="body">
@@ -368,20 +363,6 @@
       left: var(--base-line);
     }
   }
-  @keyframes footer-scroll-visibility {
-    0%, 100% {
-      opacity: 1;
-      transform: translateY(0);
-      visibility: visible;
-      pointer-events: auto;
-    }
-    5%, 95% {
-      opacity: 0;
-      transform: translateY(100%);
-      visibility: hidden;
-      pointer-events: none;
-    }
-  }
   footer#global-footer {
     position: fixed;
     bottom: 0;
@@ -421,15 +402,7 @@
       }
     }
   }
-  @supports ((animation-timeline: scroll()) and (animation-range: 0% 100%)) {
-    main#realness.footer-scroll-active > footer#global-footer {
-      animation: footer-scroll-visibility linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0% 5%, 95% 100%;
-    }
-  }
-  main#realness:not(.footer-scroll-active) > footer#global-footer {
-    animation: none;
+  main#realness.footer-hidden > footer#global-footer {
     transform: translateY(100%);
     opacity: 0;
     visibility: hidden;

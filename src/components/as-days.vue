@@ -7,7 +7,7 @@
   } from '@/utils/sorting'
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { as_statements, statements_sort } from '@/use/thought'
+  import { as_statements, statements_sort, slot_key } from '@/use/thought'
   import {
     ref,
     computed,
@@ -42,6 +42,11 @@
       type: Boolean,
       required: false,
       default: false
+    },
+    storytelling: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   })
 
@@ -53,6 +58,16 @@
   const filtered_days = computed(() => {
     if (props.paginate) return [...days.value].slice(0, page.value * page_size)
     return days.value
+  })
+
+  const flattened_items = computed(() => {
+    if (!props.storytelling) return []
+    const items = []
+    const days_to_use = props.paginate ? filtered_days.value : days.value
+    for (const [date, day] of days_to_use)
+      for (const item of day) items.push({ item, date })
+
+    return items
   })
 
   const statements = computed(() => {
@@ -140,11 +155,24 @@
 </script>
 
 <template>
-  <section class="as-days">
+  <section class="as-days" :class="{ storytelling }">
     <header v-if="working"><icon name="working" /></header>
+    <template v-else-if="storytelling">
+      <article class="storytelling-scroll" @focusin="$emit('focusin', $event)">
+        <div
+          v-for="({ item, date }, index) in flattened_items"
+          :key="slot_key(item)"
+          class="storytelling-slide">
+          <header v-if="!is_today(date)">
+            <h4>{{ as_day(date) }}</h4>
+          </header>
+          <slot :day="[item]" :date="date" />
+        </div>
+      </article>
+    </template>
     <article
-      v-for="[date, day] in filtered_days"
       v-else
+      v-for="[date, day] in filtered_days"
       :key="date"
       :class="{ today: is_today(date) }"
       class="day">
@@ -157,29 +185,38 @@
 </template>
 
 <style lang="stylus">
-  section.page.storytelling .as-days
-      aspect-ratio: 16/9
+  section.as-days.storytelling
+    display: flex
+    flex-direction: column
+    overflow: hidden
+    padding: 0
+    gap: 0
+    min-height: 100vh
+    & > header
+      display: none
+    & > article.storytelling-scroll
+      display: flex
       overflow-x: auto
       overflow-y: hidden
-      white-space: nowrap
-      display: flex
-      flex-direction: row
-      gap: 0
-      padding: 0
-      & > header
-        display: none
-      & > article.day
-        flex-shrink: 0
-        width: 100vw
+      gap: base-line
+      scroll-behavior: smooth
+      height: 100vh
+      min-height: 100vh
+      align-items: center
+      justify-content: start
+      flex: 1
+      & > .storytelling-slide
         height: 100vh
-        margin: 0
-        padding: base-line
+        min-height: 100vh
+        flex-shrink: 0
+        min-width: 100vw
         display: flex
-        flex-direction: column
-        justify-content: center
         align-items: center
+        justify-content: center
         overflow: hidden
         position: relative
+        @media (max-aspect-ratio: 1 / 1)
+          max-width: 100vw
         & > header
           position: absolute
           top: base-line
@@ -188,26 +225,15 @@
           & > h4
             color: blue
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8)
-        & > *:not(header)
-          position: absolute
-          top: 0
-          left: 0
+        & > article.thought,
+        & > figure.poster
           width: 100%
           height: 100%
-          object-fit: cover
-          z-index: 1
-        & > slot
-          position: absolute
-          top: 50%
-          left: 50%
-          transform: translate(-50%, -50%)
-          z-index: 2
-          color: white
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.8)
-          text-align: center
-          max-width: 80%
-          max-height: 80%
-          overflow: hidden
+          display: flex
+          align-items: center
+          justify-content: center
+        & > figure.poster
+          animation: none
   section.as-days
     padding: 0 base-line
     margin-bottom: base-line * 2
