@@ -73,9 +73,10 @@ vi.mock('@/use/thought', () => ({
   slot_key: vi.fn(id => id)
 }))
 
-// Mock preference utils
 vi.mock('@/utils/preference', () => ({
-  storytelling: ref(false)
+  storytelling: ref(false),
+  slice: ref(false),
+  menu: ref(true)
 }))
 
 describe('Thoughts', () => {
@@ -90,7 +91,13 @@ describe('Thoughts', () => {
 
     wrapper = shallowMount(Thoughts, {
       global: {
-        provide: { set_working },
+        provide: {
+          set_working,
+          select_photo: vi.fn(),
+          can_add: ref(true),
+          init_processing_queue: vi.fn(),
+          queue_items: ref([])
+        },
         stubs: {
           icon: true,
           'logo-as-link': true,

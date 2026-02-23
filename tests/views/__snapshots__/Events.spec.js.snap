@@ -22,6 +22,7 @@ exports[`@/views/Events > Rendering > renders events component 1`] = `
     id="tonight"
     paginate="false"
     posters=""
+    storytelling="false"
     thoughts=""
     working="false"
   />

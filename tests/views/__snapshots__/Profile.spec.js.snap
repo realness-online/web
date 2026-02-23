@@ -21,6 +21,7 @@ exports[`Profile > renders profile view 1`] = `
     events=""
     paginate="true"
     posters=""
+    storytelling="false"
     thoughts=""
     working="false"
   />
