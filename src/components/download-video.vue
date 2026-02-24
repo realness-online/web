@@ -55,7 +55,7 @@
     if (!working.value || total_frames.value === 0) return 'inherit'
 
     // Get current color from CSS variable or computed style
-    const current_color = css_var('--green') || 'hsla(136, 47%, 57%, 0.75)'
+    const current_color = css_var('--blue') || 'hsla(180, 30%, 45%, 0.75)'
     const hsl = to_hsla(current_color)
 
     // Interpolate hue through color wheel (0-360 degrees)

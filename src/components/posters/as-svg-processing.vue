@@ -196,7 +196,7 @@
     width: fit-content;
     height: fit-content;
     grid-row-start: span 2;
-    outline: 1px solid var(--green);
+    outline: 1px solid var(--blue);
 
     & > img {
       grid-area: overlay;
@@ -210,7 +210,7 @@
       grid-area: overlay;
       width: base-line * 6;
       height: base-line * 2;
-      color: var(--green);
+      color: var(--blue);
       pointer-events: none;
       z-index: 3;
       opacity: 1;
@@ -222,7 +222,7 @@
     }
     & > svg:not(.icon) {
       grid-area: overlay;
-      color: var(--green);
+      color: var(--blue);
       pointer-events: none;
       z-index: 3;
     }

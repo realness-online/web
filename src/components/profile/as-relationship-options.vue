@@ -45,7 +45,7 @@
       width:  base-line
       height: base-line
       &.finished
-        fill: green
+        fill: blue
         height: 0
         width: 0
     &.relation

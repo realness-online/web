@@ -131,8 +131,8 @@ describe('@/views/Navigation', () => {
       expect(thoughts_link).toBeTruthy()
       expect(thoughts_link.classes()).toContain('sediment')
       expect(events_link.classes()).toContain('sediment')
-      expect(posters_link.classes()).toContain('green')
-      expect(phonebook_link.classes()).toContain('green')
+      expect(posters_link.classes()).toContain('blue')
+      expect(phonebook_link.classes()).toContain('blue')
     })
   })
 

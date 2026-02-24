@@ -72,21 +72,21 @@
       fill: transparent;
     }
     & > h1 {
-      color: green;
+      color: blue;
     }
     & > article {
       standard-grid: howdy;
       & > figure {
         & > svg.background {
-          fill: green;
+          fill: blue;
         }
         & > figcaption menu a {
           svg.message, svg.download, svg.background {
-            fill: green;
+            fill: blue;
           }
           & address > h3,
           & address > time {
-            color: green;
+            color: blue;
           }
         }
       }
@@ -107,9 +107,9 @@
       p.message {
         padding: 0 base-line;
         svg, a, button, span {
-          border-color: green;
-          fill: green;
-          color: green;
+          border-color: blue;
+          fill: blue;
+          color: blue;
         }
       }
     }

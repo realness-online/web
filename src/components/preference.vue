@@ -100,7 +100,7 @@
           width: 0
           height: 0
           &:checked + .slider
-            background-color: green
+            background-color: blue
           &:focus + .slider
             box-shadow: 0 0 1px red
           &:checked + .slider:before
@@ -129,6 +129,6 @@
             -webkit-transition: .4s
             transition: .4s
     a
-      color: green
-      border-color: green
+      color: blue
+      border-color: blue
 </style>

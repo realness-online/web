@@ -270,7 +270,7 @@
             cursor: pointer
 
             &:hover
-              background-color: green
+              background-color: blue
               color: white
     button#sign-out
       border: none
@@ -279,5 +279,5 @@
       display: flex
       justify-content: flex-end
       & > button svg.silhouette
-        fill: green
+        fill: blue
 </style>

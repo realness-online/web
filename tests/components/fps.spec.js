@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
-import Fps from '@/components/fps.vue'
+import AsFps from '@/components/as-fps.vue'
 
 const mock_fps = ref(0)
 
@@ -24,7 +24,7 @@ describe('fps component', () => {
 
   it('renders fps value as number and in meter', () => {
     mock_fps.value = 42
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     expect(wrapper.find('aside#fps > div > output').text()).toContain('42 fps')
     const meter = wrapper.find('aside#fps > div > meter')
     expect(meter.attributes('value')).toBe('42')
@@ -32,7 +32,7 @@ describe('fps component', () => {
   })
 
   it('updates when fps ref changes', async () => {
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     expect(wrapper.find('aside#fps > div > meter').attributes('value')).toBe(
       '60'
     )
@@ -48,32 +48,32 @@ describe('fps component', () => {
     wrapper.unmount()
   })
 
-  it('sets green color for fps >= 24', () => {
+  it('sets blue color for fps >= 24', () => {
     mock_fps.value = 30
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: green')
+    expect(style).toContain('--fps-color: var(--blue)')
     wrapper.unmount()
   })
 
   it('sets yellow color for fps 12-24', () => {
     mock_fps.value = 18
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: yellow')
+    expect(style).toContain('--fps-color: var(--yellow)')
     wrapper.unmount()
   })
 
   it('sets red color for fps < 12', () => {
     mock_fps.value = 8
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: red')
+    expect(style).toContain('--fps-color: var(--red)')
     wrapper.unmount()
   })
 
   it('shows fps number, animation status and aspect ratio', () => {
-    const wrapper = mount(Fps)
+    const wrapper = mount(AsFps)
     expect(wrapper.find('aside#fps > div > output').text()).toMatch(/\d+ fps/)
     const outputs = wrapper.findAll('aside#fps > output')
     expect(outputs).toHaveLength(2)
