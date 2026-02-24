@@ -156,7 +156,7 @@
       text-align: left
       line-height: base-line
       margin: 0 0 base-line base-line
-      color: green
+      color: blue
       font-weight: 800
       font-size: base-line
     input
@@ -164,7 +164,7 @@
       &::-webkit-calendar-picker-indicator
         visibility: hidden
       &:focus
-        outline: .11em dotted green
+        outline: .11em dotted blue
         &::-webkit-calendar-picker-indicator
           padding-top: 3px
           visibility: visible
@@ -177,7 +177,7 @@
       height: base-line
       left: base-line
       top: base-line
-      color: green
+      color: blue
       margin: 0 0 base-line base-line
       &::-webkit-datetime-edit-fields-wrapper
       &::-webkit-datetime-edit-text
@@ -185,8 +185,8 @@
       &::-webkit-datetime-edit-day-field
       &::-webkit-datetime-edit-year-field
         display:inline-block
-        color: green
-        fill: green
+        color: blue
+        fill: blue
         font-weight: 800
         font-family: Lato
     input[type="time"]
@@ -196,7 +196,7 @@
       line-height: 1
       z-index: 3
       cursor: pointer
-      color: green
+      color: blue
       font-weight: 800
       margin-bottom: base-line
     menu
@@ -206,5 +206,5 @@
       width: 100%
       z-index: 4
       svg
-        fill: green
+        fill: blue
 </style>

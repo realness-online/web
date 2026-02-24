@@ -354,7 +354,7 @@
     .no
       text-decoration: line-through
     svg.icon
-      fill: green
+      fill: blue
     & > header
       display: block
       & > nav
@@ -385,7 +385,7 @@
               max-width: inherit
             text-align: right;
             margin:0
-            color:green
+            color:blue
           & > p
             margin-top: base-line
             text-align: center;
@@ -415,7 +415,7 @@
         justify-content: center
       & > button
         border-radius: base-line * 0.33
-        color: green
+        color: blue
         background-color: white
         font-weight: bold
         max-width: 10rem
@@ -434,7 +434,7 @@
         &[aria-selected=true]
           font-size: smaller
           color: #ffffff
-          text-shadow 1px 1px green
+          text-shadow 1px 1px blue
           @media (min-width: pad-begins)
             font-size: larger
           @media (prefers-color-scheme: dark)

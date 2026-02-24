@@ -115,7 +115,7 @@
         color: blue;
         span {
           font-size: smaller;
-          color: green;
+          color: blue;
         }
       }
       h2 {
@@ -218,7 +218,7 @@
         & > h1 {
           color: var(--blue);
           & > span {
-            color: var(--green);
+            color: var(--blue);
             font-size: 0.66em;
             font-weight: 300;
           }

@@ -109,11 +109,12 @@
   const handle_focus = event => {
     if (!storytelling.value) return
     const scroll_container = document.querySelector(
-      'section.as-days.storytelling article.storytelling-scroll'
+      'section.page.storytelling section.as-days > article'
     )
     if (!scroll_container) return
-    const focused_slide = event.target.closest('.storytelling-slide')
-    if (!focused_slide) return
+    const focused_slide = event.target.closest('section')
+    if (!focused_slide || focused_slide.parentElement !== scroll_container)
+      return
     const slide_rect = focused_slide.getBoundingClientRect()
     const container_rect = scroll_container.getBoundingClientRect()
     const scroll_left =
@@ -219,7 +220,6 @@
         <span>{{ version_parts[1] }}</span>
         <span>{{ version_parts[2] }}</span>
       </router-link>
-      <icon name="posters" />
     </header>
     <h1>Thoughts</h1>
     <section v-if="processing_items.length" class="processing">
@@ -266,7 +266,9 @@
     <footer v-if="!my_thoughts?.length && !working" class="message">
       <p>
         Say some stuff using the
-        <label for="wat" aria-label="Focus thought input">✏️</label>
+        <label for="wat" aria-label="Focus thought input"
+          ><icon name="write"
+        /></label>
         in the footer
       </p>
     </footer>
@@ -313,7 +315,7 @@
           standard-shadow: boop;
         }
         & > svg {
-          fill: green;
+          fill: blue;
         }
       }
       & > button {
@@ -365,27 +367,17 @@
     & > header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: base-line;
+      color: blue;
       & > h1 {
-        width:auto;
-        color: blue;
+        width: auto;
       }
-      & > a {
-        color: blue;
-        &:hover {
-          color: green;
-          & > svg {
-            fill: green;
-          }
-        }
-        & > svg {
-          fill: blue;
-        }
+      & > a > svg {
+        fill: blue;
       }
       & > a#about {
-        position: fixed;
-        top: env(safe-area-inset-top);
-        right: base-line;
+
         font-weight: bold;
         font-size: base-line * 1.44;
         -webkit-user-select: none;

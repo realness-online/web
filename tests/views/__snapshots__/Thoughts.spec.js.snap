@@ -24,9 +24,6 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
         tabindex="-1"
         to="/about"
       />
-      <icon-stub
-        name="posters"
-      />
     </header>
     <h1>
       Thoughts

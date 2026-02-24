@@ -10,10 +10,9 @@
     nextTick as tick,
     ref,
     computed,
-    provide,
-    inject
+    provide
   } from 'vue'
-  import { useDocumentVisibility, useMediaQuery } from '@vueuse/core'
+  import { useDocumentVisibility } from '@vueuse/core'
   import {
     use as use_poster,
     is_vector,
@@ -194,48 +193,6 @@
 
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
-  const orientation_portrait = useMediaQuery('(orientation: portrait)')
-  const can_pan = computed(
-    () => orientation_portrait.value && !use_meet.value && !storytelling.value
-  )
-  const max_pan_px = computed(() => {
-    if (!can_pan.value || !trigger.value || !vector.value) return 0
-    const rect = trigger.value.getBoundingClientRect()
-    const [, , content_width, content_height] = vector.value.viewbox
-      .split(' ')
-      .map(Number)
-    const content_aspect = content_width / content_height
-    const container_aspect = rect.width / rect.height
-    if (content_aspect <= container_aspect) return 0
-    const scale = rect.height / content_height
-    const scaled_width = content_width * scale
-    const overflow = scaled_width - rect.width
-    return Math.max(0, overflow / 2)
-  })
-
-  const pan_delegator = inject('pan_delegator', null)
-  let pan_offset
-  let panning
-  let pan_unregister = null
-
-  if (pan_delegator) {
-    const delegated = pan_delegator.register(trigger, {
-      get_can_pan: () => can_pan.value,
-      get_max_pan_px: () => max_pan_px.value
-    })
-    ;({ pan_offset, panning, unregister: pan_unregister } = delegated)
-  } else {
-    pan_offset = ref(0)
-    panning = ref(false)
-  }
-
-  const pan_style = computed(() => {
-    if (!can_pan.value) return {}
-    const transform = `translateX(${pan_offset.value}px)`
-    const transition = panning.value ? 'none' : 'transform 0.25s ease-out'
-    return { transform, transition }
-  })
-
   const OPACITY_HALF = 0.5
   const OPACITY_FULL = 1
   const OPACITY_HIDDEN = 0
@@ -310,7 +267,6 @@
 
   unmounted(() => {
     vector.value = null
-    if (pan_unregister) pan_unregister()
   })
 </script>
 
@@ -332,11 +288,16 @@
       'hide-cursor': hide_cursor
     }"
     :data-held-layer="held_layer || undefined"
+    :data-aspect="
+      aspect_ratio_mode && aspect_ratio_mode !== 'auto'
+        ? aspect_ratio_mode
+        : undefined
+    "
     @pointerdown="handle_pointerdown"
     @pointerup="handle_pointerup"
     @pointerleave="handle_pointerleave"
     @pointercancel="handle_pointerleave">
-    <g :style="pan_style">
+    <g>
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect
         id="lightbar-back"

@@ -1,18 +1,18 @@
 <script setup>
   import sync from '@/components/sync'
-  import { defineAsyncComponent } from 'vue'
-  const DialogPreferences = defineAsyncComponent(
+  import { defineAsyncComponent as define_async_component } from 'vue'
+  const AsDialogPreferences = define_async_component(
     () => import('@/components/profile/as-dialog-preferences.vue')
   )
-  const DialogAccount = defineAsyncComponent(
+  const AsDialogAccount = define_async_component(
     () => import('@/components/profile/as-dialog-account.vue')
   )
-  const DialogDocumentation = defineAsyncComponent(
+  const AsDialogDocumentation = define_async_component(
     () => import('@/components/as-dialog-documentation.vue')
   )
-  const FpsComponent = defineAsyncComponent(() => import('@/components/fps'))
-  const ThoughtAsTextarea = defineAsyncComponent(
-    () => import('@/components/thoughts/as-textarea')
+  const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
+  const AsTextarea = define_async_component(
+    () => import('@/components/thoughts/as-textarea.vue')
   )
   import WorkingBorder from '@/components/working-border.vue'
   import Icon from '@/components/icon'
@@ -309,7 +309,7 @@
     </teleport>
     <router-view />
     <sync @active="sync_active" />
-    <fps-component v-if="info" />
+    <as-fps v-if="info" />
     <button
       v-if="!isFullscreen && !thought_has_focus"
       type="button"
@@ -317,7 +317,7 @@
       @click="footer_visible = !footer_visible" />
     <footer id="global-footer">
       <template v-if="!posting">
-        <dialog-preferences ref="preferences_dialog" />
+        <as-dialog-preferences ref="preferences_dialog" />
         <a
           id="camera"
           tabindex="0"
@@ -325,11 +325,11 @@
           @keydown.enter="open_camera">
           <icon name="camera" />
         </a>
-        <dialog-account ref="account_dialog" />
+        <as-dialog-account ref="account_dialog" />
       </template>
-      <thought-as-textarea @toggle-keyboard="toggle_keyboard" />
+      <as-textarea @toggle-keyboard="toggle_keyboard" />
     </footer>
-    <dialog-documentation ref="documentation" />
+    <as-dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
       class="poster picker"
@@ -351,7 +351,7 @@
     }
     &.working {
       border-width: (base-line * 0.1);
-      border-color: var(--green);
+      border-color: var(--blue);
       border-radius: (base-line * 3);
       position: relative;
     }

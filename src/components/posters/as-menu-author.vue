@@ -81,7 +81,7 @@
         }
       }
       & > svg {
-        fill: green;
+        fill: blue;
       }
     }
     & > button {

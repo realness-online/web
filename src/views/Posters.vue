@@ -199,15 +199,15 @@
 <style lang="stylus">
   section#posters {
     svg, a {
-      color: green;
-      fill: green;
+      color: blue;
+      fill: blue;
     }
     & > header {
       justify-content: space-between;
       margin-top: base-line
       & > h1 {
         @media (prefers-color-scheme: dark) {
-          color: green;
+          color: blue;
         }
       }
     }

@@ -155,19 +155,18 @@
 </script>
 
 <template>
-  <section class="as-days" :class="{ storytelling }">
+  <section class="as-days">
     <header v-if="working"><icon name="working" /></header>
     <template v-else-if="storytelling">
-      <article class="storytelling-scroll" @focusin="$emit('focusin', $event)">
-        <div
+      <article @focusin="$emit('focusin', $event)">
+        <section
           v-for="({ item, date }, index) in flattened_items"
-          :key="slot_key(item)"
-          class="storytelling-slide">
+          :key="slot_key(item)">
           <header v-if="!is_today(date)">
             <h4>{{ as_day(date) }}</h4>
           </header>
           <slot :day="[item]" :date="date" />
-        </div>
+        </section>
       </article>
     </template>
     <article
@@ -185,7 +184,7 @@
 </template>
 
 <style lang="stylus">
-  section.as-days.storytelling
+  section.page.storytelling section.as-days
     display: flex
     flex-direction: column
     overflow: hidden
@@ -194,7 +193,9 @@
     min-height: 100vh
     & > header
       display: none
-    & > article.storytelling-scroll
+    & > article
+      container-type: inline-size
+      container-name: storytelling
       display: flex
       overflow-x: auto
       overflow-y: hidden
@@ -205,7 +206,7 @@
       align-items: center
       justify-content: start
       flex: 1
-      & > .storytelling-slide
+      & > section
         height: 100vh
         min-height: 100vh
         flex-shrink: 0
@@ -223,16 +224,16 @@
           left: base-line
           z-index: 6
           & > h4
-            color: blue
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8)
-        & > article.thought,
-        & > figure.poster
+            color: var(--blue)
+            text-shadow: 0 0 2px var(--black)
+        & > article,
+        & > figure
           width: 100%
           height: 100%
           display: flex
           align-items: center
           justify-content: center
-        & > figure.poster
+        & > figure
           animation: none
   section.as-days
     padding: 0 base-line

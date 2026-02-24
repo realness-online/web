@@ -44,7 +44,7 @@
           max-width: base-line * 10
           text-align: right
           margin: 0
-          color: green
+          color: blue
           @media (min-width: pad-begins)
             max-width: inherit
     & > p

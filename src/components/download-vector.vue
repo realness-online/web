@@ -512,7 +512,7 @@
         cursor: pointer;
 
         &:hover {
-          background: green;
+          background: blue;
           color: white;
         }
 

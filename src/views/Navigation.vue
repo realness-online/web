@@ -5,10 +5,10 @@
 <template>
   <section id="navigation" class="page" :class="{ posting }">
     <nav hidden>
-      <router-link v-if="!posting" to="/phonebook" class="green" tabindex="-1">
+      <router-link v-if="!posting" to="/phonebook" class="blue" tabindex="-1">
         Phonebook
       </router-link>
-      <router-link v-if="!posting" to="/posters" class="green" tabindex="-1">
+      <router-link v-if="!posting" to="/posters" class="blue" tabindex="-1">
         Posters
       </router-link>
       <router-link v-if="!posting" to="/events" class="sediment" tabindex="-1">

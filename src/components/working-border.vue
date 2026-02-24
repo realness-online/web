@@ -13,7 +13,7 @@
     border-radius: calc(var(--base-line) * 3);
     background:
       linear-gradient(transparent, transparent) padding-box,
-      radial-gradient(ellipse at center, transparent 87%, var(--green) 95%)
+      radial-gradient(ellipse at center, transparent 87%, var(--blue) 95%)
         border-box;
     pointer-events: none;
     will-change: opacity, transform;

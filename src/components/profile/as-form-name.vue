@@ -73,7 +73,7 @@
     &.complete
       animation-name: slide-out-right
     fieldset.saved
-      border-color: green
+      border-color: blue
     legend
       &.saving
         color: orange

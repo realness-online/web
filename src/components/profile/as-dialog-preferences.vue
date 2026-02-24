@@ -265,8 +265,8 @@
               font-family: 'Monaco', 'Menlo', monospace;
               transition: box-shadow 0.3s ease, border-color 0.3s ease;
               &[data-active] {
-                border-color: green;
-                box-shadow: 0 0 round((base-line / 2), 2) green;
+                border-color: blue;
+                box-shadow: 0 0 round((base-line / 2), 2) blue;
               }
             }
 

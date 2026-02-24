@@ -1,7 +1,10 @@
 <script setup>
   /** @typedef {import('@/types').Id} Id */
+  /** @typedef {{ document_visible: import('vue').Ref<boolean>; window_focused: import('vue').Ref<boolean>; add_listeners: () => void }} PostersViewportState */
+  /** @typedef {Window & { posters_viewport?: PostersViewportState }} WindowWithPostersViewport */
   import {
     computed,
+    ref,
     watchEffect,
     onMounted as mounted,
     onUnmounted as unmounted
@@ -88,6 +91,50 @@
   const momentum_reset_delay = 500
   const throttle_delay = 64
 
+  const w = /** @type {WindowWithPostersViewport | null} */ (
+    typeof window !== 'undefined' ? window : null
+  )
+  const viewport_state =
+    w &&
+    (w.posters_viewport ??= (() => {
+      const doc = typeof document !== 'undefined'
+      const document_visible = ref(
+        doc ? document.visibilityState === 'visible' : true
+      )
+      const window_focused = ref(true)
+      let listeners_added = false
+
+      const update = (doc_visible, win_focused) => {
+        document_visible.value = doc_visible
+        window_focused.value = win_focused
+      }
+      const add_listeners = () => {
+        if (listeners_added) return
+        listeners_added = true
+        document.addEventListener('visibilitychange', () => {
+          update(document.visibilityState === 'visible', window_focused.value)
+        })
+        const on_focus = () =>
+          update(document.visibilityState === 'visible', true)
+        const on_blur = () =>
+          update(document.visibilityState === 'visible', false)
+        window.addEventListener('focus', on_focus)
+        window.addEventListener('blur', on_blur)
+        document.addEventListener('focus', on_focus)
+        document.addEventListener('blur', on_blur)
+        update(doc ? document.visibilityState === 'visible' : true, true)
+      }
+      return { document_visible, window_focused, add_listeners }
+    })())
+
+  const shared_document_visible = viewport_state?.document_visible ?? ref(true)
+  const shared_window_focused = viewport_state?.window_focused ?? ref(true)
+  viewport_state?.add_listeners?.()
+
+  const viewport_visible = computed(
+    () => shared_document_visible.value && shared_window_focused.value
+  )
+
   /**
    * @param {KeyboardEvent} event
    */
@@ -131,11 +178,13 @@
   }
 
   watchEffect(() => {
-    if (props.paused) props.svg.pauseAnimations()
-    else props.svg.unpauseAnimations()
+    const should_animate = !props.paused && viewport_visible.value
+    if (should_animate) props.svg.unpauseAnimations()
+    else props.svg.pauseAnimations()
   })
 
   mounted(() => {
+    viewport_state?.add_listeners?.()
     window.addEventListener('keydown', handle_keydown)
   })
 
