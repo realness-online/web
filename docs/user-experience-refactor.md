@@ -93,7 +93,6 @@ All toggles and actions that must be supported in the refactor. Dialog is fixed 
 | ----------------- | ---------------------------------------------------- |
 | animate           | Poster animation                                     |
 | animation_speed   | Cycle: normal / slow / fast                          |
-| slice             | Aspect ratio meet vs slice                           |
 | slice_alignment   | ymin / ymid / ymax                                   |
 | aspect_ratio_mode | Cycle: auto / 1/1 / 1.618/1 / 16/9 / 2.35/1 / 2.76/1 |
 | grid_overlay      | Debug grid                                           |

@@ -6,15 +6,16 @@
     inject,
     provide,
     onMounted as mounted,
+    onBeforeUnmount as before_unmount,
     watch,
     nextTick as tick
   } from 'vue'
-  import Icon from '@/components/icon'
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
+  import AsDialogAccount from '@/components/profile/as-dialog-account.vue'
 
   import { as_author, as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
@@ -23,9 +24,14 @@
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, slice, menu } from '@/utils/preference'
+  import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
   import { get_my_itemid } from '@/use/people'
-  import { posting } from '@/use/posting'
+  import { posting, scroll_position } from '@/use/posting'
+  import AsTextarea from '@/components/thoughts/as-textarea.vue'
+
+  const toggle_keyboard = active => {
+    posting.value = active ?? !posting.value
+  }
 
   const version = import.meta.env.PACKAGE_VERSION
   const version_parts = version.split('.')
@@ -35,6 +41,8 @@
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
   const can_add = inject('can_add')
+  const register_account = inject('register_account')
+  const account_dialog = ref(null)
   const init_processing_queue = inject('init_processing_queue')
   const queue_items = inject('queue_items')
 
@@ -52,7 +60,6 @@
   const {
     for_person: thoughts_for_person,
     thoughts,
-    my_thoughts,
     statement_shown,
     update_thought
   } = use_thoughts()
@@ -161,12 +168,17 @@
   })
 
   mounted(async () => {
+    if (register_account) register_account(() => account_dialog.value?.show())
     if (set_working) set_working(true)
     await fill_statements()
     await init_processing_queue?.()
     working.value = false
     if (set_working) set_working(false)
     console.timeEnd('views:Thoughts')
+  })
+
+  before_unmount(() => {
+    if (register_account) register_account(null)
   })
 
   if (queue_items)
@@ -178,6 +190,14 @@
       },
       { deep: true }
     )
+
+  watch(posting, async (now, was) => {
+    if (was && !now && scroll_position.value !== null) {
+      await tick()
+      window.scrollTo(0, scroll_position.value)
+      scroll_position.value = null
+    }
+  })
 </script>
 
 <template>
@@ -205,15 +225,13 @@
     id="thoughts"
     ref="statements_ref"
     class="page"
-    :class="{ storytelling: storytelling, slice: slice, menu: menu }">
+    :class="{
+      storytelling: storytelling,
+      slice: aspect_ratio_mode !== 'auto',
+      menu
+    }">
     <header>
-      <a
-        v-if="can_add"
-        tabindex="-1"
-        aria-label="Add poster"
-        @click="select_photo">
-        <icon name="add" />
-      </a>
+      <as-dialog-account v-if="!posting" ref="account_dialog" />
       <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>
@@ -222,12 +240,14 @@
       </router-link>
     </header>
     <h1>Thoughts</h1>
+    <as-textarea @toggle-keyboard="toggle_keyboard" />
     <section v-if="processing_items.length" class="processing">
       <as-svg-processing
         v-for="item in processing_items"
         :key="item.id"
         :queue_item="item" />
     </section>
+
     <as-days
       v-slot="{ day }"
       :working="working"
@@ -239,10 +259,10 @@
       @focusin="handle_focus">
       <template v-for="item in day" :key="slot_key(item)">
         <poster-as-figure
-          v-if="item.type === 'posters'"
+          v-if="item.type === 'posters' && !posting"
           :itemid="item.id"
           :menu="menu"
-          :slice="slice"
+          :slice="aspect_ratio_mode !== 'auto'"
           tabindex="0"
           :class="{
             'selecting-event': is_picker_selected(item),
@@ -256,22 +276,13 @@
             @picker="picker" />
         </poster-as-figure>
         <thought-as-article
-          v-else
+          v-else-if="item.type !== 'posters'"
           :statements="item"
           :editable="is_editable(item)"
           verbose
           @show="statement_shown" />
       </template>
     </as-days>
-    <footer v-if="!my_thoughts?.length && !working" class="message">
-      <p>
-        Say some stuff using the
-        <label for="wat" aria-label="Focus thought input"
-          ><icon name="write"
-        /></label>
-        in the footer
-      </p>
-    </footer>
   </section>
 </template>
 
@@ -287,7 +298,7 @@
       padding: 0 base-line;
       margin-bottom: base-line;
       @media (min-width: page-width-large) {
-        grid-template-columns: repeat(auto-fill, minmax(525px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
       }
       & > figure.poster.processing.currently_processing {
         grid-column: 1 / -1;
@@ -439,26 +450,6 @@
     }
     .working {
       fill: blue;
-    }
-    & > footer.message {
-      text-align: center;
-      padding: 0 base-line;
-      & > p {
-        margin: auto;
-        max-width: inherit;
-        & > button, & > label {
-          background: red;
-          border-width: 1px;
-          border-radius: 0.2em;
-          height: 1em;
-          width: 1.66em;
-          cursor: pointer;
-        }
-        a, button, label, time {
-          color: red;
-          border-color: red;
-        }
-      }
     }
   }
 </style>

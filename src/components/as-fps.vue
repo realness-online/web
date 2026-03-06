@@ -10,8 +10,7 @@
   import {
     animate,
     animation_speed,
-    aspect_ratio_mode,
-    slice
+    aspect_ratio_mode
   } from '@/utils/preference'
   import {
     BASE_DURATION,
@@ -52,9 +51,10 @@
 
   const fps_style = computed(() => ({
     '--animate': animate.value ? 1 : 0,
-    '--slice': slice.value ? 1 : 0,
+    '--slice': aspect_ratio_mode.value !== 'auto' ? 1 : 0,
     '--animate-color': animate.value ? 'var(--blue)' : 'var(--gravel)',
-    '--slice-color': slice.value ? 'var(--sand)' : 'var(--rocks)',
+    '--slice-color':
+      aspect_ratio_mode.value !== 'auto' ? 'var(--sand)' : 'var(--rocks)',
     '--fps-color': fps_color.value
   }))
 

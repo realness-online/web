@@ -1,6 +1,6 @@
 <script setup>
-  import { as_day_and_time_for_filename } from '@/utils/date'
-  import { load, as_query_id, as_created_at } from '@/utils/itemid'
+  import { as_query_id } from '@/utils/itemid'
+  import { get_filename_for_poster } from '@/utils/export-poster'
   import { is_vector_id } from '@/use/poster'
   import icon from '@/components/icon'
   import { ref, computed, inject, onMounted } from 'vue'
@@ -124,23 +124,8 @@
     }
   }
 
-  const get_video_name = async () => {
-    const created = as_created_at(props.itemid)
-    if (!created) return 'poster.mov'
-    const path = props.itemid.split('/')
-    const author_id = path[1] ? `/${path[1]}` : ''
-    const creator = author_id ? await load(author_id) : null
-    const time = as_day_and_time_for_filename(created)
-    const facts = `${time}_${created}.mov`
-    if (creator?.name) {
-      const safe_name = creator.name.replace(/\s+/g, '_')
-      return `${safe_name}_${facts}`
-    }
-    return facts
-  }
-
   onMounted(async () => {
-    file_name.value = await get_video_name()
+    file_name.value = await get_filename_for_poster(props.itemid, 'mov')
   })
 </script>
 

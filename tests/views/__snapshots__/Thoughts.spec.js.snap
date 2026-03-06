@@ -11,14 +11,7 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     id="thoughts"
   >
     <header>
-      <a
-        aria-label="Add poster"
-        tabindex="-1"
-      >
-        <icon-stub
-          name="add"
-        />
-      </a>
+      <as-dialog-account-stub />
       <router-link-stub
         id="about"
         tabindex="-1"
@@ -28,6 +21,7 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     <h1>
       Thoughts
     </h1>
+    <as-textarea-stub />
     <!--v-if-->
     <section
       class="as-days-stub"
@@ -38,7 +32,6 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
       
       
     </section>
-    <!--v-if-->
   </section>
   
 </div>

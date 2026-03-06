@@ -227,7 +227,7 @@ export const as_storage_path = itemid => {
 export const as_author = itemid => {
   const path = as_path_parts(itemid)
   const author = path[0] || ''
-  if (author.startsWith('+1')) return `/${path[0]}` // TODO this does not work for internaional phone numbers
+  if (author.startsWith('+')) return `/${path[0]}`
   return null
 }
 

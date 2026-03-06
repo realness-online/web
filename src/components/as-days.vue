@@ -210,14 +210,13 @@
         height: 100vh
         min-height: 100vh
         flex-shrink: 0
-        min-width: 100vw
+        min-width: var(--storytelling-slide-width)
+        max-width: var(--storytelling-slide-width)
         display: flex
         align-items: center
         justify-content: center
         overflow: hidden
         position: relative
-        @media (max-aspect-ratio: 1 / 1)
-          max-width: 100vw
         & > header
           position: absolute
           top: base-line
@@ -244,7 +243,7 @@
       margin-top: base-line
       standard-grid: hi
       @media (min-width: page-width-large)
-        grid-template-columns: repeat(auto-fill, minmax(525px, 1fr))
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr))
       &:focus
         outline: none
       & > header

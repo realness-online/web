@@ -36,8 +36,7 @@ export const default_keymap = [
 
       'Tab Row': '',
       i: 'pref::Toggle_Info',
-      o: 'pref::Toggle_Storytelling',
-      e: 'pref::Toggle_Slice',
+      w: 'pref::Toggle_Storytelling',
       r: 'pref::Cycle_Aspect_Ratio',
       R: 'pref::Cycle_Aspect_Ratio',
       M: 'pref::Toggle_Menu',
@@ -90,7 +89,6 @@ export const default_keymap = [
       'pref::Cycle_Animation_Speed': 'Cycle animation speed',
       'pref::Toggle_Info': 'FPS and animation info',
       'pref::Toggle_Storytelling': 'Storytelling (side-scroll) view',
-      'pref::Toggle_Slice': 'Poster aspect ratio (meet/slice)',
       'pref::Cycle_Aspect_Ratio': 'Cycle through poster aspect ratio modes',
       'pref::Slice_Alignment_Up':
         'Move slice alignment up (ymid→ymax, ymin→ymid)',
@@ -125,6 +123,7 @@ export const default_keymap = [
       'ctrl-s': 'poster::Save',
       'ctrl-e': 'poster::Edit',
       'ctrl-d': 'poster::Download',
+      q: 'poster::Toggle_Meet_Slice',
       space: 'poster::Toggle_Play',
       left: 'poster::Previous',
       right: 'poster::Next'
@@ -136,6 +135,7 @@ export const default_keymap = [
       'poster::Save': 'Save poster',
       'poster::Edit': 'Edit poster',
       'poster::Download': 'Download poster',
+      'poster::Toggle_Meet_Slice': 'Toggle meet/slice on focused poster',
       'poster::Toggle_Play': 'Toggle animation',
       'poster::Previous': 'Previous poster',
       'poster::Next': 'Next poster'

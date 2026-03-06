@@ -97,15 +97,12 @@ describe('@/views/Navigation', () => {
       expect(wrapper.find('#navigation').classes()).not.toContain('posting')
     })
 
-    it('hides router links when posting', async () => {
-      const initial_links_count = wrapper.findAll('router-link-stub').length
-      expect(initial_links_count).toBeGreaterThan(0)
-
+    it('keeps nav in DOM when posting', async () => {
       posting.value = true
       await wrapper.vm.$nextTick()
 
-      const router_links = wrapper.findAll('router-link-stub')
-      expect(router_links.length).toBe(0)
+      expect(wrapper.find('nav').exists()).toBe(true)
+      expect(wrapper.findAll('router-link-stub').length).toBeGreaterThan(0)
     })
   })
 

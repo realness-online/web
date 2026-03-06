@@ -32,7 +32,8 @@
     watch,
     onUpdated as updated,
     nextTick as tick,
-    provide
+    provide,
+    inject
   } from 'vue'
   const props = defineProps({
     itemid: {
@@ -168,11 +169,32 @@
       window.location.hash = ''
     }
   })
+
+  const key_commands = inject('key-commands')
+  const as_svg_ref = ref(null)
+
+  const handle_focusin = () => {
+    key_commands?.add_context('Poster')
+    key_commands?.register_handler('poster::Toggle_Meet_Slice', {
+      handler: () => as_svg_ref.value?.toggle_meet(),
+      context: 'Poster'
+    })
+  }
+
+  const handle_focusout = () => {
+    key_commands?.remove_context('Poster')
+    key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
+  }
 </script>
 
 <template>
-  <figure ref="poster" class="poster">
+  <figure
+    ref="poster"
+    class="poster"
+    @focusin="handle_focusin"
+    @focusout="handle_focusout">
     <as-svg
+      ref="as_svg_ref"
       :itemid="itemid"
       :slice="slice"
       @show="on_show"
@@ -204,11 +226,16 @@
 <style lang="stylus">
   figure.poster {
     position: relative;
+    overflow: hidden;
     min-height: 512px;
     content-visibility: auto;
     contain-intrinsic-size: auto 512px;
     border-radius: round((base-line * .03), 2);
     grid-row-start: span 2;
+    transition:
+      grid-column-start 0.5s ease-in-out,
+      grid-row-start 0.5s ease-in-out,
+      min-height 0.5s ease-in-out
     scroll-margin: 50vh;
     scroll-snap-align: center;
     &:has(svg[style*='aspect-ratio']) {
@@ -229,16 +256,17 @@
           grid-column-start: span 2;
         }
         &:has(svg[style*='aspect-ratio']) {
-          grid-column-start: span 3;
+          grid-column-start: span 2;
         }
       }
     }
     @media (min-width: pad-begins) {
-      &:has(svg.landscape) + &:has(svg.landscape) {
+      &:has(svg.landscape):has(+ figure.poster:has(svg.landscape)) {
         grid-column-start: span 3;
       }
-    }
-    @media (min-width: pad-begins){
+      &:has(svg.landscape) + figure.poster:has(svg.landscape) {
+        grid-column-start: span 3;
+      }
       &.new:not(:has(svg.landscape)) {
         grid-column: 2;
         grid-row: 2;

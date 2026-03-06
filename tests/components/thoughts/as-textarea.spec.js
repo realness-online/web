@@ -17,7 +17,8 @@ vi.mock('@/use/key-commands', () => ({
 Object.defineProperty(document, 'querySelector', {
   value: vi.fn(() => ({
     focus: vi.fn(),
-    scrollIntoView: vi.fn()
+    scrollIntoView: vi.fn(),
+    style: {}
   })),
   writable: true
 })
@@ -59,13 +60,6 @@ describe('@/components/thoughts/as-textarea.vue', () => {
   })
 
   describe('Methods', () => {
-    describe('#focused', () => {
-      it('emits toggle-keyboard event', async () => {
-        await wrapper.vm.focused()
-        expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
-      })
-    })
-
     describe('#prepare_thought', () => {
       it('exists as a function', () => {
         expect(typeof wrapper.vm.prepare_thought).toBe('function')
@@ -74,8 +68,8 @@ describe('@/components/thoughts/as-textarea.vue', () => {
   })
 
   describe('Events', () => {
-    it('emits toggle-keyboard when focused', async () => {
-      await wrapper.vm.focused()
+    it('emits toggle-keyboard when prepare_thought runs (on blur)', async () => {
+      await wrapper.vm.prepare_thought()
       expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
     })
   })

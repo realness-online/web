@@ -3,10 +3,6 @@
   import LogoAsLink from '@/components/logo-as-link'
   import AsFigure from '@/components/profile/as-figure'
 
-  const open_account = () => {
-    window.location.hash = '#account'
-  }
-
   import { watch } from 'vue'
   import { current_user } from '@/utils/serverless'
   import { use as use_people } from '@/use/people'
@@ -42,9 +38,6 @@
         :key="person.id"
         :person="person" />
     </nav>
-    <footer v-if="!working && !current_user">
-      <button @click="open_account">Sign on</button>
-    </footer>
   </section>
 </template>
 
@@ -72,11 +65,4 @@
         white-space: nowrap
         overflow: hidden
         text-overflow: ellipsis
-    & > footer
-      display: flex
-      flex-direction: column
-      justify-content: space-evenly
-      align-items: center
-      & > p
-        margin-top: base-line
 </style>
