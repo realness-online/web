@@ -1,4 +1,4 @@
-body:has(dialog.confirm[open]) {
+body:has(dialog[open]) {
   overflow: hidden;
 }
 dialog {
@@ -32,13 +32,17 @@ dialog[open]::backdrop {
   opacity: 1;
 }
 
-dialog.confirm {
+dialog.modal {
   z-index: 9;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
+}
+
+dialog.confirm {
+  @extend dialog.modal;
   & > article {
     max-width: 100%
     @media (orientation: portrait) and (max-width: pad-begins) {

@@ -1,7 +1,7 @@
 /** @typedef {import('@/types').Id} Id */
 
 import { as_created_at, load } from '@/utils/itemid'
-import { as_day_and_time_for_filename } from '@/utils/date'
+import { as_day_time_of_day_for_filename } from '@/utils/date'
 import { hsl_to_hex } from '@/utils/color-converters'
 import { hsla_to_color } from '@/utils/colors'
 
@@ -174,11 +174,8 @@ export const get_filename_for_poster = async (itemid, ext) => {
         /** @type {unknown} */ (await load(/** @type {Id} */ (author_id)))
       )
     : null
-  const time = as_day_and_time_for_filename(created)
-  const facts = `${time}_${created}.${ext}`
-  if (creator?.name) {
-    const safe_name = creator.name.replace(/\s+/g, '_')
-    return `${safe_name}_${facts}`
-  }
+  const date_part = as_day_time_of_day_for_filename(created)
+  const facts = `${date_part} - ${created}.${ext}`
+  if (creator?.name) return `${creator.name} @ ${facts}`
   return facts
 }

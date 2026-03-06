@@ -12,8 +12,7 @@ vi.mock('@vueuse/core', () => ({
 vi.mock('@/utils/preference', () => ({
   animate: ref(false),
   animation_speed: ref('normal'),
-  aspect_ratio_mode: ref('auto'),
-  slice: ref(false)
+  aspect_ratio_mode: ref('auto')
 }))
 
 describe('fps component', () => {

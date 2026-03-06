@@ -3,19 +3,15 @@
   import { ref } from 'vue'
   import { use } from '@/use/thought'
   import { use_keymap } from '@/use/key-commands'
-
   const emit = defineEmits(['toggle-keyboard'])
+  defineOptions({ inheritAttrs: false })
   const { save } = use()
   const thought_text = ref(null)
 
-  const focused = () => {
-    emit('toggle-keyboard')
-  }
-
   const prepare_thought = async () => {
-    emit('toggle-keyboard')
+    emit('toggle-keyboard', false)
     const textarea = document.querySelector('textarea#wat')
-    textarea.style.height = ''
+    if (textarea) textarea.style.height = ''
     const text = thought_text.value
     thought_text.value = null
     if (typeof text !== 'string') return
@@ -49,119 +45,74 @@
   })
   register('thought::Cancel', () => {
     thought_text.value = null
-    emit('toggle-keyboard')
+    emit('toggle-keyboard', false)
   })
 </script>
 
 <template>
-  <textarea
-    id="wat"
-    v-bind="$attrs"
-    v-model="thought_text"
-    cols="1"
-    rows="1"
-    class="black"
-    placeholder=""
-    :spellcheck="true"
-    @input="adjust_height"
-    @focusout="prepare_thought"
-    @focusin="focused" />
-  <button id="done">
-    <icon name="finished" />
-  </button>
+  <div class="posting-input">
+    <textarea
+      id="wat"
+      v-bind="$attrs"
+      v-model="thought_text"
+      cols="1"
+      rows="1"
+      class="black"
+      placeholder=""
+      :spellcheck="true"
+      @input="adjust_height"
+      @focusout="prepare_thought" />
+    <button id="done">
+      <icon name="finished" />
+    </button>
+  </div>
 </template>
 
 <style lang="stylus">
-  main#realness footer#global-footer {
+  section#thoughts .posting-input {
+    display: flex;
+    flex-direction: column;
+    gap: base-line;
+    padding: base-line;
     & textarea#wat {
+      line-height: 1.5;
       padding: base-line;
       border-radius: base-line;
-      text-align: right;
       resize: none;
       appearance: none;
+      border: 1px solid var(--red);
       background-color: var(--black-transparent);
-      transition-duration: 0.3s;
-      user-select: text;
-      border-style: solid;
-      caret-color: var(--rocks);
       color: var(--rocks);
-      border-color: var(--rocks);
-      cursor: pointer;
-      transition-property: color, border-radius, text-align;
+      caret-color: var(--rocks);
+      outline: 0;
       min-height: base-line;
       @media (prefers-color-scheme: dark) {
         color: white-text;
       }
       &::placeholder {
-        transition-property: all;
-        font-family: inherit;
         color: var(--rocks);
         opacity: 0.8;
-      }
-    }
-    & button#done {
-      color: var(--boulders);
-      border-color: var(--boulders);
-      border-radius: base-line;
-      padding: base-line;
-      position: fixed;
-      bottom: base-line;
-      right: base-line;
-      z-index: 4;
-      @media (min-width: pad-begins) {
-        position: inherit;
       }
     }
     & button#done {
       display: none;
       border: none;
-      position: absolute;
-      top: safe_inset(top, base-line);
-      right: safe_inset(right, base-line);
-      width: fit-content;
-      height: fit-content;
-      padding: 0;
+      background: none;
+      padding: base-line * 0.5;
+      cursor: pointer;
+      align-self: flex-end;
       svg {
         fill: var(--boulders);
       }
     }
   }
-  main#realness.posting footer#global-footer {
+  main#realness.posting section#thoughts .posting-input {
+    & textarea#wat {
+      font-size: 1.25em;
+      min-height: base-line * 6;
+    }
     & button#done {
       display: block;
-    }
-    & textarea#wat {
-      color: var(--rocks);
-      caret-color: var(--rocks);
-      position: fixed;
-      top: safe_inset(top, base-line * 3);
-      right: safe_inset(right, base-line);
-      bottom: safe_inset(bottom, base-line * 4);
-      left: safe_inset(left, base-line);
-      font-size: 1.25em;
-      font-weight: normal;
-      padding: 0;
-      text-align: left;
-      border-top: none;
-      border-radius: 0;
-      border-width: 0;
-      background-color: var(--black-transparent);
-      outline: 0;
-      transition-duration: .3s;
-      transition-property: border-radius, text-align;
-      transition-timing-function: ease-out;
-      line-height: base-line;
-      min-height: base-line * 3;
-      height: auto;
-      text-align: inherit;
-      margin-top: base-line;
-      padding: 0;
-      border-radius: 0;
-      &::placeholder {
-        color: var(--rocks);
-        text-align: left;
-        opacity: 0.8;
-      }
     }
   }
 </style>

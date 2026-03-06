@@ -107,6 +107,31 @@ export function day_name(date) {
   const d = new Date(date)
   return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
 }
+
+const HOUR_NOON = 12
+const HOUR_EVENING = 17
+const HOUR_NIGHT = 22
+
+/**
+ * @param {Date|number} date
+ * @returns {'morning'|'afternoon'|'evening'|'night'}
+ */
+export function time_of_day(date) {
+  const hour = new Date(date).getHours()
+  if (hour >= 5 && hour < HOUR_NOON) return 'morning'
+  if (hour >= HOUR_NOON && hour < HOUR_EVENING) return 'afternoon'
+  if (hour >= HOUR_EVENING && hour < HOUR_NIGHT) return 'evening'
+  return 'night'
+}
+
+/** Day, time of day, date for filenames; spaces kept */
+export function as_day_time_of_day_for_filename(date) {
+  const d = new Date(date)
+  const day = d.toLocaleString('en-US', { weekday: 'long' })
+  const period = time_of_day(d)
+  const date_str = d.toLocaleString('en-US', { month: 'long', day: 'numeric' })
+  return `${day} ${period}, ${date_str}`
+}
 export function id_as_day(itemid) {
   return day_name(as_created_at(itemid))
 }

@@ -18,7 +18,7 @@
   import { use_posters } from '@/use/poster'
 
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, slice, menu } from '@/utils/preference'
+  import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
 
   console.time('views:Posters')
 
@@ -159,7 +159,10 @@
   <section
     id="posters"
     class="page"
-    :class="{ storytelling: storytelling, slice: slice }">
+    :class="{
+      storytelling: storytelling,
+      slice: aspect_ratio_mode !== 'auto'
+    }">
     <header>
       <a tabindex="-1" @click="select_photo">
         <icon name="add" />
@@ -179,7 +182,7 @@
         :key="poster.id"
         :itemid="poster.id"
         :menu="menu"
-        :slice="slice"
+        :slice="aspect_ratio_mode !== 'auto'"
         tabindex="0"
         :class="{
           'selecting-event': poster.picker,
@@ -229,7 +232,7 @@
       grid-auto-flow: row;
       grid-gap: base-line;
       @media (min-width: page-width-large) {
-        grid-template-columns: repeat(auto-fill, minmax(525px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
       }
       padding-bottom: base-line * 3;
       scroll-behavior: smooth;
@@ -263,15 +266,13 @@
         & > figure.poster {
           height: 100%;
           flex-shrink: 0;
-          min-width: 100vw;
+          min-width: var(--storytelling-slide-width);
+          max-width: var(--storytelling-slide-width);
           animation: none;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
-          @media (max-aspect-ratio: 1 / 1) {
-            max-width: 100vw;
-          }
         }
       }
     }

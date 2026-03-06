@@ -5,7 +5,6 @@ export const animate = storage('animate', false)
 export const drama = storage('drama', false)
 export const drama_back = storage('drama_back', false)
 export const drama_front = storage('drama_front', false)
-export const slice = storage('slice', false)
 
 export const shadow = storage('shadow', true)
 export const stroke = storage('stroke', false)
@@ -32,9 +31,7 @@ export const animation_speed = storage(
 )
 
 export const grid_overlay = storage('grid_overlay', false)
-
 export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
-
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
 export const menu = storage('menu', true)

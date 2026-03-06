@@ -37,15 +37,15 @@ export const update_single_thought = async (thought_id, new_content) => {
 
 const links = ['http://', 'https://']
 const my_thoughts = ref(/** @type {Item[]} */ ([]))
+const thoughts = ref(/** @type {Item[] | null} */ (null))
+const authors = ref(
+  /** @type {Array<{id: Id, type: string, viewed: Array<string|number>}>} */
+  ([])
+)
 let loading_promise = null
 
 export const use = () => {
   const set_working = inject('set_working')
-  const authors = ref(
-    /** @type {Array<{id: Id, type: string, viewed: Array<string|number>}>} */
-    ([])
-  )
-  const thoughts = ref(/** @type {Item[] | null} */ (null))
 
   /**
    * @param {Statement} stmt
@@ -113,6 +113,7 @@ export const use = () => {
     }
     if (!thought || links.some(link => thought.includes(link))) return
     my_thoughts.value.push(post)
+    if (thoughts.value) thoughts.value = [...thoughts.value, post]
     await tick()
     await new Thought().save(
       document.querySelector(`[itemid="${localStorage.me}/thoughts"]`)
@@ -178,11 +179,13 @@ export const use = () => {
     }
     my_thoughts.value = loaded
     if (loading_promise === promise) loading_promise = null
-    authors.value.push({
-      id: /** @type {Id} */ (localStorage.me),
-      type: 'person',
-      viewed: ['index']
-    })
+    const existing_me = authors.value.find(a => a.id === localStorage.me)
+    if (!existing_me)
+      authors.value.push({
+        id: /** @type {Id} */ (localStorage.me),
+        type: 'person',
+        viewed: ['index']
+      })
   })
 
   return {

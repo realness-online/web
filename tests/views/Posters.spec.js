@@ -72,7 +72,7 @@ vi.mock('@/persistance/Storage', () => ({
 // Mock preference utils
 vi.mock('@/utils/preference', () => ({
   storytelling: { value: false },
-  slice: { value: false },
+  aspect_ratio_mode: { value: 'auto' },
   menu: { value: true }
 }))
 

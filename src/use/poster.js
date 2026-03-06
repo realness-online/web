@@ -14,7 +14,7 @@ import {
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
-import { usePointer as use_pointer, useMagicKeys } from '@vueuse/core'
+import { usePointer as use_pointer } from '@vueuse/core'
 import {
   as_query_id,
   as_fragment_id,
@@ -25,7 +25,7 @@ import {
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
-import { slice as slice_preference, slice_alignment } from '@/utils/preference'
+import { aspect_ratio_mode, slice_alignment } from '@/utils/preference'
 
 export const geology_layers = [
   'sediment',
@@ -48,10 +48,6 @@ export const use = () => {
   const menu = ref(false)
   const { get_active_path } = use_path()
 
-  const magic_keys = useMagicKeys()
-
-  const aspect_toggle = ref(false)
-
   const is_hovered = ref(false)
 
   const { x, y, pressure } = use_pointer({ target: vector_element })
@@ -71,7 +67,7 @@ export const use = () => {
   const touch_start_scale = 1
 
   const aspect_ratio = computed(() => {
-    if (slice_preference.value) {
+    if (aspect_ratio_mode.value && aspect_ratio_mode.value !== 'auto') {
       const alignment = slice_alignment.value || 'ymid'
       let y_align = 'Mid'
       if (alignment === 'ymin') y_align = 'Min'
@@ -128,7 +124,6 @@ export const use = () => {
   }
 
   const click = () => {
-    if (magic_keys.shift.value) aspect_toggle.value = !aspect_toggle.value
     menu.value = !menu.value
     emit('click', menu.value)
   }
@@ -217,8 +212,7 @@ export const use = () => {
     touch_move,
     touch_end,
     cutout_start,
-    cutout_end,
-    aspect_toggle
+    cutout_end
   }
 }
 

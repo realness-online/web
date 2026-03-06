@@ -15,7 +15,6 @@ const {
   mock_drama,
   mock_drama_back,
   mock_drama_front,
-  mock_slice,
   mock_bold,
   mock_medium,
   mock_regular,
@@ -48,7 +47,6 @@ const {
     mock_drama: create_ref(false),
     mock_drama_back: create_ref(false),
     mock_drama_front: create_ref(false),
-    mock_slice: create_ref(false),
     mock_bold: create_ref(false),
     mock_medium: create_ref(false),
     mock_regular: create_ref(false),
@@ -120,7 +118,6 @@ vi.mock('@/utils/preference', async () => {
   const drama_ref = ref(false)
   const drama_back_ref = ref(false)
   const drama_front_ref = ref(false)
-  const slice_ref = ref(false)
   const bold_ref = ref(false)
   const medium_ref = ref(false)
   const regular_ref = ref(false)
@@ -175,12 +172,6 @@ vi.mock('@/utils/preference', async () => {
     get: () => drama_front_ref.value,
     set: v => {
       drama_front_ref.value = v
-    }
-  })
-  Object.defineProperty(mock_slice, 'value', {
-    get: () => slice_ref.value,
-    set: v => {
-      slice_ref.value = v
     }
   })
   Object.defineProperty(mock_bold, 'value', {
@@ -299,7 +290,6 @@ vi.mock('@/utils/preference', async () => {
     drama: drama_ref,
     drama_back: drama_back_ref,
     drama_front: drama_front_ref,
-    slice: slice_ref,
     bold: bold_ref,
     medium: medium_ref,
     regular: regular_ref,
@@ -736,9 +726,10 @@ describe('App.vue', () => {
     it('shows account dialog', () => {
       const handler = registered_handlers['ui::Open_Account']
       expect(handler).toBeDefined()
-      wrapper.vm.account_dialog = { show: vi.fn() }
+      const show_account = vi.fn()
+      wrapper.vm.account_open = show_account
       handler()
-      expect(wrapper.vm.account_dialog.show).toHaveBeenCalled()
+      expect(show_account).toHaveBeenCalled()
     })
 
     it('clears sync time from localStorage', () => {

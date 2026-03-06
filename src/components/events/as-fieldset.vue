@@ -3,6 +3,7 @@
   import { list } from '@/utils/itemid'
 
   import { Event } from '@/persistance/Storage'
+  import { time_of_day } from '@/utils/date'
   import { ref, computed, onMounted, nextTick } from 'vue'
 
   const props = defineProps({
@@ -55,11 +56,13 @@
 
   const event_label = computed(() => {
     if (!main_event.value) return ''
-    return main_event.value.toLocaleString('en-US', {
-      weekday: 'long',
+    const day = main_event.value.toLocaleString('en-US', { weekday: 'long' })
+    const period = time_of_day(main_event.value)
+    const date = main_event.value.toLocaleString('en-US', {
       month: 'long',
       day: 'numeric'
     })
+    return `${day} ${period}, ${date}`
   })
 
   const events_id = () => `${localStorage.me}/events`
@@ -142,6 +145,7 @@
 
 <style lang="stylus">
   fieldset.event
+    pointer-events: auto
     display: flex
     justify-content:flex-end
     flex-direction: column

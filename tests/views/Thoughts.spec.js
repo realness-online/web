@@ -75,7 +75,7 @@ vi.mock('@/use/thought', () => ({
 
 vi.mock('@/utils/preference', () => ({
   storytelling: ref(false),
-  slice: ref(false),
+  aspect_ratio_mode: ref('auto'),
   menu: ref(true)
 }))
 

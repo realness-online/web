@@ -252,7 +252,9 @@ All preferences are stored locally with no server-side sync, giving you control 
 
 <kbd>I</kbd> - Toggle Info FPS / Viewport
 
-<kbd>O</kbd> - Toggle storytelling (side-scroll) view
+<kbd>W</kbd> - Toggle storytelling (side-scroll) view
+
+<kbd>Q</kbd> - Toggle meet/slice on focused poster
 
 <kbd>P</kbd> - Toggle fullscreen mode
 

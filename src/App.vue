@@ -4,16 +4,10 @@
   const AsDialogPreferences = define_async_component(
     () => import('@/components/profile/as-dialog-preferences.vue')
   )
-  const AsDialogAccount = define_async_component(
-    () => import('@/components/profile/as-dialog-account.vue')
-  )
   const AsDialogDocumentation = define_async_component(
     () => import('@/components/as-dialog-documentation.vue')
   )
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
-  const AsTextarea = define_async_component(
-    () => import('@/components/thoughts/as-textarea.vue')
-  )
   import WorkingBorder from '@/components/working-border.vue'
   import Icon from '@/components/icon'
   import {
@@ -60,7 +54,6 @@
     animation_speed,
     info,
     storytelling,
-    slice,
     grid_overlay,
     aspect_ratio_mode,
     slice_alignment,
@@ -107,10 +100,6 @@
   const documentation = ref(null)
   provide('documentation', documentation)
 
-  const toggle_keyboard = () => {
-    posting.value = !posting.value
-  }
-
   const { isFullscreen } = useFullscreen()
   const active_el = useActiveElement()
   const thought_has_focus = computed(
@@ -118,7 +107,13 @@
   )
 
   const preferences_dialog = ref(null)
-  const account_dialog = ref(null)
+  const account_open = ref(null)
+  const register_account = fn => {
+    account_open.value = fn
+  }
+  provide('register_account', register_account)
+  provide('open_account', () => account_open.value?.())
+  const viewport_mql = ref(null)
   const { register, register_preference } = use_keymap('Global')
   const magic_keys = useMagicKeys()
 
@@ -181,7 +176,6 @@
   })
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
-  register_preference('pref::Toggle_Slice', slice)
   register('pref::Cycle_Aspect_Ratio', () => {
     const aspect_ratios = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
     const current = aspect_ratio_mode.value || 'auto'
@@ -210,12 +204,22 @@
   register_preference('pref::Toggle_Menu', menu)
   register_preference('pref::Toggle_Footer', footer_visible)
 
-  // Watch aspect_ratio_mode and update CSS variable
+  const set_storytelling_slide_width = () => {
+    const is_landscape = window.matchMedia('(min-aspect-ratio: 1/1)').matches
+    const width =
+      is_landscape && aspect_ratio_mode.value === '1/1' ? '100vh' : '100vw'
+    document.documentElement.style.setProperty(
+      '--storytelling-slide-width',
+      width
+    )
+  }
+
   watch(aspect_ratio_mode, new_value => {
     document.documentElement.style.setProperty(
       '--poster-aspect-ratio',
       new_value === 'auto' ? 'auto' : new_value
     )
+    set_storytelling_slide_width()
   })
 
   register_preference('pref::Toggle_Bold', bold)
@@ -235,9 +239,7 @@
   register('ui::Open_Settings', () => {
     preferences_dialog.value?.show()
   })
-  register('ui::Open_Account', () => {
-    account_dialog.value?.show()
-  })
+  register('ui::Open_Account', () => account_open.value?.())
   register('ui::Clear_Sync_Time', () => {
     delete localStorage.sync_time
   })
@@ -284,11 +286,18 @@
       '--poster-aspect-ratio',
       aspect_ratio === 'auto' ? 'auto' : aspect_ratio
     )
+    set_storytelling_slide_width()
+    viewport_mql.value = window.matchMedia('(min-aspect-ratio: 1/1)')
+    viewport_mql.value.addEventListener('change', set_storytelling_slide_width)
 
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
   })
   dismount(() => {
+    viewport_mql.value?.removeEventListener(
+      'change',
+      set_storytelling_slide_width
+    )
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
   })
@@ -310,14 +319,17 @@
     <router-view />
     <sync @active="sync_active" />
     <as-fps v-if="info" />
-    <button
-      v-if="!isFullscreen && !thought_has_focus"
-      type="button"
-      :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
-      @click="footer_visible = !footer_visible" />
-    <footer id="global-footer">
-      <template v-if="!posting">
-        <as-dialog-preferences ref="preferences_dialog" />
+    <div id="global-menu">
+      <footer id="global-footer">
+        <a
+          v-if="can_add"
+          id="add-poster"
+          tabindex="0"
+          aria-label="Add poster"
+          @click="select_photo"
+          @keydown.enter="select_photo">
+          <icon name="add" />
+        </a>
         <a
           id="camera"
           tabindex="0"
@@ -325,10 +337,15 @@
           @keydown.enter="open_camera">
           <icon name="camera" />
         </a>
-        <as-dialog-account ref="account_dialog" />
-      </template>
-      <as-textarea @toggle-keyboard="toggle_keyboard" />
-    </footer>
+        <as-dialog-preferences ref="preferences_dialog" />
+      </footer>
+      <button
+        v-if="!isFullscreen && !thought_has_focus"
+        type="button"
+        :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
+        @click="footer_visible = !footer_visible" />
+    </div>
+
     <as-dialog-documentation ref="documentation" />
     <input
       ref="image_picker"
@@ -363,61 +380,83 @@
       left: var(--base-line);
     }
   }
-  footer#global-footer {
+  div#global-menu {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
+    width: min(100%, page-width);
+    max-width: page-width;
+    margin: base-line auto;
     z-index: 9;
-    background-color: var(--black-transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: base-line * 0.25;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    overflow: visible;
+  }
+  footer#global-footer {
+    width: 100%;
+    background-color: hsla(228, 9.8%, 6%, 0.75);
+    border-radius: base-line;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: base-line;
-    padding: base-line;
-    padding-bottom: s('calc(var(--base-line) + env(safe-area-inset-bottom, 0))');
+    padding: base-line * 0.5;
+    padding-bottom: s('calc(var(--base-line) * 0.5 + env(safe-area-inset-bottom, 0))');
     pointer-events: none;
+    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+    transition-behavior: allow-discrete;
+    @starting-style {
+      transform: translateY(100%);
+      opacity: 0;
+      visibility: hidden;
+    }
     & > * {
       pointer-events: auto;
     }
-    & a#toggle-preferences {
+    & a#toggle-preferences,
+    & a#add-poster,
+    & a#camera,
+    & label[for='wat'],
+    & a[aria-label='Go to thoughts'] {
       position: static;
-      color: var(--sediment);
+      color: var(--blue);
+      cursor: pointer;
       svg {
-        fill: var(--sediment);
-        stroke: var(--sediment);
-      }
-    }
-    & a#toggle-account {
-      position: static;
-      color: var(--gravel);
-    }
-    & a#camera {
-      color: var(--red);
-      svg {
-        fill: var(--red);
+        fill: var(--blue);
+        stroke: var(--blue);
       }
       &:focus {
         outline: 2px solid var(--red);
       }
     }
+    & a#toggle-preferences svg {
+      width: base-line * 1.35;
+      height: base-line * 1.35;
+    }
+    & a#add-poster svg {
+      width: base-line * 1.35;
+      height: base-line * 1.35;
+    }
+    & a#camera svg {
+      width: base-line * 2;
+      height: base-line * 2;
+    }
   }
-  main#realness.footer-hidden > footer#global-footer {
+  main#realness.footer-hidden #global-footer {
     transform: translateY(100%);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
   }
-  main#realness > button {
-    position: fixed;
-    bottom: base-line * 0.25;
-    left: 50%;
-    transform: translateX(-50%);
+  div#global-menu > button {
     z-index: 10;
     width: base-line * 4;
     height: base-line * 0.5;
-    padding: 0 0 env(safe-area-inset-bottom, 0) 0;
+    padding: 0;
     border: none;
     border-radius: base-line;
     cursor: pointer;
