@@ -215,23 +215,18 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
 
     const path = shadow_symbol.querySelector(`[itemprop="${layer_name}"]`)
     if (!path) continue
-
-    const path_id = path.getAttribute('id')
-    if (!path_id) continue
-
-    const stroke_use = [...shadow_symbol.querySelectorAll('use')].find(
-      use =>
-        (use.getAttribute('href') || use.getAttribute('xlink:href') || '') ===
-        `#${path_id}`
+    if (
+      path.getAttribute('stroke') === 'none' ||
+      parseFloat(path.getAttribute('stroke-opacity') || '1') === 0
     )
-    if (!stroke_use) continue
+      continue
 
     path.setAttribute('fill', 'none')
     path.removeAttribute('fill-opacity')
     path.removeAttribute('fill-rule')
-    stroke_use.setAttribute('stroke-opacity', '1')
+    path.setAttribute('stroke-opacity', '1')
 
-    const to_keep = new Set([path, stroke_use])
+    const to_keep = new Set([path])
     ;[...shadow_symbol.children].forEach(child => {
       if (!to_keep.has(child)) child.remove()
     })

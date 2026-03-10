@@ -7,6 +7,7 @@ import {
   luminosity,
   rgba_to_hsla,
   hsla_to_color,
+  css_color_to_color,
   color_to_hsla
 } from '@/utils/colors'
 
@@ -25,6 +26,11 @@ vi.mock('@/utils/css-var', () => ({
 }))
 
 vi.mock('@/utils/color-converters', () => ({
+  parse_css_oklch_string: vi.fn(str => {
+    if (!str.startsWith('oklch')) return undefined
+    return { l: 0.5, c: 0.15, h: 29, a: 1 }
+  }),
+  oklch_to_rgb: vi.fn(() => [199, 223, 14]),
   rgb_to_hex: vi.fn((r, g, b) => {
     if (typeof r === 'string') {
       // Parse rgb(r,g,b) format
@@ -148,6 +154,17 @@ describe('@/utils/colors', () => {
       expect(result).toHaveProperty('s')
       expect(result).toHaveProperty('l')
       expect(result).toHaveProperty('a')
+    })
+  })
+
+  describe('css_color_to_color', () => {
+    it('converts OKLCH string to color object', () => {
+      const result = css_color_to_color('oklch(0.5, 0.15, 29)')
+      expect(result).toHaveProperty('h')
+      expect(result).toHaveProperty('s')
+      expect(result).toHaveProperty('l')
+      expect(result).toHaveProperty('a')
+      expect(result).toHaveProperty('oklch')
     })
   })
 

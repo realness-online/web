@@ -5,6 +5,7 @@
 
 // sRGB to linear RGB conversion constants
 const SRGB_THRESHOLD = 0.04045
+const SRGB_LINEAR_THRESHOLD = 0.0031308
 const SRGB_LOW_SLOPE = 12.92
 const SRGB_OFFSET = 0.055
 const SRGB_DIVISOR = 1.055
@@ -307,6 +308,96 @@ export const hsl_to_oklch = (h, s, l) => {
     c: c_oklch,
     h: h_oklch < 0 ? h_oklch + HUE_FULL_CIRCLE : h_oklch
   }
+}
+
+// OKLab inverse: OKLab -> LMS (cube root domain)
+const OKLAB_INV_M2_LL = 1
+const OKLAB_INV_M2_LA = 0.3963377774
+const OKLAB_INV_M2_LB = 0.2158037573
+const OKLAB_INV_M2_ML = 1
+const OKLAB_INV_M2_MA = -0.1055613458
+const OKLAB_INV_M2_MB = -0.0638541728
+const OKLAB_INV_M2_SL = 1
+const OKLAB_INV_M2_SA = -0.0894841775
+const OKLAB_INV_M2_SB = -1.291485548
+
+// LMS to linear RGB
+const OKLAB_INV_M1_RL = 1.2268798758459243
+const OKLAB_INV_M1_RM = -0.5578149944602171
+const OKLAB_INV_M1_RS = 0.2813910456659647
+const OKLAB_INV_M1_GL = -0.0405757452148008
+const OKLAB_INV_M1_GM = 1.112286803280317
+const OKLAB_INV_M1_GS = -0.0717110580655164
+const OKLAB_INV_M1_BL = -0.0763729366746601
+const OKLAB_INV_M1_BM = -0.4214933324022432
+const OKLAB_INV_M1_BS = 1.5869240198367816
+
+const linear_to_srgb = x =>
+  x <= SRGB_LINEAR_THRESHOLD
+    ? x * SRGB_LOW_SLOPE
+    : SRGB_DIVISOR * Math.pow(x, 1 / SRGB_GAMMA) - SRGB_OFFSET
+
+/**
+ * Convert OKLCH to RGB, then to hex
+ * @param {number} l - Lightness (0-1)
+ * @param {number} c - Chroma
+ * @param {number} h - Hue in degrees
+ * @returns {number[]} RGB values 0-255
+ */
+export const oklch_to_rgb = (l, c, h) => {
+  const h_rad = (h * Math.PI) / PI_DEGREES
+  const a = isNaN(h) ? 0 : c * Math.cos(h_rad)
+  const b = isNaN(h) ? 0 : c * Math.sin(h_rad)
+
+  const l_c = OKLAB_INV_M2_LL * l + OKLAB_INV_M2_LA * a + OKLAB_INV_M2_LB * b
+  const m_c = OKLAB_INV_M2_ML * l + OKLAB_INV_M2_MA * a + OKLAB_INV_M2_MB * b
+  const s_c = OKLAB_INV_M2_SL * l + OKLAB_INV_M2_SA * a + OKLAB_INV_M2_SB * b
+
+  const l_lms = l_c * l_c * l_c
+  const m_lms = m_c * m_c * m_c
+  const s_lms = s_c * s_c * s_c
+
+  const lr =
+    OKLAB_INV_M1_RL * l_lms + OKLAB_INV_M1_RM * m_lms + OKLAB_INV_M1_RS * s_lms
+  const lg =
+    OKLAB_INV_M1_GL * l_lms + OKLAB_INV_M1_GM * m_lms + OKLAB_INV_M1_GS * s_lms
+  const lb =
+    OKLAB_INV_M1_BL * l_lms + OKLAB_INV_M1_BM * m_lms + OKLAB_INV_M1_BS * s_lms
+
+  return [
+    Math.round(clamp(linear_to_srgb(lr), 0, 1) * RGB_MAX),
+    Math.round(clamp(linear_to_srgb(lg), 0, 1) * RGB_MAX),
+    Math.round(clamp(linear_to_srgb(lb), 0, 1) * RGB_MAX)
+  ]
+}
+
+/**
+ * Convert OKLCH to hex string
+ * @param {number} l - Lightness (0-1)
+ * @param {number} c - Chroma
+ * @param {number} h - Hue in degrees
+ * @returns {string}
+ */
+export const oklch_to_hex = (l, c, h) => {
+  const [r, g, b] = oklch_to_rgb(l, c, h)
+  return rgb_to_hex(r, g, b)
+}
+
+/**
+ * Parse oklch(...) or oklch(... / 1) CSS string
+ * @param {string} input
+ * @returns {{l: number, c: number, h: number, a?: number} | undefined}
+ */
+export const parse_css_oklch_string = input => {
+  const match = input.match(/oklch\s*\(\s*([^)]+)\s*\)/)
+  if (!match) return
+  const parts = match[1].split(/[,\s/]+/).filter(Boolean)
+  if (parts.length < 3) return
+  const l = Number.parseFloat(parts[0])
+  const c = Number.parseFloat(parts[1])
+  const h = Number.parseFloat(parts[2])
+  const a = parts[3] !== undefined ? Number.parseFloat(parts[3]) : 1
+  return { l, c, h, a }
 }
 
 /**

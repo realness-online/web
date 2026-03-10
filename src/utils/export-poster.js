@@ -2,8 +2,12 @@
 
 import { as_created_at, load } from '@/utils/itemid'
 import { as_day_time_of_day_for_filename } from '@/utils/date'
-import { hsl_to_hex } from '@/utils/color-converters'
-import { hsla_to_color } from '@/utils/colors'
+import {
+  hsl_to_hex,
+  oklch_to_hex,
+  parse_css_oklch_string
+} from '@/utils/color-converters'
+import { css_color_to_color } from '@/utils/colors'
 
 const normalize_ids_for_download = svg => {
   const id_map = new Map()
@@ -93,9 +97,17 @@ const normalize_ids_for_download = svg => {
 const adobe = svg => {
   const convert = svg.querySelectorAll('[stop-color]')
   convert.forEach(element => {
-    const hsla = element.getAttribute('stop-color')
-    const c = hsla_to_color(hsla)
-    element.setAttribute('stop-color', hsl_to_hex(c.h, c.s, c.l))
+    const css_color = element.getAttribute('stop-color')
+    const oklch = parse_css_oklch_string(css_color)
+    if (oklch)
+      element.setAttribute(
+        'stop-color',
+        oklch_to_hex(oklch.l, oklch.c, oklch.h)
+      )
+    else {
+      const c = css_color_to_color(css_color)
+      element.setAttribute('stop-color', hsl_to_hex(c.h, c.s, c.l))
+    }
   })
 }
 

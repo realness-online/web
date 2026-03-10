@@ -198,20 +198,6 @@ const parse_key_splines = str => {
     .filter(Boolean)
 }
 
-const find_stroke_use_for_path = (path_el, root) => {
-  const path_id = path_el.getAttribute('id')
-  if (!path_id) return null
-  const href_matches = use_el =>
-    (use_el.getAttribute('href') || use_el.getAttribute('xlink:href') || '') ===
-      `#${path_id}` ||
-    (use_el.getAttribute('href') || use_el.getAttribute('xlink:href') || '') ===
-      `url(#${path_id})`
-  const symbol = path_el.closest('symbol')
-  return symbol
-    ? [...symbol.querySelectorAll('use')].find(href_matches)
-    : [...root.querySelectorAll('use')].find(href_matches)
-}
-
 const apply_animation_state = (svg_element, current_time) => {
   const animate_elements = svg_element.querySelectorAll('animate')
   animate_elements.forEach(anim => {
@@ -231,14 +217,6 @@ const apply_animation_state = (svg_element, current_time) => {
       target = svg_element.querySelector(`[id="${shadows_id}"]`)
     }
     if (!target) return
-
-    const is_stroke_attr =
-      attribute_name === 'stroke-dashoffset' ||
-      attribute_name === 'stroke-dasharray'
-    if (is_stroke_attr && target.tagName === 'path') {
-      const stroke_use = find_stroke_use_for_path(target, svg_element)
-      if (stroke_use) target = stroke_use
-    }
 
     const values = values_str.split(';').map(v => v.trim())
     if (values.length < 2) return
@@ -337,8 +315,7 @@ const capture_svg_frame = async (
   }
   Object.entries(stroke_dasharrays).forEach(([itemprop, value]) => {
     svg_clone.querySelectorAll(`path[itemprop="${itemprop}"]`).forEach(path => {
-      const stroke_use = find_stroke_use_for_path(path, svg_clone)
-      if (stroke_use) stroke_use.setAttribute('stroke-dasharray', value)
+      path.setAttribute('stroke-dasharray', value)
     })
   })
 

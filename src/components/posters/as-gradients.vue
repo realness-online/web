@@ -4,7 +4,7 @@
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector } from '@/use/poster'
   import { use as use_vectorize } from '@/use/vectorize'
-  import { hsla_to_color } from '@/utils/colors'
+  import { color_to_hsla, css_color_to_color } from '@/utils/colors'
   const props = defineProps({
     vector: {
       type: Object,
@@ -25,20 +25,13 @@
   }
   const default_color = {
     offset: '0',
-    color: {
-      hsla: 'hsla(300,  1%, 2%, 1)',
-      hsl: 'hsl(300,  1%, 2%)',
-      h: 300,
-      s: 1,
-      l: 2,
-      a: 1
-    }
+    color: color_to_hsla({ h: 300, s: 1, l: 2, a: 1 })
   }
   const horizontal = ref([default_color])
   const vertical = ref([default_color])
   const radial = ref([default_color])
   const convert_stop = stop => ({
-    color: hsla_to_color(stop.getAttribute('stop-color')),
+    color: css_color_to_color(stop.getAttribute('stop-color')),
     offset: stop.getAttribute('offset').replace('%', '')
   })
   watch_effect(() => {
@@ -84,7 +77,7 @@
         v-for="stop in radial"
         :key="stop.offset"
         itemprop="radial"
-        :stop-color="stop.color.hsla"
+        :stop-color="stop.color.oklch"
         :offset="`${stop.offset}%`" />
     </radialGradient>
     <radialGradient
@@ -122,7 +115,7 @@
         v-for="stop in vertical"
         :key="stop.offset"
         itemprop="vertical"
-        :stop-color="stop.color.hsla"
+        :stop-color="stop.color.oklch"
         :offset="`${stop.offset}%`" />
     </linearGradient>
     <linearGradient
@@ -177,7 +170,7 @@
         v-for="stop in horizontal"
         :key="stop.offset"
         itemprop="horizontal"
-        :stop-color="stop.color.hsla"
+        :stop-color="stop.color.oklch"
         :offset="`${stop.offset}%`" />
     </linearGradient>
     <linearGradient
