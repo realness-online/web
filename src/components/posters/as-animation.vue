@@ -45,11 +45,8 @@
   const fragment_pattern = add =>
     `${as_fragment_id(/** @type {Id} */ (props.id))}-${add}`
 
-  /** @param {string} add - Targets path elements in shadow symbol */
+  /** @param {string} add - Targets path elements in shadow symbol (fill and stroke) */
   const fragment = add => `${as_fragment_id(shadow_id.value)}-${add}`
-
-  /** @param {string} add - Targets use elements (stroke) in shadow symbol */
-  const fragment_stroke = add => `${fragment(add)}-stroke`
 
   const sync_duration = base_duration => {
     const nearest = SYNC_DURATIONS.reduce((prev, curr) =>
@@ -197,7 +194,7 @@
   <animate itemprop="timeline">
     <animate v-if="stroke" class="stroke animation" id="stroke-animation">
       <animate
-        :href="fragment_stroke('light')"
+        :href="fragment('light')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(18)"
@@ -206,7 +203,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('regular')"
+        :href="fragment('regular')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -215,7 +212,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('medium')"
+        :href="fragment('medium')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -224,7 +221,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('bold')"
+        :href="fragment('bold')"
         attributeName="stroke-opacity"
         repeatCount="indefinite"
         :dur="duration(18)"
@@ -234,7 +231,7 @@
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
 
       <animate
-        :href="fragment_stroke('light')"
+        :href="fragment('light')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(18)"
@@ -243,7 +240,7 @@
         keyTimes="0;0.33;0.66;1"
         keySplines="0.42 0 1 1; 0.4 0 0.6 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('regular')"
+        :href="fragment('regular')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -252,7 +249,7 @@
         keyTimes="0;0.33;0.66;1"
         keySplines="0.42 0 1 1; 0.4 0 0.6 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('medium')"
+        :href="fragment('medium')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -261,7 +258,7 @@
         keyTimes="0;0.25;0.5;0.75;1"
         keySplines="0.42 0 1 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('bold')"
+        :href="fragment('bold')"
         attributeName="stroke-width"
         repeatCount="indefinite"
         :dur="duration(18)"
@@ -271,7 +268,7 @@
         keySplines="0.42 0 1 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0 0 0.58 1" />
 
       <animate
-        :href="fragment_stroke('light')"
+        :href="fragment('light')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(18)"
@@ -280,7 +277,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('regular')"
+        :href="fragment('regular')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -289,7 +286,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('medium')"
+        :href="fragment('medium')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(30)"
@@ -298,7 +295,7 @@
         keyTimes="0;0.5;1"
         keySplines="0.42 0 1 1; 0 0 0.58 1" />
       <animate
-        :href="fragment_stroke('bold')"
+        :href="fragment('bold')"
         attributeName="stroke-dashoffset"
         repeatCount="indefinite"
         :dur="duration(60)"

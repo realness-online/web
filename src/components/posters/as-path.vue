@@ -109,37 +109,26 @@
     :fill="show_fill ? fill : 'none'"
     :fill-opacity="show_fill ? '0.90' : undefined"
     :fill-rule="show_fill ? 'evenodd' : undefined"
-    :style="path_style" />
-  <use
-    :id="`${props.id}-stroke`"
-    :href="`#${props.id}`"
-    fill="none"
     :stroke="stroke"
-    :stroke-opacity="stroke_opacity"
-    :stroke-width="stroke_width"
+    :stroke-opacity="show_stroke && props.visible ? stroke_opacity : 0"
+    :stroke-width="show_stroke && props.visible ? stroke_width : 0"
     stroke-dashoffset="0"
     :stroke-dasharray="stroke_dasharray[props.itemprop]"
-    :style="{
-      opacity: show_stroke && props.visible ? 1 : 0,
-      visibility: show_stroke && props.visible ? 'visible' : 'hidden'
-    }" />
+    :style="path_style" />
 </template>
 
 <style>
-  use[fill='none'] {
+  path[itemprop] {
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
     transition:
       opacity 0.2s ease,
       visibility 0.2s ease,
-      stroke-opacity 0.2s ease;
+      stroke-opacity 0.2s ease,
+      stroke-width 0.2s ease;
     @starting-style {
       opacity: 0;
     }
-  }
-  path[itemprop] {
-    stroke-miterlimit: 3.14;
-    stroke-linecap: round;
     &:focus {
       outline: none;
     }

@@ -1,5 +1,11 @@
 import css_var from '@/utils/css-var'
-import { rgb_to_hex, hsl_to_hex, hsl_to_oklch } from '@/utils/color-converters'
+import {
+  rgb_to_hex,
+  hsl_to_hex,
+  hsl_to_oklch,
+  oklch_to_rgb,
+  parse_css_oklch_string
+} from '@/utils/color-converters'
 
 // Color space constants
 const RGB_MAX = 255
@@ -135,16 +141,26 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
 
   return color_to_hsla({ h, s, l, a: alpha })
 }
-export const hsla_to_color = hsla => {
-  const color_string = hsla.substring(5, hsla.length - 1)
-  const [h_val, s_val, l_val, a_val] = color_string.split(', ')
-  const h = h_val
-  const s = s_val.replace('%', '')
-  const l = l_val.replace('%', '')
-  const a = a_val
-  const color = { h, s, l, a }
-  return color_to_hsla(color)
+export const css_color_to_color = str => {
+  const s = String(str).trim()
+  if (s.startsWith('oklch')) {
+    const parsed = parse_css_oklch_string(s)
+    if (!parsed) throw new TypeError(`Invalid oklch format: ${str}`)
+    const [r, g, b] = oklch_to_rgb(parsed.l, parsed.c, parsed.h)
+    const a = parsed.a ?? 1
+    return rgba_to_hsla({ r, g, b, a: Math.round(a * RGB_MAX) })
+  }
+  const match = s.match(/hsla?\(([^)]+)\)/)
+  if (!match) throw new TypeError(`Invalid hsl/hsla format: ${str}`)
+  const parts = match[1].split(/[,\s/]+/).filter(Boolean)
+  const [h, s_raw, l_raw, a_raw] = parts
+  const s_val = (s_raw ?? '').replace('%', '')
+  const l_val = (l_raw ?? '').replace('%', '')
+  const a = a_raw ?? 1
+  return color_to_hsla({ h, s: s_val, l: l_val, a })
 }
+
+export const hsla_to_color = str => css_color_to_color(str)
 export const color_to_hsla = ({ h, s, l, a }) => {
   const hsla = `hsla(${h}, ${s}%, ${l}%, ${a})`
   const ok = hsl_to_oklch(h, s, l)
@@ -154,7 +170,7 @@ export const color_to_hsla = ({ h, s, l, a }) => {
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
     hsla,
-    oklch: `oklch(${ok.l}, ${ok.c}, ${ok.h})`,
+    oklch: `oklch(${ok.l} ${ok.c} ${ok.h})`,
     h,
     s,
     l,

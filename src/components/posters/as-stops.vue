@@ -40,6 +40,6 @@
   <stop
     v-for="stop in converted"
     :key="stop.offset"
-    :stop-color="stop.color.hsla"
+    :stop-color="stop.color.oklch"
     :offset="`${stop.offset}%`" />
 </template>

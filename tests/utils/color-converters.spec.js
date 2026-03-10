@@ -4,6 +4,9 @@ import {
   hsl_to_hex,
   rgba_to_hsla,
   hsl_to_oklch,
+  oklch_to_rgb,
+  oklch_to_hex,
+  parse_css_oklch_string,
   extract_color_palette
 } from '@/utils/color-converters'
 
@@ -107,6 +110,39 @@ describe('hsl_to_oklch', () => {
   it('handles grayscale in OKLCH', () => {
     const gray_oklch = hsl_to_oklch(0, 0, 50)
     expect(gray_oklch.c).toBeCloseTo(0, 3) // Chroma should be near 0 for grayscale
+  })
+})
+
+describe('oklch_to_rgb', () => {
+  it('converts OKLCH to RGB', () => {
+    const [r, g, b] = oklch_to_rgb(0.5, 0.2, 29)
+    expect(r).toBeGreaterThanOrEqual(0)
+    expect(r).toBeLessThanOrEqual(255)
+    expect(g).toBeGreaterThanOrEqual(0)
+    expect(g).toBeLessThanOrEqual(255)
+    expect(b).toBeGreaterThanOrEqual(0)
+    expect(b).toBeLessThanOrEqual(255)
+  })
+})
+
+describe('oklch_to_hex', () => {
+  it('converts OKLCH to hex', () => {
+    const hex = oklch_to_hex(0.5, 0.2, 29)
+    expect(hex).toMatch(/^#[0-9a-f]{6}$/i)
+  })
+})
+
+describe('parse_css_oklch_string', () => {
+  it('parses oklch CSS string', () => {
+    const result = parse_css_oklch_string('oklch(0.5, 0.2, 29)')
+    expect(result).toEqual({ l: 0.5, c: 0.2, h: 29, a: 1 })
+  })
+
+  it('parses oklch with alpha', () => {
+    const result = parse_css_oklch_string('oklch(0.5, 0.2, 29 / 0.8)')
+    expect(result.l).toBe(0.5)
+    expect(result.c).toBe(0.2)
+    expect(result.h).toBe(29)
   })
 })
 

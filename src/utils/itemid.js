@@ -156,7 +156,7 @@ export const list = async (itemid, me = localStorage.me) => {
  * @returns {Promise<string | null>}
  */
 export const as_download_url = async itemid => {
-  if (itemid.startsWith('/+/')) return null
+  if (String(itemid) === '/+' || itemid.startsWith('/+/')) return null
   const index = (await get('sync:index')) || {}
   if (index[itemid] === DOES_NOT_EXIST) return null
   try {
