@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
 import wat from '@/components/thoughts/as-textarea'
 
-vi.mock('@/use/thought', () => ({
+vi.mock('@/use/statements', () => ({
   use: () => ({
     save: vi.fn()
   })

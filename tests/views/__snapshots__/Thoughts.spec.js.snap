@@ -25,7 +25,6 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     <!--v-if-->
     <section
       class="as-days-stub"
-      itemid="/+14151234356/thoughts"
       itemscope=""
       storytelling="false"
     >

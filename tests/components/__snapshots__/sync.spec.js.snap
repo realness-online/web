@@ -10,12 +10,12 @@ exports[`@/components/sync > Render > Renders sync component 1`] = `
   />
   <as-days-stub
     events=""
-    itemid="/+16282281824/thoughts"
+    itemid="/+16282281824/statements"
     itemscope=""
     paginate="false"
     posters=""
+    statements=""
     storytelling="false"
-    thoughts=""
     working="false"
   />
   <!--v-if-->

@@ -28,17 +28,17 @@ vi.mock('@/use/people', () => ({
   get_my_itemid: vi.fn(type => `/+14151234356/${type}`)
 }))
 
-// Mock thought composable
-const mock_my_thoughts = ref([
-  { id: '/+14151234356/thoughts/1', type: 'thoughts' }
+// Mock statements composable
+const mock_my_statements = ref([
+  { id: '/+14151234356/statements/1', type: 'thoughts' }
 ])
-const mock_thoughts = ref([])
+const mock_statements = ref([])
 const mock_statement_shown = vi.fn()
 
-vi.mock('@/use/thought', () => ({
+vi.mock('@/use/statements', () => ({
   use: () => ({
-    my_thoughts: mock_my_thoughts,
-    thoughts: mock_thoughts,
+    my_statements: mock_my_statements,
+    statements: mock_statements,
     statement_shown: mock_statement_shown
   })
 }))
@@ -53,9 +53,9 @@ describe('Statements', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mock_thoughts.value = []
-    mock_my_thoughts.value = [
-      { id: '/+14151234356/thoughts/1', type: 'thoughts' }
+    mock_statements.value = []
+    mock_my_statements.value = [
+      { id: '/+14151234356/statements/1', type: 'thoughts' }
     ]
 
     wrapper = shallowMount(Statements, {
@@ -66,7 +66,7 @@ describe('Statements', () => {
           'as-days': {
             template:
               '<section class="as-days-stub"><slot v-bind="[]" /></section>',
-            props: ['itemid', 'paginate', 'thoughts']
+            props: ['itemid', 'paginate', 'statements']
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
@@ -117,11 +117,11 @@ describe('Statements', () => {
       )
     })
 
-    it('sets thoughts from my_thoughts on mount', async () => {
+    it('sets statements from my_statements on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_thoughts.value.length).toBe(1)
-      expect(mock_thoughts.value[0].id).toBe(mock_my_thoughts.value[0].id)
+      expect(mock_statements.value.length).toBe(1)
+      expect(mock_statements.value[0].id).toBe(mock_my_statements.value[0].id)
     })
 
     it('sets working to false after mount', async () => {

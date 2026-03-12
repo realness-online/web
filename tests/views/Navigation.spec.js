@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import Navigation from '@/views/Navigation'
 import { posting } from '@/use/posting'
 
-vi.mock('@/use/thought', () => ({
+vi.mock('@/use/statements', () => ({
   use: () => ({
     save: vi.fn()
   })

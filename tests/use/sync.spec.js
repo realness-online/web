@@ -58,7 +58,7 @@ vi.mock('@/persistance/Storage', () => ({
   Relation: vi.fn().mockImplementation(() => ({
     save: vi.fn(() => Promise.resolve())
   })),
-  Thought: vi.fn().mockImplementation(() => ({
+  Statements: vi.fn().mockImplementation(() => ({
     sync: vi.fn(() => Promise.resolve([])),
     save: vi.fn(() => Promise.resolve()),
     optimize: vi.fn(() => Promise.resolve())
@@ -89,9 +89,9 @@ vi.mock('@/use/people', () => ({
   })
 }))
 
-vi.mock('@/use/thought', () => ({
+vi.mock('@/use/statements', () => ({
   use: () => ({
-    my_thoughts: ref([])
+    my_statements: ref([])
   })
 }))
 

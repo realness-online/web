@@ -2,12 +2,12 @@
   import icon from '@/components/icon'
   import {
     recent_date_first,
-    earlier_weirdo_first,
-    recent_weirdo_first
+    same_day_today,
+    same_day_past
   } from '@/utils/sorting'
   import { as_author } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { as_statements, statements_sort, slot_key } from '@/use/thought'
+  import { as_thoughts, thoughts_sort, slot_key } from '@/use/statements'
   import {
     ref,
     computed,
@@ -18,7 +18,7 @@
 
   // Props
   const props = defineProps({
-    thoughts: {
+    statements: {
       type: Array,
       required: false,
       default: () => []
@@ -70,14 +70,14 @@
     return items
   })
 
-  const statements = computed(() => {
-    let statement_list = []
-    const people = thoughts_by_people(props.thoughts)
-    people.forEach(their_thoughts => {
-      statement_list = [...statement_list, ...as_statements(their_thoughts)]
+  const thought_trains = computed(() => {
+    let list = []
+    const by_author = statements_by_people(props.statements)
+    by_author.forEach(their_statements => {
+      list = [...list, ...as_thoughts(their_statements)]
     })
-    statement_list.sort(statements_sort)
-    return statement_list
+    list.sort(thoughts_sort)
+    return list
   })
 
   const check_intersection = entries => {
@@ -90,15 +90,15 @@
     })
   }
 
-  const thoughts_by_people = thoughts => {
+  const statements_by_people = statements => {
     const people = new Map()
-    if (!thoughts) return []
-    thoughts.forEach(item => {
+    if (!statements) return []
+    statements.forEach(item => {
       const author = as_author(item.id)
-      let their_thoughts = people.get(author)
-      if (!their_thoughts) their_thoughts = []
-      their_thoughts.push(item)
-      people.set(author, their_thoughts)
+      let theirs = people.get(author)
+      if (!theirs) theirs = []
+      theirs.push(item)
+      people.set(author, theirs)
     })
     return people
   }
@@ -109,7 +109,7 @@
       const page = [...this.entries()].sort(recent_date_first)
       yield* page
     }
-    statements.value.forEach(stmt => insert_into_day(stmt, new_days))
+    thought_trains.value.forEach(stmt => insert_into_day(stmt, new_days))
     props.posters.forEach(poster => insert_into_day(poster, new_days))
     props.events.forEach(happening => insert_into_day(happening, new_days))
     days.value = new_days
@@ -122,16 +122,16 @@
     const day = days_map.get(day_name)
     if (day && is_today(day_name)) {
       day.unshift(item)
-      day.sort(recent_weirdo_first)
+      day.sort(same_day_today)
     } else if (day) {
       day.push(item)
-      day.sort(earlier_weirdo_first)
+      day.sort(same_day_past)
     } else days_map.set(day_name, [item])
   }
 
   watch(
     () => ({
-      thoughts: props.thoughts,
+      statements: props.statements,
       posters: props.posters,
       events: props.events
     }),

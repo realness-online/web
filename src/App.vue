@@ -304,15 +304,7 @@
 </script>
 
 <template>
-  <main
-    id="realness"
-    :class="[
-      status,
-      {
-        posting,
-        'footer-hidden': !footer_visible
-      }
-    ]">
+  <main id="realness" :class="[status, { posting }]">
     <teleport to="body">
       <working-border v-if="status === 'working'" />
     </teleport>
@@ -342,6 +334,7 @@
       <button
         v-if="!isFullscreen && !thought_has_focus"
         type="button"
+        :aria-expanded="footer_visible"
         :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
         @click="footer_visible = !footer_visible" />
     </div>
@@ -446,11 +439,15 @@
       height: base-line * 2;
     }
   }
-  main#realness.footer-hidden #global-footer {
+  div#global-menu:has(button[aria-expanded='false']) #global-footer {
     transform: translateY(100%);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+  }
+  div#global-menu > button[aria-expanded='false'] {
+    outline: 2px solid var(--red);
+    outline-offset: base-line * 0.25;
   }
   div#global-menu > button {
     z-index: 10;
@@ -469,6 +466,10 @@
     }
     &:focus {
       outline: 2px solid var(--red);
+      outline-offset: base-line * 0.25;
+    }
+    &[aria-expanded='true']:focus {
+      outline: none;
     }
   }
 </style>

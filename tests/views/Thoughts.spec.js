@@ -57,18 +57,18 @@ vi.mock('@/use/poster', () => ({
   is_click: vi.fn().mockReturnValue(true)
 }))
 
-// Mock thought composable
-const mock_thoughts_for_person = vi.fn().mockResolvedValue(undefined)
-const mock_thoughts = ref([])
+// Mock statements composable
+const mock_statements_for_person = vi.fn().mockResolvedValue(undefined)
+const mock_statements = ref([])
 const mock_statement_shown = vi.fn()
 
-vi.mock('@/use/thought', () => ({
+vi.mock('@/use/statements', () => ({
   use: () => ({
-    thoughts: mock_thoughts,
-    my_thoughts: mock_thoughts,
+    statements: mock_statements,
+    my_statements: mock_statements,
     statement_shown: mock_statement_shown,
-    for_person: mock_thoughts_for_person,
-    update_thought: vi.fn()
+    for_person: mock_statements_for_person,
+    update_statement: vi.fn()
   }),
   slot_key: vi.fn(id => id)
 }))
@@ -85,7 +85,7 @@ describe('Thoughts', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mock_thoughts.value = []
+    mock_statements.value = []
     mock_people.value = []
     mock_relations.value = [{ id: '/+14151234356/people/1', type: 'person' }]
 
@@ -104,7 +104,7 @@ describe('Thoughts', () => {
           'as-days': {
             template:
               '<section class="as-days-stub"><slot v-bind="{}" /></section>',
-            props: ['working', 'posters', 'thoughts']
+            props: ['working', 'posters', 'statements']
           },
           'thought-as-article': {
             template: '<article class="article-stub"></article>',
@@ -155,7 +155,7 @@ describe('Thoughts', () => {
     it('fills statements with relations on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
-      expect(mock_thoughts_for_person).toHaveBeenCalled()
+      expect(mock_statements_for_person).toHaveBeenCalled()
       expect(mock_posters_for_person).toHaveBeenCalled()
     })
 
