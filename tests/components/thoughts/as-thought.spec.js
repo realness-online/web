@@ -4,7 +4,7 @@ import AsThought from '@/components/thoughts/as-thought.vue'
 
 const mount_options = {
   global: {
-    provide: { update_thought: vi.fn() }
+    provide: { update_statement: vi.fn() }
   }
 }
 

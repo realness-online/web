@@ -3,15 +3,15 @@ import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
 
 // Mock the composables and utilities
-vi.mock('@/use/thought', () => ({
-  as_statements: vi.fn(() => []),
-  statements_sort: vi.fn()
+vi.mock('@/use/statements', () => ({
+  as_thoughts: vi.fn(() => []),
+  thoughts_sort: vi.fn()
 }))
 
 vi.mock('@/utils/sorting', () => ({
   recent_date_first: vi.fn(),
-  earlier_weirdo_first: vi.fn(),
-  recent_weirdo_first: vi.fn()
+  same_day_today: vi.fn(),
+  same_day_past: vi.fn()
 }))
 
 vi.mock('@/utils/itemid', () => ({
@@ -30,7 +30,7 @@ describe('@/components/as-days', () => {
   beforeEach(() => {
     wrapper = shallowMount(AsDays, {
       props: {
-        thoughts: [],
+        statements: [],
         posters: [],
         events: [],
         paginate: true,
@@ -60,12 +60,12 @@ describe('@/components/as-days', () => {
   })
 
   describe('Props', () => {
-    it('accepts thoughts prop', () => {
-      const thoughts = [{ id: '/+16282281824/thoughts/123' }]
+    it('accepts statements prop', () => {
+      const statements = [{ id: '/+16282281824/statements/123' }]
       wrapper = shallowMount(AsDays, {
-        props: { thoughts }
+        props: { statements }
       })
-      expect(wrapper.props('thoughts')).toEqual(thoughts)
+      expect(wrapper.props('statements')).toEqual(statements)
     })
 
     it('accepts posters prop', () => {

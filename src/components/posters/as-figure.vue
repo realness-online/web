@@ -185,6 +185,8 @@
     key_commands?.remove_context('Poster')
     key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
   }
+
+  const activate_poster = () => as_svg_ref.value?.toggle_meet()
 </script>
 
 <template>
@@ -192,7 +194,8 @@
     ref="poster"
     class="poster"
     @focusin="handle_focusin"
-    @focusout="handle_focusout">
+    @focusout="handle_focusout"
+    @keydown.enter.prevent="activate_poster">
     <as-svg
       ref="as_svg_ref"
       :itemid="itemid"

@@ -15,7 +15,7 @@
   })
   const emit = defineEmits(['blurred', 'focused'])
   /** @type {((id: string, content: string) => Promise<void>) | undefined} */
-  const update_thought = inject('update_thought')
+  const update_statement = inject('update_statement')
   /** @type {import('vue').Ref<HTMLParagraphElement | null>} */
   const is_editable = ref(null)
   const thought_text = computed(
@@ -38,8 +38,8 @@
    */
   const save = async () => {
     const possibly_changed = is_editable.value?.textContent?.trim()
-    if (thought_text.value !== possibly_changed && update_thought)
-      await update_thought(props.thought.id, possibly_changed ?? '')
+    if (thought_text.value !== possibly_changed && update_statement)
+      await update_statement(props.thought.id, possibly_changed ?? '')
     emit('blurred', props.thought)
   }
 
@@ -72,10 +72,10 @@
       tabindex="0"
       :spellcheck="true"
       :contenteditable="true"
-      itemprop="thought"
+      itemprop="statement"
       @focus="focused"
       @blur.prevent="save" />
-    <p v-else itemprop="thought">{{ thought_text }}</p>
+    <p v-else itemprop="statement">{{ thought_text }}</p>
     <meta v-if="thought.why" itemprop="why" :content="thought.why" />
     <meta v-if="thought.where" itemprop="where" :content="thought.where" />
   </div>

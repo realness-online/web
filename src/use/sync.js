@@ -15,13 +15,13 @@ import { build_local_directory } from '@/persistance/Directory'
 import {
   Offline,
   Relation,
-  Thought,
+  Statements,
   Event,
   Poster,
   Me
 } from '@/persistance/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
-import { use as use_thoughts } from '@/use/thought'
+import { use as use_statements } from '@/use/statements'
 import { current_user, location, metadata } from '@/utils/serverless'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex } from '@/utils/algorithms'
@@ -126,9 +126,9 @@ const prune = async deps => {
 
 /** @param {Sync_Deps} deps @returns {Promise<void|null>} */
 const sync_thoughts = async deps => {
-  const itemid = get_my_itemid('thoughts')
+  const itemid = get_my_itemid('statements')
   if (!itemid) return null
-  const persistance = new Thought()
+  const persistance = new Statements()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
     `[itemid="${itemid}"]`
@@ -138,11 +138,11 @@ const sync_thoughts = async deps => {
   if (index_hash !== hash) {
     const synced = await persistance.sync()
     // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
-    deps.my_thoughts.value = synced || []
-    if (deps.my_thoughts.value.length) {
+    deps.my_statements.value = synced || []
+    if (deps.my_statements.value.length) {
       await tick()
       await persistance.save(elements)
-      localStorage.removeItem('/+/thoughts')
+      localStorage.removeItem('/+/statements')
     }
   }
   await persistance.optimize()
@@ -220,7 +220,7 @@ export const use = () => {
   const instance = current_instance()
   const emit = instance?.emit ?? (() => {})
   const { me, relations } = use_me()
-  const { my_thoughts } = use_thoughts()
+  const { my_statements } = use_statements()
   const events = ref(null)
   const sync_element = ref(null)
   const sync_poster = ref(null)
@@ -229,7 +229,7 @@ export const use = () => {
   const deps = /** @type {Sync_Deps} */ ({
     sync_element,
     relations,
-    my_thoughts,
+    my_statements,
     events,
     me,
     emit

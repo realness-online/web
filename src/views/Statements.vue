@@ -5,8 +5,7 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
 
   import { current_user } from '@/utils/serverless'
-  import { use as use_thoughts } from '@/use/thought'
-  import { get_my_itemid } from '@/use/people'
+  import { use as use_statements } from '@/use/statements'
 
   import { ref, provide, onMounted as mounted } from 'vue'
   import { useRouter as use_router } from 'vue-router'
@@ -16,9 +15,9 @@
   console.time('views:Thoughts')
   const working = ref(true)
   const router = use_router()
-  const { my_thoughts, thoughts, statement_shown, update_thought } =
-    use_thoughts()
-  provide('update_thought', update_thought)
+  const { my_statements, statements, statement_shown, update_statement } =
+    use_statements()
+  provide('update_statement', update_statement)
   const home = () => router.push({ path: '/' })
 
   const { register } = use_keymap('Thoughts')
@@ -27,8 +26,8 @@
   register('thought::Cancel', () => {})
 
   mounted(() => {
-    const last_editable = my_thoughts.value.length - 1
-    thoughts.value = [my_thoughts.value[last_editable]]
+    const last_editable = my_statements.value.length - 1
+    statements.value = [my_statements.value[last_editable]]
     working.value = false
     console.timeEnd('views:Thoughts')
   })
@@ -50,9 +49,8 @@
       <as-days
         v-slot="{ day }"
         itemscope
-        :itemid="get_my_itemid('thoughts')"
         :paginate="false"
-        :thoughts="my_thoughts">
+        :statements="my_statements">
         <thought-as-article
           v-for="stmt in day"
           :key="stmt[0].id"
@@ -61,18 +59,18 @@
           @show="statement_shown" />
       </as-days>
     </article>
-    <footer v-if="!my_thoughts?.length && !working" class="message">
+    <footer v-if="!my_statements?.length && !working" class="message">
       <p>
         Say some stuff via the <button aria-label="Home" @click="home" /> button
         on the homepage
         <br />
       </p>
     </footer>
-    <article v-if="thoughts?.length > 1" class="earlier thoughts">
+    <article v-if="statements?.length > 1" class="earlier thoughts">
       <header>
         <h1>Earlier Thoughts</h1>
       </header>
-      <as-days v-slot="{ day }" :thoughts="thoughts" :paginate="false">
+      <as-days v-slot="{ day }" :statements="statements" :paginate="false">
         <thought-as-article
           v-for="stmt in day"
           :key="stmt[0].id"
@@ -106,7 +104,7 @@
         padding-top: 0
         h4
           margin: base-line 0 0 0
-        article.day p[itemprop="thought"]:focus
+        article.day p[itemprop="statement"]:focus
           font-weight: bolder
           outline: 0px
     & > footer

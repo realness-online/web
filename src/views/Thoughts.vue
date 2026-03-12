@@ -20,12 +20,11 @@
   import { as_author, as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistance/Storage'
-  import { use as use_thoughts, slot_key } from '@/use/thought'
+  import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people, use_me } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
   import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
-  import { get_my_itemid } from '@/use/people'
   import { posting, scroll_position } from '@/use/posting'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
 
@@ -58,12 +57,12 @@
 
   const { people } = use_people()
   const {
-    for_person: thoughts_for_person,
-    thoughts,
+    for_person: statements_for_person,
+    statements,
     statement_shown,
-    update_thought
-  } = use_thoughts()
-  provide('update_thought', update_thought)
+    update_statement
+  } = use_statements()
+  provide('update_statement', update_statement)
   const {
     for_person: posters_for_person,
     poster_shown,
@@ -155,7 +154,7 @@
     await Promise.all(
       people.value.map(async relation => {
         await Promise.all([
-          thoughts_for_person({ id: relation.id }),
+          statements_for_person({ id: relation.id }),
           posters_for_person({ id: relation.id })
         ])
       })
@@ -240,7 +239,17 @@
       </router-link>
     </header>
     <h1>Thoughts</h1>
-    <as-textarea @toggle-keyboard="toggle_keyboard" />
+    <as-textarea
+      @toggle-keyboard="toggle_keyboard"
+      @tab-next="
+        e => {
+          const first = statements_ref?.querySelector('figure.poster')
+          if (first) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      " />
     <section v-if="processing_items.length" class="processing">
       <as-svg-processing
         v-for="item in processing_items"
@@ -252,10 +261,9 @@
       v-slot="{ day }"
       :working="working"
       :posters="posters"
-      :thoughts="thoughts"
+      :statements="statements"
       :storytelling="storytelling"
       itemscope
-      :itemid="get_my_itemid('thoughts')"
       @focusin="handle_focus">
       <template v-for="item in day" :key="slot_key(item)">
         <poster-as-figure
@@ -443,7 +451,7 @@
       h4 {
         margin: base-line 0 0 0;
       }
-      article.day p[itemprop='thought']:focus {
+      article.day p[itemprop='statement']:focus {
         font-weight: bolder;
         outline: 0;
       }

@@ -175,7 +175,7 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  * @typedef {Object} Sync_Deps
  * @property {import('vue').Ref<HTMLElement|null>} sync_element
  * @property {import('vue').Ref<Relation[]>} relations
- * @property {import('vue').Ref<Item[]>} my_thoughts
+ * @property {import('vue').Ref<Item[]>} my_statements
  * @property {import('vue').Ref<Item[]|null>} events
  * @property {import('vue').Ref<{visited?: string}|undefined>} me
  * @property {(event: string, ...args: unknown[]) => void} emit

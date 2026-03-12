@@ -129,6 +129,8 @@
     emit('click', true)
   }
 
+  defineExpose({ toggle_meet: handle_click })
+
   const trigger = ref(null)
   const visibility = useDocumentVisibility()
   const animate = computed(

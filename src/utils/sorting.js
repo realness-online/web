@@ -62,20 +62,50 @@ export const recent_number_first = (first, second) => {
 }
 
 /**
- * @param {Item} first
- * @param {Item} second
+ * @param {Item | Item[]} first
+ * @param {Item | Item[]} second
  * @returns {number}
  */
 export const earlier_weirdo_first = (first, second) =>
   recent_id_first(get_id(second), get_id(first))
 
 /**
- * @param {Item} first
- * @param {Item} second
+ * @param {Item | Item[]} first
+ * @param {Item | Item[]} second
  * @returns {number}
  */
 export const recent_weirdo_first = (first, second) =>
   recent_id_first(get_id(first), get_id(second))
+
+const same_day_type_order = item => {
+  if (Array.isArray(item)) return 0
+  if (item?.type === 'posters') return 1
+  return 2
+}
+
+/**
+ * Same-day sort: statements first, then posters. Today = newest first within type.
+ * @param {Item | Item[]} first
+ * @param {Item | Item[]} second
+ * @returns {number}
+ */
+export const same_day_today = (first, second) => {
+  const by_type = same_day_type_order(first) - same_day_type_order(second)
+  if (by_type !== 0) return by_type
+  return recent_weirdo_first(first, second)
+}
+
+/**
+ * Same-day sort: statements first, then posters. Past days = chronological within type.
+ * @param {Item | Item[]} first
+ * @param {Item | Item[]} second
+ * @returns {number}
+ */
+export const same_day_past = (first, second) => {
+  const by_type = same_day_type_order(first) - same_day_type_order(second)
+  if (by_type !== 0) return by_type
+  return earlier_weirdo_first(first, second)
+}
 
 /**
  * @param {number} time_1

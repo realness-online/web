@@ -1,9 +1,9 @@
 <script setup>
   import Icon from '@/components/icon'
   import { ref } from 'vue'
-  import { use } from '@/use/thought'
+  import { use } from '@/use/statements'
   import { use_keymap } from '@/use/key-commands'
-  const emit = defineEmits(['toggle-keyboard'])
+  const emit = defineEmits(['toggle-keyboard', 'tab-next'])
   defineOptions({ inheritAttrs: false })
   const { save } = use()
   const thought_text = ref(null)
@@ -61,7 +61,8 @@
       placeholder=""
       :spellcheck="true"
       @input="adjust_height"
-      @focusout="prepare_thought" />
+      @focusout="prepare_thought"
+      @keydown.tab.exact="e => emit('tab-next', e)" />
     <button id="done">
       <icon name="finished" />
     </button>

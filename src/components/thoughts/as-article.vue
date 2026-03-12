@@ -123,7 +123,7 @@
       v-for="thought in statements"
       :key="thought.id"
       ref="thought_refs"
-      itemprop="thoughts"
+      itemprop="statements"
       :thought="thought"
       :editable="editable"
       @focused="has_focus"

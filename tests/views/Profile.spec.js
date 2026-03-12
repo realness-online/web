@@ -32,10 +32,10 @@ vi.mock('@/use/people', () => ({
   }
 }))
 
-// Mock thought composable
-vi.mock('@/use/thought', () => ({
+// Mock statements composable
+vi.mock('@/use/statements', () => ({
   use: () => ({
-    thoughts: [],
+    statements: [],
     for_person: vi.fn()
   }),
   slot_key: vi.fn()
