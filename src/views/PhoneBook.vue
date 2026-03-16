@@ -11,11 +11,9 @@
 
   watch(
     () => current_user.value,
-    async new_user => {
-      if (new_user) {
-        await load_phonebook()
-        console.timeEnd('views:PhoneBook')
-      }
+    async () => {
+      await load_phonebook()
+      console.timeEnd('views:PhoneBook')
     },
     { immediate: true }
   )
@@ -32,7 +30,7 @@
     </header>
     <h1>Phonebook</h1>
     <icon v-if="working" name="working" />
-    <nav v-if="current_user" class="profile-list">
+    <nav class="profile-list">
       <as-figure
         v-for="person in phonebook"
         :key="person.id"

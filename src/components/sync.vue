@@ -9,7 +9,7 @@
   import { use as use_sync } from '@/use/sync'
   import { use as use_statements } from '@/use/statements'
   import { use_me, get_my_itemid } from '@/use/people'
-  defineEmits(['active'])
+  defineEmits(['active', 'refreshed'])
   const { me, relations } = use_me()
   const { my_statements: my_editable_statements, update_statement } =
     use_statements()

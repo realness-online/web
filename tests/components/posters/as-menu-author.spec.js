@@ -1,6 +1,11 @@
 import { shallowMount } from '@vue/test-utils'
 import { vi } from 'vitest'
+import { ref } from 'vue'
 import as_author_menu from '@/components/posters/as-menu-author'
+
+vi.mock('@/utils/serverless', () => ({
+  me: ref(undefined)
+}))
 
 // Mock key-commands composable
 vi.mock('@/use/key-commands', () => ({

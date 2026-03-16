@@ -75,7 +75,6 @@ vi.mock('@/use/vectorize', () => ({
     current_processing: { value: null },
     open_camera: vi.fn(),
     select_photo: vi.fn(),
-    can_add: { value: true },
     init_processing_queue: vi.fn(),
     queue_items: { value: [] },
     mount_workers: vi.fn()

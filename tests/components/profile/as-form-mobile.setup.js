@@ -40,7 +40,7 @@ vi.mock('libphonenumber-js', () => {
 
   const mock_fns = {
     AsYouType: vi.fn().mockImplementation(() => ({
-      input: vi.fn(() => '1 (415) 123-4356')
+      input: vi.fn(national_number => national_number ?? '')
     })),
     parseNumber: vi.fn(number_string => {
       const digits = number_string?.replace(/\D/g, '')

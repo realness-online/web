@@ -114,12 +114,15 @@ vi.mock('@/utils/upload-processor', () => ({
   create_hash: vi.fn(() => Promise.resolve('abc123'))
 }))
 
-vi.mock('@/utils/algorithms', () => ({
-  mutex: {
+vi.mock('@/utils/algorithms', () => {
+  const mock_mutex = {
     lock: vi.fn(() => Promise.resolve()),
     unlock: vi.fn()
   }
-}))
+  return {
+    mutex_for: vi.fn(() => mock_mutex)
+  }
+})
 
 vi.mock('@/utils/numbers', () => ({
   JS_TIME: {
@@ -189,21 +192,37 @@ describe('sync composable', () => {
       expect(Offline).toHaveBeenCalledWith('/+1234/thoughts/1000')
     })
 
-    it('handles anonymous posters', async () => {
+    it('skips anonymous poster block when offline empty and signed in', async () => {
+      const { get } = await import('idb-keyval')
+      const { build_local_directory } = await import('@/persistance/Directory')
+
+      get.mockResolvedValue(null)
+
+      await sync_offline_actions()
+
+      expect(build_local_directory).not.toHaveBeenCalled()
+    })
+
+    it('handles anonymous posters when not signed in', async () => {
       const { get, del } = await import('idb-keyval')
       const { build_local_directory } = await import('@/persistance/Directory')
       const { Offline } = await import('@/persistance/Storage')
+      const { current_user } = await import('@/utils/serverless')
 
       get.mockResolvedValue(null)
       build_local_directory.mockResolvedValueOnce({
         items: ['1000', '2000']
       })
+      const was = current_user.value
+      current_user.value = null
 
       await sync_offline_actions()
 
       expect(Offline).toHaveBeenCalledWith('/+/posters/1000')
       expect(Offline).toHaveBeenCalledWith('/+/posters/2000')
       expect(del).toHaveBeenCalledWith('/+/posters/')
+
+      current_user.value = was
     })
   })
 
@@ -236,12 +255,14 @@ describe('sync composable', () => {
     })
 
     it('uses mutex for thread safety', async () => {
-      const { mutex } = await import('@/utils/algorithms')
+      const { mutex_for } = await import('@/utils/algorithms')
+      const index_mutex = mutex_for('sync:index')
 
       await fresh_metadata('/+1234/thoughts/1000')
 
-      expect(mutex.lock).toHaveBeenCalled()
-      expect(mutex.unlock).toHaveBeenCalled()
+      expect(mutex_for).toHaveBeenCalledWith('sync:index')
+      expect(index_mutex.lock).toHaveBeenCalled()
+      expect(index_mutex.unlock).toHaveBeenCalled()
     })
   })
 

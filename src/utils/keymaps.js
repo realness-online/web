@@ -26,12 +26,8 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       'Number Row': '',
-      1: 'nav::Go_Statements',
-      2: 'nav::Go_Posters',
-      3: 'nav::Go_Thoughts',
-      4: 'nav::Go_Phonebook',
-      5: 'nav::Go_Events',
-      6: 'nav::Go_About',
+      1: 'nav::Go_Phonebook',
+      2: 'nav::Go_About',
       0: 'nav::Go_Home',
 
       'Tab Row': '',

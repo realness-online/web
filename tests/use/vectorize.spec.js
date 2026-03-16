@@ -64,12 +64,15 @@ vi.mock('@/persistance/Queue', () => ({
   remove: vi.fn().mockResolvedValue(undefined)
 }))
 
-vi.mock('@/utils/algorithms', () => ({
-  mutex: {
+vi.mock('@/utils/algorithms', () => {
+  const mock_mutex = {
     lock: vi.fn().mockResolvedValue(undefined),
     unlock: vi.fn()
   }
-}))
+  return {
+    mutex_for: vi.fn(() => mock_mutex)
+  }
+})
 
 const mock_poster_constructor = vi.fn()
 const mock_shadow_constructor = vi.fn()
@@ -288,24 +291,6 @@ describe('vectorize composable', () => {
         'environment'
       )
       expect(mock_picker.click).toHaveBeenCalled()
-    })
-  })
-
-  describe('can_add computed', () => {
-    it('returns false when working', () => {
-      vectorize_instance.working.value = true
-      expect(vectorize_instance.can_add.value).toBe(false)
-    })
-
-    it('returns false when new_vector exists', () => {
-      vectorize_instance.new_vector.value = { id: 'test' }
-      expect(vectorize_instance.can_add.value).toBe(false)
-    })
-
-    it('returns true when not working and no new_vector', () => {
-      vectorize_instance.working.value = false
-      vectorize_instance.new_vector.value = null
-      expect(vectorize_instance.can_add.value).toBe(true)
     })
   })
 

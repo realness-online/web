@@ -2,12 +2,8 @@ import { createWebHistory, createRouter } from 'vue-router'
 
 const routes = [
   { path: '/', component: () => import('@/views/Thoughts') },
-  { path: '/navigation', component: () => import('@/views/Navigation') },
-  { path: '/posters', component: () => import('@/views/Posters') },
-  { path: '/events', component: () => import('@/views/Events') },
   { path: '/relations', component: () => import('@/views/Relations') },
   { path: '/phonebook', component: () => import('@/views/PhoneBook') },
-  { path: '/profile', component: () => import('@/views/Profile') },
   { path: '/about', component: () => import('@/views/About') },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]

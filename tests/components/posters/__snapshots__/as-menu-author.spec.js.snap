@@ -13,8 +13,5 @@ exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a po
   <download-vector-stub
     itemid="/+14151234356/posters/1737178477987"
   />
-  <as-button-stub
-    itemid="/+14151234356/posters/1737178477987"
-  />
 </menu>
 `;

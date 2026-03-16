@@ -20,8 +20,9 @@
   import { as_author, as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistance/Storage'
+  import { current_user } from '@/utils/serverless'
   import { use as use_statements, slot_key } from '@/use/statements'
-  import { use as use_people, use_me } from '@/use/people'
+  import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
   import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
@@ -39,7 +40,6 @@
 
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
-  const can_add = inject('can_add')
   const register_account = inject('register_account')
   const account_dialog = ref(null)
   const init_processing_queue = inject('init_processing_queue')
@@ -55,7 +55,7 @@
   /** @type {import('vue').Ref<HTMLDialogElement | null>} */
   const delete_dialog = ref(null)
 
-  const { people } = use_people()
+  const { people, load_phonebook, phonebook } = use_people()
   const {
     for_person: statements_for_person,
     statements,
@@ -68,7 +68,6 @@
     poster_shown,
     posters
   } = use_posters()
-  const { relations } = use_me()
 
   const me_id = () =>
     (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
@@ -144,12 +143,19 @@
   }
 
   const fill_statements = async () => {
-    if (relations.value)
+    if (phonebook.value.length)
       people.value = /** @type {import('@/types').Item[]} */ ([
-        ...relations.value
+        ...phonebook.value
       ])
     const my_id = me_id()
-    if (my_id) people.value.push({ id: my_id, type: 'person' })
+    if (my_id && !people.value.some(p => p.id === my_id))
+      people.value.push({ id: my_id, type: 'person' })
+    const admin_id = import.meta.env.VITE_ADMIN_ID
+    if (!current_user.value && admin_id)
+      people.value.push({
+        id: `/${admin_id.replace(/^\/?/, '')}`,
+        type: 'person'
+      })
 
     await Promise.all(
       people.value.map(async relation => {
@@ -162,13 +168,12 @@
   }
 
   const { register } = use_keymap('Thoughts')
-  register('poster::Create_New', () => {
-    if (can_add?.value) select_photo?.()
-  })
+  register('poster::Create_New', () => select_photo?.())
 
   mounted(async () => {
     if (register_account) register_account(() => account_dialog.value?.show())
     if (set_working) set_working(true)
+    await load_phonebook()
     await fill_statements()
     await init_processing_queue?.()
     working.value = false
@@ -179,6 +184,9 @@
   before_unmount(() => {
     if (register_account) register_account(null)
   })
+
+  const feed_needs_refresh = inject('feed_needs_refresh', null)
+  if (feed_needs_refresh) watch(feed_needs_refresh, () => fill_statements())
 
   if (queue_items)
     watch(
@@ -329,6 +337,8 @@
       height: auto;
       border-radius: base-line;
       background: black-transparent;
+      min-width: 0;
+      max-width: 100%;
       & > a, & > button {
         &.remove {
           standard-shadow: boop;

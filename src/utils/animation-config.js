@@ -43,7 +43,7 @@ export const ANIMATION_SPEED_LEGACY = {
   glacial: 'freeze'
 }
 
-export const DEFAULT_ANIMATION_SPEED = 'amble'
+export const DEFAULT_ANIMATION_SPEED = 'stroll'
 
 const SHORTEST_SYNC = 18
 const SHORT_SYNC = 30

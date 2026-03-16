@@ -16,7 +16,7 @@ import {
 } from 'vue'
 import { create_path_element } from '@/use/path'
 import { IMAGE } from '@/utils/numbers'
-import { mutex } from '@/utils/algorithms'
+import { mutex_for } from '@/utils/algorithms'
 import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistance/Directory'
 import get_item from '@/utils/item'
@@ -351,10 +351,7 @@ export const use = () => {
   const optimizer = ref(/** @type {Worker | null} */ (null))
   const is_mounted = ref(true)
   const workers_mounted = ref(false)
-  const can_add = computed(() => {
-    if (working.value || new_vector.value) return false
-    return true
-  })
+  const mutex = mutex_for('vectorize')
 
   /**
    * Clean up blob references in queue item to release memory
@@ -966,7 +963,6 @@ export const use = () => {
   })
   return {
     vVectorizer: v_vectorizer,
-    can_add,
     select_photo,
     open_selfie_camera,
     open_camera,

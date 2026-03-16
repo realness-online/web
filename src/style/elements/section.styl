@@ -1,5 +1,5 @@
 section.page
-  padding-top: env(safe-area-inset-top)
+  padding-top: s('calc(env(safe-area-inset-top) - (%s * 0.75))', base-line)
   width: 100%
   & > header
     padding: base-line

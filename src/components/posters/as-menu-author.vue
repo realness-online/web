@@ -2,7 +2,6 @@
   import icon from '@/components/icon'
   import ToggleAvatar from '@/components/posters/as-button-avatar'
   import EventAsFieldset from '@/components/events/as-fieldset'
-  import EventAsButton from '@/components/events/as-button'
   import AsDownload from '@/components/download-vector'
   import { is_vector_id } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
@@ -37,8 +36,6 @@
 
     <toggle-avatar v-if="signed_in" :itemid="poster.id" />
     <as-download :itemid="poster.id" />
-
-    <event-as-button :itemid="poster.id" @picker="emit('picker', poster.id)" />
   </menu>
 </template>
 
