@@ -1,14 +1,12 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Sync_Deps} Sync_Deps */
 /** @typedef {import('@/types').Sync_Offline_Item} Sync_Offline_Item */
-import { get, del, set, keys } from 'idb-keyval'
+import { get, del, set } from 'idb-keyval'
 import {
   as_filename,
-  as_author,
   load,
   load_from_network,
-  type_as_list,
-  is_itemid
+  type_as_list
 } from '@/utils/itemid'
 import { get_item } from '@/utils/item'
 import { build_local_directory } from '@/persistance/Directory'
@@ -24,7 +22,7 @@ import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import { current_user, location, metadata } from '@/utils/serverless'
 import { create_hash } from '@/utils/upload-processor'
-import { mutex } from '@/utils/algorithms'
+import { mutex_for } from '@/utils/algorithms'
 import {
   ref,
   onMounted as mounted,
@@ -55,9 +53,6 @@ const create_play = deps => async () => {
     if (!navigator.onLine || !current_user.value) return
     if (!i_am_fresh()) {
       localStorage.sync_time = new Date().toISOString()
-      console.time('sync:prune')
-      await prune(deps)
-      console.timeEnd('sync:prune')
       console.time('sync:sync_me')
       await sync_me()
       console.timeEnd('sync:sync_me')
@@ -79,6 +74,7 @@ const create_play = deps => async () => {
     console.timeEnd('sync:visit')
   } finally {
     if (did_emit) deps.emit('active', false)
+    deps.emit('refreshed')
   }
 }
 
@@ -92,36 +88,6 @@ const visit = async deps => {
     const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
     if (me_el) await new Me().save(me_el)
   }
-}
-
-/** @param {Sync_Deps} deps @returns {Promise<void>} */
-const prune = async deps => {
-  /** @param {Id} id */
-  const is_stranger = id => {
-    const friends = [
-      ...deps.relations.value,
-      { id: localStorage.me, type: 'person' }
-    ]
-    return !friends.some(r => r.id === id)
-  }
-  const everything = /** @type {Id[]} */ (await keys())
-  await Promise.all(
-    everything.map(async itemid => {
-      if (itemid.endsWith('/')) {
-        await del(itemid)
-        return
-      }
-      if (!is_itemid(/** @type {string} */ (itemid))) return
-      if (is_stranger(/** @type {Id} */ (as_author(itemid)))) {
-        await del(itemid)
-        return
-      }
-      const network = await fresh_metadata(itemid)
-      if (!network?.customMetadata) return
-      const hash = await create_hash(await get(itemid))
-      if (network.customMetadata.hash !== hash) await del(itemid)
-    })
-  )
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<void|null>} */
@@ -288,7 +254,8 @@ export const sync_offline_actions = async () => {
     await del('sync:offline')
   }
 
-  // Handle anonymous posters using the same Offline mechanism
+  if (!offline?.length && current_user.value) return
+
   const offline_posters = await build_local_directory(
     /** @type {Id} */ ('/+/posters/')
   )
@@ -317,31 +284,31 @@ const get_index_hash = async itemid =>
  */
 export const fresh_metadata = async itemid => {
   if (itemid.startsWith('/+/')) return DOES_NOT_EXIST
-  await mutex.lock()
+  const path = location(await as_filename(itemid))
+  let network
+  try {
+    network = await metadata(path)
+  } catch (e) {
+    if (
+      e &&
+      typeof e === 'object' &&
+      'code' in e &&
+      /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+    )
+      network = DOES_NOT_EXIST
+    else throw e
+  }
+  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
+
+  const index_mutex = mutex_for('sync:index')
+  await index_mutex.lock()
   try {
     const index = (await get('sync:index')) || {}
-    const path = location(await as_filename(itemid))
-    let network
-    try {
-      network = await metadata(path)
-    } catch (e) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
-      )
-        network = DOES_NOT_EXIST
-      else throw e
-    }
-    if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
-
-    // Create a new index object with the existing data plus the new entry
     const updated_index = { ...index, [itemid]: network }
     await set('sync:index', updated_index)
     return network
   } finally {
-    mutex.unlock()
+    index_mutex.unlock()
   }
 }
 

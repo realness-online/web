@@ -26,25 +26,14 @@ vi.mock('@/use/key-commands', () => ({
 
 // Mock poster composable
 const mock_for_person = vi.fn().mockResolvedValue(undefined)
+const admin_id = import.meta.env.VITE_ADMIN_ID || '/+14151234356'
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
     posters: ref([
-      {
-        id: '/+14151234356/posters/1',
-        type: 'posters'
-      },
-      {
-        id: '/+14151234356/posters/2',
-        type: 'posters'
-      },
-      {
-        id: '/+14151234356/posters/3',
-        type: 'posters'
-      },
-      {
-        id: '/+14151234356/posters/4',
-        type: 'posters'
-      }
+      { id: `${admin_id}/posters/1`, type: 'posters' },
+      { id: `${admin_id}/posters/2`, type: 'posters' },
+      { id: `${admin_id}/posters/3`, type: 'posters' },
+      { id: `${admin_id}/posters/4`, type: 'posters' }
     ]),
     for_person: mock_for_person
   }),

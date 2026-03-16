@@ -1,13 +1,18 @@
 <script setup>
-  import { onMounted as mounted, inject } from 'vue'
+  import { onMounted as mounted, inject, computed } from 'vue'
   import AsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import CallToAction from '@/components/call-to-action'
   import LogoAsLink from '@/components/logo-as-link'
+  import { as_author } from '@/utils/itemid'
   import { use_posters } from '@/use/poster'
   sessionStorage.about = true
   const { posters, for_person: posters_for_admin } = use_posters()
+  const admin_id = import.meta.env.VITE_ADMIN_ID
+  const admin_posters = computed(() =>
+    posters.value.filter(p => as_author(p.id) === admin_id)
+  )
 
   const documentation = inject('documentation')
 
@@ -39,13 +44,13 @@
             that uses SVG.
           </p>
         </header>
-        <as-figure v-if="posters.length" :itemid="posters[0]?.id" />
+        <as-figure v-if="admin_posters.length" :itemid="admin_posters[0]?.id" />
       </section>
     </header>
     <article class="designers">
       <header><h2>Artists</h2></header>
       <section>
-        <as-figure v-if="posters.length" :itemid="posters[1]?.id" />
+        <as-figure v-if="admin_posters.length" :itemid="admin_posters[1]?.id" />
         <header>
           <h2>We call them <strong>Posters</strong></h2>
           <p>
@@ -128,7 +133,7 @@
     <article class="networks">
       <header><h2>Churches, Punks, and Veterans</h2></header>
       <section>
-        <as-figure v-if="posters.length" :itemid="posters[2]?.id" />
+        <as-figure v-if="admin_posters.length" :itemid="admin_posters[2]?.id" />
         <header>
           <h2>Shared values</h2>
           <p>
@@ -209,7 +214,7 @@
     <article class="developers">
       <header><h2>Developers</h2></header>
       <section>
-        <as-figure v-if="posters.length" :itemid="posters[3]?.id" />
+        <as-figure v-if="admin_posters.length" :itemid="admin_posters[3]?.id" />
 
         <header>
           <h2>HTML is Our Database</h2>
@@ -337,7 +342,7 @@
         <preference name="animate" />
       </header>
       <as-figure
-        v-for="poster in posters"
+        v-for="poster in admin_posters"
         :key="poster.id"
         :itemid="poster.id" />
     </section>

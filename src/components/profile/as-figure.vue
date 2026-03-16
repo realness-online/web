@@ -23,6 +23,15 @@
       type: Boolean,
       required: false,
       default: false
+    },
+    display: {
+      type: String,
+      default: 'phonebook',
+      validator: v => ['label', 'phonebook'].includes(v)
+    },
+    poster_itemid: {
+      type: String,
+      default: undefined
     }
   })
   const router = use_router()
@@ -46,16 +55,21 @@
   const vector = ref(null)
   const shown = ref(false)
 
+  const display_itemid = computed(
+    () =>
+      /** @type {Id | undefined} */ (props.person.avatar || props.poster_itemid)
+  )
+
   provide('vector', vector)
 
   const on_show = shown_vector => {
     if (!shown_vector) return
     vector.value = shown_vector
-    if (!vector.value.cutouts) {
+    if (!vector.value.cutouts && display_itemid.value) {
       vector.value.cutouts = {}
       geology_layers.forEach(layer => {
         const layer_id = as_layer_id(
-          /** @type {Id} */ (props.person.avatar),
+          /** @type {Id} */ (display_itemid.value),
           layer
         )
         get(layer_id).then(html_string => {
@@ -71,7 +85,17 @@
 </script>
 
 <template>
-  <figure class="profile">
+  <router-link v-if="display === 'label'" :to="person.id" class="profile label">
+    <as-svg v-if="display_itemid" :itemid="display_itemid" @show="on_show" />
+    <icon v-else name="silhouette" />
+    <as-poster-symbol
+      v-if="display_itemid && shown"
+      :itemid="display_itemid"
+      :vector="vector"
+      :shown="shown" />
+    <span>{{ person.name }}</span>
+  </router-link>
+  <figure v-else class="profile">
     <as-svg
       v-if="person.avatar"
       :itemid="person.avatar"
@@ -99,6 +123,23 @@
 </template>
 
 <style lang="stylus">
+  a.profile.label {
+    display: flex
+    align-items: center
+    gap: base-line * 0.33
+    color: blue
+    & > svg {
+      flex-shrink: 0
+      width: round(base-line * 2, 2)
+      height: round(base-line * 2, 2)
+      border-radius: base-line * 0.25
+    }
+    & > span {
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+    }
+  }
   figure.profile {
     content-visibility: auto;
     contain-intrinsic-size: auto 96px;

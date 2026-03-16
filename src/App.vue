@@ -84,7 +84,6 @@
     current_processing,
     open_camera,
     select_photo,
-    can_add,
     init_processing_queue,
     queue_items
   } = use_vectorize()
@@ -93,7 +92,6 @@
   provide('current_processing', current_processing)
   provide('open_camera', open_camera)
   provide('select_photo', select_photo)
-  provide('can_add', can_add)
   provide('init_processing_queue', init_processing_queue)
   provide('queue_items', queue_items)
 
@@ -207,7 +205,7 @@
   const set_storytelling_slide_width = () => {
     const is_landscape = window.matchMedia('(min-aspect-ratio: 1/1)').matches
     const width =
-      is_landscape && aspect_ratio_mode.value === '1/1' ? '100vh' : '100vw'
+      is_landscape && aspect_ratio_mode.value === '1/1' ? '100dvh' : '100dvw'
     document.documentElement.style.setProperty(
       '--storytelling-slide-width',
       width
@@ -259,6 +257,11 @@
 
   /** @param {boolean} active */
   const sync_active = active => set_working(active)
+  const feed_needs_refresh = ref(0)
+  provide('feed_needs_refresh', feed_needs_refresh)
+  const on_sync_refreshed = () => {
+    feed_needs_refresh.value = Date.now()
+  }
   const online = () => {
     document
       .querySelectorAll('[contenteditable]')
@@ -309,12 +312,11 @@
       <working-border v-if="status === 'working'" />
     </teleport>
     <router-view />
-    <sync @active="sync_active" />
+    <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
     <div id="global-menu">
       <footer id="global-footer">
         <a
-          v-if="can_add"
           id="add-poster"
           tabindex="0"
           aria-label="Add poster"
@@ -336,7 +338,8 @@
         type="button"
         :aria-expanded="footer_visible"
         :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
-        @click="footer_visible = !footer_visible" />
+        @click="footer_visible = !footer_visible"
+        @contextmenu.prevent />
     </div>
 
     <as-dialog-documentation ref="documentation" />
@@ -374,102 +377,102 @@
     }
   }
   div#global-menu {
+    user-select: none;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: min(100%, page-width);
+    bottom: base-line;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
     max-width: page-width;
-    margin: base-line auto;
+    margin: (base-line * 0.25) auto;
+    padding-inline: base-line;
+    box-sizing: border-box;
     z-index: 9;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: base-line * 0.25;
-    padding-bottom: env(safe-area-inset-bottom, 0);
     overflow: visible;
-  }
-  footer#global-footer {
-    width: 100%;
-    background-color: hsla(228, 9.8%, 6%, 0.75);
-    border-radius: base-line;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: base-line;
-    padding: base-line * 0.5;
-    padding-bottom: s('calc(var(--base-line) * 0.5 + env(safe-area-inset-bottom, 0))');
-    pointer-events: none;
-    transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
-    transition-behavior: allow-discrete;
-    @starting-style {
+
+    &:has(button[aria-expanded='false']) #global-footer {
       transform: translateY(100%);
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
     }
-    & > * {
-      pointer-events: auto;
-    }
-    & a#toggle-preferences,
-    & a#add-poster,
-    & a#camera,
-    & label[for='wat'],
-    & a[aria-label='Go to thoughts'] {
-      position: static;
-      color: var(--blue);
-      cursor: pointer;
-      svg {
-        fill: var(--blue);
-        stroke: var(--blue);
-      }
-      &:focus {
-        outline: 2px solid var(--red);
-      }
-    }
-    & a#toggle-preferences svg {
-      width: base-line * 1.35;
-      height: base-line * 1.35;
-    }
-    & a#add-poster svg {
-      width: base-line * 1.35;
-      height: base-line * 1.35;
-    }
-    & a#camera svg {
-      width: base-line * 2;
-      height: base-line * 2;
-    }
-  }
-  div#global-menu:has(button[aria-expanded='false']) #global-footer {
-    transform: translateY(100%);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  div#global-menu > button[aria-expanded='false'] {
-    outline: 2px solid var(--red);
-    outline-offset: base-line * 0.25;
-  }
-  div#global-menu > button {
-    z-index: 10;
-    width: base-line * 4;
-    height: base-line * 0.5;
-    padding: 0;
-    border: none;
-    border-radius: base-line;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    pointer-events: auto;
-    background-color: var(--black-transparent);
-    box-shadow: 0 0 base-line var(--black-transparent);
-    &:hover {
-      background-color: var(--black-background);
-    }
-    &:focus {
+
+    & > button {
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      touch-action: manipulation;
+      user-select: none !important;
       outline: 2px solid var(--red);
       outline-offset: base-line * 0.25;
+      z-index: 10;
+      width: base-line * 4;
+      height: base-line * 0.5;
+      padding: 0;
+      border: none;
+      border-radius: base-line;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      pointer-events: auto;
+      background-color: var(--black-transparent);
+      box-shadow: 0 0 base-line var(--black-transparent);
+      &:hover {
+        background-color: var(--black-background);
+      }
     }
-    &[aria-expanded='true']:focus {
-      outline: none;
+
+    & footer#global-footer {
+      width: 100%;
+      margin base-line * 0.5;
+      background-color: hsla(228, 9.8%, 6%, 0.75);
+      border-radius: base-line;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: base-line;
+      padding: base-line * 0.5;
+      pointer-events: none;
+      transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+      transition-behavior: allow-discrete;
+      @starting-style {
+        transform: translateY(100%);
+        opacity: 0;
+        visibility: hidden;
+      }
+      & > * {
+        pointer-events: auto;
+      }
+      & a#toggle-preferences,
+      & a#add-poster,
+      & a#camera,
+      & label[for='wat'],
+      & a[aria-label='Go to thoughts'] {
+        position: static;
+        color: var(--blue);
+        cursor: pointer;
+        svg {
+          fill: var(--blue);
+          stroke: var(--blue);
+        }
+        &:focus {
+          outline: 2px solid var(--red);
+        }
+      }
+      & a#toggle-preferences svg {
+        width: base-line * 1.35;
+        height: base-line * 1.35;
+      }
+      & a#add-poster svg {
+        width: base-line * 1.35;
+        height: base-line * 1.35;
+      }
+      & a#camera svg {
+        width: base-line * 2;
+        height: base-line * 2;
+      }
     }
   }
 </style>

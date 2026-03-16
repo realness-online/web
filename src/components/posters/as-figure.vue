@@ -1,9 +1,8 @@
 <script setup>
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
-  import AsLink from '@/components/profile/as-link'
+  import AsFigure from '@/components/profile/as-figure'
   import AsDownload from '@/components/download-vector'
-  import AsMessenger from '@/components/profile/as-messenger'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   import {
@@ -11,8 +10,7 @@
     as_author,
     load_from_cache,
     load,
-    as_layer_id,
-    as_created_at
+    as_layer_id
   } from '@/utils/itemid'
   import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -23,8 +21,7 @@
     geology_layers
   } from '@/use/poster'
   import { mosaic } from '@/utils/preference'
-  import { as_time } from '@/utils/date'
-  import { current_user } from '@/utils/serverless'
+  import { use_delegated_pan } from '@/use/delegated-pan'
   import {
     ref,
     computed,
@@ -48,6 +45,11 @@
     slice: {
       type: Boolean,
       default: undefined
+    },
+    profile_display: {
+      type: String,
+      default: 'label',
+      validator: v => ['label', 'phonebook'].includes(v)
     }
   })
   const emit = defineEmits({
@@ -55,12 +57,10 @@
     show: is_vector
   })
   const poster = ref(null)
+  provide('pan_delegator', use_delegated_pan(poster))
   const vector = ref(null)
   const person = ref(null)
   const menu_open = ref(false)
-  const posted_at = computed(() =>
-    as_time(new Date(as_created_at(/** @type {Id} */ (props.itemid))))
-  )
 
   const vector_click = () => {
     if (!props.menu) return
@@ -211,13 +211,12 @@
     <figcaption v-if="menu_open">
       <slot>
         <menu>
-          <as-link v-if="current_user" :itemid="/** @type {Id} */ (itemid)">
-            <time>{{ posted_at }}</time>
-          </as-link>
+          <as-figure
+            v-if="person"
+            :person="person"
+            :display="profile_display"
+            :poster_itemid="profile_display === 'label' ? itemid : undefined" />
           <span class="actions">
-            <as-messenger
-              v-if="current_user"
-              :itemid="/** @type {Id} */ (itemid)" />
             <as-download :itemid="/** @type {Id} */ (itemid)" />
           </span>
         </menu>
@@ -248,6 +247,12 @@
     &:focus {
       outline: 0.25px solid red;
       outline-offset: base-line * 0.25;
+    }
+    &:has(menu) {
+      min-height: auto;
+      svg[itemtype='/posters'] {
+        min-height: auto;
+      }
     }
     @media (orientation: landscape), (min-width: page-width) {
       &:has(svg.landscape) {
@@ -301,6 +306,7 @@
         align-items: center;
         padding: base-line;
         & > a,
+        & > figure,
         & > nav,
         & > button,
         & > fieldset,
@@ -312,7 +318,8 @@
           gap: base-line;
           align-items: center;
         }
-        & > a.profile {
+        & > a.profile,
+        & > figure.profile {
           z-index: 2;
           position: relative;
           animation-name: fade-in;
@@ -337,6 +344,7 @@
           standard-shadow: boop;
         }
         & > a.profile > svg,
+        & > figure.profile > svg,
         & > span.actions svg {
           fill: blue;
         }

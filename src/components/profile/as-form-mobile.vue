@@ -8,8 +8,7 @@
     phone_code,
     valid_phone,
     parse_phone,
-    as_you_type,
-    format_phone
+    as_you_type
   } from '@/utils/phone'
   import {
     onMounted as mounted,
@@ -46,13 +45,7 @@
     return `+${code}${mobile_number.value}`
   })
 
-  const mobile_display = computed(() => {
-    if (mobile_number.value) {
-      const formatted = format_phone(full_phone.value)
-      return formatted || mobile_number.value
-    }
-    return 'Mobile'
-  })
+  const mobile_display = computed(() => mobile_number.value || 'Mobile')
 
   const placeholder = computed(() =>
     country_code.value === default_country ? '(555) 555-5555' : null
@@ -106,25 +99,39 @@
   }
 
   const mobile_keypress = event => {
-    if (!event.key.match(/^\d$/)) event.preventDefault()
+    const { key } = event
+    if (key.match(/^\d$/) || (key === '+' && !mobile_number.value)) return
+    event.preventDefault()
+  }
+
+  const parse_and_apply = (raw, fallback_country) => {
+    const parsed = parse_phone(raw, fallback_country)
+    if (!parsed?.nationalNumber) return
+    if (parsed.country) country_code.value = parsed.country
+    const formatter = new as_you_type(parsed.country || fallback_country)
+    mobile_number.value = formatter.input(parsed.nationalNumber)
+    validate_mobile_number()
   }
 
   const mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
-    const parsed = parse_phone(past_text, country_code.value)
-    if (parsed?.nationalNumber) {
-      mobile_number.value = parsed.nationalNumber
-      validate_mobile_number()
-    }
+    parse_and_apply(past_text, country_code.value)
   }
 
   const handle_input = () => {
-    if (mobile_number.value) {
-      const formatter = new as_you_type(country_code.value)
-      const formatted = formatter.input(mobile_number.value)
-      mobile_number.value = formatted
+    const raw = mobile_number.value
+    if (!raw) {
+      validate_mobile_number()
+      return
     }
-    validate_mobile_number()
+    const parsed = parse_phone(raw, country_code.value)
+    if (parsed?.isValid?.() && parsed.country && parsed.nationalNumber)
+      parse_and_apply(raw, country_code.value)
+    else {
+      const formatter = new as_you_type(country_code.value)
+      mobile_number.value = formatter.input(raw)
+      validate_mobile_number()
+    }
   }
 
   const code_keypress = event => {
@@ -140,7 +147,10 @@
 
   mounted(() => {
     working.value = false
-    if (me.value?.id) mobile_number.value = as_phone_number(me.value.id)
+    if (me.value?.id) {
+      const raw = `+${as_phone_number(me.value.id)}`
+      parse_and_apply(raw, country_code.value)
+    }
 
     show_authorize.value = true
     validate_mobile_number()

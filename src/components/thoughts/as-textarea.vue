@@ -86,7 +86,12 @@
       color: var(--rocks);
       caret-color: var(--rocks);
       outline: 0;
-      min-height: base-line;
+       min-height: base-line;
+      @media (prefers-color-scheme: light) {
+        background-color: transparent;
+        border: none;
+        border: 1px solid var(--red);
+      }
       @media (prefers-color-scheme: dark) {
         color: white-text;
       }

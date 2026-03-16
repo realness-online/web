@@ -1,7 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
 import { ref } from 'vue'
+import { shallowMount } from '@vue/test-utils'
 import Thoughts from '@/views/Thoughts.vue'
+
+const { mock_current_user_ref } = vi.hoisted(() => {
+  const mock_current_user_ref = { value: { uid: 'test-user' } }
+  return { mock_current_user_ref }
+})
+
+vi.mock('@/utils/serverless', () => ({
+  get current_user() {
+    return mock_current_user_ref
+  },
+  directory: vi.fn().mockResolvedValue({ items: [], prefixes: [] }),
+  url: vi.fn().mockResolvedValue(null),
+  me: { value: undefined }
+}))
 
 // Mock localStorage
 Object.defineProperty(window, 'localStorage', {
@@ -25,17 +39,21 @@ vi.mock('@/use/key-commands', () => ({
 
 // Mock people composable
 const mock_people = ref([])
-const mock_relations = ref([{ id: '/+14151234356/people/1', type: 'person' }])
+const mock_phonebook = ref([{ id: '/+14151234356/people/1', type: 'person' }])
+const mock_load_phonebook = vi.fn().mockResolvedValue(undefined)
 vi.mock('@/use/people', () => ({
   use: () => ({
     people: mock_people,
-    relations: mock_relations
+    phonebook: mock_phonebook,
+    load_phonebook: mock_load_phonebook
   }),
-  use_me: () => ({
-    relations: mock_relations,
-    blocked: ref([])
-  }),
-  get_my_itemid: vi.fn(type => `/+14151234356/${type}`)
+  get_my_itemid: vi.fn(type => `/+14151234356/${type}`),
+  is_person: maybe => {
+    if (typeof maybe !== 'object') return false
+    if (maybe.type !== 'person') return false
+    if (!maybe.id) return false
+    return true
+  }
 }))
 
 // Mock poster composable
@@ -85,16 +103,17 @@ describe('Thoughts', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mock_current_user_ref.value = { uid: 'test-user' }
     mock_statements.value = []
     mock_people.value = []
-    mock_relations.value = [{ id: '/+14151234356/people/1', type: 'person' }]
+    mock_phonebook.value = [{ id: '/+14151234356/people/1', type: 'person' }]
 
     wrapper = shallowMount(Thoughts, {
       global: {
         provide: {
           set_working,
           select_photo: vi.fn(),
-          can_add: ref(true),
+          register_account: vi.fn(),
           init_processing_queue: vi.fn(),
           queue_items: ref([])
         },
@@ -152,7 +171,7 @@ describe('Thoughts', () => {
   })
 
   describe('Functionality', () => {
-    it('fills statements with relations on mount', async () => {
+    it('fills statements with phonebook on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))
       expect(mock_statements_for_person).toHaveBeenCalled()
@@ -178,6 +197,64 @@ describe('Thoughts', () => {
       expect(wrapper.find('section#thoughts').classes()).toContain(
         'storytelling'
       )
+    })
+
+    it('adds admin to people and fetches admin thoughts when not signed in', async () => {
+      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      mock_current_user_ref.value = null
+      mock_phonebook.value = []
+      const original_me = window.localStorage.me
+      Object.defineProperty(window.localStorage, 'me', {
+        value: undefined,
+        writable: true
+      })
+
+      const local_wrapper = shallowMount(Thoughts, {
+        global: {
+          provide: {
+            set_working: vi.fn(),
+            select_photo: vi.fn(),
+            register_account: vi.fn(),
+            init_processing_queue: vi.fn(),
+            queue_items: ref([])
+          },
+          stubs: {
+            icon: true,
+            'logo-as-link': true,
+            'as-days': {
+              template:
+                '<section class="as-days-stub"><slot v-bind="{}" /></section>',
+              props: ['working', 'posters', 'statements']
+            },
+            'thought-as-article': {
+              template: '<article class="article-stub"></article>',
+              props: ['statements', 'verbose'],
+              emits: ['show']
+            },
+            'poster-as-figure': {
+              template: '<figure class="poster-stub"></figure>',
+              props: ['itemid'],
+              emits: ['show']
+            }
+          }
+        }
+      })
+
+      await local_wrapper.vm.$nextTick()
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(mock_statements_for_person).toHaveBeenCalledWith({
+        id: '/+14151234356'
+      })
+      expect(mock_people.value.some(p => p.id === '/+14151234356')).toBe(true)
+
+      vi.unstubAllEnvs()
+      mock_current_user_ref.value = { uid: 'test-user' }
+      mock_phonebook.value = [{ id: '/+14151234356/people/1', type: 'person' }]
+      Object.defineProperty(window.localStorage, 'me', {
+        value: original_me,
+        writable: true
+      })
     })
   })
 })

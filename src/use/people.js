@@ -52,23 +52,21 @@ export const use = () => {
     Promise.all(ids.map(id => load_person(/** @type {Item} */ ({ id }))))
 
   const load_phonebook = async () => {
-    if (!current_user.value) return
-
     try {
       working.value = true
       if (set_working) set_working(true)
       phonebook.value = []
       load_blocked()
 
-      const people = await directory('people/')
-      if (!people?.prefixes?.length) {
+      const people_list = await directory('people/')
+      if (!people_list?.prefixes?.length) {
         working.value = false
         if (set_working) set_working(false)
         return
       }
 
       const loaded_people = await Promise.all(
-        people.prefixes.map(async phone_number => {
+        people_list.prefixes.map(async phone_number => {
           try {
             const person = await load(
               /** @type {Id} */ (from_e64(phone_number.name))

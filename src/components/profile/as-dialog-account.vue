@@ -19,7 +19,7 @@
     else {
       show_sign_in.value = false
       is_mobile_form_visible.value = false
-      form.value.show()
+      form.value.showModal()
       form.value.focus()
     }
   }
@@ -54,7 +54,7 @@
       if (new_hash === '#account' && form.value) {
         show_sign_in.value = false
         is_mobile_form_visible.value = false
-        form.value.show()
+        form.value.showModal()
         form.value.focus()
       }
     }

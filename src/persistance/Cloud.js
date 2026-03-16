@@ -6,7 +6,7 @@ import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { as_filename, as_type, as_path_parts, as_archive } from '@/utils/itemid'
 import { has_archive } from '@/types'
-import { mutex } from '@/utils/algorithms'
+import { mutex_for } from '@/utils/algorithms'
 import {
   load_directory_from_network,
   as_directory
@@ -206,6 +206,7 @@ export const Cloud = superclass =>
 export default Cloud
 
 export async function sync_later(id, action) {
+  const mutex = mutex_for('sync:offline')
   await mutex.lock()
   const offline = (await get('sync:offline')) || []
   const exists = offline.some(item => item.id === id && item.action === action)
