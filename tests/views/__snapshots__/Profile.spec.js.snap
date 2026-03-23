@@ -24,8 +24,8 @@ exports[`Profile > renders profile view 1`] = `
   <as-days-stub
     events=""
     paginate="true"
-    posters="[object Object]"
-    statements="[object Object]"
+    posters=""
+    statements=""
     storytelling="false"
     working="false"
   />
