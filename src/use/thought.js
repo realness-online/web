@@ -2,8 +2,8 @@
 /** @typedef {import('@/types').PersonQuery} PersonQuery */
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
-/** @typedef {import('@/types').Thought_Item} Thought_Item */
 /** @typedef {import('@/types').Statement} Statement */
+/** @typedef {import('@/types').Statements} Statements */
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
 import { hydrate } from '@/utils/item'
@@ -48,7 +48,7 @@ export const use = () => {
   const set_working = inject('set_working')
 
   /**
-   * @param {Statement} stmt
+   * @param {Statements} stmt
    */
   const statement_shown = async stmt => {
     const oldest = stmt[stmt.length - 1]
@@ -161,7 +161,7 @@ export const use = () => {
         section.setAttribute('itemscope', '')
         section.setAttribute('itemid', `${localStorage.me}/thoughts`)
         migrated.forEach(
-          /** @param {import('@/types').Thought_Item} item */
+          /** @param {import('@/types').Item & { thought?: string }} item */
           item => {
             const div = document.createElement('div')
             div.setAttribute('itemscope', '')
@@ -200,13 +200,13 @@ export const use = () => {
 }
 
 /**
- * @param {Thought_Item[]} sacred_thoughts
- * @returns {Statement[]}
+ * @param {Statement[]} sacred_thoughts
+ * @returns {Statements[]}
  */
 export function as_statements(sacred_thoughts) {
   const thoughts = /** @type {Item[]} */ ([...sacred_thoughts])
   thoughts.sort(recent_item_first)
-  const statements = /** @type {Statement[]} */ ([])
+  const statements = /** @type {Statements[]} */ ([])
   while (thoughts.length) {
     const [thought] = thoughts.splice(-1, 1)
     if (!thought) break
@@ -215,14 +215,14 @@ export function as_statements(sacred_thoughts) {
       const [next] = thoughts.splice(-1, 1)
       if (next) stmt.push(next)
     }
-    statements.push(/** @type {Statement} */ (stmt))
+    statements.push(/** @type {Statements} */ (stmt))
   }
   return statements
 }
 
 /**
- * @param {Statement} first
- * @param {Statement} second
+ * @param {Statements} first
+ * @param {Statements} second
  */
 export function statements_sort(first, second) {
   const [a] = first
@@ -236,7 +236,7 @@ export const slot_key = item => {
 }
 
 /**
- * @param {Statement} stmt
+ * @param {Statements} stmt
  * @param {Item[]} thoughts
  */
 export function is_train_of_statement(stmt, thoughts) {

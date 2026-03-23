@@ -10,11 +10,11 @@ import AsThought from '@/components/thoughts/as-thought'
 import vector_mock from './mixin_mock'
 
 const thought = {
-  thought: 'I am saying it',
+  statement: 'I am saying it',
   id: '/+14151234356/thoughts/1557614404580'
 }
 const older_thought = {
-  thought: 'I can say all the stuff',
+  statement: 'I can say all the stuff',
   id: '/+14151234356/thoughts/1553460776031'
 }
 

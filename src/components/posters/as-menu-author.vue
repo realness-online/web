@@ -4,13 +4,20 @@
   import EventAsFieldset from '@/components/events/as-fieldset'
   import AsDownload from '@/components/download-vector'
   import { is_vector_id } from '@/use/poster'
-  import { use_keymap } from '@/use/key-commands'
   import { me } from '@/utils/serverless'
   import { computed } from 'vue'
-  const props = defineProps({
+  defineProps({
     poster: {
       type: Object,
       required: true
+    },
+    allow_remove: {
+      type: Boolean,
+      default: true
+    },
+    allow_picker: {
+      type: Boolean,
+      default: true
     }
   })
   const emit = defineEmits({
@@ -18,19 +25,16 @@
     picker: is_vector_id,
     avatar: is_vector_id
   })
-  const { register } = use_keymap('Poster_Menu')
-  register('poster::Remove', () => emit('remove', props.poster.id))
-  register('poster::Make_Avatar', () => emit('avatar', props.poster.id))
   const signed_in = computed(() => !!me.value)
 </script>
 
 <template>
   <event-as-fieldset
-    v-if="poster.picker"
+    v-if="allow_picker && poster.picker"
     :itemid="poster.id"
     @picker="emit('picker', poster.id)" />
   <menu v-else>
-    <a class="remove" @click="emit('remove', poster.id)">
+    <a v-if="allow_remove" class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
 
@@ -40,17 +44,7 @@
 </template>
 
 <style lang="stylus">
-  section#posters > article > figure.poster > figcaption > menu {
-    pointer-events: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: base-line * 0.5;
-    padding: base-line * 0.5;
-    margin: base-line;
-    height: auto;
-    border-radius: base-line
-    background: black-transparent;
+  figure.poster > figcaption > menu {
     & > a,
     & > button {
       &.avatar {

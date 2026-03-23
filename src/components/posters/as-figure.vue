@@ -2,16 +2,21 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsFigure from '@/components/profile/as-figure'
+  import AsThought from '@/components/thoughts/as-thought'
+  import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsDownload from '@/components/download-vector'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
+  /** @typedef {import('@/types').Statement} Statement */
   import {
     as_query_id,
     as_author,
+    as_created_at,
     load_from_cache,
     load,
     as_layer_id
   } from '@/utils/itemid'
+  import { as_time } from '@/utils/date'
   import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
   import {
@@ -25,6 +30,7 @@
   import {
     ref,
     computed,
+    getCurrentInstance as current_instance,
     watchEffect as watch_effect,
     watch,
     onUpdated as updated,
@@ -53,14 +59,26 @@
     },
     /** Statements merged into this poster (same thought); shown in overlay */
     overlay_statements: {
+      /** @type {import('vue').PropType<Statement[] | null>} */
       type: Array,
       default: null
+    },
+    overlay_editable: {
+      type: Boolean,
+      default: false
+    },
+    picker_selected: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits({
     'vector-click': is_click,
-    show: is_vector
+    show: is_vector,
+    remove: is_vector_id,
+    picker: is_vector_id
   })
+  const instance = current_instance()
   const poster = ref(null)
   provide('pan_delegator', use_delegated_pan(poster))
   const vector = ref(null)
@@ -85,8 +103,10 @@
       itemid: props.itemid,
       menu: props.menu
     })
-    if (props.overlay_statements?.length)
+    if (props.overlay_statements?.length) {
       thought_overlay_open.value = !thought_overlay_open.value
+      if (!props.menu) menu_open.value = thought_overlay_open.value
+    }
     vector_click()
   }
   const symbol_loaded = ref({
@@ -98,6 +118,26 @@
   })
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
+  const poster_time = computed(() => {
+    const created_at = as_created_at(/** @type {Id} */ (props.itemid))
+    if (!created_at) return ''
+    return as_time(new Date(created_at))
+  })
+  const profile_path = computed(
+    () => as_author(/** @type {Id} */ (props.itemid)) || ''
+  )
+  const is_my_poster = computed(() => {
+    if (typeof window === 'undefined') return false
+    const my_id = window.localStorage?.me
+    if (!my_id) return false
+    return profile_path.value === my_id
+  })
+  const has_remove_handler = computed(() => !!instance?.vnode.props?.onRemove)
+  const has_picker_handler = computed(() => !!instance?.vnode.props?.onPicker)
+  const author_menu_poster = computed(() => ({
+    id: props.itemid,
+    picker: props.picker_selected
+  }))
   const shown = ref(false)
   const working = ref(true)
   const on_show = async shown_vector => {
@@ -229,32 +269,55 @@
       @show="on_show"
       @click="on_poster_svg_click"
       :focusable="false" />
-    <div
-      v-if="overlay_statements?.length && thought_overlay_open"
-      class="poster-thought-overlay"
-      aria-live="polite">
-      <p v-for="stmt in overlay_statements" :key="stmt.id">
-        {{ stmt.thought ?? stmt.statement ?? '' }}
-      </p>
-    </div>
     <as-poster-symbol
       v-if="shown"
       :itemid="itemid"
       :vector="vector"
       :shown="shown" />
-    <figcaption v-if="menu_open">
-      <slot>
-        <menu>
-          <as-figure
-            v-if="person"
-            :person="person"
-            :display="profile_display"
-            :poster_itemid="profile_display === 'label' ? itemid : undefined" />
-          <span class="actions">
-            <as-download :itemid="/** @type {Id} */ (itemid)" />
-          </span>
-        </menu>
-      </slot>
+    <figcaption v-if="menu_open || thought_overlay_open">
+      <header>
+        <aside
+          v-if="overlay_statements?.length && thought_overlay_open"
+          aria-live="polite">
+          <as-thought
+            v-for="stmt in overlay_statements"
+            :key="stmt.id"
+            :thought="stmt"
+            :editable="overlay_editable" />
+        </aside>
+      </header>
+      <template v-if="menu_open">
+        <footer>
+          <router-link
+            v-if="poster_time && is_my_poster && profile_path"
+            class="poster-time-link"
+            :to="profile_path">
+            <time>{{ poster_time }}</time>
+          </router-link>
+          <time v-else-if="poster_time">{{ poster_time }}</time>
+          <slot>
+            <as-author-menu
+              v-if="is_my_poster"
+              :poster="author_menu_poster"
+              :allow_remove="has_remove_handler"
+              :allow_picker="has_picker_handler"
+              @remove="id => emit('remove', id)"
+              @picker="id => emit('picker', id)" />
+            <menu v-else>
+              <as-figure
+                v-if="person"
+                :person="person"
+                :display="profile_display"
+                :poster_itemid="
+                  profile_display === 'label' ? itemid : undefined
+                " />
+              <span class="actions">
+                <as-download :itemid="/** @type {Id} */ (itemid)" />
+              </span>
+            </menu>
+          </slot>
+        </footer>
+      </template>
     </figcaption>
   </figure>
 </template>
@@ -262,6 +325,7 @@
 <style lang="stylus">
   figure.poster {
     position: relative;
+    display: grid;
     overflow: hidden;
     min-height: 512px;
     content-visibility: auto;
@@ -280,16 +344,16 @@
     &.has-thought-text:not(.thought-overlay-open)::after {
       content: '';
       position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: round((base-line * 0.12), 2);
+      top: round((base-line * 0.18), 2);
+      right: round((base-line * 0.18), 2);
+      bottom: round((base-line * 0.18), 2);
+      left: round((base-line * 0.18), 2);
       z-index: 2;
       pointer-events: none;
-      border-radius: 0 0 round((base-line * 0.03), 2) round((base-line * 0.03), 2);
-      background: hsla(180, 30%, 45%, 0.88);
+      border: round((base-line * 0.1), 2) solid hsla(180, 30%, 45%, 0.88);
+      border-radius: round((base-line * 0.28), 2);
       @media (prefers-color-scheme: dark) {
-        background: hsla(180, 35%, 58%, 0.9);
+        border-color: hsla(180, 35%, 58%, 0.9);
       }
     }
     &:has(svg[style*='aspect-ratio']) {
@@ -329,70 +393,101 @@
     svg {
       z-index: 1;
       &[itemscope] {
+        grid-area: 1 / 1;
         position: relative;
-      }
-    }
-    & > .poster-thought-overlay {
-      position: absolute;
-      top: base-line * 0.5;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - var(--base-line));
-      min-width: min(poster-min-width, 100%);
-      max-width: page-width;
-      max-height: 44%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      z-index: 2;
-      padding: base-line * 0.75 base-line;
-      border-radius: base-line * 0.5;
-      background: white-background;
-      color: black;
-      box-shadow:
-        0 0.08em 0.6em black-barely,
-        0 0.15em 0.5em hsla(228, 9.8%, 6%, 0.12);
-      -webkit-overflow-scrolling: touch;
-      pointer-events: auto;
-      & > p {
-        margin: 0 0 round((base-line * 0.35), 2) 0;
-        font-size: 0.95em;
-        line-height: 1.45;
-        white-space: pre-wrap;
-        word-break: break-word;
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-      @media (prefers-color-scheme: dark) {
-        background: hsla(228, 9.8%, 12%, 0.92);
-        color: white-text;
-        box-shadow:
-          0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
-          0 0.2em 0.65em hsla(0, 0%, 0%, 0.45);
       }
     }
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
     }
     & > figcaption {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      grid-area: 1 / 1;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: space-between;
       transform: none;
       z-index: 3;
       pointer-events: none;
+      padding: base-line;
+      & > header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: base-line * 0.5;
+        flex: 1;
+        min-height: 0;
+        pointer-events: none;
+        & > aside {
+          display: block ;
+          min-height: 0;
+          max-height: none;
+          overflow-y: auto;
+          overflow-x: hidden;
+          z-index: 2;
+          padding: base-line * 0.75 base-line;
+          border-radius: base-line * 0.5;
+          background: white-background;
+          color: black;
+          box-shadow:
+            0 0.08em 0.6em black-barely,
+            0 0.15em 0.5em hsla(228, 9.8%, 6%, 0.12);
+          -webkit-overflow-scrolling: touch;
+          pointer-events: auto;
+          & p[itemprop='statement'] {
+            margin: 0 0 round((base-line * 0.35), 2) 0;
+            font-size: 0.95em;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+          @media (prefers-color-scheme: dark) {
+            background: hsla(228, 9.8%, 12%, 0.92);
+            color: white-text;
+            box-shadow:
+              0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
+              0 0.2em 0.65em hsla(0, 0%, 0%, 0.45);
+          }
+        }
+      }
+      & > footer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: base-line * 0.5;
+        & > a.poster-time-link {
+          pointer-events: auto;
+          text-decoration: none;
+          &:hover > time,
+          &:focus-visible > time {
+            text-decoration: underline;
+          }
+        }
+        & > a.poster-time-link > time,
+        & > time {
+          color: blue;
+          white-space: nowrap;
+          padding: base-line * 0.2 base-line * 0.4;
+          border-radius: base-line * 0.25;
+          background: black-transparent;
+          standard-shadow: boop;
+        }
+      }
 
       menu {
-        pointer-events: none;
+        pointer-events: auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: base-line;
+        gap: base-line * 0.5;
+        padding: base-line * 0.5;
+        height: auto;
+        border-radius: base-line;
+        background: black-transparent;
+        min-width: 0;
+        max-width: page-width;
         svg[itemtype='/posters'] {
           min-height: auto;
         }

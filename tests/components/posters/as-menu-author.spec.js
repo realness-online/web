@@ -7,13 +7,6 @@ vi.mock('@/utils/serverless', () => ({
   me: ref(undefined)
 }))
 
-// Mock key-commands composable
-vi.mock('@/use/key-commands', () => ({
-  use_keymap: () => ({
-    register: vi.fn()
-  })
-}))
-
 // Mock poster data instead of using non-existent get_item
 const poster = {
   id: '/+14151234356/posters/1737178477987',

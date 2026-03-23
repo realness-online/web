@@ -1,12 +1,12 @@
 /** @typedef {import('@/types').PersonQuery} PersonQuery */
 /** @typedef {import('@/types').Item} Item */
-/** @typedef {import('@/types').Statement} Statement */
+/** @typedef {import('@/types').Statements} Statements */
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
 import { hydrate } from '@/utils/item'
 import { as_directory } from '@/persistance/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
-import { Statements } from '@/persistance/Storage'
+import { Statements as statements_storage } from '@/persistance/Storage'
 import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 const links = ['http://', 'https://']
@@ -38,7 +38,7 @@ export const update_single_statement = async (statement_id, new_content) => {
   p.textContent = new_content
   const section = fragment.firstElementChild
   if (!section) return false
-  await new Statements().save(/** @type {Element} */ (section))
+  await new statements_storage().save(/** @type {Element} */ (section))
   return true
 }
 
@@ -49,7 +49,7 @@ export const use = () => {
   )
 
   /**
-   * @param {Statement} stmt
+   * @param {Statements} stmt
    */
   const statement_shown = async stmt => {
     const oldest = stmt[stmt.length - 1]
@@ -126,7 +126,8 @@ export const use = () => {
     const section = scope.querySelector(
       `[itemid="${localStorage.me}/statements"]`
     )
-    if (section) await new Statements().save(/** @type {Element} */ (section))
+    if (section)
+      await new statements_storage().save(/** @type {Element} */ (section))
   }
 
   /**
@@ -185,7 +186,7 @@ export const use = () => {
             section.appendChild(div)
           }
         )
-        await new Statements().save(section)
+        await new statements_storage().save(section)
         loaded = migrated
       }
     }
@@ -213,12 +214,12 @@ export const use = () => {
 
 /**
  * @param {Item[]} sacred_statements
- * @returns {Statement[]}
+ * @returns {Statements[]}
  */
 export function as_thoughts(sacred_statements) {
   const stmts = /** @type {Item[]} */ ([...sacred_statements])
   stmts.sort(recent_item_first)
-  const thoughts = /** @type {Statement[]} */ ([])
+  const thoughts = /** @type {Statements[]} */ ([])
   while (stmts.length) {
     const stmt = stmts.pop()
     if (!stmt) break
@@ -227,14 +228,14 @@ export function as_thoughts(sacred_statements) {
       const next = stmts.pop()
       if (next) thot.push(next)
     }
-    thoughts.push(/** @type {Statement} */ (thot))
+    thoughts.push(/** @type {Statements} */ (thot))
   }
   return thoughts
 }
 
 /**
- * @param {Statement} first
- * @param {Statement} second
+ * @param {Statements} first
+ * @param {Statements} second
  */
 export function thoughts_sort(first, second) {
   const [a] = first
@@ -251,17 +252,17 @@ export const slot_key = item => {
  * Pairs posters with statement-thoughts from the same author when any statement
  * timestamp is within the train-of-thought window of the poster.
  *
- * @param {Array<import('@/types').Statement | import('@/types').Item>} day_items
+ * @param {Array<import('@/types').Statements | import('@/types').Item>} day_items
  * @returns {{
  *   merged_thought_keys: Set<string>,
- *   poster_to_thought: Map<string, import('@/types').Statement>
+ *   poster_to_thought: Map<string, import('@/types').Statements>
  * }}
  */
 export function poster_thought_overlay_pairs(day_items) {
   const thoughts = day_items.filter(i => Array.isArray(i))
   const items = day_items.filter(
     /**
-     * @param {import('@/types').Item | import('@/types').Statement} i
+     * @param {import('@/types').Item | import('@/types').Statements} i
      * @returns {i is import('@/types').Item}
      */
     i => !Array.isArray(i)
@@ -269,7 +270,7 @@ export function poster_thought_overlay_pairs(day_items) {
   const posters = items.filter(
     i => i && typeof i === 'object' && i.type === 'posters'
   )
-  /** @type {Array<{ poster: import('@/types').Item, thought: import('@/types').Statement, dist: number }>} */
+  /** @type {Array<{ poster: import('@/types').Item, thought: import('@/types').Statements, dist: number }>} */
   const candidates = []
   for (const poster of posters) {
     const poster_ts = as_created_at(poster.id)
@@ -296,7 +297,6 @@ export function poster_thought_overlay_pairs(day_items) {
   for (const c of candidates) {
     if (used_posters.has(c.poster.id)) continue
     const tk = slot_key(c.thought)
-    if (merged_thought_keys.has(tk)) continue
     merged_thought_keys.add(tk)
     used_posters.add(c.poster.id)
     poster_to_thought.set(c.poster.id, c.thought)
@@ -305,7 +305,7 @@ export function poster_thought_overlay_pairs(day_items) {
 }
 
 /**
- * @param {Statement} thot
+ * @param {Statements} thot
  * @param {Item[]} statements
  */
 function is_train_of_thought(thot, statements) {

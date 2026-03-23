@@ -65,14 +65,14 @@ export const default_keymap = [
       ',': 'ui::Open_Settings',
       '.': 'ui::Open_Account',
       '?': 'ui::Show_Documentation',
-      'ctrl-shift-t': 'ui::Clear_Sync_Time'
+      T: 'ui::Clear_Sync_Time'
     },
     descriptions: {
       'ui::Toggle_Presentation': 'Toggle presentation mode',
       'ui::Open_Settings': 'Show preferences',
       'ui::Open_Account': 'Open account dialog',
       'ui::Show_Documentation': 'Show application documentation',
-      'ui::Clear_Sync_Time': 'Clear sync time from localStorage',
+      'ui::Clear_Sync_Time': 'Clear sync time from browser storage',
       'pref::Toggle_Shadow': 'Shadow gradient on posters',
       'pref::Toggle_Menu': 'Show poster menu on click',
       'pref::Toggle_Footer': 'Show/hide global footer',
@@ -101,8 +101,6 @@ export const default_keymap = [
       'pref::Toggle_Sediment': 'Sediment visible',
       'nav::Go_Home': 'To home',
       'nav::Go_Statements': 'To thoughts',
-      'nav::Go_Events': 'To events',
-      'nav::Go_Posters': 'To posters',
       'nav::Go_Phonebook': 'To phonebook',
       'nav::Go_Thoughts': 'To statements',
       'nav::Go_About': 'Learn more about the app and read the documentation'
@@ -137,19 +135,6 @@ export const default_keymap = [
       'poster::Toggle_Play': 'Toggle animation',
       'poster::Previous': 'Previous poster',
       'poster::Next': 'Next poster'
-    }
-  },
-  {
-    context: 'Poster_Menu',
-    use_key_equivalents: true,
-    bindings: {
-      delete: 'poster::Remove',
-      backspace: 'poster::Remove',
-      'ctrl-d': 'poster::Download'
-    },
-    descriptions: {
-      'poster::Remove': 'Remove poster',
-      'poster::Download': 'Download poster'
     }
   },
 

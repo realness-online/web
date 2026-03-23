@@ -1,13 +1,10 @@
 <script setup>
   import icon from '@/components/icon'
-  import {
-    recent_date_first,
-    same_day_today,
-    same_day_past
-  } from '@/utils/sorting'
-  import { as_author } from '@/utils/itemid'
+  import { recent_date_first } from '@/utils/sorting'
+  import { as_author, as_created_at } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { as_thoughts, thoughts_sort, slot_key } from '@/use/statements'
+  import { slot_key } from '@/use/statements'
+  import { thoughts_for_author, thought_feed_slots } from '@/utils/thoughts'
   import {
     ref,
     computed,
@@ -73,14 +70,28 @@
     return items
   })
 
-  const thought_trains = computed(() => {
-    let list = []
-    const by_author = statements_by_people(props.statements)
-    by_author.forEach(their_statements => {
-      list = [...list, ...as_thoughts(their_statements)]
-    })
-    list.sort(thoughts_sort)
-    return list
+  const thought_feed_slots_list = computed(() => {
+    /** @type {unknown[]} */
+    const slots = []
+    const ordered_authors = []
+    const seen = new Set()
+    const note_author = id => {
+      if (seen.has(id)) return
+      seen.add(id)
+      ordered_authors.push(id)
+    }
+    if (props.statements)
+      props.statements.forEach(s => note_author(as_author(s.id)))
+    if (props.posters) props.posters.forEach(p => note_author(as_author(p.id)))
+    for (const author_id of ordered_authors) {
+      const items = [
+        ...(props.statements ?? []).filter(s => as_author(s.id) === author_id),
+        ...(props.posters ?? []).filter(p => as_author(p.id) === author_id)
+      ]
+      for (const th of thoughts_for_author(items))
+        slots.push(...thought_feed_slots(th))
+    }
+    return slots
   })
 
   const check_intersection = entries => {
@@ -93,43 +104,81 @@
     })
   }
 
-  const statements_by_people = statements => {
-    const people = new Map()
-    if (!statements) return []
-    statements.forEach(item => {
-      const author = as_author(item.id)
-      let theirs = people.get(author)
-      if (!theirs) theirs = []
-      theirs.push(item)
-      people.set(author, theirs)
-    })
-    return people
-  }
-
   const refill_days = () => {
     const new_days = new Map()
     new_days[Symbol.iterator] = function* () {
       const page = [...this.entries()].sort(recent_date_first)
       yield* page
     }
-    thought_trains.value.forEach(stmt => insert_into_day(stmt, new_days))
-    props.posters.forEach(poster => insert_into_day(poster, new_days))
-    props.events.forEach(happening => insert_into_day(happening, new_days))
+    thought_feed_slots_list.value.forEach(slot => push_to_day(slot, new_days))
+    props.events.forEach(happening => push_to_day(happening, new_days))
+    for (const day_name of new_days.keys())
+      sort_day_grouped_by_author(
+        day_name,
+        /** @type {unknown[]} */ (new_days.get(day_name))
+      )
     days.value = new_days
   }
 
-  const insert_into_day = (item, days_map) => {
-    let day_name
-    if (item.id) day_name = id_as_day(item.id)
-    else day_name = id_as_day(item[0].id)
-    const day = days_map.get(day_name)
-    if (day && is_today(day_name)) {
-      day.unshift(item)
-      day.sort(same_day_today)
-    } else if (day) {
-      day.push(item)
-      day.sort(same_day_past)
-    } else days_map.set(day_name, [item])
+  /**
+   * @param {unknown} item
+   * @param {Map<string, unknown[]>} days_map
+   */
+  const push_to_day = (item, days_map) => {
+    const day_name = Array.isArray(item)
+      ? id_as_day(item[0].id)
+      : id_as_day(/** @type {import('@/types').Item} */ (item).id)
+    const existing = days_map.get(day_name)
+    if (existing) existing.push(item)
+    else days_map.set(day_name, [item])
+  }
+
+  /**
+   * @param {import('@/types').Statements | import('@/types').Item} slot
+   * @returns {number | null}
+   */
+  const slot_timestamp = slot => {
+    const id = Array.isArray(slot) ? slot[0]?.id : slot.id
+    if (!id) return null
+    return as_created_at(id)
+  }
+
+  /**
+   * @param {string} day_name
+   * @param {unknown[]} day
+   */
+  const sort_day_grouped_by_author = (day_name, day) => {
+    /** @type {Map<string, { slots: Array<import('@/types').Statements | import('@/types').Item> }>} */
+    const by_author = new Map()
+    for (const item of day) {
+      const slot =
+        /** @type {import('@/types').Statements | import('@/types').Item} */ (
+          item
+        )
+      const id = Array.isArray(slot) ? slot[0]?.id : slot.id
+      if (!id) continue
+      const author = as_author(id)
+      let bucket = by_author.get(author)
+      if (!bucket) {
+        bucket = { slots: [] }
+        by_author.set(author, bucket)
+      }
+      bucket.slots.push(slot)
+    }
+    const author_group_anchor = bucket =>
+      bucket.slots.reduce((min, slot) => {
+        const t = slot_timestamp(slot)
+        return t === null ? min : Math.min(min, t)
+      }, Infinity)
+    const ordered_authors = [...by_author.entries()].sort((a, b) => {
+      const anc_a = author_group_anchor(a[1])
+      const anc_b = author_group_anchor(b[1])
+      const by_anchor = is_today(day_name) ? anc_b - anc_a : anc_a - anc_b
+      if (by_anchor !== 0) return by_anchor
+      return String(a[0]).localeCompare(String(b[0]))
+    })
+    day.length = 0
+    for (const [, bucket] of ordered_authors) day.push(...bucket.slots)
   }
 
   watch(
