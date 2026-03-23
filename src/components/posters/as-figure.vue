@@ -50,6 +50,11 @@
       type: String,
       default: 'label',
       validator: v => ['label', 'phonebook'].includes(v)
+    },
+    /** Statements merged into this poster (same thought); shown in overlay */
+    overlay_statements: {
+      type: Array,
+      default: null
     }
   })
   const emit = defineEmits({
@@ -61,10 +66,28 @@
   const vector = ref(null)
   const person = ref(null)
   const menu_open = ref(false)
+  const thought_overlay_open = ref(false)
+
+  watch(
+    () => props.overlay_statements,
+    () => {
+      thought_overlay_open.value = false
+    }
+  )
 
   const vector_click = () => {
     if (!props.menu) return
     menu_open.value = !menu_open.value
+  }
+
+  const on_poster_svg_click = () => {
+    console.info('posters/as-figure: on_poster_svg_click', {
+      itemid: props.itemid,
+      menu: props.menu
+    })
+    if (props.overlay_statements?.length)
+      thought_overlay_open.value = !thought_overlay_open.value
+    vector_click()
   }
   const symbol_loaded = ref({
     boulders: false,
@@ -77,7 +100,6 @@
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const shown = ref(false)
   const working = ref(true)
-
   const on_show = async shown_vector => {
     if (!shown_vector) return
 
@@ -193,6 +215,10 @@
   <figure
     ref="poster"
     class="poster"
+    :class="{
+      'has-thought-text': overlay_statements?.length,
+      'thought-overlay-open': thought_overlay_open && overlay_statements?.length
+    }"
     @focusin="handle_focusin"
     @focusout="handle_focusout"
     @keydown.enter.prevent="activate_poster">
@@ -201,8 +227,16 @@
       :itemid="itemid"
       :slice="slice"
       @show="on_show"
-      @click="vector_click"
+      @click="on_poster_svg_click"
       :focusable="false" />
+    <div
+      v-if="overlay_statements?.length && thought_overlay_open"
+      class="poster-thought-overlay"
+      aria-live="polite">
+      <p v-for="stmt in overlay_statements" :key="stmt.id">
+        {{ stmt.thought ?? stmt.statement ?? '' }}
+      </p>
+    </div>
     <as-poster-symbol
       v-if="shown"
       :itemid="itemid"
@@ -235,11 +269,29 @@
     border-radius: round((base-line * .03), 2);
     grid-row-start: span 2;
     transition:
-      grid-column-start 0.5s ease-in-out,
-      grid-row-start 0.5s ease-in-out,
-      min-height 0.5s ease-in-out
+      grid-column-start 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      grid-column-end 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      grid-row-start 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      grid-row-end 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      min-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.4s cubic-bezier(0.22, 1, 0.36, 1)
     scroll-margin: 50vh;
     scroll-snap-align: center;
+    &.has-thought-text:not(.thought-overlay-open)::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: round((base-line * 0.12), 2);
+      z-index: 2;
+      pointer-events: none;
+      border-radius: 0 0 round((base-line * 0.03), 2) round((base-line * 0.03), 2);
+      background: hsla(180, 30%, 45%, 0.88);
+      @media (prefers-color-scheme: dark) {
+        background: hsla(180, 35%, 58%, 0.9);
+      }
+    }
     &:has(svg[style*='aspect-ratio']) {
       grid-column-start: span 3;
       grid-row-start: auto;
@@ -247,12 +299,6 @@
     &:focus {
       outline: 0.25px solid red;
       outline-offset: base-line * 0.25;
-    }
-    &:has(menu) {
-      min-height: auto;
-      svg[itemtype='/posters'] {
-        min-height: auto;
-      }
     }
     @media (orientation: landscape), (min-width: page-width) {
       &:has(svg.landscape) {
@@ -286,6 +332,48 @@
         position: relative;
       }
     }
+    & > .poster-thought-overlay {
+      position: absolute;
+      top: base-line * 0.5;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - var(--base-line));
+      min-width: min(poster-min-width, 100%);
+      max-width: page-width;
+      max-height: 44%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 2;
+      padding: base-line * 0.75 base-line;
+      border-radius: base-line * 0.5;
+      background: white-background;
+      color: black;
+      box-shadow:
+        0 0.08em 0.6em black-barely,
+        0 0.15em 0.5em hsla(228, 9.8%, 6%, 0.12);
+      -webkit-overflow-scrolling: touch;
+      pointer-events: auto;
+      & > p {
+        margin: 0 0 round((base-line * 0.35), 2) 0;
+        font-size: 0.95em;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        background: hsla(228, 9.8%, 12%, 0.92);
+        color: white-text;
+        box-shadow:
+          0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
+          0 0.2em 0.65em hsla(0, 0%, 0%, 0.45);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      transition-duration: 0.01ms;
+    }
     & > figcaption {
       position: absolute;
       top: 0;
@@ -305,6 +393,9 @@
         justify-content: space-between;
         align-items: center;
         padding: base-line;
+        svg[itemtype='/posters'] {
+          min-height: auto;
+        }
         & > a,
         & > figure,
         & > nav,

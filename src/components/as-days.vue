@@ -65,7 +65,10 @@
     const items = []
     const days_to_use = props.paginate ? filtered_days.value : days.value
     for (const [date, day] of days_to_use)
-      for (const item of day) items.push({ item, date })
+      for (const item of day) {
+        if (Array.isArray(item)) continue
+        items.push({ item, date })
+      }
 
     return items
   })

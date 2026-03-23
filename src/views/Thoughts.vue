@@ -21,7 +21,11 @@
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistance/Storage'
   import { current_user } from '@/utils/serverless'
-  import { use as use_statements, slot_key } from '@/use/statements'
+  import {
+    use as use_statements,
+    slot_key,
+    poster_thought_overlay_pairs
+  } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_keymap } from '@/use/key-commands'
@@ -150,10 +154,17 @@
     const my_id = me_id()
     if (my_id && !people.value.some(p => p.id === my_id))
       people.value.push({ id: my_id, type: 'person' })
-    const admin_id = import.meta.env.VITE_ADMIN_ID
-    if (!current_user.value && admin_id)
+    const admin_raw = import.meta.env.VITE_ADMIN_ID
+    const admin_itemid = admin_raw
+      ? /** @type {Id} */ (`/${String(admin_raw).replace(/^\/?/, '')}`)
+      : null
+    if (
+      !current_user.value &&
+      admin_itemid &&
+      !people.value.some(p => p.id === admin_itemid)
+    )
       people.value.push({
-        id: `/${admin_id.replace(/^\/?/, '')}`,
+        id: admin_itemid,
         type: 'person'
       })
 
@@ -169,6 +180,15 @@
 
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
+
+  watch(
+    () => current_user.value,
+    async user => {
+      if (!user) return
+      await load_phonebook()
+      await fill_statements()
+    }
+  )
 
   mounted(async () => {
     if (register_account) register_account(() => account_dialog.value?.show())
@@ -205,6 +225,32 @@
       scroll_position.value = null
     }
   })
+
+  const overlay_cache = new WeakMap()
+  /**
+   * @param {unknown[]} day
+   */
+  const overlay_for_day = day => {
+    let hit = overlay_cache.get(day)
+    if (!hit) {
+      hit = poster_thought_overlay_pairs(
+        /** @type {import('@/types').Item[]} */ (day)
+      )
+      overlay_cache.set(day, hit)
+    }
+    return hit
+  }
+
+  /**
+   * @param {unknown[]} day
+   * @param {import('@/types').Item} poster
+   */
+  const overlay_statements_for_poster = (day, poster) => {
+    const thought = overlay_for_day(day).poster_to_thought.get(poster.id)
+    if (!thought) return null
+    if (is_editable(thought)) return null
+    return thought
+  }
 </script>
 
 <template>
@@ -279,6 +325,7 @@
           :itemid="item.id"
           :menu="menu"
           :slice="aspect_ratio_mode !== 'auto'"
+          :overlay_statements="overlay_statements_for_poster(day, item)"
           tabindex="0"
           :class="{
             'selecting-event': is_picker_selected(item),
@@ -292,7 +339,11 @@
             @picker="picker" />
         </poster-as-figure>
         <thought-as-article
-          v-else-if="item.type !== 'posters'"
+          v-else-if="
+            item.type !== 'posters' &&
+            (!overlay_for_day(day).merged_thought_keys.has(slot_key(item)) ||
+              is_editable(item))
+          "
           :statements="item"
           :editable="is_editable(item)"
           verbose
@@ -389,7 +440,8 @@
       min-height: 100vh;
       & > header,
       & > h1,
-      & > section.processing {
+      & > section.processing,
+      & > .posting-input {
         display: none;
       }
     }

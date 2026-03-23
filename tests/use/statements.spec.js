@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
 import { ref, defineComponent, nextTick as tick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { use, as_thoughts, thoughts_sort, slot_key } from '@/use/statements'
+import {
+  use,
+  as_thoughts,
+  thoughts_sort,
+  slot_key,
+  poster_thought_overlay_pairs
+} from '@/use/statements'
 
 beforeAll(() => {
   Object.defineProperty(window, 'localStorage', {
@@ -265,6 +271,46 @@ describe('thoughts_sort', () => {
     const result = thoughts_sort(stmt1, stmt2)
 
     expect(result).toBe(0)
+  })
+})
+
+describe('poster_thought_overlay_pairs', () => {
+  const author = '/+1000000000000'
+  const stmt_ts = 1_700_000_000_000
+  const poster_near = `${author}/posters/${stmt_ts + 60_000}`
+  const stmt_near = `${author}/statements/${stmt_ts}`
+
+  it('pairs poster with thought when within thirteen minutes', () => {
+    const thought = [{ id: stmt_near, statement: 'hello' }]
+    const poster = { id: poster_near, type: 'posters' }
+    const { merged_thought_keys, poster_to_thought } =
+      poster_thought_overlay_pairs([thought, poster])
+
+    expect(merged_thought_keys.has(slot_key(thought))).toBe(true)
+    expect(poster_to_thought.get(poster_near)).toBe(thought)
+  })
+
+  it('does not pair different authors', () => {
+    const thought = [{ id: '/+1111111111111/statements/1990', statement: 'a' }]
+    const poster = { id: poster_near, type: 'posters' }
+    const { merged_thought_keys, poster_to_thought } =
+      poster_thought_overlay_pairs([thought, poster])
+
+    expect(merged_thought_keys.size).toBe(0)
+    expect(poster_to_thought.size).toBe(0)
+  })
+
+  it('does not pair when more than thirteen minutes apart', () => {
+    const far_stmt = `${author}/statements/${stmt_ts}`
+    const far_poster = `${author}/posters/${stmt_ts + 800_000}`
+    const thought = [{ id: far_stmt, statement: 'old' }]
+    const poster = { id: far_poster, type: 'posters' }
+    const { merged_thought_keys } = poster_thought_overlay_pairs([
+      thought,
+      poster
+    ])
+
+    expect(merged_thought_keys.size).toBe(0)
   })
 })
 

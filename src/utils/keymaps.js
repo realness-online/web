@@ -122,7 +122,9 @@ export const default_keymap = [
       q: 'poster::Toggle_Meet_Slice',
       space: 'poster::Toggle_Play',
       left: 'poster::Previous',
-      right: 'poster::Next'
+      right: 'poster::Next',
+      ArrowUp: 'pref::Slice_Alignment_Up',
+      ArrowDown: 'pref::Slice_Alignment_Down'
     },
     descriptions: {
       'poster::Reset_Zoom': 'Reset zoom',

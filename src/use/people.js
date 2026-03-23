@@ -29,6 +29,15 @@ export const load_blocked = () => {
   }
 }
 
+/**
+ * @returns {Id | null}
+ */
+const admin_person_id_from_env = () => {
+  const raw = import.meta.env.VITE_ADMIN_ID
+  if (!raw) return null
+  return /** @type {Id} */ (`/${String(raw).replace(/^\/?/, '')}`)
+}
+
 export const use = () => {
   const set_working = inject('set_working')
   const phonebook = ref(/** @type {Person[]} */ ([]))
@@ -58,46 +67,52 @@ export const use = () => {
       phonebook.value = []
       load_blocked()
 
-      const people_list = await directory('people/')
-      if (!people_list?.prefixes?.length) {
-        working.value = false
-        if (set_working) set_working(false)
-        return
-      }
+      if (current_user.value) {
+        const people_list = await directory('people/')
+        if (!people_list?.prefixes?.length) {
+          working.value = false
+          if (set_working) set_working(false)
+          return
+        }
 
-      const loaded_people = await Promise.all(
-        people_list.prefixes.map(async phone_number => {
-          try {
-            const person = await load(
-              /** @type {Id} */ (from_e64(phone_number.name))
-            )
-            return person || null
-          } catch (err) {
-            console.error(
-              'Failed to load person:',
-              phone_number.name,
-              err instanceof Error ? err.message : String(err)
-            )
-            return null
-          }
-        })
-      )
-
-      // Filter out nulls, duplicates, and blocked
-      const blocked_ids = new Set(blocked.value)
-      const seen = new Set()
-      phonebook.value = /** @type {Person[]} */ (
-        /** @type {unknown} */ (
-          loaded_people.filter(person => {
-            if (!person || blocked_ids.has(person.id)) return false
-            if (seen.has(person.id)) return false
-            seen.add(person.id)
-            return true
+        const loaded_people = await Promise.all(
+          people_list.prefixes.map(async phone_number => {
+            try {
+              const person = await load(
+                /** @type {Id} */ (from_e64(phone_number.name))
+              )
+              return person || null
+            } catch (err) {
+              console.error(
+                'Failed to load person:',
+                phone_number.name,
+                err instanceof Error ? err.message : String(err)
+              )
+              return null
+            }
           })
         )
-      )
 
-      // Re-enable sorting
+        const blocked_ids = new Set(blocked.value)
+        const seen = new Set()
+        phonebook.value = /** @type {Person[]} */ (
+          /** @type {unknown} */ (
+            loaded_people.filter(person => {
+              if (!person || blocked_ids.has(person.id)) return false
+              if (seen.has(person.id)) return false
+              seen.add(person.id)
+              return true
+            })
+          )
+        )
+      } else {
+        const admin_id = admin_person_id_from_env()
+        if (admin_id) {
+          const person = await load(admin_id)
+          if (person && is_person(person)) phonebook.value = [person]
+        }
+      }
+
       phonebook.value.sort(recent_visit_first)
     } catch (err) {
       console.error(
@@ -171,9 +186,14 @@ export const get_my_itemid = type => {
 }
 export const as_phone_number = (id = '/+1') => id.substring(2)
 export const from_e64 = e64_number => `/${e64_number}`
+/**
+ * @param {unknown} maybe
+ * @returns {maybe is Person}
+ */
 export const is_person = maybe => {
-  if (typeof maybe !== 'object') return false
-  if (maybe.type !== 'person') return false
-  if (!maybe.id) return false
+  if (typeof maybe !== 'object' || maybe === null) return false
+  const candidate = /** @type {{ type?: unknown; id?: unknown }} */ (maybe)
+  if (candidate.type !== 'person') return false
+  if (!candidate.id) return false
   return true
 }

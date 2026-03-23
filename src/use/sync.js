@@ -68,13 +68,13 @@ const create_play = deps => async () => {
       console.time('sync:sync_posters_directory')
       await sync_posters_directory()
       console.timeEnd('sync:sync_posters_directory')
+      deps.emit('refreshed')
     }
     console.time('sync:visit')
     await visit(deps)
     console.timeEnd('sync:visit')
   } finally {
     if (did_emit) deps.emit('active', false)
-    deps.emit('refreshed')
   }
 }
 
@@ -181,10 +181,13 @@ const sync_events = async deps => {
   }
 }
 
-/** @returns {import('@/types').Sync_Return} */
-export const use = () => {
+/**
+ * @param {(event: string, ...args: unknown[]) => void} [component_emit]
+ * @returns {import('@/types').Sync_Return}
+ */
+export const use = component_emit => {
   const instance = current_instance()
-  const emit = instance?.emit ?? (() => {})
+  const emit = component_emit ?? instance?.emit ?? (() => {})
   const { me, relations } = use_me()
   const { my_statements } = use_statements()
   const events = ref(null)

@@ -1,6 +1,20 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  beforeAll,
+  afterEach
+} from 'vitest'
 import { ref, defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
+
+const { mock_current_user_ref } = vi.hoisted(() => ({
+  mock_current_user_ref: {
+    value: /** @type {{ uid: string } | null} */ ({ uid: 'test-user' })
+  }
+}))
 
 // Mock localStorage BEFORE importing the module
 beforeAll(() => {
@@ -29,7 +43,9 @@ vi.mock('@/utils/itemid', () => ({
 }))
 
 vi.mock('@/utils/serverless', () => ({
-  current_user: ref({ uid: 'test-user' }),
+  get current_user() {
+    return mock_current_user_ref
+  },
   me: ref({
     id: '/+14151234356',
     name: 'Scott Fryxell',
@@ -68,6 +84,11 @@ function with_setup(composable) {
 describe('people composable', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mock_current_user_ref.value = { uid: 'test-user' }
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   describe('use()', () => {
@@ -99,6 +120,29 @@ describe('people composable', () => {
       await load_people([{ id: '/+1234' }, { id: '/+5678' }])
 
       expect(people.value).toHaveLength(2)
+    })
+
+    it('load_phonebook lists storage when signed in', async () => {
+      mock_current_user_ref.value = { uid: 'test-user' }
+      const { directory } = await import('@/utils/serverless')
+      const { load_phonebook, phonebook } = with_setup(use)
+      await load_phonebook()
+      expect(directory).toHaveBeenCalledWith('people/')
+      expect(phonebook.value.length).toBeGreaterThan(0)
+    })
+
+    it('load_phonebook loads only admin when signed out', async () => {
+      mock_current_user_ref.value = null
+      vi.stubEnv('VITE_ADMIN_ID', '+19995551234')
+      const { directory } = await import('@/utils/serverless')
+      const { load } = await import('@/utils/itemid')
+      const { load_phonebook, phonebook } = with_setup(use)
+      await load_phonebook()
+      expect(directory).not.toHaveBeenCalled()
+      expect(load).toHaveBeenCalledWith('/+19995551234')
+      expect(phonebook.value).toEqual([
+        expect.objectContaining({ id: '/+19995551234', type: 'person' })
+      ])
     })
   })
 
