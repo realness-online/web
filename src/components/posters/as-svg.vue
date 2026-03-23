@@ -18,8 +18,6 @@
     use as use_poster,
     is_vector,
     is_vector_id,
-    is_click,
-    is_focus,
     geology_layers
   } from '@/use/poster'
   import {
@@ -61,11 +59,7 @@
       default: undefined
     }
   })
-  const emit = defineEmits({
-    focus: is_focus,
-    click: is_click,
-    show: is_vector
-  })
+  const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
   const {
     query,
     show,
@@ -95,11 +89,9 @@
     return `xMidY${y_align} slice`
   })
 
-  const cutouts_mounted = ref(false)
-
-  const cutout_group_visibility = computed(() => ({
-    visibility: intersecting.value ? 'visible' : 'hidden'
-  }))
+  const cutouts_mounted = computed(
+    () => intersecting.value && cutouts_enabled.value
+  )
 
   const HOLD_MS = 250
   const held_layer = ref(null)
@@ -188,14 +180,12 @@
     if (!props.sync_poster)
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
-        if (isIntersecting) {
-          cutouts_mounted.value = true
-          show()
-        }
+        emit('in_view', isIntersecting)
+        if (isIntersecting) show()
       })
     else {
       intersecting.value = true
-      cutouts_mounted.value = true
+      emit('in_view', true)
       vector.value = props.sync_poster
       emit('show', vector.value)
     }
@@ -205,7 +195,7 @@
   watch(() => {
     if (props.sync_poster) {
       intersecting.value = true
-      cutouts_mounted.value = true
+      emit('in_view', true)
       vector.value = props.sync_poster
       emit('show', vector.value)
     } else if (props.sync_poster === null) vector.value = null
@@ -394,10 +384,7 @@
         :style="lightbar_back_style" />
 
       <slot>
-        <g
-          v-if="cutouts_mounted"
-          class="cutouts"
-          :style="cutout_group_visibility">
+        <g v-if="cutouts_mounted" class="cutouts">
           <use
             v-for="layer in visible_layers"
             :key="layer"

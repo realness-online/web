@@ -19,7 +19,7 @@ const {
   mock_statements_for_person,
   mock_posters_for_person
 } = vi.hoisted(() => {
-  const create_ref = value => ({ value })
+  const create_ref = value => ({ value, __v_isRef: true })
   return {
     mock_people: create_ref([{ id: '/+15550000000', type: 'person' }]),
     mock_person: create_ref({ id: '/+15550000000', type: 'person' }),

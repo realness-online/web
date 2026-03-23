@@ -109,13 +109,10 @@
     }
     vector_click()
   }
-  const symbol_loaded = ref({
-    boulders: false,
-    rocks: false,
-    gravel: false,
-    sand: false,
-    sediment: false
-  })
+  const aggressive_cutout_mode = true
+  const cutouts_loaded = ref(false)
+  const cutout_load_token = ref(0)
+  const poster_in_view = ref(false)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const poster_time = computed(() => {
@@ -140,11 +137,39 @@
   }))
   const shown = ref(false)
   const working = ref(true)
+  const unload_cutouts = () => {
+    cutout_load_token.value += 1
+    if (vector.value?.cutouts) delete vector.value.cutouts
+    cutouts_loaded.value = false
+  }
+
+  const load_cutouts = async () => {
+    if (!vector.value || vector.value.cutouts) return
+    const token = cutout_load_token.value + 1
+    cutout_load_token.value = token
+    const next_cutouts = {}
+    await Promise.all(
+      geology_layers.map(async layer => {
+        const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
+        const html_string = await get(layer_id)
+        if (html_string) next_cutouts[layer] = true
+        else {
+          const { html } = await load_from_cache(layer_id)
+          if (html) next_cutouts[layer] = true
+        }
+      })
+    )
+    if (!vector.value || cutout_load_token.value !== token) return
+    vector.value.cutouts = next_cutouts
+    cutouts_loaded.value = true
+  }
+
   const on_show = async shown_vector => {
     if (!shown_vector) return
 
     working.value = true
     vector.value = shown_vector
+    cutouts_loaded.value = false
 
     if (!shown_vector.regular) {
       const shadow_id = as_layer_id(/** @type {Id} */ (props.itemid), 'shadows')
@@ -179,22 +204,6 @@
       shown.value = true
     }
     working.value = false
-
-    if (vector.value && !vector.value.cutouts) {
-      vector.value.cutouts = {}
-      await Promise.all(
-        geology_layers.map(async layer => {
-          const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
-          const html_string = await get(layer_id)
-          if (html_string) vector.value.cutouts[layer] = true
-          else {
-            const { html } = await load_from_cache(layer_id)
-            if (html) vector.value.cutouts[layer] = true
-          }
-          await tick()
-        })
-      )
-    }
   }
 
   provide('vector', vector)
@@ -213,15 +222,16 @@
       if (!menu_enabled) menu_open.value = false
     }
   )
-  watch(mosaic, new_value => {
-    if (!new_value)
-      symbol_loaded.value = {
-        boulders: false,
-        rocks: false,
-        gravel: false,
-        sand: false,
-        sediment: false
-      }
+  watch_effect(async () => {
+    const in_view = poster_in_view.value
+    const mosaic_on = mosaic.value
+    const vector_id = vector.value?.id
+    if (!vector_id) return
+    if (in_view && mosaic_on) {
+      await load_cutouts()
+      return
+    }
+    if (aggressive_cutout_mode) unload_cutouts()
   })
 
   updated(() => {
@@ -249,6 +259,9 @@
   }
 
   const activate_poster = () => as_svg_ref.value?.toggle_meet()
+  const on_in_view = visible => {
+    poster_in_view.value = visible
+  }
 </script>
 
 <template>
@@ -266,13 +279,16 @@
       ref="as_svg_ref"
       :itemid="itemid"
       :slice="slice"
+      :show_cutout_layers="poster_in_view && mosaic"
       @show="on_show"
+      @in_view="on_in_view"
       @click="on_poster_svg_click"
       :focusable="false" />
     <as-poster-symbol
       v-if="shown"
       :itemid="itemid"
       :vector="vector"
+      :show_cutout_symbols="poster_in_view && mosaic"
       :shown="shown" />
     <figcaption v-if="menu_open || thought_overlay_open">
       <header>
