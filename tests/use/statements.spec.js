@@ -312,6 +312,26 @@ describe('poster_thought_overlay_pairs', () => {
 
     expect(merged_thought_keys.size).toBe(0)
   })
+
+  it('pairs multiple posters to the same thought', () => {
+    const thought = [{ id: stmt_near, statement: 'hello' }]
+    const poster_a = {
+      id: `${author}/posters/${stmt_ts + 20_000}`,
+      type: 'posters'
+    }
+    const poster_b = {
+      id: `${author}/posters/${stmt_ts + 120_000}`,
+      type: 'posters'
+    }
+    const { merged_thought_keys, poster_to_thought } =
+      poster_thought_overlay_pairs([thought, poster_a, poster_b])
+
+    expect(merged_thought_keys.has(slot_key(thought))).toBe(true)
+    expect(merged_thought_keys.size).toBe(1)
+    expect(poster_to_thought.get(poster_a.id)).toBe(thought)
+    expect(poster_to_thought.get(poster_b.id)).toBe(thought)
+    expect(poster_to_thought.size).toBe(2)
+  })
 })
 
 describe('slot_key', () => {

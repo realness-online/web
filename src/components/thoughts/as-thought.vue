@@ -1,9 +1,9 @@
 <script setup>
-  /** @typedef {import('@/types').Thought_Item} Thought_Item */
+  /** @typedef {import('@/types').Statement} Statement */
   import { ref, computed, watch, nextTick, inject } from 'vue'
   const props = defineProps({
     thought: {
-      /** @type {import('vue').PropType<Thought_Item>} */
+      /** @type {import('vue').PropType<Statement>} */
       type: Object,
       required: true
     },
@@ -18,9 +18,7 @@
   const update_statement = inject('update_statement')
   /** @type {import('vue').Ref<HTMLParagraphElement | null>} */
   const is_editable = ref(null)
-  const thought_text = computed(
-    () => props.thought.thought ?? props.thought.statement ?? ''
-  )
+  const thought_text = computed(() => props.thought.statement ?? '')
 
   const set_initial_content = () => {
     const el = is_editable.value
@@ -76,7 +74,5 @@
       @focus="focused"
       @blur.prevent="save" />
     <p v-else itemprop="statement">{{ thought_text }}</p>
-    <meta v-if="thought.why" itemprop="why" :content="thought.why" />
-    <meta v-if="thought.where" itemprop="where" :content="thought.where" />
   </div>
 </template>

@@ -62,43 +62,37 @@
   const commands_by_context = computed(() => {
     const groups = {}
 
-    // Get the keymap directly to preserve order
     const keymap = key_commands.keymap.value
-    const active_contexts = key_commands.active_contexts.value
 
     keymap.forEach(context_config => {
       const context = context_config.context || 'Global'
+      if (!groups[context]) groups[context] = {}
 
-      if (context === 'Global' || active_contexts.includes(context)) {
-        if (!groups[context]) groups[context] = {}
+      const keys = Object.getOwnPropertyNames(context_config.bindings || {})
+      let current_row = null
 
-        const keys = Object.getOwnPropertyNames(context_config.bindings || {})
-        let current_row = 'Number Row' // Default to Number Row
+      keys.forEach(key => {
+        const command = context_config.bindings[key]
 
-        keys.forEach(key => {
-          const command = context_config.bindings[key]
+        if (typeof command === 'string' && command === '') {
+          current_row = key
+          if (!groups[context][current_row]) groups[context][current_row] = []
+          return
+        }
 
-          // Check if this is a row label
-          if (typeof command === 'string' && command === '') {
-            current_row = key
-            if (!groups[context][current_row]) groups[context][current_row] = []
-            return
+        if (typeof command === 'string' && command) {
+          if (!current_row) current_row = 'Shortcuts'
+          if (!groups[context][current_row]) groups[context][current_row] = []
+
+          const cmd_obj = {
+            key,
+            command,
+            description: get_command_description(command),
+            context
           }
-
-          // Add command to current row
-          if (typeof command === 'string' && command) {
-            if (!groups[context][current_row]) groups[context][current_row] = []
-
-            const cmd_obj = {
-              key,
-              command,
-              description: get_command_description(command),
-              context
-            }
-            groups[context][current_row].push(cmd_obj)
-          }
-        })
-      }
+          groups[context][current_row].push(cmd_obj)
+        }
+      })
     })
 
     return groups
@@ -210,10 +204,6 @@
       overflow-y: auto;
     }
 
-    & > section:last-child {
-      display: none;
-    }
-
     @media (min-width: pad-begins) {
       margin:  auto;
       max-width: 90vw;
@@ -222,9 +212,6 @@
         grid-template-columns: 1fr 1fr;
         gap: base-line * 2;
         padding: 0 base-line;
-      }
-      & > section:last-child {
-        display: block;
       }
     }
 

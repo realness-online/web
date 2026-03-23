@@ -13,21 +13,17 @@
   import AsDays from '@/components/as-days'
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
-  import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
   import AsDialogAccount from '@/components/profile/as-dialog-account.vue'
 
-  import { as_author, as_created_at, load } from '@/utils/itemid'
+  import { as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistance/Storage'
   import { current_user } from '@/utils/serverless'
-  import {
-    use as use_statements,
-    slot_key,
-    poster_thought_overlay_pairs
-  } from '@/use/statements'
+  import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/poster'
+  import { use_feed } from '@/use/feed'
   import { use_keymap } from '@/use/key-commands'
   import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
   import { posting, scroll_position } from '@/use/posting'
@@ -45,6 +41,7 @@
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
   const register_account = inject('register_account')
+  /** @type {import('vue').Ref<{show: () => void} | null>} */
   const account_dialog = ref(null)
   const init_processing_queue = inject('init_processing_queue')
   const queue_items = inject('queue_items')
@@ -53,6 +50,7 @@
   const processing_items = computed(() => queue_items?.value ?? [])
 
   const working = ref(true)
+  /** @type {import('vue').Ref<HTMLElement | null>} */
   const statements_ref = ref(null)
   /** @type {import('vue').Ref<import('@/types').Poster | null>} */
   const poster_to_remove = ref(null)
@@ -73,15 +71,21 @@
     posters
   } = use_posters()
 
-  const me_id = () =>
-    (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
-  const is_editable = item => {
-    const my_id = me_id()
-    if (!my_id) return false
-    return as_author(item?.[0]?.id) === my_id
-  }
-  const is_own_poster = item =>
-    me_id() && item?.id && as_author(item.id) === me_id()
+  const feed_needs_refresh = inject('feed_needs_refresh', null)
+  const {
+    load_feed_for_people,
+    is_editable,
+    overlay_for_day,
+    overlay_statements_for_poster,
+    overlay_editable_for_poster
+  } = use_feed({
+    posters,
+    statements,
+    statements_for_person,
+    posters_for_person,
+    refresh_signal: feed_needs_refresh,
+    queue_items
+  })
 
   const is_picker_selected = item =>
     !!(/** @type {{picker?: boolean}} */ (item).picker)
@@ -151,7 +155,8 @@
       people.value = /** @type {import('@/types').Item[]} */ ([
         ...phonebook.value
       ])
-    const my_id = me_id()
+    const my_id =
+      (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
     if (my_id && !people.value.some(p => p.id === my_id))
       people.value.push({ id: my_id, type: 'person' })
     const admin_raw = import.meta.env.VITE_ADMIN_ID
@@ -168,13 +173,8 @@
         type: 'person'
       })
 
-    await Promise.all(
-      people.value.map(async relation => {
-        await Promise.all([
-          statements_for_person({ id: relation.id }),
-          posters_for_person({ id: relation.id })
-        ])
-      })
+    await load_feed_for_people(
+      /** @type {Id[]} */ (people.value.map(relation => relation.id))
     )
   }
 
@@ -205,19 +205,6 @@
     if (register_account) register_account(null)
   })
 
-  const feed_needs_refresh = inject('feed_needs_refresh', null)
-  if (feed_needs_refresh) watch(feed_needs_refresh, () => fill_statements())
-
-  if (queue_items)
-    watch(
-      queue_items,
-      async (new_queue, old_queue) => {
-        if (old_queue && new_queue?.length < old_queue.length)
-          await fill_statements()
-      },
-      { deep: true }
-    )
-
   watch(posting, async (now, was) => {
     if (was && !now && scroll_position.value !== null) {
       await tick()
@@ -225,32 +212,6 @@
       scroll_position.value = null
     }
   })
-
-  const overlay_cache = new WeakMap()
-  /**
-   * @param {unknown[]} day
-   */
-  const overlay_for_day = day => {
-    let hit = overlay_cache.get(day)
-    if (!hit) {
-      hit = poster_thought_overlay_pairs(
-        /** @type {import('@/types').Item[]} */ (day)
-      )
-      overlay_cache.set(day, hit)
-    }
-    return hit
-  }
-
-  /**
-   * @param {unknown[]} day
-   * @param {import('@/types').Item} poster
-   */
-  const overlay_statements_for_poster = (day, poster) => {
-    const thought = overlay_for_day(day).poster_to_thought.get(poster.id)
-    if (!thought) return null
-    if (is_editable(thought)) return null
-    return thought
-  }
 </script>
 
 <template>
@@ -297,7 +258,9 @@
       @toggle-keyboard="toggle_keyboard"
       @tab-next="
         e => {
-          const first = statements_ref?.querySelector('figure.poster')
+          const first = /** @type {HTMLElement | null} */ (
+            statements_ref?.querySelector('figure.poster')
+          )
           if (first) {
             e.preventDefault()
             first.focus()
@@ -325,24 +288,21 @@
           :itemid="item.id"
           :menu="menu"
           :slice="aspect_ratio_mode !== 'auto'"
+          :picker_selected="is_picker_selected(item)"
           :overlay_statements="overlay_statements_for_poster(day, item)"
+          :overlay_editable="overlay_editable_for_poster(day, item)"
           tabindex="0"
           :class="{
             'selecting-event': is_picker_selected(item),
             'fill-screen': menu
           }"
-          @show="poster_shown">
-          <as-author-menu
-            v-if="is_own_poster(item)"
-            :poster="item"
-            @remove="remove_poster"
-            @picker="picker" />
-        </poster-as-figure>
+          @show="poster_shown"
+          @remove="remove_poster"
+          @picker="picker" />
         <thought-as-article
           v-else-if="
             item.type !== 'posters' &&
-            (!overlay_for_day(day).merged_thought_keys.has(slot_key(item)) ||
-              is_editable(item))
+            !overlay_for_day(day).merged_thought_keys.has(slot_key(item))
           "
           :statements="item"
           :editable="is_editable(item)"
@@ -376,50 +336,6 @@
     }
     & > section.as-days figure.poster.selecting-event > svg:not(.background) {
       opacity: 0.1;
-    }
-    & > section.as-days figure.poster > figcaption > menu {
-      pointer-events: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: base-line * 0.5;
-      padding: base-line * 0.5;
-      margin: base-line;
-      height: auto;
-      border-radius: base-line;
-      background: black-transparent;
-      min-width: 0;
-      max-width: 100%;
-      & > a, & > button {
-        &.remove {
-          standard-shadow: boop;
-        }
-        & > svg {
-          fill: blue;
-        }
-      }
-      & > button {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: base-line * 0.25;
-        padding: base-line * 0.25 base-line * 0.5;
-        cursor: pointer;
-        color: inherit;
-        font-size: larger;
-        line-height: 1;
-        opacity: 0.7;
-        min-width: base-line * 1.5;
-        text-align: center;
-        &:hover {
-          opacity: 1;
-          background: rgba(0, 0, 0, 0.5);
-        }
-        &:focus {
-          outline: 0.25px solid currentColor;
-          outline-offset: base-line * 0.25;
-          opacity: 1;
-        }
-      }
     }
     @media (max-width: pad-begins) {
       & > section.as-days {

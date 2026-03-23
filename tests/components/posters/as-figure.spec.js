@@ -44,9 +44,22 @@ const poster = {
 }
 describe('@/component/posters/as-figure.vue', () => {
   let wrapper
+  const mock_key_commands = {
+    add_context: vi.fn(),
+    register_handler: vi.fn(),
+    remove_context: vi.fn(),
+    unregister_handler: vi.fn()
+  }
   beforeEach(() => {
     mock_menu.value = false
-    wrapper = shallowMount(as_figure, { props: { itemid: poster.id } })
+    wrapper = shallowMount(as_figure, {
+      props: { itemid: poster.id },
+      global: {
+        provide: {
+          'key-commands': mock_key_commands
+        }
+      }
+    })
   })
   describe('Renders', () => {
     it('A poster', () => {

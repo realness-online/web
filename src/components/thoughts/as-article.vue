@@ -1,6 +1,6 @@
 <script setup>
-  /** @typedef {import('@/types').Thought_Item} Thought_Item */
   /** @typedef {import('@/types').Statement} Statement */
+  /** @typedef {import('@/types').Statements} Statements */
   import {
     ref,
     computed,
@@ -17,7 +17,7 @@
 
   const props = defineProps({
     statements: {
-      /** @type {import('vue').PropType<Statement>} */
+      /** @type {import('vue').PropType<Statements>} */
       type: Array,
       required: true
     },
@@ -34,10 +34,10 @@
   })
 
   const emit = defineEmits({
-    show: (/** @type {Statement} */ stmt) => Array.isArray(stmt),
-    focused: (/** @type {Thought_Item} */ thought) =>
+    show: (/** @type {Statements} */ stmt) => Array.isArray(stmt),
+    focused: (/** @type {Statement} */ thought) =>
       thought && typeof thought === 'object',
-    blurred: (/** @type {Thought_Item} */ thought) =>
+    blurred: (/** @type {Statement} */ thought) =>
       thought && typeof thought === 'object'
   })
 

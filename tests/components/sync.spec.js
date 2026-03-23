@@ -117,7 +117,7 @@ const fake_props = {
 const statement = {
   id: '/+16282281824',
   type: 'thoughts',
-  thought: 'I like to move it'
+  statement: 'I like to move it'
 }
 let current_user = {
   phoneNumber: '+16282281824'

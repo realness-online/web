@@ -1,23 +1,26 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
-import { as_thoughts } from '@/use/statements'
 
-// Mock the composables and utilities
 vi.mock('@/use/statements', () => ({
-  as_thoughts: vi.fn(() => []),
-  thoughts_sort: vi.fn(),
   slot_key: item => (Array.isArray(item) ? item[0].id : item.id)
 }))
 
 vi.mock('@/utils/sorting', () => ({
-  recent_date_first: vi.fn(),
-  same_day_today: vi.fn(),
-  same_day_past: vi.fn()
+  recent_date_first: vi.fn()
 }))
 
 vi.mock('@/utils/itemid', () => ({
-  as_author: vi.fn(() => '/+16282281824')
+  as_author: vi.fn(id => {
+    const m = String(id).match(/^(\/\+[^/]+)/)
+    return m ? m[1] : '/+16282281824'
+  }),
+  as_created_at: vi.fn(id => {
+    const parts = String(id).split('/')
+    const last = parts[parts.length - 1]
+    const n = parseInt(last, 10)
+    return Number.isFinite(n) ? n : null
+  })
 }))
 
 vi.mock('@/utils/date', () => ({
@@ -106,16 +109,12 @@ describe('@/components/as-days', () => {
       expect(wrapper.vm.filtered_days).toBeDefined()
     })
 
-    it('has statements computed property', () => {
-      expect(wrapper.vm.statements).toBeDefined()
+    it('has thought_feed_slots_list computed property', () => {
+      expect(wrapper.vm.thought_feed_slots_list).toBeDefined()
     })
   })
 
   describe('storytelling flattened_items', () => {
-    afterEach(() => {
-      vi.mocked(as_thoughts).mockReturnValue([])
-    })
-
     const thought = {
       id: '/+16282281824/statements/100',
       type: 'thoughts',
@@ -123,7 +122,6 @@ describe('@/components/as-days', () => {
     }
 
     it('omits text thought trains; keeps posters', () => {
-      vi.mocked(as_thoughts).mockReturnValue([[thought]])
       const poster = {
         id: '/+16282281824/posters/200',
         type: 'posters'
@@ -144,7 +142,6 @@ describe('@/components/as-days', () => {
     })
 
     it('omits all slides when only text thoughts exist', () => {
-      vi.mocked(as_thoughts).mockReturnValue([[thought]])
       wrapper = shallowMount(AsDays, {
         props: {
           statements: [thought],

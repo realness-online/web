@@ -12,8 +12,9 @@
 
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/poster'
+  import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { ref, provide, onMounted as mounted } from 'vue'
+  import { ref, provide, computed, watch, inject } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
@@ -21,25 +22,50 @@
   import { get } from 'idb-keyval'
 
   const route = use_route()
-  const id = from_e64(route.params.phone_number)
+  const person_id = computed(() =>
+    from_e64(String(route.params.phone_number ?? ''))
+  )
   const {
     statements,
     statement_shown,
-    for_person: statements_for_person
+    for_person: statements_for_person,
+    update_statement
   } = use_statements()
-  const { posters, for_person: posters_for_person } = use_posters()
-  const { load_person, person } = use_person()
-  mounted(async () => {
-    await Promise.all([
-      load_person({ id }),
-      posters_for_person({ id }),
-      statements_for_person({ id })
-    ])
-  })
-
+  provide('update_statement', update_statement)
+  const {
+    posters,
+    for_person: posters_for_person,
+    poster_shown
+  } = use_posters()
+  const { load_person, person, people } = use_person()
   const vector = ref(null)
   const shown = ref(false)
   provide('vector', vector)
+  const feed_needs_refresh = inject('feed_needs_refresh', null)
+  const {
+    load_feed_for_people,
+    is_editable,
+    overlay_for_day,
+    overlay_statements_for_poster,
+    overlay_editable_for_poster
+  } = use_feed({
+    posters,
+    statements,
+    statements_for_person,
+    posters_for_person,
+    refresh_signal: feed_needs_refresh
+  })
+
+  const load_profile_feed = async id => {
+    people.value = []
+    shown.value = false
+    vector.value = null
+    await Promise.all([
+      load_person({ id }),
+      load_feed_for_people([id], { reset: true })
+    ])
+  }
+  watch(person_id, id => load_profile_feed(id), { immediate: true })
 
   const on_show = shown_vector => {
     if (!shown_vector) return
@@ -61,13 +87,16 @@
     }
     shown.value = true
   }
+
+  const should_show_thought = (day, item) =>
+    overlay_for_day(day).merged_thought_keys.has(slot_key(item)) === false
 </script>
 
 <template>
   <section id="profile" class="page">
     <header>
-      <icon name="nothing" />
       <logo-as-link />
+      <icon name="nothing" />
     </header>
     <div>
       <as-avatar
@@ -87,8 +116,17 @@
     <as-figure v-if="person" :person="person" />
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
       <template v-for="item in day" :key="slot_key(item)">
-        <poster-as-figure v-if="item.type === 'posters'" :itemid="item.id" />
-        <thought-as-article v-else :statements="item" @show="statement_shown" />
+        <poster-as-figure
+          v-if="item.type === 'posters'"
+          :itemid="item.id"
+          :overlay_statements="overlay_statements_for_poster(day, item)"
+          :overlay_editable="overlay_editable_for_poster(day, item)"
+          @show="poster_shown" />
+        <thought-as-article
+          v-else-if="should_show_thought(day, item)"
+          :statements="item"
+          :editable="is_editable(item)"
+          @show="statement_shown" />
       </template>
     </as-days>
   </section>
@@ -104,7 +142,7 @@
         -webkit-tap-highlight-color: blue
         z-index: 2
         top: safe_inset(top)
-        right: base-line
+        left: base-line
         position: absolute
     & > div
       position: relative
@@ -118,6 +156,8 @@
         width: 100%
         display: flex
         justify-content: space-between
+        align-items: center
+        gap: base-line * 0.5
         z-index: 1
         position: absolute
         bottom: -(base-line * 2)
@@ -127,6 +167,10 @@
         animation-delay: 1.33s
         animation-duration: 0.35s
         animation-fill-mode: both
+        & > a
+        & > nav
+        & > button
+          standard-shadow: boop
         & > a > svg
           fill: blue
     & > figure.profile

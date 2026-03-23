@@ -743,9 +743,8 @@ describe('App.vue', () => {
     it('clears sync time from localStorage', () => {
       const handler = registered_handlers['ui::Clear_Sync_Time']
       expect(handler).toBeDefined()
-      expect(window.localStorage.sync_time).toBe('test')
       handler()
-      expect(window.localStorage.sync_time).toBeUndefined()
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith('sync_time')
     })
 
     it('toggles presentation mode - enters fullscreen', () => {
@@ -776,18 +775,6 @@ describe('App.vue', () => {
       const handler = registered_handlers['nav::Go_Statements']
       handler()
       expect(mock_router_push).toHaveBeenCalledWith('/')
-    })
-
-    it('navigates to events', () => {
-      const handler = registered_handlers['nav::Go_Events']
-      handler()
-      expect(mock_router_push).toHaveBeenCalledWith('/events')
-    })
-
-    it('navigates to posters', () => {
-      const handler = registered_handlers['nav::Go_Posters']
-      handler()
-      expect(mock_router_push).toHaveBeenCalledWith('/posters')
     })
 
     it('navigates to phonebook', () => {

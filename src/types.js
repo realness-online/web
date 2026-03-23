@@ -96,15 +96,26 @@
  */
 
 /**
- * @typedef {Object} Thought_Item
+ * One persisted text row (`/…/statements/…`, microdata `itemprop="statement"`).
+ * @typedef {Object} Statement
  * @property {Id} id
- * @property {string} [thought]
- * @property {string} [statement] - legacy
- * @property {string} [why]
- * @property {string} [where]
+ * @property {string} [statement]
  */
 
-/** @typedef {Thought_Item[]} Statement */
+/**
+ * Same author: one or more posters and/or statement rows from `started_at`
+ * until a gap longer than thirteen minutes with no new poster or statement.
+ * @typedef {Object} Thought
+ * @property {Author} author_id
+ * @property {number} started_at
+ * @property {Item[]} posters
+ * @property {Statement[]} statements
+ */
+
+/**
+ * Chained text rows in one feed slot (one slice of a {@link Thought}).
+ * @typedef {Statement[]} Statements
+ */
 
 /** @type {readonly ['posters', 'thoughts', 'events', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
 export const types = [

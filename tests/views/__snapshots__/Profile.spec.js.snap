@@ -6,22 +6,26 @@ exports[`Profile > renders profile view 1`] = `
   id="profile"
 >
   <header>
+    <logo-as-link-stub />
     <icon-stub
       name="nothing"
     />
-    <logo-as-link-stub />
   </header>
   <div>
     <!--v-if-->
     <!--v-if-->
     <!--v-if-->
   </div>
-  <!--v-if-->
+  <as-figure-stub
+    display="phonebook"
+    editable="false"
+    person="[object Object]"
+  />
   <as-days-stub
     events=""
     paginate="true"
-    posters=""
-    statements=""
+    posters="[object Object]"
+    statements="[object Object]"
     storytelling="false"
     working="false"
   />
