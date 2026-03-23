@@ -1,11 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
+import { as_thoughts } from '@/use/statements'
 
 // Mock the composables and utilities
 vi.mock('@/use/statements', () => ({
   as_thoughts: vi.fn(() => []),
-  thoughts_sort: vi.fn()
+  thoughts_sort: vi.fn(),
+  slot_key: item => (Array.isArray(item) ? item[0].id : item.id)
 }))
 
 vi.mock('@/utils/sorting', () => ({
@@ -106,6 +108,56 @@ describe('@/components/as-days', () => {
 
     it('has statements computed property', () => {
       expect(wrapper.vm.statements).toBeDefined()
+    })
+  })
+
+  describe('storytelling flattened_items', () => {
+    afterEach(() => {
+      vi.mocked(as_thoughts).mockReturnValue([])
+    })
+
+    const thought = {
+      id: '/+16282281824/statements/100',
+      type: 'thoughts',
+      statement: 'plain text'
+    }
+
+    it('omits text thought trains; keeps posters', () => {
+      vi.mocked(as_thoughts).mockReturnValue([[thought]])
+      const poster = {
+        id: '/+16282281824/posters/200',
+        type: 'posters'
+      }
+      wrapper = shallowMount(AsDays, {
+        props: {
+          statements: [thought],
+          posters: [poster],
+          events: [],
+          paginate: false,
+          working: false,
+          storytelling: true
+        },
+        global: { stubs: { icon: false } }
+      })
+      const slides = wrapper.findAll('section.as-days article > section')
+      expect(slides).toHaveLength(1)
+    })
+
+    it('omits all slides when only text thoughts exist', () => {
+      vi.mocked(as_thoughts).mockReturnValue([[thought]])
+      wrapper = shallowMount(AsDays, {
+        props: {
+          statements: [thought],
+          posters: [],
+          events: [],
+          paginate: false,
+          working: false,
+          storytelling: true
+        },
+        global: { stubs: { icon: false } }
+      })
+      const slides = wrapper.findAll('section.as-days article > section')
+      expect(slides).toHaveLength(0)
     })
   })
 })

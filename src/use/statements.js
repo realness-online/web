@@ -248,6 +248,63 @@ export const slot_key = item => {
 }
 
 /**
+ * Pairs posters with statement-thoughts from the same author when any statement
+ * timestamp is within the train-of-thought window of the poster.
+ *
+ * @param {Array<import('@/types').Statement | import('@/types').Item>} day_items
+ * @returns {{
+ *   merged_thought_keys: Set<string>,
+ *   poster_to_thought: Map<string, import('@/types').Statement>
+ * }}
+ */
+export function poster_thought_overlay_pairs(day_items) {
+  const thoughts = day_items.filter(i => Array.isArray(i))
+  const items = day_items.filter(
+    /**
+     * @param {import('@/types').Item | import('@/types').Statement} i
+     * @returns {i is import('@/types').Item}
+     */
+    i => !Array.isArray(i)
+  )
+  const posters = items.filter(
+    i => i && typeof i === 'object' && i.type === 'posters'
+  )
+  /** @type {Array<{ poster: import('@/types').Item, thought: import('@/types').Statement, dist: number }>} */
+  const candidates = []
+  for (const poster of posters) {
+    const poster_ts = as_created_at(poster.id)
+    // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+    if (poster_ts == null) continue
+    for (const thought of thoughts) {
+      if (as_author(poster.id) !== as_author(thought[0].id)) continue
+      let min_dist = Infinity
+      for (const stmt of thought) {
+        const t = as_created_at(stmt.id)
+        // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+        if (t == null) continue
+        const d = Math.abs(poster_ts - t)
+        if (d < min_dist) min_dist = d
+      }
+      if (min_dist < JS_TIME.THIRTEEN_MINUTES)
+        candidates.push({ poster, thought, dist: min_dist })
+    }
+  }
+  candidates.sort((a, b) => a.dist - b.dist)
+  const merged_thought_keys = new Set()
+  const poster_to_thought = new Map()
+  const used_posters = new Set()
+  for (const c of candidates) {
+    if (used_posters.has(c.poster.id)) continue
+    const tk = slot_key(c.thought)
+    if (merged_thought_keys.has(tk)) continue
+    merged_thought_keys.add(tk)
+    used_posters.add(c.poster.id)
+    poster_to_thought.set(c.poster.id, c.thought)
+  }
+  return { merged_thought_keys, poster_to_thought }
+}
+
+/**
  * @param {Statement} thot
  * @param {Item[]} statements
  */

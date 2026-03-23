@@ -314,7 +314,7 @@
     <router-view />
     <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
-    <div id="global-menu">
+    <div v-if="!storytelling" id="global-menu">
       <footer id="global-footer">
         <a
           id="add-poster"

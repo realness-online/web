@@ -35,7 +35,8 @@
     sand,
     sediment,
     storytelling,
-    aspect_ratio_mode
+    aspect_ratio_mode,
+    slice_alignment
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id } from '@/utils/itemid'
   const props = defineProps({
@@ -51,6 +52,11 @@
       validator: is_vector
     },
     slice: {
+      type: Boolean,
+      default: undefined
+    },
+    /** When set, overrides mosaic preference for cutout visibility. */
+    show_cutout_layers: {
       type: Boolean,
       default: undefined
     }
@@ -74,9 +80,26 @@
   const poster_slice = computed(() => props.slice ?? false)
   const use_meet = ref(false)
 
-  const aspect_ratio = computed(() =>
-    use_meet.value ? 'xMidYMid meet' : 'xMidYMid slice'
+  const cutouts_enabled = computed(() =>
+    props.show_cutout_layers !== undefined
+      ? props.show_cutout_layers
+      : mosaic.value
   )
+
+  const aspect_ratio = computed(() => {
+    if (use_meet.value) return 'xMidYMid meet'
+    const alignment = slice_alignment.value || 'ymid'
+    let y_align = 'Mid'
+    if (alignment === 'ymin') y_align = 'Min'
+    else if (alignment === 'ymax') y_align = 'Max'
+    return `xMidY${y_align} slice`
+  })
+
+  const cutouts_mounted = ref(false)
+
+  const cutout_group_visibility = computed(() => ({
+    visibility: intersecting.value ? 'visible' : 'hidden'
+  }))
 
   const HOLD_MS = 250
   const held_layer = ref(null)
@@ -130,6 +153,7 @@
   }
 
   const handle_click = () => {
+    console.info('posters/as-svg: handle_click', { itemid: props.itemid })
     use_meet.value = !use_meet.value
     emit('click', true)
   }
@@ -164,10 +188,14 @@
     if (!props.sync_poster)
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
-        if (isIntersecting) show()
+        if (isIntersecting) {
+          cutouts_mounted.value = true
+          show()
+        }
       })
     else {
       intersecting.value = true
+      cutouts_mounted.value = true
       vector.value = props.sync_poster
       emit('show', vector.value)
     }
@@ -177,6 +205,7 @@
   watch(() => {
     if (props.sync_poster) {
       intersecting.value = true
+      cutouts_mounted.value = true
       vector.value = props.sync_poster
       emit('show', vector.value)
     } else if (props.sync_poster === null) vector.value = null
@@ -265,7 +294,7 @@
     geology_layers.forEach(layer => {
       const pref = layer_preferences[layer]
       const visible =
-        mosaic.value && pref.value && vector.value?.cutouts?.[layer]
+        cutouts_enabled.value && pref.value && vector.value?.cutouts?.[layer]
       const fragment = props.itemid
         ? as_fragment_id(
             as_layer_id(
@@ -365,7 +394,10 @@
         :style="lightbar_back_style" />
 
       <slot>
-        <g v-if="intersecting" class="cutouts">
+        <g
+          v-if="cutouts_mounted"
+          class="cutouts"
+          :style="cutout_group_visibility">
           <use
             v-for="layer in visible_layers"
             :key="layer"
@@ -426,7 +458,12 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     contain: layout;
-    transition: transform 0.5s ease-in-out;
+    transition:
+      transform 0.4s ease-in-out,
+      aspect-ratio 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      min-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     max-height: 100%;
     &[style*='aspect-ratio'] {
       height: auto;
@@ -492,6 +529,7 @@
 
     /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {
+      transition-duration: 0.01ms;
       & use[itemprop='sediment'],
       & use[itemprop='sand'],
       & use[itemprop='gravel'],

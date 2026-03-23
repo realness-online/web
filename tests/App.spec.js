@@ -470,6 +470,15 @@ describe('App.vue', () => {
       const image_picker = wrapper.find('input[type="file"]')
       expect(image_picker.exists()).toBe(true)
     })
+
+    it('hides global menu while storytelling is on', async () => {
+      expect(wrapper.find('#global-menu').exists()).toBe(true)
+      mock_storytelling.value = true
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('#global-menu').exists()).toBe(false)
+      mock_storytelling.value = false
+      await wrapper.vm.$nextTick()
+    })
   })
 
   describe('Status Classes', () => {
