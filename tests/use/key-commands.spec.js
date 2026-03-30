@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref, reactive } from 'vue'
 import { use_key_commands } from '@/use/key-commands'
 
@@ -259,6 +259,47 @@ describe('key-commands composable', () => {
       expect(() => key_commands.load_keymap()).not.toThrow()
 
       console_warn_spy.mockRestore()
+    })
+  })
+
+  describe('check_input_focus', () => {
+    let active_element_spy
+
+    afterEach(() => {
+      active_element_spy?.mockRestore()
+    })
+
+    it('returns true when active element is textarea', () => {
+      const textarea = document.createElement('textarea')
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(textarea)
+      expect(key_commands.check_input_focus()).toBe(true)
+    })
+
+    it('returns true when active element has contenteditable (empty HTML attribute)', () => {
+      const p = document.createElement('p')
+      p.setAttribute('contenteditable', '')
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(p)
+      expect(key_commands.check_input_focus()).toBe(true)
+    })
+
+    it('returns true when active element is contenteditable via property', () => {
+      const p = document.createElement('p')
+      p.contentEditable = 'true'
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(p)
+      expect(key_commands.check_input_focus()).toBe(true)
+    })
+
+    it('returns false when active element is body', () => {
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(document.body)
+      expect(key_commands.check_input_focus()).toBe(false)
     })
   })
 

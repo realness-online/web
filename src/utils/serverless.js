@@ -209,13 +209,9 @@ export const init_serverless = () => {
         if (phone) localStorage.me = from_e64(phone)
         if (me.value) me.value.id = localStorage.me
         const maybe_me = await load_from_network(localStorage.me)
-        if (maybe_me) {
-          // Intentional: replace me with network result
-          // eslint-disable-next-line require-atomic-updates
-          me.value = maybe_me
-          const html = await get(localStorage.me)
-          if (html) localStorage.setItem(localStorage.me, html)
-        }
+        // Intentional: replace me with network result
+        // eslint-disable-next-line require-atomic-updates
+        if (maybe_me) me.value = maybe_me
       } else
         current_user.value =
           /** @type {import('firebase/auth').User | null} */ (null)

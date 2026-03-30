@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterAll } from 'vitest'
 import potrace_module, {
   as_paths,
   as_path_element,
@@ -613,6 +613,55 @@ describe('potrace/index', () => {
         expect(path.d).toBe(result2.paths[i].d)
         expect(path.fillOpacity).toBe(result2.paths[i].fillOpacity)
       })
+    })
+  })
+
+  describe('module export', () => {
+    it('default export mirrors named exports', () => {
+      expect(potrace_module.as_paths).toBe(as_paths)
+      expect(potrace_module.as_path_element).toBe(as_path_element)
+      expect(potrace_module.as_path_elements).toBe(as_path_elements)
+      expect(potrace_module.Potrace).toBe(Potrace)
+    })
+  })
+
+  describe('parameter validation', () => {
+    it('rejects steps out of range in constructor', () => {
+      expect(() => new Potrace({ steps: 400 })).toThrow(/steps/)
+    })
+  })
+
+  describe('fillStrategy and rangeDistribution', () => {
+    it('runs with fillStrategy spread', () => {
+      const img = create_gradient_image(12, 12)
+      const result = as_paths(img, {
+        steps: 3,
+        fillStrategy: 'spread',
+        threshold: 128
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('runs with fillStrategy mean and median', () => {
+      const img = create_gradient_image(12, 12)
+      for (const fillStrategy of ['mean', 'median']) {
+        const result = as_paths(img, {
+          steps: 3,
+          fillStrategy,
+          threshold: 128
+        })
+        expect(result.paths.length).toBeGreaterThan(0)
+      }
+    })
+
+    it('runs with rangeDistribution equal', () => {
+      const img = create_gradient_image(12, 12)
+      const result = as_paths(img, {
+        steps: 3,
+        rangeDistribution: 'equal',
+        threshold: 128
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
     })
   })
 })

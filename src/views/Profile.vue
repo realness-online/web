@@ -203,7 +203,7 @@
         a.phone
           display: none
     & > section.as-days
-      & > article.day
+      .as-days-flow > article.day
         @media (prefers-color-scheme: dark)
           & > header > h4, figure.poster > svg.background
             color: blue

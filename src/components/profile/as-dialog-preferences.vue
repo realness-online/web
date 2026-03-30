@@ -102,7 +102,7 @@
 </script>
 
 <template>
-  <a id="toggle-preferences" @click="show_settings">
+  <a aria-label="Settings" @click="show_settings">
     <icon name="gear" />
   </a>
   <dialog
@@ -180,7 +180,7 @@
 </template>
 
 <style lang="stylus">
-  a#toggle-preferences {
+  a[aria-label='Settings'] {
     svg.icon {
       width: base-line * 2;
       height: base-line * 2;

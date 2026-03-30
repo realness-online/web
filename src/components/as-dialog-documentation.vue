@@ -3,12 +3,14 @@
   import { marked } from 'marked'
   import { gfmHeadingId } from 'marked-gfm-heading-id'
   import DOMPurify from 'dompurify'
+  import documentation_md from '@/content/documentation.md?raw'
+
+  marked.use(gfmHeadingId())
 
   const dialog = ref(null)
   const content_ref = ref(null)
   const toc_items = ref([])
   const rendered_content = ref('')
-  const current_file = ref('documentation')
 
   const show_modal = async () => {
     if (!dialog.value) return
@@ -53,23 +55,11 @@
 
     return toc
   }
-  const load_markdown_content = async filename => {
-    const response = await fetch(`/src/content/${filename}`)
-    if (!response.ok)
-      throw new Error(`Failed to load ${filename}: ${response.status}`)
 
-    const content = await response.text()
-
-    current_file.value = filename.replace('.md', '')
-
+  const apply_markdown = content => {
     toc_items.value = generate_toc_from_markdown(content)
-
-    marked.use(gfmHeadingId())
-
-    const rendered = await marked.parse(content)
-    const sanitized = DOMPurify.sanitize(rendered)
-
-    rendered_content.value = sanitized
+    const rendered = marked.parse(content)
+    rendered_content.value = DOMPurify.sanitize(rendered)
   }
 
   watch(rendered_content, html => {
@@ -77,7 +67,7 @@
       content_ref.value.innerHTML = html
   })
 
-  mounted(() => load_markdown_content('documentation.md'))
+  mounted(() => apply_markdown(documentation_md))
 
   defineExpose({ show: show_modal })
 </script>

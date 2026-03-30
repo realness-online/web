@@ -6,6 +6,7 @@
     computed,
     ref,
     watchEffect,
+    inject,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
@@ -132,12 +133,15 @@
     () => shared_document_visible.value && shared_window_focused.value
   )
 
+  const key_commands = inject('key-commands', null)
+
   /**
    * @param {KeyboardEvent} event
    */
   const handle_keydown = event => {
     const is_arrow = event.key === 'ArrowLeft' || event.key === 'ArrowRight'
     if (!is_arrow) return
+    if (key_commands?.check_input_focus?.()) return
     if (event.ctrlKey || event.altKey || event.metaKey) return
 
     event.preventDefault()

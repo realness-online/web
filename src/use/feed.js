@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Statements} Statements */
 
-import { ref, watch } from 'vue'
+import { ref, watch, inject } from 'vue'
 import { as_author } from '@/utils/itemid'
 import { poster_thought_overlay_pairs } from '@/use/statements'
 
@@ -17,6 +17,7 @@ const my_id = () =>
  * @property {(query: { id: Id }) => Promise<void>} posters_for_person
  * @property {import('vue').Ref<number>|null} [refresh_signal]
  * @property {import('vue').Ref<Array<unknown>>|null} [queue_items]
+ * @property {() => Promise<void>} [on_refresh] replaces default refresh when set (e.g. reload phonebook then feed)
  */
 
 /**
@@ -31,8 +32,10 @@ export const use_feed = options => {
     statements_for_person,
     posters_for_person,
     refresh_signal = null,
-    queue_items = null
+    queue_items = null,
+    on_refresh = null
   } = options
+  const set_working = inject('set_working')
   const loaded_people_ids = ref(/** @type {Id[]} */ ([]))
   const overlay_cache = new WeakMap()
 
@@ -104,8 +107,17 @@ export const use_feed = options => {
 
   if (refresh_signal)
     watch(refresh_signal, async () => {
+      if (on_refresh) {
+        await on_refresh()
+        return
+      }
       if (!loaded_people_ids.value.length) return
-      await load_feed_for_people(loaded_people_ids.value)
+      set_working?.(true)
+      try {
+        await load_feed_for_people(loaded_people_ids.value)
+      } finally {
+        set_working?.(false)
+      }
     })
 
   if (queue_items)
@@ -115,7 +127,12 @@ export const use_feed = options => {
         if (!old_queue) return
         if (new_queue?.length >= old_queue.length) return
         if (!loaded_people_ids.value.length) return
-        await load_feed_for_people(loaded_people_ids.value)
+        set_working?.(true)
+        try {
+          await load_feed_for_people(loaded_people_ids.value)
+        } finally {
+          set_working?.(false)
+        }
       },
       { deep: true }
     )

@@ -38,6 +38,17 @@ const admin_person_id_from_env = () => {
   return /** @type {Id} */ (`/${String(raw).replace(/^\/?/, '')}`)
 }
 
+/**
+ * When `people/{author}/index.html.gz` is missing but the prefix exists, still list them.
+ * @param {Id} id
+ * @returns {Person}
+ */
+const person_when_root_profile_missing = id => ({
+  id,
+  type: 'person',
+  name: id.startsWith('/') ? id.slice(1) : String(id)
+})
+
 export const use = () => {
   const set_working = inject('set_working')
   const phonebook = ref(/** @type {Person[]} */ ([]))
@@ -69,41 +80,52 @@ export const use = () => {
 
       if (current_user.value) {
         const people_list = await directory('people/')
-        if (!people_list?.prefixes?.length) {
-          working.value = false
-          if (set_working) set_working(false)
-          return
-        }
+        const prefix_refs = people_list?.prefixes ?? []
 
-        const loaded_people = await Promise.all(
-          people_list.prefixes.map(async phone_number => {
+        if (!prefix_refs.length) return
+
+        const per_prefix = await Promise.all(
+          prefix_refs.map(async phone_number => {
+            const id = /** @type {Id} */ (from_e64(phone_number.name))
             try {
-              const person = await load(
-                /** @type {Id} */ (from_e64(phone_number.name))
-              )
-              return person || null
+              const loaded = await load(id)
+              const person = loaded || person_when_root_profile_missing(id)
+              return {
+                prefix: phone_number.name,
+                id,
+                person,
+                load_ok: !!loaded,
+                error: null
+              }
             } catch (err) {
-              console.error(
-                'Failed to load person:',
-                phone_number.name,
-                err instanceof Error ? err.message : String(err)
-              )
-              return null
+              const msg = err instanceof Error ? err.message : String(err)
+              console.error('[phonebook] load threw', phone_number.name, msg)
+              return {
+                prefix: phone_number.name,
+                id,
+                person: null,
+                load_ok: false,
+                error: msg
+              }
             }
           })
         )
 
+        const loaded_people = per_prefix.map(p => p.person)
         const blocked_ids = new Set(blocked.value)
         const seen = new Set()
+
         phonebook.value = /** @type {Person[]} */ (
-          /** @type {unknown} */ (
-            loaded_people.filter(person => {
-              if (!person || blocked_ids.has(person.id)) return false
+          loaded_people
+            .map(person => ({ person }))
+            .filter(({ person }) => {
+              if (!person) return false
+              if (blocked_ids.has(person.id)) return false
               if (seen.has(person.id)) return false
               seen.add(person.id)
               return true
             })
-          )
+            .map(({ person }) => /** @type {Person} */ (person))
         )
       } else {
         const admin_id = admin_person_id_from_env()
@@ -116,7 +138,7 @@ export const use = () => {
       phonebook.value.sort(recent_visit_first)
     } catch (err) {
       console.error(
-        'Failed to load phonebook:',
+        '[phonebook] Failed to load phonebook:',
         err instanceof Error ? err.message : String(err)
       )
     } finally {

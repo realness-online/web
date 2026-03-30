@@ -7,7 +7,7 @@ export const drama_back = storage('drama_back', false)
 export const drama_front = storage('drama_front', false)
 
 export const shadow = storage('shadow', true)
-export const stroke = storage('stroke', false)
+export const stroke = storage('stroke', true)
 export const mosaic = storage('mosaic', true)
 
 export const bold = storage('bold', true)

@@ -16,6 +16,7 @@ import {
 } from '@/utils/itemid'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { get } from 'idb-keyval'
+import { profile_sync_log } from '@/utils/profile-sync-log'
 
 /**
  * @interface
@@ -87,11 +88,17 @@ export class Me extends Cloud(Local(Storage)) {
   ) {
     if (!current_user.value) return
     const me_val =
-      /** @type {{name?: string, visited?: string} | null | undefined} */ (
+      /** @type {{name?: string, visited?: string, avatar?: string} | null | undefined} */ (
         me.value
       )
-    if (!me_val || !me_val.name || me_val.name.length < 3 || !me_val.visited)
-      return
+    if (!me_val) return
+    if (!me_val.visited) me_val.visited = new Date().toISOString()
+    profile_sync_log('me_save_persist', {
+      itemid: this.id,
+      name: me_val.name,
+      avatar: me_val.avatar,
+      visited: me_val.visited
+    })
     await super.save(items ?? undefined)
   }
 }

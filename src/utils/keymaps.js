@@ -111,47 +111,12 @@ export const default_keymap = [
     context: 'Poster',
     use_key_equivalents: true,
     bindings: {
-      'ctrl-0': 'poster::Reset_Zoom',
-      'ctrl-=': 'poster::Zoom_In',
-      'ctrl--': 'poster::Zoom_Out',
-      'ctrl-s': 'poster::Save',
-      'ctrl-e': 'poster::Edit',
-      'ctrl-d': 'poster::Download',
-      q: 'poster::Toggle_Meet_Slice',
-      space: 'poster::Toggle_Play',
-      left: 'poster::Previous',
-      right: 'poster::Next',
+      Shortcuts: '',
       ArrowUp: 'pref::Slice_Alignment_Up',
       ArrowDown: 'pref::Slice_Alignment_Down'
     },
     descriptions: {
-      'poster::Reset_Zoom': 'Reset zoom',
-      'poster::Zoom_In': 'Zoom in',
-      'poster::Zoom_Out': 'Zoom out',
-      'poster::Save': 'Save poster',
-      'poster::Edit': 'Edit poster',
-      'poster::Download': 'Download poster',
-      'poster::Toggle_Meet_Slice': 'Toggle meet/slice on focused poster',
-      'poster::Toggle_Play': 'Toggle animation',
-      'poster::Previous': 'Previous poster',
-      'poster::Next': 'Next poster'
-    }
-  },
-
-  {
-    context: 'Events',
-    use_key_equivalents: true,
-    bindings: {
-      'ctrl-f': 'events::Search',
-      enter: 'events::Open_Event',
-      delete: 'events::Remove_Event',
-      escape: 'events::Clear_Search'
-    },
-    descriptions: {
-      'events::Search': 'Search events',
-      'events::Open_Event': 'Open selected event',
-      'events::Remove_Event': 'Remove event',
-      'events::Clear_Search': 'Clear search'
+      'poster::Toggle_Meet_Slice': 'Toggle meet/slice on focused poster'
     }
   }
 ]

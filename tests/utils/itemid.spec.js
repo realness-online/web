@@ -2,14 +2,16 @@ import { describe, it, expect, vi } from 'vitest'
 import {
   as_filename,
   as_archive,
+  as_download_url,
   is_itemid,
   as_poster_id,
   as_layer_name,
   as_layer_id,
   load_from_cache,
-  load_from_network
+  load_from_network,
+  load
 } from '@/utils/itemid'
-import { get } from 'idb-keyval'
+import { get, set, del } from 'idb-keyval'
 vi.mock('idb-keyval')
 vi.mock('@/utils/serverless', () => ({
   url: vi.fn().mockResolvedValue('https://example.com/file.html.gz'),
@@ -414,6 +416,79 @@ describe('@/utils/itemid', () => {
       )
 
       expect(result).toBeNull()
+    })
+
+    it('load_from_network keeps root profile in localStorage only', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19159999999')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      set.mockClear()
+      del.mockClear()
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">N</h3></address>`
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const result = await load_from_network(me_id)
+
+      expect(result?.id).toBe(me_id)
+      expect(localStorage.getItem(me_id)).toBe(html)
+      expect(del).toHaveBeenCalledWith(me_id)
+      expect(set).not.toHaveBeenCalledWith(me_id, expect.anything())
+    })
+  })
+
+  describe('load root profile', () => {
+    it('migrates legacy IndexedDB html to localStorage then drops idb key', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">L</h3></address>`
+      get.mockImplementation(key => {
+        if (key === me_id) return Promise.resolve(html)
+        return Promise.resolve(null)
+      })
+      del.mockClear()
+      del.mockResolvedValue(undefined)
+
+      const item = await load(me_id, me_id)
+
+      expect(item?.name).toBe('L')
+      expect(localStorage.getItem(me_id)).toBe(html)
+      expect(del).toHaveBeenCalledWith(me_id)
+    })
+  })
+
+  describe('as_download_url', () => {
+    it('dedupes concurrent in-flight requests for the same itemid', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(undefined)
+      )
+
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      await Promise.all([
+        as_download_url(id),
+        as_download_url(id),
+        as_download_url(id)
+      ])
+
+      expect(url).toHaveBeenCalledTimes(1)
+      url.mockResolvedValue('https://example.com/file.html.gz')
     })
   })
 })

@@ -45,9 +45,9 @@ describe('poster utils', () => {
       document.body.removeChild(svg)
     })
 
-    it('returns false for detached SVG', () => {
+    it('returns true for detached SVGSVGElement (e.g. VTU without attachTo)', () => {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-      expect(is_svg_valid(svg)).toBe(false)
+      expect(is_svg_valid(svg)).toBe(true)
     })
 
     it('returns false for non-SVG', () => {

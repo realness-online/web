@@ -145,7 +145,6 @@
   }
 
   const handle_click = () => {
-    console.info('posters/as-svg: handle_click', { itemid: props.itemid })
     use_meet.value = !use_meet.value
     emit('click', true)
   }

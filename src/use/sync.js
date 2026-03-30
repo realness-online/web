@@ -33,6 +33,7 @@ import {
   watch
 } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
+import { profile_sync_log } from '@/utils/profile-sync-log'
 
 /** @type {import('@/types').Sync_Index_Entry} */
 export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } }
@@ -47,46 +48,37 @@ const create_play = deps => async () => {
   const did_emit = navigator.onLine && !!current_user.value
   if (did_emit) deps.emit('active', true)
   try {
-    console.time('sync:offline_actions')
     await sync_offline_actions()
-    console.timeEnd('sync:offline_actions')
     if (!navigator.onLine || !current_user.value) return
     if (!i_am_fresh()) {
       localStorage.sync_time = new Date().toISOString()
-      console.time('sync:sync_me')
       await sync_me()
-      console.timeEnd('sync:sync_me')
-      console.time('sync:sync_relations')
       await sync_relations(deps)
-      console.timeEnd('sync:sync_relations')
-      console.time('sync:sync_thoughts')
       await sync_thoughts(deps)
-      console.timeEnd('sync:sync_thoughts')
-      console.time('sync:sync_events')
       await sync_events(deps)
-      console.timeEnd('sync:sync_events')
-      console.time('sync:sync_posters_directory')
       await sync_posters_directory()
-      console.timeEnd('sync:sync_posters_directory')
       deps.emit('refreshed')
     }
-    console.time('sync:visit')
     await visit(deps)
-    console.timeEnd('sync:visit')
   } finally {
     if (did_emit) deps.emit('active', false)
   }
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<void>} */
-const visit = async deps => {
+export const visit = async deps => {
   const visited = deps.me.value?.visited
   const visit_digit = new Date(visited ?? 0).getTime()
   if (!visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
     if (deps.me.value) deps.me.value.visited = new Date().toISOString()
     await tick()
     const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
-    if (me_el) await new Me().save(me_el)
+    if (me_el) {
+      profile_sync_log('visit_stamp_save', {
+        itemid: /** @type {string} */ (localStorage.me)
+      })
+      await new Me().save(me_el)
+    }
   }
 }
 
@@ -336,10 +328,15 @@ export const sync_me = async () => {
   const id = get_my_itemid()
   if (!id) return
   const index_hash = await get_index_hash(id)
-  const my_info = localStorage.getItem(id) ?? (await get(id))
+  const my_info = localStorage.getItem(id)
   if (typeof my_info !== 'string' || !index_hash) return
   const hash = await create_hash(my_info)
   if (hash !== index_hash) {
+    profile_sync_log('sync_me_cleared_stale_local_html', {
+      itemid: id,
+      index_hash,
+      local_hash: hash
+    })
     localStorage.removeItem(id)
     await del(id)
   }
