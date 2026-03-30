@@ -89,7 +89,8 @@
 
 /**
  * @typedef {Object} Person
- * @property {string} id
+ * @property {Id} id
+ * @property {'person'} [type]
  * @property {string} [name]
  * @property {string} [avatar]
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string

@@ -131,6 +131,31 @@ describe('people composable', () => {
       expect(phonebook.value.length).toBeGreaterThan(0)
     })
 
+    it('load_phonebook uses stub person when root profile document is missing', async () => {
+      mock_current_user_ref.value = { uid: 'test-user' }
+      const { load } = await import('@/utils/itemid')
+      load.mockImplementation(id => {
+        if (id === '/+14155551234') return Promise.resolve(null)
+        return Promise.resolve({ id, type: 'person', name: 'Loaded' })
+      })
+      try {
+        const { load_phonebook, phonebook } = with_setup(use)
+        await load_phonebook()
+        const stub = phonebook.value.find(p => p.id === '/+14155551234')
+        expect(stub).toMatchObject({
+          id: '/+14155551234',
+          type: 'person',
+          name: '+14155551234'
+        })
+        const loaded = phonebook.value.find(p => p.id === '/+14151234356')
+        expect(loaded?.name).toBe('Loaded')
+      } finally {
+        load.mockImplementation(id =>
+          Promise.resolve({ id, type: 'person', loaded: true })
+        )
+      }
+    })
+
     it('load_phonebook loads only admin when signed out', async () => {
       mock_current_user_ref.value = null
       vi.stubEnv('VITE_ADMIN_ID', '+19995551234')

@@ -226,31 +226,34 @@ export const use_posters = () => {
    */
   const for_person = async query => {
     if (set_working) set_working(true)
-    const directory = await as_directory(
-      /** @type {Id} */ (`${query.id}/posters`)
-    )
-    if (!directory) return
-    directory.items.forEach(created_at => {
-      const poster_id = `${query.id}/posters/${created_at}`
-      if (!posters.value.find(p => p.id === poster_id))
-        posters.value.push({
-          id: /** @type {Id} */ (poster_id),
-          type: 'posters'
-        })
-    })
-    const existing_author = authors.value.find(a => a.id === query.id)
-    if (existing_author) existing_author.viewed = ['index']
-    else
-      authors.value.push({
-        id: query.id,
-        type: 'person',
-        name: '',
-        avatar: '',
-        viewed: ['index'],
-        visited: null
+    try {
+      const directory = await as_directory(
+        /** @type {Id} */ (`${query.id}/posters`)
+      )
+      if (!directory) return
+      directory.items.forEach(created_at => {
+        const poster_id = `${query.id}/posters/${created_at}`
+        if (!posters.value.find(p => p.id === poster_id))
+          posters.value.push({
+            id: /** @type {Id} */ (poster_id),
+            type: 'posters'
+          })
       })
-    posters.value.sort(recent_item_first)
-    if (set_working) set_working(false)
+      const existing_author = authors.value.find(a => a.id === query.id)
+      if (existing_author) existing_author.viewed = ['index']
+      else
+        authors.value.push({
+          id: query.id,
+          type: 'person',
+          name: '',
+          avatar: '',
+          viewed: ['index'],
+          visited: null
+        })
+      posters.value.sort(recent_item_first)
+    } finally {
+      if (set_working) set_working(false)
+    }
   }
 
   /**
@@ -344,10 +347,11 @@ const load_archive_posters = async (author_id, archive_id) => {
 }
 
 /**
+ * Type guard for the svg prop (SVGSVGElement). Uses instanceof only so
+ * validators pass under @vue/test-utils mounts without attachTo (detached DOM).
  * @returns {boolean}
  */
-export const is_svg_valid = v =>
-  v instanceof SVGSVGElement && document.contains(v)
+export const is_svg_valid = v => v instanceof SVGSVGElement
 
 /**
  * @param {Id} itemid

@@ -472,10 +472,10 @@ describe('App.vue', () => {
     })
 
     it('hides global menu while storytelling is on', async () => {
-      expect(wrapper.find('#global-menu').exists()).toBe(true)
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
       mock_storytelling.value = true
       await wrapper.vm.$nextTick()
-      expect(wrapper.find('#global-menu').exists()).toBe(false)
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(false)
       mock_storytelling.value = false
       await wrapper.vm.$nextTick()
     })

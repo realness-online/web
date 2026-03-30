@@ -45,13 +45,11 @@
   50%
     opacity: 1
 
-@keyframes pulsing
-  0%, 100%
-    opacity: 0.7
-    transform: scale(1.25)
-  35%, 58%
-    opacity: 0.75
-    transform: scale(1)
+@keyframes working-edge-sweep
+  from
+    transform: translate(-50%, -50%) rotate(0deg)
+  to
+    transform: translate(-50%, -50%) rotate(360deg)
 
 @keyframes press
   50%

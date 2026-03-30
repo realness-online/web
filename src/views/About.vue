@@ -398,10 +398,14 @@
           @media (min-width: pad-begins)
             flex: 1
             min-width: 0
-            height: 100%
+            align-self: stretch
+            min-height: 0
+            height: auto
+            display: flex
+            flex-direction: column
           &:has(svg.landscape)
             @media (min-width: pad-begins)
-              height: 100%
+              align-self: stretch
           & > svg
             transition: transform 2s
             transform-style: preserve-3d
@@ -409,7 +413,8 @@
             display: block
             border-radius: base-line
             width: 100%
-            height: 100%
+            flex: 1
+            min-height: 0
     & > menu
       border-radius: base-line
       display: flex
@@ -466,14 +471,19 @@
           @media (min-width: pad-begins)
             flex: 1
             min-width: 0
-            height: 100%
+            align-self: stretch
+            min-height: 0
+            height: auto
+            display: flex
+            flex-direction: column
           &:has(svg.landscape)
             @media (min-width: pad-begins)
-              height: 100%
+              align-self: stretch
           & > svg
             border-radius: base-line * 0.33
             width: 100%
-            height: 100%
+            flex: 1
+            min-height: 0
         & > header
           display: flex
           flex-direction: column

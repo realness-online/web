@@ -99,10 +99,6 @@
   }
 
   const on_poster_svg_click = () => {
-    console.info('posters/as-figure: on_poster_svg_click', {
-      itemid: props.itemid,
-      menu: props.menu
-    })
     if (props.overlay_statements?.length) {
       thought_overlay_open.value = !thought_overlay_open.value
       if (!props.menu) menu_open.value = thought_overlay_open.value

@@ -5,12 +5,24 @@
 /** @typedef {import('@/types').Item} Item */
 import { has_archive, has_history, types } from '@/types.js'
 
-import { get, set } from 'idb-keyval'
+import { get, set, del } from 'idb-keyval'
 import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
 import { as_directory } from '@/persistance/Directory'
+
+/** @type {Map<string, Promise<string | null>>} */
+const download_url_inflight = new Map()
+
+/**
+ * Signed-in profile id (`setItem('me', …)` and `localStorage.me` both set this).
+ * @returns {Author | undefined}
+ */
+const storage_me = () => {
+  if (typeof localStorage === 'undefined') return undefined
+  return localStorage.getItem('me') ?? localStorage.me ?? undefined
+}
 
 /**
  * @param {Id} itemid
@@ -73,7 +85,10 @@ export const load_from_network = async itemid => {
     else html = await decompress_html(compressed_html)
 
     if (!html) return null
-    await set(itemid, html)
+    if (typeof localStorage !== 'undefined' && itemid === storage_me()) {
+      localStorage.setItem(itemid, html)
+      await del(itemid)
+    } else await set(itemid, html)
     return get_item(html, itemid)
   }
   return null
@@ -108,18 +123,31 @@ export const load_from_cache = async itemid => {
 
 /**
  * @param {Id} itemid
- * @param {Author} me
+ * @param {Author} [me]
  * @returns {Promise<Item | null>}
  */
-export const load = async (itemid, me = localStorage.me) => {
+export const load = async (itemid, me = storage_me()) => {
   let item
-  if (~itemid.indexOf(me)) {
+  if (me && ~itemid.indexOf(me)) {
     const item_html = localStorage.getItem(itemid)
     if (item_html) return get_item(item_html, itemid)
   }
-  const result = await get(itemid)
-  item = get_item(result, itemid)
-  if (item) return item
+  if (itemid === me && typeof localStorage !== 'undefined') {
+    const legacy_html = await get(itemid)
+    if (typeof legacy_html === 'string' && legacy_html.length) {
+      item = get_item(legacy_html, itemid)
+      if (item) {
+        localStorage.setItem(itemid, legacy_html)
+        await del(itemid)
+        return item
+      }
+    }
+  }
+  if (itemid !== me) {
+    const result = await get(itemid)
+    item = get_item(result, itemid)
+    if (item) return item
+  }
   try {
     item = await load_from_network(itemid)
   } catch (e) {
@@ -138,10 +166,10 @@ export const load = async (itemid, me = localStorage.me) => {
 
 /**
  * @param {Id} itemid
- * @param {Author} me
+ * @param {Author} [me]
  * @returns {Promise<Item[]>}
  */
-export const list = async (itemid, me = localStorage.me) => {
+export const list = async (itemid, me = storage_me()) => {
   try {
     const item = await load(itemid, me)
     if (item) return type_as_list(item)
@@ -159,22 +187,36 @@ export const as_download_url = async itemid => {
   if (String(itemid) === '/+' || itemid.startsWith('/+/')) return null
   const index = (await get('sync:index')) || {}
   if (index[itemid] === DOES_NOT_EXIST) return null
-  try {
-    return await url(await as_filename(itemid))
-  } catch (e) {
-    if (
-      e &&
-      typeof e === 'object' &&
-      'code' in e &&
-      e.code === 'storage/object-not-found'
-    ) {
-      console.warn(itemid, '=>', await as_filename(itemid))
-      index[itemid] = DOES_NOT_EXIST
-      await set('sync:index', index)
-      return null
+
+  const key = String(itemid)
+  const existing = download_url_inflight.get(key)
+  if (existing) return existing
+
+  const pending = (async () => {
+    try {
+      const idx = (await get('sync:index')) || {}
+      if (idx[itemid] === DOES_NOT_EXIST) return null
+      return await url(await as_filename(itemid))
+    } catch (e) {
+      if (
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        e.code === 'storage/object-not-found'
+      ) {
+        const idx = (await get('sync:index')) || {}
+        idx[itemid] = DOES_NOT_EXIST
+        await set('sync:index', idx)
+        return null
+      }
+      throw e
+    } finally {
+      download_url_inflight.delete(key)
     }
-    throw e
-  }
+  })()
+
+  download_url_inflight.set(key, pending)
+  return pending
 }
 
 /**

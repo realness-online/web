@@ -36,8 +36,6 @@
   const version = import.meta.env.PACKAGE_VERSION
   const version_parts = version.split('.')
 
-  console.time('views:Thoughts')
-
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
   const register_account = inject('register_account')
@@ -72,6 +70,9 @@
   } = use_posters()
 
   const feed_needs_refresh = inject('feed_needs_refresh', null)
+  /** @type {() => Promise<void>} */
+  let fill_statements = async () => {}
+
   const {
     load_feed_for_people,
     is_editable,
@@ -84,7 +85,16 @@
     statements_for_person,
     posters_for_person,
     refresh_signal: feed_needs_refresh,
-    queue_items
+    queue_items,
+    on_refresh: async () => {
+      if (set_working) set_working(true)
+      try {
+        await load_phonebook()
+        await fill_statements()
+      } finally {
+        if (set_working) set_working(false)
+      }
+    }
   })
 
   const is_picker_selected = item =>
@@ -150,7 +160,7 @@
     if (poster) poster.picker = !poster.picker
   }
 
-  const fill_statements = async () => {
+  fill_statements = async () => {
     if (phonebook.value.length)
       people.value = /** @type {import('@/types').Item[]} */ ([
         ...phonebook.value
@@ -198,7 +208,6 @@
     await init_processing_queue?.()
     working.value = false
     if (set_working) set_working(false)
-    console.timeEnd('views:Thoughts')
   })
 
   before_unmount(() => {
@@ -418,8 +427,7 @@
       display: none;
     }
     & > section.as-days {
-      & > article.day {
-        margin-bottom: base-line;
+      .as-days-flow > article.day {
         @media (prefers-color-scheme: dark) {
           & > header h4, figure.poster > svg.background {
             color: blue;

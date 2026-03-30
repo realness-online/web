@@ -104,6 +104,13 @@
     () => !!active_el.value?.closest?.('article.thought')
   )
 
+  /** @param {Event} event */
+  const on_footer_visible_change = event => {
+    const el = /** @type {HTMLInputElement | null} */ (event.target)
+    if (!el) return
+    footer_visible.value = el.checked
+  }
+
   const preferences_dialog = ref(null)
   const account_open = ref(null)
   const register_account = fn => {
@@ -307,15 +314,14 @@
 <template>
   <main id="realness" :class="[status, { posting }]">
     <teleport to="body">
-      <working-border v-if="status === 'working'" />
+      <working-border :active="status === 'working'" />
     </teleport>
     <router-view />
     <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
-    <div v-if="!storytelling" id="global-menu">
-      <footer id="global-footer">
+    <nav v-if="!storytelling" aria-label="App actions">
+      <footer>
         <a
-          id="add-poster"
           tabindex="0"
           aria-label="Add poster"
           @click="select_photo"
@@ -323,22 +329,27 @@
           <icon name="add" />
         </a>
         <a
-          id="camera"
           tabindex="0"
+          aria-label="Open camera"
           @click="open_camera"
           @keydown.enter="open_camera">
           <icon name="camera" />
         </a>
         <as-dialog-preferences ref="preferences_dialog" />
       </footer>
-      <button
-        v-if="!isFullscreen && !thought_has_focus"
-        type="button"
-        :aria-expanded="footer_visible"
-        :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
-        @click="footer_visible = !footer_visible"
-        @contextmenu.prevent />
-    </div>
+      <label v-if="!isFullscreen && !thought_has_focus">
+        <input
+          type="checkbox"
+          switch
+          role="switch"
+          name="footer_visible"
+          :checked="footer_visible"
+          :aria-label="footer_visible ? 'Hide footer' : 'Show footer'"
+          @change="on_footer_visible_change"
+          @contextmenu.prevent />
+        <span aria-hidden="true" />
+      </label>
+    </nav>
 
     <as-dialog-documentation ref="documentation" />
     <input
@@ -360,12 +371,6 @@
     &.offline {
       border-color: var(--yellow);
     }
-    &.working {
-      border-width: (base-line * 0.1);
-      border-color: var(--blue);
-      border-radius: (base-line * 3);
-      position: relative;
-    }
     & > h6 {
       text-shadow: 1px 1px 1.25px var(--black-background);
       position: fixed;
@@ -373,103 +378,122 @@
       top: 0;
       left: var(--base-line);
     }
-  }
-  div#global-menu {
-    user-select: none;
-    position: fixed;
-    bottom: base-line;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: page-width;
-    margin: (base-line * 0.25) auto;
-    padding-inline: base-line;
-    box-sizing: border-box;
-    z-index: 9;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: base-line * 0.25;
-    overflow: visible;
 
-    &:has(button[aria-expanded='false']) #global-footer {
-      transform: translateY(100%);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    & > button {
-      -webkit-touch-callout: none !important;
-      -webkit-user-select: none !important;
-      touch-action: manipulation;
-      user-select: none !important;
-      outline: 2px solid var(--red);
-      outline-offset: base-line * 0.25;
-      z-index: 10;
-      width: base-line * 4;
-      height: base-line * 0.5;
-      padding: 0;
-      border: none;
-      border-radius: base-line;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      pointer-events: auto;
-      background-color: var(--black-transparent);
-      box-shadow: 0 0 base-line var(--black-transparent);
-      &:hover {
-        background-color: var(--black-background);
-      }
-    }
-
-    & footer#global-footer {
+    & > nav {
+      user-select: none;
+      position: fixed;
+      bottom: base-line;
+      left: 50%;
+      transform: translateX(-50%);
       width: 100%;
-      margin base-line * 0.5;
-      background-color: hsla(228, 9.8%, 6%, 0.75);
-      border-radius: base-line;
+      max-width: page-width;
+      margin: (base-line * 0.25) auto;
+      padding-inline: base-line;
+      box-sizing: border-box;
+      z-index: 9;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      gap: base-line;
-      padding: base-line * 0.5;
-      pointer-events: none;
-      transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
-      transition-behavior: allow-discrete;
-      @starting-style {
+      gap: base-line * 0.25;
+      overflow: visible;
+
+      &:has(> label input:not(:checked)) > footer {
         transform: translateY(100%);
         opacity: 0;
         visibility: hidden;
+        pointer-events: none;
       }
-      & > * {
-        pointer-events: auto;
-      }
-      & a#toggle-preferences,
-      & a#add-poster,
-      & a#camera,
-      & label[for='wat'],
-      & a[aria-label='Go to thoughts'] {
-        position: static;
-        color: var(--blue);
+
+      & > label {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        touch-action: manipulation;
+        user-select: none !important;
+        pointer-events: auto !important;
+        position: relative;
+        z-index: 10;
+        display: block;
+        width: base-line * 4;
+        height: base-line * 0.5;
+        padding: 0;
+        margin: 0;
         cursor: pointer;
-        svg {
-          fill: var(--blue);
-          stroke: var(--blue);
+        pointer-events: auto;
+        & > input {
+          position: absolute;
+          opacity: 0;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          cursor: pointer;
+          z-index: 1;
         }
-        &:focus {
+        & > span {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border-radius: base-line;
           outline: 2px solid var(--red);
+          outline-offset: base-line * 0.25;
+          transition: background-color 0.2s ease;
+          background-color: var(--black-transparent);
+          box-shadow: 0 0 base-line var(--black-transparent);
+          pointer-events: none;
+        }
+        &:hover > span {
+          background-color: var(--black-background);
         }
       }
-      & a#toggle-preferences svg {
-        width: base-line * 1.35;
-        height: base-line * 1.35;
-      }
-      & a#add-poster svg {
-        width: base-line * 1.35;
-        height: base-line * 1.35;
-      }
-      & a#camera svg {
-        width: base-line * 2;
-        height: base-line * 2;
+
+      & > footer {
+        width: 100%;
+        margin base-line * 0.5;
+        background-color: hsla(228, 9.8%, 6%, 0.75);
+        border-radius: base-line;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: base-line;
+        padding: base-line * 0.5;
+        pointer-events: none;
+        transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+        transition-behavior: allow-discrete;
+        @starting-style {
+          transform: translateY(100%);
+          opacity: 0;
+          visibility: hidden;
+        }
+        & > * {
+          pointer-events: auto;
+        }
+        & a[aria-label='Settings'],
+        & a[aria-label='Add poster'],
+        & a[aria-label='Open camera'],
+        & label[for='wat'],
+        & a[aria-label='Go to thoughts'] {
+          position: static;
+          color: var(--blue);
+          cursor: pointer;
+          svg {
+            fill: var(--blue);
+            stroke: var(--blue);
+          }
+          &:focus {
+            outline: 2px solid var(--red);
+          }
+        }
+        & a[aria-label='Settings'] svg {
+          width: base-line * 1.35;
+          height: base-line * 1.35;
+        }
+        & a[aria-label='Add poster'] svg {
+          width: base-line * 1.35;
+          height: base-line * 1.35;
+        }
+        & a[aria-label='Open camera'] svg {
+          width: base-line * 2;
+          height: base-line * 2;
+        }
       }
     }
   }

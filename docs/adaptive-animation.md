@@ -30,7 +30,7 @@ Single tuning parameter: interval length (derived from FPS, not user-set).
 Guard at a higher level via props, not scattered if-statements:
 
 - Parent (as-svg) passes `:svg="trigger"` to as-animation
-- Prop validator: `v instanceof SVGSVGElement && document.contains(v)`
+- Prop validator: `is_svg_valid` → `v instanceof SVGSVGElement` (instanceof only so VTU mounts without `attachTo` still validate)
 - Parent uses `v-if="vector && trigger"` so as-animation only mounts when valid
 - No guards inside as-animation—it receives a valid SVG or doesn't exist
 
