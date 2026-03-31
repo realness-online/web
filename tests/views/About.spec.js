@@ -14,8 +14,7 @@ Object.defineProperty(window, 'sessionStorage', {
   writable: true
 })
 
-// Mock environment variables via vite define
-// These are handled by vite.config.js define block
+import.meta.env.VITE_ADMIN_ID ??= '/+14151234356'
 
 // Mock key-commands composable
 vi.mock('@/use/key-commands', () => ({
@@ -26,7 +25,7 @@ vi.mock('@/use/key-commands', () => ({
 
 // Mock poster composable
 const mock_for_person = vi.fn().mockResolvedValue(undefined)
-const admin_id = import.meta.env.VITE_ADMIN_ID || '/+14151234356'
+const admin_id = import.meta.env.VITE_ADMIN_ID
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
     posters: ref([
