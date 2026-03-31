@@ -52,15 +52,45 @@ Realness provides **full functionality without any tracking**, working solely on
 
 ### Clone and install
 
-From your favorite terminal
-
 ```bash
 git clone git@github.com:realness-online/web.git
-
 cd web
-
-yarn install
+npm install
+npm run dev
 ```
+
+This starts a plain HTTP dev server on `http://localhost:5173`.
+
+### Local HTTPS (optional)
+
+Some features (camera, service workers, secure contexts) need HTTPS. To serve over HTTPS on `realness.local`:
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert) and create a local CA
+
+```bash
+brew install mkcert
+mkcert -install
+```
+
+2. Generate certs in the project root
+
+```bash
+mkcert realness.local
+```
+
+3. Add `realness.local` to `/etc/hosts`
+
+```bash
+echo "127.0.0.1 realness.local" | sudo tee -a /etc/hosts
+```
+
+4. Run the dev server — it detects the certs and serves HTTPS on port 443
+
+```bash
+npm run dev
+```
+
+Visit `https://realness.local`.
 
 ### Configure firebase
 

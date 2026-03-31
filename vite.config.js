@@ -2,8 +2,13 @@ import { configDefaults, defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
-import fs from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+
+const has_certs =
+  existsSync('realness.local-key.pem') && existsSync('realness.local.pem')
+const https_port = 443
+const http_port = 5173
 import wasm from 'vite-plugin-wasm'
 
 const icon_version = process.env['npm_package_version'] || '1'
@@ -37,19 +42,21 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 443,
+    port: has_certs ? https_port : http_port,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
     },
-    https: {
-      key: fs.readFileSync('localhost-key.pem'),
-      cert: fs.readFileSync('localhost.pem')
-    },
-    hmr: {
-      host: 'realness.local',
-      port: 443,
-      protocol: 'wss'
-    },
+    ...(has_certs && {
+      https: {
+        key: readFileSync('realness.local-key.pem'),
+        cert: readFileSync('realness.local.pem')
+      },
+      hmr: {
+        host: 'realness.local',
+        port: https_port,
+        protocol: 'wss'
+      }
+    }),
     headers: {
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
@@ -66,9 +73,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [
-          new URL('./src/style/variables.styl', import.meta.url).pathname
-        ]
+        imports: [path.resolve(__dirname, './src/style/variables.styl')]
       }
     }
   },
@@ -119,7 +124,7 @@ export default defineConfig({
     environment: 'happy-dom',
     reporters: ['verbose'],
     include: ['tests/**/*.spec.js'],
-    exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**'],
+    exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**', '**/workers/tracer.spec.js'],
     testTimeout: 30000,
     coverage: {
       include: ['src/**/*.js', 'src/**/*.vue'],

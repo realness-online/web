@@ -6,6 +6,18 @@ declare module '@/*' {
   export default component
 }
 
+declare module '@/wasm/tracer.js' {
+  export class ColorImageConverter {
+    static new_with_string(params: string): ColorImageConverter
+    init(image_data: ImageData): void
+    tick(): string | null
+    progress(): number
+    free(): void
+  }
+  export function init_panic_hook(): void
+  export default function init_tracer_wasm(path: string): Promise<void>
+}
+
 declare module '*.js'
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
