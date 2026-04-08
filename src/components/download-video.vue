@@ -8,7 +8,11 @@
     render_svg_to_video_blob,
     download_video
   } from '@/utils/svg-to-video'
-  import { animation_speed } from '@/utils/preference'
+  import { VIDEO_EXPORT_ANIMATION_SPEED } from '@/utils/animation-config'
+  import {
+    begin_poster_video_export,
+    end_poster_video_export
+  } from '@/use/poster-video-export'
   import { to_hsla } from '@/utils/colors'
   import css_var from '@/utils/css-var'
 
@@ -91,14 +95,12 @@
     set_working(true)
     progress.value = 0
     state.value = 'rendering'
+    begin_poster_video_export()
 
     try {
-      // Ensure animations are enabled for video
-      svg.unpauseAnimations()
-
       const blob = await render_svg_to_video_blob(svg, {
         fps: 24,
-        animation_speed: animation_speed.value,
+        animation_speed: VIDEO_EXPORT_ANIMATION_SPEED,
         width: video_width,
         height: video_height,
         suggested_filename: file_name.value,
@@ -116,6 +118,7 @@
       console.error('Failed to render video:', error)
       state.value = 'error'
     } finally {
+      end_poster_video_export()
       working.value = false
       set_working(false)
       progress.value = 0
