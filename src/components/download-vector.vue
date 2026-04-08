@@ -13,7 +13,11 @@
     render_svg_to_video_blob,
     download_video
   } from '@/utils/svg-to-video'
-  import { animation_speed } from '@/utils/preference'
+  import { VIDEO_EXPORT_ANIMATION_SPEED } from '@/utils/animation-config'
+  import {
+    begin_poster_video_export,
+    end_poster_video_export
+  } from '@/use/poster-video-export'
   import icon from '@/components/icon'
   import {
     ref,
@@ -67,6 +71,7 @@
   const toggle_menu = event => {
     event.preventDefault()
     event.stopPropagation()
+    if (video_exporting.value) return
     menu_open.value = !menu_open.value
   }
 
@@ -219,13 +224,13 @@
     video_progress.value = 0
     video_total.value = 0
     set_working(true)
-    svg.unpauseAnimations()
+    begin_poster_video_export()
 
     try {
       const video_filename = await get_filename_for_poster(props.itemid, 'mov')
       const blob = await render_svg_to_video_blob(svg, {
         fps: 24,
-        animation_speed: animation_speed.value,
+        animation_speed: VIDEO_EXPORT_ANIMATION_SPEED,
         width: video_width,
         height: video_height,
         suggested_filename: video_filename,
@@ -238,6 +243,7 @@
     } catch (error) {
       console.error('Failed to render video:', error)
     } finally {
+      end_poster_video_export()
       video_exporting.value = false
       video_progress.value = 0
       video_total.value = 0

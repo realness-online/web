@@ -45,6 +45,9 @@ export const ANIMATION_SPEED_LEGACY = {
 
 export const DEFAULT_ANIMATION_SPEED = 'stroll'
 
+/** Timeline speed for video file export (crawl multiplier, not live preview speed). */
+export const VIDEO_EXPORT_ANIMATION_SPEED = 'crawl'
+
 const SHORTEST_SYNC = 18
 const SHORT_SYNC = 30
 const MEDIUM_SYNC = 60

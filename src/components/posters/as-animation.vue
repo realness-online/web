@@ -17,6 +17,7 @@
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
   } from '@/utils/animation-config'
+  import { poster_video_export_active } from '@/use/poster-video-export'
 
   const props = defineProps({
     id: {
@@ -179,7 +180,9 @@
   }
 
   watchEffect(() => {
-    const should_animate = !props.paused && viewport_visible.value
+    const export_blocks_live_smil = poster_video_export_active.value > 0
+    const should_animate =
+      !props.paused && viewport_visible.value && !export_blocks_live_smil
     if (should_animate) props.svg.unpauseAnimations()
     else props.svg.pauseAnimations()
   })
