@@ -13,5 +13,8 @@ export const begin_poster_video_export = () => {
 }
 
 export const end_poster_video_export = () => {
-  poster_video_export_count.value = Math.max(0, poster_video_export_count.value - 1)
+  poster_video_export_count.value = Math.max(
+    0,
+    poster_video_export_count.value - 1
+  )
 }
