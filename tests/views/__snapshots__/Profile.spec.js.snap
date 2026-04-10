@@ -21,6 +21,7 @@ exports[`Profile > renders profile view 1`] = `
     editable="false"
     person="[object Object]"
   />
+  <!--v-if-->
   <as-days-stub
     events=""
     paginate="true"

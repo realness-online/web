@@ -9,6 +9,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
     show_cutout_layers="false"
+    touch_uses_long_press="true"
   />
   <!--v-if-->
   <!--v-if-->
@@ -23,6 +24,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
     show_cutout_layers="false"
+    touch_uses_long_press="true"
   />
   <!--v-if-->
   <!--v-if-->

@@ -42,6 +42,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
+    allowedHosts: ['realness.local'],
     port: has_certs ? https_port : http_port,
     watch: {
       ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']

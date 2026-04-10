@@ -18,6 +18,7 @@ const my_id = () =>
  * @property {import('vue').Ref<number>|null} [refresh_signal]
  * @property {import('vue').Ref<Array<unknown>>|null} [queue_items]
  * @property {() => Promise<void>} [on_refresh] replaces default refresh when set (e.g. reload phonebook then feed)
+ * @property {(working: boolean) => void} [set_working] when set (including explicitly `undefined`), skips inject; tests use this
  */
 
 /**
@@ -35,7 +36,8 @@ export const use_feed = options => {
     queue_items = null,
     on_refresh = null
   } = options
-  const set_working = inject('set_working')
+  const set_working =
+    'set_working' in options ? options.set_working : inject('set_working')
   const loaded_people_ids = ref(/** @type {Id[]} */ ([]))
   const overlay_cache = new WeakMap()
 

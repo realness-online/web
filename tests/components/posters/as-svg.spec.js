@@ -336,9 +336,89 @@ describe('@/components/posters/as-svg.vue', () => {
       })
       await flushPromises()
       const svg = wrapper.find('svg')
-      await svg.trigger('pointerdown')
-      await svg.trigger('pointerup')
+      await svg.trigger('pointerdown', { pointerType: 'mouse' })
+      await svg.trigger('pointerup', { pointerType: 'mouse' })
       expect(wrapper.emitted('click')?.[0]).toEqual([true])
+    })
+
+    it('does not emit click on quick touch pointerup', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      const svg = wrapper.find('svg')
+      await svg.trigger('pointerdown', { pointerType: 'touch' })
+      await svg.trigger('pointerup', { pointerType: 'touch' })
+      expect(wrapper.emitted('click')).toBeFalsy()
+    })
+
+    it('emits click on quick touch when touch_uses_long_press is false', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid,
+          sync_poster: vector_fixture(),
+          touch_uses_long_press: false
+        }
+      })
+      await flushPromises()
+      const svg = wrapper.find('svg')
+      await svg.trigger('pointerdown', { pointerType: 'touch' })
+      await svg.trigger('pointerup', { pointerType: 'touch' })
+      expect(wrapper.emitted('click')?.[0]).toEqual([true])
+    })
+
+    it('emits click after touch long press', async () => {
+      vi.useFakeTimers()
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() },
+        attachTo: document.body
+      })
+      try {
+        await flushPromises()
+        const svg = wrapper.find('svg')
+        await svg.trigger('pointerdown', { pointerType: 'touch' })
+        vi.advanceTimersByTime(450)
+        await flushPromises()
+        expect(wrapper.emitted('click')?.[0]).toEqual([true])
+        await svg.trigger('pointerup', { pointerType: 'touch' })
+      } finally {
+        vi.useRealTimers()
+        wrapper.unmount()
+      }
+    })
+
+    it('cancels touch long press when pointer moves', async () => {
+      vi.useFakeTimers()
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() },
+        attachTo: document.body
+      })
+      try {
+        await flushPromises()
+        const svg_el = wrapper.find('svg').element
+        svg_el.dispatchEvent(
+          new PointerEvent('pointerdown', {
+            pointerType: 'touch',
+            clientX: 100,
+            clientY: 100,
+            bubbles: true
+          })
+        )
+        svg_el.dispatchEvent(
+          new PointerEvent('pointermove', {
+            pointerType: 'touch',
+            clientX: 120,
+            clientY: 100,
+            bubbles: true
+          })
+        )
+        vi.advanceTimersByTime(450)
+        await flushPromises()
+        expect(wrapper.emitted('click')).toBeFalsy()
+      } finally {
+        vi.useRealTimers()
+        wrapper.unmount()
+      }
     })
 
     it('does not emit click when pointer leaves before up', async () => {

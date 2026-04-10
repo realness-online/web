@@ -92,6 +92,13 @@ export class Me extends Cloud(Local(Storage)) {
         me.value
       )
     if (!me_val) return
+    const { name } = me_val
+    if (typeof name !== 'string' || name.trim().length < 3) {
+      profile_sync_log('me_save_skipped_incomplete_profile', {
+        itemid: this.id
+      })
+      return
+    }
     if (!me_val.visited) me_val.visited = new Date().toISOString()
     profile_sync_log('me_save_persist', {
       itemid: this.id,
