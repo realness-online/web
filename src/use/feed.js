@@ -4,7 +4,7 @@
 
 import { ref, watch, inject } from 'vue'
 import { as_author } from '@/utils/itemid'
-import { poster_thought_overlay_pairs } from '@/use/statements'
+import { poster_thought_overlay_pairs, slot_key } from '@/use/statements'
 
 const my_id = () =>
   (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
@@ -39,7 +39,25 @@ export const use_feed = options => {
   const set_working =
     'set_working' in options ? options.set_working : inject('set_working')
   const loaded_people_ids = ref(/** @type {Id[]} */ ([]))
-  const overlay_cache = new WeakMap()
+  /** @type {Map<string, ReturnType<typeof poster_thought_overlay_pairs>>} */
+  const overlay_cache = new Map()
+
+  /**
+   * Same calendar bucket often gets a new array instance each render; key by item ids.
+   * @param {unknown[]} day
+   */
+  const overlay_cache_key = day => {
+    if (!Array.isArray(day) || day.length === 0) return ''
+    return day
+      .map(item =>
+        slot_key(
+          /** @type {import('@/types').Item | import('@/types').Statements} */ (
+            item
+          )
+        )
+      )
+      .join('\0')
+  }
 
   /**
    * @param {Id[]} people_ids
@@ -77,12 +95,13 @@ export const use_feed = options => {
    * @param {unknown[]} day
    */
   const overlay_for_day = day => {
-    let hit = overlay_cache.get(day)
+    const key = overlay_cache_key(day)
+    let hit = overlay_cache.get(key)
     if (!hit) {
       hit = poster_thought_overlay_pairs(
         /** @type {Array<Item|Statements>} */ (day)
       )
-      overlay_cache.set(day, hit)
+      overlay_cache.set(key, hit)
     }
     return hit
   }

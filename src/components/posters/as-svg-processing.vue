@@ -20,7 +20,7 @@
     as_layer_id
   } from '@/utils/itemid'
 
-  /** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
+  /** @typedef {import('@/persistence/Queue').QueueItem} QueueItem */
   const props = defineProps({
     queue_item: {
       /** @type {import('vue').PropType<QueueItem>} */

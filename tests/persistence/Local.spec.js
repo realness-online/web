@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Local } from '@/persistance/Local'
-import { Storage } from '@/persistance/Storage'
+import { Local } from '@/persistence/Local'
+import { Storage } from '@/persistence/Storage'
 
 // Create a test class that uses the Local mixin
 class TestLocal extends Local(Storage) {
@@ -9,7 +9,7 @@ class TestLocal extends Local(Storage) {
   }
 }
 
-describe('@/persistance/Local', () => {
+describe('@/persistence/Local', () => {
   let local
   let mock_storage
 

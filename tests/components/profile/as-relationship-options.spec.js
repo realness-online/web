@@ -21,7 +21,7 @@ vi.mock('@/use/people', () => ({
 }))
 
 // Mock the Storage class
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Relation: vi.fn().mockImplementation(() => ({
     save: vi.fn()
   }))

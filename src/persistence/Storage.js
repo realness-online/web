@@ -2,10 +2,10 @@
 /** @typedef {import('@/types').Item} Item */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-import { Local } from '@/persistance/Local'
-import { Large } from '@/persistance/Large'
-import { Cloud } from '@/persistance/Cloud'
-import { Paged } from '@/persistance/Paged'
+import { Local } from '@/persistence/Local'
+import { Large } from '@/persistence/Large'
+import { Cloud } from '@/persistence/Cloud'
+import { Paged } from '@/persistence/Paged'
 import { current_user, upload, me } from '@/utils/serverless'
 import {
   as_type,

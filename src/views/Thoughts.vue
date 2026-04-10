@@ -18,7 +18,7 @@
 
   import { as_created_at, load } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
-  import { Poster } from '@/persistance/Storage'
+  import { Poster } from '@/persistence/Storage'
   import { current_user } from '@/utils/serverless'
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use as use_people } from '@/use/people'
@@ -44,7 +44,7 @@
   const init_processing_queue = inject('init_processing_queue')
   const queue_items = inject('queue_items')
 
-  /** @type {import('vue').ComputedRef<import('@/persistance/Queue').QueueItem[]>} */
+  /** @type {import('vue').ComputedRef<import('@/persistence/Queue').QueueItem[]>} */
   const processing_items = computed(() => queue_items?.value ?? [])
 
   const working = ref(true)

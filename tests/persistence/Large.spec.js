@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Large } from '@/persistance/Large'
-import { Storage } from '@/persistance/Storage'
+import { Large } from '@/persistence/Large'
+import { Storage } from '@/persistence/Storage'
 
 // Mock dependencies
 vi.mock('idb-keyval', () => ({
@@ -9,7 +9,7 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn(() => Promise.resolve())
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   as_directory: vi.fn(() =>
     Promise.resolve({
       id: '/+1234567890/posters/index/',
@@ -67,7 +67,7 @@ class TestLargeClass extends Large(Storage) {
   }
 }
 
-describe('@/persistance/Large', () => {
+describe('@/persistence/Large', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

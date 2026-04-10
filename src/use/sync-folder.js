@@ -12,7 +12,7 @@ import {
 } from 'vue'
 import { get, set } from 'idb-keyval'
 import PosterAsFigure from '@/components/posters/as-figure'
-import { build_local_directory } from '@/persistance/Directory'
+import { build_local_directory } from '@/persistence/Directory'
 import {
   build_download_svg,
   get_filename_for_poster

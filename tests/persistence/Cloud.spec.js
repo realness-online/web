@@ -22,7 +22,7 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn(() => Promise.resolve())
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   as_directory: vi.fn(() =>
     Promise.resolve({
       id: 'test-directory',
@@ -59,12 +59,12 @@ vi.mock('@/utils/numbers', () => ({
 }))
 
 // Import Cloud - this is what we're testing
-import { Cloud, sync_later } from '@/persistance/Cloud'
-import { Large } from '@/persistance/Large'
-import { Storage } from '@/persistance/Storage'
+import { Cloud, sync_later } from '@/persistence/Cloud'
+import { Large } from '@/persistence/Large'
+import { Storage } from '@/persistence/Storage'
 import { upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { load_directory_from_network } from '@/persistance/Directory'
+import { load_directory_from_network } from '@/persistence/Directory'
 
 class TestCloudClass extends Cloud(Storage) {
   constructor(itemid) {
@@ -72,7 +72,7 @@ class TestCloudClass extends Cloud(Storage) {
   }
 }
 
-describe('@/persistance/Cloud', () => {
+describe('@/persistence/Cloud', () => {
   let cloud_instance
   let mock_navigator
 

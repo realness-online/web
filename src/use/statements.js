@@ -4,9 +4,9 @@
 
 import { as_created_at, list, as_author } from '@/utils/itemid'
 import { hydrate } from '@/utils/item'
-import { as_directory } from '@/persistance/Directory'
+import { as_directory } from '@/persistence/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
-import { Statements as statements_storage } from '@/persistance/Storage'
+import { Statements as statements_storage } from '@/persistence/Storage'
 import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 const links = ['http://', 'https://']

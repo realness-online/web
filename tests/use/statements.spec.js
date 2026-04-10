@@ -29,7 +29,7 @@ vi.mock('@/utils/itemid', () => ({
   })
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   as_directory: vi.fn(() =>
     Promise.resolve({
       items: ['1000', '2000', '3000']
@@ -46,7 +46,7 @@ vi.mock('@/utils/sorting', () => ({
   recent_number_first: vi.fn((a, b) => Number(b) - Number(a))
 }))
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Statements: vi.fn().mockImplementation(() => ({
     save: vi.fn(() => Promise.resolve())
   }))
@@ -148,7 +148,7 @@ describe('statements composable', () => {
 
   describe('save', () => {
     it('saves statement with trimmed text', async () => {
-      const { Statements } = await import('@/persistance/Storage')
+      const { Statements } = await import('@/persistence/Storage')
       const initial_length = instance.my_statements.value.length
 
       await instance.save('  Hello World  ')
@@ -171,7 +171,7 @@ describe('statements composable', () => {
     })
 
     it('calls Statements save', async () => {
-      const { Statements } = await import('@/persistance/Storage')
+      const { Statements } = await import('@/persistence/Storage')
       const section = document.createElement('section')
       section.setAttribute('itemid', '/+14151234356/statements')
       document.body.appendChild(section)
@@ -183,7 +183,7 @@ describe('statements composable', () => {
     })
 
     it('returns early for empty statement', async () => {
-      const { Statements } = await import('@/persistance/Storage')
+      const { Statements } = await import('@/persistence/Storage')
       Statements.mockClear()
 
       await instance.save('')
@@ -192,7 +192,7 @@ describe('statements composable', () => {
     })
 
     it('returns early for null statement', async () => {
-      const { Statements } = await import('@/persistance/Storage')
+      const { Statements } = await import('@/persistence/Storage')
       Statements.mockClear()
 
       await instance.save(null)

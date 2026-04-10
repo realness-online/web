@@ -22,7 +22,7 @@ import {
   as_created_at,
   as_author
 } from '@/utils/itemid'
-import { as_directory } from '@/persistance/Directory'
+import { as_directory } from '@/persistence/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { aspect_ratio_mode, slice_alignment } from '@/utils/preference'

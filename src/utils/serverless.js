@@ -96,6 +96,21 @@ export const remove = async (/** @type {string} */ path) => {
   }
 }
 
+/**
+ * HTML for an itemid may live in idb only, localStorage only, or both after `load()`.
+ * @param {Id} itemid
+ * @returns {Promise<string|null>}
+ */
+const local_html_string = async itemid => {
+  const from_idb = await get(itemid)
+  if (typeof from_idb === 'string' && from_idb.length) return from_idb
+  if (typeof localStorage !== 'undefined') {
+    const from_ls = localStorage.getItem(itemid)
+    if (typeof from_ls === 'string' && from_ls.length) return from_ls
+  }
+  return null
+}
+
 export const move = async (type, id, archive_id, author = localStorage.me) => {
   const component_types = [
     'shadows',
@@ -140,11 +155,11 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
   }
   const local_id = old_location
 
-  let html = await get(local_id)
+  let html = await local_html_string(local_id)
   if (!html) {
-    html = await load(old_location)
-    if (!html) return false
-    html = await get(local_id)
+    const loaded = await load(old_location)
+    if (!loaded) return false
+    html = await local_html_string(local_id)
     if (!html) return false
   }
 

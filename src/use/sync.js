@@ -9,7 +9,7 @@ import {
   type_as_list
 } from '@/utils/itemid'
 import { get_item } from '@/utils/item'
-import { build_local_directory } from '@/persistance/Directory'
+import { build_local_directory } from '@/persistence/Directory'
 import {
   Offline,
   Relation,
@@ -17,7 +17,7 @@ import {
   Event,
   Poster,
   Me
-} from '@/persistance/Storage'
+} from '@/persistence/Storage'
 import { get_my_itemid, use_me } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
 import { current_user, location, metadata } from '@/utils/serverless'
@@ -86,7 +86,7 @@ export const visit = async deps => {
 const sync_thoughts = async deps => {
   const itemid = get_my_itemid('statements')
   if (!itemid) return null
-  const persistance = new Statements()
+  const persistence = new Statements()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
     `[itemid="${itemid}"]`
@@ -94,16 +94,16 @@ const sync_thoughts = async deps => {
   if (!elements || !elements.outerHTML) return null
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
-    const synced = await persistance.sync()
+    const synced = await persistence.sync()
     // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
     deps.my_statements.value = synced || []
     if (deps.my_statements.value.length) {
       await tick()
-      await persistance.save(elements)
+      await persistence.save(elements)
       localStorage.removeItem('/+/statements')
     }
   }
-  await persistance.optimize()
+  await persistence.optimize()
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<void>} */

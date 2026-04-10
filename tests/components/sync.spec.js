@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 
 // Define mocks before other imports
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Storage: class {
     constructor(itemid) {
       this.id = itemid
@@ -63,7 +63,7 @@ vi.mock('@/persistance/Storage', () => ({
       } else {
         parsed_data = { outerHTML: data }
       }
-      const { Cloud } = await import('@/persistance/Cloud')
+      const { Cloud } = await import('@/persistence/Cloud')
       const cloud_instance = new (Cloud(Storage))(this.id)
       await cloud_instance.save({ ...parsed_data, id: this.id })
       return parsed_data
@@ -71,7 +71,7 @@ vi.mock('@/persistance/Storage', () => ({
   }
 }))
 
-vi.mock('@/persistance/Cloud', () => ({
+vi.mock('@/persistence/Cloud', () => ({
   Cloud: Base => {
     class CloudStorage extends Base {
       async save() {
@@ -96,8 +96,8 @@ import { get, set } from 'idb-keyval'
 import * as itemid from '@/utils/itemid'
 import * as sync_worker from '@/use/sync'
 import sync from '@/components/sync'
-import { Storage, Thought, Me, Poster, Offline } from '@/persistance/Storage'
-import { Cloud } from '@/persistance/Cloud'
+import { Storage, Thought, Me, Poster, Offline } from '@/persistence/Storage'
+import { Cloud } from '@/persistence/Cloud'
 import {
   setup_current_user,
   clear_current_user,

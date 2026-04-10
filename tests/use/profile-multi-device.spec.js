@@ -56,7 +56,7 @@ vi.mock('@/utils/itemid', () => ({
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/'))
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   build_local_directory: vi.fn(() =>
     Promise.resolve({
       items: ['1000']
@@ -64,7 +64,7 @@ vi.mock('@/persistance/Directory', () => ({
   )
 }))
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Offline: vi.fn().mockImplementation(() => ({
     save: vi.fn(() => Promise.resolve()),
     delete: vi.fn(() => Promise.resolve())
@@ -126,7 +126,7 @@ vi.mock('@/utils/numbers', () => ({
 }))
 
 import { sync_me, visit } from '@/use/sync'
-import { Me } from '@/persistance/Storage'
+import { Me } from '@/persistence/Storage'
 
 describe('profile multi-device edge cases', () => {
   /** @type {{ event: string, detail: object }[]} */

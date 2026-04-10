@@ -62,7 +62,7 @@ vi.mock('@/utils/sorting', () => ({
   recent_visit_first: vi.fn((a, b) => 0)
 }))
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Me: vi.fn().mockImplementation(() => ({
     save: vi.fn()
   }))
@@ -187,7 +187,7 @@ describe('people composable', () => {
       document.body.appendChild(me_el)
       const { save } = use_me()
       await save()
-      const { Me } = await import('@/persistance/Storage')
+      const { Me } = await import('@/persistence/Storage')
       expect(Me).toHaveBeenCalled()
       document.body.removeChild(me_el)
     })
