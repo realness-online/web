@@ -70,7 +70,7 @@ export const default_keymap = [
     descriptions: {
       'ui::Toggle_Presentation': 'Toggle presentation mode',
       'ui::Open_Settings': 'Show preferences',
-      'ui::Open_Account': 'Open account dialog',
+      'ui::Open_Account': 'Open account',
       'ui::Show_Documentation': 'Show application documentation',
       'ui::Clear_Sync_Time': 'Clear sync time from browser storage',
       'pref::Toggle_Shadow': 'Shadow gradient on posters',

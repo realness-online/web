@@ -17,7 +17,8 @@ describe('use_feed', () => {
       statements_for_person,
       posters_for_person,
       refresh_signal,
-      on_refresh
+      on_refresh,
+      set_working: undefined
     })
 
     refresh_signal.value = Date.now()

@@ -57,6 +57,14 @@
     show_cutout_layers: {
       type: Boolean,
       default: undefined
+    },
+    /**
+     * When true (default), touch must press and hold to toggle meet / emit click.
+     * Set false when the parent needs an immediate tap on touch (e.g. profile avatar).
+     */
+    touch_uses_long_press: {
+      type: Boolean,
+      default: true
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
@@ -94,10 +102,22 @@
   )
 
   const HOLD_MS = 250
+  /** Long-press on touch toggles meet + menu; quick taps do not (avoids swipe confusion). */
+  const TOUCH_TOGGLE_HOLD_MS = 450
+  const MOVE_CANCEL_TOUCH_TOGGLE_PX = 8
+
   const held_layer = ref(null)
   let hold_timer = null
   let was_hold = false
   let cancelled = false
+
+  let touch_toggle_timer = null
+  let touch_toggle_fired = false
+  let touch_start_x = 0
+  let touch_start_y = 0
+
+  /** @param {PointerEvent} event */
+  const is_touch_pointer = event => event.pointerType === 'touch'
 
   const layer_from_target = el => {
     const use_el = el?.closest?.('use[itemprop]')
@@ -107,11 +127,39 @@
     return null
   }
 
+  /** @param {PointerEvent} event */
   const handle_pointerdown = event => {
     was_hold = false
     cancelled = false
     if (hold_timer) clearTimeout(hold_timer)
+    hold_timer = null
+    if (touch_toggle_timer) {
+      clearTimeout(touch_toggle_timer)
+      touch_toggle_timer = null
+    }
+    touch_toggle_fired = false
+
     const layer = layer_from_target(event.target)
+
+    if (is_touch_pointer(event) && props.touch_uses_long_press) {
+      touch_start_x = event.clientX
+      touch_start_y = event.clientY
+      hold_timer = setTimeout(() => {
+        hold_timer = null
+        was_hold = true
+        held_layer.value = layer
+      }, HOLD_MS)
+      touch_toggle_timer = setTimeout(() => {
+        touch_toggle_timer = null
+        if (cancelled) return
+        touch_toggle_fired = true
+        held_layer.value = null
+        was_hold = false
+        handle_click()
+      }, TOUCH_TOGGLE_HOLD_MS)
+      return
+    }
+
     hold_timer = setTimeout(() => {
       hold_timer = null
       was_hold = true
@@ -119,12 +167,57 @@
     }, HOLD_MS)
   }
 
-  const handle_pointerup = () => {
+  /** @param {PointerEvent} event */
+  const handle_pointermove = event => {
+    if (!is_touch_pointer(event) || !props.touch_uses_long_press) return
+    if (!touch_toggle_timer && !hold_timer) return
+    const dx = Math.abs(event.clientX - touch_start_x)
+    const dy = Math.abs(event.clientY - touch_start_y)
+    if (dx <= MOVE_CANCEL_TOUCH_TOGGLE_PX && dy <= MOVE_CANCEL_TOUCH_TOGGLE_PX)
+      return
+    cancelled = true
+    if (touch_toggle_timer) {
+      clearTimeout(touch_toggle_timer)
+      touch_toggle_timer = null
+    }
     if (hold_timer) {
       clearTimeout(hold_timer)
       hold_timer = null
     }
+    held_layer.value = null
+    was_hold = false
+  }
+
+  /** @param {PointerEvent} event */
+  const handle_pointerup = event => {
+    if (hold_timer) {
+      clearTimeout(hold_timer)
+      hold_timer = null
+    }
+    if (touch_toggle_timer) {
+      clearTimeout(touch_toggle_timer)
+      touch_toggle_timer = null
+    }
     if (cancelled) return
+
+    if (is_touch_pointer(event) && props.touch_uses_long_press) {
+      if (was_pan_gesture?.value) {
+        was_pan_gesture.value = false
+        held_layer.value = null
+        was_hold = false
+        return
+      }
+      if (touch_toggle_fired) {
+        touch_toggle_fired = false
+        held_layer.value = null
+        was_hold = false
+        return
+      }
+      held_layer.value = null
+      was_hold = false
+      return
+    }
+
     if (was_hold) {
       held_layer.value = null
       was_hold = false
@@ -140,6 +233,10 @@
   const handle_pointerleave = () => {
     if (hold_timer) clearTimeout(hold_timer)
     hold_timer = null
+    if (touch_toggle_timer) {
+      clearTimeout(touch_toggle_timer)
+      touch_toggle_timer = null
+    }
     cancelled = true
     held_layer.value = null
   }
@@ -368,6 +465,7 @@
         : undefined
     "
     @pointerdown="handle_pointerdown"
+    @pointermove="handle_pointermove"
     @pointerup="handle_pointerup"
     @pointerleave="handle_pointerleave"
     @pointercancel="handle_pointerleave">

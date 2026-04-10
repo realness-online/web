@@ -9,22 +9,43 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
+  import NameAsForm from '@/components/profile/as-form-name'
+  import AsSignOn from '@/components/profile/as-sign-on'
 
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { ref, provide, computed, watch, inject } from 'vue'
+  import { ref, provide, computed, watch, inject, nextTick as tick } from 'vue'
   import { useRoute as use_route } from 'vue-router'
+  import { current_user, sign_off } from '@/utils/serverless'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
   import { geology_layers } from '@/use/poster'
+  import { menu } from '@/utils/preference'
   import { get } from 'idb-keyval'
 
   const route = use_route()
   const person_id = computed(() =>
     from_e64(String(route.params.phone_number ?? ''))
   )
+
+  const is_own_profile = computed(() => {
+    if (typeof localStorage === 'undefined') return false
+    const mine = localStorage.me
+    return !!(mine && person_id.value === mine)
+  })
+
+  const { load_person, person, people } = use_person()
+
+  const scroll_account_into_view = () => {
+    if (route.hash !== '#account') return
+    if (!person.value || !is_own_profile.value) return
+    tick().then(() => {
+      document.getElementById('account')?.scrollIntoView({ behavior: 'smooth' })
+    })
+  }
+
   const {
     statements,
     statement_shown,
@@ -37,7 +58,6 @@
     for_person: posters_for_person,
     poster_shown
   } = use_posters()
-  const { load_person, person, people } = use_person()
   const vector = ref(null)
   const shown = ref(false)
   provide('vector', vector)
@@ -66,6 +86,12 @@
     ])
   }
   watch(person_id, id => load_profile_feed(id), { immediate: true })
+
+  watch(
+    [() => route.hash, person, is_own_profile],
+    () => scroll_account_into_view(),
+    { immediate: true }
+  )
 
   const on_show = shown_vector => {
     if (!shown_vector) return
@@ -114,11 +140,27 @@
       </menu>
     </div>
     <as-figure v-if="person" :person="person" />
+    <section
+      v-if="person && is_own_profile"
+      id="account"
+      class="profile-account">
+      <template v-if="current_user">
+        <name-as-form />
+        <fieldset id="sign-off">
+          <legend>Sign off</legend>
+          <button type="button" @click="sign_off">
+            <icon name="arrow" /> sign off
+          </button>
+        </fieldset>
+      </template>
+      <as-sign-on v-else />
+    </section>
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
       <template v-for="item in day" :key="slot_key(item)">
         <poster-as-figure
           v-if="item.type === 'posters'"
           :itemid="item.id"
+          :menu="menu"
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
           @show="poster_shown" />
@@ -135,6 +177,27 @@
 <style lang="stylus">
   section#profile
     padding: 0
+    & > section.profile-account
+      padding: base-line
+      & > fieldset#sign-off
+        margin-top: base-line
+        border-top: 1px solid red
+        display: flex
+        align-items: center
+        justify-content: flex-end
+        gap: base-line * 0.25
+        & > legend
+          color: red
+          margin-right: auto
+        & > button
+          margin: base-line * 0.75
+          border-color: red
+          &:hover
+            background-color: red
+            color: white
+          & > svg.icon
+            width: base-line
+            height: base-line
     & > header
       height: 0
       padding: 0

@@ -204,14 +204,19 @@ export const init_serverless = () => {
     }
     auth_changed(auth.value, async user => {
       if (user) {
-        current_user.value = user
         const phone = user.phoneNumber
         if (phone) localStorage.me = from_e64(phone)
         if (me.value) me.value.id = localStorage.me
-        const maybe_me = await load_from_network(localStorage.me)
-        // Intentional: replace me with network result
+        /** Load profile before `current_user` so sync/save hooks do not upload a shell over the server file. */
+        let maybe_me = null
+        try {
+          maybe_me = await load_from_network(localStorage.me)
+        } catch (err) {
+          console.error('[auth] load_from_network failed', err)
+        }
         // eslint-disable-next-line require-atomic-updates
         if (maybe_me) me.value = maybe_me
+        current_user.value = user
       } else
         current_user.value =
           /** @type {import('firebase/auth').User | null} */ (null)
