@@ -2,7 +2,7 @@
   import icon from '@/components/icon'
   import { list } from '@/utils/itemid'
 
-  import { Event } from '@/persistance/Storage'
+  import { Event } from '@/persistence/Storage'
   import { time_of_day } from '@/utils/date'
   import { ref, computed, onMounted, nextTick } from 'vue'
 

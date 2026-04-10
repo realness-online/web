@@ -1,5 +1,5 @@
 /** @typedef {import('@/types').Id} Id */
-/** @typedef {import('@/persistance/Storage').Storage} Storage */
+/** @typedef {import('@/persistence/Storage').Storage} Storage */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
@@ -10,7 +10,7 @@ import { mutex_for } from '@/utils/algorithms'
 import {
   load_directory_from_network,
   as_directory
-} from '@/persistance/Directory'
+} from '@/persistence/Directory'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = [
@@ -125,7 +125,7 @@ export const Cloud = superclass =>
       if (!directory_list?.items) return
       const { items } = directory_list
       if (items?.length > SIZE.MAX) {
-        const sorted_items = items.sort((a, b) => Number(b) - Number(a))
+        const sorted_items = [...items].sort((a, b) => Number(b) - Number(a))
         const index = sorted_items.length - 1
         const archive_directory = sorted_items[index]
         const to_archive = sorted_items.splice(-SIZE.MID)

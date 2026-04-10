@@ -2,7 +2,7 @@
   import Icon from '@/components/icon'
   import { use_me } from '@/use/people'
   import { nextTick as tick, computed } from 'vue'
-  import { Relation } from '@/persistance/Storage'
+  import { Relation } from '@/persistence/Storage'
   const props = defineProps({
     person: {
       type: Object,

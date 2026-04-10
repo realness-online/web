@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { is_directory_id, as_directory_id } from '@/persistance/Directory'
+import { is_directory_id, as_directory_id } from '@/persistence/Directory'
 
 describe('Directory validation', () => {
   describe('is_directory_id', () => {

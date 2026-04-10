@@ -14,12 +14,12 @@ import {
   geology_layers,
   use_posters
 } from '@/use/poster'
-import { as_directory } from '@/persistance/Directory'
+import { as_directory } from '@/persistence/Directory'
 import { as_author, as_created_at } from '@/utils/itemid'
 import { load } from '@/utils/itemid'
 import { recent_item_first } from '@/utils/sorting'
 
-vi.mock('@/persistance/Directory')
+vi.mock('@/persistence/Directory')
 vi.mock('@/utils/itemid')
 vi.mock('@/utils/sorting')
 

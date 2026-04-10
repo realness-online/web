@@ -1,8 +1,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-/** @typedef {import('@/persistance/Storage').Storage} Storage */
+/** @typedef {import('@/persistence/Storage').Storage} Storage */
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
-import { History } from '@/persistance/Storage'
+import { History } from '@/persistence/Storage'
 import { from_e64 } from '@/use/people'
 import { current_user } from '@/utils/serverless'
 import { get_item, get_itemprops, hydrate } from '@/utils/item'

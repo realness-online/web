@@ -42,7 +42,7 @@ vi.mock('@/utils/itemid', () => ({
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/'))
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   build_local_directory: vi.fn(() =>
     Promise.resolve({
       items: ['1000', '2000', '3000']
@@ -50,7 +50,7 @@ vi.mock('@/persistance/Directory', () => ({
   )
 }))
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Offline: vi.fn().mockImplementation(() => ({
     save: vi.fn(() => Promise.resolve()),
     delete: vi.fn(() => Promise.resolve())
@@ -167,7 +167,7 @@ describe('sync composable', () => {
 
     it('processes offline save actions', async () => {
       const { get, del } = await import('idb-keyval')
-      const { Offline } = await import('@/persistance/Storage')
+      const { Offline } = await import('@/persistence/Storage')
 
       get.mockResolvedValueOnce([
         { action: 'save', id: '/+1234/thoughts/1000' }
@@ -181,7 +181,7 @@ describe('sync composable', () => {
 
     it('processes offline delete actions', async () => {
       const { get } = await import('idb-keyval')
-      const { Offline } = await import('@/persistance/Storage')
+      const { Offline } = await import('@/persistence/Storage')
 
       get.mockResolvedValueOnce([
         { action: 'delete', id: '/+1234/thoughts/1000' }
@@ -194,7 +194,7 @@ describe('sync composable', () => {
 
     it('skips anonymous poster block when offline empty and signed in', async () => {
       const { get } = await import('idb-keyval')
-      const { build_local_directory } = await import('@/persistance/Directory')
+      const { build_local_directory } = await import('@/persistence/Directory')
 
       get.mockResolvedValue(null)
 
@@ -205,8 +205,8 @@ describe('sync composable', () => {
 
     it('handles anonymous posters when not signed in', async () => {
       const { get, del } = await import('idb-keyval')
-      const { build_local_directory } = await import('@/persistance/Directory')
-      const { Offline } = await import('@/persistance/Storage')
+      const { build_local_directory } = await import('@/persistence/Directory')
+      const { Offline } = await import('@/persistence/Storage')
       const { current_user } = await import('@/utils/serverless')
 
       get.mockResolvedValue(null)
@@ -333,7 +333,7 @@ describe('sync composable', () => {
   describe('sync_posters_directory', () => {
     it('builds and sorts poster directory', async () => {
       const { set } = await import('idb-keyval')
-      const { build_local_directory } = await import('@/persistance/Directory')
+      const { build_local_directory } = await import('@/persistence/Directory')
 
       build_local_directory.mockResolvedValueOnce({
         items: ['1000', '3000', '2000']
@@ -362,7 +362,7 @@ describe('sync composable', () => {
     })
 
     it('calls Poster optimize', async () => {
-      const { Poster } = await import('@/persistance/Storage')
+      const { Poster } = await import('@/persistence/Storage')
 
       await sync_posters_directory()
 

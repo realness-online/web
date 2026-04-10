@@ -6,7 +6,7 @@ import { ref, computed, inject, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
-import { Me } from '@/persistance/Storage'
+import { Me } from '@/persistence/Storage'
 
 // Check if we're in a browser environment
 const is_browser =

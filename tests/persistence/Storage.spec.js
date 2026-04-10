@@ -8,7 +8,7 @@ import {
   Event,
   Offline,
   History
-} from '@/persistance/Storage'
+} from '@/persistence/Storage'
 
 // Mock dependencies
 vi.mock('@/utils/itemid', () => ({
@@ -32,7 +32,7 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn()
 }))
 
-vi.mock('@/persistance/Directory', () => ({
+vi.mock('@/persistence/Directory', () => ({
   as_directory: vi.fn(() => Promise.resolve({ id: 'test-directory' })),
   load_directory_from_network: vi.fn(() => Promise.resolve({ items: [] }))
 }))
@@ -43,7 +43,7 @@ vi.mock('@/utils/upload-processor', () => ({
   )
 }))
 
-describe('@/persistance/Storage', () => {
+describe('@/persistence/Storage', () => {
   describe('Base Storage Class', () => {
     let storage
 

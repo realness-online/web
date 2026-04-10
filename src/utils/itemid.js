@@ -10,7 +10,7 @@ import get_item from '@/utils/item'
 import { DOES_NOT_EXIST } from '@/use/sync'
 import { url } from '@/utils/serverless'
 import { decompress_html } from '@/utils/upload-processor'
-import { as_directory } from '@/persistance/Directory'
+import { as_directory } from '@/persistence/Directory'
 
 /** @type {Map<string, Promise<string | null>>} */
 const download_url_inflight = new Map()

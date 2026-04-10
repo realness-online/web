@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fresh_metadata } from '@/use/sync'
-import { Thought } from '@/persistance/Storage'
+import { Thought } from '@/persistence/Storage'
 import { metadata, location } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
 import { create_hash } from '@/utils/upload-processor'
@@ -16,7 +16,7 @@ vi.mock('@/utils/serverless', () => ({
   current_user: { value: { phoneNumber: '+14151234356' } }
 }))
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Thought: vi.fn().mockImplementation(() => ({
     sync: vi.fn(),
     save: vi.fn(),
@@ -80,7 +80,7 @@ describe('Sync Thoughts', () => {
       const statements = { value: [] }
 
       // Simulate the sync_statements logic
-      const persistance = new Thought()
+      const persistence = new Thought()
       const itemid = mock_itemid
       const index_hash = await get_index_hash(itemid)
       const elements = sync_element.querySelector(`[itemid="${itemid}"]`)
@@ -93,7 +93,7 @@ describe('Sync Thoughts', () => {
 
       // But sync returns empty data
       if (index_hash !== hash) {
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
         expect(statements.value.length).toBe(0) // No data received!
       }
 
@@ -140,7 +140,7 @@ describe('Sync Thoughts', () => {
       Thought.mockImplementation(() => mock_statement)
 
       // Simulate Device B sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -161,7 +161,7 @@ describe('Sync Thoughts', () => {
       // Sync runs but gets no data
       const statements = { value: [] }
       if (index_hash !== hash) {
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
       }
 
       // Verify the bug: sync ran but got no statements
@@ -299,7 +299,7 @@ describe('Sync Thoughts', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -313,7 +313,7 @@ describe('Sync Thoughts', () => {
       // Sync runs but gets no data
       const statements = { value: [] }
       if (index_hash !== hash) {
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
       }
 
       // Bug: Sync ran but got no statements despite server having them
@@ -345,7 +345,7 @@ describe('Sync Thoughts', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -356,7 +356,7 @@ describe('Sync Thoughts', () => {
       if (index_hash !== hash) {
         try {
           const statements = { value: [] }
-          statements.value = await persistance.sync()
+          statements.value = await persistence.sync()
         } catch (error) {
           // Auth error during sync - this could cause silent failure
           expect(error.code).toBe('storage/unauthorized')
@@ -387,7 +387,7 @@ describe('Sync Thoughts', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -397,7 +397,7 @@ describe('Sync Thoughts', () => {
       // Hash mismatch triggers sync
       if (index_hash !== hash) {
         const statements = { value: [] }
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
 
         // Bug: Network timeout causes empty result
         expect(statements.value.length).toBe(0)
@@ -427,7 +427,7 @@ describe('Sync Thoughts', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -442,7 +442,7 @@ describe('Sync Thoughts', () => {
       // Sync runs but gets no data due to corrupted index
       const statements = { value: [] }
       if (index_hash !== hash) {
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
       }
 
       // Bug: Corrupted index causes sync to run but get no data
@@ -475,7 +475,7 @@ describe('Sync Thoughts', () => {
         .mockReturnValue(mock_elements)
 
       // Simulate sync attempt
-      const persistance = new Thought()
+      const persistence = new Thought()
       const index_hash = await get_index_hash(mock_itemid)
       const elements = mock_sync_element.value.querySelector(
         `[itemid="${mock_itemid}"]`
@@ -485,11 +485,11 @@ describe('Sync Thoughts', () => {
       // Hash mismatch triggers sync
       if (index_hash !== hash) {
         const statements = { value: [] }
-        statements.value = await persistance.sync()
+        statements.value = await persistence.sync()
 
         if (statements.value.length) {
           try {
-            await persistance.save(elements)
+            await persistence.save(elements)
           } catch (error) {
             // Storage quota exceeded - data loaded but not saved
             expect(error.message).toBe('QuotaExceededError')

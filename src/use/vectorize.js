@@ -1,6 +1,6 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Poster} PosterType */
-/** @typedef {import('@/persistance/Queue').QueueItem} QueueItem */
+/** @typedef {import('@/persistence/Queue').QueueItem} QueueItem */
 /**
  * @typedef {Object} VectorResponse
  * @property {Object} data
@@ -18,12 +18,12 @@ import { create_path_element } from '@/use/path'
 import { IMAGE } from '@/utils/numbers'
 import { mutex_for } from '@/utils/algorithms'
 import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
-import { as_directory_id } from '@/persistance/Directory'
+import { as_directory_id } from '@/persistence/Directory'
 import get_item from '@/utils/item'
 import ExifReader from 'exifreader'
 
-import * as Queue from '@/persistance/Queue'
-import { Poster, Cutout, Shadow } from '@/persistance/Storage'
+import * as Queue from '@/persistence/Queue'
+import { Poster, Cutout, Shadow } from '@/persistence/Storage'
 import { get, set } from 'idb-keyval'
 
 const new_vector = ref(/** @type {PosterType | null} */ (null))

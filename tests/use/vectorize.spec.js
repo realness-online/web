@@ -56,7 +56,7 @@ vi.mock('vue-router', () => ({
   })
 }))
 
-vi.mock('@/persistance/Queue', () => ({
+vi.mock('@/persistence/Queue', () => ({
   add: vi.fn().mockResolvedValue(undefined),
   get_all: vi.fn().mockResolvedValue([]),
   get_next: vi.fn().mockResolvedValue(null),
@@ -78,7 +78,7 @@ const mock_poster_constructor = vi.fn()
 const mock_shadow_constructor = vi.fn()
 const mock_cutout_constructor = vi.fn()
 
-vi.mock('@/persistance/Storage', () => ({
+vi.mock('@/persistence/Storage', () => ({
   Poster: class {
     constructor(id) {
       mock_poster_constructor(id)
@@ -227,7 +227,7 @@ describe('vectorize composable', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
 
-    const Queue = await import('@/persistance/Queue')
+    const Queue = await import('@/persistence/Queue')
     Queue.get_all.mockResolvedValue([])
     Queue.get_next.mockResolvedValue(null)
 
@@ -370,7 +370,7 @@ describe('vectorize composable', () => {
     })
 
     it('adds files to queue', async () => {
-      const Queue = await import('@/persistance/Queue')
+      const Queue = await import('@/persistence/Queue')
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
       Object.defineProperty(file, 'size', { value: 1000 })
 
@@ -380,7 +380,7 @@ describe('vectorize composable', () => {
     })
 
     it('skips files larger than 200MB', async () => {
-      const Queue = await import('@/persistance/Queue')
+      const Queue = await import('@/persistence/Queue')
       const large_file = new File(['test'], 'large.jpg', { type: 'image/jpeg' })
       const max_size = 200 * 1024 * 1024
       Object.defineProperty(large_file, 'size', { value: max_size + 1 })
