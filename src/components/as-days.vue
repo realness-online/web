@@ -144,6 +144,23 @@
   }
 
   /**
+   * Newest activity time for a feed slot (max over a statement train).
+   * @param {import('@/types').Statements | import('@/types').Item} slot
+   * @returns {number}
+   */
+  const slot_newest_timestamp = slot => {
+    if (Array.isArray(slot)) {
+      let max = 0
+      for (const s of slot) {
+        const t = as_created_at(s.id)
+        if (t !== null && t !== undefined && t > max) max = t
+      }
+      return max
+    }
+    return as_created_at(slot.id) ?? 0
+  }
+
+  /**
    * @param {string} day_name
    * @param {unknown[]} day
    */
@@ -179,6 +196,20 @@
     })
     day.length = 0
     for (const [, bucket] of ordered_authors) day.push(...bucket.slots)
+    if (is_today(day_name))
+      day.sort(
+        (a, b) =>
+          slot_newest_timestamp(
+            /** @type {import('@/types').Statements | import('@/types').Item} */ (
+              b
+            )
+          ) -
+          slot_newest_timestamp(
+            /** @type {import('@/types').Statements | import('@/types').Item} */ (
+              a
+            )
+          )
+      )
   }
 
   watch(
