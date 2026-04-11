@@ -63,9 +63,11 @@ vi.mock('@/utils/sorting', () => ({
 }))
 
 vi.mock('@/persistence/Storage', () => ({
-  Me: vi.fn().mockImplementation(() => ({
-    save: vi.fn()
-  }))
+  Me: vi.fn(function () {
+    return {
+      save: vi.fn()
+    }
+  })
 }))
 
 // Helper to test composables in proper Vue context

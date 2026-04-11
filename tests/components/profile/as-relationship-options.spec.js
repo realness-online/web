@@ -22,9 +22,11 @@ vi.mock('@/use/people', () => ({
 
 // Mock the Storage class
 vi.mock('@/persistence/Storage', () => ({
-  Relation: vi.fn().mockImplementation(() => ({
-    save: vi.fn()
-  }))
+  Relation: vi.fn(function () {
+    return {
+      save: vi.fn()
+    }
+  })
 }))
 
 describe('@/component/profile/as-relationship-options.vue', () => {

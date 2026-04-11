@@ -65,13 +65,17 @@ vi.mock('@/persistence/Directory', () => ({
 }))
 
 vi.mock('@/persistence/Storage', () => ({
-  Offline: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve()),
-    delete: vi.fn(() => Promise.resolve())
-  })),
-  Me: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve())
-  })),
+  Offline: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve()),
+      delete: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Me: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve())
+    }
+  }),
   Relation: vi.fn(),
   Statements: vi.fn(),
   Event: vi.fn(),

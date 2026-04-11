@@ -79,7 +79,7 @@ export const is_use = path => {
 }
 export const is_url_query = _query => true
 export const settings_query = name => {
-  const settings = document.querySelector('[itemscope][itemtype=/settings]')
+  const settings = document.querySelector('[itemscope][itemtype="/settings"]')
   return settings?.querySelector(`[itemprop="${name}"]`) ?? null
 }
 

@@ -17,11 +17,13 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 vi.mock('@/persistence/Storage', () => ({
-  Thought: vi.fn().mockImplementation(() => ({
-    sync: vi.fn(),
-    save: vi.fn(),
-    optimize: vi.fn()
-  }))
+  Thought: vi.fn(function () {
+    return {
+      sync: vi.fn(),
+      save: vi.fn(),
+      optimize: vi.fn()
+    }
+  })
 }))
 
 vi.mock('@/utils/upload-processor', () => ({
@@ -73,7 +75,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_thought)
+      Thought.mockImplementation(function () {
+        return mock_thought
+      })
 
       // Mock the sync_thoughts function context
       const sync_element = mock_sync_element.value
@@ -137,7 +141,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Simulate Device B sync attempt
       const persistence = new Thought()
@@ -291,7 +297,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -337,7 +345,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -379,7 +389,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -419,7 +431,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn(),
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
@@ -467,7 +481,9 @@ describe('Sync Thoughts', () => {
         save: vi.fn().mockRejectedValue(new Error('QuotaExceededError')), // Save fails
         optimize: vi.fn()
       }
-      Thought.mockImplementation(() => mock_statement)
+      Thought.mockImplementation(function () {
+        return mock_statement
+      })
 
       // Ensure mock_sync_element returns elements for this test
       mock_sync_element.value.querySelector = vi
