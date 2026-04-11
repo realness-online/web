@@ -11,7 +11,6 @@ This document describes how to set up and use the local filesystem server for of
    ```
 
 2. **Edit `.env.local` with your configuration:**
-
    - Set `LOCAL_SERVER_PORT` (default: 3000)
    - Set `STORAGE_PATH` (default: ./storage)
    - Set `OBSIDIAN_VAULT_PATH` to your vault location

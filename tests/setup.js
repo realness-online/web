@@ -51,16 +51,18 @@ import './mocks/default'
 // Mock window properties
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn()
-  }))
+  value: vi.fn(function (query) {
+    return {
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }
+  })
 })
 
 // Get the tests directory path
@@ -75,18 +77,22 @@ global.resolve_mock_path = path => {
 global.read_mock_file = path => fs.readFileSync(resolve_mock_path(path), 'utf8')
 
 // Mock IntersectionObserver for components that use it
-global.IntersectionObserver = vi.fn().mockImplementation(callback => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-  root: null,
-  rootMargin: '',
-  thresholds: []
-}))
+global.IntersectionObserver = vi.fn(function () {
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+    root: null,
+    rootMargin: '',
+    thresholds: []
+  }
+})
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(callback => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn()
-}))
+global.ResizeObserver = vi.fn(function () {
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn()
+  }
+})

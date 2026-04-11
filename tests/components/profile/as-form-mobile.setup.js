@@ -15,9 +15,11 @@ vi.mock('@/use/people', () => ({
 
 vi.mock('@/utils/serverless', () => ({
   auth: { value: {} },
-  Recaptcha: vi.fn().mockImplementation(() => ({
-    verify: vi.fn()
-  })),
+  Recaptcha: vi.fn(function () {
+    return {
+      verify: vi.fn()
+    }
+  }),
   sign_in: vi.fn(() =>
     Promise.resolve({
       confirm: vi.fn(() => Promise.resolve())
@@ -39,9 +41,11 @@ vi.mock('libphonenumber-js', () => {
   }
 
   const mock_fns = {
-    AsYouType: vi.fn().mockImplementation(() => ({
-      input: vi.fn(national_number => national_number ?? '')
-    })),
+    AsYouType: vi.fn(function () {
+      return {
+        input: vi.fn(national_number => national_number ?? '')
+      }
+    }),
     parseNumber: vi.fn(number_string => {
       const digits = number_string?.replace(/\D/g, '')
       return { phone: digits && digits.length >= 10 ? digits : '' }

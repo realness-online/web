@@ -62,7 +62,9 @@ describe('optimize composable', () => {
       postMessage: vi.fn(),
       terminate: vi.fn()
     }
-    global.Worker = vi.fn(() => mock_worker)
+    global.Worker = vi.fn(function () {
+      return mock_worker
+    })
 
     optimize_instance = use(vector_ref)
   })

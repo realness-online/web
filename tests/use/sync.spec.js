@@ -51,28 +51,40 @@ vi.mock('@/persistence/Directory', () => ({
 }))
 
 vi.mock('@/persistence/Storage', () => ({
-  Offline: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve()),
-    delete: vi.fn(() => Promise.resolve())
-  })),
-  Relation: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve())
-  })),
-  Statements: vi.fn().mockImplementation(() => ({
-    sync: vi.fn(() => Promise.resolve([])),
-    save: vi.fn(() => Promise.resolve()),
-    optimize: vi.fn(() => Promise.resolve())
-  })),
-  Event: vi.fn().mockImplementation(() => ({
-    sync: vi.fn(() => Promise.resolve([])),
-    save: vi.fn(() => Promise.resolve())
-  })),
-  Poster: vi.fn().mockImplementation(() => ({
-    optimize: vi.fn(() => Promise.resolve())
-  })),
-  Me: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve())
-  }))
+  Offline: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve()),
+      delete: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Relation: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Statements: vi.fn(function () {
+    return {
+      sync: vi.fn(() => Promise.resolve([])),
+      save: vi.fn(() => Promise.resolve()),
+      optimize: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Event: vi.fn(function () {
+    return {
+      sync: vi.fn(() => Promise.resolve([])),
+      save: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Poster: vi.fn(function () {
+    return {
+      optimize: vi.fn(() => Promise.resolve())
+    }
+  }),
+  Me: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve())
+    }
+  })
 }))
 
 vi.mock('@/use/people', () => ({

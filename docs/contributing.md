@@ -35,7 +35,6 @@ Start your local server and `localhost:8080` will be good to go
 - Make sure `yarn test --coverage` passes. Deploying will fail if your changes drop code coverage.
 
 - If adding a new feature:
-
   - Add accompanying test case.
   - Provide a convincing reason to add this feature. Ideally, you should open a suggestion issue first and have it approved before working on it.
 

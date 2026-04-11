@@ -296,11 +296,13 @@ describe('vectorize composable', () => {
 
   describe('vectorize', () => {
     beforeEach(() => {
-      global.Worker = vi.fn(() => ({
-        addEventListener: vi.fn(),
-        postMessage: vi.fn(),
-        terminate: vi.fn()
-      }))
+      global.Worker = vi.fn(function () {
+        return {
+          addEventListener: vi.fn(),
+          postMessage: vi.fn(),
+          terminate: vi.fn()
+        }
+      })
       global.createImageBitmap = vi.fn(() =>
         Promise.resolve({
           width: 1000,
@@ -333,12 +335,14 @@ describe('vectorize composable', () => {
 
   describe('add_to_queue', () => {
     beforeEach(async () => {
-      global.Worker = vi.fn(() => ({
-        addEventListener: vi.fn(),
-        postMessage: vi.fn(),
-        terminate: vi.fn(),
-        removeEventListener: vi.fn()
-      }))
+      global.Worker = vi.fn(function () {
+        return {
+          addEventListener: vi.fn(),
+          postMessage: vi.fn(),
+          terminate: vi.fn(),
+          removeEventListener: vi.fn()
+        }
+      })
       global.createImageBitmap = vi.fn(() =>
         Promise.resolve({
           width: 1000,

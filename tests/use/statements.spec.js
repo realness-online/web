@@ -47,9 +47,11 @@ vi.mock('@/utils/sorting', () => ({
 }))
 
 vi.mock('@/persistence/Storage', () => ({
-  Statements: vi.fn().mockImplementation(() => ({
-    save: vi.fn(() => Promise.resolve())
-  }))
+  Statements: vi.fn(function () {
+    return {
+      save: vi.fn(() => Promise.resolve())
+    }
+  })
 }))
 
 vi.mock('@/utils/numbers', () => ({

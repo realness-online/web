@@ -37,19 +37,16 @@ Guard at a higher level via props, not scattered if-statements:
 ## Implementation Steps
 
 1. **Create `use/animation-performance.js`**
-
    - Uses `useFps()` from VueUse (shared observer)
    - Computes `interval` from FPS (throttled, e.g. 500ms)
    - Exports `run_duration`, `pause_duration` (80/20 of interval)
    - Always runs—observer is constant
 
 2. **Refactor as-svg**
-
    - Add `v-if="vector && trigger"` to as-animation
    - Pass `:svg="trigger"` prop
 
 3. **Refactor as-animation**
-
    - Add `svg` prop with validator
    - Remove animation_group ref and closest('svg')—use props.svg
    - Add `effective_paused = props.paused || adaptive_paused`
