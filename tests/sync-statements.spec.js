@@ -36,7 +36,7 @@ vi.mock('idb-keyval', () => ({
   del: vi.fn()
 }))
 
-describe('Sync Thoughts', () => {
+describe('Sync statements', () => {
   const mock_itemid = '/+14151234356/thoughts'
   const mock_elements = {
     outerHTML: '<div itemid="/+14151234356/thoughts">Test thoughts</div>'
@@ -79,7 +79,7 @@ describe('Sync Thoughts', () => {
         return mock_thought
       })
 
-      // Mock the sync_thoughts function context
+      // Mock the sync_statements function context
       const sync_element = mock_sync_element.value
       const statements = { value: [] }
 

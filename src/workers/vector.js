@@ -7,7 +7,7 @@ const RGBA_COMPONENTS = 4
 const PERCENTAGE_MAX = 100
 const SCALE_PRECISION = 100
 
-export const potrace_options = {
+const potrace_options = {
   turdSize: 40,
   optTolerance: 0.55,
   blackOnWhite: true,
@@ -16,7 +16,7 @@ export const potrace_options = {
   steps: 4
   // threshold: 255
 }
-export const svgo_options = {
+const svgo_options = {
   multipass: true,
   full: true,
   js2svg: {
@@ -45,7 +45,7 @@ export const svgo_options = {
   ]
 }
 
-export const get_average_color = (canvas, region) => {
+const get_average_color = (canvas, region) => {
   const { x, y, width, height } = region
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
   const image_data = ctx.getImageData(x, y, width, height)
@@ -72,7 +72,7 @@ export const get_average_color = (canvas, region) => {
   }
 }
 
-export const as_gradient = (canvas, height = false) => {
+const as_gradient = (canvas, height = false) => {
   const direction = height ? canvas.height : canvas.width
   const opposite = height ? canvas.width : canvas.height
   const chunk = fidelity(direction)
@@ -94,7 +94,7 @@ export const as_gradient = (canvas, height = false) => {
   return stops
 }
 
-export const as_radial_gradient = canvas => {
+const as_radial_gradient = canvas => {
   let box_size = canvas.width
   if (canvas.height < box_size) box_size = canvas.height
 
@@ -117,7 +117,7 @@ export const as_radial_gradient = canvas => {
   return stops
 }
 
-export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
+const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (!pair) throw new Error('Expects <number> or <percentage> for fidelity')
   const number =
     typeof pair.number === 'string' ? parseFloat(pair.number) : pair.number
@@ -125,7 +125,7 @@ export const fidelity = (length, pair = { number: 15, unit: '%' }) => {
   if (pair.unit === '%') return length * (number / PERCENTAGE_MAX)
   return number
 }
-export const scale = (value, min, max) => {
+const scale = (value, min, max) => {
   const new_min = 0
   const new_max = 100
   const percent = (value - min) / (max - min)
@@ -133,11 +133,6 @@ export const scale = (value, min, max) => {
   return (
     Math.round((scale + Number.EPSILON) * SCALE_PRECISION) / SCALE_PRECISION
   )
-}
-export const is_stop = stop => {
-  if (!stop.percentage) return false
-  if (!stop.color) return false
-  return true
 }
 
 export const make_vector = message => {
@@ -176,7 +171,7 @@ export const make_gradient = message => {
   return { gradients }
 }
 
-export const optimize_vector = message => {
+const optimize_vector = message => {
   const optimized = optimize(
     message.data.vector,
     /** @type {any} */ (svgo_options)
@@ -184,7 +179,7 @@ export const optimize_vector = message => {
   return { vector: optimized.data }
 }
 
-export const route_message = async message => {
+const route_message = async message => {
   const { route } = message.data
   let reply = {}
 

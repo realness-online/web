@@ -163,12 +163,14 @@ describe('profile multi-device edge cases', () => {
     const { get } = await import('idb-keyval')
     const { create_hash } = await import('@/utils/upload-processor')
 
-    get.mockResolvedValueOnce({
+    const sync_index = {
       '/+14151234356': {
         customMetadata: { hash: 'network_hash' }
       }
-    })
-    get.mockResolvedValueOnce('<div>local data</div>')
+    }
+    // fresh_metadata and get_index_hash each call get('sync:index')
+    get.mockResolvedValueOnce(sync_index)
+    get.mockResolvedValueOnce(sync_index)
     create_hash.mockResolvedValueOnce('different_from_index')
 
     await sync_me()
@@ -193,10 +195,11 @@ describe('profile multi-device edge cases', () => {
 
     mock_me_ref.value.name = 'Only_on_this_tab'
 
-    get.mockResolvedValueOnce({
+    const sync_index = {
       '/+14151234356': { customMetadata: { hash: 'remote' } }
-    })
-    get.mockResolvedValueOnce('<div>x</div>')
+    }
+    get.mockResolvedValueOnce(sync_index)
+    get.mockResolvedValueOnce(sync_index)
     create_hash.mockResolvedValueOnce('local_mismatch')
 
     await sync_me()
@@ -278,10 +281,11 @@ describe('profile multi-device edge cases', () => {
         visited: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
       }
 
-      get.mockResolvedValueOnce({
+      const sync_index = {
         '/+14151234356': { customMetadata: { hash: 'cloud_hash_bob_won' } }
-      })
-      get.mockResolvedValueOnce('<div>ignored</div>')
+      }
+      get.mockResolvedValueOnce(sync_index)
+      get.mockResolvedValueOnce(sync_index)
       create_hash.mockResolvedValueOnce('hash_for_alice_html')
 
       await sync_me()

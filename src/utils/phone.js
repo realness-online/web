@@ -1,31 +1,12 @@
 import { country_list } from './country-list.js'
 import { countryCodeEmoji as flag_emoji } from 'country-code-emoji'
 import {
-  findPhoneNumbersInText as phone_info,
   AsYouType as as_you_type,
   parsePhoneNumberFromString as parse_number
 } from 'libphonenumber-js'
 
-/**
- * @param {string} phone_string
- * @returns {string}
- */
-export const phone_e64 = phone_string =>
-  phone_info(phone_string)[0].number.number
-
-export const format_phone = phone_string => {
-  if (phone_string) {
-    const phones = phone_info(phone_string)
-    if (phones.length > 0) {
-      const { country } = phones[0].number
-      const number = phones[0].number.nationalNumber
-      return new as_you_type(country).input(number)
-    }
-  } else return ''
-}
-
 export const default_country = 'US'
-export const phone = {
+const phone = {
   AL: 355,
   DZ: 213,
   AF: 93,
@@ -288,12 +269,6 @@ export const countries = Object.values(country_list).map(country => ({
 }))
 
 /**
- * @param {string} code
- * @returns {Country_Phone | undefined}
- */
-export const country = code => countries.find(country => country.code === code)
-
-/**
  * @param {string} full_phone
  * @param {string} country
  * @returns {boolean}
@@ -313,14 +288,5 @@ export const valid_phone = (full_phone, country) => {
  */
 export const parse_phone = (full_phone, country) =>
   parse_number(full_phone, { defaultCountry: /** @type {any} */ (country) })
-
-/**
- * @param {string} phone_string
- * @returns {string}
- */
-export const get_country_from_phone = phone_string => {
-  const parsed = parse_number(phone_string)
-  return parsed?.country ?? ''
-}
 
 export { as_you_type }

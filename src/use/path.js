@@ -1,8 +1,8 @@
 import { useActiveElement as active_element, whenever } from '@vueuse/core'
 import { ref, onMounted as mounted } from 'vue'
-import { change } from '@/utils/opacity'
+import { change, change_by } from '@/utils/opacity'
+export { change_by }
 export const svg_ns = 'http://www.w3.org/2000/svg'
-export const change_by = 0.08
 export const is_path = path => {
   if (typeof path !== 'object') return false
   if (path instanceof SVGPathElement) return true

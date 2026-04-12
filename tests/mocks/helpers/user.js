@@ -1,6 +1,6 @@
 import auth from '../firebase/auth'
 
-export const test_user = {
+const test_user = {
   phoneNumber: '+16282281824',
   name: 'Scott Fryxell',
   id: '/+16282281824',

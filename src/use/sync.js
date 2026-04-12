@@ -18,9 +18,9 @@ import {
   Poster,
   Me
 } from '@/persistence/Storage'
-import { get_my_itemid, use_me } from '@/use/people'
+import { get_my_itemid, use_me, from_e64 } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
-import { current_user, location, metadata } from '@/utils/serverless'
+import { current_user, directory, location, metadata } from '@/utils/serverless'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex_for } from '@/utils/algorithms'
 import {
@@ -34,9 +34,9 @@ import {
 } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 import { profile_sync_log } from '@/utils/profile-sync-log'
+import { DOES_NOT_EXIST } from '@/utils/sync-file'
 
-/** @type {import('@/types').Sync_Index_Entry} */
-export const DOES_NOT_EXIST = { updated: null, customMetadata: { hash: null } }
+export { DOES_NOT_EXIST }
 
 /**
  * @param {Sync_Deps} deps
@@ -54,9 +54,10 @@ const create_play = deps => async () => {
       localStorage.sync_time = new Date().toISOString()
       await sync_me()
       await sync_relations(deps)
-      await sync_thoughts(deps)
+      await sync_statements(deps)
       await sync_events(deps)
       await sync_posters_directory()
+      await sync_phonebook_people(deps)
       deps.emit('refreshed')
     }
     await visit(deps)
@@ -83,9 +84,10 @@ export const visit = async deps => {
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<void|null>} */
-const sync_thoughts = async deps => {
+const sync_statements = async deps => {
   const itemid = get_my_itemid('statements')
   if (!itemid) return null
+  await fresh_metadata(itemid)
   const persistence = new Statements()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
@@ -154,6 +156,7 @@ const sync_relations = async deps => {
 const sync_events = async deps => {
   const itemid = get_my_itemid('events')
   if (!itemid) return
+  await fresh_metadata(itemid)
   const event_storage = new Event()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
@@ -174,10 +177,46 @@ const sync_events = async deps => {
 }
 
 /**
+ * Root `people/{author}/index.html.gz` blobs: refresh `sync:index`, then drop stale local
+ * cache when the hash disagrees. Does not fetch; `load_phonebook` / `load()` repopulate.
+ * Same schedule as other sync steps. Skips `localStorage.me` (handled in `sync_me`).
+ * @param {Sync_Deps} deps
+ * @returns {Promise<void>}
+ */
+const sync_phonebook_people = async deps => {
+  if (!current_user.value) return
+  const people_list = await directory('people/')
+  const prefix_refs = people_list?.prefixes ?? []
+  const me_id = localStorage.me
+  /* eslint-disable no-await-in-loop */
+  for (const phone_number of prefix_refs) {
+    const id = /** @type {Id} */ (from_e64(phone_number.name))
+    if (id === me_id) continue
+    await fresh_metadata(id)
+    const index_hash = await get_index_hash(id)
+    const local_html = localStorage.getItem(id) ?? (await get(id))
+    const local_hash =
+      typeof local_html === 'string' ? await create_hash(local_html) : null
+
+    if (local_html && !index_hash) continue
+
+    if (!index_hash) continue
+
+    if (local_hash !== index_hash) {
+      localStorage.removeItem(id)
+      await del(id)
+    }
+  }
+  /* eslint-enable no-await-in-loop */
+  if (deps.load_phonebook) await deps.load_phonebook()
+}
+
+/**
  * @param {(event: string, ...args: unknown[]) => void} [component_emit]
+ * @param {{ load_phonebook?: () => Promise<void> }} [options]
  * @returns {import('@/types').Sync_Return}
  */
-export const use = component_emit => {
+export const use = (component_emit, options = {}) => {
   const instance = current_instance()
   const emit = component_emit ?? instance?.emit ?? (() => {})
   const { me, relations } = use_me()
@@ -193,7 +232,8 @@ export const use = component_emit => {
     my_statements,
     events,
     me,
-    emit
+    emit,
+    load_phonebook: options.load_phonebook
   })
   const play = create_play(deps)
 
@@ -230,7 +270,7 @@ export const use = component_emit => {
 export const sync_offline_actions = async () => {
   if (!navigator.onLine) return
 
-  // Handle offline queue (includes both anonymous and logged-in thoughts)
+  // Handle offline queue (includes both anonymous and logged-in statement rows)
   /** @type {Sync_Offline_Item[]|undefined} */
   const offline = await get('sync:offline')
   if (offline) {
@@ -327,6 +367,7 @@ export const i_am_fresh = () => {
 export const sync_me = async () => {
   const id = get_my_itemid()
   if (!id) return
+  await fresh_metadata(id)
   const index_hash = await get_index_hash(id)
   const my_info = localStorage.getItem(id)
   if (typeof my_info !== 'string' || !index_hash) return

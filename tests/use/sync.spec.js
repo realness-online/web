@@ -88,6 +88,7 @@ vi.mock('@/persistence/Storage', () => ({
 }))
 
 vi.mock('@/use/people', () => ({
+  from_e64: e64 => `/${e64}`,
   get_my_itemid: vi.fn(type => {
     if (type) return `/+14151234356/${type}`
     return '/+14151234356'
@@ -110,6 +111,7 @@ vi.mock('@/use/statements', () => ({
 vi.mock('@/utils/serverless', () => ({
   current_user: ref({ uid: 'test-user' }),
   location: vi.fn(path => `storage/${path}`),
+  directory: vi.fn(() => Promise.resolve({ prefixes: [] })),
   metadata: vi.fn(() =>
     Promise.resolve({
       updated: new Date().toISOString(),
@@ -312,17 +314,27 @@ describe('sync composable', () => {
 
   describe('sync_me', () => {
     it('removes outdated local data', async () => {
-      const { get } = await import('idb-keyval')
+      const { get, set } = await import('idb-keyval')
       const { create_hash } = await import('@/utils/upload-processor')
+      const { metadata } = await import('@/utils/serverless')
 
-      get.mockResolvedValueOnce({
-        '/+14151234356': {
-          customMetadata: { hash: 'network_hash' }
-        }
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'network_hash' }
       })
-      get.mockResolvedValueOnce('<div>local data</div>')
 
-      create_hash.mockResolvedValueOnce('different_hash')
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve(index) : Promise.resolve(null)
+      )
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+
+      localStorage.getItem.mockReturnValue('<div>local data</div>')
+      create_hash.mockResolvedValue('different_hash')
 
       await sync_me()
 

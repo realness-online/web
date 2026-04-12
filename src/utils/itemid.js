@@ -3,17 +3,34 @@
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
-import { has_archive, has_history, types } from '@/types.js'
+import { has_archive, has_history } from '@/types.js'
 
+import {
+  as_path_parts,
+  as_author,
+  as_type,
+  as_created_at,
+  is_itemid
+} from './itemid-parse.js'
 import { get, set, del } from 'idb-keyval'
-import get_item from '@/utils/item'
-import { DOES_NOT_EXIST } from '@/use/sync'
-import { url } from '@/utils/serverless'
+import { DOES_NOT_EXIST } from '@/utils/sync-file'
 import { decompress_html } from '@/utils/upload-processor'
-import { as_directory } from '@/persistence/Directory'
+
+export { as_path_parts, as_author, as_type, as_created_at, is_itemid }
 
 /** @type {Map<string, Promise<string | null>>} */
 const download_url_inflight = new Map()
+
+/**
+ * Lazy-load HTML parser to avoid a static cycle with `@/utils/item` (which imports `itemid`).
+ * @param {string} html
+ * @param {Id} itemid
+ * @returns {Promise<import('@/types').Item | null>}
+ */
+const item_from_html = async (html, itemid) => {
+  const { default: get_item } = await import('@/utils/item')
+  return get_item(html, itemid)
+}
 
 /**
  * Signed-in profile id (`setItem('me', …)` and `localStorage.me` both set this).
@@ -29,6 +46,7 @@ const storage_me = () => {
  * @returns {Promise<string>}
  */
 export const as_filename = async itemid => {
+  const { as_archive } = await import('@/persistence/Directory')
   const poster_id = as_poster_id(itemid)
   if (poster_id) {
     let poster_filename = poster_id
@@ -89,7 +107,7 @@ export const load_from_network = async itemid => {
       localStorage.setItem(itemid, html)
       await del(itemid)
     } else await set(itemid, html)
-    return get_item(html, itemid)
+    return item_from_html(html, itemid)
   }
   return null
 }
@@ -115,7 +133,7 @@ export const load_from_cache = async itemid => {
     else html = await decompress_html(compressed_html)
 
     if (!html) return { item: null, html: null }
-    const item = get_item(html, itemid)
+    const item = await item_from_html(html, itemid)
     return { item, html }
   }
   return { item: null, html: null }
@@ -130,12 +148,12 @@ export const load = async (itemid, me = storage_me()) => {
   let item
   if (me && ~itemid.indexOf(me)) {
     const item_html = localStorage.getItem(itemid)
-    if (item_html) return get_item(item_html, itemid)
+    if (item_html) return item_from_html(item_html, itemid)
   }
   if (itemid === me && typeof localStorage !== 'undefined') {
     const legacy_html = await get(itemid)
     if (typeof legacy_html === 'string' && legacy_html.length) {
-      item = get_item(legacy_html, itemid)
+      item = await item_from_html(legacy_html, itemid)
       if (item) {
         localStorage.setItem(itemid, legacy_html)
         await del(itemid)
@@ -145,7 +163,7 @@ export const load = async (itemid, me = storage_me()) => {
   }
   if (itemid !== me) {
     const result = await get(itemid)
-    item = get_item(result, itemid)
+    item = await item_from_html(result, itemid)
     if (item) return item
   }
   try {
@@ -196,6 +214,7 @@ export const as_download_url = async itemid => {
     try {
       const idx = (await get('sync:index')) || {}
       if (idx[itemid] === DOES_NOT_EXIST) return null
+      const { url } = await import('@/utils/serverless')
       return await url(await as_filename(itemid))
     } catch (e) {
       if (
@@ -217,90 +236,6 @@ export const as_download_url = async itemid => {
 
   download_url_inflight.set(key, pending)
   return pending
-}
-
-/**
- * Splits an item ID path into its constituent parts
- * @param {Id} itemid - The full item path (e.g. '/+123456/thoughts/789')
- * @returns {string[]} Array of path parts where:
- *   [0] = author ID (e.g. '+123456')
- *   [1] = item type (e.g. 'thoughts', 'events', 'posters', etc.)
- *   [2] = created_at timestamp (if applicable)
- * @example
- * as_path_parts('/+123456/thoughts/789') // ['+123456', 'thoughts', '789']
- * as_path_parts('/+123456') // ['+123456']
- * as_path_parts('/+123456/thoughts/789/') // ['+123456', 'thoughts', null, '789']
- */
-export const as_path_parts = itemid => {
-  if (!itemid || typeof itemid !== 'string') return []
-  const path = itemid.split('/')
-  if (path[0].length === 0) path.shift()
-  if (itemid.endsWith('/')) {
-    //is a directory
-    const [author, type, created, archive] = path
-    if (!created && !archive) return [author, type, 'index', '']
-    if (created) return [author, type, '', created]
-  }
-  return path
-}
-
-/**
- * @param {Id} itemid
- * @returns {string | null}
- */
-export const as_storage_path = itemid => {
-  const path_parts = as_path_parts(itemid)
-  let path = `/${path_parts[0]}`
-  if (itemid.startsWith('/+')) path = `/people${path}`
-  switch (path_parts.length) {
-    case 0:
-      return null
-    case 1:
-      return path
-    default:
-      return `${path}/${path_parts[1]}`
-  }
-}
-
-/**
- * @param {Id} itemid
- * @returns {string | null}
- */
-export const as_author = itemid => {
-  const path = as_path_parts(itemid)
-  const author = path[0] || ''
-  if (author.startsWith('+')) return `/${path[0]}`
-  return null
-}
-
-/**
- * @param {Id} itemid
- * @returns {Type | null}
- */
-export const as_type = itemid => {
-  const path = as_path_parts(itemid)
-  if (path[1] === 'statements') return 'thoughts'
-  if (path[1] && types.includes(/** @type {Type} */ (path[1])))
-    return /** @type {Type} */ (path[1])
-  if (itemid.startsWith('/+')) return 'person'
-  return null
-}
-
-/**
- * @param {Id | null} itemid
- * @returns {Created | null}
- */
-export const as_created_at = itemid => {
-  if (!itemid) return null
-  const path = as_path_parts(itemid)
-  const path_length = path.length
-  const PATH_WITH_TYPE = 3
-  const PATH_WITH_TYPE_AND_CREATED = 4
-  if (path_length === PATH_WITH_TYPE && path[2])
-    return /** @type {Created} */ (parseInt(path[2]))
-  if (path_length === PATH_WITH_TYPE_AND_CREATED && path[3])
-    return /** @type {Created} */ (parseInt(path[3]))
-  return null
 }
 
 /**
@@ -339,7 +274,7 @@ export const type_as_list = item => {
  * @param {Id} itemid
  * @returns {boolean}
  */
-export const is_history = itemid => {
+const is_history = itemid => {
   const parts = as_path_parts(itemid)
   const item_type = as_type(itemid)
   if (
@@ -351,81 +286,6 @@ export const is_history = itemid => {
   )
     return true
   return false
-}
-
-/**
- * Determines if an item needs to be loaded from an archive
- * @param {Id} itemid - The ID of the item to check
- * @returns {Promise<string | null>} - Returns null if the item exists in the main items list,
- *                                    otherwise returns the archive path if found in an archive,
- *                                    or null if not found in either location
- */
-export const as_archive = async itemid => {
-  if (itemid.startsWith('/+/')) return null
-  const directory = await as_directory(itemid)
-  if (!directory) return null
-
-  const { items = [], archive = [] } = directory
-  const created = as_created_at(itemid)
-  if (!created) return null
-
-  // If items list is empty, poster belongs in root directory
-  if (items.length === 0) return null
-
-  // If the item is newer than any current items, it belongs in root directory
-  // This handles the case where layers are saved before the poster is added to directory
-  const item_timestamps = items.map(Number)
-  if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
-    return null
-
-  // If the item is already in the items list, it's a new poster and belongs in root directory
-  if (item_timestamps.includes(created)) return null
-
-  // If the item is an archive timestamp itself, return its own path
-  if (archive.includes(created))
-    return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
-
-  // Find the appropriate archive for older items
-  // Only archive if there are enough items to warrant archiving
-  let closest_timestamp = null
-  for (const archive_id of archive)
-    if (archive_id <= created) closest_timestamp = archive_id
-
-  if (!closest_timestamp) return null
-  return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
-}
-
-/**
- * Validates if a string matches the Id type pattern: ${Author}/${Type} or ${Author}/${Type}/${Created}
- * @param {string} id - String to validate
- * @returns {id is Id} - True if string matches Id pattern
- */
-export const is_itemid = id => {
-  if (typeof id !== 'string') return false
-
-  // Ensure id starts with a forward slash
-  if (!id.startsWith('/')) return false
-
-  const parts = as_path_parts(/** @type {Id} */ (id))
-  if (parts.length < 2 || parts.length > 3) return false
-
-  const [author, type, created] = parts
-
-  // Validate author (must start with '+')
-  if (!author.startsWith('+')) return false
-
-  // Validate type against the Type typedef from types.js
-  if (!types.includes(/** @type {Type} */ (type))) return false
-
-  // Large files require timestamps
-  const requires_timestamp = ['posters']
-  if (requires_timestamp.includes(type)) {
-    if (!created) return false
-    const created_num = Number(created)
-    if (!Number.isInteger(created_num)) return false
-  }
-
-  return true
 }
 
 /**

@@ -18,30 +18,23 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import {
-  load_from_network,
-  load,
-  as_poster_id,
-  as_archive
-} from '@/utils/itemid'
-import { from_e64, default_person } from '@/use/people'
+import { from_e64, default_person } from '@/utils/person-identity'
 
 import { get, set } from 'idb-keyval'
 import { prepare_upload_html } from '@/utils/upload-processor'
-import { as_filename } from '@/utils/itemid'
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
 
 export const me = ref(
   /** @type {import('@/types').MeItem | undefined} */ (undefined)
 )
-export const app = ref(
+const app = ref(
   /** @type {import('firebase/app').FirebaseApp | undefined} */ (undefined)
 )
 export const auth = ref(
   /** @type {import('firebase/auth').Auth | undefined} */ (undefined)
 )
-export const storage = ref(
+const storage = ref(
   /** @type {import('firebase/storage').FirebaseStorage | undefined} */ (
     undefined
   )
@@ -112,6 +105,8 @@ const local_html_string = async itemid => {
 }
 
 export const move = async (type, id, archive_id, author = localStorage.me) => {
+  const { load, as_poster_id, as_filename } = await import('@/utils/itemid')
+  const { as_archive } = await import('@/persistence/Directory')
   const component_types = [
     'shadows',
     'sediment',
@@ -225,6 +220,7 @@ export const init_serverless = () => {
         /** Load profile before `current_user` so sync/save hooks do not upload a shell over the server file. */
         let maybe_me = null
         try {
+          const { load_from_network } = await import('@/utils/itemid')
           maybe_me = await load_from_network(localStorage.me)
         } catch (err) {
           console.error('[auth] load_from_network failed', err)

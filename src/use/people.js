@@ -7,20 +7,22 @@ import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistence/Storage'
+import { default_person, from_e64 } from '@/utils/person-identity'
+
+export { default_person, from_e64 }
 
 // Check if we're in a browser environment
 const is_browser =
   typeof window !== 'undefined' && typeof localStorage !== 'undefined'
-
-export const default_person = {
-  id: is_browser ? localStorage.me : null,
-  type: 'person'
-}
 const relations = ref(/** @type {Relation[]} */ ([]))
 const blocked = ref(/** @type {Id[]} */ ([]))
 
+/** Shared across all `use()` callers so sync can refresh the same list as PhoneBook / feed. */
+const phonebook = ref(/** @type {Person[]} */ ([]))
+const working = ref(true)
+
 const blocked_key = () => `${localStorage.me}/blocked`
-export const load_blocked = () => {
+const load_blocked = () => {
   if (!localStorage.me) return
   try {
     blocked.value = JSON.parse(localStorage.getItem(blocked_key()) || '[]')
@@ -51,8 +53,6 @@ const person_when_root_profile_missing = id => ({
 
 export const use = () => {
   const set_working = inject('set_working')
-  const phonebook = ref(/** @type {Person[]} */ ([]))
-  const working = ref(true)
   const people = ref(/** @type {Item[]} */ ([]))
   const person = computed(() => people.value[0])
 
@@ -207,7 +207,6 @@ export const get_my_itemid = type => {
   return localStorage.me ?? null
 }
 export const as_phone_number = (id = '/+1') => id.substring(2)
-export const from_e64 = e64_number => `/${e64_number}`
 /**
  * @param {unknown} maybe
  * @returns {maybe is Person}

@@ -1,8 +1,6 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-/** @typedef {import('@/persistence/Storage').Storage} Storage */
-
 /**
- * @template {new (...args: any[]) => Storage} T
+ * @template {new (...args: any[]) => any} T
  * @param {T} superclass
  * @returns {T}
  */
