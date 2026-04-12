@@ -53,7 +53,14 @@ vi.mock('@/utils/itemid', () => ({
   as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
   as_author: vi.fn(id => id.split('/')[0]),
   load: vi.fn(() => Promise.resolve([])),
-  is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/'))
+  is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),
+  load_from_network: vi.fn(() =>
+    Promise.resolve({
+      id: '/+14151234356',
+      type: 'person',
+      name: 'Reloaded_from_cloud'
+    })
+  )
 }))
 
 vi.mock('@/persistence/Directory', () => ({
@@ -189,7 +196,7 @@ describe('profile multi-device edge cases', () => {
     expect(localStorage.removeItem).toHaveBeenCalledWith('/+14151234356')
   })
 
-  it('sync_me does not reload me from network (in-memory name can stay stale until another load)', async () => {
+  it('sync_me reloads me from network when indexed hash does not match local hash', async () => {
     const { get } = await import('idb-keyval')
     const { create_hash } = await import('@/utils/upload-processor')
 
@@ -204,7 +211,7 @@ describe('profile multi-device edge cases', () => {
 
     await sync_me()
 
-    expect(mock_me_ref.value.name).toBe('Only_on_this_tab')
+    expect(mock_me_ref.value.name).toBe('Reloaded_from_cloud')
   })
 
   it('visit_stamp_save runs when last visited over an hour ago and calls Me.save', async () => {

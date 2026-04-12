@@ -20,7 +20,14 @@ import {
 } from '@/persistence/Storage'
 import { get_my_itemid, use_me, from_e64 } from '@/use/people'
 import { use as use_statements } from '@/use/statements'
-import { current_user, directory, location, metadata } from '@/utils/serverless'
+import {
+  current_user,
+  directory,
+  location,
+  me,
+  metadata
+} from '@/utils/serverless'
+import { default_person } from '@/utils/person-identity'
 import { create_hash } from '@/utils/upload-processor'
 import { mutex_for } from '@/utils/algorithms'
 import {
@@ -380,6 +387,13 @@ export const sync_me = async () => {
     })
     localStorage.removeItem(id)
     await del(id)
+    const maybe_me = await load_from_network(id)
+    if (maybe_me) me.value = maybe_me
+    else
+      me.value = /** @type {import('@/types').MeItem} */ ({
+        ...default_person,
+        id: /** @type {import('@/types').Id} */ (id)
+      })
   }
 }
 
