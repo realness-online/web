@@ -62,7 +62,8 @@ vi.mock('@/persistence/Directory', () => ({
     Promise.resolve({
       items: ['1000', '2000', '3000']
     })
-  )
+  ),
+  clear_author_dirs: vi.fn(() => Promise.resolve())
 }))
 
 vi.mock('@/persistence/Storage', () => ({

@@ -9,7 +9,10 @@ import {
   type_as_list
 } from '@/utils/itemid'
 import { get_item } from '@/utils/item'
-import { build_local_directory } from '@/persistence/Directory'
+import {
+  build_local_directory,
+  clear_author_dirs
+} from '@/persistence/Directory'
 import {
   Offline,
   Relation,
@@ -57,9 +60,9 @@ const create_play = deps => async () => {
   try {
     await sync_offline_actions()
     if (!navigator.onLine || !current_user.value) return
+    await sync_me()
     if (!i_am_fresh()) {
       localStorage.sync_time = new Date().toISOString()
-      await sync_me()
       await sync_relations(deps)
       await sync_statements(deps)
       await sync_events(deps)
@@ -67,26 +70,8 @@ const create_play = deps => async () => {
       await sync_phonebook_people(deps)
       deps.emit('refreshed')
     }
-    await visit(deps)
   } finally {
     if (did_emit) deps.emit('active', false)
-  }
-}
-
-/** @param {Sync_Deps} deps @returns {Promise<void>} */
-export const visit = async deps => {
-  const visited = deps.me.value?.visited
-  const visit_digit = new Date(visited ?? 0).getTime()
-  if (!visited || Date.now() - visit_digit > JS_TIME.ONE_HOUR) {
-    if (deps.me.value) deps.me.value.visited = new Date().toISOString()
-    await tick()
-    const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
-    if (me_el) {
-      profile_sync_log('visit_stamp_save', {
-        itemid: /** @type {string} */ (localStorage.me)
-      })
-      await new Me().save(me_el)
-    }
   }
 }
 
@@ -186,7 +171,9 @@ const sync_events = async deps => {
 /**
  * Root `people/{author}/index.html.gz` blobs: refresh `sync:index`, then drop stale local
  * cache when the hash disagrees. Does not fetch; `load_phonebook` / `load()` repopulate.
- * Same schedule as other sync steps. Skips `localStorage.me` (handled in `sync_me`).
+ * Clears cached folder listings via `clear_author_dirs` (`@/persistence/Directory`) when the profile
+ * blob is missing on storage or its hash no longer matches. Same schedule as
+ * other sync steps. Skips `localStorage.me` (handled in `sync_me`).
  * @param {Sync_Deps} deps
  * @returns {Promise<void>}
  */
@@ -201,9 +188,21 @@ const sync_phonebook_people = async deps => {
     if (id === me_id) continue
     await fresh_metadata(id)
     const index_hash = await get_index_hash(id)
+    const index_entry = ((await get('sync:index')) || {})[id]
     const local_html = localStorage.getItem(id) ?? (await get(id))
     const local_hash =
       typeof local_html === 'string' ? await create_hash(local_html) : null
+
+    const profile_missing_on_server =
+      index_entry &&
+      index_entry.customMetadata &&
+      index_entry.customMetadata.hash === null &&
+      index_entry.updated === null
+
+    const profile_hash_stale = index_hash && local_hash !== index_hash
+
+    if (profile_missing_on_server || profile_hash_stale)
+      await clear_author_dirs(id)
 
     if (local_html && !index_hash) continue
 
@@ -370,31 +369,86 @@ export const i_am_fresh = () => {
   return am_i_fresh
 }
 
+/**
+ * Merge parsed profile fields from local HTML into `me` before stamping `visited`.
+ * @param {import('@/types').Item & {name?: string, avatar?: string}} item
+ * @param {Id} id
+ */
+const apply_person_item_to_me = (item, id) => {
+  /** @type {import('@/types').MeItem} */
+  const next = {
+    ...me.value,
+    id,
+    type: 'person'
+  }
+  if (typeof item.name === 'string') next.name = item.name
+  if (typeof item.avatar === 'string') next.avatar = item.avatar
+  me.value = next
+}
+
+/**
+ * After `sync_me` aligns `me` with server or canonical local HTML, bump `visited` and persist.
+ * Same one-hour throttle as before for how often we re-persist `visited`.
+ * @returns {Promise<void>}
+ */
+const stamp_visited_if_due = async () => {
+  if (!current_user.value) return
+  const me_val = me.value
+  if (!me_val) return
+  const { visited } = me_val
+  const visit_digit = new Date(visited ?? 0).getTime()
+  if (visited && Date.now() - visit_digit <= JS_TIME.ONE_HOUR) return
+
+  me_val.visited = new Date().toISOString()
+  await tick()
+  const me_el = document.querySelector(`[itemid="${localStorage.me}"]`)
+  if (me_el) {
+    profile_sync_log('visit_stamp_save', {
+      itemid: /** @type {string} */ (localStorage.me)
+    })
+    await new Me().save(me_el)
+  }
+}
+
 /** @returns {Promise<void>} */
 export const sync_me = async () => {
   const id = get_my_itemid()
   if (!id) return
   await fresh_metadata(id)
   const index_hash = await get_index_hash(id)
-  const my_info = localStorage.getItem(id)
-  if (typeof my_info !== 'string' || !index_hash) return
-  const hash = await create_hash(my_info)
-  if (hash !== index_hash) {
+  const my_info = localStorage.getItem(id) ?? (await get(id))
+  const local_html = typeof my_info === 'string' ? my_info : null
+
+  if (!index_hash) return
+
+  const local_hash = local_html ? await create_hash(local_html) : null
+
+  if (!local_hash || local_hash !== index_hash) {
     profile_sync_log('sync_me_cleared_stale_local_html', {
       itemid: id,
       index_hash,
-      local_hash: hash
+      local_hash
     })
     localStorage.removeItem(id)
     await del(id)
     const maybe_me = await load_from_network(id)
-    if (maybe_me) me.value = maybe_me
+    if (maybe_me)
+      me.value = /** @type {import('@/types').MeItem} */ ({
+        ...maybe_me,
+        type: 'person',
+        id
+      })
     else
       me.value = /** @type {import('@/types').MeItem} */ ({
         ...default_person,
         id: /** @type {import('@/types').Id} */ (id)
       })
+  } else {
+    const item = await load(id)
+    if (item && item.type === 'person') apply_person_item_to_me(item, id)
   }
+
+  await stamp_visited_if_due()
 }
 
 /** @returns {Promise<void>} */
