@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
 import { ref } from 'vue'
+
+const mock_me = vi.hoisted(() => ({
+  value: {
+    id: '/+14151234356',
+    type: 'person',
+    name: 'Stale_before_sync'
+  }
+}))
 import {
   sync_offline_actions,
   fresh_metadata,
@@ -39,7 +47,14 @@ vi.mock('@/utils/itemid', () => ({
   as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
   as_author: vi.fn(id => id.split('/')[0]),
   load: vi.fn(() => Promise.resolve([])),
-  is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/'))
+  is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),
+  load_from_network: vi.fn(() =>
+    Promise.resolve({
+      id: '/+14151234356',
+      type: 'person',
+      name: 'From_network'
+    })
+  )
 }))
 
 vi.mock('@/persistence/Directory', () => ({
@@ -110,6 +125,7 @@ vi.mock('@/use/statements', () => ({
 
 vi.mock('@/utils/serverless', () => ({
   current_user: ref({ uid: 'test-user' }),
+  me: mock_me,
   location: vi.fn(path => `storage/${path}`),
   directory: vi.fn(() => Promise.resolve({ prefixes: [] })),
   metadata: vi.fn(() =>
@@ -149,6 +165,11 @@ vi.mock('@/utils/numbers', () => ({
 describe('sync composable', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mock_me.value = {
+      id: '/+14151234356',
+      type: 'person',
+      name: 'Stale_before_sync'
+    }
   })
 
   describe('DOES_NOT_EXIST constant', () => {
@@ -339,6 +360,7 @@ describe('sync composable', () => {
       await sync_me()
 
       expect(localStorage.removeItem).toHaveBeenCalledWith('/+14151234356')
+      expect(mock_me.value.name).toBe('From_network')
     })
 
     it('returns early when no data', async () => {
