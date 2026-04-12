@@ -70,6 +70,7 @@
  * @property {Id} id
  * @property {Type} type
  * @property {string} [name]
+ * @property {string} [avatar]
  * @property {string} [visited]
  */
 

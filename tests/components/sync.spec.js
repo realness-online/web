@@ -280,10 +280,8 @@ describe('@/use/sync', () => {
   })
 
   describe('methods', () => {
-    describe('#visit', () => {
-      it('Component renders correctly', () => {
-        expect(wrapper.vm).toBeTruthy()
-      })
+    it('component instance is available', () => {
+      expect(wrapper.vm).toBeTruthy()
     })
   })
 })

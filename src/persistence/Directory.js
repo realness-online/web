@@ -9,7 +9,7 @@ import {
   as_created_at,
   is_itemid
 } from '@/utils/itemid-parse'
-import { get, set, keys } from 'idb-keyval'
+import { get, set, keys, del } from 'idb-keyval'
 
 /**
  * @implements {Directory}
@@ -50,6 +50,27 @@ export const is_directory_id = str => {
   const base_id = str.slice(0, -1)
   if (!is_itemid(base_id)) return false
   return true
+}
+
+/**
+ * Deletes cached `Directory` rows in idb for one author (folder listings under
+ * `people/{author}/…`, stored as keys `${author_id}/type/…/`). Does not delete item HTML keys
+ * (no trailing `/`). Uses prefix matching because `is_directory_id` does not treat type-root
+ * paths like `/${author}/posters/` as directory ids (see tests).
+ * @param {Id} author_id - Root person id (e.g. `/+1…`)
+ * @returns {Promise<void>}
+ */
+export const clear_author_dirs = async author_id => {
+  const prefix = `${author_id}/`
+  const all_keys = await keys()
+  const to_delete = []
+  for (const key of all_keys ?? []) {
+    if (typeof key !== 'string') continue
+    if (!key.startsWith(prefix)) continue
+    if (!key.endsWith('/')) continue
+    to_delete.push(key)
+  }
+  await Promise.all(to_delete.map(key => del(key)))
 }
 
 /**

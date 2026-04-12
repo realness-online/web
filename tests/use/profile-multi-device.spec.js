@@ -52,7 +52,7 @@ vi.mock('idb-keyval', () => ({
 vi.mock('@/utils/itemid', () => ({
   as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
   as_author: vi.fn(id => id.split('/')[0]),
-  load: vi.fn(() => Promise.resolve([])),
+  load: vi.fn(() => Promise.resolve(null)),
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),
   load_from_network: vi.fn(() =>
     Promise.resolve({
@@ -68,7 +68,8 @@ vi.mock('@/persistence/Directory', () => ({
     Promise.resolve({
       items: ['1000']
     })
-  )
+  ),
+  clear_author_dirs: vi.fn(() => Promise.resolve())
 }))
 
 vi.mock('@/persistence/Storage', () => ({
@@ -136,7 +137,7 @@ vi.mock('@/utils/numbers', () => ({
   }
 }))
 
-import { sync_me, visit } from '@/use/sync'
+import { sync_me } from '@/use/sync'
 import { Me } from '@/persistence/Storage'
 
 describe('profile multi-device edge cases', () => {
@@ -214,9 +215,21 @@ describe('profile multi-device edge cases', () => {
     expect(mock_me_ref.value.name).toBe('Reloaded_from_cloud')
   })
 
-  it('visit_stamp_save runs when last visited over an hour ago and calls Me.save', async () => {
+  it('sync_me stamps visited after hash match when last visited over an hour ago', async () => {
+    const { get } = await import('idb-keyval')
     const { create_hash } = await import('@/utils/upload-processor')
+    const { load } = await import('@/utils/itemid')
+
+    const sync_index = {
+      '/+14151234356': { customMetadata: { hash: 'network_hash' } }
+    }
+    get.mockResolvedValue(sync_index)
     create_hash.mockResolvedValue('network_hash')
+    vi.mocked(load).mockResolvedValueOnce({
+      id: '/+14151234356',
+      type: 'person',
+      name: 'From_local_html'
+    })
 
     const me_el = document.createElement('address')
     me_el.setAttribute('itemid', '/+14151234356')
@@ -226,7 +239,7 @@ describe('profile multi-device edge cases', () => {
       Date.now() - 2 * 60 * 60 * 1000
     ).toISOString()
 
-    await visit({ me: mock_me_ref })
+    await sync_me()
 
     expect(log_entries.some(e => e.event === 'visit_stamp_save')).toBe(true)
     expect(Me).toHaveBeenCalled()
@@ -238,12 +251,22 @@ describe('profile multi-device edge cases', () => {
     document.body.removeChild(me_el)
   })
 
-  it('visit does not stamp when visited is within the last hour', async () => {
+  it('sync_me does not stamp when visited is within the last hour', async () => {
+    const { get } = await import('idb-keyval')
+    const { create_hash } = await import('@/utils/upload-processor')
+
+    const sync_index = {
+      '/+14151234356': { customMetadata: { hash: 'network_hash' } }
+    }
+    get.mockResolvedValue(sync_index)
+    create_hash.mockResolvedValue('network_hash')
+
     mock_me_ref.value.visited = new Date(
       Date.now() - 30 * 60 * 1000
     ).toISOString()
 
-    await visit({ me: mock_me_ref })
+    Me.mockClear()
+    await sync_me()
 
     expect(
       log_entries.filter(e => e.event === 'visit_stamp_save')
@@ -277,7 +300,7 @@ describe('profile multi-device edge cases', () => {
       return me_el
     }
 
-    it('after sync_me clears stale local html, visit still uploads tab-local name (not cloud)', async () => {
+    it('after sync_me clears stale local html, me reflects cloud before visited stamp', async () => {
       const { get } = await import('idb-keyval')
       const { create_hash } = await import('@/utils/upload-processor')
 
@@ -295,42 +318,50 @@ describe('profile multi-device edge cases', () => {
       get.mockResolvedValueOnce(sync_index)
       create_hash.mockResolvedValueOnce('hash_for_alice_html')
 
-      await sync_me()
-      expect(localStorage.removeItem).toHaveBeenCalledWith('/+14151234356')
-
       const el = append_address('Tab_stale_alice')
       Me.mockClear()
-      create_hash.mockResolvedValue('network_hash')
+      await sync_me()
 
-      await visit({ me: mock_me_ref })
-
+      expect(localStorage.removeItem).toHaveBeenCalledWith('/+14151234356')
+      expect(mock_me_ref.value.name).toBe('Reloaded_from_cloud')
       expect(Me).toHaveBeenCalled()
       const inst = /** @type {{ save: ReturnType<typeof vi.fn> }} */ (
         Me.mock.results[0]?.value
       )
       const saved = inst.save.mock.calls[0][0]
-      // Still reflects tab-local `me` + DOM; cloud may already have another name on another device.
       expect(saved.outerHTML).toContain('Tab_stale_alice')
 
       document.body.removeChild(el)
     })
 
-    it('when me matches cloud before visit, upload carries that name (stay current)', async () => {
+    it('when local html matches index, load merges name then sync_me can stamp', async () => {
+      const { get } = await import('idb-keyval')
       const { create_hash } = await import('@/utils/upload-processor')
+      const { load } = await import('@/utils/itemid')
 
       mock_me_ref.value = {
         id: '/+14151234356',
-        name: 'Cloud_truth_bob',
+        name: 'Stale_tab',
         type: 'person',
         visited: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
       }
 
+      const sync_index = {
+        '/+14151234356': { customMetadata: { hash: 'network_hash' } }
+      }
+      get.mockResolvedValue(sync_index)
+      create_hash.mockResolvedValue('network_hash')
+      vi.mocked(load).mockResolvedValueOnce({
+        id: '/+14151234356',
+        type: 'person',
+        name: 'Cloud_truth_bob'
+      })
+
       const el = append_address('Cloud_truth_bob')
       Me.mockClear()
-      create_hash.mockResolvedValue('network_hash')
+      await sync_me()
 
-      await visit({ me: mock_me_ref })
-
+      expect(mock_me_ref.value.name).toBe('Cloud_truth_bob')
       const inst = /** @type {{ save: ReturnType<typeof vi.fn> }} */ (
         Me.mock.results[0]?.value
       )
