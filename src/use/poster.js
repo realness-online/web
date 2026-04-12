@@ -22,10 +22,18 @@ import {
   as_created_at,
   as_author
 } from '@/utils/itemid'
-import { as_directory } from '@/persistence/Directory'
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { aspect_ratio_mode, slice_alignment } from '@/utils/preference'
+
+/**
+ * Lazy-load directory API so `itemid` / `serverless` do not form static cycles with Directory.
+ * @param {import('@/types').Id} itemid
+ */
+const directory_for = async itemid => {
+  const { as_directory } = await import('@/persistence/Directory')
+  return as_directory(itemid)
+}
 
 export const geology_layers = [
   'sediment',
@@ -227,7 +235,7 @@ export const use_posters = () => {
   const for_person = async query => {
     if (set_working) set_working(true)
     try {
-      const directory = await as_directory(
+      const directory = await directory_for(
         /** @type {Id} */ (`${query.id}/posters`)
       )
       if (!directory) return
@@ -307,7 +315,7 @@ export const is_focus = layer => path_names.some(name => name === layer)
  * @returns {Promise<string|null>}
  */
 const get_next_unviewed_archive = async (author_id, viewed) => {
-  const directory = await as_directory(
+  const directory = await directory_for(
     /** @type {Id} */ (`${author_id}/posters`)
   )
   if (!directory?.archive || !Array.isArray(directory.archive)) return null
@@ -324,7 +332,7 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
  * @returns {Promise<Poster[]>}
  */
 const load_archive_posters = async (author_id, archive_id) => {
-  const archive = await as_directory(
+  const archive = await directory_for(
     /** @type {Id} */ (`${author_id}/posters/${archive_id}/`)
   )
   if (!archive) return []
@@ -399,13 +407,4 @@ export const is_url_query = query => {
   if (query.startsWith('url(') && !query.endsWith(')')) return false
   return true
 }
-export const set_vector_dimensions = (props, item) => {
-  props.viewbox = item.getAttribute('viewBox')
-  const [, , default_width, default_height] = props.viewbox.split(' ')
-  let width = item.getAttribute('width')
-  let height = item.getAttribute('height')
-  if (!width) width = default_width
-  if (!height) height = default_height
-  props.width = width
-  props.height = height
-}
+export { set_vector_dimensions } from '@/utils/vector-dimensions'

@@ -17,7 +17,8 @@ vi.mock('@/persistence/Directory', () => ({
       archive: [1234567890]
     })
   ),
-  as_directory_id: vi.fn(id => `${id.split('/').slice(0, 3).join('/')}/index/`)
+  as_directory_id: vi.fn(id => `${id.split('/').slice(0, 3).join('/')}/index/`),
+  as_archive: vi.fn(() => Promise.resolve(null))
 }))
 
 vi.mock('@/utils/itemid', () => ({
@@ -25,7 +26,6 @@ vi.mock('@/utils/itemid', () => ({
     const parts = id.split('/')
     return parseInt(parts[parts.length - 1])
   }),
-  as_archive: vi.fn(() => Promise.resolve(null)),
   as_author: vi.fn(() => '/+1234567890'),
   as_type: vi.fn(() => 'posters'),
   as_poster_id: vi.fn(id => {
@@ -82,7 +82,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns flat path for archived poster', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(
         'people/+1234567890/posters/1234567890/1234567891'
       )
@@ -97,7 +97,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns flat path for archive folder itself', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(
         'people/+1234567890/posters/1234567890/1234567890'
       )
@@ -112,7 +112,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for shadow layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/shadows/1737178477999')
@@ -125,7 +125,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for sediment layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/sediment/1737178477999')
@@ -138,7 +138,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for sand layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/sand/1737178477999')
@@ -149,7 +149,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for gravel layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/gravel/1737178477999')
@@ -162,7 +162,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for rock layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/rocks/1737178477999')
@@ -175,7 +175,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for boulder layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(null)
 
       const large = new TestLargeClass('/+1234567890/boulders/1737178477999')
@@ -188,7 +188,7 @@ describe('@/persistence/Large', () => {
     })
 
     it('returns path with suffix for archived shadow layer', async () => {
-      const { as_archive } = await import('@/utils/itemid')
+      const { as_archive } = await import('@/persistence/Directory')
       as_archive.mockResolvedValue(
         'people/+1234567890/posters/1234567890/1234567891'
       )

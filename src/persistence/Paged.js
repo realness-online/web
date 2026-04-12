@@ -1,9 +1,8 @@
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
-/** @typedef {import('@/persistence/Storage').Storage} Storage */
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
-import { History } from '@/persistence/Storage'
-import { from_e64 } from '@/use/people'
+import { History } from '@/persistence/History'
+import { from_e64 } from '@/utils/person-identity'
 import { current_user } from '@/utils/serverless'
 import { get_item, get_itemprops, hydrate } from '@/utils/item'
 import {
@@ -27,7 +26,7 @@ const get_oldest = (elements, prop_name) => {
   const created = as_created_at(oldest.id) ?? 0
   return new Date(created)
 }
-export const is_fat = (items, prop_name) => {
+const is_fat = (items, prop_name) => {
   const today = new Date().setHours(0, 0, 0, 0)
   if (
     elements_as_kilobytes(items) > SIZE.MIN &&
@@ -39,7 +38,7 @@ export const is_fat = (items, prop_name) => {
 }
 
 /**
- * @template {new (...args: any[]) => Storage} T
+ * @template {new (...args: any[]) => any} T
  * @param {T} superclass
  * @returns {T}
  */
@@ -76,8 +75,7 @@ export const Paged = superclass =>
         const { type } = this
         if (!type) return
         const me_val = from_e64(user.phoneNumber)
-        /** @type {Id} */
-        const id = `${me_val}/${type}/${oldest.getTime()}`
+        const id = /** @type {Id} */ (`${me_val}/${type}/${oldest.getTime()}`)
 
         const history = new History(id)
         const success = await history.save(div)
@@ -126,8 +124,7 @@ export const Paged = superclass =>
         const created = as_created_at(item.id)
         if (created === null || created === undefined || !type) return
         const me_val = from_e64(user.phoneNumber)
-        /** @type {Id} */
-        const new_id = `${me_val}/${type}/${created}`
+        const new_id = /** @type {Id} */ (`${me_val}/${type}/${created}`)
         item.id = new_id
       })
 

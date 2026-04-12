@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   as_filename,
-  as_archive,
   as_download_url,
   is_itemid,
   as_poster_id,
@@ -11,6 +10,7 @@ import {
   load_from_network,
   load
 } from '@/utils/itemid'
+import { as_archive } from '@/persistence/Directory'
 import { get, set, del } from 'idb-keyval'
 vi.mock('idb-keyval')
 vi.mock('@/utils/serverless', () => ({

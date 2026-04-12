@@ -128,14 +128,3 @@ export const get_all = async () => {
       return a_time - b_time
     })
 }
-
-/**
- * @param {Id} id
- * @returns {Promise<QueueItem | null>}
- */
-export const get_item = async id => {
-  const item = await get(queue_key(id))
-  if (item && item.resized_blob instanceof ArrayBuffer)
-    item.resized_blob = array_buffer_to_blob(item.resized_blob)
-  return item
-}

@@ -30,6 +30,8 @@ vi.mock('@/persistence/Directory', () => ({
       archive: []
     })
   ),
+  /** No archive path in tests - real code uses this for layered poster paths. */
+  as_archive: vi.fn(() => Promise.resolve(null)),
   load_directory_from_network: vi.fn(() => Promise.resolve({ items: [] }))
 }))
 
@@ -64,7 +66,10 @@ import { Large } from '@/persistence/Large'
 import { Storage } from '@/persistence/Storage'
 import { upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { load_directory_from_network } from '@/persistence/Directory'
+import {
+  as_archive,
+  load_directory_from_network
+} from '@/persistence/Directory'
 
 class TestCloudClass extends Cloud(Storage) {
   constructor(itemid) {
@@ -84,6 +89,8 @@ describe('@/persistence/Cloud', () => {
     remove.mockClear()
     move.mockClear()
     load_directory_from_network.mockClear()
+    as_archive.mockClear()
+    as_archive.mockImplementation(() => Promise.resolve(null))
     get.mockImplementation(key =>
       key === 'sync:offline'
         ? Promise.resolve([])

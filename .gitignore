@@ -1,3 +1,4 @@
+fallow-report.json
 .DS_Store
 node_modules
 /tests/e2e/videos/
@@ -19,7 +20,7 @@ node_modules
 .firebase/hosting*
 firebase-debug.log
 .firebaserc
-
+.fallow/
 
 # local env files
 .env.local

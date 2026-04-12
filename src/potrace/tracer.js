@@ -12,7 +12,7 @@ import Bitmap from '@/potrace/types/Bitmap' // eslint-disable-line no-unused-var
  * @param {Point} start_point - Point to start searching from
  * @returns {Point|false} Next point with value 1, or false if none found
  */
-export const find_next_point = (black_map, start_point) => {
+const find_next_point = (black_map, start_point) => {
   let i = black_map.point_to_index(start_point)
   while (i < black_map.size && black_map.data[i] !== 1) i++
   return i < black_map.size && black_map.index_to_point(i)
@@ -25,7 +25,7 @@ export const find_next_point = (black_map, start_point) => {
  * @param {number} y - Y coordinate
  * @returns {0|1} Majority value in neighborhood
  */
-export const get_majority = (black_map, x, y) => {
+const get_majority = (black_map, x, y) => {
   let ct
   for (let i = 2; i < 5; i++) {
     ct = 0
@@ -50,7 +50,7 @@ export const get_majority = (black_map, x, y) => {
  * @param {number} y - Current y coordinate
  * @returns {boolean} True to turn right, false to turn left
  */
-export const should_turn_right = (turn_policy, path_sign, black_map, x, y) => {
+const should_turn_right = (turn_policy, path_sign, black_map, x, y) => {
   if (turn_policy === 'right') return true
   if (turn_policy === 'left') return false
   if (turn_policy === 'black' && path_sign === '+') return true
@@ -67,7 +67,7 @@ export const should_turn_right = (turn_policy, path_sign, black_map, x, y) => {
  * @param {string} turn_policy - Turn policy for ambiguous cases
  * @returns {Path} Traced path
  */
-export const trace_path = (black_map, start_point, turn_policy) => {
+const trace_path = (black_map, start_point, turn_policy) => {
   const path = new Path()
   let { x } = start_point
   let { y } = start_point
@@ -121,7 +121,7 @@ export const trace_path = (black_map, start_point, turn_policy) => {
  * @param {Path} path - Path to XOR
  * @returns {void}
  */
-export const xor_path = (black_map, path) => {
+const xor_path = (black_map, path) => {
   let y1 = path.points[0].y
   const { len } = path
   const { width, data } = black_map

@@ -44,10 +44,7 @@
 
   const show_form = () => {
     if (!needs_sign_on_dialog.value && my_profile_path.value) {
-      router.push({
-        path: my_profile_path.value,
-        hash: '#account'
-      })
+      router.push({ path: my_profile_path.value })
       return
     }
     if (!needs_sign_on_dialog.value) return
@@ -68,11 +65,7 @@
     if (me.value?.id && me.value.id.length > 2) path = me.value.id
     else if (typeof localStorage !== 'undefined' && localStorage.me?.length > 2)
       path = localStorage.me
-    if (path)
-      await router.push({
-        path,
-        hash: '#account'
-      })
+    if (path) await router.push({ path })
     if (form.value?.open) form.value.close()
     layer_open.value = false
   }
@@ -86,10 +79,7 @@
     new_hash => {
       if (new_hash !== '#account') return
       if (!needs_sign_on_dialog.value && my_profile_path.value) {
-        router.replace({
-          path: my_profile_path.value,
-          hash: '#account'
-        })
+        router.replace({ path: my_profile_path.value })
         return
       }
       if (!form.value) return
@@ -104,7 +94,7 @@
   <router-link
     v-if="!needs_sign_on_dialog && my_profile_path"
     id="toggle-account"
-    :to="{ path: my_profile_path, hash: '#account' }"
+    :to="my_profile_path"
     >{{ name }}</router-link
   >
   <a v-else id="toggle-account" @click="show_form">{{ name }}</a>

@@ -1,16 +1,16 @@
 /** @typedef {import('@/types').Id} Id */
-/** @typedef {import('@/persistence/Storage').Storage} Storage */
 
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { current_user, upload, remove, move } from '@/utils/serverless'
 import { get, set, del } from 'idb-keyval'
-import { as_filename, as_type, as_path_parts, as_archive } from '@/utils/itemid'
-import { has_archive } from '@/types'
-import { mutex_for } from '@/utils/algorithms'
+import { as_filename, as_type, as_path_parts } from '@/utils/itemid'
 import {
+  as_archive,
   load_directory_from_network,
   as_directory
 } from '@/persistence/Directory'
+import { has_archive } from '@/types'
+import { mutex_for } from '@/utils/algorithms'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = [
@@ -51,7 +51,7 @@ const get_poster_delete_paths = async poster_id => {
 }
 
 /**
- * @template {new (...args: any[]) => Storage} T
+ * @template {new (...args: any[]) => any} T
  * @param {T} superclass
  * @returns {T}
  */

@@ -1,8 +1,8 @@
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
 
-import { as_type } from '@/utils/itemid'
-import { set_vector_dimensions } from '@/use/poster'
+import { as_type } from '@/utils/itemid-parse'
+import { set_vector_dimensions } from '@/utils/vector-dimensions'
 
 /**
  * @param {string} item_as_string
@@ -31,7 +31,7 @@ export const get_item = (elements, itemid) => {
  * @param {Element} element
  * @returns {Item}
  */
-export const make_item = element => ({
+const make_item = element => ({
   ...get_meta(element),
   ...get_itemprops(element)
 })
@@ -39,7 +39,7 @@ export const make_item = element => ({
  * @param {Element} item
  * @returns {{id?: string, type?: string}}
  */
-export const get_meta = item => {
+const get_meta = item => {
   const meta = {}
   const id = item.getAttribute('itemid')
   let type = item.getAttribute('itemtype')
@@ -54,6 +54,7 @@ export const get_meta = item => {
  * @returns {Object}
  */
 export const get_itemprops = item => {
+  /** @type {Record<string, unknown>} */
   const props = {}
   const properties = Array.from(item.querySelectorAll('[itemprop]'))
   properties.forEach(prop => {
@@ -113,7 +114,7 @@ const tag_value_handlers = {
  * @param {Element} element
  * @returns {string | Element | undefined}
  */
-export const itemprop_value = element => {
+const itemprop_value = element => {
   if (element.hasAttribute('content'))
     return element.getAttribute('content') ?? undefined
   if (element.hasAttribute('datetime'))

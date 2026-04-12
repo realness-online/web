@@ -23,13 +23,14 @@ describe('@/components/thoughts/as-article.vue', () => {
   let observer_callback
 
   beforeEach(async () => {
-    vi.stubGlobal(
-      'IntersectionObserver',
-      vi.fn().mockImplementation(cb => {
+    class MockIntersectionObserver {
+      constructor(cb) {
         observer_callback = cb
-        return { observe: vi.fn(), unobserve: vi.fn() }
-      })
-    )
+        this.observe = vi.fn()
+        this.unobserve = vi.fn()
+      }
+    }
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
     wrapper = await shallowMount(as_article, {
       props: { statements: [thought, older_thought] }
     })

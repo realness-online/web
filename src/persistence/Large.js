@@ -1,17 +1,11 @@
-/** @typedef {import('@/persistence/Storage').Storage} Storage */
 /** @typedef {import('@/types').Id} Id */
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
-import {
-  as_created_at,
-  as_archive,
-  as_poster_id,
-  as_layer_name
-} from '@/utils/itemid'
-import { as_directory_id } from '@/persistence/Directory'
+import { as_created_at, as_poster_id, as_layer_name } from '@/utils/itemid'
+import { as_archive, as_directory_id } from '@/persistence/Directory'
 
 /**
- * @template {new (...args: any[]) => Storage} T
+ * @template {new (...args: any[]) => any} T
  * @param {T} superclass
  * @returns {T}
  */

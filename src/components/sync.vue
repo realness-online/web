@@ -8,7 +8,7 @@
   import ProfileAsMeta from '@/components/profile/as-meta'
   import { use as use_sync } from '@/use/sync'
   import { use as use_statements } from '@/use/statements'
-  import { use_me, get_my_itemid } from '@/use/people'
+  import { use as use_people, use_me, get_my_itemid } from '@/use/people'
   import { current_user } from '@/utils/serverless'
   const emit = defineEmits(['active', 'refreshed'])
   const { me, relations, save } = use_me()
@@ -24,7 +24,14 @@
   )
   const { my_statements: my_editable_statements, update_statement } =
     use_statements()
-  const { events, sync_element: sync, sync_poster } = use_sync(emit)
+  const { load_phonebook } = use_people()
+  const {
+    events,
+    sync_element: sync,
+    sync_poster
+  } = use_sync(emit, {
+    load_phonebook
+  })
   provide('update_statement', update_statement)
   provide('sync_element', sync)
 </script>

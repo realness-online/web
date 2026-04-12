@@ -1,4 +1,4 @@
-export const compress_html = html => {
+const compress_html = html => {
   const compressor_worker = new Worker('/compressor.worker.js')
   return new Promise((resolve, reject) => {
     compressor_worker.onmessage = ({ data: result }) => {

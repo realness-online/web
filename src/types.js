@@ -191,6 +191,7 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  * @property {import('vue').Ref<Item[]|null>} events
  * @property {import('vue').Ref<{visited?: string}|undefined>} me
  * @property {(event: string, ...args: unknown[]) => void} emit
+ * @property {(() => Promise<void>) | undefined} [load_phonebook] - optional; repopulate UI after index cache invalidation
  */
 
 /**

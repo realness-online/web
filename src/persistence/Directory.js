@@ -2,9 +2,14 @@
 /** @typedef {import('@/types').Type} Type */
 /** @typedef {import('@/types').Created} Created */
 
-import { as_path_parts, as_created_at, is_itemid } from '@/utils/itemid'
+import {
+  as_path_parts,
+  as_author,
+  as_type,
+  as_created_at,
+  is_itemid
+} from '@/utils/itemid-parse'
 import { get, set, keys } from 'idb-keyval'
-import { directory, current_user } from '@/utils/serverless'
 
 /**
  * @implements {Directory}
@@ -48,20 +53,6 @@ export const is_directory_id = str => {
 }
 
 /**
- * @param {unknown} maybe
- * @returns {maybe is Directory}
- */
-export const is_directory = maybe =>
-  maybe !== null &&
-  maybe !== undefined &&
-  typeof maybe === 'object' &&
-  'id' in maybe &&
-  'types' in maybe &&
-  'archive' in maybe &&
-  'items' in maybe
-//
-
-/**
  * @param {Id} itemid
  * @returns {string}
  */
@@ -103,6 +94,8 @@ const is_admin_directory = itemid => {
 export const load_directory_from_network = async itemid => {
   if (itemid.startsWith('/+/')) return null
   if (!navigator.onLine) return null
+  const { directory: firebase_directory, current_user } =
+    await import('@/utils/serverless')
   if (!current_user.value && !is_admin_directory(itemid)) return null
 
   const [author, type, , archive = null] = as_path_parts(itemid)
@@ -111,7 +104,7 @@ export const load_directory_from_network = async itemid => {
 
   let firebase_path = `people/${author}/${type}/`
   if (archive) firebase_path += `${archive}/`
-  const folder = await directory(firebase_path)
+  const folder = await firebase_directory(firebase_path)
   const seen_timestamps = new Set()
   folder?.items?.forEach(item => {
     const [filename] = item.name.split('.')
@@ -132,6 +125,7 @@ export const load_directory_from_network = async itemid => {
  * @returns {Promise<Directory | null>}
  */
 export const as_directory = async itemid => {
+  const { current_user } = await import('@/utils/serverless')
   const path = as_directory_id(itemid)
   const cached = await get(path)
   if (cached) {
@@ -162,4 +156,38 @@ export const as_directory = async itemid => {
     }
 
   return directory
+}
+
+/**
+ * Resolve Firebase Storage path for an item under an archive directory.
+ * Lives here so it can call `as_directory` without `@/utils/itemid` importing this module.
+ * @param {Id} itemid
+ * @returns {Promise<string | null>}
+ */
+export const as_archive = async itemid => {
+  if (itemid.startsWith('/+/')) return null
+  const directory = await as_directory(itemid)
+  if (!directory) return null
+
+  const { items = [], archive = [] } = directory
+  const created = as_created_at(itemid)
+  if (!created) return null
+
+  if (items.length === 0) return null
+
+  const item_timestamps = items.map(Number)
+  if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
+    return null
+
+  if (item_timestamps.includes(created)) return null
+
+  if (archive.includes(created))
+    return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
+
+  let closest_timestamp = null
+  for (const archive_id of archive)
+    if (archive_id <= created) closest_timestamp = archive_id
+
+  if (!closest_timestamp) return null
+  return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
 }

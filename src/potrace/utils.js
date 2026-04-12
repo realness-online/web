@@ -29,7 +29,7 @@ const get_attr_regexp = attr_name => {
  * @param {string} value - The value to set for the attribute
  * @returns {string} The modified HTML string
  */
-export const set_html_attr = (html, attr_name, value) => {
+const set_html_attr = (html, attr_name, value) => {
   const attr = ` ${attr_name}="${value}"`
   let result = html
 
@@ -54,7 +54,7 @@ const fixed = number => number.toFixed(3).replace('.000', '')
  * @param {number} n - The divisor
  * @returns {number} The positive modulo result
  */
-export const mod = (a, n) => {
+const mod = (a, n) => {
   if (a >= n) return a % n
   if (a >= 0) return a
   return n - 1 - ((-1 - a) % n)
@@ -66,7 +66,7 @@ export const mod = (a, n) => {
  * @param {Point} p2 - Second point vector
  * @returns {number} The cross product value
  */
-export const xprod = (p1, p2) => p1.x * p2.y - p1.y * p2.x
+const xprod = (p1, p2) => p1.x * p2.y - p1.y * p2.x
 
 /**
  * Checks if b lies within the cyclic range from a to c
@@ -75,14 +75,14 @@ export const xprod = (p1, p2) => p1.x * p2.y - p1.y * p2.x
  * @param {number} c - End of range
  * @returns {boolean} True if b is in the cyclic range from a to c
  */
-export const cyclic = (a, b, c) => (a <= c ? a <= b && b < c : a <= b || b < c)
+const cyclic = (a, b, c) => (a <= c ? a <= b && b < c : a <= b || b < c)
 
 /**
  * Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero
  * @param {number} i - The number to check
  * @returns {-1 | 0 | 1} The sign indicator
  */
-export const sign = i => {
+const sign = i => {
   if (i > 0) return 1
   if (i < 0) return -1
   return 0
@@ -95,7 +95,7 @@ export const sign = i => {
  * @param {Point} w - Point to evaluate
  * @returns {number} The quadratic form value
  */
-export const quadform = (Q, w) => {
+const quadform = (Q, w) => {
   const v = [w.x, w.y, 1]
   let sum = 0
 
@@ -112,7 +112,7 @@ export const quadform = (Q, w) => {
  * @param {Point} b - End point
  * @returns {Point} The interpolated point
  */
-export const interval = (lambda, a, b) => {
+const interval = (lambda, a, b) => {
   const res = new Point()
   res.x = a.x + lambda * (b.x - a.x)
   res.y = a.y + lambda * (b.y - a.y)
@@ -126,7 +126,7 @@ export const interval = (lambda, a, b) => {
  * @param {Point} p2 - End point
  * @returns {Point} Direction vector
  */
-export const dorth_infinity = (p0, p2) => {
+const dorth_infinity = (p0, p2) => {
   const r = new Point()
   r.y = sign(p2.x - p0.x)
   r.x = -sign(p2.y - p0.y)
@@ -139,7 +139,7 @@ export const dorth_infinity = (p0, p2) => {
  * @param {Point} p2 - Second point
  * @returns {number} Denominator value
  */
-export const ddenom = (p0, p2) => {
+const ddenom = (p0, p2) => {
   const r = dorth_infinity(p0, p2)
   return r.y * (p2.x - p0.x) - r.x * (p2.y - p0.y)
 }
@@ -153,7 +153,7 @@ export const ddenom = (p0, p2) => {
  * @param {Point} p2 - Third point
  * @returns {number} Signed area (positive = counterclockwise, negative = clockwise)
  */
-export const dpara = (p0, p1, p2) => {
+const dpara = (p0, p1, p2) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
   const x2 = p2.x - p0.x
@@ -171,7 +171,7 @@ export const dpara = (p0, p1, p2) => {
  * @param {Point} p3 - End of second vector
  * @returns {number} Cross product value
  */
-export const cprod = (p0, p1, p2, p3) => {
+const cprod = (p0, p1, p2, p3) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
   const x2 = p3.x - p2.x
@@ -188,7 +188,7 @@ export const cprod = (p0, p1, p2, p3) => {
  * @param {Point} p2 - End of second vector
  * @returns {number} Dot product value
  */
-export const iprod = (p0, p1, p2) => {
+const iprod = (p0, p1, p2) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
   const x2 = p2.x - p0.x
@@ -206,7 +206,7 @@ export const iprod = (p0, p1, p2) => {
  * @param {Point} p3 - End of second vector
  * @returns {number} Dot product value
  */
-export const iprod1 = (p0, p1, p2, p3) => {
+const iprod1 = (p0, p1, p2, p3) => {
   const x1 = p1.x - p0.x
   const y1 = p1.y - p0.y
   const x2 = p3.x - p2.x
@@ -221,25 +221,25 @@ export const iprod1 = (p0, p1, p2, p3) => {
  * @param {Point} q - Second point
  * @returns {number} Distance between points
  */
-export const ddist = (p, q) =>
+const ddist = (p, q) =>
   Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y))
 
 // Luminance calculation using ITU-R BT.709 standard coefficients
 const LUMINANCE_RED_COEFFICIENT = 0.2126
 const LUMINANCE_GREEN_COEFFICIENT = 0.7153
 const LUMINANCE_BLUE_COEFFICIENT = 0.0721
-export const luminance = (r, g, b) =>
+const luminance = (r, g, b) =>
   Math.round(
     LUMINANCE_RED_COEFFICIENT * r +
       LUMINANCE_GREEN_COEFFICIENT * g +
       LUMINANCE_BLUE_COEFFICIENT * b
   )
 
-export const between = (val, min, max) => val >= min && val <= max
+const between = (val, min, max) => val >= min && val <= max
 
-export const clamp = (val, min, max) => Math.min(max, Math.max(min, val))
+const clamp = (val, min, max) => Math.min(max, Math.max(min, val))
 
-export const is_number = val => typeof val === 'number'
+const is_number = val => typeof val === 'number'
 
 /**
  * @typedef {Object} Curve
@@ -256,7 +256,7 @@ export const is_number = val => typeof val === 'number'
  * @param {number} [scale=1] - Optional scale factor for the coordinates
  * @returns {string} SVG path data string using absolute coordinates
  */
-export const render_curve = (curve, scale = 1) => {
+const render_curve = (curve, scale = 1) => {
   const starting_point = curve.c[(curve.n - 1) * 3 + 2]
   let path = `M ${fixed(starting_point.x * scale)} ${fixed(starting_point.y * scale)} `
 
@@ -290,7 +290,7 @@ export const render_curve = (curve, scale = 1) => {
  * @param {Point} p3 - End point
  * @returns {Point} The point on the curve at parameter t
  */
-export const bezier = (t, p0, p1, p2, p3) => {
+const bezier = (t, p0, p1, p2, p3) => {
   const s = 1 - t
   const res = new Point()
 
@@ -320,7 +320,7 @@ export const bezier = (t, p0, p1, p2, p3) => {
  * @param {Point} line.q1 - Second point defining the line
  * @returns {number} Parameter value t at intersection, or -1 if no intersection
  */
-export const tangent = ({ p0, p1, p2, p3 }, { q0, q1 }) => {
+const tangent = ({ p0, p1, p2, p3 }, { q0, q1 }) => {
   const A = cprod(p0, p1, q0, q1)
   const B = cprod(p1, p2, q0, q1)
   const C = cprod(p2, p3, q0, q1)

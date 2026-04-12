@@ -124,7 +124,7 @@ export const default_keymap = [
 /**
  * Platform-specific key mappings for web
  */
-export const platform_keymaps = {
+const platform_keymaps = {
   macos: {
     // macOS specific overrides - but we use ctrl for web compatibility
     cmd: 'ctrl',
@@ -152,29 +152,10 @@ export const platform_keymaps = {
  * Get current platform
  * @returns {string}
  */
-export const get_platform = () => {
+const get_platform = () => {
   if (navigator.platform.includes('Mac')) return 'macos'
   if (navigator.platform.includes('Win')) return 'windows'
   return 'linux'
-}
-
-/**
- * Parse key combination string
- * @param {string} key_string - Key combination like "ctrl+s" or "enter"
- * @returns {Object} Parsed key object
- */
-export const parse_key_combination = key_string => {
-  const parts = key_string.toLowerCase().split('-')
-  const modifiers = parts.slice(0, -1)
-  const key = parts[parts.length - 1]
-
-  return {
-    ctrl: modifiers.includes('ctrl'),
-    cmd: modifiers.includes('cmd'),
-    alt: modifiers.includes('alt'),
-    shift: modifiers.includes('shift'),
-    key
-  }
 }
 
 /**
@@ -293,136 +274,3 @@ export const get_command_description = (command, keymap = default_keymap) => {
   }
   return command
 }
-
-/**
- * Get all command descriptions from keymap
- * @param {Array} keymap - Keymap configuration
- * @returns {Object.<string, string>} Map of command to description
- */
-export const get_all_descriptions = (keymap = default_keymap) => {
-  /** @type {Object.<string, string>} */
-  const all_descriptions = {}
-
-  keymap.forEach(context_config => {
-    const descriptions = context_config.descriptions || {}
-    Object.assign(all_descriptions, descriptions)
-  })
-
-  return all_descriptions
-}
-export const left_pad = [
-  'scrollWheel',
-  'MouseUp',
-  'MouseRight',
-  'MouseLeft',
-  'MouseDown'
-]
-
-export const function_row = [
-  'Escape',
-  'F1',
-  'F2',
-  'F3',
-  'F4',
-  'F5',
-  'F6',
-  'F7',
-  'F8',
-  'F9',
-  'F10',
-  'F11',
-  'F12',
-  'PrintScreen',
-  'Spotlight',
-  'unknown'
-]
-
-export const digit_row = [
-  'Backquote',
-  'Digit1',
-  'Digit2',
-  'Digit3',
-  'Digit4',
-  'Digit5',
-  'Digit6',
-  'Digit7',
-  'Digit8',
-  'Digit9',
-  'Digit0',
-  'Minus',
-  'Equal',
-  'Backspace'
-]
-
-export const first_row = [
-  'Tab',
-  'KeyQ',
-  'KeyW',
-  'KeyE',
-  'KeyR',
-  'KeyT',
-  'KeyY',
-  'KeyU',
-  'KeyI',
-  'KeyO',
-  'KeyP',
-  'BracketLeft',
-  'BracketRight',
-  'Backslash'
-]
-
-export const home_row = [
-  'CapsLock',
-  'KeyA',
-  'KeyS',
-  'KeyD',
-  'KeyF',
-  'KeyG',
-  'KeyH',
-  'KeyJ',
-  'KeyK',
-  'KeyL',
-  'Semicolon',
-  'Quote',
-  'Enter'
-]
-
-export const shift_row = [
-  'ShiftLeft',
-  'KeyZ',
-  'KeyX',
-  'KeyC',
-  'KeyV',
-  'KeyB',
-  'KeyN',
-  'KeyM',
-  'Comma',
-  'Period',
-  'Slash',
-  'ShiftRight'
-]
-
-export const bottom_row = [
-  'ControlLeft',
-  'AltLeft',
-  'MetaLeft',
-  'Space',
-  'MetaRight',
-  'AltRight',
-  'Fn',
-  'ControlRight'
-]
-
-export const right_pad = [
-  ['Insert', 'Home', 'PageUp'],
-  ['Delete', 'End', 'PageDown'],
-  ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight']
-]
-
-export const numpad = [
-  ['NumLock', 'NumpadDivide', 'NumpadMultiply', 'NumpadSubtract'],
-  ['Numpad7', 'Numpad8', 'Numpad9'],
-  ['Numpad4', 'Numpad5', 'Numpad6', 'NumpadAdd'],
-  ['Numpad1', 'Numpad2', 'Numpad3'],
-  ['Numpad0', 'NumpadDecimal', 'NumpadEnter']
-]

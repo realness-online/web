@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": ["src/workers/*.js", "scripts/*.js"],
+  "ignorePatterns": [
+    "**/artifacts/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/src/wasm/**",
+    "**/public/wasm/**",
+    "**/docs/generated/**"
+  ],
+  "ignoreDependencies": ["stylus", "vue-eslint-parser"],
+  "rules": {
+    "unused-files": "warn",
+    "unused-exports": "warn",
+    "unused-types": "off",
+    "unresolved-imports": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.js", "tests/**/*.spec.js", "**/tests/mocks/**"],
+      "rules": {
+        "unused-exports": "off",
+        "unused-files": "off"
+      }
+    },
+    // Vite serves public/ at / (e.g. /icons.svg). HTML mocks use fixture URLs, not resolvable modules.
+    {
+      "files": [
+        "src/components/icon.vue",
+        "src/components/events/as-button.vue",
+        "tests/mocks/html/**"
+      ],
+      "rules": {
+        "unresolved-imports": "off"
+      }
+    }
+  ],
+  "duplicates": {
+    "mode": "mild",
+    "minTokens": 80,
+    "minLines": 8
+  },
+  "health": {
+    "ignore": ["**/tests/**", "**/src/wasm/**"]
+  }
+}

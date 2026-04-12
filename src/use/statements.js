@@ -23,7 +23,7 @@ let loading_promise = null
  * @param {string} new_content
  * @returns {Promise<boolean>}
  */
-export const update_single_statement = async (statement_id, new_content) => {
+const update_single_statement = async (statement_id, new_content) => {
   const storage_key = /** @type {import('@/types').Id} */ (
     `${localStorage.me}/statements`
   )

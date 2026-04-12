@@ -1,6 +1,7 @@
-import { change_by } from '@/use/path'
-
 const DEFAULT_OPACITY = 0.025
+
+/** Step size for opacity adjustments (shared with path UI). */
+export const change_by = 0.08
 const OPACITY_PRECISION = 10000
 const MAX_OPACITY = 0.9
 

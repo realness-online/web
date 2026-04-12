@@ -435,9 +435,9 @@ describe('App.vue', () => {
         stubs: {
           sync: { template: '<aside></aside>', emits: ['active'] },
           'router-view': true,
-          'dialog-preferences': true,
-          'dialog-documentation': true,
-          'fps-component': true
+          'as-dialog-preferences': true,
+          'as-dialog-documentation': true,
+          'as-fps': true
         },
         mocks: {
           $router: {
@@ -843,9 +843,9 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
-            'dialog-preferences': true,
-            'dialog-documentation': true,
-            'fps-component': true
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
           },
           mocks: {
             $router: {
@@ -868,9 +868,9 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
-            'dialog-preferences': true,
-            'dialog-documentation': true,
-            'fps-component': true
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
           },
           mocks: {
             $router: {
@@ -904,9 +904,9 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
-            'dialog-preferences': true,
-            'dialog-documentation': true,
-            'fps-component': true
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
           },
           mocks: {
             $router: {
@@ -928,9 +928,9 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
-            'dialog-preferences': true,
-            'dialog-documentation': true,
-            'fps-component': true
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
           },
           mocks: {
             $router: {

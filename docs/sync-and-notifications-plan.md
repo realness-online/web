@@ -20,7 +20,7 @@ When `sync:offline` is empty and the user is signed in, skip the anonymous-poste
 ### Remove prune
 
 - Stranger deletion is going away (global feed)
-- Hash comparison for our data is redundant: `sync_me`, `sync_relations`, `sync_thoughts`, `sync_events` already handle their own invalidation
+- Hash comparison for our data is redundant: `sync_me`, `sync_relations`, `sync_statements`, `sync_events` already handle their own invalidation
 - Hash comparison for feed/posters from others would be expensive with a global feed; not worth it
 - **Action:** Remove prune or reduce to directory cleanup only
 

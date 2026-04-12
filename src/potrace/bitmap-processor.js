@@ -65,21 +65,3 @@ export const apply_threshold = (luminance_bitmap, threshold, black_on_white) =>
       : lum < threshold
     return past_the_threshold ? 0 : 1
   })
-
-/**
- * Complete preprocessing pipeline: ImageData → binary bitmap
- * @param {ImageData} image_data - Canvas ImageData object
- * @param {Object} options - Processing options
- * @param {number|'auto'} options.threshold - Threshold value or 'auto'
- * @param {boolean} options.black_on_white - Trace dark on light or vice versa
- * @returns {{luminance: Bitmap, binary: Bitmap, threshold: number}} Processing results
- */
-export const preprocess_image = (image_data, options) => {
-  const { threshold: threshold_option, black_on_white } = options
-
-  const luminance = image_data_to_luminance(image_data)
-  const threshold = calculate_threshold(luminance, threshold_option)
-  const binary = apply_threshold(luminance, threshold, black_on_white)
-
-  return { luminance, binary, threshold }
-}
