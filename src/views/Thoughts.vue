@@ -70,7 +70,7 @@
   } = use_posters()
 
   const feed_needs_refresh = inject('feed_needs_refresh', null)
-  /** @type {() => Promise<void>} */
+  /** @type {(reset?: boolean) => Promise<void>} */
   let fill_statements = async () => {}
 
   const {
@@ -90,7 +90,7 @@
       if (set_working) set_working(true)
       try {
         await load_phonebook()
-        await fill_statements()
+        await fill_statements(true)
       } finally {
         if (set_working) set_working(false)
       }
@@ -160,7 +160,7 @@
     if (poster) poster.picker = !poster.picker
   }
 
-  fill_statements = async () => {
+  fill_statements = async (reset = false) => {
     if (phonebook.value.length)
       people.value = /** @type {import('@/types').Item[]} */ ([
         ...phonebook.value
@@ -184,7 +184,8 @@
       })
 
     await load_feed_for_people(
-      /** @type {Id[]} */ (people.value.map(relation => relation.id))
+      /** @type {Id[]} */ (people.value.map(relation => relation.id)),
+      { reset }
     )
   }
 

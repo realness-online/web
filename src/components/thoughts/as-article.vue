@@ -105,7 +105,11 @@
   <article ref="el" class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
-        <as-avatar v-if="author.avatar" :itemid="author.avatar" class="icon" />
+        <as-avatar
+          v-if="author.avatar"
+          as_avatar
+          :itemid="author.avatar"
+          class="icon" />
         <icon v-else name="silhouette" />
       </router-link>
       <address>

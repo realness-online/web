@@ -6,6 +6,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
   new_poster="[object Object]"
 >
   <as-svg-stub
+    as_avatar="false"
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
     show_cutout_layers="false"
@@ -21,6 +22,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
   class="poster"
 >
   <as-svg-stub
+    as_avatar="false"
     focusable="false"
     itemid="/+14151234356/posters/1737178477987"
     show_cutout_layers="false"

@@ -69,6 +69,7 @@ export const use_feed = options => {
     if (reset) {
       posters.value = []
       statements.value = []
+      overlay_cache.clear()
     }
     loaded_people_ids.value = /** @type {Id[]} */ (unique_people_ids)
     await Promise.all(

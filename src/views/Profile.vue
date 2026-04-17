@@ -127,6 +127,7 @@
     <div>
       <as-avatar
         v-if="person && person.avatar"
+        as_avatar
         :itemid="person.avatar"
         @show="on_show" />
       <as-poster-symbol

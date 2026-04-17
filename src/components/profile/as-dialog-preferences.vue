@@ -151,7 +151,7 @@
       </menu>
     </section>
 
-    <section>
+    <section class="keymap-panel">
       <header>
         <h2>Keymap</h2>
       </header>
@@ -218,6 +218,13 @@
     & > section:first-child menu {
       margin: 0;
       padding: 0;
+    }
+
+    & > section.keymap-panel {
+      display: none;
+      @media (min-width: pad-begins) {
+        display: block;
+      }
     }
 
     & > section:last-child {

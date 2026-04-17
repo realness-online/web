@@ -32,7 +32,8 @@ const {
   mock_menu,
   mock_aspect_ratio_mode,
   mock_slice_alignment,
-  mock_footer_visible
+  mock_footer_visible,
+  mock_current_route
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_template_ref = value =>
@@ -61,10 +62,11 @@ const {
     mock_info: create_ref(false),
     mock_storytelling: create_ref(false),
     mock_grid_overlay: create_ref(false),
-    mock_menu: create_ref(false),
+    mock_menu: create_ref(true),
     mock_aspect_ratio_mode: create_ref('auto'),
     mock_slice_alignment: create_ref('ymid'),
-    mock_footer_visible: create_ref(true)
+    mock_footer_visible: create_ref(true),
+    mock_current_route: create_ref({ path: '/', fullPath: '/' })
   }
 })
 
@@ -104,7 +106,8 @@ vi.mock('@vueuse/core', () => ({
 const mock_router_push = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({
-    push: mock_router_push
+    push: mock_router_push,
+    currentRoute: mock_current_route
   })
 }))
 
@@ -131,7 +134,7 @@ vi.mock('@/utils/preference', async () => {
   const info_ref = ref(false)
   const storytelling_ref = ref(false)
   const grid_overlay_ref = ref(false)
-  const menu_ref = ref(false)
+  const menu_ref = ref(true)
   const aspect_ratio_mode_ref = ref('auto')
   const slice_alignment_ref = ref('ymid')
   const footer_visible_ref = ref(true)
@@ -348,6 +351,9 @@ describe('App.vue', () => {
     mock_sediment.value = false
     mock_aspect_ratio_mode.value = 'auto'
     mock_slice_alignment.value = 'ymid'
+    mock_menu.value = true
+    mock_storytelling.value = false
+    mock_current_route.value = { path: '/', fullPath: '/' }
 
     // Mock sessionStorage
     const sessionStorage_storage = {
@@ -479,6 +485,15 @@ describe('App.vue', () => {
       await wrapper.vm.$nextTick()
       expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(false)
       mock_storytelling.value = false
+      await wrapper.vm.$nextTick()
+    })
+
+    it('hides global menu when menu preference is off', async () => {
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
+      mock_menu.value = false
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(false)
+      mock_menu.value = true
       await wrapper.vm.$nextTick()
     })
   })
