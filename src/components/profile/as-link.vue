@@ -28,7 +28,7 @@
 
 <template>
   <router-link v-if="person" :to="author" class="profile">
-    <as-avatar v-if="person.avatar" :itemid="person.avatar" />
+    <as-avatar v-if="person.avatar" as_avatar :itemid="person.avatar" />
     <icon v-else name="silhouette" />
     <as-address :person="person">
       <slot />

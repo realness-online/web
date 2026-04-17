@@ -163,10 +163,11 @@
       <legend :class="{ valid: validate_mobile_number() }">
         {{ mobile_display }}
       </legend>
-      <label for="mobile">
+      <label for="mobile" class="phone-input-row">
         <button
           type="button"
           id="country-toggle"
+          class="phone-country-toggle"
           @click="show_countries = !show_countries">
           {{ country?.emoji }} +{{ phone_code(country_code) }}
         </button>
@@ -237,16 +238,28 @@
       &#phone
         position: relative
 
-        label[for=mobile]
+        label.phone-input-row
           display: flex
-          align-items: center
+          flex-wrap: nowrap
+          align-items: stretch
+          width: 100%
+          min-width: 0
 
-          button#country-toggle
-            border: none
-            padding: 0
+          button#country-toggle.phone-country-toggle
+            flex-shrink: 0
+            display: flex
+            align-items: center
+            margin: 0
             margin-right: (base-line * 0.5)
+            padding: (base-line * 0.5) (base-line * 0.75)
             cursor: pointer
             white-space: nowrap
+            border: none
+            border-right: 1px solid
+            border-color: inherit
+            background: transparent
+            font: inherit
+            line-height: 1.5
             opacity: 0.7
 
             &:hover
@@ -257,6 +270,7 @@
 
           input#mobile
             flex: 1
+            min-width: 0
 
         select#country
           position: absolute

@@ -100,8 +100,14 @@
 
   const { isFullscreen } = useFullscreen()
   const active_el = useActiveElement()
-  const thought_has_focus = computed(
-    () => !!active_el.value?.closest?.('article.thought')
+  /** Only on home (Thoughts): hide footer switch while focus is inside a thought (e.g. editor). Profile and other routes still render thoughts in the feed; do not steal the switch there. */
+  const thought_hides_footer_switch = computed(() => {
+    if (router.currentRoute.value.path !== '/') return false
+    return !!active_el.value?.closest?.('article.thought')
+  })
+
+  const footer_toggle_shown = computed(
+    () => !isFullscreen.value && !thought_hides_footer_switch.value
   )
 
   /** @param {Event} event */
@@ -319,7 +325,10 @@
     <router-view />
     <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
-    <nav v-if="!storytelling" aria-label="App actions">
+    <nav
+      v-if="menu && !storytelling"
+      aria-label="App actions"
+      :data-footer-visible="footer_visible ? 'true' : 'false'">
       <footer>
         <a
           tabindex="0"
@@ -337,7 +346,7 @@
         </a>
         <as-dialog-preferences ref="preferences_dialog" />
       </footer>
-      <label v-if="!isFullscreen && !thought_has_focus">
+      <label v-if="footer_toggle_shown">
         <input
           type="checkbox"
           switch
@@ -397,7 +406,10 @@
       gap: base-line * 0.25;
       overflow: visible;
 
-      &:has(> label input:not(:checked)) > footer {
+      /* Match footer_visible directly; do not rely on :has(label) because the
+         toggle is v-if removed on / when focus is inside article.thought (and
+         when fullscreen), which would otherwise leave the bar visible. */
+      &[data-footer-visible='false'] > footer {
         transform: translateY(100%);
         opacity: 0;
         visibility: hidden;

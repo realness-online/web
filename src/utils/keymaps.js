@@ -74,7 +74,8 @@ export const default_keymap = [
       'ui::Show_Documentation': 'Show application documentation',
       'ui::Clear_Sync_Time': 'Clear sync time from browser storage',
       'pref::Toggle_Shadow': 'Shadow gradient on posters',
-      'pref::Toggle_Menu': 'Show poster menu on click',
+      'pref::Toggle_Menu':
+        'Show bottom app bar (add, camera, settings, footer switch)',
       'pref::Toggle_Footer': 'Show/hide global footer',
       'pref::Toggle_Stroke': 'Stroke outline on posters',
       'pref::Toggle_Mosaic': 'Mosaic display on posters',

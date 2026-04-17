@@ -65,6 +65,11 @@
     touch_uses_long_press: {
       type: Boolean,
       default: true
+    },
+    /** Poster is shown as a profile / list avatar; SMIL must stay off regardless of animate preference. */
+    as_avatar: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
@@ -250,9 +255,11 @@
 
   const trigger = ref(null)
   const visibility = useDocumentVisibility()
+  /** In-app `animate` preference only (default off). Not OS reduced-motion; users opt in explicitly. */
   const animate = computed(
     () =>
       animate_pref.value === true &&
+      !props.as_avatar &&
       intersecting.value &&
       visibility.value === 'visible'
   )

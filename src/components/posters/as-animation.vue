@@ -12,7 +12,11 @@
   } from 'vue'
   import { as_fragment_id, as_layer_id } from '@/utils/itemid'
   import { is_vector_id, is_svg_valid } from '@/use/poster'
-  import { stroke, animation_speed } from '@/utils/preference'
+  import {
+    stroke,
+    animation_speed,
+    animate as animate_pref
+  } from '@/utils/preference'
   import {
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
@@ -181,10 +185,19 @@
 
   watchEffect(() => {
     const export_blocks_live_smil = poster_video_export_active.value > 0
+    // In-app `animate` only (default off). Parent also gates; we re-check so SMIL cannot run if pref is off.
+    const preference_allows = animate_pref.value === true
     const should_animate =
-      !props.paused && viewport_visible.value && !export_blocks_live_smil
+      preference_allows &&
+      !props.paused &&
+      viewport_visible.value &&
+      !export_blocks_live_smil
     if (should_animate) props.svg.unpauseAnimations()
-    else props.svg.pauseAnimations()
+    else {
+      props.svg.pauseAnimations()
+      // WebKit (esp. mobile) can leave SMIL running after a single pause; reinforce next frame.
+      requestAnimationFrame(() => props.svg.pauseAnimations())
+    }
   })
 
   mounted(() => {

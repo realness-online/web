@@ -257,6 +257,21 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
 
+  describe('as_avatar', () => {
+    it('does not add animate class when used as avatar even if animate pref is on', async () => {
+      mock_animate_pref.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid,
+          as_avatar: true,
+          sync_poster: vector_fixture()
+        }
+      })
+      await flushPromises()
+      expect(wrapper.find('svg').classes()).not.toContain('animate')
+    })
+  })
+
   describe('landscape', () => {
     it('sets landscape class for wide viewbox', async () => {
       const wrapper = shallowMount(as_svg, {

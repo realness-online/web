@@ -86,7 +86,11 @@
 
 <template>
   <router-link v-if="display === 'label'" :to="person.id" class="profile label">
-    <as-svg v-if="display_itemid" :itemid="display_itemid" @show="on_show" />
+    <as-svg
+      v-if="display_itemid"
+      as_avatar
+      :itemid="display_itemid"
+      @show="on_show" />
     <icon v-else name="silhouette" />
     <as-poster-symbol
       v-if="display_itemid && shown"
@@ -98,6 +102,7 @@
   <figure v-else class="profile">
     <as-svg
       v-if="person.avatar"
+      as_avatar
       :itemid="person.avatar"
       :tabable="editable"
       @show="on_show"
