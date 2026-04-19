@@ -5,6 +5,7 @@
   import {
     computed,
     ref,
+    watch,
     watchEffect,
     inject,
     onMounted as mounted,
@@ -138,6 +139,27 @@
     () => shared_document_visible.value && shared_window_focused.value
   )
 
+  /** WebKit resumes SMIL when the tab or window regains attention, after our sync pause. Re-pause on a short deferral. */
+  const pause_smil_basic = () => {
+    props.svg.pauseAnimations()
+    requestAnimationFrame(() => props.svg.pauseAnimations())
+  }
+
+  const pause_smil_after_webkit_resume = () => {
+    pause_smil_basic()
+    queueMicrotask(() => props.svg.pauseAnimations())
+    requestAnimationFrame(() => {
+      props.svg.pauseAnimations()
+      requestAnimationFrame(() => props.svg.pauseAnimations())
+    })
+  }
+
+  watch(viewport_visible, (visible, was_visible) => {
+    if (!visible || was_visible !== false) return
+    if (animate_pref.value === true) return
+    pause_smil_after_webkit_resume()
+  })
+
   const key_commands = inject('key-commands', null)
 
   /**
@@ -193,20 +215,24 @@
       viewport_visible.value &&
       !export_blocks_live_smil
     if (should_animate) props.svg.unpauseAnimations()
-    else {
-      props.svg.pauseAnimations()
-      // WebKit (esp. mobile) can leave SMIL running after a single pause; reinforce next frame.
-      requestAnimationFrame(() => props.svg.pauseAnimations())
-    }
+    else pause_smil_basic()
   })
+
+  /** bfcache restore can skip a false-to-true viewport transition; still re-pause SMIL if pref is off. */
+  const handle_pageshow = () => {
+    if (animate_pref.value === true) return
+    pause_smil_after_webkit_resume()
+  }
 
   mounted(() => {
     viewport_state?.add_listeners?.()
     window.addEventListener('keydown', handle_keydown)
+    window.addEventListener('pageshow', handle_pageshow)
   })
 
   unmounted(() => {
     window.removeEventListener('keydown', handle_keydown)
+    window.removeEventListener('pageshow', handle_pageshow)
   })
 </script>
 

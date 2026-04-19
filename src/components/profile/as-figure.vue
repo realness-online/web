@@ -4,11 +4,14 @@
   import AsRelationshipOptions from '@/components/profile/as-relationship-options'
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
+  import PosterAsFigure from '@/components/posters/as-figure'
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
+  import NameAsForm from '@/components/profile/as-form-name'
   import { useRouter as use_router } from 'vue-router'
   import { computed, ref, provide } from 'vue'
   import { use_me, is_person } from '@/use/people'
+  import { current_user, sign_off } from '@/utils/serverless'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
   import { geology_layers } from '@/use/poster'
@@ -27,13 +30,14 @@
     display: {
       type: String,
       default: 'phonebook',
-      validator: v => ['label', 'phonebook'].includes(v)
+      validator: v => ['label', 'phonebook', 'page'].includes(v)
     },
     poster_itemid: {
       type: String,
       default: undefined
     }
   })
+  const emit = defineEmits(['show'])
   const router = use_router()
   const { relations, me } = use_me()
 
@@ -82,6 +86,18 @@
     }
     shown.value = true
   }
+
+  const on_poster_hero_show = vector => {
+    emit('show', vector)
+  }
+
+  /** Own profile + signed in: click poster to toggle menu. Others: keep messenger visible. */
+  const hero_menu_always_visible = computed(
+    () => !is_me.value || !current_user.value
+  )
+
+  /** No hero footer when viewing own profile signed out (#account has sign-on). */
+  const hero_has_menu = computed(() => !is_me.value || !!current_user.value)
 </script>
 
 <template>
@@ -99,10 +115,32 @@
       :shown="shown" />
     <span>{{ person.name }}</span>
   </router-link>
-  <figure v-else class="profile">
+  <div v-else-if="display === 'page' && person.avatar">
+    <poster-as-figure
+      :itemid="person.avatar"
+      :eager="display === 'page'"
+      :menu="hero_has_menu"
+      :menu_always_visible="hero_menu_always_visible"
+      @show="on_poster_hero_show">
+      <menu v-if="is_me && current_user" class="profile-hero-account-menu">
+        <name-as-form />
+        <fieldset id="sign-off" class="profile-hero-sign-off">
+          <legend>Sign off</legend>
+          <button type="button" @click="sign_off">
+            <icon name="arrow" /> sign off
+          </button>
+        </fieldset>
+      </menu>
+      <menu v-else-if="!is_me">
+        <as-messenger :itemid="person.id" />
+      </menu>
+    </poster-as-figure>
+  </div>
+  <figure v-if="display === 'phonebook' || display === 'page'" class="profile">
     <as-svg
       v-if="person.avatar"
       as_avatar
+      :eager="display === 'page'"
       :itemid="person.avatar"
       :tabable="editable"
       @show="on_show"
@@ -177,7 +215,7 @@
       flex: 1;
       display: flex;
       justify-content: space-between;
-      & > address
+      & > address,
       & > menu {
         display: flex;
         flex-direction: column;
@@ -194,4 +232,32 @@
       }
     }
   }
+
+  menu.profile-hero-account-menu {
+    flex-direction: column
+    align-items: stretch
+    gap: base-line * 0.5
+    max-width: page-width
+    white-space: normal
+  }
+
+  fieldset.profile-hero-sign-off
+    margin: 0
+    border-top: 1px solid red
+    display: flex
+    align-items: center
+    justify-content: flex-end
+    gap: base-line * 0.25
+    & > legend
+      color: red
+      margin-right: auto
+    & > button
+      margin: base-line * 0.75
+      border-color: red
+      &:hover
+        background-color: red
+        color: white
+      & > svg.icon
+        width: base-line
+        height: base-line
 </style>

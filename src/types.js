@@ -20,6 +20,7 @@
  * @typedef {Object} Item
  * @property {Id} id
  * @property {Type} type
+ * @property {Id} [avatar] - Poster itemid when present (e.g. profile photo)
  */
 
 /**
@@ -70,7 +71,7 @@
  * @property {Id} id
  * @property {Type} type
  * @property {string} [name]
- * @property {string} [avatar]
+ * @property {Id} [avatar]
  * @property {string} [visited]
  */
 
@@ -83,7 +84,7 @@
  * @property {Id} id
  * @property {string} type
  * @property {string} name
- * @property {string} avatar
+ * @property {Id} [avatar]
  * @property {string[]} viewed
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`|null} [visited] - ISO 8601 UTC date string
  */
@@ -93,7 +94,7 @@
  * @property {Id} id
  * @property {'person'} [type]
  * @property {string} [name]
- * @property {string} [avatar]
+ * @property {Id} [avatar]
  * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
  */
 

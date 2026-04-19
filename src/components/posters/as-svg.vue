@@ -70,6 +70,11 @@
     as_avatar: {
       type: Boolean,
       default: false
+    },
+    /** Skip IntersectionObserver; load vector and emit in_view immediately (e.g. profile page hero + avatar). */
+    eager: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
@@ -280,18 +285,21 @@
   provide('vector', vector)
 
   mounted(async () => {
-    if (!props.sync_poster)
+    if (props.sync_poster) {
+      intersecting.value = true
+      emit('in_view', true)
+      vector.value = props.sync_poster
+      emit('show', vector.value)
+    } else if (props.eager) {
+      intersecting.value = true
+      emit('in_view', true)
+      show()
+    } else
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
         emit('in_view', isIntersecting)
         if (isIntersecting) show()
       })
-    else {
-      intersecting.value = true
-      emit('in_view', true)
-      vector.value = props.sync_poster
-      emit('show', vector.value)
-    }
     await tick()
   })
 
