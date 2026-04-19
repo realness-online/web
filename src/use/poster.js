@@ -254,7 +254,6 @@ export const use_posters = () => {
           id: query.id,
           type: 'person',
           name: '',
-          avatar: '',
           viewed: ['index'],
           visited: null
         })

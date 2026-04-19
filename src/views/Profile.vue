@@ -1,29 +1,27 @@
 <script setup>
   import AsDays from '@/components/as-days'
   import LogoAsLink from '@/components/logo-as-link'
-  import AsDownload from '@/components/download-vector'
   import AsFigure from '@/components/profile/as-figure'
-  import AsAvatar from '@/components/posters/as-svg'
-  import AsPosterSymbol from '@/components/posters/as-poster-symbol'
-  import AsMessenger from '@/components/profile/as-messenger'
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
-  import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
 
   import { use as use_statements, slot_key } from '@/use/statements'
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { ref, provide, computed, watch, inject, nextTick as tick } from 'vue'
+  import {
+    provide,
+    computed,
+    watch,
+    inject,
+    nextTick as tick,
+    onUnmounted
+  } from 'vue'
   import { useRoute as use_route } from 'vue-router'
-  import { current_user, sign_off } from '@/utils/serverless'
-  /** @typedef {import('@/types').Id} Id */
-  import { as_layer_id, load_from_cache } from '@/utils/itemid'
-  import { geology_layers } from '@/use/poster'
+  import { current_user } from '@/utils/serverless'
   import { menu } from '@/utils/preference'
-  import { get } from 'idb-keyval'
 
   const route = use_route()
   const person_id = computed(() =>
@@ -58,9 +56,6 @@
     for_person: posters_for_person,
     poster_shown
   } = use_posters()
-  const vector = ref(null)
-  const shown = ref(false)
-  provide('vector', vector)
   const feed_needs_refresh = inject('feed_needs_refresh', null)
   const {
     load_feed_for_people,
@@ -76,43 +71,35 @@
     refresh_signal: feed_needs_refresh
   })
 
+  const FEED_LOAD_DELAY_MS = 2000
+  let feed_load_timer = null
+  const clear_scheduled_feed_load = () => {
+    if (feed_load_timer !== null) {
+      clearTimeout(feed_load_timer)
+      feed_load_timer = null
+    }
+  }
+
   const load_profile_feed = async id => {
     people.value = []
-    shown.value = false
-    vector.value = null
-    await Promise.all([
-      load_person({ id }),
+    clear_scheduled_feed_load()
+    await load_person({ id })
+    await load_feed_for_people([], { reset: true })
+    feed_load_timer = setTimeout(() => {
+      feed_load_timer = null
+      if (person_id.value !== id) return
       load_feed_for_people([id], { reset: true })
-    ])
+    }, FEED_LOAD_DELAY_MS)
   }
   watch(person_id, id => load_profile_feed(id), { immediate: true })
+
+  onUnmounted(clear_scheduled_feed_load)
 
   watch(
     [() => route.hash, person, is_own_profile],
     () => scroll_account_into_view(),
     { immediate: true }
   )
-
-  const on_show = shown_vector => {
-    if (!shown_vector) return
-    vector.value = shown_vector
-    if (!vector.value.cutouts) {
-      vector.value.cutouts = {}
-      geology_layers.forEach(layer => {
-        const layer_id = as_layer_id(
-          /** @type {Id} */ (person.value?.avatar),
-          layer
-        )
-        get(layer_id).then(html_string => {
-          if (html_string) vector.value.cutouts[layer] = true
-        })
-        load_from_cache(layer_id).then(({ html }) => {
-          if (html) vector.value.cutouts[layer] = true
-        })
-      })
-    }
-    shown.value = true
-  }
 
   const should_show_thought = (day, item) =>
     overlay_for_day(day).merged_thought_keys.has(slot_key(item)) === false
@@ -124,37 +111,16 @@
       <logo-as-link />
       <icon name="nothing" />
     </header>
-    <div>
-      <as-avatar
-        v-if="person && person.avatar"
-        as_avatar
-        :itemid="person.avatar"
-        @show="on_show" />
-      <as-poster-symbol
-        v-if="person?.avatar && shown"
-        :itemid="person.avatar"
-        :vector="vector"
-        :shown="shown" />
-      <menu v-if="person && person.avatar">
-        <as-download v-if="person.avatar" :itemid="person.avatar" />
-        <as-messenger :itemid="person.id" />
-      </menu>
-    </div>
-    <as-figure v-if="person" :person="person" />
+    <as-figure
+      v-if="person"
+      display="page"
+      :person="person"
+      @show="poster_shown" />
     <section
-      v-if="person && is_own_profile"
+      v-if="person && is_own_profile && !current_user"
       id="account"
       class="profile-account">
-      <template v-if="current_user">
-        <name-as-form />
-        <fieldset id="sign-off">
-          <legend>Sign off</legend>
-          <button type="button" @click="sign_off">
-            <icon name="arrow" /> sign off
-          </button>
-        </fieldset>
-      </template>
-      <as-sign-on v-else />
+      <as-sign-on />
     </section>
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
       <template v-for="item in day" :key="slot_key(item)">
@@ -180,25 +146,6 @@
     padding: 0
     & > section.profile-account
       padding: base-line
-      & > fieldset#sign-off
-        margin-top: base-line
-        border-top: 1px solid red
-        display: flex
-        align-items: center
-        justify-content: flex-end
-        gap: base-line * 0.25
-        & > legend
-          color: red
-          margin-right: auto
-        & > button
-          margin: base-line * 0.75
-          border-color: red
-          &:hover
-            background-color: red
-            color: white
-          & > svg.icon
-            width: base-line
-            height: base-line
     & > header
       height: 0
       padding: 0
@@ -208,35 +155,42 @@
         top: safe_inset(top)
         left: base-line
         position: absolute
-    & > div
+    & > header + div
       position: relative
       overflow: hidden
-      & > svg
-        width: 100dvw
-        min-height: 100dvh
-        &.working
-          fill: blue
-      & > menu
+      & > figure.poster
         width: 100%
-        display: flex
-        justify-content: space-between
-        align-items: center
-        gap: base-line * 0.5
-        z-index: 1
-        position: absolute
-        bottom: -(base-line * 2)
-        bottom: 0
-        padding: 0 base-line
-        animation: absolute-slide-up
-        animation-delay: 1.33s
-        animation-duration: 0.35s
-        animation-fill-mode: both
-        & > a
-        & > nav
-        & > button
-          standard-shadow: boop
-        & > a > svg
-          fill: blue
+        min-height: 100dvh
+        grid-row-start: auto
+        border-radius: 0
+        contain-intrinsic-size: auto 100dvh
+        & > svg[itemscope]
+          width: 100dvw
+          min-height: 100dvh
+        & > figcaption
+          & > footer > menu
+            width: 100%
+            display: flex
+            justify-content: space-between
+            align-items: center
+            gap: base-line * 0.5
+            z-index: 1
+            position: absolute
+            left: 0
+            right: 0
+            bottom: 0
+            padding: 0 base-line
+            box-sizing: border-box
+            animation: absolute-slide-up
+            animation-delay: 1.33s
+            animation-duration: 0.35s
+            animation-fill-mode: both
+            & > a
+            & > nav
+            & > button
+              standard-shadow: boop
+            & > a > svg
+              fill: blue
     & > figure.profile
       padding: base-line
       & > svg

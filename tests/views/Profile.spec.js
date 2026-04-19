@@ -74,7 +74,8 @@ vi.mock('@/use/statements', () => ({
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
     posters: mock_posters,
-    for_person: mock_posters_for_person
+    for_person: mock_posters_for_person,
+    poster_shown: vi.fn()
   }),
   geology_layers: [],
   is_vector_id: vi.fn().mockReturnValue(true),
@@ -90,6 +91,7 @@ describe('Profile', () => {
   let wrapper
 
   beforeEach(() => {
+    vi.useFakeTimers()
     vi.clearAllMocks()
     mock_route = reactive({
       params: { phone_number: '4151234356' }
@@ -119,6 +121,10 @@ describe('Profile', () => {
     })
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('renders profile view', () => {
     expect(wrapper.element).toMatchSnapshot()
   })
@@ -137,6 +143,9 @@ describe('Profile', () => {
     expect(mock_statements.value).toEqual([])
     expect(mock_people.value).toEqual([])
     expect(mock_load_person).toHaveBeenCalledWith({ id: '/4151234356' })
+    expect(mock_posters_for_person).not.toHaveBeenCalled()
+    expect(mock_statements_for_person).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(2000)
     expect(mock_posters_for_person).toHaveBeenCalledWith({ id: '/4151234356' })
     expect(mock_statements_for_person).toHaveBeenCalledWith({
       id: '/4151234356'
@@ -146,14 +155,19 @@ describe('Profile', () => {
   it('reloads when route phone number changes', async () => {
     await Promise.resolve()
     await nextTick()
+    await vi.advanceTimersByTimeAsync(2000)
+    mock_posters_for_person.mockClear()
+    mock_statements_for_person.mockClear()
     mock_route.params.phone_number = '+12157765485'
     await nextTick()
     await Promise.resolve()
     expect(mock_load_person).toHaveBeenLastCalledWith({ id: '/+12157765485' })
-    expect(mock_posters_for_person).toHaveBeenLastCalledWith({
+    expect(mock_posters_for_person).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(mock_posters_for_person).toHaveBeenCalledWith({
       id: '/+12157765485'
     })
-    expect(mock_statements_for_person).toHaveBeenLastCalledWith({
+    expect(mock_statements_for_person).toHaveBeenCalledWith({
       id: '/+12157765485'
     })
   })

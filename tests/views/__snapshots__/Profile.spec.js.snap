@@ -11,13 +11,8 @@ exports[`Profile > renders profile view 1`] = `
       name="nothing"
     />
   </header>
-  <div>
-    <!--v-if-->
-    <!--v-if-->
-    <!--v-if-->
-  </div>
   <as-figure-stub
-    display="phonebook"
+    display="page"
     editable="false"
     person="[object Object]"
   />
@@ -25,8 +20,8 @@ exports[`Profile > renders profile view 1`] = `
   <as-days-stub
     events=""
     paginate="true"
-    posters=""
-    statements=""
+    posters="[object Object]"
+    statements="[object Object]"
     storytelling="false"
     working="false"
   />
