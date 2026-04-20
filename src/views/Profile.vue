@@ -11,14 +11,7 @@
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
-  import {
-    provide,
-    computed,
-    watch,
-    inject,
-    nextTick as tick,
-    onUnmounted
-  } from 'vue'
+  import { provide, computed, watch, inject, nextTick as tick } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   import { current_user } from '@/utils/serverless'
   import { menu } from '@/utils/preference'
@@ -71,29 +64,12 @@
     refresh_signal: feed_needs_refresh
   })
 
-  const FEED_LOAD_DELAY_MS = 2000
-  let feed_load_timer = null
-  const clear_scheduled_feed_load = () => {
-    if (feed_load_timer !== null) {
-      clearTimeout(feed_load_timer)
-      feed_load_timer = null
-    }
-  }
-
   const load_profile_feed = async id => {
     people.value = []
-    clear_scheduled_feed_load()
     await load_person({ id })
-    await load_feed_for_people([], { reset: true })
-    feed_load_timer = setTimeout(() => {
-      feed_load_timer = null
-      if (person_id.value !== id) return
-      load_feed_for_people([id], { reset: true })
-    }, FEED_LOAD_DELAY_MS)
+    await load_feed_for_people([id], { reset: true })
   }
   watch(person_id, id => load_profile_feed(id), { immediate: true })
-
-  onUnmounted(clear_scheduled_feed_load)
 
   watch(
     [() => route.hash, person, is_own_profile],

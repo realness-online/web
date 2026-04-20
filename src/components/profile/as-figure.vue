@@ -118,7 +118,6 @@
   <div v-else-if="display === 'page' && person.avatar">
     <poster-as-figure
       :itemid="person.avatar"
-      :eager="display === 'page'"
       :menu="hero_has_menu"
       :menu_always_visible="hero_menu_always_visible"
       @show="on_poster_hero_show">
@@ -140,7 +139,6 @@
     <as-svg
       v-if="person.avatar"
       as_avatar
-      :eager="display === 'page'"
       :itemid="person.avatar"
       :tabable="editable"
       @show="on_show"

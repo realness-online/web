@@ -75,11 +75,6 @@
     menu_always_visible: {
       type: Boolean,
       default: false
-    },
-    /** Load poster immediately; cutouts/shadows do not wait on IntersectionObserver (e.g. profile page). */
-    eager: {
-      type: Boolean,
-      default: false
     }
   })
   const emit = defineEmits({
@@ -120,7 +115,6 @@
   const cutouts_loaded = ref(false)
   const cutout_load_token = ref(0)
   const poster_in_view = ref(false)
-  const effective_in_view = computed(() => props.eager || poster_in_view.value)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const poster_time = computed(() => {
@@ -231,7 +225,7 @@
     }
   )
   watch_effect(async () => {
-    const in_view = effective_in_view.value
+    const in_view = poster_in_view.value
     const mosaic_on = mosaic.value
     const vector_id = vector.value?.id
     if (!vector_id) return
@@ -287,8 +281,7 @@
       ref="as_svg_ref"
       :itemid="itemid"
       :slice="slice"
-      :eager="eager"
-      :show_cutout_layers="effective_in_view && mosaic"
+      :show_cutout_layers="poster_in_view && mosaic"
       @show="on_show"
       @in_view="on_in_view"
       @click="on_poster_svg_click"
@@ -296,7 +289,7 @@
     <as-poster-symbol
       :itemid="itemid"
       :vector="vector"
-      :show_cutout_symbols="effective_in_view && mosaic"
+      :show_cutout_symbols="poster_in_view && mosaic"
       :shown="shown" />
     <figcaption
       v-if="menu_open || thought_overlay_open || (menu && menu_always_visible)">
