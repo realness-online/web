@@ -313,5 +313,5 @@
 
   <rect width="232" height="232" fill="hsla(228, 9.8%, 6%, 0.97)" />
   <!-- <rect id="realness-extra" width="100%" height="100%" fill="url(#realness-animated-pattern)" /> -->
-  <use href="#realness" x="-17" y="-17" width="232" height="232" />
+  <use href="#realness" x="-20" y="-20" width="232" height="232" />
 </svg>

@@ -90,6 +90,15 @@
     prefer_dom_reference: {
       type: Boolean,
       default: false
+    },
+    /**
+     * When true, do not strip cutout state or hide cutout/shadow layers when this figure scrolls
+     * off-screen (default aggressive unload). Use for the profile hero so returning to the top
+     * does not pay a full cutout re-mount.
+     */
+    pin: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits({
@@ -337,16 +346,18 @@
       if (!menu_enabled) menu_open.value = false
     }
   )
+  const cutouts_active = computed(() => poster_in_view.value || props.pin)
+
   watch_effect(async () => {
     if (use_dom_reference.value) return
-    const in_view = poster_in_view.value
     const mosaic_on = mosaic.value
     const vector_id = vector.value?.id
     if (!vector_id) return
-    if (in_view && mosaic_on) {
+    if (mosaic_on && cutouts_active.value) {
       await load_cutouts()
       return
     }
+    if (props.pin) return
     if (aggressive_cutout_mode) unload_cutouts()
   })
 
@@ -433,7 +444,8 @@
       :itemid="itemid"
       :slice="slice"
       :sync_poster="sync_poster_for_svg"
-      :show_cutout_layers="poster_in_view && mosaic"
+      :show_cutout_layers="cutouts_active && mosaic"
+      :pin="props.pin"
       @show="on_show"
       @in_view="on_in_view"
       @click="on_poster_svg_click"
@@ -442,7 +454,7 @@
       v-if="shown && !use_dom_reference"
       :itemid="itemid"
       :vector="vector"
-      :show_cutout_symbols="poster_in_view && mosaic"
+      :show_cutout_symbols="cutouts_active && mosaic"
       :shown="shown" />
     <figcaption
       v-if="menu_open || thought_overlay_open || (menu && menu_always_visible)">

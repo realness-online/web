@@ -132,6 +132,8 @@
       overflow: hidden
       max-height: 85dvh
       & > figure.poster
+        /* Keep the canonical hero SVG in the render tree so feed `<use href="#…">` rows do not lose it when scrolled past (avoids re-render flash when returning). */
+        content-visibility: visible
         width: 100%
         min-height: 85dvh
         max-height: 85dvh

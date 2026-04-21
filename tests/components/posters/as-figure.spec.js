@@ -203,6 +203,18 @@ describe('@/component/posters/as-figure.vue', () => {
       )
     })
 
+    it('passes pin to AsSvg so cutouts can stay mounted off-screen', () => {
+      const w = shallowMount(as_figure, {
+        props: { itemid: poster.id, pin: true },
+        global: {
+          provide: {
+            'key-commands': mock_key_commands
+          }
+        }
+      })
+      expect(w.findComponent({ name: 'AsSvg' }).props('pin')).toBe(true)
+    })
+
     it('requests cutout layers when in view and mosaic is on', async () => {
       mock_mosaic.value = true
       const sediment_id = as_layer_id(

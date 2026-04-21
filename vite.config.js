@@ -91,6 +91,8 @@ export default defineConfig({
       includeAssets: ['vector.worker.js', 'fonts/*.woff2', 'icons.svg'],
       manifest: {
         display: 'standalone',
+        lang: 'en',
+        start_url: '/',
         background_color: '#151518',
         name: 'Realness',
         short_name: 'Realness',
