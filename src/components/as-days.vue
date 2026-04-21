@@ -273,13 +273,12 @@
         </section>
       </article>
     </template>
-    <div v-else class="as-days-flow">
+    <div v-else role="feed">
       <article
         v-for="([date, day], index) in filtered_days_list"
         :key="date"
         :ref="el => set_last_day_sentinel_ref(el, index)"
-        :class="{ today: is_today(date) }"
-        class="day">
+        :class="{ today: is_today(date) }">
         <header v-if="!is_today(date)">
           <h4>{{ as_day(date) }}</h4>
         </header>
@@ -347,11 +346,11 @@
       container-name: feed-days
       & > header > svg.working
         margin-top: base-line * 2
-      & .as-days-flow
+      & [role='feed']
         display: flex
         flex-direction: column
         gap: base-line
-      & .as-days-flow > article.day
+      & [role='feed'] > article
         min-width: 0
         standard-grid: hi
         @media (min-width: page-width-large)
@@ -366,7 +365,7 @@
 
   @media (orientation: portrait), (min-width: typing-begins)
     @container feed-days (min-width: pad-begins)
-      section.as-days .as-days-flow
+      section.as-days [role='feed']
         display: grid
         grid-template-columns: repeat(auto-fit, minmax(min(100%, poster-min-width), 1fr))
         align-items: start
