@@ -60,6 +60,14 @@
       default: undefined
     },
     /**
+     * When true with `show_cutout_layers`, keep cutout `<use>` nodes mounted even when the
+     * intersection observer reports off-screen (e.g. profile hero - avoids re-render cost).
+     */
+    pin: {
+      type: Boolean,
+      default: false
+    },
+    /**
      * When true (default), touch must press and hold to toggle meet / emit click.
      * Set false when the parent needs an immediate tap on touch (e.g. profile avatar).
      */
@@ -104,7 +112,7 @@
   })
 
   const cutouts_mounted = computed(
-    () => intersecting.value && cutouts_enabled.value
+    () => (intersecting.value || props.pin) && cutouts_enabled.value
   )
 
   const HOLD_MS = 250
@@ -293,12 +301,15 @@
       emit('in_view', true)
       vector.value = props.sync_poster
       emit('show', vector.value)
-    } else
+    } else {
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
         emit('in_view', isIntersecting)
         if (isIntersecting) show()
       })
+      await tick()
+      if (props.pin && !vector.value) await show()
+    }
     await tick()
   })
 

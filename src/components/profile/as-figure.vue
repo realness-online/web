@@ -128,6 +128,7 @@
       :itemid="person.avatar"
       :menu="hero_has_menu"
       :menu_always_visible="hero_menu_always_visible"
+      pin
       @show="on_poster_hero_show">
       <menu v-if="is_me && current_user" class="profile-hero-account-menu">
         <name-as-form />
