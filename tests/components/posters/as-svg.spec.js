@@ -273,7 +273,7 @@ describe('@/components/posters/as-svg.vue', () => {
   })
 
   describe('landscape', () => {
-    it('sets landscape class for wide viewbox', async () => {
+    it('sets aria-orientation horizontal for wide viewbox', async () => {
       const wrapper = shallowMount(as_svg, {
         props: {
           itemid,
@@ -281,7 +281,9 @@ describe('@/components/posters/as-svg.vue', () => {
         }
       })
       await flushPromises()
-      expect(wrapper.find('svg').classes()).toContain('landscape')
+      expect(wrapper.find('svg').attributes('aria-orientation')).toBe(
+        'horizontal'
+      )
     })
   })
 

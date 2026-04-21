@@ -35,6 +35,11 @@
     poster_itemid: {
       type: String,
       default: undefined
+    },
+    /** Poster row itemid when embedded from a poster figure (e.g. menu chip); wins over `poster_itemid` when both are set in label mode. */
+    itemid: {
+      type: String,
+      default: undefined
     }
   })
   const emit = defineEmits(['show'])
@@ -59,10 +64,13 @@
   const vector = ref(null)
   const shown = ref(false)
 
-  const display_itemid = computed(
-    () =>
-      /** @type {Id | undefined} */ (props.person.avatar || props.poster_itemid)
-  )
+  const display_itemid = computed(() => {
+    const fallback =
+      props.display === 'label'
+        ? (props.itemid ?? props.poster_itemid)
+        : props.poster_itemid
+    return /** @type {Id | undefined} */ (props.person.avatar || fallback)
+  })
 
   provide('vector', vector)
 

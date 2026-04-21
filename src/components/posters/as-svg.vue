@@ -37,6 +37,7 @@
     slice_alignment
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id } from '@/utils/itemid'
+  import { POSTER_MEET_TOGGLE_ONLY } from '@/use/poster-dom-reference'
   const props = defineProps({
     itemid: {
       type: String,
@@ -251,6 +252,12 @@
     emit('click', true)
   }
 
+  /** DOM-reference duplicate row: toggle meet/slice only (no emit to the hero figure). */
+  const on_meet_toggle_only_doc = e => {
+    if (e.detail?.itemid !== props.itemid) return
+    use_meet.value = !use_meet.value
+  }
+
   defineExpose({ toggle_meet: handle_click })
 
   const trigger = ref(null)
@@ -280,6 +287,7 @@
   provide('vector', vector)
 
   mounted(async () => {
+    document.addEventListener(POSTER_MEET_TOGGLE_ONLY, on_meet_toggle_only_doc)
     if (props.sync_poster) {
       intersecting.value = true
       emit('in_view', true)
@@ -442,6 +450,10 @@
   })
 
   unmounted(() => {
+    document.removeEventListener(
+      POSTER_MEET_TOGGLE_ONLY,
+      on_meet_toggle_only_doc
+    )
     vector.value = null
     if (pan_unregister) pan_unregister()
   })
@@ -460,10 +472,10 @@
     :style="svg_style"
     :class="{
       animate,
-      landscape,
       hovered: is_hovered,
       'hide-cursor': hide_cursor
     }"
+    :aria-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
     :data-aspect="
       aspect_ratio_mode && aspect_ratio_mode !== 'auto'
