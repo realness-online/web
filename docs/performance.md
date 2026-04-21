@@ -27,7 +27,7 @@ Defer work until needed. First paint and interactivity matter; everything else c
 
 ### Safari and feed (`as-days`, Thoughts, Profile)
 
-- **`as-days.vue` pagination sentinel** – Replaced `onUpdated` + `document.querySelector` with a ref on the last `article.day` and a watcher that calls `observe` only when the sentinel element or pagination mode warrants it. Avoids observer churn on unrelated updates.
+- **`as-days.vue` pagination sentinel** – Replaced `onUpdated` + `document.querySelector` with a ref on the last `article` in the feed (`[role="feed"] > article`) and a watcher that calls `observe` only when the sentinel element or pagination mode warrants it. Avoids observer churn on unrelated updates.
 - **`as-days.vue` feed watch** – Replaced `deep: true` on `{ statements, posters, events }` with a single computed signature (`length` + ordered `id` list per array). Refill runs when membership or order changes; avoids deep reactive traversal. In-place `posters` pushes and sorts still invalidate via id-string change.
 
 ## Planned work

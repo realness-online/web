@@ -196,11 +196,20 @@
         a.phone
           display: none
     & > section.as-days
-      .as-days-flow > article.day
+      padding-left: 0
+      padding-right: 0
+      & [role='feed'] > article > header
+        padding-left: base-line
+        padding-right: base-line
+      & article.thought
+        padding-left: base-line
+        padding-right: base-line
+      & [role='feed'] > article
         @media (prefers-color-scheme: dark)
           & > header > h4, figure.poster > svg.background
             color: blue
         figure.poster
+          border-radius: 0
           & > figcaption > menu
             & > a.download svg
               fill: blue

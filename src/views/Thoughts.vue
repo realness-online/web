@@ -347,18 +347,20 @@
     & > section.as-days figure.poster.selecting-event > svg:not(.background) {
       opacity: 0.1;
     }
-    @media (max-width: pad-begins) {
-      & > section.as-days {
-        padding-left: 0;
-        padding-right: 0;
-      }
-      & > section.as-days article.day > header {
+    /* Full-bleed posters like profile hero; text stays inset via day header + thoughts */
+    & > section.as-days {
+      padding-left: 0;
+      padding-right: 0;
+      & [role='feed'] > article > header {
         padding-left: base-line;
         padding-right: base-line;
       }
-      & > section.as-days article.thought {
+      & article.thought {
         padding-left: base-line;
         padding-right: base-line;
+      }
+      & [role='feed'] > article figure.poster {
+        border-radius: 0;
       }
     }
     &.storytelling {
@@ -428,7 +430,7 @@
       display: none;
     }
     & > section.as-days {
-      .as-days-flow > article.day {
+      [role='feed'] > article {
         @media (prefers-color-scheme: dark) {
           & > header h4, figure.poster > svg.background {
             color: blue;
@@ -438,7 +440,7 @@
       h4 {
         margin: base-line 0 0 0;
       }
-      article.day p[itemprop='statement']:focus {
+      [role='feed'] > article p[itemprop='statement']:focus {
         font-weight: bolder;
         outline: 0;
       }
