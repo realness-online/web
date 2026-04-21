@@ -2,7 +2,9 @@
 
 exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`] = `
 <svg
+  aria-orientation="vertical"
   class=""
+  id="16282281824-posters-559666932867"
   itemid="/+16282281824/posters/559666932867"
   itemscope=""
   itemtype="/posters"

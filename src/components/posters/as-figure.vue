@@ -26,6 +26,13 @@
     geology_layers
   } from '@/use/poster'
   import { mosaic } from '@/utils/preference'
+  import {
+    poster_dom_id,
+    poster_dom_href,
+    POSTER_MEET_TOGGLE_ONLY,
+    use_poster_canonical_presence
+  } from '@/use/poster-dom-reference'
+  import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import { use_delegated_pan } from '@/use/delegated-pan'
   import {
     ref,
@@ -75,6 +82,14 @@
     menu_always_visible: {
       type: Boolean,
       default: false
+    },
+    /**
+     * When true, render a same-document `<use href="#…">` if another poster SVG with this
+     * itemid already exists outside this figure (e.g. profile hero + feed duplicate).
+     */
+    prefer_dom_reference: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits({
@@ -117,6 +132,78 @@
   const poster_in_view = ref(false)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
+  const reference_broken = ref(false)
+  /** Bumps when the tree updates so we re-check for an out-of-figure canonical SVG. */
+  const dom_tick = ref(0)
+  const canonical_elsewhere = computed(() => {
+    if (!props.prefer_dom_reference) return false
+    dom_tick.value
+    if (typeof document === 'undefined') return false
+    const el = document.getElementById(query_id.value)
+    if (!el || el.tagName !== 'svg') return false
+    if (el.getAttribute('itemtype') !== '/posters') return false
+    return !poster.value?.contains(el)
+  })
+  const use_dom_reference = computed(
+    () =>
+      props.prefer_dom_reference &&
+      canonical_elsewhere.value &&
+      !reference_broken.value
+  )
+  const sync_poster_for_svg = computed(() =>
+    reference_broken.value && vector.value && is_vector(vector.value)
+      ? vector.value
+      : null
+  )
+
+  use_poster_canonical_presence(
+    () => use_dom_reference.value,
+    () => /** @type {Id} */ (props.itemid),
+    () => {
+      reference_broken.value = true
+    }
+  )
+
+  const poster_reference_href = computed(() =>
+    poster_dom_href(/** @type {Id} */ (props.itemid))
+  )
+  const ref_dom_viewbox = ref('0 0 16 16')
+  const ref_dom_preserve_aspect_ratio = ref('xMidYMid meet')
+  const ref_dom_landscape = ref(false)
+
+  const sync_reference_from_canonical = () => {
+    const el = document.getElementById(
+      poster_dom_id(/** @type {Id} */ (props.itemid))
+    )
+    if (!el || el.tagName !== 'svg') return
+    const vb = el.getAttribute('viewBox')
+    if (vb) ref_dom_viewbox.value = vb
+    const par = el.getAttribute('preserveAspectRatio')
+    if (par) ref_dom_preserve_aspect_ratio.value = par
+    ref_dom_landscape.value =
+      el.getAttribute('aria-orientation') === 'horizontal'
+  }
+
+  const dom_reference_activate = () => {
+    document.dispatchEvent(
+      new CustomEvent(POSTER_MEET_TOGGLE_ONLY, {
+        bubbles: true,
+        detail: { itemid: props.itemid }
+      })
+    )
+    on_poster_svg_click()
+  }
+
+  const {
+    handle_pointerdown: handle_dom_ref_pointerdown,
+    handle_pointermove: handle_dom_ref_pointermove,
+    handle_pointerup: handle_dom_ref_pointerup,
+    handle_pointerleave: handle_dom_ref_pointerleave
+  } = use_poster_svg_activate_pointer({
+    on_activate: dom_reference_activate,
+    touch_uses_long_press: true
+  })
+
   const poster_time = computed(() => {
     const created_at = as_created_at(/** @type {Id} */ (props.itemid))
     if (!created_at) return ''
@@ -137,6 +224,12 @@
     id: props.itemid,
     picker: props.picker_selected
   }))
+  /** Profile chip in poster footer: pass poster row `itemid` only in label mode. */
+  const profile_chip_itemid = computed(() =>
+    props.profile_display === 'label'
+      ? /** @type {Id | undefined} */ (props.itemid)
+      : undefined
+  )
   const shown = ref(false)
   const working = ref(true)
   const unload_cutouts = () => {
@@ -210,6 +303,26 @@
 
   provide('vector', vector)
   watch_effect(async () => {
+    if (!use_dom_reference.value) return
+    if (vector.value?.id === props.itemid) return
+    const poster_loaded = await load(/** @type {Id} */ (props.itemid))
+    if (poster_loaded) await on_show(/** @type {Poster} */ (poster_loaded))
+  })
+  watch(
+    () => props.itemid,
+    () => {
+      reference_broken.value = false
+      if (use_dom_reference.value) sync_reference_from_canonical()
+    }
+  )
+  watch(
+    use_dom_reference,
+    v => {
+      if (v) poster_in_view.value = true
+    },
+    { immediate: true }
+  )
+  watch_effect(async () => {
     const should_load_person = props.menu || menu_open.value
     if (should_load_person && !person.value) {
       const author_id = as_author(/** @type {Id} */ (props.itemid))
@@ -225,6 +338,7 @@
     }
   )
   watch_effect(async () => {
+    if (use_dom_reference.value) return
     const in_view = poster_in_view.value
     const mosaic_on = mosaic.value
     const vector_id = vector.value?.id
@@ -237,6 +351,7 @@
   })
 
   updated(() => {
+    if (props.prefer_dom_reference) dom_tick.value++
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment && poster.value) {
       poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -247,10 +362,15 @@
   const key_commands = inject('key-commands')
   const as_svg_ref = ref(null)
 
+  const poster_toggle_target = () =>
+    use_dom_reference.value
+      ? { toggle_meet: dom_reference_activate }
+      : as_svg_ref.value
+
   const handle_focusin = () => {
     key_commands?.add_context('Poster')
     key_commands?.register_handler('poster::Toggle_Meet_Slice', {
-      handler: () => as_svg_ref.value?.toggle_meet(),
+      handler: () => poster_toggle_target()?.toggle_meet?.(),
       context: 'Poster'
     })
   }
@@ -260,33 +380,66 @@
     key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
   }
 
-  const activate_poster = () => as_svg_ref.value?.toggle_meet()
+  const activate_poster = () => poster_toggle_target()?.toggle_meet?.()
   const on_in_view = visible => {
     poster_in_view.value = visible
   }
+
+  watch_effect(() => {
+    if (!use_dom_reference.value) return
+    sync_reference_from_canonical()
+  })
 </script>
 
 <template>
   <figure
     ref="poster"
     class="poster"
-    :class="{
-      'has-thought-text': overlay_statements?.length,
-      'thought-overlay-open': thought_overlay_open && overlay_statements?.length
-    }"
+    :aria-expanded="
+      overlay_statements?.length ? thought_overlay_open : undefined
+    "
     @focusin="handle_focusin"
     @focusout="handle_focusout"
     @keydown.enter.prevent="activate_poster">
+    <svg
+      v-if="use_dom_reference"
+      itemscope
+      itemtype="/posters"
+      :itemid="itemid"
+      :viewBox="ref_dom_viewbox"
+      :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
+      role="img"
+      aria-roledescription="referenced poster"
+      aria-label="Poster"
+      :aria-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
+      @pointerdown="handle_dom_ref_pointerdown"
+      @pointermove="handle_dom_ref_pointermove"
+      @pointerup="handle_dom_ref_pointerup"
+      @pointerleave="handle_dom_ref_pointerleave"
+      @pointercancel="handle_dom_ref_pointerleave">
+      <use :href="poster_reference_href" />
+      <rect
+        role="presentation"
+        aria-hidden="true"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        fill="transparent" />
+    </svg>
     <as-svg
+      v-else
       ref="as_svg_ref"
       :itemid="itemid"
       :slice="slice"
+      :sync_poster="sync_poster_for_svg"
       :show_cutout_layers="poster_in_view && mosaic"
       @show="on_show"
       @in_view="on_in_view"
       @click="on_poster_svg_click"
       :focusable="false" />
     <as-poster-symbol
+      v-if="shown && !use_dom_reference"
       :itemid="itemid"
       :vector="vector"
       :show_cutout_symbols="poster_in_view && mosaic"
@@ -308,7 +461,6 @@
         <footer>
           <router-link
             v-if="poster_time && is_my_poster && profile_path"
-            class="poster-time-link"
             :to="profile_path">
             <time>{{ poster_time }}</time>
           </router-link>
@@ -326,9 +478,7 @@
                 v-if="person"
                 :person="person"
                 :display="profile_display"
-                :poster_itemid="
-                  profile_display === 'label' ? itemid : undefined
-                " />
+                :itemid="profile_chip_itemid" />
               <span class="actions">
                 <as-download :itemid="/** @type {Id} */ (itemid)" />
               </span>
@@ -356,10 +506,10 @@
       grid-row-start 0.4s cubic-bezier(0.22, 1, 0.36, 1),
       grid-row-end 0.4s cubic-bezier(0.22, 1, 0.36, 1),
       min-height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-      width 0.4s cubic-bezier(0.22, 1, 0.36, 1)
+      width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     scroll-margin: 50vh;
     scroll-snap-align: center;
-    &.has-thought-text:not(.thought-overlay-open)::after {
+    &[aria-expanded='false']::after {
       content: '';
       position: absolute;
       top: round((base-line * 0.18), 2);
@@ -383,7 +533,7 @@
       outline-offset: base-line * 0.25;
     }
     @media (orientation: landscape), (min-width: page-width) {
-      &:has(svg.landscape) {
+      &:has(svg[aria-orientation='horizontal']) {
         grid-column-start: span 2;
         grid-row-start: auto;
         width: 100%;
@@ -397,13 +547,13 @@
       }
     }
     @media (min-width: pad-begins) {
-      &:has(svg.landscape):has(+ figure.poster:has(svg.landscape)) {
+      &:has(svg[aria-orientation='horizontal']):has(+ figure.poster:has(svg[aria-orientation='horizontal'])) {
         grid-column-start: span 3;
       }
-      &:has(svg.landscape) + figure.poster:has(svg.landscape) {
+      &:has(svg[aria-orientation='horizontal']) + figure.poster:has(svg[aria-orientation='horizontal']) {
         grid-column-start: span 3;
       }
-      &.new:not(:has(svg.landscape)) {
+      &.new:not(:has(svg[aria-orientation='horizontal'])) {
         grid-column: 2;
         grid-row: 2;
       }
@@ -414,6 +564,20 @@
         grid-area: 1 / 1;
         position: relative;
       }
+    }
+    svg[aria-roledescription='referenced poster'] {
+      display: block;
+      min-height: 512px;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      contain: layout;
+      max-height: 100%;
+    }
+    svg[aria-roledescription='referenced poster'] rect[role='presentation'][aria-hidden='true'] {
+      pointer-events: all;
     }
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
@@ -475,7 +639,7 @@
         flex-direction: column;
         align-items: flex-start;
         gap: base-line * 0.5;
-        & > a.poster-time-link {
+        & > a:has(> time) {
           pointer-events: auto;
           text-decoration: none;
           &:hover > time,
@@ -483,7 +647,7 @@
             text-decoration: underline;
           }
         }
-        & > a.poster-time-link > time,
+        & > a > time,
         & > time {
           color: blue;
           white-space: nowrap;

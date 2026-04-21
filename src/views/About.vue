@@ -403,7 +403,7 @@
             height: auto
             display: flex
             flex-direction: column
-          &:has(svg.landscape)
+          &:has(svg[aria-orientation='horizontal'])
             @media (min-width: pad-begins)
               align-self: stretch
           & > svg
@@ -476,7 +476,7 @@
             height: auto
             display: flex
             flex-direction: column
-          &:has(svg.landscape)
+          &:has(svg[aria-orientation='horizontal'])
             @media (min-width: pad-begins)
               align-self: stretch
           & > svg
@@ -536,15 +536,15 @@
         border-radius: base-line * 0.21
         height: 100%
         width: 100%
-      & > svg.landscape
+      & > svg[aria-orientation='horizontal']
         padding: 0
         @media (min-width: pad-begins)
           grid-column-start: span 2
-      & > svg.landscape + .landscape
+      & > svg[aria-orientation='horizontal'] + [aria-orientation='horizontal']
         @media (min-width: pad-begins)
           grid-column-start: span 3
       @media (orientation: landscape), (min-width: page-width)
-        & > img.landscape
+        & > img[aria-orientation='horizontal']
           border:1em solid blue
           grid-column-start: span 2
     & > footer

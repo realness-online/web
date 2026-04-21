@@ -186,20 +186,20 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(wrapper.find('figcaption').exists()).toBe(false)
     })
 
-    it('clears thought overlay class when overlay_statements change', async () => {
+    it('resets thought overlay expanded state when overlay_statements change', async () => {
       const stmts_a = [{ id: '/+14151234356/statements/1', statement: 'a' }]
       const stmts_b = [{ id: '/+14151234356/statements/2', statement: 'b' }]
       await wrapper.setProps({ menu: true, overlay_statements: stmts_a })
       const as_svg = wrapper.findComponent({ name: 'AsSvg' })
       await as_svg.vm.$emit('click', true)
       await flushPromises()
-      expect(wrapper.find('figure.poster').classes()).toContain(
-        'thought-overlay-open'
+      expect(wrapper.find('figure.poster').attributes('aria-expanded')).toBe(
+        'true'
       )
       await wrapper.setProps({ overlay_statements: stmts_b })
       await flushPromises()
-      expect(wrapper.find('figure.poster').classes()).not.toContain(
-        'thought-overlay-open'
+      expect(wrapper.find('figure.poster').attributes('aria-expanded')).toBe(
+        'false'
       )
     })
 

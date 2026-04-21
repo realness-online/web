@@ -120,15 +120,19 @@ export const use = () => {
   )
 
   const query = add => {
-    if (!vector.value) return add
-    if (add) return `${as_query_id(vector.value.id)}-${add}`
-    return as_query_id(vector.value.id)
+    const base = vector.value
+      ? as_query_id(vector.value.id)
+      : as_query_id(/** @type {Id} */ (itemid.value))
+    if (add) return `${base}-${add}`
+    return base
   }
 
   const fragment = add => {
-    if (!vector.value) return add
-    if (add) return `${as_fragment_id(vector.value.id)}-${add}`
-    return as_fragment_id(vector.value.id)
+    const base = vector.value
+      ? as_fragment_id(vector.value.id)
+      : as_fragment_id(/** @type {Id} */ (itemid.value))
+    if (add) return `${base}-${add}`
+    return base
   }
 
   const click = () => {

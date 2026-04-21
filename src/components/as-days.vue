@@ -5,13 +5,7 @@
   import { id_as_day, as_day, is_today } from '@/utils/date'
   import { slot_key } from '@/use/statements'
   import { thoughts_for_author, thought_feed_slots } from '@/utils/thoughts'
-  import {
-    ref,
-    computed,
-    watch,
-    onMounted as mounted,
-    onUpdated as updated
-  } from 'vue'
+  import { ref, computed, watch, onMounted as mounted } from 'vue'
 
   // Props
   const props = defineProps({
@@ -55,6 +49,25 @@
   const filtered_days = computed(() => {
     if (props.paginate) return [...days.value].slice(0, page.value * page_size)
     return days.value
+  })
+
+  /** Stable iterable for v-for + last-item sentinel ref (Map or array from `filtered_days`). */
+  const filtered_days_list = computed(() => [...filtered_days.value])
+
+  /**
+   * Cheap signature so we refill when membership or order changes, without a deep watch
+   * over statements / posters / events (which costs reactive traversal every tick).
+   */
+  const feed_source_signature = computed(() => {
+    const ids = items => (items ?? []).map(item => item.id).join('\u001f')
+    return [
+      (props.statements ?? []).length,
+      ids(props.statements),
+      (props.posters ?? []).length,
+      ids(props.posters),
+      (props.events ?? []).length,
+      ids(props.events)
+    ].join('|')
   })
 
   const flattened_items = computed(() => {
@@ -212,16 +225,20 @@
       )
   }
 
+  watch(feed_source_signature, () => refill_days(), { immediate: true })
+
+  const last_day_sentinel = ref(/** @type {Element | null} */ (null))
+
+  const set_last_day_sentinel_ref = (el, index) => {
+    const n = filtered_days_list.value.length
+    if (index === n - 1) last_day_sentinel.value = el
+  }
+
   watch(
-    () => ({
-      statements: props.statements,
-      posters: props.posters,
-      events: props.events
-    }),
-    () => {
-      refill_days()
-    },
-    { deep: true, immediate: true }
+    () => filtered_days_list.value.length,
+    len => {
+      if (len === 0) last_day_sentinel.value = null
+    }
   )
 
   mounted(() => {
@@ -231,10 +248,14 @@
     })
   })
 
-  updated(() => {
-    const element = document.querySelector('article.day:last-of-type')
-    if (element) observer.value.observe(element)
-  })
+  watch(
+    [last_day_sentinel, observer, () => props.paginate],
+    () => {
+      if (!props.paginate || !observer.value || !last_day_sentinel.value) return
+      observer.value.observe(last_day_sentinel.value)
+    },
+    { flush: 'post' }
+  )
 </script>
 
 <template>
@@ -254,8 +275,9 @@
     </template>
     <div v-else class="as-days-flow">
       <article
-        v-for="[date, day] in filtered_days"
+        v-for="([date, day], index) in filtered_days_list"
         :key="date"
+        :ref="el => set_last_day_sentinel_ref(el, index)"
         :class="{ today: is_today(date) }"
         class="day">
         <header v-if="!is_today(date)">

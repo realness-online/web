@@ -92,17 +92,13 @@
       display="page"
       :person="person"
       @show="poster_shown" />
-    <section
-      v-if="person && is_own_profile && !current_user"
-      id="account"
-      class="profile-account">
-      <as-sign-on />
-    </section>
+    <as-sign-on v-if="person && is_own_profile && !current_user" />
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
       <template v-for="item in day" :key="slot_key(item)">
         <poster-as-figure
           v-if="item.type === 'posters'"
           :itemid="item.id"
+          :prefer_dom_reference="item.id === person?.avatar"
           :menu="menu"
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
@@ -134,15 +130,18 @@
     & > header + div
       position: relative
       overflow: hidden
+      max-height: 85dvh
       & > figure.poster
         width: 100%
-        min-height: 100dvh
+        min-height: 85dvh
+        max-height: 85dvh
         grid-row-start: auto
         border-radius: 0
-        contain-intrinsic-size: auto 100dvh
+        contain-intrinsic-size: auto 85dvh
         & > svg[itemscope]
           width: 100dvw
-          min-height: 100dvh
+          min-height: 85dvh
+          max-height: 85dvh
         & > figcaption
           & > footer > menu
             width: 100%
