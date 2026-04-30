@@ -77,6 +77,7 @@ vi.mock('@/use/vectorize', () => ({
     current_processing: { value: null },
     open_camera: vi.fn(),
     select_photo: vi.fn(),
+    queue_supported_files: vi.fn().mockResolvedValue(false),
     init_processing_queue: vi.fn(),
     queue_items: { value: [] },
     mount_workers: vi.fn()
@@ -138,7 +139,6 @@ vi.mock('@/utils/preference', async () => {
   const aspect_ratio_mode_ref = ref('auto')
   const slice_alignment_ref = ref('ymid')
   const footer_visible_ref = ref(true)
-  const homescreen_icon_ref = ref('poster')
 
   // Sync hoisted objects to proxy the refs
   Object.defineProperty(mock_shadow, 'value', {
@@ -311,8 +311,7 @@ vi.mock('@/utils/preference', async () => {
     menu: menu_ref,
     aspect_ratio_mode: aspect_ratio_mode_ref,
     slice_alignment: slice_alignment_ref,
-    footer_visible: footer_visible_ref,
-    homescreen_icon: homescreen_icon_ref
+    footer_visible: footer_visible_ref
   }
 })
 

@@ -2,16 +2,9 @@
   /** @typedef {import('@/types').Available_Command} Available_Command */
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
-  import { ref, computed, inject, watch } from 'vue'
-  import { get } from 'idb-keyval'
+  import { ref, computed, inject } from 'vue'
   import { get_command_description } from '@/utils/keymaps'
   import * as preferences from '@/utils/preference'
-
-  const { homescreen_icon } = preferences
-  import {
-    homescreen_poster_icon_idb_key,
-    clear_saved_poster_homescreen_icon
-  } from '@/utils/homescreen-icon'
   import {
     sync_folder_supported,
     use as use_sync_folder
@@ -23,22 +16,6 @@
   const key_commands = inject('key-commands')
   const settings = ref(null)
   const dialog_open = ref(false)
-  const poster_homescreen_saved = ref(false)
-
-  const refresh_poster_homescreen_state = async () => {
-    const blob = await get(homescreen_poster_icon_idb_key)
-    poster_homescreen_saved.value = !!blob
-  }
-
-  watch(dialog_open, open => {
-    if (open) void refresh_poster_homescreen_state()
-  })
-
-  const remove_poster_homescreen_icon = async () => {
-    await clear_saved_poster_homescreen_icon()
-    homescreen_icon.value = 'brand'
-    await refresh_poster_homescreen_state()
-  }
 
   const command_to_preference_name = command => {
     if (!command.startsWith('pref::Toggle_')) return null
@@ -171,33 +148,6 @@
           </p>
           <button type="button" @click="sync_folder">Choose folder</button>
         </preference>
-
-        <fieldset class="homescreen-icon-fieldset">
-          <legend>Homescreen icon</legend>
-          <label class="homescreen-icon-option">
-            <input v-model="homescreen_icon" type="radio" value="brand" />
-            Realness logo
-          </label>
-          <label class="homescreen-icon-option">
-            <input
-              v-model="homescreen_icon"
-              type="radio"
-              value="poster"
-              :disabled="!poster_homescreen_saved" />
-            Poster snapshot
-          </label>
-          <p v-if="!poster_homescreen_saved" class="homescreen-icon-hint">
-            Open any poster, use Download, then Homescreen to save a square
-            snapshot. Re-add to the home screen if the icon does not update.
-          </p>
-          <button
-            v-if="poster_homescreen_saved"
-            type="button"
-            class="homescreen-icon-clear"
-            @click="remove_poster_homescreen_icon">
-            Remove poster snapshot
-          </button>
-        </fieldset>
       </menu>
     </section>
 
@@ -268,40 +218,6 @@
     & > section:first-child menu {
       margin: 0;
       padding: 0;
-    }
-
-    fieldset.homescreen-icon-fieldset {
-      margin: base-line 0 0;
-      padding: base-line;
-      border-radius: base-line * 0.25;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-
-      @media (prefers-color-scheme: light) {
-        border-color: rgba(0, 0, 0, 0.15);
-      }
-
-      legend {
-        padding: 0 round((base-line / 4), 2);
-        font-weight: bold;
-      }
-
-      label.homescreen-icon-option {
-        display: flex;
-        align-items: center;
-        gap: round((base-line / 2), 2);
-        margin-bottom: round((base-line / 2), 2);
-        cursor: pointer;
-      }
-
-      p.homescreen-icon-hint {
-        margin: 0 0 round((base-line / 2), 2);
-        font-size: smaller;
-        opacity: 0.85;
-      }
-
-      button.homescreen-icon-clear {
-        margin-top: round((base-line / 4), 2);
-      }
     }
 
     & > section.keymap-panel {

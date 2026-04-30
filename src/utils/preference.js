@@ -39,9 +39,6 @@ export const footer_visible = storage('footer_visible', true)
 
 export const sync_folder = storage('sync_folder', false)
 
-/** 'poster' uses a square PNG saved from a poster (IndexedDB); falls back to brand until one exists. */
-export const homescreen_icon = storage('homescreen_icon', 'poster')
-
 // export const adobe = storage('adobe', false)
 // export const simple = storage('simple', false)
 // export const filesystem = storage('filesystem', false)

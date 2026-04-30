@@ -8,6 +8,7 @@ import {
   parse_css_oklch_string
 } from '@/utils/color-converters'
 import { css_color_to_color } from '@/utils/colors'
+import { merge_poster_hidden_symbols } from '@/utils/poster-canvas'
 
 const normalize_ids_for_download = svg => {
   const id_map = new Map()
@@ -125,27 +126,11 @@ export const build_download_svg = svg_element => {
     if (href && href.startsWith('#')) referenced_ids.add(href.substring(1))
   })
 
-  const figure = svg_element.closest('figure.poster')
-  if (figure) {
-    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-    if (hidden_svg) {
-      const symbols = hidden_svg.querySelectorAll('symbol')
-      let defs = svg_clone.querySelector('defs')
-      if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-        svg_clone.appendChild(defs)
-      }
-      symbols.forEach(symbol => {
-        const symbol_id = symbol.getAttribute('id')
-        if (symbol_id && referenced_ids.has(symbol_id)) {
-          const symbol_clone = /** @type {SVGSymbolElement} */ (
-            symbol.cloneNode(true)
-          )
-          defs.appendChild(symbol_clone)
-        }
-      })
-    }
-  }
+  merge_poster_hidden_symbols(
+    svg_clone,
+    svg_element,
+    symbol_id => !!(symbol_id && referenced_ids.has(symbol_id))
+  )
 
   const hidden_elements = svg_clone.querySelectorAll(
     '[style*="visibility: hidden"]'

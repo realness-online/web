@@ -35,7 +35,7 @@ You can sync Realness across all your devices. Take a picture on your phone and 
 
 [Main home screen](/)
 
-The navigation provides quick access to all major sections of the app. You'll find the camera for creating [posters](#posters), a writing interface for [statements](#statements), version information, help links, and account dialog access right from the main screen.
+The navigation provides quick access to [posters](#posters), [statements](#statements), version and help, and account. **Add** tries a clipboard image when the device allows, then opens the picker; **camera** opens capture; system **paste** with an image in the clipboard queues a poster app-wide for now.
 
 All navigation works offline, with camera access for poster creation and local thought storage. There's no tracking or analytics - everything stays on your device.
 
@@ -53,7 +53,7 @@ The sync indicator appears automatically during all background sync operations a
 
 [Gallery](/posters) of your vector graphics and poster management
 
-The posters view shows a grid display of all your vector graphics. You can add new posters through the camera or file picker, process entire directories of images in batch, and delete posters with a confirmation dialog. Each poster has an author menu for additional options.
+The posters view shows a grid of your vector graphics. New posters come from the bar, camera, or paste (see [Navigation](#navigation)). Delete uses a confirmation dialog. Each poster has an author menu for more actions.
 
 ### Anatomy of a Poster
 

@@ -9,12 +9,7 @@
     render_svg_layers_to_psd,
     extract_all_layers
   } from '@/utils/svg-to-psd'
-  import { render_complete_poster_to_canvas } from '@/utils/render-poster-to-canvas'
-  import {
-    save_poster_as_homescreen_icon,
-    apply_homescreen_icon
-  } from '@/utils/homescreen-icon'
-  import { homescreen_icon } from '@/utils/preference'
+  import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
   import {
     render_svg_to_video_blob,
     download_video
@@ -387,26 +382,6 @@
     set_working(false)
   }
 
-  const set_homescreen_icon_from_poster_handler = async event => {
-    event.preventDefault()
-    event.stopPropagation()
-    close_menu()
-
-    const svg = document.getElementById(as_query_id(props.itemid))
-    if (!svg || !(svg instanceof SVGSVGElement)) return
-
-    set_working(true)
-    try {
-      await save_poster_as_homescreen_icon(svg)
-      homescreen_icon.value = 'poster'
-      await apply_homescreen_icon('poster')
-    } catch (error) {
-      console.error('Failed to set homescreen poster icon:', error)
-    } finally {
-      set_working(false)
-    }
-  }
-
   on_mounted(async () => {
     file_name.value = await get_filename_for_poster(props.itemid, 'svg')
     document.addEventListener('click', handle_click_outside)
@@ -423,13 +398,6 @@
       <icon name="download" />
     </a>
     <menu v-if="menu_open" ref="menu_ref">
-      <a
-        v-if="!video_exporting"
-        @click="set_homescreen_icon_from_poster_handler"
-        title="Use this poster as the add-to-homescreen icon"
-        aria-label="Use this poster as the homescreen icon">
-        Homescreen
-      </a>
       <a
         v-if="!video_exporting"
         @click="download_svg_handler"

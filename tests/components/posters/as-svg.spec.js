@@ -358,15 +358,43 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.emitted('click')?.[0]).toEqual([true])
     })
 
-    it('does not emit click on quick touch pointerup', async () => {
+    it('touch slice toggles when long-press timer fires (not again on pointerup)', async () => {
+      vi.useFakeTimers({ now: 10_000 })
       const wrapper = shallowMount(as_svg, {
-        props: { itemid, sync_poster: vector_fixture() }
+        props: { itemid, sync_poster: vector_fixture() },
+        attachTo: document.body
       })
-      await flushPromises()
-      const svg = wrapper.find('svg')
-      await svg.trigger('pointerdown', { pointerType: 'touch' })
-      await svg.trigger('pointerup', { pointerType: 'touch' })
-      expect(wrapper.emitted('click')).toBeFalsy()
+      try {
+        await flushPromises()
+        const svg_el = wrapper.find('svg').element
+        svg_el.dispatchEvent(
+          new PointerEvent('pointerdown', {
+            pointerType: 'touch',
+            clientX: 100,
+            clientY: 100,
+            bubbles: true
+          })
+        )
+        vi.advanceTimersByTime(499)
+        await flushPromises()
+        expect(wrapper.emitted('click')).toBeFalsy()
+
+        vi.advanceTimersByTime(1)
+        await flushPromises()
+        expect(wrapper.emitted('click')?.[0]).toEqual([true])
+
+        svg_el.dispatchEvent(
+          new PointerEvent('pointerup', {
+            pointerType: 'touch',
+            bubbles: true
+          })
+        )
+        await flushPromises()
+        expect(wrapper.emitted('click')?.length).toBe(1)
+      } finally {
+        vi.useRealTimers()
+        wrapper.unmount()
+      }
     })
 
     it('emits click on quick touch when touch_uses_long_press is false', async () => {
@@ -384,28 +412,7 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.emitted('click')?.[0]).toEqual([true])
     })
 
-    it('emits click after touch long press', async () => {
-      vi.useFakeTimers()
-      const wrapper = shallowMount(as_svg, {
-        props: { itemid, sync_poster: vector_fixture() },
-        attachTo: document.body
-      })
-      try {
-        await flushPromises()
-        const svg = wrapper.find('svg')
-        await svg.trigger('pointerdown', { pointerType: 'touch' })
-        vi.advanceTimersByTime(450)
-        await flushPromises()
-        expect(wrapper.emitted('click')?.[0]).toEqual([true])
-        await svg.trigger('pointerup', { pointerType: 'touch' })
-      } finally {
-        vi.useRealTimers()
-        wrapper.unmount()
-      }
-    })
-
-    it('cancels touch long press when pointer moves', async () => {
-      vi.useFakeTimers()
+    it('cancels click when touch slides before pointerup', async () => {
       const wrapper = shallowMount(as_svg, {
         props: { itemid, sync_poster: vector_fixture() },
         attachTo: document.body
@@ -429,11 +436,15 @@ describe('@/components/posters/as-svg.vue', () => {
             bubbles: true
           })
         )
-        vi.advanceTimersByTime(450)
+        svg_el.dispatchEvent(
+          new PointerEvent('pointerup', {
+            pointerType: 'touch',
+            bubbles: true
+          })
+        )
         await flushPromises()
         expect(wrapper.emitted('click')).toBeFalsy()
       } finally {
-        vi.useRealTimers()
         wrapper.unmount()
       }
     })
@@ -450,8 +461,7 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(wrapper.emitted('click')).toBeFalsy()
     })
 
-    it('sets data-held-layer after hold on shadow use', async () => {
-      vi.useFakeTimers()
+    it('sets data-held-layer on pointerdown on shadow use', async () => {
       const wrapper = shallowMount(as_svg, {
         props: { itemid, sync_poster: vector_fixture() },
         attachTo: document.body
@@ -462,11 +472,34 @@ describe('@/components/posters/as-svg.vue', () => {
         shadow_use.element.dispatchEvent(
           new Event('pointerdown', { bubbles: true })
         )
-        vi.advanceTimersByTime(250)
         await flushPromises()
         expect(wrapper.find('svg').attributes('data-held-layer')).toBe('shadow')
       } finally {
-        vi.useRealTimers()
+        wrapper.unmount()
+      }
+    })
+
+    it('does not set data-held-layer on touch pointerdown when touch uses slide guard', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() },
+        attachTo: document.body
+      })
+      try {
+        await flushPromises()
+        const shadow_use = wrapper.find('use[itemprop="shadow"]')
+        shadow_use.element.dispatchEvent(
+          new PointerEvent('pointerdown', {
+            bubbles: true,
+            pointerType: 'touch',
+            clientX: 100,
+            clientY: 100
+          })
+        )
+        await flushPromises()
+        expect(
+          wrapper.find('svg').attributes('data-held-layer')
+        ).toBeUndefined()
+      } finally {
         wrapper.unmount()
       }
     })

@@ -292,7 +292,7 @@ const capture_svg_frame = async (
 
   const figure = svg_element.closest('figure.poster')
   if (figure) {
-    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
+    const hidden_svg = figure.querySelector('svg[data-poster-symbol-defs]')
     if (hidden_svg) {
       const symbols = hidden_svg.querySelectorAll('symbol')
       symbols.forEach(symbol => {

@@ -1,6 +1,7 @@
 /** @typedef {import('@/types').Id} Id */
 import { writePsd } from 'ag-psd'
 import { as_layer_id, as_query_id, as_fragment_id } from '@/utils/itemid'
+import { merge_poster_hidden_symbols } from '@/utils/poster-canvas'
 
 const FOUR_K_WIDTH = 3840
 
@@ -17,6 +18,154 @@ const get_target_width = () => {
   return FOUR_K_WIDTH
 }
 
+const CUTOUT_LAYER_NAMES = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
+
+/**
+ * @param {SVGSVGElement} svg_clone
+ */
+const strip_clone_noise = svg_clone => {
+  svg_clone
+    .querySelectorAll('[style*="visibility: hidden"]')
+    .forEach(el => el.remove())
+  svg_clone
+    .querySelectorAll('as-animation')
+    .forEach(component => component.remove())
+  svg_clone
+    .querySelectorAll('[id^="lightbar"], rect[fill*="lightbar"]')
+    .forEach(el => el.remove())
+}
+
+/**
+ * @param {SVGSVGElement} svg_clone
+ * @param {number} width
+ * @param {number} height
+ */
+const size_clone_to_canvas = (svg_clone, width, height) => {
+  svg_clone.setAttribute('width', String(width))
+  svg_clone.setAttribute('height', String(height))
+  svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+}
+
+/**
+ * @param {Id} poster_id
+ * @returns {Set<string>}
+ */
+const cutout_symbol_query_ids = poster_id =>
+  new Set(
+    CUTOUT_LAYER_NAMES.map(layer_name =>
+      as_query_id(as_layer_id(poster_id, layer_name))
+    )
+  )
+
+/**
+ * Clone for core or stroke raster: strip noise, drop cutout `<use>`s, size, merge defs minus cutout symbols.
+ * @param {SVGSVGElement} svg_element
+ * @param {Id} poster_id
+ * @param {number} width
+ * @param {number} height
+ */
+const clone_poster_svg_for_shadow_raster = (
+  svg_element,
+  poster_id,
+  width,
+  height
+) => {
+  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+  strip_clone_noise(svg_clone)
+  svg_clone
+    .querySelectorAll(
+      'use[itemprop="sediment"], use[itemprop="sand"], use[itemprop="gravel"], use[itemprop="rocks"], use[itemprop="boulders"]'
+    )
+    .forEach(el => el.remove())
+  size_clone_to_canvas(svg_clone, width, height)
+  const exclude_ids = cutout_symbol_query_ids(poster_id)
+  merge_poster_hidden_symbols(
+    svg_clone,
+    svg_element,
+    symbol_id => !!(symbol_id && !exclude_ids.has(symbol_id))
+  )
+  return svg_clone
+}
+
+/**
+ * Clone for cutout mosaic layers: strip noise, remove shadow `<use>`, size, merge defs except shadows symbol.
+ * @param {SVGSVGElement} svg_element
+ * @param {Id} poster_id
+ * @param {number} width
+ * @param {number} height
+ */
+const clone_poster_svg_for_cutout_raster = (
+  svg_element,
+  poster_id,
+  width,
+  height
+) => {
+  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
+  strip_clone_noise(svg_clone)
+  const shadow_use = svg_clone.querySelector('use[itemprop="shadow"]')
+  if (shadow_use) shadow_use.remove()
+  size_clone_to_canvas(svg_clone, width, height)
+  const shadow_layer_id = as_layer_id(poster_id, 'shadows')
+  const shadow_symbol_id = as_query_id(shadow_layer_id)
+  merge_poster_hidden_symbols(
+    svg_clone,
+    svg_element,
+    symbol_id => symbol_id !== shadow_symbol_id
+  )
+  return svg_clone
+}
+
+/**
+ * Serialize a (sub) SVG subtree to pixels.
+ * @param {SVGSVGElement} layer_clone
+ * @param {number} width
+ * @param {number} height
+ * @returns {Promise<ImageData>}
+ */
+const raster_svg_clone_to_image_data = async (layer_clone, width, height) => {
+  const svg_data = new XMLSerializer().serializeToString(layer_clone)
+  const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
+  const svg_url = URL.createObjectURL(svg_blob)
+  const img = new Image()
+  await new Promise((resolve, reject) => {
+    img.onload = resolve
+    img.onerror = reject
+    img.src = svg_url
+  })
+  const canvas = new OffscreenCanvas(width, height)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to get 2d context')
+  ctx.drawImage(img, 0, 0, width, height)
+  const image_data = ctx.getImageData(0, 0, width, height)
+  URL.revokeObjectURL(svg_url)
+  img.src = ''
+  return image_data
+}
+
+/**
+ * @param {SVGSVGElement} svg_element
+ * @param {number} target_width
+ */
+const poster_raster_dimensions = (svg_element, target_width) => {
+  const viewbox = svg_element.viewBox.baseVal
+  const aspect_ratio = viewbox.width / viewbox.height
+  const width = target_width
+  const height = Math.round(target_width / aspect_ratio)
+  return { width, height }
+}
+
+/**
+ * @param {Array<{name: string, imageData: ImageData, opacity?: number}>} layers
+ */
+const map_layers_to_psd_children = layers =>
+  layers.map(({ name, imageData, opacity = 1 }) => ({
+    name,
+    opacity,
+    left: 0,
+    top: 0,
+    imageData
+  }))
+
 /**
  * Extract core layers (light, regular, medium, bold) from shadows symbol
  * @param {SVGSVGElement} svg_element - The SVG element
@@ -31,55 +180,12 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
   const shadow_layer_id = as_layer_id(poster_id, 'shadows')
   const shadow_fragment = as_fragment_id(shadow_layer_id)
 
-  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
-
-  const hidden_elements = svg_clone.querySelectorAll(
-    '[style*="visibility: hidden"]'
+  const svg_clone = clone_poster_svg_for_shadow_raster(
+    svg_element,
+    poster_id,
+    width,
+    height
   )
-  hidden_elements.forEach(el => el.remove())
-
-  const vue_components = svg_clone.querySelectorAll('as-animation')
-  vue_components.forEach(component => component.remove())
-
-  const lightbar_elements = svg_clone.querySelectorAll(
-    '[id^="lightbar"], rect[fill*="lightbar"]'
-  )
-  lightbar_elements.forEach(el => el.remove())
-
-  const cutout_use_elements = svg_clone.querySelectorAll(
-    'use[itemprop="sediment"], use[itemprop="sand"], use[itemprop="gravel"], use[itemprop="rocks"], use[itemprop="boulders"]'
-  )
-  cutout_use_elements.forEach(el => el.remove())
-
-  svg_clone.setAttribute('width', String(width))
-  svg_clone.setAttribute('height', String(height))
-  svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-  const figure = svg_element.closest('figure.poster')
-  const cutout_layer_names = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
-  const cutout_symbol_ids = new Set(
-    cutout_layer_names.map(layer_name =>
-      as_query_id(as_layer_id(poster_id, layer_name))
-    )
-  )
-  if (figure) {
-    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-    if (hidden_svg) {
-      const symbols = hidden_svg.querySelectorAll('symbol')
-      let defs = svg_clone.querySelector('defs')
-      if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-        svg_clone.appendChild(defs)
-      }
-      symbols.forEach(symbol => {
-        const symbol_id = symbol.getAttribute('id')
-        if (symbol_id && !cutout_symbol_ids.has(symbol_id)) {
-          const symbol_clone = symbol.cloneNode(true)
-          defs.appendChild(symbol_clone)
-        }
-      })
-    }
-  }
 
   for (const layer_name of core_layer_names) {
     const layer_clone = /** @type {SVGSVGElement} */ (svg_clone.cloneNode(true))
@@ -101,27 +207,12 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
       else if (itemprop !== 'background') el.setAttribute('fill-opacity', '1')
     })
 
-    const svg_data = new XMLSerializer().serializeToString(layer_clone)
-    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
-
-    const img = new Image()
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = svg_url
-    })
-
-    const canvas = new OffscreenCanvas(width, height)
-    const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('Failed to get 2d context')
-    ctx.drawImage(img, 0, 0, width, height)
-
-    const image_data = ctx.getImageData(0, 0, width, height)
-
-    URL.revokeObjectURL(svg_url)
-    img.src = ''
+    const image_data = await raster_svg_clone_to_image_data(
+      layer_clone,
+      width,
+      height
+    )
 
     const layer_opacity =
       layer_name === 'background' ? 1 : OPACITY_FOREGROUND_LAYER
@@ -150,55 +241,12 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
   const shadow_layer_id = as_layer_id(poster_id, 'shadows')
   const shadow_fragment = as_fragment_id(shadow_layer_id)
 
-  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
-
-  const hidden_elements = svg_clone.querySelectorAll(
-    '[style*="visibility: hidden"]'
+  const svg_clone = clone_poster_svg_for_shadow_raster(
+    svg_element,
+    poster_id,
+    width,
+    height
   )
-  hidden_elements.forEach(el => el.remove())
-
-  const vue_components = svg_clone.querySelectorAll('as-animation')
-  vue_components.forEach(component => component.remove())
-
-  const lightbar_elements = svg_clone.querySelectorAll(
-    '[id^="lightbar"], rect[fill*="lightbar"]'
-  )
-  lightbar_elements.forEach(el => el.remove())
-
-  const cutout_use_elements = svg_clone.querySelectorAll(
-    'use[itemprop="sediment"], use[itemprop="sand"], use[itemprop="gravel"], use[itemprop="rocks"], use[itemprop="boulders"]'
-  )
-  cutout_use_elements.forEach(el => el.remove())
-
-  svg_clone.setAttribute('width', String(width))
-  svg_clone.setAttribute('height', String(height))
-  svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-  const figure = svg_element.closest('figure.poster')
-  const cutout_layer_names = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
-  const cutout_symbol_ids = new Set(
-    cutout_layer_names.map(layer_name =>
-      as_query_id(as_layer_id(poster_id, layer_name))
-    )
-  )
-  if (figure) {
-    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-    if (hidden_svg) {
-      const symbols = hidden_svg.querySelectorAll('symbol')
-      let defs = svg_clone.querySelector('defs')
-      if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-        svg_clone.appendChild(defs)
-      }
-      symbols.forEach(symbol => {
-        const symbol_id = symbol.getAttribute('id')
-        if (symbol_id && !cutout_symbol_ids.has(symbol_id)) {
-          const symbol_clone = symbol.cloneNode(true)
-          defs.appendChild(symbol_clone)
-        }
-      })
-    }
-  }
 
   for (const layer_name of stroke_layer_names) {
     const layer_clone = /** @type {SVGSVGElement} */ (svg_clone.cloneNode(true))
@@ -231,27 +279,12 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
       if (!to_keep.has(child)) child.remove()
     })
 
-    const svg_data = new XMLSerializer().serializeToString(layer_clone)
-    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
-
-    const img = new Image()
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = svg_url
-    })
-
-    const canvas = new OffscreenCanvas(width, height)
-    const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('Failed to get 2d context')
-    ctx.drawImage(img, 0, 0, width, height)
-
-    const image_data = ctx.getImageData(0, 0, width, height)
-
-    URL.revokeObjectURL(svg_url)
-    img.src = ''
+    const image_data = await raster_svg_clone_to_image_data(
+      layer_clone,
+      width,
+      height
+    )
 
     layers.push({
       name: `${layer_name.charAt(0).toUpperCase() + layer_name.slice(1)} Stroke`,
@@ -273,53 +306,15 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
  */
 const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
   const layers = []
-  const cutout_layer_names = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
 
-  const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
-
-  const hidden_elements = svg_clone.querySelectorAll(
-    '[style*="visibility: hidden"]'
+  const svg_clone = clone_poster_svg_for_cutout_raster(
+    svg_element,
+    poster_id,
+    width,
+    height
   )
-  hidden_elements.forEach(el => el.remove())
 
-  const vue_components = svg_clone.querySelectorAll('as-animation')
-  vue_components.forEach(component => component.remove())
-
-  const lightbar_elements = svg_clone.querySelectorAll(
-    '[id^="lightbar"], rect[fill*="lightbar"]'
-  )
-  lightbar_elements.forEach(el => el.remove())
-
-  const shadow_use = svg_clone.querySelector('use[itemprop="shadow"]')
-  if (shadow_use) shadow_use.remove()
-
-  svg_clone.setAttribute('width', String(width))
-  svg_clone.setAttribute('height', String(height))
-  svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-  const figure = svg_element.closest('figure.poster')
-  const shadow_layer_id = as_layer_id(poster_id, 'shadows')
-  const shadow_symbol_id = as_query_id(shadow_layer_id)
-  if (figure) {
-    const hidden_svg = figure.querySelector('svg[style*="display: none"]')
-    if (hidden_svg) {
-      const symbols = hidden_svg.querySelectorAll('symbol')
-      let defs = svg_clone.querySelector('defs')
-      if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
-        svg_clone.appendChild(defs)
-      }
-      symbols.forEach(symbol => {
-        const symbol_id = symbol.getAttribute('id')
-        if (symbol_id !== shadow_symbol_id) {
-          const symbol_clone = symbol.cloneNode(true)
-          defs.appendChild(symbol_clone)
-        }
-      })
-    }
-  }
-
-  for (const layer_name of cutout_layer_names) {
+  for (const layer_name of CUTOUT_LAYER_NAMES) {
     const layer_id = as_layer_id(poster_id, layer_name)
     const layer_fragment = as_fragment_id(layer_id)
 
@@ -341,27 +336,12 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
         p.setAttribute('fill-opacity', '1')
       })
 
-    const svg_data = new XMLSerializer().serializeToString(layer_clone)
-    const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
-
-    const img = new Image()
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve, reject) => {
-      img.onload = resolve
-      img.onerror = reject
-      img.src = svg_url
-    })
-
-    const canvas = new OffscreenCanvas(width, height)
-    const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('Failed to get 2d context')
-    ctx.drawImage(img, 0, 0, width, height)
-
-    const image_data = ctx.getImageData(0, 0, width, height)
-
-    URL.revokeObjectURL(svg_url)
-    img.src = ''
+    const image_data = await raster_svg_clone_to_image_data(
+      layer_clone,
+      width,
+      height
+    )
 
     layers.push({
       name: layer_name.charAt(0).toUpperCase() + layer_name.slice(1),
@@ -386,11 +366,10 @@ export const render_svg_layers_to_psd = async (
   target_width
 ) => {
   const effective_width = target_width || get_target_width()
-
-  const viewbox = svg_element.viewBox.baseVal
-  const aspect_ratio = viewbox.width / viewbox.height
-  const width = effective_width
-  const height = Math.round(effective_width / aspect_ratio)
+  const { width, height } = poster_raster_dimensions(
+    svg_element,
+    effective_width
+  )
 
   const core_layers = await extract_core_layers(
     svg_element,
@@ -424,35 +403,17 @@ export const render_svg_layers_to_psd = async (
 
   const shadow_group = {
     name: 'Shadows',
-    children: core_layers.map(({ name, imageData, opacity = 1 }) => ({
-      name,
-      opacity,
-      left: 0,
-      top: 0,
-      imageData
-    }))
+    children: map_layers_to_psd_children(core_layers)
   }
 
   const stroke_group = {
     name: 'Stroke',
-    children: stroke_layers.map(({ name, imageData, opacity = 1 }) => ({
-      name,
-      opacity,
-      left: 0,
-      top: 0,
-      imageData
-    }))
+    children: map_layers_to_psd_children(stroke_layers)
   }
 
   const cutout_group = {
     name: 'Mosaic',
-    children: cutout_layers.map(({ name, imageData, opacity = 1 }) => ({
-      name,
-      opacity,
-      left: 0,
-      top: 0,
-      imageData
-    }))
+    children: map_layers_to_psd_children(cutout_layers)
   }
 
   const groups = [shadow_group]
@@ -485,10 +446,7 @@ export const extract_all_layers = async (
   poster_id,
   target_width = FOUR_K_WIDTH
 ) => {
-  const viewbox = svg_element.viewBox.baseVal
-  const aspect_ratio = viewbox.width / viewbox.height
-  const width = target_width
-  const height = Math.round(target_width / aspect_ratio)
+  const { width, height } = poster_raster_dimensions(svg_element, target_width)
 
   const core_layers = await extract_core_layers(
     svg_element,

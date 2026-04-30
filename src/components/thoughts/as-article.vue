@@ -77,11 +77,6 @@
 
   const click = e => {
     if (menu.value && !props.editable) all.value = all.value ? null : 'all'
-    if (props.editable && !e.target.closest('[contenteditable="true"]')) {
-      const refs = thought_refs.value
-      const first = Array.isArray(refs) ? refs[0] : refs
-      first?.focus_editor?.()
-    }
   }
 
   const show = () => emit('show', props.statements)

@@ -200,7 +200,6 @@
         detail: { itemid: props.itemid }
       })
     )
-    on_poster_svg_click()
   }
 
   const {
@@ -423,6 +422,7 @@
       aria-roledescription="referenced poster"
       aria-label="Poster"
       :aria-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
+      @click="on_poster_svg_click"
       @pointerdown="handle_dom_ref_pointerdown"
       @pointermove="handle_dom_ref_pointermove"
       @pointerup="handle_dom_ref_pointerup"

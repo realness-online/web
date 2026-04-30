@@ -366,7 +366,9 @@
   @media (orientation: portrait), (min-width: typing-begins)
     @container feed-days (min-width: pad-begins)
       section.as-days [role='feed']
+        // Progressive enhancement: grid-lanes when it ships; ignored until then, grid wins.
         display: grid
+        display: grid-lanes
         grid-template-columns: repeat(auto-fit, minmax(min(100%, poster-min-width), 1fr))
         align-items: start
         gap: base-line * 1.75
