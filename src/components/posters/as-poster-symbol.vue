@@ -1,5 +1,4 @@
 <script setup>
-  /* eslint-disable vue/no-static-inline-styles */
   /** @typedef {import('@/types').Id} Id */
   import { computed } from 'vue'
   import AsSymbol from '@/components/posters/as-symbol'
@@ -42,7 +41,7 @@
 </script>
 
 <template>
-  <svg v-if="shown" style="display: none; visibility: hidden">
+  <svg v-if="shown" data-poster-symbol-defs aria-hidden="true" hidden>
     <defs>
       <as-symbol-shadow />
       <as-symbol

@@ -118,14 +118,19 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
  * @returns {Promise<{blob: Blob, width: number, height: number}>}
  */
 export const resize_to_blob = async file => {
+  const lower_name = file.name.toLowerCase()
   const needs_image_fallback =
     file.type === 'image/tiff' ||
     file.type === 'image/bmp' ||
     file.type === 'image/avif' ||
-    file.name.toLowerCase().endsWith('.tif') ||
-    file.name.toLowerCase().endsWith('.tiff') ||
-    file.name.toLowerCase().endsWith('.bmp') ||
-    file.name.toLowerCase().endsWith('.avif')
+    file.type === 'image/heic' ||
+    file.type === 'image/heif' ||
+    lower_name.endsWith('.tif') ||
+    lower_name.endsWith('.tiff') ||
+    lower_name.endsWith('.bmp') ||
+    lower_name.endsWith('.avif') ||
+    lower_name.endsWith('.heic') ||
+    lower_name.endsWith('.heif')
 
   let bitmap
   let url
@@ -654,23 +659,93 @@ export const use = () => {
     }
     if (files.length === 0) return
 
-    const image_files = files.filter(file =>
-      [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'image/bmp',
-        'image/tiff',
-        'image/avif',
-        'image/svg+xml'
-      ].some(type => file.type === type)
-    )
+    await queue_supported_files(files)
+    if (image_picker.value) image_picker.value.value = ''
+  }
 
-    if (image_files.length > 0) {
-      await add_to_queue(image_files)
-      if (image_picker.value) image_picker.value.value = ''
-    }
+  const accepted_types = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'image/tiff',
+    'image/avif',
+    'image/heic',
+    'image/heif',
+    'image/svg+xml'
+  ]
+  const extension_by_type = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'image/bmp': 'bmp',
+    'image/tiff': 'tiff',
+    'image/avif': 'avif',
+    'image/heic': 'heic',
+    'image/heif': 'heif',
+    'image/svg+xml': 'svg'
+  }
+  const accepted_extensions = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.bmp',
+    '.tif',
+    '.tiff',
+    '.avif',
+    '.heic',
+    '.heif',
+    '.svg'
+  ]
+  /**
+   * @param {File} file
+   * @returns {boolean}
+   */
+  const is_supported_image_file = file => {
+    const file_name = file.name.toLowerCase()
+    return (
+      accepted_types.some(type => file.type === type) ||
+      accepted_extensions.some(extension => file_name.endsWith(extension))
+    )
+  }
+  /**
+   * @param {File[]} files
+   * @returns {Promise<boolean>}
+   */
+  const queue_supported_files = async files => {
+    const image_files = files.filter(is_supported_image_file)
+    if (image_files.length === 0) return false
+    await add_to_queue(image_files)
+    return true
+  }
+  /**
+   * Convert clipboard items into supported files and queue them.
+   * Uses the same accepted MIME list as the file picker flow.
+   * @param {ClipboardItem[]} clipboard_items
+   * @returns {Promise<boolean>}
+   */
+  const queue_supported_clipboard_items = async clipboard_items => {
+    const files = (
+      await Promise.all(
+        clipboard_items.map(async item => {
+          const image_type = item.types.find(type =>
+            accepted_types.includes(type)
+          )
+          if (!image_type) return null
+          const extension = extension_by_type[image_type]
+          if (!extension) return null
+          const blob = await item.getType(image_type)
+          return new File([blob], `clipboard-${Date.now()}.${extension}`, {
+            type: image_type
+          })
+        })
+      )
+    ).filter(file => file !== null)
+    return queue_supported_files(files)
   }
 
   const v_vectorizer = {
@@ -983,6 +1058,8 @@ export const use = () => {
     is_processing: computed(() => is_processing.value),
     completed_posters: computed(() => completed_posters.value),
     add_to_queue,
+    queue_supported_files,
+    queue_supported_clipboard_items,
     init_processing_queue,
     cleanup_queue_item
   }

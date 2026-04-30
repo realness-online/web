@@ -38,6 +38,10 @@
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id } from '@/utils/itemid'
   import { POSTER_MEET_TOGGLE_ONLY } from '@/use/poster-dom-reference'
+  import {
+    LONG_PRESS_TOGGLE_MS,
+    vibrate_long_press
+  } from '@/use/poster-svg-activate-pointer'
   const props = defineProps({
     itemid: {
       type: String,
@@ -54,28 +58,18 @@
       type: Boolean,
       default: undefined
     },
-    /** When set, overrides mosaic preference for cutout visibility. */
     show_cutout_layers: {
       type: Boolean,
       default: undefined
     },
-    /**
-     * When true with `show_cutout_layers`, keep cutout `<use>` nodes mounted even when the
-     * intersection observer reports off-screen (e.g. profile hero - avoids re-render cost).
-     */
     pin: {
       type: Boolean,
       default: false
     },
-    /**
-     * When true (default), touch must press and hold to toggle meet / emit click.
-     * Set false when the parent needs an immediate tap on touch (e.g. profile avatar).
-     */
     touch_uses_long_press: {
       type: Boolean,
       default: true
     },
-    /** Poster is shown as a profile / list avatar; SMIL must stay off regardless of animate preference. */
     as_avatar: {
       type: Boolean,
       default: false
@@ -115,20 +109,28 @@
     () => (intersecting.value || props.pin) && cutouts_enabled.value
   )
 
-  const HOLD_MS = 250
-  /** Long-press on touch toggles meet + menu; quick taps do not (avoids swipe confusion). */
-  const TOUCH_TOGGLE_HOLD_MS = 450
-  const MOVE_CANCEL_TOUCH_TOGGLE_PX = 8
+  /** Cancel meet toggle / click if touch moved more than this before pointerup (scroll guard). */
+  const MOVE_CANCEL_TOUCH_SLIDE_PX = 8
 
   const held_layer = ref(null)
-  let hold_timer = null
-  let was_hold = false
   let cancelled = false
-
-  let touch_toggle_timer = null
-  let touch_toggle_fired = false
   let touch_start_x = 0
   let touch_start_y = 0
+  /** `0` = not timing a touch long-press for slice toggle */
+  let touch_down_at = 0
+  let long_press_timer = null
+  /** Monotonic id so a cleared long-press timeout never toggles */
+  let long_press_sid = 0
+  /** Timer already fired toggle for this finger-down */
+  let long_press_fired = false
+
+  const clear_long_press_timer = () => {
+    // eslint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
+    if (long_press_timer != null) {
+      clearTimeout(long_press_timer)
+      long_press_timer = null
+    }
+  }
 
   /** @param {PointerEvent} event */
   const is_touch_pointer = event => event.pointerType === 'touch'
@@ -143,116 +145,104 @@
 
   /** @param {PointerEvent} event */
   const handle_pointerdown = event => {
-    was_hold = false
     cancelled = false
-    if (hold_timer) clearTimeout(hold_timer)
-    hold_timer = null
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    touch_toggle_fired = false
-
-    const layer = layer_from_target(event.target)
-
+    // Touch + scroll guard: do not set held_layer on down (swipe / pan would flash
+    // data-held-layer). Mouse/stylus and avatar taps still get immediate feedback.
     if (is_touch_pointer(event) && props.touch_uses_long_press) {
+      clear_long_press_timer()
+      long_press_sid++
+      const token = long_press_sid
+      long_press_fired = false
+      held_layer.value = null
       touch_start_x = event.clientX
       touch_start_y = event.clientY
-      hold_timer = setTimeout(() => {
-        hold_timer = null
-        was_hold = true
-        held_layer.value = layer
-      }, HOLD_MS)
-      touch_toggle_timer = setTimeout(() => {
-        touch_toggle_timer = null
-        if (cancelled) return
-        touch_toggle_fired = true
-        held_layer.value = null
-        was_hold = false
+      touch_down_at = Date.now()
+      long_press_timer = setTimeout(() => {
+        long_press_timer = null
+        if (token !== long_press_sid || cancelled) return
+        long_press_fired = true
         handle_click()
-      }, TOUCH_TOGGLE_HOLD_MS)
-      return
+        vibrate_long_press()
+      }, LONG_PRESS_TOGGLE_MS)
+    } else {
+      clear_long_press_timer()
+      held_layer.value = layer_from_target(event.target)
+      touch_down_at = 0
     }
-
-    hold_timer = setTimeout(() => {
-      hold_timer = null
-      was_hold = true
-      held_layer.value = layer
-    }, HOLD_MS)
   }
 
   /** @param {PointerEvent} event */
   const handle_pointermove = event => {
     if (!is_touch_pointer(event) || !props.touch_uses_long_press) return
-    if (!touch_toggle_timer && !hold_timer) return
+    if (long_press_fired) return
     const dx = Math.abs(event.clientX - touch_start_x)
     const dy = Math.abs(event.clientY - touch_start_y)
-    if (dx <= MOVE_CANCEL_TOUCH_TOGGLE_PX && dy <= MOVE_CANCEL_TOUCH_TOGGLE_PX)
+    if (dx <= MOVE_CANCEL_TOUCH_SLIDE_PX && dy <= MOVE_CANCEL_TOUCH_SLIDE_PX)
       return
     cancelled = true
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    if (hold_timer) {
-      clearTimeout(hold_timer)
-      hold_timer = null
-    }
     held_layer.value = null
-    was_hold = false
+    touch_down_at = 0
+    clear_long_press_timer()
+    long_press_sid++
   }
 
   /** @param {PointerEvent} event */
   const handle_pointerup = event => {
-    if (hold_timer) {
-      clearTimeout(hold_timer)
-      hold_timer = null
-    }
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    if (cancelled) return
-
     if (is_touch_pointer(event) && props.touch_uses_long_press) {
+      clear_long_press_timer()
+      const down_at = touch_down_at
+      touch_down_at = 0
+      held_layer.value = null
+
+      if (cancelled) {
+        long_press_fired = false
+        long_press_sid++
+        return
+      }
+
       if (was_pan_gesture?.value) {
         was_pan_gesture.value = false
-        held_layer.value = null
-        was_hold = false
+        long_press_fired = false
+        long_press_sid++
         return
       }
-      if (touch_toggle_fired) {
-        touch_toggle_fired = false
-        held_layer.value = null
-        was_hold = false
-        return
+
+      if (!long_press_fired && down_at > 0) {
+        const elapsed = Date.now() - down_at
+        if (elapsed >= LONG_PRESS_TOGGLE_MS) {
+          handle_click()
+          vibrate_long_press()
+        }
       }
-      held_layer.value = null
-      was_hold = false
+      long_press_fired = false
+      long_press_sid++
       return
     }
 
-    if (was_hold) {
-      held_layer.value = null
-      was_hold = false
+    clear_long_press_timer()
+
+    if (cancelled) {
+      touch_down_at = 0
       return
     }
+
     if (was_pan_gesture?.value) {
       was_pan_gesture.value = false
+      held_layer.value = null
       return
     }
+
+    held_layer.value = null
     handle_click()
   }
 
   const handle_pointerleave = () => {
-    if (hold_timer) clearTimeout(hold_timer)
-    hold_timer = null
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
     cancelled = true
     held_layer.value = null
+    touch_down_at = 0
+    clear_long_press_timer()
+    long_press_fired = false
+    long_press_sid++
   }
 
   const handle_click = () => {
@@ -260,7 +250,6 @@
     emit('click', true)
   }
 
-  /** DOM-reference duplicate row: toggle meet/slice only (no emit to the hero figure). */
   const on_meet_toggle_only_doc = e => {
     if (e.detail?.itemid !== props.itemid) return
     use_meet.value = !use_meet.value
@@ -270,7 +259,6 @@
 
   const trigger = ref(null)
   const visibility = useDocumentVisibility()
-  /** In-app `animate` preference only (default off). Not OS reduced-motion; users opt in explicitly. */
   const animate = computed(
     () =>
       animate_pref.value === true &&
@@ -307,6 +295,7 @@
         emit('in_view', isIntersecting)
         if (isIntersecting) show()
       })
+      if (props.as_avatar && !vector.value) await show()
       await tick()
       if (props.pin && !vector.value) await show()
     }
@@ -461,6 +450,7 @@
   })
 
   unmounted(() => {
+    clear_long_press_timer()
     document.removeEventListener(
       POSTER_MEET_TOGGLE_ONLY,
       on_meet_toggle_only_doc
@@ -570,6 +560,10 @@
     overflow: hidden;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    /* Safari: long-press image magnifier / callout steals pointercancel and fights slice toggle */
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
     contain: layout;
     transition:
       transform 0.4s ease-in-out,

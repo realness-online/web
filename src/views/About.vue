@@ -506,7 +506,9 @@
               margin-left: base-line
 
       & > ol
+        // Progressive enhancement: grid-lanes when it ships; ignored until then, grid wins.
         display: grid
+        display: grid-lanes
         grid-gap: base-line
         grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
         @media (min-width: pad-begins)

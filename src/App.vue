@@ -84,6 +84,8 @@
     current_processing,
     open_camera,
     select_photo,
+    queue_supported_files,
+    queue_supported_clipboard_items,
     init_processing_queue,
     queue_items
   } = use_vectorize()
@@ -285,6 +287,94 @@
       ?.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
+  /** @param {Event} event */
+  const handle_add_change = event => {
+    const input = /** @type {HTMLInputElement | null} */ (event.target)
+    void paste_photo()
+    select_photo()
+    if (input) input.checked = false
+  }
+  /** @param {Event} event */
+  const handle_camera_change = event => {
+    const input = /** @type {HTMLInputElement | null} */ (event.target)
+    open_camera()
+    if (input) input.checked = false
+  }
+  /**
+   * Pull image blobs from clipboard on explicit user gesture.
+   */
+  const paste_photo = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.read) return
+    try {
+      const clipboard_items = await navigator.clipboard.read()
+      await queue_supported_clipboard_items(clipboard_items)
+    } catch (error) {
+      console.warn('Clipboard read failed:', error)
+    }
+  }
+  /**
+   * @param {DataTransferItem} item
+   * @returns {Promise<string>}
+   */
+  const get_clipboard_item_string = item =>
+    new Promise(resolve => {
+      item.getAsString(value => resolve(value || ''))
+    })
+  /**
+   * @param {string} data_url
+   * @returns {Promise<File|null>}
+   */
+  const data_url_to_file = async data_url => {
+    if (!data_url.startsWith('data:image/')) return null
+    try {
+      const response = await fetch(data_url)
+      const blob = await response.blob()
+      const mime = blob.type || 'image/png'
+      const extension = mime.split('/')[1] || 'png'
+      return new File([blob], `clipboard-${Date.now()}.${extension}`, {
+        type: mime
+      })
+    } catch {
+      return null
+    }
+  }
+  /**
+   * @param {ClipboardEvent} event
+   * @returns {Promise<File[]>}
+   */
+  const get_clipboard_files = async event => {
+    const files = Array.from(event.clipboardData?.files || [])
+    if (files.length > 0) return files
+    const items = Array.from(event.clipboardData?.items || [])
+    const image_files = items
+      .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
+      .map(item => item.getAsFile())
+      .filter(file => file instanceof File)
+    if (image_files.length > 0) return image_files
+
+    const html_item = items.find(
+      item => item.kind === 'string' && item.type === 'text/html'
+    )
+    if (!html_item) return []
+    const html = await get_clipboard_item_string(html_item)
+    if (!html) return []
+
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const image_sources = Array.from(doc.querySelectorAll('img'))
+      .map(img => img.getAttribute('src') || '')
+      .filter(src => src.startsWith('data:image/'))
+    if (image_sources.length === 0) return []
+
+    const converted = await Promise.all(image_sources.map(data_url_to_file))
+    return converted.filter(file => file instanceof File)
+  }
+  /** @param {ClipboardEvent} event */
+  const paste_image = async event => {
+    const files = await get_clipboard_files(event)
+    if (files.length === 0) return
+    const queued = await queue_supported_files(files)
+    if (queued) event.preventDefault()
+  }
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
       sessionStorage.about = true
@@ -306,6 +396,7 @@
 
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
+    window.addEventListener('paste', paste_image)
   })
   dismount(() => {
     viewport_mql.value?.removeEventListener(
@@ -314,6 +405,7 @@
     )
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
+    window.removeEventListener('paste', paste_image)
   })
 </script>
 
@@ -330,20 +422,26 @@
       aria-label="App actions"
       :data-footer-visible="footer_visible ? 'true' : 'false'">
       <footer>
-        <a
-          tabindex="0"
-          aria-label="Add poster"
-          @click="select_photo"
-          @keydown.enter="select_photo">
-          <icon name="add" />
-        </a>
-        <a
-          tabindex="0"
-          aria-label="Open camera"
-          @click="open_camera"
-          @keydown.enter="open_camera">
-          <icon name="camera" />
-        </a>
+        <label class="menu-action" aria-label="Add poster">
+          <input
+            type="checkbox"
+            switch
+            aria-label="Add poster"
+            @change="handle_add_change" />
+          <span aria-hidden="true">
+            <icon name="add" />
+          </span>
+        </label>
+        <label class="menu-action" aria-label="Open camera">
+          <input
+            type="checkbox"
+            switch
+            aria-label="Open camera"
+            @change="handle_camera_change" />
+          <span aria-hidden="true">
+            <icon name="camera" />
+          </span>
+        </label>
         <as-dialog-preferences ref="preferences_dialog" />
       </footer>
       <label v-if="footer_toggle_shown">
@@ -366,7 +464,7 @@
       class="poster picker"
       v-vectorizer
       type="file"
-      accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/svg+xml" />
+      accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/heic,image/heif,.heic,.heif,image/svg+xml" />
   </main>
 </template>
 
@@ -439,6 +537,11 @@
           margin: 0;
           cursor: pointer;
           z-index: 1;
+          &:focus,
+          &:focus-visible {
+            outline: none;
+            box-shadow: none;
+          }
         }
         & > span {
           display: block;
@@ -479,30 +582,71 @@
           pointer-events: auto;
         }
         & a[aria-label='Settings'],
-        & a[aria-label='Add poster'],
-        & a[aria-label='Open camera'],
+        & button[aria-label='Settings'],
+        & label.menu-action,
         & label[for='wat'],
         & a[aria-label='Go to thoughts'] {
           position: static;
           color: var(--blue);
           cursor: pointer;
+          border: none;
+          background: transparent;
+          padding: 0;
+          margin: 0;
+          box-shadow: none;
+          transform: none;
+          appearance: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          &:active {
+            transform: none;
+          }
           svg {
             fill: var(--blue);
             stroke: var(--blue);
           }
-          &:focus {
-            outline: 2px solid var(--red);
+          &:focus,
+          &:focus-visible {
+            outline: none;
+            box-shadow: none;
           }
         }
-        & a[aria-label='Settings'] svg {
+        & label.menu-action {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          & > input {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+            &:focus,
+            &:focus-visible {
+              outline: none;
+              box-shadow: none;
+            }
+          }
+          & > span {
+            pointer-events: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+        & a[aria-label='Settings'] svg,
+        & button[aria-label='Settings'] svg {
           width: base-line * 1.35;
           height: base-line * 1.35;
         }
-        & a[aria-label='Add poster'] svg {
+        & label.menu-action[aria-label='Add poster'] svg {
           width: base-line * 1.35;
           height: base-line * 1.35;
         }
-        & a[aria-label='Open camera'] svg {
+        & label.menu-action[aria-label='Open camera'] svg {
           width: base-line * 2;
           height: base-line * 2;
         }

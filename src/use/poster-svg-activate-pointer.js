@@ -1,14 +1,27 @@
 import { ref, toValue } from 'vue'
 
-const HOLD_MS = 250
-const TOUCH_TOGGLE_HOLD_MS = 450
-const MOVE_CANCEL_TOUCH_TOGGLE_PX = 8
+/** Match `as-svg.vue` scroll guard before pointerup. */
+const MOVE_CANCEL_TOUCH_SLIDE_PX = 8
+
+/** Touch + `touch_uses_long_press`: require at least this hold before `on_activate` / slice toggle. */
+export const LONG_PRESS_TOGGLE_MS = 500
+
+/** Haptic length (ms) for long-press feedback; not all browsers support Vibration API. */
+const VIBRATE_LONG_PRESS_MS = 12
+
+export const vibrate_long_press = () => {
+  try {
+    // eslint-disable-next-line compat/compat -- optional: vibrate missing on Safari; try/catch no-ops
+    navigator.vibrate?.(VIBRATE_LONG_PRESS_MS)
+  } catch {
+    /* no-op: vibrate unsupported or blocked */
+  }
+}
 
 /**
- * Same pointer → activate sequence as `as-svg` (hold timers, touch long-press, pan skip),
- * but calls `on_activate` instead of toggling local `use_meet` + emit.
- * Used by `as-figure` when rendering a same-document `<use>` duplicate so pointer
- * behavior matches `as-svg`.
+ * Pointer -> activate for same-document `<use>` poster duplicates: `on_activate` runs when the
+ * touch long-press timer fires (see `LONG_PRESS_TOGGLE_MS`), or on non-touch pointerup, unless
+ * touch slid enough to count as scroll (when `touch_uses_long_press` is true) or pan.
  *
  * @param {object} opts
  * @param {() => void} opts.on_activate
@@ -21,117 +34,106 @@ export const use_poster_svg_activate_pointer = ({
   const held_layer = ref(null)
   /** Duplicate `<use>` rows do not register for delegated pan; keep false like a non-pan pointerup. */
   const was_pan_gesture = ref(false)
-  let hold_timer = null
-  let was_hold = false
   let cancelled = false
-  let touch_toggle_timer = null
-  let touch_toggle_fired = false
   let touch_start_x = 0
   let touch_start_y = 0
+  /** `0` = no active touch-long-press timing */
+  let touch_down_at = 0
+  let long_press_timer = null
+  /** Monotonic id so a cleared long-press timeout never runs `on_activate` */
+  let long_press_sid = 0
+  /** Timer already fired `on_activate` for this finger-down */
+  let long_press_fired = false
 
   const long_press_enabled = () => toValue(touch_uses_long_press)
+
+  const clear_long_press_timer = () => {
+    // eslint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
+    if (long_press_timer != null) {
+      clearTimeout(long_press_timer)
+      long_press_timer = null
+    }
+  }
 
   /** @param {PointerEvent} event */
   const is_touch_pointer = event => event.pointerType === 'touch'
 
-  const layer_from_target = _el => null
-
   /** @param {PointerEvent} event */
   const handle_pointerdown = event => {
-    was_hold = false
     cancelled = false
-    if (hold_timer) clearTimeout(hold_timer)
-    hold_timer = null
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    touch_toggle_fired = false
-
-    const layer = layer_from_target(event.target)
-
     if (is_touch_pointer(event) && long_press_enabled()) {
+      clear_long_press_timer()
+      long_press_sid++
+      const token = long_press_sid
+      long_press_fired = false
       touch_start_x = event.clientX
       touch_start_y = event.clientY
-      hold_timer = setTimeout(() => {
-        hold_timer = null
-        was_hold = true
-        held_layer.value = layer
-      }, HOLD_MS)
-      touch_toggle_timer = setTimeout(() => {
-        touch_toggle_timer = null
-        if (cancelled) return
-        touch_toggle_fired = true
-        held_layer.value = null
-        was_hold = false
+      touch_down_at = Date.now()
+      long_press_timer = setTimeout(() => {
+        long_press_timer = null
+        if (token !== long_press_sid || cancelled) return
+        long_press_fired = true
         on_activate()
-      }, TOUCH_TOGGLE_HOLD_MS)
-      return
+        vibrate_long_press()
+      }, LONG_PRESS_TOGGLE_MS)
+    } else {
+      clear_long_press_timer()
+      touch_down_at = 0
     }
-
-    hold_timer = setTimeout(() => {
-      hold_timer = null
-      was_hold = true
-      held_layer.value = layer
-    }, HOLD_MS)
   }
 
   /** @param {PointerEvent} event */
   const handle_pointermove = event => {
     if (!is_touch_pointer(event) || !long_press_enabled()) return
-    if (!touch_toggle_timer && !hold_timer) return
+    if (long_press_fired) return
     const dx = Math.abs(event.clientX - touch_start_x)
     const dy = Math.abs(event.clientY - touch_start_y)
-    if (dx <= MOVE_CANCEL_TOUCH_TOGGLE_PX && dy <= MOVE_CANCEL_TOUCH_TOGGLE_PX)
+    if (dx <= MOVE_CANCEL_TOUCH_SLIDE_PX && dy <= MOVE_CANCEL_TOUCH_SLIDE_PX)
       return
     cancelled = true
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    if (hold_timer) {
-      clearTimeout(hold_timer)
-      hold_timer = null
-    }
     held_layer.value = null
-    was_hold = false
+    touch_down_at = 0
+    clear_long_press_timer()
+    long_press_sid++
   }
 
   /** @param {PointerEvent} event */
   const handle_pointerup = event => {
-    if (hold_timer) {
-      clearTimeout(hold_timer)
-      hold_timer = null
-    }
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
-    if (cancelled) return
-
     if (is_touch_pointer(event) && long_press_enabled()) {
+      clear_long_press_timer()
+      const down_at = touch_down_at
+      touch_down_at = 0
+      held_layer.value = null
+
+      if (cancelled) {
+        long_press_fired = false
+        long_press_sid++
+        return
+      }
+
       if (was_pan_gesture?.value) {
         was_pan_gesture.value = false
-        held_layer.value = null
-        was_hold = false
+        long_press_fired = false
+        long_press_sid++
         return
       }
-      if (touch_toggle_fired) {
-        touch_toggle_fired = false
-        held_layer.value = null
-        was_hold = false
-        return
+
+      if (!long_press_fired && down_at > 0) {
+        const elapsed = Date.now() - down_at
+        if (elapsed >= LONG_PRESS_TOGGLE_MS) {
+          on_activate()
+          vibrate_long_press()
+        }
       }
-      held_layer.value = null
-      was_hold = false
+      long_press_fired = false
+      long_press_sid++
       return
     }
 
-    if (was_hold) {
-      held_layer.value = null
-      was_hold = false
-      return
-    }
+    clear_long_press_timer()
+
+    if (cancelled) return
+
     if (was_pan_gesture?.value) {
       was_pan_gesture.value = false
       return
@@ -140,14 +142,12 @@ export const use_poster_svg_activate_pointer = ({
   }
 
   const handle_pointerleave = () => {
-    if (hold_timer) clearTimeout(hold_timer)
-    hold_timer = null
-    if (touch_toggle_timer) {
-      clearTimeout(touch_toggle_timer)
-      touch_toggle_timer = null
-    }
     cancelled = true
     held_layer.value = null
+    touch_down_at = 0
+    clear_long_press_timer()
+    long_press_fired = false
+    long_press_sid++
   }
 
   return {
