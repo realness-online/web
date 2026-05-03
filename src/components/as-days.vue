@@ -1,9 +1,8 @@
 <script setup>
   import icon from '@/components/icon'
   import { recent_date_first } from '@/utils/sorting'
-  import { as_author, as_created_at } from '@/utils/itemid'
+  import { as_author, as_created_at, feed_slot_itemid } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
-  import { slot_key } from '@/use/statements'
   import { thoughts_for_author, thought_feed_slots } from '@/utils/thoughts'
   import { ref, computed, watch, onMounted as mounted } from 'vue'
 
@@ -265,7 +264,7 @@
       <article @focusin="$emit('focusin', $event)">
         <section
           v-for="({ item, date }, index) in flattened_items"
-          :key="slot_key(item)">
+          :key="feed_slot_itemid(item)">
           <header v-if="!is_today(date)">
             <h4>{{ as_day(date) }}</h4>
           </header>

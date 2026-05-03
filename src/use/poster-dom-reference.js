@@ -8,6 +8,9 @@ import { as_query_id } from '@/utils/itemid'
  */
 export const POSTER_MEET_TOGGLE_ONLY = 'poster-toggle-meet-only'
 
+/** Fired when a full `as-svg` root mounts so other `as-figure` rows can switch to `<use href="#…">`. */
+export const POSTER_CANONICAL_MOUNTED = 'poster-canonical-mounted'
+
 /**
  * Fragment id (no `#`) for the poster root SVG (`as-svg` sets `:id="query()"`).
  * @param {Id} itemid

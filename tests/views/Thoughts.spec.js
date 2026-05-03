@@ -65,7 +65,6 @@ vi.mock('@/use/poster', () => ({
     poster_shown: vi.fn(),
     posters: mock_posters
   }),
-  slot_key: vi.fn(id => id),
   is_vector_id: vi.fn().mockReturnValue(true),
   is_svg_valid: vi.fn().mockReturnValue(true),
   is_url_query: vi.fn().mockReturnValue(true),
@@ -87,8 +86,7 @@ vi.mock('@/use/statements', () => ({
     statement_shown: mock_statement_shown,
     for_person: mock_statements_for_person,
     update_statement: vi.fn()
-  }),
-  slot_key: vi.fn(id => id)
+  })
 }))
 
 vi.mock('@/utils/preference', () => ({

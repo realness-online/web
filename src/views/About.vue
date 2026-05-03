@@ -1,5 +1,4 @@
 <script setup>
-  import { onMounted as mounted, inject, computed } from 'vue'
   import AsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
@@ -7,7 +6,7 @@
   import LogoAsLink from '@/components/logo-as-link'
   import { as_author } from '@/utils/itemid'
   import { use_posters } from '@/use/poster'
-  sessionStorage.about = true
+  import { onMounted as mounted, inject, computed } from 'vue'
   const { posters, for_person: posters_for_admin } = use_posters()
   const admin_id = import.meta.env.VITE_ADMIN_ID
   const admin_posters = computed(() =>
@@ -399,22 +398,21 @@
             flex: 1
             min-width: 0
             align-self: stretch
-            min-height: 0
+            // min-height: 0
             height: auto
-            display: flex
+            // display: flex
             flex-direction: column
           &:has(svg[aria-orientation='horizontal'])
             @media (min-width: pad-begins)
               align-self: stretch
           & > svg
+            height 100%
             transition: transform 2s
             transform-style: preserve-3d
-            // transform: rotateY( 180deg )
             display: block
             border-radius: base-line
             width: 100%
             flex: 1
-            min-height: 0
     & > menu
       border-radius: base-line
       display: flex

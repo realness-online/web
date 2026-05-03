@@ -6,7 +6,6 @@ import About from '@/views/About.vue'
 // Mock sessionStorage
 Object.defineProperty(window, 'sessionStorage', {
   value: {
-    about: false,
     setItem: vi.fn(),
     getItem: vi.fn(),
     removeItem: vi.fn()
@@ -137,10 +136,6 @@ describe('About', () => {
   })
 
   describe('Functionality', () => {
-    it('sets sessionStorage.about to true on mount', () => {
-      expect(window.sessionStorage.about).toBe(true)
-    })
-
     it('calls for_person with admin ID on mount', async () => {
       await wrapper.vm.$nextTick()
       await new Promise(resolve => setTimeout(resolve, 10))

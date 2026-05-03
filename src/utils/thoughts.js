@@ -4,7 +4,7 @@
 /** @typedef {import('@/types').Statements} Statements */
 /** @typedef {import('@/types').Thought} Thought */
 
-import { as_author, as_created_at } from '@/utils/itemid'
+import { as_author, as_created_at, as_type } from '@/utils/itemid'
 import { JS_TIME } from '@/utils/numbers'
 
 /**
@@ -15,12 +15,11 @@ import { JS_TIME } from '@/utils/numbers'
  * @returns {Thought[]}
  */
 export const thoughts_for_author = items => {
-  const rows = items.filter(
-    i =>
-      i &&
-      typeof i === 'object' &&
-      (i.type === 'posters' || i.type === 'thoughts')
-  )
+  const rows = items.filter(i => {
+    if (!i || typeof i !== 'object' || !i.id) return false
+    const typ = as_type(/** @type {import('@/types').Id} */ (i.id))
+    return typ === 'posters' || typ === 'thoughts'
+  })
   rows.sort((a, b) => (as_created_at(a.id) ?? 0) - (as_created_at(b.id) ?? 0))
 
   /** @type {Thought[]} */
@@ -74,8 +73,10 @@ export const thoughts_for_author = items => {
  * @param {Item} item
  */
 const push_thought_item = (cur, item) => {
-  if (item.type === 'posters') cur.posters.push(item)
-  else cur.statements.push(/** @type {Statement} */ (item))
+  const typ = as_type(/** @type {import('@/types').Id} */ (item.id))
+  if (typ === 'posters') cur.posters.push(item)
+  else if (typ === 'thoughts')
+    cur.statements.push(/** @type {Statement} */ (item))
 }
 
 /**

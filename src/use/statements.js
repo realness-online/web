@@ -2,7 +2,13 @@
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Statements} Statements */
 
-import { as_created_at, list, as_author } from '@/utils/itemid'
+import {
+  as_created_at,
+  list,
+  as_author,
+  as_type,
+  feed_slot_itemid
+} from '@/utils/itemid'
 import { hydrate } from '@/utils/item'
 import { as_directory } from '@/persistence/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
@@ -243,10 +249,7 @@ export function thoughts_sort(first, second) {
   return (as_created_at(a?.id) ?? 0) - (as_created_at(b?.id) ?? 0)
 }
 
-export const slot_key = item => {
-  if (Array.isArray(item)) return item[0].id
-  return item.id
-}
+export { feed_slot_itemid as slot_key }
 
 /**
  * Pairs posters with statement-thoughts from the same author when any statement
@@ -258,6 +261,89 @@ export const slot_key = item => {
  *   poster_to_thought: Map<string, import('@/types').Statements>
  * }}
  */
+/**
+ * Statement slots in `pool` that share a thirteen-minute train with this poster
+ * (touch poster or chain to a slot that does).
+ *
+ * @param {import('@/types').Item} poster
+ * @param {import('@/types').Statements[]} pool
+ * @returns {import('@/types').Statements[]}
+ */
+const connected_statement_slots = (poster, pool) => {
+  const poster_ts = as_created_at(poster.id)
+  // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+  if (poster_ts == null) return []
+
+  /** @param {import('@/types').Statements} slot */
+  const slot_touches_poster = slot => {
+    for (const stmt of slot) {
+      const t = as_created_at(stmt.id)
+      // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+      if (t == null) continue
+      if (Math.abs(poster_ts - t) <= JS_TIME.THIRTEEN_MINUTES) return true
+    }
+    return false
+  }
+
+  /** @param {import('@/types').Statements} a */
+  /** @param {import('@/types').Statements} b */
+  const slots_adjacent = (a, b) => {
+    for (const sa of a) {
+      const ta = as_created_at(sa.id)
+      // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+      if (ta == null) continue
+      for (const sb of b) {
+        const tb = as_created_at(sb.id)
+        // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+        if (tb == null) continue
+        if (Math.abs(ta - tb) <= JS_TIME.THIRTEEN_MINUTES) return true
+      }
+    }
+    return false
+  }
+
+  /** @type {Set<import('@/types').Statements>} */
+  const connected = new Set()
+  /** @type {import('@/types').Statements[]} */
+  const queue = []
+  for (const th of pool)
+    if (slot_touches_poster(th)) {
+      connected.add(th)
+      queue.push(th)
+    }
+  while (queue.length) {
+    const cur = /** @type {import('@/types').Statements} */ (queue.pop())
+    for (const th of pool) {
+      if (connected.has(th)) continue
+      if (slots_adjacent(cur, th)) {
+        connected.add(th)
+        queue.push(th)
+      }
+    }
+  }
+  return [...connected]
+}
+
+/**
+ * @param {import('@/types').Statements[]} slots
+ * @returns {import('@/types').Statements}
+ */
+const merge_slots_chronological = slots => {
+  /** @type {import('@/types').Statement[]} */
+  const all = []
+  for (const s of slots) all.push(...s)
+  all.sort((a, b) => (as_created_at(a.id) ?? 0) - (as_created_at(b.id) ?? 0))
+  const seen = new Set()
+  /** @type {import('@/types').Statements} */
+  const out = []
+  for (const stmt of all) {
+    if (!stmt?.id || seen.has(stmt.id)) continue
+    seen.add(stmt.id)
+    out.push(stmt)
+  }
+  return out
+}
+
 export function poster_thought_overlay_pairs(day_items) {
   const thoughts = day_items.filter(i => Array.isArray(i))
   const items = day_items.filter(
@@ -267,9 +353,13 @@ export function poster_thought_overlay_pairs(day_items) {
      */
     i => !Array.isArray(i)
   )
-  const posters = items.filter(
-    i => i && typeof i === 'object' && i.type === 'posters'
-  )
+  const posters = items.filter(i => {
+    if (!i || typeof i !== 'object' || !i.id) return false
+    return (
+      i.type === 'posters' ||
+      as_type(/** @type {import('@/types').Id} */ (i.id)) === 'posters'
+    )
+  })
   /** @type {Array<{ poster: import('@/types').Item, thought: import('@/types').Statements, dist: number }>} */
   const candidates = []
   for (const poster of posters) {
@@ -286,7 +376,7 @@ export function poster_thought_overlay_pairs(day_items) {
         const d = Math.abs(poster_ts - t)
         if (d < min_dist) min_dist = d
       }
-      if (min_dist < JS_TIME.THIRTEEN_MINUTES)
+      if (min_dist <= JS_TIME.THIRTEEN_MINUTES)
         candidates.push({ poster, thought, dist: min_dist })
     }
   }
@@ -296,10 +386,13 @@ export function poster_thought_overlay_pairs(day_items) {
   const used_posters = new Set()
   for (const c of candidates) {
     if (used_posters.has(c.poster.id)) continue
-    const tk = slot_key(c.thought)
-    merged_thought_keys.add(tk)
+    const component = connected_statement_slots(c.poster, thoughts)
+    if (!component.length) continue
+    const merged = merge_slots_chronological(component)
+    if (!merged.length) continue
+    for (const th of component) merged_thought_keys.add(feed_slot_itemid(th))
     used_posters.add(c.poster.id)
-    poster_to_thought.set(c.poster.id, c.thought)
+    poster_to_thought.set(c.poster.id, merged)
   }
   return { merged_thought_keys, poster_to_thought }
 }
@@ -314,7 +407,7 @@ function is_train_of_thought(thot, statements) {
   if (next && nearest) {
     const nearest_ts = as_created_at(nearest.id) ?? 0
     const next_ts = as_created_at(next.id) ?? 0
-    return next_ts - nearest_ts < JS_TIME.THIRTEEN_MINUTES
+    return next_ts - nearest_ts <= JS_TIME.THIRTEEN_MINUTES
   }
   return false
 }

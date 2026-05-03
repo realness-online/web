@@ -37,7 +37,10 @@
     slice_alignment
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id } from '@/utils/itemid'
-  import { POSTER_MEET_TOGGLE_ONLY } from '@/use/poster-dom-reference'
+  import {
+    POSTER_MEET_TOGGLE_ONLY,
+    POSTER_CANONICAL_MOUNTED
+  } from '@/use/poster-dom-reference'
   import {
     LONG_PRESS_TOGGLE_MS,
     vibrate_long_press
@@ -447,6 +450,18 @@
     if (!drama_front_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
     return { opacity: OPACITY_FULL, visibility: 'visible' }
+  })
+
+  mounted(() => {
+    tick().then(() => {
+      if (typeof document === 'undefined') return
+      document.dispatchEvent(
+        new CustomEvent(POSTER_CANONICAL_MOUNTED, {
+          bubbles: true,
+          detail: { dom_id: query() }
+        })
+      )
+    })
   })
 
   unmounted(() => {

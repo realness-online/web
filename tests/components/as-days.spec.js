@@ -2,26 +2,26 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
 
-vi.mock('@/use/statements', () => ({
-  slot_key: item => (Array.isArray(item) ? item[0].id : item.id)
-}))
-
 vi.mock('@/utils/sorting', () => ({
   recent_date_first: vi.fn()
 }))
 
-vi.mock('@/utils/itemid', () => ({
-  as_author: vi.fn(id => {
-    const m = String(id).match(/^(\/\+[^/]+)/)
-    return m ? m[1] : '/+16282281824'
-  }),
-  as_created_at: vi.fn(id => {
-    const parts = String(id).split('/')
-    const last = parts[parts.length - 1]
-    const n = parseInt(last, 10)
-    return Number.isFinite(n) ? n : null
-  })
-}))
+vi.mock('@/utils/itemid', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    as_author: vi.fn(id => {
+      const m = String(id).match(/^(\/\+[^/]+)/)
+      return m ? m[1] : '/+16282281824'
+    }),
+    as_created_at: vi.fn(id => {
+      const parts = String(id).split('/')
+      const last = parts[parts.length - 1]
+      const n = parseInt(last, 10)
+      return Number.isFinite(n) ? n : null
+    })
+  }
+})
 
 vi.mock('@/utils/date', () => ({
   id_as_day: vi.fn(() => '2024-01-15'),

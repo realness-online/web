@@ -11,7 +11,8 @@ import {
 import { get_item } from '@/utils/item'
 import {
   build_local_directory,
-  clear_author_dirs
+  clear_author_dirs,
+  as_directory_id
 } from '@/persistence/Directory'
 import {
   Offline,
@@ -49,27 +50,98 @@ import { DOES_NOT_EXIST } from '@/utils/sync-file'
 export { DOES_NOT_EXIST }
 
 /**
+ * @returns {Id | null}
+ */
+const admin_itemid_from_env = () => {
+  const raw = import.meta.env.VITE_ADMIN_ID
+  if (!raw) return null
+  return /** @type {Id} */ (`/${String(raw).replace(/^\/?/, '')}`)
+}
+
+/**
+ * Signed-out users only see the env admin; `as_directory` skips the network when
+ * `${id}/posters/` is cached in idb. Align profile HTML with `sync:index` and drop
+ * the posters directory cache so the next feed load lists storage again.
+ * @param {Sync_Deps} deps
+ * @returns {Promise<void>}
+ */
+const sync_public_default_feed = async deps => {
+  const id = admin_itemid_from_env()
+  if (!id) {
+    if (deps.load_phonebook) await deps.load_phonebook()
+    return
+  }
+  await fresh_metadata(id)
+  const index_hash = await get_index_hash(id)
+  const index_entry = ((await get('sync:index')) || {})[id]
+  const local_html = localStorage.getItem(id) ?? (await get(id))
+  const local_hash =
+    typeof local_html === 'string' ? await create_hash(local_html) : null
+
+  const profile_missing_on_server =
+    index_entry &&
+    index_entry.customMetadata &&
+    index_entry.customMetadata.hash === null &&
+    index_entry.updated === null
+
+  const profile_hash_stale = index_hash && local_hash !== index_hash
+
+  if (profile_missing_on_server || profile_hash_stale)
+    await clear_author_dirs(id)
+
+  if (local_html && !index_hash) {
+    if (deps.load_phonebook) await deps.load_phonebook()
+    return
+  }
+
+  if (!index_hash) {
+    if (deps.load_phonebook) await deps.load_phonebook()
+    return
+  }
+
+  if (local_hash !== index_hash) {
+    localStorage.removeItem(id)
+    await del(id)
+  }
+
+  const posters_root = /** @type {Id} */ (`${id}/posters`)
+  await del(as_directory_id(posters_root))
+
+  if (deps.load_phonebook) await deps.load_phonebook()
+}
+
+/**
  * @param {Sync_Deps} deps
  * @returns {() => Promise<void>}
  */
 const create_play = deps => async () => {
-  if (!current_user.value) return
   if (document.visibilityState !== 'visible') return
+
+  if (!current_user.value) {
+    await sync_offline_actions()
+    if (!navigator.onLine) return
+    await sync_public_default_feed(deps)
+    deps.emit('refreshed')
+    return
+  }
+
   const did_emit = navigator.onLine && !!current_user.value
   if (did_emit) deps.emit('active', true)
   try {
     await sync_offline_actions()
     if (!navigator.onLine || !current_user.value) return
     await sync_me()
+    let did_full_sync = false
     if (!i_am_fresh()) {
       localStorage.sync_time = new Date().toISOString()
       await sync_relations(deps)
       await sync_statements(deps)
       await sync_events(deps)
-      await sync_posters_directory()
+      did_full_sync = true
       await sync_phonebook_people(deps)
-      deps.emit('refreshed')
     }
+    const poster_directory_changed = await sync_posters_directory()
+    if (did_full_sync || poster_directory_changed) deps.emit('refreshed')
   } finally {
     if (did_emit) deps.emit('active', false)
   }
@@ -257,8 +329,11 @@ export const use = (component_emit, options = {}) => {
     document.removeEventListener('visibilitychange', play)
   })
 
-  watch(current_user, async () => {
-    if (current_user.value) await play()
+  watch(current_user, async (user, previous) => {
+    if (!user) return
+    // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+    if (previous == null) localStorage.removeItem('sync_time')
+    await play()
   })
   return {
     events,
@@ -451,18 +526,31 @@ export const sync_me = async () => {
   await stamp_visited_if_due()
 }
 
-/** @returns {Promise<void>} */
+/**
+ * Rebuilds `${me}/posters/` in idb from all poster keys. Runs on every sync
+ * (not the 8h gate) so the feed can pick up new local or migrated posters.
+ * @returns {Promise<boolean>} True when the sorted poster id list changed
+ */
 export const sync_posters_directory = async () => {
   const me = get_my_itemid()
-  if (!me) return
+  if (!me) return false
 
   const directory_path = /** @type {Id} */ (`${me}/posters/`)
+  const prev = await get(directory_path)
+  const prev_items = /** @type {number[]} */ (
+    Array.isArray(prev?.items) ? [...prev.items].sort((a, b) => b - a) : []
+  )
+
   await del(directory_path) // Clear existing directory cache
 
   const offline_posters = await build_local_directory(directory_path) // Get local posters
-  if (!offline_posters || !offline_posters.items) return
+  if (!offline_posters || !offline_posters.items) return prev_items.length > 0
 
-  const sorted_items = offline_posters.items.sort((a, b) => b - a) // Sort items by created_at timestamp (newest first)
+  const sorted_items = [...offline_posters.items].sort((a, b) => b - a) // Newest first
+
+  const list_changed =
+    prev_items.length !== sorted_items.length ||
+    sorted_items.some((id, i) => id !== prev_items[i])
 
   await set(directory_path, {
     ...offline_posters,
@@ -471,4 +559,5 @@ export const sync_posters_directory = async () => {
   }) // Update directory with sorted items
 
   await new Poster(directory_path).optimize()
+  return list_changed
 }

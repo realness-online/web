@@ -54,7 +54,7 @@ Requires real work — these live in Navigation today, need a home in feed heade
 - **Links** — phonebook, events
 - **Camera** — open camera for poster capture
 
-Account dialog (as-dialog-account), about link styling, focus/visibility behavior all need migration.
+Account dialog (as-dialog-account), about link styling, focus/visibility behavior all need migration. Profile hero account sheet (avatar toggle, no-avatar placeholder): see [profile-account-hero.md](./profile-account-hero.md).
 
 ## Router Changes
 

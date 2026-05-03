@@ -29,6 +29,7 @@ vi.mock('@/use/poster', () => ({
 }))
 
 vi.mock('@/utils/itemid', () => ({
+  as_author: vi.fn(() => null),
   as_created_at: vi.fn(id => {
     const parts = id.split('/')
     return parts[parts.length - 1]
@@ -79,6 +80,11 @@ const mock_shadow_constructor = vi.fn()
 const mock_cutout_constructor = vi.fn()
 
 vi.mock('@/persistence/Storage', () => ({
+  Me: class {
+    async save() {
+      return Promise.resolve()
+    }
+  },
   Poster: class {
     constructor(id) {
       mock_poster_constructor(id)

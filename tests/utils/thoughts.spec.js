@@ -45,6 +45,16 @@ describe('@/utils/thoughts', () => {
       expect(thoughts[0].posters).toHaveLength(1)
       expect(thoughts[0].statements).toHaveLength(1)
     })
+
+    it('groups by id path when type field is missing', () => {
+      const t0 = 1_700_000_000_000
+      const s = { id: `${author}/statements/${t0}`, statement: 'a' }
+      const p = { id: `${author}/posters/${t0 + 60_000}` }
+      const thoughts = thoughts_for_author([s, p])
+      expect(thoughts).toHaveLength(1)
+      expect(thoughts[0].posters).toHaveLength(1)
+      expect(thoughts[0].statements).toHaveLength(1)
+    })
   })
 
   describe('thought_feed_slots', () => {

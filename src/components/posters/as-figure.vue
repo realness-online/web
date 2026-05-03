@@ -5,6 +5,7 @@
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsDownload from '@/components/download-vector'
+  import AsAsideAccount from '@/components/profile/as-aside-account.vue'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   /** @typedef {import('@/types').Statement} Statement */
@@ -30,6 +31,7 @@
     poster_dom_id,
     poster_dom_href,
     POSTER_MEET_TOGGLE_ONLY,
+    POSTER_CANONICAL_MOUNTED,
     use_poster_canonical_presence
   } from '@/use/poster-dom-reference'
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
@@ -41,6 +43,8 @@
     watchEffect as watch_effect,
     watch,
     onUpdated as updated,
+    onMounted as mounted,
+    onBeforeUnmount as before_unmount,
     nextTick as tick,
     provide,
     inject
@@ -64,7 +68,6 @@
       default: 'label',
       validator: v => ['label', 'phonebook'].includes(v)
     },
-    /** Statements merged into this poster (same thought); shown in overlay */
     overlay_statements: {
       /** @type {import('vue').PropType<Statement[] | null>} */
       type: Array,
@@ -78,25 +81,15 @@
       type: Boolean,
       default: false
     },
-    /** When true with menu, footer stays visible and clicks do not toggle it (e.g. profile hero). */
     menu_always_visible: {
       type: Boolean,
       default: false
     },
-    /**
-     * When true, render a same-document `<use href="#…">` if another poster SVG with this
-     * itemid already exists outside this figure (e.g. profile hero + feed duplicate).
-     */
-    prefer_dom_reference: {
+    pin: {
       type: Boolean,
       default: false
     },
-    /**
-     * When true, do not strip cutout state or hide cutout/shadow layers when this figure scrolls
-     * off-screen (default aggressive unload). Use for the profile hero so returning to the top
-     * does not pay a full cutout re-mount.
-     */
-    pin: {
+    account_sheet: {
       type: Boolean,
       default: false
     }
@@ -136,8 +129,12 @@
     vector_click()
   }
   const aggressive_cutout_mode = true
+  /** True after `load_cutouts` wrote `vector.cutouts`; false after unload or new vector in `on_show`. */
   const cutouts_loaded = ref(false)
   const cutout_load_token = ref(0)
+  /** Reads refs outside `load_cutouts` so `require-atomic-updates` does not pair with the post-await write. */
+  const should_skip_cutout_load = () =>
+    Boolean(cutouts_loaded.value && vector.value?.cutouts)
   const poster_in_view = ref(false)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
@@ -145,7 +142,6 @@
   /** Bumps when the tree updates so we re-check for an out-of-figure canonical SVG. */
   const dom_tick = ref(0)
   const canonical_elsewhere = computed(() => {
-    if (!props.prefer_dom_reference) return false
     dom_tick.value
     if (typeof document === 'undefined') return false
     const el = document.getElementById(query_id.value)
@@ -154,11 +150,32 @@
     return !poster.value?.contains(el)
   })
   const use_dom_reference = computed(
-    () =>
-      props.prefer_dom_reference &&
-      canonical_elsewhere.value &&
-      !reference_broken.value
+    () => canonical_elsewhere.value && !reference_broken.value
   )
+
+  const bump_dom_tick = () => {
+    dom_tick.value++
+  }
+
+  const on_canonical_mounted = (/** @type {Event} */ e) => {
+    if (!(e instanceof CustomEvent)) return
+    const dom_id = e.detail?.dom_id
+    if (dom_id === query_id.value) bump_dom_tick()
+  }
+
+  mounted(() => {
+    if (typeof document !== 'undefined')
+      document.addEventListener(POSTER_CANONICAL_MOUNTED, on_canonical_mounted)
+    tick().then(bump_dom_tick)
+  })
+
+  before_unmount(() => {
+    if (typeof document !== 'undefined')
+      document.removeEventListener(
+        POSTER_CANONICAL_MOUNTED,
+        on_canonical_mounted
+      )
+  })
   const sync_poster_for_svg = computed(() =>
     reference_broken.value && vector.value && is_vector(vector.value)
       ? vector.value
@@ -232,7 +249,6 @@
     id: props.itemid,
     picker: props.picker_selected
   }))
-  /** Profile chip in poster footer: pass poster row `itemid` only in label mode. */
   const profile_chip_itemid = computed(() =>
     props.profile_display === 'label'
       ? /** @type {Id | undefined} */ (props.itemid)
@@ -247,7 +263,8 @@
   }
 
   const load_cutouts = async () => {
-    if (!vector.value || vector.value.cutouts) return
+    if (!vector.value) return
+    if (should_skip_cutout_load()) return
     const token = cutout_load_token.value + 1
     cutout_load_token.value = token
     const next_cutouts = {}
@@ -271,8 +288,8 @@
     if (!shown_vector) return
 
     working.value = true
-    vector.value = shown_vector
     cutouts_loaded.value = false
+    vector.value = shown_vector
 
     if (!shown_vector.regular) {
       const shadow_id = as_layer_id(/** @type {Id} */ (props.itemid), 'shadows')
@@ -334,7 +351,6 @@
     const should_load_person = props.menu || menu_open.value
     if (should_load_person && !person.value) {
       const author_id = as_author(/** @type {Id} */ (props.itemid))
-      // False positive: sequential assignment after async load
       // eslint-disable-next-line require-atomic-updates
       if (author_id) person.value = await load(/** @type {Id} */ (author_id))
     }
@@ -361,7 +377,7 @@
   })
 
   updated(() => {
-    if (props.prefer_dom_reference) dom_tick.value++
+    dom_tick.value++
     const fragment = window.location.hash.substring(1)
     if (query_id.value === fragment && poster.value) {
       poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -470,7 +486,39 @@
         </aside>
       </header>
       <template v-if="menu_open || (menu && menu_always_visible)">
-        <footer>
+        <as-aside-account
+          v-if="account_sheet"
+          :open="menu_open && !menu_always_visible"
+          @close="menu_open = false">
+          <footer>
+            <router-link
+              v-if="poster_time && is_my_poster && profile_path"
+              :to="profile_path">
+              <time>{{ poster_time }}</time>
+            </router-link>
+            <time v-else-if="poster_time">{{ poster_time }}</time>
+            <slot>
+              <as-author-menu
+                v-if="is_my_poster"
+                :poster="author_menu_poster"
+                :allow_remove="has_remove_handler"
+                :allow_picker="has_picker_handler"
+                @remove="id => emit('remove', id)"
+                @picker="id => emit('picker', id)" />
+              <menu v-else>
+                <as-figure
+                  v-if="person"
+                  :person="person"
+                  :display="profile_display"
+                  :itemid="profile_chip_itemid" />
+                <span class="actions">
+                  <as-download :itemid="/** @type {Id} */ (itemid)" />
+                </span>
+              </menu>
+            </slot>
+          </footer>
+        </as-aside-account>
+        <footer v-if="!account_sheet || menu_always_visible">
           <router-link
             v-if="poster_time && is_my_poster && profile_path"
             :to="profile_path">

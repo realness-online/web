@@ -26,7 +26,14 @@ vi.mock('@/utils/itemid', () => ({
   as_author: vi.fn(id => {
     const parts = id.split('/')
     return parts[0]
-  })
+  }),
+  as_type: vi.fn(id => {
+    const parts = String(id).split('/').filter(Boolean)
+    if (parts[1] === 'statements') return 'thoughts'
+    if (parts[1] === 'posters') return 'posters'
+    return null
+  }),
+  feed_slot_itemid: item => (Array.isArray(item) ? item[0].id : item.id)
 }))
 
 vi.mock('@/persistence/Directory', () => ({
@@ -289,7 +296,17 @@ describe('poster_thought_overlay_pairs', () => {
       poster_thought_overlay_pairs([thought, poster])
 
     expect(merged_thought_keys.has(slot_key(thought))).toBe(true)
-    expect(poster_to_thought.get(poster_near)).toBe(thought)
+    expect(poster_to_thought.get(poster_near)).toEqual(thought)
+  })
+
+  it('pairs poster without type when id is a poster path', () => {
+    const thought = [{ id: stmt_near, statement: 'hello' }]
+    const poster = { id: poster_near }
+    const { merged_thought_keys, poster_to_thought } =
+      poster_thought_overlay_pairs([thought, poster])
+
+    expect(merged_thought_keys.has(slot_key(thought))).toBe(true)
+    expect(poster_to_thought.get(poster_near)).toEqual(thought)
   })
 
   it('does not pair different authors', () => {
@@ -330,9 +347,32 @@ describe('poster_thought_overlay_pairs', () => {
 
     expect(merged_thought_keys.has(slot_key(thought))).toBe(true)
     expect(merged_thought_keys.size).toBe(1)
-    expect(poster_to_thought.get(poster_a.id)).toBe(thought)
-    expect(poster_to_thought.get(poster_b.id)).toBe(thought)
+    expect(poster_to_thought.get(poster_a.id)).toEqual(thought)
+    expect(poster_to_thought.get(poster_b.id)).toEqual(thought)
     expect(poster_to_thought.size).toBe(2)
+  })
+
+  it('merges every statement slot in the train onto the poster overlay', () => {
+    const t_poster = stmt_ts
+    const t_a = stmt_ts - 60_000
+    const t_b = stmt_ts + 60_000
+    const t_c = stmt_ts + 120_000
+    const thought_before = [
+      { id: `${author}/statements/${t_a}`, statement: 'before' }
+    ]
+    const poster = { id: `${author}/posters/${t_poster}`, type: 'posters' }
+    const thought_after = [
+      { id: `${author}/statements/${t_b}`, statement: 'mid' },
+      { id: `${author}/statements/${t_c}`, statement: 'after' }
+    ]
+    const { merged_thought_keys, poster_to_thought } =
+      poster_thought_overlay_pairs([thought_before, poster, thought_after])
+
+    expect(merged_thought_keys.has(slot_key(thought_before))).toBe(true)
+    expect(merged_thought_keys.has(slot_key(thought_after))).toBe(true)
+    const merged = poster_to_thought.get(poster.id)
+    expect(merged).toHaveLength(3)
+    expect(merged.map(s => s.statement).join(' ')).toBe('before mid after')
   })
 })
 
