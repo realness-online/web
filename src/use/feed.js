@@ -4,7 +4,8 @@
 
 import { ref, watch, inject } from 'vue'
 import { as_author } from '@/utils/itemid'
-import { poster_thought_overlay_pairs, slot_key } from '@/use/statements'
+import { poster_thought_overlay_pairs } from '@/use/statements'
+import { feed_slot_itemid } from '@/utils/itemid'
 
 const my_id = () =>
   (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
@@ -50,7 +51,7 @@ export const use_feed = options => {
     if (!Array.isArray(day) || day.length === 0) return ''
     return day
       .map(item =>
-        slot_key(
+        feed_slot_itemid(
           /** @type {import('@/types').Item | import('@/types').Statements} */ (
             item
           )

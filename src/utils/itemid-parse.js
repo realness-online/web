@@ -36,10 +36,11 @@ export const as_author = itemid => {
 }
 
 /**
- * @param {Id} itemid
+ * @param {Id | null | undefined} itemid
  * @returns {Type | null}
  */
 export const as_type = itemid => {
+  if (!itemid || typeof itemid !== 'string') return null
   const path = as_path_parts(itemid)
   if (path[1] === 'statements') return 'thoughts'
   if (path[1] && types.includes(/** @type {Type} */ (path[1])))

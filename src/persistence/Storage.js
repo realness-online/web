@@ -58,19 +58,20 @@ export class Me extends Cloud(Local(Storage)) {
         me.value
       )
     if (!me_val) return
-    const { name } = me_val
-    if (typeof name !== 'string' || name.trim().length < 3) {
-      profile_sync_log('me_save_skipped_incomplete_profile', {
-        itemid: this.id
-      })
-      return
-    }
+    const name_ok =
+      typeof me_val.name === 'string' && me_val.name.trim().length >= 3
     if (!me_val.visited) me_val.visited = new Date().toISOString()
+    if (!name_ok)
+      profile_sync_log('me_save_persist_without_display_name', {
+        itemid: this.id,
+        visited: me_val.visited
+      })
     profile_sync_log('me_save_persist', {
       itemid: this.id,
       name: me_val.name,
       avatar: me_val.avatar,
-      visited: me_val.visited
+      visited: me_val.visited,
+      name_ok
     })
     await super.save(items ?? undefined)
   }

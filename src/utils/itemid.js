@@ -3,6 +3,7 @@
 /** @typedef {import('@/types').Created} Created */
 /** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
+/** @typedef {import('@/types').Statements} Statements */
 import { has_archive, has_history } from '@/types.js'
 
 import {
@@ -17,6 +18,17 @@ import { DOES_NOT_EXIST } from '@/utils/sync-file'
 import { decompress_html } from '@/utils/upload-processor'
 
 export { as_path_parts, as_author, as_type, as_created_at, is_itemid }
+
+/**
+ * Canonical itemid for a Thoughts day slot: one poster, or the first row of a statement train.
+ *
+ * @param {Item | Statements} slot
+ * @returns {Id}
+ */
+export const feed_slot_itemid = slot =>
+  Array.isArray(slot)
+    ? /** @type {Id} */ (slot[0].id)
+    : /** @type {Id} */ (slot.id)
 
 /** @type {Map<string, Promise<string | null>>} */
 const download_url_inflight = new Map()

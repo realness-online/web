@@ -7,11 +7,12 @@
   import PosterAsFigure from '@/components/posters/as-figure'
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
-  import NameAsForm from '@/components/profile/as-form-name'
+  import AsMenuAccount from '@/components/profile/as-menu-account.vue'
+  import AsAsideAccount from '@/components/profile/as-aside-account.vue'
   import { useRouter as use_router } from 'vue-router'
   import { computed, ref, provide } from 'vue'
   import { use_me, is_person } from '@/use/people'
-  import { current_user, sign_off } from '@/utils/serverless'
+  import { current_user } from '@/utils/serverless'
   /** @typedef {import('@/types').Id} Id */
   import { as_layer_id, load_from_cache } from '@/utils/itemid'
   import { geology_layers } from '@/use/poster'
@@ -63,6 +64,8 @@
 
   const vector = ref(null)
   const shown = ref(false)
+  /** Own profile, signed in, no avatar: sheet opened from placeholder control. */
+  const placeholder_sheet_open = ref(false)
 
   const display_itemid = computed(() => {
     const fallback =
@@ -128,21 +131,32 @@
       :itemid="person.avatar"
       :menu="hero_has_menu"
       :menu_always_visible="hero_menu_always_visible"
+      :account-sheet="is_me && !!current_user"
       pin
       @show="on_poster_hero_show">
-      <menu v-if="is_me && current_user" class="profile-hero-account-menu">
-        <name-as-form />
-        <fieldset id="sign-off" class="profile-hero-sign-off">
-          <legend>Sign off</legend>
-          <button type="button" @click="sign_off">
-            <icon name="arrow" /> sign off
-          </button>
-        </fieldset>
-      </menu>
+      <as-menu-account v-if="is_me && current_user" />
       <menu v-else-if="!is_me">
         <as-messenger :itemid="person.id" />
       </menu>
     </poster-as-figure>
+  </div>
+  <div
+    v-else-if="display === 'page' && is_me && current_user && !person.avatar"
+    class="profile-hero-no-avatar">
+    <button
+      type="button"
+      class="profile-hero-no-avatar-hit"
+      aria-haspopup="dialog"
+      :aria-expanded="placeholder_sheet_open"
+      @click="placeholder_sheet_open = true">
+      <icon name="silhouette" />
+      <span>Account</span>
+    </button>
+    <as-aside-account
+      :open="placeholder_sheet_open"
+      @close="placeholder_sheet_open = false">
+      <as-menu-account />
+    </as-aside-account>
   </div>
   <figure v-if="display === 'phonebook' || display === 'page'" class="profile">
     <as-svg
@@ -240,31 +254,44 @@
     }
   }
 
-  menu.profile-hero-account-menu {
+  .profile-hero-no-avatar {
+    display: flex
     flex-direction: column
     align-items: stretch
-    gap: base-line * 0.5
-    max-width: page-width
-    white-space: normal
+    min-height: round(base-line * 14, 2)
+    margin-bottom: base-line
+    border-radius: round((base-line * 0.33), 2)
+    overflow: hidden
+    background: black-transparent
   }
 
-  fieldset.profile-hero-sign-off
-    margin: 0
-    border-top: 1px solid red
+  .profile-hero-no-avatar-hit {
+    flex: 1
     display: flex
+    flex-direction: column
     align-items: center
-    justify-content: flex-end
-    gap: base-line * 0.25
-    & > legend
-      color: red
-      margin-right: auto
-    & > button
-      margin: base-line * 0.75
-      border-color: red
-      &:hover
-        background-color: red
-        color: white
-      & > svg.icon
-        width: base-line
-        height: base-line
+    justify-content: center
+    gap: base-line * 0.5
+    min-height: round(base-line * 12, 2)
+    padding: base-line
+    border: none
+    cursor: pointer
+    color: blue
+    background: transparent
+    font: inherit
+    -webkit-tap-highlight-color: transparent
+    &:focus-visible {
+      outline: 0.25px solid red
+      outline-offset: base-line * 0.25
+    }
+    & > svg {
+      width: round(base-line * 5, 2)
+      height: round(base-line * 5, 2)
+      fill: blue
+    }
+    & > span {
+      font-size: 0.9em
+      opacity: 0.85
+    }
+  }
 </style>

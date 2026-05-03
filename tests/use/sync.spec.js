@@ -386,7 +386,8 @@ describe('sync composable', () => {
         items: ['1000', '3000', '2000']
       })
 
-      await sync_posters_directory()
+      const changed = await sync_posters_directory()
+      expect(changed).toBe(true)
 
       expect(set).toHaveBeenCalledWith(
         '/+14151234356/posters/',
@@ -395,6 +396,23 @@ describe('sync composable', () => {
           archives: []
         })
       )
+    })
+
+    it('returns false when poster list unchanged', async () => {
+      const { get } = await import('idb-keyval')
+      get.mockImplementationOnce(key =>
+        key === '/+14151234356/posters/'
+          ? Promise.resolve({ items: ['1000', '2000', '3000'] })
+          : Promise.resolve(null)
+      )
+
+      const { build_local_directory } = await import('@/persistence/Directory')
+      build_local_directory.mockResolvedValueOnce({
+        items: ['1000', '2000', '3000']
+      })
+
+      const changed = await sync_posters_directory()
+      expect(changed).toBe(false)
     })
 
     it('returns early when no me', async () => {

@@ -106,8 +106,9 @@ export const build_local_directory = async itemid => {
  * @returns {boolean}
  */
 const is_admin_directory = itemid => {
-  const admin_id = import.meta.env.VITE_ADMIN_ID
-  if (!admin_id) return false
+  const raw = import.meta.env.VITE_ADMIN_ID
+  if (!raw) return false
+  const admin_id = `/${String(raw).replace(/^\/?/, '')}`
   const [author] = as_path_parts(itemid)
   return !!(author && `/${author}` === admin_id)
 }

@@ -16,11 +16,16 @@
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
   import AsDialogAccount from '@/components/profile/as-dialog-account.vue'
 
-  import { as_created_at, load } from '@/utils/itemid'
+  import {
+    as_created_at,
+    load,
+    as_type,
+    feed_slot_itemid
+  } from '@/utils/itemid'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistence/Storage'
   import { current_user } from '@/utils/serverless'
-  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_statements } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
@@ -292,10 +297,14 @@
       :storytelling="storytelling"
       itemscope
       @focusin="handle_focus">
-      <template v-for="item in day" :key="slot_key(item)">
+      <template v-for="item in day" :key="feed_slot_itemid(item)">
         <poster-as-figure
-          v-if="item.type === 'posters' && !posting"
-          :itemid="item.id"
+          v-if="
+            (item.type === 'posters' ||
+              as_type(feed_slot_itemid(item)) === 'posters') &&
+            !posting
+          "
+          :itemid="feed_slot_itemid(item)"
           :menu="menu"
           :slice="aspect_ratio_mode !== 'auto'"
           :picker_selected="is_picker_selected(item)"
@@ -312,7 +321,9 @@
         <thought-as-article
           v-else-if="
             item.type !== 'posters' &&
-            !overlay_for_day(day).merged_thought_keys.has(slot_key(item))
+            !overlay_for_day(day).merged_thought_keys.has(
+              feed_slot_itemid(item)
+            )
           "
           :statements="item"
           :editable="is_editable(item)"

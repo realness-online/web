@@ -219,7 +219,7 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  * @property {import('vue').Ref<HTMLElement|null>} sync_element
  * @property {import('vue').Ref<HTMLElement|null>} sync_poster
  * @property {() => Promise<void>} sync_offline_actions
- * @property {() => Promise<void>} sync_posters_directory
+ * @property {() => Promise<boolean>} sync_posters_directory
  * @property {() => Promise<void>} sync_me
  */
 

@@ -66,8 +66,7 @@ vi.mock('@/use/statements', () => ({
     statements: mock_statements,
     statement_shown: vi.fn(),
     for_person: mock_statements_for_person
-  }),
-  slot_key: vi.fn()
+  })
 }))
 
 // Mock poster composable

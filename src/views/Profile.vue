@@ -7,13 +7,14 @@
   import Icon from '@/components/icon'
   import AsSignOn from '@/components/profile/as-sign-on'
 
-  import { use as use_statements, slot_key } from '@/use/statements'
+  import { use as use_statements } from '@/use/statements'
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
   import { provide, computed, watch, inject, nextTick as tick } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   import { current_user } from '@/utils/serverless'
+  import { as_type, feed_slot_itemid } from '@/utils/itemid'
   import { menu } from '@/utils/preference'
 
   const route = use_route()
@@ -78,7 +79,8 @@
   )
 
   const should_show_thought = (day, item) =>
-    overlay_for_day(day).merged_thought_keys.has(slot_key(item)) === false
+    overlay_for_day(day).merged_thought_keys.has(feed_slot_itemid(item)) ===
+    false
 </script>
 
 <template>
@@ -94,11 +96,13 @@
       @show="poster_shown" />
     <as-sign-on v-if="person && is_own_profile && !current_user" />
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
-      <template v-for="item in day" :key="slot_key(item)">
+      <template v-for="item in day" :key="feed_slot_itemid(item)">
         <poster-as-figure
-          v-if="item.type === 'posters'"
-          :itemid="item.id"
-          :prefer_dom_reference="item.id === person?.avatar"
+          v-if="
+            item.type === 'posters' ||
+            as_type(feed_slot_itemid(item)) === 'posters'
+          "
+          :itemid="feed_slot_itemid(item)"
           :menu="menu"
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
