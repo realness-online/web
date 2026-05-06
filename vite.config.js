@@ -59,8 +59,6 @@ export default defineConfig({
       }
     }),
     headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
       'Access-Control-Allow-Private-Network': 'true'
     }
   },
@@ -79,7 +77,13 @@ export default defineConfig({
     }
   },
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag.startsWith('stripe-')
+        }
+      }
+    }),
     wasm(),
     vite_pwa({
       devOptions: { enabled: false },

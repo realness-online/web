@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
 import { ref } from 'vue'
+import { get as get_keyval } from 'idb-keyval'
 
 const mock_me = vi.hoisted(() => ({
   value: {
@@ -166,6 +167,7 @@ vi.mock('@/utils/numbers', () => ({
 describe('sync composable', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(get_keyval).mockResolvedValue(null)
     mock_me.value = {
       id: '/+14151234356',
       type: 'person',
@@ -288,6 +290,30 @@ describe('sync composable', () => {
       const result = await fresh_metadata('/+1234/thoughts/1000')
 
       expect(result).toEqual(DOES_NOT_EXIST)
+    })
+
+    it('skips metadata when index has idb-cloned missing marker', async () => {
+      const { get } = await import('idb-keyval')
+      const { metadata } = await import('@/utils/serverless')
+      metadata.mockReset()
+      const itemid = '/+1234/thoughts/1000'
+      get.mockImplementation(key =>
+        key === 'sync:index'
+          ? Promise.resolve({
+              [itemid]: {
+                updated: null,
+                customMetadata: { hash: null }
+              }
+            })
+          : Promise.resolve(undefined)
+      )
+
+      const result = await fresh_metadata(
+        /** @type {import('@/types').Id} */ (itemid)
+      )
+
+      expect(result).toEqual(DOES_NOT_EXIST)
+      expect(metadata).not.toHaveBeenCalled()
     })
 
     it('uses mutex for thread safety', async () => {

@@ -101,7 +101,6 @@ Bugs surfaced when enabling `strictNullChecks`, grouped by file and severity.
 | svg-to-psd.js          | multiple                               | `ctx.getImageData` when getContext returns null                         | `if (!ctx) throw new Error(...)`                              |
 | svg-to-video.js        | multiple                               | Same ctx null                                                           | Same guard                                                    |
 | workers/vector.js      | `make_gradient`                        | ctx possibly null                                                       | Same guard                                                    |
-| workers/video-frame.js |                                        | ctx possibly null                                                       | Same guard                                                    |
 | bitmap-processor.js    | `calculate_threshold`                  | `bitmap.histogram().auto_threshold()` – histogram can be null           | Optional chaining `?.` + nullish coalescing                   |
 | Histogram.js           | multiple                               | `this.data`, `this.lookup_table_h`, `this.sorted_indexes` possibly null | Guards, early returns, type annotations                       |
 | Bitmap.js              | `point_to_index`                       | `_y` possibly undefined                                                 | Default `?? 0`                                                |

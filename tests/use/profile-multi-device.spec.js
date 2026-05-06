@@ -176,9 +176,9 @@ describe('profile multi-device edge cases', () => {
         customMetadata: { hash: 'network_hash' }
       }
     }
-    // fresh_metadata and get_index_hash each call get('sync:index')
-    get.mockResolvedValueOnce(sync_index)
-    get.mockResolvedValueOnce(sync_index)
+    get.mockImplementation(key =>
+      key === 'sync:index' ? Promise.resolve(sync_index) : Promise.resolve(null)
+    )
     create_hash.mockResolvedValueOnce('different_from_index')
 
     await sync_me()
@@ -206,8 +206,9 @@ describe('profile multi-device edge cases', () => {
     const sync_index = {
       '/+14151234356': { customMetadata: { hash: 'remote' } }
     }
-    get.mockResolvedValueOnce(sync_index)
-    get.mockResolvedValueOnce(sync_index)
+    get.mockImplementation(key =>
+      key === 'sync:index' ? Promise.resolve(sync_index) : Promise.resolve(null)
+    )
     create_hash.mockResolvedValueOnce('local_mismatch')
 
     await sync_me()
@@ -314,8 +315,11 @@ describe('profile multi-device edge cases', () => {
       const sync_index = {
         '/+14151234356': { customMetadata: { hash: 'cloud_hash_bob_won' } }
       }
-      get.mockResolvedValueOnce(sync_index)
-      get.mockResolvedValueOnce(sync_index)
+      get.mockImplementation(key =>
+        key === 'sync:index'
+          ? Promise.resolve(sync_index)
+          : Promise.resolve(null)
+      )
       create_hash.mockResolvedValueOnce('hash_for_alice_html')
 
       const el = append_address('Tab_stale_alice')

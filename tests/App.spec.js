@@ -749,13 +749,11 @@ describe('App.vue', () => {
       expect(wrapper.vm.preferences_dialog.show).toHaveBeenCalled()
     })
 
-    it('shows account dialog', () => {
+    it('navigates to /account', () => {
       const handler = registered_handlers['ui::Open_Account']
       expect(handler).toBeDefined()
-      const show_account = vi.fn()
-      wrapper.vm.account_open = show_account
       handler()
-      expect(show_account).toHaveBeenCalled()
+      expect(mock_router_push).toHaveBeenCalledWith('/account')
     })
 
     it('clears sync time from localStorage', () => {
