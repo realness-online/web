@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
 import * as compressor from '@/workers/compressor'
 import pako from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'

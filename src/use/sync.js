@@ -158,23 +158,25 @@ const create_play = deps => async () => {
     if (!navigator.onLine || !current_user.value) return
     await sync_me()
     let did_full_sync = false
+    let did_sync_change = false
     if (!i_am_fresh()) {
       await purge_missing_sync_index_entries()
       localStorage.sync_time = new Date().toISOString()
-      await sync_relations(deps)
-      await sync_statements(deps)
-      await sync_events(deps)
+      did_sync_change = (await sync_relations(deps)) || did_sync_change
+      did_sync_change = (await sync_statements(deps)) || did_sync_change
+      did_sync_change = (await sync_events(deps)) || did_sync_change
       did_full_sync = true
-      await sync_phonebook_people(deps)
+      did_sync_change = (await sync_phonebook_people(deps)) || did_sync_change
     }
     const poster_directory_changed = await sync_posters_directory()
-    if (did_full_sync || poster_directory_changed) deps.emit('refreshed')
+    if ((did_full_sync && did_sync_change) || poster_directory_changed)
+      deps.emit('refreshed')
   } finally {
     if (did_emit) deps.emit('active', false)
   }
 }
 
-/** @param {Sync_Deps} deps @returns {Promise<void|null>} */
+/** @param {Sync_Deps} deps @returns {Promise<boolean|null>} */
 const sync_statements = async deps => {
   const itemid = get_my_itemid('statements')
   if (!itemid) return null
@@ -195,14 +197,17 @@ const sync_statements = async deps => {
       await persistence.save(elements)
       localStorage.removeItem('/+/statements')
     }
+    await persistence.optimize()
+    return true
   }
   await persistence.optimize()
+  return false
 }
 
-/** @param {Sync_Deps} deps @returns {Promise<void>} */
+/** @param {Sync_Deps} deps @returns {Promise<boolean>} */
 const sync_relations = async deps => {
   const itemid = get_my_itemid('relations')
-  if (!itemid) return
+  if (!itemid) return false
   await fresh_metadata(itemid)
   const index_hash = await get_index_hash(itemid)
   const local_html = localStorage.getItem(itemid) ?? (await get(itemid))
@@ -221,10 +226,10 @@ const sync_relations = async deps => {
       )
       if (elements) await new Relation().save(elements)
     }
-    return
+    return false
   }
 
-  if (!index_hash) return
+  if (!index_hash) return false
 
   if (local_hash !== index_hash) {
     localStorage.removeItem(itemid)
@@ -240,20 +245,22 @@ const sync_relations = async deps => {
       )
       if (elements) await new Relation().save(elements)
     }
+    return true
   }
+  return false
 }
 
-/** @param {Sync_Deps} deps @returns {Promise<void>} */
+/** @param {Sync_Deps} deps @returns {Promise<boolean>} */
 const sync_events = async deps => {
   const itemid = get_my_itemid('events')
-  if (!itemid) return
+  if (!itemid) return false
   await fresh_metadata(itemid)
   const event_storage = new Event()
   const index_hash = await get_index_hash(itemid)
   const elements = deps.sync_element.value?.querySelector(
     `[itemid="${itemid}"]`
   )
-  if (!elements) return
+  if (!elements) return false
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
     const synced_events = await event_storage.sync()
@@ -264,7 +271,9 @@ const sync_events = async deps => {
       await event_storage.save(elements)
       localStorage.removeItem('/+/events')
     }
+    return true
   }
+  return false
 }
 
 /**
@@ -275,13 +284,14 @@ const sync_events = async deps => {
  * other sync steps. Skips `localStorage.me` (handled in `sync_me`).
  * Per-contact work runs in parallel (`Promise.all`); `sync:index` merges stay serialized inside `fresh_metadata`.
  * @param {Sync_Deps} deps
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 const sync_phonebook_people = async deps => {
-  if (!current_user.value) return
+  if (!current_user.value) return false
   const people_list = await directory('people/')
   const prefix_refs = people_list?.prefixes ?? []
   const me_id = localStorage.me
+  let did_change = false
 
   const sync_one_contact = async phone_number => {
     const id = /** @type {Id} */ (from_e64(phone_number.name))
@@ -311,11 +321,15 @@ const sync_phonebook_people = async deps => {
     if (local_hash !== index_hash) {
       localStorage.removeItem(id)
       await del(id)
+      did_change = true
     }
+
+    if (profile_missing_on_server || profile_hash_stale) did_change = true
   }
 
   await Promise.all(prefix_refs.map(sync_one_contact))
   if (deps.load_phonebook) await deps.load_phonebook()
+  return did_change
 }
 
 /**
@@ -360,7 +374,7 @@ export const use = (component_emit, options = {}) => {
 
   watch(current_user, async (user, previous) => {
     if (!user) return
-    // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+    // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
     if (previous == null) localStorage.removeItem('sync_time')
     await play()
   })
@@ -384,7 +398,7 @@ export const sync_offline_actions = async () => {
   /** @type {Sync_Offline_Item[]|undefined} */
   const offline = await get('sync:offline')
   if (offline) {
-    /* eslint-disable no-await-in-loop */
+    /* oxlint-disable no-await-in-loop */
     while (offline.length) {
       const item = /** @type {Sync_Offline_Item} */ (offline.pop())
 
@@ -395,7 +409,7 @@ export const sync_offline_actions = async () => {
         } else await new Offline(item.id).save()
       else if (item.action === 'delete') await new Offline(item.id).delete()
     }
-    /* eslint-enable no-await-in-loop */
+    /* oxlint-enable no-await-in-loop */
     await del('sync:offline')
   }
 

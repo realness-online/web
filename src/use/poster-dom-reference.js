@@ -34,7 +34,7 @@ export const removed_subtree_had_id = (removed, id) => {
   const el = /** @type {Element} */ (removed)
   if (el.id === id) return true
   try {
-    // eslint-disable-next-line eqeqeq -- != null: element found (nullish; not strict identity)
+    // oxlint-disable-next-line eqeqeq -- != null: element found (nullish; not strict identity)
     return el.querySelector(`#${CSS.escape(id)}`) != null
   } catch {
     return false

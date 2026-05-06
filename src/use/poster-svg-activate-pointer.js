@@ -48,7 +48,7 @@ export const use_poster_svg_activate_pointer = ({
   const long_press_enabled = () => toValue(touch_uses_long_press)
 
   const clear_long_press_timer = () => {
-    // eslint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
+    // oxlint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
     if (long_press_timer != null) {
       clearTimeout(long_press_timer)
       long_press_timer = null

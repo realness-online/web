@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 // App.vue loads these with defineAsyncComponent; VTU stubs do not cancel the
 // dynamic import, so chunks can finish after teardown (raw md, stylus, etc.).

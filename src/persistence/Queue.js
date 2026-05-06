@@ -64,7 +64,7 @@ export const get_next = async () => {
 
   // Sequential check required: return first pending item found
   for (const key of queue_keys) {
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const item = await get(key)
     if (item?.status === 'pending') {
       if (item.resized_blob instanceof ArrayBuffer)

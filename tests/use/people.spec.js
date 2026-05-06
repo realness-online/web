@@ -6,7 +6,7 @@ import {
   beforeEach,
   beforeAll,
   afterEach
-} from 'vitest'
+} from 'vite-plus/test'
 import { ref, defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
 

@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import { get } from 'idb-keyval'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import as_figure from '@/components/profile/as-figure'
 

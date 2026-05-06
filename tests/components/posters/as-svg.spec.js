@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import as_svg from '@/components/posters/as-svg'
 

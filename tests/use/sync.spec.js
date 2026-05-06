@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vite-plus/test'
 import { ref } from 'vue'
 import { get as get_keyval } from 'idb-keyval'
 

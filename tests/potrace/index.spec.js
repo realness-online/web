@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterAll } from 'vitest'
+import { describe, it, expect, beforeEach, afterAll } from 'vite-plus/test'
 import potrace_module, {
   as_paths,
   as_path_element,

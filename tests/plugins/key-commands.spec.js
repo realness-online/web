@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vite-plus/test'
 import { ref, watch } from 'vue'
 import { key_commands_plugin } from '@/plugins/key-commands'
 import { use_key_commands } from '@/use/key-commands'

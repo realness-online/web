@@ -343,7 +343,7 @@ export const save_poster = async (
 
 // Composable manages entire vectorization pipeline: workers, queue, state, events
 // Breaking into smaller pieces would scatter tightly coupled logic
-// eslint-disable-next-line max-lines-per-function
+// oxlint-disable-next-line max-lines-per-function
 export const use = () => {
   const image_picker = inject(
     'image-picker',
@@ -525,7 +525,7 @@ export const use = () => {
 
       try {
         // Sequential processing required: timestamp-based IDs need unique millisecond values
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         const { blob: resized_blob, width, height } = await resize_to_blob(file)
 
         const item = /** @type {QueueItem} */ ({
@@ -537,7 +537,7 @@ export const use = () => {
           width,
           height
         })
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         await Queue.add(item)
         queue_items.value.push(item)
       } catch (error) {

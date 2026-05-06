@@ -413,7 +413,7 @@ export const render_svg_to_video_blob = async (
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
     const current_time = current_frame / FRAMES_PER_SECOND
 
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await capture_svg_frame(
       svg_element,
       ctx,
@@ -426,7 +426,7 @@ export const render_svg_to_video_blob = async (
     const frame_duration = 1 / fps
 
     try {
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       await canvas_source.add(timestamp, frame_duration)
     } catch (error) {
       console.error(`[Video] Error adding frame ${current_frame}:`, error)

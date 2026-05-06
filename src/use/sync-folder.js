@@ -87,7 +87,7 @@ export const use = () => {
 
     set_working?.(true)
 
-    /* eslint-disable no-await-in-loop -- sequential: mount → export → unmount per poster */
+    /* oxlint-disable no-await-in-loop -- sequential: mount → export → unmount per poster */
     const container = document.createElement('div')
     container.style.cssText =
       'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden'
@@ -115,7 +115,7 @@ export const use = () => {
     }
 
     container.remove()
-    /* eslint-enable no-await-in-loop */
+    /* oxlint-enable no-await-in-loop */
     set_working?.(false)
   }
 

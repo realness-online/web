@@ -4,7 +4,7 @@
  */
 import Point from '@/potrace/types/Point'
 import Path from '@/potrace/types/Path'
-import Bitmap from '@/potrace/types/Bitmap' // eslint-disable-line no-unused-vars
+import Bitmap from '@/potrace/types/Bitmap' // oxlint-disable-line no-unused-vars
 
 /**
  * Finds the next unprocessed point in the bitmap

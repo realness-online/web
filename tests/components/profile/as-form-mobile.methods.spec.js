@@ -1,6 +1,6 @@
 import './as-form-mobile.setup.js'
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import as_form from '@/components/profile/as-form-mobile'
 import { person } from './as-form-mobile.setup.js'
 

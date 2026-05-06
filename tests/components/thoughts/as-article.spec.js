@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 vi.mock('@/utils/serverless', () => ({
   url: vi.fn(() => Promise.resolve(null))

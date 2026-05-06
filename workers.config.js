@@ -1,66 +1,90 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import alias from '@rollup/plugin-alias'
-import analyzer from 'rollup-plugin-analyzer'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import copy from 'rollup-plugin-copy'
+import { defineConfig } from 'vite-plus'
+import { fileURLToPath } from 'node:url'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync
+} from 'node:fs'
+import path from 'node:path'
 
-const MIN_SIZE_BYTES = 1000
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const project_root = fileURLToPath(new URL('.', import.meta.url))
+const valid_worker_names = ['vector', 'compressor', 'tracer']
+const worker_name = process.env.WORKER_NAME
 
-const create_worker_config = filename => ({
-  input: `src/workers/${filename}.js`,
-  output: {
-    file: `public/${filename}.worker.js`,
-    format: 'iife',
-    name: 'worker'
+if (!worker_name) throw new Error('WORKER_NAME is required')
+if (!valid_worker_names.includes(worker_name))
+  throw new Error(`Invalid WORKER_NAME: ${worker_name}`)
+
+const sync_tracer_wasm = () => {
+  const tracer_source_path = path.resolve(
+    project_root,
+    'artifacts/wasm/tracer.js'
+  )
+  const tracer_output_path = path.resolve(project_root, 'src/wasm/tracer.js')
+  const wasm_source_path = path.resolve(
+    project_root,
+    'artifacts/wasm/tracer_bg.wasm'
+  )
+  const wasm_output_path = path.resolve(
+    project_root,
+    'public/wasm/tracer_bg.wasm'
+  )
+
+  if (!existsSync(tracer_source_path)) return
+  if (!existsSync(wasm_source_path)) return
+
+  const tracer_source = readFileSync(tracer_source_path, 'utf8')
+  const tracer_source_without_import_meta = tracer_source.replace(
+    "module_or_path = new URL('tracer_bg.wasm', import.meta.url);",
+    "module_or_path = '/wasm/tracer_bg.wasm';"
+  )
+  const ts_nocheck_header = '// @ts-nocheck\n'
+  const tracer_output = tracer_source_without_import_meta.startsWith(
+    ts_nocheck_header
+  )
+    ? tracer_source_without_import_meta
+    : `${ts_nocheck_header}${tracer_source_without_import_meta}`
+
+  mkdirSync(path.dirname(tracer_output_path), { recursive: true })
+  mkdirSync(path.dirname(wasm_output_path), { recursive: true })
+  writeFileSync(tracer_output_path, tracer_output)
+  copyFileSync(wasm_source_path, wasm_output_path)
+}
+
+const tracer_wasm_plugin = {
+  name: 'tracer-wasm-sync',
+  buildStart() {
+    if (worker_name !== 'tracer') return
+    sync_tracer_wasm()
   },
-  plugins: [
-    alias({
-      entries: [
-        {
-          find: '@',
-          replacement: path.resolve(__dirname, './src')
-        }
-      ]
-    }),
-    resolve({
-      browser: true
-    }),
-    commonjs(),
-    ...(filename === 'tracer'
-      ? [
-          copy({
-            targets: [
-              {
-                src: 'artifacts/wasm/tracer_bg.wasm',
-                dest: 'public/wasm'
-              },
-              {
-                src: 'artifacts/wasm/tracer.js',
-                dest: 'src/wasm',
-                transform: contents =>
-                  Buffer.concat([Buffer.from('// @ts-nocheck\n'), contents])
-              }
-            ],
-            hook: 'writeBundle'
-          })
-        ]
-      : []),
-    analyzer({
-      summaryOnly: true,
-      limit: 10,
-      filter: ({ size }) => size > MIN_SIZE_BYTES
-    })
-  ],
-  watch: {
-    exclude: ['public/wasm/**', 'src/wasm/**']
+  writeBundle() {
+    if (worker_name !== 'tracer') return
+    sync_tracer_wasm()
+  }
+}
+
+export default defineConfig({
+  publicDir: false,
+  resolve: {
+    alias: {
+      '@': path.resolve(project_root, './src')
+    },
+    extensions: ['.js', '.json', '.vue']
+  },
+  plugins: [tracer_wasm_plugin],
+  build: {
+    outDir: 'public',
+    emptyOutDir: false,
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      input: path.resolve(project_root, `src/workers/${worker_name}.js`),
+      output: {
+        format: 'iife',
+        name: 'worker',
+        entryFileNames: `${worker_name}.worker.js`
+      }
+    }
   }
 })
-
-export default [
-  create_worker_config('vector'),
-  create_worker_config('compressor'),
-  create_worker_config('tracer')
-]

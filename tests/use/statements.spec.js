@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vite-plus/test'
 import { ref, defineComponent, nextTick as tick } from 'vue'
 import { mount } from '@vue/test-utils'
 import {

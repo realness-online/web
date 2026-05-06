@@ -128,7 +128,7 @@
   let long_press_fired = false
 
   const clear_long_press_timer = () => {
-    // eslint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
+    // oxlint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
     if (long_press_timer != null) {
       clearTimeout(long_press_timer)
       long_press_timer = null
@@ -605,9 +605,6 @@
       transition:
         opacity 0.2s ease,
         visibility 0.2s ease;
-      @starting-style {
-        opacity: 0;
-      }
     }
     & use[itemprop='sediment'],
     & use[itemprop='sand'],
@@ -620,10 +617,6 @@
         opacity 0.44s ease-out,
         display 0.44s ease-out;
       transition-behavior: allow-discrete;
-
-      @starting-style {
-        opacity: 0;
-      }
 
       &:hover {
         transition: filter 0.33s ease;
@@ -660,6 +653,26 @@
         animation: none !important;
         opacity: 0.5;
       }
+    }
+  }
+
+  @starting-style {
+    svg[itemtype='/posters'] rect#lightbar-back,
+    svg[itemtype='/posters'] rect#lightbar-front,
+    svg[itemtype='/posters'] > rect:first-of-type,
+    svg[itemtype='/posters'] symbol path[itemprop],
+    svg[itemtype='/posters'] symbol rect[itemprop='background'] {
+      opacity: 0;
+    }
+  }
+
+  @starting-style {
+    svg[itemtype='/posters'] use[itemprop='sediment'],
+    svg[itemtype='/posters'] use[itemprop='sand'],
+    svg[itemtype='/posters'] use[itemprop='gravel'],
+    svg[itemtype='/posters'] use[itemprop='rocks'],
+    svg[itemtype='/posters'] use[itemprop='boulders'] {
+      opacity: 0;
     }
   }
 </style>

@@ -3,7 +3,7 @@
  * Converts traced paths to SVG format
  */
 import utils from '@/potrace/utils'
-import Path from '@/potrace/types/Path' // eslint-disable-line no-unused-vars
+import Path from '@/potrace/types/Path' // oxlint-disable-line no-unused-vars
 
 /**
  * @typedef {Object} PathData

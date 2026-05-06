@@ -37,7 +37,7 @@ class Histogram {
     p: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
     s: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
     h: new Float64Array(COLOR_DEPTH * COLOR_DEPTH),
-    indexes: new Array(COLOR_DEPTH)
+    indexes: Array.from({ length: COLOR_DEPTH })
   }
 
   // Use regular properties for better performance in hot paths
@@ -224,7 +224,7 @@ class Histogram {
       {
         starting_point: min || 0,
         prev_variance: 0,
-        indexes: new Array(threshold_amount),
+        indexes: Array.from({ length: threshold_amount }),
         depth: 0,
         max_sig: 0,
         color_stops: null

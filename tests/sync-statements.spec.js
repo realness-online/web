@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { fresh_metadata } from '@/use/sync'
 import { Thought } from '@/persistence/Storage'
 import { metadata, location } from '@/utils/serverless'

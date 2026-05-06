@@ -15,8 +15,8 @@ import {
   apply_threshold
 } from '@/potrace/bitmap-processor'
 import { trace_all_paths } from '@/potrace/tracer'
-import Path from '@/potrace/types/Path' // eslint-disable-line no-unused-vars
-import Bitmap from '@/potrace/types/Bitmap' // eslint-disable-line no-unused-vars
+import Path from '@/potrace/types/Path' // oxlint-disable-line no-unused-vars
+import Bitmap from '@/potrace/types/Bitmap' // oxlint-disable-line no-unused-vars
 
 // Potrace algorithm constants with explanations
 

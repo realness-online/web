@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 export const get = vi.fn()
 export const set = vi.fn()

@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import as_form from '@/components/profile/as-form-name'
 
 // Mock the composables and utilities

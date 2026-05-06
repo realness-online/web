@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { get_item } from '@/utils/item'
 import { address_html_for_person } from '../helpers/profile-fixtures.js'
 

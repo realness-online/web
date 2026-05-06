@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { get } from 'idb-keyval'
 import { as_layer_id, as_query_id, load, load_from_cache } from '@/utils/itemid'
 import as_menu_author from '@/components/posters/as-menu-author'

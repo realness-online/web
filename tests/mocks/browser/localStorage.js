@@ -1,4 +1,4 @@
-import { beforeEach } from 'vitest'
+import { beforeEach } from 'vite-plus/test'
 
 /**
  * In-memory Storage: getItem/setItem and named keys (`localStorage.me`) match browser behavior.

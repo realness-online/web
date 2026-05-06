@@ -155,8 +155,9 @@
   const reference_broken = ref(false)
   /** Bumps when the tree updates so we re-check for an out-of-figure canonical SVG. */
   const dom_tick = ref(0)
+  const read_dom_tick = () => dom_tick.value
   const canonical_elsewhere = computed(() => {
-    dom_tick.value
+    read_dom_tick()
     if (typeof document === 'undefined') return false
     const el = document.getElementById(query_id.value)
     if (!el || el.tagName !== 'svg') return false

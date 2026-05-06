@@ -217,9 +217,6 @@
       opacity: 1;
       transition: opacity 0.4s ease-in;
       animation: working-pulse 1.5s ease-in-out infinite;
-      @starting-style {
-        opacity: 0;
-      }
     }
     & > svg:not(.icon) {
       grid-area: overlay;
@@ -232,6 +229,12 @@
       &[aria-orientation='horizontal'] {
         grid-column-start: span 2;
       }
+    }
+  }
+
+  @starting-style {
+    figure.poster.processing > svg.icon {
+      opacity: 0;
     }
   }
 </style>

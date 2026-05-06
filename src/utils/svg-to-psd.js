@@ -207,7 +207,7 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
       else if (itemprop !== 'background') el.setAttribute('fill-opacity', '1')
     })
 
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const image_data = await raster_svg_clone_to_image_data(
       layer_clone,
       width,
@@ -279,7 +279,7 @@ const extract_stroke_layers = async (svg_element, poster_id, width, height) => {
       if (!to_keep.has(child)) child.remove()
     })
 
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const image_data = await raster_svg_clone_to_image_data(
       layer_clone,
       width,
@@ -336,7 +336,7 @@ const extract_cutout_layers = async (svg_element, poster_id, width, height) => {
         p.setAttribute('fill-opacity', '1')
       })
 
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const image_data = await raster_svg_clone_to_image_data(
       layer_clone,
       width,

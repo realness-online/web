@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 
 const { mock_me, mock_save } = vi.hoisted(() => ({
   mock_me: { value: undefined, __v_isRef: true },

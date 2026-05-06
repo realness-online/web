@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 if (typeof Element !== 'undefined' && !Element.prototype.getTotalLength)
   Element.prototype.getTotalLength = vi.fn().mockReturnValue(100)

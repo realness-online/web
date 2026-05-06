@@ -271,14 +271,14 @@ export { feed_slot_itemid as slot_key }
  */
 const connected_statement_slots = (poster, pool) => {
   const poster_ts = as_created_at(poster.id)
-  // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+  // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
   if (poster_ts == null) return []
 
   /** @param {import('@/types').Statements} slot */
   const slot_touches_poster = slot => {
     for (const stmt of slot) {
       const t = as_created_at(stmt.id)
-      // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+      // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
       if (t == null) continue
       if (Math.abs(poster_ts - t) <= JS_TIME.THIRTEEN_MINUTES) return true
     }
@@ -290,11 +290,11 @@ const connected_statement_slots = (poster, pool) => {
   const slots_adjacent = (a, b) => {
     for (const sa of a) {
       const ta = as_created_at(sa.id)
-      // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+      // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
       if (ta == null) continue
       for (const sb of b) {
         const tb = as_created_at(sb.id)
-        // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+        // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
         if (tb == null) continue
         if (Math.abs(ta - tb) <= JS_TIME.THIRTEEN_MINUTES) return true
       }
@@ -364,14 +364,14 @@ export function poster_thought_overlay_pairs(day_items) {
   const candidates = []
   for (const poster of posters) {
     const poster_ts = as_created_at(poster.id)
-    // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+    // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
     if (poster_ts == null) continue
     for (const thought of thoughts) {
       if (as_author(poster.id) !== as_author(thought[0].id)) continue
       let min_dist = Infinity
       for (const stmt of thought) {
         const t = as_created_at(stmt.id)
-        // eslint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
+        // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
         if (t == null) continue
         const d = Math.abs(poster_ts - t)
         if (d < min_dist) min_dist = d

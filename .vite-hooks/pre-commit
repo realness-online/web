@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+vp staged
+vp run type
+vp test run

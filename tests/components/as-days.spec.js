@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
 import AsDays from '@/components/as-days.vue'
 
