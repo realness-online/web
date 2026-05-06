@@ -11,7 +11,7 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     id="thoughts"
   >
     <header>
-      <as-dialog-account-stub />
+      <account-as-link-stub />
       <router-link-stub
         id="about"
         tabindex="-1"

@@ -16,7 +16,10 @@
 
 <template>
   <address itemscope itemtype="/person" :itemid="person.id">
-    <h3 itemprop="name">{{ person.name }}</h3>
+    <header>
+      <h3 itemprop="name">{{ person.name }}</h3>
+      <slot name="action" />
+    </header>
     <slot />
     <link
       v-if="person.avatar"
@@ -35,15 +38,22 @@
     padding: 0
     @media (prefers-color-scheme: dark)
       color: white
-    & > h3,
+    & > header
+      display: flex
+      justify-content: space-between
+      align-items: center
+      gap: round((base-line / 3), 2)
+      margin-bottom: round((base-line / 6), 2)
+      & > button
+        color: red
+        padding: round((base-line / 4), 2)
+    & > header > h3,
     & > b
       text-align: left
-    & > h3
+    & > header > h3
       between font-size
       margin: 0
       text-transform: capitalize
-      &:first-of-type
-        margin-bottom: round((base-line / 6), 2)
     & > b[itemprop]
       line-height: 1
       display: inline-block

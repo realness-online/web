@@ -11,12 +11,12 @@ Improve own-profile account UX when toggling the avatar poster: dim the rest of 
 | Top sheet + backdrop | `as-aside-account.vue`: `<aside role="dialog">` in a teleport, full-viewport backdrop (`black-transparent`). Escape and backdrop click close.                                    |
 | Desktop              | Panel centered, `max-width: page-width`, widens to `page-width-large` on large viewports; scrollable if content is tall.                                                         |
 | No avatar            | `as-figure.vue` (profile): placeholder block (`profile-hero-no-avatar`) with silhouette + "Account" opens the same sheet.                                                        |
-| Shared `<menu>`      | `as-menu-account.vue` holds name form + sign off (single source for hero + placeholder).                                                                                         |
+| Account menu         | `Account.vue` renders the name form + sign off inline (was `as-menu-account.vue`, now folded into the page).                                                                     |
 | Poster integration   | `posters/as-figure.vue`: prop `account_sheet`. When true and the account menu is open, footer content (time + default slot) renders inside the sheet instead of over the poster. |
 
 ## Wiring (reference)
 
-- Profile hero with avatar: `as-figure.vue` passes `:account-sheet="is_me && !!current_user"` to `poster-as-figure`, slot = `as-menu-account` when own + signed in.
+- Profile hero with avatar: `as-figure.vue` passes `:account-sheet="is_me && !!current_user"` to `poster-as-figure`. Account menu now lives inline in `Account.vue`.
 - Others on your profile: unchanged messenger slot; `menu_always_visible` still drives visitor hero footer.
 
 ## Deferred (separate effort)

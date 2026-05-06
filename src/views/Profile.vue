@@ -5,15 +5,13 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
-  import AsSignOn from '@/components/profile/as-sign-on'
 
   import { use as use_statements } from '@/use/statements'
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use as use_person, from_e64 } from '@/use/people'
-  import { provide, computed, watch, inject, nextTick as tick } from 'vue'
+  import { provide, computed, watch, inject } from 'vue'
   import { useRoute as use_route } from 'vue-router'
-  import { current_user } from '@/utils/serverless'
   import { as_type, feed_slot_itemid } from '@/utils/itemid'
   import { menu } from '@/utils/preference'
 
@@ -22,21 +20,7 @@
     from_e64(String(route.params.phone_number ?? ''))
   )
 
-  const is_own_profile = computed(() => {
-    if (typeof localStorage === 'undefined') return false
-    const mine = localStorage.me
-    return !!(mine && person_id.value === mine)
-  })
-
   const { load_person, person, people } = use_person()
-
-  const scroll_account_into_view = () => {
-    if (route.hash !== '#account') return
-    if (!person.value || !is_own_profile.value) return
-    tick().then(() => {
-      document.getElementById('account')?.scrollIntoView({ behavior: 'smooth' })
-    })
-  }
 
   const {
     statements,
@@ -72,12 +56,6 @@
   }
   watch(person_id, id => load_profile_feed(id), { immediate: true })
 
-  watch(
-    [() => route.hash, person, is_own_profile],
-    () => scroll_account_into_view(),
-    { immediate: true }
-  )
-
   const should_show_thought = (day, item) =>
     overlay_for_day(day).merged_thought_keys.has(feed_slot_itemid(item)) ===
     false
@@ -94,7 +72,6 @@
       display="page"
       :person="person"
       @show="poster_shown" />
-    <as-sign-on v-if="person && is_own_profile && !current_user" />
     <as-days v-slot="{ day }" :posters="posters" :statements="statements">
       <template v-for="item in day" :key="feed_slot_itemid(item)">
         <poster-as-figure
@@ -120,8 +97,6 @@
 <style lang="stylus">
   section#profile
     padding: 0
-    & > section.profile-account
-      padding: base-line
     & > header
       height: 0
       padding: 0
@@ -134,20 +109,23 @@
     & > header + div
       position: relative
       overflow: hidden
-      max-height: 85dvh
+      max-height: 100dvh
+      & > svg.icon.silhouette
+        width: 100%
+        height: 100dvh
+        fill: currentColor
       & > figure.poster
-        /* Keep the canonical hero SVG in the render tree so feed `<use href="#…">` rows do not lose it when scrolled past (avoids re-render flash when returning). */
         content-visibility: visible
         width: 100%
-        min-height: 85dvh
-        max-height: 85dvh
+        min-height: 100dvh
+        max-height: 100dvh
         grid-row-start: auto
         border-radius: 0
-        contain-intrinsic-size: auto 85dvh
+        contain-intrinsic-size: auto 100dvh
         & > svg[itemscope]
           width: 100dvw
-          min-height: 85dvh
-          max-height: 85dvh
+          min-height: 100dvh
+          max-height: 100dvh
         & > figcaption
           & > footer > menu
             width: 100%

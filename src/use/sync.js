@@ -45,9 +45,35 @@ import {
 } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 import { profile_sync_log } from '@/utils/profile-sync-log'
-import { DOES_NOT_EXIST } from '@/utils/sync-file'
+import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
 
 export { DOES_NOT_EXIST }
+
+/** @type {Map<string, Promise<import('@/types').Sync_Index_Entry>>} */
+const fresh_metadata_inflight = new Map()
+
+/**
+ * Drop negative-cache rows so the next `fresh_metadata` / `as_download_url` hits Storage again.
+ * Runs only when `i_am_fresh()` is false (same cadence as the 8h full sync block).
+ * @returns {Promise<void>}
+ */
+const purge_missing_sync_index_entries = async () => {
+  const index_mutex = mutex_for('sync:index')
+  await index_mutex.lock()
+  try {
+    const index = (await get('sync:index')) || {}
+    let changed = false
+    const next = { ...index }
+    for (const key of Object.keys(next))
+      if (is_sync_index_missing(next[key])) {
+        delete next[key]
+        changed = true
+      }
+    if (changed) await set('sync:index', next)
+  } finally {
+    index_mutex.unlock()
+  }
+}
 
 /**
  * @returns {Id | null}
@@ -133,6 +159,7 @@ const create_play = deps => async () => {
     await sync_me()
     let did_full_sync = false
     if (!i_am_fresh()) {
+      await purge_missing_sync_index_entries()
       localStorage.sync_time = new Date().toISOString()
       await sync_relations(deps)
       await sync_statements(deps)
@@ -246,6 +273,7 @@ const sync_events = async deps => {
  * Clears cached folder listings via `clear_author_dirs` (`@/persistence/Directory`) when the profile
  * blob is missing on storage or its hash no longer matches. Same schedule as
  * other sync steps. Skips `localStorage.me` (handled in `sync_me`).
+ * Per-contact work runs in parallel (`Promise.all`); `sync:index` merges stay serialized inside `fresh_metadata`.
  * @param {Sync_Deps} deps
  * @returns {Promise<void>}
  */
@@ -254,10 +282,10 @@ const sync_phonebook_people = async deps => {
   const people_list = await directory('people/')
   const prefix_refs = people_list?.prefixes ?? []
   const me_id = localStorage.me
-  /* eslint-disable no-await-in-loop */
-  for (const phone_number of prefix_refs) {
+
+  const sync_one_contact = async phone_number => {
     const id = /** @type {Id} */ (from_e64(phone_number.name))
-    if (id === me_id) continue
+    if (id === me_id) return
     await fresh_metadata(id)
     const index_hash = await get_index_hash(id)
     const index_entry = ((await get('sync:index')) || {})[id]
@@ -276,16 +304,17 @@ const sync_phonebook_people = async deps => {
     if (profile_missing_on_server || profile_hash_stale)
       await clear_author_dirs(id)
 
-    if (local_html && !index_hash) continue
+    if (local_html && !index_hash) return
 
-    if (!index_hash) continue
+    if (!index_hash) return
 
     if (local_hash !== index_hash) {
       localStorage.removeItem(id)
       await del(id)
     }
   }
-  /* eslint-enable no-await-in-loop */
+
+  await Promise.all(prefix_refs.map(sync_one_contact))
   if (deps.load_phonebook) await deps.load_phonebook()
 }
 
@@ -400,32 +429,49 @@ const get_index_hash = async itemid =>
  */
 export const fresh_metadata = async itemid => {
   if (itemid.startsWith('/+/')) return DOES_NOT_EXIST
-  const path = location(await as_filename(itemid))
-  let network
-  try {
-    network = await metadata(path)
-  } catch (e) {
-    if (
-      e &&
-      typeof e === 'object' &&
-      'code' in e &&
-      /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
-    )
-      network = DOES_NOT_EXIST
-    else throw e
-  }
-  if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
 
-  const index_mutex = mutex_for('sync:index')
-  await index_mutex.lock()
-  try {
-    const index = (await get('sync:index')) || {}
-    const updated_index = { ...index, [itemid]: network }
-    await set('sync:index', updated_index)
-    return network
-  } finally {
-    index_mutex.unlock()
-  }
+  const index_cached = (await get('sync:index')) || {}
+  if (is_sync_index_missing(index_cached[itemid])) return DOES_NOT_EXIST
+
+  const key = String(itemid)
+  const existing = fresh_metadata_inflight.get(key)
+  if (existing) return existing
+
+  const pending = (async () => {
+    try {
+      const path = location(await as_filename(itemid))
+      let network
+      try {
+        network = await metadata(path)
+      } catch (e) {
+        if (
+          e &&
+          typeof e === 'object' &&
+          'code' in e &&
+          /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+        )
+          network = DOES_NOT_EXIST
+        else throw e
+      }
+      if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
+
+      const index_mutex = mutex_for('sync:index')
+      await index_mutex.lock()
+      try {
+        const index = (await get('sync:index')) || {}
+        const updated_index = { ...index, [itemid]: network }
+        await set('sync:index', updated_index)
+        return network
+      } finally {
+        index_mutex.unlock()
+      }
+    } finally {
+      fresh_metadata_inflight.delete(key)
+    }
+  })()
+
+  fresh_metadata_inflight.set(key, pending)
+  return pending
 }
 
 /**

@@ -6,7 +6,6 @@
     inject,
     provide,
     onMounted as mounted,
-    onBeforeUnmount as before_unmount,
     watch,
     nextTick as tick
   } from 'vue'
@@ -14,7 +13,7 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
-  import AsDialogAccount from '@/components/profile/as-dialog-account.vue'
+  import AccountAsLink from '@/components/account/as-link.vue'
 
   import {
     as_created_at,
@@ -43,9 +42,6 @@
 
   const set_working = inject('set_working')
   const select_photo = inject('select_photo')
-  const register_account = inject('register_account')
-  /** @type {import('vue').Ref<{show: () => void} | null>} */
-  const account_dialog = ref(null)
   const init_processing_queue = inject('init_processing_queue')
   const queue_items = inject('queue_items')
 
@@ -207,17 +203,12 @@
   )
 
   mounted(async () => {
-    if (register_account) register_account(() => account_dialog.value?.show())
     if (set_working) set_working(true)
     await load_phonebook()
     await fill_statements()
     await init_processing_queue?.()
     working.value = false
     if (set_working) set_working(false)
-  })
-
-  before_unmount(() => {
-    if (register_account) register_account(null)
   })
 
   watch(posting, async (now, was) => {
@@ -260,7 +251,7 @@
       menu
     }">
     <header>
-      <as-dialog-account v-if="!posting" ref="account_dialog" />
+      <account-as-link v-if="!posting" />
       <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>

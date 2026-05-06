@@ -69,6 +69,20 @@ export const Cloud = superclass =>
             : await as_filename(this.id)
         const { compressed, metadata } = await prepare_upload_html(items)
         const response = await upload(path, compressed, metadata)
+        const index_mutex = mutex_for('sync:index')
+        await index_mutex.lock()
+        try {
+          const index_raw = await get('sync:index')
+          const index =
+            index_raw && typeof index_raw === 'object' ? index_raw : {}
+          if (this.id in index) {
+            const next_index = { ...index }
+            delete next_index[this.id]
+            await set('sync:index', next_index)
+          }
+        } finally {
+          index_mutex.unlock()
+        }
         const directory = await as_directory(this.id)
         if (!directory) return response
         await del(directory.id)

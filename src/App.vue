@@ -120,12 +120,8 @@
   }
 
   const preferences_dialog = ref(null)
-  const account_open = ref(null)
-  const register_account = fn => {
-    account_open.value = fn
-  }
-  provide('register_account', register_account)
-  provide('open_account', () => account_open.value?.())
+  const open_account = () => router.push('/account')
+  provide('open_account', open_account)
   const viewport_mql = ref(null)
   const { register, register_preference } = use_keymap('Global')
   const magic_keys = useMagicKeys()
@@ -252,7 +248,7 @@
   register('ui::Open_Settings', () => {
     preferences_dialog.value?.show()
   })
-  register('ui::Open_Account', () => account_open.value?.())
+  register('ui::Open_Account', open_account)
   register('ui::Clear_Sync_Time', () => {
     localStorage.removeItem('sync_time')
   })

@@ -14,7 +14,7 @@ import {
   is_itemid
 } from './itemid-parse.js'
 import { get, set, del } from 'idb-keyval'
-import { DOES_NOT_EXIST } from '@/utils/sync-file'
+import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
 import { decompress_html } from '@/utils/upload-processor'
 
 export { as_path_parts, as_author, as_type, as_created_at, is_itemid }
@@ -216,7 +216,7 @@ export const list = async (itemid, me = storage_me()) => {
 export const as_download_url = async itemid => {
   if (String(itemid) === '/+' || itemid.startsWith('/+/')) return null
   const index = (await get('sync:index')) || {}
-  if (index[itemid] === DOES_NOT_EXIST) return null
+  if (is_sync_index_missing(index[itemid])) return null
 
   const key = String(itemid)
   const existing = download_url_inflight.get(key)
@@ -225,7 +225,7 @@ export const as_download_url = async itemid => {
   const pending = (async () => {
     try {
       const idx = (await get('sync:index')) || {}
-      if (idx[itemid] === DOES_NOT_EXIST) return null
+      if (is_sync_index_missing(idx[itemid])) return null
       const { url } = await import('@/utils/serverless')
       return await url(await as_filename(itemid))
     } catch (e) {

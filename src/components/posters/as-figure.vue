@@ -108,6 +108,20 @@
   const menu_open = ref(false)
   const thought_overlay_open = ref(false)
 
+  /** Click-to-toggle for every poster with overlay statements (own or read-only). */
+  const overlay_text_visible = computed(() => {
+    if (!props.overlay_statements?.length) return false
+    return thought_overlay_open.value
+  })
+
+  const figcaption_visible = computed(
+    () =>
+      menu_open.value ||
+      thought_overlay_open.value ||
+      (props.menu && props.menu_always_visible) ||
+      overlay_text_visible.value
+  )
+
   watch(
     () => props.overlay_statements,
     () => {
@@ -422,7 +436,7 @@
     ref="poster"
     class="poster"
     :aria-expanded="
-      overlay_statements?.length ? thought_overlay_open : undefined
+      overlay_statements?.length ? overlay_text_visible : undefined
     "
     @focusin="handle_focusin"
     @focusout="handle_focusout"
@@ -472,12 +486,9 @@
       :vector="vector"
       :show_cutout_symbols="cutouts_active && mosaic"
       :shown="shown" />
-    <figcaption
-      v-if="menu_open || thought_overlay_open || (menu && menu_always_visible)">
+    <figcaption v-if="figcaption_visible">
       <header>
-        <aside
-          v-if="overlay_statements?.length && thought_overlay_open"
-          aria-live="polite">
+        <aside v-if="overlay_text_visible" aria-live="polite">
           <as-thought
             v-for="stmt in overlay_statements"
             :key="stmt.id"
@@ -487,8 +498,8 @@
       </header>
       <template v-if="menu_open || (menu && menu_always_visible)">
         <as-aside-account
-          v-if="account_sheet"
-          :open="menu_open && !menu_always_visible"
+          v-if="account_sheet && !menu_always_visible"
+          :open="menu_open"
           @close="menu_open = false">
           <footer>
             <router-link
@@ -556,8 +567,6 @@
     display: grid;
     overflow: hidden;
     min-height: 512px;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 512px;
     border-radius: round((base-line * .03), 2);
     grid-row-start: span 2;
     transition:
@@ -624,6 +633,11 @@
         grid-area: 1 / 1;
         position: relative;
       }
+    }
+    /* Keep `content-visibility` off the figure so figcaption (overlay text) is not skipped; Safari mishandles the subtree when the root has `auto`. */
+    & > svg:not([data-poster-symbol-defs]) {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 512px;
     }
     svg[aria-roledescription='referenced poster'] {
       display: block;

@@ -186,10 +186,29 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(wrapper.find('figcaption').exists()).toBe(false)
     })
 
+    it('hides read-only overlay statements until the poster is clicked', async () => {
+      const stmts = [{ id: '/+14151234356/statements/1', statement: 'hello' }]
+      await wrapper.setProps({
+        overlay_statements: stmts,
+        overlay_editable: false,
+        menu: false
+      })
+      await flushPromises()
+      expect(wrapper.find('figcaption aside').exists()).toBe(false)
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      await as_svg.vm.$emit('click', true)
+      await flushPromises()
+      expect(wrapper.find('figcaption aside').exists()).toBe(true)
+    })
+
     it('resets thought overlay expanded state when overlay_statements change', async () => {
       const stmts_a = [{ id: '/+14151234356/statements/1', statement: 'a' }]
       const stmts_b = [{ id: '/+14151234356/statements/2', statement: 'b' }]
-      await wrapper.setProps({ menu: true, overlay_statements: stmts_a })
+      await wrapper.setProps({
+        menu: true,
+        overlay_statements: stmts_a,
+        overlay_editable: true
+      })
       const as_svg = wrapper.findComponent({ name: 'AsSvg' })
       await as_svg.vm.$emit('click', true)
       await flushPromises()

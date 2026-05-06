@@ -490,5 +490,27 @@ describe('@/utils/itemid', () => {
       expect(url).toHaveBeenCalledTimes(1)
       url.mockResolvedValue('https://example.com/file.html.gz')
     })
+
+    it('skips Storage when sync:index holds an idb-cloned missing marker', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      get.mockImplementation(key =>
+        key === 'sync:index'
+          ? Promise.resolve({
+              [id]: {
+                updated: null,
+                customMetadata: { hash: null }
+              }
+            })
+          : Promise.resolve(undefined)
+      )
+
+      const resolved = await as_download_url(id)
+
+      expect(resolved).toBeNull()
+      expect(url).not.toHaveBeenCalled()
+    })
   })
 })
