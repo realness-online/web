@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 // Define mocks before other imports
 vi.mock('@/persistence/Storage', () => ({

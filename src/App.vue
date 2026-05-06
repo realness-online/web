@@ -569,11 +569,6 @@
         pointer-events: none;
         transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
         transition-behavior: allow-discrete;
-        @starting-style {
-          transform: translateY(100%);
-          opacity: 0;
-          visibility: hidden;
-        }
         & > * {
           pointer-events: auto;
         }
@@ -647,6 +642,15 @@
           height: base-line * 2;
         }
       }
+
+    }
+  }
+
+  @starting-style {
+    main#realness > nav > footer {
+      transform: translateY(100%);
+      opacity: 0;
+      visibility: hidden;
     }
   }
 </style>

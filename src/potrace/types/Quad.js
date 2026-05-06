@@ -15,7 +15,7 @@ class Quad {
   /**
    * @type {number[]} Matrix data stored as 1D array
    */
-  data = new Array(Quad.MATRIX_SIZE).fill(0)
+  data = Array.from({ length: Quad.MATRIX_SIZE }, () => 0)
 
   /**
    * Gets the value at specified coordinates

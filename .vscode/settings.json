@@ -6,20 +6,32 @@
   "files.eol": "\n",
   "editor.tabSize": 2,
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
-  "editor.codeActionsOnSave": { "source.fixAll": "explicit" },
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnType": false, // required
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.oxc": "explicit"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnType": false,
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "files.autoSave": "onFocusChange",
-  "vs-code-prettier-eslint.prettierLast": true,
   "deno.enable": true,
   "deno.enablePaths": ["./src", "./scripts", "./tests"],
   "deno.importMap": "./import_map.json",
   "files.exclude": {
-    ".husky/_/**/*": true
-  }
+    ".vite-hooks/_/**/*": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "oxc.fmt.configPath": "./vite.config.js"
 }

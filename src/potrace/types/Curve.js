@@ -16,13 +16,13 @@ class Curve {
    */
   constructor(n) {
     this.n = n
-    this.tag = new Array(n)
-    this.c = new Array(n * 3)
+    this.tag = Array.from({ length: n })
+    this.c = Array.from({ length: n * 3 })
     this.alpha_curve = 0
-    this.vertex = new Array(n)
-    this.alpha = new Array(n)
-    this.alpha0 = new Array(n)
-    this.beta = new Array(n)
+    this.vertex = Array.from({ length: n })
+    this.alpha = Array.from({ length: n })
+    this.alpha0 = Array.from({ length: n })
+    this.beta = Array.from({ length: n })
   }
 }
 

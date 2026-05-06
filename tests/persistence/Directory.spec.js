@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { is_directory_id, as_directory_id } from '@/persistence/Directory'
 
 describe('Directory validation', () => {

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { config } from '@vue/test-utils'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'

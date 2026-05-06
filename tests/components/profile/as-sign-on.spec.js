@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import sign_on from '@/components/profile/as-sign-on'
 

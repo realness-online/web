@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 global.fetch = vi.fn(() =>
   Promise.resolve({

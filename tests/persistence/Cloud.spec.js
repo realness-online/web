@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 
 // Mock sync.js to prevent it from importing Storage during mock setup
 vi.mock('@/use/sync', () => ({}))

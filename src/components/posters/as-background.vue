@@ -58,8 +58,10 @@
     transition:
       opacity 0.2s ease,
       visibility 0.2s ease
-    @starting-style
-      opacity: 0
     &:focus
       outline:none
+
+  @starting-style
+    rect[itemprop="background"]
+      opacity: 0
 </style>

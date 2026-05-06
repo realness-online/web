@@ -29,7 +29,7 @@ export const thoughts_for_author = items => {
 
   for (const item of rows) {
     const t = as_created_at(item.id)
-    // eslint-disable-next-line eqeqeq -- intentional nullish check
+    // oxlint-disable-next-line eqeqeq -- intentional nullish check
     if (t == null) continue
     const author = as_author(item.id)
     if (!author) continue

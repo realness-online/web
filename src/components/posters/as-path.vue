@@ -126,9 +126,6 @@
       visibility 0.2s ease,
       stroke-opacity 0.2s ease,
       stroke-width 0.2s ease;
-    @starting-style {
-      opacity: 0;
-    }
     &:focus {
       outline: none;
     }
@@ -140,7 +137,16 @@
     transition:
       opacity 0.2s ease,
       visibility 0.2s ease;
-    @starting-style {
+  }
+
+  @starting-style {
+    path[itemprop] {
+      opacity: 0;
+    }
+  }
+
+  @starting-style {
+    g {
       opacity: 0;
     }
   }

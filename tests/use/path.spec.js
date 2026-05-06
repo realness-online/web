@@ -1,5 +1,5 @@
 import { useActiveElement } from '@vueuse/core'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { itemprop_query, create_path_element, use, change_by } from '@/use/path'
 
 describe('@/use/path.js', () => {

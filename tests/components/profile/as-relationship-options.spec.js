@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import as_options from '@/components/profile/as-relationship-options'
 
 // Mock the use_me composable

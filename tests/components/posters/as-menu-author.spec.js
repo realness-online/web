@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import as_author_menu from '@/components/posters/as-menu-author'
 

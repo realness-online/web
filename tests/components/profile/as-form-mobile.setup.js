@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 // Mock all the complex dependencies properly
 vi.mock('@/use/people', () => ({

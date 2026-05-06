@@ -321,7 +321,7 @@
       ctx.putImageData(layer.imageData, 0, 0)
 
       // Sequential processing required for file downloads
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const blob = await canvas.convertToBlob({ type: 'image/png' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')

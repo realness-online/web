@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { thoughts_for_author, thought_feed_slots } from '@/utils/thoughts'
 
 const author = '/+14151234356'

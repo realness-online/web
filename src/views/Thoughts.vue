@@ -91,7 +91,7 @@
       if (set_working) set_working(true)
       try {
         await load_phonebook()
-        await fill_statements(true)
+        await fill_statements()
       } finally {
         if (set_working) set_working(false)
       }

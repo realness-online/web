@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 import as_link from '@/components/profile/as-link'
 
 // Mock the imports that the component uses

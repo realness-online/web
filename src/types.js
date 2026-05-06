@@ -222,5 +222,3 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  * @property {() => Promise<boolean>} sync_posters_directory
  * @property {() => Promise<void>} sync_me
  */
-
-export {}

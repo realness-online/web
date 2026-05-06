@@ -6,7 +6,7 @@ import {
   beforeEach,
   beforeAll,
   afterEach
-} from 'vitest'
+} from 'vite-plus/test'
 import { ref } from 'vue'
 import { log_as_device } from '../helpers/profile-device-log.js'
 import { set_profile_sync_log_sink } from '@/utils/profile-sync-log'
