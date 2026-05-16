@@ -106,7 +106,7 @@ describe('@/components/as-days', () => {
 
   describe('Computed Properties', () => {
     it('has filtered_days computed property', () => {
-      expect(wrapper.vm.filtered_days).toBeDefined()
+      expect(wrapper.vm.filtered_days_list).toBeDefined()
     })
 
     it('has thought_feed_slots_list computed property', () => {

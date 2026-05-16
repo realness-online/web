@@ -128,6 +128,67 @@ With structured segmentation data (items list + depth layers), you can:
 - Potrace processing adds CPU time but significantly reduces file size
 - Typical savings: 80-90% for simple masks, 50-70% for medium complexity
 
+## Mask Refinement Editor (iPad Layer Masks)
+
+**Goal:** After converting photo → vectors (vtracer), let users refine the output by drawing masks on three depth layers (foreground, midground, background).
+
+### Workflow
+
+1. **Depth Segmentation** — DINOv3 clusters image patches into three depth layers
+   - Run DINOv3 on original photo → get patch embeddings
+   - K-means or HDBSCAN clustering to partition depth space
+   - Generate three binary masks (one per layer)
+
+2. **Vtracer Output** — Split converted vectors into three layers (pre-process or post-segmentation)
+
+3. **iPad Mask Drawing** — User refines each layer independently
+   - Three mask canvases (one per layer)
+   - Pressure-sensitive input via perfect-freehand
+   - Draw to erase/hide regions, fade edges, composite manually
+   - Real-time preview with layer blending
+
+4. **Apply Masks** — Composite three layers with user-drawn masks
+   - Foreground mask × foreground vectors
+   - Midground mask × midground vectors
+   - Background mask × background vectors
+   - Render with proper layer ordering and blend modes
+
+### Benefits
+
+- **Selective control:** Erase background clutter, keep subject sharp, fade transitions
+- **Parallax effects:** Each layer scrolls/animates independently
+- **Selective styling:** Different opacity/effects per depth level
+- **iPad-native:** Familiar drawing experience, tactile feedback
+
+### Implementation
+
+**Segmentation worker:**
+
+- Load DINOv3 (huggingface or local inference)
+- Run on original photo at patch level (e.g., 32×32 patches)
+- Extract embeddings, cluster into 3 groups
+- Generate three binary masks (rasterized to image)
+
+**Editor UI:**
+
+- Canvas layer for each depth (foreground, mid, back)
+- Toggle layer visibility
+- perfect-freehand integration for pressure-sensitive drawing
+- Real-time preview compositing vectors + masks
+
+**Mask application:**
+
+- Store three mask ImageData per poster
+- Apply via SVG `mask` attribute or alpha compositing
+- Potrace each mask for file size optimization
+
+### Notes
+
+- DINOv3 requires signup (commercial license) — consider alternatives (OpenAI CLIP, SAM, monocular depth)
+- Inference can be local (GPU) or cloud (Replicate, HuggingFace API)
+- Three-layer split is opinionated; could extend to N layers if needed
+- Mask refinement is optional — auto-segmentation provides baseline
+
 ## Stretch Goals
 
 On-device generation of alpha, depth, and roughness maps for enhanced poster effects.

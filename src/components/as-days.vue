@@ -4,7 +4,13 @@
   import { as_author, as_created_at, feed_slot_itemid } from '@/utils/itemid'
   import { id_as_day, as_day, is_today } from '@/utils/date'
   import { thoughts_for_author, thought_feed_slots } from '@/utils/thoughts'
-  import { ref, computed, watch, onMounted as mounted } from 'vue'
+  import {
+    ref,
+    computed,
+    watch,
+    onMounted as mounted,
+    onBeforeUnmount as before_unmount
+  } from 'vue'
 
   // Props
   const props = defineProps({
@@ -40,18 +46,65 @@
     }
   })
 
-  const page_size = 5
+  const DEFAULT_SLOT_BATCH = 12
+  const MIN_SLOT_COUNT = 6
+
   const days = ref(new Map())
-  const page = ref(1)
+  const visible_slot_count = ref(0)
+  const viewport_slot_batch = ref(DEFAULT_SLOT_BATCH)
   const observer = ref(null)
 
-  const filtered_days = computed(() => {
-    if (props.paginate) return [...days.value].slice(0, page.value * page_size)
-    return days.value
+  const sorted_days_entries = computed(() => [...days.value])
+
+  const estimate_viewport_slot_batch = () => {
+    if (typeof window === 'undefined') return DEFAULT_SLOT_BATCH
+    const min_card_width = 420
+    const estimated_card_height = 360
+    const columns = Math.max(1, Math.floor(window.innerWidth / min_card_width))
+    const rows = Math.max(
+      1,
+      Math.ceil(window.innerHeight / estimated_card_height) + 1
+    )
+    return Math.max(MIN_SLOT_COUNT, columns * rows)
+  }
+
+  const update_viewport_slot_batch = () => {
+    viewport_slot_batch.value = estimate_viewport_slot_batch()
+    if (!props.paginate) return
+    if (visible_slot_count.value < viewport_slot_batch.value)
+      visible_slot_count.value = viewport_slot_batch.value
+  }
+
+  const flattened_day_slots = computed(() => {
+    const slots = []
+    for (const [date, day] of sorted_days_entries.value)
+      for (const item of day) slots.push({ date, item })
+    return slots
   })
 
-  /** Stable iterable for v-for + last-item sentinel ref (Map or array from `filtered_days`). */
-  const filtered_days_list = computed(() => [...filtered_days.value])
+  const visible_day_slots = computed(() => {
+    if (!props.paginate) return flattened_day_slots.value
+    const limit = Math.max(viewport_slot_batch.value, visible_slot_count.value)
+    return flattened_day_slots.value.slice(0, limit)
+  })
+
+  const filtered_days_list = computed(() => {
+    if (!props.paginate) return sorted_days_entries.value
+
+    /** @type {Map<string, unknown[]>} */
+    const grouped_days = new Map()
+    const ordered_days = []
+    for (const { date, item } of visible_day_slots.value) {
+      if (!grouped_days.has(date)) {
+        grouped_days.set(date, [])
+        ordered_days.push(date)
+      }
+      grouped_days.get(date)?.push(item)
+    }
+    return ordered_days
+      .map(date => [date, grouped_days.get(date)])
+      .filter(([, day]) => day?.length)
+  })
 
   /**
    * Cheap signature so we refill when membership or order changes, without a deep watch
@@ -72,7 +125,9 @@
   const flattened_items = computed(() => {
     if (!props.storytelling) return []
     const items = []
-    const days_to_use = props.paginate ? filtered_days.value : days.value
+    const days_to_use = props.paginate
+      ? filtered_days_list.value
+      : sorted_days_entries.value
     for (const [date, day] of days_to_use)
       for (const item of day) {
         if (Array.isArray(item)) continue
@@ -110,8 +165,13 @@
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         observer.value.unobserve(entry.target)
-        const pages = days.value.size / page_size
-        if (page.value < pages) page.value += 1
+        if (!props.paginate) return
+        const max_slots = flattened_day_slots.value.length
+        if (visible_slot_count.value >= max_slots) return
+        visible_slot_count.value = Math.min(
+          max_slots,
+          visible_slot_count.value + viewport_slot_batch.value
+        )
       }
     })
   }
@@ -130,6 +190,8 @@
         /** @type {unknown[]} */ (new_days.get(day_name))
       )
     days.value = new_days
+    if (!props.paginate) return
+    visible_slot_count.value = viewport_slot_batch.value
   }
 
   /**
@@ -241,10 +303,18 @@
   )
 
   mounted(() => {
+    update_viewport_slot_batch()
     observer.value = new IntersectionObserver(check_intersection, {
       root: null,
       threshold: 0.25
     })
+    window.addEventListener('resize', update_viewport_slot_batch)
+  })
+
+  before_unmount(() => {
+    observer.value?.disconnect()
+    if (typeof window !== 'undefined')
+      window.removeEventListener('resize', update_viewport_slot_batch)
   })
 
   watch(
