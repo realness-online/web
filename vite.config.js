@@ -21,7 +21,8 @@ const manual_chunk_rules = {
     '@firebase/app',
     '@firebase/auth',
     '@firebase/firestore',
-    '@firebase/storage'
+    '@firebase/storage',
+    'three'
   ],
   utilities: ['exifreader'],
   libphonenumber: ['libphonenumber-js']
@@ -260,7 +261,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(project_root, './src'),
-      '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url))
+      '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url)),
+      '@3d': path.resolve(project_root, '../3d/src')
     },
     extensions: ['.js', '.json', '.vue']
   },
@@ -311,10 +313,16 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: `512.png?v=${icon_version}`,
+            src: `192-m.png?v=${icon_version}`,
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: `512-m.png?v=${icon_version}`,
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       }

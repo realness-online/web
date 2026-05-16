@@ -139,10 +139,8 @@ export const build_download_svg = svg_element => {
     el.remove()
   })
 
-  const style_elements = svg_clone.querySelectorAll('[style]')
-  style_elements.forEach(el => {
-    el.removeAttribute('style')
-  })
+  // Keep inline presentation styles (e.g. mosaic opacity) so exported SVG
+  // matches on-screen layer blending in third-party apps.
 
   const vue_components = svg_clone.querySelectorAll('as-animation')
   vue_components.forEach(component => component.remove())

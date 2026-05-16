@@ -39,6 +39,7 @@
   import {
     ref,
     computed,
+    defineAsyncComponent,
     getCurrentInstance as current_instance,
     watchEffect as watch_effect,
     watch,
@@ -107,6 +108,11 @@
   const person = ref(null)
   const menu_open = ref(false)
   const thought_overlay_open = ref(false)
+  const viewer_open = ref(false)
+  const dialog_ref = ref(null)
+  const AsViewer3d = defineAsyncComponent(
+    () => import('@/components/posters/as-viewer-3d.vue')
+  )
 
   /** Click-to-toggle for every poster with overlay statements (own or read-only). */
   const overlay_text_visible = computed(() => {
@@ -376,6 +382,10 @@
       if (!menu_enabled) menu_open.value = false
     }
   )
+  watch(viewer_open, open => {
+    if (open) dialog_ref.value?.showModal()
+    else dialog_ref.value?.close()
+  })
   const cutouts_active = computed(() => poster_in_view.value || props.pin)
 
   watch_effect(async () => {
@@ -510,13 +520,15 @@
             </router-link>
             <time v-else-if="poster_time">{{ poster_time }}</time>
             <slot>
-              <as-author-menu
-                v-if="is_my_poster"
-                :poster="author_menu_poster"
-                :allow_remove="has_remove_handler"
-                :allow_picker="has_picker_handler"
-                @remove="id => emit('remove', id)"
-                @picker="id => emit('picker', id)" />
+              <menu v-if="is_my_poster">
+                <as-author-menu
+                  :poster="author_menu_poster"
+                  :allow_remove="has_remove_handler"
+                  :allow_picker="has_picker_handler"
+                  @remove="id => emit('remove', id)"
+                  @picker="id => emit('picker', id)" />
+                <button @click="viewer_open = true">3D</button>
+              </menu>
               <menu v-else>
                 <as-figure
                   v-if="person"
@@ -525,6 +537,7 @@
                   :itemid="profile_chip_itemid" />
                 <span class="actions">
                   <as-download :itemid="/** @type {Id} */ (itemid)" />
+                  <button @click="viewer_open = true">3D</button>
                 </span>
               </menu>
             </slot>
@@ -538,13 +551,15 @@
           </router-link>
           <time v-else-if="poster_time">{{ poster_time }}</time>
           <slot>
-            <as-author-menu
-              v-if="is_my_poster"
-              :poster="author_menu_poster"
-              :allow_remove="has_remove_handler"
-              :allow_picker="has_picker_handler"
-              @remove="id => emit('remove', id)"
-              @picker="id => emit('picker', id)" />
+            <menu v-if="is_my_poster">
+              <as-author-menu
+                :poster="author_menu_poster"
+                :allow_remove="has_remove_handler"
+                :allow_picker="has_picker_handler"
+                @remove="id => emit('remove', id)"
+                @picker="id => emit('picker', id)" />
+              <button @click="viewer_open = true">3D</button>
+            </menu>
             <menu v-else>
               <as-figure
                 v-if="person"
@@ -553,12 +568,19 @@
                 :itemid="profile_chip_itemid" />
               <span class="actions">
                 <as-download :itemid="/** @type {Id} */ (itemid)" />
+                <button @click="viewer_open = true">3D</button>
               </span>
             </menu>
           </slot>
         </footer>
       </template>
     </figcaption>
+    <dialog
+      ref="dialog_ref"
+      @close="viewer_open = false"
+      @click.self="viewer_open = false">
+      <as-viewer-3d v-if="viewer_open" :itemid="itemid" />
+    </dialog>
   </figure>
 </template>
 
@@ -656,6 +678,20 @@
     }
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
+    }
+    dialog {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      padding: 0;
+      border: none;
+      background: #151518;
+      &::backdrop {
+        background: rgba(0, 0, 0, 0.85);
+      }
     }
     & > figcaption {
       grid-area: 1 / 1;

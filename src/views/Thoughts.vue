@@ -190,6 +190,22 @@
     )
   }
 
+  const mark_thoughts_rendered = async () => {
+    if (typeof window === 'undefined') return
+    const perf = window.performance
+    if (!perf?.mark) return
+
+    await tick()
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
+    perf.clearMarks('thoughts-rendered')
+    perf.mark('thoughts-rendered')
+  }
+
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
 
@@ -209,6 +225,7 @@
     await init_processing_queue?.()
     working.value = false
     if (set_working) set_working(false)
+    await mark_thoughts_rendered()
   })
 
   watch(posting, async (now, was) => {

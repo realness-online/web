@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { tmpdir } from 'os'
+import crypto from 'node:crypto'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,15 +22,29 @@ const extract_realness_symbol = icons_svg => {
   return { symbol_content, viewbox }
 }
 
-const SAFE_ZONE_PADDING = 0.15
 const ICON_SIZE_SMALL = 192
 const ICON_SIZE_LARGE = 512
 const ICON_SIZES = [ICON_SIZE_SMALL, ICON_SIZE_LARGE]
+const ICON_VARIANTS = [
+  {
+    suffix: '',
+    safe_zone_padding: 0.2
+  },
+  {
+    suffix: '-m',
+    safe_zone_padding: 0.28
+  }
+]
 
-const generate_icon_png = async (size, output_path, icons_svg) => {
+const generate_icon_png = async (
+  size,
+  output_path,
+  icons_svg,
+  safe_zone_padding
+) => {
   const { symbol_content } = extract_realness_symbol(icons_svg)
   const content_size = ICON_SIZE_SMALL
-  const padded_size = content_size / (1 - SAFE_ZONE_PADDING * 2)
+  const padded_size = content_size / (1 - safe_zone_padding * 2)
   const inset = (padded_size - content_size) / 2
   const padded_viewbox = `-${inset} -${inset} ${padded_size} ${padded_size}`
 
@@ -37,7 +52,10 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
   ${symbol_content}
 </svg>`
 
-  const temp_svg_path = path.join(tmpdir(), `icon-${size}-${Date.now()}.svg`)
+  const temp_svg_path = path.join(
+    tmpdir(),
+    `icon-${size}-${Date.now()}-${crypto.randomUUID()}.svg`
+  )
   fs.writeFileSync(temp_svg_path, svg_content)
 
   const img = await loadImage(temp_svg_path)
@@ -57,8 +75,15 @@ const generate_all_icons = async () => {
   const public_dir = path.join(__dirname, '../public')
 
   await Promise.all(
-    ICON_SIZES.map(size =>
-      generate_icon_png(size, path.join(public_dir, `${size}.png`), icons_svg)
+    ICON_VARIANTS.flatMap(({ suffix, safe_zone_padding }) =>
+      ICON_SIZES.map(size =>
+        generate_icon_png(
+          size,
+          path.join(public_dir, `${size}${suffix}.png`),
+          icons_svg,
+          safe_zone_padding
+        )
+      )
     )
   )
 }

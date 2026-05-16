@@ -15,6 +15,9 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
   />
   <!--v-if-->
   <!--v-if-->
+  <dialog>
+    <!--v-if-->
+  </dialog>
 </figure>
 `;
 
@@ -32,5 +35,8 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
   />
   <!--v-if-->
   <!--v-if-->
+  <dialog>
+    <!--v-if-->
+  </dialog>
 </figure>
 `;

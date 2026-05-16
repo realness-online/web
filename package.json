@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "2.3.2",
+  "version": "2.3.1",
   "private": false,
   "type": "module",
   "keywords": [
@@ -27,6 +27,8 @@
     "build:icons": "node scripts/generate-icons.js",
     "build:workers": "WORKER_NAME=vector vp build -c workers.config.js && WORKER_NAME=compressor vp build -c workers.config.js && WORKER_NAME=tracer vp build -c workers.config.js",
     "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm",
+    "score": "vp run build && CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.staticDistDir=dist --collect.url=/ --collect.numberOfRuns=1 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
+    "score:prod": "CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=1 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
     "serve": "vp preview",
     "serve:https": "serve dist",
     "lint": "vp lint . --fix",
@@ -68,10 +70,12 @@
     "marked": "18.0.0",
     "marked-gfm-heading-id": "4.1.4",
     "mediabunny": "1.40.1",
+    "three": "^0.184.0",
     "vue": "3.5.32",
     "vue-router": "5.0.4"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
     "@rollup/plugin-alias": "6.0.0",
     "@rollup/plugin-commonjs": "29.0.2",
     "@rollup/plugin-node-resolve": "16.0.3",
@@ -99,8 +103,8 @@
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vite-plugin-pwa": "1.2.0",
     "vite-plugin-wasm": "3.6.0",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
-    "vite-plus": "latest"
+    "vite-plus": "latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
   "browserslist": [
     ">0.5%",
