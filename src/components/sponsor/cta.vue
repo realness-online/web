@@ -4,8 +4,8 @@
 
   defineOptions({ name: 'SponsorCta' })
 
-  const buy_button_id = import.meta.env.VITE_STRIPE_BUY_BUTTON_ID
-  const publishable_key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+  const buy_button_id = 'buy_btn_0TTXvPANizuvdTZsWfCGhEHG'
+  const publishable_key = 'pk_live_OGXHSdpX4i3CQ7w30os4sseX'
   const can_render_button = !!(buy_button_id && publishable_key)
 
   // Lazy: fetch buy-button.js only when this component mounts and only once.
@@ -32,9 +32,6 @@
     :buy-button-id="buy_button_id"
     :publishable-key="publishable_key"
     :client-reference-id="me?.id || undefined" />
-  <span v-else class="missing-link">
-    Set VITE_STRIPE_BUY_BUTTON_ID and VITE_STRIPE_PUBLISHABLE_KEY to enable.
-  </span>
 </template>
 
 <style lang="stylus">

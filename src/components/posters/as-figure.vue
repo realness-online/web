@@ -2,6 +2,7 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsFigure from '@/components/profile/as-figure'
+  import AsViewer3d from '@/components/posters/as-viewer-3d.vue'
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsDownload from '@/components/download-vector'
@@ -26,7 +27,7 @@
     is_click,
     geology_layers
   } from '@/use/poster'
-  import { mosaic } from '@/utils/preference'
+  import { mosaic, view_3d } from '@/utils/preference'
   import {
     poster_dom_id,
     poster_dom_href,
@@ -39,7 +40,6 @@
   import {
     ref,
     computed,
-    defineAsyncComponent,
     getCurrentInstance as current_instance,
     watchEffect as watch_effect,
     watch,
@@ -108,11 +108,10 @@
   const person = ref(null)
   const menu_open = ref(false)
   const thought_overlay_open = ref(false)
-  const viewer_open = ref(false)
-  const dialog_ref = ref(null)
-  const AsViewer3d = defineAsyncComponent(
-    () => import('@/components/posters/as-viewer-3d.vue')
-  )
+  // Derived from FIT_HEIGHT / (2 * (camera_z - initial_zoom) * tan(FOV/2)) - tune to taste
+  const SVG_ZOOM_SCALE = 1.59
+  const canvas_alive = ref(false)
+  const viewer_ref = ref(null)
 
   /** Click-to-toggle for every poster with overlay statements (own or read-only). */
   const overlay_text_visible = computed(() => {
@@ -382,18 +381,16 @@
       if (!menu_enabled) menu_open.value = false
     }
   )
-  watch(viewer_open, open => {
-    if (open) dialog_ref.value?.showModal()
-    else dialog_ref.value?.close()
-  })
-  const cutouts_active = computed(() => poster_in_view.value || props.pin)
+  const cutouts_active = computed(
+    () => poster_in_view.value || props.pin || view_3d.value
+  )
 
   watch_effect(async () => {
     if (use_dom_reference.value) return
     const mosaic_on = mosaic.value
     const vector_id = vector.value?.id
     if (!vector_id) return
-    if (mosaic_on && cutouts_active.value) {
+    if ((mosaic_on || view_3d.value) && cutouts_active.value) {
       await load_cutouts()
       return
     }
@@ -412,6 +409,23 @@
 
   const key_commands = inject('key-commands')
   const as_svg_ref = ref(null)
+
+  const set_svg_zoom = t => {
+    const svg = as_svg_ref.value?.$el
+    if (!svg) return
+    svg.style.scale = t > 0 ? String(1 + (SVG_ZOOM_SCALE - 1) * t) : ''
+  }
+
+  const canvas_ready = computed(
+    () => view_3d.value && shown.value && cutouts_loaded.value
+  )
+  watch(canvas_ready, ready => {
+    if (ready && !canvas_alive.value) canvas_alive.value = true
+    else if (!ready && canvas_alive.value)
+      viewer_ref.value?.start_leave(set_svg_zoom, () => {
+        canvas_alive.value = false
+      })
+  })
 
   const poster_toggle_target = () =>
     use_dom_reference.value
@@ -487,6 +501,7 @@
       :sync_poster="sync_poster_for_svg"
       :show_cutout_layers="cutouts_active && mosaic"
       :pin="props.pin"
+      :paused="canvas_ready"
       @show="on_show"
       @in_view="on_in_view"
       @click="on_poster_svg_click"
@@ -497,6 +512,12 @@
       :vector="vector"
       :show_cutout_symbols="cutouts_active && mosaic"
       :shown="shown" />
+    <as-viewer-3d
+      v-if="canvas_alive"
+      ref="viewer_ref"
+      :itemid="itemid"
+      :on_svg_zoom="set_svg_zoom"
+      class="inline" />
     <figcaption v-if="figcaption_visible">
       <header>
         <aside v-if="overlay_text_visible" aria-live="polite">
@@ -527,7 +548,6 @@
                   :allow_picker="has_picker_handler"
                   @remove="id => emit('remove', id)"
                   @picker="id => emit('picker', id)" />
-                <button @click="viewer_open = true">3D</button>
               </menu>
               <menu v-else>
                 <as-figure
@@ -537,7 +557,6 @@
                   :itemid="profile_chip_itemid" />
                 <span class="actions">
                   <as-download :itemid="/** @type {Id} */ (itemid)" />
-                  <button @click="viewer_open = true">3D</button>
                 </span>
               </menu>
             </slot>
@@ -558,7 +577,6 @@
                 :allow_picker="has_picker_handler"
                 @remove="id => emit('remove', id)"
                 @picker="id => emit('picker', id)" />
-              <button @click="viewer_open = true">3D</button>
             </menu>
             <menu v-else>
               <as-figure
@@ -568,19 +586,12 @@
                 :itemid="profile_chip_itemid" />
               <span class="actions">
                 <as-download :itemid="/** @type {Id} */ (itemid)" />
-                <button @click="viewer_open = true">3D</button>
               </span>
             </menu>
           </slot>
         </footer>
       </template>
     </figcaption>
-    <dialog
-      ref="dialog_ref"
-      @close="viewer_open = false"
-      @click.self="viewer_open = false">
-      <as-viewer-3d v-if="viewer_open" :itemid="itemid" />
-    </dialog>
   </figure>
 </template>
 
@@ -679,19 +690,10 @@
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
     }
-    dialog {
-      position: fixed;
+    .viewer_3d.inline {
+      position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-      padding: 0;
-      border: none;
-      background: #151518;
-      &::backdrop {
-        background: rgba(0, 0, 0, 0.85);
-      }
+      z-index: 2;
     }
     & > figcaption {
       grid-area: 1 / 1;

@@ -201,7 +201,8 @@ export default defineConfig({
     ],
     options: {
       typeAware: false,
-      typeCheck: false
+      typeCheck: false,
+      denyWarnings: true
     }
   },
   fmt: {
@@ -261,8 +262,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(project_root, './src'),
-      '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url)),
-      '@3d': path.resolve(project_root, '../3d/src')
+      '@@': fileURLToPath(new URL('./tests/mocks', import.meta.url))
     },
     extensions: ['.js', '.json', '.vue']
   },

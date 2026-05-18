@@ -59,7 +59,7 @@ describe('Account', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mock_route.query = {}
-    mock_me.value = { id: '/+15550000000', name: 'Scott' }
+    mock_me.value = { id: '/+15550000000', name: 'Scott', type: 'person' }
     mock_current_user.value = { uid: 'test-user' }
     mock_record.mockResolvedValue(false)
   })

@@ -76,6 +76,10 @@
     as_avatar: {
       type: Boolean,
       default: false
+    },
+    paused: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
@@ -266,6 +270,7 @@
     () =>
       animate_pref.value === true &&
       !props.as_avatar &&
+      !props.paused &&
       intersecting.value &&
       visibility.value === 'visible'
   )
@@ -642,17 +647,8 @@
       opacity: 0.85;
     }
 
-    /* Accessibility: no motion */
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
-      & use[itemprop='sediment'],
-      & use[itemprop='sand'],
-      & use[itemprop='gravel'],
-      & use[itemprop='rocks'],
-      & use[itemprop='boulders'] {
-        animation: none !important;
-        opacity: 0.5;
-      }
     }
   }
 

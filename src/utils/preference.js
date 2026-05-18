@@ -1,5 +1,19 @@
 import { useStorage as storage } from '@vueuse/core'
 import { DEFAULT_ANIMATION_SPEED } from '@/utils/animation-config'
+import {
+  DEFAULT_MOSAIC_SPREAD,
+  DEFAULT_MOSAIC_OPACITY,
+  DEFAULT_SHADOW_SPREAD,
+  DEFAULT_SHADOW_OPACITY,
+  DEFAULT_GROUP_GAP,
+  DEFAULT_TILT_AMOUNT,
+  DEFAULT_GYRO_AMOUNT,
+  DEFAULT_HAZE_DENSITY,
+  DEFAULT_DRIFT_AMOUNT,
+  DEFAULT_DRIFT_SPEED,
+  DEFAULT_BREATHING_AMOUNT,
+  DEFAULT_BREATHING_SPEED
+} from '@/utils/preference-defaults.js'
 
 export const animate = storage('animate', false)
 export const drama = storage('drama', false)
@@ -39,6 +53,25 @@ export const footer_visible = storage('footer_visible', true)
 
 export const sync_folder = storage('sync_folder', false)
 
-// export const adobe = storage('adobe', false)
-// export const simple = storage('simple', false)
-// export const filesystem = storage('filesystem', false)
+export const view_3d = storage('3d', false)
+
+export const mosaic_spread = storage('mosaic_spread', DEFAULT_MOSAIC_SPREAD)
+export const mosaic_opacity = storage('mosaic_opacity', DEFAULT_MOSAIC_OPACITY)
+export const shadow_spread = storage('shadow_spread', DEFAULT_SHADOW_SPREAD)
+export const shadow_opacity = storage('shadow_opacity', DEFAULT_SHADOW_OPACITY)
+export const group_gap = storage('group_gap', DEFAULT_GROUP_GAP)
+export const tilt_amount = storage('tilt_amount', DEFAULT_TILT_AMOUNT)
+export const gyro_amount = storage('gyro_amount', DEFAULT_GYRO_AMOUNT)
+export const haze_enabled = storage('haze_enabled', true)
+export const haze_color = storage('haze_color', '#0e0c09')
+export const haze_density = storage('haze_density', DEFAULT_HAZE_DENSITY)
+export const drift_amount = storage('drift_amount', DEFAULT_DRIFT_AMOUNT)
+export const drift_speed = storage('drift_speed', DEFAULT_DRIFT_SPEED)
+export const breathing_amount = storage(
+  'breathing_amount',
+  DEFAULT_BREATHING_AMOUNT
+)
+export const breathing_speed = storage(
+  'breathing_speed',
+  DEFAULT_BREATHING_SPEED
+)

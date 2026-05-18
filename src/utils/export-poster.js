@@ -9,6 +9,8 @@ import {
 } from '@/utils/color-converters'
 import { css_color_to_color } from '@/utils/colors'
 import { merge_poster_hidden_symbols } from '@/utils/poster-canvas'
+import { as_layer_id } from '@/utils/itemid'
+import { geology_layers } from '@/use/poster'
 
 const normalize_ids_for_download = svg => {
   const id_map = new Map()
@@ -152,6 +154,57 @@ export const build_download_svg = svg_element => {
   if (localStorage.adobe) adobe(svg_clone)
 
   return svg_clone
+}
+
+/**
+ * @param {Element} symbol_el
+ * @returns {Promise<void>}
+ */
+const symbol_has_content = symbol_el =>
+  new Promise(resolve => {
+    const check = () => {
+      if (symbol_el.innerHTML.trim()) resolve(undefined)
+      else requestAnimationFrame(check)
+    }
+    check()
+  })
+
+/**
+ * Builds a standalone SVG string for 3D (viewer or GLB export), including
+ * geology cutout symbols from the live poster DOM.
+ *
+ * @param {SVGSVGElement} svg_el
+ * @param {Id} itemid
+ * @param {{ wait_for_symbols?: boolean }} [options]
+ * @returns {Promise<string>}
+ */
+export const prepare_poster_svg_for_3d = async (
+  svg_el,
+  itemid,
+  { wait_for_symbols = true } = {}
+) => {
+  const prepared = build_download_svg(svg_el)
+  const defs = prepared.querySelector('defs')
+  if (!defs) return new XMLSerializer().serializeToString(prepared)
+
+  const symbol_defs = svg_el
+    .closest('figure.poster')
+    ?.querySelector('svg[data-poster-symbol-defs]')
+  if (!symbol_defs) return new XMLSerializer().serializeToString(prepared)
+
+  await Promise.all(
+    geology_layers.map(async layer => {
+      const layer_id = as_layer_id(itemid, layer)
+      const symbol = symbol_defs.querySelector(`symbol[itemid="${layer_id}"]`)
+      if (!symbol) return
+      if (wait_for_symbols) await symbol_has_content(symbol)
+      const symbol_clone = /** @type {Element} */ (symbol.cloneNode(true))
+      symbol_clone.setAttribute('id', layer)
+      defs.appendChild(symbol_clone)
+    })
+  )
+
+  return new XMLSerializer().serializeToString(prepared)
 }
 
 /**

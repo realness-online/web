@@ -2,7 +2,8 @@
   /** @typedef {import('@/types').Available_Command} Available_Command */
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
-  import { ref, computed, inject } from 'vue'
+  import { ref, computed, inject, watch, onBeforeUnmount, nextTick } from 'vue'
+  import { Pane } from 'tweakpane'
   import { get_command_description } from '@/utils/keymaps'
   import * as preferences from '@/utils/preference'
   import {
@@ -12,6 +13,180 @@
 
   const sync_folder_supported_value = sync_folder_supported()
   const { sync_folder, sync_folder_name } = use_sync_folder()
+
+  const tweakpane_ref = ref(null)
+  let pane = null
+
+  const dispose_pane = () => {
+    if (!pane) return
+    pane.dispose()
+    pane = null
+  }
+
+  const mount_pane = () => {
+    if (!tweakpane_ref.value || pane) return
+    const p = preferences
+    const settings = {
+      mosaic_spread: p.mosaic_spread.value,
+      mosaic_opacity: p.mosaic_opacity.value,
+      shadow_spread: p.shadow_spread.value,
+      shadow_opacity: p.shadow_opacity.value,
+      group_gap: p.group_gap.value,
+      tilt_amount: p.tilt_amount.value,
+      gyro_amount: p.gyro_amount.value,
+      haze_enabled: p.haze_enabled.value,
+      haze_color: p.haze_color.value,
+      haze_density: p.haze_density.value,
+      drift_amount: p.drift_amount.value,
+      drift_speed: p.drift_speed.value,
+      breathing_amount: p.breathing_amount.value,
+      breathing_speed: p.breathing_speed.value
+    }
+
+    pane = new Pane({ container: tweakpane_ref.value })
+
+    const sync = () => {
+      p.mosaic_spread.value = settings.mosaic_spread
+      p.mosaic_opacity.value = settings.mosaic_opacity
+      p.shadow_spread.value = settings.shadow_spread
+      p.shadow_opacity.value = settings.shadow_opacity
+      p.group_gap.value = settings.group_gap
+      p.tilt_amount.value = settings.tilt_amount
+      p.gyro_amount.value = settings.gyro_amount
+      p.haze_enabled.value = settings.haze_enabled
+      p.haze_color.value = settings.haze_color
+      p.haze_density.value = settings.haze_density
+      p.drift_amount.value = settings.drift_amount
+      p.drift_speed.value = settings.drift_speed
+      p.breathing_amount.value = settings.breathing_amount
+      p.breathing_speed.value = settings.breathing_speed
+    }
+
+    const mosaic_folder = pane.addFolder({ title: 'mosaic' })
+    mosaic_folder
+      .addBinding(settings, 'mosaic_spread', {
+        label: 'spread',
+        min: 0,
+        max: 0.01,
+        step: 0.0001
+      })
+      .on('change', sync)
+    mosaic_folder
+      .addBinding(settings, 'mosaic_opacity', {
+        label: 'opacity',
+        min: 0,
+        max: 1,
+        step: 0.01
+      })
+      .on('change', sync)
+
+    const shadow_folder = pane.addFolder({ title: 'shadows' })
+    shadow_folder
+      .addBinding(settings, 'shadow_spread', {
+        label: 'spread',
+        min: 0,
+        max: 0.03,
+        step: 0.0001
+      })
+      .on('change', sync)
+    shadow_folder
+      .addBinding(settings, 'shadow_opacity', {
+        label: 'opacity',
+        min: 0,
+        max: 1,
+        step: 0.01
+      })
+      .on('change', sync)
+    shadow_folder
+      .addBinding(settings, 'group_gap', {
+        label: 'group gap',
+        min: -0.5,
+        max: 1.5,
+        step: 0.01
+      })
+      .on('change', sync)
+
+    const camera_folder = pane.addFolder({ title: 'camera' })
+    camera_folder
+      .addBinding(settings, 'tilt_amount', {
+        label: 'arrow tilt',
+        min: 0,
+        max: 2.0,
+        step: 0.01
+      })
+      .on('change', sync)
+    camera_folder
+      .addBinding(settings, 'gyro_amount', {
+        label: 'gyro tilt',
+        min: 0,
+        max: 3.0,
+        step: 0.01
+      })
+      .on('change', sync)
+
+    const haze_folder = pane.addFolder({ title: 'haze' })
+    haze_folder
+      .addBinding(settings, 'haze_enabled', { label: 'enabled' })
+      .on('change', sync)
+    haze_folder
+      .addBinding(settings, 'haze_color', { label: 'color' })
+      .on('change', sync)
+    haze_folder
+      .addBinding(settings, 'haze_density', {
+        label: 'max',
+        min: 0,
+        max: 0.5,
+        step: 0.005
+      })
+      .on('change', sync)
+
+    const motion_folder = pane.addFolder({ title: 'motion' })
+    motion_folder
+      .addBinding(settings, 'drift_amount', {
+        label: 'drift amount',
+        min: 0,
+        max: 0.005,
+        step: 0.0001
+      })
+      .on('change', sync)
+    motion_folder
+      .addBinding(settings, 'drift_speed', {
+        label: 'drift speed',
+        min: 0,
+        max: 0.5,
+        step: 0.01
+      })
+      .on('change', sync)
+    motion_folder
+      .addBinding(settings, 'breathing_amount', {
+        label: 'breath amount',
+        min: 0,
+        max: 0.05,
+        step: 0.001
+      })
+      .on('change', sync)
+    motion_folder
+      .addBinding(settings, 'breathing_speed', {
+        label: 'breath speed',
+        min: 0,
+        max: 3,
+        step: 0.05
+      })
+      .on('change', sync)
+  }
+
+  watch(
+    () => preferences.view_3d.value,
+    async val => {
+      if (val) {
+        await nextTick()
+        mount_pane()
+      } else dispose_pane()
+    },
+    { immediate: true }
+  )
+
+  onBeforeUnmount(dispose_pane)
 
   const key_commands = inject('key-commands')
   const settings = ref(null)
@@ -133,6 +308,10 @@
           name="animate"
           title="Animate posters"
           subtitle="This one loves a big strong GPU" />
+        <div
+          v-if="preferences.view_3d.value"
+          ref="tweakpane_ref"
+          class="tweakpane-3d" />
 
         <preference
           v-if="sync_folder_supported_value"
@@ -279,6 +458,45 @@
     h1, svg.icon {
       color: red;
       fill: red;
+    }
+  }
+
+  .tweakpane-3d {
+    padding: round((base-line / 2), 2);
+    standard-border: black;
+
+    .tp-dfwv {
+      width: 100%;
+      position: static;
+
+      --tp-base-background-color: black-background;
+      --tp-base-shadow-color: transparent;
+      --tp-base-border-radius: round((base-line / 3), 2);
+      --tp-base-font-family: inherit;
+
+      --tp-container-background-color: rgba(255, 255, 255, 0.04);
+      --tp-container-background-color-hover: rgba(255, 255, 255, 0.07);
+      --tp-container-background-color-focus: rgba(255, 255, 255, 0.07);
+      --tp-container-background-color-active: rgba(255, 255, 255, 0.10);
+      --tp-container-foreground-color: white-text;
+
+      --tp-input-background-color: rgba(255, 255, 255, 0.06);
+      --tp-input-background-color-hover: blue;
+      --tp-input-background-color-focus: blue;
+      --tp-input-background-color-active: blue;
+      --tp-input-foreground-color: white-text;
+
+      --tp-label-foreground-color: white-text;
+      --tp-groove-foreground-color: rgba(255, 255, 255, 0.08);
+
+      --tp-button-background-color: rgba(255, 255, 255, 0.06);
+      --tp-button-background-color-hover: blue;
+      --tp-button-background-color-focus: blue;
+      --tp-button-background-color-active: blue;
+      --tp-button-foreground-color: white-text;
+
+      --tp-monitor-background-color: rgba(255, 255, 255, 0.04);
+      --tp-monitor-foreground-color: white-text;
     }
   }
 </style>

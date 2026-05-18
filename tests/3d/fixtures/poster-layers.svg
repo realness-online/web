@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#000" />
+    </linearGradient>
+  </defs>
+  <symbol id="boulders">
+    <path d="M10 10 L90 90" fill="#111" />
+  </symbol>
+  <symbol id="rocks">
+    <rect x="5" y="5" width="40" height="40" fill="#333" />
+  </symbol>
+  <symbol id="shadows">
+    <g id="bold"><path d="M0 0 L20 20" /></g>
+    <g id="light"><path d="M1 1 L21 21" /></g>
+  </symbol>
+</svg>
