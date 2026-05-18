@@ -30,7 +30,6 @@ export const create_poster_scene_settings = (state, appliers) => ({
     appliers.apply_mosaic_spread()
   },
   set_mosaic_opacity(value) {
-    if (state.mosaic_opacity === value) return
     state.mosaic_opacity = value
     appliers.apply_mosaic_opacity()
   },
@@ -40,7 +39,6 @@ export const create_poster_scene_settings = (state, appliers) => ({
     appliers.apply_shadow_z()
   },
   set_shadow_opacity(value) {
-    if (state.shadow_opacity === value) return
     state.shadow_opacity = value
     appliers.apply_shadow_opacity()
   },

@@ -1,5 +1,8 @@
 import * as THREE from 'three'
-import { extract_symbol_child_svg } from '../utils/load-svg-layers.js'
+import {
+  extract_symbol_child_from_context,
+  parse_poster_svg
+} from '../utils/load-svg-layers.js'
 import { svg_to_canvas_texture } from '../utils/load-svg-texture.js'
 import { SHADOW_Z_GAIN, TEXTURE_LAYERS } from './poster-scene-config.js'
 
@@ -37,10 +40,11 @@ export const add_poster_shadow_layers = options => {
   } = options
 
   const texture_promises = []
+  const poster_svg = parse_poster_svg(svg_string)
 
   for (const config of TEXTURE_LAYERS) {
-    const layer_svg = extract_symbol_child_svg(
-      svg_string,
+    const layer_svg = extract_symbol_child_from_context(
+      poster_svg,
       config.symbol_id,
       config.child_id
     )

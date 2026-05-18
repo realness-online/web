@@ -96,4 +96,34 @@ describe('create_poster_scene_settings', () => {
     expect(state.mosaic_layer_visible.boulders).toBe(false)
     expect(state.shadow_layer_visible.bold).toBe(false)
   })
+
+  it('set_mosaic_opacity always runs applier even when value unchanged', () => {
+    const state = {
+      mosaic_spread: 0,
+      mosaic_opacity: 0.5,
+      shadow_spread: 0,
+      shadow_opacity: 0,
+      mosaic_visible: true,
+      shadow_visible: true,
+      group_gap: 0,
+      tilt_amount: 0,
+      gyro_amount: 0,
+      haze_enabled: false,
+      haze_color: '',
+      haze_density: 0,
+      drift_amount: 0,
+      drift_speed: 0,
+      breathing_amount: 0,
+      breathing_speed: 0,
+      motion_enabled: true,
+      mosaic_layer_visible: {},
+      shadow_layer_visible: {}
+    }
+    const appliers = make_appliers()
+    const settings = create_poster_scene_settings(state, appliers)
+
+    settings.set_mosaic_opacity(0.5)
+
+    expect(appliers.apply_mosaic_opacity).toHaveBeenCalledTimes(1)
+  })
 })

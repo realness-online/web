@@ -45,6 +45,10 @@ vi.mock('@/utils/export-poster', () => ({
   prepare_poster_svg_for_3d: vi.fn(async svg => `<svg>${svg.outerHTML}</svg>`)
 }))
 
+vi.mock('@/3d/scenes/live-poster-scene.js', () => ({
+  register_live_poster_scene: vi.fn(() => vi.fn())
+}))
+
 vi.mock('@/utils/preference', () => ({
   animate: { value: true },
   mosaic: { value: true },

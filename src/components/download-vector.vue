@@ -6,6 +6,8 @@
   } from '@/utils/export-poster'
   import { as_query_id } from '@/utils/itemid'
   import { is_vector_id } from '@/use/poster'
+  import { get_live_poster_scene } from '@/3d/scenes/live-poster-scene.js'
+  import { with_poster_scene } from '@/3d/scenes/with-poster-scene.js'
   import {
     render_svg_layers_to_psd,
     extract_all_layers
@@ -393,31 +395,23 @@
 
     set_working(true)
 
-    const svg_string = await prepare_poster_svg_for_3d(
-      svg_el,
-      /** @type {import('@/types').Id} */ (props.itemid)
-    )
-    const canvas = document.createElement('canvas')
-    canvas.style.display = 'none'
-    document.body.appendChild(canvas)
+    const { itemid } = props
+    const filename = file_name.value?.replace('.svg', '') || 'poster'
+    const live_scene = get_live_poster_scene(itemid)
 
     try {
-      const [{ create_app }, { create_poster_scene }] = await Promise.all([
-        import('@/3d/engine/create-app.js'),
-        import('@/3d/scenes/create-poster-scene.js')
-      ])
-      const app = create_app({ canvas })
-      const scene = create_poster_scene(svg_string)
-      app.mount_scene(scene)
-      app.start()
-      await scene.wait_for_textures()
-      scene.export_glb(file_name.value?.replace('.svg', '') || 'poster')
-      app.stop()
-      app.get_renderer().dispose()
-    } catch (error) {
-      console.error('GLB export failed:', error)
+      if (live_scene) {
+        await live_scene.wait_for_textures()
+        live_scene.export_glb(filename)
+        return
+      }
+
+      const svg_string = await prepare_poster_svg_for_3d(svg_el, itemid)
+      await with_poster_scene(svg_string, async scene => {
+        await scene.wait_for_textures()
+        scene.export_glb(filename)
+      })
     } finally {
-      document.body.removeChild(canvas)
       set_working(false)
     }
   }

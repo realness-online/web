@@ -132,6 +132,8 @@ export const create_poster_scene = svg_string => {
   }
 
   appliers.apply_mosaic_spread()
+  appliers.apply_mosaic_opacity()
+  appliers.apply_mosaic_visibility()
   appliers.apply_haze()
 
   const texture_promises = add_poster_shadow_layers({

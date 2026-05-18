@@ -3,9 +3,11 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
+  parse_poster_svg,
   parse_svg_layers,
   extract_layer_svg,
-  extract_symbol_child_svg
+  extract_symbol_child_svg,
+  extract_symbol_child_from_context
 } from '@/3d/utils/load-svg-layers.js'
 
 vi.mock('three/addons/loaders/SVGLoader.js', () => ({
@@ -46,6 +48,21 @@ describe('load_svg_layers', () => {
       expect(layer_svg).toContain('<defs>')
       expect(layer_svg).toContain('href="#boulders"')
       expect(layer_svg).not.toContain('symbol id="rocks"')
+    })
+  })
+
+  describe('parse_poster_svg', () => {
+    it('reuses one parse for multiple shadow extractions', () => {
+      const parsed = parse_poster_svg(poster_svg)
+      const bold = extract_symbol_child_from_context(parsed, 'shadows', 'bold')
+      const light = extract_symbol_child_from_context(
+        parsed,
+        'shadows',
+        'light'
+      )
+
+      expect(bold).toContain('id="bold"')
+      expect(light).toContain('id="light"')
     })
   })
 

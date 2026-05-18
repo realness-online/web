@@ -1,10 +1,6 @@
 import * as THREE from 'three'
 import { build_poster_layer_geometry } from './build-poster-layer-geometry.js'
-import {
-  MESH_METALNESS,
-  MESH_ROUGHNESS,
-  VECTOR_LAYERS
-} from './poster-scene-config.js'
+import { VECTOR_LAYERS } from './poster-scene-config.js'
 
 /**
  * @param {{
@@ -15,7 +11,7 @@ import {
  *   scale: number,
  *   layer_groups: object[],
  *   mosaic_group_map: Map<string, THREE.Group>,
- *   mosaic_materials: { material: THREE.MeshStandardMaterial, base_opacity: number }[],
+ *   mosaic_materials: { material: THREE.MeshBasicMaterial, base_opacity: number }[],
  *   mosaic_layer_visible: Record<string, boolean>
  * }} options
  */
@@ -43,14 +39,12 @@ export const add_poster_mosaic_layers = options => {
     geometry.scale(scale, -scale, 1)
 
     const base_opacity = config.opacity ?? 1
-    const material = new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshBasicMaterial({
       vertexColors: true,
       side: THREE.DoubleSide,
       transparent: true,
       opacity: base_opacity,
-      depthWrite: false,
-      roughness: MESH_ROUGHNESS,
-      metalness: MESH_METALNESS
+      depthWrite: false
     })
     const mesh = new THREE.Mesh(geometry, material)
     mesh.name = config.name
