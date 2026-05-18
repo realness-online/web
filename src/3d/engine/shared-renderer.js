@@ -29,6 +29,22 @@ const ease_out = t => 1 - (1 - t) ** 3
 const ease_in = t => t ** 3
 const smoothstep = t => t * t * (3 - 2 * t) // zero slope at 0 and 1, no sudden jolt
 
+/**
+ * @param {CanvasRenderingContext2D} ctx2d
+ * @param {number} edge_px
+ * @param {number} soft_px
+ * @param {CanvasGradient | null} cached
+ * @param {string} cached_key
+ */
+const wipe_gradient = (ctx2d, edge_px, soft_px, cached, cached_key) => {
+  const key = `${edge_px}|${soft_px}`
+  if (cached && cached_key === key) return cached
+  const grad = ctx2d.createLinearGradient(edge_px - soft_px, 0, edge_px, 0)
+  grad.addColorStop(0, 'rgba(0,0,0,1)')
+  grad.addColorStop(1, 'rgba(0,0,0,0)')
+  return grad
+}
+
 let renderer = null
 let loop = null
 const entries = []
@@ -116,14 +132,15 @@ const ensure_loop = () => {
             const edge_px = entry.width * wipe_t
             const soft_px = Math.min(WIPE_SOFT_EDGE_PX_MAX, edge_px)
             entry.ctx2d.drawImage(r.domElement, 0, 0, entry.width, entry.height)
-            const grad = entry.ctx2d.createLinearGradient(
-              edge_px - soft_px,
-              0,
+            const grad = wipe_gradient(
+              entry.ctx2d,
               edge_px,
-              0
+              soft_px,
+              entry.wipe_grad,
+              entry.wipe_grad_key
             )
-            grad.addColorStop(0, 'rgba(0,0,0,1)')
-            grad.addColorStop(1, 'rgba(0,0,0,0)')
+            entry.wipe_grad = grad
+            entry.wipe_grad_key = `${edge_px}|${soft_px}`
             entry.ctx2d.globalCompositeOperation = 'destination-in'
             entry.ctx2d.fillStyle = grad
             entry.ctx2d.fillRect(0, 0, Math.ceil(edge_px), entry.height)
@@ -163,6 +180,8 @@ export const register_viewer = (canvas, scene_controller) => {
    *   phase: string,
    *   elapsed: number,
    *   wipe_t: number,
+   *   wipe_grad: CanvasGradient | null,
+   *   wipe_grad_key: string,
    *   on_svg_zoom: ((t: number) => void) | null,
    *   on_leave_done: (() => void) | null
    * }} */
@@ -179,6 +198,8 @@ export const register_viewer = (canvas, scene_controller) => {
     phase: 'idle',
     elapsed: 0,
     wipe_t: 0,
+    wipe_grad: null,
+    wipe_grad_key: '',
     on_svg_zoom: null,
     on_leave_done: null
   }
