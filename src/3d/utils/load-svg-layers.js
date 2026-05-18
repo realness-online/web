@@ -31,10 +31,9 @@ export const parse_poster_svg = svg_text => {
 }
 
 /**
- * Parses a multi-symbol SVG (paths grouped under <symbol id="...">),
- * returning per-layer SVGLoader output keyed by layer name.
+ * Parses mosaic symbols from an existing poster SVG context.
  *
- * @param {string} svg_text
+ * @param {PosterSvgContext} poster_svg
  * @param {string[]} layer_names
  * @returns {{
  *   width: number,
@@ -42,8 +41,8 @@ export const parse_poster_svg = svg_text => {
  *   layers: { name: string, paths: import('three').ShapePath[] }[]
  * }}
  */
-export const parse_svg_layers = (svg_text, layer_names) => {
-  const { root, view_box } = parse_poster_svg(svg_text)
+export const parse_svg_layers_from_context = (poster_svg, layer_names) => {
+  const { root, view_box } = poster_svg
   const [, , width, height] = view_box
 
   const loader = new SVGLoader()
@@ -60,6 +59,13 @@ export const parse_svg_layers = (svg_text, layer_names) => {
 
   return { width, height, layers }
 }
+
+/**
+ * @param {string} svg_text
+ * @param {string[]} layer_names
+ */
+export const parse_svg_layers = (svg_text, layer_names) =>
+  parse_svg_layers_from_context(parse_poster_svg(svg_text), layer_names)
 
 /**
  * Returns a standalone SVG document containing only the named layer,

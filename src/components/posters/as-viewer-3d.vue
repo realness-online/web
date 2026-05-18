@@ -63,8 +63,7 @@
 
   defineExpose({
     start_leave: (on_svg_zoom, on_done) =>
-      viewer?.start_leave(on_svg_zoom, on_done),
-    export_glb: filename => scene_ref.value?.export_glb(filename)
+      viewer?.start_leave(on_svg_zoom, on_done)
   })
 </script>
 

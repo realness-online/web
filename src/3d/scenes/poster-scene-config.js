@@ -98,7 +98,7 @@ export const INITIAL_DRIFT_SPEED = DEFAULT_DRIFT_SPEED
 
 export const INITIAL_BREATHING_AMOUNT = DEFAULT_BREATHING_AMOUNT
 export const INITIAL_BREATHING_SPEED = DEFAULT_BREATHING_SPEED
-export const INITIAL_MOTION_ENABLED = true
+export const INITIAL_MOTION_ENABLED = false
 export const BREATHING_TILT = 0.08
 
 export const PAN_ZOOM_BASE_DISTANCE = 6
@@ -111,6 +111,3 @@ export const DRIFT_FREQ_Y = 1.1
 export const WHEEL_ZOOM_STEP = 0.002
 export const ZOOM_LERP = 0.5
 export const ZOOM_EPSILON = 1e-5
-
-export const MESH_ROUGHNESS = 0.85
-export const MESH_METALNESS = 0.0

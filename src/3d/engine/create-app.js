@@ -81,6 +81,7 @@ export const create_app = options => {
     stop() {
       loop.stop()
       resize.stop()
+      input.dispose()
     }
   }
 }
