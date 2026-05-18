@@ -11,12 +11,14 @@ const SCREEN_ANGLE_UPSIDE_DOWN = 180
  *   canvas: HTMLCanvasElement,
  *   state: { gyro_x: number, gyro_y: number }
  * }} options
+ * @returns {() => void}
  */
 export const bind_device_orientation = options => {
   const { canvas, state } = options
 
   let gyro_neutral_beta = null
   let gyro_neutral_gamma = null
+  let orientation_enabled = false
 
   const get_screen_angle = () => {
     if (screen.orientation && typeof screen.orientation.angle === 'number')
@@ -63,9 +65,17 @@ export const bind_device_orientation = options => {
     state.gyro_y = Math.max(-1, Math.min(1, ny / GYRO_RANGE_DEG))
   }
 
+  const disable_orientation = () => {
+    window.removeEventListener('deviceorientation', on_orientation)
+    window.removeEventListener('orientationchange', reset_gyro_neutral)
+    orientation_enabled = false
+  }
+
   const enable_orientation = () => {
+    if (orientation_enabled) return
     window.addEventListener('deviceorientation', on_orientation)
     window.addEventListener('orientationchange', reset_gyro_neutral)
+    orientation_enabled = true
   }
 
   const try_enable_orientation = () => {
@@ -86,13 +96,19 @@ export const bind_device_orientation = options => {
   }
 
   const arm_orientation_on_gesture = () => {
-    const handler = () => {
-      canvas.removeEventListener('pointerdown', handler)
-      canvas.removeEventListener('touchstart', handler)
-      try_enable_orientation()
-    }
-    canvas.addEventListener('pointerdown', handler)
-    canvas.addEventListener('touchstart', handler)
+    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
+    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
+    try_enable_orientation()
   }
-  arm_orientation_on_gesture()
+
+  canvas.addEventListener('pointerdown', arm_orientation_on_gesture)
+  canvas.addEventListener('touchstart', arm_orientation_on_gesture)
+
+  return () => {
+    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
+    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
+    disable_orientation()
+    state.gyro_x = 0
+    state.gyro_y = 0
+  }
 }

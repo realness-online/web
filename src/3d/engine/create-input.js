@@ -113,7 +113,7 @@ export const create_input = options => {
     refresh_arrow_state()
   }
 
-  bind_device_orientation({ canvas, state })
+  const dispose_orientation = bind_device_orientation({ canvas, state })
 
   canvas.addEventListener('pointerdown', on_pointer_down)
   canvas.addEventListener('pointermove', on_pointer_move)
@@ -132,6 +132,17 @@ export const create_input = options => {
       state.wheel_delta = 0
       state.pan_wheel_x = 0
       state.pan_wheel_y = 0
+    },
+    dispose() {
+      canvas.removeEventListener('pointerdown', on_pointer_down)
+      canvas.removeEventListener('pointermove', on_pointer_move)
+      canvas.removeEventListener('pointerup', on_pointer_up)
+      canvas.removeEventListener('pointercancel', on_pointer_up)
+      canvas.removeEventListener('wheel', on_wheel)
+      window.removeEventListener('keydown', on_key_down)
+      window.removeEventListener('keyup', on_key_up)
+      window.removeEventListener('blur', on_blur)
+      dispose_orientation()
     }
   }
 }

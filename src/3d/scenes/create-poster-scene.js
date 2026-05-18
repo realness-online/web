@@ -1,5 +1,8 @@
 import * as THREE from 'three'
-import { parse_svg_layers } from '../utils/load-svg-layers.js'
+import {
+  parse_poster_svg,
+  parse_svg_layers_from_context
+} from '../utils/load-svg-layers.js'
 import { add_poster_mosaic_layers } from './add-poster-mosaic-layers.js'
 import { add_poster_scene_lights } from './add-poster-scene-lights.js'
 import { add_poster_shadow_layers } from './add-poster-shadow-layers.js'
@@ -43,8 +46,9 @@ export const create_poster_scene = svg_string => {
   const root = new THREE.Group()
   scene.add(root)
 
-  const { width, height, layers } = parse_svg_layers(
-    svg_string,
+  const poster_svg = parse_poster_svg(svg_string)
+  const { width, height, layers } = parse_svg_layers_from_context(
+    poster_svg,
     VECTOR_LAYERS.map(layer => layer.name)
   )
 
@@ -137,7 +141,7 @@ export const create_poster_scene = svg_string => {
   appliers.apply_haze()
 
   const texture_promises = add_poster_shadow_layers({
-    svg_string,
+    poster_svg,
     root,
     plane_w,
     plane_h,

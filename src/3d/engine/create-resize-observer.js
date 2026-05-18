@@ -1,3 +1,5 @@
+import { MAX_PIXEL_RATIO } from './renderer-config.js'
+
 /**
  * @param {{
  *   canvas: HTMLCanvasElement
@@ -6,7 +8,8 @@
  */
 export const create_resize_observer = options => {
   const { canvas, on_resize } = options
-  const pixel_ratio = () => Math.min(window.devicePixelRatio || 1, 2)
+  const pixel_ratio = () =>
+    Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO)
 
   const sync_now = () => {
     const rect = canvas.getBoundingClientRect()
