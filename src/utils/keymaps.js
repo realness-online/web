@@ -47,6 +47,7 @@ export const default_keymap = [
       D: 'pref::Cycle_Drama',
       f: 'pref::Toggle_Shadow',
       g: 'pref::Toggle_Mosaic',
+      q: 'pref::Toggle_View_3d',
 
       'Shift Row': '',
       z: 'pref::Toggle_Bold',
@@ -79,6 +80,7 @@ export const default_keymap = [
       'pref::Toggle_Footer': 'Show/hide global footer',
       'pref::Toggle_Stroke': 'Stroke outline on posters',
       'pref::Toggle_Mosaic': 'Mosaic display on posters',
+      'pref::Toggle_View_3d': '3D viewer',
       'pref::Toggle_Background': 'Background fill on posters',
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',

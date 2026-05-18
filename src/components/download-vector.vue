@@ -1,6 +1,7 @@
 <script setup>
   import {
     build_download_svg,
+    prepare_poster_svg_for_3d,
     get_filename_for_poster
   } from '@/utils/export-poster'
   import { as_query_id } from '@/utils/itemid'
@@ -382,6 +383,45 @@
     set_working(false)
   }
 
+  const download_glb_handler = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg_el = document.getElementById(as_query_id(props.itemid))
+    if (!svg_el || !(svg_el instanceof SVGSVGElement)) return
+
+    set_working(true)
+
+    const svg_string = await prepare_poster_svg_for_3d(
+      svg_el,
+      /** @type {import('@/types').Id} */ (props.itemid)
+    )
+    const canvas = document.createElement('canvas')
+    canvas.style.display = 'none'
+    document.body.appendChild(canvas)
+
+    try {
+      const [{ create_app }, { create_poster_scene }] = await Promise.all([
+        import('@/3d/engine/create-app.js'),
+        import('@/3d/scenes/create-poster-scene.js')
+      ])
+      const app = create_app({ canvas })
+      const scene = create_poster_scene(svg_string)
+      app.mount_scene(scene)
+      app.start()
+      await scene.wait_for_textures()
+      scene.export_glb(file_name.value?.replace('.svg', '') || 'poster')
+      app.stop()
+      app.get_renderer().dispose()
+    } catch (error) {
+      console.error('GLB export failed:', error)
+    } finally {
+      document.body.removeChild(canvas)
+      set_working(false)
+    }
+  }
+
   on_mounted(async () => {
     file_name.value = await get_filename_for_poster(props.itemid, 'svg')
     document.addEventListener('click', handle_click_outside)
@@ -425,6 +465,13 @@
         title="Download video"
         aria-label="Download animated video">
         Video
+      </a>
+      <a
+        v-if="!video_exporting"
+        @click="download_glb_handler"
+        title="Download GLB for Blender"
+        aria-label="Download GLB for Blender">
+        GLB
       </a>
       <span v-else class="video-progress">
         {{ video_progress }}/{{ video_total }} frames

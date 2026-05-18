@@ -29,6 +29,7 @@ const { mock_menu, mock_mosaic } = vi.hoisted(() => {
 vi.mock('@/utils/preference', () => ({
   menu: mock_menu,
   mosaic: mock_mosaic,
+  view_3d: { value: false },
   boulders: { value: false },
   rocks: { value: false },
   gravel: { value: false },

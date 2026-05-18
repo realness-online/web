@@ -58,7 +58,8 @@
     aspect_ratio_mode,
     slice_alignment,
     menu,
-    footer_visible
+    footer_visible,
+    view_3d
   } from '@/utils/preference'
 
   /** @type {import('vue').Ref<'working' | 'offline' | null>} */
@@ -236,6 +237,7 @@
   register_preference('pref::Toggle_Regular', regular)
   register_preference('pref::Toggle_Light', light)
 
+  register_preference('pref::Toggle_View_3d', view_3d)
   register_preference('pref::Toggle_Boulders', boulders)
   register_preference('pref::Toggle_Rocks', rocks)
   register_preference('pref::Toggle_Gravel', gravel)
@@ -438,6 +440,19 @@
             <icon name="camera" />
           </span>
         </label>
+        <label
+          class="menu-action"
+          :class="{ active: view_3d }"
+          aria-label="Toggle 3D">
+          <input
+            type="checkbox"
+            switch
+            :checked="view_3d"
+            @change="view_3d = !view_3d" />
+          <span aria-hidden="true">
+            <icon name="galaxy" />
+          </span>
+        </label>
         <as-dialog-preferences ref="preferences_dialog" />
       </footer>
       <label v-if="footer_toggle_shown">
@@ -602,6 +617,13 @@
           &:focus-visible {
             outline: none;
             box-shadow: none;
+          }
+        }
+        & label.menu-action.active {
+          color: var(--red);
+          svg {
+            fill: var(--red);
+            stroke: var(--red);
           }
         }
         & label.menu-action {
