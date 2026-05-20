@@ -308,10 +308,10 @@ const is_history = itemid => {
  */
 export const as_layer_id = (poster_id, layer) => {
   if (!poster_id || typeof poster_id !== 'string') return /** @type {Id} */ ('')
-  const path = as_path_parts(poster_id)
-  const [author, , created] = path
+  const author = as_author(/** @type {Id} */ (poster_id))
+  const created = as_created_at(/** @type {Id} */ (poster_id))
   if (!author || !created) return /** @type {Id} */ ('')
-  return /** @type {Id} */ (`/${author}/${layer}/${created}`)
+  return /** @type {Id} */ (`${author}/${layer}/${created}`)
 }
 
 /**

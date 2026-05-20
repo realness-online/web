@@ -10,6 +10,10 @@ import {
   MOSAIC_PARALLAX_GAIN,
   PAN_DEG_TO_RAD,
   PAN_FOV_HALF_DEG,
+  PAN_SMOOTH_RATE,
+  PAN_VELOCITY_SMOOTH,
+  PAN_VELOCITY_TILT,
+  PAN_WHEEL_SCALE,
   PAN_ZOOM_BASE_DISTANCE,
   PARALLAX_AMOUNT,
   POINTER_SMOOTH,
@@ -18,8 +22,9 @@ import {
   TILT_SMOOTH,
   WHEEL_ZOOM_STEP,
   ZOOM_EPSILON,
-  ZOOM_LERP
+  ZOOM_SMOOTH_RATE
 } from './poster-scene-config.js'
+import { nudge_pan, smooth_toward } from './poster-scene-motion.js'
 
 /**
  * @param {object} runtime
@@ -41,36 +46,76 @@ export const create_poster_scene_update = runtime => {
     get_haze_enabled,
     get_haze_density,
     smooth,
+    pan,
     zoom,
     tilt,
     pointer,
     camera,
-    raycast
+    raycast,
+    get_reduced_motion
   } = runtime
 
+  const pan_world_per_px = () => {
+    const distance = PAN_ZOOM_BASE_DISTANCE - zoom.current
+    return (
+      (2 * distance * Math.tan((PAN_FOV_HALF_DEG * Math.PI) / PAN_DEG_TO_RAD)) /
+      camera.canvas_height
+    )
+  }
+
   return (frame_state, input_state) => {
+    const delta_s = frame_state.delta_s || 0
+    const cinematic = !get_reduced_motion()
+    const pan_navigating = input_state.shift_held || input_state.alt_held
+
     pointer.x = input_state.pointer_x_norm
     pointer.y = input_state.pointer_y_norm
 
-    if (input_state.shift_held || input_state.alt_held) {
-      const distance = PAN_ZOOM_BASE_DISTANCE - zoom.current
-      const world_per_px =
-        (2 *
-          distance *
-          Math.tan((PAN_FOV_HALF_DEG * Math.PI) / PAN_DEG_TO_RAD)) /
-        camera.canvas_height
+    const world_per_px = pan_world_per_px()
+
+    if (pan_navigating) {
       if (input_state.shift_held) {
-        root.position.x += input_state.pointer_dx * world_per_px
-        root.position.x -= input_state.pan_wheel_x * world_per_px
+        pan.target.x += input_state.pointer_dx * world_per_px
+        pan.target.x -= input_state.pan_wheel_x * world_per_px * PAN_WHEEL_SCALE
       }
       if (input_state.alt_held) {
-        root.position.y -= input_state.pointer_dy * world_per_px
-        root.position.y += input_state.pan_wheel_y * world_per_px
+        pan.target.y -= input_state.pointer_dy * world_per_px
+        pan.target.y += input_state.pan_wheel_y * world_per_px * PAN_WHEEL_SCALE
       }
     } else {
       smooth.x += (input_state.pointer_x_norm - smooth.x) * POINTER_SMOOTH
       smooth.y += (input_state.pointer_y_norm - smooth.y) * POINTER_SMOOTH
     }
+
+    const pan_rate = cinematic ? PAN_SMOOTH_RATE : 0
+    pan.current.x = smooth_toward(
+      pan.current.x,
+      pan.target.x,
+      pan_rate,
+      delta_s
+    )
+    pan.current.y = smooth_toward(
+      pan.current.y,
+      pan.target.y,
+      pan_rate,
+      delta_s
+    )
+
+    if (cinematic && delta_s > 0) {
+      const vx = (pan.current.x - pan.prev.x) / delta_s
+      const vy = (pan.current.y - pan.prev.y) / delta_s
+      const vel_blend = 1 - Math.exp(-PAN_VELOCITY_SMOOTH * delta_s)
+      pan.velocity.x += (vx - pan.velocity.x) * vel_blend
+      pan.velocity.y += (vy - pan.velocity.y) * vel_blend
+    } else {
+      pan.velocity.x = 0
+      pan.velocity.y = 0
+    }
+    pan.prev.x = pan.current.x
+    pan.prev.y = pan.current.y
+
+    root.position.x = pan.current.x
+    root.position.y = pan.current.y
 
     const mosaic_spread = get_mosaic_spread()
     const shadow_spread = get_shadow_spread()
@@ -109,7 +154,8 @@ export const create_poster_scene_update = runtime => {
       MAX_ZOOM
     )
     const prev_zoom = zoom.current
-    zoom.current = THREE.MathUtils.lerp(zoom.current, zoom.target, ZOOM_LERP)
+    const zoom_rate = cinematic ? ZOOM_SMOOTH_RATE : 0
+    zoom.current = smooth_toward(zoom.current, zoom.target, zoom_rate, delta_s)
     root.position.z = zoom.current
 
     if (before && Math.abs(zoom.current - prev_zoom) > ZOOM_EPSILON) {
@@ -118,8 +164,9 @@ export const create_poster_scene_update = runtime => {
         raycast.cursor_after
       )
       if (after) {
-        root.position.x += before.x - after.x
-        root.position.y += before.y - after.y
+        nudge_pan(pan, before.x - after.x, before.y - after.y)
+        root.position.x = pan.current.x
+        root.position.y = pan.current.y
       }
     }
 
@@ -135,8 +182,12 @@ export const create_poster_scene_update = runtime => {
       -1,
       1
     )
-    const target_tilt_y = -input_x * tilt_amount
-    const target_tilt_x = input_y * tilt_amount
+    let target_tilt_y = -input_x * tilt_amount
+    let target_tilt_x = input_y * tilt_amount
+    if (cinematic && pan_navigating) {
+      target_tilt_y -= pan.velocity.x * PAN_VELOCITY_TILT
+      target_tilt_x += pan.velocity.y * PAN_VELOCITY_TILT
+    }
     tilt.y += (target_tilt_y - tilt.y) * TILT_SMOOTH
     tilt.x += (target_tilt_x - tilt.x) * TILT_SMOOTH
     const breathing_speed = get_breathing_speed()

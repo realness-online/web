@@ -19,11 +19,25 @@ vi.mock('@/utils/itemid', () => ({
   is_itemid: vi.fn(() => true)
 }))
 
+const { mock_me, mock_current_user } = vi.hoisted(() => ({
+  mock_me: {
+    value: /** @type {import('@/types').MeItem | undefined} */ (undefined)
+  },
+  mock_current_user: {
+    value: /** @type {{ uid: string } | null} */ ({ uid: 'test-user' })
+  }
+}))
+
 vi.mock('@/utils/serverless', () => ({
-  current_user: { value: { uid: 'test-user' } },
+  me: mock_me,
+  current_user: mock_current_user,
   upload: vi.fn(),
   remove: vi.fn(),
   move: vi.fn()
+}))
+
+vi.mock('@/utils/profile-sync-log', () => ({
+  profile_sync_log: vi.fn()
 }))
 
 vi.mock('idb-keyval', () => ({
@@ -86,7 +100,8 @@ describe('@/persistence/Storage', () => {
     let me
 
     beforeEach(() => {
-      // Mock localStorage.me
+      mock_me.value = { id: '/+1234567890', name: 'Ada', type: 'person' }
+      mock_current_user.value = { uid: 'test-user' }
       Object.defineProperty(window, 'localStorage', {
         value: {
           me: '/+1234567890'
@@ -99,6 +114,28 @@ describe('@/persistence/Storage', () => {
     it('extends Storage with localStorage.me', () => {
       expect(me).toBeInstanceOf(Storage)
       expect(me.id).toBe('/+1234567890')
+    })
+
+    it('save returns early when not signed in', async () => {
+      mock_current_user.value = null
+      mock_me.value = { id: '/+1234567890', name: 'Ada', type: 'person' }
+      const save_spy = vi.spyOn(Storage.prototype, 'save')
+
+      await me.save()
+
+      expect(save_spy).not.toHaveBeenCalled()
+      mock_current_user.value = { uid: 'test-user' }
+      save_spy.mockRestore()
+    })
+
+    it('save returns early when me profile is missing', async () => {
+      mock_me.value = undefined
+      const save_spy = vi.spyOn(Storage.prototype, 'save')
+
+      await me.save()
+
+      expect(save_spy).not.toHaveBeenCalled()
+      save_spy.mockRestore()
     })
   })
 

@@ -332,7 +332,7 @@ export default defineConfig({
     root: '.',
     globals: true,
     environment: 'happy-dom',
-    reporters: ['verbose'],
+    reporters: ['default'],
     include: ['tests/**/*.spec.js'],
     exclude: [
       ...configDefaults.exclude,

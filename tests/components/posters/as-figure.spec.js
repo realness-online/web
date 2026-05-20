@@ -235,6 +235,14 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(w.findComponent({ name: 'AsSvg' }).props('pin')).toBe(true)
     })
 
+    it('builds cutout layer ids from poster created id in paged paths', () => {
+      const archived_poster_id = /** @type {import('@/types').Id} */ (
+        '/+14151234356/posters/1773370923007/1773358870964'
+      )
+      const layer_id = as_layer_id(archived_poster_id, 'sand')
+      expect(layer_id).toBe('/+14151234356/sand/1773358870964')
+    })
+
     it('requests cutout layers when in view and mosaic is on', async () => {
       mock_mosaic.value = true
       const sediment_id = as_layer_id(
@@ -248,7 +256,7 @@ describe('@/component/posters/as-figure.vue', () => {
       const as_svg = wrapper.findComponent({ name: 'AsSvg' })
       as_svg.vm.$emit('show', { ...poster_vector, regular: true })
       await flushPromises()
-      as_svg.vm.$emit('in_view', true)
+      await wrapper.setProps({ pin: true })
       await flushPromises()
       expect(vi.mocked(get)).toHaveBeenCalledWith(sediment_id)
     })

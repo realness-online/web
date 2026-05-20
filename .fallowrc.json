@@ -42,6 +42,8 @@
     "minLines": 8
   },
   "health": {
-    "ignore": ["**/tests/**", "**/src/wasm/**"]
+    "ignore": ["**/tests/**", "**/src/wasm/**"],
+    "maxCyclomatic": 20,
+    "maxCognitive": 15
   }
 }
