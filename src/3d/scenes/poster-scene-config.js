@@ -108,6 +108,15 @@ export const POINTER_SMOOTH = 0.08
 export const DRIFT_PHASE_X = 0.6
 export const DRIFT_PHASE_Y = 0.7
 export const DRIFT_FREQ_Y = 1.1
-export const WHEEL_ZOOM_STEP = 0.002
-export const ZOOM_LERP = 0.5
+/** Cmd+wheel zoom sensitivity (pointer drag unchanged) */
+export const WHEEL_ZOOM_STEP = 0.00035
+/** Shift/Alt+wheel pan sensitivity vs hover drag */
+export const PAN_WHEEL_SCALE = 0.18
+/** ~220ms settle at 60fps; wheel and drag pan feel cinematic, not stepped */
+export const PAN_SMOOTH_RATE = 10
+/** Pan velocity leaked into root tilt while Shift/Alt navigate */
+export const PAN_VELOCITY_SMOOTH = 14
+export const PAN_VELOCITY_TILT = 0.028
+/** Cmd+wheel zoom; slightly faster than pan so depth stays responsive */
+export const ZOOM_SMOOTH_RATE = 14
 export const ZOOM_EPSILON = 1e-5

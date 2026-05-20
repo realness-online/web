@@ -262,8 +262,6 @@
     use_meet.value = !use_meet.value
   }
 
-  defineExpose({ toggle_meet: handle_click })
-
   const trigger = ref(null)
   const visibility = useDocumentVisibility()
   const animate = computed(
@@ -271,7 +269,6 @@
       animate_pref.value === true &&
       !props.as_avatar &&
       !props.paused &&
-      intersecting.value &&
       visibility.value === 'visible'
   )
   const landscape = computed(() => {
@@ -287,6 +284,8 @@
     if (is_vector(vector.value)) return vector.value
     return null
   })
+
+  defineExpose({ toggle_meet: handle_click })
 
   provide('vector', vector)
 

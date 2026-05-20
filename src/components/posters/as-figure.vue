@@ -29,6 +29,10 @@
   } from '@/use/poster'
   import { mosaic, view_3d } from '@/utils/preference'
   import {
+    INTERSECTION_THRESHOLDS,
+    measure_fully_visible
+  } from '@/utils/intersection'
+  import {
     poster_dom_id,
     poster_dom_href,
     POSTER_MEET_TOGGLE_ONLY,
@@ -50,6 +54,7 @@
     provide,
     inject
   } from 'vue'
+  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   const props = defineProps({
     itemid: {
       type: String,
@@ -111,6 +116,7 @@
   // Derived from FIT_HEIGHT / (2 * (camera_z - initial_zoom) * tan(FOV/2)) - tune to taste
   const SVG_ZOOM_SCALE = 1.59
   const canvas_alive = ref(false)
+  const canvas_leaving = ref(false)
   const viewer_ref = ref(null)
 
   /** Click-to-toggle for every poster with overlay statements (own or read-only). */
@@ -155,6 +161,45 @@
   const should_skip_cutout_load = () =>
     Boolean(cutouts_loaded.value && vector.value?.cutouts)
   const poster_in_view = ref(false)
+  const poster_fully_in_view = ref(false)
+
+  const sync_poster_visibility = () => {
+    const el = poster.value
+    if (!el || !poster_in_view.value) {
+      poster_fully_in_view.value = false
+      return
+    }
+    poster_fully_in_view.value = measure_fully_visible(el)
+  }
+
+  let visibility_raf = 0
+  const schedule_visibility_sync = () => {
+    if (visibility_raf) return
+    visibility_raf = requestAnimationFrame(() => {
+      visibility_raf = 0
+      sync_poster_visibility()
+    })
+  }
+
+  use_intersect(
+    poster,
+    ([entry]) => {
+      poster_in_view.value = entry.isIntersecting
+      if (!entry.isIntersecting) poster_fully_in_view.value = false
+      else sync_poster_visibility()
+    },
+    { threshold: INTERSECTION_THRESHOLDS }
+  )
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', schedule_visibility_sync, {
+      passive: true,
+      capture: true
+    })
+    window.addEventListener('resize', schedule_visibility_sync, {
+      passive: true
+    })
+  }
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const reference_broken = ref(false)
@@ -186,16 +231,12 @@
   mounted(() => {
     if (typeof document !== 'undefined')
       document.addEventListener(POSTER_CANONICAL_MOUNTED, on_canonical_mounted)
-    tick().then(bump_dom_tick)
+    tick().then(() => {
+      bump_dom_tick()
+      sync_poster_visibility()
+    })
   })
 
-  before_unmount(() => {
-    if (typeof document !== 'undefined')
-      document.removeEventListener(
-        POSTER_CANONICAL_MOUNTED,
-        on_canonical_mounted
-      )
-  })
   const sync_poster_for_svg = computed(() =>
     reference_broken.value && vector.value && is_vector(vector.value)
       ? vector.value
@@ -413,18 +454,47 @@
   const set_svg_zoom = t => {
     const svg = as_svg_ref.value?.$el
     if (!svg) return
-    svg.style.scale = t > 0 ? String(1 + (SVG_ZOOM_SCALE - 1) * t) : ''
+    if (t <= 0) svg.style.scale = ''
+    else svg.style.scale = String(1 + (SVG_ZOOM_SCALE - 1) * t)
   }
 
-  const canvas_ready = computed(
-    () => view_3d.value && shown.value && cutouts_loaded.value
+  const start_canvas_leave = () => {
+    if (!canvas_alive.value || canvas_leaving.value) return
+    canvas_leaving.value = true
+    viewer_ref.value?.start_leave(set_svg_zoom, () => {
+      canvas_alive.value = false
+      canvas_leaving.value = false
+    })
+  }
+
+  const want_3d = computed(
+    () =>
+      view_3d.value &&
+      shown.value &&
+      cutouts_loaded.value &&
+      poster_fully_in_view.value
   )
-  watch(canvas_ready, ready => {
-    if (ready && !canvas_alive.value) canvas_alive.value = true
-    else if (!ready && canvas_alive.value)
-      viewer_ref.value?.start_leave(set_svg_zoom, () => {
-        canvas_alive.value = false
+
+  watch(want_3d, want => {
+    if (want && !canvas_alive.value && !canvas_leaving.value)
+      canvas_alive.value = true
+    else if (!want && canvas_alive.value && !canvas_leaving.value)
+      start_canvas_leave()
+  })
+
+  before_unmount(() => {
+    if (visibility_raf) cancelAnimationFrame(visibility_raf)
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('scroll', schedule_visibility_sync, {
+        capture: true
       })
+      window.removeEventListener('resize', schedule_visibility_sync)
+    }
+    if (typeof document !== 'undefined')
+      document.removeEventListener(
+        POSTER_CANONICAL_MOUNTED,
+        on_canonical_mounted
+      )
   })
 
   const poster_toggle_target = () =>
@@ -446,9 +516,6 @@
   }
 
   const activate_poster = () => poster_toggle_target()?.toggle_meet?.()
-  const on_in_view = visible => {
-    poster_in_view.value = visible
-  }
 
   watch_effect(() => {
     if (!use_dom_reference.value) return
@@ -501,9 +568,8 @@
       :sync_poster="sync_poster_for_svg"
       :show_cutout_layers="cutouts_active && mosaic"
       :pin="props.pin"
-      :paused="canvas_ready"
+      :paused="!poster_fully_in_view || canvas_alive"
       @show="on_show"
-      @in_view="on_in_view"
       @click="on_poster_svg_click"
       :focusable="false" />
     <as-poster-symbol

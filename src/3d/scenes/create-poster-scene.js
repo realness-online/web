@@ -32,6 +32,14 @@ import {
   VECTOR_LAYERS
 } from './poster-scene-config.js'
 
+const create_reduced_motion_reader = () => {
+  if (typeof window === 'undefined') return () => false
+  const reduced_motion_query = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  )
+  return () => reduced_motion_query.matches
+}
+
 /**
  * @param {string} svg_string
  * @returns {import('../engine/types.js').PosterSceneController}
@@ -156,9 +164,16 @@ export const create_poster_scene = svg_string => {
   })
 
   const smooth = { x: 0, y: 0 }
+  const pan = {
+    target: { x: 0, y: 0 },
+    current: { x: 0, y: 0 },
+    prev: { x: 0, y: 0 },
+    velocity: { x: 0, y: 0 }
+  }
   const zoom = { target: INITIAL_ZOOM, current: INITIAL_ZOOM }
   const tilt = { x: 0, y: 0 }
   const pointer = { x: 0, y: 0 }
+  const get_reduced_motion = create_reduced_motion_reader()
 
   /** @type {THREE.PerspectiveCamera | null} */
   let camera_ref = null
@@ -197,11 +212,13 @@ export const create_poster_scene = svg_string => {
     get_haze_enabled: () => state.haze_enabled,
     get_haze_density: () => state.haze_density,
     smooth,
+    pan,
     zoom,
     tilt,
     pointer,
     camera,
-    raycast
+    raycast,
+    get_reduced_motion
   })
 
   const settings = create_poster_scene_settings(state, appliers)

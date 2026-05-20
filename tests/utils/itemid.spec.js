@@ -6,6 +6,9 @@ import {
   as_poster_id,
   as_layer_name,
   as_layer_id,
+  as_query_id,
+  as_fragment_id,
+  type_as_list,
   load_from_cache,
   load_from_network,
   load
@@ -67,6 +70,48 @@ const sans_archive_directory = {
 describe('@/utils/itemid', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe('query and list helpers', () => {
+    it('as_query_id strips leading slash and replaces path separators', () => {
+      expect(as_query_id('/+16282281824/posters/1737178477987')).toBe(
+        '16282281824-posters-1737178477987'
+      )
+    })
+
+    it('as_fragment_id prefixes query id with hash', () => {
+      expect(as_fragment_id('/+16282281824/posters/1')).toBe(
+        '#16282281824-posters-1'
+      )
+    })
+
+    it('type_as_list returns empty for null item', () => {
+      expect(type_as_list(null)).toEqual([])
+    })
+
+    it('type_as_list reads typed array from item', () => {
+      const item = {
+        id: '/+1/posters/',
+        type: 'posters',
+        posters: [{ id: '/+1/posters/1' }, { id: '/+1/posters/2' }]
+      }
+      expect(type_as_list(item)).toEqual(item.posters)
+    })
+
+    it('type_as_list falls back to statements for thoughts', () => {
+      const item = {
+        id: '/+1/thoughts/',
+        type: 'thoughts',
+        statements: [{ id: '/+1/thoughts/1' }]
+      }
+      expect(type_as_list(item)).toEqual(item.statements)
+    })
+
+    it('type_as_list wraps single nested item', () => {
+      const nested = { id: '/+1/posters/9' }
+      const item = { id: '/+1/posters/', type: 'posters', posters: nested }
+      expect(type_as_list(item)).toEqual([nested])
+    })
   })
 
   describe('path generation', () => {
@@ -442,6 +487,19 @@ describe('@/utils/itemid', () => {
       expect(localStorage.getItem(me_id)).toBe(html)
       expect(del).toHaveBeenCalledWith(me_id)
       expect(set).not.toHaveBeenCalledWith(me_id, expect.anything())
+    })
+  })
+
+  describe('load', () => {
+    it('reads own item from localStorage when me matches itemid', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">Me</h3></address>`
+      localStorage.me = me_id
+      localStorage.setItem(me_id, html)
+
+      const item = await load(me_id, me_id)
+
+      expect(item?.name).toBe('Me')
     })
   })
 
