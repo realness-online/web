@@ -442,6 +442,19 @@
         </label>
         <label
           class="menu-action"
+          :class="{ active: animate }"
+          aria-label="Toggle animation">
+          <input
+            type="checkbox"
+            switch
+            :checked="animate"
+            @change="animate = !animate" />
+          <span aria-hidden="true">
+            <icon name="animation" />
+          </span>
+        </label>
+        <label
+          class="menu-action"
           :class="{ active: view_3d }"
           aria-label="Toggle 3D">
           <input
@@ -662,6 +675,10 @@
         & label.menu-action[aria-label='Open camera'] svg {
           width: base-line * 2;
           height: base-line * 2;
+        }
+        & label.menu-action[aria-label='Toggle animation'] svg {
+          width: base-line * 1.35;
+          height: base-line * 1.35;
         }
       }
 
