@@ -55,7 +55,7 @@
     "test:keymaps": "node test-keymap-build.js",
     "fallow:fix": "fallow fix",
     "type": "tsc --pretty",
-    "pre-commit": "vp check --fix && vp run type && vp test run --reporter=dot",
+    "pre-commit": "vp check --fix && vp run type && vp test run",
     "storage:compress": "node scripts/compress-files.js",
     "storage:upload": "node scripts/upload-files.js",
     "storage:download": "node scripts/download-files.js",
