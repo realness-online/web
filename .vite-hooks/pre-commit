@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
-vp staged
-vp run type
-vp test run
+# Git hook runs package.json pre-commit (full vp check, not vp staged only).
+# Comment keeps vp config from appending a duplicate vp staged step.
+npm run pre-commit
