@@ -130,16 +130,31 @@
       delete_dialog.value.close()
   }
 
-  const handle_focus = event => {
-    if (!storytelling.value) return
-    const scroll_container = document.querySelector(
+  /** Visibility dominates center distance when ranking posters in view. */
+  const POSTER_VISIBILITY_WEIGHT = 1000
+
+  /**
+   * @param {number} visibility
+   * @param {number} center
+   * @param {number} mid
+   */
+  const poster_in_view_score = (visibility, center, mid) =>
+    visibility * POSTER_VISIBILITY_WEIGHT - Math.abs(center - mid)
+
+  const storytelling_scroll_container = () =>
+    document.querySelector(
       'section.page.storytelling section.as-days > article'
     )
-    if (!scroll_container) return
-    const focused_slide = event.target.closest('section')
-    if (!focused_slide || focused_slide.parentElement !== scroll_container)
-      return
-    const slide_rect = focused_slide.getBoundingClientRect()
+
+  /**
+   * @param {Element | null | undefined} section
+   * @param {ScrollBehavior} [behavior='smooth']
+   */
+  const scroll_storytelling_to_section = (section, behavior = 'smooth') => {
+    const scroll_container = storytelling_scroll_container()
+    if (!scroll_container || !section) return
+    if (section.parentElement !== scroll_container) return
+    const slide_rect = section.getBoundingClientRect()
     const container_rect = scroll_container.getBoundingClientRect()
     const scroll_left =
       scroll_container.scrollLeft +
@@ -147,11 +162,149 @@
         container_rect.left -
         container_rect.width / 2 +
         slide_rect.width / 2)
-    scroll_container.scrollTo({
-      left: scroll_left,
-      behavior: 'smooth'
-    })
+    scroll_container.scrollTo({ left: scroll_left, behavior })
   }
+
+  /** @param {HTMLElement} figure */
+  const poster_itemid_from_figure = figure => {
+    const id_el = figure.querySelector('[itemid]')
+    return id_el?.getAttribute('itemid') || null
+  }
+
+  /** @param {HTMLElement} root */
+  const poster_itemid_most_in_view = root => {
+    let best_itemid = null
+    let best_score = -Infinity
+    const mid = window.innerHeight / 2
+    for (const figure of root.querySelectorAll('figure.poster')) {
+      if (!(figure instanceof HTMLElement)) continue
+      const rect = figure.getBoundingClientRect()
+      if (rect.bottom < 0 || rect.top > window.innerHeight) continue
+      const visible =
+        Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+      const visibility = visible / Math.max(rect.height, 1)
+      const center = rect.top + rect.height / 2
+      const score = poster_in_view_score(visibility, center, mid)
+      if (score <= best_score) continue
+      best_score = score
+      best_itemid = poster_itemid_from_figure(figure)
+    }
+    return best_itemid
+  }
+
+  const storytelling_poster_itemid = () => {
+    const root = statements_ref.value
+    if (!root) return null
+    const active = document.activeElement
+    const focused =
+      active instanceof HTMLElement ? active.closest('figure.poster') : null
+    if (focused instanceof HTMLElement && root.contains(focused)) {
+      const itemid = poster_itemid_from_figure(focused)
+      if (itemid) return itemid
+    }
+    const scroll_container = storytelling_scroll_container()
+    if (!scroll_container) return null
+    let best_itemid = null
+    let best_score = -Infinity
+    const container_rect = scroll_container.getBoundingClientRect()
+    const mid = container_rect.left + container_rect.width / 2
+    for (const section of scroll_container.querySelectorAll(
+      ':scope > section'
+    )) {
+      const figure = section.querySelector('figure.poster')
+      if (!(figure instanceof HTMLElement)) continue
+      const rect = section.getBoundingClientRect()
+      if (rect.right < container_rect.left || rect.left > container_rect.right)
+        continue
+      const visible =
+        Math.min(rect.right, container_rect.right) -
+        Math.max(rect.left, container_rect.left)
+      const visibility = visible / Math.max(rect.width, 1)
+      const center = rect.left + rect.width / 2
+      const score = poster_in_view_score(visibility, center, mid)
+      if (score <= best_score) continue
+      best_score = score
+      best_itemid = poster_itemid_from_figure(figure)
+    }
+    return best_itemid
+  }
+
+  const focused_poster_itemid = () => {
+    const root = statements_ref.value
+    if (!root) return null
+    const active = document.activeElement
+    const focused =
+      active instanceof HTMLElement ? active.closest('figure.poster') : null
+    if (focused instanceof HTMLElement && root.contains(focused)) {
+      const itemid = poster_itemid_from_figure(focused)
+      if (itemid) return itemid
+    }
+    return poster_itemid_most_in_view(root)
+  }
+
+  /**
+   * @param {string} itemid
+   * @param {ScrollBehavior} [behavior='smooth']
+   */
+  const scroll_feed_to_itemid = (itemid, behavior = 'smooth') => {
+    const root = statements_ref.value
+    if (!root || !itemid) return
+    const escaped = CSS.escape(itemid)
+    const figure = root
+      .querySelector(`figure.poster [itemid="${escaped}"]`)
+      ?.closest('figure.poster')
+    if (!(figure instanceof HTMLElement)) return
+    figure.scrollIntoView({ block: 'center', behavior })
+    figure.focus()
+  }
+
+  /**
+   * @param {string} itemid
+   * @param {ScrollBehavior} [behavior='smooth']
+   */
+  const scroll_storytelling_to_itemid = (itemid, behavior = 'smooth') => {
+    if (!itemid) return
+    const escaped = CSS.escape(itemid)
+    const figure = document.querySelector(
+      `section.page.storytelling figure.poster [itemid="${escaped}"]`
+    )
+    const section = figure?.closest('section')
+    scroll_storytelling_to_section(section, behavior)
+  }
+
+  const handle_focus = event => {
+    if (!storytelling.value) return
+    scroll_storytelling_to_section(event.target.closest('section'))
+  }
+
+  const wait_for_layout = () =>
+    new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve)
+      })
+    })
+
+  watch(
+    storytelling,
+    async (is_on, was_on) => {
+      if (is_on && !was_on) {
+        const itemid = focused_poster_itemid()
+        if (!itemid) return
+        await tick()
+        await wait_for_layout()
+        scroll_storytelling_to_itemid(itemid, 'auto')
+        return
+      }
+      if (!is_on && was_on) {
+        const itemid = storytelling_poster_itemid()
+        if (!itemid) return
+        await tick()
+        await wait_for_layout()
+        scroll_feed_to_itemid(itemid, 'auto')
+      }
+    },
+    { flush: 'pre' }
+  )
 
   const picker = itemid => {
     const poster =

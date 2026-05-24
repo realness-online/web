@@ -304,10 +304,6 @@
           name="adobe"
           hidden
           title="Posters download with HEX (#FFF000) values for color" />
-        <preference
-          name="animate"
-          title="Animate posters"
-          subtitle="This one loves a big strong GPU" />
         <div
           v-if="preferences.view_3d.value"
           ref="tweakpane_ref"
