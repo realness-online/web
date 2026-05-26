@@ -4,6 +4,7 @@ import {
   animate,
   mosaic,
   shadow,
+  stroke,
   bold,
   medium,
   regular,
@@ -36,6 +37,7 @@ import {
 export const sync_poster_scene_preferences = scene => {
   scene.set_mosaic_visible(mosaic.value)
   scene.set_shadow_visible(shadow.value)
+  scene.set_stroke_visible(stroke.value)
   scene.set_mosaic_spread(mosaic_spread.value)
   scene.set_mosaic_opacity(mosaic_opacity.value)
   scene.set_shadow_spread(shadow_spread.value)

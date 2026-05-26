@@ -23,3 +23,19 @@ export const nudge_pan = (pan, dx, dy) => {
   pan.current.x += dx
   pan.current.y += dy
 }
+
+/**
+ * @param {number} elapsed_s
+ * @param {number} period_s
+ * @param {number} base_opacity
+ * @param {number} min_opacity
+ */
+export const stroke_pulse_opacity = (
+  elapsed_s,
+  period_s,
+  base_opacity,
+  min_opacity
+) => {
+  const wave = Math.cos((elapsed_s * Math.PI * 2) / period_s)
+  return min_opacity + ((base_opacity - min_opacity) * (wave + 1)) / 2
+}

@@ -156,18 +156,74 @@ export const build_download_svg = svg_element => {
   return svg_clone
 }
 
+const SYMBOL_WAIT_TIMEOUT_MS = 5000
+
+/**
+ * @param {() => boolean} ready
+ * @param {number} [timeout_ms]
+ * @returns {Promise<void>}
+ */
+const wait_until = (ready, timeout_ms = SYMBOL_WAIT_TIMEOUT_MS) =>
+  new Promise((resolve, reject) => {
+    const start = Date.now()
+    const check = () => {
+      if (ready()) return resolve(undefined)
+      if (Date.now() - start > timeout_ms)
+        return reject(new Error('Timeout waiting for poster symbol'))
+      requestAnimationFrame(check)
+    }
+    check()
+  })
+
 /**
  * @param {Element} symbol_el
  * @returns {Promise<void>}
  */
 const symbol_has_content = symbol_el =>
-  new Promise(resolve => {
-    const check = () => {
-      if (symbol_el.innerHTML.trim()) resolve(undefined)
-      else requestAnimationFrame(check)
-    }
-    check()
+  wait_until(() => Boolean(symbol_el.innerHTML.trim()))
+
+/**
+ * @param {Element} symbol_el
+ * @returns {Promise<void>}
+ */
+const wait_for_shadow_background = symbol_el =>
+  wait_until(() => {
+    const background = symbol_el.querySelector('[itemprop="background"]')
+    return Boolean(background?.getAttribute('fill')?.trim())
   })
+
+/**
+ * @param {Element} symbol_defs
+ * @param {Id} itemid
+ * @param {string} layer
+ * @returns {Element | null}
+ */
+const find_geology_symbol = (symbol_defs, itemid, layer) => {
+  const layer_id = as_layer_id(itemid, layer)
+  return symbol_defs.querySelector(`symbol[itemid="${layer_id}"]`)
+}
+
+/**
+ * @param {Element} symbol_defs
+ * @param {Id} itemid
+ * @returns {Promise<void>}
+ */
+const wait_for_poster_symbols = async (symbol_defs, itemid) => {
+  const waits = geology_layers
+    .map(layer => {
+      const symbol = find_geology_symbol(symbol_defs, itemid, layer)
+      return symbol ? symbol_has_content(symbol) : null
+    })
+    .filter(Boolean)
+
+  const shadow_id = as_layer_id(itemid, 'shadows')
+  const shadow_symbol = symbol_defs.querySelector(
+    `symbol[itemid="${shadow_id}"]`
+  )
+  if (shadow_symbol) waits.push(wait_for_shadow_background(shadow_symbol))
+
+  await Promise.all(waits)
+}
 
 /**
  * Builds a standalone SVG string for 3D (viewer or GLB export), including
@@ -183,26 +239,26 @@ export const prepare_poster_svg_for_3d = async (
   itemid,
   { wait_for_symbols = true } = {}
 ) => {
+  const symbol_defs = svg_el
+    .closest('figure.poster')
+    ?.querySelector('svg[data-poster-symbol-defs]')
+
+  if (wait_for_symbols && symbol_defs)
+    await wait_for_poster_symbols(symbol_defs, itemid)
+
   const prepared = build_download_svg(svg_el)
   const defs = prepared.querySelector('defs')
   if (!defs) return new XMLSerializer().serializeToString(prepared)
 
-  const symbol_defs = svg_el
-    .closest('figure.poster')
-    ?.querySelector('svg[data-poster-symbol-defs]')
   if (!symbol_defs) return new XMLSerializer().serializeToString(prepared)
 
-  await Promise.all(
-    geology_layers.map(async layer => {
-      const layer_id = as_layer_id(itemid, layer)
-      const symbol = symbol_defs.querySelector(`symbol[itemid="${layer_id}"]`)
-      if (!symbol) return
-      if (wait_for_symbols) await symbol_has_content(symbol)
-      const symbol_clone = /** @type {Element} */ (symbol.cloneNode(true))
-      symbol_clone.setAttribute('id', layer)
-      defs.appendChild(symbol_clone)
-    })
-  )
+  for (const layer of geology_layers) {
+    const symbol = find_geology_symbol(symbol_defs, itemid, layer)
+    if (!symbol) continue
+    const symbol_clone = /** @type {Element} */ (symbol.cloneNode(true))
+    symbol_clone.setAttribute('id', layer)
+    defs.appendChild(symbol_clone)
+  }
 
   return new XMLSerializer().serializeToString(prepared)
 }

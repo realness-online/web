@@ -6,6 +6,120 @@ const SCREEN_ANGLE_LANDSCAPE_LEFT = -90
 const SCREEN_ANGLE_LANDSCAPE_LEFT_ALT = 270
 const SCREEN_ANGLE_UPSIDE_DOWN = 180
 
+/** @type {PermissionState | 'unsupported' | 'unknown'} */
+let permission_state = 'unknown'
+/** @type {Promise<PermissionState | 'unsupported'> | null} */
+let permission_request_promise = null
+/** @type {Set<() => void>} */
+const pending_enable = new Set()
+let document_arm_active = false
+
+const needs_ios_permission = () => {
+  if (typeof window === 'undefined') return false
+  if (typeof window.DeviceOrientationEvent === 'undefined') return false
+  const Ctor =
+    /** @type {typeof DeviceOrientationEvent & { requestPermission?: () => Promise<PermissionState> }} */ (
+      window.DeviceOrientationEvent
+    )
+  return typeof Ctor.requestPermission === 'function'
+}
+
+const notify_pending_enable = () => {
+  for (const enable of pending_enable) enable()
+}
+
+const clear_document_arm = () => {
+  if (!document_arm_active || typeof document === 'undefined') return
+  document_arm_active = false
+  document.removeEventListener('pointerdown', on_document_gesture)
+  document.removeEventListener('touchstart', on_document_gesture)
+}
+
+const on_document_gesture = () => {
+  void request_device_orientation_permission({ force: true })
+}
+
+const ensure_document_arm = () => {
+  if (document_arm_active || typeof document === 'undefined') return
+  if (!needs_ios_permission()) return
+  if (permission_state === 'granted' || permission_state === 'denied') return
+
+  document_arm_active = true
+  document.addEventListener('pointerdown', on_document_gesture, {
+    passive: true
+  })
+  document.addEventListener('touchstart', on_document_gesture, {
+    passive: true
+  })
+}
+
+export const reset_device_orientation_state_for_tests = () => {
+  permission_state = 'unknown'
+  permission_request_promise = null
+  pending_enable.clear()
+  clear_document_arm()
+}
+
+/**
+ * Arm iOS permission on the next user gesture when 3D is active.
+ */
+export const ensure_device_orientation_ready = () => {
+  if (permission_state === 'granted' || permission_state === 'unsupported') {
+    notify_pending_enable()
+    return
+  }
+  ensure_document_arm()
+}
+
+/**
+ * @param {{ force?: boolean }} [options]
+ * @returns {Promise<PermissionState | 'unsupported'>}
+ */
+export const request_device_orientation_permission = async (options = {}) => {
+  const { force = false } = options
+  if (typeof window === 'undefined') return 'unsupported'
+  if (typeof window.DeviceOrientationEvent === 'undefined') {
+    permission_state = 'unsupported'
+    return 'unsupported'
+  }
+
+  const Ctor =
+    /** @type {typeof DeviceOrientationEvent & { requestPermission?: () => Promise<PermissionState> }} */ (
+      window.DeviceOrientationEvent
+    )
+  if (typeof Ctor.requestPermission !== 'function') {
+    permission_state = 'granted'
+    clear_document_arm()
+    notify_pending_enable()
+    return 'granted'
+  }
+
+  const request_permission = Ctor.requestPermission
+
+  if (permission_state === 'granted') return 'granted'
+  if (!force && permission_state === 'denied') return 'denied'
+  if (permission_request_promise) return permission_request_promise
+
+  permission_request_promise = (async () => {
+    try {
+      const result = await request_permission()
+      permission_state = result
+      if (result === 'granted') {
+        clear_document_arm()
+        notify_pending_enable()
+      }
+      return result
+    } catch {
+      permission_state = 'denied'
+      return 'denied'
+    } finally {
+      permission_request_promise = null
+    }
+  })()
+
+  return await permission_request_promise
+}
+
 /**
  * @param {{
  *   canvas: HTMLCanvasElement,
@@ -75,36 +189,41 @@ export const bind_device_orientation = options => {
     if (orientation_enabled) return
     window.addEventListener('deviceorientation', on_orientation)
     window.addEventListener('orientationchange', reset_gyro_neutral)
+    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
+    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
     orientation_enabled = true
   }
 
-  const try_enable_orientation = () => {
+  const try_enable_orientation = ({ force_permission = false } = {}) => {
     if (typeof window.DeviceOrientationEvent === 'undefined') return
-    const Ctor =
-      /** @type {typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> }} */ (
-        window.DeviceOrientationEvent
-      )
-    if (typeof Ctor.requestPermission === 'function') {
-      Ctor.requestPermission()
-        .then(result => {
-          if (result === 'granted') enable_orientation()
-        })
-        .catch(() => {})
+    if (orientation_enabled) return
+
+    if (permission_state === 'granted' || permission_state === 'unsupported') {
+      enable_orientation()
       return
     }
-    enable_orientation()
+
+    if (permission_state === 'denied' && !force_permission) return
+
+    ensure_document_arm()
+    request_device_orientation_permission({ force: force_permission }).then(
+      result => {
+        if (result === 'granted') enable_orientation()
+      }
+    )
   }
 
   const arm_orientation_on_gesture = () => {
-    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
-    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
-    try_enable_orientation()
+    try_enable_orientation({ force_permission: true })
   }
 
+  pending_enable.add(try_enable_orientation)
   canvas.addEventListener('pointerdown', arm_orientation_on_gesture)
   canvas.addEventListener('touchstart', arm_orientation_on_gesture)
+  try_enable_orientation()
 
   return () => {
+    pending_enable.delete(try_enable_orientation)
     canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
     canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
     disable_orientation()

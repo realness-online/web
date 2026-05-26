@@ -7,6 +7,7 @@ const { mock_viewer, mock_scene } = vi.hoisted(() => {
   const scene = {
     set_mosaic_visible: vi.fn(),
     set_shadow_visible: vi.fn(),
+    set_stroke_visible: vi.fn(),
     set_mosaic_spread: vi.fn(),
     set_mosaic_opacity: vi.fn(),
     set_shadow_spread: vi.fn(),
@@ -23,7 +24,8 @@ const { mock_viewer, mock_scene } = vi.hoisted(() => {
     set_drift_amount: vi.fn(),
     set_drift_speed: vi.fn(),
     set_breathing_amount: vi.fn(),
-    set_breathing_speed: vi.fn()
+    set_breathing_speed: vi.fn(),
+    wait_for_textures: vi.fn(async () => undefined)
   }
   const viewer = {
     start_enter: vi.fn(),
@@ -53,6 +55,7 @@ vi.mock('@/utils/preference', () => ({
   animate: { value: true },
   mosaic: { value: true },
   shadow: { value: true },
+  stroke: { value: true },
   bold: { value: true },
   medium: { value: true },
   regular: { value: true },
@@ -105,8 +108,12 @@ describe('@/components/posters/as-viewer-3d.vue', () => {
       await import('@/3d/scenes/create-poster-scene.js')
 
     expect(create_poster_scene).toHaveBeenCalled()
+    expect(mock_scene.wait_for_textures).toHaveBeenCalled()
     expect(register_viewer).toHaveBeenCalled()
     expect(mock_viewer.start_enter).toHaveBeenCalledWith(on_svg_zoom)
+    expect(
+      mock_scene.wait_for_textures.mock.invocationCallOrder[0]
+    ).toBeLessThan(mock_viewer.start_enter.mock.invocationCallOrder[0])
   })
 
   it('does nothing when poster svg is missing', async () => {

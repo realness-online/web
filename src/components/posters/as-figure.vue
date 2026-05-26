@@ -30,7 +30,7 @@
   import { mosaic, view_3d } from '@/utils/preference'
   import {
     INTERSECTION_THRESHOLDS,
-    measure_fully_visible
+    measure_visibility
   } from '@/utils/intersection'
   import {
     poster_dom_id,
@@ -165,11 +165,14 @@
 
   const sync_poster_visibility = () => {
     const el = poster.value
-    if (!el || !poster_in_view.value) {
+    if (!el) {
+      poster_in_view.value = false
       poster_fully_in_view.value = false
       return
     }
-    poster_fully_in_view.value = measure_fully_visible(el)
+    const { in_view, fully_in_view } = measure_visibility(el)
+    poster_in_view.value = in_view
+    poster_fully_in_view.value = fully_in_view
   }
 
   let visibility_raf = 0
@@ -549,7 +552,9 @@
       @pointermove="handle_dom_ref_pointermove"
       @pointerup="handle_dom_ref_pointerup"
       @pointerleave="handle_dom_ref_pointerleave"
-      @pointercancel="handle_dom_ref_pointerleave">
+      @pointercancel="handle_dom_ref_pointerleave"
+      @contextmenu.prevent
+      @selectstart.prevent>
       <use :href="poster_reference_href" />
       <rect
         role="presentation"
@@ -747,6 +752,11 @@
       overflow: hidden;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-user-drag: none;
+      touch-action: pan-y;
       contain: layout;
       max-height: 100%;
     }
@@ -760,6 +770,9 @@
       position: absolute;
       inset: 0;
       z-index: 2;
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
     & > figcaption {
       grid-area: 1 / 1;

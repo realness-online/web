@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { smooth_toward, nudge_pan } from '@/3d/scenes/poster-scene-motion.js'
+import {
+  smooth_toward,
+  nudge_pan,
+  stroke_pulse_opacity
+} from '@/3d/scenes/poster-scene-motion.js'
 
 describe('poster-scene-motion', () => {
   it('smooth_toward settles toward target over time', () => {
@@ -23,5 +27,11 @@ describe('poster-scene-motion', () => {
     nudge_pan(pan, 0.5, -0.25)
     expect(pan.target.x).toBe(1.5)
     expect(pan.current.y).toBe(1.75)
+  })
+
+  it('stroke_pulse_opacity oscillates between base and min', () => {
+    expect(stroke_pulse_opacity(0, 6, 0.9, 0.1)).toBeCloseTo(0.9, 2)
+    expect(stroke_pulse_opacity(3, 6, 0.9, 0.1)).toBeCloseTo(0.1, 2)
+    expect(stroke_pulse_opacity(6, 6, 0.9, 0.1)).toBeCloseTo(0.9, 2)
   })
 })

@@ -2,13 +2,14 @@ import * as THREE from 'three'
 import {
   parse_poster_svg,
   parse_svg_layers_from_context
-} from '../utils/load-svg-layers.js'
-import { add_poster_mosaic_layers } from './add-poster-mosaic-layers.js'
-import { add_poster_scene_lights } from './add-poster-scene-lights.js'
-import { add_poster_shadow_layers } from './add-poster-shadow-layers.js'
-import { create_poster_scene_settings } from './create-poster-scene-settings.js'
-import { create_poster_scene_update } from './create-poster-scene-update.js'
-import { export_poster_glb } from './export-poster-glb.js'
+} from '@/3d/utils/load-svg-layers.js'
+import { add_poster_mosaic_layers } from '@/3d/scenes/add-poster-mosaic-layers.js'
+import { add_poster_scene_lights } from '@/3d/scenes/add-poster-scene-lights.js'
+import { add_poster_shadow_layers } from '@/3d/scenes/add-poster-shadow-layers.js'
+import { add_poster_stroke_layers } from '@/3d/scenes/add-poster-stroke-layers.js'
+import { create_poster_scene_settings } from '@/3d/scenes/create-poster-scene-settings.js'
+import { create_poster_scene_update } from '@/3d/scenes/create-poster-scene-update.js'
+import { export_poster_glb } from '@/3d/scenes/export-poster-glb.js'
 import {
   FIT_HEIGHT,
   INITIAL_BREATHING_AMOUNT,
@@ -29,8 +30,9 @@ import {
   INITIAL_ZOOM,
   SCENE_BACKGROUND,
   SHADOW_Z_GAIN,
+  STROKE_Z_OFFSET,
   VECTOR_LAYERS
-} from './poster-scene-config.js'
+} from '@/3d/scenes/poster-scene-config.js'
 
 const create_reduced_motion_reader = () => {
   if (typeof window === 'undefined') return () => false
@@ -41,13 +43,177 @@ const create_reduced_motion_reader = () => {
 }
 
 /**
+ * @param {{
+ *   fog: THREE.FogExp2,
+ *   state: object,
+ *   mosaic_group_map: Map<string, THREE.Group>,
+ *   mosaic_materials: { material: THREE.MeshBasicMaterial, base_opacity: number }[],
+ *   shadow_entries: { group: THREE.Group, parallax_offset: number }[],
+ *   shadow_group_map: Map<string, THREE.Group>,
+ *   shadow_materials: { material: THREE.MeshBasicMaterial, base_opacity: number, loaded: boolean }[],
+ *   stroke_entries: { group: THREE.Group, parallax_offset: number, child_id: string }[],
+ *   stroke_group_map: Map<string, THREE.Group>,
+ *   stroke_materials: { material: THREE.MeshBasicMaterial, base_opacity: number, loaded: boolean, period: number }[]
+ * }} options
+ */
+const create_poster_scene_appliers = ({
+  fog,
+  state,
+  mosaic_group_map,
+  mosaic_materials,
+  shadow_entries,
+  shadow_group_map,
+  shadow_materials,
+  stroke_entries,
+  stroke_group_map,
+  stroke_materials
+}) => ({
+  apply_mosaic_spread() {
+    let i = 0
+    for (const group of mosaic_group_map.values()) {
+      group.position.z = i * i * state.mosaic_spread
+      i++
+    }
+  },
+  apply_mosaic_opacity() {
+    for (const entry of mosaic_materials)
+      entry.material.opacity = entry.base_opacity * state.mosaic_opacity
+  },
+  apply_mosaic_visibility() {
+    for (const [name, group] of mosaic_group_map)
+      group.visible = state.mosaic_visible && state.mosaic_layer_visible[name]
+  },
+  apply_shadow_visibility() {
+    for (const [child_id, group] of shadow_group_map)
+      group.visible =
+        state.shadow_visible && state.shadow_layer_visible[child_id]
+  },
+  apply_shadow_opacity() {
+    for (const entry of shadow_materials)
+      if (entry.loaded)
+        entry.material.opacity = entry.base_opacity * state.shadow_opacity
+  },
+  apply_shadow_z() {
+    for (const entry of shadow_entries)
+      entry.group.position.z =
+        entry.parallax_offset * state.shadow_spread * SHADOW_Z_GAIN -
+        state.group_gap
+    for (const entry of stroke_entries)
+      entry.group.position.z =
+        entry.parallax_offset * state.shadow_spread * SHADOW_Z_GAIN -
+        state.group_gap +
+        STROKE_Z_OFFSET
+  },
+  apply_stroke_visibility() {
+    for (const [child_id, group] of stroke_group_map)
+      group.visible =
+        state.stroke_visible && state.shadow_layer_visible[child_id]
+  },
+  apply_stroke_opacity() {
+    for (const entry of stroke_materials)
+      if (entry.loaded)
+        entry.material.opacity =
+          entry.base_opacity * (state.stroke_visible ? 1 : 0)
+  },
+  apply_haze() {
+    fog.color.set(state.haze_color)
+  }
+})
+
+/**
+ * @param {object} options
+ */
+const load_poster_texture_layers = ({
+  poster_svg,
+  root,
+  plane_w,
+  plane_h,
+  state,
+  layer_groups,
+  shadow_entries,
+  shadow_group_map,
+  shadow_materials,
+  stroke_entries,
+  stroke_group_map,
+  stroke_materials,
+  appliers
+}) => {
+  const shadow_texture_promises = add_poster_shadow_layers({
+    poster_svg,
+    root,
+    plane_w,
+    plane_h,
+    shadow_spread: state.shadow_spread,
+    group_gap: state.group_gap,
+    shadow_opacity: state.shadow_opacity,
+    layer_groups,
+    shadow_entries,
+    shadow_group_map,
+    shadow_materials,
+    shadow_layer_visible: state.shadow_layer_visible
+  })
+
+  const stroke_texture_promises = add_poster_stroke_layers({
+    poster_svg,
+    root,
+    plane_w,
+    plane_h,
+    shadow_spread: state.shadow_spread,
+    group_gap: state.group_gap,
+    layer_groups,
+    stroke_entries,
+    stroke_group_map,
+    stroke_materials
+  })
+
+  appliers.apply_stroke_visibility()
+  appliers.apply_stroke_opacity()
+
+  return { shadow_texture_promises, stroke_texture_promises }
+}
+
+/**
+ * @param {{ x: number, y: number }} pointer
+ */
+const create_poster_scene_raycast = pointer => {
+  /** @type {THREE.PerspectiveCamera | null} */
+  let camera_ref = null
+  const camera = { canvas_height: 1 }
+  const raycaster = new THREE.Raycaster()
+  const ndc = new THREE.Vector2()
+  const z_plane = new THREE.Plane()
+  const cursor_before = new THREE.Vector3()
+  const cursor_after = new THREE.Vector3()
+
+  return {
+    camera,
+    get_camera: () => camera_ref,
+    mount_camera(camera) {
+      camera_ref = camera || null
+    },
+    raycast: {
+      cursor_before,
+      cursor_after,
+      world_cursor_at_z(z, out) {
+        if (!camera_ref) return null
+        ndc.set(pointer.x, -pointer.y)
+        raycaster.setFromCamera(ndc, camera_ref)
+        z_plane.setComponents(0, 0, 1, -z)
+        return raycaster.ray.intersectPlane(z_plane, out)
+      }
+    }
+  }
+}
+
+/**
  * @param {string} svg_string
- * @returns {import('../engine/types.js').PosterSceneController}
+ * @returns {import('@/3d/engine/types.js').PosterSceneController}
  */
 export const create_poster_scene = svg_string => {
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(SCENE_BACKGROUND)
-  scene.fog = new THREE.FogExp2(INITIAL_HAZE_COLOR, 0)
+  const fog = new THREE.FogExp2(INITIAL_HAZE_COLOR, 0)
+  scene.fog = fog
 
   add_poster_scene_lights(scene)
 
@@ -87,6 +253,7 @@ export const create_poster_scene = svg_string => {
     shadow_opacity: INITIAL_SHADOW_OPACITY,
     mosaic_visible: true,
     shadow_visible: true,
+    stroke_visible: true,
     group_gap: INITIAL_GROUP_GAP,
     tilt_amount: INITIAL_TILT_AMOUNT,
     gyro_amount: INITIAL_GYRO_AMOUNT,
@@ -105,63 +272,44 @@ export const create_poster_scene = svg_string => {
   const shadow_entries = []
   const shadow_group_map = new Map()
   const shadow_materials = []
+  const stroke_entries = []
+  const stroke_group_map = new Map()
+  const stroke_materials = []
 
-  const appliers = {
-    apply_mosaic_spread() {
-      let i = 0
-      for (const group of mosaic_group_map.values()) {
-        group.position.z = i * i * state.mosaic_spread
-        i++
-      }
-    },
-    apply_mosaic_opacity() {
-      for (const entry of mosaic_materials)
-        entry.material.opacity = entry.base_opacity * state.mosaic_opacity
-    },
-    apply_mosaic_visibility() {
-      for (const [name, group] of mosaic_group_map)
-        group.visible = state.mosaic_visible && state.mosaic_layer_visible[name]
-    },
-    apply_shadow_visibility() {
-      for (const [child_id, group] of shadow_group_map)
-        group.visible =
-          state.shadow_visible && state.shadow_layer_visible[child_id]
-    },
-    apply_shadow_opacity() {
-      for (const entry of shadow_materials)
-        if (entry.loaded)
-          entry.material.opacity = entry.base_opacity * state.shadow_opacity
-    },
-    apply_shadow_z() {
-      for (const entry of shadow_entries)
-        entry.group.position.z =
-          entry.parallax_offset * state.shadow_spread * SHADOW_Z_GAIN -
-          state.group_gap
-    },
-    apply_haze() {
-      scene.fog.color.set(state.haze_color)
-    }
-  }
+  const appliers = create_poster_scene_appliers({
+    fog,
+    state,
+    mosaic_group_map,
+    mosaic_materials,
+    shadow_entries,
+    shadow_group_map,
+    shadow_materials,
+    stroke_entries,
+    stroke_group_map,
+    stroke_materials
+  })
 
   appliers.apply_mosaic_spread()
   appliers.apply_mosaic_opacity()
   appliers.apply_mosaic_visibility()
   appliers.apply_haze()
 
-  const texture_promises = add_poster_shadow_layers({
-    poster_svg,
-    root,
-    plane_w,
-    plane_h,
-    shadow_spread: state.shadow_spread,
-    group_gap: state.group_gap,
-    shadow_opacity: state.shadow_opacity,
-    layer_groups,
-    shadow_entries,
-    shadow_group_map,
-    shadow_materials,
-    shadow_layer_visible: state.shadow_layer_visible
-  })
+  const { shadow_texture_promises, stroke_texture_promises } =
+    load_poster_texture_layers({
+      poster_svg,
+      root,
+      plane_w,
+      plane_h,
+      state,
+      layer_groups,
+      shadow_entries,
+      shadow_group_map,
+      shadow_materials,
+      stroke_entries,
+      stroke_group_map,
+      stroke_materials,
+      appliers
+    })
 
   const smooth = { x: 0, y: 0 }
   const pan = {
@@ -174,32 +322,16 @@ export const create_poster_scene = svg_string => {
   const tilt = { x: 0, y: 0 }
   const pointer = { x: 0, y: 0 }
   const get_reduced_motion = create_reduced_motion_reader()
-
-  /** @type {THREE.PerspectiveCamera | null} */
-  let camera_ref = null
-  const camera = { canvas_height: 1 }
-  const raycaster = new THREE.Raycaster()
-  const ndc = new THREE.Vector2()
-  const z_plane = new THREE.Plane()
-  const cursor_before = new THREE.Vector3()
-  const cursor_after = new THREE.Vector3()
-
-  const raycast = {
-    cursor_before,
-    cursor_after,
-    world_cursor_at_z(z, out) {
-      if (!camera_ref) return null
-      ndc.set(pointer.x, -pointer.y)
-      raycaster.setFromCamera(ndc, camera_ref)
-      z_plane.setComponents(0, 0, 1, -z)
-      return raycaster.ray.intersectPlane(z_plane, out)
-    }
-  }
+  const { camera, get_camera, mount_camera, raycast } =
+    create_poster_scene_raycast(pointer)
 
   const update = create_poster_scene_update({
     scene,
     root,
     layer_groups,
+    plane_w,
+    plane_h,
+    get_camera,
     get_mosaic_spread: () => state.mosaic_spread,
     get_shadow_spread: () => state.shadow_spread,
     get_motion_enabled: () => state.motion_enabled,
@@ -211,6 +343,9 @@ export const create_poster_scene = svg_string => {
     get_gyro_amount: () => state.gyro_amount,
     get_haze_enabled: () => state.haze_enabled,
     get_haze_density: () => state.haze_density,
+    get_stroke_visible: () => state.stroke_visible,
+    stroke_materials,
+    appliers,
     smooth,
     pan,
     zoom,
@@ -226,15 +361,19 @@ export const create_poster_scene = svg_string => {
   return {
     scene,
     mount({ camera } = {}) {
-      camera_ref = camera || null
+      mount_camera(camera)
     },
     on_resize({ height } = {}) {
       if (height) camera.canvas_height = height
     },
     update,
     ...settings,
-    wait_for_textures() {
-      return Promise.all(texture_promises)
+    async wait_for_textures() {
+      await Promise.all([
+        ...shadow_texture_promises,
+        ...stroke_texture_promises
+      ])
+      appliers.apply_stroke_opacity()
     },
     export_glb(filename = 'poster') {
       export_poster_glb(scene, filename)

@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vite-plus/test'
+import { describe, it, expect, vi } from 'vite-plus/test'
 import {
   INTERSECTION_THRESHOLDS,
   intersection_ratio,
   is_ratio_fully_visible,
-  measure_fully_visible
+  measure_fully_visible,
+  measure_visibility
 } from '@/utils/intersection'
 
 /** @param {Partial<DOMRectReadOnly>} overrides */
@@ -50,5 +51,32 @@ describe('@/utils/intersection', () => {
 
   it('measure_fully_visible returns false without an element', () => {
     expect(measure_fully_visible(null)).toBe(false)
+  })
+
+  it('measure_visibility reports in_view and fully_in_view from geometry', () => {
+    const root = rect({ right: 800, bottom: 600, width: 800, height: 600 })
+    const tall = rect({ right: 400, bottom: 1500, height: 1500 })
+    const offscreen = rect({ top: 700, bottom: 1000, y: 700, height: 300 })
+
+    vi.stubGlobal('innerWidth', root.width)
+    vi.stubGlobal('innerHeight', root.height)
+
+    /** @param {Partial<DOMRectReadOnly>} bounds */
+    const element = bounds => ({
+      getBoundingClientRect: () => rect(bounds)
+    })
+
+    expect(measure_visibility(null)).toEqual({
+      in_view: false,
+      fully_in_view: false
+    })
+    expect(measure_visibility(element(tall))).toEqual({
+      in_view: true,
+      fully_in_view: true
+    })
+    expect(measure_visibility(element(offscreen))).toEqual({
+      in_view: false,
+      fully_in_view: false
+    })
   })
 })

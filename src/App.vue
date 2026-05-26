@@ -29,6 +29,10 @@
   import { use_keymap } from '@/use/key-commands'
   import { posting } from '@/use/posting'
   import {
+    ensure_device_orientation_ready,
+    request_device_orientation_permission
+  } from '@/3d/engine/bind-device-orientation.js'
+  import {
     ANIMATION_SPEEDS,
     ANIMATION_SPEED_LEGACY,
     DEFAULT_ANIMATION_SPEED
@@ -298,6 +302,16 @@
     open_camera()
     if (input) input.checked = false
   }
+  /** @param {Event} event */
+  const handle_view_3d_change = event => {
+    const input = /** @type {HTMLInputElement | null} */ (event.target)
+    const next_value = input?.checked ?? !view_3d.value
+    if (next_value) {
+      void request_device_orientation_permission()
+      ensure_device_orientation_ready()
+    }
+    view_3d.value = next_value
+  }
   /**
    * Pull image blobs from clipboard on explicit user gesture.
    */
@@ -373,6 +387,10 @@
     const queued = await queue_supported_files(files)
     if (queued) event.preventDefault()
   }
+  watch(view_3d, next_value => {
+    if (next_value) ensure_device_orientation_ready()
+  })
+
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
       sessionStorage.about = true
@@ -389,6 +407,7 @@
       aspect_ratio === 'auto' ? 'auto' : aspect_ratio
     )
     set_storytelling_slide_width()
+    if (view_3d.value) ensure_device_orientation_ready()
     viewport_mql.value = window.matchMedia('(min-aspect-ratio: 1/1)')
     viewport_mql.value.addEventListener('change', set_storytelling_slide_width)
 
@@ -420,26 +439,6 @@
       aria-label="App actions"
       :data-footer-visible="footer_visible ? 'true' : 'false'">
       <footer>
-        <label class="menu-action" aria-label="Add poster">
-          <input
-            type="checkbox"
-            switch
-            aria-label="Add poster"
-            @change="handle_add_change" />
-          <span aria-hidden="true">
-            <icon name="add" />
-          </span>
-        </label>
-        <label class="menu-action" aria-label="Open camera">
-          <input
-            type="checkbox"
-            switch
-            aria-label="Open camera"
-            @change="handle_camera_change" />
-          <span aria-hidden="true">
-            <icon name="camera" />
-          </span>
-        </label>
         <label
           class="menu-action"
           :class="{ active: animate }"
@@ -461,9 +460,30 @@
             type="checkbox"
             switch
             :checked="view_3d"
-            @change="view_3d = !view_3d" />
+            @change="handle_view_3d_change" />
           <span aria-hidden="true">
             <icon name="galaxy" />
+          </span>
+        </label>
+
+        <label class="menu-action" aria-label="Open camera">
+          <input
+            type="checkbox"
+            switch
+            aria-label="Open camera"
+            @change="handle_camera_change" />
+          <span aria-hidden="true">
+            <icon name="camera" />
+          </span>
+        </label>
+        <label class="menu-action" aria-label="Add poster">
+          <input
+            type="checkbox"
+            switch
+            aria-label="Add poster"
+            @change="handle_add_change" />
+          <span aria-hidden="true">
+            <icon name="add" />
           </span>
         </label>
         <as-dialog-preferences ref="preferences_dialog" />

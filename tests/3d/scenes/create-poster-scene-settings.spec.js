@@ -9,6 +9,8 @@ describe('create_poster_scene_settings', () => {
     apply_shadow_opacity: vi.fn(),
     apply_mosaic_visibility: vi.fn(),
     apply_shadow_visibility: vi.fn(),
+    apply_stroke_visibility: vi.fn(),
+    apply_stroke_opacity: vi.fn(),
     apply_haze: vi.fn()
   })
 
@@ -20,6 +22,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 4,
       mosaic_visible: true,
       shadow_visible: false,
+      stroke_visible: true,
       group_gap: 5,
       tilt_amount: 6,
       gyro_amount: 7,
@@ -43,6 +46,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 4,
       mosaic_visible: true,
       shadow_visible: false,
+      stroke_visible: true,
       group_gap: 5,
       tilt_amount: 6,
       gyro_amount: 7,
@@ -65,6 +69,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 0,
       mosaic_visible: false,
       shadow_visible: false,
+      stroke_visible: false,
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,
@@ -87,12 +92,15 @@ describe('create_poster_scene_settings', () => {
     settings.set_haze_enabled(true)
     settings.set_mosaic_layer_visible('boulders', false)
     settings.set_shadow_layer_visible('bold', false)
+    settings.set_stroke_visible(true)
 
     expect(state.mosaic_spread).toBe(0.5)
     expect(appliers.apply_mosaic_spread).toHaveBeenCalled()
     expect(appliers.apply_shadow_z).toHaveBeenCalled()
     expect(appliers.apply_haze).toHaveBeenCalled()
     expect(appliers.apply_mosaic_visibility).toHaveBeenCalled()
+    expect(appliers.apply_stroke_visibility).toHaveBeenCalled()
+    expect(appliers.apply_stroke_opacity).toHaveBeenCalled()
     expect(state.mosaic_layer_visible.boulders).toBe(false)
     expect(state.shadow_layer_visible.bold).toBe(false)
   })
@@ -105,6 +113,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 0,
       mosaic_visible: true,
       shadow_visible: true,
+      stroke_visible: true,
       group_gap: 3,
       tilt_amount: 4,
       gyro_amount: 5,
@@ -126,6 +135,7 @@ describe('create_poster_scene_settings', () => {
     settings.set_shadow_spread(2)
     settings.set_mosaic_visible(true)
     settings.set_shadow_visible(true)
+    settings.set_stroke_visible(true)
     settings.set_group_gap(3)
     settings.set_haze_enabled(true)
     settings.set_haze_color('#fff')
@@ -153,6 +163,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 0,
       mosaic_visible: false,
       shadow_visible: false,
+      stroke_visible: false,
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,
@@ -198,6 +209,7 @@ describe('create_poster_scene_settings', () => {
       shadow_opacity: 0,
       mosaic_visible: true,
       shadow_visible: true,
+      stroke_visible: true,
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,

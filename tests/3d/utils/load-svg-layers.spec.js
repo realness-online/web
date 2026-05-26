@@ -7,7 +7,9 @@ import {
   parse_svg_layers,
   extract_layer_svg,
   extract_symbol_child_svg,
-  extract_symbol_child_from_context
+  extract_symbol_child_from_context,
+  extract_symbol_child_fill_from_context,
+  extract_symbol_child_stroke_from_context
 } from '@/3d/utils/load-svg-layers.js'
 
 vi.mock('three/addons/loaders/SVGLoader.js', () => ({
@@ -77,6 +79,46 @@ describe('load_svg_layers', () => {
     it('returns null when symbol or child is missing', () => {
       expect(extract_symbol_child_svg(poster_svg, 'nope', 'bold')).toBeNull()
       expect(extract_symbol_child_svg(poster_svg, 'shadows', 'nope')).toBeNull()
+    })
+  })
+
+  describe('fill and stroke extraction', () => {
+    it('strips stroke from fill-only shadow svg', () => {
+      const parsed = parse_poster_svg(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+          <symbol id="shadows">
+            <path id="bold" d="M0 0 L1 1" fill="#000" stroke="#fff" stroke-width="2" />
+          </symbol>
+        </svg>`
+      )
+      const fill_svg = extract_symbol_child_fill_from_context(
+        parsed,
+        'shadows',
+        'bold'
+      )
+
+      expect(fill_svg).toContain('fill="#000"')
+      expect(fill_svg).toContain('stroke="none"')
+      expect(fill_svg).toContain('stroke-width="0"')
+    })
+
+    it('strips fill from stroke-only shadow svg', () => {
+      const parsed = parse_poster_svg(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+          <symbol id="shadows">
+            <path id="bold" d="M0 0 L1 1" fill="#000" stroke="#fff" stroke-width="2" />
+          </symbol>
+        </svg>`
+      )
+      const stroke_svg = extract_symbol_child_stroke_from_context(
+        parsed,
+        'shadows',
+        'bold'
+      )
+
+      expect(stroke_svg).toContain('fill="none"')
+      expect(stroke_svg).toContain('stroke="#fff"')
+      expect(stroke_svg).toContain('stroke-opacity="0.90"')
     })
   })
 })

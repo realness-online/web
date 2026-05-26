@@ -9,6 +9,7 @@ vi.mock('@/utils/preference', () => ({
   animate: { value: true },
   mosaic: { value: true },
   shadow: { value: false },
+  stroke: { value: true },
   bold: { value: true },
   medium: { value: true },
   regular: { value: true },
@@ -40,6 +41,7 @@ describe('poster_scene_preferences', () => {
     const scene = {
       set_mosaic_visible: vi.fn(),
       set_shadow_visible: vi.fn(),
+      set_stroke_visible: vi.fn(),
       set_mosaic_spread: vi.fn(),
       set_mosaic_opacity: vi.fn(),
       set_shadow_spread: vi.fn(),
@@ -63,6 +65,7 @@ describe('poster_scene_preferences', () => {
 
     expect(scene.set_mosaic_visible).toHaveBeenCalledWith(true)
     expect(scene.set_shadow_visible).toHaveBeenCalledWith(false)
+    expect(scene.set_stroke_visible).toHaveBeenCalledWith(true)
     expect(scene.set_motion_enabled).toHaveBeenCalledWith(true)
   })
 
@@ -73,6 +76,7 @@ describe('poster_scene_preferences', () => {
     scene_ref.value = /** @type {any} */ ({
       set_mosaic_visible: vi.fn(),
       set_shadow_visible: vi.fn(),
+      set_stroke_visible: vi.fn(),
       set_mosaic_spread: vi.fn(),
       set_mosaic_opacity: vi.fn(),
       set_shadow_spread: vi.fn(),

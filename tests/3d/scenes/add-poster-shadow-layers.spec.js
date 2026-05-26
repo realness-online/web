@@ -60,7 +60,7 @@ describe('add_poster_shadow_layers', () => {
     ).toBe(1)
   })
 
-  it('logs and keeps opacity zero when texture load fails', async () => {
+  it('logs and rejects when texture load fails', async () => {
     const { svg_to_canvas_texture } =
       await import('@/3d/utils/load-svg-texture.js')
     vi.mocked(svg_to_canvas_texture).mockRejectedValue(
@@ -84,8 +84,7 @@ describe('add_poster_shadow_layers', () => {
       shadow_layer_visible: {}
     })
 
-    await Promise.all(promises)
-
+    await expect(Promise.all(promises)).rejects.toThrow('texture fail')
     expect(error_spy).toHaveBeenCalled()
     error_spy.mockRestore()
   })

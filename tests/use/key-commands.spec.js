@@ -301,6 +301,25 @@ describe('key-commands composable', () => {
         .mockReturnValue(document.body)
       expect(key_commands.check_input_focus()).toBe(false)
     })
+
+    it('returns false when active element is a switch checkbox', () => {
+      const input = document.createElement('input')
+      input.type = 'checkbox'
+      input.setAttribute('role', 'switch')
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(input)
+      expect(key_commands.check_input_focus()).toBe(false)
+    })
+
+    it('returns true when active element is a text input', () => {
+      const input = document.createElement('input')
+      input.type = 'text'
+      active_element_spy = vi
+        .spyOn(document, 'activeElement', 'get')
+        .mockReturnValue(input)
+      expect(key_commands.check_input_focus()).toBe(true)
+    })
   })
 
   describe('keymap validation', () => {

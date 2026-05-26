@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { build_poster_layer_geometry } from './build-poster-layer-geometry.js'
-import { VECTOR_LAYERS } from './poster-scene-config.js'
+import { build_poster_layer_geometry } from '@/3d/scenes/build-poster-layer-geometry.js'
+import { VECTOR_LAYERS } from '@/3d/scenes/poster-scene-config.js'
 
 /**
  * @param {{

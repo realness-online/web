@@ -107,6 +107,27 @@ describe('create_poster_scene', () => {
     expect(svg_to_canvas_texture).toHaveBeenCalled()
   })
 
+  it('wait_for_textures rejects when a shadow texture fails', async () => {
+    const { svg_to_canvas_texture } =
+      await import('@/3d/utils/load-svg-texture.js')
+    vi.mocked(svg_to_canvas_texture).mockRejectedValue(
+      new Error('texture fail')
+    )
+    const error_spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const failing_controller = create_poster_scene(poster_svg)
+
+    await expect(failing_controller.wait_for_textures()).rejects.toThrow(
+      'texture fail'
+    )
+
+    vi.mocked(svg_to_canvas_texture).mockResolvedValue({
+      texture: { dispose: vi.fn() },
+      width: 64,
+      height: 64
+    })
+    error_spy.mockRestore()
+  })
+
   it('mount enables zoom anchor raycast when camera is provided', () => {
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100)
     camera.position.z = 5

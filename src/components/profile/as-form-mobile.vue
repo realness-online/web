@@ -163,26 +163,28 @@
       <legend :class="{ valid: validate_mobile_number() }">
         {{ mobile_display }}
       </legend>
-      <label for="mobile" class="phone-input-row">
-        <button
-          type="button"
-          id="country-toggle"
-          class="phone-country-toggle"
-          @click="show_countries = !show_countries">
-          {{ country?.emoji }} +{{ phone_code(country_code) }}
-        </button>
-        <input
-          id="mobile"
-          ref="mobile"
-          v-model="mobile_number"
-          type="tel"
-          autocomplete="tel"
-          :placeholder="placeholder"
-          @keypress="mobile_keypress"
-          @keyup="validate_mobile_number"
-          @input="handle_input"
-          @paste.prevent="mobile_paste" />
-      </label>
+      <button
+        type="button"
+        id="country-toggle"
+        aria-haspopup="listbox"
+        :aria-expanded="show_countries"
+        :aria-controls="show_countries ? 'country' : undefined"
+        :aria-label="`Country, ${country?.name ?? country_code}`"
+        @click.stop="show_countries = !show_countries">
+        {{ country?.emoji }} +{{ phone_code(country_code) }}
+      </button>
+      <input
+        id="mobile"
+        ref="mobile"
+        v-model="mobile_number"
+        type="tel"
+        autocomplete="tel"
+        aria-label="Phone number"
+        :placeholder="placeholder"
+        @keypress="mobile_keypress"
+        @keyup="validate_mobile_number"
+        @input="handle_input"
+        @paste.prevent="mobile_paste" />
       <select
         v-if="show_countries"
         id="country"
@@ -227,81 +229,81 @@
 </template>
 
 <style lang="stylus">
-  form#profile-mobile
-    animation-name: slide-in-left
-    svg.remove
-      fill: red
-    fieldset
-      margin-bottom: base-line
-      &#captcha.hide
-        display: none
-      &#phone
-        position: relative
+  form#profile-mobile {
+    margin: base-line;
+    svg.remove {
+      fill: red;
+    }
+    fieldset {
+      margin-bottom: base-line;
+      &#captcha.hide {
+         display: none;
+      }
+      &#phone {
+        overflow: visible;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
 
-        label.phone-input-row
-          display: flex
-          flex-wrap: nowrap
-          align-items: stretch
-          width: 100%
-          min-width: 0
+        & > legend {
+          flex: 0 0 100%;
+        }
 
-          button#country-toggle.phone-country-toggle
-            flex-shrink: 0
-            display: flex
-            align-items: center
-            margin: 0
-            margin-right: (base-line * 0.5)
-            padding: (base-line * 0.5) (base-line * 0.75)
-            cursor: pointer
-            white-space: nowrap
-            border: none
-            border-right: 1px solid
-            border-color: inherit
-            background: transparent
-            font: inherit
-            line-height: 1.5
-            opacity: 0.7
+        button#country-toggle {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          margin: 0;
+          margin-right: (base-line * 0.5);
+          cursor: pointer;
+          white-space: nowrap;
+          border: none;
+          background: transparent;
+          font: inherit;
+          line-height: 1.5;
+          opacity: 0.7;
+          &:focus {
+            outline: none;
+          }
+          &:hover {
+            opacity: 1;
+          }
+        }
+        input#mobile {
+          flex: 1;
+          min-width: 0;
+        }
+        select#country {
+          flex: 0 0 100%;
+          width: 100%;
+          max-height: 200px;
+          overflow-y: auto;
+          margin-top: (base-line * 0.25);
+          padding: (base-line * 0.25);
+          @media (prefers-color-scheme: dark) {
+            background-color: black-transparent;
+            border-color: red;
+          }
+          option {
+            padding: (base-line * 0.25);
+            cursor: pointer;
+            &:hover {
+              background-color: blue;
+              color: white;
+            }
+          }
+        }
+      }
+    }
 
-            &:hover
-              opacity: 1
+    button#sign-out {
+      border: none;
+      padding: 0;
+    }
 
-            &:focus
-              opacity: 1
-
-          input#mobile
-            flex: 1
-            min-width: 0
-
-        select#country
-          position: absolute
-          top: 100%
-          left: 0
-          right: 0
-          max-height: 200px
-          overflow-y: auto
-          z-index: 7
-          border: 1px solid black
-          background-color: white
-          padding: (base-line * 0.25)
-          margin-top: (base-line * 0.25)
-
-          @media (prefers-color-scheme: dark)
-            background-color: black
-            border-color: red
-
-          option
-            padding: (base-line * 0.25)
-            cursor: pointer
-
-            &:hover
-              background-color: blue
-              color: white
-    button#sign-out
-      border: none
-      padding: 0
-    menu
-      display: flex
-      justify-content: flex-end
-      & > button svg.silhouette
-        fill: blue
+    menu {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
 </style>

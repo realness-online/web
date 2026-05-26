@@ -115,6 +115,64 @@ export const extract_symbol_child_from_context = (
 }
 
 /**
+ * @param {string | null} svg_text
+ * @param {'fill' | 'stroke'} mode
+ */
+const prepare_raster_svg = (svg_text, mode) => {
+  if (!svg_text) return null
+
+  const doc = new DOMParser().parseFromString(svg_text, 'image/svg+xml')
+  doc.querySelectorAll('path').forEach(path => {
+    if (mode === 'fill') {
+      path.setAttribute('stroke', 'none')
+      path.setAttribute('stroke-opacity', '0')
+      path.setAttribute('stroke-width', '0')
+      path.removeAttribute('stroke-dasharray')
+      path.removeAttribute('stroke-dashoffset')
+      return
+    }
+
+    path.setAttribute('fill', 'none')
+    path.removeAttribute('fill-opacity')
+    path.removeAttribute('fill-rule')
+    if (path.getAttribute('stroke') === 'none') return
+    path.setAttribute('stroke-opacity', '0.90')
+  })
+
+  return new XMLSerializer().serializeToString(doc.documentElement)
+}
+
+/**
+ * @param {PosterSvgContext} poster_svg
+ * @param {string} symbol_id
+ * @param {string} child_id
+ */
+export const extract_symbol_child_fill_from_context = (
+  poster_svg,
+  symbol_id,
+  child_id
+) =>
+  prepare_raster_svg(
+    extract_symbol_child_from_context(poster_svg, symbol_id, child_id),
+    'fill'
+  )
+
+/**
+ * @param {PosterSvgContext} poster_svg
+ * @param {string} symbol_id
+ * @param {string} child_id
+ */
+export const extract_symbol_child_stroke_from_context = (
+  poster_svg,
+  symbol_id,
+  child_id
+) =>
+  prepare_raster_svg(
+    extract_symbol_child_from_context(poster_svg, symbol_id, child_id),
+    'stroke'
+  )
+
+/**
  * Returns a standalone SVG document containing only one child element
  * (by id) inside a named symbol, with all <defs> intact.
  *

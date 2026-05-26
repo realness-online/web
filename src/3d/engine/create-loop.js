@@ -2,7 +2,7 @@ const MS_PER_SECOND = 1000
 const MAX_DELTA_FPS = 15
 
 /**
- * @param {{ tick: (frame_state: import('./types.js').FrameState) => void }} options
+ * @param {{ tick: (frame_state: import('@/3d/engine/types.js').FrameState) => void }} options
  */
 export const create_loop = options => {
   const { tick } = options

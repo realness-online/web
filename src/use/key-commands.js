@@ -20,15 +20,27 @@ const check_input_focus = () => {
   // If focus is on BODY or DIALOG, allow key commands
   if (active.tagName === 'BODY' || active.tagName === 'DIALOG') return false
 
-  const input_tags = ['INPUT', 'TEXTAREA', 'SELECT']
-  const is_input = input_tags.includes(active.tagName)
   const el = /** @type {HTMLElement} */ (active)
 
-  return (
-    is_input ||
-    el.isContentEditable ||
-    active.getAttribute('contenteditable') === ''
-  )
+  if (el.isContentEditable || active.getAttribute('contenteditable') === '')
+    return true
+
+  if (active.tagName === 'TEXTAREA' || active.tagName === 'SELECT') return true
+
+  if (active.tagName === 'INPUT') {
+    const input = /** @type {HTMLInputElement} */ (active)
+    const role = input.getAttribute('role')
+    // Switches and toggles are not text entry; keep shortcuts live.
+    if (
+      input.type === 'checkbox' ||
+      input.type === 'radio' ||
+      role === 'switch'
+    )
+      return false
+    return true
+  }
+
+  return false
 }
 
 /**
