@@ -1,4 +1,5 @@
-import { bind_device_orientation } from './bind-device-orientation.js'
+import { bind_device_orientation } from '@/3d/engine/bind-device-orientation.js'
+import { bind_ios_touch_menu_block } from '@/utils/block-ios-touch-menu.js'
 
 /**
  * @param {{ canvas: HTMLCanvasElement }} options
@@ -19,11 +20,14 @@ export const create_input = options => {
     gyro_y: 0,
     shift_held: false,
     alt_held: false,
-    cmd_held: false
+    cmd_held: false,
+    touch_active: false
   }
 
   let last_x = 0
   let last_y = 0
+  /** @type {number | null} */
+  let touch_pointer_id = null
   const arrow_keys = new Set()
 
   const update_norm = event => {
@@ -37,6 +41,11 @@ export const create_input = options => {
   const on_pointer_down = event => {
     last_x = event.clientX
     last_y = event.clientY
+    update_norm(event)
+    if (event.pointerType === 'touch') {
+      touch_pointer_id = event.pointerId
+      state.touch_active = true
+    }
     canvas.setPointerCapture(event.pointerId)
   }
 
@@ -51,6 +60,10 @@ export const create_input = options => {
   }
 
   const on_pointer_up = event => {
+    if (event.pointerId === touch_pointer_id) {
+      touch_pointer_id = null
+      state.touch_active = false
+    }
     canvas.releasePointerCapture(event.pointerId)
   }
 
@@ -114,6 +127,7 @@ export const create_input = options => {
   }
 
   const dispose_orientation = bind_device_orientation({ canvas, state })
+  const dispose_ios_touch_menu = bind_ios_touch_menu_block(canvas)
 
   canvas.addEventListener('pointerdown', on_pointer_down)
   canvas.addEventListener('pointermove', on_pointer_move)
@@ -143,6 +157,7 @@ export const create_input = options => {
       window.removeEventListener('keyup', on_key_up)
       window.removeEventListener('blur', on_blur)
       dispose_orientation()
+      dispose_ios_touch_menu()
     }
   }
 }

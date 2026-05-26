@@ -506,7 +506,9 @@
     @pointermove="handle_pointermove"
     @pointerup="handle_pointerup"
     @pointerleave="handle_pointerleave"
-    @pointercancel="handle_pointerleave">
+    @pointercancel="handle_pointerleave"
+    @contextmenu.prevent
+    @selectstart.prevent>
     <g :style="pan_style">
       <use itemprop="shadow" :href="shadow_fragment" />
       <rect
@@ -583,6 +585,8 @@
     -webkit-touch-callout: none;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-user-drag: none;
+    touch-action: pan-y;
     contain: layout;
     transition:
       transform 0.4s ease-in-out,

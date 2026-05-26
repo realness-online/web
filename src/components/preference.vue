@@ -1,5 +1,9 @@
 <script setup>
   import { computed } from 'vue'
+  import {
+    ensure_device_orientation_ready,
+    request_device_orientation_permission
+  } from '@/3d/engine/bind-device-orientation.js'
   import * as preferences from '@/utils/preference'
   const props = defineProps({
     name: {
@@ -7,6 +11,10 @@
       required: true
     },
     title: {
+      type: String,
+      required: false
+    },
+    label: {
       type: String,
       required: false
     },
@@ -26,6 +34,11 @@
     return preference.value ? ' (on)' : ' (off)'
   })
   const apply = new_state => {
+    if (props.name === 'view_3d' && new_state) {
+      void request_device_orientation_permission()
+      ensure_device_orientation_ready()
+    }
+
     preference.value = new_state
 
     // Special logic: when turning mosaic ON, enable all geology layers
@@ -59,7 +72,7 @@
 <template>
   <fieldset class="preference">
     <div>
-      <h4>{{ name }}{{ state_text }}</h4>
+      <h4 :class="{ labeled: label }">{{ label || name }}{{ state_text }}</h4>
       <label class="switch">
         <input
           :checked="preference"
@@ -85,6 +98,8 @@
       justify-content: space-between
       h4
         text-transform: capitalize
+        &.labeled
+          text-transform: none
         display: inline-block
         line-height: 1
         margin: 0 0 base-line 0

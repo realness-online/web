@@ -25,14 +25,15 @@ vi.mock('@/use/key-commands', () => ({
 // Mock poster composable
 const mock_for_person = vi.fn().mockResolvedValue(undefined)
 const admin_id = import.meta.env.VITE_ADMIN_ID
+const posters_ref = ref([
+  { id: `${admin_id}/posters/1`, type: 'posters' },
+  { id: `${admin_id}/posters/2`, type: 'posters' },
+  { id: `${admin_id}/posters/3`, type: 'posters' },
+  { id: `${admin_id}/posters/4`, type: 'posters' }
+])
 vi.mock('@/use/poster', () => ({
   use_posters: () => ({
-    posters: ref([
-      { id: `${admin_id}/posters/1`, type: 'posters' },
-      { id: `${admin_id}/posters/2`, type: 'posters' },
-      { id: `${admin_id}/posters/3`, type: 'posters' },
-      { id: `${admin_id}/posters/4`, type: 'posters' }
-    ]),
+    posters: posters_ref,
     for_person: mock_for_person
   }),
   is_vector_id: vi.fn().mockReturnValue(true),
@@ -56,6 +57,12 @@ describe('About', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    posters_ref.value = [
+      { id: `${admin_id}/posters/1`, type: 'posters' },
+      { id: `${admin_id}/posters/2`, type: 'posters' },
+      { id: `${admin_id}/posters/3`, type: 'posters' },
+      { id: `${admin_id}/posters/4`, type: 'posters' }
+    ]
     wrapper = shallowMount(About, {
       global: {
         provide: {
@@ -80,11 +87,7 @@ describe('About', () => {
 
   describe('Rendering', () => {
     it('renders about view', () => {
-      // Normalize version in snapshot to ignore package version differences
-      const element = wrapper.element.cloneNode(true)
-      const version_span = element.querySelector('header nav a span')
-      if (version_span) version_span.textContent = '2.0.0'
-      expect(element).toMatchSnapshot()
+      expect(wrapper.element).toMatchSnapshot()
     })
   })
 
@@ -100,20 +103,23 @@ describe('About', () => {
     })
 
     it('renders hero section', () => {
-      expect(wrapper.find('section.hero').exists()).toBe(true)
-      expect(wrapper.find('section.hero h1').text()).toBe('Realness')
+      const hero = wrapper.find('[itemprop="hero"]')
+      expect(hero.exists()).toBe(true)
+      expect(hero.find('h1').text()).toBe('Realness')
     })
 
     it('renders documentation link', () => {
-      const doc_link = wrapper.find('a')
+      const doc_link = wrapper.find('header nav a')
       expect(doc_link.exists()).toBe(true)
-      expect(doc_link.text()).toContain('Documentation')
+      expect(doc_link.text()).toContain('Docs')
     })
 
     it('renders articles for different sections', () => {
-      expect(wrapper.find('article.designers').exists()).toBe(true)
-      expect(wrapper.find('article.networks').exists()).toBe(true)
-      expect(wrapper.find('article.developers').exists()).toBe(true)
+      expect(wrapper.find('article[itemprop="artists"]').exists()).toBe(true)
+      expect(wrapper.find('article[itemprop="communities"]').exists()).toBe(
+        true
+      )
+      expect(wrapper.find('article[itemprop="developers"]').exists()).toBe(true)
     })
 
     it('renders gallery section', () => {
@@ -158,6 +164,20 @@ describe('About', () => {
       expect(posters.value.length).toBeGreaterThan(0)
       const poster_figures = wrapper.findAll('figure')
       expect(poster_figures.length).toBeGreaterThan(0)
+    })
+
+    it('excludes featured posters from the gallery', async () => {
+      await wrapper.vm.$nextTick()
+      const gallery = wrapper.find('[itemprop="gallery"]')
+      expect(gallery.findAll('figure.poster-stub')).toHaveLength(0)
+
+      posters_ref.value.push({
+        id: `${admin_id}/posters/5`,
+        type: 'posters'
+      })
+      await wrapper.vm.$nextTick()
+
+      expect(gallery.findAll('figure.poster-stub')).toHaveLength(1)
     })
   })
 })

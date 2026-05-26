@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import { create_input } from './create-input.js'
-import { create_loop } from './create-loop.js'
-import { create_resize_observer } from './create-resize-observer.js'
+import { create_input } from '@/3d/engine/create-input.js'
+import { create_loop } from '@/3d/engine/create-loop.js'
+import { create_resize_observer } from '@/3d/engine/create-resize-observer.js'
 import {
   CAMERA_DISTANCE,
   CAMERA_FAR,
@@ -10,7 +10,7 @@ import {
   MAX_PIXEL_RATIO,
   RENDERER_CLEAR_ALPHA,
   RENDERER_CLEAR_COLOR
-} from './renderer-config.js'
+} from '@/3d/engine/renderer-config.js'
 
 /**
  * @param {{ canvas: HTMLCanvasElement }} options
@@ -36,9 +36,9 @@ export const create_app = options => {
   )
   camera.position.set(0, 0, CAMERA_DISTANCE)
 
-  /** @type {import('./types.js').PosterSceneController | null} */
+  /** @type {import('@/3d/engine/types.js').PosterSceneController | null} */
   let scene_controller = null
-  /** @type {((frame_state: import('./types.js').FrameState) => void)[]} */
+  /** @type {((frame_state: import('@/3d/engine/types.js').FrameState) => void)[]} */
   const frame_listeners = []
 
   const input = create_input({ canvas })

@@ -21,6 +21,8 @@ export const VECTOR_LAYERS = [
   { name: 'sediment', parallax_offset: 2, opacity: 0.65 }
 ]
 
+export const STROKE_LAYER_IDS = ['light', 'regular', 'medium', 'bold']
+
 export const TEXTURE_LAYERS = [
   {
     name: 'shadow-background',
@@ -76,6 +78,22 @@ export const INITIAL_SHADOW_OPACITY = DEFAULT_SHADOW_OPACITY
 export const SHADOW_BASE_PARALLAX = 0.2
 export const SHADOW_PARALLAX_GAIN = 2.5
 export const SHADOW_Z_GAIN = 10
+export const STROKE_Z_OFFSET = 0.001
+export const STROKE_BASE_WIDTH = 0.33
+export const STROKE_BASE_OPACITY = 0.9
+export const STROKE_MIN_OPACITY = 0.1
+export const STROKE_PULSE_PERIODS = {
+  light: 6,
+  regular: 10,
+  medium: 10,
+  bold: 6
+}
+export const STROKE_DASHARRAY = {
+  light: '8, 16',
+  regular: '13, 21',
+  medium: '18, 26',
+  bold: '4, 32'
+}
 
 export const INITIAL_GROUP_GAP = DEFAULT_GROUP_GAP
 export const FIT_HEIGHT = 3.5
@@ -112,6 +130,8 @@ export const DRIFT_FREQ_Y = 1.1
 export const WHEEL_ZOOM_STEP = 0.00035
 /** Shift/Alt+wheel pan sensitivity vs hover drag */
 export const PAN_WHEEL_SCALE = 0.18
+/** Touch finger position adds this fraction of tilt_amount while dragging */
+export const TOUCH_TILT_BLEND = 0.65
 /** ~220ms settle at 60fps; wheel and drag pan feel cinematic, not stepped */
 export const PAN_SMOOTH_RATE = 10
 /** Pan velocity leaked into root tilt while Shift/Alt navigate */

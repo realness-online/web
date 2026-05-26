@@ -30,10 +30,12 @@
   let viewer = null
   /** @type {(() => void) | null} */
   let unregister_live_scene = null
+  let mount_active = false
 
   use_poster_scene_preferences(scene_ref)
 
   mounted(async () => {
+    mount_active = true
     const svg_el = document.getElementById(
       as_query_id(/** @type {Id} */ (props.itemid))
     )
@@ -43,7 +45,12 @@
       svg_el,
       /** @type {Id} */ (props.itemid)
     )
+    if (!mount_active) return
+
     const scene_controller = create_poster_scene(svg_string)
+    await scene_controller.wait_for_textures()
+    if (!mount_active) return
+
     viewer = register_viewer(canvas_ref.value, scene_controller)
     viewer.start_enter(props.on_svg_zoom)
     scene_ref.value = scene_controller
@@ -54,6 +61,7 @@
   })
 
   before_unmount(() => {
+    mount_active = false
     unregister_live_scene?.()
     unregister_live_scene = null
     scene_ref.value = null
@@ -68,7 +76,11 @@
 </script>
 
 <template>
-  <canvas ref="canvas_ref" class="viewer_3d" />
+  <canvas
+    ref="canvas_ref"
+    class="viewer_3d"
+    @contextmenu.prevent
+    @selectstart.prevent />
 </template>
 
 <style lang="stylus">
@@ -76,5 +88,10 @@
     display: block;
     width: 100%;
     height: 100%;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 </style>

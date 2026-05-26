@@ -7,8 +7,20 @@ import {
   INITIAL_ZOOM,
   PARALLAX_AMOUNT
 } from '@/3d/scenes/poster-scene-config.js'
+import { CAMERA_DISTANCE, CAMERA_FOV } from '@/3d/engine/renderer-config.js'
+import {
+  get_poster_ndc_bounds,
+  poster_covers_viewport
+} from '@/3d/scenes/poster-scene-bounds.js'
 
 const frame_state = { elapsed_s: 1.5, delta_s: 1 / 60 }
+
+const make_camera = () => {
+  const camera = new THREE.PerspectiveCamera(CAMERA_FOV, 1, 0.1, 100)
+  camera.position.set(0, 0, CAMERA_DISTANCE)
+  camera.updateProjectionMatrix()
+  return camera
+}
 
 const input_state = () => ({
   pointer_x_norm: 0,
@@ -21,6 +33,7 @@ const input_state = () => ({
   shift_held: false,
   alt_held: false,
   cmd_held: false,
+  touch_active: false,
   arrow_x: 0,
   arrow_y: 0,
   gyro_x: 0,
@@ -60,6 +73,9 @@ const make_runtime = (overrides = {}) => {
     scene,
     root,
     layer_groups,
+    plane_w: 3.5,
+    plane_h: 3.5,
+    get_camera: () => make_camera(),
     get_mosaic_spread: () => 0.1,
     get_shadow_spread: () => 0.1,
     get_motion_enabled: () => false,
@@ -71,6 +87,9 @@ const make_runtime = (overrides = {}) => {
     get_gyro_amount: () => 1,
     get_haze_enabled: () => true,
     get_haze_density: () => 0.2,
+    get_stroke_visible: () => true,
+    stroke_materials: [],
+    appliers: { apply_stroke_opacity: vi.fn() },
     smooth,
     pan,
     zoom,
@@ -105,6 +124,20 @@ describe('create_poster_scene_update', () => {
     expect(mosaic.position.x).not.toBe(0)
   })
 
+  it('pans on touch drag without shift or alt modifiers', () => {
+    const runtime = make_runtime()
+    update = create_poster_scene_update(runtime)
+    const input = input_state()
+    input.touch_active = true
+    input.pointer_dx = 10
+    input.pointer_dy = 8
+
+    update({ ...frame_state, delta_s: 1 / 60 }, input)
+
+    expect(runtime.pan.target.x).not.toBe(0)
+    expect(runtime.pan.target.y).not.toBe(0)
+  })
+
   it('pans toward target when shift is held instead of updating smooth', () => {
     const runtime = make_runtime()
     update = create_poster_scene_update(runtime)
@@ -134,6 +167,16 @@ describe('create_poster_scene_update', () => {
 
     expect(runtime.pan.target.x).toBe(target_x)
     expect(runtime.root.position.x).toBeCloseTo(target_x, 2)
+
+    const bounds = get_poster_ndc_bounds({
+      camera: make_camera(),
+      plane_w: 3.5,
+      plane_h: 3.5,
+      pan: runtime.pan.current,
+      zoom_z: runtime.zoom.current,
+      tilt: runtime.tilt
+    })
+    expect(poster_covers_viewport(bounds)).toBe(true)
   })
 
   it('snaps pan when reduced motion is preferred', () => {
@@ -221,5 +264,67 @@ describe('create_poster_scene_update', () => {
 
     expect(runtime.zoom.current).toBeGreaterThan(MIN_ZOOM)
     expect(runtime.zoom.current).toBeLessThan(INITIAL_ZOOM)
+  })
+
+  it('limits arrow tilt so the poster stays in view', () => {
+    const runtime = make_runtime({ get_tilt_amount: () => 2 })
+    update = create_poster_scene_update(runtime)
+    const input = input_state()
+    input.arrow_x = 1
+    input.arrow_y = 1
+
+    for (let i = 0; i < 120; i++)
+      update({ elapsed_s: i / 60, delta_s: 1 / 60 }, input)
+
+    const camera = make_camera()
+    const bounds = get_poster_ndc_bounds({
+      camera,
+      plane_w: 3.5,
+      plane_h: 3.5,
+      pan: runtime.pan.current,
+      zoom_z: runtime.zoom.current,
+      tilt: runtime.tilt
+    })
+    expect(poster_covers_viewport(bounds)).toBe(true)
+  })
+
+  it('pulses stroke opacity when motion is enabled', () => {
+    const material = { opacity: 1 }
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      get_stroke_visible: () => true,
+      stroke_materials: [
+        { material, base_opacity: 1, loaded: true, period: 6 }
+      ],
+      appliers: { apply_stroke_opacity: vi.fn() }
+    })
+    update = create_poster_scene_update(runtime)
+
+    update({ elapsed_s: 0, delta_s: 1 / 60 }, input_state())
+    expect(material.opacity).toBeCloseTo(0.9, 2)
+
+    update({ elapsed_s: 3, delta_s: 1 / 60 }, input_state())
+    expect(material.opacity).toBeCloseTo(0.1, 2)
+  })
+
+  it('restores static stroke opacity when motion is disabled', () => {
+    const material = { opacity: 0.2 }
+    const apply_stroke_opacity = vi.fn(() => {
+      material.opacity = 1
+    })
+    const runtime = make_runtime({
+      get_motion_enabled: () => false,
+      get_stroke_visible: () => true,
+      stroke_materials: [
+        { material, base_opacity: 1, loaded: true, period: 6 }
+      ],
+      appliers: { apply_stroke_opacity }
+    })
+    update = create_poster_scene_update(runtime)
+
+    update(frame_state, input_state())
+
+    expect(apply_stroke_opacity).toHaveBeenCalled()
+    expect(material.opacity).toBe(1)
   })
 })

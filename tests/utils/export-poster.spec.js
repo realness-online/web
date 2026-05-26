@@ -125,5 +125,44 @@ describe('@/utils/export-poster', () => {
 
       expect(out).toContain(`id="${layer}"`)
     })
+
+    it('waits for shadow background fill before serializing', async () => {
+      const figure = document.createElement('figure')
+      figure.className = 'poster'
+      const poster_svg = make_svg()
+      const symbol_defs = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      symbol_defs.setAttribute('data-poster-symbol-defs', '')
+      const shadow_symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      shadow_symbol.setAttribute('itemid', '/+1/posters/1/shadows')
+      const background = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'rect'
+      )
+      background.setAttribute('itemprop', 'background')
+      shadow_symbol.appendChild(background)
+      symbol_defs.appendChild(shadow_symbol)
+      figure.append(poster_svg, symbol_defs)
+      document.body.append(figure)
+
+      let fill_set = false
+      const prepared = prepare_poster_svg_for_3d(
+        poster_svg,
+        /** @type {import('@/types').Id} */ ('/+1/posters/1')
+      )
+
+      requestAnimationFrame(() => {
+        background.setAttribute('fill', 'url(#radial-background)')
+        fill_set = true
+      })
+
+      await prepared
+      expect(fill_set).toBe(true)
+    })
   })
 })

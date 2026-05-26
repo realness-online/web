@@ -1,22 +1,24 @@
 <script setup>
+  import LogoAsLink from '@/components/logo-as-link'
+  import Icon from '@/components/icon'
   import MobileAsForm from '@/components/profile/as-form-mobile'
   import NameAsForm from '@/components/profile/as-form-name'
   import { load, load_from_network } from '@/utils/itemid'
   import { use_me } from '@/use/people'
-  import { current_user } from '@/utils/serverless'
+  import { current_user, me } from '@/utils/serverless'
   import { keys, clear } from 'idb-keyval'
   import { ref, computed, watchEffect as watch_effect } from 'vue'
+  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
 
-  const emit = defineEmits(['signed_in', 'showing_mobile'])
+  defineOptions({ name: 'SignOn' })
 
-  defineOptions({
-    name: 'AsSignOn'
-  })
-
+  const route = use_route()
+  const router = use_router()
   const { is_valid_name, save } = use_me()
   const nameless = ref(false)
   const index_db_keys = ref([])
   const working = ref(false)
+
   const cleanable = computed(() => {
     if (working.value) return false
     if (current_user.value) return false
@@ -26,6 +28,19 @@
     return false
   })
 
+  const next_path = () => {
+    const next = route.query?.next
+    if (typeof next === 'string' && next.startsWith('/')) return next
+    if (me.value?.id && me.value.id.length > 2) return me.value.id
+    if (typeof localStorage !== 'undefined' && localStorage.me?.length > 2)
+      return localStorage.me
+    return '/'
+  }
+
+  const on_signed_in = () => {
+    router.replace(next_path())
+  }
+
   const signed_on = async () => {
     const network_profile = await load_from_network(localStorage.me)
     const local_profile = await load(localStorage.me)
@@ -33,14 +48,14 @@
     const my_profile = network_profile || local_profile
     if (my_profile) {
       const valid = is_valid_name.value
-      if (valid) emit('signed_in')
+      if (valid) on_signed_in()
       else nameless.value = true
     } else nameless.value = true
   }
 
   const name_valid = async () => {
     await save()
-    emit('signed_in')
+    on_signed_in()
   }
 
   const clean = async () => {
@@ -57,17 +72,17 @@
     if (current_user.value && !valid) nameless.value = true
   })
 
-  watch_effect(() => {
-    emit('showing_mobile', !nameless.value)
-  })
-
   watch_effect(async () => {
     index_db_keys.value = await keys()
   })
 </script>
 
 <template>
-  <section id="sign-on">
+  <section id="sign-on" class="page">
+    <header>
+      <logo-as-link />
+      <icon name="nothing" />
+    </header>
     <name-as-form v-if="nameless && current_user" @valid="name_valid" />
     <mobile-as-form
       v-else-if="!nameless || !current_user"
@@ -80,14 +95,14 @@
 </template>
 
 <style lang="stylus">
-  section#sign-on {
-    padding: 0;
+  section#sign-on.page {
     & > form {
       width: 100%;
     }
     & > footer > button {
-      opacity: 0.5;
-      font-size: 0.5em;
+      margin: base-line;
+      opacity: 0.66;
+      font-size: 0.66em;
       padding: (base-line * 0.125) (base-line * 0.25);
       line-height: 1.1;
       border: none;
@@ -99,6 +114,8 @@
         border: 2px solid red;
       }
     }
-
+    @media (min-width: page-width-large) {
+      margin: autocomplete
+    }
   }
 </style>

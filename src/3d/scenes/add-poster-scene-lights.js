@@ -10,7 +10,7 @@ import {
   KEY_LIGHT_INTENSITY,
   KEY_LIGHT_Y,
   KEY_LIGHT_Z
-} from './poster-scene-config.js'
+} from '@/3d/scenes/poster-scene-config.js'
 
 /**
  * @param {THREE.Scene} scene

@@ -1,4 +1,4 @@
-import { MAX_PIXEL_RATIO } from './renderer-config.js'
+import { MAX_PIXEL_RATIO } from '@/3d/engine/renderer-config.js'
 
 /**
  * @param {{

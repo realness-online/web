@@ -22,6 +22,7 @@
  * @property {boolean} shift_held
  * @property {boolean} alt_held
  * @property {boolean} cmd_held
+ * @property {boolean} touch_active
  */
 
 /**
@@ -36,6 +37,7 @@
  * @property {(value: number) => void} set_shadow_opacity
  * @property {(value: boolean) => void} set_mosaic_visible
  * @property {(value: boolean) => void} set_shadow_visible
+ * @property {(value: boolean) => void} set_stroke_visible
  * @property {(value: number) => void} set_group_gap
  * @property {(value: number) => void} set_tilt_amount
  * @property {(value: number) => void} set_gyro_amount
@@ -50,7 +52,7 @@
  * @property {(name: string, visible: boolean) => void} set_mosaic_layer_visible
  * @property {(child_id: string, visible: boolean) => void} set_shadow_layer_visible
  * @property {() => Record<string, unknown>} get_settings
- * @property {() => Promise<unknown[]>} wait_for_textures
+ * @property {() => Promise<void>} wait_for_textures
  * @property {(filename?: string) => void} export_glb
  */
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
-import { create_loop } from './create-loop.js'
-import { create_input } from './create-input.js'
+import { create_loop } from '@/3d/engine/create-loop.js'
+import { create_input } from '@/3d/engine/create-input.js'
 import {
   CAMERA_DISTANCE,
   CAMERA_FAR,
@@ -10,7 +10,7 @@ import {
   RENDERER_CLEAR_ALPHA,
   RENDERER_CLEAR_COLOR,
   WIPE_SOFT_EDGE_PX_MAX
-} from './renderer-config.js'
+} from '@/3d/engine/renderer-config.js'
 
 // One WebGL context for all 3D viewers in the feed.
 // Each viewer registers its canvas + scene; the shared loop renders them in
@@ -170,7 +170,7 @@ export const register_viewer = (canvas, scene_controller) => {
   /** @type {{
    *   canvas: HTMLCanvasElement,
    *   ctx2d: CanvasRenderingContext2D | null,
-   *   scene_controller: import('./types.js').PosterSceneController,
+   *   scene_controller: import('@/3d/engine/types.js').PosterSceneController,
    *   input: ReturnType<typeof create_input>,
    *   camera: import('three').PerspectiveCamera,
    *   width: number,
@@ -221,12 +221,12 @@ export const register_viewer = (canvas, scene_controller) => {
   const resize_observer = new ResizeObserver(apply_size)
   resize_observer.observe(canvas)
 
-  // IntersectionObserver only manages visibility after 'done' (scroll in/out)
+  // IntersectionObserver only manages visibility after enter animation completes
   const intersection_observer = new IntersectionObserver(
     ([e]) => {
-      if (entry.phase !== 'enter')
-        if (e.isIntersecting) visible.add(entry)
-        else visible.delete(entry)
+      if (entry.phase !== 'done') return
+      if (e.isIntersecting) visible.add(entry)
+      else visible.delete(entry)
     },
     { threshold: 0.01 }
   )

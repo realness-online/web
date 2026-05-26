@@ -11,6 +11,7 @@ export const create_poster_scene_settings = (state, appliers) => ({
       shadow_opacity: state.shadow_opacity,
       mosaic_visible: state.mosaic_visible,
       shadow_visible: state.shadow_visible,
+      stroke_visible: state.stroke_visible,
       group_gap: state.group_gap,
       tilt_amount: state.tilt_amount,
       gyro_amount: state.gyro_amount,
@@ -51,6 +52,12 @@ export const create_poster_scene_settings = (state, appliers) => ({
     if (state.shadow_visible === value) return
     state.shadow_visible = value
     appliers.apply_shadow_visibility()
+  },
+  set_stroke_visible(value) {
+    if (state.stroke_visible === value) return
+    state.stroke_visible = value
+    appliers.apply_stroke_visibility()
+    appliers.apply_stroke_opacity()
   },
   set_group_gap(value) {
     if (state.group_gap === value) return
@@ -108,5 +115,6 @@ export const create_poster_scene_settings = (state, appliers) => ({
     if (state.shadow_layer_visible[child_id] === visible) return
     state.shadow_layer_visible[child_id] = visible
     appliers.apply_shadow_visibility()
+    appliers.apply_stroke_visibility()
   }
 })

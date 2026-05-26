@@ -1,11 +1,14 @@
 import * as THREE from 'three'
-import { extract_symbol_child_from_context } from '../utils/load-svg-layers.js'
-import { svg_to_canvas_texture } from '../utils/load-svg-texture.js'
-import { SHADOW_Z_GAIN, TEXTURE_LAYERS } from './poster-scene-config.js'
+import { extract_symbol_child_fill_from_context } from '@/3d/utils/load-svg-layers.js'
+import { svg_to_canvas_texture } from '@/3d/utils/load-svg-texture.js'
+import {
+  SHADOW_Z_GAIN,
+  TEXTURE_LAYERS
+} from '@/3d/scenes/poster-scene-config.js'
 
 /**
  * @param {{
- *   poster_svg: import('../utils/load-svg-layers.js').PosterSvgContext,
+ *   poster_svg: import('@/3d/utils/load-svg-layers.js').PosterSvgContext,
  *   root: THREE.Group,
  *   plane_w: number,
  *   plane_h: number,
@@ -39,7 +42,7 @@ export const add_poster_shadow_layers = options => {
   const texture_promises = []
 
   for (const config of TEXTURE_LAYERS) {
-    const layer_svg = extract_symbol_child_from_context(
+    const layer_svg = extract_symbol_child_fill_from_context(
       poster_svg,
       config.symbol_id,
       config.child_id
@@ -77,9 +80,10 @@ export const add_poster_shadow_layers = options => {
         material_entry.loaded = true
         material.opacity = material_entry.base_opacity * shadow_opacity
       })
-      .catch(error =>
+      .catch(error => {
         console.error(`Failed to load ${config.name} layer:`, error)
-      )
+        throw error
+      })
     texture_promises.push(texture_promise)
   }
 
