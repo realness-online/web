@@ -5,10 +5,6 @@ vi.mock('@/3d/engine/bind-device-orientation.js', () => ({
   bind_device_orientation: vi.fn(() => () => {})
 }))
 
-vi.mock('@/utils/block-ios-touch-menu.js', () => ({
-  bind_ios_touch_menu_block: vi.fn(() => () => {})
-}))
-
 describe('create_input', () => {
   it('tracks touch drag and wheel pan when shift is held', () => {
     const canvas = document.createElement('canvas')
@@ -104,6 +100,41 @@ describe('create_input', () => {
       })
     )
     expect(input.state.touch_active).toBe(false)
+
+    input.dispose()
+    canvas.remove()
+  })
+
+  it('prevents touchmove default while touch drag is active', () => {
+    const canvas = document.createElement('canvas')
+    document.body.appendChild(canvas)
+    Object.defineProperty(canvas, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top: 0, width: 100, height: 100 })
+    })
+    canvas.setPointerCapture = vi.fn()
+    canvas.releasePointerCapture = vi.fn()
+
+    const input = create_input({ canvas })
+
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        clientX: 0,
+        clientY: 0,
+        pointerId: 3,
+        pointerType: 'touch',
+        bubbles: true
+      })
+    )
+
+    const touch_move = new Event('touchmove', {
+      bubbles: true,
+      cancelable: true
+    })
+    const prevent_default = vi.spyOn(touch_move, 'preventDefault')
+    canvas.dispatchEvent(touch_move)
+
+    expect(input.state.touch_active).toBe(true)
+    expect(prevent_default).toHaveBeenCalledTimes(1)
 
     input.dispose()
     canvas.remove()

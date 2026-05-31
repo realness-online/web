@@ -29,10 +29,6 @@
   import { use_keymap } from '@/use/key-commands'
   import { posting } from '@/use/posting'
   import {
-    ensure_device_orientation_ready,
-    request_device_orientation_permission
-  } from '@/3d/engine/bind-device-orientation.js'
-  import {
     ANIMATION_SPEEDS,
     ANIMATION_SPEED_LEGACY,
     DEFAULT_ANIMATION_SPEED
@@ -122,6 +118,52 @@
     const el = /** @type {HTMLInputElement | null} */ (event.target)
     if (!el) return
     footer_visible.value = el.checked
+  }
+
+  const add_icon_hovered = ref(false)
+  const add_settling = ref(false)
+
+  const on_add_icon_enter = () => {
+    add_icon_hovered.value = true
+    add_settling.value = false
+  }
+
+  const play_add_icon_settle = () => {
+    if (!add_icon_hovered.value) return
+    add_icon_hovered.value = false
+    add_settling.value = false
+    requestAnimationFrame(() => {
+      add_settling.value = true
+    })
+  }
+
+  /** @param {AnimationEvent} event */
+  const on_add_icon_animation_end = event => {
+    if (event.animationName !== 'add-plus-flourish-out') return
+    add_settling.value = false
+  }
+
+  const animation_icon_hovered = ref(false)
+  const animation_settling = ref(false)
+
+  const on_animation_icon_enter = () => {
+    animation_icon_hovered.value = true
+    animation_settling.value = false
+  }
+
+  const play_animation_icon_settle = () => {
+    if (!animation_icon_hovered.value) return
+    animation_icon_hovered.value = false
+    animation_settling.value = false
+    requestAnimationFrame(() => {
+      animation_settling.value = true
+    })
+  }
+
+  /** @param {AnimationEvent} event */
+  const on_animation_icon_animation_end = event => {
+    if (event.animationName !== 'animation-ball-flourish-out') return
+    animation_settling.value = false
   }
 
   const preferences_dialog = ref(null)
@@ -241,7 +283,9 @@
   register_preference('pref::Toggle_Regular', regular)
   register_preference('pref::Toggle_Light', light)
 
-  register_preference('pref::Toggle_View_3d', view_3d)
+  register('pref::Toggle_View_3d', () => {
+    view_3d.value = !view_3d.value
+  })
   register_preference('pref::Toggle_Boulders', boulders)
   register_preference('pref::Toggle_Rocks', rocks)
   register_preference('pref::Toggle_Gravel', gravel)
@@ -306,10 +350,6 @@
   const handle_view_3d_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
     const next_value = input?.checked ?? !view_3d.value
-    if (next_value) {
-      void request_device_orientation_permission()
-      ensure_device_orientation_ready()
-    }
     view_3d.value = next_value
   }
   /**
@@ -387,9 +427,6 @@
     const queued = await queue_supported_files(files)
     if (queued) event.preventDefault()
   }
-  watch(view_3d, next_value => {
-    if (next_value) ensure_device_orientation_ready()
-  })
 
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
@@ -407,7 +444,6 @@
       aspect_ratio === 'auto' ? 'auto' : aspect_ratio
     )
     set_storytelling_slide_width()
-    if (view_3d.value) ensure_device_orientation_ready()
     viewport_mql.value = window.matchMedia('(min-aspect-ratio: 1/1)')
     viewport_mql.value.addEventListener('change', set_storytelling_slide_width)
 
@@ -441,17 +477,21 @@
       <footer>
         <label
           class="menu-action"
-          :class="{ active: animate }"
-          aria-label="Toggle animation">
+          :class="{ 'add-settling': add_settling }"
+          aria-label="Add poster"
+          @mouseenter="on_add_icon_enter"
+          @mouseleave="play_add_icon_settle"
+          @animationend="on_add_icon_animation_end">
           <input
             type="checkbox"
             switch
-            :checked="animate"
-            @change="animate = !animate" />
+            aria-label="Add poster"
+            @change="handle_add_change" />
           <span aria-hidden="true">
-            <icon name="animation" />
+            <icon name="add" />
           </span>
         </label>
+
         <label
           class="menu-action"
           :class="{ active: view_3d }"
@@ -476,16 +516,23 @@
             <icon name="camera" />
           </span>
         </label>
-        <label class="menu-action" aria-label="Add poster">
+        <label
+          class="menu-action"
+          :class="{ active: animate, 'animation-settling': animation_settling }"
+          aria-label="Toggle animation"
+          @mouseenter="on_animation_icon_enter"
+          @mouseleave="play_animation_icon_settle"
+          @animationend="on_animation_icon_animation_end">
           <input
             type="checkbox"
             switch
-            aria-label="Add poster"
-            @change="handle_add_change" />
+            :checked="animate"
+            @change="animate = !animate" />
           <span aria-hidden="true">
-            <icon name="add" />
+            <icon name="animation" />
           </span>
         </label>
+
         <as-dialog-preferences ref="preferences_dialog" />
       </footer>
       <label v-if="footer_toggle_shown">
@@ -515,6 +562,116 @@
 <style src="@/style/index.styl" lang="stylus"></style>
 
 <style lang="stylus">
+
+  @keyframes add-plus-pulse-twice
+    0%
+      transform: scale(1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    20%
+      transform: scale(1.1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    40%
+      transform: scale(1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    60%
+      transform: scale(1.1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    80%
+      transform: scale(1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      transform: scale(1)
+
+  @keyframes add-plus-flourish-out
+    0%
+      transform: scale(1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    50%
+      transform: scale(1.05)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      transform: scale(1)
+
+  @keyframes animation-ball-bounce
+    0%
+      transform: translate(0, 0) scale(1)
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
+    28%
+      transform: translate(12%, -42%) scale(1.12)
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
+    52%
+      transform: translate(-8%, 18%) scale(0.86, 1.14)
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
+    72%
+      transform: translate(5%, -10%) scale(1.06)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    88%
+      transform: translate(-2%, 5%) scale(0.98)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      transform: translate(0, 0) scale(1)
+
+  @keyframes animation-trail-mid-bounce
+    0%
+      transform: translate(0, 0) scale(1)
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
+    28%
+      transform: translate(9%, -28%) scale(1.08)
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
+    52%
+      transform: translate(-6%, 14%) scale(0.92, 1.08)
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
+    72%
+      transform: translate(4%, -7%) scale(1.03)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    88%
+      transform: translate(-2%, 3%) scale(0.99)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      transform: translate(0, 0) scale(1)
+
+  @keyframes animation-trail-old-bounce
+    0%
+      transform: translate(0, 0) scale(1)
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
+    28%
+      transform: translate(6%, -18%) scale(1.05)
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
+    52%
+      transform: translate(-4%, 10%) scale(0.94, 1.05)
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
+    72%
+      transform: translate(3%, -5%) scale(1.02)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    88%
+      transform: translate(-1%, 2%) scale(0.99)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      transform: translate(0, 0) scale(1)
+
+  @keyframes animation-trail-old-flourish-out
+    0%, 100%
+      transform: translate(0, 0) scale(1)
+    42%
+      transform: translate(3%, -7%) scale(1.02)
+    72%
+      transform: translate(-1%, 2%) scale(0.99)
+
+  @keyframes animation-trail-mid-flourish-out
+    0%, 100%
+      transform: translate(0, 0) scale(1)
+    42%
+      transform: translate(5%, -10%) scale(1.04)
+    72%
+      transform: translate(-2%, 3%) scale(0.99)
+
+  @keyframes animation-ball-flourish-out
+    0%, 100%
+      transform: translate(0, 0) scale(1)
+    42%
+      transform: translate(7%, -15%) scale(1.06)
+    72%
+      transform: translate(-3%, 4%) scale(0.98)
 
   main#realness {
     border: (base-line / 16) solid transparent;
@@ -559,10 +716,8 @@
       }
 
       & > label {
-        -webkit-touch-callout: none !important;
-        -webkit-user-select: none !important;
+        disable-ios-touch-callout(true)
         touch-action: manipulation;
-        user-select: none !important;
         pointer-events: auto !important;
         position: relative;
         z-index: 10;
@@ -607,7 +762,8 @@
       & > footer {
         width: 100%;
         margin base-line * 0.5;
-        background-color: hsla(228, 9.8%, 6%, 0.75);
+        background-color: var(--black-transparent);
+        backdrop-filter: blur(8px);
         border-radius: base-line;
         display: flex;
         align-items: center;
@@ -682,23 +838,204 @@
             align-items: center;
             justify-content: center;
           }
+          & svg.icon {
+            transition-timing-function: ease;
+            transition-duration: 1.66s;
+            transition-property: transform;
+            @media (prefers-reduced-motion: reduce) {
+              transition-duration: 0.01ms;
+            }
+          }
+          &:active svg.icon {
+            outline: none;
+          }
+          &[aria-label='Toggle animation'] svg.animation {
+            .animation-ball,
+            .animation-trail-mid,
+            .animation-trail-old {
+              transform: translate(0, 0) scale(1);
+              transition-property: transform;
+              transition-timing-function: ease;
+              transition-duration: 2.2s;
+              @media (prefers-reduced-motion: reduce) {
+                transition-duration: 0.01ms;
+              }
+            }
+            .animation-trail-old {
+              transition-delay: 0s;
+            }
+            .animation-trail-mid {
+              transition-delay: 0.16s;
+            }
+            .animation-ball {
+              transition-delay: 0.32s;
+            }
+          }
+          &[aria-label='Add poster'] svg.add .add-plus {
+            transform: scale(1);
+            transition-property: transform;
+            transition-timing-function: ease;
+            transition-duration: 0.65s;
+            @media (prefers-reduced-motion: reduce) {
+              transition-duration: 0.01ms;
+            }
+          }
+          &[aria-label='Open camera'] svg.camera {
+            transition-duration: 0.4s;
+          }
+          &.add-settling svg.add .add-plus {
+            transition: none;
+            animation: add-plus-flourish-out 0.55s cubic-bezier(0.45, 0, 0.55, 1);
+            @media (prefers-reduced-motion: reduce) {
+              animation: none;
+            }
+          }
+          &.animation-settling svg.animation {
+            .animation-ball,
+            .animation-trail-mid,
+            .animation-trail-old {
+              transition: none;
+            }
+            .animation-trail-old {
+              animation: animation-trail-old-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1);
+            }
+            .animation-trail-mid {
+              animation: animation-trail-mid-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) 0.1s;
+            }
+            .animation-ball {
+              animation: animation-ball-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) 0.2s;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .animation-ball,
+              .animation-trail-mid,
+              .animation-trail-old {
+                animation: none;
+              }
+            }
+          }
+          @media (hover: hover) and (pointer: fine) {
+            &[aria-label='Add poster']:hover svg.add {
+              .add-plus {
+                transition: none;
+                animation: add-plus-pulse-twice 1.3s linear;
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .add-plus {
+                  animation: none;
+                  transform: scale(0.95);
+                }
+              }
+            }
+            &[aria-label='Toggle 3D']:hover svg.galaxy {
+              transform: rotate(72deg) scale(0.95);
+              transition-duration: 0.45s;
+            }
+            &[aria-label='Open camera']:hover svg.camera {
+              transform: scale(1.08);
+              transition-duration: 0.4s;
+            }
+            &[aria-label='Toggle animation']:hover svg.animation {
+              .animation-ball,
+              .animation-trail-mid,
+              .animation-trail-old {
+                transition: none;
+              }
+            }
+            &[aria-label='Toggle animation']:hover svg.animation .animation-ball {
+              animation: animation-ball-bounce 0.98s linear;
+            }
+            &[aria-label='Toggle animation']:hover svg.animation .animation-trail-mid {
+              animation: animation-trail-mid-bounce 0.98s linear 0.16s;
+            }
+            &[aria-label='Toggle animation']:hover svg.animation .animation-trail-old {
+              animation: animation-trail-old-bounce 0.98s linear 0.32s;
+            }
+            &[aria-label='Toggle animation']:hover svg.animation {
+              @media (prefers-reduced-motion: reduce) {
+                .animation-ball,
+                .animation-trail-mid,
+                .animation-trail-old {
+                  animation: none;
+                  transform: scale(0.95);
+                }
+              }
+            }
+          }
+          &[aria-label='Toggle animation']:active svg.animation {
+            .animation-ball,
+            .animation-trail-mid,
+            .animation-trail-old {
+              transition: none;
+            }
+          }
+          &[aria-label='Add poster']:active svg.add {
+            .add-plus {
+              transition: none;
+              animation: add-plus-pulse-twice 0.95s linear;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .add-plus {
+                animation: none;
+                transform: scale(0.92);
+              }
+            }
+          }
+          &[aria-label='Toggle 3D']:active svg.galaxy {
+            transform: rotate(-36deg) scale(1.05);
+            transition-duration: 0.66s;
+          }
+          &[aria-label='Open camera']:active svg.camera {
+            transform: scale(0.9);
+            transition-duration: 0.22s;
+          }
+          &[aria-label='Toggle animation']:active svg.animation .animation-ball {
+            animation: animation-ball-bounce 0.64s linear;
+          }
+          &[aria-label='Toggle animation']:active svg.animation .animation-trail-mid {
+            animation: animation-trail-mid-bounce 0.64s linear 0.11s;
+          }
+          &[aria-label='Toggle animation']:active svg.animation .animation-trail-old {
+            animation: animation-trail-old-bounce 0.64s linear 0.22s;
+          }
+          &[aria-label='Toggle animation']:active svg.animation {
+            @media (prefers-reduced-motion: reduce) {
+              .animation-ball,
+              .animation-trail-mid,
+              .animation-trail-old {
+                animation: none;
+                transform: scale(0.95);
+              }
+            }
+          }
+        }
+        & a[aria-label='Settings'] {
+          & svg.icon {
+            transition-timing-function: ease;
+            transition-duration: 1.66s;
+            transition-property: transform;
+            @media (prefers-reduced-motion: reduce) {
+              transition-duration: 0.01ms;
+            }
+          }
+          @media (hover: hover) and (pointer: fine) {
+            &:hover svg.gear {
+              transform: rotate(60deg) scale(0.95);
+            }
+          }
+          &:active svg.gear {
+            transform: rotate(-60deg) scale(1.05);
+            transition-duration: 0.66s;
+          }
         }
         & a[aria-label='Settings'] svg,
-        & button[aria-label='Settings'] svg {
-          width: base-line * 1.35;
-          height: base-line * 1.35;
-        }
-        & label.menu-action[aria-label='Add poster'] svg {
-          width: base-line * 1.35;
-          height: base-line * 1.35;
+        & button[aria-label='Settings'] svg,
+        & label.menu-action:not([aria-label='Open camera']) svg {
+          width: base-line * 1.15;
+          height: base-line * 1.15;
         }
         & label.menu-action[aria-label='Open camera'] svg {
           width: base-line * 2;
           height: base-line * 2;
-        }
-        & label.menu-action[aria-label='Toggle animation'] svg {
-          width: base-line * 1.35;
-          height: base-line * 1.35;
         }
       }
 

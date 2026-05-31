@@ -153,6 +153,7 @@ const update_tilt_and_haze = (
 
   const gyro_amount = get_gyro_amount()
   const tilt_amount = get_tilt_amount()
+
   const input_x = THREE.MathUtils.clamp(
     input_state.arrow_x + input_state.gyro_x * gyro_amount,
     -1,

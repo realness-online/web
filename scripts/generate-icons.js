@@ -33,6 +33,12 @@ const ICON_VARIANTS = [
   {
     suffix: '-m',
     safe_zone_padding: 0.28
+  },
+  {
+    suffix: '-ios',
+    safe_zone_padding: 0.14,
+    fill_background: true,
+    sizes: [ICON_SIZE_SMALL]
   }
 ]
 
@@ -40,7 +46,8 @@ const generate_icon_png = async (
   size,
   output_path,
   icons_svg,
-  safe_zone_padding
+  safe_zone_padding,
+  fill_background = false
 ) => {
   const { symbol_content } = extract_realness_symbol(icons_svg)
   const content_size = ICON_SIZE_SMALL
@@ -62,6 +69,11 @@ const generate_icon_png = async (
   const canvas = createCanvas(size, size)
   const ctx = canvas.getContext('2d')
 
+  if (fill_background) {
+    ctx.fillStyle = '#2c2c26'
+    ctx.fillRect(0, 0, size, size)
+  }
+
   ctx.drawImage(img, 0, 0, size, size)
 
   const buffer = canvas.toBuffer('image/png')
@@ -75,15 +87,17 @@ const generate_all_icons = async () => {
   const public_dir = path.join(__dirname, '../public')
 
   await Promise.all(
-    ICON_VARIANTS.flatMap(({ suffix, safe_zone_padding }) =>
-      ICON_SIZES.map(size =>
-        generate_icon_png(
-          size,
-          path.join(public_dir, `${size}${suffix}.png`),
-          icons_svg,
-          safe_zone_padding
+    ICON_VARIANTS.flatMap(
+      ({ suffix, safe_zone_padding, fill_background, sizes }) =>
+        (sizes ?? ICON_SIZES).map(size =>
+          generate_icon_png(
+            size,
+            path.join(public_dir, `${size}${suffix}.png`),
+            icons_svg,
+            safe_zone_padding,
+            fill_background
+          )
         )
-      )
     )
   )
 }

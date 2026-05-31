@@ -89,9 +89,6 @@
     width: 100%;
     height: 100%;
     touch-action: none;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-user-drag: none;
+    disable-ios-touch-callout()
   }
 </style>

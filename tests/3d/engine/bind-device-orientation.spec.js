@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
+
 import {
   bind_device_orientation,
-  ensure_device_orientation_ready,
-  request_device_orientation_permission,
-  reset_device_orientation_state_for_tests
+  get_gyro_debug_snapshot,
+  request_motion_permission,
+  reset_motion_permission_state_for_tests,
+  sync_motion_bindings
 } from '@/3d/engine/bind-device-orientation.js'
 
 describe('bind_device_orientation', () => {
@@ -12,14 +14,16 @@ describe('bind_device_orientation', () => {
   const state = { gyro_x: 0, gyro_y: 0 }
 
   beforeEach(() => {
+    vi.useFakeTimers()
     canvas = document.createElement('canvas')
     state.gyro_x = 0
     state.gyro_y = 0
-    reset_device_orientation_state_for_tests()
+    reset_motion_permission_state_for_tests()
     vi.stubGlobal('DeviceOrientationEvent', class {})
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -34,18 +38,13 @@ describe('bind_device_orientation', () => {
     await Promise.resolve()
   }
 
-  it('first orientation event calibrates neutral without moving state', () => {
-    const dispose = bind_device_orientation({ canvas, state })
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    fire_orientation(10, 5)
+  const request_permission_on_canvas_touch = async () => {
+    canvas.dispatchEvent(new TouchEvent('touchend', { bubbles: true }))
+    await vi.advanceTimersByTimeAsync(10)
+    await flush_promises()
+  }
 
-    expect(state.gyro_x).toBe(0)
-    expect(state.gyro_y).toBe(0)
-
-    dispose()
-  })
-
-  it('maps portrait deltas into clamped gyro state', () => {
+  it('enables without a gesture when no permission API exists', () => {
     Object.defineProperty(window, 'orientation', {
       configurable: true,
       value: 0
@@ -59,18 +58,7 @@ describe('bind_device_orientation', () => {
     dispose()
   })
 
-  it('enables immediately when permission was already granted', async () => {
-    await request_device_orientation_permission()
-    const dispose = bind_device_orientation({ canvas, state })
-    fire_orientation(0, 0)
-    fire_orientation(0, 28)
-
-    expect(state.gyro_x).toBeCloseTo(1, 1)
-
-    dispose()
-  })
-
-  it('enables after permission resolves once the viewer is mounted', async () => {
+  it('enables after ios motion permission is granted', async () => {
     const request_permission = vi.fn().mockResolvedValue('granted')
     vi.stubGlobal(
       'DeviceOrientationEvent',
@@ -78,7 +66,17 @@ describe('bind_device_orientation', () => {
         static requestPermission = request_permission
       }
     )
+    Object.defineProperty(window, 'orientation', {
+      configurable: true,
+      value: 0
+    })
     const dispose = bind_device_orientation({ canvas, state })
+    await flush_promises()
+
+    expect(request_permission).not.toHaveBeenCalled()
+    expect(state.gyro_x).toBe(0)
+
+    request_motion_permission()
     await flush_promises()
     fire_orientation(0, 0)
     fire_orientation(0, 28)
@@ -89,114 +87,82 @@ describe('bind_device_orientation', () => {
     dispose()
   })
 
-  it('dispose removes listeners and zeros gyro', () => {
-    const add_spy = vi.spyOn(window, 'addEventListener')
-    const remove_spy = vi.spyOn(window, 'removeEventListener')
+  it('requests permission on canvas touchend before enabling on ios', async () => {
+    const request_permission = vi.fn().mockResolvedValue('granted')
+    vi.stubGlobal(
+      'DeviceOrientationEvent',
+      class {
+        static requestPermission = request_permission
+      }
+    )
     const dispose = bind_device_orientation({ canvas, state })
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
 
-    state.gyro_x = 0.5
-    state.gyro_y = -0.5
+    await request_permission_on_canvas_touch()
+    fire_orientation(0, 0)
+    fire_orientation(0, 28)
+
+    expect(request_permission).toHaveBeenCalledTimes(1)
+    expect(state.gyro_x).toBeCloseTo(1, 1)
+
     dispose()
+  })
 
+  it('enables gyro after sync when ios motion permission is granted', async () => {
+    const request_permission = vi.fn().mockResolvedValue('granted')
+    vi.stubGlobal(
+      'DeviceOrientationEvent',
+      class {
+        static requestPermission = request_permission
+      }
+    )
+    const dispose = bind_device_orientation({ canvas, state })
+
+    sync_motion_bindings()
+    await request_permission_on_canvas_touch()
+    fire_orientation(0, 0)
+    fire_orientation(0, 28)
+
+    expect(request_permission).toHaveBeenCalledTimes(1)
+    expect(state.gyro_x).toBeCloseTo(1, 1)
+
+    dispose()
+  })
+
+  it('publishes gyro debug snapshot when orientation events fire', async () => {
+    const dispose = bind_device_orientation({ canvas, state })
+    fire_orientation(0, 0)
+    fire_orientation(0, 28)
+
+    const snapshot = get_gyro_debug_snapshot()
+    expect(snapshot.window_listeners).toBe(1)
+    expect(snapshot.event_count).toBeGreaterThan(0)
+    expect(snapshot.neutral_set).toBe(true)
+    expect(snapshot.gyro_x).toBeCloseTo(1, 1)
+
+    dispose()
+    expect(get_gyro_debug_snapshot().window_listeners).toBe(0)
+  })
+
+  it('stays off when ios motion permission is denied', async () => {
+    const request_permission = vi.fn().mockResolvedValue('denied')
+    vi.stubGlobal(
+      'DeviceOrientationEvent',
+      class {
+        static requestPermission = request_permission
+      }
+    )
+    const dispose = bind_device_orientation({ canvas, state })
+
+    await request_motion_permission()
+    await flush_promises()
+    fire_orientation(0, 0)
+    fire_orientation(0, 28)
+
+    expect(request_permission).toHaveBeenCalledTimes(1)
     expect(state.gyro_x).toBe(0)
     expect(state.gyro_y).toBe(0)
-    expect(remove_spy).toHaveBeenCalledWith(
-      'deviceorientation',
-      expect.any(Function)
-    )
-    add_spy.mockRestore()
-    remove_spy.mockRestore()
-  })
-
-  it('recalibrates neutral on orientationchange for the next delta', () => {
-    const dispose = bind_device_orientation({ canvas, state })
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    fire_orientation(0, 0)
-    fire_orientation(20, 0)
-    const before_change = state.gyro_y
-
-    window.dispatchEvent(new Event('orientationchange'))
-    fire_orientation(40, 0)
-    fire_orientation(42, 0)
-
-    expect(before_change).not.toBe(0)
-    expect(Math.abs(state.gyro_y)).toBeLessThan(0.15)
+    expect(get_gyro_debug_snapshot().window_listeners).toBe(0)
 
     dispose()
-  })
-
-  it('requests iOS orientation permission before enabling events', async () => {
-    const request_permission = vi.fn().mockResolvedValue('granted')
-    vi.stubGlobal(
-      'DeviceOrientationEvent',
-      class {
-        static requestPermission = request_permission
-      }
-    )
-    const dispose = bind_device_orientation({ canvas, state })
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    await flush_promises()
-    fire_orientation(0, 0)
-    fire_orientation(0, 28)
-
-    expect(request_permission).toHaveBeenCalledTimes(1)
-    expect(state.gyro_x).toBeCloseTo(1, 1)
-
-    dispose()
-  })
-
-  it('keeps gesture fallback armed when permission is not granted', async () => {
-    const request_permission = vi
-      .fn()
-      .mockResolvedValueOnce('denied')
-      .mockResolvedValueOnce('granted')
-    vi.stubGlobal(
-      'DeviceOrientationEvent',
-      class {
-        static requestPermission = request_permission
-      }
-    )
-    const dispose = bind_device_orientation({ canvas, state })
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    await flush_promises()
-    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    await flush_promises()
-    fire_orientation(0, 0)
-    fire_orientation(0, 28)
-
-    expect(request_permission).toHaveBeenCalledTimes(2)
-    expect(state.gyro_x).toBeCloseTo(1, 1)
-
-    dispose()
-  })
-
-  it('does not ask desktop browsers for orientation permission', async () => {
-    const result = await request_device_orientation_permission()
-
-    expect(result).toBe('granted')
-  })
-
-  it('arms document gesture when 3d is active before permission is granted', async () => {
-    const request_permission = vi.fn().mockResolvedValue('granted')
-    vi.stubGlobal(
-      'DeviceOrientationEvent',
-      class {
-        static requestPermission = request_permission
-      }
-    )
-    const add_spy = vi.spyOn(document, 'addEventListener')
-    ensure_device_orientation_ready()
-    document.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
-    await flush_promises()
-
-    expect(add_spy).toHaveBeenCalledWith(
-      'pointerdown',
-      expect.any(Function),
-      expect.objectContaining({ passive: true })
-    )
-    expect(request_permission).toHaveBeenCalledTimes(1)
-
-    add_spy.mockRestore()
   })
 })

@@ -8,6 +8,7 @@ import {
   DEFAULT_GROUP_GAP,
   DEFAULT_TILT_AMOUNT,
   DEFAULT_GYRO_AMOUNT,
+  DEFAULT_HAZE_COLOR,
   DEFAULT_HAZE_DENSITY,
   DEFAULT_DRIFT_AMOUNT,
   DEFAULT_DRIFT_SPEED,
@@ -36,6 +37,26 @@ export const gravel = storage('gravel', true)
 export const sand = storage('sand', true)
 export const sediment = storage('sediment', true)
 
+export const geology_layer_prefs = {
+  boulders,
+  rocks,
+  gravel,
+  sand,
+  sediment
+}
+
+export const enable_geology_layers = () => {
+  for (const pref of Object.values(geology_layer_prefs)) pref.value = true
+}
+
+export const enable_shadow_layers = () => {
+  bold.value = true
+  medium.value = true
+  regular.value = true
+  light.value = true
+  background.value = true
+}
+
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
 
@@ -63,7 +84,7 @@ export const group_gap = storage('group_gap', DEFAULT_GROUP_GAP)
 export const tilt_amount = storage('tilt_amount', DEFAULT_TILT_AMOUNT)
 export const gyro_amount = storage('gyro_amount', DEFAULT_GYRO_AMOUNT)
 export const haze_enabled = storage('haze_enabled', true)
-export const haze_color = storage('haze_color', '#0e0c09')
+export const haze_color = storage('haze_color', DEFAULT_HAZE_COLOR)
 export const haze_density = storage('haze_density', DEFAULT_HAZE_DENSITY)
 export const drift_amount = storage('drift_amount', DEFAULT_DRIFT_AMOUNT)
 export const drift_speed = storage('drift_speed', DEFAULT_DRIFT_SPEED)

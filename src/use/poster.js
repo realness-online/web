@@ -25,6 +25,10 @@ import {
 import { recent_item_first } from '@/utils/sorting'
 import { use as use_path } from '@/use/path'
 import { aspect_ratio_mode, slice_alignment } from '@/utils/preference'
+import {
+  poster_landscape,
+  poster_preserve_aspect_ratio
+} from '@/use/poster-aspect'
 
 /**
  * Lazy-load directory API so `itemid` / `serverless` do not form static cycles with Directory.
@@ -74,26 +78,16 @@ export const use = () => {
   const touch_start_distance = 0
   const touch_start_scale = 1
 
-  const aspect_ratio = computed(() => {
-    if (aspect_ratio_mode.value && aspect_ratio_mode.value !== 'auto') {
-      const alignment = slice_alignment.value || 'ymid'
-      let y_align = 'Mid'
-      if (alignment === 'ymin') y_align = 'Min'
-      else if (alignment === 'ymax') y_align = 'Max'
-      return `xMidY${y_align} slice`
-    }
-    return 'xMidYMid meet'
-  })
+  const aspect_ratio = computed(() =>
+    poster_preserve_aspect_ratio({
+      mode: aspect_ratio_mode.value,
+      alignment: slice_alignment.value || 'ymid'
+    })
+  )
 
   const itemid = computed(() => props.itemid)
 
-  const landscape = computed(() => {
-    if (!vector.value) return false
-    const numbers = vector.value.viewbox.split(' ')
-    const width = parseInt(numbers[2])
-    const height = parseInt(numbers[3])
-    return width > height
-  })
+  const landscape = computed(() => poster_landscape(vector.value?.viewbox))
 
   const path = computed(() => {
     if (working.value || !vector.value) return null

@@ -1,4 +1,5 @@
 const GYRO_RANGE_DEG = 28
+const PERMISSION_GESTURE_DELAY_MS = 10
 
 const SCREEN_ANGLE_PORTRAIT = 0
 const SCREEN_ANGLE_LANDSCAPE_RIGHT = 90
@@ -6,118 +7,153 @@ const SCREEN_ANGLE_LANDSCAPE_LEFT = -90
 const SCREEN_ANGLE_LANDSCAPE_LEFT_ALT = 270
 const SCREEN_ANGLE_UPSIDE_DOWN = 180
 
-/** @type {PermissionState | 'unsupported' | 'unknown'} */
-let permission_state = 'unknown'
-/** @type {Promise<PermissionState | 'unsupported'> | null} */
-let permission_request_promise = null
-/** @type {Set<() => void>} */
-const pending_enable = new Set()
-let document_arm_active = false
+/** @typedef {'unknown' | 'granted' | 'denied' | 'unsupported'} MotionPermissionState */
 
-const needs_ios_permission = () => {
+/** @type {Promise<PermissionState | 'unsupported' | 'denied'> | null} */
+let permission_request = null
+/** @type {Set<() => void>} */
+const binding_callbacks = new Set()
+/** @type {Set<(snapshot: GyroDebugSnapshot) => void>} */
+const gyro_debug_listeners = new Set()
+
+/** @typedef {{
+ *   permission: MotionPermissionState,
+ *   ios_permission_api: boolean,
+ *   device_orientation_api: boolean,
+ *   window_listeners: number,
+ *   canvas_bindings: number,
+ *   gyro_x: number,
+ *   gyro_y: number,
+ *   beta: number | null,
+ *   gamma: number | null,
+ *   neutral_set: boolean,
+ *   event_count: number,
+ *   last_event_ms: number | null
+ * }} GyroDebugSnapshot */
+
+/** @type {GyroDebugSnapshot} */
+const gyro_debug = {
+  permission: 'unknown',
+  ios_permission_api: false,
+  device_orientation_api: false,
+  window_listeners: 0,
+  canvas_bindings: 0,
+  gyro_x: 0,
+  gyro_y: 0,
+  beta: null,
+  gamma: null,
+  neutral_set: false,
+  event_count: 0,
+  last_event_ms: null
+}
+
+let window_listener_count = 0
+
+const publish_gyro_debug = patch => {
+  Object.assign(gyro_debug, patch)
+  gyro_debug.canvas_bindings = binding_callbacks.size
+  gyro_debug.window_listeners = window_listener_count
+  if (gyro_debug_listeners.size === 0) return
+  gyro_debug.ios_permission_api = has_permission_api()
+  gyro_debug.device_orientation_api =
+    typeof window !== 'undefined' &&
+    typeof window.DeviceOrientationEvent !== 'undefined'
+  for (const listener of gyro_debug_listeners) listener(gyro_debug)
+}
+
+/** @returns {GyroDebugSnapshot} */
+export const get_gyro_debug_snapshot = () => ({ ...gyro_debug })
+
+/** @param {(snapshot: GyroDebugSnapshot) => void} listener */
+export const subscribe_gyro_debug = listener => {
+  publish_gyro_debug({})
+  gyro_debug_listeners.add(listener)
+  listener(gyro_debug)
+  return () => gyro_debug_listeners.delete(listener)
+}
+
+const has_permission_api = () => {
   if (typeof window === 'undefined') return false
   if (typeof window.DeviceOrientationEvent === 'undefined') return false
-  const Ctor =
+  const orientation_event =
     /** @type {typeof DeviceOrientationEvent & { requestPermission?: () => Promise<PermissionState> }} */ (
       window.DeviceOrientationEvent
     )
-  return typeof Ctor.requestPermission === 'function'
+  return typeof orientation_event.requestPermission === 'function'
 }
 
-const notify_pending_enable = () => {
-  for (const enable of pending_enable) enable()
+const notify_bindings = () => {
+  for (const callback of binding_callbacks) callback()
 }
 
-const clear_document_arm = () => {
-  if (!document_arm_active || typeof document === 'undefined') return
-  document_arm_active = false
-  document.removeEventListener('pointerdown', on_document_gesture)
-  document.removeEventListener('touchstart', on_document_gesture)
+export const sync_motion_bindings = () => {
+  notify_bindings()
 }
 
-const on_document_gesture = () => {
-  void request_device_orientation_permission({ force: true })
+const set_motion_permission = state => {
+  publish_gyro_debug({ permission: state })
 }
 
-const ensure_document_arm = () => {
-  if (document_arm_active || typeof document === 'undefined') return
-  if (!needs_ios_permission()) return
-  if (permission_state === 'granted' || permission_state === 'denied') return
-
-  document_arm_active = true
-  document.addEventListener('pointerdown', on_document_gesture, {
-    passive: true
+export const reset_motion_permission_state_for_tests = () => {
+  permission_request = null
+  binding_callbacks.clear()
+  gyro_debug_listeners.clear()
+  window_listener_count = 0
+  publish_gyro_debug({
+    permission: 'unknown',
+    gyro_x: 0,
+    gyro_y: 0,
+    beta: null,
+    gamma: null,
+    neutral_set: false,
+    event_count: 0,
+    last_event_ms: null
   })
-  document.addEventListener('touchstart', on_document_gesture, {
-    passive: true
-  })
 }
 
-export const reset_device_orientation_state_for_tests = () => {
-  permission_state = 'unknown'
-  permission_request_promise = null
-  pending_enable.clear()
-  clear_document_arm()
-}
+/** @returns {Promise<PermissionState | 'unsupported' | 'denied'>} */
+export const request_motion_permission = () => {
+  if (permission_request) return permission_request
 
-/**
- * Arm iOS permission on the next user gesture when 3D is active.
- */
-export const ensure_device_orientation_ready = () => {
-  if (permission_state === 'granted' || permission_state === 'unsupported') {
-    notify_pending_enable()
-    return
+  if (typeof window === 'undefined') {
+    set_motion_permission('unsupported')
+    notify_bindings()
+    return Promise.resolve('unsupported')
   }
-  ensure_document_arm()
-}
-
-/**
- * @param {{ force?: boolean }} [options]
- * @returns {Promise<PermissionState | 'unsupported'>}
- */
-export const request_device_orientation_permission = async (options = {}) => {
-  const { force = false } = options
-  if (typeof window === 'undefined') return 'unsupported'
   if (typeof window.DeviceOrientationEvent === 'undefined') {
-    permission_state = 'unsupported'
-    return 'unsupported'
+    set_motion_permission('unsupported')
+    notify_bindings()
+    return Promise.resolve('unsupported')
   }
 
-  const Ctor =
+  const orientation_event =
     /** @type {typeof DeviceOrientationEvent & { requestPermission?: () => Promise<PermissionState> }} */ (
       window.DeviceOrientationEvent
     )
-  if (typeof Ctor.requestPermission !== 'function') {
-    permission_state = 'granted'
-    clear_document_arm()
-    notify_pending_enable()
-    return 'granted'
+
+  if (typeof orientation_event.requestPermission !== 'function') {
+    set_motion_permission('granted')
+    notify_bindings()
+    return Promise.resolve('granted')
   }
 
-  const request_permission = Ctor.requestPermission
-
-  if (permission_state === 'granted') return 'granted'
-  if (!force && permission_state === 'denied') return 'denied'
-  if (permission_request_promise) return permission_request_promise
-
-  permission_request_promise = (async () => {
-    try {
-      const result = await request_permission()
-      permission_state = result
-      if (result === 'granted') {
-        clear_document_arm()
-        notify_pending_enable()
-      }
+  permission_request = orientation_event
+    .requestPermission()
+    .then(result => {
+      set_motion_permission(result === 'granted' ? 'granted' : 'denied')
+      notify_bindings()
       return result
-    } catch {
-      permission_state = 'denied'
-      return 'denied'
-    } finally {
-      permission_request_promise = null
-    }
-  })()
+    })
+    .catch(error => {
+      set_motion_permission('denied')
+      notify_bindings()
+      return /** @type {const} */ ('denied')
+    })
+    .finally(() => {
+      permission_request = null
+    })
 
-  return await permission_request_promise
+  return permission_request
 }
 
 /**
@@ -133,8 +169,9 @@ export const bind_device_orientation = options => {
   let gyro_neutral_beta = null
   let gyro_neutral_gamma = null
   let orientation_enabled = false
+  let cached_screen_angle = SCREEN_ANGLE_PORTRAIT
 
-  const get_screen_angle = () => {
+  const read_screen_angle = () => {
     if (screen.orientation && typeof screen.orientation.angle === 'number')
       return screen.orientation.angle
 
@@ -142,22 +179,42 @@ export const bind_device_orientation = options => {
     return SCREEN_ANGLE_PORTRAIT
   }
 
+  const refresh_screen_angle = () => {
+    cached_screen_angle = read_screen_angle()
+  }
+
   const reset_gyro_neutral = () => {
+    refresh_screen_angle()
     gyro_neutral_beta = null
     gyro_neutral_gamma = null
+    publish_gyro_debug({ neutral_set: false })
   }
 
   const on_orientation = event => {
-    if (event.beta === null || event.gamma === null) return
+    if (event.beta === null || event.gamma === null) {
+      publish_gyro_debug({
+        beta: event.beta,
+        gamma: event.gamma,
+        last_event_ms: Date.now()
+      })
+      return
+    }
     if (gyro_neutral_beta === null) {
       gyro_neutral_beta = event.beta
       gyro_neutral_gamma = event.gamma
+      publish_gyro_debug({
+        beta: event.beta,
+        gamma: event.gamma,
+        neutral_set: true,
+        event_count: gyro_debug.event_count + 1,
+        last_event_ms: Date.now()
+      })
       return
     }
     const dbeta = event.beta - gyro_neutral_beta
     const dgamma = event.gamma - gyro_neutral_gamma
     let nx, ny
-    switch (get_screen_angle()) {
+    switch (cached_screen_angle) {
       case SCREEN_ANGLE_LANDSCAPE_RIGHT:
         nx = -dbeta
         ny = dgamma
@@ -177,57 +234,86 @@ export const bind_device_orientation = options => {
     }
     state.gyro_x = Math.max(-1, Math.min(1, nx / GYRO_RANGE_DEG))
     state.gyro_y = Math.max(-1, Math.min(1, ny / GYRO_RANGE_DEG))
+    publish_gyro_debug({
+      gyro_x: state.gyro_x,
+      gyro_y: state.gyro_y,
+      beta: event.beta,
+      gamma: event.gamma,
+      neutral_set: true,
+      event_count: gyro_debug.event_count + 1,
+      last_event_ms: Date.now()
+    })
   }
 
   const disable_orientation = () => {
+    if (!orientation_enabled) return
     window.removeEventListener('deviceorientation', on_orientation)
     window.removeEventListener('orientationchange', reset_gyro_neutral)
     orientation_enabled = false
+    window_listener_count -= 1
+    state.gyro_x = 0
+    state.gyro_y = 0
+    publish_gyro_debug({ gyro_x: 0, gyro_y: 0 })
   }
 
   const enable_orientation = () => {
     if (orientation_enabled) return
+    refresh_screen_angle()
     window.addEventListener('deviceorientation', on_orientation)
     window.addEventListener('orientationchange', reset_gyro_neutral)
-    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
-    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
     orientation_enabled = true
+    window_listener_count += 1
+    publish_gyro_debug({})
   }
 
-  const try_enable_orientation = ({ force_permission = false } = {}) => {
+  const can_enable_now = () => {
+    if (!has_permission_api()) return true
+    return gyro_debug.permission === 'granted'
+  }
+
+  const sync_orientation = () => {
     if (typeof window.DeviceOrientationEvent === 'undefined') return
-    if (orientation_enabled) return
+    if (!has_permission_api()) set_motion_permission('granted')
 
-    if (permission_state === 'granted' || permission_state === 'unsupported') {
-      enable_orientation()
-      return
-    }
+    // Always try to enable orientation listening
+    if (can_enable_now()) enable_orientation()
+    else if (orientation_enabled) disable_orientation()
+  }
 
-    if (permission_state === 'denied' && !force_permission) return
+  let permission_request_pending = false
 
-    ensure_document_arm()
-    request_device_orientation_permission({ force: force_permission }).then(
-      result => {
-        if (result === 'granted') enable_orientation()
+  const request_permission_on_gesture = event => {
+    if (permission_request_pending) return
+    permission_request_pending = true
+
+    setTimeout(async () => {
+      try {
+        await request_motion_permission()
+      } finally {
+        permission_request_pending = false
       }
-    )
+    }, PERMISSION_GESTURE_DELAY_MS)
   }
 
-  const arm_orientation_on_gesture = () => {
-    try_enable_orientation({ force_permission: true })
-  }
+  canvas.addEventListener('click', request_permission_on_gesture)
+  canvas.addEventListener('touchend', request_permission_on_gesture, {
+    passive: true
+  })
 
-  pending_enable.add(try_enable_orientation)
-  canvas.addEventListener('pointerdown', arm_orientation_on_gesture)
-  canvas.addEventListener('touchstart', arm_orientation_on_gesture)
-  try_enable_orientation()
+  binding_callbacks.add(sync_orientation)
+  sync_orientation()
 
   return () => {
-    pending_enable.delete(try_enable_orientation)
-    canvas.removeEventListener('pointerdown', arm_orientation_on_gesture)
-    canvas.removeEventListener('touchstart', arm_orientation_on_gesture)
+    canvas.removeEventListener('click', request_permission_on_gesture)
+    canvas.removeEventListener('touchend', request_permission_on_gesture)
+    binding_callbacks.delete(sync_orientation)
     disable_orientation()
-    state.gyro_x = 0
-    state.gyro_y = 0
+    publish_gyro_debug({})
   }
+}
+
+if (typeof window !== 'undefined') {
+  /** @type {Window & { __gyro_debug?: () => GyroDebugSnapshot }} */
+  const win = window
+  win.__gyro_debug = get_gyro_debug_snapshot
 }

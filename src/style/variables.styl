@@ -4,9 +4,9 @@
 // https://nice-converter.com/color/hsla-to-rgba
 black             = hsl(0, 0%, 32%)
 black-dark        = hsla(300,  1%, 2%, 0.99)
-black-background  = hsla(228, 9.8%, 6%, 0.97) // #151518
-black-transparent = hsla(228, 9.8%, 6%, 0.50) // #151518
-black-barely      = hsla(228, 9.8%, 6%, 0.05) // #151518
+haze              = hsla(36, 22%, 4.5%, 1) // #0e0c09
+black-background  = hsla(57, 8%, 16%, 1) // #2c2c26
+black-transparent = hsla(57, 8%, 16%, 0.50) // #2c2c26
 
 white             = hsla( 57, 13%, 88%, 0.9)
 white-text        = hsla( 57, 13%, 82%, 0.95)
@@ -53,14 +53,16 @@ poster-thoughts-height = round((page-width), 2)
 
 
 
-// CSS Variables for gradual migration
 :root
+  interpolate-size: allow-keywords
+  accent-color: red
+
   // Colors
   --black black
   --black-dark black-dark
+  --haze haze
   --black-background black-background
   --black-transparent black-transparent
-  --black-barely black-barely
 
   --white white
   --white-text white-text

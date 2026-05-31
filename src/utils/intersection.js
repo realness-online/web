@@ -69,6 +69,19 @@ export const is_ratio_fully_visible = (ratio, element_rect, root_rect) => {
   return ratio >= max_ratio - RATIO_EPSILON
 }
 
+/**
+ * Visible fraction along one scroll axis, normalized so 1 means as much as can
+ * fit in the root is showing (matches `is_ratio_fully_visible` for that axis).
+ * @param {number} visible_span
+ * @param {number} element_span
+ * @param {number} root_span
+ */
+export const axis_visibility = (visible_span, element_span, root_span) => {
+  const fit = Math.min(element_span, root_span)
+  if (fit <= 0) return 0
+  return visible_span / fit
+}
+
 /** True when as much of the element as can fit in the viewport is visible. */
 export const measure_fully_visible = element =>
   measure_visibility(element).fully_in_view

@@ -3,6 +3,7 @@ import {
   INTERSECTION_THRESHOLDS,
   intersection_ratio,
   is_ratio_fully_visible,
+  axis_visibility,
   measure_fully_visible,
   measure_visibility
 } from '@/utils/intersection'
@@ -51,6 +52,13 @@ describe('@/utils/intersection', () => {
 
   it('measure_fully_visible returns false without an element', () => {
     expect(measure_fully_visible(null)).toBe(false)
+  })
+
+  it('axis_visibility normalizes by what can fit in the root', () => {
+    expect(axis_visibility(390, 512, 390)).toBe(1)
+    expect(axis_visibility(200, 300, 390)).toBe(200 / 300)
+    expect(axis_visibility(350, 512, 390)).toBe(350 / 390)
+    expect(axis_visibility(0, 512, 390)).toBe(0)
   })
 
   it('measure_visibility reports in_view and fully_in_view from geometry', () => {
