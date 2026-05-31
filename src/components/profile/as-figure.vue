@@ -11,9 +11,7 @@
   import { computed, ref, provide } from 'vue'
   import { use_me, is_person } from '@/use/people'
   /** @typedef {import('@/types').Id} Id */
-  import { as_layer_id, load_from_cache } from '@/utils/itemid'
-  import { geology_layers } from '@/use/poster'
-  import { get } from 'idb-keyval'
+  import { load_cutout_flags } from '@/utils/geology'
   const props = defineProps({
     person: {
       type: Object,
@@ -72,24 +70,14 @@
 
   provide('vector', vector)
 
-  const on_show = shown_vector => {
+  const on_show = async shown_vector => {
     if (!shown_vector) return
     vector.value = shown_vector
-    if (!vector.value.cutouts && display_itemid.value) {
-      vector.value.cutouts = {}
-      geology_layers.forEach(layer => {
-        const layer_id = as_layer_id(
-          /** @type {Id} */ (display_itemid.value),
-          layer
-        )
-        get(layer_id).then(html_string => {
-          if (html_string) vector.value.cutouts[layer] = true
-        })
-        load_from_cache(layer_id).then(({ html }) => {
-          if (html) vector.value.cutouts[layer] = true
-        })
-      })
-    }
+    if (!vector.value.cutouts && display_itemid.value)
+      vector.value.cutouts = await load_cutout_flags(
+        /** @type {Id} */ (display_itemid.value)
+      )
+
     shown.value = true
   }
 

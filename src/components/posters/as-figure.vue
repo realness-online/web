@@ -6,7 +6,6 @@
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import AsDownload from '@/components/download-vector'
-  import AsAsideAccount from '@/components/profile/as-aside-account.vue'
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   /** @typedef {import('@/types').Statement} Statement */
@@ -21,17 +20,11 @@
   import { as_time } from '@/utils/date'
   import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
-  import {
-    is_vector,
-    is_vector_id,
-    is_click,
-    geology_layers
-  } from '@/use/poster'
-  import { mosaic, view_3d } from '@/utils/preference'
-  import {
-    INTERSECTION_THRESHOLDS,
-    measure_visibility
-  } from '@/utils/intersection'
+  import { is_vector, is_vector_id, is_click } from '@/use/poster'
+  import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
+  import { use_mask_pen } from '@/use/mask-pen'
+  import { load_cutout_flags } from '@/utils/geology'
+  import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
   import {
     poster_dom_id,
     poster_dom_href,
@@ -54,7 +47,6 @@
     provide,
     inject
   } from 'vue'
-  import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   const props = defineProps({
     itemid: {
       type: String,
@@ -94,10 +86,6 @@
     pin: {
       type: Boolean,
       default: false
-    },
-    account_sheet: {
-      type: Boolean,
-      default: false
     }
   })
   const emit = defineEmits({
@@ -107,6 +95,8 @@
     picker: is_vector_id
   })
   const instance = current_instance()
+  const mask_pen = use_mask_pen()
+  provide('mask-pen', mask_pen)
   const poster = ref(null)
   provide('pan_delegator', use_delegated_pan(poster))
   const vector = ref(null)
@@ -122,6 +112,7 @@
   /** Click-to-toggle for every poster with overlay statements (own or read-only). */
   const overlay_text_visible = computed(() => {
     if (!props.overlay_statements?.length) return false
+    if (mask_pen.active.value) return false
     return thought_overlay_open.value
   })
 
@@ -130,7 +121,8 @@
       menu_open.value ||
       thought_overlay_open.value ||
       (props.menu && props.menu_always_visible) ||
-      overlay_text_visible.value
+      overlay_text_visible.value ||
+      mask_pen.active.value
   )
 
   watch(
@@ -146,71 +138,45 @@
     menu_open.value = !menu_open.value
   }
 
+  const toggle_mask_pen = () => {
+    const will_activate = !mask_pen.active.value
+    if (will_activate && !mosaic.value) {
+      mosaic.value = true
+      enable_geology_layers()
+    }
+    mask_pen.toggle_active()
+    if (will_activate) menu_open.value = false
+  }
+
+  const on_window_pointerdown = e => {
+    if (!mask_pen.active.value) return
+    if (poster.value && !poster.value.contains(e.target))
+      mask_pen.toggle_active()
+  }
+
   const on_poster_svg_click = () => {
+    if (mask_pen.active.value) return
     if (props.overlay_statements?.length) {
       thought_overlay_open.value = !thought_overlay_open.value
       if (!props.menu) menu_open.value = thought_overlay_open.value
     }
     vector_click()
   }
-  const aggressive_cutout_mode = true
   /** True after `load_cutouts` wrote `vector.cutouts`; false after unload or new vector in `on_show`. */
   const cutouts_loaded = ref(false)
   const cutout_load_token = ref(0)
   /** Reads refs outside `load_cutouts` so `require-atomic-updates` does not pair with the post-await write. */
   const should_skip_cutout_load = () =>
     Boolean(cutouts_loaded.value && vector.value?.cutouts)
-  const poster_in_view = ref(false)
-  const poster_fully_in_view = ref(false)
 
-  const sync_poster_visibility = () => {
-    const el = poster.value
-    if (!el) {
-      poster_in_view.value = false
-      poster_fully_in_view.value = false
-      return
-    }
-    const { in_view, fully_in_view } = measure_visibility(el)
-    poster_in_view.value = in_view
-    poster_fully_in_view.value = fully_in_view
-  }
-
-  let visibility_raf = 0
-  const schedule_visibility_sync = () => {
-    if (visibility_raf) return
-    visibility_raf = requestAnimationFrame(() => {
-      visibility_raf = 0
-      sync_poster_visibility()
-    })
-  }
-
-  use_intersect(
-    poster,
-    ([entry]) => {
-      poster_in_view.value = entry.isIntersecting
-      if (!entry.isIntersecting) poster_fully_in_view.value = false
-      else sync_poster_visibility()
-    },
-    { threshold: INTERSECTION_THRESHOLDS }
-  )
-
-  if (typeof window !== 'undefined') {
-    window.addEventListener('scroll', schedule_visibility_sync, {
-      passive: true,
-      capture: true
-    })
-    window.addEventListener('resize', schedule_visibility_sync, {
-      passive: true
-    })
-  }
+  provide('mask-pen-symbols-ready', cutouts_loaded)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
   const reference_broken = ref(false)
   /** Bumps when the tree updates so we re-check for an out-of-figure canonical SVG. */
   const dom_tick = ref(0)
-  const read_dom_tick = () => dom_tick.value
   const canonical_elsewhere = computed(() => {
-    read_dom_tick()
+    void dom_tick.value
     if (typeof document === 'undefined') return false
     const el = document.getElementById(query_id.value)
     if (!el || el.tagName !== 'svg') return false
@@ -220,6 +186,14 @@
   const use_dom_reference = computed(
     () => canonical_elsewhere.value && !reference_broken.value
   )
+
+  const {
+    in_view: poster_in_view,
+    fully_in_view: poster_fully_in_view,
+    sync: sync_poster_visibility
+  } = use_poster_viewport_visibility(poster, {
+    force_in_view: use_dom_reference
+  })
 
   const bump_dom_tick = () => {
     dom_tick.value++
@@ -234,11 +208,23 @@
   mounted(() => {
     if (typeof document !== 'undefined')
       document.addEventListener(POSTER_CANONICAL_MOUNTED, on_canonical_mounted)
+    if (typeof window !== 'undefined')
+      window.addEventListener('pointerdown', on_window_pointerdown)
     tick().then(() => {
       bump_dom_tick()
       sync_poster_visibility()
+      scroll_to_hash_if_matching()
     })
   })
+
+  const scroll_to_hash_if_matching = () => {
+    if (typeof window === 'undefined') return
+    const fragment = window.location.hash.substring(1)
+    if (query_id.value === fragment && poster.value) {
+      poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      window.location.hash = ''
+    }
+  }
 
   const sync_poster_for_svg = computed(() =>
     reference_broken.value && vector.value && is_vector(vector.value)
@@ -331,17 +317,8 @@
     if (should_skip_cutout_load()) return
     const token = cutout_load_token.value + 1
     cutout_load_token.value = token
-    const next_cutouts = {}
-    await Promise.all(
-      geology_layers.map(async layer => {
-        const layer_id = as_layer_id(/** @type {Id} */ (props.itemid), layer)
-        const html_string = await get(layer_id)
-        if (html_string) next_cutouts[layer] = true
-        else {
-          const { html } = await load_from_cache(layer_id)
-          if (html) next_cutouts[layer] = true
-        }
-      })
+    const next_cutouts = await load_cutout_flags(
+      /** @type {Id} */ (props.itemid)
     )
     if (!vector.value || cutout_load_token.value !== token) return
     vector.value.cutouts = next_cutouts
@@ -401,15 +378,9 @@
     () => props.itemid,
     () => {
       reference_broken.value = false
+      bump_dom_tick()
       if (use_dom_reference.value) sync_reference_from_canonical()
     }
-  )
-  watch(
-    use_dom_reference,
-    v => {
-      if (v) poster_in_view.value = true
-    },
-    { immediate: true }
   )
   watch_effect(async () => {
     const should_load_person = props.menu || menu_open.value
@@ -439,16 +410,11 @@
       return
     }
     if (props.pin) return
-    if (aggressive_cutout_mode) unload_cutouts()
+    unload_cutouts()
   })
 
   updated(() => {
-    dom_tick.value++
-    const fragment = window.location.hash.substring(1)
-    if (query_id.value === fragment && poster.value) {
-      poster.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      window.location.hash = ''
-    }
+    scroll_to_hash_if_matching()
   })
 
   const key_commands = inject('key-commands')
@@ -486,13 +452,8 @@
   })
 
   before_unmount(() => {
-    if (visibility_raf) cancelAnimationFrame(visibility_raf)
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('scroll', schedule_visibility_sync, {
-        capture: true
-      })
-      window.removeEventListener('resize', schedule_visibility_sync)
-    }
+    if (typeof window !== 'undefined')
+      window.removeEventListener('pointerdown', on_window_pointerdown)
     if (typeof document !== 'undefined')
       document.removeEventListener(
         POSTER_CANONICAL_MOUNTED,
@@ -599,50 +560,42 @@
             :editable="overlay_editable" />
         </aside>
       </header>
-      <template v-if="menu_open || (menu && menu_always_visible)">
-        <as-aside-account
-          v-if="account_sheet && !menu_always_visible"
-          :open="menu_open"
-          @close="menu_open = false">
-          <footer>
-            <router-link
-              v-if="poster_time && is_my_poster && profile_path"
-              :to="profile_path">
-              <time>{{ poster_time }}</time>
-            </router-link>
-            <time v-else-if="poster_time">{{ poster_time }}</time>
-            <slot>
-              <menu v-if="is_my_poster">
-                <as-author-menu
-                  :poster="author_menu_poster"
-                  :allow_remove="has_remove_handler"
-                  :allow_picker="has_picker_handler"
-                  @remove="id => emit('remove', id)"
-                  @picker="id => emit('picker', id)" />
-              </menu>
-              <menu v-else>
-                <as-figure
-                  v-if="person"
-                  :person="person"
-                  :display="profile_display"
-                  :itemid="profile_chip_itemid" />
-                <span class="actions">
-                  <as-download :itemid="/** @type {Id} */ (itemid)" />
-                </span>
-              </menu>
-            </slot>
-          </footer>
-        </as-aside-account>
-        <footer v-if="!account_sheet || menu_always_visible">
+      <template
+        v-if="
+          menu_open || (menu && menu_always_visible) || mask_pen.active.value
+        ">
+        <footer>
           <router-link
-            v-if="poster_time && is_my_poster && profile_path"
+            v-if="
+              poster_time &&
+              is_my_poster &&
+              profile_path &&
+              !mask_pen.active.value
+            "
             :to="profile_path">
             <time>{{ poster_time }}</time>
           </router-link>
-          <time v-else-if="poster_time">{{ poster_time }}</time>
+          <time v-else-if="poster_time && !mask_pen.active.value">{{
+            poster_time
+          }}</time>
           <slot>
             <menu v-if="is_my_poster">
+              <button
+                class="mask-pen"
+                :class="{ active: mask_pen.active.value }"
+                @click.stop="toggle_mask_pen">
+                &#9998;<span v-if="mask_pen.selected.value.size">
+                  {{ mask_pen.selected.value.size }}</span
+                >
+              </button>
+              <button
+                v-if="mask_pen.active.value && mask_pen.selected.value.size"
+                class="mask-pen-clear"
+                @click.stop="mask_pen.clear()">
+                &times;
+              </button>
               <as-author-menu
+                v-if="!mask_pen.active.value"
                 :poster="author_menu_poster"
                 :allow_remove="has_remove_handler"
                 :allow_picker="has_picker_handler"
@@ -751,11 +704,7 @@
       width: 100%;
       overflow: hidden;
       cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-user-drag: none;
+      disable-ios-touch-callout()
       touch-action: pan-y;
       contain: layout;
       max-height: 100%;
@@ -770,9 +719,9 @@
       position: absolute;
       inset: 0;
       z-index: 2;
-      -webkit-touch-callout: none;
-      user-select: none;
-      -webkit-user-select: none;
+      disable-ios-touch-callout()
+      border-radius: round((base-line * .03), 2);
+      overflow: hidden;
     }
     & > figcaption {
       grid-area: 1 / 1;
@@ -803,8 +752,8 @@
           background: white-background;
           color: black;
           box-shadow:
-            0 0.08em 0.6em black-barely,
-            0 0.15em 0.5em hsla(228, 9.8%, 6%, 0.12);
+            0 0.08em 0.6em hsla(57, 8%, 16%, 0.05),
+            0 0.15em 0.5em hsla(57, 8%, 8%, 0.15);
           -webkit-overflow-scrolling: touch;
           pointer-events: auto;
           & p[itemprop='statement'] {
@@ -818,7 +767,7 @@
             }
           }
           @media (prefers-color-scheme: dark) {
-            background: hsla(228, 9.8%, 12%, 0.92);
+            background: hsla(57, 8%, 20%, 1);
             color: white-text;
             box-shadow:
               0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
@@ -872,6 +821,27 @@
         & > fieldset,
         & > span.actions {
           pointer-events: auto;
+        }
+        & > button.mask-pen,
+        & > button.mask-pen-clear {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: base-line * 0.25;
+          padding: base-line * 0.25 base-line * 0.5;
+          cursor: pointer;
+          color: white;
+          font-size: larger;
+          line-height: 1;
+          opacity: 0.7;
+          min-width: base-line * 1.5;
+          text-align: center;
+          standard-shadow: boop;
+          &:hover { opacity: 1; background: rgba(0, 0, 0, 0.5); }
+        }
+        & > button.mask-pen.active {
+          opacity: 1;
+          background: alpha(orange, 0.5);
+          border-color: alpha(orange, 0.8);
         }
         & > span.actions {
           display: flex;

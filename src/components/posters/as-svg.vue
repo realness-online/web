@@ -2,6 +2,7 @@
   import AsMasks from '@/components/posters/as-masks'
   import AsGradients from '@/components/posters/as-gradients'
   import AsAnimation from '@/components/posters/as-animation'
+  import AsMaskPen from '@/components/posters/as-mask-pen'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
     watchEffect as watch,
@@ -41,10 +42,11 @@
     POSTER_MEET_TOGGLE_ONLY,
     POSTER_CANONICAL_MOUNTED
   } from '@/use/poster-dom-reference'
+  import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import {
-    LONG_PRESS_TOGGLE_MS,
-    vibrate_long_press
-  } from '@/use/poster-svg-activate-pointer'
+    poster_landscape,
+    slice_preserve_aspect_ratio
+  } from '@/use/poster-aspect'
   const props = defineProps({
     itemid: {
       type: String,
@@ -83,6 +85,8 @@
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
+  const mask_pen = inject('mask-pen', null)
+  const mask_pen_active = computed(() => mask_pen?.active.value ?? false)
   const {
     query,
     show,
@@ -103,44 +107,15 @@
       : mosaic.value
   )
 
-  const aspect_ratio = computed(() => {
-    if (use_meet.value) return 'xMidYMid meet'
-    const alignment = slice_alignment.value || 'ymid'
-    let y_align = 'Mid'
-    if (alignment === 'ymin') y_align = 'Min'
-    else if (alignment === 'ymax') y_align = 'Max'
-    return `xMidY${y_align} slice`
-  })
+  const aspect_ratio = computed(() =>
+    use_meet.value
+      ? 'xMidYMid meet'
+      : slice_preserve_aspect_ratio(slice_alignment.value || 'ymid')
+  )
 
   const cutouts_mounted = computed(
     () => (intersecting.value || props.pin) && cutouts_enabled.value
   )
-
-  /** Cancel meet toggle / click if touch moved more than this before pointerup (scroll guard). */
-  const MOVE_CANCEL_TOUCH_SLIDE_PX = 8
-
-  const held_layer = ref(null)
-  let cancelled = false
-  let touch_start_x = 0
-  let touch_start_y = 0
-  /** `0` = not timing a touch long-press for slice toggle */
-  let touch_down_at = 0
-  let long_press_timer = null
-  /** Monotonic id so a cleared long-press timeout never toggles */
-  let long_press_sid = 0
-  /** Timer already fired toggle for this finger-down */
-  let long_press_fired = false
-
-  const clear_long_press_timer = () => {
-    // oxlint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
-    if (long_press_timer != null) {
-      clearTimeout(long_press_timer)
-      long_press_timer = null
-    }
-  }
-
-  /** @param {PointerEvent} event */
-  const is_touch_pointer = event => event.pointerType === 'touch'
 
   const layer_from_target = el => {
     const use_el = el?.closest?.('use[itemprop]')
@@ -148,108 +123,6 @@
     const prop = use_el.getAttribute('itemprop')
     if (prop === 'shadow' || geology_layers.includes(prop)) return prop
     return null
-  }
-
-  /** @param {PointerEvent} event */
-  const handle_pointerdown = event => {
-    cancelled = false
-    // Touch + scroll guard: do not set held_layer on down (swipe / pan would flash
-    // data-held-layer). Mouse/stylus and avatar taps still get immediate feedback.
-    if (is_touch_pointer(event) && props.touch_uses_long_press) {
-      clear_long_press_timer()
-      long_press_sid++
-      const token = long_press_sid
-      long_press_fired = false
-      held_layer.value = null
-      touch_start_x = event.clientX
-      touch_start_y = event.clientY
-      touch_down_at = Date.now()
-      long_press_timer = setTimeout(() => {
-        long_press_timer = null
-        if (token !== long_press_sid || cancelled) return
-        long_press_fired = true
-        handle_click()
-        vibrate_long_press()
-      }, LONG_PRESS_TOGGLE_MS)
-    } else {
-      clear_long_press_timer()
-      held_layer.value = layer_from_target(event.target)
-      touch_down_at = 0
-    }
-  }
-
-  /** @param {PointerEvent} event */
-  const handle_pointermove = event => {
-    if (!is_touch_pointer(event) || !props.touch_uses_long_press) return
-    if (long_press_fired) return
-    const dx = Math.abs(event.clientX - touch_start_x)
-    const dy = Math.abs(event.clientY - touch_start_y)
-    if (dx <= MOVE_CANCEL_TOUCH_SLIDE_PX && dy <= MOVE_CANCEL_TOUCH_SLIDE_PX)
-      return
-    cancelled = true
-    held_layer.value = null
-    touch_down_at = 0
-    clear_long_press_timer()
-    long_press_sid++
-  }
-
-  /** @param {PointerEvent} event */
-  const handle_pointerup = event => {
-    if (is_touch_pointer(event) && props.touch_uses_long_press) {
-      clear_long_press_timer()
-      const down_at = touch_down_at
-      touch_down_at = 0
-      held_layer.value = null
-
-      if (cancelled) {
-        long_press_fired = false
-        long_press_sid++
-        return
-      }
-
-      if (was_pan_gesture?.value) {
-        was_pan_gesture.value = false
-        long_press_fired = false
-        long_press_sid++
-        return
-      }
-
-      if (!long_press_fired && down_at > 0) {
-        const elapsed = Date.now() - down_at
-        if (elapsed >= LONG_PRESS_TOGGLE_MS) {
-          handle_click()
-          vibrate_long_press()
-        }
-      }
-      long_press_fired = false
-      long_press_sid++
-      return
-    }
-
-    clear_long_press_timer()
-
-    if (cancelled) {
-      touch_down_at = 0
-      return
-    }
-
-    if (was_pan_gesture?.value) {
-      was_pan_gesture.value = false
-      held_layer.value = null
-      return
-    }
-
-    held_layer.value = null
-    handle_click()
-  }
-
-  const handle_pointerleave = () => {
-    cancelled = true
-    held_layer.value = null
-    touch_down_at = 0
-    clear_long_press_timer()
-    long_press_fired = false
-    long_press_sid++
   }
 
   const handle_click = () => {
@@ -271,13 +144,7 @@
       !props.paused &&
       visibility.value === 'visible'
   )
-  const landscape = computed(() => {
-    if (!vector.value) return false
-    const numbers = vector.value.viewbox.split(' ')
-    const width = parseInt(numbers[2])
-    const height = parseInt(numbers[3])
-    return width > height
-  })
+  const landscape = computed(() => poster_landscape(vector.value?.viewbox))
 
   const valid_vector = computed(() => {
     if (!vector.value) return null
@@ -377,6 +244,22 @@
     panning = ref(false)
   }
 
+  const {
+    held_layer,
+    handle_pointerdown,
+    handle_pointermove,
+    handle_pointerup,
+    handle_pointerleave
+  } = use_poster_svg_activate_pointer({
+    on_activate: handle_click,
+    touch_uses_long_press: () => props.touch_uses_long_press,
+    is_disabled: () => mask_pen_active.value,
+    was_pan_gesture,
+    on_non_touch_pointerdown: event => {
+      held_layer.value = layer_from_target(event.target)
+    }
+  })
+
   const pan_style = computed(() => {
     if (!can_pan.value) return {}
     const transform = `translateX(${pan_offset.value}px)`
@@ -469,7 +352,7 @@
   })
 
   unmounted(() => {
-    clear_long_press_timer()
+    handle_pointerleave()
     document.removeEventListener(
       POSTER_MEET_TOGGLE_ONLY,
       on_meet_toggle_only_doc
@@ -493,7 +376,8 @@
     :class="{
       animate,
       hovered: is_hovered,
-      'hide-cursor': hide_cursor
+      'hide-cursor': hide_cursor,
+      'mask-pen-mode': mask_pen_active
     }"
     :aria-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
@@ -539,6 +423,7 @@
         width="200%"
         height="200%"
         :style="lightbar_front_style" />
+      <as-mask-pen v-if="mask_pen_active && cutouts_mounted" :itemid="itemid" />
     </g>
     <defs>
       <symbol id="grid-overlay" viewBox="0 0 1 1">
@@ -558,7 +443,7 @@
   </svg>
 </template>
 
-<style>
+<style lang="stylus">
   @keyframes cutout-fade {
     from {
       opacity: 0;
@@ -580,14 +465,10 @@
     width: 100%;
     overflow: hidden;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    /* Safari: long-press image magnifier / callout steals pointercancel and fights slice toggle */
-    -webkit-touch-callout: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
+    disable-ios-touch-callout()
     touch-action: pan-y;
     contain: layout;
+    border-radius: calc(var(--base-line) * 0.03);
     transition:
       transform 0.4s ease-in-out,
       aspect-ratio 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -602,6 +483,17 @@
     }
     &.hide-cursor {
       cursor: none;
+    }
+    &.mask-pen-mode {
+      cursor: crosshair;
+      touch-action: none;
+      & use[itemprop='sediment'],
+      & use[itemprop='sand'],
+      & use[itemprop='gravel'],
+      & use[itemprop='rocks'],
+      & use[itemprop='boulders'] {
+        pointer-events: none;
+      }
     }
 
     & rect#lightbar-back,

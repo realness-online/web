@@ -69,6 +69,20 @@ describe('@/use/poster-svg-activate-pointer', () => {
     expect(on_activate).not.toHaveBeenCalled()
   })
 
+  it('is_disabled skips activation', () => {
+    const on_activate = vi.fn()
+    const { handle_pointerdown, handle_pointerup } =
+      use_poster_svg_activate_pointer({
+        on_activate,
+        is_disabled: true
+      })
+
+    handle_pointerdown({ pointerType: 'mouse', clientX: 0, clientY: 0 })
+    handle_pointerup({ pointerType: 'mouse', clientX: 0, clientY: 0 })
+
+    expect(on_activate).not.toHaveBeenCalled()
+  })
+
   it('vibrate_long_press swallows unsupported vibrate', () => {
     vi.stubGlobal('navigator', {})
     expect(() => vibrate_long_press()).not.toThrow()

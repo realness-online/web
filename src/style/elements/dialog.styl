@@ -11,7 +11,7 @@ dialog {
   background-color: white-background;
   @media (prefers-color-scheme: dark) {
     color: white-text;
-    background-color: black-background;
+    background-color: var(--black-background);
   }
   opacity: 0;
   transition: opacity 120ms ease;
@@ -19,7 +19,7 @@ dialog {
     outline: none;
   }
   &::backdrop {
-    background-color: black-transparent;
+    background-color: var(--black-transparent);
     opacity: 0;
     transition: opacity 120ms ease;
   }

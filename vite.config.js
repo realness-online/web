@@ -294,23 +294,25 @@ export default defineConfig({
         display: 'standalone',
         lang: 'en',
         start_url: '/',
-        background_color: '#151518',
+        background_color: '#2c2c26',
         name: 'Realness',
         short_name: 'Realness',
         description: 'Realness',
         scope: '/',
         orientation: 'portrait',
-        theme_color: '#151518',
+        theme_color: '#2c2c26',
         icons: [
           {
             src: `192.png?v=${icon_version}`,
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: `512.png?v=${icon_version}`,
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: `192-m.png?v=${icon_version}`,

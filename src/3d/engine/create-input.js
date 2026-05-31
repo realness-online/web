@@ -1,5 +1,4 @@
 import { bind_device_orientation } from '@/3d/engine/bind-device-orientation.js'
-import { bind_ios_touch_menu_block } from '@/utils/block-ios-touch-menu.js'
 
 /**
  * @param {{ canvas: HTMLCanvasElement }} options
@@ -67,6 +66,11 @@ export const create_input = options => {
     canvas.releasePointerCapture(event.pointerId)
   }
 
+  const on_touch_move = event => {
+    if (touch_pointer_id === null || !state.touch_active) return
+    event.preventDefault()
+  }
+
   const on_wheel = event => {
     if (state.shift_held) {
       event.preventDefault()
@@ -127,12 +131,12 @@ export const create_input = options => {
   }
 
   const dispose_orientation = bind_device_orientation({ canvas, state })
-  const dispose_ios_touch_menu = bind_ios_touch_menu_block(canvas)
 
   canvas.addEventListener('pointerdown', on_pointer_down)
   canvas.addEventListener('pointermove', on_pointer_move)
   canvas.addEventListener('pointerup', on_pointer_up)
   canvas.addEventListener('pointercancel', on_pointer_up)
+  canvas.addEventListener('touchmove', on_touch_move, { passive: false })
   canvas.addEventListener('wheel', on_wheel, { passive: false })
   window.addEventListener('keydown', on_key_down)
   window.addEventListener('keyup', on_key_up)
@@ -152,12 +156,12 @@ export const create_input = options => {
       canvas.removeEventListener('pointermove', on_pointer_move)
       canvas.removeEventListener('pointerup', on_pointer_up)
       canvas.removeEventListener('pointercancel', on_pointer_up)
+      canvas.removeEventListener('touchmove', on_touch_move)
       canvas.removeEventListener('wheel', on_wheel)
       window.removeEventListener('keydown', on_key_down)
       window.removeEventListener('keyup', on_key_up)
       window.removeEventListener('blur', on_blur)
       dispose_orientation()
-      dispose_ios_touch_menu()
     }
   }
 }

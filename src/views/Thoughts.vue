@@ -31,6 +31,8 @@
   import { use_keymap } from '@/use/key-commands'
   import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
   import { posting, scroll_position } from '@/use/posting'
+  import { axis_visibility } from '@/utils/intersection'
+  import { after_layout } from '@/utils/after-layout'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
 
   const toggle_keyboard = active => {
@@ -182,7 +184,11 @@
       if (rect.bottom < 0 || rect.top > window.innerHeight) continue
       const visible =
         Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
-      const visibility = visible / Math.max(rect.height, 1)
+      const visibility = axis_visibility(
+        visible,
+        rect.height,
+        window.innerHeight
+      )
       const center = rect.top + rect.height / 2
       const score = poster_in_view_score(visibility, center, mid)
       if (score <= best_score) continue
@@ -219,7 +225,11 @@
       const visible =
         Math.min(rect.right, container_rect.right) -
         Math.max(rect.left, container_rect.left)
-      const visibility = visible / Math.max(rect.width, 1)
+      const visibility = axis_visibility(
+        visible,
+        rect.width,
+        container_rect.width
+      )
       const center = rect.left + rect.width / 2
       const score = poster_in_view_score(visibility, center, mid)
       if (score <= best_score) continue
@@ -277,13 +287,6 @@
     scroll_storytelling_to_section(event.target.closest('section'))
   }
 
-  const wait_for_layout = () =>
-    new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve)
-      })
-    })
-
   watch(
     storytelling,
     async (is_on, was_on) => {
@@ -291,7 +294,7 @@
         const itemid = focused_poster_itemid()
         if (!itemid) return
         await tick()
-        await wait_for_layout()
+        await after_layout()
         scroll_storytelling_to_itemid(itemid, 'auto')
         return
       }
@@ -299,7 +302,7 @@
         const itemid = storytelling_poster_itemid()
         if (!itemid) return
         await tick()
-        await wait_for_layout()
+        await after_layout()
         scroll_feed_to_itemid(itemid, 'auto')
       }
     },
@@ -349,11 +352,7 @@
     if (!perf?.mark) return
 
     await tick()
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(resolve)
-      })
-    })
+    await after_layout()
 
     perf.clearMarks('thoughts-rendered')
     perf.mark('thoughts-rendered')

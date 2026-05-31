@@ -11,6 +11,7 @@ import { css_color_to_color } from '@/utils/colors'
 import { merge_poster_hidden_symbols } from '@/utils/poster-canvas'
 import { as_layer_id } from '@/utils/itemid'
 import { geology_layers } from '@/use/poster'
+import { find_geology_symbol } from '@/utils/geology'
 
 const normalize_ids_for_download = svg => {
   const id_map = new Map()
@@ -191,17 +192,6 @@ const wait_for_shadow_background = symbol_el =>
     const background = symbol_el.querySelector('[itemprop="background"]')
     return Boolean(background?.getAttribute('fill')?.trim())
   })
-
-/**
- * @param {Element} symbol_defs
- * @param {Id} itemid
- * @param {string} layer
- * @returns {Element | null}
- */
-const find_geology_symbol = (symbol_defs, itemid, layer) => {
-  const layer_id = as_layer_id(itemid, layer)
-  return symbol_defs.querySelector(`symbol[itemid="${layer_id}"]`)
-}
 
 /**
  * @param {Element} symbol_defs

@@ -1,9 +1,5 @@
 <script setup>
   import { computed } from 'vue'
-  import {
-    ensure_device_orientation_ready,
-    request_device_orientation_permission
-  } from '@/3d/engine/bind-device-orientation.js'
   import * as preferences from '@/utils/preference'
   const props = defineProps({
     name: {
@@ -34,32 +30,13 @@
     return preference.value ? ' (on)' : ' (off)'
   })
   const apply = new_state => {
-    if (props.name === 'view_3d' && new_state) {
-      void request_device_orientation_permission()
-      ensure_device_orientation_ready()
-    }
-
     preference.value = new_state
 
-    // Special logic: when turning mosaic ON, enable all geology layers
-    if (props.name === 'mosaic' && new_state) {
-      preferences.boulders.value = true
-      preferences.rocks.value = true
-      preferences.gravel.value = true
-      preferences.sand.value = true
-      preferences.sediment.value = true
-    }
+    if (props.name === 'mosaic' && new_state)
+      preferences.enable_geology_layers()
 
-    // Special logic: when turning shadow ON, enable all shadow layers
-    if (props.name === 'shadow' && new_state) {
-      preferences.bold.value = true
-      preferences.medium.value = true
-      preferences.regular.value = true
-      preferences.light.value = true
-      preferences.background.value = true
-    }
+    if (props.name === 'shadow' && new_state) preferences.enable_shadow_layers()
 
-    // Special logic: when toggling drama, sync drama_back and drama_front
     if (props.name === 'drama') {
       preferences.drama_back.value = new_state
       preferences.drama_front.value = new_state

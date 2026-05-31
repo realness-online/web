@@ -312,7 +312,6 @@
             <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
             about all my feelings and nerd problems. My resume is on there.
           </p>
-          <h4>Cyber the App Store</h4>
         </header>
       </section>
     </article>
@@ -323,32 +322,20 @@
       <ol>
         <li>
           <icon name="finished" />
-          <p>Sign in to sync your device</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Create your own social network</p>
-        </li>
-        <li>
-          <icon name="finished" />
           <p>Ready for your workflow</p>
         </li>
-
+        <li>
+          <icon name="finished" />
+          <p>Work happens and stays on your device</p>
+        </li>
         <li>
           <icon name="finished" />
           <p>Posters organized into a Timeline of your thoughts</p>
         </li>
+
         <li>
           <icon name="finished" />
           <p>Mosaics, shadows, masks, patterns, gradients</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Sign in with your phone number</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Works on any device</p>
         </li>
         <li>
           <icon name="finished" />
@@ -368,16 +355,11 @@
             <a href="https://github.com/realness-online/web" rel="external">
               Source Available
             </a>
-            with semantic HTML and microdata
           </p>
         </li>
         <li>
           <icon name="finished"></icon>
           <p>Sensitive data stays on the device</p>
-        </li>
-        <li>
-          <icon name="finished"></icon>
-          <p>Your projects live under ${name}.web.app</p>
         </li>
       </ol>
     </section>

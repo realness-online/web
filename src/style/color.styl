@@ -4,8 +4,19 @@ html
   background-color: white-background
   @media (prefers-color-scheme: dark)
     color: white-text
-    background-color: black-background
+    background-color: var(--black-background)
     color-scheme: light dark
+
+body
+  min-height: 100%
+  background-color: inherit
+
+main#realness
+  background-color: inherit
+
+section.page
+  @media (prefers-color-scheme: dark)
+    background-color: var(--black-background)
 
 .orange
   background-color: orange

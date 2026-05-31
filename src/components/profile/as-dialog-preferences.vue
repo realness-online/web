@@ -206,10 +206,8 @@
     return pref.value
   }
 
-  const is_dialog_open = computed(() => dialog_open.value)
-
   const is_key_active = cmd => {
-    if (cmd.command === 'ui::Open_Settings') return is_dialog_open.value
+    if (cmd.command === 'ui::Open_Settings') return dialog_open.value
     return is_preference_active(cmd.command)
   }
 
@@ -308,7 +306,6 @@
           v-if="preferences.view_3d.value"
           ref="tweakpane_ref"
           class="tweakpane-3d" />
-
         <preference
           v-if="sync_folder_supported_value"
           name="sync_folder"
@@ -356,20 +353,33 @@
 
 <style lang="stylus">
   a[aria-label='Settings'] {
+    -webkit-tap-highlight-color: transparent;
+    &:active,
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
     svg.icon {
       width: base-line * 2;
       height: base-line * 2;
       fill: black;
       stroke: blue;
       stroke-width: 0.25px;
+      &:active {
+        outline: none;
+      }
     }
   }
 
   dialog#preferences {
-    margin: (base-line * 2);
-    max-width: 100%;
-    max-height: calc(100dvh - var(--base-line) * 5);
+    margin: base-line base-line * 0.5;
+    width: calc(100dvw - base-line);
+    min-width: calc(100dvw - base-line);
+    max-width: calc(100dvw - base-line);
+    max-height: calc(100dvh - base-line * 3);
     border-radius: base-line;
+    box-sizing: border-box;
     overscroll-behavior-y: contain;
 
     &[open] {
@@ -380,7 +390,9 @@
     }
 
     @media (min-width: pad-begins) {
-      margin:  auto;
+      margin: auto;
+      width: auto;
+      min-width: page-width-large;
       max-width: 90vw;
       max-height: 85vh;
       &[open] {
@@ -459,40 +471,40 @@
 
   .tweakpane-3d {
     padding: round((base-line / 2), 2);
-    standard-border: black;
+    standard-border: rocks;
+
+    --tp-base-background-color: var(--black-background);
+    --tp-base-shadow-color: transparent;
+    --tp-base-border-radius: round((base-line / 3), 2);
+    --tp-base-font-family: inherit;
+
+    --tp-container-background-color: alpha(white, 0.04);
+    --tp-container-background-color-hover: alpha(white, 0.07);
+    --tp-container-background-color-focus: alpha(white, 0.07);
+    --tp-container-background-color-active: alpha(white, 0.10);
+    --tp-container-foreground-color: var(--white-text);
+
+    --tp-input-background-color: alpha(white, 0.06);
+    --tp-input-background-color-hover: var(--blue);
+    --tp-input-background-color-focus: var(--blue);
+    --tp-input-background-color-active: var(--blue);
+    --tp-input-foreground-color: var(--white-text);
+
+    --tp-label-foreground-color: var(--white-text);
+    --tp-groove-foreground-color: alpha(white, 0.08);
+
+    --tp-button-background-color: alpha(white, 0.06);
+    --tp-button-background-color-hover: var(--blue);
+    --tp-button-background-color-focus: var(--blue);
+    --tp-button-background-color-active: var(--blue);
+    --tp-button-foreground-color: var(--white-text);
+
+    --tp-monitor-background-color: alpha(white, 0.04);
+    --tp-monitor-foreground-color: var(--white-text);
 
     .tp-dfwv {
       width: 100%;
       position: static;
-
-      --tp-base-background-color: black-background;
-      --tp-base-shadow-color: transparent;
-      --tp-base-border-radius: round((base-line / 3), 2);
-      --tp-base-font-family: inherit;
-
-      --tp-container-background-color: rgba(255, 255, 255, 0.04);
-      --tp-container-background-color-hover: rgba(255, 255, 255, 0.07);
-      --tp-container-background-color-focus: rgba(255, 255, 255, 0.07);
-      --tp-container-background-color-active: rgba(255, 255, 255, 0.10);
-      --tp-container-foreground-color: white-text;
-
-      --tp-input-background-color: rgba(255, 255, 255, 0.06);
-      --tp-input-background-color-hover: blue;
-      --tp-input-background-color-focus: blue;
-      --tp-input-background-color-active: blue;
-      --tp-input-foreground-color: white-text;
-
-      --tp-label-foreground-color: white-text;
-      --tp-groove-foreground-color: rgba(255, 255, 255, 0.08);
-
-      --tp-button-background-color: rgba(255, 255, 255, 0.06);
-      --tp-button-background-color-hover: blue;
-      --tp-button-background-color-focus: blue;
-      --tp-button-background-color-active: blue;
-      --tp-button-foreground-color: white-text;
-
-      --tp-monitor-background-color: rgba(255, 255, 255, 0.04);
-      --tp-monitor-foreground-color: white-text;
     }
   }
 </style>

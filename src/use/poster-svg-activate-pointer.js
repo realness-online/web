@@ -26,14 +26,18 @@ export const vibrate_long_press = () => {
  * @param {object} opts
  * @param {() => void} opts.on_activate
  * @param {import('vue').MaybeRefOrGetter<boolean>} [opts.touch_uses_long_press=true]
+ * @param {import('vue').MaybeRefOrGetter<boolean>} [opts.is_disabled=false]
+ * @param {import('vue').Ref<boolean> | null} [opts.was_pan_gesture=null]
+ * @param {((event: PointerEvent) => void) | null} [opts.on_non_touch_pointerdown=null]
  */
 export const use_poster_svg_activate_pointer = ({
   on_activate,
-  touch_uses_long_press = true
+  touch_uses_long_press = true,
+  is_disabled = false,
+  was_pan_gesture = null,
+  on_non_touch_pointerdown = null
 }) => {
   const held_layer = ref(null)
-  /** Duplicate `<use>` rows do not register for delegated pan; keep false like a non-pan pointerup. */
-  const was_pan_gesture = ref(false)
   let cancelled = false
   let touch_start_x = 0
   let touch_start_y = 0
@@ -46,6 +50,7 @@ export const use_poster_svg_activate_pointer = ({
   let long_press_fired = false
 
   const long_press_enabled = () => toValue(touch_uses_long_press)
+  const disabled = () => toValue(is_disabled)
 
   const clear_long_press_timer = () => {
     // oxlint-disable-next-line eqeqeq -- != null: nullish (timeout id or null)
@@ -60,6 +65,7 @@ export const use_poster_svg_activate_pointer = ({
 
   /** @param {PointerEvent} event */
   const handle_pointerdown = event => {
+    if (disabled()) return
     cancelled = false
     if (is_touch_pointer(event) && long_press_enabled()) {
       clear_long_press_timer()
@@ -79,11 +85,13 @@ export const use_poster_svg_activate_pointer = ({
     } else {
       clear_long_press_timer()
       touch_down_at = 0
+      on_non_touch_pointerdown?.(event)
     }
   }
 
   /** @param {PointerEvent} event */
   const handle_pointermove = event => {
+    if (disabled()) return
     if (!is_touch_pointer(event) || !long_press_enabled()) return
     if (long_press_fired) return
     const dx = Math.abs(event.clientX - touch_start_x)
@@ -99,6 +107,7 @@ export const use_poster_svg_activate_pointer = ({
 
   /** @param {PointerEvent} event */
   const handle_pointerup = event => {
+    if (disabled()) return
     if (is_touch_pointer(event) && long_press_enabled()) {
       clear_long_press_timer()
       const down_at = touch_down_at
@@ -138,6 +147,7 @@ export const use_poster_svg_activate_pointer = ({
       was_pan_gesture.value = false
       return
     }
+    held_layer.value = null
     on_activate()
   }
 

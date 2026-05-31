@@ -237,9 +237,6 @@ exports[`About > Rendering > renders about view 1`] = `
           </a>
            about all my feelings and nerd problems. My resume is on there. 
         </p>
-        <h4>
-          Cyber the App Store
-        </h4>
       </header>
     </section>
   </article>
@@ -257,23 +254,15 @@ exports[`About > Rendering > renders about view 1`] = `
           name="finished"
         />
         <p>
-          Sign in to sync your device
-        </p>
-      </li>
-      <li>
-        <icon-stub
-          name="finished"
-        />
-        <p>
-          Create your own social network
-        </p>
-      </li>
-      <li>
-        <icon-stub
-          name="finished"
-        />
-        <p>
           Ready for your workflow
+        </p>
+      </li>
+      <li>
+        <icon-stub
+          name="finished"
+        />
+        <p>
+          Work happens and stays on your device
         </p>
       </li>
       <li>
@@ -290,22 +279,6 @@ exports[`About > Rendering > renders about view 1`] = `
         />
         <p>
           Mosaics, shadows, masks, patterns, gradients
-        </p>
-      </li>
-      <li>
-        <icon-stub
-          name="finished"
-        />
-        <p>
-          Sign in with your phone number
-        </p>
-      </li>
-      <li>
-        <icon-stub
-          name="finished"
-        />
-        <p>
-          Works on any device
         </p>
       </li>
       <li>
@@ -357,7 +330,6 @@ exports[`About > Rendering > renders about view 1`] = `
           >
              Source Available 
           </a>
-           with semantic HTML and microdata 
         </p>
       </li>
       <li>
@@ -366,14 +338,6 @@ exports[`About > Rendering > renders about view 1`] = `
         />
         <p>
           Sensitive data stays on the device
-        </p>
-      </li>
-      <li>
-        <icon-stub
-          name="finished"
-        />
-        <p>
-          Your projects live under \${name}.web.app
         </p>
       </li>
     </ol>
