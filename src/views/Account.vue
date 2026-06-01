@@ -117,6 +117,4 @@
       gap: base-line * 0.5
       max-width: page-width
       white-space: normal
-    @media (min-width: page-width-large)
-      max-width: page-width-large
 </style>

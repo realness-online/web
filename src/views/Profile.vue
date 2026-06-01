@@ -147,7 +147,6 @@
             & > a
             & > nav
             & > button
-              standard-shadow: boop
             & > a > svg
               fill: blue
     & > figure.profile

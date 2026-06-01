@@ -61,4 +61,14 @@ describe('@/components/account/as-link', () => {
     const wrapper = mount()
     expect(wrapper.text()).toBe('account')
   })
+
+  it('breaks a full name at the first space', () => {
+    mock_current_user.value = { uid: 'u1' }
+    mock_me.value = { id: '/+15550000000', name: 'Scott Realness' }
+    const wrapper = mount()
+    const lines = wrapper.findAll('a span')
+    expect(lines).toHaveLength(2)
+    expect(lines[0].text()).toBe('Scott')
+    expect(lines[1].text()).toBe('Realness')
+  })
 })
