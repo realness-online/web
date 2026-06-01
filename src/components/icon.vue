@@ -50,7 +50,6 @@
 <style lang="stylus">
   svg.icon {
     fill: currentColor
-    // standard-shadow: boop;
     &:active {
       transform: scale(0.95);
     }

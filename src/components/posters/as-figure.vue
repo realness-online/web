@@ -749,11 +749,8 @@
           z-index: 2;
           padding: base-line * 0.75 base-line;
           border-radius: base-line * 0.5;
-          background: white-background;
-          color: black;
-          box-shadow:
-            0 0.08em 0.6em hsla(57, 8%, 16%, 0.05),
-            0 0.15em 0.5em hsla(57, 8%, 8%, 0.15);
+          frosted-glass();
+          color: white-text;
           -webkit-overflow-scrolling: touch;
           pointer-events: auto;
           & p[itemprop='statement'] {
@@ -765,13 +762,6 @@
             &:last-child {
               margin-bottom: 0;
             }
-          }
-          @media (prefers-color-scheme: dark) {
-            background: hsla(57, 8%, 20%, 1);
-            color: white-text;
-            box-shadow:
-              0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
-              0 0.2em 0.65em hsla(0, 0%, 0%, 0.45);
           }
         }
       }
@@ -794,9 +784,12 @@
           white-space: nowrap;
           padding: base-line * 0.2 base-line * 0.4;
           border-radius: base-line * 0.25;
-          background: black-transparent;
-          standard-shadow: boop;
+          frosted-glass();
         }
+      }
+
+      & > footer > menu {
+        frosted-glass();
       }
 
       menu {
@@ -808,7 +801,6 @@
         padding: base-line * 0.5;
         height: auto;
         border-radius: base-line;
-        background: black-transparent;
         min-width: 0;
         max-width: page-width;
         svg[itemtype='/posters'] {
@@ -835,7 +827,6 @@
           opacity: 0.7;
           min-width: base-line * 1.5;
           text-align: center;
-          standard-shadow: boop;
           &:hover { opacity: 1; background: rgba(0, 0, 0, 0.5); }
         }
         & > button.mask-pen.active {
@@ -855,9 +846,8 @@
           animation-name: fade-in;
           animation-duration: 0.1s;
           padding: base-line * .33;
-          background: black-transparent;
+          frosted-glass();
           border-radius: base-line * .25;
-          standard-shadow: boop;
           & > address {
             & > h3:first-of-type {
               margin-right: base-line * .333;
@@ -869,15 +859,20 @@
             }
           }
         }
-        & > span.actions > nav,
-        & > span.actions > a {
-          standard-shadow: boop;
-        }
         & > a.profile > svg,
         & > figure.profile > svg,
         & > span.actions svg {
           fill: blue;
         }
+      }
+
+      & > footer > menu menu {
+        background: transparent;
+        backdrop-filter: none;
+        padding: 0;
+        border-radius: 0;
+        min-width: auto;
+        max-width: none;
       }
     }
   }

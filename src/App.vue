@@ -750,7 +750,7 @@
           outline: 2px solid var(--red);
           outline-offset: base-line * 0.25;
           transition: background-color 0.2s ease;
-          background-color: var(--black-transparent);
+          frosted-glass();
           box-shadow: 0 0 base-line var(--black-transparent);
           pointer-events: none;
         }
@@ -762,8 +762,7 @@
       & > footer {
         width: 100%;
         margin base-line * 0.5;
-        background-color: var(--black-transparent);
-        backdrop-filter: blur(8px);
+        frosted-glass();
         border-radius: base-line;
         display: flex;
         align-items: center;
@@ -800,6 +799,8 @@
           }
           svg {
             fill: var(--blue);
+          }
+          svg.animation {
             stroke: var(--blue);
           }
           &:focus,
@@ -812,6 +813,8 @@
           color: var(--red);
           svg {
             fill: var(--red);
+          }
+          svg.animation {
             stroke: var(--red);
           }
         }
@@ -979,10 +982,6 @@
                 transform: scale(0.92);
               }
             }
-          }
-          &[aria-label='Toggle 3D']:active svg.galaxy {
-            transform: rotate(-36deg) scale(1.05);
-            transition-duration: 0.66s;
           }
           &[aria-label='Open camera']:active svg.camera {
             transform: scale(0.9);

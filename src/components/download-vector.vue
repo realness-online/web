@@ -493,9 +493,8 @@
       font-size: larger;
       gap: base-line * 0.25;
       padding: base-line * 0.25;
-      background: black-transparent;
+      frosted-glass();
       border-radius: base-line * 0.25;
-      standard-shadow: boop;
       z-index: 6;
       & > a {
         position: relative;

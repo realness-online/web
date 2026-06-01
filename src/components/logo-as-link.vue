@@ -13,9 +13,6 @@
 </template>
 
 <style lang="stylus">
-  a.logo {
-    standard-shadow: boop;
-  }
   svg.realness:active {
     outline: 1px double currentColor;
     outline-offset: base-line * 0.25;

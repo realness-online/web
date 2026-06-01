@@ -44,23 +44,15 @@
 </template>
 
 <style lang="stylus">
-  figure.poster > figcaption > menu {
+  figure.poster > figcaption footer menu menu {
     & > a,
     & > button {
       &.avatar {
-        standard-shadow: boop;
         &.selected & > svg {
           fill: red;
         }
       }
-      &.remove {
-        standard-shadow: boop;
-      }
-      &.save {
-        standard-shadow: boop;
-      }
       &.event {
-        filter: none;
         outline: none;
         border: none;
         background: transparent;
