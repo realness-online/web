@@ -7,7 +7,7 @@
 
 Realness tries to be as small as possible so that you can trust the affection it generates. The server knows your phone number and the content you create. Thoughts, Posters, Events, Avatars. Relations sync across your devices. Images that you upload to create Posters and Avatars, are converted on device and then discarded.
 
-We get Messaging and group chat for free since we authorize with phone numbers. Your phone number is the shared with a third party for authorization.
+We get Messaging and group chat for free since we authorize with phone numbers. Your phone number is shared with a third party for authorization.
 
 Realness believes moderators should be at the center of social networking. Moderators keep it human. Everyone can become a moderator. Moderating an instance of realness will improve internet literacy. We believe realness is a natural form of social networking that supports the fundamental needs of citizens in a democracy. The hope is that having an ecosystem of moderators relieves some of the pressure to pick a side. Within realness we are free to accept each other as different and yet share an ethos of community responsibility.
 

@@ -213,8 +213,8 @@ describe('@/components/posters/as-svg.vue', () => {
   })
 
   describe('poster slice and storytelling', () => {
-    it('sets svg aspectRatio style when slice and aspect_ratio_mode not auto', async () => {
-      mock_aspect_ratio_mode.value = '16 / 9'
+    it('sets data-aspect when slice and aspect_ratio_mode not auto', async () => {
+      mock_aspect_ratio_mode.value = '16/9'
       const wrapper = shallowMount(as_svg, {
         props: {
           itemid,
@@ -223,8 +223,7 @@ describe('@/components/posters/as-svg.vue', () => {
         }
       })
       await flushPromises()
-      const style = wrapper.find('svg').attributes('style') ?? ''
-      expect(style).toContain('aspect-ratio')
+      expect(wrapper.find('svg').attributes('data-aspect')).toBe('16/9')
     })
 
     it('adds hide-cursor when slice and storytelling', async () => {

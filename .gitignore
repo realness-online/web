@@ -1,4 +1,5 @@
 fallow-report.json
+/design/
 .DS_Store
 node_modules
 /tests/e2e/videos/
@@ -86,9 +87,6 @@ docs/keymap.schema.json
 docs/keymap.ref.json
 scripts/service-account*
 
-public/180.png
 public/192.png
 public/512.png
-public/*-m.png
-public/*-ios.png
 .lighthouseci

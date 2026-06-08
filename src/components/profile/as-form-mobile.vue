@@ -288,7 +288,7 @@
             padding: (base-line * 0.25);
             cursor: pointer;
             &:hover {
-              background-color: blue;
+              background-color: blue-fill;
               color: white;
             }
           }

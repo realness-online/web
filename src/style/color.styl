@@ -1,11 +1,36 @@
+light-accent-tokens()
+  --blue blue-accent-light
+  --red red-accent-light
+  --surface-glass surface-glass-light
+
+dark-accent-tokens()
+  --blue blue-accent-dark
+  --red red-accent-dark
+  --surface-glass black-transparent
+
+light-surface-tokens()
+  --text black
+  --surface white-background
+  --code-surface alpha(black, 0.06)
+
+dark-surface-tokens()
+  --text white-text
+  --surface var(--black-background)
+  --code-surface alpha(white, 0.08)
+
+:root
+  light-accent-tokens()
+  light-surface-tokens()
+
+@media (prefers-color-scheme: dark)
+  :root
+    dark-accent-tokens()
+    dark-surface-tokens()
 
 html
-  color: black
-  background-color: white-background
-  @media (prefers-color-scheme: dark)
-    color: white-text
-    background-color: var(--black-background)
-    color-scheme: light dark
+  color: var(--text)
+  background-color: var(--surface)
+  color-scheme: light dark
 
 body
   min-height: 100%
@@ -15,8 +40,7 @@ main#realness
   background-color: inherit
 
 section.page
-  @media (prefers-color-scheme: dark)
-    background-color: var(--black-background)
+  background-color: var(--surface)
 
 .orange
   background-color: orange
@@ -45,27 +69,27 @@ section.page
     color: white-text
     border-color: darken(sediment, 8%)
 .red
-  background-color: red
-  border-color: red
-  color: lighten(red, 85%)
-  -webkit-tap-highlight-color: red
+  background-color: red-fill
+  border-color: red-fill
+  color: lighten(red-fill, 85%)
+  -webkit-tap-highlight-color: red-fill
   &::placeholder
-    color: lighten(red, 85%)
+    color: lighten(red-fill, 85%)
   @media (prefers-color-scheme: dark)
-    background-color: darken(red, 8%)
+    background-color: darken(red-fill, 8%)
     color: white-text
-    border-color: darken(red, 5%)
+    border-color: darken(red-fill, 5%)
 .blue
-  background-color: blue
-  border-color: blue
-  color:lighten(blue, 95%)
-  -webkit-tap-highlight-color: blue
+  background-color: blue-fill
+  border-color: blue-fill
+  color:lighten(blue-fill, 95%)
+  -webkit-tap-highlight-color: blue-fill
   &::placeholder
-    color: lighten(blue, 95%)
+    color: lighten(blue-fill, 95%)
   @media (prefers-color-scheme: dark)
-    background-color: darken(blue, 20%)
+    background-color: darken(blue-fill, 20%)
     color: white-text
-    border-color: darken(blue, 15%)
+    border-color: darken(blue-fill, 15%)
 .black
   background-color: black
   border-color: black

@@ -8,10 +8,18 @@ exports[`About > Rendering > renders about view 1`] = `
   itemtype="/about"
 >
   <header>
-    <nav>
-      <logo-as-link-stub />
-      <a>
+    <nav
+      class="marketing-nav"
+    >
+      <a
+        href="/docs"
+      >
         Docs
+      </a>
+      <a
+        href="/pricing"
+      >
+        Pricing
       </a>
     </nav>
     <section
@@ -372,7 +380,7 @@ exports[`About > Rendering > renders about view 1`] = `
   <footer
     itemprop="footer"
   >
-    <logo-as-link-stub />
+    <logo-as-link />
     <anonymous-stub />
   </footer>
 </section>

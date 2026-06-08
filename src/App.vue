@@ -169,7 +169,6 @@
   const preferences_dialog = ref(null)
   const open_account = () => router.push('/account')
   provide('open_account', open_account)
-  const viewport_mql = ref(null)
   const { register, register_preference } = use_keymap('Global')
   const magic_keys = useMagicKeys()
 
@@ -241,10 +240,7 @@
       ? (current_index - 1 + aspect_ratios.length) % aspect_ratios.length
       : (current_index + 1) % aspect_ratios.length
     aspect_ratio_mode.value = aspect_ratios[next_index]
-    document.documentElement.style.setProperty(
-      '--poster-aspect-ratio',
-      aspect_ratio_mode.value === 'auto' ? 'auto' : aspect_ratio_mode.value
-    )
+    apply_aspect_ratio()
   })
   register('pref::Slice_Alignment_Up', () => {
     const current = slice_alignment.value || 'ymid'
@@ -260,23 +256,14 @@
   register_preference('pref::Toggle_Menu', menu)
   register_preference('pref::Toggle_Footer', footer_visible)
 
-  const set_storytelling_slide_width = () => {
-    const is_landscape = window.matchMedia('(min-aspect-ratio: 1/1)').matches
-    const width =
-      is_landscape && aspect_ratio_mode.value === '1/1' ? '100dvh' : '100dvw'
-    document.documentElement.style.setProperty(
-      '--storytelling-slide-width',
-      width
+  const apply_aspect_ratio = () => {
+    document.documentElement.setAttribute(
+      'data-aspect-ratio',
+      aspect_ratio_mode.value || 'auto'
     )
   }
 
-  watch(aspect_ratio_mode, new_value => {
-    document.documentElement.style.setProperty(
-      '--poster-aspect-ratio',
-      new_value === 'auto' ? 'auto' : new_value
-    )
-    set_storytelling_slide_width()
-  })
+  watch(aspect_ratio_mode, apply_aspect_ratio, { immediate: true })
 
   register_preference('pref::Toggle_Bold', bold)
   register_preference('pref::Toggle_Medium', medium)
@@ -438,24 +425,11 @@
       drama_front.value = true
     }
 
-    const aspect_ratio = aspect_ratio_mode.value || 'auto'
-    document.documentElement.style.setProperty(
-      '--poster-aspect-ratio',
-      aspect_ratio === 'auto' ? 'auto' : aspect_ratio
-    )
-    set_storytelling_slide_width()
-    viewport_mql.value = window.matchMedia('(min-aspect-ratio: 1/1)')
-    viewport_mql.value.addEventListener('change', set_storytelling_slide_width)
-
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     window.addEventListener('paste', paste_image)
   })
   dismount(() => {
-    viewport_mql.value?.removeEventListener(
-      'change',
-      set_storytelling_slide_width
-    )
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
     window.removeEventListener('paste', paste_image)
@@ -470,11 +444,10 @@
     <router-view />
     <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
-    <nav
+    <footer
       v-if="menu && !storytelling"
-      aria-label="App actions"
       :data-footer-visible="footer_visible ? 'true' : 'false'">
-      <footer>
+      <nav aria-label="App actions">
         <label
           class="menu-action"
           :class="{ 'add-settling': add_settling }"
@@ -534,7 +507,7 @@
         </label>
 
         <as-dialog-preferences ref="preferences_dialog" />
-      </footer>
+      </nav>
       <label v-if="footer_toggle_shown">
         <input
           type="checkbox"
@@ -547,7 +520,7 @@
           @contextmenu.prevent />
         <span aria-hidden="true" />
       </label>
-    </nav>
+    </footer>
 
     <as-dialog-documentation ref="documentation" />
     <input
@@ -687,7 +660,7 @@
       left: var(--base-line);
     }
 
-    & > nav {
+    & > footer {
       user-select: none;
       position: fixed;
       bottom: base-line;
@@ -708,7 +681,7 @@
       /* Match footer_visible directly; do not rely on :has(label) because the
          toggle is v-if removed on / when focus is inside article.thought (and
          when fullscreen), which would otherwise leave the bar visible. */
-      &[data-footer-visible='false'] > footer {
+      &[data-footer-visible='false'] > nav {
         transform: translateY(100%);
         opacity: 0;
         visibility: hidden;
@@ -759,7 +732,7 @@
         }
       }
 
-      & > footer {
+      & > nav {
         width: 100%;
         margin base-line * 0.5;
         frosted-glass();
@@ -1042,7 +1015,7 @@
   }
 
   @starting-style {
-    main#realness > nav > footer {
+    main#realness > footer > nav {
       transform: translateY(100%);
       opacity: 0;
       visibility: hidden;

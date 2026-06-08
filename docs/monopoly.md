@@ -70,45 +70,24 @@ This creates a second-class experience where the web version feels broken compar
 
 ---
 
-### 2026-05-31 - iOS PWA icon inconsistencies
+### 2026-05-31 - PWA icon platform quirks
 
 **Context**
 
-- PWA icons need different treatments across platforms: regular, maskable (Android), and iOS-specific versions
-- iOS ignores PWA manifest icons entirely, uses only `apple-touch-icon`
-- iOS always applies white background to transparent `apple-touch-icon`
-- iOS applies unpredictable padding/rounded corners that vary by device/version
-- No way to control or disable iOS's automatic icon modifications
-
-**What we ship**
-
-| Icon type                | Platform        | Padding | Background      | Purpose               |
-| ------------------------ | --------------- | ------- | --------------- | --------------------- |
-| `192.png`, `512.png`     | PWA manifest    | 20%     | Transparent     | `purpose: "any"`      |
-| `192-m.png`, `512-m.png` | Android masking | 28%     | Transparent     | `purpose: "maskable"` |
-| `192-ios.png`            | iOS Safari/PWA  | 14%     | App theme color | `apple-touch-icon`    |
+- One asset pair: `192.png` and `512.png` from `scripts/generate-icons.js` (`#2c2c26` fill, ~10% inset)
+- Manifest: `purpose: "any maskable"` on both sizes
+- iOS ignores manifest icons; `index.html` points `apple-touch-icon` at the same `192.png`
+- iOS still applies its own rounding and padding; opaque background avoids the white tile
 
 **Code**
 
-- `scripts/generate-icons.js` - generates all three icon variants from `public/icons.svg`
-- `index.html` - `apple-touch-icon` with cache buster for iOS
-- `vite.config.js` - PWA manifest configuration
-
-**Cross-platform inconsistency**
-
-| Platform         | Icon control      | Background             | Padding control  |
-| ---------------- | ----------------- | ---------------------- | ---------------- |
-| Desktop browsers | Full control      | As designed            | Developer choice |
-| Android Chrome   | Respects maskable | As designed            | Developer choice |
-| iOS Safari/PWA   | None              | Force white or pre-add | iOS decides      |
+- `scripts/generate-icons.js`
+- `index.html` - `apple-touch-icon`
+- `vite.config.js` - manifest `icons`
 
 **Out of scope (platform)**
 
-- Transparent backgrounds on iOS `apple-touch-icon`
-- Consistent padding across iOS devices/versions
-- Using PWA manifest icons on iOS
-- Disabling iOS's automatic icon modifications
-
-The compromise: pre-add background color to iOS icons, tune padding through trial and error, accept platform inconsistency as an iOS limitation.
+- Identical icon framing on every OS
+- Disabling iOS automatic icon treatment
 
 ---

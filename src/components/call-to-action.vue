@@ -2,13 +2,10 @@
   <div class="call to action">
     <h3>
       Support
-      <a
-        href="https://patreon.com/scottfryxell"
-        target="_blank"
-        rel="noopener noreferrer">
+      <router-link to="/pricing">
         <h1>Realness</h1>
         <h3>online</h3>
-      </a>
+      </router-link>
     </h3>
     <p>
       <strong>The medium is the message</strong>
@@ -34,6 +31,7 @@
         padding-right: base-line * 0.25
         color: red
         min-width: 50dvw
+        text-decoration: none
         & > h1
           font-weight: 300
           margin: 0

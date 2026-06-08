@@ -321,12 +321,6 @@
     return as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
   })
 
-  const svg_style = computed(() => {
-    if (poster_slice.value && aspect_ratio_mode.value !== 'auto')
-      return { aspectRatio: aspect_ratio_mode.value }
-    return {}
-  })
-
   const lightbar_back_style = computed(() => {
     if (!drama_back_visible.value)
       return { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
@@ -372,7 +366,6 @@
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
     :tabindex="focusable"
-    :style="svg_style"
     :class="{
       animate,
       hovered: is_hovered,
@@ -382,7 +375,7 @@
     :aria-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
     :data-aspect="
-      aspect_ratio_mode && aspect_ratio_mode !== 'auto'
+      poster_slice && aspect_ratio_mode !== 'auto'
         ? aspect_ratio_mode
         : undefined
     "
@@ -476,7 +469,7 @@
       height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
       max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     max-height: 100%;
-    &[style*='aspect-ratio'] {
+    &[data-aspect] {
       height: auto;
       min-height: 0;
       max-height: 100%;

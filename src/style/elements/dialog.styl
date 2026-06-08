@@ -7,12 +7,8 @@ dialog {
   padding: base-line * 0.5;
   border: 3px solid red;
   border-radius: base-line * 0.5;
-  color: black;
-  background-color: white-background;
-  @media (prefers-color-scheme: dark) {
-    color: white-text;
-    background-color: var(--black-background);
-  }
+  color: var(--text);
+  background-color: var(--surface);
   opacity: 0;
   transition: opacity 120ms ease;
   &:focus {
@@ -64,10 +60,7 @@ dialog.confirm {
     }
     p {
       text-align: center;
-      color: black;
-      @media (prefers-color-scheme: dark) {
-        color: white-text;
-      }
+      color: var(--text);
     }
     menu {
       padding: base-line;
