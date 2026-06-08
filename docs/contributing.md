@@ -6,21 +6,18 @@ Joining [realness](https://realness.online) is the best way to get support (mora
 
 The best way to start is deploy your own instance of realness and then read about the the [philosopy](philosophy.md) and [architecture](architecture.md).
 
-Deploying creates an `artifacts` folder with reports on what files are generated.
-
-`/artifacts/unit/coverage/lcov-report/index.html` will be particularly useful for understanding what code is being tested
-
 ## Scripts
 
 A standard setup is usually three tabs in a terminal running the following scripts
 
 - `npm run dev` runs the client code on `http://localhost:8080`
 - `npm run dev:workers` keeps the workers current
-- `nmp test` runs tests with code coverage
+- `nmp run pre-commit` runs All our checks
+- `nmp run tests:coverage` is of note
 
 ### Config
 
-For a fully functioning localhost save a file named `.env.local` to the root of your project with your firebase keys. check out env.example for exact names
+For a fully functioning local setup, copy `.env.example` to `.env.local` and fill it in with your Firebase keys. If you deploy without changes, this is not necessary.
 
 Start your local server and `localhost:8080` will be good to go
 

@@ -20,13 +20,13 @@
 
 <template>
   <section class="as-sponsor">
-    <h4>Pricing</h4>
+    <h4>Sponsor</h4>
     <p v-if="is_sponsor">
       Thank you
       <time :datetime="latest_sponsorship?.at">{{ formatted_at }}</time
       >.
     </p>
-    <p v-else>Realness costs money. Payment is honor system.</p>
+    <p v-else>Realness is free to use. It costs $5.</p>
     <menu>
       <sponsor-cta />
     </menu>

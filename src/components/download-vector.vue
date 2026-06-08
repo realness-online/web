@@ -431,7 +431,7 @@
     <a @click="toggle_menu" title="Download" aria-label="Download options">
       <icon name="download" />
     </a>
-    <menu v-if="menu_open" ref="menu_ref">
+    <menu v-if="menu_open" ref="menu_ref" class="format-picker">
       <a
         v-if="!video_exporting"
         @click="download_svg_handler"
@@ -482,14 +482,18 @@
       display: block;
     }
 
-    menu {
+    menu.format-picker {
       position: absolute;
       bottom: 100%;
-      left: 0;
+      right: 0;
+      left: auto;
       margin-bottom: base-line * 0.25;
       max-width: min(calc(100vw - base-line * 4), base-line * 15);
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: center;
       font-size: larger;
       gap: base-line * 0.25;
       padding: base-line * 0.25;

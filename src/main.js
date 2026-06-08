@@ -10,8 +10,13 @@ import { log_storage_estimate } from '@/utils/storage-estimate'
 const { me } = localStorage
 if (!me) localStorage.me = '/+'
 
-if (location.hostname !== 'realness.local') registerSW({ onOfflineReady() {} })
+if (import.meta.env.PROD && location.hostname !== 'realness.local')
+  registerSW({ onOfflineReady() {} })
 init_serverless()
 void log_storage_estimate()
 
-createApp(App).use(router).use(key_commands_plugin).mount('body')
+const mount_el = document.getElementById('app') ?? document.body
+createApp(App).use(router).use(key_commands_plugin).mount(mount_el)
+
+// Static site nav is for crawlers and no-JS only; the app has its own nav.
+document.getElementById('site')?.remove()

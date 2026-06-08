@@ -3,13 +3,12 @@
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import CallToAction from '@/components/call-to-action'
-  import LogoAsLink from '@/components/logo-as-link'
+  import MarketingNav from '@/components/marketing-nav'
   import { as_author } from '@/utils/itemid'
   import { use_posters } from '@/use/poster'
   import {
     onMounted as mounted,
     onUnmounted as dismount,
-    inject,
     computed,
     ref,
     nextTick as tick
@@ -25,10 +24,6 @@
   const gallery_posters = computed(() =>
     admin_posters.value.slice(ABOUT_FEATURED_POSTER_COUNT)
   )
-
-  const documentation = inject('documentation')
-
-  const show_documentation = () => documentation?.value?.show()
 
   /** @type {import('vue').Ref<HTMLElement | null>} */
   const about_el = ref(null)
@@ -157,10 +152,7 @@
     itemtype="/about"
     :class="{ 'about-ready': about_ready }">
     <header>
-      <nav>
-        <logo-as-link />
-        <a @click="show_documentation">Docs</a>
-      </nav>
+      <marketing-nav />
       <section itemprop="hero">
         <header>
           <h1>Realness</h1>

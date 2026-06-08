@@ -44,6 +44,6 @@ describe('@/components/account/as-sponsor', () => {
   it('uses non-sponsor state when not yet a sponsor', () => {
     const wrapper = shallowMount(AsSponsor)
     expect(wrapper.find('time').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Payment is honor system')
+    expect(wrapper.text()).toContain('It costs $5')
   })
 })

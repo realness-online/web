@@ -5,19 +5,20 @@ a
   text-decoration: none
   -webkit-tap-highlight-color: transparent
 p > a
-  -webkit-tap-highlight-color: transparentify(blue)
+  -webkit-tap-highlight-color: transparentify(blue-fill)
   transition-property: all
   transition-duration: 0.8s
   transition-timing-function: ease-in-out
   transition-delay: 0.1s
-  border-bottom: .18vmin solid blue
-  border-bottom-right-radius: 0.5vmin
-  border-bottom-left-radius: 0.5vmin
+  border-bottom: .08vmin solid blue
+  border-bottom-right-radius: 0.2vmin
+  border-bottom-left-radius: 0.2vmin
   &:link
     color: blue
   &:visited
-    border-color: lighten(blue, 20%)
+    opacity: 0.82
   &:hover
     color: red
+    opacity: 1
   &:active
     color: blue

@@ -45,13 +45,6 @@ vi.mock('@/use/poster', () => ({
   is_click: vi.fn().mockReturnValue(true)
 }))
 
-// Mock documentation inject
-const mock_documentation = {
-  value: {
-    show: vi.fn()
-  }
-}
-
 describe('About', () => {
   let wrapper
 
@@ -65,9 +58,6 @@ describe('About', () => {
     ]
     wrapper = shallowMount(About, {
       global: {
-        provide: {
-          documentation: mock_documentation
-        },
         stubs: {
           'as-figure': {
             template: '<figure class="poster-stub"></figure>',
@@ -79,7 +69,10 @@ describe('About', () => {
             props: ['name', 'title', 'subtitle', 'show_state']
           },
           'call-to-action': true,
-          'logo-as-link': true
+          'marketing-nav': {
+            template:
+              '<nav class="marketing-nav"><a href="/docs">Docs</a><a href="/pricing">Pricing</a></nav>'
+          }
         }
       }
     })
@@ -108,10 +101,11 @@ describe('About', () => {
       expect(hero.find('h1').text()).toBe('Realness')
     })
 
-    it('renders documentation link', () => {
-      const doc_link = wrapper.find('header nav a')
-      expect(doc_link.exists()).toBe(true)
-      expect(doc_link.text()).toContain('Docs')
+    it('renders marketing nav with docs and pricing', () => {
+      const nav = wrapper.find('header nav.marketing-nav')
+      expect(nav.exists()).toBe(true)
+      expect(nav.text()).toContain('Docs')
+      expect(nav.text()).toContain('Pricing')
     })
 
     it('renders articles for different sections', () => {
@@ -148,13 +142,6 @@ describe('About', () => {
       expect(mock_for_person).toHaveBeenCalledWith({
         id: import.meta.env.VITE_ADMIN_ID || '/+14151234356'
       })
-    })
-
-    it('shows documentation when link is clicked', async () => {
-      const doc_link = wrapper.find('header nav a')
-      expect(doc_link.exists()).toBe(true)
-      await doc_link.trigger('click')
-      expect(mock_documentation.value.show).toHaveBeenCalled()
     })
 
     it('renders posters when available', async () => {

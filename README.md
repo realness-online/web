@@ -50,6 +50,8 @@ Realness provides **full functionality without any tracking**, working solely on
 
 ## Install
 
+Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `vp`. The npm scripts proxy to it, so `npm run dev`, `npm run build`, and `npm test` all work - you can also call `vp` directly.
+
 ### Clone and install
 
 ```bash
@@ -114,19 +116,21 @@ Once your project is created you will want to enable phone authentication and fi
 
 ### Deploy to firebase
 
-Install firebase-tools, login, and deploy
+`npm run deploy` builds the WebAssembly tracer, the workers, and the app, then deploys hosting and storage. Building the tracer needs [Rust](https://rustup.rs) and [wasm-pack](https://rustwasm.github.io/wasm-pack/).
+
+Install the Firebase CLI, log in, and deploy:
 
 ```bash
-yarn global add firebase-tools
+npm install -g firebase-tools
 
 firebase login
 
-yarn deploy
+npm run deploy
 ```
 
 # DONE
 
-Visit [https://${project-name}.web.app](https://${name}.web.app). You can sign in and invite your friends
+Visit `https://${project-name}.web.app`. You can sign in and invite your friends
 
 ## Contributing
 

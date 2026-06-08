@@ -1,16 +1,14 @@
 <script setup>
-  import { ref, nextTick, watch, onMounted as mounted } from 'vue'
-  import { marked } from 'marked'
-  import { gfmHeadingId } from 'marked-gfm-heading-id'
-  import DOMPurify from 'dompurify'
-  import documentation_md from '@/content/documentation.md?raw'
-
-  marked.use(gfmHeadingId())
+  import { ref, nextTick, watch } from 'vue'
+  import {
+    documentation_html,
+    documentation_toc
+  } from '@/utils/documentation-content'
 
   const dialog = ref(null)
   const content_ref = ref(null)
-  const toc_items = ref([])
-  const rendered_content = ref('')
+  const toc_items = ref(documentation_toc())
+  const rendered_content = ref(documentation_html())
 
   const show_modal = async () => {
     if (!dialog.value) return
@@ -32,42 +30,10 @@
     if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const generate_toc_from_markdown = content => {
-    const lines = content.split('\n')
-    const toc = []
-
-    lines.forEach(line => {
-      const heading_match = line.match(/^(#{2,6})\s+(.+)$/)
-      if (heading_match) {
-        const level = heading_match[1].length
-        const title = heading_match[2].trim()
-        const title_str = String(title || '')
-        const id = title_str
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '')
-
-        toc.push({ id, title: title_str, level })
-      }
-    })
-
-    return toc
-  }
-
-  const apply_markdown = content => {
-    toc_items.value = generate_toc_from_markdown(content)
-    const rendered = marked.parse(content)
-    rendered_content.value = DOMPurify.sanitize(rendered)
-  }
-
   watch(rendered_content, html => {
     if (content_ref.value && html && dialog.value?.open)
       content_ref.value.innerHTML = html
   })
-
-  mounted(() => apply_markdown(documentation_md))
 
   defineExpose({ show: show_modal })
 </script>
@@ -119,7 +85,6 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      background-color: var(--black-background);
       &:focus {
         outline: none;
       }
@@ -134,7 +99,7 @@
         & > a {
           cursor: pointer;
           & > svg.remove {
-            fill: var(--white-text);
+            fill: var(--text);
             width: base-line;
             height: base-line;
             &:hover {
@@ -228,7 +193,7 @@
         }
 
         & > code {
-          background: var(--black-background);
+          background: var(--code-surface);
           padding: round((base-line / 4), 2) round((base-line / 2), 2);
           border-radius: round((base-line / 4), 2);
           font-family: 'Monaco', 'Menlo', monospace;
@@ -236,7 +201,7 @@
         }
 
         & > pre {
-          background: var(--black-background);
+          background: var(--code-surface);
           padding: base-line;
           border-radius: round((base-line / 4), 2);
           overflow-x: auto;

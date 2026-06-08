@@ -72,6 +72,13 @@ describe('export_poster_glb', () => {
     expect(anchor.download).toBe('test-poster.glb')
     expect(anchor.click).toHaveBeenCalled()
 
+    const mosaic_mesh = export_scene.getObjectByName('mosaic').children[0]
+    expect(mosaic_mesh.material.map).toBeInstanceOf(THREE.DataTexture)
+    expect(mosaic_mesh.material.map.colorSpace).toBe(THREE.SRGBColorSpace)
+    expect(mosaic_mesh.material.vertexColors).toBe(false)
+    expect(mosaic_mesh.geometry.attributes.color).toBeUndefined()
+    expect(mosaic_mesh.geometry.attributes.uv).toBeDefined()
+
     create_spy.mockRestore()
   })
 })

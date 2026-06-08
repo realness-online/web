@@ -287,6 +287,78 @@ vi.mock('@/utils/preference', async () => {
     }
   })
 
+  const enable_shadow_layers = () => {
+    bold_ref.value = true
+    medium_ref.value = true
+    regular_ref.value = true
+    light_ref.value = true
+    background_ref.value = true
+  }
+
+  const enable_geology_layers = () => {
+    boulders_ref.value = true
+    rocks_ref.value = true
+    gravel_ref.value = true
+    sand_ref.value = true
+    sediment_ref.value = true
+  }
+
+  const toggle_shadow = () => {
+    const new_state = !shadow_ref.value
+    shadow_ref.value = new_state
+    if (new_state) enable_shadow_layers()
+  }
+
+  const toggle_mosaic = () => {
+    const new_state = !mosaic_ref.value
+    mosaic_ref.value = new_state
+    if (new_state) enable_geology_layers()
+  }
+
+  const set_drama = enabled => {
+    drama_ref.value = enabled
+    drama_back_ref.value = enabled
+    drama_front_ref.value = enabled
+  }
+
+  const toggle_drama = () => set_drama(!drama_ref.value)
+
+  const sync_drama_master = () => {
+    drama_ref.value = drama_back_ref.value || drama_front_ref.value
+  }
+
+  const cycle_drama = () => {
+    if (!drama_back_ref.value && !drama_front_ref.value) {
+      drama_back_ref.value = true
+      drama_front_ref.value = false
+    } else if (drama_back_ref.value && !drama_front_ref.value) {
+      drama_back_ref.value = false
+      drama_front_ref.value = true
+    } else if (!drama_back_ref.value && drama_front_ref.value) {
+      drama_back_ref.value = true
+      drama_front_ref.value = true
+    } else {
+      drama_back_ref.value = false
+      drama_front_ref.value = false
+    }
+    sync_drama_master()
+  }
+
+  const animation_speed_ref = ref('normal')
+  const cycle_animation_speed = () => {
+    animation_speed_ref.value = 'fast'
+  }
+
+  const ASPECT_RATIOS = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
+  const cycle_aspect_ratio = reverse => {
+    const current = aspect_ratio_mode_ref.value || 'auto'
+    const current_index = ASPECT_RATIOS.indexOf(current)
+    const next_index = reverse
+      ? (current_index - 1 + ASPECT_RATIOS.length) % ASPECT_RATIOS.length
+      : (current_index + 1) % ASPECT_RATIOS.length
+    aspect_ratio_mode_ref.value = ASPECT_RATIOS[next_index]
+  }
+
   return {
     shadow: shadow_ref,
     stroke: stroke_ref,
@@ -307,13 +379,20 @@ vi.mock('@/utils/preference', async () => {
     animate: animate_ref,
     info: info_ref,
     storytelling: storytelling_ref,
-    animation_speed: ref('normal'),
+    animation_speed: animation_speed_ref,
     grid_overlay: grid_overlay_ref,
     menu: menu_ref,
     aspect_ratio_mode: aspect_ratio_mode_ref,
     slice_alignment: slice_alignment_ref,
     footer_visible: footer_visible_ref,
-    view_3d: view_3d_ref
+    view_3d: view_3d_ref,
+    toggle_shadow,
+    toggle_mosaic,
+    toggle_drama,
+    cycle_drama,
+    cycle_animation_speed,
+    cycle_aspect_ratio,
+    ASPECT_RATIOS
   }
 })
 
@@ -661,8 +740,7 @@ describe('App.vue', () => {
         expect(handler).toBeDefined()
         handler()
         expect(mock_aspect_ratio_mode.value).toBe('1/1')
-        expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
-          '--poster-aspect-ratio',
+        expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
           '1/1'
         )
       })
@@ -713,13 +791,11 @@ describe('App.vue', () => {
   })
 
   describe('Watch aspect_ratio_mode', () => {
-    it('updates CSS variable when aspect_ratio_mode changes', async () => {
-      vi.clearAllMocks()
+    it('updates data-aspect-ratio when aspect_ratio_mode changes', async () => {
       mock_aspect_ratio_mode.value = '16/9'
       await wrapper.vm.$nextTick()
       await wrapper.vm.$nextTick()
-      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
-        '--poster-aspect-ratio',
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
         '16/9'
       )
     })
@@ -727,8 +803,7 @@ describe('App.vue', () => {
     it('sets to auto when aspect_ratio_mode is auto', async () => {
       mock_aspect_ratio_mode.value = 'auto'
       await wrapper.vm.$nextTick()
-      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
-        '--poster-aspect-ratio',
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
         'auto'
       )
     })
@@ -876,7 +951,7 @@ describe('App.vue', () => {
       new_wrapper.unmount()
     })
 
-    it('sets aspect ratio CSS variable on mount', async () => {
+    it('sets data-aspect-ratio on mount', async () => {
       mock_aspect_ratio_mode.value = '16/9'
       const new_wrapper = shallowMount(App, {
         shallow: true,
@@ -896,8 +971,7 @@ describe('App.vue', () => {
         }
       })
       await new_wrapper.vm.$nextTick()
-      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith(
-        '--poster-aspect-ratio',
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
         '16/9'
       )
       new_wrapper.unmount()

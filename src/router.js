@@ -6,8 +6,11 @@ const routes = [
   { path: '/relations', component: () => import('@/views/Relations') },
   { path: '/phonebook', component: () => import('@/views/PhoneBook') },
   { path: '/about', component: () => import('@/views/About') },
+  { path: '/docs', component: () => import('@/views/Documentation') },
   { path: '/sign-on', component: () => import('@/views/sign-on') },
-  { path: '/sponsor', component: () => import('@/views/Sponsor') },
+  { path: '/pricing', component: () => import('@/views/License') },
+  { path: '/license', redirect: '/pricing' },
+  { path: '/sponsor', redirect: '/pricing' },
   {
     path: '/account',
     component: () => import('@/views/Account'),

@@ -50,9 +50,9 @@
     <meta name="application-name" content="Realness" />
     <meta name="apple-mobile-web-app-title" content="Realness" />
     <meta name="darkreader-lock" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/192-ios.png?v=6" />
-    <link rel="apple-touch-icon" sizes="192x192" href="/192-ios.png?v=6" />
-    <link rel="apple-touch-icon" href="/192-ios.png?v=6" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/192.png?v=2.5.1" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/192.png?v=2.5.1" />
+    <link rel="apple-touch-icon" href="/192.png?v=2.5.1" />
     <link rel="mask-icon" href="/icons.svg" color="#2c2c26" />
     <link rel="icon" type="image/svg+xml" href="/icons.svg" />
     <style>
@@ -64,38 +64,60 @@
         height: 100%;
         margin: 0;
       }
+      /* Crawler / no-JS site links: present in the DOM for SEO, never shown.
+         Visually hidden (not display:none) so crawlers still follow them.
+         Also removed on app mount (see main.js). */
+      nav#site {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     </style>
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
-    <noscript>
-      <h3>Realness doesn't work.</h3>
-      <p>Please enable javascript to continue.</p>
-    </noscript>
-    <style media="screen">
-      @media (prefers-color-scheme: dark) {
-        html {
-          background-color: rgb(44, 44, 38);
-          color: rgba(215, 214, 203, 0.95);
+    <nav id="site" aria-label="Site">
+      <a href="/">Realness</a>
+      <a href="/about">About</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+    </nav>
+    <div id="app">
+      <noscript>
+        <h3>Realness doesn't work.</h3>
+        <p>Please enable javascript to continue.</p>
+      </noscript>
+      <style media="screen">
+        @media (prefers-color-scheme: dark) {
+          html {
+            background-color: rgb(44, 44, 38);
+            color: rgba(215, 214, 203, 0.95);
+          }
         }
-      }
-    </style>
-    <svg
-      class="working"
-      viewBox="0 0 9 4"
-      style="
-        width: 9rem;
-        height: 4rem;
-        display: block;
-        margin: auto;
-        margin-top: 12rem;
-      "
-      fill-opacity="0.73"
-      fill="#EC364C">
-      <rect x="1" y="1.05" width="2" height="2" rx="1"></rect>
-      <rect x="3.5" y="1.05" width="2" height="2" rx="1"></rect>
-      <rect x="6" y="1.05" width="2" height="2" rx="1"></rect>
-    </svg>
+      </style>
+      <svg
+        class="working"
+        viewBox="0 0 9 4"
+        style="
+          width: 9rem;
+          height: 4rem;
+          display: block;
+          margin: auto;
+          margin-top: 12rem;
+        "
+        fill-opacity="0.73"
+        fill="#EC364C">
+        <rect x="1" y="1.05" width="2" height="2" rx="1"></rect>
+        <rect x="3.5" y="1.05" width="2" height="2" rx="1"></rect>
+        <rect x="6" y="1.05" width="2" height="2" rx="1"></rect>
+      </svg>
+    </div>
   </body>
   <script>
     if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent)) {

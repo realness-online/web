@@ -289,7 +289,13 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4000000
       },
       minify: true,
-      includeAssets: ['vector.worker.js', 'fonts/*.woff2', 'icons.svg'],
+      includeAssets: [
+        'vector.worker.js',
+        'fonts/*.woff2',
+        'icons.svg',
+        'brands/*.svg',
+        'brands/*.png'
+      ],
       manifest: {
         display: 'standalone',
         lang: 'en',
@@ -306,25 +312,13 @@ export default defineConfig({
             src: `192.png?v=${icon_version}`,
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           },
           {
             src: `512.png?v=${icon_version}`,
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: `192-m.png?v=${icon_version}`,
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable'
-          },
-          {
-            src: `512-m.png?v=${icon_version}`,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'any maskable'
           }
         ]
       }

@@ -15,16 +15,8 @@
 
 <style>
   div.working-border {
-    --ring: clamp(
-      calc(var(--base-line) * 1.35),
-      calc(0.2rem + 1.05vmin),
-      min(2.125rem, 1.65vmin)
-    );
-    --ring-corner: clamp(
-      calc(var(--base-line) * 2.25),
-      calc(var(--ring) * 1.35),
-      min(3.5rem, 2.5vmin)
-    );
+    --ring: clamp(0.26rem, calc(0.18rem + 0.95vmin), min(0.58rem, 1.5vmin));
+    --ring-corner: clamp(0.5rem, calc(var(--ring) * 1.35), min(1rem, 2.5vmin));
     --sweep-gap-start: 275deg;
     --sweep-peak: 290deg;
     --sweep-gap-end: 304deg;
@@ -85,9 +77,11 @@
 
   @media (min-width: 1024px) and (pointer: fine) {
     div.working-border {
-      --sweep-gap-start: 282deg;
-      --sweep-peak: 292deg;
-      --sweep-gap-end: 300deg;
+      --ring: clamp(0.24rem, calc(0.12rem + 0.65vmin), 0.42rem);
+      --ring-corner: clamp(0.4rem, calc(var(--ring) * 1.35), 0.8rem);
+      --sweep-gap-start: 285deg;
+      --sweep-peak: 290deg;
+      --sweep-gap-end: 295deg;
     }
 
     div.working-border__spin {
