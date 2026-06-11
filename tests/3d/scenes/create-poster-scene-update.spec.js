@@ -85,8 +85,8 @@ const make_runtime = (overrides = {}) => {
     get_breathing_speed: () => 1,
     get_tilt_amount: () => 0.5,
     get_gyro_amount: () => 1,
-    get_haze_enabled: () => true,
-    get_haze_density: () => 0.2,
+    get_atmosphere_enabled: () => true,
+    get_atmosphere_density: () => 0.2,
     get_stroke_visible: () => true,
     stroke_materials: [],
     appliers: { apply_stroke_opacity: vi.fn() },
@@ -241,8 +241,8 @@ describe('create_poster_scene_update', () => {
     expect(mosaic.position.x).not.toBe(x0)
   })
 
-  it('sets fog density to zero when haze is disabled', () => {
-    const runtime = make_runtime({ get_haze_enabled: () => false })
+  it('sets fog density to zero when atmosphere is disabled', () => {
+    const runtime = make_runtime({ get_atmosphere_enabled: () => false })
     update = create_poster_scene_update(runtime)
     runtime.tilt.x = 1
     runtime.tilt.y = 1

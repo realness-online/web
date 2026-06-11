@@ -126,7 +126,7 @@ const update_layer_parallax = ({
  * @param {boolean} cinematic
  * @param {boolean} pan_navigating
  */
-const update_tilt_and_haze = (
+const update_tilt_and_atmosphere = (
   runtime,
   frame_state,
   input_state,
@@ -144,8 +144,8 @@ const update_tilt_and_haze = (
     get_breathing_speed,
     get_tilt_amount,
     get_gyro_amount,
-    get_haze_enabled,
-    get_haze_density,
+    get_atmosphere_enabled,
+    get_atmosphere_density,
     pan,
     zoom,
     tilt
@@ -208,12 +208,12 @@ const update_tilt_and_haze = (
     1 + breath_sin * breathing_amount
   )
 
-  if (get_haze_enabled()) {
+  if (get_atmosphere_enabled()) {
     const reach =
       tilt_amount > 0
         ? Math.min(1, Math.hypot(tilt.x, tilt.y) / tilt_amount)
         : 0
-    scene.fog.density = get_haze_density() * reach
+    scene.fog.density = get_atmosphere_density() * reach
   } else scene.fog.density = 0
 }
 
@@ -349,7 +349,7 @@ export const create_poster_scene_update = runtime => {
     root.position.x = pan.current.x
     root.position.y = pan.current.y
 
-    update_tilt_and_haze(
+    update_tilt_and_atmosphere(
       runtime,
       frame_state,
       input_state,

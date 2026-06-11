@@ -8,8 +8,8 @@ import {
   DEFAULT_GROUP_GAP,
   DEFAULT_TILT_AMOUNT,
   DEFAULT_GYRO_AMOUNT,
-  DEFAULT_HAZE_COLOR,
-  DEFAULT_HAZE_DENSITY,
+  DEFAULT_ATMOSPHERE_COLOR,
+  DEFAULT_ATMOSPHERE_DENSITY,
   DEFAULT_DRIFT_AMOUNT,
   DEFAULT_DRIFT_SPEED,
   DEFAULT_BREATHING_AMOUNT,
@@ -83,9 +83,15 @@ export const shadow_opacity = storage('shadow_opacity', DEFAULT_SHADOW_OPACITY)
 export const group_gap = storage('group_gap', DEFAULT_GROUP_GAP)
 export const tilt_amount = storage('tilt_amount', DEFAULT_TILT_AMOUNT)
 export const gyro_amount = storage('gyro_amount', DEFAULT_GYRO_AMOUNT)
-export const haze_enabled = storage('haze_enabled', true)
-export const haze_color = storage('haze_color', DEFAULT_HAZE_COLOR)
-export const haze_density = storage('haze_density', DEFAULT_HAZE_DENSITY)
+export const atmosphere_enabled = storage('atmosphere_enabled', true)
+export const atmosphere_color = storage(
+  'atmosphere_color',
+  DEFAULT_ATMOSPHERE_COLOR
+)
+export const atmosphere_density = storage(
+  'atmosphere_density',
+  DEFAULT_ATMOSPHERE_DENSITY
+)
 export const drift_amount = storage('drift_amount', DEFAULT_DRIFT_AMOUNT)
 export const drift_speed = storage('drift_speed', DEFAULT_DRIFT_SPEED)
 export const breathing_amount = storage(

@@ -194,6 +194,14 @@
             color: var(--red);
           }
         }
+
+        svg {
+          width: 1em;
+          height: 1em;
+          vertical-align: text-bottom;
+          fill: currentColor;
+          margin-right: 0.25em;
+        }
       }
     }
   }

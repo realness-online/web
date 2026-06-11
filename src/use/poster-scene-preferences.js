@@ -22,9 +22,9 @@ import {
   group_gap,
   tilt_amount,
   gyro_amount,
-  haze_enabled,
-  haze_color,
-  haze_density,
+  atmosphere_enabled,
+  atmosphere_color,
+  atmosphere_density,
   drift_amount,
   drift_speed,
   breathing_amount,
@@ -45,9 +45,9 @@ export const sync_poster_scene_preferences = scene => {
   scene.set_group_gap(group_gap.value)
   scene.set_tilt_amount(tilt_amount.value)
   scene.set_gyro_amount(gyro_amount.value)
-  scene.set_haze_enabled(haze_enabled.value)
-  scene.set_haze_color(haze_color.value)
-  scene.set_haze_density(haze_density.value)
+  scene.set_atmosphere_enabled(atmosphere_enabled.value)
+  scene.set_atmosphere_color(atmosphere_color.value)
+  scene.set_atmosphere_density(atmosphere_density.value)
   scene.set_mosaic_layer_visible('boulders', boulders.value)
   scene.set_mosaic_layer_visible('rocks', rocks.value)
   scene.set_mosaic_layer_visible('gravel', gravel.value)

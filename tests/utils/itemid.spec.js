@@ -17,6 +17,10 @@ import {
 import { as_archive } from '@/persistence/Directory'
 import { get, set, del } from 'idb-keyval'
 vi.mock('idb-keyval')
+vi.mock('@/utils/upload-processor', () => ({
+  decompress_html: vi.fn(),
+  compress_html: vi.fn()
+}))
 vi.mock('@/utils/serverless', () => ({
   url: vi.fn().mockResolvedValue('https://example.com/file.html.gz'),
   current_user: { value: null },
@@ -730,14 +734,10 @@ describe('@/utils/itemid', () => {
       const { url } = await import('@/utils/serverless')
       url.mockReset()
       url.mockResolvedValue('https://example.com/file.html.gz')
-      vi.mock('@/utils/upload-processor', () => ({
-        decompress_html: vi
-          .fn()
-          .mockResolvedValue(
-            '<address itemid="/+16282281824" itemscope><h3>Test</h3></address>'
-          ),
-        compress_html: vi.fn()
-      }))
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValue(
+        '<address itemid="/+16282281824" itemscope><h3>Test</h3></address>'
+      )
     })
 
     it('returns null when fetch returns non-OK response', async () => {
