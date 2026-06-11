@@ -228,6 +228,14 @@
             color: var(--red);
           }
         }
+
+        svg.inline-icon {
+          width: 1em;
+          height: 1em;
+          vertical-align: text-bottom;
+          fill: currentColor;
+          margin-right: 0.25em;
+        }
       }
     }
   }

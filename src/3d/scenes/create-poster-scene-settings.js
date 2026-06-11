@@ -15,9 +15,9 @@ export const create_poster_scene_settings = (state, appliers) => ({
       group_gap: state.group_gap,
       tilt_amount: state.tilt_amount,
       gyro_amount: state.gyro_amount,
-      haze_enabled: state.haze_enabled,
-      haze_color: state.haze_color,
-      haze_density: state.haze_density,
+      atmosphere_enabled: state.atmosphere_enabled,
+      atmosphere_color: state.atmosphere_color,
+      atmosphere_density: state.atmosphere_density,
       drift_amount: state.drift_amount,
       drift_speed: state.drift_speed,
       breathing_amount: state.breathing_amount,
@@ -72,19 +72,19 @@ export const create_poster_scene_settings = (state, appliers) => ({
     if (state.gyro_amount === value) return
     state.gyro_amount = value
   },
-  set_haze_enabled(value) {
-    if (state.haze_enabled === value) return
-    state.haze_enabled = value
-    appliers.apply_haze()
+  set_atmosphere_enabled(value) {
+    if (state.atmosphere_enabled === value) return
+    state.atmosphere_enabled = value
+    appliers.apply_atmosphere()
   },
-  set_haze_color(value) {
-    if (state.haze_color === value) return
-    state.haze_color = value
-    appliers.apply_haze()
+  set_atmosphere_color(value) {
+    if (state.atmosphere_color === value) return
+    state.atmosphere_color = value
+    appliers.apply_atmosphere()
   },
-  set_haze_density(value) {
-    if (state.haze_density === value) return
-    state.haze_density = value
+  set_atmosphere_density(value) {
+    if (state.atmosphere_density === value) return
+    state.atmosphere_density = value
   },
   set_drift_amount(value) {
     if (state.drift_amount === value) return

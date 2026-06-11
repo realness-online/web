@@ -34,9 +34,9 @@
       group_gap: p.group_gap.value,
       tilt_amount: p.tilt_amount.value,
       gyro_amount: p.gyro_amount.value,
-      haze_enabled: p.haze_enabled.value,
-      haze_color: p.haze_color.value,
-      haze_density: p.haze_density.value,
+      atmosphere_enabled: p.atmosphere_enabled.value,
+      atmosphere_color: p.atmosphere_color.value,
+      atmosphere_density: p.atmosphere_density.value,
       drift_amount: p.drift_amount.value,
       drift_speed: p.drift_speed.value,
       breathing_amount: p.breathing_amount.value,
@@ -53,9 +53,9 @@
       p.group_gap.value = settings.group_gap
       p.tilt_amount.value = settings.tilt_amount
       p.gyro_amount.value = settings.gyro_amount
-      p.haze_enabled.value = settings.haze_enabled
-      p.haze_color.value = settings.haze_color
-      p.haze_density.value = settings.haze_density
+      p.atmosphere_enabled.value = settings.atmosphere_enabled
+      p.atmosphere_color.value = settings.atmosphere_color
+      p.atmosphere_density.value = settings.atmosphere_density
       p.drift_amount.value = settings.drift_amount
       p.drift_speed.value = settings.drift_speed
       p.breathing_amount.value = settings.breathing_amount
@@ -124,15 +124,15 @@
       })
       .on('change', sync)
 
-    const haze_folder = pane.addFolder({ title: 'haze' })
-    haze_folder
-      .addBinding(settings, 'haze_enabled', { label: 'enabled' })
+    const atmosphere_folder = pane.addFolder({ title: 'atmosphere' })
+    atmosphere_folder
+      .addBinding(settings, 'atmosphere_enabled', { label: 'enabled' })
       .on('change', sync)
-    haze_folder
-      .addBinding(settings, 'haze_color', { label: 'color' })
+    atmosphere_folder
+      .addBinding(settings, 'atmosphere_color', { label: 'color' })
       .on('change', sync)
-    haze_folder
-      .addBinding(settings, 'haze_density', {
+    atmosphere_folder
+      .addBinding(settings, 'atmosphere_density', {
         label: 'max',
         min: 0,
         max: 0.5,

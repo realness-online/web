@@ -11,7 +11,7 @@ describe('create_poster_scene_settings', () => {
     apply_shadow_visibility: vi.fn(),
     apply_stroke_visibility: vi.fn(),
     apply_stroke_opacity: vi.fn(),
-    apply_haze: vi.fn()
+    apply_atmosphere: vi.fn()
   })
 
   it('get_settings mirrors state', () => {
@@ -26,9 +26,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 5,
       tilt_amount: 6,
       gyro_amount: 7,
-      haze_enabled: true,
-      haze_color: '#000',
-      haze_density: 8,
+      atmosphere_enabled: true,
+      atmosphere_color: '#000',
+      atmosphere_density: 8,
       drift_amount: 9,
       drift_speed: 10,
       breathing_amount: 11,
@@ -50,9 +50,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 5,
       tilt_amount: 6,
       gyro_amount: 7,
-      haze_enabled: true,
-      haze_color: '#000',
-      haze_density: 8,
+      atmosphere_enabled: true,
+      atmosphere_color: '#000',
+      atmosphere_density: 8,
       drift_amount: 9,
       drift_speed: 10,
       breathing_amount: 11,
@@ -73,9 +73,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,
-      haze_enabled: false,
-      haze_color: '',
-      haze_density: 0,
+      atmosphere_enabled: false,
+      atmosphere_color: '',
+      atmosphere_density: 0,
       drift_amount: 0,
       drift_speed: 0,
       breathing_amount: 0,
@@ -89,7 +89,7 @@ describe('create_poster_scene_settings', () => {
 
     settings.set_mosaic_spread(0.5)
     settings.set_shadow_spread(0.2)
-    settings.set_haze_enabled(true)
+    settings.set_atmosphere_enabled(true)
     settings.set_mosaic_layer_visible('boulders', false)
     settings.set_shadow_layer_visible('bold', false)
     settings.set_stroke_visible(true)
@@ -97,7 +97,7 @@ describe('create_poster_scene_settings', () => {
     expect(state.mosaic_spread).toBe(0.5)
     expect(appliers.apply_mosaic_spread).toHaveBeenCalled()
     expect(appliers.apply_shadow_z).toHaveBeenCalled()
-    expect(appliers.apply_haze).toHaveBeenCalled()
+    expect(appliers.apply_atmosphere).toHaveBeenCalled()
     expect(appliers.apply_mosaic_visibility).toHaveBeenCalled()
     expect(appliers.apply_stroke_visibility).toHaveBeenCalled()
     expect(appliers.apply_stroke_opacity).toHaveBeenCalled()
@@ -117,9 +117,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 3,
       tilt_amount: 4,
       gyro_amount: 5,
-      haze_enabled: true,
-      haze_color: '#fff',
-      haze_density: 6,
+      atmosphere_enabled: true,
+      atmosphere_color: '#fff',
+      atmosphere_density: 6,
       drift_amount: 7,
       drift_speed: 8,
       breathing_amount: 9,
@@ -137,9 +137,9 @@ describe('create_poster_scene_settings', () => {
     settings.set_shadow_visible(true)
     settings.set_stroke_visible(true)
     settings.set_group_gap(3)
-    settings.set_haze_enabled(true)
-    settings.set_haze_color('#fff')
-    settings.set_haze_density(6)
+    settings.set_atmosphere_enabled(true)
+    settings.set_atmosphere_color('#fff')
+    settings.set_atmosphere_density(6)
     settings.set_tilt_amount(4)
     settings.set_gyro_amount(5)
     settings.set_drift_amount(7)
@@ -152,10 +152,10 @@ describe('create_poster_scene_settings', () => {
     expect(appliers.apply_shadow_z).not.toHaveBeenCalled()
     expect(appliers.apply_mosaic_visibility).not.toHaveBeenCalled()
     expect(appliers.apply_shadow_visibility).not.toHaveBeenCalled()
-    expect(appliers.apply_haze).not.toHaveBeenCalled()
+    expect(appliers.apply_atmosphere).not.toHaveBeenCalled()
   })
 
-  it('updates motion and haze setters when values change', () => {
+  it('updates motion and atmosphere setters when values change', () => {
     const state = {
       mosaic_spread: 0,
       mosaic_opacity: 0,
@@ -167,9 +167,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,
-      haze_enabled: false,
-      haze_color: '#000',
-      haze_density: 0,
+      atmosphere_enabled: false,
+      atmosphere_color: '#000',
+      atmosphere_density: 0,
       drift_amount: 0,
       drift_speed: 0,
       breathing_amount: 0,
@@ -183,7 +183,7 @@ describe('create_poster_scene_settings', () => {
 
     settings.set_shadow_visible(true)
     settings.set_group_gap(0.4)
-    settings.set_haze_color('#abc')
+    settings.set_atmosphere_color('#abc')
     settings.set_tilt_amount(0.2)
     settings.set_gyro_amount(0.3)
     settings.set_drift_amount(0.1)
@@ -194,11 +194,11 @@ describe('create_poster_scene_settings', () => {
 
     expect(state.shadow_visible).toBe(true)
     expect(state.group_gap).toBe(0.4)
-    expect(state.haze_color).toBe('#abc')
+    expect(state.atmosphere_color).toBe('#abc')
     expect(state.motion_enabled).toBe(true)
     expect(appliers.apply_shadow_visibility).toHaveBeenCalled()
     expect(appliers.apply_shadow_z).toHaveBeenCalled()
-    expect(appliers.apply_haze).toHaveBeenCalled()
+    expect(appliers.apply_atmosphere).toHaveBeenCalled()
   })
 
   it('set_mosaic_opacity always runs applier even when value unchanged', () => {
@@ -213,9 +213,9 @@ describe('create_poster_scene_settings', () => {
       group_gap: 0,
       tilt_amount: 0,
       gyro_amount: 0,
-      haze_enabled: false,
-      haze_color: '',
-      haze_density: 0,
+      atmosphere_enabled: false,
+      atmosphere_color: '',
+      atmosphere_density: 0,
       drift_amount: 0,
       drift_speed: 0,
       breathing_amount: 0,

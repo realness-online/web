@@ -18,9 +18,9 @@ import {
   INITIAL_DRIFT_SPEED,
   INITIAL_GROUP_GAP,
   INITIAL_GYRO_AMOUNT,
-  INITIAL_HAZE_COLOR,
-  INITIAL_HAZE_DENSITY,
-  INITIAL_HAZE_ENABLED,
+  INITIAL_ATMOSPHERE_COLOR,
+  INITIAL_ATMOSPHERE_DENSITY,
+  INITIAL_ATMOSPHERE_ENABLED,
   INITIAL_MOSAIC_OPACITY,
   INITIAL_MOSAIC_SPREAD,
   INITIAL_MOTION_ENABLED,
@@ -115,8 +115,8 @@ const create_poster_scene_appliers = ({
         entry.material.opacity =
           entry.base_opacity * (state.stroke_visible ? 1 : 0)
   },
-  apply_haze() {
-    fog.color.set(state.haze_color)
+  apply_atmosphere() {
+    fog.color.set(state.atmosphere_color)
   }
 })
 
@@ -212,7 +212,7 @@ const create_poster_scene_raycast = pointer => {
 export const create_poster_scene = svg_string => {
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(SCENE_BACKGROUND)
-  const fog = new THREE.FogExp2(INITIAL_HAZE_COLOR, 0)
+  const fog = new THREE.FogExp2(INITIAL_ATMOSPHERE_COLOR, 0)
   scene.fog = fog
 
   add_poster_scene_lights(scene)
@@ -257,9 +257,9 @@ export const create_poster_scene = svg_string => {
     group_gap: INITIAL_GROUP_GAP,
     tilt_amount: INITIAL_TILT_AMOUNT,
     gyro_amount: INITIAL_GYRO_AMOUNT,
-    haze_enabled: INITIAL_HAZE_ENABLED,
-    haze_color: INITIAL_HAZE_COLOR,
-    haze_density: INITIAL_HAZE_DENSITY,
+    atmosphere_enabled: INITIAL_ATMOSPHERE_ENABLED,
+    atmosphere_color: INITIAL_ATMOSPHERE_COLOR,
+    atmosphere_density: INITIAL_ATMOSPHERE_DENSITY,
     drift_amount: INITIAL_DRIFT_AMOUNT,
     drift_speed: INITIAL_DRIFT_SPEED,
     breathing_amount: INITIAL_BREATHING_AMOUNT,
@@ -292,7 +292,7 @@ export const create_poster_scene = svg_string => {
   appliers.apply_mosaic_spread()
   appliers.apply_mosaic_opacity()
   appliers.apply_mosaic_visibility()
-  appliers.apply_haze()
+  appliers.apply_atmosphere()
 
   const { shadow_texture_promises, stroke_texture_promises } =
     load_poster_texture_layers({
@@ -341,8 +341,8 @@ export const create_poster_scene = svg_string => {
     get_breathing_speed: () => state.breathing_speed,
     get_tilt_amount: () => state.tilt_amount,
     get_gyro_amount: () => state.gyro_amount,
-    get_haze_enabled: () => state.haze_enabled,
-    get_haze_density: () => state.haze_density,
+    get_atmosphere_enabled: () => state.atmosphere_enabled,
+    get_atmosphere_density: () => state.atmosphere_density,
     get_stroke_visible: () => state.stroke_visible,
     stroke_materials,
     appliers,

@@ -41,9 +41,9 @@
  * @property {(value: number) => void} set_group_gap
  * @property {(value: number) => void} set_tilt_amount
  * @property {(value: number) => void} set_gyro_amount
- * @property {(value: boolean) => void} set_haze_enabled
- * @property {(value: string) => void} set_haze_color
- * @property {(value: number) => void} set_haze_density
+ * @property {(value: boolean) => void} set_atmosphere_enabled
+ * @property {(value: string) => void} set_atmosphere_color
+ * @property {(value: number) => void} set_atmosphere_density
  * @property {(value: number) => void} set_drift_amount
  * @property {(value: number) => void} set_drift_speed
  * @property {(value: number) => void} set_breathing_amount
