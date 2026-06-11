@@ -226,6 +226,8 @@ export const use_posters = () => {
   const set_working = inject('set_working')
   const posters = ref(/** @type {Item[]} */ ([]))
   const authors = ref(/** @type {Relation[]} */ ([]))
+  /** @type {Set<string>} */
+  const loading_archives = new Set()
 
   /**
    * @param {PersonQuery} query
@@ -237,6 +239,10 @@ export const use_posters = () => {
         /** @type {Id} */ (`${query.id}/posters`)
       )
       if (!directory) return
+      console.info(
+        `[posters] index for ${query.id}: ${directory.items.length} posters, ${directory.archive?.length ?? 0} archive pages`,
+        { items: directory.items, archive: directory.archive }
+      )
       directory.items.forEach(created_at => {
         const poster_id = `${query.id}/posters/${created_at}`
         if (!posters.value.find(p => p.id === poster_id))
@@ -246,8 +252,7 @@ export const use_posters = () => {
           })
       })
       const existing_author = authors.value.find(a => a.id === query.id)
-      if (existing_author) existing_author.viewed = ['index']
-      else
+      if (!existing_author)
         authors.value.push({
           id: query.id,
           type: 'person',
@@ -255,6 +260,9 @@ export const use_posters = () => {
           viewed: ['index'],
           visited: null
         })
+      else if (!existing_author.viewed.includes('index'))
+        existing_author.viewed.unshift('index')
+
       posters.value.sort(recent_item_first)
     } finally {
       if (set_working) set_working(false)
@@ -280,19 +288,54 @@ export const use_posters = () => {
     const author = authors.value.find(relation => relation.id === author_id)
     if (!author) return
 
-    const next_archive = await get_next_unviewed_archive(
-      author_id,
-      author.viewed
+    console.info(
+      `[posters] oldest poster shown for ${author_id}: ${poster.id}`,
+      { viewed: [...author.viewed], total_loaded: author_posters.length }
     )
-    if (!next_archive) return
 
-    const new_posters = await load_archive_posters(
-      author_id,
-      /** @type {number} */ (Number(next_archive))
-    )
-    posters.value.push(.../** @type {Item[]} */ (new_posters))
-    posters.value.sort(recent_item_first)
-    author.viewed.push(next_archive)
+    if (loading_archives.has(author_id)) {
+      console.info(
+        `[posters] guard: archive load already in flight for ${author_id}, skipping`
+      )
+      return
+    }
+    loading_archives.add(author_id)
+    try {
+      const next_archive = await get_next_unviewed_archive(
+        author_id,
+        author.viewed
+      )
+      if (!next_archive) {
+        console.info(
+          `[posters] no more archives for ${author_id} — all pages loaded`
+        )
+        return
+      }
+
+      const new_posters = await load_archive_posters(
+        author_id,
+        /** @type {number} */ (Number(next_archive))
+      )
+      const existing_ids = new Set(posters.value.map(p => p.id))
+      const dupes = new_posters.filter(p => existing_ids.has(p.id))
+      const unique_new = /** @type {Item[]} */ (
+        new_posters.filter(p => !existing_ids.has(p.id))
+      )
+      if (dupes.length)
+        console.warn(
+          `[posters] DUPES in archive ${next_archive} for ${author_id}: ${dupes.length} already in posters.value`,
+          dupes.map(p => p.id)
+        )
+      console.info(
+        `[posters] loaded archive ${next_archive} for ${author_id}: ${unique_new.length} unique posters`,
+        { total_after: author_posters.length + unique_new.length }
+      )
+      posters.value.push(...unique_new)
+      posters.value.sort(recent_item_first)
+      author.viewed.push(next_archive)
+    } finally {
+      loading_archives.delete(author_id)
+    }
   }
 
   return {
@@ -320,7 +363,37 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
   const unviewed = directory.archive.filter(
     archive => !viewed.includes(String(archive))
   )
-  return String(unviewed.pop() || '') || null
+  const cached_result = String(unviewed.pop() || '') || null
+  if (cached_result) return cached_result
+
+  // Cached archive list exhausted — refresh from network
+  console.info(
+    `[posters] cached archives exhausted for ${author_id}, fetching fresh list`
+  )
+  try {
+    const { load_directory_from_network } =
+      await import('@/persistence/Directory')
+    const fresh = await load_directory_from_network(
+      /** @type {Id} */ (`${author_id}/posters`)
+    )
+    if (!fresh?.archive || !Array.isArray(fresh.archive)) return null
+    const still_unviewed = fresh.archive.filter(
+      archive => !viewed.includes(String(archive))
+    )
+    const result = String(still_unviewed.pop() || '') || null
+    console.info(
+      `[posters] network refresh ${result ? `found: ${result}` : 'exhausted'}`,
+      {
+        total_archives: fresh.archive.length,
+        viewed: viewed.length,
+        still_unviewed: still_unviewed.length
+      }
+    )
+    return result
+  } catch (e) {
+    console.warn(`[posters] network refresh failed for ${author_id}:`, e)
+    return null
+  }
 }
 
 /**
@@ -335,7 +408,9 @@ const load_archive_posters = async (author_id, archive_id) => {
   if (!archive) return []
   return /** @type {Poster[]} */ (
     archive.items.map(created_at => ({
-      id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
+      id: /** @type {Id} */ (
+        `${author_id}/posters/${archive_id}/${created_at}`
+      ),
       type: 'posters',
       background: '',
       light: '',

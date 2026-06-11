@@ -2,7 +2,8 @@
 /** @typedef {import('@/types').Id} Id */
 
 import { computed, inject, ref, watchEffect as watch } from 'vue'
-import { as_query_id, as_fragment_id, load, as_layer_id } from '@/utils/itemid'
+import { as_query_id, as_fragment_id, load } from '@/utils/itemid'
+import { load_shadow_into_vector } from '@/utils/poster-layers'
 import { use as use_poster } from '@/use/poster'
 import { background, light, regular, medium, bold } from '@/utils/preference'
 
@@ -38,27 +39,15 @@ export const use = () => {
 
   watch(() => {
     const id = vector_id.value
-    if (id && !loaded_vector.value && !active_vector.value?.regular) {
-      const pattern_id = as_layer_id(id, 'shadows')
-      Promise.all([load(id), load(pattern_id)]).then(([poster, pattern]) => {
-        if (poster) {
-          const poster_with_pattern = /** @type {Poster} */ (
-            /** @type {unknown} */ (poster)
-          )
-          if (pattern) {
-            const pattern_data = /** @type {Poster} */ (
-              /** @type {unknown} */ (pattern)
-            )
-            poster_with_pattern.light = pattern_data.light
-            poster_with_pattern.regular = pattern_data.regular
-            poster_with_pattern.medium = pattern_data.medium
-            poster_with_pattern.bold = pattern_data.bold
-            poster_with_pattern.background = pattern_data.background
-          }
-          loaded_vector.value = poster_with_pattern
-        }
+    if (id && !loaded_vector.value && !active_vector.value?.regular)
+      load(id).then(async poster => {
+        if (!poster) return
+        const poster_with_shadows = await load_shadow_into_vector(
+          /** @type {Poster} */ (poster),
+          /** @type {import('@/types').Id} */ (id)
+        )
+        loaded_vector.value = poster_with_shadows
       })
-    }
   })
 
   const final_vector = computed(() => {

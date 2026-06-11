@@ -14,16 +14,15 @@
     as_author,
     as_created_at,
     load_from_cache,
-    load,
-    as_layer_id
+    load
   } from '@/utils/itemid'
   import { as_time } from '@/utils/date'
-  import { get_item } from '@/utils/item'
   import { get } from 'idb-keyval'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
   import { use_mask_pen } from '@/use/mask-pen'
   import { load_cutout_flags } from '@/utils/geology'
+  import { load_shadow_into_vector } from '@/utils/poster-layers'
   import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
   import {
     poster_dom_id,
@@ -332,32 +331,15 @@
     cutouts_loaded.value = false
     vector.value = shown_vector
 
-    if (!shown_vector.regular) {
-      const shadow_id = as_layer_id(/** @type {Id} */ (props.itemid), 'shadows')
-      let html_string = await get(shadow_id)
-      let pattern = null
+    if (!shown_vector.regular)
       try {
-        if (!html_string) {
-          const { item, html } = await load_from_cache(shadow_id)
-          if (html) html_string = html
-          if (item) pattern = item
-        }
-        if (!pattern && html_string) pattern = get_item(html_string, shadow_id)
-
-        if (pattern) {
-          const pattern_data = /** @type {Poster} */ (
-            /** @type {unknown} */ (pattern)
-          )
-          vector.value.light = pattern_data.light
-          vector.value.regular = pattern_data.regular
-          vector.value.medium = pattern_data.medium
-          vector.value.bold = pattern_data.bold
-          vector.value.background = pattern_data.background
-        }
+        vector.value = await load_shadow_into_vector(
+          /** @type {Poster} */ (vector.value),
+          /** @type {Id} */ (props.itemid)
+        )
       } catch {
         // Shadows failed to load; continue with degraded display
       }
-    }
 
     if (vector.value && vector.value.regular) {
       await tick()

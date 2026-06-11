@@ -189,9 +189,16 @@
         day_name,
         /** @type {unknown[]} */ (new_days.get(day_name))
       )
+    let max_slots = 0
+    for (const day of new_days.values()) max_slots += day.length
     days.value = new_days
     if (!props.paginate) return
-    visible_slot_count.value = viewport_slot_batch.value
+    const current = visible_slot_count.value
+    const batch = viewport_slot_batch.value
+    if (max_slots > current)
+      visible_slot_count.value = Math.min(current + batch, max_slots)
+    else
+      visible_slot_count.value = Math.min(Math.max(current, batch), max_slots)
   }
 
   /**

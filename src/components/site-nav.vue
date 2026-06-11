@@ -3,24 +3,24 @@
 </script>
 
 <template>
-  <nav class="marketing-nav" aria-label="Site">
+  <nav itemscope itemtype="/site-nav" aria-label="Site">
     <logo-as-link />
     <menu>
       <router-link to="/about">About</router-link>
       <router-link to="/docs">Docs</router-link>
       <router-link to="/pricing">Pricing</router-link>
+      <router-link to="/account">Sign in</router-link>
     </menu>
   </nav>
 </template>
 
 <style lang="stylus">
-  nav.marketing-nav {
+  nav[itemtype='/site-nav'] {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: base-line;
-    padding: base-line;
-
+    padding: base-line
     menu {
       display: flex;
       gap: base-line;

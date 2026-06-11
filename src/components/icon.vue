@@ -43,6 +43,20 @@
       <path
         d="M8.88 11.5v-7a.5.5 0 0 0-.5-.5h-.75a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h.75a.5.5 0 0 0 .5-.5Z" />
     </g>
+    <g class="add-satellites">
+      <path
+        class="add-sat add-sat-tl"
+        d="M4.75 3.75h-1.5a.35.35 0 0 0-.35.35v.55a.35.35 0 0 0 .35.35h1.5a.35.35 0 0 0 .35-.35v-.55a.35.35 0 0 0-.35-.35Z" />
+      <path
+        class="add-sat add-sat-tr"
+        d="M12.75 3.75h-1.5a.35.35 0 0 0-.35.35v.55a.35.35 0 0 0 .35.35h1.5a.35.35 0 0 0 .35-.35v-.55a.35.35 0 0 0-.35-.35Z" />
+      <path
+        class="add-sat add-sat-bl"
+        d="M4.75 11.25h-1.5a.35.35 0 0 0-.35.35v.55a.35.35 0 0 0 .35.35h1.5a.35.35 0 0 0 .35-.35v-.55a.35.35 0 0 0-.35-.35Z" />
+      <path
+        class="add-sat add-sat-br"
+        d="M12.75 11.25h-1.5a.35.35 0 0 0-.35.35v.55a.35.35 0 0 0 .35.35h1.5a.35.35 0 0 0 .35-.35v-.55a.35.35 0 0 0-.35-.35Z" />
+    </g>
   </svg>
   <svg v-else :class="name" class="icon"><use :href="icon_location" /></svg>
 </template>
@@ -54,6 +68,7 @@
       transform: scale(0.95);
     }
     &.animation {
+      overflow: visible
       stroke: currentColor
       stroke-width: 2
       paint-order: stroke fill
@@ -66,9 +81,22 @@
         transform-origin: center
       }
     }
+    &.add {
+      overflow: visible
+    }
     &.add .add-plus {
       transform-box: fill-box
       transform-origin: center
     }
+    &.add .add-satellites {
+      opacity: 0
+      transform-box: fill-box
+      transform-origin: center
+      .add-sat {
+        transform-box: fill-box
+        transform-origin: center
+      }
+    }
+
   }
 </style>

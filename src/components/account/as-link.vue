@@ -4,11 +4,7 @@
 
   defineOptions({ name: 'AccountAsLink' })
 
-  /** Signed-in goes to /account; signed-out goes to sign-on. */
-  const target = computed(() => {
-    if (!current_user.value) return '/sign-on'
-    return '/account'
-  })
+  const target = computed(() => (current_user.value ? '/account' : '/sign-on'))
 
   const label = computed(() => {
     if (me.value?.name) return me.value.name

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import {
   balance_orientation,
-  balance_gallery_posters
+  balance_gallery_posters,
+  gallery_counts_for_page_balance
 } from '@/utils/balance-gallery-posters'
 
 vi.mock('@/utils/itemid', () => ({
@@ -12,6 +13,35 @@ vi.mock('@/utils/itemid', () => ({
     html: null
   }))
 }))
+
+describe('gallery_counts_for_page_balance', () => {
+  it('matches counts when featured and pool are even', () => {
+    expect(
+      gallery_counts_for_page_balance(
+        { landscape: 2, portrait: 2 },
+        { landscape: 8, portrait: 5 }
+      )
+    ).toEqual({ landscape: 5, portrait: 5 })
+  })
+
+  it('favors portrait in gallery when featured is landscape-heavy', () => {
+    expect(
+      gallery_counts_for_page_balance(
+        { landscape: 3, portrait: 1 },
+        { landscape: 10, portrait: 3 }
+      )
+    ).toEqual({ landscape: 1, portrait: 3 })
+  })
+
+  it('favors landscape in gallery when featured is portrait-heavy', () => {
+    expect(
+      gallery_counts_for_page_balance(
+        { landscape: 1, portrait: 3 },
+        { landscape: 5, portrait: 3 }
+      )
+    ).toEqual({ landscape: 5, portrait: 3 })
+  })
+})
 
 describe('balance_orientation', () => {
   it('alternates when counts are close', () => {
@@ -48,5 +78,29 @@ describe('balance_gallery_posters', () => {
     const ordered = await balance_gallery_posters(posters)
     expect(ordered.map(p => p.id)).not.toEqual(posters.map(p => p.id))
     expect(ordered[1].id).toBe('/a/posters/tall-1')
+  })
+
+  it('balances page totals against featured posters', async () => {
+    const featured = [
+      { id: '/a/posters/wide-1', type: 'posters' },
+      { id: '/a/posters/wide-2', type: 'posters' },
+      { id: '/a/posters/wide-3', type: 'posters' },
+      { id: '/a/posters/tall-1', type: 'posters' }
+    ]
+    const posters = [
+      { id: '/a/posters/wide-4', type: 'posters' },
+      { id: '/a/posters/wide-5', type: 'posters' },
+      { id: '/a/posters/wide-6', type: 'posters' },
+      { id: '/a/posters/tall-2', type: 'posters' },
+      { id: '/a/posters/tall-3', type: 'posters' },
+      { id: '/a/posters/tall-4', type: 'posters' }
+    ]
+    const ordered = await balance_gallery_posters(posters, { featured })
+
+    const landscape = ordered.filter(p => p.id.includes('wide')).length
+    const portrait = ordered.filter(p => p.id.includes('tall')).length
+    expect(landscape).toBe(1)
+    expect(portrait).toBe(3)
+    expect(landscape + 3).toBe(portrait + 1)
   })
 })

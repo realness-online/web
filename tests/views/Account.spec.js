@@ -32,6 +32,10 @@ vi.mock('@/utils/serverless', () => ({
   sign_off: vi.fn()
 }))
 
+vi.mock('idb-keyval', () => ({
+  keys: vi.fn().mockResolvedValue([])
+}))
+
 vi.mock('@/use/sponsor', () => ({
   use_sponsor: () => ({
     sponsorships: sponsor_state.sponsorships,
