@@ -1,5 +1,5 @@
 <script setup>
-  import MarketingNav from '@/components/marketing-nav'
+  import SiteNav from '@/components/site-nav'
   import {
     documentation_html,
     documentation_toc
@@ -12,7 +12,7 @@
 <template>
   <section id="docs" class="page documentation" lang="en">
     <header>
-      <marketing-nav />
+      <site-nav />
       <h2>Documentation</h2>
     </header>
     <article>
@@ -33,8 +33,6 @@
 <style lang="stylus">
   section.page.documentation {
     margin: 0 auto;
-    padding: base-line;
-
     @media (min-width: pad-begins) {
       max-width: base-line * 52;
     }

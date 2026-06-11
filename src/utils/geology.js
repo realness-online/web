@@ -1,8 +1,15 @@
 /** @typedef {import('@/types').Id} Id */
 
 import { get } from 'idb-keyval'
-import { as_layer_id, load_from_cache } from '@/utils/itemid'
+import { as_layer_id, load_from_cache, as_created_at } from '@/utils/itemid'
 import { geology_layers } from '@/use/poster'
+import {
+  cutout_flags_from_html,
+  is_inline_poster_html
+} from '@/utils/poster-format'
+
+// Last timestamp for old-style (non-split) posters
+const GEOLOGY_DATE = 1767138344991
 
 /**
  * @param {ParentNode} symbol_defs
@@ -45,6 +52,23 @@ export const collect_geology_paths = (symbol_defs, itemid) => {
  * @returns {Promise<Record<string, boolean>>}
  */
 export const load_cutout_flags = async itemid => {
+  const created = as_created_at(itemid)
+  // Old-style posters don't have split geology layers
+  if (created && created <= GEOLOGY_DATE) {
+    console.info(
+      `[geology] Old-style poster found: ${itemid} (created: ${created}, geology_date: ${GEOLOGY_DATE})`
+    )
+    return {}
+  }
+
+  let poster_html = await get(itemid)
+  if (!poster_html) {
+    const { html } = await load_from_cache(itemid)
+    if (html) poster_html = html
+  }
+  if (is_inline_poster_html(poster_html))
+    return cutout_flags_from_html(poster_html, itemid)
+
   /** @type {Record<string, boolean>} */
   const cutouts = {}
   await Promise.all(

@@ -3,9 +3,7 @@
 
 ## Overview
 
-Realness is a camera-first app that turns photos into layered SVG [posters](#posters) and groups them with [statements](#statements) into [thoughts](#thoughts). It all happens on your device. if you want to sync you can sign in [Sign in](#sign-on)
-
-If you want to go further you can create a community with realness.
+Realness is a camera-first app that turns photos into layered SVG [posters](#posters) and groups them with [statements](#statements) into [thoughts](#thoughts). It all happens on your device. [Sign in](#sign-on) if you want to sync across devices.
 
 ### Quick start
 
@@ -40,7 +38,9 @@ Paste an image anywhere to queue a poster. Toggle the action bar with <kbd>M</kb
 
 ## Thoughts
 
-A thought pairs [posters](#posters) with [statements](#statements) in time. You have 12 minutes to keep adding to one after you start it. Text-only thoughts stand bare on the feed; mixed with posters they read a little like poems.
+A thought pairs [posters](#posters) with [statements](#statements) in time. You have 13 minutes to keep adding to one after you start it. Text-only thoughts stand bare on the feed; mixed with posters they read like captions.
+
+Statements written within 13 minutes of a poster attach to it as an overlay caption — you'll see a teal border on the poster when this happens. Those statements don't appear separately in the feed.
 
 ### Posters
 
@@ -91,7 +91,7 @@ Computer vision, not machine learning:
 
 ### Statements
 
-One line of text, edited in the feed and grouped by day. Works offline without sign-in; syncs once you [sign in](#sign-on).
+Text written in the feed, grouped by day. Can be multiple lines. Tap any statement to edit it in place. URLs are written as text — they aren't turned into links. Works offline without sign-in; syncs once you [sign in](#sign-on).
 
 ### Profile
 
@@ -101,7 +101,7 @@ A profile (`/<phone-number>`) shows avatar, posters, and statements by day. Down
 
 ## Sign-on
 
-[Sign in](/sign-on) with your phone number (Firebase Auth) and a display name. You appear in the [phonebook](#phonebook) at that number. Realness is invisible to search engines - no tracking, no advertising. The server handles auth and storage only; data lives on your device.
+[Sign in](/sign-on) with your phone number and a display name. You appear in the [phonebook](#phonebook) at that number. Realness is invisible to search engines — no tracking, no advertising. The server handles auth and storage only; your data lives on your device.
 
 ---
 
@@ -123,7 +123,7 @@ Gear in the action bar or <kbd>,</kbd>. Controls poster look and export.
 - **Shadow** - shadow layers and gradients.
 - **Stroke** - shadow outlines.
 - **Drama** - dynamic lighting.
-- **Export to folder** - sync to disk via File System Access API.
+- **Export to folder** - sync exports to a folder on your device.
 
 With **3D view** on: mosaic and shadow spread/opacity, camera tilt, haze, drift. Desktop also shows live [shortcut](#shortcuts) reference. Stored locally.
 

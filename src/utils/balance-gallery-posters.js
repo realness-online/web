@@ -2,6 +2,47 @@ import { load_from_cache } from '@/utils/itemid'
 import { poster_landscape } from '@/use/poster-aspect'
 
 /**
+ * @param {import('@/types').Item[]} posters
+ * @returns {Promise<{ poster: import('@/types').Item, landscape: boolean }[]>}
+ */
+const tag_poster_orientations = posters =>
+  Promise.all(
+    posters.map(async poster => {
+      const { item } = await load_from_cache(
+        /** @type {import('@/types').Id} */ (poster.id)
+      )
+      const viewbox = /** @type {{viewbox?: string} | null} */ (item)?.viewbox
+      return { poster, landscape: poster_landscape(viewbox) }
+    })
+  )
+
+/**
+ * Pick gallery landscape/portrait counts so featured + gallery totals match.
+ *
+ * @param {{ landscape: number, portrait: number }} featured
+ * @param {{ landscape: number, portrait: number }} pool
+ * @returns {{ landscape: number, portrait: number }}
+ */
+export const gallery_counts_for_page_balance = (featured, pool) => {
+  const diff = featured.portrait - featured.landscape
+  let portrait_count = Math.min(
+    pool.portrait,
+    Math.max(0, pool.landscape - diff)
+  )
+  let landscape_count = Math.min(pool.landscape, portrait_count + diff)
+
+  if (landscape_count < 0) {
+    landscape_count = 0
+    portrait_count = Math.min(pool.portrait, -diff)
+  } else if (landscape_count !== portrait_count + diff) {
+    portrait_count = landscape_count - diff
+    portrait_count = Math.max(0, Math.min(pool.portrait, portrait_count))
+  }
+
+  return { landscape: landscape_count, portrait: portrait_count }
+}
+
+/**
  * Reorder items so landscape and portrait alternate when possible, with the
  * larger group split across the sequence instead of clustered at one end.
  *
@@ -55,22 +96,41 @@ export const balance_orientation = (items, is_landscape) => {
 
 /**
  * @param {import('@/types').Item[]} posters
+ * @param {{ featured?: import('@/types').Item[] }} [options]
  * @returns {Promise<import('@/types').Item[]>}
  */
-export const balance_gallery_posters = async posters => {
-  if (posters.length < 2) return posters
+export const balance_gallery_posters = async (
+  posters,
+  { featured = [] } = {}
+) => {
+  if (!posters.length) return posters
 
-  const tagged = await Promise.all(
-    posters.map(async poster => {
-      const { item } = await load_from_cache(
-        /** @type {import('@/types').Id} */ (poster.id)
-      )
-      const viewbox = /** @type {{viewbox?: string} | null} */ (item)?.viewbox
-      return { poster, landscape: poster_landscape(viewbox) }
-    })
-  )
+  const [featured_tagged, gallery_tagged] = await Promise.all([
+    tag_poster_orientations(featured),
+    tag_poster_orientations(posters)
+  ])
 
-  return balance_orientation(tagged, entry => entry.landscape).map(
+  const featured_counts = {
+    landscape: featured_tagged.filter(entry => entry.landscape).length,
+    portrait: featured_tagged.filter(entry => !entry.landscape).length
+  }
+
+  const landscape_pool = gallery_tagged.filter(entry => entry.landscape)
+  const portrait_pool = gallery_tagged.filter(entry => !entry.landscape)
+
+  const counts = gallery_counts_for_page_balance(featured_counts, {
+    landscape: landscape_pool.length,
+    portrait: portrait_pool.length
+  })
+
+  const selected = [
+    ...landscape_pool.slice(0, counts.landscape),
+    ...portrait_pool.slice(0, counts.portrait)
+  ]
+
+  if (selected.length < 2) return selected.map(entry => entry.poster)
+
+  return balance_orientation(selected, entry => entry.landscape).map(
     entry => entry.poster
   )
 }

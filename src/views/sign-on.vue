@@ -1,6 +1,5 @@
 <script setup>
-  import LogoAsLink from '@/components/logo-as-link'
-  import Icon from '@/components/icon'
+  import SiteNav from '@/components/site-nav'
   import MobileAsForm from '@/components/profile/as-form-mobile'
   import NameAsForm from '@/components/profile/as-form-name'
   import { load, load_from_network } from '@/utils/itemid'
@@ -80,8 +79,7 @@
 <template>
   <section id="sign-on" class="page">
     <header>
-      <logo-as-link />
-      <icon name="nothing" />
+      <site-nav />
     </header>
     <name-as-form v-if="nameless && current_user" @valid="name_valid" />
     <mobile-as-form
@@ -96,6 +94,10 @@
 
 <style lang="stylus">
   section#sign-on.page {
+    & > header
+      display: block
+      padding: 0
+      margin-bottom: base-line
     & > form {
       width: 100%;
     }

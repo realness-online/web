@@ -13,8 +13,6 @@
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
-  import AccountAsLink from '@/components/account/as-link.vue'
-
   import {
     as_created_at,
     load,
@@ -34,6 +32,12 @@
   import { axis_visibility } from '@/utils/intersection'
   import { after_layout } from '@/utils/after-layout'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
+
+  const from_blog = ref(
+    new URLSearchParams(window.location.search).get('from') === 'blog'
+      ? document.referrer || history.state?.back || ''
+      : ''
+  )
 
   const toggle_keyboard = active => {
     posting.value = active ?? !posting.value
@@ -420,8 +424,8 @@
       menu
     }">
     <header>
-      <account-as-link v-if="!posting" />
-      <router-link v-if="!posting" id="about" to="/about" tabindex="-1">
+      <a v-if="from_blog" :href="from_blog">←</a>
+      <router-link id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>
         <span>{{ version_parts[1] }}</span>
@@ -515,13 +519,12 @@
     &.slice > section.processing {
       grid-gap: 0;
     }
-    & > section.as-days figure.poster.selecting-event > svg:not(.background) {
-      opacity: 0.1;
-    }
-    /* Full-bleed posters like profile hero; text stays inset via day header + thoughts */
     & > section.as-days {
       padding-left: 0;
       padding-right: 0;
+      & figure.poster.selecting-event > svg:not(.background) {
+        opacity: 0.1;
+      }
       & [role='feed'] > article > header {
         padding-left: base-line;
         padding-right: base-line;
@@ -532,6 +535,20 @@
       }
       & [role='feed'] > article figure.poster {
         border-radius: 0;
+      }
+      & [role='feed'] > article {
+        @media (prefers-color-scheme: dark) {
+          & > header h4, figure.poster > svg.background {
+            color: blue;
+          }
+        }
+      }
+      & h4 {
+        margin: base-line 0 0 0;
+      }
+      & [role='feed'] > article p[itemprop='statement']:focus {
+        font-weight: bolder;
+        outline: 0;
       }
     }
     &.storytelling {
@@ -547,7 +564,7 @@
     & > header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: base-line;
       color: blue;
       & > h1 {
@@ -557,7 +574,7 @@
         fill: blue;
       }
       & > a#about {
-
+        margin-left: auto;
         font-weight: bold;
         font-size: base-line * 1.44;
         -webkit-user-select: none;
@@ -599,22 +616,6 @@
     }
     & > nav {
       display: none;
-    }
-    & > section.as-days {
-      [role='feed'] > article {
-        @media (prefers-color-scheme: dark) {
-          & > header h4, figure.poster > svg.background {
-            color: blue;
-          }
-        }
-      }
-      h4 {
-        margin: base-line 0 0 0;
-      }
-      [role='feed'] > article p[itemprop='statement']:focus {
-        font-weight: bolder;
-        outline: 0;
-      }
     }
     .working {
       fill: blue;

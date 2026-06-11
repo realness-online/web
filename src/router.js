@@ -1,5 +1,4 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import { current_user } from '@/utils/serverless'
 
 const routes = [
   { path: '/', component: () => import('@/views/Thoughts') },
@@ -7,14 +6,13 @@ const routes = [
   { path: '/phonebook', component: () => import('@/views/PhoneBook') },
   { path: '/about', component: () => import('@/views/About') },
   { path: '/docs', component: () => import('@/views/Documentation') },
-  { path: '/sign-on', component: () => import('@/views/sign-on') },
+  { path: '/sign-on', redirect: '/account' },
   { path: '/pricing', component: () => import('@/views/License') },
   { path: '/license', redirect: '/pricing' },
   { path: '/sponsor', redirect: '/pricing' },
   {
     path: '/account',
-    component: () => import('@/views/Account'),
-    meta: { requires_auth: true }
+    component: () => import('@/views/Account')
   },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]
@@ -25,14 +23,6 @@ const router = createRouter({
     if (savedPosition) return savedPosition
     return { top: 0, left: 0 }
   }
-})
-
-/* Only redirect when auth is definitively signed-out (`null`). When still
-   booting (`undefined`), let the view mount and re-check on its own. */
-router.beforeEach(to => {
-  if (to.meta?.requires_auth && current_user.value === null)
-    return { path: '/sign-on', query: { next: to.fullPath } }
-  return true
 })
 
 export default router

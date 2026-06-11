@@ -22,6 +22,10 @@
       type: Boolean,
       required: false,
       default: false
+    },
+    compact: {
+      type: Boolean,
+      default: false
     }
   })
   const preference = preferences[props.name]
@@ -47,7 +51,7 @@
 </script>
 
 <template>
-  <fieldset class="preference">
+  <fieldset class="preference" :class="{ compact }">
     <div>
       <h4 :class="{ labeled: label }">{{ label || name }}{{ state_text }}</h4>
       <label class="switch">
@@ -70,6 +74,25 @@
 <style lang="stylus">
   fieldset.preference
     margin-bottom: base-line
+    &.compact
+      border: none
+      padding: 0
+      margin-bottom: 0
+      min-width: 0
+      & > div
+        gap: base-line * 0.5
+        align-items: center
+        & > label.switch
+          width: base-line * 2.25
+          height: base-line * 1.25
+          flex-shrink: 0
+          & > input:checked + .slider:before
+            transform: translateX(base-line * 1.05)
+          .slider:before
+            height: base-line
+            width: base-line
+            left: base-line * 0.125
+            bottom: base-line * 0.125
     & > div
       display: flex
       justify-content: space-between
@@ -79,9 +102,12 @@
           text-transform: none
         display: inline-block
         line-height: 1
-        margin: 0 0 base-line 0
         padding: 0
         font-size: normal;
+        margin: 0 0 base-line 0
+        .compact > div > &
+          margin: 0
+          font-size: smaller
       & > label.switch
         position: relative
         display: inline-block

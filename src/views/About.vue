@@ -3,8 +3,10 @@
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
   import CallToAction from '@/components/call-to-action'
-  import MarketingNav from '@/components/marketing-nav'
+  import LogoAsLink from '@/components/logo-as-link'
+  import SiteNav from '@/components/site-nav'
   import { as_author } from '@/utils/itemid'
+  import { balance_gallery_posters } from '@/utils/balance-gallery-posters'
   import { use_posters } from '@/use/poster'
   import {
     onMounted as mounted,
@@ -21,13 +23,18 @@
 
   const ABOUT_FEATURED_POSTER_COUNT = 4
 
-  const gallery_posters = computed(() =>
-    admin_posters.value.slice(ABOUT_FEATURED_POSTER_COUNT)
-  )
+  const gallery_posters = ref([])
+
+  const balance_gallery = async () => {
+    const featured = admin_posters.value.slice(0, ABOUT_FEATURED_POSTER_COUNT)
+    const sliced = admin_posters.value.slice(ABOUT_FEATURED_POSTER_COUNT)
+    gallery_posters.value = await balance_gallery_posters(sliced, { featured })
+  }
 
   /** @type {import('vue').Ref<HTMLElement | null>} */
   const about_el = ref(null)
   const about_ready = ref(false)
+  const about_motion = ref(false)
   /** @type {IntersectionObserver | null} */
   let section_observer = null
   /** @type {ScrollRestoration | null} */
@@ -116,7 +123,7 @@
   }
 
   const observe_sections = () => {
-    about_el.value?.classList.add('about-motion')
+    about_motion.value = true
     // Pre-hide must paint before `.revealed` or enter animations are skipped.
     requestAnimationFrame(() => {
       requestAnimationFrame(connect_section_observer)
@@ -130,6 +137,7 @@
     }
 
     await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
+    await balance_gallery()
     scroll_to_top()
     about_ready.value = true
     await tick()
@@ -150,45 +158,28 @@
     class="page"
     itemscope
     itemtype="/about"
-    :class="{ 'about-ready': about_ready }">
+    :class="{ 'about-motion': about_motion }">
+    <site-nav />
     <header>
-      <marketing-nav />
       <section itemprop="hero">
-        <header>
+        <header :class="{ 'about-ready': about_ready }">
           <h1>Realness</h1>
           <h3>online</h3>
           <h4>Creativity Lives With You</h4>
-
           <p itemprop="workflow-tools">
-            <span>
-              With Realness, you can create expressive vector graphics from your
-              drawings, designs, and photos. It works on your device and
-              integrates with
-            </span>
-            <span itemprop="tool-rotator" aria-label="creative workflow tools">
-              <span>Illustrator</span>
-              <span>Figma</span>
-              <span>Photoshop</span>
-              <span>After Effects</span>
-              <span>Premiere Pro</span>
-              <span>Blender</span>
-              <span>Unreal Engine</span>
-              <span>Unity</span>
-              <span>DaVinci Resolve</span>
-              <span>Final Cut Pro</span>
-              <span>Affinity Designer</span>
-              <span>Affinity Photo</span>
-              <span>Inkscape</span>
-              <span>Procreate</span>
-              <span>Canva</span>
-            </span>
+            With Realness, create expressive vector graphics from your drawings,
+            designs, and photos. It works on your device and integrates with the
+            tools you already use.
           </p>
           <p>
-            Your data lives with you.
-            <a href="#make-a-video">Install</a> Realness on your home screen
+            Start in your browser, or
+            <a href="#make-a-video"
+              >add Realness to your home screen or desktop</a
+            >
+            - works like a native app, straight from the web. Your data lives
+            with you.
           </p>
         </header>
-
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[0]?.id" />
       </section>
     </header>
@@ -197,27 +188,19 @@
       <section>
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[1]?.id" />
         <footer>
-          <h2>We organize <strong>Posters</strong> into thoughts</h2>
           <p>
-            Take a picture from your phone, and Realness creates a vector
-            graphic we call a <strong>Poster</strong>. Posters are organized
-            into Shadow and Mosaic layers that are easy to understand and export
-            elegantly to your tools. A perfect interface between physical and
-            digital drawing
+            There is no line work. Though a poster is ornate, it's still missing
+            your hand. The constraints become a vast landscape for you to
+            explore.
           </p>
           <p>
-            The data is made on the device. You can use all of Realness and only
-            need to sign in to sync devices
+            Storyboards, collage, thumbnails. No AI in the toolchain. Realness
+            is a clean slate for you to start.
           </p>
-          <p>
-            Your Poster is a natural fit for the web. Posters are optimized to
-            be expressive, small, and to run fast. You can extract a color
-            palette, animate a filter or gradient. The individual parts of a
-            Poster are easy to query and feel natural to access and manipulate
-          </p>
+          <p>Everything is made locally. Sign in to sync devices.</p>
           <h4>
-            Animators, Designers, Hand-coders —
-            <strong>Realness</strong> was built for you.
+            Animators, designers, hand-coders - <strong>Realness</strong> was
+            built for you.
           </h4>
         </footer>
       </section>
@@ -229,81 +212,18 @@
         <header>
           <h2>Shared values</h2>
           <p>
-            You can create your own social network with Realness. Use it with
-            your design team as a fun way to play and be creative. While easy to
-            administer, Realness encourages internet literacy. The time and
-            investment you put into a realness of your own helps you understand
-            the power of the internet.
+            Run your own Realness. Hosting yours stays simple - so you can free
+            your data and build community together. One moderator, clear
+            responsibility, built for trust. Use it with your family, union
+            hall, or your
+            <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a> nerdpocalypse
+            users group.
           </p>
           <p>
-            Use it with just your family, union hall, or maybe your
-            <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a>
-            nerdpocalypse users group. Realness sets you up with all the
-            benefits of a serverless web application to advantage intimate
-            useful communities with clear lines of responsibility and
-            communication. There is joy in our care for the maintenance and
-            content on the web.
-          </p>
-          <p>
-            The performance is over. Our social health requires more realness
-            online.
+            Creative joy, community at its own pace. Speak when you have
+            something to say. Check in when something moves you.
           </p>
           <h4>Let's be fun again</h4>
-        </header>
-      </section>
-    </article>
-    <article itemprop="developers">
-      <header><h2>Developers</h2></header>
-      <section>
-        <as-figure v-if="admin_posters.length" :itemid="admin_posters[3]?.id" />
-
-        <header>
-          <h2>HTML is Our Database</h2>
-          <p>
-            Realness is a way and a support system to help you build web
-            applications.
-          </p>
-          <p>
-            It's natural to build web applications with HTML, especially for
-            <i>edge-first</i> apps. Orienting to this has helped Realness take
-            advantage of what's possible on the web today. How you build your
-            app can create opportunities over the monetized client-server model
-            we are used to today.
-          </p>
-          <p>
-            Edge-first is native, fast, more secure, and gives you choices
-            around data storage that don't exist with traditional stacks. With
-            an edge-first approach, you can make a quick and seamless transition
-            from a user experience demo to product development.
-          </p>
-          <p>
-            Edge on the web opens the DOM up as a typing system and object
-            model. There are natural constraints on HTML that support accessible
-            applications.
-          </p>
-          <p>
-            Developers can use Realness to free themselves from SQL and the
-            tyranny of a full-stack mindset. Development roles can be less
-            hierarchical. Products can be fun to build, naturally more in line
-            with our customers' expectations.
-          </p>
-          <p>
-            Build applications faster with less overhead that keeps stakeholders
-            involved. All of it uses only HTML, CSS, and JavaScript.
-          </p>
-          <p>
-            Can a single developer provide a service all can use? Scott Fryxell
-            is the developer behind Realness, and that's what I'm trying to find
-            out.
-          </p>
-          <p>
-            Sign in to Realness, and you can message me directly. Visit the code
-            <a href="https://github.com/realness-online/web" rel="external"
-              >online</a
-            >. I keep a
-            <a href="https://scott-fryxell.github.io/" rel="external">blog</a>
-            about all my feelings and nerd problems. My resume is on there.
-          </p>
         </header>
       </section>
     </article>
@@ -314,55 +234,338 @@
       <ol>
         <li>
           <icon name="finished" />
-          <p>Ready for your workflow</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Work happens and stays on your device</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Posters organized into a Timeline of your thoughts</p>
-        </li>
-
-        <li>
-          <icon name="finished" />
-          <p>Mosaics, shadows, masks, patterns, gradients</p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>Direct support from the development team</p>
+          <p>
+            <strong>Photo to poster</strong> Take a picture or paste from the
+            clipboard. Layered vector art builds on your device.
+          </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            <b class="no">Email</b>, <b class="no">Likes</b>,
-            <b class="no">Links</b>,
-            <b class="no">SEO</b>
+            <strong>Interactive exploration</strong> Every poster is fully live
+            on the canvas. Toggle layers, drama, mosaic, and animation. Pan,
+            zoom, touch the mosaic, or spin it in 3D to discover what it offers
+            - then export what you find.
           </p>
         </li>
         <li>
-          <icon name="finished"></icon>
+          <icon name="finished" />
           <p>
-            <a href="https://github.com/realness-online/web" rel="external">
-              Source Available
-            </a>
+            <strong>Export</strong> SVG, 4K PNG, or layered PSD. What you see on
+            screen is what you download.
           </p>
         </li>
         <li>
-          <icon name="finished"></icon>
-          <p>Sensitive data stays on the device</p>
+          <icon name="finished" />
+          <p>
+            <strong>Keyboard shortcuts</strong> Toggle layers, drama, mosaic,
+            animation, and fullscreen without leaving the canvas.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Mosaics</strong> Transparent windows through your poster,
+            cut from contrast in your photo.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Shadows</strong> Gradient shadows and strokes for depth,
+            outline, and dramatic light.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Gradients</strong> Eighteen color pulls from each image for
+            fills across every layer.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>3D and presentation</strong> Spin a poster in 3D,
+            side-scroll storytelling view, or go fullscreen.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Thought trains</strong> Statements and posters stack for
+            thirteen minutes into one chronological train.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Events and phonebook</strong> See what is coming up and find
+            people you know on Realness.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Offline and sync</strong> Install to your home screen or
+            desktop. Works offline; sync when you sign in.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Not built for growth hacks</strong> <b class="no">Email</b>,
+            <b class="no">Likes</b>, <b class="no">Links</b>, or
+            <b class="no">SEO</b> - just posters and people you care about.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Checksumable build</strong>
+            <a href="/build-manifest.json">build-manifest.json</a> lists a
+            SHA-256 for every file we deploy. Match it to what realness.online
+            serves and confirm the version we publish.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong
+              ><a href="https://github.com/realness-online/web" rel="external"
+                >Source available</a
+              ></strong
+            >
+            Read the code, run it yourself, and send improvements upstream.
+          </p>
+        </li>
+      </ol>
+    </section>
+    <hr />
+    <section itemprop="integrations">
+      <header>
+        <h2>Integrations</h2>
+      </header>
+      <ol>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/illustrator.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Illustrator</strong> Export SVG with editable layers and
+            paths.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/figma.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p><strong>Figma</strong> Export SVG ready to import into Figma.</p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/photoshop.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Photoshop</strong> Export layered PSD with shadows, strokes,
+            and mosaic groups.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/after-effects.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>After Effects</strong> Export video or PSD layers for
+            compositing.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/premiere-pro.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Premiere Pro</strong> Export animated video to your
+            timeline.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/blender.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p><strong>Blender</strong> Export GLB from the 3D view.</p>
+        </li>
+        <li>
+          <span class="logo-wrap logo-wrap--light-bg"
+            ><img
+              class="integration-logo"
+              src="/brands/unreal-engine.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Unreal Engine</strong> Export GLB into your Unreal project.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap logo-wrap--light-bg"
+            ><img
+              class="integration-logo"
+              src="/brands/unity.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p><strong>Unity</strong> Export GLB into your Unity scene.</p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/davinci-resolve.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>DaVinci Resolve</strong> Export animated video into Resolve.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/final-cut-pro.png"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Final Cut Pro</strong> Export animated video into Final Cut.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/affinity-designer.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p><strong>Affinity Designer</strong> Export SVG or layered PSD.</p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/affinity-photo.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Affinity Photo</strong> Export layered PSD with full layer
+            groups.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/inkscape.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Inkscape</strong> Export SVG with editable vector paths.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/procreate.png"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p>
+            <strong>Procreate</strong> Export layered PSD - open on iPad with
+            every layer intact.
+          </p>
+        </li>
+        <li>
+          <span class="logo-wrap"
+            ><img
+              class="integration-logo"
+              src="/brands/canva.svg"
+              alt=""
+              width="24"
+              height="24"
+              decoding="async"
+          /></span>
+          <p><strong>Canva</strong> Export SVG or PNG for layouts in Canva.</p>
         </li>
       </ol>
     </section>
     <section itemprop="gallery">
       <header>
         <h2>Gallery</h2>
-        <preference name="shadow" />
-        <preference name="mosaic" />
-        <preference name="drama" />
-        <preference name="animate" />
-        <preference name="view_3d" label="3D" />
+        <menu class="gallery-preferences">
+          <preference compact name="shadow" />
+          <preference compact name="stroke" />
+          <preference compact name="mosaic" />
+          <preference compact name="drama" />
+          <preference compact name="animate" />
+          <preference compact name="view_3d" label="3D" />
+        </menu>
       </header>
       <as-figure
         v-for="poster in gallery_posters"
@@ -388,19 +591,27 @@
     }
   }
 
-  @keyframes workflow-tool-cycle {
-    0%, 4.8% {
-      opacity: 1;
-      translate: 0 0;
-    }
-    6.6%, 100% {
-      opacity: 0;
-      translate: 0 -0.65em;
-    }
-  }
+  about-enter(delay = null)
+    animation: about-rise var(--about-enter) var(--about-ease) both
+    if delay
+      animation-delay: delay
+
+  about-section-heading()
+    font-size: base-line * 3
+    width: 100%
+    max-width: base-line * 22
+    text-align: center
+    color: red
+    margin: 0 auto base-line * 2
+
+  about-feature-list()
+    display: grid
+    display: grid-lanes
+    grid-gap: base-line
+    grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
 
   section.page#about {
-    max-width:1800px;
+    max-width: 1800px;
     --about-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --about-enter: 820ms;
     --about-stagger: 56ms;
@@ -412,96 +623,110 @@
     --about-article-list-min-height: calc(var(--base-line) * 20);
     --about-block-min-height: calc(var(--base-line) * 10);
 
-    .no {
-      text-decoration: line-through;
-    }
-    svg.icon {
-      fill: blue;
-    }
-    [itemprop='workflow-tools'] {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.28em;
-      align-items: baseline;
-      justify-content: center;
-      text-align: left;
-    }
-    [itemprop='tool-rotator'] {
-      display: inline-grid;
-      min-width: 8.2em;
-      color: blue;
-      font-weight: bold;
-      span {
-        grid-area: 1 / 1;
-        opacity: 0;
-        animation: workflow-tool-cycle 30s ease-in-out infinite;
-        for i in 1..15 {
-          &:nth-child({i}) {
-            animation-delay: (i - 1) * 2s;
-          }
-        }
-      }
-    }
     & > header {
       display: block;
-      & > nav {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: base-line * 2;
-        svg.icon {
-          fill: blue;
-        }
-        & > a:not(.logo) {
-          cursor: pointer;
-          &:hover,
-          &:focus-visible {
-            opacity: 0.55;
-          }
-        }
-      }
-      & > [itemprop='hero'] {
 
+      & > [itemprop='hero'] {
         min-height: var(--about-hero-min-height);
+
         @media (min-width: pad-begins) {
           display: flex;
           justify-content: space-around;
           align-items: stretch;
         }
+
         & > header {
           padding: base-line;
           min-height: calc(var(--base-line) * 12);
+
           @media (min-width: pad-begins) {
             margin-top: base-line * 2;
             width: base-line * 13;
           }
+
           & > h1 {
             color: blue;
             margin: 0;
             text-align: center;
+
             @media (min-width: pad-begins) {
               text-align: left;
             }
           }
+
           & > h3 {
             max-width: base-line * 10;
-            @media (min-width: pad-begins) {
-              max-width: inherit;
-            }
             text-align: right;
             margin: 0;
             color: red;
+
+            @media (min-width: pad-begins) {
+              max-width: inherit;
+            }
           }
+
           & > h4 {
-            text-align: center
-            line-height:1.66
+            text-align: center;
+            line-height: 1.66;
           }
+
           & > p {
             margin-top: base-line;
             text-align: center;
+
+            &[itemprop='workflow-tools'] {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.28em;
+              align-items: baseline;
+              justify-content: center;
+              text-align: left;
+            }
+          }
+
+          &:not(.about-ready) {
+            & > h1,
+            & > h3,
+            & > p {
+              opacity: 0;
+            }
+          }
+
+          &.about-ready {
+            & > h1 {
+              about-enter(var(--about-hero-delay));
+            }
+
+            & > h3 {
+              about-enter(calc(var(--about-hero-delay) + var(--about-hero-stagger)));
+            }
+
+            & > p {
+              about-enter();
+
+              &:nth-of-type(1) {
+                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 2);
+              }
+
+              &:nth-of-type(2) {
+                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 3);
+              }
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            & > h1,
+            & > h3,
+            & > p {
+              animation: none;
+              opacity: 1;
+            }
           }
         }
+
         & > figure.poster {
           min-height: var(--poster-grid-height);
+
           @media (min-width: pad-begins) {
             flex: 1;
             min-width: 0;
@@ -509,12 +734,14 @@
             height: auto;
             flex-direction: column;
           }
+
           &:has(svg[aria-orientation='horizontal']) {
             @media (min-width: pad-begins) {
               align-self: stretch;
             }
           }
-          & > svg {
+
+          & > svg:not([data-poster-symbol-defs]) {
             height: 100%;
             transition: transform 2s;
             transform-style: preserve-3d;
@@ -526,246 +753,39 @@
         }
       }
     }
-    &:not(.about-ready) > header > [itemprop='hero'] > header {
-      & > h1,
-      & > h3,
-      & > p {
-        opacity: 0;
-      }
-    }
-    &.about-ready > header > [itemprop='hero'] > header {
-      & > h1 {
-        animation: about-rise var(--about-enter) var(--about-ease) both;
-        animation-delay: var(--about-hero-delay);
-      }
-      & > h3 {
-        animation: about-rise var(--about-enter) var(--about-ease) both;
-        animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger));
-      }
-      & > p {
-        animation: about-rise var(--about-enter) var(--about-ease) both;
-        &:nth-of-type(1) {
-          animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 2);
-        }
-        &:nth-of-type(2) {
-          animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 3);
-        }
-        &:nth-of-type(3) {
-          animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 4);
-        }
-      }
-    }
-    &.about-motion > article:not(.revealed) {
-      & > header > h2,
-      & > section > header,
-      & > section > footer {
-        opacity: 0;
-      }
-    }
-    &.about-motion > [itemprop='features']:not(.revealed) > ol > li {
-      opacity: 0;
-    }
-    &.about-motion > [itemprop='gallery']:not(.revealed) > header {
-      opacity: 0;
-    }
-    &.about-motion > [itemprop='support']:not(.revealed) > *,
-    &.about-motion > [itemprop='footer']:not(.revealed) > * {
-      opacity: 0;
-    }
-    & > article.revealed {
-      & > header > h2 {
-        animation: about-rise var(--about-enter) var(--about-ease) both;
-      }
-      & > section > header,
-      & > section > footer {
-        animation: about-rise var(--about-enter) var(--about-ease) both;
-        animation-delay: var(--about-follow-beat);
-      }
-    }
-    & > [itemprop='support'].revealed > * {
-      animation: about-rise var(--about-enter) var(--about-ease) both;
-    }
-    & > [itemprop='features'].revealed > ol > li {
-      animation: about-rise var(--about-enter) var(--about-ease) both;
-      for i in 1..15 {
-        &:nth-child({i}) {
-          animation-delay: calc((i - 1) * var(--about-stagger));
-        }
-      }
-    }
-    & > [itemprop='gallery'].revealed > header {
-      animation: about-rise var(--about-enter) var(--about-ease) both;
-    }
-    & > [itemprop='footer'].revealed > * {
-      animation: about-rise var(--about-enter) var(--about-ease) both;
-      &:nth-child(2) {
-        animation-delay: var(--about-hero-stagger);
-      }
-    }
+
     & > article {
-      & > header > h2 {
-        min-height: calc(var(--base-line) * 4);
-      }
-      & > section {
-        min-height: var(--poster-grid-height);
-        @media (min-width: pad-begins) {
-          min-height: max(var(--poster-grid-height), var(--about-article-copy-min-height));
-        }
-      }
-      & > section > figure.poster {
-        min-height: var(--poster-grid-height);
-      }
-      & > section > header,
-      & > section > footer {
-        min-height: var(--about-article-copy-min-height);
-      }
-    }
-    & > [itemprop='support'] {
-      min-height: var(--about-block-min-height);
-    }
-    & > [itemprop='features'] {
-      min-height: var(--about-article-list-min-height);
+      margin: base-line * 2 0;
       padding: base-line;
-      & > ol {
-        display: grid;
-        display: grid-lanes;
-        grid-gap: base-line;
-        grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
-        li {
-          position: relative;
-          display: block;
-          svg {
-            position: absolute;
-          }
-          p {
-            margin-left: base-line * 2;
-            margin-bottom: 0;
-          }
-        }
-      }
-    }
-    & > [itemprop='gallery'] {
-      min-height: calc(var(--poster-grid-height) + var(--base-line) * 6);
-      standard-grid: gentle;
-      grid-auto-flow: dense;
-      padding: base-line;
-      & > header {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
-        grid-gap: base-line;
-        align-items: start;
-        & > h2 {
-          grid-column: 1 / -1;
-          margin: 0 0 base-line 0;
-          text-align: center;
-          color: red;
-        }
-      }
-      & > figure.poster {
-        grid-column: span 1;
-        grid-row: span 1;
-        min-height: var(--poster-grid-height);
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        &.new {
-          grid-column: span 1;
-          grid-row: span 1;
-        }
-        &:has(svg[style*='aspect-ratio']) {
-          grid-column: span 2;
-          grid-row: span 1;
-          min-height: auto;
-        }
-        @media (min-width: pad-begins) {
-          &:has(svg[aria-orientation='horizontal']) {
-            grid-column: span 2;
-            grid-row: span 1;
-            min-height: auto;
-          }
-          &:has(svg[aria-orientation='horizontal']):has(+ figure.poster:has(svg[aria-orientation='horizontal'])) {
-            grid-column: span 2;
-          }
-          &:has(svg[aria-orientation='horizontal']) + figure.poster:has(svg[aria-orientation='horizontal']) {
-            grid-column: span 2;
-          }
-        }
-        & > svg {
-          flex: 1;
-          min-height: 0;
-          border-radius: base-line * 0.21;
-          height: 100%;
-          width: 100%;
-        }
-      }
-    }
-    & > menu {
-      border-radius: base-line;
-      display: flex;
-      justify-content: space-between;
-      padding: base-line;
-      @media (min-width: pad-begins) {
-        margin: base-line;
-        justify-content: center;
-      }
-      & > button {
-        border-radius: base-line * 0.33;
-        color: blue;
-        background-color: white;
-        font-weight: bold;
-        max-width: 10rem;
-        line-height: 1.33;
-        @media (prefers-color-scheme: dark) {
-          background-color: black;
-        }
-        @media (min-width: pad-begins) {
-          margin: 0 base-line;
-        }
-        &[aria-selected=false] {
-          border-color: transparent;
-          background-color: transparent;
-          font-size: smaller;
-          text-shadow: 1px 1px transparent;
-          @media (min-width: pad-begins) {
-            font-size: larger;
-          }
-        }
-        &[aria-selected=true] {
-          font-size: smaller;
-          color: #ffffff;
-          text-shadow: 1px 1px blue;
-          @media (min-width: pad-begins) {
-            font-size: larger;
-          }
-          @media (prefers-color-scheme: dark) {
-            color: white;
-          }
-        }
-      }
-    }
-    & > article {
-      margin: base-line 0;
-      padding: base-line;
+
       & > header {
         display: flex;
         justify-content: center;
         margin-bottom: base-line * 2;
+
         & > h2 {
           font-size: base-line * 3;
           width: 100%;
           max-width: base-line * 22;
           text-align: center;
           color: red;
+          min-height: calc(var(--base-line) * 4);
         }
       }
+
       & > section {
+        min-height: var(--poster-grid-height);
+
         @media (min-width: pad-begins) {
+          min-height: max(var(--poster-grid-height), var(--about-article-copy-min-height));
           padding: base-line;
           display: flex;
           align-items: stretch;
         }
+
         & > figure.poster {
+          min-height: var(--poster-grid-height);
+
           @media (min-width: pad-begins) {
             flex: 1;
             min-width: 0;
@@ -775,33 +795,41 @@
             display: flex;
             flex-direction: column;
           }
+
           &:has(svg[aria-orientation='horizontal']) {
             @media (min-width: pad-begins) {
               align-self: stretch;
             }
           }
-          & > svg {
+
+          & > svg:not([data-poster-symbol-defs]) {
             border-radius: base-line * 0.33;
             width: 100%;
             flex: 1;
             min-height: 0;
           }
         }
+
         & > header,
         & > footer {
           display: flex;
           flex-direction: column;
           width: 100%;
           margin: 0 auto;
+          min-height: var(--about-article-copy-min-height);
+
           @media (min-width: pad-begins) {
             padding: 0 base-line;
           }
+
           strong {
             color: blue;
           }
+
           & > h2 {
             margin-bottom: base-line * 3;
           }
+
           & > h4 {
             margin-top: base-line;
             margin-bottom: base-line * 2;
@@ -810,84 +838,304 @@
             max-width: base-line * 13;
             align-self: center;
           }
+
           & > ol {
             list-style-type: square;
+
             & > li {
               margin-left: base-line;
             }
           }
         }
+
         & > header {
           max-width: base-line * 22;
+
           @media (min-width: pad-begins) {
             flex: 0 1 base-line * 22;
           }
         }
+
         & > footer {
           max-width: base-line * 21;
+
           @media (min-width: pad-begins) {
             flex: 0 1 base-line * 18;
           }
         }
       }
 
+      &.revealed {
+        & > header > h2 {
+          about-enter();
+        }
+
+        & > section {
+          & > header,
+          & > footer {
+            about-enter(var(--about-follow-beat));
+          }
+        }
+      }
     }
-    & > footer {
+
+    & > [itemprop='support'] {
+      min-height: var(--about-block-min-height);
+
+      &.revealed > * {
+        about-enter();
+      }
+    }
+
+    & > [itemprop='features'] {
+      padding: base-line;
+      min-height: var(--about-article-list-min-height);
+
+      & > ol {
+        about-feature-list();
+
+        & > li {
+          position: relative;
+          display: block;
+
+          & > svg.icon {
+            position: absolute;
+            fill: blue;
+          }
+
+          & > p {
+            margin-left: base-line * 2;
+            margin-bottom: 0;
+
+            & > b.no {
+              text-decoration: line-through;
+            }
+          }
+        }
+      }
+
+      &.revealed > ol > li {
+        about-enter();
+
+        for i in 1..15 {
+          &:nth-child({i}) {
+            animation-delay: calc((i - 1) * var(--about-stagger));
+          }
+        }
+      }
+    }
+
+    & > [itemprop='integrations'] {
+      padding: base-line;
+      min-height: var(--about-article-list-min-height);
+
+      & > header > h2 {
+        about-section-heading();
+        margin-bottom: base-line * 3;
+      }
+
+      & > ol {
+        about-feature-list();
+
+        & > li {
+          position: relative;
+          display: block;
+
+          & > p {
+            margin-left: base-line * 2;
+            margin-bottom: 0;
+          }
+
+          & > .logo-wrap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: base-line * 1.33;
+            height: base-line * 1.33;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: base-line * 0.66;
+            background: none;
+            overflow: hidden;
+
+            &.logo-wrap--light-bg {
+              background: white;
+            }
+
+            & > .integration-logo {
+              width: base-line * 1.33;
+              height: base-line * 1.33;
+              object-fit: contain;
+            }
+          }
+        }
+      }
+
+      &.revealed {
+        & > header {
+          about-enter();
+        }
+
+        & > ol > li {
+          about-enter();
+
+          for i in 1..15 {
+            &:nth-child({i}) {
+              animation-delay: calc((i - 1) * var(--about-stagger));
+            }
+          }
+        }
+      }
+    }
+
+    & > [itemprop='gallery'] {
+      margin-top: base-line * 4;
+      min-height: calc(var(--poster-grid-height) + var(--base-line) * 6);
+      standard-grid: gentle;
+      grid-auto-flow: dense;
+      padding: base-line;
+
+      & > header {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: base-line * 0.75;
+        align-items: center;
+        align-self: center;
+
+        & > h2 {
+          about-section-heading();
+        }
+
+        & > menu.gallery-preferences {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: base-line base-line * 1.5;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          border: none;
+        }
+      }
+
+      & > figure.poster {
+        grid-column: span 1;
+        grid-row: span 1;
+        min-height: var(--poster-grid-height);
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+
+        &.new {
+          grid-column: span 1;
+          grid-row: span 1;
+        }
+
+        &:has(svg[style*='aspect-ratio']) {
+          grid-column: span 2;
+          grid-row: span 1;
+          min-height: auto;
+        }
+
+        @media (min-width: pad-begins) {
+          &:has(svg[aria-orientation='horizontal']) {
+            grid-column: span 2;
+            grid-row: span 1;
+            min-height: auto;
+          }
+
+          &:has(svg[aria-orientation='horizontal']):has(+ figure.poster:has(svg[aria-orientation='horizontal'])) {
+            grid-column: span 2;
+          }
+
+          &:has(svg[aria-orientation='horizontal']) + figure.poster:has(svg[aria-orientation='horizontal']) {
+            grid-column: span 2;
+          }
+        }
+
+        & > svg:not([data-poster-symbol-defs]) {
+          flex: 1;
+          min-height: 0;
+          border-radius: base-line * 0.21;
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+      &.revealed > header {
+        about-enter();
+      }
+    }
+
+    & > footer[itemprop='footer'] {
       display: block;
       min-height: 100vh;
       padding: base-line;
+
       & > a.logo {
         display: inline-block;
+      }
+
+      &.revealed > * {
+        about-enter();
+
+        &:nth-child(2) {
+          animation-delay: var(--about-hero-stagger);
+        }
+      }
+    }
+
+    &.about-motion {
+      & > article:not(.revealed) {
+        & > header > h2,
+        & > section > header,
+        & > section > footer {
+          opacity: 0;
+        }
+      }
+
+      & > [itemprop='features']:not(.revealed) > ol > li,
+      & > [itemprop='integrations']:not(.revealed) > header,
+      & > [itemprop='integrations']:not(.revealed) > ol > li,
+      & > [itemprop='gallery']:not(.revealed) > header,
+      & > [itemprop='support']:not(.revealed) > *,
+      & > [itemprop='footer']:not(.revealed) > * {
+        opacity: 0;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      &.about-ready > header > [itemprop='hero'] > header {
-        & > h1,
-        & > h3,
-        & > p {
-          animation: none;
+      &.about-motion {
+        & > article:not(.revealed) {
+          & > header > h2,
+          & > section > header,
+          & > section > footer {
+            opacity: 1;
+          }
+        }
+
+        & > [itemprop='features']:not(.revealed) > ol > li,
+        & > [itemprop='integrations']:not(.revealed) > header,
+        & > [itemprop='integrations']:not(.revealed) > ol > li,
+        & > [itemprop='gallery']:not(.revealed) > header,
+        & > [itemprop='support']:not(.revealed) > *,
+        & > [itemprop='footer']:not(.revealed) > * {
           opacity: 1;
         }
       }
-      &:not(.about-ready) > header > [itemprop='hero'] > header {
-        & > h1,
-        & > h3,
-        & > p {
-          opacity: 1;
-        }
-      }
-      &.about-motion > article:not(.revealed) {
-        & > header > h2,
-        & > section > header,
-        & > section > footer {
-          opacity: 1;
-        }
-      }
-      &.about-motion > [itemprop='features']:not(.revealed) > ol > li,
-      &.about-motion > [itemprop='gallery']:not(.revealed) > header,
-      &.about-motion > [itemprop='support']:not(.revealed) > *,
-      &.about-motion > [itemprop='footer']:not(.revealed) > * {
-        opacity: 1;
-      }
+
       & > article.revealed,
-      & > article.revealed > header,
-      & > article.revealed > section > header,
-      & > article.revealed > section > footer,
-      & > [itemprop='support'].revealed,
+      & > [itemprop='support'].revealed > *,
       & > [itemprop='features'].revealed > ol > li,
+      & > [itemprop='integrations'].revealed > header,
+      & > [itemprop='integrations'].revealed > ol > li,
       & > [itemprop='gallery'].revealed > header,
       & > [itemprop='footer'].revealed > * {
         animation: none;
-      }
-      [itemprop='tool-rotator'] span {
-        animation: none;
-        &:not(:first-child) {
-          display: none;
-        }
-        &:first-child {
-          opacity: 1;
-        }
       }
     }
   }

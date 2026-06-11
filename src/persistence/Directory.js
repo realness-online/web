@@ -195,21 +195,21 @@ export const as_archive = async itemid => {
   const created = as_created_at(itemid)
   if (!created) return null
 
-  if (items.length === 0) return null
-
+  // If poster is in the main directory items, it's not archived
   const item_timestamps = items.map(Number)
+  if (item_timestamps.includes(created)) return null
+
+  // If items exist and poster is newer than all items, it doesn't exist yet
   if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
     return null
 
-  if (item_timestamps.includes(created)) return null
-
-  if (archive.includes(created))
-    return `people${as_author(itemid)}/${as_type(itemid)}/${created}/${created}`
-
-  let closest_timestamp = null
-  for (const archive_id of archive)
-    if (archive_id <= created) closest_timestamp = archive_id
-
-  if (!closest_timestamp) return null
-  return `people${as_author(itemid)}/${as_type(itemid)}/${closest_timestamp}/${created}`
+  return archive.reduce(async (chain, archive_id) => {
+    const found = await chain
+    if (found) return found
+    const path = `/${as_author(itemid)?.slice(1)}/${as_type(itemid)}/${archive_id}/`
+    const dir = await as_directory(/** @type {Id} */ (path))
+    if (dir?.items?.map(Number).includes(created))
+      return `people${as_author(itemid)}/${as_type(itemid)}/${archive_id}/${created}`
+    return null
+  }, Promise.resolve(null))
 }

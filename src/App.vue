@@ -487,6 +487,9 @@
             @change="handle_camera_change" />
           <span aria-hidden="true">
             <icon name="camera" />
+            <svg viewBox="0 0 18 15" aria-hidden="true">
+              <circle cx="9" cy="8" r="3" />
+            </svg>
           </span>
         </label>
         <label
@@ -564,6 +567,19 @@
       animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
     100%
       transform: scale(1)
+
+  @keyframes add-satellites-flourish-out
+    0%
+      opacity: 1
+      transform: scale(1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    50%
+      opacity: 1
+      transform: scale(1.1)
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
+    100%
+      opacity: 0
+      transform: scale(0.5)
 
   @keyframes animation-ball-bounce
     0%
@@ -847,23 +863,63 @@
               transition-delay: 0.32s;
             }
           }
-          &[aria-label='Add poster'] svg.add .add-plus {
-            transform: scale(1);
-            transition-property: transform;
-            transition-timing-function: ease;
-            transition-duration: 0.65s;
-            @media (prefers-reduced-motion: reduce) {
-              transition-duration: 0.01ms;
+          &[aria-label='Add poster'] svg.add {
+            .add-plus {
+              transform: scale(1);
+              transition-property: transform;
+              transition-timing-function: ease;
+              transition-duration: 0.65s;
+              @media (prefers-reduced-motion: reduce) {
+                transition-duration: 0.01ms;
+              }
+            }
+            .add-satellites {
+              opacity: 0;
+              transition-property: opacity, transform;
+              transition-timing-function: ease;
+              transition-duration: 0.4s;
+              @media (prefers-reduced-motion: reduce) {
+                transition-duration: 0.01ms;
+              }
+              .add-sat {
+                transition-property: transform;
+                transition-timing-function: ease;
+                transition-duration: 0.4s;
+                @media (prefers-reduced-motion: reduce) {
+                  transition-duration: 0.01ms;
+                }
+              }
             }
           }
           &[aria-label='Open camera'] svg.camera {
             transition-duration: 0.4s;
           }
-          &.add-settling svg.add .add-plus {
-            transition: none;
-            animation: add-plus-flourish-out 0.55s cubic-bezier(0.45, 0, 0.55, 1);
-            @media (prefers-reduced-motion: reduce) {
-              animation: none;
+          &.add-settling svg.add {
+            .add-plus {
+              transition: none;
+              animation: add-plus-flourish-out 0.55s cubic-bezier(0.45, 0, 0.55, 1);
+              @media (prefers-reduced-motion: reduce) {
+                animation: none;
+              }
+            }
+            .add-satellites {
+              transition: none;
+              animation: add-satellites-flourish-out 0.45s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+              .add-sat-tl {
+                transform: translate(-22%, -22%) scale(0.85);
+              }
+              .add-sat-tr {
+                transform: translate(22%, -22%) scale(0.85);
+              }
+              .add-sat-bl {
+                transform: translate(-22%, 22%) scale(0.85);
+              }
+              .add-sat-br {
+                transform: translate(22%, 22%) scale(0.85);
+              }
+              @media (prefers-reduced-motion: reduce) {
+                animation: none;
+              }
             }
           }
           &.animation-settling svg.animation {
@@ -895,10 +951,28 @@
                 transition: none;
                 animation: add-plus-pulse-twice 1.3s linear;
               }
+              .add-satellites {
+                opacity: 1;
+                .add-sat-tl {
+                  transform: translate(-22%, -22%) scale(0.85);
+                }
+                .add-sat-tr {
+                  transform: translate(22%, -22%) scale(0.85);
+                }
+                .add-sat-bl {
+                  transform: translate(-22%, 22%) scale(0.85);
+                }
+                .add-sat-br {
+                  transform: translate(22%, 22%) scale(0.85);
+                }
+              }
               @media (prefers-reduced-motion: reduce) {
                 .add-plus {
                   animation: none;
                   transform: scale(0.95);
+                }
+                .add-satellites {
+                  opacity: 0;
                 }
               }
             }
@@ -910,6 +984,10 @@
               transform: scale(1.08);
               transition-duration: 0.4s;
             }
+            &[aria-label='Open camera']:hover span svg:last-child circle {
+              transform: scale(0);
+            }
+
             &[aria-label='Toggle animation']:hover svg.animation {
               .animation-ball,
               .animation-trail-mid,
@@ -949,10 +1027,28 @@
               transition: none;
               animation: add-plus-pulse-twice 0.95s linear;
             }
+            .add-satellites {
+              opacity: 1;
+              .add-sat-tl {
+                transform: translate(-30%, -30%) scale(0.75);
+              }
+              .add-sat-tr {
+                transform: translate(30%, -30%) scale(0.75);
+              }
+              .add-sat-bl {
+                transform: translate(-30%, 30%) scale(0.75);
+              }
+              .add-sat-br {
+                transform: translate(30%, 30%) scale(0.75);
+              }
+            }
             @media (prefers-reduced-motion: reduce) {
               .add-plus {
                 animation: none;
                 transform: scale(0.92);
+              }
+              .add-satellites {
+                opacity: 0;
               }
             }
           }
@@ -960,6 +1056,11 @@
             transform: scale(0.9);
             transition-duration: 0.22s;
           }
+          &[aria-label='Open camera']:active span svg:last-child circle {
+            transform: scale(0);
+            transition-duration: 0.15s;
+          }
+
           &[aria-label='Toggle animation']:active svg.animation .animation-ball {
             animation: animation-ball-bounce 0.64s linear;
           }
@@ -1009,6 +1110,36 @@
           width: base-line * 2;
           height: base-line * 2;
         }
+        & label.menu-action[aria-label='Open camera'] span {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          & > svg:first-child {
+            width: base-line * 2;
+            height: base-line * 2;
+          }
+          & > svg:last-child {
+            position: absolute;
+            inset: 0;
+            width: base-line * 2;
+            height: base-line * 2;
+            pointer-events: none;
+            circle {
+              fill: currentColor;
+              transform-box: fill-box;
+              transform-origin: 9px 8px;
+              transform: scale(1);
+              transition-property: transform;
+              transition-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+              transition-duration: 0.35s;
+              @media (prefers-reduced-motion: reduce) {
+                transition-duration: 0.01ms;
+              }
+            }
+          }
+        }
+
       }
 
     }

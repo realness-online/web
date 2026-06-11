@@ -54,7 +54,7 @@ vi.mock('@/utils/itemid', async importOriginal => {
 
 // Mock poster data instead of using non-existent get_item
 const poster = {
-  id: '/+14151234356/posters/1737178477987',
+  id: '/+14151234356/posters/1770000000000',
   type: 'poster',
   content: '<svg><rect width="100" height="100"/></svg>'
 }
