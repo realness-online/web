@@ -12,7 +12,8 @@ import {
   load_from_cache,
   load_from_network,
   load,
-  list
+  list,
+  feed_slot_itemid
 } from '@/utils/itemid'
 import { as_archive } from '@/persistence/Directory'
 import { get, set, del } from 'idb-keyval'
@@ -116,6 +117,21 @@ describe('@/utils/itemid', () => {
       const nested = { id: '/+1/posters/9' }
       const item = { id: '/+1/posters/', type: 'posters', posters: nested }
       expect(type_as_list(item)).toEqual([nested])
+    })
+
+    it('type_as_list returns empty when type is missing', () => {
+      const item = { id: '/+1/unknown/', unknown: [{ id: '/+1/unknown/1' }] }
+      expect(type_as_list(item)).toEqual([])
+    })
+
+    it('feed_slot_itemid returns id from single item', () => {
+      const slot = { id: '/+1/posters/123' }
+      expect(feed_slot_itemid(slot)).toBe('/+1/posters/123')
+    })
+
+    it('feed_slot_itemid returns id from first item in array', () => {
+      const slot = [{ id: '/+1/thoughts/111' }, { id: '/+1/thoughts/222' }]
+      expect(feed_slot_itemid(slot)).toBe('/+1/thoughts/111')
     })
   })
 
@@ -253,6 +269,27 @@ describe('@/utils/itemid', () => {
       expect(result).toBe(
         'people/+16282281824/posters/1737178477987-shadows.html.gz'
       )
+    })
+
+    it('generates correct path for relations', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/relations')
+      expect(result).toBe('people/+16282281824/relations.html.gz')
+    })
+
+    it('generates correct path for history-type item with 3 parts', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/thoughts/1737178477987')
+      expect(result).toBe('people/+16282281824/thoughts/1737178477987.html.gz')
+    })
+
+    it('generates correct path for person type', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/people')
+      expect(result).toBe('people/+16282281824/people/index.html.gz')
     })
 
     it('generates correct path for sediment layer with suffix', async () => {
@@ -563,6 +600,18 @@ describe('@/utils/itemid', () => {
       const result = as_layer_id('/+16282281824/posters/1737178477987', 'sand')
       expect(result).toBe('/+16282281824/sand/1737178477987')
     })
+
+    it('as_layer_id returns empty string for null input', () => {
+      expect(as_layer_id(null, 'shadows')).toBe('')
+    })
+
+    it('as_layer_id returns empty string for non-string input', () => {
+      expect(as_layer_id(undefined, 'shadows')).toBe('')
+    })
+
+    it('as_layer_id returns empty string for invalid itemid', () => {
+      expect(as_layer_id('/invalid', 'shadows')).toBe('')
+    })
   })
 
   describe('load_from_cache and load_from_network', () => {
@@ -631,6 +680,45 @@ describe('@/utils/itemid', () => {
       expect(del).toHaveBeenCalledWith(me_id)
       expect(set).not.toHaveBeenCalledWith(me_id, expect.anything())
     })
+
+    it('load_from_cache returns item and html on success', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope><h3 itemprop="name">Test</h3></address>`
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(result.item).not.toBeNull()
+      expect(result.html).toBe(html)
+    })
+
+    it('load_from_cache returns null item and html when url is null', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
   })
 
   describe('load', () => {
@@ -664,6 +752,34 @@ describe('@/utils/itemid', () => {
       expect(item?.name).toBe('L')
       expect(localStorage.getItem(me_id)).toBe(html)
       expect(del).toHaveBeenCalledWith(me_id)
+    })
+
+    it('load returns null on storage/unauthorized error', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = id
+      localStorage.removeItem(id)
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('unauthorized'), {
+          code: 'storage/unauthorized'
+        })
+      )
+
+      const result = await load(id, id)
+
+      expect(result).toBeNull()
+    })
+
+    it('load rethrows non-storage errors', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = id
+      localStorage.removeItem(id)
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(new Error('Network failure'))
+
+      await expect(load(id, id)).rejects.toThrow('Network failure')
     })
   })
 
@@ -726,6 +842,39 @@ describe('@/utils/itemid', () => {
       const id = /** @type {import('@/types').Id} */ ('/+19159206481')
 
       await expect(as_download_url(id)).rejects.toThrow('Network failure')
+    })
+
+    it('as_download_url returns null for /+ root', async () => {
+      const result = await as_download_url('/+')
+      expect(result).toBeNull()
+    })
+
+    it('as_download_url returns null for /+/ prefix', async () => {
+      const result = await as_download_url('/+/something')
+      expect(result).toBeNull()
+    })
+
+    it('as_download_url returns null when sync:index has missing marker on retry', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      // First call returns empty index, second call (inside retry) returns missing marker
+      let callCount = 0
+      get.mockImplementation(async key => {
+        if (key === 'sync:index') {
+          callCount++
+          if (callCount === 1) return {}
+          return { [id]: { updated: null, customMetadata: { hash: null } } }
+        }
+        return undefined
+      })
+
+      const result = await as_download_url(id)
+
+      expect(result).toBeNull()
+      expect(url).not.toHaveBeenCalled()
     })
   })
 
