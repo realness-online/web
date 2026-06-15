@@ -55,7 +55,7 @@
             </ul>
             <p>
               <strong>$5</strong>
-              <span>sponsorship</span>
+              <span>Endorse</span>
             </p>
             <menu>
               <sponsor-cta />
@@ -66,7 +66,9 @@
         <li>
           <article>
             <h2>Small teams</h2>
-            <p>For studios, families, unions, and groups up to a few people.</p>
+            <p>
+              Design studios, consultants, families; intimate creative work.
+            </p>
             <ul>
               <li>
                 <strong>Your Realness</strong>
@@ -78,11 +80,14 @@
               </li>
               <li>
                 <strong>Local posters</strong>
-                <p>Members keep art on their devices; you host the network.</p>
+                <p>
+                  Members create art on their device; The philosophy is client
+                  first. Realness is reliable and efficient to serve.
+                </p>
               </li>
               <li>
                 <strong>Shared tools</strong>
-                <p>Thoughts, statements, and phonebook for your group.</p>
+                <p>Thoughts, statements, and a phonebook for your community.</p>
               </li>
               <li>
                 <strong>No per-seat pricing</strong>

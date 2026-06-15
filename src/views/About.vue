@@ -2,11 +2,13 @@
   import AsFigure from '@/components/posters/as-figure'
   import Icon from '@/components/icon'
   import Preference from '@/components/preference'
+  import PreferencesMenu from '@/components/preferences-menu'
   import CallToAction from '@/components/call-to-action'
   import LogoAsLink from '@/components/logo-as-link'
   import SiteNav from '@/components/site-nav'
   import { as_author } from '@/utils/itemid'
   import { balance_gallery_posters } from '@/utils/balance-gallery-posters'
+  import { reset_preferences } from '@/utils/preference'
   import { use_posters } from '@/use/poster'
   import {
     onMounted as mounted,
@@ -22,13 +24,17 @@
   )
 
   const ABOUT_FEATURED_POSTER_COUNT = 4
+  const ABOUT_GALLERY_MAX_COUNT = 13
 
   const gallery_posters = ref([])
 
   const balance_gallery = async () => {
     const featured = admin_posters.value.slice(0, ABOUT_FEATURED_POSTER_COUNT)
     const sliced = admin_posters.value.slice(ABOUT_FEATURED_POSTER_COUNT)
-    gallery_posters.value = await balance_gallery_posters(sliced, { featured })
+    gallery_posters.value = await balance_gallery_posters(sliced, {
+      featured,
+      max: ABOUT_GALLERY_MAX_COUNT
+    })
   }
 
   /** @type {import('vue').Ref<HTMLElement | null>} */
@@ -53,6 +59,8 @@
     if (section.localName === 'article')
       return section.querySelector(':scope > section') ?? section
     if (section.getAttribute('itemprop') === 'gallery')
+      return section.querySelector(':scope > header') ?? section
+    if (section.getAttribute('itemprop') === 'preferences')
       return section.querySelector(':scope > header') ?? section
     if (section.getAttribute('itemprop') === 'features')
       return section.querySelector(':scope > ol > li:first-child') ?? section
@@ -167,9 +175,8 @@
           <h3>online</h3>
           <h4>Creativity Lives With You</h4>
           <p itemprop="workflow-tools">
-            With Realness, create expressive vector graphics from your drawings,
-            designs, and photos. It works on your device and integrates with the
-            tools you already use.
+            Realness is a rotoscoping tool. Trace photos into expressive vector
+            graphics on your device, integrated with the tools you already use.
           </p>
           <p>
             Start in your browser, or
@@ -188,10 +195,14 @@
       <section>
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[1]?.id" />
         <footer>
+          <h2>Magic in your hands</h2>
           <p>
-            There is no line work. Though a poster is ornate, it's still missing
-            your hand. The constraints become a vast landscape for you to
-            explore.
+            Though a poster is ornate, capable, and descriptive, there is no
+            line work. Posters can be taken so much further in your tool of
+            choice. Print layers on transparency film and stack them like
+            Disney-era cel animation—register the stack on a light table. Export
+            and print in an infinite loop of creative discovery. The constraints
+            become a vast landscape for you to explore.
           </p>
           <p>
             Storyboards, collage, thumbnails. No AI in the toolchain. Realness
@@ -199,7 +210,7 @@
           </p>
           <p>Everything is made locally. Sign in to sync devices.</p>
           <h4>
-            Animators, designers, hand-coders - <strong>Realness</strong> was
+            Animators, designers, developers - <strong>Realness</strong> was
             built for you.
           </h4>
         </footer>
@@ -212,11 +223,11 @@
         <header>
           <h2>Shared values</h2>
           <p>
-            Run your own Realness. Hosting yours stays simple - so you can free
-            your data and build community together. One moderator, clear
-            responsibility, built for trust. Use it with your family, union
-            hall, or your
-            <a href="https://youtu.be/05YRMHWtv1Y">warhammer</a> nerdpocalypse
+            Run your own Realness. Hosting your own stays simple - so you can
+            free your data and build community together. One moderator, clear
+            responsibility, built for trust—until you sign in, that's the feed.
+            Use it with your family, union hall, or your
+            <a href="https://youtu.be/05YRMHWtv1Y">Warhammer</a> nerdpocalypse
             users group.
           </p>
           <p>
@@ -242,38 +253,15 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong>Interactive exploration</strong> Every poster is fully live
-            on the canvas. Toggle layers, drama, mosaic, and animation. Pan,
-            zoom, touch the mosaic, or spin it in 3D to discover what it offers
-            - then export what you find.
+            <strong>Mosaics</strong> Photo-colored tiles layered over shadow.
+            Five sizes from sediment to boulders - peel them back one at a time.
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            <strong>Export</strong> SVG, 4K PNG, or layered PSD. What you see on
-            screen is what you download.
-          </p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>
-            <strong>Keyboard shortcuts</strong> Toggle layers, drama, mosaic,
-            animation, and fullscreen without leaving the canvas.
-          </p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>
-            <strong>Mosaics</strong> Transparent windows through your poster,
-            cut from contrast in your photo.
-          </p>
-        </li>
-        <li>
-          <icon name="finished" />
-          <p>
-            <strong>Shadows</strong> Gradient shadows and strokes for depth,
-            outline, and dramatic light.
+            <strong>Shadows</strong> Gradient values and strokes for depth,
+            outline, subtle movement and dramatic light.
           </p>
         </li>
         <li>
@@ -286,6 +274,29 @@
         <li>
           <icon name="finished" />
           <p>
+            <strong>Interactive exploration</strong> Turn layers off one at a
+            time. Hover or hold to isolate a layer. Reframe and pan until you
+            see how the poster was built.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Export</strong> SVG, 4K PNG, layered PNG, PSD, video, or
+            GLB. What you see on screen is what you download.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
+            <strong>Keyboard shortcuts</strong> Toggle layers, drama, mosaic,
+            animation, and fullscreen without leaving the canvas.
+          </p>
+        </li>
+
+        <li>
+          <icon name="finished" />
+          <p>
             <strong>3D and presentation</strong> Spin a poster in 3D,
             side-scroll storytelling view, or go fullscreen.
           </p>
@@ -293,15 +304,16 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong>Thought trains</strong> Statements and posters stack for
-            thirteen minutes into one chronological train.
+            <strong>Trains of thought</strong> Every new statement you add for
+            12 minutes is added to the last, giving you time to think and
+            explore
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            <strong>Events and phonebook</strong> See what is coming up and find
-            people you know on Realness.
+            <strong>Unshortened</strong> Tap the silhouette in Thoughts to see
+            only your posters and statements.
           </p>
         </li>
         <li>
@@ -314,16 +326,17 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong>Not built for growth hacks</strong> <b class="no">Email</b>,
+            <strong>Focused</strong> <b class="no">Email</b>,
             <b class="no">Likes</b>, <b class="no">Links</b>, or
-            <b class="no">SEO</b> - just posters and people you care about.
+            <b class="no">Scraping</b> - just posters and people you care about.
           </p>
         </li>
         <li>
           <icon name="finished" />
           <p>
-            <strong>Checksumable build</strong>
-            <a href="/build-manifest.json">build-manifest.json</a> lists a
+            <strong>Verifiable</strong>
+            Trust but verify is supported via a
+            <a href="/build-manifest.json">build-manifest.json</a> that lists a
             SHA-256 for every file we deploy. Match it to what realness.online
             serves and confirm the version we publish.
           </p>
@@ -342,6 +355,37 @@
       </ol>
     </section>
     <hr />
+    <section itemprop="gallery">
+      <header>
+        <h2>Gallery</h2>
+        <menu class="gallery-preferences">
+          <preference compact name="shadow" />
+          <preference compact name="stroke" />
+          <preference compact name="mosaic" />
+          <preference compact name="drama" />
+          <preference compact icon name="animate" />
+          <preference compact icon name="view_3d" label="3D" />
+        </menu>
+      </header>
+      <as-figure
+        v-for="poster in gallery_posters"
+        :key="poster.id"
+        :itemid="poster.id" />
+    </section>
+    <hr />
+    <section itemprop="preferences">
+      <header>
+        <h2>Preferences</h2>
+        <p>
+          Layers, geology, motion, 3D atmosphere - every poster responds to what
+          you turn on. Scroll the gallery above with these toggles, or reset
+          everything and start clean.
+        </p>
+        <button type="button" @click="reset_preferences">Reset</button>
+      </header>
+      <preferences-menu icon />
+    </section>
+
     <section itemprop="integrations">
       <header>
         <h2>Integrations</h2>
@@ -353,8 +397,8 @@
               class="integration-logo"
               src="/brands/illustrator.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -368,8 +412,8 @@
               class="integration-logo"
               src="/brands/figma.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p><strong>Figma</strong> Export SVG ready to import into Figma.</p>
@@ -380,8 +424,8 @@
               class="integration-logo"
               src="/brands/photoshop.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -395,8 +439,8 @@
               class="integration-logo"
               src="/brands/after-effects.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -410,8 +454,8 @@
               class="integration-logo"
               src="/brands/premiere-pro.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -425,8 +469,8 @@
               class="integration-logo"
               src="/brands/blender.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p><strong>Blender</strong> Export GLB from the 3D view.</p>
@@ -437,8 +481,8 @@
               class="integration-logo"
               src="/brands/unreal-engine.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -451,8 +495,8 @@
               class="integration-logo"
               src="/brands/unity.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p><strong>Unity</strong> Export GLB into your Unity scene.</p>
@@ -463,8 +507,8 @@
               class="integration-logo"
               src="/brands/davinci-resolve.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -477,8 +521,8 @@
               class="integration-logo"
               src="/brands/final-cut-pro.png"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -489,26 +533,14 @@
           <span class="logo-wrap"
             ><img
               class="integration-logo"
-              src="/brands/affinity-designer.svg"
+              src="/brands/affinity.svg"
               alt=""
-              width="24"
-              height="24"
-              decoding="async"
-          /></span>
-          <p><strong>Affinity Designer</strong> Export SVG or layered PSD.</p>
-        </li>
-        <li>
-          <span class="logo-wrap"
-            ><img
-              class="integration-logo"
-              src="/brands/affinity-photo.svg"
-              alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
-            <strong>Affinity Photo</strong> Export layered PSD with full layer
+            <strong>Affinity</strong> Export SVG or layered PSD with full layer
             groups.
           </p>
         </li>
@@ -518,8 +550,8 @@
               class="integration-logo"
               src="/brands/inkscape.svg"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -532,8 +564,8 @@
               class="integration-logo"
               src="/brands/procreate.png"
               alt=""
-              width="24"
-              height="24"
+              width="40"
+              height="40"
               decoding="async"
           /></span>
           <p>
@@ -541,37 +573,9 @@
             every layer intact.
           </p>
         </li>
-        <li>
-          <span class="logo-wrap"
-            ><img
-              class="integration-logo"
-              src="/brands/canva.svg"
-              alt=""
-              width="24"
-              height="24"
-              decoding="async"
-          /></span>
-          <p><strong>Canva</strong> Export SVG or PNG for layouts in Canva.</p>
-        </li>
       </ol>
     </section>
-    <section itemprop="gallery">
-      <header>
-        <h2>Gallery</h2>
-        <menu class="gallery-preferences">
-          <preference compact name="shadow" />
-          <preference compact name="stroke" />
-          <preference compact name="mosaic" />
-          <preference compact name="drama" />
-          <preference compact name="animate" />
-          <preference compact name="view_3d" label="3D" />
-        </menu>
-      </header>
-      <as-figure
-        v-for="poster in gallery_posters"
-        :key="poster.id"
-        :itemid="poster.id" />
-    </section>
+    <hr />
     <footer itemprop="footer">
       <logo-as-link />
       <call-to-action />
@@ -641,7 +645,8 @@
 
           @media (min-width: pad-begins) {
             margin-top: base-line * 2;
-            width: base-line * 13;
+            flex: 0 1 base-line * 20;
+            max-width: base-line * 20;
           }
 
           & > h1 {
@@ -651,6 +656,7 @@
 
             @media (min-width: pad-begins) {
               text-align: left;
+              width: base-line * 13;
             }
           }
 
@@ -661,26 +667,30 @@
             color: red;
 
             @media (min-width: pad-begins) {
-              max-width: inherit;
+              width: base-line * 13;
+              max-width: base-line * 13;
             }
           }
 
           & > h4 {
             text-align: center;
             line-height: 1.66;
+
+            @media (min-width: pad-begins) {
+              text-align: left;
+            }
           }
 
           & > p {
             margin-top: base-line;
             text-align: center;
 
-            &[itemprop='workflow-tools'] {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 0.28em;
-              align-items: baseline;
-              justify-content: center;
+            @media (min-width: pad-begins) {
               text-align: left;
+            }
+
+            &[itemprop='workflow-tools'] {
+              max-width: base-line * 20;
             }
           }
 
@@ -814,6 +824,7 @@
         & > footer {
           display: flex;
           flex-direction: column;
+          justify-content: center;
           width: 100%;
           margin: 0 auto;
           min-height: var(--about-article-copy-min-height);
@@ -879,6 +890,32 @@
       }
     }
 
+    & > [itemprop='communities'] {
+      & > section {
+        min-height: calc(var(--poster-grid-height) + var(--base-line) * 4);
+
+        @media (min-width: pad-begins) {
+          min-height: max(calc(var(--poster-grid-height) + var(--base-line) * 6), var(--about-article-copy-min-height));
+        }
+
+        & > figure.poster {
+          min-height: calc(var(--poster-grid-height) + var(--base-line) * 2);
+
+          @media (min-width: pad-begins) {
+            flex: 1.5;
+          }
+        }
+
+        & > header {
+          max-width: base-line * 20;
+
+          @media (min-width: pad-begins) {
+            flex: 0 1 base-line * 20;
+          }
+        }
+      }
+    }
+
     & > [itemprop='support'] {
       min-height: var(--about-block-min-height);
 
@@ -926,23 +963,26 @@
     }
 
     & > [itemprop='integrations'] {
-      padding: base-line;
-      min-height: var(--about-article-list-min-height);
+      padding: base-line * 2;
+      min-height: 100vh;
 
       & > header > h2 {
         about-section-heading();
-        margin-bottom: base-line * 3;
+        margin-bottom: base-line * 4;
       }
 
       & > ol {
         about-feature-list();
+        grid-gap: base-line * 2;
+        grid-template-columns: repeat(auto-fill, minmax(375px, 1fr));
 
         & > li {
           position: relative;
           display: block;
+          padding-left: base-line * 0.25;
 
           & > p {
-            margin-left: base-line * 2;
+            margin-left: base-line * 3;
             margin-bottom: 0;
           }
 
@@ -950,8 +990,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: base-line * 1.33;
-            height: base-line * 1.33;
+            width: base-line * 2;
+            height: base-line * 2;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -964,8 +1004,8 @@
             }
 
             & > .integration-logo {
-              width: base-line * 1.33;
-              height: base-line * 1.33;
+              width: base-line * 2;
+              height: base-line * 2;
               object-fit: contain;
             }
           }
@@ -980,7 +1020,61 @@
         & > ol > li {
           about-enter();
 
-          for i in 1..15 {
+          for i in 1..7 {
+            &:nth-child({i}) {
+              animation-delay: calc((i - 1) * var(--about-stagger));
+            }
+          }
+        }
+      }
+    }
+
+    & > [itemprop='preferences'] {
+      padding: base-line;
+      min-height: 100vh;
+
+      & > header {
+        margin-bottom: base-line * 3;
+
+        & > h2 {
+          about-section-heading();
+        }
+
+        & > p {
+          max-width: base-line * 28;
+          margin: 0 auto base-line * 2;
+          text-align: center;
+          line-height: 1.66;
+        }
+
+        & > button {
+          display: block;
+          margin: 0 auto;
+          padding: base-line * 0.5 base-line * 2;
+          border: 1px solid red;
+          border-radius: base-line * 0.33;
+          background: none;
+          color: red;
+          cursor: pointer;
+          font: inherit;
+
+          &:hover,
+          &:focus-visible {
+            background: red;
+            color: white;
+          }
+        }
+      }
+
+      &.revealed {
+        & > header {
+          about-enter();
+        }
+
+        :deep(menu.preferences-menu > article) {
+          about-enter();
+
+          for i in 1..3 {
             &:nth-child({i}) {
               animation-delay: calc((i - 1) * var(--about-stagger));
             }
@@ -1101,6 +1195,8 @@
       & > [itemprop='features']:not(.revealed) > ol > li,
       & > [itemprop='integrations']:not(.revealed) > header,
       & > [itemprop='integrations']:not(.revealed) > ol > li,
+      & > [itemprop='preferences']:not(.revealed) > header,
+      & > [itemprop='preferences']:not(.revealed) :deep(menu.preferences-menu > article),
       & > [itemprop='gallery']:not(.revealed) > header,
       & > [itemprop='support']:not(.revealed) > *,
       & > [itemprop='footer']:not(.revealed) > * {
@@ -1121,6 +1217,8 @@
         & > [itemprop='features']:not(.revealed) > ol > li,
         & > [itemprop='integrations']:not(.revealed) > header,
         & > [itemprop='integrations']:not(.revealed) > ol > li,
+        & > [itemprop='preferences']:not(.revealed) > header,
+        & > [itemprop='preferences']:not(.revealed) > menu > article,
         & > [itemprop='gallery']:not(.revealed) > header,
         & > [itemprop='support']:not(.revealed) > *,
         & > [itemprop='footer']:not(.revealed) > * {
@@ -1133,6 +1231,8 @@
       & > [itemprop='features'].revealed > ol > li,
       & > [itemprop='integrations'].revealed > header,
       & > [itemprop='integrations'].revealed > ol > li,
+      & > [itemprop='preferences'].revealed > header,
+      & > [itemprop='preferences'].revealed :deep(menu.preferences-menu > article),
       & > [itemprop='gallery'].revealed > header,
       & > [itemprop='footer'].revealed > * {
         animation: none;

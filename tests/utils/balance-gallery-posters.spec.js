@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vite-plus/test'
 import {
   balance_orientation,
   balance_gallery_posters,
+  cap_gallery_counts,
   gallery_counts_for_page_balance
 } from '@/utils/balance-gallery-posters'
 
@@ -40,6 +41,22 @@ describe('gallery_counts_for_page_balance', () => {
         { landscape: 5, portrait: 3 }
       )
     ).toEqual({ landscape: 5, portrait: 3 })
+  })
+})
+
+describe('cap_gallery_counts', () => {
+  it('returns counts unchanged when already within max', () => {
+    expect(cap_gallery_counts({ landscape: 2, portrait: 3 }, 6)).toEqual({
+      landscape: 2,
+      portrait: 3
+    })
+  })
+
+  it('trims larger orientation first when over max', () => {
+    expect(cap_gallery_counts({ landscape: 5, portrait: 5 }, 6)).toEqual({
+      landscape: 3,
+      portrait: 3
+    })
   })
 })
 
@@ -102,5 +119,25 @@ describe('balance_gallery_posters', () => {
     expect(landscape).toBe(1)
     expect(portrait).toBe(3)
     expect(landscape + 3).toBe(portrait + 1)
+  })
+
+  it('caps gallery size when max is set', async () => {
+    const featured = [
+      { id: '/a/posters/wide-1', type: 'posters' },
+      { id: '/a/posters/wide-2', type: 'posters' },
+      { id: '/a/posters/wide-3', type: 'posters' },
+      { id: '/a/posters/tall-1', type: 'posters' }
+    ]
+    const posters = [
+      { id: '/a/posters/wide-4', type: 'posters' },
+      { id: '/a/posters/wide-5', type: 'posters' },
+      { id: '/a/posters/wide-6', type: 'posters' },
+      { id: '/a/posters/tall-2', type: 'posters' },
+      { id: '/a/posters/tall-3', type: 'posters' },
+      { id: '/a/posters/tall-4', type: 'posters' }
+    ]
+    const ordered = await balance_gallery_posters(posters, { featured, max: 2 })
+
+    expect(ordered).toHaveLength(2)
   })
 })
