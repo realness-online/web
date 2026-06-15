@@ -1,5 +1,7 @@
 <script setup>
   import SiteNav from '@/components/site-nav'
+  import PreferencesMenu from '@/components/preferences-menu'
+  import { reset_preferences } from '@/utils/preference'
   import {
     documentation_html,
     documentation_toc
@@ -25,14 +27,31 @@
           {{ item.title }}
         </a>
       </nav>
-      <section class="content" v-html="rendered_html" />
+      <section class="content">
+        <div v-html="rendered_html" />
+        <section class="preferences-panel">
+          <header>
+            <h2 id="preferences">Preferences</h2>
+            <p>
+              Layers, geology, motion, 3D atmosphere - every poster responds to
+              what you turn on. Reset everything to start clean.
+            </p>
+            <button type="button" @click="reset_preferences">Reset</button>
+          </header>
+          <preferences-menu icon />
+        </section>
+      </section>
     </article>
   </section>
 </template>
 
 <style lang="stylus">
+  @require '../style/mixins/markdown-content.styl'
+
   section.page.documentation {
     margin: 0 auto;
+    padding: 0 base-line;
+
     @media (min-width: pad-begins) {
       max-width: base-line * 52;
     }
@@ -64,26 +83,24 @@
 
       @media (min-width: pad-begins) {
         display: grid;
-        grid-template-columns: (base-line * 11) minmax(0, 1fr);
-        gap: base-line * 2;
+        grid-template-columns: (base-line * 9) minmax(0, 1fr);
+        gap: base-line * 1.5;
         align-items: start;
       }
 
       & > nav.toc {
         display: block;
-        column-width: 166px;
+        column-width: base-line * 8;
         column-gap: base-line;
         column-fill: balance;
         column-rule: 1px solid var(--red);
-        padding-left: base-line * 1.33;
         margin-bottom: base-line * 2;
 
         @media (min-width: pad-begins) {
           column-width: auto;
           column-count: 1;
           column-rule: none;
-          padding-left: 0;
-          padding-right: base-line;
+          padding-right: base-line * 0.75;
           margin-bottom: 0;
           position: sticky;
           top: base-line;
@@ -132,75 +149,50 @@
       }
 
       & > section.content {
+        min-width: 0;
         padding: 0 base-line * 0.5;
         max-width: base-line * 36;
 
-        h1, h2, h3, h4, h5, h6 {
-          color: var(--red);
-          margin-top: base-line * 2;
-          margin-bottom: base-line;
+        & > div {
+          min-width: 0;
+          max-width: 100%;
+          markdown_content();
+        }
 
-          &:first-child {
-            margin-top: 0;
+        & > section.preferences-panel {
+          margin-top: base-line * 3;
+
+          & > header {
+            margin-bottom: base-line * 2;
+
+            & > h2 {
+              color: var(--red);
+              margin-bottom: base-line;
+            }
+
+            & > p {
+              max-width: base-line * 28;
+              margin-bottom: base-line * 2;
+              line-height: 1.66;
+            }
+
+            & > button {
+              display: block;
+              padding: base-line * 0.5 base-line * 2;
+              border: 1px solid var(--red);
+              border-radius: base-line * 0.33;
+              background: none;
+              color: var(--red);
+              cursor: pointer;
+              font: inherit;
+
+              &:hover,
+              &:focus-visible {
+                background: var(--red);
+                color: white;
+              }
+            }
           }
-        }
-
-        h1 {
-          color: var(--blue);
-        }
-
-        p {
-          margin-bottom: base-line;
-          line-height: 1.6;
-        }
-
-        ul, ol {
-          margin-bottom: base-line;
-          padding-left: base-line * 2;
-
-          li {
-            margin-bottom: round((base-line / 2), 2);
-          }
-        }
-
-        code {
-          background: var(--code-surface);
-          padding: round((base-line / 4), 2) round((base-line / 2), 2);
-          border-radius: round((base-line / 4), 2);
-          font-family: 'Monaco', 'Menlo', monospace;
-          font-size: 0.875rem;
-        }
-
-        pre {
-          background: var(--code-surface);
-          padding: base-line;
-          border-radius: round((base-line / 4), 2);
-          overflow-x: auto;
-          margin-bottom: base-line;
-        }
-
-        blockquote {
-          border-left: 3px solid var(--red);
-          padding-left: base-line;
-          margin-bottom: base-line;
-          font-style: italic;
-        }
-
-        a {
-          color: var(--blue);
-          text-decoration: none;
-
-          &:hover {
-            color: var(--red);
-          }
-        }
-
-        svg {
-          width: 1em;
-          height: 1em;
-          vertical-align: text-bottom;
-          fill: currentColor;
-          margin-right: 0.25em;
         }
       }
     }
