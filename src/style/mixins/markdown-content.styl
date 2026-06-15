@@ -1,0 +1,92 @@
+markdown_content()
+  h1, h2, h3, h4, h5, h6
+    color: var(--red)
+    margin-top: base-line * 2
+    margin-bottom: base-line
+
+    &:first-child
+      margin-top: 0
+
+  h1
+    color: var(--blue)
+
+    & > span
+      color: var(--blue)
+      font-size: 0.66em
+      font-weight: 300
+
+  p, li
+    line-height: 1.6
+    overflow-wrap: break-word
+
+  p
+    margin-bottom: base-line
+
+  ul, ol
+    margin-bottom: base-line
+    padding-inline-start: base-line * 1.5
+    max-width: page-width
+
+  ul
+    list-style: disc
+    list-style-position: inside
+
+  ol
+    list-style: decimal
+    list-style-position: inside
+
+  ul, ol
+    li
+      margin-bottom: round((base-line / 2), 2)
+
+      &:last-child
+        margin-bottom: 0
+
+      & > svg.inline-icon
+        display: inline-block
+        width: base-line * 0.75
+        height: base-line * 0.75
+        margin: 0 round((base-line / 4), 2) 0 0
+        vertical-align: -0.12em
+        fill: currentColor
+        overflow: visible
+        pointer-events: none
+        stroke-width: 0
+
+        &.animation
+          stroke: currentColor
+          stroke-width: 2
+          paint-order: stroke fill
+          stroke-linejoin: round
+          stroke-linecap: round
+
+  code
+    background: var(--code-surface)
+    padding: round((base-line / 4), 2) round((base-line / 2), 2)
+    border-radius: round((base-line / 4), 2)
+    font-family: 'Monaco', 'Menlo', monospace
+    font-size: 0.875rem
+
+  pre
+    background: var(--code-surface)
+    padding: base-line
+    border-radius: round((base-line / 4), 2)
+    overflow-x: auto
+    margin-bottom: base-line
+
+    code
+      background: none
+      padding: 0
+
+  blockquote
+    border-left: 3px solid var(--red)
+    padding-left: base-line
+    margin-bottom: base-line
+    font-style: italic
+
+  a
+    color: var(--blue)
+    text-decoration: none
+
+    &:hover
+      color: var(--red)

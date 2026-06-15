@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test'
 import {
   documentation_html,
-  documentation_toc
+  documentation_preferences_toc,
+  documentation_toc,
+  inline_documentation_icons
 } from '@/utils/documentation-content'
 
 describe('documentation-content', () => {
@@ -9,7 +11,8 @@ describe('documentation-content', () => {
     const toc = documentation_toc('## Overview\n\n## Posters\n')
     expect(toc).toEqual([
       { id: 'overview', title: 'Overview', level: 2 },
-      { id: 'posters', title: 'Posters', level: 2 }
+      { id: 'posters', title: 'Posters', level: 2 },
+      ...documentation_preferences_toc
     ])
   })
 
@@ -17,5 +20,29 @@ describe('documentation-content', () => {
     const html = documentation_html('## Hello\n\nParagraph text.')
     expect(html).toContain('id="hello"')
     expect(html).toContain('<p>Paragraph text.</p>')
+  })
+
+  it('inlines island icons from the sprite', () => {
+    const html = documentation_html(
+      '- <svg><use href="/icons.svg#add"></use></svg> **Add**'
+    )
+    expect(html).toContain('class="inline-icon"')
+    expect(html).toContain('viewBox="0 0 16 16"')
+    expect(html).not.toContain('<use href="/icons.svg#add">')
+  })
+
+  it('marks animation icons for stroke styling', () => {
+    const html = inline_documentation_icons(
+      '<svg><use href="/icons.svg#animation"></use></svg>'
+    )
+    expect(html).toContain('class="inline-icon animation"')
+  })
+
+  it('inlines icons after marked parse', () => {
+    const html = inline_documentation_icons(
+      '<svg><use href="/icons.svg#gear"></use></svg>'
+    )
+    expect(html).toContain('class="inline-icon"')
+    expect(html).not.toContain('<use')
   })
 })

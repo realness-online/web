@@ -1,5 +1,7 @@
 <script setup>
   import { ref, nextTick, watch } from 'vue'
+  import PreferencesMenu from '@/components/preferences-menu'
+  import { reset_preferences } from '@/utils/preference'
   import {
     documentation_html,
     documentation_toc
@@ -57,11 +59,24 @@
       </nav>
       <!-- Markdown content: manual innerHTML on open avoids Safari dialog+v-html rendering bug -->
       <section ref="content_ref" class="content" />
+      <section class="preferences-panel">
+        <header>
+          <h2 id="preferences">Preferences</h2>
+          <p>
+            Layers, geology, motion, 3D atmosphere - every poster responds to
+            what you turn on. Reset everything to start clean.
+          </p>
+          <button type="button" @click="reset_preferences">Reset</button>
+        </header>
+        <preferences-menu icon />
+      </section>
     </article>
   </dialog>
 </template>
 
 <style lang="stylus">
+  @require '../style/mixins/markdown-content.styl'
+
   dialog.documentation {
     & > header {
       h1 {
@@ -161,80 +176,46 @@
 
       & > section.content {
         flex: 1;
+        min-width: 0;
+        max-width: 100%;
         padding: 0 base-line * .5;
-        & > h1, & > h2, & > h3, & > h4, & > h5, & > h6 {
-          color: var(--red);
-          margin-top: base-line * 2;
-          margin-bottom: base-line;
-          &:first-child {
-            margin-top: 0;
-          }
-        }
-        & > h1 {
-          color: var(--blue);
-          & > span {
-            color: var(--blue);
-            font-size: 0.66em;
-            font-weight: 300;
-          }
-        }
-        & > p {
-          margin-bottom: base-line;
-          line-height: 1.6;
-        }
+        markdown_content();
+      }
 
-        & > ul, & > ol {
-          margin-bottom: base-line;
-          padding-left: base-line * 2;
+      & > section.preferences-panel {
+        padding: 0 base-line * 0.5 base-line * 2;
+        border-top: 1px solid var(--red);
 
-          & > li {
-            margin-bottom: round((base-line / 2), 2);
-          }
-        }
-
-        & > code {
-          background: var(--code-surface);
-          padding: round((base-line / 4), 2) round((base-line / 2), 2);
-          border-radius: round((base-line / 4), 2);
-          font-family: 'Monaco', 'Menlo', monospace;
-          font-size: 0.875rem;
-        }
-
-        & > pre {
-          background: var(--code-surface);
-          padding: base-line;
-          border-radius: round((base-line / 4), 2);
-          overflow-x: auto;
+        & > header {
           margin-bottom: base-line;
 
-          & > code {
-            background: none;
-            padding: 0;
-          }
-        }
-
-        & > blockquote {
-          border-left: 3px solid var(--red);
-          padding-left: base-line;
-          margin-bottom: base-line;
-          font-style: italic;
-        }
-
-        & > a {
-          color: var(--blue);
-          text-decoration: none;
-
-          &:hover {
+          & > h2 {
             color: var(--red);
+            margin-top: base-line * 2;
+            margin-bottom: base-line;
           }
-        }
 
-        svg.inline-icon {
-          width: 1em;
-          height: 1em;
-          vertical-align: text-bottom;
-          fill: currentColor;
-          margin-right: 0.25em;
+          & > p {
+            margin-bottom: base-line * 2;
+            line-height: 1.66;
+          }
+
+          & > button {
+            display: block;
+            padding: base-line * 0.5 base-line * 2;
+            border: 1px solid var(--red);
+            border-radius: base-line * 0.33;
+            background: none;
+            color: var(--red);
+            cursor: pointer;
+            font: inherit;
+
+            &:hover,
+            &:focus-visible {
+              background: var(--red);
+              color: white;
+            }
+          }
         }
       }
     }
