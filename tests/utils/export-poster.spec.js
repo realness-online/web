@@ -62,6 +62,18 @@ describe('@/utils/export-poster', () => {
         /^#/
       )
     })
+
+    it('strips composition grid overlay from exports', () => {
+      const source = make_svg()
+      const grid = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      grid.setAttribute('class', 'grid-overlay')
+      grid.innerHTML = '<line x1="0" y1="10" x2="100" y2="10"></line>'
+      source.appendChild(grid)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('g.grid-overlay')).toBeNull()
+    })
   })
 
   describe('get_filename_for_poster', () => {

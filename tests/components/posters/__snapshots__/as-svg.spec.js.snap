@@ -39,36 +39,9 @@ exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`
       y="0"
     />
     <!--v-if-->
+    <!--v-if-->
   </g>
   <defs>
-    <symbol
-      id="grid-overlay"
-      viewBox="0 0 1 1"
-    >
-      <rect
-        height="0.33"
-        width="1.00"
-      />
-      <rect
-        height="0.33"
-        rx="0.011"
-        width="1.00"
-        y="0.33"
-      />
-      <rect
-        height="0.33"
-        rx="0.011"
-        width="1.00"
-        y="0.66"
-      />
-      <rect
-        height="0.33"
-        rx="0.011"
-        width="0.33"
-        x="0.33"
-        y="0.33"
-      />
-    </symbol>
     <!--v-if-->
     <as-masks-stub
       itemid="/+16282281824/posters/559666932867"
