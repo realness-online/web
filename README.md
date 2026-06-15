@@ -8,6 +8,8 @@ Realness web is the source code for [realness.online](https://realness.online). 
 
 **Full functionality without tracking** - Realness works solely on the client, giving users complete control over their data and experience.
 
+See Realness in action: the [About](https://realness.online/about) page walks through what it does with live posters, and the in-app [Documentation](https://realness.online/docs) explains every feature and preference. The richer, visual explanations live there.
+
 Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
 
 ## What Realness Does

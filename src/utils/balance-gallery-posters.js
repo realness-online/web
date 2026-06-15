@@ -43,6 +43,21 @@ export const gallery_counts_for_page_balance = (featured, pool) => {
 }
 
 /**
+ * @param {{ landscape: number, portrait: number }} counts
+ * @param {number} max
+ * @returns {{ landscape: number, portrait: number }}
+ */
+export const cap_gallery_counts = (counts, max) => {
+  let { landscape, portrait } = counts
+  while (landscape + portrait > max)
+    if (landscape >= portrait && landscape > 0) landscape--
+    else if (portrait > 0) portrait--
+    else break
+
+  return { landscape, portrait }
+}
+
+/**
  * Reorder items so landscape and portrait alternate when possible, with the
  * larger group split across the sequence instead of clustered at one end.
  *
@@ -96,12 +111,12 @@ export const balance_orientation = (items, is_landscape) => {
 
 /**
  * @param {import('@/types').Item[]} posters
- * @param {{ featured?: import('@/types').Item[] }} [options]
+ * @param {{ featured?: import('@/types').Item[], max?: number }} [options]
  * @returns {Promise<import('@/types').Item[]>}
  */
 export const balance_gallery_posters = async (
   posters,
-  { featured = [] } = {}
+  { featured = [], max = Infinity } = {}
 ) => {
   if (!posters.length) return posters
 
@@ -118,10 +133,13 @@ export const balance_gallery_posters = async (
   const landscape_pool = gallery_tagged.filter(entry => entry.landscape)
   const portrait_pool = gallery_tagged.filter(entry => !entry.landscape)
 
-  const counts = gallery_counts_for_page_balance(featured_counts, {
-    landscape: landscape_pool.length,
-    portrait: portrait_pool.length
-  })
+  const counts = cap_gallery_counts(
+    gallery_counts_for_page_balance(featured_counts, {
+      landscape: landscape_pool.length,
+      portrait: portrait_pool.length
+    }),
+    max
+  )
 
   const selected = [
     ...landscape_pool.slice(0, counts.landscape),
