@@ -92,7 +92,8 @@ vi.mock('@/use/statements', () => ({
 vi.mock('@/utils/preference', () => ({
   storytelling: ref(false),
   aspect_ratio_mode: ref('auto'),
-  menu: ref(true)
+  menu: ref(true),
+  only_mine: ref(false)
 }))
 
 describe('Thoughts', () => {
@@ -195,6 +196,28 @@ describe('Thoughts', () => {
       expect(wrapper.find('section#thoughts').classes()).toContain(
         'storytelling'
       )
+    })
+
+    it('loads only current user when only_mine is on', async () => {
+      const { only_mine } = await import('@/utils/preference')
+      only_mine.value = true
+      mock_statements_for_person.mockClear()
+      mock_posters_for_person.mockClear()
+
+      await wrapper.vm.$nextTick()
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(mock_statements_for_person).toHaveBeenCalledWith({
+        id: '/+14151234356'
+      })
+      expect(mock_statements_for_person).not.toHaveBeenCalledWith({
+        id: '/+14151234356/people/1'
+      })
+      expect(mock_people.value).toEqual([
+        { id: '/+14151234356', type: 'person' }
+      ])
+
+      only_mine.value = false
     })
 
     it('adds admin to people and fetches admin thoughts when not signed in', async () => {

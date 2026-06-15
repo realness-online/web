@@ -1,6 +1,14 @@
 <script setup>
   import { computed } from 'vue'
+  import Icon from '@/components/icon'
   import * as preferences from '@/utils/preference'
+  import {
+    get_preference_cycle_hint,
+    get_preference_cycle_keys,
+    get_preference_hint,
+    get_preference_icon,
+    get_preference_keys
+  } from '@/utils/keymaps'
   const props = defineProps({
     name: {
       type: String,
@@ -23,6 +31,10 @@
       required: false,
       default: false
     },
+    icon: {
+      type: Boolean,
+      default: false
+    },
     compact: {
       type: Boolean,
       default: false
@@ -32,6 +44,27 @@
   const state_text = computed(() => {
     if (!props.show_state) return ''
     return preference.value ? ' (on)' : ' (off)'
+  })
+  const show_hint = computed(() => !props.compact && !props.title)
+  const hint_text = computed(() => {
+    if (!show_hint.value) return null
+    return get_preference_hint(props.name)
+  })
+  const key_hint = computed(() => {
+    if (!show_hint.value) return []
+    return get_preference_keys(props.name)
+  })
+  const cycle_key_hint = computed(() => {
+    if (!show_hint.value) return []
+    return get_preference_cycle_keys(props.name)
+  })
+  const cycle_hint_text = computed(() => {
+    if (!show_hint.value) return null
+    return get_preference_cycle_hint(props.name)
+  })
+  const icon_name = computed(() => {
+    if (!props.icon) return null
+    return get_preference_icon(props.name)
   })
   const apply = new_state => {
     preference.value = new_state
@@ -53,7 +86,10 @@
 <template>
   <fieldset class="preference" :class="{ compact }">
     <div>
-      <h4 :class="{ labeled: label }">{{ label || name }}{{ state_text }}</h4>
+      <h4 :class="{ labeled: label, 'with-icon': icon_name }">
+        <icon v-if="icon_name" :name="icon_name" />
+        <span>{{ label || name }}{{ state_text }}</span>
+      </h4>
       <label class="switch">
         <input
           :checked="preference"
@@ -66,12 +102,22 @@
       </label>
     </div>
     <p v-if="title">{{ title }}</p>
-    <p v-if="subtitle">{{ subtitle }}</p>
+    <p v-else-if="hint_text || key_hint.length" class="hint">
+      <span v-if="hint_text">{{ hint_text }}</span>
+      <kbd v-for="key in key_hint" :key="key">{{ key }}</kbd>
+    </p>
+    <p v-if="cycle_key_hint.length && cycle_hint_text" class="hint">
+      <kbd v-for="key in cycle_key_hint" :key="`cycle-${key}`">{{ key }}</kbd>
+      <span>{{ cycle_hint_text }}</span>
+    </p>
+    <p v-else-if="subtitle">{{ subtitle }}</p>
     <slot />
   </fieldset>
 </template>
 
 <style lang="stylus">
+  fieldset.preference:has(input:checked) h4.with-icon svg.icon
+    color: var(--red)
   fieldset.preference
     margin-bottom: base-line
     &.compact
@@ -100,14 +146,24 @@
         text-transform: capitalize
         &.labeled
           text-transform: none
-        display: inline-block
+        display: inline-flex
+        align-items: center
+        gap: base-line * 0.35
         line-height: 1
         padding: 0
         font-size: normal;
         margin: 0 0 base-line 0
+        &.with-icon svg.icon
+          color: var(--blue)
+          width: base-line * 1.1
+          height: base-line * 1.1
+          flex-shrink: 0
         .compact > div > &
           margin: 0
           font-size: smaller
+          &.with-icon svg.icon
+            width: base-line
+            height: base-line
       & > label.switch
         position: relative
         display: inline-block
@@ -146,6 +202,17 @@
             opacity: 0.75
             -webkit-transition: .4s
             transition: .4s
+    & > p.hint
+      display: flex
+      flex-wrap: wrap
+      align-items: center
+      gap: base-line * 0.5
+      margin: 0
+      line-height: 1.4
+      font-size: smaller
+      opacity: 0.8
+      kbd
+        margin: 0
     a
       color: blue
       border-color: blue

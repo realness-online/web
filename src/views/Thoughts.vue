@@ -27,11 +27,17 @@
   import { use_posters } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use_keymap } from '@/use/key-commands'
-  import { storytelling, aspect_ratio_mode, menu } from '@/utils/preference'
+  import {
+    storytelling,
+    aspect_ratio_mode,
+    menu,
+    only_mine
+  } from '@/utils/preference'
   import { posting, scroll_position } from '@/use/posting'
   import { axis_visibility } from '@/utils/intersection'
   import { after_layout } from '@/utils/after-layout'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
+  import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
 
   const from_blog = ref(
     new URLSearchParams(window.location.search).get('from') === 'blog'
@@ -322,27 +328,33 @@
   }
 
   fill_statements = async (reset = false) => {
-    if (phonebook.value.length)
-      people.value = /** @type {import('@/types').Item[]} */ ([
-        ...phonebook.value
-      ])
     const my_id =
       (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
-    if (my_id && !people.value.some(p => p.id === my_id))
-      people.value.push({ id: my_id, type: 'person' })
-    const admin_raw = import.meta.env.VITE_ADMIN_ID
-    const admin_itemid = admin_raw
-      ? /** @type {Id} */ (`/${String(admin_raw).replace(/^\/?/, '')}`)
-      : null
-    if (
-      !current_user.value &&
-      admin_itemid &&
-      !people.value.some(p => p.id === admin_itemid)
-    )
-      people.value.push({
-        id: admin_itemid,
-        type: 'person'
-      })
+
+    if (only_mine.value)
+      people.value =
+        my_id && my_id.length > 2 ? [{ id: my_id, type: 'person' }] : []
+    else {
+      if (phonebook.value.length)
+        people.value = /** @type {import('@/types').Item[]} */ ([
+          ...phonebook.value
+        ])
+      if (my_id && !people.value.some(p => p.id === my_id))
+        people.value.push({ id: my_id, type: 'person' })
+      const admin_raw = import.meta.env.VITE_ADMIN_ID
+      const admin_itemid = admin_raw
+        ? /** @type {Id} */ (`/${String(admin_raw).replace(/^\/?/, '')}`)
+        : null
+      if (
+        !current_user.value &&
+        admin_itemid &&
+        !people.value.some(p => p.id === admin_itemid)
+      )
+        people.value.push({
+          id: admin_itemid,
+          type: 'person'
+        })
+    }
 
     await load_feed_for_people(
       /** @type {Id[]} */ (people.value.map(relation => relation.id)),
@@ -373,6 +385,15 @@
       await fill_statements()
     }
   )
+
+  watch(only_mine, async () => {
+    if (set_working) set_working(true)
+    try {
+      await fill_statements(true)
+    } finally {
+      if (set_working) set_working(false)
+    }
+  })
 
   mounted(async () => {
     if (set_working) set_working(true)
@@ -424,6 +445,7 @@
       menu
     }">
     <header>
+      <as-feed-toggle v-model="only_mine" />
       <a v-if="from_blog" :href="from_blog">←</a>
       <router-link id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
@@ -587,6 +609,12 @@
           font-size: 0.266em;
           vertical-align: sub;
           opacity: 0.67;
+          transition-property: opacity, color;
+          transition-timing-function: ease;
+          transition-duration: 0.66s;
+          @media (prefers-reduced-motion: reduce) {
+            transition-duration: 0.01ms;
+          }
         }
         & > span:first-child {
           grid-column: 1;
@@ -599,6 +627,13 @@
           grid-row: 1;
           font-size: 1em;
           opacity: 1;
+          transform: scale(1);
+          transition-property: transform, color;
+          transition-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+          transition-duration: 0.66s;
+          @media (prefers-reduced-motion: reduce) {
+            transition-duration: 0.01ms;
+          }
         }
         & > span:nth-child(3) {
           grid-column: 2;
@@ -611,6 +646,20 @@
           grid-row: 1;
           margin-left: 0.1em;
           margin-right: -(base-line * 0.25);
+        }
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            & > span:nth-child(2) {
+              color: red;
+              transform: scale(1.15);
+              @media (prefers-reduced-motion: reduce) {
+                transform: scale(1);
+              }
+            }
+            & > span:not(:nth-child(2)) {
+              opacity: 0.3;
+            }
+          }
         }
       }
     }

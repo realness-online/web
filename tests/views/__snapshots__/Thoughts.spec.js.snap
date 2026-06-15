@@ -11,6 +11,9 @@ exports[`Thoughts > Rendering > renders thoughts view 1`] = `
     id="thoughts"
   >
     <header>
+      <as-feed-toggle-stub
+        modelvalue="false"
+      />
       <!--v-if-->
       <router-link-stub
         id="about"
