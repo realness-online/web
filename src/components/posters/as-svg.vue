@@ -35,7 +35,8 @@
     sediment,
     storytelling,
     aspect_ratio_mode,
-    slice_alignment
+    slice_alignment,
+    grid
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id } from '@/utils/itemid'
   import {
@@ -200,6 +201,13 @@
   )
 
   const shadow_layer_displayed = computed(() => shadow.value || stroke.value)
+
+  const viewbox_rect = computed(() => {
+    const [x, y, width, height] = viewbox.value.split(' ').map(Number)
+    return { x, y, width, height }
+  })
+
+  const grid_visible = computed(() => grid.value)
 
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
@@ -417,14 +425,34 @@
         height="200%"
         :style="lightbar_front_style" />
       <as-mask-pen v-if="mask_pen_active && cutouts_mounted" :itemid="itemid" />
+      <g
+        v-if="grid_visible"
+        class="grid-overlay"
+        pointer-events="none"
+        :transform="`translate(${viewbox_rect.x} ${viewbox_rect.y})`">
+        <line
+          x1="0"
+          :y1="viewbox_rect.height / 3"
+          :x2="viewbox_rect.width"
+          :y2="viewbox_rect.height / 3" />
+        <line
+          x1="0"
+          :y1="(viewbox_rect.height * 2) / 3"
+          :x2="viewbox_rect.width"
+          :y2="(viewbox_rect.height * 2) / 3" />
+        <line
+          :x1="viewbox_rect.width / 3"
+          y1="0"
+          :x2="viewbox_rect.width / 3"
+          :y2="viewbox_rect.height" />
+        <line
+          :x1="(viewbox_rect.width * 2) / 3"
+          y1="0"
+          :x2="(viewbox_rect.width * 2) / 3"
+          :y2="viewbox_rect.height" />
+      </g>
     </g>
     <defs>
-      <symbol id="grid-overlay" viewBox="0 0 1 1">
-        <rect width="1.00" height="0.33" />
-        <rect width="1.00" height="0.33" y="0.33" rx="0.011" />
-        <rect width="1.00" height="0.33" y="0.66" rx="0.011" />
-        <rect width="0.33" height="0.33" y="0.33" x="0.33" rx="0.011" />
-      </symbol>
       <as-gradients v-if="valid_vector" :vector="valid_vector" />
       <as-masks :itemid="itemid" />
     </defs>
@@ -533,6 +561,15 @@
 
     &[data-held-layer='shadow'] use[itemprop='shadow'] {
       opacity: 0.85;
+    }
+
+    & g.grid-overlay line {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.72);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+      shape-rendering: crispEdges;
+      paint-order: stroke;
     }
 
     @media (prefers-reduced-motion: reduce) {

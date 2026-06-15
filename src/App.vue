@@ -54,7 +54,7 @@
     animation_speed,
     info,
     storytelling,
-    grid_overlay,
+    grid,
     aspect_ratio_mode,
     slice_alignment,
     menu,
@@ -252,7 +252,7 @@
     if (current === 'ymid') slice_alignment.value = 'ymax'
     else if (current === 'ymin') slice_alignment.value = 'ymid'
   })
-  register_preference('pref::Toggle_Grid', grid_overlay)
+  register_preference('pref::Toggle_Grid', grid)
   register_preference('pref::Toggle_Menu', menu)
   register_preference('pref::Toggle_Footer', footer_visible)
 
@@ -320,9 +320,13 @@
       ?.forEach(e => e.setAttribute('contenteditable', 'false'))
     status.value = 'offline'
   }
+  const go_to_thoughts_if_needed = () => {
+    if (router.currentRoute.value.path !== '/') router.push('/')
+  }
   /** @param {Event} event */
   const handle_add_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
+    go_to_thoughts_if_needed()
     void paste_photo()
     select_photo()
     if (input) input.checked = false
@@ -330,6 +334,7 @@
   /** @param {Event} event */
   const handle_camera_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
+    go_to_thoughts_if_needed()
     open_camera()
     if (input) input.checked = false
   }
