@@ -17,7 +17,8 @@ const {
   mock_rocks,
   mock_gravel,
   mock_sand,
-  mock_sediment
+  mock_sediment,
+  mock_grid
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_watchable = value =>
@@ -36,7 +37,8 @@ const {
     mock_rocks: create_watchable(true),
     mock_gravel: create_watchable(true),
     mock_sand: create_watchable(true),
-    mock_sediment: create_watchable(true)
+    mock_sediment: create_watchable(true),
+    mock_grid: create_watchable(false)
   }
 })
 
@@ -54,7 +56,8 @@ vi.mock('@/utils/preference', () => ({
   rocks: mock_rocks,
   gravel: mock_gravel,
   sand: mock_sand,
-  sediment: mock_sediment
+  sediment: mock_sediment,
+  grid: mock_grid
 }))
 
 const itemid = '/+16282281824/posters/559666932867'
@@ -501,6 +504,16 @@ describe('@/components/posters/as-svg.vue', () => {
       } finally {
         wrapper.unmount()
       }
+    })
+
+    it('shows composition grid when grid preference is on', async () => {
+      mock_grid.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      expect(wrapper.find('g.grid-overlay').exists()).toBe(true)
+      mock_grid.value = false
     })
   })
 })
