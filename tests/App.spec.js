@@ -28,12 +28,14 @@ const {
   mock_animate,
   mock_info,
   mock_storytelling,
-  mock_grid_overlay,
+  mock_grid,
   mock_menu,
   mock_aspect_ratio_mode,
   mock_slice_alignment,
   mock_footer_visible,
-  mock_current_route
+  mock_current_route,
+  mock_select_photo,
+  mock_open_camera
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_template_ref = value =>
@@ -61,12 +63,14 @@ const {
     mock_animate: create_ref(false),
     mock_info: create_ref(false),
     mock_storytelling: create_ref(false),
-    mock_grid_overlay: create_ref(false),
+    mock_grid: create_ref(false),
     mock_menu: create_ref(true),
     mock_aspect_ratio_mode: create_ref('auto'),
     mock_slice_alignment: create_ref('ymid'),
     mock_footer_visible: create_ref(true),
-    mock_current_route: create_ref({ path: '/', fullPath: '/' })
+    mock_current_route: create_ref({ path: '/', fullPath: '/' }),
+    mock_select_photo: vi.fn(),
+    mock_open_camera: vi.fn()
   }
 })
 
@@ -75,8 +79,8 @@ vi.mock('@/use/vectorize', () => ({
     image_picker: mock_image_picker,
     new_vector: { value: null },
     current_processing: { value: null },
-    open_camera: vi.fn(),
-    select_photo: vi.fn(),
+    open_camera: mock_open_camera,
+    select_photo: mock_select_photo,
     queue_supported_files: vi.fn().mockResolvedValue(false),
     init_processing_queue: vi.fn(),
     queue_items: { value: [] },
@@ -134,7 +138,7 @@ vi.mock('@/utils/preference', async () => {
   const animate_ref = ref(false)
   const info_ref = ref(false)
   const storytelling_ref = ref(false)
-  const grid_overlay_ref = ref(false)
+  const grid_ref = ref(false)
   const menu_ref = ref(true)
   const aspect_ratio_mode_ref = ref('auto')
   const slice_alignment_ref = ref('ymid')
@@ -256,10 +260,10 @@ vi.mock('@/utils/preference', async () => {
       storytelling_ref.value = v
     }
   })
-  Object.defineProperty(mock_grid_overlay, 'value', {
-    get: () => grid_overlay_ref.value,
+  Object.defineProperty(mock_grid, 'value', {
+    get: () => grid_ref.value,
     set: v => {
-      grid_overlay_ref.value = v
+      grid_ref.value = v
     }
   })
   Object.defineProperty(mock_menu, 'value', {
@@ -380,7 +384,7 @@ vi.mock('@/utils/preference', async () => {
     info: info_ref,
     storytelling: storytelling_ref,
     animation_speed: animation_speed_ref,
-    grid_overlay: grid_overlay_ref,
+    grid: grid_ref,
     menu: menu_ref,
     aspect_ratio_mode: aspect_ratio_mode_ref,
     slice_alignment: slice_alignment_ref,
@@ -886,6 +890,49 @@ describe('App.vue', () => {
       const handler = registered_handlers['nav::Go_About']
       handler()
       expect(mock_router_push).toHaveBeenCalledWith('/about')
+    })
+  })
+
+  describe('Upload and camera', () => {
+    const trigger_menu_input = aria_label => {
+      const input = wrapper.find(`label[aria-label="${aria_label}"] input`)
+      input.element.checked = true
+      return input.trigger('change')
+    }
+
+    beforeEach(() => {
+      mock_select_photo.mockClear()
+      mock_open_camera.mockClear()
+    })
+
+    it('navigates to thoughts before upload when not on home', async () => {
+      mock_current_route.value = { path: '/about', fullPath: '/about' }
+      await trigger_menu_input('Add poster')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+      expect(mock_select_photo).toHaveBeenCalled()
+    })
+
+    it('stays on thoughts when upload is triggered from home', async () => {
+      mock_current_route.value = { path: '/', fullPath: '/' }
+      mock_router_push.mockClear()
+      await trigger_menu_input('Add poster')
+      expect(mock_router_push).not.toHaveBeenCalled()
+      expect(mock_select_photo).toHaveBeenCalled()
+    })
+
+    it('navigates to thoughts before camera when not on home', async () => {
+      mock_current_route.value = { path: '/phonebook', fullPath: '/phonebook' }
+      await trigger_menu_input('Open camera')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+      expect(mock_open_camera).toHaveBeenCalled()
+    })
+
+    it('stays on thoughts when camera is triggered from home', async () => {
+      mock_current_route.value = { path: '/', fullPath: '/' }
+      mock_router_push.mockClear()
+      await trigger_menu_input('Open camera')
+      expect(mock_router_push).not.toHaveBeenCalled()
+      expect(mock_open_camera).toHaveBeenCalled()
     })
   })
 

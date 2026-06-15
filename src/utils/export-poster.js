@@ -148,6 +148,8 @@ export const build_download_svg = svg_element => {
   const vue_components = svg_clone.querySelectorAll('as-animation')
   vue_components.forEach(component => component.remove())
 
+  svg_clone.querySelectorAll('g.grid-overlay').forEach(el => el.remove())
+
   svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
   normalize_ids_for_download(svg_clone)

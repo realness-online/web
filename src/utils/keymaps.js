@@ -3,6 +3,8 @@
  * @typedef {import('@/types.js').Keymap_Context} Keymap_Context
  */
 
+import { shadow_value_hint } from '@/utils/shadow-values'
+
 /**
  * Keymap Key Notation:
  *
@@ -277,3 +279,140 @@ export const get_command_description = (command, keymap = default_keymap) => {
   }
   return command
 }
+
+/** @type {Record<string, string>} */
+export const preference_command = {
+  mosaic: 'pref::Toggle_Mosaic',
+  shadow: 'pref::Toggle_Shadow',
+  stroke: 'pref::Toggle_Stroke',
+  bold: 'pref::Toggle_Bold',
+  medium: 'pref::Toggle_Medium',
+  regular: 'pref::Toggle_Regular',
+  light: 'pref::Toggle_Light',
+  background: 'pref::Toggle_Background',
+  boulders: 'pref::Toggle_Boulders',
+  rocks: 'pref::Toggle_Rocks',
+  gravel: 'pref::Toggle_Gravel',
+  sand: 'pref::Toggle_Sand',
+  sediment: 'pref::Toggle_Sediment',
+  drama: 'pref::Toggle_Drama',
+  animate: 'pref::Toggle_Animate',
+  view_3d: 'pref::Toggle_View_3d',
+  grid: 'pref::Toggle_Grid',
+  info: 'pref::Toggle_Info',
+  storytelling: 'pref::Toggle_Storytelling',
+  only_mine: 'pref::Toggle_Only_Mine',
+  menu: 'pref::Toggle_Menu',
+  footer_visible: 'pref::Toggle_Footer'
+}
+
+/**
+ * @param {string} command
+ * @param {Keymap_Context[]} [keymap]
+ * @returns {string[]}
+ */
+export const get_keys_for_command = (command, keymap = default_keymap) => {
+  /** @type {string[]} */
+  const keys = []
+
+  for (const context_config of keymap)
+    for (const [key, binding] of Object.entries(
+      context_config.bindings || {}
+    )) {
+      if (!binding) continue
+      const command_str = Array.isArray(binding) ? binding[0] : binding
+      if (command_str === command) keys.push(key)
+    }
+
+  return keys
+}
+
+/**
+ * @param {string} name - Preference name from `@/utils/preference`
+ * @param {Keymap_Context[]} [keymap]
+ * @returns {string[]}
+ */
+export const get_preference_keys = (name, keymap = default_keymap) => {
+  const command = preference_command[name]
+  if (!command) return []
+  return get_keys_for_command(command, keymap)
+}
+
+/** @type {Record<string, string>} */
+export const preference_cycle_command = {
+  drama: 'pref::Cycle_Drama',
+  animate: 'pref::Cycle_Animation_Speed'
+}
+
+/**
+ * @param {string} name - Preference name from `@/utils/preference`
+ * @param {Keymap_Context[]} [keymap]
+ * @returns {string[]}
+ */
+export const get_preference_cycle_keys = (name, keymap = default_keymap) => {
+  const command = preference_cycle_command[name]
+  if (!command) return []
+  return get_keys_for_command(command, keymap)
+}
+
+/** @type {Record<string, string>} */
+export const preference_cycle_hint = {
+  drama: 'cycles lights',
+  animate: 'cycles speed'
+}
+
+/**
+ * @param {string} name
+ * @returns {string | null}
+ */
+export const get_preference_cycle_hint = name =>
+  preference_cycle_hint[name] ?? null
+
+/** @type {Record<string, string>} */
+export const preference_hint = {
+  mosaic: 'Tiles defining shape over shadow',
+  shadow: 'Value layers, Light -> Bold',
+  stroke: 'Outline shadow',
+  bold: shadow_value_hint.bold,
+  medium: shadow_value_hint.medium,
+  regular: shadow_value_hint.regular,
+  light: shadow_value_hint.light,
+  background: shadow_value_hint.background,
+  boulders: 'Largest pieces',
+  rocks: 'Large pieces',
+  gravel: 'Medium pieces',
+  sand: 'Small pieces',
+  sediment: 'Finest pieces',
+  drama: 'Dynamic lighting',
+  animate: 'Active backgrounds & 3d motion',
+  view_3d: 'View poster in 3D',
+  grid: 'Composition grid',
+  info: 'FPS overlay',
+  storytelling: 'View each poster in a fullscreen side scroll',
+  only_mine: 'Unshortened view of your posters and statements',
+  menu: 'Show app island',
+  footer_visible: 'Page footer'
+}
+
+/**
+ * @param {string} name
+ * @returns {string | null}
+ */
+export const get_preference_hint = name => preference_hint[name] ?? null
+
+/** @type {Record<string, string>} */
+export const preference_icon = {
+  mosaic: 'realness',
+  stroke: 'circle',
+  background: 'background',
+  animate: 'animation',
+  view_3d: 'galaxy',
+  grid: 'grid',
+  only_mine: 'silhouette'
+}
+
+/**
+ * @param {string} name
+ * @returns {string | null}
+ */
+export const get_preference_icon = name => preference_icon[name] ?? null

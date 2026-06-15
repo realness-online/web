@@ -59,13 +59,14 @@ export const enable_shadow_layers = () => {
 
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
+export const only_mine = storage('only_mine', false)
 
 export const animation_speed = storage(
   'animation_speed',
   DEFAULT_ANIMATION_SPEED
 )
 
-export const grid_overlay = storage('grid_overlay', false)
+export const grid = storage('grid', false)
 export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
@@ -102,3 +103,48 @@ export const breathing_speed = storage(
   'breathing_speed',
   DEFAULT_BREATHING_SPEED
 )
+
+export const reset_preferences = () => {
+  animate.value = false
+  drama.value = false
+  drama_back.value = false
+  drama_front.value = false
+  shadow.value = true
+  stroke.value = true
+  mosaic.value = true
+  bold.value = true
+  medium.value = true
+  regular.value = true
+  light.value = true
+  background.value = true
+  boulders.value = true
+  rocks.value = true
+  gravel.value = true
+  sand.value = true
+  sediment.value = true
+  info.value = false
+  storytelling.value = false
+  only_mine.value = false
+  animation_speed.value = DEFAULT_ANIMATION_SPEED
+  grid.value = false
+  aspect_ratio_mode.value = 'auto'
+  slice_alignment.value = 'ymid'
+  menu.value = true
+  footer_visible.value = true
+  sync_folder.value = false
+  view_3d.value = false
+  mosaic_spread.value = DEFAULT_MOSAIC_SPREAD
+  mosaic_opacity.value = DEFAULT_MOSAIC_OPACITY
+  shadow_spread.value = DEFAULT_SHADOW_SPREAD
+  shadow_opacity.value = DEFAULT_SHADOW_OPACITY
+  group_gap.value = DEFAULT_GROUP_GAP
+  tilt_amount.value = DEFAULT_TILT_AMOUNT
+  gyro_amount.value = DEFAULT_GYRO_AMOUNT
+  atmosphere_enabled.value = true
+  atmosphere_color.value = DEFAULT_ATMOSPHERE_COLOR
+  atmosphere_density.value = DEFAULT_ATMOSPHERE_DENSITY
+  drift_amount.value = DEFAULT_DRIFT_AMOUNT
+  drift_speed.value = DEFAULT_DRIFT_SPEED
+  breathing_amount.value = DEFAULT_BREATHING_AMOUNT
+  breathing_speed.value = DEFAULT_BREATHING_SPEED
+}
