@@ -10,6 +10,7 @@ import {
   is_itemid
 } from '@/utils/itemid-parse'
 import { get, set, keys, del } from 'idb-keyval'
+import { is_sync_index_missing } from '@/utils/sync-file'
 
 /**
  * @implements {Directory}
@@ -139,7 +140,73 @@ export const load_directory_from_network = async itemid => {
   })
   folder?.prefixes?.forEach(prefix => meta.archive.push(parseInt(prefix.name)))
   await set(path, meta)
+  if (archive)
+    await remember_archive_locations(
+      /** @type {Id} */ (path),
+      parseInt(archive),
+      meta.items
+    )
   return meta
+}
+
+/**
+ * idb key for the archive location map of an author+type:
+ * `{ [created_at]: archive_id }`. Archive segments are location only —
+ * identity stays the 3-part itemid.
+ * @param {Id} itemid
+ * @returns {string}
+ */
+const as_archive_map_id = itemid =>
+  `${as_author(itemid)}/${as_type(itemid)}/archive-map/`
+
+/**
+ * Looks up which archive directory holds an item, if known.
+ * @param {Id} itemid
+ * @returns {Promise<Created | null>}
+ */
+export const lookup_archive = async itemid => {
+  const created = as_created_at(itemid)
+  if (!created) return null
+  const map = await get(as_archive_map_id(itemid))
+  return map?.[created] ?? null
+}
+
+/**
+ * Records which archive directory each created_at lives in, and clears any
+ * DOES_NOT_EXIST markers in `sync:index` for items proven to exist — a 404
+ * from a mis-resolved storage path must not permanently block the item.
+ * @param {Id} itemid - Any itemid under the author+type (archive dir id works)
+ * @param {Created} archive_id
+ * @param {Created[]} created_ats - Items discovered inside that archive
+ * @returns {Promise<void>}
+ */
+export const remember_archive_locations = async (
+  itemid,
+  archive_id,
+  created_ats
+) => {
+  if (!archive_id || !created_ats?.length) return
+  const map_key = as_archive_map_id(itemid)
+  const map = (await get(map_key)) || {}
+  let changed = false
+  created_ats.forEach(created => {
+    if (map[created] === archive_id) return
+    map[created] = archive_id
+    changed = true
+  })
+  if (changed) await set(map_key, map)
+
+  const index = await get('sync:index')
+  if (!index) return
+  let index_changed = false
+  created_ats.forEach(created => {
+    const id = `${as_author(itemid)}/${as_type(itemid)}/${created}`
+    if (is_sync_index_missing(index[id])) {
+      delete index[id]
+      index_changed = true
+    }
+  })
+  if (index_changed) await set('sync:index', index)
 }
 
 /**
@@ -188,12 +255,23 @@ export const as_directory = async itemid => {
  */
 export const as_archive = async itemid => {
   if (itemid.startsWith('/+/')) return null
-  const directory = await as_directory(itemid)
+  const created = as_created_at(itemid)
+  if (!created) return null
+  const author = as_author(itemid)
+  const type = as_type(itemid)
+
+  const known_archive = await lookup_archive(itemid)
+  if (known_archive)
+    return `people${author}/${type}/${known_archive}/${created}`
+
+  // Read the raw cached directory — `as_directory` merges locally cached item
+  // keys into `items`, which makes an archived item with local html look like
+  // it lives in the main directory and resolves to a 404ing storage path.
+  const path = /** @type {Id} */ (as_directory_id(itemid))
+  const directory = (await get(path)) ?? (await as_directory(itemid))
   if (!directory) return null
 
   const { items = [], archive = [] } = directory
-  const created = as_created_at(itemid)
-  if (!created) return null
 
   // If poster is in the main directory items, it's not archived
   const item_timestamps = items.map(Number)
@@ -206,10 +284,16 @@ export const as_archive = async itemid => {
   return archive.reduce(async (chain, archive_id) => {
     const found = await chain
     if (found) return found
-    const path = `/${as_author(itemid)?.slice(1)}/${as_type(itemid)}/${archive_id}/`
-    const dir = await as_directory(/** @type {Id} */ (path))
-    if (dir?.items?.map(Number).includes(created))
-      return `people${as_author(itemid)}/${as_type(itemid)}/${archive_id}/${created}`
+    const dir_path = `/${author?.slice(1)}/${type}/${archive_id}/`
+    const dir = await as_directory(/** @type {Id} */ (dir_path))
+    if (dir?.items?.map(Number).includes(created)) {
+      await remember_archive_locations(
+        /** @type {Id} */ (dir_path),
+        archive_id,
+        [created]
+      )
+      return `people${author}/${type}/${archive_id}/${created}`
+    }
     return null
   }, Promise.resolve(null))
 }

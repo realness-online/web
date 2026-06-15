@@ -406,11 +406,15 @@ const load_archive_posters = async (author_id, archive_id) => {
     /** @type {Id} */ (`${author_id}/posters/${archive_id}/`)
   )
   if (!archive) return []
+  const { remember_archive_locations } = await import('@/persistence/Directory')
+  await remember_archive_locations(
+    /** @type {Id} */ (`${author_id}/posters/${archive_id}/`),
+    archive_id,
+    archive.items
+  )
   return /** @type {Poster[]} */ (
     archive.items.map(created_at => ({
-      id: /** @type {Id} */ (
-        `${author_id}/posters/${archive_id}/${created_at}`
-      ),
+      id: /** @type {Id} */ (`${author_id}/posters/${created_at}`),
       type: 'posters',
       background: '',
       light: '',
