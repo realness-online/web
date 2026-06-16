@@ -20,12 +20,6 @@ exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile
       />
       <menu>
         
-        <as-meta-stub
-          people=""
-        />
-        <as-relationship-options-stub
-          person="[object Object]"
-        />
         <profile-messenger-stub
           itemid="/+16282281823"
         />

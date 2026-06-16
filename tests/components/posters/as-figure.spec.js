@@ -285,19 +285,6 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(load).toHaveBeenCalled()
     })
 
-    it('shows author menu for my poster with picker flag on poster prop', async () => {
-      window.localStorage.me = '/+14151234356'
-      await wrapper.setProps({ menu: true, picker_selected: true })
-      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
-      await as_svg.vm.$emit('click', true)
-      await flushPromises()
-      const author_menu = wrapper.findComponent(as_menu_author)
-      expect(author_menu.exists()).toBe(true)
-      expect(author_menu.props('poster')).toEqual({
-        id: poster.id,
-        picker: true
-      })
-    })
 
     it('continues when shadow layer cache load throws', async () => {
       const shadow_id = as_layer_id(

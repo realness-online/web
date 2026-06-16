@@ -13,7 +13,7 @@ export const prerender_pages = [
     path: '/docs',
     title: 'Realness Online - Documentation',
     description:
-      'How to use Realness: posters, thoughts, phonebook, events, sync, exports, and keyboard shortcuts.',
+      'How to use Realness: posters, thoughts, sync, exports, and keyboard shortcuts.',
     og_title: 'Realness Online - Documentation'
   },
   {

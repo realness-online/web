@@ -305,7 +305,7 @@
           <icon name="finished" />
           <p>
             <strong>Trains of thought</strong> Every new statement you add for
-            12 minutes is added to the last, giving you time to think and
+            13 minutes is added to the last, giving you time to think and
             explore
           </p>
         </li>

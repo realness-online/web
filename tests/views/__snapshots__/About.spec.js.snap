@@ -232,7 +232,7 @@ exports[`About > Rendering > renders about view 1`] = `
           <strong>
             Trains of thought
           </strong>
-           Every new statement you add for 12 minutes is added to the last, giving you time to think and explore 
+           Every new statement you add for 13 minutes is added to the last, giving you time to think and explore 
         </p>
       </li>
       <li>

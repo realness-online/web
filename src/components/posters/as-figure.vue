@@ -74,10 +74,6 @@
       type: Boolean,
       default: false
     },
-    picker_selected: {
-      type: Boolean,
-      default: false
-    },
     menu_always_visible: {
       type: Boolean,
       default: false
@@ -90,8 +86,7 @@
   const emit = defineEmits({
     'vector-click': is_click,
     show: is_vector,
-    remove: is_vector_id,
-    picker: is_vector_id
+    remove: is_vector_id
   })
   const instance = current_instance()
   const mask_pen = use_mask_pen()
@@ -293,10 +288,8 @@
     return profile_path.value === my_id
   })
   const has_remove_handler = computed(() => !!instance?.vnode.props?.onRemove)
-  const has_picker_handler = computed(() => !!instance?.vnode.props?.onPicker)
   const author_menu_poster = computed(() => ({
-    id: props.itemid,
-    picker: props.picker_selected
+    id: props.itemid
   }))
   const profile_chip_itemid = computed(() =>
     props.profile_display === 'label'
@@ -580,9 +573,7 @@
                 v-if="!mask_pen.active.value"
                 :poster="author_menu_poster"
                 :allow_remove="has_remove_handler"
-                :allow_picker="has_picker_handler"
-                @remove="id => emit('remove', id)"
-                @picker="id => emit('picker', id)" />
+                @remove="id => emit('remove', id)" />
             </menu>
             <menu v-else>
               <as-figure

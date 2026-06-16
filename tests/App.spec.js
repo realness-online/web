@@ -874,12 +874,6 @@ describe('App.vue', () => {
       expect(mock_router_push).toHaveBeenCalledWith('/')
     })
 
-    it('navigates to phonebook', () => {
-      const handler = registered_handlers['nav::Go_Phonebook']
-      handler()
-      expect(mock_router_push).toHaveBeenCalledWith('/phonebook')
-    })
-
     it('navigates to thoughts', () => {
       const handler = registered_handlers['nav::Go_Thoughts']
       handler()

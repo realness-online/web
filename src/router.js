@@ -2,8 +2,6 @@ import { createWebHistory, createRouter } from 'vue-router'
 
 const routes = [
   { path: '/', component: () => import('@/views/Thoughts') },
-  { path: '/relations', component: () => import('@/views/Relations') },
-  { path: '/phonebook', component: () => import('@/views/PhoneBook') },
   { path: '/about', component: () => import('@/views/About') },
   { path: '/docs', component: () => import('@/views/Documentation') },
   { path: '/sign-on', redirect: '/account' },

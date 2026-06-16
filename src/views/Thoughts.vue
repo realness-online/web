@@ -110,9 +110,6 @@
     }
   })
 
-  const is_picker_selected = item =>
-    !!(/** @type {{picker?: boolean}} */ (item).picker)
-
   /**
    * @param {Id} id
    */
@@ -319,13 +316,6 @@
     { flush: 'pre' }
   )
 
-  const picker = itemid => {
-    const poster =
-      /** @type {import('@/types').Poster & {picker?: boolean}} */ (
-        posters.value.find(p => p.id === itemid)
-      )
-    if (poster) poster.picker = !poster.picker
-  }
 
   fill_statements = async (reset = false) => {
     const my_id =
@@ -493,17 +483,12 @@
           :itemid="feed_slot_itemid(item)"
           :menu="menu"
           :slice="aspect_ratio_mode !== 'auto'"
-          :picker_selected="is_picker_selected(item)"
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
           tabindex="0"
-          :class="{
-            'selecting-event': is_picker_selected(item),
-            'fill-screen': menu
-          }"
+          :class="{ 'fill-screen': menu }"
           @show="poster_shown"
-          @remove="remove_poster"
-          @picker="picker" />
+          @remove="remove_poster" />
         <thought-as-article
           v-else-if="
             item.type !== 'posters' &&
@@ -544,9 +529,6 @@
     & > section.as-days {
       padding-left: 0;
       padding-right: 0;
-      & figure.poster.selecting-event > svg:not(.background) {
-        opacity: 0.1;
-      }
       & [role='feed'] > article > header {
         padding-left: base-line;
         padding-right: base-line;
