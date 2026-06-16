@@ -27,8 +27,7 @@ vi.mock('@/use/people', async () => {
   const { ref } = await import('vue')
   return {
     use_me: () => ({
-      me: ref(null),
-      relations: ref([])
+      me: ref(null)
     }),
     is_person: maybe => {
       if (typeof maybe !== 'object') return false
@@ -56,8 +55,6 @@ describe('@/component/profile/as-figure.vue', () => {
         stubs: {
           'as-svg': true,
           icon: true,
-          'profile-as-meta': true,
-          'as-relationship-options': true,
           'as-address': true,
           'as-messenger': true
         }
@@ -264,8 +261,6 @@ describe('@/component/profile/as-figure.vue', () => {
           stubs: {
             'as-svg': true,
             icon: true,
-            'profile-as-meta': true,
-            'as-relationship-options': true,
             'as-address': true,
             'as-messenger': true
           }

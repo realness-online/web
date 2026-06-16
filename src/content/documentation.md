@@ -3,34 +3,28 @@
 
 ## Overview
 
-Realness is a rotoscoping tool. Trace photos into layered SVG **posters**—animatable shadows, gradients, and mosaic cutouts. Print layers on transparency film and stack them like Disney-era cel animation. Export to SVG, PNG, PSD, video, or GLB for Figma, Affinity, Blender, and the rest of your stack.
+Realness is a rotoscoping tool. With it you can trace photos into layered SVG **posters** with animatable mosaics, shadows, and gradients. Posters export to SVG, PNG, PSD, video, or GLB. Print layers on transparency film and stack them like Disney-era cel animation.
 
-Everything runs on your device. No AI—classical computer vision traces your photos. Sign in to sync.
+Everything runs on your device — no AI, just classical computer vision. Sign in to sync, or host your own Realness.
 
 ### Quick start
 
 Add Realness to your home screen.
 
 1. Open the app, tap the camera, and take a picture.
-2. Realness rotoscopes the photo into a vector poster with five _Mosaic_, and 4 _Shadow_ layers and an available eighteen gradients pulled from the image.
+2. Realness rotoscopes the photo into a vector poster: five _Mosaic_ layers, four _Shadow_ layers, and up to eighteen gradients pulled from the image.
 3. Write statements alongside posters to build a thought.
-4. Sign in with your phone number to sync and show up in the phonebook.
+4. Sign in with your phone number to sync with your community.
 
 ---
 
 ### Interface
 
-The island drives the app.
+The application **Island** lives at the bottom of your screen.
 
-**Pages:** Thoughts, about, documentation, pricing, phonebook, relations, account, sign-on.
-
-**Island:**
-
-Add is for images you already have. Camera is for shooting one new photo.
-
-- <svg><use href="/icons.svg#add"></use></svg> **Add** — clipboard, then file picker. One or many posters.
+- <svg><use href="/icons.svg#add"></use></svg> **Add** — file picker for photos you already have. One or many posters.
 - <svg><use href="/icons.svg#galaxy"></use></svg> **3D** — toggle the 3D viewer.
-- <svg><use href="/icons.svg#camera"></use></svg> **Camera** — one rear-camera shot. No picker, no batch.
+- <svg><use href="/icons.svg#camera"></use></svg> **Camera** — quick photo capture, improvisational and fun — zoom without quality loss.
 - <svg><use href="/icons.svg#animation"></use></svg> **Animation** — toggle poster animation.
 - <svg><use href="/icons.svg#gear"></use></svg> **Preferences** — open the preferences panel.
 
@@ -42,27 +36,37 @@ On desktop, paste anywhere to queue a poster—same queue as **Add**. Keyboard s
 
 **Thoughts** pair statements with posters. Each new entry extends the current thought, giving you 13 minutes to build on what you're thinking.
 
-Before you sign in, Thoughts shows only this community's moderator—their posters and statements. The phonebook lists them too. Browse to see what this Realness is like; sign in to join and add your own.
+Before you sign in, Thoughts shows only this community's moderator—their posters and statements. Browse to see what this Realness is like; sign in to join and add your own.
 
 Statements within 13 minutes of a poster attach as overlay captions—you'll see a teal border on the poster. Those statements don't appear separately in the feed. Text-only thoughts stand alone.
 
-#### Posters
+#### Statements
 
-Thoughts and profiles show posters by day. Use **Add** or **Camera** on the island, or paste on desktop (see below).
+Text written in the feed, grouped by day. Tap any statement to edit in place. URLs stay as text. They aren't turned into links. Works offline without sign-in; syncs once you sign in.
 
-##### Anatomy of a poster
+#### Profile
 
-Each poster is a layered SVG. Front to back:
+Shows avatar, posters, and statements by day. Download their posters. Cached offline; visits are not tracked.
 
-**Mosaic** — transparent cutouts from photo contrast. Five layers (front to back): Boulders, Rocks, Gravel, Sand, Sediment. In 3D view, finer layers step up toward you.
+---
 
-**Stroke** — outlines along the shadow paths.
+### Posters
+
+Posters appear in Thoughts and on profiles, grouped by day. Use **Add** or **Camera** on the island, or paste on desktop.
+
+#### Anatomy of a poster
+
+Each poster is a layered SVG.
+
+**Mosaic** — transparent cutouts from photo contrast. Five layers: Boulders, Rocks, Gravel, Sand, Sediment. In 3D view, finer layers are raised creating the illusion of dimension.
 
 **Shadow** — tonal bands (lightest to boldest): Light, Regular, Medium, Bold. Background is an optional fill behind them.
 
+**Stroke** — outlines along the shadow paths.
+
 **Gradients** — eighteen colors from your photo, coloring the shadows.
 
-##### Interactive features
+#### Interactive features
 
 - **Poster menu** — on touch, long-press a poster to open download, mask pen, and more. On desktop, click the poster.
 - **Animation** — GPU color transitions; toggle and cycle speed from Preferences.
@@ -73,9 +77,11 @@ Each poster is a layered SVG. Front to back:
 - **Aspect ratio** — cycle presets from Preferences on desktop.
 - **Slice alignment** — nudge the crop in slice mode from Preferences on desktop.
 - **Storytelling** — horizontal feed scroll from Preferences on desktop.
+- **Presentation** — a keyboard shortcut fills the screen with the poster and hides the interface. Press it again to exit. The key is listed in Preferences.
 - **Mask pen** — edit mosaic selection on your own posters.
+- **Set as avatar** — on your own posters, the poster menu makes that poster your profile avatar.
 
-##### 3D viewer
+#### 3D viewer
 
 Toggle from the island or Preferences. With 3D on, tune spread, opacity, camera, atmosphere, and motion in the preferences panel.
 
@@ -85,49 +91,49 @@ Toggle from the island or Preferences. With 3D on, tune spread, opacity, camera,
 
 Vector work runs in web workers. View state persists locally.
 
-##### Download and export
+#### Download and export
 
 Open the poster menu first (long-press on touch, click on desktop). A blue sweep border means an export is running.
 
 Exports clone the live poster on screen—not a separate render path.
 
-- **SVG** — matches what you see (visible layers, opacity, crop, drama). Any size. Set `adobe` colors for HEX gradient stops in Adobe tools.
+- **SVG** — matches what you see (visible layers, opacity, crop, drama). Any size. Turn on the **adobe** color preference to write HEX gradient stops that Adobe tools read correctly.
 - **PNG** — same flat snapshot at 3840px wide, plus a small Realness watermark.
 - **PNG layers** — one file per layer for compositing—not one on-screen snapshot.
 - **PSD** — Shadows (Background, Light, Regular, Medium, Bold), Stroke, Mosaic (Sediment through Boulders). Separate layers for printing. 1920px on touch, 3840px on desktop.
 - **Video** — one animation cycle as `.mov`, 24fps, 1080px short side. Export speed is fixed.
 - **GLB** — 3D model for Blender and similar tools. Uses the open 3D viewer when it is on; otherwise builds from the poster.
 
-##### Printing
+#### Printing a cel animation
 
-Posters are built for transparency. Mosaic cutouts stay clear; shadow and gradient layers stack like colored gels—made to shine through on a light table or projector. Each printed sheet is a cel: register the stack and you get the same layered look golden-age Disney and the other hand-painted studios used.
+Posters are built for transparency. Mosaic cutouts stay clear; shadow and gradient layers stack like colored gels—made to shine through on a light table or projector. Each printed sheet is a **cel**: register a stack of them and you get the same layered look golden-age Disney and the other hand-painted studios used.
 
-Print the **full poster** on one sheet of overhead film, or export **PNG layers** or **PSD** and print each layer on its own transparency for registration. A **laser printer** (toner) is the best fit: sharp vector edges, opaque color where you need it, clear where you don't. Inkjet transparencies work in a pinch—let the ink dry fully before stacking.
+There are three ways to print, depending on how much of that layering you want to do by hand.
 
-Print the **background** layer on paper—it gives the shadows something to sit on. The rest of the stack is the transparencies above it.
+**Print the whole poster.** Export **PNG** or **SVG** and send the full poster to one sheet of overhead film. Every layer lands already composited—one cel, the fastest path, and the closest to what's on screen. Choose this when you want a finished image on transparency without assembling anything.
 
-##### How posters are made
+**Print each layer.** Export **PNG layers** or **PSD** and print one layer per sheet of transparency. PSD keeps them named and ordered for you—Shadows (Background, Light, Regular, Medium, Bold), Stroke, then Mosaic (Sediment through Boulders). This is the path for registration: trim to a common edge or use registration holes so each sheet drops into the same position.
 
-No AI. Classical computer vision on your device—not machine learning or generative models:
+**Stack all of it together for the full experience.** Print the layers, print the **background** on paper—it gives the shadows something to sit on—and register the transparencies on top of it in order, lightest shadow to boldest, mosaic on top. Light it from behind on a light table or projector and you're looking at a hand-built cel: the layers read as depth, and you can lift, swap, or re-shoot individual sheets the way an animation stand does.
 
-- **[vtracer](https://github.com/visioncortex/vtracer)** — mosaic cutouts.
-- **[potrace](http://potrace.sourceforge.net/)** — shadow layers.
+A **laser printer** (toner) is the best fit for the film: sharp vector edges, opaque color where you need it, clear where you don't. Inkjet transparencies work in a pinch—let the ink dry fully before stacking.
 
-#### Statements
+#### How posters are made
 
-Text written in the feed, grouped by day. Tap any statement to edit in place. URLs stay as text—they aren't turned into links. Works offline without sign-in; syncs once you sign in.
+No AI. Classical computer vision on your device—not machine learning or generative models. Realness doesn't do the hard part of tracing itself; it stands on two open-source projects that have spent years getting it right, and owes them the credit.
 
-#### Profile
+- **[vtracer](https://github.com/visioncortex/vtracer)**, by the [visioncortex](https://www.visioncortex.org/) team — turns photo contrast into the **mosaic** cutouts. The five mosaic layers are vtracer's color-region tracing, tuned for the look Realness is after. It does the work that makes the layered, stained-glass quality of a poster possible.
+- **[potrace](http://potrace.sourceforge.net/)**, by Peter Selinger — the starting point for the **shadow** layers. The tonal bands (Light, Regular, Medium, Bold) and the strokes along them began as potrace and have since been heavily rewritten to Realness's needs. The foundation—turning a bitmap into clean, hand-inked curves—is Selinger's; what grew from it is its own thing.
 
-Shows avatar, posters, and statements by day. Download their posters. Cached offline; visits are not tracked.
+Both are the real engine of a poster. Realness is the darkroom around them—capture, layering, color, and export.
 
 ---
 
 ### Sign-on
 
-Sign in with your phone number and a display name. You join **this** instance—you appear in the phonebook and your posters and statements show in Thoughts alongside everyone else.
+Sign in with your phone number and a display name. You join **this** instance. Your posters and statements show in Thoughts alongside everyone else.
 
-Realness is one instance per moderator—a small community of their people. You can sign in here to try it and participate. The real community is the one you build by hosting your own for your studio, family, union hall, or circle. See **Project** below for setup and docs.
+Realness is one instance per moderator. A small community of their people. You can sign in here to try it and participate. The real community is the one you build by hosting your own for your studio, family, union hall, or circle. See **Project** below for setup and docs.
 
 Realness is invisible to search engines—no tracking, no advertising. The server handles auth and storage only; your data lives on your device.
 
@@ -154,13 +160,15 @@ Progressive Web App—install from the browser (Chrome/Edge address bar, Firefox
 Sync runs when you return to the app—the tab or window becomes visible again.
 
 - **Your work** — posters, statements, and profile changes upload as soon as you're online.
-- **Community updates** — other people's posters, statements, phonebook entries, relations, and events download at most once every eight hours.
+- **Community updates** — other people's posters and statements download at most once every eight hours.
 
 Border around the app:
 
 - **Blue sweep** — syncing, exporting, processing, or refreshing.
 - **Yellow** — offline; editing paused.
 - **None** — online and idle.
+
+A **teal** border is different: it sits on a single poster (not the app frame) to mark attached caption statements — see [Thoughts](#thoughts).
 
 ---
 
@@ -173,4 +181,3 @@ Realness is open source. This page covers using the app; the repo has setup, dep
 - **[Architecture](https://github.com/realness-online/web/blob/main/docs/architecture.md)** — storage, sync, offline-first, serverless stack.
 - **[Contributing](https://github.com/realness-online/web/blob/main/docs/contributing.md)** — branch workflow, tests, pull requests.
 - **[Verify a release](https://github.com/realness-online/web/blob/main/docs/verify-release.md)** — confirm a deployed instance matches a tagged build.
-- **[Monopoly](https://github.com/realness-online/web/blob/main/docs/monopoly.md)** — platform rules that affect PWAs and the open web.

@@ -1,7 +1,6 @@
 <script setup>
   import icon from '@/components/icon'
   import ToggleAvatar from '@/components/posters/as-button-avatar'
-  import EventAsFieldset from '@/components/events/as-fieldset'
   import AsDownload from '@/components/download-vector'
   import { is_vector_id } from '@/use/poster'
   import { me } from '@/utils/serverless'
@@ -14,26 +13,17 @@
     allow_remove: {
       type: Boolean,
       default: true
-    },
-    allow_picker: {
-      type: Boolean,
-      default: true
     }
   })
   const emit = defineEmits({
     remove: is_vector_id,
-    picker: is_vector_id,
     avatar: is_vector_id
   })
   const signed_in = computed(() => !!me.value)
 </script>
 
 <template>
-  <event-as-fieldset
-    v-if="allow_picker && poster.picker"
-    :itemid="poster.id"
-    @picker="emit('picker', poster.id)" />
-  <menu v-else>
+  <menu>
     <a v-if="allow_remove" class="remove" @click="emit('remove', poster.id)">
       <icon name="remove" />
     </a>
@@ -48,17 +38,6 @@
     & > a,
     & > button {
       &.avatar {
-        &.selected & > svg {
-          fill: red;
-        }
-      }
-      &.event {
-        outline: none;
-        border: none;
-        background: transparent;
-        &:focus {
-          outline: none;
-        }
         &.selected & > svg {
           fill: red;
         }

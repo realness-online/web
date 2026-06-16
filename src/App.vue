@@ -297,7 +297,6 @@
 
   register('nav::Go_Home', () => router.push('/'))
   register('nav::Go_Statements', () => router.push('/'))
-  register('nav::Go_Phonebook', () => router.push('/phonebook'))
   register('nav::Go_Thoughts', () => router.push('/'))
   register('nav::Go_About', () => router.push('/about'))
 

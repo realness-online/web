@@ -1,7 +1,5 @@
 <script setup>
   import Icon from '@/components/icon'
-  import ProfileAsMeta from '@/components/profile/as-meta'
-  import AsRelationshipOptions from '@/components/profile/as-relationship-options'
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import PosterAsFigure from '@/components/posters/as-figure'
@@ -40,7 +38,7 @@
   })
   const emit = defineEmits(['show'])
   const router = use_router()
-  const { relations, me } = use_me()
+  const { me } = use_me()
 
   const is_me = computed(() => {
     if (localStorage.me === props.person.id) return true
@@ -134,8 +132,6 @@
       <as-address :key="person.id" :person="person" :editable="editable" />
       <menu>
         <slot v-if="!is_me">
-          <profile-as-meta :people="relations" />
-          <as-relationship-options :person="person" />
           <as-messenger :itemid="person.id" />
         </slot>
         <slot v-else />

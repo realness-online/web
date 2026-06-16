@@ -6,9 +6,51 @@
     documentation_html,
     documentation_toc
   } from '@/utils/documentation-content'
+  import { onMounted, onUnmounted, ref, watch } from 'vue'
 
   const toc_items = documentation_toc()
   const rendered_html = documentation_html()
+
+  const ACTIVE_HEADING_VIEWPORT_RATIO = 0.33
+
+  const active_id = ref(null)
+  const pick = () => {
+    const content = document.querySelector(
+      '.page.documentation section.content'
+    )
+    const headings = [
+      ...(content?.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]') ??
+        [])
+    ]
+    const threshold = window.innerHeight * ACTIVE_HEADING_VIEWPORT_RATIO
+    let closest = null,
+      best = Infinity
+    for (const h of headings) {
+      const dist = Math.abs(h.getBoundingClientRect().top - threshold)
+      if (dist < best) {
+        best = dist
+        closest = h
+      }
+    }
+    if (closest) active_id.value = closest.id
+  }
+
+  watch(active_id, id => {
+    if (!id) return
+    const link = document.querySelector(
+      `.page.documentation nav.toc a[href="#${CSS.escape(id)}"]`
+    )
+    link?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  })
+
+  onMounted(() => {
+    window.addEventListener('scroll', pick, { passive: true })
+    pick()
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('scroll', pick)
+  })
 </script>
 
 <template>
@@ -23,7 +65,7 @@
           v-for="item in toc_items"
           :key="item.id"
           :href="`#${item.id}`"
-          :class="`level-${item.level}`">
+          :class="[`level-${item.level}`, { active: item.id === active_id }]">
           {{ item.title }}
         </a>
       </nav>
@@ -117,8 +159,10 @@
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
+          transition: color 150ms ease;
 
-          &:hover {
+          &:hover,
+          &.active {
             color: var(--red);
           }
 

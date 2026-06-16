@@ -28,9 +28,8 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       'Number Row': '',
-      1: 'nav::Go_Phonebook',
-      2: 'nav::Go_About',
       0: 'nav::Go_Home',
+      1: 'nav::Go_About',
 
       'Tab Row': '',
       i: 'pref::Toggle_Info',
@@ -106,7 +105,6 @@ export const default_keymap = [
       'pref::Toggle_Sediment': 'Sediment visible',
       'nav::Go_Home': 'To home',
       'nav::Go_Statements': 'To thoughts',
-      'nav::Go_Phonebook': 'To phonebook',
       'nav::Go_Thoughts': 'To statements',
       'nav::Go_About': 'Learn more about the app and read the documentation'
     }
