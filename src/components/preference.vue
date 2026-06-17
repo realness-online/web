@@ -174,7 +174,7 @@
           width: 0
           height: 0
           &:checked + .slider
-            background-color: blue
+            background-color: red
           &:focus + .slider
             box-shadow: 0 0 1px red
           &:checked + .slider:before

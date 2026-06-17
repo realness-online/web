@@ -28,8 +28,11 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       'Number Row': '',
-      0: 'nav::Go_Home',
-      1: 'nav::Go_About',
+      1: 'nav::Go_Thoughts',
+      2: 'nav::Go_Account',
+      3: 'nav::Go_Docs',
+      4: 'nav::Go_About',
+      5: 'nav::Go_Pricing',
 
       'Tab Row': '',
       i: 'pref::Toggle_Info',
@@ -104,9 +107,12 @@ export const default_keymap = [
       'pref::Toggle_Sand': 'Sand visible',
       'pref::Toggle_Sediment': 'Sediment visible',
       'nav::Go_Home': 'To home',
-      'nav::Go_Statements': 'To thoughts',
-      'nav::Go_Thoughts': 'To statements',
-      'nav::Go_About': 'Learn more about the app and read the documentation'
+      'nav::Go_Statements': 'To statements',
+      'nav::Go_Thoughts': 'To thoughts',
+      'nav::Go_Account': 'To account',
+      'nav::Go_Docs': 'To documentation',
+      'nav::Go_About': 'To about',
+      'nav::Go_Pricing': 'To pricing'
     }
   },
 

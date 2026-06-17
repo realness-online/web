@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vite-plus/test'
 import {
   documentation_html,
+  documentation_html_parts,
   documentation_preferences_toc,
   documentation_toc,
-  inline_documentation_icons
+  inline_documentation_icons,
+  INSTALL_GUIDE_MARKER
 } from '@/utils/documentation-content'
 
 describe('documentation-content', () => {
@@ -44,5 +46,15 @@ describe('documentation-content', () => {
     )
     expect(html).toContain('class="inline-icon"')
     expect(html).not.toContain('<use')
+  })
+
+  it('splits markdown at the install guide marker', () => {
+    const md = `### Install\n\nIntro.\n\n${INSTALL_GUIDE_MARKER}\n\n---\n\n### Sync`
+    const parts = documentation_html_parts(md)
+    expect(parts.has_install_guide).toBe(true)
+    expect(parts.before).toContain('id="install"')
+    expect(parts.before).toContain('Intro.')
+    expect(parts.after).toContain('id="sync"')
+    expect(parts.before).not.toContain(INSTALL_GUIDE_MARKER)
   })
 })

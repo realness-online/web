@@ -885,6 +885,24 @@ describe('App.vue', () => {
       handler()
       expect(mock_router_push).toHaveBeenCalledWith('/about')
     })
+
+    it('navigates to account', () => {
+      const handler = registered_handlers['nav::Go_Account']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/account')
+    })
+
+    it('navigates to docs', () => {
+      const handler = registered_handlers['nav::Go_Docs']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/docs')
+    })
+
+    it('navigates to pricing', () => {
+      const handler = registered_handlers['nav::Go_Pricing']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/pricing')
+    })
   })
 
   describe('Upload and camera', () => {

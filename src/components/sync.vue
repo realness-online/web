@@ -23,10 +23,7 @@
   const { my_statements: my_editable_statements, update_statement } =
     use_statements()
   const { load_phonebook } = use_people()
-  const {
-    sync_element: sync,
-    sync_poster
-  } = use_sync(emit, {
+  const { sync_element: sync, sync_poster } = use_sync(emit, {
     load_phonebook
   })
   provide('update_statement', update_statement)

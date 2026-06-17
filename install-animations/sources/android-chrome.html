@@ -5,261 +5,956 @@
     <meta name="viewport" content="width=1080, height=1920" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: 1080px; height: 1920px; overflow: hidden;
-        background: #0e0c09; font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #0e0c09;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
 
-      [data-composition-id="main"] {
-        --atmosphere:#0e0c09; --surface:#2c2c26; --text:#d7d6cb; --text-dim:#8d8b7e;
-        --teal:#77c5c5;
-        --m-surface:#1c1b1f; --m-container:#2b2930; --m-on:#e6e1e9; --m-on-2:#cac4d0;
-        --m-primary:#d0bcff; --m-bar:#1f1f23; --m-field:#2b2930; --m-outline:#49454f;
-        position: relative; width: 1080px; height: 1920px;
-        background: radial-gradient(120% 90% at 50% 8%, #17140f 0%, #0e0c09 60%); }
+      [data-composition-id='main'] {
+        --atmosphere: #0e0c09;
+        --surface: #2c2c26;
+        --text: #d7d6cb;
+        --text-dim: #8d8b7e;
+        --teal: #77c5c5;
+        --m-surface: #1c1b1f;
+        --m-container: #2b2930;
+        --m-on: #e6e1e9;
+        --m-on-2: #cac4d0;
+        --m-primary: #d0bcff;
+        --m-bar: #1f1f23;
+        --m-field: #2b2930;
+        --m-outline: #49454f;
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        background: radial-gradient(
+          120% 90% at 50% 8%,
+          #17140f 0%,
+          #0e0c09 60%
+        );
+      }
 
-      .scene { position: absolute; inset: 0; width: 1080px; height: 1920px;
-        background: radial-gradient(120% 90% at 50% 8%, #17140f 0%, #0e0c09 60%); }
-      #s1 { z-index: 10; } #s2 { z-index: 20; } #s3 { z-index: 30; } #s4 { z-index: 40; } #s5 { z-index: 50; }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background: radial-gradient(
+          120% 90% at 50% 8%,
+          #17140f 0%,
+          #0e0c09 60%
+        );
+      }
+      #s1 {
+        z-index: 10;
+      }
+      #s2 {
+        z-index: 20;
+      }
+      #s3 {
+        z-index: 30;
+      }
+      #s4 {
+        z-index: 40;
+      }
+      #s5 {
+        z-index: 50;
+      }
 
-      .top-band { position: absolute; top: 0; left: 0; right: 0; height: 232px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 36px 60px 0; }
-      .caption { background: var(--surface); color: var(--text); font-size: 46px; font-weight: 600;
-        letter-spacing: -0.5px; padding: 22px 44px; border-radius: 999px; border: 1px solid rgba(215,214,203,0.12);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.55); text-align: center; white-space: nowrap; }
-      .caption b { color: var(--teal); font-weight: 700; }
-      .steps { display: flex; gap: 16px; }
-      .dot { width: 16px; height: 16px; border-radius: 50%; background: rgba(215,214,203,0.22); }
-      .dot.on { background: var(--teal); box-shadow: 0 0 18px rgba(119,197,197,0.6); }
+      .top-band {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 232px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        padding: 36px 60px 0;
+      }
+      .caption {
+        background: var(--surface);
+        color: var(--text);
+        font-size: 46px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        padding: 22px 44px;
+        border-radius: 999px;
+        border: 1px solid rgba(215, 214, 203, 0.12);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        text-align: center;
+        white-space: nowrap;
+      }
+      .caption b {
+        color: var(--teal);
+        font-weight: 700;
+      }
+      .steps {
+        display: flex;
+        gap: 16px;
+      }
+      .dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: rgba(215, 214, 203, 0.22);
+      }
+      .dot.on {
+        background: var(--teal);
+        box-shadow: 0 0 18px rgba(119, 197, 197, 0.6);
+      }
 
-      .phone { position: absolute; left: 90px; top: 260px; width: 900px; height: 1600px; border-radius: 76px;
-        background: #000; border: 8px solid #050505; overflow: hidden;
-        box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 0 2px rgba(255,255,255,0.04) inset; }
-      .screen { position: absolute; inset: 8px; border-radius: 68px; overflow: hidden;
-        background: var(--m-surface); display: flex; flex-direction: column; }
-      .statusbar { height: 62px; flex: 0 0 62px; display: flex; align-items: center; justify-content: space-between;
-        padding: 0 54px; color: var(--m-on); font-size: 30px; font-weight: 600; }
-      .sb-right { display: flex; align-items: center; gap: 14px; }
-      .sb-right .batt { width: 44px; height: 24px; border: 2px solid var(--m-on); border-radius: 5px; position: relative; }
-      .sb-right .batt::after { content:""; position:absolute; left:2px; top:2px; bottom:2px; width:30px; background:var(--m-on); border-radius:2px; }
-      .sb-right .sig { font-size: 26px; letter-spacing: 2px; }
+      .phone {
+        position: absolute;
+        left: 90px;
+        top: 260px;
+        width: 900px;
+        height: 1600px;
+        border-radius: 76px;
+        background: #000;
+        border: 8px solid #050505;
+        overflow: hidden;
+        box-shadow:
+          0 40px 120px rgba(0, 0, 0, 0.7),
+          0 0 0 2px rgba(255, 255, 255, 0.04) inset;
+      }
+      .screen {
+        position: absolute;
+        inset: 8px;
+        border-radius: 68px;
+        overflow: hidden;
+        background: var(--m-surface);
+        display: flex;
+        flex-direction: column;
+      }
+      .statusbar {
+        height: 62px;
+        flex: 0 0 62px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 54px;
+        color: var(--m-on);
+        font-size: 30px;
+        font-weight: 600;
+      }
+      .sb-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .sb-right .batt {
+        width: 44px;
+        height: 24px;
+        border: 2px solid var(--m-on);
+        border-radius: 5px;
+        position: relative;
+      }
+      .sb-right .batt::after {
+        content: '';
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        bottom: 2px;
+        width: 30px;
+        background: var(--m-on);
+        border-radius: 2px;
+      }
+      .sb-right .sig {
+        font-size: 26px;
+        letter-spacing: 2px;
+      }
 
       /* Chrome top toolbar */
-      .chrome { flex: 0 0 auto; background: var(--m-bar); padding: 18px 28px 20px; display:flex; align-items:center; gap: 22px; }
-      .addr { flex: 1; height: 76px; background: var(--m-field); border-radius: 40px; display:flex; align-items:center;
-        gap: 16px; padding: 0 30px; color: var(--m-on-2); font-size: 33px; }
-      .addr .lock { font-size: 26px; opacity:0.75; }
-      .tabcount { width: 54px; height: 54px; border: 4px solid var(--m-on-2); border-radius: 10px; color: var(--m-on-2);
-        display:flex; align-items:center; justify-content:center; font-size: 30px; font-weight:700; flex:0 0 54px; }
-      .kebab { width: 54px; flex: 0 0 54px; display:flex; flex-direction:column; align-items:center; gap:8px; }
-      .kebab i { width: 9px; height: 9px; border-radius:50%; background: var(--m-on); }
+      .chrome {
+        flex: 0 0 auto;
+        background: var(--m-bar);
+        padding: 18px 28px 20px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .addr {
+        flex: 1;
+        height: 76px;
+        background: var(--m-field);
+        border-radius: 40px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 30px;
+        color: var(--m-on-2);
+        font-size: 33px;
+      }
+      .addr .lock {
+        font-size: 26px;
+        opacity: 0.75;
+      }
+      .tabcount {
+        width: 54px;
+        height: 54px;
+        border: 4px solid var(--m-on-2);
+        border-radius: 10px;
+        color: var(--m-on-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        font-weight: 700;
+        flex: 0 0 54px;
+      }
+      .kebab {
+        width: 54px;
+        flex: 0 0 54px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .kebab i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--m-on);
+      }
 
-      .web { flex: 1; position: relative; background: radial-gradient(130% 80% at 50% 0%, #1b1813 0%, #0e0c09 70%); overflow: hidden; }
-      .poster { position: absolute; left: 60px; right: 60px; top: 70px; height: 700px; border-radius: 28px;
-        background: #2c2c26; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3,1fr); gap: 26px;
-        padding: 46px; box-shadow: 0 30px 70px rgba(0,0,0,0.5); }
-      .poster i { border-radius: 18px; display: block; }
-      .poster i:nth-child(1){background:#5a5a52} .poster i:nth-child(2){background:#509595}
-      .poster i:nth-child(3){background:#509595} .poster i:nth-child(4){background:#955050}
-      .poster i:nth-child(5){background:#955050} .poster i:nth-child(6){background:#5a5a52}
-      .statement { position:absolute; left:60px; right:60px; top: 830px; color: var(--text); font-size: 38px; line-height: 1.35; }
-      .statement small { display:block; color: var(--text-dim); font-size:30px; margin-top:14px; }
+      .web {
+        flex: 1;
+        position: relative;
+        background: radial-gradient(
+          130% 80% at 50% 0%,
+          #1b1813 0%,
+          #0e0c09 70%
+        );
+        overflow: hidden;
+      }
+      .poster {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 70px;
+        height: 700px;
+        border-radius: 28px;
+        background: #2c2c26;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, 1fr);
+        gap: 26px;
+        padding: 46px;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+      }
+      .poster i {
+        border-radius: 18px;
+        display: block;
+      }
+      .poster i:nth-child(1) {
+        background: #5a5a52;
+      }
+      .poster i:nth-child(2) {
+        background: #509595;
+      }
+      .poster i:nth-child(3) {
+        background: #509595;
+      }
+      .poster i:nth-child(4) {
+        background: #955050;
+      }
+      .poster i:nth-child(5) {
+        background: #955050;
+      }
+      .poster i:nth-child(6) {
+        background: #5a5a52;
+      }
+      .statement {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 830px;
+        color: var(--text);
+        font-size: 38px;
+        line-height: 1.35;
+      }
+      .statement small {
+        display: block;
+        color: var(--text-dim);
+        font-size: 30px;
+        margin-top: 14px;
+      }
 
       /* Chrome overflow menu */
-      .menu { position: absolute; top: 150px; right: 36px; width: 540px; background: var(--m-container);
-        border-radius: 22px; padding: 16px 0; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
-      .mrow { display:flex; align-items:center; gap: 30px; padding: 28px 40px; color: var(--m-on); font-size: 38px; }
-      .mrow .gi { width: 46px; height: 46px; position: relative; flex:0 0 46px; }
-      .mrow.hot { background: rgba(208,188,255,0.14); }
+      .menu {
+        position: absolute;
+        top: 150px;
+        right: 36px;
+        width: 540px;
+        background: var(--m-container);
+        border-radius: 22px;
+        padding: 16px 0;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+      .mrow {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        padding: 28px 40px;
+        color: var(--m-on);
+        font-size: 38px;
+      }
+      .mrow .gi {
+        width: 46px;
+        height: 46px;
+        position: relative;
+        flex: 0 0 46px;
+      }
+      .mrow.hot {
+        background: rgba(208, 188, 255, 0.14);
+      }
       /* download/install glyph */
-      .gi.dl::before{content:"";position:absolute;left:20px;top:2px;width:5px;height:28px;background:var(--m-on);border-radius:3px}
-      .gi.dl::after{content:"";position:absolute;top:18px;left:10px;width:26px;height:26px;border-bottom:5px solid var(--m-on);border-right:5px solid var(--m-on);transform:rotate(45deg)}
-      .gi.line{border-bottom:4px solid var(--m-on);top:36px;height:0}
+      .gi.dl::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 2px;
+        width: 5px;
+        height: 28px;
+        background: var(--m-on);
+        border-radius: 3px;
+      }
+      .gi.dl::after {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 10px;
+        width: 26px;
+        height: 26px;
+        border-bottom: 5px solid var(--m-on);
+        border-right: 5px solid var(--m-on);
+        transform: rotate(45deg);
+      }
+      .gi.line {
+        border-bottom: 4px solid var(--m-on);
+        top: 36px;
+        height: 0;
+      }
 
       /* Install dialog (Material) */
-      .dim { position:absolute; inset:0; background: rgba(0,0,0,0.5); }
-      .dialog { position:absolute; left: 70px; right: 70px; bottom: 90px; background: var(--m-container);
-        border-radius: 36px; padding: 50px 48px; box-shadow: 0 40px 90px rgba(0,0,0,0.6); }
-      .dialog .dhead { display:flex; align-items:center; gap: 30px; }
-      .dialog .dhead img { width: 92px; height:92px; border-radius: 22px; }
-      .dialog .dhead .dt { color: var(--m-on); font-size: 44px; font-weight: 600; }
-      .dialog .dsub { color: var(--m-on-2); font-size: 32px; margin: 26px 0 40px; line-height:1.35; }
-      .dialog .dbtns { display:flex; justify-content:flex-end; gap: 20px; align-items:center; }
-      .dialog .cancel { color: var(--m-primary); font-size: 36px; font-weight:600; padding: 16px 30px; }
-      .dialog .install { color: var(--m-primary); font-size: 36px; font-weight:700; padding: 16px 34px; }
+      .dim {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .dialog {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        bottom: 90px;
+        background: var(--m-container);
+        border-radius: 36px;
+        padding: 50px 48px;
+        box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6);
+      }
+      .dialog .dhead {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+      }
+      .dialog .dhead img {
+        width: 92px;
+        height: 92px;
+        border-radius: 22px;
+      }
+      .dialog .dhead .dt {
+        color: var(--m-on);
+        font-size: 44px;
+        font-weight: 600;
+      }
+      .dialog .dsub {
+        color: var(--m-on-2);
+        font-size: 32px;
+        margin: 26px 0 40px;
+        line-height: 1.35;
+      }
+      .dialog .dbtns {
+        display: flex;
+        justify-content: flex-end;
+        gap: 20px;
+        align-items: center;
+      }
+      .dialog .cancel {
+        color: var(--m-primary);
+        font-size: 36px;
+        font-weight: 600;
+        padding: 16px 30px;
+      }
+      .dialog .install {
+        color: var(--m-primary);
+        font-size: 36px;
+        font-weight: 700;
+        padding: 16px 34px;
+      }
 
       /* Android home screen */
-      .home { position:absolute; inset:0; background: linear-gradient(170deg, #241c2e 0%, #14101a 55%, #0e0c12 100%); }
-      .hclock { text-align:center; color:#fff; margin-top: 120px; }
-      .hclock .c { font-size: 150px; font-weight: 300; letter-spacing:-3px; line-height:1; }
-      .hclock .d { font-size: 36px; font-weight: 500; margin-top: 14px; opacity:0.9; }
-      .grid { position:absolute; top: 540px; left: 70px; right: 70px; display:grid; grid-template-columns: repeat(4,1fr); gap: 52px 30px; }
-      .ai { display:flex; flex-direction:column; align-items:center; gap: 16px; }
-      .ai .sq { width: 130px; height:130px; border-radius: 50%; background: rgba(230,225,233,0.12); }
-      .ai .lb { color:#fff; font-size: 26px; opacity:0.92; }
-      .ai img { width: 130px; height:130px; border-radius: 30px; box-shadow: 0 14px 36px rgba(0,0,0,0.5); }
-      .searchbar { position:absolute; left: 90px; right: 90px; bottom: 120px; height: 96px; border-radius: 48px;
-        background: rgba(230,225,233,0.12); display:flex; align-items:center; gap: 24px; padding: 0 40px; color: var(--m-on-2); font-size: 32px; }
-      .searchbar .g { width: 40px; height:40px; border:4px solid var(--m-primary); border-radius:50%; }
+      .home {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          170deg,
+          #241c2e 0%,
+          #14101a 55%,
+          #0e0c12 100%
+        );
+      }
+      .hclock {
+        text-align: center;
+        color: #fff;
+        margin-top: 120px;
+      }
+      .hclock .c {
+        font-size: 150px;
+        font-weight: 300;
+        letter-spacing: -3px;
+        line-height: 1;
+      }
+      .hclock .d {
+        font-size: 36px;
+        font-weight: 500;
+        margin-top: 14px;
+        opacity: 0.9;
+      }
+      .grid {
+        position: absolute;
+        top: 540px;
+        left: 70px;
+        right: 70px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 52px 30px;
+      }
+      .ai {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .ai .sq {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(230, 225, 233, 0.12);
+      }
+      .ai .lb {
+        color: #fff;
+        font-size: 26px;
+        opacity: 0.92;
+      }
+      .ai img {
+        width: 130px;
+        height: 130px;
+        border-radius: 30px;
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+      }
+      .searchbar {
+        position: absolute;
+        left: 90px;
+        right: 90px;
+        bottom: 120px;
+        height: 96px;
+        border-radius: 48px;
+        background: rgba(230, 225, 233, 0.12);
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 0 40px;
+        color: var(--m-on-2);
+        font-size: 32px;
+      }
+      .searchbar .g {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--m-primary);
+        border-radius: 50%;
+      }
 
-      .ring { position:absolute; top:50%; left:50%; width: 120px; height:120px; margin:-60px 0 0 -60px;
-        border: 6px solid var(--teal); border-radius: 50%; z-index: 80; box-shadow: 0 0 30px rgba(119,197,197,0.55); pointer-events:none; opacity:0; }
-      .ripple { position:absolute; top:50%; left:50%; width: 120px; height:120px; margin:-60px 0 0 -60px;
-        border: 5px solid var(--teal); border-radius:50%; z-index: 79; pointer-events:none; opacity:0; }
+      .ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120px;
+        height: 120px;
+        margin: -60px 0 0 -60px;
+        border: 6px solid var(--teal);
+        border-radius: 50%;
+        z-index: 80;
+        box-shadow: 0 0 30px rgba(119, 197, 197, 0.55);
+        pointer-events: none;
+        opacity: 0;
+      }
+      .ripple {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120px;
+        height: 120px;
+        margin: -60px 0 0 -60px;
+        border: 5px solid var(--teal);
+        border-radius: 50%;
+        z-index: 79;
+        pointer-events: none;
+        opacity: 0;
+      }
 
-      .title-wrap { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 44px; padding: 0 90px; }
-      .title-wrap img { width: 260px; height:260px; border-radius: 58px; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
-      .t-h { color: var(--text); font-size: 104px; font-weight: 700; letter-spacing:-2px; text-align:center; }
-      .t-h b { color: var(--teal); }
-      .t-tag { display:flex; align-items:center; gap: 20px; color: var(--text); font-size: 40px;
-        background: var(--surface); padding: 18px 38px; border-radius: 999px; border:1px solid rgba(215,214,203,0.12); }
-      .t-tag .d { width:14px; height:14px; border-radius:50%; background: var(--teal); }
+      .title-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 44px;
+        padding: 0 90px;
+      }
+      .title-wrap img {
+        width: 260px;
+        height: 260px;
+        border-radius: 58px;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+      }
+      .t-h {
+        color: var(--text);
+        font-size: 104px;
+        font-weight: 700;
+        letter-spacing: -2px;
+        text-align: center;
+      }
+      .t-h b {
+        color: var(--teal);
+      }
+      .t-tag {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        color: var(--text);
+        font-size: 40px;
+        background: var(--surface);
+        padding: 18px 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(215, 214, 203, 0.12);
+      }
+      .t-tag .d {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="13.4" data-width="1080" data-height="1920">
-
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="13.4"
+      data-width="1080"
+      data-height="1920">
       <!-- SCENE 1 -->
-      <div id="s1" class="clip scene" data-start="0" data-duration="2.8" data-track-index="1" data-layout-allow-overlap>
+      <div
+        id="s1"
+        class="clip scene"
+        data-start="0"
+        data-duration="2.8"
+        data-track-index="1"
+        data-layout-allow-overlap>
         <div class="title-wrap">
           <img id="s1-icon" src="assets/realness-icon.png" alt="Realness" />
           <div id="s1-h" class="t-h">Install <b>Realness</b></div>
-          <div id="s1-tag" class="t-tag"><span class="d"></span>Android · Chrome</div>
+          <div id="s1-tag" class="t-tag">
+            <span class="d"></span>Android · Chrome
+          </div>
         </div>
       </div>
 
       <!-- SCENE 2 — tap the menu (kebab) -->
-      <div id="s2" class="clip scene" data-start="2.6" data-duration="3.0" data-track-index="2" data-layout-allow-overlap>
+      <div
+        id="s2"
+        class="clip scene"
+        data-start="2.6"
+        data-duration="3.0"
+        data-track-index="2"
+        data-layout-allow-overlap>
         <div class="top-band">
           <div id="s2-cap" class="caption">Tap the <b>menu</b></div>
-          <div class="steps"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="steps">
+            <span class="dot on"></span><span class="dot"></span
+            ><span class="dot"></span><span class="dot"></span>
+          </div>
         </div>
-        <div class="phone"><div class="screen">
-          <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sig">▪▪▪</span><span>LTE</span><span class="batt"></span></span></div>
-          <div class="chrome">
-            <div class="addr"><span class="lock">🔒</span>realness.online</div>
-            <div class="tabcount">3</div>
-            <div id="s2-kebab" class="kebab"><i></i><i></i><i></i></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="statusbar">
+              <span>9:41</span
+              ><span class="sb-right"
+                ><span class="sig">▪▪▪</span><span>LTE</span
+                ><span class="batt"></span
+              ></span>
+            </div>
+            <div class="chrome">
+              <div class="addr">
+                <span class="lock">🔒</span>realness.online
+              </div>
+              <div class="tabcount">3</div>
+              <div id="s2-kebab" class="kebab"><i></i><i></i><i></i></div>
+            </div>
+            <div class="web">
+              <div class="poster">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div class="statement">
+                a poster is a thought you can hold in the light<small
+                  >realness · today</small
+                >
+              </div>
+            </div>
           </div>
-          <div class="web">
-            <div class="poster"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="statement">a poster is a thought you can hold in the light<small>realness · today</small></div>
-          </div>
-        </div></div>
-        <div id="s2-ripple" class="ripple" style="left:912px; top:392px;"></div>
-        <div id="s2-ring" class="ring" style="left:912px; top:392px;"></div>
+        </div>
+        <div
+          id="s2-ripple"
+          class="ripple"
+          style="left: 912px; top: 392px"></div>
+        <div id="s2-ring" class="ring" style="left: 912px; top: 392px"></div>
       </div>
 
       <!-- SCENE 3 — tap Install app -->
-      <div id="s3" class="clip scene" data-start="5.4" data-duration="3.2" data-track-index="1" data-layout-allow-overlap>
+      <div
+        id="s3"
+        class="clip scene"
+        data-start="5.4"
+        data-duration="3.2"
+        data-track-index="1"
+        data-layout-allow-overlap>
         <div class="top-band">
           <div id="s3-cap" class="caption">Tap <b>Install app</b></div>
-          <div class="steps"><span class="dot on"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="steps">
+            <span class="dot on"></span><span class="dot on"></span
+            ><span class="dot"></span><span class="dot"></span>
+          </div>
         </div>
-        <div class="phone"><div class="screen">
-          <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sig">▪▪▪</span><span>LTE</span><span class="batt"></span></span></div>
-          <div class="chrome">
-            <div class="addr"><span class="lock">🔒</span>realness.online</div>
-            <div class="tabcount">3</div>
-            <div class="kebab"><i></i><i></i><i></i></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="statusbar">
+              <span>9:41</span
+              ><span class="sb-right"
+                ><span class="sig">▪▪▪</span><span>LTE</span
+                ><span class="batt"></span
+              ></span>
+            </div>
+            <div class="chrome">
+              <div class="addr">
+                <span class="lock">🔒</span>realness.online
+              </div>
+              <div class="tabcount">3</div>
+              <div class="kebab"><i></i><i></i><i></i></div>
+            </div>
+            <div class="web">
+              <div class="poster" style="opacity: 0.5">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <div id="s3-menu" class="menu">
+              <div class="mrow">New tab</div>
+              <div class="mrow">History</div>
+              <div class="mrow">Downloads</div>
+              <div id="s3-install" class="mrow hot">
+                <span class="gi dl"></span>Install app
+              </div>
+              <div class="mrow">Share…</div>
+              <div class="mrow">Settings</div>
+            </div>
           </div>
-          <div class="web"><div class="poster" style="opacity:.5"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-          <div id="s3-menu" class="menu">
-            <div class="mrow">New tab</div>
-            <div class="mrow">History</div>
-            <div class="mrow">Downloads</div>
-            <div id="s3-install" class="mrow hot"><span class="gi dl"></span>Install app</div>
-            <div class="mrow">Share…</div>
-            <div class="mrow">Settings</div>
-          </div>
-        </div></div>
-        <div id="s3-ripple" class="ripple" style="left:644px; top:800px;"></div>
-        <div id="s3-ring" class="ring" style="left:644px; top:800px;"></div>
+        </div>
+        <div
+          id="s3-ripple"
+          class="ripple"
+          style="left: 644px; top: 800px"></div>
+        <div id="s3-ring" class="ring" style="left: 644px; top: 800px"></div>
       </div>
 
       <!-- SCENE 4 — Install dialog -->
-      <div id="s4" class="clip scene" data-start="8.4" data-duration="3.0" data-track-index="2" data-layout-allow-overlap>
+      <div
+        id="s4"
+        class="clip scene"
+        data-start="8.4"
+        data-duration="3.0"
+        data-track-index="2"
+        data-layout-allow-overlap>
         <div class="top-band">
           <div id="s4-cap" class="caption">Tap <b>Install</b></div>
-          <div class="steps"><span class="dot on"></span><span class="dot on"></span><span class="dot on"></span><span class="dot"></span></div>
-        </div>
-        <div class="phone"><div class="screen">
-          <div class="statusbar"><span>9:41</span><span class="sb-right"><span class="sig">▪▪▪</span><span>LTE</span><span class="batt"></span></span></div>
-          <div class="chrome"><div class="addr"><span class="lock">🔒</span>realness.online</div><div class="tabcount">3</div><div class="kebab"><i></i><i></i><i></i></div></div>
-          <div class="web"><div class="poster" style="opacity:.4"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-          <div class="dim"></div>
-          <div id="s4-dialog" class="dialog">
-            <div class="dhead"><img src="assets/realness-icon.png" alt="" /><span class="dt">Install app</span></div>
-            <div class="dsub">Realness · realness.online</div>
-            <div class="dbtns"><span class="cancel">Cancel</span><span id="s4-installbtn" class="install">Install</span></div>
+          <div class="steps">
+            <span class="dot on"></span><span class="dot on"></span
+            ><span class="dot on"></span><span class="dot"></span>
           </div>
-        </div></div>
-        <div id="s4-ripple" class="ripple" style="left:770px; top:1668px;"></div>
-        <div id="s4-ring" class="ring" style="left:770px; top:1668px;"></div>
+        </div>
+        <div class="phone">
+          <div class="screen">
+            <div class="statusbar">
+              <span>9:41</span
+              ><span class="sb-right"
+                ><span class="sig">▪▪▪</span><span>LTE</span
+                ><span class="batt"></span
+              ></span>
+            </div>
+            <div class="chrome">
+              <div class="addr">
+                <span class="lock">🔒</span>realness.online
+              </div>
+              <div class="tabcount">3</div>
+              <div class="kebab"><i></i><i></i><i></i></div>
+            </div>
+            <div class="web">
+              <div class="poster" style="opacity: 0.4">
+                <i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <div class="dim"></div>
+            <div id="s4-dialog" class="dialog">
+              <div class="dhead">
+                <img src="assets/realness-icon.png" alt="" /><span class="dt"
+                  >Install app</span
+                >
+              </div>
+              <div class="dsub">Realness · realness.online</div>
+              <div class="dbtns">
+                <span class="cancel">Cancel</span
+                ><span id="s4-installbtn" class="install">Install</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          id="s4-ripple"
+          class="ripple"
+          style="left: 770px; top: 1668px"></div>
+        <div id="s4-ring" class="ring" style="left: 770px; top: 1668px"></div>
       </div>
 
       <!-- SCENE 5 — home screen -->
-      <div id="s5" class="clip scene" data-start="11.2" data-duration="2.2" data-track-index="1" data-layout-allow-overlap>
+      <div
+        id="s5"
+        class="clip scene"
+        data-start="11.2"
+        data-duration="2.2"
+        data-track-index="1"
+        data-layout-allow-overlap>
         <div class="top-band">
-          <div id="s5-cap" class="caption">Realness is on your <b>Home Screen</b></div>
-          <div class="steps"><span class="dot on"></span><span class="dot on"></span><span class="dot on"></span><span class="dot on"></span></div>
-        </div>
-        <div class="phone"><div class="screen"><div class="home">
-          <div class="hclock"><div class="c">9:41</div><div class="d">Mon, Jun 15</div></div>
-          <div class="grid">
-            <div class="ai"><div class="sq"></div><div class="lb">Phone</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Messages</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Photos</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Maps</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Clock</div></div>
-            <div class="ai real"><img id="s5-icon" src="assets/realness-icon.png" alt="" /><div class="lb">Realness</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Camera</div></div>
-            <div class="ai"><div class="sq"></div><div class="lb">Files</div></div>
+          <div id="s5-cap" class="caption">
+            Realness is on your <b>Home Screen</b>
           </div>
-          <div class="searchbar"><span class="g"></span>Search</div>
-        </div></div></div>
+          <div class="steps">
+            <span class="dot on"></span><span class="dot on"></span
+            ><span class="dot on"></span><span class="dot on"></span>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="screen">
+            <div class="home">
+              <div class="hclock">
+                <div class="c">9:41</div>
+                <div class="d">Mon, Jun 15</div>
+              </div>
+              <div class="grid">
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Phone</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Messages</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Photos</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Maps</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Clock</div>
+                </div>
+                <div class="ai real">
+                  <img id="s5-icon" src="assets/realness-icon.png" alt="" />
+                  <div class="lb">Realness</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Camera</div>
+                </div>
+                <div class="ai">
+                  <div class="sq"></div>
+                  <div class="lb">Files</div>
+                </div>
+              </div>
+              <div class="searchbar"><span class="g"></span>Search</div>
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
 
     <script>
-      window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {}
+      const tl = gsap.timeline({ paused: true })
 
       function tap(ring, ripple, t) {
-        tl.fromTo(ring, { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power2.out" }, t);
-        tl.to(ring, { scale: 1.12, duration: 0.275, ease: "sine.inOut", repeat: 1, yoyo: true }, t + 0.45);
-        tl.to(ring, { scale: 0.82, duration: 0.12, ease: "power2.in", overwrite: "auto" }, t + 1.0);
-        tl.to(ring, { scale: 1.0, duration: 0.18, ease: "power2.out" }, t + 1.12);
-        tl.fromTo(ripple, { opacity: 0.7, scale: 0.6 }, { opacity: 0, scale: 2.2, duration: 0.55, ease: "power2.out", immediateRender: false }, t + 1.0);
+        tl.fromTo(
+          ring,
+          { opacity: 0, scale: 1.8 },
+          { opacity: 1, scale: 1, duration: 0.45, ease: 'power2.out' },
+          t
+        )
+        tl.to(
+          ring,
+          {
+            scale: 1.12,
+            duration: 0.275,
+            ease: 'sine.inOut',
+            repeat: 1,
+            yoyo: true
+          },
+          t + 0.45
+        )
+        tl.to(
+          ring,
+          { scale: 0.82, duration: 0.12, ease: 'power2.in', overwrite: 'auto' },
+          t + 1.0
+        )
+        tl.to(
+          ring,
+          { scale: 1.0, duration: 0.18, ease: 'power2.out' },
+          t + 1.12
+        )
+        tl.fromTo(
+          ripple,
+          { opacity: 0.7, scale: 0.6 },
+          {
+            opacity: 0,
+            scale: 2.2,
+            duration: 0.55,
+            ease: 'power2.out',
+            immediateRender: false
+          },
+          t + 1.0
+        )
       }
 
-      tl.from("#s1-icon", { opacity: 0, scale: 0.6, duration: 0.7, ease: "back.out(1.4)" }, 0.15);
-      tl.from("#s1-h",   { opacity: 0, y: 50, duration: 0.6, ease: "power3.out" }, 0.4);
-      tl.from("#s1-tag", { opacity: 0, scale: 0.9, duration: 0.5, ease: "back.out(1.6)" }, 0.66);
+      tl.from(
+        '#s1-icon',
+        { opacity: 0, scale: 0.6, duration: 0.7, ease: 'back.out(1.4)' },
+        0.15
+      )
+      tl.from(
+        '#s1-h',
+        { opacity: 0, y: 50, duration: 0.6, ease: 'power3.out' },
+        0.4
+      )
+      tl.from(
+        '#s1-tag',
+        { opacity: 0, scale: 0.9, duration: 0.5, ease: 'back.out(1.6)' },
+        0.66
+      )
 
-      tl.from("#s2", { opacity: 0, duration: 0.4, ease: "power1.out" }, 2.6);
-      tl.from("#s2 .phone", { y: 40, opacity: 0, duration: 0.6, ease: "power3.out" }, 2.7);
-      tl.from("#s2-cap",    { y: -30, opacity: 0, duration: 0.5, ease: "power2.out" }, 2.8);
-      tap("#s2-ring", "#s2-ripple", 3.3);
+      tl.from('#s2', { opacity: 0, duration: 0.4, ease: 'power1.out' }, 2.6)
+      tl.from(
+        '#s2 .phone',
+        { y: 40, opacity: 0, duration: 0.6, ease: 'power3.out' },
+        2.7
+      )
+      tl.from(
+        '#s2-cap',
+        { y: -30, opacity: 0, duration: 0.5, ease: 'power2.out' },
+        2.8
+      )
+      tap('#s2-ring', '#s2-ripple', 3.3)
 
-      tl.from("#s3", { opacity: 0, duration: 0.4, ease: "power1.out" }, 5.4);
-      tl.from("#s3-cap",  { y: -30, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.5);
-      tl.from("#s3-menu", { opacity: 0, y: -20, scaleY: 0.8, duration: 0.4, ease: "power2.out", transformOrigin: "100% 0%" }, 5.6);
-      tap("#s3-ring", "#s3-ripple", 6.1);
+      tl.from('#s3', { opacity: 0, duration: 0.4, ease: 'power1.out' }, 5.4)
+      tl.from(
+        '#s3-cap',
+        { y: -30, opacity: 0, duration: 0.5, ease: 'power2.out' },
+        5.5
+      )
+      tl.from(
+        '#s3-menu',
+        {
+          opacity: 0,
+          y: -20,
+          scaleY: 0.8,
+          duration: 0.4,
+          ease: 'power2.out',
+          transformOrigin: '100% 0%'
+        },
+        5.6
+      )
+      tap('#s3-ring', '#s3-ripple', 6.1)
 
-      tl.from("#s4", { opacity: 0, duration: 0.4, ease: "power1.out" }, 8.4);
-      tl.from("#s4-cap",    { y: -30, opacity: 0, duration: 0.5, ease: "power2.out" }, 8.5);
-      tl.from("#s4-dialog", { y: 80, opacity: 0, duration: 0.55, ease: "power3.out" }, 8.6);
-      tap("#s4-ring", "#s4-ripple", 9.1);
+      tl.from('#s4', { opacity: 0, duration: 0.4, ease: 'power1.out' }, 8.4)
+      tl.from(
+        '#s4-cap',
+        { y: -30, opacity: 0, duration: 0.5, ease: 'power2.out' },
+        8.5
+      )
+      tl.from(
+        '#s4-dialog',
+        { y: 80, opacity: 0, duration: 0.55, ease: 'power3.out' },
+        8.6
+      )
+      tap('#s4-ring', '#s4-ripple', 9.1)
 
-      tl.from("#s5", { opacity: 0, duration: 0.4, ease: "power1.out" }, 11.2);
-      tl.from("#s5-cap", { y: -30, opacity: 0, duration: 0.5, ease: "power2.out" }, 11.3);
-      tl.from("#s5 .hclock", { opacity: 0, y: 24, duration: 0.6, ease: "power2.out" }, 11.4);
-      tl.from("#s5 .ai:not(.real)", { opacity: 0, scale: 0.8, duration: 0.5, stagger: 0.05, ease: "back.out(1.3)" }, 11.5);
-      tl.from("#s5-icon", { opacity: 0, scale: 0.3, duration: 0.7, ease: "back.out(1.8)" }, 12.0);
-      tl.from("#s5 .searchbar", { opacity: 0, y: 30, duration: 0.4, ease: "power1.out" }, 12.2);
+      tl.from('#s5', { opacity: 0, duration: 0.4, ease: 'power1.out' }, 11.2)
+      tl.from(
+        '#s5-cap',
+        { y: -30, opacity: 0, duration: 0.5, ease: 'power2.out' },
+        11.3
+      )
+      tl.from(
+        '#s5 .hclock',
+        { opacity: 0, y: 24, duration: 0.6, ease: 'power2.out' },
+        11.4
+      )
+      tl.from(
+        '#s5 .ai:not(.real)',
+        {
+          opacity: 0,
+          scale: 0.8,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'back.out(1.3)'
+        },
+        11.5
+      )
+      tl.from(
+        '#s5-icon',
+        { opacity: 0, scale: 0.3, duration: 0.7, ease: 'back.out(1.8)' },
+        12.0
+      )
+      tl.from(
+        '#s5 .searchbar',
+        { opacity: 0, y: 30, duration: 0.4, ease: 'power1.out' },
+        12.2
+      )
 
-      window.__timelines["main"] = tl;
+      window.__timelines['main'] = tl
     </script>
   </body>
 </html>

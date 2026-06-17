@@ -4,7 +4,9 @@
   import Preference from '@/components/preference'
   import PreferencesMenu from '@/components/preferences-menu'
   import CallToAction from '@/components/call-to-action'
+  import InstallGuide from '@/components/install-guide.vue'
   import LogoAsLink from '@/components/logo-as-link'
+  import { install_method } from '@/utils/platform'
   import SiteNav from '@/components/site-nav'
   import { as_author } from '@/utils/itemid'
   import { balance_gallery_posters } from '@/utils/balance-gallery-posters'
@@ -27,6 +29,15 @@
   const ABOUT_GALLERY_MAX_COUNT = 13
 
   const gallery_posters = ref([])
+
+  const install_noun = install_method().noun
+  /** @type {import('vue').Ref<HTMLDialogElement | null>} */
+  const install_dialog = ref(null)
+  const show_install = () => install_dialog.value?.showModal()
+  /** @param {MouseEvent} event */
+  const close_on_backdrop = event => {
+    if (event.target === install_dialog.value) install_dialog.value?.close()
+  }
 
   const balance_gallery = async () => {
     const featured = admin_posters.value.slice(0, ABOUT_FEATURED_POSTER_COUNT)
@@ -180,8 +191,8 @@
           </p>
           <p>
             Start in your browser, or
-            <a href="#make-a-video"
-              >add Realness to your home screen or desktop</a
+            <a href="/docs#install" @click.prevent="show_install"
+              >add Realness to your {{ install_noun }}</a
             >
             - works like a native app, straight from the web. Your data lives
             with you.
@@ -190,6 +201,22 @@
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[0]?.id" />
       </section>
     </header>
+    <dialog
+      ref="install_dialog"
+      class="install modal"
+      @click="close_on_backdrop">
+      <article>
+        <button
+          type="button"
+          class="close"
+          autofocus
+          aria-label="Close"
+          @click="install_dialog?.close()">
+          <icon name="remove" />
+        </button>
+        <install-guide />
+      </article>
+    </dialog>
     <article itemprop="artists">
       <header><h2>Artists</h2></header>
       <section>

@@ -94,3 +94,28 @@ export const documentation_html = (content = documentation_md) => {
   const rendered = inline_documentation_icons(String(marked.parse(content)))
   return sanitize_html(rendered)
 }
+
+/** Split marker — mount `<install-guide />` here in documentation views. */
+export const INSTALL_GUIDE_MARKER = '<!-- install-guide -->'
+
+/**
+ * @param {string} [content]
+ * @returns {{ before: string, after: string, has_install_guide: boolean }}
+ */
+export const documentation_html_parts = (content = documentation_md) => {
+  const marker_index = content.indexOf(INSTALL_GUIDE_MARKER)
+  if (marker_index === -1)
+    return {
+      before: documentation_html(content),
+      after: '',
+      has_install_guide: false
+    }
+
+  return {
+    before: documentation_html(content.slice(0, marker_index)),
+    after: documentation_html(
+      content.slice(marker_index + INSTALL_GUIDE_MARKER.length)
+    ),
+    has_install_guide: true
+  }
+}

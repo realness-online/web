@@ -5,16 +5,16 @@
 
 Realness is a rotoscoping tool. With it you can trace photos into layered SVG **posters** with animatable mosaics, shadows, and gradients. Posters export to SVG, PNG, PSD, video, or GLB. Print layers on transparency film and stack them like Disney-era cel animation.
 
-Everything runs on your device — no AI, just classical computer vision. Sign in to sync, or host your own Realness.
+Everything runs on your device — no AI, just classical computer vision. Sign in to sync with a small community. What you make uploads right away; the feed catches up on an eight-hour rhythm. Or host your own Realness.
 
 ### Quick start
 
-Add Realness to your home screen.
+[Add Realness to your home screen](#install).
 
 1. Open the app, tap the camera, and take a picture.
 2. Realness rotoscopes the photo into a vector poster: five _Mosaic_ layers, four _Shadow_ layers, and up to eighteen gradients pulled from the image.
 3. Write statements alongside posters to build a thought.
-4. Sign in with your phone number to sync with your community.
+4. Sign in with your phone number to sync across your devices.
 
 ---
 
@@ -36,17 +36,29 @@ On desktop, paste anywhere to queue a poster—same queue as **Add**. Keyboard s
 
 **Thoughts** pair statements with posters. Each new entry extends the current thought, giving you 13 minutes to build on what you're thinking.
 
-Before you sign in, Thoughts shows only this community's moderator—their posters and statements. Browse to see what this Realness is like; sign in to join and add your own.
+#### Statement input
 
-Statements within 13 minutes of a poster attach as overlay captions—you'll see a teal border on the poster. Those statements don't appear separately in the feed. Text-only thoughts stand alone.
+A pill-shaped text field sits at the top of the feed. It's always visible. Tap or click to focus, type your statement, and leave the field to save. The field grows with your text. Press **Tab** to jump to the first poster in the feed.
+
+Statements within 13 minutes of a poster attach as overlay captions on that poster (marked by a teal border) and don't appear separately in the feed. Text-only thoughts stand alone.
+
+#### Community feed
+
+Thoughts is a shared feed for your instance — a small circle of people, not the whole internet. There are no likes, counts, or comments. When something moves you, you text the person.
+
+Before you sign in, Thoughts shows only the community moderator's posts. Sign in to see the full community feed and add your own.
+
+Top left of Thoughts: a switch with three silhouettes. **Red** means phonebook mode — the full community feed. Tap to toggle between the phonebook and a feed of just your work.
+
+The feed moves on an eight-hour rhythm — not a live stream. What you post on this device still goes up right away. When something moves you, text the person; Realness is not built to keep you checking back.
 
 #### Statements
 
-Text written in the feed, grouped by day. Tap any statement to edit in place. URLs stay as text. They aren't turned into links. Works offline without sign-in; syncs once you sign in.
+Text entries in the feed, grouped by day. Tap any statement to edit it in place. URLs stay as plain text, not links. Works offline without sign-in; syncs once you sign in.
 
 #### Profile
 
-Shows avatar, posters, and statements by day. Download their posters. Cached offline; visits are not tracked.
+Tap an avatar in the feed to open that person's profile - their posters and statements grouped by day. Download any poster. Profiles are cached offline; visits are not tracked.
 
 ---
 
@@ -68,18 +80,17 @@ Each poster is a layered SVG.
 
 #### Interactive features
 
-- **Poster menu** — on touch, long-press a poster to open download, mask pen, and more. On desktop, click the poster.
-- **Animation** — GPU color transitions; toggle and cycle speed from Preferences.
-- **Drama** — front and back light bars; toggle and cycle combinations from Preferences.
-- **Mosaic layers** — on touch, press and hold to isolate a layer. On desktop, hover to highlight the layer under the cursor; click to isolate.
-- **Fit or fill** — long-press toggles meet (inside frame) and slice (fill frame). On desktop, click.
-- **Pan** — portrait slice mode: swipe left or right to move the poster within the frame.
-- **Aspect ratio** — cycle presets from Preferences on desktop.
-- **Slice alignment** — nudge the crop in slice mode from Preferences on desktop.
-- **Storytelling** — horizontal feed scroll from Preferences on desktop.
-- **Presentation** — a keyboard shortcut fills the screen with the poster and hides the interface. Press it again to exit. The key is listed in Preferences.
-- **Mask pen** — edit mosaic selection on your own posters.
-- **Set as avatar** — on your own posters, the poster menu makes that poster your profile avatar.
+- **Poster details** - long-press a poster on touch, or click it on desktop, to expand its caption area. Your own posters show overlay statements, download, and set-as-avatar. Other people's posters show their profile chip and a download button.
+- **Animation** - GPU color transitions. Toggle and cycle speed from Preferences.
+- **Drama** - front and back light bars. Toggle and cycle combinations from Preferences.
+- **Mosaic layers** - on touch, press and hold to highlight a layer. On desktop, hover to highlight the layer under the cursor.
+- **Fit or fill** - long-press toggles between meet (poster inside the frame) and slice (poster fills the frame). On desktop, click.
+- **Pan** - in portrait slice mode, swipe left or right to move the poster within the frame.
+- **Aspect ratio** - cycle presets from Preferences on desktop.
+- **Slice alignment** - nudge the crop in slice mode from Preferences on desktop.
+- **Storytelling** - switch the feed to horizontal scroll from Preferences on desktop.
+- **Presentation** - a keyboard shortcut fills the screen with the poster and hides the interface. Press again to exit. The key is listed in Preferences.
+- **Set as avatar** - on your own posters, the poster details area lets you set that poster as your profile avatar.
 
 #### 3D viewer
 
@@ -101,7 +112,7 @@ Exports clone the live poster on screen—not a separate render path.
 - **PNG** — same flat snapshot at 3840px wide, plus a small Realness watermark.
 - **PNG layers** — one file per layer for compositing—not one on-screen snapshot.
 - **PSD** — Shadows (Background, Light, Regular, Medium, Bold), Stroke, Mosaic (Sediment through Boulders). Separate layers for printing. 1920px on touch, 3840px on desktop.
-- **Video** — one animation cycle as `.mov`, 24fps, 1080px short side. Export speed is fixed.
+- **Video** — one animation cycle as `.mov`, 24fps
 - **GLB** — 3D model for Blender and similar tools. Uses the open 3D viewer when it is on; otherwise builds from the poster.
 
 #### Printing a cel animation
@@ -151,16 +162,31 @@ Sign-in required:
 
 ### Install
 
-Progressive Web App—install from the browser (Chrome/Edge address bar, Firefox "Install App", Safari "Add to Dock"). Works offline. Desktop adds full keyboard shortcuts and desktop GPU.
+Realness is a Progressive Web App — install it and it runs like a native app, offline, with full keyboard shortcuts and desktop GPU. The walkthrough below matches your device; open **Other devices** for the rest.
+
+<!-- install-guide -->
 
 ---
 
 ### Sync
 
-Sync runs when you return to the app—the tab or window becomes visible again.
+Sync runs when you return to the app or come back online.
 
-- **Your work** — posters, statements, and profile changes upload as soon as you're online.
-- **Community updates** — other people's posters and statements download at most once every eight hours.
+#### What goes up
+
+Posters, statements, profile changes, and anything you saved offline on **this device** upload as soon as you have a connection.
+
+#### What comes down
+
+Realness checks for new work once every eight hours — not more often. Open the app at noon and again at three, you will see the same feed. Open it the next morning, you will see what posted overnight.
+
+That check brings in statements from your other devices, plus new profiles, statements, events, and posters from everyone on the instance. Your name and avatar are verified every visit; the rest waits for the eight-hour mark.
+
+Slow on purpose. No live ticker, no reason to refresh every few minutes. Open the app, catch up, make something, leave.
+
+When sync runs, changed profiles and statements refresh and the feed reloads. A blue sweep border around the app means sync is in progress.
+
+#### Status borders
 
 Border around the app:
 
@@ -172,9 +198,9 @@ A **teal** border is different: it sits on a single poster (not the app frame) t
 
 ---
 
-### Project
+### A realness of your own
 
-Realness is open source. This page covers using the app; the repo has setup, deploy, and deeper background.
+The Realness source code is available. This page documents the tool; the repo has setup, deploying your own, and some deeper background to explore.
 
 - **[README](https://github.com/realness-online/web)** — overview, local dev, Firebase deploy.
 - **[Philosophy](https://github.com/realness-online/web/blob/main/docs/philosophy.md)** — why moderators, small communities, and client-first design.
