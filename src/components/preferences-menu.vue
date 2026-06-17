@@ -184,7 +184,9 @@
     view_3d,
     val => {
       if (val) mount_pane()
-      else if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      else if (
+        globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+      )
         dispose_pane()
     },
     { immediate: true, flush: 'post' }

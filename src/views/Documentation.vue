@@ -1,17 +1,28 @@
 <script setup>
   import SiteNav from '@/components/site-nav'
+  import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
   import {
-    documentation_html,
+    documentation_html_parts,
     documentation_toc
   } from '@/utils/documentation-content'
   import { onMounted, onUnmounted, ref, watch } from 'vue'
 
   const toc_items = documentation_toc()
-  const rendered_html = documentation_html()
+  const { before: install_before, after: install_after } =
+    documentation_html_parts()
 
   const ACTIVE_HEADING_VIEWPORT_RATIO = 0.33
+
+  /** @param {MouseEvent} event */
+  const handle_content_click = event => {
+    const { target } = event
+    if (!(target instanceof HTMLElement)) return
+    if (!target.closest('a[href="#install"]')) return
+    event.preventDefault()
+    document.getElementById('install')?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const active_id = ref(null)
   const pick = () => {
@@ -70,7 +81,9 @@
         </a>
       </nav>
       <section class="content">
-        <div v-html="rendered_html" />
+        <div v-html="install_before" @click="handle_content_click" />
+        <install-guide />
+        <div v-html="install_after" />
         <section class="preferences-panel">
           <header>
             <h2 id="preferences">Preferences</h2>
@@ -201,6 +214,10 @@
           min-width: 0;
           max-width: 100%;
           markdown_content();
+        }
+
+        & > section.install.guide {
+          margin-top: base-line;
         }
 
         & > section.preferences-panel {

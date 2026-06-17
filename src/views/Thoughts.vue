@@ -316,7 +316,6 @@
     { flush: 'pre' }
   )
 
-
   fill_statements = async (reset = false) => {
     const my_id =
       (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null

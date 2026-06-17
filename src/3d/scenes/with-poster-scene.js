@@ -1,5 +1,7 @@
 /** @typedef {import('@/3d/engine/types.js').PosterSceneController} PosterSceneController */
 
+import { create_poster_scene } from '@/3d/scenes/create-poster-scene.js'
+
 /**
  * Mounts a headless poster scene, runs async work, then disposes WebGL.
  *
@@ -12,8 +14,6 @@ export const with_poster_scene = async (svg_string, fn) => {
   document.body.appendChild(canvas)
 
   const { create_app } = await import('@/3d/engine/create-app.js')
-  const { create_poster_scene } =
-    await import('@/3d/scenes/create-poster-scene.js')
   const app = create_app({ canvas })
   const scene = create_poster_scene(svg_string)
   app.mount_scene(scene)

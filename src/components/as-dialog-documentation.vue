@@ -1,16 +1,23 @@
 <script setup>
   import { ref, nextTick, watch } from 'vue'
+  import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
   import {
-    documentation_html,
+    documentation_html_parts,
     documentation_toc
   } from '@/utils/documentation-content'
 
   const dialog = ref(null)
-  const content_ref = ref(null)
+  const before_ref = ref(null)
+  const after_ref = ref(null)
   const toc_items = ref(documentation_toc())
-  const rendered_content = ref(documentation_html())
+  const { before, after, has_install_guide } = documentation_html_parts()
+
+  const mount_content = () => {
+    if (before_ref.value) before_ref.value.innerHTML = before
+    if (after_ref.value) after_ref.value.innerHTML = after
+  }
 
   const show_modal = async () => {
     if (!dialog.value) return
@@ -18,8 +25,7 @@
     else {
       dialog.value.showModal()
       await nextTick()
-      if (content_ref.value && rendered_content.value)
-        content_ref.value.innerHTML = rendered_content.value
+      mount_content()
     }
   }
 
@@ -32,9 +38,8 @@
     if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
 
-  watch(rendered_content, html => {
-    if (content_ref.value && html && dialog.value?.open)
-      content_ref.value.innerHTML = html
+  watch([before, after], () => {
+    if (dialog.value?.open) mount_content()
   })
 
   defineExpose({ show: show_modal })
@@ -57,8 +62,12 @@
           {{ item.title }}
         </a>
       </nav>
-      <!-- Markdown content: manual innerHTML on open avoids Safari dialog+v-html rendering bug -->
-      <section ref="content_ref" class="content" />
+      <!-- Markdown before/after install guide: manual innerHTML avoids Safari dialog+v-html bug -->
+      <section class="content">
+        <div ref="before_ref" />
+        <install-guide v-if="has_install_guide" />
+        <div ref="after_ref" />
+      </section>
       <section class="preferences-panel">
         <header>
           <h2 id="preferences">Preferences</h2>
@@ -179,7 +188,10 @@
         min-width: 0;
         max-width: 100%;
         padding: 0 base-line * .5;
-        markdown_content();
+
+        & > div {
+          markdown_content();
+        }
       }
 
       & > section.preferences-panel {

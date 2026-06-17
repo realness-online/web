@@ -285,7 +285,6 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(load).toHaveBeenCalled()
     })
 
-
     it('continues when shadow layer cache load throws', async () => {
       const shadow_id = as_layer_id(
         /** @type {import('@/types').Id} */ (poster.id),

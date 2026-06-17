@@ -298,7 +298,10 @@
   register('nav::Go_Home', () => router.push('/'))
   register('nav::Go_Statements', () => router.push('/'))
   register('nav::Go_Thoughts', () => router.push('/'))
+  register('nav::Go_Account', () => router.push('/account'))
+  register('nav::Go_Docs', () => router.push('/docs'))
   register('nav::Go_About', () => router.push('/about'))
+  register('nav::Go_Pricing', () => router.push('/pricing'))
 
   /** @param {boolean} active */
   const sync_active = active => set_working(active)

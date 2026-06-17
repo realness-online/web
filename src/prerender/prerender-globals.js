@@ -68,3 +68,10 @@ if (typeof globalThis.cancelAnimationFrame === 'undefined')
 
 if (typeof globalThis.requestIdleCallback === 'undefined')
   globalThis.requestIdleCallback = callback => setTimeout(callback, 0)
+
+if (typeof globalThis.matchMedia === 'undefined')
+  globalThis.matchMedia = () => ({
+    matches: false,
+    addEventListener() {},
+    removeEventListener() {}
+  })

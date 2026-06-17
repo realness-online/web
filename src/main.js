@@ -6,6 +6,7 @@ import router from '@/router'
 import { key_commands_plugin } from '@/plugins/key-commands'
 import { init_serverless } from '@/utils/serverless'
 import { log_storage_estimate } from '@/utils/storage-estimate'
+import '@/use/install' // register beforeinstallprompt capture at boot, before any lazy route
 
 const { me } = localStorage
 if (!me) localStorage.me = '/+'

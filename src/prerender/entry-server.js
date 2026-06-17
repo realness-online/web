@@ -10,11 +10,15 @@ import { prerender_routes } from '@/prerender/pages.js'
 
 export { prerender_routes }
 
+const stub = { template: '<div />' }
+
 const routes = [
-  { path: '/', component: { template: '<div />' } },
+  { path: '/', component: stub },
   { path: '/about', component: About },
   { path: '/docs', component: Documentation },
-  { path: '/pricing', component: License }
+  { path: '/pricing', component: License },
+  { path: '/sign-on', redirect: '/account' },
+  { path: '/account', component: stub }
 ]
 
 /**

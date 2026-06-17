@@ -46,9 +46,9 @@ exports[`About > Rendering > renders about view 1`] = `
         <p>
            Start in your browser, or 
           <a
-            href="#make-a-video"
+            href="/docs#install"
           >
-            add Realness to your home screen or desktop
+            add Realness to your dock
           </a>
            - works like a native app, straight from the web. Your data lives with you. 
         </p>
@@ -58,6 +58,23 @@ exports[`About > Rendering > renders about view 1`] = `
       />
     </section>
   </header>
+  <dialog
+    class="install modal"
+  >
+    <article>
+      <button
+        aria-label="Close"
+        autofocus=""
+        class="close"
+        type="button"
+      >
+        <icon-stub
+          name="remove"
+        />
+      </button>
+      <install-guide-stub />
+    </article>
+  </dialog>
   <article
     itemprop="artists"
   >

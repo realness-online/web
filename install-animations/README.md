@@ -7,12 +7,12 @@ served by the app from `public/install/`.
 The app picks the right one at runtime — see `src/utils/platform.js` and
 `src/components/install-guide.vue`.
 
-| Source (`sources/`)     | Output (`public/install/`) | Serves                                  | Size       |
-| ----------------------- | -------------------------- | --------------------------------------- | ---------- |
-| `ios-safari.html`       | `ios-safari.mp4`           | iPhone, iPad, all iOS browsers          | 1080×1920  |
-| `android-chrome.html`   | `android-chrome.mp4`       | Android Chrome                          | 1080×1920  |
-| `desktop-chromium.html` | `desktop-chromium.mp4`     | Desktop Chrome / Edge / Brave (any OS)  | 1920×1080  |
-| `macos-safari.html`     | `macos-safari.mp4`         | macOS Safari (Add to Dock)              | 1920×1080  |
+| Source (`sources/`)     | Output (`public/install/`) | Serves                                 | Size      |
+| ----------------------- | -------------------------- | -------------------------------------- | --------- |
+| `ios-safari.html`       | `ios-safari.mp4`           | iPhone, iPad, all iOS browsers         | 1080×1920 |
+| `android-chrome.html`   | `android-chrome.mp4`       | Android Chrome                         | 1080×1920 |
+| `desktop-chromium.html` | `desktop-chromium.mp4`     | Desktop Chrome / Edge / Brave (any OS) | 1920×1080 |
+| `macos-safari.html`     | `macos-safari.mp4`         | macOS Safari (Add to Dock)             | 1920×1080 |
 
 Firefox desktop has no install path, so it gets text in the component — no video.
 
