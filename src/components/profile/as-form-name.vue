@@ -7,14 +7,11 @@
   const { is_valid_name, save } = use_me()
   const saving = ref(false)
   const saved = ref(false)
-  const is_valid = ref(false)
   const initial_name = ref(null)
   const has_focused = ref(false)
 
   watch_effect(() => {
-    const valid = is_valid_name.value
-    is_valid.value = valid
-    if (valid) emit('valid')
+    if (is_valid_name.value) emit('valid')
   })
 
   const handle_focus = () => {
@@ -52,8 +49,7 @@
 
 <template>
   <form id="profile-name" v-if="me" @submit.prevent="handle_blur">
-    <fieldset id="name" :class="{ saved: saved }">
-      <legend :class="{ valid: is_valid, saving: saving }">Name</legend>
+    <fieldset id="name" :class="{ saved: saved, saving: saving }">
       <input
         id="name"
         v-model="me.name"
@@ -69,14 +65,12 @@
 
 <style lang="stylus">
   form#profile-name
-    // animation-name: slide-in-left
     &.complete
       animation-name: slide-out-right
-    fieldset.saved
+    fieldset.saving input#name
+      border-color: orange
+    fieldset.saved input#name
       border-color: blue
-    legend
-      &.saving
-        color: orange
     input#name
       width: 100%
     menu

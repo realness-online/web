@@ -45,10 +45,8 @@ describe('@/component/profile/as-form-name.vue', () => {
       expect(name_input.attributes('placeholder')).toBe('Name')
     })
 
-    it('renders legend with validation class', () => {
-      const legend = wrapper.find('legend')
-      expect(legend.exists()).toBe(true)
-      expect(legend.text()).toBe('Name')
+    it('has no redundant label — the input placeholder carries it', () => {
+      expect(wrapper.find('legend').exists()).toBe(false)
     })
   })
 

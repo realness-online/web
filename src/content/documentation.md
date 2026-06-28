@@ -156,7 +156,6 @@ Sign-in required:
 
 - **Sign off** — sign out.
 - **Name** — display name.
-- **Sponsorship** — history and option to sponsor.
 
 ---
 
