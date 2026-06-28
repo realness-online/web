@@ -1,6 +1,13 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Push subscriptions live outside the public `people/` tree so endpoints
+    // are never world-readable. Owner-only; the admin SDK (functions send
+    // path) bypasses these rules to read across all subscribers.
+    match /subscriptions/{mobile}/{sub} {
+      allow read, write, delete: if request.auth != null
+        && request.auth.token.phone_number == mobile;
+    }
     match /people/{mobile}/relations.html.gz {
       allow read, write, delete: if request.auth != null
         && request.auth.token.phone_number == mobile;

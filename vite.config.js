@@ -286,7 +286,10 @@ export default defineConfig({
       devOptions: { enabled: false },
       filename: 'service.worker.js',
       workbox: {
-        maximumFileSizeToCacheInBytes: 4000000
+        maximumFileSizeToCacheInBytes: 4000000,
+        // Web Push handlers, imported into the generated SW (keeps generateSW
+        // precaching untouched). Source: public/push-handlers.js.
+        importScripts: ['/push-handlers.js']
       },
       minify: true,
       includeAssets: [

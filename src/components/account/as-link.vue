@@ -4,7 +4,8 @@
 
   defineOptions({ name: 'AccountAsLink' })
 
-  const target = computed(() => (current_user.value ? '/account' : '/sign-on'))
+  // Single /account route now owns both states (shows sign-in when signed out).
+  const target = '/account'
 
   const label = computed(() => {
     if (me.value?.name) return me.value.name

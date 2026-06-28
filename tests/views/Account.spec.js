@@ -3,19 +3,14 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { reactive } from 'vue'
 import Account from '@/views/Account.vue'
 
-const { mock_replace, mock_me, mock_current_user, mock_record, sponsor_state } =
+const { mock_replace, mock_me, mock_current_user, mock_is_valid_name } =
   vi.hoisted(() => {
     const create_ref = value => ({ value, __v_isRef: true })
     return {
       mock_replace: vi.fn(),
       mock_me: create_ref(undefined),
       mock_current_user: create_ref(undefined),
-      mock_record: vi.fn().mockResolvedValue(false),
-      sponsor_state: {
-        sponsorships: create_ref([]),
-        is_sponsor: create_ref(false),
-        latest_sponsorship: create_ref(null)
-      }
+      mock_is_valid_name: create_ref(true)
     }
   })
 
@@ -32,17 +27,8 @@ vi.mock('@/utils/serverless', () => ({
   sign_off: vi.fn()
 }))
 
-vi.mock('idb-keyval', () => ({
-  keys: vi.fn().mockResolvedValue([])
-}))
-
-vi.mock('@/use/sponsor', () => ({
-  use_sponsor: () => ({
-    sponsorships: sponsor_state.sponsorships,
-    is_sponsor: sponsor_state.is_sponsor,
-    latest_sponsorship: sponsor_state.latest_sponsorship,
-    record_session: mock_record
-  })
+vi.mock('@/use/people', () => ({
+  use_me: () => ({ is_valid_name: mock_is_valid_name })
 }))
 
 const default_stubs = {
@@ -54,7 +40,11 @@ const default_stubs = {
     props: ['person']
   },
   'name-as-form': true,
-  'as-sponsor': true
+  'as-notifications': true,
+  'as-sign-on': {
+    name: 'AsSignOn',
+    template: '<section class="as-sign-on-stub" />'
+  }
 }
 
 const mount = () => shallowMount(Account, { global: { stubs: default_stubs } })
@@ -65,7 +55,6 @@ describe('Account', () => {
     mock_route.query = {}
     mock_me.value = { id: '/+15550000000', name: 'Scott', type: 'person' }
     mock_current_user.value = { uid: 'test-user' }
-    mock_record.mockResolvedValue(false)
   })
 
   it('renders the account section when signed in', () => {
@@ -73,36 +62,20 @@ describe('Account', () => {
     expect(wrapper.find('section#account.page').exists()).toBe(true)
   })
 
-  it('redirects to /sign-on when not signed in', () => {
+  it('shows the sign-in flow inline when not signed in (no redirect)', () => {
     mock_current_user.value = null
-    mount()
-    expect(mock_replace).toHaveBeenCalledWith({
-      path: '/sign-on',
-      query: { next: '/account' }
-    })
+    const wrapper = mount()
+    expect(wrapper.find('.as-sign-on-stub').exists()).toBe(true)
+    expect(wrapper.find('#sign-out').exists()).toBe(false)
+    expect(mock_replace).not.toHaveBeenCalled()
   })
 
-  it('records the Stripe session_id and clears the query', async () => {
-    mock_record.mockResolvedValue(true)
-    mock_route.query = { sponsor: 'ok', session_id: 'cs_test_abc' }
-    mount()
+  it('redirects to the next query target after sign-in', async () => {
+    mock_current_user.value = null
+    mock_route.query = { next: '/discover' }
+    const wrapper = mount()
+    wrapper.findComponent({ name: 'AsSignOn' }).vm.$emit('signed_in')
     await flushPromises()
-    expect(mock_record).toHaveBeenCalledWith('cs_test_abc')
-    expect(mock_replace).toHaveBeenCalledWith({ path: '/account' })
-  })
-
-  it('does nothing when the redirect query is missing', async () => {
-    mount()
-    await flushPromises()
-    expect(mock_record).not.toHaveBeenCalled()
-  })
-
-  it('does not redirect when sponsor entry already existed', async () => {
-    mock_record.mockResolvedValue(false)
-    mock_route.query = { sponsor: 'ok', session_id: 'cs_test_abc' }
-    mount()
-    await flushPromises()
-    expect(mock_record).toHaveBeenCalledWith('cs_test_abc')
-    expect(mock_replace).not.toHaveBeenCalledWith({ path: '/account' })
+    expect(mock_replace).toHaveBeenCalledWith('/discover')
   })
 })

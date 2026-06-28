@@ -134,11 +134,9 @@
     }
   }
 
+  // Digit-only at the point of entry; length is enforced by maxlength, not JS.
   const code_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
-    const button = document.querySelector('#submit-verification')
-    const input = document.querySelector('#verification-code')
-    if (input && input.value.length === 5 && button) button.disabled = false
   }
 
   watch_effect(() => {
@@ -205,8 +203,9 @@
         type="tel"
         inputmode="numeric"
         required
+        maxlength="6"
         autocomplete="one-time-code"
-        placeholder="Verification Code"
+        placeholder="6-digit code"
         @keypress="code_keypress" />
     </fieldset>
     <icon v-if="working" name="working" />
@@ -216,13 +215,13 @@
         id="authorize"
         :disabled="disabled_sign_in"
         @click.prevent="begin_authorization">
-        <icon name="silhouette" />
+        Text me a code
       </button>
       <button
         v-if="show_code"
         id="submit-verification"
         @click.prevent="sign_in_with_code">
-        <icon name="silhouette" />
+        Verify
       </button>
     </menu>
   </form>

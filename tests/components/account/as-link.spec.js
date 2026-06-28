@@ -32,10 +32,10 @@ describe('@/components/account/as-link', () => {
     localStorage.clear()
   })
 
-  it('points to /sign-on when signed out', () => {
+  it('points to /account when signed out (single route owns both states)', () => {
     mock_current_user.value = null
     const wrapper = mount()
-    expect(wrapper.find('a').attributes('href')).toBe('/sign-on')
+    expect(wrapper.find('a').attributes('href')).toBe('/account')
     expect(wrapper.text()).toBe('sign on')
   })
 
