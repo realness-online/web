@@ -251,6 +251,7 @@ describe('@/use/push', () => {
     })
 
     it('returns false when registration fails', async () => {
+      const err_spy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const broken_sw = {
         ready: Promise.reject(new Error('no SW'))
       }
@@ -265,6 +266,7 @@ describe('@/use/push', () => {
       expect(ok).toBe(false)
       expect(push.subscribed.value).toBe(false)
       expect(push.busy.value).toBe(false)
+      err_spy.mockRestore()
     })
 
     it('returns false when already busy', async () => {
@@ -374,6 +376,7 @@ describe('@/use/push', () => {
 
   describe('unsupported environment (APIs removed after mount)', () => {
     it('enable returns false when Notification is gone', async () => {
+      const err_spy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const orig = globalThis.Notification
       delete globalThis.Notification
       try {
@@ -381,10 +384,12 @@ describe('@/use/push', () => {
         expect(ok).toBe(false)
       } finally {
         globalThis.Notification = orig
+        err_spy.mockRestore()
       }
     })
 
     it('disable returns false when serviceWorker is gone', async () => {
+      const err_spy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const orig = globalThis.navigator.serviceWorker
       delete globalThis.navigator.serviceWorker
       try {
@@ -396,6 +401,7 @@ describe('@/use/push', () => {
           configurable: true,
           writable: true
         })
+        err_spy.mockRestore()
       }
     })
 
