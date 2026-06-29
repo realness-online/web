@@ -29,7 +29,7 @@ const is_installed = () =>
   typeof window !== 'undefined' &&
   (window.matchMedia?.('(display-mode: standalone)').matches ||
     // iOS Safari standalone flag (not in the standard Navigator type)
-    /** @type {any} */ (window.navigator).standalone === true)
+    /** @type {any} */ (window.navigator)?.standalone === true)
 
 const BASE64_GROUP = 4
 const HEX = 16
