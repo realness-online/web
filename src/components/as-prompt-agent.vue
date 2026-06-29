@@ -10,6 +10,10 @@
       type: String,
       default: 'poster',
       validator: v => ['poster', 'instance'].includes(v)
+    },
+    inline: {
+      type: Boolean,
+      default: false
     }
   })
 
@@ -48,7 +52,10 @@
 </script>
 
 <template>
-  <section class="prompt-agent">
+  <button v-if="inline" type="button" class="prompt-agent inline" @click="copy">
+    {{ copied ? 'Copied' : 'Copy prompt' }}
+  </button>
+  <section v-else class="prompt-agent">
     <h3>{{ label.heading }}</h3>
     <p>{{ label.desc }}</p>
     <button type="button" @click="copy">

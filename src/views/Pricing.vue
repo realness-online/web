@@ -104,9 +104,12 @@
               <span>per year</span>
             </p>
             <p>Contact us for terms and licensing.</p>
-            <a href="https://github.com/realness-online/web" rel="external">
-              Contact us
-            </a>
+            <menu class="actions">
+              <as-prompt-agent mode="instance" inline />
+              <a href="https://github.com/realness-online/web" rel="external">
+                Contact us
+              </a>
+            </menu>
           </article>
         </li>
 
@@ -145,14 +148,16 @@
               <span>per year</span>
             </p>
             <p>Contact us for terms and licensing.</p>
-            <a href="https://github.com/realness-online/web" rel="external">
-              Contact us
-            </a>
+            <menu class="actions">
+              <as-prompt-agent mode="instance" inline />
+              <a href="https://github.com/realness-online/web" rel="external">
+                Contact us
+              </a>
+            </menu>
           </article>
         </li>
       </ul>
     </article>
-    <as-prompt-agent mode="instance" />
   </section>
 </template>
 
@@ -293,6 +298,46 @@
               justify-content: center;
               margin: 0;
               padding: 0;
+            }
+
+            & > menu.actions {
+              gap: base-line * 0.5;
+              margin-top: auto;
+
+              & > button.prompt-agent.inline,
+              & > a {
+                flex: 1;
+                display: block;
+                text-align: center;
+                padding: base-line * 0.5 base-line;
+                border-radius: base-line * 0.33;
+                font-weight: bold;
+                text-decoration: none;
+                font: inherit;
+                cursor: pointer;
+              }
+
+              & > button.prompt-agent.inline {
+                border: round((base-line * 0.1), 2) solid var(--red);
+                background: none;
+                color: var(--red);
+
+                &:hover,
+                &:focus-visible {
+                  background: var(--red);
+                  color: white;
+                }
+              }
+
+              & > a {
+                border: round((base-line * 0.1), 2) solid var(--blue);
+                color: blue;
+
+                &:hover,
+                &:focus-visible {
+                  background-color: alpha(blue-fill, 0.12);
+                }
+              }
             }
 
             & > a {

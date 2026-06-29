@@ -112,12 +112,30 @@ export const documentation_html = (content = documentation_md) => {
  */
 export const markdown_html = content => documentation_html(content)
 
-/** Split marker — mount `<install-guide />` here in documentation views. */
 export const INSTALL_GUIDE_MARKER = '<!-- install-guide -->'
+
+export const INSTANCE_PROMPT_MARKER = '<!-- instance-prompt -->'
+
+/**
+ * @param {string} content
+ * @returns {{ after: string, realness: string }}
+ */
+const split_instance_prompt = content => {
+  const marker_index = content.indexOf(INSTANCE_PROMPT_MARKER)
+  if (marker_index === -1)
+    return { after: documentation_html(content), realness: '' }
+
+  return {
+    after: documentation_html(content.slice(0, marker_index)),
+    realness: documentation_html(
+      content.slice(marker_index + INSTANCE_PROMPT_MARKER.length)
+    )
+  }
+}
 
 /**
  * @param {string} [content]
- * @returns {{ before: string, after: string, has_install_guide: boolean }}
+ * @returns {{ before: string, after: string, realness: string, has_install_guide: boolean }}
  */
 export const documentation_html_parts = (content = documentation_md) => {
   const marker_index = content.indexOf(INSTALL_GUIDE_MARKER)
@@ -125,12 +143,13 @@ export const documentation_html_parts = (content = documentation_md) => {
     return {
       before: documentation_html(content),
       after: '',
+      realness: '',
       has_install_guide: false
     }
 
   return {
     before: documentation_html(content.slice(0, marker_index)),
-    after: documentation_html(
+    ...split_instance_prompt(
       content.slice(marker_index + INSTALL_GUIDE_MARKER.length)
     ),
     has_install_guide: true
