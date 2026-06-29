@@ -1098,7 +1098,7 @@
           about-enter();
         }
 
-        :deep(menu.preferences-menu > article) {
+        menu.preferences-menu > article {
           about-enter();
 
           for i in 1..3 {
@@ -1223,7 +1223,7 @@
       & > [itemprop='integrations']:not(.revealed) > header,
       & > [itemprop='integrations']:not(.revealed) > ol > li,
       & > [itemprop='preferences']:not(.revealed) > header,
-      & > [itemprop='preferences']:not(.revealed) :deep(menu.preferences-menu > article),
+      & > [itemprop='preferences']:not(.revealed) menu.preferences-menu > article,
       & > [itemprop='gallery']:not(.revealed) > header,
       & > [itemprop='support']:not(.revealed) > *,
       & > [itemprop='footer']:not(.revealed) > * {
@@ -1259,7 +1259,7 @@
       & > [itemprop='integrations'].revealed > header,
       & > [itemprop='integrations'].revealed > ol > li,
       & > [itemprop='preferences'].revealed > header,
-      & > [itemprop='preferences'].revealed :deep(menu.preferences-menu > article),
+      & > [itemprop='preferences'].revealed menu.preferences-menu > article,
       & > [itemprop='gallery'].revealed > header,
       & > [itemprop='footer'].revealed > * {
         animation: none;
