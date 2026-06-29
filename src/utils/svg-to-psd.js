@@ -203,8 +203,16 @@ const extract_core_layers = async (svg_element, poster_id, width, height) => {
     const layer_elements = shadow_symbol.querySelectorAll('[itemprop]')
     layer_elements.forEach(el => {
       const itemprop = el.getAttribute('itemprop')
-      if (itemprop !== layer_name) el.remove()
-      else if (itemprop !== 'background') el.setAttribute('fill-opacity', '1')
+      if (itemprop !== layer_name) {
+        el.remove()
+        return
+      }
+      // Shadow fill layers must not carry stroke — outlines are exported in
+      // the separate Stroke group. Left on, they double-render the outline
+      // onto the medium/bold fill layers.
+      el.setAttribute('stroke', 'none')
+      el.removeAttribute('stroke-opacity')
+      if (itemprop !== 'background') el.setAttribute('fill-opacity', '1')
     })
 
     // oxlint-disable-next-line no-await-in-loop
