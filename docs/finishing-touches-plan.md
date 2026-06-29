@@ -19,7 +19,7 @@ Punch list to get [realness.online](https://realness.online) over the line.
       (a lookup, not messaging). Port from seeq-app: `functions/.../services/integrity.js`,
       `handlers/http/user.js` (`check_phone_integrity`), `twilio` dep, `utils/rate-limiter.js`,
       `TWILIO_ACCOUNT_SID`/`AUTH_TOKEN`. Reject when Lookup v2 `line_type_intelligence.type !==
-    'mobile'`; cache on user record. Adapt seeq's `users` keying to realness identity.
+'mobile'`; cache on user record. Adapt seeq's `users` keying to realness identity.
       See seeq `docs/phone-fraud-prevention-plan.md`.
 
 ### 💰 Payments

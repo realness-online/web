@@ -8,6 +8,7 @@ describe('@/utils/storage-estimate', () => {
 
   it('logs usage when navigator.storage.estimate is available', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     Object.defineProperty(navigator, 'storage', {
       configurable: true,
       value: {
