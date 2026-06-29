@@ -1,5 +1,6 @@
 <script setup>
   import SiteNav from '@/components/site-nav'
+  import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
@@ -67,6 +68,7 @@
       <site-nav />
       <h2>Documentation</h2>
     </header>
+    <as-prompt-agent mode="poster" />
     <article>
       <nav v-if="toc_items.length" class="toc" aria-label="Table of contents">
         <a
@@ -94,6 +96,7 @@
         </section>
       </section>
     </article>
+    <as-prompt-agent mode="instance" />
   </section>
 </template>
 

@@ -74,10 +74,11 @@ client, and commercial work under all pricing tiers, including the free tier.
 
 ## 6. Licensing for teams and organizations
 
-Personal use of the hosted Service is free. Running an **instance** of Realness
-for a team, studio, family circle, company, or institution requires a paid
-commercial license, per the tiers published on the [Pricing page](/pricing)
-(currently "Small teams" at $100/year and "Large organizations" at $500/year).
+Personal use of the hosted Service is free. If your team, studio, family circle,
+company, or institution needs a formal license agreement — for procurement,
+legal compliance, or to support the project — we offer commercial tiers on the
+[Pricing page](/pricing) (currently "Small teams" at $100/year and "Large
+organizations" at $500/year).
 
 An organization that licenses or self-hosts Realness is the responsible
 operator of its instance: it acts as the moderator (or appoints one), is
@@ -157,24 +158,12 @@ or to protect the Service or other people. Sections that by their nature should
 survive termination — including content ownership, disclaimers, limitation of
 liability, indemnification, and dispute resolution — survive.
 
-## 14. Dispute resolution; arbitration; class-action waiver
+## 14. Governing law and venue
 
-**Please read this section carefully — it affects how disputes are resolved.**
-
-Any dispute arising out of or relating to these Terms or the Service will be
-resolved by **binding individual arbitration** administered under the rules of a
-recognized arbitration provider in California, rather than in court, except that
-either party may bring an individual claim in small-claims court. **You and we
-each waive the right to a jury trial and the right to participate in a class
-action or class-wide arbitration.** Arbitration will take place in California, and
-these Terms are governed by the laws of the State of California, without regard to
-its conflict-of-laws rules.
-
-**Opt-out:** you may opt out of this arbitration agreement within 30 days of first
-accepting these Terms by emailing **security@realness.online** with your account
-phone number and a clear statement that you opt out. If you opt out, disputes will
-be resolved in the state or federal courts located in California, and you and we
-consent to their jurisdiction.
+These Terms are governed by the laws of the State of California, USA, without
+regard to its conflict-of-laws rules. Any dispute arising out of or relating to
+these Terms or the Service will be resolved in the state or federal courts located
+in California, and you and we consent to their jurisdiction.
 
 ## 15. Changes to these Terms
 
@@ -191,5 +180,5 @@ these Terms; we may assign them in connection with a transfer of the Service.
 
 ## 17. Contact
 
-Questions, legal notices, privacy requests, and arbitration opt-outs:
+Questions, legal notices, and privacy requests:
 **security@realness.online**.

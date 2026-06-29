@@ -11,8 +11,9 @@ Copyright (c) 2026 Scott Fryxell. All rights reserved.
    up your own instance. Each instance has exactly one human moderator who takes
    responsibility for the content created within it. Anyone or any organization
    may self-host — and by doing so assumes full legal responsibility for the
-   instance they operate. Running Realness for a team or organization requires a
-   commercial license (see https://realness.online/pricing). Source-available
+   instance they operate. If your team or organization needs a formal license
+   agreement — for procurement, legal compliance, or to support the project —
+   we offer commercial tiers at https://realness.online/pricing. Source-available
    does not mean open-contribution: publishing the source creates no obligation
    on the author to review, accept, or maintain contributions.
 
@@ -39,11 +40,13 @@ Copyright (c) 2026 Scott Fryxell. All rights reserved.
 
 4. GRANT — COMMERCIAL INSTANCES
 
-   Deploying a Commercial Instance requires a paid commercial license from the
-   author, per the tiers published at https://realness.online/pricing
-   (currently "Small teams" and "Large organizations"). A Commercial Instance
-   operated without a current commercial license is outside the scope of this
-   grant.
+   If your team or organization would like a formal license agreement — for
+   procurement, legal compliance, or to support the project — we offer
+   commercial tiers at https://realness.online/pricing. The license includes
+   the same rights as Section 3 plus the organizational coverage and
+   indemnification described in the Terms. Using Realness for a team or
+   organization without a formal license is done entirely at your own risk
+   and without the protections the commercial license provides.
 
 5. RESPONSIBILITY
 
