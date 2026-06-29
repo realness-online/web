@@ -5,7 +5,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import PrerenderShell from '@/prerender/prerender-shell.vue'
 import About from '@/views/About.vue'
 import Documentation from '@/views/Documentation.vue'
-import License from '@/views/License.vue'
+import Pricing from '@/views/Pricing.vue'
 import { prerender_routes } from '@/prerender/pages.js'
 
 export { prerender_routes }
@@ -16,7 +16,7 @@ const routes = [
   { path: '/', component: stub },
   { path: '/about', component: About },
   { path: '/docs', component: Documentation },
-  { path: '/pricing', component: License },
+  { path: '/pricing', component: Pricing },
   { path: '/sign-on', redirect: '/account' },
   { path: '/account', component: stub }
 ]

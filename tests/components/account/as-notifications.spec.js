@@ -2,12 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
 import AsNotifications from '@/components/account/as-notifications.vue'
 
-const { mock_status, mock_busy, mock_enable, mock_disable, mock_refresh } =
+const { mock_status, mock_busy, mock_enable, mock_disable, mock_refresh,
+       mock_notifications } =
   vi.hoisted(() => {
     const create_ref = value => ({ value, __v_isRef: true })
+    const mock_notifications = create_ref(false)
     return {
       mock_status: create_ref('off'),
       mock_busy: create_ref(false),
+      mock_notifications,
       mock_enable: vi.fn().mockResolvedValue(true),
       mock_disable: vi.fn().mockResolvedValue(true),
       mock_refresh: vi.fn().mockResolvedValue(undefined)
@@ -23,6 +26,10 @@ vi.mock('@/use/push', () => ({
     enable: mock_enable,
     disable: mock_disable
   })
+}))
+
+vi.mock('@/utils/preference', () => ({
+  notifications: mock_notifications
 }))
 
 const mount = () => shallowMount(AsNotifications)
@@ -46,7 +53,7 @@ describe('@/components/account/as-notifications', () => {
   })
 
   it('checks the toggle when notifications are on', () => {
-    mock_status.value = 'on'
+    mock_notifications.value = true
     const wrapper = mount()
     expect(wrapper.find('input[type="checkbox"]').element.checked).toBe(true)
   })

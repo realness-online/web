@@ -3,10 +3,7 @@
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import {
-    documentation_html_parts,
-    documentation_toc
-  } from '@/utils/documentation-content'
+  import { documentation_html_parts, documentation_toc } from '@/utils/markdown'
 
   const dialog = ref(null)
   const before_ref = ref(null)
@@ -38,7 +35,7 @@
     if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
 
-  watch([before, after], () => {
+  watch([() => before, () => after], () => {
     if (dialog.value?.open) mount_content()
   })
 

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
-import License from '@/views/License.vue'
+import Pricing from '@/views/Pricing.vue'
 
-describe('@/views/License', () => {
-  it('renders the license page with plan cards', () => {
-    const wrapper = shallowMount(License, {
+describe('@/views/Pricing', () => {
+  it('renders the pricing page with plan cards', () => {
+    const wrapper = shallowMount(Pricing, {
       global: {
         stubs: {
           'logo-as-link': true,

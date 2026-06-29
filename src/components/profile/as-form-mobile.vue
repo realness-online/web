@@ -224,6 +224,12 @@
         Verify
       </button>
     </menu>
+    <p v-if="show_authorize && !working" id="consent">
+      By continuing you agree to the
+      <router-link to="/terms">Terms</router-link>
+      and
+      <router-link to="/privacy">Privacy Policy</router-link>.
+    </p>
   </form>
 </template>
 
@@ -303,6 +309,21 @@
     menu {
       display: flex;
       justify-content: flex-end;
+    }
+
+    p#consent {
+      margin: (base-line * 0.5) 0 0;
+      font-size: 0.75em;
+      opacity: 0.7;
+      line-height: 1.4;
+      text-align: right;
+
+      a {
+        color: var(--blue);
+        &:hover {
+          color: var(--red);
+        }
+      }
     }
   }
 </style>

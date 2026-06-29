@@ -1,18 +1,30 @@
 <script setup>
-  import { onMounted as mounted } from 'vue'
+  import { onMounted } from 'vue'
   import { use_push } from '@/use/push'
+  import { notifications } from '@/utils/preference'
 
   defineOptions({ name: 'AsNotifications' })
 
   const { status, busy, refresh, enable, disable } = use_push()
 
-  mounted(refresh)
-
-  // The toggle tap is the user gesture the browser/OS requires to prompt.
-  const toggle = async event => {
-    if (event.target.checked) await enable()
-    else await disable()
+  // Sync preference to actual subscription state on mount
+  onMounted(async () => {
     await refresh()
+    if (notifications.value && status.value !== 'on') {
+      const ok = await enable()
+      if (!ok) notifications.value = false
+    }
+    if (!notifications.value && status.value === 'on') await disable()
+  })
+
+  const toggle = async event => {
+    if (event.target.checked) {
+      const ok = await enable()
+      notifications.value = ok
+    } else {
+      await disable()
+      notifications.value = false
+    }
   }
 </script>
 
@@ -25,7 +37,7 @@
           type="checkbox"
           role="switch"
           switch
-          :checked="status === 'on'"
+          :checked="notifications"
           :disabled="busy || status === 'blocked' || status === 'needs-install'"
           @change="toggle" />
         <span class="slider"></span>
