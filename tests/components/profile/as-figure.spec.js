@@ -53,7 +53,7 @@ describe('@/component/profile/as-figure.vue', () => {
       },
       global: {
         stubs: {
-          'as-svg': true,
+          'as-avatar': true,
           icon: true,
           'as-address': true,
           'as-messenger': true
@@ -76,7 +76,7 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person, display: 'label' },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': {
               template: '<a :href="to"><slot /></a>',
@@ -99,14 +99,14 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person: person_with_avatar, display: 'label' },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'as-poster-symbol': true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.exists()).toBe(true)
       expect(as_svg.attributes('itemid')).toBe(person_with_avatar.avatar)
     })
@@ -119,14 +119,14 @@ describe('@/component/profile/as-figure.vue', () => {
         },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'as-poster-symbol': true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.exists()).toBe(true)
       expect(as_svg.attributes('itemid')).toBe('/+16282281823/posters/456')
     })
@@ -136,13 +136,13 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person, display: 'label' },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.attributes('itemid')).toBe(person.avatar)
     })
     it('renders poster fallback when display=label, no avatar, poster_itemid provided', () => {
@@ -151,13 +151,13 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person, display: 'label', poster_itemid: poster_id },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.attributes('itemid')).toBe(poster_id)
     })
     it('renders avatar when display=label and person has avatar', () => {
@@ -166,13 +166,13 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person, display: 'label' },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.attributes('itemid')).toBe(person.avatar)
     })
     it('renders poster when display=label and no avatar but poster_itemid', () => {
@@ -184,13 +184,13 @@ describe('@/component/profile/as-figure.vue', () => {
         },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.attributes('itemid')).toBe('/+16282281823/posters/456')
     })
     it('renders as-svg with poster_itemid when display=label and no avatar', () => {
@@ -203,13 +203,13 @@ describe('@/component/profile/as-figure.vue', () => {
         },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.exists()).toBe(true)
       expect(as_svg.attributes('itemid')).toBe('/+1/posters/123')
     })
@@ -224,13 +224,13 @@ describe('@/component/profile/as-figure.vue', () => {
         },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.exists()).toBe(true)
       expect(as_svg.attributes('itemid')).toBe('/+16282281823/posters/123')
     })
@@ -244,13 +244,13 @@ describe('@/component/profile/as-figure.vue', () => {
         },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'router-link': { template: '<a><slot /></a>', props: ['to'] }
           }
         }
       })
-      const as_svg = wrapper.find('as-svg-stub')
+      const as_svg = wrapper.find('as-avatar-stub')
       expect(as_svg.exists()).toBe(true)
       expect(as_svg.attributes('itemid')).toBe('/+16282281823/posters/123')
     })
@@ -259,7 +259,7 @@ describe('@/component/profile/as-figure.vue', () => {
         props: { person, display: 'phonebook' },
         global: {
           stubs: {
-            'as-svg': true,
+            'as-avatar': true,
             icon: true,
             'as-address': true,
             'as-messenger': true

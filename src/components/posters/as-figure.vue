@@ -27,10 +27,9 @@
   import {
     poster_dom_id,
     poster_dom_href,
-    POSTER_MEET_TOGGLE_ONLY,
-    POSTER_CANONICAL_MOUNTED,
-    use_poster_canonical_presence
+    POSTER_MEET_TOGGLE_ONLY
   } from '@/use/poster-dom-reference'
+  import { use_poster_instance } from '@/use/poster-instances'
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import { use_delegated_pan } from '@/use/delegated-pan'
   import {
@@ -166,46 +165,24 @@
   provide('mask-pen-symbols-ready', cutouts_loaded)
 
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
-  const reference_broken = ref(false)
-  /** Bumps when the tree updates so we re-check for an out-of-figure canonical SVG. */
-  const dom_tick = ref(0)
-  const canonical_elsewhere = computed(() => {
-    void dom_tick.value
-    if (typeof document === 'undefined') return false
-    const el = document.getElementById(query_id.value)
-    if (!el || el.tagName !== 'svg') return false
-    if (el.getAttribute('itemtype') !== '/posters') return false
-    return !poster.value?.contains(el)
-  })
-  const use_dom_reference = computed(
-    () => canonical_elsewhere.value && !reference_broken.value
-  )
 
   const {
     in_view: poster_in_view,
     fully_in_view: poster_fully_in_view,
     sync: sync_poster_visibility
-  } = use_poster_viewport_visibility(poster, {
-    force_in_view: use_dom_reference
-  })
+  } = use_poster_viewport_visibility(poster)
 
-  const bump_dom_tick = () => {
-    dom_tick.value++
-  }
-
-  const on_canonical_mounted = (/** @type {Event} */ e) => {
-    if (!(e instanceof CustomEvent)) return
-    const dom_id = e.detail?.dom_id
-    if (dom_id === query_id.value) bump_dom_tick()
-  }
+  // Elect a single visible canonical per poster id; the rest reference it via <use>.
+  const { am_canonical, use_reference, is_referenced } = use_poster_instance(
+    () => /** @type {Id} */ (props.itemid),
+    { el: poster, in_view: poster_in_view, kind: 'poster' }
+  )
+  const use_dom_reference = use_reference
 
   mounted(() => {
-    if (typeof document !== 'undefined')
-      document.addEventListener(POSTER_CANONICAL_MOUNTED, on_canonical_mounted)
     if (typeof window !== 'undefined')
       window.addEventListener('pointerdown', on_window_pointerdown)
     tick().then(() => {
-      bump_dom_tick()
       sync_poster_visibility()
       scroll_to_hash_if_matching()
     })
@@ -220,18 +197,12 @@
     }
   }
 
+  // When this poster is the referenced source, keep it fully rendered (pinned) with a warm
+  // vector — the vector pre-loaded while it was referencing — so promotion never blanks.
   const sync_poster_for_svg = computed(() =>
-    reference_broken.value && vector.value && is_vector(vector.value)
+    is_referenced.value && vector.value && is_vector(vector.value)
       ? vector.value
       : null
-  )
-
-  use_poster_canonical_presence(
-    () => use_dom_reference.value,
-    () => /** @type {Id} */ (props.itemid),
-    () => {
-      reference_broken.value = true
-    }
   )
 
   const poster_reference_href = computed(() =>
@@ -352,8 +323,6 @@
   watch(
     () => props.itemid,
     () => {
-      reference_broken.value = false
-      bump_dom_tick()
       if (use_dom_reference.value) sync_reference_from_canonical()
     }
   )
@@ -372,7 +341,8 @@
     }
   )
   const cutouts_active = computed(
-    () => poster_in_view.value || props.pin || view_3d.value
+    () =>
+      poster_in_view.value || props.pin || view_3d.value || am_canonical.value
   )
 
   watch_effect(async () => {
@@ -429,11 +399,6 @@
   before_unmount(() => {
     if (typeof window !== 'undefined')
       window.removeEventListener('pointerdown', on_window_pointerdown)
-    if (typeof document !== 'undefined')
-      document.removeEventListener(
-        POSTER_CANONICAL_MOUNTED,
-        on_canonical_mounted
-      )
   })
 
   const poster_toggle_target = () =>
