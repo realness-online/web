@@ -11,7 +11,7 @@
   import { as_time } from '@/utils/date'
   import Icon from '@/components/Icon'
   import AsThought from '@/components/thoughts/as-thought'
-  import AsAvatar from '@/components/posters/as-svg'
+  import AsAvatar from '@/components/posters/as-avatar'
   import AsMessenger from '@/components/profile/as-messenger'
   import { menu } from '@/utils/preference'
 
@@ -100,11 +100,7 @@
   <article ref="el" class="thought" :class="all" @click="click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1">
-        <as-avatar
-          v-if="author.avatar"
-          as_avatar
-          :itemid="author.avatar"
-          class="icon" />
+        <as-avatar v-if="author.avatar" :itemid="author.avatar" />
         <icon v-else name="silhouette" />
       </router-link>
       <address>
