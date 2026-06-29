@@ -197,7 +197,9 @@ A **teal** border is different: it sits on a single poster (not the app frame) t
 
 ---
 
-### A realness of your own
+<!-- instance-prompt -->
+
+### A Realness of your own
 
 The Realness source code is available. This page documents the tool; the repo has setup, deploying your own, and some deeper background to explore.
 

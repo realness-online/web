@@ -7,7 +7,8 @@ import {
   inline_documentation_icons,
   markdown_html,
   markdown_toc,
-  INSTALL_GUIDE_MARKER
+  INSTALL_GUIDE_MARKER,
+  INSTANCE_PROMPT_MARKER
 } from '@/utils/markdown'
 
 describe('markdown', () => {
@@ -72,5 +73,14 @@ describe('markdown', () => {
     expect(parts.before).toContain('Intro.')
     expect(parts.after).toContain('id="sync"')
     expect(parts.before).not.toContain(INSTALL_GUIDE_MARKER)
+  })
+
+  it('splits the realness section at the instance prompt marker', () => {
+    const md = `### Install\n\nIntro.\n\n${INSTALL_GUIDE_MARKER}\n\nSync notes.\n\n${INSTANCE_PROMPT_MARKER}\n\n### A realness of your own\n\nDeploy your own.`
+    const parts = documentation_html_parts(md)
+    expect(parts.after).toContain('Sync notes.')
+    expect(parts.after).not.toContain('id="a-realness-of-your-own"')
+    expect(parts.realness).toContain('id="a-realness-of-your-own"')
+    expect(parts.realness).toContain('Deploy your own.')
   })
 })

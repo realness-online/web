@@ -8,7 +8,8 @@ describe('@/views/Pricing', () => {
       global: {
         stubs: {
           'logo-as-link': true,
-          'sponsor-cta': true
+          'sponsor-cta': true,
+          'as-prompt-agent': true
         }
       }
     })
@@ -24,5 +25,7 @@ describe('@/views/Pricing', () => {
     expect(wrapper.text()).toContain('No per-seat pricing')
     expect(wrapper.text()).toContain('$5')
     expect(wrapper.find('sponsor-cta-stub').exists()).toBe(true)
+    expect(wrapper.findAll('as-prompt-agent-stub')).toHaveLength(2)
+    expect(wrapper.find('section.prompt-agent').exists()).toBe(false)
   })
 })
