@@ -488,7 +488,7 @@
       right: 0;
       left: auto;
       margin-bottom: base-line * 0.25;
-      max-width: min(calc(100vw - base-line * 4), base-line * 15);
+      max-width: min(calc(100vw - var(--base-line) * 4), base-line * 15);
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
