@@ -1,5 +1,11 @@
 // @ts-nocheck — minimal DOM stubs for Node prerender only
-if (typeof globalThis.window === 'undefined') globalThis.window = globalThis
+if (typeof globalThis.window === 'undefined') {
+  const noop = () => {}
+  globalThis.window = {
+    addEventListener: noop,
+    removeEventListener: noop
+  }
+}
 
 if (typeof globalThis.localStorage === 'undefined') {
   const store = new Map()

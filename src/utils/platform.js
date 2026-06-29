@@ -16,7 +16,7 @@ export const is_standalone = () => {
   if (typeof window === 'undefined') return false
   return (
     window.matchMedia?.('(display-mode: standalone)').matches === true ||
-    /** @type {any} */ (window.navigator).standalone === true
+    /** @type {any} */ (window.navigator)?.standalone === true
   )
 }
 
