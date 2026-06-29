@@ -51,28 +51,21 @@ Review Purpose:     Pre-launch first pass before attorney sign-off
 
 ### 🔴 HIGH — confirm before going live
 
-**H-1 · DMCA designated agent not registered.**
+~~**H-1 · DMCA designated agent not registered.**~~ **RESOLVED — deferred.**
 The Terms invoke DMCA safe harbor and name `security@realness.online` as the
 agent, but §512 safe harbor requires registering a designated agent with the
-U.S. Copyright Office (and a $6 filing). Until registered, the safe-harbor
-defense the Terms rely on is not perfected.
-→ _Action: register the DMCA agent; confirm the address/role wording matches the
-registration._
+U.S. Copyright Office (and a $6 filing). Moved to `docs/parked.md` — not worth
+the paperwork until there are users posting content.
 
-**H-2 · Arbitration + class-action waiver enforceability.**
-This is the single biggest liability lever and the most scrutinized clause for a
-consumer service. Enforceability depends on conspicuous presentation, a
-compliant opt-out, and current CA/9th-Cir. consumer-arbitration law (mass/batch
-arbitration, fee provisions). A 30-day email opt-out is included.
-→ _Action: attorney to confirm the clause, the opt-out mechanics, and whether to
-name a specific arbitration provider/rules and address arbitration fees._
+~~**H-2 · Arbitration + class-action waiver enforceability.**~~ **RESOLVED — removed.**
+Arbitration clause and class-action waiver were removed from Terms §14 per
+operator decision. Replaced with a simple governing-law/venue clause. No longer
+a risk item.
 
-**H-3 · Clickwrap assent sufficiency.**
-Assent is "by continuing you agree" above the action button (sign-in wrap), not
-an unchecked checkbox. Courts increasingly favor explicit affirmative assent for
-enforceability of arbitration/waiver.
-→ _Action: attorney to decide whether a checkbox ("I agree to the Terms and
-Privacy Policy") is warranted given H-2. Easy to add in `as-form-mobile.vue`._
+~~**H-3 · Clickwrap assent sufficiency.**~~ **RESOLVED — no arbitration to enforce.**
+The sign-in-wrap concern was tied to arbitration/waiver enforceability. Without
+an arbitration clause, sign-in-wrap is industry standard and sufficient. No
+change needed.
 
 **H-4 · Liability cap floor may be too low to be the real backstop.**
 Cap is the greater of 12-mo fees or $100. For free-tier users the cap is $100,
@@ -120,6 +113,25 @@ chosen, but non-US/non-CA users retain some non-waivable local rights (e.g.
 EU/UK if the Service is used there). Confirm whether to geo-limit, add an EU
 addendum, or accept the exposure given the US-only operational posture.
 
+### 🟡 MEDIUM — substantive legal theory worth examining
+
+**M-8 · "Original content" defense — poster-as-transformative-work.**
+The trace pipeline converts a bitmap photo into a layered vector poster via
+Potrace polygon-mode vectorization + hierarchical cutout decomposition. The
+source photo never leaves the device. The output preserves composition
+(subject positioning, framing) but strips photographic texture, continuous
+tones, fine detail, and lighting. A legal theory worth examining: the poster
+is so visually and structurally different from the source photo that it
+qualifies as a new, original work — either because no protected expression
+survives (no substantial similarity) or because the transformation is
+sufficient for fair use.
+→ _Assessment needed: does the preserved composition convey enough protected
+expression to create derivative-work liability? How does Warhol v. Goldsmith
+(2023) apply — does the poster serve a "different purpose" from the original
+photo, or could it compete in the same market (art prints)? Should the Terms
+or documentation address this defense or rely on §230 + DMCA as the sole
+liability framework?_
+
 ### 🟢 LOW — note for awareness
 
 - **L-1 · "dba Realness" / DBA filing.** Docs identify Scott Fryxell dba
@@ -150,6 +162,10 @@ addendum, or accept the exposure given the US-only operational posture.
       real backstop; not a document, but the gating real-world item (H-4).
 - [ ] **Accessibility / acceptable-content appeal path** — optional; consider a
       moderation-appeal line for fairness and ADA posture.
+- [ ] **Transformative-work / fair-use defense** — the posters are derived from
+      user-supplied photos; the platform and its users have an interest in
+      whether the vector output is a new original work or a derivative. Not
+      addressed in any current document (see M-8).
 
 ---
 
@@ -171,16 +187,19 @@ No contradictions found between the three documents as drafted.
 
 ## RECOMMENDED NEXT STEPS (prioritized)
 
-1. **Attorney review of H-1…H-4** (DMCA registration, arbitration/waiver,
-   clickwrap form, liability cap) — these gate go-live.
-2. **Register the DMCA designated agent** with the U.S. Copyright Office.
-3. **Bind tech E&O / cyber insurance** — the practical backstop behind the cap.
-4. **Decide checkbox vs. sign-in-wrap** for assent; trivial to implement.
-5. **Confirm CA ARL obligations** and defer the renewal/refund clauses' UI until
+1. ~~**H-2 · Arbitration**~~ ✅ Removed. ~~**H-3 · Clickwrap**~~ ✅ No longer a concern.
+   ~~**H-1 · DMCA registration**~~ → deferred. All original 🔴 items resolved or
+   deferred per operator decisions.
+2. **H-4 / Insurance** — bind tech E&O / cyber when there are active users or
+   revenue. Defer for now.
+3. **Confirm CA ARL obligations** and defer the renewal/refund clauses' UI until
    self-serve checkout is built.
-6. **Re-run this review when Twilio is added** (M-2) and when checkout ships.
-7. **Resolve open decisions** from the finishing-touches plan #13: outside
+4. **Re-run this review when Twilio is added** (M-2) and when checkout ships.
+5. **Resolve open decisions** from the finishing-touches plan #13: outside
    counsel engaged? FBN/DBA filing? §230 posture confirmed?
+6. **Assess the transformative-work defense** (M-8) — confirm whether to
+   document the poster-as-original-work theory in the Terms or leave the
+   liability framework to §230 + DMCA only.
 
 ```
 

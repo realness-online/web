@@ -1,5 +1,6 @@
 <script setup>
   import SiteNav from '@/components/site-nav'
+  import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import SponsorCta from '@/components/sponsor/cta'
 
   defineOptions({ name: 'Pricing' })
@@ -151,6 +152,7 @@
         </li>
       </ul>
     </article>
+    <as-prompt-agent mode="instance" />
   </section>
 </template>
 

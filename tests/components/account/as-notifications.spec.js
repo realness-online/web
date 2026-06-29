@@ -2,20 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
 import AsNotifications from '@/components/account/as-notifications.vue'
 
-const { mock_status, mock_busy, mock_enable, mock_disable, mock_refresh,
-       mock_notifications } =
-  vi.hoisted(() => {
-    const create_ref = value => ({ value, __v_isRef: true })
-    const mock_notifications = create_ref(false)
-    return {
-      mock_status: create_ref('off'),
-      mock_busy: create_ref(false),
-      mock_notifications,
-      mock_enable: vi.fn().mockResolvedValue(true),
-      mock_disable: vi.fn().mockResolvedValue(true),
-      mock_refresh: vi.fn().mockResolvedValue(undefined)
-    }
-  })
+const {
+  mock_status,
+  mock_busy,
+  mock_enable,
+  mock_disable,
+  mock_refresh,
+  mock_notifications
+} = vi.hoisted(() => {
+  const create_ref = value => ({ value, __v_isRef: true })
+  const mock_notifications = create_ref(false)
+  return {
+    mock_status: create_ref('off'),
+    mock_busy: create_ref(false),
+    mock_notifications,
+    mock_enable: vi.fn().mockResolvedValue(true),
+    mock_disable: vi.fn().mockResolvedValue(true),
+    mock_refresh: vi.fn().mockResolvedValue(undefined)
+  }
+})
 
 vi.mock('@/use/push', () => ({
   use_push: () => ({
@@ -39,6 +44,7 @@ describe('@/components/account/as-notifications', () => {
     vi.clearAllMocks()
     mock_status.value = 'off'
     mock_busy.value = false
+    mock_notifications.value = false
   })
 
   it('refreshes state on mount', () => {
