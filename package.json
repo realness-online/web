@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "private": false,
   "type": "module",
   "keywords": [
@@ -45,7 +45,7 @@
     "verify:deploy": "node scripts/verify-deploy.js --url https://realness.online",
     "prepare": "vp config",
     "docs": "jsdoc -c jsdoc.json",
-    "test": "vp test run --reporter=dot",
+    "test": "vp test run --reporter=verbose",
     "test:update": "vp test run -u --reporter=dot",
     "test:coverage": "vp test run --coverage --reporter=dot",
     "fallow": "fallow",
