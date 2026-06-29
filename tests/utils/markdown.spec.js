@@ -5,10 +5,12 @@ import {
   documentation_preferences_toc,
   documentation_toc,
   inline_documentation_icons,
+  markdown_html,
+  markdown_toc,
   INSTALL_GUIDE_MARKER
-} from '@/utils/documentation-content'
+} from '@/utils/markdown'
 
-describe('documentation-content', () => {
+describe('markdown', () => {
   it('builds a table of contents from headings', () => {
     const toc = documentation_toc('## Overview\n\n## Posters\n')
     expect(toc).toEqual([
@@ -16,6 +18,20 @@ describe('documentation-content', () => {
       { id: 'posters', title: 'Posters', level: 2 },
       ...documentation_preferences_toc
     ])
+  })
+
+  it('builds a generic toc without the preferences section', () => {
+    const toc = markdown_toc('## Terms\n\n### Eligibility\n')
+    expect(toc).toEqual([
+      { id: 'terms', title: 'Terms', level: 2 },
+      { id: 'eligibility', title: 'Eligibility', level: 3 }
+    ])
+  })
+
+  it('renders arbitrary markdown via markdown_html', () => {
+    const html = markdown_html('## Privacy\n\nWe collect little.')
+    expect(html).toContain('id="privacy"')
+    expect(html).toContain('<p>We collect little.</p>')
   })
 
   it('renders markdown to HTML', () => {

@@ -5,9 +5,11 @@ const routes = [
   { path: '/about', component: () => import('@/views/About') },
   { path: '/docs', component: () => import('@/views/Documentation') },
   { path: '/sign-on', redirect: '/account' },
-  { path: '/pricing', component: () => import('@/views/License') },
+  { path: '/pricing', component: () => import('@/views/Pricing') },
   { path: '/license', redirect: '/pricing' },
   { path: '/sponsor', redirect: '/pricing' },
+  { path: '/terms', component: () => import('@/views/Terms') },
+  { path: '/privacy', component: () => import('@/views/Privacy') },
   {
     path: '/account',
     component: () => import('@/views/Account')

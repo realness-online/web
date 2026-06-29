@@ -2,7 +2,7 @@
   import SiteNav from '@/components/site-nav'
   import SponsorCta from '@/components/sponsor/cta'
 
-  defineOptions({ name: 'License' })
+  defineOptions({ name: 'Pricing' })
 </script>
 
 <template>

@@ -62,10 +62,11 @@ export const documentation_preferences_toc = [
 ]
 
 /**
- * @param {string} [content]
+ * Build a table of contents from any markdown's h2–h6 headings.
+ * @param {string} content
  * @returns {Array<{ id: string, title: string, level: number }>}
  */
-export const documentation_toc = (content = documentation_md) => {
+export const markdown_toc = content => {
   const toc = []
   for (const line of content.split('\n')) {
     const heading_match = line.match(/^(#{2,6})\s+(.+)$/)
@@ -74,8 +75,17 @@ export const documentation_toc = (content = documentation_md) => {
     const title = heading_match[2].trim()
     toc.push({ id: heading_id(title), title: String(title || ''), level })
   }
-  return [...toc, ...documentation_preferences_toc]
+  return toc
 }
+
+/**
+ * @param {string} [content]
+ * @returns {Array<{ id: string, title: string, level: number }>}
+ */
+export const documentation_toc = (content = documentation_md) => [
+  ...markdown_toc(content),
+  ...documentation_preferences_toc
+]
 
 /**
  * @param {string} rendered
@@ -94,6 +104,13 @@ export const documentation_html = (content = documentation_md) => {
   const rendered = inline_documentation_icons(String(marked.parse(content)))
   return sanitize_html(rendered)
 }
+
+/**
+ * Render arbitrary markdown (legal pages, etc.) to sanitized HTML.
+ * @param {string} content
+ * @returns {string}
+ */
+export const markdown_html = content => documentation_html(content)
 
 /** Split marker — mount `<install-guide />` here in documentation views. */
 export const INSTALL_GUIDE_MARKER = '<!-- install-guide -->'

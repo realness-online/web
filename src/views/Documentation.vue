@@ -3,10 +3,7 @@
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import {
-    documentation_html_parts,
-    documentation_toc
-  } from '@/utils/documentation-content'
+  import { documentation_html_parts, documentation_toc } from '@/utils/markdown'
   import { onMounted, onUnmounted, ref, watch } from 'vue'
 
   const toc_items = documentation_toc()

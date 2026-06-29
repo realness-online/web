@@ -1,0 +1,95 @@
+Realness Source-Available License
+Version 1.0 (2026-06-28)
+
+Copyright (c) 2026 Scott Fryxell. All rights reserved.
+
+------------------------------------------------------------------------------
+
+1. SUMMARY
+
+   Realness is source-available. You may read it, run it, modify it, and stand
+   up your own instance. Each instance has exactly one human moderator who takes
+   responsibility for the content created within it. Anyone or any organization
+   may self-host — and by doing so assumes full legal responsibility for the
+   instance they operate. Running Realness for a team or organization requires a
+   commercial license (see https://realness.online/pricing). Source-available
+   does not mean open-contribution: publishing the source creates no obligation
+   on the author to review, accept, or maintain contributions.
+
+2. DEFINITIONS
+
+   "Software" — the Realness source code and assets in this repository.
+   "Instance" — a deployed, running copy of the Software serving users.
+   "Moderator" — the single human person responsible for an Instance.
+   "Outputs" — works a user creates with the Software (e.g. posters, exports).
+   "Personal Instance" — one Instance run by one human Moderator for themselves,
+       their family, or a non-commercial personal circle.
+   "Commercial Instance" — any Instance run by or for an organization, team,
+       studio, company, or institution, or in connection with paid services.
+
+3. GRANT — SOURCE & PERSONAL USE
+
+   Subject to this license, you are granted a worldwide, royalty-free,
+   non-exclusive right to use, copy, modify, and create derivative works of the
+   Software, and to deploy a Personal Instance, provided that:
+     (a) you retain this license and all copyright notices in copies and
+         derivatives; and
+     (b) you operate any Instance you deploy in compliance with Section 5
+         (Responsibility).
+
+4. GRANT — COMMERCIAL INSTANCES
+
+   Deploying a Commercial Instance requires a paid commercial license from the
+   author, per the tiers published at https://realness.online/pricing
+   (currently "Small teams" and "Large organizations"). A Commercial Instance
+   operated without a current commercial license is outside the scope of this
+   grant.
+
+5. RESPONSIBILITY
+
+   Each Instance has exactly one Moderator. The Moderator — and, for a
+   Commercial Instance, the operating organization — is solely responsible for:
+     (a) the content created, stored, organized, or distributed on that
+         Instance; and
+     (b) the Instance's compliance with all applicable laws (including content,
+         privacy, and consumer-protection law) in the jurisdictions it serves.
+   The author of the Software is not a party to, and assumes no responsibility
+   for, any Instance the author does not itself operate. Self-hosting transfers
+   operational and legal responsibility for that Instance to the self-hoster.
+
+6. OUTPUTS
+
+   You own the Outputs you create with the Software. Commercial use of your own
+   Outputs (including in client and commercial work) is permitted under all
+   tiers, including the free tier.
+
+7. REDISTRIBUTION
+
+   You may redistribute the Software and your modifications, in source form,
+   provided you keep this license and all notices intact and do not represent
+   your modified version as the official Realness or as endorsed by the author.
+
+8. TRADEMARKS
+
+   This license grants no rights in the "Realness" name, logos, or branding.
+   A redistributed or modified version must not use the Realness marks in a way
+   that implies it is the official project or is endorsed by the author.
+
+9. NO WARRANTY; LIMITATION OF LIABILITY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+   CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE,
+   INCLUDING ANY ARISING FROM AN INSTANCE THE AUTHOR DOES NOT OPERATE.
+
+10. TERMINATION
+
+    Rights under this license end automatically if you breach it and do not cure
+    the breach within 30 days of notice. Sections 5, 8, and 9 survive
+    termination.
+
+11. GOVERNING LAW
+
+    This license is governed by the laws of the State of California, USA, without
+    regard to its conflict-of-laws rules.
