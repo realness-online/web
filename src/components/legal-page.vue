@@ -84,7 +84,7 @@
           margin-bottom: 0;
           position: sticky;
           top: base-line;
-          max-height: calc(100dvh - base-line * 4);
+          max-height: calc(100dvh - var(--base-line) * 4);
           overflow-y: auto;
           border-right: 1px solid var(--red);
         }

@@ -59,10 +59,10 @@
 
   dialog#preferences {
     margin: base-line base-line * 0.5;
-    width: calc(100dvw - base-line);
-    min-width: calc(100dvw - base-line);
-    max-width: calc(100dvw - base-line);
-    max-height: calc(100dvh - base-line * 3);
+    width: calc(100dvw - var(--base-line));
+    min-width: calc(100dvw - var(--base-line));
+    max-width: calc(100dvw - var(--base-line));
+    max-height: calc(100dvh - var(--base-line) * 3);
     border-radius: base-line;
     box-sizing: border-box;
     overscroll-behavior-y: contain;
