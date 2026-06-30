@@ -489,7 +489,8 @@
       ref="viewer_ref"
       :itemid="itemid"
       :on_svg_zoom="set_svg_zoom"
-      class="inline" />
+      class="inline"
+      @select="on_poster_svg_click" />
     <figcaption v-if="figcaption_visible">
       <header>
         <aside v-if="overlay_text_visible" aria-live="polite">

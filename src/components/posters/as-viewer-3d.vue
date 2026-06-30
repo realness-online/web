@@ -9,6 +9,7 @@
   import { as_query_id } from '@/utils/itemid'
   import { prepare_poster_svg_for_3d } from '@/utils/export-poster'
   import { use_poster_scene_preferences } from '@/use/poster-scene-preferences'
+  import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import { register_viewer } from '@/3d/engine/shared-renderer.js'
   import { create_poster_scene } from '@/3d/scenes/create-poster-scene.js'
   import { register_live_poster_scene } from '@/3d/scenes/live-poster-scene.js'
@@ -23,6 +24,40 @@
       default: null
     }
   })
+  // Reveal the poster menu with the same gesture as SVG mode: long-press on touch,
+  // click on mouse. Movement cancels it — a drag stays reserved for orbiting here,
+  // the way it's reserved for panning the poster left/right in 2D.
+  const emit = defineEmits(['select'])
+
+  const ORBIT_MOVE_CANCEL_PX = 8
+  const was_orbit = ref(false)
+  let orbit_down_x = 0
+  let orbit_down_y = 0
+  const {
+    handle_pointerdown,
+    handle_pointermove,
+    handle_pointerup,
+    handle_pointerleave
+  } = use_poster_svg_activate_pointer({
+    on_activate: () => emit('select'),
+    touch_uses_long_press: true,
+    was_pan_gesture: was_orbit,
+    on_non_touch_pointerdown: event => {
+      orbit_down_x = event.clientX
+      orbit_down_y = event.clientY
+      was_orbit.value = false
+    }
+  })
+  // The composable only move-cancels touch; flag a mouse orbit-drag so releasing it
+  // doesn't open the menu.
+  const on_pointer_move = event => {
+    handle_pointermove(event)
+    if (event.pointerType === 'touch' || was_orbit.value) return
+    const dx = Math.abs(event.clientX - orbit_down_x)
+    const dy = Math.abs(event.clientY - orbit_down_y)
+    if (dx > ORBIT_MOVE_CANCEL_PX || dy > ORBIT_MOVE_CANCEL_PX)
+      was_orbit.value = true
+  }
 
   const canvas_ref = ref(null)
   /** @type {import('vue').Ref<PosterSceneController | null>} */
@@ -79,6 +114,11 @@
   <canvas
     ref="canvas_ref"
     class="viewer_3d"
+    @pointerdown="handle_pointerdown"
+    @pointermove="on_pointer_move"
+    @pointerup="handle_pointerup"
+    @pointercancel="handle_pointerleave"
+    @pointerleave="handle_pointerleave"
     @contextmenu.prevent
     @selectstart.prevent />
 </template>
