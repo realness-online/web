@@ -48,19 +48,71 @@
     return null
   }
 
+  // One finger paints; a second finger is a pinch-zoom — hand it to the browser
+  // (touch-action: pinch-zoom) and never paint during it. Selection is deferred:
+  // it commits only on a clean tap (release) or once a drag clearly starts, so a
+  // pinch — where the second finger lands a moment after the first — never selects.
+  const DRAG_START_PX = 4
+  const active_touches = new Set()
+  let pinching = false
+  let pending = false
+  let stroke_started = false
+  let pending_key = null
+  let down_x = 0
+  let down_y = 0
+
+  const reset_pending = () => {
+    pending = false
+    stroke_started = false
+    pending_key = null
+  }
+
   const on_pointer_down = event => {
+    if (event.pointerType === 'touch') {
+      active_touches.add(event.pointerId)
+      if (active_touches.size > 1) {
+        pinching = true
+        if (stroke_started) mask_pen?.handle_pointerup()
+        reset_pending()
+        if (capture_rect.value?.hasPointerCapture?.(event.pointerId))
+          capture_rect.value.releasePointerCapture(event.pointerId)
+        return
+      }
+    }
+    if (pinching) return
     capture_rect.value?.setPointerCapture(event.pointerId)
-    mask_pen?.handle_pointerdown(key_at(event.clientX, event.clientY))
+    pending = true
+    stroke_started = false
+    pending_key = key_at(event.clientX, event.clientY)
+    down_x = event.clientX
+    down_y = event.clientY
   }
 
   const on_pointer_move = event => {
+    if (pinching || active_touches.size > 1 || !pending) return
+    if (!stroke_started) {
+      const dx = Math.abs(event.clientX - down_x)
+      const dy = Math.abs(event.clientY - down_y)
+      if (dx < DRAG_START_PX && dy < DRAG_START_PX) return
+      stroke_started = true
+      mask_pen?.handle_pointerdown(pending_key)
+    }
     mask_pen?.handle_pointermove(key_at(event.clientX, event.clientY))
   }
 
   const on_pointer_up = event => {
+    if (event.pointerType === 'touch') active_touches.delete(event.pointerId)
     if (capture_rect.value?.hasPointerCapture?.(event.pointerId))
       capture_rect.value.releasePointerCapture(event.pointerId)
-    mask_pen?.handle_pointerup()
+    const commit = !pinching && pending
+    if (commit && stroke_started) mask_pen?.handle_pointerup()
+    else if (commit) {
+      // Clean tap: toggle the cell under the finger on release.
+      mask_pen?.handle_pointerdown(pending_key)
+      mask_pen?.handle_pointerup()
+    }
+    reset_pending()
+    if (active_touches.size === 0) pinching = false
   }
 
   const load_paths = async () => {
@@ -147,14 +199,16 @@
 
 <style lang="stylus">
   g.mask-pen
+    // Keep outlines hairline-thin so they don't swamp small geology cells; the fill
+    // is what tells you a cell is hovered (light) vs selected (solid).
     path.mask-pen-hover
-      fill: alpha(yellow, 0.35)
+      fill: alpha(yellow, 0.3)
       stroke: alpha(yellow, 0.85)
-      stroke-width: base-line * 0.15
+      stroke-width: base-line * 0.035
       vector-effect: non-scaling-stroke
     path.mask-pen-selected
-      fill: alpha(orange, 0.4)
-      stroke: alpha(orange, 0.9)
-      stroke-width: base-line * 0.11
+      fill: alpha(orange, 0.55)
+      stroke: alpha(orange, 0.95)
+      stroke-width: base-line * 0.035
       vector-effect: non-scaling-stroke
 </style>
