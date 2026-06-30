@@ -492,7 +492,10 @@
     }
     &.mask-pen-mode {
       cursor: crosshair;
-      touch-action: none;
+      // Allow the browser's native pinch-zoom (so masking can be precise on a phone)
+      // while keeping one-finger drags for painting — `pinch-zoom` disables one-finger
+      // pan, so the browser won't steal a paint stroke to scroll.
+      touch-action: pinch-zoom;
       & use[itemprop='sediment'],
       & use[itemprop='sand'],
       & use[itemprop='gravel'],

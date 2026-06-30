@@ -44,8 +44,11 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### 🎨 Mask & canvas
 
-- [ ] **unreliable mobile zoom** `M` — pinch/zoom must work on touch so masking is precise on
-      a phone. Canvas/gesture handling. _(unblocks the mask work on mobile)_
+- [x] **unreliable mobile zoom** `M` — mask surface now uses `touch-action: pinch-zoom` so the
+      browser's native pinch-zoom works while masking; one finger paints, two fingers zoom.
+      Selection is deferred (commits on tap-release or after a drag starts) and a second finger
+      cancels it, so a pinch never strays a cell. Thinner overlay outlines. (`posters/as-svg.vue`,
+      `posters/as-mask-pen.vue`)
 - [ ] **finish mask functionality** `L` — pen tool is incomplete: full draw/erase,
       persistence, export into the layer model. Depends on mobile zoom.
 
