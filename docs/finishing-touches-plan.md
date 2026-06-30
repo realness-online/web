@@ -32,13 +32,15 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### 🐛 Bugs
 
-- [ ] **PSD export stroke on shadow layers** `M` — medium/bold shadow layers carry stroke
-      they shouldn't; verify by re-opening export. Locate the export/psd writer in `src`.
-- [ ] **avatar won't render when poster already on page** `M` — need to reference a poster
-      rendered elsewhere; likely SVG `<use>` / duplicate `id` collision. Avatar + poster render
-      components.
-- [ ] **main menu inaccessible in 3D mode** `M` — menu must be reachable in 3D poster mode,
-      desktop + mobile. 3D view + nav interaction.
+- [x] **PSD export stroke on shadow layers** `M` — shadow fill layers now export with
+      `stroke:none`; the outline ships only in the dedicated Stroke group. (`svg-to-psd.js`)
+- [x] **avatar won't render when poster already on page** `M` — fixed with a visibility-aware
+      canonical election (`use/poster-instances.js`, `posters/as-avatar.vue`): the elected
+      visible instance owns the shared defs, the rest reference it via `<use>`.
+- [x] **main menu inaccessible in 3D mode** `M` — the 3D viewer canvas now reveals the
+      per-poster menu with the same gesture as SVG mode (long-press on touch, click on
+      mouse; drag stays reserved for orbit). Motion-sensor permission gesture preserved.
+      (`posters/as-viewer-3d.vue`, `posters/as-figure.vue`)
 
 ### 🎨 Mask & canvas
 
