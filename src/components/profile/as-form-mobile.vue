@@ -235,7 +235,9 @@
 
 <style lang="stylus">
   form#profile-mobile {
-    margin: base-line;
+    // Vertical rhythm only — the form is width:100% inside its container, so a
+    // horizontal margin would push it past the right edge (overflow skew).
+    margin: base-line 0;
     svg.remove {
       fill: red;
     }

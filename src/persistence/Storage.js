@@ -11,6 +11,7 @@ import { current_user, me } from '@/utils/serverless'
 import { as_type, as_created_at, as_query_id, is_itemid } from '@/utils/itemid'
 import { get } from 'idb-keyval'
 import { profile_sync_log } from '@/utils/profile-sync-log'
+import { valid_name } from '@/utils/valid-name'
 
 export { Storage }
 export { History } from '@/persistence/History'
@@ -58,9 +59,26 @@ export class Me extends Cloud(Local(Storage)) {
         me.value
       )
     if (!me_val) return
-    const name_ok =
-      typeof me_val.name === 'string' && me_val.name.trim().length >= 3
+    const name_ok = valid_name(me_val.name)
     if (!me_val.visited) me_val.visited = new Date().toISOString()
+
+    let save_items = items
+    if (!name_ok && items?.cloneNode) {
+      save_items = /** @type {Element} */ (items.cloneNode(true))
+      const name_el = save_items.querySelector('[itemprop="name"]')
+      if (name_el) {
+        const cached = localStorage.getItem(this.id)
+        let prev_name = ''
+        if (cached) {
+          const temp = document.createElement('div')
+          temp.innerHTML = cached
+          prev_name =
+            temp.querySelector('[itemprop="name"]')?.textContent?.trim() || ''
+        }
+        name_el.textContent = valid_name(prev_name) ? prev_name : ''
+      }
+    }
+
     if (!name_ok)
       profile_sync_log('me_save_persist_without_display_name', {
         itemid: this.id,
@@ -73,7 +91,7 @@ export class Me extends Cloud(Local(Storage)) {
       visited: me_val.visited,
       name_ok
     })
-    await super.save(items ?? undefined)
+    await super.save(save_items ?? undefined)
   }
 }
 

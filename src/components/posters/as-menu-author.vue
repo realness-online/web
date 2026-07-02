@@ -1,7 +1,11 @@
 <script setup>
   import icon from '@/components/icon'
   import ToggleAvatar from '@/components/posters/as-button-avatar'
-  import AsDownload from '@/components/download-vector'
+  import { defineAsyncComponent as define_async_component } from 'vue'
+
+  const AsDownload = define_async_component(
+    () => import('@/components/download-vector.vue')
+  )
   import { is_vector_id } from '@/use/poster'
   import { me } from '@/utils/serverless'
   import { computed } from 'vue'

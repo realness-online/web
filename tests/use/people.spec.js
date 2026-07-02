@@ -198,6 +198,20 @@ describe('people composable', () => {
       const { relations } = use_me()
       expect(relations).toBeDefined()
     })
+
+    it('is_valid_name trims whitespace and requires 3 characters', async () => {
+      const { me } = await import('@/utils/serverless')
+      const { is_valid_name } = use_me()
+
+      me.value = { id: '/+14151234356', name: '  Ada  ', type: 'person' }
+      expect(is_valid_name.value).toBe(true)
+
+      me.value = { id: '/+14151234356', name: '  ab  ', type: 'person' }
+      expect(is_valid_name.value).toBe(false)
+
+      me.value = { id: '/+14151234356', name: '   ', type: 'person' }
+      expect(is_valid_name.value).toBe(false)
+    })
   })
 
   describe('helper functions', () => {

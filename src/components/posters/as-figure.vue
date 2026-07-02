@@ -2,10 +2,16 @@
   import AsSvg from '@/components/posters/as-svg'
   import AsPosterSymbol from '@/components/posters/as-poster-symbol'
   import AsFigure from '@/components/profile/as-figure'
-  import AsViewer3d from '@/components/posters/as-viewer-3d.vue'
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
-  import AsDownload from '@/components/download-vector'
+  import { defineAsyncComponent as define_async_component } from 'vue'
+
+  const AsViewer3d = define_async_component(
+    () => import('@/components/posters/as-viewer-3d.vue')
+  )
+  const AsDownload = define_async_component(
+    () => import('@/components/download-vector.vue')
+  )
   /** @typedef {import('@/types').Id} Id */
   /** @typedef {import('@/types').Poster} Poster */
   /** @typedef {import('@/types').Statement} Statement */

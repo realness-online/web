@@ -68,7 +68,10 @@
 
 <template>
   <section id="sign-on">
-    <name-as-form v-if="nameless && current_user" @valid="name_valid" />
+    <template v-if="nameless && current_user">
+      <p id="name-prompt">What should we call you?</p>
+      <name-as-form @valid="name_valid" />
+    </template>
     <mobile-as-form
       v-else-if="!nameless || !current_user"
       @signed-on="signed_on"
@@ -82,6 +85,9 @@
 <style lang="stylus">
   section#sign-on {
     padding: 0;
+    & > p#name-prompt {
+      margin: 0 0 base-line;
+    }
     & > form {
       width: 100%;
     }

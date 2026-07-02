@@ -119,7 +119,7 @@ describe('@/components/profile/as-sign-on', () => {
     it('sets nameless when signed_on finds profile but name invalid', async () => {
       const profile = { id: '/+123' }
       mock_load_from_network.mockResolvedValue(profile)
-      mock_is_valid_name.value = false
+      mock_is_valid_name_value.value = false
       mock_current_user_ref.value = { uid: 'test-user' }
       localStorage.me = '/+123'
 
@@ -128,6 +128,14 @@ describe('@/components/profile/as-sign-on', () => {
 
       expect(wrapper.vm.nameless).toBe(true)
       expect(wrapper.emitted('signed_in')).toBeFalsy()
+    })
+
+    it('shows the name prompt when nameless', async () => {
+      mock_current_user_ref.value = { uid: 'test-user' }
+      wrapper.vm.nameless = true
+      await flushPromises()
+
+      expect(wrapper.find('#name-prompt').exists()).toBe(true)
     })
 
     it('sets nameless when signed_on finds no profile', async () => {
