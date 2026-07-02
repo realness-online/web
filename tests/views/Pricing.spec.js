@@ -24,7 +24,7 @@ describe('@/views/Pricing', () => {
     expect(wrapper.text()).toContain('Commercial use')
     expect(wrapper.text()).toContain('No per-seat pricing')
     expect(wrapper.text()).toContain('$5')
-    expect(wrapper.find('sponsor-cta-stub').exists()).toBe(true)
+    expect(wrapper.findAll('sponsor-cta-stub')).toHaveLength(3)
     expect(wrapper.findAll('as-prompt-agent-stub')).toHaveLength(2)
     expect(wrapper.find('section.prompt-agent').exists()).toBe(false)
   })
