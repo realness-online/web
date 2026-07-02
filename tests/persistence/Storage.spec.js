@@ -102,10 +102,13 @@ describe('@/persistence/Storage', () => {
     beforeEach(() => {
       mock_me.value = { id: '/+1234567890', name: 'Ada', type: 'person' }
       mock_current_user.value = { uid: 'test-user' }
+      const storage = {
+        me: '/+1234567890',
+        getItem: vi.fn(),
+        setItem: vi.fn()
+      }
       Object.defineProperty(window, 'localStorage', {
-        value: {
-          me: '/+1234567890'
-        },
+        value: storage,
         writable: true
       })
       me = new Me()
@@ -136,6 +139,23 @@ describe('@/persistence/Storage', () => {
 
       expect(save_spy).not.toHaveBeenCalled()
       save_spy.mockRestore()
+    })
+
+    it('does not persist an invalid name over a previously saved one', async () => {
+      const cached = `<address itemid="/+1234567890"><h3 itemprop="name">Ada Lovelace</h3></address>`
+      window.localStorage.getItem = vi.fn(() => cached)
+      mock_me.value = { id: '/+1234567890', name: 'ab', type: 'person' }
+
+      const element = document.createElement('address')
+      element.setAttribute('itemid', '/+1234567890')
+      element.innerHTML = '<h3 itemprop="name">ab</h3>'
+
+      await me.save(element)
+
+      expect(window.localStorage.setItem).toHaveBeenCalled()
+      const saved_html = window.localStorage.setItem.mock.calls.at(-1)[1]
+      expect(saved_html).toContain('Ada Lovelace')
+      expect(saved_html).not.toContain('>ab<')
     })
   })
 

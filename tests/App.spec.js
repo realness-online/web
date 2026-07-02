@@ -109,11 +109,13 @@ vi.mock('@vueuse/core', () => ({
 }))
 
 const mock_router_push = vi.fn()
+const mock_route = { meta: {} }
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mock_router_push,
     currentRoute: mock_current_route
-  })
+  }),
+  useRoute: () => mock_route
 }))
 
 vi.mock('@/utils/preference', async () => {
@@ -527,6 +529,7 @@ describe('App.vue', () => {
         stubs: {
           sync: { template: '<aside></aside>', emits: ['active'] },
           'router-view': true,
+          'site-nav': true,
           'as-dialog-preferences': true,
           'as-dialog-documentation': true,
           'as-fps': true
@@ -550,7 +553,7 @@ describe('App.vue', () => {
     })
 
     it('renders router view', () => {
-      expect(wrapper.find('router-view-stub').exists()).toBe(true)
+      expect(wrapper.find('support-layout-stub').exists()).toBe(true)
     })
 
     it('renders sync component', () => {
@@ -993,6 +996,7 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
+            'site-nav': true,
             'as-dialog-preferences': true,
             'as-dialog-documentation': true,
             'as-fps': true
@@ -1018,6 +1022,7 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
+            'site-nav': true,
             'as-dialog-preferences': true,
             'as-dialog-documentation': true,
             'as-fps': true
@@ -1053,6 +1058,7 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
+            'site-nav': true,
             'as-dialog-preferences': true,
             'as-dialog-documentation': true,
             'as-fps': true
@@ -1077,6 +1083,7 @@ describe('App.vue', () => {
           stubs: {
             sync: { template: '<aside></aside>', emits: ['active'] },
             'router-view': true,
+            'site-nav': true,
             'as-dialog-preferences': true,
             'as-dialog-documentation': true,
             'as-fps': true

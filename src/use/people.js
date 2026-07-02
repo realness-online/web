@@ -8,8 +8,10 @@ import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistence/Storage'
 import { default_person, from_e64 } from '@/utils/person-identity'
+import { valid_name } from '@/utils/valid-name'
 
 export { default_person, from_e64 }
+export { name_error, valid_name } from '@/utils/valid-name'
 
 // Check if we're in a browser environment
 const is_browser =
@@ -185,10 +187,7 @@ export const use_me = () => {
   }
   const is_valid_name = computed(() => {
     if (!current_user.value) return false
-    const me_val = me.value
-    if (!me_val?.name) return false
-    if (me_val.name.length < 3) return false
-    return true
+    return valid_name(me.value?.name)
   })
 
   return {

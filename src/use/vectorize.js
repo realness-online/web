@@ -20,7 +20,8 @@ import { mutex_for } from '@/utils/algorithms'
 import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistence/Directory'
 import get_item from '@/utils/item'
-import ExifReader from 'exifreader'
+import { extract_poster_exif, write_poster_exif } from '@/utils/exif'
+import { include_exif } from '@/utils/preference'
 
 import * as Queue from '@/persistence/Queue'
 import { Poster, Cutout, Shadow } from '@/persistence/Storage'
@@ -248,15 +249,23 @@ export const sort_cutouts_into_layers = (vector, id) => {
 }
 
 /**
+ * EXIF parsed during vectorize, written into the poster index on save.
+ * @type {Map<Id, import('@/utils/exif.js').PosterExif>}
+ */
+const pending_poster_exif = new Map()
+
+/**
  * Save poster and cutout symbols
  * @param {Id} id - Poster itemid
  * @param {Element} [element] - Optional DOM element to save
  * @param {Object.<string, SVGSymbolElement>} [cutouts] - Optional cutout symbols by layer
+ * @param {import('@/utils/exif.js').PosterExif | null} [exif] - Optional EXIF microdata
  */
 export const save_poster = async (
   id,
   element = undefined,
-  cutouts = undefined
+  cutouts = undefined,
+  exif = undefined
 ) => {
   await tick()
   const poster_element = element ?? document.querySelector(`[itemid="${id}"]`)
@@ -335,6 +344,13 @@ export const save_poster = async (
   })
 
   await Promise.all(save_promises)
+
+  const exif_data =
+    exif === undefined ? (pending_poster_exif.get(id) ?? null) : exif
+  if (exif !== undefined || pending_poster_exif.has(id))
+    write_poster_exif(poster_element, exif_data)
+  pending_poster_exif.delete(id)
+
   await new Poster(id).save(poster_element)
 
   const directory_path = as_directory_id(id)
@@ -793,10 +809,13 @@ export const use = () => {
       bitmap.close()
       URL.revokeObjectURL(image_url)
 
-      if (!is_pre_resized)
+      if (!is_pre_resized && include_exif.value)
         try {
+          const { default: ExifReader } = await import('exifreader')
           const tags = await ExifReader.load(image, { expanded: true })
-          exif = exif_logger(tags)
+          exif = extract_poster_exif(tags) ?? {}
+          if (itemid && exif && Object.keys(exif).length)
+            pending_poster_exif.set(itemid, exif)
         } catch (error) {
           console.warn(
             'Failed to parse EXIF data:',
@@ -850,15 +869,6 @@ export const use = () => {
       }
       img.src = svg_url
     })
-  }
-
-  /**
-   * @param {Object} tags
-   * @returns {Object}
-   */
-  const exif_logger = tags => {
-    const cloned = structuredClone(tags)
-    return cloned
   }
 
   /**

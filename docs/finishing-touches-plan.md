@@ -11,6 +11,12 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 User-visible and infrastructure fixes shipped through this punch list. Newest first.
 
+### 2026-07-02 — Account, EXIF capture, performance
+
+- **Require a name** — nameless users redirected to `/account`; validation on save and sign-on; profile persist skips blank display names.
+- **EXIF capture** — optional Account toggle; parse and persist photo metadata in poster index SVG (off by default).
+- **Lazy 3D and download** — `defineAsyncComponent` for viewer and download in poster figures and author menu.
+
 ### 2026-07-02 — Discoverability & social previews
 
 - **Open Graph cards** — marketing URLs (`/about`, `/docs`, `/pricing`, `/terms`, `/privacy`) prerender with full `og:*` and Twitter Card tags. **OG** = Open Graph, the meta tag protocol Facebook defined; Slack, Discord, iMessage, LinkedIn, and X all read it for link previews.
@@ -43,6 +49,10 @@ User-visible and infrastructure fixes shipped through this punch list. Newest fi
       IPTC place names, keywords, and captions during vectorize; persist in poster index as SVG
       `<metadata>` microdata (`itemtype="/exif"`). Off by default. `src/utils/exif.js`,
       `src/components/account/as-exif.vue`, `src/use/vectorize.js`.
+- [ ] **poster EXIF details UI** `M` — when metadata was saved, show it on the poster: camera,
+      date, place name, GPS, subject location, subject area, bearing, focal length, etc. Data
+      lives in the index SVG (`read_poster_exif` in `src/utils/exif.js`); nothing surfaces it in
+      the poster UI yet. Likely poster details / info panel alongside existing author controls.
 
 - [ ] **phone validation (Twilio Lookup)** `M` — block VoIP/throwaway numbers at sign-in
       (a lookup, not messaging). Port from seeq-app: `functions/.../services/integrity.js`,
