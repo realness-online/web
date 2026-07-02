@@ -8,6 +8,8 @@
     inject
   } from 'vue'
   import { collect_geology_paths } from '@/utils/geology'
+  import { geology_layers } from '@/use/poster'
+  import { subject_hue } from '@/use/mask-pen'
 
   const props = defineProps({
     itemid: { type: String, required: true }
@@ -28,9 +30,22 @@
     paths_data.value.find(p => p.key === mask_pen?.hovered_key.value)
   )
 
-  const selected_paths = computed(() =>
-    paths_data.value.filter(p => mask_pen?.selected.value.has(p.key))
+  const paths_by_key = computed(
+    () => new Map(paths_data.value.map(p => [p.key, p]))
   )
+
+  // Every subject's cells, coloured by the subject's hue; the active subject reads brighter.
+  const subject_overlays = computed(() => {
+    const subjects = mask_pen?.subjects.value ?? []
+    const active_id = mask_pen?.active_subject_id.value
+    const by_key = paths_by_key.value
+    return subjects.map((subject, index) => ({
+      id: subject.id,
+      active: subject.id === active_id,
+      hue: subject_hue(index),
+      paths: [...subject.keys].map(key => by_key.get(key)).filter(path => path)
+    }))
+  })
 
   const key_at = (clientX, clientY) => {
     const svg = mask_pen_root.value?.ownerSVGElement
@@ -48,23 +63,112 @@
     return null
   }
 
-  // One finger paints; a second finger is a pinch-zoom — hand it to the browser
-  // (touch-action: pinch-zoom) and never paint during it. Selection is deferred:
-  // it commits only on a clean tap (release) or once a drag clearly starts, so a
-  // pinch — where the second finger lands a moment after the first — never selects.
+  const layer_band = key => {
+    const band = geology_layers.indexOf(key.split(':')[0])
+    return band === -1 ? 0 : band
+  }
+
+  const active_hue = computed(() => {
+    const subjects = mask_pen?.subjects.value ?? []
+    const index = subjects.findIndex(
+      s => s.id === mask_pen?.active_subject_id.value
+    )
+    return subject_hue(index < 0 ? subjects.length : index)
+  })
+
+  // Tap seeds a cell; drag grows a circle from the seed and floods to nearby cells
+  // within TONE_TOLERANCE luminosity bands of the seed — so it spreads through an
+  // object and stops where the tone changes. A second finger is pinch-zoom.
   const DRAG_START_PX = 4
+  const TONE_TOLERANCE = 1
   const active_touches = new Set()
   let pinching = false
   let pending = false
-  let stroke_started = false
-  let pending_key = null
-  let down_x = 0
-  let down_y = 0
+  let growing = false
+  let seed_key = null
+  let seed_band = 0
+  const seed_client = { x: 0, y: 0 }
+  /** Cell centroids in client space, snapshotted at press. */
+  let centroids = []
+  const preview_keys = ref(new Set())
+  /** The grow radius affordance, in poster user units, or null. */
+  const grow_circle = ref(null)
+  // Press a cell already in the active subject to grow-erase; otherwise grow-add.
+  const erasing = ref(false)
 
-  const reset_pending = () => {
+  const preview_paths = computed(() => {
+    const by_key = paths_by_key.value
+    return [...preview_keys.value].map(key => by_key.get(key)).filter(p => p)
+  })
+
+  const preview_fill = computed(() =>
+    erasing.value
+      ? 'hsla(0, 0%, 55%, 0.35)'
+      : `hsla(${active_hue.value}, 75%, 58%, 0.4)`
+  )
+  const preview_stroke = computed(() =>
+    erasing.value
+      ? 'hsla(0, 75%, 62%, 0.95)'
+      : `hsla(${active_hue.value}, 85%, 65%, 0.9)`
+  )
+
+  const snapshot_centroids = () => {
+    const svg = mask_pen_root.value?.ownerSVGElement
+    if (!svg) return (centroids = [])
+    const pt = svg.createSVGPoint()
+    centroids = hit_paths.value.map(({ key, el }) => {
+      const box = el.getBBox()
+      const ctm = el.getScreenCTM()
+      pt.x = box.x + box.width / 2
+      pt.y = box.y + box.height / 2
+      const point = ctm ? pt.matrixTransform(ctm) : { x: 0, y: 0 }
+      return { key, cx: point.x, cy: point.y, band: layer_band(key) }
+    })
+  }
+
+  const to_user = (client_x, client_y) => {
+    const svg = mask_pen_root.value?.ownerSVGElement
+    const ctm = svg?.getScreenCTM()
+    if (!svg || !ctm) return { x: 0, y: 0, scale: 1 }
+    const pt = svg.createSVGPoint()
+    pt.x = client_x
+    pt.y = client_y
+    const user = pt.matrixTransform(ctm.inverse())
+    return { x: user.x, y: user.y, scale: ctm.a || 1 }
+  }
+
+  const grow_from_seed = radius_client => {
+    const keys = new Set()
+    const r2 = radius_client * radius_client
+    if (erasing.value) {
+      // Erase every active-subject cell inside the circle, regardless of tone.
+      const selected = mask_pen?.selected.value ?? new Set()
+      for (const cell of centroids) {
+        if (!selected.has(cell.key)) continue
+        const dx = cell.cx - seed_client.x
+        const dy = cell.cy - seed_client.y
+        if (dx * dx + dy * dy <= r2) keys.add(cell.key)
+      }
+      return keys
+    }
+    if (seed_key) keys.add(seed_key)
+    for (const cell of centroids) {
+      if (Math.abs(cell.band - seed_band) > TONE_TOLERANCE) continue
+      const dx = cell.cx - seed_client.x
+      const dy = cell.cy - seed_client.y
+      if (dx * dx + dy * dy <= r2) keys.add(cell.key)
+    }
+    return keys
+  }
+
+  const reset_grow = () => {
     pending = false
-    stroke_started = false
-    pending_key = null
+    growing = false
+    seed_key = null
+    erasing.value = false
+    preview_keys.value = new Set()
+    grow_circle.value = null
+    if (mask_pen) mask_pen.painting.value = false
   }
 
   const on_pointer_down = event => {
@@ -72,8 +176,7 @@
       active_touches.add(event.pointerId)
       if (active_touches.size > 1) {
         pinching = true
-        if (stroke_started) mask_pen?.handle_pointerup()
-        reset_pending()
+        reset_grow()
         if (capture_rect.value?.hasPointerCapture?.(event.pointerId))
           capture_rect.value.releasePointerCapture(event.pointerId)
         return
@@ -82,22 +185,33 @@
     if (pinching) return
     capture_rect.value?.setPointerCapture(event.pointerId)
     pending = true
-    stroke_started = false
-    pending_key = key_at(event.clientX, event.clientY)
-    down_x = event.clientX
-    down_y = event.clientY
+    growing = false
+    seed_key = key_at(event.clientX, event.clientY)
+    seed_band = seed_key ? layer_band(seed_key) : 0
+    erasing.value = !!(seed_key && mask_pen?.selected.value.has(seed_key))
+    seed_client.x = event.clientX
+    seed_client.y = event.clientY
+    snapshot_centroids()
+    preview_keys.value = new Set(seed_key ? [seed_key] : [])
   }
 
   const on_pointer_move = event => {
-    if (pinching || active_touches.size > 1 || !pending) return
-    if (!stroke_started) {
-      const dx = Math.abs(event.clientX - down_x)
-      const dy = Math.abs(event.clientY - down_y)
-      if (dx < DRAG_START_PX && dy < DRAG_START_PX) return
-      stroke_started = true
-      mask_pen?.handle_pointerdown(pending_key)
+    if (pinching || active_touches.size > 1) return
+    if (!pending) {
+      if (mask_pen)
+        mask_pen.hovered_key.value = key_at(event.clientX, event.clientY)
+      return
     }
-    mask_pen?.handle_pointermove(key_at(event.clientX, event.clientY))
+    const radius = Math.hypot(
+      event.clientX - seed_client.x,
+      event.clientY - seed_client.y
+    )
+    if (!growing && radius < DRAG_START_PX) return
+    growing = true
+    if (mask_pen) mask_pen.painting.value = true
+    preview_keys.value = grow_from_seed(radius)
+    const center = to_user(seed_client.x, seed_client.y)
+    grow_circle.value = { cx: center.x, cy: center.y, r: radius / center.scale }
   }
 
   const on_pointer_up = event => {
@@ -105,13 +219,11 @@
     if (capture_rect.value?.hasPointerCapture?.(event.pointerId))
       capture_rect.value.releasePointerCapture(event.pointerId)
     const commit = !pinching && pending
-    if (commit && stroke_started) mask_pen?.handle_pointerup()
-    else if (commit) {
-      // Clean tap: toggle the cell under the finger on release.
-      mask_pen?.handle_pointerdown(pending_key)
-      mask_pen?.handle_pointerup()
-    }
-    reset_pending()
+    if (commit && growing && erasing.value)
+      mask_pen?.remove_members(preview_keys.value)
+    else if (commit && growing) mask_pen?.add_members(preview_keys.value)
+    else if (commit && seed_key) mask_pen?.toggle_path(seed_key)
+    reset_grow()
     if (active_touches.size === 0) pinching = false
   }
 
@@ -187,12 +299,34 @@
       :transform="hovered_path.transform"
       class="mask-pen-hover"
       pointer-events="none" />
+    <template v-for="overlay in subject_overlays" :key="overlay.id">
+      <path
+        v-for="p in overlay.paths"
+        :key="`${overlay.id}-${p.key}`"
+        :d="p.d"
+        :transform="p.transform"
+        class="mask-pen-selected"
+        :style="{
+          fill: `hsla(${overlay.hue}, 70%, 55%, ${overlay.active ? 0.5 : 0.3})`,
+          stroke: `hsla(${overlay.hue}, 80%, 62%, ${overlay.active ? 0.95 : 0.6})`
+        }"
+        pointer-events="none" />
+    </template>
     <path
-      v-for="p in selected_paths"
-      :key="`sel-${p.key}`"
+      v-for="p in preview_paths"
+      :key="`grow-${p.key}`"
       :d="p.d"
       :transform="p.transform"
-      class="mask-pen-selected"
+      class="mask-pen-preview"
+      :style="{ fill: preview_fill, stroke: preview_stroke }"
+      pointer-events="none" />
+    <circle
+      v-if="grow_circle"
+      :cx="grow_circle.cx"
+      :cy="grow_circle.cy"
+      :r="grow_circle.r"
+      class="mask-pen-radius"
+      :style="{ stroke: preview_stroke }"
       pointer-events="none" />
   </g>
 </template>
@@ -210,5 +344,13 @@
       fill: alpha(orange, 0.55)
       stroke: alpha(orange, 0.95)
       stroke-width: base-line * 0.035
+      vector-effect: non-scaling-stroke
+    path.mask-pen-preview
+      stroke-width: base-line * 0.05
+      vector-effect: non-scaling-stroke
+    circle.mask-pen-radius
+      fill: none
+      stroke-width: base-line * 0.06
+      stroke-dasharray: base-line * 0.2 base-line * 0.15
       vector-effect: non-scaling-stroke
 </style>
