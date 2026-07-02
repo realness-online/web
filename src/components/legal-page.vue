@@ -9,17 +9,19 @@
 <template>
   <section class="page legal" lang="en">
     <header>
+      <a class="page-back" href="#" @click.prevent="$router.back()">← Back</a>
       <h1>{{ title }}</h1>
     </header>
     <article>
       <nav v-if="toc.length" class="toc" aria-label="Table of contents">
-        <a
+        <router-link
           v-for="item in toc"
           :key="item.id"
-          :href="`#${item.id}`"
+          :to="`#${item.id}`"
+          replace
           :class="`level-${item.level}`">
           {{ item.title }}
-        </a>
+        </router-link>
       </nav>
       <section class="content">
         <div class="document" v-html="html" />
@@ -53,6 +55,17 @@
         margin-top: base-line;
         text-align: center;
         color: var(--red);
+      }
+
+      a.page-back {
+        display: block;
+        font-size: smaller;
+        color: var(--blue);
+        text-decoration: none;
+        margin-bottom: base-line * 0.5;
+        &:hover {
+          color: var(--red);
+        }
       }
     }
 
@@ -88,13 +101,13 @@
 
         & > a {
           display: block;
-          font-size: smaller;
           margin: round((base-line / 4), 2) 0;
           color: var(--blue);
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
           transition: color 150ms ease;
+          touch-action: manipulation;
 
           &:hover {
             color: var(--red);
@@ -104,7 +117,7 @@
           &.level-4 {
             padding-left: base-line * 0.66;
             line-height: 1.33;
-            font-size: 0.66em;
+            font-size: smaller;
 
             &:before {
               content: '-';

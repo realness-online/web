@@ -53,8 +53,6 @@
   const about_motion = ref(false)
   /** @type {IntersectionObserver | null} */
   let section_observer = null
-  /** @type {ScrollRestoration | null} */
-  let prior_scroll_restoration = null
 
   const SECTION_REVEAL_RATIO = 0.33
   const SECTION_REVEAL_INSET = 0.1
@@ -93,10 +91,6 @@
     const visible_bottom = Math.min(rect.bottom, root_bottom)
     const visible = Math.max(0, visible_bottom - visible_top)
     return visible / rect.height >= SECTION_REVEAL_RATIO
-  }
-
-  const scroll_to_top = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }
 
   const connect_section_observer = () => {
@@ -149,14 +143,8 @@
   }
 
   mounted(async () => {
-    if ('scrollRestoration' in history) {
-      prior_scroll_restoration = history.scrollRestoration
-      history.scrollRestoration = 'manual'
-    }
-
     await posters_for_admin({ id: import.meta.env.VITE_ADMIN_ID })
     await balance_gallery()
-    scroll_to_top()
     about_ready.value = true
     await tick()
     observe_sections()
@@ -164,8 +152,6 @@
 
   dismount(() => {
     section_observer?.disconnect()
-    if (prior_scroll_restoration !== null)
-      history.scrollRestoration = prior_scroll_restoration
   })
 </script>
 

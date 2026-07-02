@@ -2,11 +2,14 @@
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import { documentation_html_parts, documentation_toc } from '@/utils/markdown'
+  import { documentation_html_parts } from '@/utils/markdown'
+  import { documentation_toc } from '@/prerender/toc'
   import instance_prompt from '@/content/agent-prompt-instance.md?raw'
   import { onMounted, onUnmounted, ref, watch } from 'vue'
+  import { useRouter as use_router } from 'vue-router'
+  const router = use_router()
 
-  const toc_items = documentation_toc()
+  const toc_items = documentation_toc
   const {
     before: install_before,
     after: install_after,
@@ -32,11 +35,10 @@
 
   /** @param {MouseEvent} event */
   const handle_content_click = event => {
-    const { target } = event
-    if (!(target instanceof HTMLElement)) return
-    if (!target.closest('a[href="#install"]')) return
+    const link = event.target?.closest?.('a[href^="#"]')
+    if (!link) return
     event.preventDefault()
-    document.getElementById('install')?.scrollIntoView({ behavior: 'smooth' })
+    router.replace({ hash: link.getAttribute('href') })
   }
 
   const active_id = ref(null)
@@ -91,17 +93,19 @@
 <template>
   <section id="docs" class="page documentation" lang="en">
     <header>
+      <a class="page-back" href="#" @click.prevent="$router.back()">← Back</a>
       <h1>Documentation</h1>
     </header>
     <article>
       <nav v-if="toc_items.length" class="toc" aria-label="Table of contents">
-        <a
+        <router-link
           v-for="item in toc_items"
           :key="item.id"
-          :href="`#${item.id}`"
+          :to="`#${item.id}`"
+          replace
           :class="[`level-${item.level}`, { active: item.id === active_id }]">
           {{ item.title }}
-        </a>
+        </router-link>
       </nav>
       <section class="content">
         <div v-html="install_before" @click="handle_content_click" />
@@ -150,6 +154,18 @@
         text-align: center;
         color: var(--red);
       }
+
+      a.page-back {
+        display: block;
+        font-size: smaller;
+        color: var(--blue);
+        text-decoration: none;
+        margin-bottom: base-line * 0.5;
+
+        &:hover {
+          color: var(--red);
+        }
+      }
     }
 
     & > article {
@@ -157,7 +173,7 @@
 
       @media (min-width: pad-begins) {
         display: grid;
-        grid-template-columns: (base-line * 7) minmax(0, 1fr);
+        grid-template-columns: (base-line * 10) minmax(0, 1fr);
         gap: base-line * 1.5;
         align-items: start;
       }
@@ -185,13 +201,13 @@
 
         & > a {
           display: block;
-          font-size: smaller;
           margin: round((base-line / 4), 2) 0;
           color: var(--blue);
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
           transition: color 150ms ease;
+          touch-action: manipulation;
 
           &:hover,
           &.active {
@@ -201,7 +217,7 @@
           &.level-3 {
             padding-left: base-line * 0.11;
             line-height: 1.33;
-            font-size: 0.66em;
+            font-size: smaller;
 
             &:before {
               content: '-';
@@ -214,7 +230,7 @@
           &.level-6 {
             padding-left: base-line * 0.66;
             line-height: 1.33;
-            font-size: 0.58em;
+            font-size: smaller;
 
             &:before {
               content: '-';

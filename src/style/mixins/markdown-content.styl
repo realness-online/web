@@ -3,8 +3,8 @@ markdown_content()
     color: var(--red)
     margin-top: base-line * 2
     margin-bottom: base-line
-    // Native anchor jumps land the heading a little below the top edge.
-    scroll-margin-top: base-line
+    // Clear the camera notch + site-nav when scrolled into view via hash.
+    scroll-margin-top: s('calc(env(safe-area-inset-top, 0px) + %s * 2)', base-line)
 
     &:first-child
       margin-top: 0
