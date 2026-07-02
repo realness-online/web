@@ -520,7 +520,13 @@
             poster_time
           }}</time>
           <slot>
-            <menu v-if="is_my_poster">
+            <menu
+              v-if="is_my_poster"
+              :style="
+                mask_pen.active.value && mask_pen.painting.value
+                  ? { opacity: 0.12, pointerEvents: 'none' }
+                  : null
+              ">
               <button
                 class="mask-pen"
                 :class="{ active: mask_pen.active.value }"
