@@ -11,6 +11,45 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 User-visible and infrastructure fixes shipped through this punch list. Newest first.
 
+### 2026-07-02 — Support layout, build-time TOC, scroll & swipe
+
+- **Support layout** — site-nav rendered once by `support-layout.vue` in both App.vue and
+  PrerenderShell (static HTML), replacing 5 hand-rolled copies. Safe-area ownership moved
+  from `section.page` (shared with app pages) onto the nav itself. `section.page` zeroes its
+  top padding when the nav precedes it via an adjacent-sibling rule.
+  (`src/components/support-layout.vue`, `src/App.vue`,
+  `src/components/site-nav.vue`, `src/style/elements/section.styl`)
+- **Build-time TOC** — `scripts/generate-toc.js` precomputes heading trees from markdown
+  content and writes `src/prerender/toc.js` before the Vite build. Documentation, Terms, and
+  Privacy views import the static arrays instead of calling `markdown_toc()` at runtime.
+  (`scripts/generate-toc.js`, `src/prerender/toc.js`, `src/views/Documentation.vue`,
+  `src/views/Terms.vue`, `src/views/Privacy.vue`)
+- **Swipe-back & scroll** — removed `history.scrollRestoration = 'manual'` from About.vue
+  (was fighting swipe-back by disabling scroll memory). TOC links use `router-link replace`
+  so hash clicks don't accumulate history entries (one swipe-back actually leaves the page).
+  `scrollBehavior` now handles `to.hash` with smooth scroll and uses `rAF`-deferred
+  `{ top: 0 }` for forward navigation. (`src/router.js`, `src/views/About.vue`)
+- **Mobile TOC UX** — sub-level font sizes bumped from `0.58em` to `smaller` (~10px→~15px);
+  `touch-action: manipulation` eliminates 300ms tap delay on all TOC links; heading
+  `scroll-margin-top` accounts for safe-area so TOC-anchored sections clear the camera notch.
+  Subtle `← Back` link in page headers for returning from deep scroll.
+  (`src/views/Documentation.vue`, `src/components/legal-page.vue`,
+  `src/style/mixins/markdown-content.styl`)
+- **Pricing page** — horizontal padding to stop content riding the edges; bottom padding to
+  clear the footer island; space between buy button and actions row; removed redundant price
+  text (Stripe button already shows the amount). (`src/views/Pricing.vue`)
+
+### 2026-07-02 — Poster EXIF details overlay
+
+- **Info-mode EXIF overlay** — with the **Info** preference on (`pref::Toggle_Info`), each
+  in-view poster shows a corner overlay of its saved photo metadata: camera, lens, capture
+  date, shot (focal length · ƒ-stop · shutter · ISO), place name, GPS (links to
+  OpenStreetMap) + altitude, compass bearing, subject distance/range, keywords, caption.
+  Reads the stored index markup via `read_poster_exif`; renders nothing when the poster has
+  no EXIF (owner didn't have **Include photo metadata** on at vectorize time). Same `info`
+  context as the FPS overlay. Lazy-loaded, gated on viewport visibility, hidden while masking.
+  `src/components/posters/as-poster-exif.vue`, `src/components/posters/as-figure.vue`.
+
 ### 2026-07-02 — Account, EXIF capture, performance
 
 - **Require a name** — nameless users redirected to `/account`; validation on save and sign-on; profile persist skips blank display names.
@@ -49,10 +88,13 @@ User-visible and infrastructure fixes shipped through this punch list. Newest fi
       IPTC place names, keywords, and captions during vectorize; persist in poster index as SVG
       `<metadata>` microdata (`itemtype="/exif"`). Off by default. `src/utils/exif.js`,
       `src/components/account/as-exif.vue`, `src/use/vectorize.js`.
-- [ ] **poster EXIF details UI** `M` — when metadata was saved, show it on the poster: camera,
-      date, place name, GPS, subject location, subject area, bearing, focal length, etc. Data
-      lives in the index SVG (`read_poster_exif` in `src/utils/exif.js`); nothing surfaces it in
-      the poster UI yet. Likely poster details / info panel alongside existing author controls.
+- [x] **poster EXIF details UI** `M` — when the **Info** preference is on (`info` in
+      `src/utils/preference.js`, Preferences menu / `pref::Toggle_Info`), show saved metadata on
+      the poster itself: camera, date, place name, GPS, subject location, subject area, bearing,
+      focal length, etc. Read via `read_poster_exif`; only when the index has EXIF (user had
+      **Include photo metadata** on at vectorize time). Same info context as the FPS overlay —
+      debug/details mode for the poster you're looking at, not a separate toggle.
+      (`src/components/posters/as-poster-exif.vue`, `src/components/posters/as-figure.vue`)
 
 - [ ] **phone validation (Twilio Lookup)** `M` — block VoIP/throwaway numbers at sign-in
       (a lookup, not messaging). Port from seeq-app: `functions/.../services/integrity.js`,
