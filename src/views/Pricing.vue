@@ -103,7 +103,9 @@
               <strong>$100</strong>
               <span>per year</span>
             </p>
-            <p>Contact us for terms and licensing.</p>
+            <menu>
+              <sponsor-cta buy_button_id="buy_btn_0ToWtGANizuvdTZsdZR8DZkz" />
+            </menu>
             <menu class="actions">
               <as-prompt-agent mode="instance" inline />
               <a href="https://github.com/realness-online/web" rel="external">
@@ -147,7 +149,9 @@
               <strong>$500</strong>
               <span>per year</span>
             </p>
-            <p>Contact us for terms and licensing.</p>
+            <menu>
+              <sponsor-cta buy_button_id="buy_btn_0ToWseANizuvdTZsaqi4BZws" />
+            </menu>
             <menu class="actions">
               <as-prompt-agent mode="instance" inline />
               <a href="https://github.com/realness-online/web" rel="external">

@@ -24,11 +24,11 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### 💰 Payments
 
-- [ ] **Stripe buy buttons for $100/$500 tiers** `M` — create products and Stripe buy
-      buttons in Stripe dashboard for Small teams ($100/yr) and Large organizations
-      ($500/yr), then wire into Pricing.vue (same pattern as the $5 Endorse button in
-      `sponsor/cta.vue`). No server-side functions needed — Stripe buy buttons are
-      client-side embeds. `src/views/Pricing.vue`.
+- [x] **Stripe buy buttons for $100/$500 tiers** `M` — `sponsor/cta` gained
+      `buy_button_id`/`publishable_key`/`checkout_url` props; Small teams ($100/yr) and Large
+      organizations ($500/yr) tiers now embed their own buy buttons in `Pricing.vue`.
+      Client-side embeds, no server functions. (`src/components/sponsor/cta.vue`,
+      `src/views/Pricing.vue`)
 
 ### 🐛 Bugs
 
