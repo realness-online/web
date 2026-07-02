@@ -1,5 +1,9 @@
+<script setup>
+  import SupportLayout from '@/components/support-layout'
+</script>
+
 <template>
   <Suspense>
-    <router-view />
+    <support-layout />
   </Suspense>
 </template>

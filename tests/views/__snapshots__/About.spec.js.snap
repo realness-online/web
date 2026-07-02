@@ -7,21 +7,6 @@ exports[`About > Rendering > renders about view 1`] = `
   itemscope=""
   itemtype="/about"
 >
-  <nav
-    itemscope=""
-    itemtype="/site-nav"
-  >
-    <a
-      href="/docs"
-    >
-      Docs
-    </a>
-    <a
-      href="/pricing"
-    >
-      Pricing
-    </a>
-  </nav>
   <header>
     <section
       itemprop="hero"

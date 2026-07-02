@@ -7,7 +7,6 @@
   import InstallGuide from '@/components/install-guide.vue'
   import LogoAsLink from '@/components/logo-as-link'
   import { install_method } from '@/utils/platform'
-  import SiteNav from '@/components/site-nav'
   import { as_author } from '@/utils/itemid'
   import { balance_gallery_posters } from '@/utils/balance-gallery-posters'
   import { reset_preferences } from '@/utils/preference'
@@ -178,7 +177,6 @@
     itemscope
     itemtype="/about"
     :class="{ 'about-motion': about_motion }">
-    <site-nav />
     <header>
       <section itemprop="hero">
         <header :class="{ 'about-ready': about_ready }">

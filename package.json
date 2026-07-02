@@ -16,7 +16,7 @@
     "tracing",
     "posterization"
   ],
-  "description": "When people search for 'outsider social network' they'll find realness online. The medium is the message",
+  "description": "Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities.",
   "author": "Scott Fryxell <sfryxell@gmail.com>",
   "scripts": {
     "dev": "vp dev",

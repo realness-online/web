@@ -2,7 +2,6 @@ import documentation_md from '@/content/documentation.md?raw'
 import icons_svg from '../../public/icons.svg?raw'
 import { marked } from 'marked'
 import { gfmHeadingId } from 'marked-gfm-heading-id'
-import DOMPurify from 'dompurify'
 
 marked.use(gfmHeadingId())
 
@@ -43,11 +42,14 @@ export const inline_documentation_icons = html =>
 /** @param {string} title */
 const heading_id = title => {
   const title_str = String(title || '')
+  // Match marked-gfm-heading-id (github-slugger): strip punctuation, then turn
+  // each remaining whitespace char into a hyphen WITHOUT collapsing runs — so
+  // "Subjects — being built live" slugs to "subjects--being-built-live", the
+  // same id the rendered heading gets. Collapsing here would break that anchor.
   return title_str
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
+    .replace(/\s/g, '-')
     .replace(/^-|-$/g, '')
 }
 
@@ -88,25 +90,14 @@ export const documentation_toc = (content = documentation_md) => [
 ]
 
 /**
- * @param {string} rendered
- * @returns {string}
- */
-const sanitize_html = rendered => {
-  if (import.meta.env.SSR) return String(rendered)
-  return DOMPurify.sanitize(rendered)
-}
-
-/**
  * @param {string} [content]
  * @returns {string}
  */
-export const documentation_html = (content = documentation_md) => {
-  const rendered = inline_documentation_icons(String(marked.parse(content)))
-  return sanitize_html(rendered)
-}
+export const documentation_html = (content = documentation_md) =>
+  inline_documentation_icons(String(marked.parse(content)))
 
 /**
- * Render arbitrary markdown (legal pages, etc.) to sanitized HTML.
+ * Render our own first-party markdown (legal pages, etc.) to HTML.
  * @param {string} content
  * @returns {string}
  */

@@ -21,8 +21,7 @@ const manual_chunk_rules = {
     '@firebase/app',
     '@firebase/auth',
     '@firebase/firestore',
-    '@firebase/storage',
-    'three'
+    '@firebase/storage'
   ],
   utilities: ['exifreader'],
   libphonenumber: ['libphonenumber-js']
@@ -287,6 +286,7 @@ export default defineConfig({
       filename: 'service.worker.js',
       workbox: {
         maximumFileSizeToCacheInBytes: 4000000,
+        navigateFallbackDenylist: [/\.(?:xml|txt|md|json)$/i],
         // Web Push handlers, imported into the generated SW (keeps generateSW
         // precaching untouched). Source: public/push-handlers.js.
         importScripts: ['/push-handlers.js']
@@ -297,7 +297,11 @@ export default defineConfig({
         'fonts/*.woff2',
         'icons.svg',
         'brands/*.svg',
-        'brands/*.png'
+        'brands/*.png',
+        'sitemap.xml',
+        'robots.txt',
+        'llms.txt',
+        'documentation.md'
       ],
       manifest: {
         display: 'standalone',

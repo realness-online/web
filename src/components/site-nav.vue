@@ -5,10 +5,11 @@
 
   // /account shows the sign-in flow when signed out and details when signed in,
   // so one link serves both — the label is what changes.
+  // Only show the name when actually authenticated — a cached `me.name` while
+  // signed out would falsely imply you're signed in.
   const account_label = computed(() => {
-    if (me.value?.name) return me.value.name
-    if (current_user.value) return 'Account'
-    return 'Sign in'
+    if (!current_user.value) return 'Sign in'
+    return me.value?.name || 'Account'
   })
 </script>
 
@@ -16,10 +17,10 @@
   <nav itemscope itemtype="/site-nav" aria-label="Site">
     <logo-as-link />
     <menu>
-      <router-link to="/about">About</router-link>
-      <router-link to="/docs">Docs</router-link>
-      <router-link to="/pricing">Pricing</router-link>
-      <router-link to="/account">{{ account_label }}</router-link>
+      <router-link to="/about" replace>About</router-link>
+      <router-link to="/docs" replace>Docs</router-link>
+      <router-link to="/pricing" replace>Pricing</router-link>
+      <router-link to="/account" replace>{{ account_label }}</router-link>
     </menu>
   </nav>
 </template>
@@ -30,9 +31,13 @@
     align-items: center;
     justify-content: space-between;
     gap: base-line;
-    padding: base-line
+    padding: base-line;
+    padding-top: s('calc(env(safe-area-inset-top, 0px) + %s)', base-line);
+
     menu {
+      flex: 1;
       display: flex;
+      align-items: center;
       gap: base-line;
       margin: 0;
       padding: 0;
@@ -49,6 +54,12 @@
         &.router-link-active {
           color: var(--red);
         }
+      }
+
+      // The account link anchors to the far right, using the remaining space.
+      & > a:last-child {
+        margin-left: auto;
+        text-align: right;
       }
     }
   }

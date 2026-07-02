@@ -1,19 +1,35 @@
 export const site_origin = 'https://realness.online'
+export const site_name = 'Realness Online'
+export const default_og_image = `${site_origin}/og.png`
 
-/** @type {Array<{ path: string, render_path?: string, canonical?: string, title: string, description: string, og_title: string }>} */
+export const home_title =
+  'Realness Online — Rotoscope Photos into Layered SVG Posters'
+export const home_description =
+  'Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities.'
+
+export const og_image_headline = 'Realness Online'
+export const og_image_subhead = 'Rotoscope photos into layered SVG posters'
+export const og_image_cta = 'Make some posters today'
+export const og_image_alt = `${og_image_headline} — ${og_image_cta}`
+export const og_image_type = 'image/png'
+
+/** @typedef {Record<string, unknown>} JsonLdSchema */
+
+/** @type {Array<{ path: string, render_path?: string, canonical?: string, title: string, description: string, og_title: string, og_image?: string, json_ld?: JsonLdSchema | ((page: { description: string, url: string }) => JsonLdSchema) | 'software_application' }>} */
 export const prerender_pages = [
   {
     path: '/about',
     title: 'Realness Online - About',
     description:
-      'Create expressive vector graphics from photos. Realness is an outsider social network built for artists, animators, and communities.',
-    og_title: 'Realness Online - About'
+      'Realness is a rotoscoping tool — trace photos into layered SVG posters with mosaics, shadows, and gradients. On-device tracing for artists, animators, and small communities.',
+    og_title: 'Realness Online - About',
+    json_ld: 'software_application'
   },
   {
     path: '/docs',
     title: 'Realness Online - Documentation',
     description:
-      'How to use Realness: posters, thoughts, sync, exports, and keyboard shortcuts.',
+      'How to use Realness: rotoscope photos into layered SVG posters, Thoughts feed, island controls, exports (SVG, PNG, PSD, video, GLB), sync, install, and keyboard shortcuts.',
     og_title: 'Realness Online - Documentation'
   },
   {
@@ -22,6 +38,20 @@ export const prerender_pages = [
     description:
       'Realness is free to use. It costs $5, and stays free to use. License plans for small teams and large organizations.',
     og_title: 'Realness Online - Pricing'
+  },
+  {
+    path: '/terms',
+    title: 'Realness Online - Terms of Service',
+    description:
+      'Terms of Service for Realness — the rotoscoping tool and outsider social network.',
+    og_title: 'Realness Online - Terms of Service'
+  },
+  {
+    path: '/privacy',
+    title: 'Realness Online - Privacy Policy',
+    description:
+      'Privacy Policy for Realness — what we collect, why, and what you can do about it.',
+    og_title: 'Realness Online - Privacy Policy'
   }
 ]
 
