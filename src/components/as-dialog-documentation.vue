@@ -3,12 +3,13 @@
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import { documentation_html_parts, documentation_toc } from '@/utils/markdown'
+  import { documentation_html_parts } from '@/utils/markdown'
+  import { documentation_toc } from '@/prerender/toc'
 
   const dialog = ref(null)
   const before_ref = ref(null)
   const after_ref = ref(null)
-  const toc_items = ref(documentation_toc())
+  const toc_items = ref(documentation_toc)
   const { before, after, has_install_guide } = documentation_html_parts()
 
   const mount_content = () => {
@@ -55,7 +56,7 @@
           :key="item.id"
           :href="`#${item.id}`"
           :class="`level-${item.level}`"
-          @click="scroll_to_section(item.id)">
+          @click.prevent="scroll_to_section(item.id)">
           {{ item.title }}
         </a>
       </nav>

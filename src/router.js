@@ -44,7 +44,14 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
-    return { top: 0, left: 0 }
+    if (to.hash) 
+      return { el: to.hash, behavior: 'smooth' }
+    
+    // Defer so the scroll fires after the page paints — some mobile
+    // browsers need the extra frame for scrollTo to take effect.
+    return new Promise(resolve => {
+      requestAnimationFrame(() => resolve({ top: 0 }))
+    })
   }
 })
 

@@ -1,12 +1,13 @@
 <script setup>
   import LegalPage from '@/components/legal-page.vue'
   import terms_md from '@/content/terms.md?raw'
-  import { markdown_html, markdown_toc } from '@/utils/markdown'
+  import { markdown_html } from '@/utils/markdown'
+  import { terms_toc } from '@/prerender/toc'
 
   defineOptions({ name: 'Terms' })
 
   const html = markdown_html(terms_md)
-  const toc = markdown_toc(terms_md)
+  const toc = terms_toc
 </script>
 
 <template>
