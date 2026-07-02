@@ -1,5 +1,4 @@
 <script setup>
-  import SiteNav from '@/components/site-nav'
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
@@ -92,8 +91,7 @@
 <template>
   <section id="docs" class="page documentation" lang="en">
     <header>
-      <site-nav />
-      <h2>Documentation</h2>
+      <h1>Documentation</h1>
     </header>
     <article>
       <nav v-if="toc_items.length" class="toc" aria-label="Table of contents">
@@ -148,16 +146,6 @@
       margin-bottom: base-line * 2;
 
       h1 {
-        margin-top: base-line * 2;
-        text-align: center;
-        color: var(--blue);
-
-        span {
-          font-size: smaller;
-        }
-      }
-
-      h2 {
         margin-top: 0;
         text-align: center;
         color: var(--red);

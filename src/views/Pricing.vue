@@ -1,5 +1,4 @@
 <script setup>
-  import SiteNav from '@/components/site-nav'
   import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import SponsorCta from '@/components/sponsor/cta'
 
@@ -8,9 +7,6 @@
 
 <template>
   <section id="pricing" class="page">
-    <header>
-      <site-nav />
-    </header>
     <article>
       <header>
         <h1>Pricing</h1>
@@ -54,10 +50,6 @@
                 <p>Use posters in client and commercial work.</p>
               </li>
             </ul>
-            <p>
-              <strong>$5</strong>
-              <span>Endorse</span>
-            </p>
             <menu>
               <sponsor-cta />
             </menu>
@@ -99,10 +91,6 @@
                 <p>Allowed for your organization.</p>
               </li>
             </ul>
-            <p>
-              <strong>$100</strong>
-              <span>per year</span>
-            </p>
             <menu>
               <sponsor-cta buy_button_id="buy_btn_0ToWtGANizuvdTZsdZR8DZkz" />
             </menu>
@@ -145,10 +133,6 @@
                 <p>Allowed across licensed communities.</p>
               </li>
             </ul>
-            <p>
-              <strong>$500</strong>
-              <span>per year</span>
-            </p>
             <menu>
               <sponsor-cta buy_button_id="buy_btn_0ToWseANizuvdTZsaqi4BZws" />
             </menu>
@@ -171,12 +155,8 @@
     max-width: none;
     margin: 0;
     box-sizing: border-box;
-
-    & > header {
-      display: block;
-      padding: 0;
-      margin-bottom: base-line;
-    }
+    padding-inline: base-line;
+    padding-bottom: base-line * 4;
 
     & > article {
       & > header {
@@ -271,37 +251,16 @@
               }
             }
 
-            & > p:has(> strong) {
-              margin: 0 0 (base-line * 0.35);
-              line-height: 1.2;
-              text-align: center;
-
-              & > strong {
-                font-size: base-line * 1.75;
-                color: blue;
-                font-weight: 300;
-              }
-
-              & > span {
-                display: block;
-                font-size: 0.9em;
-                margin-top: base-line * 0.15;
-              }
-            }
-
-            & > p:has(> strong) + p {
-              margin: 0 0 base-line;
-              font-size: 0.85em;
-              opacity: 0.85;
-              line-height: 1.4;
-              text-align: center;
-            }
-
             & > menu {
               display: flex;
               justify-content: center;
               margin: 0;
               padding: 0;
+            }
+
+            // Space between buy button and actions row
+            & > menu:not(:last-child) {
+              margin-bottom: base-line;
             }
 
             & > menu.actions {

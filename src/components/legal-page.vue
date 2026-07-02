@@ -1,6 +1,4 @@
 <script setup>
-  import SiteNav from '@/components/site-nav'
-
   defineProps({
     title: { type: String, required: true },
     html: { type: String, required: true },
@@ -11,8 +9,7 @@
 <template>
   <section class="page legal" lang="en">
     <header>
-      <site-nav />
-      <h2>{{ title }}</h2>
+      <h1>{{ title }}</h1>
     </header>
     <article>
       <nav v-if="toc.length" class="toc" aria-label="Table of contents">
@@ -52,7 +49,7 @@
       padding: 0;
       margin-bottom: base-line * 2;
 
-      h2 {
+      h1 {
         margin-top: base-line;
         text-align: center;
         color: var(--red);

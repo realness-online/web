@@ -6,6 +6,8 @@ import PrerenderShell from '@/prerender/prerender-shell.vue'
 import About from '@/views/About.vue'
 import Documentation from '@/views/Documentation.vue'
 import Pricing from '@/views/Pricing.vue'
+import Privacy from '@/views/Privacy.vue'
+import Terms from '@/views/Terms.vue'
 import { prerender_routes } from '@/prerender/pages.js'
 
 export { prerender_routes }
@@ -14,9 +16,11 @@ const stub = { template: '<div />' }
 
 const routes = [
   { path: '/', component: stub },
-  { path: '/about', component: About },
-  { path: '/docs', component: Documentation },
-  { path: '/pricing', component: Pricing },
+  { path: '/about', component: About, meta: { support: true } },
+  { path: '/docs', component: Documentation, meta: { support: true } },
+  { path: '/pricing', component: Pricing, meta: { support: true } },
+  { path: '/terms', component: Terms, meta: { support: true } },
+  { path: '/privacy', component: Privacy, meta: { support: true } },
   { path: '/sign-on', redirect: '/account' },
   { path: '/account', component: stub }
 ]

@@ -1,4 +1,11 @@
 User-agent: *
-Disallow:
+Disallow: /
+Allow: /about
+Allow: /docs
+Allow: /pricing
+Allow: /terms
+Allow: /privacy
+Allow: /llms.txt
+Allow: /documentation.md
 
 Sitemap: https://realness.online/sitemap.xml

@@ -75,11 +75,7 @@ describe('About', () => {
             template: '<fieldset class="preference-stub"></fieldset>',
             props: ['name', 'title', 'subtitle', 'show_state']
           },
-          'call-to-action': true,
-          'site-nav': {
-            template:
-              '<nav itemscope itemtype="/site-nav"><a href="/docs">Docs</a><a href="/pricing">Pricing</a></nav>'
-          }
+          'call-to-action': true
         }
       }
     })
@@ -99,7 +95,8 @@ describe('About', () => {
 
     it('renders header with navigation', () => {
       expect(wrapper.find('header').exists()).toBe(true)
-      expect(wrapper.find('nav[itemtype="/site-nav"]').exists()).toBe(true)
+      // Site nav is rendered by the support layout (App.vue), not the page.
+      expect(wrapper.find('nav[itemtype="/site-nav"]').exists()).toBe(false)
     })
 
     it('renders hero section', () => {
@@ -109,10 +106,9 @@ describe('About', () => {
     })
 
     it('renders site nav with docs and pricing', () => {
-      const nav = wrapper.find('nav[itemtype="/site-nav"]')
-      expect(nav.exists()).toBe(true)
-      expect(nav.text()).toContain('Docs')
-      expect(nav.text()).toContain('Pricing')
+      // Site nav lives in the support layout (App.vue), not in the page view.
+      // Covered by App/layout specs; About should not render its own nav.
+      expect(wrapper.find('nav[itemtype="/site-nav"]').exists()).toBe(false)
     })
 
     it('renders articles for different sections', () => {

@@ -9,6 +9,7 @@
   )
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
   import WorkingBorder from '@/components/working-border.vue'
+  import SupportLayout from '@/components/support-layout'
   import Icon from '@/components/icon'
   import {
     ref,
@@ -448,7 +449,7 @@
     <teleport to="body">
       <working-border :active="status === 'working'" />
     </teleport>
-    <router-view />
+    <support-layout />
     <sync @active="sync_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
     <footer

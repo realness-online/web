@@ -1,0 +1,27 @@
+# Realness Online
+
+> Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device classical computer vision, no AI. Small-community social network for artists.
+
+Realness traces photos into animatable vector posters. Export SVG, PNG, PSD, video, or GLB. Print on transparency film and stack like cel animation. Sign in with a phone number to sync with a small instance community.
+
+## Primary documentation
+
+- [User guide (HTML)](https://realness.online/docs): Full how-to — interface, posters, Thoughts feed, exports, sync, install
+- [User guide (Markdown)](https://realness.online/documentation.md): Same guide as plain markdown for tools and crawlers
+
+## What Realness is
+
+- [About](https://realness.online/about): Product overview, features, who it is for
+
+## Hosting and licensing
+
+- [Pricing](https://realness.online/pricing): Free tier and license plans for teams
+
+## Legal
+
+- [Terms of Service](https://realness.online/terms)
+- [Privacy Policy](https://realness.online/privacy)
+
+## Source
+
+- [GitHub](https://github.com/realness-online/web): Deploy your own instance
