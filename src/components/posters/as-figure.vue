@@ -22,7 +22,7 @@
     load_from_cache,
     load
   } from '@/utils/itemid'
-  import { as_time } from '@/utils/date'
+  import { as_time, as_day } from '@/utils/date'
   import { get } from 'idb-keyval'
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
@@ -251,6 +251,12 @@
     touch_uses_long_press: true
   })
 
+  const poster_label = computed(() => {
+    const created = as_created_at(/** @type {Id} */ (props.itemid))
+    if (!created) return 'Poster'
+    const day = as_day(new Date(created))
+    return `Poster from ${day === 'Today' ? 'today' : day}`
+  })
   const poster_time = computed(() => {
     const created_at = as_created_at(/** @type {Id} */ (props.itemid))
     if (!created_at) return ''
@@ -453,7 +459,7 @@
       :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
       role="img"
       aria-roledescription="referenced poster"
-      aria-label="Poster"
+      :aria-label="poster_label"
       :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
       @click="on_poster_svg_click"
       @pointerdown="handle_dom_ref_pointerdown"

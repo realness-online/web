@@ -38,7 +38,8 @@
     slice_alignment,
     grid
   } from '@/utils/preference'
-  import { as_layer_id, as_fragment_id } from '@/utils/itemid'
+  import { as_layer_id, as_fragment_id, as_created_at } from '@/utils/itemid'
+  import { as_day } from '@/utils/date'
   import { POSTER_MEET_TOGGLE_ONLY } from '@/use/poster-dom-reference'
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import {
@@ -85,6 +86,12 @@
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
   const mask_pen = inject('mask-pen', null)
   const mask_pen_active = computed(() => mask_pen?.active.value ?? false)
+  const poster_label = computed(() => {
+    const created = as_created_at(/** @type {import('@/types').Id} */ (props.itemid))
+    if (!created) return 'Poster'
+    const day = as_day(new Date(created))
+    return `Poster from ${day === 'Today' ? 'today' : day}`
+  })
   const {
     query,
     show,
@@ -360,7 +367,7 @@
     :preserveAspectRatio="aspect_ratio"
     role="img"
     aria-roledescription="poster"
-    aria-label="Poster"
+    :aria-label="poster_label"
     :tabindex="focusable"
     :class="{
       animate,
