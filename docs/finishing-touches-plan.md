@@ -164,8 +164,11 @@ User-visible and infrastructure fixes shipped through this punch list. Newest fi
 
 ### ⚡ Performance
 
-Prod snapshot (Jul 2026): **68–77** Performance, **74** Accessibility, **100** Best Practices,
-**54** SEO (root `/` is deliberately noindex; marketing pages are indexable). TBT 0 ms.
+Prod snapshot (2026-07-04, formal lhci run post-deploy): **73** Performance, **96** Accessibility,
+**100** Best Practices, **63** SEO (root `/` is deliberately noindex; marketing pages are
+indexable). CLS 0, TBT 100 ms. Throttled-mobile LCP 4.5 s — LCP element is the static shell
+`<h1>`, but it repaints after FCP (2.9 s), likely font swap or Vue remount; only remaining
+load-time refinement if wanted. Previous snapshot: 68–77 / 74 / 100 / 54.
 **LCP now ~1.7 s cold / <0.8 s warm** (was 3.0–5.4 s) after the LCP shell — measured live via
 `agent-browser vitals`, LCP element is the shell `<h1>`, CLS 0.05.
 **Total byte weight** reduced from ~928KB to ~679KB (removed 242KB install video from
@@ -198,11 +201,9 @@ refinements that won't move Lighthouse.
       Walk the diff with a critical eye before launch: correctness, dead code, reuse, and any
       regressions in the auth / feed / prerender paths. Run `/code-review` (raise to `high` for
       broader coverage); triage findings back into this list.
-- [ ] **production Lighthouse baseline** `S` — dev perf numbers are not representative (unminified
-      modules, no code-splitting served eager, HMR client, no render-blocking CSS extraction).
-      Measure against a **production build** — `vp build` then serve `dist/` (`vp preview` or a
-      static server) — or against deployed `realness.online`. LCP already re-checked post-shell
-      (see snapshot above); a full formal Lighthouse run across categories is still worth doing.
+- [x] **production Lighthouse baseline** `S` — done 2026-07-04 via `npm run score:prod` against
+      live realness.online after the v2.5.7 deploy. Scores in the Performance snapshot above;
+      accessibility 74 → 96 confirms the a11y punch list landed.
 
 ### 🧩 Platform
 
