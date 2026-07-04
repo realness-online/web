@@ -65,7 +65,7 @@
       from 0deg,
       transparent 0deg,
       transparent var(--sweep-gap-start),
-      var(--blue) var(--sweep-peak),
+      var(--accent) var(--sweep-peak),
       transparent var(--sweep-gap-end),
       transparent 360deg
     );

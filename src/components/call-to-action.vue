@@ -24,12 +24,12 @@
       justify-content: center
       align-items: center
     svg.icon
-      fill: blue
+      fill: accent
     & > h3
       margin-bottom: 0
       & > a
         padding-right: base-line * 0.25
-        color: red
+        color: emphasis
         min-width: 50dvw
         text-decoration: none
         & > h1
@@ -42,7 +42,7 @@
           max-width: base-line * 10
           text-align: right
           margin: 0
-          color: blue
+          color: accent
           @media (min-width: pad-begins)
             max-width: inherit
     & > p
@@ -52,7 +52,7 @@
       text-align: center
       & > strong
         text-transform: capitalize
-        color: blue
+        color: accent
         font-weight: normal
         margin-right: base-line * .5
 </style>

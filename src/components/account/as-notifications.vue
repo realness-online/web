@@ -55,7 +55,7 @@
 <style lang="stylus">
   section.as-notifications
     padding: base-line 0
-    border-top: 1px solid blue
+    border-top: 1px solid accent
     margin-top: base-line * 2
     & > div
       display: flex

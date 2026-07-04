@@ -616,7 +616,7 @@
     width: 100%
     max-width: base-line * 22
     text-align: center
-    color: red
+    color: emphasis
     margin: 0 auto base-line * 2
 
   about-feature-list()
@@ -661,7 +661,7 @@
           }
 
           & > h1 {
-            color: blue;
+            color: accent;
             margin: 0;
             text-align: center;
 
@@ -675,7 +675,7 @@
             max-width: base-line * 10;
             text-align: right;
             margin: 0;
-            color: red;
+            color: emphasis;
 
             @media (min-width: pad-begins) {
               width: base-line * 13;
@@ -789,7 +789,7 @@
           width: 100%;
           max-width: base-line * 22;
           text-align: center;
-          color: red;
+          color: emphasis;
           min-height: calc(var(--base-line) * 4);
         }
       }
@@ -845,7 +845,7 @@
           }
 
           strong {
-            color: blue;
+            color: accent;
           }
 
           & > h2 {
@@ -948,7 +948,7 @@
 
           & > svg.icon {
             position: absolute;
-            fill: blue;
+            fill: accent;
           }
 
           & > p {
@@ -1062,16 +1062,16 @@
           display: block;
           margin: 0 auto;
           padding: base-line * 0.5 base-line * 2;
-          border: 1px solid red;
+          border: 1px solid emphasis;
           border-radius: base-line * 0.33;
           background: none;
-          color: red;
+          color: emphasis;
           cursor: pointer;
           font: inherit;
 
           &:hover,
           &:focus-visible {
-            background: red;
+            background: emphasis;
             color: white;
           }
         }

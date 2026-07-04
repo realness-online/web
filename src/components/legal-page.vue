@@ -54,17 +54,17 @@
       h1 {
         margin-top: base-line;
         text-align: center;
-        color: var(--red);
+        color: var(--emphasis);
       }
 
       a.page-back {
         display: block;
         font-size: smaller;
-        color: var(--blue);
+        color: var(--accent);
         text-decoration: none;
         margin-bottom: base-line * 0.5;
         &:hover {
-          color: var(--red);
+          color: var(--emphasis);
         }
       }
     }
@@ -83,7 +83,7 @@
         display: block;
         column-width: base-line * 8;
         column-gap: base-line;
-        column-rule: 1px solid var(--red);
+        column-rule: 1px solid var(--emphasis);
         margin-bottom: base-line * 2;
 
         @media (min-width: pad-begins) {
@@ -96,13 +96,13 @@
           top: base-line;
           max-height: calc(100dvh - var(--base-line) * 4);
           overflow-y: auto;
-          border-right: 1px solid var(--red);
+          border-right: 1px solid var(--emphasis);
         }
 
         & > a {
           display: block;
           margin: round((base-line / 4), 2) 0;
-          color: var(--blue);
+          color: var(--accent);
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
@@ -110,7 +110,7 @@
           touch-action: manipulation;
 
           &:hover {
-            color: var(--red);
+            color: var(--emphasis);
           }
 
           &.level-3,
@@ -144,14 +144,14 @@
           gap: base-line;
           margin-top: base-line * 3;
           padding-top: base-line;
-          border-top: 1px solid var(--red);
+          border-top: 1px solid var(--emphasis);
 
           & > a {
-            color: var(--blue);
+            color: var(--accent);
             text-decoration: none;
 
             &:hover {
-              color: var(--red);
+              color: var(--emphasis);
             }
           }
         }

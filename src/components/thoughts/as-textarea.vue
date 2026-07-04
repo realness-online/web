@@ -57,7 +57,7 @@
       v-model="thought_text"
       cols="1"
       rows="1"
-      class="black"
+      class="graphite"
       placeholder=""
       aria-label="What are you thinking?"
       :spellcheck="true"
@@ -82,8 +82,8 @@
       border-radius: base-line;
       resize: none;
       appearance: none;
-      border: 1px solid var(--red);
-      background-color: var(--black-transparent);
+      border: 1px solid var(--emphasis);
+      background-color: var(--basalt-transparent);
       color: var(--rocks);
       caret-color: var(--rocks);
       outline: 0;
@@ -91,7 +91,7 @@
       @media (prefers-color-scheme: light) {
         background-color: transparent;
         border: none;
-        border: 1px solid var(--red);
+        border: 1px solid var(--emphasis);
       }
       @media (prefers-color-scheme: dark) {
         color: white-text;

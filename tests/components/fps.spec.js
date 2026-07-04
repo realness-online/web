@@ -51,7 +51,7 @@ describe('fps component', () => {
     mock_fps.value = 30
     const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: var(--blue)')
+    expect(style).toContain('--fps-color: var(--accent)')
     wrapper.unmount()
   })
 
@@ -59,7 +59,7 @@ describe('fps component', () => {
     mock_fps.value = 18
     const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: var(--yellow)')
+    expect(style).toContain('--fps-color: var(--warning)')
     wrapper.unmount()
   })
 
@@ -67,7 +67,7 @@ describe('fps component', () => {
     mock_fps.value = 8
     const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: var(--red)')
+    expect(style).toContain('--fps-color: var(--danger)')
     wrapper.unmount()
   })
 

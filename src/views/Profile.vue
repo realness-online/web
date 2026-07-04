@@ -101,7 +101,7 @@
       height: 0
       padding: 0
       & > a
-        -webkit-tap-highlight-color: blue
+        -webkit-tap-highlight-color: accent
         z-index: 2
         top: safe_inset(top)
         left: base-line
@@ -148,7 +148,7 @@
             & > nav
             & > button
             & > a > svg
-              fill: blue
+              fill: accent
     & > figure.profile
       padding: base-line
       & > svg
@@ -190,19 +190,19 @@
       & [role='feed'] > article
         @media (prefers-color-scheme: dark)
           & > header > h4, figure.poster > svg.background
-            color: blue
+            color: accent
         figure.poster
           border-radius: 0
           & > figcaption > menu
             & > a.download svg
-              fill: blue
+              fill: accent
             & > a.phone
               display: none
             & > a.profile
             & > address
               & > time
                 font-size: max-font
-                color: blue
+                color: accent
               & > h3
                 display: none
             & > svg

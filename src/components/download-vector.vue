@@ -153,7 +153,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 1rem 2rem;
-        background: red;
+        background: emphasis;
         color: white;
         text-decoration: none;
         border-radius: 0.5rem;
@@ -508,7 +508,7 @@
         cursor: pointer;
 
         &:hover {
-          background: blue;
+          background: accent;
           color: white;
         }
 

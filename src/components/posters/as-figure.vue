@@ -614,7 +614,7 @@
       grid-row-start: auto;
     }
     &:focus {
-      outline: 0.25px solid red;
+      outline: 0.25px solid emphasis;
       outline-offset: base-line * 0.25;
     }
     @media (orientation: landscape), (min-width: page-width) {
@@ -746,7 +746,7 @@
         }
         & > a > time,
         & > time {
-          color: blue;
+          color: accent;
           white-space: nowrap;
           padding: base-line * 0.2 base-line * 0.4;
           border-radius: base-line * 0.25;
@@ -797,8 +797,8 @@
         }
         & > button.mask-pen.active {
           opacity: 1;
-          background: alpha(orange, 0.5);
-          border-color: alpha(orange, 0.8);
+          background: alpha(ochre, 0.5);
+          border-color: alpha(ochre, 0.8);
         }
         & > span.actions {
           display: flex;
@@ -820,7 +820,7 @@
             }
             & > h3,
             & > time {
-              color: blue;
+              color: accent;
               line-height: 1;
             }
           }
@@ -828,7 +828,7 @@
         & > a.profile > svg,
         & > figure.profile > svg,
         & > span.actions svg {
-          fill: blue;
+          fill: accent;
         }
       }
 
