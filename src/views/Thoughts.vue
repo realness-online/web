@@ -409,6 +409,10 @@
     perf.mark('thoughts-rendered')
   }
 
+  const remove_thoughts_shell = () => {
+    document.querySelector('.thoughts-shell')?.remove()
+  }
+
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
 
@@ -431,6 +435,10 @@
   })
 
   mounted(async () => {
+    await tick()
+    await after_layout()
+    remove_thoughts_shell()
+
     if (set_working) set_working(true)
     await load_phonebook()
     await fill_statements()
