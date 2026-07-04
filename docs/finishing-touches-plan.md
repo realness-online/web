@@ -1,18 +1,13 @@
 # Realness — Finishing Touches
 
 Punch list to get [realness.online](https://realness.online) over the line.
-Shipped work is recorded in [`CHANGELOG.md`](../CHANGELOG.md).
 
 - App: `work/realness`
 - Functions: `work/realness-functions`
 
-Prod state (2026-07-04, v2.5.7): Lighthouse **93 Performance / 100 Accessibility /
-100 Best Practices** (SEO 63 — root deliberately noindex). LCP 2.0 s, TBT 20 ms,
-CLS 0.002. Load-time perf work is done.
-
 ---
 
-### 🔎 Pre-release
+## 🔎 Pre-release
 
 - [ ] **critical code-review pass** `M` — a lot of code has landed through this
       punch list (lazy vectorize, deferred boot, support layout, OG/prerender,
@@ -94,5 +89,5 @@ CLS 0.002. Load-time perf work is done.
   load-time refinement.
 - **Storage listing size** — Firebase's list API response (~51 KB, ungzipped by
   Google) is dominated by layer-variant files (`*-bold.svg`, shadows, cutouts)
-  filtered client-side in `Directory.js`. Moving variants into a subfolder
-  would let the delimiter exclude them.
+  filtered client-side in `Directory.js`. Moving variants into a subfolder would
+  let the delimiter exclude them.
