@@ -1,6 +1,9 @@
 <script setup>
   import Icon from '@/components/icon'
-  import { auth, Recaptcha, sign_in } from '@/utils/serverless'
+  import { auth } from '@/utils/serverless'
+  import { Recaptcha, sign_in } from '@/utils/serverless-auth'
+  import { check_phone_integrity as verify_phone_integrity } from '@/utils/phone-integrity'
+  import { use_instance_capabilities } from '@/use/instance-capabilities'
   import { as_phone_number, use_me } from '@/use/people'
   import {
     countries,
@@ -20,6 +23,7 @@
 
   const emit = defineEmits(['signed-on', 'working'])
   const { me } = use_me()
+  const { phone_integrity, probe } = use_instance_capabilities()
   const mobile = ref(null)
   const mobile_number = ref('')
   const working = ref(true)
@@ -33,6 +37,17 @@
   const country_code = ref(default_country)
   const show_code = ref(false)
   const show_countries = ref(false)
+  const integrity_message = ref('')
+
+  const reset_integrity_message = () => {
+    integrity_message.value = ''
+  }
+
+  const restore_phone_input = () => {
+    working.value = false
+    show_authorize.value = true
+    if (mobile.value) mobile.value.disabled = false
+  }
 
   const country = computed(() =>
     countries.find(c => c.code === country_code.value)
@@ -63,8 +78,28 @@
   }
 
   const begin_authorization = async () => {
+    reset_integrity_message()
     disable_input()
     show_authorize.value = false
+    working.value = true
+
+    await probe()
+    if (phone_integrity.value) {
+      const result = await verify_phone_integrity(full_phone.value)
+      if (!result) {
+        integrity_message.value =
+          'Phone verification is unavailable. Try again in a moment.'
+        restore_phone_input()
+        return
+      }
+      if (!result.allowed) {
+        integrity_message.value =
+          'Use a mobile number to sign in. Virtual and VoIP numbers are not accepted.'
+        restore_phone_input()
+        return
+      }
+    }
+
     show_captcha.value = true
     await tick()
     const captcha_element = document.getElementById('captcha')
@@ -119,6 +154,7 @@
   }
 
   const handle_input = () => {
+    reset_integrity_message()
     const raw = mobile_number.value
     if (!raw) {
       validate_mobile_number()
@@ -208,6 +244,9 @@
         placeholder="6-digit code"
         @keypress="code_keypress" />
     </fieldset>
+    <p v-if="integrity_message" id="integrity-denied" role="alert">
+      {{ integrity_message }}
+    </p>
     <icon v-if="working" name="working" />
     <menu v-else>
       <button
@@ -326,6 +365,12 @@
           color: var(--red);
         }
       }
+    }
+
+    p#integrity-denied {
+      margin: (base-line * 0.5) 0 0;
+      color: var(--red);
+      line-height: 1.4;
     }
   }
 </style>

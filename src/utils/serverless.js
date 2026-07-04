@@ -1,11 +1,4 @@
 import {
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  getAuth as init_auth,
-  onAuthStateChanged as auth_changed,
-  signOut as sign_out
-} from 'firebase/auth'
-import {
   getStorage as get_storage,
   getDownloadURL as download_url,
   ref as reference,
@@ -18,7 +11,7 @@ import {
 } from 'firebase/storage'
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
-import { from_e64, default_person } from '@/utils/person-identity'
+import { default_person } from '@/utils/person-identity'
 
 import { get, set } from 'idb-keyval'
 import { prepare_upload_html } from '@/utils/upload-processor'
@@ -42,12 +35,6 @@ const storage = ref(
 export const current_user = ref(
   /** @type {import('firebase/auth').User | null | undefined} */ (undefined)
 )
-
-export const Recaptcha = RecaptchaVerifier
-export const sign_in = signInWithPhoneNumber
-export const sign_off = () => {
-  if (auth.value) sign_out(auth.value)
-}
 
 // storage methods
 /**
@@ -188,7 +175,7 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
   }
 }
 
-export const init_serverless = () => {
+export const init_serverless = async () => {
   me.value = /** @type {Item} */ (/** @type {unknown} */ (default_person))
   const init = {
     apiKey: String(import.meta.env.VITE_API_KEY || ''),
@@ -201,40 +188,10 @@ export const init_serverless = () => {
 
   const firebase_app = initialize_firebase(init)
   app.value = firebase_app
-  if (firebase_app) auth.value = init_auth(firebase_app)
-  else console.error('Firebase app initialization failed')
+  if (!firebase_app) console.error('Firebase app initialization failed')
 
   if (app.value) storage.value = get_storage(app.value)
 
-  return new Promise(resolve => {
-    let resolved = false
-    if (!auth.value) {
-      resolve(undefined)
-      return
-    }
-    auth_changed(auth.value, async user => {
-      if (user) {
-        const phone = user.phoneNumber
-        if (phone) localStorage.me = from_e64(phone)
-        if (me.value) me.value.id = localStorage.me
-        /** Load profile before `current_user` so sync/save hooks do not upload a shell over the server file. */
-        let maybe_me = null
-        try {
-          const { load_from_network } = await import('@/utils/itemid')
-          maybe_me = await load_from_network(localStorage.me)
-        } catch (err) {
-          console.error('[auth] load_from_network failed', err)
-        }
-        // eslint-disable-next-line require-atomic-updates
-        if (maybe_me) me.value = maybe_me
-        current_user.value = user
-      } else
-        current_user.value =
-          /** @type {import('firebase/auth').User | null} */ (null)
-      if (!resolved) {
-        resolved = true
-        resolve(undefined)
-      }
-    })
-  })
+  const { init_auth } = await import('@/utils/serverless-auth')
+  return init_auth(firebase_app)
 }

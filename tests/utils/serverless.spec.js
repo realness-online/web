@@ -63,14 +63,16 @@ describe('@/utils/serverless', () => {
 
   describe('sign_off', () => {
     it('calls signOut when auth is initialized', async () => {
-      const { sign_off, auth } = await import('@/utils/serverless')
+      const { sign_off } = await import('@/utils/serverless-auth')
+      const { auth } = await import('@/utils/serverless')
       auth.value = { uid: 'u1' }
       sign_off()
       expect(signOut).toHaveBeenCalledWith(auth.value)
     })
 
     it('does nothing when auth is missing', async () => {
-      const { sign_off, auth } = await import('@/utils/serverless')
+      const { sign_off } = await import('@/utils/serverless-auth')
+      const { auth } = await import('@/utils/serverless')
       auth.value = undefined
       sign_off()
       expect(signOut).not.toHaveBeenCalled()

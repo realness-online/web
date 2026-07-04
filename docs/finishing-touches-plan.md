@@ -30,14 +30,25 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### 🔐 Account & auth
 
-- [ ] **phone validation (Twilio Lookup)** `M` — block VoIP/throwaway numbers at
-      sign-in (a lookup, not messaging). Port from seeq-app:
-      `functions/.../services/integrity.js`, `handlers/http/user.js`
-      (`check_phone_integrity`), `twilio` dep, `utils/rate-limiter.js`,
-      `TWILIO_ACCOUNT_SID`/`AUTH_TOKEN`. Reject when Lookup v2
-      `line_type_intelligence.type !== 'mobile'`; cache on user record. Adapt
-      seeq's `users` keying to realness identity. See seeq
-      `docs/phone-fraud-prevention-plan.md`.
+- [ ] **Stripe checkout: sign in first** `S` — sponsorship is a hosted Stripe
+      checkout link only (Buy Button or `buy.stripe.com` URL); no server-side
+      Stripe in `realness-functions`. When signed in, pass the phone-derived id
+      (`me.id`, e.g. `/+15551234567`) as Stripe `client_reference_id` so
+      payments can be tied to an account. **Gate:** if the visitor is not signed
+      in, collect phone auth on `/account` (or inline on `/pricing`) before
+      opening Stripe — do not send anonymous checkouts. Today `sponsor/cta.vue`
+      still renders the button without `me` and omits `client_reference_id`;
+      replace with sign-in prompt → redirect back to pricing → then checkout.
+      Update `docs/security.md` third-party / Sybil sections accordingly (Stripe
+      is voluntary checkout, not a server gate).
+
+- [x] **phone validation (Twilio Lookup)** `M` — shipped in `realness-functions`
+      (`check_phone_integrity`, capability-gated in `as-form-mobile.vue`).
+      Blocks non-mobile and known VoIP carriers before SMS when
+      `phone_integrity` is true in `/capabilities`. Optional per instance
+      (no Twilio env → gate off). Remaining: signup velocity by IP, integrity
+      cache on profile, suspicious-carrier review queue — see **moderator logs
+      and admin UI** (post-release).
 
 ### 🎨 Mask & canvas
 
@@ -86,3 +97,25 @@ Punch list to get [realness.online](https://realness.online) over the line.
   Google) is dominated by layer-variant files (`*-bold.svg`, shadows, cutouts)
   filtered client-side in `Directory.js`. Moving variants into a subfolder would
   let the delimiter exclude them.
+
+### Moderator tooling (post-release)
+
+- [ ] **moderator logs and admin UI** `L` — optional moderator-facing surface
+      for investigating instance state, modeled on seeq-app (`/admin`,
+      `docs/logging.md`). Realness is per-instance: scope to the moderator
+      (`VITE_ADMIN_ID`), not a central platform admin. Candidates:
+  - **Cloud Logging viewer** — structured JSON from `realness-functions`
+    (`log_debug` / `log_warn` / `log_error` pattern); client errors via
+    callables (`log`, `error`); `list_logs` querying Cloud Logging (see seeq
+    `handlers/http/log.js`, `list-logs` tests). Table with severity filter,
+    expandable rows, last-24h scroll.
+  - **Sybil / sign-in** — VoIP denial log from `check_phone_integrity`;
+    optional `integrity.suspicious` review queue (see seeq
+    `docs/phone-fraud-prevention-plan.md`, admin user integrity UI).
+  - **Push** — broadcast results from scheduled `notification` (sent / pruned /
+    failed).
+  - **Capabilities** — live `/capabilities` manifest vs what the app shows.
+
+  Depends on optional `realness-functions`. Self-hosted instances without
+  functions skip the UI sections that need a backend. Write
+  `docs/moderator-admin-plan.md` before build.
