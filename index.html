@@ -1,49 +1,55 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      // Reveal the static Thoughts LCP shell only on the app's home route.
+      // index.html is the SPA fallback for /account and /:profile too; gating
+      // by pathname keeps those routes from flashing "Thoughts" before mount.
+      if (location.pathname === "/")
+        document.documentElement.dataset.route = "thoughts";
+    </script>
     <title>Realness Online — Rotoscope Photos into Layered SVG Posters</title>
-    <link rel="preconnect" href="https://apis.google.com" crossorigin />
-    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
     <link
       rel="preconnect"
-      href="https://realness-online.firebaseapp.com"
-      crossorigin />
-    <link rel="dns-prefetch" href="https://www.google.com" />
-    <link rel="dns-prefetch" href="https://apis.google.com" />
-    <link rel="dns-prefetch" href="https://www.googleapis.com" />
-    <link rel="dns-prefetch" href="https://realness-online.firebaseapp.com" />
-    <link rel="dns-prefetch" href="https://www.gstatic.com" />
-    <link rel="dns-prefetch" href="https://storage.googleapis.com" />
+      href="https://firebasestorage.googleapis.com"
+      crossorigin
+    />
     <link
       rel="preload"
       href="/fonts/Lato-Regular-Subset.woff2"
       as="font"
       crossorigin="anonymous"
-      type="font/woff2" />
+      type="font/woff2"
+    />
     <meta charset="utf-8" />
     <meta
       name="description"
-      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
-    <meta name="robots" content="noindex, nofollow" />
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities."
+    />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent" />
+      content="black-translucent"
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="Realness Online — Rotoscope Photos into Layered SVG Posters" />
+      content="Realness Online — Rotoscope Photos into Layered SVG Posters"
+    />
     <meta
       name="twitter:description"
-      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities."
+    />
     <meta name="twitter:image" content="https://realness.online/og.png" />
     <meta
       name="twitter:image:alt"
-      content="Realness Online — Make some posters today" />
+      content="Realness Online — Make some posters today"
+    />
     <meta property="og:url" content="https://realness.online" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
@@ -54,22 +60,27 @@
     <meta property="og:image:type" content="image/png" />
     <meta
       property="og:image:alt"
-      content="Realness Online — Make some posters today" />
+      content="Realness Online — Make some posters today"
+    />
     <meta
       property="og:title"
-      content="Realness Online — Rotoscope Photos into Layered SVG Posters" />
+      content="Realness Online — Rotoscope Photos into Layered SVG Posters"
+    />
     <meta
       property="og:description"
-      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities."
+    />
 
     <meta
       name="theme-color"
       media="(prefers-color-scheme: light)"
-      content="#f6f6f8" />
+      content="#f6f6f8"
+    />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: dark)"
-      content="#2c2c26" />
+      content="#2c2c26"
+    />
     <meta name="application-name" content="Realness" />
     <meta name="apple-mobile-web-app-title" content="Realness" />
     <meta name="darkreader-lock" />
@@ -79,6 +90,23 @@
     <link rel="mask-icon" href="/icons.svg" color="#2c2c26" />
     <link rel="icon" type="image/svg+xml" href="/icons.svg" />
     <style>
+      #app {
+        min-height: 100dvh;
+      }
+      /* Static Thoughts shell: paints the LCP <h1> on first HTML parse so the
+         Largest Contentful Paint text lands before Vue mounts. Hidden unless the
+         head script marked this as the home route (see above). The empty header
+         reserves the real header's height to limit layout shift on mount. */
+      .thoughts-shell {
+        display: none;
+      }
+      html[data-route="thoughts"] .thoughts-shell {
+        display: flex;
+        flex-direction: column;
+      }
+      .thoughts-shell > header {
+        min-height: 2.6rem;
+      }
       html {
         height: 100%;
         margin: 0;
@@ -126,6 +154,10 @@
           }
         }
       </style>
+      <section id="thoughts" class="page thoughts-shell">
+        <header></header>
+        <h1>Thoughts</h1>
+      </section>
       <svg
         class="working"
         viewBox="0 0 9 4"
@@ -137,7 +169,8 @@
           margin-top: 12rem;
         "
         fill-opacity="0.73"
-        fill="#EC364C">
+        fill="#EC364C"
+      >
         <rect x="1" y="1.05" width="2" height="2" rx="1"></rect>
         <rect x="3.5" y="1.05" width="2" height="2" rx="1"></rect>
         <rect x="6" y="1.05" width="2" height="2" rx="1"></rect>
@@ -147,19 +180,19 @@
   <script>
     if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent)) {
       window.addEventListener(
-        'orientationchange',
+        "orientationchange",
         () => {
-          const viewport = document.querySelector('meta[name=viewport]')
+          const viewport = document.querySelector("meta[name=viewport]");
           if (viewport) {
-            const content = viewport.getAttribute('content')
-            viewport.setAttribute('content', content + ', maximum-scale=1.0')
-            setTimeout(_ => {
-              viewport.setAttribute('content', content)
-            }, 90)
+            const content = viewport.getAttribute("content");
+            viewport.setAttribute("content", content + ", maximum-scale=1.0");
+            setTimeout((_) => {
+              viewport.setAttribute("content", content);
+            }, 90);
           }
         },
-        false
-      )
+        false,
+      );
     }
   </script>
 </html>

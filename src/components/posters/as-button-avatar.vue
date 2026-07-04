@@ -26,12 +26,24 @@
 </script>
 
 <template>
-  <a class="avatar" @click="toggle_avatar">
+  <button
+    type="button"
+    class="avatar"
+    :aria-label="is_avatar ? 'Remove as avatar' : 'Set as avatar'"
+    :aria-pressed="is_avatar"
+    @click="toggle_avatar">
     <icon name="silhouette" :class="{ true: is_avatar }" />
-  </a>
+  </button>
 </template>
 
 <style lang="stylus">
-  menu > a > svg.true
+  menu > button.avatar
+    appearance: none
+    background: none
+    border: 0
+    padding: 0
+    cursor: pointer
+    color: inherit
+  menu > button > svg.true
     fill: red !important
 </style>

@@ -28,9 +28,13 @@
 
 <template>
   <menu>
-    <a v-if="allow_remove" class="remove" @click="emit('remove', poster.id)">
+    <button
+      v-if="allow_remove"
+      type="button"
+      class="remove"
+      @click="emit('remove', poster.id)">
       <icon name="remove" />
-    </a>
+    </button>
 
     <toggle-avatar v-if="signed_in" :itemid="poster.id" />
     <as-download :itemid="poster.id" />
@@ -51,27 +55,17 @@
       }
     }
     & > button {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: base-line * 0.25;
-      padding: base-line * 0.25 base-line * 0.5;
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
       cursor: pointer;
       color: inherit;
-      font-size: larger;
       line-height: 1;
-      opacity: 0.7;
-      min-width: base-line * 1.5;
-      text-align: center;
 
-      &:hover {
-        opacity: 1;
-        background: rgba(0, 0, 0, 0.5);
-      }
-
-      &:focus {
+      &:focus-visible {
         outline: 0.25px solid currentColor;
         outline-offset: base-line * 0.25;
-        opacity: 1;
       }
     }
   }

@@ -92,6 +92,14 @@ Each poster is a layered SVG.
 - **Presentation** - a keyboard shortcut fills the screen with the poster and hides the interface. Press again to exit. The key is listed in Preferences.
 - **Set as avatar** - on your own posters, the poster details area lets you set that poster as your profile avatar.
 
+#### Subjects — being built live
+
+Your own posters have a mask pen (the ✎ in the poster menu) for grouping mosaic cells into **subjects** — the things in the picture, like a face, a flower, or the foreground. Press a cell and drag to grow the selection out through cells of a similar tone; press an already-selected cell and drag to erase. Pinch to zoom in for precision.
+
+This one is being written in the open. Today you can create and color subjects on a poster, but **saving them isn't wired up yet** — a subject lives only for the current session. Naming, saving, and pulling a subject out as its own layer come next.
+
+Because it's being built live, your feedback shapes it. Try the grow-select and tell me how it should feel — [open an issue](https://github.com/realness-online/web/issues) or say hello in [About](/about).
+
 #### 3D viewer
 
 Toggle from the island or Preferences. With 3D on, tune spread, opacity, camera, atmosphere, and motion in the preferences panel.

@@ -79,7 +79,7 @@
   <figure
     class="poster processing"
     :class="{ currently_processing: is_currently_processing }"
-    :aria-orientation="landscape ? 'horizontal' : 'vertical'">
+    :data-orientation="landscape ? 'horizontal' : 'vertical'">
     <img
       v-if="thumbnail_url"
       :src="thumbnail_url"
@@ -226,7 +226,7 @@
     }
 
     @media (orientation: landscape), (min-width: page-width) {
-      &[aria-orientation='horizontal'] {
+      &[data-orientation='horizontal'] {
         grid-column-start: span 2;
       }
     }

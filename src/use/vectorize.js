@@ -1,7 +1,7 @@
-/** @typedef {import('@/types').Id} Id */
-/** @typedef {import('@/types').Poster} PosterType */
-/** @typedef {import('@/persistence/Queue').QueueItem} QueueItem */
 /**
+ * @typedef {import('@/types').Id} Id
+ * @typedef {import('@/types').Poster} PosterType
+ * @typedef {import('@/persistence/Queue').QueueItem} QueueItem
  * @typedef {Object} VectorResponse
  * @property {Object} data
  * @property {Object} data.vector
@@ -12,20 +12,31 @@ import {
   computed,
   onUnmounted as dismount,
   inject,
+  getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
 import { create_path_element } from '@/use/path'
 import { IMAGE } from '@/utils/numbers'
-import { mutex_for } from '@/utils/algorithms'
 import { as_query_id, as_layer_id, as_created_at } from '@/utils/itemid'
 import { as_directory_id } from '@/persistence/Directory'
 import get_item from '@/utils/item'
-import { extract_poster_exif, write_poster_exif } from '@/utils/exif'
-import { include_exif } from '@/utils/preference'
 
 import * as Queue from '@/persistence/Queue'
 import { Poster, Cutout, Shadow } from '@/persistence/Storage'
 import { get, set } from 'idb-keyval'
+
+import { use_workers } from './vectorize/workers'
+import {
+  use_queue,
+  queue_items,
+  current_processing,
+  is_processing,
+  completed_posters,
+  update_progress
+} from './vectorize/queue'
+import { use_file_input } from './vectorize/file-input'
+
+// ---- Module-level reactive state ----
 
 const new_vector = ref(/** @type {PosterType | null} */ (null))
 const new_gradients = ref(
@@ -37,15 +48,11 @@ const progress = ref(0)
 const current_item_id = ref(/** @type {Id | null} */ (null))
 const source_image_url = ref(/** @type {string | null} */ (null))
 
-// Queue state
-const queue_items = ref(/** @type {QueueItem[]} */ ([]))
-const current_processing = ref(/** @type {QueueItem | null} */ (null))
-const is_processing = ref(false)
-const completed_posters = ref(/** @type {Id[]} */ ([]))
+// ---- Module-level helpers ----
 
 /**
  * Create SVG path element with path data
- * @param {Object} path_data - Path data with 'd' attribute
+ * @param {Object} path_data
  * @returns {SVGPathElement}
  */
 export const make_path = path_data => {
@@ -57,7 +64,7 @@ export const make_path = path_data => {
 
 /**
  * Create cutout path element with color and transform
- * @param {Object} path_data - Path data with color, offset, and progress
+ * @param {Object} path_data - data with color, offset, and progress
  * @returns {SVGPathElement}
  */
 export const make_cutout_path = path_data => {
@@ -66,7 +73,6 @@ export const make_cutout_path = path_data => {
   path.setAttribute('fill-opacity', '0.5')
   path.setAttribute('data-progress', path_data.progress)
   path.dataset.transform = 'true'
-
   path.setAttribute(
     'fill',
     `rgb(${path_data.color.r}, ${path_data.color.g}, ${path_data.color.b})`
@@ -80,8 +86,8 @@ export const make_cutout_path = path_data => {
 
 /**
  * Deep clone tracer path data
- * @param {Object} path_data - Path data to clone
- * @returns {Object} Cloned path data
+ * @param {Object} path_data
+ * @returns {Object}
  */
 export const clone_tracer_path = path_data => ({
   ...path_data,
@@ -120,7 +126,7 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
  */
 export const resize_to_blob = async file => {
   const lower_name = file.name.toLowerCase()
-  const needs_image_fallback =
+  const needs_fallback =
     file.type === 'image/tiff' ||
     file.type === 'image/bmp' ||
     file.type === 'image/avif' ||
@@ -136,7 +142,7 @@ export const resize_to_blob = async file => {
   let bitmap
   let url
 
-  if (needs_image_fallback) {
+  if (needs_fallback) {
     url = URL.createObjectURL(file)
     const img = new Image()
 
@@ -176,24 +182,13 @@ export const resize_to_blob = async file => {
   ctx.putImageData(image_data, 0, 0)
 
   const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.7 })
-  return {
-    blob,
-    width: image_data.width,
-    height: image_data.height
-  }
-}
-
-/**
- * Load existing queue items
- */
-const load_queue = async () => {
-  queue_items.value = await Queue.get_all()
+  return { blob, width: image_data.width, height: image_data.height }
 }
 
 /**
  * Sort cutout elements into geology layers based on progress
- * @param {Object} vector - Vector object with cutout array
- * @param {Id} id - Poster itemid
+ * @param {Object} vector
+ * @param {Id} id
  * @returns {Object} Cutouts organized by layer with symbol elements
  */
 export const sort_cutouts_into_layers = (vector, id) => {
@@ -224,14 +219,12 @@ export const sort_cutouts_into_layers = (vector, id) => {
     else cutouts.boulders.push(cutout)
   })
 
-  // Convert arrays to symbol elements
   Object.keys(cutouts).forEach(layer => {
     if (cutouts[layer].length > 0) {
       const symbol = document.createElementNS(
         'http://www.w3.org/2000/svg',
         'symbol'
       )
-
       symbol.setAttribute('viewBox', `0 0 ${vector.width} ${vector.height}`)
       cutouts[layer].forEach(cutout => symbol.appendChild(cutout))
 
@@ -249,23 +242,15 @@ export const sort_cutouts_into_layers = (vector, id) => {
 }
 
 /**
- * EXIF parsed during vectorize, written into the poster index on save.
- * @type {Map<Id, import('@/utils/exif.js').PosterExif>}
- */
-const pending_poster_exif = new Map()
-
-/**
  * Save poster and cutout symbols
- * @param {Id} id - Poster itemid
- * @param {Element} [element] - Optional DOM element to save
- * @param {Object.<string, SVGSymbolElement>} [cutouts] - Optional cutout symbols by layer
- * @param {import('@/utils/exif.js').PosterExif | null} [exif] - Optional EXIF microdata
+ * @param {Id} id
+ * @param {Element} [element]
+ * @param {Object.<string, SVGSymbolElement>} [cutouts]
  */
 export const save_poster = async (
   id,
   element = undefined,
-  cutouts = undefined,
-  exif = undefined
+  cutouts = undefined
 ) => {
   await tick()
   const poster_element = element ?? document.querySelector(`[itemid="${id}"]`)
@@ -308,21 +293,21 @@ export const save_poster = async (
 
   const created_at = as_created_at(id)
   if (created_at) {
-    const path = as_directory_id(id)
-    const directory = await get(path)
+    const dir_path = as_directory_id(id)
+    const directory = await get(dir_path)
     if (directory && directory.items) {
       if (!directory.items.includes(created_at)) {
         directory.items.push(created_at)
-        await set(path, directory)
+        await set(dir_path, directory)
       }
     } else {
       const new_directory = {
-        id: path,
+        id: dir_path,
         types: [],
         archive: [],
         items: [created_at]
       }
-      await set(path, new_directory)
+      await set(dir_path, new_directory)
     }
   }
 
@@ -345,133 +330,104 @@ export const save_poster = async (
 
   await Promise.all(save_promises)
 
-  const exif_data =
-    exif === undefined ? (pending_poster_exif.get(id) ?? null) : exif
-  if (exif !== undefined || pending_poster_exif.has(id))
-    write_poster_exif(poster_element, exif_data)
-  pending_poster_exif.delete(id)
-
   await new Poster(id).save(poster_element)
 
   const directory_path = as_directory_id(id)
   await new Poster(/** @type {Id} */ (directory_path)).optimize()
 }
 
-// Composable manages entire vectorization pipeline: workers, queue, state, events
-// Breaking into smaller pieces would scatter tightly coupled logic
-// oxlint-disable-next-line max-lines-per-function
-export const use = () => {
-  const image_picker = inject(
-    'image-picker',
-    ref(/** @type {HTMLInputElement | null} */ (null))
+/**
+ * Clear vector path references to prevent memory leaks
+ */
+const clear_vector_paths = () => {
+  const vec = new_vector.value
+  if (!vec) return
+  vec.light = /** @type {import('@/types').Path} */ (
+    /** @type {unknown} */ (undefined)
   )
-  const working = ref(false)
-  const vectorizer = ref(/** @type {Worker | null} */ (null))
-  const gradienter = ref(/** @type {Worker | null} */ (null))
-  const tracer = ref(/** @type {Worker | null} */ (null))
-  const optimizer = ref(/** @type {Worker | null} */ (null))
-  const is_mounted = ref(true)
-  const workers_mounted = ref(false)
-  const mutex = mutex_for('vectorize')
+  vec.regular = /** @type {import('@/types').Path} */ (
+    /** @type {unknown} */ (undefined)
+  )
+  vec.medium = /** @type {import('@/types').Path} */ (
+    /** @type {unknown} */ (undefined)
+  )
+  vec.bold = /** @type {import('@/types').Path} */ (
+    /** @type {unknown} */ (undefined)
+  )
+  vec.cutout = undefined
+  vec.cutouts = undefined
+}
 
-  /**
-   * Clean up blob references in queue item to release memory
-   * @param {QueueItem} item
-   */
-  const cleanup_queue_item = item => {
-    if (item?.resized_blob)
-      /** @type {Blob | ArrayBuffer | null} */
-      item.resized_blob = null
+/** Clean up memory references to prevent leaks */
+const cleanup_memory_references = () => {
+  if (source_image_url.value) {
+    URL.revokeObjectURL(source_image_url.value)
+    source_image_url.value = null
   }
+  clear_vector_paths()
+}
 
-  const mount_workers = () => {
-    if (workers_mounted.value) return
+/**
+ * Clean up blob references in queue item to release memory
+ * @param {QueueItem} item
+ */
+const cleanup_queue_item = item => {
+  if (item?.resized_blob)
+    /** @type {Blob | ArrayBuffer | null} */
+    item.resized_blob = null
+}
 
-    // Clean up existing workers first
-    if (vectorizer.value) {
-      vectorizer.value.removeEventListener('message', vectorized)
-      vectorizer.value.terminate()
+/**
+ * Rasterize SVG file to ImageData
+ * @param {File|Blob} svg_file
+ * @returns {Promise<ImageData>}
+ */
+const rasterize_svg = async svg_file => {
+  const svg_text = await svg_file.text()
+  const svg_blob = new Blob([svg_text], { type: 'image/svg+xml' })
+  const svg_url = URL.createObjectURL(svg_blob)
+
+  return new Promise((resolve, reject) => {
+    const DEFAULT_CANVAS_DIMENSION = 1000
+    const img = new Image()
+    img.onload = async () => {
+      const canvas = new OffscreenCanvas(
+        img.width || DEFAULT_CANVAS_DIMENSION,
+        img.height || DEFAULT_CANVAS_DIMENSION
+      )
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
+      if (!ctx) throw new Error('Failed to get 2d context')
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(svg_url)
+      const bitmap = await createImageBitmap(canvas)
+      const resized_image_data = resize_image(bitmap)
+      bitmap.close()
+      resolve(resized_image_data)
     }
-    if (gradienter.value) {
-      gradienter.value.removeEventListener('message', gradientized)
-      gradienter.value.terminate()
+    img.onerror = () => {
+      URL.revokeObjectURL(svg_url)
+      reject(new Error('Failed to load SVG'))
     }
-    if (tracer.value) {
-      tracer.value.removeEventListener('message', traced)
-      tracer.value.terminate()
-    }
-    if (optimizer.value) {
-      optimizer.value.removeEventListener('message', optimized)
-      optimizer.value.terminate()
-    }
+    img.src = svg_url
+  })
+}
 
-    vectorizer.value = new Worker('/vector.worker.js')
-    gradienter.value = new Worker('/vector.worker.js')
-    tracer.value = new Worker('/tracer.worker.js')
-    optimizer.value = new Worker('/vector.worker.js')
-    const v = vectorizer.value
-    const g = gradienter.value
-    const t = tracer.value
-    const o = optimizer.value
-    if (v) v.addEventListener('message', vectorized)
-    if (g) g.addEventListener('message', gradientized)
-    if (t) t.addEventListener('message', traced)
-    if (o) o.addEventListener('message', optimized)
+// ---- Tracer buffering ----
 
-    workers_mounted.value = true
-  }
-
-  const unmount_workers = () => {
-    if (!workers_mounted.value) return
-
-    if (vectorizer.value) {
-      vectorizer.value.removeEventListener('message', vectorized)
-      vectorizer.value.terminate()
-      vectorizer.value = null
-    }
-    if (gradienter.value) {
-      gradienter.value.removeEventListener('message', gradientized)
-      gradienter.value.terminate()
-      gradienter.value = null
-    }
-    if (tracer.value) {
-      tracer.value.removeEventListener('message', traced)
-      tracer.value.terminate()
-      tracer.value = null
-    }
-    if (optimizer.value) {
-      optimizer.value.removeEventListener('message', optimized)
-      optimizer.value.terminate()
-      optimizer.value = null
-    }
-
-    workers_mounted.value = false
-  }
-
-  const select_photo = () => {
-    if (!image_picker.value) return
-    image_picker.value.removeAttribute('capture')
-    image_picker.value.setAttribute('multiple', '')
-    image_picker.value.click()
-  }
-  const open_selfie_camera = () => {
-    if (!image_picker.value) return
-    image_picker.value.setAttribute('capture', 'user')
-    image_picker.value.click()
-  }
-  const open_camera = () => {
-    if (!image_picker.value) return
-    image_picker.value.setAttribute('capture', 'environment')
-    image_picker.value.click()
-  }
-
+/**
+ * Buffers tracer paths and completion that arrive before `new_vector` is set,
+ * then applies them once the vector is ready. Owns all pending tracer state.
+ *
+ * @param {ReturnType<typeof use_workers>} workers
+ */
+const create_tracer_buffer = workers => {
   /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
-  const pending_tracer_paths = []
-  let tracer_complete_pending = false
+  const pending_paths = []
+  let complete_pending = false
 
-  const clear_tracer_pending = () => {
-    pending_tracer_paths.length = 0
-    tracer_complete_pending = false
+  const clear = () => {
+    pending_paths.length = 0
+    complete_pending = false
   }
 
   const add_cutout_path = (path_data, progress_value) => {
@@ -490,23 +446,23 @@ export const use = () => {
     vec.cutout = [...cutout_list]
   }
 
-  const flush_pending_tracer_paths = () => {
-    if (!new_vector.value || pending_tracer_paths.length === 0) return
-    const pending_paths = pending_tracer_paths.splice(
-      0,
-      pending_tracer_paths.length
-    )
-    pending_paths.forEach(({ path, progress }) =>
-      add_cutout_path(path, progress)
-    )
+  const buffer_path = (path_data, progress_value) => {
+    pending_paths.push({
+      path: clone_tracer_path(path_data),
+      progress: progress_value
+    })
   }
 
-  const handle_tracer_complete = async () => {
+  const mark_complete_pending = () => {
+    complete_pending = true
+  }
+
+  const handle_complete = async () => {
     const vec = new_vector.value
     if (vec && !vec.optimized) vec.completed = true
 
     const cid = current_item_id.value
-    const opt = optimizer.value
+    const opt = workers.optimizer.value
     if (!cid || !new_gradients.value || !vec || !opt) return
     await tick()
     const element = document.getElementById(as_query_id(cid))
@@ -514,275 +470,51 @@ export const use = () => {
     opt.postMessage({ route: 'optimize:vector', vector: element.outerHTML })
   }
 
-  /**
-   * Add files to processing queue
-   * @param {File[]} files
-   * @returns {Promise<void>}
-   */
-  const add_to_queue = async files => {
-    mount_workers()
-
-    const MAX_FILE_SIZE_MB = 200
-    const BYTES_PER_KB = 1024
-    const KB_PER_MB = 1024
-    const max_size = MAX_FILE_SIZE_MB * BYTES_PER_KB * KB_PER_MB
-    const too_large_files = []
-
-    for (const file of files) {
-      if (file.size > max_size) {
-        too_large_files.push({
-          name: file.name,
-          size: (file.size / BYTES_PER_KB / KB_PER_MB).toFixed(2)
-        })
-        continue
-      }
-
-      const id = /** @type {Id} */ (`${localStorage.me}/posters/${Date.now()}`)
-
-      try {
-        // Sequential processing required: timestamp-based IDs need unique millisecond values
-        // oxlint-disable-next-line no-await-in-loop
-        const { blob: resized_blob, width, height } = await resize_to_blob(file)
-
-        const item = /** @type {QueueItem} */ ({
-          id,
-          itemid: id,
-          resized_blob,
-          status: 'pending',
-          progress: 0,
-          width,
-          height
-        })
-        // oxlint-disable-next-line no-await-in-loop
-        await Queue.add(item)
-        queue_items.value.push(item)
-      } catch (error) {
-        console.error(
-          `Failed to add ${file.name || 'file'} to queue:`,
-          error instanceof Error ? error.message : String(error)
-        )
-      }
+  /** Apply anything buffered while waiting for `new_vector`. */
+  const on_vector_ready = async () => {
+    if (pending_paths.length > 0) {
+      const drained = pending_paths.splice(0, pending_paths.length)
+      drained.forEach(({ path, progress }) => add_cutout_path(path, progress))
     }
-
-    if (too_large_files.length > 0) {
-      const file_list = too_large_files
-        .map(f => `  - ${f.name} (${f.size}MB)`)
-        .join('\n')
-      console.error(
-        `Files skipped (exceed 200MB browser limit):\n${file_list}\n\nPlease resize these images before uploading.`
-      )
-    }
-
-    process_queue()
-  }
-
-  const process_queue = async () => {
-    await mutex.lock()
-
-    try {
-      const next = await Queue.get_next()
-      if (!next) {
-        is_processing.value = false
-        current_processing.value = null
-        unmount_workers()
-        mutex.unlock()
-        return
-      }
-
-      is_processing.value = true
-      current_processing.value = next
-
-      await Queue.update(next.id, { status: 'processing' })
-      const index = queue_items.value.findIndex(item => item.id === next.id)
-      if (index !== -1) queue_items.value[index].status = 'processing'
-
-      const image_blob =
-        next.resized_blob instanceof ArrayBuffer
-          ? new Blob([next.resized_blob], { type: 'image/jpeg' })
-          : next.resized_blob
-      if (!image_blob) return
-      await vectorize(image_blob, next.id)
-      mutex.unlock()
-    } catch (error) {
-      console.error(
-        'Error processing queue item:',
-        error instanceof Error ? error.message : String(error)
-      )
-      const failed_item = current_processing.value
-      if (failed_item) {
-        await Queue.update(failed_item.id, { status: 'error' })
-        const error_index = queue_items.value.findIndex(
-          item => item.id === failed_item.id
-        )
-        if (error_index !== -1)
-          queue_items.value[error_index] = {
-            ...queue_items.value[error_index],
-            status: 'error'
-          }
-        // Cleanup after error handling completes
-        // eslint-disable-next-line require-atomic-updates
-        current_processing.value = null
-      }
-      is_processing.value = false
-      reset()
-      mutex.unlock()
-      process_queue()
+    if (complete_pending) {
+      complete_pending = false
+      await handle_complete()
     }
   }
 
-  /**
-   * Update queue item progress
-   * @param {Id} id
-   * @param {number} progress_value
-   */
-  const update_progress = (id, progress_value) => {
-    const index = queue_items.value.findIndex(item => item.id === id)
-    if (index !== -1)
-      queue_items.value[index] = {
-        ...queue_items.value[index],
-        progress: progress_value
-      }
+  return {
+    clear,
+    add_cutout_path,
+    buffer_path,
+    mark_complete_pending,
+    handle_complete,
+    on_vector_ready
   }
+}
 
-  const init_processing_queue = async () => {
-    await load_queue()
+// ---- Pipeline (image in, workers dispatched) ----
 
-    const stuck_items = queue_items.value.filter(
-      item => item.status === 'processing'
-    )
-
-    await Promise.all(
-      stuck_items.map(async item => {
-        await Queue.update(item.id, { status: 'pending' })
-        // False positive: updating local ref after DB write completes
-        // eslint-disable-next-line require-atomic-updates
-        item.status = 'pending'
-      })
-    )
-
-    if (queue_items.value.length > 0) {
-      mount_workers()
-      process_queue()
-    }
-  }
-
-  const listener = async () => {
-    if (!image_picker.value?.files) return
-    const files = Array.from(image_picker.value.files)
-    if (image_picker.value) {
-      image_picker.value.removeAttribute('capture')
-      image_picker.value.removeAttribute('multiple')
-    }
-    if (files.length === 0) return
-
-    await queue_supported_files(files)
-    if (image_picker.value) image_picker.value.value = ''
-  }
-
-  const accepted_types = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'image/bmp',
-    'image/tiff',
-    'image/avif',
-    'image/heic',
-    'image/heif',
-    'image/svg+xml'
-  ]
-  const extension_by_type = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/gif': 'gif',
-    'image/webp': 'webp',
-    'image/bmp': 'bmp',
-    'image/tiff': 'tiff',
-    'image/avif': 'avif',
-    'image/heic': 'heic',
-    'image/heif': 'heif',
-    'image/svg+xml': 'svg'
-  }
-  const accepted_extensions = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.webp',
-    '.bmp',
-    '.tif',
-    '.tiff',
-    '.avif',
-    '.heic',
-    '.heif',
-    '.svg'
-  ]
-  /**
-   * @param {File} file
-   * @returns {boolean}
-   */
-  const is_supported_image_file = file => {
-    const file_name = file.name.toLowerCase()
-    return (
-      accepted_types.some(type => file.type === type) ||
-      accepted_extensions.some(extension => file_name.endsWith(extension))
-    )
-  }
-  /**
-   * @param {File[]} files
-   * @returns {Promise<boolean>}
-   */
-  const queue_supported_files = async files => {
-    const image_files = files.filter(is_supported_image_file)
-    if (image_files.length === 0) return false
-    await add_to_queue(image_files)
-    return true
-  }
-  /**
-   * Convert clipboard items into supported files and queue them.
-   * Uses the same accepted MIME list as the file picker flow.
-   * @param {ClipboardItem[]} clipboard_items
-   * @returns {Promise<boolean>}
-   */
-  const queue_supported_clipboard_items = async clipboard_items => {
-    const files = (
-      await Promise.all(
-        clipboard_items.map(async item => {
-          const image_type = item.types.find(type =>
-            accepted_types.includes(type)
-          )
-          if (!image_type) return null
-          const extension = extension_by_type[image_type]
-          if (!extension) return null
-          const blob = await item.getType(image_type)
-          return new File([blob], `clipboard-${Date.now()}.${extension}`, {
-            type: image_type
-          })
-        })
-      )
-    ).filter(file => file !== null)
-    return queue_supported_files(files)
-  }
-
-  const v_vectorizer = {
-    mounted: input => input.addEventListener('change', listener)
-  }
-
+/**
+ * Rasterizes/resizes an incoming image and dispatches it to the workers.
+ *
+ * @param {ReturnType<typeof use_workers>} workers
+ * @param {import('vue').Ref<boolean>} working
+ * @param {ReturnType<typeof create_tracer_buffer>} tracer
+ */
+const create_pipeline = (workers, working, tracer) => {
   /**
    * @param {File|Blob} image
    * @param {Id | null} [itemid]
    */
   const vectorize = async (image, itemid) => {
-    if (!vectorizer.value) mount_workers()
+    if (!workers.vectorizer.value) workers.mount_workers()
 
     working.value = true
     progress.value = 0
     current_item_id.value = itemid ?? null
-    clear_tracer_pending()
+    tracer.clear()
 
     let image_data
-    let exif = {}
-
     const is_pre_resized = image instanceof Blob && !(image instanceof File)
 
     if (source_image_url.value) URL.revokeObjectURL(source_image_url.value)
@@ -808,69 +540,45 @@ export const use = () => {
 
       bitmap.close()
       URL.revokeObjectURL(image_url)
-
-      if (!is_pre_resized && include_exif.value)
-        try {
-          const { default: ExifReader } = await import('exifreader')
-          const tags = await ExifReader.load(image, { expanded: true })
-          exif = extract_poster_exif(tags) ?? {}
-          if (itemid && exif && Object.keys(exif).length)
-            pending_poster_exif.set(itemid, exif)
-        } catch (error) {
-          console.warn(
-            'Failed to parse EXIF data:',
-            error instanceof Error ? error.message : String(error)
-          )
-          exif = {}
-        }
     }
 
-    const v = vectorizer.value
-    const g = gradienter.value
-    const t = tracer.value
+    const v = workers.vectorizer.value
+    const g = workers.gradienter.value
+    const t = workers.tracer.value
     if (!v || !g || !t) {
       working.value = false
       return
     }
-    v.postMessage({ route: 'make:vector', image_data, exif })
+    v.postMessage({ route: 'make:vector', image_data })
     g.postMessage({ route: 'make:gradient', image_data })
     t.postMessage({ route: 'make:trace', image_data })
   }
 
-  /**
-   * @param {File|Blob} svg_file
-   * @returns {Promise<ImageData>}
-   */
-  const rasterize_svg = async svg_file => {
-    const svg_text = await svg_file.text()
-    const svg_blob = new Blob([svg_text], { type: 'image/svg+xml' })
-    const svg_url = URL.createObjectURL(svg_blob)
-
-    return new Promise((resolve, reject) => {
-      const DEFAULT_CANVAS_DIMENSION = 1000
-      const img = new Image()
-      img.onload = async () => {
-        const canvas = new OffscreenCanvas(
-          img.width || DEFAULT_CANVAS_DIMENSION,
-          img.height || DEFAULT_CANVAS_DIMENSION
-        )
-        const ctx = canvas.getContext('2d', { willReadFrequently: true })
-        if (!ctx) throw new Error('Failed to get 2d context')
-        ctx.drawImage(img, 0, 0)
-        URL.revokeObjectURL(svg_url)
-        const bitmap = await createImageBitmap(canvas)
-        const resized_image_data = resize_image(bitmap)
-        bitmap.close()
-        resolve(resized_image_data)
-      }
-      img.onerror = () => {
-        URL.revokeObjectURL(svg_url)
-        reject(new Error('Failed to load SVG'))
-      }
-      img.src = svg_url
-    })
+  const reset = () => {
+    cleanup_memory_references()
+    tracer.clear()
+    new_vector.value = null
+    new_gradients.value = null
+    progress.value = 0
+    current_item_id.value = null
   }
 
+  return { vectorize, reset }
+}
+
+// ---- Worker message handlers ----
+
+/**
+ * Builds the four worker `message` callbacks, wired to the tracer buffer,
+ * the pipeline `reset`, and a `run_queue` continuation.
+ *
+ * @param {Object} deps
+ * @param {import('vue').Ref<boolean>} deps.is_mounted
+ * @param {ReturnType<typeof create_tracer_buffer>} deps.tracer
+ * @param {() => void} deps.reset
+ * @param {() => Promise<void>} deps.run_queue
+ */
+const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
   /**
    * @param {VectorResponse} response
    */
@@ -894,11 +602,7 @@ export const use = () => {
 
     new_vector.value = vector
 
-    flush_pending_tracer_paths()
-    if (tracer_complete_pending) {
-      tracer_complete_pending = false
-      await handle_tracer_complete()
-    }
+    await tracer.on_vector_ready()
     await tick()
   }
 
@@ -908,12 +612,7 @@ export const use = () => {
   }
 
   /**
-   * Handles messages from the tracer worker
-   * @param {Object} message - Message from tracer worker
-   * @description
-   * The tracer worker sends cutout data as objects with d, color, and offset properties.
-   * When tracing completes, we convert these objects to SVG path elements to maintain
-   * consistency with the main paths (light, regular, medium, bold) and enable SVGO optimization.
+   * @param {Object} message
    */
   const traced = async message => {
     if (!is_mounted.value) return
@@ -930,20 +629,17 @@ export const use = () => {
             update_progress(current_item_id.value, message.data.progress)
         }
         if (!new_vector.value) {
-          pending_tracer_paths.push({
-            path: clone_tracer_path(message.data.path),
-            progress: message.data.progress
-          })
+          tracer.buffer_path(message.data.path, message.data.progress)
           break
         }
-        add_cutout_path(message.data.path, message.data.progress)
+        tracer.add_cutout_path(message.data.path, message.data.progress)
         break
       case 'complete':
         if (!new_vector.value) {
-          tracer_complete_pending = true
+          tracer.mark_complete_pending()
           break
         }
-        await handle_tracer_complete()
+        await tracer.handle_complete()
         break
       case 'error':
         const err = message.data?.error ?? message.error
@@ -994,83 +690,95 @@ export const use = () => {
     current_processing.value = null
 
     reset()
-
-    process_queue()
+    await run_queue()
   }
 
-  /**
-   * Clear vector path references to prevent memory leaks
-   * The old paths become detached when replaced by optimized versions
-   */
-  const clear_vector_paths = () => {
-    const vec = new_vector.value
-    if (!vec) return
-    vec.light = /** @type {import('@/types').Path} */ (
-      /** @type {unknown} */ (undefined)
-    )
-    vec.regular = /** @type {import('@/types').Path} */ (
-      /** @type {unknown} */ (undefined)
-    )
-    vec.medium = /** @type {import('@/types').Path} */ (
-      /** @type {unknown} */ (undefined)
-    )
-    vec.bold = /** @type {import('@/types').Path} */ (
-      /** @type {unknown} */ (undefined)
-    )
-    vec.cutout = undefined
-    vec.cutouts = undefined
-  }
+  return { vectorized, gradientized, traced, optimized }
+}
 
-  /**
-   * Clean up memory references to prevent leaks
-   * Revokes object URLs and nullifies vector path references
-   */
-  const cleanup_memory_references = () => {
-    if (source_image_url.value) {
-      URL.revokeObjectURL(source_image_url.value)
-      source_image_url.value = null
-    }
-    clear_vector_paths()
-  }
+// ---- Composable ----
 
-  const reset = () => {
-    cleanup_memory_references()
-    clear_tracer_pending()
-    new_vector.value = null
-    new_gradients.value = null
-    progress.value = 0
-    current_item_id.value = null
-  }
+/**
+ * Main vectorization pipeline composable.
+ * Orchestrates workers, queue, file input, and poster processing.
+ *
+ * @param {import('vue').Ref<HTMLInputElement | null>} [provided_image_picker]
+ */
+export const use = provided_image_picker => {
+  const instance = current_instance()
+  const image_picker =
+    provided_image_picker ??
+    (instance
+      ? inject(
+          'image-picker',
+          ref(/** @type {HTMLInputElement | null} */ (null))
+        )
+      : ref(/** @type {HTMLInputElement | null} */ (null)))
+  const working = ref(false)
+  const is_mounted = ref(true)
 
-  dismount(() => {
+  const workers = use_workers()
+  const tracer = create_tracer_buffer(workers)
+  const { vectorize, reset } = create_pipeline(workers, working, tracer)
+
+  // Forward ref: the queue is created below, after the handlers it feeds.
+  let run_queue = async () => {}
+
+  const unmount = () => {
     is_mounted.value = false
-    unmount_workers()
+    workers.unmount_workers()
+  }
+
+  workers.set_handlers(
+    create_worker_handlers({
+      is_mounted,
+      tracer,
+      reset,
+      run_queue: () => run_queue()
+    })
+  )
+
+  const queue = use_queue({
+    mount_workers: workers.mount_workers,
+    unmount_workers: workers.unmount_workers,
+    vectorize,
+    reset,
+    resize_to_blob
   })
+
+  run_queue = queue.process_queue
+
+  const file_input = use_file_input(image_picker, queue.add_to_queue)
+
+  // ---- Lifecycle ----
+  if (instance) dismount(unmount)
+
   return {
-    vVectorizer: v_vectorizer,
-    select_photo,
-    open_selfie_camera,
-    open_camera,
+    vVectorizer: file_input.v_vectorizer,
+    unmount,
+    select_photo: file_input.select_photo,
+    open_selfie_camera: file_input.open_selfie_camera,
+    open_camera: file_input.open_camera,
     image_picker,
     vectorize,
-    vectorizer,
-    gradienter,
-    tracer,
+    vectorizer: workers.vectorizer,
+    gradienter: workers.gradienter,
+    tracer: workers.tracer,
     working,
     new_vector,
     new_gradients,
     source_image_url,
-    mount_workers,
+    mount_workers: workers.mount_workers,
     progress,
     reset,
     queue_items: computed(() => queue_items.value),
     current_processing: computed(() => current_processing.value),
     is_processing: computed(() => is_processing.value),
     completed_posters: computed(() => completed_posters.value),
-    add_to_queue,
-    queue_supported_files,
-    queue_supported_clipboard_items,
-    init_processing_queue,
+    add_to_queue: queue.add_to_queue,
+    queue_supported_files: file_input.queue_supported_files,
+    queue_supported_clipboard_items: file_input.queue_supported_clipboard_items,
+    init_processing_queue: queue.init_processing_queue,
     cleanup_queue_item
   }
 }

@@ -2,13 +2,16 @@
 
 exports[`@/components/posters/as-svg.vue > Renders > A working icon initially 1`] = `
 <svg
-  aria-orientation="vertical"
+  aria-label="Poster"
+  aria-roledescription="poster"
   class=""
+  data-orientation="vertical"
   id="16282281824-posters-559666932867"
   itemid="/+16282281824/posters/559666932867"
   itemscope=""
   itemtype="/posters"
   preserveAspectRatio="xMidYMid slice"
+  role="img"
   tabindex="-1"
   viewBox="0 0 16 16"
 >

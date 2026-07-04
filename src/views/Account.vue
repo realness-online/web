@@ -1,7 +1,6 @@
 <script setup>
   import AsAddress from '@/components/profile/as-address'
   import AsNotifications from '@/components/account/as-notifications'
-  import AsExif from '@/components/account/as-exif'
   import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
@@ -41,7 +40,6 @@
         <as-address :person="me" />
         <name-as-form />
         <as-notifications />
-        <as-exif />
         <footer>
           <div>
             <h4>Signed in</h4>

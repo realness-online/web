@@ -91,3 +91,35 @@ This creates a second-class experience where the web version feels broken compar
 - Disabling iOS automatic icon treatment
 
 ---
+
+### 2026-07-02 - iOS strips EXIF from the Photos picker (feature removed 2026-07-03)
+
+**Context**
+
+- We built optional EXIF capture (`include_exif`): read camera/date/GPS/lens from the original file at capture, persist into the poster index, show it on the poster in Info mode with a rule-of-thirds subject-area overlay.
+- The wall: on iOS Safari, a photo from the **Photos library or the camera button** does not arrive as the original. iOS re-exports a **sanitized copy** named `image.jpg`, stripping camera, date, and GPS - regardless of format (HEIC "High Efficiency" or JPEG "Most Compatible" strip identically). Only the **Files app** hands over the untouched original (`IMG_0225.HEIC`) with full EXIF.
+- OS-level privacy re-export: by the time JS sees the `File`, the tags are gone. No parser recovers bytes that aren't there.
+
+**Evidence (measured)**
+
+| Source (same iPhone photo) | File we receive         | EXIF found                                                              |
+| -------------------------- | ----------------------- | ----------------------------------------------------------------------- |
+| Photos picker (HEIC)       | `image.jpg`, re-encoded | structural only (Orientation, resolution), `gps=[]`                     |
+| Photos picker (JPEG)       | `image.jpg`, re-encoded | structural only, `gps=[]`                                               |
+| Files app (original)       | `IMG_0225.HEIC`         | 25 fields: Make/Model, DateTimeOriginal, lens, GPS lat/lng/alt, bearing |
+
+**Decision**
+
+- **Removed the feature.** For the common iOS path (Photos picker) it delivers nothing; a metadata surface that only works from Files / desktop / Android isn't worth the surface area. All EXIF code (`utils/exif.js`, `as-poster-exif.vue`, `account/as-exif.vue`, `include_exif`, capture in `vectorize.js`) was deleted.
+
+**Future path - capture at the source**
+
+- An in-app camera via `getUserMedia` / `MediaDevices` would capture metadata directly, sidestepping the Photos-picker re-export entirely: `navigator.geolocation` (GPS), `DeviceOrientationEvent` (compass bearing), a capture timestamp, and `MediaStreamTrack.getSettings()` (resolution/facing).
+- Web camera APIs do **not** expose make/model/lens/aperture/ISO - but the location, orientation, and time that matter most are all obtainable live. This is the reason to own the camera rather than accept the system picker.
+
+**Out of scope (platform)**
+
+- Recovering camera/date/GPS that iOS removed before handing us the file
+- Native-parity EXIF from the iOS Photos picker
+
+---

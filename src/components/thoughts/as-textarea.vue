@@ -59,6 +59,7 @@
       rows="1"
       class="black"
       placeholder=""
+      aria-label="What are you thinking?"
       :spellcheck="true"
       @input="adjust_height"
       @focusout="prepare_thought"

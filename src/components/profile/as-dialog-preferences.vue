@@ -23,9 +23,9 @@
 </script>
 
 <template>
-  <a aria-label="Settings" @click="show_settings">
+  <button aria-label="Settings" @click="show_settings">
     <icon name="gear" />
-  </a>
+  </button>
   <dialog id="preferences" ref="settings" @click="handle_click">
     <section>
       <header>
@@ -37,7 +37,7 @@
 </template>
 
 <style lang="stylus">
-  a[aria-label='Settings'] {
+  button[aria-label='Settings'] {
     -webkit-tap-highlight-color: transparent;
     &:active,
     &:focus,

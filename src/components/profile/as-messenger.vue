@@ -1,4 +1,5 @@
 <script setup>
+  import { computed } from 'vue'
   import { as_author } from '@/utils/itemid'
   import { as_phone_number } from '@/use/people'
   import icon from '@/components/icon'
@@ -14,13 +15,13 @@
     name: 'ProfileMessenger'
   })
 
-  const open_sms_app = () => {
-    window.open(`sms:${as_phone_number(as_author(props.itemid))}`, '_self')
-  }
+  const sms_href = computed(
+    () => `sms:${as_phone_number(as_author(props.itemid))}`
+  )
 </script>
 
 <template>
-  <a class="phone" @click="open_sms_app">
+  <a class="phone" :href="sms_href">
     <icon name="message" />
   </a>
 </template>

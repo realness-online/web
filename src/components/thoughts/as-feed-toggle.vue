@@ -39,7 +39,7 @@
     type="button"
     role="switch"
     itemprop="feed_filter"
-    :aria-pressed="only_mine"
+    :aria-checked="only_mine"
     :data-enter="phonebook_motion === 'enter' ? 'phonebook' : null"
     :data-leave="phonebook_motion === 'leave' ? 'phonebook' : null"
     aria-label="Toggle unshortened feed"
@@ -105,7 +105,7 @@
     &:focus-visible {
       outline: none;
     }
-    &[aria-pressed='true'] {
+    &[aria-checked='true'] {
       color: blue;
     }
     @media (hover: hover) and (pointer: fine) {
@@ -139,7 +139,7 @@
         transform: translate(0, 0);
       }
     }
-    &[data-enter='phonebook']:not([aria-pressed='true']) > svg {
+    &[data-enter='phonebook']:not([aria-checked='true']) > svg {
       & > g:nth-child(1),
       & > g:nth-child(2) {
         feed-silhouette-slide();
@@ -152,7 +152,7 @@
         animation-delay: 0.04s;
       }
     }
-    &[data-leave='phonebook'][aria-pressed='true'] > svg {
+    &[data-leave='phonebook'][aria-checked='true'] > svg {
       & > g:nth-child(1),
       & > g:nth-child(2) {
         feed-silhouette-slide();
@@ -166,7 +166,7 @@
         animation-delay: 0.04s;
       }
     }
-    &[aria-pressed='true']:not([data-leave='phonebook']) > svg {
+    &[aria-checked='true']:not([data-leave='phonebook']) > svg {
       & > g:nth-child(1) {
         transform: translate(-12%, -40%) scale(0.82);
         opacity: 0;
