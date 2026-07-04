@@ -21,7 +21,7 @@
 </script>
 
 <template>
-  <a class="phone" :href="sms_href">
+  <a class="phone" :href="sms_href" aria-label="Send a text message">
     <icon name="message" />
   </a>
 </template>

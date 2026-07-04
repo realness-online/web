@@ -2,324 +2,321 @@
 
 /* eslint-disable */
 
-export const documentation_toc = 
-[
+export const documentation_toc = [
   {
-    "id": "overview",
-    "title": "Overview",
-    "level": 2
+    id: 'overview',
+    title: 'Overview',
+    level: 2
   },
   {
-    "id": "quick-start",
-    "title": "Quick start",
-    "level": 3
+    id: 'quick-start',
+    title: 'Quick start',
+    level: 3
   },
   {
-    "id": "interface",
-    "title": "Interface",
-    "level": 3
+    id: 'interface',
+    title: 'Interface',
+    level: 3
   },
   {
-    "id": "thoughts",
-    "title": "Thoughts",
-    "level": 3
+    id: 'thoughts',
+    title: 'Thoughts',
+    level: 3
   },
   {
-    "id": "statement-input",
-    "title": "Statement input",
-    "level": 4
+    id: 'statement-input',
+    title: 'Statement input',
+    level: 4
   },
   {
-    "id": "community-feed",
-    "title": "Community feed",
-    "level": 4
+    id: 'community-feed',
+    title: 'Community feed',
+    level: 4
   },
   {
-    "id": "statements",
-    "title": "Statements",
-    "level": 4
+    id: 'statements',
+    title: 'Statements',
+    level: 4
   },
   {
-    "id": "profile",
-    "title": "Profile",
-    "level": 4
+    id: 'profile',
+    title: 'Profile',
+    level: 4
   },
   {
-    "id": "posters",
-    "title": "Posters",
-    "level": 3
+    id: 'posters',
+    title: 'Posters',
+    level: 3
   },
   {
-    "id": "anatomy-of-a-poster",
-    "title": "Anatomy of a poster",
-    "level": 4
+    id: 'anatomy-of-a-poster',
+    title: 'Anatomy of a poster',
+    level: 4
   },
   {
-    "id": "interactive-features",
-    "title": "Interactive features",
-    "level": 4
+    id: 'interactive-features',
+    title: 'Interactive features',
+    level: 4
   },
   {
-    "id": "subjects--being-built-live",
-    "title": "Subjects — being built live",
-    "level": 4
+    id: 'subjects--being-built-live',
+    title: 'Subjects — being built live',
+    level: 4
   },
   {
-    "id": "3d-viewer",
-    "title": "3D viewer",
-    "level": 4
+    id: '3d-viewer',
+    title: '3D viewer',
+    level: 4
   },
   {
-    "id": "download-and-export",
-    "title": "Download and export",
-    "level": 4
+    id: 'download-and-export',
+    title: 'Download and export',
+    level: 4
   },
   {
-    "id": "printing-a-cel-animation",
-    "title": "Printing a cel animation",
-    "level": 4
+    id: 'printing-a-cel-animation',
+    title: 'Printing a cel animation',
+    level: 4
   },
   {
-    "id": "how-posters-are-made",
-    "title": "How posters are made",
-    "level": 4
+    id: 'how-posters-are-made',
+    title: 'How posters are made',
+    level: 4
   },
   {
-    "id": "sign-on",
-    "title": "Sign-on",
-    "level": 3
+    id: 'sign-on',
+    title: 'Sign-on',
+    level: 3
   },
   {
-    "id": "account",
-    "title": "Account",
-    "level": 3
+    id: 'account',
+    title: 'Account',
+    level: 3
   },
   {
-    "id": "install",
-    "title": "Install",
-    "level": 3
+    id: 'install',
+    title: 'Install',
+    level: 3
   },
   {
-    "id": "sync",
-    "title": "Sync",
-    "level": 3
+    id: 'sync',
+    title: 'Sync',
+    level: 3
   },
   {
-    "id": "what-goes-up",
-    "title": "What goes up",
-    "level": 4
+    id: 'what-goes-up',
+    title: 'What goes up',
+    level: 4
   },
   {
-    "id": "what-comes-down",
-    "title": "What comes down",
-    "level": 4
+    id: 'what-comes-down',
+    title: 'What comes down',
+    level: 4
   },
   {
-    "id": "status-borders",
-    "title": "Status borders",
-    "level": 4
+    id: 'status-borders',
+    title: 'Status borders',
+    level: 4
   },
   {
-    "id": "a-realness-of-your-own",
-    "title": "A Realness of your own",
-    "level": 3
+    id: 'a-realness-of-your-own',
+    title: 'A Realness of your own',
+    level: 3
   },
   {
-    "id": "preferences",
-    "title": "Preferences",
-    "level": 2
+    id: 'preferences',
+    title: 'Preferences',
+    level: 2
   },
   {
-    "id": "preferences-mosaic",
-    "title": "Mosaic",
-    "level": 3
+    id: 'preferences-mosaic',
+    title: 'Mosaic',
+    level: 3
   },
   {
-    "id": "preferences-shadow",
-    "title": "Shadow",
-    "level": 3
+    id: 'preferences-shadow',
+    title: 'Shadow',
+    level: 3
   },
   {
-    "id": "preferences-motion",
-    "title": "Motion",
-    "level": 3
+    id: 'preferences-motion',
+    title: 'Motion',
+    level: 3
   },
   {
-    "id": "preferences-view",
-    "title": "View",
-    "level": 3
+    id: 'preferences-view',
+    title: 'View',
+    level: 3
   },
   {
-    "id": "preferences-chrome",
-    "title": "Chrome",
-    "level": 3
+    id: 'preferences-chrome',
+    title: 'Chrome',
+    level: 3
   }
 ]
 
-export const terms_toc = 
-[
+export const terms_toc = [
   {
-    "id": "1-who-can-use-realness",
-    "title": "1. Who can use Realness",
-    "level": 2
+    id: '1-who-can-use-realness',
+    title: '1. Who can use Realness',
+    level: 2
   },
   {
-    "id": "2-what-the-service-does",
-    "title": "2. What the Service does",
-    "level": 2
+    id: '2-what-the-service-does',
+    title: '2. What the Service does',
+    level: 2
   },
   {
-    "id": "3-your-account-and-phone-number",
-    "title": "3. Your account and phone number",
-    "level": 2
+    id: '3-your-account-and-phone-number',
+    title: '3. Your account and phone number',
+    level: 2
   },
   {
-    "id": "4-acceptable-use",
-    "title": "4. Acceptable use",
-    "level": 2
+    id: '4-acceptable-use',
+    title: '4. Acceptable use',
+    level: 2
   },
   {
-    "id": "5-your-content",
-    "title": "5. Your content",
-    "level": 2
+    id: '5-your-content',
+    title: '5. Your content',
+    level: 2
   },
   {
-    "id": "6-licensing-for-teams-and-organizations",
-    "title": "6. Licensing for teams and organizations",
-    "level": 2
+    id: '6-licensing-for-teams-and-organizations',
+    title: '6. Licensing for teams and organizations',
+    level: 2
   },
   {
-    "id": "7-payments-renewal-and-refunds",
-    "title": "7. Payments, renewal, and refunds",
-    "level": 2
+    id: '7-payments-renewal-and-refunds',
+    title: '7. Payments, renewal, and refunds',
+    level: 2
   },
   {
-    "id": "8-intellectual-property",
-    "title": "8. Intellectual property",
-    "level": 2
+    id: '8-intellectual-property',
+    title: '8. Intellectual property',
+    level: 2
   },
   {
-    "id": "9-copyright-and-dmca",
-    "title": "9. Copyright and DMCA",
-    "level": 2
+    id: '9-copyright-and-dmca',
+    title: '9. Copyright and DMCA',
+    level: 2
   },
   {
-    "id": "10-third-party-services",
-    "title": "10. Third-party services",
-    "level": 2
+    id: '10-third-party-services',
+    title: '10. Third-party services',
+    level: 2
   },
   {
-    "id": "11-disclaimers-and-limitation-of-liability",
-    "title": "11. Disclaimers and limitation of liability",
-    "level": 2
+    id: '11-disclaimers-and-limitation-of-liability',
+    title: '11. Disclaimers and limitation of liability',
+    level: 2
   },
   {
-    "id": "12-indemnification",
-    "title": "12. Indemnification",
-    "level": 2
+    id: '12-indemnification',
+    title: '12. Indemnification',
+    level: 2
   },
   {
-    "id": "13-suspension-and-termination",
-    "title": "13. Suspension and termination",
-    "level": 2
+    id: '13-suspension-and-termination',
+    title: '13. Suspension and termination',
+    level: 2
   },
   {
-    "id": "14-governing-law-and-venue",
-    "title": "14. Governing law and venue",
-    "level": 2
+    id: '14-governing-law-and-venue',
+    title: '14. Governing law and venue',
+    level: 2
   },
   {
-    "id": "15-changes-to-these-terms",
-    "title": "15. Changes to these Terms",
-    "level": 2
+    id: '15-changes-to-these-terms',
+    title: '15. Changes to these Terms',
+    level: 2
   },
   {
-    "id": "16-general",
-    "title": "16. General",
-    "level": 2
+    id: '16-general',
+    title: '16. General',
+    level: 2
   },
   {
-    "id": "17-contact",
-    "title": "17. Contact",
-    "level": 2
+    id: '17-contact',
+    title: '17. Contact',
+    level: 2
   }
 ]
 
-export const privacy_toc = 
-[
+export const privacy_toc = [
   {
-    "id": "the-short-version",
-    "title": "The short version",
-    "level": 2
+    id: 'the-short-version',
+    title: 'The short version',
+    level: 2
   },
   {
-    "id": "what-we-collect",
-    "title": "What we collect",
-    "level": 2
+    id: 'what-we-collect',
+    title: 'What we collect',
+    level: 2
   },
   {
-    "id": "what-we-do-not-collect",
-    "title": "What we do not collect",
-    "level": 2
+    id: 'what-we-do-not-collect',
+    title: 'What we do not collect',
+    level: 2
   },
   {
-    "id": "how-we-use-what-we-collect",
-    "title": "How we use what we collect",
-    "level": 2
+    id: 'how-we-use-what-we-collect',
+    title: 'How we use what we collect',
+    level: 2
   },
   {
-    "id": "phone-number-derived-identity",
-    "title": "Phone-number-derived identity",
-    "level": 2
+    id: 'phone-number-derived-identity',
+    title: 'Phone-number-derived identity',
+    level: 2
   },
   {
-    "id": "service-providers-sub-processors",
-    "title": "Service providers (sub-processors)",
-    "level": 2
+    id: 'service-providers-sub-processors',
+    title: 'Service providers (sub-processors)',
+    level: 2
   },
   {
-    "id": "when-we-share-information",
-    "title": "When we share information",
-    "level": 2
+    id: 'when-we-share-information',
+    title: 'When we share information',
+    level: 2
   },
   {
-    "id": "storage-on-your-device",
-    "title": "Storage on your device",
-    "level": 2
+    id: 'storage-on-your-device',
+    title: 'Storage on your device',
+    level: 2
   },
   {
-    "id": "children",
-    "title": "Children",
-    "level": 2
+    id: 'children',
+    title: 'Children',
+    level: 2
   },
   {
-    "id": "your-rights-and-choices",
-    "title": "Your rights and choices",
-    "level": 2
+    id: 'your-rights-and-choices',
+    title: 'Your rights and choices',
+    level: 2
   },
   {
-    "id": "data-retention",
-    "title": "Data retention",
-    "level": 2
+    id: 'data-retention',
+    title: 'Data retention',
+    level: 2
   },
   {
-    "id": "security",
-    "title": "Security",
-    "level": 2
+    id: 'security',
+    title: 'Security',
+    level: 2
   },
   {
-    "id": "international-users",
-    "title": "International users",
-    "level": 2
+    id: 'international-users',
+    title: 'International users',
+    level: 2
   },
   {
-    "id": "changes-to-this-policy",
-    "title": "Changes to this policy",
-    "level": 2
+    id: 'changes-to-this-policy',
+    title: 'Changes to this policy',
+    level: 2
   },
   {
-    "id": "contact",
-    "title": "Contact",
-    "level": 2
+    id: 'contact',
+    title: 'Contact',
+    level: 2
   }
 ]

@@ -3,6 +3,7 @@
 exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a poster 1`] = `
 <menu>
   <button
+    aria-label="Delete poster"
     class="remove"
     type="button"
   >
