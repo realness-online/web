@@ -3,6 +3,16 @@
 User-visible and infrastructure changes to [realness.online](https://realness.online).
 Newest first. The launch punch list lives in `docs/finishing-touches-plan.md`.
 
+## Unreleased
+
+- **Preload Lato Light** — the home-route shell `<h1>` renders Lato 300, but
+  only the 400 subset was preloaded, so the LCP element repainted when Light
+  arrived after CSS parse. Preloading Light closes the FCP→LCP gap Lighthouse
+  showed under throttling. (`index.html`)
+- **Dated poster labels** — poster SVGs announce "Poster from <day>" (from the
+  itemid's created-at) instead of the generic "Poster", in both `as-svg` and
+  the referenced-poster path in `as-figure`.
+
 ## 2026-07-04 — v2.5.7
 
 ### Performance: static LCP shell for the home route

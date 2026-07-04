@@ -82,11 +82,6 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### Non-blocking refinements (post-launch backlog)
 
-- **Poster aria-label detail** — labels read generic "Poster"; could include
-  author/date for screen readers.
-- **Shell `<h1>` late repaint** — under throttling, LCP lands after FCP on the
-  same element (likely font swap or Vue remount of the shell); only remaining
-  load-time refinement.
 - **Storage listing size** — Firebase's list API response (~51 KB, ungzipped by
   Google) is dominated by layer-variant files (`*-bold.svg`, shadows, cutouts)
   filtered client-side in `Directory.js`. Moving variants into a subfolder would
