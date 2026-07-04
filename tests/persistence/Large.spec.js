@@ -27,7 +27,10 @@ vi.mock('@/utils/itemid', () => ({
     return parseInt(parts[parts.length - 1])
   }),
   as_author: vi.fn(() => '/+1234567890'),
-  as_type: vi.fn(() => 'posters'),
+  as_type: vi.fn(id => {
+    const parts = id.split('/').filter(p => p)
+    return parts[1] || 'posters'
+  }),
   as_poster_id: vi.fn(id => {
     const layer_types = [
       'shadows',
@@ -57,6 +60,10 @@ vi.mock('@/utils/itemid', () => ({
     ]
     if (layer_types.includes(type)) return type
     return null
+  }),
+  as_layer_id: vi.fn((poster_id, layer) => {
+    const parts = poster_id.split('/').filter(p => p)
+    return `/${parts[0]}/${layer}/${parts[2]}`
   })
 }))
 
@@ -262,6 +269,43 @@ describe('@/persistence/Large', () => {
       expect(set).toHaveBeenCalledWith(expect.any(String), {
         items: [1737178477888]
       })
+    })
+
+    it('purges local cached layer keys when deleting a poster', async () => {
+      const { del } = await import('idb-keyval')
+      const large = new TestLargeClass('/+1234567890/posters/1737178477999')
+
+      await large.delete()
+
+      const layer_types = [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]
+      layer_types.forEach(type => {
+        expect(del).toHaveBeenCalledWith(`/+1234567890/${type}/1737178477999`)
+      })
+    })
+
+    it('does not purge layer keys when deleting a non-poster', async () => {
+      const { del } = await import('idb-keyval')
+      const large = new TestLargeClass('/+1234567890/shadows/1737178477999')
+
+      await large.delete()
+
+      // Should only delete the layer's own key, not sibling layers
+      const layer_calls = del.mock.calls.filter(
+        ([key]) =>
+          typeof key === 'string' &&
+          key !== '/+1234567890/shadows/1737178477999' &&
+          ['/sediment/', '/sand/', '/gravel/', '/rocks/', '/boulders/'].some(
+            t => key.includes(t)
+          )
+      )
+      expect(layer_calls).toHaveLength(0)
     })
   })
 })

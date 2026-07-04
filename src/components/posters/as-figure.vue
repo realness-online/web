@@ -27,7 +27,7 @@
   import { is_vector, is_vector_id, is_click } from '@/use/poster'
   import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
   import { use_mask_pen } from '@/use/mask-pen'
-  import { load_cutout_flags } from '@/utils/geology'
+  import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
   import { load_shadow_into_vector } from '@/utils/poster-layers'
   import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
   import {
@@ -299,6 +299,17 @@
     if (!vector.value || cutout_load_token.value !== token) return
     vector.value.cutouts = next_cutouts
     cutouts_loaded.value = true
+
+    // If no cutout layers were found and this poster should have them,
+    // the poster was likely deleted from storage. Signal the parent to
+    // re-read the directory and remove stale entries.
+    const created = as_created_at(/** @type {Id} */ (props.itemid))
+    if (
+      created &&
+      created > GEOLOGY_DATE &&
+      Object.keys(next_cutouts).length === 0
+    )
+      emit('missing', props.itemid)
   }
 
   const on_show = async shown_vector => {
