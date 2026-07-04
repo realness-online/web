@@ -16,10 +16,10 @@ posters, thoughts, events, avatars, vector tracing — happens on device. Data
 lives in the user's own Firebase Storage directory, plus `localStorage` /
 IndexedDB on device.
 
-The server (`realness-functions`) is **inert with respect to the app.** It
-exports exactly three functions — `webhook`, `account`, `portal` — and all three
-are **Stripe/sponsorship** only. There is no application server to coordinate,
-drive, or breach. The app keeps working with the functions entirely offline.
+The server (`realness-functions`) is **optional.** It exposes HTTP capabilities
+the app probes at runtime (`push`, `phone_integrity`) plus a scheduled push
+broadcaster. Instances without it are fully client-only. Stripe sponsorship uses
+hosted checkout only — no application server required.
 
 **Security consequence:** the attack surface that usually matters most — a
 central application server holding everyone's data and logic — does not exist
@@ -156,9 +156,9 @@ layered:
   passkey credentials) belongs here, **server-only** — never in client-writable
   Storage.
 - **Third parties.** Firebase (auth + storage hosting), Stripe (payments),
-  Twilio (number lookup at sign-in — a _lookup_, not ongoing messaging). The
-  phone number is shared with Firebase/Twilio for authorization; this is stated
-  plainly in philosophy.md.
+  Twilio (optional Lookup at sign-in when `realness-functions` has credentials —
+  a _lookup_, not ongoing messaging). The phone number is shared with
+  Firebase/Twilio for authorization; this is stated plainly in philosophy.md.
 
 ## What we explicitly accept
 

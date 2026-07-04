@@ -1,11 +1,12 @@
 <script setup>
   import AsAddress from '@/components/profile/as-address'
-  import AsNotifications from '@/components/account/as-notifications'
+  import PreferencesMenu from '@/components/preferences-menu'
   import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { use_me } from '@/use/people'
-  import { current_user, me, sign_off } from '@/utils/serverless'
+  import { current_user, me } from '@/utils/serverless'
+  import { sign_off } from '@/utils/serverless-auth'
   import { ref, computed } from 'vue'
 
   defineOptions({ name: 'Account' })
@@ -39,7 +40,12 @@
       <template v-if="signed_in">
         <as-address :person="me" />
         <name-as-form />
-        <as-notifications />
+        <section itemprop="preferences">
+          <header>
+            <h2 id="preferences">Preferences</h2>
+          </header>
+          <preferences-menu icon />
+        </section>
         <footer>
           <div>
             <h4>Signed in</h4>
@@ -67,9 +73,6 @@
 
 <style lang="stylus">
   section#account.page
-    // Header spans full width; the body below is a centered, capped column.
-    // Inset to match site-nav's own base-line padding, and leave room at the
-    // bottom so content clears the fixed footer island.
     & > div.body
       max-width: page-width-large
       margin: 0 auto
@@ -79,8 +82,16 @@
       & > form
         max-width: base-line * 14
         margin-bottom: base-line
-      // Sign out: same row treatment as the notifications option, sitting flush
-      // below it — the top border is the divider, no extra margin between rows.
+      & > section[itemprop='preferences']
+        margin-top: base-line * 2
+        padding-top: base-line
+        border-top: 1px solid blue
+        & > header > h2
+          color: red
+          margin: 0 0 base-line
+          font-weight: 300
+        & > menu.preferences-menu
+          margin: 0
       & > footer
         padding: base-line 0
         border-top: 1px solid blue

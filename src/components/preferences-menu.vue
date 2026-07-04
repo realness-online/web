@@ -1,12 +1,14 @@
 <script setup>
+  import AsNotifications from '@/components/account/as-notifications'
   import Preference from '@/components/preference'
+  import { use_instance_capabilities } from '@/use/instance-capabilities'
+  import { use_push } from '@/use/push'
   import {
     sync_folder_supported,
     use as use_sync_folder
   } from '@/use/sync-folder'
   import * as preferences from '@/utils/preference'
-  import { ref, watch, onBeforeUnmount } from 'vue'
-  import { Pane } from 'tweakpane'
+  import { computed, ref, watch, onBeforeUnmount } from 'vue'
 
   defineProps({
     icon: {
@@ -18,9 +20,20 @@
   const sync_folder_supported_value = sync_folder_supported()
   const { sync_folder, sync_folder_name } = use_sync_folder()
   const { view_3d } = preferences
+  const { ready, push: push_available } = use_instance_capabilities()
+  const { status: push_status } = use_push()
+
+  const show_account_services = computed(
+    () =>
+      sync_folder_supported_value ||
+      (ready.value &&
+        push_available.value &&
+        push_status.value !== 'unsupported')
+  )
 
   const tweakpane_ref = ref(null)
   let pane = null
+  let mounting = false
 
   const dispose_pane = () => {
     if (!pane) return
@@ -28,8 +41,12 @@
     pane = null
   }
 
-  const mount_pane = () => {
-    if (!tweakpane_ref.value || pane) return
+  const mount_pane = async () => {
+    if (!tweakpane_ref.value || pane || mounting || !view_3d.value) return
+    mounting = true
+    const { Pane } = await import('tweakpane')
+    mounting = false
+    if (!tweakpane_ref.value || pane || !view_3d.value) return
     const p = preferences
     const settings = {
       mosaic_spread: p.mosaic_spread.value,
@@ -242,6 +259,10 @@
       <preference name="storytelling" />
       <h3 id="preferences-chrome">Chrome</h3>
       <preference name="menu" label="Island" />
+    </article>
+    <article v-if="show_account_services">
+      <h3 id="preferences-account">Account</h3>
+      <as-notifications />
       <preference
         v-if="sync_folder_supported_value"
         name="sync_folder"

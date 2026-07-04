@@ -14,7 +14,10 @@ vi.mock('@/use/people', () => ({
 }))
 
 vi.mock('@/utils/serverless', () => ({
-  auth: { value: {} },
+  auth: { value: {} }
+}))
+
+vi.mock('@/utils/serverless-auth', () => ({
   Recaptcha: vi.fn(function () {
     return {
       verify: vi.fn()
@@ -25,6 +28,17 @@ vi.mock('@/utils/serverless', () => ({
       confirm: vi.fn(() => Promise.resolve())
     })
   )
+}))
+
+vi.mock('@/use/instance-capabilities', () => ({
+  use_instance_capabilities: () => ({
+    phone_integrity: { value: false },
+    probe: vi.fn().mockResolvedValue({ push: false, phone_integrity: false })
+  })
+}))
+
+vi.mock('@/utils/phone-integrity', () => ({
+  check_phone_integrity: vi.fn().mockResolvedValue({ allowed: true })
 }))
 
 vi.mock('libphonenumber-js', () => {

@@ -14,12 +14,12 @@ import wasm from 'vite-plugin-wasm'
 const icon_version = process.env['npm_package_version'] || '1'
 const project_root = fileURLToPath(new URL('.', import.meta.url))
 const manual_chunk_rules = {
+  firebase_auth: ['@firebase/auth'],
   vendor: [
     'vue',
     'vue-router',
     '@vueuse/core',
     '@firebase/app',
-    '@firebase/auth',
     '@firebase/firestore',
     '@firebase/storage'
   ],

@@ -23,12 +23,22 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/utils/serverless', () => ({
   me: mock_me,
-  current_user: mock_current_user,
+  current_user: mock_current_user
+}))
+
+vi.mock('@/utils/serverless-auth', () => ({
   sign_off: vi.fn()
 }))
 
 vi.mock('@/use/people', () => ({
   use_me: () => ({ is_valid_name: mock_is_valid_name })
+}))
+
+vi.mock('@/components/preferences-menu', () => ({
+  default: {
+    name: 'PreferencesMenu',
+    template: '<menu class="preferences-menu-stub" />'
+  }
 }))
 
 const default_stubs = {
@@ -40,7 +50,6 @@ const default_stubs = {
     props: ['person']
   },
   'name-as-form': true,
-  'as-notifications': true,
   'as-sign-on': {
     name: 'AsSignOn',
     template: '<section class="as-sign-on-stub" />'

@@ -1,14 +1,25 @@
 <script setup>
-  import { onMounted } from 'vue'
+  import { computed, onMounted } from 'vue'
   import { use_push } from '@/use/push'
+  import { use_instance_capabilities } from '@/use/instance-capabilities'
   import { notifications } from '@/utils/preference'
 
   defineOptions({ name: 'AsNotifications' })
 
   const { status, busy, refresh, enable, disable } = use_push()
+  const { ready, push: push_available, probe } = use_instance_capabilities()
 
-  // Sync preference to actual subscription state on mount
+  const show = computed(
+    () => ready.value && push_available.value && status.value !== 'unsupported'
+  )
+
   onMounted(async () => {
+    await probe()
+    if (!push_available.value) {
+      if (notifications.value) notifications.value = false
+      return
+    }
+
     await refresh()
     if (notifications.value && status.value !== 'on') {
       const ok = await enable()
@@ -18,6 +29,7 @@
   })
 
   const toggle = async event => {
+    if (!push_available.value) return
     if (event.target.checked) {
       const ok = await enable()
       notifications.value = ok
@@ -29,12 +41,13 @@
 </script>
 
 <template>
-  <section v-if="status !== 'unsupported'" class="as-notifications">
+  <fieldset v-if="show" class="preference">
     <div>
       <h4>Get notified</h4>
       <label class="switch">
         <input
           type="checkbox"
+          name="notifications"
           role="switch"
           switch
           :checked="notifications"
@@ -43,31 +56,11 @@
         <span class="slider"></span>
       </label>
     </div>
-    <small v-if="status === 'blocked'">
+    <p v-if="status === 'blocked'" class="hint">
       Turn notifications on in your browser settings.
-    </small>
-    <small v-else-if="status === 'needs-install'">
+    </p>
+    <p v-else-if="status === 'needs-install'" class="hint">
       Add Realness to your home screen first.
-    </small>
-  </section>
+    </p>
+  </fieldset>
 </template>
-
-<style lang="stylus">
-  section.as-notifications
-    padding: base-line 0
-    border-top: 1px solid blue
-    margin-top: base-line * 2
-    & > div
-      display: flex
-      justify-content: space-between
-      align-items: center
-      gap: base-line * 0.5
-      & > h4
-        margin: 0
-        font-size: normal
-        font-weight: 300
-    & > small
-      display: block
-      margin-top: base-line * 0.33
-      opacity: 0.7
-</style>

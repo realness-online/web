@@ -134,6 +134,29 @@ npm run deploy
 
 Visit `https://${project-name}.web.app`. You can sign in and invite your friends
 
+### Optional: server features
+
+The app is complete with Firebase auth and Storage only. For push notifications
+and (later) phone-number hardening, deploy
+[realness-functions](https://github.com/realness-online/functions) to the **same
+Firebase project** — no extra env vars. The app probes `/capabilities` on your
+origin at runtime; web-only instances fall back to `capabilities.json` (all
+features off).
+
+```bash
+# In the realness-functions repo, same Firebase project as the web app
+npm run deploy
+```
+
+Then redeploy hosting from this repo so the `/capabilities` rewrite is active
+(`firebase.json` already includes it).
+
+**Phone integrity (optional):** set Twilio Lookup secrets on the functions
+project (`firebase functions:secrets:set TWILIO_ACCOUNT_SID` and
+`TWILIO_AUTH_TOKEN`). When both are set and functions are redeployed,
+`phone_integrity` flips on in `/capabilities` and sign-in runs a Lookup check
+before SMS. Instances without Twilio secrets skip the gate.
+
 ## Contributing
 
 Moderators are ideal contributors. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
