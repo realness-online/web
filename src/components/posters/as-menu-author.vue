@@ -32,6 +32,7 @@
       v-if="allow_remove"
       type="button"
       class="remove"
+      aria-label="Delete poster"
       @click="emit('remove', poster.id)">
       <icon name="remove" />
     </button>

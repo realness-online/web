@@ -2,6 +2,7 @@
 
 exports[`@/components/profile/as-messenger > Renders > Messenger button 1`] = `
 <a
+  aria-label="Send a text message"
   class="phone"
   href="sms:16282281824"
 >
