@@ -244,7 +244,5 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 First commit 2017-12-20. Realness grew up as a phone-number-identity social
 PWA — profiles, avatars, statements, events, a phonebook of relations — with
 dark mode by 2018 and steady releases through v1.x. Posters emerged as the
-core creative object, and 2022's TensorFlow/COCO object-detection experiments
-planted the seed for today's mask-subjects work. Most of that social surface
-was deliberately shed in 2026 (v2.5.3) to focus the app on posters and
-thoughts.
+core creative object. Most of that social surface was deliberately shed in
+2026 (v2.5.3) to focus the app on posters and thoughts.
