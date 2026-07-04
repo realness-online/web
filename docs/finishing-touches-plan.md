@@ -164,6 +164,11 @@ User-visible and infrastructure fixes shipped through this punch list. Newest fi
 
 ### ⚡ Performance
 
+Update (2026-07-04, later deploy): **Accessibility 100** after labeling the sms link + delete
+button; fonts now cached a year (`/fonts/**` immutable in `firebase.json`). Only remaining
+cache-TTL flag is Google's auth iframe. Perf reads 67–73 across runs (single-run lhci noise);
+`Thoughts rendered` mark improved to 2.4 s.
+
 Prod snapshot (2026-07-04, formal lhci run post-deploy): **73** Performance, **96** Accessibility,
 **100** Best Practices, **63** SEO (root `/` is deliberately noindex; marketing pages are
 indexable). CLS 0, TBT 100 ms. Throttled-mobile LCP 4.5 s — LCP element is the static shell
