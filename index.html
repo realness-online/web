@@ -10,10 +10,6 @@
     </script>
     <title>Realness Online — Rotoscope Photos into Layered SVG Posters</title>
     <link
-      rel="preconnect"
-      href="https://firebasestorage.googleapis.com"
-      crossorigin />
-    <link
       rel="preload"
       href="/fonts/Lato-Light-Subset.woff2"
       as="font"
@@ -86,19 +82,41 @@
       #app {
         min-height: 100dvh;
       }
-      /* Static Thoughts shell: paints the LCP <h1> on first HTML parse so the
-         Largest Contentful Paint text lands before Vue mounts. Hidden unless the
-         head script marked this as the home route (see above). The empty header
-         reserves the real header's height to limit layout shift on mount. */
+      /* Static Thoughts shell: sibling of #app so Vue mount cannot remove it before
+         LCP. Hidden unless the head script marked this as the home route (see above).
+         Thoughts.vue drops it after the live <h1> paints. */
       .thoughts-shell {
         display: none;
       }
       html[data-route='thoughts'] .thoughts-shell {
         display: flex;
         flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        pointer-events: none;
+        background-color: #f6f6f8;
+        color: #111;
+      }
+      @media (prefers-color-scheme: dark) {
+        html[data-route='thoughts'] .thoughts-shell {
+          background-color: rgb(44, 44, 38);
+          color: rgba(215, 214, 203, 0.95);
+        }
+      }
+      html[data-route='thoughts'] .thoughts-shell > h1 {
+        margin: 0;
+        text-align: center;
+        padding: 0 1.5rem 1.5rem;
+        line-height: 1;
       }
       .thoughts-shell > header {
         min-height: 2.6rem;
+      }
+      body {
+        position: relative;
       }
       html {
         height: 100%;
@@ -134,6 +152,10 @@
       <a href="/terms">Terms</a>
       <a href="/privacy">Privacy</a>
     </nav>
+    <section class="page thoughts-shell" aria-hidden="true">
+      <header></header>
+      <h1>Thoughts</h1>
+    </section>
     <div id="app">
       <noscript>
         <h3>Realness doesn't work.</h3>
@@ -147,10 +169,6 @@
           }
         }
       </style>
-      <section id="thoughts" class="page thoughts-shell">
-        <header></header>
-        <h1>Thoughts</h1>
-      </section>
       <svg
         class="working"
         viewBox="0 0 9 4"
