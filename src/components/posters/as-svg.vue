@@ -87,7 +87,9 @@
   const mask_pen = inject('mask-pen', null)
   const mask_pen_active = computed(() => mask_pen?.active.value ?? false)
   const poster_label = computed(() => {
-    const created = as_created_at(/** @type {import('@/types').Id} */ (props.itemid))
+    const created = as_created_at(
+      /** @type {import('@/types').Id} */ (props.itemid)
+    )
     if (!created) return 'Poster'
     const day = as_day(new Date(created))
     return `Poster from ${day === 'Today' ? 'today' : day}`
