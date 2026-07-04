@@ -150,10 +150,101 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 - **Static docs** — `public/documentation.md` and `public/llms.txt` for crawlers
   and LLM discovery.
 
-## Earlier
+## 2026-07-01 — Early in the v2.5.7 cycle
 
-- Stripe buy buttons on $100/$500 pricing tiers
-- Mask subjects: grow-select/erase pen (WIP — save not wired)
-- Native pinch-zoom while masking
-- 3D mode poster menu gesture
-- PSD export stroke fix, avatar canonical election, require-a-name validation
+- **Stripe buy buttons** wired into the $100/$500 pricing tiers.
+- **Mask subjects** — named path groups with grow-select/erase (WIP — save not
+  wired), plus native pinch-zoom while masking.
+- **3D mode poster menu gesture** — reveal the poster menu in 3D with the same
+  gesture as SVG mode.
+
+## 2026-06-29 — v2.5.6
+
+- **Blank duplicate-poster avatars fixed** via visibility-aware canonical
+  election (one rendered poster per id; the rest reference it).
+- **PSD export** — stroke stripped from shadow fill layers.
+- **Statement text selectable**; touch callout suppressed on tappable elements.
+- **"Copy prompt" agent buttons** inline in docs and pricing.
+- **SSR hardening** — prerender and standalone guards; `var(--base-line)` in
+  viewport-relative `calc()`s.
+
+## 2026-06-28 — v2.5.5
+
+- **Account overhaul** — inline sign-in, web push notification preference,
+  Stripe reduced to a CTA.
+- **Pricing and legal pages** — ToS simplified (arbitration removed, venue
+  kept); LICENSE and legal docs updated; `security.txt` refreshed with
+  security@realness.online.
+
+## 2026-06-17 — v2.5.4
+
+- **Install guide** — native install prompt, platform detection, and synthetic
+  install-walkthrough animations (HyperFrames-rendered) for iOS/Android.
+
+## 2026-06-15 — v2.5.3
+
+- **Big simplification** — removed phonebook, relations, events, and picker;
+  simplified profile and poster menus; expanded documentation.
+- **Preferences menu** — hints, icons, keybindings; animated silhouette toggle
+  for the `only_mine` feed filter; documentation preferences panel.
+- **About page refresh** with gallery cap and lore.
+- **Archive location map** with self-healing `sync:index`.
+
+## 2026-06-08 → 06-11 — v2.5.1–2.5.2
+
+- **Prerendered marketing pages** and public site structure.
+- **About page rebuilt** — integrations, feature list, balanced gallery;
+  archive loading fixes.
+- **Frosted-glass styling consolidated**; account UI polish; 3D "haze"
+  renamed to atmosphere.
+
+## 2026-05-31 — v2.5.0
+
+- **Mask pen drawing tool** debuts.
+
+## 2026-05-16 → 05-25 — v2.4.x: 3D posters land
+
+- **3D poster viewer and export tooling** migrated in from `projects/3d`;
+  scene motion refactored with test coverage; device orientation (gyro)
+  handling and input disposal; iOS touch/orientation polish.
+
+## 2026-04 → 05 — v2.3.x: platform
+
+- **Vite+ toolchain transition.**
+- **Stripe sponsorship** integrated; profile account hero; homescreen icon
+  management and preferences.
+- **One poster on the page** — refactored so a poster renders once no matter
+  how often it's reused; caching and rendering performance work.
+
+## 2026-02 → 04 — v2.0–v2.2: the Thoughts interface
+
+- Interface re-centered around **Thoughts** (statements ⇄ thoughts refactor,
+  navigation removed); color scheme moved green → blue.
+- Safari feed performance; cutouts removed from DOM when off-screen; feed
+  ordering fixes.
+- **Sync folder** for exporting full poster outputs; download-video
+  improvements; swipe left/right for landscape posters.
+- Local dev setup simplified ("run locally like a boss").
+
+## 2025-10 → 2026-02 — v2.0.0: the rebuild
+
+- Offline/anonymous poster creation synced after sign-in; cutouts and shadows
+  stored for later sync; **PNG and PSD export** alongside SVG; layer naming
+  and cache cleanup; dark-mode color-scheme declared to the browser.
+
+## 2024 → mid-2025 — v1.5–v1.8: the on-device tracer
+
+- **vtracer (wasm) integrated** — the on-device color-region tracer behind the
+  mosaic layers; the tracing experience instrumented and tuned.
+- Offline actions merged with sign-in sync for anonymous users; iPad
+  standalone detection; preferences and documentation growth.
+
+## 2017 → 2023 — origins
+
+First commit 2017-12-20. Realness grew up as a phone-number-identity social
+PWA — profiles, avatars, statements, events, a phonebook of relations — with
+dark mode by 2018 and steady releases through v1.x. Posters emerged as the
+core creative object, and 2022's TensorFlow/COCO object-detection experiments
+planted the seed for today's mask-subjects work. Most of that social surface
+was deliberately shed in 2026 (v2.5.3) to focus the app on posters and
+thoughts.
