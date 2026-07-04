@@ -99,6 +99,36 @@ vi.mock('@/utils/preference', () => ({
 describe('Thoughts', () => {
   let wrapper
   const set_working = vi.fn()
+  const mount_options = {
+    global: {
+      provide: {
+        set_working,
+        select_photo: vi.fn(),
+        register_account: vi.fn(),
+        init_processing_queue: vi.fn(),
+        queue_items: ref([])
+      },
+      stubs: {
+        icon: true,
+        'logo-as-link': true,
+        'as-days': {
+          template:
+            '<section class="as-days-stub"><slot v-bind="{}" /></section>',
+          props: ['working', 'posters', 'statements']
+        },
+        'thought-as-article': {
+          template: '<article class="article-stub"></article>',
+          props: ['statements', 'verbose'],
+          emits: ['show']
+        },
+        'poster-as-figure': {
+          template: '<figure class="poster-stub"></figure>',
+          props: ['itemid'],
+          emits: ['show']
+        }
+      }
+    }
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -107,36 +137,7 @@ describe('Thoughts', () => {
     mock_people.value = []
     mock_phonebook.value = [{ id: '/+14151234356/people/1', type: 'person' }]
 
-    wrapper = shallowMount(Thoughts, {
-      global: {
-        provide: {
-          set_working,
-          select_photo: vi.fn(),
-          register_account: vi.fn(),
-          init_processing_queue: vi.fn(),
-          queue_items: ref([])
-        },
-        stubs: {
-          icon: true,
-          'logo-as-link': true,
-          'as-days': {
-            template:
-              '<section class="as-days-stub"><slot v-bind="{}" /></section>',
-            props: ['working', 'posters', 'statements']
-          },
-          'thought-as-article': {
-            template: '<article class="article-stub"></article>',
-            props: ['statements', 'verbose'],
-            emits: ['show']
-          },
-          'poster-as-figure': {
-            template: '<figure class="poster-stub"></figure>',
-            props: ['itemid'],
-            emits: ['show']
-          }
-        }
-      }
-    })
+    wrapper = shallowMount(Thoughts, mount_options)
   })
 
   describe('Rendering', () => {
@@ -161,6 +162,17 @@ describe('Thoughts', () => {
       const h1 = wrapper.find('h1')
       expect(h1.exists()).toBe(true)
       expect(h1.text()).toBe('Thoughts')
+    })
+
+    it('removes the static thoughts shell after mount', async () => {
+      const shell = document.createElement('section')
+      shell.className = 'thoughts-shell'
+      document.body.appendChild(shell)
+
+      shallowMount(Thoughts, mount_options)
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(document.querySelector('.thoughts-shell')).toBeNull()
     })
 
     it('has working state', () => {
