@@ -3,8 +3,35 @@
 User-visible and infrastructure changes to [realness.online](https://realness.online).
 Newest first. The launch punch list lives in `docs/finishing-touches-plan.md`.
 
-## Unreleased
+## 2026-07-04 — v2.5.8
 
+- **Instance capabilities** — the app probes `/capabilities` on its own
+  origin at runtime to discover optional `realness-functions` features (push,
+  phone integrity), falling back to a shipped `capabilities.json` (all features
+  off) for web-only instances. No build-time env vars required. Web push
+  notifications gate on the `push` capability and phone sign-on runs a Twilio
+  Lookup check before SMS when `phone_integrity` is on. Firebase auth split
+  into `serverless-auth.js` with its own vendor chunk so the auth bundle only
+  loads when needed. (`src/use/instance-capabilities.js`,
+  `src/utils/phone-integrity.js`, `src/utils/serverless-auth.js`,
+  `firebase.json`, `README.md`)
+- **Deleted posters stay gone** — when an admin deletes a poster, visitors
+  who had it cached kept seeing an empty figure with 404-ing geology layers,
+  and the cached HTML let `build_local_directory` resurrect it on every
+  directory read (wiping the DB was the only fix). `as-figure` now detects
+  missing cutout layers on posters new enough to have them and emits
+  `missing`; `remove_missing_poster` purges the poster HTML, shadow, and every
+  geology layer key from IndexedDB, clears the author's cached directories,
+  and re-reads the main poster directory from the network to reconcile the
+  feed. Admin delete (`Large.delete`) also purges local layer keys so they
+  don't linger and 404 after a delete. (`posters/as-figure.vue`,
+  `views/Thoughts.vue`, `persistence/Large.js`, `utils/geology.js`)
+- **Root indexable** — the home route dropped its `noindex, nofollow` meta so
+  search engines can crawl the app shell, not just the marketing pages.
+  (`index.html`)
+- **Thoughts shell drops after mount** — the static `<h1>Thoughts</h1>` LCP
+  shell is removed from the DOM once Vue mounts, so the prerendered
+  placeholder doesn't linger over the live feed. (`views/Thoughts.vue`)
 - **Preload Lato Light** — the home-route shell `<h1>` renders Lato 300, but
   only the 400 subset was preloaded, so the LCP element repainted when Light
   arrived after CSS parse. Preloading Light closes the FCP→LCP gap Lighthouse
