@@ -18,15 +18,9 @@ Punch list to get [realness.online](https://realness.online) over the line.
 
 ### 🎨 Design system
 
-- [ ] **Semantic color naming** `M` — color variables are named by hue
-      (`blue`/`green`/`red` in `src/style/variables.styl`, `color.styl`), which
-      couples markup and styles to specific colors and makes theming / dark-mode
-      intent hard to reason about (e.g. `blue` means "accent", `red` means
-      destructive/selected). Move toward role-based names (accent, danger,
-      success, or a numbered scale) per color-naming best practices.
-      Cross-cutting refactor touching `src/style/` and every component
-      referencing the hue names — scope and stage carefully. Coordinates with
-      the realness design system.
+- [x] **Semantic color naming** `M` — role-based color variables (accent,
+      danger, success, etc.) replace hue names across `src/style/` and
+      components; aligns with the realness design system.
 
 ### 🔐 Account & auth
 
@@ -36,19 +30,23 @@ Punch list to get [realness.online](https://realness.online) over the line.
       (`me.id`, e.g. `/+15551234567`) as Stripe `client_reference_id` so
       payments can be tied to an account. **Gate:** if the visitor is not signed
       in, collect phone auth on `/account` (or inline on `/pricing`) before
-      opening Stripe — do not send anonymous checkouts. Today `sponsor/cta.vue`
-      still renders the button without `me` and omits `client_reference_id`;
-      replace with sign-in prompt → redirect back to pricing → then checkout.
-      Update `docs/security.md` third-party / Sybil sections accordingly (Stripe
-      is voluntary checkout, not a server gate).
+      opening Stripe — do not send anonymous checkouts. `sponsor/cta.vue` passes
+      `client_reference_id` when `me` exists but still renders checkout without
+      a sign-in gate. Replace with sign-in prompt → redirect back to pricing →
+      then checkout. Update `docs/security.md` third-party / Sybil sections
+      accordingly (Stripe is voluntary checkout, not a server gate).
 
-- [x] **phone validation (Twilio Lookup)** `M` — shipped in `realness-functions`
-      (`check_phone_integrity`, capability-gated in `as-form-mobile.vue`).
-      Blocks non-mobile and known VoIP carriers before SMS when
-      `phone_integrity` is true in `/capabilities`. Optional per instance
-      (no Twilio env → gate off). Remaining: signup velocity by IP, integrity
-      cache on profile, suspicious-carrier review queue — see **moderator logs
-      and admin UI** (post-release).
+- [ ] **phone validation (Twilio Lookup)** `M` — code landed in
+      `realness-functions` (`check_phone_integrity`, capability-gated in
+      `as-form-mobile.vue`) but **not confirmed in production**. Blocks
+      non-mobile and known VoIP carriers before SMS when `phone_integrity` is
+      true in `/capabilities`. Optional per instance (no Twilio env → gate
+      off). To verify: deploy functions, set `TWILIO_ACCOUNT_SID` /
+      `TWILIO_AUTH_TOKEN` secrets, confirm `/capabilities` returns
+      `phone_integrity: true`, then E2E sign-in with mobile vs VoIP. Remaining
+      after verify: signup velocity by IP, integrity cache on profile,
+      suspicious-carrier review queue — see **moderator logs and admin UI**
+      (post-release).
 
 ### 🎨 Mask & canvas
 

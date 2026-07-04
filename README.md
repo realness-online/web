@@ -132,30 +132,70 @@ npm run deploy
 
 # DONE
 
-Visit `https://${project-name}.web.app`. You can sign in and invite your friends
+Visit `https://${project-name}.web.app`. You can sign in and invite your friends.
 
-### Optional: server features
+## Optional server features (`realness-functions`)
 
-The app is complete with Firebase auth and Storage only. For push notifications
-and (later) phone-number hardening, deploy
-[realness-functions](https://github.com/realness-online/functions) to the **same
-Firebase project** — no extra env vars. The app probes `/capabilities` on your
-origin at runtime; web-only instances fall back to `capabilities.json` (all
-features off).
+**Default: do not deploy functions.** The web app is complete with Firebase
+**Auth + Storage only**. Posters, feed, thoughts, phone sign-in, and moderation
+all work without a backend beyond Firebase.
+
+Deploy [realness-functions](https://github.com/realness-online/functions) only
+when a moderator wants one of the optional capabilities below. It is a
+**separate repo** deployed to the **same Firebase project** as this web app.
+
+### When to deploy functions
+
+| You want…                                                     | Deploy `realness-functions`? | Also configure                                                                        |
+| ------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| A working Realness instance (posters, feed, auth, storage)    | **No**                       | Firebase Auth (phone) + Storage only                                                  |
+| Web push notifications (Account toggle + scheduled broadcast) | **Yes**                      | `VAPID_PRIVATE_KEY` secret + matching public key in both repos (see functions README) |
+| Block VoIP / virtual numbers before SMS (Twilio Lookup)       | **Yes**                      | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` secrets                                    |
+| Stripe sponsorship checkout                                   | **No**                       | Hosted Stripe link in the web app; no server-side Stripe in functions                 |
+
+If none of the optional rows apply, skip functions entirely.
+
+### How the app decides (runtime, not build-time)
+
+The app never assumes functions exist. At runtime it probes capabilities on the
+**same origin**:
+
+1. `GET /capabilities` — live manifest when hosting rewrites to deployed functions
+2. `GET /capabilities.json` — static fallback shipped with the web app (all flags `false`)
+
+Probe logic: `src/use/instance-capabilities.js`. Feature gates read the result:
+
+| Flag              | When `true`                                                                                 | When `false` (default)                                  |
+| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `push`            | Account notifications UI shown; subscriptions saved to Storage; scheduled broadcast can run | Notifications toggle hidden; no server push             |
+| `phone_integrity` | Sign-in calls `POST /check-phone-integrity` before Firebase sends SMS                       | Sign-in uses Firebase phone auth only; no Twilio Lookup |
+
+Web-only deploys never hit functions — the static fallback keeps every flag off.
+No env vars are required in the web app for moderators (`VITE_FUNCTIONS_URL` is
+an optional dev override for the functions emulator).
+
+### Deploy functions (only if needed)
 
 ```bash
 # In the realness-functions repo, same Firebase project as the web app
 npm run deploy
 ```
 
-Then redeploy hosting from this repo so the `/capabilities` rewrite is active
-(`firebase.json` already includes it).
+Then redeploy hosting from this repo so the rewrites in `firebase.json` are
+active (`/capabilities`, `/check-phone-integrity` → functions).
 
-**Phone integrity (optional):** set Twilio Lookup secrets on the functions
-project (`firebase functions:secrets:set TWILIO_ACCOUNT_SID` and
-`TWILIO_AUTH_TOKEN`). When both are set and functions are redeployed,
-`phone_integrity` flips on in `/capabilities` and sign-in runs a Lookup check
-before SMS. Instances without Twilio secrets skip the gate.
+**Phone integrity:** `firebase functions:secrets:set TWILIO_ACCOUNT_SID` and
+`TWILIO_AUTH_TOKEN`, then redeploy functions. Until both secrets exist,
+`phone_integrity` stays `false` and the sign-in gate is off.
+
+**Push:** set `VAPID_PRIVATE_KEY` and keep the public key in sync across both
+repos — see `realness-functions/README.md`.
+
+**Verify:** `GET https://your-instance.web.app/capabilities` should return JSON
+(not the SPA). Confirm flags match what you configured before treating a
+capability as live.
+
+Details and emulator setup: [`realness-functions` README](../realness-functions/README.md).
 
 ## Contributing
 
