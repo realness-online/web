@@ -1,9 +1,10 @@
 import { createWebHistory, createRouter } from 'vue-router'
 import { current_user, me } from '@/utils/serverless'
 import { valid_name } from '@/utils/valid-name'
+import Thoughts from '@/views/Thoughts'
 
 const routes = [
-  { path: '/', component: () => import('@/views/Thoughts') },
+  { path: '/', component: Thoughts },
   {
     path: '/about',
     component: () => import('@/views/About'),
@@ -44,9 +45,8 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
-    if (to.hash) 
-      return { el: to.hash, behavior: 'smooth' }
-    
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+
     // Defer so the scroll fires after the page paints — some mobile
     // browsers need the extra frame for scrollTo to take effect.
     return new Promise(resolve => {

@@ -23,7 +23,6 @@ const manual_chunk_rules = {
     '@firebase/firestore',
     '@firebase/storage'
   ],
-  utilities: ['exifreader'],
   libphonenumber: ['libphonenumber-js']
 }
 

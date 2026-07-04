@@ -11,13 +11,14 @@ import '@/use/install' // register beforeinstallprompt capture at boot, before a
 const { me } = localStorage
 if (!me) localStorage.me = '/+'
 
+const mount_el = document.getElementById('app') ?? document.body
+createApp(App).use(router).use(key_commands_plugin).mount(mount_el)
+
+// Init Firebase after mount so first paint is not blocked.
 if (import.meta.env.PROD && location.hostname !== 'realness.local')
   registerSW({ onOfflineReady() {} })
 init_serverless()
 void log_storage_estimate()
-
-const mount_el = document.getElementById('app') ?? document.body
-createApp(App).use(router).use(key_commands_plugin).mount(mount_el)
 
 // Static site nav is for crawlers and no-JS only; the app has its own nav.
 document.getElementById('site')?.remove()

@@ -3,6 +3,7 @@
 exports[`@/components/profile/as-messenger > Renders > Messenger button 1`] = `
 <a
   class="phone"
+  href="sms:16282281824"
 >
   <icon-stub
     name="message"

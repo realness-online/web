@@ -756,7 +756,7 @@
             flex-direction: column;
           }
 
-          &:has(svg[aria-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) {
             @media (min-width: pad-begins) {
               align-self: stretch;
             }
@@ -817,7 +817,7 @@
             flex-direction: column;
           }
 
-          &:has(svg[aria-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) {
             @media (min-width: pad-begins) {
               align-self: stretch;
             }
@@ -1147,17 +1147,17 @@
         }
 
         @media (min-width: pad-begins) {
-          &:has(svg[aria-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) {
             grid-column: span 2;
             grid-row: span 1;
             min-height: auto;
           }
 
-          &:has(svg[aria-orientation='horizontal']):has(+ figure.poster:has(svg[aria-orientation='horizontal'])) {
+          &:has(svg[data-orientation='horizontal']):has(+ figure.poster:has(svg[data-orientation='horizontal'])) {
             grid-column: span 2;
           }
 
-          &:has(svg[aria-orientation='horizontal']) + figure.poster:has(svg[aria-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) + figure.poster:has(svg[data-orientation='horizontal']) {
             grid-column: span 2;
           }
         }

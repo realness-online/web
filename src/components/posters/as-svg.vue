@@ -358,6 +358,9 @@
     :itemid="itemid"
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
+    role="img"
+    aria-roledescription="poster"
+    aria-label="Poster"
     :tabindex="focusable"
     :class="{
       animate,
@@ -365,7 +368,7 @@
       'hide-cursor': hide_cursor,
       'mask-pen-mode': mask_pen_active
     }"
-    :aria-orientation="landscape ? 'horizontal' : 'vertical'"
+    :data-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
     :data-aspect="
       poster_slice && aspect_ratio_mode !== 'auto'

@@ -239,10 +239,6 @@ export const use_posters = () => {
         /** @type {Id} */ (`${query.id}/posters`)
       )
       if (!directory) return
-      console.info(
-        `[posters] index for ${query.id}: ${directory.items.length} posters, ${directory.archive?.length ?? 0} archive pages`,
-        { items: directory.items, archive: directory.archive }
-      )
       directory.items.forEach(created_at => {
         const poster_id = `${query.id}/posters/${created_at}`
         if (!posters.value.find(p => p.id === poster_id))

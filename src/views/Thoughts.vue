@@ -19,6 +19,8 @@
     as_type,
     feed_slot_itemid
   } from '@/utils/itemid'
+  import { del } from 'idb-keyval'
+  import { as_directory_id } from '@/persistence/Directory'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistence/Storage'
   import { current_user } from '@/utils/serverless'
@@ -119,6 +121,11 @@
     poster_to_remove.value = /** @type {import('@/types').Poster} */ (loaded)
     await tick()
     if (delete_dialog.value) delete_dialog.value.showModal()
+  }
+
+  const remove_missing_poster = id => {
+    posters.value = posters.value.filter(item => id !== item.id)
+    void del(as_directory_id(id))
   }
 
   const confirmed_remove = async () => {
@@ -487,7 +494,8 @@
           tabindex="0"
           :class="{ 'fill-screen': menu }"
           @show="poster_shown"
-          @remove="remove_poster" />
+          @remove="remove_poster"
+          @missing="remove_missing_poster" />
         <thought-as-article
           v-else-if="
             item.type !== 'posters' &&

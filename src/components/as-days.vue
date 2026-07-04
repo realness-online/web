@@ -343,7 +343,7 @@
           v-for="({ item, date }, index) in flattened_items"
           :key="feed_slot_itemid(item)">
           <header v-if="!is_today(date)">
-            <h4>{{ as_day(date) }}</h4>
+            <h4 role="heading" aria-level="2">{{ as_day(date) }}</h4>
           </header>
           <slot :day="[item]" :date="date" />
         </section>
@@ -356,7 +356,7 @@
         :ref="el => set_last_day_sentinel_ref(el, index)"
         :class="{ today: is_today(date) }">
         <header v-if="!is_today(date)">
-          <h4>{{ as_day(date) }}</h4>
+          <h4 role="heading" aria-level="2">{{ as_day(date) }}</h4>
         </header>
         <slot :day="day" :date="date" />
       </article>

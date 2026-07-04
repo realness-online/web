@@ -124,17 +124,6 @@ vi.mock('@/utils/numbers', () => ({
   }
 }))
 
-vi.mock('exifreader', () => ({
-  default: {
-    load: vi.fn(() =>
-      Promise.resolve({
-        expanded: true,
-        gps: { Latitude: 37.7749, Longitude: -122.4194 }
-      })
-    )
-  }
-}))
-
 vi.mock('@/utils/item', () => ({
   default: vi.fn((html, id) => ({
     light: document.createElementNS('http://www.w3.org/2000/svg', 'path'),

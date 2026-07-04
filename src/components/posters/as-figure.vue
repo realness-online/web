@@ -91,7 +91,8 @@
   const emit = defineEmits({
     'vector-click': is_click,
     show: is_vector,
-    remove: is_vector_id
+    remove: is_vector_id,
+    missing: is_vector_id
   })
   const instance = current_instance()
   const mask_pen = use_mask_pen()
@@ -228,7 +229,7 @@
     const par = el.getAttribute('preserveAspectRatio')
     if (par) ref_dom_preserve_aspect_ratio.value = par
     ref_dom_landscape.value =
-      el.getAttribute('aria-orientation') === 'horizontal'
+      el.getAttribute('data-orientation') === 'horizontal'
   }
 
   const dom_reference_activate = () => {
@@ -295,7 +296,7 @@
   }
 
   const on_show = async shown_vector => {
-    if (!shown_vector) return
+    if (!shown_vector) return emit('missing', props.itemid)
 
     working.value = true
     cutouts_loaded.value = false
@@ -453,7 +454,7 @@
       role="img"
       aria-roledescription="referenced poster"
       aria-label="Poster"
-      :aria-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
+      :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
       @click="on_poster_svg_click"
       @pointerdown="handle_dom_ref_pointerdown"
       @pointermove="handle_dom_ref_pointermove"
@@ -611,7 +612,7 @@
       outline-offset: base-line * 0.25;
     }
     @media (orientation: landscape), (min-width: page-width) {
-      &:has(svg[aria-orientation='horizontal']) {
+      &:has(svg[data-orientation='horizontal']) {
         grid-column-start: span 2;
         grid-row-start: auto;
         width: 100%;
@@ -625,13 +626,13 @@
       }
     }
     @media (min-width: pad-begins) {
-      &:has(svg[aria-orientation='horizontal']):has(+ figure.poster:has(svg[aria-orientation='horizontal'])) {
+      &:has(svg[data-orientation='horizontal']):has(+ figure.poster:has(svg[data-orientation='horizontal'])) {
         grid-column-start: span 3;
       }
-      &:has(svg[aria-orientation='horizontal']) + figure.poster:has(svg[aria-orientation='horizontal']) {
+      &:has(svg[data-orientation='horizontal']) + figure.poster:has(svg[data-orientation='horizontal']) {
         grid-column-start: span 3;
       }
-      &.new:not(:has(svg[aria-orientation='horizontal'])) {
+      &.new:not(:has(svg[data-orientation='horizontal'])) {
         grid-column: 2;
         grid-row: 2;
       }

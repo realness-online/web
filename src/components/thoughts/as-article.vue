@@ -99,7 +99,7 @@
 <template>
   <article ref="el" class="thought" :class="all" @click="click">
     <header v-if="author">
-      <router-link :to="author.id" tabindex="-1">
+      <router-link :to="author.id" tabindex="-1" :aria-label="author.name">
         <as-avatar v-if="author.avatar" :itemid="author.avatar" />
         <icon v-else name="silhouette" />
       </router-link>

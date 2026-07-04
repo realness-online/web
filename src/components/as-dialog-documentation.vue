@@ -1,7 +1,12 @@
 <script setup>
-  import { ref, nextTick, watch } from 'vue'
-  import InstallGuide from '@/components/install-guide.vue'
-  import PreferencesMenu from '@/components/preferences-menu'
+  import { ref, nextTick, watch, shallowRef } from 'vue'
+  import { defineAsyncComponent as define_async_component } from 'vue'
+  const InstallGuide = define_async_component(
+    () => import('@/components/install-guide.vue')
+  )
+  const PreferencesMenu = define_async_component(
+    () => import('@/components/preferences-menu.vue')
+  )
   import { reset_preferences } from '@/utils/preference'
   import { documentation_html_parts } from '@/utils/markdown'
   import { documentation_toc } from '@/prerender/toc'
@@ -11,6 +16,7 @@
   const after_ref = ref(null)
   const toc_items = ref(documentation_toc)
   const { before, after, has_install_guide } = documentation_html_parts()
+  const show_guide = ref(false)
 
   const mount_content = () => {
     if (before_ref.value) before_ref.value.innerHTML = before
@@ -22,6 +28,7 @@
     if (dialog.value.open) dialog.value.close()
     else {
       dialog.value.showModal()
+      show_guide.value = true
       await nextTick()
       mount_content()
     }
@@ -63,7 +70,7 @@
       <!-- Markdown before/after install guide: manual innerHTML avoids Safari dialog+v-html bug -->
       <section class="content">
         <div ref="before_ref" />
-        <install-guide v-if="has_install_guide" />
+        <install-guide v-if="has_install_guide && show_guide" />
         <div ref="after_ref" />
       </section>
       <section class="preferences-panel">

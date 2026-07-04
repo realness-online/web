@@ -283,7 +283,7 @@ describe('@/components/posters/as-svg.vue', () => {
         }
       })
       await flushPromises()
-      expect(wrapper.find('svg').attributes('aria-orientation')).toBe(
+      expect(wrapper.find('svg').attributes('data-orientation')).toBe(
         'horizontal'
       )
     })

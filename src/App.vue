@@ -26,7 +26,6 @@
     useActiveElement
   } from '@vueuse/core'
   import { useRouter as use_router } from 'vue-router'
-  import { use as use_vectorize } from '@/use/vectorize'
   import { use_keymap } from '@/use/key-commands'
   import { posting } from '@/use/posting'
   import {
@@ -79,24 +78,86 @@
   }
   provide('set_working', set_working)
 
-  const {
-    vVectorizer,
-    image_picker,
-    new_vector,
-    current_processing,
-    open_camera,
-    select_photo,
-    queue_supported_files,
-    queue_supported_clipboard_items,
-    init_processing_queue,
-    queue_items
-  } = use_vectorize()
+  // Lazy vectorize: load after first paint so heavy deps (potrace,
+  // persistence) don't block the critical path. The module is loaded via
+  // dynamic import after mount, and its refs are synced to the local stubs
+  // so injected values remain reactive.
+  const image_picker = ref(null)
+  const new_vector = ref(null)
+  const current_processing = ref(null)
+  const queue_items = ref([])
+  let select_photo = () => {}
+  let open_camera = () => {}
+  let queue_supported_files = () => false
+  let queue_supported_clipboard_items = () => false
+  let init_processing_queue = async () => {}
+
+  // Stub directive — the real change listener is attached when the vectorize
+  // module loads. Named vVectorizer so <script setup> registers it as
+  // v-vectorizer and the template compiles without a resolve warning.
+  const vVectorizer = {}
+  // Cleanup for the deferred vectorize module; replaced once it loads.
+  let dismount_vectorize = () => {}
+
+  mounted(() => {
+    // Defer vectorize module load to after first paint
+    requestAnimationFrame(async () => {
+      const { use } = await import('@/use/vectorize')
+      // Pass the picker ref directly: use() runs outside setup() here, so it
+      // cannot inject('image-picker'). The ref is already bound to the input.
+      const api = use(image_picker)
+      dismount_vectorize = api.unmount
+      // Attach the real file picker change listener
+      if (api.vVectorizer?.mounted && image_picker.value)
+        api.vVectorizer.mounted(image_picker.value)
+      // Sync reactive values from the API to our local refs
+      watch(
+        () => api.new_vector.value,
+        val => {
+          new_vector.value = val
+        },
+        { immediate: true }
+      )
+      watch(
+        () => api.current_processing.value,
+        val => {
+          current_processing.value = val
+        },
+        { immediate: true }
+      )
+      watch(
+        () => api.queue_items.value,
+        val => {
+          queue_items.value = val
+        },
+        { immediate: true }
+      )
+      // Delegate functions to the loaded API
+      select_photo = () => api.select_photo()
+      open_camera = () => api.open_camera()
+      queue_supported_files = files => api.queue_supported_files(files)
+      queue_supported_clipboard_items = items =>
+        api.queue_supported_clipboard_items(items)
+      init_processing_queue = () => api.init_processing_queue()
+      // Load any pending queue items that survived page reload.
+      // Skip feed_needs_refresh — the feed already loaded and queue items
+      // render in a separate processing section, not in the feed.
+      await init_processing_queue()
+    })
+  })
+
   provide('image-picker', image_picker)
   provide('new_vector', new_vector)
   provide('current_processing', current_processing)
-  provide('open_camera', open_camera)
-  provide('select_photo', select_photo)
-  provide('init_processing_queue', init_processing_queue)
+  provide('open_camera', () => {
+    open_camera()
+  })
+  provide('select_photo', () => {
+    select_photo()
+  })
+  provide('init_processing_queue', async () => {
+    await init_processing_queue()
+  })
   provide('queue_items', queue_items)
 
   const documentation = ref(null)
@@ -441,6 +502,7 @@
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
     window.removeEventListener('paste', paste_image)
+    dismount_vectorize()
   })
 </script>
 
@@ -1089,7 +1151,8 @@
             }
           }
         }
-        & a[aria-label='Settings'] {
+        & a[aria-label='Settings'],
+        & button[aria-label='Settings'] {
           & svg.icon {
             transition-timing-function: ease;
             transition-duration: 1.66s;

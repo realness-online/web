@@ -84,7 +84,8 @@ vi.mock('@/use/vectorize', () => ({
     queue_supported_files: vi.fn().mockResolvedValue(false),
     init_processing_queue: vi.fn(),
     queue_items: { value: [] },
-    mount_workers: vi.fn()
+    mount_workers: vi.fn(),
+    unmount: vi.fn()
   })
 }))
 
@@ -523,6 +524,10 @@ describe('App.vue', () => {
       configurable: true
     })
 
+    // Make requestAnimationFrame fire synchronously so the lazy vectorize
+    // load completes during mount (3D engine tests mock RAF themselves)
+    vi.stubGlobal('requestAnimationFrame', cb => cb(0))
+
     wrapper = shallowMount(App, {
       shallow: true,
       global: {
@@ -545,6 +550,7 @@ describe('App.vue', () => {
 
   afterEach(() => {
     wrapper.unmount()
+    vi.unstubAllGlobals()
   })
 
   describe('Rendering', () => {
