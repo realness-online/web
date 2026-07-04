@@ -1,7 +1,12 @@
 /** @typedef {import('@/types').Id} Id */
 // https://developers.caffeina.com/object-composition-patterns-in-javascript-4853898bb9d0
 import { set, get, del } from 'idb-keyval'
-import { as_created_at, as_poster_id, as_layer_name } from '@/utils/itemid'
+import {
+  as_created_at,
+  as_poster_id,
+  as_layer_name,
+  as_layer_id
+} from '@/utils/itemid'
 import { as_archive, as_directory_id } from '@/persistence/Directory'
 
 /**
@@ -77,6 +82,21 @@ export const Large = superclass =>
       const path = as_directory_id(this.id)
       const directory = await get(path)
       await del(this.id)
+      // When deleting a poster, also purge local cached layer keys (shadow +
+      // geology cutouts) so they don't linger and 404 on the next load.
+      if (this.type === 'posters') {
+        const layer_types = [
+          'shadows',
+          'sediment',
+          'sand',
+          'gravel',
+          'rocks',
+          'boulders'
+        ]
+        await Promise.all(
+          layer_types.map(type => del(as_layer_id(this.id, type)))
+        )
+      }
       if (directory?.items) {
         directory.items = directory.items.filter(
           id => parseInt(id) !== as_created_at(this.id)

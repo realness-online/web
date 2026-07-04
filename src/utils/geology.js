@@ -9,7 +9,7 @@ import {
 } from '@/utils/poster-format'
 
 // Last timestamp for old-style (non-split) posters
-const GEOLOGY_DATE = 1767138344991
+export const GEOLOGY_DATE = 1767138344991
 
 /**
  * @param {ParentNode} symbol_defs

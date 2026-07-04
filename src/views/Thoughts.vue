@@ -17,16 +17,22 @@
     as_created_at,
     load,
     as_type,
+    as_author,
+    as_layer_id,
     feed_slot_itemid
   } from '@/utils/itemid'
   import { del } from 'idb-keyval'
-  import { as_directory_id } from '@/persistence/Directory'
+  import {
+    as_directory_id,
+    clear_author_dirs,
+    load_directory_from_network
+  } from '@/persistence/Directory'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistence/Storage'
   import { current_user } from '@/utils/serverless'
   import { use as use_statements } from '@/use/statements'
   import { use as use_people } from '@/use/people'
-  import { use_posters } from '@/use/poster'
+  import { use_posters, geology_layers } from '@/use/poster'
   import { use_feed } from '@/use/feed'
   import { use_keymap } from '@/use/key-commands'
   import {
@@ -123,9 +129,42 @@
     if (delete_dialog.value) delete_dialog.value.showModal()
   }
 
-  const remove_missing_poster = id => {
+  const remove_missing_poster = async id => {
     posters.value = posters.value.filter(item => id !== item.id)
-    void del(as_directory_id(id))
+    const author_id = as_author(/** @type {Id} */ (id))
+    if (!author_id) {
+      void del(as_directory_id(id))
+      return
+    }
+    // Purge local cached data so build_local_directory cannot resurrect
+    // the deleted poster: the poster HTML, its shadow, and every geology
+    // layer key stored under this author.
+    const keys_to_delete = [
+      id,
+      as_layer_id(/** @type {Id} */ (id), 'shadows'),
+      ...geology_layers.map(layer => as_layer_id(/** @type {Id} */ (id), layer))
+    ]
+    await Promise.all(keys_to_delete.map(key => del(key)))
+    // Clear cached directories and re-read the main poster directory from the
+    // network. Then reconcile the feed: remove any posters from this author
+    // that should be in the main directory but are no longer listed.
+    await clear_author_dirs(/** @type {Id} */ (author_id))
+    const directory = await load_directory_from_network(
+      /** @type {Id} */ (`${author_id}/posters`)
+    )
+    if (!directory?.items?.length) return
+    const valid_timestamps = new Set(directory.items.map(Number))
+    const oldest_valid = Math.min(...valid_timestamps)
+    posters.value = posters.value.filter(item => {
+      if (as_author(/** @type {Id} */ (item.id)) !== author_id) return true
+      const created = Number(as_created_at(/** @type {Id} */ (item.id)))
+      // Keep if it's in the fresh main directory listing
+      if (valid_timestamps.has(created)) return true
+      // Keep if it's older than the main directory (lives in an archive)
+      if (created < oldest_valid) return true
+      // Should be in the main directory but isn't — deleted
+      return false
+    })
   }
 
   const confirmed_remove = async () => {
