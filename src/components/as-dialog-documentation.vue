@@ -97,15 +97,15 @@
         margin-top: base-line* 2;
         margin-right: base-line;
         text-align: center;
-        color: blue;
+        color: accent;
         span {
           font-size: smaller;
-          color: blue;
+          color: accent;
         }
       }
       h2 {
         text-align: center;
-        color: red;
+        color: emphasis;
       }
     }
     & > article {
@@ -123,7 +123,7 @@
         align-items: center;
         margin-bottom: base-line;
         h1 {
-          color: var(--red);
+          color: var(--emphasis);
         }
         & > a {
           cursor: pointer;
@@ -132,7 +132,7 @@
             width: base-line;
             height: base-line;
             &:hover {
-              fill: var(--red);
+              fill: var(--emphasis);
             }
           }
         }
@@ -143,21 +143,21 @@
         column-width: 166px;
         column-gap: base-line;
         column-fill: balance;
-        column-rule: 1px solid var(--red);
+        column-rule: 1px solid var(--emphasis);
         padding-left: base-line * 1.33;
         margin-bottom: base-line * 2;
         & > a {
           display: block;
           font-size: smaller;
           margin: round((base-line / 4), 2) 0;
-          color: var(--blue);
+          color: var(--accent);
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
           text-align: left;
 
           &:hover {
-            color: var(--red);
+            color: var(--emphasis);
           }
 
           // Level 3 and deeper get indentation
@@ -201,13 +201,13 @@
 
       & > section.preferences-panel {
         padding: 0 base-line * 0.5 base-line * 2;
-        border-top: 1px solid var(--red);
+        border-top: 1px solid var(--emphasis);
 
         & > header {
           margin-bottom: base-line;
 
           & > h2 {
-            color: var(--red);
+            color: var(--emphasis);
             margin-top: base-line * 2;
             margin-bottom: base-line;
           }
@@ -220,16 +220,16 @@
           & > button {
             display: block;
             padding: base-line * 0.5 base-line * 2;
-            border: 1px solid var(--red);
+            border: 1px solid var(--emphasis);
             border-radius: base-line * 0.33;
             background: none;
-            color: var(--red);
+            color: var(--emphasis);
             cursor: pointer;
             font: inherit;
 
             &:hover,
             &:focus-visible {
-              background: var(--red);
+              background: var(--emphasis);
               color: white;
             }
           }

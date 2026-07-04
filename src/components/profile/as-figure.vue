@@ -111,7 +111,7 @@
     display: flex
     align-items: center
     gap: base-line * 0.33
-    color: blue
+    color: accent
     & > svg {
       flex-shrink: 0
       overflow: hidden
@@ -134,7 +134,7 @@
     display: flex;
     justify-content: space-between;
     #background, svg.icon.silhouette {
-      fill: blue;
+      fill: accent;
     }
     & > svg {
       margin-right: round((base-line * .33), 3);
@@ -151,7 +151,7 @@
         border-radius: 0.66rem;
       }
       &.background {
-        fill: blue;
+        fill: accent;
       }
     }
     & > figcaption {

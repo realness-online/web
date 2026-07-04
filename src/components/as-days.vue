@@ -404,8 +404,8 @@
           left: base-line
           z-index: 6
           & > h4
-            color: var(--blue)
-            text-shadow: 0 0 2px var(--black)
+            color: var(--accent)
+            text-shadow: 0 0 2px var(--graphite)
         & > article,
         & > figure
           width: 100%

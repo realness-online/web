@@ -69,13 +69,13 @@
     margin: base-line * 2 auto
     max-width: base-line * 26
     padding: base-line
-    border: 1px solid var(--blue)
+    border: 1px solid var(--accent)
     border-radius: base-line * 0.5
     text-align: center
 
     & > h3
       margin: 0 0 base-line * 0.5
-      color: var(--blue)
+      color: var(--accent)
 
     & > p
       margin: 0 0 base-line
@@ -85,15 +85,15 @@
 
     & > button
       padding: base-line * 0.5 base-line * 1.5
-      border: 1px solid var(--red)
+      border: 1px solid var(--emphasis)
       border-radius: base-line * 0.33
       background: none
-      color: var(--red)
+      color: var(--emphasis)
       cursor: pointer
       font: inherit
 
       &:hover,
       &:focus-visible
-        background: var(--red)
+        background: var(--emphasis)
         color: white
 </style>

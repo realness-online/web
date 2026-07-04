@@ -142,7 +142,7 @@
         border-radius: (base-line * 2)
         margin-right: round((base-line / 4), 2)
         &.icon
-          fill: blue
+          fill: accent
           scale: 0.6
       & > address
         flex:1
@@ -152,7 +152,7 @@
           font-weight: 300
           display: inline-block
       & > menu > a > svg
-        fill: blue
+        fill: accent
         opacity: .25
         &:hover
         &:active

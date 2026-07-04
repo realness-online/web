@@ -1,36 +1,59 @@
 @require 'mixins'
 
 
+// Materials — paint on the shelf. Named for character, not wavelength.
+// Recipe: light ~35% / 32-40% S/L, dark lifted to 60-66%, mid fill for solids.
 // https://nice-converter.com/color/hsla-to-rgba
-black             = hsl(0, 0%, 32%)
+
+// surfaces
+graphite          = hsl(0, 0%, 32%)
 black-dark        = hsla(300,  1%, 2%, 0.99)
 atmosphere        = hsla(36, 22%, 4.5%, 1) // #0e0c09
-black-background  = hsla(57, 8%, 16%, 1) // #2c2c26
-black-transparent = hsla(57, 8%, 16%, 0.50) // #2c2c26
+basalt            = hsla(57, 8%, 16%, 1) // #2c2c26
+basalt-transparent = hsla(57, 8%, 16%, 0.50) // #2c2c26
 
 white             = hsla( 57, 13%, 88%, 0.9)
 white-text        = hsla( 57, 13%, 82%, 0.95)
-white-background  = hsl( 57, 13%, 96%)
-white-poster      = hsl( 57, 13%, 88%)
+chalk             = hsl( 57, 13%, 96%)
+bone              = hsl( 57, 13%, 88%)
 
-blue-fill              = hsla(180, 30%, 45%, 1)
-red-fill               = hsla(0, 30%, 45%, 1)
-blue-accent-light      = hsla(180, 35%, 32%, 1)
-red-accent-light       = hsla(0, 35%, 38%, 1)
-blue-accent-dark       = hsla(180, 40%, 62%, 1)
-red-accent-dark        = hsla(0, 40%, 62%, 1)
+// accent pair — water is the cool primary, clay the warm half
+water-fill        = hsla(180, 30%, 45%, 1)
+clay-fill         = hsla(0, 30%, 45%, 1)
+water-light       = hsla(180, 35%, 32%, 1)
+clay-light        = hsla(0, 35%, 38%, 1)
+water-dark        = hsla(180, 40%, 62%, 1)
+clay-dark         = hsla(0, 40%, 64%, 1) // 64% clears 4.5 AA on basalt; 62% measured 4.22
 surface-glass-light    = hsla(57, 13%, 88%, 0.85)
 
-blue              = unquote('var(--blue)')
-red               = unquote('var(--red)')
-yellow            = hsla(55, 94%, 54%, 0.75)
-orange            = hsla(37, 91%, 54%, 0.75)
+// in stock — on the shelf, unassigned
+moss-light        = hsla(120, 35%, 30%, 1)
+moss-dark         = hsla(120, 35%, 60%, 1)
+moss-fill         = hsla(120, 30%, 43%, 1)
+slate-light       = hsla(215, 30%, 38%, 1)
+slate-dark        = hsla(215, 35%, 65%, 1)
+slate-fill        = hsla(215, 25%, 47%, 1)
+heather-light     = hsla(285, 25%, 40%, 1)
+heather-dark      = hsla(285, 30%, 66%, 1)
+heather-fill      = hsla(285, 22%, 49%, 1)
+
+// signals — interrupt rather than decorate; same in both schemes
+sulfur            = hsla(55, 94%, 54%, 0.75)
+ochre             = hsla(37, 91%, 54%, 0.75)
 
 sediment          = hsla(25, 45%, 52%, 1)
 sand              = hsla(45, 40%, 58%, 1)
 gravel            = hsla(38, 18%, 48%, 1)
 rocks             = hsla(30, 15%, 35%, 1)
 boulders          = hsla(0, 25%, 42%, 1)
+
+// roles — the layer components touch; UI uses roles, the canvas uses paint
+accent            = unquote('var(--accent)')
+emphasis          = unquote('var(--emphasis)')
+danger            = unquote('var(--danger)')
+warning           = unquote('var(--warning)')
+caution           = unquote('var(--caution)')
+success           = unquote('var(--success)')
 
 base-line = 1.333rem // smallest horizontal block of content
 
@@ -63,25 +86,26 @@ poster-thoughts-height = round((page-width), 2)
 
 :root
   interpolate-size: allow-keywords
-  accent-color: var(--red)
+  accent-color: var(--emphasis)
 
-  // Colors
-  --black black
+  // Materials
+  --graphite graphite
   --black-dark black-dark
   --atmosphere atmosphere
-  --black-background black-background
-  --black-transparent black-transparent
+  --basalt basalt
+  --basalt-transparent basalt-transparent
 
   --white white
   --white-text white-text
-  --white-background white-background
-  --white-poster white-poster
+  --chalk chalk
+  --bone bone
 
-  --blue-fill blue-fill
-  --red-fill red-fill
-  // --blue, --red, --surface-glass: set in color.styl only (lazy chunks re-import variables)
-  --yellow yellow
-  --orange orange
+  --water-fill water-fill
+  --clay-fill clay-fill
+  // role tokens (--accent, --emphasis, ...) live in color.styl only
+  // (lazy chunks re-import variables)
+  --sulfur sulfur
+  --ochre ochre
   --sediment sediment
   --sand sand
   --gravel gravel
@@ -104,4 +128,3 @@ poster-thoughts-height = round((page-width), 2)
   --poster-min-width poster-min-width
   --poster-grid-height poster-grid-height
   --poster-thoughts-height poster-thoughts-height
-

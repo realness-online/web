@@ -50,10 +50,10 @@
       border-radius: round((base-line * 2), 2)
       margin-right: round((base-line / 6), 2)
       &.icon
-        fill: blue
+        fill: accent
     & > address
       & > time
-        color: red
+        color: emphasis
       & > h3
         line-height: 1
         display: inline-block

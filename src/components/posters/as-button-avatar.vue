@@ -45,5 +45,5 @@
     cursor: pointer
     color: inherit
   menu > button > svg.true
-    fill: red !important
+    fill: emphasis !important
 </style>

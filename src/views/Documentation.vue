@@ -152,18 +152,18 @@
       h1 {
         margin-top: 0;
         text-align: center;
-        color: var(--red);
+        color: var(--emphasis);
       }
 
       a.page-back {
         display: block;
         font-size: smaller;
-        color: var(--blue);
+        color: var(--accent);
         text-decoration: none;
         margin-bottom: base-line * 0.5;
 
         &:hover {
-          color: var(--red);
+          color: var(--emphasis);
         }
       }
     }
@@ -183,7 +183,7 @@
         column-width: base-line * 8;
         column-gap: base-line;
         column-fill: balance;
-        column-rule: 1px solid var(--red);
+        column-rule: 1px solid var(--emphasis);
         margin-bottom: base-line * 2;
 
         @media (min-width: pad-begins) {
@@ -196,13 +196,13 @@
           top: base-line;
           max-height: calc(100dvh - var(--base-line) * 4);
           overflow-y: auto;
-          border-right: 1px solid var(--red);
+          border-right: 1px solid var(--emphasis);
         }
 
         & > a {
           display: block;
           margin: round((base-line / 4), 2) 0;
-          color: var(--blue);
+          color: var(--accent);
           text-decoration: none;
           break-inside: avoid;
           line-height: 1.66;
@@ -211,7 +211,7 @@
 
           &:hover,
           &.active {
-            color: var(--red);
+            color: var(--emphasis);
           }
 
           &.level-3 {
@@ -267,16 +267,16 @@
             float: right;
             margin-left: base-line;
             padding: base-line * 0.33 base-line;
-            border: 1px solid var(--red);
+            border: 1px solid var(--emphasis);
             border-radius: base-line * 0.33;
             background: none;
-            color: var(--red);
+            color: var(--emphasis);
             cursor: pointer;
             font: inherit;
 
             &:hover,
             &:focus-visible {
-              background: var(--red);
+              background: var(--emphasis);
               color: white;
             }
           }
@@ -289,7 +289,7 @@
             margin-bottom: base-line * 2;
 
             & > h2 {
-              color: var(--red);
+              color: var(--emphasis);
               margin-bottom: base-line;
             }
 
@@ -303,16 +303,16 @@
               float: right;
               margin-left: base-line;
               padding: base-line * 0.33 base-line;
-              border: 1px solid var(--red);
+              border: 1px solid var(--emphasis);
               border-radius: base-line * 0.33;
               background: none;
-              color: var(--red);
+              color: var(--emphasis);
               cursor: pointer;
               font: inherit;
 
               &:hover,
               &:focus-visible {
-                background: var(--red);
+                background: var(--emphasis);
                 color: white;
               }
             }

@@ -44,15 +44,15 @@
   const aspect_ratio = computed(() => aspect_ratio_mode.value || 'auto')
 
   const fps_color = computed(() => {
-    if (fps.value >= FPS_ACCEPTABLE) return 'var(--blue)'
-    if (fps.value >= FPS_LOW) return 'var(--yellow)'
-    return 'var(--red)'
+    if (fps.value >= FPS_ACCEPTABLE) return 'var(--accent)'
+    if (fps.value >= FPS_LOW) return 'var(--warning)'
+    return 'var(--danger)'
   })
 
   const fps_style = computed(() => ({
     '--animate': animate.value ? 1 : 0,
     '--slice': aspect_ratio_mode.value !== 'auto' ? 1 : 0,
-    '--animate-color': animate.value ? 'var(--blue)' : 'var(--gravel)',
+    '--animate-color': animate.value ? 'var(--accent)' : 'var(--gravel)',
     '--slice-color':
       aspect_ratio_mode.value !== 'auto' ? 'var(--sand)' : 'var(--rocks)',
     '--fps-color': fps_color.value
@@ -131,10 +131,10 @@
     right: base-line * .5
     padding: base-line * .5
     border-radius: base-line * .5
-    background: var(--black-background)
+    background: var(--basalt)
     color: var(--white-text)
     font-size: base-line
-    text-shadow: 0 0 2px var(--black)
+    text-shadow: 0 0 2px var(--graphite)
     z-index: 8
     font-family: monospace
     display: flex
@@ -169,15 +169,15 @@
       &::-moz-meter-sub-sub-optimum::-moz-meter-bar
         background: var(--fps-color)
     > meter:last-of-type
-      accent-color: var(--blue)
-      color: var(--blue)
+      accent-color: var(--accent)
+      color: var(--accent)
       font-size: 66%
       &::-webkit-meter-bar
         background: transparent
       &::-webkit-meter-optimum-value
-        background: var(--blue)
+        background: var(--accent)
       &::-moz-meter-bar
-        background: var(--blue)
+        background: var(--accent)
     > output
       font-size: 66%
     > output:nth-of-type(1)

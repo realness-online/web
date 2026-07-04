@@ -117,7 +117,7 @@
 
 <style lang="stylus">
   fieldset.preference:has(input:checked) h4.with-icon svg.icon
-    color: var(--red)
+    color: var(--emphasis)
   fieldset.preference
     margin-bottom: base-line
     &.compact
@@ -154,7 +154,7 @@
         font-size: normal;
         margin: 0 0 base-line 0
         &.with-icon svg.icon
-          color: var(--blue)
+          color: var(--accent)
           width: base-line * 1.1
           height: base-line * 1.1
           flex-shrink: 0
@@ -176,6 +176,6 @@
       kbd
         margin: 0
     a
-      color: blue
-      border-color: blue
+      color: accent
+      border-color: accent
 </style>

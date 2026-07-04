@@ -93,17 +93,17 @@
     &.complete
       animation-name: slide-out-right
     fieldset.saving input#name
-      border-color: orange
+      border-color: caution
     fieldset.saved input#name
-      border-color: blue
+      border-color: accent
     fieldset.invalid input#name
-      border-color: red
+      border-color: danger
     input#name
       width: 100%
     p#name-error
       margin: (base-line * 0.25) 0 0
       font-size: 0.75em
-      color: red
+      color: emphasis
     menu
       display: flex
       justify-content: end
