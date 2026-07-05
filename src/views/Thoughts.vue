@@ -597,7 +597,7 @@
       & [role='feed'] > article {
         @media (prefers-color-scheme: dark) {
           & > header h4, figure.poster > svg.background {
-            color: blue;
+            color: accent;
           }
         }
       }
@@ -624,12 +624,12 @@
       align-items: center;
       justify-content: flex-start;
       gap: base-line;
-      color: blue;
+      color: accent;
       & > h1 {
         width: auto;
       }
       & > a > svg {
-        fill: blue;
+        fill: accent;
       }
       & > a#about {
         margin-left: auto;
@@ -686,7 +686,7 @@
         @media (hover: hover) and (pointer: fine) {
           &:hover {
             & > span:nth-child(2) {
-              color: red;
+              color: emphasis;
               transform: scale(1.15);
               @media (prefers-reduced-motion: reduce) {
                 transform: scale(1);
@@ -703,7 +703,7 @@
       display: none;
     }
     .working {
-      fill: blue;
+      fill: accent;
     }
   }
 </style>

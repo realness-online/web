@@ -1,6 +1,6 @@
 markdown_content()
   h1, h2, h3, h4, h5, h6
-    color: var(--red)
+    color: var(--emphasis)
     margin-top: base-line * 2
     margin-bottom: base-line
     // Clear the camera notch + site-nav when scrolled into view via hash.
@@ -10,10 +10,10 @@ markdown_content()
       margin-top: 0
 
   h1
-    color: var(--blue)
+    color: var(--accent)
 
     & > span
-      color: var(--blue)
+      color: var(--accent)
       font-size: 0.66em
       font-weight: 300
 
@@ -81,14 +81,14 @@ markdown_content()
       padding: 0
 
   blockquote
-    border-left: 3px solid var(--red)
+    border-left: 3px solid var(--emphasis)
     padding-left: base-line
     margin-bottom: base-line
     font-style: italic
 
   a
-    color: var(--blue)
+    color: var(--accent)
     text-decoration: none
 
     &:hover
-      color: var(--red)
+      color: var(--emphasis)

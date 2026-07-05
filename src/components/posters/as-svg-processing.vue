@@ -193,11 +193,11 @@
     grid-template-rows: auto;
     grid-template-columns: auto;
     border-radius: calc(var(--base-line) * 0.25);
-    background: var(--black-background);
+    background: var(--basalt);
     width: fit-content;
     height: fit-content;
     grid-row-start: span 2;
-    outline: 1px solid var(--blue);
+    outline: 1px solid var(--accent);
 
     & > img {
       grid-area: overlay;
@@ -211,7 +211,7 @@
       grid-area: overlay;
       width: base-line * 6;
       height: base-line * 2;
-      color: var(--blue);
+      color: var(--accent);
       pointer-events: none;
       z-index: 3;
       opacity: 1;
@@ -220,7 +220,7 @@
     }
     & > svg:not(.icon) {
       grid-area: overlay;
-      color: var(--blue);
+      color: var(--accent);
       pointer-events: none;
       z-index: 3;
     }

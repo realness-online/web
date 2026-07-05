@@ -94,7 +94,7 @@
           margin: 0
       & > footer
         padding: base-line 0
-        border-top: 1px solid blue
+        border-top: 1px solid accent
         & > div
           display: flex
           justify-content: space-between
@@ -105,14 +105,14 @@
             font-size: normal
             font-weight: 300
           & > button#sign-out
-            color: red
+            color: emphasis
       & > dialog#confirm-sign-out
         border: none
         padding: base-line * 1.5
         & > p
           margin: 0
         &::backdrop
-          background: black-transparent
+          background: basalt-transparent
         & > menu
           display: flex
           justify-content: flex-end
@@ -123,5 +123,5 @@
             padding: base-line * 0.5 base-line
             white-space: nowrap
           & > button#confirm
-            color: red
+            color: emphasis
 </style>

@@ -278,7 +278,7 @@
     // horizontal margin would push it past the right edge (overflow skew).
     margin: base-line 0;
     svg.remove {
-      fill: red;
+      fill: danger;
     }
     fieldset {
       margin-bottom: base-line;
@@ -327,14 +327,14 @@
           margin-top: (base-line * 0.25);
           padding: (base-line * 0.25);
           @media (prefers-color-scheme: dark) {
-            background-color: black-transparent;
-            border-color: red;
+            background-color: basalt-transparent;
+            border-color: emphasis;
           }
           option {
             padding: (base-line * 0.25);
             cursor: pointer;
             &:hover {
-              background-color: blue-fill;
+              background-color: water-fill;
               color: white;
             }
           }
@@ -360,9 +360,9 @@
       text-align: right;
 
       a {
-        color: var(--blue);
+        color: var(--accent);
         &:hover {
-          color: var(--red);
+          color: var(--emphasis);
         }
       }
     }

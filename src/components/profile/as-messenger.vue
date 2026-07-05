@@ -28,7 +28,7 @@
 
 <style lang="stylus">
   figure.profile > figcaption > menu a.phone > svg
-    fill: blue
+    fill: accent
     opacity:0.25
     &:hover
     &:active

@@ -37,7 +37,7 @@
   label[for=search]
     position: relative
     & > *
-      fill: blue
+      fill: accent
       height: base-line * 2
       width: base-line * 2
     svg
@@ -46,7 +46,7 @@
       left: 0
       z-index: -2
     input#search
-      standard-border: blue
+      standard-border: accent
       border-width: 0
       position: relative
       z-index: 2
@@ -56,11 +56,11 @@
         color: transparent
       &:focus
         transition-delay: 0.15s
-        standard-border: blue
+        standard-border: accent
         padding: round((base-line / 2 ), 2)
         width: inherit
         &::placeholder
-          color:blue
+          color:accent
           transition-duration: 0.75
           transition-property: all
           transition-delay: 0.25s

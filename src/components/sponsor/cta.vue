@@ -67,13 +67,13 @@
   a.checkout
     display: inline-block
     padding: base-line * 0.5 base-line
-    border: round((base-line * 0.1), 2) solid var(--blue)
+    border: round((base-line * 0.1), 2) solid var(--accent)
     border-radius: base-line * 0.33
-    color: blue
+    color: accent
     font-weight: bold
     text-decoration: none
 
     &:hover,
     &:focus-visible
-      background-color: alpha(blue-fill, 0.12)
+      background-color: alpha(water-fill, 0.12)
 </style>

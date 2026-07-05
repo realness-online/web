@@ -1,24 +1,31 @@
+// Roles — the jobs components actually touch. Each role points at a material;
+// a rebrand is one line here, not a hundred call sites.
 light-accent-tokens()
-  --blue blue-accent-light
-  --red red-accent-light
+  --accent water-light
+  --emphasis clay-light
+  --success moss-light
   --surface-glass surface-glass-light
 
 dark-accent-tokens()
-  --blue blue-accent-dark
-  --red red-accent-dark
-  --surface-glass black-transparent
+  --accent water-dark
+  --emphasis clay-dark
+  --success moss-dark
+  --surface-glass basalt-transparent
 
 light-surface-tokens()
-  --text black
-  --surface white-background
-  --code-surface alpha(black, 0.06)
+  --text graphite
+  --surface chalk
+  --code-surface alpha(graphite, 0.06)
 
 dark-surface-tokens()
   --text white-text
-  --surface var(--black-background)
+  --surface var(--basalt)
   --code-surface alpha(white, 0.08)
 
 :root
+  --danger var(--emphasis) // same paint as emphasis today, free to diverge
+  --warning sulfur
+  --caution ochre
   light-accent-tokens()
   light-surface-tokens()
 
@@ -42,21 +49,21 @@ main#realness
 section.page
   background-color: var(--surface)
 
-.orange
-  background-color: orange
-  border-color: orange
-  -webkit-tap-highlight-color: orange
-  color: lighten(orange, 70%)
+.ochre
+  background-color: ochre
+  border-color: ochre
+  -webkit-tap-highlight-color: ochre
+  color: lighten(ochre, 70%)
   &::placeholder
-    color: lighten(orange, 90%)
-.yellow
-  background-color: yellow
-  border-color: darken(yellow, 13%)
-  color: black
-  -webkit-tap-highlight-color: yellow
+    color: lighten(ochre, 90%)
+.sulfur
+  background-color: sulfur
+  border-color: darken(sulfur, 13%)
+  color: graphite
+  -webkit-tap-highlight-color: sulfur
   @media (prefers-color-scheme: dark)
     &::placeholder
-      color: black
+      color: graphite
 .sediment
   background-color: sediment
   border-color: sediment
@@ -68,36 +75,36 @@ section.page
     background-color: darken(sediment, 12%)
     color: white-text
     border-color: darken(sediment, 8%)
-.red
-  background-color: red-fill
-  border-color: red-fill
-  color: lighten(red-fill, 85%)
-  -webkit-tap-highlight-color: red-fill
+.clay
+  background-color: clay-fill
+  border-color: clay-fill
+  color: lighten(clay-fill, 85%)
+  -webkit-tap-highlight-color: clay-fill
   &::placeholder
-    color: lighten(red-fill, 85%)
+    color: lighten(clay-fill, 85%)
   @media (prefers-color-scheme: dark)
-    background-color: darken(red-fill, 8%)
+    background-color: darken(clay-fill, 8%)
     color: white-text
-    border-color: darken(red-fill, 5%)
-.blue
-  background-color: blue-fill
-  border-color: blue-fill
-  color:lighten(blue-fill, 95%)
-  -webkit-tap-highlight-color: blue-fill
+    border-color: darken(clay-fill, 5%)
+.water
+  background-color: water-fill
+  border-color: water-fill
+  color:lighten(water-fill, 95%)
+  -webkit-tap-highlight-color: water-fill
   &::placeholder
-    color: lighten(blue-fill, 95%)
+    color: lighten(water-fill, 95%)
   @media (prefers-color-scheme: dark)
-    background-color: darken(blue-fill, 20%)
+    background-color: darken(water-fill, 20%)
     color: white-text
-    border-color: darken(blue-fill, 15%)
-.black
-  background-color: black
-  border-color: black
-  color: lighten(black, 65%)
-  -webkit-tap-highlight-color: black
+    border-color: darken(water-fill, 15%)
+.graphite
+  background-color: graphite
+  border-color: graphite
+  color: lighten(graphite, 65%)
+  -webkit-tap-highlight-color: graphite
   &::placeholder
-    color: lighten(black, 65%)
+    color: lighten(graphite, 65%)
   @media (prefers-color-scheme: dark)
-    background-color: darken(black, 30%)
+    background-color: darken(graphite, 30%)
     color: white-text
-    border-color: black
+    border-color: graphite
