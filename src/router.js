@@ -38,6 +38,11 @@ const routes = [
     component: () => import('@/views/Account'),
     meta: { support: true }
   },
+  {
+    path: '/colors',
+    component: () => import('@/views/Colors'),
+    meta: { support: true }
+  },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]
 const router = createRouter({
