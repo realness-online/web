@@ -97,7 +97,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: red;
+    color: emphasis;
     cursor: pointer;
     transition: color 0.4s ease;
     -webkit-tap-highlight-color: transparent;
@@ -106,7 +106,7 @@
       outline: none;
     }
     &[aria-checked='true'] {
-      color: blue;
+      color: accent;
     }
     @media (hover: hover) and (pointer: fine) {
       &:hover {

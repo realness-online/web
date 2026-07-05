@@ -33,7 +33,7 @@
 
 <style lang="stylus">
   address[itemscope]
-    color: black
+    color: graphite
     margin: 0
     padding: 0
     @media (prefers-color-scheme: dark)
@@ -45,7 +45,7 @@
       gap: round((base-line / 3), 2)
       margin-bottom: round((base-line / 6), 2)
       & > button
-        color: red
+        color: emphasis
         padding: round((base-line / 4), 2)
     & > header > h3,
     & > b

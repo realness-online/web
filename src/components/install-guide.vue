@@ -42,7 +42,7 @@
       <button
         v-if="can_install"
         type="button"
-        class="blue"
+        class="water"
         @click="prompt_install">
         Install Realness
       </button>
@@ -95,7 +95,7 @@
           fill: var(--text)
 
           &:hover
-            fill: var(--red)
+            fill: var(--emphasis)
 
   section.install.guide
     margin: 0 auto
@@ -107,19 +107,19 @@
       margin-bottom: base-line
       h3
         margin: 0
-        color: var(--blue)
+        color: var(--accent)
       p
         margin: base-line * 0.25 auto 0
         small
           display: block
           margin-top: base-line * 0.25
-          color: var(--red)
+          color: var(--emphasis)
 
     figure.device
       margin: 0 auto
       border-radius: base-line
       overflow: hidden
-      box-shadow: 0 (base-line) (base-line * 2) alpha(black, 0.45)
+      box-shadow: 0 (base-line) (base-line * 2) alpha(graphite, 0.45)
       video
         display: block
         width: 100%
@@ -130,17 +130,17 @@
         max-width: base-line * 26
 
     p.installed
-      color: var(--blue)
+      color: var(--accent)
       strong
-        color: var(--blue)
+        color: var(--accent)
 
     p.unsupported
       max-width: base-line * 22
       margin: 0 auto
       strong
-        color: var(--blue)
+        color: var(--accent)
 
-    button.blue
+    button.water
       margin: base-line auto 0
       padding: (base-line * 0.5) (base-line * 1.5)
       border-radius: base-line * 2
@@ -153,7 +153,7 @@
       text-align: left
       summary
         cursor: pointer
-        color: var(--blue)
+        color: var(--accent)
         text-align: center
       ul
         list-style: none
@@ -172,7 +172,7 @@
             width: 100%
             height: auto
             border-radius: base-line * 0.5
-            background: black
+            background: graphite
           &[data-portrait='true'] video
             max-width: base-line * 11
 </style>

@@ -166,7 +166,7 @@
 
         & > h1 {
           margin: 0 0 (base-line * 0.5);
-          color: blue;
+          color: accent;
         }
 
         & > p {
@@ -198,14 +198,14 @@
             display: flex;
             flex-direction: column;
             padding: base-line;
-            border: round((base-line * 0.1), 2) solid var(--blue);
+            border: round((base-line * 0.1), 2) solid var(--accent);
             border-radius: base-line * 0.5;
             background-color: var(--surface);
             box-sizing: border-box;
 
             & > h2 {
               margin: 0 0 (base-line * 0.35);
-              color: blue;
+              color: accent;
               font-size: larger;
             }
 
@@ -234,12 +234,12 @@
                   width: base-line * 0.35;
                   height: base-line * 0.35;
                   border-radius: 50%;
-                  background-color: var(--blue);
+                  background-color: var(--accent);
                 }
 
                 & > strong {
                   display: block;
-                  color: blue;
+                  color: accent;
                 }
 
                 & > p {
@@ -281,24 +281,24 @@
               }
 
               & > button.prompt-agent.inline {
-                border: round((base-line * 0.1), 2) solid var(--red);
+                border: round((base-line * 0.1), 2) solid var(--emphasis);
                 background: none;
-                color: var(--red);
+                color: var(--emphasis);
 
                 &:hover,
                 &:focus-visible {
-                  background: var(--red);
+                  background: var(--emphasis);
                   color: white;
                 }
               }
 
               & > a {
-                border: round((base-line * 0.1), 2) solid var(--blue);
-                color: blue;
+                border: round((base-line * 0.1), 2) solid var(--accent);
+                color: accent;
 
                 &:hover,
                 &:focus-visible {
-                  background-color: alpha(blue-fill, 0.12);
+                  background-color: alpha(water-fill, 0.12);
                 }
               }
             }
@@ -307,16 +307,16 @@
               display: block;
               text-align: center;
               padding: base-line * 0.5 base-line;
-              border: round((base-line * 0.1), 2) solid var(--blue);
+              border: round((base-line * 0.1), 2) solid var(--accent);
               border-radius: base-line * 0.33;
-              color: blue;
+              color: accent;
               font-weight: bold;
               text-decoration: none;
               margin-top: auto;
 
               &:hover,
               &:focus-visible {
-                background-color: alpha(blue-fill, 0.12);
+                background-color: alpha(water-fill, 0.12);
               }
             }
           }

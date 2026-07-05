@@ -291,7 +291,7 @@
       align-self: start
 
       & > h3
-        color: red
+        color: emphasis
         margin: 0 0 base-line
         text-transform: capitalize
 
@@ -331,7 +331,7 @@
 
   fieldset.preference .tweakpane-3d
 
-    --tp-base-background-color: var(--black-background)
+    --tp-base-background-color: var(--basalt)
     --tp-base-shadow-color: transparent
     --tp-base-border-radius: round((base-line / 3), 2)
     --tp-base-font-family: inherit
@@ -343,18 +343,18 @@
     --tp-container-foreground-color: var(--white-text)
 
     --tp-input-background-color: alpha(white, 0.06)
-    --tp-input-background-color-hover: var(--blue)
-    --tp-input-background-color-focus: var(--blue)
-    --tp-input-background-color-active: var(--blue)
+    --tp-input-background-color-hover: var(--accent)
+    --tp-input-background-color-focus: var(--accent)
+    --tp-input-background-color-active: var(--accent)
     --tp-input-foreground-color: var(--white-text)
 
     --tp-label-foreground-color: var(--white-text)
     --tp-groove-foreground-color: alpha(white, 0.08)
 
     --tp-button-background-color: alpha(white, 0.06)
-    --tp-button-background-color-hover: var(--blue)
-    --tp-button-background-color-focus: var(--blue)
-    --tp-button-background-color-active: var(--blue)
+    --tp-button-background-color-hover: var(--accent)
+    --tp-button-background-color-focus: var(--accent)
+    --tp-button-background-color-active: var(--accent)
     --tp-button-foreground-color: var(--white-text)
 
     --tp-monitor-background-color: alpha(white, 0.04)

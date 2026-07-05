@@ -44,15 +44,15 @@
       list-style: none;
 
       a {
-        color: var(--blue);
+        color: var(--accent);
         text-decoration: none;
 
         &:hover {
-          color: var(--red);
+          color: var(--emphasis);
         }
 
         &.router-link-active {
-          color: var(--red);
+          color: var(--emphasis);
         }
       }
 

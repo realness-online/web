@@ -736,10 +736,10 @@
     border: (base-line / 16) solid transparent;
     border-radius (base-line / 16);
     &.offline {
-      border-color: var(--yellow);
+      border-color: var(--warning);
     }
     & > h6 {
-      text-shadow: 1px 1px 1.25px var(--black-background);
+      text-shadow: 1px 1px 1.25px var(--basalt);
       position: fixed;
       display: none;
       top: 0;
@@ -806,15 +806,15 @@
           width: 100%;
           height: 100%;
           border-radius: base-line;
-          outline: 2px solid var(--red);
+          outline: 2px solid var(--emphasis);
           outline-offset: base-line * 0.25;
           transition: background-color 0.2s ease;
           frosted-glass();
-          box-shadow: 0 0 base-line var(--black-transparent);
+          box-shadow: 0 0 base-line var(--basalt-transparent);
           pointer-events: none;
         }
         &:hover > span {
-          background-color: var(--black-background);
+          background-color: var(--basalt);
         }
       }
 
@@ -840,7 +840,7 @@
         & label[for='wat'],
         & a[aria-label='Go to thoughts'] {
           position: static;
-          color: var(--blue);
+          color: var(--accent);
           cursor: pointer;
           border: none;
           background: transparent;
@@ -857,10 +857,10 @@
             transform: none;
           }
           svg {
-            fill: var(--blue);
+            fill: var(--accent);
           }
           svg.animation {
-            stroke: var(--blue);
+            stroke: var(--accent);
           }
           &:focus,
           &:focus-visible {
@@ -869,12 +869,12 @@
           }
         }
         & label.menu-action.active {
-          color: var(--red);
+          color: var(--emphasis);
           svg {
-            fill: var(--red);
+            fill: var(--emphasis);
           }
           svg.animation {
-            stroke: var(--red);
+            stroke: var(--emphasis);
           }
         }
         & label.menu-action {

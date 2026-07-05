@@ -7,25 +7,25 @@ form
 fieldset
   padding: round((base-line / 2 ), 2)
   overflow: hidden
-  standard-border: black
+  standard-border: graphite
   @media (prefers-color-scheme: dark)
-    standard-border: red
+    standard-border: emphasis
   legend
-    color: lighten(black, 30%)
+    color: lighten(graphite, 30%)
     &.valid
-      color: blue
+      color: accent
 
 input
-  color: red
+  color: emphasis
   &[type=file]
     display: none
   &:focus
     transition-property: all
     outline: 0
     &::placeholder
-      color: lighten(black, 30%)
+      color: lighten(graphite, 30%)
   &::placeholder
-    color: lighten(black, 30%)
+    color: lighten(graphite, 30%)
 
 input
 textarea
@@ -34,8 +34,8 @@ textarea
   &:disabled
     opacity: 1
     user-select: none
-    -webkit-text-fill-color: black
-    color: black
+    -webkit-text-fill-color: graphite
+    color: graphite
 
 input
 textarea
@@ -72,9 +72,9 @@ label.switch
     width: 0
     height: 0
     &:checked + .slider
-      background-color: red
+      background-color: emphasis
     &:focus + .slider
-      box-shadow: 0 0 1px red
+      box-shadow: 0 0 1px emphasis
     &:checked + .slider:before
       transform: translateX(base-line * 1.4)
   .slider
@@ -85,7 +85,7 @@ label.switch
     left: 0
     right: 0
     bottom: 0
-    background-color: black
+    background-color: graphite
     transition: .4s
     &:before
       border-radius: 50%
@@ -100,12 +100,12 @@ label.switch
       transition: .4s
 
 button
-  standard-button: blue
+  standard-button: accent
   &:active
     transform: scale(0.95)
   &:focus
-    outline: 0.25px solid blue
+    outline: 0.25px solid accent
     outline-offset: base-line * 0.25
   &:disabled
     opacity: .75
-    standard-button: black
+    standard-button: graphite
