@@ -21,7 +21,7 @@ bone              = hsl( 57, 13%, 83.5%)
 // accent pair — water is the cool primary, clay the warm half
 water-fill        = hsla(180, 30%, 45%, 1)
 clay-fill         = hsla(0, 30%, 45%, 1)
-water-light       = hsla(180, 35%, 32%, 1)
+water-light       = hsla(180, 65%, 26%, 1) // matches water-dark's chroma; was too desaturated at 35%/32%
 clay-light        = hsla(0, 35%, 38%, 1)
 water-dark        = hsla(180, 40%, 62%, 1)
 clay-dark         = hsla(0, 40%, 64%, 1) // 64% clears 4.5 AA on basalt; 62% measured 4.22
@@ -39,13 +39,13 @@ heather-dark      = hsla(285, 30%, 66%, 1)
 heather-fill      = hsla(285, 22%, 49%, 1)
 
 // signals — interrupt rather than decorate; same in both schemes
-sulfur            = hsla(55, 94%, 40%, 0.75)
+sulfur            = hsla(60, 90%, 45%, 0.75) // brighter/greener — was too close to ochre in hue+lightness
 ochre             = hsla(37, 91%, 54%, 0.75)
 
 sediment          = hsla(25, 45%, 62.5%, 1)
-sand              = hsla(45, 40%, 45%, 1)
-gravel            = hsla(38, 18%, 43%, 1)
-rocks             = hsla(30, 15%, 35.5%, 1)
+sand              = hsla(26, 40%, 45%, 1) // was hue 45 — read as olive/mustard in oklch, not sand
+gravel            = hsla(28, 18%, 40%, 1) // was hue 38 — sat oklch H=82, sage-olive blip between sand/rocks
+rocks             = hsla(30, 15%, 33.5%, 1) // lightness nudged for an even step down from gravel
 boulders          = hsla(0, 25%, 31%, 1)
 
 // roles — the layer components touch; UI uses roles, the canvas uses paint
