@@ -83,16 +83,22 @@ only helps when the focused element is the visible one.
 
 Hover states don't have a shared mixin yet — the two conventions already
 in informal use are `background: var(--emphasis); color: white;` for
-menu-style items, and `background-color: alpha(water-fill, 0.12)` for
-subtle CTA highlights. Neither is enforced.
+menu-style items, and `color-mix(in srgb, var(--accent) 12%, transparent)`
+for subtle CTA highlights. Neither is enforced. The CTA one used to be
+`alpha(water-fill, 0.12)` — a material, not a role — and it silently went
+stale the moment light-mode `--accent` moved from `water` to `slate`.
+`color-mix()` against `var(--accent)` fixes that class of drift for good:
+it reads the role at paint time instead of freezing whatever material
+backed it when the CSS was written.
 
 ## Known gaps
 
-- `moss`, `slate`, and `heather` are fully harmonized but still mostly
-  unused — `slate` now backs `--accent` in light mode, `heather` backs
-  `--info`, but `moss` (`--success`) has no real consumer yet.
+- `moss` is fully harmonized but still has no real consumer — `slate` now
+  backs `--accent` in light mode and `heather` backs `--info`, but
+  `--success` (which points at `moss`) isn't used by any component yet.
 - No `prefers-contrast` or `forced-colors` handling.
-- The role/material boundary test only catches `var(--material)` CSS
-  references — it doesn't catch bare Stylus function calls like
-  `alpha(water-fill, 0.12)`, which is how the CTA hover highlight above
-  gets away with referencing a material without tripping the test.
+- `role-material-boundary.spec.js` catches both `var(--material)` and bare
+  Stylus color-function calls (`alpha(water-fill, 0.12)`), but a
+  material name could still slip past it inside something the regex
+  doesn't anticipate — e.g. a Stylus variable interpolated into a string,
+  or a new color function. It's a guardrail, not a guarantee.
