@@ -72,56 +72,73 @@
 </template>
 
 <style lang="stylus">
-  section#account.page
-    & > div.body
-      max-width: page-width-large
-      margin: 0 auto
-      padding: 0 base-line base-line * 4
-      & > address
-        margin-bottom: base-line
-      & > form
-        max-width: base-line * 14
-        margin-bottom: base-line
-      & > section[itemprop='preferences']
-        margin-top: base-line * 2
-        padding-top: base-line
-        border-top: 1px solid blue
-        & > header > h2
-          color: red
-          margin: 0 0 base-line
-          font-weight: 300
-        & > menu.preferences-menu
-          margin: 0
-      & > footer
-        padding: base-line 0
-        border-top: 1px solid accent
-        & > div
-          display: flex
-          justify-content: space-between
-          align-items: center
-          gap: base-line * 0.5
-          & > h4
-            margin: 0
-            font-size: normal
-            font-weight: 300
-          & > button#sign-out
-            color: emphasis
-      & > dialog#confirm-sign-out
-        border: none
-        padding: base-line * 1.5
-        & > p
-          margin: 0
-        &::backdrop
-          background: basalt-transparent
-        & > menu
-          display: flex
-          justify-content: flex-end
-          gap: base-line
-          margin: base-line * 1.5 0 0
-          padding: 0
-          & > button
-            padding: base-line * 0.5 base-line
-            white-space: nowrap
-          & > button#confirm
-            color: emphasis
+  section#account.page {
+    & > div.body {
+      max-width: page-width-large;
+      margin: 0 auto;
+      padding: 0 base-line base-line * 4;
+      & > address {
+        margin-bottom: base-line;
+      }
+      & > form {
+        max-width: base-line * 14;
+        margin-bottom: base-line;
+      }
+      & > section[itemprop='preferences'] {
+        margin-top: base-line * 2;
+        padding-top: base-line;
+        border-top: 1px solid var(--accent);
+        & > header > h2 {
+          color: var(--emphasis);
+          margin: 0 0 base-line;
+          font-weight: 300;
+        }
+        & > menu.preferences-menu {
+          margin: 0;
+        }
+      }
+      & > footer {
+        padding: base-line 0;
+        border-top: 1px solid var(--accent);
+        & > div {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: base-line * 0.5;
+          & > h4 {
+            margin: 0;
+            font-size: normal;
+            font-weight: 300;
+          }
+          & > button#sign-out {
+            color: var(--emphasis);
+          }
+        }
+      }
+      & > dialog#confirm-sign-out {
+        border: none;
+        padding: base-line * 1.5;
+        & > p {
+          margin: 0;
+        }
+        &::backdrop {
+          background: var(--basalt-transparent);
+        }
+        & > menu {
+          display: flex;
+          justify-content: flex-end;
+          gap: base-line;
+          margin: base-line * 1.5 0 0;
+          padding: 0;
+          & > button {
+            padding: base-line * 0.5 base-line;
+            white-space: nowrap;
+          }
+          & > button#confirm {
+            color: var(--emphasis);
+          }
+        }
+      }
+    }
+  }
 </style>
