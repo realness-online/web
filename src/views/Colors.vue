@@ -50,6 +50,7 @@
   const role_names = [
     'accent',
     'emphasis',
+    'info',
     'danger',
     'warning',
     'caution',
