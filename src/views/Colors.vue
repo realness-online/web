@@ -70,10 +70,10 @@
   const surfaces = [
     { name: 'chalk', note: 'light --surface', ink: 'dark' },
     { name: 'bone', note: 'light poster', ink: 'dark' },
-    { name: 'basalt', note: 'dark --surface' },
+    { name: 'graphite', note: 'light --text', ink: 'dark' },
     { name: 'pumice', note: 'dark poster' },
-    { name: 'atmosphere', note: 'depth behind everything' },
-    { name: 'graphite', note: 'light --text', ink: 'dark' }
+    { name: 'basalt', note: 'dark --surface' },
+    { name: 'moonlight', note: 'depth behind everything' }
   ]
 
   const resolved = ref({})
@@ -300,7 +300,7 @@
         <div class="schemes">
           <div class="scheme light">
             <div class="stack">
-              <div class="atmosphere" aria-hidden="true"></div>
+              <div class="moonlight" aria-hidden="true"></div>
               <div class="surface">
                 <article class="poster">
                   <p>
@@ -317,7 +317,7 @@
           </div>
           <div class="scheme dark">
             <div class="stack">
-              <div class="atmosphere" aria-hidden="true"></div>
+              <div class="moonlight" aria-hidden="true"></div>
               <div class="surface">
                 <article class="poster">
                   <p>
@@ -336,7 +336,7 @@
           </div>
         </div>
         <figcaption class="scene-note">
-          <samp>atmosphere</samp> behind both — poster on <samp>bone</samp> in
+          <samp>moonlight</samp> behind both — poster on <samp>bone</samp> in
           light, <samp>pumice</samp> in dark, signals interrupt on top of either
         </figcaption>
       </figure>
@@ -692,10 +692,10 @@
         border: 1px solid var(--gravel);
         overflow: hidden;
       }
-      & .atmosphere {
+      & .moonlight {
         position: absolute;
         inset: 0;
-        background: var(--atmosphere);
+        background: var(--moonlight);
       }
       & .surface {
         position: relative;
