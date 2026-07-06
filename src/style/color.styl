@@ -1,110 +1,93 @@
 // Roles — the jobs components actually touch. Each role points at a material;
 // a rebrand is one line here, not a hundred call sites.
-light-accent-tokens()
-  --accent water-light
-  --emphasis clay-light
-  --success moss-light
-  --surface-glass surface-glass-light
+light-accent-tokens() {
+  --accent: water-light;
+  --emphasis: clay-light;
+  --success: moss-light;
+  --surface-glass: surface-glass-light;
+}
 
-dark-accent-tokens()
-  --accent water-dark
-  --emphasis clay-dark
-  --success moss-dark
-  --surface-glass basalt-transparent
+dark-accent-tokens() {
+  --accent: water-dark;
+  --emphasis: clay-dark;
+  --success: moss-dark;
+  --surface-glass: basalt-transparent;
+}
 
-light-surface-tokens()
-  --text graphite
-  --surface chalk
-  --code-surface alpha(graphite, 0.06)
+light-surface-tokens() {
+  --text: graphite;
+  --surface: chalk;
+  --code-surface: alpha(graphite, 0.06);
+}
 
-dark-surface-tokens()
-  --text white-text
-  --surface var(--basalt)
-  --code-surface alpha(white, 0.08)
+dark-surface-tokens() {
+  --text: white-text;
+  --surface: var(--basalt);
+  --code-surface: alpha(white, 0.08);
+}
 
-:root
-  --danger var(--emphasis) // same paint as emphasis today, free to diverge
-  --warning sulfur
-  --caution ochre
-  light-accent-tokens()
-  light-surface-tokens()
+:root {
+  --danger: var(--emphasis); // same paint as emphasis today, free to diverge
+  --warning: sulfur;
+  --caution: ochre;
+  light-accent-tokens();
+  light-surface-tokens();
+}
 
-@media (prefers-color-scheme: dark)
-  :root
-    dark-accent-tokens()
-    dark-surface-tokens()
+@media (prefers-color-scheme: dark) {
+  :root {
+    dark-accent-tokens();
+    dark-surface-tokens();
+  }
+}
 
-html
-  color: var(--text)
-  background-color: var(--surface)
-  color-scheme: light dark
+html {
+  color: var(--text);
+  background-color: var(--surface);
+  color-scheme: light dark;
+}
 
-body
-  min-height: 100%
-  background-color: inherit
+body {
+  min-height: 100%;
+  background-color: inherit;
+}
 
-main#realness
-  background-color: inherit
+main#realness {
+  background-color: inherit;
+}
 
-section.page
-  background-color: var(--surface)
+section.page {
+  background-color: var(--surface);
+}
 
-.ochre
-  background-color: ochre
-  border-color: ochre
-  -webkit-tap-highlight-color: ochre
-  color: lighten(ochre, 70%)
-  &::placeholder
-    color: lighten(ochre, 90%)
-.sulfur
-  background-color: sulfur
-  border-color: darken(sulfur, 13%)
-  color: graphite
-  -webkit-tap-highlight-color: sulfur
-  @media (prefers-color-scheme: dark)
-    &::placeholder
-      color: graphite
-.sediment
-  background-color: sediment
-  border-color: sediment
-  color: lighten(sediment, 75%)
-  -webkit-tap-highlight-color: sediment
-  &::placeholder
-    color: lighten(sediment, 75%)
-  @media (prefers-color-scheme: dark)
-    background-color: darken(sediment, 12%)
-    color: white-text
-    border-color: darken(sediment, 8%)
-.clay
-  background-color: clay-fill
-  border-color: clay-fill
-  color: lighten(clay-fill, 85%)
-  -webkit-tap-highlight-color: clay-fill
-  &::placeholder
-    color: lighten(clay-fill, 85%)
-  @media (prefers-color-scheme: dark)
-    background-color: darken(clay-fill, 8%)
-    color: white-text
-    border-color: darken(clay-fill, 5%)
-.water
-  background-color: water-fill
-  border-color: water-fill
-  color:lighten(water-fill, 95%)
-  -webkit-tap-highlight-color: water-fill
-  &::placeholder
-    color: lighten(water-fill, 95%)
-  @media (prefers-color-scheme: dark)
-    background-color: darken(water-fill, 20%)
-    color: white-text
-    border-color: darken(water-fill, 15%)
-.graphite
-  background-color: graphite
-  border-color: graphite
-  color: lighten(graphite, 65%)
-  -webkit-tap-highlight-color: graphite
-  &::placeholder
-    color: lighten(graphite, 65%)
-  @media (prefers-color-scheme: dark)
-    background-color: darken(graphite, 30%)
-    color: white-text
-    border-color: graphite
+// Material classes — filled controls painted with a material directly.
+// The blessed exception to "components touch roles": used where a control
+// should read as a material (install CTA, compose box), not a semantic state.
+.water {
+  background-color: var(--water-fill);
+  border-color: var(--water-fill);
+  color: lighten(water-fill, 95%);
+  -webkit-tap-highlight-color: var(--water-fill);
+  &::placeholder {
+    color: lighten(water-fill, 95%);
+  }
+  @media (prefers-color-scheme: dark) {
+    background-color: darken(water-fill, 20%);
+    color: var(--white-text);
+    border-color: darken(water-fill, 15%);
+  }
+}
+.graphite {
+  background-color: var(--graphite);
+  border-color: var(--graphite);
+  color: lighten(graphite, 65%);
+  -webkit-tap-highlight-color: var(--graphite);
+  &::placeholder {
+    color: lighten(graphite, 65%);
+  }
+  @media (prefers-color-scheme: dark) {
+    background-color: darken(graphite, 30%);
+    color: var(--white-text);
+    border-color: var(--graphite);
+  }
+}
