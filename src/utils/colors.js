@@ -127,17 +127,13 @@ export const rgba_to_hsla = ({ r, g, b, a }) => {
 
   if (h < 0) h += HUE_FULL_CIRCLE
 
-  l = (cmax + cmin) / 2
-  l = +(l * PERCENTAGE_MAX).toFixed(2)
+  const l_fraction = (cmax + cmin) / 2
 
-  s = delta === 0 ? 0 : delta / (1 + Math.abs(2 * l - 1))
+  s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l_fraction - 1))
   s = Math.abs(s)
+  s = Math.round(s * PERCENTAGE_MAX)
 
-  const PERCENTAGE_PRECISION = 10000
-  const s_fixed = (s * PERCENTAGE_PRECISION).toFixed(2)
-
-  s = Math.round(parseFloat(s_fixed))
-  l = Math.round(l)
+  l = Math.round(l_fraction * PERCENTAGE_MAX)
 
   return color_to_hsla({ h, s, l, a: alpha })
 }
@@ -167,15 +163,44 @@ export const color_to_hsla = ({ h, s, l, a }) => {
   ok.h = Math.round(ok.h)
   ok.l = ok.l.toFixed(3)
   ok.c = ok.c.toFixed(3)
+  const alpha = Number(a)
+  const oklch =
+    alpha < 1
+      ? `oklch(${ok.l} ${ok.c} ${ok.h} / ${alpha})`
+      : `oklch(${ok.l} ${ok.c} ${ok.h})`
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
     hsla,
-    oklch: `oklch(${ok.l} ${ok.c} ${ok.h})`,
+    oklch,
     h,
     s,
     l,
     a
   }
+}
+
+const rgb_css_to_hsla_object = str => {
+  const parts = str
+    .replace(/rgba?\(([^)]+)\)/i, '$1')
+    .split(/[,\s/]+/)
+    .filter(Boolean)
+  if (parts.length < 3) throw new TypeError(`Invalid rgb format: ${str}`)
+  const r = Math.round(Number.parseFloat(parts[0]))
+  const g = Math.round(Number.parseFloat(parts[1]))
+  const b = Math.round(Number.parseFloat(parts[2]))
+  const a_frac = parts[3] !== undefined ? Number.parseFloat(parts[3]) : 1
+  return rgba_to_hsla({ r, g, b, a: Math.round(a_frac * RGB_MAX) })
+}
+
+/** Normalize any computed CSS color to canonical hsla + oklch strings. */
+export const format_css_paint = (value = '') => {
+  const raw = String(value).trim()
+  if (!raw) return { hsla: '', oklch: '' }
+  if (raw.startsWith('hsl') || raw.startsWith('oklch'))
+    return color_to_hsla(css_color_to_color(raw))
+  if (raw.startsWith('rgb')) return color_to_hsla(rgb_css_to_hsla_object(raw))
+  if (raw.startsWith('#')) return color_to_hsla(to_hsla(raw))
+  throw new TypeError(`Invalid color format: ${value}`)
 }
 
 // https://una.im/css-color-theming

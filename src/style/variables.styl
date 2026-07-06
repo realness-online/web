@@ -11,11 +11,12 @@ black-dark        = hsla(300,  1%, 2%, 0.99)
 atmosphere        = hsla(36, 22%, 4.5%, 1) // #0e0c09
 basalt            = hsla(57, 8%, 16%, 1) // #2c2c26
 basalt-transparent = hsla(57, 8%, 16%, 0.50) // #2c2c26
+pumice            = hsl(57, 8%, 21.25%) // dark poster — same offset off basalt as bone is off chalk
 
 white             = hsla( 57, 13%, 88%, 0.9)
 white-text        = hsla( 57, 13%, 82%, 0.95)
-chalk             = hsl( 57, 13%, 96%)
-bone              = hsl( 57, 13%, 88%)
+chalk             = hsl( 57, 16%, 91%)
+bone              = hsl( 57, 13%, 83.5%)
 
 // accent pair — water is the cool primary, clay the warm half
 water-fill        = hsla(180, 30%, 45%, 1)
@@ -38,14 +39,14 @@ heather-dark      = hsla(285, 30%, 66%, 1)
 heather-fill      = hsla(285, 22%, 49%, 1)
 
 // signals — interrupt rather than decorate; same in both schemes
-sulfur            = hsla(55, 94%, 54%, 0.75)
+sulfur            = hsla(55, 94%, 40%, 0.75)
 ochre             = hsla(37, 91%, 54%, 0.75)
 
-sediment          = hsla(25, 45%, 52%, 1)
-sand              = hsla(45, 40%, 58%, 1)
-gravel            = hsla(38, 18%, 48%, 1)
-rocks             = hsla(30, 15%, 35%, 1)
-boulders          = hsla(0, 25%, 42%, 1)
+sediment          = hsla(25, 45%, 62.5%, 1)
+sand              = hsla(45, 40%, 45%, 1)
+gravel            = hsla(38, 18%, 43%, 1)
+rocks             = hsla(30, 15%, 35.5%, 1)
+boulders          = hsla(0, 25%, 31%, 1)
 
 // roles — the layer components touch; UI uses roles, the canvas uses paint
 accent            = unquote('var(--accent)')
@@ -84,60 +85,62 @@ poster-thoughts-height = round((page-width), 2)
 
 
 
-:root
-  interpolate-size: allow-keywords
-  accent-color: var(--emphasis)
+:root {
+  interpolate-size: allow-keywords;
+  accent-color: var(--emphasis);
 
   // Materials
-  --graphite graphite
-  --black-dark black-dark
-  --atmosphere atmosphere
-  --basalt basalt
-  --basalt-transparent basalt-transparent
+  --graphite: graphite;
+  --black-dark: black-dark;
+  --atmosphere: atmosphere;
+  --basalt: basalt;
+  --basalt-transparent: basalt-transparent;
+  --pumice: pumice;
 
-  --white white
-  --white-text white-text
-  --chalk chalk
-  --bone bone
+  --white: white;
+  --white-text: white-text;
+  --chalk: chalk;
+  --bone: bone;
 
-  --water-fill water-fill
-  --clay-fill clay-fill
-  --water-light water-light
-  --water-dark water-dark
-  --clay-light clay-light
-  --clay-dark clay-dark
-  --moss-light moss-light
-  --moss-dark moss-dark
-  --moss-fill moss-fill
-  --slate-light slate-light
-  --slate-dark slate-dark
-  --slate-fill slate-fill
-  --heather-light heather-light
-  --heather-dark heather-dark
-  --heather-fill heather-fill
+  --water-fill: water-fill;
+  --clay-fill: clay-fill;
+  --water-light: water-light;
+  --water-dark: water-dark;
+  --clay-light: clay-light;
+  --clay-dark: clay-dark;
+  --moss-light: moss-light;
+  --moss-dark: moss-dark;
+  --moss-fill: moss-fill;
+  --slate-light: slate-light;
+  --slate-dark: slate-dark;
+  --slate-fill: slate-fill;
+  --heather-light: heather-light;
+  --heather-dark: heather-dark;
+  --heather-fill: heather-fill;
   // role tokens (--accent, --emphasis, ...) live in color.styl only
   // (lazy chunks re-import variables)
-  --sulfur sulfur
-  --ochre ochre
-  --sediment sediment
-  --sand sand
-  --gravel gravel
-  --rocks rocks
-  --boulders boulders
+  --sulfur: sulfur;
+  --ochre: ochre;
+  --sediment: sediment;
+  --sand: sand;
+  --gravel: gravel;
+  --rocks: rocks;
+  --boulders: boulders;
 
   // Typography
-  --base-line base-line
-  --min-modular min-modular
-  --max-modular max-modular
-  --min-font min-font
-  --max-font max-font
+  --base-line: base-line;
+  --min-modular: min-modular;
+  --max-modular: max-modular;
+  --min-font: min-font;
+  --max-font: max-font;
 
   // Layout
-  --pad-begins pad-begins
-  --typing-begins typing-begins
-  --display-begins display-begins
-  --page-width page-width
-  --page-width-large page-width-large
-  --poster-min-width poster-min-width
-  --poster-grid-height poster-grid-height
-  --poster-thoughts-height poster-thoughts-height
+  --pad-begins: pad-begins;
+  --typing-begins: typing-begins;
+  --display-begins: display-begins;
+  --page-width: page-width;
+  --page-width-large: page-width-large;
+  --poster-min-width: poster-min-width;
+  --poster-grid-height: poster-grid-height;
+  --poster-thoughts-height: poster-thoughts-height;
+}
