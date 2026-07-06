@@ -570,6 +570,8 @@
 </template>
 
 <style lang="stylus">
+  @require '../style/color'
+
   section#colors {
     & > article {
       max-width: base-line * 48;
@@ -701,6 +703,12 @@
         border-radius: base-line * 0.25;
         min-height: base-line * 7;
       }
+      & .scheme.light {
+        light-accent-tokens();
+      }
+      & .scheme.dark {
+        dark-accent-tokens();
+      }
       & .scheme.light .surface {
         background: var(--chalk);
         color: var(--graphite);
@@ -714,11 +722,11 @@
         & > .accent-pair {
           height: base-line * 0.75;
           border-radius: base-line * 0.2;
-          background: linear-gradient(90deg, var(--water-dark), var(--clay-dark));
+          background: linear-gradient(90deg, var(--accent), var(--emphasis));
         }
         & > a,
         & > p > a {
-          color: var(--water-dark);
+          color: var(--accent);
         }
       }
       & .poster {
@@ -733,23 +741,20 @@
         & > .accent-pair {
           height: base-line * 0.75;
           border-radius: base-line * 0.2;
-          background: linear-gradient(90deg, var(--water-light), var(--clay-light));
+          background: linear-gradient(90deg, var(--accent), var(--emphasis));
         }
         & a {
-          color: var(--water-light);
+          color: var(--accent);
         }
-      }
-      & .scheme.light .poster a {
-        color: var(--water-light);
       }
       & .scheme.dark .poster {
         background: var(--pumice);
         color: var(--white-text);
         & > .accent-pair {
-          background: linear-gradient(90deg, var(--water-dark), var(--clay-dark));
+          background: linear-gradient(90deg, var(--accent), var(--emphasis));
         }
         & a {
-          color: var(--water-dark);
+          color: var(--accent);
         }
       }
       & .signal {
