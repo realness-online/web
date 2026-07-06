@@ -46,7 +46,7 @@
   const cycle_icon = () =>
     (icon_index.value = (icon_index.value + 1) % icon_names.length)
 
-  const variants = ['light', 'dark', 'fill']
+  const variants = ['fill', 'light', 'dark']
   const role_names = [
     'accent',
     'emphasis',
@@ -414,6 +414,7 @@
           <li
             v-for="variant in variants"
             :key="variant"
+            :class="variant"
             :style="{ '--paint': `var(--${material.name}-${variant})` }">
             <samp>Aa</samp>
             <p>
@@ -1069,11 +1070,11 @@
       grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
     }
 
-    & figure[itemscope] > ul > li:nth-child(1) > samp {
+    & figure[itemscope] > ul > li.light > samp {
       background: var(--chalk);
       color: var(--paint);
     }
-    & figure[itemscope] > ul > li:nth-child(2) > samp {
+    & figure[itemscope] > ul > li.dark > samp {
       background: var(--basalt);
       color: var(--paint);
     }
