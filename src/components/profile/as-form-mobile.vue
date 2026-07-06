@@ -329,13 +329,16 @@
           @media (prefers-color-scheme: dark) {
             background-color: var(--basalt-transparent);
             border-color: var(--emphasis);
+            option:hover {
+              color: var(--basalt);
+            }
           }
           option {
             padding: (base-line * 0.25);
             cursor: pointer;
             &:hover {
-              background-color: var(--water-fill);
-              color: white;
+              background-color: var(--accent);
+              color: var(--white-text);
             }
           }
         }

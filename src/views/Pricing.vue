@@ -298,7 +298,7 @@
 
                 &:hover,
                 &:focus-visible {
-                  background-color: alpha(water-fill, 0.12);
+                  background-color: unquote('color-mix(in srgb, var(--accent) 12%, transparent)');
                 }
               }
             }
@@ -316,7 +316,7 @@
 
               &:hover,
               &:focus-visible {
-                background-color: alpha(water-fill, 0.12);
+                background-color: unquote('color-mix(in srgb, var(--accent) 12%, transparent)');
               }
             }
           }
