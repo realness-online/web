@@ -12,8 +12,17 @@ import { scan_src } from '../helpers/scan-src'
 // so adding one is a deliberate, reviewable decision instead of a habit
 // that spreads unnoticed.
 
-const MATERIAL_TOKEN_RE =
-  /var\(--(water|clay|moss|slate|heather|sulfur|ochre|sediment|sand|gravel|rocks|boulders)(-(fill|light|dark))?\)/
+const MATERIAL_NAMES =
+  '(water|clay|moss|slate|heather|sulfur|ochre|sediment|sand|gravel|rocks|boulders)'
+
+// Catches both the CSS custom-property form (var(--water-fill)) and bare
+// Stylus color-function calls (alpha(water-fill, 0.12)) — the second form
+// used to slip past this test entirely, which is how the CTA/pricing hover
+// highlights ended up silently drifting from --accent.
+const MATERIAL_TOKEN_RE = new RegExp(
+  `var\\(--${MATERIAL_NAMES}(-(fill|light|dark))?\\)` +
+    `|\\b(alpha|lighten|darken|saturate|desaturate|tint|shade|mix)\\(\\s*${MATERIAL_NAMES}(-(fill|light|dark))?\\b`
+)
 
 // Files that define or wire the palette itself, not "components touching
 // materials" — excluded rather than allowlisted.
@@ -27,10 +36,10 @@ const SELF_REFERENTIAL_FILES = new Set(['views/Colors.vue'])
 // Adding to this list should mean "I looked at this and it's deliberate,"
 // not "the test was in my way."
 const ALLOWED_BYPASSES = new Set([
-  'style/keyframes.styl', // press-hold tap-highlight, scoped to .water elements
-  'components/profile/as-form-mobile.vue', // country <select> option hover
   'components/as-fps.vue', // dev-only fps overlay, borrows geology colors
-  'components/thoughts/as-textarea.vue' // compose caret, borrows geology colors
+  'components/thoughts/as-textarea.vue', // compose caret, borrows geology colors
+  'components/posters/as-mask-pen.vue', // sulfur/ochre hover+selected — "working states, mask pen" per Colors.vue's own note
+  'components/posters/as-figure.vue' // mask-pen active button, same ochre working-state
 ])
 
 describe('palette: role/material boundary stays deliberate', () => {
