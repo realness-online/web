@@ -95,6 +95,7 @@
       }
       @media (prefers-color-scheme: dark) {
         color: var(--white-text);
+        caret-color: var(--white-text);
       }
       &::placeholder {
         color: var(--rocks);
