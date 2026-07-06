@@ -516,6 +516,42 @@
         </figcaption>
       </figure>
 
+      <figure class="strata-swatches geology-on-surfaces">
+        <ol>
+          <li
+            v-for="surface in surfaces"
+            :key="surface.name"
+            :style="{
+              '--paint': `var(--${surface.name})`,
+              '--ink': surface.ink === 'dark' ? 'var(--basalt)' : null
+            }">
+            <samp>{{ surface.name }}</samp>
+            <ul>
+              <li
+                v-for="layer in geology"
+                :key="layer.name"
+                :style="{
+                  '--paint': `var(--${layer.name})`,
+                  '--layer-opacity': layer.opacity
+                }">
+                <button
+                  type="button"
+                  class="icon-preview"
+                  :aria-label="`Preview icon: ${preview_icon}, click to cycle`"
+                  @click="cycle_icon">
+                  <icon :name="preview_icon" />
+                </button>
+                <small>{{ layer.name }}</small>
+              </li>
+            </ul>
+          </li>
+        </ol>
+        <figcaption>
+          Geology over surfaces — sediment-through-boulders at their real
+          opacity, stacked on each chalk-through-moonlight ground
+        </figcaption>
+      </figure>
+
       <h2>Roles</h2>
       <dl>
         <template v-for="wire in wiring" :key="wire.role">
@@ -892,6 +928,10 @@
         font-size: smaller;
         opacity: 0.75;
       }
+    }
+
+    & figure.geology-on-surfaces > ol > li > ul > li {
+      opacity: var(--layer-opacity, 1);
     }
 
     & figure.shelf {
