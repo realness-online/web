@@ -572,7 +572,7 @@
 <style lang="stylus">
   section#colors {
     & > article {
-      max-width: page-width-large;
+      max-width: base-line * 48;
       margin: 0 auto;
       padding: base-line;
       & > header > h1 {
