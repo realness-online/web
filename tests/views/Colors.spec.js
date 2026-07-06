@@ -12,6 +12,7 @@ describe('@/views/Colors', () => {
     expect(roles.map(dt => dt.text())).toEqual([
       '--accent',
       '--emphasis',
+      '--info',
       '--danger',
       '--warning',
       '--caution',

@@ -32,12 +32,46 @@ describe('palette: text/surface contrast (WCAG AA, 4.5:1)', () => {
     ['clay-light', 'chalk'], // emphasis/danger text, light mode
     ['clay-dark', 'basalt'], // emphasis/danger text, dark mode
     ['slate-light', 'chalk'], // accent (link) text, light mode
-    ['water-dark', 'basalt'] // accent (link) text, dark mode
+    ['water-dark', 'basalt'], // accent (link) text, dark mode
+    ['heather-light', 'chalk'], // info text, light mode
+    ['heather-dark', 'basalt'] // info text, dark mode
   ])('%s on %s clears %s:1', (fg, bg) => {
     expect(contrast_ratio(hex_of(fg), hex_of(bg))).toBeGreaterThanOrEqual(
       AA_NORMAL_TEXT
     )
   })
+})
+
+const circular_hue_distance = (a, b) => {
+  const diff = Math.abs(a - b) % 360
+  return diff > 180 ? 360 - diff : diff
+}
+
+describe('palette: accent/emphasis/info roles stay hue-distinct', () => {
+  const MIN_ROLE_HUE_SEPARATION = 40
+
+  it.each([
+    ['light', 'slate-light', 'clay-light', 'heather-light'],
+    ['dark', 'water-dark', 'clay-dark', 'heather-dark']
+  ])(
+    '%s scheme: accent/emphasis/info don’t collide',
+    (_, accent, emphasis, info) => {
+      const hues = {
+        accent: oklch_of(accent).h,
+        emphasis: oklch_of(emphasis).h,
+        info: oklch_of(info).h
+      }
+      expect(
+        circular_hue_distance(hues.accent, hues.emphasis)
+      ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
+      expect(
+        circular_hue_distance(hues.accent, hues.info)
+      ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
+      expect(
+        circular_hue_distance(hues.emphasis, hues.info)
+      ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
+    }
+  )
 })
 
 describe('palette: signal colors stay distinguishable', () => {
