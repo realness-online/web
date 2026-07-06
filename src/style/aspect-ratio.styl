@@ -1,12 +1,15 @@
 // Poster slice + storytelling layout — html[data-aspect-ratio] from App.vue
 // Surface tokens follow prefers-color-scheme via color.styl. No inline --custom-prop writes.
 
-html
-  --storytelling-slide-width 100dvw
+html {
+  --storytelling-slide-width: 100dvw;
+}
 
-html[data-aspect-ratio="1/1"]
-  @media (min-aspect-ratio: 1/1)
-    --storytelling-slide-width 100dvh
+html[data-aspect-ratio="1/1"] {
+  @media (min-aspect-ratio: 1/1) {
+    --storytelling-slide-width: 100dvh;
+  }
+}
 
 poster-slice-ratios = {
   '1/1': 1 / 1,
@@ -17,5 +20,6 @@ poster-slice-ratios = {
 }
 
 for mode, ratio in poster-slice-ratios
-  html[data-aspect-ratio="{mode}"] svg[itemtype='/posters'][data-aspect]
-    aspect-ratio ratio
+  html[data-aspect-ratio="{mode}"] svg[itemtype='/posters'][data-aspect] {
+    aspect-ratio: ratio;
+  }

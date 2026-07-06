@@ -609,132 +609,180 @@
 
 <style lang="stylus">
 
-  @keyframes add-plus-pulse-twice
-    0%
-      transform: scale(1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    20%
-      transform: scale(1.1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    40%
-      transform: scale(1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    60%
-      transform: scale(1.1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    80%
-      transform: scale(1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      transform: scale(1)
+  @keyframes add-plus-pulse-twice {
+    0% {
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    20% {
+      transform: scale(1.1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    40% {
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    60% {
+      transform: scale(1.1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    80% {
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 
-  @keyframes add-plus-flourish-out
-    0%
-      transform: scale(1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    50%
-      transform: scale(1.05)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      transform: scale(1)
+  @keyframes add-plus-flourish-out {
+    0% {
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    50% {
+      transform: scale(1.05);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 
-  @keyframes add-satellites-flourish-out
-    0%
-      opacity: 1
-      transform: scale(1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    50%
-      opacity: 1
-      transform: scale(1.1)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      opacity: 0
-      transform: scale(0.5)
+  @keyframes add-satellites-flourish-out {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+  }
 
-  @keyframes animation-ball-bounce
-    0%
-      transform: translate(0, 0) scale(1)
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
-    28%
-      transform: translate(12%, -42%) scale(1.12)
-      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
-    52%
-      transform: translate(-8%, 18%) scale(0.86, 1.14)
-      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
-    72%
-      transform: translate(5%, -10%) scale(1.06)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    88%
-      transform: translate(-2%, 5%) scale(0.98)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      transform: translate(0, 0) scale(1)
+  @keyframes animation-ball-bounce {
+    0% {
+      transform: translate(0, 0) scale(1);
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    28% {
+      transform: translate(12%, -42%) scale(1.12);
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    }
+    52% {
+      transform: translate(-8%, 18%) scale(0.86, 1.14);
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+    }
+    72% {
+      transform: translate(5%, -10%) scale(1.06);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    88% {
+      transform: translate(-2%, 5%) scale(0.98);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  }
 
-  @keyframes animation-trail-mid-bounce
-    0%
-      transform: translate(0, 0) scale(1)
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
-    28%
-      transform: translate(9%, -28%) scale(1.08)
-      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
-    52%
-      transform: translate(-6%, 14%) scale(0.92, 1.08)
-      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
-    72%
-      transform: translate(4%, -7%) scale(1.03)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    88%
-      transform: translate(-2%, 3%) scale(0.99)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      transform: translate(0, 0) scale(1)
+  @keyframes animation-trail-mid-bounce {
+    0% {
+      transform: translate(0, 0) scale(1);
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    28% {
+      transform: translate(9%, -28%) scale(1.08);
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    }
+    52% {
+      transform: translate(-6%, 14%) scale(0.92, 1.08);
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+    }
+    72% {
+      transform: translate(4%, -7%) scale(1.03);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    88% {
+      transform: translate(-2%, 3%) scale(0.99);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  }
 
-  @keyframes animation-trail-old-bounce
-    0%
-      transform: translate(0, 0) scale(1)
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1)
-    28%
-      transform: translate(6%, -18%) scale(1.05)
-      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19)
-    52%
-      transform: translate(-4%, 10%) scale(0.94, 1.05)
-      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
-    72%
-      transform: translate(3%, -5%) scale(1.02)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    88%
-      transform: translate(-1%, 2%) scale(0.99)
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1)
-    100%
-      transform: translate(0, 0) scale(1)
+  @keyframes animation-trail-old-bounce {
+    0% {
+      transform: translate(0, 0) scale(1);
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    28% {
+      transform: translate(6%, -18%) scale(1.05);
+      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+    }
+    52% {
+      transform: translate(-4%, 10%) scale(0.94, 1.05);
+      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+    }
+    72% {
+      transform: translate(3%, -5%) scale(1.02);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    88% {
+      transform: translate(-1%, 2%) scale(0.99);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+  }
 
-  @keyframes animation-trail-old-flourish-out
-    0%, 100%
-      transform: translate(0, 0) scale(1)
-    42%
-      transform: translate(3%, -7%) scale(1.02)
-    72%
-      transform: translate(-1%, 2%) scale(0.99)
+  @keyframes animation-trail-old-flourish-out {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    42% {
+      transform: translate(3%, -7%) scale(1.02);
+    }
+    72% {
+      transform: translate(-1%, 2%) scale(0.99);
+    }
+  }
 
-  @keyframes animation-trail-mid-flourish-out
-    0%, 100%
-      transform: translate(0, 0) scale(1)
-    42%
-      transform: translate(5%, -10%) scale(1.04)
-    72%
-      transform: translate(-2%, 3%) scale(0.99)
+  @keyframes animation-trail-mid-flourish-out {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    42% {
+      transform: translate(5%, -10%) scale(1.04);
+    }
+    72% {
+      transform: translate(-2%, 3%) scale(0.99);
+    }
+  }
 
-  @keyframes animation-ball-flourish-out
-    0%, 100%
-      transform: translate(0, 0) scale(1)
-    42%
-      transform: translate(7%, -15%) scale(1.06)
-    72%
-      transform: translate(-3%, 4%) scale(0.98)
+  @keyframes animation-ball-flourish-out {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    42% {
+      transform: translate(7%, -15%) scale(1.06);
+    }
+    72% {
+      transform: translate(-3%, 4%) scale(0.98);
+    }
+  }
 
   main#realness {
     border: (base-line / 16) solid transparent;
-    border-radius (base-line / 16);
+    border-radius: (base-line / 16);
     &.offline {
       border-color: var(--warning);
     }
@@ -775,7 +823,7 @@
       }
 
       & > label {
-        disable-ios-touch-callout(true)
+        disable-ios-touch-callout(true);
         touch-action: manipulation;
         pointer-events: auto !important;
         position: relative;
@@ -820,7 +868,7 @@
 
       & > nav {
         width: 100%;
-        margin base-line * 0.5;
+        margin: base-line * 0.5;
         frosted-glass();
         border-radius: base-line;
         display: flex;

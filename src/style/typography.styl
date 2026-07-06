@@ -14,34 +14,38 @@
 //   https://www.smashingmagazine.com/2016/05/fluid-typography/
 
 // ***************** CSS Variables for future migration **********************
-:root
+:root {
   // Typography calculations
-  --h1-min round(min-modular ** 4 * 1rem, 3)
-  --h1-max round(max-modular ** 4 * 1rem, 3)
-  --h2-min round(min-modular ** 3 * 1rem, 3)
-  --h2-max round(max-modular ** 3 * 1rem, 3)
-  --h3-min round(min-modular ** 2 * 1rem, 3)
-  --h3-max round(max-modular ** 2 * 1rem, 3)
-  --h4-min round(min-modular * 1rem, 3)
-  --h4-max round(max-modular * 1rem, 3)
-  --h5-min 1rem
-  --h5-max 1rem
-  --h6-min round(1rem / min-modular, 3)
-  --h6-max round(1rem / max-modular, 3)
+  --h1-min: round(min-modular ** 4 * 1rem, 3);
+  --h1-max: round(max-modular ** 4 * 1rem, 3);
+  --h2-min: round(min-modular ** 3 * 1rem, 3);
+  --h2-max: round(max-modular ** 3 * 1rem, 3);
+  --h3-min: round(min-modular ** 2 * 1rem, 3);
+  --h3-max: round(max-modular ** 2 * 1rem, 3);
+  --h4-min: round(min-modular * 1rem, 3);
+  --h4-max: round(max-modular * 1rem, 3);
+  --h5-min: 1rem;
+  --h5-max: 1rem;
+  --h6-min: round(1rem / min-modular, 3);
+  --h6-max: round(1rem / max-modular, 3);
 
   // Fluid typography calculations
-  --font-size-calc s('calc(%s + (%s - %s) * (100dvw - %s) / (%s - %s))', min-font, max-font, min-font, pad-begins, display-begins, pad-begins)
+  --font-size-calc: s('calc(%s + (%s - %s) * (100dvw - %s) / (%s - %s))', min-font, max-font, min-font, pad-begins, display-begins, pad-begins);
+}
 
 // ***************** fluid-typography *****************************************
-html
-  font-family: 'Lato', -apple-system, system-ui
-  between: font-size
-  text-rendering: optimizeLegibility
-  @media (prefers-color-scheme: dark)
-    color: var(--white-text)
-    font-smoothing: antialiased //https://usabilitypost.com/2012/11/05/stop-fixing-font-smoothing/
-p, textarea:focus, input,  blockquote, form
-  max-width: page-width
+html {
+  font-family: 'Lato', -apple-system, system-ui;
+  between: font-size;
+  text-rendering: optimizeLegibility;
+  @media (prefers-color-scheme: dark) {
+    color: var(--white-text);
+    font-smoothing: antialiased; //https://usabilitypost.com/2012/11/05/stop-fixing-font-smoothing/
+  }
+}
+p, textarea:focus, input, blockquote, form {
+  max-width: page-width;
+}
 
 // ***************** modular-scale ********************************************
 $h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
@@ -62,50 +66,64 @@ $h5-max= 1rem
 $h6-min= round(1rem / min-modular, 3) //.888
 $h6-max= round(1rem / max-modular, 3) //.8
 
-h1
-  between: font-size, $h1-min, $h1-max
-h2
-  between: font-size, $h2-min, $h2-max
-h3, address > b
-  between: font-size, $h3-min, $h3-max
-h4, span#fps
-  between: font-size, $h4-min, $h4-max
-h5
-  between: font-size, $h5-min, $h5-max
+h1 {
+  between: font-size, $h1-min, $h1-max;
+}
+h2 {
+  between: font-size, $h2-min, $h2-max;
+}
+h3, address > b {
+  between: font-size, $h3-min, $h3-max;
+}
+h4, span#fps {
+  between: font-size, $h4-min, $h4-max;
+}
+h5 {
+  between: font-size, $h5-min, $h5-max;
+}
 h6,
-section#navigation.page > footer > a
-  between: font-size, $h6-min, $h6-max
+section#navigation.page > footer > a {
+  between: font-size, $h6-min, $h6-max;
+}
 
 // ***************** vertical-rhythm ******************************************
 
 // At least 2 baselines high
-p
-  line-height: 1.33
-  margin-bottom: base-line
-dl
-  padding: 0 base-line
-dt
-  font-weight: 600
+p {
+  line-height: 1.33;
+  margin-bottom: base-line;
+}
+dl {
+  padding: 0 base-line;
+}
+dt {
+  font-weight: 600;
   text-transform: capitalize;
+}
 
-h1,h2,h3,h4,h5,h6
-  user-select: text
-  letter-spacing: -.02em
-  font-weight: 300
-  line-height: 1
-  margin-bottom: base-line
+h1,h2,h3,h4,h5,h6 {
+  user-select: text;
+  letter-spacing: -.02em;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: base-line;
   // text-transform: capitalize
-h3,h4,h5,h6
-  letter-spacing: -.01em
+}
+h3,h4,h5,h6 {
+  letter-spacing: -.01em;
+}
 
 // Four baselines high
-h1,h2,h3,h4
-  margin-top: s('calc( (%s - %s) + %s * 2)', base-line, 1em, base-line)
+h1,h2,h3,h4 {
+  margin-top: s('calc( (%s - %s) + %s * 2)', base-line, 1em, base-line);
+}
 
 // Three baselines high
-h5
-  margin-top: s('calc( (%s - %s) + %s * 1)', base-line, 1em, base-line)
+h5 {
+  margin-top: s('calc( (%s - %s) + %s * 1)', base-line, 1em, base-line);
+}
 
 // Two baselines high
-h6
-  margin-top: s('calc( (%s - %s) )', base-line, 1em)
+h6 {
+  margin-top: s('calc( (%s - %s) )', base-line, 1em);
+}

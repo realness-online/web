@@ -102,7 +102,7 @@
       transition-timing-function: ease;
       &:hover {
         opacity: 1;
-        border: 2px solid emphasis;
+        border: 2px solid var(--emphasis);
       }
     }
 

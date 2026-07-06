@@ -606,24 +606,28 @@
     }
   }
 
-  about-enter(delay = null)
-    animation: about-rise var(--about-enter) var(--about-ease) both
-    if delay
-      animation-delay: delay
+  about-enter(delay = null) {
+    animation: about-rise var(--about-enter) var(--about-ease) both;
+    if delay {
+      animation-delay: delay;
+    }
+  }
 
-  about-section-heading()
-    font-size: base-line * 3
-    width: 100%
-    max-width: base-line * 22
-    text-align: center
-    color: emphasis
-    margin: 0 auto base-line * 2
+  about-section-heading() {
+    font-size: base-line * 3;
+    width: 100%;
+    max-width: base-line * 22;
+    text-align: center;
+    color: var(--emphasis);
+    margin: 0 auto base-line * 2;
+  }
 
-  about-feature-list()
-    display: grid
-    display: grid-lanes
-    grid-gap: base-line
-    grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
+  about-feature-list() {
+    display: grid;
+    display: grid-lanes;
+    grid-gap: base-line;
+    grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
+  }
 
   section.page#about {
     max-width: 1800px;
@@ -661,7 +665,7 @@
           }
 
           & > h1 {
-            color: accent;
+            color: var(--accent);
             margin: 0;
             text-align: center;
 
@@ -675,7 +679,7 @@
             max-width: base-line * 10;
             text-align: right;
             margin: 0;
-            color: emphasis;
+            color: var(--emphasis);
 
             @media (min-width: pad-begins) {
               width: base-line * 13;
@@ -789,7 +793,7 @@
           width: 100%;
           max-width: base-line * 22;
           text-align: center;
-          color: emphasis;
+          color: var(--emphasis);
           min-height: calc(var(--base-line) * 4);
         }
       }
@@ -845,7 +849,7 @@
           }
 
           strong {
-            color: accent;
+            color: var(--accent);
           }
 
           & > h2 {
@@ -948,7 +952,7 @@
 
           & > svg.icon {
             position: absolute;
-            fill: accent;
+           fill: var(--accent);
           }
 
           & > p {
@@ -1062,16 +1066,16 @@
           display: block;
           margin: 0 auto;
           padding: base-line * 0.5 base-line * 2;
-          border: 1px solid emphasis;
+          border: 1px solid var(--emphasis);
           border-radius: base-line * 0.33;
           background: none;
-          color: emphasis;
+          color: var(--emphasis);
           cursor: pointer;
           font: inherit;
 
           &:hover,
           &:focus-visible {
-            background: emphasis;
+            background: var(--emphasis);
             color: white;
           }
         }

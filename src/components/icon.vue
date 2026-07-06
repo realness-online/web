@@ -63,40 +63,39 @@
 
 <style lang="stylus">
   svg.icon {
-    fill: currentColor
+    fill: currentColor;
     &:active {
       transform: scale(0.95);
     }
     &.animation {
-      overflow: visible
-      stroke: currentColor
-      stroke-width: 2
-      paint-order: stroke fill
-      stroke-linejoin: round
-      stroke-linecap: round
+      overflow: visible;
+      stroke: currentColor;
+      stroke-width: 2;
+      paint-order: stroke fill;
+      stroke-linejoin: round;
+      stroke-linecap: round;
       .animation-ball,
       .animation-trail-mid,
       .animation-trail-old {
-        transform-box: fill-box
-        transform-origin: center
+        transform-box: fill-box;
+        transform-origin: center;
       }
     }
     &.add {
-      overflow: visible
+      overflow: visible;
     }
     &.add .add-plus {
-      transform-box: fill-box
-      transform-origin: center
+      transform-box: fill-box;
+      transform-origin: center;
     }
     &.add .add-satellites {
-      opacity: 0
-      transform-box: fill-box
-      transform-origin: center
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
       .add-sat {
-        transform-box: fill-box
-        transform-origin: center
+        transform-box: fill-box;
+        transform-origin: center;
       }
     }
-
   }
 </style>

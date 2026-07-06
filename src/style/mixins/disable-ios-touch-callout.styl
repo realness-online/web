@@ -1,11 +1,13 @@
-disable-ios-touch-callout($important=false)
-  if $important
-    -webkit-touch-callout: none !important
-    user-select: none !important
-    -webkit-user-select: none !important
-  else
-    -webkit-touch-callout: none
-    user-select: none
-    -webkit-user-select: none
-  -webkit-user-drag: none
-  -webkit-tap-highlight-color: transparent
+disable-ios-touch-callout($important=false) {
+  if $important {
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  } else {
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}

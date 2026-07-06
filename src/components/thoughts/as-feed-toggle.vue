@@ -82,13 +82,15 @@
     }
   }
 
-  feed-silhouette-slide()
-    transition: none
-    animation-duration: 0.55s
-    animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1)
-    animation-fill-mode: both
-    @media (prefers-reduced-motion: reduce)
-      animation-duration: 0.01ms
+  feed-silhouette-slide() {
+    transition: none;
+    animation-duration: 0.55s;
+    animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
+    animation-fill-mode: both;
+    @media (prefers-reduced-motion: reduce) {
+      animation-duration: 0.01ms;
+    }
+  }
 
   button[itemprop='feed_filter'] {
     display: inline-flex;
@@ -97,7 +99,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: emphasis;
+    color: var(--emphasis);
     cursor: pointer;
     transition: color 0.4s ease;
     -webkit-tap-highlight-color: transparent;
@@ -106,7 +108,7 @@
       outline: none;
     }
     &[aria-checked='true'] {
-      color: accent;
+      color: var(--accent);
     }
     @media (hover: hover) and (pointer: fine) {
       &:hover {

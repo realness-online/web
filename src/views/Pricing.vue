@@ -166,7 +166,7 @@
 
         & > h1 {
           margin: 0 0 (base-line * 0.5);
-          color: accent;
+          color: var(--accent);
         }
 
         & > p {
@@ -205,7 +205,7 @@
 
             & > h2 {
               margin: 0 0 (base-line * 0.35);
-              color: accent;
+              color: var(--accent);
               font-size: larger;
             }
 
@@ -239,7 +239,7 @@
 
                 & > strong {
                   display: block;
-                  color: accent;
+                  color: var(--accent);
                 }
 
                 & > p {
@@ -294,7 +294,7 @@
 
               & > a {
                 border: round((base-line * 0.1), 2) solid var(--accent);
-                color: accent;
+                color: var(--accent);
 
                 &:hover,
                 &:focus-visible {
@@ -309,7 +309,7 @@
               padding: base-line * 0.5 base-line;
               border: round((base-line * 0.1), 2) solid var(--accent);
               border-radius: base-line * 0.33;
-              color: accent;
+              color: var(--accent);
               font-weight: bold;
               text-decoration: none;
               margin-top: auto;

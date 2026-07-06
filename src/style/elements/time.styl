@@ -1,10 +1,13 @@
-time
-  font-weight: 300
-  display: block
-  cursor: default
-  transition: opacity 0.25s
-  @media (prefers-color-scheme: dark)
-    color: accent
-  &:active
-    transition: all 0.24s
-    color: emphasis
+time {
+  font-weight: 300;
+  display: block;
+  cursor: default;
+  transition: opacity 0.25s;
+  @media (prefers-color-scheme: dark) {
+    color: var(--accent);
+  }
+  &:active {
+    transition: all 0.24s;
+    color: var(--emphasis);
+  }
+}

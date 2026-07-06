@@ -108,21 +108,21 @@
 
 <style lang="stylus">
   a.profile.label {
-    display: flex
-    align-items: center
-    gap: base-line * 0.33
-    color: accent
+    display: flex;
+    align-items: center;
+    gap: base-line * 0.33;
+    color: var(--accent);
     & > svg {
-      flex-shrink: 0
-      overflow: hidden
-      width: round(base-line * 2, 2)
-      height: round(base-line * 2, 2)
-      border-radius: base-line * 0.25
+      flex-shrink: 0;
+      overflow: hidden;
+      width: round(base-line * 2, 2);
+      height: round(base-line * 2, 2);
+      border-radius: base-line * 0.25;
     }
     & > span {
-      overflow: hidden
-      text-overflow: ellipsis
-      white-space: nowrap
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
   figure.profile {
@@ -133,8 +133,9 @@
     text-overflow: ellipsis;
     display: flex;
     justify-content: space-between;
-    #background, svg.icon.silhouette {
-      fill: accent;
+    #background,
+    svg.icon.silhouette {
+      fill: var(--accent);
     }
     & > svg {
       margin-right: round((base-line * .33), 3);
@@ -151,7 +152,7 @@
         border-radius: 0.66rem;
       }
       &.background {
-        fill: accent;
+        fill: var(--accent);
       }
     }
     & > figcaption {

@@ -12,125 +12,175 @@
 
 /* http://daneden.me/animate/ */
 
-@keyframes subtle-rotate
-  25%
-    transform: rotatez(0.22deg)
-  50%
-    transform: rotatey(0.22deg)
-  75%
-    transform: rotatex(0.22deg)
+@keyframes subtle-rotate {
+  25% {
+    transform: rotatez(0.22deg);
+  }
+  50% {
+    transform: rotatey(0.22deg);
+  }
+  75% {
+    transform: rotatex(0.22deg);
+  }
+}
 
-@keyframes subtle-counter-rotate
-  25%
-    transform: rotatez(0.22deg)
-  50%
-    transform: rotatez(0.11deg)
+@keyframes subtle-counter-rotate {
+  25% {
+    transform: rotatez(0.22deg);
+  }
+  50% {
+    transform: rotatez(0.11deg);
+  }
+  75% {
+    transform: rotatez(0.33deg);
+  }
+}
 
-  75%
-    transform: rotatez(0.33deg)
+@keyframes subtle-breath {
+  50% {
+    opacity: 0.5;
+  }
+}
 
+@keyframes working {
+  50% {
+    fill: var(--chalk);
+    stroke: var(--chalk);
+  }
+}
 
-@keyframes subtle-breath
-  50%
-    opacity: 0.5
+@keyframes working-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 
-@keyframes working
-  50%
-    fill: chalk
-    stroke: chalk
+@keyframes working-edge-sweep {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
 
-@keyframes working-pulse
-  0%, 100%
-    opacity: 0.7
-  50%
-    opacity: 1
+@keyframes press {
+  50% {
+    fill: currentColor;
+    fill-opacity: 0.25;
+  }
+}
 
-@keyframes working-edge-sweep
-  from
-    transform: translate(-50%, -50%) rotate(0deg)
-  to
-    transform: translate(-50%, -50%) rotate(360deg)
+@keyframes press-hold {
+  100% {
+    -webkit-tap-highlight-color: var(--water-fill);
+  }
+}
 
-@keyframes press
-  50%
-    fill: currentColor
-    fill-opacity: 0.25
+@keyframes absolute-slide-down {
+  from {
+    top: safe_inset(top, -(base-line * 2));
+    left: safe_inset(left);
+    transform: translate3d(0, -100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    position: absolute;
+    top: safe_inset(top, 0);
+    left: safe_inset(left, 0);
+  }
+}
 
-@keyframes press-hold
-  100%
-    -webkit-tap-highlight-color: water-fill
+@keyframes absolute-slide-up {
+  from {
+    transform: translate3d(0, 100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    position: absolute;
+    bottom: base-line;
+  }
+}
 
-@keyframes absolute-slide-down
-  from
-    top: safe_inset(top, -(base-line * 2))
-    left: safe_inset(left)
-    transform: translate3d(0, -100%, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
-    position: absolute
-    top: safe_inset(top, 0)
-    left: safe_inset(left, 0)
+@keyframes slide-in-down {
+  from {
+    transform: translate3d(0, -100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 
-@keyframes absolute-slide-up
-  from
-    transform: translate3d(0, 100%, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
-    position: absolute
-    bottom: base-line
+@keyframes slide-in-up {
+  from {
+    transform: translate3d(0, 100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 
-@keyframes slide-in-down
-  from
-    transform: translate3d(0, -100%, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
+@keyframes slide-in-left {
+  from {
+    transform: translate3d(-100%, 0, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes slide-in-right {
+  from {
+    transform: translate3d(100%, 0, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 
-@keyframes slide-in-up
-  from
-    transform: translate3d(0, 100%, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
+@keyframes slide-out-right {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    visibility: hidden;
+    transform: translate3d(100%, 0, 0);
+  }
+}
 
-@keyframes slide-in-left
-  from
-    transform: translate3d(-100%, 0, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
-@keyframes slide-in-right
-  from
-    transform: translate3d(100%, 0, 0)
-    visibility: visible
-  to
-    transform: translate3d(0, 0, 0)
+@keyframes rotate {
+  from {
+    transform: rotate3d(0, 0, 1, -100deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 
-@keyframes slide-out-right
-  from
-    transform: translate3d(0, 0, 0)
-  to
-    visibility: hidden
-    transform: translate3d(100%, 0, 0)
+@keyframes rotate-back {
+  from {
+    transform: rotate3d(0, 0, 1, 100deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
 
-@keyframes rotate
-  from
-    transform: rotate3d(0, 0, 1, -100deg)
-  to
-    transform: translate3d(0, 0, 0)
-
-@keyframes rotate-back
-  from
-    transform: rotate3d(0, 0, 1, 100deg)
-  to
-    transform: translate3d(0, 0, 0)
-
-@keyframes fade-in
-  from
-    opacity: 0
-    transform: translate3d(0, 10%, 0)
-  to
-    opacity: 1
-    transform: translate3d(0, 0%, 0)
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0%, 0);
+  }
+}

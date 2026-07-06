@@ -37,13 +37,15 @@
 </template>
 
 <style lang="stylus">
-  menu > button.avatar
-    appearance: none
-    background: none
-    border: 0
-    padding: 0
-    cursor: pointer
-    color: inherit
-  menu > button > svg.true
-    fill: emphasis !important
+  menu > button.avatar {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+  }
+  menu > button > svg.true {
+    fill: var(--emphasis) !important;
+  }
 </style>

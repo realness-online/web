@@ -27,10 +27,12 @@
 </template>
 
 <style lang="stylus">
-  figure.profile > figcaption > menu a.phone > svg
-    fill: accent
-    opacity:0.25
-    &:hover
-    &:active
-      opacity:1
+  figure.profile > figcaption > menu a.phone > svg {
+    fill: var(--accent);
+    opacity: 0.25;
+    &:hover,
+    &:active {
+      opacity: 1;
+    }
+  }
 </style>

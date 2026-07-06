@@ -1,29 +1,37 @@
-address
-  font-style: normal
-  p
-    user-select: none
-  h1
-    padding-left: base-line
-    text-align: left
-    width: 100dvw
-  &.message
-    max-width: page-width
-    margin: (base-line * 3) auto 0 auto
-    order: 1
-    & > p
-      padding: 0 base-line
-      text-align: center
-      line-height: 2.66
-      svg
-        fill: accent
-        width: 1em
-        height: 1em
-        display: inline-block
-        margin-bottom: -0.25em
-        &.realness
-          width: 2em
-          height: 2em
-      button
-        color: accent
-        border-color: accent
-        margin-right: round((base-line / 6), 2)
+address {
+  font-style: normal;
+  p {
+    user-select: none;
+  }
+  h1 {
+    padding-left: base-line;
+    text-align: left;
+    width: 100dvw;
+  }
+  &.message {
+    max-width: page-width;
+    margin: (base-line * 3) auto 0 auto;
+    order: 1;
+    & > p {
+      padding: 0 base-line;
+      text-align: center;
+      line-height: 2.66;
+      svg {
+        fill: var(--accent);
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        margin-bottom: -0.25em;
+        &.realness {
+          width: 2em;
+          height: 2em;
+        }
+      }
+      button {
+        color: var(--accent);
+        border-color: var(--accent);
+        margin-right: round((base-line / 6), 2);
+      }
+    }
+  }
+}

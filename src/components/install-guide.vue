@@ -70,109 +70,136 @@
 </template>
 
 <style lang="stylus">
-  dialog.install
-    width: min(92vw, base-line * 28)
-    max-height: 88vh
-    overflow-y: auto
+  dialog.install {
+    width: min(92vw, base-line * 28);
+    max-height: 88vh;
+    overflow-y: auto;
 
-    & > article
-      position: relative
-      padding: base-line * 0.5
+    & > article {
+      position: relative;
+      padding: base-line * 0.5;
 
-      & > button.close
-        position: absolute
-        top: 0
-        right: 0
-        cursor: pointer
-        line-height: 0
-        padding: 0
-        border: none
-        background: none
+      & > button.close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+        line-height: 0;
+        padding: 0;
+        border: none;
+        background: none;
 
-        & > svg.icon
-          width: base-line
-          height: base-line
-          fill: var(--text)
+        & > svg.icon {
+          width: base-line;
+          height: base-line;
+          fill: var(--text);
 
-          &:hover
-            fill: var(--emphasis)
+          &:hover {
+            fill: var(--emphasis);
+          }
+        }
+      }
+    }
+  }
 
-  section.install.guide
-    margin: 0 auto
-    max-width: base-line * 26
-    padding: base-line 0
-    text-align: center
+  section.install.guide {
+    margin: 0 auto;
+    max-width: base-line * 26;
+    padding: base-line 0;
+    text-align: center;
 
-    & > header
-      margin-bottom: base-line
-      h3
-        margin: 0
-        color: var(--accent)
-      p
-        margin: base-line * 0.25 auto 0
-        small
-          display: block
-          margin-top: base-line * 0.25
-          color: var(--emphasis)
+    & > header {
+      margin-bottom: base-line;
+      h3 {
+        margin: 0;
+        color: var(--accent);
+      }
+      p {
+        margin: base-line * 0.25 auto 0;
+        small {
+          display: block;
+          margin-top: base-line * 0.25;
+          color: var(--emphasis);
+        }
+      }
+    }
 
-    figure.device
-      margin: 0 auto
-      border-radius: base-line
-      overflow: hidden
-      box-shadow: 0 (base-line) (base-line * 2) alpha(graphite, 0.45)
-      video
-        display: block
-        width: 100%
-        height: auto
-      &[data-portrait='true']
-        max-width: base-line * 15
-      &[data-portrait='false']
-        max-width: base-line * 26
+    figure.device {
+      margin: 0 auto;
+      border-radius: base-line;
+      overflow: hidden;
+      box-shadow: 0 (base-line) (base-line * 2) alpha(graphite, 0.45);
+      video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      &[data-portrait='true'] {
+        max-width: base-line * 15;
+      }
+      &[data-portrait='false'] {
+        max-width: base-line * 26;
+      }
+    }
 
-    p.installed
-      color: var(--accent)
-      strong
-        color: var(--accent)
+    p.installed {
+      color: var(--accent);
+      strong {
+        color: var(--accent);
+      }
+    }
 
-    p.unsupported
-      max-width: base-line * 22
-      margin: 0 auto
-      strong
-        color: var(--accent)
+    p.unsupported {
+      max-width: base-line * 22;
+      margin: 0 auto;
+      strong {
+        color: var(--accent);
+      }
+    }
 
-    button.water
-      margin: base-line auto 0
-      padding: (base-line * 0.5) (base-line * 1.5)
-      border-radius: base-line * 2
-      border: none
-      font-size: inherit
-      cursor: pointer
+    button.water {
+      margin: base-line auto 0;
+      padding: (base-line * 0.5) (base-line * 1.5);
+      border-radius: base-line * 2;
+      border: none;
+      font-size: inherit;
+      cursor: pointer;
+    }
 
-    details.other
-      margin-top: base-line * 1.5
-      text-align: left
-      summary
-        cursor: pointer
-        color: var(--accent)
-        text-align: center
-      ul
-        list-style: none
-        margin: base-line 0 0
-        padding: 0
-        display: grid
-        gap: base-line
-        @media (min-width: pad-begins)
-          grid-template-columns: 1fr 1fr
-        li
-          margin: 0
-          h4
-            margin: 0 0 base-line * 0.25
-          video
-            display: block
-            width: 100%
-            height: auto
-            border-radius: base-line * 0.5
-            background: graphite
-          &[data-portrait='true'] video
-            max-width: base-line * 11
+    details.other {
+      margin-top: base-line * 1.5;
+      text-align: left;
+      summary {
+        cursor: pointer;
+        color: var(--accent);
+        text-align: center;
+      }
+      ul {
+        list-style: none;
+        margin: base-line 0 0;
+        padding: 0;
+        display: grid;
+        gap: base-line;
+        @media (min-width: pad-begins) {
+          grid-template-columns: 1fr 1fr;
+        }
+        li {
+          margin: 0;
+          h4 {
+            margin: 0 0 base-line * 0.25;
+          }
+          video {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: base-line * 0.5;
+            background: var(--graphite);
+          }
+          &[data-portrait='true'] video {
+            max-width: base-line * 11;
+          }
+        }
+      }
+    }
+  }
 </style>

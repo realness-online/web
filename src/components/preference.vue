@@ -116,66 +116,82 @@
 </template>
 
 <style lang="stylus">
-  fieldset.preference:has(input:checked) h4.with-icon svg.icon
-    color: var(--emphasis)
-  fieldset.preference
-    margin-bottom: base-line
-    &.compact
-      border: none
-      padding: 0
-      margin-bottom: 0
-      min-width: 0
-      & > div
-        gap: base-line * 0.5
-        align-items: center
-        & > label.switch
-          width: base-line * 2.25
-          height: base-line * 1.25
-          flex-shrink: 0
-          & > input:checked + .slider:before
-            transform: translateX(base-line * 1.05)
-          .slider:before
-            height: base-line
-            width: base-line
-            left: base-line * 0.125
-            bottom: base-line * 0.125
-    & > div
-      display: flex
-      justify-content: space-between
-      h4
-        text-transform: capitalize
-        &.labeled
-          text-transform: none
-        display: inline-flex
-        align-items: center
-        gap: base-line * 0.35
-        line-height: 1
-        padding: 0
+  fieldset.preference:has(input:checked) h4.with-icon svg.icon {
+    color: var(--emphasis);
+  }
+  fieldset.preference {
+    margin-bottom: base-line;
+    &.compact {
+      border: none;
+      padding: 0;
+      margin-bottom: 0;
+      min-width: 0;
+      & > div {
+        gap: base-line * 0.5;
+        align-items: center;
+        & > label.switch {
+          width: base-line * 2.25;
+          height: base-line * 1.25;
+          flex-shrink: 0;
+          & > input:checked + .slider:before {
+            transform: translateX(base-line * 1.05);
+          }
+          .slider:before {
+            height: base-line;
+            width: base-line;
+            left: base-line * 0.125;
+            bottom: base-line * 0.125;
+          }
+        }
+      }
+    }
+    & > div {
+      display: flex;
+      justify-content: space-between;
+      h4 {
+        text-transform: capitalize;
+        &.labeled {
+          text-transform: none;
+        }
+        display: inline-flex;
+        align-items: center;
+        gap: base-line * 0.35;
+        line-height: 1;
+        padding: 0;
         font-size: normal;
-        margin: 0 0 base-line 0
-        &.with-icon svg.icon
-          color: var(--accent)
-          width: base-line * 1.1
-          height: base-line * 1.1
-          flex-shrink: 0
-        .compact > div > &
-          margin: 0
-          font-size: smaller
-          &.with-icon svg.icon
-            width: base-line
-            height: base-line
-    & > p.hint
-      display: flex
-      flex-wrap: wrap
-      align-items: center
-      gap: base-line * 0.5
-      margin: 0
-      line-height: 1.4
-      font-size: smaller
-      opacity: 0.8
-      kbd
-        margin: 0
-    a
-      color: accent
-      border-color: accent
+        margin: 0 0 base-line 0;
+        &.with-icon svg.icon {
+          color: var(--accent);
+          width: base-line * 1.1;
+          height: base-line * 1.1;
+          flex-shrink: 0;
+        }
+        .compact > div > & {
+          margin: 0;
+          font-size: smaller;
+          &.with-icon svg.icon {
+            width: base-line;
+            height: base-line;
+          }
+        }
+      }
+    }
+    & > p.hint {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: base-line * 0.5;
+      margin: 0;
+      line-height: 1.4;
+      font-size: smaller;
+      opacity: 0.8;
+      kbd {
+        margin: 0;
+      }
+    }
+    a {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  }
 </style>

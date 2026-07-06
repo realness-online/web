@@ -94,7 +94,7 @@
         border: 1px solid var(--emphasis);
       }
       @media (prefers-color-scheme: dark) {
-        color: white-text;
+        color: var(--white-text);
       }
       &::placeholder {
         color: var(--rocks);

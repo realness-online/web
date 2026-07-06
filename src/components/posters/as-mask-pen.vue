@@ -332,25 +332,30 @@
 </template>
 
 <style lang="stylus">
-  g.mask-pen
+  g.mask-pen {
     // Keep outlines hairline-thin so they don't swamp small geology cells; the fill
     // is what tells you a cell is hovered (light) vs selected (solid).
-    path.mask-pen-hover
-      fill: alpha(sulfur, 0.3)
-      stroke: alpha(sulfur, 0.85)
-      stroke-width: base-line * 0.035
-      vector-effect: non-scaling-stroke
-    path.mask-pen-selected
-      fill: alpha(ochre, 0.55)
-      stroke: alpha(ochre, 0.95)
-      stroke-width: base-line * 0.035
-      vector-effect: non-scaling-stroke
-    path.mask-pen-preview
-      stroke-width: base-line * 0.05
-      vector-effect: non-scaling-stroke
-    circle.mask-pen-radius
-      fill: none
-      stroke-width: base-line * 0.06
-      stroke-dasharray: base-line * 0.2 base-line * 0.15
-      vector-effect: non-scaling-stroke
+    path.mask-pen-hover {
+      fill: alpha(sulfur, 0.3);
+      stroke: alpha(sulfur, 0.85);
+      stroke-width: base-line * 0.035;
+      vector-effect: non-scaling-stroke;
+    }
+    path.mask-pen-selected {
+      fill: alpha(ochre, 0.55);
+      stroke: alpha(ochre, 0.95);
+      stroke-width: base-line * 0.035;
+      vector-effect: non-scaling-stroke;
+    }
+    path.mask-pen-preview {
+      stroke-width: base-line * 0.05;
+      vector-effect: non-scaling-stroke;
+    }
+    circle.mask-pen-radius {
+      fill: none;
+      stroke-width: base-line * 0.06;
+      stroke-dasharray: base-line * 0.2 base-line * 0.15;
+      vector-effect: non-scaling-stroke;
+    }
+  }
 </style>

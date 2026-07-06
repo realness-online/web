@@ -97,15 +97,15 @@
         margin-top: base-line* 2;
         margin-right: base-line;
         text-align: center;
-        color: accent;
+        color: var(--accent);
         span {
           font-size: smaller;
-          color: accent;
+          color: var(--accent);
         }
       }
       h2 {
         text-align: center;
-        color: emphasis;
+        color: var(--emphasis);
       }
     }
     & > article {

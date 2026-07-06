@@ -127,34 +127,42 @@
 </template>
 
 <style lang="stylus">
-  article.thought
-    & > header
-      display: flex
-      justify-content: flex-start
-      flex-direction: row
-      margin: 0 0 base-line 0
-      & > a > svg
-        width: base-line * 2
-        height: base-line * 2
-        min-height: inherit
-        cursor: pointer
-        shape-outside: circle()
-        border-radius: (base-line * 2)
-        margin-right: round((base-line / 4), 2)
-        &.icon
-          fill: accent
-          scale: 0.6
-      & > address
-        flex:1
-        margin: 0
-        & > span
-          margin-right: round((base-line / 4), 2)
-          font-weight: 300
-          display: inline-block
-      & > menu > a > svg
-        fill: accent
-        opacity: .25
-        &:hover
-        &:active
-          opacity: 1
+  article.thought {
+    & > header {
+      display: flex;
+      justify-content: flex-start;
+      flex-direction: row;
+      margin: 0 0 base-line 0;
+      & > a > svg {
+        width: base-line * 2;
+        height: base-line * 2;
+        min-height: inherit;
+        cursor: pointer;
+        shape-outside: circle();
+        border-radius: (base-line * 2);
+        margin-right: round((base-line / 4), 2);
+        &.icon {
+          fill: var(--accent);
+          scale: 0.6;
+        }
+      }
+      & > address {
+        flex: 1;
+        margin: 0;
+        & > span {
+          margin-right: round((base-line / 4), 2);
+          font-weight: 300;
+          display: inline-block;
+        }
+      }
+      & > menu > a > svg {
+        fill: var(--accent);
+        opacity: .25;
+        &:hover,
+        &:active {
+          opacity: 1;
+        }
+      }
+    }
+  }
 </style>

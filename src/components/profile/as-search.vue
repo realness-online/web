@@ -34,38 +34,46 @@
 </template>
 
 <style lang="stylus">
-  label[for=search]
-    position: relative
-    & > *
-      fill: accent
-      height: base-line * 2
-      width: base-line * 2
-    svg
-      position: absolute
-      top: 0
-      left: 0
-      z-index: -2
-    input#search
-      standard-border: accent
-      border-width: 0
-      position: relative
-      z-index: 2
-      transition-delay: 0.15s
-      transition-property: all
-      &::placeholder
-        color: transparent
-      &:focus
-        transition-delay: 0.15s
-        standard-border: accent
-        padding: round((base-line / 2 ), 2)
-        width: inherit
-        &::placeholder
-          color:accent
-          transition-duration: 0.75
-          transition-property: all
-          transition-delay: 0.25s
-      &:focus ~ svg
-        transition-property: all
-        height:0
-        width:0
+  label[for=search] {
+    position: relative;
+    & > * {
+      fill: var(--accent);
+      height: base-line * 2;
+      width: base-line * 2;
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -2;
+    }
+    input#search {
+      standard-border: var(--accent);
+      border-width: 0;
+      position: relative;
+      z-index: 2;
+      transition-delay: 0.15s;
+      transition-property: all;
+      &::placeholder {
+        color: transparent;
+      }
+      &:focus {
+        transition-delay: 0.15s;
+        standard-border: var(--accent);
+        padding: round((base-line / 2 ), 2);
+        width: inherit;
+        &::placeholder {
+          color: var(--accent);
+          transition-duration: 0.75;
+          transition-property: all;
+          transition-delay: 0.25s;
+        }
+      }
+      &:focus ~ svg {
+        transition-property: all;
+        height: 0;
+        width: 0;
+      }
+    }
+  }
 </style>
