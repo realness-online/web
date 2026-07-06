@@ -400,6 +400,62 @@ export const parse_css_oklch_string = input => {
   return { l, c, h, a }
 }
 
+const WCAG_LUMINANCE_R = 0.2126
+const WCAG_LUMINANCE_G = 0.7152
+const WCAG_LUMINANCE_B = 0.0722
+const WCAG_CONTRAST_OFFSET = 0.05
+const HEX_FULL_LENGTH = 6
+const HEX_SHORT_LENGTH = 3
+
+/**
+ * Parse a hex color string into 0-255 RGB components
+ * @param {string} hex
+ * @returns {number[]} [r, g, b]
+ */
+export const hex_to_rgb = hex => {
+  const clean = hex.replace('#', '')
+  const full =
+    clean.length === HEX_SHORT_LENGTH
+      ? clean
+          .split('')
+          .map(c => c + c)
+          .join('')
+      : clean
+  const int = Number.parseInt(full.slice(0, HEX_FULL_LENGTH), HEX_BASE)
+  return [
+    (int >> HEX_SHIFT_RED) & RGB_MAX,
+    (int >> HEX_SHIFT_GREEN) & RGB_MAX,
+    int & RGB_MAX
+  ]
+}
+
+/**
+ * WCAG relative luminance of a hex color (0-1)
+ * @param {string} hex
+ * @returns {number}
+ */
+export const relative_luminance = hex => {
+  const [r, g, b] = hex_to_rgb(hex).map(val => {
+    const normalized = val / RGB_MAX
+    return normalized <= SRGB_THRESHOLD
+      ? normalized / SRGB_LOW_SLOPE
+      : Math.pow((normalized + SRGB_OFFSET) / SRGB_DIVISOR, SRGB_GAMMA)
+  })
+  return WCAG_LUMINANCE_R * r + WCAG_LUMINANCE_G * g + WCAG_LUMINANCE_B * b
+}
+
+/**
+ * WCAG contrast ratio between two hex colors (1-21)
+ * @param {string} hex_a
+ * @param {string} hex_b
+ * @returns {number}
+ */
+export const contrast_ratio = (hex_a, hex_b) => {
+  const lighter = Math.max(relative_luminance(hex_a), relative_luminance(hex_b))
+  const darker = Math.min(relative_luminance(hex_a), relative_luminance(hex_b))
+  return (lighter + WCAG_CONTRAST_OFFSET) / (darker + WCAG_CONTRAST_OFFSET)
+}
+
 /**
  * Extract prominent colors from image data
  * Replaces node-vibrant functionality
