@@ -1,41 +1,50 @@
 @require 'variables'
-svg
-  transition-property: none
-  line-height: 0
-  pointer-events: visible
-  height: base-line * 1.5
-  width: base-line * 1.5
-  overflow: auto
-  outline: none
-  display: block
-  stroke-width: 0
-  & use:active
-    stroke-width: 3px
-    user-select: all
-    fill: chalk
-    transition-property: padding, fill
-    transition-duration: 1.4s
-    transition-timing-function: ease
-svg.background
-  fill: transparent
-  @media (prefers-color-scheme: dark)
-    fill: accent
-svg.background
-use.working
-  position: absolute
-  z-index: 0
-svg.camera
-  width: base-line * 2.5
-  height: base-line * 2
-svg.working
-use.working
-  width: round(base-line * 3.3, 2) !important
-  height: base-line !important
-  margin: auto
-@media (max-width: page-width), (max-height: page-width)
-  svg.fullscreen
-  use.fullscreen
-    visibility: hidden
+svg {
+  transition-property: none;
+  line-height: 0;
+  pointer-events: visible;
+  height: base-line * 1.5;
+  width: base-line * 1.5;
+  overflow: auto;
+  outline: none;
+  display: block;
+  stroke-width: 0;
+  & use:active {
+    stroke-width: 3px;
+    user-select: all;
+    fill: var(--chalk);
+    transition-property: padding, fill;
+    transition-duration: 1.4s;
+    transition-timing-function: ease;
+  }
+}
+svg.background {
+  fill: transparent;
+  @media (prefers-color-scheme: dark) {
+    fill: var(--accent);
+  }
+}
+svg.background,
+use.working {
+  position: absolute;
+  z-index: 0;
+}
+svg.camera {
+  width: base-line * 2.5;
+  height: base-line * 2;
+}
+svg.working,
+use.working {
+  width: round(base-line * 3.3, 2) !important;
+  height: base-line !important;
+  margin: auto;
+}
+@media (max-width: page-width), (max-height: page-width) {
+  svg.fullscreen,
+  use.fullscreen {
+    visibility: hidden;
+  }
+}
 
 // https://frontendmasters.com/blog/pure-css-halftone-effect-in-3-declarations/
 // svg[itemtype='/posters'] halftone
@@ -48,4 +57,3 @@ use.working
 //   filter: contrast(var(--c))
 //   background-blend-mode: multiply
 //   background: var(--pattern), var(--map)
-

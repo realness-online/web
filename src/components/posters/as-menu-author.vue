@@ -48,11 +48,11 @@
     & > button {
       &.avatar {
         &.selected & > svg {
-          fill: emphasis;
+         fill: var(--emphasis);
         }
       }
       & > svg {
-        fill: accent;
+       fill: var(--accent);
       }
     }
     & > button {

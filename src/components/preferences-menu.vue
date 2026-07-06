@@ -278,89 +278,86 @@
 </template>
 
 <style lang="stylus">
-  menu.preferences-menu
-    display: grid
-    gap: base-line * 1.5
-    grid-template-columns: 1fr
-    margin: 0 auto
-    padding: 0
-    border: none
-    max-width: base-line * 52
+  menu.preferences-menu {
+    display: grid;
+    gap: base-line * 1.5;
+    grid-template-columns: 1fr;
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+    max-width: base-line * 52;
+    & > article {
+      align-self: start;
+      & > h3 {
+        color: var(--emphasis);
+        margin: 0 0 base-line;
+        text-transform: capitalize;
+        &:not(:first-child) {
+          margin-top: base-line * 1.5;
+        }
+      }
+    }
+    @media (min-width: pad-begins) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
 
-    & > article
-      align-self: start
-
-      & > h3
-        color: emphasis
-        margin: 0 0 base-line
-        text-transform: capitalize
-
-        &:not(:first-child)
-          margin-top: base-line * 1.5
-
-    @media (min-width: pad-begins)
-      grid-template-columns: repeat(3, minmax(0, 1fr))
-
-  fieldset.preference .tweakpane-slide
-    display: grid
-    grid-template-rows: 0fr
-    margin-top: base-line
-    overflow: hidden
-    transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1)
-
-    &.open
-      grid-template-rows: 1fr
-
-    @media (prefers-reduced-motion: reduce)
-      transition: none
-
-    .tweakpane-slide-inner
-      min-height: 0
-      overflow: hidden
-      opacity: 0
-      translate: 0 -0.35rem
+  fieldset.preference .tweakpane-slide {
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-top: base-line;
+    overflow: hidden;
+    transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    &.open {
+      grid-template-rows: 1fr;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+    .tweakpane-slide-inner {
+      min-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      translate: 0 -0.35rem;
       transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
-        translate 280ms cubic-bezier(0.22, 1, 0.36, 1)
+        translate 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+    &.open .tweakpane-slide-inner {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
 
-      @media (prefers-reduced-motion: reduce)
-        transition: none
-
-    &.open .tweakpane-slide-inner
-      opacity: 1
-      translate: 0 0
-
-  fieldset.preference .tweakpane-3d
-
-    --tp-base-background-color: var(--basalt)
-    --tp-base-shadow-color: transparent
-    --tp-base-border-radius: round((base-line / 3), 2)
-    --tp-base-font-family: inherit
-
-    --tp-container-background-color: alpha(white, 0.04)
-    --tp-container-background-color-hover: alpha(white, 0.07)
-    --tp-container-background-color-focus: alpha(white, 0.07)
-    --tp-container-background-color-active: alpha(white, 0.10)
-    --tp-container-foreground-color: var(--white-text)
-
-    --tp-input-background-color: alpha(white, 0.06)
-    --tp-input-background-color-hover: var(--accent)
-    --tp-input-background-color-focus: var(--accent)
-    --tp-input-background-color-active: var(--accent)
-    --tp-input-foreground-color: var(--white-text)
-
-    --tp-label-foreground-color: var(--white-text)
-    --tp-groove-foreground-color: alpha(white, 0.08)
-
-    --tp-button-background-color: alpha(white, 0.06)
-    --tp-button-background-color-hover: var(--accent)
-    --tp-button-background-color-focus: var(--accent)
-    --tp-button-background-color-active: var(--accent)
-    --tp-button-foreground-color: var(--white-text)
-
-    --tp-monitor-background-color: alpha(white, 0.04)
-    --tp-monitor-foreground-color: var(--white-text)
-
-    .tp-dfwv
-      width: 100%
-      position: static
+  fieldset.preference .tweakpane-3d {
+    --tp-base-background-color: var(--basalt);
+    --tp-base-shadow-color: transparent;
+    --tp-base-border-radius: round((base-line / 3), 2);
+    --tp-base-font-family: inherit;
+    --tp-container-background-color: alpha(white, 0.04);
+    --tp-container-background-color-hover: alpha(white, 0.07);
+    --tp-container-background-color-focus: alpha(white, 0.07);
+    --tp-container-background-color-active: alpha(white, 0.10);
+    --tp-container-foreground-color: var(--white-text);
+    --tp-input-background-color: alpha(white, 0.06);
+    --tp-input-background-color-hover: var(--accent);
+    --tp-input-background-color-focus: var(--accent);
+    --tp-input-background-color-active: var(--accent);
+    --tp-input-foreground-color: var(--white-text);
+    --tp-label-foreground-color: var(--white-text);
+    --tp-groove-foreground-color: alpha(white, 0.08);
+    --tp-button-background-color: alpha(white, 0.06);
+    --tp-button-background-color-hover: var(--accent);
+    --tp-button-background-color-focus: var(--accent);
+    --tp-button-background-color-active: var(--accent);
+    --tp-button-foreground-color: var(--white-text);
+    --tp-monitor-background-color: alpha(white, 0.04);
+    --tp-monitor-foreground-color: var(--white-text);
+    .tp-dfwv {
+      width: 100%;
+      position: static;
+    }
+  }
 </style>

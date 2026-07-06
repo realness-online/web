@@ -1,24 +1,30 @@
-a
-  cursor: pointer
-  outline: none
-  color: accent
-  text-decoration: none
-  -webkit-tap-highlight-color: transparent
-p > a
-  -webkit-tap-highlight-color: transparentify(water-fill)
-  transition-property: all
-  transition-duration: 0.8s
-  transition-timing-function: ease-in-out
-  transition-delay: 0.1s
-  border-bottom: .08vmin solid accent
-  border-bottom-right-radius: 0.2vmin
-  border-bottom-left-radius: 0.2vmin
-  &:link
-    color: accent
-  &:visited
-    opacity: 0.82
-  &:hover
-    color: emphasis
-    opacity: 1
-  &:active
-    color: accent
+a {
+  cursor: pointer;
+  outline: none;
+  color: var(--accent);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+p > a {
+  -webkit-tap-highlight-color: transparentify(water-fill);
+  transition-property: all;
+  transition-duration: 0.8s;
+  transition-timing-function: ease-in-out;
+  transition-delay: 0.1s;
+  border-bottom: .08vmin solid var(--accent);
+  border-bottom-right-radius: 0.2vmin;
+  border-bottom-left-radius: 0.2vmin;
+  &:link {
+    color: var(--accent);
+  }
+  &:visited {
+    opacity: 0.82;
+  }
+  &:hover {
+    color: var(--emphasis);
+    opacity: 1;
+  }
+  &:active {
+    color: var(--accent);
+  }
+}

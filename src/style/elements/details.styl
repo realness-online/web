@@ -1,14 +1,21 @@
- details
-  & > summary
-    cursor: pointer
-    &:focus
-      outline:none
-    &::marker
-      display: none
-  & > *:not(summary)
-    animation-name: slideOutLeft
-  &[open]
-    border: none
-    border-color: transparent
-    & > *:not(summary)
-      animation-name: slideInLeft
+details {
+  & > summary {
+    cursor: pointer;
+    &:focus {
+      outline: none;
+    }
+    &::marker {
+      display: none;
+    }
+  }
+  & > *:not(summary) {
+    animation-name: slideOutLeft;
+  }
+  &[open] {
+    border: none;
+    border-color: transparent;
+    & > *:not(summary) {
+      animation-name: slideInLeft;
+    }
+  }
+}

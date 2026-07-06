@@ -483,7 +483,7 @@
     width: 100%;
     overflow: hidden;
     cursor: pointer;
-    disable-ios-touch-callout()
+    disable-ios-touch-callout();
     touch-action: pan-y;
     contain: layout;
     border-radius: calc(var(--base-line) * 0.03);
@@ -565,7 +565,7 @@
 
     & g.grid-overlay line {
       fill: none;
-      stroke: rgba(255, 255, 255, 0.72);
+      stroke: alpha(white, 0.72);
       stroke-width: 1;
       vector-effect: non-scaling-stroke;
       shape-rendering: crispEdges;

@@ -48,8 +48,8 @@
     svg.icon {
       width: base-line * 2;
       height: base-line * 2;
-      fill: graphite;
-      stroke: accent;
+      fill: var(--graphite);
+     stroke: var(--accent);
       stroke-width: 0.25px;
       &:active {
         outline: none;
@@ -86,8 +86,8 @@
     }
 
     h1, svg.icon {
-      color: emphasis;
-      fill: emphasis;
+      color: var(--emphasis);
+     fill: var(--emphasis);
     }
   }
 </style>

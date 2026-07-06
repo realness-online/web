@@ -278,7 +278,7 @@
     // horizontal margin would push it past the right edge (overflow skew).
     margin: base-line 0;
     svg.remove {
-      fill: danger;
+      fill: var(--danger);
     }
     fieldset {
       margin-bottom: base-line;
@@ -327,14 +327,14 @@
           margin-top: (base-line * 0.25);
           padding: (base-line * 0.25);
           @media (prefers-color-scheme: dark) {
-            background-color: basalt-transparent;
-            border-color: emphasis;
+            background-color: var(--basalt-transparent);
+            border-color: var(--emphasis);
           }
           option {
             padding: (base-line * 0.25);
             cursor: pointer;
             &:hover {
-              background-color: water-fill;
+              background-color: var(--water-fill);
               color: white;
             }
           }
@@ -369,7 +369,7 @@
 
     p#integrity-denied {
       margin: (base-line * 0.5) 0 0;
-      color: var(--red);
+      color: var(--danger);
       line-height: 1.4;
     }
   }

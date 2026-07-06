@@ -89,22 +89,30 @@
 </template>
 
 <style lang="stylus">
-  form#profile-name
-    &.complete
-      animation-name: slide-out-right
-    fieldset.saving input#name
-      border-color: caution
-    fieldset.saved input#name
-      border-color: accent
-    fieldset.invalid input#name
-      border-color: danger
-    input#name
-      width: 100%
-    p#name-error
-      margin: (base-line * 0.25) 0 0
-      font-size: 0.75em
-      color: emphasis
-    menu
-      display: flex
-      justify-content: end
+  form#profile-name {
+    &.complete {
+      animation-name: slide-out-right;
+    }
+    fieldset.saving input#name {
+      border-color: var(--caution);
+    }
+    fieldset.saved input#name {
+      border-color: var(--accent);
+    }
+    fieldset.invalid input#name {
+      border-color: var(--danger);
+    }
+    input#name {
+      width: 100%;
+    }
+    p#name-error {
+      margin: (base-line * 0.25) 0 0;
+      font-size: 0.75em;
+      color: var(--emphasis);
+    }
+    menu {
+      display: flex;
+      justify-content: end;
+    }
+  }
 </style>

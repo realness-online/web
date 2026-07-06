@@ -1,6 +1,7 @@
 <script setup>
   import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted, computed } from 'vue'
+  import css_var from '@/utils/css-var'
   import {
     shadow as shadow_pref,
     mosaic as mosaic_pref,
@@ -31,8 +32,10 @@
     if (props.rect?.fill) fill_value.value = props.rect?.fill
   })
   const background_fill = computed(() => {
+    // Stroke-only mode wants a neutral ground. Resolve gravel to a literal so
+    // downloaded SVGs keep the color outside the app's stylesheet.
     if (!shadow_pref.value && !mosaic_pref.value && stroke_pref.value)
-      return '#808080'
+      return css_var('--gravel').trim()
     return fill_value.value
   })
   const style = computed(() => ({
@@ -52,16 +55,20 @@
 </template>
 
 <style lang="stylus">
-  rect[itemprop="background"]
-    outline: none
-    stroke: none
+  rect[itemprop="background"] {
+    outline: none;
+    stroke: none;
     transition:
       opacity 0.2s ease,
-      visibility 0.2s ease
-    &:focus
-      outline:none
+      visibility 0.2s ease;
+    &:focus {
+      outline: none;
+    }
+  }
 
-  @starting-style
-    rect[itemprop="background"]
-      opacity: 0
+  @starting-style {
+    rect[itemprop="background"] {
+      opacity: 0;
+    }
+  }
 </style>

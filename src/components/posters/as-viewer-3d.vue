@@ -129,6 +129,6 @@
     width: 100%;
     height: 100%;
     touch-action: none;
-    disable-ios-touch-callout()
+    disable-ios-touch-callout();
   }
 </style>

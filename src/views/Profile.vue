@@ -95,116 +95,150 @@
 </template>
 
 <style lang="stylus">
-  section#profile
-    padding: 0
-    & > header
-      height: 0
-      padding: 0
-      & > a
-        -webkit-tap-highlight-color: accent
-        z-index: 2
-        top: safe_inset(top)
-        left: base-line
-        position: absolute
-    & > header + div
-      position: relative
-      overflow: hidden
-      max-height: 100dvh
-      & > svg.icon.silhouette
-        width: 100%
-        height: 100dvh
-        fill: currentColor
-      & > figure.poster
-        content-visibility: visible
-        width: 100%
-        min-height: 100dvh
-        max-height: 100dvh
-        grid-row-start: auto
-        border-radius: 0
-        contain-intrinsic-size: auto 100dvh
-        & > svg[itemscope]
-          width: 100dvw
-          min-height: 100dvh
-          max-height: 100dvh
-        & > figcaption
-          & > footer > menu
-            width: 100%
-            display: flex
-            justify-content: space-between
-            align-items: center
-            gap: base-line * 0.5
-            z-index: 1
-            position: absolute
-            left: 0
-            right: 0
-            bottom: 0
-            padding: 0 base-line
-            box-sizing: border-box
-            animation: absolute-slide-up
-            animation-delay: 1.33s
-            animation-duration: 0.35s
-            animation-fill-mode: both
-            & > a
-            & > nav
-            & > button
-            & > a > svg
-              fill: accent
-    & > figure.profile
-      padding: base-line
-      & > svg
-        border-radius: 0.66em
-        width: base-line * 2
-        height: base-line * 2
-        border-radius: base-line
-      & > figcaption > menu
-        display:none
-        a.status
-          position: absolute
-          top: base-line
-          left: base-line
-          animation: absolute-slide-down
-          animation-delay: 1.33s
-          animation-duration: 0.35s
-          animation-fill-mode: both
-          svg.add
-            width: base-line * 2
-            height: base-line * 2
-          &.relation
-            svg.add
-              width: 0
-              height: 0
-            svg.finished
-              width: base-line * 2
-              height: base-line * 2
-        a.phone
-          display: none
-    & > section.as-days
-      padding-left: 0
-      padding-right: 0
-      & [role='feed'] > article > header
-        padding-left: base-line
-        padding-right: base-line
-      & article.thought
-        padding-left: base-line
-        padding-right: base-line
-      & [role='feed'] > article
-        @media (prefers-color-scheme: dark)
-          & > header > h4, figure.poster > svg.background
-            color: accent
-        figure.poster
-          border-radius: 0
-          & > figcaption > menu
-            & > a.download svg
-              fill: accent
-            & > a.phone
-              display: none
-            & > a.profile
-            & > address
-              & > time
-                font-size: max-font
-                color: accent
-              & > h3
-                display: none
-            & > svg
-              display: none
+  section#profile {
+    padding: 0;
+    & > header {
+      height: 0;
+      padding: 0;
+      & > a {
+        -webkit-tap-highlight-color: var(--accent);
+        z-index: 2;
+        top: safe_inset(top);
+        left: base-line;
+        position: absolute;
+      }
+    }
+    & > header + div {
+      position: relative;
+      overflow: hidden;
+      max-height: 100dvh;
+      & > svg.icon.silhouette {
+        width: 100%;
+        height: 100dvh;
+        fill: currentColor;
+      }
+      & > figure.poster {
+        content-visibility: visible;
+        width: 100%;
+        min-height: 100dvh;
+        max-height: 100dvh;
+        grid-row-start: auto;
+        border-radius: 0;
+        contain-intrinsic-size: auto 100dvh;
+        & > svg[itemscope] {
+          width: 100dvw;
+          min-height: 100dvh;
+          max-height: 100dvh;
+        }
+        & > figcaption {
+          & > footer > menu {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: base-line * 0.5;
+            z-index: 1;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 0 base-line;
+            box-sizing: border-box;
+            animation: absolute-slide-up;
+            animation-delay: 1.33s;
+            animation-duration: 0.35s;
+            animation-fill-mode: both;
+            & > a,
+            & > nav,
+            & > button,
+            & > a > svg {
+              fill: var(--accent);
+            }
+          }
+        }
+      }
+    }
+    & > figure.profile {
+      padding: base-line;
+      & > svg {
+        border-radius: 0.66em;
+        width: base-line * 2;
+        height: base-line * 2;
+        border-radius: base-line;
+      }
+      & > figcaption > menu {
+        display: none;
+        a.status {
+          position: absolute;
+          top: base-line;
+          left: base-line;
+          animation: absolute-slide-down;
+          animation-delay: 1.33s;
+          animation-duration: 0.35s;
+          animation-fill-mode: both;
+          svg.add {
+            width: base-line * 2;
+            height: base-line * 2;
+          }
+          &.relation {
+            svg.add {
+              width: 0;
+              height: 0;
+            }
+            svg.finished {
+              width: base-line * 2;
+              height: base-line * 2;
+            }
+          }
+        }
+        a.phone {
+          display: none;
+        }
+      }
+    }
+    & > section.as-days {
+      padding-left: 0;
+      padding-right: 0;
+      & [role='feed'] > article > header {
+        padding-left: base-line;
+        padding-right: base-line;
+      }
+      & article.thought {
+        padding-left: base-line;
+        padding-right: base-line;
+      }
+      & [role='feed'] > article {
+        @media (prefers-color-scheme: dark) {
+          & > header > h4,
+          figure.poster > svg.background {
+            color: var(--accent);
+          }
+        }
+        figure.poster {
+          border-radius: 0;
+          & > figcaption > menu {
+            & > a.download svg {
+              fill: var(--accent);
+            }
+            & > a.phone {
+              display: none;
+            }
+            & > a.profile,
+            & > address {
+              & > time {
+                font-size: max-font;
+                color: var(--accent);
+              }
+              & > h3 {
+                display: none;
+              }
+            }
+            & > svg {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+  }
 </style>

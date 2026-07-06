@@ -1,31 +1,37 @@
-standard-border($color=currentColor, $dark-color=black-dark)
-  border: round((base-line / 13), 2) solid $color
-  border-radius: round((base-line / 3), 2)
+standard-border($color=currentColor, $dark-color=black-dark) {
+  border: round((base-line / 13), 2) solid $color;
+  border-radius: round((base-line / 3), 2);
+}
 
-standard-button($color=currentColor, $dark-color=white)
-  standard-border: $color
-  padding: round((base-line / 2.33), 2)
-  border-radius: round((base-line / 1.33), 2)
-  line-height: 1
-  background-color: inherit
-  vertical-align: middle
-  text-transform: capitalize
-  text-align: center
-  font-weight: 300
-  cursor: pointer
-  color: $color
-  @media (prefers-color-scheme: dark)
-    color: $dark-color
+standard-button($color=currentColor, $dark-color=white) {
+  standard-border: $color;
+  padding: round((base-line / 2.33), 2);
+  border-radius: round((base-line / 1.33), 2);
+  line-height: 1;
+  background-color: inherit;
+  vertical-align: middle;
+  text-transform: capitalize;
+  text-align: center;
+  font-weight: 300;
+  cursor: pointer;
+  color: $color;
+  @media (prefers-color-scheme: dark) {
+    color: $dark-color;
+  }
+}
 
-standard-grid($nothin=hi)
+standard-grid($nothin=hi) {
   // Progressive enhancement: grid-lanes when it ships; ignored until then, grid wins.
-  display: grid
-  display: grid-lanes
-  grid-gap: base-line
-  grid-auto-flow: row
-  grid-template-columns: repeat(auto-fill, minmax(325px, 1fr))
-  @media (min-width: page-width-large)
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr))
+  display: grid;
+  display: grid-lanes;
+  grid-gap: base-line;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
+  @media (min-width: page-width-large) {
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  }
+}
 
-standard-shadow($nothin=boop)
-  filter: drop-shadow( 0.25px 1px 1.5px black-dark) // the sun is coming from the bottom right
+standard-shadow($nothin=boop) {
+  filter: drop-shadow( 0.25px 1px 1.5px black-dark); // the sun is coming from the bottom right
+}

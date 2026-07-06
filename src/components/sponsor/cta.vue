@@ -62,18 +62,20 @@
 </template>
 
 <style lang="stylus">
-  stripe-buy-button
-    display: inline-block
-  a.checkout
-    display: inline-block
-    padding: base-line * 0.5 base-line
-    border: round((base-line * 0.1), 2) solid var(--accent)
-    border-radius: base-line * 0.33
-    color: accent
-    font-weight: bold
-    text-decoration: none
-
+  stripe-buy-button {
+    display: inline-block;
+  }
+  a.checkout {
+    display: inline-block;
+    padding: base-line * 0.5 base-line;
+    border: round((base-line * 0.1), 2) solid var(--accent);
+    border-radius: base-line * 0.33;
+    color: var(--accent);
+    font-weight: bold;
+    text-decoration: none;
     &:hover,
-    &:focus-visible
-      background-color: alpha(water-fill, 0.12)
+    &:focus-visible {
+      background-color: alpha(water-fill, 0.12);
+    }
+  }
 </style>

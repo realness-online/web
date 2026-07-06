@@ -153,14 +153,14 @@
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 1rem 2rem;
-        background: emphasis;
-        color: white;
+        background: var(--emphasis);
+        color: var(--white);
         text-decoration: none;
         border-radius: 0.5rem;
         z-index: 6;
         font-size: 1.2rem;
         font-weight: bold;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--black-dark) 30%, transparent);
       `
       a.textContent = `Tap to download ${psd_filename}`
       a.id = 'ios-psd-download-link'
@@ -508,7 +508,7 @@
         cursor: pointer;
 
         &:hover {
-          background: accent;
+          background: var(--accent);
           color: white;
         }
 

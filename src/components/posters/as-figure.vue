@@ -614,18 +614,15 @@
       left: round((base-line * 0.18), 2);
       z-index: 2;
       pointer-events: none;
-      border: round((base-line * 0.1), 2) solid hsla(180, 30%, 45%, 0.88);
+      border: round((base-line * 0.1), 2) solid unquote('color-mix(in srgb, var(--accent) 88%, transparent)');
       border-radius: round((base-line * 0.28), 2);
-      @media (prefers-color-scheme: dark) {
-        border-color: hsla(180, 35%, 58%, 0.9);
-      }
     }
     &:has(svg[data-aspect]) {
       grid-column-start: span 3;
       grid-row-start: auto;
     }
     &:focus {
-      outline: 0.25px solid emphasis;
+      outline: 0.25px solid var(--emphasis);
       outline-offset: base-line * 0.25;
     }
     @media (orientation: landscape), (min-width: page-width) {
@@ -673,7 +670,7 @@
       width: 100%;
       overflow: hidden;
       cursor: pointer;
-      disable-ios-touch-callout()
+      disable-ios-touch-callout();
       touch-action: pan-y;
       contain: layout;
       max-height: 100%;
@@ -688,7 +685,7 @@
       position: absolute;
       inset: 0;
       z-index: 2;
-      disable-ios-touch-callout()
+      disable-ios-touch-callout();
       border-radius: round((base-line * .03), 2);
       overflow: hidden;
     }
@@ -721,12 +718,12 @@
           frosted-glass();
           color: var(--text);
           box-shadow:
-            0 0.08em 0.6em hsla(57, 8%, 16%, 0.05),
-            0 0.15em 0.5em hsla(57, 8%, 8%, 0.15);
+            0 0.08em 0.6em alpha(basalt, 0.05),
+            0 0.15em 0.5em alpha(black-dark, 0.15);
           @media (prefers-color-scheme: dark) {
             box-shadow:
-              0 0.08em 0.6em hsla(0, 0%, 0%, 0.35),
-              0 0.2em 0.65em hsla(0, 0%, 0%, 0.45);
+              0 0.08em 0.6em alpha(black-dark, 0.35),
+              0 0.2em 0.65em alpha(black-dark, 0.45);
           }
           -webkit-overflow-scrolling: touch;
           pointer-events: auto;
@@ -757,7 +754,7 @@
         }
         & > a > time,
         & > time {
-          color: accent;
+          color: var(--accent);
           white-space: nowrap;
           padding: base-line * 0.2 base-line * 0.4;
           border-radius: base-line * 0.25;
@@ -793,8 +790,8 @@
         }
         & > button.mask-pen,
         & > button.mask-pen-clear {
-          background: rgba(0, 0, 0, 0.3);
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: alpha(black-dark, 0.3);
+          border: 1px solid alpha(white, 0.3);
           border-radius: base-line * 0.25;
           padding: base-line * 0.25 base-line * 0.5;
           cursor: pointer;
@@ -804,7 +801,7 @@
           opacity: 0.7;
           min-width: base-line * 1.5;
           text-align: center;
-          &:hover { opacity: 1; background: rgba(0, 0, 0, 0.5); }
+          &:hover { opacity: 1; background: alpha(black-dark, 0.5); }
         }
         & > button.mask-pen.active {
           opacity: 1;
@@ -831,7 +828,7 @@
             }
             & > h3,
             & > time {
-              color: accent;
+              color: var(--accent);
               line-height: 1;
             }
           }
@@ -839,7 +836,7 @@
         & > a.profile > svg,
         & > figure.profile > svg,
         & > span.actions svg {
-          fill: accent;
+         fill: var(--accent);
         }
       }
 

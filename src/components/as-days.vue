@@ -365,77 +365,94 @@
 </template>
 
 <style lang="stylus">
-  section.page.storytelling section.as-days
-    display: flex
-    flex-direction: column
-    overflow: hidden
-    padding: 0
-    gap: 0
-    min-height: 100vh
-    & > header
-      display: none
-    & > article
-      container-type: inline-size
-      container-name: storytelling
-      display: flex
-      overflow-x: auto
-      overflow-y: hidden
-      gap: base-line
-      scroll-behavior: smooth
-      height: 100vh
-      min-height: 100vh
-      align-items: center
-      justify-content: start
-      flex: 1
-      & > section
-        height: 100vh
-        min-height: 100vh
-        flex-shrink: 0
-        min-width: var(--storytelling-slide-width)
-        max-width: var(--storytelling-slide-width)
-        display: flex
-        align-items: center
-        justify-content: center
-        overflow: hidden
-        position: relative
-        & > header
-          position: absolute
-          top: base-line
-          left: base-line
-          z-index: 6
-          & > h4
-            color: var(--accent)
-            text-shadow: 0 0 2px var(--graphite)
+  section.page.storytelling section.as-days {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    gap: 0;
+    min-height: 100vh;
+    & > header {
+      display: none;
+    }
+    & > article {
+      container-type: inline-size;
+      container-name: storytelling;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      gap: base-line;
+      scroll-behavior: smooth;
+      height: 100vh;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: start;
+      flex: 1;
+      & > section {
+        height: 100vh;
+        min-height: 100vh;
+        flex-shrink: 0;
+        min-width: var(--storytelling-slide-width);
+        max-width: var(--storytelling-slide-width);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        & > header {
+          position: absolute;
+          top: base-line;
+          left: base-line;
+          z-index: 6;
+          & > h4 {
+            color: var(--accent);
+            text-shadow: 0 0 2px var(--graphite);
+          }
+        }
         & > article,
-        & > figure
-          width: 100%
-          height: 100%
-          display: flex
-          align-items: center
-          justify-content: center
-        & > figure
-          animation: none
-  section.as-days
-    padding: 0 base-line
-    margin-bottom: base-line * 2
-    container-type: inline-size
-    container-name: feed-days
-    & > header > svg.working
-      margin-top: base-line * 2
-    & [role='feed']
-      display: flex
-      flex-direction: column
-      gap: base-line
-    & [role='feed'] > article
-      min-width: 0
-      standard-grid: hi
-      @media (min-width: page-width-large)
-        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr))
-      &:focus
-        outline: none
-      & > header
-        @media (min-width: pad-begins)
-          grid-column: 1 / -1
-        & > h4
-          margin: 0
+        & > figure {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        & > figure {
+          animation: none;
+        }
+      }
+    }
+  }
+  section.as-days {
+    padding: 0 base-line;
+    margin-bottom: base-line * 2;
+    container-type: inline-size;
+    container-name: feed-days;
+    & > header > svg.working {
+      margin-top: base-line * 2;
+    }
+    & [role='feed'] {
+      display: flex;
+      flex-direction: column;
+      gap: base-line;
+    }
+    & [role='feed'] > article {
+      min-width: 0;
+      standard-grid: hi;
+      @media (min-width: page-width-large) {
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      }
+      &:focus {
+        outline: none;
+      }
+      & > header {
+        @media (min-width: pad-begins) {
+          grid-column: 1 / -1;
+        }
+        & > h4 {
+          margin: 0;
+        }
+      }
+    }
+  }
 </style>

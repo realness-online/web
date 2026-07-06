@@ -1,21 +1,26 @@
-section.page
-  padding-top: s('calc(env(safe-area-inset-top) - (%s * 0.75))', base-line)
-  margin-bottom: (base-line * 4)
-  width: 100%
-  & > header
-    padding: base-line
-    display:flex
-    justify-content: space-between
-    z-index: 2
-  & > h1
-    margin-top: 0
-    text-align: center
-    padding: 0 base-line base-line base-line
-    line-height: 1
-    @media (prefers-color-scheme: dark)
-      color: accent
+section.page {
+  padding-top: s('calc(env(safe-area-inset-top) - (%s * 0.75))', base-line);
+  margin-bottom: (base-line * 4);
+  width: 100%;
+  & > header {
+    padding: base-line;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+  }
+  & > h1 {
+    margin-top: 0;
+    text-align: center;
+    padding: 0 base-line base-line base-line;
+    line-height: 1;
+    @media (prefers-color-scheme: dark) {
+      color: var(--accent);
+    }
+  }
+}
 
 // When the support layout renders site-nav directly above the page,
 // the nav owns notch clearance - zero the page's safe-area to avoid a gap.
-nav[itemtype='/site-nav'] + section.page
-  padding-top: 0
+nav[itemtype='/site-nav'] + section.page {
+  padding-top: 0;
+}

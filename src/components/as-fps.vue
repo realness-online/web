@@ -125,65 +125,84 @@
 </template>
 
 <style lang="stylus">
-  aside#fps
-    position: fixed
-    bottom: base-line * 6
-    right: base-line * .5
-    padding: base-line * .5
-    border-radius: base-line * .5
-    background: var(--basalt)
-    color: var(--white-text)
-    font-size: base-line
-    text-shadow: 0 0 2px var(--graphite)
-    z-index: 8
-    font-family: monospace
-    display: flex
-    flex-direction: column
-    gap: base-line * .25
+  aside#fps {
+    position: fixed;
+    bottom: base-line * 6;
+    right: base-line * .5;
+    padding: base-line * .5;
+    border-radius: base-line * .5;
+    background: var(--basalt);
+    color: var(--white-text);
+    font-size: base-line;
+    text-shadow: 0 0 2px var(--graphite);
+    z-index: 8;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    gap: base-line * .25;
 
-    > div:first-of-type
-      display: flex
-      align-items: center
-      gap: base-line * .25
-      & > output
-        font-size: 66%
-        flex-shrink: 0
+    > div:first-of-type {
+      display: flex;
+      align-items: center;
+      gap: base-line * .25;
+      & > output {
+        font-size: 66%;
+        flex-shrink: 0;
+      }
+    }
 
-    > div:first-of-type meter
-      accent-color: var(--fps-color)
-      color: var(--fps-color)
-      &::-webkit-meter-bar
-        background: transparent
-      &::-webkit-meter-optimum-value
-        background: var(--fps-color)
-      &::-webkit-meter-suboptimum-value
-        background: var(--fps-color)
-      &::-webkit-meter-even-less-good-value
-        background: var(--fps-color)
-      &::-moz-meter-bar
-        background: var(--fps-color)
-      &::-moz-meter-optimum::-moz-meter-bar
-        background: var(--fps-color)
-      &::-moz-meter-sub-optimum::-moz-meter-bar
-        background: var(--fps-color)
-      &::-moz-meter-sub-sub-optimum::-moz-meter-bar
-        background: var(--fps-color)
-    > meter:last-of-type
-      accent-color: var(--accent)
-      color: var(--accent)
-      font-size: 66%
-      &::-webkit-meter-bar
-        background: transparent
-      &::-webkit-meter-optimum-value
-        background: var(--accent)
-      &::-moz-meter-bar
-        background: var(--accent)
-    > output
-      font-size: 66%
-    > output:nth-of-type(1)
-      color: var(--animate-color)
-      opacity: calc(var(--animate) * 1 + (1 - var(--animate)) * 0.7)
-    > output:nth-of-type(2)
-      color: var(--slice-color)
-      opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.7)
+    > div:first-of-type meter {
+      accent-color: var(--fps-color);
+      color: var(--fps-color);
+      &::-webkit-meter-bar {
+        background: transparent;
+      }
+      &::-webkit-meter-optimum-value {
+        background: var(--fps-color);
+      }
+      &::-webkit-meter-suboptimum-value {
+        background: var(--fps-color);
+      }
+      &::-webkit-meter-even-less-good-value {
+        background: var(--fps-color);
+      }
+      &::-moz-meter-bar {
+        background: var(--fps-color);
+      }
+      &::-moz-meter-optimum::-moz-meter-bar {
+        background: var(--fps-color);
+      }
+      &::-moz-meter-sub-optimum::-moz-meter-bar {
+        background: var(--fps-color);
+      }
+      &::-moz-meter-sub-sub-optimum::-moz-meter-bar {
+        background: var(--fps-color);
+      }
+    }
+    > meter:last-of-type {
+      accent-color: var(--accent);
+      color: var(--accent);
+      font-size: 66%;
+      &::-webkit-meter-bar {
+        background: transparent;
+      }
+      &::-webkit-meter-optimum-value {
+        background: var(--accent);
+      }
+      &::-moz-meter-bar {
+        background: var(--accent);
+      }
+    }
+    > output {
+      font-size: 66%;
+    }
+    > output:nth-of-type(1) {
+      color: var(--animate-color);
+      opacity: calc(var(--animate) * 1 + (1 - var(--animate)) * 0.7);
+    }
+    > output:nth-of-type(2) {
+      color: var(--slice-color);
+      opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.7);
+    }
+  }
 </style>

@@ -37,24 +37,30 @@
 </template>
 
 <style lang="stylus">
-  a.profile
-    display: inline-flex
-    shape-outside: circle()
-    margin-right: round((base-line / 3), 2)
-    & > svg
-      shape-outside: circle()
-      fill: black-dark
-      width: base-line * 2
-      height: base-line * 2
-      min-height: inherit
-      border-radius: round((base-line * 2), 2)
-      margin-right: round((base-line / 6), 2)
-      &.icon
-        fill: accent
-    & > address
-      & > time
-        color: emphasis
-      & > h3
-        line-height: 1
-        display: inline-block
+  a.profile {
+    display: inline-flex;
+    shape-outside: circle();
+    margin-right: round((base-line / 3), 2);
+    & > svg {
+      shape-outside: circle();
+      fill: var(--black-dark);
+      width: base-line * 2;
+      height: base-line * 2;
+      min-height: inherit;
+      border-radius: round((base-line * 2), 2);
+      margin-right: round((base-line / 6), 2);
+      &.icon {
+        fill: var(--accent);
+      }
+    }
+    & > address {
+      & > time {
+        color: var(--emphasis);
+      }
+      & > h3 {
+        line-height: 1;
+        display: inline-block;
+      }
+    }
+  }
 </style>
