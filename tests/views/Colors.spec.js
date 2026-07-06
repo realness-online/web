@@ -18,18 +18,19 @@ describe('@/views/Colors', () => {
       '--success'
     ])
 
-    const shelf = wrapper.findAll('figure[data-material]')
-    expect(shelf.map(figure => figure.attributes('data-material'))).toEqual([
-      'water',
-      'clay',
-      'moss',
-      'slate',
-      'heather'
-    ])
+    const shelf = wrapper.findAll('figure[itemscope]')
+    expect(
+      shelf.map(figure => figure.find('[itemprop="name"]').text())
+    ).toEqual(['water', 'clay', 'moss', 'slate', 'heather'])
     shelf.forEach(figure => expect(figure.findAll('li')).toHaveLength(3))
 
-    expect(wrapper.findAll('[data-strip="signals"] > li')).toHaveLength(2)
-    expect(wrapper.findAll('[data-strip="neutrals"] > li')).toHaveLength(5)
-    expect(wrapper.findAll('[data-strip="surfaces"] > li')).toHaveLength(5)
+    expect(wrapper.findAll('figure.strata ol li')).toHaveLength(5)
+    expect(wrapper.find('figure.scene').exists()).toBe(true)
+    expect(wrapper.findAll('figure.shelf ul li')).toHaveLength(7)
+
+    const strips = wrapper.findAll('ul.catalog-strip')
+    expect(strips).toHaveLength(2)
+    expect(strips[0].findAll('li')).toHaveLength(2)
+    expect(strips[1].findAll('li')).toHaveLength(6)
   })
 })

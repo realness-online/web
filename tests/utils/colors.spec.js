@@ -8,7 +8,8 @@ import {
   rgba_to_hsla,
   hsla_to_color,
   css_color_to_color,
-  color_to_hsla
+  color_to_hsla,
+  format_css_paint
 } from '@/utils/colors'
 
 // Mock dependencies
@@ -178,6 +179,25 @@ describe('@/utils/colors', () => {
       expect(result).toHaveProperty('s')
       expect(result).toHaveProperty('l')
       expect(result).toHaveProperty('a')
+    })
+  })
+
+  describe('format_css_paint', () => {
+    it('converts rgb to hsla and oklch', () => {
+      const result = format_css_paint('rgb(199, 223, 14)')
+      expect(result.hsla).toMatch(/^hsla\(/)
+      expect(result.oklch).toMatch(/^oklch\(/)
+    })
+
+    it('preserves alpha in rgba', () => {
+      const result = format_css_paint('rgba(255, 200, 0, 0.75)')
+      expect(result.hsla).toContain('0.75')
+      expect(result.oklch).toContain('/ 0.75')
+    })
+
+    it('passes through hsla', () => {
+      const result = format_css_paint('hsla(180, 35%, 32%, 1)')
+      expect(result.hsla).toBe('hsla(180, 35%, 32%, 1)')
     })
   })
 })
