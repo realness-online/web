@@ -35,3 +35,13 @@ standard-grid($nothin=hi) {
 standard-shadow($nothin=boop) {
   filter: drop-shadow( 0.25px 1px 1.5px black-dark); // the sun is coming from the bottom right
 }
+
+// One visible keyboard-focus treatment, reached for instead of each
+// component inventing (or silently dropping) its own. Uses --accent so it
+// tracks whichever role rebrand is live in either scheme.
+focus-ring($offset=2px) {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: $offset;
+  }
+}

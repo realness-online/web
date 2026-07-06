@@ -40,11 +40,11 @@
   button[aria-label='Settings'] {
     -webkit-tap-highlight-color: transparent;
     &:active,
-    &:focus,
-    &:focus-visible {
+    &:focus {
       outline: none;
       box-shadow: none;
     }
+    focus-ring();
     svg.icon {
       width: base-line * 2;
       height: base-line * 2;

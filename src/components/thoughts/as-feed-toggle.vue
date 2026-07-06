@@ -103,10 +103,10 @@
     cursor: pointer;
     transition: color 0.4s ease;
     -webkit-tap-highlight-color: transparent;
-    &:focus,
-    &:focus-visible {
+    &:focus {
       outline: none;
     }
+    focus-ring();
     &[aria-checked='true'] {
       color: var(--accent);
     }

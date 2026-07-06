@@ -848,6 +848,10 @@
             outline: none;
             box-shadow: none;
           }
+          &:focus-visible + span {
+            outline-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent);
+          }
         }
         & > span {
           display: block;
@@ -856,7 +860,7 @@
           border-radius: base-line;
           outline: 2px solid var(--emphasis);
           outline-offset: base-line * 0.25;
-          transition: background-color 0.2s ease;
+          transition: background-color 0.2s ease, box-shadow 0.2s ease;
           frosted-glass();
           box-shadow: 0 0 base-line var(--basalt-transparent);
           pointer-events: none;
@@ -910,11 +914,11 @@
           svg.animation {
             stroke: var(--accent);
           }
-          &:focus,
-          &:focus-visible {
+          &:focus {
             outline: none;
             box-shadow: none;
           }
+          focus-ring();
         }
         & label.menu-action.active {
           color: var(--emphasis);
@@ -940,6 +944,11 @@
             &:focus-visible {
               outline: none;
               box-shadow: none;
+            }
+            &:focus-visible + span {
+              outline: 2px solid var(--accent);
+              outline-offset: 2px;
+              border-radius: base-line * 0.25;
             }
           }
           & > span {
