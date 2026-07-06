@@ -74,7 +74,7 @@
 <style lang="stylus">
   section#account.page {
     & > div.body {
-      max-width: page-width-large;
+      max-width: base-line * 48;
       margin: 0 auto;
       padding: 0 base-line base-line * 4;
       & > address {
