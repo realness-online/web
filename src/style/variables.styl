@@ -1,73 +1,13 @@
 @require 'mixins'
 
+base-line = 1.333rem
 
-// Materials — paint on the shelf. Named for character, not wavelength.
-// Recipe: light ~35% / 32-40% S/L, dark lifted to 60-66%, mid fill for solids.
-// https://nice-converter.com/color/hsla-to-rgba
-
-// surfaces
-graphite          = hsl(0, 0%, 32%)
-black-dark        = hsla(300,  1%, 2%, 0.99)
-moonlight         = hsla(30, 20%, 8%, 1) // was atmosphere; renamed to avoid clashing with the 3D haze feature
-basalt            = hsla(57, 8%, 16%, 1) // #2c2c26
-basalt-transparent = hsla(57, 8%, 16%, 0.50) // #2c2c26
-pumice            = hsl(57, 8%, 21.25%) // dark poster — same offset off basalt as bone is off chalk
-
-white             = hsla( 57, 13%, 88%, 0.9)
-white-text        = hsla( 57, 13%, 82%, 0.95)
-chalk             = hsl( 57, 16%, 91%)
-bone              = hsl( 57, 13%, 83.5%)
-
-// accent pair — water is the cool primary, clay the warm half
-water-fill        = hsla(180, 30%, 45%, 1)
-clay-fill         = hsla(0, 30%, 45%, 1)
-water-light       = hsla(180, 65%, 26%, 1) // matches water-dark's chroma; was too desaturated at 35%/32%
-clay-light        = hsla(0, 35%, 38%, 1)
-water-dark        = hsla(180, 40%, 62%, 1)
-clay-dark         = hsla(0, 40%, 64%, 1) // 64% clears 4.5 AA on basalt; 62% measured 4.22
-surface-glass-light    = hsla(57, 13%, 88%, 0.85)
-
-// in stock — on the shelf, unassigned
-moss-light        = hsla(120, 35%, 30%, 1)
-moss-dark         = hsla(120, 35%, 60%, 1)
-moss-fill         = hsla(120, 30%, 43%, 1)
-slate-light       = hsla(215, 30%, 38%, 1)
-slate-dark        = hsla(215, 35%, 65%, 1)
-slate-fill        = hsla(215, 25%, 47%, 1)
-heather-light     = hsla(285, 25%, 40%, 1)
-heather-dark      = hsla(285, 30%, 66%, 1)
-heather-fill      = hsla(285, 22%, 49%, 1)
-
-// signals — interrupt rather than decorate; same in both schemes
-sulfur            = hsla(60, 90%, 45%, 0.75) // brighter/greener — was too close to ochre in hue+lightness
-ochre             = hsla(37, 91%, 54%, 0.75)
-
-sediment          = hsla(25, 45%, 62.5%, 1)
-sand              = hsla(26, 40%, 45%, 1) // was hue 45 — read as olive/mustard in oklch, not sand
-gravel            = hsla(26, 30%, 38%, 1) // more chroma + hue pulled toward sand — was nearly same hue as rocks
-rocks             = hsla(33, 28%, 31%, 1) // more chroma + hue separated from gravel (was 1° apart, read as the same gray)
-boulders          = hsla(0, 25%, 31%, 1)
-
-// roles — the layer components touch; UI uses roles, the canvas uses paint
-accent            = unquote('var(--accent)')
-emphasis          = unquote('var(--emphasis)')
-danger            = unquote('var(--danger)')
-warning           = unquote('var(--warning)')
-caution           = unquote('var(--caution)')
-success           = unquote('var(--success)')
-
-base-line = 1.333rem // smallest horizontal block of content
-
-// Modular scale. for small and larger screens
-// if you change the scales you'll need to recalculate when the are applied
-// so that the typography scales smoothly http://type-scale.com/
 min-modular = 1.250
 max-modular = 1.414
 
 min-font = 1.125rem
 max-font = 1.33rem
 
-// Media queries defining device types
 pad-begins = round(base-line * 26)
 typing-begins = round(base-line * 48)
 display-begins = round(base-line * 60)
@@ -82,59 +22,76 @@ poster-grid-height = round(base-line * 22, 0)
 
 poster-thoughts-height = round((page-width), 2)
 
-
-
+accent            = unquote('var(--accent)')
+working           = unquote('var(--working)')
+emphasis          = unquote('var(--emphasis)')
+warning           = unquote('var(--warning)')
 
 :root {
   interpolate-size: allow-keywords;
   accent-color: var(--emphasis);
 
-  // Materials
-  --graphite: graphite;
-  --black-dark: black-dark;
-  --moonlight: moonlight;
-  --basalt: basalt;
-  --basalt-transparent: basalt-transparent;
-  --pumice: pumice;
+  --graphite: hsl(0, 0%, 32%);
+  --black-dark: hsla(300, 1%, 2%, 0.99);
+  --basalt: hsla(57, 8%, 16%, 1);
+  --basalt-transparent: hsla(57, 8%, 16%, 0.50);
+  --white: hsla(57, 13%, 88%, 0.9);
+  --white-text: hsla(57, 13%, 82%, 0.95);
+  --chalk: hsl(57, 16%, 91%);
+  --surface-glass-light: hsla(57, 13%, 88%, 0.85);
 
-  --white: white;
-  --white-text: white-text;
-  --chalk: chalk;
-  --bone: bone;
+  --moonlight: hsla(30, 20%, 8%, 1);
+  --pumice: hsl(57, 8%, 21.25%);
+  --bone: hsl(57, 13%, 83.5%);
 
-  --water-fill: water-fill;
-  --clay-fill: clay-fill;
-  --water-light: water-light;
-  --water-dark: water-dark;
-  --clay-light: clay-light;
-  --clay-dark: clay-dark;
-  --moss-light: moss-light;
-  --moss-dark: moss-dark;
-  --moss-fill: moss-fill;
-  --slate-light: slate-light;
-  --slate-dark: slate-dark;
-  --slate-fill: slate-fill;
-  --heather-light: heather-light;
-  --heather-dark: heather-dark;
-  --heather-fill: heather-fill;
+  --water-lighten: hsla(180, 40%, 62%, 1);
+  --water-fill: hsla(180, 30%, 45%, 1);
+  --water-darken: hsla(180, 60%, 28%, 1);
+
+  --clay-lighten: hsla(0, 40%, 64%, 1);
+  --clay-fill: hsla(0, 30%, 45%, 1);
+  --clay-darken: hsla(0, 35%, 38%, 1);
+
+  --moss-lighten: hsla(120, 35%, 60%, 1);
+  --moss-fill: hsla(120, 30%, 43%, 1);
+  --moss-darken: hsla(120, 35%, 30%, 1);
+
+  --slate-lighten: hsla(215, 35%, 65%, 1);
+  --slate-fill: hsla(215, 25%, 47%, 1);
+  --slate-darken: hsla(215, 30%, 38%, 1);
+
   // role tokens (--accent, --emphasis, ...) live in color.styl only
   // (lazy chunks re-import variables)
-  --sulfur: sulfur;
-  --ochre: ochre;
-  --sediment: sediment;
-  --sand: sand;
-  --gravel: gravel;
-  --rocks: rocks;
-  --boulders: boulders;
+  --ochre-lighten: hsla(37, 91%, 70%, 0.75);
+  --ochre: hsla(37, 91%, 54%, 0.75);
+  --ochre-darken: hsla(37, 91%, 38%, 0.75);
 
-  // Typography
+  --sediment-lighten: hsla(25, 45%, 78.5%, 1);
+  --sediment: hsla(25, 45%, 62.5%, 1);
+  --sediment-darken: hsla(25, 45%, 46.5%, 1);
+
+  --sand-lighten: hsla(26, 40%, 61%, 1);
+  --sand: hsla(26, 40%, 45%, 1);
+  --sand-darken: hsla(26, 40%, 29%, 1);
+
+  --gravel-lighten: hsla(26, 30%, 54%, 1);
+  --gravel: hsla(26, 30%, 38%, 1);
+  --gravel-darken: hsla(26, 30%, 22%, 1);
+
+  --rocks-lighten: hsla(33, 28%, 47%, 1);
+  --rocks: hsla(33, 28%, 31%, 1);
+  --rocks-darken: hsla(33, 28%, 15%, 1);
+
+  --boulders-lighten: hsla(0, 25%, 47%, 1);
+  --boulders: hsla(0, 25%, 31%, 1);
+  --boulders-darken: hsla(0, 25%, 15%, 1);
+
   --base-line: base-line;
   --min-modular: min-modular;
   --max-modular: max-modular;
   --min-font: min-font;
   --max-font: max-font;
 
-  // Layout
   --pad-begins: pad-begins;
   --typing-begins: typing-begins;
   --display-begins: display-begins;

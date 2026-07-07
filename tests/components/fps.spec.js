@@ -67,7 +67,7 @@ describe('fps component', () => {
     mock_fps.value = 8
     const wrapper = mount(AsFps)
     const style = wrapper.find('aside#fps').attributes('style')
-    expect(style).toContain('--fps-color: var(--danger)')
+    expect(style).toContain('--fps-color: var(--emphasis)')
     wrapper.unmount()
   })
 

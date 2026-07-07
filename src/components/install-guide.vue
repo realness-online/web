@@ -128,7 +128,7 @@
       margin: 0 auto;
       border-radius: base-line;
       overflow: hidden;
-      box-shadow: 0 (base-line) (base-line * 2) alpha(graphite, 0.45);
+      box-shadow: 0 (base-line) (base-line * 2) unquote('color-mix(in srgb, var(--graphite) 45%, transparent)');
       video {
         display: block;
         width: 100%;

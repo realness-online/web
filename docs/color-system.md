@@ -12,6 +12,13 @@ wavelength or function (`water`, `clay`, `moss`, `slate`, `heather`,
 `sulfur`, `ochre`, and the geology set `sediment` → `boulders`). A material
 is just paint. It doesn't know what it's for.
 
+Each variant has three **weights**: `fill` (solids), `darken` (foreground
+on light surfaces), and `lighten` (foreground on dark surfaces). The suffix
+names the lightness direction the paint is tuned for, not the surface itself.
+Signals (`ochre`) and the geology set also carry `darken`/`lighten` pairs
+alongside their bare/base value, so every named color in the system can be
+tuned for legibility on both light and dark ground.
+
 `src/style/color.styl` defines **roles** — the jobs components actually
 touch (`--accent`, `--emphasis`, `--info`, `--danger`, `--warning`,
 `--caution`, `--success`). Each role points at a material via
@@ -86,15 +93,15 @@ in informal use are `background: var(--emphasis); color: white;` for
 menu-style items, and `color-mix(in srgb, var(--accent) 12%, transparent)`
 for subtle CTA highlights. Neither is enforced. The CTA one used to be
 `alpha(water-fill, 0.12)` — a material, not a role — and it silently went
-stale the moment light-mode `--accent` moved from `water` to `slate`.
+stale the moment light-mode `--accent` pointed at a different material.
 `color-mix()` against `var(--accent)` fixes that class of drift for good:
 it reads the role at paint time instead of freezing whatever material
 backed it when the CSS was written.
 
 ## Known gaps
 
-- `moss` is fully harmonized but still has no real consumer — `slate` now
-  backs `--accent` in light mode and `heather` backs `--info`, but
+- `moss` is fully harmonized but still has no real consumer — `water` backs
+  `--accent` in both schemes and `heather` backs `--info`, but
   `--success` (which points at `moss`) isn't used by any component yet.
 - No `prefers-contrast` or `forced-colors` handling.
 - `role-material-boundary.spec.js` catches both `var(--material)` and bare
