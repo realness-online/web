@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import {
-  hsl_to_oklch,
-  hsl_to_hex,
-  contrast_ratio
-} from '@/utils/color-converters'
+import { oklch_to_hex, contrast_ratio } from '@/utils/color-converters'
 import { read_palette } from '../helpers/palette'
 
 // Guards the perceptual-harmony fixes made to the palette this round —
@@ -13,14 +9,11 @@ import { read_palette } from '../helpers/palette'
 
 const palette = read_palette()
 
-const oklch_of = name => {
-  const { h, s, l } = palette[name]
-  return hsl_to_oklch(h, s, l)
-}
+const oklch_of = name => palette[name]
 
 const hex_of = name => {
-  const { h, s, l } = palette[name]
-  return hsl_to_hex(h, s, l)
+  const { l, c, h } = palette[name]
+  return oklch_to_hex(l, c, h)
 }
 
 describe('palette: text/surface contrast (WCAG AA, 4.5:1)', () => {
