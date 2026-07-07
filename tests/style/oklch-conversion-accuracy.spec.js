@@ -62,8 +62,11 @@ describe('palette: oklch literals still resolve to their pre-migration hex', () 
       expect(palette[name], `missing --${name}`).toBeDefined()
   })
 
-  it.each(Object.entries(EXPECTED_HEX))('%s renders as %s', (name, expected_hex) => {
-    const { l, c, h } = palette[name]
-    expect(oklch_to_hex(l, c, h).toLowerCase()).toBe(expected_hex)
-  })
+  it.each(Object.entries(EXPECTED_HEX))(
+    '%s renders as %s',
+    (name, expected_hex) => {
+      const { l, c, h } = palette[name]
+      expect(oklch_to_hex(l, c, h).toLowerCase()).toBe(expected_hex)
+    }
+  )
 })
