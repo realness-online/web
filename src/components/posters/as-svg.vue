@@ -565,7 +565,7 @@
 
     & g.grid-overlay line {
       fill: none;
-      stroke: alpha(white, 0.72);
+      stroke: unquote('color-mix(in srgb, var(--white) 72%, transparent)');
       stroke-width: 1;
       vector-effect: non-scaling-stroke;
       shape-rendering: crispEdges;

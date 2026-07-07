@@ -160,7 +160,7 @@
         z-index: 6;
         font-size: 1.2rem;
         font-weight: bold;
-        box-shadow: 0 4px 12px color-mix(in srgb, var(--black-dark) 30%, transparent);
+        box-shadow: 0 4px 12px unquote('color-mix(in srgb, var(--black-dark) 30%, transparent)');
       `
       a.textContent = `Tap to download ${psd_filename}`
       a.id = 'ios-psd-download-link'

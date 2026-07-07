@@ -278,7 +278,7 @@
     // horizontal margin would push it past the right edge (overflow skew).
     margin: base-line 0;
     svg.remove {
-      fill: var(--danger);
+      fill: var(--emphasis);
     }
     fieldset {
       margin-bottom: base-line;
@@ -372,7 +372,7 @@
 
     p#integrity-denied {
       margin: (base-line * 0.5) 0 0;
-      color: var(--danger);
+      color: var(--emphasis);
       line-height: 1.4;
     }
   }

@@ -29,12 +29,13 @@ describe('palette: text/surface contrast (WCAG AA, 4.5:1)', () => {
   it.each([
     ['graphite', 'chalk'], // light-mode body text on the light surface
     ['white-text', 'basalt'], // dark-mode body text on the dark surface
-    ['clay-light', 'chalk'], // emphasis/danger text, light mode
-    ['clay-dark', 'basalt'], // emphasis/danger text, dark mode
-    ['slate-light', 'chalk'], // accent (link) text, light mode
-    ['water-dark', 'basalt'], // accent (link) text, dark mode
-    ['heather-light', 'chalk'], // info text, light mode
-    ['heather-dark', 'basalt'] // info text, dark mode
+    ['clay-darken', 'chalk'], // emphasis role, light mode
+    ['clay-lighten', 'basalt'], // emphasis text, dark mode
+    ['water-darken', 'chalk'], // accent role, light mode
+    ['water-lighten', 'basalt'], // accent (link) text, dark mode
+    ['moss-darken', 'chalk'], // working role, light mode
+    ['moss-lighten', 'basalt'], // working role, dark mode
+    ['slate-darken', 'chalk'] // slate foreground on light (if used as text)
   ])('%s on %s clears %s:1', (fg, bg) => {
     expect(contrast_ratio(hex_of(fg), hex_of(bg))).toBeGreaterThanOrEqual(
       AA_NORMAL_TEXT
@@ -47,46 +48,31 @@ const circular_hue_distance = (a, b) => {
   return diff > 180 ? 360 - diff : diff
 }
 
-describe('palette: accent/emphasis/info roles stay hue-distinct', () => {
+describe('palette: accent/emphasis/working roles stay hue-distinct', () => {
   const MIN_ROLE_HUE_SEPARATION = 40
 
   it.each([
-    ['light', 'slate-light', 'clay-light', 'heather-light'],
-    ['dark', 'water-dark', 'clay-dark', 'heather-dark']
+    ['light', 'water-darken', 'clay-darken', 'moss-darken'],
+    ['dark', 'water-lighten', 'clay-lighten', 'moss-lighten']
   ])(
-    '%s scheme: accent/emphasis/info don’t collide',
-    (_, accent, emphasis, info) => {
+    '%s scheme: accent/emphasis/working stay hue-distinct',
+    (_, accent, emphasis, working) => {
       const hues = {
         accent: oklch_of(accent).h,
         emphasis: oklch_of(emphasis).h,
-        info: oklch_of(info).h
+        working: oklch_of(working).h
       }
       expect(
         circular_hue_distance(hues.accent, hues.emphasis)
       ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
       expect(
-        circular_hue_distance(hues.accent, hues.info)
+        circular_hue_distance(hues.accent, hues.working)
       ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
       expect(
-        circular_hue_distance(hues.emphasis, hues.info)
+        circular_hue_distance(hues.emphasis, hues.working)
       ).toBeGreaterThanOrEqual(MIN_ROLE_HUE_SEPARATION)
     }
   )
-})
-
-describe('palette: signal colors stay distinguishable', () => {
-  const MIN_LIGHTNESS_GAP = 0.05
-
-  it('sulfur and ochre keep a real lightness gap, not just a hue difference', () => {
-    // Hue alone doesn't save you here — the original regression had sulfur
-    // and ochre nearly identical in OKLCH lightness/chroma despite a 31°
-    // hue gap, which read as near-twins side by side as signal chips.
-    const sulfur = oklch_of('sulfur')
-    const ochre = oklch_of('ochre')
-    expect(Math.abs(sulfur.l - ochre.l)).toBeGreaterThanOrEqual(
-      MIN_LIGHTNESS_GAP
-    )
-  })
 })
 
 describe('palette: geology ramp stays a real depth ramp', () => {
@@ -116,5 +102,36 @@ describe('palette: geology ramp stays a real depth ramp', () => {
       const hue_gap = Math.abs(a.h - b.h)
       expect(hue_gap).toBeGreaterThanOrEqual(MIN_HUE_SEPARATION_WHEN_TIGHT)
     }
+  })
+})
+
+describe('palette: variant triplets step lighten → fill → darken', () => {
+  const MATERIALS = [
+    'water',
+    'clay',
+    'moss',
+    'slate',
+    'sediment',
+    'sand',
+    'gravel',
+    'rocks',
+    'boulders'
+  ]
+
+  const weights_of = name => ({
+    lighten: `${name}-lighten`,
+    fill: ['sediment', 'sand', 'gravel', 'rocks', 'boulders'].includes(name)
+      ? name
+      : `${name}-fill`,
+    darken: `${name}-darken`
+  })
+
+  it.each(MATERIALS)('%s weights get lighter toward lighten', name => {
+    const { lighten, fill, darken } = weights_of(name)
+    const l_lighten = oklch_of(lighten).l
+    const l_fill = oklch_of(fill).l
+    const l_darken = oklch_of(darken).l
+    expect(l_lighten).toBeGreaterThan(l_fill)
+    expect(l_fill).toBeGreaterThan(l_darken)
   })
 })

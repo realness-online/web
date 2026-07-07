@@ -630,7 +630,6 @@
   }
 
   section.page#about {
-    max-width: 1800px;
     --about-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --about-enter: 820ms;
     --about-stagger: 56ms;
@@ -641,6 +640,8 @@
     --about-article-copy-min-height: calc(var(--base-line) * 15);
     --about-article-list-min-height: calc(var(--base-line) * 20);
     --about-block-min-height: calc(var(--base-line) * 10);
+    margin-bottom: 0;
+    max-width: 1800px;
 
     & > header {
       display: block;

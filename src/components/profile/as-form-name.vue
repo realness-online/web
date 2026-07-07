@@ -94,13 +94,13 @@
       animation-name: slide-out-right;
     }
     fieldset.saving input#name {
-      border-color: var(--caution);
+      border-color: var(--working);
     }
     fieldset.saved input#name {
       border-color: var(--accent);
     }
     fieldset.invalid input#name {
-      border-color: var(--danger);
+      border-color: var(--emphasis);
     }
     input#name {
       width: 100%;

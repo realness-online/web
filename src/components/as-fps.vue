@@ -46,7 +46,7 @@
   const fps_color = computed(() => {
     if (fps.value >= FPS_ACCEPTABLE) return 'var(--accent)'
     if (fps.value >= FPS_LOW) return 'var(--warning)'
-    return 'var(--danger)'
+    return 'var(--emphasis)'
   })
 
   const fps_style = computed(() => ({

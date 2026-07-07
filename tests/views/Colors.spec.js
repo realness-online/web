@@ -8,30 +8,54 @@ describe('@/views/Colors', () => {
     expect(wrapper.find('section#colors.page').exists()).toBe(true)
     expect(wrapper.find('h1').text()).toBe('Color')
 
-    const roles = wrapper.findAll('dl > dt')
-    expect(roles.map(dt => dt.text())).toEqual([
+    const roles = wrapper.findAll('article[itemprop="roles"] > ul > li')
+    expect(roles.map(role => role.find('header code').text())).toEqual([
       '--accent',
+      '--working',
       '--emphasis',
-      '--info',
-      '--danger',
-      '--warning',
-      '--caution',
-      '--success'
+      '--warning'
     ])
 
-    const shelf = wrapper.findAll('figure[itemscope]')
+    const paints = wrapper.findAll(
+      'article[itemprop="variants"] > figure[itemscope]'
+    )
+    expect(paints.map(figure => figure.attributes('itemprop'))).toEqual([
+      'water',
+      'clay',
+      'moss',
+      'slate'
+    ])
+    paints.forEach(figure => expect(figure.findAll('ul > li')).toHaveLength(3))
+
+    const layers = wrapper.findAll(
+      'article[itemprop="geology"] > figure[itemscope]'
+    )
+    expect(layers.map(figure => figure.attributes('itemprop'))).toEqual([
+      'sediment',
+      'sand',
+      'gravel',
+      'rocks',
+      'boulders'
+    ])
+    layers.forEach(figure => expect(figure.findAll('ul > li')).toHaveLength(3))
+
     expect(
-      shelf.map(figure => figure.find('[itemprop="name"]').text())
-    ).toEqual(['water', 'clay', 'moss', 'slate', 'heather'])
-    shelf.forEach(figure => expect(figure.findAll('li')).toHaveLength(3))
+      wrapper.findAll(
+        'article[itemprop="geology"] > figure:last-of-type ol > li'
+      )
+    ).toHaveLength(5)
 
-    expect(wrapper.findAll('figure.strata ol li')).toHaveLength(5)
-    expect(wrapper.find('figure.scene').exists()).toBe(true)
-    expect(wrapper.findAll('figure.shelf ul li')).toHaveLength(7)
+    expect(
+      wrapper.findAll('article[itemprop="palette"] > figure ul li')
+    ).toHaveLength(5)
 
-    const strips = wrapper.findAll('ul.catalog-strip')
-    expect(strips).toHaveLength(2)
-    expect(strips[0].findAll('li')).toHaveLength(2)
-    expect(strips[1].findAll('li')).toHaveLength(6)
+    expect(
+      wrapper.findAll('article[itemprop="signals"] > ul > li')
+    ).toHaveLength(2)
+    expect(
+      wrapper.findAll(
+        'article[itemprop="surfaces"] > figure:first-of-type ol > li'
+      )
+    ).toHaveLength(5)
   })
 })

@@ -1,37 +1,33 @@
-// Roles — the jobs components actually touch. Each role points at a material;
+// Roles — the jobs components actually touch. Each role points at a variant;
 // a rebrand is one line here, not a hundred call sites.
 light-accent-tokens() {
-  --accent: slate-light;
-  --emphasis: clay-light;
-  --info: heather-light;
-  --success: moss-light;
-  --surface-glass: surface-glass-light;
+  --accent: var(--water-darken);
+  --emphasis: var(--clay-darken);
+  --working: var(--moss-darken);
+  --surface-glass: var(--surface-glass-light);
 }
 
 dark-accent-tokens() {
-  --accent: water-dark;
-  --emphasis: clay-dark;
-  --info: heather-dark;
-  --success: moss-dark;
-  --surface-glass: basalt-transparent;
+  --accent: var(--water-lighten);
+  --emphasis: var(--clay-lighten);
+  --working: var(--moss-lighten);
+  --surface-glass: var(--basalt-transparent);
 }
 
 light-surface-tokens() {
-  --text: graphite;
-  --surface: chalk;
-  --code-surface: alpha(graphite, 0.06);
+  --text: var(--graphite);
+  --surface: var(--chalk);
+  --code-surface: unquote('color-mix(in srgb, var(--graphite) 6%, transparent)');
 }
 
 dark-surface-tokens() {
-  --text: white-text;
+  --text: var(--white-text);
   --surface: var(--basalt);
-  --code-surface: alpha(white, 0.08);
+  --code-surface: unquote('color-mix(in srgb, var(--white) 8%, transparent)');
 }
 
 :root {
-  --danger: var(--emphasis); // same paint as emphasis today, free to diverge
-  --warning: sulfur;
-  --caution: ochre;
+  --warning: var(--ochre);
   light-accent-tokens();
   light-surface-tokens();
 }
@@ -62,33 +58,33 @@ section.page {
   background-color: var(--surface);
 }
 
-// Material classes — filled controls painted with a material directly.
+// Variant classes — filled controls painted with a variant directly.
 // The blessed exception to "components touch roles": used where a control
-// should read as a material (install CTA, compose box), not a semantic state.
+// should read as a variant (install CTA, compose box), not a semantic state.
 .water {
   background-color: var(--water-fill);
   border-color: var(--water-fill);
-  color: lighten(water-fill, 95%);
+  color: unquote('color-mix(in srgb, var(--water-fill) 5%, white)');
   -webkit-tap-highlight-color: var(--water-fill);
   &::placeholder {
-    color: lighten(water-fill, 95%);
+    color: unquote('color-mix(in srgb, var(--water-fill) 5%, white)');
   }
   @media (prefers-color-scheme: dark) {
-    background-color: darken(water-fill, 20%);
+    background-color: unquote('color-mix(in srgb, var(--water-fill) 80%, black)');
     color: var(--white-text);
-    border-color: darken(water-fill, 15%);
+    border-color: unquote('color-mix(in srgb, var(--water-fill) 85%, black)');
   }
 }
 .graphite {
   background-color: var(--graphite);
   border-color: var(--graphite);
-  color: lighten(graphite, 65%);
+  color: unquote('color-mix(in srgb, var(--graphite) 35%, white)');
   -webkit-tap-highlight-color: var(--graphite);
   &::placeholder {
-    color: lighten(graphite, 65%);
+    color: unquote('color-mix(in srgb, var(--graphite) 35%, white)');
   }
   @media (prefers-color-scheme: dark) {
-    background-color: darken(graphite, 30%);
+    background-color: unquote('color-mix(in srgb, var(--graphite) 70%, black)');
     color: var(--white-text);
     border-color: var(--graphite);
   }
