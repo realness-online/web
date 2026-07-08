@@ -2,7 +2,8 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { vi } from 'vite-plus/test'
 
 vi.mock('@/utils/serverless', () => ({
-  url: vi.fn(() => Promise.resolve(null))
+  url: vi.fn(() => Promise.resolve(null)),
+  storage_ready: Promise.resolve()
 }))
 
 import as_article from '@/components/thoughts/as-article'

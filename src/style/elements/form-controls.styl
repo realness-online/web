@@ -13,7 +13,7 @@ fieldset {
     standard-border: var(--emphasis);
   }
   legend {
-    color: unquote('color-mix(in srgb, var(--graphite) 70%, white)');
+    color: var(--muted-text);
     &.valid {
       color: var(--accent);
     }
@@ -29,11 +29,11 @@ input {
     transition-property: all;
     outline: 0;
     &::placeholder {
-      color: unquote('color-mix(in srgb, var(--graphite) 70%, white)');
+      color: var(--muted-text);
     }
   }
   &::placeholder {
-    color: unquote('color-mix(in srgb, var(--graphite) 70%, white)');
+    color: var(--muted-text);
   }
 }
 

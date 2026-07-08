@@ -24,6 +24,7 @@ vi.mock('@/utils/upload-processor', () => ({
 }))
 vi.mock('@/utils/serverless', () => ({
   url: vi.fn().mockResolvedValue('https://example.com/file.html.gz'),
+  storage_ready: Promise.resolve(),
   current_user: { value: null },
   directory: vi.fn(),
   me: { value: undefined },
@@ -714,6 +715,19 @@ describe('@/utils/itemid', () => {
           code: 'storage/object-not-found'
         })
       )
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_cache returns null when storage is not initialized', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValueOnce(new Error('Storage not initialized'))
 
       const result = await load_from_cache(id)
 

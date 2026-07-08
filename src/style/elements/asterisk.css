@@ -11,7 +11,6 @@
   -webkit-user-select: none;
 }
 
-
 [outline],
 [outline] *:not(svg):not(svg *) {
   outline: 0.15vmin dashed var(--graphite);

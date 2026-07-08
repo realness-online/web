@@ -1,0 +1,48 @@
+/* Semantic roles and document color wiring. Swatches live in palette.css. */
+:root {
+  --warning: var(--ochre);
+
+  --accent: var(--water-darken);
+  --emphasis: var(--clay-darken);
+  --working: var(--moss-darken);
+  --surface-glass: var(--surface-glass-light);
+
+  --text: var(--graphite);
+  --surface: var(--chalk);
+  --code-surface: color-mix(in srgb, var(--graphite) 6%, transparent);
+  --muted-text: color-mix(in srgb, var(--graphite) 70%, white);
+
+  accent-color: var(--emphasis);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: var(--water-lighten);
+    --emphasis: var(--clay-lighten);
+    --working: var(--moss-lighten);
+    --surface-glass: var(--basalt-transparent);
+
+    --text: var(--white-text);
+    --surface: var(--basalt);
+    --code-surface: color-mix(in srgb, var(--white) 8%, transparent);
+  }
+}
+
+html {
+  color: var(--text);
+  background-color: var(--surface);
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100%;
+  background-color: inherit;
+}
+
+main#realness {
+  background-color: inherit;
+}
+
+section.page {
+  background-color: var(--surface);
+}

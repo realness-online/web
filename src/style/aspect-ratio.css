@@ -1,0 +1,28 @@
+/* Poster slice + storytelling layout - html[data-aspect-ratio] from App.vue
+   Surface tokens follow prefers-color-scheme via color.css. No inline --custom-prop writes. */
+
+html {
+  --storytelling-slide-width: 100dvw;
+}
+
+html[data-aspect-ratio='1/1'] {
+  @media (min-aspect-ratio: 1/1) {
+    --storytelling-slide-width: 100dvh;
+  }
+}
+
+html[data-aspect-ratio='1/1'] svg[itemtype='/posters'][data-aspect] {
+  aspect-ratio: 1 / 1;
+}
+html[data-aspect-ratio='1.618/1'] svg[itemtype='/posters'][data-aspect] {
+  aspect-ratio: 1.618 / 1;
+}
+html[data-aspect-ratio='16/9'] svg[itemtype='/posters'][data-aspect] {
+  aspect-ratio: 16 / 9;
+}
+html[data-aspect-ratio='2.35/1'] svg[itemtype='/posters'][data-aspect] {
+  aspect-ratio: 2.35 / 1;
+}
+html[data-aspect-ratio='2.76/1'] svg[itemtype='/posters'][data-aspect] {
+  aspect-ratio: 2.76 / 1;
+}

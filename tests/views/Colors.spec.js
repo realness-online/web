@@ -28,7 +28,7 @@ describe('@/views/Colors', () => {
     paints.forEach(figure => expect(figure.findAll('ul > li')).toHaveLength(3))
 
     const layers = wrapper.findAll(
-      'article[itemprop="geology"] > figure[itemscope]'
+      'details[itemprop="geology"] > figure[itemscope]'
     )
     expect(layers.map(figure => figure.attributes('itemprop'))).toEqual([
       'sediment',
@@ -41,7 +41,7 @@ describe('@/views/Colors', () => {
 
     expect(
       wrapper.findAll(
-        'article[itemprop="geology"] > figure:last-of-type ol > li'
+        'details[itemprop="geology"] > figure:last-of-type ol > li'
       )
     ).toHaveLength(5)
 

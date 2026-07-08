@@ -1,5 +1,5 @@
 /**
- * Reads named OKLCH colors straight out of variables.styl :root literals, so
+ * Reads named OKLCH colors straight out of palette.css :root literals, so
  * palette-harmony tests assert against the real source of truth instead of
  * a hand-copied duplicate that can drift.
  */
@@ -9,11 +9,10 @@ import path from 'node:path'
 
 const VARIABLES_PATH = path.resolve(
   fileURLToPath(import.meta.url),
-  '../../../src/style/variables.styl'
+  '../../../src/style/palette.css'
 )
 
-const CSS_VAR_LITERAL_RE =
-  /^\s*--([a-z][a-z0-9-]*):\s*unquote\('oklch\(([^)]+)\)'\)/gm
+const CSS_VAR_LITERAL_RE = /^\s*--([a-z][a-z0-9-]*):\s*oklch\(([^)]+)\)/gm
 
 const parse_oklch = args => {
   const [l, c, h, a] = args

@@ -226,9 +226,12 @@ export const as_download_url = async itemid => {
     try {
       const idx = (await get('sync:index')) || {}
       if (is_sync_index_missing(idx[itemid])) return null
-      const { url } = await import('@/utils/serverless')
+      const { url, storage_ready } = await import('@/utils/serverless')
+      await storage_ready
       return await url(await as_filename(itemid))
     } catch (e) {
+      if (e instanceof Error && e.message === 'Storage not initialized')
+        return null
       if (
         e &&
         typeof e === 'object' &&

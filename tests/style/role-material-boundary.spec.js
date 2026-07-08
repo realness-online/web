@@ -3,9 +3,7 @@ import { scan_src } from '../helpers/scan-src'
 
 // Item 4 from the color critique: components are supposed to touch roles
 // (--accent, --emphasis, --working, ...), not materials (--water, --clay,
-// --sediment, ...) directly — color.styl documents `.water`/`.graphite`
-// as "the blessed exception," but nothing stopped a second, third, or
-// fifth exception from quietly showing up elsewhere.
+// --sediment, ...) directly.
 //
 // This doesn't forbid the pattern — sometimes a control really should
 // read as a material. It just makes every instance of it show up here,
@@ -26,7 +24,7 @@ const MATERIAL_TOKEN_RE = new RegExp(
 
 // Files that define or wire the palette itself, not "components touching
 // materials" — excluded rather than allowlisted.
-const DEFINITION_FILES = new Set(['style/variables.styl', 'style/color.styl'])
+const DEFINITION_FILES = new Set(['style/palette.css', 'style/color.css'])
 
 // views/Colors.vue is the palette browser: referencing every material by
 // name is the entire point of the page, not a bypass.
