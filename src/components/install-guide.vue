@@ -39,11 +39,7 @@
         or <strong>Safari</strong> — or add a bookmark.
       </p>
 
-      <button
-        v-if="can_install"
-        type="button"
-        class="water"
-        @click="prompt_install">
+      <button v-if="can_install" type="button" @click="prompt_install">
         Install Realness
       </button>
 
@@ -157,13 +153,19 @@
       }
     }
 
-    button.water {
+    & > button {
       margin: base-line auto 0;
       padding: (base-line * 0.5) (base-line * 1.5);
       border-radius: base-line * 2;
       border: none;
       font-size: inherit;
       cursor: pointer;
+      background-color: var(--accent);
+      color: var(--surface);
+      -webkit-tap-highlight-color: var(--accent);
+      @media (prefers-color-scheme: dark) {
+        color: var(--white-text);
+      }
     }
 
     details.other {

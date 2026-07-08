@@ -7,10 +7,10 @@ known gaps, for whoever touches this next.
 
 ## Two layers: materials and roles
 
-`src/style/variables.styl` defines **materials** — named for character, not
-wavelength or function (`water`, `clay`, `moss`, `slate`, `heather`,
-`sulfur`, `ochre`, and the geology set `sediment` → `boulders`). A material
-is just paint. It doesn't know what it's for.
+`src/style/palette.css` defines **materials** — named for character, not
+wavelength or function (`water`, `clay`, `moss`, `slate`, `ochre`, and the
+geology set `sediment` → `boulders`). A material is just paint. It doesn't
+know what it's for.
 
 Each variant has three **weights**: `fill` (solids), `darken` (foreground
 on light surfaces), and `lighten` (foreground on dark surfaces). The suffix
@@ -19,28 +19,29 @@ Signals (`ochre`) and the geology set also carry `darken`/`lighten` pairs
 alongside their bare/base value, so every named color in the system can be
 tuned for legibility on both light and dark ground.
 
-`src/style/color.styl` defines **roles** — the jobs components actually
-touch (`--accent`, `--emphasis`, `--info`, `--danger`, `--warning`,
-`--caution`, `--success`). Each role points at a material via
-`light-accent-tokens()` / `dark-accent-tokens()`. Components reference
-roles, never materials, so a rebrand is one line in `color.styl`, not a
-hundred call sites.
+`src/style/color.css` defines **roles** — the jobs components actually
+touch (`--accent`, `--emphasis`, `--working`, `--warning`, `--text`,
+`--surface`, `--muted-text`, and related derived tokens). Each role points
+at a material and flips for `prefers-color-scheme: dark`. Components
+reference roles, never materials, so a rebrand is a few lines in
+`color.css`, not a hundred call sites.
 
-Surfaces (`chalk`, `bone`, `graphite`, `pumice`, `basalt`, `moonlight`) are
-a separate concern from materials/roles — they're the ground things sit on,
-wired through `light-surface-tokens()` / `dark-surface-tokens()`
+Surfaces (`chalk`, `bone`, `graphite`, `pumice`, `basalt`, `moonlight`) live
+in `palette.css` as raw swatches and are wired to roles in `color.css`
 (`--text`, `--surface`, `--code-surface`).
 
-## The blessed exception
+`src/style/variables.styl` holds layout tokens (`--base-line`, breakpoints)
+and Stylus-side aliases (`accent = unquote('var(--accent)')`) for `.styl`
+files.
 
-`.water` and `.graphite` in `color.styl` are the one sanctioned place a
-component paints with a material directly instead of a role — used where a
-control should read as a material (the install CTA, the compose box), not
-a semantic state. `tests/style/role-material-boundary.spec.js` enforces
-that this stays a short, explicit, reviewed list instead of spreading
-unnoticed. If you're about to reach for `var(--water-fill)` in a new
-component, that test will fail and tell you to either go through a role
-instead or add yourself to the allowlist on purpose.
+## Material bypasses
+
+`tests/style/role-material-boundary.spec.js` enforces that components reach
+for roles, not materials. A few deliberate exceptions exist (poster mosaic
+layers, dev overlays) and live on an explicit allowlist. If you're about
+to reach for `var(--water-fill)` in a new component, that test will fail
+and tell you to either go through a role instead or add yourself to the
+allowlist on purpose.
 
 ## Naming
 
@@ -73,7 +74,7 @@ source.
   tight lightness step also has enough hue separation to read as distinct
   materials instead of the same gray
 
-It parses `variables.styl` directly (`tests/helpers/palette.js`) rather
+It parses `palette.css` directly (`tests/helpers/palette.js`) rather
 than duplicating values, so it can't drift from the real source.
 
 ## Interaction states
@@ -101,8 +102,8 @@ backed it when the CSS was written.
 ## Known gaps
 
 - `moss` is fully harmonized but still has no real consumer — `water` backs
-  `--accent` in both schemes and `heather` backs `--info`, but
-  `--success` (which points at `moss`) isn't used by any component yet.
+  `--accent` in both schemes, but `--working` (which points at `moss`) is
+  only used in a few places so far.
 - No `prefers-contrast` or `forced-colors` handling.
 - `role-material-boundary.spec.js` catches both `var(--material)` and bare
   Stylus color-function calls (`alpha(water-fill, 0.12)`), but a

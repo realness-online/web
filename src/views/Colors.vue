@@ -476,69 +476,6 @@
       </figure>
     </article>
 
-    <article itemscope itemprop="geology">
-      <header>
-        <h2>Geology</h2>
-      </header>
-      <figure
-        v-for="layer in geology"
-        :key="layer.name"
-        itemscope
-        :itemprop="layer.name">
-        <figcaption>
-          <samp>{{ layer.name }}</samp>
-          <data
-            v-if="hue_of(layer.name) !== null"
-            itemprop="hue"
-            :value="hue_of(layer.name) ?? ''">
-            hue {{ hue_of(layer.name) }}
-          </data>
-        </figcaption>
-        <ul>
-          <li
-            v-for="weight in weights"
-            :key="weight"
-            itemscope
-            :itemprop="weight"
-            :style="catalog_paint(weighted_token(layer.name, weight))">
-            <preview_mark
-              :name="preview_icon"
-              :label="`${layer.name} ${weight}`"
-              @cycle="cycle_icon" />
-          </li>
-        </ul>
-      </figure>
-
-      <figure>
-        <ol>
-          <li
-            v-for="layer in geology"
-            :key="layer.name"
-            itemscope
-            :itemprop="layer.name"
-            :style="geology_paint(layer)">
-            <samp>{{ layer.name }}</samp>
-            <ul>
-              <li
-                v-for="stop in paint_stops"
-                :key="stop.name"
-                itemscope
-                :itemprop="stop.name"
-                :style="stop_paint(stop.name)">
-                <preview_mark
-                  :name="preview_icon"
-                  :label="`${layer.name} ${stop.name}`"
-                  @cycle="cycle_icon" />
-              </li>
-            </ul>
-          </li>
-        </ol>
-        <figcaption>
-          Click any mark to cycle through <code>icons.svg</code>.
-        </figcaption>
-      </figure>
-    </article>
-
     <article itemscope itemprop="variants">
       <header>
         <h2>Variants</h2>
@@ -572,24 +509,6 @@
               :name="preview_icon"
               :label="`${name} ${weight}`"
               @cycle="cycle_icon" />
-          </li>
-        </ul>
-      </figure>
-
-      <figure itemprop="controls">
-        <figcaption>
-          Painted as materials, not roles — the two controls that do this
-        </figcaption>
-        <ul>
-          <li itemscope itemprop="water">
-            <button type="button" class="water">Install</button>
-            <p><small>install CTA</small></p>
-          </li>
-          <li itemscope itemprop="bone">
-            <input
-              placeholder="What are you thinking?"
-              aria-label="Compose box example" />
-            <p><small>compose box</small></p>
           </li>
         </ul>
       </figure>
@@ -667,31 +586,6 @@
           </li>
         </ol>
       </figure>
-
-      <figure>
-        <ol>
-          <li
-            v-for="surface in surfaces"
-            :key="surface"
-            itemscope
-            :itemprop="surface">
-            <samp>{{ surface }}</samp>
-            <ul>
-              <li
-                v-for="layer in geology"
-                :key="layer.name"
-                itemscope
-                :itemprop="layer.name"
-                :style="surface_layer_paint(layer, surface)">
-                <preview_mark
-                  :name="preview_icon"
-                  :label="`${surface} ${layer.name}`"
-                  @cycle="cycle_icon" />
-              </li>
-            </ul>
-          </li>
-        </ol>
-      </figure>
     </article>
     <article itemscope itemprop="depth">
       <header>
@@ -728,6 +622,95 @@
         </ol>
       </figure>
     </article>
+
+    <details itemscope itemprop="geology">
+      <summary>
+        <icon name="arrow" aria-hidden="true" />
+        <h2>Geology</h2>
+      </summary>
+      <figure
+        v-for="layer in geology"
+        :key="layer.name"
+        itemscope
+        :itemprop="layer.name">
+        <figcaption>
+          <samp>{{ layer.name }}</samp>
+          <data
+            v-if="hue_of(layer.name) !== null"
+            itemprop="hue"
+            :value="hue_of(layer.name) ?? ''">
+            hue {{ hue_of(layer.name) }}
+          </data>
+        </figcaption>
+        <ul>
+          <li
+            v-for="weight in weights"
+            :key="weight"
+            itemscope
+            :itemprop="weight"
+            :style="catalog_paint(weighted_token(layer.name, weight))">
+            <preview_mark
+              :name="preview_icon"
+              :label="`${layer.name} ${weight}`"
+              @cycle="cycle_icon" />
+          </li>
+        </ul>
+      </figure>
+
+      <figure>
+        <ol>
+          <li
+            v-for="layer in geology"
+            :key="layer.name"
+            itemscope
+            :itemprop="layer.name"
+            :style="geology_paint(layer)">
+            <samp>{{ layer.name }}</samp>
+            <ul>
+              <li
+                v-for="stop in paint_stops"
+                :key="stop.name"
+                itemscope
+                :itemprop="stop.name"
+                :style="stop_paint(stop.name)">
+                <preview_mark
+                  :name="preview_icon"
+                  :label="`${layer.name} ${stop.name}`"
+                  @cycle="cycle_icon" />
+              </li>
+            </ul>
+          </li>
+        </ol>
+        <figcaption>
+          Click any mark to cycle through <code>icons.svg</code>.
+        </figcaption>
+      </figure>
+
+      <figure>
+        <ol>
+          <li
+            v-for="surface in surfaces"
+            :key="surface"
+            itemscope
+            :itemprop="surface">
+            <samp>{{ surface }}</samp>
+            <ul>
+              <li
+                v-for="layer in geology"
+                :key="layer.name"
+                itemscope
+                :itemprop="layer.name"
+                :style="surface_layer_paint(layer, surface)">
+                <preview_mark
+                  :name="preview_icon"
+                  :label="`${surface} ${layer.name}`"
+                  @cycle="cycle_icon" />
+              </li>
+            </ul>
+          </li>
+        </ol>
+      </figure>
+    </details>
   </section>
 </template>
 
@@ -828,12 +811,26 @@
         margin-bottom: base-line;
       }
     }
-    & > article {
+    & > article,
+    & > details {
       max-width: base-line * 48;
       margin: 0 auto;
       padding: 0 base-line base-line;
       & > header > h2 {
         margin: 0 0 (base-line * 0.5);
+      }
+      & > summary {
+        display: flex;
+        align-items: center;
+        gap: base-line * 0.4;
+        list-style: none;
+        margin: 0 0 (base-line * 0.5);
+        &::-webkit-details-marker {
+          display: none;
+        }
+        & > h2 {
+          margin: 0;
+        }
       }
       & > header > p {
         max-width: page-width;
@@ -1146,11 +1143,40 @@
       }
 
       &[itemprop='geology'] {
+        & > summary > svg.arrow {
+          width: base-line * 0.55;
+          height: base-line * 0.55;
+          flex-shrink: 0;
+          transition: transform 0.15s ease;
+        }
+        &[open] > summary > svg.arrow {
+          transform: rotate(90deg);
+        }
         & > figure[itemscope] > ul {
           colors-weight-swatch-row();
         }
         & > figure:not([itemscope]) {
           colors-layer-grid-figure();
+        }
+        & > figure:last-of-type > ol > li > ul > li {
+          opacity: var(--layer-opacity, 1);
+        }
+        & li[itemprop='chalk'] {
+          --paint: var(--chalk);
+          --ink: var(--basalt);
+        }
+        & li[itemprop='bone'] {
+          --paint: var(--bone);
+          --ink: var(--basalt);
+        }
+        & li[itemprop='pumice'] {
+          --paint: var(--pumice);
+        }
+        & li[itemprop='basalt'] {
+          --paint: var(--basalt);
+        }
+        & li[itemprop='moonlight'] {
+          --paint: var(--moonlight);
         }
       }
 
@@ -1366,57 +1392,6 @@
       &[itemprop='variants'] {
         figure[itemscope] > ul {
           colors-weight-swatch-row();
-        }
-        figure[itemprop='controls'] {
-          & > figcaption {
-            opacity: 0.75;
-            font-size: smaller;
-          }
-          & > ul {
-            display: flex;
-            flex-wrap: wrap;
-            gap: base-line * 1.5;
-            align-items: flex-start;
-            & > li {
-              border: none;
-              border-radius: 0;
-              overflow: visible;
-              display: grid;
-              gap: base-line * 0.35;
-              &[itemprop='water'] {
-                flex-shrink: 0;
-              }
-              & > button {
-                flex-shrink: 0;
-                min-width: max-content;
-                width: max-content;
-                justify-self: start;
-                padding: (base-line * 0.4) (base-line * 1.25);
-                border-radius: base-line * 2;
-                border: none;
-                font: inherit;
-                cursor: default;
-              }
-              & > input {
-                padding: base-line * 0.5 base-line;
-                border-radius: base-line;
-                min-width: min(100%, base-line * 14);
-                font: inherit;
-              }
-              &[itemprop='bone'] > input {
-                background-color: var(--bone);
-                color: var(--graphite);
-                border: 1px solid var(--emphasis);
-              }
-              & > p {
-                border-top: none;
-                padding: 0;
-                margin: 0;
-                font-size: smaller;
-                opacity: 0.65;
-              }
-            }
-          }
         }
       }
 

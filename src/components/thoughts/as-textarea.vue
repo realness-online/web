@@ -57,7 +57,6 @@
       v-model="thought_text"
       cols="1"
       rows="1"
-      class="graphite"
       placeholder=""
       aria-label="What are you thinking?"
       :spellcheck="true"

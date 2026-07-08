@@ -1,6 +1,12 @@
 import { createApp } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
 
+import '@/style/font.css'
+import '@/style/palette.css'
+import '@/style/color.css'
+import '@/style/keyframes.css'
+import '@/style/aspect-ratio.css'
+import '@/style/elements/index.css'
 import App from '@/App.vue'
 import router from '@/router'
 import { key_commands_plugin } from '@/plugins/key-commands'

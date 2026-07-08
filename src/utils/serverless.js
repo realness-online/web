@@ -32,6 +32,12 @@ const storage = ref(
     undefined
   )
 )
+/** @type {(value?: void) => void} */
+let resolve_storage_ready = () => {}
+/** Resolves once `init_serverless` has set storage (or finished without it). */
+export const storage_ready = new Promise(resolve => {
+  resolve_storage_ready = resolve
+})
 export const current_user = ref(
   /** @type {import('firebase/auth').User | null | undefined} */ (undefined)
 )
@@ -186,12 +192,16 @@ export const init_serverless = async () => {
     messagingSenderId: String(import.meta.env.VITE_MESSAGING_SENDER_ID || '')
   }
 
-  const firebase_app = initialize_firebase(init)
-  app.value = firebase_app
-  if (!firebase_app) console.error('Firebase app initialization failed')
+  try {
+    const firebase_app = initialize_firebase(init)
+    app.value = firebase_app
+    if (!firebase_app) console.error('Firebase app initialization failed')
 
-  if (app.value) storage.value = get_storage(app.value)
+    if (app.value) storage.value = get_storage(app.value)
 
-  const { init_auth } = await import('@/utils/serverless-auth')
-  return init_auth(firebase_app)
+    const { init_auth } = await import('@/utils/serverless-auth')
+    return init_auth(firebase_app)
+  } finally {
+    resolve_storage_ready()
+  }
 }

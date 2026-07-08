@@ -3,11 +3,11 @@ import { oklch_to_hex } from '@/utils/color-converters'
 import { read_palette } from '../helpers/palette'
 
 // Pins the exact sRGB appearance every named material had right before
-// variables.styl moved from hsla() to oklch(). Each expected hex below was
+// palette.css moved from hsla() to oklch(). Each expected hex below was
 // captured by converting the pre-migration HSL literal straight to hex
 // (ground truth, no OKLCH involved) at the moment of conversion. If this
 // test ever fails, either the migration script's OKLCH math is wrong or
-// someone hand-edited a value in variables.styl and drifted its appearance
+// someone hand-edited a value in palette.css and drifted its appearance
 // without meaning to — the exact failure mode that hit moss/slate/the
 // geology ramp mid-session, caught here instead of by eye.
 const EXPECTED_HEX = {
@@ -57,7 +57,7 @@ const EXPECTED_HEX = {
 const palette = read_palette()
 
 describe('palette: oklch literals still resolve to their pre-migration hex', () => {
-  it('every named color is defined as oklch() in variables.styl', () => {
+  it('every named color is defined as oklch() in palette.css', () => {
     for (const name of Object.keys(EXPECTED_HEX))
       expect(palette[name], `missing --${name}`).toBeDefined()
   })
