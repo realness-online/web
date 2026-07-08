@@ -158,9 +158,15 @@ h4, span#fps {
 h5 {
   font-size: var(--h5-min);
 }
+// h6 is the one step below the base unit, so dividing by the ratio makes
+// $h6-min (small viewport) the numerically larger bound and $h6-max (large
+// viewport) the smaller one - clamp() requires its bounds in ascending
+// numeric order or it collapses to a constant, so the var() args are
+// swapped here relative to every other heading (the calc() interpolation
+// itself is unaffected).
 h6,
 section#navigation.page > footer > a {
-  font-size: clamp(var(--h6-min), fluid-calc($h6-min, $h6-max), var(--h6-max));
+  font-size: clamp(var(--h6-max), fluid-calc($h6-min, $h6-max), var(--h6-min));
 }
 
 // ***************** vertical-rhythm ******************************************
