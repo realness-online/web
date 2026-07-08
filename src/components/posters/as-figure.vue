@@ -719,11 +719,11 @@
           color: var(--text);
           box-shadow:
             0 0.08em 0.6em unquote('color-mix(in srgb, var(--basalt) 5%, transparent)'),
-            0 0.15em 0.5em unquote('color-mix(in srgb, var(--black-dark) 15%, transparent)');
+            0 0.15em 0.5em unquote('color-mix(in srgb, var(--moonlight) 15%, transparent)');
           @media (prefers-color-scheme: dark) {
             box-shadow:
-              0 0.08em 0.6em unquote('color-mix(in srgb, var(--black-dark) 35%, transparent)'),
-              0 0.2em 0.65em unquote('color-mix(in srgb, var(--black-dark) 45%, transparent)');
+              0 0.08em 0.6em unquote('color-mix(in srgb, var(--moonlight) 35%, transparent)'),
+              0 0.2em 0.65em unquote('color-mix(in srgb, var(--moonlight) 45%, transparent)');
           }
           -webkit-overflow-scrolling: touch;
           pointer-events: auto;
@@ -790,8 +790,8 @@
         }
         & > button.mask-pen,
         & > button.mask-pen-clear {
-          background: unquote('color-mix(in srgb, var(--black-dark) 30%, transparent)');
-          border: 1px solid unquote('color-mix(in srgb, var(--white) 30%, transparent)');
+          background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
+          border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
           border-radius: base-line * 0.25;
           padding: base-line * 0.25 base-line * 0.5;
           cursor: pointer;
@@ -801,12 +801,12 @@
           opacity: 0.7;
           min-width: base-line * 1.5;
           text-align: center;
-          &:hover { opacity: 1; background: unquote('color-mix(in srgb, var(--black-dark) 50%, transparent)'); }
+          &:hover { opacity: 1; background: unquote('color-mix(in srgb, var(--moonlight) 50%, transparent)'); }
         }
         & > button.mask-pen.active {
           opacity: 1;
-          background: unquote('color-mix(in srgb, var(--moss-fill) 50%, transparent)');
-          border-color: unquote('color-mix(in srgb, var(--moss-fill) 80%, transparent)');
+          background: unquote('color-mix(in srgb, var(--slate-fill) 50%, transparent)');
+          border-color: unquote('color-mix(in srgb, var(--slate-fill) 80%, transparent)');
         }
         & > span.actions {
           display: flex;

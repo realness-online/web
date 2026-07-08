@@ -11,7 +11,7 @@ p > a {
   transition-duration: 0.8s;
   transition-timing-function: ease-in-out;
   transition-delay: 0.1s;
-  border-bottom: .08vmin solid var(--accent);
+  border-bottom: 0.08vmin solid var(--accent);
   border-bottom-right-radius: 0.2vmin;
   border-bottom-left-radius: 0.2vmin;
   &:link {

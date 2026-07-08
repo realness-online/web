@@ -55,7 +55,7 @@
       text-align: left;
     }
     & > header > h3 {
-      between font-size;
+      font-size: clamp(var(--min-font), fluid-calc(), var(--max-font));
       margin: 0;
       text-transform: capitalize;
     }

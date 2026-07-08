@@ -41,10 +41,7 @@
   section.page.legal {
     margin: 0 auto;
     padding: 0 base-line;
-
-    @media (min-width: pad-begins) {
-      max-width: base-line * 52;
-    }
+    max-width: support-page-width;
 
     & > header {
       display: block;

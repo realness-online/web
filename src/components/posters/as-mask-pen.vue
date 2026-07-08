@@ -336,14 +336,14 @@
     // Keep outlines hairline-thin so they don't swamp small geology cells; the fill
     // is what tells you a cell is hovered (light) vs selected (solid).
     path.mask-pen-hover {
-      fill: unquote('color-mix(in srgb, var(--moss-fill) 30%, transparent)');
-      stroke: unquote('color-mix(in srgb, var(--moss-fill) 85%, transparent)');
+      fill: unquote('color-mix(in srgb, var(--slate-fill) 30%, transparent)');
+      stroke: unquote('color-mix(in srgb, var(--slate-fill) 85%, transparent)');
       stroke-width: base-line * 0.035;
       vector-effect: non-scaling-stroke;
     }
     path.mask-pen-selected {
-      fill: unquote('color-mix(in srgb, var(--moss-fill) 55%, transparent)');
-      stroke: unquote('color-mix(in srgb, var(--moss-fill) 95%, transparent)');
+      fill: unquote('color-mix(in srgb, var(--slate-fill) 55%, transparent)');
+      stroke: unquote('color-mix(in srgb, var(--slate-fill) 95%, transparent)');
       stroke-width: base-line * 0.035;
       vector-effect: non-scaling-stroke;
     }

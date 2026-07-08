@@ -93,8 +93,8 @@
         border: 1px solid var(--emphasis);
       }
       @media (prefers-color-scheme: dark) {
-        color: var(--white-text);
-        caret-color: var(--white-text);
+        color: var(--bone);
+        caret-color: var(--bone);
       }
       &::placeholder {
         color: var(--rocks);

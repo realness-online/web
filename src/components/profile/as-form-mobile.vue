@@ -338,7 +338,7 @@
             cursor: pointer;
             &:hover {
               background-color: var(--accent);
-              color: var(--white-text);
+              color: var(--bone);
             }
           }
         }

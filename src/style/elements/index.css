@@ -1,4 +1,3 @@
-@import './asterisk.css';
 @import './blockquote.css';
 @import './p.css';
 @import './aside.css';
@@ -7,3 +6,10 @@
 @import './ol.css';
 @import './main.css';
 @import './article.css';
+@import './a.css';
+@import './time.css';
+@import './ul.css';
+@import './hr.css';
+@import './kbd.css';
+@import './address.css';
+@import './section.css';

@@ -132,7 +132,7 @@
     padding: base-line * .5;
     border-radius: base-line * .5;
     background: var(--basalt);
-    color: var(--white-text);
+    color: var(--bone);
     font-size: base-line;
     text-shadow: 0 0 2px var(--graphite);
     z-index: 8;

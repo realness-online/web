@@ -1,4 +1,4 @@
 hr {
   border: 0.025rem solid var(--emphasis);
-  margin: base-line * 4;
+  margin: calc(var(--base-line) * 4);
 }

@@ -2,56 +2,50 @@ import { describe, it, expect } from 'vite-plus/test'
 import { oklch_to_hex } from '@/utils/color-converters'
 import { read_palette } from '../helpers/palette'
 
-// Pins the exact sRGB appearance every named material had right before
-// palette.css moved from hsla() to oklch(). Each expected hex below was
-// captured by converting the pre-migration HSL literal straight to hex
-// (ground truth, no OKLCH involved) at the moment of conversion. If this
-// test ever fails, either the migration script's OKLCH math is wrong or
-// someone hand-edited a value in palette.css and drifted its appearance
-// without meaning to — the exact failure mode that hit moss/slate/the
-// geology ramp mid-session, caught here instead of by eye.
+// Pins the exact sRGB appearance every named material renders as right now.
+// This is a re-baseline after a deliberate palette revision pass (legacy
+// var cleanup, contrast retuning, moss -> slate for --working) — not the
+// original pre-oklch-migration snapshot anymore. If this test ever fails,
+// either the OKLCH math broke or someone hand-edited a value in
+// palette.css and drifted its appearance without meaning to. A deliberate
+// palette change should update this map in the same commit, the same way
+// a visual snapshot gets re-recorded after an intentional UI change.
 const EXPECTED_HEX = {
   graphite: '#525252',
-  'black-dark': '#050505',
+  chalk: '#ecebe4',
+  'chalk-transparent': '#ecebe4',
+  bone: '#dbdbd4',
+  pumice: '#3b3b35',
   basalt: '#2c2c26',
   'basalt-transparent': '#2c2c26',
-  white: '#e4e4dc',
-  'white-text': '#d7d6cb',
-  chalk: '#ecebe4',
-  'surface-glass-light': '#e4e4dc',
-  moonlight: '#181410',
-  pumice: '#3b3a32',
-  bone: '#dadacf',
-  'water-lighten': '#77c5c5',
-  'water-fill': '#509595',
-  'water-darken': '#1d7272',
-  'clay-lighten': '#c87e7e',
-  'clay-fill': '#955050',
-  'clay-darken': '#833f3f',
-  'moss-lighten': '#75bd75',
-  'moss-fill': '#4d8f4d',
-  'moss-darken': '#326732',
-  'slate-lighten': '#87a1c5',
-  'slate-fill': '#5a7396',
-  'slate-darken': '#445c7e',
-  'ochre-lighten': '#f8c36d',
-  ochre: '#f4a31f',
-  'ochre-darken': '#b97509',
-  'sediment-lighten': '#e1c4b0',
-  sediment: '#ca9874',
-  'sediment-darken': '#ac6e41',
-  'sand-lighten': '#c39674',
-  sand: '#a16d45',
-  'sand-darken': '#68462c',
-  'gravel-lighten': '#ad8567',
-  gravel: '#7e5d44',
-  'gravel-darken': '#493627',
-  'rocks-lighten': '#997b56',
-  rocks: '#655139',
-  'rocks-darken': '#31271c',
-  'boulders-lighten': '#965a5a',
-  boulders: '#633b3b',
-  'boulders-darken': '#301d1d'
+  moonlight: '#17130f',
+  'water-lighten': '#74b9b9',
+  'water-fill': '#4e9394',
+  'water-darken': '#356e6e',
+  'clay-lighten': '#ed8b8b',
+  'clay-fill': '#a34145',
+  'clay-darken': '#933237',
+  'slate-lighten': '#849dc1',
+  'slate-fill': '#5373a0',
+  'slate-darken': '#3d5c87',
+  'ochre-lighten': '#e1be89',
+  ochre: '#dfad6d',
+  'ochre-darken': '#7e531c',
+  'sediment-lighten': '#d6bba8',
+  sediment: '#c79a7a',
+  'sediment-darken': '#a17557',
+  'sand-lighten': '#b59074',
+  sand: '#967257',
+  'sand-darken': '#654934',
+  'gravel-lighten': '#9e7f69',
+  gravel: '#7c5f4a',
+  'gravel-darken': '#4a3525',
+  'rocks-lighten': '#8a7357',
+  rocks: '#64523d',
+  'rocks-darken': '#332618',
+  'boulders-lighten': '#8e5353',
+  boulders: '#643a3a',
+  'boulders-darken': '#39191a'
 }
 
 const palette = read_palette()

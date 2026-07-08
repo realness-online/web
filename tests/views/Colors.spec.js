@@ -22,7 +22,6 @@ describe('@/views/Colors', () => {
     expect(paints.map(figure => figure.attributes('itemprop'))).toEqual([
       'water',
       'clay',
-      'moss',
       'slate'
     ])
     paints.forEach(figure => expect(figure.findAll('ul > li')).toHaveLength(3))
@@ -47,7 +46,7 @@ describe('@/views/Colors', () => {
 
     expect(
       wrapper.findAll('article[itemprop="palette"] > figure ul li')
-    ).toHaveLength(5)
+    ).toHaveLength(4)
 
     expect(
       wrapper.findAll('article[itemprop="signals"] > ul > li')

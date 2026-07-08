@@ -43,7 +43,7 @@
     margin-right: round((base-line / 3), 2);
     & > svg {
       shape-outside: circle();
-      fill: var(--black-dark);
+      fill: var(--moonlight);
       width: base-line * 2;
       height: base-line * 2;
       min-height: inherit;

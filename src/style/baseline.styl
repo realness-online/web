@@ -1,0 +1,206 @@
+// Establishes the baseline every element builds on: the numeric constants,
+// the reset that zeroes default spacing (a precondition for vertical rhythm
+// to mean anything), the fluid modular type scale, and the vertical-rhythm
+// math that anchors headings and paragraphs to whole multiples of base-line.
+//
+// implementation from:
+//   https://www.smashingmagazine.com/2016/05/fluid-typography/
+
+@require 'mixins'
+
+base-line = 1.333rem
+
+min-modular = 1.250
+max-modular = 1.414
+
+min-font = 1.125rem
+max-font = 1.33rem
+
+pad-begins = round(base-line * 26)
+typing-begins = round(base-line * 48)
+display-begins = round(base-line * 60)
+
+page-width = round(base-line * 22)
+
+// Breakpoint gate: triggers a layout change at this viewport width (see
+// standard-grid() and its call sites). Not a content max-width.
+page-width-large = round(base-line * 32)
+
+// Content limit: caps a wide, grid-heavy container's width. Distinct from
+// page-width-large, which is a breakpoint, not a cap.
+page-width-max = round(base-line * 48)
+
+// Content limit for support pages (docs, terms, privacy) - wider than prose
+// measure (page-width) since these mix headings, sidebars and body copy.
+support-page-width = round(base-line * 52)
+
+poster-min-width = round(base-line * 10, 0)
+
+poster-grid-height = round(base-line * 22, 0)
+
+poster-thoughts-height = round((page-width), 2)
+
+// Stylus-side aliases for role tokens defined in color.css.
+// unquote is required: Stylus parses `var(...)` as a function call.
+accent   = unquote('var(--accent)')
+working  = unquote('var(--working)')
+emphasis = unquote('var(--emphasis)')
+warning  = unquote('var(--warning)')
+
+// ***************** modular-scale ********************************************
+$h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
+$h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
+
+$h2-min = round(min-modular ** 3 * 1rem, 3) // 1.424
+$h2-max = round(max-modular ** 3 * 1rem, 3) // 1.953
+
+$h3-min = round(min-modular ** 2 * 1rem, 3) // 1.266
+$h3-max = round(max-modular ** 2 * 1rem, 3) // 1.563
+
+$h4-min = round(min-modular * 1rem, 3) // 1.125
+$h4-max = round(max-modular * 1rem, 3) // 1.25
+
+$h5-min= 1rem
+$h5-max= 1rem
+
+$h6-min= round(1rem / min-modular, 3) //.888
+$h6-max= round(1rem / max-modular, 3) //.8
+
+// Color tokens (oklch) live in palette.css - plain CSS, no unquote noise.
+// Everything else is a single source of truth for the custom properties
+// this file establishes: core numeric constants plus the modular-scale
+// bounds clamp() reads for its min/max args (the fluid-calc() middle
+// argument still needs the Stylus-side $vars, since it strips units at
+// compile time).
+:root {
+  interpolate-size: allow-keywords;
+
+  --base-line: base-line;
+  --min-modular: min-modular;
+  --max-modular: max-modular;
+  --min-font: min-font;
+  --max-font: max-font;
+
+  --pad-begins: pad-begins;
+  --typing-begins: typing-begins;
+  --display-begins: display-begins;
+  --page-width: page-width;
+  --page-width-large: page-width-large;
+  --page-width-max: page-width-max;
+  --support-page-width: support-page-width;
+  --poster-min-width: poster-min-width;
+  --poster-grid-height: poster-grid-height;
+  --poster-thoughts-height: poster-thoughts-height;
+
+  --h1-min: $h1-min;
+  --h1-max: $h1-max;
+  --h2-min: $h2-min;
+  --h2-max: $h2-max;
+  --h3-min: $h3-min;
+  --h3-max: $h3-max;
+  --h4-min: $h4-min;
+  --h4-max: $h4-max;
+  --h5-min: $h5-min;
+  --h5-max: $h5-max;
+  --h6-min: $h6-min;
+  --h6-max: $h6-max;
+}
+
+// ***************** reset ******************************************
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  line-height: 1.33;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[outline],
+[outline] *:not(svg):not(svg *) {
+  outline: 0.15vmin dashed var(--graphite);
+}
+
+[hidden] {
+  display: none;
+}
+
+// ***************** fluid-typography *****************************************
+html {
+  font-family: 'Lato', -apple-system, system-ui;
+  font-size: clamp(var(--min-font), fluid-calc(), var(--max-font));
+  text-rendering: optimizeLegibility;
+  @media (prefers-color-scheme: dark) {
+    color: var(--bone);
+    font-smoothing: antialiased; //https://usabilitypost.com/2012/11/05/stop-fixing-font-smoothing/
+  }
+}
+p, textarea:focus, input, blockquote, form {
+  max-width: var(--page-width);
+}
+
+h1 {
+  font-size: clamp(var(--h1-min), fluid-calc($h1-min, $h1-max), var(--h1-max));
+}
+h2 {
+  font-size: clamp(var(--h2-min), fluid-calc($h2-min, $h2-max), var(--h2-max));
+}
+h3, address > b {
+  font-size: clamp(var(--h3-min), fluid-calc($h3-min, $h3-max), var(--h3-max));
+}
+h4, span#fps {
+  font-size: clamp(var(--h4-min), fluid-calc($h4-min, $h4-max), var(--h4-max));
+}
+h5 {
+  font-size: var(--h5-min);
+}
+h6,
+section#navigation.page > footer > a {
+  font-size: clamp(var(--h6-min), fluid-calc($h6-min, $h6-max), var(--h6-max));
+}
+
+// ***************** vertical-rhythm ******************************************
+
+// At least 2 baselines high
+p {
+  line-height: 1.33;
+  margin-bottom: var(--base-line);
+}
+dl {
+  padding: 0 var(--base-line);
+}
+dt {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  user-select: text;
+  letter-spacing: -.02em;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: var(--base-line);
+  // text-transform: capitalize
+}
+h3,h4,h5,h6 {
+  letter-spacing: -.01em;
+}
+
+// Four baselines high
+h1,h2,h3,h4 {
+  margin-top: calc((var(--base-line) - 1em) + var(--base-line) * 2);
+}
+
+// Three baselines high
+h5 {
+  margin-top: calc((var(--base-line) - 1em) + var(--base-line) * 1);
+}
+
+// Two baselines high
+h6 {
+  margin-top: calc(var(--base-line) - 1em);
+}
