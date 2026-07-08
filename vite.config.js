@@ -267,7 +267,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       stylus: {
-        imports: [path.resolve(project_root, './src/style/baseline.styl')]
+        imports: [path.resolve(project_root, './src/style/base-line.styl')]
       }
     }
   },
