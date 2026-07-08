@@ -11,7 +11,7 @@ import { scan_src } from '../helpers/scan-src'
 // that spreads unnoticed.
 
 const MATERIAL_NAMES =
-  '(water|clay|moss|slate|ochre|sediment|sand|gravel|rocks|boulders)'
+  '(water|clay|slate|ochre|sediment|sand|gravel|rocks|boulders)'
 
 // Catches both the CSS custom-property form (var(--water-fill)) and bare
 // Stylus color-function calls (alpha(water-fill, 0.12)) — the second form
@@ -36,8 +36,8 @@ const SELF_REFERENTIAL_FILES = new Set(['views/Colors.vue'])
 const ALLOWED_BYPASSES = new Set([
   'components/as-fps.vue', // dev-only fps overlay, borrows geology colors
   'components/thoughts/as-textarea.vue', // compose caret, borrows geology colors
-  'components/posters/as-mask-pen.vue', // moss-fill hover+selected — working states, mask pen per Colors.vue
-  'components/posters/as-figure.vue' // mask-pen active button, same moss working-state
+  'components/posters/as-mask-pen.vue', // slate-fill hover+selected — working states, mask pen per Colors.vue
+  'components/posters/as-figure.vue' // mask-pen active button, same slate working-state
 ])
 
 describe('palette: role/material boundary stays deliberate', () => {

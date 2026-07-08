@@ -43,7 +43,7 @@ export const to_hex = (color = '', green, blue) => {
     throw `Provided color is unrecognized — ${color}`
 
   let color_value = color
-  if (color_value.length === 0) color_value = '--black-dark'
+  if (color_value.length === 0) color_value = '--moonlight'
   if (color_value.startsWith('--')) color_value = css_var(color_value).trim()
   if (color_value.startsWith('#')) return color_value
 

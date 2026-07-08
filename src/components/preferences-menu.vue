@@ -285,7 +285,7 @@
     margin: 0 auto;
     padding: 0;
     border: none;
-    max-width: base-line * 52;
+    max-width: support-page-width;
     & > article {
       align-self: start;
       & > h3 {
@@ -336,25 +336,25 @@
     --tp-base-shadow-color: transparent;
     --tp-base-border-radius: round((base-line / 3), 2);
     --tp-base-font-family: inherit;
-    --tp-container-background-color: unquote('color-mix(in srgb, var(--white) 4%, transparent)');
-    --tp-container-background-color-hover: unquote('color-mix(in srgb, var(--white) 7%, transparent)');
-    --tp-container-background-color-focus: unquote('color-mix(in srgb, var(--white) 7%, transparent)');
-    --tp-container-background-color-active: unquote('color-mix(in srgb, var(--white) 10%, transparent)');
-    --tp-container-foreground-color: var(--white-text);
-    --tp-input-background-color: unquote('color-mix(in srgb, var(--white) 6%, transparent)');
+    --tp-container-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
+    --tp-container-background-color-hover: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
+    --tp-container-background-color-focus: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
+    --tp-container-background-color-active: unquote('color-mix(in srgb, var(--bone) 10%, transparent)');
+    --tp-container-foreground-color: var(--bone);
+    --tp-input-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
     --tp-input-background-color-hover: var(--accent);
     --tp-input-background-color-focus: var(--accent);
     --tp-input-background-color-active: var(--accent);
-    --tp-input-foreground-color: var(--white-text);
-    --tp-label-foreground-color: var(--white-text);
-    --tp-groove-foreground-color: unquote('color-mix(in srgb, var(--white) 8%, transparent)');
-    --tp-button-background-color: unquote('color-mix(in srgb, var(--white) 6%, transparent)');
+    --tp-input-foreground-color: var(--bone);
+    --tp-label-foreground-color: var(--bone);
+    --tp-groove-foreground-color: unquote('color-mix(in srgb, var(--bone) 8%, transparent)');
+    --tp-button-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
     --tp-button-background-color-hover: var(--accent);
     --tp-button-background-color-focus: var(--accent);
     --tp-button-background-color-active: var(--accent);
-    --tp-button-foreground-color: var(--white-text);
-    --tp-monitor-background-color: unquote('color-mix(in srgb, var(--white) 4%, transparent)');
-    --tp-monitor-foreground-color: var(--white-text);
+    --tp-button-foreground-color: var(--bone);
+    --tp-monitor-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
+    --tp-monitor-foreground-color: var(--bone);
     .tp-dfwv {
       width: 100%;
       position: static;

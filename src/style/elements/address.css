@@ -1,22 +1,22 @@
 address {
   font-style: normal;
-  p {
+  & p {
     user-select: none;
   }
-  h1 {
-    padding-left: base-line;
+  & h1 {
+    padding-left: var(--base-line);
     text-align: left;
     width: 100dvw;
   }
   &.message {
-    max-width: page-width;
-    margin: (base-line * 3) auto 0 auto;
+    max-width: var(--page-width);
+    margin: calc(var(--base-line) * 3) auto 0 auto;
     order: 1;
     & > p {
-      padding: 0 base-line;
+      padding: 0 var(--base-line);
       text-align: center;
       line-height: 2.66;
-      svg {
+      & svg {
         fill: var(--accent);
         width: 1em;
         height: 1em;
@@ -27,10 +27,10 @@ address {
           height: 2em;
         }
       }
-      button {
+      & button {
         color: var(--accent);
         border-color: var(--accent);
-        margin-right: round((base-line / 6), 2);
+        margin-right: calc(var(--base-line) / 6);
       }
     }
   }

@@ -1,0 +1,11 @@
+// Slope-intercept math for use inside a native clamp():
+//   font-size: clamp($min, fluid-calc($min, $max), $max)
+// Stylus only supplies the compile-time constant; clamp() does the interpolation
+// and the min/max bounds, so no media queries are generated.
+// from: https://www.smashingmagazine.com/2016/05/fluid-typography/
+fluid-calc($min-value=min-font, $max-value=max-font, $min-vw=pad-begins, $max-vw=display-begins)
+  $min-value-stripped = remove-unit($min-value)
+  $max-value-stripped = remove-unit($max-value)
+  $min-vw-stripped    = remove-unit($min-vw)
+  $max-vw-stripped    = remove-unit($max-vw)
+  s('calc(%s + (%s - %s) * (100dvw - %s) / (%s - %s))', $min-value, $max-value-stripped, $min-value-stripped, $min-vw, $max-vw-stripped, $min-vw-stripped)

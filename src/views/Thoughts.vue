@@ -570,9 +570,6 @@
       grid-gap: base-line;
       padding: 0 base-line;
       margin-bottom: base-line;
-      @media (min-width: page-width-large) {
-        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-      }
       & > figure.poster.processing.currently_processing {
         grid-column: 1 / -1;
       }

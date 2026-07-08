@@ -1,0 +1,10 @@
+kbd {
+  display: inline-block;
+  margin: calc(var(--base-line) * 0.33);
+  padding: calc(var(--base-line) * 0.11) calc(var(--base-line) * 0.33);
+  border: calc(var(--base-line) * 0.025) solid var(--emphasis);
+  border-radius: calc(var(--base-line) * 0.33);
+  & + kbd {
+    margin-left: calc(var(--base-line) * 0.33);
+  }
+}

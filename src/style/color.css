@@ -1,11 +1,11 @@
 /* Semantic roles and document color wiring. Swatches live in palette.css. */
 :root {
-  --warning: var(--ochre);
+  --warning: var(--ochre-darken);
 
   --accent: var(--water-darken);
   --emphasis: var(--clay-darken);
-  --working: var(--moss-darken);
-  --surface-glass: var(--surface-glass-light);
+  --working: var(--slate-darken);
+  --surface-glass: var(--chalk-transparent);
 
   --text: var(--graphite);
   --surface: var(--chalk);
@@ -17,14 +17,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --warning: var(--ochre-lighten);
     --accent: var(--water-lighten);
     --emphasis: var(--clay-lighten);
-    --working: var(--moss-lighten);
+    --working: var(--slate-lighten);
     --surface-glass: var(--basalt-transparent);
 
-    --text: var(--white-text);
+    --text: var(--bone);
     --surface: var(--basalt);
-    --code-surface: color-mix(in srgb, var(--white) 8%, transparent);
+    --code-surface: color-mix(in srgb, var(--bone) 8%, transparent);
   }
 }
 

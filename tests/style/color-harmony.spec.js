@@ -21,14 +21,13 @@ describe('palette: text/surface contrast (WCAG AA, 4.5:1)', () => {
 
   it.each([
     ['graphite', 'chalk'], // light-mode body text on the light surface
-    ['white-text', 'basalt'], // dark-mode body text on the dark surface
+    ['bone', 'basalt'], // dark-mode body text on the dark surface
     ['clay-darken', 'chalk'], // emphasis role, light mode
     ['clay-lighten', 'basalt'], // emphasis text, dark mode
     ['water-darken', 'chalk'], // accent role, light mode
     ['water-lighten', 'basalt'], // accent (link) text, dark mode
-    ['moss-darken', 'chalk'], // working role, light mode
-    ['moss-lighten', 'basalt'], // working role, dark mode
-    ['slate-darken', 'chalk'] // slate foreground on light (if used as text)
+    ['slate-darken', 'chalk'], // working role, light mode
+    ['slate-lighten', 'basalt'] // working role, dark mode
   ])('%s on %s clears %s:1', (fg, bg) => {
     expect(contrast_ratio(hex_of(fg), hex_of(bg))).toBeGreaterThanOrEqual(
       AA_NORMAL_TEXT
@@ -45,8 +44,8 @@ describe('palette: accent/emphasis/working roles stay hue-distinct', () => {
   const MIN_ROLE_HUE_SEPARATION = 40
 
   it.each([
-    ['light', 'water-darken', 'clay-darken', 'moss-darken'],
-    ['dark', 'water-lighten', 'clay-lighten', 'moss-lighten']
+    ['light', 'water-darken', 'clay-darken', 'slate-darken'],
+    ['dark', 'water-lighten', 'clay-lighten', 'slate-lighten']
   ])(
     '%s scheme: accent/emphasis/working stay hue-distinct',
     (_, accent, emphasis, working) => {
@@ -102,7 +101,6 @@ describe('palette: variant triplets step lighten → fill → darken', () => {
   const MATERIALS = [
     'water',
     'clay',
-    'moss',
     'slate',
     'sediment',
     'sand',

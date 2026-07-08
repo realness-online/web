@@ -439,9 +439,6 @@
     & [role='feed'] > article {
       min-width: 0;
       standard-grid: hi;
-      @media (min-width: page-width-large) {
-        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-      }
       &:focus {
         outline: none;
       }

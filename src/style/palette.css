@@ -1,55 +1,53 @@
-/* Named OKLCH swatches — materials and surfaces only. Roles live in color.css. */
+/*
+ * oklch(L C H / A): L lightness 0–1, C chroma 0–~0.4 (saturation, capped by
+ * gamut), H hue angle 0–360deg (not the same degrees as HSL hue). Each
+ * material is a lighten/fill/darken triad tuned to a consistent % of that
+ * hue's max in-gamut chroma, not a flat number — see chat for why.
+ */
 :root {
-  --graphite: oklch(0.4386 0 89.88);
-  --black-dark: oklch(0.1149 0 89.88 / 0.99);
-  --basalt: oklch(0.291 0.0106 107.04);
-  --basalt-transparent: oklch(0.291 0.0106 107.04 / 0.5);
-  --white: oklch(0.9166 0.0107 106.61 / 0.9);
-  --white-text: oklch(0.8738 0.0149 102.49 / 0.95);
-  --chalk: oklch(0.9389 0.0094 99.99);
-  --surface-glass-light: oklch(0.9166 0.0107 106.61 / 0.85);
+  --graphite: oklch(0.44 0 90);
+  --chalk: oklch(0.94 0.01 100);
+  --chalk-transparent: oklch(0.94 0.01 100 / 0.85);
+  --bone: oklch(0.89 0.01 107);
 
-  --moonlight: oklch(0.1946 0.0102 67.17);
-  --pumice: oklch(0.3468 0.0136 101.23);
-  --bone: oklch(0.8853 0.0148 106.7);
+  --pumice: oklch(0.35 0.01 101);
+  --basalt: oklch(0.29 0.01 107);
+  --basalt-transparent: oklch(0.29 0.01 107 / 0.5);
+  --moonlight: oklch(0.19 0.01 67);
 
-  --water-lighten: oklch(0.7733 0.0771 195.67);
-  --water-fill: oklch(0.6249 0.0699 195.51);
-  --water-darken: oklch(0.5041 0.0773 194.98);
+  --water-lighten: oklch(0.74 0.07 196);
+  --water-fill: oklch(0.62 0.07 196);
+  --water-darken: oklch(0.5 0.06 195);
 
-  --clay-lighten: oklch(0.6707 0.0924 19.78);
-  --clay-fill: oklch(0.5138 0.0925 20.77);
-  --clay-darken: oklch(0.455 0.0939 21.45);
+  --clay-lighten: oklch(0.74 0.12 20);
+  --clay-fill: oklch(0.51 0.13 21);
+  --clay-darken: oklch(0.46 0.13 21);
 
-  --moss-lighten: oklch(0.7327 0.1251 144.17);
-  --moss-fill: oklch(0.5894 0.1189 143.88);
-  --moss-darken: oklch(0.4633 0.1003 143.75);
+  --slate-lighten: oklch(0.69 0.06 257);
+  --slate-fill: oklch(0.55 0.08 257);
+  --slate-darken: oklch(0.47 0.08 257);
 
-  --slate-lighten: oklch(0.7021 0.0606 256.58);
-  --slate-fill: oklch(0.5498 0.0624 256.85);
-  --slate-darken: oklch(0.4701 0.0627 257.12);
+  --ochre-lighten: oklch(0.82 0.08 78 / 0.75);
+  --ochre: oklch(0.78 0.1 72 / 0.75);
+  --ochre-darken: oklch(0.48 0.09 69 / 0.75);
 
-  --ochre-lighten: oklch(0.8473 0.1203 78.08 / 0.75);
-  --ochre: oklch(0.7769 0.1595 72.01 / 0.75);
-  --ochre-darken: oklch(0.6204 0.133 69.04 / 0.75);
+  --sediment-lighten: oklch(0.81 0.04 57);
+  --sediment: oklch(0.72 0.07 57);
+  --sediment-darken: oklch(0.6 0.07 55);
 
-  --sediment-lighten: oklch(0.8397 0.0428 56.67);
-  --sediment: oklch(0.7185 0.0778 56.88);
-  --sediment-darken: oklch(0.5952 0.0995 55.43);
+  --sand-lighten: oklch(0.68 0.06 58);
+  --sand: oklch(0.58 0.06 58);
+  --sand-darken: oklch(0.43 0.05 58);
 
-  --sand-lighten: oklch(0.7072 0.0717 58.34);
-  --sand: oklch(0.5804 0.0864 57.58);
-  --sand-darken: oklch(0.4261 0.061 57.6);
+  --gravel-lighten: oklch(0.62 0.05 58);
+  --gravel: oklch(0.51 0.05 58);
+  --gravel-darken: oklch(0.35 0.04 59);
 
-  --gravel-lighten: oklch(0.6477 0.065 58.16);
-  --gravel: oklch(0.5062 0.0571 58.17);
-  --gravel-darken: oklch(0.3499 0.0367 59.48);
+  --rocks-lighten: oklch(0.57 0.05 71);
+  --rocks: oklch(0.45 0.04 71);
+  --rocks-darken: oklch(0.28 0.03 69);
 
-  --rocks-lighten: oklch(0.6025 0.0638 71.99);
-  --rocks: oklch(0.449 0.0452 71.36);
-  --rocks-darken: oklch(0.2807 0.0243 69.26);
-
-  --boulders-lighten: oklch(0.5352 0.0794 20.02);
-  --boulders: oklch(0.4003 0.0569 19.88);
-  --boulders-darken: oklch(0.2553 0.0301 19.35);
+  --boulders-lighten: oklch(0.51 0.08 20);
+  --boulders: oklch(0.4 0.06 20);
+  --boulders-darken: oklch(0.26 0.05 19);
 }

@@ -18,9 +18,13 @@
   }
 
   const weights = ['fill', 'darken', 'lighten']
+  const roles_weights_open = ref(false)
+  const toggle_roles_weights_open = () => {
+    roles_weights_open.value = !roles_weights_open.value
+  }
   const role_names = ['accent', 'working', 'emphasis', 'warning']
 
-  const variants = ['water', 'clay', 'moss', 'slate']
+  const variants = ['water', 'clay', 'slate']
   const signals = ['ochre']
   const surfaces = ['chalk', 'bone', 'pumice', 'basalt', 'moonlight']
 
@@ -65,13 +69,14 @@
     const names = {}
     for (const name of variants)
       for (const weight of weights) {
-        const value = resolved.value[`--${name}-${weight}`]?.hsla
+        const value = resolved.value[`--${weighted_token(name, weight)}`]?.hsla
         if (value && !names[value]) names[value] = { name, kind: 'variant' }
       }
-    for (const name of signals) {
-      const value = resolved.value[`--${name}`]?.hsla
-      if (value && !names[value]) names[value] = { name, kind: 'signal' }
-    }
+    for (const name of signals)
+      for (const weight of weights) {
+        const value = resolved.value[`--${weighted_token(name, weight)}`]?.hsla
+        if (value && !names[value]) names[value] = { name, kind: 'signal' }
+      }
     return names
   })
 
@@ -95,12 +100,12 @@
   const role_weight_active = (role, weight) => {
     const name = variant_of(role)
     if (!name) return false
-    return paint_of(role)?.hsla === paint_of(`${name}-${weight}`)?.hsla
+    return paint_of(role)?.hsla === paint_of(weighted_token(name, weight))?.hsla
   }
 
   /** @param {string | undefined} name @param {string} weight */
   const variant_weight_paint = (name, weight) =>
-    name ? catalog_paint(`${name}-${weight}`) : {}
+    name ? catalog_paint(weighted_token(name, weight)) : {}
 
   const roles_of = name =>
     wiring.value
@@ -122,7 +127,7 @@
   const catalog_paint = (token, ink) => {
     const style = token_paint(token)
     if (ink === 'dark') style['--ink'] = 'var(--basalt)'
-    else if (ink === 'light') style['--ink'] = 'var(--white-text)'
+    else if (ink === 'light') style['--ink'] = 'var(--bone)'
     else {
       const l = paint_of(token)?.l
       if (Number(l) >= 50) style['--ink'] = 'var(--basalt)'
@@ -133,7 +138,6 @@
   /** @param {string} role */
   const role_header_token = role => {
     if (role === 'warning') return 'ochre'
-    if (role === 'working') return 'moss-darken'
     const name = variant_of(role)
     return name ? `${name}-fill` : role
   }
@@ -163,7 +167,7 @@
   /** @param {{ name: string, kind: string }} stop */
   const shelf_stop_paint = stop => ({
     ...stop_paint(stop.name),
-    '--ink': stop.kind === 'signal' ? 'var(--basalt)' : 'var(--white-text)'
+    '--ink': stop.kind === 'signal' ? 'var(--basalt)' : 'var(--bone)'
   })
 
   /** @param {{ name: string, opacity: number }} layer */
@@ -218,10 +222,20 @@
   const paint_of = token => resolved.value[`--${token}`]
 
   const variant_combos = computed(() => {
+    const default_pair = new Set([variant_of('accent'), variant_of('emphasis')])
     const pairs = []
     for (let i = 0; i < variants.length; i++)
-      for (let j = i + 1; j < variants.length; j++)
-        pairs.push({ a: variants[i], b: variants[j] })
+      for (let j = i + 1; j < variants.length; j++) {
+        const a = variants[i]
+        const b = variants[j]
+        if (
+          default_pair.size === 2 &&
+          default_pair.has(a) &&
+          default_pair.has(b)
+        )
+          continue
+        pairs.push({ a, b })
+      }
     return pairs
   })
 
@@ -273,30 +287,43 @@
       </header>
       <ul>
         <li itemscope itemprop="accent">
-          <header :style="role_header_paint('accent')">
-            <span><code>--accent</code></span>
+          <p
+            itemscope
+            itemprop="lighten"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('accent'), 'lighten')"
+            :aria-current="
+              role_weight_active('accent', 'lighten') ? 'true' : undefined
+            ">
+            <samp>lighten</samp>
+          </p>
+          <header
+            :style="role_header_paint('accent')"
+            role="button"
+            tabindex="0"
+            :aria-expanded="roles_weights_open"
+            @click="toggle_roles_weights_open"
+            @keydown.enter="toggle_roles_weights_open"
+            @keydown.space.prevent="toggle_roles_weights_open">
+            <span>
+              <code>--accent</code>
+              <samp itemprop="variant">{{ variant_of('accent') }}</samp>
+            </span>
             <data
               itemprop="hsla"
               :value="paint_of(role_header_token('accent'))?.hsla"></data>
+            <icon name="arrow" aria-hidden="true" />
           </header>
-          <figure>
-            <figcaption>
-              <samp itemprop="variant">{{ variant_of('accent') }}</samp>
-            </figcaption>
-            <ul>
-              <li
-                v-for="weight in weights"
-                :key="weight"
-                itemscope
-                :itemprop="weight"
-                :style="variant_weight_paint(variant_of('accent'), weight)"
-                :aria-current="
-                  role_weight_active('accent', weight) ? 'true' : undefined
-                ">
-                <samp>{{ weight }}</samp>
-              </li>
-            </ul>
-          </figure>
+          <p
+            itemscope
+            itemprop="darken"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('accent'), 'darken')"
+            :aria-current="
+              role_weight_active('accent', 'darken') ? 'true' : undefined
+            ">
+            <samp>darken</samp>
+          </p>
           <figure>
             <figcaption>links, primary actions, saved fields</figcaption>
             <a href="/docs">Documentation</a>
@@ -305,26 +332,43 @@
         </li>
 
         <li itemscope itemprop="working">
-          <header :style="role_header_paint('working')">
-            <span><code>--working</code></span>
+          <p
+            itemscope
+            itemprop="lighten"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('working'), 'lighten')"
+            :aria-current="
+              role_weight_active('working', 'lighten') ? 'true' : undefined
+            ">
+            <samp>lighten</samp>
+          </p>
+          <header
+            :style="role_header_paint('working')"
+            role="button"
+            tabindex="0"
+            :aria-expanded="roles_weights_open"
+            @click="toggle_roles_weights_open"
+            @keydown.enter="toggle_roles_weights_open"
+            @keydown.space.prevent="toggle_roles_weights_open">
+            <span>
+              <code>--working</code>
+              <samp itemprop="variant">{{ variant_of('working') }}</samp>
+            </span>
             <data
               itemprop="hsla"
               :value="paint_of(role_header_token('working'))?.hsla"></data>
+            <icon name="arrow" aria-hidden="true" />
           </header>
-          <figure>
-            <figcaption>
-              <samp itemprop="variant">moss-fill</samp> · flat
-            </figcaption>
-            <ul>
-              <li
-                itemscope
-                itemprop="moss-fill"
-                :style="catalog_paint('moss-fill', 'dark')"
-                aria-current="true">
-                <samp>flat</samp>
-              </li>
-            </ul>
-          </figure>
+          <p
+            itemscope
+            itemprop="darken"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('working'), 'darken')"
+            :aria-current="
+              role_weight_active('working', 'darken') ? 'true' : undefined
+            ">
+            <samp>darken</samp>
+          </p>
           <figure>
             <figcaption>saving, in progress</figcaption>
             <output>saving</output>
@@ -333,30 +377,43 @@
         </li>
 
         <li itemscope itemprop="emphasis">
-          <header :style="role_header_paint('emphasis')">
-            <span><code>--emphasis</code></span>
+          <p
+            itemscope
+            itemprop="lighten"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('emphasis'), 'lighten')"
+            :aria-current="
+              role_weight_active('emphasis', 'lighten') ? 'true' : undefined
+            ">
+            <samp>lighten</samp>
+          </p>
+          <header
+            :style="role_header_paint('emphasis')"
+            role="button"
+            tabindex="0"
+            :aria-expanded="roles_weights_open"
+            @click="toggle_roles_weights_open"
+            @keydown.enter="toggle_roles_weights_open"
+            @keydown.space.prevent="toggle_roles_weights_open">
+            <span>
+              <code>--emphasis</code>
+              <samp itemprop="variant">{{ variant_of('emphasis') }}</samp>
+            </span>
             <data
               itemprop="hsla"
               :value="paint_of(role_header_token('emphasis'))?.hsla"></data>
+            <icon name="arrow" aria-hidden="true" />
           </header>
-          <figure>
-            <figcaption>
-              <samp itemprop="variant">{{ variant_of('emphasis') }}</samp>
-            </figcaption>
-            <ul>
-              <li
-                v-for="weight in weights"
-                :key="weight"
-                itemscope
-                :itemprop="weight"
-                :style="variant_weight_paint(variant_of('emphasis'), weight)"
-                :aria-current="
-                  role_weight_active('emphasis', weight) ? 'true' : undefined
-                ">
-                <samp>{{ weight }}</samp>
-              </li>
-            </ul>
-          </figure>
+          <p
+            itemscope
+            itemprop="darken"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('emphasis'), 'darken')"
+            :aria-current="
+              role_weight_active('emphasis', 'darken') ? 'true' : undefined
+            ">
+            <samp>darken</samp>
+          </p>
           <figure>
             <figcaption>selected controls, form errors, remove</figcaption>
             <label>
@@ -371,26 +428,43 @@
         </li>
 
         <li itemscope itemprop="warning">
-          <header :style="role_header_paint('warning')">
-            <span><code>--warning</code></span>
+          <p
+            itemscope
+            itemprop="lighten"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('warning'), 'lighten')"
+            :aria-current="
+              role_weight_active('warning', 'lighten') ? 'true' : undefined
+            ">
+            <samp>lighten</samp>
+          </p>
+          <header
+            :style="role_header_paint('warning')"
+            role="button"
+            tabindex="0"
+            :aria-expanded="roles_weights_open"
+            @click="toggle_roles_weights_open"
+            @keydown.enter="toggle_roles_weights_open"
+            @keydown.space.prevent="toggle_roles_weights_open">
+            <span>
+              <code>--warning</code>
+              <samp itemprop="variant">{{ variant_of('warning') }}</samp>
+            </span>
             <data
               itemprop="hsla"
               :value="paint_of(role_header_token('warning'))?.hsla"></data>
+            <icon name="arrow" aria-hidden="true" />
           </header>
-          <figure>
-            <figcaption>
-              <samp itemprop="variant">ochre</samp> · signal
-            </figcaption>
-            <ul>
-              <li
-                itemscope
-                itemprop="ochre"
-                :style="catalog_paint('ochre', 'dark')"
-                aria-current="true">
-                <samp>flat</samp>
-              </li>
-            </ul>
-          </figure>
+          <p
+            itemscope
+            itemprop="darken"
+            v-show="roles_weights_open"
+            :style="variant_weight_paint(variant_of('warning'), 'darken')"
+            :aria-current="
+              role_weight_active('warning', 'darken') ? 'true' : undefined
+            ">
+            <samp>darken</samp>
+          </p>
           <figure>
             <figcaption>offline, low fps</figcaption>
             <output>offline</output>
@@ -467,9 +541,10 @@
             <samp>{{ stop.name }}</samp>
             <p>
               <meta v-if="stop.roles" itemprop="roles" :content="stop.roles" />
-              <data v-if="stop.hue !== null" itemprop="hue" :value="stop.hue">
-                hue {{ stop.hue }}
-              </data>
+              <meta
+                v-if="stop.hue !== null"
+                itemprop="hue"
+                :content="stop.hue" />
             </p>
           </li>
         </ul>
@@ -485,18 +560,13 @@
           <samp>{{ name }}</samp>
           <i v-if="name === 'water'" itemprop="note">the cool</i>
           <i v-else-if="name === 'clay'" itemprop="note">warmth</i>
-          <i v-else-if="name === 'moss'" itemprop="note">
-            quiet green · <code>--working</code> uses darken/lighten
-          </i>
           <i v-else-if="name === 'slate'" itemprop="note">
-            a quieter companion to water
+            quiet blue · <code>--working</code> uses darken/lighten
           </i>
-          <data
+          <meta
             v-if="hue_of(name) !== null"
             itemprop="hue"
-            :value="hue_of(name) ?? ''">
-            hue {{ hue_of(name) }}
-          </data>
+            :content="hue_of(name) ?? ''" />
         </figcaption>
         <ul>
           <li
@@ -522,9 +592,6 @@
         <li itemscope itemprop="ochre" :style="catalog_paint('ochre', 'dark')">
           <samp>ochre</samp>
           <p>
-            <data itemprop="hsla" :value="paint_of('ochre')?.hsla">
-              {{ paint_of('ochre')?.hsla }}
-            </data>
             <data itemprop="oklch" :value="paint_of('ochre')?.oklch">
               {{ paint_of('ochre')?.oklch }}
             </data>
@@ -538,19 +605,16 @@
         <li
           itemscope
           itemprop="working"
-          :style="catalog_paint('moss-fill', 'dark')">
-          <samp>moss</samp>
+          :style="catalog_paint('slate-fill', 'dark')">
+          <samp>slate</samp>
           <p>
-            <data itemprop="hsla" :value="paint_of('moss-fill')?.hsla">
-              {{ paint_of('moss-fill')?.hsla }}
-            </data>
-            <data itemprop="oklch" :value="paint_of('moss-fill')?.oklch">
-              {{ paint_of('moss-fill')?.oklch }}
+            <data itemprop="oklch" :value="paint_of('slate-fill')?.oklch">
+              {{ paint_of('slate-fill')?.oklch }}
             </data>
             <meta
-              v-if="roles_of('moss')"
+              v-if="roles_of('slate')"
               itemprop="roles"
-              :content="roles_of('moss')" />
+              :content="roles_of('slate')" />
             <i itemprop="note">saving, in progress</i>
           </p>
         </li>
@@ -635,12 +699,10 @@
         :itemprop="layer.name">
         <figcaption>
           <samp>{{ layer.name }}</samp>
-          <data
+          <meta
             v-if="hue_of(layer.name) !== null"
             itemprop="hue"
-            :value="hue_of(layer.name) ?? ''">
-            hue {{ hue_of(layer.name) }}
-          </data>
+            :content="hue_of(layer.name) ?? ''" />
         </figcaption>
         <ul>
           <li
@@ -720,7 +782,7 @@
     justify-items: center;
     align-content: center;
     gap: base-line * 0.15;
-    padding: base-line * 0.35;
+    padding: base-line;
     border-radius: base-line * 0.2;
     border: 1px solid unquote('color-mix(in srgb, var(--text) 14%, transparent)');
   }
@@ -734,13 +796,13 @@
       align-content: center;
       gap: base-line * 0.25;
       min-height: base-line * 3;
-      padding: base-line * 0.5;
+      padding: base-line;
       border-radius: base-line * 0.25;
       border: none;
       box-shadow: inset 0 0 0 1px unquote('color-mix(in srgb, var(--text) 14%, transparent)');
       &[itemprop='fill'] {
         background: var(--paint);
-        color: var(--ink, var(--white-text));
+        color: var(--ink, var(--bone));
       }
       &[itemprop='darken'] {
         background: var(--chalk);
@@ -754,33 +816,28 @@
   }
 
   colors-layer-grid-figure() {
-    margin: 0 0 (base-line * 2);
+    margin-bottom: base-line * 2;
     & > ol {
       list-style: none;
-      margin: 0;
-      padding: 0;
       display: grid;
       gap: base-line * 0.5;
       & > li {
         border-radius: base-line * 0.25;
-        padding: base-line * 0.5;
+        padding: base-line;
         background: var(--paint);
         opacity: var(--layer-opacity, 1);
         & > samp {
           display: block;
-          margin-bottom: base-line * 0.35;
+          margin-bottom: base-line;
           text-transform: capitalize;
           font-size: smaller;
-          color: var(--ink, var(--white-text));
+          color: var(--ink, var(--bone));
           text-shadow: 0 0 base-line rgba(0, 0, 0, 0.35);
         }
         & > ul {
           list-style: none;
           margin: 0;
-          padding: 0;
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
-          gap: base-line * 0.35;
+          standard-grid($mode: auto-fit, $min: base-line * 3.38, $min-large: base-line * 3.38, $gap: base-line * 0.35);
           & > li {
             colors-icon-cell();
             color: var(--paint);
@@ -789,7 +846,7 @@
       }
     }
     & > figcaption {
-      margin-top: base-line * 0.4;
+      margin-top: base-line;
       font-size: smaller;
       opacity: 0.75;
     }
@@ -800,7 +857,7 @@
       font-size: smaller;
     }
     & > header {
-      max-width: base-line * 48;
+      max-width: page-width-max;
       margin: 0 auto;
       padding: base-line base-line base-line;
       & > h1 {
@@ -808,23 +865,22 @@
         background-clip: text;
         color: transparent;
         width: fit-content;
-        margin-bottom: base-line;
       }
     }
     & > article,
     & > details {
-      max-width: base-line * 48;
+      max-width: page-width-max;
       margin: 0 auto;
       padding: 0 base-line base-line;
       & > header > h2 {
-        margin: 0 0 (base-line * 0.5);
+        margin-top: 0;
       }
       & > summary {
         display: flex;
         align-items: center;
         gap: base-line * 0.4;
         list-style: none;
-        margin: 0 0 (base-line * 0.5);
+        margin-bottom: base-line;
         &::-webkit-details-marker {
           display: none;
         }
@@ -834,7 +890,6 @@
       }
       & > header > p {
         max-width: page-width;
-        margin: 0 0 base-line;
         font-size: smaller;
         opacity: 0.75;
       }
@@ -845,12 +900,12 @@
         opacity: 0.75;
       }
       & figure {
-        margin: 0 0 (base-line * 1.5);
+        margin-bottom: base-line * 2;
         & > figcaption {
           display: flex;
           align-items: baseline;
           gap: base-line * 0.5;
-          margin-bottom: base-line * 0.4;
+          margin-bottom: base-line;
           & > b,
           & > samp {
             text-transform: capitalize;
@@ -865,14 +920,13 @@
           }
         }
         & > ul {
-          grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax((base-line * 7.5), 1fr));
         }
       }
       & > figure > ul,
       & > ul {
         list-style: none;
         margin: 0 0 (base-line * 2);
-        padding: 0;
         display: grid;
         gap: base-line * 0.5;
         & > li {
@@ -884,11 +938,11 @@
             place-items: center;
             height: base-line * 3;
             background: var(--paint);
-            color: var(--ink, var(--white-text));
+            color: var(--ink, var(--bone));
           }
           & > p {
             margin: 0;
-            padding: (base-line * 0.25) (base-line * 0.4);
+            padding: base-line (base-line * 0.4);
             font-size: smaller;
             border-top: 1px solid var(--gravel);
             display: flex;
@@ -950,7 +1004,7 @@
             & > p {
               display: flex;
               justify-content: space-between;
-              margin: (base-line * 0.35) 0 0;
+              margin: base-line 0 0;
               font-size: smaller;
               & > span {
                 display: flex;
@@ -962,17 +1016,14 @@
           & > figure {
             margin: base-line 0 0;
             & > figcaption {
-              margin-bottom: base-line * 0.4;
+              margin-bottom: base-line;
               font-size: smaller;
               opacity: 0.75;
             }
             & > ul {
               list-style: none;
               margin: 0;
-              padding: 0;
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-              gap: base-line * 0.5;
+              standard-grid($mode: auto-fit, $min: base-line * 6.75, $min-large: base-line * 6.75, $gap: base-line * 0.5);
               & > li > button {
                 display: block;
                 width: 100%;
@@ -992,7 +1043,7 @@
                   background: linear-gradient(90deg, var(--a), var(--b));
                 }
                 & > p {
-                  margin: (base-line * 0.25) 0 0;
+                  margin: base-line 0 0;
                   font-size: smaller;
                   text-align: center;
                   color: var(--text);
@@ -1007,17 +1058,14 @@
         & > figure {
           margin: 0 0 (base-line * 2);
           & > figcaption {
-            margin-bottom: base-line * 0.4;
+            margin-bottom: base-line;
             font-size: smaller;
             opacity: 0.75;
           }
           & > ul {
             list-style: none;
             margin: 0;
-            padding: 0;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: base-line * 0.5;
+            standard-grid($mode: auto-fit, $min: base-line * 4.5, $min-large: base-line * 4.5, $gap: base-line * 0.5);
             & > li {
               border: 1px solid var(--gravel);
               border-radius: base-line * 0.25;
@@ -1036,7 +1084,7 @@
               }
               & > p {
                 margin: 0;
-                padding: (base-line * 0.2) (base-line * 0.35);
+                padding: base-line (base-line * 0.35);
                 font-size: smaller;
                 display: flex;
                 flex-direction: column;
@@ -1060,24 +1108,19 @@
         }
         & figure > ol {
           list-style: none;
-          margin: 0;
-          padding: 0;
-          display: grid;
-          gap: base-line;
-          grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+          standard-grid($mode: auto-fit, $min: base-line * 10.5, $min-large: base-line * 10.5);
           & > li {
             display: grid;
             gap: base-line * 0.35;
             & > figure {
               position: relative;
               min-height: base-line * 10;
-              margin: 0;
               padding: base-line;
               border-radius: base-line * 0.25;
               border: 1px solid var(--gravel);
               overflow: hidden;
               & > figcaption {
-                margin: (base-line * 0.35) 0 0;
+                margin: base-line 0 0;
                 font-size: smaller;
                 opacity: 0.75;
                 & > samp {
@@ -1089,7 +1132,7 @@
           & > li[itemprop='chalk'] {
             --accent: var(--water-darken);
             --emphasis: var(--clay-fill);
-            --surface-glass: var(--surface-glass-light);
+            --surface-glass: var(--chalk-transparent);
           }
           & > li[itemprop='basalt'] {
             --accent: var(--water-lighten);
@@ -1114,21 +1157,16 @@
         }
         & li[itemprop='basalt'] section {
           background: var(--basalt);
-          color: var(--white-text);
+          color: var(--bone);
         }
         & article[itemprop='bone'],
         & article[itemprop='pumice'] {
-          margin: 0;
           padding: base-line;
           border-radius: base-line * 0.25;
           background: var(--bone);
           color: var(--graphite);
-          & > p {
-            margin: 0 0 (base-line * 0.5);
-          }
           & > figure[aria-hidden='true'] {
             height: base-line * 0.75;
-            margin: 0;
             border-radius: base-line * 0.2;
             background: linear-gradient(90deg, var(--accent), var(--emphasis));
           }
@@ -1138,7 +1176,7 @@
         }
         & li[itemprop='basalt'] article[itemprop='pumice'] {
           background: var(--pumice);
-          color: var(--white-text);
+          color: var(--bone);
         }
       }
 
@@ -1210,13 +1248,12 @@
         & > ul {
           list-style: none;
           margin: 0;
-          padding: 0;
           display: grid;
           gap: base-line;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           & > li {
             display: grid;
-            grid-template-rows: auto auto 1fr;
+            grid-template-rows: auto auto auto 1fr;
             gap: base-line * 0.35;
             border: 1px solid var(--gravel);
             border-radius: base-line * 0.25;
@@ -1233,74 +1270,67 @@
             &[itemprop='warning'] {
               --role: var(--warning);
             }
+            & > p[itemprop='lighten'] {
+              grid-row: 1;
+            }
             & > header {
+              grid-row: 2;
               display: flex;
               align-items: baseline;
               justify-content: space-between;
               gap: base-line * 0.35;
-              padding: (base-line * 0.35) (base-line * 0.5);
+              padding: base-line (base-line * 0.5);
               background: var(--paint);
-              color: var(--ink, var(--white-text));
+              color: var(--ink, var(--bone));
+              cursor: pointer;
+              focus-ring(-2px);
               & > span {
                 display: flex;
                 flex-wrap: wrap;
+                align-items: baseline;
                 gap: base-line * 0.35;
+                & > samp {
+                  font-family: monospace;
+                  opacity: 0.75;
+                }
               }
               & > data {
                 font-family: monospace;
                 font-size: smaller;
                 opacity: 0.75;
               }
+              & > svg.arrow {
+                width: base-line * 0.5;
+                height: base-line * 0.5;
+                flex-shrink: 0;
+                transition: transform 0.15s ease;
+              }
+              &[aria-expanded='true'] > svg.arrow {
+                transform: rotate(90deg);
+              }
             }
-            & > p {
+            & > p[itemprop='darken'] {
+              grid-row: 3;
+            }
+            & > p[itemprop='lighten'],
+            & > p[itemprop='darken'] {
               margin: 0;
-              padding: 0 (base-line * 0.5);
+              padding: base-line (base-line * 0.5);
+              text-align: center;
               font-size: smaller;
-            }
-            & > figure:first-of-type {
-              min-width: 0;
-              margin: 0;
-              padding: (base-line * 0.35) (base-line * 0.5);
-              border-top: 1px solid var(--gravel);
-              background: var(--surface);
-              & > figcaption {
-                margin: 0 0 (base-line * 0.25);
+              background: var(--paint);
+              color: var(--ink, var(--bone));
+              border: 2px solid transparent;
+              &[aria-current='true'] {
+                border-color: var(--text);
+              }
+              & > samp {
                 font-size: smaller;
-                opacity: 0.65;
-                & > samp {
-                  font-family: monospace;
-                }
               }
-              & > ul {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: base-line * 0.25;
-                & > li {
-                  padding: base-line * 0.3;
-                  border-radius: base-line * 0.2;
-                  border: 2px solid transparent;
-                  text-align: center;
-                  background: var(--paint);
-                  color: var(--ink, var(--white-text));
-                  &[aria-current='true'] {
-                    border-color: var(--text);
-                  }
-                  & > samp {
-                    font-size: smaller;
-                  }
-                }
-              }
-            }
-            &[itemprop='warning'] > figure:first-of-type > ul,
-            &[itemprop='working'] > figure:first-of-type > ul {
-              grid-template-columns: 1fr;
             }
             & > figure:last-of-type {
-              margin: 0;
-              padding: (base-line * 0.5);
+              grid-row: 4;
+              padding: base-line;
               border-top: 1px solid var(--gravel);
               background: var(--surface);
               display: flex;
@@ -1311,7 +1341,7 @@
               min-height: base-line * 3.5;
               & > figcaption {
                 flex: 1 1 100%;
-                margin: 0 0 (base-line * 0.15);
+                margin: 0 0 base-line;
                 font-size: smaller;
                 opacity: 0.65;
               }
@@ -1323,7 +1353,7 @@
                 flex: 0 0 auto;
                 min-width: max-content;
                 width: max-content;
-                padding: (base-line * 0.2) (base-line * 0.5);
+                padding: base-line (base-line * 0.5);
                 border: 1px solid var(--role);
                 border-radius: base-line * 0.25;
                 background: transparent;
@@ -1346,7 +1376,7 @@
                 color: var(--role);
               }
               & > input[type='text'] {
-                padding: base-line * 0.25 (base-line * 0.35);
+                padding: base-line (base-line * 0.35);
                 border: 1px solid var(--gravel);
                 border-radius: base-line * 0.2;
                 background: var(--surface);
@@ -1360,7 +1390,7 @@
               }
               & > output {
                 font-size: smaller;
-                padding: (base-line * 0.15) (base-line * 0.4);
+                padding: base-line (base-line * 0.4);
                 border-radius: base-line;
                 border: 1px solid var(--role);
                 color: var(--role);
@@ -1397,7 +1427,7 @@
 
       &[itemprop='signals'] {
         & > ul {
-          grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax((base-line * 6.75), 1fr));
         }
       }
     }

@@ -1,9 +1,9 @@
-standard-border($color=currentColor, $dark-color=var(--black-dark)) {
+standard-border($color=currentColor, $dark-color=var(--moonlight)) {
   border: round((base-line / 13), 2) solid $color;
   border-radius: round((base-line / 3), 2);
 }
 
-standard-button($color=currentColor, $dark-color=var(--white)) {
+standard-button($color=currentColor, $dark-color=var(--bone)) {
   standard-border: $color;
   padding: round((base-line / 2.33), 2);
   border-radius: round((base-line / 1.33), 2);
@@ -20,20 +20,23 @@ standard-button($color=currentColor, $dark-color=var(--white)) {
   }
 }
 
-standard-grid($nothin=hi) {
+// $min/$min-large default to the content-card sizing used by the existing
+// call sites; pass smaller base-line-derived values for compact grids
+// (swatches, icon cells) instead of inventing a one-off grid per component.
+standard-grid($nothin=hi, $min=325px, $min-large=420px, $gap=base-line, $mode=auto-fill) {
   // Progressive enhancement: grid-lanes when it ships; ignored until then, grid wins.
   display: grid;
   display: grid-lanes;
-  grid-gap: base-line;
+  grid-gap: $gap;
   grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
+  grid-template-columns: repeat($mode, minmax($min, 1fr));
   @media (min-width: page-width-large) {
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    grid-template-columns: repeat($mode, minmax($min-large, 1fr));
   }
 }
 
 standard-shadow($nothin=boop) {
-  filter: drop-shadow(0.25px 1px 1.5px var(--black-dark));
+  filter: drop-shadow(0.25px 1px 1.5px var(--moonlight));
 }
 
 // One visible keyboard-focus treatment, reached for instead of each
