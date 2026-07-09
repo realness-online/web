@@ -41,7 +41,15 @@ const extract_realness_symbol = icons_svg => {
     throw new Error('Could not find realness symbol in icons.svg')
 
   const [, symbol_content] = symbol_match
-  return { symbol_content }
+
+  // the realness tiles reference smalti mask/pattern defs that live outside
+  // the symbol, so they must travel along with it into the standalone SVG
+  const smalti_match = icons_svg.match(
+    /<defs id="smalti">[\s\S]*?<\/defs>/
+  )
+  const smalti_defs = smalti_match ? smalti_match[0] : ''
+
+  return { symbol_content, smalti_defs }
 }
 
 const generate_icon_png = async (size, output_path, icons_svg) => {
@@ -57,13 +65,14 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
 }
 
 const render_symbol_image = async (size, icons_svg) => {
-  const { symbol_content } = extract_realness_symbol(icons_svg)
+  const { symbol_content, smalti_defs } = extract_realness_symbol(icons_svg)
   const content_size = ICON_SIZE_SMALL
   const padded_size = content_size / (1 - SAFE_ZONE_PADDING * 2)
   const inset = (padded_size - content_size) / 2
   const padded_viewbox = `-${inset} -${inset} ${padded_size} ${padded_size}`
 
   const svg_content = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${padded_viewbox}">
+  ${smalti_defs}
   ${symbol_content}
 </svg>`
 

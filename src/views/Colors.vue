@@ -279,6 +279,7 @@
     itemtype="/colors">
     <header>
       <h1>Color</h1>
+      <icon name="realness" class="realness-preview" aria-hidden="true" />
     </header>
 
     <article itemscope itemprop="roles">
@@ -865,6 +866,12 @@
         background-clip: text;
         color: transparent;
         width: fit-content;
+      }
+      & > svg.realness-preview {
+        display: block;
+        width: base-line * 20;
+        height: base-line * 20;
+        margin: base-line auto 0;
       }
     }
     & > article,
