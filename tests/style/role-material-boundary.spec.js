@@ -37,7 +37,8 @@ const ALLOWED_BYPASSES = new Set([
   'components/as-fps.vue', // dev-only fps overlay, borrows geology colors
   'components/thoughts/as-textarea.vue', // compose caret, borrows geology colors
   'components/posters/as-mask-pen.vue', // slate-fill hover+selected — working states, mask pen per Colors.vue
-  'components/posters/as-figure.vue' // mask-pen active button, same slate working-state
+  'components/posters/as-figure.vue', // mask-pen active button, same slate working-state
+  'components/icon.vue' // realness mark cycles the brand variants + geology layers by design
 ])
 
 describe('palette: role/material boundary stays deliberate', () => {
