@@ -9,6 +9,7 @@ import {
   og_image_headline,
   og_image_subhead
 } from '../src/prerender/pages.js'
+import { oklch_to_rgb } from '../src/utils/color-converters.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -30,27 +31,55 @@ const THEME_COLOR = '#2c2c26'
 const TEXT_COLOR = 'rgba(215, 214, 203, 0.95)'
 const ACCENT_COLOR = '#EC364C'
 const CTA_TEXT_COLOR = '#ffffff'
-// ~10% inset: maskable safe zone + room for iOS / desktop squircle crops
-const SAFE_ZONE_PADDING = 0.1
 
 const extract_realness_symbol = icons_svg => {
   const symbol_match = icons_svg.match(
-    /<symbol id="realness"[^>]*>([\s\S]*?)<\/symbol>/
+    /<symbol id="realness"[^>]*viewBox="([\d.-]+) ([\d.-]+) ([\d.]+) ([\d.]+)"[^>]*>([\s\S]*?)<\/symbol>/
   )
   if (!symbol_match)
     throw new Error('Could not find realness symbol in icons.svg')
 
-  const [, symbol_content] = symbol_match
+  const [
+    ,
+    viewbox_x,
+    viewbox_y,
+    viewbox_width,
+    viewbox_height,
+    symbol_content
+  ] = symbol_match
+  const symbol_viewbox = {
+    x: Number(viewbox_x),
+    y: Number(viewbox_y),
+    width: Number(viewbox_width),
+    height: Number(viewbox_height)
+  }
 
-  // the realness tiles reference smalti mask/pattern defs that live outside
-  // the symbol, so they must travel along with it into the standalone SVG
-  const smalti_match = icons_svg.match(
-    /<defs id="smalti">[\s\S]*?<\/defs>/
+  // the realness tiles reference fill pattern defs and tile shape paths that
+  // live outside the symbol, so they must travel along with it into the
+  // standalone SVG
+  const fills_match = icons_svg.match(/<defs id="fills">[\s\S]*?<\/defs>/)
+  const fills_defs = fills_match ? fills_match[0] : ''
+
+  const shapes_match = icons_svg.match(
+    /<defs id="tile-shapes">[\s\S]*?<\/defs>/
   )
-  const smalti_defs = smalti_match ? smalti_match[0] : ''
+  const shapes_defs = shapes_match ? shapes_match[0] : ''
 
-  return { symbol_content, smalti_defs }
+  return { symbol_content, fills_defs, shapes_defs, symbol_viewbox }
 }
+
+// node-canvas rasterizes SVG through librsvg, which doesn't understand the
+// oklch() color syntax the design system authors colors in (it renders as
+// black). Convert to rgb() before handing markup to loadImage; browsers keep
+// reading the un-touched oklch() in icons.svg itself.
+const replace_oklch_with_rgb = svg =>
+  svg.replace(
+    /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/g,
+    (_, l, c, h) => {
+      const [r, g, b] = oklch_to_rgb(Number(l), Number(c), Number(h))
+      return `rgb(${r}, ${g}, ${b})`
+    }
+  )
 
 const generate_icon_png = async (size, output_path, icons_svg) => {
   const img = await render_symbol_image(size, icons_svg)
@@ -65,16 +94,19 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
 }
 
 const render_symbol_image = async (size, icons_svg) => {
-  const { symbol_content, smalti_defs } = extract_realness_symbol(icons_svg)
-  const content_size = ICON_SIZE_SMALL
-  const padded_size = content_size / (1 - SAFE_ZONE_PADDING * 2)
-  const inset = (padded_size - content_size) / 2
-  const padded_viewbox = `-${inset} -${inset} ${padded_size} ${padded_size}`
+  const { symbol_content, fills_defs, shapes_defs, symbol_viewbox } =
+    extract_realness_symbol(icons_svg)
+  // render at the symbol's own viewBox so the PNG's margin matches exactly
+  // what browsers show for <use href="#realness">; the icon already carries
+  // its own safe margin, so no extra padding is added on top here
+  const { x, y, width, height } = symbol_viewbox
 
-  const svg_content = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${padded_viewbox}">
-  ${smalti_defs}
+  const svg_content =
+    replace_oklch_with_rgb(`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${x} ${y} ${width} ${height}">
+  ${shapes_defs}
+  ${fills_defs}
   ${symbol_content}
-</svg>`
+</svg>`)
 
   const temp_svg_path = path.join(
     tmpdir(),
