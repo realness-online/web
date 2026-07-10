@@ -25,6 +25,17 @@ input {
   &[type=file] {
     display: none;
   }
+  &[type=checkbox] {
+    display: inline-block;
+    vertical-align: middle;
+    width: base-line;
+    height: base-line;
+    standard-border: currentColor;
+    cursor: pointer;
+    &:checked {
+      background-color: currentColor;
+    }
+  }
   &:focus {
     transition-property: all;
     outline: 0;

@@ -327,8 +327,8 @@
           </p>
           <figure>
             <figcaption>links, primary actions, saved fields</figcaption>
-            <a href="/docs">Documentation</a>
-            <button type="button">Post</button>
+            <a class="role" href="/docs">Documentation</a>
+            <button class="role" type="button">Post</button>
           </figure>
         </li>
 
@@ -372,8 +372,8 @@
           </p>
           <figure>
             <figcaption>saving, in progress</figcaption>
-            <output>saving</output>
-            <input type="text" class="in-progress" value="Scott" />
+            <output class="role">saving</output>
+            <input class="role" type="text" value="Scott" />
           </figure>
         </li>
 
@@ -417,12 +417,12 @@
           </p>
           <figure>
             <figcaption>selected controls, form errors, remove</figcaption>
-            <label>
+            <label class="role">
               <input type="checkbox" checked />
               mosaic
             </label>
-            <p>Name required</p>
-            <button type="button" aria-label="Remove">
+            <p class="role">Name required</p>
+            <button class="role" type="button" aria-label="Remove">
               <icon name="remove" />
             </button>
           </figure>
@@ -468,7 +468,7 @@
           </p>
           <figure>
             <figcaption>offline, low fps</figcaption>
-            <output>offline</output>
+            <output class="role">offline</output>
           </figure>
         </li>
       </ul>
@@ -869,8 +869,9 @@
       }
       & > svg.realness-preview {
         display: block;
-        width: base-line * 20;
-        height: base-line * 20;
+        width: 66vh;
+        height: 66vh;
+        max-width: 100%;
         margin: base-line auto 0;
       }
     }
@@ -1352,75 +1353,31 @@
                 font-size: smaller;
                 opacity: 0.65;
               }
-              & > a {
+              & > a.role {
                 color: var(--role);
-                min-width: 0;
               }
-              & > button {
-                flex: 0 0 auto;
-                min-width: max-content;
-                width: max-content;
-                padding: base-line (base-line * 0.5);
-                border: 1px solid var(--role);
-                border-radius: base-line * 0.25;
-                background: transparent;
+              & > button.role {
+                standard-button: var(--role);
+              }
+              & > output.role {
+                standard-border: var(--role);
+                padding: 0 (base-line * 0.4);
                 color: var(--role);
-                font: inherit;
-                cursor: default;
               }
-              & > label {
+              & > input.role {
+                border-color: var(--role);
+              }
+              & > p.role {
+                color: var(--role);
+                border-left: 2px solid var(--role);
+              }
+              & > label.role {
                 display: flex;
                 align-items: center;
-                gap: base-line * 0.35;
-                font-size: smaller;
+                gap: base-line * 0.4;
+                color: var(--role);
                 accent-color: var(--role);
               }
-              & > p {
-                margin: 0;
-                padding-left: base-line * 0.35;
-                border-left: 2px solid var(--role);
-                font-size: smaller;
-                color: var(--role);
-              }
-              & > input[type='text'] {
-                padding: base-line (base-line * 0.35);
-                border: 1px solid var(--gravel);
-                border-radius: base-line * 0.2;
-                background: var(--surface);
-                color: var(--text);
-                font: inherit;
-                font-size: smaller;
-                &[aria-invalid='true'],
-                &.in-progress {
-                  border-color: var(--role);
-                }
-              }
-              & > output {
-                font-size: smaller;
-                padding: base-line (base-line * 0.4);
-                border-radius: base-line;
-                border: 1px solid var(--role);
-                color: var(--role);
-              }
-            }
-            &[itemprop='emphasis'] > figure:last-of-type > button {
-              padding: 0;
-              border: none;
-              background: none;
-              color: inherit;
-              line-height: 1;
-              & > svg {
-                display: block;
-                width: base-line;
-                height: base-line;
-                fill: var(--role);
-              }
-            }
-            &[itemprop='warning'] > figure:last-of-type > output,
-            &[itemprop='working'] > figure:last-of-type > output {
-              border-color: transparent;
-              background: var(--role);
-              color: var(--basalt);
             }
           }
         }
