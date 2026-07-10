@@ -14,10 +14,9 @@
 
 <style lang="stylus">
   svg.realness:active {
-    outline: 1px double currentColor;
-    outline-offset: base-line * 0.25;
-    transition-property: all;
-    transition-duration: 0.21s;
+    transition-property: transform;
+    transition-duration: 0.52s;
+    transition-timing-function: var(--ease-click);
     transform: scale(0.95);
   }
 </style>

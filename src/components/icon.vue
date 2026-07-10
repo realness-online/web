@@ -153,62 +153,137 @@
         transform-origin: center;
       }
     }
+    &.realness {
+      // quicker to drift apart, a longer gentle settle back — an asymmetric
+      // spring-like feel instead of a mirrored ease-in-out
+      --ease-drift-out: linear(0, 0.42 24%, 0.82 52%, 0.97 76%, 1);
+      --ease-drift-back: linear(0, 0.18 22%, 0.52 48%, 0.84 74%, 1);
+      // physical snap for the click-to-assemble response: fast approach,
+      // overshoot past the seam, then a couple of settling wobbles — like a
+      // piece with real weight dropping into its slot, not an instant cut
+      --ease-click: linear(0, 0.42 22%, 0.87 42%, 1.09 58%, 0.96 72%, 1.03 84%, 0.99 92%, 1);
+    }
+    // ambient rest state: each tile drifts apart from the assembled mosaic
+    // and back, at its own pace, out of phase with the others
     &.realness .realness-tile {
       transform-box: fill-box;
       transform-origin: center;
-      animation-duration: 7s;
-      animation-timing-function: ease-in-out;
       animation-iteration-count: infinite;
-      @media (prefers-reduced-motion: reduce) {
-        animation-duration: 0.01ms;
-      }
     }
     &.realness .realness-ash {
       animation-name: realness-drift-up-left;
+      animation-duration: 7.4s;
+      animation-delay: -0.4s;
+      --snap-x: -6.5px;
+      --snap-y: -8.5px;
+      --snap-rot: -1.3deg;
     }
     &.realness .realness-tide {
       animation-name: realness-drift-up-right;
+      animation-duration: 6.8s;
+      animation-delay: -2.1s;
+      --snap-x: 6.4px;
+      --snap-y: -8.6px;
+      --snap-rot: 1.1deg;
     }
     &.realness .realness-silt {
       animation-name: realness-drift-left;
+      animation-duration: 7.9s;
+      animation-delay: -1.2s;
+      --snap-x: -10.5px;
+      --snap-y: -0.15px;
+      --snap-rot: -0.9deg;
     }
     &.realness .realness-ember {
       animation-name: realness-drift-right;
+      animation-duration: 7.1s;
+      animation-delay: -3.6s;
+      --snap-x: 10.5px;
+      --snap-y: -0.4px;
+      --snap-rot: 1.5deg;
     }
     &.realness .realness-rust {
       animation-name: realness-drift-down-left;
+      animation-duration: 8.2s;
+      animation-delay: -0.9s;
+      --snap-x: -6.5px;
+      --snap-y: 8.4px;
+      --snap-rot: 1.1deg;
     }
     &.realness .realness-cinder {
       animation-name: realness-drift-down-right;
+      animation-duration: 7.6s;
+      animation-delay: -2.8s;
+      --snap-x: 6.5px;
+      --snap-y: 8.5px;
+      --snap-rot: -1.5deg;
+    }
+    // pressing anywhere on the icon (wrapped in a link/button or bare)
+    // clicks the tiles firmly into place — :active propagates up from
+    // whatever descendant path was actually pressed, so this matches with
+    // or without a wrapper. The click keyframe uses its own, larger
+    // "pulled apart" starting point (--snap-x/y/rot) rather than the
+    // ambient drift's small, unpredictable current offset, so every press
+    // reads as a clear, deliberate motion instead of a barely-visible one
+    &.realness:active .realness-tile {
+      animation: realness-click-in 0.52s var(--ease-click) forwards;
+    }
+    // declared after the rules above so it wins the cascade tie (equal
+    // specificity, later source order) once reduced motion applies
+    @media (prefers-reduced-motion: reduce) {
+      &.realness .realness-tile {
+        animation-duration: 0.01ms;
+        animation-delay: 0s;
+      }
     }
   }
 
   // Tiles are drawn once with their edges permanently touching (the
   // assembled mosaic); each one physically slides outward from the
   // composition's center and back, rather than the shapes themselves
-  // resizing, so the gap comes from real motion.
+  // resizing, so the gap comes from real motion. Quicker to drift apart,
+  // longer gentle settle back — an asymmetric, spring-like feel rather
+  // than a mirrored ease-in-out — plus a whisper of rotation so the path
+  // isn't perfectly straight.
   @keyframes realness-drift-up-left {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-2.74px, -3.57px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(-2.74px, -3.57px) rotate(-0.6deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes realness-drift-up-right {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(2.70px, -3.60px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(2.70px, -3.60px) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes realness-drift-left {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-4.50px, -0.06px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(-4.50px, -0.06px) rotate(-0.4deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes realness-drift-right {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(4.50px, -0.16px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(4.50px, -0.16px) rotate(0.7deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes realness-drift-down-left {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-2.75px, 3.56px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(-2.75px, 3.56px) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
   @keyframes realness-drift-down-right {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(2.74px, 3.57px); }
+    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(2.74px, 3.57px) rotate(-0.7deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+  // starts from each tile's own --snap-x/y/rot (a deliberately bigger pull
+  // than the ambient drift ever reaches) so every press is a clear, visible
+  // throw-and-catch, not a nudge from wherever the drift happened to be
+  @keyframes realness-click-in {
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
   }
 </style>
