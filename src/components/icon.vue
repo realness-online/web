@@ -216,60 +216,71 @@
       // piece with real weight dropping into its slot, not an instant cut
       --ease-click: linear(0, 0.42 22%, 0.87 42%, 1.09 58%, 0.96 72%, 1.03 84%, 0.99 92%, 1);
     }
-    // ambient rest state: each tile drifts apart from the assembled mosaic
-    // and back, at its own pace, out of phase with the others
+    // Rest state: each tile sits pulled apart at its own --snap-x/y/rot,
+    // showing the gutter both between tiles and around the outside —
+    // the shapes themselves are drawn edge-to-edge (touching), the gap
+    // is purely this static transform, so pressing can transition it
+    // back to translate(0,0) and actually seal the seams shut.
     &.realness .realness-tile {
       transform-box: fill-box;
       transform-origin: center;
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
       animation-iteration-count: infinite;
     }
+    // Ambient position drift is disabled for now (kept here, commented,
+    // to re-enable later) — same toggle-off treatment as the color cycling.
+    // Shift magnitudes follow the grid, not each tile's individual centroid:
+    // both columns move ±2.5px (so the col0/col1 seam gets 2.5+2.5=5px),
+    // the top/bottom rows move ±5px while the middle row stays put (so
+    // both row seams get exactly 5px too, one side moving, one static).
+    // Every internal gap ends up the same 5px distance from its neighbor.
     &.realness .realness-ash {
-      animation-name: realness-drift-up-left;
-      animation-duration: 7.4s;
-      animation-delay: -0.4s;
-      --snap-x: -6.5px;
-      --snap-y: -8.5px;
-      --snap-rot: -1.3deg;
+      // animation-name: realness-drift-up-left;
+      // animation-duration: 7.4s;
+      // animation-delay: -0.4s;
+      --snap-x: -2.5px;
+      --snap-y: -5px;
+      --snap-rot: 0deg;
     }
     &.realness .realness-tide {
-      animation-name: realness-drift-up-right;
-      animation-duration: 6.8s;
-      animation-delay: -2.1s;
-      --snap-x: 6.4px;
-      --snap-y: -8.6px;
-      --snap-rot: 1.1deg;
+      // animation-name: realness-drift-up-right;
+      // animation-duration: 6.8s;
+      // animation-delay: -2.1s;
+      --snap-x: 2.5px;
+      --snap-y: -5px;
+      --snap-rot: 0deg;
     }
     &.realness .realness-silt {
-      animation-name: realness-drift-left;
-      animation-duration: 7.9s;
-      animation-delay: -1.2s;
-      --snap-x: -10.5px;
-      --snap-y: -0.15px;
-      --snap-rot: -0.9deg;
+      // animation-name: realness-drift-left;
+      // animation-duration: 7.9s;
+      // animation-delay: -1.2s;
+      --snap-x: -2.5px;
+      --snap-y: 0px;
+      --snap-rot: 0deg;
     }
     &.realness .realness-ember {
-      animation-name: realness-drift-right;
-      animation-duration: 7.1s;
-      animation-delay: -3.6s;
-      --snap-x: 10.5px;
-      --snap-y: -0.4px;
-      --snap-rot: 1.5deg;
+      // animation-name: realness-drift-right;
+      // animation-duration: 7.1s;
+      // animation-delay: -3.6s;
+      --snap-x: 2.5px;
+      --snap-y: 0px;
+      --snap-rot: 0deg;
     }
     &.realness .realness-rust {
-      animation-name: realness-drift-down-left;
-      animation-duration: 8.2s;
-      animation-delay: -0.9s;
-      --snap-x: -6.5px;
-      --snap-y: 8.4px;
-      --snap-rot: 1.1deg;
+      // animation-name: realness-drift-down-left;
+      // animation-duration: 8.2s;
+      // animation-delay: -0.9s;
+      --snap-x: -2.5px;
+      --snap-y: 5px;
+      --snap-rot: 0deg;
     }
     &.realness .realness-cinder {
-      animation-name: realness-drift-down-right;
-      animation-duration: 7.6s;
-      animation-delay: -2.8s;
-      --snap-x: 6.5px;
-      --snap-y: 8.5px;
-      --snap-rot: -1.5deg;
+      // animation-name: realness-drift-down-right;
+      // animation-duration: 7.6s;
+      // animation-delay: -2.8s;
+      --snap-x: 2.5px;
+      --snap-y: 5px;
+      --snap-rot: 0deg;
     }
     // pressing anywhere on the icon (wrapped in a link/button or bare)
     // clicks the tiles firmly into place — :active propagates up from
