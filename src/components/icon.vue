@@ -1,6 +1,6 @@
 <script setup>
   import icons from '/icons.svg'
-  import { computed } from 'vue'
+  import { computed, ref, watch, onMounted } from 'vue'
   import { animate } from '@/utils/preference'
   const props = defineProps({
     name: {
@@ -9,6 +9,26 @@
     }
   })
   const icon_location = computed(() => `${icons}#${props.name}`)
+
+  // Web Animations API gives the ambient drift/color-cycle the same
+  // transport control SMIL has for the poster animations (setCurrentTime,
+  // play/pause) — CSS animation-play-state alone can only freeze/resume
+  // wherever the timeline happens to be, not seek back to the start.
+  // Toggling the shared "animate" preference always rewinds to zero first,
+  // so turning it back on is a fresh, in-sync start every time rather than
+  // resuming from wherever it was paused.
+  const realness_svg = ref(null)
+  const sync_realness_animations = playing => {
+    const svg = realness_svg.value
+    if (!svg || typeof svg.getAnimations !== 'function') return
+    for (const animation of svg.getAnimations({ subtree: true })) {
+      animation.currentTime = 0
+      if (playing) animation.play()
+      else animation.pause()
+    }
+  }
+  onMounted(() => sync_realness_animations(animate.value))
+  watch(animate, sync_realness_animations)
 </script>
 
 <template>
@@ -61,9 +81,9 @@
   </svg>
   <svg
     v-else-if="name === 'realness'"
+    ref="realness_svg"
     viewBox="-20 -20 232 232"
-    class="icon realness"
-    :class="{ 'realness-motion-on': animate }">
+    class="icon realness">
     <defs>
       <path
         id="icon-realness-smalti-ash"
@@ -228,13 +248,13 @@
       transform-origin: center;
       transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
       animation-iteration-count: infinite;
-      // paused by default; the app's persisted "animate" preference
-      // (src/utils/preference.js, off by default) is the only gate —
-      // .realness-motion-on is bound straight from that ref
+      // paused by default; the Web Animations API in the <script> block
+      // is the sole play/pause + rewind-to-zero authority, driven by the
+      // app's persisted "animate" preference (src/utils/preference.js,
+      // off by default) — once script calls play()/pause() on an
+      // animation, CSS animation-play-state no longer has a say over it,
+      // so this is purely the safe pre-mount default
       animation-play-state: paused;
-    }
-    &.realness-motion-on .realness-tile {
-      animation-play-state: running;
     }
     // Ambient drift oscillates around the resting gutter position
     // (--snap-x/y above), not around fully sealed — so a paused/not-yet-
@@ -364,12 +384,9 @@
   svg.icon.realness .realness-fill {
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
-    // paused by default; same "animate" preference gate as the position
-    // drift, via the .realness-motion-on class bound from that ref
+    // paused by default; same Web Animations API control as the position
+    // drift — see the <script> block
     animation-play-state: paused;
-  }
-  svg.icon.realness-motion-on .realness-fill {
-    animation-play-state: running;
   }
   svg.icon.realness .realness-fill-ash,
   svg.icon.realness .realness-fill-cinder {
