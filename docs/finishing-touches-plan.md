@@ -37,6 +37,21 @@ sponsorship are web-app only.
       anonymous checkouts. This matches the product positioning (free to use,
       voluntary license purchase). - `sponsor/cta.vue` — no change needed, already works this way. - Update `docs/security.md` — Stripe is voluntary checkout, not a server
       gate; third-party / Sybil sections should reflect that.
+- [~] **split Pricing into 3 page views** `M` — currently one combined view;
+      route-based per-tier pages instead (`src/views/Pricing.vue`,
+      `src/router.js`). In progress, uncommitted. Known gap: `tests/views/
+      Pricing.spec.js` fails — the view now calls `useRoute()`/`useRouter()`
+      and the test isn't wired for router mocking.
+
+### 📜 Licensing
+
+- [~] **switch to GPL-2.0** `M` — replacing the source-available license.
+      Rationale: closed forks of Realness stay possible today; GPL-2.0 closes
+      that gap while keeping self-hosting/redistribution as already granted.
+      In progress, uncommitted: `LICENSE` rewritten, `package.json` `license`
+      field updated, `src/potrace/README.md` added crediting `potrace`
+      (Peter Selinger) and `node-potrace` (mattmc), since `src/potrace/` is
+      GPL-2.0 code with no prior attribution in-repo.
 
 ### 🎨 Mask & canvas
 
