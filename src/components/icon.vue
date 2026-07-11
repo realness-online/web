@@ -347,40 +347,58 @@
   // both sets on every tile read as too much at once; keeping each tile
   // internally consistent (checkerboarded across the grid so neighbors
   // never share a palette) still reads as one rich, coordinated mark.
+  // the static fill here is the true brand default — what's on screen
+  // before the animation-delay below elapses, and what each keyframe
+  // starts/ends on, so the mark always loads looking like the real logo
+  // first and only eases into drifting after a pause
   svg.icon.realness .realness-fill {
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
   }
-  svg.icon.realness .realness-fill-ash {
-    animation-name: realness-color-ash;
-    animation-duration: 26s;
-    animation-delay: -3s;
-  }
-  svg.icon.realness .realness-fill-ember {
-    animation-name: realness-color-ember;
-    animation-duration: 34s;
-    animation-delay: -17s;
-  }
-  svg.icon.realness .realness-fill-rust {
-    animation-name: realness-color-rust;
-    animation-duration: 28s;
-    animation-delay: -21s;
-  }
-  svg.icon.realness .realness-fill-tide {
-    animation-name: realness-color-tide;
-    animation-duration: 31s;
-    animation-delay: -11s;
-  }
-  svg.icon.realness .realness-fill-silt {
-    animation-name: realness-color-silt;
-    animation-duration: 23s;
-    animation-delay: -6s;
-  }
+  svg.icon.realness .realness-fill-ash,
   svg.icon.realness .realness-fill-cinder {
-    animation-name: realness-color-cinder;
-    animation-duration: 25s;
-    animation-delay: -9s;
+    fill: var(--pumice);
   }
+  svg.icon.realness .realness-fill-tide,
+  svg.icon.realness .realness-fill-silt {
+    fill: var(--water-fill);
+  }
+  svg.icon.realness .realness-fill-ember,
+  svg.icon.realness .realness-fill-rust {
+    fill: var(--clay-fill);
+  }
+  // Color-cycling is disabled for now (kept here, commented, to re-enable
+  // later) — it wasn't reliably showing the brand default colors first.
+  // svg.icon.realness .realness-fill-ash {
+  //   animation-name: realness-color-ash;
+  //   animation-duration: 26s;
+  //   animation-delay: 4s;
+  // }
+  // svg.icon.realness .realness-fill-ember {
+  //   animation-name: realness-color-ember;
+  //   animation-duration: 34s;
+  //   animation-delay: 6.5s;
+  // }
+  // svg.icon.realness .realness-fill-rust {
+  //   animation-name: realness-color-rust;
+  //   animation-duration: 28s;
+  //   animation-delay: 5s;
+  // }
+  // svg.icon.realness .realness-fill-tide {
+  //   animation-name: realness-color-tide;
+  //   animation-duration: 31s;
+  //   animation-delay: 7s;
+  // }
+  // svg.icon.realness .realness-fill-silt {
+  //   animation-name: realness-color-silt;
+  //   animation-duration: 23s;
+  //   animation-delay: 5.5s;
+  // }
+  // svg.icon.realness .realness-fill-cinder {
+  //   animation-name: realness-color-cinder;
+  //   animation-duration: 25s;
+  //   animation-delay: 4.5s;
+  // }
   // pressing snaps the colors back to the default mark too — same duration
   // and easing as the tiles clicking into place, so the whole icon reads
   // as returning to "home" in one coordinated motion, not just repositioning.
@@ -409,12 +427,14 @@
       transition-duration: 0.01ms;
     }
   }
-  // main-color palette: water, clay, slate, ochre
+  // main-color palette: water, clay, slate, ochre — each starts/ends on
+  // its own true brand default (ash+cinder: pumice, tide+silt: water,
+  // ember+rust: clay) rather than an arbitrary point in the rotation
   @keyframes realness-color-ash {
-    0%, 100% { fill: var(--water-fill); }
-    25% { fill: var(--clay-fill); }
-    50% { fill: var(--slate-fill); }
-    75% { fill: var(--ochre); }
+    0%, 100% { fill: var(--pumice); }
+    25% { fill: var(--water-fill); }
+    50% { fill: var(--clay-fill); }
+    75% { fill: var(--slate-fill); }
   }
   @keyframes realness-color-ember {
     0%, 100% { fill: var(--clay-fill); }
@@ -423,31 +443,31 @@
     75% { fill: var(--slate-fill); }
   }
   @keyframes realness-color-rust {
-    0%, 100% { fill: var(--slate-fill); }
-    25% { fill: var(--water-fill); }
-    50% { fill: var(--ochre); }
-    75% { fill: var(--clay-fill); }
+    0%, 100% { fill: var(--clay-fill); }
+    25% { fill: var(--slate-fill); }
+    50% { fill: var(--water-fill); }
+    75% { fill: var(--ochre); }
   }
   // geology palette: sediment, sand, gravel, rocks, boulders
   @keyframes realness-color-tide {
-    0%, 100% { fill: var(--sediment); }
-    20% { fill: var(--sand); }
-    40% { fill: var(--gravel); }
-    60% { fill: var(--rocks); }
-    80% { fill: var(--boulders); }
-  }
-  @keyframes realness-color-silt {
-    0%, 100% { fill: var(--gravel); }
-    20% { fill: var(--boulders); }
-    40% { fill: var(--sediment); }
-    60% { fill: var(--rocks); }
-    80% { fill: var(--sand); }
-  }
-  @keyframes realness-color-cinder {
-    0%, 100% { fill: var(--rocks); }
+    0%, 100% { fill: var(--water-fill); }
     20% { fill: var(--sediment); }
     40% { fill: var(--sand); }
-    60% { fill: var(--boulders); }
+    60% { fill: var(--gravel); }
+    80% { fill: var(--rocks); }
+  }
+  @keyframes realness-color-silt {
+    0%, 100% { fill: var(--water-fill); }
+    20% { fill: var(--boulders); }
+    40% { fill: var(--gravel); }
+    60% { fill: var(--sediment); }
+    80% { fill: var(--rocks); }
+  }
+  @keyframes realness-color-cinder {
+    0%, 100% { fill: var(--pumice); }
+    20% { fill: var(--rocks); }
+    40% { fill: var(--sediment); }
+    60% { fill: var(--sand); }
     80% { fill: var(--gravel); }
   }
 </style>
