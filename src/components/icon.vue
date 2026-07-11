@@ -1,6 +1,7 @@
 <script setup>
   import icons from '/icons.svg'
   import { computed } from 'vue'
+  import { animate } from '@/utils/preference'
   const props = defineProps({
     name: {
       type: String,
@@ -61,7 +62,8 @@
   <svg
     v-else-if="name === 'realness'"
     viewBox="-20 -20 232 232"
-    class="icon realness">
+    class="icon realness"
+    :class="{ 'realness-motion-on': animate }">
     <defs>
       <path
         id="icon-realness-smalti-ash"
@@ -226,58 +228,63 @@
       transform-origin: center;
       transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
       animation-iteration-count: infinite;
+      // paused by default; the app's persisted "animate" preference
+      // (src/utils/preference.js, off by default) is the only gate —
+      // .realness-motion-on is bound straight from that ref
+      animation-play-state: paused;
     }
-    // Ambient position drift is disabled for now (kept here, commented,
-    // to re-enable later) — same toggle-off treatment as the color cycling.
-    // Shift magnitudes follow the grid, not each tile's individual centroid:
-    // both columns move ±2.5px (so the col0/col1 seam gets 2.5+2.5=5px),
-    // the top/bottom rows move ±5px while the middle row stays put (so
-    // both row seams get exactly 5px too, one side moving, one static).
-    // Every internal gap ends up the same 5px distance from its neighbor.
+    &.realness-motion-on .realness-tile {
+      animation-play-state: running;
+    }
+    // Ambient drift oscillates around the resting gutter position
+    // (--snap-x/y above), not around fully sealed — so a paused/not-yet-
+    // started animation still shows exactly the committed static baseline.
+    // Shift magnitudes for the rest position follow the grid (both columns
+    // ±2.5px, top/bottom rows ±5px, middle row static) so every internal
+    // gap is a uniform 5px; the drift peak (50%) adds each tile's own
+    // organic wander on top of that shared baseline.
+    // No negative delays here — a negative delay means even the paused
+    // (animate-off) frame sits slightly offset into the cycle rather than
+    // exactly at the static baseline. Durations alone are enough to bring
+    // the six tiles out of phase with each other once running.
     &.realness .realness-ash {
-      // animation-name: realness-drift-up-left;
-      // animation-duration: 7.4s;
-      // animation-delay: -0.4s;
+      animation-name: realness-drift-up-left;
+      animation-duration: 7.4s;
       --snap-x: -2.5px;
       --snap-y: -5px;
       --snap-rot: 0deg;
     }
     &.realness .realness-tide {
-      // animation-name: realness-drift-up-right;
-      // animation-duration: 6.8s;
-      // animation-delay: -2.1s;
+      animation-name: realness-drift-up-right;
+      animation-duration: 6.8s;
       --snap-x: 2.5px;
       --snap-y: -5px;
       --snap-rot: 0deg;
     }
     &.realness .realness-silt {
-      // animation-name: realness-drift-left;
-      // animation-duration: 7.9s;
-      // animation-delay: -1.2s;
+      animation-name: realness-drift-left;
+      animation-duration: 7.9s;
       --snap-x: -2.5px;
       --snap-y: 0px;
       --snap-rot: 0deg;
     }
     &.realness .realness-ember {
-      // animation-name: realness-drift-right;
-      // animation-duration: 7.1s;
-      // animation-delay: -3.6s;
+      animation-name: realness-drift-right;
+      animation-duration: 7.1s;
       --snap-x: 2.5px;
       --snap-y: 0px;
       --snap-rot: 0deg;
     }
     &.realness .realness-rust {
-      // animation-name: realness-drift-down-left;
-      // animation-duration: 8.2s;
-      // animation-delay: -0.9s;
+      animation-name: realness-drift-down-left;
+      animation-duration: 8.2s;
       --snap-x: -2.5px;
       --snap-y: 5px;
       --snap-rot: 0deg;
     }
     &.realness .realness-cinder {
-      // animation-name: realness-drift-down-right;
-      // animation-duration: 7.6s;
-      // animation-delay: -2.8s;
+      animation-name: realness-drift-down-right;
+      animation-duration: 7.6s;
       --snap-x: 2.5px;
       --snap-y: 5px;
       --snap-rot: 0deg;
@@ -292,52 +299,44 @@
     &.realness:active .realness-tile {
       animation: realness-click-in 0.52s var(--ease-click) forwards;
     }
-    // declared after the rules above so it wins the cascade tie (equal
-    // specificity, later source order) once reduced motion applies
-    @media (prefers-reduced-motion: reduce) {
-      &.realness .realness-tile {
-        animation-duration: 0.01ms;
-        animation-delay: 0s;
-      }
-    }
   }
 
-  // Tiles are drawn once with their edges permanently touching (the
-  // assembled mosaic); each one physically slides outward from the
-  // composition's center and back, rather than the shapes themselves
-  // resizing, so the gap comes from real motion. Quicker to drift apart,
-  // longer gentle settle back — an asymmetric, spring-like feel rather
-  // than a mirrored ease-in-out — plus a whisper of rotation so the path
-  // isn't perfectly straight.
+  // Ambient drift oscillates around each tile's resting gutter position
+  // (--snap-x/y/rot), not around fully sealed — 0%/100% match the static
+  // baseline exactly, so a paused animation looks identical to the
+  // committed rest state, and 50% adds that tile's own organic wander on
+  // top. Quicker to drift apart, longer gentle settle back — an
+  // asymmetric, spring-like feel rather than a mirrored ease-in-out —
+  // plus a whisper of rotation so the path isn't perfectly straight.
   @keyframes realness-drift-up-left {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(-2.74px, -3.57px) rotate(-0.6deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) - 2.74px), calc(var(--snap-y) - 3.57px)) rotate(-0.6deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   @keyframes realness-drift-up-right {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(2.70px, -3.60px) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) + 2.70px), calc(var(--snap-y) - 3.60px)) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   @keyframes realness-drift-left {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(-4.50px, -0.06px) rotate(-0.4deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) - 4.50px), calc(var(--snap-y) - 0.06px)) rotate(-0.4deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   @keyframes realness-drift-right {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(4.50px, -0.16px) rotate(0.7deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) + 4.50px), calc(var(--snap-y) - 0.16px)) rotate(0.7deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   @keyframes realness-drift-down-left {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(-2.75px, 3.56px) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) - 2.75px), calc(var(--snap-y) + 3.56px)) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   @keyframes realness-drift-down-right {
-    0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(2.74px, 3.57px) rotate(-0.7deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
+    50% { transform: translate(calc(var(--snap-x) + 2.74px), calc(var(--snap-y) + 3.57px)) rotate(-0.7deg); animation-timing-function: var(--ease-drift-back); }
+    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
   // starts from each tile's own --snap-x/y/rot (a deliberately bigger pull
   // than the ambient drift ever reaches) so every press is a clear, visible
@@ -365,6 +364,12 @@
   svg.icon.realness .realness-fill {
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
+    // paused by default; same "animate" preference gate as the position
+    // drift, via the .realness-motion-on class bound from that ref
+    animation-play-state: paused;
+  }
+  svg.icon.realness-motion-on .realness-fill {
+    animation-play-state: running;
   }
   svg.icon.realness .realness-fill-ash,
   svg.icon.realness .realness-fill-cinder {
@@ -378,38 +383,36 @@
   svg.icon.realness .realness-fill-rust {
     fill: var(--clay-fill);
   }
-  // Color-cycling is disabled for now (kept here, commented, to re-enable
-  // later) — it wasn't reliably showing the brand default colors first.
-  // svg.icon.realness .realness-fill-ash {
-  //   animation-name: realness-color-ash;
-  //   animation-duration: 26s;
-  //   animation-delay: 4s;
-  // }
-  // svg.icon.realness .realness-fill-ember {
-  //   animation-name: realness-color-ember;
-  //   animation-duration: 34s;
-  //   animation-delay: 6.5s;
-  // }
-  // svg.icon.realness .realness-fill-rust {
-  //   animation-name: realness-color-rust;
-  //   animation-duration: 28s;
-  //   animation-delay: 5s;
-  // }
-  // svg.icon.realness .realness-fill-tide {
-  //   animation-name: realness-color-tide;
-  //   animation-duration: 31s;
-  //   animation-delay: 7s;
-  // }
-  // svg.icon.realness .realness-fill-silt {
-  //   animation-name: realness-color-silt;
-  //   animation-duration: 23s;
-  //   animation-delay: 5.5s;
-  // }
-  // svg.icon.realness .realness-fill-cinder {
-  //   animation-name: realness-color-cinder;
-  //   animation-duration: 25s;
-  //   animation-delay: 4.5s;
-  // }
+  svg.icon.realness .realness-fill-ash {
+    animation-name: realness-color-ash;
+    animation-duration: 26s;
+    animation-delay: 4s;
+  }
+  svg.icon.realness .realness-fill-ember {
+    animation-name: realness-color-ember;
+    animation-duration: 34s;
+    animation-delay: 6.5s;
+  }
+  svg.icon.realness .realness-fill-rust {
+    animation-name: realness-color-rust;
+    animation-duration: 28s;
+    animation-delay: 5s;
+  }
+  svg.icon.realness .realness-fill-tide {
+    animation-name: realness-color-tide;
+    animation-duration: 31s;
+    animation-delay: 7s;
+  }
+  svg.icon.realness .realness-fill-silt {
+    animation-name: realness-color-silt;
+    animation-duration: 23s;
+    animation-delay: 5.5s;
+  }
+  svg.icon.realness .realness-fill-cinder {
+    animation-name: realness-color-cinder;
+    animation-duration: 25s;
+    animation-delay: 4.5s;
+  }
   // pressing snaps the colors back to the default mark too — same duration
   // and easing as the tiles clicking into place, so the whole icon reads
   // as returning to "home" in one coordinated motion, not just repositioning.
