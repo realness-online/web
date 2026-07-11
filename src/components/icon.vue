@@ -383,7 +383,11 @@
   }
   // pressing snaps the colors back to the default mark too — same duration
   // and easing as the tiles clicking into place, so the whole icon reads
-  // as returning to "home" in one coordinated motion, not just repositioning
+  // as returning to "home" in one coordinated motion, not just repositioning.
+  // A transition (not a second keyframe animation) so it reliably eases
+  // from whatever color is currently showing — switching animation-name
+  // to a fresh keyframe loses that "current" value, falling back to
+  // fill's CSS-initial black instead of the live ambient color.
   svg.icon.realness:active .realness-fill {
     animation: none;
     transition: fill 0.52s var(--ease-click);
@@ -399,6 +403,11 @@
   svg.icon.realness:active .realness-fill-ember,
   svg.icon.realness:active .realness-fill-rust {
     fill: var(--clay-fill);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    svg.icon.realness:active .realness-fill {
+      transition-duration: 0.01ms;
+    }
   }
   // main-color palette: water, clay, slate, ochre
   @keyframes realness-color-ash {
