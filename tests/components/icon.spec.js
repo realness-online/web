@@ -25,7 +25,8 @@ describe('@/components/icon', () => {
       expect(
         uses.every(use => !use.attributes('href')?.includes('icons.svg'))
       ).toBe(true)
-      expect(wrapper.findAll('path.realness-tile')).toHaveLength(6)
+      expect(wrapper.findAll('path[data-tile]')).toHaveLength(6)
+      expect(wrapper.findAll('svg > use[data-tile]')).toHaveLength(6)
     })
   })
 
