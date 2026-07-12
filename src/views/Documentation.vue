@@ -2,7 +2,7 @@
   import InstallGuide from '@/components/install-guide.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
-  import { documentation_html_parts } from '@/utils/markdown'
+  import { documentation_html_parts, changelog_html } from '@/utils/markdown'
   import { documentation_toc } from '@/prerender/toc'
   import instance_prompt from '@/content/agent-prompt-instance.md?raw'
   import { onMounted, onUnmounted, ref, watch } from 'vue'
@@ -15,6 +15,7 @@
     after: install_after,
     realness: install_realness
   } = documentation_html_parts()
+  const changelog_content = changelog_html()
 
   const copy_feedback_ms = 2000
   const copied = ref(false)
@@ -93,7 +94,6 @@
 <template>
   <section id="docs" class="page documentation" lang="en">
     <header>
-      <a class="page-back" href="#" @click.prevent="$router.back()">← Back</a>
       <h1>Documentation</h1>
     </header>
     <article>
@@ -128,6 +128,10 @@
           </header>
           <preferences-menu icon />
         </section>
+        <section class="changelog-panel">
+          <h2 id="changelog">Changelog</h2>
+          <div v-html="changelog_content" />
+        </section>
       </section>
     </article>
   </section>
@@ -150,18 +154,6 @@
         margin-top: 0;
         text-align: center;
         color: var(--emphasis);
-      }
-
-      a.page-back {
-        display: block;
-        font-size: smaller;
-        color: var(--accent);
-        text-decoration: none;
-        margin-bottom: base-line * 0.5;
-
-        &:hover {
-          color: var(--emphasis);
-        }
       }
     }
 
@@ -313,6 +305,21 @@
                 color: white;
               }
             }
+          }
+        }
+
+        & > section.changelog-panel {
+          margin-top: base-line * 3;
+
+          & > h2 {
+            color: var(--emphasis);
+            margin-bottom: base-line;
+          }
+
+          & > div {
+            min-width: 0;
+            max-width: 100%;
+            markdown_content();
           }
         }
       }

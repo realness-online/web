@@ -20,6 +20,7 @@
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
       <router-link to="/pricing" replace>Pricing</router-link>
+      <router-link to="/terms" replace>Legal</router-link>
       <router-link to="/account" replace>{{ account_label }}</router-link>
     </menu>
   </nav>
@@ -37,8 +38,9 @@
     menu {
       flex: 1;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: base-line;
+      gap: base-line * 0.5 base-line;
       margin: 0;
       padding: 0;
       list-style: none;
@@ -53,6 +55,17 @@
 
         &.router-link-active {
           color: var(--emphasis);
+        }
+      }
+
+      // Legal is the least-visited link here; keep it out of the way.
+      a[href='/terms'] {
+        font-size: smaller;
+        opacity: 0.6;
+
+        &:hover,
+        &.router-link-active {
+          opacity: 1;
         }
       }
 

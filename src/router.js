@@ -33,11 +33,8 @@ const routes = [
     component: () => import('@/views/Terms'),
     meta: { support: true }
   },
-  {
-    path: '/privacy',
-    component: () => import('@/views/Privacy'),
-    meta: { support: true }
-  },
+  { path: '/privacy', redirect: '/terms#privacy-policy' },
+  { path: '/changelog', redirect: '/docs#changelog' },
   {
     path: '/account',
     component: () => import('@/views/Account'),

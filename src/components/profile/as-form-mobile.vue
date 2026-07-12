@@ -267,7 +267,7 @@
       By continuing you agree to the
       <router-link to="/terms">Terms</router-link>
       and
-      <router-link to="/privacy">Privacy Policy</router-link>.
+      <router-link to="/terms#privacy-policy">Privacy Policy</router-link>.
     </p>
   </form>
 </template>
