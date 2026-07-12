@@ -10,25 +10,32 @@
   })
   const icon_location = computed(() => `${icons}#${props.name}`)
 
-  // Web Animations API gives the ambient drift/color-cycle the same
-  // transport control SMIL has for the poster animations (setCurrentTime,
-  // play/pause) — CSS animation-play-state alone can only freeze/resume
-  // wherever the timeline happens to be, not seek back to the start.
-  // Toggling the shared "animate" preference always rewinds to zero first,
-  // so turning it back on is a fresh, in-sync start every time rather than
-  // resuming from wherever it was paused.
   const realness_svg = ref(null)
-  const sync_realness_animations = playing => {
+  const realness_elements = selector => {
     const svg = realness_svg.value
-    if (!svg || typeof svg.getAnimations !== 'function') return
-    for (const animation of svg.getAnimations({ subtree: true })) {
+    return svg ? [...svg.querySelectorAll(selector)] : []
+  }
+  const realness_animations = selector =>
+    realness_elements(selector).flatMap(el =>
+      typeof el.getAnimations === 'function' ? el.getAnimations() : []
+    )
+  const rewind = (animations, playing) => {
+    for (const animation of animations) {
       animation.currentTime = 0
       if (playing) animation.play()
       else animation.pause()
     }
   }
+  const sync_realness_animations = playing =>
+    rewind(realness_animations('[data-tile]'), playing)
   onMounted(() => sync_realness_animations(animate.value))
   watch(animate, sync_realness_animations)
+
+  const on_realness_press = event => {
+    event.currentTarget?.setPointerCapture?.(event.pointerId)
+  }
+  const on_realness_release = () =>
+    requestAnimationFrame(() => sync_realness_animations(animate.value))
 </script>
 
 <template>
@@ -83,7 +90,10 @@
     v-else-if="name === 'realness'"
     ref="realness_svg"
     viewBox="-20 -20 232 232"
-    class="icon realness">
+    class="icon realness"
+    @pointerdown="on_realness_press"
+    @pointerup="on_realness_release"
+    @pointercancel="on_realness_release">
     <defs>
       <path
         id="icon-realness-smalti-ash"
@@ -114,80 +124,74 @@
         width="21.5"
         height="20.0"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-ash"
-          class="realness-fill realness-fill-ash" />
+        <use href="#icon-realness-smalti-ash" data-tile="ash" />
       </pattern>
       <pattern
         id="icon-realness-fill-tide"
         width="21.6"
         height="18.4"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-tide"
-          class="realness-fill realness-fill-tide" />
+        <use href="#icon-realness-smalti-tide" data-tile="tide" />
       </pattern>
       <pattern
         id="icon-realness-fill-silt"
         width="20.0"
         height="20.4"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-silt"
-          class="realness-fill realness-fill-silt" />
+        <use href="#icon-realness-smalti-silt" data-tile="silt" />
       </pattern>
       <pattern
         id="icon-realness-fill-ember"
         width="19.5"
         height="19.5"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-ember"
-          class="realness-fill realness-fill-ember" />
+        <use href="#icon-realness-smalti-ember" data-tile="ember" />
       </pattern>
       <pattern
         id="icon-realness-fill-rust"
         width="18.8"
         height="21.5"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-rust"
-          class="realness-fill realness-fill-rust" />
+        <use href="#icon-realness-smalti-rust" data-tile="rust" />
       </pattern>
       <pattern
         id="icon-realness-fill-cinder"
         width="19.8"
         height="19.8"
         patternUnits="userSpaceOnUse">
-        <use
-          href="#icon-realness-smalti-cinder"
-          class="realness-fill realness-fill-cinder" />
+        <use href="#icon-realness-smalti-cinder" data-tile="cinder" />
       </pattern>
     </defs>
     <path
-      class="realness-tile realness-ash"
-      fill="url(#icon-realness-fill-ash)"
+      id="realness-ash"
+      data-tile="ash"
       d="M12.52 10.65 L40.16 16.68 L67.38 6.73 L94.91 8.41 L98.34 28.54 L97.35 48.45 L92.06 68.16 L64.17 68.93 L36.23 71.81 L8.53 65.79 L7.58 47.25 L8.14 28.81 Z" />
     <path
-      class="realness-tile realness-tide"
-      fill="url(#icon-realness-fill-tide)"
+      id="realness-tide"
+      data-tile="tide"
       d="M94.91 8.41 L122.79 10.38 L150.37 18.39 L178.64 12.68 L181.77 29.65 L182.17 46.93 L184.65 63.97 L153.88 67.35 L123.17 72.26 L92.06 68.16 L97.35 48.45 L98.34 28.54 Z" />
     <path
-      class="realness-tile realness-silt"
-      fill="url(#icon-realness-fill-silt)"
+      id="realness-silt"
+      data-tile="silt"
       d="M8.53 65.79 L36.23 71.81 L64.17 68.93 L92.06 68.16 L87.70 85.72 L89.53 103.58 L89.37 121.35 L64.25 116.61 L39.93 126.77 L14.99 125.36 L15.10 105.26 L13.60 85.33 Z" />
     <path
-      class="realness-tile realness-ember"
-      fill="url(#icon-realness-fill-ember)"
+      id="realness-ember"
+      data-tile="ember"
       d="M92.06 68.16 L123.17 72.26 L153.88 67.35 L184.65 63.97 L189.29 84.50 L187.58 105.02 L184.60 125.54 L153.03 120.34 L121.42 115.91 L89.37 121.35 L89.53 103.58 L87.70 85.72 Z" />
     <path
-      class="realness-tile realness-rust"
-      fill="url(#icon-realness-fill-rust)"
+      id="realness-rust"
+      data-tile="rust"
       d="M14.99 125.36 L39.93 126.77 L64.25 116.61 L89.37 121.35 L90.85 141.12 L96.62 160.25 L98.10 180.02 L70.17 175.00 L42.10 176.81 L14.03 178.15 L10.20 160.48 L16.89 143.00 Z" />
     <path
-      class="realness-tile realness-cinder"
-      fill="url(#icon-realness-fill-cinder)"
+      id="realness-cinder"
+      data-tile="cinder"
       d="M89.37 121.35 L121.42 115.91 L153.03 120.34 L184.60 125.54 L181.45 143.02 L180.07 160.68 L179.36 178.40 L152.34 182.29 L125.09 174.67 L98.10 180.02 L96.62 160.25 L90.85 141.12 Z" />
+    <use href="#realness-ash" data-tile="ash" />
+    <use href="#realness-tide" data-tile="tide" />
+    <use href="#realness-silt" data-tile="silt" />
+    <use href="#realness-ember" data-tile="ember" />
+    <use href="#realness-rust" data-tile="rust" />
+    <use href="#realness-cinder" data-tile="cinder" />
   </svg>
   <svg v-else :class="name" class="icon"><use :href="icon_location" /></svg>
 </template>
@@ -229,105 +233,82 @@
       }
     }
     &.realness {
-      // quicker to drift apart, a longer gentle settle back — an asymmetric
-      // spring-like feel instead of a mirrored ease-in-out
       --ease-drift-out: linear(0, 0.42 24%, 0.82 52%, 0.97 76%, 1);
       --ease-drift-back: linear(0, 0.18 22%, 0.52 48%, 0.84 74%, 1);
-      // physical snap for the click-to-assemble response: fast approach,
-      // overshoot past the seam, then a couple of settling wobbles — like a
-      // piece with real weight dropping into its slot, not an instant cut
       --ease-click: linear(0, 0.42 22%, 0.87 42%, 1.09 58%, 0.96 72%, 1.03 84%, 0.99 92%, 1);
     }
-    // Rest state: each tile sits pulled apart at its own --snap-x/y/rot,
-    // showing the gutter both between tiles and around the outside —
-    // the shapes themselves are drawn edge-to-edge (touching), the gap
-    // is purely this static transform, so pressing can transition it
-    // back to translate(0,0) and actually seal the seams shut.
-    &.realness .realness-tile {
+    &.realness > [data-tile] {
       transform-box: fill-box;
       transform-origin: center;
       transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
       animation-iteration-count: infinite;
-      // paused by default; the Web Animations API in the <script> block
-      // is the sole play/pause + rewind-to-zero authority, driven by the
-      // app's persisted "animate" preference (src/utils/preference.js,
-      // off by default) — once script calls play()/pause() on an
-      // animation, CSS animation-play-state no longer has a say over it,
-      // so this is purely the safe pre-mount default
       animation-play-state: paused;
     }
-    // Ambient drift oscillates around the resting gutter position
-    // (--snap-x/y above), not around fully sealed — so a paused/not-yet-
-    // started animation still shows exactly the committed static baseline.
-    // Shift magnitudes for the rest position follow the grid (both columns
-    // ±2.5px, top/bottom rows ±5px, middle row static) so every internal
-    // gap is a uniform 5px; the drift peak (50%) adds each tile's own
-    // organic wander on top of that shared baseline.
-    // No negative delays here — a negative delay means even the paused
-    // (animate-off) frame sits slightly offset into the cycle rather than
-    // exactly at the static baseline. Durations alone are enough to bring
-    // the six tiles out of phase with each other once running.
-    &.realness .realness-ash {
+    &.realness > path[data-tile='ash'] {
+      fill: url(#icon-realness-fill-ash);
+    }
+    &.realness > path[data-tile='tide'] {
+      fill: url(#icon-realness-fill-tide);
+    }
+    &.realness > path[data-tile='silt'] {
+      fill: url(#icon-realness-fill-silt);
+    }
+    &.realness > path[data-tile='ember'] {
+      fill: url(#icon-realness-fill-ember);
+    }
+    &.realness > path[data-tile='rust'] {
+      fill: url(#icon-realness-fill-rust);
+    }
+    &.realness > path[data-tile='cinder'] {
+      fill: url(#icon-realness-fill-cinder);
+    }
+    &.realness > [data-tile='ash'] {
       animation-name: realness-drift-up-left;
       animation-duration: 7.4s;
       --snap-x: -2.5px;
       --snap-y: -5px;
       --snap-rot: 0deg;
     }
-    &.realness .realness-tide {
+    &.realness > [data-tile='tide'] {
       animation-name: realness-drift-up-right;
       animation-duration: 6.8s;
       --snap-x: 2.5px;
       --snap-y: -5px;
       --snap-rot: 0deg;
     }
-    &.realness .realness-silt {
+    &.realness > [data-tile='silt'] {
       animation-name: realness-drift-left;
       animation-duration: 7.9s;
       --snap-x: -2.5px;
       --snap-y: 0px;
       --snap-rot: 0deg;
     }
-    &.realness .realness-ember {
+    &.realness > [data-tile='ember'] {
       animation-name: realness-drift-right;
       animation-duration: 7.1s;
       --snap-x: 2.5px;
       --snap-y: 0px;
       --snap-rot: 0deg;
     }
-    &.realness .realness-rust {
+    &.realness > [data-tile='rust'] {
       animation-name: realness-drift-down-left;
       animation-duration: 8.2s;
       --snap-x: -2.5px;
       --snap-y: 5px;
       --snap-rot: 0deg;
     }
-    &.realness .realness-cinder {
+    &.realness > [data-tile='cinder'] {
       animation-name: realness-drift-down-right;
       animation-duration: 7.6s;
       --snap-x: 2.5px;
       --snap-y: 5px;
       --snap-rot: 0deg;
     }
-    // pressing anywhere on the icon (wrapped in a link/button or bare)
-    // clicks the tiles firmly into place — :active propagates up from
-    // whatever descendant path was actually pressed, so this matches with
-    // or without a wrapper. The click keyframe uses its own, larger
-    // "pulled apart" starting point (--snap-x/y/rot) rather than the
-    // ambient drift's small, unpredictable current offset, so every press
-    // reads as a clear, deliberate motion instead of a barely-visible one
-    &.realness:active .realness-tile {
+    &.realness:active > [data-tile] {
       animation: realness-click-in 0.52s var(--ease-click) forwards;
     }
   }
 
-  // Ambient drift oscillates around each tile's resting gutter position
-  // (--snap-x/y/rot), not around fully sealed — 0%/100% match the static
-  // baseline exactly, so a paused animation looks identical to the
-  // committed rest state, and 50% adds that tile's own organic wander on
-  // top. Quicker to drift apart, longer gentle settle back — an
-  // asymmetric, spring-like feel rather than a mirrored ease-in-out —
-  // plus a whisper of rotation so the path isn't perfectly straight.
   @keyframes realness-drift-up-left {
     0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
     50% { transform: translate(calc(var(--snap-x) - 2.74px), calc(var(--snap-y) - 3.57px)) rotate(-0.6deg); animation-timing-function: var(--ease-drift-back); }
@@ -358,9 +339,6 @@
     50% { transform: translate(calc(var(--snap-x) + 2.74px), calc(var(--snap-y) + 3.57px)) rotate(-0.7deg); animation-timing-function: var(--ease-drift-back); }
     100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
   }
-  // starts from each tile's own --snap-x/y/rot (a deliberately bigger pull
-  // than the ambient drift ever reaches) so every press is a clear, visible
-  // throw-and-catch, not a nudge from wherever the drift happened to be
   @keyframes realness-click-in {
     0% {
       transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
@@ -370,97 +348,74 @@
     }
   }
 
-  // Each tile drifts through its own slow, personal color sequence, but
-  // drawn from one of two separate palettes rather than mixing both —
-  // ash/ember/rust stay within the vivid brand variants + ochre signal,
-  // tide/silt/cinder stay within the muted geology earth tones. Mixing
-  // both sets on every tile read as too much at once; keeping each tile
-  // internally consistent (checkerboarded across the grid so neighbors
-  // never share a palette) still reads as one rich, coordinated mark.
-  // the static fill here is the true brand default — what's on screen
-  // before the animation-delay below elapses, and what each keyframe
-  // starts/ends on, so the mark always loads looking like the real logo
-  // first and only eases into drifting after a pause
-  svg.icon.realness .realness-fill {
+  svg.icon.realness pattern use[data-tile] {
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
-    // paused by default; same Web Animations API control as the position
-    // drift — see the <script> block
     animation-play-state: paused;
   }
-  svg.icon.realness .realness-fill-ash,
-  svg.icon.realness .realness-fill-cinder {
+  svg.icon.realness pattern use[data-tile='ash'],
+  svg.icon.realness pattern use[data-tile='cinder'] {
     fill: var(--pumice);
   }
-  svg.icon.realness .realness-fill-tide,
-  svg.icon.realness .realness-fill-silt {
+  svg.icon.realness pattern use[data-tile='tide'],
+  svg.icon.realness pattern use[data-tile='silt'] {
     fill: var(--water-fill);
   }
-  svg.icon.realness .realness-fill-ember,
-  svg.icon.realness .realness-fill-rust {
+  svg.icon.realness pattern use[data-tile='ember'],
+  svg.icon.realness pattern use[data-tile='rust'] {
     fill: var(--clay-fill);
   }
-  svg.icon.realness .realness-fill-ash {
+  svg.icon.realness pattern use[data-tile='ash'] {
     animation-name: realness-color-ash;
     animation-duration: 26s;
     animation-delay: 4s;
   }
-  svg.icon.realness .realness-fill-ember {
+  svg.icon.realness pattern use[data-tile='ember'] {
     animation-name: realness-color-ember;
     animation-duration: 34s;
     animation-delay: 6.5s;
   }
-  svg.icon.realness .realness-fill-rust {
+  svg.icon.realness pattern use[data-tile='rust'] {
     animation-name: realness-color-rust;
     animation-duration: 28s;
     animation-delay: 5s;
   }
-  svg.icon.realness .realness-fill-tide {
+  svg.icon.realness pattern use[data-tile='tide'] {
     animation-name: realness-color-tide;
     animation-duration: 31s;
     animation-delay: 7s;
   }
-  svg.icon.realness .realness-fill-silt {
+  svg.icon.realness pattern use[data-tile='silt'] {
     animation-name: realness-color-silt;
     animation-duration: 23s;
     animation-delay: 5.5s;
   }
-  svg.icon.realness .realness-fill-cinder {
+  svg.icon.realness pattern use[data-tile='cinder'] {
     animation-name: realness-color-cinder;
     animation-duration: 25s;
     animation-delay: 4.5s;
   }
-  // pressing snaps the colors back to the default mark too — same duration
-  // and easing as the tiles clicking into place, so the whole icon reads
-  // as returning to "home" in one coordinated motion, not just repositioning.
-  // A transition (not a second keyframe animation) so it reliably eases
-  // from whatever color is currently showing — switching animation-name
-  // to a fresh keyframe loses that "current" value, falling back to
-  // fill's CSS-initial black instead of the live ambient color.
-  svg.icon.realness:active .realness-fill {
-    animation: none;
-    transition: fill 0.52s var(--ease-click);
+  svg.icon.realness > use[data-tile] {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.52s var(--ease-click);
   }
-  svg.icon.realness:active .realness-fill-ash,
-  svg.icon.realness:active .realness-fill-cinder {
+  svg.icon.realness > use[data-tile='ash'],
+  svg.icon.realness > use[data-tile='cinder'] {
     fill: var(--pumice);
   }
-  svg.icon.realness:active .realness-fill-tide,
-  svg.icon.realness:active .realness-fill-silt {
+  svg.icon.realness > use[data-tile='tide'],
+  svg.icon.realness > use[data-tile='silt'] {
     fill: var(--water-fill);
   }
-  svg.icon.realness:active .realness-fill-ember,
-  svg.icon.realness:active .realness-fill-rust {
+  svg.icon.realness > use[data-tile='ember'],
+  svg.icon.realness > use[data-tile='rust'] {
     fill: var(--clay-fill);
   }
-  @media (prefers-reduced-motion: reduce) {
-    svg.icon.realness:active .realness-fill {
-      transition-duration: 0.01ms;
-    }
+  svg.icon.realness:active > use[data-tile] {
+    opacity: 1;
   }
-  // main-color palette: water, clay, slate, ochre — each starts/ends on
-  // its own true brand default (ash+cinder: pumice, tide+silt: water,
-  // ember+rust: clay) rather than an arbitrary point in the rotation
+
   @keyframes realness-color-ash {
     0%, 100% { fill: var(--pumice); }
     25% { fill: var(--water-fill); }
@@ -479,7 +434,6 @@
     50% { fill: var(--water-fill); }
     75% { fill: var(--ochre); }
   }
-  // geology palette: sediment, sand, gravel, rocks, boulders
   @keyframes realness-color-tide {
     0%, 100% { fill: var(--water-fill); }
     20% { fill: var(--sediment); }
