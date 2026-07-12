@@ -3,6 +3,7 @@ import {
   documentation_html,
   documentation_html_parts,
   documentation_preferences_toc,
+  documentation_changelog_toc,
   documentation_toc,
   inline_documentation_icons,
   markdown_html,
@@ -17,7 +18,8 @@ describe('markdown', () => {
     expect(toc).toEqual([
       { id: 'overview', title: 'Overview', level: 2 },
       { id: 'posters', title: 'Posters', level: 2 },
-      ...documentation_preferences_toc
+      ...documentation_preferences_toc,
+      ...documentation_changelog_toc
     ])
   })
 

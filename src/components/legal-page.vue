@@ -9,7 +9,6 @@
 <template>
   <section class="page legal" lang="en">
     <header>
-      <a class="page-back" href="#" @click.prevent="$router.back()">← Back</a>
       <h1>{{ title }}</h1>
     </header>
     <article>
@@ -25,11 +24,6 @@
       </nav>
       <section class="content">
         <div class="document" v-html="html" />
-        <footer class="legal-links">
-          <router-link to="/terms">Terms</router-link>
-          <router-link to="/privacy">Privacy</router-link>
-          <router-link to="/pricing">Pricing &amp; License</router-link>
-        </footer>
       </section>
     </article>
   </section>
@@ -53,27 +47,18 @@
         text-align: center;
         color: var(--emphasis);
       }
-
-      a.page-back {
-        display: block;
-        font-size: smaller;
-        color: var(--accent);
-        text-decoration: none;
-        margin-bottom: base-line * 0.5;
-        &:hover {
-          color: var(--emphasis);
-        }
-      }
     }
 
     & > article {
       display: block;
 
       @media (min-width: pad-begins) {
-        display: grid;
-        grid-template-columns: (base-line * 9) minmax(0, 1fr);
-        gap: base-line * 1.5;
-        align-items: start;
+        &:has(nav.toc) {
+          display: grid;
+          grid-template-columns: (base-line * 9) minmax(0, 1fr);
+          gap: base-line * 1.5;
+          align-items: start;
+        }
       }
 
       & > nav.toc {
@@ -124,6 +109,25 @@
         }
       }
 
+      &:not(:has(nav.toc)) > section.content {
+        margin-inline: auto;
+
+        // The global `p { max-width: var(--page-width) }` rule caps prose
+        // width app-wide, but leaves each element block-aligned left — fine
+        // in narrow layouts, but it reads as ragged/left-heavy once this
+        // column has no sidebar to sit next to. Center each capped element
+        // as its own block instead.
+        & > div.document {
+          p, blockquote, ul, ol {
+            margin-inline: auto;
+          }
+
+          h1, h2, h3, h4, h5, h6 {
+            text-align: center;
+          }
+        }
+      }
+
       & > section.content {
         min-width: 0;
         padding: 0 base-line * 0.5;
@@ -133,24 +137,6 @@
           min-width: 0;
           max-width: 100%;
           markdown_content();
-        }
-
-        & > footer.legal-links {
-          display: flex;
-          flex-wrap: wrap;
-          gap: base-line;
-          margin-top: base-line * 3;
-          padding-top: base-line;
-          border-top: 1px solid var(--emphasis);
-
-          & > a {
-            color: var(--accent);
-            text-decoration: none;
-
-            &:hover {
-              color: var(--emphasis);
-            }
-          }
         }
       }
     }

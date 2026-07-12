@@ -29,29 +29,22 @@ export const prerender_pages = [
     path: '/docs',
     title: 'Realness Online - Documentation',
     description:
-      'How to use Realness: rotoscope photos into layered SVG posters, Thoughts feed, island controls, exports (SVG, PNG, PSD, video, GLB), sync, install, and keyboard shortcuts.',
+      'How to use Realness: rotoscope photos into layered SVG posters, Thoughts feed, island controls, exports (SVG, PNG, PSD, video, GLB), sync, install, keyboard shortcuts, and changelog.',
     og_title: 'Realness Online - Documentation'
   },
   {
     path: '/pricing',
     title: 'Realness Online - Pricing',
     description:
-      'Realness is free to use. It costs $5, and stays free to use. License plans for small teams and large organizations.',
+      'Realness is free to use — but it has a price, if you want one. Separate paid tiers for teams and organizations.',
     og_title: 'Realness Online - Pricing'
   },
   {
     path: '/terms',
-    title: 'Realness Online - Terms of Service',
+    title: 'Realness Online - Terms & Privacy',
     description:
-      'Terms of Service for Realness — the rotoscoping tool and outsider social network.',
-    og_title: 'Realness Online - Terms of Service'
-  },
-  {
-    path: '/privacy',
-    title: 'Realness Online - Privacy Policy',
-    description:
-      'Privacy Policy for Realness — what we collect, why, and what you can do about it.',
-    og_title: 'Realness Online - Privacy Policy'
+      'Terms of Service and Privacy Policy for Realness — the rotoscoping tool and outsider social network.',
+    og_title: 'Realness Online - Terms & Privacy'
   }
 ]
 

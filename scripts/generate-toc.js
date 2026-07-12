@@ -56,9 +56,14 @@ const documentation_preferences_toc = [
   { id: 'preferences-chrome', title: 'Chrome', level: 3 }
 ]
 
+const documentation_changelog_toc = [
+  { id: 'changelog', title: 'Changelog', level: 2 }
+]
+
 const documentation_toc = [
   ...markdown_toc(documentation_md),
-  ...documentation_preferences_toc
+  ...documentation_preferences_toc,
+  ...documentation_changelog_toc
 ]
 const terms_toc = markdown_toc(terms_md)
 const privacy_toc = markdown_toc(privacy_md)

@@ -1,4 +1,5 @@
 import documentation_md from '@/content/documentation.md?raw'
+import changelog_md from '../../CHANGELOG.md?raw'
 import icons_svg from '../../public/icons.svg?raw'
 import { marked } from 'marked'
 import { gfmHeadingId } from 'marked-gfm-heading-id'
@@ -63,6 +64,11 @@ export const documentation_preferences_toc = [
   { id: 'preferences-chrome', title: 'Chrome', level: 3 }
 ]
 
+/** @type {Array<{ id: string, title: string, level: number }>} */
+export const documentation_changelog_toc = [
+  { id: 'changelog', title: 'Changelog', level: 2 }
+]
+
 /**
  * Build a table of contents from any markdown's h2–h6 headings.
  * @param {string} content
@@ -86,7 +92,8 @@ export const markdown_toc = content => {
  */
 export const documentation_toc = (content = documentation_md) => [
   ...markdown_toc(content),
-  ...documentation_preferences_toc
+  ...documentation_preferences_toc,
+  ...documentation_changelog_toc
 ]
 
 /**
@@ -102,6 +109,26 @@ export const documentation_html = (content = documentation_md) =>
  * @returns {string}
  */
 export const markdown_html = content => documentation_html(content)
+
+/** @param {string} text */
+const humanize_dates = text =>
+  text.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (_, y, m, d) =>
+    new Date(Number(y), Number(m) - 1, Number(d)).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  )
+
+/**
+ * CHANGELOG.md dates its entries in ISO (sorts cleanly as a dev log);
+ * humanize them and drop the leading "# Changelog" so it can sit under this
+ * page's own "Changelog" heading instead of rendering its own.
+ * @param {string} [content]
+ * @returns {string}
+ */
+export const changelog_html = (content = changelog_md) =>
+  documentation_html(humanize_dates(content.replace(/^#\s+.+\n+/, '')))
 
 export const INSTALL_GUIDE_MARKER = '<!-- install-guide -->'
 
