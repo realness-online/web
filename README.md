@@ -207,12 +207,47 @@ We invite you to [Join realness online](https://realness.online) if you are inte
 
 ## License
 
-One instance of realness per human person. This human person is the moderator.
+Realness is licensed under the **GPL-2.0**. See [LICENSE](LICENSE) for the
+full text. Anyone may run, modify, and redistribute Realness, including for
+commercial use, provided derivative works stay GPL-2.0 with source available.
 
-A moderator takes responsibility for the content that is created within their instance of Realness.
+### One instance, one moderator
 
-By moderating an instance of Realness you become part of a chain of responsibility that is diffuse. Each instance of Realness is a unique opportunity for users to negotiate norms with their moderator. This way, human beings can move between networks naturally; choosing a Realness that is a good fit for them.
+While the GPL governs the code, Realness is designed around a product
+principle: one instance of Realness per human person, and that human person is
+the moderator.
 
-It is the explicit goal of realness to create a democratic environment where people feel free to share and communicate yet it is clear whose ass is on the line for what gets said, organized, and done.
+A moderator takes responsibility for the content that is created within their
+instance of Realness.
 
-Currently [package.json](package.json) has the license field marked as UNLICENSED – This is because we are in an alpha phase of the product roadmap. We need to figure this license out.
+By moderating an instance of Realness you become part of a chain of
+responsibility that is diffuse. Each instance of Realness is a unique
+opportunity for users to negotiate norms with their moderator. This way, human
+beings can move between networks naturally; choosing a Realness that is a good
+fit for them.
+
+It is the explicit goal of realness to create a democratic environment where
+people feel free to share and communicate yet it is clear whose ass is on the
+line for what gets said, organized, and done.
+
+### Commercial support
+
+Commercial tiers at <https://realness.online/pricing> provide a formal
+license agreement, support, and indemnification for teams and organizations.
+The GPL permits commercial use freely; the commercial tiers are a service and
+contract wrapper, not a license gate.
+
+### Trademarks
+
+The "Realness" name and logos are trademarks of Scott Fryxell and are not
+licensed under the GPL. A redistributed or modified version must not use the
+Realness marks in a way that implies it is the official project or is
+endorsed by the author.
+
+### Attribution
+
+Realness's vector tracing is built on two GPL-2.0 projects: potrace by Peter
+Selinger (<http://potrace.sourceforge.net/>) and node-potrace by mattmc
+(<https://github.com/tooolbox/node-potrace>), the JavaScript port
+`src/potrace/` is derived from. Both are credited in the in-app
+documentation and remain GPL-2.0.

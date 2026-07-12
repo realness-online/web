@@ -114,7 +114,7 @@
     "not op_mini all",
     "not ios_saf < 16"
   ],
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "GPL-2.0",
   "packageManager": "npm@11.13.0",
   "overrides": {
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
