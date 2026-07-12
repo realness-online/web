@@ -3,6 +3,7 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { is_release_junk } from './release-junk.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const project_root = path.join(__dirname, '..')
@@ -28,6 +29,8 @@ const git_commit = () => {
 }
 
 /**
+ * Walk dist/, remove OS junk so the tree matches what Hosting will upload,
+ * and hash the remaining files.
  * @param {string} dir
  * @param {string} base_dir
  * @returns {Record<string, string>}
@@ -37,11 +40,19 @@ const hash_dist_files = (dir, base_dir = dist_dir) => {
   const files = {}
   for (const name of fs.readdirSync(dir)) {
     const full_path = path.join(dir, name)
+    const relative = path
+      .relative(base_dir, full_path)
+      .split(path.sep)
+      .join('/')
+    if (is_release_junk(relative)) {
+      fs.rmSync(full_path, { recursive: true, force: true })
+      continue
+    }
     const stat = fs.statSync(full_path)
     if (stat.isDirectory())
       Object.assign(files, hash_dist_files(full_path, base_dir))
     else {
-      const url_path = `/${path.relative(base_dir, full_path).split(path.sep).join('/')}`
+      const url_path = `/${relative}`
       if (url_path === `/${manifest_name}`) continue
       files[url_path] = sha256_file(full_path)
     }

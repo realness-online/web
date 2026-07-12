@@ -54,7 +54,7 @@ Review Purpose:     Pre-launch first pass before attorney sign-off
 ~~**H-1 · DMCA designated agent not registered.**~~ **RESOLVED — deferred.**
 The Terms invoke DMCA safe harbor and name `security@realness.online` as the
 agent, but §512 safe harbor requires registering a designated agent with the
-U.S. Copyright Office (and a $6 filing). Moved to `docs/parked.md` — not worth
+U.S. Copyright Office (and a $6 filing). Moved to `docs/plans/parked.md` — not worth
 the paperwork until there are users posting content.
 
 ~~**H-2 · Arbitration + class-action waiver enforceability.**~~ **RESOLVED — removed.**

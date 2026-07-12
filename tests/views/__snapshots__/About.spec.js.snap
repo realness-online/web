@@ -265,6 +265,17 @@ exports[`About > Rendering > renders about view 1`] = `
         />
         <p>
           <strong>
+            Talk off-app
+          </strong>
+           Your number lets friends and moderators reach you where you already talk. Realness is for showing up; conversation continues in your messenger. 
+        </p>
+      </li>
+      <li>
+        <icon-stub
+          name="finished"
+        />
+        <p>
+          <strong>
             Focused
           </strong>
            

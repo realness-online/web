@@ -45,6 +45,8 @@
 
   mounted(() => {
     if (!can_render_button.value) return
+    // Fallback for Safari; lint targets the bare API name, not the guard.
+    // eslint-disable-next-line compat/compat -- guarded by || setTimeout
     const idle = window.requestIdleCallback || (cb => setTimeout(cb, 1))
     idle(load_stripe_buy_button)
   })

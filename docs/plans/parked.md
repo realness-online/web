@@ -2,7 +2,7 @@
 
 _Created 2026-06-28. Items from the finishing-touches plan that are explicitly
 deferred until there are active users, revenue, or other triggering signal.
-See `docs/finishing-touches-plan.md` for the full plan and context._
+See `docs/plans/finishing-touches-plan.md` for the full plan and context._
 
 ---
 
@@ -23,7 +23,7 @@ revenue or active users to insure against.
 **DBA filing.** "Scott Fryxell, doing business as Realness" may require a
 fictitious business name filing in California. Revisit when there's revenue.
 
-**Outside counsel / attorney review.** The `docs/attorney-review.md` package
+**Outside counsel / attorney review.** The `docs/plans/attorney-review.md` package
 (H-1–H-4, M-8) is ready for a California attorney when the time comes. No
 outside counsel needed until the service is live with users.
 
@@ -49,3 +49,34 @@ the manifest; a service-worker handler stashes the file and redirects to
 means the POST handler needs `importScripts` (same pattern as
 `public/push-handlers.js`) or a runtime route. Deferred — no iOS Safari
 support, so it only helps Android and installed desktop Chromium.
+
+---
+
+## Non-blocking refinements (post-launch backlog)
+
+**Storage listing size.** Firebase's list API response (~51 KB, ungzipped by
+Google) is dominated by layer-variant files (`*-bold.svg`, shadows, cutouts)
+filtered client-side in `Directory.js`. Moving variants into a subfolder would
+let the delimiter exclude them.
+
+---
+
+## Moderator tooling (post-release)
+
+**Moderator logs and admin UI** `L` — optional moderator-facing surface for
+investigating instance state, modeled on seeq-app (`/admin`, `docs/logging.md`).
+Realness is per-instance: scope to the moderator (`VITE_ADMIN_ID`), not a
+central platform admin. Only relevant when `realness-functions` is deployed.
+Candidates:
+
+- **Cloud Logging viewer** — structured JSON from `realness-functions`
+  (`log_debug` / `log_warn` / `log_error` pattern); client errors via callables
+  (`log`, `error`); `list_logs` querying Cloud Logging. Table with severity
+  filter, expandable rows, last-24h scroll.
+- **Sybil / sign-in** — VoIP denial log from `check_phone_integrity`; optional
+  `integrity.suspicious` review queue.
+- **Push** — broadcast results from scheduled `notification` (sent / pruned /
+  failed).
+- **Capabilities** — live `/capabilities` manifest vs what the app shows.
+
+Write `docs/moderator-admin-plan.md` before build.

@@ -5,7 +5,7 @@ groups of geology cells that become their own thing within a poster, separable f
 A poster has a few subjects (e.g. _Face_, _Flower_, _Foreground_).
 
 - App: `work/realness`
-- Supersedes the "finish mask functionality" item in `docs/finishing-touches-plan.md`.
+- Supersedes the "finish mask functionality" item in `docs/plans/finishing-touches-plan.md`.
 
 ## Concept
 
