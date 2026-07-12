@@ -18,6 +18,11 @@ const routes = [
   { path: '/sign-on', redirect: '/account' },
   {
     path: '/pricing',
+    redirect: '/pricing/endorse',
+    meta: { support: true }
+  },
+  {
+    path: '/pricing/:tier',
     component: () => import('@/views/Pricing'),
     meta: { support: true }
   },
