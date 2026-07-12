@@ -160,10 +160,7 @@
     <article>
       <header>
         <h1>Pricing</h1>
-        <p>
-          Realness is free to use. It costs $5, and stays free to use, with paid
-          tiers for teams and organizations.
-        </p>
+        <p>Realness is free to use — but it has a price, if you want one.</p>
       </header>
 
       <nav aria-label="Pricing tiers">
@@ -177,9 +174,6 @@
       </nav>
 
       <section aria-label="Tier carousel">
-        <button type="button" aria-label="Previous tier" @click="prev">
-          ‹
-        </button>
         <transition name="slide" mode="out-in">
           <article :key="active_tier.slug">
             <h2>{{ active_tier.title }}</h2>
@@ -201,7 +195,6 @@
             </menu>
           </article>
         </transition>
-        <button type="button" aria-label="Next tier" @click="next">›</button>
       </section>
     </article>
   </section>
@@ -269,33 +262,9 @@
       }
 
       & > section[aria-label='Tier carousel'] {
-        display: flex;
-        align-items: center;
-        gap: base-line * 0.5;
         touch-action: pan-y;
 
-        & > button[aria-label='Previous tier'],
-        & > button[aria-label='Next tier'] {
-          flex: none;
-          width: base-line * 1.5;
-          height: base-line * 1.5;
-          border: round((base-line * 0.1), 2) solid var(--accent);
-          border-radius: 50%;
-          background: none;
-          color: var(--accent);
-          font-size: larger;
-          line-height: 1;
-          cursor: pointer;
-
-          &:hover,
-          &:focus-visible {
-            background-color: unquote('color-mix(in srgb, var(--accent) 12%, transparent)');
-          }
-        }
-
         & > article {
-          flex: 1;
-          min-width: 0;
           display: flex;
           flex-direction: column;
           padding: base-line;

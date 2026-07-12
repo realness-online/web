@@ -20,7 +20,7 @@ describe('@/views/Pricing', () => {
     expect(wrapper.find('section#pricing.page').exists()).toBe(true)
     expect(wrapper.find('h1').text()).toBe('Pricing')
     expect(wrapper.text()).toContain('Realness is free to use')
-    expect(wrapper.text()).toContain('It costs $5, and stays free to use')
+    expect(wrapper.text()).toContain('it has a price, if you want one')
   })
 
   it('renders tier navigation with all three tiers', () => {
@@ -48,15 +48,6 @@ describe('@/views/Pricing', () => {
     expect(articles[0].text()).toContain('Commercial use')
   })
 
-  it('renders prev/next buttons for the carousel', () => {
-    const wrapper = mount_pricing()
-    const carousel = wrapper.find("section[aria-label='Tier carousel']")
-    expect(carousel.find("button[aria-label='Previous tier']").exists()).toBe(
-      true
-    )
-    expect(carousel.find("button[aria-label='Next tier']").exists()).toBe(true)
-  })
-
   it('renders one sponsor cta for the active tier', () => {
     const wrapper = mount_pricing()
     expect(wrapper.findAll('sponsor-cta-stub')).toHaveLength(1)
@@ -67,20 +58,20 @@ describe('@/views/Pricing', () => {
     expect(wrapper.find("menu[aria-label='Actions']").exists()).toBe(false)
   })
 
-  // With the out/in transition, the DOM is mid-swap after a click, so these
-  // tests assert on the component's reactive state — the source of truth for
-  // which tier is active — rather than the transitioning DOM.
-  it('advances to the next tier on next click', async () => {
+  // Tier switching drives through go_to() (tier nav links and touch swipe
+  // both call it); exercise it directly against the component's reactive
+  // state rather than the transitioning DOM.
+  it('advances to the next tier via next()', async () => {
     const wrapper = mount_pricing()
-    await wrapper.find("button[aria-label='Next tier']").trigger('click')
+    wrapper.vm.next()
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.active_index).toBe(1)
     expect(wrapper.vm.active_tier.slug).toBe('teams')
   })
 
-  it('wraps around to the last tier on prev from the first', async () => {
+  it('wraps around to the last tier via prev() from the first', async () => {
     const wrapper = mount_pricing()
-    await wrapper.find("button[aria-label='Previous tier']").trigger('click')
+    wrapper.vm.prev()
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.active_index).toBe(2)
     expect(wrapper.vm.active_tier.slug).toBe('enterprise')
@@ -88,7 +79,7 @@ describe('@/views/Pricing', () => {
 
   it('exposes the actions flag for the teams tier when active', async () => {
     const wrapper = mount_pricing()
-    await wrapper.find("button[aria-label='Next tier']").trigger('click')
+    wrapper.vm.next()
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.active_tier.has_actions).toBe(true)
   })
