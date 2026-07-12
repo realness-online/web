@@ -1,8 +1,5 @@
 # Changelog
 
-User-visible and infrastructure changes to [realness.online](https://realness.online).
-Newest first. The launch punch list lives in `docs/finishing-touches-plan.md`.
-
 ## 2026-07-11 — v2.5.9
 
 - **Materials-and-roles design system** — palette converted to OKLCH (fixing
