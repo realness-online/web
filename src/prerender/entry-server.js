@@ -19,6 +19,7 @@ const routes = [
   { path: '/about', component: About, meta: { support: true } },
   { path: '/docs', component: Documentation, meta: { support: true } },
   { path: '/pricing', component: Pricing, meta: { support: true } },
+  { path: '/pricing/:tier', component: Pricing, meta: { support: true } },
   { path: '/terms', component: Terms, meta: { support: true } },
   { path: '/privacy', component: Privacy, meta: { support: true } },
   { path: '/sign-on', redirect: '/account' },
