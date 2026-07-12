@@ -64,6 +64,11 @@
 <style lang="stylus">
   stripe-buy-button {
     display: inline-block;
+    // Reserve the rendered button height before Stripe's iframe loads, so the
+    // surrounding layout (and the tier card's height) doesn't reflow when the
+    // button mounts. 223px is the measured Buy Button height.
+    min-height: 223px;
+    min-width: 160px;
   }
   a.checkout {
     display: inline-block;
