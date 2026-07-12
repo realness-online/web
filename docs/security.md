@@ -143,8 +143,10 @@ layered:
   see seeq-app's `phone-fraud-prevention-plan.md`).
 - **Moderation** — moderators are at the center of Realness by design; they keep
   instances human and catch what slips through.
-- **Payment** (optional) — the sponsor tier is inherently Sybil-resistant (every
-  fake costs a real charge) for instances that want a harder gate.
+- **Payment** (voluntary) — the sponsor tier is a voluntary license purchase with
+  anonymous Stripe checkout; Stripe collects email on every transaction for
+  receipt and refund purposes. Not a Sybil gate — anyone can pay without an
+  account.
 
 ## Data & trust boundaries
 
