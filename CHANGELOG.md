@@ -3,6 +3,65 @@
 User-visible and infrastructure changes to [realness.online](https://realness.online).
 Newest first. The launch punch list lives in `docs/finishing-touches-plan.md`.
 
+## 2026-07-11 — v2.5.9
+
+- **Materials-and-roles design system** — palette converted to OKLCH (fixing
+  an inverted OKLCH→RGB conversion matrix along the way), materials became
+  static CSS custom properties with derived lighten/fill/darken weights, and
+  a new `--info` role gives status messaging a neutral color distinct from
+  `--accent`. Backed by automated contrast/harmony guardrail tests so future
+  palette tuning can't silently break contrast. (`src/style/variables.styl`,
+  `src/utils/color-converters.js`, `docs/color-system.md`,
+  `tests/style/color-harmony.spec.js`,
+  `tests/style/oklch-conversion-accuracy.spec.js`)
+- **`/colors` view** — the material/role palette renders live in-app as a
+  design tool, not just docs: swatches, roles, a "Geology over surfaces"
+  demo, and a Depth demo wired to live custom properties. Widened alongside
+  `/account` for a less cramped content container.
+  (`src/views/Colors.vue`, `src/router.js`)
+- **Stylus → native CSS migration** — element styles that don't need a
+  preprocessor mixin or a derived breakpoint moved to plain `.css`; Stylus
+  stays only where real mixins or breakpoint math are needed (`dialog`,
+  `nav`, `form-controls`, `svg`). (`src/style/`)
+- **Shared `focus-ring()` mixin** — fixed several places where keyboard
+  focus indicators were silently dropped. (`src/style/mixins/standards.styl`,
+  `src/App.vue`, `profile/as-dialog-preferences.vue`,
+  `thoughts/as-feed-toggle.vue`)
+- **Realness mosaic logo** — the app icon/logo went from a placeholder glyph
+  to a mosaic-style mark: palette colors, smalti masks, an even gutter, and
+  physical, interaction-driven motion — per-tile ambient drift, a two-palette
+  color cycle, and a press-to-flatten snap that rewinds to zero via the Web
+  Animations API instead of resuming mid-cycle. Tile markup was later
+  refactored onto `data-tile` attributes with a `<use>` overlay for the press
+  color-snap, and press handling moved to pointer capture so it's reliable on
+  touch, not just mouse `:active`. (`src/components/icon.vue`,
+  `public/icons.svg`, `scripts/generate-icons.js`)
+- **Pricing split into a per-tier carousel** — `/pricing` now redirects to
+  `/pricing/endorse`, with `/pricing/:tier` driving which of the three tiers
+  (Endorse, Teams, Organizations) is shown; tier nav links, prev/next
+  buttons, and touch swipe all stay in sync with the URL.
+  (`src/views/Pricing.vue`, `src/router.js`, `src/prerender/entry-server.js`)
+- **Switched from a source-available license to GPL-2.0** — closes the gap
+  that let closed forks exist under the old terms, while keeping
+  self-hosting/redistribution as already granted. The "Realness" name/logos
+  stay trademarked outside the GPL grant; commercial tiers become a support
+  and indemnification contract, not a license gate. `src/potrace/`, a JS
+  port of Peter Selinger's potrace via node-potrace, now carries proper
+  GPL-2.0 attribution. (`LICENSE`, `README.md`, `package.json`,
+  `src/potrace/README.md`)
+- **Drag-and-drop image upload** — dropping a photo (or SVG) onto the app
+  queues it the same way paste already does; dropped/pasted SVGs now resize
+  through the vectorize rasterize path instead of failing the raster-only
+  assumption the resize step made before. (`src/App.vue`,
+  `src/use/vectorize.js`)
+- Small fixes along the way: an invisible compose caret in dark mode, a
+  malformed `--basalt-transparent` reference in the sign-out dialog, `h6`
+  font-size pinned constant by a `clamp()` bound-order bug, button/checkbox
+  styling leaks on the Colors Roles demo, a `display: block` override
+  clobbering the Colors header, the sponsor Buy Button reflowing tier cards
+  while its iframe loads, and the generated support-page TOC no longer
+  tracked in git (built at `dev` start instead).
+
 ## 2026-07-04 — v2.5.8
 
 - **Instance capabilities** — the app probes `/capabilities` on its own
