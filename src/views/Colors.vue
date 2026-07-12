@@ -858,6 +858,7 @@
       font-size: smaller;
     }
     & > header {
+      display inherit;
       max-width: page-width-max;
       margin: 0 auto;
       padding: base-line base-line base-line;
