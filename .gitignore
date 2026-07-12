@@ -13,6 +13,7 @@ node_modules
 /public/**.wasm
 /coverage/
 /artifacts/
+/src/prerender/toc.js
 /.deno_lsp/
 /dist
 /storage/
