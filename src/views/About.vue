@@ -337,6 +337,14 @@
         <li>
           <icon name="finished" />
           <p>
+            <strong>Talk off-app</strong> Your number lets friends and
+            moderators reach you where you already talk. Realness is for showing
+            up; conversation continues in your messenger.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
             <strong>Focused</strong> <b class="no">Email</b>,
             <b class="no">Likes</b>, <b class="no">Links</b>, or
             <b class="no">Scraping</b> - just posters and people you care about.

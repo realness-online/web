@@ -10,7 +10,7 @@ svg {
   display: block;
   stroke-width: 0;
   & use:active {
-    stroke-width: 3px;
+    stroke-width: round(base-line / 7, 2);
     user-select: all;
     fill: var(--chalk);
     transition-property: padding, fill;

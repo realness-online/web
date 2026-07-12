@@ -38,6 +38,10 @@
           p: "Everyone's posters and statements, together."
         },
         {
+          strong: 'Talk off-app',
+          p: 'Your number lets people reach you in the messenger you already use.'
+        },
+        {
           strong: 'Commercial use',
           p: 'Use posters in client and commercial work.'
         }
@@ -64,7 +68,11 @@
         },
         {
           strong: 'Shared tools',
-          p: 'Thoughts, statements, and a phonebook for your community.'
+          p: 'Thoughts, statements, and people you can reach by phone.'
+        },
+        {
+          strong: 'Talk off-app',
+          p: 'Members keep talking in messengers they already use. Your instance is for presence.'
         },
         {
           strong: 'No per-seat pricing',
@@ -94,6 +102,10 @@
         {
           strong: 'Same workflow',
           p: 'Posters, exports, and shortcuts for every member.'
+        },
+        {
+          strong: 'Talk off-app',
+          p: 'People connect by phone and keep talking in messengers they already use.'
         },
         {
           strong: 'Scale hosting',

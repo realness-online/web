@@ -42,9 +42,9 @@ standard-shadow($nothin=boop) {
 // One visible keyboard-focus treatment, reached for instead of each
 // component inventing (or silently dropping) its own. Uses --accent so it
 // tracks whichever role rebrand is live in either scheme.
-focus-ring($offset=2px) {
+focus-ring($offset=round(base-line / 10, 2)) {
   &:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: round(base-line / 10, 2) solid var(--accent);
     outline-offset: $offset;
   }
 }

@@ -316,6 +316,6 @@
     </pattern>
   </defs>
   <!-- <rect id="realness-extra" x="-20" y="-20" width="100%" height="100%" fill="url(#realness-animated-pattern)" /> -->
-  <rect id="page-background" x="-904" y="-904" width="2000" height="2000" />
+  <!-- <rect id="page-background" x="-904" y="-904" width="2000" height="2000" /> -->
   <use href="#realness" x="-20" y="-20" width="232" height="232" />
 </svg>

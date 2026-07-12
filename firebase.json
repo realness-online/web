@@ -2,7 +2,14 @@
   "storage": { "rules": "storage.rules" },
   "hosting": {
     "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/Thumbs.db",
+      "**/desktop.ini",
+      "**/__MACOSX/**"
+    ],
     "rewrites": [
       { "source": "/capabilities", "function": "capabilities" },
       {
