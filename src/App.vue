@@ -483,6 +483,15 @@
     const queued = await queue_supported_files(files)
     if (queued) event.preventDefault()
   }
+  /** @param {DragEvent} event */
+  const drop_image = async event => {
+    if (!event.dataTransfer?.files?.length) return
+    event.preventDefault()
+    const files = Array.from(event.dataTransfer.files)
+    await queue_supported_files(files)
+  }
+  /** @param {DragEvent} event */
+  const allow_drop = event => event.preventDefault()
 
   mounted(() => {
     if (window.matchMedia('(display-mode: standalone)').matches)
@@ -497,11 +506,15 @@
     window.addEventListener('online', online)
     window.addEventListener('offline', offline)
     window.addEventListener('paste', paste_image)
+    window.addEventListener('dragover', allow_drop)
+    window.addEventListener('drop', drop_image)
   })
   dismount(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
     window.removeEventListener('paste', paste_image)
+    window.removeEventListener('dragover', allow_drop)
+    window.removeEventListener('drop', drop_image)
     dismount_vectorize()
   })
 </script>

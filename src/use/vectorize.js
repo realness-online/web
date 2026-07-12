@@ -125,6 +125,28 @@ export const resize_image = (image, target_size = IMAGE.TARGET_SIZE) => {
  * @returns {Promise<{blob: Blob, width: number, height: number}>}
  */
 export const resize_to_blob = async file => {
+  // SVG reuses the same rasterize path as the vectorize step (handles
+  // viewBox-only files via the default dimension fallback).
+  if (
+    file.type === 'image/svg+xml' ||
+    file.name.toLowerCase().endsWith('.svg')
+  ) {
+    const image_data = await rasterize_svg(file)
+    const canvas = new OffscreenCanvas(image_data.width, image_data.height)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Failed to get 2d context')
+    ctx.putImageData(image_data, 0, 0)
+    const blob = await canvas.convertToBlob({
+      type: 'image/jpeg',
+      quality: 0.7
+    })
+    return {
+      blob,
+      width: image_data.width,
+      height: image_data.height
+    }
+  }
+
   const lower_name = file.name.toLowerCase()
   const needs_fallback =
     file.type === 'image/tiff' ||

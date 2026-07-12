@@ -1110,6 +1110,14 @@ describe('App.vue', () => {
         'offline',
         expect.any(Function)
       )
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'dragover',
+        expect.any(Function)
+      )
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'drop',
+        expect.any(Function)
+      )
       new_wrapper.unmount()
     })
   })
@@ -1124,6 +1132,14 @@ describe('App.vue', () => {
       )
       expect(remove_listener_spy).toHaveBeenCalledWith(
         'offline',
+        expect.any(Function)
+      )
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'dragover',
+        expect.any(Function)
+      )
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'drop',
         expect.any(Function)
       )
     })
