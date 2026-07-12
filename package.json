@@ -19,7 +19,7 @@
   "description": "Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities.",
   "author": "Scott Fryxell <sfryxell@gmail.com>",
   "scripts": {
-    "dev": "vp dev",
+    "dev": "node scripts/generate-toc.js && vp dev",
     "check": "vp check",
     "certs": "./generate-certs.sh",
     "dev:workers": "node scripts/watch-workers.js",

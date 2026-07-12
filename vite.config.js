@@ -67,7 +67,8 @@ export default defineConfig({
       '**/docs/generated/**',
       '**/tests/**',
       'artifacts/**',
-      'src/wasm/tracer.js'
+      'src/wasm/tracer.js',
+      'src/prerender/toc.js'
     ],
     rules: {
       'compat/compat': 'error',
