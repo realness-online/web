@@ -6,11 +6,11 @@
     aria-hidden="true">
     <path
       data-glint="cutout"
-      style="fill: #2a2925; --glint-delay: calc(var(--glint-cycle) * 0.0)"
+      style="fill: #2a2925; --glint-delay: calc(var(--glint-cycle) * 0)"
       d="m129 116 3 4 11-1v1l-7 1v6l7-2 3-1v6l-17-1v-4Z" />
     <path
       data-glint="cutout"
-      style="fill: #23211d; --glint-delay: calc(var(--glint-cycle) * 0.0)"
+      style="fill: #23211d; --glint-delay: calc(var(--glint-cycle) * 0)"
       d="M162 75h4v13h-2v3h-3v-3h2v-8h-6l-1 4-5 4v-6l-3-1 6-2 1-2Z" />
     <path
       data-glint="cutout"
@@ -98,7 +98,7 @@
       d="M444 284h4v5l-9 4-3 7-3-1 1-5 2-7h4l1-2Z" />
     <path
       data-glint="cutout"
-      style="fill: #33322e; --glint-delay: calc(var(--glint-cycle) * 1.0)"
+      style="fill: #33322e; --glint-delay: calc(var(--glint-cycle) * 1)"
       d="M392 376h6l-1 4h-6l-2 9h-5l-1-3 2-1 2-7 5 1Z" />
   </g>
 </template>
