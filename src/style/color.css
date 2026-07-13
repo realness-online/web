@@ -15,7 +15,7 @@
   /* Content on top of an emphasis-toned or dark surface (button hover fills,
      toggle-switch knobs). Deliberately not scheme-split: the surfaces it sits
      on already flip per-scheme, so this stays the same near-white either way. */
-  --on-emphasis: var(--chalk);
+  --contrast: var(--chalk);
 
   accent-color: var(--emphasis);
 }

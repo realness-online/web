@@ -266,7 +266,7 @@
             &:hover,
             &:focus-visible {
               background: var(--emphasis);
-              color: var(--on-emphasis);
+              color: var(--contrast);
             }
           }
         }
@@ -302,7 +302,7 @@
               &:hover,
               &:focus-visible {
                 background: var(--emphasis);
-                color: var(--on-emphasis);
+                color: var(--contrast);
               }
             }
           }
