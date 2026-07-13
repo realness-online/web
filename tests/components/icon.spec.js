@@ -17,7 +17,8 @@ describe('@/components/icon', () => {
     // don't reliably run CSS/SMIL animations
     it('The realness logo, inline and animated', () => {
       const wrapper = shallowMount(icon, {
-        props: { name: 'realness' }
+        props: { name: 'realness' },
+        global: { stubs: { SmaltiGlints: false } }
       })
       expect(wrapper.find('svg.icon').exists()).toBe(true)
       expect(wrapper.find('svg').classes()).toContain('realness')
@@ -27,6 +28,7 @@ describe('@/components/icon', () => {
       ).toBe(true)
       expect(wrapper.findAll('path[data-tile]')).toHaveLength(6)
       expect(wrapper.findAll('svg > use[data-tile]')).toHaveLength(6)
+      expect(wrapper.findAll('path[data-glint]').length).toBeGreaterThan(20)
     })
   })
 

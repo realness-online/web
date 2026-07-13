@@ -8,6 +8,7 @@ import { nextTick } from 'vue'
 
 import {
   animate,
+  color_cycle,
   drama,
   drama_back,
   drama_front,
@@ -123,7 +124,8 @@ describe('@/utils/preference', () => {
       ['sediment', sediment],
       ['menu', menu],
       ['footer_visible', footer_visible],
-      ['atmosphere_enabled', atmosphere_enabled]
+      ['atmosphere_enabled', atmosphere_enabled],
+      ['color_cycle', color_cycle]
     ])('%s defaults to true', (_name, ref) => {
       expect(ref.value).toBe(true)
     })
@@ -194,6 +196,7 @@ describe('@/utils/preference', () => {
   describe('reset_preferences', () => {
     it('resets all preferences to their defaults', () => {
       animate.value = true
+      color_cycle.value = false
       drama.value = true
       shadow.value = false
       stroke.value = false
@@ -238,6 +241,7 @@ describe('@/utils/preference', () => {
       reset_preferences()
 
       expect(animate.value).toBe(false)
+      expect(color_cycle.value).toBe(true)
       expect(drama.value).toBe(false)
       expect(drama_back.value).toBe(false)
       expect(drama_front.value).toBe(false)
