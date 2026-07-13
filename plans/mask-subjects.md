@@ -1,13 +1,23 @@
-# Mask Subjects — plan
+# Mask Subjects
+
+Status: active
+Related: finishing-touches — "finish mask functionality"
+
+## Goal
 
 Finish the mask-pen feature: turn an ephemeral path selection into named **subjects** —
 groups of geology cells that become their own thing within a poster, separable from the rest.
-A poster has a few subjects (e.g. _Face_, _Flower_, _Foreground_).
+A poster has a few subjects (e.g. Face, Flower, Foreground).
 
-- App: `work/realness`
-- Supersedes the "finish mask functionality" item in `docs/plans/finishing-touches-plan.md`.
+## Current state
 
-## Concept
+Pen tool exists with a single `selected` set; mobile zoom (dependency) has shipped.
+Persistence, named subjects, and export into the layer model are incomplete.
+Supersedes the mask line in `finishing-touches.md`.
+
+## Approach
+
+### Concept
 
 - A geology **cell** is one `<path>` in a geology layer symbol, addressed positionally as
   `"<layer>:<index>"` (e.g. `rocks:3`). Stable because a poster's layers don't change once
@@ -16,7 +26,7 @@ A poster has a few subjects (e.g. _Face_, _Flower_, _Foreground_).
 - Subjects are referenced, never copied — we store the lightweight `layer:index` pointers,
   not path geometry (keeps the index file tiny; geometry already lives in the layer files).
 
-## Data shape (persisted in the poster index file)
+### Data shape (persisted in the poster index file)
 
 SVG-native microdata in `<metadata>` so it survives the HTML-context parse (`hydrate` →
 `createContextualFragment`). No HTML breakout-list tags; `item.js` reads `<desc>` via its
@@ -40,7 +50,7 @@ SVG-native microdata in `<metadata>` so it survives the HTML-context parse (`hyd
 - Parses to `poster.subject = [{ name, members }]`; normalized in memory to
   `subjects = [{ id, name, keys: Set<string> }]`.
 
-## Pieces
+### Pieces
 
 1. **Model** (`src/use/mask-pen.js`) — generalize the single `selected` Set into a list of
    named subjects + an active subject. Painting toggles cells into the active subject;
@@ -49,14 +59,14 @@ SVG-native microdata in `<metadata>` so it survives the HTML-context parse (`hyd
    `add/select/rename/remove` subject; `clear` empties the active subject.
 2. **Persistence** — serialize subjects into the index `<metadata>` on save; parse back via
    `get_item` on load (whitespace-split `members`). Round-trips `layer:index` references only.
-3. **Render / separate** (`as-svg` / `as-mask-pen`) — base geology renders _minus_ cells
+3. **Render / separate** (`as-svg` / `as-mask-pen`) — base geology renders minus cells
    claimed by subjects; each subject renders as its own `<g itemtype="/subject">` resolved
    from the cells, so it is a distinct, independently-transformable group. v1 stops at
    making them real/named/separable groups; actually moving a subject is v2.
 4. **UI** (`as-figure` mask toolbar) — name field + a small list of the poster's subjects
    (re-select / rename / delete), active subject indicated.
 
-## Out of scope (v2)
+## Out of scope
 
 - Moving / offsetting / animating a subject (2D drag, or per-subject depth in 3D).
 - Potrace-smoothed silhouette outline (only if we later want a soft boundary look).

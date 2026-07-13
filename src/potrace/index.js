@@ -1539,7 +1539,10 @@ class Potrace {
 
       const rangeStart = Math.round(blackOnWhite ? nextValue + 1 : threshold)
       const rangeEnd = Math.round(blackOnWhite ? threshold : nextValue - 1)
-      const factor = index / (colorStops_length - 1)
+      // `colorStops_length - 1` is 0 for a single color stop; index is
+      // always 0 in that case too, so the divisor only needs to avoid 0/0 —
+      // factor should still land at 0 (the most-saturated end).
+      const factor = index / (colorStops_length - 1 || 1)
       const intervalSize = rangeEnd - rangeStart
       const stats = histogram
         ? histogram.get_stats(rangeStart, rangeEnd)

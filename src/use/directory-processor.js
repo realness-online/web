@@ -66,7 +66,10 @@ export const use = () => {
           if (!poster?.optimized) {
             const { optimize: optimize_poster, vector: vector_ref } =
               use_optimizer(completed_poster)
-            if (!poster) return
+            if (!poster) {
+              console.error(`❌ No vector produced for ${name}, skipping`)
+              continue
+            }
             optimize_poster()
             if (!vector_ref.value?.optimized)
               await new Promise(resolve => {
@@ -86,7 +89,10 @@ export const use = () => {
           }
 
           const final_poster = completed_poster.value
-          if (!final_poster) return
+          if (!final_poster) {
+            console.error(`❌ No final poster for ${name}, skipping`)
+            continue
+          }
           const svg_data = final_poster.toString()
           const poster_name = poster_filename(name)
           const poster_file = await posters_dir.getFileHandle(poster_name, {

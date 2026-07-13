@@ -107,12 +107,6 @@ export const use = () => {
     return -1
   })
 
-  const focusable = computed(
-    () =>
-      // if (!props.tabable) return 0
-      -1
-  )
-
   const query = add => {
     const base = vector.value
       ? as_query_id(vector.value.id)
@@ -195,7 +189,6 @@ export const use = () => {
     focus,
     focus_cutout,
     tabindex,
-    focusable,
     is_hovered,
     x,
     y,

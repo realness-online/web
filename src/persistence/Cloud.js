@@ -145,7 +145,6 @@ export const Cloud = superclass =>
         const to_archive = sorted_items.splice(-SIZE.MID)
         const path = as_path_parts(this.id)
         const [author] = path
-        let had_partial_failure = false
 
         const archive_poster = async timestamp => {
           if (item_type === 'posters' && author) {
@@ -179,14 +178,33 @@ export const Cloud = superclass =>
             ]
             const results = await Promise.all(move_promises.map(m => m.promise))
             const failed = move_promises.filter((_, i) => !results[i])
-            if (failed.length > 0) {
-              if (failed.length < move_promises.length)
-                had_partial_failure = true
+            const succeeded = move_promises.filter((_, i) => results[i])
+            if (failed.length > 0 && succeeded.length > 0) {
+              // Partial failure: undo the components that did archive so this
+              // poster stays fully consistent (un-archived) instead of split
+              // across both locations.
+              await Promise.all(
+                succeeded.map(m =>
+                  move(
+                    m.type,
+                    timestamp,
+                    archive_directory,
+                    `/${author}`,
+                    'restore'
+                  )
+                )
+              )
+              console.error(
+                `[optimize] Rolled back partial archive for poster ${timestamp}:`,
+                failed.map(f => f.type)
+              )
+              return false
+            }
+            if (failed.length > 0)
               console.error(
                 `[optimize] Failed to move components for poster ${timestamp}:`,
                 failed.map(f => f.type)
               )
-            }
             return results.every(success => success === true)
           }
 
@@ -211,8 +229,7 @@ export const Cloud = superclass =>
         if (successfully_archived_count > 0) {
           const check_directory = await load_directory_from_network(this.id)
           const check_items = check_directory?.items ?? []
-          if (!had_partial_failure && check_items.length > SIZE.MAX)
-            await this.optimize()
+          if (check_items.length > SIZE.MAX) await this.optimize()
         }
       }
     }

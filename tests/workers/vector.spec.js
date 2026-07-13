@@ -134,4 +134,21 @@ describe('vector worker', () => {
       expect(result.gradients).toHaveProperty('radial')
     })
   })
+
+  describe('worker message listener', () => {
+    it('posts an error reply instead of hanging when route_message throws', async () => {
+      as_paths_spy.mockImplementation(() => {
+        throw new Error('trace failed')
+      })
+
+      self.dispatchEvent(
+        new MessageEvent('message', {
+          data: { route: 'make:vector', image_data: mock_image }
+        })
+      )
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(postMessage_spy).toHaveBeenCalledWith({ error: 'trace failed' })
+    })
+  })
 })

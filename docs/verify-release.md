@@ -2,7 +2,7 @@
 
 Realness ships a **build manifest** - a JSON file listing every file in `dist/` and its SHA-256 checksum. Anyone can confirm that `https://realness.online` serves the same bytes as a tagged release.
 
-**Roadmap:** A fuller "verify any instance" tool (CLI, `/verify` page, release trust) is planned in [verify-instance-plan.md](./verify-instance-plan.md).
+**Roadmap:** A fuller "verify any instance" tool (CLI, `/verify` page, release trust) is planned in [verify-instance.md](../plans/verify-instance.md).
 
 ## What this proves
 

@@ -160,4 +160,25 @@ describe('create_poster_scene', () => {
     const settings = controller.get_settings()
     expect(settings.mosaic_spread).toBe(0.42)
   })
+
+  it('does not produce Infinity/NaN geometry for a zero-height poster', async () => {
+    const { build_poster_layer_geometry } =
+      await import('@/3d/scenes/build-poster-layer-geometry.js')
+    vi.mocked(build_poster_layer_geometry).mockReturnValueOnce(
+      new THREE.PlaneGeometry(1, 1)
+    )
+    const { parse_svg_layers_from_context } =
+      await import('@/3d/utils/load-svg-layers.js')
+    vi.mocked(parse_svg_layers_from_context).mockReturnValueOnce({
+      width: 100,
+      height: 0,
+      layers: [{ name: 'boulders', paths: [{}] }]
+    })
+
+    const zero_height_controller = create_poster_scene(poster_svg)
+    const mesh = zero_height_controller.scene.getObjectByName('boulders')
+    const positions = mesh.geometry.attributes.position.array
+
+    expect(Array.from(positions).every(Number.isFinite)).toBe(true)
+  })
 })

@@ -73,6 +73,23 @@ describe('@/utils/upload-processor', () => {
     await expect(decompress_html(new Blob(['gz']))).rejects.toBeTruthy()
   })
 
+  it('decompress_html rejects instead of hanging when the worker replies with an error message', async () => {
+    class ErrorReplyWorker {
+      constructor() {
+        setTimeout(() => {
+          this.onmessage?.({ data: { error: 'corrupt data' } })
+        }, 0)
+      }
+      postMessage() {}
+      terminate() {}
+    }
+    vi.stubGlobal('Worker', ErrorReplyWorker)
+
+    await expect(decompress_html(new Blob(['gz']))).rejects.toThrow(
+      'corrupt data'
+    )
+  })
+
   it('prepare_upload_html accepts HTMLElement outerHTML', async () => {
     const worker_ctor = vi.fn().mockImplementation(function FakeWorker() {
       setTimeout(() => {

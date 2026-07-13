@@ -40,6 +40,7 @@
       const { value } = textarea
       textarea.value = `${value.substring(0, start)}\n${value.substring(end)}`
       textarea.selectionStart = textarea.selectionEnd = start + 1
+      thought_text.value = textarea.value
       adjust_height({ target: textarea })
     }
   })

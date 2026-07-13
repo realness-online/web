@@ -14,6 +14,18 @@ import {
 
 // Video encoding constants
 const DEFAULT_FPS = 24
+// Each rendered frame (sampled at FRAMES_PER_SECOND) is repeated this many
+// times during encoding, so the output is a standard 24fps file but paces
+// like ~2x real-time (24 / FRAME_HOLD = 6 unique poses/sec) instead of the
+// distractingly-fast ~8x you'd get from encoding one rendered frame per
+// 24fps tick with no hold.
+const FRAME_HOLD = 4
+// Bitrate is a fixed bits-per-second target, not tied to resolution, so it
+// needs to scale with the canvas pixel count to keep the same bits-per-pixel
+// density — otherwise a bigger canvas just spreads the same bit budget over
+// more pixels instead of looking sharper. 14 Mbps matches the ~1.8x pixel
+// increase from 1080p (8 Mbps) to the current 1440p export target.
+const VIDEO_BITRATE = 14000000
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
 const PROGRESS_HALF = 0.5
@@ -130,7 +142,7 @@ const setup_canvas_and_encoder = (
   try {
     canvas_source = new CanvasSource(canvas, {
       codec: 'avc',
-      bitrate: 2500000,
+      bitrate: VIDEO_BITRATE,
       keyFrameInterval: 1.25,
       latencyMode: 'quality'
     })
@@ -271,17 +283,17 @@ const apply_animation_state = (svg_element, current_time) => {
 }
 
 /**
- * Capture a single SVG frame to canvas
+ * Rasterizes the SVG's animation state at a point in time to an Image,
+ * without drawing it anywhere. Kept separate from drawing so a frame can be
+ * cross-faded against its neighbor instead of only ever drawn on its own.
  * @param {SVGSVGElement} svg_element - SVG element to capture
- * @param {CanvasRenderingContext2D} ctx - Canvas context
  * @param {number} canvas_width - Canvas width
  * @param {number} canvas_height - Canvas height
  * @param {number} current_time - Current animation time
- * @returns {Promise<void>}
+ * @returns {Promise<HTMLImageElement>}
  */
-const capture_svg_frame = async (
+const rasterize_svg_frame = async (
   svg_element,
-  ctx,
   canvas_width,
   canvas_height,
   current_time
@@ -330,13 +342,37 @@ const capture_svg_frame = async (
     img.src = svg_url
   })
 
-  ctx.clearRect(0, 0, canvas_width, canvas_height)
-  ctx.drawImage(img, 0, 0, canvas_width, canvas_height)
-
   URL.revokeObjectURL(svg_url)
-  img.src = ''
   img.onload = null
   img.onerror = null
+  return img
+}
+
+/**
+ * Draws a cross-fade between two already-rasterized frames onto the canvas.
+ * `blend_t` of 0 shows `current_image` only; increasing it fades in
+ * `next_image` on top, so motion between the two sparse samples reads as a
+ * smooth transition instead of a hard hold.
+ * @param {CanvasRenderingContext2D} ctx - Canvas context
+ * @param {{width: number, height: number}} canvas_size - Canvas dimensions
+ * @param {HTMLImageElement} current_image - Rasterized frame to fade from
+ * @param {HTMLImageElement} next_image - Rasterized frame to fade toward
+ * @param {number} blend_t - Blend factor in [0, 1)
+ */
+const draw_blended_frame = (
+  ctx,
+  { width, height },
+  current_image,
+  next_image,
+  blend_t
+) => {
+  ctx.clearRect(0, 0, width, height)
+  ctx.drawImage(current_image, 0, 0, width, height)
+  if (blend_t > 0 && next_image !== current_image) {
+    ctx.globalAlpha = blend_t
+    ctx.drawImage(next_image, 0, 0, width, height)
+    ctx.globalAlpha = 1
+  }
 }
 
 /**
@@ -358,7 +394,10 @@ export const download_video = (blob, filename = 'animation.mov') => {
 }
 
 /**
- * Renders an SVG animation to a video blob at 24fps for download using parallel workers
+ * Renders an SVG animation to a video blob at 24fps for download using parallel workers.
+ * Frames are sampled at FRAMES_PER_SECOND and each is repeated FRAME_HOLD times during
+ * encoding, so the output is a standard 24fps file that paces at ~2x real-time instead
+ * of the ~8x speedup a naive one-rendered-frame-per-tick encoding would produce.
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
@@ -399,41 +438,73 @@ export const render_svg_to_video_blob = async (
   canvas_height = canvas_height + (canvas_height % 2)
 
   const total_frames = Math.floor(duration * FRAMES_PER_SECOND) + 1
+  const encoded_frame_count = total_frames * FRAME_HOLD
 
   const { ctx, output, canvas_source } = setup_canvas_and_encoder(
     canvas_width,
     canvas_height,
     fps,
-    total_frames,
+    encoded_frame_count,
     writable_stream
   )
 
   await output.start()
 
+  // oxlint-disable-next-line no-await-in-loop
+  let current_image = await rasterize_svg_frame(
+    svg_element,
+    canvas_width,
+    canvas_height,
+    0
+  )
+
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
-    const current_time = current_frame / FRAMES_PER_SECOND
+    const is_last_frame = current_frame === total_frames - 1
+    const next_time = (current_frame + 1) / FRAMES_PER_SECOND
 
-    // oxlint-disable-next-line no-await-in-loop
-    await capture_svg_frame(
-      svg_element,
-      ctx,
-      canvas_width,
-      canvas_height,
-      current_time
-    )
+    // Rasterize the next sample now so the held ticks below can cross-fade
+    // toward it instead of holding the current pose rigidly — same number
+    // of rasterizations as before (one per current_frame), just reused as
+    // both the "current" and "next" endpoint across adjacent iterations.
+    let next_image = current_image
+    if (!is_last_frame)
+      // oxlint-disable-next-line no-await-in-loop
+      next_image = await rasterize_svg_frame(
+        svg_element,
+        canvas_width,
+        canvas_height,
+        next_time
+      )
 
-    const timestamp = current_frame / fps
     const frame_duration = 1 / fps
 
-    try {
-      // oxlint-disable-next-line no-await-in-loop
-      await canvas_source.add(timestamp, frame_duration)
-    } catch (error) {
-      console.error(`[Video] Error adding frame ${current_frame}:`, error)
-      canvas_source.close()
-      throw error
+    for (let hold = 0; hold < FRAME_HOLD; hold++) {
+      const blend_t = hold / FRAME_HOLD
+      draw_blended_frame(
+        ctx,
+        { width: canvas_width, height: canvas_height },
+        current_image,
+        next_image,
+        blend_t
+      )
+
+      const encoded_frame_index = current_frame * FRAME_HOLD + hold
+      const timestamp = encoded_frame_index / fps
+
+      try {
+        // oxlint-disable-next-line no-await-in-loop
+        await canvas_source.add(timestamp, frame_duration)
+      } catch (error) {
+        console.error(
+          `[Video] Error adding frame ${encoded_frame_index}:`,
+          error
+        )
+        canvas_source.close()
+        throw error
+      }
     }
 
+    current_image = next_image
     if (on_progress) on_progress(current_frame + 1, total_frames)
   }
 

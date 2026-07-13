@@ -3,7 +3,8 @@ const compress_html = html => {
   return new Promise((resolve, reject) => {
     compressor_worker.onmessage = ({ data: result }) => {
       compressor_worker.terminate()
-      resolve(result.blob)
+      if (result.error) reject(new Error(result.error))
+      else resolve(result.blob)
     }
     compressor_worker.onerror = error => {
       compressor_worker.terminate()
@@ -28,7 +29,8 @@ export const decompress_html = compressed => {
   return new Promise((resolve, reject) => {
     compressor_worker.onmessage = ({ data: result }) => {
       compressor_worker.terminate()
-      resolve(result.html)
+      if (result.error) reject(new Error(result.error))
+      else resolve(result.html)
     }
     compressor_worker.onerror = error => {
       compressor_worker.terminate()

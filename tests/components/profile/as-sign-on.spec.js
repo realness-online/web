@@ -167,6 +167,18 @@ describe('@/components/profile/as-sign-on', () => {
         expect(mock_clear).toHaveBeenCalled()
         expect(window.location.href).toBe('/')
       })
+
+      it('removes every key even with many entries present', async () => {
+        for (let i = 0; i < 20; i++)
+          localStorage.setItem(`key${i}`, `value${i}`)
+        localStorage.me = '/+123'
+
+        await wrapper.vm.clean()
+        await flushPromises()
+
+        for (let i = 0; i < 20; i++)
+          expect(localStorage.getItem(`key${i}`)).toBeFalsy()
+      })
     })
   })
 })

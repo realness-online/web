@@ -135,7 +135,22 @@ export const use_queue = deps => {
         next.resized_blob instanceof ArrayBuffer
           ? new Blob([next.resized_blob], { type: 'image/jpeg' })
           : next.resized_blob
-      if (!image_blob) return
+      if (!image_blob) {
+        await Queue.update(next.id, { status: 'error' })
+        const error_index = queue_items.value.findIndex(
+          item => item.id === next.id
+        )
+        if (error_index !== -1)
+          queue_items.value[error_index] = {
+            ...queue_items.value[error_index],
+            status: 'error'
+          }
+        current_processing.value = null
+        is_processing.value = false
+        mutex.unlock()
+        process_queue()
+        return
+      }
       await vectorize(image_blob, next.id)
       mutex.unlock()
     } catch (error) {

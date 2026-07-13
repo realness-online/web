@@ -242,6 +242,7 @@ export const register_viewer = (canvas, scene_controller) => {
     resize_observer.disconnect()
     intersection_observer.disconnect()
     entry.input.dispose()
+    entry.scene_controller.dispose()
     visible.delete(entry)
     const idx = entries.indexOf(entry)
     if (idx !== -1) entries.splice(idx, 1)

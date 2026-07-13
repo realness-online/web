@@ -1,6 +1,14 @@
-import { describe, it, expect } from 'vite-plus/test'
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test'
 import { mount } from '@vue/test-utils'
+import { reactive } from 'vue'
 import Pricing from '@/views/Pricing.vue'
+
+const mock_route = reactive({ params: {} })
+
+vi.mock('vue-router', () => ({
+  useRoute: () => mock_route,
+  useRouter: () => ({ replace: vi.fn() })
+}))
 
 describe('@/views/Pricing', () => {
   const mount_pricing = () =>
@@ -20,7 +28,7 @@ describe('@/views/Pricing', () => {
     expect(wrapper.find('section#pricing.page').exists()).toBe(true)
     expect(wrapper.find('h1').text()).toBe('Pricing')
     expect(wrapper.text()).toContain('Realness is free to use')
-    expect(wrapper.text()).toContain('it has a price, if you want one')
+    expect(wrapper.text()).toContain('it has a price')
   })
 
   it('renders tier navigation with all three tiers', () => {
@@ -66,7 +74,7 @@ describe('@/views/Pricing', () => {
     wrapper.vm.next()
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.active_index).toBe(1)
-    expect(wrapper.vm.active_tier.slug).toBe('teams')
+    expect(wrapper.vm.active_slug).toBe('teams')
   })
 
   it('wraps around to the last tier via prev() from the first', async () => {
@@ -74,13 +82,16 @@ describe('@/views/Pricing', () => {
     wrapper.vm.prev()
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.active_index).toBe(2)
-    expect(wrapper.vm.active_tier.slug).toBe('enterprise')
+    expect(wrapper.vm.active_slug).toBe('enterprise')
   })
 
-  it('exposes the actions flag for the teams tier when active', async () => {
+  it('renders the actions row for the teams tier when active', () => {
+    mock_route.params.tier = 'teams'
     const wrapper = mount_pricing()
-    wrapper.vm.next()
-    await wrapper.vm.$nextTick()
-    expect(wrapper.vm.active_tier.has_actions).toBe(true)
+    expect(wrapper.find("menu[aria-label='Actions']").exists()).toBe(true)
+  })
+
+  afterEach(() => {
+    mock_route.params = {}
   })
 })

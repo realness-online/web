@@ -328,6 +328,97 @@ describe('vectorize composable', () => {
     })
   })
 
+  describe('worker error handling', () => {
+    let created_workers
+
+    beforeEach(() => {
+      created_workers = []
+      global.Worker = vi.fn(function () {
+        const instance = {
+          addEventListener: vi.fn(),
+          postMessage: vi.fn(),
+          terminate: vi.fn(),
+          removeEventListener: vi.fn()
+        }
+        created_workers.push(instance)
+        return instance
+      })
+      global.createImageBitmap = vi.fn(() =>
+        Promise.resolve({
+          width: 1000,
+          height: 1000,
+          close: vi.fn()
+        })
+      )
+      vectorize_instance.mount_workers()
+    })
+
+    const itemid = '/+14151234356/posters/1770000000000'
+
+    it('vectorized handler fails the item and continues the queue on an error reply, instead of throwing', async () => {
+      const Queue = await import('@/persistence/Queue')
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      // created_workers[0] is the vectorizer (mount order: vectorizer,
+      // gradienter, tracer, optimizer).
+      const vectorized_handler =
+        created_workers[0].addEventListener.mock.calls[0][1]
+
+      await expect(
+        vectorized_handler({ data: { error: 'trace failed' } })
+      ).resolves.toBeUndefined()
+
+      expect(Queue.update).toHaveBeenCalledWith(itemid, { status: 'error' })
+      expect(vectorize_instance.is_processing.value).toBe(false)
+      expect(vectorize_instance.current_processing.value).toBeNull()
+    })
+
+    it('gradientized handler logs and does not throw on an error reply', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      const gradientized_handler =
+        created_workers[1].addEventListener.mock.calls[0][1]
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+
+      expect(() =>
+        gradientized_handler({ data: { error: 'gradient failed' } })
+      ).not.toThrow()
+
+      expect(console_error).toHaveBeenCalled()
+      expect(vectorize_instance.new_gradients.value).toBeNull()
+      console_error.mockRestore()
+    })
+
+    it('optimized handler fails the item and continues the queue on an error reply, instead of throwing', async () => {
+      const Queue = await import('@/persistence/Queue')
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+      vectorize_instance.new_vector.value = {
+        id: itemid,
+        light: {},
+        regular: {},
+        medium: {},
+        bold: {}
+      }
+
+      // created_workers[3] is the optimizer.
+      const optimized_handler =
+        created_workers[3].addEventListener.mock.calls[0][1]
+
+      await expect(
+        optimized_handler({ data: { error: 'optimize failed' } })
+      ).resolves.toBeUndefined()
+
+      expect(Queue.update).toHaveBeenCalledWith(itemid, { status: 'error' })
+      expect(vectorize_instance.is_processing.value).toBe(false)
+      expect(vectorize_instance.current_processing.value).toBeNull()
+    })
+  })
+
   describe('add_to_queue', () => {
     beforeEach(async () => {
       global.Worker = vi.fn(function () {

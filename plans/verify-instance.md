@@ -1,10 +1,7 @@
-# Verify Instance Plan
+# Verify Instance
 
-A plan for a tool that checks whether a Realness deployment is **legit** - the bytes on the wire match a build we recognize, not a fork or tampered host.
-
-Related today: [verify-release.md](./verify-release.md) (manifest format and `verify-deploy.js`).
-
----
+Status: active
+Related: finishing-touches — "verify instance"
 
 ## Goal
 
@@ -20,25 +17,11 @@ The tool should work for:
 - A team instance (`https://our-union.realness...` or custom domain)
 - Local preview (`http://localhost:5173` after `npm run build && npm run serve`)
 
----
+Related today: [verify-release.md](../docs/verify-release.md) (manifest format and `verify-deploy.js`).
 
-## What "legit" means
+## Current state
 
-| Check                    | Pass means                                                                         |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| **Manifest present**     | `{origin}/build-manifest.json` exists and parses                                   |
-| **Files match manifest** | Every path in `files` hashes to the listed `sha256:` on that host                  |
-| **Known release**        | `version` + `git_commit` match a GitHub release or tagged build we publish         |
-| **Bundle fingerprint**   | `bundle_sha256` matches the release artifact (fast single-field check)             |
-| **Version in UI**        | In-app version (Thoughts header) matches manifest `version` (optional cross-check) |
-
-Legit does **not** mean "equals `main` today." It means "equals **this** tagged release commit after a standard build."
-
----
-
-## Current state (Phase 0)
-
-Done or in progress:
+Phase 0 done or in progress:
 
 - `scripts/build-manifest.js` runs after `npm run build`
 - `dist/build-manifest.json` deploys with Firebase Hosting
@@ -52,9 +35,19 @@ Gaps:
 - GitHub release may not yet attach manifest every time
 - No UI, no arbitrary-instance UX, no trust registry
 
----
+### What "legit" means
 
-## Manifest contract (stable for tools)
+| Check                    | Pass means                                                                         |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| **Manifest present**     | `{origin}/build-manifest.json` exists and parses                                   |
+| **Files match manifest** | Every path in `files` hashes to the listed `sha256:` on that host                  |
+| **Known release**        | `version` + `git_commit` match a GitHub release or tagged build we publish         |
+| **Bundle fingerprint**   | `bundle_sha256` matches the release artifact (fast single-field check)             |
+| **Version in UI**        | In-app version (Thoughts header) matches manifest `version` (optional cross-check) |
+
+Legit does **not** mean "equals `main` today." It means "equals **this** tagged release commit after a standard build."
+
+### Manifest contract (stable for tools)
 
 Path: `/build-manifest.json` on the instance origin.
 
@@ -80,11 +73,9 @@ Future optional fields (Phase 3+):
 
 Tools should tolerate unknown keys.
 
----
+## Approach
 
-## Proposed product: "Verify instance"
-
-### Name and entry points
+### Product surfaces
 
 | Surface                                                             | Audience               | Notes                               |
 | ------------------------------------------------------------------- | ---------------------- | ----------------------------------- |
@@ -93,8 +84,6 @@ Tools should tolerate unknown keys.
 | **npm package** (later)                                             | CI, community scripts  | Thin wrapper over same core library |
 
 ### Core library (`src/verify/` or `scripts/lib/verify-instance.js`)
-
-Single function shape:
 
 ```js
 verify_instance({
@@ -159,10 +148,10 @@ Learn more → verify-release.md
 ```
 
 - No sign-in required
-- Runs client-side fetches to the **target origin** (CORS must allow or use a tiny same-origin proxy on our host only for the checker page - plan both options in implementation)
+- Runs client-side fetches to the **target origin** (CORS must allow or use a tiny same-origin proxy on our host only for the checker page)
 - For third-party instances, user pastes URL; we never send their data server-side if client-side is enough
 
-**CORS note:** Verification fetches static assets on the target host. If `build-manifest.json` is served with permissive CORS (or from same origin when verifying self), browser verification works. For cross-origin instances, Phase 2 may need `Access-Control-Allow-Origin` on manifest + assets, or a "copy manifest URL" flow that runs CLI locally. Document in implementation.
+**CORS note:** Verification fetches static assets on the target host. If `build-manifest.json` is served with permissive CORS (or from same origin when verifying self), browser verification works. For cross-origin instances, Phase 2 may need `Access-Control-Allow-Origin` on manifest + assets, or a "copy manifest URL" flow that runs CLI locally.
 
 ### Trust sources (Phase 2–3)
 
@@ -175,11 +164,9 @@ Learn more → verify-release.md
 
 Official realness.online should pass both self-check and GitHub release match after each deploy.
 
----
+### Phases
 
-## Phases
-
-### Phase 1 - CLI "verify instance" (next)
+#### Phase 1 - CLI "verify instance" (next)
 
 - [ ] Rename or wrap `verify-deploy.js` → `verify-instance.js` with `--url` required
 - [ ] `--release vX.Y.Z` downloads manifest from GitHub release assets
@@ -188,29 +175,27 @@ Official realness.online should pass both self-check and GitHub release match af
 - [ ] Document in `verify-release.md` and package.json script `verify:instance`
 - [ ] Attach manifest on every `release:gh` in release checklist
 
-### Phase 2 - `/verify` page
+#### Phase 2 - `/verify` page
 
-- [ ] Vue view or static page under `work/web`
+- [ ] Vue view or static page
 - [ ] Input: instance URL; optional: expected release tag
 - [ ] Reuse core verify library (import from `src/verify/` if used in browser - may need to duplicate hash logic without Node fs)
 - [ ] Link from About footer ("Verify an instance")
 - [ ] i18n-free, minimal copy
 
-### Phase 3 - Publisher and communities
+#### Phase 3 - Publisher and communities
 
 - [ ] `publisher` field in manifest for licensed hosts
 - [ ] Doc: community moderators run verify before pointing members at an instance
 - [ ] Optional allowlist file in repo for known community origins (not required for legitimacy, only for "recognized host")
 
-### Phase 4 - Signed manifests
+#### Phase 4 - Signed manifests
 
 - [ ] Sign `build-manifest.json` at release time
 - [ ] Tool verifies signature before checksum loop
 - [ ] Key rotation doc
 
----
-
-## Instance types
+### Instance types
 
 | Type                   | Verify against                                                        |
 | ---------------------- | --------------------------------------------------------------------- |
@@ -219,18 +204,14 @@ Official realness.online should pass both self-check and GitHub release match af
 | Dev / localhost        | Self manifest only; expect different `origin`                         |
 | Unknown                | Self manifest only; warn if no matching GitHub release                |
 
----
-
-## Security and limits
+### Security and limits
 
 - Verification proves **static deploy integrity**, not runtime behavior (no proof that Firebase rules, Stripe, or API keys are honest).
 - A malicious host could serve a good manifest once and bad JS to targeted users - mitigated by checking **all** listed files, not just manifest (full mode).
 - Service worker cache: verifier uses `cache: 'no-store'`; document hard-refresh for humans.
 - Do not log instance URLs with PII in analytics.
 
----
-
-## Open questions
+### Open questions
 
 1. **CORS** on community domains - require hosts to set headers, or CLI-only for third parties?
 2. **Partial manifests** for large deploys - is `--quick` enough for "legit enough" or always full?
@@ -238,20 +219,21 @@ Official realness.online should pass both self-check and GitHub release match af
 4. **Separate package** - publish `@realness.online/verify` or keep scripts in monorepo?
 5. **Wasm/workers** - include in manifest always (already in `dist/` walk)?
 
----
+## Out of scope
 
-## Success criteria
+- Proving runtime honesty of Firebase rules, Stripe, or API keys.
+- Claiming the deploy "matches `main`" in user-facing copy.
+
+## Verification
 
 - Moderator can paste a community URL into `/verify` or run one CLI command and get a clear LEGIT / NOT LEGIT result.
 - Official deploy fails CI if `verify:instance` does not pass before or after deploy.
-- README and About link to this plan and `verify-release.md`.
+- README and About link to this plan and `docs/verify-release.md`.
 - No claim of "matches main" in user-facing copy - only version, commit, and checksums.
 
----
+### References
 
-## References
-
-- [verify-release.md](./verify-release.md) - how to run verification today
+- [verify-release.md](../docs/verify-release.md) - how to run verification today
 - `scripts/build-manifest.js` - manifest generator
 - `scripts/verify-deploy.js` - Phase 0 verifier
 - About footer - `build-manifest.json`, link to this plan when shipped

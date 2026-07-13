@@ -23,6 +23,7 @@ export const with_poster_scene = async (svg_string, fn) => {
     await fn(scene)
   } finally {
     app.stop()
+    scene.dispose()
     app.get_renderer().dispose()
     document.body.removeChild(canvas)
   }

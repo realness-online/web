@@ -81,6 +81,10 @@
     paused: {
       type: Boolean,
       default: false
+    },
+    tabable: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
@@ -97,7 +101,7 @@
   const {
     query,
     show,
-    focusable,
+    tabindex,
     vector,
     intersecting,
     is_hovered,
@@ -370,7 +374,7 @@
     role="img"
     aria-roledescription="poster"
     :aria-label="poster_label"
-    :tabindex="focusable"
+    :tabindex="tabindex"
     :class="{
       animate,
       hovered: is_hovered,

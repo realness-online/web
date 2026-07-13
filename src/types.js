@@ -38,6 +38,28 @@
  */
 
 /**
+ * Organized cutout layers mapped by geology layer name.
+ * Each key is present only when that layer has cutouts.
+ * @typedef {Object} Cutout_Layers
+ * @property {SVGSymbolElement} [sediment]
+ * @property {SVGSymbolElement} [sand]
+ * @property {SVGSymbolElement} [gravel]
+ * @property {SVGSymbolElement} [rocks]
+ * @property {SVGSymbolElement} [boulders]
+ */
+
+/** @type {readonly ['sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
+export const LAYER_NAMES = /** @type {const} */ ([
+  'sediment',
+  'sand',
+  'gravel',
+  'rocks',
+  'boulders'
+])
+
+/** @typedef {typeof LAYER_NAMES[number]} Layer_Name */
+
+/**
  * @typedef {Object} Poster_Gradients
  * @property {number} width
  * @property {number} height
@@ -55,7 +77,7 @@
  * @property {Path} medium
  * @property {Path} bold
  * @property {Path[] | Path | undefined} [cutout]
- * @property {Object.<string, SVGSymbolElement>} [cutouts] - Cutouts organized by layer
+ * @property {Cutout_Layers} [cutouts] - Cutouts organized by geology layer
  * @property {boolean} [completed] - Runtime flag during vectorization
  * @property {number} width
  * @property {number} height

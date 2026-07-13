@@ -395,6 +395,8 @@ export const sync_offline_actions = async () => {
   if (!navigator.onLine) return
 
   // Handle offline queue (includes both anonymous and logged-in statement rows)
+  const offline_mutex = mutex_for('sync:offline')
+  await offline_mutex.lock()
   /** @type {Sync_Offline_Item[]|undefined} */
   const offline = await get('sync:offline')
   if (offline) {
@@ -412,6 +414,7 @@ export const sync_offline_actions = async () => {
     /* oxlint-enable no-await-in-loop */
     await del('sync:offline')
   }
+  offline_mutex.unlock()
 
   if (!offline?.length && current_user.value) return
 

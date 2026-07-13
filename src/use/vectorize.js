@@ -1,10 +1,12 @@
 /**
  * @typedef {import('@/types').Id} Id
  * @typedef {import('@/types').Poster} PosterType
+ * @typedef {import('@/types').Cutout_Layers} Cutout_Layers
  * @typedef {import('@/persistence/Queue').QueueItem} QueueItem
  * @typedef {Object} VectorResponse
  * @property {Object} data
- * @property {Object} data.vector
+ * @property {Object} [data.vector]
+ * @property {string} [data.error]
  */
 
 import {
@@ -211,7 +213,7 @@ export const resize_to_blob = async file => {
  * Sort cutout elements into geology layers based on progress
  * @param {Object} vector
  * @param {Id} id
- * @returns {Object} Cutouts organized by layer with symbol elements
+ * @returns {Cutout_Layers} Cutouts organized by geology layer
  */
 export const sort_cutouts_into_layers = (vector, id) => {
   /** @type {{sediment: Element[], sand: Element[], gravel: Element[], rocks: Element[], boulders: Element[]}} */
@@ -257,17 +259,17 @@ export const sort_cutouts_into_layers = (vector, id) => {
       symbol.setAttribute('itemtype', '/cutouts')
 
       cutouts[layer] = symbol
-    }
+    } else delete cutouts[layer]
   })
 
-  return cutouts
+  return /** @type {Cutout_Layers} */ (/** @type {unknown} */ (cutouts))
 }
 
 /**
  * Save poster and cutout symbols
  * @param {Id} id
  * @param {Element} [element]
- * @param {Object.<string, SVGSymbolElement>} [cutouts]
+ * @param {Cutout_Layers} [cutouts]
  */
 export const save_poster = async (
   id,
@@ -602,12 +604,36 @@ const create_pipeline = (workers, working, tracer) => {
  */
 const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
   /**
+   * Marks the in-flight queue item as errored and continues the queue,
+   * instead of leaving the whole pipeline stalled on one worker failure.
+   * @param {Id} id
+   * @param {unknown} error
+   */
+  const fail_current_item = async (id, error) => {
+    console.error('[vectorize] Worker error, skipping item:', error)
+    await Queue.update(id, { status: 'error' })
+    const item_to_remove = queue_items.value.find(item => item.id === id)
+    if (item_to_remove) cleanup_queue_item(item_to_remove)
+    queue_items.value = queue_items.value.filter(item => item.id !== id)
+    is_processing.value = false
+    current_processing.value = null
+    reset()
+    await run_queue()
+  }
+
+  /**
    * @param {VectorResponse} response
    */
   const vectorized = async response => {
     if (!is_mounted.value) return
     const cid = current_item_id.value
     if (!cid) return
+
+    if (response.data?.error) {
+      await fail_current_item(cid, response.data.error)
+      return
+    }
+
     const { vector } = response.data
     vector.id = cid
     vector.type = 'posters'
@@ -630,6 +656,10 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
 
   const gradientized = message => {
     if (!is_mounted.value) return
+    if (message.data?.error) {
+      console.error('[vectorize] Gradient worker error:', message.data.error)
+      return
+    }
     new_gradients.value = message.data.gradients
   }
 
@@ -678,6 +708,12 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
     const id = current_item_id.value
     const vec = new_vector.value
     if (!id || !vec) return
+
+    if (message.data?.error) {
+      await fail_current_item(id, message.data.error)
+      return
+    }
+
     const optimized_data = get_item(message.data.vector, id)
 
     clear_vector_paths()

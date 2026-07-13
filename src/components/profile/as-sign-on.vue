@@ -44,9 +44,11 @@
   }
 
   const clean = async () => {
+    const keys_to_remove = []
     for (const key in localStorage)
       if (Object.prototype.hasOwnProperty.call(localStorage, key))
-        localStorage.removeItem(key)
+        keys_to_remove.push(key)
+    keys_to_remove.forEach(key => localStorage.removeItem(key))
     localStorage.me = '/+'
     await clear()
     window.location.href = '/'

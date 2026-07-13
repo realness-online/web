@@ -126,11 +126,18 @@
   }
 
   const sign_in_with_code = async () => {
+    reset_integrity_message()
     working.value = true
     disable_input()
     show_code.value = false
-    await authorizer.value.confirm(code.value)
-    emit('signed-on')
+    try {
+      await authorizer.value.confirm(code.value)
+      emit('signed-on')
+    } catch {
+      working.value = false
+      show_code.value = true
+      integrity_message.value = 'That code was incorrect. Please try again.'
+    }
   }
 
   const mobile_keypress = event => {

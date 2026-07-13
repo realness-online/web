@@ -216,6 +216,22 @@ describe('potrace/index', () => {
       expect(result).toHaveProperty('paths')
       expect(Array.isArray(result.paths)).toBe(true)
     }, 60000)
+
+    it('does not produce NaN fillOpacity for a single color stop with FILL_SPREAD', () => {
+      // threshold===steps[0] keeps colorStops at length 1, which used to
+      // divide by zero (colorStops_length - 1) inside #calc_color_intensity.
+      const result = as_paths(test_image, {
+        threshold: 128,
+        steps: [128],
+        fillStrategy: Potrace.FILL_SPREAD
+      })
+
+      expect(result.paths.length).toBeGreaterThan(0)
+      result.paths.forEach(path => {
+        expect(path.fillOpacity).not.toBe('NaN')
+        expect(Number.isFinite(Number(path.fillOpacity))).toBe(true)
+      })
+    })
   })
 
   describe('as_path_element', () => {

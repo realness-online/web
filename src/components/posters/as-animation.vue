@@ -466,7 +466,7 @@
         attributeName="y1"
         repeatCount="indefinite"
         :dur="duration(110)"
-        begin="indefinite"
+        begin="0s"
         values="0%;250%;-150%;175%;0%"
         keyTimes="0;0.25;0.5;0.75;1"
         keySplines="0.42 0 1 1; 0.4 0 0.6 1; 0.4 0 0.6 1; 0 0 0.58 1" />
