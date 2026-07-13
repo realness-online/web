@@ -97,7 +97,7 @@ describe('@/components/profile/as-sign-on', () => {
     })
 
     it('emits signed_in when name_valid is called', async () => {
-      await wrapper.vm.name_valid()
+      await wrapper.vm.on_name_valid()
       await flushPromises()
       expect(mock_save).toHaveBeenCalled()
       expect(wrapper.emitted('signed_in')).toBeTruthy()
@@ -109,7 +109,7 @@ describe('@/components/profile/as-sign-on', () => {
       mock_is_valid_name.value = true
       localStorage.me = '/+123'
 
-      await wrapper.vm.signed_on()
+      await wrapper.vm.on_signed_on()
       await flushPromises()
 
       expect(mock_load_from_network).toHaveBeenCalledWith('/+123')
@@ -123,7 +123,7 @@ describe('@/components/profile/as-sign-on', () => {
       mock_current_user_ref.value = { uid: 'test-user' }
       localStorage.me = '/+123'
 
-      await wrapper.vm.signed_on()
+      await wrapper.vm.on_signed_on()
       await flushPromises()
 
       expect(wrapper.vm.nameless).toBe(true)
@@ -144,7 +144,7 @@ describe('@/components/profile/as-sign-on', () => {
       mock_current_user_ref.value = { uid: 'test-user' }
       localStorage.me = '/+123'
 
-      await wrapper.vm.signed_on()
+      await wrapper.vm.on_signed_on()
       await flushPromises()
 
       expect(wrapper.vm.nameless).toBe(true)
@@ -158,7 +158,7 @@ describe('@/components/profile/as-sign-on', () => {
         localStorage.setItem('test2', 'value2')
         localStorage.me = '/+123'
 
-        await wrapper.vm.clean()
+        await wrapper.vm.on_clean()
         await flushPromises()
 
         expect(localStorage.me).toBe('/+')
@@ -173,7 +173,7 @@ describe('@/components/profile/as-sign-on', () => {
           localStorage.setItem(`key${i}`, `value${i}`)
         localStorage.me = '/+123'
 
-        await wrapper.vm.clean()
+        await wrapper.vm.on_clean()
         await flushPromises()
 
         for (let i = 0; i < 20; i++)

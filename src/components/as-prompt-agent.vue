@@ -38,7 +38,7 @@
         }
   )
 
-  const copy = async () => {
+  const on_copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt.value)
       copied.value = true
@@ -52,13 +52,17 @@
 </script>
 
 <template>
-  <button v-if="inline" type="button" class="prompt-agent inline" @click="copy">
+  <button
+    v-if="inline"
+    type="button"
+    class="prompt-agent inline"
+    @click="on_copy">
     {{ copied ? 'Copied' : 'Copy prompt' }}
   </button>
   <section v-else class="prompt-agent">
     <h3>{{ label.heading }}</h3>
     <p>{{ label.desc }}</p>
-    <button type="button" @click="copy">
+    <button type="button" @click="on_copy">
       {{ copied ? 'Copied!' : label.button }}
     </button>
   </section>

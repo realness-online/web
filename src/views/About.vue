@@ -1,6 +1,6 @@
 <script setup>
   import AsFigure from '@/components/posters/as-figure'
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import Preference from '@/components/preference'
   import PreferencesMenu from '@/components/preferences-menu'
   import CallToAction from '@/components/call-to-action'
@@ -32,9 +32,9 @@
   const install_noun = install_method().noun
   /** @type {import('vue').Ref<HTMLDialogElement | null>} */
   const install_dialog = ref(null)
-  const show_install = () => install_dialog.value?.showModal()
+  const on_show_install = () => install_dialog.value?.showModal()
   /** @param {MouseEvent} event */
-  const close_on_backdrop = event => {
+  const on_close_on_backdrop = event => {
     if (event.target === install_dialog.value) install_dialog.value?.close()
   }
 
@@ -175,7 +175,7 @@
           </p>
           <p>
             Start in your browser, or
-            <a href="/docs#install" @click.prevent="show_install"
+            <a href="/docs#install" @click.prevent="on_show_install"
               >add Realness to your {{ install_noun }}</a
             >
             - works like a native app, straight from the web. Your data lives
@@ -188,7 +188,7 @@
     <dialog
       ref="install_dialog"
       class="install modal"
-      @click="close_on_backdrop">
+      @click="on_close_on_backdrop">
       <article>
         <button
           type="button"

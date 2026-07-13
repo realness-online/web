@@ -60,16 +60,16 @@ describe('@/components/thoughts/as-textarea.vue', () => {
   })
 
   describe('Methods', () => {
-    describe('#prepare_thought', () => {
+    describe('#on_prepare_thought', () => {
       it('exists as a function', () => {
-        expect(typeof wrapper.vm.prepare_thought).toBe('function')
+        expect(typeof wrapper.vm.on_prepare_thought).toBe('function')
       })
     })
   })
 
   describe('Events', () => {
-    it('emits toggle-keyboard when prepare_thought runs (on blur)', async () => {
-      await wrapper.vm.prepare_thought()
+    it('emits toggle-keyboard when on_prepare_thought runs (on blur)', async () => {
+      await wrapper.vm.on_prepare_thought()
       expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
     })
   })

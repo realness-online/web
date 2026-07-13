@@ -20,7 +20,7 @@
   const copy_feedback_ms = 2000
   const copied = ref(false)
 
-  const copy_prompt = async () => {
+  const on_copy_prompt = async () => {
     try {
       await navigator.clipboard.writeText(instance_prompt)
       copied.value = true
@@ -35,7 +35,7 @@
   const ACTIVE_HEADING_VIEWPORT_RATIO = 0.33
 
   /** @param {MouseEvent} event */
-  const handle_content_click = event => {
+  const on_content_click = event => {
     const link = event.target?.closest?.('a[href^="#"]')
     if (!link) return
     event.preventDefault()
@@ -108,11 +108,11 @@
         </router-link>
       </nav>
       <section class="content">
-        <div v-html="install_before" @click="handle_content_click" />
+        <div v-html="install_before" @click="on_content_click" />
         <install-guide />
         <div v-html="install_after" />
         <section v-if="install_realness" class="realness-of-your-own">
-          <button type="button" class="copy-prompt" @click="copy_prompt">
+          <button type="button" class="copy-prompt" @click="on_copy_prompt">
             {{ copied ? 'Copied' : 'Copy prompt' }}
           </button>
           <div v-html="install_realness" />

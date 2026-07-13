@@ -1,5 +1,5 @@
 <script setup>
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import { ref } from 'vue'
   import { use } from '@/use/statements'
   import { use_keymap } from '@/use/key-commands'
@@ -8,7 +8,7 @@
   const { save } = use()
   const thought_text = ref(null)
 
-  const prepare_thought = async () => {
+  const on_prepare_thought = async () => {
     emit('toggle-keyboard', false)
     const textarea = document.querySelector('textarea#wat')
     if (textarea) textarea.style.height = ''
@@ -24,14 +24,14 @@
     if (thought_text.value === text) thought_text.value = null
   }
 
-  const adjust_height = event => {
+  const on_adjust_height = event => {
     const textarea = event.target
     textarea.style.height = 'auto'
     textarea.style.height = `${textarea.scrollHeight}px`
   }
 
   const { register } = use_keymap('Thoughts')
-  register('thought::Save', () => prepare_thought())
+  register('thought::Save', () => on_prepare_thought())
   register('thought::New_Line', () => {
     const textarea = document.querySelector('textarea#wat')
     if (textarea) {
@@ -41,7 +41,7 @@
       textarea.value = `${value.substring(0, start)}\n${value.substring(end)}`
       textarea.selectionStart = textarea.selectionEnd = start + 1
       thought_text.value = textarea.value
-      adjust_height({ target: textarea })
+      on_adjust_height({ target: textarea })
     }
   })
   register('thought::Cancel', () => {
@@ -61,8 +61,8 @@
       placeholder=""
       aria-label="What are you thinking?"
       :spellcheck="true"
-      @input="adjust_height"
-      @focusout="prepare_thought"
+      @input="on_adjust_height"
+      @focusout="on_prepare_thought"
       @keydown.tab.exact="e => emit('tab-next', e)" />
     <button id="done">
       <icon name="finished" />

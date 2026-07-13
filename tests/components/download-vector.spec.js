@@ -56,7 +56,9 @@ describe('@/components/download-vector.vue', () => {
     const { wrapper, set_working } = mount_with_svg()
     const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
 
-    await expect(wrapper.vm.png_layers(event)).rejects.toThrow('extract failed')
+    await expect(wrapper.vm.on_png_layers(event)).rejects.toThrow(
+      'extract failed'
+    )
 
     expect(set_working).toHaveBeenCalledWith(true)
     expect(set_working).toHaveBeenLastCalledWith(false)
@@ -66,7 +68,7 @@ describe('@/components/download-vector.vue', () => {
     const { wrapper, set_working } = mount_with_svg()
     const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
 
-    await expect(wrapper.vm.download_png_handler(event)).rejects.toThrow(
+    await expect(wrapper.vm.on_download_png(event)).rejects.toThrow(
       'canvas failed'
     )
 
@@ -79,7 +81,7 @@ describe('@/components/download-vector.vue', () => {
     const { wrapper, svg } = mount_with_svg()
     const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
 
-    await wrapper.vm.download_video_handler(event)
+    await wrapper.vm.on_download_video(event)
 
     // Playback pacing (fps + frame holding) is svg-to-video.js's own concern,
     // covered by tests/utils/svg-to-video.spec.js — this just checks wiring.

@@ -1,5 +1,5 @@
 <script setup>
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import { is_vector_id } from '@/use/poster'
   import { computed } from 'vue'
   import { me } from '@/utils/serverless'
@@ -16,7 +16,7 @@
     if (props.itemid === me.value.avatar) return true
     return false
   })
-  const toggle_avatar = async () => {
+  const on_toggle_avatar = async () => {
     if (me.value) {
       if (me.value.avatar === props.itemid) me.value.avatar = undefined
       else me.value.avatar = props.itemid
@@ -31,7 +31,7 @@
     class="avatar"
     :aria-label="is_avatar ? 'Remove as avatar' : 'Set as avatar'"
     :aria-pressed="is_avatar"
-    @click="toggle_avatar">
+    @click="on_toggle_avatar">
     <icon name="silhouette" :class="{ true: is_avatar }" />
   </button>
 </template>

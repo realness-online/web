@@ -23,7 +23,7 @@
     }, ANIM_MS)
   }
 
-  const toggle = () => {
+  const on_toggle = () => {
     if (only_mine.value) {
       only_mine.value = false
       start_motion('enter')
@@ -44,7 +44,7 @@
     :data-leave="phonebook_motion === 'leave' ? 'phonebook' : null"
     aria-label="Toggle unshortened feed"
     title="Unshortened"
-    @click="toggle">
+    @click="on_toggle">
     <svg viewBox="0 0 16 16" aria-hidden="true">
       <g itemprop="followed_person">
         <path fill-rule="evenodd" :d="silhouette_path" clip-rule="evenodd" />

@@ -26,7 +26,7 @@
     return false
   })
 
-  const signed_on = async () => {
+  const on_signed_on = async () => {
     const network_profile = await load_from_network(localStorage.me)
     const local_profile = await load(localStorage.me)
 
@@ -38,12 +38,12 @@
     } else nameless.value = true
   }
 
-  const name_valid = async () => {
+  const on_name_valid = async () => {
     await save()
     emit('signed_in')
   }
 
-  const clean = async () => {
+  const on_clean = async () => {
     const keys_to_remove = []
     for (const key in localStorage)
       if (Object.prototype.hasOwnProperty.call(localStorage, key))
@@ -72,14 +72,14 @@
   <section id="sign-on">
     <template v-if="nameless && current_user">
       <p id="name-prompt">What should we call you?</p>
-      <name-as-form @valid="name_valid" />
+      <name-as-form @valid="on_name_valid" />
     </template>
     <mobile-as-form
       v-else-if="!nameless || !current_user"
-      @signed-on="signed_on"
+      @signed-on="on_signed_on"
       @working="working = $event" />
     <footer v-if="cleanable">
-      <button @click="clean">Wipe</button>
+      <button @click="on_clean">Wipe</button>
     </footer>
   </section>
 </template>

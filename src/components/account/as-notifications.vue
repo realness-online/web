@@ -28,7 +28,7 @@
     if (!notifications.value && status.value === 'on') await disable()
   })
 
-  const toggle = async event => {
+  const on_toggle = async event => {
     if (!push_available.value) return
     if (event.target.checked) {
       const ok = await enable()
@@ -52,7 +52,7 @@
           switch
           :checked="notifications"
           :disabled="busy || status === 'blocked' || status === 'needs-install'"
-          @change="toggle" />
+          @change="on_toggle" />
         <span class="slider"></span>
       </label>
     </div>

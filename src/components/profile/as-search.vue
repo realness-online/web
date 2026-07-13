@@ -9,11 +9,11 @@
   const searching = ref(false)
   const query = ref('')
 
-  const search_mode = () => {
+  const on_search_mode = () => {
     searching.value = true
   }
 
-  const view_friends_mode = () => {
+  const on_view_friends_mode = () => {
     query.value = ''
     searching.value = false
   }
@@ -27,8 +27,8 @@
       type="search"
       placeholder="Search phonebook"
       autocomplete="off"
-      @focusout="view_friends_mode"
-      @focusin="search_mode" />
+      @focusout="on_view_friends_mode"
+      @focusin="on_search_mode" />
     <icon name="search" />
   </label>
 </template>

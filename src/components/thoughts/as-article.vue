@@ -75,20 +75,20 @@
     }
   }
 
-  const click = e => {
+  const on_click = e => {
     if (menu.value && !props.editable) all.value = all.value ? null : 'all'
   }
 
   const show = () => emit('show', props.statements)
 
-  const has_focus = thought => {
+  const on_focused = thought => {
     focused.value = true
     emit('focused', thought)
   }
 
   const BLUR_DELAY_MS = 750
 
-  const has_blurred = thought => {
+  const on_blurred = thought => {
     focused.value = false
     setTimeout(() => {
       if (!focused.value) emit('blurred', thought)
@@ -97,7 +97,7 @@
 </script>
 
 <template>
-  <article ref="el" class="thought" :class="all" @click="click">
+  <article ref="el" class="thought" :class="all" @click="on_click">
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1" :aria-label="author.name">
         <as-avatar v-if="author.avatar" :itemid="author.avatar" />
@@ -121,8 +121,8 @@
       itemprop="statements"
       :thought="thought"
       :editable="editable"
-      @focused="has_focus"
-      @blurred="has_blurred" />
+      @focused="on_focused"
+      @blurred="on_blurred" />
   </article>
 </template>
 

@@ -136,7 +136,7 @@
     return null
   }
 
-  const handle_click = () => {
+  const on_click = () => {
     use_meet.value = !use_meet.value
     emit('click', true)
   }
@@ -163,7 +163,7 @@
     return null
   })
 
-  defineExpose({ toggle_meet: handle_click })
+  defineExpose({ toggle_meet: on_click })
 
   provide('vector', vector)
 
@@ -264,12 +264,12 @@
 
   const {
     held_layer,
-    handle_pointerdown,
-    handle_pointermove,
-    handle_pointerup,
-    handle_pointerleave
+    handle_pointerdown: on_pointerdown,
+    handle_pointermove: on_pointermove,
+    handle_pointerup: on_pointerup,
+    handle_pointerleave: on_pointerleave
   } = use_poster_svg_activate_pointer({
-    on_activate: handle_click,
+    on_activate: on_click,
     touch_uses_long_press: () => props.touch_uses_long_press,
     is_disabled: () => mask_pen_active.value,
     was_pan_gesture,
@@ -352,7 +352,7 @@
   })
 
   unmounted(() => {
-    handle_pointerleave()
+    on_pointerleave()
     document.removeEventListener(
       POSTER_MEET_TOGGLE_ONLY,
       on_meet_toggle_only_doc
@@ -388,11 +388,11 @@
         ? aspect_ratio_mode
         : undefined
     "
-    @pointerdown="handle_pointerdown"
-    @pointermove="handle_pointermove"
-    @pointerup="handle_pointerup"
-    @pointerleave="handle_pointerleave"
-    @pointercancel="handle_pointerleave"
+    @pointerdown="on_pointerdown"
+    @pointermove="on_pointermove"
+    @pointerup="on_pointerup"
+    @pointerleave="on_pointerleave"
+    @pointercancel="on_pointerleave"
     @contextmenu.prevent
     @selectstart.prevent>
     <g :style="pan_style">

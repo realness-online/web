@@ -10,7 +10,7 @@
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
   import WorkingBorder from '@/components/working-border.vue'
   import SupportLayout from '@/components/support-layout'
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import {
     ref,
     computed,
@@ -366,7 +366,7 @@
   register('nav::Go_Pricing', () => router.push('/pricing'))
 
   /** @param {boolean} active */
-  const sync_active = active => set_working(active)
+  const on_active = active => set_working(active)
   const feed_needs_refresh = ref(0)
   provide('feed_needs_refresh', feed_needs_refresh)
   const on_sync_refreshed = () => {
@@ -388,7 +388,7 @@
     if (router.currentRoute.value.path !== '/') router.push('/')
   }
   /** @param {Event} event */
-  const handle_add_change = event => {
+  const on_add_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
     go_to_thoughts_if_needed()
     void paste_photo()
@@ -396,14 +396,14 @@
     if (input) input.checked = false
   }
   /** @param {Event} event */
-  const handle_camera_change = event => {
+  const on_camera_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
     go_to_thoughts_if_needed()
     open_camera()
     if (input) input.checked = false
   }
   /** @param {Event} event */
-  const handle_view_3d_change = event => {
+  const on_view_3d_change = event => {
     const input = /** @type {HTMLInputElement | null} */ (event.target)
     const next_value = input?.checked ?? !view_3d.value
     view_3d.value = next_value
@@ -525,7 +525,7 @@
       <working-border :active="status === 'working'" />
     </teleport>
     <support-layout />
-    <sync @active="sync_active" @refreshed="on_sync_refreshed" />
+    <sync @active="on_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
     <footer
       v-if="menu && !storytelling"
@@ -542,7 +542,7 @@
             type="checkbox"
             switch
             aria-label="Add poster"
-            @change="handle_add_change" />
+            @change="on_add_change" />
           <span aria-hidden="true">
             <icon name="add" />
           </span>
@@ -556,7 +556,7 @@
             type="checkbox"
             switch
             :checked="view_3d"
-            @change="handle_view_3d_change" />
+            @change="on_view_3d_change" />
           <span aria-hidden="true">
             <icon name="galaxy" />
           </span>
@@ -567,7 +567,7 @@
             type="checkbox"
             switch
             aria-label="Open camera"
-            @change="handle_camera_change" />
+            @change="on_camera_change" />
           <span aria-hidden="true">
             <icon name="camera" />
             <svg viewBox="0 0 18 15" aria-hidden="true">
