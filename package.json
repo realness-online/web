@@ -105,7 +105,7 @@
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vite-plugin-pwa": "1.2.0",
     "vite-plugin-wasm": "3.6.0",
-    "vite-plus": "0.1.20"
+    "vite-plus": "0.1.24"
   },
   "browserslist": [
     ">0.5%",
