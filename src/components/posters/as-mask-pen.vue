@@ -331,30 +331,31 @@
   </g>
 </template>
 
-<style lang="stylus">
+<style>
   g.mask-pen {
-    // Keep outlines hairline-thin so they don't swamp small geology cells; the fill
-    // is what tells you a cell is hovered (light) vs selected (solid).
+    /* Keep outlines hairline-thin so they don't swamp small geology cells; the fill
+       is what tells you a cell is hovered (light) vs selected (solid). */
     path.mask-pen-hover {
-      fill: unquote('color-mix(in srgb, var(--slate-fill) 30%, transparent)');
-      stroke: unquote('color-mix(in srgb, var(--slate-fill) 85%, transparent)');
-      stroke-width: base-line * 0.035;
+      fill: color-mix(in srgb, var(--slate-fill) 30%, transparent);
+      stroke: color-mix(in srgb, var(--slate-fill) 85%, transparent);
+      stroke-width: calc(var(--base-line) * 0.035);
       vector-effect: non-scaling-stroke;
     }
     path.mask-pen-selected {
-      fill: unquote('color-mix(in srgb, var(--slate-fill) 55%, transparent)');
-      stroke: unquote('color-mix(in srgb, var(--slate-fill) 95%, transparent)');
-      stroke-width: base-line * 0.035;
+      fill: color-mix(in srgb, var(--slate-fill) 55%, transparent);
+      stroke: color-mix(in srgb, var(--slate-fill) 95%, transparent);
+      stroke-width: calc(var(--base-line) * 0.035);
       vector-effect: non-scaling-stroke;
     }
     path.mask-pen-preview {
-      stroke-width: base-line * 0.05;
+      stroke-width: calc(var(--base-line) * 0.05);
       vector-effect: non-scaling-stroke;
     }
     circle.mask-pen-radius {
       fill: none;
-      stroke-width: base-line * 0.06;
-      stroke-dasharray: base-line * 0.2 base-line * 0.15;
+      stroke-width: calc(var(--base-line) * 0.06);
+      stroke-dasharray: calc(var(--base-line) * 0.2)
+        calc(var(--base-line) * 0.15);
       vector-effect: non-scaling-stroke;
     }
   }

@@ -33,12 +33,9 @@
 
 <style lang="stylus">
   address[itemscope] {
-    color: var(--graphite);
+    color: var(--text);
     margin: 0;
     padding: 0;
-    @media (prefers-color-scheme: dark) {
-      color: white;
-    }
     & > header {
       display: flex;
       justify-content: space-between;

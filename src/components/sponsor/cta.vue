@@ -63,26 +63,26 @@
     :client-reference-id="me?.id || undefined" />
 </template>
 
-<style lang="stylus">
+<style>
   stripe-buy-button {
     display: inline-block;
-    // Reserve the rendered button height before Stripe's iframe loads, so the
-    // surrounding layout (and the tier card's height) doesn't reflow when the
-    // button mounts. 223px is the measured Buy Button height.
+    /* Reserve the rendered button height before Stripe's iframe loads, so the
+       surrounding layout (and the tier card's height) doesn't reflow when the
+       button mounts. 223px is the measured Buy Button height. */
     min-height: 223px;
     min-width: 160px;
   }
   a.checkout {
     display: inline-block;
-    padding: base-line * 0.5 base-line;
-    border: round((base-line * 0.1), 2) solid var(--accent);
-    border-radius: base-line * 0.33;
+    padding: calc(var(--base-line) * 0.5) var(--base-line);
+    border: calc(var(--base-line) * 0.1) solid var(--accent);
+    border-radius: calc(var(--base-line) * 0.33);
     color: var(--accent);
     font-weight: bold;
     text-decoration: none;
     &:hover,
     &:focus-visible {
-      background-color: unquote('color-mix(in srgb, var(--accent) 12%, transparent)');
+      background-color: color-mix(in srgb, var(--accent) 12%, transparent);
     }
   }
 </style>

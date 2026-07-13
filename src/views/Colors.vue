@@ -833,7 +833,7 @@
           text-transform: capitalize;
           font-size: smaller;
           color: var(--ink, var(--bone));
-          text-shadow: 0 0 base-line rgba(0, 0, 0, 0.35);
+          text-shadow: 0 0 base-line unquote('color-mix(in srgb, var(--moonlight) 35%, transparent)');
         }
         & > ul {
           list-style: none;

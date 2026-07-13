@@ -221,7 +221,7 @@
   <svg v-else :class="name" class="icon"><use :href="icon_location" /></svg>
 </template>
 
-<style lang="stylus">
+<style>
   svg.icon {
     fill: currentColor;
     &:active {
@@ -260,7 +260,16 @@
     &.realness {
       --ease-drift-out: linear(0, 0.42 24%, 0.82 52%, 0.97 76%, 1);
       --ease-drift-back: linear(0, 0.18 22%, 0.52 48%, 0.84 74%, 1);
-      --ease-click: linear(0, 0.42 22%, 0.87 42%, 1.09 58%, 0.96 72%, 1.03 84%, 0.99 92%, 1);
+      --ease-click: linear(
+        0,
+        0.42 22%,
+        0.87 42%,
+        1.09 58%,
+        0.96 72%,
+        1.03 84%,
+        0.99 92%,
+        1
+      );
     }
     &.realness > [data-tile] {
       transform-box: fill-box;
@@ -335,34 +344,106 @@
   }
 
   @keyframes realness-drift-up-left {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) - 2.74px), calc(var(--snap-y) - 3.57px)) rotate(-0.6deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) - 2.74px),
+          calc(var(--snap-y) - 3.57px)
+        )
+        rotate(-0.6deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-drift-up-right {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) + 2.70px), calc(var(--snap-y) - 3.60px)) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) + 2.7px),
+          calc(var(--snap-y) - 3.6px)
+        )
+        rotate(0.5deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-drift-left {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) - 4.50px), calc(var(--snap-y) - 0.06px)) rotate(-0.4deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) - 4.5px),
+          calc(var(--snap-y) - 0.06px)
+        )
+        rotate(-0.4deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-drift-right {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) + 4.50px), calc(var(--snap-y) - 0.16px)) rotate(0.7deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) + 4.5px),
+          calc(var(--snap-y) - 0.16px)
+        )
+        rotate(0.7deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-drift-down-left {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) - 2.75px), calc(var(--snap-y) + 3.56px)) rotate(0.5deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) - 2.75px),
+          calc(var(--snap-y) + 3.56px)
+        )
+        rotate(0.5deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-drift-down-right {
-    0% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); animation-timing-function: var(--ease-drift-out); }
-    50% { transform: translate(calc(var(--snap-x) + 2.74px), calc(var(--snap-y) + 3.57px)) rotate(-0.7deg); animation-timing-function: var(--ease-drift-back); }
-    100% { transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot)); }
+    0% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+      animation-timing-function: var(--ease-drift-out);
+    }
+    50% {
+      transform: translate(
+          calc(var(--snap-x) + 2.74px),
+          calc(var(--snap-y) + 3.57px)
+        )
+        rotate(-0.7deg);
+      animation-timing-function: var(--ease-drift-back);
+    }
+    100% {
+      transform: translate(var(--snap-x), var(--snap-y)) rotate(var(--snap-rot));
+    }
   }
   @keyframes realness-click-in {
     0% {
@@ -390,7 +471,7 @@
   svg.icon.realness pattern use[data-tile='rust'] {
     fill: var(--clay-fill);
   }
-  // Shimmer always; color cycle when .color-cycle (preference)
+  /* Shimmer always; color cycle when .color-cycle (preference) */
   svg.icon.realness pattern use[data-tile='ash'] {
     animation-name: realness-smalti-shimmer;
     animation-duration: calc(var(--realness-cycle) * 0.5);
@@ -473,47 +554,114 @@
   }
 
   @keyframes realness-smalti-shimmer {
-    0%, 100% { opacity: 1; }
-    42% { opacity: 0.78; }
-    58% { opacity: 1; }
+    0%,
+    100% {
+      opacity: 1;
+    }
+    42% {
+      opacity: 0.78;
+    }
+    58% {
+      opacity: 1;
+    }
   }
   @keyframes realness-color-ash {
-    0%, 100% { fill: var(--pumice); }
-    25% { fill: var(--water-fill); }
-    50% { fill: var(--clay-fill); }
-    75% { fill: var(--slate-fill); }
+    0%,
+    100% {
+      fill: var(--pumice);
+    }
+    25% {
+      fill: var(--water-fill);
+    }
+    50% {
+      fill: var(--clay-fill);
+    }
+    75% {
+      fill: var(--slate-fill);
+    }
   }
   @keyframes realness-color-ember {
-    0%, 100% { fill: var(--clay-fill); }
-    25% { fill: var(--ochre); }
-    50% { fill: var(--water-fill); }
-    75% { fill: var(--slate-fill); }
+    0%,
+    100% {
+      fill: var(--clay-fill);
+    }
+    25% {
+      fill: var(--ochre);
+    }
+    50% {
+      fill: var(--water-fill);
+    }
+    75% {
+      fill: var(--slate-fill);
+    }
   }
   @keyframes realness-color-rust {
-    0%, 100% { fill: var(--clay-fill); }
-    25% { fill: var(--slate-fill); }
-    50% { fill: var(--water-fill); }
-    75% { fill: var(--ochre); }
+    0%,
+    100% {
+      fill: var(--clay-fill);
+    }
+    25% {
+      fill: var(--slate-fill);
+    }
+    50% {
+      fill: var(--water-fill);
+    }
+    75% {
+      fill: var(--ochre);
+    }
   }
   @keyframes realness-color-tide {
-    0%, 100% { fill: var(--water-fill); }
-    20% { fill: var(--sediment); }
-    40% { fill: var(--sand); }
-    60% { fill: var(--gravel); }
-    80% { fill: var(--rocks); }
+    0%,
+    100% {
+      fill: var(--water-fill);
+    }
+    20% {
+      fill: var(--sediment);
+    }
+    40% {
+      fill: var(--sand);
+    }
+    60% {
+      fill: var(--gravel);
+    }
+    80% {
+      fill: var(--rocks);
+    }
   }
   @keyframes realness-color-silt {
-    0%, 100% { fill: var(--water-fill); }
-    20% { fill: var(--boulders); }
-    40% { fill: var(--gravel); }
-    60% { fill: var(--sediment); }
-    80% { fill: var(--rocks); }
+    0%,
+    100% {
+      fill: var(--water-fill);
+    }
+    20% {
+      fill: var(--boulders);
+    }
+    40% {
+      fill: var(--gravel);
+    }
+    60% {
+      fill: var(--sediment);
+    }
+    80% {
+      fill: var(--rocks);
+    }
   }
   @keyframes realness-color-cinder {
-    0%, 100% { fill: var(--pumice); }
-    20% { fill: var(--rocks); }
-    40% { fill: var(--sediment); }
-    60% { fill: var(--sand); }
-    80% { fill: var(--gravel); }
+    0%,
+    100% {
+      fill: var(--pumice);
+    }
+    20% {
+      fill: var(--rocks);
+    }
+    40% {
+      fill: var(--sediment);
+    }
+    60% {
+      fill: var(--sand);
+    }
+    80% {
+      fill: var(--gravel);
+    }
   }
 </style>

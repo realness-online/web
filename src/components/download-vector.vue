@@ -509,7 +509,7 @@
 
         &:hover {
           background: var(--accent);
-          color: white;
+          color: var(--on-emphasis);
         }
 
         & > svg.icon,

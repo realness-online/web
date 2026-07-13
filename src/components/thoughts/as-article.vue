@@ -126,21 +126,21 @@
   </article>
 </template>
 
-<style lang="stylus">
+<style>
   article.thought {
     & > header {
       display: flex;
       justify-content: flex-start;
       flex-direction: row;
-      margin: 0 0 base-line 0;
+      margin: 0 0 var(--base-line) 0;
       & > a > svg {
-        width: base-line * 2;
-        height: base-line * 2;
+        width: calc(var(--base-line) * 2);
+        height: calc(var(--base-line) * 2);
         min-height: inherit;
         cursor: pointer;
         shape-outside: circle();
-        border-radius: (base-line * 2);
-        margin-right: round((base-line / 4), 2);
+        border-radius: calc(var(--base-line) * 2);
+        margin-right: calc(var(--base-line) / 4);
         &.icon {
           fill: var(--accent);
           scale: 0.6;
@@ -150,14 +150,14 @@
         flex: 1;
         margin: 0;
         & > span {
-          margin-right: round((base-line / 4), 2);
+          margin-right: calc(var(--base-line) / 4);
           font-weight: 300;
           display: inline-block;
         }
       }
       & > menu > a > svg {
         fill: var(--accent);
-        opacity: .25;
+        opacity: 0.25;
         &:hover,
         &:active {
           opacity: 1;

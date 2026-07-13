@@ -36,7 +36,7 @@
   </button>
 </template>
 
-<style lang="stylus">
+<style>
   menu > button.avatar {
     appearance: none;
     background: none;

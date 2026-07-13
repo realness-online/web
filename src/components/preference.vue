@@ -115,32 +115,32 @@
   </fieldset>
 </template>
 
-<style lang="stylus">
+<style>
   fieldset.preference:has(input:checked) h4.with-icon svg.icon {
     color: var(--emphasis);
   }
   fieldset.preference {
-    margin-bottom: base-line;
+    margin-bottom: var(--base-line);
     &.compact {
       border: none;
       padding: 0;
       margin-bottom: 0;
       min-width: 0;
       & > div {
-        gap: base-line * 0.5;
+        gap: calc(var(--base-line) * 0.5);
         align-items: center;
         & > label.switch {
-          width: base-line * 2.25;
-          height: base-line * 1.25;
+          width: calc(var(--base-line) * 2.25);
+          height: calc(var(--base-line) * 1.25);
           flex-shrink: 0;
           & > input:checked + .slider:before {
-            transform: translateX(base-line * 1.05);
+            transform: translateX(calc(var(--base-line) * 1.05));
           }
           .slider:before {
-            height: base-line;
-            width: base-line;
-            left: base-line * 0.125;
-            bottom: base-line * 0.125;
+            height: var(--base-line);
+            width: var(--base-line);
+            left: calc(var(--base-line) * 0.125);
+            bottom: calc(var(--base-line) * 0.125);
           }
         }
       }
@@ -155,23 +155,23 @@
         }
         display: inline-flex;
         align-items: center;
-        gap: base-line * 0.35;
+        gap: calc(var(--base-line) * 0.35);
         line-height: 1;
         padding: 0;
         font-size: normal;
-        margin: 0 0 base-line 0;
+        margin: 0 0 var(--base-line) 0;
         &.with-icon svg.icon {
           color: var(--accent);
-          width: base-line * 1.1;
-          height: base-line * 1.1;
+          width: calc(var(--base-line) * 1.1);
+          height: calc(var(--base-line) * 1.1);
           flex-shrink: 0;
         }
         .compact > div > & {
           margin: 0;
           font-size: smaller;
           &.with-icon svg.icon {
-            width: base-line;
-            height: base-line;
+            width: var(--base-line);
+            height: var(--base-line);
           }
         }
       }
@@ -180,7 +180,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: base-line * 0.5;
+      gap: calc(var(--base-line) * 0.5);
       margin: 0;
       line-height: 1.4;
       font-size: smaller;

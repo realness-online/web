@@ -32,7 +32,7 @@
   </router-link>
 </template>
 
-<style lang="stylus">
+<style>
   a#toggle-account {
     display: inline-flex;
     flex-direction: column;

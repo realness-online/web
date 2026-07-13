@@ -36,19 +36,19 @@
   </router-link>
 </template>
 
-<style lang="stylus">
+<style>
   a.profile {
     display: inline-flex;
     shape-outside: circle();
-    margin-right: round((base-line / 3), 2);
+    margin-right: calc(var(--base-line) / 3);
     & > svg {
       shape-outside: circle();
       fill: var(--moonlight);
-      width: base-line * 2;
-      height: base-line * 2;
+      width: calc(var(--base-line) * 2);
+      height: calc(var(--base-line) * 2);
       min-height: inherit;
-      border-radius: round((base-line * 2), 2);
-      margin-right: round((base-line / 6), 2);
+      border-radius: calc(var(--base-line) * 2);
+      margin-right: calc(var(--base-line) / 6);
       &.icon {
         fill: var(--accent);
       }

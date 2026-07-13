@@ -11,7 +11,7 @@
   </div>
 </template>
 
-<style lang="stylus">
+<style>
   .support-layout {
     display: flex;
     flex-direction: column;
