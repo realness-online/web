@@ -1,4 +1,4 @@
-## Next steps (when returning)
+# Next steps (when returning)
 
 1. **Server-as-index** — Add Firestore feed_index; Storage trigger populates it. Client fetches index since last_signed_in.
 2. **last_signed_in** — Add to user doc `/{phone}/index.html`; update on sign-in and sync completion.
