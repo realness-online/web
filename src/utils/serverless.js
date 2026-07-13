@@ -97,7 +97,25 @@ const local_html_string = async itemid => {
   return null
 }
 
-export const move = async (type, id, archive_id, author = localStorage.me) => {
+/**
+ * Moves one poster component between its live location and an archive folder.
+ * @param {string} type
+ * @param {string|number} id
+ * @param {string|number} archive_id
+ * @param {string} [author]
+ * @param {'archive' | 'restore'} [direction] - 'restore' reverses the move,
+ *   used to undo a component that archived successfully when a sibling
+ *   component of the same poster failed, so the poster doesn't end up split
+ *   across both locations.
+ * @returns {Promise<boolean>}
+ */
+export const move = async (
+  type,
+  id,
+  archive_id,
+  author = localStorage.me,
+  direction = 'archive'
+) => {
   const { load, as_poster_id, as_filename } = await import('@/utils/itemid')
   const { as_archive } = await import('@/persistence/Directory')
   const component_types = [
@@ -109,6 +127,7 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
     'boulders'
   ]
   const is_component = component_types.includes(type)
+  const restoring = direction === 'restore'
 
   let old_location, new_location, old_storage_path, new_storage_path
   if (is_component) {
@@ -119,25 +138,34 @@ export const move = async (type, id, archive_id, author = localStorage.me) => {
     const poster_id = as_poster_id(component_itemid)
     if (!poster_id) return false
 
-    const existing_archive = await as_archive(poster_id)
     const poster_filename = poster_id.startsWith('/+')
       ? `people${poster_id}`
       : poster_id
-
-    if (existing_archive)
-      old_storage_path = `${existing_archive}-${type}.html.gz`
-    else old_storage_path = `${poster_filename}-${type}.html.gz`
-
     const archived_poster_id = /** @type {Id} */ (
       `${author}/posters/${archive_id}/${id}`
     )
     const archived_poster_filename = archived_poster_id.startsWith('/+')
       ? `people${archived_poster_id}`
       : archived_poster_id
-    new_storage_path = `${archived_poster_filename}-${type}.html.gz`
+    const archived_storage_path = `${archived_poster_filename}-${type}.html.gz`
+
+    if (restoring) {
+      old_storage_path = archived_storage_path
+      new_storage_path = `${poster_filename}-${type}.html.gz`
+    } else {
+      const existing_archive = await as_archive(poster_id)
+      old_storage_path = existing_archive
+        ? `${existing_archive}-${type}.html.gz`
+        : `${poster_filename}-${type}.html.gz`
+      new_storage_path = archived_storage_path
+    }
   } else {
-    old_location = /** @type {Id} */ (`${author}/${type}/${id}`)
-    new_location = /** @type {Id} */ (`${author}/${type}/${archive_id}/${id}`)
+    const live_location = /** @type {Id} */ (`${author}/${type}/${id}`)
+    const archived_location = /** @type {Id} */ (
+      `${author}/${type}/${archive_id}/${id}`
+    )
+    old_location = restoring ? archived_location : live_location
+    new_location = restoring ? live_location : archived_location
     old_storage_path = await as_filename(old_location)
     new_storage_path = await as_filename(new_location)
   }

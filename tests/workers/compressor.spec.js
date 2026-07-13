@@ -95,4 +95,26 @@ describe('compressor worker', () => {
       expect(result.error).toBe('Unknown route: unknown:route')
     })
   })
+
+  describe('worker message listener', () => {
+    it('posts an error reply instead of hanging when route_message throws', async () => {
+      const post_message_spy = vi
+        .spyOn(self, 'postMessage')
+        .mockImplementation(() => {})
+      pako.inflate.mockImplementation(() => {
+        throw new Error('corrupt data')
+      })
+
+      const compressed = new Uint8Array([1, 2, 3, 4])
+      self.dispatchEvent(
+        new MessageEvent('message', {
+          data: { route: 'decompress:html', compressed }
+        })
+      )
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(post_message_spy).toHaveBeenCalledWith({ error: 'corrupt data' })
+      post_message_spy.mockRestore()
+    })
+  })
 })

@@ -62,9 +62,7 @@
 
 <template>
   <form id="profile-name" v-if="me" @submit.prevent="handle_blur">
-    <fieldset
-      id="name"
-      :class="{ saved: saved, saving: saving, invalid: show_error }">
+    <fieldset :class="{ saved: saved, saving: saving, invalid: show_error }">
       <legend :class="{ valid: is_valid_name }">
         {{ me.name?.trim() || 'Name' }}
       </legend>

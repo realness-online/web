@@ -214,7 +214,7 @@
 
     const viewbox = svg.viewBox.baseVal
     const aspect_ratio = viewbox.width / viewbox.height
-    const target_smallest_side = 1080
+    const target_smallest_side = 1440
     const video_width =
       aspect_ratio >= 1
         ? Math.round(target_smallest_side * aspect_ratio)
@@ -233,7 +233,6 @@
     try {
       const video_filename = await get_filename_for_poster(props.itemid, 'mov')
       const blob = await render_svg_to_video_blob(svg, {
-        fps: 24,
         animation_speed: VIDEO_EXPORT_ANIMATION_SPEED,
         width: video_width,
         height: video_height,
@@ -308,36 +307,38 @@
 
     set_working(true)
 
-    const viewbox = svg.viewBox.baseVal
-    const aspect_ratio = viewbox.width / viewbox.height
-    const FOUR_K_WIDTH = 3840
-    const width = FOUR_K_WIDTH
-    const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
+    try {
+      const viewbox = svg.viewBox.baseVal
+      const aspect_ratio = viewbox.width / viewbox.height
+      const FOUR_K_WIDTH = 3840
+      const width = FOUR_K_WIDTH
+      const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
 
-    const layers = await extract_all_layers(svg, props.itemid, FOUR_K_WIDTH)
+      const layers = await extract_all_layers(svg, props.itemid, FOUR_K_WIDTH)
 
-    const base_name = file_name.value?.replace('.svg', '') || 'poster'
+      const base_name = file_name.value?.replace('.svg', '') || 'poster'
 
-    for (const layer of layers) {
-      const canvas = new OffscreenCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-      ctx.putImageData(layer.imageData, 0, 0)
+      for (const layer of layers) {
+        const canvas = new OffscreenCanvas(width, height)
+        const ctx = canvas.getContext('2d')
+        ctx.putImageData(layer.imageData, 0, 0)
 
-      // Sequential processing required for file downloads
-      // oxlint-disable-next-line no-await-in-loop
-      const blob = await canvas.convertToBlob({ type: 'image/png' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      const safe_layer_name = layer.name.toLowerCase().replace(/\s+/g, '_')
-      a.download = `${base_name}_${safe_layer_name}.png`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+        // Sequential processing required for file downloads
+        // oxlint-disable-next-line no-await-in-loop
+        const blob = await canvas.convertToBlob({ type: 'image/png' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        const safe_layer_name = layer.name.toLowerCase().replace(/\s+/g, '_')
+        a.download = `${base_name}_${safe_layer_name}.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    } finally {
+      set_working(false)
     }
-
-    set_working(false)
   }
 
   const download_png_handler = async event => {
@@ -350,39 +351,41 @@
 
     set_working(true)
 
-    const viewbox = svg.viewBox.baseVal
-    const aspect_ratio = viewbox.width / viewbox.height
-    const FOUR_K_WIDTH = 3840
-    const width = FOUR_K_WIDTH
-    const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
+    try {
+      const viewbox = svg.viewBox.baseVal
+      const aspect_ratio = viewbox.width / viewbox.height
+      const FOUR_K_WIDTH = 3840
+      const width = FOUR_K_WIDTH
+      const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
 
-    const canvas = await render_complete_poster_to_canvas(svg, width, height)
-    const ctx = canvas.getContext('2d')
+      const canvas = await render_complete_poster_to_canvas(svg, width, height)
+      const ctx = canvas.getContext('2d')
 
-    const ICON_SIZE_RATIO = 0.02
-    const ICON_PADDING_RATIO = 0.01
-    const icon_size = Math.round(width * ICON_SIZE_RATIO)
-    const icon_padding = Math.round(width * ICON_PADDING_RATIO)
-    await draw_icon_on_canvas(
-      ctx,
-      'realness',
-      icon_padding,
-      icon_padding,
-      icon_size
-    )
+      const ICON_SIZE_RATIO = 0.02
+      const ICON_PADDING_RATIO = 0.01
+      const icon_size = Math.round(width * ICON_SIZE_RATIO)
+      const icon_padding = Math.round(width * ICON_PADDING_RATIO)
+      await draw_icon_on_canvas(
+        ctx,
+        'realness',
+        icon_padding,
+        icon_padding,
+        icon_size
+      )
 
-    const blob = await canvas.convertToBlob({ type: 'image/png' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const base_name = file_name.value?.replace('.svg', '') || 'poster'
-    a.download = `${base_name}.png`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-
-    set_working(false)
+      const blob = await canvas.convertToBlob({ type: 'image/png' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const base_name = file_name.value?.replace('.svg', '') || 'poster'
+      a.download = `${base_name}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } finally {
+      set_working(false)
+    }
   }
 
   const download_glb_handler = async event => {

@@ -9,124 +9,13 @@
   const route = useRoute()
   const router = useRouter()
 
-  // The Endorse tier uses the $5 Stripe buy button (the SponsorCta default);
-  // the commercial tiers pass their own buy_button_id.
-  const tiers = [
-    {
-      slug: 'endorse',
-      title: 'Endorse',
-      intro: 'For anyone making posters on the web.',
-      features: [
-        {
-          strong: 'Photo to poster',
-          p: 'Camera, paste, or pick an image. Vector layers stay on your device.'
-        },
-        {
-          strong: 'Mosaics',
-          p: 'Transparent cutouts from contrast in your photo.'
-        },
-        {
-          strong: 'Shadow layers',
-          p: 'Gradients and strokes across eighteen colors per image.'
-        },
-        {
-          strong: 'Export',
-          p: 'SVG, 4K PNG, layered PSD, video, or GLB.'
-        },
-        {
-          strong: 'Thoughts feed',
-          p: "Everyone's posters and statements, together."
-        },
-        {
-          strong: 'Talk off-app',
-          p: 'Your number lets people reach you in the messenger you already use.'
-        },
-        {
-          strong: 'Commercial use',
-          p: 'Use posters in client and commercial work.'
-        }
-      ],
-      buy_button_id: 'buy_btn_0TTXvPANizuvdTZsWfCGhEHG',
-      has_actions: false
-    },
-    {
-      slug: 'teams',
-      title: 'Teams',
-      intro: 'Design studios, consultants, families; intimate creative work.',
-      features: [
-        {
-          strong: 'Your Realness',
-          p: 'Run an instance for your studio, family, or circle.'
-        },
-        {
-          strong: 'One community',
-          p: 'One moderator with clear responsibility.'
-        },
-        {
-          strong: 'Local posters',
-          p: 'Members create art on their device; The philosophy is client first. Realness is reliable and efficient to serve.'
-        },
-        {
-          strong: 'Shared tools',
-          p: 'Thoughts, statements, and people you can reach by phone.'
-        },
-        {
-          strong: 'Talk off-app',
-          p: 'Members keep talking in messengers they already use. Your instance is for presence.'
-        },
-        {
-          strong: 'No per-seat pricing',
-          p: 'License the group, not every login.'
-        },
-        {
-          strong: 'Commercial use',
-          p: 'Allowed for your organization.'
-        }
-      ],
-      buy_button_id: 'buy_btn_0ToWtGANizuvdTZsdZR8DZkz',
-      has_actions: true
-    },
-    {
-      slug: 'enterprise',
-      title: 'Organizations',
-      intro: 'For companies and institutions running Realness at scale.',
-      features: [
-        {
-          strong: 'Many communities',
-          p: 'License Realness across teams and institutions.'
-        },
-        {
-          strong: 'Governance',
-          p: 'Moderation that scales with your organization.'
-        },
-        {
-          strong: 'Same workflow',
-          p: 'Posters, exports, and shortcuts for every member.'
-        },
-        {
-          strong: 'Talk off-app',
-          p: 'People connect by phone and keep talking in messengers they already use.'
-        },
-        {
-          strong: 'Scale hosting',
-          p: 'Capacity for distributed orgs and large groups.'
-        },
-        {
-          strong: 'No per-seat pricing',
-          p: 'License the organization, not headcount.'
-        },
-        {
-          strong: 'Commercial use',
-          p: 'Allowed across licensed communities.'
-        }
-      ],
-      buy_button_id: 'buy_btn_0ToWseANizuvdTZsaqi4BZws',
-      has_actions: true
-    }
-  ]
+  // Order of tiers as they appear in the template — used only to drive
+  // which one is active, never to generate content.
+  const tier_slugs = ['endorse', 'teams', 'enterprise']
 
-  const slug_index = slug => tiers.findIndex(tier => tier.slug === slug)
+  const slug_index = slug => tier_slugs.indexOf(slug)
   const active_index = ref(0)
+  const active_slug = computed(() => tier_slugs[active_index.value])
 
   const sync_from_route = () => {
     const slug = route?.params?.tier
@@ -136,12 +25,10 @@
   sync_from_route()
   watch(() => route?.params?.tier, sync_from_route)
 
-  const active_tier = computed(() => tiers[active_index.value])
-
   const go_to = index => {
-    const wrapped = (index + tiers.length) % tiers.length
+    const wrapped = (index + tier_slugs.length) % tier_slugs.length
     active_index.value = wrapped
-    const { slug } = tiers[wrapped]
+    const slug = tier_slugs[wrapped]
     if (route?.params?.tier !== slug && router)
       router.replace(`/pricing/${slug}`)
   }
@@ -150,10 +37,10 @@
 
   // Swipe between tiers on touch.
   let touch_start_x = null
-  const onTouchStart = event => {
+  const on_touch_start = event => {
     touch_start_x = event.changedTouches[0]?.clientX ?? null
   }
-  const onTouchEnd = event => {
+  const on_touch_end = event => {
     if (touch_start_x === null) return
     const delta = event.changedTouches[0].clientX - touch_start_x
     touch_start_x = null
@@ -167,39 +54,168 @@
   <section
     id="pricing"
     class="page"
-    @touchstart.passive="onTouchStart"
-    @touchend.passive="onTouchEnd">
+    @touchstart.passive="on_touch_start"
+    @touchend.passive="on_touch_end">
     <article>
       <header>
         <h1>Pricing</h1>
-        <p>Realness is free to use — but it has a price, if you want one.</p>
+        <p>Realness is free to use — but it has a price.</p>
       </header>
 
       <nav aria-label="Pricing tiers">
         <router-link
-          v-for="(tier, index) in tiers"
-          :key="tier.slug"
-          :to="`/pricing/${tier.slug}`"
-          :aria-current="index === active_index ? 'page' : undefined">
-          {{ tier.title }}
+          to="/pricing/endorse"
+          :aria-current="active_slug === 'endorse' ? 'page' : undefined">
+          Endorse
+        </router-link>
+        <router-link
+          to="/pricing/teams"
+          :aria-current="active_slug === 'teams' ? 'page' : undefined">
+          Teams
+        </router-link>
+        <router-link
+          to="/pricing/enterprise"
+          :aria-current="active_slug === 'enterprise' ? 'page' : undefined">
+          Organizations
         </router-link>
       </nav>
 
       <section aria-label="Tier carousel">
         <transition name="slide" mode="out-in">
-          <article :key="active_tier.slug">
-            <h2>{{ active_tier.title }}</h2>
-            <p>{{ active_tier.intro }}</p>
+          <article v-if="active_slug === 'endorse'" key="endorse">
+            <h2>Endorse</h2>
+            <p>For anyone making posters on the web.</p>
             <ul>
-              <li v-for="feature in active_tier.features" :key="feature.strong">
-                <strong>{{ feature.strong }}</strong>
-                <p>{{ feature.p }}</p>
+              <li>
+                <strong>Photo to poster</strong>
+                <p>
+                  Camera, paste, or pick an image. Vector layers stay on your
+                  device.
+                </p>
+              </li>
+              <li>
+                <strong>Mosaics</strong>
+                <p>Transparent cutouts from contrast in your photo.</p>
+              </li>
+              <li>
+                <strong>Shadow layers</strong>
+                <p>Gradients and strokes across eighteen colors per image.</p>
+              </li>
+              <li>
+                <strong>Export</strong>
+                <p>SVG, 4K PNG, layered PSD, video, or GLB.</p>
+              </li>
+              <li>
+                <strong>Thoughts feed</strong>
+                <p>Everyone's posters and statements, together.</p>
+              </li>
+              <li>
+                <strong>Talk off-app</strong>
+                <p>
+                  Your number lets people reach you in the messenger you already
+                  use.
+                </p>
+              </li>
+              <li>
+                <strong>Commercial use</strong>
+                <p>Use posters in client and commercial work.</p>
               </li>
             </ul>
             <menu>
-              <sponsor-cta :buy_button_id="active_tier.buy_button_id" />
+              <sponsor-cta buy_button_id="buy_btn_0TTXvPANizuvdTZsWfCGhEHG" />
             </menu>
-            <menu v-if="active_tier.has_actions" aria-label="Actions">
+          </article>
+          <article v-else-if="active_slug === 'teams'" key="teams">
+            <h2>Teams</h2>
+            <p>
+              Design studios, consultants, families; intimate creative work.
+            </p>
+            <ul>
+              <li>
+                <strong>Your Realness</strong>
+                <p>Run an instance for your studio, family, or circle.</p>
+              </li>
+              <li>
+                <strong>One community</strong>
+                <p>One moderator with clear responsibility.</p>
+              </li>
+              <li>
+                <strong>Local posters</strong>
+                <p>
+                  Members create art on their device; The philosophy is client
+                  first. Realness is reliable and efficient to serve.
+                </p>
+              </li>
+              <li>
+                <strong>Shared tools</strong>
+                <p>Thoughts, statements, and people you can reach by phone.</p>
+              </li>
+              <li>
+                <strong>Talk off-app</strong>
+                <p>
+                  Members keep talking in messengers they already use. Your
+                  instance is for presence.
+                </p>
+              </li>
+              <li>
+                <strong>No per-seat pricing</strong>
+                <p>License the group, not every login.</p>
+              </li>
+              <li>
+                <strong>Commercial use</strong>
+                <p>Allowed for your organization.</p>
+              </li>
+            </ul>
+            <menu>
+              <sponsor-cta buy_button_id="buy_btn_0ToWtGANizuvdTZsdZR8DZkz" />
+            </menu>
+            <menu aria-label="Actions">
+              <as-prompt-agent mode="instance" inline />
+              <a href="https://github.com/realness-online/web" rel="external">
+                Contact us
+              </a>
+            </menu>
+          </article>
+          <article v-else key="enterprise">
+            <h2>Organizations</h2>
+            <p>For companies and institutions running Realness at scale.</p>
+            <ul>
+              <li>
+                <strong>Many communities</strong>
+                <p>License Realness across teams and institutions.</p>
+              </li>
+              <li>
+                <strong>Governance</strong>
+                <p>Moderation that scales with your organization.</p>
+              </li>
+              <li>
+                <strong>Same workflow</strong>
+                <p>Posters, exports, and shortcuts for every member.</p>
+              </li>
+              <li>
+                <strong>Talk off-app</strong>
+                <p>
+                  People connect by phone and keep talking in messengers they
+                  already use.
+                </p>
+              </li>
+              <li>
+                <strong>Scale hosting</strong>
+                <p>Capacity for distributed orgs and large groups.</p>
+              </li>
+              <li>
+                <strong>No per-seat pricing</strong>
+                <p>License the organization, not headcount.</p>
+              </li>
+              <li>
+                <strong>Commercial use</strong>
+                <p>Allowed across licensed communities.</p>
+              </li>
+            </ul>
+            <menu>
+              <sponsor-cta buy_button_id="buy_btn_0ToWseANizuvdTZsaqi4BZws" />
+            </menu>
+            <menu aria-label="Actions">
               <as-prompt-agent mode="instance" inline />
               <a href="https://github.com/realness-online/web" rel="external">
                 Contact us

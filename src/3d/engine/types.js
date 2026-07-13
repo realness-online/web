@@ -54,6 +54,7 @@
  * @property {() => Record<string, unknown>} get_settings
  * @property {() => Promise<void>} wait_for_textures
  * @property {(filename?: string) => void} export_glb
+ * @property {() => void} dispose
  */
 
 export {}

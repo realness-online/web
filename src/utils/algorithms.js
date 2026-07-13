@@ -15,9 +15,9 @@ const create_mutex = () => {
       else state.locked = true
     },
     unlock: () => {
-      state.locked = false
       const next = state.queue.shift()
       if (next) next()
+      else state.locked = false
     }
   }
 }

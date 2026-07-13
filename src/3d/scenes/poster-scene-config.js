@@ -14,6 +14,7 @@ import {
   DEFAULT_BREATHING_SPEED
 } from '@/utils/preference-defaults.js'
 
+/** @type {Array<{name: import('@/types').Layer_Name, parallax_offset: number, opacity: number}>} */
 export const VECTOR_LAYERS = [
   { name: 'boulders', parallax_offset: -2, opacity: 1.0 },
   { name: 'rocks', parallax_offset: -1, opacity: 0.95 },

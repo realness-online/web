@@ -12,6 +12,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
     paused="true"
     pin="false"
     show_cutout_layers="false"
+    tabable="false"
     touch_uses_long_press="true"
   />
   <!--v-if-->
@@ -31,6 +32,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
     paused="true"
     pin="false"
     show_cutout_layers="false"
+    tabable="false"
     touch_uses_long_press="true"
   />
   <!--v-if-->

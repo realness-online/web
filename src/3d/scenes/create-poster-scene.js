@@ -226,7 +226,10 @@ export const create_poster_scene = svg_string => {
     VECTOR_LAYERS.map(layer => layer.name)
   )
 
-  const scale = FIT_HEIGHT / height
+  // A zero or NaN height (empty/malformed poster SVG) would otherwise
+  // divide out to an Infinity/NaN scale that propagates into every
+  // downstream transform.
+  const scale = FIT_HEIGHT / (height || 1)
   const plane_w = width * scale
   const plane_h = height * scale
   const layer_groups = []
@@ -377,6 +380,19 @@ export const create_poster_scene = svg_string => {
     },
     export_glb(filename = 'poster') {
       export_poster_glb(scene, filename)
+    },
+    dispose() {
+      scene.traverse(object => {
+        object.geometry?.dispose()
+        const materials = Array.isArray(object.material)
+          ? object.material
+          : [object.material].filter(Boolean)
+        for (const material of materials) {
+          for (const value of Object.values(material))
+            if (value?.isTexture) value.dispose()
+          material.dispose()
+        }
+      })
     }
   }
 }

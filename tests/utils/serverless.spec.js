@@ -188,6 +188,54 @@ describe('@/utils/serverless', () => {
 
       expect(ok).toBe(false)
     })
+
+    it('restore direction reverses a poster move back out of the archive', async () => {
+      localStorage.me = '/+15551234567'
+      const itemid = '/+15551234567/posters/archive99/1720119797893'
+      localStorage.setItem(itemid, '<svg>poster</svg>')
+      get.mockResolvedValue(null)
+      const { as_filename } = await import('@/utils/itemid')
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move(
+        'posters',
+        '1720119797893',
+        'archive99',
+        undefined,
+        'restore'
+      )
+
+      expect(ok).toBe(true)
+      // old (archived) location resolved first, new (live) location second.
+      expect(as_filename).toHaveBeenNthCalledWith(
+        1,
+        '/+15551234567/posters/archive99/1720119797893'
+      )
+      expect(as_filename).toHaveBeenNthCalledWith(
+        2,
+        '/+15551234567/posters/1720119797893'
+      )
+    })
+
+    it('restore direction reverses a component move using the archived path', async () => {
+      localStorage.me = '/+15551234567'
+      const shadow_id = '/+15551234567/shadows/1720119797893'
+      localStorage.setItem(shadow_id, '<svg>shadow</svg>')
+      get.mockResolvedValue(null)
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move(
+        'shadows',
+        '1720119797893',
+        'archive99',
+        undefined,
+        'restore'
+      )
+
+      expect(ok).toBe(true)
+      expect(deleteObject.mock.calls[0][0].path).toContain('archive99')
+      expect(uploadString.mock.calls[0][0].path).not.toContain('archive99')
+    })
   })
 
   describe('init_serverless', () => {

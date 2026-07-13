@@ -199,6 +199,13 @@ const route_message = async message => {
   return reply
 }
 self.addEventListener('message', async event => {
-  const reply = await route_message(event)
-  self.postMessage(reply)
+  try {
+    const reply = await route_message(event)
+    self.postMessage(reply)
+  } catch (error) {
+    console.error('Error in message handler:', error)
+    self.postMessage({
+      error: error instanceof Error ? error.message : String(error)
+    })
+  }
 })

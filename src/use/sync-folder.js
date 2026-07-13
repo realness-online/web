@@ -87,36 +87,40 @@ export const use = () => {
 
     set_working?.(true)
 
-    /* oxlint-disable no-await-in-loop -- sequential: mount → export → unmount per poster */
     const container = document.createElement('div')
     container.style.cssText =
       'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden'
     document.body.appendChild(container)
 
-    for (const created of items) {
-      const itemid = /** @type {Id} */ (`${me}/posters/${created}`)
-      const app = createApp({
-        name: 'SyncFolderPoster',
-        render: () =>
-          h(PosterAsFigure, {
-            itemid,
-            menu: false
-          })
-      })
-      app.provide('set_working', () => {})
-      app.mount(container)
+    try {
+      /* oxlint-disable no-await-in-loop -- sequential: mount → export → unmount per poster */
+      for (const created of items) {
+        const itemid = /** @type {Id} */ (`${me}/posters/${created}`)
+        const app = createApp({
+          name: 'SyncFolderPoster',
+          render: () =>
+            h(PosterAsFigure, {
+              itemid,
+              menu: false
+            })
+        })
+        app.provide('set_working', () => {})
+        app.mount(container)
 
-      await tick()
+        try {
+          await tick()
 
-      const svg = await wait_for_svg(itemid)
-      await export_poster_svg(itemid, svg, dir)
-
-      app.unmount()
+          const svg = await wait_for_svg(itemid)
+          await export_poster_svg(itemid, svg, dir)
+        } finally {
+          app.unmount()
+        }
+      }
+      /* oxlint-enable no-await-in-loop */
+    } finally {
+      container.remove()
+      set_working?.(false)
     }
-
-    container.remove()
-    /* oxlint-enable no-await-in-loop */
-    set_working?.(false)
   }
 
   return { sync_folder, sync_folder_name }

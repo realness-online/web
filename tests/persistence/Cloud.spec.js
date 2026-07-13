@@ -514,7 +514,7 @@ describe('@/persistence/Cloud', () => {
       console_error_spy.mockRestore()
     })
 
-    it('logs which component types fail to move', async () => {
+    it('rolls back and logs which component types fail to move', async () => {
       const mock_directory = {
         items: [
           '100',
@@ -558,7 +558,7 @@ describe('@/persistence/Cloud', () => {
 
       expect(console_error_spy).toHaveBeenCalled()
       const error_calls = console_error_spy.mock.calls.filter(call =>
-        call[0].includes('[optimize] Failed to move components')
+        call[0].includes('[optimize] Rolled back partial archive')
       )
       expect(error_calls.length).toBeGreaterThan(0)
 
@@ -648,10 +648,80 @@ describe('@/persistence/Cloud', () => {
         'boulders'
       ]
       const archived_timestamps = ['100', '200', '300', '400', '500']
-      const expected_calls = archived_timestamps.length * component_types.length
+      // Poster '100' fails on 'shadows' but its other 6 components archive
+      // successfully, so they get rolled back with 6 extra `move()` calls.
+      const rolled_back_calls = component_types.length - 1
+      const expected_calls =
+        archived_timestamps.length * component_types.length + rolled_back_calls
 
       expect(move).toHaveBeenCalledTimes(expected_calls)
       expect(load_directory_from_network).toHaveBeenCalledTimes(2)
+
+      console_error_spy.mockRestore()
+    })
+
+    it('rolls back succeeded components when a sibling component fails', async () => {
+      const console_error_spy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+
+      const mock_directory = {
+        items: [
+          '100',
+          '200',
+          '300',
+          '400',
+          '500',
+          '600',
+          '700',
+          '800',
+          '900',
+          '1000',
+          '1100',
+          '1200'
+        ]
+      }
+
+      move.mockImplementation((type, timestamp) => {
+        if (timestamp === '100' && type === 'shadows')
+          return Promise.resolve(false)
+        return Promise.resolve(true)
+      })
+
+      load_directory_from_network
+        .mockResolvedValueOnce(mock_directory)
+        .mockResolvedValue({
+          items: [
+            '200',
+            '300',
+            '400',
+            '500',
+            '600',
+            '700',
+            '800',
+            '900',
+            '1000',
+            '1100'
+          ]
+        })
+
+      await cloud_instance.optimize()
+
+      const restore_calls = move.mock.calls.filter(
+        call =>
+          call[0] !== 'shadows' && call[1] === '100' && call[4] === 'restore'
+      )
+      const restored_types = restore_calls.map(call => call[0])
+      expect(restored_types.sort()).toEqual(
+        ['boulders', 'gravel', 'posters', 'rocks', 'sand', 'sediment'].sort()
+      )
+      // The failed component itself is never "restored" — it never archived.
+      expect(
+        move.mock.calls.some(
+          call =>
+            call[0] === 'shadows' && call[1] === '100' && call[4] === 'restore'
+        )
+      ).toBe(false)
 
       console_error_spy.mockRestore()
     })

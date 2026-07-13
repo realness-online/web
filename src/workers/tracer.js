@@ -5,6 +5,7 @@ import init_tracer_wasm, {
 
 let converter
 let is_processing = false
+let generation = 0
 
 const DEGREES_IN_CIRCLE = 180
 const CORNER_DEG = 30
@@ -35,6 +36,7 @@ const init_tracer = async () => {
 
 export const make_trace = message => {
   const { image_data } = message.data
+  const my_generation = ++generation
 
   is_processing = false
 
@@ -71,10 +73,14 @@ export const make_trace = message => {
   is_processing = true
   let last_reported_progress = -1
   const process_chunk = () => {
-    if (!is_processing) return
+    if (my_generation !== generation || !is_processing) return
 
     try {
-      for (let i = 0; i < CHUNK_ITER && is_processing; i++) {
+      for (
+        let i = 0;
+        i < CHUNK_ITER && is_processing && my_generation === generation;
+        i++
+      ) {
         const result = converter.tick()
         const progress = converter.progress()
 
@@ -98,6 +104,8 @@ export const make_trace = message => {
           last_reported_progress = progress
         }
       }
+
+      if (my_generation !== generation) return
 
       const current_progress = converter.progress()
       if (current_progress !== last_reported_progress) {

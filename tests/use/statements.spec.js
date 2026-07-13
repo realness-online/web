@@ -219,6 +219,15 @@ describe('statements composable', () => {
 
       expect(true).toBe(true)
     })
+
+    it('does not throw when statements.value has none from this author', async () => {
+      const stmt = [{ id: '/+1234/statements/1000', statement: 'Test' }]
+      instance.statements.value = [
+        { id: '/+9999/statements/2000', statement: 'Someone else' }
+      ]
+
+      await expect(instance.statement_shown(stmt)).resolves.toBeUndefined()
+    })
   })
 })
 

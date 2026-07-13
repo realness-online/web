@@ -374,7 +374,9 @@ class Histogram {
     }
 
     const mean_value = all_pixel_values_combined / pixels_total
-    const pixels_per_level_mean = pixels_total / (max - min)
+    // `max - min` is 0 for a single-level range; the correct per-level mean
+    // in that case is simply `pixels_total` (there's exactly one level).
+    const pixels_per_level_mean = pixels_total / (max - min || 1)
     const pixels_per_level_median = pixels_total / unique_values
     const median_pixel_index = Math.floor(pixels_total / 2)
 

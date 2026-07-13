@@ -2,7 +2,7 @@
 
 _Created 2026-06-28. Items from the finishing-touches plan that are explicitly
 deferred until there are active users, revenue, or other triggering signal.
-See `docs/plans/finishing-touches-plan.md` for the full plan and context._
+See `finishing-touches.md` for the full plan and context._
 
 ---
 
@@ -23,7 +23,7 @@ revenue or active users to insure against.
 **DBA filing.** "Scott Fryxell, doing business as Realness" may require a
 fictitious business name filing in California. Revisit when there's revenue.
 
-**Outside counsel / attorney review.** The `docs/plans/attorney-review.md` package
+**Outside counsel / attorney review.** The `attorney-review.md` package
 (H-1–H-4, M-8) is ready for a California attorney when the time comes. No
 outside counsel needed until the service is live with users.
 

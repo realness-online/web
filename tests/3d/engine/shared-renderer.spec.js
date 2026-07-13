@@ -85,7 +85,8 @@ describe('shared_renderer register_viewer', () => {
     scene: new THREE.Scene(),
     mount: vi.fn(),
     update: vi.fn(),
-    on_resize: vi.fn()
+    on_resize: vi.fn(),
+    dispose: vi.fn()
   })
 
   it('mounts scene and sizes canvas on register', () => {

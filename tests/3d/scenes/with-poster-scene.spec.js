@@ -3,7 +3,8 @@ import { with_poster_scene } from '@/3d/scenes/with-poster-scene.js'
 
 const mock_scene = {
   wait_for_textures: vi.fn(async () => []),
-  export_glb: vi.fn()
+  export_glb: vi.fn(),
+  dispose: vi.fn()
 }
 
 const mock_dispose = vi.fn()

@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-07-12 → 07-13 — v2.5.10
+
+- **Codebase-wide bug-fix pass** — a systematic review across persistence,
+  components, composables, workers, and 3D/potrace, cross-referenced
+  against coverage/refactor-risk data, surfaced and fixed real bugs: a
+  mutex that could double-acquire a lock, a sync-queue race risking data
+  loss, a tracer-worker cross-contamination race, poster SVGs silently
+  losing keyboard focusability, a stuck sign-in flow on a wrong SMS code,
+  a textarea keymap that could silently delete typed text, Three.js
+  geometries/materials/textures leaking on every infinite-scroll
+  mount/unmount, several divide-by-zero/Infinity bugs in the color
+  histogram and posterization code, and worker error handling that could
+  leave the upload queue silently stalled forever on one failed image.
+  Every fix landed with a regression test; full detail in
+  `plans/code-review-findings.md`.
+- **Cloud archive consistency** — a poster's 7 component files (main +
+  6 layers) could end up permanently split across live/archive storage if
+  only some of the concurrent moves succeeded; partial failures now roll
+  back cleanly to a fully un-archived state instead of leaving orphaned
+  files. (`src/persistence/Cloud.js`, `src/utils/serverless.js`)
+- **Pricing page rewritten as real HTML** — tier content (features, copy)
+  is now hand-authored markup per the project's semantic-HTML convention,
+  instead of being generated from a JS data array. (`src/views/Pricing.vue`)
+- **Poster video export overhauled** — fixed an ~8x-too-fast playback bug
+  (frames sampled once but encoded at a much higher rate than they were
+  captured), then tuned for quality: frames now cross-fade into each other
+  for smooth motion instead of a stepped hold, bitrate and resolution raised
+  to a real 1440p/14 Mbps encode instead of the previous under-bitrated
+  1080p output. (`src/utils/svg-to-video.js`, `src/components/download-vector.vue`)
+
 ## 2026-07-11 — v2.5.9
 
 - **Materials-and-roles design system** — palette converted to OKLCH (fixing

@@ -341,7 +341,9 @@
   watch_effect(async () => {
     if (!use_dom_reference.value) return
     if (vector.value?.id === props.itemid) return
-    const poster_loaded = await load(/** @type {Id} */ (props.itemid))
+    const itemid_at_start = props.itemid
+    const poster_loaded = await load(/** @type {Id} */ (itemid_at_start))
+    if (props.itemid !== itemid_at_start) return
     if (poster_loaded) await on_show(/** @type {Poster} */ (poster_loaded))
   })
   watch(

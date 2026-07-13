@@ -63,6 +63,7 @@ export const use = () => {
     const current = statements.value
     if (!current) return
     const author_statements = current.filter(s => author === as_author(s.id))
+    if (!author_statements.length) return
     const author_oldest = author_statements[author_statements.length - 1]
     if (oldest.id === author_oldest.id) {
       const author_obj = authors.value.find(relation => relation.id === author)
