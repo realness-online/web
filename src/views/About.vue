@@ -1024,7 +1024,7 @@
             overflow: hidden;
 
             &.logo-wrap--light-bg {
-              background: var(--on-emphasis);
+              background: var(--contrast);
             }
 
             & > .integration-logo {

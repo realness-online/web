@@ -384,7 +384,7 @@
               &:hover,
               &:focus-visible {
                 background: var(--emphasis);
-                color: var(--on-emphasis);
+                color: var(--contrast);
               }
             }
 
