@@ -16,7 +16,7 @@
     if (is_valid_name.value) emit('valid')
   })
 
-  const handle_focus = () => {
+  const on_focus = () => {
     show_error.value = false
     display_error.value = null
     if (!has_focused.value) {
@@ -27,7 +27,7 @@
 
   const SAVED_DISPLAY_TIME = 2000
 
-  const handle_blur = async () => {
+  const on_blur = async () => {
     if (!has_focused.value) return
     const current_name = me.value?.name
     if (current_name === initial_name.value) return
@@ -61,7 +61,7 @@
 </script>
 
 <template>
-  <form id="profile-name" v-if="me" @submit.prevent="handle_blur">
+  <form id="profile-name" v-if="me" @submit.prevent="on_blur">
     <fieldset :class="{ saved: saved, saving: saving, invalid: show_error }">
       <legend :class="{ valid: is_valid_name }">
         {{ me.name?.trim() || 'Name' }}
@@ -76,9 +76,9 @@
         minlength="3"
         :aria-invalid="show_error ? 'true' : undefined"
         :aria-describedby="show_error ? 'name-error' : undefined"
-        @focus="handle_focus"
-        @blur="handle_blur"
-        @keydown.enter.prevent="handle_blur" />
+        @focus="on_focus"
+        @blur="on_blur"
+        @keydown.enter.prevent="on_blur" />
       <p v-if="show_error" id="name-error" role="alert">
         {{ display_error }}
       </p>

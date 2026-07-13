@@ -138,7 +138,7 @@
     menu_open.value = !menu_open.value
   }
 
-  const toggle_mask_pen = () => {
+  const on_toggle_mask_pen = () => {
     const will_activate = !mask_pen.active.value
     if (will_activate && !mosaic.value) {
       mosaic.value = true
@@ -242,10 +242,10 @@
   }
 
   const {
-    handle_pointerdown: handle_dom_ref_pointerdown,
-    handle_pointermove: handle_dom_ref_pointermove,
-    handle_pointerup: handle_dom_ref_pointerup,
-    handle_pointerleave: handle_dom_ref_pointerleave
+    handle_pointerdown: on_dom_ref_pointerdown,
+    handle_pointermove: on_dom_ref_pointermove,
+    handle_pointerup: on_dom_ref_pointerup,
+    handle_pointerleave: on_dom_ref_pointerleave
   } = use_poster_svg_activate_pointer({
     on_activate: dom_reference_activate,
     touch_uses_long_press: true
@@ -432,7 +432,7 @@
       ? { toggle_meet: dom_reference_activate }
       : as_svg_ref.value
 
-  const handle_focusin = () => {
+  const on_focusin = () => {
     key_commands?.add_context('Poster')
     key_commands?.register_handler('poster::Toggle_Meet_Slice', {
       handler: () => poster_toggle_target()?.toggle_meet?.(),
@@ -440,12 +440,12 @@
     })
   }
 
-  const handle_focusout = () => {
+  const on_focusout = () => {
     key_commands?.remove_context('Poster')
     key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
   }
 
-  const activate_poster = () => poster_toggle_target()?.toggle_meet?.()
+  const on_activate_poster = () => poster_toggle_target()?.toggle_meet?.()
 
   watch_effect(() => {
     if (!use_dom_reference.value) return
@@ -460,9 +460,9 @@
     :aria-expanded="
       overlay_statements?.length ? overlay_text_visible : undefined
     "
-    @focusin="handle_focusin"
-    @focusout="handle_focusout"
-    @keydown.enter.prevent="activate_poster">
+    @focusin="on_focusin"
+    @focusout="on_focusout"
+    @keydown.enter.prevent="on_activate_poster">
     <svg
       v-if="use_dom_reference"
       itemscope
@@ -475,11 +475,11 @@
       :aria-label="poster_label"
       :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
       @click="on_poster_svg_click"
-      @pointerdown="handle_dom_ref_pointerdown"
-      @pointermove="handle_dom_ref_pointermove"
-      @pointerup="handle_dom_ref_pointerup"
-      @pointerleave="handle_dom_ref_pointerleave"
-      @pointercancel="handle_dom_ref_pointerleave"
+      @pointerdown="on_dom_ref_pointerdown"
+      @pointermove="on_dom_ref_pointermove"
+      @pointerup="on_dom_ref_pointerup"
+      @pointerleave="on_dom_ref_pointerleave"
+      @pointercancel="on_dom_ref_pointerleave"
       @contextmenu.prevent
       @selectstart.prevent>
       <use :href="poster_reference_href" />
@@ -556,7 +556,7 @@
               <button
                 class="mask-pen"
                 :class="{ active: mask_pen.active.value }"
-                @click.stop="toggle_mask_pen">
+                @click.stop="on_toggle_mask_pen">
                 &#9998;<span v-if="mask_pen.selected.value.size">
                   {{ mask_pen.selected.value.size }}</span
                 >

@@ -1,5 +1,5 @@
 <script setup>
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import AsAvatar from '@/components/posters/as-avatar'
   import PosterAsFigure from '@/components/posters/as-figure'
   import AsAddress from '@/components/profile/as-address'
@@ -48,7 +48,7 @@
     return props.person
   })
 
-  const avatar_click = () => {
+  const on_avatar_click = () => {
     const route_path = { path: props.person.id }
     router.push(route_path)
   }
@@ -92,8 +92,8 @@
       v-if="person.avatar"
       :itemid="person.avatar"
       :tabable="editable"
-      @click="avatar_click" />
-    <icon v-else name="silhouette" @click="avatar_click" />
+      @click="on_avatar_click" />
+    <icon v-else name="silhouette" @click="on_avatar_click" />
     <figcaption>
       <as-address :key="person.id" :person="person" :editable="editable" />
       <menu>

@@ -618,13 +618,13 @@ describe('App.vue', () => {
   describe('Sync Events', () => {
     it('handles sync active event', async () => {
       wrapper.vm.status = null // Reset status
-      wrapper.vm.sync_active(true)
+      wrapper.vm.on_active(true)
       expect(wrapper.vm.status).toBe('working')
     })
 
     it('handles sync inactive event', async () => {
       wrapper.vm.status = 'working' // Set initial status
-      wrapper.vm.sync_active(false)
+      wrapper.vm.on_active(false)
       expect(wrapper.vm.status).toBe(null)
     })
   })

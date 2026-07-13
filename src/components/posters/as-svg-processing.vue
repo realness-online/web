@@ -8,7 +8,7 @@
     onUnmounted as unmounted,
     inject
   } from 'vue'
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import AsSvg from '@/components/posters/as-svg'
   import AsPathCutout from '@/components/posters/as-path-cutout'
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'

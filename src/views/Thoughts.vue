@@ -53,7 +53,7 @@
       : ''
   )
 
-  const toggle_keyboard = active => {
+  const on_toggle_keyboard = active => {
     posting.value = active ?? !posting.value
   }
 
@@ -121,7 +121,7 @@
   /**
    * @param {Id} id
    */
-  const remove_poster = async id => {
+  const on_remove_poster = async id => {
     const loaded = await load(id)
     if (!loaded) return
     poster_to_remove.value = /** @type {import('@/types').Poster} */ (loaded)
@@ -129,7 +129,7 @@
     if (delete_dialog.value) delete_dialog.value.showModal()
   }
 
-  const remove_missing_poster = async id => {
+  const on_remove_missing_poster = async id => {
     posters.value = posters.value.filter(item => id !== item.id)
     const author_id = as_author(/** @type {Id} */ (id))
     if (!author_id) {
@@ -167,7 +167,7 @@
     })
   }
 
-  const confirmed_remove = async () => {
+  const on_confirmed_remove = async () => {
     const to_remove = poster_to_remove.value
     if (!to_remove || !delete_dialog.value) return
     delete_dialog.value.close()
@@ -176,11 +176,11 @@
     await poster.delete()
   }
 
-  const cancel_remove = () => {
+  const on_cancel_remove = () => {
     if (delete_dialog.value) delete_dialog.value.close()
   }
 
-  const dialog_click = event => {
+  const on_dialog_click = event => {
     if (event.target === delete_dialog.value && delete_dialog.value)
       delete_dialog.value.close()
   }
@@ -335,7 +335,7 @@
     scroll_storytelling_to_section(section, behavior)
   }
 
-  const handle_focus = event => {
+  const on_focus = event => {
     if (!storytelling.value) return
     scroll_storytelling_to_section(event.target.closest('section'))
   }
@@ -462,7 +462,7 @@
     v-if="poster_to_remove"
     ref="delete_dialog"
     class="confirm"
-    @click="dialog_click">
+    @click="on_dialog_click">
     <article>
       <header>
         <h1>Delete Poster</h1>
@@ -472,8 +472,8 @@
         {{ as_day_time_year(as_created_at(poster_to_remove.id)) }}
       </p>
       <menu>
-        <button class="cancel" @click="cancel_remove">Cancel</button>
-        <button class="delete" @click="confirmed_remove">Delete</button>
+        <button class="cancel" @click="on_cancel_remove">Cancel</button>
+        <button class="delete" @click="on_confirmed_remove">Delete</button>
       </menu>
       <footer></footer>
     </article>
@@ -499,7 +499,7 @@
     </header>
     <h1>Thoughts</h1>
     <as-textarea
-      @toggle-keyboard="toggle_keyboard"
+      @toggle-keyboard="on_toggle_keyboard"
       @tab-next="
         e => {
           const first = /** @type {HTMLElement | null} */ (
@@ -525,7 +525,7 @@
       :statements="statements"
       :storytelling="storytelling"
       itemscope
-      @focusin="handle_focus">
+      @focusin="on_focus">
       <template v-for="item in day" :key="feed_slot_itemid(item)">
         <poster-as-figure
           v-if="
@@ -541,8 +541,8 @@
           tabindex="0"
           :class="{ 'fill-screen': menu }"
           @show="poster_shown"
-          @remove="remove_poster"
-          @missing="remove_missing_poster" />
+          @remove="on_remove_poster"
+          @missing="on_remove_missing_poster" />
         <thought-as-article
           v-else-if="
             item.type !== 'posters' &&

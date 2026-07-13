@@ -1,6 +1,6 @@
 <script setup>
   import { computed } from 'vue'
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import * as preferences from '@/utils/preference'
   import {
     get_preference_cycle_hint,

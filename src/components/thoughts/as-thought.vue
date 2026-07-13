@@ -69,7 +69,7 @@
   /**
    * @returns {Promise<void>}
    */
-  const save = async () => {
+  const on_blur = async () => {
     const possibly_changed = is_editable.value?.textContent?.trim()
     if (thought_text.value !== possibly_changed && update_statement)
       await update_statement(props.thought.id, possibly_changed ?? '')
@@ -77,7 +77,7 @@
     emit('blurred', props.thought)
   }
 
-  const focused = () => {
+  const on_focus = () => {
     emit('focused', props.thought)
   }
 
@@ -135,7 +135,7 @@
       :spellcheck="true"
       :contenteditable="true"
       itemprop="statement"
-      @focus="focused"
-      @blur.prevent="save" />
+      @focus="on_focus"
+      @blur.prevent="on_blur" />
   </div>
 </template>

@@ -26,9 +26,9 @@
 
   // Sign out is destructive enough to confirm — no one-tap logout.
   const confirm = ref(null)
-  const ask_sign_out = () => confirm.value?.showModal()
-  const cancel_sign_out = () => confirm.value?.close()
-  const do_sign_out = () => {
+  const on_ask_sign_out = () => confirm.value?.showModal()
+  const on_cancel_sign_out = () => confirm.value?.close()
+  const on_do_sign_out = () => {
     confirm.value?.close()
     sign_off()
   }
@@ -49,7 +49,7 @@
         <footer>
           <div>
             <h4>Signed in</h4>
-            <button type="button" id="sign-out" @click="ask_sign_out">
+            <button type="button" id="sign-out" @click="on_ask_sign_out">
               Sign out
             </button>
           </div>
@@ -61,8 +61,8 @@
       <dialog id="confirm-sign-out" ref="confirm" class="modal">
         <p>Sign out?</p>
         <menu>
-          <button type="button" @click="cancel_sign_out">Cancel</button>
-          <button type="button" id="confirm" @click="do_sign_out">
+          <button type="button" @click="on_cancel_sign_out">Cancel</button>
+          <button type="button" id="confirm" @click="on_do_sign_out">
             Sign out
           </button>
         </menu>

@@ -52,7 +52,7 @@
   const video_progress = ref(0)
   const video_total = ref(0)
 
-  const download_svg_handler = event => {
+  const on_download_svg = event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
@@ -72,7 +72,7 @@
     URL.revokeObjectURL(url)
   }
 
-  const toggle_menu = event => {
+  const on_toggle_menu = event => {
     event.preventDefault()
     event.stopPropagation()
     if (video_exporting.value) return
@@ -189,7 +189,7 @@
     }
   }
 
-  const download_psd_handler = async event => {
+  const on_download_psd = async event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
@@ -205,7 +205,7 @@
     await download_psd(svg)
   }
 
-  const download_video_handler = async event => {
+  const on_download_video = async event => {
     event.preventDefault()
     event.stopPropagation()
 
@@ -297,7 +297,7 @@
     document.body.removeChild(container)
   }
 
-  const png_layers = async event => {
+  const on_png_layers = async event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
@@ -341,7 +341,7 @@
     }
   }
 
-  const download_png_handler = async event => {
+  const on_download_png = async event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
@@ -388,7 +388,7 @@
     }
   }
 
-  const download_glb_handler = async event => {
+  const on_download_glb = async event => {
     event.preventDefault()
     event.stopPropagation()
     close_menu()
@@ -431,41 +431,38 @@
 
 <template>
   <nav class="download-vector" ref="button_ref">
-    <a @click="toggle_menu" title="Download" aria-label="Download options">
+    <a @click="on_toggle_menu" title="Download" aria-label="Download options">
       <icon name="download" />
     </a>
     <menu v-if="menu_open" ref="menu_ref" class="format-picker">
-      <a
-        v-if="!video_exporting"
-        @click="download_svg_handler"
-        title="Download SVG">
+      <a v-if="!video_exporting" @click="on_download_svg" title="Download SVG">
         SVG
       </a>
       <a
         v-if="!video_exporting"
-        @click="download_png_handler"
+        @click="on_download_png"
         title="Download PNG"
         aria-label="Download full poster as PNG">
-        <icon name="add" @click="png_layers" />
+        <icon name="add" @click="on_png_layers" />
         PNG
       </a>
       <a
         v-if="!video_exporting"
-        @click="download_psd_handler"
+        @click="on_download_psd"
         title="Download PSD"
         aria-label="Download PSD">
         PSD
       </a>
       <a
         v-if="!video_exporting"
-        @click="download_video_handler"
+        @click="on_download_video"
         title="Download video"
         aria-label="Download animated video">
         Video
       </a>
       <a
         v-if="!video_exporting"
-        @click="download_glb_handler"
+        @click="on_download_glb"
         title="Download GLB for Blender"
         aria-label="Download GLB for Blender">
         GLB

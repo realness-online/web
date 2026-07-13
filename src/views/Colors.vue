@@ -12,14 +12,14 @@
 
   const icon_index = ref(0)
   const preview_icon = computed(() => icon_names[icon_index.value])
-  const cycle_icon = () => {
+  const on_cycle = () => {
     if (!icon_names.length) return
     icon_index.value = (icon_index.value + 1) % icon_names.length
   }
 
   const weights = ['fill', 'darken', 'lighten']
   const roles_weights_open = ref(false)
-  const toggle_roles_weights_open = () => {
+  const on_toggle_roles_weights_open = () => {
     roles_weights_open.value = !roles_weights_open.value
   }
   const role_names = ['accent', 'working', 'emphasis', 'warning']
@@ -303,9 +303,9 @@
             role="button"
             tabindex="0"
             :aria-expanded="roles_weights_open"
-            @click="toggle_roles_weights_open"
-            @keydown.enter="toggle_roles_weights_open"
-            @keydown.space.prevent="toggle_roles_weights_open">
+            @click="on_toggle_roles_weights_open"
+            @keydown.enter="on_toggle_roles_weights_open"
+            @keydown.space.prevent="on_toggle_roles_weights_open">
             <span>
               <code>--accent</code>
               <samp itemprop="variant">{{ variant_of('accent') }}</samp>
@@ -348,9 +348,9 @@
             role="button"
             tabindex="0"
             :aria-expanded="roles_weights_open"
-            @click="toggle_roles_weights_open"
-            @keydown.enter="toggle_roles_weights_open"
-            @keydown.space.prevent="toggle_roles_weights_open">
+            @click="on_toggle_roles_weights_open"
+            @keydown.enter="on_toggle_roles_weights_open"
+            @keydown.space.prevent="on_toggle_roles_weights_open">
             <span>
               <code>--working</code>
               <samp itemprop="variant">{{ variant_of('working') }}</samp>
@@ -393,9 +393,9 @@
             role="button"
             tabindex="0"
             :aria-expanded="roles_weights_open"
-            @click="toggle_roles_weights_open"
-            @keydown.enter="toggle_roles_weights_open"
-            @keydown.space.prevent="toggle_roles_weights_open">
+            @click="on_toggle_roles_weights_open"
+            @keydown.enter="on_toggle_roles_weights_open"
+            @keydown.space.prevent="on_toggle_roles_weights_open">
             <span>
               <code>--emphasis</code>
               <samp itemprop="variant">{{ variant_of('emphasis') }}</samp>
@@ -444,9 +444,9 @@
             role="button"
             tabindex="0"
             :aria-expanded="roles_weights_open"
-            @click="toggle_roles_weights_open"
-            @keydown.enter="toggle_roles_weights_open"
-            @keydown.space.prevent="toggle_roles_weights_open">
+            @click="on_toggle_roles_weights_open"
+            @keydown.enter="on_toggle_roles_weights_open"
+            @keydown.space.prevent="on_toggle_roles_weights_open">
             <span>
               <code>--warning</code>
               <samp itemprop="variant">{{ variant_of('warning') }}</samp>
@@ -579,7 +579,7 @@
             <preview_mark
               :name="preview_icon"
               :label="`${name} ${weight}`"
-              @cycle="cycle_icon" />
+              @cycle="on_cycle" />
           </li>
         </ul>
       </figure>
@@ -645,7 +645,7 @@
                 <preview_mark
                   :name="preview_icon"
                   :label="`${surface} ${stop.name}`"
-                  @cycle="cycle_icon" />
+                  @cycle="on_cycle" />
               </li>
             </ul>
           </li>
@@ -715,7 +715,7 @@
             <preview_mark
               :name="preview_icon"
               :label="`${layer.name} ${weight}`"
-              @cycle="cycle_icon" />
+              @cycle="on_cycle" />
           </li>
         </ul>
       </figure>
@@ -739,7 +739,7 @@
                 <preview_mark
                   :name="preview_icon"
                   :label="`${layer.name} ${stop.name}`"
-                  @cycle="cycle_icon" />
+                  @cycle="on_cycle" />
               </li>
             </ul>
           </li>
@@ -767,7 +767,7 @@
                 <preview_mark
                   :name="preview_icon"
                   :label="`${surface} ${layer.name}`"
-                  @cycle="cycle_icon" />
+                  @cycle="on_cycle" />
               </li>
             </ul>
           </li>

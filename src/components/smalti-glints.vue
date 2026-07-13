@@ -1,6 +1,7 @@
 <template>
   <!-- 512-space cutouts mapped onto the logo box (-20,-20) 232×232 -->
   <g
+    data-glint-group
     transform="translate(-20 -20) scale(0.453125)"
     pointer-events="none"
     aria-hidden="true">
@@ -103,10 +104,10 @@
   </g>
 </template>
 
-<style lang="stylus" scoped>
+<style lang="stylus">
   // Own loop, not the poster cycle. Tracks animation_speed via --realness-cycle.
   // ~9s at default stroll (90s cycle).
-  g {
+  g[data-glint-group] {
     --glint-cycle: calc(var(--realness-cycle, 90s) * 0.1);
   }
 

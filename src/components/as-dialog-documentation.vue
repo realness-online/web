@@ -34,11 +34,11 @@
     }
   }
 
-  const handle_click = event => {
+  const on_click = event => {
     if (event.target === dialog.value) dialog.value.close()
   }
 
-  const scroll_to_section = id => {
+  const on_scroll_to_section = id => {
     const element = document.getElementById(id)
     if (element) element.scrollIntoView({ behavior: 'smooth' })
   }
@@ -51,7 +51,7 @@
 </script>
 
 <template>
-  <dialog ref="dialog" class="documentation" @click="handle_click">
+  <dialog ref="dialog" class="documentation" @click="on_click">
     <header>
       <h1>Realness.<span>online</span></h1>
       <h2>Documentation</h2>
@@ -63,7 +63,7 @@
           :key="item.id"
           :href="`#${item.id}`"
           :class="`level-${item.level}`"
-          @click.prevent="scroll_to_section(item.id)">
+          @click.prevent="on_scroll_to_section(item.id)">
           {{ item.title }}
         </a>
       </nav>

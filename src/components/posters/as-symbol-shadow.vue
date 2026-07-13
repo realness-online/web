@@ -44,7 +44,7 @@
     return null
   })
 
-  const handle_focus = layer => {
+  const on_focus = layer => {
     focus(layer)
     emit('focus', layer)
   }
@@ -72,7 +72,7 @@
       :visible="background_visible"
       fill-opacity="1"
       :fill="`url(${gradient_fragment('radial-background')})`"
-      @focus="handle_focus('background')" />
+      @focus="on_focus('background')" />
     <as-path
       v-if="vector.light"
       :id="query('light')"
@@ -83,7 +83,7 @@
       :mask="`url(${gradient_fragment('horizontal-mask')})`"
       :fill="`url(${gradient_fragment('vertical-light')})`"
       :stroke="`url(${gradient_fragment('horizontal-medium')})`"
-      @focus="handle_focus('light')" />
+      @focus="on_focus('light')" />
     <as-path
       v-if="vector.regular"
       :id="query('regular')"
@@ -94,7 +94,7 @@
       :mask="`url(${gradient_fragment('radial-mask')})`"
       :fill="`url(${gradient_fragment('horizontal-regular')})`"
       :stroke="`url(${gradient_fragment('vertical-bold')})`"
-      @focus="handle_focus('regular')" />
+      @focus="on_focus('regular')" />
     <as-path
       v-if="vector.medium"
       :id="query('medium')"
@@ -105,7 +105,7 @@
       :mask="`url(${gradient_fragment('vertical-mask')})`"
       :fill="`url(${gradient_fragment('vertical-medium')})`"
       :stroke="`url(${gradient_fragment('vertical-background')})`"
-      @focus="handle_focus('medium')" />
+      @focus="on_focus('medium')" />
     <as-path
       v-if="vector.bold"
       :id="query('bold')"
@@ -116,6 +116,6 @@
       :mask="`url(${gradient_fragment('horizontal-mask')})`"
       :fill="`url(${gradient_fragment('vertical-bold')})`"
       :stroke="`url(${gradient_fragment('radial-light')})`"
-      @focus="handle_focus('bold')" />
+      @focus="on_focus('bold')" />
   </symbol>
 </template>

@@ -34,10 +34,10 @@
   let orbit_down_x = 0
   let orbit_down_y = 0
   const {
-    handle_pointerdown,
+    handle_pointerdown: on_pointerdown,
     handle_pointermove,
-    handle_pointerup,
-    handle_pointerleave
+    handle_pointerup: on_pointerup,
+    handle_pointerleave: on_pointerleave
   } = use_poster_svg_activate_pointer({
     on_activate: () => emit('select'),
     touch_uses_long_press: true,
@@ -114,11 +114,11 @@
   <canvas
     ref="canvas_ref"
     class="viewer_3d"
-    @pointerdown="handle_pointerdown"
+    @pointerdown="on_pointerdown"
     @pointermove="on_pointer_move"
-    @pointerup="handle_pointerup"
-    @pointercancel="handle_pointerleave"
-    @pointerleave="handle_pointerleave"
+    @pointerup="on_pointerup"
+    @pointercancel="on_pointerleave"
+    @pointerleave="on_pointerleave"
     @contextmenu.prevent
     @selectstart.prevent />
 </template>

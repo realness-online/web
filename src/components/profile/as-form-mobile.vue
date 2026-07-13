@@ -1,5 +1,5 @@
 <script setup>
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import { auth } from '@/utils/serverless'
   import { Recaptcha, sign_in } from '@/utils/serverless-auth'
   import { check_phone_integrity as verify_phone_integrity } from '@/utils/phone-integrity'
@@ -66,7 +66,7 @@
     country_code.value === default_country ? '(555) 555-5555' : null
   )
 
-  const validate_mobile_number = () => {
+  const on_validate_mobile_number = () => {
     const is_valid =
       !!mobile_number.value && valid_phone(full_phone.value, country_code.value)
     disabled_sign_in.value = !is_valid
@@ -77,7 +77,7 @@
     if (mobile.value) mobile.value.disabled = true
   }
 
-  const begin_authorization = async () => {
+  const on_begin_authorization = async () => {
     reset_integrity_message()
     disable_input()
     show_authorize.value = false
@@ -125,7 +125,7 @@
     if (verifier) verifier.scrollIntoView(false)
   }
 
-  const sign_in_with_code = async () => {
+  const on_sign_in_with_code = async () => {
     reset_integrity_message()
     working.value = true
     disable_input()
@@ -140,7 +140,7 @@
     }
   }
 
-  const mobile_keypress = event => {
+  const on_mobile_keypress = event => {
     const { key } = event
     if (key.match(/^\d$/) || (key === '+' && !mobile_number.value)) return
     event.preventDefault()
@@ -152,19 +152,19 @@
     if (parsed.country) country_code.value = parsed.country
     const formatter = new as_you_type(parsed.country || fallback_country)
     mobile_number.value = formatter.input(parsed.nationalNumber)
-    validate_mobile_number()
+    on_validate_mobile_number()
   }
 
-  const mobile_paste = event => {
+  const on_mobile_paste = event => {
     const past_text = event.clipboardData.getData('text/plain')
     parse_and_apply(past_text, country_code.value)
   }
 
-  const handle_input = () => {
+  const on_input = () => {
     reset_integrity_message()
     const raw = mobile_number.value
     if (!raw) {
-      validate_mobile_number()
+      on_validate_mobile_number()
       return
     }
     const parsed = parse_phone(raw, country_code.value)
@@ -173,12 +173,12 @@
     else {
       const formatter = new as_you_type(country_code.value)
       mobile_number.value = formatter.input(raw)
-      validate_mobile_number()
+      on_validate_mobile_number()
     }
   }
 
   // Digit-only at the point of entry; length is enforced by maxlength, not JS.
-  const code_keypress = event => {
+  const on_code_keypress = event => {
     if (!event.key.match(/^\d$/)) event.preventDefault()
   }
 
@@ -194,14 +194,14 @@
     }
 
     show_authorize.value = true
-    validate_mobile_number()
+    on_validate_mobile_number()
   })
 </script>
 
 <template>
   <form id="profile-mobile">
     <fieldset v-if="show_mobile_input" id="phone">
-      <legend :class="{ valid: validate_mobile_number() }">
+      <legend :class="{ valid: on_validate_mobile_number() }">
         {{ mobile_display }}
       </legend>
       <button
@@ -222,10 +222,10 @@
         autocomplete="tel"
         aria-label="Phone number"
         :placeholder="placeholder"
-        @keypress="mobile_keypress"
-        @keyup="validate_mobile_number"
-        @input="handle_input"
-        @paste.prevent="mobile_paste" />
+        @keypress="on_mobile_keypress"
+        @keyup="on_validate_mobile_number"
+        @input="on_input"
+        @paste.prevent="on_mobile_paste" />
       <select
         v-if="show_countries"
         id="country"
@@ -249,7 +249,7 @@
         maxlength="6"
         autocomplete="one-time-code"
         placeholder="6-digit code"
-        @keypress="code_keypress" />
+        @keypress="on_code_keypress" />
     </fieldset>
     <p v-if="integrity_message" id="integrity-denied" role="alert">
       {{ integrity_message }}
@@ -260,13 +260,13 @@
         v-if="show_authorize"
         id="authorize"
         :disabled="disabled_sign_in"
-        @click.prevent="begin_authorization">
+        @click.prevent="on_begin_authorization">
         Text me a code
       </button>
       <button
         v-if="show_code"
         id="submit-verification"
-        @click.prevent="sign_in_with_code">
+        @click.prevent="on_sign_in_with_code">
         Verify
       </button>
     </menu>

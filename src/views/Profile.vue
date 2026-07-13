@@ -4,7 +4,7 @@
   import AsFigure from '@/components/profile/as-figure'
   import ThoughtAsArticle from '@/components/thoughts/as-article'
   import PosterAsFigure from '@/components/posters/as-figure'
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
 
   import { use as use_statements } from '@/use/statements'
   import { use_posters } from '@/use/poster'

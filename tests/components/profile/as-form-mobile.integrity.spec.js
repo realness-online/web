@@ -79,7 +79,7 @@ describe('as-form-mobile - phone integrity', () => {
     })
     await flushPromises()
     wrapper.vm.mobile_number = '4155551234'
-    wrapper.vm.validate_mobile_number()
+    wrapper.vm.on_validate_mobile_number()
     await wrapper.vm.$nextTick()
     return wrapper
   }

@@ -39,7 +39,7 @@ describe('as-form-mobile - Button Functionality', () => {
         wrapper.vm.mobile_number = 'invalid'
         await wrapper.vm.$nextTick()
         // Call validation directly
-        wrapper.vm.validate_mobile_number()
+        wrapper.vm.on_validate_mobile_number()
         await wrapper.vm.$nextTick()
       }
 
@@ -98,7 +98,7 @@ describe('as-form-mobile - Button Functionality', () => {
     })
 
     it('Emits an event when the user is signed on', async () => {
-      await wrapper.vm.sign_in_with_code()
+      await wrapper.vm.on_sign_in_with_code()
       expect(wrapper.emitted('signed-on')).toBeTruthy()
     })
   })

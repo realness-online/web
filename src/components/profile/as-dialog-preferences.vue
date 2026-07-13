@@ -1,11 +1,11 @@
 <script setup>
-  import Icon from '@/components/icon'
+  import icon from '@/components/icon'
   import PreferencesMenu from '@/components/preferences-menu'
   import { ref } from 'vue'
 
   const settings = ref(null)
 
-  const show_settings = () => {
+  const on_show_settings = () => {
     if (!settings.value) return
 
     if (settings.value.open) settings.value.close()
@@ -15,18 +15,18 @@
     }
   }
 
-  const handle_click = event => {
+  const on_click = event => {
     if (event.target === settings.value) settings.value.close()
   }
 
-  defineExpose({ show: show_settings })
+  defineExpose({ show: on_show_settings })
 </script>
 
 <template>
-  <button aria-label="Settings" @click="show_settings">
+  <button aria-label="Settings" @click="on_show_settings">
     <icon name="gear" />
   </button>
-  <dialog id="preferences" ref="settings" @click="handle_click">
+  <dialog id="preferences" ref="settings" @click="on_click">
     <section>
       <header>
         <h1>Settings</h1>
