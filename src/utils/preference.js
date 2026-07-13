@@ -17,6 +17,7 @@ import {
 } from '@/utils/preference-defaults.js'
 
 export const animate = storage('animate', false)
+export const color_cycle = storage('color_cycle', true)
 export const drama = storage('drama', false)
 export const drama_back = storage('drama_back', false)
 export const drama_front = storage('drama_front', false)
@@ -107,6 +108,7 @@ export const breathing_speed = storage(
 
 export const reset_preferences = () => {
   animate.value = false
+  color_cycle.value = true
   drama.value = false
   drama_back.value = false
   drama_front.value = false

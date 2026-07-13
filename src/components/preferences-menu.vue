@@ -243,6 +243,7 @@
       <h3 id="preferences-motion">Motion</h3>
       <preference name="drama" />
       <preference :icon="icon" name="animate" />
+      <preference name="color_cycle" label="Color cycle" />
       <h3 id="preferences-view">View</h3>
       <preference :icon="icon" name="view_3d" label="3D">
         <div

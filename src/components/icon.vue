@@ -1,7 +1,12 @@
 <script setup>
   import icons from '/icons.svg'
   import { computed, ref, watch, onMounted } from 'vue'
-  import { animate } from '@/utils/preference'
+  import { animate, animation_speed, color_cycle } from '@/utils/preference'
+  import {
+    BASE_DURATION,
+    ANIMATION_SPEED_MULTIPLIERS
+  } from '@/utils/animation-config'
+  import SmaltiGlints from '@/components/smalti-glints.vue'
   const props = defineProps({
     name: {
       type: String,
@@ -9,6 +14,12 @@
     }
   })
   const icon_location = computed(() => `${icons}#${props.name}`)
+
+  // Same master cycle as posters/as-animation.vue duration(BASE_DURATION)
+  const realness_cycle = computed(() => {
+    const multiplier = ANIMATION_SPEED_MULTIPLIERS[animation_speed.value] || 1
+    return BASE_DURATION * multiplier
+  })
 
   const realness_svg = ref(null)
   const realness_elements = selector => {
@@ -21,15 +32,26 @@
     )
   const rewind = (animations, playing) => {
     for (const animation of animations) {
+      const name = animation.animationName || ''
+      if (String(name).includes('realness-color') && !color_cycle.value) {
+        animation.cancel()
+        continue
+      }
       animation.currentTime = 0
       if (playing) animation.play()
       else animation.pause()
     }
   }
   const sync_realness_animations = playing =>
-    rewind(realness_animations('[data-tile]'), playing)
+    rewind(realness_animations('[data-tile], [data-glint]'), playing)
   onMounted(() => sync_realness_animations(animate.value))
   watch(animate, sync_realness_animations)
+  watch(color_cycle, () =>
+    requestAnimationFrame(() => sync_realness_animations(animate.value))
+  )
+  watch(animation_speed, () =>
+    requestAnimationFrame(() => sync_realness_animations(animate.value))
+  )
 
   const on_realness_press = event => {
     event.currentTarget?.setPointerCapture?.(event.pointerId)
@@ -91,6 +113,8 @@
     ref="realness_svg"
     viewBox="-20 -20 232 232"
     class="icon realness"
+    :class="{ 'color-cycle': color_cycle }"
+    :style="{ '--realness-cycle': `${realness_cycle}s` }"
     @pointerdown="on_realness_press"
     @pointerup="on_realness_release"
     @pointercancel="on_realness_release">
@@ -192,6 +216,7 @@
     <use href="#realness-ember" data-tile="ember" />
     <use href="#realness-rust" data-tile="rust" />
     <use href="#realness-cinder" data-tile="cinder" />
+    <smalti-glints />
   </svg>
   <svg v-else :class="name" class="icon"><use :href="icon_location" /></svg>
 </template>
@@ -365,35 +390,66 @@
   svg.icon.realness pattern use[data-tile='rust'] {
     fill: var(--clay-fill);
   }
+  // Shimmer always; color cycle when .color-cycle (preference)
   svg.icon.realness pattern use[data-tile='ash'] {
-    animation-name: realness-color-ash;
-    animation-duration: 26s;
-    animation-delay: 4s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: 0s;
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='ash'] {
+    animation-name: realness-color-ash, realness-smalti-shimmer;
+    animation-duration: 26s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 4s, 0s;
   }
   svg.icon.realness pattern use[data-tile='ember'] {
-    animation-name: realness-color-ember;
-    animation-duration: 34s;
-    animation-delay: 6.5s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: calc(var(--realness-cycle) * 0.08);
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='ember'] {
+    animation-name: realness-color-ember, realness-smalti-shimmer;
+    animation-duration: 34s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 6.5s, calc(var(--realness-cycle) * 0.08);
   }
   svg.icon.realness pattern use[data-tile='rust'] {
-    animation-name: realness-color-rust;
-    animation-duration: 28s;
-    animation-delay: 5s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: calc(var(--realness-cycle) * 0.16);
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='rust'] {
+    animation-name: realness-color-rust, realness-smalti-shimmer;
+    animation-duration: 28s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 5s, calc(var(--realness-cycle) * 0.16);
   }
   svg.icon.realness pattern use[data-tile='tide'] {
-    animation-name: realness-color-tide;
-    animation-duration: 31s;
-    animation-delay: 7s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: calc(var(--realness-cycle) * 0.04);
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='tide'] {
+    animation-name: realness-color-tide, realness-smalti-shimmer;
+    animation-duration: 31s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 7s, calc(var(--realness-cycle) * 0.04);
   }
   svg.icon.realness pattern use[data-tile='silt'] {
-    animation-name: realness-color-silt;
-    animation-duration: 23s;
-    animation-delay: 5.5s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: calc(var(--realness-cycle) * 0.12);
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='silt'] {
+    animation-name: realness-color-silt, realness-smalti-shimmer;
+    animation-duration: 23s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 5.5s, calc(var(--realness-cycle) * 0.12);
   }
   svg.icon.realness pattern use[data-tile='cinder'] {
-    animation-name: realness-color-cinder;
-    animation-duration: 25s;
-    animation-delay: 4.5s;
+    animation-name: realness-smalti-shimmer;
+    animation-duration: calc(var(--realness-cycle) * 0.5);
+    animation-delay: calc(var(--realness-cycle) * 0.22);
+  }
+  svg.icon.realness.color-cycle pattern use[data-tile='cinder'] {
+    animation-name: realness-color-cinder, realness-smalti-shimmer;
+    animation-duration: 25s, calc(var(--realness-cycle) * 0.5);
+    animation-delay: 4.5s, calc(var(--realness-cycle) * 0.22);
   }
   svg.icon.realness > use[data-tile] {
     opacity: 0;
@@ -416,6 +472,11 @@
     opacity: 1;
   }
 
+  @keyframes realness-smalti-shimmer {
+    0%, 100% { opacity: 1; }
+    42% { opacity: 0.78; }
+    58% { opacity: 1; }
+  }
   @keyframes realness-color-ash {
     0%, 100% { fill: var(--pumice); }
     25% { fill: var(--water-fill); }
