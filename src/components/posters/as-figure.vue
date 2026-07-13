@@ -797,7 +797,7 @@
           border-radius: base-line * 0.25;
           padding: base-line * 0.25 base-line * 0.5;
           cursor: pointer;
-          color: white;
+          color: var(--on-emphasis);
           font-size: larger;
           line-height: 1;
           opacity: 0.7;

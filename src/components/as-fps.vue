@@ -124,27 +124,27 @@
   </aside>
 </template>
 
-<style lang="stylus">
+<style>
   aside#fps {
     position: fixed;
-    bottom: base-line * 6;
-    right: base-line * .5;
-    padding: base-line * .5;
-    border-radius: base-line * .5;
+    bottom: calc(var(--base-line) * 6);
+    right: calc(var(--base-line) * 0.5);
+    padding: calc(var(--base-line) * 0.5);
+    border-radius: calc(var(--base-line) * 0.5);
     background: var(--basalt);
     color: var(--bone);
-    font-size: base-line;
+    font-size: var(--base-line);
     text-shadow: 0 0 2px var(--graphite);
     z-index: 8;
     font-family: monospace;
     display: flex;
     flex-direction: column;
-    gap: base-line * .25;
+    gap: calc(var(--base-line) * 0.25);
 
     > div:first-of-type {
       display: flex;
       align-items: center;
-      gap: base-line * .25;
+      gap: calc(var(--base-line) * 0.25);
       & > output {
         font-size: 66%;
         flex-shrink: 0;

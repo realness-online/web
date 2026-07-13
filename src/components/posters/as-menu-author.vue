@@ -42,17 +42,17 @@
   </menu>
 </template>
 
-<style lang="stylus">
+<style>
   figure.poster > figcaption footer menu menu {
     & > a,
     & > button {
       &.avatar {
         &.selected & > svg {
-         fill: var(--emphasis);
+          fill: var(--emphasis);
         }
       }
       & > svg {
-       fill: var(--accent);
+        fill: var(--accent);
       }
     }
     & > button {
@@ -66,7 +66,7 @@
 
       &:focus-visible {
         outline: 0.25px solid currentColor;
-        outline-offset: base-line * 0.25;
+        outline-offset: calc(var(--base-line) * 0.25);
       }
     }
   }

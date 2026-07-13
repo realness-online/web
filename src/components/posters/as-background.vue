@@ -54,8 +54,8 @@
     :style="style" />
 </template>
 
-<style lang="stylus">
-  rect[itemprop="background"] {
+<style>
+  rect[itemprop='background'] {
     outline: none;
     stroke: none;
     transition:
@@ -67,7 +67,7 @@
   }
 
   @starting-style {
-    rect[itemprop="background"] {
+    rect[itemprop='background'] {
       opacity: 0;
     }
   }

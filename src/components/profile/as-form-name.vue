@@ -86,7 +86,7 @@
   </form>
 </template>
 
-<style lang="stylus">
+<style>
   form#profile-name {
     &.complete {
       animation-name: slide-out-right;
@@ -104,7 +104,7 @@
       width: 100%;
     }
     p#name-error {
-      margin: (base-line * 0.25) 0 0;
+      margin: calc(var(--base-line) * 0.25) 0 0;
       font-size: 0.75em;
       color: var(--emphasis);
     }

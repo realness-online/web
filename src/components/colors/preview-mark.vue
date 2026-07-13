@@ -27,15 +27,15 @@
   </button>
 </template>
 
-<style lang="stylus">
-  // scoped to this component's own buttons via their aria-label prefix —
-  // a bare `button` selector here would leak this fixed-size reset onto
-  // every button in the app
+<style>
+  /* scoped to this component's own buttons via their aria-label prefix —
+     a bare `button` selector here would leak this fixed-size reset onto
+     every button in the app */
   button[aria-label^='Preview '] {
     position: relative;
     display: block;
-    width: base-line * 1.5;
-    height: base-line * 1.5;
+    width: calc(var(--base-line) * 1.5);
+    height: calc(var(--base-line) * 1.5);
     padding: 0;
     border: none;
     background: none;
@@ -51,7 +51,7 @@
       position: absolute;
       left: 100%;
       top: 50%;
-      margin-left: base-line * 0.1;
+      margin-left: calc(var(--base-line) * 0.1);
       transform: translateY(-50%);
       writing-mode: vertical-rl;
       font-size: smaller;

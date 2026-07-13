@@ -26,21 +26,21 @@
   </nav>
 </template>
 
-<style lang="stylus">
+<style>
   nav[itemtype='/site-nav'] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: base-line;
-    padding: base-line;
-    padding-top: s('calc(env(safe-area-inset-top, 0px) + %s)', base-line);
+    gap: var(--base-line);
+    padding: var(--base-line);
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--base-line));
 
     menu {
       flex: 1;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: base-line * 0.5 base-line;
+      gap: calc(var(--base-line) * 0.5) var(--base-line);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -58,7 +58,7 @@
         }
       }
 
-      // Legal is the least-visited link here; keep it out of the way.
+      /* Legal is the least-visited link here; keep it out of the way. */
       a[href='/terms'] {
         font-size: smaller;
         opacity: 0.6;
@@ -69,7 +69,7 @@
         }
       }
 
-      // The account link anchors to the far right, using the remaining space.
+      /* The account link anchors to the far right, using the remaining space. */
       & > a:last-child {
         margin-left: auto;
         text-align: right;

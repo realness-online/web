@@ -26,7 +26,7 @@
   </a>
 </template>
 
-<style lang="stylus">
+<style>
   figure.profile > figcaption > menu a.phone > svg {
     fill: var(--accent);
     opacity: 0.25;

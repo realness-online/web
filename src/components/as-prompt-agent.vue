@@ -68,31 +68,31 @@
   </section>
 </template>
 
-<style lang="stylus">
+<style>
   section.prompt-agent {
-    margin: base-line * 2 auto;
-    max-width: base-line * 26;
-    padding: base-line;
+    margin: calc(var(--base-line) * 2) auto;
+    max-width: calc(var(--base-line) * 26);
+    padding: var(--base-line);
     border: 1px solid var(--accent);
-    border-radius: base-line * 0.5;
+    border-radius: calc(var(--base-line) * 0.5);
     text-align: center;
 
     & > h3 {
-      margin: 0 0 base-line * 0.5;
+      margin: 0 0 calc(var(--base-line) * 0.5);
       color: var(--accent);
     }
 
     & > p {
-      margin: 0 0 base-line;
+      margin: 0 0 var(--base-line);
       font-size: 0.9em;
       line-height: 1.5;
       opacity: 0.85;
     }
 
     & > button {
-      padding: base-line * 0.5 base-line * 1.5;
+      padding: calc(var(--base-line) * 0.5) calc(var(--base-line) * 1.5);
       border: 1px solid var(--emphasis);
-      border-radius: base-line * 0.33;
+      border-radius: calc(var(--base-line) * 0.33);
       background: none;
       color: var(--emphasis);
       cursor: pointer;
@@ -101,7 +101,7 @@
       &:hover,
       &:focus-visible {
         background: var(--emphasis);
-        color: white;
+        color: var(--on-emphasis);
       }
     }
   }

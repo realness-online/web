@@ -588,7 +588,7 @@
   </animate>
 </template>
 
-<style lang="stylus">
+<style>
   g[itemprop='animation'] {
     & animate {
       animation-play-state: paused;

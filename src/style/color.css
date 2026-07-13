@@ -10,7 +10,12 @@
   --text: var(--graphite);
   --surface: var(--chalk);
   --code-surface: color-mix(in srgb, var(--graphite) 6%, transparent);
-  --muted-text: color-mix(in srgb, var(--graphite) 70%, white);
+  --muted-text: color-mix(in srgb, var(--graphite) 70%, var(--chalk));
+
+  /* Content on top of an emphasis-toned or dark surface (button hover fills,
+     toggle-switch knobs). Deliberately not scheme-split: the surfaces it sits
+     on already flip per-scheme, so this stays the same near-white either way. */
+  --on-emphasis: var(--chalk);
 
   accent-color: var(--emphasis);
 }

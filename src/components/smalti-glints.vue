@@ -104,16 +104,16 @@
   </g>
 </template>
 
-<style lang="stylus">
-  // Own loop, not the poster cycle. Tracks animation_speed via --realness-cycle.
-  // ~9s at default stroll (90s cycle).
+<style>
+  /* Own loop, not the poster cycle. Tracks animation_speed via --realness-cycle.
+     ~9s at default stroll (90s cycle). */
   g[data-glint-group] {
     --glint-cycle: calc(var(--realness-cycle, 90s) * 0.1);
   }
 
   path[data-glint] {
     opacity: 0;
-    // Light catching glass: lift the photo fill without washing to white
+    /* Light catching glass: lift the photo fill without washing to white */
     filter: brightness(1.85) saturate(1.35);
     animation-name: realness-glint-flash;
     animation-duration: var(--glint-cycle);
@@ -123,11 +123,20 @@
     animation-play-state: paused;
   }
 
-  // ~0.5s flash on a ~9s loop
+  /* ~0.5s flash on a ~9s loop */
   @keyframes realness-glint-flash {
-    0%, 100% { opacity: 0; }
-    2% { opacity: 0; }
-    5% { opacity: 0.9; }
-    8% { opacity: 0; }
+    0%,
+    100% {
+      opacity: 0;
+    }
+    2% {
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.9;
+    }
+    8% {
+      opacity: 0;
+    }
   }
 </style>

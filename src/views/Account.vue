@@ -71,26 +71,26 @@
   </section>
 </template>
 
-<style lang="stylus">
+<style>
   section#account.page {
     & > div.body {
-      max-width: base-line * 48;
+      max-width: calc(var(--base-line) * 48);
       margin: 0 auto;
-      padding: 0 base-line base-line * 4;
+      padding: 0 var(--base-line) calc(var(--base-line) * 4);
       & > address {
-        margin-bottom: base-line;
+        margin-bottom: var(--base-line);
       }
       & > form {
-        max-width: base-line * 14;
-        margin-bottom: base-line;
+        max-width: calc(var(--base-line) * 14);
+        margin-bottom: var(--base-line);
       }
       & > section[itemprop='preferences'] {
-        margin-top: base-line * 2;
-        padding-top: base-line;
+        margin-top: calc(var(--base-line) * 2);
+        padding-top: var(--base-line);
         border-top: 1px solid var(--accent);
         & > header > h2 {
           color: var(--emphasis);
-          margin: 0 0 base-line;
+          margin: 0 0 var(--base-line);
           font-weight: 300;
         }
         & > menu.preferences-menu {
@@ -98,13 +98,13 @@
         }
       }
       & > footer {
-        padding: base-line 0;
+        padding: var(--base-line) 0;
         border-top: 1px solid var(--accent);
         & > div {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: base-line * 0.5;
+          gap: calc(var(--base-line) * 0.5);
           & > h4 {
             margin: 0;
             font-size: normal;
@@ -117,7 +117,7 @@
       }
       & > dialog#confirm-sign-out {
         border: none;
-        padding: base-line * 1.5;
+        padding: calc(var(--base-line) * 1.5);
         & > p {
           margin: 0;
         }
@@ -127,11 +127,11 @@
         & > menu {
           display: flex;
           justify-content: flex-end;
-          gap: base-line;
-          margin: base-line * 1.5 0 0;
+          gap: var(--base-line);
+          margin: calc(var(--base-line) * 1.5) 0 0;
           padding: 0;
           & > button {
-            padding: base-line * 0.5 base-line;
+            padding: calc(var(--base-line) * 0.5) var(--base-line);
             white-space: nowrap;
           }
           & > button#confirm {

@@ -84,11 +84,11 @@
   </section>
 </template>
 
-<style lang="stylus">
+<style>
   section#sign-on {
     padding: 0;
     & > p#name-prompt {
-      margin: 0 0 base-line;
+      margin: 0 0 var(--base-line);
     }
     & > form {
       width: 100%;
@@ -96,7 +96,7 @@
     & > footer > button {
       opacity: 0.5;
       font-size: 0.5em;
-      padding: (base-line * 0.125) (base-line * 0.25);
+      padding: calc(var(--base-line) * 0.125) calc(var(--base-line) * 0.25);
       line-height: 1.1;
       border: none;
       transition-property: opacity, border;
@@ -107,6 +107,5 @@
         border: 2px solid var(--emphasis);
       }
     }
-
   }
 </style>

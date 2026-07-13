@@ -8,7 +8,7 @@
   </router-link>
 </template>
 
-<style lang="stylus">
+<style>
   svg.realness:active {
     transition-property: transform;
     transition-duration: 0.52s;
