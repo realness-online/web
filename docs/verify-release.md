@@ -55,8 +55,12 @@ rebuild in between):
 
 ```bash
 npm run deploy          # ends with a local-manifest check against production
-npm run release:gh      # gh release create $version dist/build-manifest.json
+npm run release:gh      # creates the GitHub release with CHANGELOG notes for this version
 ```
+
+`release:gh` slices the matching `## … vX.Y.Z` section from `CHANGELOG.md`
+(via `scripts/changelog-notes.js`) and passes it as `--notes-file`. No
+interactive notes prompt.
 
 Until a release has a `build-manifest.json` asset, `npm run verify` fails with
 operator instructions. That is intentional - without the GitHub asset there is
