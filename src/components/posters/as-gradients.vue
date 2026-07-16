@@ -3,7 +3,7 @@
   import { as_query_id } from '@/utils/itemid'
   import { ref, watchEffect as watch_effect } from 'vue'
   import { is_vector } from '@/use/poster'
-  import { use as use_vectorize } from '@/use/vectorize'
+  import { new_gradients as gradients } from '@/use/vectorize/state'
   import { color_to_hsla, css_color_to_color } from '@/utils/colors'
   import { shadow_luminosity } from '@/utils/shadow-values'
   const props = defineProps({
@@ -13,7 +13,6 @@
       validator: is_vector
     }
   })
-  const { new_gradients: gradients } = use_vectorize()
   const { background, light, regular, medium, bold } = shadow_luminosity
   const query = add => {
     if (!props.vector) return add
