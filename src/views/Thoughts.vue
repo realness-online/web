@@ -198,7 +198,7 @@
 
   const storytelling_scroll_container = () =>
     document.querySelector(
-      'section.page.storytelling section.as-days > article'
+      'section[data-page][data-storytelling] section[data-days] > article'
     )
 
   /**
@@ -231,7 +231,9 @@
     let best_itemid = null
     let best_score = -Infinity
     const mid = window.innerHeight / 2
-    for (const figure of root.querySelectorAll('figure.poster')) {
+    for (const figure of root.querySelectorAll(
+      'figure:has([itemtype="/posters"])'
+    )) {
       if (!(figure instanceof HTMLElement)) continue
       const rect = figure.getBoundingClientRect()
       if (rect.bottom < 0 || rect.top > window.innerHeight) continue
@@ -256,7 +258,9 @@
     if (!root) return null
     const active = document.activeElement
     const focused =
-      active instanceof HTMLElement ? active.closest('figure.poster') : null
+      active instanceof HTMLElement
+        ? active.closest('figure:has([itemtype="/posters"])')
+        : null
     if (focused instanceof HTMLElement && root.contains(focused)) {
       const itemid = poster_itemid_from_figure(focused)
       if (itemid) return itemid
@@ -270,7 +274,7 @@
     for (const section of scroll_container.querySelectorAll(
       ':scope > section'
     )) {
-      const figure = section.querySelector('figure.poster')
+      const figure = section.querySelector('figure:has([itemtype="/posters"])')
       if (!(figure instanceof HTMLElement)) continue
       const rect = section.getBoundingClientRect()
       if (rect.right < container_rect.left || rect.left > container_rect.right)
@@ -297,7 +301,9 @@
     if (!root) return null
     const active = document.activeElement
     const focused =
-      active instanceof HTMLElement ? active.closest('figure.poster') : null
+      active instanceof HTMLElement
+        ? active.closest('figure:has([itemtype="/posters"])')
+        : null
     if (focused instanceof HTMLElement && root.contains(focused)) {
       const itemid = poster_itemid_from_figure(focused)
       if (itemid) return itemid
@@ -314,8 +320,8 @@
     if (!root || !itemid) return
     const escaped = CSS.escape(itemid)
     const figure = root
-      .querySelector(`figure.poster [itemid="${escaped}"]`)
-      ?.closest('figure.poster')
+      .querySelector(`figure:has([itemtype='/posters']) [itemid="${escaped}"]`)
+      ?.closest('figure:has([itemtype="/posters"])')
     if (!(figure instanceof HTMLElement)) return
     figure.scrollIntoView({ block: 'center', behavior })
     figure.focus()
@@ -329,10 +335,20 @@
     if (!itemid) return
     const escaped = CSS.escape(itemid)
     const figure = document.querySelector(
-      `section.page.storytelling figure.poster [itemid="${escaped}"]`
+      `section[data-page][data-storytelling] figure:has([itemtype='/posters']) [itemid="${escaped}"]`
     )
     const section = figure?.closest('section')
     scroll_storytelling_to_section(section, behavior)
+  }
+
+  /** @param {Event} e */
+  const focus_first_poster = e => {
+    const first = statements_ref.value?.querySelector(
+      'figure:has([itemtype="/posters"])'
+    )
+    if (!(first instanceof HTMLElement)) return
+    e.preventDefault()
+    first.focus()
   }
 
   const on_focus = event => {
@@ -461,7 +477,7 @@
   <dialog
     v-if="poster_to_remove"
     ref="delete_dialog"
-    class="confirm"
+    data-confirm
     @click="on_dialog_click">
     <article>
       <header>
@@ -472,8 +488,8 @@
         {{ as_day_time_year(as_created_at(poster_to_remove.id)) }}
       </p>
       <menu>
-        <button class="cancel" @click="on_cancel_remove">Cancel</button>
-        <button class="delete" @click="on_confirmed_remove">Delete</button>
+        <button @click="on_cancel_remove">Cancel</button>
+        <button data-delete @click="on_confirmed_remove">Delete</button>
       </menu>
       <footer></footer>
     </article>
@@ -481,12 +497,9 @@
   <section
     id="thoughts"
     ref="statements_ref"
-    class="page"
-    :class="{
-      storytelling: storytelling,
-      slice: aspect_ratio_mode !== 'auto',
-      menu
-    }">
+    data-page
+    :data-storytelling="storytelling || undefined"
+    :data-slice="aspect_ratio_mode !== 'auto' || undefined">
     <header>
       <as-feed-toggle v-model="only_mine" />
       <a v-if="from_blog" :href="from_blog">←</a>
@@ -500,18 +513,8 @@
     <h1>Thoughts</h1>
     <as-textarea
       @toggle-keyboard="on_toggle_keyboard"
-      @tab-next="
-        e => {
-          const first = /** @type {HTMLElement | null} */ (
-            statements_ref?.querySelector('figure.poster')
-          )
-          if (first) {
-            e.preventDefault()
-            first.focus()
-          }
-        }
-      " />
-    <section v-if="processing_items.length" class="processing">
+      @tab-next="focus_first_poster" />
+    <section v-if="processing_items.length" data-processing-queue>
       <as-svg-processing
         v-for="item in processing_items"
         :key="item.id"
@@ -539,7 +542,6 @@
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
           tabindex="0"
-          :class="{ 'fill-screen': menu }"
           @show="poster_shown"
           @remove="on_remove_poster"
           @missing="on_remove_missing_poster" />
@@ -564,36 +566,36 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    & > section.processing {
+    & > section[data-processing-queue] {
       standard-grid: gentle;
       grid-auto-flow: row;
       grid-gap: base-line;
       padding: 0 base-line;
       margin-bottom: base-line;
-      & > figure.poster.processing.currently_processing {
+      & > figure[itemtype='/posters'][aria-busy] {
         grid-column: 1 / -1;
       }
     }
-    &.slice > section.processing {
+    &[data-slice] > section[data-processing-queue] {
       grid-gap: 0;
     }
-    & > section.as-days {
+    & > section[data-days] {
       padding-left: 0;
       padding-right: 0;
-      & [role='feed'] > article > header {
+      &[role='feed'] > article > header {
         padding-left: base-line;
         padding-right: base-line;
       }
-      & article.thought {
+      & article[data-thought] {
         padding-left: base-line;
         padding-right: base-line;
       }
-      & [role='feed'] > article figure.poster {
+      &[role='feed'] > article figure:has([itemtype='/posters']) {
         border-radius: 0;
       }
-      & [role='feed'] > article {
+      &[role='feed'] > article {
         @media (prefers-color-scheme: dark) {
-          & > header h4, figure.poster > svg.background {
+          & > header h4, figure:has([itemtype='/posters']) > svg[data-icon='background'] {
             color: var(--accent);
           }
         }
@@ -601,18 +603,18 @@
       & h4 {
         margin: base-line 0 0 0;
       }
-      & [role='feed'] > article p[itemprop='statement']:focus {
+      &[role='feed'] > article p[itemprop='statement']:focus {
         font-weight: bolder;
         outline: 0;
       }
     }
-    &.storytelling {
+    &[data-storytelling] {
       flex: 1;
       min-height: 100vh;
       & > header,
       & > h1,
-      & > section.processing,
-      & > .posting-input {
+      & > section[data-processing-queue],
+      & > fieldset:has(> textarea#wat) {
         display: none;
       }
     }
@@ -699,7 +701,7 @@
     & > nav {
       display: none;
     }
-    .working {
+    svg[data-icon='working'] {
      fill: var(--accent);
     }
   }

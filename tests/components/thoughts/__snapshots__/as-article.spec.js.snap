@@ -2,7 +2,7 @@
 
 exports[`@/components/thoughts/as-article.vue > Renders > Loads the thought author if verbose is true 1`] = `
 <article
-  class="thought"
+  data-thought=""
 >
   <header>
     <time>
@@ -26,7 +26,7 @@ exports[`@/components/thoughts/as-article.vue > Renders > Loads the thought auth
 
 exports[`@/components/thoughts/as-article.vue > Renders > Render a thought as an article element 1`] = `
 <article
-  class="thought"
+  data-thought=""
 >
   <header>
     <time>

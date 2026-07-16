@@ -5,7 +5,7 @@
   import AsMaskPen from '@/components/posters/as-mask-pen'
   import { useIntersectionObserver as use_intersect } from '@vueuse/core'
   import {
-    watchEffect as watch,
+    watchEffect as watch_effect,
     onMounted as mounted,
     onUnmounted as unmounted,
     nextTick as tick,
@@ -98,16 +98,8 @@
     const day = as_day(new Date(created))
     return `Poster from ${day === 'Today' ? 'today' : day}`
   })
-  const {
-    query,
-    show,
-    tabindex,
-    vector,
-    intersecting,
-    is_hovered,
-    viewbox,
-    working
-  } = use_poster()
+  const { query, show, tabindex, vector, intersecting, viewbox, working } =
+    use_poster()
 
   const poster_slice = computed(() => props.slice ?? false)
   const use_meet = ref(false)
@@ -187,7 +179,7 @@
     await tick()
   })
 
-  watch(() => {
+  watch_effect(() => {
     if (props.sync_poster) {
       intersecting.value = true
       emit('in_view', true)
@@ -375,12 +367,9 @@
     aria-roledescription="poster"
     :aria-label="poster_label"
     :tabindex="tabindex"
-    :class="{
-      animate,
-      hovered: is_hovered,
-      'hide-cursor': hide_cursor,
-      'mask-pen-mode': mask_pen_active
-    }"
+    :data-animate="animate || undefined"
+    :data-hide-cursor="hide_cursor || undefined"
+    :data-mask-pen-mode="mask_pen_active || undefined"
     :data-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
     :data-aspect="
@@ -407,7 +396,7 @@
         :style="lightbar_back_style" />
 
       <slot>
-        <g v-if="cutouts_mounted" class="cutouts">
+        <g v-if="cutouts_mounted">
           <use
             v-for="layer in visible_layers"
             :key="layer"
@@ -428,7 +417,7 @@
       <as-mask-pen v-if="mask_pen_active && cutouts_mounted" :itemid="itemid" />
       <g
         v-if="grid_visible"
-        class="grid-overlay"
+        data-grid-overlay
         pointer-events="none"
         :transform="`translate(${viewbox_rect.x} ${viewbox_rect.y})`">
         <line
@@ -503,10 +492,10 @@
       min-height: 0;
       max-height: 100%;
     }
-    &.hide-cursor {
+    &[data-hide-cursor] {
       cursor: none;
     }
-    &.mask-pen-mode {
+    &[data-mask-pen-mode] {
       cursor: crosshair;
       // Allow the browser's native pinch-zoom (so masking can be precise on a phone)
       // while keeping one-finger drags for painting — `pinch-zoom` disables one-finger
@@ -567,7 +556,7 @@
       opacity: 0.85;
     }
 
-    & g.grid-overlay line {
+    & g[data-grid-overlay] line {
       fill: none;
       stroke: unquote('color-mix(in srgb, var(--bone) 72%, transparent)');
       stroke-width: 1;

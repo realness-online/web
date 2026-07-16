@@ -7,9 +7,9 @@
 <template>
   <div
     class="working-border"
-    :class="{ 'is-active': active }"
+    :data-active="active || undefined"
     aria-hidden="true">
-    <div class="working-border__spin" />
+    <div />
   </div>
 </template>
 
@@ -43,16 +43,16 @@
     mask-composite: exclude;
   }
 
-  div.working-border.is-active {
+  div.working-border[data-active] {
     opacity: 1;
     visibility: visible;
   }
 
-  div.working-border:not(.is-active) .working-border__spin {
+  div.working-border:not([data-active]) > div {
     animation-play-state: paused;
   }
 
-  div.working-border__spin {
+  div.working-border > div {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -84,13 +84,13 @@
       --sweep-gap-end: 295deg;
     }
 
-    div.working-border__spin {
+    div.working-border > div {
       animation-duration: 3.4s;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    div.working-border__spin {
+    div.working-border > div {
       animation: none;
       transform: translate(-50%, -50%) rotate(42deg);
       opacity: 0.82;

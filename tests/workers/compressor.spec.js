@@ -101,6 +101,9 @@ describe('compressor worker', () => {
       const post_message_spy = vi
         .spyOn(self, 'postMessage')
         .mockImplementation(() => {})
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       pako.inflate.mockImplementation(() => {
         throw new Error('corrupt data')
       })
@@ -114,7 +117,9 @@ describe('compressor worker', () => {
       await new Promise(resolve => setTimeout(resolve, 0))
 
       expect(post_message_spy).toHaveBeenCalledWith({ error: 'corrupt data' })
+      expect(console_error).toHaveBeenCalled()
       post_message_spy.mockRestore()
+      console_error.mockRestore()
     })
   })
 })

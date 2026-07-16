@@ -7,7 +7,7 @@ exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile
   
   <!--v-if-->
   <figure
-    class="profile"
+    data-display="phonebook"
   >
     <icon-stub
       name="silhouette"

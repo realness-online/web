@@ -7,7 +7,10 @@ import {
   Thought,
   Event,
   Offline,
-  History
+  History,
+  Statements,
+  Cutout,
+  Shadow
 } from '@/persistence/Storage'
 
 // Mock dependencies
@@ -157,8 +160,97 @@ describe('@/persistence/Storage', () => {
       expect(saved_html).toContain('Ada Lovelace')
       expect(saved_html).not.toContain('>ab<')
     })
+
+    it('sets visited when missing before save', async () => {
+      mock_me.value = {
+        id: '/+1234567890',
+        name: 'Ada Lovelace',
+        type: 'person'
+      }
+      const element = document.createElement('address')
+      element.setAttribute('itemid', '/+1234567890')
+      element.innerHTML = '<h3 itemprop="name">Ada Lovelace</h3>'
+
+      await me.save(element)
+
+      expect(mock_me.value.visited).toBeDefined()
+    })
   })
 
+  describe('Statements Class', () => {
+    let statements
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          me: '/+1234567890',
+          setItem: vi.fn()
+        },
+        writable: true
+      })
+      statements = new Statements()
+    })
+
+    it('extends Storage with statements path', () => {
+      expect(statements).toBeInstanceOf(Storage)
+      expect(statements.id).toBe('/+1234567890/statements')
+    })
+
+    it('save_statement stores matching element outerHTML', () => {
+      const scope = document.createElement('div')
+      const statement = document.createElement('div')
+      statement.setAttribute('itemid', '/+1234567890/statements/1000')
+      statement.textContent = 'hello'
+      scope.appendChild(statement)
+
+      const ok = statements.save_statement(
+        /** @type {import('@/types').Id} */ ('/+1234567890/statements/1000'),
+        scope
+      )
+
+      expect(ok).toBe(true)
+      expect(window.localStorage.setItem).toHaveBeenCalledWith(
+        '/+1234567890/statements/1000',
+        statement.outerHTML
+      )
+    })
+
+    it('save_statement returns false when element is missing', () => {
+      const scope = document.createElement('div')
+      const ok = statements.save_statement(
+        /** @type {import('@/types').Id} */ ('/+1234567890/statements/missing'),
+        scope
+      )
+      expect(ok).toBe(false)
+    })
+  })
+
+  describe('Cutout and Shadow', () => {
+    it('Cutout save delegates to Large/Cloud save', async () => {
+      const cutout = new Cutout('/+1234567890/cutouts/1000')
+      const save_spy = vi
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(cutout)), 'save')
+        .mockResolvedValue(undefined)
+
+      await cutout.save()
+
+      expect(save_spy).toHaveBeenCalled()
+      save_spy.mockRestore()
+    })
+
+    it('Shadow save accepts an explicit element', async () => {
+      const shadow = new Shadow('/+1234567890/shadows/1000')
+      const save_spy = vi
+        .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(shadow)), 'save')
+        .mockResolvedValue(undefined)
+      const el = document.createElement('svg')
+
+      await shadow.save(el)
+
+      expect(save_spy).toHaveBeenCalledWith(el)
+      save_spy.mockRestore()
+    })
+  })
   describe('Relation Class', () => {
     let relation
 
@@ -220,12 +312,48 @@ describe('@/persistence/Storage', () => {
     let offline
 
     beforeEach(() => {
-      offline = new Offline('/+/1234567890/posters/1234567890')
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          me: '/+1234567890'
+        },
+        writable: true
+      })
+      offline = new Offline('/+/posters/1234567890')
     })
 
     it('extends Storage', () => {
       expect(offline).toBeInstanceOf(Storage)
-      expect(offline.id).toBe('/+/1234567890/posters/1234567890')
+      expect(offline.id).toBe('/+/posters/1234567890')
+    })
+
+    it('returns early when idb has no outerHTML', async () => {
+      const { get } = await import('idb-keyval')
+      get.mockResolvedValueOnce(null)
+      const save_spy = vi.spyOn(Storage.prototype, 'save')
+
+      await offline.save()
+
+      expect(save_spy).not.toHaveBeenCalled()
+      save_spy.mockRestore()
+    })
+
+    it('returns early when rewritten itemid is invalid', async () => {
+      const { get } = await import('idb-keyval')
+      const { is_itemid } = await import('@/utils/itemid')
+      get.mockResolvedValueOnce('<div>content</div>')
+      is_itemid.mockReturnValueOnce(false)
+      const error_log = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const save_spy = vi.spyOn(Storage.prototype, 'save')
+
+      await offline.save()
+
+      expect(error_log).toHaveBeenCalledWith(
+        'invalid itemid',
+        expect.any(String)
+      )
+      expect(save_spy).not.toHaveBeenCalled()
+      error_log.mockRestore()
+      save_spy.mockRestore()
     })
 
     it('has save method that processes outerHTML', async () => {

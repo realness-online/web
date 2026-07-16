@@ -86,10 +86,6 @@
 
 <style>
   section#sign-on {
-    padding: 0;
-    & > p#name-prompt {
-      margin: 0 0 var(--base-line);
-    }
     & > form {
       width: 100%;
     }

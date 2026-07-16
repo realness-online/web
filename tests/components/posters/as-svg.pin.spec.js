@@ -118,7 +118,7 @@ describe('@/components/posters/as-svg.vue pin', () => {
     vi.restoreAllMocks()
   })
 
-  it('keeps g.cutouts in the tree when pin and intersection reports false', async () => {
+  it('keeps cutout layers in the tree when pin and intersection reports false', async () => {
     const wrapper = shallowMount(as_svg, {
       props: {
         itemid,
@@ -127,7 +127,7 @@ describe('@/components/posters/as-svg.vue pin', () => {
       }
     })
     await flushPromises()
-    expect(wrapper.find('g.cutouts').exists()).toBe(true)
+    expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(true)
   })
 
   it('without pin, removes cutouts when intersection reports false', async () => {
@@ -139,6 +139,6 @@ describe('@/components/posters/as-svg.vue pin', () => {
       }
     })
     await flushPromises()
-    expect(wrapper.find('g.cutouts').exists()).toBe(false)
+    expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(false)
   })
 })

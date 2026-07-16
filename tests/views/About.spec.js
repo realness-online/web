@@ -90,7 +90,7 @@ describe('About', () => {
   describe('Component Structure', () => {
     it('renders with correct structure', () => {
       expect(wrapper.find('section#about').exists()).toBe(true)
-      expect(wrapper.find('section#about').classes()).toContain('page')
+      expect(wrapper.find('section#about').attributes('data-page')).toBe('')
     })
 
     it('renders header with navigation', () => {

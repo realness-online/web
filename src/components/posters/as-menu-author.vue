@@ -31,7 +31,6 @@
     <button
       v-if="allow_remove"
       type="button"
-      class="remove"
       aria-label="Delete poster"
       @click="emit('remove', poster.id)">
       <icon name="remove" />
@@ -43,14 +42,9 @@
 </template>
 
 <style>
-  figure.poster > figcaption footer menu menu {
+  figure:has([itemtype='/posters']) > figcaption footer menu menu {
     & > a,
     & > button {
-      &.avatar {
-        &.selected & > svg {
-          fill: var(--emphasis);
-        }
-      }
       & > svg {
         fill: var(--accent);
       }

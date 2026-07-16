@@ -76,6 +76,7 @@ export const footer_visible = storage('footer_visible', true)
 
 export const sync_folder = storage('sync_folder', false)
 export const notifications = storage('notifications', false)
+export const notifications_prompted = storage('notifications_prompted', false)
 
 export const view_3d = storage('3d', false)
 
@@ -136,6 +137,7 @@ export const reset_preferences = () => {
   footer_visible.value = true
   sync_folder.value = false
   notifications.value = false
+  notifications_prompted.value = false
   view_3d.value = false
   mosaic_spread.value = DEFAULT_MOSAIC_SPREAD
   mosaic_opacity.value = DEFAULT_MOSAIC_OPACITY

@@ -67,7 +67,10 @@
 </script>
 
 <template>
-  <router-link v-if="display === 'label'" :to="person.id" class="profile label">
+  <router-link
+    v-if="display === 'label'"
+    :to="person.id"
+    :data-display="display">
     <as-avatar v-if="display_itemid" :itemid="display_itemid" />
     <icon v-else name="silhouette" />
     <span>{{ person.name }}</span>
@@ -87,7 +90,7 @@
   <div v-else-if="display === 'page'">
     <icon name="silhouette" />
   </div>
-  <figure v-if="display === 'phonebook'" class="profile">
+  <figure v-if="display === 'phonebook'" :data-display="display">
     <as-avatar
       v-if="person.avatar"
       :itemid="person.avatar"
@@ -107,7 +110,7 @@
 </template>
 
 <style lang="stylus">
-  a.profile.label {
+  a[data-display='label'] {
     display: flex;
     align-items: center;
     gap: base-line * 0.33;
@@ -125,7 +128,7 @@
       white-space: nowrap;
     }
   }
-  figure.profile {
+  figure[data-display='phonebook'] {
     content-visibility: auto;
     contain-intrinsic-size: auto 96px;
     white-space: nowrap;
@@ -134,7 +137,7 @@
     display: flex;
     justify-content: space-between;
     #background,
-    svg.icon.silhouette {
+    svg.icon[data-icon='silhouette'] {
       fill: var(--accent);
     }
     & > svg {

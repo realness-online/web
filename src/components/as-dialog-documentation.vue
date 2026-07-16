@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, nextTick, watch, shallowRef } from 'vue'
+  import { ref, nextTick as tick, watch } from 'vue'
   import { defineAsyncComponent as define_async_component } from 'vue'
   const InstallGuide = define_async_component(
     () => import('@/components/install-guide.vue')
@@ -29,7 +29,7 @@
     else {
       dialog.value.showModal()
       show_guide.value = true
-      await nextTick()
+      await tick()
       mount_content()
     }
   }
@@ -51,29 +51,27 @@
 </script>
 
 <template>
-  <dialog ref="dialog" class="documentation" @click="on_click">
+  <dialog ref="dialog" id="documentation" @click="on_click">
     <header>
       <h1>Realness.<span>online</span></h1>
       <h2>Documentation</h2>
     </header>
     <article>
-      <nav v-if="toc_items.length > 0" class="toc">
+      <nav v-if="toc_items.length > 0" aria-label="Table of contents">
         <a
           v-for="item in toc_items"
           :key="item.id"
           :href="`#${item.id}`"
-          :class="`level-${item.level}`"
+          :data-level="item.level"
           @click.prevent="on_scroll_to_section(item.id)">
           {{ item.title }}
         </a>
       </nav>
-      <!-- Markdown before/after install guide: manual innerHTML avoids Safari dialog+v-html bug -->
-      <section class="content">
-        <div ref="before_ref" />
-        <install-guide v-if="has_install_guide && show_guide" />
-        <div ref="after_ref" />
-      </section>
-      <section class="preferences-panel">
+      <!-- Manual innerHTML avoids Safari dialog+v-html bug -->
+      <section ref="before_ref" itemprop="content" />
+      <install-guide v-if="has_install_guide && show_guide" />
+      <section ref="after_ref" itemprop="content" />
+      <section itemprop="preferences">
         <header>
           <h2 id="preferences">Preferences</h2>
           <p>
@@ -89,9 +87,7 @@
 </template>
 
 <style lang="stylus">
-  @require '../style/mixins/markdown-content.styl'
-
-  dialog.documentation {
+  dialog#documentation {
     & > header {
       h1 {
         margin-top: base-line* 2;
@@ -127,7 +123,7 @@
         }
         & > a {
           cursor: pointer;
-          & > svg.remove {
+          & > svg[data-icon='remove'] {
             fill: var(--text);
             width: base-line;
             height: base-line;
@@ -138,7 +134,7 @@
         }
       }
 
-      & > nav.toc {
+      & > nav[aria-label='Table of contents'] {
         display: block;
         column-width: 166px;
         column-gap: base-line;
@@ -149,7 +145,6 @@
         & > a {
           display: block;
           font-size: smaller;
-          margin: round((base-line / 4), 2) 0;
           color: var(--accent);
           text-decoration: none;
           break-inside: avoid;
@@ -161,7 +156,7 @@
           }
 
           // Level 3 and deeper get indentation
-          &.level-3 {
+          &[data-level='3'] {
             padding-left: base-line * 0.11;
             line-height: 1.33;
             font-size: 0.66em;
@@ -171,35 +166,31 @@
             }
           }
 
-          &.level-4 {
+          &[data-level='4'] {
             padding-left: base-line * 0.66;
             font-size: 0.85em;
           }
 
-          &.level-5 {
+          &[data-level='5'] {
             padding-left: base-line * 0.66;
             font-size: 0.8em;
           }
 
-          &.level-6 {
+          &[data-level='6'] {
             padding-left: base-line * 0.66;
             font-size: 0.75em;
           }
         }
       }
 
-      & > section.content {
-        flex: 1;
+      & > section[itemprop='content'],
+      & > section[aria-label='Install Realness'] {
         min-width: 0;
         max-width: 100%;
         padding: 0 base-line * .5;
-
-        & > div {
-          markdown_content();
-        }
       }
 
-      & > section.preferences-panel {
+      & > section[itemprop='preferences'] {
         padding: 0 base-line * 0.5 base-line * 2;
         border-top: 1px solid var(--emphasis);
 
@@ -209,7 +200,6 @@
           & > h2 {
             color: var(--emphasis);
             margin-top: base-line * 2;
-            margin-bottom: base-line;
           }
 
           & > p {

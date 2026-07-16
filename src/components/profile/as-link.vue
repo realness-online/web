@@ -3,7 +3,7 @@
   import { load, as_author } from '@/utils/itemid'
   import AsAvatar from '@/components/posters/as-svg'
   import AsAddress from '@/components/profile/as-address'
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted as mounted } from 'vue'
 
   const props = defineProps({
     itemid: {
@@ -20,14 +20,14 @@
 
   const author = computed(() => as_author(props.itemid))
 
-  onMounted(async () => {
+  mounted(async () => {
     if (!author.value) return
     person.value = await load(author.value)
   })
 </script>
 
 <template>
-  <router-link v-if="person" :to="author" class="profile">
+  <router-link v-if="person" :to="author" data-profile-link>
     <as-avatar v-if="person.avatar" as_avatar :itemid="person.avatar" />
     <icon v-else name="silhouette" />
     <as-address :person="person">
@@ -37,7 +37,7 @@
 </template>
 
 <style>
-  a.profile {
+  a[data-profile-link] {
     display: inline-flex;
     shape-outside: circle();
     margin-right: calc(var(--base-line) / 3);

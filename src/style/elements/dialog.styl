@@ -4,7 +4,7 @@ body:has(dialog[open]) {
 dialog {
   outline: none;
   margin: base-line auto 0;
-  padding: base-line * 0.5;
+  padding: base-line (base-line * 0.5);
   border: round(base-line / 7, 2) solid var(--emphasis);
   border-radius: base-line * 0.5;
   color: var(--text);
@@ -28,7 +28,7 @@ dialog[open]::backdrop {
   opacity: 1;
 }
 
-dialog.modal {
+dialog[data-modal] {
   z-index: 9;
   position: fixed;
   top: 50%;
@@ -37,8 +37,8 @@ dialog.modal {
   margin: 0;
 }
 
-dialog.confirm {
-  @extend dialog.modal;
+dialog[data-confirm] {
+  @extend dialog[data-modal];
   & > article {
     max-width: 100%
     @media (orientation: portrait) and (max-width: pad-begins) {

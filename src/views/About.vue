@@ -13,7 +13,7 @@
   import { use_posters } from '@/use/poster'
   import {
     onMounted as mounted,
-    onUnmounted as dismount,
+    onUnmounted as unmounted,
     computed,
     ref,
     nextTick as tick
@@ -27,6 +27,7 @@
   const ABOUT_FEATURED_POSTER_COUNT = 4
   const ABOUT_GALLERY_MAX_COUNT = 13
 
+  /** @type {import('vue').Ref<import('@/types').Item[]>} */
   const gallery_posters = ref([])
 
   const install_noun = install_method().noun
@@ -77,8 +78,8 @@
 
   /** @param {Element} section */
   const reveal_section = section => {
-    if (section.classList.contains('revealed')) return
-    section.classList.add('revealed')
+    if (section.hasAttribute('data-revealed')) return
+    section.setAttribute('data-revealed', '')
     section_observer?.unobserve(reveal_trigger(section))
   }
 
@@ -104,7 +105,7 @@
     )
 
     watched.forEach(({ section, trigger }) => {
-      if (section.classList.contains('revealed')) return
+      if (section.hasAttribute('data-revealed')) return
       if (section_in_view(trigger)) reveal_section(section)
     })
 
@@ -129,14 +130,14 @@
     )
 
     watched.forEach(({ section, trigger }) => {
-      if (!section.classList.contains('revealed'))
+      if (!section.hasAttribute('data-revealed'))
         section_observer?.observe(trigger)
     })
   }
 
   const observe_sections = () => {
     about_motion.value = true
-    // Pre-hide must paint before `.revealed` or enter animations are skipped.
+    // Pre-hide must paint before `[data-revealed]` or enter animations are skipped.
     requestAnimationFrame(() => {
       requestAnimationFrame(connect_section_observer)
     })
@@ -150,7 +151,7 @@
     observe_sections()
   })
 
-  dismount(() => {
+  unmounted(() => {
     section_observer?.disconnect()
   })
 </script>
@@ -159,13 +160,13 @@
   <section
     id="about"
     ref="about_el"
-    class="page"
+    data-page
     itemscope
     itemtype="/about"
-    :class="{ 'about-motion': about_motion }">
+    :data-about-motion="about_motion || undefined">
     <header>
       <section itemprop="hero">
-        <header :class="{ 'about-ready': about_ready }">
+        <header :data-about-ready="about_ready || undefined">
           <h1>Realness</h1>
           <h3>online</h3>
           <h4>Creativity Lives With You</h4>
@@ -187,12 +188,12 @@
     </header>
     <dialog
       ref="install_dialog"
-      class="install modal"
+      id="install"
+      data-modal
       @click="on_close_on_backdrop">
       <article>
         <button
           type="button"
-          class="close"
           autofocus
           aria-label="Close"
           @click="install_dialog?.close()">
@@ -345,9 +346,9 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong>Focused</strong> <b class="no">Email</b>,
-            <b class="no">Likes</b>, <b class="no">Links</b>, or
-            <b class="no">Scraping</b> - just posters and people you care about.
+            <strong>Focused</strong> <del>Email</del>, <del>Likes</del>,
+            <del>Links</del>, or <del>Scraping</del> - just posters and people
+            you care about.
           </p>
         </li>
         <li>
@@ -377,7 +378,7 @@
     <section itemprop="gallery">
       <header>
         <h2>Gallery</h2>
-        <menu class="gallery-preferences">
+        <menu>
           <preference compact name="shadow" />
           <preference compact name="stroke" />
           <preference compact name="mosaic" />
@@ -411,9 +412,8 @@
       </header>
       <ol>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/illustrator.svg"
               alt=""
               width="40"
@@ -426,9 +426,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/figma.svg"
               alt=""
               width="40"
@@ -438,9 +437,8 @@
           <p><strong>Figma</strong> Export SVG ready to import into Figma.</p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/photoshop.svg"
               alt=""
               width="40"
@@ -453,9 +451,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/after-effects.svg"
               alt=""
               width="40"
@@ -468,9 +465,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/premiere-pro.svg"
               alt=""
               width="40"
@@ -483,9 +479,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/blender.svg"
               alt=""
               width="40"
@@ -495,9 +490,8 @@
           <p><strong>Blender</strong> Export GLB from the 3D view.</p>
         </li>
         <li>
-          <span class="logo-wrap logo-wrap--light-bg"
+          <span data-light-bg
             ><img
-              class="integration-logo"
               src="/brands/unreal-engine.svg"
               alt=""
               width="40"
@@ -509,9 +503,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap logo-wrap--light-bg"
+          <span data-light-bg
             ><img
-              class="integration-logo"
               src="/brands/unity.svg"
               alt=""
               width="40"
@@ -521,9 +514,8 @@
           <p><strong>Unity</strong> Export GLB into your Unity scene.</p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/davinci-resolve.svg"
               alt=""
               width="40"
@@ -535,9 +527,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/final-cut-pro.png"
               alt=""
               width="40"
@@ -549,9 +540,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/affinity.svg"
               alt=""
               width="40"
@@ -564,9 +554,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/inkscape.svg"
               alt=""
               width="40"
@@ -578,9 +567,8 @@
           </p>
         </li>
         <li>
-          <span class="logo-wrap"
+          <span
             ><img
-              class="integration-logo"
               src="/brands/procreate.png"
               alt=""
               width="40"
@@ -637,7 +625,7 @@
     grid-template-columns: repeat(auto-fill, minmax(325px, 1fr));
   }
 
-  section.page#about {
+  section#about[data-page] {
     --about-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --about-enter: 820ms;
     --about-stagger: 56ms;
@@ -697,6 +685,7 @@
           }
 
           & > h4 {
+            margin: 0;
             text-align: center;
             line-height: 1.66;
 
@@ -718,7 +707,7 @@
             }
           }
 
-          &:not(.about-ready) {
+          &:not([data-about-ready]) {
             & > h1,
             & > h3,
             & > p {
@@ -726,7 +715,7 @@
             }
           }
 
-          &.about-ready {
+          &[data-about-ready] {
             & > h1 {
               about-enter(var(--about-hero-delay));
             }
@@ -758,7 +747,7 @@
           }
         }
 
-        & > figure.poster {
+        & > figure:has([itemtype='/posters']) {
           min-height: var(--poster-grid-height);
 
           @media (min-width: pad-begins) {
@@ -817,7 +806,7 @@
           align-items: stretch;
         }
 
-        & > figure.poster {
+        & > figure:has([itemtype='/posters']) {
           min-height: var(--poster-grid-height);
 
           @media (min-width: pad-begins) {
@@ -850,7 +839,7 @@
           flex-direction: column;
           justify-content: center;
           width: 100%;
-          margin: 0 auto;
+          margin-inline: auto;
           min-height: var(--about-article-copy-min-height);
 
           @media (min-width: pad-begins) {
@@ -900,7 +889,7 @@
         }
       }
 
-      &.revealed {
+      &[data-revealed] {
         & > header > h2 {
           about-enter();
         }
@@ -922,7 +911,7 @@
           min-height: max(calc(var(--poster-grid-height) + var(--base-line) * 6), var(--about-article-copy-min-height));
         }
 
-        & > figure.poster {
+        & > figure:has([itemtype='/posters']) {
           min-height: calc(var(--poster-grid-height) + var(--base-line) * 2);
 
           @media (min-width: pad-begins) {
@@ -943,7 +932,7 @@
     & > [itemprop='support'] {
       min-height: var(--about-block-min-height);
 
-      &.revealed > * {
+      &[data-revealed] > * {
         about-enter();
       }
     }
@@ -967,15 +956,11 @@
           & > p {
             margin-left: base-line * 2;
             margin-bottom: 0;
-
-            & > b.no {
-              text-decoration: line-through;
-            }
           }
         }
       }
 
-      &.revealed > ol > li {
+      &[data-revealed] > ol > li {
         about-enter();
 
         for i in 1..15 {
@@ -1010,7 +995,7 @@
             margin-bottom: 0;
           }
 
-          & > .logo-wrap {
+          & > span {
             position: absolute;
             top: 0;
             left: 0;
@@ -1023,11 +1008,11 @@
             background: none;
             overflow: hidden;
 
-            &.logo-wrap--light-bg {
+            &[data-light-bg] {
               background: var(--contrast);
             }
 
-            & > .integration-logo {
+            & > img {
               width: base-line * 2;
               height: base-line * 2;
               object-fit: contain;
@@ -1036,7 +1021,7 @@
         }
       }
 
-      &.revealed {
+      &[data-revealed] {
         & > header {
           about-enter();
         }
@@ -1090,12 +1075,12 @@
         }
       }
 
-      &.revealed {
+      &[data-revealed] {
         & > header {
           about-enter();
         }
 
-        menu.preferences-menu > article {
+        menu[data-preferences-menu] > article {
           about-enter();
 
           for i in 1..3 {
@@ -1127,20 +1112,18 @@
           about-section-heading();
         }
 
-        & > menu.gallery-preferences {
+        & > menu {
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
           align-items: center;
           gap: base-line base-line * 1.5;
-          margin: 0;
-          padding: 0;
           width: 100%;
           border: none;
         }
       }
 
-      & > figure.poster {
+      & > figure:has([itemtype='/posters']) {
         grid-column: span 1;
         grid-row: span 1;
         min-height: var(--poster-grid-height);
@@ -1166,11 +1149,11 @@
             min-height: auto;
           }
 
-          &:has(svg[data-orientation='horizontal']):has(+ figure.poster:has(svg[data-orientation='horizontal'])) {
+          &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal'])) {
             grid-column: span 2;
           }
 
-          &:has(svg[data-orientation='horizontal']) + figure.poster:has(svg[data-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) + figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal']) {
             grid-column: span 2;
           }
         }
@@ -1184,7 +1167,7 @@
         }
       }
 
-      &.revealed > header {
+      &[data-revealed] > header {
         about-enter();
       }
     }
@@ -1194,11 +1177,11 @@
       min-height: 100vh;
       padding: base-line;
 
-      & > a.logo {
+      & > a[aria-label='Realness home'] {
         display: inline-block;
       }
 
-      &.revealed > * {
+      &[data-revealed] > * {
         about-enter();
 
         &:nth-child(2) {
@@ -1207,8 +1190,8 @@
       }
     }
 
-    &.about-motion {
-      & > article:not(.revealed) {
+    &[data-about-motion] {
+      & > article:not([data-revealed]) {
         & > header > h2,
         & > section > header,
         & > section > footer {
@@ -1216,21 +1199,21 @@
         }
       }
 
-      & > [itemprop='features']:not(.revealed) > ol > li,
-      & > [itemprop='integrations']:not(.revealed) > header,
-      & > [itemprop='integrations']:not(.revealed) > ol > li,
-      & > [itemprop='preferences']:not(.revealed) > header,
-      & > [itemprop='preferences']:not(.revealed) menu.preferences-menu > article,
-      & > [itemprop='gallery']:not(.revealed) > header,
-      & > [itemprop='support']:not(.revealed) > *,
-      & > [itemprop='footer']:not(.revealed) > * {
+      & > [itemprop='features']:not([data-revealed]) > ol > li,
+      & > [itemprop='integrations']:not([data-revealed]) > header,
+      & > [itemprop='integrations']:not([data-revealed]) > ol > li,
+      & > [itemprop='preferences']:not([data-revealed]) > header,
+      & > [itemprop='preferences']:not([data-revealed]) menu[data-preferences-menu] > article,
+      & > [itemprop='gallery']:not([data-revealed]) > header,
+      & > [itemprop='support']:not([data-revealed]) > *,
+      & > [itemprop='footer']:not([data-revealed]) > * {
         opacity: 0;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      &.about-motion {
-        & > article:not(.revealed) {
+      &[data-about-motion] {
+        & > article:not([data-revealed]) {
           & > header > h2,
           & > section > header,
           & > section > footer {
@@ -1238,27 +1221,27 @@
           }
         }
 
-        & > [itemprop='features']:not(.revealed) > ol > li,
-        & > [itemprop='integrations']:not(.revealed) > header,
-        & > [itemprop='integrations']:not(.revealed) > ol > li,
-        & > [itemprop='preferences']:not(.revealed) > header,
-        & > [itemprop='preferences']:not(.revealed) > menu > article,
-        & > [itemprop='gallery']:not(.revealed) > header,
-        & > [itemprop='support']:not(.revealed) > *,
-        & > [itemprop='footer']:not(.revealed) > * {
+        & > [itemprop='features']:not([data-revealed]) > ol > li,
+        & > [itemprop='integrations']:not([data-revealed]) > header,
+        & > [itemprop='integrations']:not([data-revealed]) > ol > li,
+        & > [itemprop='preferences']:not([data-revealed]) > header,
+        & > [itemprop='preferences']:not([data-revealed]) > menu > article,
+        & > [itemprop='gallery']:not([data-revealed]) > header,
+        & > [itemprop='support']:not([data-revealed]) > *,
+        & > [itemprop='footer']:not([data-revealed]) > * {
           opacity: 1;
         }
       }
 
-      & > article.revealed,
-      & > [itemprop='support'].revealed > *,
-      & > [itemprop='features'].revealed > ol > li,
-      & > [itemprop='integrations'].revealed > header,
-      & > [itemprop='integrations'].revealed > ol > li,
-      & > [itemprop='preferences'].revealed > header,
-      & > [itemprop='preferences'].revealed menu.preferences-menu > article,
-      & > [itemprop='gallery'].revealed > header,
-      & > [itemprop='footer'].revealed > * {
+      & > article[data-revealed],
+      & > [itemprop='support'][data-revealed] > *,
+      & > [itemprop='features'][data-revealed] > ol > li,
+      & > [itemprop='integrations'][data-revealed] > header,
+      & > [itemprop='integrations'][data-revealed] > ol > li,
+      & > [itemprop='preferences'][data-revealed] > header,
+      & > [itemprop='preferences'][data-revealed] menu[data-preferences-menu] > article,
+      & > [itemprop='gallery'][data-revealed] > header,
+      & > [itemprop='footer'][data-revealed] > * {
         animation: none;
       }
     }

@@ -72,7 +72,7 @@ describe('@/components/sponsor/cta', () => {
         checkout_url: 'https://buy.stripe.com/3cIcMS4ataieg214HI4F201'
       }
     })
-    const link = wrapper.find('a.checkout')
+    const link = wrapper.find('a[data-checkout]')
     expect(link.exists()).toBe(true)
     expect(link.attributes('href')).toBe(
       'https://buy.stripe.com/3cIcMS4ataieg214HI4F201?client_reference_id=%2F%2B15550000000'

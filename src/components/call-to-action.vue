@@ -1,5 +1,5 @@
 <template>
-  <div class="call to action">
+  <aside data-call-to-action>
     <h3>
       Support
       <router-link to="/pricing">
@@ -10,11 +10,11 @@
     <p>
       <strong>The medium is the message</strong>
     </p>
-  </div>
+  </aside>
 </template>
 
 <style lang="stylus">
-  div.call.to.action {
+  aside[data-call-to-action] {
     margin: auto;
     max-width: base-line * 18rem;
     padding: base-line * 1.5;
@@ -23,9 +23,6 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-    }
-    svg.icon {
-      fill: var(--accent);
     }
     & > h3 {
       margin-bottom: 0;

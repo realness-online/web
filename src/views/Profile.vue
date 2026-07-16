@@ -62,7 +62,7 @@
 </script>
 
 <template>
-  <section id="profile" class="page">
+  <section id="profile" data-page>
     <header>
       <logo-as-link />
       <icon name="nothing" />
@@ -112,12 +112,12 @@
       position: relative;
       overflow: hidden;
       max-height: 100dvh;
-      & > svg.icon.silhouette {
+      & > svg.icon[data-icon='silhouette'] {
         width: 100%;
         height: 100dvh;
         fill: currentColor;
       }
-      & > figure.poster {
+      & > figure:has([itemtype='/posters']) {
         content-visibility: visible;
         width: 100%;
         min-height: 100dvh;
@@ -185,21 +185,21 @@
               width: 0;
               height: 0;
             }
-            svg.finished {
+            svg[data-icon='finished'] {
               width: base-line * 2;
               height: base-line * 2;
             }
           }
         }
-        a.phone {
+        a[aria-label='Send a text message'] {
           display: none;
         }
       }
     }
-    & > section.as-days {
+    & > section[data-days] {
       padding-left: 0;
       padding-right: 0;
-      & [role='feed'] > article > header {
+      &[role='feed'] > article > header {
         padding-left: base-line;
         padding-right: base-line;
       }
@@ -207,23 +207,20 @@
         padding-left: base-line;
         padding-right: base-line;
       }
-      & [role='feed'] > article {
+      &[role='feed'] > article {
         @media (prefers-color-scheme: dark) {
           & > header > h4,
-          figure.poster > svg.background {
+          figure:has([itemtype='/posters']) > svg[data-icon='background'] {
             color: var(--accent);
           }
         }
-        figure.poster {
+        figure:has([itemtype='/posters']) {
           border-radius: 0;
           & > figcaption > menu {
-            & > a.download svg {
-              fill: var(--accent);
-            }
-            & > a.phone {
+            & > a[aria-label='Send a text message'] {
               display: none;
             }
-            & > a.profile,
+            & > a[data-display='label'],
             & > address {
               & > time {
                 font-size: max-font;

@@ -1,10 +1,10 @@
 <script setup>
-  import { computed, onMounted } from 'vue'
+  import { computed, onMounted as mounted } from 'vue'
   import { use_push } from '@/use/push'
   import { use_instance_capabilities } from '@/use/instance-capabilities'
   import { notifications } from '@/utils/preference'
 
-  defineOptions({ name: 'AsNotifications' })
+  defineOptions({ name: 'AsFieldsetNotifications' })
 
   const { status, busy, refresh, enable, disable } = use_push()
   const { ready, push: push_available, probe } = use_instance_capabilities()
@@ -13,7 +13,7 @@
     () => ready.value && push_available.value && status.value !== 'unsupported'
   )
 
-  onMounted(async () => {
+  mounted(async () => {
     await probe()
     if (!push_available.value) {
       if (notifications.value) notifications.value = false
@@ -41,10 +41,10 @@
 </script>
 
 <template>
-  <fieldset v-if="show" class="preference">
+  <fieldset v-if="show" data-preference>
     <div>
       <h4>Get notified</h4>
-      <label class="switch">
+      <label>
         <input
           type="checkbox"
           name="notifications"
@@ -53,13 +53,13 @@
           :checked="notifications"
           :disabled="busy || status === 'blocked' || status === 'needs-install'"
           @change="on_toggle" />
-        <span class="slider"></span>
+        <span data-slider></span>
       </label>
     </div>
-    <p v-if="status === 'blocked'" class="hint">
+    <p v-if="status === 'blocked'" data-hint>
       Turn notifications on in your browser settings.
     </p>
-    <p v-else-if="status === 'needs-install'" class="hint">
+    <p v-else-if="status === 'needs-install'" data-hint>
       Add Realness to your home screen first.
     </p>
   </fieldset>

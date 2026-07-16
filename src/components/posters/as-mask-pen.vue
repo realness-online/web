@@ -2,7 +2,7 @@
   import {
     ref,
     computed,
-    onMounted,
+    onMounted as mounted,
     watch,
     nextTick as tick,
     inject
@@ -239,7 +239,9 @@
         height: vb.height
       }
 
-    const figure = mask_pen_root.value?.closest('figure.poster')
+    const figure = mask_pen_root.value?.closest(
+      'figure:has([itemtype="/posters"])'
+    )
     const symbol_defs = figure?.querySelector('svg[data-poster-symbol-defs]')
     const paths = collect_geology_paths(symbol_defs, props.itemid)
     paths_data.value = paths
@@ -260,7 +262,7 @@
     })
   }
 
-  onMounted(load_paths)
+  mounted(load_paths)
   watch(() => props.itemid, load_paths)
   watch(
     () => symbols_ready?.value,
@@ -271,7 +273,7 @@
 </script>
 
 <template>
-  <g ref="mask_pen_root" class="mask-pen">
+  <g ref="mask_pen_root" data-mask-pen>
     <g
       ref="hit_layer"
       visibility="hidden"
@@ -297,7 +299,7 @@
       "
       :d="hovered_path.d"
       :transform="hovered_path.transform"
-      class="mask-pen-hover"
+      data-mask-pen="hover"
       pointer-events="none" />
     <template v-for="overlay in subject_overlays" :key="overlay.id">
       <path
@@ -305,7 +307,7 @@
         :key="`${overlay.id}-${p.key}`"
         :d="p.d"
         :transform="p.transform"
-        class="mask-pen-selected"
+        data-mask-pen="selected"
         :style="{
           fill: `hsla(${overlay.hue}, 70%, 55%, ${overlay.active ? 0.5 : 0.3})`,
           stroke: `hsla(${overlay.hue}, 80%, 62%, ${overlay.active ? 0.95 : 0.6})`
@@ -317,7 +319,7 @@
       :key="`grow-${p.key}`"
       :d="p.d"
       :transform="p.transform"
-      class="mask-pen-preview"
+      data-mask-pen="preview"
       :style="{ fill: preview_fill, stroke: preview_stroke }"
       pointer-events="none" />
     <circle
@@ -325,33 +327,33 @@
       :cx="grow_circle.cx"
       :cy="grow_circle.cy"
       :r="grow_circle.r"
-      class="mask-pen-radius"
+      data-mask-pen="radius"
       :style="{ stroke: preview_stroke }"
       pointer-events="none" />
   </g>
 </template>
 
 <style>
-  g.mask-pen {
+  g[data-mask-pen] {
     /* Keep outlines hairline-thin so they don't swamp small geology cells; the fill
        is what tells you a cell is hovered (light) vs selected (solid). */
-    path.mask-pen-hover {
+    path[data-mask-pen='hover'] {
       fill: color-mix(in srgb, var(--slate-fill) 30%, transparent);
       stroke: color-mix(in srgb, var(--slate-fill) 85%, transparent);
       stroke-width: calc(var(--base-line) * 0.035);
       vector-effect: non-scaling-stroke;
     }
-    path.mask-pen-selected {
+    path[data-mask-pen='selected'] {
       fill: color-mix(in srgb, var(--slate-fill) 55%, transparent);
       stroke: color-mix(in srgb, var(--slate-fill) 95%, transparent);
       stroke-width: calc(var(--base-line) * 0.035);
       vector-effect: non-scaling-stroke;
     }
-    path.mask-pen-preview {
+    path[data-mask-pen='preview'] {
       stroke-width: calc(var(--base-line) * 0.05);
       vector-effect: non-scaling-stroke;
     }
-    circle.mask-pen-radius {
+    circle[data-mask-pen='radius'] {
       fill: none;
       stroke-width: calc(var(--base-line) * 0.06);
       stroke-dasharray: calc(var(--base-line) * 0.2)

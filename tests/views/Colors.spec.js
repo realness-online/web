@@ -5,7 +5,7 @@ import Colors from '@/views/Colors.vue'
 describe('@/views/Colors', () => {
   it('renders the color system reference', () => {
     const wrapper = mount(Colors)
-    expect(wrapper.find('section#colors.page').exists()).toBe(true)
+    expect(wrapper.find('section#colors[data-page]').exists()).toBe(true)
     expect(wrapper.find('h1').text()).toBe('Color')
 
     const roles = wrapper.findAll('article[itemprop="roles"] > ul > li')

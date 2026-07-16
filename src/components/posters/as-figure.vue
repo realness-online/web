@@ -109,7 +109,6 @@
   const canvas_leaving = ref(false)
   const viewer_ref = ref(null)
 
-  /** Click-to-toggle for every poster with overlay statements (own or read-only). */
   const overlay_text_visible = computed(() => {
     if (!props.overlay_statements?.length) return false
     if (mask_pen.active.value) return false
@@ -456,7 +455,6 @@
 <template>
   <figure
     ref="poster"
-    class="poster"
     :aria-expanded="
       overlay_statements?.length ? overlay_text_visible : undefined
     "
@@ -515,7 +513,7 @@
       ref="viewer_ref"
       :itemid="itemid"
       :on_svg_zoom="set_svg_zoom"
-      class="inline"
+      data-mode="inline"
       @select="on_poster_svg_click" />
     <figcaption v-if="figcaption_visible">
       <header>
@@ -554,8 +552,8 @@
                   : null
               ">
               <button
-                class="mask-pen"
-                :class="{ active: mask_pen.active.value }"
+                aria-label="Toggle mask pen"
+                :aria-pressed="mask_pen.active.value"
                 @click.stop="on_toggle_mask_pen">
                 &#9998;<span v-if="mask_pen.selected.value.size">
                   {{ mask_pen.selected.value.size }}</span
@@ -563,7 +561,7 @@
               </button>
               <button
                 v-if="mask_pen.active.value && mask_pen.selected.value.size"
-                class="mask-pen-clear"
+                aria-label="Clear mask"
                 @click.stop="mask_pen.clear()">
                 &times;
               </button>
@@ -579,7 +577,7 @@
                 :person="person"
                 :display="profile_display"
                 :itemid="profile_chip_itemid" />
-              <span class="actions">
+              <span role="group">
                 <as-download :itemid="/** @type {Id} */ (itemid)" />
               </span>
             </menu>
@@ -591,7 +589,7 @@
 </template>
 
 <style lang="stylus">
-  figure.poster {
+  figure:has([itemtype='/posters']):not([itemtype]) {
     position: relative;
     display: grid;
     overflow: hidden;
@@ -642,10 +640,10 @@
       }
     }
     @media (min-width: pad-begins) {
-      &:has(svg[data-orientation='horizontal']):has(+ figure.poster:has(svg[data-orientation='horizontal'])) {
+      &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal'])) {
         grid-column-start: span 3;
       }
-      &:has(svg[data-orientation='horizontal']) + figure.poster:has(svg[data-orientation='horizontal']) {
+      &:has(svg[data-orientation='horizontal']) + figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal']) {
         grid-column-start: span 3;
       }
       &.new:not(:has(svg[data-orientation='horizontal'])) {
@@ -683,7 +681,7 @@
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
     }
-    .viewer_3d.inline {
+    canvas[data-mode='inline'] {
       position: absolute;
       inset: 0;
       z-index: 2;
@@ -715,7 +713,7 @@
           overflow-y: auto;
           overflow-x: hidden;
           z-index: 2;
-          padding: base-line * 0.75 base-line;
+          padding: base-line;
           border-radius: base-line * 0.5;
           frosted-glass();
           color: var(--text);
@@ -730,7 +728,6 @@
           -webkit-overflow-scrolling: touch;
           pointer-events: auto;
           & p[itemprop='statement'] {
-            margin: 0 0 round((base-line * 0.35), 2) 0;
             font-size: 0.95em;
             line-height: 1.45;
             white-space: pre-wrap;
@@ -758,7 +755,7 @@
         & > time {
           color: var(--accent);
           white-space: nowrap;
-          padding: base-line * 0.2 base-line * 0.4;
+          padding-inline: base-line * 0.4;
           border-radius: base-line * 0.25;
           frosted-glass();
         }
@@ -774,7 +771,7 @@
         justify-content: space-between;
         align-items: center;
         gap: base-line * 0.5;
-        padding: base-line * 0.5;
+        padding: base-line (base-line * 0.5);
         height: auto;
         border-radius: base-line;
         min-width: 0;
@@ -787,15 +784,15 @@
         & > nav,
         & > button,
         & > fieldset,
-        & > span.actions {
+        & > span[role='group'] {
           pointer-events: auto;
         }
-        & > button.mask-pen,
-        & > button.mask-pen-clear {
+        & > button[aria-label='Toggle mask pen'],
+        & > button[aria-label='Clear mask'] {
           background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
           border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
           border-radius: base-line * 0.25;
-          padding: base-line * 0.25 base-line * 0.5;
+          padding-inline: base-line * 0.5;
           cursor: pointer;
           color: var(--contrast);
           font-size: larger;
@@ -805,18 +802,18 @@
           text-align: center;
           &:hover { opacity: 1; background: unquote('color-mix(in srgb, var(--moonlight) 50%, transparent)'); }
         }
-        & > button.mask-pen.active {
+        & > button[aria-label='Toggle mask pen'][aria-pressed='true'] {
           opacity: 1;
           background: unquote('color-mix(in srgb, var(--slate-fill) 50%, transparent)');
           border-color: unquote('color-mix(in srgb, var(--slate-fill) 80%, transparent)');
         }
-        & > span.actions {
+        & > span[role='group'] {
           display: flex;
           gap: base-line;
           align-items: center;
         }
-        & > a.profile,
-        & > figure.profile {
+        & > a[data-display='label'],
+        & > figure[data-display='phonebook'] {
           z-index: 2;
           position: relative;
           animation-name: fade-in;
@@ -835,9 +832,9 @@
             }
           }
         }
-        & > a.profile > svg,
-        & > figure.profile > svg,
-        & > span.actions svg {
+        & > a[data-display='label'] > svg,
+        & > figure[data-display='phonebook'] > svg,
+        & > span[role='group'] svg {
          fill: var(--accent);
         }
       }

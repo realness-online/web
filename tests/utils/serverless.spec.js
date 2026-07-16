@@ -189,6 +189,68 @@ describe('@/utils/serverless', () => {
       expect(ok).toBe(false)
     })
 
+    it('returns false when load hydrates nothing into local storage', async () => {
+      localStorage.me = '/+15551234567'
+      get.mockResolvedValue(null)
+      const { load } = await import('@/utils/itemid')
+      load.mockResolvedValueOnce({ id: 'present-but-empty' })
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move('posters', '1720119797893', 'archive99')
+
+      expect(ok).toBe(false)
+    })
+
+    it('returns false when component poster id cannot be resolved', async () => {
+      localStorage.me = '/+15551234567'
+      const { as_poster_id } = await import('@/utils/itemid')
+      as_poster_id.mockReturnValueOnce(null)
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move('shadows', '1720119797893', 'archive99')
+
+      expect(ok).toBe(false)
+    })
+
+    it('rolls back uploaded archive when remove of old path fails', async () => {
+      localStorage.me = '/+15551234567'
+      const itemid = '/+15551234567/posters/1720119797893'
+      localStorage.setItem(itemid, '<svg>poster</svg>')
+      get.mockResolvedValue(null)
+      deleteObject.mockRejectedValueOnce(new Error('remove failed'))
+      const error_log = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move('posters', '1720119797893', 'archive99')
+
+      expect(ok).toBe(false)
+      expect(uploadString).toHaveBeenCalled()
+      expect(deleteObject).toHaveBeenCalledTimes(2)
+      expect(set).toHaveBeenCalledWith(itemid, '<svg>poster</svg>')
+      error_log.mockRestore()
+    })
+
+    it('logs cleanup failure when rollback remove also fails', async () => {
+      localStorage.me = '/+15551234567'
+      const itemid = '/+15551234567/posters/1720119797893'
+      localStorage.setItem(itemid, '<svg>poster</svg>')
+      get.mockResolvedValue(null)
+      deleteObject
+        .mockRejectedValueOnce(new Error('remove failed'))
+        .mockRejectedValueOnce(new Error('cleanup failed'))
+      const error_log = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const { move } = await import('@/utils/serverless')
+
+      const ok = await move('posters', '1720119797893', 'archive99')
+
+      expect(ok).toBe(false)
+      expect(error_log).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to cleanup'),
+        'cleanup failed'
+      )
+      error_log.mockRestore()
+    })
+
     it('restore direction reverses a poster move back out of the archive', async () => {
       localStorage.me = '/+15551234567'
       const itemid = '/+15551234567/posters/archive99/1720119797893'
@@ -239,6 +301,21 @@ describe('@/utils/serverless', () => {
   })
 
   describe('init_serverless', () => {
+    it('logs when firebase app initialization returns null', async () => {
+      vi.resetModules()
+      initializeApp.mockReturnValueOnce(null)
+      getAuth.mockReturnValue({ uid: 'test-auth' })
+      const error_log = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { init_serverless } = await import('@/utils/serverless')
+      await init_serverless()
+
+      expect(error_log).toHaveBeenCalledWith(
+        'Firebase app initialization failed'
+      )
+      error_log.mockRestore()
+    })
+
     it('hydrates me from network profile after sign-in', async () => {
       vi.resetModules()
       initializeApp.mockReturnValue({ name: 'test-app' })

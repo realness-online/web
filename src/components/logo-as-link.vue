@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <router-link class="logo" to="/" tabindex="-1">
+  <router-link aria-label="Realness home" to="/" tabindex="-1">
     <icon name="realness" />
   </router-link>
 </template>

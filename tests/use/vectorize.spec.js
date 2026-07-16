@@ -364,6 +364,9 @@ describe('vectorize composable', () => {
       // gradienter, tracer, optimizer).
       const vectorized_handler =
         created_workers[0].addEventListener.mock.calls[0][1]
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       await expect(
         vectorized_handler({ data: { error: 'trace failed' } })
@@ -372,6 +375,8 @@ describe('vectorize composable', () => {
       expect(Queue.update).toHaveBeenCalledWith(itemid, { status: 'error' })
       expect(vectorize_instance.is_processing.value).toBe(false)
       expect(vectorize_instance.current_processing.value).toBeNull()
+      expect(console_error).toHaveBeenCalled()
+      console_error.mockRestore()
     })
 
     it('gradientized handler logs and does not throw on an error reply', async () => {
@@ -408,6 +413,9 @@ describe('vectorize composable', () => {
       // created_workers[3] is the optimizer.
       const optimized_handler =
         created_workers[3].addEventListener.mock.calls[0][1]
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       await expect(
         optimized_handler({ data: { error: 'optimize failed' } })
@@ -416,6 +424,8 @@ describe('vectorize composable', () => {
       expect(Queue.update).toHaveBeenCalledWith(itemid, { status: 'error' })
       expect(vectorize_instance.is_processing.value).toBe(false)
       expect(vectorize_instance.current_processing.value).toBeNull()
+      expect(console_error).toHaveBeenCalled()
+      console_error.mockRestore()
     })
   })
 

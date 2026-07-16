@@ -26,10 +26,10 @@
   import {
     ref,
     inject,
-    onMounted as on_mounted,
-    onUnmounted as on_unmounted,
+    onMounted as mounted,
+    onUnmounted as unmounted,
     h,
-    createApp
+    createApp as create_app
   } from 'vue'
   const props = defineProps({
     itemid: {
@@ -261,7 +261,7 @@
     container.style.left = '-9999px'
     document.body.appendChild(container)
 
-    const app = createApp({
+    const app = create_app({
       render: () => h(icon, { name: icon_name })
     })
     app.mount(container)
@@ -419,22 +419,22 @@
     }
   }
 
-  on_mounted(async () => {
+  mounted(async () => {
     file_name.value = await get_filename_for_poster(props.itemid, 'svg')
     document.addEventListener('click', handle_click_outside)
   })
 
-  on_unmounted(() => {
+  unmounted(() => {
     document.removeEventListener('click', handle_click_outside)
   })
 </script>
 
 <template>
-  <nav class="download-vector" ref="button_ref">
+  <nav aria-label="Download options" ref="button_ref">
     <a @click="on_toggle_menu" title="Download" aria-label="Download options">
       <icon name="download" />
     </a>
-    <menu v-if="menu_open" ref="menu_ref" class="format-picker">
+    <menu v-if="menu_open" ref="menu_ref">
       <a v-if="!video_exporting" @click="on_download_svg" title="Download SVG">
         SVG
       </a>
@@ -467,27 +467,24 @@
         aria-label="Download GLB for Blender">
         GLB
       </a>
-      <span v-else class="video-progress">
-        {{ video_progress }}/{{ video_total }} frames
-      </span>
+      <output v-else> {{ video_progress }}/{{ video_total }} frames </output>
     </menu>
   </nav>
 </template>
 
 <style lang="stylus">
-  nav.download-vector {
+  nav[aria-label='Download options'] {
     position: relative;
 
     & > a:first-child {
       display: block;
     }
 
-    menu.format-picker {
+    menu {
       position: absolute;
       bottom: 100%;
       right: 0;
       left: auto;
-      margin-bottom: base-line * 0.25;
       max-width: min(calc(100vw - var(--base-line) * 4), base-line * 15);
       display: flex;
       flex-direction: row;
@@ -496,13 +493,13 @@
       align-items: center;
       font-size: larger;
       gap: base-line * 0.25;
-      padding: base-line * 0.25;
+      padding-inline: base-line * 0.25;
       frosted-glass();
       border-radius: base-line * 0.25;
       z-index: 6;
       & > a {
         position: relative;
-        padding: base-line * 0.25 base-line * 0.5;
+        padding-inline: base-line * 0.5;
         border-radius: base-line * 0.125;
         white-space: nowrap;
         cursor: pointer;
@@ -525,8 +522,8 @@
         }
       }
 
-      .video-progress {
-        padding: base-line * 0.25 base-line * 0.5;
+      output {
+        padding-inline: base-line * 0.5;
         opacity: 0.9;
       }
     }

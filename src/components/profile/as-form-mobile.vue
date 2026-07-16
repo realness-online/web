@@ -201,7 +201,7 @@
 <template>
   <form id="profile-mobile">
     <fieldset v-if="show_mobile_input" id="phone">
-      <legend :class="{ valid: on_validate_mobile_number() }">
+      <legend :data-valid="on_validate_mobile_number() || undefined">
         {{ mobile_display }}
       </legend>
       <button
@@ -284,14 +284,11 @@
     // Vertical rhythm only — the form is width:100% inside its container, so a
     // horizontal margin would push it past the right edge (overflow skew).
     margin: base-line 0;
-    svg.remove {
+    svg[data-icon='remove'] {
       fill: var(--emphasis);
     }
     fieldset {
       margin-bottom: base-line;
-      &#captcha.hide {
-         display: none;
-      }
       &#phone {
         overflow: visible;
         display: flex;
@@ -306,7 +303,6 @@
           flex-shrink: 0;
           display: flex;
           align-items: center;
-          margin: 0;
           margin-right: (base-line * 0.5);
           cursor: pointer;
           white-space: nowrap;
@@ -331,8 +327,7 @@
           width: 100%;
           max-height: 200px;
           overflow-y: auto;
-          margin-top: (base-line * 0.25);
-          padding: (base-line * 0.25);
+          padding-inline: (base-line * 0.25);
           @media (prefers-color-scheme: dark) {
             background-color: var(--basalt-transparent);
             border-color: var(--emphasis);
@@ -341,7 +336,7 @@
             }
           }
           option {
-            padding: (base-line * 0.25);
+            padding-inline: (base-line * 0.25);
             cursor: pointer;
             &:hover {
               background-color: var(--accent);
@@ -363,7 +358,7 @@
     }
 
     p#consent {
-      margin: (base-line * 0.5) 0 0;
+      margin: base-line 0 0;
       font-size: 0.75em;
       opacity: 0.7;
       line-height: 1.4;
@@ -378,7 +373,7 @@
     }
 
     p#integrity-denied {
-      margin: (base-line * 0.5) 0 0;
+      margin-top: base-line;
       color: var(--emphasis);
       line-height: 1.4;
     }

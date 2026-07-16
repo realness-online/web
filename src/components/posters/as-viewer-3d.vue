@@ -113,7 +113,6 @@
 <template>
   <canvas
     ref="canvas_ref"
-    class="viewer_3d"
     @pointerdown="on_pointerdown"
     @pointermove="on_pointer_move"
     @pointerup="on_pointerup"
@@ -124,7 +123,7 @@
 </template>
 
 <style lang="stylus">
-  canvas.viewer_3d {
+  canvas {
     display: block;
     width: 100%;
     height: 100%;

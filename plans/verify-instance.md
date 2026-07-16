@@ -17,23 +17,24 @@ The tool should work for:
 - A team instance (`https://our-union.realness...` or custom domain)
 - Local preview (`http://localhost:5173` after `npm run build && npm run serve`)
 
-Related today: [verify-release.md](../docs/verify-release.md) (manifest format and `verify-deploy.js`).
+Related today: [verify-release.md](../docs/verify-release.md) (manifesto format and `npm run verify`).
 
 ## Current state
 
-Phase 0 done or in progress:
+Phase 0 / public verify entry:
 
 - `scripts/build-manifest.js` runs after `npm run build`
 - `dist/build-manifest.json` deploys with Firebase Hosting
-- `scripts/verify-deploy.js` + `npm run verify:deploy` (defaults to realness.online)
-- `docs/verify-release.md` for manual steps
-- About page links to manifest and docs
+- `npm run verify` → GitHub release manifesto + hash live instance (default:
+  latest release with asset vs `https://realness.online`)
+- `docs/verify-release.md` for the one-liner and operator release steps
+- About page links to manifesto and docs
 
 Gaps:
 
-- Manifest not on production until next deploy
-- GitHub release may not yet attach manifest every time
-- No UI, no arbitrary-instance UX, no trust registry
+- No modern GitHub release yet has a `build-manifest.json` asset (`npm run verify`
+  fails until operators run `npm run release:gh` after deploy)
+- No UI, no arbitrary-instance UX beyond `--url`, no trust registry
 
 ### What "legit" means
 

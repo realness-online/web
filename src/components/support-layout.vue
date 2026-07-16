@@ -5,17 +5,6 @@
 </script>
 
 <template>
-  <div class="support-layout">
-    <site-nav v-if="route.meta.support" />
-    <router-view />
-  </div>
+  <site-nav v-if="route.meta.support" />
+  <router-view />
 </template>
-
-<style>
-  .support-layout {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-width: 0;
-  }
-</style>

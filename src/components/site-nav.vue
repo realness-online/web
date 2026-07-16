@@ -41,8 +41,6 @@
       flex-wrap: wrap;
       align-items: center;
       gap: calc(var(--base-line) * 0.5) var(--base-line);
-      margin: 0;
-      padding: 0;
       list-style: none;
 
       a {

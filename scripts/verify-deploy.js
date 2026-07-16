@@ -5,12 +5,41 @@ import { fileURLToPath } from 'node:url'
 import { is_release_junk } from './release-junk.js'
 
 const default_repo = 'realness-online/web'
+const default_url = 'https://realness.online'
 const manifest_asset = 'build-manifest.json'
 const script_path = fileURLToPath(import.meta.url)
 
+const help_text = `Verify a live Realness instance against a GitHub release manifesto.
+
+GitHub is the root of trust: the site alone can rewrite files and its own
+manifesto together. A pass means live bytes match a published release asset.
+
+Usage:
+  npm run verify
+  npm run verify -- --url https://community.example
+  npm run verify -- --release 2.5.8
+
+Options:
+  --url URL           Instance to check (default: ${default_url})
+  --release [tag]     GitHub release (default: latest that has ${manifest_asset})
+                      Bare --release uses package.json version
+  --repo owner/name   GitHub repo (default: ${default_repo})
+  --manifest PATH     Local build-manifest.json (operator / deploy gate)
+  --from-site         Instance's own manifesto only (not independent evidence)
+  --help              Show this help
+
+Operators: after deploy, attach the same dist manifesto to the release:
+  npm run release:gh
+`
+
 const parse_args = () => {
   const args = process.argv.slice(2)
-  let base_url = 'https://realness.online'
+  if (args.includes('--help') || args.includes('-h')) {
+    console.info(help_text)
+    process.exit(0)
+  }
+
+  let base_url = default_url
   let manifest_path = null
   let release = null
   let from_site = false
@@ -29,6 +58,9 @@ const parse_args = () => {
       }
       release = 'package'
     }
+
+  // Default root of trust: newest GitHub release that ships a manifesto.
+  if (!manifest_path && !release && !from_site) release = 'latest'
 
   return {
     base_url: base_url.replace(/\/$/, ''),
@@ -86,7 +118,10 @@ const latest_release_tag_with_manifest = async repo => {
   }
 
   throw new Error(
-    `No GitHub release on ${repo} has a ${manifest_asset} asset yet. Attach one with: gh release upload <tag> dist/build-manifest.json`
+    `No GitHub release on ${repo} has a ${manifest_asset} asset yet.\n` +
+      `Operators: deploy from dist/, then publish that same manifesto:\n` +
+      `  npm run release:gh\n` +
+      `Or: gh release upload <tag> dist/build-manifest.json`
   )
 }
 
@@ -125,7 +160,11 @@ const load_github_manifest = async ({ repo, release }) => {
   }
 
   throw new Error(
-    `Could not download ${manifest_asset} for release ${tag} from ${repo}. Tried:\n${tried.map(u => `  ${u}`).join('\n')}\nAttach it with: gh release upload ${tag} dist/build-manifest.json`
+    `Could not download ${manifest_asset} for release ${tag} from ${repo}. Tried:\n` +
+      `${tried.map(u => `  ${u}`).join('\n')}\n` +
+      `Operators: attach the deployed dist manifesto with:\n` +
+      `  gh release upload ${tag} dist/build-manifest.json\n` +
+      `Or: npm run release:gh`
   )
 }
 
@@ -146,14 +185,9 @@ const load_manifest = async ({
 
   if (release) return load_github_manifest({ repo, release })
 
-  if (!from_site)
-    throw new Error(
-      'Pick a root of trust: --release [tag|latest], --manifest <path>, or --from-site (site-only consistency check)'
-    )
-
   const url = `${base_url}/build-manifest.json`
   const response = await fetch(url, { cache: 'no-store' })
-  if (!response.ok) throw new Error(`Could not load manifest from ${url}`)
+  if (!response.ok) throw new Error(`Could not load manifesto from ${url}`)
   return {
     manifest: await response.json(),
     source: `site:${url}`
@@ -192,19 +226,25 @@ export const main = async () => {
     .sort(([a], [b]) => a.localeCompare(b))
 
   if (!entries.length) {
-    console.error('Manifest has no files to verify')
+    console.error('Manifesto has no files to verify')
     process.exit(1)
   }
 
-  console.info(
-    `Verifying ${entries.length} files against ${base_url} (v${manifest.version}, ${manifest.git_commit ?? 'no git_commit'})`
-  )
-  console.info(`Manifest source: ${source}`)
+  let trust = 'site manifesto only (not independent)'
+  if (source.startsWith('github:')) trust = 'GitHub release (independent)'
+  else if (source.startsWith('file:')) trust = 'local manifesto'
+
+  console.info(`Instance:  ${base_url}`)
+  console.info(`Version:   ${manifest.version ?? '(none)'}`)
+  console.info(`Commit:    ${manifest.git_commit ?? '(none)'}`)
   if (manifest.bundle_sha256)
-    console.info(`bundle_sha256: ${manifest.bundle_sha256}`)
+    console.info(`Bundle:    ${manifest.bundle_sha256}`)
+  console.info(`Trust:     ${trust}`)
+  console.info(`Source:    ${source}`)
+  console.info(`Checking:  ${entries.length} files`)
   if (skipped.length)
     console.info(
-      `Skipping ${skipped.length} junk path(s): ${skipped.join(', ')}`
+      `Skipping:  ${skipped.length} junk path(s): ${skipped.join(', ')}`
     )
 
   const results = await Promise.all(
@@ -223,8 +263,14 @@ export const main = async () => {
       failed++
     }
 
-  console.info(`Done: ${passed} passed, ${failed} failed`)
-  process.exit(failed > 0 ? 1 : 0)
+  console.info(`Files:     ${passed}/${passed + failed} match`)
+  if (failed > 0) {
+    console.error('Result:    NOT LEGIT')
+    process.exit(1)
+  }
+
+  console.info('Result:    LEGIT')
+  process.exit(0)
 }
 
 const is_main =

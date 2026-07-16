@@ -7,6 +7,9 @@
   const AsDialogDocumentation = define_async_component(
     () => import('@/components/as-dialog-documentation.vue')
   )
+  const AsNotificationPrompt = define_async_component(
+    () => import('@/components/profile/as-notification-prompt.vue')
+  )
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
   import WorkingBorder from '@/components/working-border.vue'
   import SupportLayout from '@/components/support-layout'
@@ -15,7 +18,7 @@
     ref,
     computed,
     watch,
-    onUnmounted as dismount,
+    onUnmounted as unmounted,
     onMounted as mounted,
     provide
   } from 'vue'
@@ -509,7 +512,7 @@
     window.addEventListener('dragover', allow_drop)
     window.addEventListener('drop', drop_image)
   })
-  dismount(() => {
+  unmounted(() => {
     window.removeEventListener('online', online)
     window.removeEventListener('offline', offline)
     window.removeEventListener('paste', paste_image)
@@ -520,7 +523,10 @@
 </script>
 
 <template>
-  <main id="realness" :class="[status, { posting }]">
+  <main
+    id="realness"
+    :data-offline="status === 'offline' || undefined"
+    :data-posting="posting || undefined">
     <teleport to="body">
       <working-border :active="status === 'working'" />
     </teleport>
@@ -532,8 +538,7 @@
       :data-footer-visible="footer_visible ? 'true' : 'false'">
       <nav aria-label="App actions">
         <label
-          class="menu-action"
-          :class="{ 'add-settling': add_settling }"
+          :data-settling="add_settling || undefined"
           aria-label="Add poster"
           @mouseenter="on_add_icon_enter"
           @mouseleave="play_add_icon_settle"
@@ -548,10 +553,7 @@
           </span>
         </label>
 
-        <label
-          class="menu-action"
-          :class="{ active: view_3d }"
-          aria-label="Toggle 3D">
+        <label aria-label="Toggle 3D">
           <input
             type="checkbox"
             switch
@@ -562,7 +564,7 @@
           </span>
         </label>
 
-        <label class="menu-action" aria-label="Open camera">
+        <label aria-label="Open camera">
           <input
             type="checkbox"
             switch
@@ -576,8 +578,7 @@
           </span>
         </label>
         <label
-          class="menu-action"
-          :class="{ active: animate, 'animation-settling': animation_settling }"
+          :data-settling="animation_settling || undefined"
           aria-label="Toggle animation"
           @mouseenter="on_animation_icon_enter"
           @mouseleave="play_animation_icon_settle"
@@ -609,9 +610,9 @@
     </footer>
 
     <as-dialog-documentation ref="documentation" />
+    <as-notification-prompt />
     <input
       ref="image_picker"
-      class="poster picker"
       v-vectorizer
       type="file"
       accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/avif,image/heic,image/heif,.heic,.heif,image/svg+xml" />
@@ -796,7 +797,7 @@
   main#realness {
     border: (base-line / 16) solid transparent;
     border-radius: (base-line / 16);
-    &.offline {
+    &[data-offline] {
       border-color: var(--warning);
     }
     & > h6 {
@@ -815,7 +816,7 @@
       transform: translateX(-50%);
       width: 100%;
       max-width: page-width;
-      margin: (base-line * 0.25) auto;
+      margin: 0 auto;
       padding-inline: base-line;
       box-sizing: border-box;
       z-index: 9;
@@ -844,8 +845,6 @@
         display: block;
         width: base-line * 4;
         height: base-line * 0.5;
-        padding: 0;
-        margin: 0;
         cursor: pointer;
         pointer-events: auto;
         & > input {
@@ -853,7 +852,6 @@
           opacity: 0;
           width: 100%;
           height: 100%;
-          margin: 0;
           cursor: pointer;
           z-index: 1;
           &:focus,
@@ -885,14 +883,14 @@
 
       & > nav {
         width: 100%;
-        margin: base-line * 0.5;
+        margin: base-line (base-line * 0.5);
         frosted-glass();
         border-radius: base-line;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: base-line;
-        padding: base-line * 0.5;
+        padding: base-line (base-line * 0.5);
         pointer-events: none;
         transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
         transition-behavior: allow-discrete;
@@ -901,7 +899,7 @@
         }
         & a[aria-label='Settings'],
         & button[aria-label='Settings'],
-        & label.menu-action,
+        & > label,
         & label[for='wat'],
         & a[aria-label='Go to thoughts'] {
           position: static;
@@ -910,7 +908,6 @@
           border: none;
           background: transparent;
           padding: 0;
-          margin: 0;
           box-shadow: none;
           transform: none;
           appearance: none;
@@ -933,7 +930,7 @@
           }
           focus-ring();
         }
-        & label.menu-action.active {
+        & > label:has(input:checked) {
           color: var(--emphasis);
           svg {
             fill: var(--emphasis);
@@ -942,7 +939,7 @@
             stroke: var(--emphasis);
           }
         }
-        & label.menu-action {
+        & > label {
           position: relative;
           display: inline-flex;
           align-items: center;
@@ -950,7 +947,6 @@
           & > input {
             position: absolute;
             inset: 0;
-            margin: 0;
             opacity: 0;
             cursor: pointer;
             &:focus,
@@ -1031,10 +1027,10 @@
               }
             }
           }
-          &[aria-label='Open camera'] svg.camera {
+          &[aria-label='Open camera'] svg[data-icon='camera'] {
             transition-duration: 0.4s;
           }
-          &.add-settling svg.add {
+          &[data-settling] svg.add {
             .add-plus {
               transition: none;
               animation: add-plus-flourish-out 0.55s cubic-bezier(0.45, 0, 0.55, 1);
@@ -1062,7 +1058,7 @@
               }
             }
           }
-          &.animation-settling svg.animation {
+          &[data-settling] svg.animation {
             .animation-ball,
             .animation-trail-mid,
             .animation-trail-old {
@@ -1116,11 +1112,11 @@
                 }
               }
             }
-            &[aria-label='Toggle 3D']:hover svg.galaxy {
+            &[aria-label='Toggle 3D']:hover svg[data-icon='galaxy'] {
               transform: rotate(72deg) scale(0.95);
               transition-duration: 0.45s;
             }
-            &[aria-label='Open camera']:hover svg.camera {
+            &[aria-label='Open camera']:hover svg[data-icon='camera'] {
               transform: scale(1.08);
               transition-duration: 0.4s;
             }
@@ -1192,7 +1188,7 @@
               }
             }
           }
-          &[aria-label='Open camera']:active svg.camera {
+          &[aria-label='Open camera']:active svg[data-icon='camera'] {
             transform: scale(0.9);
             transition-duration: 0.22s;
           }
@@ -1232,26 +1228,26 @@
             }
           }
           @media (hover: hover) and (pointer: fine) {
-            &:hover svg.gear {
+            &:hover svg[data-icon='gear'] {
               transform: rotate(60deg) scale(0.95);
             }
           }
-          &:active svg.gear {
+          &:active svg[data-icon='gear'] {
             transform: rotate(-60deg) scale(1.05);
             transition-duration: 0.66s;
           }
         }
         & a[aria-label='Settings'] svg,
         & button[aria-label='Settings'] svg,
-        & label.menu-action:not([aria-label='Open camera']) svg {
+        & > label:not([aria-label='Open camera']) svg {
           width: base-line * 1.15;
           height: base-line * 1.15;
         }
-        & label.menu-action[aria-label='Open camera'] svg {
+        & > label[aria-label='Open camera'] svg {
           width: base-line * 2;
           height: base-line * 2;
         }
-        & label.menu-action[aria-label='Open camera'] span {
+        & > label[aria-label='Open camera'] span {
           position: relative;
           display: inline-flex;
           align-items: center;

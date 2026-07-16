@@ -22,6 +22,7 @@ vi.mock('@/utils/date', () => ({
 
 const make_svg = () => {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.setAttribute('itemtype', '/posters')
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs')
   const hidden = document.createElementNS('http://www.w3.org/2000/svg', 'g')
   hidden.setAttribute('style', 'visibility: hidden')
@@ -66,13 +67,13 @@ describe('@/utils/export-poster', () => {
     it('strips composition grid overlay from exports', () => {
       const source = make_svg()
       const grid = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-      grid.setAttribute('class', 'grid-overlay')
+      grid.setAttribute('data-grid-overlay', '')
       grid.innerHTML = '<line x1="0" y1="10" x2="100" y2="10"></line>'
       source.appendChild(grid)
 
       const result = build_download_svg(source)
 
-      expect(result.querySelector('g.grid-overlay')).toBeNull()
+      expect(result.querySelector('g[data-grid-overlay]')).toBeNull()
     })
   })
 
@@ -111,7 +112,6 @@ describe('@/utils/export-poster', () => {
 
     it('clones geology symbols into defs when figure provides them', async () => {
       const figure = document.createElement('figure')
-      figure.className = 'poster'
       const poster_svg = make_svg()
       const symbol_defs = document.createElementNS(
         'http://www.w3.org/2000/svg',
@@ -140,7 +140,6 @@ describe('@/utils/export-poster', () => {
 
     it('waits for shadow background fill before serializing', async () => {
       const figure = document.createElement('figure')
-      figure.className = 'poster'
       const poster_svg = make_svg()
       const symbol_defs = document.createElementNS(
         'http://www.w3.org/2000/svg',

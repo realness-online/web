@@ -164,8 +164,7 @@ h5 {
 // numeric order or it collapses to a constant, so the var() args are
 // swapped here relative to every other heading (the calc() interpolation
 // itself is unaffected).
-h6,
-section#navigation.page > footer > a {
+h6 {
   font-size: clamp(var(--h6-max), fluid-calc($h6-min, $h6-max), var(--h6-min));
 }
 

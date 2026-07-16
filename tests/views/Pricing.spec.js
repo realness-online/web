@@ -25,7 +25,7 @@ describe('@/views/Pricing', () => {
 
   it('renders the pricing page with header', () => {
     const wrapper = mount_pricing()
-    expect(wrapper.find('section#pricing.page').exists()).toBe(true)
+    expect(wrapper.find('section#pricing[data-page]').exists()).toBe(true)
     expect(wrapper.find('h1').text()).toBe('Pricing')
     expect(wrapper.text()).toContain('Realness is free to use')
     expect(wrapper.text()).toContain('it has a price')

@@ -81,7 +81,7 @@
       max-height: 85vh;
     }
 
-    & > section menu.preferences-menu {
+    & > section menu[data-preferences-menu] {
       margin: 0;
     }
 

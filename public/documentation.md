@@ -215,4 +215,4 @@ The Realness source code is available. This page documents the tool; the repo ha
 - **[Philosophy](https://github.com/realness-online/web/blob/main/docs/philosophy.md)** — why moderators, small communities, and client-first design.
 - **[Architecture](https://github.com/realness-online/web/blob/main/docs/architecture.md)** — storage, sync, offline-first, serverless stack.
 - **[Contributing](https://github.com/realness-online/web/blob/main/docs/contributing.md)** — branch workflow, tests, pull requests.
-- **[Verify a release](https://github.com/realness-online/web/blob/main/docs/verify-release.md)** — confirm a deployed instance matches a tagged build.
+- **[Verify a release](https://github.com/realness-online/web/blob/main/docs/verify-release.md)** — `npm run verify` confirms a live instance matches a GitHub release.

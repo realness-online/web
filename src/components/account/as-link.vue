@@ -3,17 +3,13 @@
   import { current_user, me } from '@/utils/serverless'
 
   defineOptions({ name: 'AccountAsLink' })
-
-  // Single /account route now owns both states (shows sign-in when signed out).
   const target = '/account'
-
   const label = computed(() => {
     if (me.value?.name) return me.value.name
     if (current_user.value) return 'account'
     return 'sign on'
   })
 
-  /** First space splits given name onto two lines; single token stays one line. */
   const name_lines = computed(() => {
     const name = me.value?.name
     if (!name) return null

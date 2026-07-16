@@ -34,17 +34,14 @@
 <style lang="stylus">
   address[itemscope] {
     color: var(--text);
-    margin: 0;
-    padding: 0;
     & > header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: round((base-line / 3), 2);
-      margin-bottom: round((base-line / 6), 2);
       & > button {
         color: var(--emphasis);
-        padding: round((base-line / 4), 2);
+        padding-inline: round((base-line / 4), 2);
       }
     }
     & > header > h3,
@@ -62,7 +59,6 @@
       font-weight: 300;
       &:first-of-type {
         margin-right: round((base-line / 6), 2);
-        margin-bottom: round((base-line / 3), 2);
       }
       &:focus {
         font-weight: 400;

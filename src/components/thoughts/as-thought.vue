@@ -4,7 +4,7 @@
     ref,
     computed,
     watch,
-    nextTick,
+    nextTick as tick,
     inject,
     onMounted as mounted,
     onBeforeUnmount as before_unmount
@@ -61,7 +61,7 @@
     () => [props.editable, props.thought.id],
     () => {
       actively_editing.value = false
-      nextTick(set_initial_content)
+      tick(set_initial_content)
     },
     { immediate: true }
   )
@@ -85,12 +85,12 @@
     if (!props.editable) return
     if (desktop_edit_gate.value) {
       actively_editing.value = true
-      nextTick(() => {
+      tick(() => {
         set_initial_content()
         is_editable.value?.focus()
       })
     } else
-      nextTick(() => {
+      tick(() => {
         is_editable.value?.focus()
       })
   }

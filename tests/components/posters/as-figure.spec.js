@@ -118,7 +118,7 @@ describe('@/component/posters/as-figure.vue', () => {
       as_svg.vm.$emit('show', vector_without_shadows)
       await flushPromises()
 
-      expect(wrapper.find('figure.poster').exists()).toBe(true)
+      expect(wrapper.find('figure').exists()).toBe(true)
     })
   })
 
@@ -165,7 +165,7 @@ describe('@/component/posters/as-figure.vue', () => {
     })
 
     it('registers poster key commands on focusin and clears on focusout', async () => {
-      const fig = wrapper.find('figure.poster')
+      const fig = wrapper.find('figure')
       await fig.trigger('focusin')
       expect(mock_key_commands.add_context).toHaveBeenCalledWith('Poster')
       expect(mock_key_commands.register_handler).toHaveBeenCalled()
@@ -213,14 +213,10 @@ describe('@/component/posters/as-figure.vue', () => {
       const as_svg = wrapper.findComponent({ name: 'AsSvg' })
       await as_svg.vm.$emit('click', true)
       await flushPromises()
-      expect(wrapper.find('figure.poster').attributes('aria-expanded')).toBe(
-        'true'
-      )
+      expect(wrapper.find('figure').attributes('aria-expanded')).toBe('true')
       await wrapper.setProps({ overlay_statements: stmts_b })
       await flushPromises()
-      expect(wrapper.find('figure.poster').attributes('aria-expanded')).toBe(
-        'false'
-      )
+      expect(wrapper.find('figure').attributes('aria-expanded')).toBe('false')
     })
 
     it('passes pin to AsSvg so cutouts can stay mounted off-screen', () => {
@@ -262,7 +258,7 @@ describe('@/component/posters/as-figure.vue', () => {
     })
 
     it('scrolls poster into view when location hash matches query id', async () => {
-      const fig_el = wrapper.find('figure.poster').element
+      const fig_el = wrapper.find('figure').element
       fig_el.scrollIntoView = vi.fn()
       window.location.hash = `#${as_query_id(/** @type {import('@/types').Id} */ (poster.id))}`
       await wrapper.setProps({ slice: true })
@@ -304,7 +300,7 @@ describe('@/component/posters/as-figure.vue', () => {
         height: '100'
       })
       await flushPromises()
-      expect(wrapper.find('figure.poster').exists()).toBe(true)
+      expect(wrapper.find('figure').exists()).toBe(true)
     })
   })
 })

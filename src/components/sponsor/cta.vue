@@ -53,7 +53,7 @@
 </script>
 
 <template>
-  <a v-if="checkout_url" class="checkout" :href="checkout_href" rel="external">
+  <a v-if="checkout_url" data-checkout :href="checkout_href" rel="external">
     Subscribe
   </a>
   <stripe-buy-button
@@ -72,9 +72,9 @@
     min-height: 223px;
     min-width: 160px;
   }
-  a.checkout {
+  a[data-checkout] {
     display: inline-block;
-    padding: calc(var(--base-line) * 0.5) var(--base-line);
+    padding: var(--base-line);
     border: calc(var(--base-line) * 0.1) solid var(--accent);
     border-radius: calc(var(--base-line) * 0.33);
     color: var(--accent);

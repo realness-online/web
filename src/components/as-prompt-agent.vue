@@ -52,14 +52,10 @@
 </script>
 
 <template>
-  <button
-    v-if="inline"
-    type="button"
-    class="prompt-agent inline"
-    @click="on_copy">
+  <button v-if="inline" type="button" @click="on_copy">
     {{ copied ? 'Copied' : 'Copy prompt' }}
   </button>
-  <section v-else class="prompt-agent">
+  <section v-else data-prompt-agent>
     <h3>{{ label.heading }}</h3>
     <p>{{ label.desc }}</p>
     <button type="button" @click="on_copy">
@@ -69,7 +65,7 @@
 </template>
 
 <style>
-  section.prompt-agent {
+  section[data-prompt-agent] {
     margin: calc(var(--base-line) * 2) auto;
     max-width: calc(var(--base-line) * 26);
     padding: var(--base-line);
@@ -78,12 +74,11 @@
     text-align: center;
 
     & > h3 {
-      margin: 0 0 calc(var(--base-line) * 0.5);
+      margin-top: 0;
       color: var(--accent);
     }
 
     & > p {
-      margin: 0 0 var(--base-line);
       font-size: 0.9em;
       line-height: 1.5;
       opacity: 0.85;

@@ -6,7 +6,7 @@
     computed,
     ref,
     watch,
-    watchEffect,
+    watchEffect as watch_effect,
     inject,
     onMounted as mounted,
     onUnmounted as unmounted
@@ -205,7 +205,7 @@
     props.svg.setCurrentTime(new_time)
   }
 
-  watchEffect(() => {
+  watch_effect(() => {
     const export_blocks_live_smil = poster_video_export_active.value > 0
     // In-app `animate` only (default off). Parent also gates; we re-check so SMIL cannot run if pref is off.
     const preference_allows = animate_pref.value === true
@@ -238,7 +238,7 @@
 
 <template>
   <animate itemprop="timeline">
-    <animate v-if="stroke" class="stroke animation" id="stroke-animation">
+    <animate v-if="stroke">
       <animate
         :href="fragment('light')"
         attributeName="stroke-opacity"
@@ -595,7 +595,7 @@
     }
   }
 
-  svg.animate {
+  svg[data-animate] {
     & g[itemprop='animation'] animate {
       animation-play-state: running;
     }

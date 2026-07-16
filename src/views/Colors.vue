@@ -1,5 +1,10 @@
 <script setup>
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onUnmounted as unmounted
+  } from 'vue'
   import css_var from '@/utils/css-var'
   import { format_css_paint } from '@/utils/colors'
   import { geology_layers } from '@/use/poster'
@@ -28,9 +33,6 @@
   const signals = ['ochre']
   const surfaces = ['chalk', 'bone', 'pumice', 'basalt', 'moonlight']
 
-  // variants carry an explicit "-fill" base token; signals and geology
-  // layers use their bare name as the base — everything else shares
-  // "-darken"/"-lighten" suffixes
   const base_token = name => (variants.includes(name) ? `${name}-fill` : name)
 
   /** @param {string} name @param {string} weight */
@@ -54,13 +56,13 @@
     )
   }
 
-  onMounted(() => {
+  mounted(() => {
     resolve_paints()
     scheme_query.value = window.matchMedia('(prefers-color-scheme: dark)')
     scheme_query.value.addEventListener('change', resolve_paints)
   })
 
-  onUnmounted(() => {
+  unmounted(() => {
     scheme_query.value?.removeEventListener('change', resolve_paints)
   })
 
@@ -271,15 +273,10 @@
 </script>
 
 <template>
-  <section
-    id="colors"
-    class="page"
-    itemid="/colors"
-    itemscope
-    itemtype="/colors">
+  <section id="colors" data-page itemid="/colors" itemscope itemtype="/colors">
     <header>
       <h1>Color</h1>
-      <icon name="realness" class="realness-preview" aria-hidden="true" />
+      <icon name="realness" aria-hidden="true" />
     </header>
 
     <article itemscope itemprop="roles">
@@ -327,8 +324,8 @@
           </p>
           <figure>
             <figcaption>links, primary actions, saved fields</figcaption>
-            <a class="role" href="/docs">Documentation</a>
-            <button class="role" type="button">Post</button>
+            <a href="/docs">Documentation</a>
+            <button type="button">Post</button>
           </figure>
         </li>
 
@@ -372,8 +369,8 @@
           </p>
           <figure>
             <figcaption>saving, in progress</figcaption>
-            <output class="role">saving</output>
-            <input class="role" type="text" value="Scott" />
+            <output>saving</output>
+            <input type="text" value="Scott" />
           </figure>
         </li>
 
@@ -417,12 +414,12 @@
           </p>
           <figure>
             <figcaption>selected controls, form errors, remove</figcaption>
-            <label class="role">
+            <label>
               <input type="checkbox" checked />
               mosaic
             </label>
-            <p class="role">Name required</p>
-            <button class="role" type="button" aria-label="Remove">
+            <p>Name required</p>
+            <button type="button" aria-label="Remove">
               <icon name="remove" />
             </button>
           </figure>
@@ -468,7 +465,7 @@
           </p>
           <figure>
             <figcaption>offline, low fps</figcaption>
-            <output class="role">offline</output>
+            <output>offline</output>
           </figure>
         </li>
       </ul>
@@ -860,15 +857,14 @@
     & > header {
       display inherit;
       max-width: page-width-max;
-      margin: 0 auto;
-      padding: base-line base-line base-line;
+      margin-inline: auto;
       & > h1 {
         background: linear-gradient(60deg, var(--accent), var(--emphasis));
         background-clip: text;
         color: transparent;
         width: fit-content;
       }
-      & > svg.realness-preview {
+      & > svg.realness {
         display: block;
         width: 66vh;
         height: 66vh;
@@ -879,8 +875,9 @@
     & > article,
     & > details {
       max-width: page-width-max;
-      margin: 0 auto;
-      padding: 0 base-line base-line;
+      margin-inline: auto;
+      padding-inline: base-line;
+      padding-bottom: base-line;
       & > header > h2 {
         margin-top: 0;
       }
@@ -1190,13 +1187,13 @@
       }
 
       &[itemprop='geology'] {
-        & > summary > svg.arrow {
+        & > summary > svg[data-icon='arrow'] {
           width: base-line * 0.55;
           height: base-line * 0.55;
           flex-shrink: 0;
           transition: transform 0.15s ease;
         }
-        &[open] > summary > svg.arrow {
+        &[open] > summary > svg[data-icon='arrow'] {
           transform: rotate(90deg);
         }
         & > figure[itemscope] > ul {
@@ -1308,13 +1305,13 @@
                 font-size: smaller;
                 opacity: 0.75;
               }
-              & > svg.arrow {
+              & > svg[data-icon='arrow'] {
                 width: base-line * 0.5;
                 height: base-line * 0.5;
                 flex-shrink: 0;
                 transition: transform 0.15s ease;
               }
-              &[aria-expanded='true'] > svg.arrow {
+              &[aria-expanded='true'] > svg[data-icon='arrow'] {
                 transform: rotate(90deg);
               }
             }
@@ -1354,25 +1351,25 @@
                 font-size: smaller;
                 opacity: 0.65;
               }
-              & > a.role {
+              & > a {
                 color: var(--role);
               }
-              & > button.role {
+              & > button {
                 standard-button: var(--role);
               }
-              & > output.role {
+              & > output {
                 standard-border: var(--role);
                 padding: 0 (base-line * 0.4);
                 color: var(--role);
               }
-              & > input.role {
+              & > input {
                 border-color: var(--role);
               }
-              & > p.role {
+              & > p {
                 color: var(--role);
                 border-left: 2px solid var(--role);
               }
-              & > label.role {
+              & > label {
                 display: flex;
                 align-items: center;
                 gap: base-line * 0.4;

@@ -4,7 +4,6 @@ exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a po
 <menu>
   <button
     aria-label="Delete poster"
-    class="remove"
     type="button"
   >
     <icon-stub

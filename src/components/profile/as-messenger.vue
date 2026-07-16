@@ -21,13 +21,17 @@
 </script>
 
 <template>
-  <a class="phone" :href="sms_href" aria-label="Send a text message">
+  <a :href="sms_href" aria-label="Send a text message">
     <icon name="message" />
   </a>
 </template>
 
 <style>
-  figure.profile > figcaption > menu a.phone > svg {
+  figure[data-display='phonebook']
+    > figcaption
+    > menu
+    a[aria-label='Send a text message']
+    > svg {
     fill: var(--accent);
     opacity: 0.25;
     &:hover,
