@@ -12,8 +12,8 @@ vi.mock('@/use/poster', () => ({
   is_vector: () => true
 }))
 
-vi.mock('@/use/vectorize', () => ({
-  use: () => ({ new_gradients: mock_gradients })
+vi.mock('@/use/vectorize/state', () => ({
+  new_gradients: mock_gradients
 }))
 
 vi.mock('@/utils/itemid', () => ({

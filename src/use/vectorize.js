@@ -37,18 +37,13 @@ import {
   update_progress
 } from './vectorize/queue'
 import { use_file_input } from './vectorize/file-input'
-
-// ---- Module-level reactive state ----
-
-const new_vector = ref(/** @type {PosterType | null} */ (null))
-const new_gradients = ref(
-  /** @type {{horizontal?: string[], vertical?: string[], radial?: string[]} | null} */ (
-    null
-  )
-)
-const progress = ref(0)
-const current_item_id = ref(/** @type {Id | null} */ (null))
-const source_image_url = ref(/** @type {string | null} */ (null))
+import {
+  new_vector,
+  new_gradients,
+  progress,
+  current_item_id,
+  source_image_url
+} from './vectorize/state'
 
 // ---- Module-level helpers ----
 
