@@ -15,8 +15,6 @@
   const router = use_router()
   const { is_valid_name } = use_me()
 
-  // Signed in AND named: anything short of that is still "signing in", which
-  // as-sign-on owns (phone form, then the name gate). One source of truth.
   const signed_in = computed(() => !!current_user.value && is_valid_name.value)
 
   const on_signed_in = () => {
@@ -24,7 +22,6 @@
     if (typeof next === 'string' && next.startsWith('/')) router.replace(next)
   }
 
-  // Sign out is destructive enough to confirm — no one-tap logout.
   const confirm = ref(null)
   const on_ask_sign_out = () => confirm.value?.showModal()
   const on_cancel_sign_out = () => confirm.value?.close()
@@ -35,8 +32,8 @@
 </script>
 
 <template>
-  <section id="account" class="page">
-    <div class="body">
+  <section id="account" data-page>
+    <div>
       <template v-if="signed_in">
         <as-address :person="me" />
         <name-as-form />
@@ -58,7 +55,7 @@
 
       <as-sign-on v-else @signed_in="on_signed_in" />
 
-      <dialog id="confirm-sign-out" ref="confirm" class="modal">
+      <dialog id="confirm-sign-out" ref="confirm" data-modal>
         <p>Sign out?</p>
         <menu>
           <button type="button" @click="on_cancel_sign_out">Cancel</button>
@@ -72,68 +69,83 @@
 </template>
 
 <style>
-  section#account.page {
-    & > div.body {
+  section#account[data-page] {
+    & > div {
       max-width: calc(var(--base-line) * 48);
-      margin: 0 auto;
-      padding: 0 var(--base-line) calc(var(--base-line) * 4);
+      margin-inline: auto;
+      padding-inline: var(--base-line);
+      padding-bottom: calc(var(--base-line) * 4);
+
       & > address {
         margin-bottom: var(--base-line);
       }
+
       & > form {
         max-width: calc(var(--base-line) * 14);
         margin-bottom: var(--base-line);
       }
+
       & > section[itemprop='preferences'] {
         margin-top: calc(var(--base-line) * 2);
         padding-top: var(--base-line);
         border-top: 1px solid var(--accent);
+
         & > header > h2 {
           color: var(--emphasis);
-          margin: 0 0 var(--base-line);
+          margin-top: 0;
           font-weight: 300;
         }
-        & > menu.preferences-menu {
+
+        & > menu[data-preferences-menu] {
           margin: 0;
         }
       }
+
       & > footer {
         padding: var(--base-line) 0;
         border-top: 1px solid var(--accent);
+
         & > div {
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: calc(var(--base-line) * 0.5);
+
           & > h4 {
             margin: 0;
             font-size: normal;
             font-weight: 300;
           }
+
           & > button#sign-out {
             color: var(--emphasis);
           }
         }
       }
+
       & > dialog#confirm-sign-out {
         border: none;
         padding: calc(var(--base-line) * 1.5);
+
         & > p {
           margin: 0;
         }
+
         &::backdrop {
           background: var(--basalt-transparent);
         }
+
         & > menu {
           display: flex;
           justify-content: flex-end;
           gap: var(--base-line);
-          margin: calc(var(--base-line) * 1.5) 0 0;
-          padding: 0;
+          margin-top: calc(var(--base-line) * 1.5);
+
           & > button {
-            padding: calc(var(--base-line) * 0.5) var(--base-line);
+            padding: var(--base-line);
             white-space: nowrap;
           }
+
           & > button#confirm {
             color: var(--emphasis);
           }

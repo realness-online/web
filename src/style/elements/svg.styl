@@ -18,30 +18,25 @@ svg {
     transition-timing-function: ease;
   }
 }
-svg.background {
+svg[data-icon='background'] {
   fill: transparent;
   @media (prefers-color-scheme: dark) {
     fill: var(--accent);
   }
-}
-svg.background,
-use.working {
   position: absolute;
   z-index: 0;
 }
-svg.camera {
+svg[data-icon='camera'] {
   width: base-line * 2.5;
   height: base-line * 2;
 }
-svg.working,
-use.working {
+svg[data-icon='working'] {
   width: round(base-line * 3.3, 2) !important;
   height: base-line !important;
   margin: auto;
 }
 @media (max-width: page-width), (max-height: page-width) {
-  svg.fullscreen,
-  use.fullscreen {
+  svg[data-icon='fullscreen'] {
     visibility: hidden;
   }
 }

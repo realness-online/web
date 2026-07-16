@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
-import AsNotifications from '@/components/account/as-notifications.vue'
+import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications.vue'
 
 const {
   mock_status,
@@ -55,9 +55,9 @@ vi.mock('@/utils/preference', () => ({
   notifications: mock_notifications
 }))
 
-const mount = () => shallowMount(AsNotifications)
+const mount = () => shallowMount(AsFieldsetNotifications)
 
-describe('@/components/account/as-notifications', () => {
+describe('@/components/account/as-fieldset-notifications', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mock_status.value = 'off'
@@ -77,13 +77,13 @@ describe('@/components/account/as-notifications', () => {
   it('renders nothing when push is unsupported', () => {
     mock_status.value = 'unsupported'
     const wrapper = mount()
-    expect(wrapper.find('fieldset.preference').exists()).toBe(false)
+    expect(wrapper.find('fieldset[data-preference]').exists()).toBe(false)
   })
 
   it('renders nothing when the instance has no push capability', () => {
     mock_push_available.value = false
     const wrapper = mount()
-    expect(wrapper.find('fieldset.preference').exists()).toBe(false)
+    expect(wrapper.find('fieldset[data-preference]').exists()).toBe(false)
   })
 
   it('clears the notifications preference when push is unavailable', async () => {
@@ -108,7 +108,7 @@ describe('@/components/account/as-notifications', () => {
     expect(
       wrapper.find('input[type="checkbox"]').attributes('disabled')
     ).toBeDefined()
-    expect(wrapper.find('p.hint').text()).toMatch(/browser settings/i)
+    expect(wrapper.find('p[data-hint]').text()).toMatch(/browser settings/i)
   })
 
   it('prompts to install first on iOS when not installed', () => {
@@ -117,7 +117,7 @@ describe('@/components/account/as-notifications', () => {
     expect(
       wrapper.find('input[type="checkbox"]').attributes('disabled')
     ).toBeDefined()
-    expect(wrapper.find('p.hint').text()).toMatch(/home screen/i)
+    expect(wrapper.find('p[data-hint]').text()).toMatch(/home screen/i)
   })
 
   it('enables when toggled on', async () => {

@@ -51,7 +51,7 @@
 </script>
 
 <template>
-  <div class="posting-input">
+  <fieldset>
     <textarea
       id="wat"
       v-bind="$attrs"
@@ -64,19 +64,22 @@
       @input="on_adjust_height"
       @focusout="on_prepare_thought"
       @keydown.tab.exact="e => emit('tab-next', e)" />
-    <button id="done">
+    <button id="done" type="button" @click="on_prepare_thought">
       <icon name="finished" />
     </button>
-  </div>
+  </fieldset>
 </template>
 
 <style lang="stylus">
-  section#thoughts .posting-input {
+  section#thoughts > fieldset:has(> textarea#wat) {
     display: flex;
     flex-direction: column;
     gap: base-line;
     padding: base-line;
-    & textarea#wat {
+    margin: 0;
+    border: none;
+    min-inline-size: 0;
+    & > textarea#wat {
       line-height: 1.5;
       padding: base-line;
       border-radius: base-line;
@@ -87,7 +90,7 @@
       color: var(--rocks);
       caret-color: var(--rocks);
       outline: 0;
-       min-height: base-line;
+      min-height: base-line;
       @media (prefers-color-scheme: light) {
         background-color: transparent;
         border: none;
@@ -102,11 +105,11 @@
         opacity: 0.8;
       }
     }
-    & button#done {
+    & > button#done {
       display: none;
       border: none;
       background: none;
-      padding: base-line * 0.5;
+      padding: base-line (base-line * 0.5);
       cursor: pointer;
       align-self: flex-end;
       svg {
@@ -114,12 +117,12 @@
       }
     }
   }
-  main#realness.posting section#thoughts .posting-input {
-    & textarea#wat {
+  main#realness[data-posting] section#thoughts > fieldset:has(> textarea#wat) {
+    & > textarea#wat {
       font-size: 1.25em;
       min-height: base-line * 6;
     }
-    & button#done {
+    & > button#done {
       display: block;
     }
   }

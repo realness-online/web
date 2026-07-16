@@ -1,5 +1,14 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vite-plus/test'
-import { ref } from 'vue'
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  beforeAll,
+  afterEach
+} from 'vite-plus/test'
+import { ref, defineComponent } from 'vue'
+import { mount, flushPromises } from '@vue/test-utils'
 import { get as get_keyval } from 'idb-keyval'
 
 const mock_me = vi.hoisted(() => ({
@@ -15,8 +24,22 @@ import {
   i_am_fresh,
   sync_me,
   sync_posters_directory,
-  DOES_NOT_EXIST
+  DOES_NOT_EXIST,
+  use as use_sync
 } from '@/use/sync'
+
+function with_setup(composable) {
+  let result
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        result = composable()
+        return () => {}
+      }
+    })
+  )
+  return { result, wrapper }
+}
 
 // Mock localStorage BEFORE imports
 beforeAll(() => {
@@ -49,6 +72,7 @@ vi.mock('@/utils/itemid', () => ({
   as_author: vi.fn(id => id.split('/')[0]),
   load: vi.fn(() => Promise.resolve([])),
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),
+  type_as_list: vi.fn(item => (Array.isArray(item) ? item : [])),
   load_from_network: vi.fn(() =>
     Promise.resolve({
       id: '/+14151234356',
@@ -58,13 +82,26 @@ vi.mock('@/utils/itemid', () => ({
   )
 }))
 
+vi.mock('@/utils/item', () => ({
+  get_item: vi.fn(() => null)
+}))
+
+vi.mock('@/utils/person-identity', () => ({
+  default_person: { type: 'person', name: '' }
+}))
+
+vi.mock('@/utils/profile-sync-log', () => ({
+  profile_sync_log: vi.fn()
+}))
+
 vi.mock('@/persistence/Directory', () => ({
   build_local_directory: vi.fn(() =>
     Promise.resolve({
       items: ['1000', '2000', '3000']
     })
   ),
-  clear_author_dirs: vi.fn(() => Promise.resolve())
+  clear_author_dirs: vi.fn(() => Promise.resolve()),
+  as_directory_id: vi.fn(id => `${id}/`)
 }))
 
 vi.mock('@/persistence/Storage', () => ({
@@ -228,6 +265,27 @@ describe('sync composable', () => {
       await sync_offline_actions()
 
       expect(Offline).toHaveBeenCalledWith('/+1234/thoughts/1000')
+    })
+
+    it('saves offline relations via Relation when html is present', async () => {
+      const { get } = await import('idb-keyval')
+      const { Relation } = await import('@/persistence/Storage')
+      const relations_id = '/+14151234356/relations'
+      const save = vi.fn(() => Promise.resolve())
+      Relation.mockImplementationOnce(function () {
+        return { save }
+      })
+
+      get.mockResolvedValueOnce([{ action: 'save', id: relations_id }])
+      localStorage.getItem.mockReturnValueOnce(
+        '<div itemid="relations">r</div>'
+      )
+
+      await sync_offline_actions()
+
+      expect(save).toHaveBeenCalledWith({
+        outerHTML: '<div itemid="relations">r</div>'
+      })
     })
 
     it('skips anonymous poster block when offline empty and signed in', async () => {
@@ -401,6 +459,85 @@ describe('sync composable', () => {
 
       expect(create_hash).not.toHaveBeenCalled()
     })
+
+    it('keeps matching local html and applies person fields to me', async () => {
+      const { get, set } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const { metadata } = await import('@/utils/serverless')
+      const { load } = await import('@/utils/itemid')
+      const { current_user } = await import('@/utils/serverless')
+
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'same_hash' }
+      })
+      create_hash.mockResolvedValue('same_hash')
+
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve(index) : Promise.resolve(null)
+      )
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+
+      localStorage.getItem.mockReturnValue('<address>me</address>')
+      load.mockResolvedValueOnce({
+        id: '/+14151234356',
+        type: 'person',
+        name: 'Local_name',
+        avatar: '/+14151234356/posters/1'
+      })
+      mock_me.value = {
+        id: '/+14151234356',
+        type: 'person',
+        name: 'Stale_before_sync',
+        visited: new Date().toISOString()
+      }
+      current_user.value = { uid: 'test-user' }
+
+      await sync_me()
+
+      expect(mock_me.value.name).toBe('Local_name')
+      expect(mock_me.value.avatar).toBe('/+14151234356/posters/1')
+      expect(localStorage.removeItem).not.toHaveBeenCalledWith('/+14151234356')
+    })
+
+    it('falls back to default_person when network profile is missing', async () => {
+      const { get, set } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const { metadata } = await import('@/utils/serverless')
+      const { load_from_network } = await import('@/utils/itemid')
+
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'network_hash' }
+      })
+      create_hash.mockResolvedValue('local_hash')
+
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve(index) : Promise.resolve(null)
+      )
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+
+      localStorage.getItem.mockReturnValue('<div>stale</div>')
+      load_from_network.mockResolvedValueOnce(null)
+
+      await sync_me()
+
+      expect(mock_me.value).toMatchObject({
+        id: '/+14151234356',
+        type: 'person',
+        name: ''
+      })
+    })
   })
 
   describe('sync_posters_directory', () => {
@@ -458,6 +595,230 @@ describe('sync composable', () => {
       await sync_posters_directory()
 
       expect(Poster).toHaveBeenCalledWith('/+14151234356/posters/')
+    })
+  })
+
+  describe('use()', () => {
+    /** @type {(event: string, ...args: unknown[]) => void} */
+    let emit
+    /** @type {import('@vue/test-utils').VueWrapper | null} */
+    let wrapper
+
+    beforeEach(() => {
+      emit = vi.fn()
+      wrapper?.unmount()
+      wrapper = null
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'visible',
+        configurable: true
+      })
+      Object.defineProperty(navigator, 'onLine', {
+        value: true,
+        configurable: true
+      })
+    })
+
+    afterEach(async () => {
+      wrapper?.unmount()
+      wrapper = null
+      const { current_user } = await import('@/utils/serverless')
+      current_user.value = { uid: 'test-user' }
+    })
+
+    it('skips play work when tab is hidden', async () => {
+      Object.defineProperty(document, 'visibilityState', {
+        value: 'hidden',
+        configurable: true
+      })
+      const { current_user } = await import('@/utils/serverless')
+      current_user.value = { uid: 'test-user' }
+
+      ;({ wrapper } = with_setup(() => use_sync(emit)))
+      await flushPromises()
+      emit.mockClear()
+
+      document.dispatchEvent(new Event('visibilitychange'))
+      await flushPromises()
+
+      expect(emit).not.toHaveBeenCalled()
+    })
+
+    it('signed-out play syncs public admin feed and emits refreshed', async () => {
+      const { current_user, metadata, directory } =
+        await import('@/utils/serverless')
+      const { clear_author_dirs } = await import('@/persistence/Directory')
+      const { get, set, del } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const load_phonebook = vi.fn(() => Promise.resolve())
+
+      current_user.value = null
+      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'admin_hash' }
+      })
+      create_hash.mockResolvedValue('stale_local')
+      directory.mockResolvedValue({ prefixes: [] })
+
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key => {
+        if (key === 'sync:index') return Promise.resolve(index)
+        if (key === '/+14151234356') return Promise.resolve('<div>admin</div>')
+        return Promise.resolve(null)
+      })
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+      localStorage.getItem.mockImplementation(key =>
+        key === '/+14151234356' ? '<div>admin</div>' : null
+      )
+
+      ;({ wrapper } = with_setup(() => use_sync(emit, { load_phonebook })))
+      await flushPromises()
+      emit.mockClear()
+      clear_author_dirs.mockClear()
+      del.mockClear()
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(clear_author_dirs).toHaveBeenCalledWith('/+14151234356')
+      expect(del).toHaveBeenCalledWith('/+14151234356')
+      expect(load_phonebook).toHaveBeenCalled()
+      expect(emit).toHaveBeenCalledWith('refreshed')
+    })
+
+    it('signed-in stale sync purges missing index rows and runs phonebook', async () => {
+      const { current_user, metadata, directory } =
+        await import('@/utils/serverless')
+      const { get, set, del } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const { DOES_NOT_EXIST: missing } = await import('@/utils/sync-file')
+      const load_phonebook = vi.fn(() => Promise.resolve())
+
+      localStorage.sync_time = new Date(
+        Date.now() - 1000 * 60 * 60 * 9
+      ).toISOString()
+      localStorage.me = '/+14151234356'
+      current_user.value = { uid: 'test-user' }
+
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'ok' }
+      })
+      create_hash.mockResolvedValue('ok')
+      directory.mockResolvedValue({
+        prefixes: [{ name: '+19995551234' }]
+      })
+
+      let index = /** @type {Record<string, unknown>} */ ({
+        '/+19995550000': missing
+      })
+      get.mockImplementation(key => {
+        if (key === 'sync:index') return Promise.resolve(index)
+        if (key === 'sync:offline') return Promise.resolve(null)
+        if (String(key).endsWith('/posters/'))
+          return Promise.resolve({ items: ['1000'] })
+        return Promise.resolve(null)
+      })
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+      localStorage.getItem.mockReturnValue(null)
+
+      const mounted = with_setup(() => use_sync(emit, { load_phonebook }))
+      wrapper = mounted.wrapper
+      const sync = mounted.result
+      await flushPromises()
+
+      const statements_el = {
+        outerHTML: '<section itemid="/+14151234356/statements"></section>'
+      }
+      const events_el = {
+        outerHTML: '<section itemid="/+14151234356/events"></section>'
+      }
+      sync.sync_element.value = {
+        querySelector: vi.fn(sel => {
+          if (sel.includes('statements')) return statements_el
+          if (sel.includes('events')) return events_el
+          if (sel.includes('relations')) return null
+          return null
+        })
+      }
+
+      emit.mockClear()
+      load_phonebook.mockClear()
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(index['/+19995550000']).toBeUndefined()
+      expect(load_phonebook).toHaveBeenCalled()
+      expect(emit).toHaveBeenCalledWith('active', true)
+      expect(emit).toHaveBeenCalledWith('active', false)
+      expect(del).toHaveBeenCalled()
+    })
+
+    it('sync_relations replaces stale local cache from network', async () => {
+      const { current_user, metadata } = await import('@/utils/serverless')
+      const { get, set, del } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const { load_from_network, type_as_list } = await import('@/utils/itemid')
+      const { Relation } = await import('@/persistence/Storage')
+      const save = vi.fn(() => Promise.resolve())
+      Relation.mockImplementation(function () {
+        return { save }
+      })
+
+      localStorage.sync_time = new Date(
+        Date.now() - 1000 * 60 * 60 * 9
+      ).toISOString()
+      current_user.value = { uid: 'test-user' }
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'cloud_hash' }
+      })
+      create_hash.mockResolvedValue('local_hash')
+      load_from_network.mockResolvedValue({
+        id: '/+14151234356/relations',
+        type: 'relations'
+      })
+      type_as_list.mockReturnValue([{ id: '/+1999' }])
+
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key => {
+        if (key === 'sync:index') return Promise.resolve(index)
+        if (key === '/+14151234356/relations')
+          return Promise.resolve('<div>local relations</div>')
+        return Promise.resolve(null)
+      })
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+      localStorage.getItem.mockImplementation(key =>
+        key === '/+14151234356/relations' ? '<div>local relations</div>' : null
+      )
+
+      const mounted = with_setup(() => use_sync(emit))
+      wrapper = mounted.wrapper
+      const sync = mounted.result
+      await flushPromises()
+      sync.sync_element.value = {
+        querySelector: vi.fn(() => ({
+          outerHTML: '<div itemid="/+14151234356/relations"></div>'
+        }))
+      }
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(del).toHaveBeenCalledWith('/+14151234356/relations')
+      expect(save).toHaveBeenCalled()
     })
   })
 })

@@ -9,8 +9,8 @@
 </script>
 
 <template>
-  <section class="install guide" aria-label="Install Realness">
-    <p v-if="installed" class="installed">
+  <section aria-label="Install Realness">
+    <p v-if="installed" role="status">
       <strong>Realness is installed.</strong>
       Open it from your home screen or dock.
     </p>
@@ -26,14 +26,13 @@
 
       <figure
         v-if="method.video"
-        :class="['device', method.video]"
         :data-portrait="
           method.video === 'ios-safari' || method.video === 'android-chrome'
         ">
         <video :src="src(method.video)" autoplay loop muted playsinline />
       </figure>
 
-      <p v-else class="unsupported">
+      <p v-else role="alert">
         Firefox can't install web apps on the desktop. Open Realness in
         <strong>Chrome</strong>, <strong>Edge</strong>, <strong>Brave</strong>,
         or <strong>Safari</strong> — or add a bookmark.
@@ -43,7 +42,7 @@
         Install Realness
       </button>
 
-      <details class="other">
+      <details>
         <summary>Other devices</summary>
         <ul>
           <li
@@ -66,16 +65,16 @@
 </template>
 
 <style lang="stylus">
-  dialog.install {
+  dialog#install {
     width: min(92vw, base-line * 28);
     max-height: 88vh;
     overflow-y: auto;
 
     & > article {
       position: relative;
-      padding: base-line * 0.5;
+      padding: base-line (base-line * 0.5);
 
-      & > button.close {
+      & > button {
         position: absolute;
         top: 0;
         right: 0;
@@ -98,8 +97,8 @@
     }
   }
 
-  section.install.guide {
-    margin: 0 auto;
+  section[aria-label='Install Realness'] {
+    margin-inline: auto;
     max-width: base-line * 26;
     padding: base-line 0;
     text-align: center;
@@ -111,17 +110,16 @@
         color: var(--accent);
       }
       p {
-        margin: base-line * 0.25 auto 0;
+        margin: 0 auto;
         small {
           display: block;
-          margin-top: base-line * 0.25;
           color: var(--emphasis);
         }
       }
     }
 
-    figure.device {
-      margin: 0 auto;
+    figure {
+      margin-inline: auto;
       border-radius: base-line;
       overflow: hidden;
       box-shadow: 0 (base-line) (base-line * 2) unquote('color-mix(in srgb, var(--graphite) 45%, transparent)');
@@ -138,14 +136,14 @@
       }
     }
 
-    p.installed {
+    p[role='status'] {
       color: var(--accent);
       strong {
         color: var(--accent);
       }
     }
 
-    p.unsupported {
+    p[role='alert'] {
       max-width: base-line * 22;
       margin: 0 auto;
       strong {
@@ -155,7 +153,7 @@
 
     & > button {
       margin: base-line auto 0;
-      padding: (base-line * 0.5) (base-line * 1.5);
+      padding: base-line (base-line * 1.5);
       border-radius: base-line * 2;
       border: none;
       font-size: inherit;
@@ -168,7 +166,7 @@
       }
     }
 
-    details.other {
+    details {
       margin-top: base-line * 1.5;
       text-align: left;
       summary {
@@ -178,17 +176,15 @@
       }
       ul {
         list-style: none;
-        margin: base-line 0 0;
-        padding: 0;
+        margin-top: base-line;
         display: grid;
         gap: base-line;
         @media (min-width: pad-begins) {
           grid-template-columns: 1fr 1fr;
         }
         li {
-          margin: 0;
           h4 {
-            margin: 0 0 base-line * 0.25;
+            margin-top: 0;
           }
           video {
             display: block;

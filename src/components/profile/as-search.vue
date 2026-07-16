@@ -60,7 +60,7 @@
       &:focus {
         transition-delay: 0.15s;
         standard-border: var(--accent);
-        padding: round((base-line / 2 ), 2);
+        padding: base-line round((base-line / 2 ), 2);
         width: inherit;
         &::placeholder {
           color: var(--accent);

@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <g class="masks">
+  <g>
     <mask
       :id="query('horizontal-mask')"
       maskUnits="userSpaceOnUse"

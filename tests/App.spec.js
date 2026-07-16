@@ -594,24 +594,17 @@ describe('App.vue', () => {
   })
 
   describe('Status Classes', () => {
-    it('applies working class when status is working', async () => {
-      wrapper.vm.status = 'working'
-      await wrapper.vm.$nextTick()
-      expect(wrapper.find('#realness').classes()).toContain('working')
-    })
-
-    it('applies offline class when status is offline', async () => {
+    it('applies offline attribute when status is offline', async () => {
       wrapper.vm.status = 'offline'
       await wrapper.vm.$nextTick()
-      expect(wrapper.find('#realness').classes()).toContain('offline')
+      expect(wrapper.find('#realness').attributes('data-offline')).toBe('true')
     })
 
-    it('has no status class when status is null', async () => {
+    it('has no status attribute when status is null', async () => {
       wrapper.vm.status = null
       await wrapper.vm.$nextTick()
       const main_element = wrapper.find('#realness')
-      expect(main_element.classes()).not.toContain('working')
-      expect(main_element.classes()).not.toContain('offline')
+      expect(main_element.attributes('data-offline')).toBeUndefined()
     })
   })
 

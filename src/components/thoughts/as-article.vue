@@ -5,7 +5,7 @@
     ref,
     computed,
     onMounted as mounted,
-    onBeforeUnmount as before_unmounted
+    onBeforeUnmount as before_unmount
   } from 'vue'
   import { load, as_author, as_created_at } from '@/utils/itemid'
   import { as_time } from '@/utils/date'
@@ -13,7 +13,6 @@
   import AsThought from '@/components/thoughts/as-thought'
   import AsAvatar from '@/components/posters/as-avatar'
   import AsMessenger from '@/components/profile/as-messenger'
-  import { menu } from '@/utils/preference'
 
   const props = defineProps({
     statements: {
@@ -42,7 +41,6 @@
   })
 
   const observer = ref(null)
-  const all = ref(null)
   const author = ref(null)
   const focused = ref(false)
   const el = ref(null)
@@ -63,7 +61,7 @@
     }
   })
 
-  before_unmounted(() => {
+  before_unmount(() => {
     observer.value?.unobserve(el.value)
   })
 
@@ -73,10 +71,6 @@
       show()
       observer.value.unobserve(el.value)
     }
-  }
-
-  const on_click = e => {
-    if (menu.value && !props.editable) all.value = all.value ? null : 'all'
   }
 
   const show = () => emit('show', props.statements)
@@ -97,7 +91,7 @@
 </script>
 
 <template>
-  <article ref="el" class="thought" :class="all" @click="on_click">
+  <article ref="el" data-thought>
     <header v-if="author">
       <router-link :to="author.id" tabindex="-1" :aria-label="author.name">
         <as-avatar v-if="author.avatar" :itemid="author.avatar" />
@@ -127,12 +121,12 @@
 </template>
 
 <style>
-  article.thought {
+  article[data-thought] {
     & > header {
       display: flex;
       justify-content: flex-start;
       flex-direction: row;
-      margin: 0 0 var(--base-line) 0;
+      margin-bottom: var(--base-line);
       & > a > svg {
         width: calc(var(--base-line) * 2);
         height: calc(var(--base-line) * 2);
@@ -148,7 +142,6 @@
       }
       & > address {
         flex: 1;
-        margin: 0;
         & > span {
           margin-right: calc(var(--base-line) / 4);
           font-weight: 300;

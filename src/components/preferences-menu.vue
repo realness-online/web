@@ -1,5 +1,5 @@
 <script setup>
-  import AsNotifications from '@/components/account/as-notifications'
+  import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
   import Preference from '@/components/preference'
   import { use_instance_capabilities } from '@/use/instance-capabilities'
   import { use_push } from '@/use/push'
@@ -8,7 +8,7 @@
     use as use_sync_folder
   } from '@/use/sync-folder'
   import * as preferences from '@/utils/preference'
-  import { computed, ref, watch, onBeforeUnmount } from 'vue'
+  import { computed, ref, watch, onBeforeUnmount as before_unmount } from 'vue'
 
   defineProps({
     icon: {
@@ -215,11 +215,11 @@
     dispose_pane()
   }
 
-  onBeforeUnmount(dispose_pane)
+  before_unmount(dispose_pane)
 </script>
 
 <template>
-  <menu class="preferences-menu">
+  <menu data-preferences-menu>
     <article>
       <h3 id="preferences-mosaic">Mosaic</h3>
       <preference name="mosaic" />
@@ -246,13 +246,8 @@
       <preference name="color_cycle" label="Color cycle" />
       <h3 id="preferences-view">View</h3>
       <preference :icon="icon" name="view_3d" label="3D">
-        <div
-          class="tweakpane-slide"
-          :class="{ open: view_3d }"
-          @transitionend="on_slide_transition_end">
-          <div class="tweakpane-slide-inner">
-            <div ref="tweakpane_ref" class="tweakpane-3d" />
-          </div>
+        <div class="tweakpane" @transitionend="on_slide_transition_end">
+          <div ref="tweakpane_ref" class="tweakpane__host" />
         </div>
       </preference>
       <preference :icon="icon" name="grid" />
@@ -263,14 +258,14 @@
     </article>
     <article v-if="show_account_services">
       <h3 id="preferences-account">Account</h3>
-      <as-notifications />
+      <as-fieldset-notifications />
       <preference
         v-if="sync_folder_supported_value"
         name="sync_folder"
         title="Export output to a folder">
         <p v-if="sync_folder_name">
           Export output to
-          <span class="location">{{ sync_folder_name }}</span>
+          <span>{{ sync_folder_name }}</span>
         </p>
         <button type="button" @click="sync_folder">Choose folder</button>
       </preference>
@@ -279,19 +274,18 @@
 </template>
 
 <style lang="stylus">
-  menu.preferences-menu {
+  menu[data-preferences-menu] {
     display: grid;
     gap: base-line * 1.5;
     grid-template-columns: 1fr;
-    margin: 0 auto;
-    padding: 0;
+    margin-inline: auto;
     border: none;
     max-width: support-page-width;
     & > article {
       align-self: start;
       & > h3 {
         color: var(--emphasis);
-        margin: 0 0 base-line;
+        margin-top: 0;
         text-transform: capitalize;
         &:not(:first-child) {
           margin-top: base-line * 1.5;
@@ -303,19 +297,16 @@
     }
   }
 
-  fieldset.preference .tweakpane-slide {
+  fieldset[data-preference]:has(input[name='view_3d']) > .tweakpane {
     display: grid;
     grid-template-rows: 0fr;
     margin-top: base-line;
     overflow: hidden;
     transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
-    &.open {
-      grid-template-rows: 1fr;
-    }
     @media (prefers-reduced-motion: reduce) {
       transition: none;
     }
-    .tweakpane-slide-inner {
+    & > .tweakpane__host {
       min-height: 0;
       overflow: hidden;
       opacity: 0;
@@ -325,40 +316,41 @@
       @media (prefers-reduced-motion: reduce) {
         transition: none;
       }
-    }
-    &.open .tweakpane-slide-inner {
-      opacity: 1;
-      translate: 0 0;
+      --tp-base-background-color: var(--basalt);
+      --tp-base-shadow-color: transparent;
+      --tp-base-border-radius: round((base-line / 3), 2);
+      --tp-base-font-family: inherit;
+      --tp-container-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
+      --tp-container-background-color-hover: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
+      --tp-container-background-color-focus: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
+      --tp-container-background-color-active: unquote('color-mix(in srgb, var(--bone) 10%, transparent)');
+      --tp-container-foreground-color: var(--bone);
+      --tp-input-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
+      --tp-input-background-color-hover: var(--accent);
+      --tp-input-background-color-focus: var(--accent);
+      --tp-input-background-color-active: var(--accent);
+      --tp-input-foreground-color: var(--bone);
+      --tp-label-foreground-color: var(--bone);
+      --tp-groove-foreground-color: unquote('color-mix(in srgb, var(--bone) 8%, transparent)');
+      --tp-button-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
+      --tp-button-background-color-hover: var(--accent);
+      --tp-button-background-color-focus: var(--accent);
+      --tp-button-background-color-active: var(--accent);
+      --tp-button-foreground-color: var(--bone);
+      --tp-monitor-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
+      --tp-monitor-foreground-color: var(--bone);
+      .tp-dfwv {
+        width: 100%;
+        position: static;
+      }
     }
   }
 
-  fieldset.preference .tweakpane-3d {
-    --tp-base-background-color: var(--basalt);
-    --tp-base-shadow-color: transparent;
-    --tp-base-border-radius: round((base-line / 3), 2);
-    --tp-base-font-family: inherit;
-    --tp-container-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
-    --tp-container-background-color-hover: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
-    --tp-container-background-color-focus: unquote('color-mix(in srgb, var(--bone) 7%, transparent)');
-    --tp-container-background-color-active: unquote('color-mix(in srgb, var(--bone) 10%, transparent)');
-    --tp-container-foreground-color: var(--bone);
-    --tp-input-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
-    --tp-input-background-color-hover: var(--accent);
-    --tp-input-background-color-focus: var(--accent);
-    --tp-input-background-color-active: var(--accent);
-    --tp-input-foreground-color: var(--bone);
-    --tp-label-foreground-color: var(--bone);
-    --tp-groove-foreground-color: unquote('color-mix(in srgb, var(--bone) 8%, transparent)');
-    --tp-button-background-color: unquote('color-mix(in srgb, var(--bone) 6%, transparent)');
-    --tp-button-background-color-hover: var(--accent);
-    --tp-button-background-color-focus: var(--accent);
-    --tp-button-background-color-active: var(--accent);
-    --tp-button-foreground-color: var(--bone);
-    --tp-monitor-background-color: unquote('color-mix(in srgb, var(--bone) 4%, transparent)');
-    --tp-monitor-foreground-color: var(--bone);
-    .tp-dfwv {
-      width: 100%;
-      position: static;
+  fieldset[data-preference]:has(input[name='view_3d']:checked) > .tweakpane {
+    grid-template-rows: 1fr;
+    & > .tweakpane__host {
+      opacity: 1;
+      translate: 0 0;
     }
   }
 </style>

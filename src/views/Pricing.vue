@@ -53,7 +53,7 @@
 <template>
   <section
     id="pricing"
-    class="page"
+    data-page
     @touchstart.passive="on_touch_start"
     @touchend.passive="on_touch_end">
     <article>
@@ -229,7 +229,7 @@
 </template>
 
 <style lang="stylus">
-  section#pricing.page {
+  section#pricing[data-page] {
     width: 100%;
     max-width: none;
     margin: 0;
@@ -247,7 +247,7 @@
         margin-bottom: base-line * 1.5;
 
         & > h1 {
-          margin: 0 0 (base-line * 0.5);
+          margin-top: 0;
           color: var(--accent);
         }
 
@@ -267,7 +267,7 @@
         margin-bottom: base-line * 1.5;
 
         & > a {
-          padding: base-line * 0.25 base-line * 0.75;
+          padding: 0 base-line * 0.75;
           border-radius: base-line * 0.33;
           color: var(--accent);
           text-decoration: none;
@@ -302,23 +302,21 @@
           box-sizing: border-box;
 
           & > h2 {
-            margin: 0 0 (base-line * 0.35);
+            margin-top: 0;
             color: var(--accent);
             font-size: larger;
           }
 
           & > h2 + p {
-            margin: 0 0 base-line;
             line-height: 1.45;
           }
 
           & > ul {
             list-style: none;
-            margin: 0 0 base-line;
-            padding: 0;
+            margin-bottom: base-line;
 
             & > li {
-              margin: 0 0 base-line;
+              margin-bottom: base-line;
               padding-left: base-line;
               position: relative;
               line-height: 1.4;
@@ -340,7 +338,7 @@
               }
 
               & > p {
-                margin: (base-line * 0.15) 0 0;
+                margin: 0;
                 font-size: 0.9em;
                 opacity: 0.88;
                 line-height: 1.4;
@@ -352,8 +350,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0;
-            padding: 0;
             // Reserve the buy-button height so the card doesn't reflow when
             // Stripe's iframe loads.
             min-height: 223px;
@@ -363,12 +359,12 @@
             gap: base-line * 0.5;
             margin-top: base-line;
 
-            & > button.prompt-agent.inline,
+            & > button,
             & > a {
               flex: 1;
               display: block;
               text-align: center;
-              padding: base-line * 0.5 base-line;
+              padding: base-line;
               border-radius: base-line * 0.33;
               font-weight: bold;
               text-decoration: none;
@@ -376,7 +372,7 @@
               cursor: pointer;
             }
 
-            & > button.prompt-agent.inline {
+            & > button {
               border: round((base-line * 0.1), 2) solid var(--emphasis);
               background: none;
               color: var(--emphasis);

@@ -49,6 +49,6 @@ main#realness {
   background-color: inherit;
 }
 
-section.page {
+section[data-page] {
   background-color: var(--surface);
 }

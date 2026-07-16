@@ -137,6 +137,9 @@ describe('vector worker', () => {
 
   describe('worker message listener', () => {
     it('posts an error reply instead of hanging when route_message throws', async () => {
+      const console_error = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       as_paths_spy.mockImplementation(() => {
         throw new Error('trace failed')
       })
@@ -149,6 +152,8 @@ describe('vector worker', () => {
       await new Promise(resolve => setTimeout(resolve, 0))
 
       expect(postMessage_spy).toHaveBeenCalledWith({ error: 'trace failed' })
+      expect(console_error).toHaveBeenCalled()
+      console_error.mockRestore()
     })
   })
 })

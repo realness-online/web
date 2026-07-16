@@ -148,7 +148,7 @@ export const build_download_svg = svg_element => {
   const vue_components = svg_clone.querySelectorAll('as-animation')
   vue_components.forEach(component => component.remove())
 
-  svg_clone.querySelectorAll('g.grid-overlay').forEach(el => el.remove())
+  svg_clone.querySelectorAll('g[data-grid-overlay]').forEach(el => el.remove())
 
   svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
@@ -232,7 +232,7 @@ export const prepare_poster_svg_for_3d = async (
   { wait_for_symbols = true } = {}
 ) => {
   const symbol_defs = svg_el
-    .closest('figure.poster')
+    .closest('figure:has([itemtype="/posters"])')
     ?.querySelector('svg[data-poster-symbol-defs]')
 
   if (wait_for_symbols && symbol_defs)

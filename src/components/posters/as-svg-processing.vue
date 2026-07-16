@@ -77,8 +77,10 @@
 
 <template>
   <figure
-    class="poster processing"
-    :class="{ currently_processing: is_currently_processing }"
+    itemscope
+    itemtype="/posters"
+    :itemid="queue_itemid"
+    :aria-busy="is_currently_processing || undefined"
     :data-orientation="landscape ? 'horizontal' : 'vertical'">
     <img
       v-if="thumbnail_url"
@@ -187,7 +189,7 @@
 </template>
 
 <style lang="stylus">
-  figure.poster.processing {
+  figure[itemtype='/posters'] {
     display: grid;
     grid-template-areas: "overlay";
     grid-template-rows: auto;
@@ -233,7 +235,7 @@
   }
 
   @starting-style {
-    figure.poster.processing > svg.icon {
+    figure[itemtype='/posters'] > svg.icon {
       opacity: 0;
     }
   }

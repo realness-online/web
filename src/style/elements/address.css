@@ -8,30 +8,4 @@ address {
     text-align: left;
     width: 100dvw;
   }
-  &.message {
-    max-width: var(--page-width);
-    margin: calc(var(--base-line) * 3) auto 0 auto;
-    order: 1;
-    & > p {
-      padding: 0 var(--base-line);
-      text-align: center;
-      line-height: 2.66;
-      & svg {
-        fill: var(--accent);
-        width: 1em;
-        height: 1em;
-        display: inline-block;
-        margin-bottom: -0.25em;
-        &.realness {
-          width: 2em;
-          height: 2em;
-        }
-      }
-      & button {
-        color: var(--accent);
-        border-color: var(--accent);
-        margin-right: calc(var(--base-line) / 6);
-      }
-    }
-  }
 }

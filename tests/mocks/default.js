@@ -17,6 +17,12 @@ vi.mock('@/components/as-dialog-documentation.vue', () => ({
     methods: { show() {} }
   }
 }))
+vi.mock('@/components/profile/as-notification-prompt.vue', () => ({
+  default: {
+    name: 'AsNotificationPrompt',
+    template: '<div class="as-notification-prompt-stub"></div>'
+  }
+}))
 
 vi.mock('vue-router')
 vi.mock('firebase/app')

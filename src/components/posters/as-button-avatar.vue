@@ -28,24 +28,23 @@
 <template>
   <button
     type="button"
-    class="avatar"
     :aria-label="is_avatar ? 'Remove as avatar' : 'Set as avatar'"
     :aria-pressed="is_avatar"
     @click="on_toggle_avatar">
-    <icon name="silhouette" :class="{ true: is_avatar }" />
+    <icon name="silhouette" />
   </button>
 </template>
 
 <style>
-  menu > button.avatar {
+  menu > button[aria-pressed] {
     appearance: none;
     background: none;
     border: 0;
     padding: 0;
     cursor: pointer;
     color: inherit;
-  }
-  menu > button > svg.true {
-    fill: var(--emphasis) !important;
+    &[aria-pressed='true'] > svg {
+      fill: var(--emphasis) !important;
+    }
   }
 </style>

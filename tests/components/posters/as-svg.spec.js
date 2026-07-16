@@ -143,7 +143,7 @@ describe('@/components/posters/as-svg.vue', () => {
       const svg = wrapper.find('svg')
       expect(svg.attributes('viewBox')).toBe('0 0 400 200')
       expect(svg.attributes('preserveAspectRatio')).toContain('slice')
-      expect(wrapper.find('g.cutouts').exists()).toBe(true)
+      expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(true)
     })
   })
 
@@ -239,7 +239,7 @@ describe('@/components/posters/as-svg.vue', () => {
         }
       })
       await flushPromises()
-      expect(wrapper.find('svg').classes()).toContain('hide-cursor')
+      expect(wrapper.find('svg').attributes('data-hide-cursor')).toBe('true')
     })
   })
 
@@ -254,7 +254,7 @@ describe('@/components/posters/as-svg.vue', () => {
         }
       })
       await flushPromises()
-      const cutouts = wrapper.find('g.cutouts')
+      const cutouts = wrapper.find('use[itemprop="sediment"]')
       expect(cutouts.exists()).toBe(true)
     })
   })
@@ -512,7 +512,7 @@ describe('@/components/posters/as-svg.vue', () => {
         props: { itemid, sync_poster: vector_fixture() }
       })
       await flushPromises()
-      expect(wrapper.find('g.grid-overlay').exists()).toBe(true)
+      expect(wrapper.find('g[data-grid-overlay]').exists()).toBe(true)
       mock_grid.value = false
     })
   })

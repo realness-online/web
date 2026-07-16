@@ -335,7 +335,7 @@
 </script>
 
 <template>
-  <section class="as-days">
+  <section data-days :role="!working && !storytelling ? 'feed' : undefined">
     <header v-if="working"><icon name="working" /></header>
     <template v-else-if="storytelling">
       <article @focusin="$emit('focusin', $event)">
@@ -349,23 +349,22 @@
         </section>
       </article>
     </template>
-    <div v-else role="feed">
+    <template v-else>
       <article
         v-for="([date, day], index) in filtered_days_list"
         :key="date"
-        :ref="el => set_last_day_sentinel_ref(el, index)"
-        :class="{ today: is_today(date) }">
+        :ref="el => set_last_day_sentinel_ref(el, index)">
         <header v-if="!is_today(date)">
           <h4 role="heading" aria-level="2">{{ as_day(date) }}</h4>
         </header>
         <slot :day="day" :date="date" />
       </article>
-    </div>
+    </template>
   </section>
 </template>
 
 <style lang="stylus">
-  section.page.storytelling section.as-days {
+  section[data-page][data-storytelling] section[data-days] {
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -423,20 +422,20 @@
       }
     }
   }
-  section.as-days {
+  section[data-days] {
     padding: 0 base-line;
     margin-bottom: base-line * 2;
     container-type: inline-size;
     container-name: feed-days;
-    & > header > svg.working {
+    & > header > svg[data-icon='working'] {
       margin-top: base-line * 2;
     }
-    & [role='feed'] {
+    &[role='feed'] {
       display: flex;
       flex-direction: column;
       gap: base-line;
     }
-    & [role='feed'] > article {
+    &[role='feed'] > article {
       min-width: 0;
       standard-grid: hi;
       &:focus {
@@ -447,7 +446,7 @@
           grid-column: 1 / -1;
         }
         & > h4 {
-          margin: 0;
+          margin-top: 0;
         }
       }
     }

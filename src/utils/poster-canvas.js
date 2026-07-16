@@ -4,7 +4,7 @@
  * resolves in exports (flat SVG download, PSD raster, canvas raster). No-op if `<defs>` is missing.
  *
  * @param {SVGSVGElement} svg_clone - Working clone (mutated: symbols appended to defs)
- * @param {SVGSVGElement} svg_element - Live poster root (used for `closest('figure.poster')`)
+ * @param {SVGSVGElement} svg_element - Live poster root (used for `closest('figure:has([itemtype="/posters"])')`)
  * @param {(symbol_id: string | null) => boolean} include_symbol
  */
 export const merge_poster_hidden_symbols = (
@@ -12,7 +12,7 @@ export const merge_poster_hidden_symbols = (
   svg_element,
   include_symbol
 ) => {
-  const figure = svg_element.closest('figure.poster')
+  const figure = svg_element.closest('figure:has([itemtype="/posters"])')
   if (!figure) return
   const hidden_svg = figure.querySelector('svg[data-poster-symbol-defs]')
   if (!hidden_svg) return

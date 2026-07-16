@@ -125,6 +125,11 @@ describe('@/utils/itemid', () => {
       expect(type_as_list(item)).toEqual([])
     })
 
+    it('type_as_list returns empty when as_type cannot resolve a type', () => {
+      const item = { id: '/nobody/nowhere/', posters: [{ id: '/x' }] }
+      expect(type_as_list(item)).toEqual([])
+    })
+
     it('feed_slot_itemid returns id from single item', () => {
       const slot = { id: '/+1/posters/123' }
       expect(feed_slot_itemid(slot)).toBe('/+1/posters/123')
@@ -291,6 +296,15 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/people')
       expect(result).toBe('people/+16282281824/people/index.html.gz')
+    })
+
+    it('skips people prefix when itemid does not start with /+', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename(
+        /** @type {import('@/types').Id} */ ('/guest/posters/1737178477987')
+      )
+      expect(result).toBe('/guest/posters/1737178477987.html.gz')
     })
 
     it('generates correct path for sediment layer with suffix', async () => {
@@ -581,6 +595,16 @@ describe('@/utils/itemid', () => {
       expect(result).toBeNull()
     })
 
+    it('as_layer_name returns null for empty or non-string input', () => {
+      expect(as_layer_name('')).toBeNull()
+      expect(as_layer_name(null)).toBeNull()
+      expect(as_layer_name(undefined)).toBeNull()
+    })
+
+    it('as_layer_name returns null when path has no type segment', () => {
+      expect(as_layer_name('/+16282281824')).toBeNull()
+    })
+
     it('constructs layer ID from poster ID', () => {
       const result = as_layer_id(
         '/+16282281824/posters/1737178477987',
@@ -733,6 +757,74 @@ describe('@/utils/itemid', () => {
 
       expect(result).toEqual({ item: null, html: null })
     })
+
+    it('load_from_cache decompresses gzip responses', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope><h3 itemprop="name">Gz</h3></address>`
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce(html)
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(decompress_html).toHaveBeenCalled()
+      expect(result.html).toBe(html)
+      expect(result.item).not.toBeNull()
+    })
+
+    it('load_from_cache returns null when decompress yields empty html', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce('')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_network returns null when decompress yields empty html', async () => {
+      const id = /** @type {import('@/types').Id} */ (
+        '/+16282281824/posters/1737178477987'
+      )
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce('')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_network(id)
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('load', () => {
@@ -745,6 +837,48 @@ describe('@/utils/itemid', () => {
       const item = await load(me_id, me_id)
 
       expect(item?.name).toBe('Me')
+    })
+
+    it('loads other ids from IndexedDB before network', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const other = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${other}" itemscope itemtype="/person"><h3 itemprop="name">Other</h3></address>`
+      localStorage.me = me_id
+      const fetch_spy = vi.fn()
+      global.fetch = fetch_spy
+      get.mockImplementation(key =>
+        key === other ? Promise.resolve(html) : Promise.resolve(null)
+      )
+
+      const item = await load(other, me_id)
+
+      expect(item?.name).toBe('Other')
+      expect(fetch_spy).not.toHaveBeenCalled()
+    })
+
+    it('loads from network when not cached locally', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const other = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${other}" itemscope itemtype="/person"><h3 itemprop="name">Net</h3></address>`
+      localStorage.me = me_id
+      localStorage.removeItem(other)
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(null)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html.gz')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const item = await load(other, me_id)
+
+      expect(item?.name).toBe('Net')
+      expect(set).toHaveBeenCalledWith(other, html)
     })
   })
 
@@ -766,6 +900,29 @@ describe('@/utils/itemid', () => {
       expect(item?.name).toBe('L')
       expect(localStorage.getItem(me_id)).toBe(html)
       expect(del).toHaveBeenCalledWith(me_id)
+    })
+
+    it('skips legacy idb migration when html does not parse to an item', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      get.mockImplementation(key => {
+        if (key === me_id) return Promise.resolve('<div>not a person</div>')
+        if (key === 'sync:index') return Promise.resolve({})
+        return Promise.resolve(null)
+      })
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      del.mockClear()
+
+      const item = await load(me_id, me_id)
+
+      expect(item).toBeNull()
+      expect(del).not.toHaveBeenCalledWith(me_id)
     })
 
     it('load returns null on storage/unauthorized error', async () => {
@@ -983,6 +1140,17 @@ describe('@/utils/itemid', () => {
           '/+16282281824/posters/nonexistent'
         )
       )
+
+      expect(result).toEqual([])
+    })
+
+    it('returns type_as_list when load finds an item', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope itemtype="/person"><h3 itemprop="name">Listed</h3></address>`
+      localStorage.me = id
+      localStorage.setItem(id, html)
+
+      const result = await list(id, id)
 
       expect(result).toEqual([])
     })

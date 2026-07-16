@@ -1,6 +1,6 @@
 <script setup>
   import icons from '/icons.svg'
-  import { computed, ref, watch, onMounted } from 'vue'
+  import { computed, ref, watch, onMounted as mounted } from 'vue'
   import { animate, animation_speed, color_cycle } from '@/utils/preference'
   import {
     BASE_DURATION,
@@ -43,8 +43,11 @@
     }
   }
   const sync_realness_animations = playing =>
-    rewind(realness_animations('[data-tile], [data-glint]'), playing)
-  onMounted(() => sync_realness_animations(animate.value))
+    rewind(
+      realness_animations('[data-tile], [data-glint], [data-smalti-wobble]'),
+      playing
+    )
+  mounted(() => sync_realness_animations(animate.value))
   watch(animate, sync_realness_animations)
   watch(color_cycle, () =>
     requestAnimationFrame(() => sync_realness_animations(animate.value))
@@ -114,7 +117,10 @@
     viewBox="-20 -20 232 232"
     class="icon realness"
     :class="{ 'color-cycle': color_cycle }"
-    :style="{ '--realness-cycle': `${realness_cycle}s` }"
+    :style="{
+      '--realness-cycle': `${realness_cycle}s`,
+      '--glint-cycle': `${realness_cycle * 0.1}s`
+    }"
     @pointerdown="on_realness_press"
     @pointerup="on_realness_release"
     @pointercancel="on_realness_release">
@@ -185,6 +191,16 @@
         patternUnits="userSpaceOnUse">
         <use href="#icon-realness-smalti-cinder" data-tile="cinder" />
       </pattern>
+      <clipPath id="clip-realness-ash"><use href="#realness-ash" /></clipPath>
+      <clipPath id="clip-realness-tide"><use href="#realness-tide" /></clipPath>
+      <clipPath id="clip-realness-silt"><use href="#realness-silt" /></clipPath>
+      <clipPath id="clip-realness-ember">
+        <use href="#realness-ember" />
+      </clipPath>
+      <clipPath id="clip-realness-rust"><use href="#realness-rust" /></clipPath>
+      <clipPath id="clip-realness-cinder">
+        <use href="#realness-cinder" />
+      </clipPath>
     </defs>
     <path
       id="realness-ash"
@@ -216,9 +232,123 @@
     <use href="#realness-ember" data-tile="ember" />
     <use href="#realness-rust" data-tile="rust" />
     <use href="#realness-cinder" data-tile="cinder" />
+    <g data-smalti-wobble data-tile="ash" clip-path="url(#clip-realness-ash)">
+      <path
+        data-smalti-wobble="ash"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0)"
+        d="M34.96 32.03 L38.06 32.88 L38.81 35.74 L35.10 35.65 Z" />
+      <path
+        data-smalti-wobble="ash"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0)"
+        d="M52.16 12.85 L55.05 12.05 L55.92 15.92 L51.77 15.21 Z" />
+      <path
+        data-smalti-wobble="ash"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.0066)"
+        d="M22.13 44.77 L24.84 44.22 L24.83 47.91 L22.21 47.05 Z" />
+      <path
+        data-smalti-wobble="ash"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.1357)"
+        d="M73.09 24.99 L76.58 24.17 L77.26 27.37 L73.33 27.08 Z" />
+    </g>
+    <g data-smalti-wobble data-tile="tide" clip-path="url(#clip-realness-tide)">
+      <path
+        data-smalti-wobble="tide"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.2441)"
+        d="M108.78 14.65 L111.46 14.46 L111.27 17.91 L108.29 18.22 Z" />
+      <path
+        data-smalti-wobble="tide"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.3318)"
+        d="M115.69 32.88 L118.69 33.02 L118.31 36.41 L115.77 36.07 Z" />
+      <path
+        data-smalti-wobble="tide"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.4119)"
+        d="M108.78 51.45 L111.46 51.26 L111.27 54.71 L108.29 55.02 Z" />
+      <path
+        data-smalti-wobble="tide"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.5297)"
+        d="M137.59 55.81 L139.86 55.43 L140.22 58.90 L137.30 59.06 Z" />
+    </g>
+    <g data-smalti-wobble data-tile="silt" clip-path="url(#clip-realness-silt)">
+      <path
+        data-smalti-wobble="silt"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.2008)"
+        d="M21.08 95.78 L23.95 95.31 L24.14 98.05 L19.66 98.32 Z" />
+      <path
+        data-smalti-wobble="silt"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.2686)"
+        d="M50.31 75.56 L55.05 74.71 L53.81 77.37 L50.90 78.21 Z" />
+      <path
+        data-smalti-wobble="silt"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.3732)"
+        d="M40.13 108.90 L44.54 108.62 L44.72 112.15 L40.33 112.27 Z" />
+      <path
+        data-smalti-wobble="silt"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.4288)"
+        d="M65.70 105.66 L69.51 105.55 L69.61 108.80 L65.14 108.03 Z" />
+    </g>
+    <g
+      data-smalti-wobble
+      data-tile="ember"
+      clip-path="url(#clip-realness-ember)">
+      <path
+        data-smalti-wobble="ember"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.7314)"
+        d="M156.07 86.59 L159.54 85.90 L159.03 88.85 L156.90 88.86 Z" />
+      <path
+        data-smalti-wobble="ember"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.7691)"
+        d="M144.55 101.46 L147.74 102.21 L147.83 104.88 L144.76 104.63 Z" />
+      <path
+        data-smalti-wobble="ember"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.8388)"
+        d="M179.72 90.48 L182.93 89.76 L182.77 92.71 L179.98 92.78 Z" />
+      <path
+        data-smalti-wobble="ember"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.9227)"
+        d="M179.41 106.01 L182.97 105.81 L183.30 108.60 L179.59 108.37 Z" />
+    </g>
+    <g data-smalti-wobble data-tile="rust" clip-path="url(#clip-realness-rust)">
+      <path
+        data-smalti-wobble="rust"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.5523)"
+        d="M42.30 151.01 L46.43 150.62 L45.90 154.68 L42.63 154.32 Z" />
+      <path
+        data-smalti-wobble="rust"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.557)"
+        d="M70.22 129.82 L74.62 128.69 L75.16 133.22 L71.23 133.36 Z" />
+      <path
+        data-smalti-wobble="rust"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.6579)"
+        d="M79.90 142.42 L84.08 141.83 L83.75 146.51 L80.88 146.12 Z" />
+      <path
+        data-smalti-wobble="rust"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.6777)"
+        d="M89.02 129.82 L93.42 128.69 L93.96 133.22 L90.03 133.36 Z" />
+      <path
+        data-smalti-wobble="rust"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.7484)"
+        d="M79.90 163.92 L84.08 163.33 L83.75 168.01 L80.88 167.62 Z" />
+    </g>
+    <g
+      data-smalti-wobble
+      data-tile="cinder"
+      clip-path="url(#clip-realness-cinder)">
+      <path
+        data-smalti-wobble="cinder"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.7795)"
+        d="M105.81 142.07 L108.21 142.30 L108.69 144.94 L106.09 144.54 Z" />
+      <path
+        data-smalti-wobble="cinder"
+        style="--smalti-delay: calc(var(--glint-cycle) * 0.8935)"
+        d="M122.75 162.35 L124.81 162.40 L124.99 164.51 L122.29 164.55 Z" />
+      <path
+        data-smalti-wobble="cinder"
+        style="--smalti-delay: calc(var(--glint-cycle) * 1)"
+        d="M155.51 149.18 L157.65 149.22 L157.82 151.62 L155.67 151.14 Z" />
+    </g>
     <smalti-glints />
   </svg>
-  <svg v-else :class="name" class="icon"><use :href="icon_location" /></svg>
+  <svg v-else :data-icon="name" class="icon"><use :href="icon_location" /></svg>
 </template>
 
 <style>
@@ -551,6 +681,80 @@
   }
   svg.icon.realness:active > use[data-tile] {
     opacity: 1;
+  }
+
+  /* Individual wobble smalti - coordinates with cutout glints via --smalti-delay
+     (same --glint-cycle as smalti-glints.vue) */
+  g[data-smalti-wobble] {
+    pointer-events: none;
+  }
+  path[data-smalti-wobble='ash'],
+  path[data-smalti-wobble='cinder'] {
+    fill: var(--pumice);
+  }
+  path[data-smalti-wobble='tide'],
+  path[data-smalti-wobble='silt'] {
+    fill: var(--water-fill);
+  }
+  path[data-smalti-wobble='ember'],
+  path[data-smalti-wobble='rust'] {
+    fill: var(--clay-fill);
+  }
+  path[data-smalti-wobble] {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation-name: realness-smalti-wobble;
+    animation-duration: var(--glint-cycle, 9s);
+    animation-delay: var(--smalti-delay, 0s);
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    animation-play-state: paused;
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='ash'] {
+    animation-name: realness-color-ash, realness-smalti-wobble;
+    animation-duration: 26s, var(--glint-cycle, 9s);
+    animation-delay: 4s, var(--smalti-delay, 0s);
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='ember'] {
+    animation-name: realness-color-ember, realness-smalti-wobble;
+    animation-duration: 34s, var(--glint-cycle, 9s);
+    animation-delay: 6.5s, var(--smalti-delay, 0s);
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='rust'] {
+    animation-name: realness-color-rust, realness-smalti-wobble;
+    animation-duration: 28s, var(--glint-cycle, 9s);
+    animation-delay: 5s, var(--smalti-delay, 0s);
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='tide'] {
+    animation-name: realness-color-tide, realness-smalti-wobble;
+    animation-duration: 31s, var(--glint-cycle, 9s);
+    animation-delay: 7s, var(--smalti-delay, 0s);
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='silt'] {
+    animation-name: realness-color-silt, realness-smalti-wobble;
+    animation-duration: 23s, var(--glint-cycle, 9s);
+    animation-delay: 5.5s, var(--smalti-delay, 0s);
+  }
+  svg.icon.realness.color-cycle path[data-smalti-wobble='cinder'] {
+    animation-name: realness-color-cinder, realness-smalti-wobble;
+    animation-duration: 25s, var(--glint-cycle, 9s);
+    animation-delay: 4.5s, var(--smalti-delay, 0s);
+  }
+
+  @keyframes realness-smalti-wobble {
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    25% {
+      transform: translate(0.6px, -0.5px) rotate(2deg);
+    }
+    50% {
+      transform: translate(-0.4px, 0.7px) rotate(-1.5deg);
+    }
+    75% {
+      transform: translate(0.3px, 0.4px) rotate(1deg);
+    }
   }
 
   @keyframes realness-smalti-shimmer {

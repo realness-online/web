@@ -68,7 +68,7 @@ describe('Account', () => {
 
   it('renders the account section when signed in', () => {
     const wrapper = mount()
-    expect(wrapper.find('section#account.page').exists()).toBe(true)
+    expect(wrapper.find('section#account[data-page]').exists()).toBe(true)
   })
 
   it('shows the sign-in flow inline when not signed in (no redirect)', () => {

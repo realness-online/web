@@ -7,32 +7,28 @@
 </script>
 
 <template>
-  <section class="page legal" lang="en">
+  <section data-page itemscope itemtype="/legal" lang="en">
     <header>
       <h1>{{ title }}</h1>
     </header>
     <article>
-      <nav v-if="toc.length" class="toc" aria-label="Table of contents">
+      <nav v-if="toc.length" aria-label="Table of contents">
         <router-link
           v-for="item in toc"
           :key="item.id"
           :to="`#${item.id}`"
           replace
-          :class="`level-${item.level}`">
+          :data-level="item.level">
           {{ item.title }}
         </router-link>
       </nav>
-      <section class="content">
-        <div class="document" v-html="html" />
-      </section>
+      <section itemprop="content" v-html="html" />
     </article>
   </section>
 </template>
 
 <style lang="stylus">
-  @require '../style/mixins/markdown-content.styl'
-
-  section.page.legal {
+  section[itemtype='/legal'] {
     margin: 0 auto;
     padding: 0 base-line;
     max-width: support-page-width;
@@ -53,7 +49,7 @@
       display: block;
 
       @media (min-width: pad-begins) {
-        &:has(nav.toc) {
+        &:has(nav[aria-label='Table of contents']) {
           display: grid;
           grid-template-columns: (base-line * 9) minmax(0, 1fr);
           gap: base-line * 1.5;
@@ -61,7 +57,7 @@
         }
       }
 
-      & > nav.toc {
+      & > nav[aria-label='Table of contents'] {
         display: block;
         column-width: base-line * 8;
         column-gap: base-line;
@@ -83,7 +79,6 @@
 
         & > a {
           display: block;
-          margin: round((base-line / 4), 2) 0;
           color: var(--accent);
           text-decoration: none;
           break-inside: avoid;
@@ -95,8 +90,8 @@
             color: var(--emphasis);
           }
 
-          &.level-3,
-          &.level-4 {
+          &[data-level='3'],
+          &[data-level='4'] {
             padding-left: base-line * 0.66;
             line-height: 1.33;
             font-size: smaller;
@@ -109,7 +104,7 @@
         }
       }
 
-      &:not(:has(nav.toc)) > section.content {
+      &:not(:has(nav[aria-label='Table of contents'])) > section[itemprop='content'] {
         margin-inline: auto;
 
         // The global `p { max-width: var(--page-width) }` rule caps prose
@@ -117,27 +112,19 @@
         // in narrow layouts, but it reads as ragged/left-heavy once this
         // column has no sidebar to sit next to. Center each capped element
         // as its own block instead.
-        & > div.document {
-          p, blockquote, ul, ol {
-            margin-inline: auto;
-          }
+        p, blockquote, ul, ol {
+          margin-inline: auto;
+        }
 
-          h1, h2, h3, h4, h5, h6 {
-            text-align: center;
-          }
+        h1, h2, h3, h4, h5, h6 {
+          text-align: center;
         }
       }
 
-      & > section.content {
+      & > section[itemprop='content'] {
         min-width: 0;
-        padding: 0 base-line * 0.5;
+        padding-inline: base-line * 0.5;
         max-width: base-line * 36;
-
-        & > div.document {
-          min-width: 0;
-          max-width: 100%;
-          markdown_content();
-        }
       }
     }
   }

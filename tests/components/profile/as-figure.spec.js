@@ -68,7 +68,9 @@ describe('@/component/profile/as-figure.vue', () => {
   })
   describe('Component Structure', () => {
     it('renders with correct structure', () => {
-      expect(wrapper.find('figure.profile').exists()).toBe(true)
+      expect(wrapper.find('figure[data-display="phonebook"]').exists()).toBe(
+        true
+      )
       expect(wrapper.find('figcaption').exists()).toBe(true)
     })
     it('renders label when display=label', () => {
@@ -85,7 +87,7 @@ describe('@/component/profile/as-figure.vue', () => {
           }
         }
       })
-      const link = wrapper.find('.profile.label')
+      const link = wrapper.find('[data-display="label"]')
       expect(link.exists()).toBe(true)
       expect(link.find('span').text()).toBe('Scott Fryxell')
       expect(link.attributes('href')).toBe(person.id)
@@ -266,7 +268,9 @@ describe('@/component/profile/as-figure.vue', () => {
           }
         }
       })
-      expect(wrapper.find('figure.profile').exists()).toBe(true)
+      expect(wrapper.find('figure[data-display="phonebook"]').exists()).toBe(
+        true
+      )
     })
   })
 })

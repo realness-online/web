@@ -2,7 +2,7 @@
 
 exports[`Profile > renders profile view 1`] = `
 <section
-  class="page"
+  data-page=""
   id="profile"
 >
   <header>

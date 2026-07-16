@@ -84,13 +84,13 @@
 </script>
 
 <template>
-  <fieldset class="preference" :class="{ compact }">
+  <fieldset data-preference :class="{ compact }">
     <div>
-      <h4 :class="{ labeled: label, 'with-icon': icon_name }">
+      <h4 :data-labeled="label || undefined">
         <icon v-if="icon_name" :name="icon_name" />
         <span>{{ label || name }}{{ state_text }}</span>
       </h4>
-      <label class="switch">
+      <label>
         <input
           :checked="preference"
           :name="name"
@@ -98,15 +98,15 @@
           type="checkbox"
           switch
           @change="on_change" />
-        <span class="slider"></span>
+        <span data-slider></span>
       </label>
     </div>
     <p v-if="title">{{ title }}</p>
-    <p v-else-if="hint_text || key_hint.length" class="hint">
+    <p v-else-if="hint_text || key_hint.length" data-hint>
       <span v-if="hint_text">{{ hint_text }}</span>
       <kbd v-for="key in key_hint" :key="key">{{ key }}</kbd>
     </p>
-    <p v-if="cycle_key_hint.length && cycle_hint_text" class="hint">
+    <p v-if="cycle_key_hint.length && cycle_hint_text" data-hint>
       <kbd v-for="key in cycle_key_hint" :key="`cycle-${key}`">{{ key }}</kbd>
       <span>{{ cycle_hint_text }}</span>
     </p>
@@ -116,10 +116,10 @@
 </template>
 
 <style>
-  fieldset.preference:has(input:checked) h4.with-icon svg.icon {
+  fieldset[data-preference]:has(input:checked) h4:has(> svg.icon) svg.icon {
     color: var(--emphasis);
   }
-  fieldset.preference {
+  fieldset[data-preference] {
     margin-bottom: var(--base-line);
     &.compact {
       border: none;
@@ -129,14 +129,14 @@
       & > div {
         gap: calc(var(--base-line) * 0.5);
         align-items: center;
-        & > label.switch {
+        & > label:has(input[role='switch']) {
           width: calc(var(--base-line) * 2.25);
           height: calc(var(--base-line) * 1.25);
           flex-shrink: 0;
-          & > input:checked + .slider:before {
+          & > input:checked + [data-slider]:before {
             transform: translateX(calc(var(--base-line) * 1.05));
           }
-          .slider:before {
+          [data-slider]:before {
             height: var(--base-line);
             width: var(--base-line);
             left: calc(var(--base-line) * 0.125);
@@ -150,17 +150,16 @@
       justify-content: space-between;
       h4 {
         text-transform: capitalize;
-        &.labeled {
+        &[data-labeled] {
           text-transform: none;
         }
         display: inline-flex;
         align-items: center;
         gap: calc(var(--base-line) * 0.35);
         line-height: 1;
-        padding: 0;
         font-size: normal;
-        margin: 0 0 var(--base-line) 0;
-        &.with-icon svg.icon {
+        margin-top: 0;
+        &:has(> svg.icon) svg.icon {
           color: var(--accent);
           width: calc(var(--base-line) * 1.1);
           height: calc(var(--base-line) * 1.1);
@@ -169,14 +168,14 @@
         .compact > div > & {
           margin: 0;
           font-size: smaller;
-          &.with-icon svg.icon {
+          &:has(> svg.icon) svg.icon {
             width: var(--base-line);
             height: var(--base-line);
           }
         }
       }
     }
-    & > p.hint {
+    & > p[data-hint] {
       display: flex;
       flex-wrap: wrap;
       align-items: center;

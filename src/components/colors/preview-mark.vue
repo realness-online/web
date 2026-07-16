@@ -1,19 +1,15 @@
 <script setup>
   import icon from '@/components/icon'
-
   defineProps({
-    // the icon name to render
     name: {
       type: String,
       required: true
     },
-    // which swatch this mark previews, e.g. "water darken" or "chalk"
     label: {
       type: String,
       default: 'icon'
     }
   })
-
   defineEmits(['cycle'])
 </script>
 
@@ -28,9 +24,6 @@
 </template>
 
 <style>
-  /* scoped to this component's own buttons via their aria-label prefix —
-     a bare `button` selector here would leak this fixed-size reset onto
-     every button in the app */
   button[aria-label^='Preview '] {
     position: relative;
     display: block;

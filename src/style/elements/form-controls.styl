@@ -14,7 +14,7 @@ fieldset {
   }
   legend {
     color: var(--muted-text);
-    &.valid {
+    &[data-valid] {
       color: var(--accent);
     }
   }
@@ -86,8 +86,8 @@ label {
 }
 
 // Toggle switch — a checkbox styled as a sliding switch. Used by preference.vue
-// and as-notifications.vue. Markup: label.switch > input[switch] + span.slider
-label.switch {
+// and as-fieldset-notifications.vue. Markup: label:has(input[role=switch]) > input[switch] + span[data-slider]
+label:has(input[role='switch']) {
   position: relative;
   display: inline-block;
   width: base-line * 3;
@@ -97,17 +97,17 @@ label.switch {
     opacity: 0;
     width: 0;
     height: 0;
-    &:checked + .slider {
+    &:checked + [data-slider] {
       background-color: var(--emphasis);
     }
-    &:focus + .slider {
+    &:focus + [data-slider] {
       box-shadow: 0 0 1px var(--emphasis);
     }
-    &:checked + .slider:before {
+    &:checked + [data-slider]:before {
       transform: translateX(base-line * 1.4);
     }
   }
-  .slider {
+  [data-slider] {
     border-radius: base-line * 2;
     position: absolute;
     cursor: pointer;

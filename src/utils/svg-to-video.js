@@ -302,7 +302,7 @@ const rasterize_svg_frame = async (
   svg_clone.setAttribute('width', String(canvas_width))
   svg_clone.setAttribute('height', String(canvas_height))
 
-  const figure = svg_element.closest('figure.poster')
+  const figure = svg_element.closest('figure:has([itemtype="/posters"])')
   if (figure) {
     const hidden_svg = figure.querySelector('svg[data-poster-symbol-defs]')
     if (hidden_svg) {

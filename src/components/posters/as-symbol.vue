@@ -1,6 +1,11 @@
 <script setup>
   /* eslint-disable vue/no-v-html */
-  import { ref, shallowRef, onMounted as mounted, watch } from 'vue'
+  import {
+    ref,
+    shallowRef as shallow_ref,
+    onMounted as mounted,
+    watch
+  } from 'vue'
   import { load_from_cache } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -13,7 +18,7 @@
   })
 
   const element = ref(null)
-  const symbol_content = shallowRef('')
+  const symbol_content = shallow_ref('')
   const symbol_id = ref('')
   const symbol_viewbox = ref('')
   const load_token = ref(0)

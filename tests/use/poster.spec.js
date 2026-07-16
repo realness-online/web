@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { defineComponent } from 'vue'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import {
   is_vector_id,
   is_vector,
@@ -12,10 +12,16 @@ import {
   is_url_query,
   set_vector_dimensions,
   geology_layers,
-  use_posters
+  use_posters,
+  use as use_poster
 } from '@/use/poster'
 import { as_directory } from '@/persistence/Directory'
-import { as_author, as_created_at } from '@/utils/itemid'
+import {
+  as_author,
+  as_created_at,
+  as_query_id,
+  as_fragment_id
+} from '@/utils/itemid'
 import { load } from '@/utils/itemid'
 import { recent_item_first } from '@/utils/sorting'
 
@@ -23,16 +29,37 @@ vi.mock('@/persistence/Directory')
 vi.mock('@/utils/itemid')
 vi.mock('@/utils/sorting')
 
+const mock_get_active_path = vi.hoisted(() => vi.fn(() => null))
+
+vi.mock('@/use/path', () => ({
+  use: () => ({ get_active_path: mock_get_active_path })
+}))
+vi.mock('@/utils/preference', () => ({
+  aspect_ratio_mode: { value: 'auto', __v_isRef: true },
+  slice_alignment: { value: 'ymid', __v_isRef: true }
+}))
+vi.mock('@vueuse/core', () => ({
+  usePointer: () => ({
+    x: { value: 0 },
+    y: { value: 0 },
+    pressure: { value: 0.5 }
+  })
+}))
+
 // Helper to test composables in proper Vue context
-function with_setup(composable) {
+function with_setup(composable, { props = {}, provide = {} } = {}) {
   let result
   const app = defineComponent({
+    props: {
+      itemid: { type: String, default: '/+1/posters/1000' },
+      tabable: { type: Boolean, default: false }
+    },
     setup() {
       result = composable()
       return () => {}
     }
   })
-  mount(app)
+  mount(app, { props, global: { provide } })
   return result
 }
 
@@ -153,6 +180,34 @@ describe('poster utils', () => {
         }
       }
       expect(is_vector(vector_invalid_gradients)).toBe(false)
+    })
+
+    it('returns false when gradients are missing height', () => {
+      vi.mocked(as_created_at).mockReturnValue('1234567890')
+      expect(
+        is_vector({
+          id: '/user/posters/1234567890',
+          type: 'posters',
+          viewbox: '0 0 100 100',
+          width: 100,
+          height: 100,
+          gradients: { width: 100, radial: true }
+        })
+      ).toBe(false)
+    })
+
+    it('returns false when gradients are missing width', () => {
+      vi.mocked(as_created_at).mockReturnValue('1234567890')
+      expect(
+        is_vector({
+          id: '/user/posters/1234567890',
+          type: 'posters',
+          viewbox: '0 0 100 100',
+          width: 100,
+          height: 100,
+          gradients: { height: 100, radial: true }
+        })
+      ).toBe(false)
     })
 
     it('returns false for wrong type', () => {
@@ -310,10 +365,28 @@ describe('poster utils', () => {
 
   describe('use_posters', () => {
     let posters_composable
+    let set_working
 
     beforeEach(() => {
       vi.clearAllMocks()
-      posters_composable = with_setup(use_posters)
+      set_working = vi.fn()
+      posters_composable = with_setup(use_posters, {
+        provide: { set_working }
+      })
+      vi.mocked(as_author).mockImplementation(id => {
+        if (!id || typeof id !== 'string') return null
+        const parts = id.split('/').filter(Boolean)
+        return parts[0]?.startsWith('+') || parts[0] === 'user'
+          ? `/${parts[0]}`
+          : null
+      })
+      vi.mocked(as_created_at).mockImplementation(id => {
+        const parts = String(id).split('/').filter(Boolean)
+        return parts[2] || null
+      })
+      vi.mocked(recent_item_first).mockImplementation((a, b) =>
+        String(b.id).localeCompare(String(a.id))
+      )
     })
 
     describe('for_person', () => {
@@ -334,6 +407,16 @@ describe('poster utils', () => {
         expect(posters_composable.posters.value[1].id).toBe(
           '/user/posters/0987654321'
         )
+        expect(set_working).toHaveBeenCalledWith(true)
+        expect(set_working).toHaveBeenCalledWith(false)
+      })
+
+      it('returns early when directory is missing', async () => {
+        vi.mocked(as_directory).mockResolvedValue(null)
+
+        await posters_composable.for_person({ id: '/user' })
+
+        expect(posters_composable.posters.value).toHaveLength(0)
       })
 
       it('does not add duplicate posters', async () => {
@@ -357,9 +440,6 @@ describe('poster utils', () => {
         }
 
         vi.mocked(as_directory).mockResolvedValue(mock_directory)
-        vi.mocked(recent_item_first).mockImplementation((a, b) => {
-          return a.id.localeCompare(b.id)
-        })
 
         await posters_composable.for_person(mock_query)
 
@@ -368,9 +448,141 @@ describe('poster utils', () => {
     })
 
     describe('poster_shown', () => {
+      it('returns when poster has no author', async () => {
+        vi.mocked(as_author).mockReturnValueOnce(null)
+        await posters_composable.poster_shown({
+          id: '/bad',
+          type: 'posters'
+        })
+        expect(as_directory).not.toHaveBeenCalled()
+      })
+
+      it('returns when author has no posters loaded', async () => {
+        await posters_composable.poster_shown({
+          id: '/user/posters/1000',
+          type: 'posters'
+        })
+        expect(as_directory).not.toHaveBeenCalled()
+      })
+
+      it('returns when shown poster is not the oldest', async () => {
+        vi.mocked(as_directory).mockResolvedValue({
+          items: ['2000', '1000'],
+          archive: ['900']
+        })
+        await posters_composable.for_person({ id: '/user' })
+        as_directory.mockClear()
+
+        await posters_composable.poster_shown({
+          id: '/user/posters/2000',
+          type: 'posters'
+        })
+
+        expect(as_directory).not.toHaveBeenCalled()
+      })
+
       it('is a function', () => {
         expect(posters_composable.poster_shown).toBeTypeOf('function')
       })
+    })
+  })
+
+  describe('use()', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      mock_get_active_path.mockClear()
+      vi.mocked(as_query_id).mockImplementation(id =>
+        String(id).replace(/\//g, '-').replace(/^\-/, '')
+      )
+      vi.mocked(as_fragment_id).mockImplementation(id => `#${as_query_id(id)}`)
+      vi.mocked(load).mockResolvedValue(null)
+    })
+
+    it('exposes defaults and toggles menu on click', () => {
+      const poster = with_setup(use_poster, {
+        props: { itemid: '/+1/posters/1000', tabable: true }
+      })
+
+      expect(poster.working.value).toBe(true)
+      expect(poster.menu.value).toBe(false)
+      expect(poster.tabindex.value).toBe(0)
+      expect(poster.viewbox.value).toBe('0 0 16 16')
+      expect(poster.path.value).toBeNull()
+
+      poster.click()
+      expect(poster.menu.value).toBe(true)
+    })
+
+    it('loads vector on show and builds query fragments', async () => {
+      const vector = {
+        id: '/+1/posters/1000',
+        type: 'posters',
+        viewbox: '0 0 200 100',
+        path: { id: 'p1' }
+      }
+      vi.mocked(load).mockResolvedValue(vector)
+
+      const poster = with_setup(use_poster, {
+        props: { itemid: '/+1/posters/1000' }
+      })
+
+      await poster.show()
+      await flushPromises()
+
+      expect(load).toHaveBeenCalledWith('/+1/posters/1000')
+      expect(poster.vector.value).toEqual(vector)
+      expect(poster.working.value).toBe(false)
+      expect(poster.landscape.value).toBe(true)
+      expect(poster.path.value).toEqual([vector.path])
+      expect(poster.query('bg')).toContain('bg')
+      expect(poster.fragment('bg')).toContain('bg')
+      expect(poster.original_viewbox.value).toEqual({
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 100
+      })
+    })
+
+    it('wraps path arrays and ignores show when vector already set', async () => {
+      const poster = with_setup(use_poster, {
+        props: { itemid: '/+1/posters/1000' }
+      })
+      poster.vector.value = {
+        id: '/+1/posters/1000',
+        viewbox: '0 0 10 20',
+        path: [{ id: 'a' }, { id: 'b' }]
+      }
+      poster.working.value = false
+
+      expect(poster.path.value).toEqual([{ id: 'a' }, { id: 'b' }])
+      await poster.show()
+      expect(load).not.toHaveBeenCalled()
+    })
+
+    it('emits focus through get_active_path and clears hover on up', () => {
+      const poster = with_setup(use_poster, {
+        props: { itemid: '/+1/posters/1000' }
+      })
+      poster.is_hovered.value = true
+
+      poster.focus('regular')
+      expect(mock_get_active_path).toHaveBeenCalled()
+
+      poster.up()
+      expect(poster.is_hovered.value).toBe(false)
+
+      poster.focus_cutout()
+      poster.down()
+      poster.move()
+      poster.wheel()
+      poster.reset()
+      poster.touch_dist()
+      poster.touch_start()
+      poster.touch_move()
+      poster.touch_end()
+      poster.cutout_start()
+      poster.cutout_end()
     })
   })
 })

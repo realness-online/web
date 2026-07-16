@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-07-13 → 07-15 — v2.5.11
+
+- **realness-design realign** — views and components drop invented class hooks
+  for markup state (`data-*`, semantic elements, Scheme.org where it already
+  lived), rename `--on-emphasis` to `--contrast`, and align Vue lifecycle
+  aliases / event handlers with the design skill conventions.
+  (`src/App.vue`, `src/views/*`, `src/components/**`, `src/style/`)
+- **Markdown as an element stylesheet** — content typography moved out of a
+  Stylus mixin into `src/style/elements/markdown.styl`, same pattern as the
+  other element sheets.
+- **Notification opt-in onboarding** — once per device after sign-in, a modal
+  offers push when the instance supports it.
+  (`src/components/profile/as-notification-prompt.vue`, `src/App.vue`)
+- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced
+  off the glint cycle, so the mark has more physical glitter when animation
+  is on. (`src/components/icon.vue`)
+- **Preferences markup tidy** — notifications fieldset rename, tweakpane
+  slide simplified to attribute selectors; orphan scratch `grid.svg` removed
+  (preference grid already uses `icons.svg#grid`).
+- **`npm run verify`** — deploy checksum CLI defaults clarified; docs updated
+  for independent GitHub-manifest checks against any live URL.
+  (`scripts/verify-deploy.js`, `docs/verify-release.md`, `package.json`)
+- **Test coverage surge** — new and expanded specs across posters, profile,
+  views, sync/persistence, potrace, and utils (~2k net test lines).
+
 ## 2026-07-12 → 07-13 — v2.5.10
 
 - **Codebase-wide bug-fix pass** — a systematic review across persistence,

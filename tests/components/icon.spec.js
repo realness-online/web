@@ -8,7 +8,7 @@ describe('@/components/icon', () => {
         props: { name: 'gear' }
       })
       expect(wrapper.find('svg.icon').exists()).toBe(true)
-      expect(wrapper.find('svg').classes()).toContain('gear')
+      expect(wrapper.find('svg').attributes('data-icon')).toBe('gear')
       expect(wrapper.find('use').attributes('href')).toContain('#gear')
     })
 
@@ -38,7 +38,7 @@ describe('@/components/icon', () => {
         props: { name: 'test-icon' }
       })
       expect(wrapper.props('name')).toBe('test-icon')
-      expect(wrapper.find('svg').classes()).toContain('test-icon')
+      expect(wrapper.find('svg').attributes('data-icon')).toBe('test-icon')
     })
   })
 })

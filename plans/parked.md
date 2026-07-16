@@ -80,3 +80,15 @@ Candidates:
 - **Capabilities** — live `/capabilities` manifest vs what the app shows.
 
 Write `docs/moderator-admin-plan.md` before build.
+
+**Prerequisite: real server-side moderator check.** `VITE_ADMIN_ID` is a
+build-time client env var (identifies whose content to show on About/Thoughts)
+— it ships in the public JS bundle and is not a security boundary. Every
+candidate above returns cross-user or system-level data (logs, the Sybil
+review queue, broadcast results), so `storage.rules`' folder-ownership model
+(`request.auth.token.phone_number == mobile`) can't express "is this caller
+the moderator" — there's no single owned path for instance-wide data. Needs a
+server-side check (e.g. a Firebase custom claim set on the moderator's Auth
+user) that admin-only Cloud Functions verify before returning anything. One
+boolean fact (moderator: true/false), not a multi-role system — Realness is
+one-moderator-per-instance. Not needed until this section is actually built.

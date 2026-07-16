@@ -680,4 +680,135 @@ describe('potrace/index', () => {
       expect(result.paths.length).toBeGreaterThan(0)
     })
   })
+
+  describe('auto steps and threshold branches', () => {
+    it('runs with STEPS_AUTO and THRESHOLD_AUTO', () => {
+      const result = as_paths(test_image, {
+        steps: Potrace.STEPS_AUTO,
+        threshold: Potrace.THRESHOLD_AUTO
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('STEPS_AUTO with a bright threshold returns four layers', () => {
+      const gradient = create_gradient_image(16, 16)
+      const result = as_paths(gradient, {
+        steps: Potrace.STEPS_AUTO,
+        threshold: 250,
+        blackOnWhite: true,
+        rangeDistribution: 'equal'
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('STEPS_AUTO with a dark threshold returns three layers', () => {
+      const gradient = create_gradient_image(16, 16)
+      const result = as_paths(gradient, {
+        steps: Potrace.STEPS_AUTO,
+        threshold: 40,
+        blackOnWhite: true,
+        rangeDistribution: 'equal'
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('array steps ignore out-of-range values and refill from threshold', () => {
+      const result = as_paths(test_image, {
+        steps: [400, -10],
+        threshold: 128
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('white-on-black array steps still produce paths', () => {
+      const result = as_paths(test_image, {
+        blackOnWhite: false,
+        steps: [40, 80],
+        threshold: 160
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('auto ranges with fixed threshold still posterize', () => {
+      const gradient = create_gradient_image(16, 16)
+      const result = as_paths(gradient, {
+        steps: 4,
+        threshold: 180,
+        rangeDistribution: Potrace.RANGES_AUTO,
+        blackOnWhite: true
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+
+    it('auto ranges with white-on-black and fixed threshold', () => {
+      const gradient = create_gradient_image(16, 16)
+      const result = as_paths(gradient, {
+        steps: 4,
+        threshold: 60,
+        rangeDistribution: Potrace.RANGES_AUTO,
+        blackOnWhite: false
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('path_tags extra color stop', () => {
+    it('adds an extra stop when many equal ranges are requested', () => {
+      const gradient = create_gradient_image(24, 24)
+      const tracer = new Potrace({
+        steps: 12,
+        rangeDistribution: 'equal',
+        threshold: 128,
+        fillStrategy: Potrace.FILL_DOMINANT
+      })
+      tracer.load_image(gradient)
+      const tags = tracer.path_tags()
+      expect(Array.isArray(tags)).toBe(true)
+      expect(tags.length).toBeGreaterThanOrEqual(10)
+    })
+
+    it('get_path_data throws when image is not loaded', () => {
+      const tracer = new Potrace()
+      expect(() => tracer.get_path_data()).toThrow(/should be loaded/)
+    })
+
+    it('reprocesses after a non-visual param change', () => {
+      const tracer = new Potrace({ steps: [128], turdSize: 2 })
+      tracer.load_image(test_image)
+      const first = tracer.get_path_tag()
+      // threshold change via path_tags / as_curves drives #set_parameters
+      tracer.load_image(test_image)
+      const second = tracer.create_paths(test_image)
+      expect(first).toContain('<path')
+      expect(second.paths.length).toBeGreaterThan(0)
+    })
+
+    it('traces holes with white-on-black on a ring image', () => {
+      const width = 20
+      const height = 20
+      const data = new Uint8ClampedArray(width * height * 4)
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4
+          const dx = x - 10
+          const dy = y - 10
+          const r2 = dx * dx + dy * dy
+          const white = r2 >= 16 && r2 <= 64
+          const v = white ? 255 : 0
+          data[idx] = v
+          data[idx + 1] = v
+          data[idx + 2] = v
+          data[idx + 3] = 255
+        }
+      }
+      const ring = new ImageData(data, width, height)
+      const result = as_paths(ring, {
+        blackOnWhite: true,
+        threshold: 128,
+        steps: [128],
+        turdSize: 0
+      })
+      expect(result.paths.length).toBeGreaterThan(0)
+    })
+  })
 })

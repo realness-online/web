@@ -51,7 +51,7 @@ describe('@/components/as-days', () => {
 
   describe('Rendering', () => {
     it('renders as-days section', () => {
-      expect(wrapper.find('section.as-days').exists()).toBe(true)
+      expect(wrapper.find('section[data-days]').exists()).toBe(true)
     })
 
     it('shows working indicator when working prop is true', async () => {
@@ -60,7 +60,7 @@ describe('@/components/as-days', () => {
     })
 
     it('renders day articles when not working', () => {
-      expect(wrapper.find('section.as-days').exists()).toBe(true)
+      expect(wrapper.find('section[data-days]').exists()).toBe(true)
     })
   })
 
@@ -137,7 +137,7 @@ describe('@/components/as-days', () => {
         },
         global: { stubs: { icon: false } }
       })
-      const slides = wrapper.findAll('section.as-days article > section')
+      const slides = wrapper.findAll('section[data-days] article > section')
       expect(slides).toHaveLength(1)
     })
 
@@ -153,7 +153,7 @@ describe('@/components/as-days', () => {
         },
         global: { stubs: { icon: false } }
       })
-      const slides = wrapper.findAll('section.as-days article > section')
+      const slides = wrapper.findAll('section[data-days] article > section')
       expect(slides).toHaveLength(0)
     })
   })

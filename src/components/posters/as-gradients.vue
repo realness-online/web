@@ -68,7 +68,7 @@
     <stop offset="96%" stop-color="#000" stop-opacity="0.59" />
     <stop offset="100%" stop-color="#000" stop-opacity="0.6" />
   </radialGradient>
-  <g class="radial">
+  <g>
     <radialGradient :id="query('radial')" gradientUnits="userSpaceOnUse">
       <stop
         v-for="stop in radial"
@@ -100,7 +100,7 @@
       <as-stops :luminosity="bold" :stops="radial" />
     </radialGradient>
   </g>
-  <g class="vertical">
+  <g>
     <linearGradient
       :id="query('vertical')"
       gradientUnits="userSpaceOnUse"
@@ -155,7 +155,7 @@
       <as-stops :luminosity="bold" :stops="vertical" />
     </linearGradient>
   </g>
-  <g class="horizontal">
+  <g>
     <linearGradient
       :id="query('horizontal')"
       x1="0"

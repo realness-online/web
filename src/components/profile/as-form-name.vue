@@ -62,8 +62,8 @@
 
 <template>
   <form id="profile-name" v-if="me" @submit.prevent="on_blur">
-    <fieldset :class="{ saved: saved, saving: saving, invalid: show_error }">
-      <legend :class="{ valid: is_valid_name }">
+    <fieldset :aria-busy="saving || undefined" :data-saved="saved || undefined">
+      <legend :data-valid="is_valid_name || undefined">
         {{ me.name?.trim() || 'Name' }}
       </legend>
       <input
@@ -88,23 +88,20 @@
 
 <style>
   form#profile-name {
-    &.complete {
-      animation-name: slide-out-right;
-    }
-    fieldset.saving input#name {
+    fieldset[aria-busy='true'] input#name {
       border-color: var(--working);
     }
-    fieldset.saved input#name {
+    fieldset[data-saved] input#name {
       border-color: var(--accent);
     }
-    fieldset.invalid input#name {
+    input#name[aria-invalid='true'] {
       border-color: var(--emphasis);
     }
     input#name {
       width: 100%;
     }
     p#name-error {
-      margin: calc(var(--base-line) * 0.25) 0 0;
+      margin: 0;
       font-size: 0.75em;
       color: var(--emphasis);
     }
