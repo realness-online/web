@@ -42,7 +42,7 @@
     "format:check": "vp fmt . --check",
     "release": "vp run release:gh && vp run release:npm && git tag v$npm_package_version",
     "release:npm": "npm publish",
-    "release:gh": "gh release create $npm_package_version dist/build-manifest.json",
+    "release:gh": "node scripts/changelog-notes.js --out /tmp/realness-release-notes.md && gh release create $npm_package_version dist/build-manifest.json --title $npm_package_version --notes-file /tmp/realness-release-notes.md",
     "verify": "node scripts/verify-deploy.js",
     "verify:deploy": "node scripts/verify-deploy.js",
     "verify:deploy:site": "node scripts/verify-deploy.js --from-site",

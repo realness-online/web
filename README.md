@@ -130,9 +130,46 @@ firebase login
 npm run deploy
 ```
 
-# DONE
-
 Visit `https://${project-name}.web.app`. You can sign in and invite your friends.
+
+### Hot release (production cut)
+
+Do this every time you ship `realness.online`. Same `dist/` for deploy and
+GitHub - do not rebuild between the two. Firebase account must be the one that
+owns the project (`firebase login` / `firebase use production`).
+
+1. **Write the story** — add a `## … vX.Y.Z` section to `CHANGELOG.md`, bump
+   `package.json` `"version"` to match, commit on `main`.
+2. **Deploy + self-check**
+
+   ```bash
+   npm run deploy
+   ```
+
+   Builds, deploys hosting+storage, then verifies live bytes against that
+   local `dist/build-manifest.json`. Expect `Result: LEGIT`.
+
+3. **Publish the independent root of trust**
+
+   ```bash
+   npm run release:gh
+   ```
+
+   Creates the GitHub release for `$npm_package_version`, attaches
+   `dist/build-manifest.json`, and fills notes from the matching changelog
+   section (no interactive prompt).
+
+4. **Prove it from GitHub**
+
+   ```bash
+   npm run verify
+   ```
+
+   Downloads the manifesto from the GitHub release and rehashes production.
+   Expect `Trust: GitHub release` and `Result: LEGIT`.
+
+Anyone else can run `npm run verify` after step 3. Detail:
+[docs/verify-release.md](docs/verify-release.md).
 
 ## Optional server features (`realness-functions`)
 
