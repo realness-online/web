@@ -6,6 +6,13 @@ section[itemprop='content'] {
   -webkit-touch-callout: default;
   touch-action: auto;
 
+  & * {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+    touch-action: auto;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     color: var(--emphasis);
     margin-top: base-line * 2;
