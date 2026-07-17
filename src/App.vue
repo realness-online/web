@@ -890,7 +890,7 @@
         align-items: center;
         justify-content: space-between;
         gap: base-line;
-        padding: base-line (base-line * 0.5);
+        padding: (base-line * 0.5) (base-line * 0.5);
         pointer-events: none;
         transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
         transition-behavior: allow-discrete;

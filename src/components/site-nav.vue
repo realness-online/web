@@ -28,6 +28,8 @@
 
 <style>
   nav[itemtype='/site-nav'] {
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: space-between;

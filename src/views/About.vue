@@ -59,8 +59,9 @@
   const SECTION_REVEAL_INSET = 0.1
   const PERCENT = 100
   const reveal_sections = () =>
-    Array.from(about_el.value?.children ?? []).filter(el =>
-      el.hasAttribute('itemprop')
+    Array.from(about_el.value?.children ?? []).filter(
+      el =>
+        el.hasAttribute('itemprop') && el.getAttribute('itemprop') !== 'footer'
     )
 
   /** @param {Element} section */
@@ -73,6 +74,8 @@
       return section.querySelector(':scope > header') ?? section
     if (section.getAttribute('itemprop') === 'features')
       return section.querySelector(':scope > ol > li:first-child') ?? section
+    if (section.getAttribute('itemprop') === 'support')
+      return section.querySelector(':scope > [data-call-to-action]') ?? section
     return section
   }
 
@@ -355,10 +358,15 @@
           <icon name="finished" />
           <p>
             <strong>Verifiable</strong>
-            Trust but verify is supported via a
-            <a href="/build-manifest.json">build-manifest.json</a> that lists a
-            SHA-256 for every file we deploy. Match it to what realness.online
-            serves and confirm the version we publish.
+            Don't trust the live site on its own say-so.
+            <code>npm run verify</code> rehashes what we serve against the
+            checksums on the
+            <a
+              href="https://github.com/realness-online/web/releases"
+              rel="external"
+              >GitHub release</a
+            >
+            - same build, independent root of trust.
           </p>
         </li>
         <li>
@@ -585,7 +593,7 @@
     <hr />
     <footer itemprop="footer">
       <logo-as-link />
-      <call-to-action />
+      <call-to-action id="medium-is-the-message" />
     </footer>
   </section>
 </template>
@@ -840,9 +848,9 @@
           justify-content: center;
           width: 100%;
           margin-inline: auto;
-          min-height: var(--about-article-copy-min-height);
 
           @media (min-width: pad-begins) {
+            min-height: var(--about-article-copy-min-height);
             padding: 0 base-line;
           }
 
@@ -930,7 +938,9 @@
     }
 
     & > [itemprop='support'] {
-      min-height: var(--about-block-min-height);
+      @media (min-width: pad-begins) {
+        min-height: var(--about-block-min-height);
+      }
 
       &[data-revealed] > * {
         about-enter();
@@ -972,18 +982,28 @@
     }
 
     & > [itemprop='integrations'] {
-      padding: base-line * 2;
-      min-height: 100vh;
+      padding: base-line;
+      @media (min-width: pad-begins) {
+        padding: base-line * 2;
+        min-height: 100vh;
+      }
 
       & > header > h2 {
         about-section-heading();
-        margin-bottom: base-line * 4;
+        margin-bottom: base-line * 2;
+        @media (min-width: pad-begins) {
+          margin-bottom: base-line * 4;
+        }
       }
 
       & > ol {
         about-feature-list();
-        grid-gap: base-line * 2;
-        grid-template-columns: repeat(auto-fill, minmax(375px, 1fr));
+        grid-gap: base-line * 1.5;
+        grid-template-columns: minmax(0, 1fr);
+        @media (min-width: pad-begins) {
+          grid-gap: base-line * 2;
+          grid-template-columns: repeat(auto-fill, minmax(375px, 1fr));
+        }
 
         & > li {
           position: relative;
@@ -1174,19 +1194,18 @@
 
     & > footer[itemprop='footer'] {
       display: block;
-      min-height: 100vh;
       padding: base-line;
+      @media (min-width: pad-begins) {
+        min-height: 100vh;
+      }
+
+      & > * {
+        opacity: 1;
+        animation: none;
+      }
 
       & > a[aria-label='Realness home'] {
         display: inline-block;
-      }
-
-      &[data-revealed] > * {
-        about-enter();
-
-        &:nth-child(2) {
-          animation-delay: var(--about-hero-stagger);
-        }
       }
     }
 
@@ -1205,8 +1224,7 @@
       & > [itemprop='preferences']:not([data-revealed]) > header,
       & > [itemprop='preferences']:not([data-revealed]) menu[data-preferences-menu] > article,
       & > [itemprop='gallery']:not([data-revealed]) > header,
-      & > [itemprop='support']:not([data-revealed]) > *,
-      & > [itemprop='footer']:not([data-revealed]) > * {
+      & > [itemprop='support']:not([data-revealed]) > * {
         opacity: 0;
       }
     }
@@ -1227,8 +1245,7 @@
         & > [itemprop='preferences']:not([data-revealed]) > header,
         & > [itemprop='preferences']:not([data-revealed]) > menu > article,
         & > [itemprop='gallery']:not([data-revealed]) > header,
-        & > [itemprop='support']:not([data-revealed]) > *,
-        & > [itemprop='footer']:not([data-revealed]) > * {
+        & > [itemprop='support']:not([data-revealed]) > * {
           opacity: 1;
         }
       }
@@ -1240,8 +1257,7 @@
       & > [itemprop='integrations'][data-revealed] > ol > li,
       & > [itemprop='preferences'][data-revealed] > header,
       & > [itemprop='preferences'][data-revealed] menu[data-preferences-menu] > article,
-      & > [itemprop='gallery'][data-revealed] > header,
-      & > [itemprop='footer'][data-revealed] > * {
+      & > [itemprop='gallery'][data-revealed] > header {
         animation: none;
       }
     }
