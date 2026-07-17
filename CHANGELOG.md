@@ -2,34 +2,14 @@
 
 ## Unreleased
 
-- **Verifiable releases** — Keep a Changelog `## Unreleased` (hidden on
-  `/docs#changelog` until cut), `npm version` promotes it and tags `vX.Y.Z`,
-  `npm run ship` deploys then publishes `build-manifest.json` + notes to
-  GitHub so `npm run verify` has an independent root of trust. About copy
-  points skeptics at that ritual.
-
-- **realness-design realign** — views and components drop invented class hooks
-  for markup state (`data-*`, semantic elements, Scheme.org where it already
-  lived), rename `--on-emphasis` to `--contrast`, and align Vue lifecycle
-  aliases / event handlers with the design skill conventions.
-  (`src/App.vue`, `src/views/*`, `src/components/**`, `src/style/`)
-- **Markdown as an element stylesheet** — content typography moved out of a
-  Stylus mixin into `src/style/elements/markdown.styl`, same pattern as the
-  other element sheets.
-- **Notification opt-in onboarding** — once per device after sign-in, a modal
-  offers push when the instance supports it.
-  (`src/components/profile/as-notification-prompt.vue`, `src/App.vue`)
-- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced
-  off the glint cycle, so the mark has more physical glitter when animation
-  is on. (`src/components/icon.vue`)
-- **Preferences markup tidy** — notifications fieldset rename, tweakpane
-  slide simplified to attribute selectors; orphan scratch `grid.svg` removed
-  (preference grid already uses `icons.svg#grid`).
-- **`npm run verify`** — deploy checksum CLI defaults clarified; docs updated
-  for independent GitHub-manifest checks against any live URL.
-  (`scripts/verify-deploy.js`, `docs/verify-release.md`, `package.json`)
-- **Test coverage surge** — new and expanded specs across posters, profile,
-  views, sync/persistence, potrace, and utils (~2k net test lines).
+- **Verifiable releases** — Keep a changelog `## Unreleased` (hidden on `/docs` until cut); `npm version` promotes and tags, `npm run ship` publishes build-manifest + notes to GitHub. Copy points skeptics at the ritual.
+- **realness-design realign** — views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions. (`src/`)
+- **Markdown as an element stylesheet** — content typography moved from Stylus mixin into `src/style/elements/markdown.styl`.
+- **Notification opt-in onboarding** — once per device after sign-in, a modal offers push when the instance supports it.
+- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter. (`src/components/icon.vue`)
+- **Preferences markup tidy** — notifications fieldset rename, tweakpane slide simplified to attribute selectors; orphan `grid.svg` removed.
+- **`npm run verify`** — deploy checksum CLI defaults clarified; docs updated for independent GitHub-manifest checks.
+- **Test coverage surge** — ~2k net test lines across posters, profile, views, sync/persistence, potrace, and utils.
 
 ## v2.5.10 — 2026-07-13
 
