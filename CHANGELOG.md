@@ -3,323 +3,119 @@
 ## Unreleased
 
 - **Verifiable releases** — Keep a changelog `## Unreleased` (hidden on `/docs` until cut); `npm version` promotes and tags, `npm run ship` publishes build-manifest + notes to GitHub. Copy points skeptics at the ritual.
-- **realness-design realign** — views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions. (`src/`)
+- **realness-design realign** — views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions.
 - **Markdown as an element stylesheet** — content typography moved from Stylus mixin into `src/style/elements/markdown.styl`.
 - **Notification opt-in onboarding** — once per device after sign-in, a modal offers push when the instance supports it.
-- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter. (`src/components/icon.vue`)
+- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter.
 - **Preferences markup tidy** — notifications fieldset rename, tweakpane slide simplified to attribute selectors; orphan `grid.svg` removed.
 - **`npm run verify`** — deploy checksum CLI defaults clarified; docs updated for independent GitHub-manifest checks.
 - **Test coverage surge** — ~2k net test lines across posters, profile, views, sync/persistence, potrace, and utils.
 
 ## v2.5.10 — 2026-07-13
 
-- **Codebase-wide bug-fix pass** — a systematic review across persistence,
-  components, composables, workers, and 3D/potrace, cross-referenced
-  against coverage/refactor-risk data, surfaced and fixed real bugs: a
-  mutex that could double-acquire a lock, a sync-queue race risking data
-  loss, a tracer-worker cross-contamination race, poster SVGs silently
-  losing keyboard focusability, a stuck sign-in flow on a wrong SMS code,
-  a textarea keymap that could silently delete typed text, Three.js
-  geometries/materials/textures leaking on every infinite-scroll
-  mount/unmount, several divide-by-zero/Infinity bugs in the color
-  histogram and posterization code, and worker error handling that could
-  leave the upload queue silently stalled forever on one failed image.
-  Every fix landed with a regression test.
-- **Cloud archive consistency** — a poster's 7 component files (main +
-  6 layers) could end up permanently split across live/archive storage if
-  only some of the concurrent moves succeeded; partial failures now roll
-  back cleanly to a fully un-archived state instead of leaving orphaned
-  files. (`src/persistence/Cloud.js`, `src/utils/serverless.js`)
-- **Pricing page rewritten as real HTML** — tier content (features, copy)
-  is now hand-authored markup per the project's semantic-HTML convention,
-  instead of being generated from a JS data array. (`src/views/Pricing.vue`)
-- **Poster video export overhauled** — fixed an ~8x-too-fast playback bug
-  (frames sampled once but encoded at a much higher rate than they were
-  captured), then tuned for quality: frames now cross-fade into each other
-  for smooth motion instead of a stepped hold, bitrate and resolution raised
-  to a real 1440p/14 Mbps encode instead of the previous under-bitrated
-  1080p output. (`src/utils/svg-to-video.js`, `src/components/download-vector.vue`)
+- **Codebase-wide bug-fix pass** — systematic review across persistence, components, composables, workers, and 3D/potrace; fixed real bugs (mutex double-acquire, sync-queue race, tracer cross-contamination, SVG focusability, sign-in hang, textarea keymap, Three.js leaks, divide-by-zero, stalled upload queue). Every fix with a regression test.
+- **Cloud archive consistency** — partial poster archive failure now rolls back cleanly instead of leaving orphaned files.
+- **Pricing page rewritten as real HTML** — tier content hand-authored per semantic-HTML convention instead of generated from JS data.
+- **Poster video export overhauled** — fixed ~8x-too-fast playback, cross-fade frames, 1440p/14 Mbps encode.
 
 ## v2.5.9 — 2026-07-11
 
-- **Materials-and-roles design system** — palette converted to OKLCH (fixing
-  an inverted OKLCH→RGB conversion matrix along the way), materials became
-  static CSS custom properties with derived lighten/fill/darken weights, and
-  a new `--info` role gives status messaging a neutral color distinct from
-  `--accent`. Backed by automated contrast/harmony guardrail tests so future
-  palette tuning can't silently break contrast. (`src/style/variables.styl`,
-  `src/utils/color-converters.js`, `docs/color-system.md`,
-  `tests/style/color-harmony.spec.js`,
-  `tests/style/oklch-conversion-accuracy.spec.js`)
-- **`/colors` view** — the material/role palette renders live in-app as a
-  design tool, not just docs: swatches, roles, a "Geology over surfaces"
-  demo, and a Depth demo wired to live custom properties. Widened alongside
-  `/account` for a less cramped content container.
-  (`src/views/Colors.vue`, `src/router.js`)
-- **Stylus → native CSS migration** — element styles that don't need a
-  preprocessor mixin or a derived breakpoint moved to plain `.css`; Stylus
-  stays only where real mixins or breakpoint math are needed (`dialog`,
-  `nav`, `form-controls`, `svg`). (`src/style/`)
-- **Shared `focus-ring()` mixin** — fixed several places where keyboard
-  focus indicators were silently dropped. (`src/style/mixins/standards.styl`,
-  `src/App.vue`, `profile/as-dialog-preferences.vue`,
-  `thoughts/as-feed-toggle.vue`)
-- **Realness mosaic logo** — the app icon/logo went from a placeholder glyph
-  to a mosaic-style mark: palette colors, smalti masks, an even gutter, and
-  physical, interaction-driven motion — per-tile ambient drift, a two-palette
-  color cycle, and a press-to-flatten snap that rewinds to zero via the Web
-  Animations API instead of resuming mid-cycle. Tile markup was later
-  refactored onto `data-tile` attributes with a `<use>` overlay for the press
-  color-snap, and press handling moved to pointer capture so it's reliable on
-  touch, not just mouse `:active`. (`src/components/icon.vue`,
-  `public/icons.svg`, `scripts/generate-icons.js`)
-- **Pricing split into a per-tier carousel** — `/pricing` now redirects to
-  `/pricing/endorse`, with `/pricing/:tier` driving which of the three tiers
-  (Endorse, Teams, Organizations) is shown; tier nav links, prev/next
-  buttons, and touch swipe all stay in sync with the URL.
-  (`src/views/Pricing.vue`, `src/router.js`, `src/prerender/entry-server.js`)
-- **Switched from a source-available license to GPL-2.0** — closes the gap
-  that let closed forks exist under the old terms, while keeping
-  self-hosting/redistribution as already granted. The "Realness" name/logos
-  stay trademarked outside the GPL grant; commercial tiers become a support
-  and indemnification contract, not a license gate. `src/potrace/`, a JS
-  port of Peter Selinger's potrace via node-potrace, now carries proper
-  GPL-2.0 attribution. (`LICENSE`, `README.md`, `package.json`,
-  `src/potrace/README.md`)
-- **Drag-and-drop image upload** — dropping a photo (or SVG) onto the app
-  queues it the same way paste already does; dropped/pasted SVGs now resize
-  through the vectorize rasterize path instead of failing the raster-only
-  assumption the resize step made before. (`src/App.vue`,
-  `src/use/vectorize.js`)
-- Small fixes along the way: an invisible compose caret in dark mode, a
-  malformed `--basalt-transparent` reference in the sign-out dialog, `h6`
-  font-size pinned constant by a `clamp()` bound-order bug, button/checkbox
-  styling leaks on the Colors Roles demo, a `display: block` override
-  clobbering the Colors header, the sponsor Buy Button reflowing tier cards
-  while its iframe loads, and the generated support-page TOC no longer
-  tracked in git (built at `dev` start instead).
+- **Materials-and-roles design system** — palette converted to OKLCH, materials as static CSS custom properties with derived weights, new `--info` role. Automated contrast/harmony guardrails.
+- **`/colors` view** — live palette renderer in-app with swatches, roles, geology demo, Depth demo.
+- **Stylus → native CSS migration** — element styles that don't need mixins moved to plain `.css`.
+- **Shared `focus-ring()` mixin** — fixed silently dropped keyboard focus indicators.
+- **Realness mosaic logo** — placeholder glyph replaced with mosaic mark: palette colors, smalti masks, per-tile drift, color cycle, press-to-flatten via Web Animations API.
+- **Pricing split into per-tier carousel** — `/pricing/:tier` drives tier nav, prev/next, touch swipe, all synced to URL.
+- **Switched to GPL-2.0** — closed-source-license gap closed; name/logos trademarked outside GPL; commercial tiers as support contract.
+- **Drag-and-drop image upload** — photos and SVGs dropped onto the app queue like paste; SVGs resize through the vectorize path.
+- Small fixes: dark-mode compose caret, `--basalt-transparent` reference, `clamp()` order bug, button/checkbox style leaks, Colors header, Buy Button iframe reflow, TOC not tracked in git.
 
 ## v2.5.8 — 2026-07-04
 
-- **Instance capabilities** — the app probes `/capabilities` on its own
-  origin at runtime to discover optional `realness-functions` features (push,
-  phone integrity), falling back to a shipped `capabilities.json` (all features
-  off) for web-only instances. No build-time env vars required. Web push
-  notifications gate on the `push` capability and phone sign-on runs a Twilio
-  Lookup check before SMS when `phone_integrity` is on. Firebase auth split
-  into `serverless-auth.js` with its own vendor chunk so the auth bundle only
-  loads when needed. (`src/use/instance-capabilities.js`,
-  `src/utils/phone-integrity.js`, `src/utils/serverless-auth.js`,
-  `firebase.json`, `README.md`)
-- **Deleted posters stay gone** — when an admin deletes a poster, visitors
-  who had it cached kept seeing an empty figure with 404-ing geology layers,
-  and the cached HTML let `build_local_directory` resurrect it on every
-  directory read (wiping the DB was the only fix). `as-figure` now detects
-  missing cutout layers on posters new enough to have them and emits
-  `missing`; `remove_missing_poster` purges the poster HTML, shadow, and every
-  geology layer key from IndexedDB, clears the author's cached directories,
-  and re-reads the main poster directory from the network to reconcile the
-  feed. Admin delete (`Large.delete`) also purges local layer keys so they
-  don't linger and 404 after a delete. (`posters/as-figure.vue`,
-  `views/Thoughts.vue`, `persistence/Large.js`, `utils/geology.js`)
-- **Root indexable** — the home route dropped its `noindex, nofollow` meta so
-  search engines can crawl the app shell, not just the marketing pages.
-  (`index.html`)
-- **Thoughts shell drops after mount** — the static `<h1>Thoughts</h1>` LCP
-  shell is removed from the DOM once Vue mounts, so the prerendered
-  placeholder doesn't linger over the live feed. (`views/Thoughts.vue`)
-- **Preload Lato Light** — the home-route shell `<h1>` renders Lato 300, but
-  only the 400 subset was preloaded, so the LCP element repainted when Light
-  arrived after CSS parse. Preloading Light closes the FCP→LCP gap Lighthouse
-  showed under throttling. (`index.html`)
-- **Dated poster labels** — poster SVGs announce "Poster from <day>" (from the
-  itemid's created-at) instead of the generic "Poster", in both `as-svg` and
-  the referenced-poster path in `as-figure`.
+- **Instance capabilities** — runtime `/capabilities` probe discovers optional features (push, phone integrity); falls back to shipped `capabilities.json` (all off). Firebase auth split into its own vendor chunk.
+- **Deleted posters stay gone** — cached posters no longer resurrected; `remove_missing_poster` purges HTML, shadow, geology layers, and cached directories on delete.
+- **Root indexable** — home route dropped `noindex` for search engines.
+- **Thoughts shell drops after mount** — static `<h1>` removed from DOM once Vue mounts.
+- **Preload Lato Light** — closes FCP→LCP gap from font repaint.
+- **Dated poster labels** — poster SVGs announce "Poster from <day>" instead of generic "Poster".
 
 ## v2.5.7 — 2026-07-04
 
-### Performance: static LCP shell for the home route
-
-- **Static Thoughts shell** — `index.html` now renders
-  `<section id="thoughts"><h1>Thoughts</h1></section>` inside `#app`, so the LCP
-  text paints on first HTML parse (styled by the already render-blocking entry
-  CSS) instead of waiting for Vue to mount. A head script gates the shell to
-  `location.pathname === '/'` via `html[data-route='thoughts']`, so `/account`
-  and `/:profile` — which share `index.html` as the SPA fallback — don't flash
-  "Thoughts". An empty placeholder `<header>` (min-height 2.6rem) reserves the
-  real header's height to limit layout shift on mount. Prerender injection
-  unaffected: the `#app` replace regex adds no `<div>`, so marketing pages still
-  fully swap the shell out. (`index.html`)
-
-### Accessibility 100
-
-- **Poster SVG labels** — `role="img"` + `aria-label` +
-  `aria-roledescription="poster"` on the live poster SVG (`posters/as-svg.vue`);
-  dynamic `aria-label`/`aria-pressed` on the icon-only avatar toggle
-  (`posters/as-button-avatar.vue`).
-- **Icon-only link sweep** — `aria-label` on the messenger `sms:` link
-  (`profile/as-messenger.vue`, also converted from a JS `window.open` to a
-  native `href`) and the author-menu delete button (`posters/as-menu-author.vue`).
-  Cleared Lighthouse's last accessibility audit: 74 → **100**.
-
-### Infrastructure & fixes
-
-- **Fonts cached a year** — `/fonts/**` now `max-age=31536000, immutable` in
-  `firebase.json` (was 1 day via the generic asset rule). Rename subsets if ever
-  regenerated.
-- **Deleted posters drop from visitor feeds** — missing/empty poster loads no
-  longer render a blank figure for signed-out visitors.
-- **3D poster menu buttons** — previously-reported dead buttons no longer
-  reproduce (verified desktop + phone; hit-testing confirmed clean live).
-
-### Measured (Lighthouse, live prod)
-
-**93 Performance / 100 Accessibility / 100 Best Practices** (SEO 63 — root is
-deliberately noindex; marketing pages are indexable). FCP 1.7 s, LCP 2.0 s
-(shell `<h1>`), TBT 20 ms, CLS 0.002. Start of week: LCP 3.0–5.4 s,
-accessibility 74. Total byte weight ~928 KB → ~679 KB.
+- **Static LCP shell for home route** — `index.html` renders `<h1>Thoughts</h1>` in `#app` at first HTML parse, gated by pathname. Placeholder `<header>` reserves real header height. LCP 2.0 s, performance 93, accessibility 100, CLS 0.002.
+- **Poster SVG labels** — `role="img"` + `aria-label` + `aria-roledescription="poster"`; `aria-label` on avatar toggle, messenger `sms:` link, delete button. Lighthouse accessibility 74 → 100.
+- **Fonts cached a year** — `/fonts/**` `max-age=31536000, immutable`.
+- **Deleted posters drop from visitor feeds** — missing loads no longer render blank figures.
 
 ## 2026-07-03 — Removed EXIF metadata feature
 
-- **EXIF capture + overlay removed** — the iOS Photos picker re-exports a
-  sanitized `image.jpg` that strips camera/date/GPS before our code runs, so the
-  feature delivered nothing on the common iOS path. Deleted `utils/exif.js`,
-  `as-poster-exif.vue`, `account/as-exif.vue`, the `include_exif` preference,
-  and all capture in `vectorize.js`. Rationale and the in-app-camera path
-  forward: `docs/monopoly.md`.
+- **EXIF capture + overlay removed** — iOS Photos picker strips camera/date/GPS before our code runs. Deleted exif files, preference, and capture code. Rationale: `docs/monopoly.md`.
 
-## 2026-07-02 — Performance: lazy vectorize, trimmed preconnects, deferred boot, CLS fix
+## 2026-07-02 — Performance
 
-- **Lazy vectorize on first paint** — `use_vectorize` (potrace, persistence,
-  Queue, Storage) now loads via dynamic import after `requestAnimationFrame`
-  instead of blocking the critical path. App boot imports fell by ~80KB. The
-  file input directive and all injected refs/functions are stubbed until the
-  real module arrives, then synced via watchers. (`src/App.vue`)
-- **Deferred `init_serverless`** — Firebase initialization moved after Vue mount
-  so first paint isn't blocked by auth setup. Same for SW registration.
-  (`src/main.js`)
-- **Trimmed preconnects** — removed 8 unused `preconnect`/`dns-prefetch` links
-  to `apis.google.com`, `googleapis.com`, `firebaseapp.com`, `google.com`,
-  `gstatic.com`, `storage.googleapis.com`. Only `firebasestorage.googleapis.com`
-  preconnect remains. (`index.html`)
-- **Lazy InstallGuide + PreferencesMenu** — both components in the documentation
-  dialog now use `defineAsyncComponent` so the 242KB `android-chrome.mp4` video
-  and preferences panel code don't load on every page view.
-  (`src/components/as-dialog-documentation.vue`)
-- **CLS shell** — `#app` gets `min-height: 100dvh` so the loading SVG
-  replacement by Vue doesn't shift the layout. (`index.html`)
-- **Stable feed render time** — `Thoughts rendered` performance mark improved
-  from 4.2s to ~2.7s across runs (36% faster). `feed_needs_refresh` not fired on
-  vectorize load to avoid double feed fetch.
+- **Lazy vectorize on first paint** — `use_vectorize` loads via dynamic import after `rAF`; boot imports ~80KB lighter.
+- **Deferred `init_serverless`** — Firebase auth after Vue mount to not block first paint.
+- **Trimmed preconnects** — removed 8 unused preconnect/dns-prefetch links; only `firebasestorage.googleapis.com` remains.
+- **Lazy InstallGuide + PreferencesMenu** — `defineAsyncComponent` for 242KB video and preferences panel.
+- **CLS shell** — `#app` gets `min-height: 100dvh` to prevent layout shift on mount.
+- **Stable feed render** — `Thoughts rendered` improved from 4.2s to ~2.7s.
 
 ## 2026-07-02 — Support layout, build-time TOC, scroll & swipe
 
-- **Support layout** — site-nav rendered once by `support-layout.vue` in both
-  App.vue and PrerenderShell (static HTML), replacing 5 hand-rolled copies.
-  Safe-area ownership moved from `section.page` (shared with app pages) onto the
-  nav itself. `section.page` zeroes its top padding when the nav precedes it via
-  an adjacent-sibling rule. (`src/components/support-layout.vue`, `src/App.vue`,
-  `src/components/site-nav.vue`, `src/style/elements/section.styl`)
-- **Build-time TOC** — `scripts/generate-toc.js` precomputes heading trees from
-  markdown content and writes `src/prerender/toc.js` before the Vite build.
-  Documentation, Terms, and Privacy views import the static arrays instead of
-  calling `markdown_toc()` at runtime. (`scripts/generate-toc.js`,
-  `src/prerender/toc.js`, `src/views/Documentation.vue`, `src/views/Terms.vue`,
-  `src/views/Privacy.vue`)
-- **Swipe-back & scroll** — removed `history.scrollRestoration = 'manual'` from
-  About.vue (was fighting swipe-back by disabling scroll memory). TOC links use
-  `router-link replace` so hash clicks don't accumulate history entries (one
-  swipe-back actually leaves the page). `scrollBehavior` now handles `to.hash`
-  with smooth scroll and uses `rAF`-deferred `{ top: 0 }` for forward
-  navigation. (`src/router.js`, `src/views/About.vue`)
-- **Mobile TOC UX** — sub-level font sizes bumped from `0.58em` to `smaller`
-  (~10px→~15px); `touch-action: manipulation` eliminates 300ms tap delay on all
-  TOC links; heading `scroll-margin-top` accounts for safe-area so TOC-anchored
-  sections clear the camera notch. Subtle `← Back` link in page headers for
-  returning from deep scroll. (`src/views/Documentation.vue`,
-  `src/components/legal-page.vue`, `src/style/mixins/markdown-content.styl`)
-- **Pricing page** — horizontal padding to stop content riding the edges; bottom
-  padding to clear the footer island; space between buy button and actions row;
-  removed redundant price text (Stripe button already shows the amount).
-  (`src/views/Pricing.vue`)
+- **Support layout** — site-nav rendered once by `support-layout.vue` replacing 5 hand-rolled copies.
+- **Build-time TOC** — `scripts/generate-toc.js` precomputes heading trees; views import static arrays instead of runtime `markdown_toc()`.
+- **Swipe-back & scroll** — removed `scrollRestoration = 'manual'`; TOC links use `router-link replace`; `scrollBehavior` handles `to.hash` with smooth scroll.
+- **Mobile TOC UX** — larger sub-level fonts, `touch-action: manipulation`, heading `scroll-margin-top` for safe-area.
+- **Pricing page** — padding fixes, space between buy button and actions, removed redundant price text.
 
 ## 2026-07-02 — Account, performance
 
-- **Require a name** — nameless users redirected to `/account`; validation on
-  save and sign-on; profile persist skips blank display names.
-- **Lazy 3D and download** — `defineAsyncComponent` for viewer and download in
-  poster figures and author menu.
-- **Smaller first feed page** — confirmed handled at the source: `optimize()`
-  (`persistence/Cloud.js`) caps each author's current `directory.items` to
-  `SIZE.MAX` (55) on save, archiving the oldest into buckets that load on
-  scroll, so first paint is a bounded page per author.
+- **Require a name** — nameless users redirected to `/account`; validation on save and sign-on.
+- **Lazy 3D and download** — `defineAsyncComponent` for viewer and download in poster figures.
+- **Smaller first feed page** — `optimize()` caps each author's directory to `SIZE.MAX` (55).
 
 ## 2026-07-02 — Discoverability & social previews
 
-- **Open Graph cards** — marketing URLs (`/about`, `/docs`, `/pricing`,
-  `/terms`, `/privacy`) prerender with full `og:*` and Twitter Card tags. **OG**
-  = Open Graph, the meta tag protocol Facebook defined; Slack, Discord,
-  iMessage, LinkedIn, and X all read it for link previews.
-- **`og.png` (1200×630)** — social image with headline ("Realness Online"),
-  value prop, and CTA pill ("Make some posters today"). Generated by
-  `scripts/generate-icons.js`; copy in `src/prerender/pages.js`.
-- **Meta tag pass** — title 50–60 chars, description ≤125 for social truncation,
-  `og:site_name`, `og:image:alt`, `og:image:type`, `og:image:width`/`height`,
-  `twitter:image:alt`.
-- **Support layout** — shared nav shell for marketing pages via
-  `support-layout.vue`; app feed stays `noindex`.
-- **Sitemap & robots** — crawlable marketing pages in `sitemap.xml`; app shell
-  remains unindexed.
-- **Static docs** — `public/documentation.md` and `public/llms.txt` for crawlers
-  and LLM discovery.
+- **Open Graph cards** — marketing URLs prerender with full `og:*` and Twitter Card tags.
+- **`og.png` (1200×630)** — social image with headline, value prop, CTA.
+- **Meta tag pass** — titles, descriptions, `og:image:alt`, `twitter:image:alt`.
+- **Sitemap & robots** — crawlable marketing pages in `sitemap.xml`; app shell unindexed.
+- **Static docs** — `public/documentation.md` and `public/llms.txt` for crawlers and LLM discovery.
 
 ## 2026-07-01 — Early in the v2.5.7 cycle
 
-- **Stripe buy buttons** wired into the $100/$500 pricing tiers.
-- **Mask subjects** — named path groups with grow-select/erase (WIP — save not
-  wired), plus native pinch-zoom while masking.
-- **3D mode poster menu gesture** — reveal the poster menu in 3D with the same
-  gesture as SVG mode.
+- **Stripe buy buttons** wired into $100/$500 pricing tiers.
+- **Mask subjects** — named path groups with grow-select/erase (WIP).
+- **3D mode poster menu gesture** — reveal poster menu in 3D with same gesture as SVG mode.
 
 ## v2.5.6 — 2026-06-29
 
-- **Blank duplicate-poster avatars fixed** via visibility-aware canonical
-  election (one rendered poster per id; the rest reference it).
+- **Blank duplicate-poster avatars fixed** — visibility-aware canonical election.
 - **PSD export** — stroke stripped from shadow fill layers.
 - **Statement text selectable**; touch callout suppressed on tappable elements.
 - **"Copy prompt" agent buttons** inline in docs and pricing.
-- **SSR hardening** — prerender and standalone guards; `var(--base-line)` in
-  viewport-relative `calc()`s.
+- **SSR hardening** — prerender and standalone guards; `var(--base-line)` in viewport-relative `calc()`s.
 
 ## v2.5.5 — 2026-06-28
 
-- **Account overhaul** — inline sign-in, web push notification preference,
-  Stripe reduced to a CTA.
-- **Pricing and legal pages** — ToS simplified (arbitration removed, venue
-  kept); LICENSE and legal docs updated; `security.txt` refreshed with
-  security@realness.online.
+- **Account overhaul** — inline sign-in, web push notification preference, Stripe reduced to CTA.
+- **Pricing and legal pages** — ToS simplified (arbitration removed), LICENSE updated, `security.txt` refreshed.
 
 ## v2.5.4 — 2026-06-17
 
-- **Install guide** — native install prompt, platform detection, and synthetic
-  install-walkthrough animations (HyperFrames-rendered) for iOS/Android.
+- **Install guide** — native install prompt, platform detection, synthetic walkthrough animations (HyperFrames) for iOS/Android.
 
 ## v2.5.3 — 2026-06-15
 
-- **Big simplification** — removed phonebook, relations, events, and picker;
-  simplified profile and poster menus; expanded documentation.
-- **Preferences menu** — hints, icons, keybindings; animated silhouette toggle
-  for the `only_mine` feed filter; documentation preferences panel.
+- **Big simplification** — removed phonebook, relations, events, picker; simplified profile/poster menus; expanded docs.
+- **Preferences menu** — hints, icons, keybindings; animated silhouette toggle for `only_mine` feed filter.
 - **About page refresh** with gallery cap and lore.
 - **Archive location map** with self-healing `sync:index`.
 
 ## v2.5.1–2.5.2 — 2026-06-11
 
 - **Prerendered marketing pages** and public site structure.
-- **About page rebuilt** — integrations, feature list, balanced gallery;
-  archive loading fixes.
-- **Frosted-glass styling consolidated**; account UI polish; 3D "haze"
-  renamed to atmosphere.
+- **About page rebuilt** — integrations, feature list, balanced gallery; archive loading fixes.
+- **Frosted-glass styling consolidated**; account UI polish; 3D "haze" renamed to atmosphere.
 
 ## v2.5.0 — 2026-05-31
 
@@ -327,46 +123,30 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 
 ## 2026-05-16 → 05-25 — v2.4.x: 3D posters land
 
-- **3D poster viewer and export tooling** migrated in from `projects/3d`;
-  scene motion refactored with test coverage; device orientation (gyro)
-  handling and input disposal; iOS touch/orientation polish.
+- **3D poster viewer and export tooling** migrated in from `projects/3d`; scene motion refactored with tests; device orientation handling; iOS touch/orientation polish.
 
 ## 2026-04 → 05 — v2.3.x: platform
 
 - **Vite+ toolchain transition.**
-- **Stripe sponsorship** integrated; profile account hero; homescreen icon
-  management and preferences.
-- **One poster on the page** — refactored so a poster renders once no matter
-  how often it's reused; caching and rendering performance work.
+- **Stripe sponsorship** integrated; profile account hero; homescreen icon management.
+- **One poster on the page** — deduplicated rendering; caching and performance work.
 
 ## 2026-02 → 04 — v2.0–v2.2: the Thoughts interface
 
-- Interface re-centered around **Thoughts** (statements ⇄ thoughts refactor,
-  navigation removed); color scheme moved green → blue.
-- Safari feed performance; cutouts removed from DOM when off-screen; feed
-  ordering fixes.
-- **Sync folder** for exporting full poster outputs; download-video
-  improvements; swipe left/right for landscape posters.
-- Local dev setup simplified ("run locally like a boss").
+- Interface re-centered around **Thoughts**; navigation removed; color scheme green → blue.
+- Safari feed performance; off-screen cutout removal; feed ordering fixes.
+- **Sync folder** for poster output export; download-video improvements; landscape poster swipe.
+- Local dev setup simplified.
 
 ## 2025-10 → 2026-02 — v2.0.0: the rebuild
 
-- Offline/anonymous poster creation synced after sign-in; cutouts and shadows
-  stored for later sync; **PNG and PSD export** alongside SVG; layer naming
-  and cache cleanup; dark-mode color-scheme declared to the browser.
+- Offline/anonymous poster creation synced after sign-in; cutouts and shadows stored for later sync; **PNG and PSD export** alongside SVG; layer naming; dark-mode color-scheme declared.
 
 ## 2024 → mid-2025 — v1.5–v1.8: the on-device tracer
 
-- **vtracer (wasm) integrated** — the on-device color-region tracer behind the
-  mosaic layers; the tracing experience instrumented and tuned.
-- Offline actions merged with sign-in sync for anonymous users; iPad
-  standalone detection; preferences and documentation growth.
+- **vtracer (wasm) integrated** — on-device color-region tracer behind mosaic layers.
+- Offline actions merged with sign-in sync; iPad standalone detection; preferences and docs growth.
 
 ## 2017 → 2023 — origins
 
-First commit 2017-12-20. Realness grew up as a phone-number-identity social
-PWA — profiles, avatars, statements, events, a phonebook of relations — with
-dark mode by 2018 and steady releases through v1.x. Experiments from 2018 to
-2022 led to the poster emerging as the core creative object. Most of that
-social surface was deliberately shed in 2026 (v2.5.3) to focus the app on
-posters and thoughts.
+First commit 2017-12-20. Realness grew up as a phone-number-identity social PWA — profiles, avatars, statements, events, phonebook — with dark mode by 2018 and steady releases through v1.x. The poster emerged as the core creative object through experiments from 2018 to 2022. Most of that social surface was shed in 2026 (v2.5.3) to focus on posters and thoughts.
