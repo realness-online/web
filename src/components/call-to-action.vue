@@ -15,15 +15,13 @@
 
 <style lang="stylus">
   aside[data-call-to-action] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     margin: auto;
     max-width: base-line * 18rem;
     padding: base-line * 1.5;
-    @media (min-width: pad-begins) {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
     & > h3 {
       margin-bottom: 0;
       & > a {

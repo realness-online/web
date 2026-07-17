@@ -1,34 +1,34 @@
 <script setup>
-  import AsAddress from '@/components/profile/as-address'
-  import PreferencesMenu from '@/components/preferences-menu'
-  import NameAsForm from '@/components/profile/as-form-name'
-  import AsSignOn from '@/components/profile/as-sign-on'
-  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
-  import { use_me } from '@/use/people'
-  import { current_user, me } from '@/utils/serverless'
-  import { sign_off } from '@/utils/serverless-auth'
-  import { ref, computed } from 'vue'
+import AsAddress from '@/components/profile/as-address'
+import PreferencesMenu from '@/components/preferences-menu'
+import NameAsForm from '@/components/profile/as-form-name'
+import AsSignOn from '@/components/profile/as-sign-on'
+import { useRoute as use_route, useRouter as use_router } from 'vue-router'
+import { use_me } from '@/use/people'
+import { current_user, me } from '@/utils/serverless'
+import { sign_off } from '@/utils/serverless-auth'
+import { ref, computed } from 'vue'
 
-  defineOptions({ name: 'Account' })
+defineOptions({ name: 'Account' })
 
-  const route = use_route()
-  const router = use_router()
-  const { is_valid_name } = use_me()
+const route = use_route()
+const router = use_router()
+const { is_valid_name } = use_me()
 
-  const signed_in = computed(() => !!current_user.value && is_valid_name.value)
+const signed_in = computed(() => !!current_user.value && is_valid_name.value)
 
-  const on_signed_in = () => {
-    const next = route.query?.next
-    if (typeof next === 'string' && next.startsWith('/')) router.replace(next)
-  }
+const on_signed_in = () => {
+  const next = route.query?.next
+  if (typeof next === 'string' && next.startsWith('/')) router.replace(next)
+}
 
-  const confirm = ref(null)
-  const on_ask_sign_out = () => confirm.value?.showModal()
-  const on_cancel_sign_out = () => confirm.value?.close()
-  const on_do_sign_out = () => {
-    confirm.value?.close()
-    sign_off()
-  }
+const confirm = ref(null)
+const on_ask_sign_out = () => confirm.value?.showModal()
+const on_cancel_sign_out = () => confirm.value?.close()
+const on_do_sign_out = () => {
+  confirm.value?.close()
+  sign_off()
+}
 </script>
 
 <template>
@@ -69,88 +69,88 @@
 </template>
 
 <style>
-  section#account[data-page] {
-    & > div {
-      max-width: calc(var(--base-line) * 48);
-      margin-inline: auto;
-      padding-inline: var(--base-line);
-      padding-bottom: calc(var(--base-line) * 4);
+section#account[data-page] {
+  &>div {
+    max-width: calc(var(--base-line) * 48);
+    margin-inline: auto;
+    padding-inline: var(--base-line);
+    padding-bottom: calc(var(--base-line) * 4);
 
-      & > address {
-        margin-bottom: var(--base-line);
+    &>address {
+      margin-bottom: var(--base-line);
+    }
+
+    &>form {
+      max-width: calc(var(--base-line) * 14);
+      margin-bottom: var(--base-line);
+    }
+
+    &>section[itemprop='preferences'] {
+      margin-top: calc(var(--base-line) * 2);
+      padding-top: var(--base-line);
+      border-top: 1px solid var(--accent);
+
+      &>header>h2 {
+        color: var(--emphasis);
+        margin-top: 0;
+        font-weight: 300;
       }
 
-      & > form {
-        max-width: calc(var(--base-line) * 14);
-        margin-bottom: var(--base-line);
+      &>menu[data-preferences-menu] {
+        margin: 0;
       }
+    }
 
-      & > section[itemprop='preferences'] {
-        margin-top: calc(var(--base-line) * 2);
-        padding-top: var(--base-line);
-        border-top: 1px solid var(--accent);
+    &>footer {
+      padding: var(--base-line) 0;
+      border-top: 1px solid var(--accent);
 
-        & > header > h2 {
-          color: var(--emphasis);
-          margin-top: 0;
+      &>div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: calc(var(--base-line) * 0.5);
+
+        &>h4 {
+          margin: 0;
+          font-size: normal;
           font-weight: 300;
         }
 
-        & > menu[data-preferences-menu] {
-          margin: 0;
+        &>button#sign-out {
+          color: var(--emphasis);
         }
       }
+    }
 
-      & > footer {
-        padding: var(--base-line) 0;
-        border-top: 1px solid var(--accent);
+    &>dialog#confirm-sign-out {
+      border: none;
+      padding: calc(var(--base-line) * 1.5);
 
-        & > div {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: calc(var(--base-line) * 0.5);
-
-          & > h4 {
-            margin: 0;
-            font-size: normal;
-            font-weight: 300;
-          }
-
-          & > button#sign-out {
-            color: var(--emphasis);
-          }
-        }
+      &>p {
+        margin: 0;
       }
 
-      & > dialog#confirm-sign-out {
-        border: none;
-        padding: calc(var(--base-line) * 1.5);
+      &::backdrop {
+        background: var(--basalt-transparent);
+      }
 
-        & > p {
-          margin: 0;
+      &>menu {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--base-line);
+        margin-top: calc(var(--base-line) * 1.5);
+
+        &>button {
+          padding: var(--base-line);
+          white-space: nowrap;
         }
 
-        &::backdrop {
-          background: var(--basalt-transparent);
-        }
-
-        & > menu {
-          display: flex;
-          justify-content: flex-end;
-          gap: var(--base-line);
-          margin-top: calc(var(--base-line) * 1.5);
-
-          & > button {
-            padding: var(--base-line);
-            white-space: nowrap;
-          }
-
-          & > button#confirm {
-            color: var(--emphasis);
-          }
+        &>button#confirm {
+          color: var(--emphasis);
         }
       }
     }
   }
+}
 </style>

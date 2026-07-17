@@ -16,8 +16,7 @@ npm run verify -- --release 2.5.8
 npm run verify -- --help
 ```
 
-**Roadmap:** A `/verify` page and richer instance UX is planned in
-[verify-instance.md](../plans/verify-instance.md).
+**Roadmap:** A `/verify` page and richer instance UX is planned.
 
 ## What this proves
 
@@ -49,18 +48,17 @@ The manifesto is **not** a diff of `main` vs production. It attests to a
 
 ## Operator: publish so others can `npm run verify`
 
-After `npm run build`, `dist/build-manifest.json` is generated. Deploy that
-`dist/`, then attach **the same** manifesto to the GitHub release (do not
-rebuild in between):
+Work accumulates under `## Unreleased` in `CHANGELOG.md` (stripped from
+`/docs#changelog` until release). Then:
 
 ```bash
-npm run deploy          # ends with a local-manifest check against production
-npm run release:gh      # creates the GitHub release with CHANGELOG notes for this version
+npm version patch -m "chore(release): v%s"   # promote Unreleased, commit, tag
+npm run ship                                 # deploy → release:gh → verify
 ```
 
-`release:gh` slices the matching `## … vX.Y.Z` section from `CHANGELOG.md`
-(via `scripts/changelog-notes.js`) and passes it as `--notes-file`. No
-interactive notes prompt.
+`ship` keeps one `dist/`: deploy verifies against the local manifesto, then
+`release:gh` attaches that same `build-manifest.json` to GitHub release
+`vX.Y.Z` with notes sliced from the changelog (heading + verify footer).
 
 Until a release has a `build-manifest.json` asset, `npm run verify` fails with
 operator instructions. That is intentional - without the GitHub asset there is

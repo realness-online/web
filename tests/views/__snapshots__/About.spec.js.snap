@@ -306,13 +306,18 @@ exports[`About > Rendering > renders about view 1`] = `
           <strong>
             Verifiable
           </strong>
-           Trust but verify is supported via a 
+           Don't trust the live site on its own say-so. 
+          <code>
+            npm run verify
+          </code>
+           rehashes what we serve against the checksums on the 
           <a
-            href="/build-manifest.json"
+            href="https://github.com/realness-online/web/releases"
+            rel="external"
           >
-            build-manifest.json
+            GitHub release
           </a>
-           that lists a SHA-256 for every file we deploy. Match it to what realness.online serves and confirm the version we publish. 
+           - same build, independent root of trust. 
         </p>
       </li>
       <li>

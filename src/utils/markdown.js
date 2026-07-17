@@ -121,14 +121,39 @@ const humanize_dates = text =>
   )
 
 /**
+ * Drop ## Unreleased so /docs#changelog only shows shipped history.
+ * WIP notes stay in the repo file for npm version to promote.
+ * @param {string} content
+ */
+export const strip_changelog_unreleased = content => {
+  const lines = content.split(/\r?\n/)
+  const out = []
+  let skipping = false
+  for (const line of lines) {
+    if (/^##\s+Unreleased\b/i.test(line)) {
+      skipping = true
+      continue
+    }
+    if (skipping && line.startsWith('## ')) skipping = false
+    if (!skipping) out.push(line)
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
+/**
  * CHANGELOG.md dates its entries in ISO (sorts cleanly as a dev log);
  * humanize them and drop the leading "# Changelog" so it can sit under this
  * page's own "Changelog" heading instead of rendering its own.
+ * ## Unreleased is stripped - that section is operator WIP, not public docs.
  * @param {string} [content]
  * @returns {string}
  */
 export const changelog_html = (content = changelog_md) =>
-  documentation_html(humanize_dates(content.replace(/^#\s+.+\n+/, '')))
+  documentation_html(
+    humanize_dates(
+      strip_changelog_unreleased(content).replace(/^#\s+.+\n+/, '')
+    )
+  )
 
 export const INSTALL_GUIDE_MARKER = '<!-- install-guide -->'
 

@@ -8,6 +8,8 @@ import {
   inline_documentation_icons,
   markdown_html,
   markdown_toc,
+  changelog_html,
+  strip_changelog_unreleased,
   INSTALL_GUIDE_MARKER,
   INSTANCE_PROMPT_MARKER
 } from '@/utils/markdown'
@@ -35,6 +37,24 @@ describe('markdown', () => {
     const html = markdown_html('## Privacy\n\nWe collect little.')
     expect(html).toContain('id="privacy"')
     expect(html).toContain('<p>We collect little.</p>')
+  })
+
+  it('strips Unreleased from public changelog HTML', () => {
+    const md = `# Changelog
+
+## Unreleased
+
+- **secret** — WIP
+
+## 2026-07-16 — v2.5.12
+
+- **shipped** — live
+`
+    expect(strip_changelog_unreleased(md)).not.toContain('secret')
+    const html = changelog_html(md)
+    expect(html).not.toContain('secret')
+    expect(html).toContain('shipped')
+    expect(html).not.toMatch(/Unreleased/i)
   })
 
   it('renders markdown to HTML', () => {

@@ -134,39 +134,35 @@ Visit `https://${project-name}.web.app`. You can sign in and invite your friends
 
 ### Hot release (production cut)
 
-Do this every time you ship `realness.online`. Same `dist/` for deploy and
-GitHub - do not rebuild between the two. Firebase account must be the one that
-owns the project (`firebase login` / `firebase use production`).
+Every ship of `realness.online` ties three things together: changelog story,
+tagged commit, and GitHub manifesto. That is what makes
+`npm run verify` an independent check. Same `dist/` for deploy and GitHub -
+do not rebuild between them. Firebase account must own the project
+(`firebase login` / `firebase use production`).
 
-1. **Write the story** — add a `## … vX.Y.Z` section to `CHANGELOG.md`, bump
-   `package.json` `"version"` to match, commit on `main`.
-2. **Deploy + self-check**
-
-   ```bash
-   npm run deploy
-   ```
-
-   Builds, deploys hosting+storage, then verifies live bytes against that
-   local `dist/build-manifest.json`. Expect `Result: LEGIT`.
-
-3. **Publish the independent root of trust**
+1. **Write under Unreleased** — bullets go in `CHANGELOG.md` under
+   `## Unreleased` (hidden from `/docs#changelog` until you cut).
+2. **Cut the version**
 
    ```bash
-   npm run release:gh
+   npm version patch -m "chore(release): v%s"
+   # or: minor | major | 2.5.12
    ```
 
-   Creates the GitHub release for `$npm_package_version`, attaches
-   `dist/build-manifest.json`, and fills notes from the matching changelog
-   section (no interactive prompt).
+   Bumps `package.json`, promotes Unreleased → `## YYYY-MM-DD — vX.Y.Z`,
+   commits `chore(release): vX.Y.Z`, tags `vX.Y.Z`. Fails if Unreleased is empty.
 
-4. **Prove it from GitHub**
+3. **Ship**
 
    ```bash
-   npm run verify
+   npm run ship
    ```
 
-   Downloads the manifesto from the GitHub release and rehashes production.
-   Expect `Trust: GitHub release` and `Result: LEGIT`.
+   Runs `deploy` → `release:gh` → `verify`. Expect `LEGIT` twice (local
+   manifesto, then GitHub as root of trust). `release:gh` attaches
+   `dist/build-manifest.json` and changelog notes to GitHub release `vX.Y.Z`.
+
+Or step through: `npm run deploy` then `npm run release:gh` then `npm run verify`.
 
 Anyone else can run `npm run verify` after step 3. Detail:
 [docs/verify-release.md](docs/verify-release.md).

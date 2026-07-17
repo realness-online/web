@@ -1,6 +1,12 @@
 # Changelog
 
-## 2026-07-13 → 07-15 — v2.5.11
+## Unreleased
+
+- **Verifiable releases** — Keep a Changelog `## Unreleased` (hidden on
+  `/docs#changelog` until cut), `npm version` promotes it and tags `vX.Y.Z`,
+  `npm run ship` deploys then publishes `build-manifest.json` + notes to
+  GitHub so `npm run verify` has an independent root of trust. About copy
+  points skeptics at that ritual.
 
 - **realness-design realign** — views and components drop invented class hooks
   for markup state (`data-*`, semantic elements, Scheme.org where it already
@@ -25,7 +31,7 @@
 - **Test coverage surge** — new and expanded specs across posters, profile,
   views, sync/persistence, potrace, and utils (~2k net test lines).
 
-## 2026-07-12 → 07-13 — v2.5.10
+## v2.5.10 — 2026-07-13
 
 - **Codebase-wide bug-fix pass** — a systematic review across persistence,
   components, composables, workers, and 3D/potrace, cross-referenced
@@ -38,8 +44,7 @@
   mount/unmount, several divide-by-zero/Infinity bugs in the color
   histogram and posterization code, and worker error handling that could
   leave the upload queue silently stalled forever on one failed image.
-  Every fix landed with a regression test; full detail in
-  `plans/code-review-findings.md`.
+  Every fix landed with a regression test.
 - **Cloud archive consistency** — a poster's 7 component files (main +
   6 layers) could end up permanently split across live/archive storage if
   only some of the concurrent moves succeeded; partial failures now roll
@@ -55,7 +60,7 @@
   to a real 1440p/14 Mbps encode instead of the previous under-bitrated
   1080p output. (`src/utils/svg-to-video.js`, `src/components/download-vector.vue`)
 
-## 2026-07-11 — v2.5.9
+## v2.5.9 — 2026-07-11
 
 - **Materials-and-roles design system** — palette converted to OKLCH (fixing
   an inverted OKLCH→RGB conversion matrix along the way), materials became
@@ -114,7 +119,7 @@
   while its iframe loads, and the generated support-page TOC no longer
   tracked in git (built at `dev` start instead).
 
-## 2026-07-04 — v2.5.8
+## v2.5.8 — 2026-07-04
 
 - **Instance capabilities** — the app probes `/capabilities` on its own
   origin at runtime to discover optional `realness-functions` features (push,
@@ -151,7 +156,7 @@
   itemid's created-at) instead of the generic "Poster", in both `as-svg` and
   the referenced-poster path in `as-figure`.
 
-## 2026-07-04 — v2.5.7
+## v2.5.7 — 2026-07-04
 
 ### Performance: static LCP shell for the home route
 
@@ -296,7 +301,7 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 - **3D mode poster menu gesture** — reveal the poster menu in 3D with the same
   gesture as SVG mode.
 
-## 2026-06-29 — v2.5.6
+## v2.5.6 — 2026-06-29
 
 - **Blank duplicate-poster avatars fixed** via visibility-aware canonical
   election (one rendered poster per id; the rest reference it).
@@ -306,7 +311,7 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 - **SSR hardening** — prerender and standalone guards; `var(--base-line)` in
   viewport-relative `calc()`s.
 
-## 2026-06-28 — v2.5.5
+## v2.5.5 — 2026-06-28
 
 - **Account overhaul** — inline sign-in, web push notification preference,
   Stripe reduced to a CTA.
@@ -314,12 +319,12 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
   kept); LICENSE and legal docs updated; `security.txt` refreshed with
   security@realness.online.
 
-## 2026-06-17 — v2.5.4
+## v2.5.4 — 2026-06-17
 
 - **Install guide** — native install prompt, platform detection, and synthetic
   install-walkthrough animations (HyperFrames-rendered) for iOS/Android.
 
-## 2026-06-15 — v2.5.3
+## v2.5.3 — 2026-06-15
 
 - **Big simplification** — removed phonebook, relations, events, and picker;
   simplified profile and poster menus; expanded documentation.
@@ -328,7 +333,7 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 - **About page refresh** with gallery cap and lore.
 - **Archive location map** with self-healing `sync:index`.
 
-## 2026-06-08 → 06-11 — v2.5.1–2.5.2
+## v2.5.1–2.5.2 — 2026-06-11
 
 - **Prerendered marketing pages** and public site structure.
 - **About page rebuilt** — integrations, feature list, balanced gallery;
@@ -336,7 +341,7 @@ accessibility 74. Total byte weight ~928 KB → ~679 KB.
 - **Frosted-glass styling consolidated**; account UI polish; 3D "haze"
   renamed to atmosphere.
 
-## 2026-05-31 — v2.5.0
+## v2.5.0 — 2026-05-31
 
 - **Mask pen drawing tool** debuts.
 
