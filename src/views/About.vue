@@ -637,8 +637,8 @@
     --about-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --about-enter: 820ms;
     --about-stagger: 56ms;
-    --about-hero-delay: 500ms;
-    --about-hero-stagger: 120ms;
+    --about-hero-delay: 120ms;
+    --about-hero-stagger: 70ms;
     --about-follow-beat: 200ms;
     --about-hero-min-height: calc(var(--poster-grid-height) + var(--base-line) * 8);
     --about-article-copy-min-height: calc(var(--base-line) * 15);
@@ -718,6 +718,7 @@
           &:not([data-about-ready]) {
             & > h1,
             & > h3,
+            & > h4,
             & > p {
               opacity: 0;
             }
@@ -732,15 +733,19 @@
               about-enter(calc(var(--about-hero-delay) + var(--about-hero-stagger)));
             }
 
+            & > h4 {
+              about-enter(calc(var(--about-hero-delay) + var(--about-hero-stagger) * 2));
+            }
+
             & > p {
               about-enter();
 
               &:nth-of-type(1) {
-                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 2);
+                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 3);
               }
 
               &:nth-of-type(2) {
-                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 3);
+                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 4);
               }
             }
           }
@@ -748,6 +753,7 @@
           @media (prefers-reduced-motion: reduce) {
             & > h1,
             & > h3,
+            & > h4,
             & > p {
               animation: none;
               opacity: 1;
@@ -757,6 +763,12 @@
 
         & > figure:has([itemtype='/posters']) {
           min-height: var(--poster-grid-height);
+          about-enter(var(--about-hero-delay));
+
+          @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            opacity: 1;
+          }
 
           @media (min-width: pad-begins) {
             flex: 1;
