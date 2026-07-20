@@ -1,6 +1,9 @@
 /** @typedef {import('@/types').Id} Id */
 
-import { as_created_at, load } from '@/utils/itemid'
+import { get, set, keys, del } from 'idb-keyval'
+import { as_created_at, as_author, load } from '@/utils/itemid'
+import { mutex_for } from '@/utils/algorithms'
+import { is_sync_index_missing } from '@/utils/sync-file'
 import { as_day_time_of_day_for_filename } from '@/utils/date'
 import {
   hsl_to_hex,
@@ -11,7 +14,15 @@ import { css_color_to_color } from '@/utils/colors'
 import { merge_poster_hidden_symbols } from '@/utils/poster-canvas'
 import { as_layer_id } from '@/utils/itemid'
 import { geology_layers } from '@/use/poster'
-import { find_geology_symbol } from '@/utils/geology'
+import { find_geology_symbol, load_cutout_flags } from '@/utils/geology'
+import {
+  mosaic,
+  boulders,
+  rocks,
+  gravel,
+  sand,
+  sediment
+} from '@/utils/preference'
 
 const normalize_ids_for_download = svg => {
   const id_map = new Map()
@@ -159,23 +170,82 @@ export const build_download_svg = svg_element => {
   return svg_clone
 }
 
-const SYMBOL_WAIT_TIMEOUT_MS = 5000
+const SYMBOL_WAIT_TIMEOUT_MS = 15000
+
+const cutout_layer_prefs = { boulders, rocks, gravel, sand, sediment }
 
 /**
+ * Drop stale "missing on server" rows for a poster and its layer files so the
+ * next loads re-verify against Storage. A 404 seen once (mid-upload from
+ * another device, or a mis-resolved archive path) otherwise blocks every
+ * fetch of that file until the periodic purge.
+ * @param {Id} itemid
+ * @returns {Promise<void>}
+ */
+export const revalidate_poster_files = async itemid => {
+  const ids = [
+    itemid,
+    as_layer_id(itemid, 'shadows'),
+    ...geology_layers.map(layer => as_layer_id(itemid, layer))
+  ]
+  const mutex = mutex_for('sync:index')
+  await mutex.lock()
+  try {
+    const index = (await get('sync:index')) || {}
+    const stale = ids.filter(id => is_sync_index_missing(index[id]))
+    if (!stale.length) return
+    for (const id of stale) delete index[id]
+    await set('sync:index', index)
+    console.info('[export-poster] revalidating server files', itemid, stale)
+    // Negative rows usually come from a mis-resolved archive path. Drop the
+    // cached poster directory listings and archive map too, so the next load
+    // re-resolves against the server instead of the same stale cache.
+    const author = as_author(itemid)
+    if (author) {
+      const prefix = `${author}/posters/`
+      const everything = (await keys()) ?? []
+      const dirs = everything.filter(
+        key =>
+          typeof key === 'string' && key.startsWith(prefix) && key.endsWith('/')
+      )
+      await Promise.all(dirs.map(key => del(key)))
+    }
+  } finally {
+    mutex.unlock()
+  }
+}
+
+/**
+ * Resolve once `ready()` is true, re-checking only when `root`'s subtree
+ * mutates. Event-driven — no animation-frame polling, so it settles (or times
+ * out) even in a backgrounded tab.
+ * @param {Node} root
  * @param {() => boolean} ready
  * @param {number} [timeout_ms]
  * @returns {Promise<void>}
  */
-const wait_until = (ready, timeout_ms = SYMBOL_WAIT_TIMEOUT_MS) =>
+const when_mutated = (root, ready, timeout_ms = SYMBOL_WAIT_TIMEOUT_MS) =>
   new Promise((resolve, reject) => {
-    const start = Date.now()
-    const check = () => {
-      if (ready()) return resolve(undefined)
-      if (Date.now() - start > timeout_ms)
-        return reject(new Error('Timeout waiting for poster symbol'))
-      requestAnimationFrame(check)
+    if (ready()) {
+      resolve(undefined)
+      return
     }
-    check()
+    const observer = new MutationObserver(() => {
+      if (!ready()) return
+      observer.disconnect()
+      clearTimeout(timer)
+      resolve(undefined)
+    })
+    const timer = setTimeout(() => {
+      observer.disconnect()
+      reject(new Error('Timeout waiting for poster symbol'))
+    }, timeout_ms)
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    })
   })
 
 /**
@@ -183,16 +253,28 @@ const wait_until = (ready, timeout_ms = SYMBOL_WAIT_TIMEOUT_MS) =>
  * @returns {Promise<void>}
  */
 const symbol_has_content = symbol_el =>
-  wait_until(() => Boolean(symbol_el.innerHTML.trim()))
+  when_mutated(symbol_el, () => Boolean(symbol_el.innerHTML.trim()))
 
 /**
  * @param {Element} symbol_el
  * @returns {Promise<void>}
  */
 const wait_for_shadow_background = symbol_el =>
-  wait_until(() => {
+  when_mutated(symbol_el, () => {
     const background = symbol_el.querySelector('[itemprop="background"]')
     return Boolean(background?.getAttribute('fill')?.trim())
+  })
+
+/**
+ * @param {Element} symbol_defs
+ * @param {Id} itemid
+ * @param {string} layer
+ * @returns {Promise<void>}
+ */
+const wait_for_geology_symbol = (symbol_defs, itemid, layer) =>
+  when_mutated(symbol_defs, () => {
+    const symbol = find_geology_symbol(symbol_defs, itemid, layer)
+    return Boolean(symbol && symbol.innerHTML.trim())
   })
 
 /**
@@ -201,8 +283,20 @@ const wait_for_shadow_background = symbol_el =>
  * @returns {Promise<void>}
  */
 const wait_for_poster_symbols = async (symbol_defs, itemid) => {
+  /** @type {Record<string, boolean>} */
+  let flags = {}
+  try {
+    flags = await load_cutout_flags(itemid)
+  } catch {
+    // Flags unavailable — fall back to waiting on already-mounted symbols
+  }
   const waits = geology_layers
     .map(layer => {
+      // Cutout symbols mount only after the poster's cutout flags load — an
+      // expected symbol may not be in the DOM yet, so wait for it to appear.
+      const expected =
+        mosaic.value && cutout_layer_prefs[layer].value && flags[layer]
+      if (expected) return wait_for_geology_symbol(symbol_defs, itemid, layer)
       const symbol = find_geology_symbol(symbol_defs, itemid, layer)
       return symbol ? symbol_has_content(symbol) : null
     })
@@ -215,6 +309,29 @@ const wait_for_poster_symbols = async (symbol_defs, itemid) => {
   if (shadow_symbol) waits.push(wait_for_shadow_background(shadow_symbol))
 
   await Promise.all(waits)
+}
+
+/**
+ * @param {SVGSVGElement} svg_el
+ * @returns {Element | null | undefined}
+ */
+const find_symbol_defs = svg_el =>
+  svg_el
+    .closest('figure:has([itemtype="/posters"])')
+    ?.querySelector('svg[data-poster-symbol-defs]')
+
+/**
+ * Waits for the poster's companion symbol defs (cutouts, shadow background)
+ * to have content so `build_download_svg` merges filled symbols, not empty ones.
+ * Resolves immediately when the poster has no companion defs.
+ *
+ * @param {SVGSVGElement} svg_el
+ * @param {Id} itemid
+ * @returns {Promise<void>}
+ */
+export const wait_for_poster_export_ready = async (svg_el, itemid) => {
+  const symbol_defs = find_symbol_defs(svg_el)
+  if (symbol_defs) await wait_for_poster_symbols(symbol_defs, itemid)
 }
 
 /**
@@ -231,9 +348,7 @@ export const prepare_poster_svg_for_3d = async (
   itemid,
   { wait_for_symbols = true } = {}
 ) => {
-  const symbol_defs = svg_el
-    .closest('figure:has([itemtype="/posters"])')
-    ?.querySelector('svg[data-poster-symbol-defs]')
+  const symbol_defs = find_symbol_defs(svg_el)
 
   if (wait_for_symbols && symbol_defs)
     await wait_for_poster_symbols(symbol_defs, itemid)

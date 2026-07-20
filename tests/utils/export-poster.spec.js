@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import {
   build_download_svg,
   get_filename_for_poster,
-  prepare_poster_svg_for_3d
+  prepare_poster_svg_for_3d,
+  revalidate_poster_files
 } from '@/utils/export-poster'
 import { geology_layers } from '@/use/poster'
 
@@ -12,8 +13,10 @@ vi.mock('@/utils/poster-canvas', () => ({
 
 vi.mock('@/utils/itemid', () => ({
   as_created_at: vi.fn(() => 1720119797893),
+  as_author: vi.fn(id => `/${String(id).split('/')[1]}`),
   load: vi.fn(() => Promise.resolve({ name: 'Ada' })),
-  as_layer_id: vi.fn((itemid, layer) => `${itemid}/${layer}`)
+  as_layer_id: vi.fn((itemid, layer) => `${itemid}/${layer}`),
+  load_from_cache: vi.fn(() => Promise.resolve({ html: null }))
 }))
 
 vi.mock('@/utils/date', () => ({
@@ -98,6 +101,57 @@ describe('@/utils/export-poster', () => {
     })
   })
 
+  describe('revalidate_poster_files', () => {
+    it('drops missing-on-server rows for the poster and its layers', async () => {
+      const { get, set } = await import('idb-keyval')
+      const missing = { updated: null, customMetadata: { hash: null } }
+      const kept = { updated: '2026-01-01', customMetadata: { hash: 'abc' } }
+      get.mockImplementation(async key =>
+        key === 'sync:index'
+          ? {
+              '/+1/posters/9': missing,
+              '/+1/posters/9/sediment': missing,
+              '/+1/posters/8': kept
+            }
+          : undefined
+      )
+
+      await revalidate_poster_files(
+        /** @type {import('@/types').Id} */ ('/+1/posters/9')
+      )
+
+      expect(set).toHaveBeenCalledWith('sync:index', { '/+1/posters/8': kept })
+      get.mockReset()
+    })
+
+    it('drops cached poster directories so archive paths re-resolve', async () => {
+      const { get, keys, del } = await import('idb-keyval')
+      const missing = { updated: null, customMetadata: { hash: null } }
+      get.mockImplementation(async key =>
+        key === 'sync:index' ? { '/+1/posters/9': missing } : undefined
+      )
+      keys.mockResolvedValue([
+        '/+1/posters/',
+        '/+1/posters/1234/',
+        '/+1/posters/archive-map/',
+        '/+1/posters/9',
+        '/+1/statements/'
+      ])
+
+      await revalidate_poster_files(
+        /** @type {import('@/types').Id} */ ('/+1/posters/9')
+      )
+
+      expect(del).toHaveBeenCalledWith('/+1/posters/')
+      expect(del).toHaveBeenCalledWith('/+1/posters/1234/')
+      expect(del).toHaveBeenCalledWith('/+1/posters/archive-map/')
+      expect(del).not.toHaveBeenCalledWith('/+1/posters/9')
+      expect(del).not.toHaveBeenCalledWith('/+1/statements/')
+      get.mockReset()
+      keys.mockReset()
+    })
+  })
+
   describe('prepare_poster_svg_for_3d', () => {
     it('returns serialized svg without symbol defs when figure is missing', async () => {
       const svg = make_svg()
@@ -136,6 +190,50 @@ describe('@/utils/export-poster', () => {
       )
 
       expect(out).toContain(`id="${layer}"`)
+    })
+
+    it('waits for an expected cutout symbol to mount before serializing', async () => {
+      const { as_created_at } = await import('@/utils/itemid')
+      const { get } = await import('idb-keyval')
+      // Post-geology poster whose boulders layer exists in storage
+      as_created_at.mockImplementation(() => 1767138344992)
+      get.mockImplementation(async key =>
+        String(key).endsWith('/boulders') ? '<path d="M0 0" />' : undefined
+      )
+
+      const figure = document.createElement('figure')
+      const poster_svg = make_svg()
+      const symbol_defs = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      symbol_defs.setAttribute('data-poster-symbol-defs', '')
+      figure.append(poster_svg, symbol_defs)
+      document.body.append(figure)
+
+      let mounted_late = false
+      const prepared = prepare_poster_svg_for_3d(
+        poster_svg,
+        /** @type {import('@/types').Id} */ ('/+1/posters/1767138344992')
+      )
+
+      requestAnimationFrame(() => {
+        const symbol = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'symbol'
+        )
+        symbol.setAttribute('itemid', '/+1/posters/1767138344992/boulders')
+        symbol.innerHTML = '<path d="M0 0 L1 1" />'
+        symbol_defs.appendChild(symbol)
+        mounted_late = true
+      })
+
+      const out = await prepared
+      expect(mounted_late).toBe(true)
+      expect(out).toContain('id="boulders"')
+
+      as_created_at.mockImplementation(() => 1720119797893)
+      get.mockReset()
     })
 
     it('waits for shadow background fill before serializing', async () => {

@@ -6,6 +6,7 @@ import { Storage } from '@/persistence/Repository'
 import { Local } from '@/persistence/Local'
 import { Large } from '@/persistence/Large'
 import { Cloud } from '@/persistence/Cloud'
+import { Folder } from '@/persistence/Folder'
 import { Paged } from '@/persistence/Paged'
 import { current_user, me } from '@/utils/serverless'
 import { as_type, as_created_at, as_query_id, is_itemid } from '@/utils/itemid'
@@ -19,7 +20,7 @@ export { History } from '@/persistence/History'
 /**
  * @extends {Storage}
  */
-class Cached extends Large(Cloud(Storage)) {
+class Cached extends Folder(Large(Cloud(Storage))) {
   async save(
     items = document.querySelector(`[itemid="${this.id}"]`) ?? undefined
   ) {
@@ -30,7 +31,7 @@ class Cached extends Large(Cloud(Storage)) {
 /**
  * @extends {Storage}
  */
-export class Poster extends Large(Cloud(Storage)) {}
+export class Poster extends Folder(Large(Cloud(Storage))) {}
 
 /**
  * @extends {Cached}
@@ -110,7 +111,7 @@ export class Thought extends Paged(Cloud(Local(Storage))) {
 }
 
 /** @extends {Storage} - Per-statement storage. Saves individual statement divs by itemid. */
-export class Statements extends Paged(Cloud(Local(Storage))) {
+export class Statements extends Folder(Paged(Cloud(Local(Storage)))) {
   constructor() {
     super(/** @type {Id} */ (`${localStorage.me}/statements`))
   }
