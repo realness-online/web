@@ -210,6 +210,35 @@ export const list = async (itemid, me = storage_me()) => {
 }
 
 /**
+ * @param {unknown} e
+ * @returns {boolean}
+ */
+const is_storage_not_found = e =>
+  !!(
+    e &&
+    typeof e === 'object' &&
+    'code' in e &&
+    /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+  )
+
+/**
+ * Poster or layer filename at the pre-archive location.
+ * @param {Id} itemid
+ * @returns {string | null} null when the itemid is not a poster or layer
+ */
+export const as_top_level_filename = itemid => {
+  const poster_id =
+    as_poster_id(itemid) ?? (as_type(itemid) === 'posters' ? itemid : null)
+  if (!poster_id) return null
+  const poster_filename = poster_id.startsWith('/+')
+    ? `people${poster_id}`
+    : poster_id
+  const layer_name = as_layer_name(itemid)
+  const suffix = layer_name ? `-${layer_name}` : ''
+  return `${poster_filename}${suffix}.html.gz`
+}
+
+/**
  * @param {Id} itemid
  * @returns {Promise<string | null>}
  */
@@ -228,21 +257,29 @@ export const as_download_url = async itemid => {
       if (is_sync_index_missing(idx[itemid])) return null
       const { url, storage_ready } = await import('@/utils/serverless')
       await storage_ready
-      return await url(await as_filename(itemid))
+      const filename = await as_filename(itemid)
+      try {
+        return await url(filename)
+      } catch (e) {
+        if (!is_storage_not_found(e)) throw e
+        // Archived posters can be split: `move` uploads from the local copy,
+        // so a device without every layer cached leaves components at the
+        // pre-archive path. Check there before declaring the file missing.
+        const fallback = as_top_level_filename(itemid)
+        if (fallback && fallback !== filename)
+          try {
+            return await url(fallback)
+          } catch (fallback_error) {
+            if (!is_storage_not_found(fallback_error)) throw fallback_error
+          }
+        const stale = (await get('sync:index')) || {}
+        stale[itemid] = DOES_NOT_EXIST
+        await set('sync:index', stale)
+        return null
+      }
     } catch (e) {
       if (e instanceof Error && e.message === 'Storage not initialized')
         return null
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        e.code === 'storage/object-not-found'
-      ) {
-        const idx = (await get('sync:index')) || {}
-        idx[itemid] = DOES_NOT_EXIST
-        await set('sync:index', idx)
-        return null
-      }
       throw e
     } finally {
       download_url_inflight.delete(key)

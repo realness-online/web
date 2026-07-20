@@ -387,7 +387,7 @@
     scroll_to_hash_if_matching()
   })
 
-  const key_commands = inject('key-commands')
+  const key_commands = inject('key-commands', null)
   const as_svg_ref = ref(null)
 
   const set_svg_zoom = t => {

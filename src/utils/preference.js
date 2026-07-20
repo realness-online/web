@@ -75,6 +75,7 @@ export const menu = storage('menu', true)
 export const footer_visible = storage('footer_visible', true)
 
 export const sync_folder = storage('sync_folder', false)
+export const sync_svg = storage('sync_svg', true)
 export const notifications = storage('notifications', false)
 export const notifications_prompted = storage('notifications_prompted', false)
 
@@ -136,6 +137,7 @@ export const reset_preferences = () => {
   menu.value = true
   footer_visible.value = true
   sync_folder.value = false
+  sync_svg.value = true
   notifications.value = false
   notifications_prompted.value = false
   view_3d.value = false
