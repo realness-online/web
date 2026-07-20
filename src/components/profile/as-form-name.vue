@@ -1,4 +1,5 @@
 <script setup>
+  import Icon from '@/components/icon'
   import { me } from '@/utils/serverless'
   import { use_me, name_error } from '@/use/people'
   import { ref, watchEffect as watch_effect } from 'vue'
@@ -6,7 +7,6 @@
   const emit = defineEmits(['valid'])
   const { is_valid_name, save } = use_me()
   const saving = ref(false)
-  const saved = ref(false)
   const initial_name = ref(null)
   const has_focused = ref(false)
   const show_error = ref(false)
@@ -25,8 +25,6 @@
     }
   }
 
-  const SAVED_DISPLAY_TIME = 2000
-
   const on_blur = async () => {
     if (!has_focused.value) return
     const current_name = me.value?.name
@@ -43,42 +41,37 @@
     if (me.value?.name) me.value.name = me.value.name.trim()
 
     saving.value = true
-    saved.value = false
 
     await save()
     // eslint-disable-next-line require-atomic-updates
     initial_name.value = me.value?.name
 
     saving.value = false
-    saved.value = true
     show_error.value = false
     display_error.value = null
-
-    setTimeout(() => {
-      saved.value = false
-    }, SAVED_DISPLAY_TIME)
   }
 </script>
 
 <template>
   <form id="profile-name" v-if="me" @submit.prevent="on_blur">
-    <fieldset :aria-busy="saving || undefined" :data-saved="saved || undefined">
-      <legend :data-valid="is_valid_name || undefined">
-        {{ me.name?.trim() || 'Name' }}
-      </legend>
-      <input
-        id="name"
-        v-model="me.name"
-        type="text"
-        autocomplete="name"
-        placeholder="Name"
-        required
-        minlength="3"
-        :aria-invalid="show_error ? 'true' : undefined"
-        :aria-describedby="show_error ? 'name-error' : undefined"
-        @focus="on_focus"
-        @blur="on_blur"
-        @keydown.enter.prevent="on_blur" />
+    <fieldset data-preference :aria-busy="saving || undefined">
+      <div>
+        <h4 :data-valid="is_valid_name || undefined">Name</h4>
+        <icon v-if="saving" name="working" />
+        <input
+          id="name"
+          v-model="me.name"
+          type="text"
+          autocomplete="name"
+          placeholder="Name"
+          required
+          minlength="3"
+          :aria-invalid="show_error ? 'true' : undefined"
+          :aria-describedby="show_error ? 'name-error' : undefined"
+          @focus="on_focus"
+          @blur="on_blur"
+          @keydown.enter.prevent="on_blur" />
+      </div>
       <p v-if="show_error" id="name-error" role="alert">
         {{ display_error }}
       </p>
@@ -88,26 +81,40 @@
 
 <style>
   form#profile-name {
-    fieldset[aria-busy='true'] input#name {
-      border-color: var(--working);
-    }
-    fieldset[data-saved] input#name {
-      border-color: var(--accent);
+    max-width: none;
+
+    fieldset > div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: calc(var(--base-line) * 0.5);
+
+      h4 {
+        margin: 0;
+        font-weight: 300;
+        color: var(--muted-text);
+        &[data-valid] {
+          color: var(--accent);
+        }
+      }
+
+      svg.icon {
+        margin-inline-start: auto;
+        color: var(--working);
+        animation: working-pulse 1.5s ease-in-out infinite;
+      }
     }
     input#name[aria-invalid='true'] {
       border-color: var(--emphasis);
     }
     input#name {
-      width: 100%;
+      max-width: calc(var(--base-line) * 12);
+      text-align: end;
     }
     p#name-error {
       margin: 0;
       font-size: 0.75em;
       color: var(--emphasis);
-    }
-    menu {
-      display: flex;
-      justify-content: end;
     }
   }
 </style>

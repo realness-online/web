@@ -74,16 +74,22 @@ describe('@/components/account/as-fieldset-notifications', () => {
     expect(mock_refresh).toHaveBeenCalled()
   })
 
-  it('renders nothing when push is unsupported', () => {
+  it('disables the toggle and explains when push is unsupported', () => {
     mock_status.value = 'unsupported'
     const wrapper = mount()
-    expect(wrapper.find('fieldset[data-preference]').exists()).toBe(false)
+    expect(
+      wrapper.find('input[type="checkbox"]').attributes('disabled')
+    ).toBeDefined()
+    expect(wrapper.find('p[data-hint]').text()).toMatch(/not supported/i)
   })
 
-  it('renders nothing when the instance has no push capability', () => {
+  it('disables the toggle and explains when the instance has no push capability', () => {
     mock_push_available.value = false
     const wrapper = mount()
-    expect(wrapper.find('fieldset[data-preference]').exists()).toBe(false)
+    expect(
+      wrapper.find('input[type="checkbox"]').attributes('disabled')
+    ).toBeDefined()
+    expect(wrapper.find('p[data-hint]').text()).toMatch(/not available/i)
   })
 
   it('clears the notifications preference when push is unavailable', async () => {

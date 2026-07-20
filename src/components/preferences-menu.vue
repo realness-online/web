@@ -1,14 +1,7 @@
 <script setup>
-  import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
   import Preference from '@/components/preference'
-  import { use_instance_capabilities } from '@/use/instance-capabilities'
-  import { use_push } from '@/use/push'
-  import {
-    sync_folder_supported,
-    use as use_sync_folder
-  } from '@/use/sync-folder'
   import * as preferences from '@/utils/preference'
-  import { computed, ref, watch, onBeforeUnmount as before_unmount } from 'vue'
+  import { ref, watch, onBeforeUnmount as before_unmount } from 'vue'
 
   defineProps({
     icon: {
@@ -17,19 +10,7 @@
     }
   })
 
-  const sync_folder_supported_value = sync_folder_supported()
-  const { sync_folder, sync_folder_name } = use_sync_folder()
   const { view_3d } = preferences
-  const { ready, push: push_available } = use_instance_capabilities()
-  const { status: push_status } = use_push()
-
-  const show_account_services = computed(
-    () =>
-      sync_folder_supported_value ||
-      (ready.value &&
-        push_available.value &&
-        push_status.value !== 'unsupported')
-  )
 
   const tweakpane_ref = ref(null)
   let pane = null
@@ -255,20 +236,6 @@
       <preference name="storytelling" />
       <h3 id="preferences-chrome">Chrome</h3>
       <preference name="menu" label="Island" />
-    </article>
-    <article v-if="show_account_services">
-      <h3 id="preferences-account">Account</h3>
-      <as-fieldset-notifications />
-      <preference
-        v-if="sync_folder_supported_value"
-        name="sync_folder"
-        title="Export output to a folder">
-        <p v-if="sync_folder_name">
-          Export output to
-          <span>{{ sync_folder_name }}</span>
-        </p>
-        <button type="button" @click="sync_folder">Choose folder</button>
-      </preference>
     </article>
   </menu>
 </template>

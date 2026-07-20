@@ -38,6 +38,10 @@
     compact: {
       type: Boolean,
       default: false
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   })
   const preference = preferences[props.name]
@@ -74,6 +78,9 @@
 
     if (props.name === 'shadow' && new_state) preferences.enable_shadow_layers()
 
+    if (props.name === 'sync_folder' && new_state)
+      preferences.sync_svg.value = true
+
     if (props.name === 'drama') {
       preferences.drama_back.value = new_state
       preferences.drama_front.value = new_state
@@ -94,6 +101,7 @@
         <input
           :checked="preference"
           :name="name"
+          :disabled="disabled"
           role="switch"
           type="checkbox"
           switch
@@ -191,6 +199,28 @@
     a {
       color: var(--accent);
       border-color: var(--accent);
+    }
+    /* Nested preferences: collapsed until this fieldset's own switch is on */
+    & > fieldset[data-preference] {
+      display: grid;
+      grid-template-rows: 0fr;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      border: none;
+      min-width: 0;
+      transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+      & > * {
+        min-height: 0;
+        overflow: hidden;
+      }
+    }
+    &:has(> div > label > input:checked) > fieldset[data-preference] {
+      grid-template-rows: 1fr;
+      margin-top: calc(var(--base-line) * 0.5);
     }
   }
 </style>
