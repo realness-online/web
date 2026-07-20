@@ -7,10 +7,10 @@
   defineOptions({ name: 'AsFieldsetNotifications' })
 
   const { status, busy, refresh, enable, disable } = use_push()
-  const { ready, push: push_available, probe } = use_instance_capabilities()
+  const { push: push_available, probe } = use_instance_capabilities()
 
-  const show = computed(
-    () => ready.value && push_available.value && status.value !== 'unsupported'
+  const available = computed(
+    () => push_available.value && status.value !== 'unsupported'
   )
 
   mounted(async () => {
@@ -41,7 +41,7 @@
 </script>
 
 <template>
-  <fieldset v-if="show" data-preference>
+  <fieldset data-preference>
     <div>
       <h4>Get notified</h4>
       <label>
@@ -51,7 +51,12 @@
           role="switch"
           switch
           :checked="notifications"
-          :disabled="busy || status === 'blocked' || status === 'needs-install'"
+          :disabled="
+            busy ||
+            !available ||
+            status === 'blocked' ||
+            status === 'needs-install'
+          "
           @change="on_toggle" />
         <span data-slider></span>
       </label>
@@ -61,6 +66,13 @@
     </p>
     <p v-else-if="status === 'needs-install'" data-hint>
       Add Realness to your home screen first.
+    </p>
+    <p v-else-if="status === 'unsupported'" data-hint>
+      Not supported in this browser.
+    </p>
+    <p v-else-if="!push_available" data-hint>Not available.</p>
+    <p v-else data-hint>
+      Just a friendly nudge that we're here, sent Thursdays at 3pm PST.
     </p>
   </fieldset>
 </template>

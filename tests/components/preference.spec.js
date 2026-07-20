@@ -78,6 +78,26 @@ describe('@/components/preference', () => {
     expect(preferences.drama_front.value).toBe(true)
   })
 
+  it('turns sync_svg on when sync_folder is enabled', async () => {
+    preferences.sync_folder.value = false
+    preferences.sync_svg.value = false
+    const wrapper = mount({ name: 'sync_folder' })
+    await wrapper.find('input').setValue(true)
+    expect(preferences.sync_folder.value).toBe(true)
+    expect(preferences.sync_svg.value).toBe(true)
+  })
+
+  it('renders nested preferences from the default slot', () => {
+    const wrapper = shallowMount(Preference, {
+      props: { name: 'sync_folder' },
+      slots: {
+        default: '<fieldset data-preference data-nested-stub />'
+      },
+      global: { stubs: { icon: true } }
+    })
+    expect(wrapper.find('[data-nested-stub]').exists()).toBe(true)
+  })
+
   it('renders an icon and cycle hint when requested', () => {
     const wrapper = mount({ name: 'animate', icon: true })
     expect(wrapper.findComponent({ name: 'icon' }).exists()).toBe(true)

@@ -31,7 +31,9 @@ vi.mock('@/utils/serverless-auth', () => ({
 }))
 
 vi.mock('@/use/people', () => ({
-  use_me: () => ({ is_valid_name: mock_is_valid_name })
+  use_me: () => ({ is_valid_name: mock_is_valid_name }),
+  is_person: vi.fn(() => true),
+  name_error: vi.fn(() => null)
 }))
 
 vi.mock('@/components/preferences-menu', () => ({
@@ -71,12 +73,44 @@ describe('Account', () => {
     expect(wrapper.find('section#account[data-page]').exists()).toBe(true)
   })
 
+  it('renders neither flow while auth is unresolved', () => {
+    mock_current_user.value = undefined
+    const wrapper = mount()
+    expect(wrapper.find('.as-sign-on-stub').exists()).toBe(false)
+    expect(wrapper.find('#sign-out').exists()).toBe(false)
+  })
+
   it('shows the sign-in flow inline when not signed in (no redirect)', () => {
     mock_current_user.value = null
     const wrapper = mount()
     expect(wrapper.find('.as-sign-on-stub').exists()).toBe(true)
     expect(wrapper.find('#sign-out').exists()).toBe(false)
     expect(mock_replace).not.toHaveBeenCalled()
+  })
+
+  it('shows the sync folder preference when not signed in', () => {
+    mock_current_user.value = null
+    const wrapper = mount()
+    expect(wrapper.find('preference-stub').exists()).toBe(true)
+  })
+
+  it('nests the SVG preference inside sync folder', () => {
+    const wrapper = shallowMount(Account, {
+      global: {
+        stubs: {
+          ...default_stubs,
+          Preference: false
+        }
+      }
+    })
+    const sync_folder = wrapper
+      .findAllComponents({ name: 'Preference' })
+      .find(c => c.props('name') === 'sync_folder')
+    expect(sync_folder).toBeTruthy()
+    const nested = sync_folder
+      .findAllComponents({ name: 'Preference' })
+      .find(c => c.props('name') === 'sync_svg')
+    expect(nested).toBeTruthy()
   })
 
   it('redirects to the next query target after sign-in', async () => {
