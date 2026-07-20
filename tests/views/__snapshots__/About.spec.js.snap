@@ -644,7 +644,9 @@ exports[`About > Rendering > renders about view 1`] = `
     itemprop="footer"
   >
     <logo-as-link-stub />
-    <anonymous-stub />
+    <anonymous-stub
+      id="medium-is-the-message"
+    />
   </footer>
 </section>
 `;
