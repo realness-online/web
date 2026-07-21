@@ -104,7 +104,6 @@ const sitemap = build_sitemap_xml({
   extra_urls: ['/documentation.md']
 })
 fs.writeFileSync(path.join(dist_dir, 'sitemap.xml'), sitemap)
-fs.writeFileSync(path.join(project_root, 'public/sitemap.xml'), sitemap)
 console.info(`prerender: wrote ${path.join(dist_dir, 'sitemap.xml')}`)
 
 const documentation_md = path.join(project_root, 'src/content/documentation.md')

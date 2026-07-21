@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Build no longer rewrites `public/sitemap.xml`** — every build regenerated it with today's date, leaving a perpetual uncommitted diff after each deploy. `dist/sitemap.xml` (what actually ships) is unaffected; `public/sitemap.xml` stays as the static checked-in copy until next touched deliberately.
+
 ## v2.5.13 — 2026-07-21
 
 - **Folder sync rebuilt** — File System Access API directory handle persisted in IndexedDB, mutex-guarded queue mirrors thought/poster saves and deletes as human-readable files (date-titled thought folders, snippet-named poster SVGs/PNGs) instead of raw itemid dumps. New `sync_svg` preference toggles SVG export.
