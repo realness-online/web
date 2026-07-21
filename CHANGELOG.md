@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.5.13 — 2026-07-21
+
 - **Folder sync rebuilt** — File System Access API directory handle persisted in IndexedDB, mutex-guarded queue mirrors thought/poster saves and deletes as human-readable files (date-titled thought folders, snippet-named poster SVGs/PNGs) instead of raw itemid dumps. New `sync_svg` preference toggles SVG export.
 - **Account page rebuilt** — Sync folder section (choose/re-sync, live progress, Brave detection with a how-to-enable dialog) and notifications now both live under Account, visible ahead of sign-in status resolving.
 - **`base-line.styl` split** — constants-only now; the actual reset/root-properties/fluid-type-scale CSS output moves to a new `reset.styl` loaded once from `index.styl`.
