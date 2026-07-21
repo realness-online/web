@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.6.0 — 2026-07-21
+
 - **Build no longer rewrites `public/sitemap.xml`** — every build regenerated it with today's date, leaving a perpetual uncommitted diff after each deploy. `dist/sitemap.xml` (what actually ships) is unaffected; `public/sitemap.xml` stays as the static checked-in copy until next touched deliberately.
 
 ## v2.5.13 — 2026-07-21
