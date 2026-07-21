@@ -5,7 +5,6 @@
 - **Folder sync rebuilt** — File System Access API directory handle persisted in IndexedDB, mutex-guarded queue mirrors thought/poster saves and deletes as human-readable files (date-titled thought folders, snippet-named poster SVGs/PNGs) instead of raw itemid dumps. New `sync_svg` preference toggles SVG export.
 - **Account page rebuilt** — Sync folder section (choose/re-sync, live progress, Brave detection with a how-to-enable dialog) and notifications now both live under Account, visible ahead of sign-in status resolving.
 - **`base-line.styl` split** — constants-only now; the actual reset/root-properties/fluid-type-scale CSS output moves to a new `reset.styl` loaded once from `index.styl`.
-- **Flexible visual system exploration** — module/grid/repetition/transformation/color rules derived from the 6 logo tiles, documented in `visual-system.md`; sample SVG output generated for review (not wired into the app build).
 - **About hero fade** — tagline and hero poster now fade/rise in with the rest of the hero instead of snapping in or sitting blank; stagger tightened so the reveal settles quickly.
 
 ## v2.5.12 — 2026-07-17
