@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.6.1 — 2026-07-22
+
 - **Homepage was blocked from indexing** — `robots.txt` disallowed `/` with no exception for the homepage itself, and `sitemap.xml` never listed it. Added `Allow: /$` and the homepage entry so Google can crawl and index it.
 
 ## v2.6.0 — 2026-07-21
