@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Homepage was blocked from indexing** — `robots.txt` disallowed `/` with no exception for the homepage itself, and `sitemap.xml` never listed it. Added `Allow: /$` and the homepage entry so Google can crawl and index it.
+
 ## v2.6.0 — 2026-07-21
 
 - **Build no longer rewrites `public/sitemap.xml`** — every build regenerated it with today's date, leaving a perpetual uncommitted diff after each deploy. `dist/sitemap.xml` (what actually ships) is unaffected; `public/sitemap.xml` stays as the static checked-in copy until next touched deliberately.
