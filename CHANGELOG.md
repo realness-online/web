@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Favicons and OG image matched to the bone-background icons** — `192.png`, `512.png`, and `og.png` were still generated on the old dark surface; the generator now renders them on `bone` with dark text.
+
 ## v2.6.2 — 2026-07-24
 
 - **Storytelling mode trapped touch users** — the poster `<svg>` hardcoded `touch-action: pan-y`, blocking the horizontal swipe storytelling scrolls on; and the footer nav (the only way to reach Preferences and turn storytelling back off) unmounted whenever storytelling was on, leaving no touch-reachable escape since the toggle is keyboard-only (`w`). Fixed both: posters allow horizontal pan while storytelling, and the footer stays mounted.

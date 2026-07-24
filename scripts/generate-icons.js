@@ -27,8 +27,8 @@ const OG_SUBHEAD_STEP = 64
 const OG_CTA_FONT_SIZE = 40
 const OG_CTA_PADDING_X = 44
 const OG_CTA_PADDING_Y = 22
-const THEME_COLOR = '#2c2c26'
-const TEXT_COLOR = 'rgba(215, 214, 203, 0.95)'
+const THEME_COLOR = '#dbdbd4'
+const TEXT_COLOR = 'rgba(44, 44, 38, 0.95)'
 const ACCENT_COLOR = '#EC364C'
 const CTA_TEXT_COLOR = '#ffffff'
 
