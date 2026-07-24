@@ -372,6 +372,7 @@
     :data-mask-pen-mode="mask_pen_active || undefined"
     :data-orientation="landscape ? 'horizontal' : 'vertical'"
     :data-held-layer="held_layer || undefined"
+    :data-storytelling="storytelling || undefined"
     :data-aspect="
       poster_slice && aspect_ratio_mode !== 'auto'
         ? aspect_ratio_mode
@@ -479,6 +480,11 @@
     disable-ios-touch-callout();
     touch-action: pan-y;
     contain: layout;
+    &[data-storytelling] {
+      // Storytelling scrolls the deck horizontally, so let touch swipes pan
+      // the axis the poster actually scrolls on instead of eating the gesture.
+      touch-action: pan-x;
+    }
     border-radius: calc(var(--base-line) * 0.03);
     transition:
       transform 0.4s ease-in-out,

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Storytelling mode trapped touch users** — the poster `<svg>` hardcoded `touch-action: pan-y`, blocking the horizontal swipe storytelling scrolls on; and the footer nav (the only way to reach Preferences and turn storytelling back off) unmounted whenever storytelling was on, leaving no touch-reachable escape since the toggle is keyboard-only (`w`). Fixed both: posters allow horizontal pan while storytelling, and the footer stays mounted.
+
 ## v2.6.1 — 2026-07-22
 
 - **Homepage was blocked from indexing** — `robots.txt` disallowed `/` with no exception for the homepage itself, and `sitemap.xml` never listed it. Added `Allow: /$` and the homepage entry so Google can crawl and index it.
