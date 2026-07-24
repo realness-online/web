@@ -534,7 +534,7 @@
     <sync @active="on_active" @refreshed="on_sync_refreshed" />
     <as-fps v-if="info" />
     <footer
-      v-if="menu && !storytelling"
+      v-if="menu"
       :data-footer-visible="footer_visible ? 'true' : 'false'">
       <nav aria-label="App actions">
         <label
