@@ -42,6 +42,7 @@
     "format:check": "vp fmt . --check",
     "preversion": "node scripts/check-release.js --unreleased",
     "version": "node scripts/promote-changelog.js && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags",
     "release": "vp run release:gh && vp run release:npm",
     "release:npm": "npm publish",
     "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version dist/build-manifest.json --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file artifacts/release-notes.md",
