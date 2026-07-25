@@ -13,6 +13,7 @@
     extract_all_layers
   } from '@/utils/svg-to-psd'
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
+  import { draw_icon_on_canvas } from '@/utils/canvas-icon'
   import {
     render_svg_to_video_blob,
     download_video
@@ -27,9 +28,7 @@
     ref,
     inject,
     onMounted as mounted,
-    onUnmounted as unmounted,
-    h,
-    createApp as create_app
+    onUnmounted as unmounted
   } from 'vue'
   const props = defineProps({
     itemid: {
@@ -253,48 +252,6 @@
       set_working(false)
       close_menu()
     }
-  }
-
-  const draw_icon_on_canvas = async (ctx, icon_name, x, y, size) => {
-    const container = document.createElement('div')
-    container.style.position = 'absolute'
-    container.style.left = '-9999px'
-    document.body.appendChild(container)
-
-    const app = create_app({
-      render: () => h(icon, { name: icon_name })
-    })
-    app.mount(container)
-
-    const icon_element = container.querySelector('svg.icon')
-    if (!icon_element) {
-      app.unmount()
-      document.body.removeChild(container)
-      return
-    }
-
-    icon_element.setAttribute('width', String(size))
-    icon_element.setAttribute('height', String(size))
-
-    const icon_svg_string = new XMLSerializer().serializeToString(icon_element)
-    const icon_blob = new Blob([icon_svg_string], { type: 'image/svg+xml' })
-    const icon_url = URL.createObjectURL(icon_blob)
-
-    const icon_img = new Image()
-    await new Promise((resolve, reject) => {
-      icon_img.onload = resolve
-      icon_img.onerror = reject
-      icon_img.src = icon_url
-    })
-
-    ctx.save()
-    ctx.globalAlpha = 0.7
-    ctx.drawImage(icon_img, x, y, size, size)
-    ctx.restore()
-
-    URL.revokeObjectURL(icon_url)
-    app.unmount()
-    document.body.removeChild(container)
   }
 
   const on_png_layers = async event => {

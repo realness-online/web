@@ -30,12 +30,15 @@ export const merge_poster_hidden_symbols = (
  * @param {SVGSVGElement} svg_element
  * @param {number} width
  * @param {number} height
+ * @param {{ fit?: 'meet' | 'slice' }} [options] - `slice` fills the frame and
+ *   crops, for frames with an aspect ratio of their own (social previews)
  * @returns {Promise<OffscreenCanvas>}
  */
 export const render_complete_poster_to_canvas = async (
   svg_element,
   width,
-  height
+  height,
+  { fit = 'meet' } = {}
 ) => {
   const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
 
@@ -51,7 +54,7 @@ export const render_complete_poster_to_canvas = async (
   svg_clone.setAttribute('height', String(height))
   // The live poster slices to fill its grid cell. An export has no cell to
   // fill, and slice can only ever crop - meet fits the whole viewBox.
-  svg_clone.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+  svg_clone.setAttribute('preserveAspectRatio', `xMidYMid ${fit}`)
   svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
   merge_poster_hidden_symbols(svg_clone, svg_element, () => true)
