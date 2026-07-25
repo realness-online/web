@@ -1,6 +1,6 @@
 export const site_origin = 'https://realness.online'
 export const site_name = 'Realness Online'
-export const default_og_image = `${site_origin}/og.png`
+export const default_og_image = `${site_origin}/og.jpg`
 
 export const home_title =
   'Realness Online — Rotoscope Photos into Layered SVG Posters'
@@ -11,7 +11,7 @@ export const og_image_headline = 'Realness Online'
 export const og_image_subhead = 'Rotoscope photos into layered SVG posters'
 export const og_image_cta = 'Make some posters today'
 export const og_image_alt = `${og_image_headline} — ${og_image_cta}`
-export const og_image_type = 'image/png'
+export const og_image_type = 'image/jpeg'
 
 /** @typedef {Record<string, unknown>} JsonLdSchema */
 
