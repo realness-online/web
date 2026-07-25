@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Download menu had no surface over a poster** — the poster footer styled its menus with a descendant selector and then reset `background`/`backdrop-filter` on anything nested, which caught the download sheet along with the author row. Footer menu rules are scoped to direct children now, and the bar's glass moved to a `::before` so the bar stops being a Backdrop Root — nested `backdrop-filter` was sampling the bar instead of the poster, leaving the sheet's blur dead.
+- **PNG, PSD, and layer exports cropped the poster edges** — every raster path clones the live `<svg>`, which carries `preserveAspectRatio="xMidY… slice"` to fill its grid cell. `slice` scales to cover the target canvas, so it can only ever crop; export clones now set `xMidYMid meet` to fit the whole viewBox.
+- **Download menu rebuilt** — formats are real `<button>`s (focusable, Enter activates) in a column sized to its labels; the per-layer PNG export moved from an unlabelled icon buried in the corner of the PNG button to its own chip alongside it; sheet and chip slide up on the poster grid's easing curve.
+
 ## v2.6.3 — 2026-07-24
 
 - **Favicons and OG image matched to the bone-background icons** — `192.png`, `512.png`, and `og.png` were still generated on the old dark surface; the generator now renders them on `bone` with dark text.

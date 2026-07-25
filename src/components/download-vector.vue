@@ -435,44 +435,29 @@
       <icon name="download" />
     </a>
     <menu v-if="menu_open" ref="menu_ref">
-      <a v-if="!video_exporting" @click="on_download_svg" title="Download SVG">
-        SVG
-      </a>
-      <a
-        v-if="!video_exporting"
-        @click="on_download_png"
-        title="Download PNG"
-        aria-label="Download full poster as PNG">
-        <icon name="add" @click="on_png_layers" />
-        PNG
-      </a>
-      <a
-        v-if="!video_exporting"
-        @click="on_download_psd"
-        title="Download PSD"
-        aria-label="Download PSD">
-        PSD
-      </a>
-      <a
-        v-if="!video_exporting"
-        @click="on_download_video"
-        title="Download video"
-        aria-label="Download animated video">
-        Video
-      </a>
-      <a
-        v-if="!video_exporting"
-        @click="on_download_glb"
-        title="Download GLB for Blender"
-        aria-label="Download GLB for Blender">
-        GLB
-      </a>
-      <output v-else> {{ video_progress }}/{{ video_total }} frames </output>
+      <template v-if="!video_exporting">
+        <button type="button" @click="on_download_svg">SVG</button>
+        <span role="group">
+          <button type="button" title="PNG layers" @click="on_png_layers">
+            <icon name="add" />
+          </button>
+          <button type="button" @click="on_download_png">PNG</button>
+        </span>
+        <button type="button" @click="on_download_psd">PSD</button>
+        <button type="button" @click="on_download_video">Video</button>
+        <button type="button" @click="on_download_glb">GLB</button>
+      </template>
+      <output v-else>{{ video_progress }}/{{ video_total }} frames</output>
     </menu>
   </nav>
 </template>
 
 <style lang="stylus">
+  // Same curve as-figure uses for the poster grid, so the sheet moves like the
+  // rest of the app. Named so the animation shorthands stay on one line -
+  // Stylus cannot parse a wrapped declaration.
+  sheet-ease = cubic-bezier(0.22, 1, 0.36, 1)
+
   nav[aria-label='Download options'] {
     position: relative;
 
@@ -485,47 +470,102 @@
       bottom: 100%;
       right: 0;
       left: auto;
-      max-width: min(calc(100vw - var(--base-line) * 4), base-line * 15);
+      // Clear the footer bar's own top padding (base-line), then a small gap,
+      // so the sheet sits above the bar instead of bleeding into it.
+      margin-bottom: base-line * 1.25;
+      // A column of one-word formats: max-content keeps the sheet as narrow as
+      // its widest label, so anchoring right can never push it off the left.
+      width: max-content;
+      max-width: calc(100vw - var(--base-line) * 4);
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      align-items: center;
-      font-size: larger;
-      gap: base-line * 0.25;
-      padding-inline: base-line * 0.25;
+      flex-direction: column;
+      align-items: stretch;
+      padding: base-line * 0.25;
       frosted-glass();
       border-radius: base-line * 0.25;
       z-index: 6;
-      & > a {
-        position: relative;
-        padding-inline: base-line * 0.5;
+      // Unfolds out of the trigger below it, so the origin is the corner the
+      // sheet is anchored to.
+      transform-origin: bottom right;
+      animation: download-sheet 0.28s sheet-ease both;
+      button {
+        appearance: none;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: inherit;
+        line-height: 1.4;
+        padding-inline: base-line * 0.33;
         border-radius: base-line * 0.125;
         white-space: nowrap;
+        text-align: right;
         cursor: pointer;
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
           background: var(--accent);
           color: var(--contrast);
         }
+      }
 
-        & > svg.icon,
-        & > icon {
+      // Layers hangs off the PNG row on its own glass, outside the sheet, so
+      // it costs the sheet no width and leaves more poster showing.
+      & > span[role='group'] {
+        position: relative;
+
+        & > button:last-child {
+          display: block;
+          width: 100%;
+        }
+
+        & > button:first-child {
           position: absolute;
-          top: base-line * 0.15;
-          left: base-line * 0.15;
-          width: base-line * 0.5;
-          height: base-line * 0.5;
-          cursor: pointer;
-          pointer-events: auto;
-          z-index: 1;
+          top: 50%;
+          right: 100%;
+          translate: 0 -50%;
+          margin-right: base-line * 0.25;
+          display: flex;
+          padding: base-line * 0.165;
+          border-radius: 50%;
+          frosted-glass();
+          animation: download-layers 0.2s sheet-ease 0.22s both;
+
+          & > svg {
+            width: base-line * 0.75;
+            height: base-line * 0.75;
+          }
         }
       }
 
       output {
-        padding-inline: base-line * 0.5;
+        padding-inline: base-line * 0.33;
+        text-align: right;
         opacity: 0.9;
       }
+    }
+  }
+
+  @keyframes download-sheet {
+    from {
+      opacity: 0;
+      translate: 0 base-line * 0.75;
+      scale: 0.96;
+    }
+  }
+
+  // Preserves the chip's own -50% centering while it slides out.
+  @keyframes download-layers {
+    from {
+      opacity: 0;
+      translate: base-line * 0.5 -50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav[aria-label='Download options'] menu,
+    nav[aria-label='Download options'] menu span[role='group'] > button:first-child {
+      animation-duration: 0.01ms;
+      animation-delay: 0ms;
     }
   }
 </style>
