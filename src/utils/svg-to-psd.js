@@ -43,6 +43,8 @@ const strip_clone_noise = svg_clone => {
 const size_clone_to_canvas = (svg_clone, width, height) => {
   svg_clone.setAttribute('width', String(width))
   svg_clone.setAttribute('height', String(height))
+  // Match poster-canvas: slice crops to fill, meet fits the whole viewBox.
+  svg_clone.setAttribute('preserveAspectRatio', 'xMidYMid meet')
   svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 }
 

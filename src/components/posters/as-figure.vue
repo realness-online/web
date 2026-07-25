@@ -762,10 +762,18 @@
       }
 
       & > footer > menu {
-        frosted-glass();
-      }
-
-      menu {
+        // The glass lives on a pseudo-element, not the bar itself. An element
+        // with backdrop-filter becomes a Backdrop Root for everything inside
+        // it, which kills the blur on the download sheet that opens from here.
+        position: relative;
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          border-radius: inherit;
+          frosted-glass();
+        }
         pointer-events: auto;
         display: flex;
         justify-content: space-between;
@@ -839,13 +847,13 @@
         }
       }
 
-      & > footer > menu menu {
-        background: transparent;
-        backdrop-filter: none;
-        padding: 0;
-        border-radius: 0;
-        min-width: auto;
-        max-width: none;
+      // The author menu sits inside the footer bar; it needs the row layout
+      // but not a second frosted surface. Menus deeper than this (the
+      // download popup) style themselves.
+      & > footer > menu > menu {
+        display: flex;
+        align-items: center;
+        gap: base-line * 0.5;
       }
     }
   }

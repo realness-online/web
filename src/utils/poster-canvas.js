@@ -49,6 +49,9 @@ export const render_complete_poster_to_canvas = async (
 
   svg_clone.setAttribute('width', String(width))
   svg_clone.setAttribute('height', String(height))
+  // The live poster slices to fill its grid cell. An export has no cell to
+  // fill, and slice can only ever crop - meet fits the whole viewBox.
+  svg_clone.setAttribute('preserveAspectRatio', 'xMidYMid meet')
   svg_clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
   merge_poster_hidden_symbols(svg_clone, svg_element, () => true)
