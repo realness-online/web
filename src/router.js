@@ -45,6 +45,11 @@ const routes = [
     component: () => import('@/views/Colors'),
     meta: { support: true }
   },
+  {
+    path: '/og-candidates',
+    component: () => import('@/views/OgCandidates'),
+    meta: { support: true }
+  },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]
 const router = createRouter({
