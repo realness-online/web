@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.6.5 — 2026-07-28
+
 - **Only the homepage was indexed** — Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.
 - **Pressing an icon blobbed its sprite** — `svg use:active` dates from poster layer selection but matched every `<use>` in the app, so the gear (a 16-unit sprite carrying a stroke) picked up a 4px stroke that swallowed its teeth. Scoped to `svg[itemtype='/posters']`.
 - **OG image is a real poster now** — a hand-picked 1280x960 jpg replaces the generated card across `index.html`, the prerender defaults, and the JSON-LD image.
