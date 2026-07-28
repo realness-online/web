@@ -48,7 +48,7 @@
     "release": "vp run release:gh && vp run release:npm",
     "release:npm": "npm publish",
     "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version dist/build-manifest.json --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file artifacts/release-notes.md",
-    "ship": "npm run deploy && npm run release:gh && npm run verify",
+    "ship": "npm run deploy && npm run release:gh && npm run verify -- --release",
     "verify": "node scripts/verify-deploy.js",
     "verify:deploy": "node scripts/verify-deploy.js",
     "verify:deploy:site": "node scripts/verify-deploy.js --from-site",
