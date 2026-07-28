@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Only the homepage was indexed** — Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.
+- **Pressing an icon blobbed its sprite** — `svg use:active` dates from poster layer selection but matched every `<use>` in the app, so the gear (a 16-unit sprite carrying a stroke) picked up a 4px stroke that swallowed its teeth. Scoped to `svg[itemtype='/posters']`.
+- **OG image is a real poster now** — a hand-picked 1280x960 jpg replaces the generated card across `index.html`, the prerender defaults, and the JSON-LD image.
+- **OG candidates generated from the admin's posters** — an unlisted `/og-candidates` route mounts each landscape poster and cuts two 1200x630 frames: full bleed, and the same poster under the marketing card copy. A driver script serves `dist` and works the route in headless Chrome over the devtools protocol — no new dependencies, reusing the `CHROME_PATH` the score script already needs. `npm run og:pick` installs a chosen frame as `public/og.jpg` after checking its dimensions.
+- **`npm run ship` verifies the version it just cut** — `verify` defaults to the newest GitHub release carrying a manifest, so ship was checking the previous release rather than `package.json`'s version.
+
 ## v2.6.4 — 2026-07-25
 
 - **Download menu had no surface over a poster** — the poster footer styled its menus with a descendant selector and then reset `background`/`backdrop-filter` on anything nested, which caught the download sheet along with the author row. Footer menu rules are scoped to direct children now, and the bar's glass moved to a `::before` so the bar stops being a Backdrop Root — nested `backdrop-filter` was sampling the bar instead of the poster, leaving the sheet's blur dead.
