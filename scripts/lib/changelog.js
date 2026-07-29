@@ -79,7 +79,7 @@ export const promote_unreleased = (changelog, version, date = new Date()) => {
       '## Unreleased is empty. Add release notes before npm version.'
     )
 
-  const iso = date.toISOString().slice(0, 10)
+  const [iso] = date.toISOString().split('T')
   const released_heading = `## v${bare} — ${iso}`
   const without = strip_unreleased(changelog)
   const title_match = without.match(/^#\s+.+\n+/)
