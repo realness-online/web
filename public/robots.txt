@@ -8,5 +8,9 @@ Allow: /terms
 Allow: /privacy
 Allow: /llms.txt
 Allow: /documentation.md
+Allow: /assets/
+Allow: /fonts/
+Allow: /og.png
+Allow: /og.jpg
 
 Sitemap: https://realness.online/sitemap.xml
