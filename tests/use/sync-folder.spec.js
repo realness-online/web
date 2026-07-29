@@ -111,6 +111,18 @@ function with_setup(composable, { provide = {} } = {}) {
   return result
 }
 
+/** @type {ReturnType<typeof vi.spyOn>[]} */
+const console_spies = []
+
+// Silence the console for paths that log on purpose, and assert the message
+// instead. Expected noise buries the errors we do want to see.
+/** @param {'warn' | 'error'} method */
+function silence_console(method) {
+  const spy = vi.spyOn(console, method).mockImplementation(() => {})
+  console_spies.push(spy)
+  return spy
+}
+
 describe('@/use/sync-folder', () => {
   /** @type {ReturnType<typeof vi.fn>} */
   let set_working
@@ -216,6 +228,7 @@ describe('@/use/sync-folder', () => {
   afterEach(() => {
     svg_el?.closest('figure')?.remove()
     svg_el = null
+    console_spies.splice(0).forEach(spy => spy.mockRestore())
   })
 
   it('sync_folder_supported is false when File System Access API is missing', () => {
@@ -237,6 +250,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('choose_folder stores the handle without requiring me', async () => {
+    const warn = silence_console('warn')
     delete localStorage.me
     const { choose_folder } = with_setup(() => use(), {
       provide: { set_working }
@@ -245,6 +259,9 @@ describe('@/use/sync-folder', () => {
     await choose_folder()
     expect(show_directory_picker).toHaveBeenCalled()
     expect(set).toHaveBeenCalledWith('sync_folder_handle', folder_handle)
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] abort: localStorage.me missing'
+    )
   })
 
   it('sync_now exports poster svg into a named thought folder', async () => {
@@ -345,6 +362,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('skips posters that cannot be confirmed instead of waiting to timeout', async () => {
+    const warn = silence_console('warn')
     mock_load.mockResolvedValue(null)
     const { sync_now } = with_setup(() => use(), {
       provide: { set_working }
@@ -356,6 +374,10 @@ describe('@/use/sync-folder', () => {
 
     expect(mock_build_download_svg).not.toHaveBeenCalled()
     expect(mock_figure_props.length).toBe(0)
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] poster unavailable; skipping',
+      poster_id
+    )
   })
 
   it('skips rewrite when manifest matches and files exist on disk', async () => {
@@ -453,6 +475,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('skips the poster when the figure emits missing', async () => {
+    const error = silence_console('error')
     mock_figure_missing.value = true
     const { sync_now } = with_setup(() => use(), {
       provide: { set_working }
@@ -464,9 +487,15 @@ describe('@/use/sync-folder', () => {
 
     expect(mock_build_download_svg).not.toHaveBeenCalled()
     expect(write).not.toHaveBeenCalled()
+    expect(error).toHaveBeenCalledWith(
+      '[sync-folder] skipped poster',
+      poster_id,
+      expect.any(Error)
+    )
   })
 
   it('does not retry a failed thought until the next user-triggered sync', async () => {
+    const error = silence_console('error')
     mock_export_ready.mockRejectedValue(new Error('symbols never loaded'))
     const { sync_now } = with_setup(() => use(), {
       provide: { set_working }
@@ -489,5 +518,10 @@ describe('@/use/sync-folder', () => {
     await flushPromises()
     expect(mock_figure_props.length).toBe(2)
     expect(write).toHaveBeenCalled()
+    expect(error).toHaveBeenCalledWith(
+      '[sync-folder] skipped poster',
+      poster_id,
+      expect.any(Error)
+    )
   })
 })

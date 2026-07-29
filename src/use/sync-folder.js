@@ -354,6 +354,27 @@ const scan_poster_keys = async me => {
 }
 
 /**
+ * Items held by one archive directory, network-filled when the cache is empty.
+ * @param {string} author
+ * @param {number | string} archive_id
+ * @returns {Promise<(number | string)[]>}
+ */
+const load_archive_items = async (author, archive_id) => {
+  const archive_path = /** @type {Id} */ (
+    `/${author.slice(1)}/posters/${archive_id}/`
+  )
+  let archive_dir = await as_directory(archive_path)
+  if (!archive_dir?.items?.length && navigator.onLine)
+    try {
+      archive_dir =
+        (await load_directory_from_network(archive_path)) ?? archive_dir
+    } catch (error) {
+      console.warn('[sync-folder] archive load failed', archive_id, error)
+    }
+  return archive_dir?.items ?? []
+}
+
+/**
  * @param {Id} me
  * @returns {Promise<Item[]>}
  */
@@ -370,58 +391,30 @@ const gather_poster_items = async me => {
     ...(directory?.items ?? [])
   ])
 
-  console.info('[sync-folder] posters inventory', {
-    me,
-    scanned: scanned.size,
-    local_items: local?.items?.length ?? 0,
-    directory_items: directory?.items?.length ?? 0,
-    archives: directory?.archive?.length ?? 0,
-    online: navigator.onLine
-  })
-
   // Stale empty directory cache skips network in as_directory — force a fetch.
-  if (created.size === 0 && navigator.onLine) {
-    console.info('[sync-folder] forcing network posters directory')
+  if (created.size === 0 && navigator.onLine)
     try {
       const network = await load_directory_from_network(root)
       directory = network ?? directory
       for (const item of network?.items ?? []) created.add(item)
-      console.info('[sync-folder] network posters', {
-        items: network?.items?.length ?? 0,
-        archives: network?.archive?.length ?? 0
-      })
     } catch (error) {
       console.warn('[sync-folder] network posters failed', error)
     }
-  }
 
-  for (const archive_id of directory?.archive ?? []) {
-    const author = as_author(root)
-    if (!author) continue
-    const archive_path = /** @type {Id} */ (
-      `/${author.slice(1)}/posters/${archive_id}/`
-    )
-    let archive_dir = await as_directory(archive_path)
-    if (!archive_dir?.items?.length && navigator.onLine)
-      try {
-        archive_dir =
-          (await load_directory_from_network(archive_path)) ?? archive_dir
-      } catch (error) {
-        console.warn('[sync-folder] archive load failed', archive_id, error)
-      }
-    console.info('[sync-folder] posters archive', {
-      archive_id,
-      items: archive_dir?.items?.length ?? 0
-    })
-    for (const item of archive_dir?.items ?? []) created.add(item)
-  }
+  const author = as_author(root)
+  const archives = author
+    ? await Promise.all(
+        (directory?.archive ?? []).map(archive_id =>
+          load_archive_items(author, archive_id)
+        )
+      )
+    : []
+  for (const items of archives) for (const item of items) created.add(item)
 
-  const items = [...created].map(c => /** @type {Item} */ ({
+  return [...created].map(c => /** @type {Item} */ ({
     id: /** @type {Id} */ (`${me}/posters/${c}`),
     type: 'posters'
   }))
-  console.info('[sync-folder] poster items gathered', items.length)
-  return items
 }
 
 /**
@@ -432,29 +425,17 @@ const gather_poster_items = async me => {
 const gather_statements = async me => {
   const statements_id = /** @type {Id} */ (`${me}/statements`)
   let statements = await list(statements_id)
-  console.info('[sync-folder] statements page', {
-    statements_id,
-    count: statements.length,
-    has_localStorage: Boolean(
-      typeof localStorage !== 'undefined' && localStorage.getItem(statements_id)
-    )
-  })
 
   if (!statements.length && navigator.onLine)
     try {
-      console.info('[sync-folder] forcing network statements page')
       const from_network = await load_from_network(statements_id)
-      if (from_network) {
-        statements = type_as_list(from_network)
-        console.info('[sync-folder] network statements', statements.length)
-      }
+      if (from_network) statements = type_as_list(from_network)
     } catch (error) {
       console.warn('[sync-folder] network statements failed', error)
     }
 
   if (!statements.length) {
     const legacy = await list(/** @type {Id} */ (`${me}/thoughts`))
-    console.info('[sync-folder] legacy thoughts page', legacy.length)
     if (legacy.length)
       statements = legacy.map(item => {
         const legacy_item =
@@ -468,21 +449,20 @@ const gather_statements = async me => {
         })
       })
   }
-  if (statements.length || typeof localStorage === 'undefined') {
-    console.info('[sync-folder] statements gathered', statements.length)
+  if (statements.length || typeof localStorage === 'undefined')
     return statements
-  }
 
   const prefix = `${me}/statements/`
-  /** @type {Item[]} */
-  const found = []
+  /** @type {Id[]} */
+  const stray = []
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (!key?.startsWith(prefix)) continue
-    const item = await load(/** @type {Id} */ (key))
-    if (item) found.push(item)
+    if (key?.startsWith(prefix)) stray.push(/** @type {Id} */ (key))
   }
-  console.info('[sync-folder] statements from individual keys', found.length)
+  /** @type {Item[]} */
+  const found = []
+  for (const item of await Promise.all(stray.map(key => load(key))))
+    if (item) found.push(item)
   return found
 }
 
@@ -493,18 +473,7 @@ const gather_statements = async me => {
 const gather_thoughts = async me => {
   const poster_items = await gather_poster_items(me)
   const statements = await gather_statements(me)
-  const thoughts = thoughts_for_author([...poster_items, ...statements])
-  console.info('[sync-folder] thoughts_for_author', {
-    posters: poster_items.length,
-    statements: statements.length,
-    thoughts: thoughts.length,
-    sample: thoughts.slice(0, 3).map(t => ({
-      started_at: t.started_at,
-      posters: t.posters.length,
-      statements: t.statements.length
-    }))
-  })
-  return thoughts
+  return thoughts_for_author([...poster_items, ...statements])
 }
 
 /**
@@ -747,17 +716,13 @@ const entry_on_disk = async (root, entry, thought) => {
  */
 const validate_manifest_on_disk = async (root, manifest_thoughts, thoughts) => {
   const by_start = new Map(thoughts.map(t => [String(t.started_at), t]))
-  let dropped = 0
   /* oxlint-disable no-await-in-loop -- sequential handle probes */
   for (const [started_key, entry] of Object.entries(manifest_thoughts)) {
     const ok = await entry_on_disk(root, entry, by_start.get(started_key))
     if (ok) continue
     delete manifest_thoughts[started_key]
-    dropped++
   }
   /* oxlint-enable no-await-in-loop */
-  if (dropped)
-    console.info('[sync-folder] manifest entries missing on disk', dropped)
 }
 
 /**
@@ -766,6 +731,7 @@ const validate_manifest_on_disk = async (root, manifest_thoughts, thoughts) => {
  * @param {Set<string>} keep
  */
 const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
+  /* oxlint-disable no-await-in-loop -- sequential writes to one directory handle */
   for (const started_key of Object.keys(manifest_thoughts)) {
     if (keep.has(started_key)) continue
     const path = manifest_thoughts[started_key]?.path
@@ -777,6 +743,7 @@ const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
       }
     delete manifest_thoughts[started_key]
   }
+  /* oxlint-enable no-await-in-loop */
 }
 
 /**
@@ -785,11 +752,6 @@ const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
  * @returns {Promise<boolean>}
  */
 export const run_folder_sync = async (opts = {}) => {
-  console.info('[sync-folder] run start', {
-    pref: sync_folder_pref.value,
-    sync_svg: sync_svg.value,
-    me: localStorage.me ?? null
-  })
   if (!sync_folder_pref.value) {
     console.warn('[sync-folder] abort: sync_folder preference is off')
     return false
@@ -806,10 +768,6 @@ export const run_folder_sync = async (opts = {}) => {
     folder_sync_status.value = 'needs_permission'
     return false
   }
-  console.info('[sync-folder] folder handle', {
-    name: /** @type {{ name?: string }} */ (handle).name
-  })
-
   const allowed = await ensure_folder_permission(handle)
   if (!allowed) {
     console.warn('[sync-folder] abort: folder permission denied')
@@ -853,10 +811,6 @@ export const run_folder_sync = async (opts = {}) => {
     /** @type {{ thoughts?: Record<string, { path: string, key: string }>, last_synced_at?: string }} */
     const manifest = (await get(SYNC_FOLDER_MANIFEST_KEY)) || { thoughts: {} }
     const manifest_thoughts = { ...manifest.thoughts }
-    console.info('[sync-folder] manifest', {
-      entries: Object.keys(manifest_thoughts).length,
-      last_synced_at: manifest.last_synced_at ?? null
-    })
     await validate_manifest_on_disk(root, manifest_thoughts, thoughts)
     const prior_paths = new Set(
       Object.values(manifest_thoughts).map(entry => entry.path)
@@ -868,12 +822,6 @@ export const run_folder_sync = async (opts = {}) => {
       thoughts,
       manifest_thoughts
     )
-    console.info('[sync-folder] batch selected', {
-      batch: batch.length,
-      library_total,
-      remaining_unsynced,
-      batch_starts: batch.map(t => t.started_at)
-    })
     const total = batch.length
     const batch_detail = () => {
       if (total)
@@ -894,13 +842,6 @@ export const run_folder_sync = async (opts = {}) => {
         while (next_index < batch.length) {
           const i = next_index++
           assert_run_active(run)
-          console.info('[sync-folder] sync thought', {
-            index: i + 1,
-            total,
-            started_at: batch[i].started_at,
-            posters: batch[i].posters.length,
-            statements: batch[i].statements.length
-          })
           await sync_one_thought(session, batch[i], container, {
             index: ++completed,
             total
@@ -943,11 +884,6 @@ export const run_folder_sync = async (opts = {}) => {
     })
     folder_sync_last_at.value = last_synced_at
     folder_sync_name.value = handle.name ?? folder_sync_name.value
-    console.info('[sync-folder] run complete', {
-      wrote: total,
-      remaining_unsynced,
-      manifest_entries: Object.keys(manifest_thoughts).length
-    })
 
     if (remaining_unsynced > 0) {
       folder_sync_status.value = 'syncing'
@@ -957,7 +893,6 @@ export const run_folder_sync = async (opts = {}) => {
     return true
   } catch (error) {
     if (error instanceof Error && error.name === 'FolderSyncCancelled') {
-      console.info('[sync-folder] cancelled')
       await clean_aborted_run(root, run)
       folder_sync_status.value = 'idle'
       folder_sync_error.value = null
@@ -1014,10 +949,7 @@ const schedule_folder_drain = () => {
  * @param {{ set_working?: (v: boolean) => void, force?: boolean }} [opts]
  */
 export const drain_folder_queue = async (opts = {}) => {
-  if (drain_inflight) {
-    console.info('[sync-folder] drain already in flight; joining')
-    return drain_inflight
-  }
+  if (drain_inflight) return drain_inflight
   drain_inflight = (async () => {
     const mutex = mutex_for('sync:folder-queue')
     await mutex.lock()
@@ -1030,15 +962,7 @@ export const drain_folder_queue = async (opts = {}) => {
       mutex.unlock()
     }
 
-    console.info('[sync-folder] drain', {
-      queue: queue.length,
-      force: Boolean(opts.force),
-      pref: sync_folder_pref.value
-    })
-    if (!queue.length && !opts.force) {
-      console.info('[sync-folder] drain skip: empty queue')
-      return
-    }
+    if (!queue.length && !opts.force) return
     if (!sync_folder_pref.value) {
       console.warn('[sync-folder] drain skip: preference off')
       return
