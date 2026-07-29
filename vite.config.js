@@ -196,6 +196,14 @@ export default defineConfig({
         rules: {
           'no-magic-numbers': 'off'
         }
+      },
+      {
+        // Build tooling drives one browser, one page, one poll at a time.
+        // Sequential await is the point, not an oversight.
+        files: ['scripts/**', 'src/views/OgCandidates.vue'],
+        rules: {
+          'no-await-in-loop': 'off'
+        }
       }
     ],
     options: {

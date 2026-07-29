@@ -2,8 +2,11 @@ const SOI = 0xd8
 const MARKER = 0xff
 const SOF_FIRST = 0xc0
 const SOF_LAST = 0xcf
-// Frame markers that share the SOF range but carry no dimensions.
-const NOT_A_FRAME = [0xc4, 0xc8, 0xcc]
+// Markers that share the SOF range but carry no dimensions.
+const DHT = 0xc4 // define huffman table
+const JPG = 0xc8 // reserved
+const DAC = 0xcc // define arithmetic coding
+const NOT_A_FRAME = [DHT, JPG, DAC]
 const HEADER_BYTES = 2
 const SEGMENT_LENGTH_BYTES = 2
 const HEIGHT_OFFSET = 5
