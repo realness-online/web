@@ -48,7 +48,7 @@ const fail = message => {
 }
 
 if (!fs.existsSync(path.join(dist_dir, 'index.html')))
-  fail('dist/index.html missing - run npm run build first')
+  fail('dist/index.html missing - npm run og:candidates builds first')
 
 if (!chrome_path)
   fail(

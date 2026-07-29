@@ -21,7 +21,6 @@ const CTA_PADDING_X = 34
 const CTA_PADDING_Y = 18
 const HEADLINE_GAP = 21
 const SUBHEAD_GAP = 34
-const MARK_RATIO = 0.05
 
 /**
  * Only landscape posters survive the crop into a 1.91:1 frame with anything
@@ -120,13 +119,4 @@ export const draw_og_card = (ctx, copy) => {
   const headline_baseline = subhead_baseline - SUBHEAD_SIZE - HEADLINE_GAP
   ctx.font = `bold ${HEADLINE_SIZE}px Lato, sans-serif`
   ctx.fillText(copy.headline, MARGIN, headline_baseline)
-}
-
-/**
- * Realness mark, top-left, on the poster-only composition.
- * @returns {{ size: number, x: number, y: number }}
- */
-export const og_mark_placement = () => {
-  const size = Math.round(OG_HEIGHT * MARK_RATIO)
-  return { size, x: MARGIN, y: MARGIN }
 }

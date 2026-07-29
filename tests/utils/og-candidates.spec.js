@@ -4,8 +4,7 @@ import {
   OG_HEIGHT,
   candidate_filename,
   draw_og_card,
-  landscape_posters,
-  og_mark_placement
+  landscape_posters
 } from '@/utils/og-candidates'
 
 const recording_context = () => {
@@ -68,12 +67,6 @@ describe('@/utils/og-candidates', () => {
   it('names a candidate after its poster and style', () => {
     expect(candidate_filename('/+16282281824/posters/1775512190351', 'card')) //
       .toBe('1775512190351-card.jpg')
-  })
-
-  it('places the mark inside the frame', () => {
-    const { size, x, y } = og_mark_placement()
-    expect(x + size).toBeLessThan(OG_WIDTH)
-    expect(y + size).toBeLessThan(OG_HEIGHT)
   })
 
   it('draws card copy bottom up, inside the frame', () => {

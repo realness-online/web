@@ -8,7 +8,6 @@
   import { find_geology_symbol, load_cutout_flags } from '@/utils/geology'
   import { wait_for_poster_export_ready } from '@/utils/export-poster'
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
-  import { draw_icon_on_canvas } from '@/utils/canvas-icon'
   import { mosaic } from '@/utils/preference'
   import {
     OG_WIDTH,
@@ -17,7 +16,6 @@
     draw_og_card,
     ensure_og_fonts,
     landscape_posters,
-    og_mark_placement,
     resolve_css_color
   } from '@/utils/og-candidates'
   import {
@@ -120,8 +118,6 @@
    */
   const bleed_candidate = async (itemid, svg) => {
     const canvas = await og_frame(svg)
-    const { size, x, y } = og_mark_placement()
-    await draw_icon_on_canvas(canvas.getContext('2d'), 'realness', x, y, size)
     return {
       itemid,
       style: 'bleed',
