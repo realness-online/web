@@ -1,0 +1,17 @@
+{
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "storage": {
+      "port": 9299
+    },
+    "hub": {
+      "port": 4401
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

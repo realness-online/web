@@ -1,25 +1,38 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    function owns(mobile) {
+      return request.auth != null
+        && request.auth.token.phone_number == mobile;
+    }
+
     // Push subscriptions live outside the public `people/` tree so endpoints
     // are never world-readable. Owner-only; the admin SDK (functions send
     // path) bypasses these rules to read across all subscribers.
     match /subscriptions/{mobile}/{sub} {
-      allow read, write, delete: if request.auth != null
-        && request.auth.token.phone_number == mobile;
+      allow read, write, delete: if owns(mobile);
     }
-    match /people/{mobile}/relations.html.gz {
-      allow read, write, delete: if request.auth != null
-        && request.auth.token.phone_number == mobile;
-    }
-    match /people/{path=**} {
-      allow read: if !path.matches('relations.html.gz');
-    }
-    match /people/{mobile}/{path=**} {
-      allow read: if path != 'relations.html.gz'
-        || request.auth != null && request.auth.token.phone_number == mobile;
-      allow write, delete: if request.auth != null
-        && request.auth.token.phone_number == mobile;
+
+    match /people/{mobile} {
+      // Every match that could reach relations.html.gz has to exclude it by
+      // name. Rules OR together, so one permissive match undoes every
+      // restriction above it — a single-segment wildcard binds a string and
+      // can be compared, where `{path=**}` binds a Path and cannot.
+      match /relations.html.gz {
+        allow read, write, delete: if owns(mobile);
+      }
+
+      // Files sitting directly under a person: index.html.gz and friends.
+      match /{file} {
+        allow read: if file != 'relations.html.gz';
+        allow write, delete: if owns(mobile);
+      }
+
+      // posters/, statements/, events/ and anything nested inside them.
+      match /{folder}/{path=**} {
+        allow read: if folder != 'relations.html.gz';
+        allow write, delete: if owns(mobile);
+      }
     }
   }
 }
