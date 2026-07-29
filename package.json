@@ -31,7 +31,7 @@
     "build:icons": "node scripts/generate-icons.js",
     "build:workers": "WORKER_NAME=vector vp build -c workers.config.js && WORKER_NAME=compressor vp build -c workers.config.js && WORKER_NAME=tracer vp build -c workers.config.js",
     "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm",
-    "og:candidates": "CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/generate-og-candidates.js",
+    "og:candidates": "vp run build && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/generate-og-candidates.js",
     "og:pick": "node scripts/pick-og.js",
     "score": "vp run build && CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.staticDistDir=dist --collect.url=/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
     "score:prod": "CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
@@ -66,9 +66,10 @@
     "test:ui": "vp test --ui",
     "test:fail-fast": "vp test run --bail=1 --reporter=dot",
     "test:keymaps": "node test-keymap-build.js",
+    "test:rules": "firebase emulators:exec --only storage --config firebase.test.json 'vp test run -c vitest.config.storage-rules.js'",
     "fallow:fix": "fallow fix",
     "type": "tsc --pretty",
-    "pre-commit": "vp check --fix && vp run type && vp test run",
+    "pre-commit": "vp check --fix && vp run type && vp test run && npm run test:rules",
     "storage:compress": "node scripts/compress-files.js",
     "storage:upload": "node scripts/upload-files.js",
     "storage:download": "node scripts/download-files.js",
@@ -92,6 +93,7 @@
     "vue-router": "5.0.4"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@lhci/cli": "^0.15.1",
     "@testing-library/jest-dom": "6.9.1",
     "@vitejs/plugin-vue": "6.0.5",
