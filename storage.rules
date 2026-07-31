@@ -13,6 +13,14 @@ service firebase.storage {
       allow read, write, delete: if owns(mobile);
     }
 
+    // The phonebook is a listAll on `people/`, and a list is evaluated against
+    // a wildcard rather than the literal segment. `read` is `get` plus `list`,
+    // and it was granting both here that handed out relations.html.gz; `list`
+    // alone returns the names under a prefix and never the bytes of a file.
+    match /people/{path=**} {
+      allow list: if request.auth != null;
+    }
+
     match /people/{mobile} {
       // Every match that could reach relations.html.gz has to exclude it by
       // name. Rules OR together, so one permissive match undoes every

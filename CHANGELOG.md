@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Nobody could see anybody else** — v2.6.6 closed a hole that let anyone read your follow list, and in doing so took away permission to list the directory of people, so realness could only show you your own posters and thoughts. Reading the directory is allowed again, for signed-in people only. Your follow list stays private, and the phone directory is no longer readable by anyone who is not signed in.
+
 ## v2.6.6 — 2026-07-31
 
 - **Anyone could read a person's relations file** — the guard `!path.matches('relations.html.gz')` sat on a `{path=**}` wildcard, which binds a Path rather than a string, so it never excluded the file; rules OR together, so that one permissive match handed the private follow list to any reader, signed in or not. Every match that can reach the file now excludes it by name through single-segment wildcards, and `npm run test:rules` runs `storage.rules` against the storage emulator as part of pre-commit.
