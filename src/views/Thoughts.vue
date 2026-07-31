@@ -33,7 +33,7 @@
   import { use as use_statements } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters, geology_layers } from '@/use/poster'
-  import { use_feed } from '@/use/feed'
+  import { use_feed, authors_to_reload } from '@/use/feed'
   import { use_keymap } from '@/use/key-commands'
   import {
     storytelling,
@@ -93,6 +93,8 @@
   const feed_needs_refresh = inject('feed_needs_refresh', null)
   /** @type {(reset?: boolean) => Promise<void>} */
   let fill_statements = async () => {}
+  const shown_people_ids = () =>
+    /** @type {Id[]} */ (people.value.map(person => person.id))
 
   const {
     load_feed_for_people,
@@ -107,11 +109,18 @@
     posters_for_person,
     refresh_signal: feed_needs_refresh,
     queue_items,
-    on_refresh: async () => {
+    on_refresh: async detail => {
+      const reload_phonebook = detail?.reload_phonebook !== false
+      const authors = Array.isArray(detail?.authors)
+        ? authors_to_reload(detail, shown_people_ids())
+        : null
+      if (!reload_phonebook && !authors?.length) return
       if (set_working) set_working(true)
       try {
-        await load_phonebook()
-        await fill_statements()
+        if (reload_phonebook) {
+          await load_phonebook()
+          await fill_statements()
+        } else await load_feed_for_people(/** @type {Id[]} */ (authors))
       } finally {
         if (set_working) set_working(false)
       }
@@ -442,11 +451,11 @@
   )
 
   watch(only_mine, async () => {
-    if (set_working) set_working(true)
+    working.value = true
     try {
       await fill_statements(true)
     } finally {
-      if (set_working) set_working(false)
+      working.value = false
     }
   })
 
@@ -455,13 +464,19 @@
     await after_layout()
     remove_thoughts_shell()
 
-    if (set_working) set_working(true)
-    await load_phonebook()
-    await fill_statements()
-    await init_processing_queue?.()
-    working.value = false
-    if (set_working) set_working(false)
-    await mark_thoughts_rendered()
+    try {
+      // Without a phonebook `fill_statements` falls back to me, which `load()`
+      // serves from idb: a painted feed before the contacts round trip.
+      await fill_statements()
+      working.value = false
+      await mark_thoughts_rendered()
+
+      await load_phonebook()
+      await fill_statements()
+      await init_processing_queue?.()
+    } finally {
+      working.value = false
+    }
   })
 
   watch(posting, async (now, was) => {

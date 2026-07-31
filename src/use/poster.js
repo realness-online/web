@@ -10,7 +10,6 @@
 import {
   ref,
   computed,
-  inject,
   getCurrentInstance as current_instance,
   nextTick as tick
 } from 'vue'
@@ -216,7 +215,6 @@ export const use = () => {
 }
 
 export const use_posters = () => {
-  const set_working = inject('set_working')
   const posters = ref(/** @type {Item[]} */ ([]))
   const authors = ref(/** @type {Relation[]} */ ([]))
   /** @type {Set<string>} */
@@ -226,36 +224,31 @@ export const use_posters = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
-    if (set_working) set_working(true)
-    try {
-      const directory = await directory_for(
-        /** @type {Id} */ (`${query.id}/posters`)
-      )
-      if (!directory) return
-      directory.items.forEach(created_at => {
-        const poster_id = `${query.id}/posters/${created_at}`
-        if (!posters.value.find(p => p.id === poster_id))
-          posters.value.push({
-            id: /** @type {Id} */ (poster_id),
-            type: 'posters'
-          })
-      })
-      const existing_author = authors.value.find(a => a.id === query.id)
-      if (!existing_author)
-        authors.value.push({
-          id: query.id,
-          type: 'person',
-          name: '',
-          viewed: ['index'],
-          visited: null
+    const directory = await directory_for(
+      /** @type {Id} */ (`${query.id}/posters`)
+    )
+    if (!directory) return
+    directory.items.forEach(created_at => {
+      const poster_id = `${query.id}/posters/${created_at}`
+      if (!posters.value.find(p => p.id === poster_id))
+        posters.value.push({
+          id: /** @type {Id} */ (poster_id),
+          type: 'posters'
         })
-      else if (!existing_author.viewed.includes('index'))
-        existing_author.viewed.unshift('index')
+    })
+    const existing_author = authors.value.find(a => a.id === query.id)
+    if (!existing_author)
+      authors.value.push({
+        id: query.id,
+        type: 'person',
+        name: '',
+        viewed: ['index'],
+        visited: null
+      })
+    else if (!existing_author.viewed.includes('index'))
+      existing_author.viewed.unshift('index')
 
-      posters.value.sort(recent_item_first)
-    } finally {
-      if (set_working) set_working(false)
-    }
+    posters.value.sort(recent_item_first)
   }
 
   /**

@@ -236,11 +236,19 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  */
 
 /**
+ * What sync changed, so a feed reloads those authors instead of everything.
+ * @typedef {Object} Feed_Refresh
+ * @property {number} [at] - Stamp so each emit is a new object the watchers see
+ * @property {boolean} [reload_phonebook] - Contact list itself moved
+ * @property {Id[]|null} [authors] - Authors to reload; null or absent means all loaded authors
+ */
+
+/**
  * @typedef {Object} Sync_Return
  * @property {import('vue').Ref<Array|null>} events
  * @property {import('vue').Ref<HTMLElement|null>} sync_element
  * @property {import('vue').Ref<HTMLElement|null>} sync_poster
  * @property {() => Promise<void>} sync_offline_actions
- * @property {() => Promise<boolean>} sync_posters_directory
+ * @property {(options?: {optimize?: boolean}) => Promise<boolean>} sync_posters_directory
  * @property {() => Promise<void>} sync_me
  */

@@ -2,7 +2,7 @@
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Person} Person */
 /** @typedef {import('@/types').Relation} Relation */
-import { ref, computed, inject, nextTick as tick } from 'vue'
+import { ref, computed, nextTick as tick } from 'vue'
 import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
@@ -54,7 +54,6 @@ const person_when_root_profile_missing = id => ({
 })
 
 export const use = () => {
-  const set_working = inject('set_working')
   const people = ref(/** @type {Item[]} */ ([]))
   const person = computed(() => people.value[0])
 
@@ -76,7 +75,6 @@ export const use = () => {
   const load_phonebook = async () => {
     try {
       working.value = true
-      if (set_working) set_working(true)
       phonebook.value = []
       load_blocked()
 
@@ -145,7 +143,6 @@ export const use = () => {
       )
     } finally {
       working.value = false
-      if (set_working) set_working(false)
     }
   }
   return {

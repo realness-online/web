@@ -49,7 +49,6 @@ const update_single_statement = async (statement_id, new_content) => {
 }
 
 export const use = () => {
-  const set_working = inject('set_working')
   const sync_element = /** @type {import('vue').Ref<HTMLElement|null>|null} */ (
     inject('sync_element', null)
   )
@@ -94,7 +93,6 @@ export const use = () => {
    * @param {PersonQuery} query
    */
   const for_person = async query => {
-    if (set_working) set_working(true)
     const statement_id = /** @type {import('@/types').Id} */ (
       `${query.id}/statements`
     )
@@ -112,7 +110,6 @@ export const use = () => {
         type: 'person',
         viewed: ['index']
       })
-    if (set_working) set_working(false)
   }
 
   const save = async statement => {
