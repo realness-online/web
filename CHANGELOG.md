@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.6.7 — 2026-07-31
+
 - **Nobody could see anybody else** — v2.6.6 closed a hole that let anyone read your follow list, and in doing so took away permission to list the directory of people, so realness could only show you your own posters and thoughts. Reading the directory is allowed again, for signed-in people only. Your follow list stays private, and the phone directory is no longer readable by anyone who is not signed in.
 
 ## v2.6.6 — 2026-07-31
