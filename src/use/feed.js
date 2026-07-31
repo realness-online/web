@@ -11,14 +11,30 @@ const my_id = () =>
   (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
 
 /**
+ * The authors sync named, narrowed to the ones this feed shows. A refresh carrying
+ * no list means all of them.
+ * @param {unknown} detail
+ * @param {Id[]} loaded
+ * @returns {Id[]}
+ */
+export const authors_to_reload = (detail, loaded) => {
+  const requested = /** @type {import('@/types').Feed_Refresh} */ (
+    detail
+  )?.authors
+  if (!Array.isArray(requested)) return loaded
+  const shown = new Set(loaded)
+  return requested.filter(id => shown.has(id))
+}
+
+/**
  * @typedef {Object} Use_Feed_Options
  * @property {import('vue').Ref<Item[]>} posters
  * @property {import('vue').Ref<Item[]|null>} statements
  * @property {(query: { id: Id }) => Promise<void>} statements_for_person
  * @property {(query: { id: Id }) => Promise<void>} posters_for_person
- * @property {import('vue').Ref<number>|null} [refresh_signal]
+ * @property {import('vue').Ref<import('@/types').Feed_Refresh|number|null>|null} [refresh_signal]
  * @property {import('vue').Ref<Array<unknown>>|null} [queue_items]
- * @property {() => Promise<void>} [on_refresh] replaces default refresh when set (e.g. reload phonebook then feed)
+ * @property {(detail?: import('@/types').Feed_Refresh) => Promise<void>} [on_refresh] replaces default refresh when set (e.g. reload phonebook then feed)
  * @property {(working: boolean) => void} [set_working] when set (including explicitly `undefined`), skips inject; tests use this
  */
 
@@ -72,7 +88,13 @@ export const use_feed = options => {
       statements.value = []
       overlay_cache.clear()
     }
-    loaded_people_ids.value = /** @type {Id[]} */ (unique_people_ids)
+    // Who the feed is showing. A reset replaces them; reloading a few named
+    // authors leaves the rest on screen, so it adds rather than replaces.
+    loaded_people_ids.value = /** @type {Id[]} */ (
+      reset
+        ? unique_people_ids
+        : [...new Set([...loaded_people_ids.value, ...unique_people_ids])]
+    )
     await Promise.all(
       unique_people_ids.map(async raw_id => {
         const id = /** @type {Id} */ (raw_id)
@@ -128,16 +150,19 @@ export const use_feed = options => {
     return is_editable(thought)
   }
 
+  // Pulling in what sync found is the visible half of a sync tick, so it carries
+  // the border.
   if (refresh_signal)
-    watch(refresh_signal, async () => {
+    watch(refresh_signal, async detail => {
       if (on_refresh) {
-        await on_refresh()
+        await on_refresh(/** @type {import('@/types').Feed_Refresh} */ (detail))
         return
       }
-      if (!loaded_people_ids.value.length) return
+      const people_ids = authors_to_reload(detail, loaded_people_ids.value)
+      if (!people_ids.length) return
       set_working?.(true)
       try {
-        await load_feed_for_people(loaded_people_ids.value)
+        await load_feed_for_people(people_ids)
       } finally {
         set_working?.(false)
       }
@@ -150,12 +175,7 @@ export const use_feed = options => {
         if (!old_queue) return
         if (new_queue?.length >= old_queue.length) return
         if (!loaded_people_ids.value.length) return
-        set_working?.(true)
-        try {
-          await load_feed_for_people(loaded_people_ids.value)
-        } finally {
-          set_working?.(false)
-        }
+        await load_feed_for_people(loaded_people_ids.value)
       },
       { deep: true }
     )

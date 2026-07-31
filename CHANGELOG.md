@@ -6,6 +6,20 @@
 
 - **Crawlers were locked out of the assets that render the site** — `robots.txt` disallows `/` and allows named paths back, and `/assets/` and `/fonts/` were never on that list, so the CSS, JS, and fonts behind every page we do want indexed were off limits, along with the OG images. All four are allowed now.
 
+- **Your thoughts and posters are on screen the moment you open realness** — the feed used to wait for the whole contact list to come down from the server before it drew anything, even though your own work was already on the device. It draws what it has first, and other people fill in behind it.
+
+- **Anything not yet on your device arrives in half the trips** — fetching a poster asked the server where the file was, then asked again for the file. Those turn out to be the same request, so realness remembers the answer.
+
+- **Scrolling a big feed stopped stuttering** — every person in your feed made realness read through its entire local store, once each. Posters keep six layers apiece, so that added up fast on a long history. It reads once now and shares the answer.
+
+- **Coming back to the tab is immediate** — leaving and returning kicked off filing and cleanup work that had nothing to do with what you were looking at. That runs on its own schedule now.
+
+- **The border only lights up when realness is talking to the server** — it used to come on for anything that took a moment, including work happening entirely on your device, so it never told you much. The feed has its own quiet spinner for loading.
+
+- **A new poster no longer rebuilds the whole feed** — any change used to reload every person on screen. Realness now knows what moved and refreshes just that.
+
+- **Reloading no longer re-reads everyone you follow** — your own profile, thoughts, events and posters reconcile every time realness runs, so anything you make on another device still turns up right away. Reading back through other people's files is the part that runs on a schedule, and a page reload was resetting that schedule every time.
+
 ## v2.6.5 — 2026-07-28
 
 - **Only the homepage was indexed** — Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.

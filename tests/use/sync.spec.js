@@ -184,12 +184,32 @@ vi.mock('@/utils/upload-processor', () => ({
 }))
 
 vi.mock('@/utils/algorithms', () => {
-  const mock_mutex = {
-    lock: vi.fn(() => Promise.resolve()),
-    unlock: vi.fn()
+  // Serializes for real, per resource. Sync reads `sync:index`, merges, and writes
+  // it back from several steps at once; a mutex that never excludes lets them
+  // clobber each other and hides the behavior under test.
+  const mutexes = new Map()
+  const create_mutex = () => {
+    const state = { locked: false, queue: [] }
+    return {
+      lock: vi.fn(async () => {
+        if (state.locked)
+          await new Promise(resolve => {
+            state.queue.push(resolve)
+          })
+        else state.locked = true
+      }),
+      unlock: vi.fn(() => {
+        const next = state.queue.shift()
+        if (next) next()
+        else state.locked = false
+      })
+    }
   }
   return {
-    mutex_for: vi.fn(() => mock_mutex)
+    mutex_for: vi.fn(resource => {
+      if (!mutexes.has(resource)) mutexes.set(resource, create_mutex())
+      return mutexes.get(resource)
+    })
   }
 })
 
@@ -625,6 +645,162 @@ describe('sync composable', () => {
       current_user.value = { uid: 'test-user' }
     })
 
+    describe('the eight hour gate', () => {
+      // `current_user` starts `undefined` and resolves once per page load, so the
+      // only way to tell a restored session from somebody signing in is whether
+      // this page ever watched a signed-out state.
+      const arrange = async () => {
+        const { current_user, metadata, directory } =
+          await import('@/utils/serverless')
+        const { get } = await import('idb-keyval')
+        metadata.mockResolvedValue({
+          updated: new Date().toISOString(),
+          customMetadata: { hash: 'abc123' }
+        })
+        directory.mockResolvedValue({ prefixes: [] })
+        get.mockImplementation(() => Promise.resolve(null))
+        localStorage.me = '/+14151234356'
+        localStorage.sync_time = new Date().toISOString()
+        localStorage.removeItem.mockClear()
+        current_user.value = undefined
+        return current_user
+      }
+
+      it('keeps a fresh sync_time when a session is restored on load', async () => {
+        const current_user = await arrange()
+        const fresh = localStorage.sync_time
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+
+        expect(localStorage.removeItem).not.toHaveBeenCalledWith('sync_time')
+        expect(localStorage.sync_time).toBe(fresh)
+      })
+
+      it('resyncs from scratch when somebody signs in', async () => {
+        const current_user = await arrange()
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        current_user.value = null
+        await flushPromises()
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+
+        expect(localStorage.removeItem).toHaveBeenCalledWith('sync_time')
+      })
+
+      // The gate is about how often we go looking through other people's files.
+      // Your own work reconciles every tick regardless of it.
+      it('reconciles your own files while fresh, and leaves contacts alone', async () => {
+        const { metadata, directory } = await import('@/utils/serverless')
+        const current_user = await arrange()
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+        metadata.mockClear()
+        directory.mockClear()
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        for (const mine of ['statements', 'relations', 'events'])
+          expect(metadata).toHaveBeenCalledWith(expect.stringContaining(mine))
+        expect(directory).not.toHaveBeenCalledWith('people/')
+      })
+
+      it('goes through contacts once the eight hours are up', async () => {
+        const { directory } = await import('@/utils/serverless')
+        const current_user = await arrange()
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+        directory.mockClear()
+        localStorage.sync_time = new Date(
+          Date.now() - 1000 * 60 * 60 * 9
+        ).toISOString()
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(directory).toHaveBeenCalledWith('people/')
+      })
+    })
+
+    describe('reporting what changed', () => {
+      // A hash mismatch alone means nothing: an account with no thoughts mismatches
+      // on every tick, because there is no server file to agree with and an empty
+      // list is never saved. Only a list that actually moved is worth a reload.
+      const arrange = async statements => {
+        const { current_user, metadata, directory } =
+          await import('@/utils/serverless')
+        const { get } = await import('idb-keyval')
+        const { Statements, Event: Event_storage } =
+          await import('@/persistence/Storage')
+
+        localStorage.me = '/+14151234356'
+        localStorage.sync_time = new Date().toISOString()
+        current_user.value = { uid: 'test-user' }
+        directory.mockResolvedValue({ prefixes: [] })
+        // Poster listing already cached and unchanged, so it cannot be the thing
+        // reporting a change.
+        get.mockImplementation(key =>
+          String(key).endsWith('/posters/')
+            ? Promise.resolve({ items: ['1000', '2000', '3000'] })
+            : Promise.resolve(null)
+        )
+        metadata.mockRejectedValue(
+          Object.assign(new Error('not found'), {
+            code: 'storage/object-not-found'
+          })
+        )
+        Statements.mockImplementation(function () {
+          return {
+            sync: vi.fn(() => Promise.resolve(statements)),
+            save: vi.fn(() => Promise.resolve()),
+            optimize: vi.fn(() => Promise.resolve())
+          }
+        })
+        Event_storage.mockImplementation(function () {
+          return {
+            sync: vi.fn(() => Promise.resolve([])),
+            save: vi.fn(() => Promise.resolve())
+          }
+        })
+
+        const mounted = with_setup(() => use_sync(emit))
+        wrapper = mounted.wrapper
+        await flushPromises()
+        mounted.result.sync_element.value = {
+          querySelector: vi.fn(() => ({ outerHTML: '<section></section>' }))
+        }
+        emit.mockClear()
+      }
+
+      it('stays quiet on repeat ticks when you have nothing to say', async () => {
+        await arrange([])
+
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
+      })
+
+      it('reloads you when a thought arrives from another device', async () => {
+        await arrange([{ id: '/+14151234356/statements/1', type: 'thoughts' }])
+
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(emit).toHaveBeenCalledWith('refreshed', {
+          reload_phonebook: false,
+          authors: ['/+14151234356']
+        })
+      })
+    })
+
     it('skips play work when tab is hidden', async () => {
       Object.defineProperty(document, 'visibilityState', {
         value: 'hidden',
@@ -687,7 +863,56 @@ describe('sync composable', () => {
       expect(clear_author_dirs).toHaveBeenCalledWith('/+14151234356')
       expect(del).toHaveBeenCalledWith('/+14151234356')
       expect(load_phonebook).toHaveBeenCalled()
-      expect(emit).toHaveBeenCalledWith('refreshed')
+      expect(emit).toHaveBeenCalledWith('refreshed', {
+        reload_phonebook: false,
+        authors: ['/+14151234356']
+      })
+    })
+
+    it('signed-out play leaves the cached posters listing alone when the admin has not moved', async () => {
+      const { current_user, metadata, directory } =
+        await import('@/utils/serverless')
+      const { clear_author_dirs } = await import('@/persistence/Directory')
+      const { get, set, del } = await import('idb-keyval')
+      const { create_hash } = await import('@/utils/upload-processor')
+      const load_phonebook = vi.fn(() => Promise.resolve())
+
+      current_user.value = null
+      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      metadata.mockResolvedValue({
+        updated: new Date().toISOString(),
+        customMetadata: { hash: 'admin_hash' }
+      })
+      create_hash.mockResolvedValue('admin_hash')
+      directory.mockResolvedValue({ prefixes: [] })
+
+      let index = /** @type {Record<string, unknown>} */ ({})
+      get.mockImplementation(key => {
+        if (key === 'sync:index') return Promise.resolve(index)
+        if (key === '/+14151234356') return Promise.resolve('<div>admin</div>')
+        return Promise.resolve(null)
+      })
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+      localStorage.getItem.mockImplementation(key =>
+        key === '/+14151234356' ? '<div>admin</div>' : null
+      )
+
+      ;({ wrapper } = with_setup(() => use_sync(emit, { load_phonebook })))
+      await flushPromises()
+      emit.mockClear()
+      clear_author_dirs.mockClear()
+      del.mockClear()
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(clear_author_dirs).not.toHaveBeenCalled()
+      expect(del).not.toHaveBeenCalledWith('/+14151234356/posters/')
+      expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
     })
 
     it('signed-in stale sync purges missing index rows and runs phonebook', async () => {
@@ -757,9 +982,52 @@ describe('sync composable', () => {
 
       expect(index['/+19995550000']).toBeUndefined()
       expect(load_phonebook).toHaveBeenCalled()
-      expect(emit).toHaveBeenCalledWith('active', true)
-      expect(emit).toHaveBeenCalledWith('active', false)
+      // A tick this fast never shows the border
+      expect(emit).not.toHaveBeenCalledWith('active', true)
       expect(del).toHaveBeenCalled()
+    })
+
+    it('shows the working border once a tick outlives the delay', async () => {
+      const { current_user, metadata, directory } =
+        await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+
+      vi.useFakeTimers()
+      try {
+        localStorage.me = '/+14151234356'
+        current_user.value = { uid: 'test-user' }
+        directory.mockResolvedValue({ prefixes: [] })
+        get.mockImplementation(() => Promise.resolve(null))
+
+        /** @type {(value: unknown) => void} */
+        let release = () => {}
+        metadata.mockReturnValue(
+          new Promise(resolve => {
+            release = resolve
+          })
+        )
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        await vi.advanceTimersByTimeAsync(0)
+        emit.mockClear()
+
+        window.dispatchEvent(new Event('online'))
+        await vi.advanceTimersByTimeAsync(0)
+        expect(emit).not.toHaveBeenCalledWith('active', true)
+
+        await vi.advanceTimersByTimeAsync(400)
+        expect(emit).toHaveBeenCalledWith('active', true)
+
+        release({
+          updated: new Date().toISOString(),
+          customMetadata: { hash: 'abc123' }
+        })
+        await vi.advanceTimersByTimeAsync(0)
+        expect(emit).toHaveBeenCalledWith('active', false)
+      } finally {
+        vi.useRealTimers()
+        metadata.mockReset()
+      }
     })
 
     it('sync_relations replaces stale local cache from network', async () => {

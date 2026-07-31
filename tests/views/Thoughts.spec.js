@@ -366,9 +366,14 @@ describe('Thoughts', () => {
       expect(mock_statements_for_person).toHaveBeenCalled()
       expect(mock_posters_for_person).toHaveBeenCalled()
       expect(mock_people.value.some(p => p.id === person_id)).toBe(true)
-      expect(mock_set_working).toHaveBeenCalledWith(true)
-      expect(mock_set_working).toHaveBeenCalledWith(false)
       expect(wrapper.vm.working).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('assembles the feed on mount without showing the sync border', async () => {
+      const wrapper = await settled(mount())
+      expect(mock_statements_for_person).toHaveBeenCalled()
+      expect(mock_set_working).not.toHaveBeenCalled()
       wrapper.unmount()
     })
 
@@ -383,15 +388,15 @@ describe('Thoughts', () => {
       wrapper.unmount()
     })
 
-    it('reloads with working state when only_mine toggles', async () => {
+    it('reloads the feed when only_mine toggles, without the sync border', async () => {
       const wrapper = await settled(mount())
       mock_set_working.mockClear()
       mock_statements_for_person.mockClear()
       only_mine.value = true
       await flushPromises()
-      expect(mock_set_working).toHaveBeenCalledWith(true)
-      expect(mock_set_working).toHaveBeenCalledWith(false)
       expect(mock_statements_for_person).toHaveBeenCalled()
+      expect(mock_set_working).not.toHaveBeenCalled()
+      expect(wrapper.vm.working).toBe(false)
       wrapper.unmount()
     })
 

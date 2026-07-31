@@ -407,8 +407,14 @@ describe('poster utils', () => {
         expect(posters_composable.posters.value[1].id).toBe(
           '/user/posters/0987654321'
         )
-        expect(set_working).toHaveBeenCalledWith(true)
-        expect(set_working).toHaveBeenCalledWith(false)
+      })
+
+      it('assembles the feed without claiming a server sync', async () => {
+        vi.mocked(as_directory).mockResolvedValue({ items: ['1234567890'] })
+
+        await posters_composable.for_person({ id: '/user' })
+
+        expect(set_working).not.toHaveBeenCalled()
       })
 
       it('returns early when directory is missing', async () => {

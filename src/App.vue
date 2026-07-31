@@ -370,10 +370,12 @@
 
   /** @param {boolean} active */
   const on_active = active => set_working(active)
-  const feed_needs_refresh = ref(0)
+  /** @type {import('vue').Ref<import('@/types').Feed_Refresh | null>} */
+  const feed_needs_refresh = ref(null)
   provide('feed_needs_refresh', feed_needs_refresh)
-  const on_sync_refreshed = () => {
-    feed_needs_refresh.value = Date.now()
+  /** @param {import('@/types').Feed_Refresh} [detail] Which authors sync changed; absent means all of them */
+  const on_sync_refreshed = detail => {
+    feed_needs_refresh.value = { at: Date.now(), ...detail }
   }
   const online = () => {
     document

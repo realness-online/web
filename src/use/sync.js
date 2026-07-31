@@ -11,8 +11,7 @@ import {
 import { get_item } from '@/utils/item'
 import {
   build_local_directory,
-  clear_author_dirs,
-  as_directory_id
+  clear_author_dirs
 } from '@/persistence/Directory'
 import {
   Offline,
@@ -53,8 +52,10 @@ export { DOES_NOT_EXIST }
 const fresh_metadata_inflight = new Map()
 
 /**
- * Drop negative-cache rows so the next `fresh_metadata` / `as_download_url` hits Storage again.
- * Runs only when `i_am_fresh()` is false (same cadence as the 8h full sync block).
+ * Drop negative-cache rows so the next `fresh_metadata` / `as_download_url` hits
+ * Storage again. This is the only expiry other people's files get: yours are
+ * dropped by `Cloud.to_network` as you upload, but nothing on this device hears
+ * about a contact posting for the first time.
  * @returns {Promise<void>}
  */
 const purge_missing_sync_index_entries = async () => {
@@ -85,17 +86,16 @@ const admin_itemid_from_env = () => {
 }
 
 /**
- * Signed-out users only see the env admin; `as_directory` skips the network when
- * `${id}/posters/` is cached in idb. Align profile HTML with `sync:index` and drop
- * the posters directory cache so the next feed load lists storage again.
+ * Signed-out users only see the env admin. Aligns profile HTML with `sync:index`,
+ * dropping cached folder listings when the profile has moved.
  * @param {Sync_Deps} deps
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} True when local state for the admin changed
  */
 const sync_public_default_feed = async deps => {
   const id = admin_itemid_from_env()
   if (!id) {
     if (deps.load_phonebook) await deps.load_phonebook()
-    return
+    return false
   }
   await fresh_metadata(id)
   const index_hash = await get_index_hash(id)
@@ -115,14 +115,9 @@ const sync_public_default_feed = async deps => {
   if (profile_missing_on_server || profile_hash_stale)
     await clear_author_dirs(id)
 
-  if (local_html && !index_hash) {
-    if (deps.load_phonebook) await deps.load_phonebook()
-    return
-  }
-
   if (!index_hash) {
     if (deps.load_phonebook) await deps.load_phonebook()
-    return
+    return !!(profile_missing_on_server || profile_hash_stale)
   }
 
   if (local_hash !== index_hash) {
@@ -130,10 +125,27 @@ const sync_public_default_feed = async deps => {
     await del(id)
   }
 
-  const posters_root = /** @type {Id} */ (`${id}/posters`)
-  await del(as_directory_id(posters_root))
-
   if (deps.load_phonebook) await deps.load_phonebook()
+  return local_hash !== index_hash
+}
+
+const WORKING_BORDER_DELAY = 300
+
+/**
+ * Show the working border only once a tick outlives `WORKING_BORDER_DELAY`.
+ * @param {Sync_Deps['emit']} emit
+ * @returns {() => void} Call when the tick finishes
+ */
+const defer_working_border = emit => {
+  let shown = false
+  const timer = setTimeout(() => {
+    shown = true
+    emit('active', true)
+  }, WORKING_BORDER_DELAY)
+  return () => {
+    clearTimeout(timer)
+    if (shown) emit('active', false)
+  }
 }
 
 /**
@@ -146,34 +158,67 @@ const create_play = deps => async () => {
   if (!current_user.value) {
     await sync_offline_actions()
     if (!navigator.onLine) return
-    await sync_public_default_feed(deps)
-    deps.emit('refreshed')
+    const admin_changed = await sync_public_default_feed(deps)
+    if (admin_changed) {
+      const admin_id = admin_itemid_from_env()
+      deps.emit('refreshed', {
+        reload_phonebook: false,
+        authors: admin_id ? [admin_id] : []
+      })
+    }
     return
   }
 
-  const did_emit = navigator.onLine && !!current_user.value
-  if (did_emit) deps.emit('active', true)
+  const done = navigator.onLine ? defer_working_border(deps.emit) : () => {}
   try {
     await sync_offline_actions()
     if (!navigator.onLine || !current_user.value) return
+
+    // First: it rewrites `me`, re-rendering the sync aside the other three read
+    // their elements out of.
     await sync_me()
-    let did_full_sync = false
-    let did_sync_change = false
-    if (!i_am_fresh()) {
+    const [relations, statements, events] = await Promise.all([
+      sync_relations(deps),
+      sync_statements(deps),
+      sync_events(deps)
+    ])
+    let contacts_changed = !!relations
+    let mine_changed = !!statements || !!events
+
+    const sync_was_due = !i_am_fresh()
+    if (sync_was_due) {
       await purge_missing_sync_index_entries()
       localStorage.sync_time = new Date().toISOString()
-      did_sync_change = (await sync_relations(deps)) || did_sync_change
-      did_sync_change = (await sync_statements(deps)) || did_sync_change
-      did_sync_change = (await sync_events(deps)) || did_sync_change
-      did_full_sync = true
-      did_sync_change = (await sync_phonebook_people(deps)) || did_sync_change
+      contacts_changed = (await sync_phonebook_people(deps)) || contacts_changed
     }
-    const poster_directory_changed = await sync_posters_directory()
-    if ((did_full_sync && did_sync_change) || poster_directory_changed)
-      deps.emit('refreshed')
+
+    const poster_directory_changed = await sync_posters_directory({
+      optimize: sync_was_due
+    })
+    if (poster_directory_changed) mine_changed = true
+    if (!contacts_changed && !mine_changed) return
+    const me_id = get_my_itemid()
+    deps.emit('refreshed', {
+      reload_phonebook: contacts_changed,
+      authors: contacts_changed || !me_id ? null : [me_id]
+    })
   } finally {
-    if (did_emit) deps.emit('active', false)
+    done()
   }
+}
+
+/**
+ * Whether a synced list is worth reloading the feed for. A hash mismatch is not
+ * enough on its own: an account with nothing to say mismatches every tick, because
+ * there is no server file to agree with and an empty list is never saved.
+ * @param {import('@/types').Item[]} before
+ * @param {import('@/types').Item[]} after
+ * @returns {boolean}
+ */
+const rows_changed = (before, after) => {
+  if (before.length !== after.length) return true
+  const had = new Set(before.map(item => item.id))
+  return after.some(item => !had.has(item.id))
 }
 
 /** @param {Sync_Deps} deps @returns {Promise<boolean|null>} */
@@ -189,16 +234,17 @@ const sync_statements = async deps => {
   if (!elements || !elements.outerHTML) return null
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
-    const synced = await persistence.sync()
+    const before = deps.my_statements.value ?? []
+    const synced = (await persistence.sync()) || []
     // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
-    deps.my_statements.value = synced || []
-    if (deps.my_statements.value.length) {
+    deps.my_statements.value = synced
+    if (synced.length) {
       await tick()
       await persistence.save(elements)
       localStorage.removeItem('/+/statements')
     }
     await persistence.optimize()
-    return true
+    return rows_changed(before, synced)
   }
   await persistence.optimize()
   return false
@@ -263,15 +309,16 @@ const sync_events = async deps => {
   if (!elements) return false
   const hash = await create_hash(elements.outerHTML)
   if (index_hash !== hash) {
-    const synced_events = await event_storage.sync()
+    const before = deps.events.value ?? []
+    const synced_events = (await event_storage.sync()) || []
     // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
-    deps.events.value = synced_events || []
-    if (deps.events.value.length) {
+    deps.events.value = synced_events
+    if (synced_events.length) {
       await tick()
       await event_storage.save(elements)
       localStorage.removeItem('/+/events')
     }
-    return true
+    return rows_changed(before, synced_events)
   }
   return false
 }
@@ -374,8 +421,9 @@ export const use = (component_emit, options = {}) => {
 
   watch(current_user, async (user, previous) => {
     if (!user) return
-    // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-    if (previous == null) localStorage.removeItem('sync_time')
+    // `current_user` starts `undefined` and resolves once per page: `null` first
+    // is somebody signing in, `undefined` is a session restored on load.
+    if (previous === null) localStorage.removeItem('sync_time')
     await play()
   })
   return {
@@ -590,11 +638,13 @@ export const sync_me = async () => {
 }
 
 /**
- * Rebuilds `${me}/posters/` in idb from all poster keys. Runs on every sync
- * (not the 8h gate) so the feed can pick up new local or migrated posters.
+ * Rebuilds `${me}/posters/` in idb from all poster keys, so the feed picks up new
+ * local or migrated posters. `optimize` archives overflow and costs a `listAll`.
+ * @param {{ optimize?: boolean }} [options]
  * @returns {Promise<boolean>} True when the sorted poster id list changed
  */
-export const sync_posters_directory = async () => {
+export const sync_posters_directory = async (options = {}) => {
+  const { optimize = true } = options
   const me = get_my_itemid()
   if (!me) return false
 
@@ -621,6 +671,6 @@ export const sync_posters_directory = async () => {
     archives: []
   }) // Update directory with sorted items
 
-  await new Poster(directory_path).optimize()
+  if (optimize) await new Poster(directory_path).optimize()
   return list_changed
 }
