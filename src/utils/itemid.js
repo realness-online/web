@@ -16,6 +16,7 @@ import {
 import { get, set, del } from 'idb-keyval'
 import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
 import { decompress_html } from '@/utils/upload-processor'
+import { mutex_for } from '@/utils/algorithms'
 
 export { as_path_parts, as_author, as_type, as_created_at, is_itemid }
 
@@ -32,6 +33,112 @@ export const feed_slot_itemid = slot =>
 
 /** @type {Map<string, Promise<string | null>>} */
 const download_url_inflight = new Map()
+
+/** idb key holding `{ [itemid]: { filename, url } }`. */
+const DOWNLOAD_URLS = 'sync:urls'
+
+/**
+ * Entries kept in `sync:urls`. Every read deserializes the whole map, so this is a
+ * ceiling on read cost as much as on disk. Posters store seven files apiece, so it
+ * needs room for a feed's worth of layers.
+ */
+const DOWNLOAD_URL_LIMIT = 500
+
+/**
+ * A download URL only moves when the object is re-uploaded (new token) or archived
+ * (new filename), so it is worth remembering: `getDownloadURL` is a round trip, and
+ * the same one `getMetadata` makes.
+ * @param {Id} itemid
+ * @param {string} filename
+ * @returns {Promise<string | null>}
+ */
+const cached_download_url = async (itemid, filename) => {
+  const cache = (await get(DOWNLOAD_URLS)) || {}
+  const entry = cache[itemid]
+  if (entry?.filename !== filename) return null
+  return typeof entry.url === 'string' ? entry.url : null
+}
+
+/**
+ * @param {Id} itemid
+ * @param {string} filename
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+const remember_download_url = async (itemid, filename, url) => {
+  const urls_mutex = mutex_for(DOWNLOAD_URLS)
+  await urls_mutex.lock()
+  try {
+    const cache = (await get(DOWNLOAD_URLS)) || {}
+    // Deleting first moves an id already in there back to the end: string keys
+    // hold insertion order, which is what makes the oldest droppable.
+    delete cache[itemid]
+    const next = { ...cache, [itemid]: { filename, url } }
+    const ids = Object.keys(next)
+    const over = ids.length - DOWNLOAD_URL_LIMIT
+    if (over > 0) for (const id of ids.slice(0, over)) delete next[id]
+    await set(DOWNLOAD_URLS, next)
+  } finally {
+    urls_mutex.unlock()
+  }
+}
+
+/**
+ * Drop a remembered URL so the next `as_download_url` asks Storage again.
+ * @param {Id} itemid
+ * @returns {Promise<void>}
+ */
+export const forget_download_url = async itemid => {
+  const urls_mutex = mutex_for(DOWNLOAD_URLS)
+  await urls_mutex.lock()
+  try {
+    const cache = await get(DOWNLOAD_URLS)
+    if (!cache?.[itemid]) return
+    const next = { ...cache }
+    delete next[itemid]
+    await set(DOWNLOAD_URLS, next)
+  } finally {
+    urls_mutex.unlock()
+  }
+}
+
+/**
+ * Fetch an item's blob, repairing a remembered URL whose token has rotated. Only a
+ * remembered URL can be stale, so one resolved fresh in this call is taken at its
+ * word — items that were never posted 404 here routinely and must stay one lookup.
+ * @param {Id} itemid
+ * @returns {Promise<Response | null>}
+ */
+const fetch_item = async itemid => {
+  const cache = (await get(DOWNLOAD_URLS)) || {}
+  const was_remembered = typeof cache[itemid]?.url === 'string'
+
+  const remembered = await as_download_url(itemid)
+  if (!remembered) return null
+
+  const response = await fetch(remembered)
+  if (response.ok) return response
+  if (!was_remembered) return null
+
+  await forget_download_url(itemid)
+  const fresh = await as_download_url(itemid)
+  if (!fresh || fresh === remembered) return null
+
+  const retried = await fetch(fresh)
+  return retried.ok ? retried : null
+}
+
+/**
+ * @param {Response} response
+ * @returns {Promise<string | null>}
+ */
+const as_html = async response => {
+  const content_encoding = response.headers.get('Content-Encoding')
+  const compressed_html = await response.arrayBuffer()
+  if (!content_encoding || content_encoding === 'identity')
+    return new TextDecoder().decode(compressed_html)
+  return decompress_html(compressed_html)
+}
 
 /**
  * Lazy-load HTML parser to avoid a static cycle with `@/utils/item` (which imports `itemid`).
@@ -101,27 +208,17 @@ export const as_filename = async itemid => {
  * @returns {Promise<Item | null>}
  */
 export const load_from_network = async itemid => {
-  const url = await as_download_url(itemid)
+  const response = await fetch_item(itemid)
+  if (!response) return null
 
-  if (url) {
-    const response = await fetch(url)
-    if (!response.ok) return null
+  const html = await as_html(response)
+  if (!html) return null
 
-    const content_encoding = response.headers.get('Content-Encoding')
-    const compressed_html = await response.arrayBuffer()
-    let html = null
-    if (!content_encoding || content_encoding === 'identity')
-      html = new TextDecoder().decode(compressed_html)
-    else html = await decompress_html(compressed_html)
-
-    if (!html) return null
-    if (typeof localStorage !== 'undefined' && itemid === storage_me()) {
-      localStorage.setItem(itemid, html)
-      await del(itemid)
-    } else await set(itemid, html)
-    return item_from_html(html, itemid)
-  }
-  return null
+  if (typeof localStorage !== 'undefined' && itemid === storage_me()) {
+    localStorage.setItem(itemid, html)
+    await del(itemid)
+  } else await set(itemid, html)
+  return item_from_html(html, itemid)
 }
 
 /**
@@ -131,24 +228,14 @@ export const load_from_network = async itemid => {
  * @returns {Promise<{item: Item | null, html: string | null}>}
  */
 export const load_from_cache = async itemid => {
-  const url = await as_download_url(itemid)
+  const response = await fetch_item(itemid)
+  if (!response) return { item: null, html: null }
 
-  if (url) {
-    const response = await fetch(url)
-    if (!response.ok) return { item: null, html: null }
+  const html = await as_html(response)
+  if (!html) return { item: null, html: null }
 
-    const content_encoding = response.headers.get('Content-Encoding')
-    const compressed_html = await response.arrayBuffer()
-    let html = null
-    if (!content_encoding || content_encoding === 'identity')
-      html = new TextDecoder().decode(compressed_html)
-    else html = await decompress_html(compressed_html)
-
-    if (!html) return { item: null, html: null }
-    const item = await item_from_html(html, itemid)
-    return { item, html }
-  }
-  return { item: null, html: null }
+  const item = await item_from_html(html, itemid)
+  return { item, html }
 }
 
 /**
@@ -258,8 +345,12 @@ export const as_download_url = async itemid => {
       const { url, storage_ready } = await import('@/utils/serverless')
       await storage_ready
       const filename = await as_filename(itemid)
+      const remembered = await cached_download_url(itemid, filename)
+      if (remembered) return remembered
       try {
-        return await url(filename)
+        const fresh = await url(filename)
+        await remember_download_url(itemid, filename, fresh)
+        return fresh
       } catch (e) {
         if (!is_storage_not_found(e)) throw e
         // Archived posters can be split: `move` uploads from the local copy,
@@ -268,7 +359,9 @@ export const as_download_url = async itemid => {
         const fallback = as_top_level_filename(itemid)
         if (fallback && fallback !== filename)
           try {
-            return await url(fallback)
+            const fallback_url = await url(fallback)
+            await remember_download_url(itemid, fallback, fallback_url)
+            return fallback_url
           } catch (fallback_error) {
             if (!is_storage_not_found(fallback_error)) throw fallback_error
           }
