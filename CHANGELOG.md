@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.6.6 — 2026-07-31
+
 - **Anyone could read a person's relations file** — the guard `!path.matches('relations.html.gz')` sat on a `{path=**}` wildcard, which binds a Path rather than a string, so it never excluded the file; rules OR together, so that one permissive match handed the private follow list to any reader, signed in or not. Every match that can reach the file now excludes it by name through single-segment wildcards, and `npm run test:rules` runs `storage.rules` against the storage emulator as part of pre-commit.
 
 - **Crawlers were locked out of the assets that render the site** — `robots.txt` disallows `/` and allows named paths back, and `/assets/` and `/fonts/` were never on that list, so the CSS, JS, and fonts behind every page we do want indexed were off limits, along with the OG images. All four are allowed now.
