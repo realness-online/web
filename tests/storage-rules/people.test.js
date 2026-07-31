@@ -25,6 +25,8 @@ const profile = `people/${OWNER}/index.html.gz`
 const poster = `people/${OWNER}/posters/1712000000000.html.gz`
 const statements = `people/${OWNER}/statements/1712000000000.html.gz`
 const subscription = `subscriptions/${OWNER}/endpoint-abc`
+const archived = `people/${OWNER}/posters/1600000000000/1712000000000.html.gz`
+const loose = 'loose.txt'
 
 let test_env
 let anonymous
@@ -56,7 +58,15 @@ beforeEach(async () => {
   await test_env.clearStorage()
   await test_env.withSecurityRulesDisabled(async context => {
     const seed = context.storage()
-    const paths = [relations, profile, poster, statements, subscription]
+    const paths = [
+      relations,
+      profile,
+      poster,
+      statements,
+      subscription,
+      archived,
+      loose
+    ]
     for (const path of paths)
       await uploadString(ref(seed, path), 'seeded', 'raw')
   })
@@ -158,29 +168,63 @@ describe('subscriptions never leave their owner', () => {
   })
 })
 
-// The phonebook is a listAll on `people/`, and every poster feed is a listAll
-// inside somebody's folder. Neither is a file read, so no amount of get
-// coverage catches them.
-describe('the phonebook can be listed', () => {
-  it('allows a signed-in person to list people', async () => {
+// Listing is its own permission, and the 22 cases this suite started with were
+// all gets, writes and deletes. v2.6.6 removed the only rule granting a list of
+// `people/` and nothing here noticed.
+describe('listing', () => {
+  it('lets a signed-in person list the phonebook', async () => {
     await assertSucceeds(listAll(ref(owner, 'people')))
   })
 
-  it('allows a signed-in person to list a stranger posters folder', async () => {
-    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}/posters`)))
+  it('refuses an anonymous listing of the phonebook', async () => {
+    await assertFails(listAll(ref(anonymous, 'people')))
   })
 
-  it('allows an anonymous visitor to list a posters folder', async () => {
+  it('lets anyone list a posters folder, signed in or not', async () => {
+    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}/posters`)))
     await assertSucceeds(listAll(ref(anonymous, `people/${OWNER}/posters`)))
   })
 
-  it('does not hand out relations.html.gz through a listing', async () => {
-    await assertFails(getBytes(ref(stranger, relations)))
+  it('lets anyone list an archive folder inside posters', async () => {
+    await assertSucceeds(
+      listAll(ref(anonymous, `people/${OWNER}/posters/1600000000000`))
+    )
+  })
+
+  it('lets anyone list a statements folder', async () => {
+    await assertSucceeds(listAll(ref(anonymous, `people/${OWNER}/statements`)))
+  })
+
+  it('refuses an anonymous listing of a person', async () => {
+    await assertFails(listAll(ref(anonymous, `people/${OWNER}`)))
+  })
+
+  it('refuses everyone a listing of the bucket root', async () => {
+    await assertFails(listAll(ref(anonymous, '')))
+    await assertFails(listAll(ref(owner, '')))
   })
 })
 
-describe('the phone directory is not public', () => {
-  it('denies an anonymous listing of people', async () => {
-    await assertFails(listAll(ref(anonymous, 'people')))
+// Subscriptions are push endpoints keyed by phone number, so a list here would
+// enumerate everybody who has ever turned notifications on.
+describe('subscriptions cannot be enumerated', () => {
+  it('refuses everyone a listing of subscriptions', async () => {
+    await assertFails(listAll(ref(anonymous, 'subscriptions')))
+    await assertFails(listAll(ref(owner, 'subscriptions')))
+    await assertFails(listAll(ref(stranger, 'subscriptions')))
+  })
+
+  it('refuses a stranger a listing of somebody else subscriptions', async () => {
+    await assertFails(listAll(ref(stranger, `subscriptions/${OWNER}`)))
+    await assertFails(listAll(ref(anonymous, `subscriptions/${OWNER}`)))
+  })
+})
+
+// Nothing outside people/ and subscriptions/ is reachable at all.
+describe('paths outside the tree', () => {
+  it('refuses a read and a write to a loose file', async () => {
+    await assertFails(getBytes(ref(anonymous, loose)))
+    await assertFails(getBytes(ref(owner, loose)))
+    await assertFails(uploadString(ref(owner, loose), 'x', 'raw'))
   })
 })

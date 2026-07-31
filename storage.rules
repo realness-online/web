@@ -31,12 +31,23 @@ service firebase.storage {
       }
 
       // Files sitting directly under a person: index.html.gz and friends.
+      // `get`, not `read`: on a list `{file}` never binds, and comparing a null
+      // segment to a string throws. A thrown rule denies, so this read the way
+      // it was meant to while logging an evaluation error every time.
       match /{file} {
-        allow read: if file != 'relations.html.gz';
+        allow get: if file != 'relations.html.gz';
         allow write, delete: if owns(mobile);
       }
 
-      // posters/, statements/, events/ and anything nested inside them.
+      // posters/, statements/, events/ and anything nested inside them. `read`
+      // here is what lets a signed-out visitor list a folder for the public
+      // feed, so it cannot narrow to `get` the way the rule above does.
+      //
+      // Listing a person's root reaches this match with `{folder}` unbound, and
+      // referencing an unbound wildcard throws — `is string` and `!= null` throw
+      // on the reference too, so there is no guard to write. A throw denies,
+      // which is the answer we want, and the app never lists a person's root:
+      // it lists `people/` and `people/{author}/{type}/`.
       match /{folder}/{path=**} {
         allow read: if folder != 'relations.html.gz';
         allow write, delete: if owns(mobile);
