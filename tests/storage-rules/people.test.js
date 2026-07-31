@@ -4,7 +4,13 @@ import {
   assertSucceeds,
   assertFails
 } from '@firebase/rules-unit-testing'
-import { ref, getBytes, uploadString, deleteObject } from 'firebase/storage'
+import {
+  ref,
+  getBytes,
+  uploadString,
+  deleteObject,
+  listAll
+} from 'firebase/storage'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -149,5 +155,32 @@ describe('subscriptions never leave their owner', () => {
 
   it('denies another signed-in person a write', async () => {
     await assertFails(uploadString(ref(stranger, subscription), 'sub', 'raw'))
+  })
+})
+
+// The phonebook is a listAll on `people/`, and every poster feed is a listAll
+// inside somebody's folder. Neither is a file read, so no amount of get
+// coverage catches them.
+describe('the phonebook can be listed', () => {
+  it('allows a signed-in person to list people', async () => {
+    await assertSucceeds(listAll(ref(owner, 'people')))
+  })
+
+  it('allows a signed-in person to list a stranger posters folder', async () => {
+    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}/posters`)))
+  })
+
+  it('allows an anonymous visitor to list a posters folder', async () => {
+    await assertSucceeds(listAll(ref(anonymous, `people/${OWNER}/posters`)))
+  })
+
+  it('does not hand out relations.html.gz through a listing', async () => {
+    await assertFails(getBytes(ref(stranger, relations)))
+  })
+})
+
+describe('the phone directory is not public', () => {
+  it('denies an anonymous listing of people', async () => {
+    await assertFails(listAll(ref(anonymous, 'people')))
   })
 })
