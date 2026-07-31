@@ -85,6 +85,39 @@ export const as_directory_id = itemid => {
   return `/${author}/${type}/`
 }
 
+/** @type {Promise<Map<string, Created[]>> | null} */
+let local_directories_inflight = null
+
+/**
+ * Every locally cached item key grouped by directory id, from one `keys()` pass.
+ * Callers running at the same time share one scan; the grouping is dropped the
+ * moment it resolves, so nobody reads a snapshot taken before their turn started.
+ * @returns {Promise<Map<string, Created[]>>}
+ */
+const local_directories = () => {
+  if (local_directories_inflight) return local_directories_inflight
+  local_directories_inflight = (async () => {
+    try {
+      /** @type {Map<string, Created[]>} */
+      const grouped = new Map()
+      const everything = await keys()
+      everything?.forEach(key => {
+        if (typeof key !== 'string') return
+        const created = as_created_at(/** @type {Id} */ (key))
+        if (!created) return
+        const path = as_directory_id(/** @type {Id} */ (key))
+        const items = grouped.get(path)
+        if (items) items.push(created)
+        else grouped.set(path, [created])
+      })
+      return grouped
+    } finally {
+      local_directories_inflight = null
+    }
+  })()
+  return local_directories_inflight
+}
+
 /**
  * @param {Id} itemid
  * @returns {Promise<Directory | null>}
@@ -92,13 +125,8 @@ export const as_directory_id = itemid => {
 export const build_local_directory = async itemid => {
   const path = /** @type {Id} */ (as_directory_id(itemid))
   const directory = new Directory(path)
-  const everything = await keys()
-  everything?.forEach(itemid => {
-    if (as_directory_id(/** @type {Id} */ (itemid)) === path) {
-      const id = as_created_at(/** @type {Id} */ (itemid))
-      if (id) directory.items.push(id)
-    }
-  })
+  const grouped = await local_directories()
+  directory.items = [...(grouped.get(path) ?? [])]
   return directory
 }
 
