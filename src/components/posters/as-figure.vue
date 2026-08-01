@@ -36,6 +36,8 @@
     POSTER_MEET_TOGGLE_ONLY
   } from '@/use/poster-dom-reference'
   import { use_poster_instance } from '@/use/poster-instances'
+  import { is_audio_file, decode_audio_files } from '@/utils/audio-file'
+  import { export_poster_to_video_with_audio } from '@/utils/export-poster-video'
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import { use_delegated_pan } from '@/use/delegated-pan'
   import {
@@ -281,6 +283,8 @@
   )
   const shown = ref(false)
   const working = ref(true)
+  /** Frame progress of a bare-poster audio video export, or null when idle. */
+  const video_export_progress = ref(null)
   const unload_cutouts = () => {
     cutout_load_token.value += 1
     if (vector.value?.cutouts) delete vector.value.cutouts
@@ -388,6 +392,7 @@
   })
 
   const key_commands = inject('key-commands', null)
+  const set_working = inject('set_working', () => {})
   const as_svg_ref = ref(null)
 
   const set_svg_zoom = t => {
@@ -446,6 +451,58 @@
 
   const on_activate_poster = () => poster_toggle_target()?.toggle_meet?.()
 
+  /**
+   * Allow an audio drag over a poster so the drop registers (dragover must be
+   * prevented for a drop event to fire). Everything else falls through to the
+   * app-wide image-drop handling.
+   * @param {DragEvent} event
+   */
+  const on_poster_dragover = event => {
+    const files = Array.from(event.dataTransfer?.files || [])
+    if (files.some(is_audio_file)) event.preventDefault()
+  }
+
+  /**
+   * When an audio file is dropped on the poster, decode it and export the
+   * video with it baked in as the soundtrack, looping the animation to match
+   * the track length. Works on the bare poster - no menu needed - because it
+   * calls the shared export directly rather than routing through the (lazily
+   * mounted) download menu.
+   * @param {DragEvent} event
+   */
+  const on_poster_drop_audio = async event => {
+    const files = Array.from(event.dataTransfer?.files || [])
+    const audio_files = files.filter(is_audio_file)
+    if (!audio_files.length) return
+    event.preventDefault()
+    event.stopPropagation()
+
+    let decoded = []
+    try {
+      decoded = await decode_audio_files(audio_files)
+    } catch (error) {
+      console.error('Failed to decode audio for video export:', error)
+      return
+    }
+    if (!decoded.length) return
+
+    // Drive the full-screen blue sweep border and a per-poster frame readout
+    // so a bare-poster drop keeps the same feedback as a menu export.
+    video_export_progress.value = { frame: 0, total: 0 }
+    set_working(true)
+    try {
+      await export_poster_to_video_with_audio(props.itemid, {
+        audio_buffers: decoded,
+        on_progress: (frame, total) => {
+          video_export_progress.value = { frame, total }
+        }
+      })
+    } finally {
+      video_export_progress.value = null
+      set_working(false)
+    }
+  }
+
   watch_effect(() => {
     if (!use_dom_reference.value) return
     sync_reference_from_canonical()
@@ -460,7 +517,9 @@
     "
     @focusin="on_focusin"
     @focusout="on_focusout"
-    @keydown.enter.prevent="on_activate_poster">
+    @keydown.enter.prevent="on_activate_poster"
+    @dragover="on_poster_dragover"
+    @drop="on_poster_drop_audio">
     <svg
       v-if="use_dom_reference"
       itemscope
@@ -585,6 +644,12 @@
         </footer>
       </template>
     </figcaption>
+    <output
+      v-if="video_export_progress"
+      class="video-export-progress"
+      aria-live="polite">
+      {{ video_export_progress.frame }}/{{ video_export_progress.total }} frames
+    </output>
   </figure>
 </template>
 
@@ -620,6 +685,18 @@
     &:has(svg[data-aspect]) {
       grid-column-start: span 3;
       grid-row-start: auto;
+    }
+    output.video-export-progress {
+      position: absolute;
+      left: 50%;
+      bottom: base-line * 0.5;
+      transform: translateX(-50%);
+      z-index: 3;
+      padding: base-line * 0.25 base-line * 0.5;
+      font-size: 0.78em;
+      white-space: nowrap;
+      frosted-glass();
+      border-radius: base-line * 0.25;
     }
     &:focus {
       outline: 0.25px solid var(--emphasis);

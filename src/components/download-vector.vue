@@ -14,15 +14,7 @@
   } from '@/utils/svg-to-psd'
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
   import { draw_icon_on_canvas } from '@/utils/canvas-icon'
-  import {
-    render_svg_to_video_blob,
-    download_video
-  } from '@/utils/svg-to-video'
-  import { VIDEO_EXPORT_ANIMATION_SPEED } from '@/utils/animation-config'
-  import {
-    begin_poster_video_export,
-    end_poster_video_export
-  } from '@/use/poster-video-export'
+  import { export_poster_to_video_with_audio } from '@/utils/export-poster-video'
   import icon from '@/components/icon'
   import {
     ref,
@@ -204,48 +196,34 @@
     await download_psd(svg)
   }
 
-  const on_download_video = async event => {
+  const on_download_video = event => {
     event.preventDefault()
     event.stopPropagation()
+    void export_video()
+  }
 
-    const svg = document.getElementById(as_query_id(props.itemid))
-    if (!svg || !(svg instanceof SVGSVGElement)) return
-
-    const viewbox = svg.viewBox.baseVal
-    const aspect_ratio = viewbox.width / viewbox.height
-    const target_smallest_side = 1440
-    const video_width =
-      aspect_ratio >= 1
-        ? Math.round(target_smallest_side * aspect_ratio)
-        : target_smallest_side
-    const video_height =
-      aspect_ratio >= 1
-        ? target_smallest_side
-        : Math.round(target_smallest_side / aspect_ratio)
-
+  /**
+   * Renders and downloads the poster as 4K H.264 MOV, optionally muxing one or
+   * more decoded audio buffers as the soundtrack. When audio is provided the
+   * video runs exactly as long as the audio, looping the animation cycle to
+   * cover it.
+   * @param {AudioBuffer[]} [audio_buffers] - Decoded audio to embed as the track
+   */
+  const export_video = async audio_buffers => {
     video_exporting.value = true
     video_progress.value = 0
     video_total.value = 0
     set_working(true)
-    begin_poster_video_export()
 
     try {
-      const video_filename = await get_filename_for_poster(props.itemid, 'mov')
-      const blob = await render_svg_to_video_blob(svg, {
-        animation_speed: VIDEO_EXPORT_ANIMATION_SPEED,
-        width: video_width,
-        height: video_height,
-        suggested_filename: video_filename,
+      await export_poster_to_video_with_audio(props.itemid, {
+        audio_buffers,
         on_progress: (frame, total) => {
           video_progress.value = frame
           video_total.value = total
         }
       })
-      download_video(blob, video_filename)
-    } catch (error) {
-      console.error('Failed to render video:', error)
     } finally {
-      end_poster_video_export()
       video_exporting.value = false
       video_progress.value = 0
       video_total.value = 0
@@ -253,6 +231,8 @@
       close_menu()
     }
   }
+
+  defineExpose({ export_video })
 
   const on_png_layers = async event => {
     event.preventDefault()
