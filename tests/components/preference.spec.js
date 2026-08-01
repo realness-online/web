@@ -99,7 +99,7 @@ describe('@/components/preference', () => {
   })
 
   it('renders an icon and cycle hint when requested', () => {
-    const wrapper = mount({ name: 'animate', icon: true })
+    const wrapper = mount({ name: 'animate', show_icon: true })
     expect(wrapper.findComponent({ name: 'icon' }).exists()).toBe(true)
     expect(wrapper.findAll('p[data-hint]').at(-1).text()).toContain(
       'cycle speeds'

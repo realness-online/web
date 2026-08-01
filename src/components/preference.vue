@@ -31,7 +31,8 @@
       required: false,
       default: false
     },
-    icon: {
+    // Not `icon`: that would shadow the imported `<icon>` component.
+    show_icon: {
       type: Boolean,
       default: false
     },
@@ -67,7 +68,7 @@
     return get_preference_cycle_hint(props.name)
   })
   const icon_name = computed(() => {
-    if (!props.icon) return null
+    if (!props.show_icon) return null
     return get_preference_icon(props.name)
   })
   const apply = new_state => {

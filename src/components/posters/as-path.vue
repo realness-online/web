@@ -62,9 +62,11 @@
     if (new_poster.value) return true
     return shadow_pref.value
   })
-  const path = ref(null)
-  const fill = ref(undefined)
-  const stroke = ref(undefined)
+  // Named apart from the props of the same name: `<script setup>` bindings
+  // shadow props in the template, so `fill` would quietly mean two things.
+  const path_element = ref(null)
+  const fill_color = ref(undefined)
+  const stroke_color = ref(undefined)
   const d = ref(undefined)
   const stroke_opacity = ref('0.90')
   const stroke_width = ref('0.33')
@@ -81,35 +83,37 @@
   }))
 
   mounted(async () => {
-    fill.value = props.fill
-    stroke.value = props.stroke
+    fill_color.value = props.fill
+    stroke_color.value = props.stroke
     d.value = props.path.getAttribute('d')
-    if (props.path.style.color) stroke.value = props.path.style.color
-    if (props.path.style.fill) fill.value = props.path.style.fill
+    if (props.path.style.color) stroke_color.value = props.path.style.color
+    if (props.path.style.fill) fill_color.value = props.path.style.fill
     await tick()
-    if (path.value) path_length.value = path.value.getTotalLength()
+    if (path_element.value)
+      path_length.value = path_element.value.getTotalLength()
   })
   watch_effect(() => {
     d.value = props.path?.getAttribute('d')
   })
 
   watch_effect(() => {
-    if (props.fill && props.fill !== fill.value) fill.value = props.fill
+    if (props.fill && props.fill !== fill_color.value)
+      fill_color.value = props.fill
   })
 </script>
 
 <template>
   <path
     :id="props.id"
-    ref="path"
+    ref="path_element"
     :d="d"
     :mask="props.mask"
     :itemprop="props.itemprop"
     :tabindex="props.tabindex"
-    :fill="show_fill ? fill : 'none'"
+    :fill="show_fill ? fill_color : 'none'"
     :fill-opacity="show_fill ? '0.90' : undefined"
     :fill-rule="show_fill ? 'evenodd' : undefined"
-    :stroke="stroke"
+    :stroke="stroke_color"
     :stroke-opacity="show_stroke && props.visible ? stroke_opacity : 0"
     :stroke-width="show_stroke && props.visible ? stroke_width : 0"
     stroke-dashoffset="0"
