@@ -29,6 +29,12 @@ page-width-large = round(base-line * 32)
 // page-width-large, which is a breakpoint, not a cap.
 page-width-max = round(base-line * 48)
 
+// Ultra-wide viewport: where the shared standard-grid() min (420px) starts
+// yielding 5+ columns and posters stretch absurdly. Raise the poster column
+// minimum here so fewer, larger posters pack the row instead.
+page-width-4k = round(base-line * 92, 0)
+poster-wide-min = round(base-line * 24, 0)
+
 // Content limit for support pages (docs, terms, privacy) - wider than prose
 // measure (page-width) since these mix headings, sidebars and body copy.
 support-page-width = round(base-line * 52)

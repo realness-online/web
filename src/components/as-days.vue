@@ -449,6 +449,12 @@
           margin-top: 0;
         }
       }
+      // Ultra-wide: the default 420px min grows to 5+ columns and posters
+      // stretch across the whole row. Use auto-fit so a lone 2-poster thought
+      // stays a natural size instead of leaving empty trailing tracks.
+      @media (min-width: page-width-4k) {
+        grid-template-columns: repeat(auto-fit, minmax(poster-wide-min, 1fr));
+      }
     }
   }
 </style>
