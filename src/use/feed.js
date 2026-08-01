@@ -18,9 +18,8 @@ const my_id = () =>
  * @returns {Id[]}
  */
 export const authors_to_reload = (detail, loaded) => {
-  const requested = /** @type {import('@/types').Feed_Refresh} */ (
-    detail
-  )?.authors
+  const requested =
+    /** @type {import('@/types').Feed_Refresh} */ (detail)?.authors
   if (!Array.isArray(requested)) return loaded
   const shown = new Set(loaded)
   return requested.filter(id => shown.has(id))
