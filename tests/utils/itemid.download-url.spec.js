@@ -217,6 +217,106 @@ describe('items that are not there', () => {
     })
   })
 
+  it('finds an archived poster its directory still lists as un-archived', async () => {
+    const { as_download_url } = await import('@/utils/itemid')
+    const { url } = await import('@/utils/serverless')
+    const poster = /** @type {import('@/types').Id} */ (
+      '/+16282281824/posters/1712000000000'
+    )
+    const top_level = 'people/+16282281824/posters/1712000000000.html.gz'
+    const archived =
+      'people/+16282281824/posters/1600000000000/1712000000000.html.gz'
+
+    // The cached listing predates the archiving: it still claims the poster
+    // sits in the main directory, which is what sends `as_filename` to a path
+    // Storage 404s. The archive directory knows better.
+    store.set('/+16282281824/posters/', {
+      items: ['1712000000000'],
+      archive: ['1600000000000']
+    })
+    store.set('/+16282281824/posters/1600000000000/', {
+      items: ['1712000000000'],
+      archive: []
+    })
+    url.mockImplementation(async filename => {
+      if (filename === archived) return 'https://storage/archived.html.gz'
+      throw Object.assign(new Error('not found'), {
+        code: 'storage/object-not-found'
+      })
+    })
+
+    const resolved = await as_download_url(poster)
+
+    expect(url).toHaveBeenCalledWith(top_level)
+    expect(resolved).toBe('https://storage/archived.html.gz')
+    expect(store.get('sync:index')?.[poster]).toBeUndefined()
+  })
+
+  it('remembers where it found it, so the next read costs one lookup', async () => {
+    const { as_download_url, forget_download_url } =
+      await import('@/utils/itemid')
+    const { url } = await import('@/utils/serverless')
+    const poster = /** @type {import('@/types').Id} */ (
+      '/+16282281824/posters/1712000000000'
+    )
+    const archived =
+      'people/+16282281824/posters/1600000000000/1712000000000.html.gz'
+
+    store.set('/+16282281824/posters/', {
+      items: ['1712000000000'],
+      archive: ['1600000000000']
+    })
+    store.set('/+16282281824/posters/1600000000000/', {
+      items: ['1712000000000'],
+      archive: []
+    })
+    url.mockImplementation(async filename => {
+      if (filename === archived) return 'https://storage/archived.html.gz'
+      throw Object.assign(new Error('not found'), {
+        code: 'storage/object-not-found'
+      })
+    })
+
+    await as_download_url(poster)
+    await forget_download_url(poster)
+    url.mockClear()
+    const second = await as_download_url(poster)
+
+    expect(second).toBe('https://storage/archived.html.gz')
+    expect(url).toHaveBeenCalledTimes(1)
+    expect(url).toHaveBeenCalledWith(archived)
+  })
+
+  it('still writes the missing marker when no archive holds it either', async () => {
+    const { as_download_url } = await import('@/utils/itemid')
+    const { url } = await import('@/utils/serverless')
+    const poster = /** @type {import('@/types').Id} */ (
+      '/+16282281824/posters/1712000000000'
+    )
+
+    store.set('/+16282281824/posters/', {
+      items: ['1712000000000'],
+      archive: ['1600000000000']
+    })
+    store.set('/+16282281824/posters/1600000000000/', {
+      items: ['1500000000000'],
+      archive: []
+    })
+    url.mockRejectedValue(
+      Object.assign(new Error('not found'), {
+        code: 'storage/object-not-found'
+      })
+    )
+
+    const resolved = await as_download_url(poster)
+
+    expect(resolved).toBeNull()
+    expect(store.get('sync:index')[poster]).toEqual({
+      updated: null,
+      customMetadata: { hash: null }
+    })
+  })
+
   it('stops asking Storage once the missing marker is cached', async () => {
     const { load_from_network } = await import('@/utils/itemid')
     const { url } = await import('@/utils/serverless')

@@ -279,9 +279,11 @@ export const as_directory = async itemid => {
  * Resolve Firebase Storage path for an item under an archive directory.
  * Lives here so it can call `as_directory` without `@/utils/itemid` importing this module.
  * @param {Id} itemid
+ * @param {{ search_archives?: boolean }} [options] - `search_archives` probes
+ *   every archive instead of trusting the cached directory's item list.
  * @returns {Promise<string | null>}
  */
-export const as_archive = async itemid => {
+export const as_archive = async (itemid, { search_archives = false } = {}) => {
   if (itemid.startsWith('/+/')) return null
   const created = as_created_at(itemid)
   if (!created) return null
@@ -301,13 +303,18 @@ export const as_archive = async itemid => {
 
   const { items = [], archive = [] } = directory
 
-  // If poster is in the main directory items, it's not archived
-  const item_timestamps = items.map(Number)
-  if (item_timestamps.includes(created)) return null
+  // Both shortcuts below read a directory that can be older than the archive it
+  // describes. Storage 404ing the path they produced is proof of exactly that,
+  // so a `search_archives` retry skips them and asks the archives themselves.
+  if (!search_archives) {
+    // If poster is in the main directory items, it's not archived
+    const item_timestamps = items.map(Number)
+    if (item_timestamps.includes(created)) return null
 
-  // If items exist and poster is newer than all items, it doesn't exist yet
-  if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
-    return null
+    // If items exist and poster is newer than all items, it doesn't exist yet
+    if (item_timestamps.length > 0 && created > Math.max(...item_timestamps))
+      return null
+  }
 
   return archive.reduce(async (chain, archive_id) => {
     const found = await chain
