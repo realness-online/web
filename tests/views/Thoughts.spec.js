@@ -174,11 +174,20 @@ vi.mock('@/use/feed', () => ({
   }
 }))
 
+// Geology-layer toggles live in export-poster, which the real as-figure now
+// reaches through export-poster-video even when the component tree stubs the
+// figure out. Mock them as plain refs so the module graph still evaluates.
 vi.mock('@/utils/preference', () => ({
   storytelling: mock_storytelling,
   aspect_ratio_mode: mock_aspect_ratio_mode,
   menu: mock_menu,
-  only_mine: mock_only_mine
+  only_mine: mock_only_mine,
+  mosaic: { value: false },
+  boulders: { value: false },
+  rocks: { value: false },
+  gravel: { value: false },
+  sand: { value: false },
+  sediment: { value: false }
 }))
 
 vi.mock('@/utils/after-layout', () => ({
