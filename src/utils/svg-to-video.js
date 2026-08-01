@@ -4,7 +4,8 @@ import {
   MovOutputFormat,
   BufferTarget,
   StreamTarget,
-  CanvasSource
+  CanvasSource,
+  AudioBufferSource
 } from 'mediabunny'
 import {
   FRAMES_PER_SECOND,
@@ -23,9 +24,13 @@ const FRAME_HOLD = 4
 // Bitrate is a fixed bits-per-second target, not tied to resolution, so it
 // needs to scale with the canvas pixel count to keep the same bits-per-pixel
 // density — otherwise a bigger canvas just spreads the same bit budget over
-// more pixels instead of looking sharper. 14 Mbps matches the ~1.8x pixel
-// increase from 1080p (8 Mbps) to the current 1440p export target.
-const VIDEO_BITRATE = 14000000
+// more pixels instead of looking sharper. 40 Mbps is the H.264 4K upload
+// range YouTube recommends (35-45 Mbps), ~5x the 8 Mbps baseline for 1080p
+// against the ~4x pixel jump to 4K, so gradients stay band-free.
+const VIDEO_BITRATE = 40000000
+// AAC-LC audio bitrate for the muxed soundtrack, in the transparent range for
+// music-quality source material at 44.1/48 kHz.
+const AUDIO_BITRATE = 192000
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
 const PROGRESS_HALF = 0.5
@@ -63,6 +68,37 @@ const KEY_SPLINE_PARTS = 4
 const get_animation_duration = animation_speed => {
   const multiplier = ANIMATION_SPEED_MULTIPLIERS[animation_speed] || 1
   return BASE_DURATION * multiplier
+}
+
+// H.264 Level 5.1 (36,864 macroblocks) is the ceiling every browser's H.264
+// encoder honors; beyond it the encoder refuses the config. A square or tall
+// poster at a plain 3840-wide target blows past that (3840 square = 57,600
+// MBs), so we render at the largest size that (a) keeps the poster's own
+// aspect ratio - no crop, no forced 16:9 frame - and (b) stays inside the
+// level. 16:9 tops out at true 4K (3840x2160 = 32,400 MBs); every other
+// aspect scales within it (a square fills to 2160x2160, 18,225 MBs). The
+// poster is vector, so upscaling to this target is just rasterizing it
+// larger - it does not soften the image.
+const LEVEL51_TARGET = { width: 3840, height: 2160 }
+
+/**
+ * Largest Level-5.1-safe export size for a poster of the given viewbox
+ * aspect, preserving the ratio and forcing even dimensions (H.264 needs
+ * them). Scales the vector poster up to fill the level ceiling, never
+ * cropping.
+ * @param {{ width: number, height: number }} viewbox - Poster's intrinsic size
+ * @returns {{ width: number, height: number }}
+ */
+export const level51_video_size = viewbox => {
+  const scale = Math.min(
+    LEVEL51_TARGET.width / viewbox.width,
+    LEVEL51_TARGET.height / viewbox.height
+  )
+  const even = n => Math.max(2, Math.round(n) + (Math.round(n) % 2))
+  return {
+    width: even(viewbox.width * scale),
+    height: even(viewbox.height * scale)
+  }
 }
 
 /**
@@ -110,15 +146,18 @@ const setup_file_system_api = async suggested_filename => {
  * @param {number} canvas_height - Canvas height
  * @param {number} fps - Frames per second
  * @param {number} total_frames - Total number of frames
- * @param {any} writable_stream - Optional writable stream for File System API
- * @returns {{canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, output: any, canvas_source: any}}
+ * @param {object} options
+ * @param {any} [options.writable_stream] - Optional writable stream for File System API
+ * @param {AudioBuffer[]} [options.audio_buffers] - Decoded audio to mux beside
+ *   the video. When present the output also carries an AAC audio track.
+ * @returns {{canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, output: any, canvas_source: any, audio_source: any}}
  */
 const setup_canvas_and_encoder = (
   canvas_width,
   canvas_height,
   fps,
   total_frames,
-  writable_stream
+  { writable_stream, audio_buffers } = {}
 ) => {
   const canvas = document.createElement('canvas')
   canvas.width = canvas_width
@@ -155,7 +194,16 @@ const setup_canvas_and_encoder = (
     maximumPacketCount: total_frames
   })
 
-  return { canvas, ctx, output, canvas_source }
+  let audio_source = null
+  if (audio_buffers?.length) {
+    audio_source = new AudioBufferSource({
+      codec: 'aac',
+      bitrate: AUDIO_BITRATE
+    })
+    output.addAudioTrack(audio_source)
+  }
+
+  return { canvas, ctx, output, canvas_source, audio_source }
 }
 
 const parse_dur = dur_str => {
@@ -407,6 +455,9 @@ export const download_video = (blob, filename = 'animation.mov') => {
  * @param {number} [options.height] - Canvas height (defaults to SVG viewBox height)
  * @param {Function} [options.on_progress] - Progress callback (frame, total_frames)
  * @param {string} [options.suggested_filename] - Suggested filename for File System Access API
+ * @param {AudioBuffer[]} [options.audio_buffers] - One or more decoded
+ *   audio buffers to mux as the soundtrack. When present the video runs for exactly the
+ *   total audio length, looping the animation cycle to cover it, and the audio plays alongside.
  * @returns {Promise<Blob|null>} Video blob ready for download, or null if saved via File System Access API
  */
 export const render_svg_to_video_blob = async (
@@ -418,7 +469,8 @@ export const render_svg_to_video_blob = async (
     width,
     height,
     on_progress,
-    suggested_filename
+    suggested_filename,
+    audio_buffers
   } = {}
 ) => {
   if (!(svg_element instanceof SVGSVGElement))
@@ -426,7 +478,16 @@ export const render_svg_to_video_blob = async (
 
   svg_element.pauseAnimations()
 
-  const duration = max_duration || get_animation_duration(animation_speed)
+  const audio_duration = audio_buffers?.length
+    ? audio_buffers.reduce((sum, buf) => sum + buf.duration, 0)
+    : 0
+  const duration =
+    audio_duration || max_duration || get_animation_duration(animation_speed)
+  // The animation cycle length. When audio is longer than the cycle the
+  // render wraps time modulo this value so the animation repeats visually
+  // (seamless loop). When audio is shorter the cycle is still sampled at the
+  // same tempo — the animation simply plays for the audio length and stops.
+  const cycle_length = get_animation_duration(animation_speed)
   const { file_handle, writable_stream } =
     await setup_file_system_api(suggested_filename)
 
@@ -440,15 +501,22 @@ export const render_svg_to_video_blob = async (
   const total_frames = Math.floor(duration * FRAMES_PER_SECOND) + 1
   const encoded_frame_count = total_frames * FRAME_HOLD
 
-  const { ctx, output, canvas_source } = setup_canvas_and_encoder(
+  const { ctx, output, canvas_source, audio_source } = setup_canvas_and_encoder(
     canvas_width,
     canvas_height,
     fps,
     encoded_frame_count,
-    writable_stream
+    {
+      writable_stream,
+      audio_buffers
+    }
   )
 
   await output.start()
+
+  if (audio_source && audio_buffers?.length)
+    // oxlint-disable-next-line no-await-in-loop
+    for (const buffer of audio_buffers) await audio_source.add(buffer)
 
   // oxlint-disable-next-line no-await-in-loop
   let current_image = await rasterize_svg_frame(
@@ -458,9 +526,14 @@ export const render_svg_to_video_blob = async (
     0
   )
 
+  // animation sample time that loops: wraps the raw render time back to the
+  // start of the cycle once it exceeds one cycle, so longer audio repeats the
+  // animation instead of playing one cycle and holding the final pose.
+  const wrap_time = time => (cycle_length > 0 ? time % cycle_length : time)
+
   for (let current_frame = 0; current_frame < total_frames; current_frame++) {
     const is_last_frame = current_frame === total_frames - 1
-    const next_time = (current_frame + 1) / FRAMES_PER_SECOND
+    const next_time = wrap_time((current_frame + 1) / FRAMES_PER_SECOND)
 
     // Rasterize the next sample now so the held ticks below can cross-fade
     // toward it instead of holding the current pose rigidly — same number
@@ -509,6 +582,7 @@ export const render_svg_to_video_blob = async (
   }
 
   canvas_source.close()
+  audio_source?.close()
 
   await output.finalize()
 

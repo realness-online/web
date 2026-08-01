@@ -17,7 +17,12 @@ vi.mock('@/utils/poster-canvas', () => ({
 
 vi.mock('@/utils/svg-to-video', () => ({
   render_svg_to_video_blob: vi.fn(async () => new Blob(['video'])),
-  download_video: vi.fn()
+  download_video: vi.fn(),
+  level51_video_size: vi.fn(() => ({ width: 2160, height: 2160 }))
+}))
+
+vi.mock('@/utils/export-poster-video', () => ({
+  export_poster_to_video_with_audio: vi.fn(async () => {})
 }))
 
 vi.mock('@/utils/export-poster', async importOriginal => {
@@ -76,18 +81,21 @@ describe('@/components/download-vector.vue', () => {
     expect(set_working).toHaveBeenLastCalledWith(false)
   })
 
-  it('exports video using the crawl-speed animation timeline', async () => {
-    const { render_svg_to_video_blob } = await import('@/utils/svg-to-video')
-    const { wrapper, svg } = mount_with_svg()
+  it('exports video through the shared exporter with the poster itemid', async () => {
+    const { export_poster_to_video_with_audio } =
+      await import('@/utils/export-poster-video')
+    const { wrapper, set_working } = mount_with_svg()
     const event = { preventDefault: vi.fn(), stopPropagation: vi.fn() }
 
     await wrapper.vm.on_download_video(event)
 
-    // Playback pacing (fps + frame holding) is svg-to-video.js's own concern,
-    // covered by tests/utils/svg-to-video.spec.js — this just checks wiring.
-    expect(render_svg_to_video_blob).toHaveBeenCalledWith(
-      svg,
-      expect.objectContaining({ animation_speed: 'crawl' })
+    // Video rendering/looping lives in the shared exporter (and, beneath it,
+    // svg-to-video.js's own tests); this just checks the wiring and that the
+    // component's working state wraps the call.
+    expect(export_poster_to_video_with_audio).toHaveBeenCalledWith(
+      itemid,
+      expect.objectContaining({ audio_buffers: undefined })
     )
+    expect(set_working).toHaveBeenLastCalledWith(false)
   })
 })

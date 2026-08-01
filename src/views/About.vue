@@ -319,6 +319,14 @@
         <li>
           <icon name="finished" />
           <p>
+            <strong>Music visualizer</strong> Drop a song on a poster and it
+            becomes your visualizer - the animation loops to your track, audio
+            baked in, ready for your DAW or YouTube.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
             <strong>Trains of thought</strong> Every new statement you add for
             13 minutes is added to the last, giving you time to think and
             explore
@@ -985,7 +993,7 @@
       &[data-revealed] > ol > li {
         about-enter();
 
-        for i in 1..15 {
+        for i in 1..16 {
           &:nth-child({i}) {
             animation-delay: calc((i - 1) * var(--about-stagger));
           }

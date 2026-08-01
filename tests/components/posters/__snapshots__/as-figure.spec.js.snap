@@ -17,6 +17,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
   <!--v-if-->
   <!--v-if-->
   <!--v-if-->
+  <!--v-if-->
 </figure>
 `;
 
@@ -32,6 +33,7 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
     tabable="false"
     touch_uses_long_press="true"
   />
+  <!--v-if-->
   <!--v-if-->
   <!--v-if-->
   <!--v-if-->
