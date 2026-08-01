@@ -134,29 +134,77 @@ const resolve_release_tag = async (repo, release) => {
   return release
 }
 
-const load_github_manifest = async ({ repo, release }) => {
+const not_found = 404
+const server_error = 500
+const retry_attempts = 5
+const retry_base_ms = 2000
+const ms_per_second = 1000
+
+/**
+ * A freshly published asset 404s until GitHub propagates it; a 5xx is the CDN
+ * having a moment. Both are worth waiting on. Anything else is a real answer.
+ * @param {number} status
+ */
+export const is_retryable_status = status =>
+  status === not_found || status >= server_error
+
+/** @param {number} ms */
+const sleep = ms =>
+  new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+
+/**
+ * `ship` publishes the release and verifies it in the same breath, so retry
+ * whole passes rather than each spelling: the bare tag legitimately never
+ * resolves when `release:gh` tagged `v<version>`, and per-candidate backoff
+ * would burn the whole budget waiting on it.
+ * @param {{ repo: string, release: string }} opts
+ * @param {{ fetch_impl?: typeof fetch, sleep_impl?: sleep, attempts?: number }} [injected]
+ */
+export const load_github_manifest = async (
+  { repo, release },
+  { fetch_impl = fetch, sleep_impl = sleep, attempts = retry_attempts } = {}
+) => {
   const tag = await resolve_release_tag(repo, release)
   const candidates = release === 'latest' ? [tag] : release_tag_candidates(tag)
-  const tried = []
+  const tried = candidates.map(candidate =>
+    github_download_url(repo, candidate)
+  )
 
-  // Try tag spellings in order; stop on the first manifest that downloads.
-  for (const candidate of candidates) {
-    const url = github_download_url(repo, candidate)
-    tried.push(url)
-    // eslint-disable-next-line no-await-in-loop -- sequential fallbacks
-    const response = await fetch(url, {
-      cache: 'no-store',
-      redirect: 'follow',
-      headers: { Accept: 'application/octet-stream' }
-    })
-    if (!response.ok) continue
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let propagating = false
 
-    // eslint-disable-next-line no-await-in-loop -- sequential fallbacks
-    const manifest = await response.json()
-    return {
-      manifest,
-      source: `github:${repo}@${candidate}`
+    // Try tag spellings in order; stop on the first manifest that downloads.
+    for (const candidate of candidates) {
+      const url = github_download_url(repo, candidate)
+      // eslint-disable-next-line no-await-in-loop -- sequential fallbacks
+      const response = await fetch_impl(url, {
+        cache: 'no-store',
+        redirect: 'follow',
+        headers: { Accept: 'application/octet-stream' }
+      })
+      if (!response.ok) {
+        if (is_retryable_status(response.status)) propagating = true
+        continue
+      }
+
+      // eslint-disable-next-line no-await-in-loop -- sequential fallbacks
+      const manifest = await response.json()
+      return {
+        manifest,
+        source: `github:${repo}@${candidate}`
+      }
     }
+
+    if (!propagating || attempt === attempts) break
+
+    const wait = retry_base_ms * 2 ** (attempt - 1)
+    console.info(
+      `Waiting ${wait / ms_per_second}s for ${manifest_asset} to publish...`
+    )
+    // eslint-disable-next-line no-await-in-loop -- sequential backoff
+    await sleep_impl(wait)
   }
 
   throw new Error(
