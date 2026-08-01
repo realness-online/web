@@ -1,9 +1,9 @@
-import pako from 'pako'
+import { deflate, inflate } from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'
 
 export const compress_html = message => {
   const uint8_array = new TextEncoder().encode(message.data.html)
-  const result = pako.deflate(uint8_array, {
+  const result = deflate(uint8_array, {
     level: 9
   })
   const blob = new Blob([result], { type: 'application/octet-stream' })
@@ -18,8 +18,8 @@ export const decompress_html = message => {
     return { html: new TextDecoder().decode(compressed_data) }
 
   // Otherwise proceed with decompression
-  const html = pako.inflate(compressed_data, {
-    to: 'string'
+  const html = inflate(compressed_data, {
+    toText: true
   })
   return { html }
 }

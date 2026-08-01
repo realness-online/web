@@ -1,13 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
 import * as compressor from '@/workers/compressor'
-import pako from 'pako'
+import { deflate, inflate } from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'
 
 vi.mock('pako', () => ({
-  default: {
-    deflate: vi.fn(),
-    inflate: vi.fn()
-  }
+  deflate: vi.fn(),
+  inflate: vi.fn()
 }))
 
 describe('compressor worker', () => {
@@ -19,12 +17,12 @@ describe('compressor worker', () => {
     it('compresses HTML string', () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3, 4])
-      pako.deflate.mockReturnValue(mock_compressed)
+      deflate.mockReturnValue(mock_compressed)
 
       const message = { data: { html: mock_html } }
       const result = compressor.compress_html(message)
 
-      expect(pako.deflate).toHaveBeenCalledWith(expect.any(Uint8Array), {
+      expect(deflate).toHaveBeenCalledWith(expect.any(Uint8Array), {
         level: 9
       })
       expect(result).toHaveProperty('blob')
@@ -36,13 +34,13 @@ describe('compressor worker', () => {
     it('decompresses compressed data', () => {
       const mock_compressed = new Uint8Array([1, 2, 3, 4])
       const mock_decompressed = '<html><body>test</body></html>'
-      pako.inflate.mockReturnValue(mock_decompressed)
+      inflate.mockReturnValue(mock_decompressed)
 
       const message = { data: { compressed: mock_compressed } }
       const result = compressor.decompress_html(message)
 
-      expect(pako.inflate).toHaveBeenCalledWith(mock_compressed, {
-        to: 'string'
+      expect(inflate).toHaveBeenCalledWith(mock_compressed, {
+        toText: true
       })
       expect(result).toHaveProperty('html')
       expect(result.html).toBe(mock_decompressed)
@@ -55,7 +53,7 @@ describe('compressor worker', () => {
       const message = { data: { compressed: mock_uncompressed } }
       const result = compressor.decompress_html(message)
 
-      expect(pako.inflate).not.toHaveBeenCalled()
+      expect(inflate).not.toHaveBeenCalled()
       expect(result).toHaveProperty('html')
       expect(result.html).toBe(decoded_html)
     })
@@ -65,7 +63,7 @@ describe('compressor worker', () => {
     it('routes compress:html message', () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3])
-      pako.deflate.mockReturnValue(mock_compressed)
+      deflate.mockReturnValue(mock_compressed)
 
       const message = { data: { route: 'compress:html', html: mock_html } }
       const result = compressor.route_message(message)
@@ -76,7 +74,7 @@ describe('compressor worker', () => {
     it('routes decompress:html message', () => {
       const mock_compressed = new Uint8Array([1, 2, 3])
       const mock_decompressed = '<html><body>test</body></html>'
-      pako.inflate.mockReturnValue(mock_decompressed)
+      inflate.mockReturnValue(mock_decompressed)
 
       const message = {
         data: { route: 'decompress:html', compressed: mock_compressed }
@@ -104,7 +102,7 @@ describe('compressor worker', () => {
       const console_error = vi
         .spyOn(console, 'error')
         .mockImplementation(() => {})
-      pako.inflate.mockImplementation(() => {
+      inflate.mockImplementation(() => {
         throw new Error('corrupt data')
       })
 
