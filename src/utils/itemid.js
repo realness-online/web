@@ -162,9 +162,11 @@ const storage_me = () => {
 
 /**
  * @param {Id} itemid
+ * @param {{ search_archives?: boolean }} [options] - passed through to
+ *   `as_archive`; probes the archives rather than trusting the cached directory.
  * @returns {Promise<string>}
  */
-export const as_filename = async itemid => {
+export const as_filename = async (itemid, options) => {
   const { as_archive } = await import('@/persistence/Directory')
   const poster_id = as_poster_id(itemid)
   if (poster_id) {
@@ -172,7 +174,7 @@ export const as_filename = async itemid => {
     if (poster_id.startsWith('/+')) poster_filename = `people${poster_id}`
 
     const layer_name = as_layer_name(itemid)
-    const archive = await as_archive(poster_id)
+    const archive = await as_archive(poster_id, options)
 
     if (archive) {
       const suffix = layer_name ? `-${layer_name}` : ''
@@ -191,7 +193,7 @@ export const as_filename = async itemid => {
     item_type &&
     has_archive.includes(/** @type {typeof has_archive[number]} */ (item_type))
   ) {
-    const archive = await as_archive(itemid)
+    const archive = await as_archive(itemid, options)
     if (archive) return `${archive}.html.gz`
     return `${filename}.html.gz`
   } else if (is_history(itemid)) return `${filename}.html.gz`
@@ -365,6 +367,22 @@ export const as_download_url = async itemid => {
           } catch (fallback_error) {
             if (!is_storage_not_found(fallback_error)) throw fallback_error
           }
+
+        // And the other direction: a cached directory older than the archive it
+        // describes makes `as_archive` call an archived poster un-archived, so
+        // `filename` was the pre-archive path all along. Ask the archives
+        // themselves before writing the item off — a wrong guess about where a
+        // file lives must not become a permanent DOES_NOT_EXIST.
+        const searched = await as_filename(itemid, { search_archives: true })
+        if (searched !== filename && searched !== fallback)
+          try {
+            const searched_url = await url(searched)
+            await remember_download_url(itemid, searched, searched_url)
+            return searched_url
+          } catch (searched_error) {
+            if (!is_storage_not_found(searched_error)) throw searched_error
+          }
+
         const stale = (await get('sync:index')) || {}
         stale[itemid] = DOES_NOT_EXIST
         await set('sync:index', stale)
