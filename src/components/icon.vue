@@ -361,6 +361,9 @@
 <style>
   svg.icon {
     fill: currentColor;
+    &[data-icon='no-ai'] {
+      stroke: currentColor;
+    }
     &:active {
       transform: scale(0.95);
     }

@@ -15,7 +15,7 @@
 
   defineOptions({ name: 'Colors' })
 
-  const icon_index = ref(0)
+  const icon_index = ref(Math.max(0, icon_names.indexOf('no-ai')))
   const preview_icon = computed(() => icon_names[icon_index.value])
   const on_cycle = () => {
     if (!icon_names.length) return
