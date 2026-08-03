@@ -9,7 +9,7 @@ import {
   download_video
 } from '@/utils/svg-to-video'
 import { get_filename_for_poster } from '@/utils/export-poster'
-import { VIDEO_EXPORT_ANIMATION_SPEED } from '@/utils/animation-config'
+import { animation_speed } from '@/utils/preference'
 import {
   begin_poster_video_export,
   end_poster_video_export
@@ -49,7 +49,10 @@ export const export_poster_to_video_with_audio = async (
   try {
     const video_filename = await get_filename_for_poster(itemid, 'mov')
     const blob = await render_svg_to_video_blob(svg, {
-      animation_speed: VIDEO_EXPORT_ANIMATION_SPEED,
+      // Live animation speed preference: sets the default video length for a
+      // no-audio export (one full cycle) and matches the pace of the poster
+      // on screen. With audio the track length rules instead.
+      animation_speed: animation_speed.value,
       width: video_width,
       height: video_height,
       suggested_filename: video_filename,
