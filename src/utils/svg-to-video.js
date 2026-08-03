@@ -134,7 +134,8 @@ const setup_canvas_and_encoder = (
     target
   })
 
-  let canvas_source = null
+  /** @type {CanvasSource} */
+  let canvas_source
   try {
     canvas_source = new CanvasSource(canvas, {
       codec: 'avc',
@@ -151,6 +152,7 @@ const setup_canvas_and_encoder = (
     maximumPacketCount: total_frames
   })
 
+  /** @type {AudioBufferSource | null} */
   let audio_source = null
   if (audio_buffers?.length) {
     audio_source = new AudioBufferSource({

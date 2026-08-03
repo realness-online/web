@@ -43,6 +43,7 @@ export const use_poster_svg_activate_pointer = ({
   let touch_start_y = 0
   /** `0` = no active touch-long-press timing */
   let touch_down_at = 0
+  /** @type {ReturnType<typeof setTimeout> | null} */
   let long_press_timer = null
   /** Monotonic id so a cleared long-press timeout never runs `on_activate` */
   let long_press_sid = 0

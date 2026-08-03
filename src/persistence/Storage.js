@@ -141,10 +141,10 @@ export class Event extends Paged(Cloud(Local(Storage))) {
 /** @extends {Storage} */
 export class Offline extends Cloud(Storage) {
   async save() {
-    const outer_html = await get(this.id)
+    let { id } = this
+    const outer_html = await get(id)
     if (!outer_html) return
 
-    let { id } = this
     if (id.startsWith('/+/'))
       id = /** @type {Id} */ (
         `${localStorage.me}/${as_type(id)}/${as_created_at(id)}`

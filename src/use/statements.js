@@ -22,6 +22,7 @@ const authors = ref(
   /** @type {Array<{id: import('@/types').Id, type: string, viewed: Array<string|number>}>} */
   ([])
 )
+/** @type {Promise<import('@/types').Item[]> | null} */
 let loading_promise = null
 
 /**

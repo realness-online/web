@@ -35,6 +35,7 @@ export const init_auth = firebase_app => {
         if (phone) localStorage.me = from_e64(phone)
         if (me.value) me.value.id = localStorage.me
         /** Load profile before `current_user` so sync/save hooks do not upload a shell over the server file. */
+        /** @type {import('@/types').Item | null} */
         let maybe_me = null
         try {
           const { load_from_network } = await import('@/utils/itemid')

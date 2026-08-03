@@ -284,7 +284,7 @@ export const valid_phone = (full_phone, country) => {
 /**
  * @param {string} full_phone
  * @param {string} country
- * @returns {object}
+ * @returns {import('libphonenumber-js').PhoneNumber | undefined} Undefined when the number cannot be parsed
  */
 export const parse_phone = (full_phone, country) =>
   parse_number(full_phone, { defaultCountry: /** @type {any} */ (country) })
