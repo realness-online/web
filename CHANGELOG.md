@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **The favicon was a grey smudge in the tab** — the mark fills its six tiles with the smalti tessera pattern, and at 16px one tessera is about a pixel and a half, so the mosaic dithered away and the water, clay and pumice palettes averaged into a single grey. The root drawing of `icons.svg` is only ever the favicon and Safari's pinned-tab icon — every other consumer pulls a `#symbol` by id — so it now crops tight to the mark and fills flat, with pumice lifted from 0.35 to 0.72 so the ash and cinder tiles still read against a dark tab strip. `#realness` and its mosaic are untouched, and so is everywhere the mark is actually drawn.
+
+- **Pressing the realness mark left it stuck on its solid fill** — a press snaps the six tiles together and swaps the mosaic for flat colour; letting go is supposed to fade back. The rewind that resets the drift animations collects `getAnimations()`, which hands back CSS transitions alongside keyframe animations, so it caught that fade one frame in and paused it at frame zero. Only keyframe animations get rewound now.
+
+- **The 3D and grid preferences lost their icons** — `preference.vue`'s `icon` prop was renamed `show_icon` (as `icon` shadowed the imported `<icon>` component) and two of the three call sites in the menu still passed the old name, so the attribute fell through to the fieldset instead.
+
 ## v2.6.7 — 2026-07-31
 
 - **Nobody could see anybody else** — v2.6.6 closed a hole that let anyone read your follow list, and in doing so took away permission to list the directory of people, so realness could only show you your own posters and thoughts. Reading the directory is allowed again, for signed-in people only. Your follow list stays private, and the phone directory is no longer readable by anyone who is not signed in.

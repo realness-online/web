@@ -226,12 +226,12 @@
       <preference :show_icon="icon" name="animate" />
       <preference name="color_cycle" label="Color cycle" />
       <h3 id="preferences-view">View</h3>
-      <preference :icon="icon" name="view_3d" label="3D">
+      <preference :show_icon="icon" name="view_3d" label="3D">
         <div class="tweakpane" @transitionend="on_slide_transition_end">
           <div ref="tweakpane_ref" class="tweakpane__host" />
         </div>
       </preference>
-      <preference :icon="icon" name="grid" />
+      <preference :show_icon="icon" name="grid" />
       <preference name="info" />
       <preference name="storytelling" />
       <h3 id="preferences-chrome">Chrome</h3>
