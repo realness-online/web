@@ -34,6 +34,9 @@ import {
   VECTOR_LAYERS
 } from '@/3d/scenes/poster-scene-config.js'
 
+/** @typedef {import('@/3d/engine/types.js').PosterSceneState} PosterSceneState */
+/** @typedef {import('@/3d/engine/types.js').PosterSceneAppliers} PosterSceneAppliers */
+
 const create_reduced_motion_reader = () => {
   if (typeof window === 'undefined') return () => false
   const reduced_motion_query = window.matchMedia(
@@ -45,7 +48,7 @@ const create_reduced_motion_reader = () => {
 /**
  * @param {{
  *   fog: THREE.FogExp2,
- *   state: object,
+ *   state: PosterSceneState,
  *   mosaic_group_map: Map<string, THREE.Group>,
  *   mosaic_materials: { material: THREE.MeshBasicMaterial, base_opacity: number }[],
  *   shadow_entries: { group: THREE.Group, parallax_offset: number }[],
@@ -121,7 +124,21 @@ const create_poster_scene_appliers = ({
 })
 
 /**
- * @param {object} options
+ * @param {{
+ *   poster_svg: import('@/3d/utils/load-svg-layers.js').PosterSvgContext,
+ *   root: THREE.Group,
+ *   plane_w: number,
+ *   plane_h: number,
+ *   state: PosterSceneState,
+ *   layer_groups: object[],
+ *   shadow_entries: { group: THREE.Group, parallax_offset: number }[],
+ *   shadow_group_map: Map<string, THREE.Group>,
+ *   shadow_materials: { material: THREE.MeshBasicMaterial, base_opacity: number, loaded: boolean }[],
+ *   stroke_entries: { group: THREE.Group, parallax_offset: number, child_id: string }[],
+ *   stroke_group_map: Map<string, THREE.Group>,
+ *   stroke_materials: { material: THREE.MeshBasicMaterial, base_opacity: number, loaded: boolean, period: number }[],
+ *   appliers: PosterSceneAppliers
+ * }} options
  */
 const load_poster_texture_layers = ({
   poster_svg,

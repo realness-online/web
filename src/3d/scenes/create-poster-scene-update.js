@@ -38,11 +38,15 @@ import {
   stroke_pulse_opacity
 } from '@/3d/scenes/poster-scene-motion.js'
 
+/** @typedef {import('@/3d/engine/types.js').PosterSceneRuntime} PosterSceneRuntime */
+/** @typedef {import('@/3d/engine/types.js').FrameState} FrameState */
+/** @typedef {import('@/3d/engine/types.js').InputState} InputState */
+
 /**
  * @param {object} options
- * @param {object} options.runtime
- * @param {object} options.frame_state
- * @param {object} options.input_state
+ * @param {PosterSceneRuntime} options.runtime
+ * @param {FrameState} options.frame_state
+ * @param {InputState} options.input_state
  * @param {boolean} options.cinematic
  * @param {boolean} options.pan_navigating
  * @param {number} options.delta_s
@@ -120,9 +124,9 @@ const update_layer_parallax = ({
 }
 
 /**
- * @param {object} runtime
- * @param {object} frame_state
- * @param {object} input_state
+ * @param {PosterSceneRuntime} runtime
+ * @param {FrameState} frame_state
+ * @param {InputState} input_state
  * @param {boolean} cinematic
  * @param {boolean} pan_navigating
  */
@@ -218,8 +222,8 @@ const update_tilt_and_atmosphere = (
 }
 
 /**
- * @param {object} runtime
- * @param {object} frame_state
+ * @param {PosterSceneRuntime} runtime
+ * @param {FrameState} frame_state
  */
 const update_stroke_pulse = (runtime, frame_state) => {
   const { get_stroke_visible, get_motion_enabled, stroke_materials, appliers } =
@@ -244,7 +248,8 @@ const update_stroke_pulse = (runtime, frame_state) => {
 }
 
 /**
- * @param {object} runtime
+ * @param {PosterSceneRuntime} runtime
+ * @returns {(frame_state: FrameState, input_state: InputState) => void}
  */
 export const create_poster_scene_update = runtime => {
   const {
