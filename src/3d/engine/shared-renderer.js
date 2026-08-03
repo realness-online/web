@@ -45,11 +45,14 @@ const wipe_gradient = (ctx2d, edge_px, soft_px, cached, cached_key) => {
   return grad
 }
 
+/** @type {THREE.WebGLRenderer | null} */
 let renderer = null
+/** @type {ReturnType<typeof create_loop> | null} */
 let loop = null
 const entries = []
 const visible = new Set()
 
+/** @returns {THREE.WebGLRenderer} */
 const get_renderer = () => {
   if (renderer) return renderer
   renderer = new THREE.WebGLRenderer({
