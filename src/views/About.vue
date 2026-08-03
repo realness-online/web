@@ -266,6 +266,14 @@
           </p>
         </li>
         <li>
+          <icon name="no-ai" />
+          <p>
+            <strong>No AI</strong> Classical computer vision on your device - no
+            machine learning, no generative models. Your photo becomes the
+            poster.
+          </p>
+        </li>
+        <li>
           <icon name="finished" />
           <p>
             <strong>Mosaics</strong> Photo-colored tiles layered over shadow.
@@ -319,9 +327,8 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong>Music visualizer</strong> Drop a song on a poster and it
-            becomes your visualizer - the animation loops to your track, audio
-            baked in, ready for your DAW or YouTube.
+            <strong>Poster video with audio</strong> Drop a song on a poster to
+            export a video of that poster with the track baked in.
           </p>
         </li>
         <li>
@@ -977,10 +984,28 @@
         & > li {
           position: relative;
           display: block;
+          user-select: text;
+          -webkit-user-select: text;
+          -webkit-touch-callout: default;
+          touch-action: auto;
+
+          & * {
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-touch-callout: default;
+            touch-action: auto;
+          }
 
           & > svg.icon {
             position: absolute;
-           fill: var(--accent);
+            fill: var(--accent);
+            user-select: none;
+            -webkit-user-select: none;
+          }
+
+          & > svg.icon[data-icon='no-ai'] {
+            fill: var(--emphasis);
+            stroke: var(--emphasis);
           }
 
           & > p {
@@ -993,7 +1018,7 @@
       &[data-revealed] > ol > li {
         about-enter();
 
-        for i in 1..16 {
+        for i in 1..17 {
           &:nth-child({i}) {
             animation-delay: calc((i - 1) * var(--about-stagger));
           }

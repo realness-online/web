@@ -152,6 +152,17 @@ exports[`About > Rendering > renders about view 1`] = `
       </li>
       <li>
         <icon-stub
+          name="no-ai"
+        />
+        <p>
+          <strong>
+            No AI
+          </strong>
+           Classical computer vision on your device - no machine learning, no generative models. Your photo becomes the poster. 
+        </p>
+      </li>
+      <li>
+        <icon-stub
           name="finished"
         />
         <p>
@@ -233,9 +244,9 @@ exports[`About > Rendering > renders about view 1`] = `
         />
         <p>
           <strong>
-            Music visualizer
+            Poster video with audio
           </strong>
-           Drop a song on a poster and it becomes your visualizer - the animation loops to your track, audio baked in, ready for your DAW or YouTube. 
+           Drop a song on a poster to export a video of that poster with the track baked in. 
         </p>
       </li>
       <li>

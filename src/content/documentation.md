@@ -120,20 +120,20 @@ Exports clone the live poster on screen—not a separate render path.
 - **PNG** — same flat snapshot at 3840px wide, plus a small Realness watermark.
 - **PNG layers** — one file per layer for compositing—not one on-screen snapshot.
 - **PSD** — Shadows (Background, Light, Regular, Medium, Bold), Stroke, Mosaic (Sediment through Boulders). Separate layers for printing. 1920px on touch, 3840px on desktop.
-- **Video** — H.264 `.mov`, 24fps, up to 4K, looped animation. Dragging an **audio file** (mp3, wav, ogg, m4a, flac) onto the poster exports the video with that soundtrack baked in, the animation looping to match the track length — ready to drop straight into Ableton or upload to YouTube.
+- **Video** — H.264 `.mov`, 24fps, up to 4K. Dragging an **audio file** (mp3, wav, ogg, m4a, flac) onto the poster exports a video of that poster with the soundtrack baked in — ready to drop straight into Ableton or upload to YouTube.
 - **GLB** — 3D model for Blender and similar tools. Uses the open 3D viewer when it is on; otherwise builds from the poster.
 
-##### Music visualizer, in one drag
+##### Poster video with audio, in one drag
 
-Realness doubles as an easy audio visualizer for musicians. You don't need a video editor or any timeline work — the poster _is_ the visualizer.
+Export a video of a poster with your track baked in. No video editor or timeline work.
 
 1. **Drop a track on a poster.** Drag any audio file — mp3, wav, ogg, m4a, aac, or flac — onto the bare poster tile (no menu needed). It decodes on your device; nothing is uploaded.
-2. **The video runs exactly as long as your song.** The poster's animation loops seamlessly to fill the track, so there's no jump cut and no manual pacing.
+2. **The video runs exactly as long as your song.** Poster animation plays for the track length.
 3. **Audio is baked in.** The exported H.264 4K `.mov` carries your track as its soundtrack. It plays in any player and drops straight into **Ableton Live, Resolve, Premiere, Final Cut**, or straight up to **YouTube**.
 
 A blue sweep border and a frame counter on the poster show progress while the export runs.
 
-Set the **animation** preference (motion speed and layers) before exporting — that's the tempo and feel of your visualizer. Because the poster is vector, the 4K rasterize stays crisp however you scale it.
+Set the **animation** preference (motion speed and layers) before exporting — that sets the feel of the video. Because the poster is vector, the 4K rasterize stays crisp however you scale it.
 
 #### Printing a cel animation
 
