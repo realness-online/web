@@ -1,5 +1,7 @@
 import Point from '@/potrace/types/Point'
 
+/** @typedef {import('@/potrace/types/Quad').default} Quad */
+
 // Mathematical constants
 const RGBA_COMPONENTS = 4
 const MATRIX_DIMENSION = 3
@@ -90,8 +92,7 @@ const sign = i => {
 
 /**
  * Calculates the quadratic form for curve optimization
- * @param {Object} Q - Matrix-like object representing the quadratic form
- * @param {function(number, number): number} Q.at - Method to access matrix elements
+ * @param {Quad} Q - The 3x3 matrix representing the quadratic form
  * @param {Point} w - Point to evaluate
  * @returns {number} The quadratic form value
  */
