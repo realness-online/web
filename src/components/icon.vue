@@ -26,14 +26,21 @@
     const svg = realness_svg.value
     return svg ? [...svg.querySelectorAll(selector)] : []
   }
+  // getAnimations() hands back CSSTransitions too. The click-release fade on
+  // use[data-tile] is one of those: pausing it at currentTime 0 strands the
+  // mark on its solid fill. Only the keyframe animations get rewound.
   const realness_animations = selector =>
-    realness_elements(selector).flatMap(el =>
-      typeof el.getAnimations === 'function' ? el.getAnimations() : []
-    )
+    realness_elements(selector)
+      .flatMap(el =>
+        typeof el.getAnimations === 'function' ? el.getAnimations() : []
+      )
+      .filter(animation => animation.animationName)
   const rewind = (animations, playing) => {
     for (const animation of animations) {
-      const name = animation.animationName || ''
-      if (String(name).includes('realness-color') && !color_cycle.value) {
+      if (
+        animation.animationName.includes('realness-color') &&
+        !color_cycle.value
+      ) {
         animation.cancel()
         continue
       }

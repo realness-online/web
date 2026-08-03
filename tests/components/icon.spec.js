@@ -1,5 +1,8 @@
+import { vi } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
 import icon from '@/components/icon'
+
+const next_frame = () => new Promise(resolve => requestAnimationFrame(resolve))
 
 describe('@/components/icon', () => {
   describe('Renders', () => {
@@ -29,6 +32,40 @@ describe('@/components/icon', () => {
       expect(wrapper.findAll('path[data-tile]')).toHaveLength(6)
       expect(wrapper.findAll('svg > use[data-tile]')).toHaveLength(6)
       expect(wrapper.findAll('path[data-glint]').length).toBeGreaterThan(20)
+    })
+  })
+
+  describe('Rewinding after a click', () => {
+    const make = extra => ({
+      currentTime: 400,
+      play: vi.fn(),
+      pause: vi.fn(),
+      cancel: vi.fn(),
+      ...extra
+    })
+
+    it('rewinds keyframes but leaves the release transition running', async () => {
+      const drift = make({ animationName: 'realness-drift-up-left' })
+      // the opacity fade back to the smalti mask - a CSSTransition, no name
+      const fade = make()
+      const original = Element.prototype.getAnimations
+      Element.prototype.getAnimations = function () {
+        return this.tagName === 'use' ? [fade] : [drift]
+      }
+
+      const wrapper = shallowMount(icon, {
+        props: { name: 'realness' },
+        global: { stubs: { SmaltiGlints: false } }
+      })
+      await wrapper.find('svg.icon.realness').trigger('pointerup')
+      await next_frame()
+
+      expect(drift.pause).toHaveBeenCalled()
+      expect(drift.currentTime).toBe(0)
+      expect(fade.pause).not.toHaveBeenCalled()
+      expect(fade.currentTime).toBe(400)
+
+      Element.prototype.getAnimations = original
     })
   })
 

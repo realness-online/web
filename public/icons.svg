@@ -1,15 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 232 232">
+<!--
+  The root drawing is the favicon (and Safari's mask-icon). Nothing else reads
+  it: every other consumer pulls a #symbol by id. So it is cropped tight to the
+  mark and drawn for 16px — see #favicon-mark below.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5 2 184 184">
   <style>
     #background {
       fill: transparent;
-    }
-    #page-background {
-      fill: oklch(0.94 0.01 100);
-    }
-    @media (prefers-color-scheme: dark) {
-      #page-background {
-        fill: oklch(0.19 0.01 67);
-      }
     }
   </style>
   <defs id="symbols">
@@ -316,6 +313,25 @@
     </pattern>
   </defs>
   <!-- <rect id="realness-extra" x="-20" y="-20" width="100%" height="100%" fill="url(#realness-animated-pattern)" /> -->
-  <!-- <rect id="page-background" x="-904" y="-904" width="2000" height="2000" /> -->
-  <use href="#realness" x="-20" y="-20" width="232" height="232" />
+  <!--
+    Two departures from #realness, both forced by tab size.
+
+    Flat fills, not #smalti: at 16px one tessera is about a pixel and a half, so
+    the mosaic dithers away and the three palettes average into one grey.
+
+    Pumice lifted from 0.35 to 0.72: there is no plate behind the mark, so the
+    transparent grout takes the colour of whatever strip it lands on. At 0.35
+    the ash and cinder tiles were indistinguishable from a dark tab and the mark
+    lost two of its six pieces. Lifted, every tile reads on either strip.
+
+    The mosaic and the original pumice are untouched wherever #realness is drawn.
+  -->
+  <g id="favicon-mark">
+    <use href="#ash-shape" fill="oklch(0.72 0.02 101)" />
+    <use href="#tide-shape" fill="oklch(0.62 0.07 196)" />
+    <use href="#silt-shape" fill="oklch(0.62 0.07 196)" />
+    <use href="#ember-shape" fill="oklch(0.51 0.13 21)" />
+    <use href="#rust-shape" fill="oklch(0.51 0.13 21)" />
+    <use href="#cinder-shape" fill="oklch(0.72 0.02 101)" />
+  </g>
 </svg>
