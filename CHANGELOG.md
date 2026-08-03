@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.7.0 — 2026-08-03
+
 - **Exported video did not move the way the poster does** — the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there — `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.
 
 - **Video exports ran at a fixed crawl no matter what the animation preference said** — the export pinned its timeline to `crawl` and sampled three poses a second, holding each for four ticks of the 24fps file and cross-fading between them to cover the gap. It renders one frame per tick at the speed you set now, so the video is paced like the poster in front of you. With no audio dropped on it, the video is one full cycle at that speed.
