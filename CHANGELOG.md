@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Exported video did not move the way the poster does** — the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there — `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.
+
+- **Video exports ran at a fixed crawl no matter what the animation preference said** — the export pinned its timeline to `crawl` and sampled three poses a second, holding each for four ticks of the 24fps file and cross-fading between them to cover the gap. It renders one frame per tick at the speed you set now, so the video is paced like the poster in front of you. With no audio dropped on it, the video is one full cycle at that speed.
+
+- **A song longer than one animation cycle froze on the last pose** — covering the extra time meant wrapping the render clock back to the start of the cycle by hand, and anything the wrap did not account for held still until the track ended. The animations repeat indefinitely on their own, so the export just keeps seeking and the poster keeps moving for the whole song.
+
+- **Your track was re-encoded on its way into the video** — audio was muxed as 192 kbps AAC, so a file that had already been through a lossy encoder took a second pass before it reached your DAW. `.mov` carries PCM natively, so the decoded audio is written through untouched.
+
+- **Exporting a poster that had scrolled off screen produced a blank video** — posters are marked `content-visibility: auto`, which lets the browser skip rendering one that is not on screen, and the export rasterized those skipped frames as empty. The poster is held visible for the length of the export.
+
 - **The favicon was a grey smudge in the tab** — the mark fills its six tiles with the smalti tessera pattern, and at 16px one tessera is about a pixel and a half, so the mosaic dithered away and the water, clay and pumice palettes averaged into a single grey. The root drawing of `icons.svg` is only ever the favicon and Safari's pinned-tab icon — every other consumer pulls a `#symbol` by id — so it now crops tight to the mark and fills flat, with pumice lifted from 0.35 to 0.72 so the ash and cinder tiles still read against a dark tab strip. `#realness` and its mosaic are untouched, and so is everywhere the mark is actually drawn.
 
 - **Pressing the realness mark left it stuck on its solid fill** — a press snaps the six tiles together and swaps the mosaic for flat colour; letting go is supposed to fade back. The rewind that resets the drift animations collects `getAnimations()`, which hands back CSS transitions alongside keyframe animations, so it caught that fade one frame in and paused it at frame zero. Only keyframe animations get rewound now.
