@@ -1,4 +1,3 @@
-/** @typedef {import('@/types').Id} Id */
 import {
   Output,
   MovOutputFormat,
@@ -8,57 +7,20 @@ import {
   AudioBufferSource
 } from 'mediabunny'
 import {
-  FRAMES_PER_SECOND,
   BASE_DURATION,
   ANIMATION_SPEED_MULTIPLIERS
 } from '@/utils/animation-config'
 
 // Video encoding constants
 const DEFAULT_FPS = 24
-// Each rendered frame (sampled at FRAMES_PER_SECOND) is repeated this many
-// times during encoding, so the output is a standard 24fps file but paces
-// like ~2x real-time (24 / FRAME_HOLD = 6 unique poses/sec) instead of the
-// distractingly-fast ~8x you'd get from encoding one rendered frame per
-// 24fps tick with no hold.
-const FRAME_HOLD = 4
-// Bitrate is a fixed bits-per-second target, not tied to resolution, so it
-// needs to scale with the canvas pixel count to keep the same bits-per-pixel
-// density — otherwise a bigger canvas just spreads the same bit budget over
-// more pixels instead of looking sharper. 40 Mbps is the H.264 4K upload
-// range YouTube recommends (35-45 Mbps), ~5x the 8 Mbps baseline for 1080p
-// against the ~4x pixel jump to 4K, so gradients stay band-free.
+// YouTube's recommended 4K H.264 upload range (35-45 Mbps); roughly
+// 5x the 1080p baseline for the ~4x pixel jump, so gradients stay clean.
 const VIDEO_BITRATE = 40000000
-// AAC-LC audio bitrate for the muxed soundtrack, in the transparent range for
-// music-quality source material at 44.1/48 kHz.
-const AUDIO_BITRATE = 192000
+// Lossless: raw float32 PCM of the decoded AudioBuffer, no re-encode loss.
+// MOV (QuickTime) carries PCM natively.
+const AUDIO_CODEC = 'pcm-f32'
 const BYTES_PER_KB = 1024
 const CHUNK_SIZE_MB = 2
-const PROGRESS_HALF = 0.5
-const EASE_BEZIER_ITERATIONS = 12
-const EASE_BEZIER_TOLERANCE = 1e-6
-const KEY_SPLINE_PARTS = 4
-
-/**
- * @typedef {Object} VideoEncoderConfig
- * @property {string} codec - Codec string (e.g., 'vp09.00.10.08', 'vp8')
- * @property {number} width - Video width in pixels
- * @property {number} height - Video height in pixels
- * @property {number} bitrate - Bitrate in bits per second
- * @property {number} framerate - Frame rate in frames per second
- */
-
-/**
- * @typedef {Object} EncodedVideoChunk
- * @property {Uint8Array} data - Encoded video data
- * @property {number} timestamp - Timestamp in microseconds
- * @property {string} type - Chunk type ('key' or 'delta')
- * @property {number} duration - Duration in microseconds
- */
-
-/**
- * @typedef {typeof globalThis.VideoEncoder} VideoEncoder
- * @typedef {typeof globalThis.VideoFrame} VideoFrame
- */
 
 /**
  * Calculates animation duration based on animation speed preference
@@ -70,15 +32,10 @@ const get_animation_duration = animation_speed => {
   return BASE_DURATION * multiplier
 }
 
-// H.264 Level 5.1 (36,864 macroblocks) is the ceiling every browser's H.264
-// encoder honors; beyond it the encoder refuses the config. A square or tall
-// poster at a plain 3840-wide target blows past that (3840 square = 57,600
-// MBs), so we render at the largest size that (a) keeps the poster's own
-// aspect ratio - no crop, no forced 16:9 frame - and (b) stays inside the
-// level. 16:9 tops out at true 4K (3840x2160 = 32,400 MBs); every other
-// aspect scales within it (a square fills to 2160x2160, 18,225 MBs). The
-// poster is vector, so upscaling to this target is just rasterizing it
-// larger - it does not soften the image.
+// Level 5.1 (36,864 macroblocks) is the ceiling browsers' H.264 encoders
+// honor; a square poster at plain 3840-wide would blow past it (57,600 MBs),
+// so scale to the largest size that keeps the ratio and stays in level:
+// 16:9 tops out at true 4K (32,400 MBs), a square at 2160x2160.
 const LEVEL51_TARGET = { width: 3840, height: 2160 }
 
 /**
@@ -197,8 +154,7 @@ const setup_canvas_and_encoder = (
   let audio_source = null
   if (audio_buffers?.length) {
     audio_source = new AudioBufferSource({
-      codec: 'aac',
-      bitrate: AUDIO_BITRATE
+      codec: AUDIO_CODEC
     })
     output.addAudioTrack(audio_source)
   }
@@ -206,178 +162,115 @@ const setup_canvas_and_encoder = (
   return { canvas, ctx, output, canvas_source, audio_source }
 }
 
-const parse_dur = dur_str => {
-  if (!dur_str) return 1
-  return parseFloat(String(dur_str).replace('s', '')) || 1
-}
+/**
+ * SVG geometry attributes (SVGAnimatedLength). Their animated values read via
+ * `el[prop].animVal.valueAsString` (units preserved). Everything else the
+ * poster animates is a paint/presentation property read via computed style.
+ */
+const GEOMETRY_ATTRIBUTES = new Set([
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'width',
+  'height'
+])
 
-const cubic_bezier_at = (t, p1x, p1y, p2x, p2y) => {
-  const mt = 1 - t
-  const mt2 = mt * mt
-  const t2 = t * t
-  const t3 = t2 * t
-  return {
-    x: 3 * mt2 * t * p1x + 3 * mt * t2 * p2x + t3,
-    y: 3 * mt2 * t * p1y + 3 * mt * t2 * p2y + t3
+/**
+ * Reads the SMIL-animated value of an attribute from the live DOM. The
+ * browser's SMIL engine computes the state (easing, keyTimes, repeats) after
+ * setCurrentTime; this just copies its output, so the exported frame matches
+ * what the poster shows natively without reimplementing any animation math.
+ * @param {SVGElement} target - Live element the animation targets
+ * @param {string} attribute_name - Animated attribute, e.g. 'fill-opacity'
+ * @returns {string|null} Value safe to set as an attribute, or null
+ */
+const read_animated_value = (target, attribute_name) => {
+  if (GEOMETRY_ATTRIBUTES.has(attribute_name)) {
+    const anim = /** @type {any} */ (target)[attribute_name]?.animVal
+    if (anim) return anim.valueAsString
   }
-}
-
-const ease_bezier = (t, p1x, p1y, p2x, p2y) => {
-  if (t <= 0) return 0
-  if (t >= 1) return 1
-  let lo = 0
-  let hi = 1
-  for (let i = 0; i < EASE_BEZIER_ITERATIONS; i++) {
-    const mid = (lo + hi) / 2
-    const pt = cubic_bezier_at(mid, p1x, p1y, p2x, p2y)
-    if (Math.abs(pt.x - t) < EASE_BEZIER_TOLERANCE) return pt.y
-    if (pt.x < t) lo = mid
-    else hi = mid
-  }
-  return cubic_bezier_at((lo + hi) / 2, p1x, p1y, p2x, p2y).y
-}
-
-const parse_key_times = str => {
-  if (!str) return null
-  return str
-    .split(';')
-    .map(v => parseFloat(v.trim()))
-    .filter(n => !isNaN(n))
-}
-
-const parse_key_splines = str => {
-  if (!str) return null
-  return str
-    .split(';')
-    .map(segment => {
-      const parts = segment.trim().split(/\s+/).map(parseFloat)
-      return parts.length === KEY_SPLINE_PARTS ? parts : null
-    })
-    .filter(Boolean)
-}
-
-const apply_animation_state = (svg_element, current_time) => {
-  const animate_elements = svg_element.querySelectorAll('animate')
-  animate_elements.forEach(anim => {
-    const dur = parse_dur(anim.getAttribute('dur'))
-    const values_str = anim.getAttribute('values')
-    const attribute_name = anim.getAttribute('attributeName')
-    const href = anim.getAttribute('href') || anim.getAttribute('xlink:href')
-
-    if (!values_str || !attribute_name || !href) return
-
-    const target_id = href.replace(/^#/, '')
-    let target = svg_element.querySelector(`[id="${target_id}"]`)
-    if (!target && target_id.includes('-')) {
-      const parts = target_id.split('-')
-      const last = parts.pop()
-      const shadows_id = [...parts, 'shadows', last].join('-')
-      target = svg_element.querySelector(`[id="${shadows_id}"]`)
-    }
-    if (!target) return
-
-    const values = values_str.split(';').map(v => v.trim())
-    if (values.length < 2) return
-
-    const cycle_time = current_time % dur
-    const progress = Math.min(cycle_time / dur, 1)
-    const key_times = parse_key_times(
-      anim.getAttribute('keyTimes') || anim.getAttribute('keytimes')
-    )
-    const key_splines_raw =
-      anim.getAttribute('keySplines') || anim.getAttribute('keysplines')
-    const key_splines = parse_key_splines(key_splines_raw)
-
-    const times =
-      key_times && key_times.length === values.length
-        ? key_times
-        : values.map((_, i) => i / (values.length - 1))
-
-    let value_index = times.length - 2
-    let local_progress = 1
-    for (let i = 0; i < times.length - 1; i++)
-      if (progress <= times[i + 1]) {
-        value_index = i
-        const seg_dur = times[i + 1] - times[i]
-        local_progress = seg_dur <= 0 ? 0 : (progress - times[i]) / seg_dur
-        break
-      }
-
-    const spline = key_splines && key_splines[value_index]
-    const eased_progress = spline
-      ? ease_bezier(local_progress, spline[0], spline[1], spline[2], spline[3])
-      : local_progress
-
-    const current_value = values[value_index]
-    const next_value = values[value_index + 1]
-    if (!current_value || !next_value) return
-
-    const current_num = parseFloat(current_value)
-    const next_num = parseFloat(next_value)
-    const unit = current_value.match(/%|px|em$/)?.[0] || ''
-
-    if (!isNaN(current_num) && !isNaN(next_num)) {
-      const interpolated =
-        current_num + (next_num - current_num) * eased_progress
-      target.setAttribute(attribute_name, `${interpolated}${unit}`)
-    } else
-      target.setAttribute(
-        attribute_name,
-        eased_progress < PROGRESS_HALF ? current_value : next_value
-      )
-  })
-
-  animate_elements.forEach(el => el.remove())
+  return getComputedStyle(target).getPropertyValue(attribute_name) || null
 }
 
 /**
- * Rasterizes the SVG's animation state at a point in time to an Image,
- * without drawing it anywhere. Kept separate from drawing so a frame can be
- * cross-faded against its neighbor instead of only ever drawn on its own.
- * @param {SVGSVGElement} svg_element - SVG element to capture
- * @param {number} canvas_width - Canvas width
- * @param {number} canvas_height - Canvas height
- * @param {number} current_time - Current animation time
+ * Resolves the id an animate element's href points at, with the same
+ * shadows fallback the live poster uses (fragment ids reference the shadow
+ * layer's paths by layer id, but the animate elements target the poster id).
+ * @param {ParentNode} root - Document or svg to search
+ * @param {string} target_id - id from the href, without '#'
+ * @returns {SVGElement | null}
+ */
+const resolve_target = (root, target_id) => {
+  let target = root.querySelector(`[id="${target_id}"]`)
+  if (!target && target_id.includes('-')) {
+    const parts = target_id.split('-')
+    const last = parts.pop()
+    const shadows_id = [...parts, 'shadows', last].join('-')
+    target = root.querySelector(`[id="${shadows_id}"]`)
+  }
+  return /** @type {SVGElement | null} */ (target)
+}
+
+/**
+ * Rasterizes the poster's SMIL state at one seeked time to an Image.
+ * Clones the live SVG, bakes the browser-computed animated values onto the
+ * clone (serialization cannot see the animated layer), removes the SMIL
+ * elements, then loads the serialized frame as an image. The animation is
+ * paused and seeked by the caller, so this is deterministic — a slow machine
+ * just takes longer between frames.
+ * @param {SVGSVGElement} svg_element - Live poster SVG (paused, seeked)
+ * @param {number} canvas_width - Export width
+ * @param {number} canvas_height - Export height
  * @returns {Promise<HTMLImageElement>}
  */
 const rasterize_svg_frame = async (
   svg_element,
   canvas_width,
-  canvas_height,
-  current_time
+  canvas_height
 ) => {
   const svg_clone = /** @type {SVGSVGElement} */ (svg_element.cloneNode(true))
   svg_clone.setAttribute('width', String(canvas_width))
   svg_clone.setAttribute('height', String(canvas_height))
 
+  // Symbols referenced by <use> and by the animate hrefs live in the hidden
+  // defs svg; append them so the standalone serialized frame can resolve them.
   const figure = svg_element.closest('figure:has([itemtype="/posters"])')
-  if (figure) {
-    const hidden_svg = figure.querySelector('svg[data-poster-symbol-defs]')
-    if (hidden_svg) {
-      const symbols = hidden_svg.querySelectorAll('symbol')
-      symbols.forEach(symbol => {
-        const symbol_clone = symbol.cloneNode(true)
-        svg_clone.appendChild(symbol_clone)
-      })
-    }
-  }
-
-  const vue_components = svg_clone.querySelectorAll('as-animation')
-  vue_components.forEach(el => el.replaceWith(...el.children))
-
-  const stroke_dasharrays = {
-    light: '8, 16',
-    regular: '13, 21',
-    medium: '18, 26',
-    bold: '4, 32'
-  }
-  Object.entries(stroke_dasharrays).forEach(([itemprop, value]) => {
-    svg_clone.querySelectorAll(`path[itemprop="${itemprop}"]`).forEach(path => {
-      path.setAttribute('stroke-dasharray', value)
-    })
+  const hidden_svg = figure?.querySelector('svg[data-poster-symbol-defs]')
+  hidden_svg?.querySelectorAll('symbol').forEach(symbol => {
+    svg_clone.appendChild(symbol.cloneNode(true))
   })
 
-  apply_animation_state(svg_clone, current_time)
+  // as-animation renders its <animate> tree under the Vue component root;
+  // flatten the wrapper so the serialized frame carries only the animates.
+  svg_clone.querySelectorAll('as-animation').forEach(el => {
+    el.replaceWith(...el.children)
+  })
+
+  // Bake the live SMIL state onto the clone, then strip the SMIL elements
+  // from the clone only — the live poster keeps its animation for the next
+  // frame's seek.
+  const live_animates = svg_element.querySelectorAll('animate')
+  live_animates.forEach(anim => {
+    const attribute_name = anim.getAttribute('attributeName')
+    const href = anim.getAttribute('href') || anim.getAttribute('xlink:href')
+    if (!attribute_name || !href) return
+    const target_id = href.replace(/^#/, '')
+    const live_target = resolve_target(document, target_id)
+    if (!live_target) return
+    const value = read_animated_value(live_target, attribute_name)
+    if (!value) return
+    const clone_target = resolve_target(svg_clone, target_id)
+    clone_target?.setAttribute(attribute_name, value)
+  })
+  svg_clone.querySelectorAll('animate').forEach(el => el.remove())
 
   const svg_data = new XMLSerializer().serializeToString(svg_clone)
   const svg_blob = new Blob([svg_data], { type: 'image/svg+xml' })
@@ -394,33 +287,6 @@ const rasterize_svg_frame = async (
   img.onload = null
   img.onerror = null
   return img
-}
-
-/**
- * Draws a cross-fade between two already-rasterized frames onto the canvas.
- * `blend_t` of 0 shows `current_image` only; increasing it fades in
- * `next_image` on top, so motion between the two sparse samples reads as a
- * smooth transition instead of a hard hold.
- * @param {CanvasRenderingContext2D} ctx - Canvas context
- * @param {{width: number, height: number}} canvas_size - Canvas dimensions
- * @param {HTMLImageElement} current_image - Rasterized frame to fade from
- * @param {HTMLImageElement} next_image - Rasterized frame to fade toward
- * @param {number} blend_t - Blend factor in [0, 1)
- */
-const draw_blended_frame = (
-  ctx,
-  { width, height },
-  current_image,
-  next_image,
-  blend_t
-) => {
-  ctx.clearRect(0, 0, width, height)
-  ctx.drawImage(current_image, 0, 0, width, height)
-  if (blend_t > 0 && next_image !== current_image) {
-    ctx.globalAlpha = blend_t
-    ctx.drawImage(next_image, 0, 0, width, height)
-    ctx.globalAlpha = 1
-  }
 }
 
 /**
@@ -442,10 +308,13 @@ export const download_video = (blob, filename = 'animation.mov') => {
 }
 
 /**
- * Renders an SVG animation to a video blob at 24fps for download using parallel workers.
- * Frames are sampled at FRAMES_PER_SECOND and each is repeated FRAME_HOLD times during
- * encoding, so the output is a standard 24fps file that paces at ~2x real-time instead
- * of the ~8x speedup a naive one-rendered-frame-per-tick encoding would produce.
+ * Renders the poster's animation to a video blob using the browser's own
+ * SMIL engine: each frame seeks the SVG timeline with setCurrentTime and
+ * rasterizes the seeked state. The browser computes easing, keyTimes, and
+ * repeats natively (repeatCount="indefinite"), so audio longer than one
+ * cycle keeps animating without any wrapping math — the export simply keeps
+ * seeking past the cycle. A slow machine just exports slower; the video
+ * itself is deterministic (every frame is stamped at encode time).
  * @param {SVGSVGElement} svg_element - The SVG element with animations
  * @param {Object} options - Configuration options
  * @param {number} [options.fps=24] - Target frames per second
@@ -457,7 +326,7 @@ export const download_video = (blob, filename = 'animation.mov') => {
  * @param {string} [options.suggested_filename] - Suggested filename for File System Access API
  * @param {AudioBuffer[]} [options.audio_buffers] - One or more decoded
  *   audio buffers to mux as the soundtrack. When present the video runs for exactly the
- *   total audio length, looping the animation cycle to cover it, and the audio plays alongside.
+ *   total audio length, with the animation looping natively to cover it.
  * @returns {Promise<Blob|null>} Video blob ready for download, or null if saved via File System Access API
  */
 export const render_svg_to_video_blob = async (
@@ -476,6 +345,8 @@ export const render_svg_to_video_blob = async (
   if (!(svg_element instanceof SVGSVGElement))
     throw new Error('Element must be an SVGSVGElement')
 
+  // Freeze the timeline; every frame seeks it explicitly, so the export is
+  // deterministic regardless of how fast the machine renders.
   svg_element.pauseAnimations()
 
   const audio_duration = audio_buffers?.length
@@ -483,11 +354,6 @@ export const render_svg_to_video_blob = async (
     : 0
   const duration =
     audio_duration || max_duration || get_animation_duration(animation_speed)
-  // The animation cycle length. When audio is longer than the cycle the
-  // render wraps time modulo this value so the animation repeats visually
-  // (seamless loop). When audio is shorter the cycle is still sampled at the
-  // same tempo — the animation simply plays for the audio length and stops.
-  const cycle_length = get_animation_duration(animation_speed)
   const { file_handle, writable_stream } =
     await setup_file_system_api(suggested_filename)
 
@@ -498,14 +364,13 @@ export const render_svg_to_video_blob = async (
   canvas_width = canvas_width + (canvas_width % 2)
   canvas_height = canvas_height + (canvas_height % 2)
 
-  const total_frames = Math.floor(duration * FRAMES_PER_SECOND) + 1
-  const encoded_frame_count = total_frames * FRAME_HOLD
+  const total_frames = Math.floor(duration * fps) + 1
 
   const { ctx, output, canvas_source, audio_source } = setup_canvas_and_encoder(
     canvas_width,
     canvas_height,
     fps,
-    encoded_frame_count,
+    total_frames,
     {
       writable_stream,
       audio_buffers
@@ -518,67 +383,39 @@ export const render_svg_to_video_blob = async (
     // oxlint-disable-next-line no-await-in-loop
     for (const buffer of audio_buffers) await audio_source.add(buffer)
 
-  // oxlint-disable-next-line no-await-in-loop
-  let current_image = await rasterize_svg_frame(
-    svg_element,
-    canvas_width,
-    canvas_height,
-    0
-  )
+  // The poster's svg carries `content-visibility: auto`; if it is off-screen
+  // the browser may skip rendering it, and the draw below would capture a
+  // blank frame. Force it visible for the duration of the export.
+  const previous_content_visibility = svg_element.style.contentVisibility
+  svg_element.style.contentVisibility = 'visible'
+  try {
+    for (let frame = 0; frame < total_frames; frame++) {
+      const timestamp = frame / fps
+      // Seek natively: past one cycle the indefinite animations repeat on
+      // their own, so long audio never hits a frozen final pose.
+      svg_element.setCurrentTime(timestamp)
 
-  // animation sample time that loops: wraps the raw render time back to the
-  // start of the cycle once it exceeds one cycle, so longer audio repeats the
-  // animation instead of playing one cycle and holding the final pose.
-  const wrap_time = time => (cycle_length > 0 ? time % cycle_length : time)
-
-  for (let current_frame = 0; current_frame < total_frames; current_frame++) {
-    const is_last_frame = current_frame === total_frames - 1
-    const next_time = wrap_time((current_frame + 1) / FRAMES_PER_SECOND)
-
-    // Rasterize the next sample now so the held ticks below can cross-fade
-    // toward it instead of holding the current pose rigidly — same number
-    // of rasterizations as before (one per current_frame), just reused as
-    // both the "current" and "next" endpoint across adjacent iterations.
-    let next_image = current_image
-    if (!is_last_frame)
       // oxlint-disable-next-line no-await-in-loop
-      next_image = await rasterize_svg_frame(
+      const frame_image = await rasterize_svg_frame(
         svg_element,
         canvas_width,
-        canvas_height,
-        next_time
+        canvas_height
       )
-
-    const frame_duration = 1 / fps
-
-    for (let hold = 0; hold < FRAME_HOLD; hold++) {
-      const blend_t = hold / FRAME_HOLD
-      draw_blended_frame(
-        ctx,
-        { width: canvas_width, height: canvas_height },
-        current_image,
-        next_image,
-        blend_t
-      )
-
-      const encoded_frame_index = current_frame * FRAME_HOLD + hold
-      const timestamp = encoded_frame_index / fps
+      ctx.clearRect(0, 0, canvas_width, canvas_height)
+      ctx.drawImage(frame_image, 0, 0, canvas_width, canvas_height)
 
       try {
         // oxlint-disable-next-line no-await-in-loop
-        await canvas_source.add(timestamp, frame_duration)
+        await canvas_source.add(timestamp, 1 / fps)
       } catch (error) {
-        console.error(
-          `[Video] Error adding frame ${encoded_frame_index}:`,
-          error
-        )
+        console.error(`[Video] Error adding frame ${frame}:`, error)
         canvas_source.close()
         throw error
       }
+      if (on_progress) on_progress(frame + 1, total_frames)
     }
-
-    current_image = next_image
-    if (on_progress) on_progress(current_frame + 1, total_frames)
+  } finally {
+    svg_element.style.contentVisibility = previous_content_visibility
   }
 
   canvas_source.close()

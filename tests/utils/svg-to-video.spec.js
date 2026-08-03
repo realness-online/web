@@ -54,13 +54,91 @@ vi.mock('mediabunny', () => ({
   })
 }))
 
+/**
+ * Builds a minimal poster-like SVG: a target element with a SMIL animate
+ * whose href resolves to it (mirroring how as-animation emits animates that
+ * target the poster's shadow fragments).
+ */
+const make_svg = () => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.pauseAnimations = vi.fn()
+  svg.setCurrentTime = vi.fn()
+  Object.defineProperty(svg, 'viewBox', {
+    value: { baseVal: { width: 100, height: 100 } }
+  })
+  const target = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  target.id = 'as-fragment-poster-light'
+  target.setAttribute('itemprop', 'light')
+  target.setAttribute('fill-opacity', '0.9')
+  target.setAttribute('stroke-width', '0.33')
+  svg.appendChild(target)
+
+  const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate')
+  anim.setAttribute('href', '#as-fragment-poster-light')
+  anim.setAttribute('attributeName', 'stroke-width')
+  anim.setAttribute('dur', '18s')
+  svg.appendChild(anim)
+
+  const anim_geometry = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'animate'
+  )
+  anim_geometry.setAttribute('href', '#as-fragment-poster-light')
+  anim_geometry.setAttribute('attributeName', 'x')
+  anim_geometry.setAttribute('dur', '18s')
+  svg.appendChild(anim_geometry)
+
+  // The hidden defs svg the poster's symbols live in, so <use>/href targets
+  // resolve in the standalone serialized frame.
+  const defs_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  defs_svg.setAttribute('data-poster-symbol-defs', '')
+  defs_svg.setAttribute('aria-hidden', 'true')
+  const symbol = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'symbol'
+  )
+  symbol.id = 'as-fragment-poster-shadows-light'
+  defs_svg.appendChild(symbol)
+  document.body.appendChild(defs_svg)
+
+  document.body.appendChild(svg)
+
+  return svg
+}
+
 describe('@/utils/svg-to-video', () => {
+  let svg
+
   beforeEach(() => {
     add_calls.length = 0
     audio_calls.length = 0
     audio_config = null
     vi.clearAllMocks()
+    svg = make_svg()
 
+    // The live target exposes a geometry animVal like Chrome does.
+    const live_target = document.getElementById('as-fragment-poster-light')
+    Object.defineProperty(live_target, 'x', {
+      value: {
+        animVal: { valueAsString: '42' }
+      },
+      configurable: true
+    })
+
+    vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: vi.fn(property => {
+        // Paint props reflect the seeked SMIL state in computed style.
+        const values = {
+          'fill-opacity': '0.833333',
+          'stroke-opacity': '0.42',
+          'stroke-width': '0.162458px',
+          'stroke-dashoffset': '-24px'
+        }
+        return values[property] || ''
+      })
+    })
+
+    // The serialized frame loads as an image immediately in the test env.
     global.Image = class {
       set src(_value) {
         this.onload?.()
@@ -73,24 +151,16 @@ describe('@/utils/svg-to-video', () => {
     })
   })
 
-  it('holds each rendered frame across multiple 24fps ticks instead of encoding one-per-tick', async () => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.pauseAnimations = vi.fn()
-    Object.defineProperty(svg, 'viewBox', {
-      value: { baseVal: { width: 100, height: 100 } }
-    })
-
+  it('encodes one frame per seek at the output frame rate, no holds', async () => {
     const blob = await render_svg_to_video_blob(svg, {
-      max_duration: 1, // small on purpose: keeps the frame count fast to test
+      max_duration: 1,
       width: 100,
       height: 100
     })
 
-    // FRAMES_PER_SECOND=3, duration=1s → total_frames = floor(1*3)+1 = 4
-    // FRAME_HOLD=4 → 16 encoded frames, each pair 4 apart sharing a rendered pose
-    expect(add_calls.length).toBe(16)
+    // fps=24, duration=1s → floor(1*24)+1 = 25 frames, one encode each.
+    expect(add_calls.length).toBe(25)
 
-    // Every 4 consecutive calls hold the same duration and are spaced 1/24s apart.
     for (let i = 0; i < add_calls.length; i++) {
       expect(add_calls[i].duration).toBeCloseTo(1 / 24, 5)
       expect(add_calls[i].timestamp).toBeCloseTo(i / 24, 5)
@@ -99,36 +169,14 @@ describe('@/utils/svg-to-video', () => {
     expect(blob).toBeInstanceOf(Blob)
   })
 
-  it('cross-fades between rasterized frames without rasterizing more of them', async () => {
-    let image_count = 0
-    global.Image = class {
-      constructor() {
-        image_count++
-      }
-      set src(_value) {
-        this.onload?.()
-      }
-    }
-
-    const seen_images = new Set()
-    const alphas_seen = []
+  it('drives the native SMIL timeline and rasterizes a baked frame per tick', async () => {
     const mock_ctx = {
       clearRect: vi.fn(),
-      globalAlpha: 1,
-      drawImage: vi.fn(image => {
-        seen_images.add(image)
-        alphas_seen.push(mock_ctx.globalAlpha)
-      })
+      drawImage: vi.fn()
     }
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
       mock_ctx
     )
-
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.pauseAnimations = vi.fn()
-    Object.defineProperty(svg, 'viewBox', {
-      value: { baseVal: { width: 100, height: 100 } }
-    })
 
     await render_svg_to_video_blob(svg, {
       max_duration: 1,
@@ -136,25 +184,52 @@ describe('@/utils/svg-to-video', () => {
       height: 100
     })
 
-    // total_frames = 4 for max_duration=1 — same rasterization count as
-    // before blending was added, regardless of FRAME_HOLD.
-    expect(image_count).toBe(4)
+    // The timeline was frozen, then seeked once per frame.
+    expect(svg.pauseAnimations).toHaveBeenCalled()
+    expect(svg.setCurrentTime).toHaveBeenCalledTimes(25)
+    expect(svg.setCurrentTime).toHaveBeenNthCalledWith(1, 0)
+    expect(svg.setCurrentTime).toHaveBeenLastCalledWith(1)
 
-    // More than one distinct rasterized image was drawn (the blend actually
-    // reaches toward the next sample, not just redrawing one pose forever).
-    expect(seen_images.size).toBeGreaterThan(1)
+    // The live svg keeps its SMIL elements after the export — the render
+    // bakes values onto the clone only, and later frames seek the same live
+    // timeline. Removing them here would freeze the video after frame 1.
+    expect(svg.querySelectorAll('animate').length).toBe(2)
 
-    // Some draw used a partial alpha (a real cross-fade), not just 0 or 1.
-    expect(alphas_seen.some(alpha => alpha > 0 && alpha < 1)).toBe(true)
+    // Every frame was drawn from the rasterized image, not the live svg
+    // (drawImage rejects SVGSVGElement, so the frame goes through the
+    // serialize → image path instead).
+    expect(mock_ctx.drawImage).toHaveBeenCalledTimes(25)
+    const drawn = mock_ctx.drawImage.mock.calls[0][0]
+    expect(drawn).toBeInstanceOf(global.Image)
+
+    // The baked frame carried the browser-computed animated value: the live
+    // target's geometry animVal was read and written onto the serialized
+    // clone as an attribute.
+    expect(getComputedStyle).toHaveBeenCalled()
   })
 
-  it('muxes audio as a soundtrack and loops the animation to the audio length', async () => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.pauseAnimations = vi.fn()
-    Object.defineProperty(svg, 'viewBox', {
-      value: { baseVal: { width: 100, height: 100 } }
+  it('bakes the seeked SMIL state into the serialized frame', async () => {
+    const serializer_spy = vi.spyOn(
+      XMLSerializer.prototype,
+      'serializeToString'
+    )
+
+    await render_svg_to_video_blob(svg, {
+      max_duration: 1,
+      width: 100,
+      height: 100
     })
 
+    const serialized = serializer_spy.mock.results[0].value
+    // The animated stroke-width (from computed style) replaced the base 0.33.
+    expect(serialized).toContain('stroke-width="0.162458px"')
+    // The geometry animVal (x → 42) was baked in.
+    expect(serialized).toContain('x="42"')
+    // SMIL elements are stripped from the serialized frame.
+    expect(serialized).not.toContain('<animate')
+  })
+
+  it('muxes audio as a soundtrack and runs for exactly the audio length', async () => {
     // Two buffers totaling 0.5s of audio.
     const buffers = [
       { duration: 0.25, sampleRate: 48000, numberOfChannels: 2 },
@@ -173,40 +248,32 @@ describe('@/utils/svg-to-video', () => {
     // The audio track was registered on the muxer.
     expect(mock_output.addAudioTrack).toHaveBeenCalledWith(mock_audio_source)
 
-    // AAC encoding is requested; rate/channels come from the buffer itself,
-    // so the config carries only the codec and target bitrate.
+    // Lossless float32 PCM is requested (no re-encode); rate/channels come
+    // from the buffer itself, so the config carries only the codec.
     expect(audio_config).toEqual({
-      codec: 'aac',
-      bitrate: 192000
+      codec: 'pcm-f32'
     })
 
     // The video duration equals the total audio length (0.5s), not the
-    // default cycle length, so the animation loops to fit the track.
-    // FRAMES_PER_SECOND=3, at 0.5s -> floor(0.5*3)+1 = 2 sample moments,
-    // each held FRAME_HOLD=4 ticks -> 8 encoded frames.
-    expect(add_calls.length).toBe(8)
+    // default cycle length, so the animation runs to fit the track.
+    // fps=24, at 0.5s -> floor(0.5*24)+1 = 13 frames.
+    expect(add_calls.length).toBe(13)
   })
 
-  it('continues animating past one cycle for audio longer than the cycle', async () => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.pauseAnimations = vi.fn()
-    Object.defineProperty(svg, 'viewBox', {
-      value: { baseVal: { width: 100, height: 100 } }
-    })
-
+  it('keeps seeking past one cycle, letting SMIL repeat natively', async () => {
     // default export speed is 'crawl' -> cycle = BASE_DURATION(180) * 2 = 360s
-    // Render 367s: beyond one cycle, the sampled animation time wraps back to
-    // the start of the cycle so the animation repeats instead of stopping.
+    // Render 367s: the timeline keeps advancing past the cycle instead of
+    // being wrapped — the poster's repeatCount="indefinite" animations loop
+    // on their own, which is what makes audio longer than the cycle work.
     await render_svg_to_video_blob(svg, {
       width: 100,
       height: 100,
       max_duration: 367
     })
 
-    // floor(367*3)+1 = 1102 sample moments, each held FRAME_HOLD=4 -> 4408.
-    // Rendering the full requested length (not truncated at one 360s cycle)
-    // proves the loop continuation path emits frames past the boundary.
-    expect(add_calls.length).toBe(4408)
+    // floor(367*24)+1 = 8809 frames, none truncated at the 360s cycle.
+    expect(add_calls.length).toBe(8809)
+    expect(svg.setCurrentTime).toHaveBeenLastCalledWith(367)
   })
 })
 
