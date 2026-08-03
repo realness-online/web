@@ -5,6 +5,30 @@ const RUBBER_RESISTANCE = 0.25
 const MAX_OVERFLOW_PX = 80
 
 /**
+ * A poster that has registered itself as pannable.
+ * @typedef {Object} PanRegistration
+ * @property {import('vue').Ref<number>} pan_offset
+ * @property {import('vue').Ref<boolean>} panning
+ * @property {import('vue').Ref<boolean>} was_pan_gesture
+ * @property {() => boolean} get_can_pan
+ * @property {() => number} get_max_pan_px
+ */
+
+/**
+ * The touch currently being followed, from touchstart until the finger lifts.
+ * @typedef {Object} PanGesture
+ * @property {Element} element
+ * @property {PanRegistration} reg
+ * @property {number} touch_id
+ * @property {number} start_x
+ * @property {number} start_y
+ * @property {number} pan_start_offset
+ * @property {number} max_pan_px
+ * @property {boolean} gesture_decided
+ * @property {boolean} gesture_is_pan
+ */
+
+/**
  * Single delegated touch handler for pan gestures. Touch events provide more
  * natural feel on mobile than pointer events. One container listener avoids
  * N per-poster listeners.
@@ -12,8 +36,11 @@ const MAX_OVERFLOW_PX = 80
  * @returns {{ register: (element_ref: import('vue').Ref, opts: { get_can_pan: () => boolean, get_max_pan_px: () => number }) => { pan_offset: import('vue').Ref, unregister: () => void } }}
  */
 export const use_delegated_pan = container_ref => {
+  /** @type {Map<Element, PanRegistration>} */
   const pan_targets = new Map()
+  /** @type {PanGesture | null} */
   let current_gesture = null
+  /** @type {HTMLElement | null} */
   let listeners_container = null
 
   const find_target = element => {
@@ -44,6 +71,7 @@ export const use_delegated_pan = container_ref => {
 
   const on_touch_move = event => {
     if (!current_gesture || !event.touches.length) return
+    /** @type {Touch | null} */
     let touch = null
     for (let i = 0; i < event.touches.length; i++)
       if (event.touches[i].identifier === current_gesture.touch_id) {
