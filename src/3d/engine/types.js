@@ -26,6 +26,93 @@
  */
 
 /**
+ * The scene's mutable settings. The setters on PosterSceneController write
+ * here; the appliers below read it back onto the three.js objects.
+ * @typedef {Object} PosterSceneState
+ * @property {number} mosaic_spread
+ * @property {number} mosaic_opacity
+ * @property {number} shadow_spread
+ * @property {number} shadow_opacity
+ * @property {boolean} mosaic_visible
+ * @property {boolean} shadow_visible
+ * @property {boolean} stroke_visible
+ * @property {number} group_gap
+ * @property {number} tilt_amount
+ * @property {number} gyro_amount
+ * @property {boolean} atmosphere_enabled
+ * @property {string} atmosphere_color
+ * @property {number} atmosphere_density
+ * @property {number} drift_amount
+ * @property {number} drift_speed
+ * @property {number} breathing_amount
+ * @property {number} breathing_speed
+ * @property {boolean} motion_enabled
+ * @property {Record<string, boolean>} mosaic_layer_visible
+ * @property {Record<string, boolean>} shadow_layer_visible
+ */
+
+/**
+ * Pushes PosterSceneState onto the three.js objects it describes. Each is
+ * idempotent, so a setter can call whichever ones its change affects.
+ * @typedef {Object} PosterSceneAppliers
+ * @property {() => void} apply_mosaic_spread
+ * @property {() => void} apply_mosaic_opacity
+ * @property {() => void} apply_mosaic_visibility
+ * @property {() => void} apply_shadow_visibility
+ * @property {() => void} apply_shadow_opacity
+ * @property {() => void} apply_shadow_z
+ * @property {() => void} apply_stroke_visibility
+ * @property {() => void} apply_stroke_opacity
+ * @property {() => void} apply_atmosphere
+ */
+
+/**
+ * @typedef {{ x: number, y: number }} Vec2
+ */
+
+/**
+ * One rendered layer of the poster, in draw order.
+ * @typedef {Object} PosterSceneLayerGroup
+ * @property {import('three').Group} group
+ * @property {'mosaic' | 'shadow' | 'stroke'} kind
+ * @property {number} parallax_offset
+ */
+
+/**
+ * Everything the per-frame update reads. The scene owns the objects; the
+ * getters read PosterSceneState, so the update never writes settings.
+ * @typedef {Object} PosterSceneRuntime
+ * @property {import('three').Scene & { fog: import('three').FogExp2 }} scene
+ * @property {import('three').Group} root
+ * @property {PosterSceneLayerGroup[]} layer_groups
+ * @property {number} plane_w
+ * @property {number} plane_h
+ * @property {() => import('three').PerspectiveCamera | null} get_camera
+ * @property {() => number} get_mosaic_spread
+ * @property {() => number} get_shadow_spread
+ * @property {() => boolean} get_motion_enabled
+ * @property {() => number} get_drift_amount
+ * @property {() => number} get_drift_speed
+ * @property {() => number} get_breathing_amount
+ * @property {() => number} get_breathing_speed
+ * @property {() => number} get_tilt_amount
+ * @property {() => number} get_gyro_amount
+ * @property {() => boolean} get_atmosphere_enabled
+ * @property {() => number} get_atmosphere_density
+ * @property {() => boolean} get_stroke_visible
+ * @property {{ material: import('three').MeshBasicMaterial, base_opacity: number, loaded: boolean, period: number }[]} stroke_materials
+ * @property {PosterSceneAppliers} appliers
+ * @property {Vec2} smooth
+ * @property {{ target: Vec2, current: Vec2, prev: Vec2, velocity: Vec2 }} pan
+ * @property {{ target: number, current: number }} zoom
+ * @property {Vec2} tilt
+ * @property {Vec2} pointer
+ * @property {{ canvas_height: number }} camera
+ * @property {{ cursor_before: import('three').Vector3, cursor_after: import('three').Vector3, world_cursor_at_z: (z: number, out: import('three').Vector3) => import('three').Vector3 | null }} raycast
+ * @property {() => boolean} get_reduced_motion
+ */
+
+/**
  * @typedef {Object} PosterSceneController
  * @property {import('three').Scene} scene
  * @property {(options?: { camera?: import('three').PerspectiveCamera }) => void} mount

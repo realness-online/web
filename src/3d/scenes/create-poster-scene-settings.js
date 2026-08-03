@@ -1,6 +1,9 @@
+/** @typedef {import('@/3d/engine/types.js').PosterSceneState} PosterSceneState */
+/** @typedef {import('@/3d/engine/types.js').PosterSceneAppliers} PosterSceneAppliers */
+
 /**
- * @param {object} state
- * @param {object} appliers
+ * @param {PosterSceneState} state
+ * @param {PosterSceneAppliers} appliers
  */
 export const create_poster_scene_settings = (state, appliers) => ({
   get_settings() {
