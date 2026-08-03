@@ -813,7 +813,7 @@
     & > footer {
       user-select: none;
       position: fixed;
-      bottom: base-line;
+      bottom: base-line * 1.5;
       left: 50%;
       transform: translateX(-50%);
       width: 100%;

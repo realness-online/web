@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **The footer island sat too close to the bottom edge** — it was pinned one
+  base-line off the viewport. It now sits at one and a half.
+
 ## v2.7.0 — 2026-08-03
 
 - **Exported video did not move the way the poster does** — the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there — `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.
