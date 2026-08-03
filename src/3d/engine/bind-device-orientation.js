@@ -199,7 +199,7 @@ export const bind_device_orientation = options => {
       })
       return
     }
-    if (gyro_neutral_beta === null) {
+    if (gyro_neutral_beta === null || gyro_neutral_gamma === null) {
       gyro_neutral_beta = event.beta
       gyro_neutral_gamma = event.gamma
       publish_gyro_debug({
