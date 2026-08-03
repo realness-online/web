@@ -267,7 +267,7 @@ export const rgba_to_hsla = (r, g, b, _a) => {
  * @param {number} h - Hue in degrees
  * @param {number} s - Saturation percentage
  * @param {number} l - Lightness percentage
- * @returns {object} OKLCH object with l, c, h properties
+ * @returns {{l: number, c: number, h: number}} OKLCH lightness, chroma and hue
  */
 export const hsl_to_oklch = (h, s, l) => {
   // First convert HSL to RGB

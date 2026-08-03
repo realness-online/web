@@ -160,14 +160,14 @@ export const hsla_to_color = str => css_color_to_color(str)
 export const color_to_hsla = ({ h, s, l, a }) => {
   const hsla = `hsla(${h}, ${s}%, ${l}%, ${a})`
   const ok = hsl_to_oklch(h, s, l)
-  ok.h = Math.round(ok.h)
-  ok.l = ok.l.toFixed(3)
-  ok.c = ok.c.toFixed(3)
+  const ok_h = Math.round(ok.h)
+  const ok_l = ok.l.toFixed(3)
+  const ok_c = ok.c.toFixed(3)
   const alpha = Number(a)
   const oklch =
     alpha < 1
-      ? `oklch(${ok.l} ${ok.c} ${ok.h} / ${alpha})`
-      : `oklch(${ok.l} ${ok.c} ${ok.h})`
+      ? `oklch(${ok_l} ${ok_c} ${ok_h} / ${alpha})`
+      : `oklch(${ok_l} ${ok_c} ${ok_h})`
   return {
     hsl: `hsl(${h}, ${s}%, ${l}%)`,
     hsla,
