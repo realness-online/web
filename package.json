@@ -109,7 +109,7 @@
     "pako": "3.0.1",
     "stylus": "0.64.0",
     "svgo": "4.0.2",
-    "typescript": "5.8.3",
+    "typescript": "7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.7",
     "vite-plugin-pwa": "1.2.0",
     "vite-plugin-wasm": "3.6.0",
