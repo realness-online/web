@@ -48,8 +48,7 @@
     svg.icon {
       width: base-line * 2;
       height: base-line * 2;
-      fill: var(--graphite);
-     stroke: var(--accent);
+      stroke: currentColor;
       stroke-width: 0.25px;
       &:active {
         outline: none;
