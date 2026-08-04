@@ -25,6 +25,7 @@
   import { useFps, useFullscreen, useActiveElement } from '@vueuse/core'
   import { useRouter as use_router } from 'vue-router'
   import { use_global_keymap } from '@/use/global-keymap'
+  import { use_icon_settle } from '@/use/icon-settle'
   import { posting } from '@/use/posting'
   import {
     drama,
@@ -157,54 +158,23 @@
     footer_visible.value = el.checked
   }
 
-  const add_icon_hovered = ref(false)
-  const add_settling = ref(false)
+  const {
+    settling: add_settling,
+    enter: on_add_enter,
+    leave: on_add_leave,
+    end: on_add_animation_end
+  } = use_icon_settle({ animation: 'add-plus-flourish-out' })
 
-  const on_add_icon_enter = () => {
-    add_icon_hovered.value = true
-    add_settling.value = false
-  }
-
-  const play_add_icon_settle = () => {
-    if (!add_icon_hovered.value) return
-    add_icon_hovered.value = false
-    add_settling.value = false
-    requestAnimationFrame(() => {
-      add_settling.value = true
-    })
-  }
-
-  /** @param {AnimationEvent} event */
-  const on_add_icon_animation_end = event => {
-    if (event.animationName !== 'add-plus-flourish-out') return
-    add_settling.value = false
-  }
-
-  const animation_icon_hovered = ref(false)
-  const animation_settling = ref(false)
-
-  const on_animation_icon_enter = () => {
-    animation_icon_hovered.value = true
-    animation_settling.value = false
-  }
-
-  const play_animation_icon_settle = () => {
-    if (!animation_icon_hovered.value) return
-    animation_icon_hovered.value = false
-    animation_settling.value = false
-    requestAnimationFrame(() => {
-      animation_settling.value = true
-    })
-  }
-
-  /** All three parts share the keyframe; the ball is the last to finish.
-   * @param {AnimationEvent} event */
-  const on_animation_icon_animation_end = event => {
-    if (event.animationName !== 'animation-flourish-out') return
-    const part = /** @type {Element | null} */ (event.target)
-    if (!part?.classList.contains('animation-ball')) return
-    animation_settling.value = false
-  }
+  // The ball and both trails ride one keyframe; the ball is last out.
+  const {
+    settling: animation_settling,
+    enter: on_animation_enter,
+    leave: on_animation_leave,
+    end: on_animation_animation_end
+  } = use_icon_settle({
+    animation: 'animation-flourish-out',
+    part: 'animation-ball'
+  })
 
   const preferences_dialog = ref(null)
   const open_account = () => router.push('/account')
@@ -388,9 +358,9 @@
         <label
           :data-settling="add_settling || undefined"
           aria-label="Add poster"
-          @mouseenter="on_add_icon_enter"
-          @mouseleave="play_add_icon_settle"
-          @animationend="on_add_icon_animation_end">
+          @mouseenter="on_add_enter"
+          @mouseleave="on_add_leave"
+          @animationend="on_add_animation_end">
           <input
             type="checkbox"
             switch
@@ -428,9 +398,9 @@
         <label
           :data-settling="animation_settling || undefined"
           aria-label="Toggle animation"
-          @mouseenter="on_animation_icon_enter"
-          @mouseleave="play_animation_icon_settle"
-          @animationend="on_animation_icon_animation_end">
+          @mouseenter="on_animation_enter"
+          @mouseleave="on_animation_leave"
+          @animationend="on_animation_animation_end">
           <input
             type="checkbox"
             switch
