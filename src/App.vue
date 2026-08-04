@@ -225,9 +225,12 @@
     })
   }
 
-  /** @param {AnimationEvent} event */
+  /** All three parts share the keyframe; the ball is the last to finish.
+   * @param {AnimationEvent} event */
   const on_animation_icon_animation_end = event => {
-    if (event.animationName !== 'animation-ball-flourish-out') return
+    if (event.animationName !== 'animation-flourish-out') return
+    const part = /** @type {Element | null} */ (event.target)
+    if (!part?.classList.contains('animation-ball')) return
     animation_settling.value = false
   }
 
@@ -682,25 +685,36 @@
     }
   }
 
-  @keyframes animation-ball-bounce {
+  /* A mixin because hover is gated behind a hover-capable pointer and press
+     is not, so the two triggers cannot share a rule. */
+  bounce-parts() {
+    transition: none;
+    animation-name: animation-bounce;
+    animation-duration: var(--bounce);
+    animation-timing-function: linear;
+    animation-delay: var(--delay-out);
+  }
+
+  /* One arc, scaled per part by the --amplitude it declares. */
+  @keyframes animation-bounce {
     0% {
       transform: translate(0, 0) scale(1);
       animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
     }
     28% {
-      transform: translate(12%, -42%) scale(1.12);
+      transform: translate(calc(12% * var(--amplitude)), calc(-42% * var(--amplitude))) scale(calc(1 + 0.12 * var(--amplitude)));
       animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
     }
     52% {
-      transform: translate(-8%, 18%) scale(0.86, 1.14);
+      transform: translate(calc(-8% * var(--amplitude)), calc(18% * var(--amplitude))) scale(calc(1 - 0.14 * var(--amplitude)), calc(1 + 0.14 * var(--amplitude)));
       animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
     }
     72% {
-      transform: translate(5%, -10%) scale(1.06);
+      transform: translate(calc(5% * var(--amplitude)), calc(-10% * var(--amplitude))) scale(calc(1 + 0.06 * var(--amplitude)));
       animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
     }
     88% {
-      transform: translate(-2%, 5%) scale(0.98);
+      transform: translate(calc(-2% * var(--amplitude)), calc(5% * var(--amplitude))) scale(calc(1 - 0.02 * var(--amplitude)));
       animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
     }
     100% {
@@ -708,91 +722,15 @@
     }
   }
 
-  @keyframes animation-trail-mid-bounce {
-    0% {
-      transform: translate(0, 0) scale(1);
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    28% {
-      transform: translate(9%, -28%) scale(1.08);
-      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-    }
-    52% {
-      transform: translate(-6%, 14%) scale(0.92, 1.08);
-      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
-    }
-    72% {
-      transform: translate(4%, -7%) scale(1.03);
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-    }
-    88% {
-      transform: translate(-2%, 3%) scale(0.99);
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-    }
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-  }
-
-  @keyframes animation-trail-old-bounce {
-    0% {
-      transform: translate(0, 0) scale(1);
-      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    28% {
-      transform: translate(6%, -18%) scale(1.05);
-      animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
-    }
-    52% {
-      transform: translate(-4%, 10%) scale(0.94, 1.05);
-      animation-timing-function: cubic-bezier(0.34, 1.45, 0.64, 1);
-    }
-    72% {
-      transform: translate(3%, -5%) scale(1.02);
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-    }
-    88% {
-      transform: translate(-1%, 2%) scale(0.99);
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-    }
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-  }
-
-  @keyframes animation-trail-old-flourish-out {
+  @keyframes animation-flourish-out {
     0%, 100% {
       transform: translate(0, 0) scale(1);
     }
     42% {
-      transform: translate(3%, -7%) scale(1.02);
+      transform: translate(calc(7% * var(--amplitude)), calc(-15% * var(--amplitude))) scale(calc(1 + 0.06 * var(--amplitude)));
     }
     72% {
-      transform: translate(-1%, 2%) scale(0.99);
-    }
-  }
-
-  @keyframes animation-trail-mid-flourish-out {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    42% {
-      transform: translate(5%, -10%) scale(1.04);
-    }
-    72% {
-      transform: translate(-2%, 3%) scale(0.99);
-    }
-  }
-
-  @keyframes animation-ball-flourish-out {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    42% {
-      transform: translate(7%, -15%) scale(1.06);
-    }
-    72% {
-      transform: translate(-3%, 4%) scale(0.98);
+      transform: translate(calc(-3% * var(--amplitude)), calc(4% * var(--amplitude))) scale(calc(1 - 0.02 * var(--amplitude)));
     }
   }
 
@@ -979,26 +917,75 @@
           &:active svg.icon {
             outline: none;
           }
-          &[aria-label='Toggle animation'] svg.animation {
-            .animation-ball,
-            .animation-trail-mid,
-            .animation-trail-old {
-              transform: translate(0, 0) scale(1);
-              transition-property: transform;
-              transition-timing-function: ease;
-              transition-duration: 2.2s;
-              @media (prefers-reduced-motion: reduce) {
-                transition-duration: 0.01ms;
+          &[aria-label='Toggle animation'] {
+            svg.animation {
+              --settle: 2.2s;
+              --bounce: 0.98s;
+              --flourish: 0.55s;
+              --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+              --stagger: 0.16s;
+              /* The ball leads going out and lands last coming back. */
+              .animation-ball {
+                --amplitude: 1;
+                --out: 0;
+                --back: 2;
+              }
+              .animation-trail-mid {
+                --amplitude: 0.7;
+                --out: 1;
+                --back: 1;
+              }
+              .animation-trail-old {
+                --amplitude: 0.5;
+                --out: 2;
+                --back: 0;
+              }
+              & > * {
+                --delay-out: calc(var(--out) * var(--stagger));
+                --delay-back: calc(var(--back) * var(--stagger));
+                transform: translate(0, 0) scale(1);
+                transition-property: transform;
+                transition-duration: var(--settle);
+                transition-timing-function: ease;
+                transition-delay: var(--delay-back);
               }
             }
-            .animation-trail-old {
-              transition-delay: 0s;
+            @media (hover: hover) and (pointer: fine) {
+              &:hover svg.animation > * {
+                bounce-parts();
+              }
             }
-            .animation-trail-mid {
-              transition-delay: 0.16s;
+            &:active svg.animation {
+              --bounce: 0.64s;
+              --stagger: 0.11s;
+              & > * {
+                bounce-parts();
+              }
             }
-            .animation-ball {
-              transition-delay: 0.32s;
+            &[data-settling] svg.animation {
+              --stagger: 0.1s;
+              & > * {
+                transition: none;
+                animation-name: animation-flourish-out;
+                animation-duration: var(--flourish);
+                animation-timing-function: var(--spring);
+                animation-delay: var(--delay-back);
+              }
+            }
+            /* No travel, but a hover and a press still say they landed. */
+            @media (prefers-reduced-motion: reduce) {
+              svg.animation {
+                --settle: 0.01ms;
+                --stagger: 0s;
+              }
+              &:hover svg.animation > *,
+              &:active svg.animation > * {
+                animation: none;
+                transform: scale(0.95);
+              }
+              &[data-settling] svg.animation > * {
+                animation: none;
+              }
             }
           }
           &[aria-label='Add poster'] svg.add {
@@ -1060,29 +1047,6 @@
               }
             }
           }
-          &[data-settling] svg.animation {
-            .animation-ball,
-            .animation-trail-mid,
-            .animation-trail-old {
-              transition: none;
-            }
-            .animation-trail-old {
-              animation: animation-trail-old-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1);
-            }
-            .animation-trail-mid {
-              animation: animation-trail-mid-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) 0.1s;
-            }
-            .animation-ball {
-              animation: animation-ball-flourish-out 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) 0.2s;
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .animation-ball,
-              .animation-trail-mid,
-              .animation-trail-old {
-                animation: none;
-              }
-            }
-          }
           @media (hover: hover) and (pointer: fine) {
             &[aria-label='Add poster']:hover svg.add {
               .add-plus {
@@ -1125,40 +1089,6 @@
             &[aria-label='Open camera']:hover span svg:last-child circle {
               transform: scale(0);
             }
-
-            &[aria-label='Toggle animation']:hover svg.animation {
-              .animation-ball,
-              .animation-trail-mid,
-              .animation-trail-old {
-                transition: none;
-              }
-            }
-            &[aria-label='Toggle animation']:hover svg.animation .animation-ball {
-              animation: animation-ball-bounce 0.98s linear;
-            }
-            &[aria-label='Toggle animation']:hover svg.animation .animation-trail-mid {
-              animation: animation-trail-mid-bounce 0.98s linear 0.16s;
-            }
-            &[aria-label='Toggle animation']:hover svg.animation .animation-trail-old {
-              animation: animation-trail-old-bounce 0.98s linear 0.32s;
-            }
-            &[aria-label='Toggle animation']:hover svg.animation {
-              @media (prefers-reduced-motion: reduce) {
-                .animation-ball,
-                .animation-trail-mid,
-                .animation-trail-old {
-                  animation: none;
-                  transform: scale(0.95);
-                }
-              }
-            }
-          }
-          &[aria-label='Toggle animation']:active svg.animation {
-            .animation-ball,
-            .animation-trail-mid,
-            .animation-trail-old {
-              transition: none;
-            }
           }
           &[aria-label='Add poster']:active svg.add {
             .add-plus {
@@ -1197,26 +1127,6 @@
           &[aria-label='Open camera']:active span svg:last-child circle {
             transform: scale(0);
             transition-duration: 0.15s;
-          }
-
-          &[aria-label='Toggle animation']:active svg.animation .animation-ball {
-            animation: animation-ball-bounce 0.64s linear;
-          }
-          &[aria-label='Toggle animation']:active svg.animation .animation-trail-mid {
-            animation: animation-trail-mid-bounce 0.64s linear 0.11s;
-          }
-          &[aria-label='Toggle animation']:active svg.animation .animation-trail-old {
-            animation: animation-trail-old-bounce 0.64s linear 0.22s;
-          }
-          &[aria-label='Toggle animation']:active svg.animation {
-            @media (prefers-reduced-motion: reduce) {
-              .animation-ball,
-              .animation-trail-mid,
-              .animation-trail-old {
-                animation: none;
-                transform: scale(0.95);
-              }
-            }
           }
         }
         & a[aria-label='Settings'],
@@ -1278,9 +1188,7 @@
             }
           }
         }
-
       }
-
     }
   }
 
