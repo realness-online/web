@@ -26,6 +26,7 @@
   import { useRouter as use_router } from 'vue-router'
   import { use_global_keymap } from '@/use/global-keymap'
   import { use_icon_settle } from '@/use/icon-settle'
+  import { get_clipboard_files } from '@/utils/clipboard-images'
   import { posting } from '@/use/posting'
   import {
     drama,
@@ -240,62 +241,6 @@
     } catch (error) {
       console.warn('Clipboard read failed:', error)
     }
-  }
-  /**
-   * @param {DataTransferItem} item
-   * @returns {Promise<string>}
-   */
-  const get_clipboard_item_string = item =>
-    new Promise(resolve => {
-      item.getAsString(value => resolve(value || ''))
-    })
-  /**
-   * @param {string} data_url
-   * @returns {Promise<File|null>}
-   */
-  const data_url_to_file = async data_url => {
-    if (!data_url.startsWith('data:image/')) return null
-    try {
-      const response = await fetch(data_url)
-      const blob = await response.blob()
-      const mime = blob.type || 'image/png'
-      const extension = mime.split('/')[1] || 'png'
-      return new File([blob], `clipboard-${Date.now()}.${extension}`, {
-        type: mime
-      })
-    } catch {
-      return null
-    }
-  }
-  /**
-   * @param {ClipboardEvent} event
-   * @returns {Promise<File[]>}
-   */
-  const get_clipboard_files = async event => {
-    const files = Array.from(event.clipboardData?.files || [])
-    if (files.length > 0) return files
-    const items = Array.from(event.clipboardData?.items || [])
-    const image_files = items
-      .filter(item => item.kind === 'file' && item.type.startsWith('image/'))
-      .map(item => item.getAsFile())
-      .filter(file => file instanceof File)
-    if (image_files.length > 0) return image_files
-
-    const html_item = items.find(
-      item => item.kind === 'string' && item.type === 'text/html'
-    )
-    if (!html_item) return []
-    const html = await get_clipboard_item_string(html_item)
-    if (!html) return []
-
-    const doc = new DOMParser().parseFromString(html, 'text/html')
-    const image_sources = Array.from(doc.querySelectorAll('img'))
-      .map(img => img.getAttribute('src') || '')
-      .filter(src => src.startsWith('data:image/'))
-    if (image_sources.length === 0) return []
-
-    const converted = await Promise.all(image_sources.map(data_url_to_file))
-    return converted.filter(file => file instanceof File)
   }
   /** @param {ClipboardEvent} event */
   const paste_image = async event => {
