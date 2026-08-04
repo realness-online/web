@@ -685,8 +685,21 @@
     }
   }
 
-  /* A mixin because hover is gated behind a hover-capable pointer and press
-     is not, so the two triggers cannot share a rule. */
+  /* These three are mixins because hover is gated behind a hover-capable
+     pointer and press is not, so the two triggers cannot share a rule. */
+  satellites-out() {
+    .add-sat {
+      transform: translate(var(--dx), var(--dy)) scale(var(--sat-scale));
+    }
+  }
+
+  pulse-plus() {
+    .add-plus {
+      transition: none;
+      animation: add-plus-pulse-twice var(--pulse) linear;
+    }
+  }
+
   bounce-parts() {
     transition: none;
     animation-name: animation-bounce;
@@ -858,26 +871,15 @@
           &:active {
             transform: none;
           }
-          svg {
-            fill: var(--accent);
-          }
-          svg.animation {
-            stroke: var(--accent);
-          }
           &:focus {
             outline: none;
             box-shadow: none;
           }
           focus-ring();
         }
+        /* icon.vue paints with currentColor, so color is the whole story. */
         & > label:has(input:checked) {
           color: var(--emphasis);
-          svg {
-            fill: var(--emphasis);
-          }
-          svg.animation {
-            stroke: var(--emphasis);
-          }
         }
         & > label {
           position: relative;
@@ -917,7 +919,7 @@
           &:active svg.icon {
             outline: none;
           }
-          &[aria-label='Toggle animation'] {
+          &:has(svg.animation) {
             svg.animation {
               --settle: 2.2s;
               --bounce: 0.98s;
@@ -988,149 +990,135 @@
               }
             }
           }
-          &[aria-label='Add poster'] svg.add {
-            .add-plus {
-              transform: scale(1);
-              transition-property: transform;
-              transition-timing-function: ease;
-              transition-duration: 0.65s;
-              @media (prefers-reduced-motion: reduce) {
-                transition-duration: 0.01ms;
-              }
-            }
-            .add-satellites {
-              opacity: 0;
-              transition-property: opacity, transform;
-              transition-timing-function: ease;
-              transition-duration: 0.4s;
-              @media (prefers-reduced-motion: reduce) {
-                transition-duration: 0.01ms;
-              }
-              .add-sat {
-                transition-property: transform;
-                transition-timing-function: ease;
-                transition-duration: 0.4s;
-                @media (prefers-reduced-motion: reduce) {
-                  transition-duration: 0.01ms;
-                }
-              }
-            }
-          }
-          &[aria-label='Open camera'] svg[data-icon='camera'] {
-            transition-duration: 0.4s;
-          }
-          &[data-settling] svg.add {
-            .add-plus {
-              transition: none;
-              animation: add-plus-flourish-out 0.55s cubic-bezier(0.45, 0, 0.55, 1);
-              @media (prefers-reduced-motion: reduce) {
-                animation: none;
-              }
-            }
-            .add-satellites {
-              transition: none;
-              animation: add-satellites-flourish-out 0.45s cubic-bezier(0.45, 0, 0.55, 1) forwards;
-              .add-sat-tl {
-                transform: translate(-22%, -22%) scale(0.85);
-              }
-              .add-sat-tr {
-                transform: translate(22%, -22%) scale(0.85);
-              }
-              .add-sat-bl {
-                transform: translate(-22%, 22%) scale(0.85);
-              }
-              .add-sat-br {
-                transform: translate(22%, 22%) scale(0.85);
-              }
-              @media (prefers-reduced-motion: reduce) {
-                animation: none;
-              }
-            }
-          }
-          @media (hover: hover) and (pointer: fine) {
-            &[aria-label='Add poster']:hover svg.add {
+          &:has(svg.add) {
+            svg.add {
+              --pulse: 1.3s;
+              --reach: 22%;
+              --sat-scale: 0.85;
+              --still: 0.95;
               .add-plus {
-                transition: none;
-                animation: add-plus-pulse-twice 1.3s linear;
+                transform: scale(1);
+                transition: transform 0.65s ease;
               }
               .add-satellites {
-                opacity: 1;
-                .add-sat-tl {
-                  transform: translate(-22%, -22%) scale(0.85);
-                }
-                .add-sat-tr {
-                  transform: translate(22%, -22%) scale(0.85);
-                }
-                .add-sat-bl {
-                  transform: translate(-22%, 22%) scale(0.85);
-                }
-                .add-sat-br {
-                  transform: translate(22%, 22%) scale(0.85);
-                }
+                opacity: 0;
+                transition: opacity 0.4s ease, transform 0.4s ease;
               }
-              @media (prefers-reduced-motion: reduce) {
+              /* Which corner each satellite makes for. */
+              .add-sat-tl {
+                --x: -1;
+                --y: -1;
+              }
+              .add-sat-tr {
+                --x: 1;
+                --y: -1;
+              }
+              .add-sat-bl {
+                --x: -1;
+                --y: 1;
+              }
+              .add-sat-br {
+                --x: 1;
+                --y: 1;
+              }
+              .add-sat {
+                --dx: calc(var(--reach) * var(--x));
+                --dy: calc(var(--reach) * var(--y));
+                transition: transform 0.4s ease;
+              }
+            }
+            @media (hover: hover) and (pointer: fine) {
+              &:hover svg.add {
+                pulse-plus();
+                .add-satellites {
+                  opacity: 1;
+                }
+                satellites-out();
+              }
+            }
+            /* A press throws them further and lands them smaller. */
+            &:active svg.add {
+              --pulse: 0.95s;
+              --reach: 30%;
+              --sat-scale: 0.75;
+              --still: 0.92;
+              pulse-plus();
+              .add-satellites {
+                opacity: 1;
+              }
+              satellites-out();
+            }
+            &[data-settling] svg.add {
+              .add-plus {
+                transition: none;
+                animation-name: add-plus-flourish-out;
+                animation-duration: 0.55s;
+                animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+              }
+              .add-satellites {
+                transition: none;
+                animation-name: add-satellites-flourish-out;
+                animation-duration: 0.45s;
+                animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+                animation-fill-mode: forwards;
+              }
+              satellites-out();
+            }
+            @media (prefers-reduced-motion: reduce) {
+              svg.add .add-plus,
+              svg.add .add-satellites,
+              svg.add .add-sat {
+                transition-duration: 0.01ms;
+              }
+              &:hover svg.add,
+              &:active svg.add {
                 .add-plus {
                   animation: none;
-                  transform: scale(0.95);
+                  transform: scale(var(--still));
                 }
                 .add-satellites {
                   opacity: 0;
                 }
               }
+              &[data-settling] svg.add {
+                .add-plus,
+                .add-satellites {
+                  animation: none;
+                }
+              }
             }
-            &[aria-label='Toggle 3D']:hover svg[data-icon='galaxy'] {
+          }
+          &:has(svg[data-icon='camera']) {
+            svg[data-icon='camera'] {
+              transition-duration: 0.4s;
+            }
+            /* The focus ring inside the lens closes as the camera reacts. */
+            @media (hover: hover) and (pointer: fine) {
+              &:hover svg[data-icon='camera'] {
+                transform: scale(1.08);
+              }
+              &:hover span svg:not(.icon) circle {
+                transform: scale(0);
+              }
+            }
+            &:active svg[data-icon='camera'] {
+              transform: scale(0.9);
+              transition-duration: 0.22s;
+            }
+            &:active span svg:not(.icon) circle {
+              transform: scale(0);
+              transition-duration: 0.15s;
+            }
+          }
+          @media (hover: hover) and (pointer: fine) {
+            &:hover svg[data-icon='galaxy'] {
               transform: rotate(72deg) scale(0.95);
               transition-duration: 0.45s;
             }
-            &[aria-label='Open camera']:hover svg[data-icon='camera'] {
-              transform: scale(1.08);
-              transition-duration: 0.4s;
-            }
-            &[aria-label='Open camera']:hover span svg:last-child circle {
-              transform: scale(0);
-            }
-          }
-          &[aria-label='Add poster']:active svg.add {
-            .add-plus {
-              transition: none;
-              animation: add-plus-pulse-twice 0.95s linear;
-            }
-            .add-satellites {
-              opacity: 1;
-              .add-sat-tl {
-                transform: translate(-30%, -30%) scale(0.75);
-              }
-              .add-sat-tr {
-                transform: translate(30%, -30%) scale(0.75);
-              }
-              .add-sat-bl {
-                transform: translate(-30%, 30%) scale(0.75);
-              }
-              .add-sat-br {
-                transform: translate(30%, 30%) scale(0.75);
-              }
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .add-plus {
-                animation: none;
-                transform: scale(0.92);
-              }
-              .add-satellites {
-                opacity: 0;
-              }
-            }
-          }
-          &[aria-label='Open camera']:active svg[data-icon='camera'] {
-            transform: scale(0.9);
-            transition-duration: 0.22s;
-          }
-          &[aria-label='Open camera']:active span svg:last-child circle {
-            transform: scale(0);
-            transition-duration: 0.15s;
           }
         }
-        & a[aria-label='Settings'],
-        & button[aria-label='Settings'] {
+        & a:has(svg[data-icon='gear']),
+        & button:has(svg[data-icon='gear']) {
           & svg.icon {
             transition-timing-function: ease;
             transition-duration: 1.66s;
