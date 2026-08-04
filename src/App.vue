@@ -22,44 +22,16 @@
     onMounted as mounted,
     provide
   } from 'vue'
-  import {
-    useFps,
-    useMagicKeys,
-    useFullscreen,
-    useActiveElement
-  } from '@vueuse/core'
+  import { useFps, useFullscreen, useActiveElement } from '@vueuse/core'
   import { useRouter as use_router } from 'vue-router'
-  import { use_keymap } from '@/use/key-commands'
+  import { use_global_keymap } from '@/use/global-keymap'
   import { posting } from '@/use/posting'
   import {
-    ANIMATION_SPEEDS,
-    ANIMATION_SPEED_LEGACY,
-    DEFAULT_ANIMATION_SPEED
-  } from '@/utils/animation-config'
-  import {
-    shadow,
-    stroke,
-    mosaic,
     drama,
     drama_back,
     drama_front,
-    bold,
-    medium,
-    regular,
-    light,
-    background,
-    boulders,
-    rocks,
-    gravel,
-    sand,
-    sediment,
     animate,
-    animation_speed,
     info,
-    storytelling,
-    grid,
-    aspect_ratio_mode,
-    slice_alignment,
     menu,
     footer_visible,
     view_3d
@@ -237,139 +209,10 @@
   const preferences_dialog = ref(null)
   const open_account = () => router.push('/account')
   provide('open_account', open_account)
-  const { register, register_preference } = use_keymap('Global')
-  const magic_keys = useMagicKeys()
-
-  register('pref::Toggle_Shadow', () => {
-    const new_state = !shadow.value
-    shadow.value = new_state
-    if (new_state) {
-      bold.value = true
-      medium.value = true
-      regular.value = true
-      light.value = true
-      background.value = true
-    }
+  use_global_keymap({
+    documentation,
+    preferences: preferences_dialog
   })
-
-  register_preference('pref::Toggle_Stroke', stroke)
-  register('pref::Toggle_Mosaic', () => {
-    const new_state = !mosaic.value
-    mosaic.value = new_state
-    if (new_state) {
-      boulders.value = true
-      rocks.value = true
-      gravel.value = true
-      sand.value = true
-      sediment.value = true
-    }
-  })
-  register_preference('pref::Toggle_Background', background)
-  register('pref::Toggle_Drama', () => {
-    const new_state = !drama.value
-    drama.value = new_state
-    drama_back.value = new_state
-    drama_front.value = new_state
-  })
-  register('pref::Cycle_Drama', () => {
-    if (!drama_back.value && !drama_front.value) {
-      drama_back.value = true
-      drama_front.value = false
-    } else if (drama_back.value && !drama_front.value) {
-      drama_back.value = false
-      drama_front.value = true
-    } else if (!drama_back.value && drama_front.value) {
-      drama_back.value = true
-      drama_front.value = true
-    } else {
-      drama_back.value = false
-      drama_front.value = false
-    }
-    drama.value = drama_back.value || drama_front.value
-  })
-  register_preference('pref::Toggle_Animate', animate)
-  register('pref::Cycle_Animation_Speed', () => {
-    const current =
-      ANIMATION_SPEED_LEGACY[animation_speed.value] ||
-      animation_speed.value ||
-      DEFAULT_ANIMATION_SPEED
-    const current_index = ANIMATION_SPEEDS.indexOf(current)
-    const next_index = (current_index + 1) % ANIMATION_SPEEDS.length
-    animation_speed.value = ANIMATION_SPEEDS[next_index]
-  })
-  register_preference('pref::Toggle_Info', info)
-  register_preference('pref::Toggle_Storytelling', storytelling)
-  register('pref::Cycle_Aspect_Ratio', () => {
-    const aspect_ratios = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
-    const current = aspect_ratio_mode.value || 'auto'
-    const current_index = aspect_ratios.indexOf(current)
-    const is_reverse = magic_keys.shift.value
-    const next_index = is_reverse
-      ? (current_index - 1 + aspect_ratios.length) % aspect_ratios.length
-      : (current_index + 1) % aspect_ratios.length
-    aspect_ratio_mode.value = aspect_ratios[next_index]
-    apply_aspect_ratio()
-  })
-  register('pref::Slice_Alignment_Up', () => {
-    const current = slice_alignment.value || 'ymid'
-    if (current === 'ymid') slice_alignment.value = 'ymin'
-    else if (current === 'ymax') slice_alignment.value = 'ymid'
-  })
-  register('pref::Slice_Alignment_Down', () => {
-    const current = slice_alignment.value || 'ymid'
-    if (current === 'ymid') slice_alignment.value = 'ymax'
-    else if (current === 'ymin') slice_alignment.value = 'ymid'
-  })
-  register_preference('pref::Toggle_Grid', grid)
-  register_preference('pref::Toggle_Menu', menu)
-  register_preference('pref::Toggle_Footer', footer_visible)
-
-  const apply_aspect_ratio = () => {
-    document.documentElement.setAttribute(
-      'data-aspect-ratio',
-      aspect_ratio_mode.value || 'auto'
-    )
-  }
-
-  watch(aspect_ratio_mode, apply_aspect_ratio, { immediate: true })
-
-  register_preference('pref::Toggle_Bold', bold)
-  register_preference('pref::Toggle_Medium', medium)
-  register_preference('pref::Toggle_Regular', regular)
-  register_preference('pref::Toggle_Light', light)
-
-  register('pref::Toggle_View_3d', () => {
-    view_3d.value = !view_3d.value
-  })
-  register_preference('pref::Toggle_Boulders', boulders)
-  register_preference('pref::Toggle_Rocks', rocks)
-  register_preference('pref::Toggle_Gravel', gravel)
-  register_preference('pref::Toggle_Sand', sand)
-  register_preference('pref::Toggle_Sediment', sediment)
-
-  register('ui::Show_Documentation', () => {
-    documentation.value?.show()
-  })
-  register('ui::Open_Settings', () => {
-    preferences_dialog.value?.show()
-  })
-  register('ui::Open_Account', open_account)
-  register('ui::Clear_Sync_Time', () => {
-    localStorage.removeItem('sync_time')
-  })
-  register('ui::Toggle_Presentation', () =>
-    !document.fullscreenElement
-      ? document.documentElement.requestFullscreen()
-      : document.exitFullscreen()
-  )
-
-  register('nav::Go_Home', () => router.push('/'))
-  register('nav::Go_Statements', () => router.push('/'))
-  register('nav::Go_Thoughts', () => router.push('/'))
-  register('nav::Go_Account', () => router.push('/account'))
-  register('nav::Go_Docs', () => router.push('/docs'))
-  register('nav::Go_About', () => router.push('/about'))
-  register('nav::Go_Pricing', () => router.push('/pricing'))
 
   /** @param {boolean} active */
   const on_active = active => set_working(active)

@@ -66,8 +66,10 @@
 
   /** @param {Element} section */
   const reveal_trigger = section => {
+    // Article titles sit above a tall poster section; observe the header
+    // so mobile reveal is not delayed until the poster is mostly in view.
     if (section.localName === 'article')
-      return section.querySelector(':scope > section') ?? section
+      return section.querySelector(':scope > header') ?? section
     if (section.getAttribute('itemprop') === 'gallery')
       return section.querySelector(':scope > header') ?? section
     if (section.getAttribute('itemprop') === 'preferences')
@@ -659,8 +661,15 @@
     --about-article-copy-min-height: calc(var(--base-line) * 15);
     --about-article-list-min-height: calc(var(--base-line) * 20);
     --about-block-min-height: calc(var(--base-line) * 10);
+    --about-section-beat: calc(var(--base-line) * 2);
     margin-bottom: 0;
     max-width: 1800px;
+
+    & > hr {
+      @media (max-width: pad-begins) {
+        margin-block: var(--about-section-beat);
+      }
+    }
 
     & > header {
       display: block;
@@ -832,8 +841,6 @@
       }
 
       & > section {
-        min-height: var(--poster-grid-height);
-
         @media (min-width: pad-begins) {
           min-height: max(var(--poster-grid-height), var(--about-article-copy-min-height));
           padding: base-line;
@@ -939,9 +946,16 @@
     }
 
     & > [itemprop='communities'] {
-      & > section {
-        min-height: calc(var(--poster-grid-height) + var(--base-line) * 4);
+      @media (max-width: pad-begins) {
+        margin-bottom: base-line;
+        padding-bottom: 0;
 
+        & > section > header > h4:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      & > section {
         @media (min-width: pad-begins) {
           min-height: max(calc(var(--poster-grid-height) + var(--base-line) * 6), var(--about-article-copy-min-height));
         }
@@ -965,6 +979,12 @@
     }
 
     & > [itemprop='support'] {
+      @media (max-width: pad-begins) {
+        aside[data-call-to-action] {
+          padding-top: base-line;
+        }
+      }
+
       @media (min-width: pad-begins) {
         min-height: var(--about-block-min-height);
       }
@@ -977,6 +997,10 @@
     & > [itemprop='features'] {
       padding: base-line;
       min-height: var(--about-article-list-min-height);
+
+      @media (max-width: pad-begins) {
+        padding-bottom: 0;
+      }
 
       & > ol {
         about-feature-list();
@@ -1158,23 +1182,33 @@
     }
 
     & > [itemprop='gallery'] {
-      margin-top: base-line * 4;
+      margin-top: 0;
       min-height: calc(var(--poster-grid-height) + var(--base-line) * 6);
       standard-grid: gentle;
       grid-auto-flow: dense;
       padding: base-line;
+
+      @media (max-width: pad-begins) {
+        padding-top: 0;
+        grid-row-gap: var(--about-section-beat);
+      }
 
       & > header {
         width: 100%;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: base-line * 0.75;
+        gap: base-line;
         align-items: center;
         align-self: center;
 
+        @media (max-width: pad-begins) {
+          gap: var(--about-section-beat);
+        }
+
         & > h2 {
           about-section-heading();
+          margin-bottom: 0;
         }
 
         & > menu {

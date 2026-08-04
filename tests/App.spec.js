@@ -32,6 +32,7 @@ const {
   mock_menu,
   mock_aspect_ratio_mode,
   mock_slice_alignment,
+  mock_animation_speed,
   mock_footer_visible,
   mock_current_route,
   mock_select_photo,
@@ -67,6 +68,7 @@ const {
     mock_menu: create_ref(true),
     mock_aspect_ratio_mode: create_ref('auto'),
     mock_slice_alignment: create_ref('ymid'),
+    mock_animation_speed: create_ref('normal'),
     mock_footer_visible: create_ref(true),
     mock_current_route: create_ref({ path: '/', fullPath: '/' }),
     mock_select_photo: vi.fn(),
@@ -352,6 +354,12 @@ vi.mock('@/utils/preference', async () => {
   }
 
   const animation_speed_ref = ref('normal')
+  Object.defineProperty(mock_animation_speed, 'value', {
+    get: () => animation_speed_ref.value,
+    set: v => {
+      animation_speed_ref.value = v
+    }
+  })
   const cycle_animation_speed = () => {
     animation_speed_ref.value = 'fast'
   }
@@ -760,6 +768,37 @@ describe('App.vue', () => {
         mock_aspect_ratio_mode.value = '2.76/1'
         handler()
         expect(mock_aspect_ratio_mode.value).toBe('auto')
+      })
+    })
+
+    describe('Cycle_Animation_Speed', () => {
+      it('advances to the next canonical speed', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        expect(handler).toBeDefined()
+        mock_animation_speed.value = 'crawl'
+        handler()
+        expect(mock_animation_speed.value).toBe('amble')
+      })
+
+      it('wraps from the fastest speed back to the slowest', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = 'sprint'
+        handler()
+        expect(mock_animation_speed.value).toBe('freeze')
+      })
+
+      it('resolves a legacy name before advancing', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = 'slow'
+        handler()
+        expect(mock_animation_speed.value).toBe('amble')
+      })
+
+      it('starts from the default when the speed is unset', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = ''
+        handler()
+        expect(mock_animation_speed.value).toBe('stride')
       })
     })
 

@@ -1,4 +1,4 @@
-/* Poster slice + storytelling layout - html[data-aspect-ratio] from App.vue
+/* Poster slice + storytelling layout - html[data-aspect-ratio] from use/global-keymap.js
    Surface tokens follow prefers-color-scheme via color.css. No inline --custom-prop writes. */
 
 html {
