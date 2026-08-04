@@ -146,11 +146,21 @@ do not rebuild between them. Firebase account must own the project
 
    ```bash
    npm version patch -m "chore(release): v%s"
-   # or: minor | major | 2.5.12
+   # or: minor | major
    ```
 
-   Bumps `package.json`, promotes Unreleased → `## YYYY-MM-DD — vX.Y.Z`,
+   Bumps `package.json`, promotes Unreleased → `## vX.Y.Z — YYYY-MM-DD`,
    commits `chore(release): vX.Y.Z`, tags `vX.Y.Z`. Fails if Unreleased is empty.
+   Always pass `-m "chore(release): v%s"` so every tag reads the same.
+
+   Which bump — read the Unreleased bullets, not the commit log:
+
+   - **patch** — fixes, performance, build and deploy work, copy. Nothing new
+     to do in the app.
+   - **minor** — a bullet describes something you can now do that you could
+     not before. One feature is enough.
+   - **major** — a stored file format, a storage rule, or a URL changes in a
+     way an existing install cannot read.
 
 3. **Ship**
 
