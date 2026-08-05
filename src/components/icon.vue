@@ -7,6 +7,7 @@
     ANIMATION_SPEED_MULTIPLIERS
   } from '@/utils/animation-config'
   import SmaltiGlints from '@/components/smalti-glints.vue'
+  import NoAi from '@/components/no-ai.vue'
   const props = defineProps({
     name: {
       type: String,
@@ -118,6 +119,7 @@
         d="M12.75 11.25h-1.5a.35.35 0 0 0-.35.35v.55a.35.35 0 0 0 .35.35h1.5a.35.35 0 0 0 .35-.35v-.55a.35.35 0 0 0-.35-.35Z" />
     </g>
   </svg>
+  <no-ai v-else-if="name === 'no-ai'" />
   <svg
     v-else-if="name === 'realness'"
     ref="realness_svg"

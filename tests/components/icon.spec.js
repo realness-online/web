@@ -33,6 +33,19 @@ describe('@/components/icon', () => {
       expect(wrapper.findAll('svg > use[data-tile]')).toHaveLength(6)
       expect(wrapper.findAll('path[data-glint]').length).toBeGreaterThan(20)
     })
+
+    // the no-ai mark is drawn inline so a press and hold can pull its own
+    // ring, sparkles, and slash apart - see @/components/no-ai
+    it('The no-ai mark, inline and holdable', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'no-ai' },
+        global: { stubs: { NoAi: false } }
+      })
+      expect(wrapper.find("svg[data-icon='no-ai']").exists()).toBe(true)
+      expect(wrapper.find('use').exists()).toBe(false)
+      expect(wrapper.findAll('path[data-sparkle]')).toHaveLength(3)
+      expect(wrapper.findAll('rect[data-slash]')).toHaveLength(2)
+    })
   })
 
   describe('Rewinding after a click', () => {
