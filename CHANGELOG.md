@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.7.1 — 2026-08-05
+
 - **The footer island sat too close to the bottom edge** — it was pinned one
   base-line off the viewport. It now sits at one and a half.
 
