@@ -76,18 +76,18 @@
     "server:sync": "node scripts/sync.js"
   },
   "dependencies": {
-    "@vueuse/core": "14.2.1",
+    "@vueuse/core": "14.4.0",
     "ag-psd": "31.0.2",
     "country-code-emoji": "2.3.0",
     "firebase": "12.12.0",
     "idb-keyval": "6.2.2",
     "libphonenumber-js": "1.12.41",
-    "marked": "18.0.7",
+    "marked": "18.0.9",
     "marked-gfm-heading-id": "4.1.4",
     "mediabunny": "1.40.1",
-    "three": "0.184.0",
+    "three": "0.185.1",
     "tweakpane": "4.0.5",
-    "vue": "3.5.32",
+    "vue": "3.5.41",
     "vue-router": "5.0.4"
   },
   "devDependencies": {
@@ -98,21 +98,21 @@
     "@vitest/coverage-v8": "4.1.10",
     "@vitest/eslint-plugin": "1.6.15",
     "@vitest/ui": "4.1.10",
-    "@vue/test-utils": "2.4.6",
+    "@vue/test-utils": "2.4.11",
     "canvas": "3.2.3",
     "eslint-plugin-compat": "7.0.1",
     "fake-indexeddb": "6.2.5",
     "fallow": "3.10.0",
-    "happy-dom": "20.10.6",
+    "happy-dom": "20.11.1",
     "jsdoc": "4.0.5",
     "pako": "3.0.1",
     "stylus": "0.64.0",
     "svgo": "4.0.2",
     "typescript": "7.0.2",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.7",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.8",
     "vite-plugin-pwa": "1.2.0",
     "vite-plugin-wasm": "3.6.0",
-    "vite-plus": "0.2.7"
+    "vite-plus": "0.2.8"
   },
   "browserslist": [
     ">0.5%",
@@ -125,7 +125,7 @@
   "license": "GPL-2.0",
   "packageManager": "npm@11.13.0",
   "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.7",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.8",
     "@vitest/coverage-v8": "4.1.10",
     "@vitest/ui": "4.1.10"
   }
