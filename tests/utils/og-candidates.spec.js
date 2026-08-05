@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from 'vite-plus/test'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import {
   OG_WIDTH,
   OG_HEIGHT,
   candidate_filename,
   draw_og_card,
+  ensure_og_fonts,
+  resolve_css_color,
   landscape_posters
 } from '@/utils/og-candidates'
 
@@ -46,6 +48,46 @@ const copy = {
 }
 
 describe('@/utils/og-candidates', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('resolves a chained css custom property via the probe element', () => {
+    const probe_color = 'rgb(1, 2, 3)'
+    const original_computed = globalThis.getComputedStyle
+    globalThis.getComputedStyle = el => ({ color: probe_color })
+    try {
+      expect(resolve_css_color('--accent')).toBe(probe_color)
+    } finally {
+      globalThis.getComputedStyle = original_computed
+    }
+  })
+
+  it('skips font loading when the document exposes no font faces', async () => {
+    // happy-dom: document.fonts is undefined, so the guard returns early
+    await expect(ensure_og_fonts()).resolves.toBeUndefined()
+  })
+
+  it('loads the headline and subhead webfaces when fonts are available', async () => {
+    const loads = []
+    const fonts = {
+      load: vi.fn(font => {
+        loads.push(font)
+        return Promise.resolve()
+      }),
+      ready: Promise.resolve()
+    }
+    Object.defineProperty(document, 'fonts', {
+      configurable: true,
+      value: fonts
+    })
+    await expect(ensure_og_fonts()).resolves.toBeUndefined()
+    expect(loads).toHaveLength(2)
+    expect(loads[0]).toContain('bold 60px Lato')
+    expect(loads[1]).toContain('34px Lato')
+    delete document.fonts
+  })
+
   it('frames candidates at the open graph aspect ratio', () => {
     expect(OG_WIDTH).toBe(1200)
     expect(OG_HEIGHT).toBe(630)
