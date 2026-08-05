@@ -14,7 +14,7 @@ const GEOLOGY_DATE = 1767138344991
  * @param {Poster} pattern
  * @returns {Poster}
  */
-export const apply_poster_shadow_paths = (vector, pattern) => {
+const apply_poster_shadow_paths = (vector, pattern) => {
   if (pattern.light) vector.light = pattern.light
   if (pattern.regular) vector.regular = pattern.regular
   if (pattern.medium) vector.medium = pattern.medium

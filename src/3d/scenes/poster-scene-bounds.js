@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-export const VIEW_BOUNDS_MARGIN = 0.02
+const VIEW_BOUNDS_MARGIN = 0.02
 
 const QUAD_CORNER_COUNT = 4
 const BINARY_SEARCH_STEPS = 12
@@ -97,7 +97,7 @@ export const get_poster_ndc_bounds = ({
  * @param {{ min_x: number, max_x: number, min_y: number, max_y: number, corners: { x: number, y: number }[] } | null} bounds
  * @param {number} [margin]
  */
-export const ndc_bounds_in_view = (bounds, margin = VIEW_BOUNDS_MARGIN) => {
+const ndc_bounds_in_view = (bounds, margin = VIEW_BOUNDS_MARGIN) => {
   if (!bounds) return true
   const limit = 1 - margin
   return (
@@ -262,7 +262,7 @@ export const clamp_tilt_target_to_bounds = ({
  * @param {number} view.zoom_z
  * @param {{ x: number, y: number }} view.tilt
  */
-export const clamp_tilt_values_to_bounds = ({
+const clamp_tilt_values_to_bounds = ({
   camera,
   plane_w,
   plane_h,

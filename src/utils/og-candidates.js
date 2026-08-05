@@ -9,8 +9,6 @@ import { as_created_at } from '@/utils/itemid'
 export const OG_WIDTH = 1200
 export const OG_HEIGHT = 630
 
-export const OG_STYLES = ['bleed', 'card']
-
 const MARGIN = 55
 const SCRIM_START = 0.34
 const SCRIM_ALPHA = 0.85

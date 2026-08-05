@@ -412,7 +412,7 @@ const HEX_SHORT_LENGTH = 3
  * @param {string} hex
  * @returns {number[]} [r, g, b]
  */
-export const hex_to_rgb = hex => {
+const hex_to_rgb = hex => {
   const clean = hex.replace('#', '')
   const full =
     clean.length === HEX_SHORT_LENGTH
@@ -434,7 +434,7 @@ export const hex_to_rgb = hex => {
  * @param {string} hex
  * @returns {number}
  */
-export const relative_luminance = hex => {
+const relative_luminance = hex => {
   const [r, g, b] = hex_to_rgb(hex).map(val => {
     const normalized = val / RGB_MAX
     return normalized <= SRGB_THRESHOLD

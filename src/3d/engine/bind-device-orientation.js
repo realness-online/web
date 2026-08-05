@@ -64,14 +64,6 @@ const publish_gyro_debug = patch => {
 /** @returns {GyroDebugSnapshot} */
 export const get_gyro_debug_snapshot = () => ({ ...gyro_debug })
 
-/** @param {(snapshot: GyroDebugSnapshot) => void} listener */
-export const subscribe_gyro_debug = listener => {
-  publish_gyro_debug({})
-  gyro_debug_listeners.add(listener)
-  listener(gyro_debug)
-  return () => gyro_debug_listeners.delete(listener)
-}
-
 const has_permission_api = () => {
   if (typeof window === 'undefined') return false
   if (typeof window.DeviceOrientationEvent === 'undefined') return false

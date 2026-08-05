@@ -48,16 +48,7 @@
  * @property {SVGSymbolElement} [boulders]
  */
 
-/** @type {readonly ['sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
-export const LAYER_NAMES = /** @type {const} */ ([
-  'sediment',
-  'sand',
-  'gravel',
-  'rocks',
-  'boulders'
-])
-
-/** @typedef {typeof LAYER_NAMES[number]} Layer_Name */
+/** @typedef {'sediment' | 'sand' | 'gravel' | 'rocks' | 'boulders'} Layer_Name */
 
 /**
  * @typedef {Object} Poster_Gradients

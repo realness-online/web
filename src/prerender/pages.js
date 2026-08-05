@@ -2,11 +2,6 @@ export const site_origin = 'https://realness.online'
 export const site_name = 'Realness Online'
 export const default_og_image = `${site_origin}/og.jpg`
 
-export const home_title =
-  'Realness Online — Rotoscope Photos into Layered SVG Posters'
-export const home_description =
-  'Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities.'
-
 export const og_image_headline = 'Realness Online'
 export const og_image_subhead = 'Rotoscope photos into layered SVG posters'
 export const og_image_cta = 'Make some posters today'

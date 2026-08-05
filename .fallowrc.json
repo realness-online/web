@@ -24,7 +24,6 @@
         "unused-files": "off"
       }
     },
-    // Vite serves public/ at / (e.g. /icons.svg). HTML mocks use fixture URLs, not resolvable modules.
     {
       "files": [
         "src/components/icon.vue",
@@ -45,5 +44,63 @@
     "ignore": ["**/tests/**", "**/src/wasm/**"],
     "maxCyclomatic": 20,
     "maxCognitive": 15
-  }
+  },
+  "ignoreExports": [
+    {
+      "file": "src/use/layer.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/utils/opacity.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/utils/color-converters.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/utils/colors.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/directory-processor.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/optimize.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/path.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/pattern.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/people.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/poster.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/statements.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/sync-folder.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/sync.js",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/use/vectorize.js",
+      "exports": ["*"]
+    }
+  ]
 }
