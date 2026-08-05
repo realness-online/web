@@ -62,6 +62,16 @@ describe('@/components/as-days', () => {
     it('renders day articles when not working', () => {
       expect(wrapper.find('section[data-days]').exists()).toBe(true)
     })
+
+    // role="feed" only allows article children, and the pagination sentinel is
+    // not one. A valueless `aria-hidden` compiles to the empty string, which is
+    // not a valid value — the div stays in the accessibility tree and the feed
+    // fails aria-required-children. It has to say true out loud.
+    it('hides the pagination sentinel from the accessibility tree', () => {
+      const sentinel = wrapper.find('[data-feed-end]')
+      expect(sentinel.exists()).toBe(true)
+      expect(sentinel.attributes('aria-hidden')).toBe('true')
+    })
   })
 
   describe('Props', () => {

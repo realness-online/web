@@ -356,7 +356,11 @@
         </header>
         <slot :day="day" :date="date" />
       </article>
-      <div v-if="paginate" :ref="set_feed_end_ref" data-feed-end aria-hidden />
+      <div
+        v-if="paginate"
+        :ref="set_feed_end_ref"
+        data-feed-end
+        aria-hidden="true" />
     </template>
   </section>
 </template>
