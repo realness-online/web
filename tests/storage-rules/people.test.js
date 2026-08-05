@@ -199,6 +199,16 @@ describe('listing', () => {
     await assertFails(listAll(ref(anonymous, `people/${OWNER}`)))
   })
 
+  // A person's root is the one path where `{folder}` never binds, so the rule
+  // guarding relations.html.gz throws, and that throw is what denies the
+  // anonymous listing above. The phonebook grant is a separate match and still
+  // allows anybody signed in: revoke it and this listing denies with that same
+  // null-value error. Names only; a list never returns bytes.
+  it('lets a signed-in person list a person', async () => {
+    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}`)))
+    await assertSucceeds(listAll(ref(owner, `people/${OWNER}`)))
+  })
+
   it('refuses everyone a listing of the bucket root', async () => {
     await assertFails(listAll(ref(anonymous, '')))
     await assertFails(listAll(ref(owner, '')))
