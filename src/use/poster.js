@@ -214,6 +214,9 @@ export const use = () => {
   }
 }
 
+/** How many of the oldest loaded posters can pull the next archive. */
+const PAGE_AHEAD_COUNT = 5
+
 export const use_posters = () => {
   const posters = ref(/** @type {Item[]} */ ([]))
   const authors = ref(/** @type {Relation[]} */ ([]))
@@ -252,27 +255,31 @@ export const use_posters = () => {
   }
 
   /**
-   * @param {Poster} poster
+   * Paging hangs on posters coming into view, so one trigger is too few — a
+   * fast scroll skips a single element outright, and the feed goes on for
+   * screens of statements past the oldest poster, so there is no second chance
+   * on the way down. Any of the oldest few pulls the next page.
+   * @param {Id} itemid
+   * @returns {boolean}
    */
-  const poster_shown = async poster => {
-    const author_id = as_author(poster.id)
-    if (!author_id) return
+  const is_near_oldest = itemid => {
+    const author_id = as_author(itemid)
+    if (!author_id) return false
+    const created = as_created_at(itemid)
+    return posters.value
+      .filter(p => author_id === as_author(p.id))
+      .slice(-PAGE_AHEAD_COUNT)
+      .some(p => as_created_at(p.id) === created)
+  }
 
-    const author_posters = posters.value.filter(
-      p => author_id === as_author(p.id)
-    )
-    const oldest = author_posters[author_posters.length - 1]
-    if (!oldest) return
-
-    const is_oldest_poster =
-      as_created_at(poster.id) === as_created_at(oldest.id)
-    if (!is_oldest_poster) return
+  /**
+   * @param {Id} author_id
+   */
+  const load_next_archive = async author_id => {
     const author = authors.value.find(relation => relation.id === author_id)
     if (!author) return
-
-    console.info(
-      `[posters] oldest poster shown for ${author_id}: ${poster.id}`,
-      { viewed: [...author.viewed], total_loaded: author_posters.length }
+    const author_posters = posters.value.filter(
+      p => author_id === as_author(p.id)
     )
 
     if (loading_archives.has(author_id)) {
@@ -320,10 +327,30 @@ export const use_posters = () => {
     }
   }
 
+  /**
+   * @param {Poster} poster
+   */
+  const poster_shown = async poster => {
+    if (!is_near_oldest(poster.id)) return
+    await load_next_archive(/** @type {Id} */ (as_author(poster.id)))
+  }
+
+  /**
+   * A poster that will never draw can still be the one holding the next page —
+   * it just never comes into view to ask for it. Drop it and page on its behalf.
+   * @param {Id} itemid
+   */
+  const poster_missing = async itemid => {
+    const paging = is_near_oldest(itemid)
+    posters.value = posters.value.filter(item => item.id !== itemid)
+    if (paging) await load_next_archive(/** @type {Id} */ (as_author(itemid)))
+  }
+
   return {
     for_person,
     posters,
-    poster_shown
+    poster_shown,
+    poster_missing
   }
 }
 
@@ -450,15 +477,22 @@ export const is_vector = vector => {
 }
 
 /**
- * Posters made before 2020-11-24 never had a `regular` layer — `background` and
- * `bold` are all they ever drew with. Waiting on `regular` leaves those forty
- * posters loading forever and, under folder sync, timing out one by one. Any
- * layer with something to draw means the poster is ready to show.
+ * The tracer gained layers over the years — `regular` on 2020-11-24, `medium`
+ * on 2024-03-18 — so no single layer is common to every poster. Insisting on
+ * one leaves the older work loading forever, and in `as-symbol-shadow` it drops
+ * the shadow symbol entirely, which blanks the poster on screen and in the
+ * folder export. Any layer with something to draw is enough.
  * @param {Poster} vector
  * @returns {boolean}
  */
 export const has_drawable_layer = vector =>
-  Boolean(vector?.regular || vector?.bold || vector?.background)
+  Boolean(
+    vector?.light ||
+    vector?.regular ||
+    vector?.medium ||
+    vector?.bold ||
+    vector?.background
+  )
 
 export const is_rect = rect => {
   if (rect === null || rect === undefined) return true

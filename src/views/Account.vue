@@ -6,7 +6,8 @@
   import {
     sync_folder_supported,
     use as use_sync_folder,
-    detect_brave
+    detect_brave,
+    HISTORY_PAUSE_DETAIL
   } from '@/use/sync-folder'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { use_me } from '@/use/people'
@@ -38,7 +39,8 @@
   const sync_status_label = computed(() => {
     if (folder_sync_status.value === 'syncing') {
       const { current, total, label, detail } = folder_sync_progress.value
-      if (detail?.includes('older thoughts soon')) return detail
+      // The between-batch pause stands alone — no count wrapped around it
+      if (detail === HISTORY_PAUSE_DETAIL) return detail
       if (total > 0 && label)
         return `${current} of ${total}: ${label}${detail ? ` — ${detail}` : ''}`
       if (total > 0)

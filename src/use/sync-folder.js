@@ -31,6 +31,7 @@ import {
   as_query_id,
   as_created_at,
   list,
+  list_history_page,
   as_author,
   load,
   load_from_network,
@@ -38,7 +39,7 @@ import {
 } from '@/utils/itemid'
 import { thoughts_for_author } from '@/utils/thoughts'
 import {
-  thought_folder_name,
+  thought_folder_path,
   poster_file_name
 } from '@/utils/folder-sync-paths'
 import { sync_folder as sync_folder_pref, sync_svg } from '@/utils/preference'
@@ -71,15 +72,17 @@ const HISTORY_BATCH_SIZE = 20
 const PARALLEL_EXPORTS = 3
 /** Pause before chaining the next older batch. */
 const HISTORY_BATCH_PAUSE_MS = 2000
+/** Shown during that pause. The wait speaks for itself. */
+export const HISTORY_PAUSE_DETAIL = '…'
 
 /** @type {ReturnType<typeof ref<'idle' | 'syncing' | 'needs_permission' | 'error'>>} */
-export const folder_sync_status = ref('idle')
+const folder_sync_status = ref('idle')
 /** @type {ReturnType<typeof ref<string>>} */
-export const folder_sync_name = ref('')
+const folder_sync_name = ref('')
 /** @type {ReturnType<typeof ref<string | null>>} */
-export const folder_sync_last_at = ref(null)
+const folder_sync_last_at = ref(null)
 /** @type {ReturnType<typeof ref<string | null>>} */
-export const folder_sync_error = ref(null)
+const folder_sync_error = ref(null)
 /**
  * Live progress while syncing.
  * @type {ReturnType<typeof ref<{
@@ -89,7 +92,7 @@ export const folder_sync_error = ref(null)
  *   detail: string
  * }>>}
  */
-export const folder_sync_progress = ref({
+const folder_sync_progress = ref({
   current: 0,
   total: 0,
   label: '',
@@ -158,7 +161,7 @@ const assert_run_active = run => {
  * Stop an in-flight sync and drop pending drains. Incomplete folders from the
  * aborted run are cleaned in `run_folder_sync`'s cancel path.
  */
-export const cancel_folder_sync = () => {
+const cancel_folder_sync = () => {
   if (drain_timer) {
     clearTimeout(drain_timer)
     drain_timer = null
@@ -176,6 +179,35 @@ const failed_thoughts = new Set()
 export const clear_failed_thoughts = () => failed_thoughts.clear()
 
 /**
+ * Thought folders nest under a year, so every path here is `a/b`, not a name.
+ * @param {FileSystemDirectoryHandle} root
+ * @param {string} path
+ * @param {{ create?: boolean }} [options]
+ * @returns {Promise<FileSystemDirectoryHandle>}
+ */
+const directory_at = async (root, path, { create = false } = {}) => {
+  let dir = root
+  /* oxlint-disable no-await-in-loop -- one handle per segment, in order */
+  for (const segment of path.split('/'))
+    dir = await dir.getDirectoryHandle(segment, { create })
+  /* oxlint-enable no-await-in-loop */
+  return dir
+}
+
+/**
+ * @param {FileSystemDirectoryHandle} root
+ * @param {string} path
+ */
+const remove_path = async (root, path) => {
+  const segments = path.split('/')
+  const name = /** @type {string} */ (segments.pop())
+  const parent = segments.length
+    ? await directory_at(root, segments.join('/'))
+    : root
+  await parent.removeEntry(name, { recursive: true })
+}
+
+/**
  * @param {FileSystemDirectoryHandle} root
  * @param {Folder_Sync_Run} run
  */
@@ -183,7 +215,7 @@ const clean_aborted_run = async (root, run) => {
   const paths = new Set([...run.created_paths, ...run.writing_paths])
   for (const path of paths)
     try {
-      await root.removeEntry(path, { recursive: true })
+      await remove_path(root, path)
     } catch {
       /* ignore */
     }
@@ -270,7 +302,7 @@ const write_file = async (dir_handle, filename, blob) => {
  * @param {unknown} handle
  * @returns {Promise<boolean>}
  */
-export const ensure_folder_permission = async handle => {
+const ensure_folder_permission = async handle => {
   if (!handle || typeof handle !== 'object') return false
   const opts = { mode: 'readwrite' }
   const dir = /** @type {FileSystemDirectoryHandle & {
@@ -291,7 +323,7 @@ export const ensure_folder_permission = async handle => {
 /**
  * @returns {Promise<FileSystemDirectoryHandle | null>}
  */
-export const get_sync_folder_handle = async () => {
+const get_sync_folder_handle = async () => {
   const handle = await get(SYNC_FOLDER_HANDLE_KEY)
   return handle ?? null
 }
@@ -418,11 +450,42 @@ const gather_poster_items = async me => {
 }
 
 /**
+ * Every archived page of statements. Statements page off into whole sections
+ * saved under a timestamped filename, the way posters page off into archive
+ * directories — and the index holds only the newest stretch. The feed opens
+ * these a page at a time as you scroll; the folder is a copy of the whole
+ * library, so it takes them all at once.
+ * @param {Id} me
+ * @returns {Promise<Item[]>}
+ */
+const gather_statement_history = async me => {
+  const statements_id = /** @type {Id} */ (`${me}/statements`)
+  const directory = await as_directory(statements_id)
+  // `index` parses to nothing — it is the page we already have
+  const pages = (directory?.items ?? []).filter(page =>
+    Number.isFinite(Number(page))
+  )
+  const loaded = await Promise.all(
+    pages.map(async page => {
+      try {
+        return await list_history_page(
+          /** @type {Id} */ (`${statements_id}/${page}`)
+        )
+      } catch (error) {
+        console.warn('[sync-folder] statement page failed', page, error)
+        return []
+      }
+    })
+  )
+  return loaded.flat()
+}
+
+/**
  * Load statements the same way the feed does (page + legacy thoughts + stray keys).
  * @param {Id} me
  * @returns {Promise<Item[]>}
  */
-const gather_statements = async me => {
+const gather_current_statements = async me => {
   const statements_id = /** @type {Id} */ (`${me}/statements`)
   let statements = await list(statements_id)
 
@@ -468,6 +531,19 @@ const gather_statements = async me => {
 
 /**
  * @param {Id} me
+ * @returns {Promise<Item[]>}
+ */
+const gather_statements = async me => {
+  const [current, history] = await Promise.all([
+    gather_current_statements(me),
+    gather_statement_history(me)
+  ])
+  const seen = new Set(current.map(item => item.id))
+  return [...current, ...history.filter(item => !seen.has(item.id))]
+}
+
+/**
+ * @param {Id} me
  * @returns {Promise<Thought[]>}
  */
 const gather_thoughts = async me => {
@@ -488,6 +564,9 @@ const select_history_batch = (thoughts, manifest_thoughts) => {
   const needs_write = thought => {
     const prior = manifest_thoughts[String(thought.started_at)]
     if (!prior) return true
+    // Where it belongs counts as much as what is in it — a rename or a change
+    // to the folder scheme has to reach thoughts whose content never moved.
+    if (prior.path !== thought_folder_path(thought)) return true
     return prior.key !== thought_content_key(thought)
   }
 
@@ -503,19 +582,21 @@ const select_history_batch = (thoughts, manifest_thoughts) => {
     seen.add(thought.started_at)
   }
 
-  // Walk older unsynced, newest first, until the batch is full
+  // Walk older thoughts that still owe the folder something, newest first,
+  // until the batch is full. Asking `needs_write` rather than "is it in the
+  // manifest" is what lets a changed folder scheme reach back through history.
   for (const thought of sorted) {
     if (batch.length >= HISTORY_BATCH_SIZE) break
     if (seen.has(thought.started_at)) continue
     if (failed_thoughts.has(String(thought.started_at))) continue
-    if (manifest_thoughts[String(thought.started_at)]) continue
+    if (!needs_write(thought)) continue
     batch.push(thought)
     seen.add(thought.started_at)
   }
 
   const remaining_unsynced = sorted.filter(
     thought =>
-      !manifest_thoughts[String(thought.started_at)] &&
+      needs_write(thought) &&
       !seen.has(thought.started_at) &&
       !failed_thoughts.has(String(thought.started_at))
   ).length
@@ -535,7 +616,7 @@ const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
     current: 0,
     total: remaining_unsynced,
     label: '',
-    detail: `Next ${Math.min(HISTORY_BATCH_SIZE, remaining_unsynced)} older thoughts soon…`
+    detail: HISTORY_PAUSE_DETAIL
   })
   drain_timer = setTimeout(() => {
     drain_timer = null
@@ -562,7 +643,7 @@ const sync_one_thought = async (session, thought, container, progress) => {
   const { root, manifest_thoughts, run, prior_paths } = session
   assert_run_active(run)
   const key = thought_content_key(thought)
-  const path = thought_folder_name(thought)
+  const path = thought_folder_path(thought)
   const started_key = String(thought.started_at)
   const prior = manifest_thoughts[started_key]
 
@@ -580,7 +661,7 @@ const sync_one_thought = async (session, thought, container, progress) => {
 
   if (prior?.path && prior.path !== path)
     try {
-      await root.removeEntry(prior.path, { recursive: true })
+      await remove_path(root, prior.path)
     } catch {
       /* prior folder may already be gone */
     }
@@ -589,7 +670,7 @@ const sync_one_thought = async (session, thought, container, progress) => {
   if (!posters.length && !thought.statements.length) {
     if (prior?.path)
       try {
-        await root.removeEntry(prior.path, { recursive: true })
+        await remove_path(root, prior.path)
       } catch {
         /* ignore */
       }
@@ -600,7 +681,7 @@ const sync_one_thought = async (session, thought, container, progress) => {
   run.writing_paths.add(path)
   if (!prior_paths.has(path)) run.created_paths.add(path)
 
-  const thought_dir = await root.getDirectoryHandle(path, { create: true })
+  const thought_dir = await directory_at(root, path, { create: true })
   assert_run_active(run)
 
   if (thought.statements.length) {
@@ -692,7 +773,7 @@ const sync_one_thought = async (session, thought, container, progress) => {
  */
 const entry_on_disk = async (root, entry, thought) => {
   try {
-    const dir = await root.getDirectoryHandle(entry.path)
+    const dir = await directory_at(root, entry.path)
     if (!thought) return true
     const posters = sync_svg.value ? thought.posters : []
     /* oxlint-disable no-await-in-loop -- sequential handle probes */
@@ -737,7 +818,7 @@ const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
     const path = manifest_thoughts[started_key]?.path
     if (path)
       try {
-        await root.removeEntry(path, { recursive: true })
+        await remove_path(root, path)
       } catch {
         /* ignore */
       }
@@ -751,7 +832,7 @@ const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
  * @param {{ set_working?: (v: boolean) => void }} [opts]
  * @returns {Promise<boolean>}
  */
-export const run_folder_sync = async (opts = {}) => {
+const run_folder_sync = async (opts = {}) => {
   if (!sync_folder_pref.value) {
     console.warn('[sync-folder] abort: sync_folder preference is off')
     return false
@@ -986,14 +1067,14 @@ export const drain_folder_queue = async (opts = {}) => {
  * Wait for any in-flight drain to settle (including after cancel).
  * @returns {Promise<void>}
  */
-export const await_folder_sync_idle = async () => {
+const await_folder_sync_idle = async () => {
   if (drain_inflight) await drain_inflight
 }
 
 /**
  * @returns {Promise<FileSystemDirectoryHandle | null>}
  */
-export const choose_sync_folder = async () => {
+const choose_sync_folder = async () => {
   const dir = await /** @type {any} */ (window).showDirectoryPicker({
     mode: 'readwrite',
     startIn: 'documents',

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, mount } from '@vue/test-utils'
 import { nextTick, reactive } from 'vue'
 import Profile from '@/views/Profile.vue'
 
@@ -17,7 +17,9 @@ const {
   mock_posters,
   mock_load_person,
   mock_statements_for_person,
-  mock_posters_for_person
+  mock_posters_for_person,
+  mock_poster_shown,
+  mock_statement_shown
 } = vi.hoisted(() => {
   const create_ref = value => ({ value, __v_isRef: true })
   return {
@@ -31,7 +33,9 @@ const {
     ]),
     mock_load_person: vi.fn().mockResolvedValue(undefined),
     mock_statements_for_person: vi.fn().mockResolvedValue(undefined),
-    mock_posters_for_person: vi.fn().mockResolvedValue(undefined)
+    mock_posters_for_person: vi.fn().mockResolvedValue(undefined),
+    mock_poster_shown: vi.fn(),
+    mock_statement_shown: vi.fn()
   }
 })
 
@@ -61,10 +65,11 @@ vi.mock('@/use/people', () => ({
 }))
 
 // Mock statements composable
-vi.mock('@/use/statements', () => ({
+vi.mock('@/use/statements', async import_original => ({
+  ...(await import_original()),
   use: () => ({
     statements: mock_statements,
-    statement_shown: vi.fn(),
+    statement_shown: mock_statement_shown,
     for_person: mock_statements_for_person
   })
 }))
@@ -74,7 +79,8 @@ vi.mock('@/use/poster', () => ({
   use_posters: () => ({
     posters: mock_posters,
     for_person: mock_posters_for_person,
-    poster_shown: vi.fn()
+    poster_shown: mock_poster_shown,
+    poster_missing: vi.fn()
   }),
   geology_layers: [],
   is_vector_id: vi.fn().mockReturnValue(true),
@@ -161,5 +167,43 @@ describe('Profile', () => {
     expect(mock_statements_for_person).toHaveBeenCalledWith({
       id: '/+12157765485'
     })
+  })
+
+  // `@show="handler(day, item)"` compiles to an inline statement, so whatever
+  // it returns is discarded and the poster never reaches the composable. The
+  // feed then stops at the first page of posters with nothing to show for it.
+  it('hands the shown poster to the composable', async () => {
+    const poster = { id: '/+15550000000/posters/1', type: 'posters' }
+    const feed = mount(Profile, {
+      global: {
+        stubs: {
+          'logo-as-link': true,
+          'thought-as-article': true,
+          icon: true,
+          'as-days': {
+            setup: () => ({ day: [poster] }),
+            template: '<section><slot :day="day" date="2026-08-04" /></section>'
+          },
+          // Both figures import as `as-figure`, so a stub keyed by that name
+          // catches the profile portrait too — the poster is the one with an
+          // itemid.
+          'as-figure': {
+            name: 'as-figure',
+            props: ['itemid'],
+            emits: ['show', 'missing'],
+            template: '<figure />'
+          }
+        }
+      }
+    })
+    await nextTick()
+
+    const figure = feed
+      .findAllComponents({ name: 'as-figure' })
+      .find(each => each.props('itemid') === poster.id)
+    expect(figure).toBeTruthy()
+    figure.vm.$emit('show', poster)
+
+    expect(mock_poster_shown).toHaveBeenCalledWith(poster)
   })
 })

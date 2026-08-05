@@ -5,6 +5,7 @@
 import {
   as_created_at,
   list,
+  list_history_page,
   as_author,
   as_type,
   feed_slot_itemid
@@ -16,8 +17,19 @@ import { Statements as statements_storage } from '@/persistence/Storage'
 import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 const links = ['http://', 'https://']
+/** How many of the oldest loaded statements can pull the next page. */
+const PAGE_AHEAD_COUNT = 5
 const my_statements = ref(/** @type {Item[]} */ ([]))
 const statements = ref(/** @type {Item[] | null} */ (null))
+/**
+ * Authors with a history page in flight. A day of the feed can bring several
+ * thoughts into view in the same frame, and each one asks for the next page —
+ * all of them read `viewed` before any of them writes it, so all of them fetch
+ * the same page and append it again. `statements` and `authors` are shared by
+ * every view, so the guard belongs beside them rather than inside `use`.
+ * @type {Set<string>}
+ */
+const loading_pages = new Set()
 const authors = ref(
   /** @type {Array<{id: import('@/types').Id, type: string, viewed: Array<string|number>}>} */
   ([])
@@ -49,46 +61,83 @@ const update_single_statement = async (statement_id, new_content) => {
   return true
 }
 
+/**
+ * A thought is a train of statements, and which end of it arrives first is
+ * not something this needs to know. Matching one exact id against one exact
+ * id meant a thought could show, be the oldest thing loaded, and still not
+ * count — so the history behind it never opened. Anything in the oldest
+ * stretch is close enough to ask for the next page.
+ * @param {import('@/types').Id} author
+ * @param {Statements} thought
+ * @returns {boolean}
+ */
+const is_near_oldest = (author, thought) => {
+  const current = statements.value
+  if (!current) return false
+  const by_recent = current
+    .filter(s => author === as_author(s.id))
+    .sort(recent_item_first)
+  if (!by_recent.length) return false
+  const tail = new Set(by_recent.slice(-PAGE_AHEAD_COUNT).map(s => s.id))
+  return thought.some(stmt => tail.has(stmt.id))
+}
+
+/**
+ * @param {import('@/types').Id} author
+ */
+const load_next_statements_page = async author => {
+  const author_obj = authors.value.find(relation => relation.id === author)
+  if (!author_obj) return
+  if (loading_pages.has(author)) return
+  loading_pages.add(author)
+  try {
+    const dir = await as_directory(
+      /** @type {import('@/types').Id} */ (`${author_obj.id}/statements`)
+    )
+    if (!dir) return
+    const next = [...dir.items]
+      // `index` parses to nothing — a page id that would burn a turn to fetch
+      .filter(page => Number.isFinite(Number(page)))
+      .sort(recent_number_first)
+      .filter(page => !author_obj.viewed.some(v => String(v) === String(page)))
+      .shift()
+    if (!next) return
+    const next_statements = await list_history_page(
+      /** @type {import('@/types').Id} */ (
+        `${author_obj.id}/statements/${next}`
+      )
+    )
+    author_obj.viewed.push(next)
+    const current = statements.value ?? []
+    // A statement that arrives twice is a duplicate key in the feed, and Vue
+    // stops rendering the list at that point — the history keeps loading and
+    // the screen keeps showing the same day.
+    const seen = new Set(current.map(item => item.id))
+    statements.value = [
+      ...current,
+      ...next_statements.filter(item => !seen.has(item.id))
+    ]
+  } finally {
+    loading_pages.delete(author)
+  }
+}
+
+/**
+ * @param {Statements} thought
+ */
+const statement_shown = async thought => {
+  const author = /** @type {import('@/types').Id | null} */ (
+    as_author(thought[thought.length - 1]?.id)
+  )
+  if (!author) return
+  if (!is_near_oldest(author, thought)) return
+  await load_next_statements_page(author)
+}
+
 export const use = () => {
   const sync_element = /** @type {import('vue').Ref<HTMLElement|null>|null} */ (
     inject('sync_element', null)
   )
-
-  /**
-   * @param {Statements} stmt
-   */
-  const statement_shown = async stmt => {
-    const oldest = stmt[stmt.length - 1]
-    const author = as_author(oldest.id)
-    const current = statements.value
-    if (!current) return
-    const author_statements = current.filter(s => author === as_author(s.id))
-    if (!author_statements.length) return
-    const author_oldest = author_statements[author_statements.length - 1]
-    if (oldest.id === author_oldest.id) {
-      const author_obj = authors.value.find(relation => relation.id === author)
-      if (!author_obj) return
-      const dir = await as_directory(
-        /** @type {import('@/types').Id} */ (`${author_obj.id}/statements`)
-      )
-      if (!dir) return
-      let history = dir.items
-      history.sort(recent_number_first)
-      history = history.filter(
-        page => !author_obj.viewed.some(v => String(v) === String(page))
-      )
-      const next = history.shift()
-      if (next) {
-        const next_statements = await list(
-          /** @type {import('@/types').Id} */ (
-            `${author_obj.id}/statements/${next}`
-          )
-        )
-        author_obj.viewed.push(next)
-        statements.value = [...(statements.value ?? []), ...next_statements]
-      }
-    }
-  }
 
   /**
    * @param {PersonQuery} query

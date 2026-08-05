@@ -53,6 +53,11 @@
   const visible_slot_count = ref(0)
   const viewport_slot_batch = ref(DEFAULT_SLOT_BATCH)
   const observer = ref(null)
+  const last_day_sentinel = ref(/** @type {Element | null} */ (null))
+
+  const set_feed_end_ref = el => {
+    last_day_sentinel.value = el
+  }
 
   const sorted_days_entries = computed(() => [...days.value])
 
@@ -161,18 +166,20 @@
     return slots
   })
 
+  // Stays observed for the life of the feed. Unobserving on the way in meant
+  // the only path back was the sentinel ref changing identity, which it does
+  // not do when a batch lands inside the day already at the bottom — the feed
+  // stopped there for good, halfway through a library, with no way back.
   const check_intersection = entries => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        observer.value.unobserve(entry.target)
-        if (!props.paginate) return
-        const max_slots = flattened_day_slots.value.length
-        if (visible_slot_count.value >= max_slots) return
-        visible_slot_count.value = Math.min(
-          max_slots,
-          visible_slot_count.value + viewport_slot_batch.value
-        )
-      }
+      if (!entry.isIntersecting) return
+      if (!props.paginate) return
+      const max_slots = flattened_day_slots.value.length
+      if (visible_slot_count.value >= max_slots) return
+      visible_slot_count.value = Math.min(
+        max_slots,
+        visible_slot_count.value + viewport_slot_batch.value
+      )
     })
   }
 
@@ -295,25 +302,17 @@
 
   watch(feed_source_signature, () => refill_days(), { immediate: true })
 
-  const last_day_sentinel = ref(/** @type {Element | null} */ (null))
-
-  const set_last_day_sentinel_ref = (el, index) => {
-    const n = filtered_days_list.value.length
-    if (index === n - 1) last_day_sentinel.value = el
-  }
-
-  watch(
-    () => filtered_days_list.value.length,
-    len => {
-      if (len === 0) last_day_sentinel.value = null
-    }
-  )
-
   mounted(() => {
     update_viewport_slot_batch()
+    // A bare marker at the end of the feed, not the last day itself. A day of
+    // heavy posting is taller than the window, and a fraction threshold on an
+    // element that cannot fit on screen is a threshold that never trips — the
+    // feed stops dead at the first busy day. An empty div is always fully in
+    // view or fully out, whatever the day above it weighs.
     observer.value = new IntersectionObserver(check_intersection, {
       root: null,
-      threshold: 0.25
+      rootMargin: '256px',
+      threshold: 0
     })
     window.addEventListener('resize', update_viewport_slot_batch)
   })
@@ -326,9 +325,10 @@
 
   watch(
     [last_day_sentinel, observer, () => props.paginate],
-    () => {
-      if (!props.paginate || !observer.value || !last_day_sentinel.value) return
-      observer.value.observe(last_day_sentinel.value)
+    ([el, io, paginate], [was_el]) => {
+      if (was_el && io) io.unobserve(was_el)
+      if (!paginate || !io || !el) return
+      io.observe(el)
     },
     { flush: 'post' }
   )
@@ -350,15 +350,13 @@
       </article>
     </template>
     <template v-else>
-      <article
-        v-for="([date, day], index) in filtered_days_list"
-        :key="date"
-        :ref="el => set_last_day_sentinel_ref(el, index)">
+      <article v-for="[date, day] in filtered_days_list" :key="date">
         <header v-if="!is_today(date)">
           <h4 role="heading" aria-level="2">{{ as_day(date) }}</h4>
         </header>
         <slot :day="day" :date="date" />
       </article>
+      <div v-if="paginate" :ref="set_feed_end_ref" data-feed-end aria-hidden />
     </template>
   </section>
 </template>

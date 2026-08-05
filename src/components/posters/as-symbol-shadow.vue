@@ -2,7 +2,7 @@
   import AsPath from '@/components/posters/as-path'
   import AsBackground from '@/components/posters/as-background'
   import { use as use_pattern } from '@/use/pattern'
-  import { use as use_poster, is_rect } from '@/use/poster'
+  import { use as use_poster, is_rect, has_drawable_layer } from '@/use/poster'
   import { computed } from 'vue'
   import { as_layer_id, as_query_id } from '@/utils/itemid'
 
@@ -56,9 +56,7 @@
     :itemid="as_layer_id(itemid, 'shadows')"
     itemscope
     itemtype="/shadows"
-    v-if="
-      vector && vector.light && vector.regular && vector.medium && vector.bold
-    "
+    v-if="has_drawable_layer(vector)"
     :width="width"
     :height="height"
     :viewBox="viewbox"

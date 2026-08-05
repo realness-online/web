@@ -93,10 +93,18 @@ export function time_of_day(date) {
   return 'night'
 }
 
+/**
+ * @param {Date|number} date
+ * @returns {string} Monday, Tuesday, …
+ */
+export function weekday_name(date) {
+  return new Date(date).toLocaleString('en-US', { weekday: 'long' })
+}
+
 /** Day, time of day, date for filenames; spaces kept */
 export function as_day_time_of_day_for_filename(date) {
   const d = new Date(date)
-  const day = d.toLocaleString('en-US', { weekday: 'long' })
+  const day = weekday_name(d)
   const period = time_of_day(d)
   const date_str = d.toLocaleString('en-US', { month: 'long', day: 'numeric' })
   return `${day} ${period}, ${date_str}`

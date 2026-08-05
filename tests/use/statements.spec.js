@@ -23,9 +23,10 @@ vi.mock('@/utils/itemid', () => ({
     return Number(parts[parts.length - 1])
   }),
   list: vi.fn(() => Promise.resolve([])),
+  list_history_page: vi.fn(() => Promise.resolve([])),
   as_author: vi.fn(id => {
-    const parts = id.split('/')
-    return parts[0]
+    const [author] = String(id).split('/').filter(Boolean)
+    return author ? `/${author}` : null
   }),
   as_type: vi.fn(id => {
     const parts = String(id).split('/').filter(Boolean)
@@ -227,6 +228,76 @@ describe('statements composable', () => {
       ]
 
       await expect(instance.statement_shown(stmt)).resolves.toBeUndefined()
+    })
+
+    /** Ascending timestamps, so index 0 is the oldest and index 9 the newest. */
+    const ten_statements = author =>
+      Array.from({ length: 10 }, (_, index) => ({
+        id: `${author}/statements/${1000 + index * 100}`,
+        statement: `statement ${index}`
+      }))
+
+    it('pages when a thought near the oldest shows, not only the oldest', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+
+      await instance.statement_shown([loaded[3]])
+
+      expect(list_history_page).toHaveBeenCalledWith('/+1234/statements/3000')
+    })
+
+    it('leaves history shut for a thought nowhere near the oldest', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+
+      await instance.statement_shown([loaded[9]])
+
+      expect(list_history_page).not.toHaveBeenCalled()
+    })
+
+    it('fetches one page when several thoughts show at once', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+      list_history_page.mockResolvedValue([
+        { id: '/+1234/statements/500', statement: 'older' }
+      ])
+
+      await Promise.all([
+        instance.statement_shown([loaded[0]]),
+        instance.statement_shown([loaded[1]]),
+        instance.statement_shown([loaded[2]])
+      ])
+
+      expect(list_history_page).toHaveBeenCalledTimes(1)
+      const author = instance.authors.value.find(a => a.id === '/+1234')
+      expect(author.viewed).toEqual(['index', '3000'])
+    })
+
+    it('keeps a statement out of the feed twice', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+      list_history_page.mockResolvedValue([
+        { id: '/+1234/statements/1000', statement: 'already here' },
+        { id: '/+1234/statements/500', statement: 'older' }
+      ])
+
+      await instance.statement_shown([loaded[0]])
+
+      const ids = instance.statements.value.map(item => item.id)
+      expect(new Set(ids).size).toBe(ids.length)
+      expect(ids).toContain('/+1234/statements/500')
     })
   })
 })
