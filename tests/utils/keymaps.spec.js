@@ -6,8 +6,96 @@ import {
   get_preference_hint,
   get_preference_icon,
   get_preference_keys,
+  get_command_description,
+  get_keymap_stats,
+  normalize_key_for_platform,
+  validate_keymap_runtime,
   preference_command
 } from '@/utils/keymaps'
+
+describe('keymaps validate_keymap_runtime', () => {
+  it('reports no errors or warnings for a clean keymap', () => {
+    const result = validate_keymap_runtime([
+      {
+        context: 'Global',
+        bindings: { a: 'pref::Toggle_Animate' }
+      },
+      {
+        context: 'Poster',
+        bindings: { b: 'pref::Stroke' }
+      }
+    ])
+    expect(result.errors).toEqual([])
+    expect(result.warnings).toEqual([])
+    expect(result.is_valid).toBe(true)
+  })
+
+  it('warns when a key is bound in multiple contexts', () => {
+    const result = validate_keymap_runtime([
+      { context: 'Global', bindings: { a: 'x' } },
+      { context: 'Poster', bindings: { a: 'y' } }
+    ])
+    expect(result.warnings.some(w => w.includes('multiple contexts'))).toBe(
+      true
+    )
+  })
+
+  it('collects used commands and ignores null/undefined bindings', () => {
+    const result = validate_keymap_runtime([
+      {
+        context: 'Global',
+        bindings: { a: ['pref::Animate'], b: null, c: 'pref::Stroke' }
+      }
+    ])
+    expect(result.used_commands).toContain('pref::Animate')
+    expect(result.used_commands).toContain('pref::Stroke')
+    expect(result.used_commands).not.toContain(null)
+  })
+
+  it('defaults a missing context to Global', () => {
+    const result = validate_keymap_runtime([{ bindings: { a: 'x' } }])
+    expect(result.errors).toEqual([])
+    expect(result.is_valid).toBe(true)
+  })
+})
+
+describe('keymaps get_keymap_stats', () => {
+  it('counts contexts and unique commands', () => {
+    const stats = get_keymap_stats([
+      { context: 'Global', bindings: { a: 'x', b: 'y' } },
+      { context: 'Poster', bindings: { c: 'x' } }
+    ])
+    expect(stats.total_contexts).toBe(2)
+    expect(stats.total_bindings).toBe(3)
+    expect(stats.contexts).toEqual(['Global', 'Poster'])
+    expect(stats.commands).toEqual(['x', 'y'])
+  })
+
+  it('groups missing context under Global', () => {
+    const stats = get_keymap_stats([{ bindings: { a: 'x' } }])
+    expect(stats.contexts).toEqual(['Global'])
+  })
+})
+
+describe('keymaps get_command_description', () => {
+  it('returns the description when present', () => {
+    expect(get_command_description('pref::Toggle_Mosaic')).toContain('Mosaic')
+  })
+
+  it('falls back to the command itself when not described', () => {
+    expect(get_command_description('no::Such_Command')).toBe('no::Such_Command')
+  })
+})
+
+describe('keymaps normalize_key_for_platform', () => {
+  it('maps cmd to ctrl on macos', () => {
+    Object.defineProperty(navigator, 'platform', {
+      configurable: true,
+      value: 'MacIntel'
+    })
+    expect(normalize_key_for_platform('cmd-s')).toBe('ctrl-s')
+  })
+})
 
 describe('keymaps preference keys', () => {
   it('maps preference names to toggle commands', () => {
