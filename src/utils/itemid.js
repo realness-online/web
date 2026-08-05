@@ -299,6 +299,31 @@ export const list = async (itemid, me = storage_me()) => {
 }
 
 /**
+ * Statements archive into a whole section saved under a timestamped filename,
+ * and that timestamp is one of the statements inside. Asking `load` for the
+ * page id therefore finds that one statement — a page of history reads as a
+ * single sentence, and everything behind it stays shut. The section itself
+ * still carries the plain `/+author/statements` id, so ask it for its list.
+ * @param {Id} itemid - A history page, e.g. `/+1/statements/1738103761047`
+ * @returns {Promise<Item[]>}
+ */
+export const list_history_page = async itemid => {
+  const [author, type] = as_path_parts(itemid)
+  if (!author || !type) return []
+  let html = await get(itemid)
+  if (typeof html !== 'string') {
+    await load_from_network(itemid)
+    html = await get(itemid)
+  }
+  if (typeof html !== 'string') return []
+  const page = await item_from_html(
+    html,
+    /** @type {Id} */ (`/${author}/${type}`)
+  )
+  return page ? type_as_list(page) : []
+}
+
+/**
  * @param {unknown} e
  * @returns {boolean}
  */
@@ -315,7 +340,7 @@ const is_storage_not_found = e =>
  * @param {Id} itemid
  * @returns {string | null} null when the itemid is not a poster or layer
  */
-export const as_top_level_filename = itemid => {
+const as_top_level_filename = itemid => {
   const poster_id =
     as_poster_id(itemid) ?? (as_type(itemid) === 'posters' ? itemid : null)
   if (!poster_id) return null

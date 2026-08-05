@@ -23,6 +23,9 @@ const mock_vector = {
   bold: mock_path_element
 }
 
+// Swapped by tests that need a poster whose vector is missing layers
+let pattern_vector = null
+
 // Mock pattern composable
 vi.mock('@/use/pattern', () => ({
   use: vi.fn(() => ({
@@ -35,7 +38,7 @@ vi.mock('@/use/pattern', () => ({
     viewbox: ref('0 0 800 600'),
     aspect_ratio: ref('xMidYMid meet'),
     tabindex: ref(-1),
-    vector: ref(mock_vector),
+    vector: ref(pattern_vector || mock_vector),
     itemid: ref(mock_vector.id),
     background_visible: ref(true),
     light_visible: ref(true),
@@ -63,21 +66,17 @@ vi.mock('@/utils/itemid', () => ({
   )
 }))
 
-// Mock poster composable
-vi.mock('@/use/poster', () => ({
-  use: vi.fn(() => ({
-    focus: vi.fn()
-  })),
-  is_vector: vi.fn(() => true),
-  is_vector_id: vi.fn(() => true),
-  is_svg_valid: vi.fn(() => true),
-  is_rect: vi.fn(rect => {
-    if (rect === null || rect === undefined) return true
-    if (typeof rect !== 'object') return false
-    if (rect instanceof SVGRectElement) return true
-    return false
-  })
-}))
+// Mock poster composable. `has_drawable_layer` decides whether the symbol
+// renders at all, so it stays the real one — a stub would test itself.
+vi.mock('@/use/poster', async importOriginal => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    use: vi.fn(() => ({
+      focus: vi.fn()
+    }))
+  }
+})
 
 // Mock child components
 vi.mock('@/components/posters/as-background', () => ({
@@ -145,6 +144,41 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
       })
       const symbol = wrapper.find('symbol')
       expect(symbol.exists()).toBe(true)
+    })
+  })
+
+  describe('Posters older than the layers they predate', () => {
+    afterEach(() => {
+      pattern_vector = null
+    })
+
+    // The tracer gained `medium` on 2024-03-18 and `regular` on 2020-11-24.
+    // Requiring all four dropped the symbol for every poster before that, and
+    // the poster draws itself through `<use href="#shadows">` — so it came out
+    // blank on screen and blank in the folder export.
+    it('builds the symbol for a poster with no medium layer', () => {
+      pattern_vector = { ...mock_vector, medium: undefined }
+      const wrapper = shallowMount(as_symbol_shadow)
+      expect(wrapper.find('symbol').exists()).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'AsPath' }).length).toBe(3)
+    })
+
+    it('builds the symbol for a poster with only bold', () => {
+      pattern_vector = {
+        ...mock_vector,
+        light: undefined,
+        regular: undefined,
+        medium: undefined
+      }
+      const wrapper = shallowMount(as_symbol_shadow)
+      expect(wrapper.find('symbol').exists()).toBe(true)
+      expect(wrapper.findAllComponents({ name: 'AsPath' }).length).toBe(1)
+    })
+
+    it('skips the symbol when there is nothing to draw', () => {
+      pattern_vector = { id: mock_vector.id }
+      const wrapper = shallowMount(as_symbol_shadow)
+      expect(wrapper.find('symbol').exists()).toBe(false)
     })
   })
 

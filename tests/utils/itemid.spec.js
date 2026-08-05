@@ -13,6 +13,7 @@ import {
   load_from_network,
   load,
   list,
+  list_history_page,
   feed_slot_itemid
 } from '@/utils/itemid'
 import { as_archive } from '@/persistence/Directory'
@@ -1151,6 +1152,46 @@ describe('@/utils/itemid', () => {
       localStorage.setItem(id, html)
 
       const result = await list(id, id)
+
+      expect(result).toEqual([])
+    })
+  })
+
+  // An archive is a whole statements section saved under a timestamp, and that
+  // timestamp is also one of the statements inside it. Asking `load` for the
+  // page id therefore finds that one statement, so a page of history reads as a
+  // single sentence and everything behind it stays shut.
+  describe('list_history_page', () => {
+    const author = '/+16282281824'
+    const page = /** @type {import('@/types').Id} */ (
+      `${author}/statements/1738103761047`
+    )
+    const archive_html = `<section itemscope itemid="${author}/statements"><div itemscope itemprop="statements" itemid="${author}/statements/1738103761047"><p itemprop="statement">first</p></div><div itemscope itemprop="statements" itemid="${author}/statements/1738103800000"><p itemprop="statement">second</p></div></section>`
+
+    it('reads the whole section a history page holds', async () => {
+      get.mockResolvedValue(archive_html)
+
+      const result = await list_history_page(page)
+
+      expect(result).toHaveLength(2)
+      expect(result.map(item => item.id)).toEqual([
+        `${author}/statements/1738103761047`,
+        `${author}/statements/1738103800000`
+      ])
+    })
+
+    it('returns nothing when the page is nowhere to be found', async () => {
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+
+      const result = await list_history_page(
+        /** @type {import('@/types').Id} */ (`${author}/statements/404`)
+      )
 
       expect(result).toEqual([])
     })

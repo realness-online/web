@@ -5,6 +5,41 @@
 - **The footer island sat too close to the bottom edge** — it was pinned one
   base-line off the viewport. It now sits at one and a half.
 
+- **Statements stopped years short of the beginning** — they archive into whole
+  sections saved under a timestamped filename, and that timestamp is also one of
+  the statements inside. Asking for the page id therefore found that one
+  statement, so a page of history read as a single sentence and everything
+  behind it stayed shut. The section still carries the plain
+  `/+author/statements` id, so realness asks it for its list. Every archive
+  opens, back to the first thing you ever wrote.
+
+- **Posters never paged past the first screenful on a profile** —
+  `@show="handler(day, item)"` compiles to an inline statement, so Vue called
+  the handler, took the function it returned, and threw it away. Nothing was
+  ever told a poster had been seen, and the feed had no reason to load the next
+  archive. Both feeds now reach the oldest poster.
+
+- **A thought that came into view three times fetched the same page of history
+  three times** — a day can bring several thoughts on screen in one frame, and
+  each read the list of pages already seen before any of them had written to it.
+  The duplicate statements then collided as list keys and the feed stopped
+  drawing where they landed. One page loads at a time per person, and a
+  statement that arrives twice is only kept once.
+
+- **A thought that had merged into a poster never said it was seen** — it is
+  drawn as that poster's overlay, so its own article never mounts. The oldest
+  statements ride under the oldest posters, so the history behind them never
+  opened. The poster now speaks for the thought it carries.
+
+- **The synced folder was missing everything before the newest page of
+  statements** — it read the index and stopped, the way the feed used to. It
+  walks every archived page, so `notes.md` holds the whole library.
+
+- **Thought folders repeated the year in every name** — they already sit in a
+  folder named for their year, and the current year is the one you are standing
+  in. `2019/2019-12-08 Sunday morning` is now `2019/12-08 Sunday morning`. Still
+  sorts by date; the part that varies is easier to find.
+
 ## v2.7.0 — 2026-08-03
 
 - **Exported video did not move the way the poster does** — the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there — `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.

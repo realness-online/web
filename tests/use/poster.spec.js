@@ -493,24 +493,99 @@ describe('poster utils', () => {
         expect(as_directory).not.toHaveBeenCalled()
       })
 
-      it('returns when shown poster is not the oldest', async () => {
+      const load_eight = async () => {
         vi.mocked(as_directory).mockResolvedValue({
-          items: ['2000', '1000'],
+          items: [
+            '8000',
+            '7000',
+            '6000',
+            '5000',
+            '4000',
+            '3000',
+            '2000',
+            '1000'
+          ],
           archive: ['900']
         })
         await posters_composable.for_person({ id: '/user' })
         as_directory.mockClear()
+      }
+
+      it('returns when shown poster is nowhere near the oldest', async () => {
+        await load_eight()
 
         await posters_composable.poster_shown({
-          id: '/user/posters/2000',
+          id: '/user/posters/8000',
           type: 'posters'
         })
 
         expect(as_directory).not.toHaveBeenCalled()
       })
 
+      // One trigger is too few: a fast scroll skips a single element, and the
+      // feed runs on for screens of statements past the oldest poster, so
+      // there is no second chance on the way down.
+      it('pages when a poster near the oldest shows, not only the oldest', async () => {
+        await load_eight()
+
+        await posters_composable.poster_shown({
+          id: '/user/posters/5000',
+          type: 'posters'
+        })
+
+        expect(as_directory).toHaveBeenCalled()
+      })
+
       it('is a function', () => {
         expect(posters_composable.poster_shown).toBeTypeOf('function')
+      })
+    })
+
+    describe('poster_missing', () => {
+      const load_eight = async () => {
+        vi.mocked(as_directory).mockResolvedValue({
+          items: [
+            '8000',
+            '7000',
+            '6000',
+            '5000',
+            '4000',
+            '3000',
+            '2000',
+            '1000'
+          ],
+          archive: ['900']
+        })
+        await posters_composable.for_person({ id: '/user' })
+        as_directory.mockClear()
+      }
+
+      it('drops the poster from the feed', async () => {
+        await load_eight()
+
+        await posters_composable.poster_missing('/user/posters/8000')
+
+        expect(
+          posters_composable.posters.value.map(poster => poster.id)
+        ).not.toContain('/user/posters/8000')
+      })
+
+      // A poster that never draws never comes into view to ask for the next
+      // page, so it would hold the feed shut from the bottom of the list.
+      it('pages on behalf of a missing poster near the oldest', async () => {
+        await load_eight()
+
+        await posters_composable.poster_missing('/user/posters/1000')
+
+        expect(as_directory).toHaveBeenCalled()
+      })
+
+      it('leaves paging alone for a missing poster near the top', async () => {
+        await load_eight()
+
+        await posters_composable.poster_missing('/user/posters/8000')
+
+        expect(as_directory).not.toHaveBeenCalled()
       })
     })
   })

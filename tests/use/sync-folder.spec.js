@@ -9,9 +9,10 @@ const {
   mock_build_download_svg,
   mock_export_ready,
   mock_list,
+  mock_list_history_page,
   mock_load,
   mock_thoughts_for_author,
-  mock_folder_name,
+  mock_folder_path,
   mock_sync_svg,
   mock_sync_folder_pref,
   mock_figure_props,
@@ -23,9 +24,10 @@ const {
   mock_build_download_svg: vi.fn(el => el),
   mock_export_ready: vi.fn(() => Promise.resolve()),
   mock_list: vi.fn(() => Promise.resolve([])),
+  mock_list_history_page: vi.fn(() => Promise.resolve([])),
   mock_load: vi.fn(() => Promise.resolve(null)),
   mock_thoughts_for_author: vi.fn(() => []),
-  mock_folder_name: vi.fn(() => '2026-07-18 morning — hello'),
+  mock_folder_path: vi.fn(() => '07-18 Saturday morning — hello'),
   mock_sync_svg: { value: true },
   mock_sync_folder_pref: { value: true },
   mock_figure_props: [],
@@ -53,6 +55,7 @@ vi.mock('@/utils/itemid', () => ({
   }),
   as_author: vi.fn(() => '/+14151234356'),
   list: mock_list,
+  list_history_page: mock_list_history_page,
   load: mock_load,
   load_from_network: vi.fn(() => Promise.resolve(null)),
   type_as_list: vi.fn(() => [])
@@ -63,7 +66,7 @@ vi.mock('@/utils/thoughts', () => ({
 }))
 
 vi.mock('@/utils/folder-sync-paths', () => ({
-  thought_folder_name: mock_folder_name,
+  thought_folder_path: mock_folder_path,
   poster_file_name: vi.fn(() => '2026-07-18 morning 0930.svg')
 }))
 
@@ -161,7 +164,7 @@ describe('@/use/sync-folder', () => {
     keys.mockResolvedValue([])
     mock_list.mockResolvedValue([])
     mock_load.mockResolvedValue({ id: poster_id })
-    mock_folder_name.mockReturnValue('2026-07-18 morning — hello')
+    mock_folder_path.mockReturnValue('07-18 Saturday morning — hello')
 
     write = vi.fn(() => Promise.resolve())
     remove_entry = vi.fn(() => Promise.resolve())
@@ -274,7 +277,7 @@ describe('@/use/sync-folder', () => {
     await flushPromises()
 
     expect(get_directory_handle).toHaveBeenCalledWith(
-      '2026-07-18 morning — hello',
+      '07-18 Saturday morning — hello',
       { create: true }
     )
     expect(get_file_handle).toHaveBeenCalledWith(
@@ -326,6 +329,28 @@ describe('@/use/sync-folder', () => {
       { id: poster_id, type: 'posters' },
       statement
     ])
+  })
+
+  // The index holds only the newest stretch of statements; the rest sit in
+  // timestamped pages beside it. A folder that skips them is a folder missing
+  // years of writing.
+  it('walks archived statement pages, not just the index', async () => {
+    const recent = { id: `${me}/statements/9000`, statement: 'today' }
+    const archived = { id: `${me}/statements/500`, statement: 'years ago' }
+    mock_list.mockResolvedValueOnce([recent])
+    mock_as_directory.mockResolvedValue({ items: [1000, 'index'], archive: [] })
+    mock_list_history_page.mockResolvedValue([recent, archived])
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+
+    expect(mock_list_history_page).toHaveBeenCalledWith(`${me}/statements/1000`)
+    const [gathered] = mock_thoughts_for_author.mock.calls.at(-1)
+    expect(gathered).toContainEqual(archived)
+    expect(gathered.filter(item => item.id === recent.id)).toHaveLength(1)
   })
 
   it('mounts the poster pinned so cutouts load off-screen', async () => {
@@ -381,7 +406,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('skips rewrite when manifest matches and files exist on disk', async () => {
-    const path = '2026-07-18 morning — hello'
+    const path = '07-18 Saturday morning — hello'
     const key = `1000|svg:true|${poster_id}|`
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return folder_handle
@@ -406,8 +431,42 @@ describe('@/use/sync-folder', () => {
     expect(write).not.toHaveBeenCalled()
   })
 
+  // Thoughts already in the manifest used to be skipped outright, so a change
+  // to the folder scheme only ever reached new work — years of history kept
+  // their old paths forever.
+  it('rewrites a thought whose folder moved, content unchanged', async () => {
+    const key = `1000|svg:true|${poster_id}|`
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest')
+        return {
+          thoughts: { 1000: { path: '2026-07-18 morning — hello', key } }
+        }
+      return null
+    })
+    get_file_handle.mockImplementation(() =>
+      Promise.resolve({ createWritable: vi.fn() })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(remove_entry).toHaveBeenCalledWith('2026-07-18 morning — hello', {
+      recursive: true
+    })
+    expect(get_directory_handle).toHaveBeenCalledWith(
+      '07-18 Saturday morning — hello',
+      { create: true }
+    )
+  })
+
   it('resyncs a manifest entry whose folder is missing on disk', async () => {
-    const path = '2026-07-18 morning — hello'
+    const path = '07-18 Saturday morning — hello'
     const key = `1000|svg:true|${poster_id}|`
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return folder_handle
@@ -468,9 +527,12 @@ describe('@/use/sync-folder', () => {
     await pending
     await flushPromises()
 
-    expect(remove_entry).toHaveBeenCalledWith('2026-07-18 morning — hello', {
-      recursive: true
-    })
+    expect(remove_entry).toHaveBeenCalledWith(
+      '07-18 Saturday morning — hello',
+      {
+        recursive: true
+      }
+    )
     expect(folder_sync_status.value).toBe('idle')
   })
 

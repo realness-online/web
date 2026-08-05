@@ -32,7 +32,8 @@
   const {
     posters,
     for_person: posters_for_person,
-    poster_shown
+    poster_shown,
+    poster_missing
   } = use_posters()
   const feed_needs_refresh = inject('feed_needs_refresh', null)
   const {
@@ -55,6 +56,22 @@
     await load_feed_for_people([id], { reset: true })
   }
   watch(person_id, id => load_profile_feed(id), { immediate: true })
+
+  /**
+   * A thought merged into a poster is drawn as that poster's overlay, so its
+   * `as-article` never mounts and never says it was seen. Left alone, the
+   * oldest statements ride under the oldest posters and the statement history
+   * behind them never opens. The poster speaks for the thought it carries.
+   *
+   * Takes the poster as an argument rather than returning a closure: a template
+   * `@show="handler(day, item)"` compiles to an inline statement, so the value
+   * it returns is thrown away and the work never happens.
+   */
+  const on_poster_show = (day, item, poster) => {
+    poster_shown(poster)
+    const overlay = overlay_statements_for_poster(day, item)
+    if (overlay?.length) statement_shown(overlay)
+  }
 
   const should_show_thought = (day, item) =>
     overlay_for_day(day).merged_thought_keys.has(feed_slot_itemid(item)) ===
@@ -83,7 +100,8 @@
           :menu="menu"
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
-          @show="poster_shown" />
+          @show="poster => on_poster_show(day, item, poster)"
+          @missing="poster_missing" />
         <thought-as-article
           v-else-if="should_show_thought(day, item)"
           :statements="item"

@@ -138,6 +138,22 @@
     if (delete_dialog.value) delete_dialog.value.showModal()
   }
 
+  /**
+   * A thought merged into a poster is drawn as that poster's overlay, so its
+   * `as-article` never mounts and never says it was seen. Left alone, the
+   * oldest statements ride under the oldest posters and the statement history
+   * behind them never opens. The poster speaks for the thought it carries.
+   *
+   * Takes the poster as an argument rather than returning a closure: a template
+   * `@show="handler(day, item)"` compiles to an inline statement, so the value
+   * it returns is thrown away and the work never happens.
+   */
+  const on_poster_show = (day, item, poster) => {
+    poster_shown(poster)
+    const overlay = overlay_statements_for_poster(day, item)
+    if (overlay?.length) statement_shown(overlay)
+  }
+
   const on_remove_missing_poster = async id => {
     posters.value = posters.value.filter(item => id !== item.id)
     const author_id = as_author(/** @type {Id} */ (id))
@@ -557,7 +573,7 @@
           :overlay_statements="overlay_statements_for_poster(day, item)"
           :overlay_editable="overlay_editable_for_poster(day, item)"
           tabindex="0"
-          @show="poster_shown"
+          @show="poster => on_poster_show(day, item, poster)"
           @remove="on_remove_poster"
           @missing="on_remove_missing_poster" />
         <thought-as-article
