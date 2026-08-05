@@ -1,7 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { get } from 'idb-keyval'
-import { load_from_cache } from '@/utils/itemid'
-import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
+import { load_from_cache, as_created_at } from '@/utils/itemid'
+import {
+  load_cutout_flags,
+  collect_geology_paths,
+  find_geology_symbol,
+  GEOLOGY_DATE
+} from '@/utils/geology'
 
 vi.mock('idb-keyval', () => ({ get: vi.fn() }))
 
@@ -17,7 +22,11 @@ vi.mock('@/use/poster', () => ({
 
 vi.mock('@/utils/poster-format', async importOriginal => {
   const actual = await importOriginal()
-  return { ...actual, is_inline_poster_html: () => false }
+  return {
+    ...actual,
+    is_inline_poster_html: vi.fn(() => false),
+    cutout_flags_from_html: vi.fn(() => ({}))
+  }
 })
 
 const itemid = '/+1/posters/9'
@@ -65,5 +74,60 @@ describe('load_cutout_flags', () => {
     const flags = await load_cutout_flags(itemid)
 
     expect(flags.gravel).toBe(true)
+  })
+})
+
+describe('collect_geology_paths', () => {
+  it('returns nothing when symbol_defs is absent', () => {
+    expect(collect_geology_paths(null, itemid)).toEqual([])
+    expect(collect_geology_paths(undefined, itemid)).toEqual([])
+  })
+
+  it('collects layer paths with their d and transform', () => {
+    const root = document.createElement('div')
+    root.innerHTML =
+      '<symbol itemid="/+1/sediment/9"><path d="M0 0"></path><path d="M5 5" transform="rotate(10)"></path></symbol>' +
+      '<symbol itemid="/+1/sand/9"><path d="M1 1"></path></symbol>'
+
+    const data = collect_geology_paths(root, itemid)
+    expect(data).toEqual([
+      { key: 'sediment:0', d: 'M0 0' },
+      {
+        key: 'sediment:1',
+        d: 'M5 5',
+        transform: 'rotate(10)'
+      },
+      { key: 'sand:0', d: 'M1 1' }
+    ])
+  })
+
+  it('skips symbols without matching layers and paths without a d', () => {
+    const root = document.createElement('div')
+    root.innerHTML =
+      '<symbol itemid="/+1/unlisted/9"><path d="M1 1"></path></symbol>' +
+      '<symbol itemid="/+1/rocks/9"><path></path></symbol>'
+    expect(collect_geology_paths(root, itemid)).toEqual([])
+  })
+
+  it('finds a single layer symbol by id', () => {
+    const root = document.createElement('div')
+    root.innerHTML = '<symbol itemid="/+1/gravel/9"></symbol>'
+    expect(find_geology_symbol(root, itemid, 'gravel')).not.toBeNull()
+    expect(find_geology_symbol(root, itemid, 'sand')).toBeNull()
+  })
+})
+
+describe('load_cutout_flags inline & old-style', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // contents differ per test
+  })
+
+  it('returns an empty set for old-style posters before the split cutoff', async () => {
+    vi.mocked(as_created_at).mockReturnValue(GEOLOGY_DATE - 1)
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => {})
+    expect(await load_cutout_flags(itemid)).toEqual({})
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
   })
 })

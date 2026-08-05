@@ -345,12 +345,7 @@ export default defineConfig({
     environment: 'happy-dom',
     reporters: ['default'],
     include: ['tests/**/*.spec.js'],
-    exclude: [
-      ...configDefaults.exclude,
-      '**/setup.js',
-      '**/mocks/**',
-      '**/workers/tracer.spec.js'
-    ],
+    exclude: [...configDefaults.exclude, '**/setup.js', '**/mocks/**'],
     testTimeout: 30000,
     coverage: {
       include: ['src/**/*.js', 'src/**/*.vue'],

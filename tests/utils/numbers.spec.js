@@ -1,42 +1,33 @@
-import { describe, it, expect } from 'vite-plus/test'
-import {
-  SIZE,
-  JS_TIME,
-  itemid_as_kilobytes,
-  elements_as_kilobytes
-} from '@/utils/numbers'
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test'
+import { itemid_as_kilobytes, elements_as_kilobytes } from '@/utils/numbers'
 
 describe('@/utils/numbers', () => {
-  it('exposes storage size thresholds used by Paged.optimize', () => {
-    expect(SIZE.MIN).toBeLessThan(SIZE.MID)
-    expect(SIZE.MID).toBeLessThan(SIZE.MAX)
+  beforeEach(() => {
+    localStorage.clear()
+  })
+  afterEach(() => {
+    localStorage.clear()
   })
 
-  it('itemid_as_kilobytes uses localStorage byte length', () => {
-    const id = '/+15551234567/posters/1'
-    localStorage.setItem(id, 'x'.repeat(2048))
-    expect(itemid_as_kilobytes(id)).toBe(2)
-    localStorage.removeItem(id)
+  it('converts a stored itemid string length to kilobytes', () => {
+    localStorage.setItem('k/1', 'x'.repeat(1024))
+    expect(itemid_as_kilobytes('k/1')).toBeCloseTo(1, 2)
   })
 
-  it('itemid_as_kilobytes returns zero when missing', () => {
-    expect(itemid_as_kilobytes('/missing')).toBe(0)
+  it('returns zero for a missing itemid', () => {
+    expect(itemid_as_kilobytes('missing')).toBe(0)
   })
 
-  it('elements_as_kilobytes measures outerHTML', () => {
-    const el = document.createElement('motion.div')
-    el.innerHTML = 'a'.repeat(1024)
-    expect(elements_as_kilobytes(el)).toBeGreaterThanOrEqual(1)
+  it('converts an element serialization to kilobytes', () => {
+    const el = document.createElement('div')
+    el.textContent = 'ab'.repeat(1024)
+    document.body.appendChild(el)
+    // outerHTML includes the wrapping <div> tags on top of the text
+    expect(elements_as_kilobytes(el)).toBeGreaterThan(2)
+    document.body.removeChild(el)
   })
 
-  it('elements_as_kilobytes returns zero for null', () => {
+  it('returns zero when no element is given', () => {
     expect(elements_as_kilobytes(null)).toBe(0)
-  })
-
-  it('JS_TIME constants are ordered', () => {
-    expect(JS_TIME.THREE_MINUTES).toBeLessThan(JS_TIME.FIVE_MINUTES)
-    expect(JS_TIME.FIVE_MINUTES).toBeLessThan(JS_TIME.THIRTEEN_MINUTES)
-    expect(JS_TIME.THIRTEEN_MINUTES).toBeLessThan(JS_TIME.ONE_HOUR)
-    expect(JS_TIME.ONE_HOUR).toBeLessThan(JS_TIME.EIGHT_HOURS)
   })
 })

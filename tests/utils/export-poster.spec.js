@@ -99,6 +99,20 @@ describe('@/utils/export-poster', () => {
       )
       expect(name).toBe('poster.png')
     })
+
+    it('omits the creator when load returns no named person', async () => {
+      const { load } = await import('@/utils/itemid')
+      load.mockResolvedValueOnce(null)
+      const name = await get_filename_for_poster(
+        /** @type {import('@/types').Id} */ (
+          '/+15551234567/posters/1720119797893'
+        ),
+        'svg'
+      )
+      expect(name).toContain('Monday morning')
+      expect(name).toContain('1720119797893.svg')
+      expect(name).not.toContain('@')
+    })
   })
 
   describe('revalidate_poster_files', () => {

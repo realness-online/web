@@ -135,6 +135,22 @@ describe('tracer worker', () => {
       expect(mock_converter.init).toHaveBeenCalledWith(valid_image_data)
     })
 
+    it('frees a previous live converter before allocating a new one', () => {
+      const valid_image_data = {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4)
+      }
+
+      // Module `converter` may already be live (persists across tests), so
+      // the reuse-free branch is hit on the first call; a second call
+      // certainly frees the just-allocated converter.
+      tracer.make_trace({ data: { image_data: valid_image_data } })
+      tracer.make_trace({ data: { image_data: valid_image_data } })
+      expect(mock_converter.free).toHaveBeenCalled()
+      expect(mock_converter.init).toHaveBeenCalledTimes(2)
+    })
+
     it('posts complete message when tracing finishes', async () => {
       const valid_image_data = {
         width: 200,
@@ -271,6 +287,38 @@ describe('tracer worker', () => {
         'unknown:route'
       )
       expect(result).toEqual({})
+    })
+  })
+
+  describe('beforeunload', () => {
+    it('frees a live converter on worker unload', async () => {
+      // Re-import a fresh worker module so the beforeunload handler is
+      // registered against a self.addEventListener stub we can capture.
+      let unload
+      const event_map = {}
+      global.self.addEventListener = vi.fn((event, handler) => {
+        event_map[event] = handler
+      })
+
+      vi.resetModules()
+      mock_converter.free.mockClear()
+      await import('@/workers/tracer')
+
+      const valid_image_data = {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4)
+      }
+      const fresh_tracer = await import('@/workers/tracer')
+      fresh_tracer.make_trace({ data: { image_data: valid_image_data } })
+
+      unload = event_map.beforeunload
+      expect(unload).toBeTypeOf('function')
+      unload()
+      expect(mock_converter.free).toHaveBeenCalled()
+
+      // Restore the shared listener stub for other suites.
+      global.self.addEventListener = vi.fn((event, handler) => {})
     })
   })
 })
