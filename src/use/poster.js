@@ -449,6 +449,17 @@ export const is_vector = vector => {
   return false
 }
 
+/**
+ * Posters made before 2020-11-24 never had a `regular` layer — `background` and
+ * `bold` are all they ever drew with. Waiting on `regular` leaves those forty
+ * posters loading forever and, under folder sync, timing out one by one. Any
+ * layer with something to draw means the poster is ready to show.
+ * @param {Poster} vector
+ * @returns {boolean}
+ */
+export const has_drawable_layer = vector =>
+  Boolean(vector?.regular || vector?.bold || vector?.background)
+
 export const is_rect = rect => {
   if (rect === null || rect === undefined) return true
   if (typeof rect !== 'object') return false

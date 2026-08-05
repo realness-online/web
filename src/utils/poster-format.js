@@ -20,6 +20,22 @@ export const is_inline_poster_html = html =>
   typeof html === 'string' && !is_split_poster_html(html)
 
 /**
+ * A layer file is a `<symbol>` wrapper around its paths. Storage holds some
+ * that wrap nothing — `save_poster` used to persist the empty shell `as-symbol`
+ * renders before content arrives. Treating those as present makes
+ * `wait_for_poster_symbols` block on a symbol that never fills, so the test
+ * here is the one that waiter uses: does the symbol contain anything.
+ * @param {string | null | undefined} html
+ * @returns {boolean}
+ */
+export const layer_html_has_content = html => {
+  if (typeof html !== 'string') return false
+  const inner = html.match(/<symbol[^>]*>([\s\S]*)<\/symbol>/)
+  if (!inner) return Boolean(html.trim())
+  return Boolean(inner[1].trim())
+}
+
+/**
  * @param {string} html
  * @param {Id} itemid
  * @returns {Record<string, boolean>}

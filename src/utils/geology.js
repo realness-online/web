@@ -5,7 +5,8 @@ import { as_layer_id, load_from_cache, as_created_at } from '@/utils/itemid'
 import { geology_layers } from '@/use/poster'
 import {
   cutout_flags_from_html,
-  is_inline_poster_html
+  is_inline_poster_html,
+  layer_html_has_content
 } from '@/utils/poster-format'
 
 // Last timestamp for old-style (non-split) posters
@@ -75,11 +76,14 @@ export const load_cutout_flags = async itemid => {
     geology_layers.map(async layer => {
       const layer_id = as_layer_id(itemid, layer)
       const html_string = await get(layer_id)
-      if (html_string) cutouts[layer] = true
-      else {
-        const { html } = await load_from_cache(layer_id)
-        if (html) cutouts[layer] = true
+      if (layer_html_has_content(html_string)) {
+        cutouts[layer] = true
+        return
       }
+      // An empty local copy still falls through to the network — the layer may
+      // have real paths there, and an empty answer costs nothing but a miss.
+      const { html } = await load_from_cache(layer_id)
+      if (layer_html_has_content(html)) cutouts[layer] = true
     })
   )
   return cutouts

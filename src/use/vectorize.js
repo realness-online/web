@@ -340,11 +340,19 @@ export const save_poster = async (
   geology_layers.forEach(layer => {
     const layer_id = as_layer_id(id, layer)
     const layer_el = find_layer_element(layer_id)
-    if (layer_el) save_promises.push(new Cutout(layer_id).save(layer_el))
-    else
+    if (!layer_el) {
       console.warn(
         `[save_poster] Could not find cutout element for ${layer_id}`
       )
+      return
+    }
+    // `sort_cutouts_into_layers` drops a layer the tracer produced nothing for,
+    // but `find_layer_element` asks the DOM, where `as-symbol` always offers an
+    // empty shell. Saving that shell writes a file claiming the layer exists,
+    // which mounts another empty shell and re-saves it on the next edit — and
+    // the export wait then blocks forever on a symbol that never fills.
+    if (!layer_el.innerHTML.trim()) return
+    save_promises.push(new Cutout(layer_id).save(layer_el))
   })
 
   await Promise.all(save_promises)

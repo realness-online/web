@@ -24,7 +24,12 @@
   } from '@/utils/itemid'
   import { as_time, as_day } from '@/utils/date'
   import { get } from 'idb-keyval'
-  import { is_vector, is_vector_id, is_click } from '@/use/poster'
+  import {
+    is_vector,
+    is_vector_id,
+    is_click,
+    has_drawable_layer
+  } from '@/use/poster'
   import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
   import { use_mask_pen } from '@/use/mask-pen'
   import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
@@ -332,7 +337,7 @@
         // Shadows failed to load; continue with degraded display
       }
 
-    if (vector.value && vector.value.regular) {
+    if (vector.value && has_drawable_layer(vector.value)) {
       await tick()
       emit('show', vector.value)
       shown.value = true
