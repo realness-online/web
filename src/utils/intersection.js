@@ -9,7 +9,7 @@ export const INTERSECTION_THRESHOLDS = Array.from(
 )
 
 /** @returns {DOMRectReadOnly} */
-export const viewport_rect = () => {
+const viewport_rect = () => {
   const width = globalThis.innerWidth ?? 0
   const height = globalThis.innerHeight ?? 0
   const rect = {

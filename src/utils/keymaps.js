@@ -344,7 +344,7 @@ export const get_preference_keys = (name, keymap = default_keymap) => {
 }
 
 /** @type {Record<string, string>} */
-export const preference_cycle_command = {
+const preference_cycle_command = {
   drama: 'pref::Cycle_Drama',
   animate: 'pref::Cycle_Animation_Speed'
 }
@@ -361,7 +361,7 @@ export const get_preference_cycle_keys = (name, keymap = default_keymap) => {
 }
 
 /** @type {Record<string, string>} */
-export const preference_cycle_hint = {
+const preference_cycle_hint = {
   drama: 'cycles lights',
   animate: 'cycles speed'
 }
@@ -374,7 +374,7 @@ export const get_preference_cycle_hint = name =>
   preference_cycle_hint[name] ?? null
 
 /** @type {Record<string, string>} */
-export const preference_hint = {
+const preference_hint = {
   mosaic: 'Tiles defining shape over shadow',
   shadow: 'Value layers, Light -> Bold',
   stroke: 'Outline shadow',
@@ -407,7 +407,7 @@ export const preference_hint = {
 export const get_preference_hint = name => preference_hint[name] ?? null
 
 /** @type {Record<string, string>} */
-export const preference_icon = {
+const preference_icon = {
   mosaic: 'realness',
   stroke: 'circle',
   background: 'background',

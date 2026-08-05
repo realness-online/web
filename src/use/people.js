@@ -7,11 +7,11 @@ import { list, load } from '@/utils/itemid'
 import { current_user, me, directory } from '@/utils/serverless'
 import { recent_visit_first } from '@/utils/sorting'
 import { Me } from '@/persistence/Storage'
-import { default_person, from_e64 } from '@/utils/person-identity'
+import { from_e64 } from '@/utils/person-identity'
 import { valid_name } from '@/utils/valid-name'
 
-export { default_person, from_e64 }
-export { name_error, valid_name } from '@/utils/valid-name'
+export { from_e64 }
+export { name_error } from '@/utils/valid-name'
 
 // Check if we're in a browser environment
 const is_browser =

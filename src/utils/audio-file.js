@@ -48,7 +48,7 @@ const get_audio_context = () => {
  * @param {File} file - Audio file (mp3/wav/ogg/m4a/flac/...)
  * @returns {Promise<AudioBuffer>}
  */
-export const decode_audio_file = async file => {
+const decode_audio_file = async file => {
   const array_buffer = await file.arrayBuffer()
   return get_audio_context().decodeAudioData(array_buffer)
 }
