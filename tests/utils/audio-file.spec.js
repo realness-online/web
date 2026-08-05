@@ -47,16 +47,16 @@ describe('decode_audio_file', () => {
   })
 
   it('reads the file buffer and decodes it through the AudioContext', async () => {
-    const { decode_audio_file } = await load_decoders()
+    const { decode_audio_files } = await load_decoders()
     const file = {
       arrayBuffer: vi.fn(async () => new ArrayBuffer(8)),
       type: 'audio/mpeg',
       name: 'loop.mp3'
     }
-    const decoded = await decode_audio_file(file)
+    const decoded = await decode_audio_files([file])
     expect(file.arrayBuffer).toHaveBeenCalled()
     expect(mock_decode).toHaveBeenCalled()
-    expect(decoded).toEqual({ duration: 1 })
+    expect(decoded).toEqual([{ duration: 1 }])
   })
 
   it('decodes only the audio files in a mixed list', async () => {

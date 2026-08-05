@@ -95,6 +95,64 @@ describe('@/component/posters/as-figure.vue', () => {
         expect(wrapper.vm.query_id).toBeDefined()
       })
     })
+    describe('overlay_text_visible', () => {
+      it('is false with no overlay statements', () => {
+        expect(wrapper.vm.overlay_text_visible).toBe(false)
+      })
+    })
+    describe('figcaption_visible', () => {
+      it('is false in the default closed state', () => {
+        expect(wrapper.vm.figcaption_visible).toBe(false)
+      })
+    })
+    describe('.poster_label', () => {
+      it('builds a label from the poster created timestamp', () => {
+        expect(wrapper.vm.poster_label).toContain('Poster from')
+      })
+    })
+    describe('.poster_time', () => {
+      it('derives a time from the poster created timestamp', () => {
+        expect(wrapper.vm.poster_time).toBeTruthy()
+      })
+    })
+    describe('.profile_chip_itemid', () => {
+      it('is the itemid for label display', () => {
+        expect(wrapper.vm.profile_chip_itemid).toBe(poster.id)
+      })
+      it('is undefined for phonebook display', async () => {
+        const w = shallowMount(as_figure, {
+          props: { itemid: poster.id, profile_display: 'phonebook' },
+          global: {
+            provide: { 'key-commands': mock_key_commands }
+          }
+        })
+        expect(w.vm.profile_chip_itemid).toBeUndefined()
+        w.unmount()
+      })
+    })
+    describe('.has_remove_handler', () => {
+      it('is false when no remove handler is passed', () => {
+        expect(wrapper.vm.has_remove_handler).toBe(false)
+      })
+    })
+    describe('.is_my_poster', () => {
+      it('is true when the author is the local user', () => {
+        const w = shallowMount(as_figure, {
+          props: { itemid: poster.id },
+          global: {
+            provide: { 'key-commands': mock_key_commands }
+          }
+        })
+        // author of poster.id is /+14151234356
+        Object.defineProperty(window, 'localStorage', {
+          value: { me: '/+14151234356' },
+          configurable: true,
+          writable: true
+        })
+        expect(w.vm.is_my_poster).toBe(true)
+        w.unmount()
+      })
+    })
   })
   describe('Watchers', () => {
     describe('menu', () => {
@@ -197,6 +255,28 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(mock_key_commands.unregister_handler).toHaveBeenCalledWith(
         'poster::Toggle_Meet_Slice'
       )
+    })
+
+    it('allows a drag over a poster when it carries an audio file', () => {
+      const fig = wrapper.find('figure').element
+      const audio = new File(['x'], 'clip.mp3', { type: 'audio/mp3' })
+      const event = new Event('dragover', { cancelable: true, bubbles: true })
+      Object.defineProperty(event, 'dataTransfer', {
+        value: { files: [audio] }
+      })
+      fig.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+    })
+
+    it('ignores a drag over a poster with non-audio files', () => {
+      const fig = wrapper.find('figure').element
+      const text = new File(['x'], 'notes.txt', { type: 'text/plain' })
+      const event = new Event('dragover', { cancelable: true, bubbles: true })
+      Object.defineProperty(event, 'dataTransfer', {
+        value: { files: [text] }
+      })
+      fig.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
     })
 
     it('closes menu when menu prop becomes false', async () => {

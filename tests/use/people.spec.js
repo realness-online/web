@@ -17,10 +17,15 @@ const { mock_current_user_ref } = vi.hoisted(() => ({
 }))
 
 // Mock localStorage BEFORE importing the module
+const local_storage = { me: '/+14151234356' }
 beforeAll(() => {
   Object.defineProperty(window, 'localStorage', {
     value: {
-      me: '/+14151234356'
+      me: '/+14151234356',
+      getItem: key => (key in local_storage ? local_storage[key] : null),
+      setItem: (key, val) => {
+        local_storage[key] = String(val)
+      }
     },
     configurable: true,
     writable: true
@@ -211,6 +216,41 @@ describe('people composable', () => {
 
       me.value = { id: '/+14151234356', name: '   ', type: 'person' }
       expect(is_valid_name.value).toBe(false)
+    })
+
+    it('block_person adds and persists a blocked id, skipping duplicates', () => {
+      const { blocked, block_person } = use_me()
+      blocked.value = []
+      block_person('/+19990000001')
+      expect(blocked.value).toContain('/+19990000001')
+      const persisted = JSON.parse(
+        localStorage.getItem(`${localStorage.me}/blocked`)
+      )
+      expect(persisted).toContain('/+19990000001')
+      // second call with same id should not duplicate
+      block_person('/+19990000001')
+      expect(blocked.value.filter(id => id === '/+19990000001')).toHaveLength(1)
+    })
+
+    it('unblock_person removes a blocked id and persists', () => {
+      const { blocked, block_person, unblock_person } = use_me()
+      blocked.value = []
+      block_person('/+19990000002')
+      unblock_person('/+19990000002')
+      expect(blocked.value).not.toContain('/+19990000002')
+      const persisted = JSON.parse(
+        localStorage.getItem(`${localStorage.me}/blocked`)
+      )
+      expect(persisted).not.toContain('/+19990000002')
+    })
+
+    it('load_blocked resets to an empty list on invalid JSON', () => {
+      const { blocked } = use_me()
+      localStorage.setItem(`${localStorage.me}/blocked`, '{not json')
+      // re-trigger the load path via a second use()
+      const second = use_me()
+      expect(second.blocked.value).toEqual([])
+      expect(blocked.value).toEqual([])
     })
   })
 

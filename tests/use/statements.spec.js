@@ -211,7 +211,67 @@ describe('statements composable', () => {
     })
   })
 
+  describe('update_statement', () => {
+    const statement_id = '/+14151234356/statements/1000'
+
+    /** A stored section matching the statement this test edits. */
+    function stored_section(statement) {
+      return `<section itemid="/+14151234356/statements"><div itemid="${statement_id}"><p itemprop="statement">${statement}</p></div></section>`
+    }
+
+    it('rewrites the statement text and persists the section', async () => {
+      localStorage.getItem = vi.fn(() => stored_section('Old text'))
+      instance.my_statements.value = [
+        { id: statement_id, statement: 'Old text' }
+      ]
+      instance.statements.value = [{ id: statement_id, statement: 'Old text' }]
+
+      await instance.update_statement(statement_id, 'Edited')
+
+      const patched = instance.my_statements.value.find(
+        s => s.id === statement_id
+      )
+      expect(patched.statement).toBe('Edited')
+      expect(instance.statements.value[0].statement).toBe('Edited')
+    })
+
+    it('leaves state alone when no stored fragment exists', async () => {
+      localStorage.getItem = vi.fn(() => null)
+      instance.my_statements.value = [
+        { id: statement_id, statement: 'Old text' }
+      ]
+
+      await instance.update_statement(statement_id, 'Edited')
+
+      expect(instance.my_statements.value[0].statement).toBe('Old text')
+    })
+
+    it('returns early when the statement text element is missing', async () => {
+      localStorage.getItem = vi.fn(
+        () =>
+          `<section itemid="/+14151234356/statements"><div itemid="${statement_id}"></div></section>`
+      )
+      instance.my_statements.value = [
+        { id: statement_id, statement: 'Old text' }
+      ]
+
+      await instance.update_statement(statement_id, 'Edited')
+
+      expect(instance.my_statements.value[0].statement).toBe('Old text')
+    })
+  })
+
   describe('statement_shown', () => {
+    it('stays quiet with no feed loaded', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      instance.statements.value = null
+
+      await instance.statement_shown([
+        { id: '/+1234/statements/1000', statement: 'Test' }
+      ])
+
+      expect(list_history_page).not.toHaveBeenCalled()
+    })
     it('requires non-empty statement array', async () => {
       const stmt = [{ id: '/+1234/statements/1000', statement: 'Test' }]
       instance.statements.value = [stmt[0]]
@@ -236,6 +296,45 @@ describe('statements composable', () => {
         id: `${author}/statements/${1000 + index * 100}`,
         statement: `statement ${index}`
       }))
+
+    it('drops the request when the author is not in the authors list', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+9999')
+      instance.statements.value = loaded
+      // for_person is never called -> /+9999 never joins authors.value.
+
+      await instance.statement_shown([loaded[2]])
+
+      expect(list_history_page).not.toHaveBeenCalled()
+    })
+
+    it('drops the request when the directory is unavailable', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const { as_directory } = await import('@/persistence/Directory')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+      as_directory.mockResolvedValueOnce(null)
+
+      await instance.statement_shown([loaded[2]])
+
+      expect(list_history_page).not.toHaveBeenCalled()
+    })
+
+    it('skips the fetch when every page has already been viewed', async () => {
+      const { list_history_page } = await import('@/utils/itemid')
+      const loaded = ten_statements('/+1234')
+      instance.statements.value = loaded
+      await instance.for_person({ id: '/+1234', type: 'person' })
+      instance.statements.value = loaded
+      const author = instance.authors.value.find(a => a.id === '/+1234')
+      author.viewed = ['index', '1000', '2000', '3000']
+
+      await instance.statement_shown([loaded[2]])
+
+      expect(list_history_page).not.toHaveBeenCalled()
+    })
 
     it('pages when a thought near the oldest shows, not only the oldest', async () => {
       const { list_history_page } = await import('@/utils/itemid')
