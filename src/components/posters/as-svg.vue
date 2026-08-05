@@ -19,7 +19,8 @@
     use as use_poster,
     is_vector,
     is_vector_id,
-    geology_layers
+    geology_layers,
+    has_drawable_layer
   } from '@/use/poster'
   import {
     animate as animate_pref,
@@ -192,7 +193,7 @@
     if (!intersecting.value) return false
     if (working.value) return true
     if (!vector.value) return true
-    if (!vector.value.regular) return true
+    if (!has_drawable_layer(vector.value)) return true
     return false
   })
   const drama_back_visible = computed(

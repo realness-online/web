@@ -4,6 +4,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import {
   is_vector_id,
   is_vector,
+  has_drawable_layer,
   is_svg_valid,
   is_click,
   is_focus,
@@ -92,6 +93,27 @@ describe('poster utils', () => {
     it('returns false for itemid without created_at', () => {
       vi.mocked(as_created_at).mockReturnValue(null)
       expect(is_vector_id('/user/posters')).toBe(false)
+    })
+  })
+
+  describe('has_drawable_layer', () => {
+    it('accepts a pre-2020-11 poster that only ever had background and bold', () => {
+      const vector = {
+        id: '/+16282281824/posters/1605151640150',
+        background: {},
+        bold: {}
+      }
+      expect(has_drawable_layer(vector)).toBe(true)
+    })
+
+    it('accepts a poster with a regular layer', () => {
+      expect(has_drawable_layer({ regular: {} })).toBe(true)
+    })
+
+    it('rejects a poster with nothing to draw', () => {
+      expect(has_drawable_layer({ id: '/user/posters/1' })).toBe(false)
+      expect(has_drawable_layer(null)).toBe(false)
+      expect(has_drawable_layer(undefined)).toBe(false)
     })
   })
 

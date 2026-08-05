@@ -164,6 +164,29 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(wrapper.emitted('show')).toBeTruthy()
     })
 
+    it('emits show for a pre-2020-11 poster that has no regular layer', async () => {
+      // Posters from before 2020-11-24 only ever drew with background and bold.
+      // No shadow file exists to fill `regular` in, so gating show on it left
+      // these loading forever and timing out under folder sync.
+      vi.mocked(get).mockResolvedValue(null)
+      vi.mocked(load_from_cache).mockResolvedValue({ item: null, html: null })
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      as_svg.vm.$emit('show', {
+        id: poster.id,
+        type: 'posters',
+        viewbox: '0 0 100 100',
+        width: '100',
+        height: '100',
+        background: {},
+        bold: {}
+      })
+      await flushPromises()
+      expect(wrapper.emitted('show')?.[0]?.[0]).toMatchObject({
+        id: poster.id,
+        bold: {}
+      })
+    })
+
     it('registers poster key commands on focusin and clears on focusout', async () => {
       const fig = wrapper.find('figure')
       await fig.trigger('focusin')

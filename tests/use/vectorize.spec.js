@@ -704,11 +704,22 @@ describe('exported utilities', () => {
   })
 
   describe('save_poster', () => {
+    /**
+     * @param {string} inner
+     * @returns {HTMLElement}
+     */
+    const mock_layer_element = inner => {
+      const element = document.createElement('svg')
+      element.setAttribute('itemid', '/user/posters/1234567890')
+      element.innerHTML = inner
+      return element
+    }
+
     beforeEach(() => {
       vi.clearAllMocks()
-      const mock_element = document.createElement('svg')
-      mock_element.setAttribute('itemid', '/user/posters/1234567890')
-      vi.spyOn(document, 'querySelector').mockReturnValue(mock_element)
+      vi.spyOn(document, 'querySelector').mockReturnValue(
+        mock_layer_element('<path d="M0 0" />')
+      )
     })
 
     it('saves shadow and all cutout layers', async () => {
@@ -725,6 +736,18 @@ describe('exported utilities', () => {
       expect(mock_cutout_constructor).toHaveBeenCalledWith(
         '/user/sand/1234567890'
       )
+    })
+
+    it('does not save a cutout layer whose symbol is empty', async () => {
+      // `as-symbol` renders its shell before content arrives, so the DOM offers
+      // an empty symbol for a layer the tracer produced nothing for. Saving it
+      // writes a file claiming the layer exists, and the export wait then
+      // blocks on a symbol that never fills.
+      vi.spyOn(document, 'querySelector').mockReturnValue(mock_layer_element(''))
+
+      await save_poster('/user/posters/1234567890')
+
+      expect(mock_cutout_constructor).not.toHaveBeenCalled()
     })
   })
 })
