@@ -743,7 +743,9 @@ describe('exported utilities', () => {
       // an empty symbol for a layer the tracer produced nothing for. Saving it
       // writes a file claiming the layer exists, and the export wait then
       // blocks on a symbol that never fills.
-      vi.spyOn(document, 'querySelector').mockReturnValue(mock_layer_element(''))
+      vi.spyOn(document, 'querySelector').mockReturnValue(
+        mock_layer_element('')
+      )
 
       await save_poster('/user/posters/1234567890')
 
