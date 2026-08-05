@@ -93,3 +93,6 @@ public/512.png
 public/og.png
 .lighthouseci
 .claude/
+
+# autoresearch session files
+.auto/
