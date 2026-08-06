@@ -447,6 +447,9 @@ const rasterize_svg = async svg_file => {
  *
  * @param {ReturnType<typeof use_workers>} workers
  */
+/** Ticks to wait for cutout paths to render their `d` before optimizer capture */
+const CUTOUT_DOM_MAX_WAIT = 50
+
 const create_tracer_buffer = workers => {
   /** @type {{ path: ReturnType<typeof clone_tracer_path>, progress: number }[]} */
   const pending_paths = []
@@ -491,10 +494,35 @@ const create_tracer_buffer = workers => {
     const cid = current_item_id.value
     const opt = workers.optimizer.value
     if (!cid || !new_gradients.value || !vec || !opt) return
-    await tick()
+    await wait_for_cutout_paths(vec)
     const element = document.getElementById(as_query_id(cid))
     if (!element) return
     opt.postMessage({ route: 'optimize:vector', vector: element.outerHTML })
+  }
+
+  /**
+   * The processing SVG's cutout `<path>` elements set their `d` attribute one
+   * tick after they mount (as-path-cutout copies it from the vector in its
+   * mounted hook). A single tick after the last tracer path is not enough, so
+   * the optimizer can capture paths without a `d` attribute and SVGO deletes
+   * them - silently dropping cutout layers at save. Wait until every expected
+   * cutout path has a `d` before serializing.
+   * @param {Record<string, unknown>} vec
+   */
+  const wait_for_cutout_paths = async vec => {
+    const cid = current_item_id.value
+    const expected = Array.isArray(vec.cutout) ? vec.cutout.length : 0
+    if (!expected || !cid) return
+    const id = as_query_id(cid)
+    for (let attempt = 0; attempt < CUTOUT_DOM_MAX_WAIT; attempt++) {
+      const element = document.getElementById(id)
+      const rendered = element?.querySelectorAll(
+        'g[itemprop="new_cutouts"] path[itemprop="cutout"][d]'
+      )
+      if (rendered && rendered.length >= expected) return
+      // oxlint-disable-next-line no-await-in-loop
+      await tick()
+    }
   }
 
   /** Apply anything buffered while waiting for `new_vector`. */

@@ -379,6 +379,53 @@ describe('vectorize composable', () => {
       console_error.mockRestore()
     })
 
+    it('waits for cutout paths to render their d before capturing for the optimizer', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      // created_workers[2] is the tracer, created_workers[3] the optimizer.
+      const traced_handler =
+        created_workers[2].addEventListener.mock.calls[0][1]
+      const optimizer_worker = created_workers[3]
+
+      // A processing SVG whose cutout path has no d yet - as-path-cutout only
+      // fills it a tick after mount. It appears on a later check, like the
+      // component ref flush does.
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+      group.setAttribute('itemprop', 'new_cutouts')
+      const cutout_path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
+      cutout_path.setAttribute('itemprop', 'cutout')
+      group.appendChild(cutout_path)
+      svg.appendChild(group)
+
+      let lookups = 0
+      vi.spyOn(document, 'getElementById').mockImplementation(() => {
+        lookups += 1
+        if (lookups > 1) cutout_path.setAttribute('d', 'M 0 0 L 10 10')
+        return svg
+      })
+
+      vectorize_instance.new_vector.value = {
+        id: itemid,
+        light: {},
+        regular: {},
+        medium: {},
+        bold: {},
+        cutout: [cutout_path]
+      }
+      vectorize_instance.new_gradients.value = [{ color: 'red' }]
+
+      await traced_handler({ data: { type: 'complete' } })
+
+      const posted = optimizer_worker.postMessage.mock.calls.at(-1)[0]
+      expect(posted.route).toBe('optimize:vector')
+      expect(posted.vector).toContain('d="M 0 0 L 10 10"')
+    })
+
     it('gradientized handler logs and does not throw on an error reply', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
       await vectorize_instance.vectorize(file, itemid)
