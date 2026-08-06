@@ -2,18 +2,37 @@
 
 In 2457, only inert HTML is legal.
 
-The web servers that remain serve nothing but semantic markup — no dynamic state, no hubris. This law stands as a monument to a choice we made. Or rather, the choice made for us.
+The servers that remain serve semantic markup and nothing else. No dynamic
+state. The law is a monument to a choice we made, or to the choice made for us.
 
-The angels of death still walk among us. They are the ones who broke the Earth's orbit with their fumbling, brilliant hands, and they are the only hope we have left. They discovered gravity — not the force itself, we always knew gravity, but how to _use_ it. How to harness it. The moment they did, Earth began its slow spiral toward the sun.
+Ashbury and Cole still walk among us. People called them angels when it
+happened. They broke the Earth's orbit, and they are the only help we have.
+What they found was not gravity — we always knew gravity — but how to use it.
+The day they used it, Earth began to fall toward the sun.
 
-Lower Haight is gone. The whole Bay is gone. Now we drift.
+Lower Haight is gone. The whole Bay is gone. We drift now.
 
-My neighborhood — what remains of it — traverses the Kuiper Belt, one degree of arc every seventeen years. We harvest ore from the belt itself. Slowly. Methodically. The material that keeps our streets intact, our buildings standing, our place in space _real_. We are learning what the angels know: how to push against gravity. How to hold ground in the void.
+My neighborhood, what is left of it, rides a long ellipse that crosses the
+Kuiper Belt, one degree of arc every seventeen years. We harvest ore from the
+belt as we pass. It keeps the streets intact and the buildings standing. We are
+learning what Ashbury knows: how to push against gravity, how to hold ground.
 
-The Victorians are our ships now. We photograph them as they were — rooted, defiant, beautiful. Then we launch them. Animated trajectories, gravity-bent arcs that carry ore back to the geofenced zone we protect. Lower Haight marked on celestial charts. Home is a polygon we draw and redraw. The buildings leave the ground to save the ground.
+A message to Earth takes two days to arrive. Nothing out here can ask a
+question and wait for the answer.
 
-This is why the posters are built the way they are. Inert HTML as gospel. No trust in systems that think. Just clean markup and the weight of stone — stone doesn't pretend to be smart. Stone just _is_. Deterministic. Seekable. Renderable without apology.
+The Victorians are our ships. We photograph them as they were — rooted,
+defiant — and then we launch them. Their trajectories are animated,
+gravity-bent arcs that carry ore back to the zone we keep. Lower Haight is a
+polygon on a celestial chart, drawn and redrawn. The buildings leave the ground
+to save the ground.
 
-We build altars from semantic tags. We write our warnings in the DOM. If the angels can break worlds, we can at least refuse to make the same mistake twice. The Victorians launch in silence. They return in silence. The servers serve it all without a thought.
+This is why the posters are built the way they are. A page that has to ask a
+server for something is useless when the server is two days away. A file has to
+arrive whole and stand on its own: clean markup, nothing that thinks,
+deterministic and seekable, rendered without apology.
+
+We write our warnings in the DOM. If Ashbury and Cole can break a world, we can
+refuse to make the same mistake twice. The Victorians launch quietly. They come
+back quietly. The servers serve it all without a thought.
 
 The silence saves us.
