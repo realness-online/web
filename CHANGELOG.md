@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Nine frames of a 2343 frame video render came out empty** — two gates in
+  the poster driver said ready before the poster was: a placeholder viewBox
+  passed a width-over-zero check, and absent symbol defs read as nothing to
+  wait for. Both now wait for the real thing, an empty frame is rejected
+  instead of written, and renders carry the clip's audio at any width.
+
+- **Pricing would not scroll on a phone** — a thumb scrolling down arcs
+  sideways, and the tier carousel only measured sideways. Every flick changed
+  the tier, which sent the router back to the top. A swipe now has to travel
+  further across than down, and swapping tiers keeps your place on the page.
+
 ## v2.7.2 — 2026-08-06
 
 - **Posters now render for a whole video, not just a single still** —

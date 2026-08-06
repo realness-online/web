@@ -64,6 +64,10 @@ const router = createRouter({
     if (savedPosition) return savedPosition
     if (to.hash) return { el: to.hash, behavior: 'smooth' }
 
+    // A tier swap is a card swap, not a new page.
+    if (to.path.startsWith('/pricing') && from.path.startsWith('/pricing'))
+      return false
+
     // Defer so the scroll fires after the page paints — some mobile
     // browsers need the extra frame for scrollTo to take effect.
     return new Promise(resolve => {

@@ -85,6 +85,32 @@ describe('@/views/Pricing', () => {
     expect(wrapper.vm.active_slug).toBe('enterprise')
   })
 
+  const swipe = async (wrapper, from, to) => {
+    const page = wrapper.find('section#pricing')
+    await page.trigger('touchstart', { changedTouches: [from] })
+    await page.trigger('touchend', { changedTouches: [to] })
+  }
+
+  it('ignores a downward flick that drifts sideways', async () => {
+    const wrapper = mount_pricing()
+    await swipe(
+      wrapper,
+      { clientX: 200, clientY: 700 },
+      { clientX: 145, clientY: 300 }
+    )
+    expect(wrapper.vm.active_slug).toBe('endorse')
+  })
+
+  it('advances a tier on a sideways swipe', async () => {
+    const wrapper = mount_pricing()
+    await swipe(
+      wrapper,
+      { clientX: 300, clientY: 400 },
+      { clientX: 120, clientY: 430 }
+    )
+    expect(wrapper.vm.active_slug).toBe('teams')
+  })
+
   it('renders the actions row for the teams tier when active', () => {
     mock_route.params.tier = 'teams'
     const wrapper = mount_pricing()
