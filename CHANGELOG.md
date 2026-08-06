@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.7.2 — 2026-08-06
+
 - **Posters now render for a whole video, not just a single still** —
   `npm run poster:video <clip>` extracts every frame of a clip, traces each one
   in a pool of parallel headless browsers, and stitches the traced frames back
