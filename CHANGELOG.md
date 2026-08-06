@@ -2,16 +2,19 @@
 
 ## Unreleased
 
-- **Nine frames of a 2343 frame video render came out empty** — two gates in
-  the poster driver said ready before the poster was: a placeholder viewBox
-  passed a width-over-zero check, and absent symbol defs read as nothing to
-  wait for. Both now wait for the real thing, an empty frame is rejected
-  instead of written, and renders carry the clip's audio at any width.
+## v2.7.3 — 2026-08-06
 
-- **Pricing would not scroll on a phone** — a thumb scrolling down arcs
-  sideways, and the tier carousel only measured sideways. Every flick changed
-  the tier, which sent the router back to the top. A swipe now has to travel
-  further across than down, and swapping tiers keeps your place on the page.
+- **Video renders were leaving frames blank** — the renderer photographed each
+  frame before its poster had finished drawing, and a blank frame still writes
+  a perfectly good file, so nothing caught it. It waits for the poster now and
+  will not write an empty frame. Renders also carry the clip's audio and work
+  at any width.
+
+- **The pricing page would not scroll on a phone** — swiping sideways moves
+  between tiers, and a thumb scrolling down drifts sideways as it travels. So
+  every scroll changed the tier, and changing tier put you back at the top of
+  the page. A swipe now has to travel further across than down, and moving
+  between tiers keeps your place.
 
 ## v2.7.2 — 2026-08-06
 
@@ -23,10 +26,11 @@
   against the deployed site (override with `REALNESS_URL`), so a render never
   depends on a local build being present or current.
 
-- **The pagination sentinel claimed to hide itself but never did** —
-  `aria-hidden` with no value compiles to the empty string, which is not a
-  valid value, so the sentinel stayed in the accessibility tree and the feed
-  broke its `role="feed"` contract. It now says `true` out loud.
+- **A screen reader announced something that is not there** — the feed ends in
+  an invisible marker that asks for the next page of history when you reach it,
+  and it was meant to be hidden from assistive technology. `aria-hidden`
+  written with no value is the empty string, which means nothing at all, so the
+  marker was read out like any other item in the feed. It says `true` now.
 
 ## v2.7.1 — 2026-08-05
 
@@ -41,11 +45,11 @@
   `/+author/statements` id, so realness asks it for its list. Every archive
   opens, back to the first thing you ever wrote.
 
-- **Posters never paged past the first screenful on a profile** —
-  `@show="handler(day, item)"` compiles to an inline statement, so Vue called
-  the handler, took the function it returned, and threw it away. Nothing was
-  ever told a poster had been seen, and the feed had no reason to load the next
-  archive. Both feeds now reach the oldest poster.
+- **Posters never paged past the first screenful on a profile** — a poster
+  coming into view is what asks for the next page of history, and the line
+  listening for it was written so that Vue ran the handler once while drawing
+  the page and threw the result away. Nothing was ever told a poster had been
+  seen, so nothing ever asked for more. Both feeds reach the oldest poster now.
 
 - **A thought that came into view three times fetched the same page of history
   three times** — a day can bring several thoughts on screen in one frame, and
@@ -54,10 +58,12 @@
   drawing where they landed. One page loads at a time per person, and a
   statement that arrives twice is only kept once.
 
-- **A thought that had merged into a poster never said it was seen** — it is
-  drawn as that poster's overlay, so its own article never mounts. The oldest
-  statements ride under the oldest posters, so the history behind them never
-  opened. The poster now speaks for the thought it carries.
+- **The oldest thoughts would not open** — a thought written alongside a poster
+  is drawn as that poster's overlay rather than on its own, so there was
+  nothing to report it had come into view, and coming into view is what asks
+  for the next page of history. The oldest thoughts are exactly the ones riding
+  under posters, so history stopped where they began. The poster now speaks for
+  the thought it carries.
 
 - **The synced folder was missing everything before the newest page of
   statements** — it read the index and stopped, the way the feed used to. It
@@ -80,7 +86,13 @@
 
 - **Exporting a poster that had scrolled off screen produced a blank video** — posters are marked `content-visibility: auto`, which lets the browser skip rendering one that is not on screen, and the export rasterized those skipped frames as empty. The poster is held visible for the length of the export.
 
-- **The favicon was a grey smudge in the tab** — the mark fills its six tiles with the smalti tessera pattern, and at 16px one tessera is about a pixel and a half, so the mosaic dithered away and the water, clay and pumice palettes averaged into a single grey. The root drawing of `icons.svg` is only ever the favicon and Safari's pinned-tab icon — every other consumer pulls a `#symbol` by id — so it now crops tight to the mark and fills flat, with pumice lifted from 0.35 to 0.72 so the ash and cinder tiles still read against a dark tab strip. `#realness` and its mosaic are untouched, and so is everywhere the mark is actually drawn.
+- **The favicon was a grey smudge in the tab** — the mark is a mosaic, and at
+  16 pixels a single tile is about a pixel and a half wide, so the tiles blur
+  into each other and the whole palette averages out to grey. Only the favicon
+  and Safari's pinned tab draw the mark from the top of `icons.svg`, so that
+  drawing now crops tight and fills flat, with the palest tiles darkened enough
+  to hold their shape against a dark tab strip. The mark everywhere else in the
+  app is untouched.
 
 - **Pressing the realness mark left it stuck on its solid fill** — a press snaps the six tiles together and swaps the mosaic for flat colour; letting go is supposed to fade back. The rewind that resets the drift animations collects `getAnimations()`, which hands back CSS transitions alongside keyframe animations, so it caught that fade one frame in and paused it at frame zero. Only keyframe animations get rewound now.
 
@@ -92,7 +104,13 @@
 
 ## v2.6.6 — 2026-07-31
 
-- **Anyone could read a person's relations file** — the guard `!path.matches('relations.html.gz')` sat on a `{path=**}` wildcard, which binds a Path rather than a string, so it never excluded the file; rules OR together, so that one permissive match handed the private follow list to any reader, signed in or not. Every match that can reach the file now excludes it by name through single-segment wildcards, and `npm run test:rules` runs `storage.rules` against the storage emulator as part of pre-commit.
+- **Your follow list was readable by anyone** — the rule meant to keep
+  `relations.html.gz` private compared a whole path against a filename, which
+  never matches, so it never excluded the file. Storage rules grant access if
+  any one of them says yes, and that single permissive match handed the list to
+  any reader, signed in or not. Every rule that can reach the file now excludes
+  it by name, and `npm run test:rules` checks `storage.rules` against the
+  storage emulator before every commit.
 
 - **Crawlers were locked out of the assets that render the site** — `robots.txt` disallows `/` and allows named paths back, and `/assets/` and `/fonts/` were never on that list, so the CSS, JS, and fonts behind every page we do want indexed were off limits, along with the OG images. All four are allowed now.
 
@@ -113,7 +131,7 @@
 ## v2.6.5 — 2026-07-28
 
 - **Only the homepage was indexed** — Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.
-- **Pressing an icon blobbed its sprite** — `svg use:active` dates from poster layer selection but matched every `<use>` in the app, so the gear (a 16-unit sprite carrying a stroke) picked up a 4px stroke that swallowed its teeth. Scoped to `svg[itemtype='/posters']`.
+- **Pressing an icon turned it into a blob** — a rule written for picking out poster layers matched every icon in the app, so holding the gear down thickened its outline until the teeth filled in. The rule only reaches posters now.
 - **OG image is a real poster now** — a hand-picked 1280x960 jpg replaces the generated card across `index.html`, the prerender defaults, and the JSON-LD image.
 - **OG candidates generated from the admin's posters** — an unlisted `/og-candidates` route mounts each landscape poster and cuts two 1200x630 frames: full bleed, and the same poster under the marketing card copy. A driver script serves `dist` and works the route in headless Chrome over the devtools protocol — no new dependencies, reusing the `CHROME_PATH` the score script already needs. `npm run og:pick` installs a chosen frame as `public/og.jpg` after checking its dimensions.
 - **`npm run ship` verifies the version it just cut** — `verify` defaults to the newest GitHub release carrying a manifest, so ship was checking the previous release rather than `package.json`'s version.
@@ -160,7 +178,7 @@
 
 ## v2.5.10 — 2026-07-13
 
-- **Codebase-wide bug-fix pass** — systematic review across persistence, components, composables, workers, and 3D/potrace; fixed real bugs (mutex double-acquire, sync-queue race, tracer cross-contamination, SVG focusability, sign-in hang, textarea keymap, Three.js leaks, divide-by-zero, stalled upload queue). Every fix with a regression test.
+- **A pass over the whole codebase looking for real bugs** — storage, components, workers, the tracer and the 3D viewer, read end to end. It turned up saves that could collide and lose each other, a sign-in that could hang, a tracer that could mix one image into another, keyboard handling that failed in the compose box, memory the 3D viewer never gave back, and an upload queue that could stall. Every fix carries a regression test.
 - **Cloud archive consistency** — partial poster archive failure now rolls back cleanly instead of leaving orphaned files.
 - **Pricing page rewritten as real HTML** — tier content hand-authored per semantic-HTML convention instead of generated from JS data.
 - **Poster video export overhauled** — fixed ~8x-too-fast playback, cross-fade frames, 1440p/14 Mbps encode.
