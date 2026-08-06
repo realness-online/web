@@ -1,6 +1,5 @@
 import { spawn, fork } from 'node:child_process'
 import fs from 'node:fs'
-import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -10,19 +9,19 @@ import { tmpdir } from 'node:os'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const __filename = fileURLToPath(import.meta.url)
 const project_root = path.join(__dirname, '..')
-const dist_dir = path.join(project_root, 'dist')
 const out_dir = path.join(project_root, 'artifacts', 'poster-video')
 
+// Render against the deployed site so a render never depends on a local build,
+// prerender, or wasm step being present and current. Override for a preview
+// (e.g. REALNESS_URL=https://realness.local).
+const base_url = process.env.REALNESS_URL || 'https://realness.online'
 const DRIVER_ROUTE = '/poster-driver'
 const READY_TIMEOUT_MS = 120000
 const POLL_MS = 1000
 const RENDER_RETRIES = 3
 const BROWSER_TIMEOUT_MS = 20000
 const BROWSER_POLL_MS = 200
-const SERVER_PORT = 4181
 const DEBUG_PORT = 9335
-const HTTP_OK = 200
-const NOT_FOUND = 404
 const DEFAULT_FPS = 24
 const DEFAULT_WORKERS = 6
 const ERR_TAIL_LINES = 4
@@ -46,22 +45,6 @@ const chrome_path =
     fs.existsSync(process.env.CHROME_PATH) &&
     process.env.CHROME_PATH) ||
   BROWSER_CANDIDATES[0]
-
-const content_types = {
-  '.css': 'text/css',
-  '.gz': 'application/gzip',
-  '.html': 'text/html',
-  '.jpg': 'image/jpeg',
-  '.js': 'text/javascript',
-  '.json': 'application/json',
-  '.md': 'text/markdown',
-  '.png': 'image/png',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain',
-  '.wasm': 'application/wasm',
-  '.woff2': 'font/woff2',
-  '.xml': 'application/xml'
-}
 
 const fail = message => {
   console.error(`poster-video: ${message}`)
@@ -90,8 +73,6 @@ else {
   }
   if (!input_path)
     fail('usage: npm run poster:video <video> [--fps N] [--workers N]')
-  if (!fs.existsSync(`${dist_dir}/index.html`))
-    fail('dist/index.html missing - npm run build first')
   if (!chrome_path)
     fail(
       'no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)'
@@ -111,29 +92,6 @@ const exec = (cmd, args) =>
       else
         reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
     })
-  })
-
-const serve_dist = port =>
-  new Promise(resolve => {
-    const server = http.createServer((request, response) => {
-      const url_path = decodeURIComponent(
-        (request.url ?? '/').split('?')[0]
-      ).replace(/^\/+/, '')
-      let file = path.join(dist_dir, url_path)
-      if (!file.startsWith(dist_dir)) {
-        response.writeHead(NOT_FOUND)
-        response.end()
-        return
-      }
-      if (!fs.existsSync(file) || fs.statSync(file).isDirectory())
-        file = path.join(dist_dir, 'index.html')
-      response.writeHead(HTTP_OK, {
-        'content-type':
-          content_types[path.extname(file)] ?? 'application/octet-stream'
-      })
-      fs.createReadStream(file).pipe(response)
-    })
-    server.listen(port, '127.0.0.1', () => resolve(server))
   })
 
 const sleep = ms =>
@@ -222,13 +180,11 @@ const run_worker = async opts => {
     poster_dir,
     start,
     end,
-    server_port,
     debug_port,
     worker_id
   } = opts
-  const server = await serve_dist(server_port)
   const profile_dir = mkdtempSync(path.join(tmpdir(), 'poster-video-prof-'))
-  const target_url = `http://127.0.0.1:${server_port}${DRIVER_ROUTE}`
+  const target_url = `${base_url}${DRIVER_ROUTE}`
   const browser = spawn(
     chrome_path,
     [
@@ -244,7 +200,6 @@ const run_worker = async opts => {
   )
   const shutdown = () => {
     browser.kill()
-    server.close()
     try {
       rmSync(profile_dir, {
         recursive: true,
@@ -257,7 +212,7 @@ const run_worker = async opts => {
     }
   }
   // Close cleanly on signal so the headless browser is never orphaned holding
-  // its debug/server port.
+  // its debug port.
   for (const sig of ['SIGINT', 'SIGTERM'])
     process.once(sig, () => {
       shutdown()
@@ -389,7 +344,6 @@ const run_master = async () => {
       poster_dir,
       start: slice.start,
       end: slice.end,
-      server_port: SERVER_PORT + w,
       debug_port: DEBUG_PORT + w
     }
     return fork(__filename, [WORKER_FLAG, JSON.stringify(opts)], {
