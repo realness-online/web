@@ -70,7 +70,9 @@
     queue_supported_files,
     queue_supported_clipboard_items,
     init_processing_queue
-  } = use_vectorize_deferred()
+  } = use_vectorize_deferred({
+    enabled: router.currentRoute.value.path !== '/poster-driver'
+  })
 
   provide('image-picker', image_picker)
   provide('new_vector', new_vector)

@@ -12,13 +12,17 @@ import {
  * mount, and until it lands every value here reads empty and every call is a
  * no-op. Nothing has to know whether it has arrived yet.
  */
-export const use_vectorize_deferred = () => {
+/**
+ * @param {{ enabled?: boolean }} [options]
+ */
+export const use_vectorize_deferred = ({ enabled = true } = {}) => {
   /** @type {import('vue').ShallowRef<any>} */
   const api = shallowRef(null)
   const image_picker = ref(null)
   let dismount = () => {}
 
-  mounted(() =>
+  mounted(() => {
+    if (!enabled) return
     requestAnimationFrame(async () => {
       const { use } = await import('@/use/vectorize')
       // use() runs outside setup() here, so it cannot inject('image-picker').
@@ -33,7 +37,7 @@ export const use_vectorize_deferred = () => {
       // loaded and these render in their own section, so it needs no refresh.
       await loaded.init_processing_queue()
     })
-  )
+  })
 
   unmounted(() => dismount())
 
