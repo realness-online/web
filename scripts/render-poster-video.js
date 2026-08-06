@@ -5,6 +5,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { frame_problem, poster_raster_size } from './lib/poster-frame.js'
+import { read_png_size, IHDR_HEADER_BYTES } from './lib/png-size.js'
+import { clear_raster_frames } from './lib/raster-frames.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const __filename = fileURLToPath(import.meta.url)
@@ -18,12 +21,23 @@ const base_url = process.env.REALNESS_URL || 'https://realness.online'
 const DRIVER_ROUTE = '/poster-driver'
 const READY_TIMEOUT_MS = 120000
 const POLL_MS = 1000
+const PROGRESS_TICK_MS = 500
+const US_PER_SECOND = 1e6
+const STATUS_PAD = 48
 const RENDER_RETRIES = 3
 const BROWSER_TIMEOUT_MS = 20000
 const BROWSER_POLL_MS = 200
 const DEBUG_PORT = 9335
 const DEFAULT_FPS = 24
 const DEFAULT_WORKERS = 6
+const AUDIO_BITRATE = '192k'
+// x264's own default. Traced posters are all hard edges, which cost a codec
+// dearly, so a 4k render at 23 runs to hundreds of megabytes - raise this to
+// trade sharpness at the boundaries for a smaller file.
+const DEFAULT_CRF = 23
+const CRF_MIN = 0
+const CRF_MAX = 51
+const BYTES_PER_MB = 1e6
 const ERR_TAIL_LINES = 4
 const PROFILE_RM_RETRIES = 5
 const PROFILE_RM_DELAY_MS = 200
@@ -52,17 +66,27 @@ const fail = message => {
 }
 
 // ---- CLI ----
-const [, , arg_one, arg_two, arg_three, arg_four] = process.argv
+const [, , arg_one, arg_two] = process.argv
 const WORKER_FLAG = '--worker'
 let worker_opts = null
 let input_path = null
 let fps = DEFAULT_FPS
 let workers = DEFAULT_WORKERS
+// Zero means "the size the poster was traced at". The traced svg is the master
+// and carries no resolution of its own, so any width rasterizes from the same
+// geometry - sharper edges, not more detail.
+let width = 0
+let crf = DEFAULT_CRF
+// The rastered pngs are scratch - the svgs beside them re-raster at any width
+// without re-tracing, so a finished encode has no reason to keep 11gb around.
+let keep_frames = false
 
 if (arg_one === WORKER_FLAG) worker_opts = JSON.parse(arg_two)
 else {
   input_path = arg_one
-  const rest = [arg_two, arg_three, arg_four]
+  // Read every flag, not a fixed window of three - `--fps N --workers N` is
+  // four tokens on its own and used to lose whatever came last.
+  const rest = process.argv.slice(3)
   for (let index = 0; index < rest.length; index++) {
     const token = rest[index] ?? ''
     if (token === '--fps') fps = Number(rest[index + 1]) || DEFAULT_FPS
@@ -70,9 +94,20 @@ else {
       const n = Number(rest[index + 1])
       if (Number.isInteger(n) && n > 0) workers = n
     }
+    if (token === '--width') {
+      const n = Number(rest[index + 1])
+      if (Number.isInteger(n) && n > 0) width = n
+    }
+    if (token === '--crf') {
+      const n = Number(rest[index + 1])
+      if (Number.isInteger(n) && n >= CRF_MIN && n <= CRF_MAX) crf = n
+    }
+    if (token === '--keep-frames') keep_frames = true
   }
   if (!input_path)
-    fail('usage: npm run poster:video <video> [--fps N] [--workers N]')
+    fail(
+      'usage: npm run poster:video <video> [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]'
+    )
   if (!chrome_path)
     fail(
       'no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)'
@@ -86,6 +121,43 @@ const exec = (cmd, args) =>
     let stderr = ''
     child.stderr.on('data', chunk => {
       stderr += String(chunk)
+    })
+    child.on('close', code => {
+      if (code === 0) resolve()
+      else
+        reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
+    })
+  })
+
+// Run ffmpeg while reporting extraction progress on one \r-updated status
+// line. ffmpeg's `-progress pipe:2` writes key=value pairs to stderr; we read
+// frame and out_time_us so the master shows it's working instead of appearing
+// hung while the whole clip decodes to PNGs.
+const extract_frames = (video_path, fps, pattern, on_progress) =>
+  new Promise((resolve, reject) => {
+    const child = spawn('ffmpeg', [
+      '-y',
+      '-i',
+      video_path,
+      '-vf',
+      `fps=${fps},scale='min(1200,iw)':-2`,
+      '-progress',
+      'pipe:2',
+      '-nostats',
+      pattern
+    ])
+    let stderr = ''
+    let last_tick = 0
+    child.stderr.on('data', chunk => {
+      stderr += String(chunk)
+      // Throttle redraws to ~2/sec; the status line is cheap enough that
+      // parsing each chunk is fine.
+      const now = Date.now()
+      if (now - last_tick < PROGRESS_TICK_MS) return
+      last_tick = now
+      const frame = Number(/frame=(\d+)/.exec(stderr)?.[1] ?? 0)
+      const us = Number(/out_time_us=(\d+)/.exec(stderr)?.[1] ?? 0)
+      on_progress?.(frame, us / US_PER_SECOND)
     })
     child.on('close', code => {
       if (code === 0) resolve()
@@ -173,9 +245,86 @@ const data_url_of = file => {
 
 const status = message => console.info(`poster-video: ${message}`)
 
+/**
+ * The size a png on disk was rastered at, or null when it isn't there.
+ * Reads the IHDR header only - these files run to megabytes at 4k.
+ */
+const png_size_of = file => {
+  if (!fs.existsSync(file)) return null
+  const buffer = Buffer.alloc(IHDR_HEADER_BYTES)
+  const handle = fs.openSync(file, 'r')
+  try {
+    fs.readSync(handle, buffer, 0, IHDR_HEADER_BYTES, 0)
+  } finally {
+    fs.closeSync(handle)
+  }
+  return read_png_size(buffer)
+}
+
+/**
+ * Trace one source frame through the app's poster pipeline, returning its svg.
+ * An empty poster still comes back as a well-formed png and svg, so a render
+ * that resolves is not proof the frame is good - a rejected one is traced
+ * again rather than written.
+ */
+const trace_frame = async (evaluate, data_url, label) => {
+  for (let attempt = 1; attempt <= RENDER_RETRIES; attempt++)
+    try {
+      const rendered = JSON.parse(
+        await evaluate(
+          `window.__poster_driver.render(${JSON.stringify(data_url)}).then(r => JSON.stringify({ png: r.png, svg: r.svg }))`
+        )
+      )
+      const problem = frame_problem(rendered)
+      if (problem) throw new Error(problem)
+      return rendered.svg
+    } catch (error) {
+      status(`${label} attempt ${attempt} failed: ${error.message}`)
+    }
+  throw new Error(`${label} failed after retries`)
+}
+
+/**
+ * Draw a traced poster svg to a canvas at an arbitrary size. The svg carries
+ * its own symbols and gradients, so it rasterizes as a plain image with no
+ * app around it - which is why a resize never re-traces.
+ *
+ * Chrome's own --screenshot path hangs on these files; the posters carry SMIL
+ * `<animate>` elements and the page never settles. Drawing to a canvas takes
+ * the first frame and returns.
+ */
+const rasterize = async (evaluate, svg, { width, height }) => {
+  const data_url = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
+  const base64 = await evaluate(`(async () => {
+    const image = new Image()
+    await new Promise((resolve, reject) => {
+      image.onload = resolve
+      image.onerror = () => reject(new Error('poster svg failed to load'))
+      image.src = ${JSON.stringify(data_url)}
+    })
+    const canvas = new OffscreenCanvas(${width}, ${height})
+    canvas.getContext('2d').drawImage(image, 0, 0, ${width}, ${height})
+    const blob = await canvas.convertToBlob({ type: 'image/png' })
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    let binary = ''
+    for (let index = 0; index < bytes.length; index++)
+      binary += String.fromCharCode(bytes[index])
+    return btoa(binary)
+  })()`)
+  return Buffer.from(base64, 'base64')
+}
+
 // ---- Worker: one headless browser, renders a slice of frames ----
 const run_worker = async opts => {
-  const { source_dir, poster_dir, start, end, debug_port, worker_id } = opts
+  const {
+    source_dir,
+    poster_dir,
+    start,
+    end,
+    debug_port,
+    worker_id,
+    target_width
+  } = opts
   const profile_dir = mkdtempSync(path.join(tmpdir(), 'poster-video-prof-'))
   const target_url = `${base_url}${DRIVER_ROUTE}`
   const browser = spawn(
@@ -235,36 +384,40 @@ const run_worker = async opts => {
     for (let index = start; index < end; index++) {
       const frame_stem = `poster-${String(index + 1).padStart(5, '0')}`
       const out_png = path.join(poster_dir, `${frame_stem}.png`)
-      // Resume: a frame already rendered is left untouched, so an interrupted
-      // batch only redoes the missing frames.
-      if (fs.existsSync(out_png)) {
-        status(`skipping ${frame_stem} (already rendered)`)
+      const out_svg = path.join(poster_dir, `${frame_stem}.svg`)
+
+      // The traced svg is the master. Tracing is the expensive step, so it
+      // only runs when the svg is missing - a rerun at a different --width
+      // rasterizes the svgs already on disk and never touches the pipeline.
+      let svg = fs.existsSync(out_svg) ? fs.readFileSync(out_svg, 'utf8') : null
+
+      if (!svg) {
+        const frame = frame_files[index]
+        status(
+          `tracing ${index + 1}/${frame_files.length} (worker ${worker_id})`
+        )
+        svg = await trace_frame(
+          evaluate,
+          data_url_of(path.join(source_dir, frame)),
+          `frame ${index + 1}`
+        )
+        fs.writeFileSync(out_svg, svg)
+      }
+
+      const size = poster_raster_size(svg, target_width)
+      if (!size) throw new Error(`frame ${index + 1} svg has no usable viewBox`)
+
+      // Resume: a png already at the requested size is left alone, so an
+      // interrupted batch only redoes what is missing or the wrong size.
+      if (png_size_of(out_png)?.width === size.width) {
+        status(`skipping ${frame_stem} (already ${size.width}px)`)
         continue
       }
-      const frame = frame_files[index]
-      const data_url = data_url_of(path.join(source_dir, frame))
+
       status(
-        `rendering ${index + 1}/${frame_files.length} (worker ${worker_id})`
+        `rastering ${index + 1}/${frame_files.length} at ${size.width}x${size.height} (worker ${worker_id})`
       )
-
-      let result = null
-      for (let attempt = 1; attempt <= RENDER_RETRIES && !result; attempt++)
-        try {
-          result = await evaluate(
-            `window.__poster_driver.render(${JSON.stringify(data_url)}).then(r => JSON.stringify({ png: r.png, svg: r.svg }))`
-          )
-        } catch (error) {
-          status(
-            `frame ${index + 1} attempt ${attempt} failed: ${error.message}`
-          )
-        }
-
-      if (!result) throw new Error(`frame ${index + 1} failed after retries`)
-      const { png, svg } = JSON.parse(result)
-      if (!png) throw new Error(`frame ${index + 1} produced no poster png`)
-      const [, base64] = png.split(',')
-      fs.writeFileSync(out_png, Buffer.from(base64, 'base64'))
-      fs.writeFileSync(path.join(poster_dir, `${frame_stem}.svg`), svg)
+      fs.writeFileSync(out_png, await rasterize(evaluate, svg, size))
     }
   } finally {
     shutdown()
@@ -285,28 +438,36 @@ const run_master = async () => {
   const stem = path.basename(input_path, path.extname(input_path))
   const poster_dir = path.join(out_dir, `${stem}-frames`)
   fs.mkdirSync(source_dir, { recursive: true })
-  // Do NOT wipe poster_dir - already-rendered frames are skipped on resume,
-  // so an interrupted run only redoes the missing frames.
+  // Do NOT wipe poster_dir - the traced svgs in it are the master, and an
+  // interrupted run only redoes what is missing.
   fs.mkdirSync(poster_dir, { recursive: true })
-  const existing = fs
+  const traced = fs
     .readdirSync(poster_dir)
-    .filter(name => name.endsWith('.png')).length
-  if (existing > 0)
+    .filter(name => name.endsWith('.svg')).length
+  if (traced > 0)
     console.info(
-      `poster-video: resuming - ${existing} frame(s) already rendered will be skipped`
+      `poster-video: resuming - ${traced} frame(s) already traced will be reused`
     )
+  if (width > 0) console.info(`poster-video: rastering posters ${width}px wide`)
 
   console.info(
     `poster-video: extracting ${fps}fps frames from ${path.basename(input_path)}`
   )
-  await exec('ffmpeg', [
-    '-y',
-    '-i',
+  let last_tick = 0
+  await extract_frames(
     input_path,
-    '-vf',
-    `fps=${fps},scale='min(1200,iw)':-2`,
-    `${source_dir}/frame-%05d.png`
-  ])
+    fps,
+    `${source_dir}/frame-%05d.png`,
+    (frame, seconds) => {
+      const now = Date.now()
+      if (now - last_tick < PROGRESS_TICK_MS) return
+      last_tick = now
+      process.stderr.write(
+        `\rposter-video: extracting ${frame} frames (${seconds.toFixed(1)}s)   `
+      )
+    }
+  )
+  process.stderr.write(`\r${' '.repeat(STATUS_PAD)}\r`)
   mark('extract')
   const frame_files = fs
     .readdirSync(source_dir)
@@ -337,7 +498,8 @@ const run_master = async () => {
       poster_dir,
       start: slice.start,
       end: slice.end,
-      debug_port: DEBUG_PORT + w
+      debug_port: DEBUG_PORT + w,
+      target_width: width
     }
     return fork(__filename, [WORKER_FLAG, JSON.stringify(opts)], {
       stdio: ['ignore', 'inherit', 'inherit', 'ipc']
@@ -391,13 +553,30 @@ const run_master = async () => {
       String(fps),
       '-i',
       `${poster_dir}/poster-%05d.png`,
+      // The clip again, for its soundtrack. Tracing covers the same span at
+      // whatever --fps was asked for, so the audio still lines up.
+      '-i',
+      input_path,
       // libx264 + yuv420p requires even dimensions; traced posters can be odd
       '-vf',
       'pad=ceil(iw/2)*2:ceil(ih/2)*2',
+      '-map',
+      '0:v',
+      // Optional - a silent clip encodes to a silent poster video.
+      '-map',
+      '1:a?',
       '-c:v',
       'libx264',
+      '-crf',
+      String(crf),
       '-pix_fmt',
       'yuv420p',
+      // Re-encode rather than copy: .mov often carries pcm, which mp4 rejects.
+      '-c:a',
+      'aac',
+      '-b:a',
+      AUDIO_BITRATE,
+      '-shortest',
       '-movflags',
       '+faststart',
       out_file
@@ -414,7 +593,15 @@ const run_master = async () => {
       })}`
     )
     console.info(`poster-video: wrote ${out_file}`)
-    console.info(`poster-video: kept frames in ${poster_dir}`)
+    // Only once the encode has succeeded: the pngs have served their purpose,
+    // and the svgs beside them re-raster at any --width without re-tracing.
+    if (keep_frames) console.info(`poster-video: kept frames in ${poster_dir}`)
+    else {
+      const freed = clear_raster_frames(poster_dir)
+      console.info(
+        `poster-video: cleared ${freed.count} raster frame(s), ${Math.round(freed.bytes / BYTES_PER_MB)}MB - kept the svgs in ${poster_dir}`
+      )
+    }
   } finally {
     cleanup_tmp()
   }
