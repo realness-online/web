@@ -35,18 +35,22 @@
   const next = () => go_to(active_index.value + 1)
   const prev = () => go_to(active_index.value - 1)
 
-  // Swipe between tiers on touch.
-  let touch_start_x = null
+  // Swipe between tiers. Scrolling flicks arc sideways, so require across > down.
+  let touch_start = null
   const on_touch_start = event => {
-    touch_start_x = event.changedTouches[0]?.clientX ?? null
+    const [touch] = event.changedTouches
+    touch_start = touch ? { x: touch.clientX, y: touch.clientY } : null
   }
   const on_touch_end = event => {
-    if (touch_start_x === null) return
-    const delta = event.changedTouches[0].clientX - touch_start_x
-    touch_start_x = null
+    if (touch_start === null) return
+    const [touch] = event.changedTouches
+    const delta_x = touch.clientX - touch_start.x
+    const delta_y = touch.clientY - touch_start.y
+    touch_start = null
     const THRESHOLD = 40
-    if (delta > THRESHOLD) prev()
-    else if (delta < -THRESHOLD) next()
+    if (Math.abs(delta_x) <= Math.abs(delta_y)) return
+    if (delta_x > THRESHOLD) prev()
+    else if (delta_x < -THRESHOLD) next()
   }
 </script>
 
