@@ -15,7 +15,14 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const PROJECT_ID = 'realness-rules-test'
-const STORAGE_PORT = Number(process.env.STORAGE_EMULATOR_PORT || 9299)
+// Prefer the port Firebase's emulators:exec sets for the running storage
+// emulator (127.0.0.1:<port>) so this can never drift from firebase.test.json.
+// Fall back to a dedicated non-reserved port - keep it in sync with
+// firebase.test.json "emulators.storage.port" if you change it.
+const emulator_host = process.env.FIREBASE_STORAGE_EMULATOR_HOST
+const STORAGE_PORT = emulator_host
+  ? Number(emulator_host.split(':').pop())
+  : Number(process.env.STORAGE_EMULATOR_PORT || 9439)
 
 const OWNER = '+15551110000'
 const STRANGER = '+15552220000'

@@ -4,7 +4,7 @@
   },
   "emulators": {
     "storage": {
-      "port": 9299
+      "port": 9439
     },
     "hub": {
       "port": 4401

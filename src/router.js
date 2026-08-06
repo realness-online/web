@@ -50,6 +50,11 @@ const routes = [
     component: () => import('@/views/OgCandidates'),
     meta: { support: true }
   },
+  {
+    path: '/poster-driver',
+    component: () => import('@/views/PosterDriver'),
+    meta: { support: true }
+  },
   { path: '/:phone_number', component: () => import('@/views/Profile') }
 ]
 const router = createRouter({

@@ -96,3 +96,6 @@ public/og.png
 
 # autoresearch session files
 .auto/
+
+# test videos - too large for git
+public/*.mov
