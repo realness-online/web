@@ -175,14 +175,7 @@ const status = message => console.info(`poster-video: ${message}`)
 
 // ---- Worker: one headless browser, renders a slice of frames ----
 const run_worker = async opts => {
-  const {
-    source_dir,
-    poster_dir,
-    start,
-    end,
-    debug_port,
-    worker_id
-  } = opts
+  const { source_dir, poster_dir, start, end, debug_port, worker_id } = opts
   const profile_dir = mkdtempSync(path.join(tmpdir(), 'poster-video-prof-'))
   const target_url = `${base_url}${DRIVER_ROUTE}`
   const browser = spawn(
