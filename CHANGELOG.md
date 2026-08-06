@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- **Posters now render for a whole video, not just a single still** —
+  `npm run poster:video <clip>` extracts every frame of a clip, traces each one
+  in a pool of parallel headless browsers, and stitches the traced frames back
+  into an mp4. Frames already rendered are skipped on rerun, so an interrupted
+  batch resumes where it left off instead of starting over. The tracing runs
+  against the deployed site (override with `REALNESS_URL`), so a render never
+  depends on a local build being present or current.
+
+- **The pagination sentinel claimed to hide itself but never did** —
+  `aria-hidden` with no value compiles to the empty string, which is not a
+  valid value, so the sentinel stayed in the accessibility tree and the feed
+  broke its `role="feed"` contract. It now says `true` out loud.
+
 ## v2.7.1 — 2026-08-05
 
 - **The footer island sat too close to the bottom edge** — it was pinned one
