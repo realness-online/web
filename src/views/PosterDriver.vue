@@ -10,6 +10,7 @@
   import { geology_layers } from '@/use/poster'
   import { completed_posters, current_processing } from '@/use/vectorize/queue'
   import { as_query_id, as_layer_id } from '@/utils/itemid'
+  import { mutex_for } from '@/utils/algorithms'
   import {
     build_download_svg,
     wait_for_poster_export_ready
@@ -37,6 +38,13 @@
   const READY_TIMEOUT_MS = 120000
   const POLL_MS = 100
   const PNG_TARGET = 1200
+  // Serialize driver renders on a driver-owned mutex (distinct from the
+  // queue's 'vectorize' mutex, whose handler re-locks the same key and would
+  // deadlock if we held it across the render). A frame's late-arriving worker
+  // messages (vectorize/optimize completing) can never be clobbered by the
+  // next frame's dispatch: the shared pipeline state is single-slot, so
+  // overlapping renders race and drop traced paths.
+  const render_mutex = mutex_for('poster-driver')
 
   const image_picker = ref(/** @type {HTMLInputElement | null} */ (null))
   const { vectorize, new_vector, mount_workers } = use_vectorize(image_picker)
@@ -136,6 +144,16 @@
   }
 
   const render = async data_url => {
+    await render_mutex.lock()
+    try {
+      return await render_inner(data_url)
+    } finally {
+      render_mutex.unlock()
+    }
+  }
+
+  /** @param {string} data_url */
+  const render_inner = async data_url => {
     const file = data_url_to_file(data_url)
     const created = Date.now()
     const itemid = /** @type {Id} */ (`/+${DRIVER_AUTHOR}/posters/${created}`)
@@ -174,14 +192,27 @@
     status.value = 'Rendering'
     persisted_itemid.value = itemid
 
-    // Mounted and sized - the figure sets the real viewBox once its poster
-    // loads from storage.
+    // Mounted and sized - as-figure starts on a 16x16 placeholder viewBox and
+    // swaps in the real one once its poster loads from storage. A width over
+    // zero accepts that placeholder, so wait for the dimensions we asked for.
     const svg = await wait_for(() => {
       const el = document.getElementById(as_query_id(itemid))
       if (!(el instanceof SVGSVGElement)) return null
-      return el.viewBox.baseVal.width > 0 ? el : null
+      const { width, height } = el.viewBox.baseVal
+      return width === poster_width && height === poster_height ? el : null
     })
     if (!svg) throw new Error('poster svg never mounted')
+
+    // The companion symbol defs are v-if'd in, so an absent element means "not
+    // mounted yet" - but wait_for_poster_export_ready reads absent as "nothing
+    // to wait for" and returns at once. Capture then merges no symbols and the
+    // frame exports with zero traced paths.
+    const symbol_defs = await wait_for(() =>
+      svg
+        .closest('figure:has([itemtype="/posters"])')
+        ?.querySelector('svg[data-poster-symbol-defs]')
+    )
+    if (!symbol_defs) throw new Error('poster symbol defs never mounted')
 
     await wait_for_poster_export_ready(svg, itemid)
 
