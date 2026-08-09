@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.7.4 — 2026-08-09
+
 - **You can make posters from a whole folder of photos now** - point
   `npm run poster` at a directory instead of one image. Add
   `--formats svg,png,psd,glb` to pick what comes out. GLB is new to the command
