@@ -110,10 +110,13 @@ const build_mosaic_mesh = (obj, ambient_total, dir_lights) => {
 }
 
 /**
+ * Builds the export scene and hands back the binary glTF, so a caller that
+ * wants the bytes (the poster driver) doesn't have to go through a download.
+ *
  * @param {THREE.Scene} scene
- * @param {string} [filename]
+ * @returns {Promise<ArrayBuffer>}
  */
-export const export_poster_glb = (scene, filename = 'poster') => {
+export const parse_poster_glb = scene => {
   const exporter = new GLTFExporter()
   const export_scene = new THREE.Scene()
   const mosaic_group = new THREE.Group()
@@ -157,9 +160,19 @@ export const export_poster_glb = (scene, filename = 'poster') => {
     }
   })
 
-  exporter.parse(
-    export_scene,
-    buffer => {
+  return new Promise((resolve, reject) => {
+    exporter.parse(export_scene, resolve, reject, { binary: true })
+  })
+}
+
+/**
+ * @param {THREE.Scene} scene
+ * @param {string} [filename]
+ * @returns {Promise<void>}
+ */
+export const export_poster_glb = (scene, filename = 'poster') =>
+  parse_poster_glb(scene)
+    .then(buffer => {
       const blob = new Blob([buffer], { type: 'application/octet-stream' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -167,8 +180,5 @@ export const export_poster_glb = (scene, filename = 'poster') => {
       a.download = `${filename}.glb`
       a.click()
       URL.revokeObjectURL(url)
-    },
-    error => console.error('GLTFExporter error:', error),
-    { binary: true }
-  )
-}
+    })
+    .catch(error => console.error('GLTFExporter error:', error))

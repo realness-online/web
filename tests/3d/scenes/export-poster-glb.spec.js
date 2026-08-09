@@ -1,6 +1,9 @@
 import * as THREE from 'three'
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
-import { export_poster_glb } from '@/3d/scenes/export-poster-glb.js'
+import {
+  export_poster_glb,
+  parse_poster_glb
+} from '@/3d/scenes/export-poster-glb.js'
 
 const { parse_mock } = vi.hoisted(() => ({
   parse_mock: vi.fn((scene, on_done) => {
@@ -23,7 +26,7 @@ describe('export_poster_glb', () => {
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
   })
 
-  it('exports colored mosaic meshes and textured shadows', () => {
+  it('exports colored mosaic meshes and textured shadows', async () => {
     const scene = new THREE.Scene()
     add_poster_scene_lights(scene)
 
@@ -63,7 +66,7 @@ describe('export_poster_glb', () => {
         return Document.prototype.createElement.call(document, tag)
       })
 
-    export_poster_glb(scene, 'test-poster')
+    await export_poster_glb(scene, 'test-poster')
 
     expect(parse_mock).toHaveBeenCalled()
     const export_scene = parse_mock.mock.calls[0][0]
@@ -79,6 +82,18 @@ describe('export_poster_glb', () => {
     expect(mosaic_mesh.geometry.attributes.color).toBeUndefined()
     expect(mosaic_mesh.geometry.attributes.uv).toBeDefined()
 
+    create_spy.mockRestore()
+  })
+
+  it('hands the binary glTF back without downloading it', async () => {
+    const scene = new THREE.Scene()
+    add_poster_scene_lights(scene)
+    const create_spy = vi.spyOn(document, 'createElement')
+
+    const buffer = await parse_poster_glb(scene)
+
+    expect(buffer).toBeInstanceOf(ArrayBuffer)
+    expect(create_spy).not.toHaveBeenCalledWith('a')
     create_spy.mockRestore()
   })
 })

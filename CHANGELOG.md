@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **You can make posters from a whole folder of photos now** - point
+  `npm run poster` at a directory instead of one image. Add
+  `--formats svg,png,psd,glb` to pick what comes out. GLB is new to the command
+  line, so a 3D model no longer has to come from the menu.
+
+- **Batch renders were writing empty posters** - if a poster's layers had not
+  finished saving, the file still came out perfectly well formed with nothing
+  in it, and nothing noticed. A render now waits for every layer to be stored,
+  checks the tracer found something, and names the frame when it did not. Only
+  one poster is drawn at a time, so two can no longer be half-drawn at once.
+
 ## v2.7.3 — 2026-08-06
 
 - **Video renders were leaving frames blank** — the renderer photographed each

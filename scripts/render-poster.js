@@ -202,8 +202,7 @@ const run = async () => {
     const ready = await (async () => {
       const deadline = Date.now() + READY_TIMEOUT_MS
       while (Date.now() < deadline) {
-        if (await evaluate('window.__poster_driver?.ready === true'))
-          return true
+        if (await evaluate('window.poster_driver?.ready === true')) return true
         await sleep(POLL_MS)
       }
       return false
@@ -214,11 +213,11 @@ const run = async () => {
     let result
     try {
       result = await evaluate(
-        `window.__poster_driver.render(${image_json}).then(r => r)`
+        `window.poster_driver.render(${image_json}).then(r => r)`
       )
     } catch (error) {
       const debug = await evaluate(
-        'window.__poster_driver?.debug?.() ?? null'
+        'window.poster_driver?.debug?.() ?? null'
       ).catch(() => null)
       console.error(
         'render-poster: render failed',

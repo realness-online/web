@@ -7,7 +7,12 @@ import { is_release_junk } from './release-junk.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const project_root = path.join(__dirname, '..')
-const dist_dir = path.join(project_root, 'dist')
+// The build always means `dist/`. DIST_DIR exists so a test can point this at
+// its own tree - this script deletes junk from whatever it walks, and it must
+// never be pointed at a real build by accident.
+const dist_dir = process.env.DIST_DIR
+  ? path.resolve(process.env.DIST_DIR)
+  : path.join(project_root, 'dist')
 const manifest_name = 'build-manifest.json'
 const manifest_path = path.join(dist_dir, manifest_name)
 
