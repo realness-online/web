@@ -66,16 +66,10 @@
     "test:watch": "vp test watch",
     "test:ui": "vp test --ui",
     "test:fail-fast": "vp test run --bail=1 --reporter=dot",
-    "test:keymaps": "node test-keymap-build.js",
     "test:rules": "firebase emulators:exec --only storage --config firebase.test.json 'vp test run -c vitest.config.storage-rules.js'",
     "fallow:fix": "fallow fix",
     "type": "tsc --pretty",
-    "pre-commit": "vp check --fix && vp run type && vp test run && npm run test:rules",
-    "storage:compress": "node scripts/compress-files.js",
-    "storage:upload": "node scripts/upload-files.js",
-    "storage:download": "node scripts/download-files.js",
-    "server:start": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"./loader.mjs\", pathToFileURL(\"./\"));' scripts/server.js",
-    "server:sync": "node scripts/sync.js"
+    "pre-commit": "vp check --fix && vp run type && vp test run && npm run test:rules"
   },
   "dependencies": {
     "@vueuse/core": "14.4.0",

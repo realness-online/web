@@ -13,37 +13,22 @@
   import { mutex_for } from '@/utils/algorithms'
   import {
     build_download_svg,
+    prepare_poster_svg_for_3d,
     wait_for_poster_export_ready
   } from '@/utils/export-poster'
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
-
-  /**
-   * PosterDriver is the seam for making posters from an arbitrary image (or
-   * video frame) without the Thoughts feed UI. The app is the only renderer,
-   * so this view drives it - the same machinery as the feed, end to end:
-   *
-   * 1. `render(data_url)` feeds the image to the real vectorize pipeline.
-   * 2. `as-svg-processing` shows the live processing SVG while tracing - the
-   *    optimizer captures that element's HTML.
-   * 3. Done means done: the poster and all its layers are persisted to
-   *    storage (`completed_posters` inclusion, pushed after `save_poster`).
-   * 4. A fresh `as-figure` then loads the saved poster - the exact render
-   *    path the feed uses. No pipeline state is read after completion.
-   * 5. After the app's own export-ready gate, the finished poster is exported
-   *    with the app's export utilities: standalone SVG, full figure HTML, and
-   *    a PNG. The caller can parse the HTML with `get_item`/`get_itemprops`.
-   */
+  import { render_svg_layers_to_psd } from '@/utils/svg-to-psd'
+  import { with_poster_scene } from '@/3d/scenes/with-poster-scene.js'
 
   const DRIVER_AUTHOR = 'driver'
+
+  const DEFAULT_FORMATS = ['png']
+  const BASE64_CHUNK = 0x8000
   const READY_TIMEOUT_MS = 120000
+  const DRAWABLE_TIMEOUT_MS = 10000
+  const BLANK_POSTER = 'poster has no drawable layer'
   const POLL_MS = 100
   const PNG_TARGET = 1200
-  // Serialize driver renders on a driver-owned mutex (distinct from the
-  // queue's 'vectorize' mutex, whose handler re-locks the same key and would
-  // deadlock if we held it across the render). A frame's late-arriving worker
-  // messages (vectorize/optimize completing) can never be clobbered by the
-  // next frame's dispatch: the shared pipeline state is single-slot, so
-  // overlapping renders race and drop traced paths.
   const render_mutex = mutex_for('poster-driver')
 
   const image_picker = ref(/** @type {HTMLInputElement | null} */ (null))
@@ -54,9 +39,6 @@
 
   /** @type {import('vue').Ref<QueueItem | null>} */
   const queue_item = ref(null)
-  // The pipeline's own processing slot - the vectorized handler reads the
-  // poster's width/height (and so its viewBox) from it, and
-  // as-svg-processing keys off it. Same object the feed's queue uses.
   provide('current_processing', current_processing)
 
   /** @type {import('vue').Ref<Id | null>} */
@@ -73,10 +55,11 @@
   /**
    * @template T
    * @param {() => T} check
+   * @param {number} [timeout_ms]
    * @returns {Promise<T | null>}
    */
-  const wait_for = async check => {
-    const deadline = Date.now() + READY_TIMEOUT_MS
+  const wait_for = async (check, timeout_ms = READY_TIMEOUT_MS) => {
+    const deadline = Date.now() + timeout_ms
     while (Date.now() < deadline) {
       const value = check()
       if (value) return value
@@ -122,17 +105,37 @@
   }
 
   /**
-   * @param {string} data_url
-   * @returns {Promise<{
-   *   itemid: Id,
-   *   svg: string,
-   *   html: string,
-   *   png: string,
-   *   viewbox: string,
-   *   width: number,
-   *   height: number
-   * }>}
+   * @param {ArrayBuffer | Uint8Array} buffer
+   * @returns {string}
    */
+  const as_base64 = buffer => {
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
+    let binary = ''
+    for (let index = 0; index < bytes.length; index += BASE64_CHUNK)
+      binary += String.fromCharCode(
+        ...bytes.subarray(index, index + BASE64_CHUNK)
+      )
+    return btoa(binary)
+  }
+
+  /**
+   * The poster menu's GLB path without the download - mount a headless scene,
+   * wait for its textures, hand back the binary glTF.
+   * @param {SVGSVGElement} svg
+   * @param {Id} itemid
+   * @returns {Promise<string>}
+   */
+  const as_glb_base64 = async (svg, itemid) => {
+    const svg_string = await prepare_poster_svg_for_3d(svg, itemid)
+    let glb = ''
+    await with_poster_scene(svg_string, async scene => {
+      await scene.wait_for_textures()
+      glb = as_base64(await scene.parse_glb())
+    })
+    return glb
+  }
+
+  /** @param {Id} itemid */
   const cleanup_storage = async itemid => {
     /** The poster itself, its shadow layer, and the geology cutout layers. */
     const keys = [
@@ -143,17 +146,38 @@
     await Promise.all(keys.map(key => del(key)))
   }
 
-  const render = async data_url => {
+  /**
+   * @param {string} data_url
+   * @param {{ formats?: string[] }} [options]
+   * @returns {Promise<{
+   *   itemid: Id,
+   *   svg: string,
+   *   html: string,
+   *   png: string | null,
+   *   psd: string | null,
+   *   glb: string | null,
+   *   viewbox: string,
+   *   width: number,
+   *   height: number
+   * }>}
+   */
+  const render = async (data_url, options = {}) => {
     await render_mutex.lock()
     try {
-      return await render_inner(data_url)
+      return await render_inner(
+        data_url,
+        new Set(options.formats ?? DEFAULT_FORMATS)
+      )
     } finally {
       render_mutex.unlock()
     }
   }
 
-  /** @param {string} data_url */
-  const render_inner = async data_url => {
+  /**
+   * @param {string} data_url
+   * @param {Set<string>} formats
+   */
+  const render_inner = async (data_url, formats) => {
     const file = data_url_to_file(data_url)
     const created = Date.now()
     const itemid = /** @type {Id} */ (`/+${DRIVER_AUTHOR}/posters/${created}`)
@@ -192,9 +216,6 @@
     status.value = 'Rendering'
     persisted_itemid.value = itemid
 
-    // Mounted and sized - as-figure starts on a 16x16 placeholder viewBox and
-    // swaps in the real one once its poster loads from storage. A width over
-    // zero accepts that placeholder, so wait for the dimensions we asked for.
     const svg = await wait_for(() => {
       const el = document.getElementById(as_query_id(itemid))
       if (!(el instanceof SVGSVGElement)) return null
@@ -203,24 +224,31 @@
     })
     if (!svg) throw new Error('poster svg never mounted')
 
-    // The companion symbol defs are v-if'd in, so an absent element means "not
-    // mounted yet" - but wait_for_poster_export_ready reads absent as "nothing
-    // to wait for" and returns at once. Capture then merges no symbols and the
-    // frame exports with zero traced paths.
-    const symbol_defs = await wait_for(() =>
-      svg
-        .closest('figure:has([itemtype="/posters"])')
-        ?.querySelector('svg[data-poster-symbol-defs]')
+    const symbol_defs = await wait_for(
+      () =>
+        svg
+          .closest('figure:has([itemtype="/posters"])')
+          ?.querySelector('svg[data-poster-symbol-defs]'),
+      DRAWABLE_TIMEOUT_MS
     )
-    if (!symbol_defs) throw new Error('poster symbol defs never mounted')
+    if (!symbol_defs) throw new Error(BLANK_POSTER)
 
     await wait_for_poster_export_ready(svg, itemid)
 
     const download_svg = build_download_svg(svg)
     const width = download_svg.viewBox.baseVal.width || PNG_TARGET
     const height = download_svg.viewBox.baseVal.height || PNG_TARGET
-    const png = await as_png_data_url(svg, width, height)
+
+    status.value = 'Exporting'
+    const png = formats.has('png')
+      ? await as_png_data_url(svg, width, height)
+      : null
+    const psd = formats.has('psd')
+      ? as_base64(await render_svg_layers_to_psd(svg, itemid))
+      : null
+    const glb = formats.has('glb') ? await as_glb_base64(svg, itemid) : null
     const html = svg.closest('figure')?.outerHTML ?? download_svg.outerHTML
+
     // The poster was captured; drop it from storage so this batch stays flat.
     await cleanup_storage(itemid)
     status.value = 'Done'
@@ -229,6 +257,8 @@
       svg: download_svg.outerHTML,
       html,
       png,
+      psd,
+      glb,
       viewbox: download_svg.getAttribute('viewBox') || '',
       width,
       height
@@ -237,7 +267,7 @@
 
   mounted(() => {
     /** @type {any} */
-    window.__poster_driver = {
+    window.poster_driver = {
       render,
       ready: true,
       get_status: () => status.value
@@ -252,7 +282,7 @@
     <header>
       <h1>Poster driver</h1>
       <p>{{ status }}</p>
-      <p v-if="ready">Call window.__poster_driver.render(dataUrl).</p>
+      <p v-if="ready">Call window.poster_driver.render(dataUrl).</p>
     </header>
     <aside aria-hidden="true">
       <as-svg-processing

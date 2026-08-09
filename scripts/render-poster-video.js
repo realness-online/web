@@ -272,7 +272,7 @@ const trace_frame = async (evaluate, data_url, label) => {
     try {
       const rendered = JSON.parse(
         await evaluate(
-          `window.__poster_driver.render(${JSON.stringify(data_url)}).then(r => JSON.stringify({ png: r.png, svg: r.svg }))`
+          `window.poster_driver.render(${JSON.stringify(data_url)}).then(r => JSON.stringify({ png: r.png, svg: r.svg }))`
         )
       )
       const problem = frame_problem(rendered)
@@ -373,7 +373,7 @@ const run_worker = async opts => {
     const ready_deadline = Date.now() + READY_TIMEOUT_MS
     let ready = false
     while (Date.now() < ready_deadline) {
-      if (await evaluate('window.__poster_driver?.ready === true')) {
+      if (await evaluate('window.poster_driver?.ready === true')) {
         ready = true
         break
       }

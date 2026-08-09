@@ -9,7 +9,10 @@ import { add_poster_shadow_layers } from '@/3d/scenes/add-poster-shadow-layers.j
 import { add_poster_stroke_layers } from '@/3d/scenes/add-poster-stroke-layers.js'
 import { create_poster_scene_settings } from '@/3d/scenes/create-poster-scene-settings.js'
 import { create_poster_scene_update } from '@/3d/scenes/create-poster-scene-update.js'
-import { export_poster_glb } from '@/3d/scenes/export-poster-glb.js'
+import {
+  export_poster_glb,
+  parse_poster_glb
+} from '@/3d/scenes/export-poster-glb.js'
 import {
   FIT_HEIGHT,
   INITIAL_BREATHING_AMOUNT,
@@ -397,6 +400,9 @@ export const create_poster_scene = svg_string => {
     },
     export_glb(filename = 'poster') {
       export_poster_glb(scene, filename)
+    },
+    parse_glb() {
+      return parse_poster_glb(scene)
     },
     dispose() {
       scene.traverse(object => {

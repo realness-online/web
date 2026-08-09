@@ -9,29 +9,35 @@ const project_root = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   '../..'
 )
-const dist_dir = path.join(project_root, 'dist')
-const manifest_path = path.join(dist_dir, 'build-manifest.json')
 
-const cleanup_path = relative => {
-  const full = path.join(dist_dir, relative)
-  if (fs.existsSync(full)) fs.rmSync(full, { recursive: true, force: true })
-}
+// A tree of this spec's own, never the real `dist/`. build-manifest deletes
+// the junk it finds, so pointing it at a real build makes running the tests
+// destroy it - `npm run build` then `npm run test` used to leave dist without
+// an index.html.
+let dist_dir
+let manifest_path
+
+const run_manifest = () =>
+  execSync('node scripts/build-manifest.js', {
+    cwd: project_root,
+    env: { ...process.env, DIST_DIR: dist_dir }
+  })
 
 describe('build-manifest', () => {
   beforeEach(() => {
-    fs.mkdirSync(dist_dir, { recursive: true })
+    const artifacts = path.join(project_root, 'artifacts')
+    fs.mkdirSync(artifacts, { recursive: true })
+    dist_dir = fs.mkdtempSync(path.join(artifacts, 'build-manifest-'))
+    manifest_path = path.join(dist_dir, 'build-manifest.json')
     fs.writeFileSync(path.join(dist_dir, 'index.html'), '<html></html>\n')
   })
 
   afterEach(() => {
-    cleanup_path('build-manifest.json')
-    cleanup_path('index.html')
-    cleanup_path('screentones')
-    cleanup_path('Thumbs.db')
+    fs.rmSync(dist_dir, { recursive: true, force: true })
   })
 
   it('writes sha256 entries for dist files', () => {
-    execSync('node scripts/build-manifest.js', { cwd: project_root })
+    run_manifest()
     const manifest = JSON.parse(fs.readFileSync(manifest_path, 'utf8'))
     const expected = `sha256:${createHash('sha256')
       .update('<html></html>\n')
@@ -48,7 +54,7 @@ describe('build-manifest', () => {
     fs.writeFileSync(path.join(tone_dir, 'ok.txt'), 'keep\n')
     fs.writeFileSync(path.join(dist_dir, 'Thumbs.db'), 'windows-junk')
 
-    execSync('node scripts/build-manifest.js', { cwd: project_root })
+    run_manifest()
     const manifest = JSON.parse(fs.readFileSync(manifest_path, 'utf8'))
 
     expect(manifest.files['/screentones/ok.txt']).toBeTruthy()
