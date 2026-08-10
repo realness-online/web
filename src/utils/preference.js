@@ -17,6 +17,7 @@ import {
 } from '@/utils/preference-defaults.js'
 
 export const animate = storage('animate', false)
+export const morph = storage('morph', false)
 export const color_cycle = storage('color_cycle', true)
 export const drama = storage('drama', false)
 export const drama_back = storage('drama_back', false)

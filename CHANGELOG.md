@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## v2.7.4 — 2026-08-09
+## v2.7.4 - 2026-08-09
 
 - **You can make posters from a whole folder of photos now** - point
   `npm run poster` at a directory instead of one image. Add
@@ -15,23 +15,23 @@
   checks the tracer found something, and names the frame when it did not. Only
   one poster is drawn at a time, so two can no longer be half-drawn at once.
 
-## v2.7.3 — 2026-08-06
+## v2.7.3 - 2026-08-06
 
-- **Video renders were leaving frames blank** — the renderer photographed each
+- **Video renders were leaving frames blank** - the renderer photographed each
   frame before its poster had finished drawing, and a blank frame still writes
   a perfectly good file, so nothing caught it. It waits for the poster now and
   will not write an empty frame. Renders also carry the clip's audio and work
   at any width.
 
-- **The pricing page would not scroll on a phone** — swiping sideways moves
+- **The pricing page would not scroll on a phone** - swiping sideways moves
   between tiers, and a thumb scrolling down drifts sideways as it travels. So
   every scroll changed the tier, and changing tier put you back at the top of
   the page. A swipe now has to travel further across than down, and moving
   between tiers keeps your place.
 
-## v2.7.2 — 2026-08-06
+## v2.7.2 - 2026-08-06
 
-- **Posters now render for a whole video, not just a single still** —
+- **Posters now render for a whole video, not just a single still** -
   `npm run poster:video <clip>` extracts every frame of a clip, traces each one
   in a pool of parallel headless browsers, and stitches the traced frames back
   into an mp4. Frames already rendered are skipped on rerun, so an interrupted
@@ -39,18 +39,18 @@
   against the deployed site (override with `REALNESS_URL`), so a render never
   depends on a local build being present or current.
 
-- **A screen reader announced something that is not there** — the feed ends in
+- **A screen reader announced something that is not there** - the feed ends in
   an invisible marker that asks for the next page of history when you reach it,
   and it was meant to be hidden from assistive technology. `aria-hidden`
   written with no value is the empty string, which means nothing at all, so the
   marker was read out like any other item in the feed. It says `true` now.
 
-## v2.7.1 — 2026-08-05
+## v2.7.1 - 2026-08-05
 
-- **The footer island sat too close to the bottom edge** — it was pinned one
+- **The footer island sat too close to the bottom edge** - it was pinned one
   base-line off the viewport. It now sits at one and a half.
 
-- **Statements stopped years short of the beginning** — they archive into whole
+- **Statements stopped years short of the beginning** - they archive into whole
   sections saved under a timestamped filename, and that timestamp is also one of
   the statements inside. Asking for the page id therefore found that one
   statement, so a page of history read as a single sentence and everything
@@ -58,20 +58,20 @@
   `/+author/statements` id, so realness asks it for its list. Every archive
   opens, back to the first thing you ever wrote.
 
-- **Posters never paged past the first screenful on a profile** — a poster
+- **Posters never paged past the first screenful on a profile** - a poster
   coming into view is what asks for the next page of history, and the line
   listening for it was written so that Vue ran the handler once while drawing
   the page and threw the result away. Nothing was ever told a poster had been
   seen, so nothing ever asked for more. Both feeds reach the oldest poster now.
 
 - **A thought that came into view three times fetched the same page of history
-  three times** — a day can bring several thoughts on screen in one frame, and
+  three times** - a day can bring several thoughts on screen in one frame, and
   each read the list of pages already seen before any of them had written to it.
   The duplicate statements then collided as list keys and the feed stopped
   drawing where they landed. One page loads at a time per person, and a
   statement that arrives twice is only kept once.
 
-- **The oldest thoughts would not open** — a thought written alongside a poster
+- **The oldest thoughts would not open** - a thought written alongside a poster
   is drawn as that poster's overlay rather than on its own, so there was
   nothing to report it had come into view, and coming into view is what asks
   for the next page of history. The oldest thoughts are exactly the ones riding
@@ -79,27 +79,27 @@
   the thought it carries.
 
 - **The synced folder was missing everything before the newest page of
-  statements** — it read the index and stopped, the way the feed used to. It
+  statements** - it read the index and stopped, the way the feed used to. It
   walks every archived page, so `notes.md` holds the whole library.
 
-- **Thought folders repeated the year in every name** — they already sit in a
+- **Thought folders repeated the year in every name** - they already sit in a
   folder named for their year, and the current year is the one you are standing
   in. `2019/2019-12-08 Sunday morning` is now `2019/12-08 Sunday morning`. Still
   sorts by date; the part that varies is easier to find.
 
-## v2.7.0 — 2026-08-03
+## v2.7.0 - 2026-08-03
 
-- **Exported video did not move the way the poster does** — the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there — `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.
+- **Exported video did not move the way the poster does** - the export reimplemented SVG animation rather than reading it. It parsed `dur`, `values`, `keyTimes` and `keySplines` off each `<animate>` and solved the easing curve itself, so every frame was a second, independent guess at what the browser was already drawing, and the two drifted apart. Each frame now seeks the poster's own timeline and copies what the browser computed there - `animVal` for geometry, computed style for paint. Easing, `keyTimes` and repeats come out exactly as they look on screen, because they are the same numbers.
 
-- **Video exports ran at a fixed crawl no matter what the animation preference said** — the export pinned its timeline to `crawl` and sampled three poses a second, holding each for four ticks of the 24fps file and cross-fading between them to cover the gap. It renders one frame per tick at the speed you set now, so the video is paced like the poster in front of you. With no audio dropped on it, the video is one full cycle at that speed.
+- **Video exports ran at a fixed crawl no matter what the animation preference said** - the export pinned its timeline to `crawl` and sampled three poses a second, holding each for four ticks of the 24fps file and cross-fading between them to cover the gap. It renders one frame per tick at the speed you set now, so the video is paced like the poster in front of you. With no audio dropped on it, the video is one full cycle at that speed.
 
-- **A song longer than one animation cycle froze on the last pose** — covering the extra time meant wrapping the render clock back to the start of the cycle by hand, and anything the wrap did not account for held still until the track ended. The animations repeat indefinitely on their own, so the export just keeps seeking and the poster keeps moving for the whole song.
+- **A song longer than one animation cycle froze on the last pose** - covering the extra time meant wrapping the render clock back to the start of the cycle by hand, and anything the wrap did not account for held still until the track ended. The animations repeat indefinitely on their own, so the export just keeps seeking and the poster keeps moving for the whole song.
 
-- **Your track was re-encoded on its way into the video** — audio was muxed as 192 kbps AAC, so a file that had already been through a lossy encoder took a second pass before it reached your DAW. `.mov` carries PCM natively, so the decoded audio is written through untouched.
+- **Your track was re-encoded on its way into the video** - audio was muxed as 192 kbps AAC, so a file that had already been through a lossy encoder took a second pass before it reached your DAW. `.mov` carries PCM natively, so the decoded audio is written through untouched.
 
-- **Exporting a poster that had scrolled off screen produced a blank video** — posters are marked `content-visibility: auto`, which lets the browser skip rendering one that is not on screen, and the export rasterized those skipped frames as empty. The poster is held visible for the length of the export.
+- **Exporting a poster that had scrolled off screen produced a blank video** - posters are marked `content-visibility: auto`, which lets the browser skip rendering one that is not on screen, and the export rasterized those skipped frames as empty. The poster is held visible for the length of the export.
 
-- **The favicon was a grey smudge in the tab** — the mark is a mosaic, and at
+- **The favicon was a grey smudge in the tab** - the mark is a mosaic, and at
   16 pixels a single tile is about a pixel and a half wide, so the tiles blur
   into each other and the whole palette averages out to grey. Only the favicon
   and Safari's pinned tab draw the mark from the top of `icons.svg`, so that
@@ -107,17 +107,17 @@
   to hold their shape against a dark tab strip. The mark everywhere else in the
   app is untouched.
 
-- **Pressing the realness mark left it stuck on its solid fill** — a press snaps the six tiles together and swaps the mosaic for flat colour; letting go is supposed to fade back. The rewind that resets the drift animations collects `getAnimations()`, which hands back CSS transitions alongside keyframe animations, so it caught that fade one frame in and paused it at frame zero. Only keyframe animations get rewound now.
+- **Pressing the realness mark left it stuck on its solid fill** - a press snaps the six tiles together and swaps the mosaic for flat colour; letting go is supposed to fade back. The rewind that resets the drift animations collects `getAnimations()`, which hands back CSS transitions alongside keyframe animations, so it caught that fade one frame in and paused it at frame zero. Only keyframe animations get rewound now.
 
-- **The 3D and grid preferences lost their icons** — `preference.vue`'s `icon` prop was renamed `show_icon` (as `icon` shadowed the imported `<icon>` component) and two of the three call sites in the menu still passed the old name, so the attribute fell through to the fieldset instead.
+- **The 3D and grid preferences lost their icons** - `preference.vue`'s `icon` prop was renamed `show_icon` (as `icon` shadowed the imported `<icon>` component) and two of the three call sites in the menu still passed the old name, so the attribute fell through to the fieldset instead.
 
-## v2.6.7 — 2026-07-31
+## v2.6.7 - 2026-07-31
 
-- **Nobody could see anybody else** — v2.6.6 closed a hole that let anyone read your follow list, and in doing so took away permission to list the directory of people, so realness could only show you your own posters and thoughts. Reading the directory is allowed again, for signed-in people only. Your follow list stays private, and the phone directory is no longer readable by anyone who is not signed in.
+- **Nobody could see anybody else** - v2.6.6 closed a hole that let anyone read your follow list, and in doing so took away permission to list the directory of people, so realness could only show you your own posters and thoughts. Reading the directory is allowed again, for signed-in people only. Your follow list stays private, and the phone directory is no longer readable by anyone who is not signed in.
 
-## v2.6.6 — 2026-07-31
+## v2.6.6 - 2026-07-31
 
-- **Your follow list was readable by anyone** — the rule meant to keep
+- **Your follow list was readable by anyone** - the rule meant to keep
   `relations.html.gz` private compared a whole path against a filename, which
   never matches, so it never excluded the file. Storage rules grant access if
   any one of them says yes, and that single permissive match handed the list to
@@ -125,206 +125,206 @@
   it by name, and `npm run test:rules` checks `storage.rules` against the
   storage emulator before every commit.
 
-- **Crawlers were locked out of the assets that render the site** — `robots.txt` disallows `/` and allows named paths back, and `/assets/` and `/fonts/` were never on that list, so the CSS, JS, and fonts behind every page we do want indexed were off limits, along with the OG images. All four are allowed now.
+- **Crawlers were locked out of the assets that render the site** - `robots.txt` disallows `/` and allows named paths back, and `/assets/` and `/fonts/` were never on that list, so the CSS, JS, and fonts behind every page we do want indexed were off limits, along with the OG images. All four are allowed now.
 
-- **Your thoughts and posters are on screen the moment you open realness** — the feed used to wait for the whole contact list to come down from the server before it drew anything, even though your own work was already on the device. It draws what it has first, and other people fill in behind it.
+- **Your thoughts and posters are on screen the moment you open realness** - the feed used to wait for the whole contact list to come down from the server before it drew anything, even though your own work was already on the device. It draws what it has first, and other people fill in behind it.
 
-- **Anything not yet on your device arrives in half the trips** — fetching a poster asked the server where the file was, then asked again for the file. Those turn out to be the same request, so realness remembers the answer.
+- **Anything not yet on your device arrives in half the trips** - fetching a poster asked the server where the file was, then asked again for the file. Those turn out to be the same request, so realness remembers the answer.
 
-- **Scrolling a big feed stopped stuttering** — every person in your feed made realness read through its entire local store, once each. Posters keep six layers apiece, so that added up fast on a long history. It reads once now and shares the answer.
+- **Scrolling a big feed stopped stuttering** - every person in your feed made realness read through its entire local store, once each. Posters keep six layers apiece, so that added up fast on a long history. It reads once now and shares the answer.
 
-- **Coming back to the tab is immediate** — leaving and returning kicked off filing and cleanup work that had nothing to do with what you were looking at. That runs on its own schedule now.
+- **Coming back to the tab is immediate** - leaving and returning kicked off filing and cleanup work that had nothing to do with what you were looking at. That runs on its own schedule now.
 
-- **The border only lights up when realness is talking to the server** — it used to come on for anything that took a moment, including work happening entirely on your device, so it never told you much. The feed has its own quiet spinner for loading.
+- **The border only lights up when realness is talking to the server** - it used to come on for anything that took a moment, including work happening entirely on your device, so it never told you much. The feed has its own quiet spinner for loading.
 
-- **A new poster no longer rebuilds the whole feed** — any change used to reload every person on screen. Realness now knows what moved and refreshes just that.
+- **A new poster no longer rebuilds the whole feed** - any change used to reload every person on screen. Realness now knows what moved and refreshes just that.
 
-- **Reloading no longer re-reads everyone you follow** — your own profile, thoughts, events and posters reconcile every time realness runs, so anything you make on another device still turns up right away. Reading back through other people's files is the part that runs on a schedule, and a page reload was resetting that schedule every time.
+- **Reloading no longer re-reads everyone you follow** - your own profile, thoughts, events and posters reconcile every time realness runs, so anything you make on another device still turns up right away. Reading back through other people's files is the part that runs on a schedule, and a page reload was resetting that schedule every time.
 
-## v2.6.5 — 2026-07-28
+## v2.6.5 - 2026-07-28
 
-- **Only the homepage was indexed** — Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.
-- **Pressing an icon turned it into a blob** — a rule written for picking out poster layers matched every icon in the app, so holding the gear down thickened its outline until the teeth filled in. The rule only reaches posters now.
-- **OG image is a real poster now** — a hand-picked 1280x960 jpg replaces the generated card across `index.html`, the prerender defaults, and the JSON-LD image.
-- **OG candidates generated from the admin's posters** — an unlisted `/og-candidates` route mounts each landscape poster and cuts two 1200x630 frames: full bleed, and the same poster under the marketing card copy. A driver script serves `dist` and works the route in headless Chrome over the devtools protocol — no new dependencies, reusing the `CHROME_PATH` the score script already needs. `npm run og:pick` installs a chosen frame as `public/og.jpg` after checking its dimensions.
-- **`npm run ship` verifies the version it just cut** — `verify` defaults to the newest GitHub release carrying a manifest, so ship was checking the previous release rather than `package.json`'s version.
+- **Only the homepage was indexed** - Firebase appended a trailing slash to `/about`, `/docs`, `/pricing` and `/terms`, so every sitemap URL answered with a 301 and each prerendered page's `rel=canonical` pointed back at the redirecting URL. Search Console had one valid page. `trailingSlash: false` serves the prerendered HTML at the canonical URL.
+- **Pressing an icon turned it into a blob** - a rule written for picking out poster layers matched every icon in the app, so holding the gear down thickened its outline until the teeth filled in. The rule only reaches posters now.
+- **OG image is a real poster now** - a hand-picked 1280x960 jpg replaces the generated card across `index.html`, the prerender defaults, and the JSON-LD image.
+- **OG candidates generated from the admin's posters** - an unlisted `/og-candidates` route mounts each landscape poster and cuts two 1200x630 frames: full bleed, and the same poster under the marketing card copy. A driver script serves `dist` and works the route in headless Chrome over the devtools protocol - no new dependencies, reusing the `CHROME_PATH` the score script already needs. `npm run og:pick` installs a chosen frame as `public/og.jpg` after checking its dimensions.
+- **`npm run ship` verifies the version it just cut** - `verify` defaults to the newest GitHub release carrying a manifest, so ship was checking the previous release rather than `package.json`'s version.
 
-## v2.6.4 — 2026-07-25
+## v2.6.4 - 2026-07-25
 
-- **Download menu had no surface over a poster** — the poster footer styled its menus with a descendant selector and then reset `background`/`backdrop-filter` on anything nested, which caught the download sheet along with the author row. Footer menu rules are scoped to direct children now, and the bar's glass moved to a `::before` so the bar stops being a Backdrop Root — nested `backdrop-filter` was sampling the bar instead of the poster, leaving the sheet's blur dead.
-- **PNG, PSD, and layer exports cropped the poster edges** — every raster path clones the live `<svg>`, which carries `preserveAspectRatio="xMidY… slice"` to fill its grid cell. `slice` scales to cover the target canvas, so it can only ever crop; export clones now set `xMidYMid meet` to fit the whole viewBox.
-- **Download menu rebuilt** — formats are real `<button>`s (focusable, Enter activates) in a column sized to its labels; the per-layer PNG export moved from an unlabelled icon buried in the corner of the PNG button to its own chip alongside it; sheet and chip slide up on the poster grid's easing curve.
+- **Download menu had no surface over a poster** - the poster footer styled its menus with a descendant selector and then reset `background`/`backdrop-filter` on anything nested, which caught the download sheet along with the author row. Footer menu rules are scoped to direct children now, and the bar's glass moved to a `::before` so the bar stops being a Backdrop Root - nested `backdrop-filter` was sampling the bar instead of the poster, leaving the sheet's blur dead.
+- **PNG, PSD, and layer exports cropped the poster edges** - every raster path clones the live `<svg>`, which carries `preserveAspectRatio="xMidY… slice"` to fill its grid cell. `slice` scales to cover the target canvas, so it can only ever crop; export clones now set `xMidYMid meet` to fit the whole viewBox.
+- **Download menu rebuilt** - formats are real `<button>`s (focusable, Enter activates) in a column sized to its labels; the per-layer PNG export moved from an unlabelled icon buried in the corner of the PNG button to its own chip alongside it; sheet and chip slide up on the poster grid's easing curve.
 
-## v2.6.3 — 2026-07-24
+## v2.6.3 - 2026-07-24
 
-- **Favicons and OG image matched to the bone-background icons** — `192.png`, `512.png`, and `og.png` were still generated on the old dark surface; the generator now renders them on `bone` with dark text.
+- **Favicons and OG image matched to the bone-background icons** - `192.png`, `512.png`, and `og.png` were still generated on the old dark surface; the generator now renders them on `bone` with dark text.
 
-## v2.6.2 — 2026-07-24
+## v2.6.2 - 2026-07-24
 
-- **Storytelling mode trapped touch users** — the poster `<svg>` hardcoded `touch-action: pan-y`, blocking the horizontal swipe storytelling scrolls on; and the footer nav (the only way to reach Preferences and turn storytelling back off) unmounted whenever storytelling was on, leaving no touch-reachable escape since the toggle is keyboard-only (`w`). Fixed both: posters allow horizontal pan while storytelling, and the footer stays mounted.
+- **Storytelling mode trapped touch users** - the poster `<svg>` hardcoded `touch-action: pan-y`, blocking the horizontal swipe storytelling scrolls on; and the footer nav (the only way to reach Preferences and turn storytelling back off) unmounted whenever storytelling was on, leaving no touch-reachable escape since the toggle is keyboard-only (`w`). Fixed both: posters allow horizontal pan while storytelling, and the footer stays mounted.
 
-## v2.6.1 — 2026-07-22
+## v2.6.1 - 2026-07-22
 
-- **Homepage was blocked from indexing** — `robots.txt` disallowed `/` with no exception for the homepage itself, and `sitemap.xml` never listed it. Added `Allow: /$` and the homepage entry so Google can crawl and index it.
+- **Homepage was blocked from indexing** - `robots.txt` disallowed `/` with no exception for the homepage itself, and `sitemap.xml` never listed it. Added `Allow: /$` and the homepage entry so Google can crawl and index it.
 
-## v2.6.0 — 2026-07-21
+## v2.6.0 - 2026-07-21
 
-- **Build no longer rewrites `public/sitemap.xml`** — every build regenerated it with today's date, leaving a perpetual uncommitted diff after each deploy. `dist/sitemap.xml` (what actually ships) is unaffected; `public/sitemap.xml` stays as the static checked-in copy until next touched deliberately.
+- **Build no longer rewrites `public/sitemap.xml`** - every build regenerated it with today's date, leaving a perpetual uncommitted diff after each deploy. `dist/sitemap.xml` (what actually ships) is unaffected; `public/sitemap.xml` stays as the static checked-in copy until next touched deliberately.
 
-## v2.5.13 — 2026-07-21
+## v2.5.13 - 2026-07-21
 
-- **Folder sync rebuilt** — File System Access API directory handle persisted in IndexedDB, mutex-guarded queue mirrors thought/poster saves and deletes as human-readable files (date-titled thought folders, snippet-named poster SVGs/PNGs) instead of raw itemid dumps. New `sync_svg` preference toggles SVG export.
-- **Account page rebuilt** — Sync folder section (choose/re-sync, live progress, Brave detection with a how-to-enable dialog) and notifications now both live under Account, visible ahead of sign-in status resolving.
-- **`base-line.styl` split** — constants-only now; the actual reset/root-properties/fluid-type-scale CSS output moves to a new `reset.styl` loaded once from `index.styl`.
-- **About hero fade** — tagline and hero poster now fade/rise in with the rest of the hero instead of snapping in or sitting blank; stagger tightened so the reveal settles quickly.
+- **Folder sync rebuilt** - File System Access API directory handle persisted in IndexedDB, mutex-guarded queue mirrors thought/poster saves and deletes as human-readable files (date-titled thought folders, snippet-named poster SVGs/PNGs) instead of raw itemid dumps. New `sync_svg` preference toggles SVG export.
+- **Account page rebuilt** - Sync folder section (choose/re-sync, live progress, Brave detection with a how-to-enable dialog) and notifications now both live under Account, visible ahead of sign-in status resolving.
+- **`base-line.styl` split** - constants-only now; the actual reset/root-properties/fluid-type-scale CSS output moves to a new `reset.styl` loaded once from `index.styl`.
+- **About hero fade** - tagline and hero poster now fade/rise in with the rest of the hero instead of snapping in or sitting blank; stagger tightened so the reveal settles quickly.
 
-## v2.5.12 — 2026-07-17
+## v2.5.12 - 2026-07-17
 
-- **Verifiable releases** — Keep a changelog `## Unreleased` (hidden on `/docs` until cut); `npm version` promotes and tags, `npm run ship` publishes build-manifest + notes to GitHub. Copy points skeptics at the ritual.
-- **realness-design realign** — views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions.
-- **Markdown as an element stylesheet** — content typography moved from Stylus mixin into `src/style/elements/markdown.styl`.
-- **Notification opt-in onboarding** — once per device after sign-in, a modal offers push when the instance supports it.
-- **Mosaic logo smalti wobble** — clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter.
-- **Preferences markup tidy** — notifications fieldset rename, tweakpane slide simplified to attribute selectors; orphan `grid.svg` removed.
-- **`npm run verify`** — deploy checksum CLI defaults clarified; docs updated for independent GitHub-manifest checks.
-- **Test coverage surge** — ~2k net test lines across posters, profile, views, sync/persistence, potrace, and utils.
+- **Verifiable releases** - Keep a changelog `## Unreleased` (hidden on `/docs` until cut); `npm version` promotes and tags, `npm run ship` publishes build-manifest + notes to GitHub. Copy points skeptics at the ritual.
+- **realness-design realign** - views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions.
+- **Markdown as an element stylesheet** - content typography moved from Stylus mixin into `src/style/elements/markdown.styl`.
+- **Notification opt-in onboarding** - once per device after sign-in, a modal offers push when the instance supports it.
+- **Mosaic logo smalti wobble** - clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter.
+- **Preferences markup tidy** - notifications fieldset rename, tweakpane slide simplified to attribute selectors; orphan `grid.svg` removed.
+- **`npm run verify`** - deploy checksum CLI defaults clarified; docs updated for independent GitHub-manifest checks.
+- **Test coverage surge** - ~2k net test lines across posters, profile, views, sync/persistence, potrace, and utils.
 
-## v2.5.10 — 2026-07-13
+## v2.5.10 - 2026-07-13
 
-- **A pass over the whole codebase looking for real bugs** — storage, components, workers, the tracer and the 3D viewer, read end to end. It turned up saves that could collide and lose each other, a sign-in that could hang, a tracer that could mix one image into another, keyboard handling that failed in the compose box, memory the 3D viewer never gave back, and an upload queue that could stall. Every fix carries a regression test.
-- **Cloud archive consistency** — partial poster archive failure now rolls back cleanly instead of leaving orphaned files.
-- **Pricing page rewritten as real HTML** — tier content hand-authored per semantic-HTML convention instead of generated from JS data.
-- **Poster video export overhauled** — fixed ~8x-too-fast playback, cross-fade frames, 1440p/14 Mbps encode.
+- **A pass over the whole codebase looking for real bugs** - storage, components, workers, the tracer and the 3D viewer, read end to end. It turned up saves that could collide and lose each other, a sign-in that could hang, a tracer that could mix one image into another, keyboard handling that failed in the compose box, memory the 3D viewer never gave back, and an upload queue that could stall. Every fix carries a regression test.
+- **Cloud archive consistency** - partial poster archive failure now rolls back cleanly instead of leaving orphaned files.
+- **Pricing page rewritten as real HTML** - tier content hand-authored per semantic-HTML convention instead of generated from JS data.
+- **Poster video export overhauled** - fixed ~8x-too-fast playback, cross-fade frames, 1440p/14 Mbps encode.
 
-## v2.5.9 — 2026-07-11
+## v2.5.9 - 2026-07-11
 
-- **Materials-and-roles design system** — palette converted to OKLCH, materials as static CSS custom properties with derived weights, new `--info` role. Automated contrast/harmony guardrails.
-- **`/colors` view** — live palette renderer in-app with swatches, roles, geology demo, Depth demo.
-- **Stylus → native CSS migration** — element styles that don't need mixins moved to plain `.css`.
-- **Shared `focus-ring()` mixin** — fixed silently dropped keyboard focus indicators.
-- **Realness mosaic logo** — placeholder glyph replaced with mosaic mark: palette colors, smalti masks, per-tile drift, color cycle, press-to-flatten via Web Animations API.
-- **Pricing split into per-tier carousel** — `/pricing/:tier` drives tier nav, prev/next, touch swipe, all synced to URL.
-- **Switched to GPL-2.0** — closed-source-license gap closed; name/logos trademarked outside GPL; commercial tiers as support contract.
-- **Drag-and-drop image upload** — photos and SVGs dropped onto the app queue like paste; SVGs resize through the vectorize path.
+- **Materials-and-roles design system** - palette converted to OKLCH, materials as static CSS custom properties with derived weights, new `--info` role. Automated contrast/harmony guardrails.
+- **`/colors` view** - live palette renderer in-app with swatches, roles, geology demo, Depth demo.
+- **Stylus → native CSS migration** - element styles that don't need mixins moved to plain `.css`.
+- **Shared `focus-ring()` mixin** - fixed silently dropped keyboard focus indicators.
+- **Realness mosaic logo** - placeholder glyph replaced with mosaic mark: palette colors, smalti masks, per-tile drift, color cycle, press-to-flatten via Web Animations API.
+- **Pricing split into per-tier carousel** - `/pricing/:tier` drives tier nav, prev/next, touch swipe, all synced to URL.
+- **Switched to GPL-2.0** - closed-source-license gap closed; name/logos trademarked outside GPL; commercial tiers as support contract.
+- **Drag-and-drop image upload** - photos and SVGs dropped onto the app queue like paste; SVGs resize through the vectorize path.
 - Small fixes: dark-mode compose caret, `--basalt-transparent` reference, `clamp()` order bug, button/checkbox style leaks, Colors header, Buy Button iframe reflow, TOC not tracked in git.
 
-## v2.5.8 — 2026-07-04
+## v2.5.8 - 2026-07-04
 
-- **Instance capabilities** — runtime `/capabilities` probe discovers optional features (push, phone integrity); falls back to shipped `capabilities.json` (all off). Firebase auth split into its own vendor chunk.
-- **Deleted posters stay gone** — cached posters no longer resurrected; `remove_missing_poster` purges HTML, shadow, geology layers, and cached directories on delete.
-- **Root indexable** — home route dropped `noindex` for search engines.
-- **Thoughts shell drops after mount** — static `<h1>` removed from DOM once Vue mounts.
-- **Preload Lato Light** — closes FCP→LCP gap from font repaint.
-- **Dated poster labels** — poster SVGs announce "Poster from <day>" instead of generic "Poster".
+- **Instance capabilities** - runtime `/capabilities` probe discovers optional features (push, phone integrity); falls back to shipped `capabilities.json` (all off). Firebase auth split into its own vendor chunk.
+- **Deleted posters stay gone** - cached posters no longer resurrected; `remove_missing_poster` purges HTML, shadow, geology layers, and cached directories on delete.
+- **Root indexable** - home route dropped `noindex` for search engines.
+- **Thoughts shell drops after mount** - static `<h1>` removed from DOM once Vue mounts.
+- **Preload Lato Light** - closes FCP→LCP gap from font repaint.
+- **Dated poster labels** - poster SVGs announce "Poster from <day>" instead of generic "Poster".
 
-## v2.5.7 — 2026-07-04
+## v2.5.7 - 2026-07-04
 
-- **Static LCP shell for home route** — `index.html` renders `<h1>Thoughts</h1>` in `#app` at first HTML parse, gated by pathname. Placeholder `<header>` reserves real header height. LCP 2.0 s, performance 93, accessibility 100, CLS 0.002.
-- **Poster SVG labels** — `role="img"` + `aria-label` + `aria-roledescription="poster"`; `aria-label` on avatar toggle, messenger `sms:` link, delete button. Lighthouse accessibility 74 → 100.
-- **Fonts cached a year** — `/fonts/**` `max-age=31536000, immutable`.
-- **Deleted posters drop from visitor feeds** — missing loads no longer render blank figures.
+- **Static LCP shell for home route** - `index.html` renders `<h1>Thoughts</h1>` in `#app` at first HTML parse, gated by pathname. Placeholder `<header>` reserves real header height. LCP 2.0 s, performance 93, accessibility 100, CLS 0.002.
+- **Poster SVG labels** - `role="img"` + `aria-label` + `aria-roledescription="poster"`; `aria-label` on avatar toggle, messenger `sms:` link, delete button. Lighthouse accessibility 74 → 100.
+- **Fonts cached a year** - `/fonts/**` `max-age=31536000, immutable`.
+- **Deleted posters drop from visitor feeds** - missing loads no longer render blank figures.
 
-## 2026-07-03 — Removed EXIF metadata feature
+## 2026-07-03 - Removed EXIF metadata feature
 
-- **EXIF capture + overlay removed** — iOS Photos picker strips camera/date/GPS before our code runs. Deleted exif files, preference, and capture code. Rationale: `docs/monopoly.md`.
+- **EXIF capture + overlay removed** - iOS Photos picker strips camera/date/GPS before our code runs. Deleted exif files, preference, and capture code. Rationale: `docs/monopoly.md`.
 
-## 2026-07-02 — Performance
+## 2026-07-02 - Performance
 
-- **Lazy vectorize on first paint** — `use_vectorize` loads via dynamic import after `rAF`; boot imports ~80KB lighter.
-- **Deferred `init_serverless`** — Firebase auth after Vue mount to not block first paint.
-- **Trimmed preconnects** — removed 8 unused preconnect/dns-prefetch links; only `firebasestorage.googleapis.com` remains.
-- **Lazy InstallGuide + PreferencesMenu** — `defineAsyncComponent` for 242KB video and preferences panel.
-- **CLS shell** — `#app` gets `min-height: 100dvh` to prevent layout shift on mount.
-- **Stable feed render** — `Thoughts rendered` improved from 4.2s to ~2.7s.
+- **Lazy vectorize on first paint** - `use_vectorize` loads via dynamic import after `rAF`; boot imports ~80KB lighter.
+- **Deferred `init_serverless`** - Firebase auth after Vue mount to not block first paint.
+- **Trimmed preconnects** - removed 8 unused preconnect/dns-prefetch links; only `firebasestorage.googleapis.com` remains.
+- **Lazy InstallGuide + PreferencesMenu** - `defineAsyncComponent` for 242KB video and preferences panel.
+- **CLS shell** - `#app` gets `min-height: 100dvh` to prevent layout shift on mount.
+- **Stable feed render** - `Thoughts rendered` improved from 4.2s to ~2.7s.
 
-## 2026-07-02 — Support layout, build-time TOC, scroll & swipe
+## 2026-07-02 - Support layout, build-time TOC, scroll & swipe
 
-- **Support layout** — site-nav rendered once by `support-layout.vue` replacing 5 hand-rolled copies.
-- **Build-time TOC** — `scripts/generate-toc.js` precomputes heading trees; views import static arrays instead of runtime `markdown_toc()`.
-- **Swipe-back & scroll** — removed `scrollRestoration = 'manual'`; TOC links use `router-link replace`; `scrollBehavior` handles `to.hash` with smooth scroll.
-- **Mobile TOC UX** — larger sub-level fonts, `touch-action: manipulation`, heading `scroll-margin-top` for safe-area.
-- **Pricing page** — padding fixes, space between buy button and actions, removed redundant price text.
+- **Support layout** - site-nav rendered once by `support-layout.vue` replacing 5 hand-rolled copies.
+- **Build-time TOC** - `scripts/generate-toc.js` precomputes heading trees; views import static arrays instead of runtime `markdown_toc()`.
+- **Swipe-back & scroll** - removed `scrollRestoration = 'manual'`; TOC links use `router-link replace`; `scrollBehavior` handles `to.hash` with smooth scroll.
+- **Mobile TOC UX** - larger sub-level fonts, `touch-action: manipulation`, heading `scroll-margin-top` for safe-area.
+- **Pricing page** - padding fixes, space between buy button and actions, removed redundant price text.
 
-## 2026-07-02 — Account, performance
+## 2026-07-02 - Account, performance
 
-- **Require a name** — nameless users redirected to `/account`; validation on save and sign-on.
-- **Lazy 3D and download** — `defineAsyncComponent` for viewer and download in poster figures.
-- **Smaller first feed page** — `optimize()` caps each author's directory to `SIZE.MAX` (55).
+- **Require a name** - nameless users redirected to `/account`; validation on save and sign-on.
+- **Lazy 3D and download** - `defineAsyncComponent` for viewer and download in poster figures.
+- **Smaller first feed page** - `optimize()` caps each author's directory to `SIZE.MAX` (55).
 
-## 2026-07-02 — Discoverability & social previews
+## 2026-07-02 - Discoverability & social previews
 
-- **Open Graph cards** — marketing URLs prerender with full `og:*` and Twitter Card tags.
-- **`og.png` (1200×630)** — social image with headline, value prop, CTA.
-- **Meta tag pass** — titles, descriptions, `og:image:alt`, `twitter:image:alt`.
-- **Sitemap & robots** — crawlable marketing pages in `sitemap.xml`; app shell unindexed.
-- **Static docs** — `public/documentation.md` and `public/llms.txt` for crawlers and LLM discovery.
+- **Open Graph cards** - marketing URLs prerender with full `og:*` and Twitter Card tags.
+- **`og.png` (1200×630)** - social image with headline, value prop, CTA.
+- **Meta tag pass** - titles, descriptions, `og:image:alt`, `twitter:image:alt`.
+- **Sitemap & robots** - crawlable marketing pages in `sitemap.xml`; app shell unindexed.
+- **Static docs** - `public/documentation.md` and `public/llms.txt` for crawlers and LLM discovery.
 
-## 2026-07-01 — Early in the v2.5.7 cycle
+## 2026-07-01 - Early in the v2.5.7 cycle
 
 - **Stripe buy buttons** wired into $100/$500 pricing tiers.
-- **Mask subjects** — named path groups with grow-select/erase (WIP).
-- **3D mode poster menu gesture** — reveal poster menu in 3D with same gesture as SVG mode.
+- **Mask subjects** - named path groups with grow-select/erase (WIP).
+- **3D mode poster menu gesture** - reveal poster menu in 3D with same gesture as SVG mode.
 
-## v2.5.6 — 2026-06-29
+## v2.5.6 - 2026-06-29
 
-- **Blank duplicate-poster avatars fixed** — visibility-aware canonical election.
-- **PSD export** — stroke stripped from shadow fill layers.
+- **Blank duplicate-poster avatars fixed** - visibility-aware canonical election.
+- **PSD export** - stroke stripped from shadow fill layers.
 - **Statement text selectable**; touch callout suppressed on tappable elements.
 - **"Copy prompt" agent buttons** inline in docs and pricing.
-- **SSR hardening** — prerender and standalone guards; `var(--base-line)` in viewport-relative `calc()`s.
+- **SSR hardening** - prerender and standalone guards; `var(--base-line)` in viewport-relative `calc()`s.
 
-## v2.5.5 — 2026-06-28
+## v2.5.5 - 2026-06-28
 
-- **Account overhaul** — inline sign-in, web push notification preference, Stripe reduced to CTA.
-- **Pricing and legal pages** — ToS simplified (arbitration removed), LICENSE updated, `security.txt` refreshed.
+- **Account overhaul** - inline sign-in, web push notification preference, Stripe reduced to CTA.
+- **Pricing and legal pages** - ToS simplified (arbitration removed), LICENSE updated, `security.txt` refreshed.
 
-## v2.5.4 — 2026-06-17
+## v2.5.4 - 2026-06-17
 
-- **Install guide** — native install prompt, platform detection, synthetic walkthrough animations (HyperFrames) for iOS/Android.
+- **Install guide** - native install prompt, platform detection, synthetic walkthrough animations (HyperFrames) for iOS/Android.
 
-## v2.5.3 — 2026-06-15
+## v2.5.3 - 2026-06-15
 
-- **Big simplification** — removed phonebook, relations, events, picker; simplified profile/poster menus; expanded docs.
-- **Preferences menu** — hints, icons, keybindings; animated silhouette toggle for `only_mine` feed filter.
+- **Big simplification** - removed phonebook, relations, events, picker; simplified profile/poster menus; expanded docs.
+- **Preferences menu** - hints, icons, keybindings; animated silhouette toggle for `only_mine` feed filter.
 - **About page refresh** with gallery cap and lore.
 - **Archive location map** with self-healing `sync:index`.
 
-## v2.5.1–2.5.2 — 2026-06-11
+## v2.5.1-2.5.2 - 2026-06-11
 
 - **Prerendered marketing pages** and public site structure.
-- **About page rebuilt** — integrations, feature list, balanced gallery; archive loading fixes.
+- **About page rebuilt** - integrations, feature list, balanced gallery; archive loading fixes.
 - **Frosted-glass styling consolidated**; account UI polish; 3D "haze" renamed to atmosphere.
 
-## v2.5.0 — 2026-05-31
+## v2.5.0 - 2026-05-31
 
 - **Mask pen drawing tool** debuts.
 
-## 2026-05-16 → 05-25 — v2.4.x: 3D posters land
+## 2026-05-16 → 05-25 - v2.4.x: 3D posters land
 
 - **3D poster viewer and export tooling** migrated in from `projects/3d`; scene motion refactored with tests; device orientation handling; iOS touch/orientation polish.
 
-## 2026-04 → 05 — v2.3.x: platform
+## 2026-04 → 05 - v2.3.x: platform
 
 - **Vite+ toolchain transition.**
 - **Stripe sponsorship** integrated; profile account hero; homescreen icon management.
-- **One poster on the page** — deduplicated rendering; caching and performance work.
+- **One poster on the page** - deduplicated rendering; caching and performance work.
 
-## 2026-02 → 04 — v2.0–v2.2: the Thoughts interface
+## 2026-02 → 04 - v2.0-v2.2: the Thoughts interface
 
 - Interface re-centered around **Thoughts**; navigation removed; color scheme green → blue.
 - Safari feed performance; off-screen cutout removal; feed ordering fixes.
 - **Sync folder** for poster output export; download-video improvements; landscape poster swipe.
 - Local dev setup simplified.
 
-## 2025-10 → 2026-02 — v2.0.0: the rebuild
+## 2025-10 → 2026-02 - v2.0.0: the rebuild
 
 - Offline/anonymous poster creation synced after sign-in; cutouts and shadows stored for later sync; **PNG and PSD export** alongside SVG; layer naming; dark-mode color-scheme declared.
 
-## 2024 → mid-2025 — v1.5–v1.8: the on-device tracer
+## 2024 → mid-2025 - v1.5-v1.8: the on-device tracer
 
-- **vtracer (wasm) integrated** — on-device color-region tracer behind mosaic layers.
+- **vtracer (wasm) integrated** - on-device color-region tracer behind mosaic layers.
 - Offline actions merged with sign-in sync; iPad standalone detection; preferences and docs growth.
 
-## 2017 → 2023 — origins
+## 2017 → 2023 - origins
 
-First commit 2017-12-20. Realness grew up as a phone-number-identity social PWA — profiles, avatars, statements, events, phonebook — with dark mode by 2018 and steady releases through v1.x. The poster emerged as the core creative object through experiments from 2018 to 2022. Most of that social surface was shed in 2026 (v2.5.3) to focus on posters and thoughts.
+First commit 2017-12-20. Realness grew up as a phone-number-identity social PWA - profiles, avatars, statements, events, phonebook - with dark mode by 2018 and steady releases through v1.x. The poster emerged as the core creative object through experiments from 2018 to 2022. Most of that social surface was shed in 2026 (v2.5.3) to focus on posters and thoughts.

@@ -95,6 +95,18 @@ export const extract_layer_svg = (svg_text, layer_name) => {
  * @param {PosterSvgContext} poster_svg
  * @param {string} symbol_id
  * @param {string} child_id
+ * @returns {Element | null}
+ */
+const find_symbol_child = (poster_svg, symbol_id, child_id) => {
+  const symbol = poster_svg.root.querySelector(`symbol#${symbol_id}`)
+  if (!symbol) return null
+  return symbol.querySelector(`#${child_id}`)
+}
+
+/**
+ * @param {PosterSvgContext} poster_svg
+ * @param {string} symbol_id
+ * @param {string} child_id
  * @returns {string | null}
  */
 export const extract_symbol_child_from_context = (
@@ -102,10 +114,8 @@ export const extract_symbol_child_from_context = (
   symbol_id,
   child_id
 ) => {
-  const { root, view_box, defs_html } = poster_svg
-  const symbol = root.querySelector(`symbol#${symbol_id}`)
-  if (!symbol) return null
-  const child = symbol.querySelector(`#${child_id}`)
+  const { view_box, defs_html } = poster_svg
+  const child = find_symbol_child(poster_svg, symbol_id, child_id)
   if (!child) return null
 
   return (
@@ -171,6 +181,68 @@ export const extract_symbol_child_stroke_from_context = (
     extract_symbol_child_from_context(poster_svg, symbol_id, child_id),
     'stroke'
   )
+
+/**
+ * The layer's shape as a white silhouette on black, ready to be read as an
+ * alpha map. Keeps the source fill-opacity so coverage lands in the channel
+ * three.js samples; drops the stroke, which is its own layer.
+ *
+ * @param {PosterSvgContext} poster_svg
+ * @param {string} symbol_id
+ * @param {string} child_id
+ * @returns {string | null}
+ */
+export const extract_symbol_child_mask_from_context = (
+  poster_svg,
+  symbol_id,
+  child_id
+) => {
+  const svg_text = extract_symbol_child_from_context(
+    poster_svg,
+    symbol_id,
+    child_id
+  )
+  if (!svg_text) return null
+
+  const doc = new DOMParser().parseFromString(svg_text, 'image/svg+xml')
+  doc.querySelectorAll('path, rect').forEach(shape => {
+    shape.setAttribute('fill', '#fff')
+    shape.setAttribute('stroke', 'none')
+    shape.removeAttribute('stroke-dasharray')
+    shape.removeAttribute('stroke-dashoffset')
+  })
+
+  return new XMLSerializer().serializeToString(doc.documentElement)
+}
+
+/**
+ * The layer's fill on its own, painted across the whole poster. This is the
+ * tile the 3D scene slides under the shape. Null unless the layer is painted
+ * with a gradient, since a flat colour has nothing to slide.
+ *
+ * @param {PosterSvgContext} poster_svg
+ * @param {string} symbol_id
+ * @param {string} child_id
+ * @returns {string | null}
+ */
+export const extract_symbol_child_paint_from_context = (
+  poster_svg,
+  symbol_id,
+  child_id
+) => {
+  const child = find_symbol_child(poster_svg, symbol_id, child_id)
+  const fill = child?.getAttribute('fill')
+  if (!fill?.startsWith('url(')) return null
+
+  const { view_box, defs_html } = poster_svg
+  const [x, y, width, height] = view_box
+
+  return (
+    `<svg xmlns="${SVG_NS}" viewBox="${view_box.join(' ')}"` +
+    ` width="${width}" height="${height}">${defs_html}` +
+    `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fill}" /></svg>`
+  )
+}
 
 /**
  * Returns a standalone SVG document containing only one child element

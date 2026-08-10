@@ -1,10 +1,67 @@
 import * as THREE from 'three'
-import { extract_symbol_child_fill_from_context } from '@/3d/utils/load-svg-layers.js'
+import {
+  extract_symbol_child_fill_from_context,
+  extract_symbol_child_mask_from_context,
+  extract_symbol_child_paint_from_context
+} from '@/3d/utils/load-svg-layers.js'
 import { svg_to_canvas_texture } from '@/3d/utils/load-svg-texture.js'
 import {
+  GRADIENT_TEXTURE_SIZE,
+  SHADOW_PULSE_KEYFRAMES,
   SHADOW_Z_GAIN,
   TEXTURE_LAYERS
 } from '@/3d/scenes/poster-scene-config.js'
+
+/**
+ * Splits a gradient-filled layer into a slideable paint texture and a fixed
+ * shape mask, so the colour can drift without dragging the shape with it.
+ * Falls back to one baked texture for anything not gradient-filled.
+ *
+ * @param {{
+ *   poster_svg: import('@/3d/utils/load-svg-layers.js').PosterSvgContext,
+ *   config: { symbol_id: string, child_id: string },
+ *   fill_svg: string,
+ *   material: THREE.MeshBasicMaterial,
+ *   entry: import('@/3d/engine/types.js').ShadowMaterialEntry
+ * }} options
+ */
+const load_shadow_layer_texture = async ({
+  poster_svg,
+  config,
+  fill_svg,
+  material,
+  entry
+}) => {
+  const { symbol_id, child_id } = config
+  const paint_svg = extract_symbol_child_paint_from_context(
+    poster_svg,
+    symbol_id,
+    child_id
+  )
+  const mask_svg =
+    paint_svg &&
+    extract_symbol_child_mask_from_context(poster_svg, symbol_id, child_id)
+
+  if (!paint_svg || !mask_svg) {
+    const { texture } = await svg_to_canvas_texture(fill_svg)
+    material.map = texture
+    return
+  }
+
+  const [paint, mask] = await Promise.all([
+    svg_to_canvas_texture(paint_svg, { max_dimension: GRADIENT_TEXTURE_SIZE }),
+    svg_to_canvas_texture(mask_svg, {
+      background: '#000',
+      color_space: THREE.NoColorSpace
+    })
+  ])
+
+  paint.texture.wrapS = THREE.MirroredRepeatWrapping
+  paint.texture.wrapT = THREE.MirroredRepeatWrapping
+  material.map = paint.texture
+  material.alphaMap = mask.texture
+  entry.drift = paint.texture.offset
+}
 
 /**
  * @param {{
@@ -18,7 +75,7 @@ import {
  *   layer_groups: object[],
  *   shadow_entries: { group: THREE.Group, parallax_offset: number }[],
  *   shadow_group_map: Map<string, THREE.Group>,
- *   shadow_materials: { material: THREE.MeshBasicMaterial, base_opacity: number, loaded: boolean }[],
+ *   shadow_materials: import('@/3d/engine/types.js').ShadowMaterialEntry[],
  *   shadow_layer_visible: Record<string, boolean>
  * }} options
  * @returns {Promise<unknown>[]}
@@ -70,12 +127,23 @@ export const add_poster_shadow_layers = options => {
     shadow_entries.push({ group, parallax_offset: config.parallax_offset })
     shadow_group_map.set(config.child_id, group)
     shadow_layer_visible[config.child_id] = true
-    const material_entry = { material, base_opacity: 1, loaded: false }
+    const material_entry = {
+      material,
+      base_opacity: 1,
+      loaded: false,
+      pulse: SHADOW_PULSE_KEYFRAMES[config.child_id] ?? null,
+      drift: null
+    }
     shadow_materials.push(material_entry)
 
-    const texture_promise = svg_to_canvas_texture(layer_svg)
-      .then(({ texture }) => {
-        material.map = texture
+    const texture_promise = load_shadow_layer_texture({
+      poster_svg,
+      config,
+      fill_svg: layer_svg,
+      material,
+      entry: material_entry
+    })
+      .then(() => {
         material.needsUpdate = true
         material_entry.loaded = true
         material.opacity = material_entry.base_opacity * shadow_opacity

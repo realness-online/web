@@ -2,53 +2,23 @@
 
 ![Realness](public/icons.svg)
 
-Realness is for churches, punks, and veterans: any organization whose core tenants are at odds with advertising-based social networking.
+Realness is for churches, punks, and veterans: any organization whose core tenets are at odds with advertising-based social networking.
 
 Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
 
-**Full functionality without tracking** - Realness works solely on the client, giving users complete control over their data and experience.
+Realness works solely on the client. There is no tracking and no analytics, and the server does authentication and storage only.
 
 See Realness in action: the [About](https://realness.online/about) page walks through what it does with live posters, and the in-app [Documentation](https://realness.online/docs) explains every feature and preference. The richer, visual explanations live there.
 
 Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
 
-## What Realness Does
+## What Realness does
 
-Realness creates expressive vector graphics from your designs and photos. It works on any device. Once you save your creations, they integrate into any workflow that uses SVG.
+Realness turns your pictures and designs into vector graphics. Take a photo on your phone and it comes back as a poster built from five animatable layers, with eighteen gradients drawn from the picture's prominent colors. Opacity merges the colors between layers, which is where the movement comes from. Posters are small and quick to draw, and they are SVG, so they fit any workflow that reads SVG. It works on any device, including an iPad in split view, and exports into Affinity Designer.
 
-### For Artists & Designers
+Run an instance for your design team, your family, your union hall, or any community small enough to know each other. Each instance has one moderator, and that moderator is responsible for what gets posted. There is no email, no likes, no links, and no SEO, and as a progressive web app it stays unindexed by search engines. Moderating one is a good way to understand what the internet can do.
 
-- **Supremely animatable vector graphics** - Take a picture from your phone, and Realness creates a vector graphic composed into five animatable layers
-- **Powerful workflow** - Works great on iPad with split view and export right into Affinity Designer
-- **Optimized for the web** - Posters are optimized to be expressive, small, and run fast
-- **Extract color palettes** - Use any one of eighteen gradients generated from your poster's prominent colors
-- **High performance masking** - Smart use of opacity to merge colors between each of five layers creating natural movement
-
-### For Communities
-
-- **Create your own social network** - Use it with your design team, family, union hall, or any intimate community
-- **Clear lines of responsibility** - Each instance has one moderator who takes responsibility for content
-- **No tracking or analytics** - PWA means Realness is unindexed by search engines
-- **Encourages internet literacy** - Helps people understand the power of the internet
-- **No email, likes, links, or SEO** - Focus on real human connections
-
-### For Developers
-
-- **HTML is our database** - Build complete applications without backend coordination
-- **Edge-first approach** - Native, fast, more secure with choices around data storage
-- **Open source** - Modern best practices with semantic HTML described using microdata
-- **Reduced attack surface** - Leave sensitive data on the device
-- **Server is auth and storage only** - No backend processes required
-
-## Client-Only Architecture
-
-Realness provides **full functionality without any tracking**, working solely on the client:
-
-- **localStorage** - Small data (preferences, viewbox coordinates, friend groups)
-- **IndexedDB** - Large data (posters, thoughts, events)
-- **No server dependency** - Everything works offline
-- **Persistent state** - View states, preferences, and data survive page reloads
-- **No analytics** - No tracking, no monitoring, no data collection
+For developers: HTML is the database, so an application can be built without coordinating with a backend. The work happens at the edge, on the device, which keeps sensitive data off the server and the attack surface small. The markup is semantic and described with microdata. Where the data actually lives is in [architecture](docs/architecture.md).
 
 ## Install
 
@@ -88,7 +58,7 @@ mkcert realness.local
 echo "127.0.0.1 realness.local" | sudo tee -a /etc/hosts
 ```
 
-4. Run the dev server — it detects the certs and serves HTTPS on port 443
+4. Run the dev server - it detects the certs and serves HTTPS on port 443
 
 ```bash
 npm run dev
@@ -110,7 +80,7 @@ Once your project is created you will want to enable phone authentication and fi
 - Edit the configuration for phone
 - Enable and save
 
-#### Enable Storage
+#### Enable storage
 
 - Click to get started from storage tab
 - Accept the default security rules (they will be configured with deploy)
@@ -140,7 +110,7 @@ tagged commit, and GitHub manifesto. That is what makes
 do not rebuild between them. Firebase account must own the project
 (`firebase login` / `firebase use production`).
 
-1. **Write under Unreleased** — bullets go in `CHANGELOG.md` under
+1. **Write under Unreleased** - bullets go in `CHANGELOG.md` under
    `## Unreleased` (hidden from `/docs#changelog` until you cut).
 2. **Cut the version**
 
@@ -149,17 +119,17 @@ do not rebuild between them. Firebase account must own the project
    # or: minor | major
    ```
 
-   Bumps `package.json`, promotes Unreleased → `## vX.Y.Z — YYYY-MM-DD`,
+   Bumps `package.json`, promotes Unreleased → `## vX.Y.Z - YYYY-MM-DD`,
    commits `chore(release): vX.Y.Z`, tags `vX.Y.Z`. Fails if Unreleased is empty.
    Always pass `-m "chore(release): v%s"` so every tag reads the same.
 
-   Which bump — read the Unreleased bullets, not the commit log:
+   Which bump - read the Unreleased bullets, not the commit log:
 
-   - **patch** — fixes, performance, build and deploy work, copy. Nothing new
+   - **patch** - fixes, performance, build and deploy work, copy. Nothing new
      to do in the app.
-   - **minor** — a bullet describes something you can now do that you could
+   - **minor** - a bullet describes something you can now do that you could
      not before. One feature is enough.
-   - **major** — a stored file format, a storage rule, or a URL changes in a
+   - **major** - a stored file format, a storage rule, or a URL changes in a
      way an existing install cannot read.
 
 3. **Ship**
@@ -189,7 +159,7 @@ when a moderator wants one of the optional capabilities below. It is a
 
 ### When to deploy functions
 
-| You want…                                                     | Deploy `realness-functions`? | Also configure                                                                        |
+| You want...                                                   | Deploy `realness-functions`? | Also configure                                                                        |
 | ------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
 | A working Realness instance (posters, feed, auth, storage)    | **No**                       | Firebase Auth (phone) + Storage only                                                  |
 | Web push notifications (Account toggle + scheduled broadcast) | **Yes**                      | `VAPID_PRIVATE_KEY` secret + matching public key in both repos (see functions README) |
@@ -203,8 +173,8 @@ If none of the optional rows apply, skip functions entirely.
 The app never assumes functions exist. At runtime it probes capabilities on the
 **same origin**:
 
-1. `GET /capabilities` — live manifest when hosting rewrites to deployed functions
-2. `GET /capabilities.json` — static fallback shipped with the web app (all flags `false`)
+1. `GET /capabilities` - live manifest when hosting rewrites to deployed functions
+2. `GET /capabilities.json` - static fallback shipped with the web app (all flags `false`)
 
 Probe logic: `src/use/instance-capabilities.js`. Feature gates read the result:
 
@@ -213,7 +183,7 @@ Probe logic: `src/use/instance-capabilities.js`. Feature gates read the result:
 | `push`            | Account notifications UI shown; subscriptions saved to Storage; scheduled broadcast can run | Notifications toggle hidden; no server push             |
 | `phone_integrity` | Sign-in calls `POST /check-phone-integrity` before Firebase sends SMS                       | Sign-in uses Firebase phone auth only; no Twilio Lookup |
 
-Web-only deploys never hit functions — the static fallback keeps every flag off.
+Web-only deploys never hit functions - the static fallback keeps every flag off.
 No env vars are required in the web app for moderators (`VITE_FUNCTIONS_URL` is
 an optional dev override for the functions emulator).
 
@@ -232,7 +202,7 @@ active (`/capabilities`, `/check-phone-integrity` → functions).
 `phone_integrity` stays `false` and the sign-in gate is off.
 
 **Push:** set `VAPID_PRIVATE_KEY` and keep the public key in sync across both
-repos — see `realness-functions/README.md`.
+repos - see `realness-functions/README.md`.
 
 **Verify:** `GET https://your-instance.web.app/capabilities` should return JSON
 (not the SPA). Confirm flags match what you configured before treating a

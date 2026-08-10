@@ -41,6 +41,69 @@ describe('svg_to_canvas_texture', () => {
     texture.dispose()
   })
 
+  it('caps the raster at max_dimension and honours background and color space', async () => {
+    const draw_image = vi.fn()
+    const fill_rect = vi.fn()
+    const ctx = { drawImage: draw_image, fillRect: fill_rect, fillStyle: '' }
+    vi.spyOn(document, 'createElement').mockImplementation(tag => {
+      if (tag === 'canvas')
+        return { width: 0, height: 0, getContext: () => ctx }
+      return document.createElement(tag)
+    })
+
+    class FakeImage {
+      constructor() {
+        this.naturalWidth = 512
+        this.naturalHeight = 588
+        setTimeout(() => this.onload?.(), 0)
+      }
+      set src(_value) {}
+    }
+    vi.stubGlobal('Image', FakeImage)
+
+    const { texture, width, height } = await svg_to_canvas_texture('<svg />', {
+      max_dimension: 256,
+      background: '#000',
+      color_space: THREE.NoColorSpace
+    })
+
+    expect(height).toBe(256)
+    expect(width).toBe(223)
+    expect(ctx.fillStyle).toBe('#000')
+    expect(fill_rect).toHaveBeenCalledWith(0, 0, width, height)
+    expect(texture.colorSpace).toBe(THREE.NoColorSpace)
+    texture.dispose()
+  })
+
+  it('leaves a raster smaller than max_dimension at full density', async () => {
+    vi.spyOn(document, 'createElement').mockImplementation(tag => {
+      if (tag === 'canvas')
+        return {
+          width: 0,
+          height: 0,
+          getContext: () => ({ drawImage: vi.fn() })
+        }
+      return document.createElement(tag)
+    })
+
+    class FakeImage {
+      constructor() {
+        this.naturalWidth = 50
+        this.naturalHeight = 40
+        setTimeout(() => this.onload?.(), 0)
+      }
+      set src(_value) {}
+    }
+    vi.stubGlobal('Image', FakeImage)
+
+    const { texture, width } = await svg_to_canvas_texture('<svg />', {
+      max_dimension: 256
+    })
+
+    expect(width).toBe(100)
+    texture.dispose()
+  })
+
   it('rejects when image fails to load', async () => {
     class BadImage {
       constructor() {

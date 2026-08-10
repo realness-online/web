@@ -122,6 +122,32 @@ describe('@/components/as-days', () => {
     it('has thought_feed_slots_list computed property', () => {
       expect(wrapper.vm.thought_feed_slots_list).toBeDefined()
     })
+
+    // Regression: editing a statement keeps its id, so a refill signature that
+    // only watches ids never fires and the rendered thought stays stale until
+    // reload. Content changes must also refill the days map.
+    it('refills days when statement content changes but its id does not', async () => {
+      const stmt = {
+        id: '/+16282281824/statements/100',
+        type: 'thoughts',
+        statement: 'before'
+      }
+      wrapper = shallowMount(AsDays, {
+        props: { statements: [stmt], posters: [], events: [], paginate: false },
+        global: { stubs: { icon: false } },
+        slots: {
+          default: ({ day }) => day[0][0].statement
+        }
+      })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.text()).toContain('before')
+
+      // Same id, new content — as `update_statement` produces in statements.js.
+      await wrapper.setProps({
+        statements: [{ ...stmt, statement: 'after' }]
+      })
+      expect(wrapper.text()).toContain('after')
+    })
   })
 
   describe('storytelling flattened_items', () => {

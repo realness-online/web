@@ -71,6 +71,19 @@
  */
 
 /**
+ * One shadow layer's material. `pulse` carries the layer's fill-opacity
+ * keyframes from the SVG, or null for the layers that hold still. `drift` is
+ * the paint texture's UV offset, or null when the layer is not gradient-filled
+ * and so has one baked texture rather than a paint/mask pair.
+ * @typedef {Object} ShadowMaterialEntry
+ * @property {import('three').MeshBasicMaterial} material
+ * @property {number} base_opacity
+ * @property {boolean} loaded
+ * @property {{ at: number, value: number }[] | null} pulse
+ * @property {import('three').Vector2 | null} drift
+ */
+
+/**
  * One rendered layer of the poster, in draw order.
  * @typedef {Object} PosterSceneLayerGroup
  * @property {import('three').Group} group
@@ -90,6 +103,7 @@
  * @property {() => import('three').PerspectiveCamera | null} get_camera
  * @property {() => number} get_mosaic_spread
  * @property {() => number} get_shadow_spread
+ * @property {() => number} get_shadow_opacity
  * @property {() => boolean} get_motion_enabled
  * @property {() => number} get_drift_amount
  * @property {() => number} get_drift_speed
@@ -100,6 +114,7 @@
  * @property {() => boolean} get_atmosphere_enabled
  * @property {() => number} get_atmosphere_density
  * @property {() => boolean} get_stroke_visible
+ * @property {ShadowMaterialEntry[]} shadow_materials
  * @property {{ material: import('three').MeshBasicMaterial, base_opacity: number, loaded: boolean, period: number }[]} stroke_materials
  * @property {PosterSceneAppliers} appliers
  * @property {Vec2} smooth

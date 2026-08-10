@@ -9,6 +9,8 @@ import {
   extract_symbol_child_svg,
   extract_symbol_child_from_context,
   extract_symbol_child_fill_from_context,
+  extract_symbol_child_mask_from_context,
+  extract_symbol_child_paint_from_context,
   extract_symbol_child_stroke_from_context
 } from '@/3d/utils/load-svg-layers.js'
 
@@ -119,6 +121,69 @@ describe('load_svg_layers', () => {
       expect(stroke_svg).toContain('fill="none"')
       expect(stroke_svg).toContain('stroke="#fff"')
       expect(stroke_svg).toContain('stroke-opacity="0.90"')
+    })
+  })
+
+  describe('mask and paint extraction', () => {
+    const gradient_poster = () =>
+      parse_poster_svg(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 20">
+          <defs><linearGradient id="grad"><stop offset="0" stop-color="#f00" /></linearGradient></defs>
+          <symbol id="shadows">
+            <path id="bold" d="M0 0 L1 1" fill="url(#grad)" fill-opacity="0.90" stroke="#fff" stroke-dasharray="4, 8" />
+            <path id="flat" d="M0 0 L1 1" fill="#123456" />
+          </symbol>
+        </svg>`
+      )
+
+    it('paints the layer shape white and drops its stroke for the mask', () => {
+      const mask_svg = extract_symbol_child_mask_from_context(
+        gradient_poster(),
+        'shadows',
+        'bold'
+      )
+
+      expect(mask_svg).toContain('fill="#fff"')
+      expect(mask_svg).toContain('stroke="none"')
+      expect(mask_svg).not.toContain('stroke-dasharray')
+    })
+
+    it('keeps the source fill-opacity so the mask carries coverage', () => {
+      const mask_svg = extract_symbol_child_mask_from_context(
+        gradient_poster(),
+        'shadows',
+        'bold'
+      )
+
+      expect(mask_svg).toContain('fill-opacity="0.90"')
+    })
+
+    it('paints the gradient across the whole poster', () => {
+      const paint_svg = extract_symbol_child_paint_from_context(
+        gradient_poster(),
+        'shadows',
+        'bold'
+      )
+
+      expect(paint_svg).toContain('<defs>')
+      expect(paint_svg).toContain('fill="url(#grad)"')
+      expect(paint_svg).toContain('width="10"')
+      expect(paint_svg).toContain('height="20"')
+      expect(paint_svg).not.toContain('id="bold"')
+    })
+
+    it('returns no paint for a flat fill or a missing layer', () => {
+      const parsed = gradient_poster()
+
+      expect(
+        extract_symbol_child_paint_from_context(parsed, 'shadows', 'flat')
+      ).toBeNull()
+      expect(
+        extract_symbol_child_paint_from_context(parsed, 'shadows', 'nope')
+      ).toBeNull()
+      expect(
+        extract_symbol_child_mask_from_context(parsed, 'shadows', 'nope')
+      ).toBeNull()
     })
   })
 })

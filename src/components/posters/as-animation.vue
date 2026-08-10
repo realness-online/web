@@ -16,8 +16,11 @@
   import {
     stroke,
     animation_speed,
-    animate as animate_pref
+    animate as animate_pref,
+    morph as morph_pref
   } from '@/utils/preference'
+  import { as_key_times, breathing_order } from '@/utils/path-morph'
+  import { morph_paths, shadow_layers } from '@/use/poster-morph'
   import {
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
@@ -37,10 +40,25 @@
       required: true,
       validator: is_svg_valid
     },
-    /** When true, SVG SMIL is paused (e.g. poster off-screen or animate preference off) */
+    /** When true, SVG SMIL is paused (poster off-screen or shown as an avatar) */
     paused: {
       type: Boolean,
       default: true
+    },
+    /** The poster's four density layers. Morph needs their geometry. */
+    vector: {
+      type: Object,
+      required: false,
+      default: null
+    },
+    /**
+     * Morph only mounts for the poster the reader is actually looking at - a
+     * layer's keyframes carry whole path strings, so a grid of them would put
+     * megabytes of geometry in the DOM.
+     */
+    focused: {
+      type: Boolean,
+      default: false
     }
   })
 
@@ -76,6 +94,75 @@
     const sync_base = sync_duration(base_duration)
     return `${sync_base * multiplier}s`
   }
+
+  /**
+   * A sync duration each, thinnest layer quickest, so the densities breathe
+   * out of step but still meet back at the start of the base cycle.
+   */
+  const MORPH_DURATIONS = SYNC_DURATIONS.slice(0, shadow_layers.length)
+  const MORPH_SPLINE = '0.42 0 0.58 1'
+
+  /**
+   * Base-seconds each layer rests on its own shape at the end of a cycle. The
+   * same absolute rest for every layer, so when the cycles meet at the base
+   * boundary the whole poster reads as itself for a beat before breathing on.
+   */
+  const MORPH_HOLD = 6
+  const MS_PER_SECOND = 1000
+
+  /** @type {import('vue').Ref<string[] | null>} */
+  const morph_layers = ref(null)
+
+  watch(
+    () => [morph_pref.value, props.focused, props.vector],
+    async ([wanted, focused, vector]) => {
+      if (!wanted || !focused || !vector) return
+      if (morph_layers.value) return
+      morph_layers.value = await morph_paths(props.id, vector)
+    },
+    { immediate: true }
+  )
+
+  /**
+   * Lags `morph_pref` on the way off - the layers finish their cycle back to
+   * their own shapes before the elements leave the DOM.
+   */
+  const morph_active = ref(morph_pref.value)
+
+  /**
+   * SMIL cannot point at another element's `d`, so every keyframe carries a
+   * whole path string. That is why this only builds for the focused poster.
+   */
+  const morph_animations = computed(() => {
+    if (!morph_active.value || !props.focused) return []
+    const layers = morph_layers.value
+    if (!layers) return []
+
+    return shadow_layers
+      .map((name, index) => {
+        const frames = breathing_order(index, shadow_layers.length).map(
+          slot => layers[slot]
+        )
+        if (frames.some(frame => !frame)) return null
+        // Rest on the layer's own shape at the end of each cycle
+        frames.push(frames[0])
+        return {
+          name,
+          href: fragment(name),
+          values: frames.join(';'),
+          key_times: as_key_times(
+            frames.length,
+            MORPH_HOLD / MORPH_DURATIONS[index]
+          ),
+          key_splines: frames
+            .slice(1)
+            .map(() => MORPH_SPLINE)
+            .join(';'),
+          dur: duration(MORPH_DURATIONS[index])
+        }
+      })
+      .filter(Boolean)
+  })
 
   const static_stroke_opacity = '0.90'
   const static_fill_opacity = '0.90'
@@ -205,17 +292,110 @@
     props.svg.setCurrentTime(new_time)
   }
 
-  watch_effect(() => {
-    const export_blocks_live_smil = poster_video_export_active.value > 0
-    // In-app `animate` only (default off). Parent also gates; we re-check so SMIL cannot run if pref is off.
-    const preference_allows = animate_pref.value === true
-    const should_animate =
-      preference_allows &&
+  /** @type {import('vue').Ref<SVGElement | null>} */
+  const timeline = ref(null)
+  /** @type {import('vue').Ref<SVGElement | null>} */
+  const morph_group = ref(null)
+  /** A preference just turned off; cycles are still landing on their base values */
+  const winding_down = ref(false)
+  /**
+   * Ended SMIL animations cannot restart in sync, so after a wind-down the
+   * elements are rebuilt - fresh ones re-enter the shared timeline in phase.
+   */
+  const generation = ref(0)
+  let elements_ended = false
+  let wind_down_timer = null
+  let morph_wind_down_timer = null
+
+  /** The reader can see the poster and nothing else needs SMIL stopped */
+  const watchable = computed(
+    () =>
       !props.paused &&
       viewport_visible.value &&
-      !export_blocks_live_smil
-    if (should_animate) props.svg.unpauseAnimations()
-    else pause_smil_basic()
+      poster_video_export_active.value === 0
+  )
+  // In-app `animate` only (default off). Parent also gates; we re-check so SMIL cannot run if pref is off.
+  const smil_running = computed(
+    () => animate_pref.value === true && watchable.value
+  )
+
+  /**
+   * Every animation begins and ends its cycle on its resting value, so ending
+   * it exactly on the next cycle boundary removes it without a visible jump.
+   * @param {ParentNode | null} root
+   * @returns {number} Seconds until the last animation lands
+   */
+  const end_at_cycle_boundaries = root => {
+    if (!root || typeof props.svg.getCurrentTime !== 'function') return 0
+    const now = props.svg.getCurrentTime()
+    let longest = 0
+    root.querySelectorAll('animate[dur]').forEach(leaf => {
+      if (typeof leaf.endElementAt !== 'function') return
+      const dur = parseFloat(leaf.getAttribute('dur'))
+      if (!dur) return
+      const remaining = dur - (now % dur)
+      leaf.endElementAt(remaining)
+      if (remaining > longest) longest = remaining
+    })
+    if (longest) elements_ended = true
+    return longest
+  }
+
+  const cancel_wind_down = () => {
+    if (wind_down_timer) clearTimeout(wind_down_timer)
+    wind_down_timer = null
+    winding_down.value = false
+  }
+
+  watch(animate_pref, (on, was_on) => {
+    if (on || !was_on || !watchable.value) return
+    const longest = end_at_cycle_boundaries(timeline.value)
+    if (!longest) return
+    winding_down.value = true
+    wind_down_timer = setTimeout(() => {
+      wind_down_timer = null
+      winding_down.value = false
+    }, longest * MS_PER_SECOND)
+  })
+
+  watch(morph_pref, on => {
+    if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
+    morph_wind_down_timer = null
+    if (on) {
+      if (morph_active.value && elements_ended) {
+        elements_ended = false
+        generation.value += 1
+      } else morph_active.value = true
+      return
+    }
+    const longest = smil_running.value
+      ? end_at_cycle_boundaries(morph_group.value)
+      : 0
+    if (!longest) {
+      morph_active.value = false
+      return
+    }
+    morph_wind_down_timer = setTimeout(() => {
+      morph_wind_down_timer = null
+      morph_active.value = false
+    }, longest * MS_PER_SECOND)
+  })
+
+  watch_effect(() => {
+    if (smil_running.value) {
+      if (elements_ended) {
+        elements_ended = false
+        generation.value += 1
+      }
+      cancel_wind_down()
+      props.svg.unpauseAnimations()
+    } else if (winding_down.value && watchable.value)
+      // Keep the timeline running so every cycle lands back on its base value
+      props.svg.unpauseAnimations()
+    else {
+      cancel_wind_down()
+      pause_smil_basic()
+    }
   })
 
   /** bfcache restore can skip a false-to-true viewport transition; still re-pause SMIL if pref is off. */
@@ -233,11 +413,28 @@
   unmounted(() => {
     window.removeEventListener('keydown', handle_keydown)
     window.removeEventListener('pageshow', handle_pageshow)
+    if (wind_down_timer) clearTimeout(wind_down_timer)
+    if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
   })
 </script>
 
 <template>
-  <animate itemprop="timeline">
+  <animate ref="timeline" itemprop="timeline" :key="generation">
+    <animate v-if="morph_animations.length" ref="morph_group" itemprop="morph">
+      <animate
+        v-for="layer in morph_animations"
+        :key="layer.name"
+        :href="layer.href"
+        attributeName="d"
+        repeatCount="indefinite"
+        :dur="layer.dur"
+        begin="0s"
+        :values="layer.values"
+        :keyTimes="layer.key_times"
+        calcMode="spline"
+        :keySplines="layer.key_splines" />
+    </animate>
+
     <animate v-if="stroke">
       <animate
         :href="fragment('light')"

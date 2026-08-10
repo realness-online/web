@@ -80,7 +80,7 @@ export const promote_unreleased = (changelog, version, date = new Date()) => {
     )
 
   const [iso] = date.toISOString().split('T')
-  const released_heading = `## v${bare} — ${iso}`
+  const released_heading = `## v${bare} - ${iso}`
   const without = strip_unreleased(changelog)
   const title_match = without.match(/^#\s+.+\n+/)
   const title = title_match ? title_match[0] : '# Changelog\n\n'
@@ -97,7 +97,7 @@ export const promote_unreleased = (changelog, version, date = new Date()) => {
 
 /**
  * Pull one version section from CHANGELOG.md.
- * Matches headings like `## v2.5.12 — 2026-07-16`.
+ * Matches headings like `## v2.5.12 - 2026-07-16`.
  *
  * @param {string} changelog
  * @param {string} version

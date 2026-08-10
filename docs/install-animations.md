@@ -1,11 +1,11 @@
-# Realness — Install Walkthroughs · Design
+# Realness - Install Walkthroughs · Design
 
 Synthetic recreations of the "Add to Home Screen / Add to Dock / Install" flow for
 each device + browser. Two palettes are in play and must not be mixed:
 
-1. **Framing layer** — Realness brand. Title cards, captions, callout rings, the
+1. **Framing layer** - Realness brand. Title cards, captions, callout rings, the
    background behind the device. Use these.
-2. **Device chrome** — accurate native OS UI (iOS / Android / browser). These are NOT
+2. **Device chrome** - accurate native OS UI (iOS / Android / browser). These are NOT
    brand colors; they exist so the share sheet, toolbar, and dialogs read as the real
    thing. Realness runs as a dark-mode app, so device UI is rendered in **dark mode**.
 
@@ -17,12 +17,12 @@ each device + browser. Two palettes are in play and must not be mixed:
 | surface       | `#2c2c26` | Title-card panels, caption bars                |
 | text          | `#d7d6cb` | Primary warm off-white text                    |
 | text-dim      | `#8d8b7e` | Secondary / device-tag text                    |
-| teal (accent) | `#77c5c5` | Primary accent — callout rings, progress, CTAs |
+| teal (accent) | `#77c5c5` | Primary accent - callout rings, progress, CTAs |
 | teal-fill     | `#509595` | Deeper teal fill                               |
-| red (accent)  | `#c57777` | Secondary accent — sparingly                   |
+| red (accent)  | `#c57777` | Secondary accent - sparingly                   |
 | red-fill      | `#955050` | Deeper red fill                                |
 
-Mosaic earth tones (the app-icon family — use only if an accent beyond teal is needed):
+Mosaic earth tones (the app-icon family - use only if an accent beyond teal is needed):
 sediment `#bc7b4e`, sand `#bfa969`, gravel `#918064`, rocks `#67594c`, boulders `#865050`.
 
 ## Device chrome palette (accurate iOS dark mode)
@@ -36,7 +36,7 @@ sediment `#bc7b4e`, sand `#bfa969`, gravel `#918064`, rocks `#67594c`, boulders 
 | ios-bar     | `#161618` | Safari toolbar / nav bar                  |
 | ios-label   | `#ffffff` | Primary label text                        |
 | ios-label-2 | `#98989f` | Secondary label text                      |
-| ios-blue    | `#0a84ff` | System tint — Add / Cancel / active icons |
+| ios-blue    | `#0a84ff` | System tint - Add / Cancel / active icons |
 | ios-field   | `#1c1c1e` | Address field background                  |
 
 Android (Material 3 dark, for the Android flows): surface `#1c1b1f`, surface-container
@@ -45,8 +45,8 @@ Android (Material 3 dark, for the Android flows): surface `#1c1b1f`, surface-con
 ## Type
 
 - UI / device chrome: `-apple-system`, fall back to **Inter** (built-in). iOS uses SF;
-  Inter is the closest available substitute — acceptable for a recreation.
-- Captions & titles: **Inter**, 600–700 weight. Tabular nums on any step counters.
+  Inter is the closest available substitute - acceptable for a recreation.
+- Captions & titles: **Inter**, 600-700 weight. Tabular nums on any step counters.
 - Caption body ≥ 40px, titles ≥ 80px (portrait 1080×1920 renders).
 
 ## Motion
@@ -58,7 +58,7 @@ Android (Material 3 dark, for the Android flows): surface `#1c1b1f`, surface-con
 
 ## What NOT to do
 
-- Don't tint the iOS/Android chrome with brand teal/red — chrome stays native.
-- Don't invent system colors — use the device tables above.
+- Don't tint the iOS/Android chrome with brand teal/red - chrome stays native.
+- Don't invent system colors - use the device tables above.
 - Don't show more than one tap target lit at a time.
-- Don't use jump cuts between scenes — every scene transitions, entrances only.
+- Don't use jump cuts between scenes - every scene transitions, entrances only.

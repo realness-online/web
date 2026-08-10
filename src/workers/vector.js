@@ -1,6 +1,7 @@
 /** @typedef {import('@/potrace/index.js').FillStrategy} FillStrategy */
 import { as_paths } from '@/potrace/index.js'
 import { rgba_to_hsla } from '@/utils/colors'
+import { normalize_set } from '@/utils/path-morph'
 import { optimize } from 'svgo/browser'
 
 const RGBA_COMPONENTS = 4
@@ -179,6 +180,16 @@ const optimize_vector = message => {
   return { vector: optimized.data }
 }
 
+/**
+ * Rebuild a poster's layers so they share a command signature and can morph
+ * into each other. Off the main thread because a poster runs to a few hundred
+ * contours and the alignment pass is quadratic in segment count.
+ */
+const normalize_morph = message => {
+  const { paths, contours, segments, precision } = message.data
+  return { paths: normalize_set(paths, { contours, segments, precision }) }
+}
+
 const route_message = async message => {
   const { route } = message.data
   let reply = {}
@@ -193,18 +204,25 @@ const route_message = async message => {
     case 'optimize:vector':
       reply = optimize_vector(message)
       break
+    case 'normalize:morph':
+      reply = normalize_morph(message)
+      break
     default:
       console.warn('unknown route', route)
   }
   return reply
 }
 self.addEventListener('message', async event => {
+  // Echoed back so a caller sharing this worker can match replies to its own
+  // requests instead of taking whichever answer lands first
+  const { id } = event.data
   try {
     const reply = await route_message(event)
-    self.postMessage(reply)
+    self.postMessage({ id, ...reply })
   } catch (error) {
     console.error('Error in message handler:', error)
     self.postMessage({
+      id,
       error: error instanceof Error ? error.message : String(error)
     })
   }
