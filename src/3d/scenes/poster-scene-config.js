@@ -97,6 +97,51 @@ export const STROKE_DASHARRAY = {
   bold: '4, 32'
 }
 
+/** A third of the SVG's 18s fill-opacity cycle, matching how the strokes were sped up */
+export const SHADOW_PULSE_PERIOD = 6
+/** The SVG's static fill-opacity; the keyframes below are absolute values against it */
+export const SHADOW_PULSE_BASE_OPACITY = 0.9
+/**
+ * Mirrors the fill-opacity animations in as-animation.vue, which a baked
+ * texture cannot carry. Background and regular hold still there too.
+ */
+export const SHADOW_PULSE_KEYFRAMES = {
+  light: [
+    { at: 0, value: 0.9 },
+    { at: 0.25, value: 0.75 },
+    { at: 0.5, value: 0.9 },
+    { at: 0.75, value: 0.21 },
+    { at: 1, value: 0.9 }
+  ],
+  medium: [
+    { at: 0, value: 0.9 },
+    { at: 0.25, value: 0.6 },
+    { at: 0.5, value: 0.9 },
+    { at: 0.75, value: 0.5 },
+    { at: 1, value: 0.9 }
+  ],
+  bold: [
+    { at: 0, value: 0.9 },
+    { at: 0.2, value: 0.75 },
+    { at: 0.4, value: 0.9 },
+    { at: 0.6, value: 0.6 },
+    { at: 0.8, value: 0.8 },
+    { at: 1, value: 0.9 }
+  ]
+}
+
+/**
+ * The baked gradient slides under the layer's shape - a stand-in for the SVG's
+ * gradient sweeps, which a still texture cannot carry. Mirrored wrapping means
+ * the sweep turns back at the edge instead of seaming, so amount can pass 0.5.
+ * Two periods and a per-layer phase keep the layers off each other's rhythm.
+ */
+export const GRADIENT_TEXTURE_SIZE = 256
+export const GRADIENT_DRIFT_AMOUNT = 0.25
+export const GRADIENT_DRIFT_PERIOD_X = 23
+export const GRADIENT_DRIFT_PERIOD_Y = 37
+export const GRADIENT_DRIFT_PHASE = 1.3
+
 export const INITIAL_GROUP_GAP = DEFAULT_GROUP_GAP
 export const FIT_HEIGHT = 3.5
 export const PARALLAX_AMOUNT = 0.35

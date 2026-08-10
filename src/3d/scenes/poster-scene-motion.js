@@ -25,6 +25,28 @@ export const nudge_pan = (pan, dx, dy) => {
 }
 
 /**
+ * Piecewise-linear sample of SMIL-style keyframes, looping over period_s.
+ * Linear because SMIL only splines with `calcMode="spline"`, which the poster
+ * markup omits - so this is what the 2D poster actually draws.
+ *
+ * @param {number} elapsed_s
+ * @param {number} period_s
+ * @param {{ at: number, value: number }[]} frames `at` normalised 0..1, ascending
+ */
+export const sample_keyframes = (elapsed_s, period_s, frames) => {
+  if (frames.length < 2) return frames[0]?.value ?? 0
+  if (period_s <= 0) return frames[0].value
+
+  const t = (((elapsed_s / period_s) % 1) + 1) % 1
+  let i = 1
+  while (i < frames.length - 1 && t > frames[i].at) i++
+
+  const span = frames[i].at - frames[i - 1].at
+  const local = span > 0 ? (t - frames[i - 1].at) / span : 0
+  return frames[i - 1].value + (frames[i].value - frames[i - 1].value) * local
+}
+
+/**
  * @param {number} elapsed_s
  * @param {number} period_s
  * @param {number} base_opacity

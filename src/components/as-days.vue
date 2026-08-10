@@ -112,14 +112,20 @@
   })
 
   /**
-   * Cheap signature so we refill when membership or order changes, without a deep watch
-   * over statements / posters / events (which costs reactive traversal every tick).
+   * Cheap signature so we refill when membership, order, or content changes,
+   * without a deep watch over statements / posters / events (which costs
+   * reactive traversal every tick). Ids alone are not enough: editing a
+   * statement keeps its id, so a signature that ignores text never refills
+   * days and the rendered thought stays stale until a reload. Statements are
+   * short, so fold their content in as well.
    */
   const feed_source_signature = computed(() => {
+    const statements = (props.statements ?? [])
+      .map(s => `${s.id}${s.statement ?? ''}`)
+      .join('\u001f')
     const ids = items => (items ?? []).map(item => item.id).join('\u001f')
     return [
-      (props.statements ?? []).length,
-      ids(props.statements),
+      statements,
       (props.posters ?? []).length,
       ids(props.posters),
       (props.events ?? []).length,

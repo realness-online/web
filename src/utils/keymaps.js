@@ -390,6 +390,7 @@ const preference_hint = {
   sediment: 'Finest pieces',
   drama: 'Dynamic lighting',
   animate: 'Active backgrounds & 3d motion',
+  morph: 'Layers flow between densities',
   color_cycle: 'Logo tiles cycle brand colors',
   view_3d: 'View poster in 3D',
   grid: 'Composition grid',

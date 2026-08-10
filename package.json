@@ -21,6 +21,7 @@
   "scripts": {
     "dev": "node scripts/generate-toc.js && vp dev",
     "check": "vp check",
+    "check:fix": "vp check --fix",
     "certs": "./generate-certs.sh",
     "dev:workers": "node scripts/watch-workers.js",
     "build": "vp run build:icons && vp run build:wasm && node scripts/generate-toc.js && vp build && vp build -c vite.prerender.config.js && node scripts/prerender.js && node scripts/build-manifest.js",
@@ -38,11 +39,7 @@
     "score": "CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
     "serve": "vp preview",
     "serve:https": "serve dist",
-    "lint": "vp lint . --fix",
-    "lint:check": "vp lint .",
     "deploy": "vp run build:wasm && vp run build:workers && vp run build && firebase deploy --only hosting,storage -m $npm_package_version && node scripts/verify-deploy.js --manifest dist/build-manifest.json --url https://realness.online",
-    "format": "vp fmt .",
-    "format:check": "vp fmt . --check",
     "preversion": "node scripts/check-release.js --unreleased",
     "version": "node scripts/promote-changelog.js && git add CHANGELOG.md",
     "postversion": "git push && git push --tags",
@@ -69,7 +66,7 @@
     "test:rules": "firebase emulators:exec --only storage --config firebase.test.json 'vp test run -c vitest.config.storage-rules.js'",
     "fallow:fix": "fallow fix",
     "type": "tsc --pretty",
-    "pre-commit": "vp check --fix && vp run type && vp test run && npm run test:rules"
+    "pre-commit": "npm run check:fix && npm run type && vp test run && npm run test:rules"
   },
   "dependencies": {
     "@vueuse/core": "14.4.0",

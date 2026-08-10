@@ -121,7 +121,7 @@ ships `public/screentones/` with real assets.
 
 ## What NOT to do
 
-- No full-screen vibrant gradients (the cutout style is solid fills with
+- No full-screen saturated gradients (the cutout style is solid fills with
   overlap, not gradient ramps)
 - No glow-heavy depth (`text-shadow: 0 0 40px ...`)
 - No drop shadows for elevation

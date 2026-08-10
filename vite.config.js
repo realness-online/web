@@ -33,9 +33,6 @@ const get_manual_chunk = id => {
 }
 
 export default defineConfig({
-  staged: {
-    '*': 'vp check --fix'
-  },
   lint: {
     plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
     jsPlugins: ['eslint-plugin-compat'],

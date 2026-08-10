@@ -1,4 +1,4 @@
-# Realness – Philosophy
+# Realness - Philosophy
 
 ![Realness](/public/icons.svg)
 

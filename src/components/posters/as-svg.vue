@@ -148,6 +148,13 @@
       !props.paused &&
       visibility.value === 'visible'
   )
+  /**
+   * `paused` is already false only while the poster is fully in view - see
+   * `as-figure`. Morph rides on that, so a directory grid never builds one.
+   */
+  const focused = computed(
+    () => !props.as_avatar && !props.paused && visibility.value === 'visible'
+  )
   const landscape = computed(() => poster_landscape(vector.value?.viewbox))
 
   const valid_vector = computed(() => {
@@ -452,7 +459,9 @@
       v-if="vector && trigger"
       :svg="trigger"
       :id="itemid"
-      :paused="!animate" />
+      :vector="vector"
+      :focused="focused"
+      :paused="paused || as_avatar" />
   </svg>
 </template>
 

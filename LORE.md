@@ -7,7 +7,7 @@ state. The law is a monument to a choice we made, or to the choice made for us.
 
 Ashbury and Cole still walk among us. People called them angels when it
 happened. They broke the Earth's orbit, and they are the only help we have.
-What they found was not gravity — we always knew gravity — but how to use it.
+What they found was not gravity - we always knew gravity - but how to use it.
 The day they used it, Earth began to fall toward the sun.
 
 Lower Haight is gone. The whole Bay is gone. We drift now.
@@ -20,8 +20,8 @@ learning what Ashbury knows: how to push against gravity, how to hold ground.
 A message to Earth takes two days to arrive. Nothing out here can ask a
 question and wait for the answer.
 
-The Victorians are our ships. We photograph them as they were — rooted,
-defiant — and then we launch them. Their trajectories are animated,
+The Victorians are our ships. We photograph them as they were - rooted,
+defiant - and then we launch them. Their trajectories are animated,
 gravity-bent arcs that carry ore back to the zone we keep. Lower Haight is a
 polygon on a celestial chart, drawn and redrawn. The buildings leave the ground
 to save the ground.

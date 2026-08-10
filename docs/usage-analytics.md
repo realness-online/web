@@ -148,7 +148,7 @@ Against current numbers:
   `$5` measurements are not worth opening.
 - **What would change the answer:** a real, sustained trickle of `$5`
   sponsors - each one already a gift of data you can capture by asking the
-  person. That is the honest unlock: at this scale you do not need a dashboard,
+  person. That is the honest answer: at this scale you do not need a dashboard,
   you need a handful of sponsors to interview.
 - **Decision deferred, not dead.** Watch `/pricing` traffic via `npm run
 traffic`, and watch the sponsor stream. The moment sponsors become a real

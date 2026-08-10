@@ -1,4 +1,4 @@
-# Realness – Contributing
+# Realness - Contributing
 
 ![Realness](/public/icons.svg)
 
@@ -6,7 +6,7 @@ Joining [realness](https://realness.online) is the best way to get support (mora
 
 The best way to start is deploy your own instance of realness and then read about the the [philosopy](philosophy.md) and [architecture](architecture.md).
 
-Touching palette code? Read [the color system](color-system.md) first — it covers the materials/roles split, naming conventions, and the guardrail tests before you change a value.
+Touching palette code? Read [the color system](color-system.md) first - it covers the materials/roles split, naming conventions, and the guardrail tests before you change a value.
 
 ## Scripts
 

@@ -1,45 +1,29 @@
-# Realness – Architecture
+# Realness - Architecture
 
 ![Realness](/public/icons.svg)
 
-Realness is a progressive web app. It is serverless and static. All of the heavy lifting is done at the edge on device. You moderate an instance of Realness via the [firebase console](https://firebase.google.com)
+Realness is a progressive web app. It is serverless and static, and the heavy
+lifting happens at the edge, on the device. You moderate an instance of Realness
+via the [firebase console](https://firebase.google.com).
 
-## Client-Only, Offline-First Design
+## Where data lives
 
-**Full functionality without tracking** - Realness works solely on the client, giving users complete control over their data and experience.
+Size decides the store. Items under 21KB go to `localStorage`: preferences,
+viewbox coordinates, friend groups, and events. Larger items go to IndexedDB
+through `idb-keyval`: posters, thoughts, and information about the people you
+follow. The thresholds are MIN 21KB, MID 34KB, MAX 55KB.
 
-### Storage Strategy
+Both stores are on the device, so the app works offline, and view states,
+preferences, and data survive a page reload. Vector tracing, animation, and
+every interaction run locally.
 
-- **Small items** (< 21KB) → `localStorage` (preferences, viewbox coordinates, friend groups, events)
-- **Large items** (> 21KB) → `idb-keyval` (IndexedDB) (posters, thoughts, user data)
-- **Size thresholds**: MIN=21KB, MID=34KB, MAX=55KB
-- **No server dependency** - Everything works offline
-- **Persistent state** - View states, preferences, and data survive page reloads
+## Data structure
 
-### Privacy & Control
+Each person has their own directory of HTML files, and that directory is their
+activity. A `Profile` lives at the root of it and has many `Thoughts`, `Events`,
+and `Posters`.
 
-- **No analytics** - No tracking, no monitoring, no data collection
-- **Client-side processing** - All vector graphics, animations, and interactions happen locally
-- **User-owned data** - Data you create is stored on your device
-- **No backend coordination** - Build complete applications without the backend having to keep up
+## Stack
 
-## Birds Eye View
-
-We use Vue.js, workers, Firebase Auth & Storage primarily. Design is applied with Stylus via CSS queries. Data you create is stored in localStorage. Large files and information about the people you follow is stored with indexdb.
-
-## Highlights
-
-- It's best practices
-- It's fast
-- It's cheap to run
-- The data it makes is yours
-- **Full functionality offline**
-- **No tracking or analytics**
-
-### Data structure
-
-Each user has their own directory of html files that is their activity. A `Profile` lives at the root of this directory and has many `Thoughts`, `Events`, and `Posters`
-
-```
-
-```
+Vue.js and workers, with Firebase Auth and Storage behind them. Design is
+applied with Stylus via CSS queries.

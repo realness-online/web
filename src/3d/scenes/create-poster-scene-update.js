@@ -4,6 +4,10 @@ import {
   DRIFT_FREQ_Y,
   DRIFT_PHASE_X,
   DRIFT_PHASE_Y,
+  GRADIENT_DRIFT_AMOUNT,
+  GRADIENT_DRIFT_PERIOD_X,
+  GRADIENT_DRIFT_PERIOD_Y,
+  GRADIENT_DRIFT_PHASE,
   MAX_ZOOM,
   MIN_ZOOM,
   MOSAIC_BASE_PARALLAX,
@@ -19,6 +23,8 @@ import {
   POINTER_SMOOTH,
   SHADOW_BASE_PARALLAX,
   SHADOW_PARALLAX_GAIN,
+  SHADOW_PULSE_BASE_OPACITY,
+  SHADOW_PULSE_PERIOD,
   STROKE_BASE_OPACITY,
   STROKE_MIN_OPACITY,
   TOUCH_TILT_BLEND,
@@ -34,6 +40,7 @@ import {
 } from '@/3d/scenes/poster-scene-bounds.js'
 import {
   nudge_pan,
+  sample_keyframes,
   smooth_toward,
   stroke_pulse_opacity
 } from '@/3d/scenes/poster-scene-motion.js'
@@ -221,6 +228,66 @@ const update_tilt_and_atmosphere = (
   } else scene.fog.density = 0
 }
 
+const TURN = Math.PI * 2
+
+/**
+ * Slides each layer's paint texture under its shape mask - the stand-in for the
+ * SVG's gradient sweeps. Mirrored wrapping turns the sweep back at the edge, so
+ * this only ever translates: it moves the way the 2D sweep does without
+ * following its curve.
+ *
+ * @param {PosterSceneRuntime} runtime
+ * @param {FrameState} frame_state
+ */
+const update_gradient_drift = (runtime, frame_state) => {
+  const { get_motion_enabled, shadow_materials } = runtime
+  const motion_enabled = get_motion_enabled()
+
+  for (let i = 0; i < shadow_materials.length; i++) {
+    const offset = shadow_materials[i].drift
+    if (!offset) continue
+    if (!motion_enabled) {
+      offset.set(0, 0)
+      continue
+    }
+    const phase = i * GRADIENT_DRIFT_PHASE
+    const turns_x = frame_state.elapsed_s / GRADIENT_DRIFT_PERIOD_X
+    const turns_y = frame_state.elapsed_s / GRADIENT_DRIFT_PERIOD_Y
+    offset.x = Math.sin(turns_x * TURN + phase) * GRADIENT_DRIFT_AMOUNT
+    offset.y = Math.cos(turns_y * TURN + phase) * GRADIENT_DRIFT_AMOUNT
+  }
+}
+
+/**
+ * The poster's fill-opacity SMIL cannot survive being baked into a texture, so
+ * replay the same dip on the material. The keyframes are absolute SVG opacities,
+ * so divide them back out and leave shadow_opacity as the ceiling.
+ *
+ * @param {PosterSceneRuntime} runtime
+ * @param {FrameState} frame_state
+ */
+const update_shadow_pulse = (runtime, frame_state) => {
+  const { get_motion_enabled, get_shadow_opacity, shadow_materials, appliers } =
+    runtime
+
+  if (!get_motion_enabled()) {
+    appliers.apply_shadow_opacity()
+    return
+  }
+
+  const shadow_opacity = get_shadow_opacity()
+  for (const entry of shadow_materials) {
+    if (!entry.loaded || !entry.pulse) continue
+    const pulse = sample_keyframes(
+      frame_state.elapsed_s,
+      SHADOW_PULSE_PERIOD,
+      entry.pulse
+    )
+    entry.material.opacity =
+      (entry.base_opacity * shadow_opacity * pulse) / SHADOW_PULSE_BASE_OPACITY
+  }
+}
+
 /**
  * @param {PosterSceneRuntime} runtime
  * @param {FrameState} frame_state
@@ -361,6 +428,8 @@ export const create_poster_scene_update = runtime => {
       cinematic,
       pan_navigating
     )
+    update_gradient_drift(runtime, frame_state)
+    update_shadow_pulse(runtime, frame_state)
     update_stroke_pulse(runtime, frame_state)
   }
 }

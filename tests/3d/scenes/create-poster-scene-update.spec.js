@@ -5,7 +5,10 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   INITIAL_ZOOM,
-  PARALLAX_AMOUNT
+  PARALLAX_AMOUNT,
+  GRADIENT_DRIFT_AMOUNT,
+  SHADOW_PULSE_KEYFRAMES,
+  SHADOW_PULSE_PERIOD
 } from '@/3d/scenes/poster-scene-config.js'
 import { CAMERA_DISTANCE, CAMERA_FOV } from '@/3d/engine/renderer-config.js'
 import {
@@ -78,6 +81,7 @@ const make_runtime = (overrides = {}) => {
     get_camera: () => make_camera(),
     get_mosaic_spread: () => 0.1,
     get_shadow_spread: () => 0.1,
+    get_shadow_opacity: () => 0.9,
     get_motion_enabled: () => false,
     get_drift_amount: () => 0.05,
     get_drift_speed: () => 1,
@@ -88,8 +92,9 @@ const make_runtime = (overrides = {}) => {
     get_atmosphere_enabled: () => true,
     get_atmosphere_density: () => 0.2,
     get_stroke_visible: () => true,
+    shadow_materials: [],
     stroke_materials: [],
-    appliers: { apply_stroke_opacity: vi.fn() },
+    appliers: { apply_shadow_opacity: vi.fn(), apply_stroke_opacity: vi.fn() },
     smooth,
     pan,
     zoom,
@@ -318,7 +323,7 @@ describe('create_poster_scene_update', () => {
       stroke_materials: [
         { material, base_opacity: 1, loaded: true, period: 6 }
       ],
-      appliers: { apply_stroke_opacity }
+      appliers: { apply_shadow_opacity: vi.fn(), apply_stroke_opacity }
     })
     update = create_poster_scene_update(runtime)
 
@@ -326,5 +331,166 @@ describe('create_poster_scene_update', () => {
 
     expect(apply_stroke_opacity).toHaveBeenCalled()
     expect(material.opacity).toBe(1)
+  })
+
+  it('pulses shadow opacity from the layer keyframes when motion is enabled', () => {
+    const material = { opacity: 0.9 }
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      get_shadow_opacity: () => 0.9,
+      shadow_materials: [
+        {
+          material,
+          base_opacity: 1,
+          loaded: true,
+          pulse: SHADOW_PULSE_KEYFRAMES.light
+        }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    update({ elapsed_s: 0, delta_s: 1 / 60 }, input_state())
+    expect(material.opacity).toBeCloseTo(0.9, 3)
+
+    // 3/4 through the 6s cycle is the light layer's deepest dip, 0.21 of 0.9
+    update(
+      { elapsed_s: SHADOW_PULSE_PERIOD * 0.75, delta_s: 1 / 60 },
+      input_state()
+    )
+    expect(material.opacity).toBeCloseTo(0.21, 3)
+  })
+
+  it('keeps shadow_opacity as the ceiling of the pulse', () => {
+    const material = { opacity: 1 }
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      get_shadow_opacity: () => 0.5,
+      shadow_materials: [
+        {
+          material,
+          base_opacity: 1,
+          loaded: true,
+          pulse: SHADOW_PULSE_KEYFRAMES.light
+        }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    update({ elapsed_s: 0, delta_s: 1 / 60 }, input_state())
+
+    expect(material.opacity).toBeCloseTo(0.5, 3)
+  })
+
+  it('leaves shadow layers without keyframes alone', () => {
+    const material = { opacity: 0.9 }
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      shadow_materials: [
+        { material, base_opacity: 1, loaded: true, pulse: null }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    update(
+      { elapsed_s: SHADOW_PULSE_PERIOD * 0.75, delta_s: 1 / 60 },
+      input_state()
+    )
+
+    expect(material.opacity).toBe(0.9)
+  })
+
+  it('slides the paint texture under each layer when motion is enabled', () => {
+    const drift = new THREE.Vector2(0, 0)
+    const other = new THREE.Vector2(0, 0)
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      shadow_materials: [
+        {
+          material: { opacity: 1 },
+          base_opacity: 1,
+          loaded: true,
+          pulse: null,
+          drift
+        },
+        {
+          material: { opacity: 1 },
+          base_opacity: 1,
+          loaded: true,
+          pulse: null,
+          drift: other
+        }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    update({ elapsed_s: 4, delta_s: 1 / 60 }, input_state())
+
+    expect(drift.x).not.toBe(0)
+    expect(Math.abs(drift.x)).toBeLessThanOrEqual(GRADIENT_DRIFT_AMOUNT)
+    expect(Math.abs(drift.y)).toBeLessThanOrEqual(GRADIENT_DRIFT_AMOUNT)
+    // A per-layer phase keeps the layers off each other's rhythm
+    expect(other.x).not.toBeCloseTo(drift.x, 4)
+  })
+
+  it('recentres the paint texture when motion is disabled', () => {
+    const drift = new THREE.Vector2(0.2, -0.1)
+    const runtime = make_runtime({
+      get_motion_enabled: () => false,
+      shadow_materials: [
+        {
+          material: { opacity: 1 },
+          base_opacity: 1,
+          loaded: true,
+          pulse: null,
+          drift
+        }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    update({ elapsed_s: 4, delta_s: 1 / 60 }, input_state())
+
+    expect(drift.x).toBe(0)
+    expect(drift.y).toBe(0)
+  })
+
+  it('leaves layers without a paint texture undrifted', () => {
+    const material = { opacity: 0.9 }
+    const runtime = make_runtime({
+      get_motion_enabled: () => true,
+      shadow_materials: [
+        { material, base_opacity: 1, loaded: true, pulse: null, drift: null }
+      ]
+    })
+    update = create_poster_scene_update(runtime)
+
+    expect(() =>
+      update({ elapsed_s: 4, delta_s: 1 / 60 }, input_state())
+    ).not.toThrow()
+  })
+
+  it('restores static shadow opacity when motion is disabled', () => {
+    const material = { opacity: 0.21 }
+    const apply_shadow_opacity = vi.fn(() => {
+      material.opacity = 0.9
+    })
+    const runtime = make_runtime({
+      get_motion_enabled: () => false,
+      shadow_materials: [
+        {
+          material,
+          base_opacity: 1,
+          loaded: true,
+          pulse: SHADOW_PULSE_KEYFRAMES.light
+        }
+      ],
+      appliers: { apply_shadow_opacity, apply_stroke_opacity: vi.fn() }
+    })
+    update = create_poster_scene_update(runtime)
+
+    update(frame_state, input_state())
+
+    expect(apply_shadow_opacity).toHaveBeenCalled()
+    expect(material.opacity).toBe(0.9)
   })
 })
