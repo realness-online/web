@@ -88,7 +88,7 @@
       default: false
     }
   })
-  const emit = defineEmits(['focus', 'click', 'show', 'in_view'])
+  const emit = defineEmits(['focus', 'click', 'show', 'intersecting'])
   const mask_pen = inject('mask-pen', null)
   const mask_pen_active = computed(() => mask_pen?.active.value ?? false)
   const poster_label = computed(() => {
@@ -152,7 +152,7 @@
    * `paused` is already false only while the poster is fully in view - see
    * `as-figure`. Morph rides on that, so a directory grid never builds one.
    */
-  const focused = computed(
+  const in_view = computed(
     () => !props.as_avatar && !props.paused && visibility.value === 'visible'
   )
   const landscape = computed(() => poster_landscape(vector.value?.viewbox))
@@ -171,13 +171,13 @@
     document.addEventListener(POSTER_MEET_TOGGLE_ONLY, on_meet_toggle_only_doc)
     if (props.sync_poster) {
       intersecting.value = true
-      emit('in_view', true)
+      emit('intersecting', true)
       vector.value = props.sync_poster
       emit('show', vector.value)
     } else {
       use_intersect(trigger, ([{ isIntersecting }]) => {
         intersecting.value = isIntersecting
-        emit('in_view', isIntersecting)
+        emit('intersecting', isIntersecting)
         if (isIntersecting) show()
       })
       if (props.as_avatar && !vector.value) await show()
@@ -190,7 +190,7 @@
   watch_effect(() => {
     if (props.sync_poster) {
       intersecting.value = true
-      emit('in_view', true)
+      emit('intersecting', true)
       vector.value = props.sync_poster
       emit('show', vector.value)
     } else if (props.sync_poster === null) vector.value = null
@@ -460,7 +460,7 @@
       :svg="trigger"
       :id="itemid"
       :vector="vector"
-      :focused="focused"
+      :in_view="in_view"
       :paused="paused || as_avatar" />
   </svg>
 </template>

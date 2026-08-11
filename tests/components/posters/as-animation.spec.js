@@ -2,6 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import as_animation from '@/components/posters/as-animation.vue'
 import { animate, morph } from '@/utils/preference'
+import { as_layer_id, as_query_id } from '@/utils/itemid'
 
 vi.mock('@/use/poster-morph', async import_original => {
   const actual = await import_original()
@@ -27,6 +28,14 @@ const as_leaves = wrapper =>
     .findAll('animate')
     .filter(animation => animation.attributes('dur'))
     .map(animation => (animation.element.endElementAt = vi.fn()))
+
+/** The real shadow path element morph's SMIL targets by id, for a given layer */
+const as_shadow_path = name => {
+  const path = document.createElement('path')
+  path.id = `${as_query_id(as_layer_id(poster_id, 'shadows'))}-${name}`
+  document.body.append(path)
+  return path
+}
 
 describe('@/component/posters/as-animation.vue', () => {
   afterEach(() => {
@@ -56,18 +65,232 @@ describe('@/component/posters/as-animation.vue', () => {
     })
   })
 
-  it('rests each morph layer on its own shape at the end of a cycle', async () => {
+  it('starts morph moving as soon as its geometry is ready, no delay', async () => {
+    animate.value = true
     morph.value = true
     const wrapper = mount(as_animation, {
       props: {
         id: poster_id,
         svg: as_svg(),
         paused: false,
-        focused: true,
+        in_view: true,
         vector: {}
       }
     })
     await flushPromises()
+    await nextTick()
+
+    expect(
+      wrapper
+        .findAll('animate')
+        .filter(animation => animation.attributes('attributename') === 'd')
+    ).toHaveLength(4)
+  })
+
+  it('primes the shadow to morph own shape before it ever moves, so nothing pops at the start', async () => {
+    animate.value = true
+    morph.value = true
+    vi.useFakeTimers()
+    const light = as_shadow_path('light')
+    try {
+      mount(as_animation, {
+        props: {
+          id: poster_id,
+          svg: as_svg(),
+          paused: false,
+          in_view: true,
+          vector: {}
+        }
+      })
+      await flushPromises()
+      await nextTick()
+
+      // Morph hasn't started moving yet, but the shadow already shows what
+      // its first frame will be rather than the un-normalized original
+      expect(light.getAttribute('d')).toBe('L0')
+    } finally {
+      light.remove()
+    }
+  })
+
+  it('never primes the shadow to morph geometry while animate is off', async () => {
+    // animate stays off - morph riding on a paused timeline still means
+    // nothing is moving, so there is no reason to pay for the heavier shape
+    morph.value = true
+    vi.useFakeTimers()
+    const light = as_shadow_path('light')
+    try {
+      mount(as_animation, {
+        props: {
+          id: poster_id,
+          svg: as_svg(),
+          paused: false,
+          in_view: true,
+          vector: { light: 'RAW_LIGHT' }
+        }
+      })
+      await flushPromises()
+      await nextTick()
+      vi.runAllTimers()
+      await nextTick()
+
+      expect(light.getAttribute('d')).toBe('RAW_LIGHT')
+    } finally {
+      light.remove()
+    }
+  })
+
+  it('keeps the shadow on morph shape through a wind-down, then falls back once morph is off', async () => {
+    animate.value = true
+    morph.value = true
+    vi.useFakeTimers()
+    const light = as_shadow_path('light')
+    try {
+      const wrapper = mount(as_animation, {
+        props: {
+          id: poster_id,
+          svg: as_svg(),
+          paused: false,
+          in_view: true,
+          vector: { light: 'RAW_LIGHT' }
+        }
+      })
+      await flushPromises()
+      await nextTick()
+      vi.runAllTimers()
+      await nextTick()
+      as_leaves(wrapper)
+
+      morph.value = false
+      await nextTick()
+
+      // Still winding down - the animate elements are still landing on this
+      // same value, so the base must not jump out from under them yet
+      expect(
+        wrapper
+          .findAll('animate')
+          .filter(animation => animation.attributes('attributename') === 'd')
+      ).toHaveLength(4)
+      expect(light.getAttribute('d')).toBe('L0')
+
+      vi.runAllTimers()
+      await nextTick()
+
+      // Morph is done with it - no reason to keep paying for the heavier
+      // normalized geometry once the reader can no longer see it move
+      expect(
+        wrapper
+          .findAll('animate')
+          .filter(animation => animation.attributes('attributename') === 'd')
+      ).toHaveLength(0)
+      expect(light.getAttribute('d')).toBe('RAW_LIGHT')
+    } finally {
+      light.remove()
+    }
+  })
+
+  it('caps a wind-down at a few seconds instead of waiting out a slow layer full cycle', async () => {
+    animate.value = true
+    morph.value = true
+    vi.useFakeTimers()
+    const wrapper = mount(as_animation, {
+      props: {
+        id: poster_id,
+        svg: as_svg(),
+        paused: false,
+        in_view: true,
+        vector: {}
+      }
+    })
+    await flushPromises()
+    await nextTick()
+    vi.runAllTimers()
+    await nextTick()
+    as_leaves(wrapper)
+
+    morph.value = false
+    await nextTick()
+
+    // The slowest layer's own cycle boundary is well past the cap here -
+    // still present just before it, gone right at it
+    vi.advanceTimersByTime(4999)
+    await nextTick()
+    expect(
+      wrapper
+        .findAll('animate')
+        .filter(animation => animation.attributes('attributename') === 'd')
+    ).toHaveLength(4)
+
+    vi.advanceTimersByTime(1)
+    await nextTick()
+    expect(
+      wrapper
+        .findAll('animate')
+        .filter(animation => animation.attributes('attributename') === 'd')
+    ).toHaveLength(0)
+  })
+
+  it('glides a capped layer home with a CSS transition instead of freezing mid-breath', async () => {
+    animate.value = true
+    morph.value = true
+    vi.useFakeTimers()
+    const bold = as_shadow_path('bold')
+    try {
+      const wrapper = mount(as_animation, {
+        props: {
+          id: poster_id,
+          svg: as_svg(),
+          paused: false,
+          in_view: true,
+          vector: {}
+        }
+      })
+      await flushPromises()
+      await nextTick()
+      vi.runAllTimers()
+      await nextTick()
+      as_leaves(wrapper)
+
+      morph.value = false
+      await nextTick()
+
+      // Bold's own boundary (40s) is well past the cap - ended right away
+      // rather than left running, then glided home with a real transition
+      expect(bold.style.transition).toContain('d')
+      expect(bold.style.transition).toContain('5s')
+      expect(bold.getAttribute('d')).toBe('L3')
+
+      const morphs = wrapper
+        .findAll('animate')
+        .filter(animation => animation.attributes('attributename') === 'd')
+      // Light's own boundary (4s) is inside the cap - it keeps breathing
+      // toward it on its existing cycle, untouched by the settle
+      const light = morphs.find(animation =>
+        animation.attributes('href').endsWith('-light')
+      )
+      expect(light.attributes('values')).toBe('L0;L1;L2;L3;L2;L1;L0;L0')
+    } finally {
+      bold.remove()
+    }
+  })
+
+  it('rests each morph layer on its own shape at the end of a cycle', async () => {
+    animate.value = true
+    morph.value = true
+    vi.useFakeTimers()
+    const wrapper = mount(as_animation, {
+      props: {
+        id: poster_id,
+        svg: as_svg(),
+        paused: false,
+        in_view: true,
+        vector: {}
+      }
+    })
+    await flushPromises()
+    await nextTick()
+    vi.runAllTimers()
+    await nextTick()
 
     const morphs = wrapper
       .findAll('animate')
@@ -75,15 +298,19 @@ describe('@/component/posters/as-animation.vue', () => {
     expect(morphs.length).toBe(4)
 
     const light = morphs[0]
-    expect(light.attributes('values')).toBe('L0;L1;L0;L0')
-    expect(light.attributes('keytimes')).toBe('0;0.3333;0.6667;1')
-    expect(light.attributes('keysplines').split(';').length).toBe(3)
+    expect(light.attributes('values')).toBe('L0;L1;L2;L3;L2;L1;L0;L0')
+    expect(light.attributes('keytimes')).toBe(
+      '0;0.1481;0.2963;0.4444;0.5926;0.7407;0.8889;1'
+    )
+    expect(light.attributes('keysplines').split(';').length).toBe(7)
 
-    // Bold breathes over 90 base-seconds, so its 6-second rest is a short
+    // Bold sweeps down from its own density, so its 6-second rest is a short
     // slice at the end rather than a third of the cycle
     const bold = morphs[3]
-    expect(bold.attributes('values')).toBe('L3;L2;L3;L3')
-    expect(bold.attributes('keytimes')).toBe('0;0.4667;0.9333;1')
+    expect(bold.attributes('values')).toBe('L3;L2;L1;L0;L1;L2;L3;L3')
+    expect(bold.attributes('keytimes')).toBe(
+      '0;0.163;0.3259;0.4889;0.6519;0.8148;0.9778;1'
+    )
   })
 
   it('lets every animation land on its base value before pausing', async () => {
@@ -111,18 +338,21 @@ describe('@/component/posters/as-animation.vue', () => {
   it('keeps morph layers until they finish their cycle after morph turns off', async () => {
     animate.value = true
     morph.value = true
+    vi.useFakeTimers()
     const wrapper = mount(as_animation, {
       props: {
         id: poster_id,
         svg: as_svg(),
         paused: false,
-        focused: true,
+        in_view: true,
         vector: {}
       }
     })
     await flushPromises()
+    await nextTick()
+    vi.runAllTimers()
+    await nextTick()
     as_leaves(wrapper)
-    vi.useFakeTimers()
 
     morph.value = false
     await nextTick()

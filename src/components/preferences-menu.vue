@@ -223,9 +223,10 @@
     <article>
       <h3 id="preferences-motion">Motion</h3>
       <preference name="drama" />
-      <preference :show_icon="icon" name="animate" />
-      <preference name="morph" />
-      <preference name="color_cycle" label="Color cycle" />
+      <preference :show_icon="icon" name="animate">
+        <preference compact name="morph" label="Lava lamp" />
+        <preference compact name="color_cycle" label="Color cycle" />
+      </preference>
       <h3 id="preferences-view">View</h3>
       <preference :show_icon="icon" name="view_3d" label="3D">
         <div class="tweakpane" @transitionend="on_slide_transition_end">

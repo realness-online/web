@@ -52,6 +52,7 @@ export const default_keymap = [
       f: 'pref::Toggle_Shadow',
       g: 'pref::Toggle_Mosaic',
       q: 'pref::Toggle_View_3d',
+      l: 'pref::Toggle_Morph',
 
       'Shift Row': '',
       z: 'pref::Toggle_Bold',
@@ -85,6 +86,7 @@ export const default_keymap = [
       'pref::Toggle_Stroke': 'Stroke outline on posters',
       'pref::Toggle_Mosaic': 'Mosaic display on posters',
       'pref::Toggle_View_3d': '3D viewer',
+      'pref::Toggle_Morph': 'Lava lamp layer flow',
       'pref::Toggle_Background': 'Background fill on posters',
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',
@@ -301,6 +303,7 @@ export const preference_command = {
   sediment: 'pref::Toggle_Sediment',
   drama: 'pref::Toggle_Drama',
   animate: 'pref::Toggle_Animate',
+  morph: 'pref::Toggle_Morph',
   color_cycle: 'pref::Toggle_Color_Cycle',
   view_3d: 'pref::Toggle_View_3d',
   grid: 'pref::Toggle_Grid',

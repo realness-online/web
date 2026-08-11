@@ -61,7 +61,7 @@ describe('@/utils/intersection', () => {
     expect(axis_visibility(0, 512, 390)).toBe(0)
   })
 
-  it('measure_visibility reports in_view and fully_in_view from geometry', () => {
+  it('measure_visibility reports intersecting and in_view from geometry', () => {
     const root = rect({ right: 800, bottom: 600, width: 800, height: 600 })
     const tall = rect({ right: 400, bottom: 1500, height: 1500 })
     const offscreen = rect({ top: 700, bottom: 1000, y: 700, height: 300 })
@@ -75,16 +75,16 @@ describe('@/utils/intersection', () => {
     })
 
     expect(measure_visibility(null)).toEqual({
-      in_view: false,
-      fully_in_view: false
+      intersecting: false,
+      in_view: false
     })
     expect(measure_visibility(element(tall))).toEqual({
-      in_view: true,
-      fully_in_view: true
+      intersecting: true,
+      in_view: true
     })
     expect(measure_visibility(element(offscreen))).toEqual({
-      in_view: false,
-      fully_in_view: false
+      intersecting: false,
+      in_view: false
     })
   })
 })

@@ -141,6 +141,7 @@ vi.mock('@/utils/preference', async () => {
   const sand_ref = ref(false)
   const sediment_ref = ref(false)
   const animate_ref = ref(false)
+  const morph_ref = ref(false)
   const info_ref = ref(false)
   const storytelling_ref = ref(false)
   const grid_ref = ref(false)
@@ -392,6 +393,7 @@ vi.mock('@/utils/preference', async () => {
     sand: sand_ref,
     sediment: sediment_ref,
     animate: animate_ref,
+    morph: morph_ref,
     info: info_ref,
     storytelling: storytelling_ref,
     animation_speed: animation_speed_ref,

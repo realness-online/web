@@ -59,6 +59,10 @@
     if (!show_hint.value) return []
     return get_preference_keys(props.name)
   })
+  const compact_key_hint = computed(() => {
+    if (!props.compact) return []
+    return get_preference_keys(props.name)
+  })
   const cycle_key_hint = computed(() => {
     if (!show_hint.value) return []
     return get_preference_cycle_keys(props.name)
@@ -97,6 +101,7 @@
       <h4 :data-labeled="label || undefined">
         <icon v-if="icon_name" :name="icon_name" />
         <span>{{ label || name }}{{ state_text }}</span>
+        <kbd v-for="key in compact_key_hint" :key="key">{{ key }}</kbd>
       </h4>
       <label>
         <input
@@ -180,6 +185,9 @@
           &:has(> svg.icon) svg.icon {
             width: var(--base-line);
             height: var(--base-line);
+          }
+          kbd {
+            margin: 0;
           }
         }
       }

@@ -6,7 +6,8 @@ import {
   as_contours,
   as_key_times,
   breathing_order,
-  normalize_set
+  normalize_set,
+  DEFAULT_SEGMENTS
 } from '@/utils/path-morph'
 
 const poster_layers = readFileSync(
@@ -84,6 +85,16 @@ const bounds = (d, solid_only = false) => {
 const corners = (d, index = 0) => {
   const contour = as_contours(d)[index]
   return [contour.start, ...contour.cubics.map(cubic => [cubic[4], cubic[5]])]
+}
+
+/** A long, sharply turning contour - far more perimeter than area */
+const zigzag = (x, y, width, teeth) => {
+  const step = width / teeth
+  let d = `M${x} ${y}`
+  for (let i = 1; i <= teeth; i++)
+    d += `L${x + i * step} ${y + (i % 2 === 0 ? 0 : 40)}`
+  d += `L${x + width} ${y + 60}L${x} ${y + 60}Z`
+  return d
 }
 
 const circle = (cx, cy, r, from = 0) => {
@@ -221,6 +232,20 @@ describe('normalize_set', () => {
     }
   })
 
+  it('spends more cubics on a long, detailed contour than a simple one the same rank', () => {
+    // An even split per contour was giving a sprawling, sharply turning shape
+    // the same handful of cubics as a plain circle beside it - coarse enough
+    // to round its turns away and read as a different, blobbier shape.
+    const busy = `${zigzag(0, 0, 600, 40)}${circle(700, 30, 10)}${circle(700, 100, 10)}`
+    const [normalized] = normalize_set([busy])
+    const [long_contour, ...small_contours] = as_contours(normalized).sort(
+      (first, second) => second.cubics.length - first.cubics.length
+    )
+    expect(long_contour.cubics.length).toBeGreaterThan(DEFAULT_SEGMENTS * 5)
+    for (const contour of small_contours)
+      expect(contour.cubics.length).toBeLessThan(long_contour.cubics.length)
+  })
+
   it('rounds to the precision asked for', () => {
     const [normalized] = normalize_set(layers, {
       contours: 2,
@@ -311,13 +336,13 @@ describe('normalize_set', () => {
 })
 
 describe('breathing_order', () => {
-  it('pairs a layer with the next density', () => {
-    expect(breathing_order(0, 4)).toEqual([0, 1, 0])
-    expect(breathing_order(2, 4)).toEqual([2, 3, 2])
+  it('sweeps up through every density then back down to start', () => {
+    expect(breathing_order(0, 4)).toEqual([0, 1, 2, 3, 2, 1, 0])
+    expect(breathing_order(2, 4)).toEqual([2, 3, 2, 1, 0, 1, 2])
   })
 
-  it('pairs the last layer backwards, so nothing wraps', () => {
-    expect(breathing_order(3, 4)).toEqual([3, 2, 3])
+  it('wraps a sweep starting past the top back down without going out of range', () => {
+    expect(breathing_order(3, 4)).toEqual([3, 2, 1, 0, 1, 2, 3])
   })
 
   it('stays put when there is only one layer', () => {

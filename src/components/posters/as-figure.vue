@@ -180,15 +180,15 @@
   const query_id = computed(() => as_query_id(/** @type {Id} */ (props.itemid)))
 
   const {
+    intersecting: poster_intersecting,
     in_view: poster_in_view,
-    fully_in_view: poster_fully_in_view,
     sync: sync_poster_visibility
   } = use_poster_viewport_visibility(poster)
 
   // Elect a single visible canonical per poster id; the rest reference it via <use>.
   const { am_canonical, use_reference, is_referenced } = use_poster_instance(
     () => /** @type {Id} */ (props.itemid),
-    { el: poster, in_view: poster_in_view, kind: 'poster' }
+    { el: poster, intersecting: poster_intersecting, kind: 'poster' }
   )
   const use_dom_reference = use_reference
 
@@ -376,7 +376,10 @@
   )
   const cutouts_active = computed(
     () =>
-      poster_in_view.value || props.pin || view_3d.value || am_canonical.value
+      poster_intersecting.value ||
+      props.pin ||
+      view_3d.value ||
+      am_canonical.value
   )
 
   watch_effect(async () => {
@@ -421,7 +424,7 @@
       view_3d.value &&
       shown.value &&
       cutouts_loaded.value &&
-      poster_fully_in_view.value
+      poster_in_view.value
   )
 
   watch(want_3d, want => {
@@ -562,7 +565,7 @@
       :sync_poster="sync_poster_for_svg"
       :show_cutout_layers="cutouts_active && mosaic"
       :pin="props.pin"
-      :paused="!poster_fully_in_view || canvas_alive"
+      :paused="!poster_in_view || canvas_alive"
       @show="on_show"
       @click="on_poster_svg_click"
       :focusable="false" />

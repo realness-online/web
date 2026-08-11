@@ -193,13 +193,13 @@ describe('@/components/posters/as-svg.vue', () => {
   })
 
   describe('sync_poster', () => {
-    it('emits in_view and show when sync_poster is set', async () => {
+    it('emits intersecting and show when sync_poster is set', async () => {
       const v = vector_fixture()
       const wrapper = shallowMount(as_svg, {
         props: { itemid, sync_poster: v }
       })
       await flushPromises()
-      expect(wrapper.emitted('in_view')?.[0]).toEqual([true])
+      expect(wrapper.emitted('intersecting')?.[0]).toEqual([true])
       expect(wrapper.emitted('show')?.[0]).toEqual([v])
     })
 
