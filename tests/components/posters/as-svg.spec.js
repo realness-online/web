@@ -13,6 +13,7 @@ const {
   mock_shadow,
   mock_stroke,
   mock_animate_pref,
+  mock_morph_pref,
   mock_boulders,
   mock_rocks,
   mock_gravel,
@@ -33,6 +34,7 @@ const {
     mock_shadow: create_watchable(true),
     mock_stroke: create_watchable(false),
     mock_animate_pref: create_watchable(false),
+    mock_morph_pref: create_watchable(false),
     mock_boulders: create_watchable(true),
     mock_rocks: create_watchable(true),
     mock_gravel: create_watchable(true),
@@ -52,6 +54,7 @@ vi.mock('@/utils/preference', () => ({
   shadow: mock_shadow,
   stroke: mock_stroke,
   animate: mock_animate_pref,
+  morph: mock_morph_pref,
   boulders: mock_boulders,
   rocks: mock_rocks,
   gravel: mock_gravel,
@@ -93,6 +96,7 @@ describe('@/components/posters/as-svg.vue', () => {
     mock_shadow.value = true
     mock_stroke.value = false
     mock_animate_pref.value = false
+    mock_morph_pref.value = false
     mock_boulders.value = true
     mock_rocks.value = true
     mock_gravel.value = true
@@ -256,6 +260,45 @@ describe('@/components/posters/as-svg.vue', () => {
       await flushPromises()
       const cutouts = wrapper.find('use[itemprop="sediment"]')
       expect(cutouts.exists()).toBe(true)
+    })
+  })
+
+  describe('cutout opacity and morph mask', () => {
+    it('rests cutouts at 0.5 with no mask while morph is off', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 0.5')
+      expect(cutout.element.parentElement.getAttribute('mask')).toBe(null)
+    })
+
+    it('raises cutouts to 0.85 and masks the group while morphing', async () => {
+      mock_animate_pref.value = true
+      mock_morph_pref.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 0.85')
+      expect(cutout.element.parentElement.getAttribute('mask')).toMatch(
+        /url\(.+cutout-shadow-dim\)/
+      )
+    })
+
+    it('keeps cutouts unmasked at full opacity when shadow is hidden', async () => {
+      mock_shadow.value = false
+      mock_animate_pref.value = true
+      mock_morph_pref.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 1')
+      expect(cutout.element.parentElement.getAttribute('mask')).toBe(null)
     })
   })
 
