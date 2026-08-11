@@ -12,7 +12,7 @@ import { poster_dom_id } from '@/use/poster-dom-reference'
  * @property {number} uid
  * @property {'poster' | 'avatar'} kind
  * @property {import('vue').MaybeRefOrGetter<Element | null | undefined>} el
- * @property {import('vue').Ref<boolean>} in_view
+ * @property {import('vue').Ref<boolean>} intersecting
  */
 
 /** @type {Map<string, PosterInstanceRecord[]>} */
@@ -39,11 +39,11 @@ const precedes = (a, b) => {
 /**
  * Pure election: among visible instances prefer a full poster over an avatar/row, then take
  * the earliest in document order. No visible instance → no canonical.
- * @param {Array<{ uid: number, kind: string, el: Element | null | undefined, in_view: boolean }>} records
+ * @param {Array<{ uid: number, kind: string, el: Element | null | undefined, intersecting: boolean }>} records
  * @returns {{ uid: number } | null}
  */
 export const elect_canonical = records => {
-  const visible = records.filter(record => record.in_view)
+  const visible = records.filter(record => record.intersecting)
   if (visible.length === 0) return null
   const posters = visible.filter(record => record.kind === 'poster')
   const pool = posters.length > 0 ? posters : visible
@@ -72,21 +72,21 @@ const records_for = itemid => {
  * @param {import('vue').MaybeRefOrGetter<Id>} itemid
  * @param {object} options
  * @param {import('vue').MaybeRefOrGetter<Element | null | undefined>} options.el - root element of this instance
- * @param {import('vue').MaybeRefOrGetter<boolean>} options.in_view
+ * @param {import('vue').MaybeRefOrGetter<boolean>} options.intersecting
  * @param {'poster' | 'avatar'} options.kind
  */
-export const use_poster_instance = (itemid, { el, in_view, kind }) => {
+export const use_poster_instance = (itemid, { el, intersecting, kind }) => {
   const uid = next_uid++
   const list = records_for(String(toValue(itemid)))
 
   /** @type {PosterInstanceRecord} */
-  const record = { uid, kind, el, in_view: ref(!!toValue(in_view)) }
+  const record = { uid, kind, el, intersecting: ref(!!toValue(intersecting)) }
   list.push(record)
 
   watch(
-    () => toValue(in_view),
+    () => toValue(intersecting),
     visible => {
-      record.in_view.value = !!visible
+      record.intersecting.value = !!visible
     }
   )
 
@@ -96,7 +96,7 @@ export const use_poster_instance = (itemid, { el, in_view, kind }) => {
         uid: other.uid,
         kind: other.kind,
         el: toValue(other.el),
-        in_view: other.in_view.value
+        intersecting: other.intersecting.value
       }))
     )
   )

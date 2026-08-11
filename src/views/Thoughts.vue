@@ -457,10 +457,55 @@
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
 
+  /**
+   * Runs the full feed load once, waiting for auth to resolve first. Auth is
+   * deferred to after first paint (init_serverless runs in a rAF), so `mounted`
+   * can beat it; loading without the phonebook would paint just me, then the
+   * auth watcher would load everyone and the feed would glitch and re-render.
+   * Holding `working` through the whole load keeps it to one paint.
+   * @returns {Promise<void>}
+   */
+  let initial_feed = null
+  const load_initial_feed = () => {
+    if (initial_feed) return initial_feed
+    initial_feed = new Promise(resolve => {
+      const start = async () => {
+        working.value = true
+        try {
+          // One paint, complete: my feed from idb and the phonebook from the
+          // network load in parallel, then everyone loads before `working` is
+          // dropped. A first frame of just me that reflows as the rest of the
+          // phonebook lands reads as a glitch, so the feed waits until whole.
+          await Promise.all([fill_statements(), load_phonebook()])
+          await fill_statements()
+          await init_processing_queue?.()
+          await mark_thoughts_rendered()
+        } finally {
+          working.value = false
+          resolve()
+        }
+      }
+      if (current_user.value !== undefined) void start()
+      else {
+        const stop = watch(
+          () => current_user.value,
+          user => {
+            if (user === undefined) return
+            stop()
+            void start()
+          }
+        )
+      }
+    })
+    return initial_feed
+  }
+
+  // Reloads for a sign-in after the initial load already settled -
+  // `load_initial_feed` covers the first resolution from `undefined` itself.
   watch(
     () => current_user.value,
-    async user => {
-      if (!user) return
+    async (user, was) => {
+      if (was === undefined || !user) return
       await load_phonebook()
       await fill_statements()
     }
@@ -479,20 +524,7 @@
     await tick()
     await after_layout()
     remove_thoughts_shell()
-
-    try {
-      // Without a phonebook `fill_statements` falls back to me, which `load()`
-      // serves from idb: a painted feed before the contacts round trip.
-      await fill_statements()
-      working.value = false
-      await mark_thoughts_rendered()
-
-      await load_phonebook()
-      await fill_statements()
-      await init_processing_queue?.()
-    } finally {
-      working.value = false
-    }
+    await load_initial_feed()
   })
 
   watch(posting, async (now, was) => {

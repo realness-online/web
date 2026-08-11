@@ -34,14 +34,14 @@
     if (!node) return null
     return node.$el ?? node
   })
-  const in_view = ref(false)
+  const intersecting = ref(false)
   use_intersect(el, ([entry]) => {
-    in_view.value = entry?.isIntersecting ?? false
+    intersecting.value = entry?.isIntersecting ?? false
   })
 
   const { use_reference } = use_poster_instance(() => props.itemid, {
     el,
-    in_view,
+    intersecting,
     kind: 'avatar'
   })
 

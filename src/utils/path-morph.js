@@ -97,6 +97,31 @@ export const segments_for = count =>
   )
 
 /**
+ * Cubics per slot, weighted by how much perimeter that slot actually carries.
+ * An even split per contour starves a large, branching shape of the curves it
+ * needs while wasting them on simple ones the same rank - which is what
+ * turned a detailed contour into a blob. Every layer sharing a slot morphs
+ * through the same cubic count, so the slot answers to whichever occupant -
+ * not just the reference layer's - is the most complex.
+ * @param {(Measured | null)[][]} filled One slot array per layer
+ * @param {number} count
+ * @returns {number[]}
+ */
+const segments_for_slots = (filled, count) => {
+  const lengths = Array.from({ length: count }, (unused, slot) =>
+    Math.max(0, ...filled.map(layer => layer[slot]?.polyline.total ?? 0))
+  )
+  const total_length = lengths.reduce((sum, length) => sum + length, 0) || 1
+  // Every slot is guaranteed the usual floor; what is left of the budget
+  // after that goes to whichever slots actually carry the perimeter to use
+  // it, rather than sitting unspent on shapes too simple to need it.
+  const bonus_budget = Math.max(0, CURVE_BUDGET - count * MIN_SEGMENTS)
+  return lengths.map(
+    length => MIN_SEGMENTS + Math.round((length / total_length) * bonus_budget)
+  )
+}
+
+/**
  * A cubic is six numbers - two control points then the end point. Reading
  * them by name keeps the geometry legible.
  * @param {Cubic} cubic
@@ -776,10 +801,6 @@ export const normalize_set = (paths, options = {}) => {
   const count = reference.length
   if (count === 0) return paths.map(() => '')
 
-  // Every layer is rebuilt to the same shape count, so the segment count has
-  // to answer to that total rather than to a fixed guess
-  const segments = options.segments ?? segments_for(count)
-
   const extent = Math.max(
     ...layers.flat().map(measured => Math.sqrt(measured.area)),
     1
@@ -798,31 +819,44 @@ export const normalize_set = (paths, options = {}) => {
     (measured, slot) => measured ?? reference[slot]
   )
 
+  // Every layer is rebuilt to the same shape count. Segments are picked per
+  // slot, not once for the whole set, and follow whichever layer's actual
+  // contour in that slot is the most complex - not just the reference's.
+  const segments = options.segments
+    ? Array.from({ length: count }, () => options.segments)
+    : segments_for_slots(filled, count)
+
   return filled.map(layer =>
     as_path_data(
       layer.map((measured, slot) => {
         const target = reference_shapes[slot]
-        if (!measured) return as_point_contour(target.middle, segments)
+        const slot_segments = segments[slot] ?? MIN_SEGMENTS
+        if (!measured) return as_point_contour(target.middle, slot_segments)
 
         const reverse = !measured.clockwise
         if (measured === target)
-          return resample(measured.polyline, segments, 0, reverse)
+          return resample(measured.polyline, slot_segments, 0, reverse)
 
         // Closed contours start at an arbitrary vertex. Left alone, two shapes
         // that match perfectly still twist as one morphs into the other, so
         // rotate the start to wherever it tracks the reference most closely.
-        const aim = resample(target.polyline, segments, 0, !target.clockwise)
+        const aim = resample(
+          target.polyline,
+          slot_segments,
+          0,
+          !target.clockwise
+        )
         let phase = 0
         let best = Infinity
         for (let attempt = 0; attempt < PHASE_ATTEMPTS; attempt++) {
           const offset = (attempt / PHASE_ATTEMPTS) * measured.polyline.total
           let cost = 0
-          for (let segment = 0; segment < segments; segment++) {
+          for (let segment = 0; segment < slot_segments; segment++) {
             const walked = at_length(
               measured.polyline,
               offset +
                 (reverse ? -1 : 1) *
-                  (segment / segments) *
+                  (segment / slot_segments) *
                   measured.polyline.total
             )
             const wanted = aim.cubics[segment]
@@ -833,7 +867,7 @@ export const normalize_set = (paths, options = {}) => {
           best = cost
           phase = offset
         }
-        return resample(measured.polyline, segments, phase, reverse)
+        return resample(measured.polyline, slot_segments, phase, reverse)
       }),
       precision
     )
@@ -841,18 +875,28 @@ export const normalize_set = (paths, options = {}) => {
 }
 
 /**
- * Which densities a layer visits during a morph. Every transition crosses one
- * threshold, so the poster stays readable - cycling all four means a wide
- * bold-to-light wrap whose middle is abstract.
+ * Which densities a layer visits during a morph, as a full there-and-back
+ * sweep of every layer rather than a round trip to just its neighbor -
+ * light visits regular, then medium, then bold, then unwinds back through
+ * medium and regular to light again. Still crosses one threshold at a time
+ * (a triangle wave, not a wrap), so the poster stays readable - jumping
+ * straight from bold back to light would pass through an abstract middle.
+ * Each layer starts its own sweep from its own position, so all four are
+ * out of phase with each other, and every sweep still ends back on the
+ * layer's own shape.
  *
  * @param {number} index Layer position in the set
  * @param {number} count How many layers there are
  * @returns {number[]}
  */
 export const breathing_order = (index, count) => {
-  const partner = index === count - 1 ? index - 1 : index + 1
-  if (partner < 0) return [index]
-  return [index, partner, index]
+  if (count <= 1) return [index]
+  const period = TWO * (count - 1)
+  const at = step => {
+    const distance = step % period
+    return distance < count ? distance : period - distance
+  }
+  return Array.from({ length: period + 1 }, (unused, step) => at(index + step))
 }
 
 /**

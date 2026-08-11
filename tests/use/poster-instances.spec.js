@@ -19,10 +19,10 @@ const node = index => ({
   }
 })
 
-const record = (uid, kind, in_view, index) => ({
+const record = (uid, kind, intersecting, index) => ({
   uid,
   kind,
-  in_view,
+  intersecting,
   el: node(index)
 })
 
@@ -74,8 +74,8 @@ describe('poster-instances election', () => {
     ]
     expect(elect_canonical(records)?.uid).toBe(1)
     // first scrolls away, second scrolls in
-    records[0].in_view = false
-    records[1].in_view = true
+    records[0].intersecting = false
+    records[1].intersecting = true
     expect(elect_canonical(records)?.uid).toBe(2)
   })
 })

@@ -35,6 +35,7 @@ import {
   info,
   storytelling,
   grid,
+  morph,
   aspect_ratio_mode,
   slice_alignment,
   menu,
@@ -155,6 +156,7 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   register_preference('pref::Toggle_Stroke', stroke)
   register_preference('pref::Toggle_Background', background)
   register_preference('pref::Toggle_Animate', animate)
+  register_preference('pref::Toggle_Morph', morph)
   register_preference('pref::Toggle_Info', info)
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Grid', grid)

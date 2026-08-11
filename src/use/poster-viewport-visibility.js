@@ -9,27 +9,27 @@ import {
  * Track coarse and full viewport visibility for a poster figure element.
  *
  * @param {import('vue').MaybeRefOrGetter<HTMLElement | null | undefined>} element_ref
- * @param {{ force_in_view?: import('vue').MaybeRefOrGetter<boolean> }} [options]
+ * @param {{ force_intersecting?: import('vue').MaybeRefOrGetter<boolean> }} [options]
  */
 export const use_poster_viewport_visibility = (element_ref, options = {}) => {
+  const intersecting = ref(false)
   const in_view = ref(false)
-  const fully_in_view = ref(false)
 
   const sync = () => {
     const el = toValue(element_ref)
     if (!el) {
+      intersecting.value = false
       in_view.value = false
-      fully_in_view.value = false
       return
     }
     const measured = measure_visibility(el)
+    intersecting.value = measured.intersecting
     in_view.value = measured.in_view
-    fully_in_view.value = measured.fully_in_view
   }
 
   let raf = 0
   const schedule_sync = () => {
-    if (raf || !in_view.value) return
+    if (raf || !intersecting.value) return
     raf = requestAnimationFrame(() => {
       raf = 0
       sync()
@@ -39,8 +39,8 @@ export const use_poster_viewport_visibility = (element_ref, options = {}) => {
   use_intersect(
     element_ref,
     ([entry]) => {
-      in_view.value = entry.isIntersecting
-      if (!entry.isIntersecting) fully_in_view.value = false
+      intersecting.value = entry.isIntersecting
+      if (!entry.isIntersecting) in_view.value = false
       else sync()
     },
     { threshold: INTERSECTION_THRESHOLDS }
@@ -54,11 +54,11 @@ export const use_poster_viewport_visibility = (element_ref, options = {}) => {
     window.addEventListener('resize', schedule_sync, { passive: true })
   }
 
-  if (options.force_in_view)
+  if (options.force_intersecting)
     watch(
-      () => toValue(options.force_in_view),
+      () => toValue(options.force_intersecting),
       force => {
-        if (force) in_view.value = true
+        if (force) intersecting.value = true
       },
       { immediate: true }
     )
@@ -71,5 +71,5 @@ export const use_poster_viewport_visibility = (element_ref, options = {}) => {
     }
   })
 
-  return { in_view, fully_in_view, sync }
+  return { intersecting, in_view, sync }
 }

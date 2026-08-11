@@ -8,6 +8,7 @@
     watch,
     watchEffect as watch_effect,
     inject,
+    nextTick,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
@@ -20,7 +21,11 @@
     morph as morph_pref
   } from '@/utils/preference'
   import { as_key_times, breathing_order } from '@/utils/path-morph'
-  import { morph_paths, shadow_layers } from '@/use/poster-morph'
+  import {
+    morph_paths,
+    as_layer_paths,
+    shadow_layers
+  } from '@/use/poster-morph'
   import {
     SYNC_DURATIONS,
     ANIMATION_SPEED_MULTIPLIERS
@@ -56,7 +61,7 @@
      * layer's keyframes carry whole path strings, so a grid of them would put
      * megabytes of geometry in the DOM.
      */
-    focused: {
+    in_view: {
       type: Boolean,
       default: false
     }
@@ -83,24 +88,53 @@
   }
 
   /**
+   * @param {number} base_duration - Base duration in seconds
+   * @returns {number} Real seconds, sync-friendly duration times speed multiplier
+   */
+  const duration_seconds = base_duration => {
+    const multiplier = ANIMATION_SPEED_MULTIPLIERS[animation_speed.value] || 1
+    return sync_duration(base_duration) * multiplier
+  }
+
+  /**
    * Calculates duration based on animation speed preference.
    * Uses sync-friendly durations (divisors of 180) so all animations
    * return to start together for smooth looping.
    * @param {number} base_duration - Base duration in seconds
    * @returns {string} Duration string with speed multiplier applied
    */
-  const duration = base_duration => {
-    const multiplier = ANIMATION_SPEED_MULTIPLIERS[animation_speed.value] || 1
-    const sync_base = sync_duration(base_duration)
-    return `${sync_base * multiplier}s`
-  }
+  const duration = base_duration => `${duration_seconds(base_duration)}s`
 
   /**
    * A sync duration each, thinnest layer quickest, so the densities breathe
-   * out of step but still meet back at the start of the base cycle.
+   * out of step but still meet back at the start of the base cycle. These are
+   * the pace for one there-and-back hop to a neighbor - `morph_base_duration`
+   * scales them up for a layer whose sweep visits more than that.
    */
   const MORPH_DURATIONS = SYNC_DURATIONS.slice(0, shadow_layers.length)
-  const MORPH_SPLINE = '0.42 0 0.58 1'
+  /** Transitions in the original there-and-back hop `MORPH_DURATIONS` was paced for */
+  const BASELINE_TRANSITIONS = 2
+
+  /**
+   * `breathing_order` can return a sweep through every layer rather than a
+   * single hop - scale the base duration by how many transitions the sweep
+   * actually carries, so the pace of any one crossing stays the one
+   * `MORPH_DURATIONS` sets regardless of how many crossings the sweep makes.
+   * @param {number} index
+   * @param {number} transitions
+   * @returns {number}
+   */
+  const morph_base_duration = (index, transitions) =>
+    (MORPH_DURATIONS[index] * transitions) / BASELINE_TRANSITIONS
+  /**
+   * Leaving rest reads as a sudden jump if it eases out symmetrically - the
+   * eye catches motion appearing where there was none a moment ago no matter
+   * how gently it starts. Building slowly and leaving fast (easeInCubic),
+   * then arriving slow (easeOutCubic), keeps the departure gradual and the
+   * landing soft without a dead stop at the far shape in between.
+   */
+  const MORPH_LEAVE_SPLINE = '0.55 0.055 0.675 0.19'
+  const MORPH_RETURN_SPLINE = '0.215 0.61 0.355 1'
 
   /**
    * Base-seconds each layer rests on its own shape at the end of a cycle. The
@@ -110,13 +144,21 @@
   const MORPH_HOLD = 6
   const MS_PER_SECOND = 1000
 
+  /**
+   * Longest a wind-down will wait for a cycle boundary. The slowest layer's
+   * full cycle can run to 45s+, far past what turning morph off should cost -
+   * past this cap the layer ends wherever it currently is instead of waiting
+   * out the rest of its lap.
+   */
+  const MORPH_WIND_DOWN_CAP = 5
+
   /** @type {import('vue').Ref<string[] | null>} */
   const morph_layers = ref(null)
 
   watch(
-    () => [morph_pref.value, props.focused, props.vector],
-    async ([wanted, focused, vector]) => {
-      if (!wanted || !focused || !vector) return
+    () => [morph_pref.value, props.in_view, props.vector],
+    async ([wanted, in_view, vector]) => {
+      if (!wanted || !in_view || !vector) return
       if (morph_layers.value) return
       morph_layers.value = await morph_paths(props.id, vector)
     },
@@ -124,41 +166,43 @@
   )
 
   /**
-   * Lags `morph_pref` on the way off - the layers finish their cycle back to
-   * their own shapes before the elements leave the DOM.
+   * Lags `morph_pref` on both ends - a start delay before the layers first
+   * move, and on the way off the layers finish their cycle back to their own
+   * shapes before the elements leave the DOM.
    */
-  const morph_active = ref(morph_pref.value)
+  const morph_active = ref(false)
 
   /**
    * SMIL cannot point at another element's `d`, so every keyframe carries a
-   * whole path string. That is why this only builds for the focused poster.
+   * whole path string. That is why this only builds for the in-view poster.
    */
   const morph_animations = computed(() => {
-    if (!morph_active.value || !props.focused) return []
+    if (!morph_active.value || !props.in_view) return []
     const layers = morph_layers.value
     if (!layers) return []
 
     return shadow_layers
       .map((name, index) => {
-        const frames = breathing_order(index, shadow_layers.length).map(
-          slot => layers[slot]
-        )
+        const order = breathing_order(index, shadow_layers.length)
+        const frames = order.map(slot => layers[slot])
         if (frames.some(frame => !frame)) return null
+
+        const base_duration = morph_base_duration(index, order.length - 1)
+
         // Rest on the layer's own shape at the end of each cycle
         frames.push(frames[0])
         return {
           name,
           href: fragment(name),
           values: frames.join(';'),
-          key_times: as_key_times(
-            frames.length,
-            MORPH_HOLD / MORPH_DURATIONS[index]
-          ),
+          key_times: as_key_times(frames.length, MORPH_HOLD / base_duration),
           key_splines: frames
             .slice(1)
-            .map(() => MORPH_SPLINE)
+            .map((unused, transition) =>
+              transition === 0 ? MORPH_LEAVE_SPLINE : MORPH_RETURN_SPLINE
+            )
             .join(';'),
-          dur: duration(MORPH_DURATIONS[index])
+          dur: duration(base_duration)
         }
       })
       .filter(Boolean)
@@ -306,6 +350,30 @@
   let elements_ended = false
   let wind_down_timer = null
   let morph_wind_down_timer = null
+  /**
+   * `props.svg.getCurrentTime()` when the current morph leaves last began.
+   * They start on `begin="indefinite"` + `beginElement()` rather than
+   * `begin="0s"` so turning morph on always opens on the resting shape
+   * already drawn statically, instead of snapping to wherever a
+   * document-synced cycle happens to be after the poster has been
+   * animating for a while.
+   */
+  let morph_epoch = 0
+
+  watch(morph_group, group => {
+    if (!group) return
+    nextTick(() => {
+      const leaves = group.querySelectorAll('animate')
+      if (!leaves.length) return
+      morph_epoch =
+        typeof props.svg.getCurrentTime === 'function'
+          ? props.svg.getCurrentTime()
+          : 0
+      leaves.forEach(leaf => {
+        if (typeof leaf.beginElement === 'function') leaf.beginElement()
+      })
+    })
+  })
 
   /** The reader can see the poster and nothing else needs SMIL stopped */
   const watchable = computed(
@@ -320,6 +388,19 @@
   )
 
   /**
+   * Morph's geometry is ready, the reader is actually looking at it, and SMIL
+   * is actually going to run - no reason to carry the normalized geometry, let
+   * alone breathe it, while `animate` itself is off and nothing is moving.
+   */
+  const morph_wanted = computed(
+    () =>
+      morph_pref.value &&
+      props.in_view &&
+      smil_running.value &&
+      Boolean(morph_layers.value)
+  )
+
+  /**
    * Every animation begins and ends its cycle on its resting value, so ending
    * it exactly on the next cycle boundary removes it without a visible jump.
    * @param {ParentNode | null} root
@@ -330,12 +411,97 @@
     const now = props.svg.getCurrentTime()
     let longest = 0
     root.querySelectorAll('animate[dur]').forEach(leaf => {
+      // Morph's leaves don't begin at document time zero (see morph_epoch
+      // below), so this document-synced modulo doesn't locate them correctly
+      // - wind_down_morph handles their own ending instead.
+      if (morph_group.value?.contains(leaf)) return
       if (typeof leaf.endElementAt !== 'function') return
       const dur = parseFloat(leaf.getAttribute('dur'))
       if (!dur) return
       const remaining = dur - (now % dur)
       leaf.endElementAt(remaining)
       if (remaining > longest) longest = remaining
+    })
+    if (longest) elements_ended = true
+    return longest
+  }
+
+  /**
+   * Morph's own wind-down: a layer close enough to its cycle boundary lands
+   * there as usual, but a layer that is not gets switched to a short,
+   * single-shot leg back to its own shape instead of either freezing
+   * mid-breath or running well past the cap.
+   * @returns {number} Seconds until every layer has settled
+   */
+  /** @param {string} spline Four numbers, space separated, as SMIL keySplines write them */
+  const as_css_bezier = spline =>
+    `cubic-bezier(${spline.trim().split(/\s+/).join(',')})`
+
+  /**
+   * A layer whose cycle boundary is too far away to wait for. SMIL cannot be
+   * told to run its existing indefinite cycle faster, so instead: end it now,
+   * pre-set the base to roughly where it was (its breathing partner, the
+   * nearer of the two shapes it was moving between), then glide the base the
+   * rest of the way home with a plain CSS transition - simpler and more
+   * reliable than splicing a fresh SMIL animation into a running timeline.
+   * @param {string} name
+   * @param {string} from_shape
+   * @param {string} to_shape
+   * @param {SVGAnimateElement | null} leaf
+   */
+  const settle_layer = (name, from_shape, to_shape, leaf) => {
+    const target = document.getElementById(fragment(name).slice(1))
+    if (!target) return
+    target.style.transition = 'none'
+    target.setAttribute('d', from_shape)
+    if (leaf && typeof leaf.endElementAt === 'function') leaf.endElementAt(0)
+    // Forces layout so the browser locks in `from_shape` as the transition's
+    // starting point, rather than coalescing it with the change below
+    target.getBoundingClientRect()
+    target.style.transition = `d ${MORPH_WIND_DOWN_CAP}s ${as_css_bezier(MORPH_RETURN_SPLINE)}`
+    target.setAttribute('d', to_shape)
+  }
+
+  /** A stray transition from an interrupted settle should not affect the next prime or SMIL take-over */
+  const clear_settle_transitions = () => {
+    if (typeof document === 'undefined') return
+    shadow_layers.forEach(name => {
+      const target = document.getElementById(fragment(name).slice(1))
+      if (target) target.style.transition = ''
+    })
+  }
+
+  /**
+   * Morph's own wind-down: a layer close enough to its cycle boundary lands
+   * there as usual; one that is not gets ended now and settled the rest of
+   * the way home with a CSS transition, so nothing runs well past the cap or
+   * sits frozen mid-breath waiting for it.
+   * @returns {number} Seconds until every layer has settled
+   */
+  const wind_down_morph = () => {
+    if (!morph_group.value || typeof props.svg.getCurrentTime !== 'function')
+      return 0
+    const layers = morph_layers.value
+    // Relative to when this generation's leaves actually began (see
+    // morph_epoch), not document time zero like the persistent animations.
+    const elapsed = Math.max(0, props.svg.getCurrentTime() - morph_epoch)
+    let longest = 0
+    shadow_layers.forEach((name, index) => {
+      const order = breathing_order(index, shadow_layers.length)
+      const dur = duration_seconds(morph_base_duration(index, order.length - 1))
+      if (!dur) return
+      const remaining = dur - (elapsed % dur)
+      const leaf = morph_group.value.querySelector(`[href="${fragment(name)}"]`)
+      if (remaining > MORPH_WIND_DOWN_CAP) {
+        const own = layers?.[index]
+        const partner = layers?.[order[1]]
+        if (own && partner) settle_layer(name, partner, own, leaf)
+        longest = Math.max(longest, MORPH_WIND_DOWN_CAP)
+        return
+      }
+      if (leaf && typeof leaf.endElementAt === 'function')
+        leaf.endElementAt(remaining)
+      longest = Math.max(longest, remaining)
     })
     if (longest) elements_ended = true
     return longest
@@ -358,28 +524,68 @@
     }, longest * MS_PER_SECOND)
   })
 
-  watch(morph_pref, on => {
-    if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
-    morph_wind_down_timer = null
-    if (on) {
-      if (morph_active.value && elements_ended) {
-        elements_ended = false
-        generation.value += 1
-      } else morph_active.value = true
-      return
-    }
-    const longest = smil_running.value
-      ? end_at_cycle_boundaries(morph_group.value)
-      : 0
-    if (!longest) {
-      morph_active.value = false
-      return
-    }
-    morph_wind_down_timer = setTimeout(() => {
+  watch(
+    morph_wanted,
+    wanted => {
+      if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
       morph_wind_down_timer = null
-      morph_active.value = false
-    }, longest * MS_PER_SECOND)
-  })
+
+      if (wanted) {
+        clear_settle_transitions()
+        if (!morph_active.value) morph_active.value = true
+        else if (elements_ended) {
+          // Already running but its elements ended (e.g. `animate` wound
+          // down the whole timeline) - ended SMIL cannot restart, rebuild.
+          elements_ended = false
+          generation.value += 1
+        }
+        return
+      }
+
+      if (!morph_active.value) return
+      // Still watchable even though it stopped being wanted (`animate` or
+      // `morph` just turned off) - keep going long enough to settle gracefully
+      const longest = watchable.value ? wind_down_morph() : 0
+      if (!longest) {
+        morph_active.value = false
+        return
+      }
+      morph_wind_down_timer = setTimeout(() => {
+        morph_wind_down_timer = null
+        morph_active.value = false
+      }, longest * MS_PER_SECOND)
+    },
+    { immediate: true }
+  )
+
+  /**
+   * The normalized geometry is several times heavier than the layer's true
+   * artwork - fine while morph is actually using it, wasted once the reader
+   * has it turned off. Keep it on the shadow through a wind-down, same as
+   * `morph_active`, so removing the `<animate>` still doesn't pop; only fall
+   * back to the original once morph has genuinely finished with it.
+   */
+  const shadow_shapes = computed(() =>
+    morph_wanted.value || morph_active.value ? morph_layers.value : null
+  )
+
+  watch(
+    shadow_shapes,
+    shapes => {
+      if (typeof document === 'undefined') return
+      const originals = as_layer_paths(props.vector)
+      shadow_layers.forEach((name, index) => {
+        const value = shapes?.[index] || originals[index]
+        if (!value) return
+        // getElementById, not a CSS selector - poster ids can start with a
+        // digit, which querySelector rejects as an invalid identifier
+        document
+          .getElementById(fragment(name).slice(1))
+          ?.setAttribute('d', value)
+      })
+    },
+    { immediate: true }
+  )
 
   watch_effect(() => {
     if (smil_running.value) {
@@ -428,7 +634,7 @@
         attributeName="d"
         repeatCount="indefinite"
         :dur="layer.dur"
-        begin="0s"
+        begin="indefinite"
         :values="layer.values"
         :keyTimes="layer.key_times"
         calcMode="spline"

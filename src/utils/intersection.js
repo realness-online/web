@@ -84,20 +84,20 @@ export const axis_visibility = (visible_span, element_span, root_span) => {
 
 /** True when as much of the element as can fit in the viewport is visible. */
 export const measure_fully_visible = element =>
-  measure_visibility(element).fully_in_view
+  measure_visibility(element).in_view
 
 /**
  * @param {Element} element
- * @returns {{ in_view: boolean, fully_in_view: boolean }}
+ * @returns {{ intersecting: boolean, in_view: boolean }}
  */
 export const measure_visibility = element => {
   if (!element?.getBoundingClientRect)
-    return { in_view: false, fully_in_view: false }
+    return { intersecting: false, in_view: false }
   const element_rect = element.getBoundingClientRect()
   const root_rect = viewport_rect()
   const ratio = intersection_ratio(element_rect, root_rect)
   return {
-    in_view: ratio > 0,
-    fully_in_view: is_ratio_fully_visible(ratio, element_rect, root_rect)
+    intersecting: ratio > 0,
+    in_view: is_ratio_fully_visible(ratio, element_rect, root_rect)
   }
 }
