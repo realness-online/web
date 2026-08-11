@@ -24,6 +24,7 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
+    morph as morph_pref,
     drama_back,
     drama_front,
     shadow,
@@ -285,9 +286,24 @@
     return { transform, transition }
   })
 
-  const OPACITY_HALF = 0.5
+  // Static baseline: cutouts blend with the shadow resting underneath.
+  const CUTOUT_REST_OPACITY = 0.5
+  // While morph runs, cutouts carry the poster where only the background
+  // rect is underneath; wherever shadow geometry actually sits, the shared
+  // luminance mask (as-masks.vue's cutout-shadow-dim) dims them back to
+  // ~0.5 so the moving shadow reads through. Per-pixel, no clock.
+  const CUTOUT_MORPH_OPACITY = 0.85
   const OPACITY_FULL = 1
   const OPACITY_HIDDEN = 0
+
+  /**
+   * Mirrors as-animation.vue's gate for building morph animations. Tracks
+   * the preference directly rather than morph's lagged wind-down state - the
+   * 0.44s opacity transition on the `use` elements covers the settle.
+   */
+  const morphing = computed(
+    () => morph_pref.value && animate.value && in_view.value
+  )
 
   const layer_preferences = {
     boulders,
@@ -311,15 +327,12 @@
             )
           )
         : ''
+      let opacity = OPACITY_FULL
+      if (shadow_layer_displayed.value)
+        opacity = morphing.value ? CUTOUT_MORPH_OPACITY : CUTOUT_REST_OPACITY
       const style = visible
-        ? {
-            opacity: shadow_layer_displayed.value ? OPACITY_HALF : OPACITY_FULL,
-            visibility: 'visible'
-          }
-        : {
-            opacity: OPACITY_HIDDEN,
-            visibility: 'hidden'
-          }
+        ? { opacity, visibility: 'visible' }
+        : { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
 
       layers[layer] = { visible, fragment, style }
     })
@@ -328,6 +341,17 @@
 
   const visible_layers = computed(() =>
     geology_layers.filter(layer => layer_data.value[layer].visible)
+  )
+
+  /**
+   * One mask on the cutout group, not per `<use>` - five masked uses cost
+   * half the frame rate while morph runs (measured ~29 vs ~59 fps); the
+   * group composites the mask once and keeps the full rate.
+   */
+  const cutout_group_mask = computed(() =>
+    shadow_layer_displayed.value && morphing.value
+      ? `url(${as_fragment_id(/** @type {import('@/types').Id} */ (props.itemid))}-cutout-shadow-dim)`
+      : undefined
   )
 
   const shadow_fragment = computed(() => {
@@ -405,7 +429,7 @@
         :style="lightbar_back_style" />
 
       <slot>
-        <g v-if="cutouts_mounted">
+        <g v-if="cutouts_mounted" :mask="cutout_group_mask">
           <use
             v-for="layer in visible_layers"
             :key="layer"

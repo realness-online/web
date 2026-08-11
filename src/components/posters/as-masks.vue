@@ -1,8 +1,9 @@
 <script setup>
   import { ref, computed, watch, onMounted as mounted, inject } from 'vue'
-  import { as_query_id, as_fragment_id } from '@/utils/itemid'
+  import { as_query_id, as_fragment_id, as_layer_id } from '@/utils/itemid'
   import { collect_geology_paths } from '@/utils/geology'
   import { read_subjects } from '@/utils/subjects'
+  import { shadow_layers } from '@/use/poster-morph'
 
   const props = defineProps({
     itemid: {
@@ -67,6 +68,24 @@
     return as_query_id(props.itemid)
   }
   const as_url = add => `url(${as_fragment_id(props.itemid)}-${add})`
+
+  /**
+   * Luminance the cutout-dim mask paints over shadow geometry. While morph
+   * runs, cutouts rise to 0.85 base opacity (as-svg.vue's
+   * CUTOUT_MORPH_OPACITY); 0.85 x 0.4 drops them to ~0.34 wherever shadow
+   * actually is, so the moving shadow reads through strongly - tuned by
+   * eye, deeper than the 0.5 static blend.
+   * Browsers disagree on the color space mask luminance is computed in - this
+   * value is tuned by eye against the 0.5 target, not trusted math.
+   */
+  const SHADOW_DIM_GRAY = 0.4
+  const gray = SHADOW_DIM_GRAY
+  // Alpha -> flat gray: shadow paths paint with gradient fills, their own
+  // gradient masks, and strokes - none of which belong in a luminance mask.
+  const flatten_matrix = `0 0 0 ${gray} 0  0 0 0 ${gray} 0  0 0 0 ${gray} 0  0 0 0 1 0`
+
+  const shadow_fragment = layer =>
+    `#${as_query_id(as_layer_id(/** @type {import('@/types').Id} */ (props.itemid), 'shadows'))}-${layer}`
 </script>
 
 <template>
@@ -91,6 +110,26 @@
       maskUnits="userSpaceOnUse"
       maskContentUnits="userSpaceOnUse">
       <rect width="100%" height="100%" :fill="as_url('vertical-background')" />
+    </mask>
+    <filter
+      :id="query('cutout-shadow-flatten')"
+      color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" :values="flatten_matrix" />
+    </filter>
+    <!-- Where shadow geometry is, dim the cutouts so it reads through; the
+      <use>s reference the live shadow paths, so morph moves the dimmed
+      region for free. White everywhere else leaves cutouts at base opacity. -->
+    <mask
+      :id="query('cutout-shadow-dim')"
+      maskUnits="userSpaceOnUse"
+      maskContentUnits="userSpaceOnUse">
+      <rect width="100%" height="100%" fill="#fff" />
+      <g :filter="as_url('cutout-shadow-flatten')">
+        <use
+          v-for="layer in shadow_layers"
+          :key="layer"
+          :href="shadow_fragment(layer)" />
+      </g>
     </mask>
     <mask
       v-for="subject in subject_masks"
