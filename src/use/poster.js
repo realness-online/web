@@ -447,11 +447,12 @@ const load_archive_posters = async (author_id, archive_id) => {
 export const is_svg_valid = v => v instanceof SVGSVGElement
 
 /**
- * @param {Id} itemid
- * @returns {boolean}
+ * Type guard for a poster itemid (Author/Type/Created-style Id).
+ * @param {string} itemid
+ * @returns {itemid is Id}
  */
 export const is_vector_id = itemid => {
-  if (as_created_at(itemid)) return true
+  if (as_created_at(/** @type {Id} */ (itemid))) return true
   return false
 }
 

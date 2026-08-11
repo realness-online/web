@@ -622,6 +622,10 @@
     if (wind_down_timer) clearTimeout(wind_down_timer)
     if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
   })
+
+  // The true morph gate (wind-down included) so as-svg can style cutouts to
+  // match actually-running morph rather than re-deriving the preference.
+  defineExpose({ morph_active })
 </script>
 
 <template>

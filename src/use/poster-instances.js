@@ -12,7 +12,7 @@ import { poster_dom_id } from '@/use/poster-dom-reference'
  * @property {number} uid
  * @property {'poster' | 'avatar'} kind
  * @property {import('vue').MaybeRefOrGetter<Element | null | undefined>} el
- * @property {import('vue').Ref<boolean>} intersecting
+ * @property {boolean} intersecting
  */
 
 /** @type {Map<string, PosterInstanceRecord[]>} */
@@ -80,13 +80,25 @@ export const use_poster_instance = (itemid, { el, intersecting, kind }) => {
   const list = records_for(String(toValue(itemid)))
 
   /** @type {PosterInstanceRecord} */
-  const record = { uid, kind, el, intersecting: ref(!!toValue(intersecting)) }
+  /**
+   * The record holds a plain boolean, not a ref: storing refs inside the
+   * reactive `list` array unreliably proxies them (their `.value` reads as
+   * `undefined` through the reactive wrapper), which once left `intersecting`
+   * always falsy and the whole canonical election dead. The record itself is
+   * `reactive` so mutating `record.intersecting` still triggers recompute.
+   */
+  const record = reactive({
+    uid,
+    kind,
+    el,
+    intersecting: !!toValue(intersecting)
+  })
   list.push(record)
 
   watch(
     () => toValue(intersecting),
     visible => {
-      record.intersecting.value = !!visible
+      record.intersecting = !!visible
     }
   )
 
@@ -96,7 +108,7 @@ export const use_poster_instance = (itemid, { el, intersecting, kind }) => {
         uid: other.uid,
         kind: other.kind,
         el: toValue(other.el),
-        intersecting: other.intersecting.value
+        intersecting: other.intersecting
       }))
     )
   )

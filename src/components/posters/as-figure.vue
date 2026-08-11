@@ -644,7 +644,7 @@
                       subject.id === mask_pen.active_subject_id.value
                     "
                     @click.stop="mask_pen.select_subject(subject.id)">
-                    {{ subject.name || 'Untitled' }}
+                    {{ subject.name }}
                   </button>
                   <input
                     :value="subject.name"

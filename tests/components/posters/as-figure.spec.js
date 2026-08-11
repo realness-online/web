@@ -17,13 +17,30 @@ vi.mock('@/use/delegated-pan', () => ({
   })
 }))
 
-const { mock_menu, mock_mosaic } = vi.hoisted(() => {
+const {
+  mock_menu,
+  mock_mosaic,
+  mock_enable_geology,
+  mock_export_video,
+  mock_decode_audio,
+  mock_am_canonical,
+  mock_is_referenced,
+  mock_use_reference
+} = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_watchable = value =>
     Object.assign(create_ref(value), { __v_isRef: true })
   return {
     mock_menu: create_watchable(false),
-    mock_mosaic: create_watchable(false)
+    mock_mosaic: create_watchable(false),
+    mock_enable_geology: vi.fn(),
+    mock_export_video: vi.fn().mockResolvedValue(undefined),
+    mock_decode_audio: vi
+      .fn()
+      .mockResolvedValue([{ buffer: new ArrayBuffer(1) }]),
+    mock_am_canonical: create_watchable(false),
+    mock_is_referenced: create_watchable(false),
+    mock_use_reference: create_watchable(false)
   }
 })
 
@@ -35,8 +52,26 @@ vi.mock('@/utils/preference', () => ({
   rocks: { value: false },
   gravel: { value: false },
   sand: { value: false },
-  sediment: { value: false }
+  sediment: { value: false },
+  enable_geology_layers: mock_enable_geology
 }))
+
+vi.mock('@/utils/export-poster-video', () => ({
+  export_poster_to_video_with_audio: mock_export_video
+}))
+
+vi.mock('@/use/poster-instances', () => ({
+  use_poster_instance: () => ({
+    am_canonical: mock_am_canonical,
+    is_referenced: mock_is_referenced,
+    use_reference: mock_use_reference
+  })
+}))
+
+vi.mock('@/utils/audio-file', async importOriginal => {
+  const mod = await importOriginal()
+  return { ...mod, decode_audio_files: mock_decode_audio }
+})
 
 vi.mock('idb-keyval', () => ({
   get: vi.fn().mockResolvedValue(null),
@@ -70,6 +105,12 @@ describe('@/component/posters/as-figure.vue', () => {
   beforeEach(() => {
     mock_menu.value = false
     mock_mosaic.value = false
+    mock_enable_geology.mockClear()
+    mock_export_video.mockClear()
+    mock_decode_audio.mockClear()
+    mock_am_canonical.value = false
+    mock_is_referenced.value = false
+    mock_use_reference.value = false
     vi.mocked(get).mockResolvedValue(null)
     vi.mocked(load_from_cache).mockResolvedValue({ item: null, html: null })
     wrapper = shallowMount(as_figure, {
@@ -429,6 +470,128 @@ describe('@/component/posters/as-figure.vue', () => {
         expect(
           wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id)
         ).toBeUndefined()
+      })
+    })
+
+    describe('mask pen toggle', () => {
+      it('turns on mosaic and geology layers, closes menu; turning off does neither', async () => {
+        expect(wrapper.vm.mask_pen.active.value).toBe(false)
+        wrapper.vm.menu_open = true
+        wrapper.vm.on_toggle_mask_pen()
+        await nextTick()
+        expect(wrapper.vm.mask_pen.active.value).toBe(true)
+        expect(mock_mosaic.value).toBe(true)
+        expect(mock_enable_geology).toHaveBeenCalledTimes(1)
+        expect(wrapper.vm.menu_open).toBe(false)
+
+        wrapper.vm.on_toggle_mask_pen()
+        await nextTick()
+        expect(wrapper.vm.mask_pen.active.value).toBe(false)
+        expect(mock_enable_geology).toHaveBeenCalledTimes(1)
+      })
+
+      it('does not force mosaic on when geology is already on', async () => {
+        wrapper.vm.mask_pen.active.value = true
+        wrapper.vm.on_toggle_mask_pen()
+        await nextTick()
+        expect(mock_enable_geology).not.toHaveBeenCalled()
+      })
+
+      it('closes the mask pen when clicking outside the poster', async () => {
+        wrapper.vm.mask_pen.toggle_active()
+        await nextTick()
+        expect(wrapper.vm.mask_pen.active.value).toBe(true)
+        window.dispatchEvent(new Event('pointerdown'))
+        await nextTick()
+        expect(wrapper.vm.mask_pen.active.value).toBe(false)
+      })
+    })
+
+    it('emits missing when a geology-era poster has no cutout layers', async () => {
+      mock_mosaic.value = true
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      as_svg.vm.$emit('show', { ...poster_vector, regular: true })
+      await flushPromises()
+      await wrapper.setProps({ pin: true })
+      await flushPromises()
+      // created (1770000000000) > GEOLOGY_DATE, no cutouts found -> stale entry
+      expect(wrapper.emitted('missing')?.[0]?.[0]).toBe(poster.id)
+    })
+
+    it('exports a video with audio dropped on the bare poster', async () => {
+      const fig = wrapper.find('figure').element
+      const audio = new File(['x'], 'clip.mp3', { type: 'audio/mp3' })
+      const event = new Event('drop', { cancelable: true, bubbles: true })
+      Object.defineProperty(event, 'dataTransfer', {
+        value: { files: [audio] }
+      })
+      fig.dispatchEvent(event)
+      await flushPromises()
+      expect(mock_decode_audio).toHaveBeenCalledTimes(1)
+      expect(mock_export_video).toHaveBeenCalledWith(
+        poster.id,
+        expect.objectContaining({
+          audio_buffers: [{ buffer: expect.any(ArrayBuffer) }]
+        })
+      )
+    })
+
+    it('ignores a drop with no audio files', async () => {
+      const fig = wrapper.find('figure').element
+      const text = new File(['x'], 'notes.txt', { type: 'text/plain' })
+      const event = new Event('drop', { cancelable: true, bubbles: true })
+      Object.defineProperty(event, 'dataTransfer', { value: { files: [text] } })
+      fig.dispatchEvent(event)
+      await flushPromises()
+      expect(mock_decode_audio).not.toHaveBeenCalled()
+      expect(mock_export_video).not.toHaveBeenCalled()
+    })
+
+    describe('dom-reference (non-canonical duplicate instance)', () => {
+      const dom_id = () =>
+        as_query_id(/** @type {import('@/types').Id} */ (poster.id))
+      const mount_reference = async () => {
+        mock_use_reference.value = true
+        const w = shallowMount(as_figure, {
+          props: { itemid: poster.id },
+          global: { provide: { 'key-commands': mock_key_commands } }
+        })
+        await flushPromises()
+        return w
+      }
+
+      it('renders a reference svg to the canonical and syncs its geometry', async () => {
+        // A fake canonical render already in the DOM (namespaced so tagName is 'svg')
+        const canonical = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'svg'
+        )
+        canonical.id = dom_id()
+        canonical.setAttribute('viewBox', '0 0 40 20')
+        canonical.setAttribute('preserveAspectRatio', 'xMidYMax slice')
+        canonical.setAttribute('data-orientation', 'horizontal')
+        document.body.appendChild(canonical)
+
+        const ref_wrapper = await mount_reference()
+        const ref_svg = ref_wrapper.find('svg[itemtype="/posters"]')
+        expect(ref_svg.exists()).toBe(true)
+        expect(ref_svg.attributes('viewBox')).toBe('0 0 40 20')
+        expect(ref_svg.attributes('preserveAspectRatio')).toBe('xMidYMax slice')
+        expect(ref_svg.attributes('data-orientation')).toBe('horizontal')
+        expect(ref_svg.find('use').attributes('href')).toBe(`#${dom_id()}`)
+
+        canonical.remove()
+        ref_wrapper.unmount()
+      })
+
+      it('dispatches the meet toggle on the shared reference element', async () => {
+        const ref_wrapper = await mount_reference()
+        const event_spy = vi.fn()
+        document.addEventListener('poster-toggle-meet-only', event_spy)
+        await ref_wrapper.find('figure').trigger('keydown.enter')
+        expect(event_spy).toHaveBeenCalledTimes(1)
+        document.removeEventListener('poster-toggle-meet-only', event_spy)
+        ref_wrapper.unmount()
       })
     })
   })
