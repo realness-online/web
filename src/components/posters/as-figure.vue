@@ -629,6 +629,42 @@
                 @click.stop="mask_pen.clear()">
                 &times;
               </button>
+              <menu
+                v-if="mask_pen.active.value"
+                class="mask-subjects"
+                aria-label="Poster subjects">
+                <li
+                  v-for="subject in mask_pen.subjects.value"
+                  :key="subject.id">
+                  <button
+                    :aria-pressed="
+                      subject.id === mask_pen.active_subject_id.value
+                    "
+                    @click.stop="mask_pen.select_subject(subject.id)">
+                    {{ subject.name || 'Untitled' }}
+                  </button>
+                  <input
+                    :value="subject.name"
+                    aria-label="Rename subject"
+                    placeholder="Name"
+                    @click.stop
+                    @input="
+                      mask_pen.rename_subject(subject.id, $event.target.value)
+                    " />
+                  <button
+                    :aria-label="`Remove ${subject.name || 'subject'}`"
+                    @click.stop="mask_pen.remove_subject(subject.id)">
+                    &times;
+                  </button>
+                </li>
+                <li>
+                  <button
+                    aria-label="Add subject"
+                    @click.stop="mask_pen.add_subject()">
+                    +
+                  </button>
+                </li>
+              </menu>
               <as-author-menu
                 v-if="!mask_pen.active.value"
                 :poster="author_menu_poster"
@@ -896,6 +932,44 @@
           opacity: 1;
           background: unquote('color-mix(in srgb, var(--slate-fill) 50%, transparent)');
           border-color: unquote('color-mix(in srgb, var(--slate-fill) 80%, transparent)');
+        }
+        & > menu.mask-subjects {
+          margin: 0;
+          display: flex;
+          flex-wrap: wrap;
+          gap: base-line * 0.25;
+          justify-content: flex-start;
+          & > li {
+            display: flex;
+            align-items: center;
+            gap: base-line * 0.25;
+            padding-left: base-line * 0.25;
+            border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
+            border-radius: base-line * 0.25;
+            background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
+            & > button {
+              border: none;
+              background: transparent;
+              color: var(--contrast);
+              cursor: pointer;
+              opacity: 0.7;
+              &:hover { opacity: 1; }
+              &[aria-pressed='true'] {
+                opacity: 1;
+                color: var(--accent);
+                font-weight: 600;
+              }
+            }
+            & > input {
+              width: 7em;
+              background: transparent;
+              border: none;
+              border-bottom: 1px solid unquote('color-mix(in srgb, var(--bone) 40%, transparent)');
+              color: var(--contrast);
+              font: inherit;
+              &::placeholder { opacity: 0.6; }
+            }
+          }
         }
         & > span[role='group'] {
           display: flex;

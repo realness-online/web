@@ -29,4 +29,22 @@ describe('@/components/posters/as-masks.vue', () => {
     const masks = wrapper.findAll('mask')
     expect(masks[0].attributes('id')).toBe('horizontal-mask')
   })
+
+  it('emits one mask per subject from the live subject list', () => {
+    const subjects = {
+      value: [
+        { id: '1700000900001', name: 'Flower', keys: new Set(['rocks:3']) },
+        { id: '1700000900002', name: 'Foreground', keys: new Set(['sand:7']) }
+      ]
+    }
+    const wrapper = shallowMount(as_masks, {
+      props: { itemid },
+      global: { provide: { 'mask-pen': { subjects } } }
+    })
+    const masks = wrapper.findAll('mask')
+    // 3 base masks + 1 per subject
+    expect(masks).toHaveLength(5)
+    expect(masks[3].attributes('id')).toContain(`subjects/1700000900001`)
+    expect(masks[4].attributes('id')).toContain(`subjects/1700000900002`)
+  })
 })

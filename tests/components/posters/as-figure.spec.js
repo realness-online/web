@@ -1,4 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { vi } from 'vite-plus/test'
 import { get } from 'idb-keyval'
 import { as_layer_id, as_query_id, load, load_from_cache } from '@/utils/itemid'
@@ -404,6 +405,31 @@ describe('@/component/posters/as-figure.vue', () => {
       })
       await flushPromises()
       expect(wrapper.find('figure').exists()).toBe(true)
+    })
+
+    describe('mask pen subject list', () => {
+      it('renders the named subjects with rename and remove controls', async () => {
+        const subject = wrapper.vm.mask_pen.add_subject('Flower')
+        wrapper.vm.mask_pen.active.value = true
+        await nextTick()
+        const list = wrapper.find('menu.mask-subjects')
+        expect(list.exists()).toBe(true)
+        const rows = list.findAll('li')
+        expect(rows).toHaveLength(2) // one subject + one add
+        expect(rows[0].text()).toContain('Flower')
+        expect(rows[0].find('input').exists()).toBe(true)
+        expect(rows[0].find('[aria-label*="Flower"]').exists()).toBe(true)
+        // Rename updates the persisted subject name.
+        await rows[0].find('input').setValue('Rose')
+        expect(
+          wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id).name
+        ).toBe('Rose')
+        // Remove deletes the subject.
+        await rows[0].find('[aria-label*="Rose"]').trigger('click')
+        expect(
+          wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id)
+        ).toBeUndefined()
+      })
     })
   })
 })
