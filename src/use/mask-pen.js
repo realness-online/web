@@ -14,6 +14,67 @@ const HUE_WHEEL = 360
 /** Stable-ish hue per subject index, shared by the toolbar chip and the overlay. */
 export const subject_hue = index => (index * HUE_STEP) % HUE_WHEEL
 
+// Fun default subject names, so authors do not have to type one. Geology-
+// themed pairings from the poster's own layers (sediment, sand, gravel, rocks,
+// boulders).
+const NAME_STARTERS = [
+  'Buried',
+  'Rolling',
+  'Dusty',
+  'Mossy',
+  'Glacial',
+  'Chunky',
+  'Weathered',
+  'Tumbled',
+  'Granular',
+  'Fossilized',
+  'Drifting',
+  'Sandy',
+  'Pebbly',
+  'Rumbling',
+  'Ancient',
+  'Humble',
+  'Hidden',
+  'Crumbling',
+  'Sunbaked',
+  'Windswept'
+]
+const NAME_ENDERS = [
+  'Boulder',
+  'Pebble',
+  'Dune',
+  'Cliff',
+  'Gravel',
+  'Sediment',
+  'Stone',
+  'Ridge',
+  'Outcrop',
+  'Moraine',
+  'Bedrock',
+  'Cobble',
+  'Shale',
+  'Playa',
+  'Talus',
+  'Silt',
+  'Scree'
+]
+/** Names already handed out this session, so rapid adds stay distinct. */
+const used_names = new Set()
+const pick = arr => arr[Math.floor(Math.random() * arr.length)]
+/** Cap on rerolls before falling back to a numbered subject. */
+const NAME_REROLLS = 24
+
+export const fresh_subject_name = () => {
+  for (let i = 0; i < NAME_REROLLS; i++) {
+    const name = `${pick(NAME_STARTERS)} ${pick(NAME_ENDERS)}`
+    if (!used_names.has(name)) {
+      used_names.add(name)
+      return name
+    }
+  }
+  return `Subject ${used_names.size + 1}`
+}
+
 /**
  * Mask pen for authoring poster subjects: named groups of geology cells. Provide from
  * `as-figure` as `mask-pen`; inject in `as-svg` / `as-mask-pen`. Painting toggles cells into
@@ -44,7 +105,7 @@ export const use_mask_pen = () => {
   }
 
   /** @param {string} [name] */
-  const add_subject = (name = '') => {
+  const add_subject = (name = fresh_subject_name()) => {
     const id = `${Date.now()}-${next_subject_id++}`
     /** @type {Subject} */
     const subject = { id, name, keys: new Set() }

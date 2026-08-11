@@ -24,7 +24,6 @@
   } from '@/use/poster'
   import {
     animate as animate_pref,
-    morph as morph_pref,
     drama_back,
     drama_front,
     shadow,
@@ -292,18 +291,21 @@
   // rect is underneath; wherever shadow geometry actually sits, the shared
   // luminance mask (as-masks.vue's cutout-shadow-dim) dims them back to
   // ~0.5 so the moving shadow reads through. Per-pixel, no clock.
-  const CUTOUT_MORPH_OPACITY = 0.85
+  const CUTOUT_MORPH_OPACITY = 0.7
   const OPACITY_FULL = 1
   const OPACITY_HIDDEN = 0
 
   /**
-   * Mirrors as-animation.vue's gate for building morph animations. Tracks
-   * the preference directly rather than morph's lagged wind-down state - the
-   * 0.44s opacity transition on the `use` elements covers the settle.
+   * Real morph gate from as-animation (wind-down included). Reads the actual
+   * `morph_active` state rather than re-deriving the preferences, so cutouts
+   * stay raised and masked during the whole morph - including its wind-down
+   * settle - and rest the instant it is genuinely done, instead of popping
+   * early the moment a preference flips.
    */
-  const morphing = computed(
-    () => morph_pref.value && animate.value && in_view.value
-  )
+  const morphing = computed(() => Boolean(as_animation.value?.morph_active))
+
+  /** Surface the real morph-gate state (as-animation's `morph_active`, wind-down included) */
+  const as_animation = ref(null)
 
   const layer_preferences = {
     boulders,
@@ -480,6 +482,7 @@
       <as-masks :itemid="itemid" />
     </defs>
     <as-animation
+      ref="as_animation"
       v-if="vector && trigger"
       :svg="trigger"
       :id="itemid"

@@ -2,6 +2,23 @@ import { describe, it, expect } from 'vite-plus/test'
 import { use_mask_pen } from '@/use/mask-pen'
 
 describe('@/use/mask-pen', () => {
+  it('auto-creating a subject gives it a fun default name', () => {
+    const pen = use_mask_pen()
+    pen.add_subject()
+    const name = pen.subjects.value[0].name
+    expect(name.length).toBeGreaterThan(3)
+    expect(name).not.toBe('')
+  })
+
+  it('continuously added subjects stay distinctly named', () => {
+    const pen = use_mask_pen()
+    const names = new Set()
+    for (let i = 0; i < 8; i++) {
+      const s = pen.add_subject()
+      names.add(s.name)
+    }
+    expect(names.size).toBe(8)
+  })
   it('toggle_path replaces selected Set on single toggles', () => {
     const pen = use_mask_pen()
     pen.toggle_path('sand:0')

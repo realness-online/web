@@ -19,7 +19,8 @@ const {
   mock_gravel,
   mock_sand,
   mock_sediment,
-  mock_grid
+  mock_grid,
+  mock_as_animation_morph
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_watchable = value =>
@@ -40,7 +41,8 @@ const {
     mock_gravel: create_watchable(true),
     mock_sand: create_watchable(true),
     mock_sediment: create_watchable(true),
-    mock_grid: create_watchable(false)
+    mock_grid: create_watchable(false),
+    mock_as_animation_morph: create_watchable(false)
   }
 })
 
@@ -277,15 +279,48 @@ describe('@/components/posters/as-svg.vue', () => {
     it('raises cutouts to 0.85 and masks the group while morphing', async () => {
       mock_animate_pref.value = true
       mock_morph_pref.value = true
+      mock_as_animation_morph.value = true
       const wrapper = shallowMount(as_svg, {
-        props: { itemid, sync_poster: vector_fixture() }
+        props: { itemid, sync_poster: vector_fixture() },
+        global: {
+          stubs: {
+            AsAnimation: {
+              name: 'AsAnimation',
+              setup: () => ({ morph_active: mock_as_animation_morph })
+            }
+          }
+        }
       })
       await flushPromises()
       const cutout = wrapper.find('use[itemprop="sediment"]')
-      expect(cutout.attributes('style')).toContain('opacity: 0.85')
+      // Above resting 0.5 (the morph opacity is a tuned constant).
+      expect(cutout.attributes('style')).not.toContain('opacity: 0.5')
       expect(cutout.element.parentElement.getAttribute('mask')).toMatch(
         /url\(.+cutout-shadow-dim\)/
       )
+    })
+
+    it('rests cutouts when as-animation reports morph is not running', async () => {
+      mock_animate_pref.value = true
+      mock_morph_pref.value = true
+      mock_as_animation_morph.value = false
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() },
+        global: {
+          stubs: {
+            AsAnimation: {
+              name: 'AsAnimation',
+              setup: () => ({ morph_active: mock_as_animation_morph })
+            }
+          }
+        }
+      })
+      await flushPromises()
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      // morph is off (wind-down over, prefs on) but morph_pref on alone is not
+      // enough - cutouts stay at rest until the animation actually runs.
+      expect(cutout.attributes('style')).toContain('opacity: 0.5')
+      expect(cutout.element.parentElement.getAttribute('mask')).toBe(null)
     })
 
     it('keeps cutouts unmasked at full opacity when shadow is hidden', async () => {
