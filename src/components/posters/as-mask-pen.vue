@@ -10,6 +10,7 @@
   import { collect_geology_paths } from '@/utils/geology'
   import { geology_layers } from '@/use/poster'
   import { subject_hue } from '@/use/mask-pen'
+  import { read_subjects, write_subjects } from '@/utils/subjects'
 
   const props = defineProps({
     itemid: { type: String, required: true }
@@ -28,6 +29,23 @@
 
   const hovered_path = computed(() =>
     paths_data.value.find(p => p.key === mask_pen?.hovered_key.value)
+  )
+
+  // Persist subjects into the poster root's <metadata> so the existing poster
+  // save (which writes the whole element) carries them; write_subjects replaces
+  // any we wrote before. The root is the poster <svg>, resolved via ownerSVGElement.
+  watch(
+    () => mask_pen?.subjects.value,
+    () => {
+      const svg = mask_pen_root.value?.ownerSVGElement
+      if (!svg || !props.itemid) return
+      write_subjects(
+        svg,
+        /** @type {import('@/types').Id} */ (props.itemid),
+        mask_pen?.subjects.value ?? []
+      )
+    },
+    { deep: true }
   )
 
   const paths_by_key = computed(
@@ -230,6 +248,17 @@
   const load_paths = async () => {
     await tick()
     const svg = mask_pen_root.value?.ownerSVGElement
+
+    // Restore persisted subjects from the poster root's <metadata> into the
+    // mask pen on (re)mount, so a reloaded poster keeps its named subjects.
+    if (svg && props.itemid && mask_pen) {
+      const restored = read_subjects(
+        svg,
+        /** @type {import('@/types').Id} */ (props.itemid)
+      )
+      if (restored.length) mask_pen.subjects.value = restored
+    }
+
     const vb = svg?.viewBox?.baseVal
     if (vb)
       overlay.value = {
