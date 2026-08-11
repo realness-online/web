@@ -3,6 +3,7 @@
     ref,
     computed,
     onMounted as mounted,
+    onBeforeUnmount as before_unmount,
     watch,
     nextTick as tick,
     inject
@@ -34,19 +35,35 @@
   // Persist subjects into the poster root's <metadata> so the existing poster
   // save (which writes the whole element) carries them; write_subjects replaces
   // any we wrote before. The root is the poster <svg>, resolved via ownerSVGElement.
+  let persist_timer = null
+  // One storage write across a rename keystream; short enough to not lose a fast add/remove.
+  const PERSIST_DEBOUNCE_MS = 300
+  const persist_subjects = () => {
+    persist_timer = null
+    const svg = mask_pen_root.value?.ownerSVGElement
+    if (!svg || !props.itemid) return
+    write_subjects(
+      svg,
+      /** @type {import('@/types').Id} */ (props.itemid),
+      mask_pen?.subjects.value ?? []
+    )
+  }
+  // Debounced so a rename keystream writes once instead of once per key; the
+  // trailing write still lands on the latest subjects, and unmount flushes it.
   watch(
     () => mask_pen?.subjects.value,
     () => {
-      const svg = mask_pen_root.value?.ownerSVGElement
-      if (!svg || !props.itemid) return
-      write_subjects(
-        svg,
-        /** @type {import('@/types').Id} */ (props.itemid),
-        mask_pen?.subjects.value ?? []
-      )
+      if (persist_timer) clearTimeout(persist_timer)
+      persist_timer = setTimeout(persist_subjects, PERSIST_DEBOUNCE_MS)
     },
     { deep: true }
   )
+  before_unmount(() => {
+    if (persist_timer) {
+      clearTimeout(persist_timer)
+      persist_subjects()
+    }
+  })
 
   const paths_by_key = computed(
     () => new Map(paths_data.value.map(p => [p.key, p]))

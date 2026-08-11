@@ -96,6 +96,34 @@ describe('@/use/mask-pen', () => {
     expect(pen.active_subject_id.value).toBe(b.id)
   })
 
+  it('guards removal behind a two-step confirm', () => {
+    const pen = use_mask_pen()
+    const a = pen.add_subject('A')
+    pen.request_remove_subject(a.id)
+    // armed, not yet removed
+    expect(pen.subjects.value).toHaveLength(1)
+    expect(pen.pending_removal_id.value).toBe(a.id)
+    // confirming removes and clears the arm
+    pen.request_remove_subject(a.id)
+    expect(pen.subjects.value).toHaveLength(0)
+    expect(pen.pending_removal_id.value).toBeNull()
+  })
+
+  it('clears the pending removal on select and on toggling off', () => {
+    const pen = use_mask_pen()
+    const a = pen.add_subject('A')
+    const b = pen.add_subject('B')
+    pen.request_remove_subject(a.id)
+    pen.select_subject(b.id)
+    expect(pen.pending_removal_id.value).toBeNull()
+
+    pen.request_remove_subject(b.id)
+    pen.toggle_active() // enabling the pen does not disarm
+    expect(pen.pending_removal_id.value).toBe(b.id)
+    pen.toggle_active() // leaving mask mode disarms
+    expect(pen.pending_removal_id.value).toBeNull()
+  })
+
   it('clear empties only the active subject', () => {
     const pen = use_mask_pen()
     const a = pen.add_subject('A')

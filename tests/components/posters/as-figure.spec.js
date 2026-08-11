@@ -449,15 +449,16 @@ describe('@/component/posters/as-figure.vue', () => {
     })
 
     describe('mask pen subject list', () => {
-      it('renders the named subjects with rename and remove controls', async () => {
+      it('renders the named subjects with swatch, rename and guarded remove', async () => {
         const subject = wrapper.vm.mask_pen.add_subject('Flower')
         wrapper.vm.mask_pen.active.value = true
         await nextTick()
-        const list = wrapper.find('menu.mask-subjects')
+        const list = wrapper.find('menu.mask-panel')
         expect(list.exists()).toBe(true)
         const rows = list.findAll('li')
         expect(rows).toHaveLength(2) // one subject + one add
         expect(rows[0].text()).toContain('Flower')
+        expect(rows[0].find('.mask-swatch').exists()).toBe(true)
         expect(rows[0].find('input').exists()).toBe(true)
         expect(rows[0].find('[aria-label*="Flower"]').exists()).toBe(true)
         // Rename updates the persisted subject name.
@@ -465,8 +466,17 @@ describe('@/component/posters/as-figure.vue', () => {
         expect(
           wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id).name
         ).toBe('Rose')
-        // Remove deletes the subject.
+        // First remove click arms the confirm; the subject survives.
         await rows[0].find('[aria-label*="Rose"]').trigger('click')
+        expect(
+          wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id)
+        ).toBeDefined()
+        expect(wrapper.vm.mask_pen.pending_removal_id.value).toBe(subject.id)
+        // The armed button asks for confirmation; clicking again removes.
+        expect(rows[0].find('[aria-label*="Confirm remove"]').exists()).toBe(
+          true
+        )
+        await rows[0].find('[aria-label*="Confirm remove"]').trigger('click')
         expect(
           wrapper.vm.mask_pen.subjects.value.find(s => s.id === subject.id)
         ).toBeUndefined()

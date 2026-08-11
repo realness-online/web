@@ -91,6 +91,8 @@ export const use_mask_pen = () => {
   const paint_adding = ref(true)
   /** @type {import('vue').Ref<string | null>} */
   const hovered_key = ref(null)
+  /** @type {import('vue').Ref<string | null>} */
+  const pending_removal_id = ref(null)
   let paint_batch = false
 
   const active_subject = computed(
@@ -111,12 +113,14 @@ export const use_mask_pen = () => {
     const subject = { id, name, keys: new Set() }
     subjects.value = [...subjects.value, subject]
     active_subject_id.value = id
+    pending_removal_id.value = null
     return subject
   }
 
   /** @param {string} id */
   const select_subject = id => {
     active_subject_id.value = id
+    pending_removal_id.value = null
   }
 
   /** @param {string} id @param {string} name */
@@ -132,6 +136,18 @@ export const use_mask_pen = () => {
     subjects.value = subjects.value.filter(s => s.id !== id)
     if (active_subject_id.value === id)
       active_subject_id.value = subjects.value[0]?.id ?? null
+    if (pending_removal_id.value === id) pending_removal_id.value = null
+  }
+
+  /**
+   * Two-step delete: the first call on an id arms it for removal (show a
+   * confirm), the second call on the same id removes it. Guards against
+   * losing a painted subject to a stray tap on the bare ×.
+   * @param {string} id
+   */
+  const request_remove_subject = id => {
+    if (pending_removal_id.value === id) remove_subject(id)
+    else pending_removal_id.value = id
   }
 
   const ensure_active_subject = () => active_subject.value ?? add_subject('')
@@ -182,6 +198,7 @@ export const use_mask_pen = () => {
 
   const toggle_active = () => {
     active.value = !active.value
+    if (!active.value) pending_removal_id.value = null
     if (active.value && subjects.value.length === 0) add_subject('')
   }
 
@@ -230,6 +247,8 @@ export const use_mask_pen = () => {
     add_subject,
     select_subject,
     rename_subject,
+    request_remove_subject,
+    pending_removal_id,
     remove_subject,
     toggle_active,
     toggle_path,
