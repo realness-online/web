@@ -31,7 +31,7 @@
     has_drawable_layer
   } from '@/use/poster'
   import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
-  import { use_mask_pen } from '@/use/mask-pen'
+  import { use_mask_pen, subject_hue } from '@/use/mask-pen'
   import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
   import { load_shadow_into_vector } from '@/utils/poster-layers'
   import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
@@ -596,6 +596,51 @@
         v-if="
           menu_open || (menu && menu_always_visible) || mask_pen.active.value
         ">
+        <menu
+          v-if="mask_pen.active.value"
+          class="mask-panel"
+          aria-label="Poster subjects">
+          <li
+            v-for="(subject, index) in mask_pen.subjects.value"
+            :key="subject.id">
+            <span
+              class="mask-swatch"
+              :style="{ background: `hsl(${subject_hue(index)} 70% 55%)` }"
+              aria-hidden="true" />
+            <button
+              :aria-pressed="subject.id === mask_pen.active_subject_id.value"
+              @click.stop="mask_pen.select_subject(subject.id)">
+              {{ subject.name }}
+            </button>
+            <input
+              :value="subject.name"
+              aria-label="Rename subject"
+              @input="
+                mask_pen.rename_subject(subject.id, $event.target.value)
+              " />
+            <button
+              :aria-label="
+                mask_pen.pending_removal_id.value === subject.id
+                  ? `Confirm remove ${subject.name || 'subject'}`
+                  : `Remove ${subject.name || 'subject'}`
+              "
+              :data-arm="
+                mask_pen.pending_removal_id.value === subject.id || undefined
+              "
+              @click.stop="mask_pen.request_remove_subject(subject.id)">
+              {{
+                mask_pen.pending_removal_id.value === subject.id ? 'Sure?' : '×'
+              }}
+            </button>
+          </li>
+          <li>
+            <button
+              aria-label="Add subject"
+              @click.stop="mask_pen.add_subject()">
+              +
+            </button>
+          </li>
+        </menu>
         <footer>
           <router-link
             v-if="
@@ -632,42 +677,6 @@
                 @click.stop="mask_pen.clear()">
                 &times;
               </button>
-              <menu
-                v-if="mask_pen.active.value"
-                class="mask-subjects"
-                aria-label="Poster subjects">
-                <li
-                  v-for="subject in mask_pen.subjects.value"
-                  :key="subject.id">
-                  <button
-                    :aria-pressed="
-                      subject.id === mask_pen.active_subject_id.value
-                    "
-                    @click.stop="mask_pen.select_subject(subject.id)">
-                    {{ subject.name }}
-                  </button>
-                  <input
-                    :value="subject.name"
-                    aria-label="Rename subject"
-                    placeholder="Name"
-                    @click.stop
-                    @input="
-                      mask_pen.rename_subject(subject.id, $event.target.value)
-                    " />
-                  <button
-                    :aria-label="`Remove ${subject.name || 'subject'}`"
-                    @click.stop="mask_pen.remove_subject(subject.id)">
-                    &times;
-                  </button>
-                </li>
-                <li>
-                  <button
-                    aria-label="Add subject"
-                    @click.stop="mask_pen.add_subject()">
-                    +
-                  </button>
-                </li>
-              </menu>
               <as-author-menu
                 v-if="!mask_pen.active.value"
                 :poster="author_menu_poster"
@@ -859,6 +868,69 @@
           }
         }
       }
+      & > menu.mask-panel {
+        position: absolute;
+        top: base-line;
+        left: base-line;
+        z-index: 4;
+        max-height: 60%;
+        overflow-y: auto;
+        pointer-events: auto;
+        margin: 0;
+        padding: base-line * 0.5;
+        border-radius: base-line * 0.5;
+        frosted-glass();
+        box-shadow:
+          0 0.08em 0.6em unquote('color-mix(in srgb, var(--basalt) 5%, transparent)'),
+          0 0.15em 0.5em unquote('color-mix(in srgb, var(--moonlight) 15%, transparent)');
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: base-line * 0.25;
+        & > li {
+          display: flex;
+          align-items: center;
+          gap: base-line * 0.25;
+          padding: base-line * 0.2;
+          border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
+          border-radius: base-line * 0.25;
+          background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
+          & > .mask-swatch {
+            width: base-line * 0.75;
+            height: base-line * 0.75;
+            border-radius: 50%;
+            flex: none;
+            box-shadow: inset 0 0 0 1px unquote('color-mix(in srgb, var(--basalt) 30%, transparent)');
+          }
+          & > button {
+            border: none;
+            background: transparent;
+            color: var(--contrast);
+            cursor: pointer;
+            opacity: 0.7;
+            &:hover { opacity: 1; }
+            &[aria-pressed='true'] {
+              opacity: 1;
+              color: var(--accent);
+              font-weight: 600;
+            }
+            &[data-arm] {
+              opacity: 1;
+              color: #c0504d;
+              font-weight: 600;
+            }
+          }
+          & > input {
+            width: 7em;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid unquote('color-mix(in srgb, var(--bone) 40%, transparent)');
+            color: var(--contrast);
+            font: inherit;
+            &:focus { outline: none; }
+          }
+        }
+      }
       & > footer {
         display: flex;
         flex-direction: column;
@@ -935,44 +1007,6 @@
           opacity: 1;
           background: unquote('color-mix(in srgb, var(--slate-fill) 50%, transparent)');
           border-color: unquote('color-mix(in srgb, var(--slate-fill) 80%, transparent)');
-        }
-        & > menu.mask-subjects {
-          margin: 0;
-          display: flex;
-          flex-wrap: wrap;
-          gap: base-line * 0.25;
-          justify-content: flex-start;
-          & > li {
-            display: flex;
-            align-items: center;
-            gap: base-line * 0.25;
-            padding-left: base-line * 0.25;
-            border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
-            border-radius: base-line * 0.25;
-            background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
-            & > button {
-              border: none;
-              background: transparent;
-              color: var(--contrast);
-              cursor: pointer;
-              opacity: 0.7;
-              &:hover { opacity: 1; }
-              &[aria-pressed='true'] {
-                opacity: 1;
-                color: var(--accent);
-                font-weight: 600;
-              }
-            }
-            & > input {
-              width: 7em;
-              background: transparent;
-              border: none;
-              border-bottom: 1px solid unquote('color-mix(in srgb, var(--bone) 40%, transparent)');
-              color: var(--contrast);
-              font: inherit;
-              &::placeholder { opacity: 0.6; }
-            }
-          }
         }
         & > span[role='group'] {
           display: flex;
