@@ -31,6 +31,8 @@
     ANIMATION_SPEED_MULTIPLIERS
   } from '@/utils/animation-config'
   import { poster_video_export_active } from '@/use/poster-video-export'
+  import { bind_device_orientation } from '@/3d/engine/bind-device-orientation'
+  import { nudge_step, GYRO_NUDGE_EPSILON } from '@/utils/gyro-nudge'
 
   const props = defineProps({
     id: {
@@ -604,6 +606,40 @@
     }
   })
 
+  /**
+   * Tilt nudges the running morph. The binding shares the 3D viewer's
+   * page-scoped motion permission - the poster's svg is just another gesture
+   * surface for the iOS prompt, and a grant from either side serves both.
+   */
+  const gyro_state = { gyro_x: 0, gyro_y: 0 }
+  /** @type {(() => void) | null} */
+  let unbind_gyro = null
+  let gyro_frame = null
+  let gyro_offset = 0
+
+  const gyro_tick = () => {
+    gyro_frame = requestAnimationFrame(gyro_tick)
+    const { offset, delta } = nudge_step(
+      gyro_offset,
+      gyro_state.gyro_x,
+      gyro_state.gyro_y
+    )
+    gyro_offset = offset
+    if (Math.abs(delta) < GYRO_NUDGE_EPSILON) return
+    if (typeof props.svg.setCurrentTime !== 'function') return
+    props.svg.setCurrentTime(props.svg.getCurrentTime() + delta)
+  }
+
+  watch(morph_active, active => {
+    if (active && gyro_frame === null)
+      gyro_frame = requestAnimationFrame(gyro_tick)
+    else if (!active && gyro_frame !== null) {
+      cancelAnimationFrame(gyro_frame)
+      gyro_frame = null
+      gyro_offset = 0
+    }
+  })
+
   /** bfcache restore can skip a false-to-true viewport transition; still re-pause SMIL if pref is off. */
   const handle_pageshow = () => {
     if (animate_pref.value === true) return
@@ -614,6 +650,10 @@
     viewport_state?.add_listeners?.()
     window.addEventListener('keydown', handle_keydown)
     window.addEventListener('pageshow', handle_pageshow)
+    unbind_gyro = bind_device_orientation({
+      canvas: props.svg,
+      state: gyro_state
+    })
   })
 
   unmounted(() => {
@@ -621,6 +661,10 @@
     window.removeEventListener('pageshow', handle_pageshow)
     if (wind_down_timer) clearTimeout(wind_down_timer)
     if (morph_wind_down_timer) clearTimeout(morph_wind_down_timer)
+    if (gyro_frame !== null) cancelAnimationFrame(gyro_frame)
+    gyro_frame = null
+    unbind_gyro?.()
+    unbind_gyro = null
   })
 
   // The true morph gate (wind-down included) so as-svg can style cutouts to

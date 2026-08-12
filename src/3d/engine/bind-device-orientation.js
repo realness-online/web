@@ -149,8 +149,11 @@ export const request_motion_permission = () => {
 }
 
 /**
+ * `canvas` is only the gesture surface for the permission request - any
+ * element works, including a poster's SVG. Permission is page-scoped, so a
+ * grant from one surface serves every binding.
  * @param {{
- *   canvas: HTMLCanvasElement,
+ *   canvas: Element,
  *   state: { gyro_x: number, gyro_y: number }
  * }} options
  * @returns {() => void}
