@@ -82,6 +82,11 @@ export const notifications_prompted = storage('notifications_prompted', false)
 
 export const view_3d = storage('3d', false)
 
+/**
+ * Track B experiment: live DOM poster as the 3D viewer's shadow texture via
+ * the HTML-in-Canvas origin trial. Hard-off here falls back to baked stills.
+ */
+export const live_texture_3d = storage('live_texture_3d', false)
 export const mosaic_spread = storage('mosaic_spread', DEFAULT_MOSAIC_SPREAD)
 export const mosaic_opacity = storage('mosaic_opacity', DEFAULT_MOSAIC_OPACITY)
 export const shadow_spread = storage('shadow_spread', DEFAULT_SHADOW_SPREAD)
