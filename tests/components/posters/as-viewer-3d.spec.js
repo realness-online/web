@@ -79,7 +79,8 @@ vi.mock('@/utils/preference', () => ({
   drift_amount: { value: 0 },
   drift_speed: { value: 0 },
   breathing_amount: { value: 0 },
-  breathing_speed: { value: 0 }
+  breathing_speed: { value: 0 },
+  live_texture_3d: { value: false }
 }))
 
 describe('@/components/posters/as-viewer-3d.vue', () => {
