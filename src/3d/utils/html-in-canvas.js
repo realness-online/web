@@ -16,12 +16,12 @@ const PROBE_WIDTH = 1
 const PROBE_HEIGHT = 1
 
 /**
- * @param {WebGLRenderingContext | WebGL2RenderingContext} gl
+ * @param {WebGLRenderingContext | WebGL2RenderingContext | null} gl
  */
 const has_tex_element_image_2d = gl => {
-  const ctx = /** @type {WebGLRenderingContext & { texElementImage2D?: Function }} */ (
-    gl
-  )
+  if (!gl) return false
+  const ctx =
+    /** @type {WebGLRenderingContext & { texElementImage2D?: Function }} */ (gl)
   return typeof ctx.texElementImage2D === 'function'
 }
 
@@ -43,12 +43,12 @@ export const probe_html_in_canvas = () => {
   canvas.width = PROBE_WIDTH
   canvas.height = PROBE_HEIGHT
   const gl =
-    canvas.getContext('webgl2') ||
-    canvas.getContext('webgl') ||
-    canvas.getContext('experimental-webgl')
-  cached_support = has_tex_element_image_2d(
-    /** @type {WebGLRenderingContext | WebGL2RenderingContext} */ (gl)
-  )
+    /** @type {WebGLRenderingContext | WebGL2RenderingContext | null} */ (
+      canvas.getContext('webgl2') ||
+      canvas.getContext('webgl') ||
+      canvas.getContext('experimental-webgl')
+    )
+  cached_support = has_tex_element_image_2d(gl)
   return cached_support
 }
 

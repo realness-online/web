@@ -13,6 +13,8 @@
   import { register_viewer } from '@/3d/engine/shared-renderer.js'
   import { create_poster_scene } from '@/3d/scenes/create-poster-scene.js'
   import { register_live_poster_scene } from '@/3d/scenes/live-poster-scene.js'
+  import { attach_live_poster_texture } from '@/3d/utils/live-shadow-texture.js'
+  import { live_texture_3d } from '@/utils/preference'
 
   const props = defineProps({
     itemid: {
@@ -65,6 +67,8 @@
   let viewer = null
   /** @type {(() => void) | null} */
   let unregister_live_scene = null
+  /** @type {(() => void) | null} */
+  let release_live_texture = null
   let mount_active = false
 
   use_poster_scene_preferences(scene_ref)
@@ -89,6 +93,15 @@
     viewer = register_viewer(canvas_ref.value, scene_controller)
     viewer.start_enter(props.on_svg_zoom)
     scene_ref.value = scene_controller
+    // Track B experiment: when the origin-trial feature is present and the
+    // user has opted in, let the running SVG morph show on the front shadow
+    // layer instead of its baked still. Inert anywhere else.
+    if (live_texture_3d.value)
+      release_live_texture = attach_live_poster_texture({
+        element: svg_el,
+        scene: scene_controller.scene
+      })
+
     unregister_live_scene = register_live_poster_scene(
       /** @type {Id} */ (props.itemid),
       scene_controller
@@ -97,6 +110,8 @@
 
   before_unmount(() => {
     mount_active = false
+    release_live_texture?.()
+    release_live_texture = null
     unregister_live_scene?.()
     unregister_live_scene = null
     scene_ref.value = null
