@@ -64,6 +64,14 @@ const as_leaves = wrapper =>
     .filter(animation => animation.attributes('dur'))
     .map(animation => (animation.element.endElementAt = vi.fn()))
 
+/**
+ * Vue renders the template's animations as plain HTML here, which lowercases
+ * their attribute names; a settle leg is built in the SVG namespace and keeps
+ * its camelCase.
+ */
+const attribute_name_of = animation =>
+  animation.attributes('attributeName') ?? animation.attributes('attributename')
+
 /** The real shadow path element morph's SMIL targets by id, for a given layer */
 const as_shadow_path = name => {
   const path = document.createElement('path')
@@ -375,6 +383,58 @@ describe('@/component/posters/as-animation.vue', () => {
     vi.runAllTimers()
     await nextTick()
     expect(svg.pauseAnimations).toHaveBeenCalled()
+  })
+
+  it('walks an animation whose boundary is past the cap home, then pauses on time', async () => {
+    animate.value = true
+    const svg = as_svg()
+    const wrapper = mount(as_animation, {
+      props: { id: poster_id, svg, paused: false }
+    })
+    await nextTick()
+    as_leaves(wrapper)
+    svg.pauseAnimations.mockClear()
+    use_fake_timers()
+
+    animate.value = false
+    await nextTick()
+
+    // The slow gradient cycles are minutes from their own boundary - each one
+    // gets a short leg from where it currently sits back to its resting value
+    const legs = wrapper
+      .findAll('animate')
+      .filter(animation => animation.attributes('itemprop') === 'settle')
+    expect(legs.length).toBeGreaterThan(0)
+    legs.forEach(leg => {
+      const [from, home] = leg.attributes('values').split(';')
+      const source = wrapper
+        .findAll('animate')
+        .find(
+          animation =>
+            animation.attributes('itemprop') !== 'settle' &&
+            animation.attributes('href') === leg.attributes('href') &&
+            attribute_name_of(animation) === attribute_name_of(leg)
+        )
+      const resting = source.attributes('values').split(';')[0]
+      // Starts where the poster actually looks right now, ends at rest
+      expect(home).toBe(resting)
+      expect(from).not.toBe('')
+      expect(leg.attributes('dur')).toBe('5s')
+    })
+
+    // Held open only long enough for the legs to land, not for a full cycle
+    vi.advanceTimersByTime(4999)
+    await nextTick()
+    expect(svg.pauseAnimations).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(1)
+    await nextTick()
+    expect(svg.pauseAnimations).toHaveBeenCalled()
+    expect(
+      wrapper
+        .findAll('animate')
+        .filter(animation => animation.attributes('itemprop') === 'settle')
+    ).toHaveLength(0)
   })
 
   it('keeps morph layers until they finish their cycle after morph turns off', async () => {

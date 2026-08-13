@@ -184,9 +184,13 @@
             <a href="/docs#install" @click.prevent="on_show_install"
               >add Realness to your {{ install_noun }}</a
             >
-            - works like a native app, straight from the web. Your data lives
-            with you.
+            works like a native app, straight from the web. Your data lives with
+            you.
           </p>
+          <menu>
+            <p itemprop="lava-lamp">It's also a lava lamp</p>
+            <preference compact unlabeled name="animate" label="Lava lamp" />
+          </menu>
         </header>
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[0]?.id" />
       </section>
@@ -716,14 +720,11 @@
             }
           }
 
+          // Centered, and the lava lamp line below it centers to match.
           & > h4 {
-            margin: 0;
+            margin: calc(base-line * 0.5) 0 0;
             text-align: center;
             line-height: 1.66;
-
-            @media (min-width: pad-begins) {
-              text-align: left;
-            }
           }
 
           & > p {
@@ -739,11 +740,26 @@
             }
           }
 
+          // Lava lamp: the statement and its switch read as one line.
+          & > menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: base-line;
+            padding: 0;
+            margin: calc(base-line * 0.5) 0 0;
+
+            & > p[itemprop='lava-lamp'] {
+              margin: 0;
+            }
+          }
+
           &:not([data-about-ready]) {
             & > h1,
             & > h3,
             & > h4,
-            & > p {
+            & > p,
+            & > menu {
               opacity: 0;
             }
           }
@@ -771,6 +787,14 @@
               &:nth-of-type(2) {
                 animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 4);
               }
+
+              &[itemprop='lava-lamp'] {
+                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 5);
+              }
+            }
+
+            & > menu {
+              about-enter(calc(var(--about-hero-delay) + var(--about-hero-stagger) * 6));
             }
           }
 
@@ -778,7 +802,8 @@
             & > h1,
             & > h3,
             & > h4,
-            & > p {
+            & > p,
+            & > menu {
               animation: none;
               opacity: 1;
             }

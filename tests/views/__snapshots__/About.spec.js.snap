@@ -36,8 +36,21 @@ exports[`About > Rendering > renders about view 1`] = `
           >
             add Realness to your dock
           </a>
-           - works like a native app, straight from the web. Your data lives with you. 
+           works like a native app, straight from the web. Your data lives with you. 
         </p>
+        <menu>
+          <p
+            itemprop="lava-lamp"
+          >
+            It's also a lava lamp
+          </p>
+          <fieldset
+            class="preference-stub"
+            compact=""
+            label="Lava lamp"
+            unlabeled=""
+          />
+        </menu>
       </header>
       <figure
         class="poster-stub"

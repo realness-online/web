@@ -40,6 +40,11 @@
       type: Boolean,
       default: false
     },
+    // Switch only: nearby copy already names it. Keeps an accessible name.
+    unlabeled: {
+      type: Boolean,
+      default: false
+    },
     disabled: {
       type: Boolean,
       default: false
@@ -86,6 +91,9 @@
     if (props.name === 'sync_folder' && new_state)
       preferences.sync_svg.value = true
 
+    // Morph is a child of animate; on its own it has nothing to breathe.
+    if (props.name === 'morph' && new_state) preferences.animate.value = true
+
     if (props.name === 'drama') {
       preferences.drama_back.value = new_state
       preferences.drama_front.value = new_state
@@ -98,7 +106,7 @@
 <template>
   <fieldset data-preference :class="{ compact }">
     <div>
-      <h4 :data-labeled="label || undefined">
+      <h4 v-if="!unlabeled" :data-labeled="label || undefined">
         <icon v-if="icon_name" :name="icon_name" />
         <span>{{ label || name }}{{ state_text }}</span>
         <kbd v-for="key in compact_key_hint" :key="key">{{ key }}</kbd>
@@ -107,6 +115,7 @@
         <input
           :checked="preference"
           :name="name"
+          :aria-label="unlabeled ? label || name : undefined"
           :disabled="disabled"
           role="switch"
           type="checkbox"
