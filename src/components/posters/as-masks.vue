@@ -78,7 +78,7 @@
    * Browsers disagree on the color space mask luminance is computed in - this
    * value is tuned by eye against the 0.5 target, not trusted math.
    */
-  const SHADOW_DIM_GRAY = 0.45
+  const SHADOW_DIM_GRAY = 0.5
   const gray = SHADOW_DIM_GRAY
   // Alpha -> flat gray: shadow paths paint with gradient fills, their own
   // gradient masks, and strokes - none of which belong in a luminance mask.

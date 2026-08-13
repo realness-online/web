@@ -33,6 +33,9 @@
   import { poster_video_export_active } from '@/use/poster-video-export'
   import { bind_device_orientation } from '@/3d/engine/bind-device-orientation'
   import { nudge_step, GYRO_NUDGE_EPSILON } from '@/utils/gyro-nudge'
+  import { sample_smil, resting_value } from '@/utils/animation-sample'
+
+  const SVG_NS = 'http://www.w3.org/2000/svg'
 
   const props = defineProps({
     id: {
@@ -144,15 +147,16 @@
    * boundary the whole poster reads as itself for a beat before breathing on.
    */
   const MORPH_HOLD = 6
+
   const MS_PER_SECOND = 1000
 
   /**
-   * Longest a wind-down will wait for a cycle boundary. The slowest layer's
-   * full cycle can run to 45s+, far past what turning morph off should cost -
-   * past this cap the layer ends wherever it currently is instead of waiting
-   * out the rest of its lap.
+   * Longest any wind-down will wait for a cycle boundary. A slow layer's full
+   * cycle runs to 45s, a slow gradient's to several minutes - far past what
+   * turning a preference off should cost. Past this cap the animation ends
+   * where it currently is and is walked home over the cap instead.
    */
-  const MORPH_WIND_DOWN_CAP = 5
+  const WIND_DOWN_CAP = 5
 
   /** @type {import('vue').Ref<string[] | null>} */
   const morph_layers = ref(null)
@@ -350,6 +354,8 @@
    */
   const generation = ref(0)
   let elements_ended = false
+  /** Spliced single-shot legs walking capped animations home (see `settle_leaf`) */
+  let settle_legs = []
   let wind_down_timer = null
   let morph_wind_down_timer = null
   /**
@@ -403,8 +409,54 @@
   )
 
   /**
+   * A leaf whose boundary is further off than the cap: end it now and hand
+   * the rest of the way home to a short single-shot leg from where it
+   * currently sits back to its resting value. Morph settles with a CSS
+   * transition because `d` is a CSS property; these leaves animate gradient
+   * coordinates too, which CSS cannot touch, so the leg is a spliced SMIL
+   * animation instead. It is removed when it lands, and removal reveals the
+   * element's own base value - the same resting value it just arrived on.
+   * @param {SVGAnimateElement} leaf
+   * @param {number} elapsed Seconds into the leaf's current cycle
+   */
+  const settle_leaf = (leaf, elapsed) => {
+    if (typeof document === 'undefined') return leaf.endElementAt(0)
+    const from = sample_smil(leaf, elapsed)
+    const home = resting_value(leaf)
+    if (!from || !home || !leaf.parentNode) return leaf.endElementAt(0)
+
+    const leg = document.createElementNS(SVG_NS, 'animate')
+    leg.setAttribute('itemprop', 'settle')
+    leg.setAttribute('href', leaf.getAttribute('href'))
+    leg.setAttribute('attributeName', leaf.getAttribute('attributeName'))
+    leg.setAttribute('dur', `${WIND_DOWN_CAP}s`)
+    leg.setAttribute('begin', 'indefinite')
+    leg.setAttribute('values', `${from};${home}`)
+    leg.setAttribute('calcMode', 'spline')
+    leg.setAttribute('keyTimes', '0;1')
+    leg.setAttribute('keySplines', MORPH_RETURN_SPLINE)
+    leaf.parentNode.appendChild(leg)
+    settle_legs.push(leg)
+    // Begun before the running leaf ends, both in this one tick, so no frame
+    // renders with the attribute back at its base value
+    if (typeof leg.beginElement === 'function') leg.beginElement()
+    leaf.endElementAt(0)
+  }
+
+  /**
+   * Once the legs have landed the base value underneath is what they arrived
+   * on, so taking them out is invisible - and it keeps a stale leg from
+   * fighting the fresh timeline when animation comes back on.
+   */
+  const clear_settle_legs = () => {
+    settle_legs.forEach(leg => leg.remove())
+    settle_legs = []
+  }
+
+  /**
    * Every animation begins and ends its cycle on its resting value, so ending
-   * it exactly on the next cycle boundary removes it without a visible jump.
+   * it exactly on the next cycle boundary removes it without a visible jump -
+   * as long as that boundary is close enough to wait for.
    * @param {ParentNode | null} root
    * @returns {number} Seconds until the last animation lands
    */
@@ -421,6 +473,11 @@
       const dur = parseFloat(leaf.getAttribute('dur'))
       if (!dur) return
       const remaining = dur - (now % dur)
+      if (remaining > WIND_DOWN_CAP) {
+        settle_leaf(leaf, now % dur)
+        longest = Math.max(longest, WIND_DOWN_CAP)
+        return
+      }
       leaf.endElementAt(remaining)
       if (remaining > longest) longest = remaining
     })
@@ -460,7 +517,7 @@
     // Forces layout so the browser locks in `from_shape` as the transition's
     // starting point, rather than coalescing it with the change below
     target.getBoundingClientRect()
-    target.style.transition = `d ${MORPH_WIND_DOWN_CAP}s ${as_css_bezier(MORPH_RETURN_SPLINE)}`
+    target.style.transition = `d ${WIND_DOWN_CAP}s ${as_css_bezier(MORPH_RETURN_SPLINE)}`
     target.setAttribute('d', to_shape)
   }
 
@@ -494,11 +551,11 @@
       if (!dur) return
       const remaining = dur - (elapsed % dur)
       const leaf = morph_group.value.querySelector(`[href="${fragment(name)}"]`)
-      if (remaining > MORPH_WIND_DOWN_CAP) {
+      if (remaining > WIND_DOWN_CAP) {
         const own = layers?.[index]
         const partner = layers?.[order[1]]
         if (own && partner) settle_layer(name, partner, own, leaf)
-        longest = Math.max(longest, MORPH_WIND_DOWN_CAP)
+        longest = Math.max(longest, WIND_DOWN_CAP)
         return
       }
       if (leaf && typeof leaf.endElementAt === 'function')
@@ -512,6 +569,7 @@
   const cancel_wind_down = () => {
     if (wind_down_timer) clearTimeout(wind_down_timer)
     wind_down_timer = null
+    clear_settle_legs()
     winding_down.value = false
   }
 
@@ -520,10 +578,10 @@
     const longest = end_at_cycle_boundaries(timeline.value)
     if (!longest) return
     winding_down.value = true
-    wind_down_timer = setTimeout(() => {
-      wind_down_timer = null
-      winding_down.value = false
-    }, longest * MS_PER_SECOND)
+    wind_down_timer = setTimeout(
+      () => cancel_wind_down(),
+      longest * MS_PER_SECOND
+    )
   })
 
   watch(

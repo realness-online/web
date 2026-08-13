@@ -87,6 +87,35 @@ describe('@/components/preference', () => {
     expect(preferences.sync_svg.value).toBe(true)
   })
 
+  it('drops the label and keys when unlabeled, keeping an accessible name', () => {
+    const wrapper = mount({
+      name: 'animate',
+      label: 'Lava lamp',
+      compact: true,
+      unlabeled: true
+    })
+    expect(wrapper.find('h4').exists()).toBe(false)
+    expect(wrapper.find('kbd').exists()).toBe(false)
+    expect(wrapper.find('input').attributes('aria-label')).toBe('Lava lamp')
+  })
+
+  it('turns animate on when morph is enabled', async () => {
+    preferences.morph.value = false
+    const wrapper = mount({ name: 'morph' })
+    await wrapper.find('input').setValue(true)
+    expect(preferences.morph.value).toBe(true)
+    expect(preferences.animate.value).toBe(true)
+  })
+
+  it('leaves animate alone when morph is disabled', async () => {
+    preferences.morph.value = true
+    preferences.animate.value = true
+    const wrapper = mount({ name: 'morph' })
+    await wrapper.find('input').setValue(false)
+    expect(preferences.morph.value).toBe(false)
+    expect(preferences.animate.value).toBe(true)
+  })
+
   it('renders nested preferences from the default slot', () => {
     const wrapper = shallowMount(Preference, {
       props: { name: 'sync_folder' },
