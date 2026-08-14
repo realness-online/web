@@ -397,6 +397,18 @@ describe('Thoughts', () => {
       wrapper.unmount()
     })
 
+    it('shows an anonymous author their own work in only_mine', async () => {
+      // Before signing in, main.js parks localStorage.me at '/+'. Posters are
+      // saved under that id, so only_mine has to load it like any other author
+      mock_current_user_ref.value = null
+      window.localStorage.me = '/+'
+      only_mine.value = true
+      const wrapper = await settled(mount())
+      expect(mock_posters_for_person).toHaveBeenCalledWith({ id: '/+' })
+      expect(mock_people.value).toEqual([{ id: '/+', type: 'person' }])
+      wrapper.unmount()
+    })
+
     it('reloads the feed when only_mine toggles, without the sync border', async () => {
       const wrapper = await settled(mount())
       mock_set_working.mockClear()

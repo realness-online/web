@@ -410,9 +410,10 @@
     const my_id =
       (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
 
+    // '/+' is what main.js parks there before anyone signs in, and posters are
+    // saved under it, so it is an author like any other
     if (only_mine.value)
-      people.value =
-        my_id && my_id.length > 2 ? [{ id: my_id, type: 'person' }] : []
+      people.value = my_id ? [{ id: my_id, type: 'person' }] : []
     else {
       if (phonebook.value.length)
         people.value = /** @type {import('@/types').Item[]} */ ([
