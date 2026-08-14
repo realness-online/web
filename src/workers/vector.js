@@ -46,76 +46,114 @@ const svgo_options = {
   ]
 }
 
-const get_average_color = (canvas, region) => {
-  const { x, y, width, height } = region
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  const image_data = ctx.getImageData(x, y, width, height)
-  const { data } = image_data
+/**
+ * Averaging gamma-encoded bytes is not averaging colour: half black and half
+ * white comes back as a middle grey the picture never contained. Squaring on
+ * the way in and taking the root on the way out keeps the strip as bright as
+ * it looks.
+ */
+const get_average_color = (image, region) => {
+  const { data } = image
+  // Strips land on fractional boundaries; whole pixels are what can be read
+  const x = Math.floor(region.x)
+  const y = Math.floor(region.y)
+  const width = Math.max(1, Math.floor(region.width))
+  const height = Math.max(1, Math.floor(region.height))
 
   let r = 0,
     g = 0,
     b = 0,
     a = 0
-  const pixel_count = data.length / RGBA_COMPONENTS
+  // Weighted by alpha, so a transparent pixel contributes no colour rather
+  // than contributing black
+  let weight = 0
+  const pixel_count = width * height
 
-  for (let i = 0; i < data.length; i += RGBA_COMPONENTS) {
-    r += data[i]
-    g += data[i + 1]
-    b += data[i + 2]
-    a += data[i + 3]
+  for (let row = y; row < y + height; row++) {
+    const row_start = row * image.width * RGBA_COMPONENTS
+    for (let column = x; column < x + width; column++) {
+      const i = row_start + column * RGBA_COMPONENTS
+      const alpha = data[i + 3]
+      r += data[i] * data[i] * alpha
+      g += data[i + 1] * data[i + 1] * alpha
+      b += data[i + 2] * data[i + 2] * alpha
+      a += alpha
+      weight += alpha
+    }
   }
 
+  if (!weight) return { r: 0, g: 0, b: 0, a: 0 }
+
   return {
-    r: Math.round(r / pixel_count),
-    g: Math.round(g / pixel_count),
-    b: Math.round(b / pixel_count),
+    r: Math.round(Math.sqrt(r / weight)),
+    g: Math.round(Math.sqrt(g / weight)),
+    b: Math.round(Math.sqrt(b / weight)),
     a: Math.round(a / pixel_count)
   }
 }
 
-const as_gradient = (canvas, height = false) => {
-  const direction = height ? canvas.height : canvas.width
-  const opposite = height ? canvas.width : canvas.height
+const as_gradient = (image, height = false) => {
+  const direction = height ? image.height : image.width
+  const opposite = height ? image.width : image.height
   const chunk = fidelity(direction)
   const stops = []
 
   for (let i = 0; i < direction; i += chunk) {
-    const color = get_average_color(canvas, {
+    // The last strip would otherwise run past the edge and average in the
+    // transparent black a canvas pads with, darkening the final stop
+    const reach = Math.min(chunk, direction - i)
+    const color = get_average_color(image, {
       x: height ? 0 : i,
       y: height ? i : 0,
-      width: height ? opposite : chunk,
-      height: height ? chunk : opposite
+      width: height ? opposite : reach,
+      height: height ? reach : opposite
     })
     stops.push({
       color: rgba_to_hsla(color),
-      offset: scale(i, 0, direction)
+      // A strip's average belongs at its middle, not at its leading edge
+      offset: scale(i + reach / 2, 0, direction)
     })
   }
 
+  return pin_to_edges(stops)
+}
+
+/**
+ * The first and last strips carry the colour of the edges they cover, so they
+ * sit at 0 and 100. Without this a gradient starts and ends part way in and
+ * the paint outside those stops is a flat hold.
+ *
+ * @param {{ color: object, offset: number }[]} stops
+ */
+const pin_to_edges = stops => {
+  if (stops.length < 2) return stops
+  stops[0].offset = 0
+  stops[stops.length - 1].offset = 100
   return stops
 }
 
-const as_radial_gradient = canvas => {
-  let box_size = canvas.width
-  if (canvas.height < box_size) box_size = canvas.height
+const as_radial_gradient = image => {
+  let box_size = image.width
+  if (image.height < box_size) box_size = image.height
 
   const chunk = fidelity(box_size)
   const stops = []
 
   for (let i = 0; i < box_size; i += chunk) {
-    const color = get_average_color(canvas, {
+    const reach = Math.min(chunk, box_size - i)
+    const color = get_average_color(image, {
       x: i,
       y: 0,
-      width: chunk,
+      width: reach,
       height: box_size
     })
     stops.push({
       color: rgba_to_hsla(color),
-      offset: scale(i, 0, box_size)
+      offset: scale(i + reach / 2, 0, box_size)
     })
   }
 
-  return stops
+  return pin_to_edges(stops)
 }
 
 const fidelity = (length, pair = { number: 15, unit: '%' }) => {
@@ -157,16 +195,12 @@ export const make_vector = message => {
 export const make_gradient = message => {
   const { image_data } = message.data
 
-  // Create a temporary canvas to work with the image data
-  const canvas = new OffscreenCanvas(image_data.width, image_data.height)
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get 2d context')
-  ctx.putImageData(image_data, 0, 0)
-
+  // The pixels arrive with the message, so the three reads work straight off
+  // that buffer rather than round-tripping every strip through a canvas
   const gradients = {
-    horizontal: as_gradient(canvas),
-    vertical: as_gradient(canvas, true),
-    radial: as_radial_gradient(canvas)
+    horizontal: as_gradient(image_data),
+    vertical: as_gradient(image_data, true),
+    radial: as_radial_gradient(image_data)
   }
 
   return { gradients }
@@ -190,7 +224,7 @@ const normalize_morph = message => {
   return { paths: normalize_set(paths, { contours, segments, precision }) }
 }
 
-const route_message = async message => {
+export const route_message = async message => {
   const { route } = message.data
   let reply = {}
 
