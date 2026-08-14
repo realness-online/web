@@ -44,6 +44,7 @@
   import { posting, scroll_position } from '@/use/posting'
   import { axis_visibility } from '@/utils/intersection'
   import { after_layout } from '@/utils/after-layout'
+  import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
   import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
 
@@ -155,6 +156,7 @@
   }
 
   const on_remove_missing_poster = async id => {
+    poster_delete_log('Thoughts on_remove_missing_poster', { id })
     posters.value = posters.value.filter(item => id !== item.id)
     const author_id = as_author(/** @type {Id} */ (id))
     if (!author_id) {
@@ -169,6 +171,7 @@
       as_layer_id(/** @type {Id} */ (id), 'shadows'),
       ...geology_layers.map(layer => as_layer_id(/** @type {Id} */ (id), layer))
     ]
+    poster_delete_log('Thoughts purging idb keys', { id, keys_to_delete })
     await Promise.all(keys_to_delete.map(key => del(key)))
     // Clear cached directories and re-read the main poster directory from the
     // network. Then reconcile the feed: remove any posters from this author

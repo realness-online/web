@@ -34,6 +34,8 @@
   import { use_mask_pen, subject_hue } from '@/use/mask-pen'
   import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
   import { load_shadow_into_vector } from '@/utils/poster-layers'
+  import { poster_delete_log } from '@/utils/poster-delete-log'
+  import { statement_edit_log } from '@/utils/statement-edit-log'
   import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
   import {
     poster_dom_id,
@@ -134,6 +136,13 @@
   watch(
     () => props.overlay_statements,
     () => {
+      // Closing the overlay under an open editor would take the statement away
+      // mid-edit, so say when it happens.
+      if (thought_overlay_open.value)
+        statement_edit_log('overlay closed by new statements prop', {
+          itemid: props.itemid,
+          active: document.activeElement?.getAttribute?.('itemprop')
+        })
       thought_overlay_open.value = false
     }
   )
@@ -161,6 +170,13 @@
   }
 
   const on_poster_svg_click = () => {
+    statement_edit_log('poster svg click', {
+      itemid: props.itemid,
+      overlay_statements: props.overlay_statements?.length ?? 0,
+      overlay_editable: props.overlay_editable,
+      was_open: thought_overlay_open.value,
+      mask_pen: mask_pen.active.value
+    })
     if (mask_pen.active.value) return
     if (props.overlay_statements?.length) {
       thought_overlay_open.value = !thought_overlay_open.value
@@ -251,11 +267,18 @@
     handle_pointerdown: on_dom_ref_pointerdown,
     handle_pointermove: on_dom_ref_pointermove,
     handle_pointerup: on_dom_ref_pointerup,
-    handle_pointerleave: on_dom_ref_pointerleave
+    handle_pointerleave: on_dom_ref_pointerleave,
+    handle_contextmenu: on_dom_ref_contextmenu
   } = use_poster_svg_activate_pointer({
     on_activate: dom_reference_activate,
-    touch_uses_long_press: true
+    touch_uses_long_press: true,
+    // These live on the figure now, so the haptic switch layered over the
+    // poster still reaches them. The canonical poster brings its own handlers.
+    is_disabled: computed(() => !use_dom_reference.value)
   })
+
+  /** One switch per poster on the page, so a label points at its own. */
+  const haptic_id = computed(() => `haptic-${query_id.value}`)
 
   const poster_label = computed(() => {
     const created = as_created_at(/** @type {Id} */ (props.itemid))
@@ -296,6 +319,29 @@
     cutouts_loaded.value = false
   }
 
+  /**
+   * `missing` is answered by deleting the poster from storage - its html, its
+   * shadow, every geology layer - so nothing may emit it on a hunch, and both
+   * callers here are hunches. `show` in use/poster fires with whatever `vector`
+   * holds, so a render racing the load reports empty for a poster that is
+   * perfectly well there; and no cutout layers looks the same as a deletion
+   * even though plenty of posters have none. Loading the poster is the only
+   * evidence that counts: if it comes back, nothing is missing.
+   *
+   * @returns {Promise<Poster|null>} the poster, when it is still there
+   */
+  const confirm_missing = async caller => {
+    const poster_loaded = await load(/** @type {Id} */ (props.itemid))
+    poster_delete_log('as-figure confirm_missing', {
+      itemid: props.itemid,
+      caller,
+      still_loads: Boolean(poster_loaded)
+    })
+    if (poster_loaded) return /** @type {Poster} */ (poster_loaded)
+    emit('missing', props.itemid)
+    return null
+  }
+
   const load_cutouts = async () => {
     if (!vector.value) return
     if (should_skip_cutout_load()) return
@@ -308,20 +354,24 @@
     vector.value.cutouts = next_cutouts
     cutouts_loaded.value = true
 
-    // If no cutout layers were found and this poster should have them,
-    // the poster was likely deleted from storage. Signal the parent to
-    // re-read the directory and remove stale entries.
+    // A geology-era poster with no cutout layers may have been deleted from
+    // storage - or may simply never have had any. Only the poster itself can
+    // tell the two apart.
     const created = as_created_at(/** @type {Id} */ (props.itemid))
     if (
       created &&
       created > GEOLOGY_DATE &&
       Object.keys(next_cutouts).length === 0
     )
-      emit('missing', props.itemid)
+      await confirm_missing('no cutout layers')
   }
 
   const on_show = async shown_vector => {
-    if (!shown_vector) return emit('missing', props.itemid)
+    if (!shown_vector) {
+      const still_there = await confirm_missing('empty show')
+      if (still_there) return on_show(still_there)
+      return
+    }
 
     working.value = true
     cutouts_loaded.value = false
@@ -527,176 +577,189 @@
     @focusout="on_focusout"
     @keydown.enter.prevent="on_activate_poster"
     @dragover="on_poster_dragover"
-    @drop="on_poster_drop_audio">
-    <svg
-      v-if="use_dom_reference"
-      itemscope
-      itemtype="/posters"
-      :itemid="itemid"
-      :viewBox="ref_dom_viewbox"
-      :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
-      role="img"
-      aria-roledescription="referenced poster"
-      :aria-label="poster_label"
-      :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
-      @click="on_poster_svg_click"
-      @pointerdown="on_dom_ref_pointerdown"
-      @pointermove="on_dom_ref_pointermove"
-      @pointerup="on_dom_ref_pointerup"
-      @pointerleave="on_dom_ref_pointerleave"
-      @pointercancel="on_dom_ref_pointerleave"
-      @contextmenu.prevent
-      @selectstart.prevent>
-      <use :href="poster_reference_href" />
-      <rect
-        role="presentation"
-        aria-hidden="true"
-        x="0"
-        y="0"
-        width="100%"
-        height="100%"
-        fill="transparent" />
-    </svg>
-    <as-svg
-      v-else
-      ref="as_svg_ref"
-      :itemid="itemid"
-      :slice="slice"
-      :sync_poster="sync_poster_for_svg"
-      :show_cutout_layers="cutouts_active && mosaic"
-      :pin="props.pin"
-      :paused="!poster_in_view || canvas_alive"
-      @show="on_show"
-      @click="on_poster_svg_click"
-      :focusable="false" />
-    <as-poster-symbol
-      v-if="shown && !use_dom_reference"
-      :itemid="itemid"
-      :vector="vector"
-      :show_cutout_symbols="cutouts_active && mosaic"
-      :shown="shown" />
-    <as-viewer-3d
-      v-if="canvas_alive"
-      ref="viewer_ref"
-      :itemid="itemid"
-      :on_svg_zoom="set_svg_zoom"
-      data-mode="inline"
-      @select="on_poster_svg_click" />
-    <figcaption v-if="figcaption_visible">
-      <header>
-        <aside v-if="overlay_text_visible" aria-live="polite">
-          <as-thought
-            v-for="stmt in overlay_statements"
-            :key="stmt.id"
-            :thought="stmt"
-            :editable="overlay_editable" />
-        </aside>
-      </header>
-      <template
-        v-if="
-          menu_open || (menu && menu_always_visible) || mask_pen.active.value
-        ">
-        <menu
-          v-if="mask_pen.active.value"
-          class="mask-panel"
-          aria-label="Poster subjects">
-          <li
-            v-for="(subject, index) in mask_pen.subjects.value"
-            :key="subject.id">
-            <span
-              class="mask-swatch"
-              :style="{ background: `hsl(${subject_hue(index)} 70% 55%)` }"
-              aria-hidden="true" />
-            <button
-              :aria-pressed="subject.id === mask_pen.active_subject_id.value"
-              @click.stop="mask_pen.select_subject(subject.id)">
-              {{ subject.name }}
-            </button>
-            <input
-              :value="subject.name"
-              aria-label="Rename subject"
-              @input="
-                mask_pen.rename_subject(subject.id, $event.target.value)
-              " />
-            <button
-              :aria-label="
-                mask_pen.pending_removal_id.value === subject.id
-                  ? `Confirm remove ${subject.name || 'subject'}`
-                  : `Remove ${subject.name || 'subject'}`
-              "
-              :data-arm="
-                mask_pen.pending_removal_id.value === subject.id || undefined
-              "
-              @click.stop="mask_pen.request_remove_subject(subject.id)">
-              {{
-                mask_pen.pending_removal_id.value === subject.id ? 'Sure?' : '×'
-              }}
-            </button>
-          </li>
-          <li>
-            <button
-              aria-label="Add subject"
-              @click.stop="mask_pen.add_subject()">
-              +
-            </button>
-          </li>
-        </menu>
-        <footer>
-          <router-link
-            v-if="
-              poster_time &&
-              is_my_poster &&
-              profile_path &&
-              !mask_pen.active.value
-            "
-            :to="profile_path">
-            <time>{{ poster_time }}</time>
-          </router-link>
-          <time v-else-if="poster_time && !mask_pen.active.value">{{
-            poster_time
-          }}</time>
-          <slot>
-            <menu
-              v-if="is_my_poster"
-              :style="
-                mask_pen.active.value && mask_pen.painting.value
-                  ? { opacity: 0.12, pointerEvents: 'none' }
-                  : null
-              ">
+    @drop="on_poster_drop_audio"
+    @pointerdown="on_dom_ref_pointerdown"
+    @pointermove="on_dom_ref_pointermove"
+    @pointerup="on_dom_ref_pointerup"
+    @pointerleave="on_dom_ref_pointerleave"
+    @pointercancel="on_dom_ref_pointerleave"
+    @contextmenu="on_dom_ref_contextmenu">
+    <!--
+      iOS buzzes for a switch a finger toggles, and for nothing a script does -
+      so the poster carries one. The switch itself is hidden; this label around
+      the poster is what your tap toggles, the same way the footer menu earns
+      its buzz. `display: contents` keeps the figure's own layout untouched, and
+      the poster still receives every event it did before.
+    -->
+    <label :for="haptic_id" aria-hidden="true">
+      <input :id="haptic_id" type="checkbox" switch tabindex="-1" data-haptic />
+      <svg
+        v-if="use_dom_reference"
+        itemscope
+        itemtype="/posters"
+        :itemid="itemid"
+        :viewBox="ref_dom_viewbox"
+        :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
+        role="img"
+        aria-roledescription="referenced poster"
+        :aria-label="poster_label"
+        :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
+        @click="on_poster_svg_click"
+        @selectstart.prevent>
+        <use :href="poster_reference_href" />
+        <rect
+          role="presentation"
+          aria-hidden="true"
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill="transparent" />
+      </svg>
+      <as-svg
+        v-if="!use_dom_reference"
+        ref="as_svg_ref"
+        :itemid="itemid"
+        :slice="slice"
+        :sync_poster="sync_poster_for_svg"
+        :show_cutout_layers="cutouts_active && mosaic"
+        :pin="props.pin"
+        :paused="!poster_in_view || canvas_alive"
+        :behind_canvas="canvas_alive"
+        :focusable="false"
+        @show="on_show"
+        @click="on_poster_svg_click" />
+      <as-poster-symbol
+        v-if="shown && !use_dom_reference"
+        :itemid="itemid"
+        :vector="vector"
+        :show_cutout_symbols="cutouts_active && mosaic"
+        :shown="shown" />
+      <as-viewer-3d
+        v-if="canvas_alive"
+        ref="viewer_ref"
+        :itemid="itemid"
+        :on_svg_zoom="set_svg_zoom"
+        data-mode="inline"
+        @select="on_poster_svg_click" />
+      <figcaption v-if="figcaption_visible">
+        <header>
+          <aside v-if="overlay_text_visible" aria-live="polite">
+            <as-thought
+              v-for="stmt in overlay_statements"
+              :key="stmt.id"
+              :thought="stmt"
+              :editable="overlay_editable" />
+          </aside>
+        </header>
+        <template
+          v-if="
+            menu_open || (menu && menu_always_visible) || mask_pen.active.value
+          ">
+          <menu
+            v-if="mask_pen.active.value"
+            class="mask-panel"
+            aria-label="Poster subjects">
+            <li
+              v-for="(subject, index) in mask_pen.subjects.value"
+              :key="subject.id">
+              <span
+                class="mask-swatch"
+                :style="{ background: `hsl(${subject_hue(index)} 70% 55%)` }"
+                aria-hidden="true" />
               <button
-                aria-label="Toggle mask pen"
-                :aria-pressed="mask_pen.active.value"
-                @click.stop="on_toggle_mask_pen">
-                &#9998;<span v-if="mask_pen.selected.value.size">
-                  {{ mask_pen.selected.value.size }}</span
-                >
+                :aria-pressed="subject.id === mask_pen.active_subject_id.value"
+                @click.stop="mask_pen.select_subject(subject.id)">
+                {{ subject.name }}
               </button>
+              <input
+                :value="subject.name"
+                aria-label="Rename subject"
+                @input="
+                  mask_pen.rename_subject(subject.id, $event.target.value)
+                " />
               <button
-                v-if="mask_pen.active.value && mask_pen.selected.value.size"
-                aria-label="Clear mask"
-                @click.stop="mask_pen.clear()">
-                &times;
+                :aria-label="
+                  mask_pen.pending_removal_id.value === subject.id
+                    ? `Confirm remove ${subject.name || 'subject'}`
+                    : `Remove ${subject.name || 'subject'}`
+                "
+                :data-arm="
+                  mask_pen.pending_removal_id.value === subject.id || undefined
+                "
+                @click.stop="mask_pen.request_remove_subject(subject.id)">
+                {{
+                  mask_pen.pending_removal_id.value === subject.id
+                    ? 'Sure?'
+                    : '×'
+                }}
               </button>
-              <as-author-menu
-                v-if="!mask_pen.active.value"
-                :poster="author_menu_poster"
-                :allow_remove="has_remove_handler"
-                @remove="id => emit('remove', id)" />
-            </menu>
-            <menu v-else>
-              <as-figure
-                v-if="person"
-                :person="person"
-                :display="profile_display"
-                :itemid="profile_chip_itemid" />
-              <span role="group">
-                <as-download :itemid="/** @type {Id} */ (itemid)" />
-              </span>
-            </menu>
-          </slot>
-        </footer>
-      </template>
-    </figcaption>
+            </li>
+            <li>
+              <button
+                aria-label="Add subject"
+                @click.stop="mask_pen.add_subject()">
+                +
+              </button>
+            </li>
+          </menu>
+          <footer>
+            <router-link
+              v-if="
+                poster_time &&
+                is_my_poster &&
+                profile_path &&
+                !mask_pen.active.value
+              "
+              :to="profile_path">
+              <time>{{ poster_time }}</time>
+            </router-link>
+            <time v-else-if="poster_time && !mask_pen.active.value">{{
+              poster_time
+            }}</time>
+            <slot>
+              <menu
+                v-if="is_my_poster"
+                :style="
+                  mask_pen.active.value && mask_pen.painting.value
+                    ? { opacity: 0.12, pointerEvents: 'none' }
+                    : null
+                ">
+                <button
+                  aria-label="Toggle mask pen"
+                  :aria-pressed="mask_pen.active.value"
+                  @click.stop="on_toggle_mask_pen">
+                  &#9998;<span v-if="mask_pen.selected.value.size">
+                    {{ mask_pen.selected.value.size }}</span
+                  >
+                </button>
+                <button
+                  v-if="mask_pen.active.value && mask_pen.selected.value.size"
+                  aria-label="Clear mask"
+                  @click.stop="mask_pen.clear()">
+                  &times;
+                </button>
+                <as-author-menu
+                  v-if="!mask_pen.active.value"
+                  :poster="author_menu_poster"
+                  :allow_remove="has_remove_handler"
+                  @remove="id => emit('remove', id)" />
+              </menu>
+              <menu v-else>
+                <as-figure
+                  v-if="person"
+                  :person="person"
+                  :display="profile_display"
+                  :itemid="profile_chip_itemid" />
+                <span role="group">
+                  <as-download :itemid="/** @type {Id} */ (itemid)" />
+                </span>
+              </menu>
+            </slot>
+          </footer>
+        </template>
+      </figcaption>
+    </label>
     <output
       v-if="video_export_progress"
       class="video-export-progress"
@@ -789,7 +852,11 @@
       }
     }
     /* Keep `content-visibility` off the figure so figcaption (overlay text) is not skipped; Safari mishandles the subtree when the root has `auto`. */
-    & > svg:not([data-poster-symbol-defs]) {
+    /* The haptic label is `display: contents`, so the poster it wraps is still
+       the figure's own child as far as layout goes - the selector has to reach
+       through it. */
+    & > svg:not([data-poster-symbol-defs]),
+    & > label > svg:not([data-poster-symbol-defs]) {
       content-visibility: auto;
       contain-intrinsic-size: auto 512px;
     }
@@ -808,6 +875,24 @@
     svg[aria-roledescription='referenced poster'] rect[role='presentation'][aria-hidden='true'] {
       pointer-events: all;
     }
+    /* The label is only here to carry taps to the switch - it must not take
+       part in the figure's layout. */
+    & > label:has(input[data-haptic]) {
+      display: contents;
+    }
+    /* `all: initial` keeps the switch's native appearance, which our global
+       `input { appearance: none }` would otherwise strip, and a switch that
+       does not render natively does not buzz. It stays out of sight and out of
+       the way; the label around the poster is what gets touched. */
+    input[data-haptic] {
+      all: initial;
+      appearance: auto;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
     }
@@ -819,7 +904,8 @@
       border-radius: round((base-line * .03), 2);
       overflow: hidden;
     }
-    & > figcaption {
+    & > figcaption,
+    & > label > figcaption {
       grid-area: 1 / 1;
       display: flex;
       flex-direction: column;

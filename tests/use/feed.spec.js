@@ -118,3 +118,71 @@ describe('use_feed', () => {
     expect(posters_for_person).not.toHaveBeenCalled()
   })
 })
+
+/**
+ * A statement rewritten under a poster kept showing its old text until the page
+ * was reloaded: the pairing is cached by item id, an edit never changes an id,
+ * and `update_statement` replaces the statement objects instead of mutating
+ * them - so the cache served the pairing captured before the edit. Both halves
+ * are pinned here: the cache has to clear on an edit, and it has to still be a
+ * cache the rest of the time.
+ */
+describe('overlay pairing cache', () => {
+  const poster = { id: '/+1/posters/2' }
+  const thought_of = text => [{ id: '/+1/statements/1', statement: text }]
+  const feed_for = statements =>
+    use_feed({
+      posters: ref([poster]),
+      statements,
+      statements_for_person: vi.fn().mockResolvedValue(undefined),
+      posters_for_person: vi.fn().mockResolvedValue(undefined),
+      set_working: undefined
+    })
+
+  it('re-pairs after a statement is rewritten', async () => {
+    const statements = ref(thought_of('before'))
+    const feed = feed_for(statements)
+    const day = [poster, statements.value]
+    expect(feed.overlay_statements_for_poster(day, poster)?.[0].statement).toBe(
+      'before'
+    )
+
+    // update_statement replaces the objects rather than mutating them.
+    statements.value = thought_of('after')
+    await nextTick()
+
+    const fresh_day = [poster, statements.value]
+    expect(
+      feed.overlay_statements_for_poster(fresh_day, poster)?.[0].statement
+    ).toBe('after')
+  })
+
+  it('re-pairs when the statement is emptied, not just changed', async () => {
+    const statements = ref(thought_of('written'))
+    const feed = feed_for(statements)
+    feed.overlay_statements_for_poster([poster, statements.value], poster)
+
+    statements.value = thought_of('')
+    await nextTick()
+
+    expect(
+      feed.overlay_statements_for_poster(
+        [poster, statements.value],
+        poster
+      )?.[0].statement
+    ).toBe('')
+  })
+
+  it('still caches while the statements hold still', () => {
+    const statements = ref(thought_of('before'))
+    const feed = feed_for(statements)
+    const day = [poster, statements.value]
+    const first = feed.overlay_statements_for_poster(day, poster)
+    // A fresh array for the same day, as a re-render hands over.
+    const same = feed.overlay_statements_for_poster(
+      [poster, statements.value],
+      poster
+    )
+    expect(same).toBe(first)
+  })
+})

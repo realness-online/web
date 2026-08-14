@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { shallowMount } from '@vue/test-utils'
 import { ref } from 'vue'
 import About from '@/views/About.vue'
+import { animate, view_3d } from '@/utils/preference'
 
 // Mock sessionStorage
 Object.defineProperty(window, 'sessionStorage', {
@@ -56,6 +57,8 @@ describe('About', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    animate.value = false
+    view_3d.value = false
     posters_ref.value = [
       { id: `${admin_id}/posters/1`, type: 'posters' },
       { id: `${admin_id}/posters/2`, type: 'posters' },
@@ -163,6 +166,20 @@ describe('About', () => {
       expect(
         gallery.findAll('figure.poster-stub').length
       ).toBeGreaterThanOrEqual(1)
+    })
+
+    it('offers the lava lamp only while animating in 2d', async () => {
+      const lava_lamp = () =>
+        wrapper.find('[itemprop="gallery"] [label="Lava lamp"]')
+      expect(lava_lamp().exists()).toBe(false)
+
+      animate.value = true
+      await wrapper.vm.$nextTick()
+      expect(lava_lamp().exists()).toBe(true)
+
+      view_3d.value = true
+      await wrapper.vm.$nextTick()
+      expect(lava_lamp().exists()).toBe(false)
     })
   })
 })

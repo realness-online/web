@@ -86,6 +86,15 @@
     tabable: {
       type: Boolean,
       default: false
+    },
+    /**
+     * The 3D canvas is alive over this poster. The svg is scaled scenery behind
+     * it (see `set_svg_zoom` in as-figure), so it takes no gestures: no swipe,
+     * no zoom, no activation, and the callout stays blocked like the canvas.
+     */
+    behind_canvas: {
+      type: Boolean,
+      default: false
     }
   })
   const emit = defineEmits(['focus', 'click', 'show', 'intersecting'])
@@ -222,8 +231,18 @@
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
   const orientation_portrait = useMediaQuery('(orientation: portrait)')
+  /**
+   * Only a landscape poster overflows a portrait frame. Measuring the rect
+   * can't answer this: `landscape` is not persisted on the item, so until the
+   * vector loads the viewBox makes every poster look like it fits.
+   */
   const can_pan = computed(
-    () => orientation_portrait.value && !use_meet.value && !storytelling.value
+    () =>
+      orientation_portrait.value &&
+      landscape.value &&
+      !use_meet.value &&
+      !storytelling.value &&
+      !props.behind_canvas
   )
   const max_pan_px = computed(() => {
     if (!can_pan.value || !trigger.value || !vector.value) return 0
@@ -267,16 +286,27 @@
     handle_pointerdown: on_pointerdown,
     handle_pointermove: on_pointermove,
     handle_pointerup: on_pointerup,
-    handle_pointerleave: on_pointerleave
+    handle_pointerleave: on_pointerleave,
+    handle_contextmenu: on_touch_contextmenu
   } = use_poster_svg_activate_pointer({
     on_activate: on_click,
     touch_uses_long_press: () => props.touch_uses_long_press,
-    is_disabled: () => mask_pen_active.value,
+    is_disabled: () => mask_pen_active.value || props.behind_canvas,
     was_pan_gesture,
     on_non_touch_pointerdown: event => {
       held_layer.value = layer_from_target(event.target)
     }
   })
+
+  /**
+   * Touch callout is blocked either way; the mouse menu is blocked only while
+   * the 3D canvas owns this poster, matching as-viewer-3d.
+   * @param {Event} event
+   */
+  const on_contextmenu = event => {
+    if (props.behind_canvas) event.preventDefault()
+    else on_touch_contextmenu(event)
+  }
 
   const pan_style = computed(() => {
     if (!can_pan.value) return {}
@@ -417,7 +447,7 @@
     @pointerup="on_pointerup"
     @pointerleave="on_pointerleave"
     @pointercancel="on_pointerleave"
-    @contextmenu.prevent
+    @contextmenu="on_contextmenu"
     @selectstart.prevent>
     <g :style="pan_style">
       <use itemprop="shadow" :href="shadow_fragment" />
@@ -515,12 +545,15 @@
     overflow: hidden;
     cursor: pointer;
     disable-ios-touch-callout();
-    touch-action: pan-y;
+    // `pan-y` leaves the horizontal axis to our swipe handler while the page
+    // keeps its vertical scroll; `pinch-zoom` hands two-finger zoom back to
+    // the browser, which the pan-y alone had taken away.
+    touch-action: pan-y pinch-zoom;
     contain: layout;
     &[data-storytelling] {
       // Storytelling scrolls the deck horizontally, so let touch swipes pan
       // the axis the poster actually scrolls on instead of eating the gesture.
-      touch-action: pan-x;
+      touch-action: pan-x pinch-zoom;
     }
     border-radius: calc(var(--base-line) * 0.03);
     transition:

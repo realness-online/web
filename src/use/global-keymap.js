@@ -20,6 +20,7 @@ import {
   drama,
   drama_back,
   drama_front,
+  drama_last,
   bold,
   medium,
   regular,
@@ -48,12 +49,15 @@ const ASPECT_RATIOS = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
 /** Bottom to top. The ends do not wrap. */
 const SLICE_ALIGNMENTS = ['ymin', 'ymid', 'ymax']
 
-/** drama_back, drama_front — the four stages a repeated press walks through. */
+/**
+ * drama_back, drama_front - the three stages a repeated press walks through.
+ * Both on, then each light alone, then back to both. Turning drama off is what
+ * Toggle_Drama is for, so the cycle never lands on nothing.
+ */
 const DRAMA_STAGES = [
-  [false, false],
+  [true, true],
   [true, false],
-  [false, true],
-  [true, true]
+  [false, true]
 ]
 
 /**
@@ -108,8 +112,17 @@ export const use_global_keymap = ({ documentation, preferences }) => {
 
   register('pref::Toggle_Drama', () => {
     drama.value = !drama.value
-    drama_back.value = drama.value
-    drama_front.value = drama.value
+    if (drama.value) {
+      drama_back.value = drama_last.value !== 'front'
+      drama_front.value = drama_last.value !== 'back'
+      return
+    }
+    // Remember the combination so switching back on restores it.
+    if (drama_back.value !== drama_front.value)
+      drama_last.value = drama_back.value ? 'back' : 'front'
+    else drama_last.value = 'both'
+    drama_back.value = false
+    drama_front.value = false
   })
   register('pref::Cycle_Drama', () => {
     const at = DRAMA_STAGES.findIndex(

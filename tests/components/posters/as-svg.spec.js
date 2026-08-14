@@ -424,6 +424,73 @@ describe('@/components/posters/as-svg.vue', () => {
       const style = inner_g.attributes('style') ?? ''
       expect(style).toContain('translateX(12px)')
     })
+
+    it('does not pan a portrait poster, which already fits the frame', async () => {
+      const pan_delegator = {
+        register: vi.fn(() => ({
+          pan_offset: ref(12),
+          panning: ref(false),
+          was_pan_gesture: ref(false),
+          unregister: vi.fn()
+        }))
+      }
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid,
+          sync_poster: vector_fixture({ viewbox: '0 0 200 800' })
+        },
+        global: { provide: { pan_delegator } }
+      })
+      await flushPromises()
+      const style = wrapper.find('svg g').attributes('style') ?? ''
+      expect(style).not.toContain('translateX')
+    })
+
+    it('drops the pan transform while the 3D canvas owns the poster', async () => {
+      const pan_delegator = {
+        register: vi.fn(() => ({
+          pan_offset: ref(12),
+          panning: ref(false),
+          was_pan_gesture: ref(false),
+          unregister: vi.fn()
+        }))
+      }
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid,
+          sync_poster: vector_fixture({ viewbox: '0 0 800 200' }),
+          behind_canvas: true
+        },
+        global: { provide: { pan_delegator } }
+      })
+      await flushPromises()
+      const style = wrapper.find('svg g').attributes('style') ?? ''
+      expect(style).not.toContain('translateX')
+    })
+  })
+
+  describe('contextmenu', () => {
+    it('leaves the mouse menu alone, but blocks it behind the 3D canvas', async () => {
+      const mouse_down = { pointerType: 'mouse', clientX: 0, clientY: 0 }
+
+      const flat = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      await flat.find('svg').trigger('pointerdown', mouse_down)
+      const menu = { preventDefault: vi.fn() }
+      await flat.find('svg').trigger('contextmenu', menu)
+      expect(menu.preventDefault).not.toHaveBeenCalled()
+
+      const behind = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture(), behind_canvas: true }
+      })
+      await flushPromises()
+      await behind.find('svg').trigger('pointerdown', mouse_down)
+      const blocked = { preventDefault: vi.fn() }
+      await behind.find('svg').trigger('contextmenu', blocked)
+      expect(blocked.preventDefault).toHaveBeenCalled()
+    })
   })
 
   describe('pointer and click', () => {

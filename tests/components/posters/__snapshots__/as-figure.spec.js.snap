@@ -4,38 +4,80 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
 <figure
   new_poster="[object Object]"
 >
-  <as-svg-stub
-    as_avatar="false"
-    focusable="false"
-    itemid="/+14151234356/posters/1770000000000"
-    paused="true"
-    pin="false"
-    show_cutout_layers="false"
-    tabable="false"
-    touch_uses_long_press="true"
-  />
-  <!--v-if-->
-  <!--v-if-->
-  <!--v-if-->
+  <!--
+      iOS buzzes for a switch a finger toggles, and for nothing a script does -
+      so the poster carries one. The switch itself is hidden; this label around
+      the poster is what your tap toggles, the same way the footer menu earns
+      its buzz. \`display: contents\` keeps the figure's own layout untouched, and
+      the poster still receives every event it did before.
+    -->
+  <label
+    aria-hidden="true"
+    for="haptic-14151234356-posters-1770000000000"
+  >
+    <input
+      data-haptic=""
+      id="haptic-14151234356-posters-1770000000000"
+      switch=""
+      tabindex="-1"
+      type="checkbox"
+    />
+    <!--v-if-->
+    <as-svg-stub
+      as_avatar="false"
+      behind_canvas="false"
+      focusable="false"
+      itemid="/+14151234356/posters/1770000000000"
+      paused="true"
+      pin="false"
+      show_cutout_layers="false"
+      tabable="false"
+      touch_uses_long_press="true"
+    />
+    <!--v-if-->
+    <!--v-if-->
+    <!--v-if-->
+  </label>
   <!--v-if-->
 </figure>
 `;
 
 exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
 <figure>
-  <as-svg-stub
-    as_avatar="false"
-    focusable="false"
-    itemid="/+14151234356/posters/1770000000000"
-    paused="true"
-    pin="false"
-    show_cutout_layers="false"
-    tabable="false"
-    touch_uses_long_press="true"
-  />
-  <!--v-if-->
-  <!--v-if-->
-  <!--v-if-->
+  <!--
+      iOS buzzes for a switch a finger toggles, and for nothing a script does -
+      so the poster carries one. The switch itself is hidden; this label around
+      the poster is what your tap toggles, the same way the footer menu earns
+      its buzz. \`display: contents\` keeps the figure's own layout untouched, and
+      the poster still receives every event it did before.
+    -->
+  <label
+    aria-hidden="true"
+    for="haptic-14151234356-posters-1770000000000"
+  >
+    <input
+      data-haptic=""
+      id="haptic-14151234356-posters-1770000000000"
+      switch=""
+      tabindex="-1"
+      type="checkbox"
+    />
+    <!--v-if-->
+    <as-svg-stub
+      as_avatar="false"
+      behind_canvas="false"
+      focusable="false"
+      itemid="/+14151234356/posters/1770000000000"
+      paused="true"
+      pin="false"
+      show_cutout_layers="false"
+      tabable="false"
+      touch_uses_long_press="true"
+    />
+    <!--v-if-->
+    <!--v-if-->
+    <!--v-if-->
+  </label>
   <!--v-if-->
 </figure>
 `;

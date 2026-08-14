@@ -71,8 +71,8 @@
 
   /**
    * Luminance the cutout-dim mask paints over shadow geometry. While morph
-   * runs, cutouts rise to 0.85 base opacity (as-svg.vue's
-   * CUTOUT_MORPH_OPACITY); 0.85 x 0.4 drops them to ~0.34 wherever shadow
+   * runs, cutouts rise to 0.7 base opacity (as-svg.vue's
+   * CUTOUT_MORPH_OPACITY); 0.7 x 0.5 drops them to ~0.35 wherever shadow
    * actually is, so the moving shadow reads through strongly - tuned by
    * eye, deeper than the 0.5 static blend.
    * Browsers disagree on the color space mask luminance is computed in - this

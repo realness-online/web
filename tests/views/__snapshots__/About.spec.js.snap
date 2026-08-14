@@ -38,19 +38,6 @@ exports[`About > Rendering > renders about view 1`] = `
           </a>
            works like a native app, straight from the web. Your data lives with you. 
         </p>
-        <menu>
-          <p
-            itemprop="lava-lamp"
-          >
-            It's also a lava lamp
-          </p>
-          <fieldset
-            class="preference-stub"
-            compact=""
-            label="Lava lamp"
-            unlabeled=""
-          />
-        </menu>
       </header>
       <figure
         class="poster-stub"
@@ -409,6 +396,7 @@ exports[`About > Rendering > renders about view 1`] = `
           icon=""
           label="3D"
         />
+        <!--v-if-->
       </menu>
     </header>
     

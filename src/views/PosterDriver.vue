@@ -280,9 +280,11 @@
 <template>
   <article id="poster-driver" aria-busy="true">
     <header>
-      <h1>Poster driver</h1>
+      <h1>Whoops</h1>
+      <p>
+        This page is for your agent. I'm embarrassed you've seen me undressed.
+      </p>
       <p>{{ status }}</p>
-      <p v-if="ready">Call window.poster_driver.render(dataUrl).</p>
     </header>
     <aside aria-hidden="true">
       <as-svg-processing

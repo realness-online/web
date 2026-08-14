@@ -44,6 +44,7 @@ import {
 } from 'vue'
 import { JS_TIME } from '@/utils/numbers'
 import { profile_sync_log } from '@/utils/profile-sync-log'
+import { poster_delete_log } from '@/utils/poster-delete-log'
 import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
 
 export { DOES_NOT_EXIST }
@@ -654,6 +655,10 @@ export const sync_posters_directory = async (options = {}) => {
     Array.isArray(prev?.items) ? [...prev.items].sort((a, b) => b - a) : []
   )
 
+  poster_delete_log('sync_posters_directory clearing cache', {
+    directory_path,
+    prev_items: prev_items.length
+  })
   await del(directory_path) // Clear existing directory cache
 
   const offline_posters = await build_local_directory(directory_path) // Get local posters

@@ -52,11 +52,18 @@ export const intersection_ratio = (element_rect, root_rect) => {
 }
 
 /**
+ * A third of what can fit is enough to count as watching it. Demanding every
+ * pixel meant a poster resting a few pixels off - a storytelling slide the
+ * scroll never landed exactly on - kept animation, morph, and 3d switched off.
+ */
+const VISIBLE_FRACTION = 1 / 3
+
+/**
  * @param {number} ratio
  * @param {DOMRectReadOnly} element_rect
  * @param {DOMRectReadOnly} root_rect
  */
-export const is_ratio_fully_visible = (ratio, element_rect, root_rect) => {
+export const is_ratio_visible_enough = (ratio, element_rect, root_rect) => {
   if (ratio <= 0) return false
   if (ratio >= 1) return true
 
@@ -66,12 +73,12 @@ export const is_ratio_fully_visible = (ratio, element_rect, root_rect) => {
     root_rect.height / element_rect.height
   )
 
-  return ratio >= max_ratio - RATIO_EPSILON
+  return ratio >= max_ratio * VISIBLE_FRACTION - RATIO_EPSILON
 }
 
 /**
  * Visible fraction along one scroll axis, normalized so 1 means as much as can
- * fit in the root is showing (matches `is_ratio_fully_visible` for that axis).
+ * fit in the root is showing (the same normalization used above).
  * @param {number} visible_span
  * @param {number} element_span
  * @param {number} root_span
@@ -82,8 +89,8 @@ export const axis_visibility = (visible_span, element_span, root_span) => {
   return visible_span / fit
 }
 
-/** True when as much of the element as can fit in the viewport is visible. */
-export const measure_fully_visible = element =>
+/** True when enough of the element is visible to treat it as being watched. */
+export const measure_visible_enough = element =>
   measure_visibility(element).in_view
 
 /**
@@ -98,6 +105,6 @@ export const measure_visibility = element => {
   const ratio = intersection_ratio(element_rect, root_rect)
   return {
     intersecting: ratio > 0,
-    in_view: is_ratio_fully_visible(ratio, element_rect, root_rect)
+    in_view: is_ratio_visible_enough(ratio, element_rect, root_rect)
   }
 }

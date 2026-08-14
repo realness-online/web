@@ -10,7 +10,9 @@
   import {
     animate,
     animation_speed,
-    aspect_ratio_mode
+    aspect_ratio_mode,
+    drama_back,
+    drama_front
   } from '@/utils/preference'
   import {
     BASE_DURATION,
@@ -57,6 +59,20 @@
       aspect_ratio_mode.value !== 'auto' ? 'var(--sand)' : 'var(--rocks)',
     '--fps-color': fps_color.value
   }))
+
+  // The front lightbar sits further left than the back one, so it reads as left
+  const lights = computed(() => [
+    {
+      side: 'left',
+      on: drama_front.value,
+      label: `left light ${drama_front.value ? 'on' : 'off'}`
+    },
+    {
+      side: 'right',
+      on: drama_back.value,
+      label: `right light ${drama_back.value ? 'on' : 'off'}`
+    }
+  ])
 
   const animation_time = ref(0)
   const max_cycle_time = computed(() => {
@@ -121,6 +137,20 @@
     </meter>
     <output>{{ animation_status }}</output>
     <output>aspect: {{ aspect_ratio }}</output>
+    <div data-lights>
+      <output
+        v-for="light in lights"
+        :key="light.side"
+        :data-on="light.on"
+        :title="light.label">
+        <svg viewBox="0 0 24 16" :data-side="light.side">
+          <path d="M4 1h4a7 7 0 0 1 0 14H4z" />
+          <line x1="17" y1="3" x2="23" y2="1" />
+          <line x1="18" y1="8" x2="24" y2="8" />
+          <line x1="17" y1="13" x2="23" y2="15" />
+        </svg>
+      </output>
+    </div>
   </aside>
 </template>
 
@@ -195,6 +225,31 @@
     }
     > output {
       font-size: 66%;
+    }
+    > div[data-lights] {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--base-line) * 0.5);
+
+      svg {
+        height: calc(var(--base-line) * 0.75);
+        width: auto;
+        overflow: visible;
+        fill: none;
+        stroke: var(--gravel);
+        stroke-width: 2;
+        stroke-linecap: round;
+        transition: stroke 0.2s ease;
+        /* Tipped down so the light reads as falling from above the poster */
+        transform: rotate(45deg);
+      }
+      svg[data-side='left'] {
+        transform: scaleX(-1) rotate(45deg);
+      }
+      output[data-on='true'] svg {
+        fill: var(--accent);
+        stroke: var(--accent);
+      }
     }
     > output:nth-of-type(1) {
       color: var(--animate-color);

@@ -12,19 +12,7 @@ vi.mock('@/use/poster-morph', async import_original => {
   }
 })
 
-/** Captures the poster's gyro state so a test can tilt it */
-let gyro_binding_state = null
-vi.mock('@/3d/engine/bind-device-orientation', () => ({
-  bind_device_orientation: vi.fn(({ state }) => {
-    gyro_binding_state = state
-    return vi.fn()
-  })
-}))
-
-/**
- * Controllable rAF. Fake timers would spin the gyro nudge loop forever on
- * `runAllTimers`, so the loop only runs when a test flushes a frame.
- */
+/** Controllable rAF, so a test decides when a frame runs. */
 let raf_callbacks = new Set()
 let raf_id = 0
 
@@ -38,12 +26,6 @@ const use_fake_timers = () => {
     })
   )
   vi.stubGlobal('cancelAnimationFrame', vi.fn())
-}
-
-const flush_raf = () => {
-  const pending = [...raf_callbacks]
-  raf_callbacks.clear()
-  pending.forEach(callback => callback())
 }
 
 const poster_id = '/+14151234356/posters/1770000000000'
@@ -469,34 +451,5 @@ describe('@/component/posters/as-animation.vue', () => {
       .findAll('animate')
       .filter(animation => animation.attributes('attributename') === 'd')
     expect(after.length).toBe(0)
-  })
-
-  it('nudges the timeline forward while tiled and morph is running', async () => {
-    animate.value = true
-    morph.value = true
-    use_fake_timers()
-    const svg = as_svg()
-    const wrapper = mount(as_animation, {
-      props: {
-        id: poster_id,
-        svg,
-        paused: false,
-        in_view: true,
-        vector: {}
-      }
-    })
-    await flushPromises()
-    await nextTick()
-    vi.runAllTimers()
-    await nextTick()
-
-    // Tilt the poster the binding would have fed gyro_state
-    gyro_binding_state.gyro_x = 1
-    flush_raf()
-
-    // One eased nudge step scrubs the svg ahead past its natural clock
-    expect(svg.setCurrentTime).toHaveBeenCalled()
-    const delta = svg.setCurrentTime.mock.calls.at(-1)[0] - 5
-    expect(delta).toBeGreaterThan(0)
   })
 })

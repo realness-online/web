@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vite-plus/test'
 import {
   INTERSECTION_THRESHOLDS,
   intersection_ratio,
-  is_ratio_fully_visible,
+  is_ratio_visible_enough,
   axis_visibility,
-  measure_fully_visible,
+  measure_visible_enough,
   measure_visibility
 } from '@/utils/intersection'
 
@@ -32,13 +32,27 @@ describe('@/utils/intersection', () => {
     const tall = rect({ right: 400, bottom: 1500, height: 1500 })
 
     expect(
-      is_ratio_fully_visible(intersection_ratio(tall, root), tall, root)
+      is_ratio_visible_enough(intersection_ratio(tall, root), tall, root)
     ).toBe(true)
   })
 
-  it('returns false when only part of a tall element is visible', () => {
+  it('returns false when less than a third of a tall element is visible', () => {
     const root = rect({ right: 800, bottom: 600, width: 800, height: 600 })
     const partial = rect({
+      top: 500,
+      bottom: 2000,
+      y: 500,
+      height: 1500
+    })
+
+    expect(
+      is_ratio_visible_enough(intersection_ratio(partial, root), partial, root)
+    ).toBe(false)
+  })
+
+  it('returns true once a third of what can fit is visible', () => {
+    const root = rect({ right: 800, bottom: 600, width: 800, height: 600 })
+    const third = rect({
       top: 400,
       bottom: 1900,
       y: 400,
@@ -46,12 +60,12 @@ describe('@/utils/intersection', () => {
     })
 
     expect(
-      is_ratio_fully_visible(intersection_ratio(partial, root), partial, root)
-    ).toBe(false)
+      is_ratio_visible_enough(intersection_ratio(third, root), third, root)
+    ).toBe(true)
   })
 
-  it('measure_fully_visible returns false without an element', () => {
-    expect(measure_fully_visible(null)).toBe(false)
+  it('measure_visible_enough returns false without an element', () => {
+    expect(measure_visible_enough(null)).toBe(false)
   })
 
   it('axis_visibility normalizes by what can fit in the root', () => {
