@@ -83,8 +83,62 @@ describe('@/use/poster-svg-activate-pointer', () => {
     expect(on_activate).not.toHaveBeenCalled()
   })
 
+  it('contextmenu is prevented after a touch, left alone after a mouse', () => {
+    const { handle_pointerdown, handle_contextmenu } =
+      use_poster_svg_activate_pointer({ on_activate: vi.fn() })
+
+    handle_pointerdown({ pointerType: 'touch', clientX: 0, clientY: 0 })
+    const callout = { preventDefault: vi.fn() }
+    handle_contextmenu(callout)
+    expect(callout.preventDefault).toHaveBeenCalled()
+
+    handle_pointerdown({ pointerType: 'mouse', clientX: 0, clientY: 0 })
+    const right_click = { preventDefault: vi.fn() }
+    handle_contextmenu(right_click)
+    expect(right_click.preventDefault).not.toHaveBeenCalled()
+  })
+
+  it('contextmenu still blocks the touch callout while disabled', () => {
+    const { handle_pointerdown, handle_contextmenu } =
+      use_poster_svg_activate_pointer({
+        on_activate: vi.fn(),
+        is_disabled: true
+      })
+
+    handle_pointerdown({ pointerType: 'touch', clientX: 0, clientY: 0 })
+    const callout = { preventDefault: vi.fn() }
+    handle_contextmenu(callout)
+    expect(callout.preventDefault).toHaveBeenCalled()
+  })
+
   it('vibrate_long_press swallows unsupported vibrate', () => {
     vi.stubGlobal('navigator', {})
     expect(() => vibrate_long_press()).not.toThrow()
+  })
+
+  it('vibrate_long_press clicks a switch label (Safari haptic)', () => {
+    /** @type {HTMLElement[]} */
+    const clicked = []
+    const original = HTMLElement.prototype.click
+    HTMLElement.prototype.click = function () {
+      clicked.push(this)
+    }
+
+    vibrate_long_press()
+
+    HTMLElement.prototype.click = original
+
+    expect(clicked.length).toBe(1)
+    const label = clicked[0]
+    expect(label.tagName).toBe('LABEL')
+    const input = label.querySelector('input[type="checkbox"][switch]')
+    expect(input).toBeTruthy()
+    // The label drives the input, and the input keeps its native appearance
+    expect(label.htmlFor).toBe(input.id)
+    expect(input.style.appearance).toBe('auto')
+
+    // One element, reused
+    vibrate_long_press()
+    expect(document.querySelectorAll('input[switch]').length).toBe(1)
   })
 })

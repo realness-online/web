@@ -6,6 +6,7 @@
  */
 :root {
   --graphite: oklch(0.44 0 90);
+  --graphite-lighten: oklch(0.82 0 90);
   --chalk: oklch(0.94 0.01 100);
   --chalk-transparent: oklch(0.94 0.01 100 / 0.85);
   --bone: oklch(0.89 0.01 107);

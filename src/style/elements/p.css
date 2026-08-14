@@ -2,3 +2,9 @@ p,
 [itemprop='statement'] {
   user-select: text;
 }
+/* A statement with nothing in it still has to be reachable: with no text a <p>
+   collapses to no height, leaving nothing to click or tap back into. Non-empty
+   statements are already taller than this, so it only shows up when empty. */
+[itemprop='statement'] {
+  min-height: var(--base-line);
+}

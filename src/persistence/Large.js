@@ -8,6 +8,7 @@ import {
   as_layer_id
 } from '@/utils/itemid'
 import { as_archive, as_directory_id } from '@/persistence/Directory'
+import { poster_delete_log } from '@/utils/poster-delete-log'
 
 /**
  * @template {new (...args: any[]) => any} T
@@ -78,6 +79,7 @@ export const Large = superclass =>
       await super.save(items)
     }
     async delete() {
+      poster_delete_log('Large.delete', { id: this.id, type: this.type })
       await super.delete()
       const path = as_directory_id(this.id)
       const directory = await get(path)

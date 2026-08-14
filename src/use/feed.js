@@ -6,6 +6,7 @@ import { ref, watch, inject } from 'vue'
 import { as_author } from '@/utils/itemid'
 import { poster_thought_overlay_pairs } from '@/use/statements'
 import { feed_slot_itemid } from '@/utils/itemid'
+import { statement_edit_log } from '@/utils/statement-edit-log'
 
 const my_id = () =>
   (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
@@ -57,6 +58,12 @@ export const use_feed = options => {
   const loaded_people_ids = ref(/** @type {Id[]} */ ([]))
   /** @type {Map<string, ReturnType<typeof poster_thought_overlay_pairs>>} */
   const overlay_cache = new Map()
+
+  // Keyed by id, so an edited statement keeps its key and would be served from
+  // the pairing captured before the edit. `update_statement` replaces the
+  // statement objects rather than mutating them, so the cached pairs go stale
+  // the moment anyone rewrites a statement - drop them and pair again.
+  watch(statements, () => overlay_cache.clear())
 
   /**
    * Same calendar bucket often gets a new array instance each render; key by item ids.
@@ -146,7 +153,19 @@ export const use_feed = options => {
   const overlay_editable_for_poster = (day, poster) => {
     const thought = overlay_statements_for_poster(day, poster)
     if (!thought) return false
-    return is_editable(thought)
+    const editable = is_editable(thought)
+    if (thought.some(stmt => !stmt.statement))
+      statement_edit_log('overlay carries an empty statement', {
+        poster: poster.id,
+        editable,
+        me: my_id(),
+        author: as_author(thought[0].id),
+        statements: thought.map(stmt => ({
+          id: stmt.id,
+          text: JSON.stringify(stmt.statement)
+        }))
+      })
+    return editable
   }
 
   // Pulling in what sync found is the visible half of a sync tick, so it carries

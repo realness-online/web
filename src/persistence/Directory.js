@@ -11,6 +11,7 @@ import {
 } from '@/utils/itemid-parse'
 import { get, set, keys, del } from 'idb-keyval'
 import { is_sync_index_missing } from '@/utils/sync-file'
+import { poster_delete_log } from '@/utils/poster-delete-log'
 
 /**
  * @implements {Directory}
@@ -71,6 +72,7 @@ export const clear_author_dirs = async author_id => {
     if (!key.endsWith('/')) continue
     to_delete.push(key)
   }
+  poster_delete_log('clear_author_dirs', { author_id, to_delete })
   await Promise.all(to_delete.map(key => del(key)))
 }
 

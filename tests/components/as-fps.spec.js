@@ -7,13 +7,22 @@ import {
 } from '@/utils/animation-config'
 
 // Controlled refs for pref + useFps
-const { mock_fps, mock_animate, mock_speed, mock_aspect } = vi.hoisted(() => {
+const {
+  mock_fps,
+  mock_animate,
+  mock_speed,
+  mock_aspect,
+  mock_drama_front,
+  mock_drama_back
+} = vi.hoisted(() => {
   const watchable = value => ({ value, __v_isRef: true })
   return {
     mock_fps: watchable(60),
     mock_animate: watchable(false),
     mock_speed: watchable('stroll'),
-    mock_aspect: watchable('auto')
+    mock_aspect: watchable('auto'),
+    mock_drama_front: watchable(false),
+    mock_drama_back: watchable(false)
   }
 })
 
@@ -24,7 +33,9 @@ vi.mock('@vueuse/core', () => ({
 vi.mock('@/utils/preference', () => ({
   animate: mock_animate,
   animation_speed: mock_speed,
-  aspect_ratio_mode: mock_aspect
+  aspect_ratio_mode: mock_aspect,
+  drama_front: mock_drama_front,
+  drama_back: mock_drama_back
 }))
 
 const raf_callbacks = []
@@ -38,6 +49,8 @@ describe('@/components/as-fps.vue', () => {
     mock_animate.value = false
     mock_speed.value = 'stroll'
     mock_aspect.value = 'auto'
+    mock_drama_front.value = false
+    mock_drama_back.value = false
     raf_callbacks.length = 0
     next_frame_id = 1
     global.requestAnimationFrame = cb => {

@@ -130,6 +130,7 @@ vi.mock('@/utils/preference', async () => {
   const drama_ref = ref(false)
   const drama_back_ref = ref(false)
   const drama_front_ref = ref(false)
+  const drama_last_ref = ref('both')
   const bold_ref = ref(false)
   const medium_ref = ref(false)
   const regular_ref = ref(false)
@@ -382,6 +383,7 @@ vi.mock('@/utils/preference', async () => {
     drama: drama_ref,
     drama_back: drama_back_ref,
     drama_front: drama_front_ref,
+    drama_last: drama_last_ref,
     bold: bold_ref,
     medium: medium_ref,
     regular: regular_ref,
@@ -707,12 +709,29 @@ describe('App.vue', () => {
         expect(mock_drama_back.value).toBe(true)
         expect(mock_drama_front.value).toBe(true)
       })
+
+      it('restores the lights it was switched off with', () => {
+        const handler = registered_handlers['pref::Toggle_Drama']
+        mock_drama.value = true
+        mock_drama_back.value = true
+        mock_drama_front.value = false
+        handler()
+        expect(mock_drama.value).toBe(false)
+        expect(mock_drama_back.value).toBe(false)
+        expect(mock_drama_front.value).toBe(false)
+        handler()
+        expect(mock_drama.value).toBe(true)
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(false)
+      })
     })
 
     describe('Cycle_Drama', () => {
       it('cycles through drama states: back only', () => {
         const handler = registered_handlers['pref::Cycle_Drama']
         expect(handler).toBeDefined()
+        mock_drama_back.value = true
+        mock_drama_front.value = true
         handler()
         expect(mock_drama_back.value).toBe(true)
         expect(mock_drama_front.value).toBe(false)
@@ -739,14 +758,14 @@ describe('App.vue', () => {
         expect(mock_drama.value).toBe(true)
       })
 
-      it('cycles through drama states: off', () => {
+      it('never lands on off - both lights come back on', () => {
         const handler = registered_handlers['pref::Cycle_Drama']
-        mock_drama_back.value = true
-        mock_drama_front.value = true
+        mock_drama_back.value = false
+        mock_drama_front.value = false
         handler()
-        expect(mock_drama_back.value).toBe(false)
-        expect(mock_drama_front.value).toBe(false)
-        expect(mock_drama.value).toBe(false)
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(true)
+        expect(mock_drama.value).toBe(true)
       })
     })
 

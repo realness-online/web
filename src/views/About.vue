@@ -9,7 +9,7 @@
   import { install_method } from '@/utils/platform'
   import { as_author } from '@/utils/itemid'
   import { balance_gallery_posters } from '@/utils/balance-gallery-posters'
-  import { reset_preferences } from '@/utils/preference'
+  import { reset_preferences, animate, view_3d } from '@/utils/preference'
   import { use_posters } from '@/use/poster'
   import {
     onMounted as mounted,
@@ -29,6 +29,9 @@
 
   /** @type {import('vue').Ref<import('@/types').Item[]>} */
   const gallery_posters = ref([])
+
+  /** The lava lamp only makes sense over the 2d gallery while it animates */
+  const lava_lamp_available = computed(() => animate.value && !view_3d.value)
 
   const install_noun = install_method().noun
   /** @type {import('vue').Ref<HTMLDialogElement | null>} */
@@ -187,10 +190,6 @@
             works like a native app, straight from the web. Your data lives with
             you.
           </p>
-          <menu>
-            <p itemprop="lava-lamp">It's also a lava lamp</p>
-            <preference compact unlabeled name="animate" label="Lava lamp" />
-          </menu>
         </header>
         <as-figure v-if="admin_posters.length" :itemid="admin_posters[0]?.id" />
       </section>
@@ -414,6 +413,11 @@
           <preference compact name="drama" />
           <preference compact icon name="animate" />
           <preference compact icon name="view_3d" label="3D" />
+          <preference
+            v-if="lava_lamp_available"
+            compact
+            name="morph"
+            label="Lava lamp" />
         </menu>
       </header>
       <as-figure
@@ -720,7 +724,6 @@
             }
           }
 
-          // Centered, and the lava lamp line below it centers to match.
           & > h4 {
             margin: calc(base-line * 0.5) 0 0;
             text-align: center;
@@ -740,26 +743,11 @@
             }
           }
 
-          // Lava lamp: the statement and its switch read as one line.
-          & > menu {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: base-line;
-            padding: 0;
-            margin: calc(base-line * 0.5) 0 0;
-
-            & > p[itemprop='lava-lamp'] {
-              margin: 0;
-            }
-          }
-
           &:not([data-about-ready]) {
             & > h1,
             & > h3,
             & > h4,
-            & > p,
-            & > menu {
+            & > p {
               opacity: 0;
             }
           }
@@ -787,14 +775,6 @@
               &:nth-of-type(2) {
                 animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 4);
               }
-
-              &[itemprop='lava-lamp'] {
-                animation-delay: calc(var(--about-hero-delay) + var(--about-hero-stagger) * 5);
-              }
-            }
-
-            & > menu {
-              about-enter(calc(var(--about-hero-delay) + var(--about-hero-stagger) * 6));
             }
           }
 
@@ -802,8 +782,7 @@
             & > h1,
             & > h3,
             & > h4,
-            & > p,
-            & > menu {
+            & > p {
               animation: none;
               opacity: 1;
             }

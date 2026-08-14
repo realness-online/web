@@ -112,6 +112,9 @@ describe('@/component/posters/as-figure.vue', () => {
     mock_is_referenced.value = false
     mock_use_reference.value = false
     vi.mocked(get).mockResolvedValue(null)
+    // Queued `mockResolvedValueOnce` values outlive the test that set them and
+    // get eaten by whoever loads next, so each test starts from nothing found.
+    vi.mocked(load).mockReset().mockResolvedValue(null)
     vi.mocked(load_from_cache).mockResolvedValue({ item: null, html: null })
     wrapper = shallowMount(as_figure, {
       props: { itemid: poster.id },
@@ -219,6 +222,40 @@ describe('@/component/posters/as-figure.vue', () => {
       await flushPromises()
 
       expect(wrapper.find('figure').exists()).toBe(true)
+    })
+  })
+
+  /**
+   * `missing` is answered by deleting the poster from storage - its html, its
+   * shadow, every geology layer. `show` in use/poster fires with whatever
+   * `vector` happens to hold, so a render that races the load reports empty for
+   * a poster that is perfectly well there, and the poster vanished off the
+   * screen mid-edit. An empty show has to be confirmed before anything is
+   * deleted.
+   */
+  describe('An empty show', () => {
+    const emit_empty_show = async () => {
+      wrapper.findComponent({ name: 'AsSvg' }).vm.$emit('show', null)
+      await flushPromises()
+    }
+
+    it('does not report missing while the poster is still loadable', async () => {
+      vi.mocked(load).mockResolvedValue({
+        id: poster.id,
+        type: 'posters',
+        viewbox: '0 0 100 100',
+        width: '100',
+        height: '100',
+        regular: true
+      })
+      await emit_empty_show()
+      expect(wrapper.emitted('missing')).toBeFalsy()
+    })
+
+    it('reports missing once a finished load comes back with nothing', async () => {
+      vi.mocked(load).mockResolvedValue(null)
+      await emit_empty_show()
+      expect(wrapper.emitted('missing')?.[0]).toEqual([poster.id])
     })
   })
 
@@ -526,6 +563,19 @@ describe('@/component/posters/as-figure.vue', () => {
       await flushPromises()
       // created (1770000000000) > GEOLOGY_DATE, no cutouts found -> stale entry
       expect(wrapper.emitted('missing')?.[0]?.[0]).toBe(poster.id)
+    })
+
+    // Plenty of posters simply have no cutout layers. Deleting one for that is
+    // how a poster vanished off the feed - and out of storage - mid-edit.
+    it('keeps a poster with no cutout layers that still loads', async () => {
+      vi.mocked(load).mockResolvedValue({ ...poster_vector })
+      mock_mosaic.value = true
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      as_svg.vm.$emit('show', { ...poster_vector, regular: true })
+      await flushPromises()
+      await wrapper.setProps({ pin: true })
+      await flushPromises()
+      expect(wrapper.emitted('missing')).toBeFalsy()
     })
 
     it('exports a video with audio dropped on the bare poster', async () => {

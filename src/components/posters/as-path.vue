@@ -11,8 +11,10 @@
   import { is_vector_id } from '@/use/poster'
   import {
     stroke as stroke_pref,
-    shadow as shadow_pref
+    shadow as shadow_pref,
+    mosaic as mosaic_pref
   } from '@/utils/preference'
+  import css_var from '@/utils/css-var'
   const props = defineProps({
     itemprop: {
       type: String,
@@ -69,7 +71,7 @@
   const stroke_color = ref(undefined)
   const d = ref(undefined)
   const stroke_opacity = ref('0.90')
-  const stroke_width = ref('0.33')
+  const stroke_width = ref('0.5')
   const path_length = ref(0)
   const stroke_dasharray = {
     light: '8, 16',
@@ -77,6 +79,19 @@
     medium: '18, 26',
     bold: '4, 32'
   }
+  // Per-path colors exist to separate a stroke from the shadow layer beneath
+  // it. With the shadows off there is nothing to separate from, so they only
+  // scatter across the lightness range and half of them vanish into the paper
+  // ground. One ink for all of them instead.
+  const ink_only = computed(
+    () => !shadow_pref.value && !mosaic_pref.value && stroke_pref.value
+  )
+  const drawn_stroke = computed(() =>
+    ink_only.value ? css_var('--pumice').trim() : stroke_color.value
+  )
+  const drawn_width = computed(() =>
+    ink_only.value ? '0.5' : stroke_width.value
+  )
   const path_style = computed(() => ({
     opacity: props.visible ? 1 : 0,
     visibility: props.visible ? 'visible' : 'hidden'
@@ -113,9 +128,9 @@
     :fill="show_fill ? fill_color : 'none'"
     :fill-opacity="show_fill ? '0.90' : undefined"
     :fill-rule="show_fill ? 'evenodd' : undefined"
-    :stroke="stroke_color"
+    :stroke="drawn_stroke"
     :stroke-opacity="show_stroke && props.visible ? stroke_opacity : 0"
-    :stroke-width="show_stroke && props.visible ? stroke_width : 0"
+    :stroke-width="show_stroke && props.visible ? drawn_width : 0"
     stroke-dashoffset="0"
     :stroke-dasharray="stroke_dasharray[props.itemprop]"
     :style="path_style" />

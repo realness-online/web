@@ -17,11 +17,13 @@ import {
 } from '@/utils/preference-defaults.js'
 
 export const animate = storage('animate', false)
-export const morph = storage('morph', true)
+export const morph = storage('morph', false)
 export const color_cycle = storage('color_cycle', true)
 export const drama = storage('drama', false)
 export const drama_back = storage('drama_back', false)
 export const drama_front = storage('drama_front', false)
+/** Which lights were on when drama was switched off: both, back, or front. */
+export const drama_last = storage('drama_last', 'both')
 
 export const shadow = storage('shadow', true)
 export const stroke = storage('stroke', true)
@@ -116,11 +118,12 @@ export const breathing_speed = storage(
 
 export const reset_preferences = () => {
   animate.value = false
-  morph.value = true
+  morph.value = false
   color_cycle.value = true
   drama.value = false
   drama_back.value = false
   drama_front.value = false
+  drama_last.value = 'both'
   shadow.value = true
   stroke.value = true
   mosaic.value = true

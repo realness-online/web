@@ -32,10 +32,10 @@
     if (props.rect?.fill) fill_value.value = props.rect?.fill
   })
   const background_fill = computed(() => {
-    // Stroke-only mode wants a neutral ground. Resolve gravel to a literal so
+    // Stroke-only mode wants a neutral ground. Resolve graphite to a literal so
     // downloaded SVGs keep the color outside the app's stylesheet.
     if (!shadow_pref.value && !mosaic_pref.value && stroke_pref.value)
-      return css_var('--gravel').trim()
+      return css_var('--graphite-lighten').trim()
     return fill_value.value
   })
   const style = computed(() => ({
