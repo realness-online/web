@@ -36,7 +36,27 @@
   dialog#sign-on {
     padding: calc(var(--base-line) * 1.5);
 
+    /* The flow swaps its fieldsets for a working indicator between steps. Hold
+       the resting size so the dialog cannot collapse around it and shove the
+       indicator up against the close button. Capped so a phone still fits. */
+    min-width: min(
+      calc(var(--base-line) * 22),
+      calc(100vw - var(--base-line) * 3)
+    );
+    min-height: min(
+      calc(var(--base-line) * 21),
+      calc(100svh - var(--base-line) * 3)
+    );
+
+    /* Only when open — a bare `display: flex` would defeat the UA's
+       `display: none` and show the dialog while it is closed. */
+    &[open] {
+      display: flex;
+      flex-direction: column;
+    }
+
     & > article {
+      flex: 1;
       display: flex;
       flex-direction: column;
 
@@ -50,6 +70,19 @@
           fill: var(--emphasis);
         }
       }
+
+      /* Centre the flow in the held height rather than letting it ride up
+         under the close button. */
+      & > section#sign-on {
+        margin-block: auto;
+      }
+    }
+
+    /* Clay, matching the dialog's own border, instead of reading as a
+       second control next to the close button. */
+    svg[data-icon='working'] {
+      fill: var(--emphasis);
+      color: var(--emphasis);
     }
   }
 </style>

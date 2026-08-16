@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **The sign-in window keeps still while it works** - it used to shrink around
+  the three dots between steps, leaving them crowded against the close button.
+  The window now holds its size, the dots sit in the middle of it, and they are
+  the same clay as its border instead of looking like a second button.
+
 ## v2.8.6 - 2026-08-16
 
 - **The name field says "Name" once** - it used to say it twice, as a heading
