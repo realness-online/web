@@ -40,6 +40,13 @@ describe('@/component/profile/as-form-name.vue', () => {
     expect(wrapper.find('input#name').exists()).toBe(true)
   })
 
+  it('names the field once, with a label rather than a placeholder', () => {
+    const wrapper = shallowMount(as_form)
+
+    expect(wrapper.find('label[for="name"]').text()).toBe('Name')
+    expect(wrapper.find('input#name').attributes('placeholder')).toBeUndefined()
+  })
+
   it('shows validation error and does not save invalid names', async () => {
     mock_is_valid_name.value = false
     const wrapper = shallowMount(as_form)

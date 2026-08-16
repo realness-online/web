@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The name field says "Name" once** - it used to say it twice, as a heading
+  and again in grey inside the box. The grey one is gone, and the heading is
+  now what a screen reader announces.
+
 ## v2.8.5 - 2026-08-16
 
 - **Signing in no longer takes over your settings** - the account page was two

@@ -56,14 +56,15 @@
   <form id="profile-name" v-if="me" @submit.prevent="on_blur">
     <fieldset data-preference :aria-busy="saving || undefined">
       <div>
-        <h4 :data-valid="is_valid_name || undefined">Name</h4>
+        <h4 :data-valid="is_valid_name || undefined">
+          <label for="name">Name</label>
+        </h4>
         <icon v-if="saving" name="working" />
         <input
           id="name"
           v-model="me.name"
           type="text"
           autocomplete="name"
-          placeholder="Name"
           required
           minlength="3"
           :aria-invalid="show_error ? 'true' : undefined"
