@@ -43,6 +43,7 @@ describe('@/components/site-nav', () => {
     expect(wrapper.text()).toContain('About')
     expect(wrapper.text()).toContain('Docs')
     expect(wrapper.text()).toContain('Pricing')
+    expect(wrapper.text()).not.toContain('License')
     expect(wrapper.text()).toContain('Legal')
   })
 

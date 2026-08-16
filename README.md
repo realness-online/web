@@ -262,5 +262,5 @@ endorsed by the author.
 Realness's vector tracing is built on two GPL-2.0 projects: potrace by Peter
 Selinger (<http://potrace.sourceforge.net/>) and node-potrace by mattmc
 (<https://github.com/tooolbox/node-potrace>), the JavaScript port
-`src/potrace/` is derived from. Both are credited in the in-app
-documentation and remain GPL-2.0.
+`src/potrace/` is derived from. Both are credited on `/license` and remain
+GPL-2.0.

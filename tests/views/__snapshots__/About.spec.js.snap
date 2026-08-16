@@ -348,14 +348,18 @@ exports[`About > Rendering > renders about view 1`] = `
         />
         <p>
           <strong>
-            <a
-              href="https://github.com/realness-online/web"
-              rel="external"
-            >
-              Source available
-            </a>
+            <router-link-stub
+              to="/license"
+            />
           </strong>
-           Read the code, run it yourself, and send improvements upstream. 
+           Source is on 
+          <a
+            href="https://github.com/realness-online/web"
+            rel="external"
+          >
+            GitHub
+          </a>
+          . Read the code, run it yourself, and send improvements upstream. 
         </p>
       </li>
     </ol>

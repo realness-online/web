@@ -10,6 +10,10 @@
   <section data-page itemscope itemtype="/legal" lang="en">
     <header>
       <h1>{{ title }}</h1>
+      <nav aria-label="Legal documents">
+        <router-link to="/terms">Terms</router-link>
+        <router-link to="/license">License</router-link>
+      </nav>
     </header>
     <article>
       <nav v-if="toc.length" aria-label="Table of contents">
@@ -43,6 +47,23 @@
         text-align: center;
         color: var(--emphasis);
       }
+
+      nav[aria-label='Legal documents'] {
+        display: flex;
+        justify-content: center;
+        gap: base-line;
+        margin-top: base-line * 0.5;
+
+        a {
+          color: var(--accent);
+          text-decoration: none;
+
+          &:hover,
+          &.router-link-active {
+            color: var(--emphasis);
+          }
+        }
+      }
     }
 
     & > article {
@@ -51,7 +72,7 @@
       @media (min-width: pad-begins) {
         &:has(nav[aria-label='Table of contents']) {
           display: grid;
-          grid-template-columns: (base-line * 9) minmax(0, 1fr);
+          grid-template-columns: (base-line * 12) minmax(0, 1fr);
           gap: base-line * 1.5;
           align-items: start;
         }

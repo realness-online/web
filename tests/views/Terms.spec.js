@@ -33,6 +33,8 @@ describe('@/views/Terms', () => {
     expect(html).not.toContain('(/privacy)')
     expect(html).not.toContain('(/terms)')
     expect(html).toContain('#privacy-policy')
+    expect(html).toContain('/license')
+    expect(html).not.toMatch(/source-available license/i)
   })
 
   it('builds a combined toc with section headings', () => {

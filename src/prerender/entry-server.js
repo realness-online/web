@@ -7,6 +7,7 @@ import About from '@/views/About.vue'
 import Documentation from '@/views/Documentation.vue'
 import Pricing from '@/views/Pricing.vue'
 import Terms from '@/views/Terms.vue'
+import License from '@/views/License.vue'
 import { prerender_routes } from '@/prerender/pages.js'
 
 export { prerender_routes }
@@ -19,6 +20,7 @@ const routes = [
   { path: '/docs', component: Documentation, meta: { support: true } },
   { path: '/pricing', component: Pricing, meta: { support: true } },
   { path: '/pricing/:tier', component: Pricing, meta: { support: true } },
+  { path: '/license', component: License, meta: { support: true } },
   { path: '/terms', component: Terms, meta: { support: true } },
   { path: '/privacy', redirect: '/terms#privacy-policy' },
   { path: '/changelog', redirect: '/docs#changelog' },

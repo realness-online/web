@@ -35,6 +35,13 @@ export const prerender_pages = [
     og_title: 'Realness Online - Pricing'
   },
   {
+    path: '/license',
+    title: 'Realness Online - License',
+    description:
+      'Realness is free software under the GNU GPL version 2. Copyright notice, no warranty, corresponding source, and the full license text.',
+    og_title: 'Realness Online - License'
+  },
+  {
     path: '/terms',
     title: 'Realness Online - Terms & Privacy',
     description:
