@@ -494,7 +494,38 @@
     key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
   }
 
-  const on_activate_poster = () => poster_toggle_target()?.toggle_meet?.()
+  /** @type {import('vue').Ref<Array<{ focus_editor?: () => void }>>} */
+  const overlay_thought_refs = ref([])
+
+  /**
+   * An emptied statement is one line tall inside a panel several lines tall, so
+   * most attempts to click back into it land on the panel and do nothing. The
+   * panel is what you aim at, so the panel opens the last statement in it -
+   * where a train of thought is still being written.
+   * @param {MouseEvent} event
+   */
+  const on_overlay_click = event => {
+    if (!props.overlay_editable) return
+    // Only the panel's own padding. A statement handles its own clicks, and
+    // asking `closest` about it would climb past the panel to the poster.
+    if (event.target !== event.currentTarget) return
+    const thoughts = overlay_thought_refs.value
+    thoughts[thoughts.length - 1]?.focus_editor?.()
+  }
+
+  /**
+   * Enter toggles meet/slice, and toggling it emits the click that opens and
+   * closes the thought overlay - so Enter inside the overlay's own editor would
+   * shut the overlay under the caret. Text entry keeps its Enter, poster and
+   * caret both intact.
+   * @param {KeyboardEvent} event
+   */
+  const on_activate_poster = event => {
+    const target = /** @type {Element | null} */ (event?.target)
+    if (target?.closest?.('[contenteditable="true"], input, textarea')) return
+    event?.preventDefault()
+    poster_toggle_target()?.toggle_meet?.()
+  }
 
   /**
    * Allow an audio drag over a poster so the drop registers (dragover must be
@@ -562,7 +593,7 @@
     "
     @focusin="on_focusin"
     @focusout="on_focusout"
-    @keydown.enter.prevent="on_activate_poster"
+    @keydown.enter="on_activate_poster"
     @dragover="on_poster_dragover"
     @drop="on_poster_drop_audio"
     @pointerdown="on_dom_ref_pointerdown"
@@ -639,10 +670,14 @@
       @select="on_poster_svg_click" />
     <figcaption v-if="figcaption_visible">
       <header>
-        <aside v-if="overlay_text_visible" aria-live="polite">
+        <aside
+          v-if="overlay_text_visible"
+          aria-live="polite"
+          @click="on_overlay_click">
           <as-thought
             v-for="stmt in overlay_statements"
             :key="stmt.id"
+            ref="overlay_thought_refs"
             :thought="stmt"
             :editable="overlay_editable" />
         </aside>

@@ -93,6 +93,82 @@ describe('@/components/thoughts/as-thought', () => {
       expect(update_statement).not.toHaveBeenCalled()
     })
 
+    // A statement in a poster's overlay is taken off screen when the overlay
+    // closes, and the overlay closes under you if anything toggles the poster
+    // while you are typing. The blur arrives with the editor already gone, and
+    // an editor that is not there has no text to offer - which is not the same
+    // as being asked to empty the statement.
+    it('does not save when the editor is gone by the time the blur lands', async () => {
+      const update_statement = vi.fn()
+      wrapper = shallowMount(AsThought, {
+        props: { thought: mock_thought, editable: true },
+        global: { provide: { update_statement } }
+      })
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      expect(editor_of(wrapper).element.textContent).toBe('Test content')
+
+      const editor = editor_of(wrapper)
+      wrapper.unmount()
+      await editor.trigger('blur')
+
+      expect(update_statement).not.toHaveBeenCalled()
+    })
+
+    // Enter finishes a statement, shift-enter opens a line - the compose box
+    // makes the same bargain. Either way the key stops at the editor: a poster
+    // underneath reads a bare Enter as "toggle me" and takes the overlay away.
+    describe('enter', () => {
+      const editing = () => {
+        const update_statement = vi.fn()
+        const w = shallowMount(AsThought, {
+          props: { thought: mock_thought, editable: true },
+          global: { provide: { update_statement } }
+        })
+        return { w, update_statement }
+      }
+
+      it('finishes the statement and does not travel', async () => {
+        const { w, update_statement } = editing()
+        await w.vm.$nextTick()
+        await w.vm.$nextTick()
+        const editor = editor_of(w)
+        editor.element.textContent = 'Rewritten'
+
+        const event = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          cancelable: true
+        })
+        editor.element.dispatchEvent(event)
+        await w.vm.$nextTick()
+
+        expect(event.defaultPrevented).toBe(true)
+        await editor.trigger('blur')
+        expect(update_statement).toHaveBeenCalledWith(
+          mock_thought.id,
+          'Rewritten'
+        )
+      })
+
+      it('leaves shift-enter to open a line', async () => {
+        const { w } = editing()
+        await w.vm.$nextTick()
+        await w.vm.$nextTick()
+
+        const event = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true
+        })
+        editor_of(w).element.dispatchEvent(event)
+        await w.vm.$nextTick()
+
+        expect(event.defaultPrevented).toBe(false)
+      })
+    })
+
     it('refills when the statement is patched in place', async () => {
       const update_statement = vi.fn()
       const live_thought = reactive({ ...mock_thought })

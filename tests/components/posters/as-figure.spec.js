@@ -1,5 +1,5 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, defineComponent, h } from 'vue'
 import { vi } from 'vite-plus/test'
 import { get } from 'idb-keyval'
 import { as_layer_id, as_query_id, load, load_from_cache } from '@/utils/itemid'
@@ -382,6 +382,124 @@ describe('@/component/posters/as-figure.vue', () => {
       await as_svg.vm.$emit('click', true)
       await flushPromises()
       expect(wrapper.find('figcaption aside').exists()).toBe(true)
+    })
+
+    // Enter on a poster toggles meet/slice, and toggling it emits the same
+    // click that opens and closes the thought overlay. Pressing Enter while
+    // writing in that overlay therefore shut the overlay under the caret - and
+    // the statement went with it.
+    it('leaves the poster alone when enter comes from an editable statement', async () => {
+      const stmts = [{ id: '/+14151234356/statements/1', statement: 'hello' }]
+      // The real AsSvg answers `toggle_meet` by emitting the click that opens
+      // and closes the overlay. A stub without it cannot show this at all.
+      const as_svg_stub = defineComponent({
+        name: 'AsSvg',
+        emits: ['click', 'show'],
+        setup(_props, { emit, expose }) {
+          expose({ toggle_meet: () => emit('click', true) })
+          return () => h('svg')
+        }
+      })
+      const w = shallowMount(as_figure, {
+        props: {
+          itemid: poster.id,
+          overlay_statements: stmts,
+          overlay_editable: true,
+          menu: false
+        },
+        global: {
+          provide: { 'key-commands': mock_key_commands },
+          stubs: { AsSvg: as_svg_stub }
+        }
+      })
+      const as_svg = w.findComponent({ name: 'AsSvg' })
+      await as_svg.vm.$emit('click', true)
+      await flushPromises()
+      expect(w.find('figcaption aside').exists()).toBe(true)
+
+      const editor = document.createElement('p')
+      editor.setAttribute('contenteditable', 'true')
+      w.find('figcaption aside').element.append(editor)
+
+      editor.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      )
+      await flushPromises()
+
+      expect(w.find('figcaption aside').exists()).toBe(true)
+
+      // Enter anywhere else on the poster still toggles it, and the toggle is
+      // what closes the overlay.
+      w.find('figure').element.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      )
+      await flushPromises()
+      expect(w.find('figcaption aside').exists()).toBe(false)
+      w.unmount()
+    })
+
+    // An emptied statement is one line tall inside a panel several lines tall,
+    // so nearly every attempt to click back into it lands on the panel and does
+    // nothing. The panel is what you aim at, so the panel is what opens it.
+    it('opens the editor when the overlay panel itself is clicked', async () => {
+      const touch_match_media = window.matchMedia
+      window.matchMedia = vi.fn(query => ({
+        matches: true,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn()
+      }))
+      const stmts = [
+        { id: '/+14151234356/statements/1770000000001', statement: '' }
+      ]
+      const w = shallowMount(as_figure, {
+        props: {
+          itemid: poster.id,
+          overlay_statements: stmts,
+          overlay_editable: true,
+          menu: false
+        },
+        global: {
+          provide: { 'key-commands': mock_key_commands },
+          stubs: { AsThought: false }
+        }
+      })
+      await w.findComponent({ name: 'AsSvg' }).vm.$emit('click', true)
+      await flushPromises()
+
+      const aside = w.find('figcaption aside')
+      expect(aside.exists()).toBe(true)
+      await aside.trigger('click')
+      await flushPromises()
+
+      expect(w.find('[contenteditable="true"]').exists()).toBe(true)
+      w.unmount()
+      window.matchMedia = touch_match_media
+    })
+
+    it('leaves a read-only overlay panel alone', async () => {
+      const stmts = [
+        { id: '/+14151234356/statements/1770000000001', statement: '' }
+      ]
+      const w = shallowMount(as_figure, {
+        props: {
+          itemid: poster.id,
+          overlay_statements: stmts,
+          overlay_editable: false,
+          menu: false
+        },
+        global: {
+          provide: { 'key-commands': mock_key_commands },
+          stubs: { AsThought: false }
+        }
+      })
+      await w.findComponent({ name: 'AsSvg' }).vm.$emit('click', true)
+      await flushPromises()
+      await w.find('figcaption aside').trigger('click')
+      await flushPromises()
+
+      expect(w.find('[contenteditable="true"]').exists()).toBe(false)
+      w.unmount()
     })
 
     it('keeps the caption out of the haptic label', async () => {
