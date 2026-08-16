@@ -662,10 +662,6 @@
     }
   })
 
-  // No gyro binding here on purpose: `bind_device_orientation` asks for motion
-  // permission from whatever surface it binds to, so binding a poster's own svg
-  // put the iOS prompt in front of every feed tap. Only 3D asks now.
-
   /** bfcache restore can skip a false-to-true viewport transition; still re-pause SMIL if pref is off. */
   const handle_pageshow = () => {
     if (animate_pref.value === true) return

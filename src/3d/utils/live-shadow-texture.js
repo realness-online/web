@@ -9,7 +9,7 @@ const BYTES_PER_PIXEL = 4
 /**
  * Captures a live DOM element into a 2D canvas on every browser paint, using
  * the HTML-in-Canvas origin trial. A THREE.CanvasTexture over that canvas then
- * shows the poster's running morph (and its gyro nudge) inside the 3D viewer.
+ * shows the poster's running morph inside the 3D viewer.
  *
  * Entirely inert unless the probe passes - Chrome Canary behind
  * `#canvas-draw-element` or an origin-trial token. Anywhere else this returns
