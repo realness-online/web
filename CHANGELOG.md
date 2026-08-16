@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Your avatar comes back** - while the poster listing was wrong, every failed
+  look-up was written down as "this file does not exist", and that note outlived
+  the fix. Realness now forgets those notes the moment it hears from storage
+  what you actually have.
+
 ## v2.8.3 - 2026-08-16
 
 - **Posters you made on another device show up again** - the listing of your

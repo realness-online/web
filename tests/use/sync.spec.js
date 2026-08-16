@@ -70,6 +70,10 @@ vi.mock('idb-keyval', () => ({
 vi.mock('@/utils/itemid', () => ({
   as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
   as_author: vi.fn(id => id.split('/')[0]),
+  as_created_at: vi.fn(id => {
+    const created = Number(String(id).split('/').pop())
+    return Number.isFinite(created) ? created : null
+  }),
   load: vi.fn(() => Promise.resolve([])),
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),
   type_as_list: vi.fn(item => (Array.isArray(item) ? item : [])),
@@ -703,6 +707,115 @@ describe('sync composable', () => {
           '/+14151234356/posters/',
           expect.objectContaining({ items: ['2000', '1000'] })
         )
+      })
+
+      // `as_download_url` writes DOES_NOT_EXIST when it cannot find a file, and
+      // that row is a permanent no for as long as it lives. Every miss caused by
+      // a listing that lied left one behind - your avatar is the one you notice,
+      // because it is on every row of the home page. Learning what storage
+      // really holds is the moment those guesses expire.
+      it('drops the missing-file marker for a poster the network lists', async () => {
+        const { get, set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        const index = {
+          '/+14151234356/posters/2000': {
+            updated: null,
+            customMetadata: { hash: null }
+          },
+          '/+14151234356/shadows/2000': {
+            updated: null,
+            customMetadata: { hash: null }
+          },
+          '/+14151234356/posters/9999': {
+            updated: null,
+            customMetadata: { hash: null }
+          },
+          '/+14151234356/posters/1000': {
+            updated: 'now',
+            customMetadata: { hash: 'abc' }
+          }
+        }
+        get.mockImplementation(key =>
+          Promise.resolve(key === 'sync:index' ? index : null)
+        )
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['1000', '2000'],
+          archive: []
+        })
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith('sync:index', {
+          // 9999 is not in the listing, so nothing new was learned about it
+          '/+14151234356/posters/9999': {
+            updated: null,
+            customMetadata: { hash: null }
+          },
+          '/+14151234356/posters/1000': {
+            updated: 'now',
+            customMetadata: { hash: 'abc' }
+          }
+        })
+      })
+
+      // An archived poster is not in the root listing at all - that is what
+      // being archived means - so "is it listed?" would never reach the avatar
+      // this was written for. Older than the oldest listed item is the tell.
+      it('drops the marker for an archived poster, and keeps one for a poster not yet uploaded', async () => {
+        const { get, set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        const missing = { updated: null, customMetadata: { hash: null } }
+        const index = {
+          '/+14151234356/posters/500': missing, // archived: older than 1000
+          '/+14151234356/posters/9999': missing, // newer than anything listed
+          '/+19998887777/posters/500': missing // not mine
+        }
+        get.mockImplementation(key =>
+          Promise.resolve(key === 'sync:index' ? index : null)
+        )
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['1000', '2000'],
+          archive: [400]
+        })
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith('sync:index', {
+          '/+14151234356/posters/9999': missing,
+          '/+19998887777/posters/500': missing
+        })
+      })
+
+      // Offline we learned nothing, so nothing expires.
+      it('keeps every marker when the network is unreachable', async () => {
+        const { get, set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        get.mockImplementation(key =>
+          Promise.resolve(
+            key === 'sync:index'
+              ? {
+                  '/+14151234356/posters/500': {
+                    updated: null,
+                    customMetadata: { hash: null }
+                  }
+                }
+              : null
+          )
+        )
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce(null)
+
+        await sync_posters_directory()
+
+        expect(set).not.toHaveBeenCalledWith('sync:index', expect.anything())
       })
 
       // The network is the only place a delete is authoritative: once we have
