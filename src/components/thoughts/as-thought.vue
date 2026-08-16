@@ -92,8 +92,14 @@
    * @returns {Promise<void>}
    */
   const on_blur = async () => {
-    const possibly_changed = is_editable.value?.textContent?.trim()
+    // No editor to read is not an empty edit. A statement in a poster's overlay
+    // goes away with the overlay, and the blur that follows arrives after the
+    // element does - reading nothing from it and saving that would wipe the
+    // statement you were in the middle of typing.
+    const editor = is_editable.value
+    const possibly_changed = editor?.textContent?.trim()
     if (
+      editor &&
       content_loaded.value &&
       thought_text.value !== possibly_changed &&
       update_statement
@@ -105,6 +111,19 @@
 
   const on_focus = () => {
     emit('focused', props.thought)
+  }
+
+  /**
+   * Enter finishes the statement, shift-enter opens a line - the same bargain
+   * the compose box makes. It stops here either way: the poster underneath
+   * treats a bare Enter as "toggle me", which would take the overlay away.
+   * @param {KeyboardEvent} event
+   */
+  const on_enter = event => {
+    if (event.shiftKey) return
+    event.preventDefault()
+    event.stopPropagation()
+    is_editable.value?.blur()
   }
 
   const focus_editor = () => {
@@ -167,6 +186,7 @@
       :contenteditable="true"
       itemprop="statement"
       @focus="on_focus"
+      @keydown.enter="on_enter"
       @blur.prevent="on_blur" />
   </div>
 </template>
