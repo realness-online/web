@@ -31,7 +31,7 @@ describe('prerender-html', () => {
     <meta name="robots" content="noindex, nofollow" />
     <meta property="og:url" content="https://realness.online" />
     <meta property="og:title" content="Realness Online" />
-    <meta property="og:image" content="https://realness.online/og.png" />
+    <meta property="og:image" content="https://realness.online/og.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body></body>
@@ -43,13 +43,13 @@ describe('prerender-html', () => {
       og_title: 'About OG',
       og_description: 'new description',
       og_url: 'https://realness.online/about',
-      og_image: 'https://realness.online/og.png',
+      og_image: 'https://realness.online/og.jpg',
       og_image_alt: 'Realness Online — Make some posters today',
-      og_image_type: 'image/png',
+      og_image_type: 'image/jpeg',
       og_site_name: 'Realness Online',
       twitter_title: 'About OG',
       twitter_description: 'new description',
-      twitter_image: 'https://realness.online/og.png',
+      twitter_image: 'https://realness.online/og.jpg',
       twitter_image_alt: 'Realness Online — Make some posters today',
       canonical: 'https://realness.online/about'
     })
