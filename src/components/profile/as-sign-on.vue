@@ -56,30 +56,14 @@
   </section>
 </template>
 
-<style lang="stylus">
+<style>
   section#sign-on {
+    /* The dialog sizes to this, so the form drives the width rather than
+       inheriting the reset's page-width max and sitting off to one side. */
+    min-width: min(calc(var(--base-line) * 18), 100%);
+
     & > form {
       width: 100%;
-    }
-
-    // Phones give the form the whole column already. From tablets up the
-    // reset's `form { max-width: page-width }` leaves it pinned to the left
-    // edge under the settings, so center it and let it own the leftover
-    // page height.
-    @media (min-width: pad-begins) {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 60svh;
-
-      & > form {
-        margin-inline: auto;
-      }
-
-      & > p#name-prompt {
-        margin-inline: auto;
-        text-align: center;
-      }
     }
   }
 </style>
