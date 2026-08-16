@@ -6,23 +6,21 @@ describe('@/utils/storage-estimate', () => {
     vi.restoreAllMocks()
   })
 
-  it('logs usage when navigator.storage.estimate is available', async () => {
+  it('says nothing when storage is nowhere near quota', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     Object.defineProperty(navigator, 'storage', {
       configurable: true,
       value: {
-        estimate: vi.fn().mockResolvedValue({ usage: 850, quota: 1000 })
+        estimate: vi.fn().mockResolvedValue({ usage: 100, quota: 1000 })
       }
     })
 
     await log_storage_estimate()
 
     expect(navigator.storage.estimate).toHaveBeenCalled()
-    expect(info).toHaveBeenCalledWith(
-      '[storage] estimate',
-      expect.objectContaining({ pct_used: 85 })
-    )
+    expect(info).not.toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
   })
 
   it('warns when usage is above warn threshold', async () => {
