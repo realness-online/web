@@ -150,35 +150,4 @@ describe('@/components/profile/as-sign-on', () => {
       expect(wrapper.vm.nameless).toBe(true)
     })
   })
-
-  describe('Methods', () => {
-    describe('#clean', () => {
-      it('clears localStorage and redirects', async () => {
-        localStorage.setItem('test1', 'value1')
-        localStorage.setItem('test2', 'value2')
-        localStorage.me = '/+123'
-
-        await wrapper.vm.on_clean()
-        await flushPromises()
-
-        expect(localStorage.me).toBe('/+')
-        expect(localStorage.getItem('test1')).toBeFalsy()
-        expect(localStorage.getItem('test2')).toBeFalsy()
-        expect(mock_clear).toHaveBeenCalled()
-        expect(window.location.href).toBe('/')
-      })
-
-      it('removes every key even with many entries present', async () => {
-        for (let i = 0; i < 20; i++)
-          localStorage.setItem(`key${i}`, `value${i}`)
-        localStorage.me = '/+123'
-
-        await wrapper.vm.on_clean()
-        await flushPromises()
-
-        for (let i = 0; i < 20; i++)
-          expect(localStorage.getItem(`key${i}`)).toBeFalsy()
-      })
-    })
-  })
 })

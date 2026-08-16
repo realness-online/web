@@ -1,7 +1,8 @@
 <script setup>
   import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
+  import AsFieldsetWipe from '@/components/account/as-fieldset-wipe'
   import NameAsForm from '@/components/profile/as-form-name'
-  import AsSignOn from '@/components/profile/as-sign-on'
+  import AsDialogSignOn from '@/components/profile/as-dialog-sign-on'
   import Preference from '@/components/preference'
   import {
     sync_folder_supported,
@@ -13,7 +14,7 @@
   import { use_me } from '@/use/people'
   import { current_user } from '@/utils/serverless'
   import { sign_off } from '@/utils/serverless-auth'
-  import { ref, computed, onMounted as mounted } from 'vue'
+  import { ref, computed, onMounted as mounted, nextTick as tick } from 'vue'
 
   defineOptions({ name: 'Account' })
 
@@ -69,9 +70,26 @@
   const auth_resolved = computed(() => current_user.value !== undefined)
   const signed_in = computed(() => !!current_user.value && is_valid_name.value)
 
+  const sign_on = ref(null)
+  const on_open_sign_on = () => sign_on.value?.open()
+
+  /** Named but unnamed: the sign-on flow owns the "what should we call you"
+   * step, so it has to open itself rather than wait for a click. */
+  const needs_name = computed(
+    () => !!current_user.value && !is_valid_name.value
+  )
+
+  mounted(async () => {
+    await tick()
+    if (route.query?.['sign-in'] !== undefined || needs_name.value)
+      on_open_sign_on()
+  })
+
   const on_signed_in = () => {
     const next = route.query?.next
     if (typeof next === 'string' && next.startsWith('/')) router.replace(next)
+    else if (route.query?.['sign-in'] !== undefined)
+      router.replace({ path: '/account' })
   }
 
   const confirm = ref(null)
@@ -86,8 +104,9 @@
 <template>
   <section id="account" data-page>
     <div>
-      <name-as-form v-if="signed_in" />
-      <as-sign-on v-else-if="auth_resolved" @signed_in="on_signed_in" />
+      <!-- A name is yours before an account is: realness stores it locally,
+           so the field stands whether or not you are signed in. -->
+      <name-as-form />
 
       <section itemprop="preferences">
         <as-fieldset-notifications v-if="signed_in" />
@@ -126,18 +145,28 @@
             label="SVG"
             :disabled="!sync_folder_supported_value" />
         </preference>
+        <as-fieldset-wipe />
       </section>
 
-      <footer v-if="signed_in">
+      <footer v-if="auth_resolved">
         <fieldset>
           <div>
-            <h4>Signed in</h4>
-            <button type="button" id="sign-out" @click="on_ask_sign_out">
+            <h4>{{ signed_in ? 'Signed in' : 'Account' }}</h4>
+            <button
+              v-if="signed_in"
+              type="button"
+              id="sign-out"
+              @click="on_ask_sign_out">
               Sign out
+            </button>
+            <button v-else type="button" id="sign-in" @click="on_open_sign_on">
+              Sign in
             </button>
           </div>
         </fieldset>
       </footer>
+
+      <as-dialog-sign-on ref="sign_on" @signed_in="on_signed_in" />
 
       <dialog id="confirm-sign-out" ref="confirm" data-modal>
         <p>Sign out?</p>

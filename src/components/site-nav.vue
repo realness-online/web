@@ -3,13 +3,20 @@
   import { computed } from 'vue'
   import { current_user, me } from '@/utils/serverless'
 
-  // /account shows the sign-in flow when signed out and details when signed in,
-  // so one link serves both — the label is what changes.
+  // /account is always the settings page. Signed out the link is labelled
+  // "Sign in", so it carries the flag that opens the sign-on dialog on arrival
+  // — otherwise the label would promise a sign-in and deliver a settings list.
   // Only show the name when actually authenticated — a cached `me.name` while
   // signed out would falsely imply you're signed in.
   const account_label = computed(() => {
     if (!current_user.value) return 'Sign in'
     return me.value?.name || 'Account'
+  })
+
+  const account_target = computed(() => {
+    if (!current_user.value)
+      return { path: '/account', query: { 'sign-in': '' } }
+    return { path: '/account' }
   })
 </script>
 
@@ -21,7 +28,9 @@
       <router-link to="/docs" replace>Docs</router-link>
       <router-link to="/pricing" replace>Pricing</router-link>
       <router-link to="/terms" replace>Legal</router-link>
-      <router-link to="/account" replace>{{ account_label }}</router-link>
+      <router-link :to="account_target" replace>{{
+        account_label
+      }}</router-link>
     </menu>
   </nav>
 </template>
