@@ -147,6 +147,57 @@ describe('as_archive - finding archived posters', () => {
     expect(result).toBeNull()
   })
 
+  // An avatar is usually one of the oldest posters an account has, so it is
+  // almost always archived, and this is the only list that says where. A cache
+  // writer that blanks it makes every avatar on the page resolve to a 404ing
+  // main-directory path and render empty - `sync_posters_directory` did exactly
+  // that, writing `archives: []` while the field it had to fill is `archive`.
+  it('cannot place an archived poster once the archive list is blanked', async () => {
+    const poster_id = '/+16282281824/posters/1774048681125'
+    const archive_id = 1737178477987
+
+    vi.mocked(idb.get).mockImplementation(async key => {
+      if (key === '/+16282281824/posters/')
+        return {
+          id: '/+16282281824/posters/',
+          items: [1800000000000],
+          archive: [],
+          archives: [archive_id]
+        }
+      if (key === `/+16282281824/posters/${archive_id}/`)
+        return {
+          id: `/+16282281824/posters/${archive_id}/`,
+          items: [1774048681125],
+          archive: []
+        }
+      return null
+    })
+    vi.mocked(idb.keys).mockResolvedValue([])
+
+    expect(await as_archive(poster_id)).toBeNull()
+
+    // The same poster, same archive, with the list intact.
+    vi.mocked(idb.get).mockImplementation(async key => {
+      if (key === '/+16282281824/posters/')
+        return {
+          id: '/+16282281824/posters/',
+          items: [1800000000000],
+          archive: [archive_id]
+        }
+      if (key === `/+16282281824/posters/${archive_id}/`)
+        return {
+          id: `/+16282281824/posters/${archive_id}/`,
+          items: [1774048681125],
+          archive: []
+        }
+      return null
+    })
+
+    expect(await as_archive(poster_id)).toBe(
+      `people/+16282281824/posters/${archive_id}/1774048681125`
+    )
+  })
+
   it('handles real-world archived poster ID', async () => {
     // This is the actual poster ID from the screenshot
     const poster_id = '/+16282281824/posters/1774048681125'

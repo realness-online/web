@@ -100,6 +100,7 @@ vi.mock('@/persistence/Directory', () => ({
       items: ['1000', '2000', '3000']
     })
   ),
+  load_directory_from_network: vi.fn(() => Promise.resolve(null)),
   clear_author_dirs: vi.fn(() => Promise.resolve()),
   as_directory_id: vi.fn(id => `${id}/`)
 }))
@@ -576,7 +577,7 @@ describe('sync composable', () => {
         '/+14151234356/posters/',
         expect.objectContaining({
           items: ['3000', '2000', '1000'], // Sorted descending
-          archives: []
+          archive: []
         })
       )
     })
@@ -615,6 +616,120 @@ describe('sync composable', () => {
       await sync_posters_directory()
 
       expect(Poster).toHaveBeenCalledWith('/+14151234356/posters/')
+    })
+
+    // `as_directory` returns any cached listing without consulting the network.
+    // This function writes that cache on every tick, so whatever it leaves out
+    // is invisible to the feed until something else deletes the cache. A
+    // local-only rebuild strands every poster made on another device.
+    describe('posters made on another device', () => {
+      it('keeps network items the rebuild never saw locally', async () => {
+        const { set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['1000', '2000'],
+          archive: []
+        })
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith(
+          '/+14151234356/posters/',
+          expect.objectContaining({ items: ['2000', '1000'] })
+        )
+      })
+
+      it('reports the list changed when only the network moved', async () => {
+        const { get } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        get.mockImplementationOnce(key =>
+          key === '/+14151234356/posters/'
+            ? Promise.resolve({ items: ['1000'] })
+            : Promise.resolve(null)
+        )
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['1000', '2000'],
+          archive: []
+        })
+
+        expect(await sync_posters_directory()).toBe(true)
+      })
+
+      // Archived posters are located through this list. Blanking it loses them.
+      it('preserves the archive list', async () => {
+        const { set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        build_local_directory.mockResolvedValueOnce({ items: ['3000'] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['3000'],
+          archive: [1000]
+        })
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith(
+          '/+14151234356/posters/',
+          expect.objectContaining({ archive: [1000] })
+        )
+      })
+
+      // Offline we cannot confirm a deletion, so the cached listing stands.
+      // Narrowing it to local-only would hide other devices' work until the
+      // next online tick, and `as_directory` would serve that gap.
+      it('does not narrow the cache when the network is unreachable', async () => {
+        const { get, set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        get.mockImplementationOnce(key =>
+          key === '/+14151234356/posters/'
+            ? Promise.resolve({ items: ['1000', '2000'] })
+            : Promise.resolve(null)
+        )
+        build_local_directory.mockResolvedValueOnce({ items: ['1000'] })
+        load_directory_from_network.mockResolvedValueOnce(null)
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith(
+          '/+14151234356/posters/',
+          expect.objectContaining({ items: ['2000', '1000'] })
+        )
+      })
+
+      // The network is the only place a delete is authoritative: once we have
+      // reached it, a poster it no longer lists is gone, cache or not.
+      it('drops items the network no longer lists', async () => {
+        const { get, set } = await import('idb-keyval')
+        const { build_local_directory, load_directory_from_network } =
+          await import('@/persistence/Directory')
+
+        get.mockImplementationOnce(key =>
+          key === '/+14151234356/posters/'
+            ? Promise.resolve({ items: ['1000', '2000'] })
+            : Promise.resolve(null)
+        )
+        build_local_directory.mockResolvedValueOnce({ items: [] })
+        load_directory_from_network.mockResolvedValueOnce({
+          items: ['2000'],
+          archive: []
+        })
+
+        await sync_posters_directory()
+
+        expect(set).toHaveBeenCalledWith(
+          '/+14151234356/posters/',
+          expect.objectContaining({ items: ['2000'] })
+        )
+      })
     })
   })
 

@@ -11,7 +11,8 @@ import {
 import { get_item } from '@/utils/item'
 import {
   build_local_directory,
-  clear_author_dirs
+  clear_author_dirs,
+  load_directory_from_network
 } from '@/persistence/Directory'
 import {
   Offline,
@@ -664,7 +665,16 @@ export const sync_posters_directory = async (options = {}) => {
   const offline_posters = await build_local_directory(directory_path) // Get local posters
   if (!offline_posters || !offline_posters.items) return prev_items.length > 0
 
-  const sorted_items = [...offline_posters.items].sort((a, b) => b - a) // Newest first
+  // `as_directory` serves this cache without ever asking the network again, so
+  // whatever we leave out here is invisible to the feed. Reached network is the
+  // authority on what exists — it is the only place a delete shows up — plus
+  // anything local that has not uploaded yet. Unreachable, the cache stands:
+  // narrowing to local-only would strand every poster made on another device.
+  const network = await load_directory_from_network(directory_path)
+  const baseline = network ? (network.items ?? []) : prev_items
+  const merged = new Set([...baseline, ...offline_posters.items])
+
+  const sorted_items = [...merged].sort((a, b) => b - a) // Newest first
 
   const list_changed =
     prev_items.length !== sorted_items.length ||
@@ -673,7 +683,7 @@ export const sync_posters_directory = async (options = {}) => {
   await set(directory_path, {
     ...offline_posters,
     items: sorted_items,
-    archives: []
+    archive: network?.archive ?? prev?.archive ?? []
   }) // Update directory with sorted items
 
   if (optimize) await new Poster(directory_path).optimize()
