@@ -15,7 +15,9 @@ declare module '@/wasm/tracer.js' {
     free(): void
   }
   export function init_panic_hook(): void
-  export default function init_tracer_wasm(path: string): Promise<void>
+  export default function init_tracer_wasm(options: {
+    module_or_path: string
+  }): Promise<void>
 }
 
 declare module '*.js'
