@@ -120,6 +120,7 @@
       overflow: hidden;
       width: round(base-line * 2, 2);
       height: round(base-line * 2, 2);
+      min-height: 0;
       border-radius: base-line * 0.25;
     }
     & > span {

@@ -9,13 +9,6 @@
     onMounted as mounted,
     onBeforeUnmount as before_unmount
   } from 'vue'
-  import {
-    statement_edit_log,
-    install_statement_edit_probe
-  } from '@/utils/statement-edit-log'
-
-  install_statement_edit_probe()
-
   const props = defineProps({
     thought: {
       /** @type {import('vue').PropType<Statement>} */
@@ -111,60 +104,27 @@
   }
 
   const on_focus = () => {
-    statement_edit_log('editor focused', { itemid: props.thought.id })
     emit('focused', props.thought)
   }
 
   const focus_editor = () => {
-    statement_edit_log('focus_editor', {
-      itemid: props.thought.id,
-      editable: props.editable,
-      desktop_gate: desktop_edit_gate.value,
-      actively_editing: actively_editing.value,
-      text: JSON.stringify(thought_text.value)
-    })
     if (!props.editable) return
     if (desktop_edit_gate.value) {
       actively_editing.value = true
       tick(() => {
         set_initial_content()
         is_editable.value?.focus()
-        report_focus()
       })
     } else
       tick(() => {
         is_editable.value?.focus()
-        report_focus()
       })
-  }
-
-  /** Did the editor render, and did the focus land on it? */
-  const report_focus = () => {
-    statement_edit_log('after focus attempt', {
-      itemid: props.thought.id,
-      editor_rendered: Boolean(is_editable.value),
-      focused: document.activeElement === is_editable.value,
-      active: document.activeElement?.tagName,
-      box: is_editable.value?.getBoundingClientRect().toJSON?.()
-    })
   }
 
   /**
    * @param {MouseEvent} e
    */
   const on_wrapper_click = e => {
-    statement_edit_log('wrapper click', {
-      itemid: props.thought.id,
-      editable: props.editable,
-      desktop_gate: desktop_edit_gate.value,
-      text: JSON.stringify(thought_text.value),
-      in_overlay: Boolean(
-        /** @type {Element} */ (e.target).closest?.('figcaption')
-      ),
-      on_editor: Boolean(
-        /** @type {Element} */ (e.target).closest?.('[contenteditable="true"]')
-      )
-    })
     if (!props.editable) return
     // The desktop double-click gate protects text from stray clicks. An empty
     // statement has none to protect, and nowhere to advertise the gesture, so

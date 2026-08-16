@@ -6,7 +6,6 @@ import { ref, watch, inject } from 'vue'
 import { as_author } from '@/utils/itemid'
 import { poster_thought_overlay_pairs } from '@/use/statements'
 import { feed_slot_itemid } from '@/utils/itemid'
-import { statement_edit_log } from '@/utils/statement-edit-log'
 
 const my_id = () =>
   (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
@@ -153,19 +152,7 @@ export const use_feed = options => {
   const overlay_editable_for_poster = (day, poster) => {
     const thought = overlay_statements_for_poster(day, poster)
     if (!thought) return false
-    const editable = is_editable(thought)
-    if (thought.some(stmt => !stmt.statement))
-      statement_edit_log('overlay carries an empty statement', {
-        poster: poster.id,
-        editable,
-        me: my_id(),
-        author: as_author(thought[0].id),
-        statements: thought.map(stmt => ({
-          id: stmt.id,
-          text: JSON.stringify(stmt.statement)
-        }))
-      })
-    return editable
+    return is_editable(thought)
   }
 
   // Pulling in what sync found is the visible half of a sync tick, so it carries
