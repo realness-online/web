@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.1 - 2026-08-16
+
 - **Terms and pricing now match the license** - Realness is GPL, so you can
   already run it, change it, host it and use it commercially without paying.
   The paid tiers are for the written agreement procurement asks for, and to
