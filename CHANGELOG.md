@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.6 - 2026-08-16
+
 - **The name field says "Name" once** - it used to say it twice, as a heading
   and again in grey inside the box. The grey one is gone, and the heading is
   now what a screen reader announces.
