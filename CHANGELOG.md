@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.5 - 2026-08-16
+
 - **Signing in no longer takes over your settings** - the account page was two
   different pages wearing one address: a phone number form when you were signed
   out, your settings when you were signed in. Signing in now happens in a
