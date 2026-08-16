@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Signing in no longer takes over your settings** - the account page was two
+  different pages wearing one address: a phone number form when you were signed
+  out, your settings when you were signed in. Signing in now happens in a
+  window that opens over the page, so the settings are always where you left
+  them - and folder sync, which never needed an account, is there whether you
+  sign in or not.
+
+- **Wipe is a real button** - clearing what Realness keeps in this browser used
+  to be a small grey word tucked under the sign-in form. It sits with the other
+  settings now, and it asks before it clears anything.
+
 ## v2.8.4 - 2026-08-16
 
 - **Your avatar comes back** - while the poster listing was wrong, every failed
