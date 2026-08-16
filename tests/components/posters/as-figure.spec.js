@@ -384,6 +384,17 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(wrapper.find('figcaption aside').exists()).toBe(true)
     })
 
+    it('keeps the caption out of the haptic label', async () => {
+      const stmts = [{ id: '/+14151234356/statements/1', statement: 'hello' }]
+      await wrapper.setProps({ overlay_statements: stmts, menu: false })
+      const as_svg = wrapper.findComponent({ name: 'AsSvg' })
+      await as_svg.vm.$emit('click', true)
+      await flushPromises()
+      const figcaption = wrapper.find('figcaption')
+      expect(figcaption.exists()).toBe(true)
+      expect(figcaption.element.closest('label')).toBe(null)
+    })
+
     it('resets thought overlay expanded state when overlay_statements change', async () => {
       const stmts_a = [{ id: '/+14151234356/statements/1', statement: 'a' }]
       const stmts_b = [{ id: '/+14151234356/statements/2', statement: 'b' }]

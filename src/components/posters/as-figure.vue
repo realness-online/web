@@ -35,7 +35,6 @@
   import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
   import { load_shadow_into_vector } from '@/utils/poster-layers'
   import { poster_delete_log } from '@/utils/poster-delete-log'
-  import { statement_edit_log } from '@/utils/statement-edit-log'
   import { use_poster_viewport_visibility } from '@/use/poster-viewport-visibility'
   import {
     poster_dom_id,
@@ -136,13 +135,6 @@
   watch(
     () => props.overlay_statements,
     () => {
-      // Closing the overlay under an open editor would take the statement away
-      // mid-edit, so say when it happens.
-      if (thought_overlay_open.value)
-        statement_edit_log('overlay closed by new statements prop', {
-          itemid: props.itemid,
-          active: document.activeElement?.getAttribute?.('itemprop')
-        })
       thought_overlay_open.value = false
     }
   )
@@ -170,13 +162,6 @@
   }
 
   const on_poster_svg_click = () => {
-    statement_edit_log('poster svg click', {
-      itemid: props.itemid,
-      overlay_statements: props.overlay_statements?.length ?? 0,
-      overlay_editable: props.overlay_editable,
-      was_open: thought_overlay_open.value,
-      mask_pen: mask_pen.active.value
-    })
     if (mask_pen.active.value) return
     if (props.overlay_statements?.length) {
       thought_overlay_open.value = !thought_overlay_open.value
@@ -279,6 +264,8 @@
 
   /** One switch per poster on the page, so a label points at its own. */
   const haptic_id = computed(() => `haptic-${query_id.value}`)
+
+  const on_haptic_focus = () => poster.value?.focus()
 
   const poster_label = computed(() => {
     const created = as_created_at(/** @type {Id} */ (props.itemid))
@@ -591,8 +578,15 @@
       its buzz. `display: contents` keeps the figure's own layout untouched, and
       the poster still receives every event it did before.
     -->
-    <label :for="haptic_id" aria-hidden="true">
-      <input :id="haptic_id" type="checkbox" switch tabindex="-1" data-haptic />
+    <label :for="haptic_id">
+      <input
+        :id="haptic_id"
+        type="checkbox"
+        switch
+        tabindex="-1"
+        aria-hidden="true"
+        data-haptic
+        @focus="on_haptic_focus" />
       <svg
         v-if="use_dom_reference"
         itemscope
@@ -635,131 +629,129 @@
         :vector="vector"
         :show_cutout_symbols="cutouts_active && mosaic"
         :shown="shown" />
-      <as-viewer-3d
-        v-if="canvas_alive"
-        ref="viewer_ref"
-        :itemid="itemid"
-        :on_svg_zoom="set_svg_zoom"
-        data-mode="inline"
-        @select="on_poster_svg_click" />
-      <figcaption v-if="figcaption_visible">
-        <header>
-          <aside v-if="overlay_text_visible" aria-live="polite">
-            <as-thought
-              v-for="stmt in overlay_statements"
-              :key="stmt.id"
-              :thought="stmt"
-              :editable="overlay_editable" />
-          </aside>
-        </header>
-        <template
-          v-if="
-            menu_open || (menu && menu_always_visible) || mask_pen.active.value
-          ">
-          <menu
-            v-if="mask_pen.active.value"
-            class="mask-panel"
-            aria-label="Poster subjects">
-            <li
-              v-for="(subject, index) in mask_pen.subjects.value"
-              :key="subject.id">
-              <span
-                class="mask-swatch"
-                :style="{ background: `hsl(${subject_hue(index)} 70% 55%)` }"
-                aria-hidden="true" />
-              <button
-                :aria-pressed="subject.id === mask_pen.active_subject_id.value"
-                @click.stop="mask_pen.select_subject(subject.id)">
-                {{ subject.name }}
-              </button>
-              <input
-                :value="subject.name"
-                aria-label="Rename subject"
-                @input="
-                  mask_pen.rename_subject(subject.id, $event.target.value)
-                " />
-              <button
-                :aria-label="
-                  mask_pen.pending_removal_id.value === subject.id
-                    ? `Confirm remove ${subject.name || 'subject'}`
-                    : `Remove ${subject.name || 'subject'}`
-                "
-                :data-arm="
-                  mask_pen.pending_removal_id.value === subject.id || undefined
-                "
-                @click.stop="mask_pen.request_remove_subject(subject.id)">
-                {{
-                  mask_pen.pending_removal_id.value === subject.id
-                    ? 'Sure?'
-                    : '×'
-                }}
-              </button>
-            </li>
-            <li>
-              <button
-                aria-label="Add subject"
-                @click.stop="mask_pen.add_subject()">
-                +
-              </button>
-            </li>
-          </menu>
-          <footer>
-            <router-link
-              v-if="
-                poster_time &&
-                is_my_poster &&
-                profile_path &&
-                !mask_pen.active.value
-              "
-              :to="profile_path">
-              <time>{{ poster_time }}</time>
-            </router-link>
-            <time v-else-if="poster_time && !mask_pen.active.value">{{
-              poster_time
-            }}</time>
-            <slot>
-              <menu
-                v-if="is_my_poster"
-                :style="
-                  mask_pen.active.value && mask_pen.painting.value
-                    ? { opacity: 0.12, pointerEvents: 'none' }
-                    : null
-                ">
-                <button
-                  aria-label="Toggle mask pen"
-                  :aria-pressed="mask_pen.active.value"
-                  @click.stop="on_toggle_mask_pen">
-                  &#9998;<span v-if="mask_pen.selected.value.size">
-                    {{ mask_pen.selected.value.size }}</span
-                  >
-                </button>
-                <button
-                  v-if="mask_pen.active.value && mask_pen.selected.value.size"
-                  aria-label="Clear mask"
-                  @click.stop="mask_pen.clear()">
-                  &times;
-                </button>
-                <as-author-menu
-                  v-if="!mask_pen.active.value"
-                  :poster="author_menu_poster"
-                  :allow_remove="has_remove_handler"
-                  @remove="id => emit('remove', id)" />
-              </menu>
-              <menu v-else>
-                <as-figure
-                  v-if="person"
-                  :person="person"
-                  :display="profile_display"
-                  :itemid="profile_chip_itemid" />
-                <span role="group">
-                  <as-download :itemid="/** @type {Id} */ (itemid)" />
-                </span>
-              </menu>
-            </slot>
-          </footer>
-        </template>
-      </figcaption>
     </label>
+    <as-viewer-3d
+      v-if="canvas_alive"
+      ref="viewer_ref"
+      :itemid="itemid"
+      :on_svg_zoom="set_svg_zoom"
+      data-mode="inline"
+      @select="on_poster_svg_click" />
+    <figcaption v-if="figcaption_visible">
+      <header>
+        <aside v-if="overlay_text_visible" aria-live="polite">
+          <as-thought
+            v-for="stmt in overlay_statements"
+            :key="stmt.id"
+            :thought="stmt"
+            :editable="overlay_editable" />
+        </aside>
+      </header>
+      <template
+        v-if="
+          menu_open || (menu && menu_always_visible) || mask_pen.active.value
+        ">
+        <menu
+          v-if="mask_pen.active.value"
+          class="mask-panel"
+          aria-label="Poster subjects">
+          <li
+            v-for="(subject, index) in mask_pen.subjects.value"
+            :key="subject.id">
+            <span
+              class="mask-swatch"
+              :style="{ background: `hsl(${subject_hue(index)} 70% 55%)` }"
+              aria-hidden="true" />
+            <button
+              :aria-pressed="subject.id === mask_pen.active_subject_id.value"
+              @click.stop="mask_pen.select_subject(subject.id)">
+              {{ subject.name }}
+            </button>
+            <input
+              :value="subject.name"
+              aria-label="Rename subject"
+              @input="
+                mask_pen.rename_subject(subject.id, $event.target.value)
+              " />
+            <button
+              :aria-label="
+                mask_pen.pending_removal_id.value === subject.id
+                  ? `Confirm remove ${subject.name || 'subject'}`
+                  : `Remove ${subject.name || 'subject'}`
+              "
+              :data-arm="
+                mask_pen.pending_removal_id.value === subject.id || undefined
+              "
+              @click.stop="mask_pen.request_remove_subject(subject.id)">
+              {{
+                mask_pen.pending_removal_id.value === subject.id ? 'Sure?' : '×'
+              }}
+            </button>
+          </li>
+          <li>
+            <button
+              aria-label="Add subject"
+              @click.stop="mask_pen.add_subject()">
+              +
+            </button>
+          </li>
+        </menu>
+        <footer>
+          <router-link
+            v-if="
+              poster_time &&
+              is_my_poster &&
+              profile_path &&
+              !mask_pen.active.value
+            "
+            :to="profile_path">
+            <time>{{ poster_time }}</time>
+          </router-link>
+          <time v-else-if="poster_time && !mask_pen.active.value">{{
+            poster_time
+          }}</time>
+          <slot>
+            <menu
+              v-if="is_my_poster"
+              :style="
+                mask_pen.active.value && mask_pen.painting.value
+                  ? { opacity: 0.12, pointerEvents: 'none' }
+                  : null
+              ">
+              <button
+                aria-label="Toggle mask pen"
+                :aria-pressed="mask_pen.active.value"
+                @click.stop="on_toggle_mask_pen">
+                &#9998;<span v-if="mask_pen.selected.value.size">
+                  {{ mask_pen.selected.value.size }}</span
+                >
+              </button>
+              <button
+                v-if="mask_pen.active.value && mask_pen.selected.value.size"
+                aria-label="Clear mask"
+                @click.stop="mask_pen.clear()">
+                &times;
+              </button>
+              <as-author-menu
+                v-if="!mask_pen.active.value"
+                :poster="author_menu_poster"
+                :allow_remove="has_remove_handler"
+                @remove="id => emit('remove', id)" />
+            </menu>
+            <menu v-else>
+              <as-figure
+                v-if="person"
+                :person="person"
+                :display="profile_display"
+                :itemid="profile_chip_itemid" />
+              <span role="group">
+                <as-download :itemid="/** @type {Id} */ (itemid)" />
+              </span>
+            </menu>
+          </slot>
+        </footer>
+      </template>
+    </figcaption>
     <output
       v-if="video_export_progress"
       class="video-export-progress"
@@ -860,7 +852,8 @@
       content-visibility: auto;
       contain-intrinsic-size: auto 512px;
     }
-    svg[aria-roledescription='referenced poster'] {
+    /* The figure's own poster, not an author chip drawing the same one. */
+    & > label > svg[itemid] {
       display: block;
       min-height: 512px;
       height: 100%;
@@ -868,11 +861,14 @@
       overflow: hidden;
       cursor: pointer;
       disable-ios-touch-callout();
-      touch-action: pan-y;
+      touch-action: pan-y pinch-zoom;
       contain: layout;
       max-height: 100%;
+      &[data-storytelling] {
+        touch-action: pan-x pinch-zoom;
+      }
     }
-    svg[aria-roledescription='referenced poster'] rect[role='presentation'][aria-hidden='true'] {
+    & > label > svg[itemid] rect[role='presentation'][aria-hidden='true'] {
       pointer-events: all;
     }
     /* The label is only here to carry taps to the switch - it must not take

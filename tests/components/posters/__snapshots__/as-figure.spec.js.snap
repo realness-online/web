@@ -12,10 +12,10 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
       the poster still receives every event it did before.
     -->
   <label
-    aria-hidden="true"
     for="haptic-14151234356-posters-1770000000000"
   >
     <input
+      aria-hidden="true"
       data-haptic=""
       id="haptic-14151234356-posters-1770000000000"
       switch=""
@@ -35,9 +35,9 @@ exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
       touch_uses_long_press="true"
     />
     <!--v-if-->
-    <!--v-if-->
-    <!--v-if-->
   </label>
+  <!--v-if-->
+  <!--v-if-->
   <!--v-if-->
 </figure>
 `;
@@ -52,10 +52,10 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
       the poster still receives every event it did before.
     -->
   <label
-    aria-hidden="true"
     for="haptic-14151234356-posters-1770000000000"
   >
     <input
+      aria-hidden="true"
       data-haptic=""
       id="haptic-14151234356-posters-1770000000000"
       switch=""
@@ -75,9 +75,9 @@ exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
       touch_uses_long_press="true"
     />
     <!--v-if-->
-    <!--v-if-->
-    <!--v-if-->
   </label>
+  <!--v-if-->
+  <!--v-if-->
   <!--v-if-->
 </figure>
 `;
