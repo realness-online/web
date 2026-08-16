@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.2 - 2026-08-16
+
 - **Ask an AI to help you run your own Realness** - the ready-made prompt now
   sits on the License page and in the documentation, under "A Realness of your
   own", with a word about what it is. It used to be an unlabelled button on the
