@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Ask an AI to help you run your own Realness** - the ready-made prompt now
+  sits on the License page and in the documentation, under "A Realness of your
+  own", with a word about what it is. It used to be an unlabelled button on the
+  pricing page.
+
 ## v2.8.1 - 2026-08-16
 
 - **Terms and pricing now match the license** - Realness is GPL, so you can

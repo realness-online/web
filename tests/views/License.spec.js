@@ -10,7 +10,7 @@ const mount = () =>
           name: 'LegalPage',
           props: ['title', 'html', 'toc'],
           template:
-            '<section class="legal-page-stub"><h1>{{ title }}</h1><div class="doc" v-html="html" /></section>'
+            '<section class="legal-page-stub"><h1>{{ title }}</h1><div class="doc" v-html="html" /><slot /></section>'
         }
       }
     }
@@ -33,8 +33,21 @@ describe('@/views/License', () => {
     expect(html).toContain('visioncortex')
     expect(html).toContain('vtracer')
     expect(html).toContain('TSANG')
-    expect(html).toContain('GNU GENERAL PUBLIC LICENSE')
-    expect(html).toContain('&lt;http://fsf.org/&gt;')
+  })
+
+  it('puts the full license text after the notice, not inside it', () => {
+    const wrapper = mount()
+    const html = wrapper.findComponent({ name: 'LegalPage' }).props('html')
+    expect(html).not.toContain('GNU GENERAL PUBLIC LICENSE')
+
+    const rendered = wrapper.html()
+    expect(rendered).toContain('GNU GENERAL PUBLIC LICENSE')
+    expect(rendered).toContain('&lt;http://fsf.org/&gt;')
+  })
+
+  it('offers the agent prompt for running your own', () => {
+    const prompt = mount().findComponent({ name: 'AsPromptAgent' })
+    expect(prompt.exists()).toBe(true)
   })
 
   it('builds a toc for source, attribution, and the GPL heading', () => {

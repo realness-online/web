@@ -1,7 +1,6 @@
 <script setup>
   import { computed, ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import SponsorCta from '@/components/sponsor/cta'
 
   defineOptions({ name: 'Pricing' })
@@ -165,19 +164,11 @@
                 <strong>Never per-seat</strong>
                 <p>One price for the group, however many log in.</p>
               </li>
-              <li>
-                <strong>An agreement to file</strong>
-                <p>
-                  The GPL already lets you use Realness commercially. This is
-                  the paperwork procurement asks for.
-                </p>
-              </li>
             </ul>
             <menu>
               <sponsor-cta buy_button_id="buy_btn_0ToWtGANizuvdTZsdZR8DZkz" />
             </menu>
             <menu aria-label="Actions">
-              <as-prompt-agent mode="instance" inline />
               <a href="https://github.com/realness-online/web" rel="external">
                 Contact us
               </a>
@@ -214,19 +205,11 @@
                 <strong>Never per-seat</strong>
                 <p>One price for the organization, not headcount.</p>
               </li>
-              <li>
-                <strong>An agreement to file</strong>
-                <p>
-                  The GPL already covers commercial use. This is the contract
-                  your legal review needs.
-                </p>
-              </li>
             </ul>
             <menu>
               <sponsor-cta buy_button_id="buy_btn_0ToWseANizuvdTZsaqi4BZws" />
             </menu>
             <menu aria-label="Actions">
-              <as-prompt-agent mode="instance" inline />
               <a href="https://github.com/realness-online/web" rel="external">
                 Contact us
               </a>

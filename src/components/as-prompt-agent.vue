@@ -1,16 +1,10 @@
 <script setup>
-  import { ref, computed } from 'vue'
-  import poster_prompt from '@/content/agent-prompt-poster.md?raw'
+  import { ref } from 'vue'
   import instance_prompt from '@/content/agent-prompt-instance.md?raw'
 
   defineOptions({ name: 'AsPromptAgent' })
 
   const props = defineProps({
-    mode: {
-      type: String,
-      default: 'poster',
-      validator: v => ['poster', 'instance'].includes(v)
-    },
     inline: {
       type: Boolean,
       default: false
@@ -20,27 +14,15 @@
   const copy_feedback_ms = 2000
   const copied = ref(false)
 
-  const prompt = computed(() =>
-    props.mode === 'instance' ? instance_prompt : poster_prompt
-  )
-
-  const label = computed(() =>
-    props.mode === 'instance'
-      ? {
-          heading: 'Prompt an agent',
-          desc: 'Copy a ready-made prompt to give an AI agent. Paste it into Cursor, Claude Code, or any coding assistant — it will know how to guide you through deploying your own Realness instance.',
-          button: 'Copy instance prompt'
-        }
-      : {
-          heading: 'Prompt an agent',
-          desc: 'Copy a ready-made prompt to give an AI agent. Paste it into Cursor, Claude Code, or any coding assistant — it will know how to guide you through creating a Realness poster.',
-          button: 'Copy poster prompt'
-        }
-  )
+  const label = {
+    heading: 'Prompt an agent',
+    desc: 'Copy a ready-made prompt to give an AI agent. Paste it into Cursor, Claude Code, or any coding assistant — it will know how to guide you through deploying your own Realness instance.',
+    button: 'Copy instance prompt'
+  }
 
   const on_copy = async () => {
     try {
-      await navigator.clipboard.writeText(prompt.value)
+      await navigator.clipboard.writeText(instance_prompt)
       copied.value = true
       setTimeout(() => {
         copied.value = false

@@ -27,6 +27,7 @@
         </router-link>
       </nav>
       <section itemprop="content" v-html="html" />
+      <slot />
     </article>
   </section>
 </template>
