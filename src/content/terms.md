@@ -1,4 +1,4 @@
-_Last updated August 14, 2026._
+_Last updated August 16, 2026._
 
 These Terms of Service ("Terms") are a binding agreement between you and Scott
 Fryxell, doing business as Realness ("Realness," "we," "us"), a sole
@@ -72,25 +72,31 @@ it does not infringe anyone else's rights. You are responsible for Your Content.
 You own the outputs you create with Realness and may use them in personal,
 client, and commercial work under all pricing tiers, including the free tier.
 
-## 6. Licensing for teams and organizations
+## 6. Teams and organizations
 
-Personal use of the hosted Service is free. If your team, studio, family circle,
-company, or institution needs a formal license agreement — for procurement,
-legal compliance, or to support the project — we offer commercial tiers on the
-[Pricing page](/pricing) (currently "Small teams" at $100/year and "Large
-organizations" at $500/year).
+The software is free under the [GPL](/license). You may already run it, modify
+it, self-host it, and use it commercially — including as a team, a studio, or a
+company — at no cost and without asking us. Paying us does not grant you that
+permission, because you have it already.
 
-An organization that licenses or self-hosts Realness is the responsible
-operator of its instance: it acts as the moderator (or appoints one), is
-responsible for its members' content and conduct, and is responsible for
-complying with the laws that apply to the community it runs. Responsibility for
-a self-hosted instance transfers to the organization that operates it.
-Organizations agree to indemnify us as described in Section 12 for claims
-arising out of the instances and communities they operate.
+What the tiers on the [Pricing page](/pricing) offer is the part the GPL cannot
+give you: a written agreement with a named counterparty, which is what
+procurement and legal review usually need before an organization can adopt
+anything, and the continued existence of the project. Currently "Small teams"
+at $100/year and "Large organizations" at $500/year. Personal use of the hosted
+Service is free.
+
+An organization running Realness — self-hosted or on the hosted Service, paid
+or not — is the responsible operator of its instance: it acts as the moderator
+(or appoints one), is responsible for its members' content and conduct, and is
+responsible for complying with the laws that apply to the community it runs.
+Responsibility for a self-hosted instance transfers to the organization that
+operates it. Organizations agree to indemnify us as described in Section 12 for
+claims arising out of the instances and communities they operate.
 
 ## 7. Payments, renewal, and refunds
 
-Paid licenses are billed annually in advance and renew automatically each year
+Paid tiers are billed annually in advance and renew automatically each year
 unless cancelled before the renewal date. You can cancel at any time; cancellation
 stops the next renewal and does not retroactively refund the current term, except
 as stated here. You may request a full refund within **14 days** of a new or

@@ -162,12 +162,15 @@
                 </p>
               </li>
               <li>
-                <strong>No per-seat pricing</strong>
-                <p>License the group, not every login.</p>
+                <strong>Never per-seat</strong>
+                <p>One price for the group, however many log in.</p>
               </li>
               <li>
-                <strong>Commercial use</strong>
-                <p>Allowed for your organization.</p>
+                <strong>An agreement to file</strong>
+                <p>
+                  The GPL already lets you use Realness commercially. This is
+                  the paperwork procurement asks for.
+                </p>
               </li>
             </ul>
             <menu>
@@ -186,7 +189,7 @@
             <ul>
               <li>
                 <strong>Many communities</strong>
-                <p>License Realness across teams and institutions.</p>
+                <p>Run Realness across teams and institutions.</p>
               </li>
               <li>
                 <strong>Governance</strong>
@@ -208,12 +211,15 @@
                 <p>Capacity for distributed orgs and large groups.</p>
               </li>
               <li>
-                <strong>No per-seat pricing</strong>
-                <p>License the organization, not headcount.</p>
+                <strong>Never per-seat</strong>
+                <p>One price for the organization, not headcount.</p>
               </li>
               <li>
-                <strong>Commercial use</strong>
-                <p>Allowed across licensed communities.</p>
+                <strong>An agreement to file</strong>
+                <p>
+                  The GPL already covers commercial use. This is the contract
+                  your legal review needs.
+                </p>
               </li>
             </ul>
             <menu>
