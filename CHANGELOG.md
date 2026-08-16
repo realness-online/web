@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Posters you made on another device show up again** - the listing of your
+  posters was being rebuilt from whatever this device happened to have on hand,
+  and nothing ever asked storage what was really there. Work made on your phone
+  stayed on your phone. It now asks, and mends itself the next time you open
+  Realness.
+
+- **Avatars are not blank circles** - same cause. The list that says where older
+  posters were filed away was being wiped, and an avatar is usually one of the
+  oldest posters you have, so it could not be found.
+
 ## v2.8.2 - 2026-08-16
 
 - **Ask an AI to help you run your own Realness** - the ready-made prompt now
