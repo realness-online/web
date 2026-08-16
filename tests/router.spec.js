@@ -13,6 +13,22 @@ const { default: router } = await import('@/router')
 const { scrollBehavior } = router.options
 
 describe('@/router', () => {
+  it('sends /sign-on to the account page with the dialog open', () => {
+    const route = router.options.routes.find(r => r.path === '/sign-on')
+    expect(route.redirect({ query: {} })).toEqual({
+      path: '/account',
+      query: { 'sign-in': '' }
+    })
+  })
+
+  it('keeps the next target when redirecting /sign-on', () => {
+    const route = router.options.routes.find(r => r.path === '/sign-on')
+    expect(route.redirect({ query: { next: '/discover' } })).toEqual({
+      path: '/account',
+      query: { next: '/discover', 'sign-in': '' }
+    })
+  })
+
   it('restores a saved position', () => {
     const saved = { top: 240 }
     expect(scrollBehavior({ path: '/about' }, { path: '/' }, saved)).toBe(saved)

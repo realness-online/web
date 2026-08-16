@@ -60,6 +60,23 @@ describe('@/components/site-nav', () => {
     expect(wrapper.text()).not.toContain('Sign in')
   })
 
+  it('carries the sign-in flag when the link promises a sign in', () => {
+    const wrapper = mount()
+    const account = wrapper.findAllComponents(router_link_stub).at(-1)
+    expect(account.props('to')).toEqual({
+      path: '/account',
+      query: { 'sign-in': '' }
+    })
+  })
+
+  it('drops the sign-in flag once signed in', () => {
+    mock_current_user.value = { uid: 'u1' }
+    mock_me.value = { name: 'Scott' }
+    const wrapper = mount()
+    const account = wrapper.findAllComponents(router_link_stub).at(-1)
+    expect(account.props('to')).toEqual({ path: '/account' })
+  })
+
   it('falls back to Account when signed in without a name', () => {
     mock_current_user.value = { uid: 'u1' }
     mock_me.value = {}

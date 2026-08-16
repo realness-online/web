@@ -15,7 +15,15 @@ const routes = [
     component: () => import('@/views/Documentation'),
     meta: { support: true }
   },
-  { path: '/sign-on', redirect: '/account' },
+  // Sign-on is a dialog on the account page, not a page of its own. The
+  // `sign-in` flag opens it on arrival so deep links still land in the flow.
+  {
+    path: '/sign-on',
+    redirect: to => ({
+      path: '/account',
+      query: { ...to.query, 'sign-in': '' }
+    })
+  },
   {
     path: '/pricing',
     redirect: '/pricing/endorse',
