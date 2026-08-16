@@ -85,7 +85,7 @@ operator of its instance: it acts as the moderator (or appoints one), is
 responsible for its members' content and conduct, and is responsible for
 complying with the laws that apply to the community it runs. Responsibility for
 a self-hosted instance transfers to the organization that operates it.
-Organizations agree to indemnify us as described in Section 11 for claims
+Organizations agree to indemnify us as described in Section 12 for claims
 arising out of the instances and communities they operate.
 
 ## 7. Payments, renewal, and refunds
