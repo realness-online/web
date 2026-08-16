@@ -1,5 +1,6 @@
 <script setup>
   import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
+  import AsFieldsetWipe from '@/components/account/as-fieldset-wipe'
   import NameAsForm from '@/components/profile/as-form-name'
   import AsSignOn from '@/components/profile/as-sign-on'
   import Preference from '@/components/preference'
@@ -87,7 +88,10 @@
   <section id="account" data-page>
     <div>
       <name-as-form v-if="signed_in" />
-      <as-sign-on v-else-if="auth_resolved" @signed_in="on_signed_in" />
+
+      <as-sign-on
+        v-if="!signed_in && auth_resolved"
+        @signed_in="on_signed_in" />
 
       <section itemprop="preferences">
         <as-fieldset-notifications v-if="signed_in" />
@@ -126,6 +130,7 @@
             label="SVG"
             :disabled="!sync_folder_supported_value" />
         </preference>
+        <as-fieldset-wipe />
       </section>
 
       <footer v-if="signed_in">

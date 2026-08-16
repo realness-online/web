@@ -88,6 +88,17 @@ describe('Account', () => {
     expect(mock_replace).not.toHaveBeenCalled()
   })
 
+  it('places the sign-in form above the preferences', () => {
+    mock_current_user.value = null
+    const wrapper = mount()
+    const sign_on = wrapper.find('.as-sign-on-stub').element
+    const preferences = wrapper.find('section[itemprop="preferences"]').element
+    const order = sign_on.compareDocumentPosition(preferences)
+
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(order & Node.DOCUMENT_POSITION_CONTAINED_BY).toBeFalsy()
+  })
+
   it('shows the sync folder preference when not signed in', () => {
     mock_current_user.value = null
     const wrapper = mount()

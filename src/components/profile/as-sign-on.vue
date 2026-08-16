@@ -4,8 +4,7 @@
   import { load, load_from_network } from '@/utils/itemid'
   import { use_me } from '@/use/people'
   import { current_user } from '@/utils/serverless'
-  import { keys, clear } from 'idb-keyval'
-  import { ref, computed, watchEffect as watch_effect } from 'vue'
+  import { ref, watchEffect as watch_effect } from 'vue'
 
   const emit = defineEmits(['signed_in', 'showing_mobile'])
 
@@ -15,16 +14,7 @@
 
   const { is_valid_name, save } = use_me()
   const nameless = ref(false)
-  const index_db_keys = ref([])
   const working = ref(false)
-  const cleanable = computed(() => {
-    if (working.value) return false
-    if (current_user.value) return false
-    if (localStorage.me && localStorage.me.length > 2) return true
-    if (localStorage.length > 2) return true
-    if (index_db_keys.value.length > 1) return true
-    return false
-  })
 
   const on_signed_on = async () => {
     const network_profile = await load_from_network(localStorage.me)
@@ -43,17 +33,6 @@
     emit('signed_in')
   }
 
-  const on_clean = async () => {
-    const keys_to_remove = []
-    for (const key in localStorage)
-      if (Object.prototype.hasOwnProperty.call(localStorage, key))
-        keys_to_remove.push(key)
-    keys_to_remove.forEach(key => localStorage.removeItem(key))
-    localStorage.me = '/+'
-    await clear()
-    window.location.href = '/'
-  }
-
   watch_effect(() => {
     const valid = is_valid_name.value
     if (current_user.value && !valid) nameless.value = true
@@ -61,10 +40,6 @@
 
   watch_effect(() => {
     emit('showing_mobile', !nameless.value)
-  })
-
-  watch_effect(async () => {
-    index_db_keys.value = await keys()
   })
 </script>
 
@@ -78,29 +53,32 @@
       v-else-if="!nameless || !current_user"
       @signed-on="on_signed_on"
       @working="working = $event" />
-    <footer v-if="cleanable">
-      <button @click="on_clean">Wipe</button>
-    </footer>
   </section>
 </template>
 
-<style>
+<style lang="stylus">
   section#sign-on {
     & > form {
       width: 100%;
     }
-    & > footer > button {
-      opacity: 0.5;
-      font-size: 0.5em;
-      padding: calc(var(--base-line) * 0.125) calc(var(--base-line) * 0.25);
-      line-height: 1.1;
-      border: none;
-      transition-property: opacity, border;
-      transition-duration: 0.33s;
-      transition-timing-function: ease;
-      &:hover {
-        opacity: 1;
-        border: 2px solid var(--emphasis);
+
+    // Phones give the form the whole column already. From tablets up the
+    // reset's `form { max-width: page-width }` leaves it pinned to the left
+    // edge under the settings, so center it and let it own the leftover
+    // page height.
+    @media (min-width: pad-begins) {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 60svh;
+
+      & > form {
+        margin-inline: auto;
+      }
+
+      & > p#name-prompt {
+        margin-inline: auto;
+        text-align: center;
       }
     }
   }
