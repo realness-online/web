@@ -15,7 +15,7 @@ const CHUNK_ITER = 10
 const deg2rad = deg => (deg / DEGREES_IN_CIRCLE) * Math.PI
 
 const init_tracer = async () => {
-  await init_tracer_wasm('/wasm/tracer_bg.wasm')
+  await init_tracer_wasm({ module_or_path: '/wasm/tracer_bg.wasm' })
   init_panic_hook()
 
   const params = {
