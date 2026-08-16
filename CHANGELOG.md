@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+- **Your posters can be lava lamps** - the layers drift between shapes, slowly,
+  never quite repeating. It leans on the GPU, so it stays off until you ask:
+  turn on Animate, then Lava lamp under it, in Preferences or on the About page.
+
+- **Name the things in your picture** - the mask pen (the ✎ in the poster menu)
+  groups mosaic cells into subjects: a face, a flower, the foreground. Press and
+  drag to grow a selection through cells of a similar tone, press again to
+  erase. Subjects now save with the poster and come back when you open it, each
+  with its own color, a name you can edit, and a two-tap remove. Opening the
+  pen turns mosaic on if it was off.
+
+- **Pinch to zoom works on posters again.** Swiping between them is unaffected,
+  and no longer eats the tap on posters that already fit the screen.
+
+- **Tapping the caption no longer toggles the poster switch** - the switch's
+  label had grown to cover the 3D viewer and the whole caption, so a tap meant
+  for a subject button or a rename field landed on the switch as well.
+
+- **Your own posters show up when you haven't signed in.**
+
+- **The license is GPL-2.0 and now says so** - `/license` used to redirect to
+  the pricing page. It's a real page now with the copyright notice, the
+  no-warranty disclaimer, where to get the source, and the full text. The Terms
+  link to it instead of describing a license we don't use.
+
+- **The 3D viewer got its lighting redone** - drama lights and single-ink
+  strokes. Behind an opt-in preference, it can also texture the model with the
+  live, morphing poster instead of a still.
+
 ## v2.7.4 - 2026-08-09
 
 - **You can make posters from a whole folder of photos now** - point
