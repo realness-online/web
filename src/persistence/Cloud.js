@@ -11,6 +11,7 @@ import {
 } from '@/persistence/Directory'
 import { has_archive } from '@/types'
 import { mutex_for } from '@/utils/algorithms'
+import { poster_delete_log } from '@/utils/poster-delete-log'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { SIZE } from '@/utils/numbers'
 const networkable = [
@@ -106,7 +107,7 @@ export const Cloud = superclass =>
         const item_type = this.type || as_type(this.id)
         if (item_type === 'posters') {
           const paths = await get_poster_delete_paths(this.id)
-          console.info('[poster:delete] transaction:', paths)
+          poster_delete_log('Cloud.delete transaction', { id: this.id, paths })
           await Promise.all(paths.map(path => remove(path)))
         } else {
           const path =

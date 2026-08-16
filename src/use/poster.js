@@ -278,28 +278,14 @@ export const use_posters = () => {
   const load_next_archive = async author_id => {
     const author = authors.value.find(relation => relation.id === author_id)
     if (!author) return
-    const author_posters = posters.value.filter(
-      p => author_id === as_author(p.id)
-    )
-
-    if (loading_archives.has(author_id)) {
-      console.info(
-        `[posters] guard: archive load already in flight for ${author_id}, skipping`
-      )
-      return
-    }
+    if (loading_archives.has(author_id)) return
     loading_archives.add(author_id)
     try {
       const next_archive = await get_next_unviewed_archive(
         author_id,
         author.viewed
       )
-      if (!next_archive) {
-        console.info(
-          `[posters] no more archives for ${author_id} — all pages loaded`
-        )
-        return
-      }
+      if (!next_archive) return
 
       const new_posters = await load_archive_posters(
         author_id,
@@ -315,10 +301,6 @@ export const use_posters = () => {
           `[posters] DUPES in archive ${next_archive} for ${author_id}: ${dupes.length} already in posters.value`,
           dupes.map(p => p.id)
         )
-      console.info(
-        `[posters] loaded archive ${next_archive} for ${author_id}: ${unique_new.length} unique posters`,
-        { total_after: author_posters.length + unique_new.length }
-      )
       posters.value.push(...unique_new)
       posters.value.sort(recent_item_first)
       author.viewed.push(next_archive)
@@ -376,9 +358,6 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
   if (cached_result) return cached_result
 
   // Cached archive list exhausted — refresh from network
-  console.info(
-    `[posters] cached archives exhausted for ${author_id}, fetching fresh list`
-  )
   try {
     const { load_directory_from_network } =
       await import('@/persistence/Directory')
@@ -390,14 +369,6 @@ const get_next_unviewed_archive = async (author_id, viewed) => {
       archive => !viewed.includes(String(archive))
     )
     const result = String(still_unviewed.pop() || '') || null
-    console.info(
-      `[posters] network refresh ${result ? `found: ${result}` : 'exhausted'}`,
-      {
-        total_archives: fresh.archive.length,
-        viewed: viewed.length,
-        still_unviewed: still_unviewed.length
-      }
-    )
     return result
   } catch (e) {
     console.warn(`[posters] network refresh failed for ${author_id}:`, e)
