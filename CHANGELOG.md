@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.3 - 2026-08-16
+
 - **Posters you made on another device show up again** - the listing of your
   posters was being rebuilt from whatever this device happened to have on hand,
   and nothing ever asked storage what was really there. Work made on your phone
