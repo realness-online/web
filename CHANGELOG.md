@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.8.0 - 2026-08-16
+
 - **Your posters can be lava lamps** - the layers drift between shapes, slowly,
   never quite repeating. It leans on the GPU, so it stays off until you ask:
   turn on Animate, then Lava lamp under it, in Preferences or on the About page.
