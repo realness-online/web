@@ -26,7 +26,11 @@ const routes = [
     component: () => import('@/views/Pricing'),
     meta: { support: true }
   },
-  { path: '/license', redirect: '/pricing' },
+  {
+    path: '/license',
+    component: () => import('@/views/License'),
+    meta: { support: true }
+  },
   { path: '/sponsor', redirect: '/pricing' },
   {
     path: '/terms',

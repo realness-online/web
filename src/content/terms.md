@@ -1,10 +1,10 @@
-_Last updated June 28, 2026._
+_Last updated August 14, 2026._
 
 These Terms of Service ("Terms") are a binding agreement between you and Scott
 Fryxell, doing business as Realness ("Realness," "we," "us"), a sole
 proprietorship based in California, USA. They govern your use of the hosted
 service at realness.online (the "Service"). The Realness software itself is
-also covered by the separate [source-available license](/pricing); these Terms
+licensed under the [GNU GPL version 2](/license); these Terms
 govern use of the hosted Service, not the source code.
 
 **By creating an account, verifying a phone number, or otherwise using the
@@ -49,7 +49,7 @@ You agree not to use the Service to:
 - distribute malware, attempt to breach or overload the Service, or interfere
   with others' use of it;
 - scrape, resell, or systematically extract the Service except as the
-  source-available license allows.
+  [GPL](/license) allows.
 
 Each instance of Realness has exactly one human moderator who is responsible
 for content within it. On the hosted Service that moderator is us, and we may
@@ -84,10 +84,9 @@ An organization that licenses or self-hosts Realness is the responsible
 operator of its instance: it acts as the moderator (or appoints one), is
 responsible for its members' content and conduct, and is responsible for
 complying with the laws that apply to the community it runs. Responsibility for
-a self-hosted instance transfers to the organization that operates it, as
-described in the [source-available license](/pricing). Organizations agree to
-indemnify us as described in Section 11 for claims arising out of the instances
-and communities they operate.
+a self-hosted instance transfers to the organization that operates it.
+Organizations agree to indemnify us as described in Section 11 for claims
+arising out of the instances and communities they operate.
 
 ## 7. Payments, renewal, and refunds
 
@@ -103,10 +102,10 @@ renewal.
 ## 8. Intellectual property
 
 The "Realness" name, logo, and brand are ours and are not licensed to you by
-these Terms or by the source-available license. The Realness software is made
-available under its separate license; nothing here grants you rights in the
-software beyond that license. Except for Your Content, all rights in the Service
-are reserved to us.
+these Terms or by the [GPL](/license). The Realness software is made
+available under the [GNU GPL version 2](/license); nothing here grants you
+rights in the software beyond that license. Except for Your Content, all rights
+in the Service are reserved to us.
 
 ## 9. Copyright and DMCA
 

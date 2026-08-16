@@ -46,4 +46,14 @@ describe('@/components/legal-page', () => {
     expect(links[0].attributes('href')).toBe('#overview')
     expect(links[1].attributes('data-level')).toBe('3')
   })
+
+  it('links Terms and License as sibling documents', () => {
+    const wrapper = mount()
+    const links = wrapper.findAll('nav[aria-label="Legal documents"] a')
+    expect(links).toHaveLength(2)
+    expect(links[0].text()).toBe('Terms')
+    expect(links[0].attributes('href')).toBe('/terms')
+    expect(links[1].text()).toBe('License')
+    expect(links[1].attributes('href')).toBe('/license')
+  })
 })

@@ -392,12 +392,11 @@
         <li>
           <icon name="finished" />
           <p>
-            <strong
-              ><a href="https://github.com/realness-online/web" rel="external"
-                >Source available</a
-              ></strong
-            >
-            Read the code, run it yourself, and send improvements upstream.
+            <strong><router-link to="/license">GPL-2.0</router-link></strong>
+            Source is on
+            <a href="https://github.com/realness-online/web" rel="external"
+              >GitHub</a
+            >. Read the code, run it yourself, and send improvements upstream.
           </p>
         </li>
       </ol>

@@ -46,6 +46,7 @@ const documentation_md = readFileSync(
 )
 const terms_md = readFileSync(join(content_dir, 'terms.md'), 'utf8')
 const privacy_md = readFileSync(join(content_dir, 'privacy.md'), 'utf8')
+const license_md = readFileSync(join(content_dir, 'license.md'), 'utf8')
 
 const documentation_preferences_toc = [
   { id: 'preferences', title: 'Preferences', level: 2 },
@@ -67,6 +68,7 @@ const documentation_toc = [
 ]
 const terms_toc = markdown_toc(terms_md)
 const privacy_toc = markdown_toc(privacy_md)
+const license_toc = markdown_toc(license_md)
 
 const out_dir = out_path.match(/.+\//)?.[0]
 if (out_dir) mkdirSync(out_dir, { recursive: true })
@@ -84,10 +86,13 @@ const code = [
   '',
   'export const privacy_toc = ',
   JSON.stringify(privacy_toc, null, 2),
+  '',
+  'export const license_toc = ',
+  JSON.stringify(license_toc, null, 2),
   ''
 ].join('\n')
 
 writeFileSync(out_path, code)
 console.info(
-  `generate-toc: wrote ${out_path} (${documentation_toc.length + terms_toc.length + privacy_toc.length} entries)`
+  `generate-toc: wrote ${out_path} (${documentation_toc.length + terms_toc.length + privacy_toc.length + license_toc.length} entries)`
 )
