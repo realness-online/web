@@ -4,6 +4,7 @@
 import { get, del, set } from 'idb-keyval'
 import {
   as_filename,
+  as_created_at,
   load,
   load_from_network,
   type_as_list
@@ -645,6 +646,45 @@ export const sync_me = async () => {
  * @param {{ optimize?: boolean }} [options]
  * @returns {Promise<boolean>} True when the sorted poster id list changed
  */
+/**
+ * `as_download_url` writes DOES_NOT_EXIST when it cannot find a file, and that
+ * row is a permanent no until something expires it. A miss caused by a listing
+ * that was wrong about where a poster lived leaves one behind, so learning what
+ * storage really holds is the moment those guesses stop being worth keeping.
+ * Anything the listing names, and anything older than the oldest thing it names
+ * — those are the archived ones, filed somewhere this listing cannot see, and
+ * an avatar is nearly always among them. Newer than the newest is the one case
+ * to leave alone: it has genuinely not been uploaded yet.
+ * @param {Id} me
+ * @param {Set<number | string>} created_ats
+ * @returns {Promise<void>}
+ */
+const forget_missing = async (me, created_ats) => {
+  const listed = new Set([...created_ats].map(Number))
+  if (!listed.size) return
+  const oldest_listed = Math.min(...listed)
+  const index_mutex = mutex_for('sync:index')
+  await index_mutex.lock()
+  try {
+    const index = (await get('sync:index')) || {}
+    let changed = false
+    const next = { ...index }
+    for (const key of Object.keys(next)) {
+      if (!is_sync_index_missing(next[key])) continue
+      if (!key.startsWith(`${me}/`)) continue
+      // Layers are their own itemids under the same created_at as the poster
+      const created = Number(as_created_at(/** @type {Id} */ (key)))
+      if (!created) continue
+      if (!listed.has(created) && created > oldest_listed) continue
+      delete next[key]
+      changed = true
+    }
+    if (changed) await set('sync:index', next)
+  } finally {
+    index_mutex.unlock()
+  }
+}
+
 export const sync_posters_directory = async (options = {}) => {
   const { optimize = true } = options
   const me = get_my_itemid()
@@ -685,6 +725,8 @@ export const sync_posters_directory = async (options = {}) => {
     items: sorted_items,
     archive: network?.archive ?? prev?.archive ?? []
   }) // Update directory with sorted items
+
+  if (network) await forget_missing(me, merged)
 
   if (optimize) await new Poster(directory_path).optimize()
   return list_changed
