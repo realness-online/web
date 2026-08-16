@@ -1,10 +1,10 @@
 <script setup>
   import InstallGuide from '@/components/install-guide.vue'
+  import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import PreferencesMenu from '@/components/preferences-menu'
   import { reset_preferences } from '@/utils/preference'
   import { documentation_html_parts, changelog_html } from '@/utils/markdown'
   import { documentation_toc } from '@/prerender/toc'
-  import instance_prompt from '@/content/agent-prompt-instance.md?raw'
   import {
     onMounted as mounted,
     onUnmounted as unmounted,
@@ -21,21 +21,6 @@
     realness: install_realness
   } = documentation_html_parts()
   const changelog_content = changelog_html()
-
-  const copy_feedback_ms = 2000
-  const copied = ref(false)
-
-  const on_copy_prompt = async () => {
-    try {
-      await navigator.clipboard.writeText(instance_prompt)
-      copied.value = true
-      setTimeout(() => {
-        copied.value = false
-      }, copy_feedback_ms)
-    } catch {
-      // clipboard unavailable
-    }
-  }
 
   const ACTIVE_HEADING_VIEWPORT_RATIO = 0.33
 
@@ -116,10 +101,8 @@
       <install-guide />
       <section itemprop="content" v-html="install_after" />
       <section v-if="install_realness" itemprop="self-host">
-        <button type="button" aria-label="Copy prompt" @click="on_copy_prompt">
-          {{ copied ? 'Copied' : 'Copy prompt' }}
-        </button>
         <section itemprop="content" v-html="install_realness" />
+        <as-prompt-agent />
       </section>
       <section itemprop="preferences">
         <header>
@@ -249,24 +232,6 @@
 
       & > section[itemprop='self-host'] {
         margin-top: base-line * 3;
-
-        & > button[aria-label='Copy prompt'] {
-          float: right;
-          margin-left: base-line;
-          padding-inline: base-line;
-          border: 1px solid var(--emphasis);
-          border-radius: base-line * 0.33;
-          background: none;
-          color: var(--emphasis);
-          cursor: pointer;
-          font: inherit;
-
-          &:hover,
-          &:focus-visible {
-            background: var(--emphasis);
-            color: var(--contrast);
-          }
-        }
       }
 
       & > section[itemprop='preferences'] {

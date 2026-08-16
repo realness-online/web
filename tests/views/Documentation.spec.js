@@ -93,27 +93,12 @@ describe('@/views/Documentation', () => {
     wrapper.unmount()
   })
 
-  it('copies the instance prompt and shows feedback', async () => {
-    vi.useFakeTimers()
-    const write_text = vi.fn().mockResolvedValue(undefined)
-    vi.stubGlobal('navigator', {
-      ...navigator,
-      clipboard: { writeText: write_text }
-    })
-
+  it('offers the agent prompt in the self-host section', () => {
     const wrapper = mount()
-    const button = wrapper.find('button[aria-label="Copy prompt"]')
-    expect(button.text()).toBe('Copy prompt')
-    await button.trigger('click')
-    await flushPromises()
-    expect(write_text).toHaveBeenCalledWith('Build your own Realness instance.')
-    expect(button.text()).toBe('Copied')
-
-    vi.advanceTimersByTime(2000)
-    await flushPromises()
-    expect(button.text()).toBe('Copy prompt')
+    const prompt = wrapper.findComponent({ name: 'AsPromptAgent' })
+    expect(prompt.exists()).toBe(true)
+    expect(prompt.element.closest('section[itemprop="self-host"]')).toBeTruthy()
     wrapper.unmount()
-    vi.useRealTimers()
   })
 
   it('routes in-page content links through the router', async () => {
