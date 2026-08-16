@@ -92,13 +92,13 @@ Each poster is a layered SVG.
 - **Presentation** - a keyboard shortcut fills the screen with the poster and hides the interface. Press again to exit. The key is listed in Preferences.
 - **Set as avatar** - on your own posters, the poster details area sets that poster as your profile avatar.
 
-#### Subjects — being built live
+#### Subjects
 
-Your own posters have a mask pen, the ✎ in the poster menu, for grouping mosaic cells into **subjects**. A subject is a thing in the picture: a face, a flower, the foreground. Press a cell and drag to grow the selection out through cells of a similar tone. Press an already-selected cell and drag to erase. Pinch to zoom in for precision.
+Your own posters have a mask pen, the ✎ in the poster menu, for grouping mosaic cells into **subjects**. A subject is a thing in the picture: a face, a flower, the foreground. Opening the pen turns mosaic on if it was off.
 
-This one is being written in the open. Today you can create and color subjects on a poster, but **saving them isn't wired up yet**, so a subject lives only for the current session. Naming, saving, and pulling a subject out as its own layer come next.
+Press a cell and drag to grow the selection through cells of a similar tone. Press an already-selected cell and drag to erase. A cell belongs to one subject at a time. Pinch to zoom in.
 
-Your feedback shapes it while it's being built. Try the grow-select and tell me how it should feel - [open an issue](https://github.com/realness-online/web/issues) or say hello in [About](/about).
+The panel lists subjects with a color, a name you can edit, and a two-tap remove. **+** adds another. Subjects save with the poster and come back when you open it again.
 
 #### 3D viewer
 
@@ -123,9 +123,9 @@ Exports clone the live poster on screen. There is no separate render path.
 - **Video** - H.264 `.mov`, 24fps, up to 4K, animating at the speed your **animation** preference is set to. Drag an **audio file** (mp3, wav, ogg, m4a, flac) onto the poster to bake that track in as the soundtrack, uncompressed.
 - **GLB** - 3D model for Blender and similar tools. Uses the open 3D viewer when it is on, and otherwise builds from the poster.
 
-##### Poster video with audio, in one drag
+##### Visualizer for a song
 
-Want your track baked into a video of a poster? Drag it on. No video editor, no timeline.
+Want a visualizer for a song? Drag the track onto a poster. No video editor, no timeline.
 
 1. **Drop a track on a poster.** Any audio file: mp3, wav, ogg, m4a, aac, or flac. Drag it onto the bare poster tile, no menu needed. It decodes on your device and nothing is uploaded.
 2. **The video runs exactly as long as your song.** The poster animates for the whole track, however long it is. It does not stop at the end of a cycle and hold.
@@ -135,19 +135,33 @@ A blue sweep border and a frame counter on the poster show progress while the ex
 
 Set the **animation** preference before exporting. Motion speed and layers are the pace of the video, the same motion you are watching on the poster. With no audio, the video is one full cycle at that speed. The poster is vector, so the 4K rasterize stays crisp however you scale it.
 
-##### Batching posters
+##### Poster driver
 
-Want to turn a video into posters? You can do it from the terminal. A whole folder of photos too.
+Scripts load `/poster-driver` in a hidden Chromium window. The page exposes `window.poster_driver.render(data_url)`, which traces a photo the same way the app does and returns SVG and PNG without saving the poster.
 
-- **A video** - `npm run poster:video -- clip.mov` makes a poster of every frame and puts them back together as an mp4.
-- **A folder** - `npm run poster -- ./photos` makes a poster of every photo in it. Each one keeps the name of its photo.
-- **One photo** - `npm run poster -- photo.jpg`
+From the repo, after `npm run build`:
 
-These run the app in a hidden browser, so you get the same tracer, the same layers, and the same exports as tapping through them yourself.
+```
+CHROME_PATH=/path/to/Chromium npm run poster -- photo.jpg
+```
 
-Add `--formats svg,png,psd,glb` to pick what comes out. Add `--fps` to a video for its frame rate. Everything lands in `artifacts/poster-driver/`.
+The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/poster-driver/` as SVG and PNG, named from the poster id.
 
-You run this from the code, not the app. You need the repo, Node, and a Chromium browser on whichever machine does the work - the [README](https://github.com/realness-online/web) covers getting set up. Nothing is uploaded - the tracing happens there, exactly as it happens in your tab.
+You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
+
+##### Converting a video
+
+In the app, Video export animates one poster. From the repo, `poster:video` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack.
+
+```
+npm run poster:video -- clip.mov
+```
+
+You can pass `--fps N` (default 24), `--workers N` (default 6), `--width N` (0 keeps the traced size), `--crf N` (0-51, default 23; lower is sharper and larger), and `--keep-frames` if you want the raster PNGs after encode.
+
+You need ffmpeg and a Chromium browser. Set `CHROME_PATH`, or have Brave, Chrome, Chromium, or Edge installed. The script opens `https://realness.online/poster-driver` unless `REALNESS_URL` points at a local serve. The site you load has to expose `window.poster_driver` too.
+
+The mp4 is `artifacts/poster-video/<name>.mp4`. Traced SVGs stay in `artifacts/poster-video/<name>-frames/`. If you stop a run and start again, those SVGs are reused. Raster PNGs are deleted after a successful encode unless you pass `--keep-frames`. Audio is remuxed as AAC at 192k. If the clip has no audio, the mp4 has none either.
 
 #### Printing a cel animation
 
@@ -168,7 +182,7 @@ A **laser printer** suits the film best: sharp vector edges, opaque color where 
 No AI. Classical computer vision, on your device, rather than machine learning or generative models. Realness doesn't do the hard part of tracing itself. It stands on two open-source projects that have spent years getting it right, and owes them the credit.
 
 - **[vtracer](https://github.com/visioncortex/vtracer)**, by the [visioncortex](https://www.visioncortex.org/) team, turns photo contrast into the **mosaic** cutouts. The five mosaic layers are vtracer's color-region tracing, tuned for the look Realness is after. It does the work that makes the stained-glass quality of a poster possible.
-- **[potrace](http://potrace.sourceforge.net/)**, by Peter Selinger, is the starting point for the **shadow** layers. The tonal bands (Light, Regular, Medium, Bold) and the strokes along them began as potrace and have since been heavily rewritten. Turning a bitmap into clean, hand-inked curves is Selinger's foundation. What grew from it is its own thing.
+- **[potrace](http://potrace.sourceforge.net/)**, by Peter Selinger, is the starting point for the **shadow** layers. The tonal bands (Light, Regular, Medium, Bold) and the strokes along them began as potrace and have since been heavily rewritten. Turning a bitmap into clean, hand-inked curves is Selinger's foundation. What grew from it is its own thing. Realness is GPL-2.0 because potrace is; the [license](/license) has the required notices and source.
 
 Both are the real engine of a poster. Realness is the darkroom around them: capture, layering, color, and export.
 
