@@ -595,11 +595,14 @@ describe('App.vue', () => {
       await wrapper.vm.$nextTick()
     })
 
+    // The footer stays mounted so display can carry it out; data-menu is what
+    // hides it now.
     it('hides global menu when menu preference is off', async () => {
+      expect(wrapper.find('footer').attributes('data-menu')).toBe('true')
       expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
       mock_menu.value = false
       await wrapper.vm.$nextTick()
-      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(false)
+      expect(wrapper.find('footer').attributes('data-menu')).toBe('false')
       mock_menu.value = true
       await wrapper.vm.$nextTick()
     })

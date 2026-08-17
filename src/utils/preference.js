@@ -53,6 +53,34 @@ export const enable_geology_layers = () => {
   for (const pref of Object.values(geology_layer_prefs)) pref.value = true
 }
 
+export const shadow_layer_prefs = {
+  bold,
+  medium,
+  regular,
+  light,
+  background
+}
+
+/**
+ * A layer key only ever changes its own layer. With the group off there is
+ * nothing on screen to change, so the key means "show me this one": the group
+ * comes on carrying that layer alone, rather than every layer whose
+ * preference happened to be left on.
+ *
+ * @param {import('vue').Ref<boolean>} layer
+ * @param {import('vue').Ref<boolean>} group
+ * @param {Record<string, import('vue').Ref<boolean>>} siblings
+ */
+export const toggle_layer = (layer, group, siblings) => {
+  if (group.value) {
+    layer.value = !layer.value
+    return
+  }
+  for (const sibling of Object.values(siblings))
+    sibling.value = sibling === layer
+  group.value = true
+}
+
 export const enable_shadow_layers = () => {
   bold.value = true
   medium.value = true

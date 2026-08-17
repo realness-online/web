@@ -116,7 +116,16 @@ label:has(input[role='switch']) {
     right: 0;
     bottom: 0;
     background-color: var(--graphite);
-    transition: .4s;
+    // Explicit properties, on the shared constants. The switch leads the
+    // reveal it opens, so it lands before the 280ms panel rather than after.
+    transition:
+      background-color duration-quick ease-reveal,
+      box-shadow duration-quick ease-reveal;
+    // Press feedback goes on opacity, not transform - the knob's transform is
+    // already carrying its travel, and scaling here would snap it home.
+    &:active:before {
+      opacity: 1;
+    }
     &:before {
       border-radius: 50%;
       position: absolute;
@@ -127,7 +136,9 @@ label:has(input[role='switch']) {
       bottom: base-line * 0.15;
       background-color: var(--contrast);
       opacity: 0.75;
-      transition: .4s;
+      transition:
+        transform duration-quick ease-reveal,
+        opacity duration-press ease-reveal;
     }
   }
 }

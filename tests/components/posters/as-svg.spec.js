@@ -20,6 +20,11 @@ const {
   mock_sand,
   mock_sediment,
   mock_grid,
+  mock_background,
+  mock_light,
+  mock_regular,
+  mock_medium,
+  mock_bold,
   mock_as_animation_morph
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
@@ -42,6 +47,11 @@ const {
     mock_sand: create_watchable(true),
     mock_sediment: create_watchable(true),
     mock_grid: create_watchable(false),
+    mock_background: create_watchable(true),
+    mock_light: create_watchable(true),
+    mock_regular: create_watchable(true),
+    mock_medium: create_watchable(true),
+    mock_bold: create_watchable(true),
     mock_as_animation_morph: create_watchable(false)
   }
 })
@@ -62,7 +72,12 @@ vi.mock('@/utils/preference', () => ({
   gravel: mock_gravel,
   sand: mock_sand,
   sediment: mock_sediment,
-  grid: mock_grid
+  grid: mock_grid,
+  background: mock_background,
+  light: mock_light,
+  regular: mock_regular,
+  medium: mock_medium,
+  bold: mock_bold
 }))
 
 const itemid = '/+16282281824/posters/559666932867'
@@ -323,7 +338,7 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(cutout.element.parentElement.getAttribute('mask')).toBe(null)
     })
 
-    it('keeps cutouts unmasked at full opacity when shadow is hidden', async () => {
+    it('keeps cutouts unmasked and raised when shadow is hidden', async () => {
       mock_shadow.value = false
       mock_animate_pref.value = true
       mock_morph_pref.value = true
@@ -332,7 +347,7 @@ describe('@/components/posters/as-svg.vue', () => {
       })
       await flushPromises()
       const cutout = wrapper.find('use[itemprop="sediment"]')
-      expect(cutout.attributes('style')).toContain('opacity: 1')
+      expect(cutout.attributes('style')).toContain('--layer-opacity: 0.8')
       expect(cutout.element.parentElement.getAttribute('mask')).toBe(null)
     })
   })

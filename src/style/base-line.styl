@@ -52,6 +52,18 @@ working  = unquote('var(--working)')
 emphasis = unquote('var(--emphasis)')
 warning  = unquote('var(--warning)')
 
+// Stylus-side aliases for the motion constants defined in motion.css.
+duration-press   = unquote('var(--duration-press)')
+duration-quick   = unquote('var(--duration-quick)')
+duration-reveal  = unquote('var(--duration-reveal)')
+duration-subject = unquote('var(--duration-subject)')
+
+ease-reveal = unquote('var(--ease-reveal)')
+ease-settle = unquote('var(--ease-settle)')
+ease-exit   = unquote('var(--ease-exit)')
+
+stagger-step = unquote('var(--stagger-step)')
+
 // ***************** modular-scale ********************************************
 $h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
 $h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441

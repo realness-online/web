@@ -15,6 +15,9 @@
     mosaic as mosaic_pref
   } from '@/utils/preference'
   import css_var from '@/utils/css-var'
+  import { use_smil_fade } from '@/use/smil-fade'
+
+  const FILL_OPACITY = 0.9
   const props = defineProps({
     itemprop: {
       type: String,
@@ -92,10 +95,17 @@
   const drawn_width = computed(() =>
     ink_only.value ? '0.5' : stroke_width.value
   )
-  const path_style = computed(() => ({
-    opacity: props.visible ? 1 : 0,
-    visibility: props.visible ? 'visible' : 'hidden'
-  }))
+  // Both of these are attributes, not style: the path lives in `<symbol>`
+  // defs, where CSS transitions never start, so SMIL carries the crossing and
+  // the attribute holds the resting value for exports.
+  const fill_opacity = computed(() => (show_fill.value ? FILL_OPACITY : 0))
+  const layer_opacity = computed(() => (props.visible ? 1 : 0))
+
+  const fill_fade = ref(null)
+  const layer_fade = ref(null)
+
+  use_smil_fade(fill_fade, () => fill_opacity.value)
+  use_smil_fade(layer_fade, () => layer_opacity.value)
 
   mounted(async () => {
     fill_color.value = props.fill
@@ -125,15 +135,27 @@
     :mask="props.mask"
     :itemprop="props.itemprop"
     :tabindex="props.tabindex"
-    :fill="show_fill ? fill_color : 'none'"
-    :fill-opacity="show_fill ? '0.90' : undefined"
-    :fill-rule="show_fill ? 'evenodd' : undefined"
+    :fill="fill_color"
+    :fill-opacity="fill_opacity"
+    fill-rule="evenodd"
+    :opacity="layer_opacity"
+    :pointer-events="props.visible ? undefined : 'none'"
     :stroke="drawn_stroke"
     :stroke-opacity="show_stroke && props.visible ? stroke_opacity : 0"
     :stroke-width="show_stroke && props.visible ? drawn_width : 0"
     stroke-dashoffset="0"
-    :stroke-dasharray="stroke_dasharray[props.itemprop]"
-    :style="path_style" />
+    :stroke-dasharray="stroke_dasharray[props.itemprop]">
+    <animate
+      ref="fill_fade"
+      attributeName="fill-opacity"
+      begin="indefinite"
+      fill="freeze" />
+    <animate
+      ref="layer_fade"
+      attributeName="opacity"
+      begin="indefinite"
+      fill="freeze" />
+  </path>
 </template>
 
 <style>
@@ -141,10 +163,10 @@
     stroke-miterlimit: 3.14;
     stroke-linecap: round;
     transition:
-      opacity 0.2s ease,
-      visibility 0.2s ease,
-      stroke-opacity 0.2s ease,
-      stroke-width 0.2s ease;
+      opacity var(--duration-quick) var(--ease-exit),
+      visibility var(--duration-quick) var(--ease-exit),
+      stroke-opacity var(--duration-quick) var(--ease-exit),
+      stroke-width var(--duration-quick) var(--ease-exit);
     &:focus {
       outline: none;
     }
@@ -154,8 +176,8 @@
   }
   g {
     transition:
-      opacity 0.2s ease,
-      visibility 0.2s ease;
+      opacity var(--duration-quick) var(--ease-exit),
+      visibility var(--duration-quick) var(--ease-exit);
   }
 
   @starting-style {

@@ -22,12 +22,18 @@
     geology_layers,
     has_drawable_layer
   } from '@/use/poster'
+  import { use_deferred_unmount } from '@/use/deferred-unmount'
   import {
     animate as animate_pref,
     drama_back,
     drama_front,
     shadow,
     stroke,
+    background,
+    light,
+    regular,
+    medium,
+    bold,
     mosaic,
     boulders,
     rocks,
@@ -130,6 +136,17 @@
     () => (intersecting.value || props.pin) && cutouts_enabled.value
   )
 
+  /**
+   * The group has to outlive the mosaic switch, or turning cutouts off takes
+   * the whole subtree away on the same frame and the layers inside never get
+   * to fade. Offscreen still unmounts immediately - nothing was visible.
+   */
+  const cutouts_held = computed(
+    () =>
+      (intersecting.value || props.pin) &&
+      (cutouts_enabled.value || held_layers.value.length > 0)
+  )
+
   const layer_from_target = el => {
     const use_el = el?.closest?.('use[itemprop]')
     if (!use_el) return null
@@ -219,7 +236,33 @@
     () => drama_front.value || is_loading.value
   )
 
-  const shadow_layer_displayed = computed(() => shadow.value || stroke.value)
+  /**
+   * Any shadow geometry actually drawing. The group switch is not enough: with
+   * every individual layer off there is nothing underneath, however `shadow`
+   * itself is set.
+   */
+  const shadow_layers_on = computed(
+    () =>
+      background.value ||
+      light.value ||
+      regular.value ||
+      medium.value ||
+      bold.value
+  )
+
+  const shadow_layer_displayed = computed(
+    () => (shadow.value || stroke.value) && shadow_layers_on.value
+  )
+
+  /** Shadow fills resting under the cutouts - what dims them the most. */
+  const shadow_fill_displayed = computed(
+    () => shadow.value && shadow_layers_on.value
+  )
+
+  /** Only the outlines are down there, so the cutouts can come up a little. */
+  const stroke_only = computed(
+    () => !shadow.value && stroke.value && shadow_layers_on.value
+  )
 
   const viewbox_rect = computed(() => {
     const [x, y, width, height] = viewbox.value.split(' ').map(Number)
@@ -322,6 +365,12 @@
   // luminance mask (as-masks.vue's cutout-shadow-dim) dims them back to
   // ~0.5 so the moving shadow reads through. Per-pixel, no clock.
   const CUTOUT_MORPH_OPACITY = 0.7
+  // Nothing resting underneath, so the cutouts carry the poster alone. Not
+  // full strength - they are still a mosaic, and 1 reads as flat.
+  const CUTOUT_SOLO_OPACITY = 0.8
+  // Strokes but no fills: less underneath than a full shadow, more than
+  // nothing, so the cutouts sit between the two.
+  const CUTOUT_STROKE_OPACITY = 0.65
   const OPACITY_FULL = 1
   const OPACITY_HIDDEN = 0
 
@@ -359,12 +408,16 @@
             )
           )
         : ''
-      let opacity = OPACITY_FULL
-      if (shadow_layer_displayed.value)
+      let opacity = CUTOUT_SOLO_OPACITY
+      if (stroke_only.value) opacity = CUTOUT_STROKE_OPACITY
+      if (shadow_fill_displayed.value)
         opacity = morphing.value ? CUTOUT_MORPH_OPACITY : CUTOUT_REST_OPACITY
+      // Opacity goes through a custom property, not an inline opacity: an
+      // inline value outranks @starting-style, so the layer would pop in at
+      // full strength instead of fading up.
       const style = visible
-        ? { opacity, visibility: 'visible' }
-        : { opacity: OPACITY_HIDDEN, visibility: 'hidden' }
+        ? { '--layer-opacity': opacity, visibility: 'visible' }
+        : { '--layer-opacity': OPACITY_HIDDEN, visibility: 'hidden' }
 
       layers[layer] = { visible, fragment, style }
     })
@@ -373,6 +426,14 @@
 
   const visible_layers = computed(() =>
     geology_layers.filter(layer => layer_data.value[layer].visible)
+  )
+
+  // A layer turned off used to vanish on the same frame, which is why the
+  // exit transition below never ran. It still unmounts - five masked `use`
+  // elements measured ~29fps against ~59 - just one transition later.
+  const { keys: held_layers } = use_deferred_unmount(
+    () => visible_layers.value,
+    { steps: geology_layers.length - 1 }
   )
 
   /**
@@ -461,9 +522,9 @@
         :style="lightbar_back_style" />
 
       <slot>
-        <g v-if="cutouts_mounted" :mask="cutout_group_mask">
+        <g v-if="cutouts_held" :mask="cutout_group_mask">
           <use
-            v-for="layer in visible_layers"
+            v-for="layer in held_layers"
             :key="layer"
             :itemprop="layer"
             :href="layer_data[layer].fragment"
@@ -481,8 +542,8 @@
         :style="lightbar_front_style" />
       <as-mask-pen v-if="mask_pen_active && cutouts_mounted" :itemid="itemid" />
       <g
-        v-if="grid_visible"
         data-grid-overlay
+        :data-grid-visible="grid_visible ? 'true' : 'false'"
         pointer-events="none"
         :transform="`translate(${viewbox_rect.x} ${viewbox_rect.y})`">
         <line
@@ -593,19 +654,23 @@
     & symbol rect[itemprop='background'] {
       pointer-events: none;
       transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease;
+        opacity duration-quick ease-exit,
+        visibility duration-quick ease-exit;
     }
     & use[itemprop='sediment'],
     & use[itemprop='sand'],
     & use[itemprop='gravel'],
     & use[itemprop='rocks'],
     & use[itemprop='boulders'] {
-      opacity: 0.5;
+      opacity: unquote('var(--layer-opacity, 0.5)');
+      // visibility is in the list on purpose: layer_data hides a leaving layer
+      // with visibility: hidden, and without a duration that applies on the
+      // first frame and the opacity fade is never seen.
       transition:
-        filter 0.44s ease-in-out,
-        opacity 0.44s ease-out,
-        display 0.44s ease-out;
+        filter duration-subject ease-settle,
+        opacity duration-subject ease-exit,
+        visibility duration-subject ease-exit,
+        display duration-subject ease-exit;
       transition-behavior: allow-discrete;
 
       &:hover {
@@ -620,6 +685,25 @@
       }
     }
 
+    // The mosaic switch turns all five layers on at once. Staggering fine to
+    // coarse makes the build-up legible instead of one pop. Delay is per
+    // property so the first one, filter, keeps hover instant.
+    & use[itemprop='sediment'] {
+      stagger(0s);
+    }
+    & use[itemprop='sand'] {
+      stagger(unquote('calc(var(--stagger-step) * 1)'));
+    }
+    & use[itemprop='gravel'] {
+      stagger(unquote('calc(var(--stagger-step) * 2)'));
+    }
+    & use[itemprop='rocks'] {
+      stagger(unquote('calc(var(--stagger-step) * 3)'));
+    }
+    & use[itemprop='boulders'] {
+      stagger(unquote('calc(var(--stagger-step) * 4)'));
+    }
+
     &[data-held-layer='sediment'] use[itemprop='sediment'],
     &[data-held-layer='sand'] use[itemprop='sand'],
     &[data-held-layer='gravel'] use[itemprop='gravel'],
@@ -632,6 +716,16 @@
       opacity: 0.85;
     }
 
+    // Four lines, so the overlay stays mounted and display carries it out.
+    & g[data-grid-overlay] {
+      opacity: 1;
+      discrete-exit(duration-reveal);
+      &[data-grid-visible='false'] {
+        display: none;
+        opacity: 0;
+      }
+    }
+
     & g[data-grid-overlay] line {
       fill: none;
       stroke: unquote('color-mix(in srgb, var(--bone) 72%, transparent)');
@@ -641,9 +735,8 @@
       paint-order: stroke;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      transition-duration: 0.01ms;
-    }
+    // Reduced motion is handled once, in motion.css, by collapsing the
+    // duration constants these transitions are written on.
   }
 
   @starting-style {

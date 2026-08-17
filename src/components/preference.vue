@@ -227,10 +227,7 @@
       padding: 0;
       border: none;
       min-width: 0;
-      transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
-      @media (prefers-reduced-motion: reduce) {
-        transition: none;
-      }
+      transition: grid-template-rows var(--duration-reveal) var(--ease-reveal);
       & > * {
         min-height: 0;
         overflow: hidden;
