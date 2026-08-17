@@ -2,6 +2,7 @@
   import { use as use_poster, is_rect, is_url_query } from '@/use/poster'
   import { ref, onMounted as mounted, computed } from 'vue'
   import css_var from '@/utils/css-var'
+  import { use_smil_fade } from '@/use/smil-fade'
   import {
     shadow as shadow_pref,
     mosaic as mosaic_pref,
@@ -38,10 +39,11 @@
       return css_var('--graphite-lighten').trim()
     return fill_value.value
   })
-  const style = computed(() => ({
-    opacity: props.visible ? 1 : 0,
-    visibility: props.visible ? 'visible' : 'hidden'
-  }))
+  // An attribute, not style: the rect sits inside `<symbol>` defs, where CSS
+  // transitions never start. SMIL carries the crossing instead.
+  const layer_opacity = computed(() => (props.visible ? 1 : 0))
+  const layer_fade = ref(null)
+  use_smil_fade(layer_fade, () => layer_opacity.value)
 </script>
 
 <template>
@@ -51,7 +53,14 @@
     width="100%"
     height="100%"
     :tabindex="tabindex"
-    :style="style" />
+    :opacity="layer_opacity"
+    :pointer-events="props.visible ? undefined : 'none'">
+    <animate
+      ref="layer_fade"
+      attributeName="opacity"
+      begin="indefinite"
+      fill="freeze" />
+  </rect>
 </template>
 
 <style>
@@ -59,8 +68,8 @@
     outline: none;
     stroke: none;
     transition:
-      opacity 0.2s ease,
-      visibility 0.2s ease;
+      opacity var(--duration-quick) var(--ease-exit),
+      visibility var(--duration-quick) var(--ease-exit);
     &:focus {
       outline: none;
     }

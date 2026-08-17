@@ -25,6 +25,7 @@
   import { useRouter as use_router } from 'vue-router'
   import { use_global_keymap } from '@/use/global-keymap'
   import { use_icon_settle } from '@/use/icon-settle'
+  import { use_deferred_flag } from '@/use/deferred-unmount'
   import { get_clipboard_files } from '@/utils/clipboard-images'
   import { use_vectorize_deferred } from '@/use/vectorize-deferred'
   import { posting } from '@/use/posting'
@@ -45,6 +46,12 @@
 
   const fps = useFps()
   provide('fps', fps)
+
+  // The readout keeps unmounting so its chunk stays lazy; it just leaves one
+  // transition later than the preference does, so the exit is visible.
+  const { mounted: fps_mounted, leaving: fps_leaving } = use_deferred_flag(
+    () => info.value
+  )
 
   const working_count = ref(0)
   /** @param {boolean} active */
@@ -239,9 +246,9 @@
     </teleport>
     <support-layout />
     <sync @active="on_active" @refreshed="on_sync_refreshed" />
-    <as-fps v-if="info" />
+    <as-fps v-if="fps_mounted" :data-leaving="fps_leaving || undefined" />
     <footer
-      v-if="menu"
+      :data-menu="menu ? 'true' : 'false'"
       :data-footer-visible="footer_visible ? 'true' : 'false'">
       <nav aria-label="App actions">
         <label
@@ -465,6 +472,15 @@
 
     & > footer {
       user-select: none;
+      opacity: 1;
+      discrete-exit(duration-reveal);
+      // menu off used to remove the footer outright, so it snapped. It stays
+      // mounted now and display carries it out - see docs/motion-preferences.
+      &[data-menu='false'] {
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+      }
       position: fixed;
       bottom: base-line * 1.5;
       left: 50%;

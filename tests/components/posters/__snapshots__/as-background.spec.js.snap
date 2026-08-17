@@ -4,8 +4,14 @@ exports[`@/components/posters/as-background.vue > Renders > a new background for
 <rect
   height="100%"
   itemprop="background"
-  style="opacity: 1; visibility: visible;"
+  opacity="1"
   tabindex="-1"
   width="100%"
-/>
+>
+  <animate
+    attributename="opacity"
+    begin="indefinite"
+    fill="freeze"
+  />
+</rect>
 `;

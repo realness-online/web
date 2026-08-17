@@ -41,7 +41,8 @@ import {
   slice_alignment,
   menu,
   footer_visible,
-  view_3d
+  view_3d,
+  toggle_layer
 } from '@/utils/preference'
 
 const ASPECT_RATIOS = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
@@ -167,7 +168,6 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   })
 
   register_preference('pref::Toggle_Stroke', stroke)
-  register_preference('pref::Toggle_Background', background)
   register_preference('pref::Toggle_Animate', animate)
   register_preference('pref::Toggle_Morph', morph)
   register_preference('pref::Toggle_Info', info)
@@ -175,15 +175,24 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   register_preference('pref::Toggle_Grid', grid)
   register_preference('pref::Toggle_Menu', menu)
   register_preference('pref::Toggle_Footer', footer_visible)
-  register_preference('pref::Toggle_Bold', bold)
-  register_preference('pref::Toggle_Medium', medium)
-  register_preference('pref::Toggle_Regular', regular)
-  register_preference('pref::Toggle_Light', light)
-  register_preference('pref::Toggle_Boulders', boulders)
-  register_preference('pref::Toggle_Rocks', rocks)
-  register_preference('pref::Toggle_Gravel', gravel)
-  register_preference('pref::Toggle_Sand', sand)
-  register_preference('pref::Toggle_Sediment', sediment)
+  const register_layer = (command, layer, group, siblings) =>
+    register(command, () => toggle_layer(layer, group, siblings))
+
+  // Background is the ground the others sit on, not one of the alternatives.
+  // Soloing a shadow layer leaves it alone; it goes off only when asked.
+  const shadows = { bold, medium, regular, light }
+  const geology = { boulders, rocks, gravel, sand, sediment }
+
+  register_layer('pref::Toggle_Background', background, shadow, {})
+  register_layer('pref::Toggle_Bold', bold, shadow, shadows)
+  register_layer('pref::Toggle_Medium', medium, shadow, shadows)
+  register_layer('pref::Toggle_Regular', regular, shadow, shadows)
+  register_layer('pref::Toggle_Light', light, shadow, shadows)
+  register_layer('pref::Toggle_Boulders', boulders, mosaic, geology)
+  register_layer('pref::Toggle_Rocks', rocks, mosaic, geology)
+  register_layer('pref::Toggle_Gravel', gravel, mosaic, geology)
+  register_layer('pref::Toggle_Sand', sand, mosaic, geology)
+  register_layer('pref::Toggle_Sediment', sediment, mosaic, geology)
 
   register('ui::Show_Documentation', () => documentation.value?.show())
   register('ui::Open_Settings', () => preferences.value?.show())

@@ -167,6 +167,17 @@
     text-shadow: 0 0 2px var(--graphite);
     z-index: 8;
     font-family: monospace;
+    opacity: 1;
+    transition:
+      opacity var(--duration-reveal) var(--ease-exit),
+      transform var(--duration-reveal) var(--ease-exit);
+    /* Held past the preference flip by use_deferred_flag, so the readout has
+       time to leave before its node goes. */
+    &[data-leaving] {
+      opacity: 0;
+      transform: translateY(calc(var(--base-line) * 0.5));
+      pointer-events: none;
+    }
     display: flex;
     flex-direction: column;
     gap: calc(var(--base-line) * 0.25);
@@ -258,6 +269,13 @@
     > output:nth-of-type(2) {
       color: var(--slice-color);
       opacity: calc(var(--slice) * 1 + (1 - var(--slice)) * 0.7);
+    }
+  }
+
+  @starting-style {
+    aside#fps {
+      opacity: 0;
+      transform: translateY(calc(var(--base-line) * 0.5));
     }
   }
 </style>

@@ -1,0 +1,37 @@
+/* Motion constants.
+
+   One shared vocabulary for every transition in the app. Values are seeded
+   from what the codebase already converged on by hand, not invented: 280ms
+   with cubic-bezier(0.22, 1, 0.36, 1) is the de facto reveal, 0.44s carries
+   the poster layers, 120ms is the control-press feel.
+
+   Stylus blocks reach these through the aliases in base-line.styl. */
+
+:root {
+  /* Durations, fastest to slowest. */
+  --duration-press: 120ms; /* a control acknowledging the press */
+  --duration-quick: 200ms; /* small chrome, hover states */
+  --duration-reveal: 280ms; /* the default - panels, nested fieldsets */
+  --duration-subject: 440ms; /* poster layers entering and leaving */
+
+  /* Easings. */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1); /* decelerating, the default */
+  --ease-settle: cubic-bezier(0.45, 0, 0.55, 1); /* symmetric in-out */
+  --ease-exit: ease-out;
+
+  /* Step between siblings in a staggered group, e.g. the five geology layers
+     the mosaic switch turns on at once. */
+  --stagger-step: 60ms;
+}
+
+/* Reduced motion collapses the durations rather than removing transitions.
+   A near-zero duration still fires transitionend, which the deferred-unmount
+   composable depends on to drop a node - transition: none would strand it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-press: 0.01ms;
+    --duration-quick: 0.01ms;
+    --duration-reveal: 0.01ms;
+    --duration-subject: 0.01ms;
+  }
+}

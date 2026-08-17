@@ -4,6 +4,8 @@
   import AsSymbol from '@/components/posters/as-symbol'
   import AsSymbolShadow from '@/components/posters/as-symbol-shadow'
   import { as_layer_id } from '@/utils/itemid'
+  import { geology_layers } from '@/use/poster'
+  import { use_deferred_unmount } from '@/use/deferred-unmount'
   import {
     mosaic,
     boulders,
@@ -38,6 +40,27 @@
       ? props.show_cutout_symbols
       : mosaic.value
   )
+
+  const layer_preferences = { boulders, rocks, gravel, sand, sediment }
+
+  const defined_layers = computed(() => {
+    if (!layer_defs_on.value) return []
+    // Coarsest first, as the defs were written by hand before this loop.
+    return [...geology_layers]
+      .reverse()
+      .filter(
+        layer =>
+          layer_preferences[layer].value && props.vector?.cutouts?.[layer]
+      )
+  })
+
+  // The def has to outlive the preference by as long as the `use` does. If the
+  // symbol goes first the `use` resolves to nothing and the layer blanks, so
+  // the exit transition over in as-svg never gets to run.
+  const { keys: held_layers } = use_deferred_unmount(
+    () => defined_layers.value,
+    { steps: geology_layers.length - 1 }
+  )
 </script>
 
 <template>
@@ -45,25 +68,9 @@
     <defs>
       <as-symbol-shadow />
       <as-symbol
-        v-if="layer_defs_on && boulders && vector?.cutouts?.boulders"
-        :key="as_layer_id(/** @type {Id} */ (itemid), 'boulders')"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'boulders')" />
-      <as-symbol
-        v-if="layer_defs_on && rocks && vector?.cutouts?.rocks"
-        :key="as_layer_id(/** @type {Id} */ (itemid), 'rocks')"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'rocks')" />
-      <as-symbol
-        v-if="layer_defs_on && gravel && vector?.cutouts?.gravel"
-        :key="as_layer_id(/** @type {Id} */ (itemid), 'gravel')"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'gravel')" />
-      <as-symbol
-        v-if="layer_defs_on && sand && vector?.cutouts?.sand"
-        :key="as_layer_id(/** @type {Id} */ (itemid), 'sand')"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sand')" />
-      <as-symbol
-        v-if="layer_defs_on && sediment && vector?.cutouts?.sediment"
-        :key="as_layer_id(/** @type {Id} */ (itemid), 'sediment')"
-        :itemid="as_layer_id(/** @type {Id} */ (itemid), 'sediment')" />
+        v-for="layer in held_layers"
+        :key="as_layer_id(/** @type {Id} */ (itemid), layer)"
+        :itemid="as_layer_id(/** @type {Id} */ (itemid), layer)" />
     </defs>
   </svg>
 </template>
