@@ -27,7 +27,7 @@
     geology_layers,
     has_drawable_layer
   } from '@/use/poster'
-  import { use_deferred_unmount } from '@/use/deferred-unmount'
+  import { use_deferred_unmount, duration_of } from '@/use/deferred-unmount'
   import {
     animate as animate_pref,
     drama_back,
@@ -524,42 +524,56 @@
   )
 
   /**
-   * Where each layer sits in the build-up, as a transition delay.
+   * Whether a build-up is running.
    *
-   * The stagger reads as a build-up only when the group moves together - the
-   * mosaic switch turning all five on. Held in the stylesheet it applied to
-   * every change, so a single layer key waited its sibling's turn (four steps
-   * for boulders) and the press read as unmapped. So: staggered when more than
-   * one layer changes in the same beat, instant when one layer answers for
-   * itself.
+   * The stagger reads as a build-up only when the group moves - the mosaic
+   * switch. Held in the stylesheet it applied to every change, so a single
+   * layer key waited its sibling's turn, four steps for boulders, and the
+   * press read as unmapped.
    *
-   * Kept out of `layer_data` on purpose - a computed reading this ref while
-   * this watcher reads that computed would chase its own tail.
-   *
-   * @type {import('vue').Ref<Record<string, string>>}
+   * It is a window rather than a verdict on one change, because switching the
+   * group on sends as-figure off to load the cutouts and `vector.cutouts`
+   * fills in a layer at a time. Read change by change, a group entrance looks
+   * like five separate single presses and stops staggering - which is exactly
+   * how the build-up went missing. The switch opens the window; every layer
+   * arriving inside it belongs to the same build-up.
    */
-  const layer_delays = ref({})
-
-  /** Whether the change now leaving carries the build-up's delays. */
   const staggering = ref(false)
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let build_up
 
-  watch(
-    wanted_layers,
-    (now, before = []) => {
-      const changed = geology_layers.filter(
-        layer => now.includes(layer) !== before.includes(layer)
-      )
-      staggering.value = changed.length > 1
-      /** @type {Record<string, string>} */
-      const delays = {}
-      for (const layer of geology_layers)
-        delays[layer] = staggering.value
-          ? `calc(var(--stagger-step) * ${geology_layers.indexOf(layer)})`
-          : '0s'
-      layer_delays.value = delays
-    },
-    { immediate: true }
-  )
+  const begin_build_up = () => {
+    staggering.value = true
+    clearTimeout(build_up)
+    build_up = setTimeout(
+      () => {
+        staggering.value = false
+      },
+      duration_of('--duration-subject') +
+        duration_of('--stagger-step') * (geology_layers.length - 1)
+    )
+  }
+
+  unmounted(() => clearTimeout(build_up))
+
+  watch(cutouts_enabled, begin_build_up)
+  watch(wanted_layers, (now, before = []) => {
+    const changed = geology_layers.filter(
+      layer => now.includes(layer) !== before.includes(layer)
+    )
+    if (changed.length > 1) begin_build_up()
+  })
+
+  /** Where each layer sits in the build-up, as a transition delay. */
+  const layer_delays = computed(() => {
+    /** @type {Record<string, string>} */
+    const delays = {}
+    for (const layer of geology_layers)
+      delays[layer] = staggering.value
+        ? `calc(var(--stagger-step) * ${geology_layers.indexOf(layer)})`
+        : '0s'
+    return delays
+  })
 
   // A layer turned off used to vanish on the same frame, which is why the
   // exit transition below never ran. It still unmounts - five masked `use`

@@ -460,7 +460,10 @@ describe('@/component/posters/as-figure.vue', () => {
           menu: false
         },
         global: {
-          provide: { 'key-commands': mock_key_commands },
+          provide: {
+            'key-commands': mock_key_commands,
+            update_statement: vi.fn()
+          },
           stubs: { AsThought: false }
         }
       })
@@ -489,7 +492,10 @@ describe('@/component/posters/as-figure.vue', () => {
           menu: false
         },
         global: {
-          provide: { 'key-commands': mock_key_commands },
+          provide: {
+            'key-commands': mock_key_commands,
+            update_statement: vi.fn()
+          },
           stubs: { AsThought: false }
         }
       })

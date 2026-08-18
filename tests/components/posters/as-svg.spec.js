@@ -335,7 +335,9 @@ describe('@/components/posters/as-svg.vue', () => {
           stubs: {
             AsAnimation: {
               name: 'AsAnimation',
-              setup: () => ({ morph_active: mock_as_animation_morph })
+              props: ['id', 'svg', 'paused', 'vector', 'in_view'],
+              setup: () => ({ morph_active: mock_as_animation_morph }),
+              render: () => null
             }
           }
         }
@@ -359,7 +361,9 @@ describe('@/components/posters/as-svg.vue', () => {
           stubs: {
             AsAnimation: {
               name: 'AsAnimation',
-              setup: () => ({ morph_active: mock_as_animation_morph })
+              props: ['id', 'svg', 'paused', 'vector', 'in_view'],
+              setup: () => ({ morph_active: mock_as_animation_morph }),
+              render: () => null
             }
           }
         }
@@ -404,6 +408,18 @@ describe('@/components/posters/as-svg.vue', () => {
   })
 
   describe('cutout stagger', () => {
+    beforeEach(() => {
+      // The build-up window is read from the motion constants, which no
+      // stylesheet supplies here.
+      document.documentElement.style.setProperty('--duration-subject', '440ms')
+      document.documentElement.style.setProperty('--stagger-step', '60ms')
+    })
+
+    afterEach(() => {
+      document.documentElement.style.removeProperty('--duration-subject')
+      document.documentElement.style.removeProperty('--stagger-step')
+    })
+
     const all_cutouts = () =>
       vector_fixture({
         cutouts: {
@@ -432,6 +448,44 @@ describe('@/components/posters/as-svg.vue', () => {
       // Boulders is last in the build-up, so it carried the longest delay.
       expect(delay_of(wrapper, 'boulders')).toBe('0s')
       expect(delay_of(wrapper, 'rocks')).toBe('0s')
+    })
+
+    it('keeps the build-up while the layers arrive one at a time', async () => {
+      // Switching the group on sends as-figure off to load the cutouts, so
+      // `vector.cutouts` fills in a layer at a time. Read change by change,
+      // that looks like five single presses and the build-up disappears.
+      const arriving = layers =>
+        vector_fixture({
+          cutouts: Object.fromEntries(
+            ['sediment', 'sand', 'gravel', 'rocks', 'boulders'].map(layer => [
+              layer,
+              layers.includes(layer)
+            ])
+          )
+        })
+
+      mock_mosaic.value = false
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: arriving([]) }
+      })
+      await flushPromises()
+
+      mock_mosaic.value = true
+      await flushPromises()
+
+      // The loader delivers them one at a time, the way as-figure does.
+      const order = ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
+      for (let at = 0; at < order.length; at++) {
+        await wrapper.setProps({
+          sync_poster: arriving(order.slice(0, at + 1))
+        })
+        await flushPromises()
+      }
+
+      expect(delay_of(wrapper, 'boulders')).toBe(
+        'calc(var(--stagger-step) * 4)'
+      )
+      expect(delay_of(wrapper, 'rocks')).toBe('calc(var(--stagger-step) * 3)')
     })
 
     it('builds up fine to coarse when the group moves together', async () => {

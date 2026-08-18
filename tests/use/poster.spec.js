@@ -526,6 +526,9 @@ describe('poster utils', () => {
       // feed runs on for screens of statements past the oldest poster, so
       // there is no second chance on the way down.
       it('pages when a poster near the oldest shows, not only the oldest', async () => {
+        // Paging re-fetches an archive that is already in posters.value, which
+        // logs a DUPES warn by design - silence it so the test stays clean.
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         await load_eight()
 
         await posters_composable.poster_shown({
@@ -534,6 +537,7 @@ describe('poster utils', () => {
         })
 
         expect(as_directory).toHaveBeenCalled()
+        warn.mockRestore()
       })
 
       it('is a function', () => {
@@ -573,11 +577,15 @@ describe('poster utils', () => {
       // A poster that never draws never comes into view to ask for the next
       // page, so it would hold the feed shut from the bottom of the list.
       it('pages on behalf of a missing poster near the oldest', async () => {
+        // Paging re-fetches an archive already in posters.value, which logs a
+        // DUPES warn by design - silence it so the test stays clean.
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         await load_eight()
 
         await posters_composable.poster_missing('/user/posters/1000')
 
         expect(as_directory).toHaveBeenCalled()
+        warn.mockRestore()
       })
 
       it('leaves paging alone for a missing poster near the top', async () => {
