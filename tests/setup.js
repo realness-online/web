@@ -1,14 +1,27 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vite-plus/test'
+import { h } from 'vue'
 import { config } from '@vue/test-utils'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import fs from 'fs'
 
 // Setup Vue Test Utils global config
+// AsAnimation holds an SVG-only template (nested `<animate>` elements), which
+// Vue's runtime cannot render once shallowMount stubs it - it only keeps the
+// setup. A bare stub with no render function trips Vue's noisy "missing
+// template or render function" warning, so give it a render that returns a
+// plain element instead. Tests that need AsAnimation's exposed state override
+// this stub (per-mount stubs win over this global one).
 config.global.stubs = {
   'router-link': true,
-  'router-view': true
+  'router-view': true,
+  AsAnimation: {
+    name: 'AsAnimation',
+    props: ['id', 'svg', 'paused', 'vector', 'in_view'],
+    setup: () => ({}),
+    render: () => h('as-animation-stub')
+  }
 }
 
 // Provide set_working globally for all tests
