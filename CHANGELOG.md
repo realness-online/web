@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.9.0 - 2026-08-18
+
 - **Turning mosaic or a layer off lets it leave** - it used to vanish on the
   same frame. It now fades out, then goes. The menu and grid do the same, and
   they stay in the page so they can; the geology layers still unmount, one
