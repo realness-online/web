@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- **Turning mosaic or a layer off lets it leave** - it used to vanish on the
+  same frame. It now fades out, then goes. The menu and grid do the same, and
+  they stay in the page so they can; the geology layers still unmount, one
+  beat later.
+
+- **A layer key with mosaic off now shows that layer alone.** It used to do
+  nothing you could see. The group comes back carrying just that layer.
+  Background stays; it is the ground the others sit on.
+
+- **Arrow keys pan the poster** instead of jumping by slice. Hold to pick up
+  a little speed. Home still centres.
+
+- **Mosaic still builds up when you turn the group on** - cutouts arriving
+  one by one used to look like five separate presses, and the stagger
+  dropped. The entrance now holds for the whole arrival.
+
 - **The sign-in window keeps still while it works** - it used to shrink around
   the three dots between steps, leaving them crowded against the close button.
   The window now holds its size, the dots sit in the middle of it, and they are
