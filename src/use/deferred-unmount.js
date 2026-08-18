@@ -37,8 +37,10 @@ export const duration_of = name => {
  * @param {() => string[]} source Keys that should be shown right now
  * @param {Object} [options]
  * @param {string} [options.duration] Motion constant to hold for
- * @param {number} [options.steps] Stagger steps to allow for, if the exit is
- *   staggered across siblings
+ * @param {number | (() => number)} [options.steps] Stagger steps to allow for,
+ *   if the exit is staggered across siblings. A function is asked at the
+ *   moment of the hold, for a stagger that only some exits carry - a fixed
+ *   count would keep every other exit mounted for a wait it never took.
  * @returns {{ keys: import('vue').ComputedRef<string[]>,
  *             leaving: import('vue').Ref<Set<string>>,
  *             end: (key: string) => void }}
@@ -66,11 +68,12 @@ export const use_deferred_unmount = (
   // transitionend only gets to be early.
   const hold = key => {
     clearTimeout(timers.get(key))
+    const waiting = typeof steps === 'function' ? steps() : steps
     timers.set(
       key,
       setTimeout(
         () => forget(key),
-        duration_of(duration) + duration_of('--stagger-step') * steps + SLACK
+        duration_of(duration) + duration_of('--stagger-step') * waiting + SLACK
       )
     )
   }

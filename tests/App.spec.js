@@ -33,6 +33,7 @@ const {
   mock_aspect_ratio_mode,
   mock_slice_alignment,
   mock_animation_speed,
+  mock_camera_y,
   mock_footer_visible,
   mock_current_route,
   mock_select_photo,
@@ -69,6 +70,7 @@ const {
     mock_aspect_ratio_mode: create_ref('auto'),
     mock_slice_alignment: create_ref('ymid'),
     mock_animation_speed: create_ref('normal'),
+    mock_camera_y: create_ref(0),
     mock_footer_visible: create_ref(true),
     mock_current_route: create_ref({ path: '/', fullPath: '/' }),
     mock_select_photo: vi.fn(),
@@ -123,6 +125,9 @@ vi.mock('vue-router', () => ({
 
 vi.mock('@/utils/preference', async () => {
   const { ref } = await import('vue')
+  // The layer rule is pure over whatever refs it is handed, so the real one is
+  // used rather than a second copy of it living in this mock.
+  const { toggle_layer } = await vi.importActual('@/utils/layer-toggle')
   // Create real Vue refs for reactivity (watchers need real refs)
   const shadow_ref = ref(false)
   const stroke_ref = ref(false)
@@ -355,6 +360,15 @@ vi.mock('@/utils/preference', async () => {
     sync_drama_master()
   }
 
+  const camera_y_ref = ref(0)
+  const color_cycle_ref = ref(false)
+  const only_mine_ref = ref(false)
+  Object.defineProperty(mock_camera_y, 'value', {
+    get: () => camera_y_ref.value,
+    set: v => {
+      camera_y_ref.value = v
+    }
+  })
   const animation_speed_ref = ref('normal')
   Object.defineProperty(mock_animation_speed, 'value', {
     get: () => animation_speed_ref.value,
@@ -411,7 +425,11 @@ vi.mock('@/utils/preference', async () => {
     cycle_drama,
     cycle_animation_speed,
     cycle_aspect_ratio,
-    ASPECT_RATIOS
+    ASPECT_RATIOS,
+    toggle_layer,
+    camera_y: camera_y_ref,
+    color_cycle: color_cycle_ref,
+    only_mine: only_mine_ref
   }
 })
 
@@ -703,6 +721,57 @@ describe('App.vue', () => {
       })
     })
 
+    describe('layer keys', () => {
+      it('Toggle_Light changes only the light layer while shadow is on', () => {
+        const handler = registered_handlers['pref::Toggle_Light']
+        expect(handler).toBeDefined()
+        mock_shadow.value = true
+        mock_light.value = true
+        mock_bold.value = true
+
+        handler()
+
+        expect(mock_light.value).toBe(false)
+        expect(mock_bold.value).toBe(true)
+        expect(mock_shadow.value).toBe(true)
+      })
+
+      it('Toggle_Rocks brings the mosaic back carrying rocks alone', () => {
+        const handler = registered_handlers['pref::Toggle_Rocks']
+        expect(handler).toBeDefined()
+        mock_mosaic.value = false
+        mock_boulders.value = true
+        mock_rocks.value = false
+
+        handler()
+
+        expect(mock_mosaic.value).toBe(true)
+        expect(mock_rocks.value).toBe(true)
+        expect(mock_boulders.value).toBe(false)
+      })
+    })
+
+    describe('camera keys', () => {
+      it('Camera_Down moves the camera down and Camera_Center returns it', () => {
+        const down = registered_handlers['pref::Camera_Down']
+        const centre = registered_handlers['pref::Camera_Center']
+        expect(down).toBeDefined()
+        expect(centre).toBeDefined()
+
+        down()
+        expect(mock_camera_y.value).toBeGreaterThan(0)
+
+        centre()
+        expect(mock_camera_y.value).toBe(0)
+      })
+
+      it('Camera_Up moves the other way', () => {
+        const up = registered_handlers['pref::Camera_Up']
+        up()
+        expect(mock_camera_y.value).toBeLessThan(0)
+      })
+    })
+
     describe('Toggle_Drama', () => {
       it('toggles drama and syncs drama_back and drama_front', () => {
         const handler = registered_handlers['pref::Toggle_Drama']
@@ -823,38 +892,6 @@ describe('App.vue', () => {
         mock_animation_speed.value = ''
         handler()
         expect(mock_animation_speed.value).toBe('stride')
-      })
-    })
-
-    describe('Slice_Alignment_Up', () => {
-      it('cycles slice alignment up', () => {
-        const handler = registered_handlers['pref::Slice_Alignment_Up']
-        expect(handler).toBeDefined()
-        handler()
-        expect(mock_slice_alignment.value).toBe('ymin')
-      })
-
-      it('cycles from ymax to ymid', () => {
-        const handler = registered_handlers['pref::Slice_Alignment_Up']
-        mock_slice_alignment.value = 'ymax'
-        handler()
-        expect(mock_slice_alignment.value).toBe('ymid')
-      })
-    })
-
-    describe('Slice_Alignment_Down', () => {
-      it('cycles slice alignment down', () => {
-        const handler = registered_handlers['pref::Slice_Alignment_Down']
-        expect(handler).toBeDefined()
-        handler()
-        expect(mock_slice_alignment.value).toBe('ymax')
-      })
-
-      it('cycles from ymin to ymid', () => {
-        const handler = registered_handlers['pref::Slice_Alignment_Down']
-        mock_slice_alignment.value = 'ymin'
-        handler()
-        expect(mock_slice_alignment.value).toBe('ymid')
       })
     })
   })

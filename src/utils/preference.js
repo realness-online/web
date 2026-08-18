@@ -1,4 +1,6 @@
 import { useStorage as storage } from '@vueuse/core'
+// Re-exported so every caller still reaches the layer rule through this module.
+export { toggle_layer } from '@/utils/layer-toggle'
 import { DEFAULT_ANIMATION_SPEED } from '@/utils/animation-config'
 import {
   DEFAULT_MOSAIC_SPREAD,
@@ -61,26 +63,6 @@ export const shadow_layer_prefs = {
   background
 }
 
-/**
- * A layer key only ever changes its own layer. With the group off there is
- * nothing on screen to change, so the key means "show me this one": the group
- * comes on carrying that layer alone, rather than every layer whose
- * preference happened to be left on.
- *
- * @param {import('vue').Ref<boolean>} layer
- * @param {import('vue').Ref<boolean>} group
- * @param {Record<string, import('vue').Ref<boolean>>} siblings
- */
-export const toggle_layer = (layer, group, siblings) => {
-  if (group.value) {
-    layer.value = !layer.value
-    return
-  }
-  for (const sibling of Object.values(siblings))
-    sibling.value = sibling === layer
-  group.value = true
-}
-
 export const enable_shadow_layers = () => {
   bold.value = true
   medium.value = true
@@ -102,6 +84,12 @@ export const grid = storage('grid', false)
 export const aspect_ratio_mode = storage('aspect_ratio_mode', 'auto')
 export const slice_alignment = storage('slice_alignment', 'ymid')
 
+/**
+ * Where the camera sits vertically, measured in frames of travel from centre:
+ * 0.5 is half a frame down. Continuous, unlike slice_alignment's three stops -
+ * the arrow keys drive it, and each poster stops it at its own crop.
+ */
+export const camera_y = storage('camera_y', 0)
 export const menu = storage('menu', true)
 export const footer_visible = storage('footer_visible', true)
 
@@ -172,6 +160,7 @@ export const reset_preferences = () => {
   grid.value = false
   aspect_ratio_mode.value = 'auto'
   slice_alignment.value = 'ymid'
+  camera_y.value = 0
   menu.value = true
   footer_visible.value = true
   sync_folder.value = false

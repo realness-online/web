@@ -6,14 +6,7 @@
   import { as_layer_id } from '@/utils/itemid'
   import { geology_layers } from '@/use/poster'
   import { use_deferred_unmount } from '@/use/deferred-unmount'
-  import {
-    mosaic,
-    boulders,
-    rocks,
-    gravel,
-    sand,
-    sediment
-  } from '@/utils/preference'
+  import { mosaic } from '@/utils/preference'
 
   const props = defineProps({
     itemid: {
@@ -41,22 +34,28 @@
       : mosaic.value
   )
 
-  const layer_preferences = { boulders, rocks, gravel, sand, sediment }
-
+  /**
+   * Every cutout the poster has, not only the ones switched on.
+   *
+   * A symbol reads its geometry out of idb when it mounts, so tying the defs
+   * to the preferences put that read on the key press: the layer sat still for
+   * as long as the read took, then faded. Same press, different wait each
+   * time. Defs are not drawn - only the `use` in as-svg draws - so keeping
+   * them resident costs nothing on screen and makes every press immediate.
+   * The default has all five on anyway, so this is the DOM the app already
+   * carries.
+   */
   const defined_layers = computed(() => {
     if (!layer_defs_on.value) return []
     // Coarsest first, as the defs were written by hand before this loop.
     return [...geology_layers]
       .reverse()
-      .filter(
-        layer =>
-          layer_preferences[layer].value && props.vector?.cutouts?.[layer]
-      )
+      .filter(layer => props.vector?.cutouts?.[layer])
   })
 
-  // The def has to outlive the preference by as long as the `use` does. If the
-  // symbol goes first the `use` resolves to nothing and the layer blanks, so
-  // the exit transition over in as-svg never gets to run.
+  // The defs have to outlive the mosaic switch by as long as the `use` does.
+  // If a symbol goes first the `use` resolves to nothing and the layer blanks,
+  // so the exit transition over in as-svg never gets to run.
   const { keys: held_layers } = use_deferred_unmount(
     () => defined_layers.value,
     { steps: geology_layers.length - 1 }

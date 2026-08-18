@@ -8,6 +8,7 @@ import { watch } from 'vue'
 import { useMagicKeys } from '@vueuse/core'
 import { useRouter as use_router } from 'vue-router'
 import { use_keymap } from '@/use/key-commands'
+import { camera_next, camera_reach, CAMERA_REPEAT_MS } from '@/use/camera'
 import {
   ANIMATION_SPEEDS,
   ANIMATION_SPEED_LEGACY,
@@ -33,22 +34,29 @@ import {
   sediment,
   animate,
   animation_speed,
+  color_cycle,
+  only_mine,
   info,
   storytelling,
   grid,
   morph,
   aspect_ratio_mode,
-  slice_alignment,
   menu,
   footer_visible,
   view_3d,
-  toggle_layer
+  toggle_layer,
+  camera_y
 } from '@/utils/preference'
 
-const ASPECT_RATIOS = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
-
-/** Bottom to top. The ends do not wrap. */
-const SLICE_ALIGNMENTS = ['ymin', 'ymid', 'ymax']
+const ASPECT_RATIOS = [
+  'auto',
+  '1/1',
+  '4/3',
+  '1.618/1',
+  '16/9',
+  '2.35/1',
+  '2.76/1'
+]
 
 /**
  * drama_back, drama_front - the three stages a repeated press walks through.
@@ -155,13 +163,37 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   })
   watch(aspect_ratio_mode, apply_aspect_ratio, { immediate: true })
 
-  const step_slice_alignment = direction => {
-    const at = SLICE_ALIGNMENTS.indexOf(slice_alignment.value || 'ymid')
-    const next = SLICE_ALIGNMENTS[at + direction]
-    if (next) slice_alignment.value = next
+  // Holding the key should pick up speed like a dolly leaving its mark, but
+  // only so far - past a point it stops reading as a camera and starts
+  // reading as a jump cut. Each repeat gains a little, capped, and a pause
+  // (or a change of direction) puts it back at walking pace.
+  let camera_ramp = 1
+  let camera_last = 0
+  let camera_heading = 0
+
+  /** @param {number} direction -1 moves the camera up, 1 down */
+  const move_camera = direction => {
+    const now = performance.now()
+    const held =
+      direction === camera_heading && now - camera_last < CAMERA_REPEAT_MS
+    const press = camera_next({
+      at: camera_y.value,
+      direction,
+      ramp: camera_ramp,
+      held,
+      reach: camera_reach.value
+    })
+    camera_ramp = press.ramp
+    camera_last = now
+    camera_heading = direction
+    camera_y.value = press.at
   }
-  register('pref::Slice_Alignment_Up', () => step_slice_alignment(-1))
-  register('pref::Slice_Alignment_Down', () => step_slice_alignment(1))
+  register('pref::Camera_Up', () => move_camera(-1))
+  register('pref::Camera_Down', () => move_camera(1))
+  register('pref::Camera_Center', () => {
+    camera_ramp = 1
+    camera_y.value = 0
+  })
 
   register('pref::Toggle_View_3d', () => {
     view_3d.value = !view_3d.value
@@ -174,6 +206,10 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   register_preference('pref::Toggle_Storytelling', storytelling)
   register_preference('pref::Toggle_Grid', grid)
   register_preference('pref::Toggle_Menu', menu)
+  // No default key. They are in `preference_command`, so a custom binding can
+  // reach them; without a handler that binding would quietly do nothing.
+  register_preference('pref::Toggle_Color_Cycle', color_cycle)
+  register_preference('pref::Toggle_Only_Mine', only_mine)
   register_preference('pref::Toggle_Footer', footer_visible)
   const register_layer = (command, layer, group, siblings) =>
     register(command, () => toggle_layer(layer, group, siblings))

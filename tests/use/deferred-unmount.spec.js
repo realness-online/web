@@ -57,6 +57,31 @@ describe('@/use/deferred-unmount', () => {
       expect(keys.value).toEqual([])
     })
 
+    it('asks a steps function at the moment of the hold', async () => {
+      document.documentElement.style.setProperty('--stagger-step', '60ms')
+      const staggering = ref(false)
+      const showing = ref(['sand'])
+      const { keys } = use_deferred_unmount(() => showing.value, {
+        steps: () => (staggering.value ? 4 : 0)
+      })
+
+      // Nothing staggered this exit, so it holds for the fade alone.
+      showing.value = []
+      await nextTick()
+      vi.advanceTimersByTime(490)
+      expect(keys.value).toEqual([])
+
+      staggering.value = true
+      showing.value = ['sand']
+      await nextTick()
+      showing.value = []
+      await nextTick()
+      vi.advanceTimersByTime(490)
+      expect(keys.value).toEqual(['sand'])
+      vi.advanceTimersByTime(250)
+      expect(keys.value).toEqual([])
+    })
+
     it('drops it early when the transition ends', async () => {
       const showing = ref(['rocks'])
       const { keys, end } = use_deferred_unmount(() => showing.value)

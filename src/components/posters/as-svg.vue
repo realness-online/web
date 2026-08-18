@@ -10,11 +10,16 @@
     onUnmounted as unmounted,
     nextTick as tick,
     ref,
+    watch,
     computed,
     provide,
     inject
   } from 'vue'
-  import { useDocumentVisibility, useMediaQuery } from '@vueuse/core'
+  import {
+    useDocumentVisibility,
+    useMediaQuery,
+    useElementSize
+  } from '@vueuse/core'
   import {
     use as use_poster,
     is_vector,
@@ -43,7 +48,8 @@
     storytelling,
     aspect_ratio_mode,
     slice_alignment,
-    grid
+    grid,
+    camera_y
   } from '@/utils/preference'
   import { as_layer_id, as_fragment_id, as_created_at } from '@/utils/itemid'
   import { as_day } from '@/utils/date'
@@ -51,8 +57,12 @@
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import {
     poster_landscape,
-    slice_preserve_aspect_ratio
+    slice_preserve_aspect_ratio,
+    camera_travel,
+    camera_bounds
   } from '@/use/poster-aspect'
+  import { report_camera_reach } from '@/use/camera'
+  import { is_symbol_ready } from '@/use/symbol-ready'
   const props = defineProps({
     itemid: {
       type: String,
@@ -279,6 +289,17 @@
    * can't answer this: `landscape` is not persisted on the item, so until the
    * vector loads the viewBox makes every poster look like it fits.
    */
+  /**
+   * useElementSize starts at zero and only fills in after its observer runs,
+   * which never happens in a test environment, so fall back to a live measure.
+   */
+  const measured_frame = computed(() => {
+    if (frame_width.value && frame_height.value)
+      return { width: frame_width.value, height: frame_height.value }
+    const rect = trigger.value?.getBoundingClientRect()
+    return { width: rect?.width || 0, height: rect?.height || 0 }
+  })
+
   const can_pan = computed(
     () =>
       orientation_portrait.value &&
@@ -287,9 +308,14 @@
       !storytelling.value &&
       !props.behind_canvas
   )
+  // Measured, not read on demand: a computed that calls
+  // getBoundingClientRect() never re-runs on a resize or a rotation, so the
+  // framing would stay wherever it was when the poster first drew.
+  const { width: frame_width, height: frame_height } = useElementSize(trigger)
+
   const max_pan_px = computed(() => {
     if (!can_pan.value || !trigger.value || !vector.value) return 0
-    const rect = trigger.value.getBoundingClientRect()
+    const rect = measured_frame.value
     const [, , content_width, content_height] = vector.value.viewbox
       .split(' ')
       .map(Number)
@@ -300,6 +326,42 @@
     const scaled_width = content_width * scale
     const overflow = scaled_width - rect.width
     return Math.max(0, overflow / 2)
+  })
+
+  /**
+   * Tell the camera what this poster can use, so it stops where the posters on
+   * screen stop instead of counting on past them.
+   */
+  const camera_reachable = computed(() => {
+    if (!intersecting.value && !props.pin) return null
+    if (use_meet.value || props.behind_canvas) return null
+    if (!vector.value) return null
+    const rect = measured_frame.value
+    const { up, down, frame } = camera_bounds({
+      width: rect.width,
+      height: rect.height,
+      viewbox: vector.value.viewbox,
+      alignment: slice_alignment.value || 'ymid'
+    })
+    if (!frame) return null
+    return { up, down }
+  })
+
+  watch_effect(() => report_camera_reach(props.itemid, camera_reachable.value))
+  unmounted(() => report_camera_reach(props.itemid, null))
+
+  /** Where the camera sits on this poster, in viewBox units. */
+  const camera_offset = computed(() => {
+    if (use_meet.value || props.behind_canvas) return 0
+    if (!trigger.value || !vector.value) return 0
+    const rect = measured_frame.value
+    return camera_travel({
+      width: rect.width,
+      height: rect.height,
+      viewbox: vector.value.viewbox,
+      alignment: slice_alignment.value || 'ymid',
+      at: camera_y.value
+    })
   })
 
   const pan_delegator = inject('pan_delegator', null)
@@ -351,10 +413,29 @@
     else on_touch_contextmenu(event)
   }
 
+  /**
+   * Screen pixels per viewBox unit. A transform on an SVG element is in user
+   * units, so a pan measured in screen pixels has to be converted or the two
+   * axes of the same translate move at different rates.
+   */
+  const user_units = computed(() => {
+    const rect = measured_frame.value
+    if (!vector.value || !rect.width || !rect.height) return 1
+    const [, , content_width, content_height] = vector.value.viewbox
+      .split(' ')
+      .map(Number)
+    if (!content_width || !content_height) return 1
+    return Math.max(rect.width / content_width, rect.height / content_height)
+  })
+
   const pan_style = computed(() => {
-    if (!can_pan.value) return {}
-    const transform = `translateX(${pan_offset.value}px)`
-    const transition = panning.value ? 'none' : 'transform 0.25s ease-out'
+    const across = can_pan.value ? pan_offset.value / user_units.value : 0
+    const down = -camera_offset.value
+    if (!across && !down) return {}
+    const transform = `translate(${across}px, ${down}px)`
+    const transition = panning.value
+      ? 'none'
+      : 'transform var(--duration-camera) var(--ease-camera)'
     return { transform, transition }
   })
 
@@ -398,15 +479,19 @@
     const layers = {}
     geology_layers.forEach(layer => {
       const pref = layer_preferences[layer]
-      const visible =
+      const wanted = Boolean(
         cutouts_enabled.value && pref.value && vector.value?.cutouts?.[layer]
-      const fragment = props.itemid
-        ? as_fragment_id(
-            as_layer_id(
-              /** @type {import('@/types').Id} */ (props.itemid),
-              layer
-            )
-          )
+      )
+      const layer_id = props.itemid
+        ? as_layer_id(/** @type {import('@/types').Id} */ (props.itemid), layer)
+        : ''
+      // Not `wanted` alone: the symbol this points at loads from idb, and a
+      // `use` that mounts first fades up over geometry that is not there yet -
+      // the layer then arrives partway through its own entrance, as far
+      // through as the read was slow. Waiting puts both on one clock.
+      const visible = wanted && is_symbol_ready(layer_id)
+      const fragment = layer_id
+        ? as_fragment_id(/** @type {import('@/types').Id} */ (layer_id))
         : ''
       let opacity = CUTOUT_SOLO_OPACITY
       if (stroke_only.value) opacity = CUTOUT_STROKE_OPACITY
@@ -419,7 +504,7 @@
         ? { '--layer-opacity': opacity, visibility: 'visible' }
         : { '--layer-opacity': OPACITY_HIDDEN, visibility: 'hidden' }
 
-      layers[layer] = { visible, fragment, style }
+      layers[layer] = { visible, wanted, fragment, style }
     })
     return layers
   })
@@ -428,12 +513,62 @@
     geology_layers.filter(layer => layer_data.value[layer].visible)
   )
 
+  /**
+   * What the preferences asked for, whether or not it has drawn yet. The
+   * build-up below is a reading of the press, so it follows the ask - the
+   * symbols resolve one at a time, and keying it to those would call every
+   * group change a single change.
+   */
+  const wanted_layers = computed(() =>
+    geology_layers.filter(layer => layer_data.value[layer].wanted)
+  )
+
+  /**
+   * Where each layer sits in the build-up, as a transition delay.
+   *
+   * The stagger reads as a build-up only when the group moves together - the
+   * mosaic switch turning all five on. Held in the stylesheet it applied to
+   * every change, so a single layer key waited its sibling's turn (four steps
+   * for boulders) and the press read as unmapped. So: staggered when more than
+   * one layer changes in the same beat, instant when one layer answers for
+   * itself.
+   *
+   * Kept out of `layer_data` on purpose - a computed reading this ref while
+   * this watcher reads that computed would chase its own tail.
+   *
+   * @type {import('vue').Ref<Record<string, string>>}
+   */
+  const layer_delays = ref({})
+
+  /** Whether the change now leaving carries the build-up's delays. */
+  const staggering = ref(false)
+
+  watch(
+    wanted_layers,
+    (now, before = []) => {
+      const changed = geology_layers.filter(
+        layer => now.includes(layer) !== before.includes(layer)
+      )
+      staggering.value = changed.length > 1
+      /** @type {Record<string, string>} */
+      const delays = {}
+      for (const layer of geology_layers)
+        delays[layer] = staggering.value
+          ? `calc(var(--stagger-step) * ${geology_layers.indexOf(layer)})`
+          : '0s'
+      layer_delays.value = delays
+    },
+    { immediate: true }
+  )
+
   // A layer turned off used to vanish on the same frame, which is why the
   // exit transition below never ran. It still unmounts - five masked `use`
-  // elements measured ~29fps against ~59 - just one transition later.
+  // elements measured ~29fps against ~59 - just one transition later. Only a
+  // staggered exit waits on the build-up; a single layer leaves on its own
+  // clock rather than sitting mounted through four steps it never took.
   const { keys: held_layers } = use_deferred_unmount(
     () => visible_layers.value,
-    { steps: geology_layers.length - 1 }
+    { steps: () => (staggering.value ? geology_layers.length - 1 : 0) }
   )
 
   /**
@@ -528,7 +663,10 @@
             :key="layer"
             :itemprop="layer"
             :href="layer_data[layer].fragment"
-            :style="layer_data[layer].style" />
+            :style="[
+              layer_data[layer].style,
+              { '--layer-delay': layer_delays[layer] }
+            ]" />
         </g>
       </slot>
 
@@ -597,6 +735,7 @@
   /* aspect-ratio: 2.35 / 1 // current film */
   /* aspect-ratio: 1.618 / 1 // golden-ratio */
   /* aspect-ratio: 16 / 9 // most like human vision */
+  /* aspect-ratio: 4 / 3 // classic print */
   /* aspect-ratio: 1 / 1 // square */
   svg[itemtype='/posters'] {
     display: block;
@@ -672,6 +811,12 @@
         visibility duration-subject ease-exit,
         display duration-subject ease-exit;
       transition-behavior: allow-discrete;
+      // The mosaic switch turns all five layers on at once, and staggering
+      // fine to coarse makes the build-up legible instead of one pop. The step
+      // comes from the component, which is the only place that knows whether
+      // the group moved together or one key answered for itself. Delay is per
+      // property so the first one, filter, keeps hover instant.
+      stagger(unquote('var(--layer-delay, 0s)'));
 
       &:hover {
         transition: filter 0.33s ease;
@@ -685,24 +830,6 @@
       }
     }
 
-    // The mosaic switch turns all five layers on at once. Staggering fine to
-    // coarse makes the build-up legible instead of one pop. Delay is per
-    // property so the first one, filter, keeps hover instant.
-    & use[itemprop='sediment'] {
-      stagger(0s);
-    }
-    & use[itemprop='sand'] {
-      stagger(unquote('calc(var(--stagger-step) * 1)'));
-    }
-    & use[itemprop='gravel'] {
-      stagger(unquote('calc(var(--stagger-step) * 2)'));
-    }
-    & use[itemprop='rocks'] {
-      stagger(unquote('calc(var(--stagger-step) * 3)'));
-    }
-    & use[itemprop='boulders'] {
-      stagger(unquote('calc(var(--stagger-step) * 4)'));
-    }
 
     &[data-held-layer='sediment'] use[itemprop='sediment'],
     &[data-held-layer='sand'] use[itemprop='sand'],

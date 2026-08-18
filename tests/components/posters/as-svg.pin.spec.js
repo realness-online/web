@@ -1,6 +1,7 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import as_svg from '@/components/posters/as-svg'
+import { load_cutout_symbols } from '../../helpers/cutout-symbols'
 
 const itemid = '/+16282281824/posters/559666932867'
 
@@ -33,6 +34,7 @@ const {
   mock_animate_pref,
   mock_morph_pref,
   mock_grid,
+  mock_camera_y,
   mock_background,
   mock_light,
   mock_regular,
@@ -58,6 +60,7 @@ const {
     mock_animate_pref: create_watchable(false),
     mock_morph_pref: create_watchable(false),
     mock_grid: create_watchable(false),
+    mock_camera_y: create_watchable(0),
     mock_background: create_watchable(true),
     mock_light: create_watchable(true),
     mock_regular: create_watchable(true),
@@ -83,6 +86,7 @@ vi.mock('@/utils/preference', () => ({
   animate: mock_animate_pref,
   morph: mock_morph_pref,
   grid: mock_grid,
+  camera_y: mock_camera_y,
   background: mock_background,
   light: mock_light,
   regular: mock_regular,
@@ -119,6 +123,9 @@ vi.mock('@/utils/itemid', async importOriginal => {
 
 describe('@/components/posters/as-svg.vue pin', () => {
   beforeEach(() => {
+    // as-svg draws a cutout only once its symbol has loaded, and the symbols
+    // live in a sibling component that a shallow mount never renders.
+    load_cutout_symbols(itemid)
     mock_mosaic.value = true
     vi.spyOn(window, 'matchMedia').mockImplementation(query => ({
       matches: String(query).includes('portrait'),

@@ -104,3 +104,31 @@ poster into view before asserting on `use[itemprop]`: offscreen posters
 legitimately carry only their `shadow` use, because `cutouts_mounted` gates on
 `intersecting`. `Shift+z` is the working form for uppercase geology shortcuts -
 `press Z` registers as `z` and silently toggles `bold` instead.
+
+## Addendum, after b3..b9
+
+The Subject table above is the **pre-b3 measurement** and is kept as the record
+of what was wrong. What the verdicts mean now:
+
+| Row                  | Then              | Now                                                                                                                                                                    |
+| -------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mosaic` (group)     | removed           | held - the group and its symbols outlive the switch, staggered fine to coarse (b3)                                                                                     |
+| geology layers       | removed           | held, and the entrance waits for its symbol so it never fades up over nothing (b9). Symbols are defined for every cutout the poster has, so a press never waits on idb |
+| `info`               | removed           | held past the flip, chunk stays lazy (b2)                                                                                                                              |
+| `grid`               | removed           | stays mounted, `display` carries it out (b4)                                                                                                                           |
+| `menu`               | removed           | footer stays mounted under `data-menu` (b2)                                                                                                                            |
+| `shadow`, `bold` etc | persists, instant | SMIL fade over `--duration-subject`; CSS cannot reach a path inside defs (b6, b7)                                                                                      |
+| `stroke`             | persists          | still a `v-if` on `<animate>` elements - no rendered box to transition, deliberate                                                                                     |
+| `storytelling`       | rebuilt           | unchanged, still out of scope                                                                                                                                          |
+
+Two rows the original audit did not have:
+
+- `slice_alignment` - was three stops on the arrow keys. The arrows now drive
+  `camera_y`, a continuous camera (b8), and the stepping commands are deleted.
+  The preference is still the framing base; nothing binds to it directly.
+- `camera_y` - new. `transform` only, `--duration-camera`, `--ease-camera`.
+
+Live re-verification, all ten layer keys on a real poster, each pressed off and
+on: every one round-trips, with the group-off rule holding on both sides -
+mosaic off then `Shift+X` returns rocks alone; shadow off then `v` returns light
+alone with background still on.
