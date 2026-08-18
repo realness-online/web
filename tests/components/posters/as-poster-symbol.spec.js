@@ -57,16 +57,21 @@ describe('@/components/posters/as-poster-symbol', () => {
     expect(wrapper.find('svg[data-poster-symbol-defs]').exists()).toBe(false)
   })
 
-  it('renders shadow and enabled cutout symbols when shown', () => {
+  it('defines a symbol for every cutout the poster has, switched on or not', () => {
+    // gravel, sand and sediment are all off in beforeEach; the poster has
+    // gravel geometry, so its symbol is defined and waiting. A def draws
+    // nothing on its own, and mounting it on the key press would put an idb
+    // read between the press and the fade.
     const wrapper = mount()
     expect(wrapper.find('svg[data-poster-symbol-defs]').exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'as-symbol-shadow' }).exists()).toBe(
       true
     )
     const symbols = wrapper.findAllComponents({ name: 'as-symbol' })
-    expect(symbols).toHaveLength(2)
+    expect(symbols).toHaveLength(3)
     expect(symbols[0].props('itemid')).toBe(`${itemid}/boulders`)
     expect(symbols[1].props('itemid')).toBe(`${itemid}/rocks`)
+    expect(symbols[2].props('itemid')).toBe(`${itemid}/gravel`)
   })
 
   it('honors show_cutout_symbols over mosaic', () => {

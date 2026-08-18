@@ -87,6 +87,8 @@ export const default_keymap = [
       'pref::Toggle_Mosaic': 'Mosaic display on posters',
       'pref::Toggle_View_3d': '3D viewer',
       'pref::Toggle_Morph': 'Lava lamp layer flow',
+      'pref::Toggle_Color_Cycle': 'Cycle poster colors (no default key)',
+      'pref::Toggle_Only_Mine': 'Show only my posters (no default key)',
       'pref::Toggle_Background': 'Background fill on posters',
       'pref::Toggle_Drama': 'Dynamic lighting on posters',
       'pref::Cycle_Drama': 'Cycle through individual drama light settings',
@@ -95,10 +97,9 @@ export const default_keymap = [
       'pref::Toggle_Info': 'FPS and animation info',
       'pref::Toggle_Storytelling': 'Storytelling (side-scroll) view',
       'pref::Cycle_Aspect_Ratio': 'Cycle through poster aspect ratio modes',
-      'pref::Slice_Alignment_Up':
-        'Move slice alignment up (ymid→ymax, ymin→ymid)',
-      'pref::Slice_Alignment_Down':
-        'Move slice alignment down (ymid→ymin, ymax→ymid)',
+      'pref::Camera_Up': 'Move the camera up the poster',
+      'pref::Camera_Down': 'Move the camera down the poster',
+      'pref::Camera_Center': 'Centre the camera',
       'pref::Toggle_Bold': 'Bold layer visible',
       'pref::Toggle_Medium': 'Medium layer visible',
       'pref::Toggle_Regular': 'Regular layer visible',
@@ -123,8 +124,9 @@ export const default_keymap = [
     use_key_equivalents: true,
     bindings: {
       Shortcuts: '',
-      ArrowUp: 'pref::Slice_Alignment_Up',
-      ArrowDown: 'pref::Slice_Alignment_Down'
+      ArrowUp: 'pref::Camera_Up',
+      ArrowDown: 'pref::Camera_Down',
+      Home: 'pref::Camera_Center'
     },
     descriptions: {
       'poster::Toggle_Meet_Slice': 'Toggle meet/slice on focused poster'

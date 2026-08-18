@@ -481,8 +481,25 @@
       ? { toggle_meet: dom_reference_activate }
       : as_svg_ref.value
 
+  const poster_focused = ref(false)
+
+  /**
+   * The arrows mean "move the camera" in both views; which camera they reach
+   * depends on which one is drawing. The 3d canvas listens for them itself, so
+   * the svg camera only claims the Poster context while 3d is off - otherwise
+   * one press moves both cameras at once.
+   */
+  watch_effect(() => {
+    // Only the focused poster speaks. The context list is one shared list and
+    // a feed mounts a dozen of these, so an unfocused instance running this
+    // would take the context away from whichever poster actually has focus.
+    if (!poster_focused.value) return
+    if (view_3d.value) key_commands?.remove_context('Poster')
+    else key_commands?.add_context('Poster')
+  })
+
   const on_focusin = () => {
-    key_commands?.add_context('Poster')
+    poster_focused.value = true
     key_commands?.register_handler('poster::Toggle_Meet_Slice', {
       handler: () => poster_toggle_target()?.toggle_meet?.(),
       context: 'Poster'
@@ -490,6 +507,7 @@
   }
 
   const on_focusout = () => {
+    poster_focused.value = false
     key_commands?.remove_context('Poster')
     key_commands?.unregister_handler('poster::Toggle_Meet_Slice')
   }

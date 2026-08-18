@@ -2,6 +2,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import as_svg from '@/components/posters/as-svg'
+import { load_cutout_symbols } from '../../helpers/cutout-symbols'
 
 const {
   mock_slice_alignment,
@@ -20,6 +21,7 @@ const {
   mock_sand,
   mock_sediment,
   mock_grid,
+  mock_camera_y,
   mock_background,
   mock_light,
   mock_regular,
@@ -47,6 +49,7 @@ const {
     mock_sand: create_watchable(true),
     mock_sediment: create_watchable(true),
     mock_grid: create_watchable(false),
+    mock_camera_y: create_watchable(0),
     mock_background: create_watchable(true),
     mock_light: create_watchable(true),
     mock_regular: create_watchable(true),
@@ -73,12 +76,40 @@ vi.mock('@/utils/preference', () => ({
   sand: mock_sand,
   sediment: mock_sediment,
   grid: mock_grid,
+  camera_y: mock_camera_y,
   background: mock_background,
   light: mock_light,
   regular: mock_regular,
   medium: mock_medium,
   bold: mock_bold
 }))
+
+/**
+ * The hoisted mocks start as plain objects - `vi.hoisted` runs before imports,
+ * so it cannot call `ref`. Back each one with a real ref here, before anything
+ * mounts, so a preference changed mid-test reaches the component's watchers.
+ *
+ * @param {{ value: unknown }} mock
+ */
+const make_reactive = mock => {
+  const backing = ref(mock.value)
+  Object.defineProperty(mock, 'value', {
+    get: () => backing.value,
+    set: next => {
+      backing.value = next
+    }
+  })
+}
+
+for (const mock of [
+  mock_mosaic,
+  mock_boulders,
+  mock_rocks,
+  mock_gravel,
+  mock_sand,
+  mock_sediment
+])
+  make_reactive(mock)
 
 const itemid = '/+16282281824/posters/559666932867'
 
@@ -104,6 +135,9 @@ describe('@/components/posters/as-svg.vue', () => {
   let match_media_impl
 
   beforeEach(() => {
+    // as-svg draws a cutout only once its symbol has loaded, and the symbols
+    // live in a sibling component that a shallow mount never renders.
+    load_cutout_symbols(itemid)
     mock_slice_alignment.value = 'ymid'
     mock_aspect_ratio_mode.value = 'auto'
     mock_mosaic.value = true
@@ -352,6 +386,80 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
 
+  describe('cutout symbol readiness', () => {
+    it('holds a cutout back until its symbol has geometry', async () => {
+      load_cutout_symbols(itemid, false)
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      // The preference says show it; the symbol it points at is still loading,
+      // so entering now would fade up over nothing.
+      expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(false)
+
+      load_cutout_symbols(itemid)
+      await flushPromises()
+      expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(true)
+    })
+  })
+
+  describe('cutout stagger', () => {
+    const all_cutouts = () =>
+      vector_fixture({
+        cutouts: {
+          sediment: true,
+          sand: true,
+          gravel: true,
+          rocks: true,
+          boulders: true
+        }
+      })
+
+    const delay_of = (wrapper, layer) => {
+      const style = wrapper.find(`use[itemprop="${layer}"]`).attributes('style')
+      return style.match(/--layer-delay:\s*([^;]+)/)?.[1]
+    }
+
+    it('answers a single layer key without waiting its turn', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: all_cutouts() }
+      })
+      await flushPromises()
+
+      mock_rocks.value = false
+      await flushPromises()
+
+      // Boulders is last in the build-up, so it carried the longest delay.
+      expect(delay_of(wrapper, 'boulders')).toBe('0s')
+      expect(delay_of(wrapper, 'rocks')).toBe('0s')
+    })
+
+    it('builds up fine to coarse when the group moves together', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: all_cutouts() }
+      })
+      await flushPromises()
+
+      mock_rocks.value = false
+      await flushPromises()
+      mock_mosaic.value = false
+      await flushPromises()
+      mock_rocks.value = true
+      mock_mosaic.value = true
+      await flushPromises()
+
+      expect(delay_of(wrapper, 'sediment')).toBe(
+        'calc(var(--stagger-step) * 0)'
+      )
+      expect(delay_of(wrapper, 'sand')).toBe('calc(var(--stagger-step) * 1)')
+      expect(delay_of(wrapper, 'gravel')).toBe('calc(var(--stagger-step) * 2)')
+      expect(delay_of(wrapper, 'rocks')).toBe('calc(var(--stagger-step) * 3)')
+      expect(delay_of(wrapper, 'boulders')).toBe(
+        'calc(var(--stagger-step) * 4)'
+      )
+    })
+  })
+
   describe('as_avatar', () => {
     it('does not add animate class when used as avatar even if animate pref is on', async () => {
       mock_animate_pref.value = true
@@ -437,7 +545,7 @@ describe('@/components/posters/as-svg.vue', () => {
       await flushPromises()
       const inner_g = wrapper.find('svg g')
       const style = inner_g.attributes('style') ?? ''
-      expect(style).toContain('translateX(12px)')
+      expect(style).toContain('translate(12px, 0px)')
     })
 
     it('does not pan a portrait poster, which already fits the frame', async () => {

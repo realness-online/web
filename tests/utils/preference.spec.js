@@ -28,6 +28,7 @@ import {
   geology_layer_prefs,
   enable_geology_layers,
   enable_shadow_layers,
+  toggle_layer,
   info,
   storytelling,
   only_mine,
@@ -320,6 +321,67 @@ describe('@/utils/preference', () => {
       expect(regular.value).toBe(true)
       expect(light.value).toBe(true)
       expect(background.value).toBe(true)
+    })
+  })
+
+  describe('toggle_layer', () => {
+    const geology = { boulders, rocks, gravel, sand, sediment }
+    const shadows = { bold, medium, regular, light }
+
+    beforeEach(() => {
+      mosaic.value = true
+      shadow.value = true
+      for (const pref of Object.values(geology)) pref.value = true
+      for (const pref of Object.values(shadows)) pref.value = true
+      background.value = true
+    })
+
+    it('changes only its own layer while the group is on', () => {
+      toggle_layer(rocks, mosaic, geology)
+
+      expect(rocks.value).toBe(false)
+      expect(boulders.value).toBe(true)
+      expect(gravel.value).toBe(true)
+      expect(mosaic.value).toBe(true)
+    })
+
+    it('brings the group back carrying the pressed layer alone', () => {
+      // The group is off, so there is nothing on screen to change: the key
+      // means "show me this one", not "show me everything left switched on".
+      mosaic.value = false
+      boulders.value = true
+      sand.value = true
+
+      toggle_layer(rocks, mosaic, geology)
+
+      expect(mosaic.value).toBe(true)
+      expect(rocks.value).toBe(true)
+      expect(boulders.value).toBe(false)
+      expect(sand.value).toBe(false)
+    })
+
+    it('leaves background alone when a shadow layer solos', () => {
+      // Background is the ground the others sit on, not one of the
+      // alternatives, so it is not in the sibling set.
+      shadow.value = false
+      background.value = true
+
+      toggle_layer(light, shadow, shadows)
+
+      expect(shadow.value).toBe(true)
+      expect(light.value).toBe(true)
+      expect(bold.value).toBe(false)
+      expect(medium.value).toBe(false)
+      expect(regular.value).toBe(false)
+      expect(background.value).toBe(true)
+    })
+
+    it('turns background off only when asked', () => {
+      toggle_layer(background, shadow, {})
+
+      expect(background.value).toBe(false)
+      expect(bold.value).toBe(true)
+      expect(shadow.value).toBe(true)
     })
   })
 

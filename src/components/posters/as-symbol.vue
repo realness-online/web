@@ -4,8 +4,10 @@
     ref,
     shallowRef as shallow_ref,
     onMounted as mounted,
+    onUnmounted as unmounted,
     watch
   } from 'vue'
+  import { report_symbol_ready } from '@/use/symbol-ready'
   import { load_from_cache } from '@/utils/itemid'
   import { hydrate } from '@/utils/item'
   import { get } from 'idb-keyval'
@@ -41,17 +43,23 @@
       symbol_content.value = loaded.innerHTML
       symbol_id.value = loaded.id || itemid_at_start
       symbol_viewbox.value = loaded.getAttribute('viewBox') || ''
+      // The `use` pointing here holds its entrance until now, so the fade and
+      // the geometry start together instead of on two clocks.
+      report_symbol_ready(itemid_at_start, true)
     }
   }
 
   mounted(load_symbol)
   watch(
     () => props.itemid,
-    () => {
+    (to, from) => {
+      report_symbol_ready(from, false)
       symbol_content.value = ''
       load_symbol()
     }
   )
+
+  unmounted(() => report_symbol_ready(props.itemid, false))
 </script>
 
 <template>

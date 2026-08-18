@@ -5,33 +5,106 @@
    with cubic-bezier(0.22, 1, 0.36, 1) is the de facto reveal, 0.44s carries
    the poster layers, 120ms is the control-press feel.
 
-   Stylus blocks reach these through the aliases in base-line.styl. */
+   Stylus blocks reach these through the aliases in base-line.styl.
+
+   The durations are registered with @property so they compute to a real time
+   rather than an unresolved calc() - `duration_of` in use/deferred-unmount.js
+   reads them back to decide how long to hold a node, and a token stream would
+   parse as nothing. */
+
+@property --duration-scale {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --duration-press {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 120ms;
+}
+
+@property --duration-quick {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 200ms;
+}
+
+@property --duration-reveal {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 280ms;
+}
+
+@property --duration-subject {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 440ms;
+}
+
+@property --duration-camera {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 640ms;
+}
+
+@property --stagger-step {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 60ms;
+}
 
 :root {
+  /* The one knob. Every duration is derived from it, so the whole system
+     stretches or tightens together and their proportions hold. */
+  --duration-scale: 1;
+
   /* Durations, fastest to slowest. */
-  --duration-press: 120ms; /* a control acknowledging the press */
-  --duration-quick: 200ms; /* small chrome, hover states */
-  --duration-reveal: 280ms; /* the default - panels, nested fieldsets */
-  --duration-subject: 440ms; /* poster layers entering and leaving */
+  --duration-press: calc(
+    120ms * var(--duration-scale)
+  ); /* a control acknowledging the press */
+  --duration-quick: calc(
+    200ms * var(--duration-scale)
+  ); /* small chrome, hover states */
+  --duration-reveal: calc(
+    280ms * var(--duration-scale)
+  ); /* the default - panels, nested fieldsets */
+  --duration-subject: calc(
+    440ms * var(--duration-scale)
+  ); /* poster layers entering and leaving */
+  --duration-camera: calc(
+    640ms * var(--duration-scale)
+  ); /* a camera move across the poster */
 
   /* Easings. */
   --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1); /* decelerating, the default */
   --ease-settle: cubic-bezier(0.45, 0, 0.55, 1); /* symmetric in-out */
   --ease-exit: ease-out;
+  /* A dolly, not a UI transition: weight to overcome at the start, a long
+     glide, and a settle with no bounce - cameras do not overshoot. */
+  --ease-camera: linear(
+    0,
+    0.02 6%,
+    0.09 14%,
+    0.28 26%,
+    0.55 40%,
+    0.76 53%,
+    0.89 65%,
+    0.955 77%,
+    0.99 89%,
+    1
+  );
 
   /* Step between siblings in a staggered group, e.g. the five geology layers
      the mosaic switch turns on at once. */
-  --stagger-step: 60ms;
+  --stagger-step: calc(60ms * var(--duration-scale));
 }
 
-/* Reduced motion collapses the durations rather than removing transitions.
-   A near-zero duration still fires transitionend, which the deferred-unmount
+/* Reduced motion collapses the scale rather than removing transitions. A
+   near-zero duration still fires transitionend, which the deferred-unmount
    composable depends on to drop a node - transition: none would strand it. */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --duration-press: 0.01ms;
-    --duration-quick: 0.01ms;
-    --duration-reveal: 0.01ms;
-    --duration-subject: 0.01ms;
+    --duration-scale: 0.0001;
   }
 }
