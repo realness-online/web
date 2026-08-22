@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- **Other people's thoughts show up again** - a contact's writing was cached
+  the first time you read it and never checked again. Signing out and clearing
+  the app was the only way to see anything new they wrote. Sync now checks each
+  contact's thoughts on its own, rather than waiting for something about their
+  profile to change - posting does not change a profile, so it never did.
+
+- **A sync that fails tries again** - the eight hour clock was set before the
+  work, not after. A tab closed mid-check, or one file erroring, and the app
+  believed it had caught up and waited another eight hours.
+
+- **Everyone has a profile from the moment they sign in** - a person who never
+  edited their name had no profile file at all, so the phonebook could only
+  show their phone number. Same for thoughts: nothing was written until you
+  wrote one, and every read of them asked for a file that was not there.
+
+- **The poster driver page explains itself** - it used to apologise for being
+  undressed. It now shows how to call it, how to trace a movie from the
+  terminal, and hands over a prompt you can paste into a coding assistant.
+
 ## v2.9.0 - 2026-08-18
 
 - **Turning mosaic or a layer off lets it leave** - it used to vanish on the
