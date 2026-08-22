@@ -57,6 +57,34 @@ describe('@/components/as-prompt-agent', () => {
     inline.unmount()
   })
 
+  it('copies whatever prompt it is handed, under its own labels', async () => {
+    // Two prompts share this component now: standing up an instance, and
+    // driving the poster page. The default has to stay the instance one, or
+    // Documentation and License start handing out the wrong text.
+    const write_text = with_clipboard()
+    const wrapper = mount(AsPromptAgent, {
+      props: {
+        prompt: 'Drive the poster page.',
+        heading: 'Prompt an agent',
+        desc: 'It explains the render function.',
+        button: 'Copy driver prompt'
+      }
+    })
+    const button = wrapper.find('button')
+
+    expect(button.text()).toBe('Copy driver prompt')
+    expect(wrapper.text()).toContain('It explains the render function.')
+
+    await button.trigger('click')
+    await flushPromises()
+
+    expect(write_text).toHaveBeenCalledWith('Drive the poster page.')
+    expect(write_text).not.toHaveBeenCalledWith(
+      'Build your own Realness instance.'
+    )
+    wrapper.unmount()
+  })
+
   it('survives a clipboard that refuses', async () => {
     vi.stubGlobal('navigator', {
       ...navigator,

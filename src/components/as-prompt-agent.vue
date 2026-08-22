@@ -8,21 +8,33 @@
     inline: {
       type: Boolean,
       default: false
+    },
+    /** The prompt text itself. Defaults to standing up an instance. */
+    prompt: {
+      type: String,
+      default: instance_prompt
+    },
+    heading: {
+      type: String,
+      default: 'Prompt an agent'
+    },
+    desc: {
+      type: String,
+      default:
+        'Copy a ready-made prompt to give an AI agent. Paste it into Cursor, Claude Code, or any coding assistant — it will know how to guide you through deploying your own Realness instance.'
+    },
+    button: {
+      type: String,
+      default: 'Copy instance prompt'
     }
   })
 
   const copy_feedback_ms = 2000
   const copied = ref(false)
 
-  const label = {
-    heading: 'Prompt an agent',
-    desc: 'Copy a ready-made prompt to give an AI agent. Paste it into Cursor, Claude Code, or any coding assistant — it will know how to guide you through deploying your own Realness instance.',
-    button: 'Copy instance prompt'
-  }
-
   const on_copy = async () => {
     try {
-      await navigator.clipboard.writeText(instance_prompt)
+      await navigator.clipboard.writeText(props.prompt)
       copied.value = true
       setTimeout(() => {
         copied.value = false
@@ -38,10 +50,10 @@
     {{ copied ? 'Copied' : 'Copy prompt' }}
   </button>
   <section v-else data-prompt-agent>
-    <h3>{{ label.heading }}</h3>
-    <p>{{ label.desc }}</p>
+    <h3>{{ heading }}</h3>
+    <p>{{ desc }}</p>
     <button type="button" @click="on_copy">
-      {{ copied ? 'Copied!' : label.button }}
+      {{ copied ? 'Copied!' : button }}
     </button>
   </section>
 </template>
