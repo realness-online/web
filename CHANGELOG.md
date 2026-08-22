@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.9.1 - 2026-08-22
+
 - **Other people's thoughts show up again** - a contact's writing was cached
   the first time you read it and never checked again. Signing out and clearing
   the app was the only way to see anything new they wrote. Sync now checks each
