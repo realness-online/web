@@ -473,7 +473,7 @@ describe('sync composable', () => {
       expect(mock_me.value.name).toBe('From_network')
     })
 
-    it('returns early when no data', async () => {
+    it('does not compare hashes when there is nothing to compare', async () => {
       const { get } = await import('idb-keyval')
       const { create_hash } = await import('@/utils/upload-processor')
 
@@ -483,6 +483,57 @@ describe('sync composable', () => {
       await sync_me()
 
       expect(create_hash).not.toHaveBeenCalled()
+    })
+
+    // Sign-up writes nothing to a person's root. Their name, avatar, and last
+    // visit live in that one small file, and the phonebook falls back to showing
+    // a raw phone number without it. Nobody else can write it for them.
+    it('writes a profile for a person who has none', async () => {
+      const { get } = await import('idb-keyval')
+      const { metadata } = await import('@/utils/serverless')
+      const { Me } = await import('@/persistence/Storage')
+      const save = vi.fn(() => Promise.resolve())
+      Me.mockImplementation(function () {
+        return { save }
+      })
+
+      metadata.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      get.mockResolvedValue(null)
+      localStorage.getItem.mockReturnValue(null)
+      document.body.innerHTML = '<div itemid="/+14151234356"></div>'
+
+      await sync_me()
+
+      expect(save).toHaveBeenCalled()
+      document.body.innerHTML = ''
+    })
+
+    it('stamps a fresh visit on that first profile', async () => {
+      const { get } = await import('idb-keyval')
+      const { metadata } = await import('@/utils/serverless')
+      const { Me } = await import('@/persistence/Storage')
+      Me.mockImplementation(function () {
+        return { save: vi.fn(() => Promise.resolve()) }
+      })
+
+      metadata.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      get.mockResolvedValue(null)
+      localStorage.getItem.mockReturnValue(null)
+      mock_me.value = { id: '/+14151234356', type: 'person' }
+      document.body.innerHTML = '<div itemid="/+14151234356"></div>'
+
+      await sync_me()
+
+      expect(mock_me.value.visited).toBeDefined()
+      document.body.innerHTML = ''
     })
 
     it('keeps matching local html and applies person fields to me', async () => {
@@ -953,6 +1004,44 @@ describe('sync composable', () => {
 
         expect(directory).toHaveBeenCalledWith('people/')
       })
+
+      // The clock is a note saying the catch-up happened. Writing it before the
+      // walk means a tab closed mid-pass, a dropped connection, or one contact's
+      // file erroring buys itself another eight hours of not looking.
+      it('leaves the clock alone when the contact walk fails', async () => {
+        const { directory } = await import('@/utils/serverless')
+        const current_user = await arrange()
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+
+        const stale = new Date(Date.now() - 1000 * 60 * 60 * 9).toISOString()
+        localStorage.sync_time = stale
+        directory.mockImplementation(() =>
+          Promise.reject(new Error('offline mid-walk'))
+        )
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(localStorage.sync_time).toBe(stale)
+      })
+
+      it('moves the clock once the contact walk finishes', async () => {
+        const { directory } = await import('@/utils/serverless')
+        const current_user = await arrange()
+        current_user.value = { uid: 'test-user' }
+        await flushPromises()
+
+        const stale = new Date(Date.now() - 1000 * 60 * 60 * 9).toISOString()
+        localStorage.sync_time = stale
+        directory.mockResolvedValue({ prefixes: [] })
+
+        ;({ wrapper } = with_setup(() => use_sync(emit)))
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(localStorage.sync_time).not.toBe(stale)
+      })
     })
 
     describe('reporting what changed', () => {
@@ -1004,6 +1093,28 @@ describe('sync composable', () => {
         }
         emit.mockClear()
       }
+
+      // A person who has never written has no statements file, so every read of
+      // their thoughts asks storage for a URL that is not there. Writing the
+      // empty file once is what stops that, and it is also the file our own
+      // hash check has been mismatching against on every tick.
+      it('writes an empty statements file for someone who has never written', async () => {
+        const { Statements } = await import('@/persistence/Storage')
+        const save = vi.fn(() => Promise.resolve())
+        await arrange([])
+        Statements.mockImplementation(function () {
+          return {
+            sync: vi.fn(() => Promise.resolve([])),
+            save,
+            optimize: vi.fn(() => Promise.resolve())
+          }
+        })
+
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(save).toHaveBeenCalled()
+      })
 
       it('stays quiet on repeat ticks when you have nothing to say', async () => {
         await arrange([])
