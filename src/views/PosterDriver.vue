@@ -5,6 +5,7 @@
   import { ref, provide, onMounted as mounted } from 'vue'
   import { del } from 'idb-keyval'
   import AsFigure from '@/components/posters/as-figure'
+  import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import AsSvgProcessing from '@/components/posters/as-svg-processing'
   import { use as use_vectorize, resize_to_blob } from '@/use/vectorize'
   import { geology_layers } from '@/use/poster'
@@ -19,6 +20,7 @@
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
   import { render_svg_layers_to_psd } from '@/utils/svg-to-psd'
   import { with_poster_scene } from '@/3d/scenes/with-poster-scene.js'
+  import poster_driver_prompt from '@/content/agent-prompt-poster-driver.md?raw'
 
   const DRIVER_AUTHOR = 'driver'
 
@@ -29,6 +31,7 @@
   const BLANK_POSTER = 'poster has no drawable layer'
   const POLL_MS = 100
   const PNG_TARGET = 1200
+  const COPIED_MS = 2000
   const render_mutex = mutex_for('poster-driver')
 
   const image_picker = ref(/** @type {HTMLInputElement | null} */ (null))
@@ -46,6 +49,22 @@
 
   const status = ref('Idle')
   const ready = ref(false)
+  const copied = ref('')
+
+  /**
+   * Copy a snippet's code to the clipboard.
+   * @param {MouseEvent} event
+   */
+  const on_copy = async event => {
+    const button = /** @type {HTMLButtonElement} */ (event.currentTarget)
+    const code = button.closest('pre')?.querySelector('code')
+    if (!code) return
+    await navigator.clipboard.writeText(code.textContent ?? '')
+    copied.value = button.value
+    setTimeout(() => {
+      if (copied.value === button.value) copied.value = ''
+    }, COPIED_MS)
+  }
 
   const sleep = ms =>
     new Promise(resolve => {
@@ -273,47 +292,120 @@
       get_status: () => status.value
     }
     ready.value = true
-    status.value = `${DRIVER_AUTHOR} driver ready`
+    status.value = 'Ready'
   })
 </script>
 
 <template>
-  <article id="poster-driver" aria-busy="true">
-    <header>
-      <h1>Whoops</h1>
+  <section id="poster-driver" data-page>
+    <article :aria-busy="!ready || Boolean(queue_item)">
+      <header>
+        <h1>Poster driver</h1>
+      </header>
       <p>
-        This page is for your agent. I'm embarrassed you've seen me undressed.
+        This page has no interface. It's here so a script can run the tracing
+        the feed runs: give it an image, it gives back a poster.
       </p>
-      <p>{{ status }}</p>
-    </header>
-    <aside aria-hidden="true">
-      <as-svg-processing
-        v-if="queue_item && !persisted_itemid"
-        :queue_item="queue_item" />
-      <as-figure
-        v-if="persisted_itemid"
-        :key="persisted_itemid"
-        :itemid="persisted_itemid"
-        pin />
-    </aside>
-    <input
-      ref="image_picker"
-      type="file"
-      accept="image/*"
-      multiple
-      aria-hidden="true"
-      class="visually-hidden" />
-  </article>
+      <as-prompt-agent
+        :prompt="poster_driver_prompt"
+        heading="Prompt an agent"
+        desc="Copy a ready-made prompt and paste it into Cursor, Claude Code, or any coding assistant. It explains this page's render function, what comes back, and how to trace a whole movie."
+        button="Copy driver prompt" />
+      <p>Or drive it yourself.</p>
+      <pre><code>await window.poster_driver.render(data_url, {
+  formats: ['png', 'psd', 'glb']
+})</code><button type="button" value="render" @click="on_copy">{{ copied === 'render' ? 'Copied' : 'Copy' }}</button></pre>
+      <p>
+        Realness traces photos. From a terminal it can trace movies. This starts
+        a headless Chrome, opens this page, and calls
+        <code>render</code> once per frame over the devtools protocol. ffmpeg
+        reassembles the frames and keeps the original audio.
+      </p>
+      <pre><code>npm run poster:video clip.mp4</code><button type="button" value="video" @click="on_copy">{{ copied === 'video' ? 'Copied' : 'Copy' }}</button></pre>
+      <p>
+        The code:
+        <a
+          href="https://github.com/realness-online/web/blob/main/src/views/PosterDriver.vue"
+          rel="external">
+          PosterDriver.vue
+        </a>
+        is this page.
+        <a
+          href="https://github.com/realness-online/web/blob/main/scripts/render-poster-video.js"
+          rel="external">
+          render-poster-video.js
+        </a>
+        drives it. Write your own script against the same function.
+      </p>
+      <aside aria-hidden="true">
+        <as-svg-processing
+          v-if="queue_item && !persisted_itemid"
+          :queue_item="queue_item" />
+        <as-figure
+          v-if="persisted_itemid"
+          :key="persisted_itemid"
+          :itemid="persisted_itemid"
+          pin />
+      </aside>
+      <input ref="image_picker" type="file" accept="image/*" multiple hidden />
+    </article>
+  </section>
 </template>
 
 <style lang="stylus">
-  article#poster-driver > aside
-    position: fixed
-    top: 0
-    left: -200vw
-    width: 1200px
-    height: 1200px
-    & figure, & svg
-      width: 100%
-      height: 100%
+  section#poster-driver[data-page] {
+    margin: 0 auto;
+    padding: 0 base-line;
+    max-width: page-width;
+
+    code {
+      background: var(--code-surface);
+      padding: round((base-line / 4), 2) round((base-line / 2), 2);
+      border-radius: round((base-line / 4), 2);
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.875rem;
+    }
+
+    pre {
+      background: var(--code-surface);
+      border-left: 2px solid var(--emphasis);
+      padding: base-line;
+      border-radius: round((base-line / 4), 2);
+      overflow-x: auto;
+      margin-block: base-line * 2;
+      font-size: 0.875rem;
+      line-height: base-line;
+
+      code {
+        display: block;
+        background: none;
+        padding: 0;
+        font-size: inherit;
+      }
+
+      button {
+        display: block;
+        margin-left: auto;
+        margin-top: base-line;
+        padding: round((base-line / 4), 2) round((base-line / 2), 2);
+        border-radius: round((base-line / 2), 2);
+        font-size: 0.75rem;
+        line-height: 1;
+        white-space: normal;
+      }
+    }
+
+    aside {
+      position: fixed;
+      top: 0;
+      left: -200vw;
+      width: 1200px;
+      height: 1200px;
+
+      & figure, & svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
 </style>
