@@ -191,8 +191,11 @@ const create_play = deps => async () => {
     const sync_was_due = !i_am_fresh()
     if (sync_was_due) {
       await purge_missing_sync_index_entries()
-      localStorage.sync_time = new Date().toISOString()
       contacts_changed = (await sync_phonebook_people(deps)) || contacts_changed
+      // Last, so the clock only ever means the walk finished. Stamped first, a
+      // tab closed mid-pass or one contact's file erroring bought another eight
+      // hours of not looking.
+      localStorage.sync_time = new Date().toISOString()
     }
 
     const poster_directory_changed = await sync_posters_directory({
@@ -205,6 +208,11 @@ const create_play = deps => async () => {
       reload_phonebook: contacts_changed,
       authors: contacts_changed || !me_id ? null : [me_id]
     })
+  } catch (e) {
+    // Fired from an event listener, so nothing downstream can catch this. The
+    // clock is stamped last on purpose: a tick that dies here leaves it stale
+    // and the next visit tries again.
+    console.warn('[sync] tick failed', e)
   } finally {
     done()
   }
@@ -212,8 +220,8 @@ const create_play = deps => async () => {
 
 /**
  * Whether a synced list is worth reloading the feed for. A hash mismatch is not
- * enough on its own: an account with nothing to say mismatches every tick, because
- * there is no server file to agree with and an empty list is never saved.
+ * enough on its own: two empty lists still disagree on the tick that first writes
+ * the empty file.
  * @param {import('@/types').Item[]} before
  * @param {import('@/types').Item[]} after
  * @returns {boolean}
@@ -241,15 +249,61 @@ const sync_statements = async deps => {
     const synced = (await persistence.sync()) || []
     // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
     deps.my_statements.value = synced
-    if (synced.length) {
-      await tick()
-      await persistence.save(elements)
-      localStorage.removeItem('/+/statements')
-    }
+    // Saved even when empty. A person who has never written otherwise has no
+    // file at all, and every read of their thoughts - theirs and everyone
+    // else's - asks storage for something that is not there.
+    await tick()
+    await persistence.save(elements)
+    if (synced.length) localStorage.removeItem('/+/statements')
     await persistence.optimize()
     return rows_changed(before, synced)
   }
   await persistence.optimize()
+  return false
+}
+
+/**
+ * A contact's thoughts are one file. Posting appends to it, editing rewrites a row
+ * in it, and `optimize` moves rows out of it - and archive pages, once written, are
+ * never touched again. So this hash check is the whole of their freshness: nothing
+ * else they can do changes what we cached, and nothing else here can notice.
+ *
+ * Their profile blob is not a usable sentinel for it. `visited` restamps at most
+ * hourly and saving a statement does not touch the profile at all, so a post made
+ * inside that hour leaves the profile hash exactly where it was.
+ * @param {Id} id Contact's person itemid
+ * @returns {Promise<boolean>} True when their cached statements were dropped
+ */
+export const sync_contact_statements = async id => {
+  const itemid = /** @type {Id} */ (`${id}/statements`)
+  const cached = await get(itemid)
+  // Nothing cached is already fresh; `load` will fetch when the feed asks.
+  if (typeof cached !== 'string') return false
+
+  // A negative-cache row would short circuit `fresh_metadata` and read as "their
+  // file is gone" - both wrong for a contact who has since posted for the first
+  // time. Drop ours before asking, and trust the answer we get back.
+  const index_mutex = mutex_for('sync:index')
+  await index_mutex.lock()
+  try {
+    const index = (await get('sync:index')) || {}
+    if (is_sync_index_missing(index[itemid])) {
+      const next = { ...index }
+      delete next[itemid]
+      await set('sync:index', next)
+    }
+  } finally {
+    index_mutex.unlock()
+  }
+
+  const entry = await fresh_metadata(itemid)
+  const local_hash = await create_hash(cached)
+  const gone_from_server = is_sync_index_missing(entry)
+
+  if (gone_from_server || local_hash !== entry?.customMetadata?.hash) {
+    await del(itemid)
+    return true
+  }
   return false
 }
 
@@ -328,7 +382,8 @@ const sync_events = async deps => {
 
 /**
  * Root `people/{author}/index.html.gz` blobs: refresh `sync:index`, then drop stale local
- * cache when the hash disagrees. Does not fetch; `load_phonebook` / `load()` repopulate.
+ * cache when the hash disagrees. Each contact's statements file is hash checked here
+ * too, on its own, for the reasons in `sync_contact_statements`. Does not fetch; `load_phonebook` / `load()` repopulate.
  * Clears cached folder listings via `clear_author_dirs` (`@/persistence/Directory`) when the profile
  * blob is missing on storage or its hash no longer matches. Same schedule as
  * other sync steps. Skips `localStorage.me` (handled in `sync_me`).
@@ -336,7 +391,7 @@ const sync_events = async deps => {
  * @param {Sync_Deps} deps
  * @returns {Promise<boolean>}
  */
-const sync_phonebook_people = async deps => {
+export const sync_phonebook_people = async deps => {
   if (!current_user.value) return false
   const people_list = await directory('people/')
   const prefix_refs = people_list?.prefixes ?? []
@@ -346,6 +401,9 @@ const sync_phonebook_people = async deps => {
   const sync_one_contact = async phone_number => {
     const id = /** @type {Id} */ (from_e64(phone_number.name))
     if (id === me_id) return
+    // Ahead of the profile checks and outside their early returns: their thoughts
+    // change without their profile changing.
+    if (await sync_contact_statements(id)) did_change = true
     await fresh_metadata(id)
     const index_hash = await get_index_hash(id)
     const index_entry = ((await get('sync:index')) || {})[id]
@@ -578,15 +636,17 @@ const apply_person_item_to_me = (item, id) => {
 /**
  * After `sync_me` aligns `me` with server or canonical local HTML, bump `visited` and persist.
  * Same one-hour throttle as before for how often we re-persist `visited`.
+ * @param {boolean} [force] Stamp regardless of the throttle - a person with no
+ * profile on the server needs one written now.
  * @returns {Promise<void>}
  */
-const stamp_visited_if_due = async () => {
+const stamp_visited_if_due = async (force = false) => {
   if (!current_user.value) return
   const me_val = me.value
   if (!me_val) return
   const { visited } = me_val
   const visit_digit = new Date(visited ?? 0).getTime()
-  if (visited && Date.now() - visit_digit <= JS_TIME.ONE_HOUR) return
+  if (!force && visited && Date.now() - visit_digit <= JS_TIME.ONE_HOUR) return
 
   me_val.visited = new Date().toISOString()
   await tick()
@@ -608,7 +668,19 @@ export const sync_me = async () => {
   const my_info = localStorage.getItem(id) ?? (await get(id))
   const local_html = typeof my_info === 'string' ? my_info : null
 
-  if (!index_hash) return
+  // Nothing at their root. Sign-up writes no profile, so for anyone who never
+  // edits their name this is the only thing that ever creates one - and without
+  // it the phonebook can only show their phone number. Forced, because a local
+  // visit stamp from this hour must not talk us out of the first upload.
+  if (!index_hash) {
+    if (!me.value?.id)
+      me.value = /** @type {import('@/types').MeItem} */ ({
+        ...default_person,
+        id
+      })
+    await stamp_visited_if_due(true)
+    return
+  }
 
   const local_hash = local_html ? await create_hash(local_html) : null
 
