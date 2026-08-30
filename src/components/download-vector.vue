@@ -13,7 +13,6 @@
     extract_all_layers
   } from '@/utils/svg-to-psd'
   import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
-  import { draw_icon_on_canvas } from '@/utils/canvas-icon'
   import { export_poster_to_video_with_audio } from '@/utils/export-poster-video'
   import icon from '@/components/icon'
   import {
@@ -296,19 +295,6 @@
       const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
 
       const canvas = await render_complete_poster_to_canvas(svg, width, height)
-      const ctx = canvas.getContext('2d')
-
-      const ICON_SIZE_RATIO = 0.02
-      const ICON_PADDING_RATIO = 0.01
-      const icon_size = Math.round(width * ICON_SIZE_RATIO)
-      const icon_padding = Math.round(width * ICON_PADDING_RATIO)
-      await draw_icon_on_canvas(
-        ctx,
-        'realness',
-        icon_padding,
-        icon_padding,
-        icon_size
-      )
 
       const blob = await canvas.convertToBlob({ type: 'image/png' })
       const url = URL.createObjectURL(blob)

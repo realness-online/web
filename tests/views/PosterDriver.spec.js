@@ -94,9 +94,9 @@ describe('@/views/PosterDriver', () => {
   })
 
   it('publishes the render api a script drives it by', async () => {
-    // scripts/render-poster-video.js opens this page and talks to exactly this
-    // object over the devtools protocol. Renaming any of it breaks the video
-    // pipeline silently, from a repo that cannot see this file.
+    // bin/make-animation.js in the brayness harness opens this page and talks
+    // to exactly this object over the devtools protocol. Renaming any of it
+    // breaks the video pipeline silently, from a repo that cannot see this file.
     const wrapper = render_driver()
     await flushPromises()
 
@@ -144,7 +144,7 @@ describe('@/views/PosterDriver', () => {
     const snippets = wrapper.findAll('pre')
     expect(snippets).toHaveLength(2)
     expect(snippets[0].text()).toContain('window.poster_driver.render')
-    expect(snippets[1].text()).toContain('npm run poster:video')
+    expect(snippets[1].text()).toContain('npm run make:animation')
 
     await snippets[0].find('button').trigger('click')
     await flushPromises()

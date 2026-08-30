@@ -11,8 +11,8 @@ describe('@/content/agent-prompt-poster-driver', () => {
     expect(prompt).toContain("formats: ['png', 'psd', 'glb']")
   })
 
-  it('names the video script and its real flags', () => {
-    expect(prompt).toContain('npm run poster:video')
+  it('names the harness video script and its real flags', () => {
+    expect(prompt).toContain('npm run make:animation')
     expect(prompt).toContain('--fps')
     expect(prompt).toContain('--workers')
     expect(prompt).toContain('REALNESS_URL')

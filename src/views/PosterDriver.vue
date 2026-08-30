@@ -321,7 +321,7 @@
         <code>render</code> once per frame over the devtools protocol. ffmpeg
         reassembles the frames and keeps the original audio.
       </p>
-      <pre><code>npm run poster:video clip.mp4</code><button type="button" value="video" @click="on_copy">{{ copied === 'video' ? 'Copied' : 'Copy' }}</button></pre>
+      <pre><code>npm run make:animation clip.mp4</code><button type="button" value="video" @click="on_copy">{{ copied === 'video' ? 'Copied' : 'Copy' }}</button></pre>
       <p>
         The code:
         <a
@@ -331,11 +331,12 @@
         </a>
         is this page.
         <a
-          href="https://github.com/realness-online/web/blob/main/scripts/render-poster-video.js"
+          href="https://github.com/scott-fryxell/brayness/blob/main/bin/make-animation.js"
           rel="external">
-          render-poster-video.js
+          make-animation.js
         </a>
-        drives it. Write your own script against the same function.
+        in the brayness harness drives it. Write your own script against the
+        same function.
       </p>
       <aside aria-hidden="true">
         <as-svg-processing
