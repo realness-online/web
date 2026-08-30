@@ -6,8 +6,8 @@ Load `/poster-driver` in a browser you control, wait for `window.poster_driver.r
 
 ```js
 const poster = await window.poster_driver.render(data_url, {
-  formats: ['png', 'psd', 'glb']
-})
+  formats: ["png", "psd", "glb"],
+});
 ```
 
 `data_url` is a base64 image data URL (`data:image/png;base64,...`).
@@ -35,17 +35,17 @@ const poster = await window.poster_driver.render(data_url, {
 
 ## Video
 
-Realness traces photos. From a terminal it traces movies, by starting a headless Chrome, opening this page, and calling `render` once per frame over the devtools protocol. ffmpeg reassembles the frames and keeps the original audio.
+Realness traces photos. From the harness it traces movies, by starting a headless Chrome, opening this page, and calling `render` once per frame over the devtools protocol. ffmpeg reassembles the frames and keeps the original audio. The script lives in the brayness harness as `bin/make-animation.js`.
 
 ```
-npm run poster:video clip.mp4 [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]
+npm run make:animation clip.mp4 [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]
 ```
 
-Renders against `https://realness.online` by default. Set `REALNESS_URL` to point at another instance or a local preview. Output lands in `artifacts/poster-video`.
+Runs from the brayness root, against `https://realness.online` by default. Set `REALNESS_URL` to point at another instance or a local preview. Output lands in `artifacts/animation`.
 
 ## Where to read the code
 
 - `src/views/PosterDriver.vue` — the page and the `render` function
-- `scripts/render-poster-video.js` — the reference driver, worth copying from
+- `bin/make-animation.js` in the brayness harness — the reference driver, worth copying from
 
 Write your own script against `render`. The page is the contract; everything else is an example.

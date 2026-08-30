@@ -39,10 +39,6 @@ const make_svg = () => {
 }
 
 describe('@/utils/export-poster', () => {
-  beforeEach(() => {
-    localStorage.removeItem('adobe')
-  })
-
   describe('build_download_svg', () => {
     it('clones svg, strips hidden nodes and vue animation tags', () => {
       const source = make_svg()
@@ -55,8 +51,7 @@ describe('@/utils/export-poster', () => {
       expect(result.querySelector('#shadow')).not.toBeNull()
     })
 
-    it('runs adobe gradient conversion when localStorage.adobe is set', () => {
-      localStorage.adobe = '1'
+    it('hex-encodes gradient stops so SVG-import tools read them', () => {
       const source = make_svg()
       const stop = source.querySelector('stop')
       stop?.setAttribute('stop-color', 'oklch(0.55 0.12 240)')
@@ -65,6 +60,26 @@ describe('@/utils/export-poster', () => {
       expect(result.querySelector('stop')?.getAttribute('stop-color')).toMatch(
         /^#/
       )
+    })
+
+    it('hex-encodes hsl gradient stops too', () => {
+      const source = make_svg()
+      const stop = source.querySelector('stop')
+      stop?.setAttribute('stop-color', 'hsla(84, 2%, 44%, 1.00)')
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('stop')?.getAttribute('stop-color')).toMatch(
+        /^#/
+      )
+    })
+
+    it('leaves an empty stop-color alone', () => {
+      const source = make_svg()
+      const stop = source.querySelector('stop')
+      stop?.setAttribute('stop-color', '')
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('stop')?.getAttribute('stop-color')).toBe('')
     })
 
     it('strips composition grid overlay from exports', () => {

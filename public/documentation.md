@@ -116,8 +116,8 @@ Open the poster menu first: long-press on touch, click on desktop. A blue sweep 
 
 Exports clone the live poster on screen. There is no separate render path.
 
-- **SVG** - matches what you see: visible layers, opacity, crop, drama. Any size. Turn on the **adobe** color preference to write HEX gradient stops that Adobe tools read correctly.
-- **PNG** - the same flat snapshot at 3840px wide, plus a small Realness watermark.
+- **SVG** - matches what you see: visible layers, opacity, crop, drama. Any size. Gradient stops export as HEX so Illustrator, Affinity, Inkscape, Figma, and Sketch read the colors.
+- **PNG** - the same flat snapshot at 3840px wide.
 - **PNG layers** - one file per layer for compositing, rather than one on-screen snapshot.
 - **PSD** - separate layers for printing: Shadows (Background, Light, Regular, Medium, Bold), Stroke, Mosaic (Sediment through Boulders). 1920px on touch, 3840px on desktop.
 - **Video** - H.264 `.mov`, 24fps, up to 4K, animating at the speed your **animation** preference is set to. Drag an **audio file** (mp3, wav, ogg, m4a, flac) onto the poster to bake that track in as the soundtrack, uncompressed.
@@ -151,17 +151,17 @@ You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
 
 ##### Converting a video
 
-In the app, Video export animates one poster. From the repo, `poster:video` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack.
+In the app, Video export animates one poster. From the harness, `make:animation` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack. It runs from the brayness harness root - no Realness checkout needed.
 
 ```
-npm run poster:video -- clip.mov
+npm run make:animation clip.mov
 ```
 
 You can pass `--fps N` (default 24), `--workers N` (default 6), `--width N` (0 keeps the traced size), `--crf N` (0-51, default 23; lower is sharper and larger), and `--keep-frames` if you want the raster PNGs after encode.
 
-You need ffmpeg and a Chromium browser. Set `CHROME_PATH`, or have Brave, Chrome, Chromium, or Edge installed. The script opens `https://realness.online/poster-driver` unless `REALNESS_URL` points at a local serve. The site you load has to expose `window.poster_driver` too.
+You need ffmpeg and a Chromium browser. Set `CHROME_PATH`, or have Brave, Chrome, Chromium, or Edge installed. The script opens `https://realness.online/poster-driver` unless `REALNESS_URL` points at a local serve.
 
-The mp4 is `artifacts/poster-video/<name>.mp4`. Traced SVGs stay in `artifacts/poster-video/<name>-frames/`. If you stop a run and start again, those SVGs are reused. Raster PNGs are deleted after a successful encode unless you pass `--keep-frames`. Audio is remuxed as AAC at 192k. If the clip has no audio, the mp4 has none either.
+The mp4 is `artifacts/animation/<name>.mp4`. Traced SVGs stay in `artifacts/animation/<name>-frames/`. If you stop a run and start again, those SVGs are reused. Raster PNGs are deleted after a successful encode unless you pass `--keep-frames`. Audio is remuxed as AAC at 192k. If the clip has no audio, the mp4 has none either.
 
 #### Printing a cel animation
 

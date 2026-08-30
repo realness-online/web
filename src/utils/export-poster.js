@@ -109,20 +109,27 @@ const normalize_ids_for_download = svg => {
   })
 }
 
-const adobe = svg => {
-  const convert = svg.querySelectorAll('[stop-color]')
-  convert.forEach(element => {
+/**
+ * Rewrite gradient `stop-color` values to hex. Browsers read the poster's
+ * oklch stops, but SVG-import tools (Illustrator, Affinity, Inkscape, Figma,
+ * Sketch) do not parse CSS Color 4 - they drop the fill. Hex imports everywhere.
+ * @param {SVGSVGElement} svg
+ */
+const hex_encode_gradient_stops = svg => {
+  svg.querySelectorAll('[stop-color]').forEach(element => {
     const css_color = element.getAttribute('stop-color')
+    if (!css_color) return
     const oklch = parse_css_oklch_string(css_color)
     if (oklch)
       element.setAttribute(
         'stop-color',
         oklch_to_hex(oklch.l, oklch.c, oklch.h)
       )
-    else {
+    else if (css_color.trim().startsWith('hsl')) {
       const c = css_color_to_color(css_color)
       element.setAttribute('stop-color', hsl_to_hex(c.h, c.s, c.l))
     }
+    // Already-portable stops (hex, rgb, named) import everywhere - leave them.
   })
 }
 
@@ -165,7 +172,7 @@ export const build_download_svg = svg_element => {
 
   normalize_ids_for_download(svg_clone)
 
-  if (localStorage.adobe) adobe(svg_clone)
+  hex_encode_gradient_stops(svg_clone)
 
   return svg_clone
 }
