@@ -2,6 +2,7 @@
 /** @typedef {import('@/types').Item} Item */
 
 import { as_type } from '@/utils/itemid-parse'
+import { as_vocabulary_type } from '@/utils/vocabulary'
 import { set_vector_dimensions } from '@/utils/vector-dimensions'
 
 /**
@@ -42,8 +43,7 @@ const make_item = element => ({
 const get_meta = item => {
   const meta = {}
   const id = item.getAttribute('itemid')
-  let type = item.getAttribute('itemtype')
-  if (type) type = type.substring(1)
+  let type = as_vocabulary_type(item.getAttribute('itemtype'))
   if (id && !type) type = as_type(/** @type {import('@/types').Id} */ (id))
   if (id) meta.id = id
   if (type) meta.type = type

@@ -78,7 +78,7 @@
 <template>
   <figure
     itemscope
-    itemtype="/posters"
+    itemtype="https://realness.online/posters"
     :itemid="queue_itemid"
     :aria-busy="is_currently_processing || undefined"
     :data-orientation="landscape ? 'horizontal' : 'vertical'">
@@ -152,35 +152,35 @@
           :id="query(as_layer_id(queue_itemid, 'sediment'))"
           :itemid="as_layer_id(queue_itemid, 'sediment')"
           itemscope
-          itemtype="/cutouts"
+          itemtype="https://realness.online/cutouts"
           :viewBox="`0 0 ${image_width} ${image_height}`"
           v-html="new_vector?.cutouts?.sediment?.innerHTML ?? ''" />
         <symbol
           :id="query(as_layer_id(queue_itemid, 'sand'))"
           :itemid="as_layer_id(queue_itemid, 'sand')"
           itemscope
-          itemtype="/cutouts"
+          itemtype="https://realness.online/cutouts"
           :viewBox="`0 0 ${image_width} ${image_height}`"
           v-html="new_vector?.cutouts?.sand?.innerHTML ?? ''" />
         <symbol
           :id="query(as_layer_id(queue_itemid, 'gravel'))"
           :itemid="as_layer_id(queue_itemid, 'gravel')"
           itemscope
-          itemtype="/cutouts"
+          itemtype="https://realness.online/cutouts"
           :viewBox="`0 0 ${image_width} ${image_height}`"
           v-html="new_vector?.cutouts?.gravel?.innerHTML ?? ''" />
         <symbol
           :id="query(as_layer_id(queue_itemid, 'rocks'))"
           :itemid="as_layer_id(queue_itemid, 'rocks')"
           itemscope
-          itemtype="/cutouts"
+          itemtype="https://realness.online/cutouts"
           :viewBox="`0 0 ${image_width} ${image_height}`"
           v-html="new_vector?.cutouts?.rocks?.innerHTML ?? ''" />
         <symbol
           :id="query(as_layer_id(queue_itemid, 'boulders'))"
           :itemid="as_layer_id(queue_itemid, 'boulders')"
           itemscope
-          itemtype="/cutouts"
+          itemtype="https://realness.online/cutouts"
           :viewBox="`0 0 ${image_width} ${image_height}`"
           v-html="new_vector?.cutouts?.boulders?.innerHTML ?? ''" />
       </defs>
@@ -189,7 +189,7 @@
 </template>
 
 <style lang="stylus">
-  figure[itemtype='/posters'] {
+  figure[itemtype$='/posters'] {
     display: grid;
     grid-template-areas: "overlay";
     grid-template-rows: auto;
@@ -235,7 +235,7 @@
   }
 
   @starting-style {
-    figure[itemtype='/posters'] > svg.icon {
+    figure[itemtype$='/posters'] > svg.icon {
       opacity: 0;
     }
   }

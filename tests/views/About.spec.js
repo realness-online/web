@@ -99,7 +99,9 @@ describe('About', () => {
     it('renders header with navigation', () => {
       expect(wrapper.find('header').exists()).toBe(true)
       // Site nav is rendered by the support layout (App.vue), not the page.
-      expect(wrapper.find('nav[itemtype="/site-nav"]').exists()).toBe(false)
+      expect(
+        wrapper.find('nav[itemtype$="/SiteNavigationElement"]').exists()
+      ).toBe(false)
     })
 
     it('renders hero section', () => {
@@ -111,7 +113,9 @@ describe('About', () => {
     it('renders site nav with docs and pricing', () => {
       // Site nav lives in the support layout (App.vue), not in the page view.
       // Covered by App/layout specs; About should not render its own nav.
-      expect(wrapper.find('nav[itemtype="/site-nav"]').exists()).toBe(false)
+      expect(
+        wrapper.find('nav[itemtype$="/SiteNavigationElement"]').exists()
+      ).toBe(false)
     })
 
     it('renders articles for different sections', () => {

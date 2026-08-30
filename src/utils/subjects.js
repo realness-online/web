@@ -63,7 +63,7 @@ export const read_subjects = (poster_html, itemid) => {
 export const write_subjects = (poster_el, itemid, subjects) => {
   if (!poster_el) return
   poster_el
-    .querySelectorAll('[itemprop="subject"][itemtype="/subject"]')
+    .querySelectorAll('[itemprop="subject"][itemtype$="/subject"]')
     .forEach(node => node.remove())
   if (!subjects.length) {
     poster_el.querySelectorAll('metadata:empty').forEach(node => node.remove())
@@ -79,7 +79,7 @@ export const write_subjects = (poster_el, itemid, subjects) => {
     const group = doc.createElementNS(SVG_NS, 'g')
     group.setAttribute('itemprop', 'subject')
     group.setAttribute('itemscope', '')
-    group.setAttribute('itemtype', '/subject')
+    group.setAttribute('itemtype', 'https://realness.online/subject')
     group.setAttribute('itemid', `${itemid}/subjects/${subject.id}`)
 
     const name = doc.createElementNS(SVG_NS, 'desc')

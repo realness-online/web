@@ -9,7 +9,6 @@ describe('Directory validation', () => {
       expect(is_directory_id('/+16282281824/thoughts/1737178477987/')).toBe(
         true
       )
-      expect(is_directory_id('/+16282281824/events/1737178477987/')).toBe(true)
       expect(is_directory_id('/+16282281824/relations/1737178477987/')).toBe(
         true
       )

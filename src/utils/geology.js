@@ -55,12 +55,7 @@ export const collect_geology_paths = (symbol_defs, itemid) => {
 export const load_cutout_flags = async itemid => {
   const created = as_created_at(itemid)
   // Old-style posters don't have split geology layers
-  if (created && created <= GEOLOGY_DATE) {
-    console.info(
-      `[geology] Old-style poster found: ${itemid} (created: ${created}, geology_date: ${GEOLOGY_DATE})`
-    )
-    return {}
-  }
+  if (created && created <= GEOLOGY_DATE) return {}
 
   let poster_html = await get(itemid)
   if (!poster_html) {

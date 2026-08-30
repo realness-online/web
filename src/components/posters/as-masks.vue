@@ -24,7 +24,7 @@
   // the per-layer symbols live in the figure's symbol-defs svg.
   const resolve_geometry = () => {
     const svg = root.value?.ownerSVGElement
-    const figure = svg?.closest('figure:has([itemtype="/posters"])')
+    const figure = svg?.closest('figure:has([itemtype$="/posters"])')
     const symbol_defs = figure?.querySelector('svg[data-poster-symbol-defs]')
     geometry.value =
       collect_geology_paths(

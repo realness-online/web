@@ -639,7 +639,7 @@
       <svg
         v-if="use_dom_reference"
         itemscope
-        itemtype="/posters"
+        itemtype="https://realness.online/posters"
         :itemid="itemid"
         :viewBox="ref_dom_viewbox"
         :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
@@ -815,7 +815,7 @@
 </template>
 
 <style lang="stylus">
-  figure:has([itemtype='/posters']):not([itemtype]) {
+  figure:has([itemtype$='/posters']):not([itemtype]) {
     position: relative;
     display: grid;
     overflow: hidden;
@@ -878,10 +878,10 @@
       }
     }
     @media (min-width: pad-begins) {
-      &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal'])) {
+      &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype$='/posters']):has(svg[data-orientation='horizontal'])) {
         grid-column-start: span 3;
       }
-      &:has(svg[data-orientation='horizontal']) + figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal']) {
+      &:has(svg[data-orientation='horizontal']) + figure:has([itemtype$='/posters']):has(svg[data-orientation='horizontal']) {
         grid-column-start: span 3;
       }
       &.new:not(:has(svg[data-orientation='horizontal'])) {
@@ -1112,7 +1112,7 @@
         border-radius: base-line;
         min-width: 0;
         max-width: page-width;
-        svg[itemtype='/posters'] {
+        svg[itemtype$='/posters'] {
           min-height: auto;
         }
         & > a,

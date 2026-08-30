@@ -15,7 +15,10 @@
 </script>
 
 <template>
-  <address itemscope itemtype="/person" :itemid="person.id">
+  <address
+    itemscope
+    itemtype="https://realness.online/person"
+    :itemid="person.id">
     <header>
       <h3 itemprop="name">{{ person.name }}</h3>
       <slot name="action" />

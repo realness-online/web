@@ -324,7 +324,7 @@ const wait_for_poster_symbols = async (symbol_defs, itemid) => {
  */
 const find_symbol_defs = svg_el =>
   svg_el
-    .closest('figure:has([itemtype="/posters"])')
+    .closest('figure:has([itemtype$="/posters"])')
     ?.querySelector('svg[data-poster-symbol-defs]')
 
 /**

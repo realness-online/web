@@ -6,7 +6,7 @@ exports[`About > Rendering > renders about view 1`] = `
   data-page=""
   id="about"
   itemscope=""
-  itemtype="/about"
+  itemtype="https://realness.online/about"
 >
   <header>
     <section

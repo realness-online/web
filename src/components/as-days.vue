@@ -24,11 +24,6 @@
       required: false,
       default: () => []
     },
-    events: {
-      type: Array,
-      required: false,
-      default: () => []
-    },
     paginate: {
       type: Boolean,
       required: false,
@@ -113,7 +108,7 @@
 
   /**
    * Cheap signature so we refill when membership, order, or content changes,
-   * without a deep watch over statements / posters / events (which costs
+   * without a deep watch over statements / posters (which costs
    * reactive traversal every tick). Ids alone are not enough: editing a
    * statement keeps its id, so a signature that ignores text never refills
    * days and the rendered thought stays stale until a reload. Statements are
@@ -124,13 +119,9 @@
       .map(s => `${s.id}${s.statement ?? ''}`)
       .join('\u001f')
     const ids = items => (items ?? []).map(item => item.id).join('\u001f')
-    return [
-      statements,
-      (props.posters ?? []).length,
-      ids(props.posters),
-      (props.events ?? []).length,
-      ids(props.events)
-    ].join('|')
+    return [statements, (props.posters ?? []).length, ids(props.posters)].join(
+      '|'
+    )
   })
 
   const flattened_items = computed(() => {
@@ -196,7 +187,6 @@
       yield* page
     }
     thought_feed_slots_list.value.forEach(slot => push_to_day(slot, new_days))
-    props.events.forEach(happening => push_to_day(happening, new_days))
     for (const day_name of new_days.keys())
       sort_day_grouped_by_author(
         day_name,

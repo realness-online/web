@@ -55,7 +55,7 @@
     :id="query()"
     :itemid="as_layer_id(itemid, 'shadows')"
     itemscope
-    itemtype="/shadows"
+    itemtype="https://realness.online/shadows"
     v-if="has_drawable_layer(vector)"
     :width="width"
     :height="height"

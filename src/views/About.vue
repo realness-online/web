@@ -170,7 +170,7 @@
     ref="about_el"
     data-page
     itemscope
-    itemtype="/about"
+    itemtype="https://realness.online/about"
     :data-about-motion="about_motion || undefined">
     <header>
       <section itemprop="hero">
@@ -788,7 +788,7 @@
           }
         }
 
-        & > figure:has([itemtype='/posters']) {
+        & > figure:has([itemtype$='/posters']) {
           min-height: var(--poster-grid-height);
           about-enter(var(--about-hero-delay));
 
@@ -851,7 +851,7 @@
           align-items: stretch;
         }
 
-        & > figure:has([itemtype='/posters']) {
+        & > figure:has([itemtype$='/posters']) {
           min-height: var(--poster-grid-height);
 
           @media (min-width: pad-begins) {
@@ -963,7 +963,7 @@
           min-height: max(calc(var(--poster-grid-height) + var(--base-line) * 6), var(--about-article-copy-min-height));
         }
 
-        & > figure:has([itemtype='/posters']) {
+        & > figure:has([itemtype$='/posters']) {
           min-height: calc(var(--poster-grid-height) + var(--base-line) * 2);
 
           @media (min-width: pad-begins) {
@@ -1225,7 +1225,7 @@
         }
       }
 
-      & > figure:has([itemtype='/posters']) {
+      & > figure:has([itemtype$='/posters']) {
         grid-column: span 1;
         grid-row: span 1;
         min-height: var(--poster-grid-height);
@@ -1251,11 +1251,11 @@
             min-height: auto;
           }
 
-          &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal'])) {
+          &:has(svg[data-orientation='horizontal']):has(+ figure:has([itemtype$='/posters']):has(svg[data-orientation='horizontal'])) {
             grid-column: span 2;
           }
 
-          &:has(svg[data-orientation='horizontal']) + figure:has([itemtype='/posters']):has(svg[data-orientation='horizontal']) {
+          &:has(svg[data-orientation='horizontal']) + figure:has([itemtype$='/posters']):has(svg[data-orientation='horizontal']) {
             grid-column: span 2;
           }
         }

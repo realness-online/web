@@ -286,7 +286,7 @@
       }
 
     const figure = mask_pen_root.value?.closest(
-      'figure:has([itemtype="/posters"])'
+      'figure:has([itemtype$="/posters"])'
     )
     const symbol_defs = figure?.querySelector('svg[data-poster-symbol-defs]')
     const paths = collect_geology_paths(symbol_defs, props.itemid)

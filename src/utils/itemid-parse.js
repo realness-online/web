@@ -9,7 +9,7 @@ import { types } from '@/types.js'
  * @param {Id} itemid - The full item path (e.g. '/+123456/thoughts/789')
  * @returns {string[]} Array of path parts where:
  *   [0] = author ID (e.g. '+123456')
- *   [1] = item type (e.g. 'thoughts', 'events', 'posters', etc.)
+ *   [1] = item type (e.g. 'thoughts', 'posters', etc.)
  *   [2] = created_at timestamp (if applicable)
  */
 export const as_path_parts = itemid => {

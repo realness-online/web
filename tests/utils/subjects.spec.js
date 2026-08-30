@@ -41,7 +41,7 @@ describe('@/utils/subjects', () => {
     const html = poster.outerHTML
     expect(html).toContain('<metadata>')
     expect(html).toContain('itemprop="subject"')
-    expect(html).toContain('itemtype="/subject"')
+    expect(html).toContain('itemtype="https://realness.online/subject"')
     expect(html).not.toMatch(/<span|<data|<ol|<li/)
   })
 

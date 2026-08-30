@@ -47,6 +47,13 @@ describe('@/components/site-nav', () => {
     expect(wrapper.text()).toContain('Legal')
   })
 
+  it('types the nav with an absolute itemtype, as microdata requires', () => {
+    const nav = mount().find('nav[aria-label="Site"]')
+    expect(nav.attributes('itemtype')).toBe(
+      'https://schema.org/SiteNavigationElement'
+    )
+  })
+
   it('labels the account link Sign in when signed out', () => {
     const wrapper = mount()
     expect(wrapper.text()).toContain('Sign in')

@@ -37,7 +37,6 @@ describe('@/components/as-days', () => {
       props: {
         statements: [],
         posters: [],
-        events: [],
         paginate: true,
         working: false
       },
@@ -91,14 +90,6 @@ describe('@/components/as-days', () => {
       expect(wrapper.props('posters')).toEqual(posters)
     })
 
-    it('accepts events prop', () => {
-      const events = [{ id: '/+16282281824/events/123' }]
-      wrapper = shallowMount(AsDays, {
-        props: { events }
-      })
-      expect(wrapper.props('events')).toEqual(events)
-    })
-
     it('accepts paginate prop', () => {
       wrapper = shallowMount(AsDays, {
         props: { paginate: false }
@@ -133,7 +124,7 @@ describe('@/components/as-days', () => {
         statement: 'before'
       }
       wrapper = shallowMount(AsDays, {
-        props: { statements: [stmt], posters: [], events: [], paginate: false },
+        props: { statements: [stmt], posters: [], paginate: false },
         global: { stubs: { icon: false } },
         slots: {
           default: ({ day }) => day[0][0].statement
@@ -166,7 +157,6 @@ describe('@/components/as-days', () => {
         props: {
           statements: [thought],
           posters: [poster],
-          events: [],
           paginate: false,
           working: false,
           storytelling: true
@@ -182,7 +172,6 @@ describe('@/components/as-days', () => {
         props: {
           statements: [thought],
           posters: [],
-          events: [],
           paginate: false,
           working: false,
           storytelling: true

@@ -5,7 +5,6 @@ import {
   Me,
   Relation,
   Thought,
-  Event,
   Offline,
   History,
   Statements,
@@ -285,26 +284,6 @@ describe('@/persistence/Storage', () => {
     it('extends Storage with thoughts path', () => {
       expect(thought).toBeInstanceOf(Storage)
       expect(thought.id).toBe('/+1234567890/thoughts')
-    })
-  })
-
-  describe('Event Class', () => {
-    let event
-
-    beforeEach(() => {
-      // Mock localStorage.me
-      Object.defineProperty(window, 'localStorage', {
-        value: {
-          me: '/+1234567890'
-        },
-        writable: true
-      })
-      event = new Event()
-    })
-
-    it('extends Storage with events path', () => {
-      expect(event).toBeInstanceOf(Storage)
-      expect(event.id).toBe('/+1234567890/events')
     })
   })
 

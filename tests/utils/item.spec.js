@@ -50,6 +50,14 @@ describe('@/utils/item', () => {
       expect(item?.type).toBe('person')
     })
 
+    it('reads type from an absolute itemtype', () => {
+      const html = `<address itemid="/+1" itemscope itemtype="https://realness.online/person">
+        <h3 itemprop="name">Ada</h3>
+      </address>`
+      const item = get_item(html, /** @type {import('@/types').Id} */ ('/+1'))
+      expect(item?.type).toBe('person')
+    })
+
     it('infers type from itemid when itemtype is missing', () => {
       const html = `<section itemid="/+1/relations" itemscope>
         <meta itemprop="count" content="2" />

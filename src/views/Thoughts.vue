@@ -260,7 +260,7 @@
     let best_score = -Infinity
     const mid = window.innerHeight / 2
     for (const figure of root.querySelectorAll(
-      'figure:has([itemtype="/posters"])'
+      'figure:has([itemtype$="/posters"])'
     )) {
       if (!(figure instanceof HTMLElement)) continue
       const rect = figure.getBoundingClientRect()
@@ -287,7 +287,7 @@
     const active = document.activeElement
     const focused =
       active instanceof HTMLElement
-        ? active.closest('figure:has([itemtype="/posters"])')
+        ? active.closest('figure:has([itemtype$="/posters"])')
         : null
     if (focused instanceof HTMLElement && root.contains(focused)) {
       const itemid = poster_itemid_from_figure(focused)
@@ -302,7 +302,7 @@
     for (const section of scroll_container.querySelectorAll(
       ':scope > section'
     )) {
-      const figure = section.querySelector('figure:has([itemtype="/posters"])')
+      const figure = section.querySelector('figure:has([itemtype$="/posters"])')
       if (!(figure instanceof HTMLElement)) continue
       const rect = section.getBoundingClientRect()
       if (rect.right < container_rect.left || rect.left > container_rect.right)
@@ -330,7 +330,7 @@
     const active = document.activeElement
     const focused =
       active instanceof HTMLElement
-        ? active.closest('figure:has([itemtype="/posters"])')
+        ? active.closest('figure:has([itemtype$="/posters"])')
         : null
     if (focused instanceof HTMLElement && root.contains(focused)) {
       const itemid = poster_itemid_from_figure(focused)
@@ -348,8 +348,8 @@
     if (!root || !itemid) return
     const escaped = CSS.escape(itemid)
     const figure = root
-      .querySelector(`figure:has([itemtype='/posters']) [itemid="${escaped}"]`)
-      ?.closest('figure:has([itemtype="/posters"])')
+      .querySelector(`figure:has([itemtype$='/posters']) [itemid="${escaped}"]`)
+      ?.closest('figure:has([itemtype$="/posters"])')
     if (!(figure instanceof HTMLElement)) return
     figure.scrollIntoView({ block: 'center', behavior })
     figure.focus()
@@ -363,7 +363,7 @@
     if (!itemid) return
     const escaped = CSS.escape(itemid)
     const figure = document.querySelector(
-      `section[data-page][data-storytelling] figure:has([itemtype='/posters']) [itemid="${escaped}"]`
+      `section[data-page][data-storytelling] figure:has([itemtype$='/posters']) [itemid="${escaped}"]`
     )
     const section = figure?.closest('section')
     scroll_storytelling_to_section(section, behavior)
@@ -372,7 +372,7 @@
   /** @param {Event} e */
   const focus_first_poster = e => {
     const first = statements_ref.value?.querySelector(
-      'figure:has([itemtype="/posters"])'
+      'figure:has([itemtype$="/posters"])'
     )
     if (!(first instanceof HTMLElement)) return
     e.preventDefault()
@@ -639,7 +639,7 @@
       grid-gap: base-line;
       padding: 0 base-line;
       margin-bottom: base-line;
-      & > figure[itemtype='/posters'][aria-busy] {
+      & > figure[itemtype$='/posters'][aria-busy] {
         grid-column: 1 / -1;
       }
     }
@@ -657,12 +657,12 @@
         padding-left: base-line;
         padding-right: base-line;
       }
-      &[role='feed'] > article figure:has([itemtype='/posters']) {
+      &[role='feed'] > article figure:has([itemtype$='/posters']) {
         border-radius: 0;
       }
       &[role='feed'] > article {
         @media (prefers-color-scheme: dark) {
-          & > header h4, figure:has([itemtype='/posters']) > svg[data-icon='background'] {
+          & > header h4, figure:has([itemtype$='/posters']) > svg[data-icon='background'] {
             color: var(--accent);
           }
         }

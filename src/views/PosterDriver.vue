@@ -246,7 +246,7 @@
     const symbol_defs = await wait_for(
       () =>
         svg
-          .closest('figure:has([itemtype="/posters"])')
+          .closest('figure:has([itemtype$="/posters"])')
           ?.querySelector('svg[data-poster-symbol-defs]'),
       DRAWABLE_TIMEOUT_MS
     )

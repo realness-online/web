@@ -42,7 +42,7 @@
 </template>
 
 <style>
-  figure:has([itemtype='/posters']) > figcaption > footer > menu > menu {
+  figure:has([itemtype$='/posters']) > figcaption > footer > menu > menu {
     & > a,
     & > button {
       & > svg {
