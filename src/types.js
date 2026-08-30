@@ -133,11 +133,10 @@
  * @typedef {Statement[]} Statements
  */
 
-/** @type {readonly ['posters', 'thoughts', 'events', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
+/** @type {readonly ['posters', 'thoughts', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
 export const types = [
   'posters',
   'thoughts',
-  'events',
   'relations',
   'me',
   'person',
@@ -156,9 +155,9 @@ export const has_archive = /** @type {readonly ['posters']} */ (
   /** @type {unknown} */ (types.slice(0, 1))
 )
 
-/** @type {readonly ['thoughts', 'events']} */
-export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
-  /** @type {unknown} */ (types.slice(1, 3))
+/** @type {readonly ['thoughts']} */
+export const has_history = /** @type {readonly ['thoughts']} */ (
+  /** @type {unknown} */ (types.slice(1, 2))
 )
 
 /**
@@ -203,7 +202,6 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
  * @property {import('vue').Ref<HTMLElement|null>} sync_element
  * @property {import('vue').Ref<Relation[]>} relations
  * @property {import('vue').Ref<Item[]>} my_statements
- * @property {import('vue').Ref<Item[]|null>} events
  * @property {import('vue').Ref<{visited?: string}|undefined>} me
  * @property {(event: string, ...args: unknown[]) => void} emit
  * @property {(() => Promise<void>) | undefined} [load_phonebook] - optional; repopulate UI after index cache invalidation
@@ -236,7 +234,6 @@ export const has_history = /** @type {readonly ['thoughts', 'events']} */ (
 
 /**
  * @typedef {Object} Sync_Return
- * @property {import('vue').Ref<Array|null>} events
  * @property {import('vue').Ref<HTMLElement|null>} sync_element
  * @property {import('vue').Ref<HTMLElement|null>} sync_poster
  * @property {() => Promise<void>} sync_offline_actions

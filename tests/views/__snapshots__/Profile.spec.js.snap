@@ -17,7 +17,6 @@ exports[`Profile > renders profile view 1`] = `
     person="[object Object]"
   />
   <as-days-stub
-    events=""
     paginate="true"
     posters="[object Object]"
     statements="[object Object]"

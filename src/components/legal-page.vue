@@ -7,7 +7,11 @@
 </script>
 
 <template>
-  <section data-page itemscope itemtype="/legal" lang="en">
+  <section
+    data-page
+    itemscope
+    itemtype="https://realness.online/legal"
+    lang="en">
     <header>
       <h1>{{ title }}</h1>
       <nav aria-label="Legal documents">
@@ -33,7 +37,7 @@
 </template>
 
 <style lang="stylus">
-  section[itemtype='/legal'] {
+  section[itemtype$='/legal'] {
     margin: 0 auto;
     padding: 0 base-line;
     max-width: support-page-width;

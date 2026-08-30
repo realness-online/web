@@ -19,7 +19,6 @@ import {
   Offline,
   Relation,
   Statements,
-  Event,
   Poster,
   Me
 } from '@/persistence/Storage'
@@ -177,16 +176,15 @@ const create_play = deps => async () => {
     await sync_offline_actions()
     if (!navigator.onLine || !current_user.value) return
 
-    // First: it rewrites `me`, re-rendering the sync aside the other three read
+    // First: it rewrites `me`, re-rendering the sync aside the other two read
     // their elements out of.
     await sync_me()
-    const [relations, statements, events] = await Promise.all([
+    const [relations, statements] = await Promise.all([
       sync_relations(deps),
-      sync_statements(deps),
-      sync_events(deps)
+      sync_statements(deps)
     ])
     let contacts_changed = !!relations
-    let mine_changed = !!statements || !!events
+    let mine_changed = !!statements
 
     const sync_was_due = !i_am_fresh()
     if (sync_was_due) {
@@ -353,33 +351,6 @@ const sync_relations = async deps => {
   return false
 }
 
-/** @param {Sync_Deps} deps @returns {Promise<boolean>} */
-const sync_events = async deps => {
-  const itemid = get_my_itemid('events')
-  if (!itemid) return false
-  await fresh_metadata(itemid)
-  const event_storage = new Event()
-  const index_hash = await get_index_hash(itemid)
-  const elements = deps.sync_element.value?.querySelector(
-    `[itemid="${itemid}"]`
-  )
-  if (!elements) return false
-  const hash = await create_hash(elements.outerHTML)
-  if (index_hash !== hash) {
-    const before = deps.events.value ?? []
-    const synced_events = (await event_storage.sync()) || []
-    // eslint-disable-next-line require-atomic-updates -- deps ref is stable; assign is from sync result
-    deps.events.value = synced_events
-    if (synced_events.length) {
-      await tick()
-      await event_storage.save(elements)
-      localStorage.removeItem('/+/events')
-    }
-    return rows_changed(before, synced_events)
-  }
-  return false
-}
-
 /**
  * Root `people/{author}/index.html.gz` blobs: refresh `sync:index`, then drop stale local
  * cache when the hash disagrees. Each contact's statements file is hash checked here
@@ -450,7 +421,6 @@ export const use = (component_emit, options = {}) => {
   const emit = component_emit ?? instance?.emit ?? (() => {})
   const { me, relations } = use_me()
   const { my_statements } = use_statements()
-  const events = ref(null)
   const sync_element = ref(null)
   const sync_poster = ref(null)
   provide('sync-poster', sync_poster)
@@ -459,7 +429,6 @@ export const use = (component_emit, options = {}) => {
     sync_element,
     relations,
     my_statements,
-    events,
     me,
     emit,
     load_phonebook: options.load_phonebook
@@ -488,7 +457,6 @@ export const use = (component_emit, options = {}) => {
     await play()
   })
   return {
-    events,
     sync_element,
     sync_poster,
     sync_offline_actions,

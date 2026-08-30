@@ -768,7 +768,7 @@ describe('@/component/posters/as-figure.vue', () => {
         document.body.appendChild(canonical)
 
         const ref_wrapper = await mount_reference()
-        const ref_svg = ref_wrapper.find('svg[itemtype="/posters"]')
+        const ref_svg = ref_wrapper.find('svg[itemtype$="/posters"]')
         expect(ref_svg.exists()).toBe(true)
         expect(ref_svg.attributes('viewBox')).toBe('0 0 40 20')
         expect(ref_svg.attributes('preserveAspectRatio')).toBe('xMidYMax slice')

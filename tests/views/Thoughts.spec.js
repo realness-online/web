@@ -667,7 +667,7 @@ describe('Thoughts', () => {
     it('scrolls into storytelling mode for the poster most in view', async () => {
       const wrapper = await settled(mount())
       const page = wrapper.find('section#thoughts').element
-      const figure = page.querySelector('figure:has([itemtype="/posters"])')
+      const figure = page.querySelector('figure:has([itemtype$="/posters"])')
       expect(figure).toBeTruthy()
       figure.getBoundingClientRect = () => ({
         top: 100,
@@ -694,7 +694,7 @@ describe('Thoughts', () => {
 
       expect(
         document.querySelector(
-          `section[data-page][data-storytelling] figure:has([itemtype="/posters"]) [itemid="${poster_id}"]`
+          `section[data-page][data-storytelling] figure:has([itemtype$="/posters"]) [itemid="${poster_id}"]`
         )
       ).toBeTruthy()
       wrapper.unmount()
@@ -711,13 +711,13 @@ describe('Thoughts', () => {
       days_el.setAttribute('data-days', '')
       const article = document.createElement('article')
       const section = document.createElement('section')
-      const figure = page.querySelector('figure:has([itemtype="/posters"])')
+      const figure = page.querySelector('figure:has([itemtype$="/posters"])')
       section.appendChild(figure.cloneNode(true))
       article.appendChild(section)
       days_el.appendChild(article)
 
       const feed_figure = page.querySelector(
-        'figure:has([itemtype="/posters"])'
+        'figure:has([itemtype$="/posters"])'
       )
       const scroll_into_view = vi.fn()
       const focus = vi.fn()
@@ -747,7 +747,7 @@ describe('Thoughts', () => {
 
     it('focuses the first poster on textarea tab-next', async () => {
       const wrapper = await settled(mount())
-      const figure = wrapper.find('figure:has([itemtype="/posters"])').element
+      const figure = wrapper.find('figure:has([itemtype$="/posters"])').element
       const focus = vi.fn()
       figure.focus = focus
       const event = { preventDefault: vi.fn() }

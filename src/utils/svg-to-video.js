@@ -244,7 +244,7 @@ const rasterize_svg_frame = async (
 
   // Symbols referenced by <use> and by the animate hrefs live in the hidden
   // defs svg; append them so the standalone serialized frame can resolve them.
-  const figure = svg_element.closest('figure:has([itemtype="/posters"])')
+  const figure = svg_element.closest('figure:has([itemtype$="/posters"])')
   const hidden_svg = figure?.querySelector('svg[data-poster-symbol-defs]')
   hidden_svg?.querySelectorAll('symbol').forEach(symbol => {
     svg_clone.appendChild(symbol.cloneNode(true))

@@ -22,6 +22,6 @@ section[data-page] {
 
 /* When the support layout renders site-nav directly above the page,
    the nav owns notch clearance - zero the page's safe-area to avoid a gap. */
-nav[itemtype='/site-nav'] + section[data-page] {
+nav[itemtype$='/SiteNavigationElement'] + section[data-page] {
   padding-top: 0;
 }

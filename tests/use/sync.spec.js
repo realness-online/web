@@ -983,7 +983,7 @@ describe('sync composable', () => {
         window.dispatchEvent(new Event('online'))
         await flushPromises()
 
-        for (const mine of ['statements', 'relations', 'events'])
+        for (const mine of ['statements', 'relations'])
           expect(metadata).toHaveBeenCalledWith(expect.stringContaining(mine))
         expect(directory).not.toHaveBeenCalledWith('people/')
       })
@@ -1302,13 +1302,9 @@ describe('sync composable', () => {
       const statements_el = {
         outerHTML: '<section itemid="/+14151234356/statements"></section>'
       }
-      const events_el = {
-        outerHTML: '<section itemid="/+14151234356/events"></section>'
-      }
       sync.sync_element.value = {
         querySelector: vi.fn(sel => {
           if (sel.includes('statements')) return statements_el
-          if (sel.includes('events')) return events_el
           if (sel.includes('relations')) return null
           return null
         })

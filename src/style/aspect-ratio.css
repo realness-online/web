@@ -11,21 +11,21 @@ html[data-aspect-ratio='1/1'] {
   }
 }
 
-html[data-aspect-ratio='1/1'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='1/1'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 1 / 1;
 }
-html[data-aspect-ratio='4/3'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='4/3'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 4 / 3;
 }
-html[data-aspect-ratio='1.618/1'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='1.618/1'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 1.618 / 1;
 }
-html[data-aspect-ratio='16/9'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='16/9'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 16 / 9;
 }
-html[data-aspect-ratio='2.35/1'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='2.35/1'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 2.35 / 1;
 }
-html[data-aspect-ratio='2.76/1'] svg[itemtype='/posters'][data-aspect] {
+html[data-aspect-ratio='2.76/1'] svg[itemtype$='/posters'][data-aspect] {
   aspect-ratio: 2.76 / 1;
 }

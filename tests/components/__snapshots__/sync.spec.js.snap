@@ -6,7 +6,6 @@ exports[`@/components/sync > Render > Renders sync component 1`] = `
 >
   <!--v-if-->
   <as-days-stub
-    events=""
     itemid="/+16282281824/statements"
     itemscope=""
     paginate="false"

@@ -251,7 +251,7 @@ export const sort_cutouts_into_layers = (vector, id) => {
       symbol.setAttribute('id', as_query_id(layer_id))
       symbol.setAttribute('itemid', layer_id)
       symbol.setAttribute('itemscope', '')
-      symbol.setAttribute('itemtype', '/cutouts')
+      symbol.setAttribute('itemtype', 'https://realness.online/cutouts')
 
       cutouts[layer] = symbol
     } else delete cutouts[layer]

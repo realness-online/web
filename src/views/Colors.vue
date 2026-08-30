@@ -273,7 +273,12 @@
 </script>
 
 <template>
-  <section id="colors" data-page itemid="/colors" itemscope itemtype="/colors">
+  <section
+    id="colors"
+    data-page
+    itemid="/colors"
+    itemscope
+    itemtype="https://realness.online/colors">
     <header>
       <h1>Color</h1>
       <icon name="realness" aria-hidden="true" />

@@ -633,7 +633,7 @@
     ref="trigger"
     :id="query()"
     itemscope
-    itemtype="/posters"
+    itemtype="https://realness.online/posters"
     :itemid="itemid"
     :viewBox="viewbox"
     :preserveAspectRatio="aspect_ratio"
@@ -751,7 +751,7 @@
   /* aspect-ratio: 16 / 9 // most like human vision */
   /* aspect-ratio: 4 / 3 // classic print */
   /* aspect-ratio: 1 / 1 // square */
-  svg[itemtype='/posters'] {
+  svg[itemtype$='/posters'] {
     display: block;
     min-height: 512px;
     height: 100%;
@@ -881,21 +881,21 @@
   }
 
   @starting-style {
-    svg[itemtype='/posters'] rect#lightbar-back,
-    svg[itemtype='/posters'] rect#lightbar-front,
-    svg[itemtype='/posters'] > rect:first-of-type,
-    svg[itemtype='/posters'] symbol path[itemprop],
-    svg[itemtype='/posters'] symbol rect[itemprop='background'] {
+    svg[itemtype$='/posters'] rect#lightbar-back,
+    svg[itemtype$='/posters'] rect#lightbar-front,
+    svg[itemtype$='/posters'] > rect:first-of-type,
+    svg[itemtype$='/posters'] symbol path[itemprop],
+    svg[itemtype$='/posters'] symbol rect[itemprop='background'] {
       opacity: 0;
     }
   }
 
   @starting-style {
-    svg[itemtype='/posters'] use[itemprop='sediment'],
-    svg[itemtype='/posters'] use[itemprop='sand'],
-    svg[itemtype='/posters'] use[itemprop='gravel'],
-    svg[itemtype='/posters'] use[itemprop='rocks'],
-    svg[itemtype='/posters'] use[itemprop='boulders'] {
+    svg[itemtype$='/posters'] use[itemprop='sediment'],
+    svg[itemtype$='/posters'] use[itemprop='sand'],
+    svg[itemtype$='/posters'] use[itemprop='gravel'],
+    svg[itemtype$='/posters'] use[itemprop='rocks'],
+    svg[itemtype$='/posters'] use[itemprop='boulders'] {
       opacity: 0;
     }
   }

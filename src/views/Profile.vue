@@ -135,7 +135,7 @@
         height: 100dvh;
         fill: currentColor;
       }
-      & > figure:has([itemtype='/posters']) {
+      & > figure:has([itemtype$='/posters']) {
         content-visibility: visible;
         width: 100%;
         min-height: 100dvh;
@@ -228,11 +228,11 @@
       &[role='feed'] > article {
         @media (prefers-color-scheme: dark) {
           & > header > h4,
-          figure:has([itemtype='/posters']) > svg[data-icon='background'] {
+          figure:has([itemtype$='/posters']) > svg[data-icon='background'] {
             color: var(--accent);
           }
         }
-        figure:has([itemtype='/posters']) {
+        figure:has([itemtype$='/posters']) {
           border-radius: 0;
           & > figcaption > menu {
             & > a[aria-label='Send a text message'] {

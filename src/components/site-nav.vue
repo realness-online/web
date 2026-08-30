@@ -21,7 +21,10 @@
 </script>
 
 <template>
-  <nav itemscope itemtype="/site-nav" aria-label="Site">
+  <nav
+    itemscope
+    itemtype="https://schema.org/SiteNavigationElement"
+    aria-label="Site">
     <logo-as-link />
     <menu>
       <router-link to="/about" replace>About</router-link>
@@ -36,7 +39,7 @@
 </template>
 
 <style>
-  nav[itemtype='/site-nav'] {
+  nav[itemtype$='/SiteNavigationElement'] {
     width: 100%;
     box-sizing: border-box;
     display: flex;

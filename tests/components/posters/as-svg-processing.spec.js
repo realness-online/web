@@ -70,7 +70,9 @@ describe('@/components/posters/as-svg-processing', () => {
   it('marks landscape orientation from queue dimensions', () => {
     const wrapper = mount()
     expect(
-      wrapper.find("figure[itemtype='/posters']").attributes('data-orientation')
+      wrapper
+        .find("figure[itemtype$='/posters']")
+        .attributes('data-orientation')
     ).toBe('horizontal')
   })
 
@@ -79,7 +81,9 @@ describe('@/components/posters/as-svg-processing', () => {
       item: queue_item({ width: 400, height: 800 })
     })
     expect(
-      wrapper.find("figure[itemtype='/posters']").attributes('data-orientation')
+      wrapper
+        .find("figure[itemtype$='/posters']")
+        .attributes('data-orientation')
     ).toBe('vertical')
   })
 

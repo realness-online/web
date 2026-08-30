@@ -10,7 +10,7 @@ svg {
   display: block;
   stroke-width: 0;
 }
-svg[itemtype='/posters'] use:active {
+svg[itemtype$='/posters'] use:active {
   stroke-width: round(base-line / 7, 2);
   fill: var(--chalk);
   transition-property: padding, fill;
@@ -41,7 +41,7 @@ svg[data-icon='working'] {
 }
 
 // https://frontendmasters.com/blog/pure-css-halftone-effect-in-3-declarations/
-// svg[itemtype='/posters'] halftone
+// svg[itemtype$='/posters'] halftone
 //   --s: 2em 2em
 //   --c: 21
 //   --dot: radial-gradient(closest-side, #777, #fff calc(100% / sqrt(2)))

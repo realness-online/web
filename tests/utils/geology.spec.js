@@ -125,9 +125,7 @@ describe('load_cutout_flags inline & old-style', () => {
 
   it('returns an empty set for old-style posters before the split cutoff', async () => {
     vi.mocked(as_created_at).mockReturnValue(GEOLOGY_DATE - 1)
-    const spy = vi.spyOn(console, 'info').mockImplementation(() => {})
     expect(await load_cutout_flags(itemid)).toEqual({})
-    expect(spy).toHaveBeenCalled()
-    spy.mockRestore()
+    expect(get).not.toHaveBeenCalled()
   })
 })

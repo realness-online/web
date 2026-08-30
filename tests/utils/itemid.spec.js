@@ -399,11 +399,9 @@ describe('@/utils/itemid', () => {
 
   describe('item id validation', () => {
     it('validates correct item ids', () => {
-      expect(is_itemid('/+16282281824/events')).toBe(true)
       expect(is_itemid('/+16282281824/thoughts')).toBe(true)
       expect(is_itemid('/+16282281824/posters/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/thoughts/1737178477987')).toBe(true)
-      expect(is_itemid('/+16282281824/events/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/relations/1737178477987')).toBe(true)
       expect(is_itemid('/+16282281824/me/1737178477987')).toBe(true)
     })

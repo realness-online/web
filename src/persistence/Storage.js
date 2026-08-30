@@ -132,13 +132,6 @@ export class Statements extends Folder(Paged(Cloud(Local(Storage)))) {
 }
 
 /** @extends {Storage} */
-export class Event extends Paged(Cloud(Local(Storage))) {
-  constructor() {
-    super(/** @type {Id} */ (`${localStorage.me}/events`))
-  }
-}
-
-/** @extends {Storage} */
 export class Offline extends Cloud(Storage) {
   async save() {
     let { id } = this

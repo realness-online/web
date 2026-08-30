@@ -19,7 +19,6 @@ const networkable = [
   'relations',
   'thoughts',
   'posters',
-  'events',
   'shadows',
   'sediment',
   'sand',

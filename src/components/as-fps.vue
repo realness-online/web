@@ -84,9 +84,9 @@
 
   const find_poster_svg = () => {
     const animating = document.querySelectorAll(
-      'svg[data-animate][itemtype="/posters"]'
+      'svg[data-animate][itemtype$="/posters"]'
     )
-    const any_poster = document.querySelectorAll('svg[itemtype="/posters"]')
+    const any_poster = document.querySelectorAll('svg[itemtype$="/posters"]')
     const svgs = animating.length ? animating : any_poster
     if (!svgs.length) return null
     const in_view = [...svgs].find(svg => {
