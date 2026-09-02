@@ -6,8 +6,8 @@ Load `/poster-driver` in a browser you control, wait for `window.poster_driver.r
 
 ```js
 const poster = await window.poster_driver.render(data_url, {
-  formats: ["png", "psd", "glb"],
-});
+  formats: ['png', 'psd', 'glb']
+})
 ```
 
 `data_url` is a base64 image data URL (`data:image/png;base64,...`).
