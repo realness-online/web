@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- **Signing in on a phone gets past the captcha** - when Google decided to ask
+  for the picture puzzle, the puzzle opened behind the sign-in window and there
+  was no way through. The window used to sit in the browser's top layer, which
+  paints over everything regardless of stacking. It is a normal window now,
+  with its own scrim and Esc to close, and on a phone it takes the whole
+  screen instead of floating as a card.
+
+- **A downloaded poster is the drawing, nothing else** - the PNG used to come
+  out with the realness icon burned into a corner.
+
+- **Making a movie from a poster moved to the harness** - `npm run
+make:animation` from the brayness root does what `render-poster-video.js`
+  did inside this repo. The driver page and the documentation say so, and the
+  prompt the page hands a coding assistant points at the new script.
+
+- **Posters say what they are in a way other readers can follow** - the
+  microdata types were relative paths, which only made sense to us. They are
+  full `https://realness.online/...` addresses now. Posters saved before this
+  still read fine.
+
 ## v2.9.1 - 2026-08-22
 
 - **Other people's thoughts show up again** - a contact's writing was cached
