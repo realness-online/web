@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.9.2 - 2026-09-02
+
 - **Signing in on a phone gets past the captcha** - when Google decided to ask
   for the picture puzzle, the puzzle opened behind the sign-in window and there
   was no way through. The window used to sit in the browser's top layer, which
