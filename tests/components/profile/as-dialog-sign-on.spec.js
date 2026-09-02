@@ -21,9 +21,10 @@ describe('@/components/profile/as-dialog-sign-on', () => {
     vi.clearAllMocks()
     wrapper = mount()
     element = wrapper.find('dialog#sign-on').element
-    element.showModal = vi.fn(() => {
+    element.show = vi.fn(() => {
       element.open = true
     })
+    element.showModal = vi.fn()
     element.close = vi.fn(() => {
       element.open = false
     })
@@ -35,13 +36,39 @@ describe('@/components/profile/as-dialog-sign-on', () => {
 
   it('opens on request', () => {
     wrapper.vm.open()
-    expect(element.showModal).toHaveBeenCalled()
+    expect(element.show).toHaveBeenCalled()
   })
 
   it('does not re-open a dialog that is already open', () => {
     wrapper.vm.open()
     wrapper.vm.open()
-    expect(element.showModal).toHaveBeenCalledTimes(1)
+    expect(element.show).toHaveBeenCalledTimes(1)
+  })
+
+  // A modal dialog sits in the top layer, above the reCAPTCHA challenge
+  // Google appends to the body. Staying non-modal is the whole fix.
+  it('never goes modal, so the captcha challenge can paint over it', () => {
+    wrapper.vm.open()
+    expect(element.showModal).not.toHaveBeenCalled()
+  })
+
+  it('raises a scrim while it is open and drops it on close', async () => {
+    expect(wrapper.find('#sign-on-scrim').exists()).toBe(false)
+
+    wrapper.vm.open()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('#sign-on-scrim').exists()).toBe(true)
+
+    wrapper.vm.close()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('#sign-on-scrim').exists()).toBe(false)
+  })
+
+  it('closes on escape, which a non-modal dialog does not do on its own', async () => {
+    wrapper.vm.open()
+    await wrapper.find('dialog#sign-on').trigger('keydown.esc')
+
+    expect(element.close).toHaveBeenCalled()
   })
 
   it('shuts itself and passes the signal on when sign-on succeeds', async () => {
