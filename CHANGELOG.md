@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Google could not make sense of the site** - the homepage never said which
+  URL it was, so a link with tracking junk on the end looked like a second
+  homepage. The license page was listed in the sitemap and blocked in the same
+  breath. And /privacy answered like a real page, then moved you to the terms
+  page once the app loaded, which a crawler never sees. It is a redirect now.
+
+  - **Tracing a poster no longer needs a build** - `npm run poster` drove a copy
+    of the site it started itself. It uses the deployed site, the way
+    `poster:video` already did. Point `REALNESS_URL` somewhere else to override.
+
 ## v2.9.2 - 2026-09-02
 
 - **Signing in on a phone gets past the captcha** - when Google decided to ask
