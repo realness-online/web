@@ -1019,11 +1019,17 @@ describe('sync composable', () => {
         directory.mockImplementation(() =>
           Promise.reject(new Error('offline mid-walk'))
         )
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
         ;({ wrapper } = with_setup(() => use_sync(emit)))
         window.dispatchEvent(new Event('online'))
         await flushPromises()
 
         expect(localStorage.sync_time).toBe(stale)
+        expect(warn).toHaveBeenCalledWith(
+          '[sync] tick failed',
+          expect.any(Error)
+        )
+        warn.mockRestore()
       })
 
       it('moves the clock once the contact walk finishes', async () => {
