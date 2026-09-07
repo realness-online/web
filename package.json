@@ -1,7 +1,7 @@
 {
   "name": "@realness.online/web",
   "version": "2.9.2",
-  "private": false,
+  "private": true,
   "type": "module",
   "keywords": [
     "svg",
@@ -42,8 +42,6 @@
     "preversion": "node scripts/check-release.js --unreleased",
     "version": "node scripts/promote-changelog.js && git add CHANGELOG.md",
     "postversion": "git push && git push --tags",
-    "release": "vp run release:gh && vp run release:npm",
-    "release:npm": "npm publish",
     "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version dist/build-manifest.json --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file artifacts/release-notes.md",
     "ship": "npm run deploy && npm run release:gh && npm run verify -- --release",
     "verify": "node scripts/verify-deploy.js",
