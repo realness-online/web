@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.9.3 - 2026-09-07
+
 - **Google could not make sense of the site** - the homepage never said which
   URL it was, so a link with tracking junk on the end looked like a second
   homepage. The license page was listed in the sitemap and blocked in the same
