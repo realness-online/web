@@ -1,6 +1,5 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
-import http from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -8,38 +7,19 @@ import { tmpdir } from 'node:os'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const project_root = path.join(__dirname, '..')
-const dist_dir = path.join(project_root, 'dist')
 const out_dir = path.join(project_root, 'artifacts', 'poster-driver')
 
+const DRIVER_ORIGIN = process.env.REALNESS_URL || 'https://realness.online'
 const DRIVER_ROUTE = '/poster-driver'
 const READY_TIMEOUT_MS = 120000
 const POLL_MS = 1000
 const BROWSER_TIMEOUT_MS = 20000
 const BROWSER_POLL_MS = 200
-const SERVER_PORT = 4180
 const DEBUG_PORT = 9334
-const HTTP_OK = 200
-const NOT_FOUND = 404
 const PROFILE_RM_RETRIES = 5
 const PROFILE_RM_DELAY_MS = 200
 
 const chrome_path = process.env.CHROME_PATH
-
-const content_types = {
-  '.css': 'text/css',
-  '.gz': 'application/gzip',
-  '.html': 'text/html',
-  '.jpg': 'image/jpeg',
-  '.js': 'text/javascript',
-  '.json': 'application/json',
-  '.md': 'text/markdown',
-  '.png': 'image/png',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain',
-  '.wasm': 'application/wasm',
-  '.woff2': 'font/woff2',
-  '.xml': 'application/xml'
-}
 
 const fail = message => {
   console.error(`render-poster: ${message}`)
@@ -48,8 +28,6 @@ const fail = message => {
 
 const [, , input_path] = process.argv
 if (!input_path) fail('usage: npm run poster <image-path>')
-if (!fs.existsSync(`${dist_dir}/index.html`))
-  fail('dist/index.html missing - npm run build first')
 if (!chrome_path)
   fail(
     'CHROME_PATH is not set - point it at a Chromium browser, the same one npm run score uses'
@@ -60,29 +38,6 @@ if (!fs.existsSync(input_path)) fail(`image not found: ${input_path}`)
 const image_data_url = `data:image/${path.extname(input_path).slice(1)};base64,${fs
   .readFileSync(input_path)
   .toString('base64')}`
-
-const serve_dist = () =>
-  new Promise(resolve => {
-    const server = http.createServer((request, response) => {
-      const url_path = decodeURIComponent(
-        (request.url ?? '/').split('?')[0]
-      ).replace(/^\/+/, '')
-      let file = path.join(dist_dir, url_path)
-      if (!file.startsWith(dist_dir)) {
-        response.writeHead(NOT_FOUND)
-        response.end()
-        return
-      }
-      if (!fs.existsSync(file) || fs.statSync(file).isDirectory())
-        file = path.join(dist_dir, 'index.html')
-      response.writeHead(HTTP_OK, {
-        'content-type':
-          content_types[path.extname(file)] ?? 'application/octet-stream'
-      })
-      fs.createReadStream(file).pipe(response)
-    })
-    server.listen(SERVER_PORT, '127.0.0.1', () => resolve(server))
-  })
 
 const sleep = ms =>
   new Promise(resolve => {
@@ -162,9 +117,8 @@ const devtools = socket => {
 }
 
 const run = async () => {
-  const server = await serve_dist()
   const profile_dir = mkdtempSync(path.join(tmpdir(), 'render-poster-'))
-  const target_url = `http://127.0.0.1:${SERVER_PORT}${DRIVER_ROUTE}`
+  const target_url = `${DRIVER_ORIGIN}${DRIVER_ROUTE}`
   const browser = spawn(
     chrome_path,
     [
@@ -180,7 +134,6 @@ const run = async () => {
   )
   const shutdown = () => {
     browser.kill()
-    server.close()
     try {
       rmSync(profile_dir, {
         recursive: true,
