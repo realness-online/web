@@ -11,6 +11,13 @@
       "**/desktop.ini",
       "**/__MACOSX/**"
     ],
+    "redirects": [
+      {
+        "source": "/privacy",
+        "destination": "/terms#privacy-policy",
+        "type": 301
+      }
+    ],
     "rewrites": [
       { "source": "/capabilities", "function": "capabilities" },
       {

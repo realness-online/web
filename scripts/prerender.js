@@ -101,7 +101,7 @@ const sitemap = build_sitemap_xml({
   site_origin,
   pages: prerender_pages,
   lastmod: sitemap_lastmod,
-  extra_urls: ['/documentation.md']
+  extra_urls: ['/', '/documentation.md']
 })
 fs.writeFileSync(path.join(dist_dir, 'sitemap.xml'), sitemap)
 console.info(`prerender: wrote ${path.join(dist_dir, 'sitemap.xml')}`)

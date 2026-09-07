@@ -4,6 +4,7 @@ Allow: /$
 Allow: /about
 Allow: /docs
 Allow: /pricing
+Allow: /license
 Allow: /terms
 Allow: /privacy
 Allow: /llms.txt
