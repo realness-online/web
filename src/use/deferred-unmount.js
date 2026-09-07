@@ -32,7 +32,7 @@ export const duration_of = name => {
  * one transition later instead of on the same frame.
  *
  * Not Vue's `<Transition>`, which injects `v-enter-active` classes that
- * realness-design forbids.
+ * the useless skill forbids.
  *
  * @param {() => string[]} source Keys that should be shown right now
  * @param {Object} [options]
