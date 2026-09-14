@@ -10,16 +10,24 @@ export const slice_preserve_aspect_ratio = (alignment = 'ymid') => {
 }
 
 /**
+ * The poster's width over its height. 1 when there is no viewBox yet - the
+ * silhouette as-svg draws until the poster loads is square.
+ *
+ * @param {string | undefined} viewbox
+ * @returns {number}
+ */
+export const poster_ratio = viewbox => {
+  if (!viewbox) return 1
+  const [, , width, height] = viewbox.split(' ').map(Number)
+  if (!width || !height) return 1
+  return width / height
+}
+
+/**
  * @param {string | undefined} viewbox
  * @returns {boolean}
  */
-export const poster_landscape = viewbox => {
-  if (!viewbox) return false
-  const numbers = viewbox.split(' ')
-  const width = parseInt(numbers[2], 10)
-  const height = parseInt(numbers[3], 10)
-  return width > height
-}
+export const poster_landscape = viewbox => poster_ratio(viewbox) > 1
 
 /**
  * @param {{
