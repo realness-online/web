@@ -29,7 +29,7 @@ export const ENVIRONMENTS = {
     /** The API, through Lima's port forward: guest 8080 -> Mac 18080. */
     api: "http://127.0.0.1:18080",
     webPort: 18090,
-    log: "runs/dev-up.log",
+    log: "dist/dev-up.log",
     /** Sizes for the stack the host runs. */
     volume: "/opt/fc/sessions",
     volumeSize: "6G",

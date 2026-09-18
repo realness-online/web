@@ -35,7 +35,7 @@ const PARTS = ["artifacts.tar.gz", "trace.jsonl", "manifest.json"]
 
 export async function drain(cloud, config, name, { delete: drop = false, runDir } = {}) {
   const api = remoteApi(name, { zone: config.zone })
-  const run = runDir ?? join(ROOT_RUNS(), `drain-${stamp()}`)
+  const run = runDir ?? join(dist(), `drain-${stamp()}`)
 
   step(`${name} (${config.project}/${config.zone}), bucket gs://${config.bucket}`)
 
@@ -286,6 +286,7 @@ function stamp() {
   return new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "Z")
 }
 
-function ROOT_RUNS() {
-  return new URL("../../runs/", import.meta.url).pathname.replace(/\/$/, "")
+/** Everything generated lands here: dist/ is ignored, source is not. */
+function dist() {
+  return new URL("../../dist/", import.meta.url).pathname.replace(/\/$/, "")
 }

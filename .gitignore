@@ -1,8 +1,15 @@
-# Output, not source
-build/
-runs/
+# Everything generated. A fresh clone is source only.
+dist/
+
+# Python bytecode. The orchestrator runs as root on a host and would otherwise
+# leave root-owned files in the source tree.
 __pycache__/
 *.pyc
+
+# The old names for dist/. Kept so a working tree that still has them does not
+# have them committed by accident.
+build/
+runs/
 
 # Dependencies. site/package.json names them; there is no lock yet, so
 # `npm install` in site/ floats to current versions.

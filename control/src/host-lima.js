@@ -100,8 +100,8 @@ async function startStack(lima, config, { fresh = false } = {}) {
 
   const prefix = fresh ? "env FRESH=1 " : ""
   const command =
-    `mkdir -p ${config.workdir}/runs && nohup ${prefix}bash ` +
-    `${config.workdir}/scripts/dev-stack.sh > ${config.workdir}/runs/dev-up.log 2>&1 &`
+    `mkdir -p ${config.workdir}/dist && nohup ${prefix}bash ` +
+    `${config.workdir}/scripts/dev-stack.sh > ${config.workdir}/dist/dev-up.log 2>&1 &`
   await lima.run(command, { user: "root", timeout: 30_000 })
   return { alreadyUp: false, health: await waitForHealth(config.api, { tries: 90, delayMs: 2000 }) }
 }

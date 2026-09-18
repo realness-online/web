@@ -14,8 +14,8 @@ code that builds it and serves it.
   `control/`; not the operator surface any more.
 - `site/` - the markdown-to-static-site builder, comark + shiki.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
-- `runs/<check>-<utc>/` - one directory per check run: disposable evidence, not
-  source.
+- `dist/` - everything generated: the staged harness, boot and template check
+  runs, drain logs. Ignored; a fresh clone is source only.
 
 `control/` and `src/` are separate worlds and a test enforces it: the
 orchestrator must not know the control plane exists, and control may only reach
@@ -58,7 +58,7 @@ node control/bin/webspace.js dev build
 ```
 
 `harness-stage.sh` copies this repo's non-personal parts into
-`build/brayness-harness.tar.gz` - an allowlist, not an exclude list - then
+`dist/brayness-harness.tar.gz` - an allowlist, not an exclude list - then
 `template-build.sh` fetches its inputs (checksummed, cached in `/opt/fc`) and
 builds `/opt/fc/template.ext4` in the guest. After a rebuild the seed is stale,
 so `webspace dev up --fresh` wipes the sessions volume and rebuilds it.
@@ -85,7 +85,7 @@ node control/bin/webspace.js dev up      # each time: volume, TAP, API; waits fo
 - API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`.
 - `dev stop` stops it, `dev restart` reloads the current code, `dev up --fresh`
   wipes the sessions volume and rebuilds the seed.
-- The log is `runs/dev-up.log`; the guest side is `scripts/dev-stack.sh`.
+- The log is `dist/dev-up.log`; the guest side is `scripts/dev-stack.sh`.
 - `dev up` waits for `seed.built`, not just for health: the API answers `ok` as
   soon as it is listening, before the seed exists, so waiting on `ok` reports a
   stack as up when it cannot make a session.
@@ -934,7 +934,7 @@ walkthrough of what each command does, with what it proved, is
 `artifacts/firecracker/webspace-command-map.md`; the run logs from the prod
 walkthrough are in `artifacts/firecracker/probe-20260918/`:
 
-- `dev-setup.sh` - booted a microVM (`runs/boot-20260918T173159Z/`, 473 serial
+- `dev-setup.sh` - booted a microVM (`dist/boot-<utc>/`, 473 serial
   lines, `PASS: guest reached userspace`)
 - `dev-up.sh` - `--fresh` wiped the volume and rebuilt the seed; health `ok`
 - `host-up.sh probe-brayness-2 --smoke --zone=us-west1-b` - host created,

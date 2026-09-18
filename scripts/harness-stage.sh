@@ -19,7 +19,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
-OUT="$(cd "$(dirname "$0")/.." && pwd)/build"
+OUT="$(cd "$(dirname "$0")/.." && pwd)/dist"
 TAR="$OUT/brayness-harness.tar.gz"
 MANIFEST="$OUT/brayness-harness.manifest"
 

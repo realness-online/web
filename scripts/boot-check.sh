@@ -4,7 +4,7 @@
 set -euo pipefail
 
 ROOT="/opt/fc"
-RUNS="${RUNS_DIR:-/mnt/fc/runs}"
+RUNS="${RUNS_DIR:-/mnt/fc/dist}"
 RUN="$RUNS/boot-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$RUN"
 

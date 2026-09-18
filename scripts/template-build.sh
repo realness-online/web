@@ -27,9 +27,9 @@ TREE="${TREE:-$ROOT/template-tree}"
 IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
 STAGE="${STAGE:-full}"
-HARNESS_TAR="${HARNESS_TAR:-$REPO/build/brayness-harness.tar.gz}"
+HARNESS_TAR="${HARNESS_TAR:-$REPO/dist/brayness-harness.tar.gz}"
 GUEST_SRC="${GUEST_SRC:-$REPO/scripts/guest}"
-RUNS="${RUNS_DIR:-$REPO/runs}"
+RUNS="${RUNS_DIR:-$REPO/dist}"
 RUN="$RUNS/template-$(date -u +%Y%m%dT%H%M%SZ)"
 
 # Node says x64 where Ubuntu says amd64.
