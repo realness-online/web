@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Prints are for sale** - `/prints` lists the posters finished by hand and
+  shipped, priced at what the next sale costs right now. The ladder is global:
+  the first print sold anywhere is $5, the second $100, and every one after that
+  $500, with Stripe keeping count. A print sells once. Sold prints wear a red
+  dot, and one that sells while your tab is open turns into a dot on its own.
+
 ## v2.9.3 - 2026-09-07
 
 - **Google could not make sense of the site** - the homepage never said which
@@ -342,7 +348,7 @@ make:animation` from the brayness root does what `render-poster-video.js`
 ## v2.5.12 - 2026-07-17
 
 - **Verifiable releases** - Keep a changelog `## Unreleased` (hidden on `/docs` until cut); `npm version` promotes and tags, `npm run ship` publishes build-manifest + notes to GitHub. Copy points skeptics at the ritual.
-- **realness-design realign** - views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions.
+- **useless realign** - views/components drop invented class hooks for markup state, rename `--on-emphasis` → `--contrast`, align with design skill conventions.
 - **Markdown as an element stylesheet** - content typography moved from Stylus mixin into `src/style/elements/markdown.styl`.
 - **Notification opt-in onboarding** - once per device after sign-in, a modal offers push when the instance supports it.
 - **Mosaic logo smalti wobble** - clipped fragment paths on each tile, paced off the glint cycle, for more physical glitter.
