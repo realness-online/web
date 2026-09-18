@@ -11,6 +11,7 @@ import {
 } from '@/utils/itemid'
 import { get_item } from '@/utils/item'
 import {
+  as_directory,
   build_local_directory,
   clear_author_dirs,
   load_directory_from_network
@@ -100,6 +101,7 @@ const sync_public_default_feed = async deps => {
     return false
   }
   await fresh_metadata(id)
+  const posters_changed = await sync_author_posters(id)
   const index_hash = await get_index_hash(id)
   const index_entry = ((await get('sync:index')) || {})[id]
   const local_html = localStorage.getItem(id) ?? (await get(id))
@@ -119,7 +121,9 @@ const sync_public_default_feed = async deps => {
 
   if (!index_hash) {
     if (deps.load_phonebook) await deps.load_phonebook()
-    return !!(profile_missing_on_server || profile_hash_stale)
+    return (
+      !!(profile_missing_on_server || profile_hash_stale) || posters_changed
+    )
   }
 
   if (local_hash !== index_hash) {
@@ -128,7 +132,7 @@ const sync_public_default_feed = async deps => {
   }
 
   if (deps.load_phonebook) await deps.load_phonebook()
-  return local_hash !== index_hash
+  return local_hash !== index_hash || posters_changed
 }
 
 const WORKING_BORDER_DELAY = 300
@@ -200,12 +204,21 @@ const create_play = deps => async () => {
       optimize: sync_was_due
     })
     if (poster_directory_changed) mine_changed = true
+
+    const admin_id = admin_itemid_from_env()
+    const author_posters_changed = admin_id
+      ? await sync_author_posters(admin_id)
+      : false
+    if (author_posters_changed) mine_changed = true
+
     if (!contacts_changed && !mine_changed) return
     const me_id = get_my_itemid()
-    deps.emit('refreshed', {
-      reload_phonebook: contacts_changed,
-      authors: contacts_changed || !me_id ? null : [me_id]
-    })
+    /** @type {Id[] | null} */
+    let authors = me_id ? [me_id] : null
+    if (contacts_changed) authors = null
+    if (authors && author_posters_changed && admin_id && admin_id !== me_id)
+      authors = [me_id, admin_id]
+    deps.emit('refreshed', { reload_phonebook: contacts_changed, authors })
   } catch (e) {
     // Fired from an event listener, so nothing downstream can catch this. The
     // clock is stamped last on purpose: a tick that dies here leaves it stale
@@ -349,6 +362,46 @@ const sync_relations = async deps => {
     return true
   }
   return false
+}
+
+/**
+ * The print author's posters are the only ones that change in place: the
+ * webhook appends a sale to the poster's own file and moves its stored hash.
+ * Nothing else on this device hears about it - both `load` and `as-symbol`
+ * serve idb before the network - so a cached poster whose stored hash no
+ * longer matches is dropped, and the next render downloads the sale.
+ * Bounded to one walk per eight hours, the clock the contact walk uses.
+ * @param {Id | null} author_id
+ * @returns {Promise<boolean>} True when a cached poster was dropped
+ */
+export const sync_author_posters = async author_id => {
+  if (!author_id || !navigator.onLine) return false
+  const checked_at = localStorage.posters_synced_at
+  if (
+    checked_at &&
+    Date.now() - new Date(checked_at).getTime() < JS_TIME.EIGHT_HOURS
+  )
+    return false
+
+  const directory = await as_directory(
+    /** @type {Id} */ (`${author_id}/posters/`)
+  )
+  let changed = false
+  await Promise.all(
+    (directory?.items ?? []).map(async created_at => {
+      const itemid = /** @type {Id} */ (`${author_id}/posters/${created_at}`)
+      const cached = await get(itemid)
+      if (typeof cached !== 'string') return
+      const entry = await fresh_metadata(itemid)
+      const stored_hash = entry?.customMetadata?.hash
+      if (!stored_hash) return
+      if ((await create_hash(cached)) === stored_hash) return
+      await del(itemid)
+      changed = true
+    })
+  )
+  localStorage.posters_synced_at = new Date().toISOString()
+  return changed
 }
 
 /**

@@ -24,6 +24,7 @@ import {
   i_am_fresh,
   sync_me,
   sync_posters_directory,
+  sync_author_posters,
   DOES_NOT_EXIST,
   use as use_sync
 } from '@/use/sync'
@@ -99,6 +100,7 @@ vi.mock('@/utils/profile-sync-log', () => ({
 }))
 
 vi.mock('@/persistence/Directory', () => ({
+  as_directory: vi.fn(() => Promise.resolve({ items: [] })),
   build_local_directory: vi.fn(() =>
     Promise.resolve({
       items: ['1000', '2000', '3000']
@@ -1429,5 +1431,65 @@ describe('sync composable', () => {
       expect(del).toHaveBeenCalledWith('/+14151234356/relations')
       expect(save).toHaveBeenCalled()
     })
+  })
+})
+
+describe('sync_author_posters', () => {
+  const author_id = '/+16282281824'
+  const poster_id = `${author_id}/posters/1720119797893`
+  const cached_poster = `<svg itemid="${poster_id}" itemscope></svg>`
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    delete localStorage.posters_synced_at
+    vi.mocked(get_keyval).mockResolvedValue(null)
+    const { as_directory } = await import('@/persistence/Directory')
+    as_directory.mockResolvedValue({ items: ['1720119797893'] })
+    const { create_hash } = await import('@/utils/upload-processor')
+    create_hash.mockResolvedValue('abc123')
+    const { metadata } = await import('@/utils/serverless')
+    metadata.mockResolvedValue({
+      updated: new Date().toISOString(),
+      customMetadata: { hash: 'abc123' }
+    })
+  })
+
+  it('drops a cached poster whose stored hash moved', async () => {
+    const { get, del } = await import('idb-keyval')
+    const { metadata } = await import('@/utils/serverless')
+    get.mockImplementation(key =>
+      Promise.resolve(key === poster_id ? cached_poster : null)
+    )
+    metadata.mockResolvedValue({
+      updated: new Date().toISOString(),
+      customMetadata: { hash: 'moved_hash' }
+    })
+
+    const changed = await sync_author_posters(author_id)
+
+    expect(changed).toBe(true)
+    expect(del).toHaveBeenCalledWith(poster_id)
+  })
+
+  it('keeps a cached poster whose stored hash still matches', async () => {
+    const { get, del } = await import('idb-keyval')
+    get.mockImplementation(key =>
+      Promise.resolve(key === poster_id ? cached_poster : null)
+    )
+
+    const changed = await sync_author_posters(author_id)
+
+    expect(changed).toBe(false)
+    expect(del).not.toHaveBeenCalled()
+  })
+
+  it('does not walk again inside the eight-hour clock', async () => {
+    localStorage.posters_synced_at = new Date().toISOString()
+    const { as_directory } = await import('@/persistence/Directory')
+
+    const changed = await sync_author_posters(author_id)
+
+    expect(changed).toBe(false)
+    expect(as_directory).not.toHaveBeenCalled()
   })
 })

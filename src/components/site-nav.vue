@@ -29,6 +29,7 @@
     <menu>
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
+      <router-link to="/prints" replace>Prints</router-link>
       <router-link to="/pricing" replace>Pricing</router-link>
       <router-link to="/terms" replace>Legal</router-link>
       <router-link :to="account_target" replace>{{

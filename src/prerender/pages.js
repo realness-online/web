@@ -28,6 +28,13 @@ export const prerender_pages = [
     og_title: 'Realness Online - Documentation'
   },
   {
+    path: '/prints',
+    title: 'Realness Online - Prints',
+    description:
+      'Hand-finished prints of Realness posters - finished by hand and shipped to you. Every print covers the same area, so a tall poster does not shout over a wide one.',
+    og_title: 'Realness Online - Prints'
+  },
+  {
     path: '/pricing',
     title: 'Realness Online - Pricing',
     description:

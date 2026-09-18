@@ -24,6 +24,8 @@
         "source": "/check-phone-integrity",
         "function": "check_phone_integrity"
       },
+      { "source": "/prints-checkout", "function": "prints_checkout" },
+      { "source": "/prints-webhook", "function": "prints_webhook" },
       { "source": "**", "destination": "/index.html" }
     ],
     "headers": [

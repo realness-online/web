@@ -224,12 +224,17 @@
   })
 
   watch_effect(() => {
-    if (props.sync_poster) {
-      intersecting.value = true
-      emit('intersecting', true)
-      vector.value = props.sync_poster
-      emit('show', vector.value)
-    } else if (props.sync_poster === null) vector.value = null
+    // A parent with nothing to hand over passes null, which is also the
+    // default. That is not an instruction to throw away the poster this
+    // instance loaded for itself: when a second copy of a poster comes and
+    // goes - a print opened in a dialog and closed again - as-figure's sync
+    // flips from the vector back to null, and clearing here left the copy
+    // that stayed rendering the empty silhouette.
+    if (!props.sync_poster) return
+    intersecting.value = true
+    emit('intersecting', true)
+    vector.value = props.sync_poster
+    emit('show', vector.value)
   })
 
   const is_loading = computed(() => {
@@ -428,6 +433,19 @@
     return Math.max(rect.width / content_width, rect.height / content_height)
   })
 
+  /**
+   * A transform on this group changes what the SVG has to draw, not just where
+   * it sits, so every step of a touch pan repaints the whole poster. On a
+   * phone that is the whole poster re-rastered once per touchmove, at page
+   * scale - pinch in and one landscape poster is a hundred megabytes of raster
+   * per move, which is enough for WebKit to kill the tab.
+   *
+   * The hint promotes the group for the length of the gesture so the
+   * compositor moves what was already drawn. It is deliberately scoped to
+   * `panning` and dropped on release: a promoted layer is rastered at page
+   * scale, so leaving it on the poster would hold that memory for every poster
+   * that has ever been panned.
+   */
   const pan_style = computed(() => {
     const across = can_pan.value ? pan_offset.value / user_units.value : 0
     const down = -camera_offset.value
@@ -436,7 +454,11 @@
     const transition = panning.value
       ? 'none'
       : 'transform var(--duration-camera) var(--ease-camera)'
-    return { transform, transition }
+    return {
+      transform,
+      transition,
+      willChange: panning.value ? 'transform' : null
+    }
   })
 
   // Static baseline: cutouts blend with the shadow resting underneath.

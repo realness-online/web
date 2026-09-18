@@ -200,6 +200,22 @@ describe('@/components/posters/as-svg.vue', () => {
       expect(svg.attributes('preserveAspectRatio')).toContain('slice')
       expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(true)
     })
+
+    it('keeps the poster when sync_poster goes back to null', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      expect(wrapper.find('svg').attributes('viewBox')).toBe('0 0 400 200')
+      expect(wrapper.find('as-animation-stub').exists()).toBe(true)
+
+      // A second copy of this poster unmounted, so the parent has nothing left
+      // to hand over. The poster on screen is still the same poster.
+      await wrapper.setProps({ sync_poster: null })
+      await flushPromises()
+      expect(wrapper.find('svg').attributes('viewBox')).toBe('0 0 400 200')
+      expect(wrapper.find('as-animation-stub').exists()).toBe(true)
+    })
   })
 
   describe('preserveAspectRatio', () => {
@@ -256,17 +272,6 @@ describe('@/components/posters/as-svg.vue', () => {
       await flushPromises()
       expect(wrapper.emitted('intersecting')?.[0]).toEqual([true])
       expect(wrapper.emitted('show')?.[0]).toEqual([v])
-    })
-
-    it('clears vector when sync_poster becomes null', async () => {
-      const wrapper = shallowMount(as_svg, {
-        props: { itemid, sync_poster: vector_fixture() }
-      })
-      await flushPromises()
-      expect(wrapper.find('as-animation-stub').exists()).toBe(true)
-      await wrapper.setProps({ sync_poster: null })
-      await flushPromises()
-      expect(wrapper.find('as-animation-stub').exists()).toBe(false)
     })
   })
 
@@ -600,6 +605,34 @@ describe('@/components/posters/as-svg.vue', () => {
       const inner_g = wrapper.find('svg g')
       const style = inner_g.attributes('style') ?? ''
       expect(style).toContain('translate(12px, 0px)')
+    })
+
+    it('promotes the group only while a finger drives the pan', async () => {
+      const panning = ref(false)
+      const pan_delegator = {
+        register: vi.fn(() => ({
+          pan_offset: ref(12),
+          panning,
+          was_pan_gesture: ref(false),
+          unregister: vi.fn()
+        }))
+      }
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid,
+          sync_poster: vector_fixture({ viewbox: '0 0 800 200' })
+        },
+        global: { provide: { pan_delegator } }
+      })
+      await flushPromises()
+      const g = wrapper.find('svg g')
+      // A promoted layer is rastered at page scale, so at rest the group must
+      // not be one - otherwise every poster ever panned holds that memory.
+      expect(g.attributes('style') ?? '').not.toContain('will-change')
+
+      panning.value = true
+      await wrapper.vm.$nextTick()
+      expect(g.attributes('style') ?? '').toContain('will-change: transform')
     })
 
     it('does not pan a portrait poster, which already fits the frame', async () => {

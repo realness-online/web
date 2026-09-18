@@ -4,7 +4,7 @@
     ref,
     shallowRef as shallow_ref,
     onMounted as mounted,
-    onUnmounted as unmounted,
+    onBeforeUnmount as before_unmount,
     watch
   } from 'vue'
   import { report_symbol_ready } from '@/use/symbol-ready'
@@ -24,6 +24,20 @@
   const symbol_id = ref('')
   const symbol_viewbox = ref('')
   const load_token = ref(0)
+
+  /**
+   * The id this instance counted in the shared ready registry, if it got that
+   * far. A copy that unmounts before its load lands - open a poster in a
+   * dialog, close it again - must not decrement a count it never added, or
+   * the copy that stayed loses its layers and renders blank.
+   */
+  const counted = ref('')
+
+  const release = () => {
+    if (!counted.value) return
+    report_symbol_ready(counted.value, false)
+    counted.value = ''
+  }
 
   const load_symbol = async () => {
     const token = ++load_token.value
@@ -46,20 +60,29 @@
       // The `use` pointing here holds its entrance until now, so the fade and
       // the geometry start together instead of on two clocks.
       report_symbol_ready(itemid_at_start, true)
+      counted.value = itemid_at_start
     }
   }
 
   mounted(load_symbol)
   watch(
     () => props.itemid,
-    (to, from) => {
-      report_symbol_ready(from, false)
+    () => {
+      release()
       symbol_content.value = ''
       load_symbol()
     }
   )
 
-  unmounted(() => report_symbol_ready(props.itemid, false))
+  /**
+   * Unmount is not the place for this: a load still in flight resolves after
+   * the instance is gone, so the token is bumped first to keep that late reply
+   * from reporting ready, then any count it did add is released.
+   */
+  before_unmount(() => {
+    load_token.value++
+    release()
+  })
 </script>
 
 <template>

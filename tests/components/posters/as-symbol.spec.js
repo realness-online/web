@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import AsSymbol from '@/components/posters/as-symbol.vue'
+import { is_symbol_ready } from '@/use/symbol-ready'
 
 const itemid = '/+14151234356/boulders/1000'
 
@@ -75,6 +76,57 @@ describe('@/components/posters/as-symbol', () => {
     expect(mock_load_from_cache).toHaveBeenCalledWith(itemid)
     expect(wrapper.find('symbol').attributes('id')).toBe(itemid)
     expect(wrapper.find('symbol').element.innerHTML).toContain('<circle r="1">')
+  })
+
+  it('keeps a layer ready when a second copy unmounts without loading', async () => {
+    const shared = '/+14151234356/rocks/2000'
+    mock_get.mockResolvedValue(symbol_html)
+    mock_hydrate.mockReturnValue({
+      querySelector: () => ({
+        innerHTML: '<path d="M1 1"/>',
+        id: 'sym-2',
+        getAttribute: () => null
+      })
+    })
+    const loaded = shallowMount(AsSymbol, { props: { itemid: shared } })
+    await flushPromises()
+    expect(is_symbol_ready(shared)).toBe(true)
+
+    // The dialog's copy: mounted, nothing in the cache for it yet, closed again.
+    mock_get.mockResolvedValue(null)
+    mock_load_from_cache.mockResolvedValue({ html: null })
+    const empty = shallowMount(AsSymbol, { props: { itemid: shared } })
+    await flushPromises()
+    empty.unmount()
+    expect(is_symbol_ready(shared)).toBe(true)
+
+    loaded.unmount()
+    expect(is_symbol_ready(shared)).toBe(false)
+  })
+
+  it('does not count a load that lands after unmount', async () => {
+    const shared = '/+14151234356/sand/3000'
+    let land
+    mock_get.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          land = resolve
+        })
+    )
+    mock_hydrate.mockReturnValue({
+      querySelector: () => ({
+        innerHTML: '<path d="M2 2"/>',
+        id: 'sym-3',
+        getAttribute: () => null
+      })
+    })
+
+    const wrapper = shallowMount(AsSymbol, { props: { itemid: shared } })
+    wrapper.unmount()
+    land(symbol_html)
+    await flushPromises()
+
+    expect(is_symbol_ready(shared)).toBe(false)
   })
 
   it('leaves the symbol empty when cache has no html', async () => {

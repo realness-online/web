@@ -225,6 +225,11 @@
             become a vast landscape for you to explore.
           </p>
           <p>
+            To skip the printing yourself,
+            <router-link to="/prints">hand-finished prints</router-link> are
+            shipped to you.
+          </p>
+          <p>
             Storyboards, collage, thumbnails. No AI in the toolchain. Realness
             is a clean slate for you to start.
           </p>

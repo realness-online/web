@@ -12,7 +12,8 @@ const routes = [
   },
   {
     path: '/prints',
-    component: () => import('@/views/Prints.vue')
+    component: () => import('@/views/Prints.vue'),
+    meta: { support: true }
   },
   {
     path: '/docs',
