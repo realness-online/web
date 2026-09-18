@@ -1,0 +1,85 @@
+#!/bin/sh
+# brayness-session-init <session-id> <epoch-seconds>
+#
+# Called once by the host over the vsock control channel after /snapshot/load.
+# A memory snapshot is a fork of a booted machine, so a clone resumes carrying
+# the seed boot's identity and whatever the seed wrote. This turns the clone
+# into a session: the clock to now, an identity of its own, and none of the
+# seed's residue.
+#
+# Idempotent. A session id already recorded on this disk means this disk is
+# already that session, so nothing is minted. The running system still has to
+# agree: a disk-tier reload is loaded from the seed snapshot, so its /run and
+# its kernel hostname are the seed's, and `sd_id128_get_machine()` reads
+# /run/machine-id first (f6). Re-apply the disk's identity - same values on a
+# memory resume, the session's values on a disk reload.
+#
+# The wipe list is what f6a-audit.sh measures from a live clone. Extend that
+# audit first, then this list.
+set -eu
+
+session_id="${1:?usage: brayness-session-init <session-id> <epoch>}"
+epoch="${2:?usage: brayness-session-init <session-id> <epoch>}"
+
+state_dir=/etc/brayness
+state_file="$state_dir/session"
+
+# The clock is always wrong after a resume: the guest comes up at snapshot
+# time (f4). Set it before anything here writes a timestamp.
+date -u -s "@$epoch" > /dev/null
+
+short_id="$(printf '%s' "$session_id" | tr -cd '0-9a-f' | cut -c1-8)"
+[ -n "$short_id" ] || short_id="$(cat /proc/sys/kernel/random/uuid | cut -c1-8)"
+
+if [ -r "$state_file" ] && [ "$(cat "$state_file")" = "$session_id" ]; then
+  machine_id="$(cat /etc/machine-id)"
+  printf '%s\n' "$machine_id" > /run/machine-id
+  if [ -e /var/lib/dbus/machine-id ] && [ ! -L /var/lib/dbus/machine-id ]; then
+    printf '%s\n' "$machine_id" > /var/lib/dbus/machine-id
+  fi
+  printf 'brayness-%s\n' "$short_id" > /etc/hostname
+  hostname "brayness-$short_id"
+  echo "session $session_id already initialized"
+  exit 0
+fi
+
+# ------------------------------------------------------------------ identity
+# systemd writes a machine-id at first boot, so every clone of the seed
+# snapshot carries the seed's. Mint one and keep the running system in step:
+# /run/machine-id is what sd_id128_get_machine() reads first.
+mkdir -p "$state_dir"
+printf '%s\n' "$session_id" > "$state_file"
+
+machine_id="$(cat /proc/sys/kernel/random/uuid | tr -d '-')"
+printf '%s\n' "$machine_id" > /etc/machine-id
+printf '%s\n' "$machine_id" > /run/machine-id
+if [ -e /var/lib/dbus/machine-id ] && [ ! -L /var/lib/dbus/machine-id ]; then
+  printf '%s\n' "$machine_id" > /var/lib/dbus/machine-id
+fi
+
+# Hostname from the session id: observable, and two clones are distinguishable
+# in logs and on the wire.
+printf 'brayness-%s\n' "$short_id" > /etc/hostname
+hostname "brayness-$short_id"
+
+# --------------------------------------------------- the seed boot's residue
+# Nothing the seed wrote should be visible to the session.
+rm -rf /var/log/journal/* /run/log/journal/*
+rm -f /var/lib/systemd/random-seed
+find /var/log -maxdepth 1 -type f -delete 2> /dev/null || true
+find /tmp -mindepth 1 -delete 2> /dev/null || true
+rm -f /root/.bash_history /root/.lesshst
+rm -rf /opt/brayness/.pi/agent/sessions/* 2> /dev/null || true
+if [ -e /run/utmp ]; then : > /run/utmp; fi
+
+# journald holds the old journal open, so deleting it is not enough: the boot's
+# entries come back from memory until it starts a new file.
+systemctl restart systemd-journald 2> /dev/null || true
+
+{
+  printf 'session %s\n' "$session_id"
+  printf 'started %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "$state_dir/started"
+
+printf 'session %s: machine-id %s, hostname brayness-%s, clock %s\n' \
+  "$session_id" "$machine_id" "$short_id" "$(date -u +%s)"

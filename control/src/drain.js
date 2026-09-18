@@ -1,0 +1,291 @@
+/**
+ * Move a host's sessions to a bucket, and only then let the host go.
+ *
+ *   webspace prod host drain brayness-2            # export and ship, host stays
+ *   webspace prod host drain brayness-2 --delete   # ... and delete it after
+ *
+ * Runs on the control plane, not the host: the host has no credentials at all
+ * (`host up` creates it with --no-service-account), so it cannot upload its own
+ * bundles and cannot be trusted to decide it is safe to die. This does both
+ * from the outside.
+ *
+ * The order is the point. Every session is exported, streamed to
+ * `gs://<bucket>/sessions/<id>/bundle.tar.gz`, and checked against what the
+ * bucket says it stored; the bundle is then dropped from the host's volume. The
+ * delete happens last and only if every session came back confirmed. Anything
+ * else leaves the host up, so a re-run is the retry.
+ *
+ * The shell version was 235 lines, and about 60 of them existed to work around
+ * two bash properties: a command substitution is a subshell, so state cannot
+ * live in variables set inside one; and exit status is not evidence, because a
+ * `set -eu` script that dies still exits 0. Both disappear here - values are
+ * returned, and a throw is a throw - which is most of why this file is shorter.
+ */
+import { createHash } from "node:crypto"
+import { spawn } from "node:child_process"
+import { mkdir, open, readFile, readdir, rm, stat } from "node:fs/promises"
+import { join } from "node:path"
+import { attempt, step, note } from "./exec.js"
+import { remoteApi } from "./api.js"
+
+export class DrainError extends Error {}
+
+/** The three files every bundle must contain. */
+const PARTS = ["artifacts.tar.gz", "trace.jsonl", "manifest.json"]
+
+export async function drain(cloud, config, name, { delete: drop = false, runDir } = {}) {
+  const api = remoteApi(name, { zone: config.zone })
+  const run = runDir ?? join(ROOT_RUNS(), `drain-${stamp()}`)
+
+  step(`${name} (${config.project}/${config.zone}), bucket gs://${config.bucket}`)
+
+  if (!(await cloud.exists(["instances", "describe", name]))) {
+    throw new DrainError(`no such instance ${name} in ${config.project}/${config.zone}`)
+  }
+
+  // A name that does not exist should say that, not blame the orchestrator:
+  // ssh would fail for the same reason it would on a stopped host.
+  const health = await probeHealth(api)
+  if (!health) {
+    throw new DrainError(
+      "no orchestrator answering on the host - start it with scripts/orchestrator-restart.sh",
+    )
+  }
+  note("health: seed and sessions answered")
+
+  const sessions = JSON.parse(await api.call("/v1/sessions")).sessions ?? []
+  step("sessions on the host")
+  if (sessions.length === 0) note("none")
+  for (const session of sessions) note(`${session.id}: ${session.state}`)
+
+  // Only now is there anything to keep: a guard that refused left no log behind.
+  await mkdir(run, { recursive: true })
+
+  step("export and ship")
+  const counts = { shipped: 0, skipped: 0, failed: 0 }
+  for (const session of sessions) {
+    if (session.state === "incomplete") {
+      // A directory with no record: a create that died mid-flight. No disk, so
+      // nothing to export. Reported, because a skip nobody can see is worse
+      // than a failure - and it must not block the delete forever.
+      note(`SKIP ${session.id}: no disk (state ${session.state})`)
+      counts.skipped += 1
+      continue
+    }
+    try {
+      const shipped = await shipOne(cloud, config, name, api, session.id, run)
+      note(`${session.id}: ${shipped.bytes} bytes, ${shipped.proof}`)
+      counts.shipped += 1
+    } catch (error) {
+      note(`FAIL ${session.id}: ${error.message}`)
+      counts.failed += 1
+      break
+    }
+  }
+
+  note(`${counts.shipped} shipped, ${counts.skipped} skipped, ${counts.failed} failed`)
+  if (counts.failed > 0) {
+    throw new DrainError(
+      "the host is left up: fix and re-run, or the delete takes sessions with it",
+    )
+  }
+
+  if (!drop) {
+    note(`bundles: gs://${config.bucket}/sessions/<id>/bundle.tar.gz`)
+    note(`run log: ${run}`)
+    return { ...counts, run, deleted: false }
+  }
+
+  await deleteHostAndDisks(cloud, config, name)
+  return { ...counts, run, deleted: true }
+}
+
+/** Export one session, prove it arrived, then drop it from the volume. */
+async function shipOne(cloud, config, name, api, id, run) {
+  const status = await api.call(`/v1/sessions/${id}/export`, { method: "POST", timeout: 300 })
+  // The export endpoint answers with the manifest itself.
+  let manifest
+  try {
+    manifest = JSON.parse(status)
+  } catch {
+    throw new DrainError(`export did not answer a manifest: ${status.slice(0, 200)}`)
+  }
+  const expected = manifest.artifacts?.sha256
+  const bytes = manifest.artifacts?.bytes ?? 0
+  if (!expected) throw new DrainError("the manifest has no artifacts.sha256")
+
+  // One tar on stdout, because the export directory is root-owned on the host
+  // and a scp of a directory cannot sudo. This is also the only copy that
+  // leaves the host: everything after this is about proving it arrived.
+  const archive = join(run, `${id}.tgz`)
+  await streamToFile(cloud, config, name, archive, id)
+
+  // The outer tar is a fresh gzip, and gzip is not byte-deterministic, so the
+  // manifest's sha256 describes `artifacts.tar.gz` inside it, not this archive.
+  // Untar and check the file the manifest names.
+  const extracted = join(run, id)
+  await rm(extracted, { recursive: true, force: true })
+  const untar = await attempt("tar", ["-xzf", archive, "-C", run])
+  if (!untar.ok) throw new DrainError(`the bundle will not untar: ${lastLine(untar.err)}`)
+
+  const present = new Set(await readdir(extracted))
+  const missing = PARTS.filter(part => !present.has(part))
+  if (missing.length > 0) throw new DrainError(`the bundle is missing: ${missing.join(", ")}`)
+
+  const artifacts = join(extracted, "artifacts.tar.gz")
+  const actual = createHash("sha256").update(await readFile(artifacts)).digest("hex")
+  if (actual !== expected) {
+    throw new DrainError(`what came down (${actual}) is not the bundle (${expected})`)
+  }
+
+  const object = `gs://${config.bucket}/sessions/${id}/bundle.tar.gz`
+  const copied = await attempt("gcloud", ["storage", "cp", "--quiet", archive, object])
+  if (!copied.ok) throw new DrainError(`upload failed: ${lastLine(copied.err)}`)
+
+  const proof = await storedProof(archive, object, id)
+  const removed = await attempt(
+    "gcloud",
+    cloud.sshArgs(
+      name,
+      `sudo rm -rf ${config.hostExports ?? "/opt/fc/sessions/mnt/exports"}/${id}`,
+    ),
+  )
+  if (!removed.ok) throw new DrainError("could not drop the bundle from the volume")
+
+  return { bytes, proof }
+}
+
+/**
+ * What the bucket reports, compared against what was sent.
+ *
+ * A composite upload has no whole-object md5, so the size is what is left. Said
+ * out loud rather than passed off as an integrity check.
+ */
+async function storedProof(archive, object, id) {
+  const described = await attempt("gcloud", [
+    "storage",
+    "objects",
+    "describe",
+    object,
+    "--format=value(md5Hash,size)",
+  ])
+  if (!described.ok) throw new DrainError(`the bucket has no object for ${id}`)
+
+  const [md5, size] = described.out.trim().split(/\s+/)
+  const local = await stat(archive)
+  if (md5) {
+    const digest = createHash("md5").update(await readFile(archive)).digest("base64")
+    if (digest !== md5) {
+      throw new DrainError(`the bucket has md5 ${md5}, not what was sent (${digest})`)
+    }
+    return `md5 ${md5}`
+  }
+  if (String(local.size) !== size) {
+    throw new DrainError(`the bucket has ${size} bytes, not the ${local.size} sent`)
+  }
+  return "size only (composite upload)"
+}
+
+/**
+ * `sudo tar -C <exports> -czf - <id>`, with stdout going straight to a file.
+ *
+ * Binary, so this cannot go through execFile: that collects stdout as a UTF-8
+ * string, which mangles a gzip stream. spawn writes the bytes to a file
+ * descriptor instead, the way the shell's `>` did.
+ */
+async function streamToFile(cloud, config, name, target, id) {
+  const exports = config.hostExports ?? "/opt/fc/sessions/mnt/exports"
+  const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
+  const handle = await open(target, "w")
+  try {
+    await new Promise((resolve, reject) => {
+      const child = spawn("gcloud", args, {
+        stdio: ["ignore", handle.fd, "pipe"],
+      })
+      let err = ""
+      child.stderr.on("data", (chunk) => {
+        err += chunk
+      })
+      child.on("error", reject)
+      child.on("close", (code) => {
+        if (code === 0) return resolve()
+        reject(new DrainError(`could not stream ${id} down: ${lastLine(err)}`))
+      })
+    })
+  } finally {
+    await handle.close()
+  }
+}
+
+/**
+ * Delete the host and the disks it actually has.
+ *
+ * Enumerated, not guessed. Assuming `<name>-sessions` is wrong for
+ * brayness-1, whose volume is named `brayness-sessions`: the guess deletes the
+ * instance and leaves a 30 GB disk behind, unattached and still billed.
+ */
+async function deleteHostAndDisks(cloud, config, name) {
+  step("delete the host and the disks it has")
+  const disks = await attachedDisks(cloud, name)
+  note(`attached: ${disks.join(" ")}`)
+
+  await cloud.stream(["instances", "delete", name, "--quiet"])
+  for (const disk of disks) {
+    // The boot disk has auto-delete and went with the instance; whatever is
+    // left is a volume that outlives its host unless this removes it.
+    await cloud.try(["disks", "delete", disk, "--quiet"])
+  }
+
+  if (await cloud.exists(["instances", "describe", name])) {
+    throw new DrainError("the instance is still there")
+  }
+  const left = []
+  for (const disk of disks) {
+    if (await cloud.exists(["disks", "describe", disk])) left.push(disk)
+  }
+  if (left.length > 0) throw new DrainError(`disks left behind: ${left.join(" ")}`)
+
+  note(`${name} and its disks are gone; the bundles are the state`)
+  const remaining = await cloud.value(
+    ["disks", "list", `--filter=zone:${config.zone}`, "--format=value(name)"],
+    "value(name)",
+  )
+  note(`left in ${config.zone}: ${remaining.replaceAll("\n", " ") || "nothing"}`)
+}
+
+/**
+ * The names of the disks attached to an instance.
+ *
+ * Read from JSON, not from `--format=value(disks[].source.basename())`. That
+ * format looks right and returns the *instance* name - so a delete loop over it
+ * removes nothing and a 30 GB sessions disk keeps billing after its host is
+ * gone. `source` is a full URL to the disk itself; this takes its last path
+ * segment. Verified against brayness-1, whose two disks are the boot disk and
+ * a volume whose name does not match any pattern.
+ */
+async function attachedDisks(cloud, name) {
+  const instance = await cloud.json(["instances", "describe", name])
+  const [self] = Array.isArray(instance) ? instance : [instance]
+  return (self?.disks ?? []).map((disk) => String(disk.source ?? "").split("/").pop()).filter(Boolean)
+}
+
+async function probeHealth(api) {
+  try {
+    const health = JSON.parse(await api.call("/v1/health", { timeout: 30 }))
+    return health.ok ? health : null
+  } catch {
+    return null
+  }
+}
+
+function lastLine(text) {
+  return text.trim().split("\n").pop()?.trim() ?? ""
+}
+
+function stamp() {
+  return new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "Z")
+}
+
+function ROOT_RUNS() {
+  return new URL("../../runs/", import.meta.url).pathname.replace(/\/$/, "")
+}

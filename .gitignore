@@ -1,0 +1,21 @@
+# Output, not source
+build/
+runs/
+__pycache__/
+*.pyc
+
+# Dependencies. site/package.json names them; there is no lock yet, so
+# `npm install` in site/ floats to current versions.
+node_modules/
+
+# A vendored mermaid bundle, 5.3 MB, provenance unrecorded (no version, no
+# checksum, no fetch step in any build log). The orchestrator serves it at
+# /mermaid.min.js from this path. Not committed while it is undecided: the
+# builder injects `<script src="/mermaid.min.js">` by absolute path, so a
+# published site only draws diagrams while a live host serves it, which
+# contradicts the builder's own "needs no server of its own".
+# Open question in plans/brayness-webspace.md ("Plan viewer").
+src/orchestrator/static/
+
+# macOS
+.DS_Store

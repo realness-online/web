@@ -1,0 +1,39 @@
+# Local stand-in for the prod host (plan node d3). An aarch64 Linux guest with
+# nested virtualization, so /dev/kvm exists and Firecracker runs inside it.
+# Needs an M3 or newer Mac on macOS 15+.
+vmType: vz
+arch: aarch64
+nestedVirtualization: true
+images:
+  - location: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img
+    arch: aarch64
+cpus: 4
+memory: 8GiB
+disk: 20GiB
+mounts:
+  - location: /Users/scott/Desktop/brayness/work/brayness-webspace
+    mountPoint: /mnt/fc
+    writable: true
+# Mac-facing ports for the dev host (r3d). Explicit because Lima's automatic
+# forward skips a guest port whose host number is taken - the Mac's 8080 is
+# often an unrelated service - and the failure is silent. From the Mac:
+#   API       http://127.0.0.1:18080
+#   terminal  127.0.0.1:18081 (framed stream)
+portForwards:
+  - guestPort: 8080
+    hostPort: 18080
+  - guestPort: 8081
+    hostPort: 18081
+  - guestPort: 8090
+    hostPort: 18090
+provision:
+  - mode: system
+    script: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq
+      apt-get install -y -qq curl jq e2fsprogs squashfs-tools iptables iproute2
+      usermod -aG kvm "${LIMA_CIDATA_USER:?}"
+      test -e /dev/kvm || { echo "FAIL: no /dev/kvm, nested virtualization is off" >&2; exit 1; }
+      echo "OK: /dev/kvm present"

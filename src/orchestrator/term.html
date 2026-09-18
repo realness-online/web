@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>brayness session</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        background: #14130f;
+        color: #e8e0c8;
+        font:
+          15px/1.45 ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+      }
+      #screen {
+        margin: 0;
+        padding: 16px;
+        min-height: 100vh;
+        box-sizing: border-box;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        outline: none;
+      }
+      #screen:empty::before {
+        content: "connecting...";
+        color: #7a7360;
+      }
+      /* A terminal needs a text field to receive keystrokes and browser input; it
+     stays out of sight. Printable input arrives through the `input` event, so
+     an automation tool that inserts text (rather than firing key events) works
+     too. Only special and control keys are handled on keydown. */
+      #keys {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        border: 0;
+        opacity: 0;
+        resize: none;
+      }
+    </style>
+  </head>
+  <body>
+    <pre id="screen"></pre>
+    <textarea
+      id="keys"
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
+    ></textarea>
+    <script>
+      "use strict";
+
+      const params = new URLSearchParams(location.search);
+      const session = params.get("session");
+      const cols = params.get("cols") || 80;
+      const rows = params.get("rows") || 24;
+      const screen = document.getElementById("screen");
+      const keys = document.getElementById("keys");
+
+      const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+      let buffer = "";
+
+      // A terminal stream is not text: escape sequences are instructions we do not
+      // render, and backspace edits what is already there. The guest echoes what we
+      // type, so this buffer is the screen. Carriage returns redraw in a real
+      // terminal; here a lone \r is treated as a newline, which is close enough for a
+      // prompt and a command.
+      function render(bytes) {
+        let text = decoder.decode(bytes, { stream: true });
+        text = text.replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
+        for (const char of text) {
+          if (char === "\x7f" || char === "\b") buffer = buffer.slice(0, -1);
+          else if (char === "\r") buffer += "\n";
+          else buffer += char;
+        }
+        screen.textContent = buffer;
+        screen.scrollTop = screen.scrollHeight;
+      }
+
+      function base64(bytes) {
+        let binary = "";
+        for (const byte of bytes) binary += String.fromCharCode(byte);
+        return btoa(binary);
+      }
+
+      function bytesOf(b64) {
+        return Uint8Array.from(atob(b64), (char) => char.charCodeAt(0));
+      }
+
+      let ws;
+      function connect() {
+        const scheme = location.protocol === "https:" ? "wss" : "ws";
+        ws = new WebSocket(
+          `${scheme}://${location.host}/pty?session=${encodeURIComponent(session)}&cols=${cols}&rows=${rows}`,
+        );
+        ws.onopen = () =>
+          ws.send(
+            JSON.stringify({
+              op: "resize",
+              cols: Number(cols),
+              rows: Number(rows),
+            }),
+          );
+        ws.onmessage = (event) => {
+          const frame = JSON.parse(event.data);
+          if (frame.op === "data") render(bytesOf(frame.data_b64));
+          else if (frame.op === "exit") {
+            render(encoder.encode(`\n[exit ${frame.code}]\n`));
+            ws.close();
+          }
+        };
+        ws.onclose = () => render(encoder.encode("\n[disconnected]\n"));
+      }
+
+      function send(text) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(
+            JSON.stringify({
+              op: "data",
+              data_b64: base64(encoder.encode(text)),
+            }),
+          );
+        }
+      }
+
+      const specials = {
+        Enter: "\r",
+        Backspace: "\x7f",
+        Tab: "\t",
+        Escape: "\x1b",
+        ArrowUp: "\x1b[A",
+        ArrowDown: "\x1b[B",
+        ArrowRight: "\x1b[C",
+        ArrowLeft: "\x1b[D",
+        Home: "\x1b[H",
+        End: "\x1b[F",
+        Delete: "\x1b[3~",
+      };
+
+      keys.addEventListener("keydown", (event) => {
+        if (ws && ws.readyState !== WebSocket.OPEN) return;
+        if (event.ctrlKey && !event.metaKey && event.key.length === 1) {
+          send(String.fromCharCode(event.key.toUpperCase().charCodeAt(0) - 64));
+        } else if (specials[event.key]) {
+          send(specials[event.key]);
+        } else {
+          return; // printable input arrives through the input event
+        }
+        event.preventDefault();
+      });
+
+      keys.addEventListener("input", (event) => {
+        const text = event.data != null ? event.data : keys.value;
+        keys.value = "";
+        if (text) send(text);
+      });
+
+      screen.addEventListener("click", () => keys.focus());
+      if (!session) {
+        screen.textContent = "no session: open this page with ?session=<id>\n";
+      } else {
+        connect();
+        keys.focus();
+      }
+    </script>
+  </body>
+</html>

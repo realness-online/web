@@ -1,0 +1,17 @@
+{
+  "name": "brayness-webspace-control",
+  "private": true,
+  "type": "module",
+  "description": "Control plane: make session hosts exist, put code on them, take them away",
+  "bin": {
+    "webspace": "./bin/webspace.js"
+  },
+  "scripts": {
+    "webspace": "node ./bin/webspace.js",
+    "test": "node --test 'test/*.test.js'"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {}
+}
