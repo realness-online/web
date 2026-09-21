@@ -61,11 +61,10 @@ node control/bin/webspace.js dev build
 `harness-stage.sh` copies this repo's non-personal parts into
 `dist/brayness-harness.tar.gz` - an allowlist, not an exclude list - then
 `template-build.sh` fetches its inputs (checksummed, cached in `/opt/fc`) and
-builds `/opt/fc/template.ext4` in the guest. After a rebuild the seed is stale,
-so `webspace dev up --fresh` wipes the sessions volume and rebuilds it.
-The orchestrator also refuses a seed whose template, kernel, or Firecracker
-fingerprint changed, so a missed rebuild fails loudly instead of forking an old
-image.
+builds `/opt/fc/template.ext4` in the guest. After a rebuild the seed is stale.
+A seed whose template, kernel, or Firecracker fingerprint changed is not forked:
+`ensure_seed()` sees the mismatch and rebuilds it on the next serve, so a missed
+rebuild cannot fork an old image.
 
 Record: the template rootfs (f3), and the capability it carries, a session that
 builds a site (a1).
@@ -80,14 +79,14 @@ the guest at `/opt/fc`.
 
 ```bash
 node control/bin/webspace.js dev setup   # once: Lima, firecracker, kernel, rootfs, boot check
-node control/bin/webspace.js dev up      # each time: volume, TAP, API; waits for the seed
+node control/bin/webspace.js dev host up  # each time: volume, TAP, API; waits for the seed
 ```
 
 - API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`.
-- `dev stop` stops it, `dev restart` reloads the current code, `dev up --fresh`
-  wipes the sessions volume and rebuilds the seed.
+- `dev host down` stops it, `dev host restart` reloads the current code; a
+  changed template fingerprint rebuilds the seed on the next serve.
 - The log is `dist/dev-up.log`; the guest side is `control/scripts/dev-stack.sh`.
-- `dev up` waits for `seed.built`, not just for health: the API answers `ok` as
+- `dev host up` waits for `seed.built`, not just for health: the API answers `ok` as
   soon as it is listening, before the seed exists, so waiting on `ok` reports a
   stack as up when it cannot make a session.
 

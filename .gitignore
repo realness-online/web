@@ -22,7 +22,7 @@ node_modules/
 # published site only draws diagrams while a live host serves it, which
 # contradicts the builder's own "needs no server of its own".
 # Open question in plans/brayness-webspace.md ("Plan viewer").
-src/orchestrator/static/
+orchestrator/static/
 
 # macOS
 .DS_Store

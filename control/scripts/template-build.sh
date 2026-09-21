@@ -65,9 +65,9 @@ fetch() {  # fetch <url-dir> <file>
 }
 
 fetch "$UBUNTU_BASE_URL" "$UBUNTU_BASE"
-curl -fsSL "$UBUNTU_BASE_URL/SHA256SUMS" | grep "$UBUNTU_BASE\$" | sha256sum -c -
+(cd "$ROOT" && curl -fsSL "$UBUNTU_BASE_URL/SHA256SUMS" | grep "$UBUNTU_BASE\$" | sha256sum -c -)
 fetch "$NODE_URL" "$NODE"
-curl -fsSL "$NODE_URL/SHASUMS256.txt" | grep "$NODE\$" | sha256sum -c -
+(cd "$ROOT" && curl -fsSL "$NODE_URL/SHASUMS256.txt" | grep "$NODE\$" | sha256sum -c -)
 
 # ---------------------------------------------------------------- unpack base
 rm -rf "$TREE"
