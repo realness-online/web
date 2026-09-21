@@ -5,14 +5,14 @@
 # work/. The staged deno.json stops that walk.
 set -euo pipefail
 
-root="$(cd "$(dirname "$0")/../.." && pwd)"
+root="$(cd "$(dirname "$0")/../../.." && pwd)"
 out="$root/artifacts/brayness-product"
 stage="$out/build"
 
 rm -rf "$stage"
 mkdir -p "$stage"
 
-cp "$root/work/brayness-app/entry.ts" "$root/work/brayness-app/deno.json" "$stage/"
+cp "$root/work/brayness/app/entry.ts" "$root/work/brayness/app/deno.json" "$stage/"
 cp "$root/AGENTS.md" "$stage/"
 for part in skills extensions prompts themes; do
   [[ -d "$root/$part" ]] && cp -R "$root/$part" "$stage/"
