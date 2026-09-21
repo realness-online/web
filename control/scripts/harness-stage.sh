@@ -30,6 +30,7 @@ INCLUDE=(
   package.json
   bin
   skills
+  prompts
   extensions
   .pi/agent/settings.json
   .pi/agent/models.json
