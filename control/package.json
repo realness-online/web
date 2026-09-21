@@ -1,5 +1,5 @@
 {
-  "name": "brayness-webspace-control",
+  "name": "brayness-control",
   "private": true,
   "type": "module",
   "description": "Control plane: make session hosts exist, put code on them, take them away",

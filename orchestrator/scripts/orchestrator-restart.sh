@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # orchestrator-restart - the host's orchestrator, rebuilt from the current code.
 #
-#   cat ~/brayness/scripts/orchestrator-restart.sh | ssh host 'bash -s'
+#   cat ~/brayness/orchestrator/scripts/orchestrator-restart.sh | ssh host 'bash -s'
 #
 # Stops any orchestrator and leftover Firecracker, re-asserts the tap, serves on
 # loopback in the background, and waits for health. Run it by path or over
@@ -10,11 +10,11 @@
 # through.
 set -uo pipefail
 
-cd "$HOME/brayness/src"
+cd "$HOME/brayness"
 sudo pkill -f "[p]ython3 -m orchestrator" || true
 sudo pkill -x firecracker || true
 sleep 2
-sudo bash "$HOME/brayness/scripts/net-up.sh" | head -1
+sudo bash "$HOME/brayness/orchestrator/scripts/net-up.sh" | head -1
 # Running as root used to leave root-owned __pycache__ in the source tree, which
 # then made the next `scp` of the code fail as an unprivileged user.
 sudo env PYTHONDONTWRITEBYTECODE=1 nohup python3 -m orchestrator serve \

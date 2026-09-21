@@ -6,7 +6,7 @@ before the channel is a plain byte stream (Firecracker docs/vsock.md,
 Host-Initiated Connections). On the other end is `brayness-agent`, one JSON
 request per line and one response per line.
 
-This is the same protocol as scripts/vsock-exec.py. That script stays as it is:
+This is the same protocol as orchestrator/clients/vsock-exec.py. That script stays as it is:
 it is the evidence runner for f2-f6, and those checks have to keep working
 regardless of what r3 does. The cost is one duplicated connect-and-frame
 routine, which is cheaper than an evidence script that breaks when the

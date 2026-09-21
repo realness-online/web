@@ -7,7 +7,7 @@
 host's network: the HTTP API on `--port`, the framed terminal stream on
 `--pty-port`, and the browser terminal on `--web-port`. `seed` stops after
 building it, which is what host provisioning wants. Defaults are the dev loop's
-paths, which live in the fc-local Lima guest (scripts/dev-up.sh sets them up).
+paths, which live in the fc-local Lima guest (the dev stack script sets them up).
 """
 from __future__ import annotations
 

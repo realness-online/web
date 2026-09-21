@@ -43,14 +43,14 @@ export function limaTarget(config) {
     },
 
     /**
-     * Run a script from the project's scripts/ directory, by its guest path.
-     * /mnt/fc is this project as the guest sees it, so the guest runs exactly
-     * the file the Mac just wrote.
+     * Run a script in the guest, by its path under the project root. /mnt/fc is
+     * this project as the guest sees it, so the guest runs exactly the file the
+     * Mac just wrote.
      */
-    async streamScript(name, { user = null } = {}) {
+    async streamScript(path, { user = null } = {}) {
       return stream(
         "limactl",
-        shellArgs(`bash ${config.workdir}/scripts/${name}`, { user }),
+        shellArgs(`bash ${config.workdir}/${path}`, { user }),
       )
     },
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # dev-stack - the dev host: sessions volume, TAP0, and the session API.
 #
-#   sudo bash /mnt/fc/scripts/dev-stack.sh
+#   sudo bash /mnt/fc/control/scripts/dev-stack.sh
 #
 # Driven from the Mac by `webspace dev up`, which runs it in the background and
 # waits for health. Run it directly to watch the serve in the foreground.
@@ -13,7 +13,7 @@
 # orchestrator's.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"     # /mnt/fc
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"     # /mnt/fc
 VOL="${VOL:-/opt/fc/sessions}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
@@ -63,9 +63,9 @@ echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail 
 
 # TAP0 plus its NAT rules. The seed boot needs a TAP; a session's own egress is
 # h2's, so sessions get TAPs this script knows nothing about.
-bash "$DIR/scripts/net-up.sh"
+bash "$DIR/orchestrator/scripts/net-up.sh"
 
-# The package lives in src/ and is imported by name, so the import path is the
-# project root plus src. Same for the host scripts that run `-m orchestrator`.
-cd "$DIR/src"
+# The package is imported by name, so the import path is the project root.
+# Same for the host scripts that run `-m orchestrator`.
+cd "$DIR"
 exec python3 -m orchestrator serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

@@ -160,7 +160,7 @@ class SessionStore:
     # ------------------------------------------------------------------ host
     def _check_host(self):
         host.require_root("creating TAPs and Firecracker")
-        host.require_mount(str(self.volume), "mount the sessions volume (scripts/dev-up.sh)")
+        host.require_mount(str(self.volume), "mount the sessions volume (the dev stack script)")
         sample = self.volume / mint_id() / "vsock.sock"
         if not host.is_short_enough_for_af_unix(sample):
             raise host.HostError(
@@ -245,7 +245,7 @@ class SessionStore:
         host.run(["cp", "--sparse=always", str(self.template), str(disk)])
 
         if not host.tap_exists(self.seed_tap):
-            raise host.HostError(f"no {self.seed_tap}: run 'sudo bash scripts/net-up.sh' first")
+            raise host.HostError(f"no {self.seed_tap}: run 'sudo bash orchestrator/scripts/net-up.sh' first")
 
         api_sock = target / "api.sock"
         uds_path = target / "vsock.sock"

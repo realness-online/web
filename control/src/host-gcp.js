@@ -116,11 +116,11 @@ export async function up(cloud, config, name, { smoke = false, ...options } = {}
 
   step("bootstrap on the host")
   await push(cloud, name)
-  await cloud.ssh(name, `sudo bash ${config.root}/scripts/host-bootstrap.sh`)
+  await cloud.ssh(name, `sudo bash ${config.root}/orchestrator/scripts/host-bootstrap.sh`)
 
   if (smoke) {
     step("smoke test")
-    await cloud.ssh(name, `bash ${config.root}/scripts/host-smoke.sh`)
+    await cloud.ssh(name, `bash ${config.root}/orchestrator/scripts/host-smoke.sh`)
   }
 
   await serve(cloud, config, name)
@@ -162,7 +162,7 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
 export async function push(cloud, name) {
   step("copy the code")
   await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
-  for (const dir of ["scripts", "src"]) {
+  for (const dir of ["orchestrator"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
 }
@@ -172,7 +172,7 @@ export async function serve(cloud, config, name) {
   step("serve")
   // By path, not inline: an ssh command line holding a pkill pattern would
   // kill the shell running the ssh command.
-  await cloud.ssh(name, `bash ${config.root}/scripts/orchestrator-restart.sh`)
+  await cloud.ssh(name, `bash ${config.root}/orchestrator/scripts/orchestrator-restart.sh`)
 }
 
 export async function restart(cloud, config, name) {

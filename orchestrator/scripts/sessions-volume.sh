@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sessions-volume - the sessions volume on the prod host: a real PD, xfs, reflink.
 #
-#   sudo bash ~/brayness/scripts/sessions-volume.sh
+#   sudo bash ~/brayness/orchestrator/scripts/sessions-volume.sh
 #
 # xfs + reflink was proven on a loopback image first. This is the shipped version:
 # format the attached sessions PD, mount it where the orchestrator looks

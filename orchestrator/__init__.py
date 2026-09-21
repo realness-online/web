@@ -1,6 +1,6 @@
 """Brayness session orchestrator: fork microVM sessions from a seed snapshot.
 
-Run it as a package from this directory (paths in scripts/dev-up.sh):
+Run it as a package from this directory (paths set up by the dev stack script):
 
     sudo python3 -m orchestrator serve --volume /opt/fc/sessions/mnt
 

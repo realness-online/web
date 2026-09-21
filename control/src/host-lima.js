@@ -28,10 +28,10 @@ export async function up(lima, config, name, { smoke = false } = {}) {
   note(await lima.start(join(ROOT, "lima", "fc-local.yaml")))
 
   step("firecracker, kernel, rootfs")
-  await lima.streamScript("guest-setup.sh")
+  await lima.streamScript("control/scripts/guest-setup.sh")
 
   step("boot check")
-  await lima.streamScript("boot-check.sh")
+  await lima.streamScript("control/scripts/boot-check.sh")
 
   step("start the stack")
   const started = await startStack(lima, config)
@@ -39,7 +39,7 @@ export async function up(lima, config, name, { smoke = false } = {}) {
 
   if (smoke) {
     step("smoke test")
-    await lima.streamScript("host-smoke.sh", { user: "root" })
+    await lima.streamScript("orchestrator/scripts/host-smoke.sh", { user: "root" })
   }
 
   const health = await waitForHealth(config.api, { tries: 90, delayMs: 2000 })
@@ -90,7 +90,7 @@ export async function restart(lima, config, name) {
 /**
  * The stack: sessions volume, TAP, API.
  *
- * `scripts/dev-stack.sh` does all three and `exec`s into the orchestrator, so
+ * `control/scripts/dev-stack.sh` does all three and `exec`s into the orchestrator, so
  * it is started detached - the orchestrator outlives this command and limactl
  * must not wait for a process that never exits.
  */
@@ -101,7 +101,7 @@ async function startStack(lima, config, { fresh = false } = {}) {
   const prefix = fresh ? "env FRESH=1 " : ""
   const command =
     `mkdir -p ${config.workdir}/dist && nohup ${prefix}bash ` +
-    `${config.workdir}/scripts/dev-stack.sh > ${config.workdir}/dist/dev-up.log 2>&1 &`
+    `${config.workdir}/control/scripts/dev-stack.sh > ${config.workdir}/dist/dev-up.log 2>&1 &`
   await lima.run(command, { user: "root", timeout: 30_000 })
   return { alreadyUp: false, health: await waitForHealth(config.api, { tries: 90, delayMs: 2000 }) }
 }

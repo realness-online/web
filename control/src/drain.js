@@ -48,7 +48,7 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
   const health = await probeHealth(api)
   if (!health) {
     throw new DrainError(
-      "no orchestrator answering on the host - start it with scripts/orchestrator-restart.sh",
+      "no orchestrator answering on the host - start it with orchestrator/scripts/orchestrator-restart.sh",
     )
   }
   note("health: seed and sessions answered")

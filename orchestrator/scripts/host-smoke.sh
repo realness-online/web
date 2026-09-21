@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # host-smoke - prove a host serves a session, over its own API.
 #
-#   bash ~/brayness/scripts/host-smoke.sh
+#   bash ~/brayness/orchestrator/scripts/host-smoke.sh
 #
 # Builds the seed from the template, serves on loopback, creates a session, runs
 # a command in it, destroys it, and checks nothing was left behind. The point of

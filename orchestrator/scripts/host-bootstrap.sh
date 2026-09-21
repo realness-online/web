@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # host-bootstrap - take a fresh fleet-image host to a host that can serve.
 #
-#   sudo bash ~/brayness/scripts/host-bootstrap.sh
+#   sudo bash ~/brayness/orchestrator/scripts/host-bootstrap.sh
 #
 # The image already carries /opt/fc and the idle guard, so this is only what is
 # per-instance: the root partition (an instance created from an image keeps the

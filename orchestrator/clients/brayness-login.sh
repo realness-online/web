@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Host-side login: one SSH login -> one brayness session.
 #
-#   ssh -t brayness-1 ~/brayness/scripts/brayness-login.sh
+#   ssh -t brayness-1 ~/brayness/orchestrator/clients/brayness-login.sh
 #
 # Creates a session over the API, starts COMMAND in it (brayness by default), and
 # attaches this terminal to that session's pty. When it exits, the session is

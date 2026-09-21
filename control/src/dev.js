@@ -23,10 +23,10 @@ export async function setup(lima) {
   note(await lima.start(join(ROOT, "lima", "fc-local.yaml")))
 
   step("firecracker, kernel, rootfs")
-  await lima.streamScript("guest-setup.sh")
+  await lima.streamScript("control/scripts/guest-setup.sh")
 
   step("boot check")
-  await lima.streamScript("boot-check.sh")
+  await lima.streamScript("control/scripts/boot-check.sh")
   return { host: lima.config.vm, ready: true }
 }
 
@@ -35,10 +35,10 @@ export async function build(lima) {
   const { stream, step, note } = await import("./exec.js")
 
   step("stage the harness")
-  await stream("bash", [join(ROOT, "scripts", "harness-stage.sh")])
+  await stream("bash", [join(ROOT, "control", "scripts", "harness-stage.sh")])
 
   step("build the template in the guest")
-  await lima.streamScript("template-build.sh", { user: "root" })
+  await lima.streamScript("control/scripts/template-build.sh", { user: "root" })
 
   note("after a rebuild the seed is stale: webspace dev host up --fresh")
   return { rebuilt: true }

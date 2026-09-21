@@ -4,8 +4,8 @@
 # template: a real Ubuntu 24.04 userspace that boots under the Firecracker CI
 # kernel, with pi, git, node, and the stock harness in it and nothing personal.
 #
-#   sudo bash /mnt/fc/scripts/template-build.sh            # full
-#   sudo STAGE=base bash /mnt/fc/scripts/template-build.sh # boot-test only
+#   sudo bash /mnt/fc/control/scripts/template-build.sh            # full
+#   sudo STAGE=base bash /mnt/fc/control/scripts/template-build.sh # boot-test only
 #
 # Both inputs are cached under /opt/fc; a re-run only fetches what is missing.
 #
@@ -22,13 +22,13 @@
 set -euo pipefail
 
 ROOT="${ROOT:-/opt/fc}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TREE="${TREE:-$ROOT/template-tree}"
 IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
 STAGE="${STAGE:-full}"
 HARNESS_TAR="${HARNESS_TAR:-$REPO/dist/brayness-harness.tar.gz}"
-GUEST_SRC="${GUEST_SRC:-$REPO/scripts/guest}"
+GUEST_SRC="${GUEST_SRC:-$REPO/orchestrator/guest}"
 RUNS="${RUNS_DIR:-$REPO/dist}"
 RUN="$RUNS/template-$(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -87,7 +87,7 @@ printf '#!/bin/sh\nexit 101\n' > "$TREE/usr/sbin/policy-rc.d"
 chmod 0755 "$TREE/usr/sbin/policy-rc.d"
 
 # fcnet-setup.sh is the MAC-to-address step brayness-net-up calls first. It is
-# vendored in scripts/guest (see the header there) because the CI squashfs it
+# vendored in orchestrator/guest (see the header there) because the CI squashfs it
 # comes from is a leftover of the rootfs fetch, not a build input.
 install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
 install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"
@@ -168,7 +168,7 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
 
 # ---------------------------------------------------------------------- harness
 log "stock harness -> /opt/brayness"
-[ -f "$HARNESS_TAR" ] || { echo "run scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
+[ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
 mkdir -p "$TREE/opt/brayness"
 tar xzf "$HARNESS_TAR" -C "$TREE/opt/brayness"
 

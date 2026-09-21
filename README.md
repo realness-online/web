@@ -7,17 +7,18 @@ code that builds it and serves it.
 
 - `control/` - Node. The control plane: makes hosts exist, puts the code on
   them, takes them away. Reaches the live side only over its HTTP API. Run
-  `node bin/webspace.js`.
-- `src/orchestrator/` - the session API, exec, PTY, browser terminal (Python3
-  stdlib). The live code: it runs on the host and owns sessions.
-- `scripts/` - bash. Root syscalls on the guest and the host, called by
-  `control/`; not the operator surface any more.
-- `site/` - the markdown-to-static-site builder, comark + shiki.
+  `node bin/webspace.js`. Its `scripts/` are the Mac and Lima build/run steps.
+- `orchestrator/` - the session API, exec, PTY, browser terminal (Python3
+  stdlib). The live side: it runs on the host and owns sessions. Its `scripts/`
+  are the host syscalls, its `guest/` runs inside a session, and its `clients/`
+  are the host-shell tools.
+- `examples/site/` - the markdown-to-static-site builder, comark + shiki.
+- `examples/plan-viewer/` - the plans viewer, built on the same builder.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
   runs, drain logs. Ignored; a fresh clone is source only.
 
-`control/` and `src/` are separate worlds and a test enforces it: the
+`control/` and `orchestrator/` are separate worlds and a test enforces it: the
 orchestrator must not know the control plane exists, and control may only reach
 it through the API. `cd control && npm test`.
 
@@ -34,15 +35,15 @@ Someone who will not run a setup script gets a working environment.
 
 ## The four directions
 
-Everything in `scripts/` is one of four things. Commands run on the Mac unless
-a step says otherwise.
+All four run through `control/`, as `node control/bin/webspace.js <env> ...`.
+Commands run on the Mac unless a step says otherwise.
 
-| Direction          | Command                     | What it does                             |
-| ------------------ | --------------------------- | ---------------------------------------- |
-| Build the template | `dev-build.sh`              | stage the harness, build `template.ext4` |
-| Run it locally     | `dev-setup.sh`, `dev-up.sh` | Lima guest, then volume + TAP + API      |
-| Run a host         | `host-up.sh <name>`         | create, bootstrap, check, serve          |
-| Move sessions      | `host-drain.sh <name>`      | export every session to GCS              |
+| Direction          | Command               | What it does                             |
+| ------------------ | --------------------- | ---------------------------------------- |
+| Build the template | `dev build`           | stage the harness, build `template.ext4` |
+| Run it locally     | `dev setup`, `dev up` | Lima guest, then volume + TAP + API      |
+| Run a host         | `prod host up <name>` | create, bootstrap, check, serve          |
+| Move sessions      | `prod host drain`     | export every session to GCS              |
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections below carry what
@@ -85,7 +86,7 @@ node control/bin/webspace.js dev up      # each time: volume, TAP, API; waits fo
 - API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`.
 - `dev stop` stops it, `dev restart` reloads the current code, `dev up --fresh`
   wipes the sessions volume and rebuilds the seed.
-- The log is `dist/dev-up.log`; the guest side is `scripts/dev-stack.sh`.
+- The log is `dist/dev-up.log`; the guest side is `control/scripts/dev-stack.sh`.
 - `dev up` waits for `seed.built`, not just for health: the API answers `ok` as
   soon as it is listening, before the seed exists, so waiting on `ok` reports a
   stack as up when it cannot make a session.
@@ -192,7 +193,7 @@ were close.
   lifecycle only (x1).
 - **ubuntu-base plus the CI kernel, not the CI rootfs** - the CI rootfs has an
   empty dpkg and is a boot fixture, not a session image.
-- **The orchestrator is ours, Python3 stdlib**, in `src/orchestrator/`; rejected
+- **The orchestrator is ours, Python3 stdlib**, in `orchestrator/`; rejected
   firecracker-go-sdk, Kata, and flintlock.
 - **Sessions get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
@@ -289,11 +290,11 @@ per line (`argv`, `cwd`, `stdin_b64`) and answers with one
 line-oriented channel; no shell, so `argv` is exec'd directly and a session that
 wants a shell asks for one.
 
-`scripts/vsock-exec.py` is the host-side client. It exits with the guest
+`orchestrator/clients/vsock-exec.py` is the host-side client. It exits with the guest
 command's own exit code, so shell composition works:
 
 ```bash
-sudo python3 /mnt/fc/scripts/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
+sudo python3 /mnt/fc/orchestrator/clients/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
 ```
 
 Needs root: Firecracker creates the socket as root and the socket mode does not
@@ -386,9 +387,9 @@ host over the f2 channel, which is the one call r3's session API makes.
 
 ## The session API (r3a)
 
-`scripts/dev-stack.sh` is the dev host: an xfs loopback volume at `/opt/fc/sessions`
+`control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at `/opt/fc/sessions`
 (persistent across runs, `FRESH=1` to wipe), TAP0 and its NAT, and
-`src/orchestrator/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
+`orchestrator/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
 
 The orchestrator is python3 stdlib. It builds the seed itself - boot the
@@ -429,7 +430,7 @@ goes.
 
 ## A terminal (r3c)
 
-`src/orchestrator/pty.py` listens on 8081 for a framed terminal stream, one TCP
+`orchestrator/pty.py` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
 `{"session": "s-...", "cols": 80, "rows": 24}`; the server answers
 `{"ok": true}` and then relays the guest agent's frames byte for byte:
@@ -468,7 +469,7 @@ An instance created before the rule existed needs it applied and a restart:
     limactl stop fc-local
     limactl edit fc-local --tty=false --set '.portForwards = [{"guestPort":8080,"hostPort":18080},{"guestPort":8081,"hostPort":18081}]'
     limactl start fc-local
-    # then sudo bash /mnt/fc/scripts/dev-stack.sh again
+    # then sudo bash /mnt/fc/control/scripts/dev-stack.sh again
 
 The seed and the sessions volume live on the guest disk and survive the restart.
 
@@ -496,12 +497,12 @@ checks hid this by calling `sync` after every write by hand.
 
 ## A browser terminal (r5)
 
-`src/orchestrator/webterm.py` serves a page on 8090 and upgrades `/pty?session=<id>`
+`orchestrator/webterm.py` serves a page on 8090 and upgrades `/pty?session=<id>`
 to a websocket, then bridges websocket messages to the framed terminal stream on 8081. The websocket is a transport in front of `pty.py`, not a second terminal;
 a message is one of the same JSON frames, so the bridge is a line <-> message
 pump.
 
-`src/orchestrator/term.html` is the page: no dependency, a `<pre>` for the screen and
+`orchestrator/term.html` is the page: no dependency, a `<pre>` for the screen and
 a hidden textarea for keys. Printable input arrives through the `input` event (so
 an automation tool that inserts text works) and special or control keys are
 handled on `keydown`. It renders text rather than a full grid, so cursor motion
@@ -637,7 +638,7 @@ happening: every 5 minutes, stop after 30 with no `firecracker`, no
 VM has to hold it open:
 
 ```bash
-sudo bash ~/brayness/scripts/idle-guard.sh
+sudo bash ~/brayness/orchestrator/scripts/idle-guard.sh
 sudo touch /run/brayness-hold     # tmpfs; cleared by a boot
 ```
 
@@ -655,7 +656,7 @@ node control/bin/webspace.js prod host up brayness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
-sessions volume, copies `scripts/` and `src/`, and runs `host-bootstrap.sh` on
+sessions volume, copies `orchestrator/`, and runs its `scripts/host-bootstrap.sh` on
 the host: grow the root partition if it lags, `net-up.sh`,
 `sessions-volume.sh`, `idle-guard.sh`, then one state line per resource.
 `--smoke` then runs
@@ -719,7 +720,7 @@ over the exec channel, extracts it into `published/<id>/` on the volume with
 tar's `data` filter, and serves it at `/s/<id>/`. The session keeps running; the
 copy dies with the session, because the durable thing is the export bundle and
 not the copy. `/mermaid.min.js` is served once for every site from
-`src/orchestrator/static/`, so a published tree stays a few KB of HTML and CSS.
+`orchestrator/static/`, so a published tree stays a few KB of HTML and CSS.
 
 In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 18080
 to the API port. Nothing is reachable from outside the machine yet; that is the
@@ -779,7 +780,7 @@ class="language-js">`), so a highlighter regex that expects `<pre><code`
   `iptables -t nat -C ...` works, `iptables -C -t nat ...` dies with
   `Bad argument 'nat'`.
 - `fcnet-setup.sh`, the MAC-to-address script `brayness-net-up` calls, is
-  Firecracker CI's and is not in ubuntu-base. It is vendored in `scripts/guest/`
+  Firecracker CI's and is not in ubuntu-base. It is vendored in `orchestrator/guest/`
   rather than read out of `squashfs-root`, which is a leftover of the f1 fetch
   and may not exist on a fresh host.
 - Run the tap and NAT setup with `sudo`; Firecracker here runs as root, so the
@@ -851,7 +852,7 @@ SEARCH_TERMS`. `tail -5` keeps the message.
   twice over: once plainly, and once when the same command also contains the text
   the pattern matches (a restart one-liner holds both the `pkill` and the
   `nohup ... serve`). Put it in a script and run it with `bash -s`
-  (`scripts/orchestrator-restart.sh`) so the pattern is never on the remote command line.
+  (`orchestrator/scripts/orchestrator-restart.sh`) so the pattern is never on the remote command line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
   process named `firecracker` - which is what every leftover check and the idle
   guard count. One would hold a host awake forever. Reaping has to poll:
@@ -928,8 +929,9 @@ block and net, and worth revisiting when r3 measures anything.
 
 ## Proven how
 
-Every script in `scripts/` was read and run for real on 2026-09-18, except
-`dev-build.sh` (prior green runs, not re-run) and `net-down.sh`. The one-page
+Every script was read and run for real on 2026-09-18; the checks now live in
+`artifacts/firecracker/webspace-archive/scripts/`. `dev-build.sh` kept a prior
+green run, and `net-down.sh` was read only. The one-page
 walkthrough of what each command does, with what it proved, is
 `artifacts/firecracker/webspace-command-map.md`; the run logs from the prod
 walkthrough are in `artifacts/firecracker/probe-20260918/`:

@@ -2,7 +2,7 @@
 # Runs on the Mac. Stages the "stock harness" - the part of this repo that is
 # not personal - as a tarball the Lima guest can read at /mnt/fc/build/.
 #
-#   bash work/brayness-webspace/scripts/harness-stage.sh
+#   bash work/brayness/control/scripts/harness-stage.sh
 #
 # An allowlist, not an exclude list: a new personal file must be added here
 # deliberately before it can reach a hosted template. Deliberately excluded:
@@ -18,8 +18,8 @@
 #   */node_modules             installed in the image, not shipped
 set -euo pipefail
 
-REPO="$(cd "$(dirname "$0")/../../.." && pwd)"
-OUT="$(cd "$(dirname "$0")/.." && pwd)/dist"
+REPO="$(cd "$(dirname "$0")/../../../.." && pwd)"
+OUT="$(cd "$(dirname "$0")/../.." && pwd)/dist"
 TAR="$OUT/brayness-harness.tar.gz"
 MANIFEST="$OUT/brayness-harness.manifest"
 

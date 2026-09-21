@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # idle-guard - shut the prod host down when nothing is happening.
 #
-#   sudo bash ~/brayness/scripts/idle-guard.sh
+#   sudo bash ~/brayness/orchestrator/scripts/idle-guard.sh
 #
 # GCP turns a guest poweroff into STOPPED, so an idle host bills disks only
 # (~$0.041/h) and `gcloud compute instances start` brings it back. The check

@@ -11,7 +11,7 @@ cpus: 4
 memory: 8GiB
 disk: 20GiB
 mounts:
-  - location: /Users/scott/Desktop/brayness/work/brayness-webspace
+  - location: /Users/scott/Desktop/brayness/work/brayness
     mountPoint: /mnt/fc
     writable: true
 # Mac-facing ports for the dev host (r3d). Explicit because Lima's automatic
