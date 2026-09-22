@@ -15,7 +15,7 @@ wants a shell asks for one (["/bin/bash","-c",...]).
 
 This is a stub. It runs everything as root with no authentication, which is
 acceptable only because the channel is a host-local unix socket. h1/h2 in
-plans/brayness-webspace.md own identity and egress.
+plans/brayness.md own identity and egress.
 """
 import base64
 import json

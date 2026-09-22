@@ -21,7 +21,7 @@ node_modules/
 # builder injects `<script src="/mermaid.min.js">` by absolute path, so a
 # published site only draws diagrams while a live host serves it, which
 # contradicts the builder's own "needs no server of its own".
-# Open question in plans/brayness-webspace.md ("Plan viewer").
+# Open question in plans/brayness.md ("Plan viewer").
 orchestrator/static/
 
 # macOS

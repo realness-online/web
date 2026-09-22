@@ -20,7 +20,7 @@ there is no terminal to type into and no reason to leave a process behind. A
 reconnectable terminal is not this node.
 
 No authentication and no egress policy: the channel is a host-local unix socket.
-h1/h2 in plans/brayness-webspace.md own identity and network.
+h1/h2 in plans/brayness.md own identity and network.
 """
 import base64
 import fcntl
