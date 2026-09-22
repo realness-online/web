@@ -18,7 +18,10 @@ vi.mock('@/utils/itemid', () => ({
   as_filename: vi.fn(() => 'test-filename'),
   as_created_at: vi.fn(() => 1234567890),
   as_query_id: vi.fn(() => 'test-query-id'),
-  is_itemid: vi.fn(() => true)
+  is_itemid: vi.fn(() => true),
+  as_path_parts: vi.fn(id => String(id).split('/').filter(Boolean)),
+  as_author: vi.fn(() => '/+1234567890'),
+  as_layer_id: vi.fn(() => '/+1234567890/shadows/1234567890')
 }))
 
 const { mock_me, mock_current_user } = vi.hoisted(() => ({
@@ -35,7 +38,8 @@ vi.mock('@/utils/serverless', () => ({
   current_user: mock_current_user,
   upload: vi.fn(),
   remove: vi.fn(),
-  move: vi.fn()
+  move: vi.fn(),
+  directory: vi.fn(async () => ({ items: [], prefixes: [] }))
 }))
 
 vi.mock('@/utils/profile-sync-log', () => ({
@@ -45,7 +49,8 @@ vi.mock('@/utils/profile-sync-log', () => ({
 vi.mock('idb-keyval', () => ({
   get: vi.fn(),
   set: vi.fn(),
-  del: vi.fn()
+  del: vi.fn(),
+  keys: vi.fn(async () => [])
 }))
 
 vi.mock('@/persistence/Directory', () => ({

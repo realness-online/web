@@ -1,0 +1,22 @@
+{
+  "name": "@realness/store",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The microdata document store: Storage, mixins, and Directory over an injected backend",
+  "exports": {
+    ".": "./src/index.js",
+    "./firebase": "./src/firebase.js"
+  },
+  "scripts": {
+    "test": "vp test run",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@realness/itemid": "^0.1.0",
+    "idb-keyval": "6.2.2"
+  },
+  "peerDependencies": {
+    "firebase": "^12.0.0"
+  }
+}

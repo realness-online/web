@@ -16,7 +16,7 @@ export class History extends Cloud(Storage) {
     this.id = itemid
   }
 
-  /** @param {Element | {outerHTML: string}} items */
+  /** @param {Element | {outerHTML: string}} [items] */
   async save(items) {
     // on purpose doesn't call super.save
     if (!items) return false
