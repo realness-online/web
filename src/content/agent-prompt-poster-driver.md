@@ -31,6 +31,11 @@ const poster = await window.poster_driver.render(data_url, {
 - **One render at a time.** `render` holds a mutex; a second call waits rather than failing. Do not race it.
 - **Wait for ready.** `window.poster_driver.ready` is `true` once the tracing workers are mounted. `window.poster_driver.get_status()` reports the current phase: Vectorizing, Rendering, Exporting, Done.
 - **Nothing persists.** Each poster is dropped from storage once captured, so a long batch stays flat.
+
+## Rendering a stored poster
+
+`window.poster_driver.render_stored(itemid)` renders a poster already on storage through the same export renderer and returns `{ itemid, png, viewbox, width, height }`, the PNG capped at 1200px on the long side. The print shop's checkout pictures come from here.
+
 - **A blank result is an error.** `poster has no drawable layer` means the source image gave the tracer nothing to work with — usually too little contrast.
 
 ## Video

@@ -284,10 +284,66 @@
     }
   }
 
+  /**
+   * Render a poster already on storage to a PNG preview through the same
+   * export renderer `render` uses. The print shop's checkout pictures come
+   * from here.
+   * @param {Id} itemid - e.g. `/author/posters/1712000000000`
+   * @returns {Promise<{ itemid: Id, png: string, viewbox: string, width: number, height: number }>}
+   */
+  const render_stored = async itemid => {
+    await render_mutex.lock()
+    try {
+      status.value = 'Rendering stored poster'
+      persisted_itemid.value = itemid
+
+      const svg = await wait_for(() => {
+        const el = document.getElementById(as_query_id(itemid))
+        return el instanceof SVGSVGElement ? el : null
+      })
+      if (!svg) throw new Error('poster svg never mounted')
+
+      const symbol_defs = await wait_for(
+        () =>
+          svg
+            .closest('figure:has([itemtype$="/posters"])')
+            ?.querySelector('svg[data-poster-symbol-defs]'),
+        DRAWABLE_TIMEOUT_MS
+      )
+      if (!symbol_defs) throw new Error(BLANK_POSTER)
+
+      await wait_for_poster_export_ready(svg, itemid)
+
+      const source_width = svg.viewBox.baseVal.width || PNG_TARGET
+      const source_height = svg.viewBox.baseVal.height || PNG_TARGET
+      const scale = Math.min(
+        1,
+        PNG_TARGET / Math.max(source_width, source_height)
+      )
+      const width = Math.round(source_width * scale)
+      const height = Math.round(source_height * scale)
+
+      status.value = 'Exporting'
+      const png = await as_png_data_url(svg, width, height)
+      status.value = 'Done'
+      return {
+        itemid,
+        png,
+        viewbox: svg.getAttribute('viewBox') || '',
+        width,
+        height
+      }
+    } finally {
+      persisted_itemid.value = null
+      render_mutex.unlock()
+    }
+  }
+
   mounted(() => {
     /** @type {any} */
     window.poster_driver = {
       render,
+      render_stored,
       ready: true,
       get_status: () => status.value
     }
