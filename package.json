@@ -35,6 +35,7 @@
     "og:candidates": "vp run build && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/generate-og-candidates.js",
     "og:pick": "node scripts/pick-og.js",
     "poster": "node scripts/render-poster.js",
+    "prints:previews": "vp run build && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/render-print-previews.js",
     "score": "CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
     "serve": "vp preview",
     "serve:https": "serve dist",
