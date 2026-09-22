@@ -1,3 +1,7 @@
+// Realness's itemid vocabulary now lives in `packages/itemid`; this file keeps
+// the app typedefs and re-exports the values so existing imports do not move.
+import { types, has_archive, has_history } from '@realness/itemid'
+
 /** @typedef {string | SVGPathElement} Path */
 /** @typedef {string | SVGRectElement} Rect */
 
@@ -133,32 +137,9 @@
  * @typedef {Statement[]} Statements
  */
 
-/** @type {readonly ['posters', 'thoughts', 'relations', 'me', 'person', 'shadows', 'sediment', 'sand', 'gravel', 'rocks', 'boulders']} */
-export const types = [
-  'posters',
-  'thoughts',
-  'relations',
-  'me',
-  'person',
-  'shadows',
-  'sediment',
-  'sand',
-  'gravel',
-  'rocks',
-  'boulders'
-]
+export { types, has_archive, has_history }
 
 /** @typedef {typeof types[number]} Type */
-
-/** @type {readonly ['posters']} */
-export const has_archive = /** @type {readonly ['posters']} */ (
-  /** @type {unknown} */ (types.slice(0, 1))
-)
-
-/** @type {readonly ['thoughts']} */
-export const has_history = /** @type {readonly ['thoughts']} */ (
-  /** @type {unknown} */ (types.slice(1, 2))
-)
 
 /**
  * @typedef {Object} Available_Command

@@ -1,0 +1,14 @@
+{
+  "name": "@realness/itemid",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The itemid rulebook: one string that names a thing and carries its facts",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vp test run",
+    "check": "vp check"
+  }
+}

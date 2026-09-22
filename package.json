@@ -3,6 +3,9 @@
   "version": "2.9.3",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "keywords": [
     "svg",
     "computer-graphics",
