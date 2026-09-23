@@ -1,6 +1,9 @@
 # Everything generated. A fresh clone is source only.
 dist/
 
+# The built browser terminal (control/scripts/terminal-build.sh).
+orchestrator/term/
+
 # Python bytecode. The orchestrator runs as root on a host and would otherwise
 # leave root-owned files in the source tree.
 __pycache__/

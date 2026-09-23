@@ -13,6 +13,7 @@
 import { join } from "node:path"
 import { attempt, step, note } from "./exec.js"
 import { ROOT } from "./paths.js"
+import { buildTerminal } from "./terminal.js"
 import { waitForHealth } from "./api.js"
 
 export async function up(lima, config, name, { smoke = false } = {}) {
@@ -32,6 +33,8 @@ export async function up(lima, config, name, { smoke = false } = {}) {
 
   step("boot check")
   await lima.streamScript("control/scripts/boot-check.sh")
+
+  await buildTerminal()
 
   step("start the stack")
   const started = await startStack(lima, config)
@@ -83,6 +86,7 @@ export async function down(lima, config, name, { mode = "stop" } = {}) {
 }
 
 export async function restart(lima, config, name) {
+  await buildTerminal()
   await down(lima, config, name)
   return serve(lima, config, name)
 }

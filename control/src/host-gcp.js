@@ -16,6 +16,7 @@
 import { join } from "node:path"
 import { attempt, step, note } from "./exec.js"
 import { ROOT } from "./paths.js"
+import { buildTerminal } from "./terminal.js"
 
 const bootDisk = (name) => `${name}-boot`
 const sessionsDisk = (name) => `${name}-sessions`
@@ -160,6 +161,7 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
 export async function push(cloud, name) {
+  await buildTerminal()
   step("copy the code")
   await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
   for (const dir of ["orchestrator"]) {

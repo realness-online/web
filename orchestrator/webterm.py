@@ -1,6 +1,8 @@
 """The browser terminal: a websocket in front of the framed PTY stream.
 
-One page and one websocket endpoint. `GET /` serves `term.html`; `GET /pty`
+One page and one websocket endpoint. `GET /` serves the terminal page from
+`term/`, the built brayness-examples/terminal, shipped with this code
+(built off-host); `GET /pty`
 upgrades and then bridges websocket messages to the orchestrator's own terminal
 stream on 127.0.0.1:8081 (`pty.py`), which is where the session's pty lives. This
 module is transport, not terminal: it speaks the same frames and keeps one
@@ -33,7 +35,13 @@ from urllib.parse import parse_qs, urlparse
 
 LOG = logging.getLogger(__name__)
 
-PAGE = Path(__file__).with_name("term.html")
+PAGE_ROOT = Path(__file__).with_name("term")
+CONTENT_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".wasm": "application/wasm",
+}
 GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 TEXT, CLOSE, PING, PONG = 0x1, 0x8, 0x9, 0xA
 
@@ -156,7 +164,16 @@ class WebTermHandler(BaseHTTPRequestHandler):
             return self._page(parsed)
         if parsed.path == "/pty" and self.headers.get("Upgrade", "").lower() == "websocket":
             return self._websocket(parsed)
-        self._text(404, b"no route\n")
+        self._file(parsed.path)
+
+    def _file(self, path):
+        """A file from the built page: its hashed assets and the wasm."""
+        root = PAGE_ROOT.resolve()
+        target = (root / path.lstrip("/")).resolve()
+        if root not in target.parents or not target.is_file():
+            return self._text(404, b"no route\n")
+        content_type = CONTENT_TYPES.get(target.suffix, "application/octet-stream")
+        self._body(200, content_type, target.read_bytes())
 
     def _page(self, parsed):
         """The page, and a session for it when the URL does not name one.
@@ -185,7 +202,10 @@ class WebTermHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        self._body(200, "text/html; charset=utf-8", PAGE.read_bytes())
+        index = PAGE_ROOT / "index.html"
+        if not index.is_file():
+            return self._text(503, b"no terminal page: term/ was not shipped\n")
+        self._body(200, CONTENT_TYPES[".html"], index.read_bytes())
 
     def _text(self, status, body):
         self._body(status, "text/plain; charset=utf-8", body)

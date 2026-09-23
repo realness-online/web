@@ -501,11 +501,13 @@ to a websocket, then bridges websocket messages to the framed terminal stream on
 a message is one of the same JSON frames, so the bridge is a line <-> message
 pump.
 
-`orchestrator/term.html` is the page: no dependency, a `<pre>` for the screen and
-a hidden textarea for keys. Printable input arrives through the `input` event (so
-an automation tool that inserts text works) and special or control keys are
-handled on `keydown`. It renders text rather than a full grid, so cursor motion
-and TUIs are approximate.
+The page is the terminal example, `brayness-examples/terminal`: Ghostty's
+libghostty-vt as WebAssembly, drawn on a canvas, so pi's TUI draws as it does in
+a native terminal. `control/scripts/terminal-build.sh` fetches it with giget,
+builds it, and puts `dist/` at `orchestrator/term/` (gitignored), which ships with
+the orchestrator code. The host needs no Node. The door redirects with
+`&exec=brayness`, and the page sends that line once connected, so a visitor
+lands in pi and pi's exit lands in bash.
 
 A bare `GET /` is the door: the page cannot make a session itself, because the
 API that creates one is on loopback and the browser would need that port open, so
