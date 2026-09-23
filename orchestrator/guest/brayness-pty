@@ -33,6 +33,10 @@ import sys
 import termios
 
 SHELL = "/bin/bash"
+# The one layout: the harness root, where a login lands and pi starts.
+HOME_DIR = "/root/brayness"
+# The browser page draws with libghostty-vt: 256 colors and truecolor.
+TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
 DEFAULT_COLS = 80
 DEFAULT_ROWS = 24
 
@@ -52,6 +56,8 @@ def main():
     if pid == 0:
         # Child: the slave is stdin/stdout/stderr and the controlling terminal,
         # so a shell started here is interactive.
+        os.environ.update(TERM_ENV)
+        os.chdir(HOME_DIR if os.path.isdir(HOME_DIR) else "/root")
         os.execvp(SHELL, [SHELL])
         os._exit(127)
 

@@ -104,7 +104,7 @@
         ws = new WebSocket(
           `${scheme}://${location.host}/pty?session=${encodeURIComponent(session)}&cols=${cols}&rows=${rows}`,
         );
-        ws.onopen = () =>
+        ws.onopen = () => {
           ws.send(
             JSON.stringify({
               op: "resize",
@@ -112,6 +112,9 @@
               rows: Number(rows),
             }),
           );
+          const command = params.get("exec");
+          if (command) send(`exec ${command}\r`);
+        };
         ws.onmessage = (event) => {
           const frame = JSON.parse(event.data);
           if (frame.op === "data") render(bytesOf(frame.data_b64));
