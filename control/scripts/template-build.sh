@@ -190,7 +190,11 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
 cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 #!/bin/sh
 # exec, not a symlink: bin/pi resolves the harness root from its own path.
-exec /opt/brayness/bin/pi "$@"
+# PI_OFFLINE skips startup network work only (model calls still go out). The
+# image is pinned, so update checks have nothing to find, and on two vCPUs
+# their ten `npm view` processes kept pi deaf to keys for minutes.
+export PI_OFFLINE=1
+exec /root/brayness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/brayness"
 
