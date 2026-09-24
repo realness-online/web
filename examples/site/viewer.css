@@ -294,6 +294,15 @@ blockquote {
   color: var(--muted-text);
 }
 
+/* Finished plan nodes use ~~id~~. Dim every cell in their row. */
+tr:has(del) {
+  opacity: 0.45;
+}
+
+tr:has(del) del {
+  text-decoration: none;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

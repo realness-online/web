@@ -41,7 +41,8 @@ esac
 UBUNTU_BASE="ubuntu-base-24.04.3-base-$UBUNTU_ARCH.tar.gz"
 NODE_VERSION="v24.21.0"
 NODE="node-$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
-PI_VERSION="${PI_VERSION:-0.85.1}"
+# The Mac captured its installed pi version in the staged harness archive.
+# Read it before installing pi, so a missing or stale stage cannot use a fallback.
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 mkdir -p "$RUN"
@@ -120,7 +121,7 @@ BASE_PACKAGES=(
                                   # the boot stalls on dev-ttyS0.device
   iproute2 socat python3           # python3, not -minimal: the agent imports
                                   # json, which the minimal stdlib does not ship
-  ca-certificates curl git ripgrep jq unzip
+  ca-certificates curl git ripgrep fd-find jq unzip
   less
 )
 
@@ -133,7 +134,7 @@ chroot "$TREE" env DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 \
 log "installed packages: $(chroot "$TREE" dpkg-query -f '.\n' -W | wc -l)"
 
 # dpkg's status is the thing the CI image lacked; it has to be real here.
-chroot "$TREE" dpkg-query -W systemd git socat python3 > /dev/null \
+chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find > /dev/null \
   || { echo "dpkg does not agree the base packages installed" >&2; exit 1; }
 
 # ------------------------------------------------------------------- enable it
@@ -162,27 +163,33 @@ chroot "$TREE" /usr/local/bin/node --version
 
 # -------------------------------------------------------------------------- pi
 # The documented install: https://.../docs/containerization.md
-log "pi $PI_VERSION (global, pinned)"
+[ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
+PI_VERSION="$(tar xOzf "$HARNESS_TAR" ./.pi-version)"
+[[ "$PI_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]] || {
+  echo "invalid pi version in $HARNESS_TAR: $PI_VERSION" >&2
+  exit 1
+}
+log "pi $PI_VERSION (global, from local build)"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
   --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION" --no-fund --no-audit
 
 # ---------------------------------------------------------------------- harness
-log "stock harness -> /opt/brayness"
+# The harness lives in the home directory, laid out like the Mac's: export saves
+# /root, so edits to the harness and to work/ travel with the session.
+log "stock harness -> /root/brayness"
 [ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
-mkdir -p "$TREE/opt/brayness"
-tar xzf "$HARNESS_TAR" -C "$TREE/opt/brayness"
+mkdir -p "$TREE/root/brayness"
+tar xzf "$HARNESS_TAR" -C "$TREE/root/brayness"
+
+# The realness proxy's shared pass. models.json reads it with `!cat` per request.
+PASS_FILE="${PASS_FILE:-$REPO/dist/agent-pass}"
+[ -s "$PASS_FILE" ] || { echo "missing $PASS_FILE: run control/scripts/agent-pass.sh on the Mac" >&2; exit 1; }
+install -D -m 600 -o root -g root "$PASS_FILE" "$TREE/etc/brayness/agent-pass"
 
 # pi packages (the harness's own extensions) live in .pi/agent/npm
 log "harness pi-packages"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --ignore-scripts --no-fund --no-audit --prefix /opt/brayness/.pi/agent/npm
-
-# The webspace skill's build deps (comark, shiki) live beside it, so a session
-# can build a site with no network of its own. node_modules is excluded from
-# the staged tarball precisely because this step installs it.
-log "webspace build deps"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --ignore-scripts --no-fund --no-audit --prefix /opt/brayness/skills/webspace
+  npm install --ignore-scripts --no-fund --no-audit --prefix /root/brayness/.pi/agent/npm
 
 # brayness is the harness entrypoint. A wrapper rather than a symlink: bin/pi
 # derives the repo root from its own path, so a symlink named brayness would
@@ -223,6 +230,9 @@ find "$TREE" \( -name '._*' -o -name '.DS_Store' \) -delete 2> /dev/null || true
 find "$TREE/var/log" -type f -delete 2> /dev/null || true
 find "$TREE/tmp" -mindepth 1 -delete 2> /dev/null || true
 chroot "$TREE" apt-get clean
+
+# Pi accepts Ubuntu's fdfind name for its find tool, even in offline mode.
+chroot "$TREE" /usr/bin/fdfind --version
 
 # With no resolver, reaching for npx here would fail instead of printing a
 # version - so this is the offline check, not just a smoke test.

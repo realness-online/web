@@ -9,25 +9,40 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 out="$root/artifacts/brayness-product"
 stage="$out/build"
 
+bash "$root/work/brayness/control/scripts/ship-stage.sh"
 rm -rf "$stage"
 mkdir -p "$stage"
-
+cp -R "$root/work/brayness/dist/ship/." "$stage/"
 cp "$root/work/brayness/app/entry.ts" "$root/work/brayness/app/deno.json" "$stage/"
-cp "$root/AGENTS.md" "$stage/"
-for part in skills extensions prompts themes; do
-  [[ -d "$root/$part" ]] && cp -R "$root/$part" "$stage/"
-done
+
+# One captured version for every target, with a static import Deno can bundle.
+pi_version="$(<"$stage/.pi-version")"
+[[ "$pi_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]] || {
+  echo "invalid staged pi version: $pi_version" >&2
+  exit 1
+}
+sed -i '' "s|__PI_VERSION__|$pi_version|" "$stage/entry.ts"
+grep -Fq "npm:@earendil-works/pi-coding-agent@$pi_version" "$stage/entry.ts"
 
 includes=()
-for part in skills extensions prompts themes AGENTS.md; do
+for part in skills extensions prompts themes work AGENTS.md; do
   [[ -e "$stage/$part" ]] && includes+=(--include "$part")
 done
 
 cd "$stage"
-for target in aarch64-apple-darwin:brayness-mac x86_64-pc-windows-msvc:brayness-win; do
-  echo "building ${target#*:}"
-  deno compile -A --target "${target%%:*}" --output "$out/${target#*:}" \
-    "${includes[@]}" entry.ts
-done
+build() {  # target, output name
+  echo "building $2"
+  deno compile -A --target "$1" --output "$out/$2" "${includes[@]}" entry.ts
+}
 
+# deno has no universal target, so the two Mac slices are built apart and
+# lipo'd into one file. One binary is the app, on both kinds of Mac.
+build aarch64-apple-darwin "brayness-mac-arm64"
+build x86_64-apple-darwin "brayness-mac-intel"
+build x86_64-pc-windows-msvc "brayness-win.exe"
+
+lipo -create "$out/brayness-mac-arm64" "$out/brayness-mac-intel" -output "$out/brayness-mac"
+rm -f "$out/brayness-mac-arm64" "$out/brayness-mac-intel"
+
+lipo -archs "$out/brayness-mac"
 ls -lh "$out"/brayness-mac "$out"/brayness-win.exe

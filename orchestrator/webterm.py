@@ -193,8 +193,8 @@ class WebTermHandler(BaseHTTPRequestHandler):
                 LOG.exception("could not create a session for a bare page")
                 return self._text(502, f"could not start a session: {error}\n".encode())
             LOG.info("bare page: created %s", record.id)
-            # The page runs `exec brayness` in the new shell, so pi's exit
-            # lands in bash, as brayness-login.sh does.
+            # Start a new Pi conversation in the same hosted session. Past
+            # conversations remain searchable through /remember.
             location = f"/?session={record.id}&exec=brayness"
             self.close_connection = True
             self.send_response(302)

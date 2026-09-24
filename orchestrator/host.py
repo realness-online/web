@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -80,13 +81,36 @@ def free_tap(prefix, first=1, last=63):
     raise HostError(f"no free TAP in {prefix}{first}..{last}")
 
 
+def tap_index(name):
+    """The number in a TAP name: fc-tap7 -> 7."""
+    match = re.search(r"(\d+)$", name)
+    if not match:
+        raise HostError(f"no index in TAP name {name}")
+    return int(match.group(1))
+
+
+def tap_gateway(name):
+    """The host's address on a session TAP: fc-tap7 -> 172.16.7.1.
+
+    Each session owns a /30, so two sessions never share an address (h2).
+    """
+    return f"172.16.{tap_index(name)}.1"
+
+
+def tap_guest(name):
+    """The guest's address on a session TAP: fc-tap7 -> 172.16.7.2."""
+    return f"172.16.{tap_index(name)}.2"
+
+
 def create_tap(name):
     run(["ip", "tuntap", "add", "dev", name, "mode", "tap"])
+    run(["ip", "addr", "add", f"{tap_gateway(name)}/30", "dev", name])
     run(["ip", "link", "set", name, "up"])
 
 
 def delete_tap(name):
     if tap_exists(name):
+        # Deleting the link takes its address with it.
         run(["ip", "link", "del", name])
 
 

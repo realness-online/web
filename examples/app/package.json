@@ -1,0 +1,20 @@
+{
+  "name": "brayness-app-template",
+  "private": true,
+  "type": "module",
+  "description": "A Vite project of microdata documents, stored as files",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "npm run build && node --test test/*.test.js",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "@realness/itemid": "file:../../../realness/packages/itemid",
+    "@realness/store": "file:../../../realness/packages/store",
+    "idb-keyval": "^6.2.2"
+  }
+}

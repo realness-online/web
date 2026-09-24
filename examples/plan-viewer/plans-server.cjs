@@ -20,7 +20,7 @@ const { execFile } = require("child_process")
 // This script lives in work/brayness/examples/plan-viewer/, so the harness root
 // is four levels up and the builder's stylesheet is next door in examples/site/.
 const HARNESS = join(__dirname, '../../../..')
-const PLANS = join(HARNESS, 'plans')
+const PLANS = process.env.PLANS_DIR || join(HARNESS, 'plans')
 // The same stylesheet the webspace builder ships: one file, so the dev viewer
 // and a published site cannot drift apart.
 const STYLESHEET = join(__dirname, '../site/viewer.css')

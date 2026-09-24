@@ -14,8 +14,8 @@ just copies bytes, so the protocol has one definition and the browser websocket
 (r5) can speak the same one. Base64 keeps a terminal's binary intact; lines are
 the framing f2 already proved for the exec channel.
 
-The terminal is the connection. Closing the client kills the shell in the guest,
-so a reconnect is a new terminal - r5 is where a terminal outlives a socket. An
+The terminal outlives the connection: the guest's brayness-pty holds the shell
+and Pi, and a reconnect reattaches to them. An
 idle session is reloaded before the shell starts, so the tiers are invisible
 here too.
 

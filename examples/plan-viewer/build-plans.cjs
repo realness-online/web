@@ -57,6 +57,9 @@ function shell(title, body, opts = {}) {
 <link rel="stylesheet" href="style.css">
 <style>
   /* Minimal overrides for standalone artifact pages */
+  /* A finished node is ~~id~~ in the table: dim its row. */
+  tr:has(del) { opacity: 0.45; }
+  tr:has(del) del { text-decoration: none; }
   body { font-family: Georgia, "Times New Roman", serif; line-height: 1.55; color: #222; background: #fdfcf8; }
   main { max-width: 720px; margin: 3rem auto; padding: 0 1.5rem; }
   h1 { font-family: system-ui, -apple-system, sans-serif; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; font-size: 2.2rem; margin-bottom: 0.25rem; }

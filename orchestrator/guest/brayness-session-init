@@ -18,8 +18,9 @@
 # audit first, then this list.
 set -eu
 
-session_id="${1:?usage: brayness-session-init <session-id> <epoch>}"
-epoch="${2:?usage: brayness-session-init <session-id> <epoch>}"
+session_id="${1:?usage: brayness-session-init <session-id> <epoch> <address>/<prefix>}"
+epoch="${2:?usage: brayness-session-init <session-id> <epoch> <address>/<prefix>}"
+address="${3:?usage: brayness-session-init <session-id> <epoch> <address>/<prefix>}"
 
 state_dir=/etc/brayness
 state_file="$state_dir/session"
@@ -27,6 +28,23 @@ state_file="$state_dir/session"
 # The clock is always wrong after a resume: the guest comes up at snapshot
 # time (f4). Set it before anything here writes a timestamp.
 date -u -s "@$epoch" > /dev/null
+
+# Networking is a snapshot property too: every clone resumes carrying the seed's
+# 172.16.0.2/30 and its route. Re-address from the session's own /30 before
+# anything needs the network, and do it on the idempotent path as well - a disk
+# reload can come back on a different TAP (h2).
+network_up() {
+  ip_addr="${address%%/*}"
+  prefix="${address##*/}"
+  gateway="${ip_addr%.*}.1"
+  for dev in $(ls /sys/class/net | grep -v '^lo$'); do
+    ip addr flush dev "$dev"
+    ip addr add "$ip_addr/$prefix" dev "$dev"
+    ip link set "$dev" up
+    ip route replace default via "$gateway" dev "$dev"
+  done
+}
+network_up
 
 short_id="$(printf '%s' "$session_id" | tr -cd '0-9a-f' | cut -c1-8)"
 [ -n "$short_id" ] || short_id="$(cat /proc/sys/kernel/random/uuid | cut -c1-8)"
@@ -69,7 +87,7 @@ rm -f /var/lib/systemd/random-seed
 find /var/log -maxdepth 1 -type f -delete 2> /dev/null || true
 find /tmp -mindepth 1 -delete 2> /dev/null || true
 rm -f /root/.bash_history /root/.lesshst
-rm -rf /opt/brayness/.pi/agent/sessions/* 2> /dev/null || true
+rm -rf /root/brayness/.pi/agent/sessions/* 2> /dev/null || true
 if [ -e /run/utmp ]; then : > /run/utmp; fi
 
 # journald holds the old journal open, so deleting it is not enough: the boot's

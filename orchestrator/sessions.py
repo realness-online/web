@@ -57,10 +57,10 @@ FINGERPRINT_SCHEMA = 1
 # re-checked at startup: hashing a 1.8 GiB template on every start buys nothing
 # the size and mtime do not already say.
 CHEAP_FIELDS = ("schema", "arch", "kernel", "firecracker", "template_size", "template_mtime_ns")
-# What an export carries: the session's home directory. Identity (`/etc`) and
-# the harness (`/opt/brayness`) are not artifacts - the harness's transcripts are
-# per-session state that session-init owns, and restoring an identity would make
-# two sessions share one. Widening this tuple is the whole change if that moves.
+# What an export carries: the session's home directory, which holds the harness
+# (`/root/brayness`) and its work/. Identity (`/etc`) is not an artifact -
+# restoring an identity would make two sessions share one. Widening this tuple
+# is the whole change if that moves.
 ARTIFACT_PATHS = ("root",)
 TRACE_DIR = "traces"
 EXPORT_DIR = "exports"
@@ -366,7 +366,7 @@ class SessionStore:
         """
         code, out, err = vsock.exec_in_guest(
             record.vsock_path,
-            [SESSION_INIT, record.id, str(int(time.time()))],
+            [SESSION_INIT, record.id, str(int(time.time())), f"{host.tap_guest(record.tap)}/30"],
             timeout=self.boot_timeout,
             port=self.vsock_port,
         )

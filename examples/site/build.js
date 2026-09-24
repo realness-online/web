@@ -2,7 +2,7 @@
 // Build a static site from a folder of markdown: comark -> @comark/html ->
 // shiki, the same pipeline as work/blog/build.js and plans-server.cjs.
 //
-//   node build.mjs --in <folder> --out <folder> [--title "Name"]
+//   node build.js --in <folder> --out <folder> [--title "Name"]
 //
 // Reads every top-level .md in --in, writes one HTML page per file plus an
 // index and the stylesheet into --out. Nothing is served here: this is the
@@ -26,7 +26,7 @@ const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }
 
 function usage(message) {
   if (message) console.error(message)
-  console.error('usage: build.mjs --in <folder> --out <folder> [--title "Name"]')
+  console.error('usage: build.js --in <folder> --out <folder> [--title "Name"]')
   process.exit(2)
 }
 

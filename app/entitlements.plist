@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Deno runs V8, which compiles JavaScript at runtime. The hardened runtime
+       blocks writable-executable memory unless these are granted. arm64 needs
+       allow-jit; the x86_64 slice needs the other two, because V8 there flips
+       pages with mprotect instead of mapping a JIT region. -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-executable-page-protection</key>
+  <true/>
+  <!-- Not granted, and must not be: the notary service rejects a submission
+       that carries com.apple.security.get-task-allow. -->
+</dict>
+</plist>

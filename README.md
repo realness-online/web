@@ -52,14 +52,17 @@ each one proved.
 ## Build the template
 
 The template is the Ubuntu 24.04 image every session forks from: pi, git, node,
-the stock harness, and the webspace build deps, and nothing personal.
+the stock harness, both examples as source, and the Realness packages. Example
+dependencies install in the session, not the image.
 
 ```bash
 node control/bin/webspace.js dev build
 ```
 
-`harness-stage.sh` copies this repo's non-personal parts into
-`dist/brayness-harness.tar.gz` - an allowlist, not an exclude list - then
+`ship-stage.sh` builds one allowlisted `dist/ship/` tree for the binary and
+records the local `pi --version` there. The binary compiles that version for
+all targets; `harness-stage.sh` tars the same version into
+`dist/brayness-harness.tar.gz`; then
 `template-build.sh` fetches its inputs (checksummed, cached in `/opt/fc`) and
 builds `/opt/fc/template.ext4` in the guest. After a rebuild the seed is stale.
 A seed whose template, kernel, or Firecracker fingerprint changed is not forked:
@@ -135,8 +138,9 @@ curl -sS -X POST -H 'content-type: application/json' \
   -d '{"restore_from":"<id>"}' http://127.0.0.1:8080/v1/sessions
 ```
 
-Identity and the harness do not travel: restoring one export twice is two
-sessions with the same files and different identities. Files come back,
+The harness travels - it lives at `/root/brayness`, with its `work/` - and
+identity does not: restoring one export twice is two sessions with the same
+files and different identities. Files come back,
 processes do not, and nothing replays a command.
 
 Record: export and restore (r7), and the drain proof in (r8, r9).
@@ -167,8 +171,9 @@ were close.
   log** (r7). Files come back and processes do not, and nothing replays a
   command. A bundle is `artifacts.tar.gz` (of `/root`) plus `trace.jsonl` plus a
   manifest holding both sha256s, the identity the session had, and the seed it
-  forked from. Identity and the harness's own state stay behind, so restoring one
-  export twice is two sessions with the same files and different identities.
+  forked from. The harness is in `/root/brayness`, so it travels; identity stays
+  behind, so restoring one export twice is two sessions with the same files and
+  different identities.
   Bundles go to `gs://realness-online-brayness/sessions/<id>/bundle.tar.gz`,
   moved by the control plane because the host has no credentials.
 - **Idle holds no rented capacity.** A session is its trace, its artifacts and
@@ -506,8 +511,10 @@ libghostty-vt as WebAssembly, drawn on a canvas, so pi's TUI draws as it does in
 a native terminal. `control/scripts/terminal-build.sh` fetches it with giget,
 builds it, and puts `dist/` at `orchestrator/term/` (gitignored), which ships with
 the orchestrator code. The host needs no Node. The door redirects with
-`&exec=brayness`, and the page sends that line once connected, so a visitor
-lands in pi and pi's exit lands in bash.
+`&exec=brayness`, and the page sends that line on every connect, so a visitor
+lands in a new Pi conversation in the same hosted session. Pi's exit lands in
+bash. Past conversations stay saved and searchable through `/remember` without
+sending their full history to the model on refresh.
 
 A bare `GET /` is the door: the page cannot make a session itself, because the
 API that creates one is on loopback and the browser would need that port open, so
@@ -543,10 +550,11 @@ volume, which destroy does not remove. A restore copies the bundle's trace onto
 the new session ahead of its own `create`, so the trace of a session that is gone
 is the head of the trace that replaced it.
 
-**What travels is `/root`, and that is the whole contract.** Identity
-(`/etc/machine-id`, the session id) and the harness (`/opt/brayness`, including
-pi's transcripts) do not: restoring an identity would make two sessions share
-one, and session-init owns the harness's per-session state. A session that writes
+**What travels is `/root`, and that is the whole contract.** It holds the
+harness at `/root/brayness`, laid out like the Mac's (`work/brayness/examples`,
+`work/realness/packages`), so harness edits, pi's transcripts, and `work/`
+travel together. Identity (`/etc/machine-id`, the session id) does not:
+restoring an identity would make two sessions share one. A session that writes
 outside its home is outside the contract, and `ARTIFACT_PATHS` in `sessions.py`
 is the one place that decides. Files come back; processes do not; nothing
 replays.
@@ -698,14 +706,12 @@ hosts.
 
 ## A session builds a site (a1)
 
-The harness carries the webspace capability: `skills/webspace/build.mjs` with
-comark and shiki installed beside it in the image. A session has no network, so
-the toolchain is in the image and its deps are installed at build time
-(`template-build.sh`) - which is why `node_modules` is excluded from the
-staged harness tarball.
+The site builder is `examples/site/` (`build.js` and `viewer.css`). It ships as
+source at `~/brayness/work/brayness/examples/site`; install comark and shiki in the session.
 
 ```bash
-node /opt/brayness/skills/webspace/build.mjs --in /root/notes --out /root/site --title "Notes"
+npm install --prefix ~/brayness/work/brayness/examples/site
+node ~/brayness/work/brayness/examples/site/build.js --in /root/notes --out /root/site --title "Notes"
 ```
 
 Every top-level `.md` becomes a page, plus an index and a `style.css` copied
@@ -726,6 +732,39 @@ not the copy. `/mermaid.min.js` is served once for every site from
 In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 18080
 to the API port. Nothing is reachable from outside the machine yet; that is the
 open 8090 question, and h1/h2. `scripts/a2-verify.sh` is 17 checks.
+
+## Signing the binary
+
+`app/build.sh`, `app/sign.sh`, `app/notarize.sh`. What each run taught:
+
+- One binary is the app. macOS opens a bare executable in Terminal, so a
+  launcher `.app` buys nothing; Terminal is the floor, Ghostty an upgrade.
+- Notarization uses an App Store Connect API key (profile `brayness-notary`);
+  the app-specific password returned 401 twice. The `.p8` must not move - the
+  profile stores its path.
+
+- A universal binary is 376 MB and the zip about 113 MB; both slices carry the
+  whole runtime. First launch needs internet, because the notarization ticket
+  cannot be stapled to a bare executable.
+- A ticket is not served the moment it is accepted, and a machine fetches it on
+  the first launch of a quarantined binary. That launch can still refuse while
+  the lookup is in flight; wait and re-run. Both causes look the same on screen,
+  and the dialog is what the check script's 25s alarm kills.
+- The x86_64 slice needs `allow-unsigned-executable-memory` and
+  `disable-executable-page-protection` beside `allow-jit`. With `allow-jit`
+  alone it dies at `Check failed: 12 == (*__error())`, exit 133; arm64 is
+  unaffected, so a broken Intel build passes every local run. A re-sign voids
+  the ticket, so notarize again after any re-sign.
+- Every refused launch carried a quarantine flag; the one that ran carried none.
+  Whether a non-Safari flag (Brave writes `0281`) blocks the ticket lookup is
+  untested.
+- The Developer ID certificate is not enough on its own: the Apple G2
+  intermediate CA must be in the keychain, or `security find-identity` reports
+  no valid identity. It does not arrive with the certificate.
+- Signing needs internet; the secure timestamp comes from Apple's server.
+- `spctl --assess --type exec` cannot judge a bare executable. It reports
+  "valid but does not seem to be an app" for a correctly signed and notarized
+  binary, so the run is the verdict, not spctl.
 
 ## Known costs
 

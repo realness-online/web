@@ -9,7 +9,7 @@ const agent_dir = join(workspace, ".pi", "agent")
 // embedded harness, extracted once - never overwrites what she has edited
 const embedded = import.meta.dirname ?? here
 const extracted: string[] = []
-for (const part of ["skills", "extensions", "prompts", "themes", "AGENTS.md"]) {
+for (const part of ["skills", "extensions", "prompts", "themes", "AGENTS.md", "work"]) {
   const dest = join(workspace, part)
   const src = join(embedded, part)
   if (existsSync(dest) || !existsSync(src)) continue
@@ -31,7 +31,8 @@ mkdirSync(agent_dir, { recursive: true })
 Deno.env.set("PI_CODING_AGENT_DIR", agent_dir)
 Deno.chdir(workspace)
 
-const { main } = await import("npm:@earendil-works/pi-coding-agent@0.85.1")
+// build.sh replaces the version token before Deno compiles this entry.
+const { main } = await import("npm:@earendil-works/pi-coding-agent@__PI_VERSION__")
 // skills stay visible at the workspace root, so load them explicitly
 const manage = ["install", "remove", "uninstall", "update", "list", "config", "auth",
   "--help", "-h", "--version", "-v", "--list-models"]
