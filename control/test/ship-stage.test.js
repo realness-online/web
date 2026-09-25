@@ -22,6 +22,12 @@ test('both delivery modes get the source-only app and site from one ship tree', 
   const settings = JSON.parse(readFileSync(join(ship, '.pi/agent/settings.json')))
   assert.equal(`${settings.defaultProvider}/${settings.defaultModel}`, 'realness/inkling')
   assert.deepEqual(settings.enabledModels, ['realness/inkling'])
+  const npm = JSON.parse(readFileSync(join(ship, '.pi/agent/npm/package.json')))
+  for (const name of ['pi-claude-oauth-adapter', 'pi-mcp-adapter', 'pi-subagents-j0k3r', 'pi-mono-usage']) {
+    assert.ok(!settings.packages.includes(`npm:${name}`), name)
+    assert.ok(!(name in npm.dependencies), name)
+  }
+  assert.ok(settings.packages.includes('npm:pi-mono-ask-user-question'))
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
   assert.ok(models.providers.realness.models.some(model => model.id === 'inkling'))
   assert.ok(!existsSync(join(ship, 'agent-pass')))

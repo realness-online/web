@@ -32,14 +32,22 @@ ln -s ../../extensions "$stage/.pi/agent/extensions"
 
 # The Mac's model list names logins the ship tree does not carry. Shipped Pi
 # talks to one model: the realness proxy, which picks the real one.
+# Packages a shipped harness cannot use cost startup seconds on two vCPUs:
+# the proxy is the only model (oauth), no MCP servers ship (mcp), subagents run
+# in their own microVMs (plans/brayness.md), and usage reports proxy calls.
 node -e '
-  const fs = require("fs"), path = process.argv[1]
-  const settings = JSON.parse(fs.readFileSync(path))
+  const fs = require("fs"), [settings_path, npm_path] = process.argv.slice(1)
+  const unshipped = ["pi-claude-oauth-adapter", "pi-mcp-adapter", "pi-subagents-j0k3r", "pi-mono-usage"]
+  const settings = JSON.parse(fs.readFileSync(settings_path))
   settings.defaultProvider = "realness"
   settings.defaultModel = "inkling"
   settings.enabledModels = ["realness/inkling"]
-  fs.writeFileSync(path, JSON.stringify(settings, null, 2) + "\n")
-' "$stage/.pi/agent/settings.json"
+  settings.packages = settings.packages.filter(p => !unshipped.includes(p.replace(/^npm:/, "")))
+  fs.writeFileSync(settings_path, JSON.stringify(settings, null, 2) + "\n")
+  const npm = JSON.parse(fs.readFileSync(npm_path))
+  for (const name of unshipped) delete npm.dependencies[name]
+  fs.writeFileSync(npm_path, JSON.stringify(npm, null, 2) + "\n")
+' "$stage/.pi/agent/settings.json" "$stage/.pi/agent/npm/package.json"
 
 # The ship tree keeps the dev layout: examples under work/brayness, the packages
 # under work/realness, so the app's relative links resolve the same everywhere.

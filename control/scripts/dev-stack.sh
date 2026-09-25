@@ -59,6 +59,14 @@ if ! mountpoint -q "$MOUNT"; then
   mount -o loop "$IMAGE" "$MOUNT"
 fi
 
+# The image is a sparse file on the Lima disk. A destroyed session frees blocks
+# inside xfs but not in the file, so the file only grows until the Lima disk is
+# full and a template build dies at mkfs with ENOSPC. fstrim punches the holes.
+# Mounting with `discard` did not: a deleted 500 MiB stayed allocated.
+fstrim "$MOUNT" || true
+# $$ becomes the orchestrator at the exec below, so the loop ends with it.
+( while sleep 300 && kill -0 $$ 2> /dev/null; do fstrim "$MOUNT" 2> /dev/null || true; done ) &
+
 echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
 # TAP0 plus its NAT rules. The seed boot needs a TAP; a session's own egress is

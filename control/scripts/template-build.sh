@@ -201,9 +201,19 @@ cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 # image is pinned, so update checks have nothing to find, and on two vCPUs
 # their ten `npm view` processes kept pi deaf to keys for minutes.
 export PI_OFFLINE=1
+# jiti caches transpiled extensions in $TMPDIR/jiti, and Node its compile cache
+# beside it. /tmp is emptied per session and per boot, which cost ~130s of
+# transpiling on two vCPUs at every first start. /var/tmp survives both.
+export TMPDIR=/var/tmp
 exec /root/brayness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/brayness"
+
+# Keep the caches out of /var/tmp's 30-day age cleaning.
+cat > "$TREE/etc/tmpfiles.d/brayness-pi-cache.conf" <<'TMPFILES'
+x /var/tmp/jiti
+x /var/tmp/node-compile-cache
+TMPFILES
 
 fi
 
@@ -239,6 +249,16 @@ chroot "$TREE" /usr/bin/fdfind --version
 log "brayness starts, and resolves pi without the network"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
   /usr/local/bin/brayness --version
+
+# --help loads every extension, so this fills the caches the wrapper points at.
+# Paths match a session's, so its first start reads them instead of transpiling.
+log "warm the extension caches"
+rm -rf "$TREE/var/tmp/jiti" "$TREE/var/tmp/node-compile-cache"
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
+  sh -c 'cd /root/brayness/work && /usr/local/bin/brayness --help > /dev/null'
+jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
+[ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
+log "jiti cache: $jiti_files files"
 
 # ------------------------------------------------------------------ build image
 log "building $IMG"
