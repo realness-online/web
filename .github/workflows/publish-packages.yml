@@ -1,0 +1,43 @@
+# Publish a workspace package to npm through trusted publishing (OIDC).
+# Tag to release: itemid-v0.1.1 or store-v0.2.0. The tag must match the
+# version in that package's package.json. No token, no 2FA prompt.
+name: Publish packages
+
+on:
+  push:
+    tags:
+      - 'itemid-v*'
+      - 'store-v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Match tag to package version
+        id: pkg
+        run: |
+          name="${GITHUB_REF_NAME%%-v*}"
+          version="${GITHUB_REF_NAME#*-v}"
+          actual=$(node -p "require('./packages/$name/package.json').version")
+          if [ "$version" != "$actual" ]; then
+            echo "Tag says $version, packages/$name says $actual" >&2
+            exit 1
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - run: npm install -g npm@latest
+
+      - run: npm publish
+        working-directory: packages/${{ steps.pkg.outputs.name }}
