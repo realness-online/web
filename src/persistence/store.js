@@ -1,7 +1,7 @@
-/** @fileoverview Realness's store: `@realness/store` wired to Firebase, this
+/** @fileoverview Realness's store: `@realness.online/store` wired to Firebase, this
  * app's paths, and its vocabulary. The files beside this one re-export these
  * bindings so existing imports do not move. */
-import { create_store } from '@realness/store'
+import { create_store } from '@realness.online/store'
 import { backend } from './store-backend.js'
 import { paths } from './store-paths.js'
 import { vocabulary } from './store-vocabulary.js'

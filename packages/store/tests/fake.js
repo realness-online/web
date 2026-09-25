@@ -1,5 +1,5 @@
 import { vi } from 'vite-plus/test'
-import { as_path_parts } from '@realness/itemid'
+import { as_path_parts } from '@realness.online/itemid'
 import { create_store } from '../src/index.js'
 
 // Two types is enough to exercise networkable, archived, and paged separately.

@@ -20,7 +20,7 @@ const serialize_document = items => ({
  *   backend: import('./store.js').Backend,
  *   paths: import('./store.js').Paths,
  *   vocabulary: import('./store.js').Vocabulary,
- *   itemid: import('@realness/itemid').Itemid,
+ *   itemid: import('@realness.online/itemid').Itemid,
  *   as_directory: (itemid: string) => Promise<{ id: string, items?: number[], archive?: number[] } | null>,
  *   load_directory_from_network: (itemid: string) => Promise<{ id: string, items?: number[], archive?: number[] } | null>
  * }} config

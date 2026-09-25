@@ -4,7 +4,7 @@ import { get, set, del } from 'idb-keyval'
  * Large mixin: the item's html is cached in idb, and the directory row keeps the
  * created_at list in step. The app decides where the item lives; this mixin only
  * asks `paths`.
- * @param {{ paths: import('./store.js').Paths, itemid: import('@realness/itemid').Itemid }} config
+ * @param {{ paths: import('./store.js').Paths, itemid: import('@realness.online/itemid').Itemid }} config
  */
 export const create_large =
   ({ paths, itemid }) =>

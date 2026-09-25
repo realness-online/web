@@ -2,7 +2,7 @@
  * serverless functions this app already owns, plus its offline queue and sync
  * index bookkeeping. */
 import { get, set } from 'idb-keyval'
-import { create_firebase_move } from '@realness/store/firebase'
+import { create_firebase_move } from '@realness.online/store/firebase'
 import { mutex_for } from '@/utils/algorithms'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { is_sync_index_missing } from '@/utils/sync-file'

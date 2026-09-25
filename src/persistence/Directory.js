@@ -1,4 +1,4 @@
-// Directory listings moved to `packages/store` (`@realness/store`), wired in
+// Directory listings moved to `packages/store` (`@realness.online/store`), wired in
 // `store.js`.
 export {
   is_directory_id,

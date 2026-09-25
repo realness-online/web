@@ -1,6 +1,6 @@
 // Realness's itemid vocabulary now lives in `packages/itemid`; this file keeps
 // the app typedefs and re-exports the values so existing imports do not move.
-import { types, has_archive, has_history } from '@realness/itemid'
+import { types, has_archive, has_history } from '@realness.online/itemid'
 
 /** @typedef {string | SVGPathElement} Path */
 /** @typedef {string | SVGRectElement} Rect */

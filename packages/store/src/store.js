@@ -1,4 +1,4 @@
-import { create_itemid } from '@realness/itemid'
+import { create_itemid } from '@realness.online/itemid'
 import { create_storage } from './storage.js'
 import { Local } from './local.js'
 import { create_large } from './large.js'

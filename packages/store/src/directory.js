@@ -3,7 +3,7 @@ import { get, set, keys, del } from 'idb-keyval'
 /**
  * Directory listings: one cached row per directory, merged with the local idb
  * scan, refreshed from the backend only when nothing is cached.
- * @param {{ backend: import('./store.js').Backend, paths: import('./store.js').Paths, itemid: import('@realness/itemid').Itemid }} config
+ * @param {{ backend: import('./store.js').Backend, paths: import('./store.js').Paths, itemid: import('@realness.online/itemid').Itemid }} config
  */
 // oxlint-disable-next-line max-lines-per-function - one factory keeps every seam in view
 export const create_directory = ({ backend, paths, itemid }) => {

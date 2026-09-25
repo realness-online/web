@@ -1,11 +1,23 @@
 {
-  "name": "@realness/itemid",
+  "name": "@realness.online/itemid",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "The itemid rulebook: one string that names a thing and carries its facts",
+  "license": "GPL-2.0-only",
+  "author": "Scott Fryxell <sfryxell@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realness-online/web.git",
+    "directory": "packages/itemid"
+  },
+  "files": [
+    "src"
+  ],
   "exports": {
     ".": "./src/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "test": "vp test run",
