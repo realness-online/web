@@ -192,6 +192,13 @@ log "harness pi-packages"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
   npm install --ignore-scripts --no-fund --no-audit --prefix /root/brayness/.pi/agent/npm
 
+# pi-mono-auto-fix looks for node_modules/.bin/prettier above each edited file,
+# else runs `npx prettier`: a registry fetch per session, which failed under
+# load. One pinned copy at the harness root covers everything under it.
+log "prettier for auto-fix"
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
+  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /root/brayness prettier@3.9.9
+
 # brayness is the harness entrypoint. A wrapper rather than a symlink: bin/pi
 # derives the repo root from its own path, so a symlink named brayness would
 # make it look for /usr/local/skills.
@@ -256,6 +263,7 @@ chroot "$TREE" /usr/bin/fdfind --version
 log "brayness starts, and resolves pi without the network"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
   /usr/local/bin/brayness --version
+chroot "$TREE" /root/brayness/node_modules/.bin/prettier --version
 
 # --help loads every extension, so this fills the caches the wrapper points at.
 # Paths match a session's, so its first start reads them instead of transpiling.
