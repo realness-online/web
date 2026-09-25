@@ -1,19 +1,21 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 
 const project = new URL('../../', import.meta.url).pathname
 const ship = join(project, 'dist/ship')
 
-test('both delivery modes get the source-only app and site from one ship tree', () => {
+test('the ship tree carries the harness and prompts, no examples', () => {
   execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')])
-  for (const path of [
-    'work/brayness/examples/app/package.json', 'work/brayness/examples/site/build.js',
-    'work/realness/packages/itemid/src/index.js', 'work/realness/packages/store/src/index.js',
-    'prompts/app.md',
-  ]) assert.ok(existsSync(join(ship, path)), path)
+  for (const path of ['prompts/app.md', 'prompts/site.md'])
+    assert.ok(existsSync(join(ship, path)), path)
+  // work/ ships, empty: Pi starts there; examples are downloaded, not shipped.
+  assert.deepEqual(readdirSync(join(ship, 'work')), [])
+  // Prompts download the examples; none ride in the ship tree.
+  for (const name of ['app', 'site'])
+    assert.match(readFileSync(join(ship, `prompts/${name}.md`), 'utf8'), /giget gh:scott-fryxell\/brayness-examples\//)
 
   const extensions = join(ship, '.pi/agent/extensions')
   assert.equal(readlinkSync(extensions), '../../extensions')
@@ -36,18 +38,9 @@ test('both delivery modes get the source-only app and site from one ship tree', 
   assert.ok(models.providers.realness.models.some(model => model.id === 'inkling'))
   assert.ok(!existsSync(join(ship, 'agent-pass')))
 
-  const app_dir = join(ship, 'work/brayness/examples/app')
-  const app = JSON.parse(readFileSync(join(app_dir, 'package.json')))
-  for (const name of ['itemid', 'store']) {
-    const link = app.dependencies[`@realness/${name}`]
-    assert.equal(link, `file:../../../realness/packages/${name}`)
-    assert.ok(existsSync(join(app_dir, link.slice(5), 'package.json')), link)
-  }
   assert.match(readFileSync(join(ship, '.pi-version'), 'utf8'), /^\d+\.\d+\.\d+/)
   for (const path of [
-    'AGENTS.local.md', '.pi/agent/auth.json', 'work/brayness/examples/app/node_modules',
-    'work/brayness/examples/site/node_modules', 'work/brayness/examples/app/package-lock.json',
-    'work/brayness/examples/app/data', 'examples', 'packages',
+    'AGENTS.local.md', '.pi/agent/auth.json', 'examples', 'packages',
   ]) assert.ok(!existsSync(join(ship, path)), path)
 })
 

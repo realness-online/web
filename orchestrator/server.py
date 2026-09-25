@@ -13,7 +13,6 @@
     GET    /v1/sessions/{id}/trace   its events
     GET    /v1/exports             every bundle in the volume
     GET    /s/{id}/<file>          a published site
-    GET    /mermaid.min.js         the diagram bundle every page may ask for
 
 Create is the slow one - it reflinks a disk, loads a snapshot, and waits for the
 guest's control channel - so it answers with the session it made rather than a
@@ -31,7 +30,6 @@ import binascii
 import json
 import logging
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 from urllib.parse import urlparse
 
 from . import firecracker, host, sessions, vsock
@@ -40,11 +38,9 @@ LOG = logging.getLogger(__name__)
 # The longest exec a caller may ask for: an npm install on two vCPUs is minutes.
 EXEC_TIMEOUT_MAX = 1800
 
-# What the host serves beside the API: a published site at /s/<id>/, and the
-# mermaid bundle a built page asks for by absolute path. The bundle rides with
-# the orchestrator rather than in each site, so a published tree stays small.
-STATIC_DIR = Path(__file__).with_name("static")
-MERMAID_BUNDLE = STATIC_DIR / "mermaid.min.js"
+# What the host serves beside the API: a published site at /s/<id>/. A site
+# carries its own scripts; the static example copies mermaid in when a page
+# has a diagram.
 CONTENT_TYPES = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -80,11 +76,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         host = (self.headers.get("Host") or "").split(":")[0]
         label, _, rest = host.partition(".")
         if rest == "localhost" and label.startswith("s-"):
-            if path == "/mermaid.min.js":
-                return self._bundle(MERMAID_BUNDLE)
             return self._site(label, path.lstrip("/"))
-        if path == "/mermaid.min.js":
-            return self._bundle(MERMAID_BUNDLE)
         if path == "/v1/health":
             return self._health()
         if path == "/v1/sessions":
@@ -185,18 +177,6 @@ class ApiHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", CONTENT_TYPES.get(target.suffix.lower(), "application/octet-stream"))
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(body)
-
-    def _bundle(self, path):
-        """A file the host serves for every published site."""
-        if not path.is_file():
-            return self._plain(404, f"no {path.name} on this host")
-        body = path.read_bytes()
-        self.send_response(200)
-        self.send_header("Content-Type", "text/javascript; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "public, max-age=86400")
         self.end_headers()
         self.wfile.write(body)
 

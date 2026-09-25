@@ -12,7 +12,7 @@ code that builds it and serves it.
   stdlib). The live side: it runs on the host and owns sessions. Its `scripts/`
   are the host syscalls, its `guest/` runs inside a session, and its `clients/`
   are the host-shell tools.
-- `examples/site/` - the markdown-to-static-site builder, comark + shiki.
+- Examples live in `brayness-examples`; sessions download them with giget.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
   runs, drain logs. Ignored; a fresh clone is source only.
@@ -51,8 +51,8 @@ each one proved.
 ## Build the template
 
 The template is the Ubuntu 24.04 image every session forks from: pi, git, node,
-the stock harness, both examples as source, and the Realness packages. Example
-dependencies install in the session, not the image.
+and the stock harness. Examples are not in the image: `/site` and `/app` download
+them from `brayness-examples` and install their dependencies in the session.
 
 ```bash
 node control/bin/webspace.js dev build
@@ -550,8 +550,7 @@ the new session ahead of its own `create`, so the trace of a session that is gon
 is the head of the trace that replaced it.
 
 **What travels is `/root`, and that is the whole contract.** It holds the
-harness at `/root/brayness`, laid out like the Mac's (`work/brayness/examples`,
-`work/realness/packages`), so harness edits, pi's transcripts, and `work/`
+harness at `/root/brayness`, laid out like the Mac's, so harness edits, pi's transcripts, and `work/`
 travel together. Identity (`/etc/machine-id`, the session id) does not:
 restoring an identity would make two sessions share one. A session that writes
 outside its home is outside the contract, and `ARTIFACT_PATHS` in `sessions.py`
@@ -705,19 +704,17 @@ hosts.
 
 ## A session builds a site (a1)
 
-The site builder is `examples/site/` (`build.js` and `viewer.css`). It ships as
-source at `~/brayness/work/brayness/examples/site`; install comark and shiki in the session.
+The `/site` prompt downloads the static example and builds it:
 
 ```bash
-npm install --prefix ~/brayness/work/brayness/examples/site
-node ~/brayness/work/brayness/examples/site/build.js --in /root/notes --out /root/site --title "Notes"
+npx giget gh:scott-fryxell/brayness-examples/static site
+cd site && npm install && npm run build
+brayness publish dist
 ```
 
-Every top-level `.md` becomes a page, plus an index and a `style.css` copied
-alongside. The output is plain HTML: relative links, no server, no bundler,
-`/mermaid.min.js` for diagrams. `scripts/a1-verify.sh` drives it through the API
-in a real session (16 checks) and checks the site is in the home directory the
-export bundles.
+Articles are Markdown in `content/articles/`. The output is plain HTML with its
+own scripts; a page with a diagram gets `scripts/mermaid.min.js` copied in.
+`/app` does the same with the app example.
 
 ## Publish it at a URL (a2)
 
@@ -725,8 +722,7 @@ export bundles.
 over the exec channel, extracts it into `published/<id>/` on the volume with
 tar's `data` filter, and serves it at `/s/<id>/`. The session keeps running; the
 copy dies with the session, because the durable thing is the export bundle and
-not the copy. `/mermaid.min.js` is served once for every site from
-`orchestrator/static/`, so a published tree stays a few KB of HTML and CSS.
+not the copy.
 
 In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 18080
 to the API port. Nothing is reachable from outside the machine yet; that is the

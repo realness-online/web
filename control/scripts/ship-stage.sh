@@ -51,18 +51,9 @@ node -e '
   fs.writeFileSync(npm_path, JSON.stringify(npm, null, 2) + "\n")
 ' "$stage/.pi/agent/settings.json" "$stage/.pi/agent/npm/package.json"
 
-# The ship tree keeps the dev layout: examples under work/brayness, the packages
-# under work/realness, so the app's relative links resolve the same everywhere.
-# Examples are source only. Dependencies are installed by the session.
-mkdir -p "$stage/work/brayness"
-tar -C "$project" -cf - --no-mac-metadata \
-  --exclude='node_modules' --exclude='._*' --exclude='.DS_Store' \
-  --exclude='smoke-staging-project.png' --exclude='page.png' --exclude='data' \
-  --exclude='dist' --exclude='package-lock.json' examples/site examples/app | tar -C "$stage/work/brayness" -xf -
-for package in itemid store; do
-  mkdir -p "$stage/work/realness/packages/$package"
-  cp "$root/work/realness/packages/$package/package.json" "$stage/work/realness/packages/$package/"
-  cp -R "$root/work/realness/packages/$package/src" "$stage/work/realness/packages/$package/"
-done
+# Examples are not shipped: sessions download them from brayness-examples with
+# giget when a prompt asks, and install @realness.online packages from npm.
+# work/ ships empty: Pi starts there, and a session's projects land in it.
+mkdir -p "$stage/work"
 
 printf 'ship tree: %s\n' "$stage"
