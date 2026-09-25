@@ -151,7 +151,9 @@ You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
 
 ##### Converting a video
 
-In the app, Video export animates one poster. From the harness, `make:animation` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack. It runs from the brayness harness root - no Realness checkout needed.
+In the app, Video export animates one poster. To trace a whole clip, use [Brayness](https://github.com/scott-fryxell/brayness), an optional harness. Realness traces your footage into layered artwork. Brayness can run that tracing frame by frame and make a video. You choose the footage and finish the art.
+
+Brayness's `make:animation` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack. It runs from the Brayness root - no Realness checkout needed. Using Realness never requires Brayness.
 
 ```
 npm run make:animation clip.mov

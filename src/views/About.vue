@@ -344,6 +344,18 @@
         <li>
           <icon name="finished" />
           <p>
+            <strong>Footage to artwork</strong> Realness traces your footage
+            into layered artwork. The optional
+            <router-link to="/docs#converting-a-video"
+              >Brayness harness</router-link
+            >
+            runs that tracing frame by frame and makes a video. You choose the
+            footage and finish the art.
+          </p>
+        </li>
+        <li>
+          <icon name="finished" />
+          <p>
             <strong>Trains of thought</strong> Every new statement you add for
             13 minutes is added to the last, giving you time to think and
             explore

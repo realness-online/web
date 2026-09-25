@@ -7,6 +7,10 @@
   the first print sold anywhere is $5, the second $100, and every one after that
   $500, with Stripe keeping count. A print sells once. Sold prints wear a red
   dot, and one that sells while your tab is open turns into a dot on its own.
+- **Footage to artwork** - Realness traces your footage into layered artwork.
+  Brayness, an optional harness, can run that tracing frame by frame and make
+  a video. You choose the footage and finish the art. About lists it, and the
+  guide's "Converting a video" shows how. Using Realness never requires it.
 
 ## v2.9.3 - 2026-09-07
 
