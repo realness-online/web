@@ -6,8 +6,8 @@ name: Publish packages
 on:
   push:
     tags:
-      - "itemid-v*"
-      - "store-v*"
+      - itemid-v*
+      - store-v*
 
 permissions:
   contents: read
