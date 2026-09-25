@@ -9,7 +9,8 @@
   "scripts": {
     "webspace": "node ./bin/webspace.js",
     "test": "node --test 'test/*.test.js'",
-    "check:browser": "node test/browser.check.js"
+    "check:browser": "node test/browser.check.js",
+    "check:publish": "node test/publish.check.js"
   },
   "engines": {
     "node": ">=22.19.0"

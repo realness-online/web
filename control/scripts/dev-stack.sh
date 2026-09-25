@@ -76,4 +76,8 @@ bash "$DIR/orchestrator/scripts/net-up.sh"
 # The package is imported by name, so the import path is the project root.
 # Same for the host scripts that run `-m orchestrator`.
 cd "$DIR"
+# The link `brayness publish` prints: each site at its own root, through
+# Lima's forward of the API port. Browsers resolve *.localhost locally.
+site_url_default='http://{id}.localhost:18080/'
+export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
 exec python3 -m orchestrator serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

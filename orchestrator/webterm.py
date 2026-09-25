@@ -247,6 +247,7 @@ class WebTermHandler(BaseHTTPRequestHandler):
         self.close_connection = True
 
         ws = self.connection
+        ws.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         out = threading.Thread(target=pty_to_ws, args=(ws, pty), daemon=True)
         out.start()
         ws_to_pty(ws, pty)
@@ -258,6 +259,7 @@ class WebTermHandler(BaseHTTPRequestHandler):
         (no such session) is a 502 on the websocket request rather than a
         confusing empty terminal."""
         sock = socket.create_connection(("127.0.0.1", self.server.stream_port), timeout=30.0)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         hello = json.dumps({"session": session, "cols": int(cols), "rows": int(rows)})
         sock.sendall(hello.encode() + b"\n")
         line = b""

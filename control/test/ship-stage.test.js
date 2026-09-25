@@ -18,6 +18,10 @@ test('both delivery modes get the source-only app and site from one ship tree', 
   const extensions = join(ship, '.pi/agent/extensions')
   assert.equal(readlinkSync(extensions), '../../extensions')
   assert.ok(existsSync(join(extensions, 'memory/index.ts')))
+  // Without this link /site and /app reach the model as literal text.
+  const prompts = join(ship, '.pi/agent/prompts')
+  assert.equal(readlinkSync(prompts), '../../prompts')
+  assert.ok(existsSync(join(prompts, 'site.md')))
 
   const settings = JSON.parse(readFileSync(join(ship, '.pi/agent/settings.json')))
   assert.equal(`${settings.defaultProvider}/${settings.defaultModel}`, 'realness/inkling')

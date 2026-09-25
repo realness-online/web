@@ -63,7 +63,7 @@ FINGERPRINT_SCHEMA = 1
 # Cheap fields decide whether a seed is stale. The sha256 is recorded, not
 # re-checked at startup: hashing a 1.8 GiB template on every start buys nothing
 # the size and mtime do not already say.
-CHEAP_FIELDS = ("schema", "arch", "kernel", "firecracker", "template_size", "template_mtime_ns")
+CHEAP_FIELDS = ("schema", "arch", "kernel", "firecracker", "template_size", "template_mtime_ns", "vcpu_count")
 # What an export carries: the session's home directory, which holds the harness
 # (`/root/brayness`) and its work/. Identity (`/etc`) is not an artifact -
 # restoring an identity would make two sessions share one. Widening this tuple
@@ -257,6 +257,7 @@ class SessionStore:
             "firecracker": self.firecracker_version,
             "template_size": stat.st_size,
             "template_mtime_ns": stat.st_mtime_ns,
+            "vcpu_count": self.vcpu_count,
         }
 
     def build_fingerprint(self):

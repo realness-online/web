@@ -29,6 +29,8 @@ tar -C "$root" -cf - --no-mac-metadata \
 # Pi discovers local extensions from its agent directory. Keep the same link
 # as the dev harness without copying the extensions a second time.
 ln -s ../../extensions "$stage/.pi/agent/extensions"
+# Prompt templates (/site, /app) load from the agent directory too.
+ln -s ../../prompts "$stage/.pi/agent/prompts"
 
 # The Mac's model list names logins the ship tree does not carry. Shipped Pi
 # talks to one model: the realness proxy, which picks the real one.

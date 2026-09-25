@@ -13,10 +13,11 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 import threading
 
-from . import pty, server, sessions, webterm
+from . import door, pty, server, sessions, webterm
 
 
 def add_shared_arguments(parser):
@@ -104,6 +105,9 @@ def main(argv=None):
     web_server = webterm.make_server(args.listen, args.web_port, args.pty_port,
                                      new_session=store.create)
     threading.Thread(target=web_server.serve_forever, daemon=True).start()
+    # Requests a session makes of its host, e.g. `brayness publish`.
+    the_door = door.Door(store, site_url=os.environ.get("BRAYNESS_SITE_URL", "/s/{id}/"))
+    threading.Thread(target=the_door.serve_forever, daemon=True).start()
     server.serve(store, args.listen, args.port)
     return 0
 

@@ -37,6 +37,8 @@ from urllib.parse import urlparse
 from . import firecracker, host, sessions, vsock
 
 LOG = logging.getLogger(__name__)
+# The longest exec a caller may ask for: an npm install on two vCPUs is minutes.
+EXEC_TIMEOUT_MAX = 1800
 
 # What the host serves beside the API: a published site at /s/<id>/, and the
 # mermaid bundle a built page asks for by absolute path. The bundle rides with
@@ -73,6 +75,14 @@ class ApiHandler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------- routing
     def do_GET(self):
         path = urlparse(self.path).path.rstrip("/") or "/"
+        # <id>.localhost gives a published site its own root, so the
+        # root-relative links a normal site uses resolve inside it.
+        host = (self.headers.get("Host") or "").split(":")[0]
+        label, _, rest = host.partition(".")
+        if rest == "localhost" and label.startswith("s-"):
+            if path == "/mermaid.min.js":
+                return self._bundle(MERMAID_BUNDLE)
+            return self._site(label, path.lstrip("/"))
         if path == "/mermaid.min.js":
             return self._bundle(MERMAID_BUNDLE)
         if path == "/v1/health":
@@ -82,7 +92,8 @@ class ApiHandler(BaseHTTPRequestHandler):
         if path == "/v1/exports":
             return self._json(200, {"exports": self.store.exports()})
         if path.startswith("/s/"):
-            return self._site(path)
+            session_id, _, rel = path[len("/s/"):].partition("/")
+            return self._site(session_id, rel)
         if path.startswith("/v1/sessions/"):
             tail = path[len("/v1/sessions/"):]
             session_id, _, action = tail.partition("/")
@@ -152,17 +163,21 @@ class ApiHandler(BaseHTTPRequestHandler):
         return self.store.publish(session_id, tree)
 
     # ------------------------------------------------------------- published
-    def _site(self, path):
-        """GET /s/<id>/<file>: a published tree, served from the host."""
-        session_id, _, rel = path[len("/s/"):].partition("/")
-        if not rel:
-            rel = "index.html"
+    def _site(self, session_id, rel):
+        """A file from a published tree: /s/<id>/<rel> or <id>.localhost/<rel>.
+
+        A directory serves its index.html, and a bare name its .html, so
+        pretty links like /blog/hello resolve."""
         root = self.store.published_site(session_id)
         if root is None:
             return self._plain(404, f"nothing published for {session_id}")
         target = (root / rel).resolve()
         if not target.is_relative_to(root.resolve()):
             return self._plain(403, "that path leaves the published site")
+        if target.is_dir():
+            target = target / "index.html"
+        elif not target.exists() and target.with_suffix(".html").is_file():
+            target = target.with_suffix(".html")
         if not target.is_file():
             return self._plain(404, f"no {rel} in {session_id}")
         body = target.read_bytes()
@@ -214,8 +229,13 @@ class ApiHandler(BaseHTTPRequestHandler):
             stdin = base64.b64decode(stdin_b64, validate=True)
         except (binascii.Error, ValueError) as error:
             raise sessions.BadRequest(f"stdin_b64 is not base64: {error}")
+        # Without this every exec got the store's 30s default, and a longer
+        # command kept running in the guest after the caller saw a timeout.
+        timeout = payload.get("timeout")
+        if timeout is not None and (not isinstance(timeout, (int, float)) or not 0 < timeout <= EXEC_TIMEOUT_MAX):
+            raise sessions.BadRequest(f"timeout must be seconds, 0 < t <= {EXEC_TIMEOUT_MAX}")
         return self.store.exec_command(
-            session_id, payload.get("argv"), cwd=payload.get("cwd"), stdin=stdin
+            session_id, payload.get("argv"), cwd=payload.get("cwd"), stdin=stdin, timeout=timeout
         )
 
     def _idle(self, session_id):

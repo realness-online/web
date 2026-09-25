@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import logging
 import select
+import socket
 import socketserver
 
 from . import firecracker, host, sessions, vsock
@@ -65,6 +66,7 @@ class PtyHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         client = self.request
+        client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         client.settimeout(self.server.hello_timeout)
         try:
             hello, leftover = read_hello(client)

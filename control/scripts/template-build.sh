@@ -95,6 +95,7 @@ install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-u
 install -m 0755 "$GUEST_SRC/brayness-agent.py" "$TREE/usr/local/bin/brayness-agent"
 install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
 install -m 0755 "$GUEST_SRC/brayness-session-init" "$TREE/usr/local/bin/brayness-session-init"
+install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
 install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
 install -m 0644 "$GUEST_SRC/brayness-vsock.service" "$TREE/etc/systemd/system/brayness-vsock.service"
 install -m 0644 "$GUEST_SRC/brayness-pty.service" "$TREE/etc/systemd/system/brayness-pty.service"
@@ -196,6 +197,12 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
 # make it look for /usr/local/skills.
 cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 #!/bin/sh
+# `brayness publish [dir]` asks the host to serve a built site (the door).
+if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
+case "${1:-}" in -h|--help)
+  echo "brayness publish [dir]  serve a built site from this session; prints its link"
+  echo ;;
+esac
 # exec, not a symlink: bin/pi resolves the harness root from its own path.
 # PI_OFFLINE skips startup network work only (model calls still go out). The
 # image is pinned, so update checks have nothing to find, and on two vCPUs
