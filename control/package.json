@@ -8,7 +8,8 @@
   },
   "scripts": {
     "webspace": "node ./bin/webspace.js",
-    "test": "node --test 'test/*.test.js'"
+    "test": "node --test 'test/*.test.js'",
+    "check:browser": "node test/browser.check.js"
   },
   "engines": {
     "node": ">=22.19.0"
