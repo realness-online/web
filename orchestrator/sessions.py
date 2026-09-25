@@ -52,6 +52,13 @@ DISK_NAME = "rootfs.ext4"
 SESSION_STATE = "state"
 SESSION_MEM = "mem"
 SESSION_INIT = "/usr/local/bin/brayness-session-init"
+# The guest terminal (brayness-pty). pty.py imports this module, so it is
+# named here too.
+PTY_PORT = 53
+# The seed snapshots a Pi that has drawn its prompt and echoed a key (h4).
+PI_OPENER = b"exec brayness\r"
+PI_PROMPT = b"inkling"
+PI_WARM_TIMEOUT = 300.0
 FINGERPRINT_SCHEMA = 1
 # Cheap fields decide whether a seed is stale. The sha256 is recorded, not
 # re-checked at startup: hashing a 1.8 GiB template on every start buys nothing
@@ -115,6 +122,72 @@ class Session:
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def warm_pi(uds_path, timeout=PI_WARM_TIMEOUT):
+    """Start Pi in the seed's terminal and wait until a typed key echoes.
+
+    The snapshot then holds a ready Pi, and a session's first attach skips its
+    ~8s start: the holder drops the page's `exec brayness` when Pi is running.
+    The key is erased so every clone opens on an empty editor.
+    """
+    sock = vsock.connect(uds_path, PTY_PORT)
+
+    def send(data):
+        frame = {"op": "data", "data_b64": base64.b64encode(data).decode()}
+        sock.sendall(json.dumps(frame).encode() + b"\n")
+
+    started = time.monotonic()
+    opened = False
+    prompt = False
+    last_key = 0.0
+    buf = b""
+    pending = b""
+    try:
+        sock.settimeout(1.0)
+        sock.sendall(json.dumps({"op": "resize", "cols": 80, "rows": 24}).encode() + b"\n")
+        while time.monotonic() - started < timeout:
+            # vsock.read_line drops what follows the first newline in a recv;
+            # the terminal sends frames in bursts, so keep the remainder.
+            try:
+                data = sock.recv(65536)
+                if not data:
+                    raise vsock.VsockError("the seed's terminal closed while warming pi")
+                pending += data
+            except TimeoutError:
+                pass
+            *lines, pending = pending.split(b"\n")
+            for line in lines:
+                if not line:
+                    continue
+                message = json.loads(line)
+                if message.get("op") == "exit":
+                    raise vsock.VsockError(f"pi exited while warming: {message}")
+                chunk = base64.b64decode(message.get("data_b64", ""))
+                if not opened:
+                    # Type the opener once the shell has drawn its prompt.
+                    if b"# " in chunk:
+                        send(PI_OPENER)
+                        opened = True
+                elif not prompt:
+                    buf += chunk
+                    prompt = PI_PROMPT in buf
+                elif last_key and b"q" in chunk and b"\x1b[2K" in chunk:
+                    send(b"\x7f")
+                    time.sleep(1.0)
+                    LOG.info("pi warm in the seed after %.1fs", time.monotonic() - started)
+                    return
+            # A shell prompt drawn before the attach is dropped; open anyway.
+            if not opened and time.monotonic() - started > 3.0:
+                send(PI_OPENER)
+                opened = True
+            # Once the prompt is drawn, press a key every second until it shows.
+            if prompt and time.monotonic() - last_key > 1.0:
+                send(b"q")
+                last_key = time.monotonic()
+        raise vsock.VsockError(f"pi did not echo a key within {timeout:.0f}s")
+    finally:
+        sock.close()
 
 
 def sha256_file(path, chunk=1 << 20):
@@ -271,6 +344,7 @@ class SessionStore:
             )
             identity = self.identity(uds_path)
             LOG.info("seed is up: hostname %s", identity["hostname"])
+            warm_pi(uds_path)
 
             LOG.info("pausing and snapshotting")
             firecracker.pause(api)

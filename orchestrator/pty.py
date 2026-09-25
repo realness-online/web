@@ -32,7 +32,7 @@ from . import firecracker, host, sessions, vsock
 
 LOG = logging.getLogger(__name__)
 
-PTY_PORT = 53
+PTY_PORT = sessions.PTY_PORT
 HELLO_LIMIT = 1 << 16
 
 

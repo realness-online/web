@@ -16,7 +16,7 @@ import { ROOT } from "./paths.js"
 import { buildTerminal } from "./terminal.js"
 import { waitForHealth } from "./api.js"
 
-export async function up(lima, config, name, { smoke = false } = {}) {
+export async function up(lima, config, name, { smoke = false, fresh = false } = {}) {
   if (name && name !== config.vm) {
     // One Lima VM per environment, named in the config. A second would need its
     // own config block, which is a real thing to add but not this command.
@@ -36,8 +36,10 @@ export async function up(lima, config, name, { smoke = false } = {}) {
 
   await buildTerminal()
 
+  // --fresh wipes the sessions volume, so the seed rebuilds from the new template.
+  if (fresh) await down(lima, config, name)
   step("start the stack")
-  const started = await startStack(lima, config)
+  const started = await startStack(lima, config, { fresh })
   note(started.alreadyUp ? "already up" : "started")
 
   if (smoke) {

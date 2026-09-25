@@ -53,11 +53,16 @@ def set_window(master, cols, rows):
 
 
 def running_command(pid):
-    """True once the shell has exec'd something else (Pi)."""
+    """True once the shell has exec'd something else (Pi).
+
+    Right after pty.fork the child is still this Python, before it execs the
+    shell; that is not a running command, or the first opener is dropped.
+    """
     try:
-        return os.readlink(f"/proc/{pid}/exe") != os.path.realpath(SHELL)
+        exe = os.readlink(f"/proc/{pid}/exe")
     except OSError:
         return False
+    return exe not in (os.path.realpath(SHELL), os.path.realpath(sys.executable))
 
 
 class Holder:

@@ -114,7 +114,10 @@ async function hostCommand(hosts, config, args, flags) {
   switch (action) {
     case "up":
       // dev has exactly one host, named in the config, so the name is optional.
-      return mod.up(target, config, rest[0], { smoke: Boolean(flags.smoke) })
+      return mod.up(target, config, rest[0], {
+        smoke: Boolean(flags.smoke),
+        fresh: Boolean(flags.fresh),
+      })
 
     case "down": {
       const name = requireName(rest, `usage: webspace <env> host down <name> [--delete]`)

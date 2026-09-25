@@ -46,6 +46,21 @@ network_up() {
 }
 network_up
 
+# The seed snapshot holds a running Pi (h4), so every resume wakes it inside
+# the seed's conversation. Its restore-fresh extension starts a new one on
+# SIGUSR2, with an id from the kernel. No pid file means no handler, and the
+# signal's default action would kill Pi. /run is memory: it names this session
+# after its own resume, and not after a reload from the seed.
+fresh_pi() {
+  pid_file=/run/brayness-pi.pid
+  marker=/run/brayness-pi-fresh
+  [ -r "$pid_file" ] || return 0
+  [ "$(cat "$marker" 2> /dev/null)" = "$session_id" ] && return 0
+  printf '%s\n' "$session_id" > "$marker"
+  cat /proc/sys/kernel/random/uuid > /run/brayness-pi-session-id
+  kill -USR2 "$(cat "$pid_file")" 2> /dev/null || true
+}
+
 short_id="$(printf '%s' "$session_id" | tr -cd '0-9a-f' | cut -c1-8)"
 [ -n "$short_id" ] || short_id="$(cat /proc/sys/kernel/random/uuid | cut -c1-8)"
 
@@ -57,6 +72,7 @@ if [ -r "$state_file" ] && [ "$(cat "$state_file")" = "$session_id" ]; then
   fi
   printf 'brayness-%s\n' "$short_id" > /etc/hostname
   hostname "brayness-$short_id"
+  fresh_pi
   echo "session $session_id already initialized"
   exit 0
 fi
@@ -87,12 +103,16 @@ rm -f /var/lib/systemd/random-seed
 find /var/log -maxdepth 1 -type f -delete 2> /dev/null || true
 find /tmp -mindepth 1 -delete 2> /dev/null || true
 rm -f /root/.bash_history /root/.lesshst
-rm -rf /root/brayness/.pi/agent/sessions/* 2> /dev/null || true
+# Files only: the seed's running Pi made its session folder at startup and
+# will not make it again.
+find /root/brayness/.pi/agent/sessions -type f -delete 2> /dev/null || true
 if [ -e /run/utmp ]; then : > /run/utmp; fi
 
 # journald holds the old journal open, so deleting it is not enough: the boot's
 # entries come back from memory until it starts a new file.
 systemctl restart systemd-journald 2> /dev/null || true
+
+fresh_pi
 
 {
   printf 'session %s\n' "$session_id"
