@@ -13,7 +13,6 @@ code that builds it and serves it.
   are the host syscalls, its `guest/` runs inside a session, and its `clients/`
   are the host-shell tools.
 - `examples/site/` - the markdown-to-static-site builder, comark + shiki.
-- `examples/plan-viewer/` - the plans viewer, built on the same builder.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
   runs, drain logs. Ignored; a fresh clone is source only.
