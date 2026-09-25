@@ -63,7 +63,7 @@ async function run(n) {
     })
 
     await step("start the site from the example", () =>
-      exec(session, `cd /root/brayness/work && npx -y giget ${EXAMPLE} site && cd site && npm install --no-fund --no-audit && sync`, 900),
+      exec(session, `mkdir -p /root/brayness/work && cd /root/brayness/work && npx -y giget ${EXAMPLE} site && cd site && npm install --no-fund --no-audit && sync`, 900),
     )
 
     const link = await step("build and publish", async () => {

@@ -53,7 +53,5 @@ node -e '
 
 # Examples are not shipped: sessions download them from brayness-examples with
 # giget when a prompt asks, and install @realness.online packages from npm.
-# work/ ships empty: Pi starts there, and a session's projects land in it.
-mkdir -p "$stage/work"
 
 printf 'ship tree: %s\n' "$stage"

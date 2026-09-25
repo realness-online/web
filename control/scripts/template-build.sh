@@ -270,7 +270,7 @@ chroot "$TREE" /root/brayness/node_modules/.bin/prettier --version
 log "warm the extension caches"
 rm -rf "$TREE/var/tmp/jiti" "$TREE/var/tmp/node-compile-cache"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
-  sh -c 'cd /root/brayness/work && /usr/local/bin/brayness --help > /dev/null'
+  sh -c 'cd /root/brayness && /usr/local/bin/brayness --help > /dev/null'
 jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
 [ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
 log "jiti cache: $jiti_files files"

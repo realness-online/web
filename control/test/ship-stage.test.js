@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 
@@ -11,8 +11,6 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')])
   for (const path of ['prompts/app.md', 'prompts/site.md'])
     assert.ok(existsSync(join(ship, path)), path)
-  // work/ ships, empty: Pi starts there; examples are downloaded, not shipped.
-  assert.deepEqual(readdirSync(join(ship, 'work')), [])
   // Prompts download the examples; none ride in the ship tree.
   for (const name of ['app', 'site'])
     assert.match(readFileSync(join(ship, `prompts/${name}.md`), 'utf8'), /giget gh:scott-fryxell\/brayness-examples\//)
@@ -40,7 +38,7 @@ test('the ship tree carries the harness and prompts, no examples', () => {
 
   assert.match(readFileSync(join(ship, '.pi-version'), 'utf8'), /^\d+\.\d+\.\d+/)
   for (const path of [
-    'AGENTS.local.md', '.pi/agent/auth.json', 'examples', 'packages',
+    'AGENTS.local.md', '.pi/agent/auth.json', 'work', 'examples', 'packages',
   ]) assert.ok(!existsSync(join(ship, path)), path)
 })
 

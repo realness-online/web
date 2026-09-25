@@ -9,7 +9,7 @@ const agent_dir = join(workspace, ".pi", "agent")
 // embedded harness, extracted once - never overwrites what she has edited
 const embedded = import.meta.dirname ?? here
 const extracted: string[] = []
-for (const part of ["skills", "extensions", "prompts", "themes", "AGENTS.md", "work"]) {
+for (const part of ["skills", "extensions", "prompts", "themes", "AGENTS.md"]) {
   const dest = join(workspace, part)
   const src = join(embedded, part)
   if (existsSync(dest) || !existsSync(src)) continue
