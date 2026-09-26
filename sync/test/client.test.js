@@ -85,6 +85,17 @@ test("names with spaces and dashes travel", async () => {
   assert.deepEqual(Object.keys(await a.walk("can://~/names/")).sort(), ["02-08 Sunday — flow/notes.md", "a#b?c.md"])
 })
 
+test("downloads obey the never-sync list", async () => {
+  const a = as(A)
+  await a.put("can://~/pull-skip/.env", "SECRET=1")
+  await a.put("can://~/pull-skip/app/node_modules/x.js", "x")
+  await a.put("can://~/pull-skip/note.md", "n")
+  const dir = await local("pull-skip", {})
+  const report = await a.sync(dir, "can://~/pull-skip/")
+  assert.deepEqual(report.pulled, ["note.md"])
+  assert.deepEqual(await readdir(dir), ["note.md"])
+})
+
 test("edits travel both ways between two folders", async () => {
   const a = as(A)
   const laptop = await local("two/laptop", { "note.md": "one", "img.bin": Buffer.from([0, 1, 2]) })

@@ -16,7 +16,7 @@ import { createHash } from "node:crypto"
 import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
-import { skipped_name } from "./skip.js"
+import { skipped, skipped_name } from "./skip.js"
 
 /** The development sync service, unless SYNC_URL says otherwise. */
 export const SYNC_URL = process.env.SYNC_URL ?? "https://brayness-sync-639469569733.us-central1.run.app"
@@ -125,7 +125,8 @@ export function client({ url, token, fetcher = fetch }) {
       const locals = new Map()
       for (const file of await walk(local).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
       const remotes = await api.walk(folder)
-      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)])
+      // The never-sync list holds both ways: a remote `.env` is never pulled.
+      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name)))
 
       const agree = (name, bytes, version) => (manifest[name] = { sha: sha(bytes), version })
       const forget = (name) => delete manifest[name]
