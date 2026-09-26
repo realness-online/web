@@ -5,10 +5,12 @@
   "description": "Where the paths can() asks about live: one adapter per storage provider",
   "exports": {
     "./disk": "./src/disk.js",
+    "./gcs": "./src/gcs.js",
     "./contract": "./src/contract.js"
   },
   "scripts": {
-    "test": "node --test 'test/*.test.js'"
+    "test": "node --test 'test/*.test.js'",
+    "test:gcs": "GCS_TEST_BUCKET=realness-development.appspot.com node --test test/gcs.test.js"
   },
   "engines": {
     "node": ">=22.19.0"
