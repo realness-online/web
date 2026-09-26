@@ -83,14 +83,14 @@ export async function plan_syncs(root, names = []) {
  * Sync every plan's paths to `can://~/<path>/`. Refused paths are named, never
  * synced; the rest still run.
  */
-export async function sync_harness({ root, store, plans = [] }) {
+export async function sync_harness({ root, store, plans = [], deletes }) {
   const synced = {}
   const refusals = {}
   for (const [path, plan] of await plan_syncs(root, plans)) {
     const local = join(root, path)
     const reason = refused(path) ?? ((await repo_of(local)) ? "inside a git repo" : null)
     if (reason) refusals[path] = `${reason} (${plan})`
-    else synced[path] = await store.sync(local, `can://~/${path}/`)
+    else synced[path] = await store.sync(local, `can://~/${path}/`, { deletes })
   }
   return { synced, refused: refusals }
 }

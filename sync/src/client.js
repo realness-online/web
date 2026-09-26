@@ -10,10 +10,13 @@
  * from it wins. Both moving keeps both: theirs lands beside ours as
  * `x.conflict.ext`, and both travel. An edit beats a delete. A lost record is
  * safe: every file looks new, so identical ones match and the rest keep both.
+ * A local delete travels only when the session edit log explains it, or with
+ * `deletes: "all"`; the rest are held. Remote deletes move files to the Trash.
  * A remote change mid-run is left for the next run and reported as a conflict.
  */
 import { createHash } from "node:crypto"
-import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
+import { copyFile, mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises"
+import { edit_log, edit_log_path } from "./edits.js"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
 import { skipped, skipped_name } from "./skip.js"
@@ -115,19 +118,21 @@ export function client({ url, token, fetcher = fetch }) {
     },
 
     /** Two-way: whichever side moved from the base wins; both moving is a conflict. */
-    async sync(local, remote, { concurrency = 8, state = state_dir() } = {}) {
+    async sync(local, remote, { concurrency = 8, state = state_dir(), deletes = "explained", trash = trash_dir(state) } = {}) {
       const folder = remote.endsWith("/") ? remote : `${remote}/`
       const pair = { local: resolve(local), remote: key(folder) }
       const record_path = join(state, "sync", `${sha(`${pair.local}\n${pair.remote}`).slice(0, 16)}.json`)
       const manifest = JSON.parse(await readFile(record_path, "utf8").catch(() => "{}")).files ?? {}
-      const report = { pushed: [], pulled: [], deleted: [], removed: [], adopted: [], kept_both: [], unchanged: [], conflicts: [] }
+      const report = { pushed: [], pulled: [], deleted: [], held: [], removed: [], adopted: [], kept_both: [], unchanged: [], conflicts: [] }
 
+      const log = edit_log(edit_log_path(state))
       const locals = new Map()
       for (const file of await walk(local).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
       const remotes = await api.walk(folder)
       // The never-sync list holds both ways: a remote `.env` is never pulled.
       const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name)))
 
+      const file_of = (name) => join(pair.local, ...name.split("/"))
       const agree = (name, bytes, version) => (manifest[name] = { sha: sha(bytes), version })
       const forget = (name) => delete manifest[name]
       const fetch_remote = async (name) => {
@@ -156,6 +161,8 @@ export function client({ url, token, fetcher = fetch }) {
           if (!local_moved && !remote_moved) return report.unchanged.push(name)
           if (local_moved && !remote_moved) {
             if (!bytes) {
+              // Only a delete a session explains travels; the rest wait for --deletes.
+              if (deletes !== "all" && !log.explained(file_of(name), null)) return report.held.push(name)
               await expect(await call("DELETE", `${folder}${name}`, { headers: conditional(base) }), `rm ${name}`, [204])
               forget(name)
               return report.deleted.push(name)
@@ -165,7 +172,7 @@ export function client({ url, token, fetcher = fetch }) {
           }
           if (!local_moved && remote_moved) {
             if (!remote_version) {
-              await rm(join(local, name), { force: true })
+              await to_trash(join(local, name), trash)
               forget(name)
               return report.removed.push(name)
             }
@@ -205,6 +212,7 @@ export function client({ url, token, fetcher = fetch }) {
 
       const all = [...names].sort()
       for (let i = 0; i < all.length; i += concurrency) await Promise.all(all.slice(i, i + concurrency).map(one))
+      log.close()
       await mkdir(dirname(record_path), { recursive: true })
       await writeFile(record_path, `${JSON.stringify({ ...pair, files: manifest }, null, 2)}\n`)
       for (const list of Object.values(report)) list.sort()
@@ -212,6 +220,27 @@ export function client({ url, token, fetcher = fetch }) {
     },
   }
   return api
+}
+
+/** macOS keeps a Trash; elsewhere removed files wait in harness state. */
+export const trash_dir = (state, env = process.env) =>
+  env.BRAYNESS_TRASH ?? (process.platform === "darwin" ? join(homedir(), ".Trash") : join(state, "trash"))
+
+/** Move a file aside, never destroy it: `note.md` lands as `note 2026-09-27T….md`. */
+async function to_trash(path, trash) {
+  const stamp = new Date().toISOString().replace(/:/g, "-")
+  const name = basename(path)
+  const dot = name.lastIndexOf(".")
+  const target = join(trash, dot > 0 ? `${name.slice(0, dot)} ${stamp}${name.slice(dot)}` : `${name} ${stamp}`)
+  await mkdir(trash, { recursive: true })
+  try {
+    await rename(path, target)
+  } catch (error) {
+    if (error.code === "ENOENT") return
+    if (error.code !== "EXDEV") throw error
+    await copyFile(path, target)
+    await rm(path, { force: true })
+  }
 }
 
 /** `note.md` becomes `note.conflict.md`, then `note.conflict-2.md`, until one is free. */

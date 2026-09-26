@@ -6,6 +6,7 @@ import assert from "node:assert/strict"
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { randomUUID } from "node:crypto"
 import { join } from "node:path"
+import { DatabaseSync } from "node:sqlite"
 import { disk } from "brayness-can-store/disk"
 import { client, conflict_name } from "../src/client.js"
 import { dev_issuer } from "../src/dev-token.js"
@@ -22,6 +23,7 @@ let url
 
 before(async () => {
   process.env.BRAYNESS_STATE = join(root, "state")
+  process.env.BRAYNESS_TRASH = join(root, "trash")
   server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))
   url = `http://127.0.0.1:${server.address().port}`
@@ -108,6 +110,23 @@ test("edits travel both ways between two folders", async () => {
   assert.equal(await readFile(join(laptop, "note.md"), "utf8"), "two")
 })
 
+test("a delete the session log explains travels on its own", async () => {
+  const a = as(A)
+  const state = join(root, "explained-state")
+  const dir = await local("explained", { "old.md": "o", "kept.md": "k" })
+  await a.sync(dir, "can://~/explained/", { state })
+  await mkdir(state, { recursive: true })
+  const db = new DatabaseSync(join(state, "edits.db"))
+  db.exec("CREATE TABLE edit (id INTEGER PRIMARY KEY, path TEXT, sha TEXT, session TEXT, turn INTEGER, tool TEXT, tool_call TEXT, ts TEXT)")
+  db.prepare("INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, NULL, 's', 1, 'settle', '', '')").run(join(dir, "old.md"))
+  db.close()
+  await rm(join(dir, "old.md"))
+  await rm(join(dir, "kept.md"))
+  const report = await a.sync(dir, "can://~/explained/", { state })
+  assert.deepEqual(report.deleted, ["old.md"])
+  assert.deepEqual(report.held, ["kept.md"])
+})
+
 test("the folder holds only its own files; the record lives in state", async () => {
   const a = as(A)
   const dir = await local("clean", { "note.md": "text" })
@@ -139,8 +158,12 @@ test("deletes travel both ways, only onto unchanged files", async () => {
   await a.sync(laptop, "can://~/del/")
   await a.sync(session, "can://~/del/")
   await rm(join(laptop, "gone.md"))
-  assert.deepEqual((await a.sync(laptop, "can://~/del/")).deleted, ["gone.md"])
+  assert.deepEqual((await a.sync(laptop, "can://~/del/")).held, ["gone.md"], "unexplained deletes wait")
+  assert.deepEqual((await a.sync(laptop, "can://~/del/", { deletes: "all" })).deleted, ["gone.md"])
   assert.deepEqual((await a.sync(session, "can://~/del/")).removed, ["gone.md"])
+  const trashed = (await readdir(join(root, "trash"))).filter((name) => name.startsWith("gone "))
+  assert.equal(trashed.length, 1, "removed files go to the Trash")
+  assert.equal(await readFile(join(root, "trash", trashed[0]), "utf8"), "x")
   // Deleted here, edited there: nothing is lost.
   await rm(join(session, "kept.md"))
   await writeFile(join(laptop, "kept.md"), "y, edited")

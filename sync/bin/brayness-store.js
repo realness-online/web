@@ -7,7 +7,7 @@
  *   brayness-store cp    note.md can://~/vault/
  *   brayness-store cp    can://~/vault/note.md .
  *   brayness-store rm    can://~/vault/note.md
- *   brayness-store sync  ~/brayness/plans can://~/plans/   two-way
+ *   brayness-store sync  ~/brayness/plans can://~/plans/   two-way; --deletes sends all
  *   brayness-store login | logout | whoami
  *
  * `login` signs in through Realness in your browser and keeps the result in
@@ -52,10 +52,11 @@ const commands = {
   async rm(paths) {
     for (const path of paths) await store.rm(path)
   },
-  async sync([local, remote]) {
-    const report = await store.sync(local, remote)
+  async sync(args) {
+    const [local, remote] = args.filter((arg) => arg !== "--deletes")
+    const report = await store.sync(local, remote, { deletes: args.includes("--deletes") ? "all" : "explained" })
     for (const [kind, names] of Object.entries(report)) {
-      if (names.length) console.log(`${kind}: ${names.length}${["conflicts", "kept_both"].includes(kind) ? `\n  ${names.join("\n  ")}` : ""}`)
+      if (names.length) console.log(`${kind}: ${names.length}${["conflicts", "kept_both", "held"].includes(kind) ? `\n  ${names.join("\n  ")}` : ""}`)
     }
     if (report.conflicts.length) process.exitCode = 1
   },
