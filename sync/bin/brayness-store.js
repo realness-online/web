@@ -7,7 +7,7 @@
  *   brayness-store cp    note.md can://~/vault/
  *   brayness-store cp    can://~/vault/note.md .
  *   brayness-store rm    can://~/vault/note.md
- *   brayness-store rsync ~/brayness/plans can://~/plans/
+ *   brayness-store sync  ~/brayness/plans can://~/plans/   two-way
  *   brayness-store login | logout | whoami
  *
  * `login` signs in through Realness in your browser and keeps the result in
@@ -53,8 +53,8 @@ const commands = {
   async rm(paths) {
     for (const path of paths) await store.rm(path)
   },
-  async rsync([local, remote]) {
-    const report = await store.rsync(local, remote)
+  async sync([local, remote]) {
+    const report = await store.sync(local, remote)
     for (const [kind, names] of Object.entries(report)) {
       if (names.length) console.log(`${kind}: ${names.length}${kind === "conflicts" ? `\n  ${names.join("\n  ")}` : ""}`)
     }
@@ -63,7 +63,7 @@ const commands = {
 }
 
 if (!commands[command]) {
-  console.error("usage: brayness-store login|logout|whoami|ls|cat|cp|rm|rsync ... (see the header of this file)")
+  console.error("usage: brayness-store login|logout|whoami|ls|cat|cp|rm|sync ... (see the header of this file)")
   process.exit(2)
 }
 try {

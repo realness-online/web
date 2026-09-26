@@ -64,42 +64,78 @@ test("another person is refused, with the status", async () => {
   await assert.rejects(client({ url }).ls(`can://people/${A}/vault/`), { status: 403 })
 })
 
-test("rsync uploads, then skips what has not changed", async () => {
+test("sync pushes, then skips what has not changed", async () => {
   const a = as(A)
   const dir = await local("plans", { "a.md": "a", "sub/b.md": "b", ".DS_Store": "junk", ".git/HEAD": "ref" })
-  const first = await a.rsync(dir, "can://~/plans/")
-  assert.deepEqual(first.uploaded.sort(), ["a.md", "sub/b.md"])
-  const second = await a.rsync(dir, "can://~/plans/")
-  assert.deepEqual(second.unchanged.sort(), ["a.md", "sub/b.md"])
-  assert.deepEqual(second.uploaded, [])
+  assert.deepEqual((await a.sync(dir, "can://~/plans/")).pushed, ["a.md", "sub/b.md"])
+  const second = await a.sync(dir, "can://~/plans/")
+  assert.deepEqual(second.unchanged, ["a.md", "sub/b.md"])
+  assert.deepEqual(second.pushed, [])
   await writeFile(join(dir, "a.md"), "a, edited")
-  const third = await a.rsync(dir, "can://~/plans/")
-  assert.deepEqual(third.uploaded, ["a.md"])
+  assert.deepEqual((await a.sync(dir, "can://~/plans/")).pushed, ["a.md"])
   assert.deepEqual(await a.ls("can://~/plans/"), ["sub/", "a.md"])
 })
 
-test("rsync reports a conflict instead of overwriting a remote change", async () => {
+test("edits travel both ways between two folders", async () => {
   const a = as(A)
-  const dir = await local("conflict", { "doc.md": "v1" })
-  await a.rsync(dir, "can://~/conflict/")
-  await a.put("can://~/conflict/doc.md", "changed elsewhere")
-  await writeFile(join(dir, "doc.md"), "v2 here")
-  const report = await a.rsync(dir, "can://~/conflict/")
-  assert.deepEqual(report.conflicts, ["doc.md"])
-  assert.equal((await a.cat("can://~/conflict/doc.md")).toString(), "changed elsewhere")
+  const laptop = await local("two/laptop", { "note.md": "one", "img.bin": Buffer.from([0, 1, 2]) })
+  const session = await local("two/session", {})
+  await a.sync(laptop, "can://~/two/")
+  assert.deepEqual((await a.sync(session, "can://~/two/")).pulled, ["img.bin", "note.md"])
+  await writeFile(join(session, "note.md"), "two")
+  await a.sync(session, "can://~/two/")
+  assert.deepEqual((await a.sync(laptop, "can://~/two/")).pulled, ["note.md"])
+  assert.equal(await readFile(join(laptop, "note.md"), "utf8"), "two")
 })
 
-test("rsync adopts identical files it never uploaded, conflicts on different ones", async () => {
+test("text bases are kept for merging; binaries are not", async () => {
+  const a = as(A)
+  const dir = await local("base", { "note.md": "text", "img.bin": Buffer.from([0, 1]) })
+  await a.sync(dir, "can://~/base/")
+  assert.equal(await readFile(join(dir, ".can-base/note.md"), "utf8"), "text")
+  await assert.rejects(readFile(join(dir, ".can-base/img.bin")), { code: "ENOENT" })
+  assert.ok(!(await a.walk("can://~/base/"))[".can-base/note.md"], "the base never uploads")
+})
+
+test("deletes travel both ways, only onto unchanged files", async () => {
+  const a = as(A)
+  const laptop = await local("del/laptop", { "gone.md": "x", "kept.md": "y", "back.md": "z" })
+  const session = await local("del/session", {})
+  await a.sync(laptop, "can://~/del/")
+  await a.sync(session, "can://~/del/")
+  await rm(join(laptop, "gone.md"))
+  assert.deepEqual((await a.sync(laptop, "can://~/del/")).deleted, ["gone.md"])
+  assert.deepEqual((await a.sync(session, "can://~/del/")).removed, ["gone.md"])
+  // Deleted here, edited there: nothing is lost.
+  await rm(join(session, "kept.md"))
+  await writeFile(join(laptop, "kept.md"), "y, edited")
+  await a.sync(laptop, "can://~/del/")
+  assert.deepEqual((await a.sync(session, "can://~/del/")).conflicts, ["kept.md"])
+  assert.equal((await a.cat("can://~/del/kept.md")).toString(), "y, edited")
+})
+
+test("sync reports a conflict instead of overwriting either side", async () => {
+  const a = as(A)
+  const dir = await local("conflict", { "doc.md": "v1" })
+  await a.sync(dir, "can://~/conflict/")
+  await a.put("can://~/conflict/doc.md", "changed elsewhere")
+  await writeFile(join(dir, "doc.md"), "v2 here")
+  assert.deepEqual((await a.sync(dir, "can://~/conflict/")).conflicts, ["doc.md"])
+  assert.equal((await a.cat("can://~/conflict/doc.md")).toString(), "changed elsewhere")
+  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "v2 here")
+})
+
+test("sync adopts identical files it never saw, conflicts on different ones", async () => {
   const a = as(A)
   await a.put("can://~/adopt/same.md", "same")
   await a.put("can://~/adopt/other.md", "theirs")
   const dir = await local("adopt", { "same.md": "same", "other.md": "mine" })
-  const report = await a.rsync(dir, "can://~/adopt/")
+  const report = await a.sync(dir, "can://~/adopt/")
   assert.deepEqual(report.adopted, ["same.md"])
   assert.deepEqual(report.conflicts, ["other.md"])
 })
 
-test("rsync into someone else's folder fails loudly", async () => {
+test("sync into someone else's folder fails loudly", async () => {
   const dir = await local("intrude", { "x.md": "x" })
-  await assert.rejects(as(B).rsync(dir, `can://people/${A}/vault/`), { status: 403 })
+  await assert.rejects(as(B).sync(dir, `can://people/${A}/vault/`), { status: 403 })
 })

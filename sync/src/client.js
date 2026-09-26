@@ -5,16 +5,22 @@
  *   can://people/+1…/vault/note.md   a remote path
  *   can://~/vault/note.md            the same, for whoever the token names
  *
- * `rsync` is one-way, local to remote. It remembers what it uploaded in
- * `.can-sync.json` beside the files, skips what has not changed, and never
- * overwrites a remote file that changed since: that is a conflict to report.
+ * `sync` is two-way. `.can-sync.json` holds the base: each file's hash and
+ * remote version at the last agreement. A side that moved from the base wins;
+ * both moving is a conflict, left untouched and reported. Text bases are
+ * copied into `.can-base/` so a later merge has a common ancestor.
  */
 import { createHash } from "node:crypto"
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises"
+import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
 import { basename, dirname, join, relative, sep } from "node:path"
 import { skipped_name } from "./skip.js"
 
 const MANIFEST = ".can-sync.json"
+const BASE = ".can-base"
+const TEXT_LIMIT = 1024 * 1024
+
+/** Small files with no NUL byte are text, and worth a base copy. */
+export const is_text = (bytes) => bytes.length <= TEXT_LIMIT && !bytes.subarray(0, 8000).includes(0)
 
 export class SyncError extends Error {
   constructor(status, what) {
@@ -99,43 +105,103 @@ export function client({ url, token, fetcher = fetch }) {
       return target
     },
 
-    /** One-way: every local file up, unchanged ones skipped, conflicts reported. */
-    async rsync(local, remote, { concurrency = 8 } = {}) {
-      const base = remote.endsWith("/") ? remote : `${remote}/`
+    /** Every remote file below a folder, name to version. */
+    async walk(path) {
+      const folder = path.endsWith("/") ? path : `${path}/`
+      return (await expect(await call("GET", `${folder}?deep`), `walk ${path}`)).json()
+    },
+
+    /** Two-way: whichever side moved from the base wins; both moving is a conflict. */
+    async sync(local, remote, { concurrency = 8 } = {}) {
+      const folder = remote.endsWith("/") ? remote : `${remote}/`
       const manifest_path = join(local, MANIFEST)
       const manifest = JSON.parse(await readFile(manifest_path, "utf8").catch(() => "{}"))
-      const report = { uploaded: [], unchanged: [], conflicts: [], adopted: [] }
+      const report = { pushed: [], pulled: [], deleted: [], removed: [], adopted: [], unchanged: [], conflicts: [] }
 
-      const one = async (file) => {
-        const name = relative(local, file).split(sep).join("/")
-        const bytes = await readFile(file)
-        const hash = sha(bytes)
-        const known = manifest[name]
-        if (known?.sha === hash) return report.unchanged.push(name)
-        const headers = known ? { "if-match": `"${known.version}"` } : { "if-none-match": "*" }
+      const locals = new Map()
+      for (const file of await walk(local).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
+      const remotes = await api.walk(folder)
+      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)])
+
+      const agree = async (name, bytes, version) => {
+        manifest[name] = { sha: sha(bytes), version }
+        const copy = join(local, BASE, name)
+        if (is_text(bytes)) {
+          await mkdir(dirname(copy), { recursive: true })
+          await writeFile(copy, bytes)
+        } else await rm(copy, { force: true })
+      }
+      const forget = async (name) => {
+        delete manifest[name]
+        await rm(join(local, BASE, name), { force: true })
+      }
+      const fetch_remote = async (name) => {
+        const response = await expect(await call("GET", `${folder}${name}`), `get ${name}`, [200, 404])
+        if (response.status === 404) return null
+        return { bytes: Buffer.from(await response.arrayBuffer()), version: version_of(response) }
+      }
+      const conditional = (base) => (base ? { "if-match": `"${base.version}"` } : { "if-none-match": "*" })
+
+      const one = async (name) => {
+        const base = manifest[name]
+        const file = locals.get(name)
+        const bytes = file ? await readFile(file) : null
+        const local_sha = bytes ? sha(bytes) : null
+        const remote_version = remotes[name] ?? null
+        const local_moved = local_sha !== (base?.sha ?? null)
+        const remote_moved = remote_version !== (base?.version ?? null)
+
         try {
-          manifest[name] = { sha: hash, version: await api.put(`${base}${name}`, bytes, headers) }
-          report.uploaded.push(name)
+          if (!local_moved && !remote_moved) return report.unchanged.push(name)
+          if (local_moved && !remote_moved) {
+            if (!bytes) {
+              await expect(await call("DELETE", `${folder}${name}`, { headers: conditional(base) }), `rm ${name}`, [204])
+              await forget(name)
+              return report.deleted.push(name)
+            }
+            await agree(name, bytes, await api.put(`${folder}${name}`, bytes, conditional(base)))
+            return report.pushed.push(name)
+          }
+          if (!local_moved && remote_moved) {
+            if (!remote_version) {
+              await rm(join(local, name), { force: true })
+              await forget(name)
+              return report.removed.push(name)
+            }
+            const theirs = await fetch_remote(name)
+            if (!theirs) return report.conflicts.push(name)
+            const target = join(local, name)
+            await mkdir(dirname(target), { recursive: true })
+            await writeFile(target, theirs.bytes)
+            await agree(name, theirs.bytes, theirs.version)
+            return report.pulled.push(name)
+          }
+          // Both moved. The same bytes, or both gone, is agreement.
+          if (!bytes && !remote_version) return forget(name)
+          const theirs = remote_version ? await fetch_remote(name) : null
+          if (bytes && theirs && sha(theirs.bytes) === local_sha) {
+            await agree(name, bytes, theirs.version)
+            return report.adopted.push(name)
+          }
+          report.conflicts.push(name)
         } catch (error) {
+          // The remote moved while we worked: a conflict for the next run.
           if (error.status !== 412) throw error
-          // Never synced from here, but the same bytes are already there: adopt them.
-          const remote_file = await call("GET", `${base}${name}`)
-          const remote_bytes = Buffer.from(await remote_file.arrayBuffer())
-          if (!known && remote_file.ok && sha(remote_bytes) === hash) {
-            manifest[name] = { sha: hash, version: remote_file.headers.get("etag").replace(/"/g, "") }
-            report.adopted.push(name)
-          } else report.conflicts.push(name)
+          report.conflicts.push(name)
         }
       }
 
-      const files = await walk(local)
-      for (let i = 0; i < files.length; i += concurrency) await Promise.all(files.slice(i, i + concurrency).map(one))
+      const all = [...names].sort()
+      for (let i = 0; i < all.length; i += concurrency) await Promise.all(all.slice(i, i + concurrency).map(one))
       await writeFile(manifest_path, `${JSON.stringify(manifest, null, 2)}\n`)
+      for (const list of Object.values(report)) list.sort()
       return report
     },
   }
   return api
 }
+
+const version_of = (response) => response.headers.get("etag")?.replace(/"/g, "")
 
 async function is_dir(path) {
   return (await stat(path).catch(() => null))?.isDirectory() ?? false
