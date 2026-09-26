@@ -40,6 +40,11 @@ ENV NODE_ENV=production
 CMD ["node", "bin/sync-service.js"]
 EOF
 
+# Every overwrite and delete stays recoverable: old versions live 30 days.
+echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } } ] }' \
+  > "$stage/lifecycle.json"
+gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
+
 gcloud run deploy brayness-sync \
   --project "$project" \
   --region "$region" \
