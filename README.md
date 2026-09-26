@@ -712,7 +712,9 @@ gcloud compute images create brayness-host-v<N> --family brayness-host \
   --source-disk brayness-1-boot --source-disk-zone us-central1-a
 ```
 
-v2 added Node; a fresh host from it printed `node v22.23.3 present` at bootstrap.
+v3 carries Node and a source tree with only `host/`; a fresh host from it
+printed `node v22.23.3 present` at bootstrap. Delete older images once a new one
+passes `--smoke`.
 
 The image already carries a grown root partition, so `growpart` reports NOCHANGE
 on a host built from it; 20 GB is the floor because an image cannot be smaller
