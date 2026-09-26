@@ -6,7 +6,9 @@
 // Needs the dev host (`webspace dev host up`).
 //
 //   npm run check:host
-//   API=http://127.0.0.1:8080 TERM_URL=http://127.0.0.1:8090 npm run check:host
+//   API=http://127.0.0.1:8080 TERM_URL=http://127.0.0.1:8090 \
+//   KILL="gcloud compute ssh brayness-1 --zone=us-central1-a --command='sudo kill -9 {pid}'" \
+//   npm run check:host
 
 import { execFileSync } from "node:child_process"
 import assert from "node:assert/strict"
@@ -14,7 +16,8 @@ import { after, before, describe, test } from "node:test"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const TERM_URL = process.env.TERM_URL ?? "http://127.0.0.1:18090"
-const LIMA = process.env.LIMA ?? "fc-local"
+// How to kill a VM process on the host, as a crash would. {pid} is replaced.
+const KILL = process.env.KILL ?? "limactl shell fc-local sudo kill -9 {pid}"
 
 const made = new Set()
 
@@ -347,7 +350,7 @@ describe("h3 lessons", () => {
     const count = 3000
     await sh(session.id, `mkdir -p /root/h4a && cd /root/h4a && i=0; while [ $i -lt ${count} ]; do echo $i > f$i; i=$((i+1)); done`, 120)
     // What a host crash looks like: the VM process dies, no idle, no sync.
-    execFileSync("limactl", ["shell", LIMA, "sudo", "kill", "-9", String(session.pid)], { stdio: "ignore" })
+    execFileSync("sh", ["-c", KILL.replaceAll("{pid}", String(session.pid))], { stdio: "ignore" })
     const reload = await call("POST", `/v1/sessions/${session.id}/reload`)
     assert.equal(reload.status, 200, reload.text)
     const empty = await sh(session.id, `cd /root/h4a || exit 9; ls | wc -l; find . -type f -empty | wc -l`)
