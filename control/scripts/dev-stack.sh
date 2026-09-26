@@ -80,4 +80,8 @@ cd "$DIR"
 # Lima's forward of the API port. Browsers resolve *.localhost locally.
 site_url_default='http://{id}.localhost:18080/'
 export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
-exec python3 -m orchestrator serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"
+# The JavaScript host (h4b); BRAYNESS_HOST=python runs the old one to compare.
+if [ "${BRAYNESS_HOST:-node}" = python ]; then
+  exec python3 -m orchestrator serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"
+fi
+exec node host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

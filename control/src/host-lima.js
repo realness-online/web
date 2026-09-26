@@ -74,7 +74,7 @@ export async function serve(lima, config, name) {
 export async function down(lima, config, name, { mode = "stop" } = {}) {
   step(`stopping the dev stack${mode === "delete" ? " and the Lima VM" : ""}`)
   await lima.run(
-    'pkill -f "[p]ython3 -m orchestrator" || true; pkill -x firecracker || true',
+    'pkill -f "[p]ython3 -m orchestrator" || true; pkill -f "[n]ode host/main.js" || true; pkill -x firecracker || true',
     { user: "root" },
   )
 

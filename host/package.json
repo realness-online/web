@@ -1,0 +1,13 @@
+{
+  "name": "brayness-host",
+  "private": true,
+  "type": "module",
+  "description": "The session host: seed, sessions, API, terminal, door. Standard library only.",
+  "scripts": {
+    "serve": "node main.js serve"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {}
+}
