@@ -12,9 +12,9 @@
 import { createHash } from "node:crypto"
 import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises"
 import { basename, dirname, join, relative, sep } from "node:path"
+import { skipped_name } from "./skip.js"
 
 const MANIFEST = ".can-sync.json"
-const SKIP = new Set([".git", "node_modules", ".DS_Store", MANIFEST])
 
 export class SyncError extends Error {
   constructor(status, what) {
@@ -144,7 +144,7 @@ async function is_dir(path) {
 async function walk(dir) {
   const found = []
   for (const entry of await readdir(dir, { withFileTypes: true })) {
-    if (SKIP.has(entry.name)) continue
+    if (skipped_name(entry.name)) continue
     const path = join(dir, entry.name)
     if (entry.isDirectory()) found.push(...(await walk(path)))
     else if (entry.isFile()) found.push(path)

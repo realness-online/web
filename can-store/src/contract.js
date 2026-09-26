@@ -76,6 +76,15 @@ export function contract({ test, assert, make }) {
     assert.deepEqual(await store.list("people/+2/"), { files: [], folders: [] })
   })
 
+  test("walk maps every file under a prefix to its version", async () => {
+    const store = await make()
+    const a = await store.put("people/+1/vault/a.md", "a")
+    const b = await store.put("people/+1/vault/deep/b.md", "b")
+    await store.put("people/+1/other.md", "o")
+    assert.deepEqual(await store.walk("people/+1/vault/"), { "a.md": a, "deep/b.md": b })
+    assert.deepEqual(await store.walk("people/+2/"), {})
+  })
+
   test("two racing creates: exactly one wins", async () => {
     const store = await make()
     const results = await Promise.allSettled(

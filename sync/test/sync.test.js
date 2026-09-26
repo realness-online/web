@@ -55,6 +55,13 @@ test("an owner writes, reads, lists, and deletes their own files", async () => {
   assert.equal(await status("GET", `people/${A}/vault/note.md`, { headers: as(A) }), 404)
 })
 
+test("a deep list maps every file below to its etag", async () => {
+  const put = await call("PUT", `people/${A}/deep/x/y.md`, { headers: as(A), body: "y" })
+  const listed = await (await call("GET", `people/${A}/deep/?deep`, { headers: as(A) })).json()
+  assert.deepEqual(listed, { "x/y.md": put.headers.get("etag").replace(/"/g, "") })
+  assert.equal(await status("GET", `people/${A}/deep/?deep`, { headers: as(B) }), 403)
+})
+
 test("another person never reaches my private files", async () => {
   await call("PUT", `people/${A}/vault/secret.md`, { headers: as(A), body: "secret" })
   await call("PUT", `people/${A}/relations.html.gz`, { headers: as(A), body: "friends" })

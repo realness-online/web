@@ -5,6 +5,7 @@
  *   put(key, body, { if_version }) new version
  *   delete(key, { if_version })
  *   list(prefix)                   { files, folders } directly under it
+ *   walk(prefix)                   { relative name: version } for every file below
  *
  * `if_version` makes a write conditional: a version string must match, and
  * `null` means the key must not exist yet. A mismatch throws a Conflict.
@@ -88,6 +89,18 @@ export function disk(root) {
       const shown = entries.filter((entry) => !entry.name.endsWith(".tmp"))
       const names = (test) => shown.filter(test).map((entry) => entry.name).sort()
       return { files: names((e) => e.isFile()), folders: names((e) => e.isDirectory()) }
+    },
+
+    async walk(prefix) {
+      const folder = prefix.replace(/\/?$/, "/").replace(/^\/$/, "")
+      const found = {}
+      const visit = async (under) => {
+        const { files, folders } = await this.list(`${folder}${under}`)
+        for (const name of files) found[`${under}${name}`] = (await get(`${folder}${under}${name}`)).version
+        for (const name of folders) await visit(`${under}${name}/`)
+      }
+      await visit("")
+      return found
     },
   }
 }

@@ -109,5 +109,24 @@ export function create_gcs({ bucket, token, prefix = "" }) {
       } while (page)
       return { files: files.filter(Boolean).sort(), folders: folders.sort() }
     },
+
+    async walk(folder) {
+      const scope = `${prefix}${folder.replace(/\/?$/, "/").replace(/^\/$/, "")}`
+      const found = {}
+      let page = ""
+      do {
+        const query = new URLSearchParams({ prefix: scope, fields: "items(name,generation),nextPageToken" })
+        if (page) query.set("pageToken", page)
+        const response = await call(`${API}/${bucket}/o?${query}`)
+        if (!response.ok) await fail(`walk ${folder}`, response)
+        const listed = await response.json()
+        for (const item of listed.items ?? []) {
+          const name = item.name.slice(scope.length)
+          if (name && !name.endsWith("/")) found[name] = item.generation
+        }
+        page = listed.nextPageToken ?? ""
+      } while (page)
+      return found
+    },
   }
 }

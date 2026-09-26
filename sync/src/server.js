@@ -3,6 +3,7 @@
  * then storage, then one log line with phone numbers hashed.
  *
  *   GET    /people/+A/posters/     list a folder (trailing slash)
+ *   GET    /people/+A/vault/?deep  every file below, name to version
  *   GET    /people/+A/index.html.gz
  *   PUT    /people/+A/vault/note.md   If-Match: "<version>" or If-None-Match: *
  *   DELETE /people/+A/vault/note.md   If-Match optional
@@ -98,7 +99,8 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
 
     if (action === "list") {
       response.writeHead(200, { "content-type": "application/json" })
-      return response.end(JSON.stringify(await storage.list(path)))
+      const deep = new URLSearchParams((request.url ?? "").split("?")[1] ?? "").has("deep")
+      return response.end(JSON.stringify(await (deep ? storage.walk(path) : storage.list(path))))
     }
     if (action === "get") {
       const file = await storage.get(path)
