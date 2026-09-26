@@ -1,0 +1,20 @@
+{
+  "name": "brayness-sync",
+  "private": true,
+  "type": "module",
+  "description": "The sync service: the only holder of storage keys",
+  "bin": {
+    "sync-service": "./bin/sync-service.js"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.js'",
+    "start": "node ./bin/sync-service.js",
+    "dev": "node ./bin/sync-service.js --dev"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {
+    "brayness-can": "file:../can"
+  }
+}
