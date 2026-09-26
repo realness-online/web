@@ -15,6 +15,7 @@
     "node": ">=22.19.0"
   },
   "dependencies": {
-    "brayness-can": "file:../can"
+    "brayness-can": "file:../can",
+    "brayness-can-store": "file:../can-store"
   }
 }

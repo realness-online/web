@@ -7,7 +7,7 @@
  */
 import { resolve } from "node:path"
 import { google_certs } from "brayness-can"
-import { disk } from "../src/disk.js"
+import { disk } from "brayness-can-store/disk"
 import { dev_issuer } from "../src/dev-token.js"
 import { rights } from "../src/rights.js"
 import { sync_service } from "../src/server.js"

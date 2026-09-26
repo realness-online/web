@@ -14,6 +14,9 @@ code that builds it and serves it.
   are the host-shell tools.
 - `can/` - Node, no dependencies. `can()`, rights pages, and phone identity;
   every door imports it. `cd can && npm test`.
+- `can-store/` - Node, no dependencies. Where the paths `can()` asks about
+  live: one adapter per provider (`./disk` now), and a contract every adapter
+  passes. `cd can-store && npm test`.
 - `sync/` - Node. The sync service, the only holder of storage keys: phone
   token, then `can()`, then storage. `npm run dev` runs it locally on disk.
 - Examples live in `brayness-examples`; sessions download them with giget.
