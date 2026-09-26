@@ -3,9 +3,9 @@
 #
 #   sync/scripts/deploy.sh                 realness-development
 #
-# IDENTITY is the Firebase project whose phone sign-in the service trusts.
-# It is production Realness sign-in even when storage is the dev bucket: one
-# project only, since one number has a different uid in each project.
+# IDENTITY is the Firebase project whose phone sign-in the service trusts:
+# the deploy's own project unless set. One project only, since one number
+# has a different uid in each project and the pin would refuse the other.
 #   PROJECT=... BUCKET=... sync/scripts/deploy.sh
 #
 # Stages can, can-store, and sync into dist/sync-deploy so the file: links
@@ -19,7 +19,7 @@ bucket="${BUCKET:-$project.appspot.com}"
 region="${REGION:-us-central1}"
 account="brayness-sync@$project.iam.gserviceaccount.com"
 origins="${ORIGINS:-https://realness.local,https://realness.online}"
-identity="${IDENTITY:-realness-online}"
+identity="${IDENTITY:-$project}"
 stage="$root/dist/sync-deploy"
 
 rm -rf "$stage"

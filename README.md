@@ -21,7 +21,8 @@ code that builds it and serves it.
   token, then `can()`, then storage. `npm run dev` runs it locally on disk;
   `sync/scripts/deploy.sh` deploys it to Cloud Run in realness-development.
   `sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
-  one-way rsync, all through the service with `TOKEN=` set.
+  one-way rsync, all through the service. `login` signs in through Realness
+  in your browser and keeps it in the macOS keychain; `TOKEN=` still wins.
 - Examples live in `brayness-examples`; sessions download them with giget.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check

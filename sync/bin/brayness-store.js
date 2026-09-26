@@ -8,17 +8,37 @@
  *   brayness-store cp    can://~/vault/note.md .
  *   brayness-store rm    can://~/vault/note.md
  *   brayness-store rsync ~/brayness/plans can://~/plans/
+ *   brayness-store login | logout | whoami
  *
- * TOKEN is a Realness sign-in token; public reads work without one.
- * SYNC_URL picks the service (default: the realness-development deploy).
+ * `login` signs in through Realness in your browser and keeps the result in
+ * the macOS keychain; every other command then signs itself. TOKEN, when set,
+ * wins. SYNC_URL picks the service; REALNESS_URL picks the sign-in site.
  */
-import { client, SyncError } from "../src/client.js"
+import { execFile } from "node:child_process"
+import { promisify } from "node:util"
+import { client, phone_of, SyncError } from "../src/client.js"
+import { keychain, login, token_source } from "../src/login.js"
 
 const DEFAULT_URL = "https://brayness-sync-639469569733.us-central1.run.app"
+const REALNESS = process.env.REALNESS_URL ?? "https://realness.online"
 const [command, ...args] = process.argv.slice(2)
-const store = client({ url: process.env.SYNC_URL ?? DEFAULT_URL, token: process.env.TOKEN })
+const signed_in = ["login", "logout"].includes(command) ? null : await token_source()()
+const store = client({ url: process.env.SYNC_URL ?? DEFAULT_URL, token: signed_in })
+const mask = (phone) => (phone ? `${phone.slice(0, 2)}…${phone.slice(-2)}` : "nobody")
 
 const commands = {
+  async login() {
+    console.log(`Opening ${REALNESS}/sign-on in your browser. Click to sign Brayness in.`)
+    const { id_token } = await login({ realness: REALNESS, open: (url) => promisify(execFile)("open", [url]) })
+    console.log(`Signed in as ${mask(phone_of(id_token))}. The keychain holds it.`)
+  },
+  async logout() {
+    await keychain.remove()
+    console.log("Signed out; the keychain entry is gone.")
+  },
+  async whoami() {
+    console.log(signed_in ? `Signed in as ${mask(phone_of(signed_in))}` : "Not signed in; run brayness-store login")
+  },
   async ls([path = "can://~/"]) {
     for (const name of await store.ls(path)) console.log(name)
   },
@@ -41,7 +61,7 @@ const commands = {
 }
 
 if (!commands[command]) {
-  console.error("usage: brayness-store ls|cat|cp|rm|rsync ... (see the header of this file)")
+  console.error("usage: brayness-store login|logout|whoami|ls|cat|cp|rm|rsync ... (see the header of this file)")
   process.exit(2)
 }
 try {
