@@ -96,12 +96,13 @@ test("edits travel both ways between two folders", async () => {
   assert.equal(await readFile(join(laptop, "note.md"), "utf8"), "two")
 })
 
-test("text bases are kept for merging; binaries are not", async () => {
+test("bases are kept for prose and code, not binaries or posters", async () => {
   const a = as(A)
-  const dir = await local("base", { "note.md": "text", "img.bin": Buffer.from([0, 1]) })
+  const dir = await local("base", { "note.md": "text", "img.bin": Buffer.from([0, 1]), "poster.svg": "<svg/>" })
   await a.sync(dir, "can://~/base/")
   assert.equal(await readFile(join(dir, ".can-base/note.md"), "utf8"), "text")
   await assert.rejects(readFile(join(dir, ".can-base/img.bin")), { code: "ENOENT" })
+  await assert.rejects(readFile(join(dir, ".can-base/poster.svg")), { code: "ENOENT" })
   assert.ok(!(await a.walk("can://~/base/"))[".can-base/note.md"], "the base never uploads")
 })
 

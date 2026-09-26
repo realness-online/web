@@ -7,8 +7,8 @@
  *
  * `sync` is two-way. `.can-sync.json` holds the base: each file's hash and
  * remote version at the last agreement. A side that moved from the base wins.
- * Both moving: text merges three ways against the copy in `.can-base/`; when
- * edits overlap, or for binaries, theirs lands beside ours as `x.conflict.ext`
+ * Both moving: prose and code merge three ways against `.can-base/`; when
+ * edits overlap, or for anything else, theirs lands beside ours as `x.conflict.ext`
  * and both travel. An edit beats a delete. A remote change mid-run is left
  * for the next run and reported as a conflict.
  */
@@ -28,8 +28,12 @@ const MANIFEST = ".can-sync.json"
 const BASE = ".can-base"
 const TEXT_LIMIT = 1024 * 1024
 
-/** Small files with no NUL byte are text, and worth a base copy. */
-export const is_text = (bytes) => bytes.length <= TEXT_LIMIT && !bytes.subarray(0, 8000).includes(0)
+// Prose, code, and config merge; generated text like SVG posters keeps both.
+const MERGEABLE = /\.(md|markdown|txt|json|jsonc|ya?ml|toml|csv|tsv|js|ts|jsx|tsx|vue|css|styl|scss|html|py|rs|go|sh|lua)$/i
+
+/** Small text files people write are worth a base copy, for merging. */
+export const mergeable = (name, bytes) =>
+  MERGEABLE.test(name) && bytes.length <= TEXT_LIMIT && !bytes.subarray(0, 8000).includes(0)
 
 export class SyncError extends Error {
   constructor(status, what) {
@@ -138,7 +142,7 @@ export function client({ url, token, fetcher = fetch }) {
       const agree = async (name, bytes, version) => {
         manifest[name] = { sha: sha(bytes), version }
         const copy = join(local, BASE, name)
-        if (is_text(bytes)) {
+        if (mergeable(name, bytes)) {
           await mkdir(dirname(copy), { recursive: true })
           await writeFile(copy, bytes)
         } else await rm(copy, { force: true })
@@ -207,7 +211,7 @@ export function client({ url, token, fetcher = fetch }) {
             return report.adopted.push(name)
           }
           const ancestor = base && (await readFile(join(local, BASE, name)).catch(() => null))
-          const merged = ancestor && is_text(bytes) && is_text(theirs.bytes) && (await merge(local, bytes, ancestor, theirs.bytes))
+          const merged = ancestor && mergeable(name, bytes) && mergeable(name, theirs.bytes) && (await merge(local, bytes, ancestor, theirs.bytes))
           if (merged) {
             await writeFile(join(local, name), merged)
             await agree(name, merged, await api.put(`${folder}${name}`, merged, conditional(theirs)))
