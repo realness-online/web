@@ -1,0 +1,105 @@
+/**
+ * The gsutil-style client against a real sync service on disk.
+ */
+import { after, before, test } from "node:test"
+import assert from "node:assert/strict"
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
+import { randomUUID } from "node:crypto"
+import { join } from "node:path"
+import { disk } from "brayness-can-store/disk"
+import { client } from "../src/client.js"
+import { dev_issuer } from "../src/dev-token.js"
+import { rights } from "../src/rights.js"
+import { sync_service } from "../src/server.js"
+
+const A = "+15555550100"
+const B = "+15555550101"
+const root = new URL(`../../dist/client-test-${randomUUID()}/`, import.meta.url).pathname
+const issuer = dev_issuer()
+const storage = disk(join(root, "bucket"))
+let server
+let url
+
+before(async () => {
+  server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })
+  await new Promise((done) => server.listen(0, "127.0.0.1", done))
+  url = `http://127.0.0.1:${server.address().port}`
+})
+after(async () => {
+  server.close()
+  await rm(root, { recursive: true, force: true })
+})
+
+const as = (phone) => client({ url, token: issuer.token(phone) })
+const local = async (name, files) => {
+  const dir = join(root, name)
+  for (const [path, body] of Object.entries(files)) {
+    await mkdir(join(dir, path, ".."), { recursive: true })
+    await writeFile(join(dir, path), body)
+  }
+  return dir
+}
+
+test("can://~ names the token's own folder", () => {
+  assert.equal(as(A).key("can://~/vault/x.md"), `people/${A}/vault/x.md`)
+  assert.equal(as(A).key("can://~"), `people/${A}`)
+  assert.throws(() => client({ url: "x" }).key("can://~/x"), /needs a token/)
+})
+
+test("cp up, ls, cat, cp down, rm", async () => {
+  const a = as(A)
+  const dir = await local("cp", { "note.md": "hello" })
+  assert.equal(await a.cp(join(dir, "note.md"), "can://~/vault/"), "can://~/vault/note.md")
+  assert.deepEqual(await a.ls("can://~/vault"), ["note.md"])
+  assert.equal((await a.cat("can://~/vault/note.md")).toString(), "hello")
+  const down = await a.cp("can://~/vault/note.md", join(dir, "down") + "/")
+  assert.equal(await readFile(down, "utf8"), "hello")
+  await a.rm("can://~/vault/note.md")
+  assert.deepEqual(await a.ls("can://~/vault/"), [])
+})
+
+test("another person is refused, with the status", async () => {
+  await as(A).put("can://~/vault/secret.md", "mine")
+  await assert.rejects(as(B).cat(`can://people/${A}/vault/secret.md`), { status: 403 })
+  await assert.rejects(client({ url }).ls(`can://people/${A}/vault/`), { status: 403 })
+})
+
+test("rsync uploads, then skips what has not changed", async () => {
+  const a = as(A)
+  const dir = await local("plans", { "a.md": "a", "sub/b.md": "b", ".DS_Store": "junk", ".git/HEAD": "ref" })
+  const first = await a.rsync(dir, "can://~/plans/")
+  assert.deepEqual(first.uploaded.sort(), ["a.md", "sub/b.md"])
+  const second = await a.rsync(dir, "can://~/plans/")
+  assert.deepEqual(second.unchanged.sort(), ["a.md", "sub/b.md"])
+  assert.deepEqual(second.uploaded, [])
+  await writeFile(join(dir, "a.md"), "a, edited")
+  const third = await a.rsync(dir, "can://~/plans/")
+  assert.deepEqual(third.uploaded, ["a.md"])
+  assert.deepEqual(await a.ls("can://~/plans/"), ["sub/", "a.md"])
+})
+
+test("rsync reports a conflict instead of overwriting a remote change", async () => {
+  const a = as(A)
+  const dir = await local("conflict", { "doc.md": "v1" })
+  await a.rsync(dir, "can://~/conflict/")
+  await a.put("can://~/conflict/doc.md", "changed elsewhere")
+  await writeFile(join(dir, "doc.md"), "v2 here")
+  const report = await a.rsync(dir, "can://~/conflict/")
+  assert.deepEqual(report.conflicts, ["doc.md"])
+  assert.equal((await a.cat("can://~/conflict/doc.md")).toString(), "changed elsewhere")
+})
+
+test("rsync adopts identical files it never uploaded, conflicts on different ones", async () => {
+  const a = as(A)
+  await a.put("can://~/adopt/same.md", "same")
+  await a.put("can://~/adopt/other.md", "theirs")
+  const dir = await local("adopt", { "same.md": "same", "other.md": "mine" })
+  const report = await a.rsync(dir, "can://~/adopt/")
+  assert.deepEqual(report.adopted, ["same.md"])
+  assert.deepEqual(report.conflicts, ["other.md"])
+})
+
+test("rsync into someone else's folder fails loudly", async () => {
+  const dir = await local("intrude", { "x.md": "x" })
+  await assert.rejects(as(B).rsync(dir, `can://people/${A}/vault/`), { status: 403 })
+})
