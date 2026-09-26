@@ -229,6 +229,21 @@ were close.
   path - RAM binds, storage is the cheapest dimension. The measurement script is
   archived with the checks.
 
+
+### Pi inside a session
+
+Gotchas that bit; carry them through the h4 port.
+
+- A Pi tool allowlist is not a security boundary.
+- Pi runs as a plain user; boot setup and the command runner stay root.
+- System tools come baked in the template; sessions never `apt install`.
+- Egress is filtered on the host, where guest root cannot reach.
+- The terminal page draws libghostty-vt on a canvas; the relay stays blind.
+- Pi outlives the connection; a reload reattaches, never `/new`.
+- `TMPDIR=/var/tmp` keeps jiti's cache; wipes skip it.
+- Measure Pi readiness by key echo, never `-p`.
+- Pi writes nothing before a reply: wipe its files, never its folder.
+
 ## What is proven
 
 Counts are checks passed; the per-node sections below carry the commands and the
