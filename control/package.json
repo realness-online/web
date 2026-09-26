@@ -10,7 +10,8 @@
     "webspace": "node ./bin/webspace.js",
     "test": "node --test 'test/*.test.js'",
     "check:browser": "node test/browser.check.js",
-    "check:publish": "node test/publish.check.js"
+    "check:publish": "node test/publish.check.js",
+    "check:host": "node --test --test-concurrency=1 test/host.check.js"
   },
   "engines": {
     "node": ">=22.19.0"
