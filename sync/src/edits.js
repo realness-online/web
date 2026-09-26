@@ -8,12 +8,15 @@ import { join } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 
 export function edit_log(path) {
-  if (!existsSync(path)) return { last: () => undefined, explained: () => false, close() {} }
+  if (!existsSync(path)) return { last: () => undefined, since: () => [], explained: () => false, close() {} }
   const db = new DatabaseSync(path, { readOnly: true })
   const query = db.prepare("SELECT sha, session, turn, tool FROM edit WHERE path = ? ORDER BY id DESC LIMIT 1")
   const last = (file) => query.get(file)
+  const after = db.prepare("SELECT sha, session, turn, tool, tool_call, ts FROM edit WHERE path = ? AND ts > ? ORDER BY id")
   return {
     last,
+    /** Every logged edit to a path after an ISO time, oldest first. */
+    since: (file, ts) => after.all(file, ts),
     /** `sha` null asks whether a session left the file absent. */
     explained: (file, sha) => {
       const edit = last(file)

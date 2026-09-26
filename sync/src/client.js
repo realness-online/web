@@ -17,6 +17,7 @@
 import { createHash } from "node:crypto"
 import { copyFile, mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises"
 import { edit_log, edit_log_path } from "./edits.js"
+import { apply, load_calls, replayable } from "./replay.js"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
 import { skipped, skipped_name } from "./skip.js"
@@ -123,7 +124,7 @@ export function client({ url, token, fetcher = fetch }) {
       const pair = { local: resolve(local), remote: key(folder) }
       const record_path = join(state, "sync", `${sha(`${pair.local}\n${pair.remote}`).slice(0, 16)}.json`)
       const manifest = JSON.parse(await readFile(record_path, "utf8").catch(() => "{}")).files ?? {}
-      const report = { pushed: [], pulled: [], deleted: [], held: [], removed: [], adopted: [], kept_both: [], unchanged: [], conflicts: [] }
+      const report = { pushed: [], pulled: [], deleted: [], held: [], removed: [], adopted: [], replayed: [], kept_both: [], unchanged: [], conflicts: [], sessions: {} }
 
       const log = edit_log(edit_log_path(state))
       const locals = new Map()
@@ -133,7 +134,7 @@ export function client({ url, token, fetcher = fetch }) {
       const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name)))
 
       const file_of = (name) => join(pair.local, ...name.split("/"))
-      const agree = (name, bytes, version) => (manifest[name] = { sha: sha(bytes), version })
+      const agree = (name, bytes, version) => (manifest[name] = { sha: sha(bytes), version, at: new Date().toISOString() })
       const forget = (name) => delete manifest[name]
       const fetch_remote = async (name) => {
         const response = await expect(await call("GET", `${folder}${name}`), `get ${name}`, [200, 404])
@@ -196,7 +197,18 @@ export function client({ url, token, fetcher = fetch }) {
             agree(name, bytes, theirs.version)
             return report.adopted.push(name)
           }
+          // Ours is only session edits since we agreed: apply them to theirs.
+          const rows = base?.at && replayable(log.since(file_of(name), base.at), local_sha)
+          const replayed = rows && apply(theirs.bytes.toString("utf8"), await load_calls(rows))
+          if (typeof replayed === "string") {
+            const merged = Buffer.from(replayed)
+            await writeFile(join(local, name), merged)
+            agree(name, merged, await api.put(`${folder}${name}`, merged, conditional(theirs)))
+            return report.replayed.push(name)
+          }
           // Keep both: theirs lands beside ours under a new name, both travel.
+          const ours = log.explained(file_of(name), local_sha) && log.last(file_of(name))
+          if (ours) report.sessions[name] = { session: ours.session, turn: ours.turn }
           const copy = conflict_name(name, (taken) => locals.has(taken) || taken in remotes)
           locals.set(copy, join(local, copy))
           await writeFile(join(local, copy), theirs.bytes)
@@ -215,7 +227,7 @@ export function client({ url, token, fetcher = fetch }) {
       log.close()
       await mkdir(dirname(record_path), { recursive: true })
       await writeFile(record_path, `${JSON.stringify({ ...pair, files: manifest }, null, 2)}\n`)
-      for (const list of Object.values(report)) list.sort()
+      for (const list of Object.values(report)) if (Array.isArray(list)) list.sort()
       return report
     },
   }

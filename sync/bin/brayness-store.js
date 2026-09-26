@@ -56,6 +56,7 @@ const commands = {
     const [local, remote] = args.filter((arg) => arg !== "--deletes")
     const report = await store.sync(local, remote, { deletes: args.includes("--deletes") ? "all" : "explained" })
     for (const [kind, names] of Object.entries(report)) {
+      if (!Array.isArray(names)) continue
       if (names.length) console.log(`${kind}: ${names.length}${["conflicts", "kept_both", "held"].includes(kind) ? `\n  ${names.join("\n  ")}` : ""}`)
     }
     if (report.conflicts.length) process.exitCode = 1

@@ -4,7 +4,7 @@
 import { after, before, test } from "node:test"
 import assert from "node:assert/strict"
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 import { join } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 import { disk } from "brayness-can-store/disk"
@@ -221,4 +221,34 @@ test("sync adopts identical files it never saw, keeps both of different ones", a
 test("sync into someone else's folder fails loudly", async () => {
   const dir = await local("intrude", { "x.md": "x" })
   await assert.rejects(as(B).sync(dir, `can://people/${A}/vault/`), { status: 403 })
+})
+
+test("both changed: ours from session edits replays onto theirs", async () => {
+  const a = as(A)
+  const state = join(root, "replay-state")
+  const dir = await local("replay", { "doc.md": "title\nbody\nend\n", "clash.md": "one\n" })
+  await a.sync(dir, "can://~/replay/", { state })
+  const session = join(root, "replay-session.jsonl")
+  const call = (id, path, oldText, newText) =>
+    JSON.stringify({ type: "message", message: { role: "assistant", content: [{ type: "toolCall", id, name: "edit", arguments: { path, edits: [{ oldText, newText }] } }] } })
+  await writeFile(session, [call("c1", "doc.md", "body", "BODY"), call("c2", "clash.md", "one", "ours")].join("\n") + "\n")
+  await writeFile(join(dir, "doc.md"), "title\nBODY\nend\n")
+  await writeFile(join(dir, "clash.md"), "ours\n")
+  const db = new DatabaseSync(join(state, "edits.db"))
+  db.exec("CREATE TABLE edit (id INTEGER PRIMARY KEY, path TEXT, sha TEXT, session TEXT, turn INTEGER, tool TEXT, tool_call TEXT, ts TEXT)")
+  const log = db.prepare("INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, ?, ?, 4, 'edit', ?, ?)")
+  const hash = (text) => createHash("sha256").update(text).digest("hex")
+  const later = new Date(Date.now() + 1000).toISOString()
+  log.run(join(dir, "doc.md"), hash("title\nBODY\nend\n"), session, "c1", later)
+  log.run(join(dir, "clash.md"), hash("ours\n"), session, "c2", later)
+  db.close()
+  await a.put("can://~/replay/doc.md", "TITLE\nbody\nend\n")
+  await a.put("can://~/replay/clash.md", "theirs\n")
+
+  const report = await a.sync(dir, "can://~/replay/", { state })
+  assert.deepEqual(report.replayed, ["doc.md"])
+  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "TITLE\nBODY\nend\n")
+  assert.equal((await a.cat("can://~/replay/doc.md")).toString(), "TITLE\nBODY\nend\n")
+  assert.deepEqual(report.kept_both, ["clash.md"], "their change removed our oldText")
+  assert.deepEqual(report.sessions["clash.md"], { session, turn: 4 })
 })

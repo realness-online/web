@@ -14,6 +14,7 @@
  * Sign in first with `brayness-store login`. BRAYNESS_ROOT picks the harness;
  * otherwise the nearest folder above holding plans/.
  */
+import { basename } from "node:path"
 import { client, state_dir, SYNC_URL, SyncError } from "../src/client.js"
 import { find_root, sync_harness } from "../src/harness.js"
 import { token_source } from "../src/login.js"
@@ -29,14 +30,17 @@ const session = option("session")
 const turn = Number(option("turn") ?? 0)
 const args = rest.filter((arg) => arg !== "--deletes")
 
+const who = (ours) => (ours ? ` (ours: turn ${ours.turn} of ${basename(ours.session)})` : "")
+
 async function sync() {
   const token = await token_source()()
   if (!token) throw new Error("not signed in; run brayness-store login")
   const { synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes })
   for (const [path, report] of Object.entries(synced)) {
-    const moved = Object.entries(report).filter(([kind, names]) => kind !== "unchanged" && names.length)
+    const moved = Object.entries(report).filter(([kind, names]) => Array.isArray(names) && kind !== "unchanged" && names.length)
     console.log(`${path}: ${moved.map(([kind, names]) => `${kind} ${names.length}`).join(", ") || "unchanged"}`)
-    for (const kind of ["kept_both", "held", "conflicts"]) for (const name of report[kind]) console.log(`  ${kind}: ${name}`)
+    for (const kind of ["kept_both", "held", "conflicts"])
+      for (const name of report[kind]) console.log(`  ${kind}: ${name}${who(report.sessions[name])}`)
     if (report.conflicts.length) process.exitCode = 1
   }
   for (const [path, reason] of Object.entries(refused)) console.error(`refused ${path}: ${reason}`)
