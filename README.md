@@ -12,6 +12,8 @@ code that builds it and serves it.
   stdlib). The live side: it runs on the host and owns sessions. Its `scripts/`
   are the host syscalls, its `guest/` runs inside a session, and its `clients/`
   are the host-shell tools.
+- `can/` - Node, no dependencies. `can()`, rights pages, and phone identity;
+  every door imports it. `cd can && npm test`.
 - Examples live in `brayness-examples`; sessions download them with giget.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
