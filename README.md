@@ -685,8 +685,8 @@ involved. Resume with `gcloud compute instances start brayness-1`.
 
 ### A host from the image
 
-`brayness-host` (family `brayness-host`) bakes /opt/fc, the scripts and the idle
-guard into a 20 GB-geometry image, so a host is one command:
+The family `brayness-host` bakes /opt/fc (pinned Node included), the scripts and
+the idle guard into a 20 GB-geometry image, so a host is one command:
 
 ```bash
 node control/bin/webspace.js prod host up brayness-2 --smoke
@@ -703,6 +703,16 @@ execs in it, destroys it, and checks the session's machine-id is not the seed's.
 Measured: **2m50s** from nothing to a host that serves a session (the seed is
 36s of that), and 5/5 on the smoke test. `webspace prod host down brayness-2
 --delete` takes it back to the image and leaves no disk behind.
+
+Bake a new image from a stopped host that has the change; the family serves the
+newest, and older images stay for rollback:
+
+```bash
+gcloud compute images create brayness-host-v<N> --family brayness-host \
+  --source-disk brayness-1-boot --source-disk-zone us-central1-a
+```
+
+v2 added Node; a fresh host from it printed `node v22.23.3 present` at bootstrap.
 
 The image already carries a grown root partition, so `growpart` reports NOCHANGE
 on a host built from it; 20 GB is the floor because an image cannot be smaller
