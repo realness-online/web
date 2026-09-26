@@ -20,7 +20,7 @@ printf '%s\n' "$pi_version" > "$stage/.pi-version"
 
 # The harness is an allowlist. Do not copy personal config, sessions, or work/.
 include=(AGENTS.md README.md LICENSE package.json bin skills prompts extensions
-  .pi/agent/settings.json .pi/agent/models.json .pi/agent/subagents.json
+  .pi/agent/settings.json .pi/agent/models.json
   .pi/agent/npm/package.json)
 [[ ! -d "$root/themes" ]] || include+=(themes)
 tar -C "$root" -cf - --no-mac-metadata \
@@ -35,8 +35,9 @@ ln -s ../../prompts "$stage/.pi/agent/prompts"
 # The Mac's model list names logins the ship tree does not carry. Shipped Pi
 # talks to one model: the realness proxy, which picks the real one.
 # Packages a shipped harness cannot use cost startup seconds on two vCPUs:
-# the proxy is the only model (oauth), no MCP servers ship (mcp), subagents run
-# in their own microVMs (plans/brayness.md), and usage reports proxy calls.
+# the proxy is the only model (oauth), no MCP servers ship (mcp), long work runs
+# as autoresearch loops, never subagents (plans/brayness.md), and usage reports
+# proxy calls.
 node -e '
   const fs = require("fs"), [settings_path, npm_path] = process.argv.slice(1)
   const unshipped = ["pi-claude-oauth-adapter", "pi-mcp-adapter", "pi-subagents-j0k3r", "pi-mono-usage"]
