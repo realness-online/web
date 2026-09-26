@@ -5,7 +5,8 @@
   "description": "The sync service: the only holder of storage keys",
   "bin": {
     "sync-service": "./bin/sync-service.js",
-    "brayness-store": "./bin/brayness-store.js"
+    "brayness-store": "./bin/brayness-store.js",
+    "brayness": "./bin/brayness.js"
   },
   "scripts": {
     "test": "node --test 'test/*.test.js'",

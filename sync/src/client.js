@@ -21,6 +21,9 @@ import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
 import { basename, dirname, join, relative, sep } from "node:path"
 import { skipped_name } from "./skip.js"
 
+/** The development sync service, unless SYNC_URL says otherwise. */
+export const SYNC_URL = process.env.SYNC_URL ?? "https://brayness-sync-639469569733.us-central1.run.app"
+
 const MANIFEST = ".can-sync.json"
 const BASE = ".can-base"
 const TEXT_LIMIT = 1024 * 1024

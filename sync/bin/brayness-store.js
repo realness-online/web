@@ -16,16 +16,15 @@
  */
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
-import { client, phone_of, SyncError } from "../src/client.js"
+import { client, phone_of, SYNC_URL, SyncError } from "../src/client.js"
 import { keychain, login, token_source } from "../src/login.js"
 
-const DEFAULT_URL = "https://brayness-sync-639469569733.us-central1.run.app"
 // Development only for now: the sync service it talks to trusts dev sign-in.
 // Both flip to production together.
 const REALNESS = process.env.REALNESS_URL ?? "https://realness-development.web.app"
 const [command, ...args] = process.argv.slice(2)
 const signed_in = ["login", "logout"].includes(command) ? null : await token_source()()
-const store = client({ url: process.env.SYNC_URL ?? DEFAULT_URL, token: signed_in })
+const store = client({ url: SYNC_URL, token: signed_in })
 const mask = (phone) => (phone ? `${phone.slice(0, 2)}…${phone.slice(-2)}` : "nobody")
 
 const commands = {

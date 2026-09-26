@@ -23,6 +23,8 @@ code that builds it and serves it.
   `sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
   two-way sync, all through the service. `login` signs in through Realness
   in your browser and keeps it in the macOS keychain; `TOKEN=` still wins.
+  `sync/bin/brayness.js sync` syncs every plan's `## Syncs` folders both
+  ways; paths inside a git repo are refused.
 - Examples live in `brayness-examples`; sessions download them with giget.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
