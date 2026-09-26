@@ -3,8 +3,7 @@
   import { computed } from 'vue'
   import { current_user, me } from '@/utils/serverless'
 
-  // /account is always the settings page. Signed out the link is labelled
-  // "Sign in", so it carries the flag that opens the sign-on dialog on arrival
+  // Signed out the link is labelled "Sign in", so it goes to the sign-on page
   // — otherwise the label would promise a sign-in and deliver a settings list.
   // Only show the name when actually authenticated — a cached `me.name` while
   // signed out would falsely imply you're signed in.
@@ -14,8 +13,7 @@
   })
 
   const account_target = computed(() => {
-    if (!current_user.value)
-      return { path: '/account', query: { 'sign-in': '' } }
+    if (!current_user.value) return { path: '/sign-on' }
     return { path: '/account' }
   })
 </script>

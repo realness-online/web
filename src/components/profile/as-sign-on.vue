@@ -58,8 +58,8 @@
 
 <style>
   section#sign-on {
-    /* The dialog sizes to this, so the form drives the width rather than
-       inheriting the reset's page-width max and sitting off to one side. */
+    /* The form drives the width rather than inheriting the reset's
+       page-width max and sitting off to one side. */
     min-width: min(calc(var(--base-line) * 18), 100%);
 
     & > form {

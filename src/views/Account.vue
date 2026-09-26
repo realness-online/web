@@ -2,7 +2,6 @@
   import AsFieldsetNotifications from '@/components/account/as-fieldset-notifications'
   import AsFieldsetWipe from '@/components/account/as-fieldset-wipe'
   import NameAsForm from '@/components/profile/as-form-name'
-  import AsDialogSignOn from '@/components/profile/as-dialog-sign-on'
   import Preference from '@/components/preference'
   import {
     sync_folder_supported,
@@ -10,16 +9,13 @@
     detect_brave,
     HISTORY_PAUSE_DETAIL
   } from '@/use/sync-folder'
-  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { use_me } from '@/use/people'
   import { current_user } from '@/utils/serverless'
   import { sign_off } from '@/utils/serverless-auth'
-  import { ref, computed, onMounted as mounted, nextTick as tick } from 'vue'
+  import { ref, computed, onMounted as mounted } from 'vue'
 
   defineOptions({ name: 'Account' })
 
-  const route = use_route()
-  const router = use_router()
   const { is_valid_name } = use_me()
   const sync_folder_supported_value = sync_folder_supported()
   const {
@@ -69,28 +65,6 @@
   /** `undefined` means auth has not resolved yet; `null` means signed out. */
   const auth_resolved = computed(() => current_user.value !== undefined)
   const signed_in = computed(() => !!current_user.value && is_valid_name.value)
-
-  const sign_on = ref(null)
-  const on_open_sign_on = () => sign_on.value?.open()
-
-  /** Named but unnamed: the sign-on flow owns the "what should we call you"
-   * step, so it has to open itself rather than wait for a click. */
-  const needs_name = computed(
-    () => !!current_user.value && !is_valid_name.value
-  )
-
-  mounted(async () => {
-    await tick()
-    if (route.query?.['sign-in'] !== undefined || needs_name.value)
-      on_open_sign_on()
-  })
-
-  const on_signed_in = () => {
-    const next = route.query?.next
-    if (typeof next === 'string' && next.startsWith('/')) router.replace(next)
-    else if (route.query?.['sign-in'] !== undefined)
-      router.replace({ path: '/account' })
-  }
 
   const confirm = ref(null)
   const on_ask_sign_out = () => confirm.value?.showModal()
@@ -159,14 +133,10 @@
               @click="on_ask_sign_out">
               Sign out
             </button>
-            <button v-else type="button" id="sign-in" @click="on_open_sign_on">
-              Sign in
-            </button>
+            <router-link v-else id="sign-in" to="/sign-on">Sign in</router-link>
           </div>
         </fieldset>
       </footer>
-
-      <as-dialog-sign-on ref="sign_on" @signed_in="on_signed_in" />
 
       <dialog id="confirm-sign-out" ref="confirm" data-modal>
         <p>Sign out?</p>

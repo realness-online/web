@@ -2,6 +2,10 @@ import { createWebHistory, createRouter } from 'vue-router'
 import { current_user, me } from '@/utils/serverless'
 import { valid_name } from '@/utils/valid-name'
 import Thoughts from '@/views/Thoughts'
+import { after_sign_on } from '@/utils/after-sign-on'
+
+/** Signed in and named: nothing left for the sign-on page to do. */
+const signed_on = () => !!current_user.value && valid_name(me.value?.name)
 
 const routes = [
   { path: '/', component: Thoughts },
@@ -20,15 +24,16 @@ const routes = [
     component: () => import('@/views/Documentation'),
     meta: { support: true }
   },
-  // Sign-on is a dialog on the account page, not a page of its own. The
-  // `sign-in` flag opens it on arrival so deep links still land in the flow.
+  // Sign-on is its own page: arriving always shows the form. A dialog on
+  // /account had to be told to open, and missed the cue when you were
+  // already there.
   {
     path: '/sign-on',
-    redirect: to => ({
-      path: '/account',
-      query: { ...to.query, 'sign-in': '' }
-    })
+    component: () => import('@/views/SignOn'),
+    meta: { support: true },
+    beforeEnter: to => (signed_on() ? after_sign_on(to.query) : true)
   },
+  { path: '/sign-in', redirect: to => ({ path: '/sign-on', query: to.query }) },
   {
     path: '/pricing',
     redirect: '/pricing/endorse',
@@ -55,7 +60,14 @@ const routes = [
   {
     path: '/account',
     component: () => import('@/views/Account'),
-    meta: { support: true }
+    meta: { support: true },
+    // Old links carried a `sign-in` flag to open the dialog; send them on.
+    beforeEnter: to => {
+      if (to.query?.['sign-in'] === undefined) return true
+      const query = { ...to.query }
+      delete query['sign-in']
+      return { path: '/sign-on', query }
+    }
   },
   {
     path: '/colors',
@@ -93,14 +105,11 @@ const router = createRouter({
   }
 })
 
+// Signed in without a name: the sign-on page owns the naming step.
 router.beforeEach(to => {
-  if (to.path !== '/') return true
-  if (!current_user.value) return true
-  if (valid_name(me.value?.name)) return true
-  return {
-    path: '/account',
-    query: { ...to.query, next: to.fullPath }
-  }
+  if (to.path !== '/' && to.path !== '/account') return true
+  if (!current_user.value || signed_on()) return true
+  return { path: '/sign-on', query: { next: to.fullPath } }
 })
 
 export default router

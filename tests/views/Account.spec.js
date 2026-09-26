@@ -1,9 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
-import { shallowMount, flushPromises } from '@vue/test-utils'
-import { reactive, h } from 'vue'
+import { shallowMount } from '@vue/test-utils'
+import { reactive } from 'vue'
 import Account from '@/views/Account.vue'
-
-const mock_open_sign_on = vi.fn()
 
 const { mock_replace, mock_me, mock_current_user, mock_is_valid_name } =
   vi.hoisted(() => {
@@ -58,13 +56,6 @@ const default_stubs = {
   'as-form-name': {
     name: 'AsFormName',
     template: '<form class="name-as-form-stub" />'
-  },
-  'as-dialog-sign-on': {
-    name: 'AsDialogSignOn',
-    setup(props, { expose }) {
-      expose({ open: mock_open_sign_on, close: vi.fn() })
-      return () => h('dialog', { class: 'as-dialog-sign-on-stub' })
-    }
   }
 }
 
@@ -110,47 +101,11 @@ describe('Account', () => {
     expect(mock_replace).not.toHaveBeenCalled()
   })
 
-  it('keeps the sign-in flow in a dialog, out of the page flow', () => {
+  it('sends Sign in to the sign-on page, never a dialog', () => {
     mock_current_user.value = null
     const wrapper = mount()
-    const preferences = wrapper.find('section[itemprop="preferences"]')
-
-    expect(preferences.find('.as-dialog-sign-on-stub').exists()).toBe(false)
-    expect(wrapper.find('dialog.as-dialog-sign-on-stub').exists()).toBe(true)
-  })
-
-  it('opens the dialog when the sign-in row is clicked', async () => {
-    mock_current_user.value = null
-    const wrapper = mount()
-    await wrapper.find('#sign-in').trigger('click')
-
-    expect(mock_open_sign_on).toHaveBeenCalled()
-  })
-
-  it('opens the dialog on arrival when the sign-in flag is set', async () => {
-    mock_current_user.value = null
-    mock_route.query = { 'sign-in': '' }
-    mount()
-    await flushPromises()
-
-    expect(mock_open_sign_on).toHaveBeenCalled()
-  })
-
-  it('leaves the dialog shut on a plain visit', async () => {
-    mock_current_user.value = null
-    mount()
-    await flushPromises()
-
-    expect(mock_open_sign_on).not.toHaveBeenCalled()
-  })
-
-  it('opens the dialog when signed in without a valid name', async () => {
-    mock_current_user.value = { uid: 'test-user' }
-    mock_is_valid_name.value = false
-    mount()
-    await flushPromises()
-
-    expect(mock_open_sign_on).toHaveBeenCalled()
+    expect(wrapper.find('#sign-in').attributes('to')).toBe('/sign-on')
+    expect(wrapper.find('dialog#sign-on').exists()).toBe(false)
   })
 
   it('shows the sync folder preference when not signed in', () => {
@@ -176,14 +131,5 @@ describe('Account', () => {
       .findAllComponents({ name: 'Preference' })
       .find(c => c.props('name') === 'sync_svg')
     expect(nested).toBeTruthy()
-  })
-
-  it('redirects to the next query target after sign-in', async () => {
-    mock_current_user.value = null
-    mock_route.query = { next: '/discover' }
-    const wrapper = mount()
-    wrapper.findComponent({ name: 'AsDialogSignOn' }).vm.$emit('signed_in')
-    await flushPromises()
-    expect(mock_replace).toHaveBeenCalledWith('/discover')
   })
 })

@@ -10,22 +10,51 @@ vi.mock('@/utils/serverless', () => ({
 }))
 
 const { default: router } = await import('@/router')
+const { current_user, me } = await import('@/utils/serverless')
 const { scrollBehavior } = router.options
 
 describe('@/router', () => {
-  it('sends /sign-on to the account page with the dialog open', () => {
-    const route = router.options.routes.find(r => r.path === '/sign-on')
-    expect(route.redirect({ query: {} })).toEqual({
-      path: '/account',
-      query: { 'sign-in': '' }
+  const route_for = path => router.options.routes.find(r => r.path === path)
+
+  it('makes /sign-on a page of its own', () => {
+    expect(route_for('/sign-on').component).toBeTypeOf('function')
+    expect(route_for('/sign-on').redirect).toBeUndefined()
+  })
+
+  it('shows the sign-on page to anyone not yet signed on', () => {
+    current_user.value = null
+    expect(route_for('/sign-on').beforeEnter({ query: {} })).toBe(true)
+    current_user.value = { uid: 'u1' }
+    me.value = {}
+    expect(route_for('/sign-on').beforeEnter({ query: {} })).toBe(true)
+    current_user.value = null
+    me.value = null
+  })
+
+  it('sends someone already signed on where they were going', () => {
+    current_user.value = { uid: 'u1' }
+    me.value = { name: 'Scott Fryxell' }
+    const enter = route_for('/sign-on').beforeEnter
+    expect(enter({ query: {} })).toBe('/account')
+    expect(enter({ query: { next: '/discover' } })).toBe('/discover')
+    expect(enter({ query: { next: '//evil.example' } })).toBe('/account')
+    current_user.value = null
+    me.value = null
+  })
+
+  it('sends old /account?sign-in links to the sign-on page', () => {
+    const enter = route_for('/account').beforeEnter
+    expect(enter({ query: {} })).toBe(true)
+    expect(enter({ query: { 'sign-in': '', next: '/discover' } })).toEqual({
+      path: '/sign-on',
+      query: { next: '/discover' }
     })
   })
 
-  it('keeps the next target when redirecting /sign-on', () => {
-    const route = router.options.routes.find(r => r.path === '/sign-on')
-    expect(route.redirect({ query: { next: '/discover' } })).toEqual({
-      path: '/account',
-      query: { next: '/discover', 'sign-in': '' }
+  it('sends /sign-in to /sign-on', () => {
+    expect(route_for('/sign-in').redirect({ query: { next: '/x' } })).toEqual({
+      path: '/sign-on',
+      query: { next: '/x' }
     })
   })
 

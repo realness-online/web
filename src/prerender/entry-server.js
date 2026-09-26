@@ -26,7 +26,7 @@ const routes = [
   { path: '/terms', component: Terms, meta: { support: true } },
   { path: '/privacy', redirect: '/terms#privacy-policy' },
   { path: '/changelog', redirect: '/docs#changelog' },
-  { path: '/sign-on', redirect: '/account' },
+  { path: '/sign-on', component: stub },
   { path: '/account', component: stub }
 ]
 
