@@ -6,7 +6,6 @@ const NAMES = new Set([
   ".git", "node_modules", ".venv", "__pycache__", ".DS_Store",
   "dist", "build", ".next", ".nuxt", ".output", ".cache", "coverage",
   "auth.json", ".npmrc", ".netrc", "credentials.json", "service-account.json",
-  ".can-sync.json", ".can-base",
 ])
 const PATTERNS = [/^\.env(\..+)?$/, /\.(pem|key|p12|pfx)$/, /^id_(rsa|ed25519|ecdsa)(\.pub)?$/, /\.tmp$/]
 

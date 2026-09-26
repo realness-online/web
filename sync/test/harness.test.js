@@ -23,6 +23,7 @@ let server
 let store
 
 before(async () => {
+  process.env.BRAYNESS_STATE = join(root, "state")
   const storage = disk(join(root, "bucket"))
   server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))

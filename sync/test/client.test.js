@@ -3,7 +3,7 @@
  */
 import { after, before, test } from "node:test"
 import assert from "node:assert/strict"
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { randomUUID } from "node:crypto"
 import { join } from "node:path"
 import { disk } from "brayness-can-store/disk"
@@ -21,6 +21,7 @@ let server
 let url
 
 before(async () => {
+  process.env.BRAYNESS_STATE = join(root, "state")
   server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))
   url = `http://127.0.0.1:${server.address().port}`
@@ -96,14 +97,28 @@ test("edits travel both ways between two folders", async () => {
   assert.equal(await readFile(join(laptop, "note.md"), "utf8"), "two")
 })
 
-test("bases are kept for prose and code, not binaries or posters", async () => {
+test("the folder holds only its own files; the record lives in state", async () => {
   const a = as(A)
-  const dir = await local("base", { "note.md": "text", "img.bin": Buffer.from([0, 1]), "poster.svg": "<svg/>" })
-  await a.sync(dir, "can://~/base/")
-  assert.equal(await readFile(join(dir, ".can-base/note.md"), "utf8"), "text")
-  await assert.rejects(readFile(join(dir, ".can-base/img.bin")), { code: "ENOENT" })
-  await assert.rejects(readFile(join(dir, ".can-base/poster.svg")), { code: "ENOENT" })
-  assert.ok(!(await a.walk("can://~/base/"))[".can-base/note.md"], "the base never uploads")
+  const dir = await local("clean", { "note.md": "text" })
+  await a.sync(dir, "can://~/clean/")
+  assert.deepEqual(await readdir(dir), ["note.md"])
+  const records = await readdir(join(root, "state/sync"))
+  const all = await Promise.all(records.map(async (name) => JSON.parse(await readFile(join(root, "state/sync", name), "utf8"))))
+  const saved = all.find((record) => record.remote === `people/${A}/clean/`)
+  assert.equal(saved.local, dir)
+  assert.deepEqual(Object.keys(saved.files), ["note.md"])
+})
+
+test("a lost record deletes nothing: same files match, different ones keep both", async () => {
+  const a = as(A)
+  const dir = await local("lost", { "same.md": "s", "diff.md": "mine" })
+  await a.sync(dir, "can://~/lost/", { state: join(root, "lost-state-1") })
+  await a.put("can://~/lost/diff.md", "theirs")
+  await rm(join(dir, "same.md"))
+  const report = await a.sync(dir, "can://~/lost/", { state: join(root, "lost-state-2") })
+  assert.deepEqual(report.deleted, [])
+  assert.deepEqual(report.pulled, ["same.md"])
+  assert.deepEqual(report.kept_both, ["diff.md"])
 })
 
 test("deletes travel both ways, only onto unchanged files", async () => {
@@ -123,19 +138,18 @@ test("deletes travel both ways, only onto unchanged files", async () => {
   assert.equal(await readFile(join(session, "kept.md"), "utf8"), "y, edited")
 })
 
-test("text edits to different lines merge three ways", async () => {
+test("edits on both sides never merge, even on different lines", async () => {
   const a = as(A)
   const dir = await local("merge", { "doc.md": "one\ntwo\nthree\n" })
   await a.sync(dir, "can://~/merge/")
   await a.put("can://~/merge/doc.md", "ONE\ntwo\nthree\n")
   await writeFile(join(dir, "doc.md"), "one\ntwo\nTHREE\n")
-  assert.deepEqual((await a.sync(dir, "can://~/merge/")).merged, ["doc.md"])
-  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "ONE\ntwo\nTHREE\n")
-  assert.equal((await a.cat("can://~/merge/doc.md")).toString(), "ONE\ntwo\nTHREE\n")
-  assert.equal(await readFile(join(dir, ".can-base/doc.md"), "utf8"), "ONE\ntwo\nTHREE\n")
+  assert.deepEqual((await a.sync(dir, "can://~/merge/")).kept_both, ["doc.md"])
+  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "one\ntwo\nTHREE\n")
+  assert.equal(await readFile(join(dir, "doc.conflict.md"), "utf8"), "ONE\ntwo\nthree\n")
 })
 
-test("overlapping edits keep both, on both sides", async () => {
+test("both edited keeps both, on both sides", async () => {
   const a = as(A)
   const dir = await local("both", { "doc.md": "v1\n", "img.bin": Buffer.from([0, 1]) })
   await a.sync(dir, "can://~/both/")
