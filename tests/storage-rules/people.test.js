@@ -33,6 +33,8 @@ const poster = `people/${OWNER}/posters/1712000000000.html.gz`
 const statements = `people/${OWNER}/statements/1712000000000.html.gz`
 const subscription = `subscriptions/${OWNER}/endpoint-abc`
 const archived = `people/${OWNER}/posters/1600000000000/1712000000000.html.gz`
+const sold = `people/${OWNER}/posters/1789000000000.html.gz`
+const sold_archived = `people/${OWNER}/posters/1600000000000/1789000000000.html.gz`
 const loose = 'loose.txt'
 
 let test_env
@@ -76,6 +78,11 @@ beforeEach(async () => {
     ]
     for (const path of paths)
       await uploadString(ref(seed, path), 'seeded', 'raw')
+    // The prints webhook tags a poster once Stripe has been paid for it.
+    for (const path of [sold, sold_archived])
+      await uploadString(ref(seed, path), 'sale', 'raw', {
+        customMetadata: { sold: 'true' }
+      })
   })
 })
 
@@ -146,6 +153,31 @@ describe('only the owner writes their own tree', () => {
 
   it('denies another signed-in person a poster delete', async () => {
     await assertFails(deleteObject(ref(stranger, poster)))
+  })
+})
+
+// A re-save from a device that never saw the sale once wiped one out.
+describe('a sold poster keeps its sale', () => {
+  it('refuses the owner an overwrite', async () => {
+    await assertFails(uploadString(ref(owner, sold), 'edited', 'raw'))
+    await assertFails(uploadString(ref(owner, sold_archived), 'edited', 'raw'))
+  })
+
+  it('lets the owner delete it, which is how an archive move ends', async () => {
+    await assertSucceeds(deleteObject(ref(owner, sold)))
+  })
+
+  it('lets the owner create the archive copy, tag and all', async () => {
+    const copy = `people/${OWNER}/posters/1700000000000/1789000000000.html.gz`
+    await assertSucceeds(
+      uploadString(ref(owner, copy), 'sale', 'raw', {
+        customMetadata: { sold: 'true' }
+      })
+    )
+  })
+
+  it('still refuses a stranger', async () => {
+    await assertFails(deleteObject(ref(stranger, sold)))
   })
 })
 

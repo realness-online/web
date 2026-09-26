@@ -11,6 +11,7 @@ import {
   current_user,
   directory,
   location,
+  metadata,
   remove,
   upload,
   url
@@ -84,8 +85,29 @@ export const after_directory = async itemids => {
   if (index_changed) await set('sync:index', index)
 }
 
+/**
+ * storage.rules refuse to overwrite a poster the prints webhook tagged sold.
+ * Keep the stored copy, sale and all; sync swaps it in for the local edit.
+ * Throwing would strand the offline queue behind a lock it never releases.
+ * @param {string} path
+ * @param {string | Blob} body
+ * @param {object} meta
+ * @returns {Promise<object>} the upload, or the stored copy's metadata
+ */
+export const upload_unless_sold = async (path, body, meta) => {
+  try {
+    return await upload(path, body, meta)
+  } catch (error) {
+    if (error?.code !== 'storage/unauthorized') throw error
+    const stored = await metadata(path).catch(() => null)
+    if (stored?.customMetadata?.sold !== 'true') throw error
+    console.warn(path, 'is sold; kept the stored copy')
+    return stored
+  }
+}
+
 export const backend = {
-  upload: (path, body, metadata) => upload(path, body, metadata),
+  upload: upload_unless_sold,
   remove: path => remove(path),
   // Deferred: a test that mocks `@/utils/serverless` may not define location.
   move: (from, to) =>

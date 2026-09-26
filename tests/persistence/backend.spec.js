@@ -16,9 +16,11 @@ vi.mock('@/utils/serverless', () => ({
   remove: vi.fn(),
   url: vi.fn(),
   directory: vi.fn(),
-  location: vi.fn()
+  location: vi.fn(),
+  metadata: vi.fn()
 }))
 
+import { metadata, upload } from '@/utils/serverless'
 import {
   after_directory,
   after_upload,
@@ -26,6 +28,38 @@ import {
   is_admin_directory,
   sync_later
 } from '@/persistence/store-backend'
+
+describe('upload', () => {
+  const refused = Object.assign(new Error('refused'), {
+    code: 'storage/unauthorized'
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('keeps the stored copy of a sold poster instead of throwing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.mocked(upload).mockRejectedValue(refused)
+    const stored = { customMetadata: { sold: 'true' } }
+    vi.mocked(metadata).mockResolvedValue(stored)
+
+    await expect(
+      backend.upload('people/+1/posters/1000.html.gz', 'html', {})
+    ).resolves.toBe(stored)
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('still throws a refusal that is not a sale', async () => {
+    vi.mocked(upload).mockRejectedValue(refused)
+    vi.mocked(metadata).mockResolvedValue({ customMetadata: {} })
+
+    await expect(
+      backend.upload('people/+1/posters/1000.html.gz', 'html', {})
+    ).rejects.toBe(refused)
+  })
+})
 
 describe('sync_later', () => {
   beforeEach(() => {

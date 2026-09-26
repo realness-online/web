@@ -48,9 +48,18 @@ service firebase.storage {
       // on the reference too, so there is no guard to write. A throw denies,
       // which is the answer we want, and the app never lists a person's root:
       // it lists `people/` and `people/{author}/{type}/`.
+      //
+      // A poster the prints webhook tagged `sold` cannot be overwritten: a
+      // re-save from a device that never saw the sale once wiped it out.
+      // Overwriting bytes is a `create` here; `update` is metadata alone.
+      // Delete stays open, because an archive move is copy, then delete.
       match /{folder}/{path=**} {
         allow read: if folder != 'relations.html.gz';
-        allow write, delete: if owns(mobile);
+        allow create, update: if owns(mobile)
+          && (resource == null
+            || resource.metadata == null
+            || resource.metadata.get('sold', '') != 'true');
+        allow delete: if owns(mobile);
       }
     }
   }
