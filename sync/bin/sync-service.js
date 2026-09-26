@@ -7,6 +7,7 @@
  *   PROJECT=realness-online STORE=gcs GCS_BUCKET=... npm start
  *
  * GCS_PREFIX scopes every key, e.g. brayness-test/<run>/ while trying it out.
+ * ORIGINS lists the sites a browser may call from, comma separated.
  * On Cloud Run (K_SERVICE is set) tokens come from the metadata server.
  */
 import { resolve } from "node:path"
@@ -51,6 +52,8 @@ if (dev) {
   certs = google_certs()
 }
 
-sync_service({ storage, rights: rights(storage), project, certs }).listen(port, host, () =>
+const origins = (process.env.ORIGINS ?? "").split(",").filter(Boolean)
+
+sync_service({ storage, rights: rights(storage), project, certs, origins }).listen(port, host, () =>
   console.log(`# sync service on http://${host}:${port}, storage ${where}`),
 )

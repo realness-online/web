@@ -9,6 +9,8 @@
  *
  * No token is a stranger; a bad token is 401. Denial is 403 whether or not
  * the file exists, because the check runs before storage is touched.
+ *
+ * Browsers may call it only from `origins`, e.g. https://realness.online.
  */
 import { createHash } from "node:crypto"
 import { createServer } from "node:http"
@@ -67,8 +69,15 @@ async function read_body(request) {
   return Buffer.concat(chunks)
 }
 
-export function sync_service({ storage, rights, project, certs, log = console.log }) {
+const PREFLIGHT = {
+  "access-control-allow-methods": "GET, PUT, DELETE",
+  "access-control-allow-headers": "authorization, content-type, if-match, if-none-match",
+  "access-control-max-age": "600",
+}
+
+export function sync_service({ storage, rights, project, certs, origins = [], log = console.log }) {
   const pins = storage_pins(storage)
+  const allowed = new Set(origins)
 
   async function who_is(request) {
     const header = request.headers.authorization
@@ -120,9 +129,20 @@ export function sync_service({ storage, rights, project, certs, log = console.lo
     const started = Date.now()
     const path = (request.url ?? "/").split("?")[0].slice(1)
     const action = action_for(request.method, path)
+    const origin = request.headers.origin
     let who = null
     let status = 200
+    if (origin && allowed.has(origin)) {
+      response.setHeader("access-control-allow-origin", origin)
+      response.setHeader("access-control-expose-headers", "etag")
+    }
+    response.setHeader("vary", "origin")
     try {
+      if (request.method === "OPTIONS") {
+        if (!origin || !allowed.has(origin)) throw new Status(403)
+        response.writeHead((status = 204), PREFLIGHT).end()
+        return
+      }
       if (!action) throw new Status(405)
       who = await who_is(request)
       await handle(request, response, path, action, who)

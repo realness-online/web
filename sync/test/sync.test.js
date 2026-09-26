@@ -23,7 +23,14 @@ let base
 
 before(async () => {
   await mkdir(dir, { recursive: true })
-  server = sync_service({ storage, rights: cache, project: issuer.project, certs: issuer.certs, log: (l) => lines.push(l) })
+  server = sync_service({
+    storage,
+    rights: cache,
+    project: issuer.project,
+    certs: issuer.certs,
+    origins: ["https://realness.online"],
+    log: (l) => lines.push(l),
+  })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))
   base = `http://127.0.0.1:${server.address().port}`
 })
@@ -142,4 +149,24 @@ test("a rights change through sync applies at once", async () => {
   assert.notEqual(second.version, first.version)
   await call("PUT", `people/${A}/rights.html`, { headers: as(A), body: "<li itemscope" })
   assert.deepEqual((await cache.grants(A)).grants, [])
+})
+
+test("only allowed sites may call from a browser", async () => {
+  const preflight = (origin) =>
+    call("OPTIONS", `people/${A}/vault/`, {
+      headers: { origin, "access-control-request-method": "GET", "access-control-request-headers": "authorization" },
+    })
+  const good = await preflight("https://realness.online")
+  assert.equal(good.status, 204)
+  assert.equal(good.headers.get("access-control-allow-origin"), "https://realness.online")
+  assert.match(good.headers.get("access-control-allow-headers"), /authorization/)
+  const bad = await preflight("https://evil.example")
+  assert.equal(bad.status, 403)
+  assert.equal(bad.headers.get("access-control-allow-origin"), null)
+
+  const read = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://realness.online" } })
+  assert.equal(read.headers.get("access-control-allow-origin"), "https://realness.online")
+  assert.equal(read.headers.get("access-control-expose-headers"), "etag")
+  const stranger_site = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://evil.example" } })
+  assert.equal(stranger_site.headers.get("access-control-allow-origin"), null)
 })
