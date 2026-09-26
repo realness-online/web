@@ -8,10 +8,6 @@ FC_SHA256="e351ebe4f7a16b5873bbd51005d2e6767103cff4d5ebc829df2d3f95a93e2256"
 CI_PREFIX="firecracker-ci/v1.15/aarch64"
 KERNEL_VERSION="6.1.155"
 S3="https://s3.amazonaws.com/spec.ccfc.min"
-# The host runs on Node (h4b). x64 for the fleet image:
-# df450af89261115ef9f9e3830c3eeb2cc9213b63c720b1af623cb5dcbe2e02de
-NODE_VERSION="v22.23.3"
-NODE_SHA256="a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f"
 ROOT="/opt/fc"
 
 log() { printf '==> %s\n' "$*"; }
@@ -23,15 +19,7 @@ sudo mkdir -p "$ROOT"
 sudo chown "$(id -u):$(id -g)" "$ROOT"
 cd "$ROOT"
 
-if [ ! -x node/bin/node ] || [ "$(node/bin/node --version)" != "$NODE_VERSION" ]; then
-  log "node $NODE_VERSION"
-  curl -fsSL -o node.tar.xz "https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-linux-arm64.tar.xz"
-  echo "$NODE_SHA256  node.tar.xz" | sha256sum -c -
-  rm -rf node && mkdir node
-  tar xJf node.tar.xz -C node --strip-components=1
-  rm node.tar.xz
-  sudo ln -sf "$ROOT/node/bin/node" /usr/local/bin/node
-fi
+bash "$(dirname "$0")/../../host/scripts/node-install.sh"
 
 if [ ! -x firecracker ]; then
   log "firecracker $FC_VERSION"

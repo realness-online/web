@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# The browser terminal, built here and shipped with the orchestrator.
+# The browser terminal, built here and shipped with the host.
 #
 # Fetches the terminal example (brayness-examples/terminal) with giget, builds
-# it, and puts its dist/ at orchestrator/term/, which webterm.py serves. The host
-# stays stdlib Python: no Node there, and no network needed at deploy.
+# it, and puts its dist/ at host/term/, which host/src/webterm.js serves.
+# No network needed at deploy.
 #
 #   TERMINAL_REF=<branch|tag|sha>   default main
 #   TERMINAL_SOURCE=<dir>           build a local checkout instead of fetching
@@ -11,7 +11,7 @@ set -euo pipefail
 
 project="$(cd "$(dirname "$0")/../.." && pwd)"
 work="$project/dist/terminal"
-out="$project/orchestrator/term"
+out="$project/host/term"
 ref="${TERMINAL_REF:-main}"
 
 rm -rf "$work"

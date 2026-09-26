@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # idle-guard - shut the prod host down when nothing is happening.
 #
-#   sudo bash ~/brayness/orchestrator/scripts/idle-guard.sh
+#   sudo bash ~/brayness/host/scripts/idle-guard.sh
 #
 # GCP turns a guest poweroff into STOPPED, so an idle host bills disks only
 # (~$0.041/h) and `gcloud compute instances start` brings it back. The check
 # runs locally every 5 minutes, never over ssh, and only stops the host after
-# IDLE_SECONDS of nothing: no firecracker, no orchestrator, no ssh session.
-# This is the proof-phase guard; host lifecycle moves into the orchestrator
+# IDLE_SECONDS of nothing: no firecracker, no host, no ssh session.
+# This is the proof-phase guard; host lifecycle moves into the host
 # later, which is the only thing that really knows a session is live.
 set -euo pipefail
 
@@ -31,14 +31,14 @@ active() {
   # build. tmpfs, so a boot clears it. `sudo touch /run/brayness-hold`.
   [ -e /run/brayness-hold ] && return 0
   # A zombie is not activity: it holds nothing and would keep this host awake
-  # forever. Reaping is the orchestrator's job - this only refuses to be fooled
+  # forever. Reaping is the host's job - this only refuses to be fooled
   # by one that got away.
   for pid in $(pgrep -x firecracker 2> /dev/null || true); do
     [ "$(awk '{print $3}' "/proc/$pid/stat" 2> /dev/null)" = "Z" ] || return 0
   done
   # Bracket the first letter: pgrep -f matches any process whose argv contains
   # the pattern, including the shell that is running this check.
-  pgrep -f "[p]ython3 -m orchestrator" > /dev/null && return 0
+  pgrep -f "[n]ode host/main.js" > /dev/null && return 0
   # A human at a shell. `sshd: scott@pts/0` is an interactive login;
   # `sshd: scott@notty` is `gcloud compute ssh --command`, which a poller can
   # hold all day. Matching "sshd: " would also match the always-present

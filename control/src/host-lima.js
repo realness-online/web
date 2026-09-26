@@ -44,7 +44,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
 
   if (smoke) {
     step("smoke test")
-    await lima.streamScript("orchestrator/scripts/host-smoke.sh", { user: "root" })
+    await lima.streamScript("host/scripts/host-smoke.sh", { user: "root" })
   }
 
   const health = await waitForHealth(config.api, { tries: 90, delayMs: 2000 })
@@ -65,16 +65,16 @@ export async function push(lima, config, name) {
   return { copied: false }
 }
 
-/** Start the orchestrator, if it is not already answering. */
+/** Start the host, if it is not already answering. */
 export async function serve(lima, config, name) {
   return startStack(lima, config)
 }
 
-/** Stop the orchestrator and any microVM it left running. */
+/** Stop the host and any microVM it left running. */
 export async function down(lima, config, name, { mode = "stop" } = {}) {
   step(`stopping the dev stack${mode === "delete" ? " and the Lima VM" : ""}`)
   await lima.run(
-    'pkill -f "[p]ython3 -m orchestrator" || true; pkill -f "[n]ode host/main.js" || true; pkill -x firecracker || true',
+    'pkill -f "[n]ode host/main.js" || true; pkill -x firecracker || true',
     { user: "root" },
   )
 
@@ -96,8 +96,8 @@ export async function restart(lima, config, name) {
 /**
  * The stack: sessions volume, TAP, API.
  *
- * `control/scripts/dev-stack.sh` does all three and `exec`s into the orchestrator, so
- * it is started detached - the orchestrator outlives this command and limactl
+ * `control/scripts/dev-stack.sh` does all three and `exec`s into the host, so
+ * it is started detached - the host outlives this command and limactl
  * must not wait for a process that never exits.
  */
 async function startStack(lima, config, { fresh = false } = {}) {

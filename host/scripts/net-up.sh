@@ -2,7 +2,7 @@
 # Runs inside the fc-local Lima guest (the firecracker host). Gives microVMs a
 # way out: a tap on 172.16.0.0/30, NAT'd to the host's uplink.
 #
-#   sudo bash /mnt/fc/orchestrator/scripts/net-up.sh
+#   sudo bash /mnt/fc/host/scripts/net-up.sh
 #
 # Idempotent. Rules are appended only if absent, so re-running is a no-op.
 # Firecracker runs as root here, so the tap does not need a `user` owner.

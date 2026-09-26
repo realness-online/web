@@ -43,7 +43,7 @@ const { positionals, values } = parseArgs({
     port: { type: "string", default: "8080" },
     "pty-port": { type: "string", default: "8081" },
     "web-port": { type: "string", default: "8090" },
-    term: { type: "string", default: join(HERE, "..", "orchestrator", "term") },
+    term: { type: "string", default: join(HERE, "term") },
     rebuild: { type: "boolean", default: false },
   },
 })

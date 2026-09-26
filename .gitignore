@@ -2,9 +2,9 @@
 dist/
 
 # The built browser terminal (control/scripts/terminal-build.sh).
-orchestrator/term/
+host/term/
 
-# Python bytecode. The orchestrator runs as root on a host and would otherwise
+# Python bytecode from host/clients and host/guest; run as root it would
 # leave root-owned files in the source tree.
 __pycache__/
 *.pyc

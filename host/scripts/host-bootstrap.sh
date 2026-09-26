@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # host-bootstrap - take a fresh fleet-image host to a host that can serve.
 #
-#   sudo bash ~/brayness/orchestrator/scripts/host-bootstrap.sh
+#   sudo bash ~/brayness/host/scripts/host-bootstrap.sh
 #
 # The image already carries /opt/fc and the idle guard, so this is only what is
 # per-instance: the root partition (an instance created from an image keeps the
@@ -9,14 +9,14 @@
 # the guard timer. Idempotent - it is safe on a host that is already serving.
 #
 # A seed is deliberately not built here. build_seed boots the template and
-# takes ~36s, and the orchestrator builds it on first serve anyway.
+# takes ~36s, and the host builds it on first serve anyway.
 set -euo pipefail
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> ownership"
-# The orchestrator runs as root, so anything it wrote into the source tree is
+# The host runs as root, so anything it wrote into the source tree is
 # root-owned, and the next `scp` of the code over it fails for the login user.
 if [ -n "${SUDO_USER:-}" ]; then
   chown -R "$SUDO_USER:$SUDO_USER" "/home/$SUDO_USER/brayness" 2> /dev/null || true
@@ -32,6 +32,9 @@ root_part="$(cat "/sys/class/block/$(basename "$root_dev")/partition")"
 growpart "$root_disk" "$root_part" || true
 resize2fs "$root_dev" || true
 df -h / | tail -1
+
+echo "==> node"
+bash "$HERE/node-install.sh"
 
 echo "==> net"
 bash "$HERE/net-up.sh"

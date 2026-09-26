@@ -211,7 +211,7 @@ export class SessionStore {
     rmSync(target, { recursive: true, force: true })
     mkdirSync(target, { recursive: true })
     host.run(["cp", "--sparse=always", this.template, join(target, DISK)])
-    if (!host.tapExists(this.seedTap)) throw new HostError(`no ${this.seedTap}: run 'sudo bash orchestrator/scripts/net-up.sh' first`)
+    if (!host.tapExists(this.seedTap)) throw new HostError(`no ${this.seedTap}: run 'sudo bash host/scripts/net-up.sh' first`)
 
     const apiSock = join(target, "api.sock")
     const uds = join(target, "vsock.sock")

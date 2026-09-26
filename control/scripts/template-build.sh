@@ -28,7 +28,7 @@ IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
 STAGE="${STAGE:-full}"
 HARNESS_TAR="${HARNESS_TAR:-$REPO/dist/brayness-harness.tar.gz}"
-GUEST_SRC="${GUEST_SRC:-$REPO/orchestrator/guest}"
+GUEST_SRC="${GUEST_SRC:-$REPO/host/guest}"
 RUNS="${RUNS_DIR:-$REPO/dist}"
 RUN="$RUNS/template-$(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -88,7 +88,7 @@ printf '#!/bin/sh\nexit 101\n' > "$TREE/usr/sbin/policy-rc.d"
 chmod 0755 "$TREE/usr/sbin/policy-rc.d"
 
 # fcnet-setup.sh is the MAC-to-address step brayness-net-up calls first. It is
-# vendored in orchestrator/guest (see the header there) because the CI squashfs it
+# vendored in host/guest (see the header there) because the CI squashfs it
 # comes from is a leftover of the rootfs fetch, not a build input.
 install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
 install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"

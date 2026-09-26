@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # host-smoke - prove a host serves a session, over its own API.
 #
-#   bash ~/brayness/orchestrator/scripts/host-smoke.sh
+#   bash ~/brayness/host/scripts/host-smoke.sh
 #
 # Builds the seed from the template, serves on loopback, creates a session, runs
 # a command in it, destroys it, and checks nothing was left behind. The point of
@@ -9,21 +9,21 @@
 # two sessions must never share one.
 set -uo pipefail
 
-cd "$HOME/brayness/src"
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PASS=0
 FAIL=0
 pass() { printf 'PASS  %s\n' "$1"; PASS=$((PASS + 1)); }
 fail() { printf 'FAIL  %s\n' "$1"; FAIL=$((FAIL + 1)); }
 
-sudo pkill -f "[p]ython3 -m orchestrator" 2> /dev/null || true
+sudo pkill -f "[n]ode host/main.js" 2> /dev/null || true
 sudo pkill -x firecracker 2> /dev/null || true
 sleep 1
 
 echo "==> seed"
-sudo timeout 300 python3 -m orchestrator seed --volume /opt/fc/sessions/mnt --rebuild 2>&1 | tail -2
+sudo timeout 300 node host/main.js seed --volume /opt/fc/sessions/mnt --rebuild 2>&1 | tail -2
 
 echo "==> serve"
-sudo nohup python3 -m orchestrator serve --volume /opt/fc/sessions/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
+sudo nohup node host/main.js serve --volume /opt/fc/sessions/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 for _ in $(seq 1 20); do
   sleep 2
   curl -sf --max-time 3 http://127.0.0.1:8080/v1/health > /tmp/health.json && break
@@ -60,7 +60,7 @@ print(base64.b64decode(d['stdout_b64']).decode().strip())
 fi
 
 echo "==> leftovers"
-sudo pkill -f "[p]ython3 -m orchestrator" 2> /dev/null || true
+sudo pkill -f "[n]ode host/main.js" 2> /dev/null || true
 sleep 1
 if pgrep -x firecracker > /dev/null; then fail "firecracker still running"; else pass "no firecracker left"; fi
 printf '      volume: %s\n' "$(ls /opt/fc/sessions/mnt)"

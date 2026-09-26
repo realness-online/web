@@ -3,7 +3,7 @@
  *
  * `dev` is a Linux VM on this Mac, made by Lima. `prod` is a VM in GCP, made by
  * gcloud. Both implement the same verbs - make a host, put the code on it, run
- * the orchestrator on it, take it away - so the environment picks *where*, not
+ * the host on it, take it away - so the environment picks *where*, not
  * *which command*.
  *
  * A command names its environment explicitly and there is no default, so a typo

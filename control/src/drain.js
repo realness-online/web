@@ -43,12 +43,12 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
     throw new DrainError(`no such instance ${name} in ${config.project}/${config.zone}`)
   }
 
-  // A name that does not exist should say that, not blame the orchestrator:
+  // A name that does not exist should say that, not blame the host:
   // ssh would fail for the same reason it would on a stopped host.
   const health = await probeHealth(api)
   if (!health) {
     throw new DrainError(
-      "no orchestrator answering on the host - start it with orchestrator/scripts/orchestrator-restart.sh",
+      "no host answering - start it with host/scripts/host-restart.sh",
     )
   }
   note("health: seed and sessions answered")

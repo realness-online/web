@@ -1,8 +1,8 @@
 /**
- * The orchestrator's API, as seen from outside the host.
+ * The host's API, as seen from outside the host.
  *
  * Control may only reach the live side through this. Nothing here imports,
- * reads, or writes anything under the orchestrator/ - it starts the server and then talks to
+ * reads, or writes anything under host/ - it starts the server and then talks to
  * it over HTTP. That boundary is what keeps the two worlds from mixing.
  *
  * On a host the API is loopback-only until h1 exists, so a call is an ssh

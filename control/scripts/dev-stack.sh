@@ -10,7 +10,7 @@
 # rebuilding the seed costs a boot. FRESH=1 wipes the image and starts over.
 #
 # This is host plumbing, so it stays shell. Everything below the API is the
-# orchestrator's.
+# host's.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"     # /mnt/fc
@@ -64,24 +64,19 @@ fi
 # full and a template build dies at mkfs with ENOSPC. fstrim punches the holes.
 # Mounting with `discard` did not: a deleted 500 MiB stayed allocated.
 fstrim "$MOUNT" || true
-# $$ becomes the orchestrator at the exec below, so the loop ends with it.
+# $$ becomes the host at the exec below, so the loop ends with it.
 ( while sleep 300 && kill -0 $$ 2> /dev/null; do fstrim "$MOUNT" 2> /dev/null || true; done ) &
 
 echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
 # TAP0 plus its NAT rules. The seed boot needs a TAP; a session's own egress is
 # h2's, so sessions get TAPs this script knows nothing about.
-bash "$DIR/orchestrator/scripts/net-up.sh"
+bash "$DIR/host/scripts/net-up.sh"
 
 # The package is imported by name, so the import path is the project root.
-# Same for the host scripts that run `-m orchestrator`.
 cd "$DIR"
 # The link `brayness publish` prints: each site at its own root, through
 # Lima's forward of the API port. Browsers resolve *.localhost locally.
 site_url_default='http://{id}.localhost:18080/'
 export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
-# The JavaScript host (h4b); BRAYNESS_HOST=python runs the old one to compare.
-if [ "${BRAYNESS_HOST:-node}" = python ]; then
-  exec python3 -m orchestrator serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"
-fi
 exec node host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

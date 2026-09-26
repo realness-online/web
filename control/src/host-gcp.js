@@ -117,11 +117,11 @@ export async function up(cloud, config, name, { smoke = false, ...options } = {}
 
   step("bootstrap on the host")
   await push(cloud, name)
-  await cloud.ssh(name, `sudo bash ${config.root}/orchestrator/scripts/host-bootstrap.sh`)
+  await cloud.ssh(name, `sudo bash ${config.root}/host/scripts/host-bootstrap.sh`)
 
   if (smoke) {
     step("smoke test")
-    await cloud.ssh(name, `bash ${config.root}/orchestrator/scripts/host-smoke.sh`)
+    await cloud.ssh(name, `bash ${config.root}/host/scripts/host-smoke.sh`)
   }
 
   await serve(cloud, config, name)
@@ -157,24 +157,24 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
  *
  * The image carries a copy of both directories, but the code is the thing that
  * changes, so the host gets the local working copies rather than whatever was
- * baked in. The orchestrator runs as root and leaves a root-owned
+ * baked in. The host runs as root and leaves a root-owned
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
 export async function push(cloud, name) {
   await buildTerminal()
   step("copy the code")
   await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
-  for (const dir of ["orchestrator"]) {
+  for (const dir of ["host"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
 }
 
-/** Start the orchestrator on the host, by path. */
+/** Start the host on the host, by path. */
 export async function serve(cloud, config, name) {
   step("serve")
   // By path, not inline: an ssh command line holding a pkill pattern would
   // kill the shell running the ssh command.
-  await cloud.ssh(name, `bash ${config.root}/orchestrator/scripts/orchestrator-restart.sh`)
+  await cloud.ssh(name, `bash ${config.root}/host/scripts/host-restart.sh`)
 }
 
 export async function restart(cloud, config, name) {

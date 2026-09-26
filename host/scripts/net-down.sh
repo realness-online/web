@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs inside the fc-local Lima guest. Undoes net-up.sh.
 #
-#   sudo bash /mnt/fc/orchestrator/scripts/net-down.sh
+#   sudo bash /mnt/fc/host/scripts/net-down.sh
 set -euo pipefail
 
 TAP="${TAP:-fc-tap0}"

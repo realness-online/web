@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Host-side login: one SSH login -> one brayness session.
 #
-#   ssh -t brayness-1 ~/brayness/orchestrator/clients/brayness-login.sh
+#   ssh -t brayness-1 ~/brayness/host/clients/brayness-login.sh
 #
 # Creates a session over the API, starts COMMAND in it (brayness by default), and
 # attaches this terminal to that session's pty. When it exits, the session is
@@ -17,7 +17,7 @@ COMMAND="${COMMAND:-brayness}"
 [ -t 0 ] || { echo "brayness-login needs a terminal: ssh -t" >&2; exit 1; }
 
 if ! curl -sS --max-time 5 -o /dev/null "$API/v1/health"; then
-  echo "no orchestrator answering on $API" >&2
+  echo "no host answering on $API" >&2
   exit 1
 fi
 

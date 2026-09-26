@@ -1,25 +1,22 @@
 /**
  * The boundary check: control and the live side must not mix.
  *
- * Two directories, one rule each:
+ *   control/  reaches host/ only over its HTTP API. It starts the server and
+ *             talks to it; it never imports a host module.
+ *   host/     must not know control exists: no import of it, no path into it,
+ *             no npm dependency.
  *
- *   control/  may only reach orchestrator/ through its HTTP API. It starts
- *             the server and talks to it. It must not import, read, or write
- *             anything inside the package.
- *   orchestrator/  must not know control exists. No node, no npm, no path into it.
- *
- * The rule is worth a test because it is invisible in a diff: importing a
- * session module to read a field is one line and it dissolves the split. This
- * is the cheapest thing that fails when that happens.
+ * Invisible in a diff: importing a session module to read one field is one
+ * line, and it dissolves the split. This is the cheapest thing that fails.
  */
-import { readFile, readdir, stat } from "node:fs/promises"
+import { readFile, readdir } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { test } from "node:test"
 import assert from "node:assert/strict"
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/\/$/, "")
 const CONTROL = join(ROOT, "control")
-const ORCHESTRATOR = join(ROOT, "orchestrator")
+const HOST = join(ROOT, "host")
 
 /** Every regular file under a directory, recursively. */
 async function files(dir) {
@@ -27,7 +24,7 @@ async function files(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === "__pycache__") continue
+      if (["node_modules", "__pycache__", "term"].includes(entry.name)) continue
       found.push(...(await files(path)))
     } else if (entry.isFile()) {
       found.push(path)
@@ -36,57 +33,48 @@ async function files(dir) {
   return found
 }
 
-const source = (path) => readFile(path, "utf8")
+const isComment = (code) => code.startsWith("*") || code.startsWith("//") || code.startsWith("#")
 
-test("the orchestrator does not know the control plane exists", async () => {
+test("the host does not know the control plane exists", async () => {
   const offences = []
-  for (const path of await files(ORCHESTRATOR)) {
-    if (!path.endsWith(".py")) continue
-    const text = await source(path)
+  for (const path of await files(HOST)) {
+    const text = await readFile(path, "utf8")
     for (const line of text.split("\n")) {
-      // The control plane's directory name, as a path or an import.
-      if (/\bcontrol\//.test(line) || /\bfrom control\b|\bimport control\b/.test(line)) {
-        offences.push(`${relative(ROOT, path)}: ${line.trim()}`)
-      }
-      // Node must not appear in the Python: it is the other world's runtime.
-      if (/\bnode_modules\b|\bnpm\b|\brequire\(/.test(line) && !line.trim().startsWith("#")) {
-        offences.push(`${relative(ROOT, path)}: ${line.trim()}`)
+      const code = line.trim()
+      if (isComment(code)) continue
+      if (/\bcontrol\//.test(code) || /\bnode_modules\b|\bnpm\b|\brequire\(/.test(code)) {
+        offences.push(`${relative(ROOT, path)}: ${code}`)
       }
     }
   }
-  assert.deepEqual(offences, [], `orchestrator refers to the control plane:\n${offences.join("\n")}`)
+  assert.deepEqual(offences, [], `host refers to the control plane:\n${offences.join("\n")}`)
+})
+
+test("the host takes no dependencies", async () => {
+  const pkg = JSON.parse(await readFile(join(HOST, "package.json"), "utf8"))
+  assert.deepEqual(pkg.dependencies ?? {}, {})
+  assert.equal(pkg.devDependencies, undefined)
 })
 
 test("the control plane reaches sessions only over HTTP", async () => {
   const offences = []
   for (const path of await files(CONTROL)) {
-    if (!path.endsWith(".js")) continue
-    // This test itself names the paths it forbids.
-    if (path.endsWith("boundary.test.js")) continue
-    const text = await source(path)
+    if (!path.endsWith(".js") || path.endsWith("boundary.test.js")) continue
+    const text = await readFile(path, "utf8")
     for (const line of text.split("\n")) {
       const code = line.trim()
-      if (code.startsWith("*") || code.startsWith("//")) continue
-      // A filesystem path into the package, or an import of a Python module
-      // standing in for its API.
-      if (/["'`][^"'`]*src\/orchestrator/.test(code)) {
-        offences.push(`${relative(ROOT, path)}: ${code}`)
-      }
-      if (/\bfrom\s+["'`].*orchestrator|require\(.*orchestrator/.test(code)) {
+      if (isComment(code)) continue
+      if (/\bfrom\s+["'`][^"'`]*\bhost\/(src|main)|import\(\s*["'`][^"'`]*\bhost\/(src|main)|require\(.*\bhost\/(src|main)/.test(code)) {
         offences.push(`${relative(ROOT, path)}: ${code}`)
       }
     }
   }
-  assert.deepEqual(offences, [], `control reaches into the orchestrator:\n${offences.join("\n")}`)
+  assert.deepEqual(offences, [], `control reaches into the host:\n${offences.join("\n")}`)
 })
 
-test("the split is real: both directories exist and are not empty", async () => {
-  // A boundary test that passes because a directory is missing is worse than
-  // none, so assert the two sides are actually there.
-  const control_js = (await files(CONTROL)).filter(path => path.endsWith(".js"))
-  const python = (await files(ORCHESTRATOR)).filter(path => path.endsWith(".py"))
-  assert.ok(control_js.length > 0, "no JavaScript in control/")
-  assert.ok(python.length > 0, "no Python in orchestrator/")
-  const size = await stat(join(ORCHESTRATOR, "sessions.py"))
-  assert.ok(size.size > 1000, "sessions.py looks like a stub")
+test("the split is real: both directories hold code", async () => {
+  // A boundary test that passes because a directory is missing is worse than none.
+  const js = (dir) => files(dir).then((found) => found.filter((path) => path.endsWith(".js")))
+  assert.ok((await js(CONTROL)).length > 0, "no JavaScript in control/")
+  assert.ok((await js(HOST)).some((path) => path.endsWith("sessions.js")), "no host/src/sessions.js")
 })

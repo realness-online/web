@@ -8,10 +8,11 @@ code that builds it and serves it.
 - `control/` - Node. The control plane: makes hosts exist, puts the code on
   them, takes them away. Reaches the live side only over its HTTP API. Run
   `node bin/webspace.js`. Its `scripts/` are the Mac and Lima build/run steps.
-- `orchestrator/` - the session API, exec, PTY, browser terminal (Python3
-  stdlib). The live side: it runs on the host and owns sessions. Its `scripts/`
-  are the host syscalls, its `guest/` runs inside a session, and its `clients/`
-  are the host-shell tools.
+- `host/` - the session API, exec, PTY, browser terminal, door (Node, standard
+  library only). The live side: it runs on the host and owns sessions. Its
+  `scripts/` are the host syscalls, its `guest/` runs inside a session, and its
+  `clients/` are the host-shell tools. `cd control && npm run check:host` is its
+  contract.
 - `can/` - Node, no dependencies. `can()`, rights pages, and phone identity;
   every door imports it. `cd can && npm test`.
 - `can-store/` - Node, no dependencies. Where the paths `can()` asks about
@@ -30,8 +31,8 @@ code that builds it and serves it.
 - `dist/` - everything generated: the staged harness, boot and template check
   runs, drain logs. Ignored; a fresh clone is source only.
 
-`control/` and `orchestrator/` are separate worlds and a test enforces it: the
-orchestrator must not know the control plane exists, and control may only reach
+`control/` and `host/` are separate worlds and a test enforces it: the
+host must not know the control plane exists, and control may only reach
 it through the API. `cd control && npm test`.
 
 ## How one is used
@@ -176,9 +177,9 @@ were close.
 - **The prod host idles stopped, itself.** `gcloud compute instances stop` keeps
   the boot disk, the xfs volume (`/etc/fstab` by UUID) and `/dev/kvm`; the disks
   are the only floor, $0.80/mo. A systemd timer checks every 5 minutes and stops
-  the host after 30 with no `firecracker`, no `python3 -m orchestrator` and no
+  the host after 30 with no `firecracker`, no `node host/main.js` and no
   interactive login; `/run/brayness-hold` (tmpfs) holds it open for work that is
-  not a running VM. h3 folds host lifecycle into the orchestrator.
+  not a running VM. h3 folds host lifecycle into the host.
 - **The artifact set is the session's home directory and the trace is its event
   log** (r7). Files come back and processes do not, and nothing replays a
   command. A bundle is `artifacts.tar.gz` (of `/root`) plus `trace.jsonl` plus a
@@ -209,8 +210,9 @@ were close.
   lifecycle only (x1).
 - **ubuntu-base plus the CI kernel, not the CI rootfs** - the CI rootfs has an
   empty dpkg and is a boot fixture, not a session image.
-- **The orchestrator is ours, Python3 stdlib**, in `orchestrator/`; rejected
-  firecracker-go-sdk, Kata, and flintlock.
+- **The host is ours, Node standard library**, in `host/`; rejected
+  firecracker-go-sdk, Kata, and flintlock. It began as Python (`host/`,
+  gone after h4b); `check:host` is the contract both passed.
 - **Sessions get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
   `host-drain.sh <host> [--delete]` exports every session, streams each bundle to
@@ -321,11 +323,11 @@ per line (`argv`, `cwd`, `stdin_b64`) and answers with one
 line-oriented channel; no shell, so `argv` is exec'd directly and a session that
 wants a shell asks for one.
 
-`orchestrator/clients/vsock-exec.py` is the host-side client. It exits with the guest
+`host/clients/vsock-exec.py` is the host-side client. It exits with the guest
 command's own exit code, so shell composition works:
 
 ```bash
-sudo python3 /mnt/fc/orchestrator/clients/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
+sudo python3 /mnt/fc/host/clients/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
 ```
 
 Needs root: Firecracker creates the socket as root and the socket mode does not
@@ -420,15 +422,15 @@ host over the f2 channel, which is the one call r3's session API makes.
 
 `control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at `/opt/fc/sessions`
 (persistent across runs, `FRESH=1` to wipe), TAP0 and its NAT, and
-`orchestrator/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
+`host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
 
-The orchestrator is python3 stdlib. It builds the seed itself - boot the
+The host builds the seed itself - boot the
 template, pause, snapshot - and records what it built from in `seed/seed.json`,
 so a start with a mismatched kernel, template or Firecracker rebuilds and
-`create` refuses a seed that does not match. `host.py` owns TAPs and the volume,
-`firecracker.py` the unix-socket REST calls, `vsock.py` the guest channel,
-`sessions.py` the create/destroy cycle, `server.py` the routes:
+`create` refuses a seed that does not match. In `host/src/`, `host.js` owns TAPs and the volume,
+`firecracker.js` the unix-socket REST calls, `vsock.js` the guest channel,
+`sessions.js` the create/destroy cycle, `server.js` the routes:
 `GET /v1/health`, `GET|POST /v1/sessions`, `GET|DELETE /v1/sessions/{id}`.
 
 A session is one directory - `rootfs.ext4` reflinked from the seed (f5b),
@@ -448,7 +450,7 @@ limactl shell fc-local sh -c 'curl -sS -X POST http://127.0.0.1:8080/v1/sessions
 `POST /v1/sessions/{id}/exec` takes `{"argv": [...], "cwd": "...",
 "stdin_b64": "..."}` and answers `{"exit_code", "stdout_b64", "stderr_b64"}`.
 It is the f2 channel addressed by session id instead of socket path: the
-orchestrator resolves the id to one directory and one `vsock.sock`, so there is
+host resolves the id to one directory and one `vsock.sock`, so there is
 no route to another session's disk. argv is exec'd, not shell-expanded (the
 guest agent has no shell); a non-zero exit code is a 200, because the exec ran.
 Output stays base64 so binary survives JSON.
@@ -461,7 +463,7 @@ goes.
 
 ## A terminal (r3c)
 
-`orchestrator/pty.py` listens on 8081 for a framed terminal stream, one TCP
+`host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
 `{"session": "s-...", "cols": 80, "rows": 24}`; the server answers
 `{"ok": true}` and then relays the guest agent's frames byte for byte:
@@ -528,16 +530,16 @@ checks hid this by calling `sync` after every write by hand.
 
 ## A browser terminal (r5)
 
-`orchestrator/webterm.py` serves a page on 8090 and upgrades `/pty?session=<id>`
-to a websocket, then bridges websocket messages to the framed terminal stream on 8081. The websocket is a transport in front of `pty.py`, not a second terminal;
+`host/src/webterm.js` serves a page on 8090 and upgrades `/pty?session=<id>`
+to a websocket, then bridges websocket messages to the framed terminal stream on 8081. The websocket is a transport in front of `pty.js`, not a second terminal;
 a message is one of the same JSON frames, so the bridge is a line <-> message
 pump.
 
 The page is the terminal example, `brayness-examples/terminal`: Ghostty's
 libghostty-vt as WebAssembly, drawn on a canvas, so pi's TUI draws as it does in
 a native terminal. `control/scripts/terminal-build.sh` fetches it with giget,
-builds it, and puts `dist/` at `orchestrator/term/` (gitignored), which ships with
-the orchestrator code. The host needs no Node. The door redirects with
+builds it, and puts `dist/` at `host/term/` (gitignored), which ships with
+the host code. The door redirects with
 `&exec=brayness`, and the page sends that line on every connect, so a visitor
 lands in a new Pi conversation in the same hosted session. Pi's exit lands in
 bash. Past conversations stay saved and searchable through `/remember` without
@@ -545,7 +547,7 @@ sending their full history to the model on refresh.
 
 A bare `GET /` is the door: the page cannot make a session itself, because the
 API that creates one is on loopback and the browser would need that port open, so
-`webterm.py` makes one in process and redirects to it with `?session=` on the
+`host/src/webterm.js` makes one in process and redirects to it with `?session=` on the
 URL. A refresh keeps that session; a second bare URL makes a second one, which is
 what an unauthenticated door does until h1. Without that redirect the page
 answered a stranger with "no session: open this page with ?session=<id>".
@@ -566,7 +568,7 @@ A bundle is three files in the volume's `exports/<id>/`:
 
 ```
 artifacts.tar.gz   the session's home directory (/root), gzipped
-trace.jsonl        every event the orchestrator saw
+trace.jsonl        every event the host saw
 manifest.json      sha256 and size of both, the identity it had, the seed it forked from
 ```
 
@@ -581,7 +583,7 @@ is the head of the trace that replaced it.
 harness at `/root/brayness`, laid out like the Mac's, so harness edits, pi's transcripts, and `work/`
 travel together. Identity (`/etc/machine-id`, the session id) does not:
 restoring an identity would make two sessions share one. A session that writes
-outside its home is outside the contract, and `ARTIFACT_PATHS` in `sessions.py`
+outside its home is outside the contract, and `ARTIFACT_PATHS` in `host/src/sessions.js`
 is the one place that decides. Files come back; processes do not; nothing
 replays.
 
@@ -668,17 +670,17 @@ the disks, the mount and `/dev/kvm` all come back.
 
 `idle-guard.sh` installs the timer that stops the host when nothing is
 happening: every 5 minutes, stop after 30 with no `firecracker`, no
-`python3 -m orchestrator` and no interactive login. `gcloud compute ssh
+`node host/main.js` and no interactive login. `gcloud compute ssh
 --command` sessions are `@notty` and do not count, so work that is not a running
 VM has to hold it open:
 
 ```bash
-sudo bash ~/brayness/orchestrator/scripts/idle-guard.sh
+sudo bash ~/brayness/host/scripts/idle-guard.sh
 sudo touch /run/brayness-hold     # tmpfs; cleared by a boot
 ```
 
 A guest `poweroff` does become `TERMINATED`: with the hold removed and the
-orchestrator stopped, the timer stopped the host 2.5 minutes later, no API call
+host stopped, the timer stopped the host 2.5 minutes later, no API call
 involved. Resume with `gcloud compute instances start brayness-1`.
 
 ### A host from the image
@@ -691,7 +693,7 @@ node control/bin/webspace.js prod host up brayness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
-sessions volume, copies `orchestrator/`, and runs its `scripts/host-bootstrap.sh` on
+sessions volume, copies `host/`, and runs its `scripts/host-bootstrap.sh` on
 the host: grow the root partition if it lags, `net-up.sh`,
 `sessions-volume.sh`, `idle-guard.sh`, then one state line per resource.
 `--smoke` then runs
@@ -705,7 +707,7 @@ Measured: **2m50s** from nothing to a host that serves a session (the seed is
 The image already carries a grown root partition, so `growpart` reports NOCHANGE
 on a host built from it; 20 GB is the floor because an image cannot be smaller
 than the disk it was taken from. `net-up.sh` has to run before the
-orchestrator can build a seed, or `build_seed` stops with `no fc-tap0`.
+host can build a seed, or `build_seed` stops with `no fc-tap0`.
 
 ## The loop on x86_64 (x1)
 
@@ -720,7 +722,7 @@ from their own path instead of `/mnt/fc`.
 sudo bash ~/brayness/scripts/template-build.sh
 bash ~/brayness/scripts/f3-verify.sh          # 19/19
 sudo bash ~/brayness/scripts/f4-verify.sh     # 7/7, the x1 done-when
-sudo python3 -m orchestrator serve --volume /opt/fc/sessions/mnt &
+sudo node host/main.js serve --volume /opt/fc/sessions/mnt &
 bash ~/brayness/scripts/x1-verify.sh          # 11/11
 ```
 
@@ -843,7 +845,7 @@ class="language-js">`), so a highlighter regex that expects `<pre><code`
   `iptables -t nat -C ...` works, `iptables -C -t nat ...` dies with
   `Bad argument 'nat'`.
 - `fcnet-setup.sh`, the MAC-to-address script `brayness-net-up` calls, is
-  Firecracker CI's and is not in ubuntu-base. It is vendored in `orchestrator/guest/`
+  Firecracker CI's and is not in ubuntu-base. It is vendored in `host/guest/`
   rather than read out of `squashfs-root`, which is a leftover of the f1 fetch
   and may not exist on a fresh host.
 - Run the tap and NAT setup with `sudo`; Firecracker here runs as root, so the
@@ -893,7 +895,7 @@ I/O error (os error 5)` in the middle of a snapshot. `dev-stack.sh` checks free
 
 - `cp --reflink=always` cannot cross a filesystem: cloning the seed from the
   ext4 boot disk fails with `Invalid cross-device link`. The seed has to live on
-  the sessions volume, which is also where the orchestrator keeps it (d3e).
+  the sessions volume, which is also where the host keeps it (d3e).
 - `pgrep -f "sshd: "` matches the always-running listener (`sshd: /usr/sbin/sshd
 -D [listener] ...`), so an activity check written that way is always true; and
   `pgrep -f <pattern>` matches any argv containing the pattern, including the
@@ -915,17 +917,16 @@ SEARCH_TERMS`. `tail -5` keeps the message.
   twice over: once plainly, and once when the same command also contains the text
   the pattern matches (a restart one-liner holds both the `pkill` and the
   `nohup ... serve`). Put it in a script and run it with `bash -s`
-  (`orchestrator/scripts/orchestrator-restart.sh`) so the pattern is never on the remote command line.
+  (`host/scripts/host-restart.sh`) so the pattern is never on the remote command line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
   process named `firecracker` - which is what every leftover check and the idle
   guard count. One would hold a host awake forever. Reaping has to poll:
   `waitpid(pid, WNOHANG)` issued right after SIGKILL returns 0 while the process
   is still dying, and nothing else ever collects it. `host-smoke.sh` and
   `r7-verify.sh` both check for leftovers, which is how this was caught.
-- The orchestrator runs as root, so it leaves root-owned `__pycache__` in the
-  source tree, and the next `scp` of the code over it fails for the login user
-  with `failed to upload directory`. Start it with `PYTHONDONTWRITEBYTECODE=1`
-  (`orchestrator-restart.sh` does) and chown the tree before copying
+- The Python host ran as root and left root-owned `__pycache__` in the
+  source tree, and the next `scp` of the code over it failed for the login user
+  with `failed to upload directory`. Chown the tree before copying
   (`host-bootstrap.sh` does).
 - A disk whose name collides with an instance's is attached rather than created:
   asking for a 20 GB boot disk while the 100 GB `brayness-1` still existed booted
@@ -975,8 +976,8 @@ storage` call needing a local crc32c fails. Compare a bundle with the object's
   each candidate for real, and r9 ran in us-west1-b for that reason. `host-up.sh`
   removes the boot disk it just made when a create fails - before that, one
   refusal left 20 GB billing unattached.
-- The orchestrator's first serve on a fresh host builds the seed (~36s of boot)
-  before the listener answers, so `orchestrator-restart.sh` waits three minutes, not one.
+- The host's first serve on a fresh host builds the seed (~36s of boot)
+  before the listener answers, so `host-restart.sh` waits three minutes, not one.
 
 ## Scope
 

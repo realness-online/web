@@ -2,7 +2,7 @@
 """Interactive terminal for a session, from a real terminal.
 
 The browser page is fine for a shell; a full-screen agent TUI wants a real
-terminal emulator. This connects to the orchestrator's framed PTY stream and
+terminal emulator. This connects to the host's framed PTY stream and
 pipes the local tty through it, so the session's pty sees your terminal and your
 terminal renders what the session draws.
 
