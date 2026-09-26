@@ -22,18 +22,27 @@ const PHONES = /\+[1-9]\d{6,14}/g
 export const hash_phones = (text) =>
   text.replace(PHONES, (phone) => `#${createHash("sha256").update(phone).digest("hex").slice(0, 12)}`)
 
-/** Pins live at `pins/+A`, written once; `can()` denies that root to everyone. */
-export const storage_pins = (storage) => ({
-  async claim(phone, uid) {
-    try {
-      await storage.put(`pins/${phone}`, uid, { if_version: null })
-      return uid
-    } catch (error) {
-      if (error.code !== "conflict") throw error
-      return (await storage.get(`pins/${phone}`))?.body.toString("utf8")
-    }
-  },
-})
+/**
+ * Pins live at `pins/+A`, written once; `can()` denies that root to everyone.
+ * A pin never changes once written, so each is read from storage only once.
+ */
+export const storage_pins = (storage) => {
+  const known = new Map()
+  return {
+    async claim(phone, uid) {
+      if (known.has(phone)) return known.get(phone)
+      let pinned = uid
+      try {
+        await storage.put(`pins/${phone}`, uid, { if_version: null })
+      } catch (error) {
+        if (error.code !== "conflict") throw error
+        pinned = (await storage.get(`pins/${phone}`))?.body.toString("utf8")
+      }
+      if (pinned) known.set(phone, pinned)
+      return pinned
+    },
+  }
+}
 
 class Status extends Error {
   constructor(status) {
