@@ -129,8 +129,14 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
 
   return createServer(async (request, response) => {
     const started = Date.now()
-    const path = (request.url ?? "/").split("?")[0].slice(1)
-    const action = action_for(request.method, path)
+    // Decoded once; `can()` refuses a `%` left over, so double encoding fails.
+    let path = (request.url ?? "/").split("?")[0].slice(1)
+    try {
+      path = decodeURIComponent(path)
+    } catch {
+      path = null
+    }
+    const action = path === null ? null : action_for(request.method, path)
     const origin = request.headers.origin
     let who = null
     let status = 200
@@ -145,6 +151,7 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
         response.writeHead((status = 204), PREFLIGHT).end()
         return
       }
+      if (path === null) throw new Status(400)
       if (!action) throw new Status(405)
       who = await who_is(request)
       await handle(request, response, path, action, who)
@@ -155,7 +162,7 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
       if (!response.headersSent) response.writeHead(status).end()
       else response.destroy()
     } finally {
-      const line = `${new Date().toISOString()} ${who?.phone ?? "-"} ${request.method} /${path} ${status} ${Date.now() - started}ms`
+      const line = `${new Date().toISOString()} ${who?.phone ?? "-"} ${request.method} /${path ?? "(bad encoding)"} ${status} ${Date.now() - started}ms`
       log(hash_phones(line))
     }
   })

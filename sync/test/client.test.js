@@ -76,6 +76,14 @@ test("sync pushes, then skips what has not changed", async () => {
   assert.deepEqual(await a.ls("can://~/plans/"), ["sub/", "a.md"])
 })
 
+test("names with spaces and dashes travel", async () => {
+  const a = as(A)
+  const dir = await local("names", { "02-08 Sunday — flow/notes.md": "n", "a#b?c.md": "q" })
+  assert.deepEqual((await a.sync(dir, "can://~/names/")).pushed, ["02-08 Sunday — flow/notes.md", "a#b?c.md"])
+  assert.equal((await a.cat("can://~/names/a#b?c.md")).toString(), "q")
+  assert.deepEqual(Object.keys(await a.walk("can://~/names/")).sort(), ["02-08 Sunday — flow/notes.md", "a#b?c.md"])
+})
+
 test("edits travel both ways between two folders", async () => {
   const a = as(A)
   const laptop = await local("two/laptop", { "note.md": "one", "img.bin": Buffer.from([0, 1, 2]) })

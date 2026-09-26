@@ -62,6 +62,15 @@ test("a deep list maps every file below to its etag", async () => {
   assert.equal(await status("GET", `people/${A}/deep/?deep`, { headers: as(B) }), 403)
 })
 
+test("names are decoded once; double encoding and bad encoding are refused", async () => {
+  const name = encodeURIComponent("Sunday evening — vibe.md")
+  assert.equal(await status("PUT", `people/${A}/vault/${name}`, { headers: as(A), body: "v" }), 200)
+  const listed = await (await call("GET", `people/${A}/vault/`, { headers: as(A) })).json()
+  assert.ok(listed.files.includes("Sunday evening — vibe.md"))
+  assert.equal(await status("GET", `people/${A}/vault/${encodeURIComponent(name)}`, { headers: as(A) }), 403)
+  assert.equal(await status("GET", `people/${A}/vault/%E0%A4%A`, { headers: as(A) }), 400)
+})
+
 test("another person never reaches my private files", async () => {
   await call("PUT", `people/${A}/vault/secret.md`, { headers: as(A), body: "secret" })
   await call("PUT", `people/${A}/relations.html.gz`, { headers: as(A), body: "friends" })

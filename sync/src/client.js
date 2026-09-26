@@ -64,9 +64,10 @@ export function client({ url, token, fetcher = fetch }) {
     return rest
   }
 
-  const call = async (method, path, { body, headers = {} } = {}) => {
+  const call = async (method, path, { body, headers = {}, query = "" } = {}) => {
     const auth = token ? { authorization: `Bearer ${token}` } : {}
-    return fetcher(`${url}/${key(path)}`, { method, body, headers: { ...auth, ...headers } })
+    const encoded = key(path).split("/").map(encodeURIComponent).join("/")
+    return fetcher(`${url}/${encoded}${query && `?${query}`}`, { method, body, headers: { ...auth, ...headers } })
   }
 
   const expect = async (response, what, ok = [200]) => {
@@ -117,7 +118,7 @@ export function client({ url, token, fetcher = fetch }) {
     /** Every remote file below a folder, name to version. */
     async walk(path) {
       const folder = path.endsWith("/") ? path : `${path}/`
-      return (await expect(await call("GET", `${folder}?deep`), `walk ${path}`)).json()
+      return (await expect(await call("GET", folder, { query: "deep" }), `walk ${path}`)).json()
     },
 
     /** Two-way: whichever side moved from the base wins; both moving is a conflict. */
