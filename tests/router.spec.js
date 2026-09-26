@@ -42,6 +42,18 @@ describe('@/router', () => {
     me.value = null
   })
 
+  it('keeps someone signed on on the page when a terminal is waiting', () => {
+    current_user.value = { uid: 'u1' }
+    me.value = { name: 'Scott Fryxell' }
+    const enter = route_for('/sign-on').beforeEnter
+    expect(enter({ query: { cli: '53124', state: 's'.repeat(32) } })).toBe(true)
+    expect(enter({ query: { cli: 'bad', state: 's'.repeat(32) } })).toBe(
+      '/account'
+    )
+    current_user.value = null
+    me.value = null
+  })
+
   it('sends old /account?sign-in links to the sign-on page', () => {
     const enter = route_for('/account').beforeEnter
     expect(enter({ query: {} })).toBe(true)

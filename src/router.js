@@ -3,6 +3,7 @@ import { current_user, me } from '@/utils/serverless'
 import { valid_name } from '@/utils/valid-name'
 import Thoughts from '@/views/Thoughts'
 import { after_sign_on } from '@/utils/after-sign-on'
+import { cli_request } from '@/utils/cli-hand-off'
 
 /** Signed in and named: nothing left for the sign-on page to do. */
 const signed_on = () => !!current_user.value && valid_name(me.value?.name)
@@ -31,7 +32,10 @@ const routes = [
     path: '/sign-on',
     component: () => import('@/views/SignOn'),
     meta: { support: true },
-    beforeEnter: to => (signed_on() ? after_sign_on(to.query) : true)
+    // Already signed on goes where it was headed, unless a terminal on this
+    // computer is waiting for the sign-in (`brayness login`).
+    beforeEnter: to =>
+      signed_on() && !cli_request(to.query) ? after_sign_on(to.query) : true
   },
   { path: '/sign-in', redirect: to => ({ path: '/sign-on', query: to.query }) },
   {
