@@ -56,7 +56,7 @@ const commands = {
   async sync([local, remote]) {
     const report = await store.sync(local, remote)
     for (const [kind, names] of Object.entries(report)) {
-      if (names.length) console.log(`${kind}: ${names.length}${kind === "conflicts" ? `\n  ${names.join("\n  ")}` : ""}`)
+      if (names.length) console.log(`${kind}: ${names.length}${["conflicts", "kept_both"].includes(kind) ? `\n  ${names.join("\n  ")}` : ""}`)
     }
     if (report.conflicts.length) process.exitCode = 1
   },

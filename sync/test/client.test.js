@@ -7,7 +7,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
 import { randomUUID } from "node:crypto"
 import { join } from "node:path"
 import { disk } from "brayness-can-store/disk"
-import { client } from "../src/client.js"
+import { client, conflict_name } from "../src/client.js"
 import { dev_issuer } from "../src/dev-token.js"
 import { rights } from "../src/rights.js"
 import { sync_service } from "../src/server.js"
@@ -110,29 +110,55 @@ test("deletes travel both ways, only onto unchanged files", async () => {
   await rm(join(session, "kept.md"))
   await writeFile(join(laptop, "kept.md"), "y, edited")
   await a.sync(laptop, "can://~/del/")
-  assert.deepEqual((await a.sync(session, "can://~/del/")).conflicts, ["kept.md"])
-  assert.equal((await a.cat("can://~/del/kept.md")).toString(), "y, edited")
+  assert.deepEqual((await a.sync(session, "can://~/del/")).pulled, ["kept.md"])
+  assert.equal(await readFile(join(session, "kept.md"), "utf8"), "y, edited")
 })
 
-test("sync reports a conflict instead of overwriting either side", async () => {
+test("text edits to different lines merge three ways", async () => {
   const a = as(A)
-  const dir = await local("conflict", { "doc.md": "v1" })
-  await a.sync(dir, "can://~/conflict/")
-  await a.put("can://~/conflict/doc.md", "changed elsewhere")
-  await writeFile(join(dir, "doc.md"), "v2 here")
-  assert.deepEqual((await a.sync(dir, "can://~/conflict/")).conflicts, ["doc.md"])
-  assert.equal((await a.cat("can://~/conflict/doc.md")).toString(), "changed elsewhere")
-  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "v2 here")
+  const dir = await local("merge", { "doc.md": "one\ntwo\nthree\n" })
+  await a.sync(dir, "can://~/merge/")
+  await a.put("can://~/merge/doc.md", "ONE\ntwo\nthree\n")
+  await writeFile(join(dir, "doc.md"), "one\ntwo\nTHREE\n")
+  assert.deepEqual((await a.sync(dir, "can://~/merge/")).merged, ["doc.md"])
+  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "ONE\ntwo\nTHREE\n")
+  assert.equal((await a.cat("can://~/merge/doc.md")).toString(), "ONE\ntwo\nTHREE\n")
+  assert.equal(await readFile(join(dir, ".can-base/doc.md"), "utf8"), "ONE\ntwo\nTHREE\n")
 })
 
-test("sync adopts identical files it never saw, conflicts on different ones", async () => {
+test("overlapping edits keep both, on both sides", async () => {
+  const a = as(A)
+  const dir = await local("both", { "doc.md": "v1\n", "img.bin": Buffer.from([0, 1]) })
+  await a.sync(dir, "can://~/both/")
+  await a.put("can://~/both/doc.md", "theirs\n")
+  await a.put("can://~/both/img.bin", Buffer.from([0, 2]))
+  await writeFile(join(dir, "doc.md"), "mine\n")
+  await writeFile(join(dir, "img.bin"), Buffer.from([0, 3]))
+  assert.deepEqual((await a.sync(dir, "can://~/both/")).kept_both, ["doc.md", "img.bin"])
+  assert.equal(await readFile(join(dir, "doc.md"), "utf8"), "mine\n")
+  assert.equal(await readFile(join(dir, "doc.conflict.md"), "utf8"), "theirs\n")
+  assert.deepEqual(await readFile(join(dir, "img.conflict.bin")), Buffer.from([0, 2]))
+  assert.equal((await a.cat("can://~/both/doc.md")).toString(), "mine\n")
+  assert.equal((await a.cat("can://~/both/doc.conflict.md")).toString(), "theirs\n")
+  const again = await a.sync(dir, "can://~/both/")
+  assert.deepEqual(again.unchanged, ["doc.conflict.md", "doc.md", "img.bin", "img.conflict.bin"])
+})
+
+test("conflict names skip ones already taken", () => {
+  const taken = new Set(["a/note.conflict.md"])
+  assert.equal(conflict_name("a/note.md", (n) => taken.has(n)), "a/note.conflict-2.md")
+  assert.equal(conflict_name("Makefile", () => false), "Makefile.conflict")
+  assert.equal(conflict_name("dir.v2/poster.html.gz", () => false), "dir.v2/poster.conflict.html.gz")
+})
+
+test("sync adopts identical files it never saw, keeps both of different ones", async () => {
   const a = as(A)
   await a.put("can://~/adopt/same.md", "same")
   await a.put("can://~/adopt/other.md", "theirs")
   const dir = await local("adopt", { "same.md": "same", "other.md": "mine" })
   const report = await a.sync(dir, "can://~/adopt/")
   assert.deepEqual(report.adopted, ["same.md"])
-  assert.deepEqual(report.conflicts, ["other.md"])
+  assert.deepEqual(report.kept_both, ["other.md"])
 })
 
 test("sync into someone else's folder fails loudly", async () => {
