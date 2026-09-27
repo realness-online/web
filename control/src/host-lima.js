@@ -8,7 +8,7 @@
  *
  * The steps are the same scripts a GCP host runs. What differs is the transport
  * (`limactl shell` rather than `gcloud compute ssh`) and that Lima has no disks
- * to create: the VM's own filesystem holds the sessions volume.
+ * to create: the VM's own filesystem holds the actors volume.
  */
 import { join } from "node:path"
 import { attempt, step, note } from "./exec.js"
@@ -36,7 +36,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
 
   await buildTerminal()
 
-  // --fresh wipes the sessions volume, so the seed rebuilds from the new template.
+  // --fresh wipes the actors volume, so the seed rebuilds from the new template.
   if (fresh) await down(lima, config, name)
   step("start the stack")
   const started = await startStack(lima, config, { fresh })
@@ -53,7 +53,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
     api: `${config.api}/v1/health`,
     terminal: `http://127.0.0.1:${config.webPort}/`,
     seed: health.seed?.built ? "built" : "missing",
-    sessions: countOf(health.sessions),
+    actors: countOf(health.actors),
   }
 }
 
@@ -88,13 +88,15 @@ export async function down(lima, config, name, { mode = "stop" } = {}) {
 }
 
 export async function restart(lima, config, name) {
+  const health = await probeHealth(config.api)
+  if (health?.actors?.running) throw new Error(`${health.actors.running} actor(s) running; stop them before restarting the dev host`)
   await buildTerminal()
   await down(lima, config, name)
   return serve(lima, config, name)
 }
 
 /**
- * The stack: sessions volume, TAP, API.
+ * The stack: actors volume, TAP, API.
  *
  * `control/scripts/dev-stack.sh` does all three and `exec`s into the host, so
  * it is started detached - the host outlives this command and limactl
@@ -122,8 +124,8 @@ async function probeHealth(api) {
   }
 }
 
-function countOf(sessions) {
-  const counts = Object.entries(sessions ?? {})
+function countOf(actors) {
+  const counts = Object.entries(actors ?? {})
     .map(([state, n]) => `${n} ${state}`)
     .join(", ")
   return counts || "none"

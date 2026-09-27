@@ -1,5 +1,5 @@
 /**
- * Move a host's sessions to a bucket, and only then let the host go.
+ * Move a host's actors to a bucket, and only then let the host go.
  *
  *   webspace prod host drain brayness-2            # export and ship, host stays
  *   webspace prod host drain brayness-2 --delete   # ... and delete it after
@@ -9,10 +9,10 @@
  * bundles and cannot be trusted to decide it is safe to die. This does both
  * from the outside.
  *
- * The order is the point. Every session is exported, streamed to
- * `gs://<bucket>/sessions/<id>/bundle.tar.gz`, and checked against what the
+ * The order is the point. Every actor is exported, streamed to
+ * `gs://<bucket>/actors/<id>/bundle.tar.gz`, and checked against what the
  * bucket says it stored; the bundle is then dropped from the host's volume. The
- * delete happens last and only if every session came back confirmed. Anything
+ * delete happens last and only if every actor came back confirmed. Anything
  * else leaves the host up, so a re-run is the retry.
  *
  * The shell version was 235 lines, and about 60 of them existed to work around
@@ -51,33 +51,33 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
       "no host answering - start it with host/scripts/host-restart.sh",
     )
   }
-  note("health: seed and sessions answered")
+  note("health: seed and actors answered")
 
-  const sessions = JSON.parse(await api.call("/v1/sessions")).sessions ?? []
-  step("sessions on the host")
-  if (sessions.length === 0) note("none")
-  for (const session of sessions) note(`${session.id}: ${session.state}`)
+  const actors = JSON.parse(await api.call("/v1/actors")).actors ?? []
+  step("actors on the host")
+  if (actors.length === 0) note("none")
+  for (const actor of actors) note(`${actor.id}: ${actor.state}`)
 
   // Only now is there anything to keep: a guard that refused left no log behind.
   await mkdir(run, { recursive: true })
 
   step("export and ship")
   const counts = { shipped: 0, skipped: 0, failed: 0 }
-  for (const session of sessions) {
-    if (session.state === "incomplete") {
+  for (const actor of actors) {
+    if (actor.state === "incomplete") {
       // A directory with no record: a create that died mid-flight. No disk, so
       // nothing to export. Reported, because a skip nobody can see is worse
       // than a failure - and it must not block the delete forever.
-      note(`SKIP ${session.id}: no disk (state ${session.state})`)
+      note(`SKIP ${actor.id}: no disk (state ${actor.state})`)
       counts.skipped += 1
       continue
     }
     try {
-      const shipped = await shipOne(cloud, config, name, api, session.id, run)
-      note(`${session.id}: ${shipped.bytes} bytes, ${shipped.proof}`)
+      const shipped = await shipOne(cloud, config, name, api, actor.id, run)
+      note(`${actor.id}: ${shipped.bytes} bytes, ${shipped.proof}`)
       counts.shipped += 1
     } catch (error) {
-      note(`FAIL ${session.id}: ${error.message}`)
+      note(`FAIL ${actor.id}: ${error.message}`)
       counts.failed += 1
       break
     }
@@ -86,12 +86,12 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
   note(`${counts.shipped} shipped, ${counts.skipped} skipped, ${counts.failed} failed`)
   if (counts.failed > 0) {
     throw new DrainError(
-      "the host is left up: fix and re-run, or the delete takes sessions with it",
+      "the host is left up: fix and re-run, or the delete takes actors with it",
     )
   }
 
   if (!drop) {
-    note(`bundles: gs://${config.bucket}/sessions/<id>/bundle.tar.gz`)
+    note(`bundles: gs://${config.bucket}/actors/<id>/bundle.tar.gz`)
     note(`run log: ${run}`)
     return { ...counts, run, deleted: false }
   }
@@ -100,9 +100,9 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
   return { ...counts, run, deleted: true }
 }
 
-/** Export one session, prove it arrived, then drop it from the volume. */
+/** Export one actor, prove it arrived, then drop it from the volume. */
 async function shipOne(cloud, config, name, api, id, run) {
-  const status = await api.call(`/v1/sessions/${id}/export`, { method: "POST", timeout: 300 })
+  const status = await api.call(`/v1/actors/${id}/export`, { method: "POST", timeout: 300 })
   // The export endpoint answers with the manifest itself.
   let manifest
   try {
@@ -138,7 +138,7 @@ async function shipOne(cloud, config, name, api, id, run) {
     throw new DrainError(`what came down (${actual}) is not the bundle (${expected})`)
   }
 
-  const object = `gs://${config.bucket}/sessions/${id}/bundle.tar.gz`
+  const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
   const copied = await attempt("gcloud", ["storage", "cp", "--quiet", archive, object])
   if (!copied.ok) throw new DrainError(`upload failed: ${lastLine(copied.err)}`)
 
@@ -147,7 +147,7 @@ async function shipOne(cloud, config, name, api, id, run) {
     "gcloud",
     cloud.sshArgs(
       name,
-      `sudo rm -rf ${config.hostExports ?? "/opt/fc/sessions/mnt/exports"}/${id}`,
+      `sudo rm -rf ${config.hostExports ?? "/opt/fc/actors/mnt/exports"}/${id}`,
     ),
   )
   if (!removed.ok) throw new DrainError("could not drop the bundle from the volume")
@@ -194,7 +194,7 @@ async function storedProof(archive, object, id) {
  * descriptor instead, the way the shell's `>` did.
  */
 async function streamToFile(cloud, config, name, target, id) {
-  const exports = config.hostExports ?? "/opt/fc/sessions/mnt/exports"
+  const exports = config.hostExports ?? "/opt/fc/actors/mnt/exports"
   const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
   const handle = await open(target, "w")
   try {
@@ -220,7 +220,7 @@ async function streamToFile(cloud, config, name, target, id) {
 /**
  * Delete the host and the disks it actually has.
  *
- * Enumerated, not guessed. Assuming `<name>-sessions` is wrong for
+ * Enumerated, not guessed. Assuming `<name>-actors` is wrong for
  * brayness-1, whose volume is named `brayness-sessions`: the guess deletes the
  * instance and leaves a 30 GB disk behind, unattached and still billed.
  */
@@ -258,7 +258,7 @@ async function deleteHostAndDisks(cloud, config, name) {
  *
  * Read from JSON, not from `--format=value(disks[].source.basename())`. That
  * format looks right and returns the *instance* name - so a delete loop over it
- * removes nothing and a 30 GB sessions disk keeps billing after its host is
+ * removes nothing and a 30 GB actors disk keeps billing after its host is
  * gone. `source` is a full URL to the disk itself; this takes its last path
  * segment. Verified against brayness-1, whose two disks are the boot disk and
  * a volume whose name does not match any pattern.

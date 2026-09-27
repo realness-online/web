@@ -1,17 +1,19 @@
-// The door: requests a session makes of its host, over guest-initiated vsock.
+// The door: requests an actor makes of its host, over guest-initiated vsock.
 //
-// A guest connecting to CID 2 port 54 reaches `<session>/vsock.sock_54` on the
-// host. Only that VM can open it, so the socket is the session's identity.
+// A guest connecting to CID 2 port 54 reaches `<actor>/vsock.sock_54` on the
+// host. Only that VM can open it, so the socket is the actor's identity.
 //
-//   {"op": "publish", "path": "/root/site"}  ->  {"ok": true, "url": "..."}
+//   {"op": "publish", "path": "/brayness/site"}  ->  {"ok": true, "url": "..."}
 //
-// One listener per running session, kept in step by a reconciler rather than
+// One listener per running actor, kept in step by a reconciler rather than
 // hooks in every start, reload, and destroy path.
 
 import { existsSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
 import { logger } from "./log.js"
 import { Lines } from "./vsock.js"
+import { can } from "../../can/src/can.js"
+import { issue_recovery_pass } from "../../sync/src/recovery-pass.js"
 
 const LOG = logger("door")
 const DOOR_PORT = 54
@@ -22,7 +24,7 @@ export class Door {
   constructor(store, siteUrl = "/s/{id}/") {
     this.store = store
     this.siteUrl = siteUrl
-    this.listeners = new Map() // session id -> { path, server }
+    this.listeners = new Map() // actor id -> { path, server }
   }
 
   start() {
@@ -38,7 +40,7 @@ export class Door {
   }
 
   reconcile() {
-    const live = new Map(this.store.liveSessions().map((record) => [record.id, record]))
+    const live = new Map(this.store.liveActors().map((record) => [record.id, record]))
     for (const [id, { path, server }] of this.listeners) {
       if (!live.has(id) || !existsSync(path)) {
         server.close()
@@ -71,8 +73,16 @@ export class Door {
   }
 
   async #answer(id, request) {
+    const record = this.store.get(id)
+    const owner = record.owner
+    const instance = `/${owner}/harnesses/${id}`
+    if (request.op === "recovery-pass") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot recover")
+      return { ok: true, pass: issue_recovery_pass({ phone: owner, id, paths: record.paths ?? null }, process.env.HOST_PASS_SECRET) }
+    }
     if (request.op !== "publish") throw new Error(`unknown op '${request.op}'`)
-    const path = request.path || "/root/site"
+    if (!owner || !can({ instance }, "write", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot publish")
+    const path = request.path || "/brayness/site"
     await this.store.publish(id, path)
     LOG.info(`door: ${id} published ${path}`)
     return { ok: true, url: this.siteUrl.replaceAll("{id}", id) }

@@ -1,19 +1,21 @@
-// The session terminal: a framed TCP stream into a guest pty.
+// The actor terminal: a framed TCP stream into a guest pty.
 //
-// The client's first line is a hello, {"session", "cols", "rows"}; the server
+// The client's first line is a hello, {"actor", "cols", "rows"}; the server
 // answers {"ok": true} and then copies bytes both ways. The frames are the
 // guest's (brayness-pty, vsock port 53):
 //
 //   client -> server   {"op": "data", "data_b64"}  {"op": "resize", "cols", "rows"}
 //   server -> client   {"op": "data", "data_b64"}  {"op": "exit", "code"}
 //
-// The vsock path keeps sessions apart; frames carry no session id. The guest
+// The vsock path keeps actors apart; frames carry no actor id. The guest
 // holds the shell and Pi, so a reconnect reattaches to them.
 
 import { createServer } from "node:net"
 import { NotFound } from "./errors.js"
 import { logger } from "./log.js"
-import { PTY_PORT } from "./sessions.js"
+import { PTY_PORT } from "./actors.js"
+import { verify_host_pass } from "./host-pass.js"
+import { can } from "../../can/src/can.js"
 import * as vsock from "./vsock.js"
 
 const LOG = logger("pty")
@@ -36,27 +38,32 @@ async function handle(store, client, helloSeconds) {
   if (hello === null) return
   if (hello.length >= HELLO_LIMIT) return reject(client, "hello line is too long")
 
-  let id, cols, rows
+  let id, cols, rows, pass
   try {
     const request = JSON.parse(hello)
-    id = request.session
+    id = request.actor
+    pass = request.pass
     cols = Number.parseInt(request.cols || 80, 10)
     rows = Number.parseInt(request.rows || 24, 10)
     if (Number.isNaN(cols) || Number.isNaN(rows)) throw new Error("cols and rows must be numbers")
   } catch (error) {
     return reject(client, `bad hello: ${error.message}`)
   }
-  if (typeof id !== "string" || !id) return reject(client, "hello needs a session id")
+  if (typeof id !== "string" || !id) return reject(client, "hello needs an actor id")
 
   let guest
   try {
-    const record = await store.ensureRunning(id)
+    const owner = verify_host_pass(pass, process.env.HOST_PASS_SECRET).phone
+    const record = store.get(id)
+    if (record.owner !== owner || !can({ phone: owner }, "get", `people/${owner}/harnesses/${id}`)) throw new NotFound(id)
+    await store.ensureRunning(id)
     guest = await vsock.connect(record.vsockPath, PTY_PORT)
   } catch (error) {
-    return reject(client, error instanceof NotFound ? `no such session ${id}` : error.message)
+    return reject(client, error instanceof NotFound ? `no such actor ${id}` : error.message)
   }
 
   LOG.info(`pty attached to ${id} from ${client.remoteAddress}`)
+  store.beginWork(id)
   const leftover = lines.rest()
   const early = guest.lines.rest()
   guest.socket.write(`${JSON.stringify({ op: "resize", cols, rows })}\n`)
@@ -68,6 +75,7 @@ async function handle(store, client, helloSeconds) {
   const end = () => {
     client.destroy()
     guest.socket.destroy()
+    store.endWork(id)
   }
   client.on("close", end)
   client.on("error", end)

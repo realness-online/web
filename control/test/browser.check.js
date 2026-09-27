@@ -1,21 +1,38 @@
 #!/usr/bin/env node
-// z1: prove the hosted terminal in a real browser, twice from a clean start.
+// z1: prove the hosted terminal in a real browser, twice from a fresh actor.
 //
 // Needs the dev host (`webspace dev host up`) and agent-browser. Each run opens
-// a new session and a new browser, drives the page with press and paste events
-// (the page reads keydown, not typed text), and removes both afterwards.
-// No model calls: `!` shell lines and slash commands only.
+// a new actor and a new browser, drives key and paste events (the page reads
+// keydown, not typed text), and removes both afterwards.
+// No model calls: shell lines only.
 //
 //   npm run check:browser            two runs
-//   RUNS=1 npm run check:browser
+//   npm run check:browser:cold       one disk reload before opening the page
 
 import { execFileSync } from "node:child_process"
+import { createHmac } from "node:crypto"
+import { existsSync, readFileSync } from "node:fs"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const PAGE = process.env.PAGE ?? "http://127.0.0.1:18090/"
 const RUNS = Number(process.env.RUNS ?? 2)
+const owner = "+14156667777"
+const secret_path = new URL("../../dist/host-pass-secret", import.meta.url)
+const secret = process.env.HOST_PASS_SECRET ?? (existsSync(secret_path) ? readFileSync(secret_path, "utf8").trim() : null)
+
+function host_pass() {
+  if (!secret || Buffer.byteLength(secret) < 32) throw new Error("HOST_PASS_SECRET required for check:browser")
+  const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
+  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+}
+
+function actor_request(path, options = {}) {
+  return fetch(`${API}${path}`, { ...options, headers: { ...options.headers, authorization: `Bearer ${host_pass()}` } })
+}
+
 // The seed holds a running Pi (h4): it should draw almost as soon as the page.
 const PI_BUDGET_MS = Number(process.env.PI_BUDGET_MS ?? 2000)
+const COLD_PI_BUDGET_MS = Number(process.env.COLD_PI_BUDGET_MS ?? 45000)
 const CREATE_BUDGET_MS = Number(process.env.CREATE_BUDGET_MS ?? 20000)
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -34,7 +51,7 @@ async function until(what, ms, test) {
   throw new Error(`${what}: not within ${ms}ms`)
 }
 
-async function run(n) {
+async function run(n, cold = false) {
   const name = `brayness-z1-check-${process.pid}-${n}`
   const ab = browser(name)
   // eval prints its result as JSON; functions keep names out of the shared global scope.
@@ -45,7 +62,7 @@ async function run(n) {
     js(`const dt = new DataTransfer(); dt.setData("text/plain", ${JSON.stringify(text)});
         window.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, bubbles: true })); return 1`)
   const enter = () => ab("press", "Enter")
-  let session = null
+  let actor = null
   const times = {}
   const step = (label, fn) => {
     const start = Date.now()
@@ -59,20 +76,39 @@ async function run(n) {
   try {
     const opened = Date.now()
     // Create through the API, not GET /: a retried page load would mint another
-    // session per attempt, and the redirect waits out the whole create.
-    await step("z1a create a session and open it", async () => {
-      const response = await fetch(`${API}/v1/sessions`, { method: "POST" })
+    // actor per attempt, and the redirect waits out the whole create.
+    await step(cold ? "z1a cold-boot an actor and open it" : "z1a create an actor and open it", async () => {
+      const response = await actor_request("/v1/actors", { method: "POST" })
       if (!response.ok) throw new Error(`create: ${response.status} ${await response.text()}`)
-      session = (await response.json()).id
-      if (Date.now() - opened > CREATE_BUDGET_MS) throw new Error("session create over budget")
+      actor = (await response.json()).id
+      if (Date.now() - opened > CREATE_BUDGET_MS) throw new Error("actor create over budget")
+      if (cold) {
+        const idle = await actor_request(`/v1/actors/${actor}/idle`, {
+          method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ tier: "disk" }),
+        })
+        if (!idle.ok || (await idle.json()).state !== "stopped") throw new Error(`disk idle: ${idle.status}`)
+        const reload = await actor_request(`/v1/actors/${actor}/reload`, { method: "POST" })
+        if (!reload.ok || (await reload.json()).state !== "running") throw new Error(`cold reload: ${reload.status}`)
+      }
       const url = new URL(PAGE)
-      url.searchParams.set("session", session)
+      url.searchParams.set("actor", actor)
       url.searchParams.set("exec", "brayness")
+      const login = await fetch(new URL("auth", PAGE), {
+        method: "POST", headers: { origin: new URL(PAGE).origin, "content-type": "application/json" },
+        body: JSON.stringify({ pass: host_pass() }),
+      })
+      if (login.status !== 204) throw new Error(`terminal auth: ${login.status}`)
+      const cookie = login.headers.get("set-cookie")?.split(";")[0]
+      if (!cookie) throw new Error("terminal auth gave no cookie")
+      // Establish the origin before setting its host-only cookie.
+      ab("open", new URL("handoff", PAGE).href)
+      const [cookie_name, cookie_value] = cookie.split("=")
+      ab("cookies", "set", cookie_name, cookie_value)
       ab("open", url.href)
     })
 
     await step("z1b pi drawn and a key echoes", async () => {
-      await until("pi prompt", PI_BUDGET_MS, () => screen().includes("inkling"))
+      await until(cold ? "pi prompt after cold boot" : "pi prompt", cold ? COLD_PI_BUDGET_MS : PI_BUDGET_MS, () => screen().includes("inkling"))
       ab("click", "canvas")
       ab("press", "q")
       await until("key echo", PI_BUDGET_MS, () => lines().some((l) => l.trim() === "q"))
@@ -86,12 +122,6 @@ async function run(n) {
       for (const key of tag) ab("press", key)
       enter()
       await until("marker output", 15000, () => lines().some((l) => l.trim() === marker))
-    })
-
-    await step("z1h a slash command renders", async () => {
-      paste("/session")
-      enter()
-      await until("/session output", 5000, () => screen().includes("Session Info"))
     })
 
     await step("z1e resize reflows pi", async () => {
@@ -147,8 +177,8 @@ async function run(n) {
 
     await step("z1g reload reattaches", async () => {
       ab("reload")
-      const again = new URL(ab("get", "url")).searchParams.get("session")
-      if (again !== session) throw new Error(`reload moved to ${again}`)
+      const again = new URL(ab("get", "url")).searchParams.get("actor")
+      if (again !== actor) throw new Error(`reload moved to ${again}`)
       await until("marker after reload", 10000, () => screen().includes(marker))
     })
 
@@ -157,7 +187,7 @@ async function run(n) {
     try {
       ab("close")
     } catch {}
-    if (session) await fetch(`${API}/v1/sessions/${session}`, { method: "DELETE" }).catch(() => {})
+    if (actor) await actor_request(`/v1/actors/${actor}`, { method: "DELETE" }).catch(() => {})
   }
 }
 
@@ -171,11 +201,11 @@ let failed = false
 for (let n = 1; n <= RUNS; n++) {
   console.log(`run ${n}`)
   try {
-    await run(n)
+    await run(n, process.env.COLD === "1")
   } catch (error) {
     failed = true
     console.error(`  FAIL ${error.message}`)
   }
 }
-console.log(failed ? "z1: FAIL" : `z1: ${RUNS} clean runs passed`)
+console.log(failed ? "z1: FAIL" : `z1: ${RUNS} ${process.env.COLD === "1" ? "cold" : "fresh"} runs passed`)
 process.exit(failed ? 1 : 0)

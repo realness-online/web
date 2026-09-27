@@ -16,6 +16,8 @@
 import { createHash } from "node:crypto"
 import { createServer } from "node:http"
 import { can, identify } from "brayness-can"
+import { issue_host_pass } from "./host-pass.js"
+import { recovery_path, verify_recovery_pass } from "./recovery-pass.js"
 import { rights_key } from "./rights.js"
 
 const LIMIT = 10 * 1024 * 1024
@@ -71,12 +73,12 @@ async function read_body(request) {
 }
 
 const PREFLIGHT = {
-  "access-control-allow-methods": "GET, PUT, DELETE",
+  "access-control-allow-methods": "GET, PUT, DELETE, POST",
   "access-control-allow-headers": "authorization, content-type, if-match, if-none-match",
   "access-control-max-age": "600",
 }
 
-export function sync_service({ storage, rights, project, certs, origins = [], log = console.log }) {
+export function sync_service({ storage, rights, project, certs, host_pass_secret, origins = [], log = console.log }) {
   const pins = storage_pins(storage)
   const allowed = new Set(origins)
 
@@ -85,6 +87,15 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
     if (!header) return null
     const token = /^Bearer (\S+)$/.exec(header)?.[1]
     if (!token) throw new Status(401)
+    if (token.split(".").length === 2) {
+      if (!host_pass_secret) throw new Status(401)
+      try {
+        const claims = verify_recovery_pass(token, host_pass_secret)
+        return { recovery: claims.phone, id: claims.id, paths: claims.paths }
+      } catch {
+        throw new Status(401)
+      }
+    }
     try {
       return await identify(token, { project, certs, pins })
     } catch {
@@ -95,7 +106,9 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
   async function handle(request, response, path, action, who) {
     const owner = path.split("/")[1]
     const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
-    if (!can(who, action, path, grants)) throw new Status(403)
+    if (who?.recovery) {
+      if (!["get", "list"].includes(action) || !recovery_path(path, who.recovery, who.paths)) throw new Status(403)
+    } else if (!can(who, action, path, grants)) throw new Status(403)
 
     if (action === "list") {
       response.writeHead(200, { "content-type": "application/json" })
@@ -152,9 +165,17 @@ export function sync_service({ storage, rights, project, certs, origins = [], lo
         return
       }
       if (path === null) throw new Status(400)
-      if (!action) throw new Status(405)
-      who = await who_is(request)
-      await handle(request, response, path, action, who)
+      if (path === "v1/host-pass" && request.method === "POST") {
+        who = await who_is(request)
+        if (!who?.phone) throw new Status(401)
+        if (!host_pass_secret) throw new Status(503)
+        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        response.end(JSON.stringify({ pass: issue_host_pass(who, host_pass_secret), expires_in: 300 }))
+      } else {
+        if (!action) throw new Status(405)
+        who = await who_is(request)
+        await handle(request, response, path, action, who)
+      }
       status = response.statusCode
     } catch (error) {
       status = error instanceof Status ? error.status : 500

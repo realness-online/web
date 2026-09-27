@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# dev-stack - the dev host: sessions volume, TAP0, and the session API.
+# dev-stack - the dev host: actors volume, TAP0, and the actor API.
 #
 #   sudo bash /mnt/fc/control/scripts/dev-stack.sh
 #
 # Driven from the Mac by `webspace dev up`, which runs it in the background and
 # waits for health. Run it directly to watch the serve in the foreground.
 #
-# The volume persists across runs: a session's disk is its identity, and
+# The volume persists across runs: an actor's disk is its identity, and
 # rebuilding the seed costs a boot. FRESH=1 wipes the image and starts over.
 #
 # This is host plumbing, so it stays shell. Everything below the API is the
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"     # /mnt/fc
-VOL="${VOL:-/opt/fc/sessions}"
+VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
 SIZE="${SIZE:-6G}"
@@ -40,16 +40,16 @@ already=0
 if [ -e "$IMAGE" ]; then already="$(du -B1 "$IMAGE" | cut -f1)"; fi
 want=$((size_bytes - already))
 if [ "$want" -gt "$host_free" ]; then
-  printf 'sessions volume wants %s but %s MiB is free on the host disk\n' \
+  printf 'actors volume wants %s but %s MiB is free on the host disk\n' \
     "$SIZE" "$((host_free / 1024 / 1024))" >&2
   printf 'lower SIZE, or free space - finished work dirs live in /opt/fc\n' >&2
   exit 1
 fi
 
-# xfs because a session disk is a reflink of the seed's - the reason the
-# volume exists at all rather than session disks sitting next to the template.
+# xfs because an actor disk is a reflink of the seed's - the reason the
+# volume exists at all rather than actor disks sitting next to the template.
 if [ ! -e "$IMAGE" ]; then
-  echo "new sessions volume: $IMAGE ($SIZE, sparse)"
+  echo "new actors volume: $IMAGE ($SIZE, sparse)"
   truncate -s "$SIZE" "$IMAGE"
   mkfs.xfs -q -f "$IMAGE"
 fi
@@ -59,7 +59,7 @@ if ! mountpoint -q "$MOUNT"; then
   mount -o loop "$IMAGE" "$MOUNT"
 fi
 
-# The image is a sparse file on the Lima disk. A destroyed session frees blocks
+# The image is a sparse file on the Lima disk. A destroyed actor frees blocks
 # inside xfs but not in the file, so the file only grows until the Lima disk is
 # full and a template build dies at mkfs with ENOSPC. fstrim punches the holes.
 # Mounting with `discard` did not: a deleted 500 MiB stayed allocated.
@@ -69,9 +69,23 @@ fstrim "$MOUNT" || true
 
 echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
-# TAP0 plus its NAT rules. The seed boot needs a TAP; a session's own egress is
-# h2's, so sessions get TAPs this script knows nothing about.
+# TAP0 plus its NAT rules. The seed boot needs a TAP; an actor's own egress is
+# h2's, so actors get TAPs this script knows nothing about.
 bash "$DIR/host/scripts/net-up.sh"
+
+# Dev only: one shared signing key for sync, host, and the contract check.
+secret_file="$DIR/dist/host-pass-secret"
+if [ ! -f "$secret_file" ]; then
+  echo "missing $secret_file: generate a 32-byte secret before starting the dev host" >&2
+  exit 1
+fi
+export HOST_PASS_SECRET="$(< "$secret_file")"
+origin_file="$DIR/dist/realness-origin"
+if [ -f "$origin_file" ]; then
+  export REALNESS_ORIGIN="${REALNESS_ORIGIN:-$(< "$origin_file")}"
+else
+  export REALNESS_ORIGIN="${REALNESS_ORIGIN:-http://localhost:5173}"
+fi
 
 # The package is imported by name, so the import path is the project root.
 cd "$DIR"

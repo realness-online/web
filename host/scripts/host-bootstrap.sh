@@ -5,7 +5,7 @@
 #
 # The image already carries /opt/fc and the idle guard, so this is only what is
 # per-instance: the root partition (an instance created from an image keeps the
-# image's partition), the tap microVMs leave through, the sessions volume, and
+# image's partition), the tap microVMs leave through, the actors volume, and
 # the guard timer. Idempotent - it is safe on a host that is already serving.
 #
 # A seed is deliberately not built here. build_seed boots the template and
@@ -39,11 +39,11 @@ bash "$HERE/node-install.sh"
 echo "==> net"
 bash "$HERE/net-up.sh"
 
-echo "==> sessions volume"
-if [ -e /dev/disk/by-id/google-brayness-sessions ]; then
-  bash "$HERE/sessions-volume.sh" | tail -4
+echo "==> actors volume"
+if [ -e /dev/disk/by-id/google-brayness-actors ]; then
+  bash "$HERE/actors-volume.sh" | tail -4
 else
-  echo "no sessions volume attached - skipped"
+  echo "no actors volume attached - skipped"
 fi
 
 echo "==> idle guard"
@@ -56,6 +56,6 @@ printf '      /dev/kvm: %s\n' "$(ls -l /dev/kvm 2>/dev/null | awk '{print $1, $3
 printf '      firecracker: %s\n' "$(/opt/fc/firecracker --version 2>&1 | head -1)"
 printf '      kernel: %s\n' "$(ls -l /opt/fc/vmlinux-* 2>/dev/null | awk '{print $9}')"
 printf '      template: %s\n' "$(ls -lh /opt/fc/template.ext4 2>/dev/null | awk '{print $5}')"
-printf '      volume: %s\n' "$(findmnt -no SOURCE,FSTYPE,AVAIL /opt/fc/sessions/mnt 2>/dev/null || echo 'not mounted')"
-printf '      seed: %s\n' "$(ls -d /opt/fc/sessions/mnt/seed 2>/dev/null || echo 'none yet (built on first serve)')"
+printf '      volume: %s\n' "$(findmnt -no SOURCE,FSTYPE,AVAIL /opt/fc/actors/mnt 2>/dev/null || echo 'not mounted')"
+printf '      seed: %s\n' "$(ls -d /opt/fc/actors/mnt/seed 2>/dev/null || echo 'none yet (built on first serve)')"
 printf '      hold: %s\n' "$(ls /run/brayness-hold 2>/dev/null || echo 'not held')"

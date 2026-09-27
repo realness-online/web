@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * webspace - run hosts, and the sessions in them.
+ * webspace - run hosts, and the actors in them.
  *
  * An environment says *where hosts live*, not *which command you may run*:
  *
@@ -16,7 +16,7 @@
  *   webspace <env> host up [<name>] [--smoke]     make a host, put the code on it, serve
  *   webspace <env> host restart <name>            push the code and re-serve
  *   webspace <env> host down <name> [--delete] [--no-drain]
- *   webspace <env> host drain <name> [--delete]   export every session to the bucket
+ *   webspace <env> host drain <name> [--delete]   export every actor to the bucket
  *   webspace <env> host list
  *   webspace <env> probe [<type>:<zone> ...]      which zones can make a host now
  *
@@ -41,7 +41,7 @@ const USAGE = `usage: webspace <dev|prod> <command> [options]
   host up [<name>] [--smoke]   make a host, put the code on it, serve (~3 min in GCP)
   host restart <name>          push the code and re-serve
   host down <name> [--delete]  park it, or drain and delete
-  host drain <name> [--delete] export every session to the bucket
+  host drain <name> [--delete] export every actor to the bucket
   host list                    the hosts this environment has
 
   probe [<type>:<zone> ...]    prod only: which zones can make a host right now
@@ -138,7 +138,7 @@ async function hostCommand(hosts, config, args, flags) {
     case "drain": {
       if (isLocal(config)) {
         // The drain ships bundles to a bucket and verifies what the bucket
-        // stored. Dev has friends on one machine, not sessions to preserve.
+        // stored. Dev has friends on one machine, not actors to preserve.
         throw new Error("there is nothing to drain in dev: the host is this Mac's VM")
       }
       const name = requireName(rest, "usage: webspace prod host drain <name> [--delete]")

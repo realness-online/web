@@ -6,7 +6,7 @@
  *   host/     must not know control exists: no import of it, no path into it,
  *             no npm dependency.
  *
- * Invisible in a diff: importing a session module to read one field is one
+ * Invisible in a diff: importing an actor module to read one field is one
  * line, and it dissolves the split. This is the cheapest thing that fails.
  */
 import { readFile, readdir } from "node:fs/promises"
@@ -56,7 +56,7 @@ test("the host takes no dependencies", async () => {
   assert.equal(pkg.devDependencies, undefined)
 })
 
-test("the control plane reaches sessions only over HTTP", async () => {
+test("the control plane reaches actors only over HTTP", async () => {
   const offences = []
   for (const path of await files(CONTROL)) {
     if (!path.endsWith(".js") || path.endsWith("boundary.test.js")) continue
@@ -76,5 +76,5 @@ test("the split is real: both directories hold code", async () => {
   // A boundary test that passes because a directory is missing is worse than none.
   const js = (dir) => files(dir).then((found) => found.filter((path) => path.endsWith(".js")))
   assert.ok((await js(CONTROL)).length > 0, "no JavaScript in control/")
-  assert.ok((await js(HOST)).some((path) => path.endsWith("sessions.js")), "no host/src/sessions.js")
+  assert.ok((await js(HOST)).some((path) => path.endsWith("actors.js")), "no host/src/actors.js")
 })

@@ -1,0 +1,233 @@
+#!/usr/bin/env python3
+"""Pull the owner's saved files into a fresh microVM, then replay pending edits.
+
+The host door verifies this VM and issues a short, read-only pass; a new one
+is fetched whenever the old one lapses. The sync service checks it on every
+request. No owner credential is stored.
+
+Pulled: Pi history, plans, every plan's `## Syncs` folder, and
+`.pi/agent/deferred.json`, whose edits are replayed onto their exact base.
+An actor started with a path list pulls only those paths; sync enforces it.
+"""
+import base64
+import glob
+import hashlib
+import json
+import os
+import re
+import socket
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+HOST_CID = 2
+DOOR_PORT = 54
+ROOT = os.environ.get("BRAYNESS_ROOT", "/brayness")
+SESSIONS = ".pi/agent/sessions"
+DEFERRED = ".pi/agent/deferred.json"
+SKIP = {".git", ".env", "auth.json", "credentials.json", ".npmrc", ".netrc", "service-account.json"}
+SKIP.add("node" + "_modules")
+
+
+def door_pass():
+    sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
+    sock.settimeout(10)
+    with sock:
+        sock.connect((HOST_CID, DOOR_PORT))
+        sock.sendall(b'{"op":"recovery-pass"}\n')
+        response = b""
+        while b"\n" not in response:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            response += chunk
+    answer = json.loads(response.partition(b"\n")[0])
+    if not answer.get("ok"):
+        raise RuntimeError(answer.get("error", "host door did not issue a pass"))
+    return answer["pass"]
+
+
+class Passes:
+    """The current pass, renewed once when the sync service refuses it."""
+
+    def __init__(self, issue):
+        self.issue = issue
+        self.token = issue()
+
+    def claims(self):
+        body = self.token.split(".")[0]
+        return json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
+
+    def get(self, url):
+        for attempt in (1, 2):
+            request = urllib.request.Request(url, headers={"Authorization": f"Bearer {self.token}"})
+            try:
+                with urllib.request.urlopen(request, timeout=30) as response:
+                    return response.read()
+            except urllib.error.HTTPError as error:
+                if error.code != 401:
+                    raise
+                if attempt == 2:
+                    raise RuntimeError("sync refused a fresh pass; check HOST_PASS_SECRET on host and sync") from error
+                self.token = self.issue()
+
+
+def safe(name):
+    parts = name.split("/")
+    return bool(name) and all(
+        part not in ("", ".", "..") and "\\" not in part and "%" not in part and part not in SKIP
+        for part in parts
+    )
+
+
+def declared(root):
+    """Every plan's `## Syncs` paths, as `brayness sync` reads them."""
+    found = []
+    for plan in sorted(glob.glob(os.path.join(root, "plans", "*.md"))):
+        inside = False
+        with open(plan, encoding="utf-8") as text:
+            for line in text:
+                heading = re.match(r"^(#{1,2})\s+(.*)$", line)
+                if heading:
+                    inside = heading.group(2).strip().lower() == "syncs"
+                    continue
+                item = re.match(r"^\s*[-*]\s+`?([^`]+?)`?\s*$", line) if inside else None
+                path = item and os.path.normpath(item.group(1)).rstrip("/")
+                if path and not os.path.isabs(path) and not path.startswith("..") and path != "." and safe(path):
+                    if path not in found:
+                        found.append(path)
+    return found
+
+
+def write(root, path, data):
+    destination = os.path.join(root, path)
+    current = root
+    for part in path.split("/")[:-1]:
+        current = os.path.join(current, part)
+        if os.path.islink(current):
+            raise ValueError(f"target is a link: {current}")
+    if os.path.islink(destination):
+        raise ValueError(f"target is a link: {destination}")
+    os.makedirs(os.path.dirname(destination), exist_ok=True)
+    with open(destination, "wb") as output:
+        output.write(data)
+
+
+def pull_folder(url, passes, root, folder):
+    prefix = f"{url}/{folder}/"
+    try:
+        names = json.loads(passes.get(prefix + "?deep"))
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return 0
+        raise
+    for name in names:
+        if not safe(name):
+            raise ValueError(f"unsafe path: {name!r}")
+    for name in names:
+        write(root, f"{folder}/{name}", passes.get(prefix + urllib.parse.quote(name, safe="/")))
+    return len(names)
+
+
+def pull_path(url, passes, root, path):
+    """A folder's files, or the one file when the path names a file."""
+    count = pull_folder(url, passes, root, path)
+    if count:
+        return count
+    try:
+        write(root, path, passes.get(f"{url}/{urllib.parse.quote(path, safe='/')}"))
+        return 1
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            return 0
+        raise
+
+
+def edit_calls(root, rows):
+    """Edit-call arguments by id, from the pulled session files."""
+    calls = {}
+    for session in {row["session"] for row in rows}:
+        path = os.path.normpath(os.path.join(root, SESSIONS, session))
+        if not path.startswith(os.path.join(root, SESSIONS) + os.sep) or not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as text:
+            for line in text:
+                if '"toolCall"' not in line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except ValueError:
+                    continue
+                for part in (entry.get("message") or {}).get("content") or []:
+                    if part.get("type") == "toolCall" and part.get("name") == "edit":
+                        calls[part.get("id")] = part.get("arguments")
+    return [calls.get(row["tool_call"]) for row in rows]
+
+
+def replay(text, calls):
+    """The same rule as sync's replay.js: every oldText must be unique."""
+    for call in calls:
+        if not call:
+            return None
+        edits = call.get("edits") or [{"oldText": call.get("oldText"), "newText": call.get("newText")}]
+        for edit in edits:
+            old, new = edit.get("oldText"), edit.get("newText")
+            if not isinstance(old, str) or not isinstance(new, str) or not old or text.count(old) != 1:
+                return None
+            text = text.replace(old, new, 1)
+    return text
+
+
+def apply_deferred(root, pending):
+    applied = []
+    for path, entry in sorted(pending.items()):
+        if not safe(path):
+            continue
+        file = os.path.join(root, path)
+        try:
+            with open(file, "rb") as original:
+                data = original.read()
+        except OSError:
+            continue
+        if hashlib.sha256(data).hexdigest() != entry.get("base_sha"):
+            continue
+        result = replay(data.decode("utf-8"), edit_calls(root, entry.get("calls") or []))
+        if result is None or hashlib.sha256(result.encode("utf-8")).hexdigest() != entry.get("target_sha"):
+            continue
+        with open(file, "w", encoding="utf-8", newline="") as output:
+            output.write(result)
+        applied.append(path)
+    return applied
+
+
+def recover(url, issue, root=ROOT):
+    passes = Passes(issue)
+    claims = passes.claims()
+    base = f"{url.rstrip('/')}/people/{urllib.parse.quote(claims['phone'], safe='')}"
+    limit = claims.get("paths")
+    if limit is not None:
+        if not all(safe(path) for path in limit):
+            raise ValueError("unsafe path limit")
+        count = sum(pull_path(base, passes, root, path) for path in limit)
+    else:
+        count = pull_folder(base, passes, root, SESSIONS) + pull_folder(base, passes, root, "plans")
+        for folder in declared(root):
+            count += pull_folder(base, passes, root, folder)
+    try:
+        pending = json.loads(passes.get(f"{base}/{DEFERRED}"))
+    except urllib.error.HTTPError as error:
+        if error.code not in (403, 404):
+            raise
+        pending = {}
+    return count, apply_deferred(root, pending)
+
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) != 2 or not sys.argv[1].startswith(("https://", "http://")):
+            raise ValueError("usage: brayness-recover <sync-url>")
+        count, applied = recover(sys.argv[1], door_pass)
+        print(f"pulled {count} files, replayed {len(applied)} pending edits")
+    except (OSError, ValueError, RuntimeError, urllib.error.URLError) as error:
+        sys.exit(f"brayness-recover: {error}")

@@ -1,5 +1,5 @@
 [Unit]
-Description=Brayness session agent (vsock control channel, port 52)
+Description=Brayness actor agent (vsock control channel, port 52)
 # Deliberately does not wait for the network. The control channel is the thing
 # used to debug the network, so it must come up even when networking is broken.
 

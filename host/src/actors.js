@@ -1,9 +1,9 @@
-// The seed, and a session's life: create, idle, reload, destroy, publish,
+// The seed, and an actor's life: create, idle, reload, destroy, publish,
 // export, restore. Commentary on why lives in README.md (f4-f6, r3-r7).
 //
 // Nothing half-built is left in the volume: a failed create or restore rolls
 // back everything it took, because a leftover TAP or process is invisible in a
-// list of sessions.
+// list of actors.
 
 import { createHash, randomBytes } from "node:crypto"
 import { createReadStream, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, appendFileSync } from "node:fs"
@@ -14,13 +14,14 @@ import * as firecracker from "./firecracker.js"
 import * as host from "./host.js"
 import { logger } from "./log.js"
 import * as vsock from "./vsock.js"
+import { next_step } from "./lifecycle.js"
 
-const LOG = logger("sessions")
+const LOG = logger("actors")
 
 const DISK = "rootfs.ext4"
 const STATE = "state"
 const MEM = "mem"
-const SESSION_INIT = "/usr/local/bin/brayness-session-init"
+const ACTOR_INIT = "/usr/local/bin/brayness-actor-init"
 export const PTY_PORT = 53
 const PI_OPENER = Buffer.from("exec brayness\r")
 const PI_PROMPT = "inkling"
@@ -28,18 +29,18 @@ const PI_WARM_SECONDS = 300
 const FINGERPRINT_SCHEMA = 1
 // Size and mtime decide staleness; the sha256 is recorded, never re-hashed at start.
 const CHEAP_FIELDS = ["schema", "arch", "kernel", "firecracker", "template_size", "template_mtime_ns", "vcpu_count"]
-// An export carries /root (the harness and its work/); identity in /etc stays behind.
-const ARTIFACT_PATHS = ["root"]
+// An export carries /brayness (the harness and its work/); identity in /etc stays behind.
+const ARTIFACT_PATHS = ["brayness"]
 const TRACES = "traces"
 const EXPORTS = "exports"
 const PUBLISHED = "published"
-const NON_SESSION_DIRS = new Set(["seed", TRACES, EXPORTS, PUBLISHED])
+const NON_ACTOR_DIRS = new Set(["seed", TRACES, EXPORTS, PUBLISHED])
 // Ids are names on the volume; anything else would be a path.
 const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 export const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, "+00:00")
-const mintId = () => `s-${randomBytes(6).toString("hex")}`
+const mintId = () => `a-${randomBytes(6).toString("hex")}`
 const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"))
 const unlink = (path) => rmSync(path, { force: true })
@@ -55,20 +56,20 @@ function sha256File(path) {
   })
 }
 
-export class Session {
+export class Actor {
   constructor(fields) {
-    Object.assign(this, { machine_id: "", hostname: "", boot_id: "", state: "running" }, fields)
+    Object.assign(this, { machine_id: "", hostname: "", boot_id: "", state: "running", owner: null, paths: null, last_activity: "" }, fields)
     this.apiSock = join(this.dir, "api.sock")
     this.vsockPath = join(this.dir, "vsock.sock")
   }
 
   toJSON() {
-    const { id, state, created, tap, pid, hostname, machine_id, boot_id, dir } = this
-    return { id, state, created, tap, pid, hostname, machine_id, boot_id, dir }
+    const { id, state, created, tap, pid, hostname, machine_id, boot_id, dir, owner, paths, last_activity } = this
+    return { id, state, created, tap, pid, hostname, machine_id, boot_id, dir, owner, paths, last_activity }
   }
 }
 
-/** One lock for everything that changes a session; exec and reads stay outside it. */
+/** One lock for everything that changes an actor; exec and reads stay outside it. */
 class Mutex {
   #tail = Promise.resolve()
   run(work) {
@@ -133,7 +134,7 @@ async function warmPi(uds, seconds = PI_WARM_SECONDS) {
   }
 }
 
-export class SessionStore {
+export class ActorStore {
   constructor(options) {
     Object.assign(this, {
       guestCid: 3,
@@ -151,11 +152,12 @@ export class SessionStore {
     this.exportsDir = join(this.volume, EXPORTS)
     this.publishedDir = join(this.volume, PUBLISHED)
     this.lock = new Mutex()
+    this.busy = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
     host.requireRoot("creating TAPs and Firecracker")
-    host.requireMount(this.volume, "mount the sessions volume (the dev stack script)")
+    host.requireMount(this.volume, "mount the actors volume (the dev stack script)")
     if (!host.shortEnoughForUnix(join(this.volume, mintId(), "vsock.sock"))) {
-      throw new HostError(`${this.volume} is too long for AF_UNIX socket paths (108 bytes); mount the sessions volume somewhere shorter`)
+      throw new HostError(`${this.volume} is too long for AF_UNIX socket paths (108 bytes); mount the actors volume somewhere shorter`)
     }
   }
 
@@ -198,7 +200,7 @@ export class SessionStore {
   async ensureSeed({ rebuild = false } = {}) {
     const status = this.seedStatus()
     if (status.matches && !rebuild) return status
-    if (rebuild && this.liveSessions().length) throw new Busy("sessions are running from this seed; destroy them before --rebuild")
+    if (rebuild && this.liveActors().length) throw new Busy("actors are running from this seed; destroy them before --rebuild")
     await this.buildSeed(status)
     return this.seedStatus()
   }
@@ -252,23 +254,24 @@ export class SessionStore {
     return Object.fromEntries([...CHEAP_FIELDS, "template_sha256"].map((key) => [key, record[key] ?? null]))
   }
 
-  // ------------------------------------------------------------ sessions
-  create() {
-    return this.lock.run(() => this.#create())
+  // ------------------------------------------------------------ actors
+  create(owner, { paths = null } = {}) {
+    return this.lock.run(() => this.#create(owner, { paths }))
   }
 
-  async #create() {
+  async #create(owner, { paths = null } = {}) {
+    if (!/^\+[1-9]\d{6,14}$/.test(owner)) throw new BadRequest("verified owner required")
     const seed = await this.ensureSeed()
     if (!seed.matches) throw new Busy(`seed does not match the current build: ${seed.mismatches.join("; ")}`)
     const id = mintId()
-    const record = new Session({ id, created: nowIso(), tap: "", pid: 0, dir: join(this.volume, id) })
+    const record = new Actor({ id, created: nowIso(), tap: "", pid: 0, dir: join(this.volume, id), owner, paths, last_activity: nowIso() })
     try {
       mkdirSync(record.dir, { recursive: true })
       this.#reflinkSeedDisk(record.dir)
       record.tap = host.freeTap(this.tapPrefix)
       host.createTap(record.tap)
       await this.#start(record, join(this.seedDir, STATE), join(this.seedDir, MEM))
-      Object.assign(record, await this.#initSession(record))
+      Object.assign(record, await this.#initActor(record))
       this.#write(record)
       this.trace(record.id, "create", { hostname: record.hostname, machine_id: record.machine_id, tap: record.tap, pid: record.pid })
     } catch (error) {
@@ -276,7 +279,7 @@ export class SessionStore {
       await this.#teardown(record)
       throw error
     }
-    LOG.info(`session ${record.id} running (tap ${record.tap}, pid ${record.pid})`)
+    LOG.info(`actor ${record.id} running (tap ${record.tap}, pid ${record.pid})`)
     return record
   }
 
@@ -285,11 +288,11 @@ export class SessionStore {
     try {
       host.run(["cp", "--reflink=always", source, join(dir, DISK)])
     } catch (error) {
-      throw new HostError(`reflink failed: ${error.message}\nsession disks are reflinks of ${source}, which needs xfs (or btrfs) at ${this.volume}`)
+      throw new HostError(`reflink failed: ${error.message}\nactor disks are reflinks of ${source}, which needs xfs (or btrfs) at ${this.volume}`)
     }
   }
 
-  /** Load a snapshot as this session: its TAP, its vsock, and (from cwd) its disk. */
+  /** Load a snapshot as this actor: its TAP, its vsock, and (from cwd) its disk. */
   async #start(record, state, mem) {
     // A terminated process leaves its sockets; Firecracker cannot bind over them.
     unlink(record.apiSock)
@@ -307,8 +310,8 @@ export class SessionStore {
     }
   }
 
-  /** Cold tier: boot the session's own disk; the seed's memory would see a stale /root. */
-  async #bootSession(record) {
+  /** Cold tier: boot the actor's own disk; the seed's memory would see a stale /brayness. */
+  async #bootActor(record) {
     unlink(record.apiSock)
     unlink(record.vsockPath)
     const child = firecracker.spawn(this.firecracker, record.dir, record.apiSock, join(record.dir, "firecracker.log"))
@@ -324,12 +327,12 @@ export class SessionStore {
     }
   }
 
-  /** Turn the resumed clone into this session (f6): clock, identity, address. */
-  async #initSession(record) {
-    const argv = [SESSION_INIT, record.id, String(Math.floor(Date.now() / 1000)), `${host.tapGuest(record.tap)}/30`]
+  /** Turn the resumed clone into this actor (f6): clock, identity, address. */
+  async #initActor(record) {
+    const argv = [ACTOR_INIT, record.id, String(Math.floor(Date.now() / 1000)), `${host.tapGuest(record.tap)}/30`]
     const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, { timeout: this.bootTimeout, port: this.vsockPort })
-    if (code !== 0) throw new VsockError(`session-init on ${record.id} exited ${code}: ${err.toString().trim()}`)
-    LOG.info(`session ${record.id} initialized: ${out.toString().trim()}`)
+    if (code !== 0) throw new VsockError(`actor-init on ${record.id} exited ${code}: ${err.toString().trim()}`)
+    LOG.info(`actor ${record.id} initialized: ${out.toString().trim()}`)
     const { machine_id, hostname, boot_id } = await this.identity(record.vsockPath)
     return { machine_id, hostname, boot_id }
   }
@@ -341,7 +344,7 @@ export class SessionStore {
   }
 
   /**
-   * Run argv in one session; no shell, so nothing in argv is parsed. The guest
+   * Run argv in one actor; no shell, so nothing in argv is parsed. The guest
    * is flushed before answering: a hard stop after an exec returned must not
    * lose what it wrote (h3).
    */
@@ -352,10 +355,15 @@ export class SessionStore {
     if (cwd !== null && typeof cwd !== "string") throw new BadRequest("cwd must be a string")
     const record = await this.ensureRunning(id)
     const started = Date.now()
-    const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, { cwd, stdin, timeout: timeout || this.apiTimeout, port: this.vsockPort })
-    await this.#flush(record)
-    this.trace(record.id, "exec", { argv, cwd, exit_code: code, ms: Date.now() - started, stdout_bytes: out.length, stderr_bytes: err.length })
-    return { exit_code: code, stdout_b64: out.toString("base64"), stderr_b64: err.toString("base64") }
+    this.beginWork(id)
+    try {
+      const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, { cwd, stdin, timeout: timeout || this.apiTimeout, port: this.vsockPort })
+      await this.#flush(record)
+      this.trace(record.id, "exec", { argv, cwd, exit_code: code, ms: Date.now() - started, stdout_bytes: out.length, stderr_bytes: err.length })
+      return { exit_code: code, stdout_b64: out.toString("base64"), stderr_b64: err.toString("base64") }
+    } finally {
+      this.endWork(id)
+    }
   }
 
   /** Guest page cache to its disk. A memory snapshot keeps it; a crash or cold boot does not. */
@@ -364,14 +372,14 @@ export class SessionStore {
       await vsock.runOk(record.vsockPath, ["/bin/sync"], { timeout: this.apiTimeout, port: this.vsockPort })
       return true
     } catch (error) {
-      LOG.warn(`session ${record.id} did not sync: ${error.message}`)
+      LOG.warn(`actor ${record.id} did not sync: ${error.message}`)
       return false
     }
   }
 
-  /** Flush every running session: bounds what a hard stop loses from terminal writes. */
+  /** Flush every running actor: bounds what a hard stop loses from terminal writes. */
   async flushAll() {
-    await Promise.all(this.liveSessions().map((record) => this.#flush(record)))
+    await Promise.all(this.liveActors().map((record) => this.#flush(record)))
   }
 
   ensureRunning(id) {
@@ -380,7 +388,67 @@ export class SessionStore {
     return this.reload(id)
   }
 
-  /** `memory` snapshots the session; `disk` keeps only the disk. Idempotent. */
+  /** Mark an actor as doing work, so the idle sweep leaves it alone. */
+  beginWork(id) {
+    this.busy.add(id)
+  }
+
+  endWork(id) {
+    this.busy.delete(id)
+    this.touch(id).catch(() => {})
+  }
+
+  /** Record activity, writing at most once a minute. */
+  touch(id) {
+    return this.lock.run(() => {
+      const record = this.get(id)
+      const last = Date.parse(record.last_activity)
+      if (Number.isFinite(last) && Date.now() - last < 60_000) return record
+      record.last_activity = nowIso()
+      this.#write(record)
+      return record
+    })
+  }
+
+  /**
+   * Step idle actors down: memory, disk, export, then delete after a verified
+   * export. Only verified owners are retired (lifecycle.next_step).
+   */
+  sweep({ now = Date.now(), apply = null } = {}) {
+    return this.lock.run(async () => {
+      const done = []
+      for (const record of this.list()) {
+        if (this.busy.has(record.id)) continue
+        const step = next_step(record, now)
+        if (!step) continue
+        if (apply) {
+          await apply(record, step)
+        } else if (step === "export") {
+          await this.#export(record.id)
+          if (!this.#exportVerified(record.id)) {
+            LOG.warn(`actor ${record.id} exported but not verified; keeping it`)
+            continue
+          }
+          await this.#destroy(record.id)
+        } else {
+          await this.#idle(record.id, step)
+        }
+        done.push({ id: record.id, step })
+      }
+      return done
+    })
+  }
+
+  /** An export is safe to retire when its manifest and bundle agree. */
+  #exportVerified(id) {
+    const dir = join(this.exportsDir, id)
+    if (!existsSync(join(dir, "manifest.json"))) return false
+    const manifest = readJson(join(dir, "manifest.json"))
+    const artifacts = join(dir, manifest.artifacts?.path ?? "artifacts.tar.gz")
+    return existsSync(artifacts) && statSync(artifacts).size === manifest.artifacts?.bytes
+  }
+
+  /** `memory` snapshots the actor; `disk` keeps only the disk. Idempotent. */
   idle(id, tier = "memory") {
     return this.lock.run(() => this.#idle(id, tier))
   }
@@ -401,11 +469,11 @@ export class SessionStore {
       unlink(join(record.dir, MEM))
     }
     this.trace(id, "idle", { tier })
-    LOG.info(`session ${id} idle (${tier} tier)`)
+    LOG.info(`actor ${id} idle (${tier} tier)`)
     return this.get(id)
   }
 
-  /** A memory snapshot is a restore; without one the session's own disk boots. */
+  /** A memory snapshot is a restore; without one the actor's own disk boots. */
   reload(id) {
     return this.lock.run(() => this.#reload(id))
   }
@@ -417,27 +485,29 @@ export class SessionStore {
     const mem = join(record.dir, MEM)
     const fromMemory = existsSync(state) && existsSync(mem)
     if (fromMemory) {
-      LOG.info(`reloading session ${id} from its memory snapshot`)
+      LOG.info(`reloading actor ${id} from its memory snapshot`)
       await this.#start(record, state, mem)
     } else {
-      LOG.info(`booting session ${id} from its disk`)
-      await this.#bootSession(record)
+      LOG.info(`booting actor ${id} from its disk`)
+      await this.#bootActor(record)
     }
-    Object.assign(record, await this.#initSession(record))
+    Object.assign(record, await this.#initActor(record))
     this.#write(record)
     this.trace(id, "reload", { from_memory: fromMemory, machine_id: record.machine_id, hostname: record.hostname })
-    LOG.info(`session ${id} is up, ${record.hostname}`)
+    LOG.info(`actor ${id} is up, ${record.hostname}`)
     return this.get(id)
   }
 
   destroy(id) {
-    return this.lock.run(async () => {
-      const record = this.get(id)
-      LOG.info(`destroying session ${id}`)
-      this.trace(id, "destroy")
-      await this.#teardown(record)
-      return record
-    })
+    return this.lock.run(() => this.#destroy(id))
+  }
+
+  async #destroy(id) {
+    const record = this.get(id)
+    LOG.info(`destroying actor ${id}`)
+    this.trace(id, "destroy")
+    await this.#teardown(record)
+    return record
   }
 
   /** The process has to be gone before its disk is removed. */
@@ -473,11 +543,11 @@ export class SessionStore {
 
   // ------------------------------------------------------------- publish
   /**
-   * Copy a directory out of a running session and serve it. The tree is
+   * Copy a directory out of a running actor and serve it. The tree is
    * untrusted: only files, directories, and links survive, and the server
    * refuses any path that resolves outside it.
    */
-  async publish(id, tree = "/root/site") {
+  async publish(id, tree = "/brayness/site") {
     if (typeof tree !== "string" || !tree.startsWith("/") || tree.split("/").includes("..")) {
       throw new BadRequest("path must be absolute, with no .. segments")
     }
@@ -521,13 +591,16 @@ export class SessionStore {
       .sort((a, b) => (b.exported ?? "").localeCompare(a.exported ?? ""))
   }
 
-  /** Write a session out as a bundle; it is stopped first and left stopped. */
+  /** Write an actor out as a bundle; it is stopped first and left stopped. */
   export(id) {
-    return this.lock.run(async () => {
+    return this.lock.run(() => this.#export(id))
+  }
+
+  async #export(id) {
       let record = this.get(id)
       if (record.state === "running") record = await this.#idle(id, "disk")
       const disk = join(record.dir, DISK)
-      if (!existsSync(disk)) throw new Busy(`session ${id} has no disk to export`)
+      if (!existsSync(disk)) throw new Busy(`actor ${id} has no disk to export`)
       const target = join(this.exportsDir, id)
       const staging = join(this.exportsDir, `.${id}.part`)
       rmSync(staging, { recursive: true, force: true })
@@ -544,7 +617,7 @@ export class SessionStore {
           schema: 1,
           id,
           exported: nowIso(),
-          session: { id: record.id, created: record.created, machine_id: record.machine_id, hostname: record.hostname },
+          actor: { id: record.id, created: record.created, machine_id: record.machine_id, hostname: record.hostname, owner: record.owner },
           artifacts: {
             path: "artifacts.tar.gz",
             bytes: statSync(artifacts).size,
@@ -563,24 +636,24 @@ export class SessionStore {
         throw error
       }
       this.trace(id, "export", { export: target, artifacts_sha256: manifest.artifacts.sha256, bytes: manifest.artifacts.bytes })
-      LOG.info(`session ${id} exported to ${target} (${manifest.artifacts.bytes} bytes)`)
+      LOG.info(`actor ${id} exported to ${target} (${manifest.artifacts.bytes} bytes)`)
       return manifest
-    })
   }
 
   /** Land a bundle on a fresh disk: the export's files, a new identity, the old trace. */
-  restore(exportId, { start = true } = {}) {
+  restore(exportId, owner, { start = true } = {}) {
     return this.lock.run(async () => {
       if (!ID.test(exportId)) throw new NotFound(`export ${exportId}`)
       const exportDir = join(this.exportsDir, exportId)
       if (!existsSync(join(exportDir, "manifest.json"))) throw new NotFound(`export ${exportId}`)
       const manifest = readJson(join(exportDir, "manifest.json"))
+      if (!manifest.actor?.owner || manifest.actor.owner !== owner) throw new NotFound(`export ${exportId}`)
       const artifacts = join(exportDir, manifest.artifacts.path)
       const digest = await sha256File(artifacts)
       if (digest !== manifest.artifacts.sha256) {
         throw new BadRequest(`export ${exportId} is corrupt: ${digest.slice(0, 12)} != ${manifest.artifacts.sha256.slice(0, 12)}`)
       }
-      let record = await this.#create()
+      let record = await this.#create(owner)
       try {
         await this.#idle(record.id, "disk")
         await host.mounted(join(record.dir, DISK), (tree) => host.run(["tar", "-xzf", artifacts, "-C", tree, "--no-same-owner"]))
@@ -595,21 +668,21 @@ export class SessionStore {
         await this.#teardown(record)
         throw error
       }
-      LOG.info(`session ${record.id} restored from ${exportId}`)
+      LOG.info(`actor ${record.id} restored from ${exportId}`)
       return record
     })
   }
 
   // ------------------------------------------------------------- records
   #write(record) {
-    const { id, created, tap, pid, machine_id, hostname, boot_id } = record
-    writeJson(join(record.dir, "session.json"), { id, created, tap, pid, machine_id, hostname, boot_id })
+    const { id, created, tap, pid, machine_id, hostname, boot_id, owner, paths, last_activity } = record
+    writeJson(join(record.dir, "actor.json"), { id, created, tap, pid, machine_id, hostname, boot_id, owner, paths, last_activity })
   }
 
   /** State comes from disk, not the record: after a reboot a recorded pid is a stranger. */
   #read(dir) {
-    const stored = readJson(join(dir, "session.json"))
-    const record = new Session({
+    const stored = readJson(join(dir, "actor.json"))
+    const record = new Actor({
       id: stored.id,
       created: stored.created ?? "",
       tap: stored.tap ?? "",
@@ -618,6 +691,9 @@ export class SessionStore {
       machine_id: stored.machine_id ?? "",
       hostname: stored.hostname ?? "",
       boot_id: stored.boot_id ?? "",
+      owner: stored.owner ?? null,
+      paths: stored.paths ?? null,
+      last_activity: stored.last_activity ?? stored.created ?? "",
     })
     if (firecracker.pidForApiSock(record.apiSock)) record.state = "running"
     else if (existsSync(join(dir, STATE)) && existsSync(join(dir, MEM))) record.state = "idle"
@@ -626,9 +702,9 @@ export class SessionStore {
   }
 
   get(id) {
-    if (typeof id !== "string" || !ID.test(id) || NON_SESSION_DIRS.has(id)) throw new NotFound(String(id))
+    if (typeof id !== "string" || !ID.test(id) || NON_ACTOR_DIRS.has(id)) throw new NotFound(String(id))
     const dir = join(this.volume, id)
-    if (!existsSync(join(dir, "session.json"))) throw new NotFound(id)
+    if (!existsSync(join(dir, "actor.json"))) throw new NotFound(id)
     return this.#read(dir)
   }
 
@@ -636,19 +712,19 @@ export class SessionStore {
     const records = []
     for (const name of readdirSync(this.volume).sort()) {
       const dir = join(this.volume, name)
-      if (NON_SESSION_DIRS.has(name) || !lstatSync(dir).isDirectory()) continue
-      if (existsSync(join(dir, "session.json"))) {
+      if (NON_ACTOR_DIRS.has(name) || !lstatSync(dir).isDirectory()) continue
+      if (existsSync(join(dir, "actor.json"))) {
         records.push(this.#read(dir))
       } else {
         // A create that died mid-flight. Reported: a leak nobody sees is worse.
-        LOG.warn(`incomplete session directory: ${dir}`)
-        records.push(new Session({ id: name, created: "", tap: "", pid: 0, dir, state: "incomplete" }))
+        LOG.warn(`incomplete actor directory: ${dir}`)
+        records.push(new Actor({ id: name, created: "", tap: "", pid: 0, dir, state: "incomplete" }))
       }
     }
     return records
   }
 
-  liveSessions() {
+  liveActors() {
     return this.list().filter((record) => record.state === "running")
   }
 }

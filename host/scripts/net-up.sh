@@ -11,9 +11,9 @@ set -euo pipefail
 TAP="${TAP:-fc-tap0}"
 TAP_IP="172.16.0.1/30"
 TAP_PREFIX="${TAP_PREFIX:-fc-tap}"
-# Every session TAP owns a /30 in this range (host.py's tap_gateway); the seed
-# keeps 172.16.0.0/30. One rule set covers the seed and every session, and the
-# `+` matches every TAP by name, so a new session needs no rule of its own.
+# Every actor TAP owns a /30 in this range (host.py's tap_gateway); the seed
+# keeps 172.16.0.0/30. One rule set covers the seed and every actor, and the
+# `+` matches every TAP by name, so a new actor needs no rule of its own.
 SUBNET="${SUBNET:-172.16.0.0/16}"
 TAP_MATCH="${TAP_MATCH:-${TAP_PREFIX}+}"
 UPLINK="${UPLINK:-$(ip -j route list default | jq -r '.[0].dev')}"

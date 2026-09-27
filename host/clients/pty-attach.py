@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Interactive terminal for a session, from a real terminal.
+"""Interactive terminal for an actor, from a real terminal.
 
 The browser page is fine for a shell; a full-screen agent TUI wants a real
 terminal emulator. This connects to the host's framed PTY stream and
-pipes the local tty through it, so the session's pty sees your terminal and your
-terminal renders what the session draws.
+pipes the local tty through it, so the actor's pty sees your terminal and your
+terminal renders what the actor draws.
 
-    pty-attach.py --session s-abc
-    pty-attach.py --session s-abc --send 'exec brayness'
+    pty-attach.py --actor a-abc
+    pty-attach.py --actor a-abc --send 'exec brayness'
 
-`--send` types a line into the session once attached - how the login wrapper
+`--send` types a line into the actor once attached - how the login wrapper
 starts the agent instead of a shell.
 
 Needs a tty on stdin, so run it under `ssh -t` or a terminal, not a pipe.
@@ -51,12 +51,12 @@ def terminal_size(fd):
     return size.columns, size.lines
 
 
-def attach(session, host, port, send):
+def attach(actor, host, port, send):
     fd = sys.stdin.fileno()
     cols, rows = terminal_size(fd)
     sock = socket.create_connection((host, port), timeout=DEFAULT_TIMEOUT)
     sock.settimeout(DEFAULT_TIMEOUT)
-    send_frame(sock, {"session": session, "cols": cols, "rows": rows})
+    send_frame(sock, {"actor": actor, "cols": cols, "rows": rows})
     line, buffered = read_line(sock)
     if line is None:
         raise Refused("stream closed before answering the hello")
@@ -112,7 +112,7 @@ def attach(session, host, port, send):
 def parse_args(argv):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--session", required=True)
+    parser.add_argument("--actor", required=True)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8081)
     parser.add_argument("--send", default="", help="a line to type once attached")
@@ -125,7 +125,7 @@ def main(argv=None):
         print("pty-attach needs a terminal (ssh -t)", file=sys.stderr)
         return 2
     try:
-        attach(args.session, args.host, args.port, args.send)
+        attach(args.actor, args.host, args.port, args.send)
     except Refused as error:
         print(f"refused: {error}", file=sys.stderr)
         return 2

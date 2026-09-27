@@ -1,13 +1,16 @@
-// The HTTP API: sessions over the host's network. Routes and error shapes are
+// The HTTP API: actors over the host's network. Routes and error shapes are
 // the contract in control/test/host.check.js.
 //
-// Errors are JSON: 400 malformed, 404 unknown session or route, 500 with the
+// Errors are JSON: 400 malformed, 404 unknown actor or route, 500 with the
 // host or Firecracker message, which is where the fix usually is.
 
 import { readFileSync, realpathSync, statSync } from "node:fs"
 import { createServer } from "node:http"
 import { extname, join, sep } from "node:path"
 import { BadRequest, HOST_FAILURES, NotFound } from "./errors.js"
+import { verify_host_pass } from "./host-pass.js"
+import { limit_path } from "../../sync/src/recovery-pass.js"
+import { can } from "../../can/src/can.js"
 import { logger } from "./log.js"
 
 const LOG = logger("server")
@@ -106,7 +109,7 @@ function health(store) {
       boot_id: seed.record?.boot_id ?? null,
       created: seed.record?.created ?? null,
     },
-    sessions: counts,
+    actors: counts,
   }
 }
 
@@ -130,34 +133,58 @@ async function route(store, request, response) {
 
   // <id>.localhost gives a published site its own root, so root-relative links resolve.
   const [label, ...rest] = (request.headers.host ?? "").split(":")[0].split(".")
-  if (method === "GET" && rest.join(".") === "localhost" && label.startsWith("s-")) {
+  if (method === "GET" && rest.join(".") === "localhost" && label.startsWith("a-")) {
     return site(store, response, label, url.pathname.replace(/^\/+/, ""))
   }
 
+  if (method === "GET" && path === "/v1/health") return json(response, 200, health(store))
+
+  // Published sites are public. Every private route below needs a signed owner.
+  let owner
+  if (path.startsWith("/v1/")) {
+    const pass = request.headers.authorization?.match(/^Bearer (\S+)$/)?.[1]
+    try {
+      owner = verify_host_pass(pass, process.env.HOST_PASS_SECRET).phone
+    } catch {
+      return json(response, 401, { error: "valid host pass required" })
+    }
+  }
+  const owns = (record) => record.owner === owner && can({ phone: owner }, "get", `people/${record.owner}/harnesses/${record.id}`)
+  const actor = (id) => {
+    const record = store.get(id)
+    if (!owns(record)) throw new NotFound(id)
+    return record
+  }
+
   if (method === "GET") {
-    if (path === "/v1/health") return json(response, 200, health(store))
-    if (path === "/v1/sessions") return json(response, 200, { sessions: store.list() })
-    if (path === "/v1/exports") return json(response, 200, { exports: store.exports() })
+    if (path === "/v1/actors") return json(response, 200, { actors: store.list().filter(owns) })
+    if (path === "/v1/exports") return json(response, 200, { exports: store.exports().filter((item) => item.actor?.owner === owner && can({ phone: owner }, "get", `people/${owner}/harnesses/${item.id}`)) })
     if (url.pathname.startsWith("/s/")) {
       const [id, ...parts] = url.pathname.slice(3).split("/")
       return site(store, response, id, parts.join("/"))
     }
-    if (path.startsWith("/v1/sessions/")) {
-      const [id, action] = path.slice("/v1/sessions/".length).split("/")
+    if (path.startsWith("/v1/actors/")) {
+      const [id, action] = path.slice("/v1/actors/".length).split("/")
+      actor(id)
       if (action === "trace") return json(response, 200, { events: store.traceOf(id) })
       if (action === undefined) return json(response, 200, store.get(id))
     }
   }
 
   if (method === "POST") {
-    if (path === "/v1/sessions") {
+    if (path === "/v1/actors") {
       const payload = await readJson(request)
-      if (payload.restore_from === undefined || payload.restore_from === null) return json(response, 201, await store.create())
+      if (!can({ phone: owner }, "write", `people/${owner}/harnesses`)) throw new NotFound("actor")
+      const paths = payload.paths ?? null
+      if (paths !== null && (!Array.isArray(paths) || paths.length > 100 || !paths.every(limit_path))) throw new BadRequest("paths must be relative paths without secrets")
+      if (payload.restore_from === undefined || payload.restore_from === null) return json(response, 201, await store.create(owner, { paths }))
       if (typeof payload.restore_from !== "string" || !payload.restore_from) throw new BadRequest("restore_from must be an export id")
-      return json(response, 201, await store.restore(payload.restore_from))
+      return json(response, 201, await store.restore(payload.restore_from, owner))
     }
-    if (path.startsWith("/v1/sessions/")) {
-      const [id, action] = path.slice("/v1/sessions/".length).split("/")
+    if (path.startsWith("/v1/actors/")) {
+      const [id, action] = path.slice("/v1/actors/".length).split("/")
+      actor(id)
+      if (!can({ phone: owner }, "write", `people/${owner}/harnesses/${id}`)) throw new NotFound(id)
       if (action === "exec") return json(response, 200, await exec(store, request, id))
       if (action === "idle") {
         const payload = await readJson(request)
@@ -169,15 +196,18 @@ async function route(store, request, response) {
       if (action === "export") return json(response, 200, await store.export(id))
       if (action === "publish") {
         const payload = await readJson(request)
-        const tree = payload.path ?? "/root/site"
+        const tree = payload.path ?? "/brayness/site"
         if (typeof tree !== "string") throw new BadRequest("path must be a string")
-        return json(response, 200, await store.publish(id, tree || "/root/site"))
+        return json(response, 200, await store.publish(id, tree || "/brayness/site"))
       }
     }
   }
 
-  if (method === "DELETE" && path.startsWith("/v1/sessions/")) {
-    await store.destroy(path.split("/").at(-1))
+  if (method === "DELETE" && path.startsWith("/v1/actors/")) {
+    const id = path.split("/").at(-1)
+    actor(id)
+    if (!can({ phone: owner }, "delete", `people/${owner}/harnesses/${id}`)) throw new NotFound(id)
+    await store.destroy(id)
     return json(response, 204)
   }
 
@@ -192,7 +222,7 @@ export function makeServer(store) {
     } catch (error) {
       request.resume()
       if (error instanceof BadRequest) return json(response, 400, { error: error.message })
-      if (error instanceof NotFound) return json(response, 404, { error: "no such session" })
+      if (error instanceof NotFound) return json(response, 404, { error: "no such actor" })
       if (HOST_FAILURES.some((kind) => error instanceof kind)) {
         LOG.warn(`request failed: ${error.message}`)
         return json(response, 500, { error: error.message })

@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# sessions-volume - the sessions volume on the prod host: a real PD, xfs, reflink.
+# actors-volume - the actors volume on the prod host: a real PD, xfs, reflink.
 #
-#   sudo bash ~/brayness/host/scripts/sessions-volume.sh
+#   sudo bash ~/brayness/host/scripts/actors-volume.sh
 #
 # xfs + reflink was proven on a loopback image first. This is the shipped version:
-# format the attached sessions PD, mount it where the host looks
-# (/opt/fc/sessions/mnt is --volume's default), and run the same checks against
+# format the attached actors PD, mount it where the host looks
+# (/opt/fc/actors/mnt is --volume's default), and run the same checks against
 # real storage. Idempotent: a disk that is already xfs is mounted, not
 # reformatted.
 set -euo pipefail
 
-DEV="${DEV:-/dev/disk/by-id/google-brayness-sessions}"   # the sessions PD
-MNT="${MNT:-/opt/fc/sessions/mnt}"
+DEV="${DEV:-/dev/disk/by-id/google-brayness-actors}"   # the actors PD
+MNT="${MNT:-/opt/fc/actors/mnt}"
 IMAGE="${IMAGE:-/opt/fc/rootfs.ext4}"     # what gets seeded onto the volume
-SEED="$MNT/seed.ext4"                     # the copy sessions reflink from
+SEED="$MNT/seed.ext4"                     # the copy actors reflink from
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 [ -e "$DEV" ] || { echo "no $DEV" >&2; exit 1; }
@@ -32,7 +32,7 @@ alloc_kb() { du -s "$1" | cut -f1; }
 chunk_md5() { dd if="$1" bs=1M count=1 skip="$2" status=none | md5sum | cut -d' ' -f1; }
 
 kind="$(blkid -s TYPE -o value "$DEV" || true)"
-log "sessions volume $DEV (${kind:-blank}) at $MNT"
+log "actors volume $DEV (${kind:-blank}) at $MNT"
 if [ "$kind" != "xfs" ]; then
   [ -z "$kind" ] || { echo "$DEV holds $kind - refusing to format" >&2; exit 1; }
   mkfs.xfs -q -f "$DEV"
@@ -41,7 +41,7 @@ fi
 mkdir -p "$MNT"
 uuid="$(blkid -s UUID -o value "$DEV")"
 mountpoint -q "$MNT" || mount -U "$uuid" "$MNT"
-# Survive a reboot. The disk is the sessions, and stop/start is how this host
+# Survive a reboot. The disk is the actors, and stop/start is how this host
 # idles, so the filesystem comes back by UUID and never by device node. nofail:
 # a missing disk must not wedge boot. A replaced disk leaves a dead UUID line
 # behind, so only ever keep one entry for this mount point.
@@ -60,8 +60,8 @@ fi
 
 log "cloning the volume's seed twice, timed"
 # Reflink is same-filesystem only: a clone from the ext4 boot disk fails with
-# "Invalid cross-device link". The seed has to live on the sessions volume, and
-# this copy is the one real copy - every session reflinks from it.
+# "Invalid cross-device link". The seed has to live on the actors volume, and
+# this copy is the one real copy - every actor reflinks from it.
 if [ ! -f "$SEED" ]; then
   log "seeding the volume: $IMAGE -> $SEED"
   cp --sparse=always "$IMAGE" "$SEED"

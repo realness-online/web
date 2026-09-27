@@ -31,7 +31,7 @@ export const ENVIRONMENTS = {
     webPort: 18090,
     log: "dist/dev-up.log",
     /** Sizes for the stack the host runs. */
-    volume: "/opt/fc/sessions",
+    volume: "/opt/fc/actors",
     volumeSize: "6G",
   },
 
@@ -43,14 +43,14 @@ export const ENVIRONMENTS = {
     imageFamily: "brayness-host",
     machineType: "n2-standard-4",
     bootSize: "20GB",
-    sessionsSize: "30GB",
+    actorsSize: "30GB",
     /** Where bundles ship before a host is dropped. */
     bucket: "realness-online-brayness",
     /** The host's copy of the project. */
     root: "~/brayness",
     /** Loopback-only until h1 exists, so the API is reached over ssh. */
     api: "http://127.0.0.1:8080",
-    hostExports: "/opt/fc/sessions/mnt/exports",
+    hostExports: "/opt/fc/actors/mnt/exports",
   },
 }
 

@@ -20,7 +20,8 @@ import { sync_service } from "../src/server.js"
 
 const dev = process.argv.includes("--dev")
 const port = Number(process.env.PORT ?? 8787)
-const host = process.env.K_SERVICE ? "0.0.0.0" : "127.0.0.1"
+// LISTEN=0.0.0.0 lets dev actors reach it through their gateway.
+const host = process.env.LISTEN ?? (process.env.K_SERVICE ? "0.0.0.0" : "127.0.0.1")
 
 function open_store() {
   const kind = process.env.STORE ?? "disk"
@@ -54,6 +55,6 @@ if (dev) {
 
 const origins = (process.env.ORIGINS ?? "").split(",").filter(Boolean)
 
-sync_service({ storage, rights: rights(storage), project, certs, origins }).listen(port, host, () =>
+sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET }).listen(port, host, () =>
   console.log(`# sync service on http://${host}:${port}, storage ${where}`),
 )

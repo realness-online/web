@@ -6,9 +6,9 @@
 # GCP turns a guest poweroff into STOPPED, so an idle host bills disks only
 # (~$0.041/h) and `gcloud compute instances start` brings it back. The check
 # runs locally every 5 minutes, never over ssh, and only stops the host after
-# IDLE_SECONDS of nothing: no firecracker, no host, no ssh session.
+# IDLE_SECONDS of nothing: no firecracker, no host, no ssh actor.
 # This is the proof-phase guard; host lifecycle moves into the host
-# later, which is the only thing that really knows a session is live.
+# later, which is the only thing that really knows an actor is live.
 set -euo pipefail
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
@@ -97,6 +97,6 @@ systemctl enable --now brayness-idle-check.timer
 printf '==> threshold %ss, %s\n' "$IDLE_SECONDS" "$UNIT.timer"
 printf '    hold: sudo touch /run/brayness-hold (cleared by a boot)\n'
 systemctl list-timers brayness-idle-check.timer --no-pager
-printf '\n==> one dry run now (an ssh session is open, so it must do nothing)\n'
+printf '\n==> one dry run now (an ssh actor is open, so it must do nothing)\n'
 "$CHECK"
 printf 'idle state file: %s\n' "$(test -f /run/brayness-idle-since && echo present || echo absent - activity seen)"

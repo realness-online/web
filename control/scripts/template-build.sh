@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs where the microVM runs: the fc-local Lima guest (arm64) or the prod host
-# (x86_64). Fetches ubuntu-base and node (checksummed), then builds the session
+# (x86_64). Fetches ubuntu-base and node (checksummed), then builds the actor
 # template: a real Ubuntu 24.04 userspace that boots under the Firecracker CI
 # kernel, with pi, git, node, and the stock harness in it and nothing personal.
 #
@@ -94,8 +94,9 @@ install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
 install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"
 install -m 0755 "$GUEST_SRC/brayness-agent.py" "$TREE/usr/local/bin/brayness-agent"
 install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
-install -m 0755 "$GUEST_SRC/brayness-session-init" "$TREE/usr/local/bin/brayness-session-init"
+install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
 install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
+install -m 0755 "$GUEST_SRC/brayness-recover" "$TREE/usr/local/bin/brayness-recover"
 install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
 install -m 0644 "$GUEST_SRC/brayness-vsock.service" "$TREE/etc/systemd/system/brayness-vsock.service"
 install -m 0644 "$GUEST_SRC/brayness-pty.service" "$TREE/etc/systemd/system/brayness-pty.service"
@@ -175,12 +176,11 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
   --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION" --no-fund --no-audit
 
 # ---------------------------------------------------------------------- harness
-# The harness lives in the home directory, laid out like the Mac's: export saves
-# /root, so edits to the harness and to work/ travel with the session.
-log "stock harness -> /root/brayness"
+# Actor files live at /brayness; exports carry the harness and its work/.
+log "stock harness -> /brayness"
 [ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
-mkdir -p "$TREE/root/brayness"
-tar xzf "$HARNESS_TAR" -C "$TREE/root/brayness"
+mkdir -p "$TREE/brayness"
+tar xzf "$HARNESS_TAR" -C "$TREE/brayness"
 
 # The realness proxy's shared pass. models.json reads it with `!cat` per request.
 PASS_FILE="${PASS_FILE:-$REPO/dist/agent-pass}"
@@ -190,14 +190,14 @@ install -D -m 600 -o root -g root "$PASS_FILE" "$TREE/etc/brayness/agent-pass"
 # pi packages (the harness's own extensions) live in .pi/agent/npm
 log "harness pi-packages"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --ignore-scripts --no-fund --no-audit --prefix /root/brayness/.pi/agent/npm
+  npm install --ignore-scripts --no-fund --no-audit --prefix /brayness/.pi/agent/npm
 
 # pi-mono-auto-fix looks for node_modules/.bin/prettier above each edited file,
-# else runs `npx prettier`: a registry fetch per session, which failed under
+# else runs `npx prettier`: a registry fetch per actor, which failed under
 # load. One pinned copy at the harness root covers everything under it.
 log "prettier for auto-fix"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /root/brayness prettier@3.9.9
+  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /brayness prettier@3.9.9
 
 # brayness is the harness entrypoint. A wrapper rather than a symlink: bin/pi
 # derives the repo root from its own path, so a symlink named brayness would
@@ -207,7 +207,7 @@ cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 # `brayness publish [dir]` asks the host to serve a built site (the door).
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
 case "${1:-}" in -h|--help)
-  echo "brayness publish [dir]  serve a built site from this session; prints its link"
+  echo "brayness publish [dir]  serve a built site from this actor; prints its link"
   echo ;;
 esac
 # exec, not a symlink: bin/pi resolves the harness root from its own path.
@@ -216,10 +216,10 @@ esac
 # their ten `npm view` processes kept pi deaf to keys for minutes.
 export PI_OFFLINE=1
 # jiti caches transpiled extensions in $TMPDIR/jiti, and Node its compile cache
-# beside it. /tmp is emptied per session and per boot, which cost ~130s of
+# beside it. /tmp is emptied per actor and per boot, which cost ~130s of
 # transpiling on two vCPUs at every first start. /var/tmp survives both.
 export TMPDIR=/var/tmp
-exec /root/brayness/bin/pi "$@"
+exec /brayness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/brayness"
 
@@ -234,7 +234,7 @@ fi
 # ------------------------------------------------------------- template hygiene
 log "template hygiene"
 # An *empty* machine-id means uninitialized: systemd writes a fresh one at boot,
-# so forked sessions do not share an identity. Deleting the file instead makes
+# so forked actors do not share an identity. Deleting the file instead makes
 # systemd run its first-boot wizard, which prompts on the serial console and
 # blocks the boot - a template must never do that, hence the mask.
 : > "$TREE/etc/machine-id"
@@ -261,16 +261,16 @@ chroot "$TREE" /usr/bin/fdfind --version
 # With no resolver, reaching for npx here would fail instead of printing a
 # version - so this is the offline check, not just a smoke test.
 log "brayness starts, and resolves pi without the network"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
   /usr/local/bin/brayness --version
-chroot "$TREE" /root/brayness/node_modules/.bin/prettier --version
+chroot "$TREE" /brayness/node_modules/.bin/prettier --version
 
 # --help loads every extension, so this fills the caches the wrapper points at.
-# Paths match a session's, so its first start reads them instead of transpiling.
+# Paths match an actor's, so its first start reads them instead of transpiling.
 log "warm the extension caches"
 rm -rf "$TREE/var/tmp/jiti" "$TREE/var/tmp/node-compile-cache"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
-  sh -c 'cd /root/brayness && /usr/local/bin/brayness --help > /dev/null'
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
+  sh -c 'cd /brayness && /usr/local/bin/brayness --help > /dev/null'
 jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
 [ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
 log "jiti cache: $jiti_files files"

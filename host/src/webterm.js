@@ -1,9 +1,9 @@
 // The browser terminal: a websocket in front of the framed pty stream.
 //
-//   GET /      the page, and a session for it when the URL names none
-//   GET /pty   websocket; the query is the hello (?session=, cols, rows)
+//   GET /      the page, and an actor for it when the URL names none
+//   GET /pty   websocket; the query is the hello (?actor=, cols, rows)
 //
-// A bare GET / is the door: the API that creates sessions is on loopback, so
+// A bare GET / is the door: the API that creates actors is on loopback, so
 // this server makes one and redirects with its id on the URL. The websocket is
 // RFC 6455 by hand, text frames only: the host takes no dependencies.
 
@@ -14,6 +14,8 @@ import { connect } from "node:net"
 import { extname, join, sep } from "node:path"
 import { logger } from "./log.js"
 import { CONTENT_TYPES } from "./server.js"
+import { terminal_auth } from "./terminal-auth.js"
+import { can } from "../../can/src/can.js"
 import { Lines } from "./vsock.js"
 
 const LOG = logger("webterm")
@@ -71,22 +73,74 @@ function text(response, status, body) {
   response.end(body)
 }
 
-export function makeServer({ pageRoot, streamPort, newSession }) {
+export function makeServer({ pageRoot, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET) }) {
+  const same_origin = (request) => {
+    const origin = request.headers.origin
+    return origin === `http://${request.headers.host}` || origin === `https://${request.headers.host}`
+  }
+  const allowed = (phone, id) => {
+    const record = store.get(id)
+    return record.owner === phone && can({ phone }, "get", `people/${phone}/harnesses/${id}`)
+  }
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, "http://host")
+    if (request.method === "GET" && url.pathname === "/handoff") {
+      const origin = process.env.REALNESS_ORIGIN
+      if (!origin) return text(response, 503, "Realness origin is not configured\n")
+      const page = Buffer.from(`<!doctype html><title>Opening Brayness</title><p>Waiting for Realness...</p><script>const trusted=${JSON.stringify(origin)};window.addEventListener('message',async event=>{if(event.origin!==trusted||event.source!==window.opener||event.data?.type!=='brayness-pass')return;const response=await fetch('/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:event.data.pass})});if(response.ok)location.replace('/');else document.querySelector('p').textContent='Sign-in handoff failed'});if(window.opener)window.opener.postMessage({type:'brayness-ready'},trusted);</script>`)
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-length": page.length, "cache-control": "no-store", "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'" })
+      return response.end(page)
+    }
+    if (request.method === "POST" && url.pathname === "/auth") {
+      if (!same_origin(request)) return text(response, 403, "bad origin\n")
+      const chunks = []
+      for await (const chunk of request) {
+        chunks.push(chunk)
+        if (chunks.reduce((sum, part) => sum + part.length, 0) > 4096) return text(response, 413, "body too large\n")
+      }
+      try {
+        const value = auth.cookie(JSON.parse(Buffer.concat(chunks).toString()).pass)
+        response.writeHead(204, { "set-cookie": `${auth.cookie_name}=${value}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${auth.cookie_age}${request.headers.host?.startsWith("localhost:") || request.headers.host?.startsWith("127.0.0.1:") ? "" : "; Secure"}`, "cache-control": "no-store" })
+        return response.end()
+      } catch {
+        return text(response, 401, "invalid pass\n")
+      }
+    }
+    const phone = auth.owner(request.headers.cookie)
+    if (!phone && (url.pathname === "/ticket" || ["/", "/term", "/index.html"].includes(url.pathname))) return text(response, 401, "sign in through Realness\n")
+    if (request.method === "POST" && url.pathname === "/ticket") {
+      if (!same_origin(request)) return text(response, 403, "bad origin\n")
+      const id = url.searchParams.get("actor")
+      try {
+        if (!allowed(phone, id)) return text(response, 404, "no actor\n")
+      } catch {
+        return text(response, 404, "no actor\n")
+      }
+      const body = Buffer.from(JSON.stringify({ ticket: auth.issue(phone, id) }))
+      response.writeHead(200, { "content-type": "application/json", "content-length": body.length, "cache-control": "no-store" })
+      return response.end(body)
+    }
     if (["/", "/term", "/index.html"].includes(url.pathname)) {
-      if (!url.searchParams.get("session") && newSession) {
+      if (!url.searchParams.get("actor") && newActor) {
+        if (!can({ phone }, "write", `people/${phone}/harnesses`)) return text(response, 403, "cannot create an actor\n")
         let record
         try {
-          record = await newSession()
+          record = await newActor(phone)
         } catch (error) {
-          LOG.error("could not create a session for a bare page", error)
-          return text(response, 502, `could not start a session: ${error.message}\n`)
+          LOG.error("could not create an actor for a bare page", error)
+          return text(response, 502, `could not start an actor: ${error.message}\n`)
         }
         LOG.info(`bare page: created ${record.id}`)
-        // A new Pi conversation in the new session; old ones stay searchable.
-        response.writeHead(302, { location: `/?session=${record.id}&exec=brayness`, "content-length": 0, connection: "close" })
+        // A new Pi conversation in the new actor; old ones stay searchable.
+        response.writeHead(302, { location: `/?actor=${record.id}&exec=brayness`, "content-length": 0, connection: "close" })
         return response.end()
+      }
+      if (url.searchParams.get("actor")) {
+        try {
+          if (!allowed(phone, url.searchParams.get("actor"))) return text(response, 404, "no actor\n")
+        } catch {
+          return text(response, 404, "no actor\n")
+        }
       }
       try {
         const page = readFileSync(join(pageRoot, "index.html"))
@@ -96,7 +150,7 @@ export function makeServer({ pageRoot, streamPort, newSession }) {
         return text(response, 503, "no terminal page: term/ was not shipped\n")
       }
     }
-    if (url.pathname === "/pty") return text(response, 400, request.headers["sec-websocket-key"] ? "no session\n" : "no websocket key\n")
+    if (url.pathname === "/pty") return text(response, 400, request.headers["sec-websocket-key"] ? "no actor\n" : "no websocket key\n")
     // The built page's hashed assets and the wasm.
     try {
       const root = realpathSync(pageRoot)
@@ -110,7 +164,7 @@ export function makeServer({ pageRoot, streamPort, newSession }) {
     }
   })
 
-  server.on("upgrade", (request, socket) => bridge(request, socket, streamPort))
+  server.on("upgrade", (request, socket) => bridge(request, socket, streamPort, auth, allowed, same_origin))
   return server
 }
 
@@ -136,19 +190,27 @@ async function openPty(streamPort, hello) {
   return { stream, lines }
 }
 
-async function bridge(request, socket, streamPort) {
+async function bridge(request, socket, streamPort, auth, allowed, same_origin) {
   const url = new URL(request.url, "http://host")
   if (url.pathname !== "/pty") return refuse(socket, 400, "no route\n")
-  const session = url.searchParams.get("session")
-  if (!session) return refuse(socket, 400, "no session\n")
+  const actor = url.searchParams.get("actor")
+  if (!actor) return refuse(socket, 400, "no actor\n")
   const key = request.headers["sec-websocket-key"]
   if (!key) return refuse(socket, 400, "no websocket key\n")
+  const phone = auth.owner(request.headers.cookie)
+  if (!phone || !same_origin(request)) return refuse(socket, 403, "not signed in\n")
+  try {
+    if (!allowed(phone, actor)) return refuse(socket, 404, "no actor\n")
+  } catch {
+    return refuse(socket, 404, "no actor\n")
+  }
+  if (!auth.consume(url.searchParams.get("ticket"), phone, actor)) return refuse(socket, 403, "invalid ticket\n")
 
   let pty
   try {
-    pty = await openPty(streamPort, { session, cols: Number(url.searchParams.get("cols") ?? 80), rows: Number(url.searchParams.get("rows") ?? 24) })
+    pty = await openPty(streamPort, { actor, pass: auth.pass(phone), cols: Number(url.searchParams.get("cols") ?? 80), rows: Number(url.searchParams.get("rows") ?? 24) })
   } catch (error) {
-    LOG.warn(`pty bridge failed for ${session}: ${error.message}`)
+    LOG.warn(`pty bridge failed for ${actor}: ${error.message}`)
     return refuse(socket, 502, `${error.message}\n`)
   }
 

@@ -19,7 +19,7 @@ sudo bash "$HOME/brayness/host/scripts/node-install.sh" | tail -1
 # An image baked before h4p carries a guard that looks for the Python host.
 sudo bash "$HOME/brayness/host/scripts/idle-guard.sh" > /dev/null
 sudo nohup node host/main.js serve \
-  --volume /opt/fc/sessions/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
+  --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 # Three minutes, not one: on a host that has no seed yet, the first serve builds
 # it, and that means booting the template and pausing it (about 36s) before the
 # listener ever answers. A 60s wait read as a dead host on a fresh host.

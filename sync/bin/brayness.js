@@ -2,8 +2,8 @@
 /**
  * The harness command.
  *
- *   brayness sync            every plan's Syncs folders, both ways
- *   brayness sync brayness   only plans/brayness.md's
+ *   brayness sync            Pi session history and every plan's Syncs folders
+ *   brayness sync brayness   Pi session history and plans/brayness.md's folders
  *   brayness sync --deletes  also send deletes no session explains
  *   brayness turn-start --session <file>
  *   brayness turn-end   --session <file> --turn <n>   logs the turn, then syncs
@@ -32,10 +32,10 @@ const args = rest.filter((arg) => arg !== "--deletes")
 
 const who = (ours) => (ours ? ` (ours: turn ${ours.turn} of ${basename(ours.session)})` : "")
 
-async function sync() {
+async function sync({ defer_edits = false } = {}) {
   const token = await token_source()()
   if (!token) throw new Error("not signed in; run brayness-store login")
-  const { synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes })
+  const { synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes, defer_edits })
   for (const [path, report] of Object.entries(synced)) {
     const moved = Object.entries(report).filter(([kind, names]) => Array.isArray(names) && kind !== "unchanged" && names.length)
     console.log(`${path}: ${moved.map(([kind, names]) => `${kind} ${names.length}`).join(", ") || "unchanged"}`)
@@ -45,7 +45,7 @@ async function sync() {
   }
   for (const [path, reason] of Object.entries(refused)) console.error(`refused ${path}: ${reason}`)
   if (Object.keys(refused).length) process.exitCode = 1
-  if (!Object.keys(synced).length && !Object.keys(refused).length) console.log("No plan lists a ## Syncs folder.")
+  if (!Object.keys(synced).length && !Object.keys(refused).length) console.log("Nothing to sync.")
 }
 
 const commands = {
@@ -54,7 +54,7 @@ const commands = {
   async "turn-end"() {
     const logged = await turn_end({ root: find_root(), state: state_dir(), session, turn })
     if (logged.length) console.log(`turn ${turn}: ${logged.length} change(s) logged`)
-    await sync()
+    await sync({ defer_edits: true })
   },
 }
 

@@ -1,6 +1,6 @@
 # Brayness webspace
 
-Hosted sessions. One host runs many microVM sessions - forks of one booted
+Hosted actors. One host runs many microVM actors - forks of one booted
 snapshot - and each one is reachable three ways, idle in three tiers, and costs
 nothing while it sleeps. The prod host is a VM in `realness-online`; this is the
 code that builds it and serves it.
@@ -8,9 +8,9 @@ code that builds it and serves it.
 - `control/` - Node. The control plane: makes hosts exist, puts the code on
   them, takes them away. Reaches the live side only over its HTTP API. Run
   `node bin/webspace.js`. Its `scripts/` are the Mac and Lima build/run steps.
-- `host/` - the session API, exec, PTY, browser terminal, door (Node, standard
-  library only). The live side: it runs on the host and owns sessions. Its
-  `scripts/` are the host syscalls, its `guest/` runs inside a session, and its
+- `host/` - the actor API, exec, PTY, browser terminal, door (Node, standard
+  library only). The live side: it runs on the host and owns actors. Its
+  `scripts/` are the host syscalls, its `guest/` runs inside an actor, and its
   `clients/` are the host-shell tools. `cd control && npm run check:host` is its
   contract.
 - `can/` - Node, no dependencies. `can()`, rights pages, and phone identity;
@@ -26,7 +26,7 @@ code that builds it and serves it.
   in your browser and keeps it in the macOS keychain; `TOKEN=` still wins.
   `sync/bin/brayness.js sync` syncs every plan's `## Syncs` folders both
   ways; paths inside a git repo are refused.
-- Examples live in `brayness-examples`; sessions download them with giget.
+- Examples live in `brayness-examples`; actors download them with giget.
 - `lima/fc-local.yaml` - the dev loop on this Mac.
 - `dist/` - everything generated: the staged harness, boot and template check
   runs, drain logs. Ignored; a fresh clone is source only.
@@ -35,12 +35,22 @@ code that builds it and serves it.
 host must not know the control plane exists, and control may only reach
 it through the API. `cd control && npm test`.
 
+## Starter ownership and updates
+
+`control/scripts/ship-stage.sh` makes an allowlisted ship tree from Scott's harness. The template puts that tree in `/brayness`; each actor then owns its copy. Today this is a build path, not a versioned update service.
+
+The planned starter will record its version and inspected file list. Brayness will propose changes to `AGENTS.md`, selected skills, extensions, and required configuration. `AGENTS.local.md`, the vault, `work/`, `artifacts/`, and Pi history stay personal. Before an update replaces a managed file, it must compare that file with the received starter; personal edits require review. Session history can explain those edits but cannot prove that all edits went through Pi.
+
+A person can decline updates or detach from guidance while keeping hosting and sync. Export must let them take their harness and Pi history to another machine or service. Portable model access and other runtime dependencies remain open design work. Plans may move into the vault; current code still reads `plans/`.
+
+See `plans/brayness.md` nodes k1-k4 for the decisions and unfinished work. Do not treat the planned update and export paths as available commands.
+
 ## How one is used
 
 Someone who will not run a setup script gets a working environment.
 
 - In three ways: a browser page, an attached terminal, the API.
-- Out two ways: served from the session while it runs, or published to a host
+- Out two ways: served from the actor while it runs, or published to a host
   and reachable with nothing running.
 - Idle three ways: a memory sleep, where programs resume; a disk sleep, where
   files come back and programs do not; or nothing at all, where the trace and
@@ -56,7 +66,7 @@ Commands run on the Mac unless a step says otherwise.
 | Build the template | `dev build`           | stage the harness, build `template.ext4` |
 | Run it locally     | `dev setup`, `dev up` | Lima guest, then volume + TAP + API      |
 | Run a host         | `prod host up <name>` | create, bootstrap, check, serve          |
-| Move sessions      | `prod host drain`     | export every session to GCS              |
+| Move actors        | `prod host drain`     | export every actor to GCS                |
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections below carry what
@@ -64,9 +74,9 @@ each one proved.
 
 ## Build the template
 
-The template is the Ubuntu 24.04 image every session forks from: pi, git, node,
+The template is the Ubuntu 24.04 image every actor forks from: pi, git, node,
 and the stock harness. Examples are not in the image: `/site` and `/app` download
-them from `brayness-examples` and install their dependencies in the session.
+them from `brayness-examples` and install their dependencies in the actor.
 
 ```bash
 node control/bin/webspace.js dev build
@@ -82,7 +92,7 @@ A seed whose template, kernel, or Firecracker fingerprint changed is not forked:
 `ensure_seed()` sees the mismatch and rebuilds it on the next serve, so a missed
 rebuild cannot fork an old image.
 
-Record: the template rootfs (f3), and the capability it carries, a session that
+Record: the template rootfs (f3), and the capability it carries, an actor that
 builds a site (a1).
 
 ## Run it locally
@@ -104,31 +114,31 @@ node control/bin/webspace.js dev host up  # each time: volume, TAP, API; waits f
 - The log is `dist/dev-up.log`; the guest side is `control/scripts/dev-stack.sh`.
 - `dev host up` waits for `seed.built`, not just for health: the API answers `ok` as
   soon as it is listening, before the seed exists, so waiting on `ok` reports a
-  stack as up when it cannot make a session.
+  stack as up when it cannot make an actor.
 
 Record: boot (f1), network and a control channel (f2), snapshot and restore
-(f4), the session-disk mechanics (f5a-c, f6), and the API (r3a-r5) with idle
-tiers (r4) and the pages a session dirties (m1).
+(f4), the actor-disk mechanics (f5a-c, f6), and the API (r3a-r5) with idle
+tiers (r4) and the pages an actor dirties (m1).
 
 ## Run a host
 
 A host is a GCP VM in `realness-online` that boots the fleet image and serves
-sessions. Everything below runs from the Mac.
+actors. Everything below runs from the Mac.
 
 ```bash
 node control/bin/webspace.js prod host up brayness-2 --smoke    # create, bootstrap, check, serve
 node control/bin/webspace.js prod host restart brayness-2       # push the current code, re-serve
 node control/bin/webspace.js prod host down brayness-2          # park: stop, disks kept ($0.80/mo)
-node control/bin/webspace.js prod host down brayness-2 --delete # drain sessions, then delete ($0)
+node control/bin/webspace.js prod host down brayness-2 --delete # drain actors, then delete ($0)
 ```
 
 - The API is loopback-only; tunnel it with
   `gcloud compute ssh brayness-2 -- -N -L 8080:127.0.0.1:8080`, the terminal
   with 8090.
-- `--delete` drains first and only deletes when every session came back
+- `--delete` drains first and only deletes when every actor came back
   confirmed; `--no-drain` skips the export. The delete enumerates the disks the
   instance actually has - `disks[].source.basename()` returns the _instance_
-  name, so a delete loop built on it removes nothing and the sessions volume
+  name, so a delete loop built on it removes nothing and the actors volume
   keeps billing.
 - `node control/bin/webspace.js prod probe` says which zone and machine type
   can create now (the default list is us-central1 a/b/c, us-west1 a/b,
@@ -138,21 +148,21 @@ node control/bin/webspace.js prod host down brayness-2 --delete # drain sessions
 Record: the prod host (d3), a host from the image and one that can be deleted
 (r8, r9), and the loop on x86_64 (x1).
 
-## Move sessions
+## Move actors
 
-A session's durable form is its export bundle: `artifacts.tar.gz` (its `/root`),
+An actor's durable form is its export bundle: `artifacts.tar.gz` (its `/brayness`),
 `trace.jsonl`, and a manifest with both hashes and the seed it forked from.
-Bundles live in `gs://realness-online-brayness/sessions/<id>/bundle.tar.gz`.
+Bundles live in `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`.
 
 ```bash
 # on a host, against its loopback API
-curl -sS -X POST http://127.0.0.1:8080/v1/sessions/<id>/export
+curl -sS -X POST http://127.0.0.1:8080/v1/actors/<id>/export
 curl -sS -X POST -H 'content-type: application/json' \
-  -d '{"restore_from":"<id>"}' http://127.0.0.1:8080/v1/sessions
+  -d '{"restore_from":"<id>"}' http://127.0.0.1:8080/v1/actors
 ```
 
-The harness travels - it lives at `/root/brayness`, with its `work/` - and
-identity does not: restoring one export twice is two sessions with the same
+The harness travels - it lives at `/brayness`, with its `work/` - and
+identity does not: restoring one export twice is two actors with the same
 files and different identities. Files come back,
 processes do not, and nothing replays a command.
 
@@ -164,13 +174,13 @@ Why the system is shaped this way. Rejected alternatives are named where they
 were close.
 
 - **Self-host Firecracker.** Boot once, snapshot, fork.
-- **Nested virt on GCP.** Sessions wait on model calls, so density comes from
+- **Nested virt on GCP.** Actors wait on model calls, so density comes from
   oversubscription; bare metal is priced for CPU this is not.
 - **The prod host is a VM in `realness-online`**, the server project that already
   holds the brayness agent proxy. `realness-ops` is the server repo and
   `realness` the client repo; `realness-development` is the client's dev project.
 - **The d3 host is `n2-standard-4` in `us-central1-a`** - a 20 GB `pd-standard`
-  boot disk plus a 30 GB `pd-standard` PD for sessions: about $0.20/h running,
+  boot disk plus a 30 GB `pd-standard` PD for actors: about $0.20/h running,
   $0.80/mo parked. Spot is unavailable (`PREEMPTIBLE_CPUS` in us-central1 is 0)
   and nested virt rules out every cheap family (E2, all ARM, the memory-optimized
   M1/M2/M3, and every AMD but N4D).
@@ -180,28 +190,28 @@ were close.
   the host after 30 with no `firecracker`, no `node host/main.js` and no
   interactive login; `/run/brayness-hold` (tmpfs) holds it open for work that is
   not a running VM. h3 folds host lifecycle into the host.
-- **The artifact set is the session's home directory and the trace is its event
+- **The artifact set is the actor's home directory and the trace is its event
   log** (r7). Files come back and processes do not, and nothing replays a
-  command. A bundle is `artifacts.tar.gz` (of `/root`) plus `trace.jsonl` plus a
-  manifest holding both sha256s, the identity the session had, and the seed it
-  forked from. The harness is in `/root/brayness`, so it travels; identity stays
-  behind, so restoring one export twice is two sessions with the same files and
+  command. A bundle is `artifacts.tar.gz` (of `/brayness`) plus `trace.jsonl` plus a
+  manifest holding both sha256s, the identity the actor had, and the seed it
+  forked from. The harness is in `/brayness`, so it travels; identity stays
+  behind, so restoring one export twice is two actors with the same files and
   different identities.
-  Bundles go to `gs://realness-online-brayness/sessions/<id>/bundle.tar.gz`,
+  Bundles go to `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`,
   moved by the control plane because the host has no credentials.
-- **Idle holds no rented capacity.** A session is its trace, its artifacts and
-  its sessions directory; the microVM disk and memory are caches that can be
-  rebuilt. 30 GB-months of standard PD is free, so the sessions volume sits
+- **Idle holds no rented capacity.** An actor is its trace, its artifacts and
+  its actors directory; the microVM disk and memory are caches that can be
+  rebuilt. 30 GB-months of standard PD is free, so the actors volume sits
   inside the free tier; bytes that outgrow it go to GCS at $0.02/GiB-mo, first
   5 GiB free.
 - **Idle per host is $0: a parked host has no disk.** A parked host is deleted
-  and rebuilt from one shared image; the durable state is the sessions' traces
+  and rebuilt from one shared image; the durable state is the actors' traces
   and artifacts in GCS. The guest has no credentials, so the delete comes from
   the control plane, never the host's own timer. Per-host provisioned disks are
   the whole bill at hundreds of hosts (20 GB standard is $0.80/mo each), and the
   30 GB-months allowance is shared and per account, so it does not scale. The
   fleet image exists: `brayness-host`, family `brayness-host`, 20 GB geometry. A
-  stopped host is a 20 GB boot plus a 30 GB sessions volume, both standard, and
+  stopped host is a 20 GB boot plus a 30 GB actors volume, both standard, and
   `host-down.sh --delete` returns it to nothing but the image.
 - **A $20/mo Compute Engine budget on `realness-online`** alerts at 50/90/100%.
   Leaving the host up trips it in about four days.
@@ -209,36 +219,35 @@ were close.
   per-architecture and pinned to the Firecracker data format, so arm64 proves the
   lifecycle only (x1).
 - **ubuntu-base plus the CI kernel, not the CI rootfs** - the CI rootfs has an
-  empty dpkg and is a boot fixture, not a session image.
+  empty dpkg and is a boot fixture, not an actor image.
 - **The host is ours, Node standard library**, in `host/`; rejected
   firecracker-go-sdk, Kata, and flintlock. It began as Python (`host/`,
   gone after h4b); `check:host` is the contract both passed.
-- **Sessions get a TAP and no NAT.** Egress is h2's.
+- **Actors get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
-  `host-drain.sh <host> [--delete]` exports every session, streams each bundle to
-  `gs://<bucket>/sessions/<id>/bundle.tar.gz`, checks the object the bucket
+  `host-drain.sh <host> [--delete]` exports every actor, streams each bundle to
+  `gs://<bucket>/actors/<id>/bundle.tar.gz`, checks the object the bucket
   stored against the bundle that was sent, drops the bundle from the volume, and
   only then deletes the instance together with the disks it actually has.
   Anything unconfirmed leaves the host up, and nothing schedules a drain yet.
 - **What shipped is the bucket object, not a ledger.** No local record, so a
-  re-run re-exports and re-uploads; a session with no disk (a create that died
+  re-run re-exports and re-uploads; an actor with no disk (a create that died
   mid-flight) is reported and skipped rather than blocking a delete forever.
 - **The drain reaches the host over `gcloud compute ssh --command="curl ..."`** -
   the API is loopback-only until h1 exists, and a tunnel would cost a background
   process and a fixed local port per host to save a second a call.
-- **The density branch is dropped.** m1 measured it: a restored session dirties
+- **The density branch is dropped.** m1 measured it: a restored actor dirties
   20-26 MiB of its 512 MiB. The win is density, and density is not the critical
   path - RAM binds, storage is the cheapest dimension. The measurement script is
   archived with the checks.
 
-
-### Pi inside a session
+### Pi inside an actor
 
 Gotchas that bit; carry them through the h4 port.
 
 - A Pi tool allowlist is not a security boundary.
 - Pi runs as a plain user; boot setup and the command runner stay root.
-- System tools come baked in the template; sessions never `apt install`.
+- System tools come baked in the template; actors never `apt install`.
 - Egress is filtered on the host, where guest root cannot reach.
 - The terminal page draws libghostty-vt on a canvas; the relay stays blind.
 - Pi outlives the connection; a reload reattaches, never `/new`.
@@ -259,41 +268,41 @@ runbook.
 - f4 - restore reseeds and comes up at snapshot time - 7/7
 - f5a - a relative drive path follows the process cwd - 3/3
 - f5b - xfs reflink clones instantly, sharing extents - 6/6
-- f5c - two sessions hold their own disk, TAP and socket - 8/8
-- f6 - a clone starts fresh; identity is machine-id + session id - 9+15
+- f5c - two actors hold their own disk, TAP and socket - 8/8
+- f6 - a clone starts fresh; identity is machine-id + actor id - 9+15
 - r3a - create and destroy over HTTP - 29/29
-- r3b - exec in a named session - 24/24
+- r3b - exec in a named actor - 24/24
 - r3c - terminal, resize, exit code - 13/13
 - r3d - the Mac drives it through Lima - 13/13
 - r4 - idle tiers; workspace persists across a cold boot - 23/23
 - r5 - browser terminal; page, websocket frames, real browser typing - 13/13,
-  including a bare URL that makes its own session and redirects to it
-- d3 - GCP x86_64 host, nested virt, xfs sessions volume, self-stopping idle
+  including a bare URL that makes its own actor and redirects to it
+- d3 - GCP x86_64 host, nested virt, xfs actors volume, self-stopping idle
   guard - 6/6 + stop/start + a guest poweroff leaving it `TERMINATED` + the
   volume swapped to 30 GB standard with reflink green again
-- x1 - the loop on x86_64: template 19/19, restore 7/7, session over the API 11/11
-- r7 - a destroyed session comes back: export, destroy, restore, 24 checks on
+- x1 - the loop on x86_64: template 19/19, restore 7/7, actor over the API 11/11
+- r7 - a destroyed actor comes back: export, destroy, restore, 24 checks on
   the host, then the same restore from a bundle that went to
   `gs://realness-online-brayness` and back byte for byte (13 + 11 checks), with
-  the 3 MiB file intact and the new session holding its own identity
+  the 3 MiB file intact and the new actor holding its own identity
 - r8 - the host loop is one command each way: `host-up.sh brayness-2 --smoke`
-  made a 20 GB host from the image and had it serving a session in 2m50s (seed
+  made a 20 GB host from the image and had it serving an actor in 2m50s (seed
   36s, smoke 5/5), and `host-down.sh brayness-2 --delete` took the host and its
   volume away. A deleted host leaves the image as the fleet's only standing cost
-- r9 - a host is deleted with a live session on it and the session comes back: 20
+- r9 - a host is deleted with a live actor on it and the actor comes back: 20
   checks, run in us-west1-b because us-central1 had no n2 capacity. The drain
-  exported the session, put its 3 MB bundle in
-  `gs://realness-online-brayness/sessions/<id>/bundle.tar.gz` with a matching
+  exported the actor, put its 3 MB bundle in
+  `gs://realness-online-brayness/actors/<id>/bundle.tar.gz` with a matching
   md5Hash, and took the instance and both disks away; `host-up.sh` built a host
   whose creation time is new and whose volume held none of it; the bundle came
   back, the 3 MiB payload hashed identically, the identity did not, and the trace
-  opens with the drained session's own events
-- a1 - a session with no network builds a site from its own markdown, renders
+  opens with the drained actor's own events
+- a1 - an actor with no network builds a site from its own markdown, renders
   and highlights it, and the site lands in the home directory an export bundles
   - 16/16
-- a2 - the host takes that tree out of the running session and serves it at
+- a2 - the host takes that tree out of the running actor and serves it at
   `/s/<id>/`, a real browser loads it and draws the diagram, and the copy dies
-  with the session - 17/17 plus the browser
+  with the actor - 17/17 plus the browser
 
 ## Boot (f1)
 
@@ -303,7 +312,7 @@ and e2fsprogs 1.47 needs the size spelled out as a block count with `-d`.
 
 ## Network and a control channel (f2)
 
-Two things a session needs before anything else: a way out, and a way in that
+Two things an actor needs before anything else: a way out, and a way in that
 is not the serial console.
 
 **Out.** The host gets a tap on `172.16.0.0/30`, NAT'd to its uplink
@@ -320,7 +329,7 @@ listener. `brayness-vsock.service` runs `socat VSOCK-LISTEN:52,fork` in the
 guest, handing each connection to `brayness-agent`, which takes one JSON request
 per line (`argv`, `cwd`, `stdin_b64`) and answers with one
 (`exit_code`, `stdout_b64`, `stderr_b64`). Base64 so binary output survives a
-line-oriented channel; no shell, so `argv` is exec'd directly and a session that
+line-oriented channel; no shell, so `argv` is exec'd directly and an actor that
 wants a shell asks for one.
 
 `host/clients/vsock-exec.py` is the host-side client. It exits with the guest
@@ -344,7 +353,7 @@ Two things are worth remembering from building it:
 
 ## The template rootfs (f3)
 
-`template-build.sh` builds the image every session forks from, from
+`template-build.sh` builds the image every actor forks from, from
 `ubuntu-base` 24.04 plus the CI kernel: systemd, udev, node, pi, the stock
 harness, and the guest-side network and vsock files. It installs nothing
 personal and no way in (locked root, no sshd, empty machine-id).
@@ -365,62 +374,62 @@ original's socket. Two loads of one memory image are two forks: they must not
 produce the same random bytes. Both clones are the same boot (`boot_id`), and
 `/dev/urandom` differs between them, so resume reseeds. The device tree carries
 a `vmgenid` node. The guest also resumes at snapshot time, so the host sets its
-clock over the vsock channel - the mechanism a session start will use.
+clock over the vsock channel - the mechanism an actor start will use.
 
 Clones run one at a time. A snapshot is memory and device state, not disk, so a
 clone opens the original's drive, and a TAP can only have one VM. Which is what
 f5 is about.
 
-## A session disk is a directory (f5a)
+## An actor disk is a directory (f5a)
 
 A snapshot stores the drive's `path_on_host` as the string it was given, and a
 relative path resolves against the process's working directory. `f5a` boots a
 copy of the template with `rootfs.ext4`, snapshots it, then restores it from a
 second directory holding a second disk. The clone opens that second disk and
-its writes land there, not in the seed. So a session is a directory with its own
+its writes land there, not in the seed. So an actor is a directory with its own
 `rootfs.ext4` and a Firecracker started in it - no jailer, no mount namespace.
 
 ## xfs and reflink (f5b)
 
-On ext4 a session disk is a real copy (1.8 GiB, ~2.5s). We build the prod host,
-so its sessions directory can be xfs, where `cp --reflink=always` clones the
-disk instantly and shares the template's extents until the session writes. `f5b`
+On ext4 an actor disk is a real copy (1.8 GiB, ~2.5s). We build the prod host,
+so its actors directory can be xfs, where `cp --reflink=always` clones the
+disk instantly and shares the template's extents until the actor writes. `f5b`
 mounts a loopback xfs and measures it: two clones in 3ms, no free-space change,
 a write allocated only in the written clone. The dev loop mounts the loopback
 xfs; prod formats the disk. Needs root.
 
-## Two sessions at once (f5c)
+## Two actors at once (f5c)
 
 One boot and snapshot, two reflinked disks on a loopback xfs, and two
 Firecracker processes started in their own directories. `network_overrides`
 gives each clone its own TAP and `vsock_override` its own socket. Each opens its
 own `rootfs.ext4`; a file written in one is invisible to the other. That is f5:
-a session is a directory plus a process. Needs root, and `net-up.sh` first.
+an actor is a directory plus a process. Needs root, and `net-up.sh` first.
 
 The second clone keeps the template's MAC-derived address, so only the first is
-NAT'd - per-session addresses are r3/h2, not f5.
+NAT'd - per-actor addresses are r3/h2, not f5.
 
-## A session starts fresh (f6)
+## An actor starts fresh (f6)
 
 A snapshot is a fork of a booted machine, so a restored clone inherits the seed's
 identity and the seed's boot writes. `f6a-audit.sh` measures that against the
 template image as baseline: the image ships an empty machine-id, and the restored
 clone resumes with one the seed's boot wrote, plus the seed's hostname, journal,
 `/tmp` and random-seed file. `f6-verify.sh` then boots the template once, writes
-two markers the seed owns, snapshots, forks a reflinked disk per session with its
-own TAP, and runs `brayness-session-init <id> <epoch>` on each. Before init the
+two markers the seed owns, snapshots, forks a reflinked disk per actor with its
+own TAP, and runs `brayness-actor-init <id> <epoch>` on each. Before init the
 clones agree on machine-id; after, machine-id, hostname, journal and `/tmp` differ
 or are cleared, the clock is now, and a second init with the same id changes
-nothing - a disk-only reload is the same session. Needs root (xfs, TAPs).
-`boot_id` stays shared: it is the kernel's, not the session's, and identity is
-machine-id plus session id.
+nothing - a disk-only reload is the same actor. Needs root (xfs, TAPs).
+`boot_id` stays shared: it is the kernel's, not the actor's, and identity is
+machine-id plus actor id.
 
-`brayness-session-init` is installed by the template builder and called by the
-host over the f2 channel, which is the one call r3's session API makes.
+`brayness-actor-init` is installed by the template builder and called by the
+host over the f2 channel, which is the one call r3's actor API makes.
 
-## The session API (r3a)
+## The actor API (r3a)
 
-`control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at `/opt/fc/sessions`
+`control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at `/opt/fc/actors`
 (persistent across runs, `FRESH=1` to wipe), TAP0 and its NAT, and
 `host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
@@ -430,32 +439,32 @@ template, pause, snapshot - and records what it built from in `seed/seed.json`,
 so a start with a mismatched kernel, template or Firecracker rebuilds and
 `create` refuses a seed that does not match. In `host/src/`, `host.js` owns TAPs and the volume,
 `firecracker.js` the unix-socket REST calls, `vsock.js` the guest channel,
-`sessions.js` the create/destroy cycle, `server.js` the routes:
-`GET /v1/health`, `GET|POST /v1/sessions`, `GET|DELETE /v1/sessions/{id}`.
+`actors.js` the create/destroy cycle, `server.js` the routes:
+`GET /v1/health`, `GET|POST /v1/actors`, `GET|DELETE /v1/actors/{id}`.
 
-A session is one directory - `rootfs.ext4` reflinked from the seed (f5b),
-`api.sock`, `vsock.sock`, `session.json`, `firecracker.log` - with that
+An actor is one directory - `rootfs.ext4` reflinked from the seed (f5b),
+`api.sock`, `vsock.sock`, `actor.json`, `firecracker.log` - with that
 directory as Firecracker's cwd, which is what makes the relative drive path in
 the snapshot resolve to its own disk (f5a). Destroy kills the process, deletes
-its TAP, and removes the directory. Sessions get a TAP and no NAT: their egress
+its TAP, and removes the directory. Actors get a TAP and no NAT: their egress
 is h2's. Only the seed boots on TAP0's NAT.
 
 ```bash
 limactl shell fc-local sh -c 'curl -sS http://127.0.0.1:8080/v1/health'
-limactl shell fc-local sh -c 'curl -sS -X POST http://127.0.0.1:8080/v1/sessions'
+limactl shell fc-local sh -c 'curl -sS -X POST http://127.0.0.1:8080/v1/actors'
 ```
 
-## Exec in a session (r3b)
+## Exec in an actor (r3b)
 
-`POST /v1/sessions/{id}/exec` takes `{"argv": [...], "cwd": "...",
+`POST /v1/actors/{id}/exec` takes `{"argv": [...], "cwd": "...",
 "stdin_b64": "..."}` and answers `{"exit_code", "stdout_b64", "stderr_b64"}`.
-It is the f2 channel addressed by session id instead of socket path: the
+It is the f2 channel addressed by actor id instead of socket path: the
 host resolves the id to one directory and one `vsock.sock`, so there is
-no route to another session's disk. argv is exec'd, not shell-expanded (the
+no route to another actor's disk. argv is exec'd, not shell-expanded (the
 guest agent has no shell); a non-zero exit code is a 200, because the exec ran.
 Output stays base64 so binary survives JSON.
 
-The channel is `socat ... fork`, so two execs in one session run at once, and a
+The channel is `socat ... fork`, so two execs in one actor run at once, and a
 long exec does not block create or destroy. `r3b-verify.sh` measures that with
 two 4s sleeps finishing in under 7s. Exec is synchronous and bounded by the
 API's `--api-timeout` (30s); the framed PTY (r3c) is where long interactive work
@@ -465,7 +474,7 @@ goes.
 
 `host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
-`{"session": "s-...", "cols": 80, "rows": 24}`; the server answers
+`{"actor": "a-...", "cols": 80, "rows": 24}`; the server answers
 `{"ok": true}` and then relays the guest agent's frames byte for byte:
 
     client -> server   {"op": "data", "data_b64": "..."}
@@ -504,23 +513,23 @@ An instance created before the rule existed needs it applied and a restart:
     limactl start fc-local
     # then sudo bash /mnt/fc/control/scripts/dev-stack.sh again
 
-The seed and the sessions volume live on the guest disk and survive the restart.
+The seed and the actors volume live on the guest disk and survive the restart.
 
 ## Idle tiers and workspace persistence (r4)
 
-`POST /v1/sessions/{id}/idle` puts a session down; `POST /v1/sessions/{id}/reload`
+`POST /v1/actors/{id}/idle` puts an actor down; `POST /v1/actors/{id}/reload`
 brings it back, and exec and the terminal reload on their own, so callers never
 see the tiers. `tier` is `memory` or `disk`:
 
-- **memory** - pause, snapshot `state` + `mem` into the session directory, kill
+- **memory** - pause, snapshot `state` + `mem` into the actor directory, kill
   the process. Reload restores it: the same boot, the same processes.
 - **disk** - sync the guest, kill the process, keep only the disk. Reload boots
-  the session's own disk. Files and identity persist; processes do not.
+  the actor's own disk. Files and identity persist; processes do not.
 
 A disk-tier reload does **not** load the seed's memory. That memory carries the
-seed's mounted filesystem and its caches for a disk the session has been
+seed's mounted filesystem and its caches for a disk the actor has been
 writing, so the guest reads the seed's stale view - a file just written under
-`/root` was invisible while `/etc` was fine - and dropping the caches surfaces
+`/brayness` was invisible while `/etc` was fine - and dropping the caches surfaces
 an unclean ext4 journal (`Bad message`). Booting the disk replays the journal and
 mounts what it is actually given.
 
@@ -528,9 +537,23 @@ Idle syncs the guest first. A write lands in the guest's page cache and reaches
 the block device later; a memory resume hides that, a cold boot does not. r3a's
 checks hid this by calling `sync` after every write by hand.
 
+### The idle sweep (h3)
+
+The host steps actors down on its own (`host/src/lifecycle.js`, run each
+minute from `host/main.js`):
+
+- running and quiet for 15 minutes -> memory
+- idle for 2 hours -> disk
+- stopped for 7 days -> export, then destroy once the bundle verifies
+
+Activity is `last_activity` in `actor.json`, written at most once a minute by
+exec and by a live terminal. An actor with no verified owner is never retired.
+The export is checked (manifest and bundle agree) before the destroy; there is
+no remote copy yet, so nothing leaves the host volume.
+
 ## A browser terminal (r5)
 
-`host/src/webterm.js` serves a page on 8090 and upgrades `/pty?session=<id>`
+`host/src/webterm.js` serves a page on 8090 and upgrades `/pty?actor=<id>`
 to a websocket, then bridges websocket messages to the framed terminal stream on 8081. The websocket is a transport in front of `pty.js`, not a second terminal;
 a message is one of the same JSON frames, so the bridge is a line <-> message
 pump.
@@ -541,33 +564,37 @@ a native terminal. `control/scripts/terminal-build.sh` fetches it with giget,
 builds it, and puts `dist/` at `host/term/` (gitignored), which ships with
 the host code. The door redirects with
 `&exec=brayness`, and the page sends that line on every connect, so a visitor
-lands in a new Pi conversation in the same hosted session. Pi's exit lands in
+lands in a new Pi conversation in the same hosted actor. Pi's exit lands in
 bash. Past conversations stay saved and searchable through `/remember` without
 sending their full history to the model on refresh.
 
-A bare `GET /` is the door: the page cannot make a session itself, because the
+A bare `GET /` is the door: the page cannot make an actor itself, because the
 API that creates one is on loopback and the browser would need that port open, so
-`host/src/webterm.js` makes one in process and redirects to it with `?session=` on the
-URL. A refresh keeps that session; a second bare URL makes a second one, which is
-what an unauthenticated door does until h1. Without that redirect the page
-answered a stranger with "no session: open this page with ?session=<id>".
+`host/src/webterm.js` makes one in process and redirects to it with `?actor=` on the
+URL. A refresh keeps that actor; a second bare URL makes a second one.
+
+Sign-in is Realness's. A signed pass from sync is exchanged at `POST /auth` for
+an HttpOnly, SameSite cookie (`host/src/terminal-auth.js`); the page and the
+`/handoff` window need it, and each websocket needs a one-use, actor-bound
+ticket from `POST /ticket`. The framed terminal on 8081 verifies the same pass
+itself, so an actor id alone cannot attach to either.
 
 Lima forwards 8090 to the Mac's 18090. `scripts/r5-verify.sh` runs on the Mac:
 `ws-client.py` proves the frames, and agent-browser proves a real browser typing
-makes the session answer. It also checks the bare URL redirects to a session that
+makes the actor answer. It also checks the bare URL redirects to an actor that
 exists.
 
 ## Export and restore (r7)
 
-`POST /v1/sessions/{id}/export` writes a session out;
-`POST /v1/sessions {"restore_from": "<id>"}` lands it on a fresh disk.
-`GET /v1/exports` lists the bundles and `GET /v1/sessions/{id}/trace` reads a
-session's events.
+`POST /v1/actors/{id}/export` writes an actor out;
+`POST /v1/actors {"restore_from": "<id>"}` lands it on a fresh disk.
+`GET /v1/exports` lists the bundles and `GET /v1/actors/{id}/trace` reads a
+actor's events.
 
 A bundle is three files in the volume's `exports/<id>/`:
 
 ```
-artifacts.tar.gz   the session's home directory (/root), gzipped
+artifacts.tar.gz   the actor's harness and work (/brayness), gzipped
 trace.jsonl        every event the host saw
 manifest.json      sha256 and size of both, the identity it had, the seed it forked from
 ```
@@ -576,68 +603,68 @@ The trace is the record, not a script: nothing replays it. Events are appended a
 they happen - `create`, `exec` (argv, cwd, exit code, duration, output sizes),
 `idle`, `reload`, `export`, `restore`, `destroy` - to `traces/<id>.jsonl` on the
 volume, which destroy does not remove. A restore copies the bundle's trace onto
-the new session ahead of its own `create`, so the trace of a session that is gone
+the new actor ahead of its own `create`, so the trace of an actor that is gone
 is the head of the trace that replaced it.
 
-**What travels is `/root`, and that is the whole contract.** It holds the
-harness at `/root/brayness`, laid out like the Mac's, so harness edits, pi's transcripts, and `work/`
-travel together. Identity (`/etc/machine-id`, the session id) does not:
-restoring an identity would make two sessions share one. A session that writes
-outside its home is outside the contract, and `ARTIFACT_PATHS` in `host/src/sessions.js`
+**What travels is `/brayness`, and that is the whole contract.** It holds the
+harness, so harness edits, Pi transcripts, and `work/`
+travel together. Identity (`/etc/machine-id`, the actor id) does not:
+restoring an identity would make two actors share one. An actor that writes
+outside `/brayness` is outside the contract, and `ARTIFACT_PATHS` in `host/src/actors.js`
 is the one place that decides. Files come back; processes do not; nothing
 replays.
 
-The mechanism is a loop mount, not a channel into the guest. A stopped session's
-disk is a file on the sessions volume, so the host mounts it, tars `/root`, and
+The mechanism is a loop mount, not a channel into the guest. A stopped actor's
+disk is a file on the actors volume, so the host mounts it, tars `/brayness`, and
 unmounts - no size limit, no guest-side code, no credentials. Export stops the
-session first, because a live guest writes under the mount and mounting rw
+actor first, because a live guest writes under the mount and mounting rw
 replays its journal for it, and leaves it stopped; `reload` brings it back.
 Restore is the same mount with the tar going the other way, and it costs two
-boots: the fresh session starts, stops for the files, and starts again. Two
-restores of one export are two sessions with the same files and different
+boots: the fresh actor starts, stops for the files, and starts again. Two
+restores of one export are two actors with the same files and different
 identities.
 
 `scripts/r7-verify.sh` is the check on the host - export, destroy, restore, 21 of
 them - and `scripts/r7-gcs-verify.sh` runs the same thing from the Mac with a GCS
 round trip in the middle, because the host has no credentials. The bundle is
 deleted from the volume before the restore, so what comes back is what the bucket
-held: `gs://realness-online-brayness/sessions/<id>/bundle.tar.gz`, us-central1,
+held: `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`, us-central1,
 standard.
 
-## How many pages a session dirties (m1)
+## How many pages an actor dirties (m1)
 
-A memory idle writes the guest's whole 512MB to the volume whatever the session
+A memory idle writes the guest's whole 512MB to the volume whatever the actor
 used. `m1-mem-compare.sh` (in the guest, as root, dev loop only) creates a
-session, runs one of three shapes of work, memory-idles it, and compares its
+actor, runs one of three shapes of work, memory-idles it, and compares its
 `mem` with the seed's 4KB at a time - identical to the seed, zero, or differing.
-It measured 20-21 MiB dirty for a session restored and idled with nothing done to
+It measured 20-21 MiB dirty for an actor restored and idled with nothing done to
 it, 24-26 MiB after light use, and 171 MiB with node holding 100 MiB (two runs).
 So a sleep that stored the difference would write ~20-26 MiB instead of 512, while
-the session's own disk writes stay what caps density. `KEEP=1` leaves the sessions
+the actor's own disk writes stay what caps density. `KEEP=1` leaves the actors
 up. The branch is closed: the win is density, and RAM - not storage - is what caps
-a host, so storing less per sleep does not buy a session. The script stays as the
+a host, so storing less per sleep does not buy an actor. The script stays as the
 measurement.
 
 ## A host from the image, and one that can be deleted (r8, r9)
 
 `host-up.sh <name>` makes a host from the fleet image: boot disk, instance with
-nested virt and no service account, sessions volume, then `host-bootstrap.sh` on
+nested virt and no service account, actors volume, then `host-bootstrap.sh` on
 it (`--smoke` also runs `host-smoke.sh`). `host-down.sh <name>` stops it with its
 disks; `--delete` takes the disks too and leaves the image as the only cost.
 
 `host-down.sh --delete` does not ask what is on the host. `host-drain.sh <name>
-[--delete]` does: it exports every session, streams each bundle to
-`gs://realness-online-brayness/sessions/<id>/bundle.tar.gz`, checks what the
+[--delete]` does: it exports every actor, streams each bundle to
+`gs://realness-online-brayness/actors/<id>/bundle.tar.gz`, checks what the
 bucket stored against what was sent, drops the bundle from the volume, and only
 then deletes the instance and the disks it actually has. It runs on the control
 plane, not the host - the host has no credentials, so it cannot upload a bundle
 or decide it is safe to die.
 
-`r9-verify.sh` is the proof, on the Mac: build a host, write 3 MiB in a session,
+`r9-verify.sh` is the proof, on the Mac: build a host, write 3 MiB in an actor,
 drain and delete the host, check the instance and both disks are gone, build a
 _second_ host (different creation time, empty volume), land the bundle from the
 bucket, restore, and check the payload hash matches, the identity does not, and
-the drained session's trace opens the trace that replaced it. 20 checks.
+the drained actor's trace opens the trace that replaced it. 20 checks.
 `probe-capacity.sh` answers which zone can make a host when `host-up.sh` reports
 a stockout.
 
@@ -646,7 +673,7 @@ a stockout.
 `brayness-1` in `realness-online` (us-central1-a, `n2-standard-4`, nested virt
 on). Every command runs from here and reaches the host over gcloud; the account
 is `sfryxell@gmail.com`. The host mirrors the Lima layout: `/opt/fc` holds the
-artifacts and `/opt/fc/sessions/mnt` is the xfs sessions volume.
+artifacts and `/opt/fc/actors/mnt` is the xfs actors volume.
 
 ```bash
 gcloud compute ssh brayness-1 --zone=us-central1-a --command='mkdir -p ~/brayness'
@@ -654,7 +681,7 @@ gcloud compute scp --zone=us-central1-a --recurse scripts src brayness-1:~/brayn
 
 gcloud compute ssh brayness-1 --zone=us-central1-a --command='bash ~/brayness/scripts/d3-fetch-x86_64.sh'
 gcloud compute ssh brayness-1 --zone=us-central1-a --command='ROOT=/opt/fc RUNS_DIR=/home/scott/brayness/runs bash ~/brayness/scripts/boot-check.sh'
-gcloud compute ssh brayness-1 --zone=us-central1-a --command='sudo bash ~/brayness/scripts/sessions-volume.sh'
+gcloud compute ssh brayness-1 --zone=us-central1-a --command='sudo bash ~/brayness/scripts/actors-volume.sh'
 
 gcloud compute instances stop brayness-1 --zone=us-central1-a     # manual stop
 gcloud compute instances start brayness-1 --zone=us-central1-a
@@ -662,16 +689,16 @@ gcloud compute instances start brayness-1 --zone=us-central1-a
 
 `d3-fetch-x86_64.sh` is `guest-setup.sh` with the x86_64 SHA pinned; the f3
 scripts now pick their arch from `uname -m`, so both hosts share them.
-`sessions-volume.sh` formats the sessions PD (once), mounts it by UUID, and
+`actors-volume.sh` formats the actors PD (once), mounts it by UUID, and
 re-runs f5b's reflink checks against real storage: 6/6, two clones in 5ms, free
 space up 8K. It is 30 GB `pd-standard` - inside the free tier - and reads at
-350 MB/s sequential, fast enough to boot a session from. Stop/start is verified:
+350 MB/s sequential, fast enough to boot an actor from. Stop/start is verified:
 the disks, the mount and `/dev/kvm` all come back.
 
 `idle-guard.sh` installs the timer that stops the host when nothing is
 happening: every 5 minutes, stop after 30 with no `firecracker`, no
 `node host/main.js` and no interactive login. `gcloud compute ssh
---command` sessions are `@notty` and do not count, so work that is not a running
+--command` actors are `@notty` and do not count, so work that is not a running
 VM has to hold it open:
 
 ```bash
@@ -693,14 +720,14 @@ node control/bin/webspace.js prod host up brayness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
-sessions volume, copies `host/`, and runs its `scripts/host-bootstrap.sh` on
+actors volume, copies `host/`, and runs its `scripts/host-bootstrap.sh` on
 the host: grow the root partition if it lags, `net-up.sh`,
-`sessions-volume.sh`, `idle-guard.sh`, then one state line per resource.
+`actors-volume.sh`, `idle-guard.sh`, then one state line per resource.
 `--smoke` then runs
-`host-smoke.sh`, which builds the seed, serves on loopback, creates a session,
-execs in it, destroys it, and checks the session's machine-id is not the seed's.
+`host-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
+execs in it, destroys it, and checks the actor's machine-id is not the seed's.
 
-Measured: **2m50s** from nothing to a host that serves a session (the seed is
+Measured: **2m50s** from nothing to a host that serves an actor (the seed is
 36s of that), and 5/5 on the smoke test. `webspace prod host down brayness-2
 --delete` takes it back to the image and leaves no disk behind.
 
@@ -724,7 +751,7 @@ host can build a seed, or `build_seed` stops with `no fc-tap0`.
 ## The loop on x86_64 (x1)
 
 `scripts/x1-verify.sh` runs on `brayness-1` and proves the port end to end: the
-template is x86_64, the seed forks, and a session runs a command and a terminal.
+template is x86_64, the seed forks, and an actor runs a command and a terminal.
 The template build is arch-neutral now - `template-build.sh` fetches its own
 inputs and picks amd64/x64 from `uname -m`, and the scripts resolve the repo
 from their own path instead of `/mnt/fc`.
@@ -734,7 +761,7 @@ from their own path instead of `/mnt/fc`.
 sudo bash ~/brayness/scripts/template-build.sh
 bash ~/brayness/scripts/f3-verify.sh          # 19/19
 sudo bash ~/brayness/scripts/f4-verify.sh     # 7/7, the x1 done-when
-sudo node host/main.js serve --volume /opt/fc/sessions/mnt &
+sudo node host/main.js serve --volume /opt/fc/actors/mnt &
 bash ~/brayness/scripts/x1-verify.sh          # 11/11
 ```
 
@@ -744,7 +771,7 @@ the race, `Resource busy` on `fc-tap0`), and `boot-lib.sh`'s EXIT trap ended on
 a short-circuited `declare -F`, so a passing run exited 1. Both fixed for both
 hosts.
 
-## A session builds a site (a1)
+## An actor builds a site (a1)
 
 The `/site` prompt downloads the static example and builds it:
 
@@ -760,10 +787,10 @@ own scripts; a page with a diagram gets `scripts/mermaid.min.js` copied in.
 
 ## Publish it at a URL (a2)
 
-`POST /v1/sessions/{id}/publish {"path": "/root/site"}` runs `tar` in the guest
+`POST /v1/actors/{id}/publish {"path": "/brayness/site"}` runs `tar` in the guest
 over the exec channel, extracts it into `published/<id>/` on the volume with
-tar's `data` filter, and serves it at `/s/<id>/`. The session keeps running; the
-copy dies with the session, because the durable thing is the export bundle and
+tar's `data` filter, and serves it at `/s/<id>/`. The actor keeps running; the
+copy dies with the actor, because the durable thing is the export bundle and
 not the copy.
 
 In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 18080
@@ -807,25 +834,25 @@ open 8090 question, and h1/h2. `scripts/a2-verify.sh` is 17 checks.
 
 Cost and design facts. Build and runtime gotchas are below.
 
-- Memory per session, measured on the dev host: 86MB restored and idle, 125MB
+- Memory per actor, measured on the dev host: 86MB restored and idle, 125MB
   with node running, 230MB with pi up. The 384MB this plan used to carry was
-  never measured. Density is bounded by RAM: ~30 busy sessions on a 4-vCPU/16GB
+  never measured. Density is bounded by RAM: ~30 busy actors on a 4-vCPU/16GB
   host, more when they idle. The template carries ~1.0 GiB of `node_modules`,
-  but reflink shares it, so it sets the seed's size and not each session's.
+  but reflink shares it, so it sets the seed's size and not each actor's.
 - A memory sleep is a Full snapshot: 512MB on the volume every time, fully
-  allocated, whatever the session used (measured: one idle took the volume up
-  exactly 512 MiB). A session's own writes are ~160MB after two minutes of
+  allocated, whatever the actor used (measured: one idle took the volume up
+  exactly 512 MiB). An actor's own writes are ~160MB after two minutes of
   light work, and reflink shares the rest with the seed. So 30GB holds ~43
   memory sleeps, or ~180 disk sleeps. Storing is roughly ten times cheaper
   than resuming with programs alive, and neither is what runs out first.
-- Idle is a tier, not a shutdown: the disk is the session and memory is
-  disposable. A memory idle restores; a disk idle boots the session's own disk,
+- Idle is a tier, not a shutdown: the disk is the actor and memory is
+  disposable. A memory idle restores; a disk idle boots the actor's own disk,
   so files and identity persist and processes are gone.
-- The sessions volume is 30 GB `pd-standard` and reads at 350 MB/s sequential,
-  which is fast enough to boot a session from, and reflink works on it (6/6, two
+- The actors volume is 30 GB `pd-standard` and reads at 350 MB/s sequential,
+  which is fast enough to boot an actor from, and reflink works on it (6/6, two
   clones in 5ms). That keeps the volume inside the free tier; only the boot disk
   bills.
-- Parked cost, measured: 20 GB boot + 30 GB sessions, standard, is $0.80/mo
+- Parked cost, measured: 20 GB boot + 30 GB actors, standard, is $0.80/mo
   because the 30 GiB-months allowance is shared and per account; the fleet
   image adds $0.12/mo (2.35 GB compressed). 20 + 10 GB would fit inside the
   allowance and cost nothing, and deleting the disks (r8) makes it $0.
@@ -848,7 +875,7 @@ class="language-js">`), so a highlighter regex that expects `<pre><code`
   skill's builder both carried the stale regex.
 - The image is only as new as the staged tarball. `dev-build.sh` stages and
   builds it, then `dev-up.sh --fresh` reseeds. Run `template-build.sh` alone
-  and a session quietly runs the previous staged harness.
+  and an actor quietly runs the previous staged harness.
 - A check script that writes markdown through a heredoc must quote the
   delimiter (`<<"EOF"`). Unquoted, bash runs the backticks in a fenced block as
   command substitution and the fences vanish from the file with no error.
@@ -897,24 +924,24 @@ I/O error (os error 5)` in the middle of a snapshot. `dev-stack.sh` checks free
   it handshakes on.
 - The guest's page cache is not the disk. Idle runs `sync` before dropping
   memory; a cold boot reads only what actually reached the disk.
-- Do not load the seed's memory over a session's disk. The seed's mount and its
-  caches are stale for a disk the session wrote; boot the session's disk instead.
+- Do not load the seed's memory over an actor's disk. The seed's mount and its
+  caches are stale for a disk the actor wrote; boot the actor's disk instead.
 - `pid_for_api_sock` must match `--api-sock`, not `api-sock`. A bare-name match
-  never fires, so every live session reads as stopped.
+  never fires, so every live actor reads as stopped.
 - A web terminal needs a focused text field. Typing through CDP inserts text and
   fires `input`, not `keydown`, so the page reads printable input from `input`
   and only special keys from `keydown`.
 
 - `cp --reflink=always` cannot cross a filesystem: cloning the seed from the
   ext4 boot disk fails with `Invalid cross-device link`. The seed has to live on
-  the sessions volume, which is also where the host keeps it (d3e).
+  the actors volume, which is also where the host keeps it (d3e).
 - `pgrep -f "sshd: "` matches the always-running listener (`sshd: /usr/sbin/sshd
 -D [listener] ...`), so an activity check written that way is always true; and
   `pgrep -f <pattern>` matches any argv containing the pattern, including the
   shell running the check. Match `@pts`, and bracket the first letter.
 - A GCP disk's `deviceName` decides its `/dev/disk/by-id` path, and defaults to
   `persistent-disk-1` rather than the resource name. Create it with an explicit
-  `--device-name=brayness-sessions` or the path will not match the script.
+  `--device-name=brayness-actors` or the path will not match the script.
   The name is per-instance, so every host can use the same one.
 - `--zone` and `--project` are not accepted above a subcommand: `gcloud
 --project=p --zone=z compute disks create` and `gcloud compute --zone=z disks
@@ -967,14 +994,14 @@ storage` call needing a local crc32c fails. Compare a bundle with the object's
 - Guest RNG comes from VMGenID on kernel >= 5.18; the wall clock needs VMClock or
   a manual `clock_settime` after restore. arm64 reseeds on the CI 6.1.155
   kernel, and x1 re-proves it per-kernel.
-- A vsock device owns a host unix socket, one path per VM, and a session's unix
-  sockets must fit AF_UNIX's 108-byte limit - which is why the sessions volume is
-  mounted at the short `/opt/fc/sessions/mnt`.
+- A vsock device owns a host unix socket, one path per VM, and an actor's unix
+  sockets must fit AF_UNIX's 108-byte limit - which is why the actors volume is
+  mounted at the short `/opt/fc/actors/mnt`.
 - Firecracker does no network filtering. Host egress rules are mandatory; the
   guest's own rules are not a boundary.
 - Snapshot files are trusted, with no host-side protection.
 - Replacing a disk leaves a second `/etc/fstab` line pointed at the same mount
-  point. `sessions-volume.sh` deletes other entries for the mount before adding
+  point. `actors-volume.sh` deletes other entries for the mount before adding
   its own.
 - A stale seed forks an old kernel or pi silently. `create` refuses on the
   `seed.json` fingerprint instead - template size and mtime, kernel, firecracker,
@@ -1017,8 +1044,8 @@ walkthrough are in `artifacts/firecracker/probe-20260918/`:
 - `dev-up.sh` - `--fresh` wiped the volume and rebuilt the seed; health `ok`
 - `host-up.sh probe-brayness-2 --smoke --zone=us-west1-b` - host created,
   bootstrapped, 5/5 smoke, serving
-- `host-drain.sh` and `host-down.sh --delete` - a session with a 100 KB payload
-  exported to `gs://realness-online-brayness/sessions/s-2c3939d4a288/bundle.tar.gz`
+- `host-drain.sh` and `host-down.sh --delete` - an actor with a 100 KB payload
+  exported to `gs://realness-online-brayness/actors/a-2c3939d4a288/bundle.tar.gz`
   (103,375 bytes, md5 `pFK6XsalyMdOkOmpzOKTHQ==`), then the host and both its
   disks deleted; `gcloud compute instances list` back to `brayness-1` alone
 - `probe-capacity.sh` - us-central1 a/b/c and us-west1-a: no n2-standard-4;

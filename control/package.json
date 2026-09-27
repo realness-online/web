@@ -2,7 +2,7 @@
   "name": "brayness-control",
   "private": true,
   "type": "module",
-  "description": "Control plane: make session hosts exist, put code on them, take them away",
+  "description": "Control plane: make actor hosts exist, put code on them, take them away",
   "bin": {
     "webspace": "./bin/webspace.js"
   },
@@ -10,7 +10,10 @@
     "webspace": "node ./bin/webspace.js",
     "test": "node --test 'test/*.test.js'",
     "check:browser": "node test/browser.check.js",
+    "check:browser:cold": "COLD=1 RUNS=1 node test/browser.check.js",
+    "check:pi-exit": "node test/pi-exit.check.js",
     "check:publish": "node test/publish.check.js",
+    "check:fresh-actor": "node --test --test-concurrency=1 test/fresh-actor.check.js",
     "check:host": "node --test --test-concurrency=1 test/host.check.js"
   },
   "engines": {

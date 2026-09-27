@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// The session host.
+// The actor host.
 //
-//   sudo node host/main.js serve --volume /opt/fc/sessions/mnt
-//   sudo node host/main.js seed  --volume /opt/fc/sessions/mnt --rebuild
+//   sudo node host/main.js serve --volume /opt/fc/actors/mnt
+//   sudo node host/main.js seed  --volume /opt/fc/actors/mnt --rebuild
 //
 // `serve` builds the seed if none matches, then answers: the API on --port,
 // the framed terminal on --pty-port, the browser terminal on --web-port, and
-// the door for each running session. `seed` stops after building it.
+// the door for each running actor. `seed` stops after building it.
 
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -15,18 +15,20 @@ import { Door } from "./src/door.js"
 import { logger } from "./src/log.js"
 import * as pty from "./src/pty.js"
 import * as server from "./src/server.js"
-import { SessionStore } from "./src/sessions.js"
+import { ActorStore } from "./src/actors.js"
 import * as webterm from "./src/webterm.js"
 
 const LOG = logger("host")
 const HERE = dirname(fileURLToPath(import.meta.url))
 // Terminal writes never pass through exec; this bounds what a hard stop loses.
 const FLUSH_MS = 5000
+// How often to step idle actors down (h3).
+const SWEEP_MS = 60_000
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
-    volume: { type: "string", default: "/opt/fc/sessions/mnt" },
+    volume: { type: "string", default: "/opt/fc/actors/mnt" },
     template: { type: "string", default: "/opt/fc/template.ext4" },
     kernel: { type: "string", default: "/opt/fc/vmlinux-6.1.155" },
     firecracker: { type: "string", default: "/opt/fc/firecracker" },
@@ -54,7 +56,7 @@ if (command !== "serve" && command !== "seed") {
   process.exit(2)
 }
 
-const store = new SessionStore({
+const store = new ActorStore({
   volume: values.volume,
   template: values.template,
   kernel: values.kernel,
@@ -84,11 +86,21 @@ const listen = (what, port) =>
 
 await listen(pty.makeServer(store), values["pty-port"])
 LOG.info(`pty stream on ${values.listen}:${values["pty-port"]}`)
-await listen(webterm.makeServer({ pageRoot: values.term, streamPort: Number(values["pty-port"]), newSession: () => store.create() }), values["web-port"])
+await listen(webterm.makeServer({ pageRoot: values.term, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner) }), values["web-port"])
 LOG.info(`browser terminal on ${values.listen}:${values["web-port"]}`)
 new Door(store, process.env.BRAYNESS_SITE_URL ?? "/s/{id}/").start()
 await listen(server.makeServer(store), values.port)
 LOG.info(`listening on ${values.listen}:${values.port}`)
+
+const sweep = async () => {
+  try {
+    const done = await store.sweep()
+    for (const { id, step } of done) LOG.info(`lifecycle: ${id} -> ${step}`)
+  } catch (error) {
+    LOG.warn(`idle sweep failed: ${error.message}`)
+  }
+  setTimeout(sweep, SWEEP_MS)
+}
 
 const flush = async () => {
   try {
@@ -99,3 +111,4 @@ const flush = async () => {
   setTimeout(flush, FLUSH_MS)
 }
 setTimeout(flush, FLUSH_MS)
+setTimeout(sweep, SWEEP_MS)

@@ -1,4 +1,4 @@
-// Host plumbing: the sessions volume, TAP devices, root. Each check fails with
+// Host plumbing: the actors volume, TAP devices, root. Each check fails with
 // the command that fixes it rather than continuing into a confusing error later.
 
 import { spawnSync } from "node:child_process"
@@ -26,11 +26,11 @@ export function requireMount(path, fix) {
   }
 }
 
-/** Reflink is how a session disk is made; not fatal here, the first create says so. */
+/** Reflink is how an actor disk is made; not fatal here, the first create says so. */
 export function reflinkWarning(path) {
   const kind = run(["stat", "-f", "-c", "%T", path]).output.trim()
   if (REFLINK_FILESYSTEMS.includes(kind)) return null
-  return `${path} is ${kind}, not ${REFLINK_FILESYSTEMS.join(" or ")}: session disks will not reflink`
+  return `${path} is ${kind}, not ${REFLINK_FILESYSTEMS.join(" or ")}: actor disks will not reflink`
 }
 
 export const tapExists = (name) => run(["ip", "link", "show", name], { check: false }).code === 0
@@ -49,7 +49,7 @@ function tapIndex(name) {
   return Number(match[1])
 }
 
-// Each session owns a /30, so two sessions never share an address (h2).
+// Each actor owns a /30, so two actors never share an address (h2).
 export const tapGateway = (name) => `172.16.${tapIndex(name)}.1`
 export const tapGuest = (name) => `172.16.${tapIndex(name)}.2`
 
@@ -67,7 +67,7 @@ export function deleteTap(name) {
 export const shortEnoughForUnix = (path) => Buffer.byteLength(path) < 108
 
 /**
- * Mount a stopped session's disk for the length of `work`. Stopped, because a
+ * Mount a stopped actor's disk for the length of `work`. Stopped, because a
  * running guest writes under the mount. The mount point is on /run (tmpfs),
  * so a stale mount never makes the volume look non-empty.
  */

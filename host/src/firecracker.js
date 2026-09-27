@@ -1,7 +1,7 @@
 // One Firecracker process: its unix-socket REST API, and its life.
 //
-// The seed boots over the API; a session is `snapshot/load` with overrides for
-// its TAP and vsock. A session's disk is not in any request: the snapshot
+// The seed boots over the API; an actor is `snapshot/load` with overrides for
+// its TAP and vsock. An actor's disk is not in any request: the snapshot
 // records the drive path relative to Firecracker's cwd (f5a).
 
 import { spawn as spawnProcess, spawnSync } from "node:child_process"
@@ -152,7 +152,7 @@ export const pause = (api) => api.patch("/vm", { state: "Paused" })
 export const createSnapshot = (api, state, mem) =>
   api.put("/snapshot/create", { snapshot_type: "Full", snapshot_path: state, mem_file_path: mem })
 
-/** Resume a snapshot as a session, running on return, still the seed until init (f6). */
+/** Resume a snapshot as an actor, running on return, still the seed until init (f6). */
 export const loadSnapshot = (api, state, mem, tap, uds) =>
   api.put("/snapshot/load", {
     snapshot_path: state,

@@ -17,7 +17,7 @@ import { attempt } from "./exec.js"
  * Health answers `ok: true` as soon as the HTTP server is listening - before
  * the seed is built, which on a cold start means booting the template and
  * pausing it (about 36s). Waiting on `ok` alone reports a stack as up when it
- * has no seed and cannot make a session.
+ * has no seed and cannot make an actor.
  */
 export async function waitForHealth(api, { tries, delayMs, requireSeed = true }) {
   let last = "no response"
@@ -35,7 +35,7 @@ export async function waitForHealth(api, { tries, delayMs, requireSeed = true })
   throw new Error(`no health after ${((tries * delayMs) / 1000).toFixed(0)}s: ${last}`)
 }
 
-/** Is the API up and able to make a session? Does not throw. */
+/** Is the API up and able to make an actor? Does not throw. */
 export async function healthy(api) {
   const result = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
   if (!result.ok || !result.out.trim()) return false

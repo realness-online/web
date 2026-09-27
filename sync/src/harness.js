@@ -1,6 +1,6 @@
 /**
- * What `brayness sync` carries: the folders each plan names under a
- * `## Syncs` heading, one per list item, relative to the harness root.
+ * What `brayness sync` carries: Pi session history, plus the folders each
+ * plan names under a `## Syncs` heading, relative to the harness root.
  *
  *   ## Syncs
  *
@@ -14,7 +14,15 @@ import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
 import { dirname, isAbsolute, join, normalize, resolve } from "node:path"
 import { promisify } from "node:util"
+import { createHash } from "node:crypto"
+import { writeFile } from "node:fs/promises"
+import { apply, load_calls } from "./replay.js"
 import { skipped } from "./skip.js"
+
+const SESSIONS = ".pi/agent/sessions"
+/** Edits a later actor must replay: harness path to base, target, and calls. */
+const DEFERRED = "can://~/.pi/agent/deferred.json"
+const sha = (bytes) => createHash("sha256").update(bytes).digest("hex")
 
 const run = promisify(execFile)
 
@@ -76,6 +84,8 @@ export async function plan_syncs(root, names = []) {
       if (!found.has(key)) found.set(key, file)
     }
   }
+  // Conversation history belongs to the harness, not an individual plan.
+  found.set(".pi/agent/sessions", "harness")
   return found
 }
 
@@ -83,14 +93,68 @@ export async function plan_syncs(root, names = []) {
  * Sync every plan's paths to `can://~/<path>/`. Refused paths are named, never
  * synced; the rest still run.
  */
-export async function sync_harness({ root, store, plans = [], deletes }) {
+export async function sync_harness({ root, store, plans = [], deletes, defer_edits = false }) {
   const synced = {}
   const refusals = {}
-  for (const [path, plan] of await plan_syncs(root, plans)) {
+  const paths = await plan_syncs(root, plans)
+  // The session bytes must reach storage before any file relies on their edits.
+  for (const [path, plan] of [...paths].sort(([a], [b]) => Number(b === ".pi/agent/sessions") - Number(a === ".pi/agent/sessions"))) {
     const local = join(root, path)
     const reason = refused(path) ?? ((await repo_of(local)) ? "inside a git repo" : null)
     if (reason) refusals[path] = `${reason} (${plan})`
-    else synced[path] = await store.sync(local, `can://~/${path}/`, { deletes })
+    else synced[path] = await store.sync(local, `can://~/${path}/`, { deletes, defer_edits: defer_edits && path !== SESSIONS, sessions: join(root, SESSIONS) })
   }
-  return { synced, refused: refusals }
+  const pending = await read_deferred(store)
+  const applied = await apply_deferred(root, pending)
+  let changed = false
+  for (const [path, report] of Object.entries(synced)) {
+    if (path === SESSIONS) continue
+    // Only real bytes in storage retire a pending edit.
+    const settled = ["pushed", "adopted", "replayed", "kept_both", "deleted", "removed"].flatMap((kind) => report[kind])
+    for (const name of settled) {
+      if (pending[`${path}/${name}`]) {
+        delete pending[`${path}/${name}`]
+        changed = true
+      }
+    }
+    for (const name of report.deferred) {
+      if (report.replay[name]) {
+        pending[`${path}/${name}`] = report.replay[name]
+        changed = true
+      }
+    }
+  }
+  if (changed && store.put) await store.put(DEFERRED, `${JSON.stringify(pending, null, 2)}\n`)
+  return { synced, refused: refusals, applied }
+}
+
+async function read_deferred(store) {
+  if (!store.cat) return {}
+  try {
+    return JSON.parse((await store.cat(DEFERRED)).toString())
+  } catch (error) {
+    if (error.status === 404) return {}
+    throw error
+  }
+}
+
+/**
+ * Rebuild deferred files from saved history: only where the local bytes are
+ * exactly the saved base and the replay yields exactly the recorded target.
+ */
+export async function apply_deferred(root, pending) {
+  const applied = []
+  for (const [path, { base_sha, target_sha, calls }] of Object.entries(pending)) {
+    if (refused(path)) continue
+    const file = join(root, path)
+    const bytes = await readFile(file).catch(() => null)
+    if (!bytes || sha(bytes) !== base_sha) continue
+    const rows = calls.map(({ session, tool_call }) => ({ session: join(root, SESSIONS, session), tool_call }))
+    if (rows.some((row) => !row.session.startsWith(join(root, SESSIONS) + "/"))) continue
+    const replayed = apply(bytes.toString("utf8"), await load_calls(rows))
+    if (replayed === null || sha(Buffer.from(replayed)) !== target_sha) continue
+    await writeFile(file, replayed)
+    applied.push(path)
+  }
+  return applied.sort()
 }

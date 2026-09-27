@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// p7: a session starts a site from the example, builds, publishes, changes it,
+// p7: an actor starts a site from the example, builds, publishes, changes it,
 // and republishes; a browser shows the change after reload. Twice, each from a
-// new session. No model calls: the steps Pi's /site prompt runs, through exec.
+// new actor. No model calls: the steps Pi's /site prompt runs, through exec.
 //
 // Needs the dev host (`webspace dev host up`) and agent-browser.
 //
@@ -13,12 +13,12 @@ import { execFileSync } from "node:child_process"
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const RUNS = Number(process.env.RUNS ?? 2)
 const EXAMPLE = "gh:scott-fryxell/brayness-examples/static"
-const SITE = "/root/brayness/work/site"
+const SITE = "/brayness/work/site"
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function exec(session, command, timeout = 120) {
-  const response = await fetch(`${API}/v1/sessions/${session}/exec`, {
+async function exec(actor, command, timeout = 120) {
+  const response = await fetch(`${API}/v1/actors/${actor}/exec`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ argv: ["/bin/bash", "-lc", command], timeout }),
@@ -47,7 +47,7 @@ async function run(n) {
     }).trim()
   // The example's header partial ignores site.json; the name reaches <title>.
   const page_title = () => JSON.parse(ab("eval", "document.title"))
-  let session = null
+  let actor = null
   const step = async (label, fn) => {
     const start = Date.now()
     const value = await fn()
@@ -56,18 +56,18 @@ async function run(n) {
   }
 
   try {
-    await step("create a session", async () => {
-      const response = await fetch(`${API}/v1/sessions`, { method: "POST" })
+    await step("create an actor", async () => {
+      const response = await fetch(`${API}/v1/actors`, { method: "POST" })
       if (!response.ok) throw new Error(`create: ${response.status} ${await response.text()}`)
-      session = (await response.json()).id
+      actor = (await response.json()).id
     })
 
     await step("start the site from the example", () =>
-      exec(session, `mkdir -p /root/brayness/work && cd /root/brayness/work && npx -y giget ${EXAMPLE} site && cd site && npm install --no-fund --no-audit && sync`, 900),
+      exec(actor, `mkdir -p /brayness/work && cd /brayness/work && npx -y giget ${EXAMPLE} site && cd site && npm install --no-fund --no-audit && sync`, 900),
     )
 
     const link = await step("build and publish", async () => {
-      const out = await exec(session, `cd ${SITE} && npm run build && brayness publish dist`, 300)
+      const out = await exec(actor, `cd ${SITE} && npm run build && brayness publish dist`, 300)
       const url = out.trim().split("\n").pop()
       if (!url.startsWith("http")) throw new Error(`no link in: ${out.slice(-300)}`)
       return url
@@ -81,7 +81,7 @@ async function run(n) {
     const name = `P7 ${Math.random().toString(36).slice(2, 7)}`
     await step("change, rebuild, republish", () =>
       exec(
-        session,
+        actor,
         `cd ${SITE} && node -e 'const f="site.json",s=JSON.parse(require("fs").readFileSync(f));s.name=process.argv[1];require("fs").writeFileSync(f,JSON.stringify(s,null,2))' ${JSON.stringify(name)} && npm run build && brayness publish dist`,
         300,
       ),
@@ -96,7 +96,7 @@ async function run(n) {
     try {
       ab("close")
     } catch {}
-    if (session) await fetch(`${API}/v1/sessions/${session}`, { method: "DELETE" }).catch(() => {})
+    if (actor) await fetch(`${API}/v1/actors/${actor}`, { method: "DELETE" }).catch(() => {})
   }
 }
 

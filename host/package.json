@@ -2,7 +2,7 @@
   "name": "brayness-host",
   "private": true,
   "type": "module",
-  "description": "The session host: seed, sessions, API, terminal, door. Standard library only.",
+  "description": "The actor host: seed, actors, API, terminal, door. Standard library only.",
   "scripts": {
     "serve": "node main.js serve"
   },

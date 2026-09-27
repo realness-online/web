@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Brayness session terminal - a pty on the guest end of the vsock channel.
+"""Brayness actor terminal - a pty on the guest end of the vsock channel.
 
 socat runs one copy of this per connection (VSOCK-LISTEN:53,fork) with pipes on
 stdin and stdout. Frames are JSON lines:
@@ -33,8 +33,8 @@ import termios
 import time
 
 SHELL = "/bin/bash"
-# The harness stays at /root/brayness, but the visible terminal starts in work/.
-WORK_DIR = "/root/brayness/work"
+# The visible terminal starts in the actor's work/ folder.
+WORK_DIR = "/brayness/work"
 SOCKET = "/run/brayness-pty.sock"
 # The browser page draws with libghostty-vt: 256 colors and truecolor.
 TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
@@ -75,6 +75,7 @@ class Holder:
         self.pid, self.master = pty.fork()
         if self.pid == 0:
             os.environ.update(TERM_ENV)
+            os.environ["HOME"] = "/brayness"
             os.makedirs(WORK_DIR, exist_ok=True)
             os.chdir(WORK_DIR)
             os.execvp(SHELL, [SHELL])

@@ -1,5 +1,5 @@
 [Unit]
-Description=Brayness session terminal (vsock port 53)
+Description=Brayness actor terminal (vsock port 53)
 # Like brayness-vsock: the control channel is what debugs the network, so it
 # must come up even when networking is broken.
 

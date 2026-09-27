@@ -18,7 +18,7 @@ rm -rf "$stage"
 mkdir -p "$stage"
 printf '%s\n' "$pi_version" > "$stage/.pi-version"
 
-# The harness is an allowlist. Do not copy personal config, sessions, or work/.
+# The harness is an allowlist. Do not copy personal config, actors, or work/.
 include=(AGENTS.md README.md LICENSE package.json bin skills prompts extensions
   .pi/agent/settings.json .pi/agent/models.json
   .pi/agent/npm/package.json)
@@ -52,7 +52,7 @@ node -e '
   fs.writeFileSync(npm_path, JSON.stringify(npm, null, 2) + "\n")
 ' "$stage/.pi/agent/settings.json" "$stage/.pi/agent/npm/package.json"
 
-# Examples are not shipped: sessions download them from brayness-examples with
+# Examples are not shipped: actors download them from brayness-examples with
 # giget when a prompt asks, and install @realness.online packages from npm.
 
 printf 'ship tree: %s\n' "$stage"
