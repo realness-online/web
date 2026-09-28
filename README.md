@@ -846,8 +846,7 @@ Our server (`host/guest/brayness-serve.js`, on the node runtime disk) turns
 HTTP on 8080 into a web `Request` and streams the `Response` back. Node runs it
 under `--permission`: it reads only the handler's files and itself. A plain
 `index.html` is a site: files, no VM. Anything else (a Procfile, python, a
-binary, a dependency) is refused at publish with its reason. Frameworks are an
-export (ex1): the same handler runs on Workers, Deno, Bun, or Hono.
+binary, a dependency) is refused at publish with its reason.
 
 Each handler is one Firecracker microVM from `/opt/fc/app.ext4`, with nothing an
 app does not need. `SECURITY.md` lists each absence and the check that proves it.
