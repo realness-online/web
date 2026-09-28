@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { argvText, CAPS, macFor } from "../src/apps.js"
+import { argvText, CAPS, macFor, mibFor } from "../src/apps.js"
 import { BadRequest, HostError } from "../src/errors.js"
 
 test("an app's MAC carries its 172.17 address", () => {
@@ -16,7 +16,10 @@ test("argv is one argument per line, and refuses what would split", () => {
   assert.throws(() => argvText(["node", ""]), BadRequest)
 })
 
-test("every cap is named, with a default", () => {
-  assert.deepEqual(Object.keys(CAPS).sort(), ["mib", "vcpus"])
-  assert.ok(CAPS.mib > 0 && CAPS.vcpus > 0)
+test("memory sits above the measured floor, by kind", () => {
+  assert.equal(CAPS.vcpus, 1)
+  assert.ok(mibFor({ runtime: "node" }) > 64)
+  assert.ok(mibFor({ runtime: null }) > 48)
+  assert.ok(mibFor({ runtime: "python" }) > mibFor({ runtime: null }))
+  assert.equal(mibFor({ runtime: "node" }, 40), 40)
 })

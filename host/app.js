@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// One app VM by hand, until u2f puts start/stop/status in the host API. The
-// record is the last line of stdout; log lines come before it.
+// One app VM by hand, from a host folder. The API (/v1/apps) starts apps from
+// an actor's work folder. The record is the last line of stdout; log lines come before it.
 //
 //   sudo node host/app.js start <files-dir>   prints the record as JSON
 //   sudo node host/app.js stop <id>

@@ -16,6 +16,7 @@ import { logger } from "./src/log.js"
 import * as pty from "./src/pty.js"
 import * as server from "./src/server.js"
 import { ActorStore } from "./src/actors.js"
+import { AppStore } from "./src/apps.js"
 import * as webterm from "./src/webterm.js"
 
 const LOG = logger("host")
@@ -24,12 +25,15 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const FLUSH_MS = 5000
 // How often to step idle actors down (h3).
 const SWEEP_MS = 60_000
+// How often to check each app's VM and port (u5).
+const APP_SWEEP_MS = 5000
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
     volume: { type: "string", default: "/opt/fc/actors/mnt" },
     template: { type: "string", default: "/opt/fc/template.ext4" },
+    "app-image": { type: "string", default: "/opt/fc/app.ext4" },
     kernel: { type: "string", default: "/opt/fc/vmlinux-6.1.155" },
     firecracker: { type: "string", default: "/opt/fc/firecracker" },
     "guest-mac": { type: "string", default: "06:00:AC:10:00:02" },
@@ -89,7 +93,8 @@ LOG.info(`pty stream on ${values.listen}:${values["pty-port"]}`)
 await listen(webterm.makeServer({ pageRoot: values.term, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner) }), values["web-port"])
 LOG.info(`browser terminal on ${values.listen}:${values["web-port"]}`)
 new Door(store, process.env.BRAYNESS_SITE_URL ?? "/s/{id}/").start()
-await listen(server.makeServer(store), values.port)
+const apps = new AppStore({ volume: values.volume, image: values["app-image"], kernel: values.kernel, firecracker: values.firecracker })
+await listen(server.makeServer(store, apps), values.port)
 LOG.info(`listening on ${values.listen}:${values.port}`)
 
 const sweep = async () => {
@@ -112,3 +117,14 @@ const flush = async () => {
 }
 setTimeout(flush, FLUSH_MS)
 setTimeout(sweep, SWEEP_MS)
+
+// u5: the first pass runs now, so a host restart brings its apps back.
+const superviseApps = async () => {
+  try {
+    for (const { id, step } of await apps.sweep()) LOG.info(`app: ${id} -> ${step}`)
+  } catch (error) {
+    LOG.warn(`app sweep failed: ${error.message}`)
+  }
+  setTimeout(superviseApps, APP_SWEEP_MS)
+}
+superviseApps()

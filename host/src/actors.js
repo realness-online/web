@@ -548,31 +548,36 @@ export class ActorStore {
    * refuses any path that resolves outside it.
    */
   async publish(id, tree = "/brayness/site") {
-    if (typeof tree !== "string" || !tree.startsWith("/") || tree.split("/").includes("..")) {
-      throw new BadRequest("path must be absolute, with no .. segments")
-    }
-    const result = await this.exec(id, ["tar", "-czf", "-", "-C", tree, "."])
-    if (result.exit_code !== 0) {
-      const detail = Buffer.from(result.stderr_b64, "base64").toString().trim()
-      throw new BadRequest(`nothing to publish at ${tree}: ${detail || "tar failed"}`)
-    }
     const target = join(this.publishedDir, id)
     const staging = join(this.publishedDir, `.${id}.part`)
-    rmSync(staging, { recursive: true, force: true })
-    mkdirSync(staging, { recursive: true })
-    try {
-      host.run(["tar", "-xzf", "-", "-C", staging, "--no-same-owner", "--no-same-permissions"], { input: Buffer.from(result.stdout_b64, "base64") })
-      keepPlainEntries(staging)
-    } catch (error) {
-      rmSync(staging, { recursive: true, force: true })
-      throw error
-    }
+    await this.copyOut(id, tree, staging)
     rmSync(target, { recursive: true, force: true })
     renameSync(staging, target)
     const files = listFiles(target)
     const published = { id, path: tree, files: files.length, bytes: files.reduce((sum, file) => sum + statSync(file).size, 0), url: `/s/${id}/` }
     this.trace(id, "publish", published)
     return published
+  }
+
+  /** Copy an actor's directory into a fresh `dest`; only plain entries survive. */
+  async copyOut(id, tree, dest) {
+    if (typeof tree !== "string" || !tree.startsWith("/") || tree.split("/").includes("..")) {
+      throw new BadRequest("path must be absolute, with no .. segments")
+    }
+    const result = await this.exec(id, ["tar", "-czf", "-", "-C", tree, "."])
+    if (result.exit_code !== 0) {
+      const detail = Buffer.from(result.stderr_b64, "base64").toString().trim()
+      throw new BadRequest(`nothing to copy at ${tree}: ${detail || "tar failed"}`)
+    }
+    rmSync(dest, { recursive: true, force: true })
+    mkdirSync(dest, { recursive: true })
+    try {
+      host.run(["tar", "-xzf", "-", "-C", dest, "--no-same-owner", "--no-same-permissions"], { input: Buffer.from(result.stdout_b64, "base64") })
+      keepPlainEntries(dest)
+    } catch (error) {
+      rmSync(dest, { recursive: true, force: true })
+      throw error
+    }
   }
 
   publishedSite(id) {

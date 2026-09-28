@@ -4,6 +4,7 @@
 // host. Only that VM can open it, so the socket is the actor's identity.
 //
 //   {"op": "publish", "path": "/brayness/site"}  ->  {"ok": true, "url": "..."}
+//   {"op": "loop", "goal": "..."}                ->  {"ok": true, "id": "a-...", "depth": 1}
 //
 // One listener per running actor, kept in step by a reconciler rather than
 // hooks in every start, reload, and destroy path.
@@ -11,6 +12,7 @@
 import { existsSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
 import { logger } from "./log.js"
+import { Loops } from "./loops.js"
 import { Lines } from "./vsock.js"
 import { can } from "../../can/src/can.js"
 import { issue_recovery_pass } from "../../sync/src/recovery-pass.js"
@@ -20,15 +22,18 @@ const LOG = logger("door")
 const DOOR_PORT = 54
 const LINE_LIMIT = 1 << 16
 const RECONCILE_MS = 500
+const LOOP_WATCH_MS = 30_000
 
 export class Door {
-  constructor(store, siteUrl = "/s/{id}/") {
+  constructor(store, siteUrl = "/s/{id}/", loops = null) {
     this.store = store
     this.siteUrl = siteUrl
+    this.loops = loops
     this.listeners = new Map() // actor id -> { path, server }
   }
 
   start() {
+    this.#watchLoops()
     const tick = () => {
       try {
         this.reconcile()
@@ -38,6 +43,18 @@ export class Door {
       this.timer = setTimeout(tick, RECONCILE_MS)
     }
     tick()
+  }
+
+  #watchLoops() {
+    const tick = async () => {
+      try {
+        for (const { id, reason } of await (this.loops ??= new Loops(this.store)).watch()) LOG.info(`loop ${id} stopped: ${reason}`)
+      } catch (error) {
+        LOG.error("loop watch failed", error)
+      }
+      this.loopTimer = setTimeout(tick, LOOP_WATCH_MS)
+    }
+    this.loopTimer = setTimeout(tick, LOOP_WATCH_MS)
   }
 
   reconcile() {
@@ -84,6 +101,12 @@ export class Door {
     if (request.op === "model-pass") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot call models")
       return { ok: true, pass: issue_model_pass({ phone: owner, id }, process.env.MODEL_PASS_SECRET) }
+    }
+    if (request.op === "loop") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot start loops")
+      const loop = await (this.loops ??= new Loops(this.store)).start(id, request.goal)
+      LOG.info(`door: ${id} started loop ${loop.id} at depth ${loop.depth}`)
+      return { ok: true, ...loop }
     }
     if (request.op !== "publish") throw new Error(`unknown op '${request.op}'`)
     if (!owner || !can({ instance }, "write", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot publish")

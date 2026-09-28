@@ -5,12 +5,14 @@
 // host or Firecracker message, which is where the fix usually is.
 
 import { readFileSync, realpathSync, statSync } from "node:fs"
-import { createServer } from "node:http"
+import { createServer, request as httpRequest } from "node:http"
+import { connect } from "node:net"
 import { extname, join, sep } from "node:path"
 import { BadRequest, HOST_FAILURES, NotFound } from "./errors.js"
 import { verify_host_pass } from "./host-pass.js"
 import { limit_path } from "../../sync/src/recovery-pass.js"
 import { can } from "../../can/src/can.js"
+import { app_auth, ENTER, withoutAppCookie } from "./app-auth.js"
 import { logger } from "./log.js"
 
 const LOG = logger("server")
@@ -126,12 +128,103 @@ async function exec(store, request, id) {
   return store.exec(id, payload.argv, { cwd: payload.cwd ?? null, stdin: Buffer.from(stdinB64, "base64"), timeout })
 }
 
-async function route(store, request, response) {
+// u6. `<app-id>.localhost` reaches the app's VM; the reply streams through.
+const APP_HOST = /^(app-[0-9a-f]{12})\.localhost$/
+const appOfHost = (header) => APP_HOST.exec((header ?? "").split(":")[0])?.[1] ?? null
+
+/**
+ * The app's record if this request may reach it now; otherwise the reason.
+ * A private app is 404 to everyone but its owner, so strangers learn nothing.
+ */
+function appTarget(apps, auth, id, request) {
+  let record
+  try {
+    record = apps.record(id)
+  } catch {
+    return { status: 404, message: `no app ${id}` }
+  }
+  if (record.kind === "site") return { status: 404, message: `no app ${id}` }
+  if (!record.public && auth.owner(request.headers.cookie, id) !== record.owner) return { status: 404, message: `no app ${id}` }
+  if (record.state === "crashed") return { status: 503, message: `${id} crashed; see its status` }
+  return { record }
+}
+
+/** The request's headers for the app: our cookie gone, forwarding added. */
+function forwarded(request) {
+  const headers = { ...request.headers, "x-forwarded-for": request.socket.remoteAddress, "x-forwarded-host": request.headers.host ?? "" }
+  const cookie = withoutAppCookie(request.headers.cookie)
+  if (cookie) headers.cookie = cookie
+  else delete headers.cookie
+  return headers
+}
+
+/** A ticket from POST /v1/apps/<id>/enter becomes the owner's cookie, on the app's host. */
+function enterApp(auth, id, url, response) {
+  const cookie = auth.enter(url.searchParams.get("ticket") ?? "", id)
+  if (!cookie) return plain(response, 403, "that link is used or expired; ask for a new one")
+  send(response, 302, { "set-cookie": cookie, location: "/", "cache-control": "no-store" }, Buffer.alloc(0))
+}
+
+function proxyApp(apps, auth, id, request, response) {
+  const url = new URL(request.url, "http://app")
+  if (url.pathname === ENTER) {
+    request.resume()
+    return enterApp(auth, id, url, response)
+  }
+  const { record, status, message } = appTarget(apps, auth, id, request)
+  if (!record) {
+    request.resume()
+    return plain(response, status, message)
+  }
+  const upstream = httpRequest({ host: record.address, port: record.port, method: request.method, path: request.url, headers: forwarded(request) }, (reply) => {
+    response.writeHead(reply.statusCode, reply.rawHeaders)
+    reply.pipe(response)
+  })
+  upstream.on("error", (error) => {
+    if (response.headersSent) return response.destroy()
+    plain(response, 502, `${id} is not answering: ${error.code ?? error.message}`)
+  })
+  request.pipe(upstream)
+}
+
+/** A WebSocket (or any) upgrade: replay the request head, then splice the sockets. */
+function upgradeApp(apps, auth, request, socket, head) {
+  const id = appOfHost(request.headers.host)
+  const { record } = id ? appTarget(apps, auth, id, request) : {}
+  if (!record) return socket.end("HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n")
+  const upstream = connect(record.port, record.address, () => {
+    const lines = [`${request.method} ${request.url} HTTP/1.1`]
+    for (const [name, value] of Object.entries(forwarded(request))) for (const one of [value].flat()) lines.push(`${name}: ${one}`)
+    upstream.write(`${lines.join("\r\n")}\r\n\r\n`)
+    if (head?.length) upstream.write(head)
+    upstream.pipe(socket).pipe(upstream)
+  })
+  const close = () => { upstream.destroy(); socket.destroy() }
+  upstream.on("error", close)
+  socket.on("error", close)
+}
+
+// u2f. App files come from the harness's work folder, nowhere else.
+const APP_TREE = /^\/brayness\/work\/[^\0]+$/
+
+async function startApp(store, apps, owner, actor, request) {
+  const payload = await readJson(request)
+  const path = payload.path
+  if (typeof payload.actor !== "string") throw new BadRequest("actor must be an actor id")
+  if (typeof path !== "string" || !APP_TREE.test(path) || path.split("/").includes("..")) throw new BadRequest("path must sit under /brayness/work, with no .. segments")
+  const id = actor(payload.actor).id
+  if (!can({ phone: owner }, "write", `people/${owner}/harnesses/${id}`)) throw new NotFound(id)
+  return apps.startFrom((dest) => store.copyOut(id, path, dest), { owner, actor: id, path })
+}
+
+async function route(store, apps, auth, request, response) {
   const url = new URL(request.url, "http://host")
   const path = url.pathname.replace(/\/+$/, "") || "/"
   const method = request.method
 
   // <id>.localhost gives a published site its own root, so root-relative links resolve.
+  const appId = apps && appOfHost(request.headers.host)
+  if (appId) return proxyApp(apps, auth, appId, request, response)
   const [label, ...rest] = (request.headers.host ?? "").split(":")[0].split(".")
   if (method === "GET" && rest.join(".") === "localhost" && label.startsWith("a-")) {
     return site(store, response, label, url.pathname.replace(/^\/+/, ""))
@@ -154,6 +247,34 @@ async function route(store, request, response) {
     const record = store.get(id)
     if (!owns(record)) throw new NotFound(id)
     return record
+  }
+
+  const app = (id) => {
+    const record = apps.record(id)
+    if (record.owner !== owner) throw new NotFound(id)
+    return record
+  }
+  if (path.startsWith("/v1/apps") && !apps) throw new NotFound("apps")
+  if (path === "/v1/apps" && method === "GET") return json(response, 200, { apps: apps.list().filter((record) => record.owner === owner) })
+  if (path === "/v1/apps" && method === "POST") return json(response, 201, await startApp(store, apps, owner, actor, request))
+  if (path.startsWith("/v1/apps/")) {
+    const [id, action] = path.slice("/v1/apps/".length).split("/")
+    app(id)
+    if (method === "GET" && !action) return json(response, 200, await apps.status(id))
+    if (method === "POST" && action === "enter") {
+      request.resume()
+      const port = request.headers.host?.split(":")[1]
+      return json(response, 200, { url: `http://${id}.localhost${port ? `:${port}` : ""}${ENTER}?ticket=${auth.issue(owner, id)}` })
+    }
+    if (method === "POST" && action === "visibility") {
+      const payload = await readJson(request)
+      if (typeof payload.public !== "boolean") throw new BadRequest("public must be true or false")
+      return json(response, 200, await apps.setPublic(id, payload.public))
+    }
+    if (method === "DELETE" && !action) {
+      await apps.stop(id)
+      return json(response, 204)
+    }
   }
 
   if (method === "GET") {
@@ -215,10 +336,11 @@ async function route(store, request, response) {
   json(response, 404, { error: `no route for ${method} ${path}` })
 }
 
-export function makeServer(store) {
-  return createServer(async (request, response) => {
+/** `apps` is an AppStore; without one, /v1/apps answers 404. */
+export function makeServer(store, apps = null, auth = apps && app_auth(process.env.HOST_PASS_SECRET)) {
+  const server = createServer(async (request, response) => {
     try {
-      await route(store, request, response)
+      await route(store, apps, auth, request, response)
     } catch (error) {
       request.resume()
       if (error instanceof BadRequest) return json(response, 400, { error: error.message })
@@ -231,4 +353,6 @@ export function makeServer(store) {
       json(response, 500, { error: `${error.name}: ${error.message}` })
     }
   })
+  server.on("upgrade", (request, socket, head) => (apps ? upgradeApp(apps, auth, request, socket, head) : socket.destroy()))
+  return server
 }
