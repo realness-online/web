@@ -54,9 +54,10 @@ describe('@/components/site-nav', () => {
     )
   })
 
-  it('labels the account link Sign in when signed out', () => {
+  it('labels the account link Account when signed out', () => {
     const wrapper = mount()
-    expect(wrapper.text()).toContain('Sign in')
+    expect(wrapper.text()).toContain('Account')
+    expect(wrapper.text()).not.toContain('Sign in')
   })
 
   it('labels the account link with the profile name when signed in', () => {
@@ -67,10 +68,10 @@ describe('@/components/site-nav', () => {
     expect(wrapper.text()).not.toContain('Sign in')
   })
 
-  it('goes to the sign-on page when the link promises a sign in', () => {
+  it('opens account settings when signed out', () => {
     const wrapper = mount()
     const account = wrapper.findAllComponents(router_link_stub).at(-1)
-    expect(account.props('to')).toEqual({ path: '/sign-on' })
+    expect(account.props('to')).toBe('/account')
   })
 
   it('goes to the account page once signed in', () => {
@@ -78,7 +79,7 @@ describe('@/components/site-nav', () => {
     mock_me.value = { name: 'Scott' }
     const wrapper = mount()
     const account = wrapper.findAllComponents(router_link_stub).at(-1)
-    expect(account.props('to')).toEqual({ path: '/account' })
+    expect(account.props('to')).toBe('/account')
   })
 
   it('falls back to Account when signed in without a name', () => {
