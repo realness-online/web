@@ -24,6 +24,26 @@ Each published app is one Firecracker microVM: its own kernel, never shared.
 | Nothing is routed to an app                                    | `FORWARD -o fc-app+ -j DROP`                                                |
 | Apps and actors never share an address range or rule           | apps on `172.17/16` and `fc-app*`; actors on `172.16` and `fc-tap*`         |
 
+### Escape probes
+
+`control/scripts/app-escape-check.sh` boots a probe app beside a live sibling.
+From inside, the probe tries each route below; every one must be refused.
+`CONTROL=1` opens only the probe's own TAP first, so each network probe is
+shown to see a hole when one exists.
+
+| Route tried from inside an app | Refused by |
+| --- | --- |
+| Every port the host listens on, at every host address | `BRAYNESS-APP-IN` |
+| A running sibling app's 8080 | `FORWARD -o fc-app+ -j DROP` |
+| Actors and their gateways | `BRAYNESS-APP-OUT` |
+| Cloud metadata, 169.254.169.254 | `BRAYNESS-APP-OUT` |
+| The internet, by address and by name | `BRAYNESS-APP-OUT`, and no NAT for 172.17 |
+| vsock to the host | no vsock device attached |
+| Writing its code, its runtime, or /etc | read-only disks; not root |
+| Mounting anything, gaining privileges | not root; NoNewPrivs |
+| Seeing host files: shared mounts, extra disks | none attached |
+| A second port reached from the host | replies only from 8080 |
+
 Rejected: nsjail, bubblewrap, systemd-run. Code we did not write needs a kernel
 boundary, not a namespace.
 
@@ -31,7 +51,7 @@ boundary, not a namespace.
 
 - Caps (128 MiB, 1 vCPU) are placeholders until the memory floor is measured.
 - Each app's writable root is a 1G copy; a shared read-only root is smaller.
-- The escape probes (host files, volume, sibling app, actor, metadata, host)
-  are not written yet.
+- In Lima, TCP from a VM gets no answer upstream even with rules lifted, so the
+  internet control proves packets leave the host, not that a reply returns.
 - Apps get no egress; model calls will need a narrow door.
 - Everything above is proven in a Lima development host, not yet production.
