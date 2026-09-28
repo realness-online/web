@@ -97,6 +97,7 @@ install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
 install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
 install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
 install -m 0755 "$GUEST_SRC/brayness-loop-run" "$TREE/usr/local/bin/brayness-loop-run"
+install -m 0755 "$GUEST_SRC/brayness-loop" "$TREE/usr/local/bin/brayness-loop"
 install -m 0755 "$GUEST_SRC/brayness-recover" "$TREE/usr/local/bin/brayness-recover"
 install -m 0755 "$GUEST_SRC/brayness-model-pass" "$TREE/usr/local/bin/brayness-model-pass"
 install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
@@ -203,8 +204,12 @@ cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 #!/bin/sh
 # `brayness publish [dir]` asks the host to serve a built site (the door).
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
+# `brayness loop "<goal>"` hands long work to a loop in its own actor.
+if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/brayness-loop "$@"; fi
 case "${1:-}" in -h|--help)
   echo "brayness publish [dir]  serve a built site from this actor; prints its link"
+  echo "brayness loop \"<goal>\"  start a loop in its own actor; prints its id"
+  echo "brayness loop report <id>  a loop's status, runs, and log tail"
   echo ;;
 esac
 # exec, not a symlink: bin/pi resolves the harness root from its own path.

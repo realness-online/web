@@ -32,7 +32,8 @@ def read(path, tail=0):
 status = json.loads(read(d + "/status.json") or "{}")
 runs = sum(1 for line in read(d + "/.auto/log.jsonl").splitlines() if '"run":' in line)
 quota = "quota exceeded" in read(d + "/events.jsonl", 65536)
-print(json.dumps({"state": status.get("state"), "runs": runs, "quota": quota}))
+tail = read(d + "/.auto/log.jsonl", 16384).splitlines()[-20:]
+print(json.dumps({"state": status.get("state"), "runs": runs, "quota": quota, "tail": tail}))
 `]
 
 /** Why a running loop should stop now, or null. */
@@ -91,6 +92,17 @@ export class Loops {
     return { id: record.id, depth }
   }
 
+  /**
+   * What a parent may read of its loop: the host's record and the last
+   * probe's log tail. Never execs, so reading never wakes an idle loop.
+   */
+  report(parent_id, loop_id) {
+    const loop = this.loops[loop_id]
+    if (!loop || loop.parent !== parent_id) throw new BadRequest("no such loop")
+    const { parent, goal, ...report } = loop
+    return { id: loop_id, ...report }
+  }
+
   /** One pass over running loops; each failure is its own. */
   async watch(now = Date.now()) {
     const stopped = []
@@ -101,7 +113,7 @@ export class Loops {
         const { exit_code, stdout_b64 } = await this.store.exec(id, PROBE_ARGV, { cwd: "/" })
         if (exit_code !== 0) throw new Error(`probe exit ${exit_code}`)
         const probe = JSON.parse(Buffer.from(stdout_b64, "base64").toString())
-        loop.runs = probe.runs
+        Object.assign(loop, { runs: probe.runs, tail: Array.isArray(probe.tail) ? probe.tail : [], checked: new Date(now).toISOString() })
         const reason = stop_reason(probe, loop, { maxRuns: this.maxRuns, deadlineMs: this.deadlineMs, now })
         if (reason) {
           await this.stop(id, reason)

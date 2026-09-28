@@ -111,6 +111,8 @@ test("watch stops a finished loop, idles it, and frees the slot", async () => {
   }
   assert.deepEqual(await loops.watch(), [])
   assert.equal(loops.loops[id].runs, 1)
+  assert.equal(loops.report("a-000000000001", id).status, "running")
+  assert.throws(() => loops.report("a-000000000077", id), /no such loop/) // only the parent reads it
   runs = 2
   assert.deepEqual(await loops.watch(), [{ id, reason: "runs" }])
   assert.deepEqual(store.execs.at(-1), [id, STOP_ARGV])
@@ -137,4 +139,17 @@ test("a failed probe keeps the loop and records why", async () => {
   assert.deepEqual(await loops.watch(), [])
   assert.equal(loops.loops[id].status, "running")
   assert.match(loops.loops[id].error, /probe exit 2/)
+})
+
+test("report carries the last tail and never execs", async () => {
+  const store = fake()
+  const loops = new Loops(store, { file: join(root, "report.json") })
+  const { id } = await loops.start("a-000000000001", "goal")
+  store.exec = async () => ({ exit_code: 0, stdout_b64: Buffer.from(JSON.stringify({ state: "exited", runs: 2, quota: false, tail: ['{"run":2}'] })).toString("base64") })
+  await loops.watch()
+  store.exec = async () => assert.fail("report must not exec")
+  const report = loops.report("a-000000000001", id)
+  assert.deepEqual([report.status, report.reason, report.runs, report.tail], ["stopped", "exited", 2, ['{"run":2}']])
+  assert.equal(report.goal, undefined)
+  assert.throws(() => loops.report("a-000000000001", "a-000000000999"), /no such loop/)
 })

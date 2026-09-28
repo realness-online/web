@@ -878,6 +878,35 @@ What this taught:
   with every rule lifted; UDP DNS works. The internet control proves packets
   leave, not that a connection completes.
 
+## Usage and the daily cap (o1, g3)
+
+Every model call through `brayness-proxy` writes one create-only file:
+
+```
+usage/+A/<day>/<time>-<actor>-<nonce>.html
+```
+
+One `/usage` item per file: model, actor, status, request and reply bytes,
+prompt and completion tokens, cost. Never prompt or reply text. Tokens and cost
+come from the last streamed chunk; the proxy asks OpenRouter with
+`usage: {include: true}` and reads the stream as it passes, unchanged.
+
+The ledger sits outside `people/`, so sync never writes it: `can()` lets the
+owner `get` and `list` their own `usage/+A/`, and nothing else. One file per
+call because Storage has no append; racing calls never conflict.
+
+The cap is per person per UTC day. `FREE_TOKENS_PER_DAY` and
+`FREE_COST_PER_DAY` set it; unset means no cap. The first call of the day lists
+the folder, then the proxy counts in memory - exact for one instance.
+
+- Over the cap: 429, `insufficient_quota`, message containing "quota
+  exceeded". Pi retries any 429 unless the text says so; this one it shows at
+  once. `proxy/test/server.test.js` runs Pi's own classifier on it.
+- Total unreadable: 503, and no upstream call.
+
+Proven: `proxy` tests, and one real call to OpenRouter wrote a row to
+`realness-development.appspot.com`; a second call at a 1-token cap got 429.
+
 ## Signing the binary
 
 `app/build.sh`, `app/sign.sh`, `app/notarize.sh`. What each run taught:

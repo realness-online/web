@@ -42,12 +42,17 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     assert.equal(model.ok, true)
     assert.deepEqual(verify_model_pass(model.pass, process.env.MODEL_PASS_SECRET), { phone: record.owner, id: record.id })
     const loops = []
-    door.loops = { start: async (id, goal) => (loops.push([id, goal]), { id: "a-0000000000ff", depth: 1 }) }
+    door.loops = {
+      start: async (id, goal) => (loops.push([id, goal]), { id: "a-0000000000ff", depth: 1 }),
+      report: (parent, id) => (loops.push([parent, id]), { id, status: "running" }),
+    }
     assert.deepEqual(await send({ op: "loop", goal: "faster tests", owner: "+14155559999" }), { ok: true, id: "a-0000000000ff", depth: 1 })
-    assert.deepEqual(loops, [[record.id, "faster tests"]])
+    assert.deepEqual(await send({ op: "loop-report", id: "a-0000000000ff" }), { ok: true, loop: { id: "a-0000000000ff", status: "running" } })
+    assert.deepEqual(loops, [[record.id, "faster tests"], [record.id, "a-0000000000ff"]])
     record.owner = null
     assert.equal((await send({ op: "loop", goal: "x" })).ok, false)
-    assert.equal(loops.length, 1)
+    assert.equal((await send({ op: "loop-report", id: "a-0000000000ff" })).ok, false)
+    assert.equal(loops.length, 2)
     assert.equal((await send({ op: "model-pass" })).ok, false)
     assert.equal((await send({ op: "recovery-pass" })).ok, false)
     assert.equal((await send({ op: "publish", owner: "+14155550123" })).ok, false)

@@ -5,6 +5,7 @@
 //
 //   {"op": "publish", "path": "/brayness/site"}  ->  {"ok": true, "url": "..."}
 //   {"op": "loop", "goal": "..."}                ->  {"ok": true, "id": "a-...", "depth": 1}
+//   {"op": "loop-report", "id": "a-..."}         ->  {"ok": true, "loop": {status, runs, tail, ...}}
 //
 // One listener per running actor, kept in step by a reconciler rather than
 // hooks in every start, reload, and destroy path.
@@ -101,6 +102,10 @@ export class Door {
     if (request.op === "model-pass") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot call models")
       return { ok: true, pass: issue_model_pass({ phone: owner, id }, process.env.MODEL_PASS_SECRET) }
+    }
+    if (request.op === "loop-report") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot read loops")
+      return { ok: true, loop: (this.loops ??= new Loops(this.store)).report(id, request.id) }
     }
     if (request.op === "loop") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot start loops")
