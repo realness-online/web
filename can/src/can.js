@@ -4,7 +4,7 @@
  * who     null for a stranger, `{ phone: "+A" }` for a person,
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance.
  * action  "get", "list", "write", or "delete".
- * path    a storage key: `people/+A/...` or `subscriptions/+A/...`.
+ * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, or `usage/+A/...`.
  * grants  triples read from the owner's rights page (see rights.js).
  *
  * Deny by default. Ownership comes from the path, never from stored data.
@@ -62,6 +62,8 @@ export function can(who, action, path, grants = []) {
   const [root, owner, ...rest] = parts
 
   if (root === "subscriptions") return Boolean(owner) && me.phone === owner
+  // The proxy alone writes the ledger; its owner may only read it.
+  if (root === "usage") return Boolean(owner) && me.phone === owner && (action === "get" || action === "list")
 
   if (root !== "people") return false
   if (!owner) return action === "list" && Boolean(me.phone) // the phonebook

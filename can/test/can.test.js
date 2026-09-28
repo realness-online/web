@@ -92,6 +92,15 @@ test("subscriptions are owner only", () => {
   assert.equal(can(scott, "list", "subscriptions/"), false)
 })
 
+test("usage is read-only to its owner", () => {
+  assert.equal(can(scott, "get", `usage/${A}/2026-09-27/row.html`), true)
+  assert.equal(can(scott, "list", `usage/${A}/2026-09-27/`), true)
+  assert.equal(can(scott, "write", `usage/${A}/2026-09-27/row.html`), false)
+  assert.equal(can(scott, "delete", `usage/${A}/2026-09-27/row.html`), false)
+  assert.equal(can(other, "get", `usage/${A}/2026-09-27/row.html`), false)
+  assert.equal(can(scott, "list", "usage/"), false)
+})
+
 // Realness serves index.html.gz and three folders; the rest stays private.
 test("public is an allowlist", () => {
   assert.equal(can(stranger, "get", `people/${A}/thoughts/1738103761047.html.gz`), true)

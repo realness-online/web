@@ -1,5 +1,5 @@
 const UPSTREAM = "https://openrouter.ai/api/v1/chat/completions"
-const MODEL = "thinkingmachines/inkling:free"
+export const MODEL = "thinkingmachines/inkling:free"
 const TIMEOUT_MS = 120_000
 const LIMIT = 10 * 1024 * 1024
 
@@ -13,7 +13,7 @@ export const call_upstream = (body, { key, fetcher = fetch } = {}) =>
       "HTTP-Referer": "https://pi.dev",
       "X-OpenRouter-Title": "pi",
     },
-    body: JSON.stringify({ ...body, model: MODEL }),
+    body: JSON.stringify({ ...body, model: MODEL, usage: { include: true } }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
 
@@ -26,6 +26,6 @@ export async function read_body(request) {
     if (size > LIMIT) throw new Error("request too large")
     chunks.push(chunk)
   }
-  return JSON.parse(Buffer.concat(chunks).toString())
+  return { body: JSON.parse(Buffer.concat(chunks).toString()), size }
 }
 

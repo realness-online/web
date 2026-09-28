@@ -13,6 +13,6 @@ test("the proxy chooses the model and keeps the other request fields", async () 
   assert.equal(sent.options.headers["HTTP-Referer"], "https://pi.dev")
   assert.equal(sent.options.headers["X-OpenRouter-Title"], "pi")
   assert.deepEqual(JSON.parse(sent.options.body), {
-    model: "thinkingmachines/inkling:free", stream: true, messages: [{ role: "user", content: "hi" }],
+    model: "thinkingmachines/inkling:free", stream: true, messages: [{ role: "user", content: "hi" }], usage: { include: true },
   })
 })
