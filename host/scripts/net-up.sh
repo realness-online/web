@@ -4,7 +4,7 @@
 #
 #   sudo bash /mnt/fc/host/scripts/net-up.sh
 #
-# Idempotent. Rules are appended only if absent, so re-running is a no-op.
+# Idempotent. Dedicated chains are rebuilt on each run.
 # Firecracker runs as root here, so the tap does not need a `user` owner.
 set -euo pipefail
 
@@ -17,6 +17,9 @@ TAP_PREFIX="${TAP_PREFIX:-fc-tap}"
 SUBNET="${SUBNET:-172.16.0.0/16}"
 TAP_MATCH="${TAP_MATCH:-${TAP_PREFIX}+}"
 UPLINK="${UPLINK:-$(ip -j route list default | jq -r '.[0].dev')}"
+# Private, loopback, link-local (cloud metadata), shared, multicast, reserved.
+BLOCKED="0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 198.18.0.0/15 224.0.0.0/4 240.0.0.0/4"
+ACTOR_HOST_PORTS="${ACTOR_HOST_PORTS:-}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 [ -n "$UPLINK" ] && [ "$UPLINK" != null ] || { echo "no default route on the host" >&2; exit 1; }
@@ -33,10 +36,37 @@ add_rule() {  # add_rule <table> <chain> <rule...>
   shift
   iptables -t "$table" -C "$@" 2> /dev/null || iptables -t "$table" -A "$@"
 }
-add_rule filter FORWARD -i "$TAP_MATCH" -o "$UPLINK" -s "$SUBNET" -j ACCEPT
 add_rule filter FORWARD -i "$UPLINK" -o "$TAP_MATCH" -d "$SUBNET" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 add_rule nat POSTROUTING -s "$SUBNET" -o "$UPLINK" -j MASQUERADE
+# The old blanket accept let actors reach anything; BRAYNESS-OUT replaces it.
+while iptables -D FORWARD -i "$TAP_MATCH" -o "$UPLINK" -s "$SUBNET" -j ACCEPT 2> /dev/null; do :; done
+
+# Egress: the open internet, nothing local. Guest root cannot touch these.
+# Chains are flushed and rebuilt each run, so edits here apply on re-run.
+chain() {  # chain <cmd> <table> <name> <parent>: fresh chain, jumped to first
+  local cmd="$1" table="$2" name="$3" parent="$4"
+  $cmd -t "$table" -N "$name" 2> /dev/null || $cmd -t "$table" -F "$name"
+  $cmd -t "$table" -C "$parent" -i "$TAP_MATCH" -j "$name" 2> /dev/null \
+    || $cmd -t "$table" -I "$parent" 1 -i "$TAP_MATCH" -j "$name"
+}
+chain iptables filter BRAYNESS-OUT FORWARD
+iptables -A BRAYNESS-OUT -o "$TAP_MATCH" -j DROP  # actor to actor
+for range in $BLOCKED; do iptables -A BRAYNESS-OUT -d "$range" -j DROP; done
+iptables -A BRAYNESS-OUT -s "$SUBNET" -o "$UPLINK" -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A BRAYNESS-OUT -j DROP
+
+# The host itself: only named service ports (dev sync).
+chain iptables filter BRAYNESS-IN INPUT
+for port in $ACTOR_HOST_PORTS; do iptables -A BRAYNESS-IN -p tcp --dport "$port" -j ACCEPT; done
+iptables -A BRAYNESS-IN -j DROP
+
+# Guests have link-local IPv6 only; nothing of theirs leaves or lands over it.
+chain ip6tables filter BRAYNESS-OUT FORWARD
+ip6tables -A BRAYNESS-OUT -j DROP
+chain ip6tables filter BRAYNESS-IN INPUT
+ip6tables -A BRAYNESS-IN -j DROP
 
 echo "OK: $TAP ${TAP_IP} -> $UPLINK"
 echo "    ip_forward=$(sysctl -n net.ipv4.ip_forward)"
+echo "    egress: internet only; host ports: ${ACTOR_HOST_PORTS:-none}"
 echo "    FORWARD policy=$(iptables -nL FORWARD | sed -n '1s/.*policy \([A-Z]*\).*/\1/p')"

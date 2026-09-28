@@ -6,9 +6,12 @@ import test from 'node:test'
 
 const project = new URL('../../', import.meta.url).pathname
 const ship = join(project, 'dist/ship')
+const proxy_url = 'http://127.0.0.1:18788'
 
 test('the ship tree carries the harness and prompts, no examples', () => {
-  execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')])
+  execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
+  })
   for (const path of ['prompts/app.md', 'prompts/site.md'])
     assert.ok(existsSync(join(ship, path)), path)
   // Prompts download the examples; none ride in the ship tree.
@@ -33,13 +36,24 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   }
   assert.ok(settings.packages.includes('npm:pi-mono-ask-user-question'))
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
+  assert.deepEqual(Object.keys(models.providers), ['realness'])
   assert.ok(models.providers.realness.models.some(model => model.id === 'inkling'))
+  assert.equal(models.providers.realness.baseUrl, proxy_url)
+  assert.equal(models.providers.realness.apiKey, '!brayness-model-pass')
   assert.ok(!existsSync(join(ship, 'agent-pass')))
+  assert.ok(!readFileSync(join(ship, '.pi/agent/models.json'), 'utf8').includes('/etc/brayness/agent-pass'))
 
   assert.match(readFileSync(join(ship, '.pi-version'), 'utf8'), /^\d+\.\d+\.\d+/)
   for (const path of [
     'AGENTS.local.md', '.pi/agent/auth.json', 'work', 'examples', 'packages',
   ]) assert.ok(!existsSync(join(ship, path)), path)
+})
+
+test('the ship tree rejects a malformed proxy URL', () => {
+  assert.throws(() => execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: 'not-a-url' },
+    stdio: 'pipe',
+  }), /BRAYNESS_PROXY_URL/)
 })
 
 test('the ship tree captures one local version and rejects invalid versions', () => {
@@ -49,11 +63,11 @@ test('the ship tree captures one local version and rejects invalid versions', ()
   try {
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho 9.8.7\n', { mode: 0o755 })
     execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, BRAYNESS_PROXY_URL: proxy_url },
     })
     assert.equal(readFileSync(join(ship, '.pi-version'), 'utf8'), '9.8.7\n')
     execFileSync('bash', [join(project, 'control/scripts/harness-stage.sh')], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, BRAYNESS_PROXY_URL: proxy_url },
     })
     assert.equal(execFileSync('tar', ['xOzf', join(project, 'dist/brayness-harness.tar.gz'), './.pi-version'], { encoding: 'utf8' }), '9.8.7\n')
     const entry = readFileSync(join(project, 'app/entry.ts'), 'utf8')
@@ -62,7 +76,7 @@ test('the ship tree captures one local version and rejects invalid versions', ()
     assert.ok(readFileSync(join(project, 'app/build.sh'), 'utf8').includes('sed -i \'\' "s|__PI_VERSION__|$pi_version|"'))
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho unknown\n', { mode: 0o755 })
     assert.throws(() => execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, BRAYNESS_PROXY_URL: proxy_url },
       stdio: 'pipe',
     }), /invalid local pi version/)
     assert.equal(readFileSync(join(ship, '.pi-version'), 'utf8'), '9.8.7\n')

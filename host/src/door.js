@@ -14,6 +14,7 @@ import { logger } from "./log.js"
 import { Lines } from "./vsock.js"
 import { can } from "../../can/src/can.js"
 import { issue_recovery_pass } from "../../sync/src/recovery-pass.js"
+import { issue_model_pass } from "../../proxy/src/model-pass.js"
 
 const LOG = logger("door")
 const DOOR_PORT = 54
@@ -79,6 +80,10 @@ export class Door {
     if (request.op === "recovery-pass") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot recover")
       return { ok: true, pass: issue_recovery_pass({ phone: owner, id, paths: record.paths ?? null }, process.env.HOST_PASS_SECRET) }
+    }
+    if (request.op === "model-pass") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot call models")
+      return { ok: true, pass: issue_model_pass({ phone: owner, id }, process.env.MODEL_PASS_SECRET) }
     }
     if (request.op !== "publish") throw new Error(`unknown op '${request.op}'`)
     if (!owner || !can({ instance }, "write", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot publish")

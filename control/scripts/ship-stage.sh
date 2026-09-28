@@ -32,14 +32,19 @@ ln -s ../../extensions "$stage/.pi/agent/extensions"
 # Prompt templates (/site, /app) load from the agent directory too.
 ln -s ../../prompts "$stage/.pi/agent/prompts"
 
-# The Mac's model list names logins the ship tree does not carry. Shipped Pi
-# talks to one model: the realness proxy, which picks the real one.
+# The ship tree names its own one provider; the Mac's model list stays local.
+# Shipped Pi asks its host door for a person-bound pass on each proxy call.
+proxy_url="${BRAYNESS_PROXY_URL:-https://brayness-proxy-yelzvhhngq-uc.a.run.app}"
+[[ "$proxy_url" =~ ^https?://[^/[:space:]]+(/[^[:space:]]*)?$ ]] || {
+  echo "BRAYNESS_PROXY_URL must be an http(s) endpoint" >&2
+  exit 1
+}
 # Packages a shipped harness cannot use cost startup seconds on two vCPUs:
 # the proxy is the only model (oauth), no MCP servers ship (mcp), long work runs
 # as autoresearch loops, never subagents (plans/brayness.md), and usage reports
 # proxy calls.
 node -e '
-  const fs = require("fs"), [settings_path, npm_path] = process.argv.slice(1)
+  const fs = require("fs"), [settings_path, npm_path, models_path, proxy_url] = process.argv.slice(1)
   const unshipped = ["pi-claude-oauth-adapter", "pi-mcp-adapter", "pi-subagents-j0k3r", "pi-mono-usage"]
   const settings = JSON.parse(fs.readFileSync(settings_path))
   settings.defaultProvider = "realness"
@@ -50,7 +55,23 @@ node -e '
   const npm = JSON.parse(fs.readFileSync(npm_path))
   for (const name of unshipped) delete npm.dependencies[name]
   fs.writeFileSync(npm_path, JSON.stringify(npm, null, 2) + "\n")
-' "$stage/.pi/agent/settings.json" "$stage/.pi/agent/npm/package.json"
+  const models = JSON.parse(fs.readFileSync(models_path))
+  models.providers = { realness: {
+    baseUrl: proxy_url,
+    apiKey: "!brayness-model-pass",
+    api: "openai-completions",
+    compat: { supportsDeveloperRole: false, supportsReasoningEffort: false },
+    models: [{
+      id: "inkling",
+      name: "Inkling (realness proxy)",
+      input: ["text"],
+      contextWindow: 1048576,
+      maxTokens: 32768,
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    }],
+  } }
+  fs.writeFileSync(models_path, JSON.stringify(models, null, 2) + "\n")
+' "$stage/.pi/agent/settings.json" "$stage/.pi/agent/npm/package.json" "$stage/.pi/agent/models.json" "$proxy_url"
 
 # Examples are not shipped: actors download them from brayness-examples with
 # giget when a prompt asks, and install @realness.online packages from npm.

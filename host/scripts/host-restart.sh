@@ -18,7 +18,16 @@ sudo bash "$HOME/brayness/host/scripts/net-up.sh" | head -1
 sudo bash "$HOME/brayness/host/scripts/node-install.sh" | tail -1
 # An image baked before h4p carries a guard that looks for the Python host.
 sudo bash "$HOME/brayness/host/scripts/idle-guard.sh" > /dev/null
-sudo nohup node host/main.js serve \
+# The host has no service account. An operator provisions this root-only file
+# from Secret Manager; the guest and exports never receive it.
+model_secret=/etc/brayness/model-pass-secret
+if [ ! -s "$model_secret" ] || [ "$(stat -c %a "$model_secret")" != 600 ] || [ "$(stat -c %u "$model_secret")" != 0 ]; then
+  echo "missing root-only $model_secret (0600); refusing to start" >&2
+  exit 1
+fi
+export MODEL_PASS_SECRET="$(sudo cat "$model_secret")"
+if [ "${#MODEL_PASS_SECRET}" -lt 32 ]; then echo "model pass secret is too short" >&2; exit 1; fi
+sudo -E nohup node host/main.js serve \
   --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 # Three minutes, not one: on a host that has no seed yet, the first serve builds
 # it, and that means booting the template and pausing it (about 36s) before the

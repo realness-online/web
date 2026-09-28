@@ -37,9 +37,6 @@ export async function build(lima) {
   step("stage the harness")
   await stream("bash", [join(ROOT, "control", "scripts", "harness-stage.sh")])
 
-  step("fetch the agent pass")
-  await stream("bash", [join(ROOT, "control", "scripts", "agent-pass.sh")])
-
   step("build the template in the guest")
   await lima.streamScript("control/scripts/template-build.sh", { user: "root" })
 

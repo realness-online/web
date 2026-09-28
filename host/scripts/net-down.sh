@@ -20,6 +20,12 @@ del_rule() {  # del_rule <table> <chain> <rule...>
 del_rule filter FORWARD -i "$TAP_MATCH" -o "$UPLINK" -s "$SUBNET" -j ACCEPT
 del_rule filter FORWARD -i "$UPLINK" -o "$TAP_MATCH" -d "$SUBNET" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 del_rule nat POSTROUTING -s "$SUBNET" -o "$UPLINK" -j MASQUERADE
+for cmd in iptables ip6tables; do
+  for pair in FORWARD:BRAYNESS-OUT INPUT:BRAYNESS-IN; do
+    $cmd -D "${pair%%:*}" -i "$TAP_MATCH" -j "${pair#*:}" 2> /dev/null || true
+    $cmd -F "${pair#*:}" 2> /dev/null && $cmd -X "${pair#*:}" || true
+  done
+done
 
 ip link delete "$TAP" 2> /dev/null || true
 echo "OK: $TAP removed, rules dropped (ip_forward left at $(sysctl -n net.ipv4.ip_forward))"

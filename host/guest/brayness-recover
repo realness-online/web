@@ -227,6 +227,12 @@ if __name__ == "__main__":
     try:
         if len(sys.argv) != 2 or not sys.argv[1].startswith(("https://", "http://")):
             raise ValueError("usage: brayness-recover <sync-url>")
+        # Run from the host as root, write as the harness owner, never root.
+        owner = os.stat(ROOT)
+        if os.geteuid() == 0 and owner.st_uid != 0:
+            os.setgroups([])
+            os.setgid(owner.st_gid)
+            os.setuid(owner.st_uid)
         count, applied = recover(sys.argv[1], door_pass)
         print(f"pulled {count} files, replayed {len(applied)} pending edits")
     except (OSError, ValueError, RuntimeError, urllib.error.URLError) as error:

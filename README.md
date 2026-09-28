@@ -176,9 +176,12 @@ were close.
 - **Self-host Firecracker.** Boot once, snapshot, fork.
 - **Nested virt on GCP.** Actors wait on model calls, so density comes from
   oversubscription; bare metal is priced for CPU this is not.
-- **The prod host is a VM in `realness-online`**, the server project that already
-  holds the brayness agent proxy. `realness-ops` is the server repo and
-  `realness` the client repo; `realness-development` is the client's dev project.
+- **The prod host is a VM in `realness-online`**, the server project.
+  `realness-ops` is the server repo and `realness` the client repo;
+  `realness-development` is the client's dev project.
+- **Brayness owns its proxy.** `brayness-proxy` runs in `realness-development`
+  beside `brayness-sync`, sharing its phone pins; `realness-ops` keeps no agent
+  handler and no `AGENT_PASS`.
 - **The d3 host is `n2-standard-4` in `us-central1-a`** - a 20 GB `pd-standard`
   boot disk plus a 30 GB `pd-standard` PD for actors: about $0.20/h running,
   $0.80/mo parked. Spot is unavailable (`PREEMPTIBLE_CPUS` in us-central1 is 0)
@@ -254,6 +257,23 @@ Gotchas that bit; carry them through the h4 port.
 - `TMPDIR=/var/tmp` keeps jiti's cache; wipes skip it.
 - Measure Pi readiness by key echo, never `-p`.
 - Pi writes nothing before a reply: wipe its files, never its folder.
+
+### Saved files, sync, and identity
+
+- Sync carries Pi history and declared folders; other files may be lost.
+- Turn-end order: history, files, pending list; each file lands old or new.
+- Exact `edit` calls may defer; `write` and bash push bytes.
+- Pending edits replay only onto the exact saved base.
+- Pi JSONL alone never restores a lost working tree.
+- Prove saved files on a fresh actor before deleting any disk: `check:fresh-actor`.
+- Secrets never sync; the host injects them.
+- Actors read Realness-owned folders, never write or sync them.
+- The host pass is read-only, renews itself, may list paths.
+- Sync is the only key holder; hosted actors cannot switch checks off.
+- Sync never merges; both changed keeps both copies.
+- Each folder has one writer: Realness or the harness.
+- Each sync deploy trusts only its own project's sign-in.
+- Phone numbers never appear in app URLs, logs, or referrers.
 
 ## What is proven
 

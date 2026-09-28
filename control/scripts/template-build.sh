@@ -97,6 +97,7 @@ install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
 install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
 install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
 install -m 0755 "$GUEST_SRC/brayness-recover" "$TREE/usr/local/bin/brayness-recover"
+install -m 0755 "$GUEST_SRC/brayness-model-pass" "$TREE/usr/local/bin/brayness-model-pass"
 install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
 install -m 0644 "$GUEST_SRC/brayness-vsock.service" "$TREE/etc/systemd/system/brayness-vsock.service"
 install -m 0644 "$GUEST_SRC/brayness-pty.service" "$TREE/etc/systemd/system/brayness-pty.service"
@@ -181,11 +182,6 @@ log "stock harness -> /brayness"
 [ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
 mkdir -p "$TREE/brayness"
 tar xzf "$HARNESS_TAR" -C "$TREE/brayness"
-
-# The realness proxy's shared pass. models.json reads it with `!cat` per request.
-PASS_FILE="${PASS_FILE:-$REPO/dist/agent-pass}"
-[ -s "$PASS_FILE" ] || { echo "missing $PASS_FILE: run control/scripts/agent-pass.sh on the Mac" >&2; exit 1; }
-install -D -m 600 -o root -g root "$PASS_FILE" "$TREE/etc/brayness/agent-pass"
 
 # pi packages (the harness's own extensions) live in .pi/agent/npm
 log "harness pi-packages"
@@ -274,6 +270,15 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
 jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
 [ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
 log "jiti cache: $jiti_files files"
+
+# Pi and the terminal run as `brayness`; boot setup and the agent stay root.
+log "brayness user owns /brayness and the caches"
+chroot "$TREE" id -u brayness > /dev/null 2>&1 \
+  || chroot "$TREE" useradd -M -U -d /brayness -s /bin/bash brayness
+chroot "$TREE" chown -R brayness:brayness /brayness /var/tmp/jiti /var/tmp/node-compile-cache
+cat > "$TREE/etc/tmpfiles.d/brayness-run.conf" <<'TMPFILES'
+d /run/brayness 0755 brayness brayness
+TMPFILES
 
 # ------------------------------------------------------------------ build image
 log "building $IMG"

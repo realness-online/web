@@ -71,7 +71,8 @@ echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail 
 
 # TAP0 plus its NAT rules. The seed boot needs a TAP; an actor's own egress is
 # h2's, so actors get TAPs this script knows nothing about.
-bash "$DIR/host/scripts/net-up.sh"
+# 18095: the fresh-actor check's sync service, on the Lima host.
+ACTOR_HOST_PORTS="18095" bash "$DIR/host/scripts/net-up.sh"
 
 # Dev only: one shared signing key for sync, host, and the contract check.
 secret_file="$DIR/dist/host-pass-secret"
@@ -80,6 +81,11 @@ if [ ! -f "$secret_file" ]; then
   exit 1
 fi
 export HOST_PASS_SECRET="$(< "$secret_file")"
+# Development host and local proxy use a separate model-signing key.
+model_secret_file="$DIR/dist/model-pass-secret"
+[ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
+export MODEL_PASS_SECRET="$(< "$model_secret_file")"
+[ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 origin_file="$DIR/dist/realness-origin"
 if [ -f "$origin_file" ]; then
   export REALNESS_ORIGIN="${REALNESS_ORIGIN:-$(< "$origin_file")}"

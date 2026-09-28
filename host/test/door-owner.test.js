@@ -6,9 +6,11 @@ import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { Door } from "../src/door.js"
 import { verify_recovery_pass } from "../../sync/src/recovery-pass.js"
+import { verify_model_pass } from "../../proxy/src/model-pass.js"
 
 const root = mkdtempSync(fileURLToPath(new URL("../../../../artifacts/brayness/door-owner-", import.meta.url)))
 process.env.HOST_PASS_SECRET = "door-owner-test-secret-at-least-thirty-two-bytes"
+process.env.MODEL_PASS_SECRET = "door-model-test-secret-at-least-thirty-two-bytes"
 
 test("VM-bound door ignores a claimed owner and denies actors without one", async () => {
   const record = { id: "a-abcdef123456", owner: "+14155550123", vsockPath: join(root, "vsock.sock") }
@@ -36,7 +38,11 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     const recovery = await send({ op: "recovery-pass", owner: "+14155559999" })
     assert.equal(recovery.ok, true)
     assert.deepEqual(verify_recovery_pass(recovery.pass, process.env.HOST_PASS_SECRET), { phone: record.owner, id: record.id, paths: null })
+    const model = await send({ op: "model-pass", owner: "+14155559999" })
+    assert.equal(model.ok, true)
+    assert.deepEqual(verify_model_pass(model.pass, process.env.MODEL_PASS_SECRET), { phone: record.owner, id: record.id })
     record.owner = null
+    assert.equal((await send({ op: "model-pass" })).ok, false)
     assert.equal((await send({ op: "recovery-pass" })).ok, false)
     assert.equal((await send({ op: "publish", owner: "+14155550123" })).ok, false)
     assert.equal(published.length, 1)

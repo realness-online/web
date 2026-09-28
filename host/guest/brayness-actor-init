@@ -52,12 +52,12 @@ network_up
 # signal's default action would kill Pi. /run is memory: it names this actor
 # after its own resume, and not after a reload from the seed.
 fresh_pi() {
-  pid_file=/run/brayness-pi.pid
+  pid_file=/run/brayness/pi.pid
   marker=/run/brayness-pi-fresh
   [ -r "$pid_file" ] || return 0
   [ "$(cat "$marker" 2> /dev/null)" = "$actor_id" ] && return 0
   printf '%s\n' "$actor_id" > "$marker"
-  cat /proc/sys/kernel/random/uuid > /run/brayness-pi-session-id
+  cat /proc/sys/kernel/random/uuid > /run/brayness/pi-session-id
   kill -USR2 "$(cat "$pid_file")" 2> /dev/null || true
 }
 

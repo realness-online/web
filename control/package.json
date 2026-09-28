@@ -14,6 +14,7 @@
     "check:pi-exit": "node test/pi-exit.check.js",
     "check:publish": "node test/publish.check.js",
     "check:fresh-actor": "node --test --test-concurrency=1 test/fresh-actor.check.js",
+    "check:boundary": "node --test --test-concurrency=1 test/actor-boundary.check.js",
     "check:host": "node --test --test-concurrency=1 test/host.check.js"
   },
   "engines": {

@@ -25,6 +25,7 @@ import fcntl
 import json
 import os
 import pty
+import pwd
 import select
 import socket
 import struct
@@ -33,6 +34,8 @@ import termios
 import time
 
 SHELL = "/bin/bash"
+# Pi and its shell run as this user; the holder itself stays root.
+USER = "brayness"
 # The visible terminal starts in the actor's work/ folder.
 WORK_DIR = "/brayness/work"
 SOCKET = "/run/brayness-pty.sock"
@@ -65,6 +68,15 @@ def running_command(pid):
     return exe not in (os.path.realpath(SHELL), os.path.realpath(sys.executable))
 
 
+def drop_to(name):
+    """Become `name` for good: groups, then gid, then uid, then its env."""
+    entry = pwd.getpwnam(name)
+    os.initgroups(name, entry.pw_gid)
+    os.setgid(entry.pw_gid)
+    os.setuid(entry.pw_uid)
+    os.environ.update({"HOME": entry.pw_dir, "USER": name, "LOGNAME": name})
+
+
 class Holder:
     def __init__(self, listener):
         self.listener = listener
@@ -75,7 +87,7 @@ class Holder:
         self.pid, self.master = pty.fork()
         if self.pid == 0:
             os.environ.update(TERM_ENV)
-            os.environ["HOME"] = "/brayness"
+            drop_to(USER)
             os.makedirs(WORK_DIR, exist_ok=True)
             os.chdir(WORK_DIR)
             os.execvp(SHELL, [SHELL])
