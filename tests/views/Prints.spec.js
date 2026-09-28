@@ -114,12 +114,18 @@ describe('@/views/Prints', () => {
     expect(wrapper.find('dialog button[type="submit"]').text()).toBe('$100')
   })
 
-  it('says Buy rather than guess a price when the fetch fails', async () => {
+  it('hides checkout rather than guess a price when the fetch fails', async () => {
     global.fetch = vi.fn(() => Promise.reject(new Error('offline')))
     const wrapper = mount_prints()
     await flushPromises()
 
-    expect(wrapper.find('dialog button[type="submit"]').text()).toBe('Buy')
+    expect(wrapper.find('dialog button[type="submit"]').exists()).toBe(false)
+    expect(wrapper.find('dialog [role="status"]').text()).toBe(
+      'Checkout unavailable'
+    )
+    expect(wrapper.find('dialog a').attributes('href')).toBe(
+      `sms:${admin_id.slice(1)}`
+    )
   })
 
   it('opens the chosen print in the dialog', async () => {
@@ -160,5 +166,9 @@ describe('@/views/Prints', () => {
 
     expect(wrapper.vm.buy_error).toBe('Poster is not for sale')
     expect(wrapper.find("[role='alert']").text()).toBe('Poster is not for sale')
+    expect(wrapper.find('dialog button[type="submit"]').exists()).toBe(false)
+    expect(wrapper.find('dialog a').attributes('href')).toBe(
+      `sms:${admin_id.slice(1)}`
+    )
   })
 })

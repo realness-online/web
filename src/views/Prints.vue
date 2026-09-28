@@ -8,6 +8,7 @@
 
   const { posters, for_person } = use_posters()
   const admin_id = import.meta.env.VITE_ADMIN_ID
+  const contact_url = `sms:${admin_id.slice(1)}`
   const CENTS_PER_DOLLAR = 100
 
   const prints = computed(() =>
@@ -189,13 +190,17 @@
       -->
       <as-figure v-if="showing" :key="showing" :itemid="showing" pin />
       <form @submit.prevent="buy(showing)">
-        <button type="submit" :aria-busy="buying === showing">
-          <data v-if="price !== null" :value="price">{{
-            as_money(price, currency)
-          }}</data>
-          <template v-else>Buy</template>
+        <button
+          v-if="price !== null && !buy_error"
+          type="submit"
+          :aria-busy="buying === showing">
+          <data :value="price">{{ as_money(price, currency) }}</data>
         </button>
         <p v-if="buy_error" role="alert">{{ buy_error }}</p>
+        <p v-else-if="price === null" role="status">Checkout unavailable</p>
+        <a v-if="buy_error || price === null" :href="contact_url"
+          >Message the artist</a
+        >
       </form>
     </dialog>
   </section>
@@ -324,7 +329,25 @@
       border: 0;
 
       & > form {
+        display: grid;
+        justify-items: center;
+        gap: base-line * 0.5;
         width: auto;
+
+        & > button {
+          min-width: 0;
+          padding: 0;
+          border: 0;
+          background: none;
+          color: var(--text);
+          text-decoration: underline;
+          text-underline-offset: 0.2em;
+        }
+
+        & > p {
+          margin: 0;
+          text-align: center;
+        }
       }
 
       & > figure {
