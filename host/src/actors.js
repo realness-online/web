@@ -34,7 +34,7 @@ const ARTIFACT_PATHS = ["brayness"]
 const TRACES = "traces"
 const EXPORTS = "exports"
 const PUBLISHED = "published"
-const NON_ACTOR_DIRS = new Set(["seed", TRACES, EXPORTS, PUBLISHED])
+const NON_ACTOR_DIRS = new Set(["seed", "apps", TRACES, EXPORTS, PUBLISHED])
 // Ids are names on the volume; anything else would be a path.
 const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
 
