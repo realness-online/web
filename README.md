@@ -825,6 +825,59 @@ In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 1808
 to the API port. Nothing is reachable from outside the machine yet; that is the
 open 8090 question, and h1/h2. `scripts/a2-verify.sh` is 17 checks.
 
+## An app runs in its own VM (u2a-u2e)
+
+A published server is one Firecracker microVM from `/opt/fc/app.ext4`, a
+sibling of the actor template with nothing an app does not need. `SECURITY.md`
+lists each absence and the check that proves it.
+
+```bash
+sudo bash /mnt/fc/control/scripts/app-image-build.sh      # the image
+sudo bash /mnt/fc/control/scripts/runtime-build.sh        # read-only runtime disks
+sudo bash /mnt/fc/host/scripts/net-up.sh                  # fc-app rules
+sudo bash /mnt/fc/control/scripts/app-image-verify.sh     # 13 checks
+sudo bash /mnt/fc/control/scripts/app-boot-check.sh       # 5 checks
+sudo bash /mnt/fc/control/scripts/app-escape-check.sh     # 20 refusals
+sudo CONTROL=1 bash /mnt/fc/control/scripts/app-escape-check.sh  # holes seen
+sudo bash /mnt/fc/control/scripts/app-memory-floor.sh     # floor per kind
+```
+
+- **Disks.** A reflink copy of the image is the only writable disk. The app's
+  files are a read-only ext4 labelled `app-code`, with its start command beside
+  them; the runtime, when there is one, is a second read-only disk. The guest
+  mounts both by label, so attach order does not matter.
+- **Start.** `brayness-app.service` mounts as root, then runs the command as
+  `app` with `NoNewPrivileges`. No shell parses it; `brayness-app-start` execs
+  argv. No code disk (a bare image boot) skips the unit.
+- **Network.** App TAPs are `fc-appN` on `172.17.N.0/30`; the MAC carries the
+  address. The host may open 8080 and gets replies only from it. Nothing an app
+  starts leaves, and nothing is routed to one. No vsock device is attached.
+- **Memory (u2e).** The guest OS takes about 54 MiB before any app. Node and
+  python served at 64 MiB, a static busybox at 48; below that the boot thrashes
+  rather than hitting the OOM killer, so the failure is a timeout.
+
+The apps are becoming managed: one `fetch` handler, Node only, no dependencies
+(u2j-u2n). Python, binaries, and Procfiles go; the checks above rerun as
+handlers.
+
+What this taught:
+
+- The Lima host's INPUT policy is ACCEPT. A TAP no chain names is open to the
+  host, so each TAP prefix needs its own chains before its first VM.
+- A Node process that spawns Firecracker waits on it forever; `unref()` the
+  child, or a CLI never exits.
+- The host logger writes to stdout, so a CLI's JSON record is its last line.
+- `start()` in `$(...)` runs in a subshell: ids appended to an array there never
+  reach the cleanup trap. The checks write ids to a file.
+- The kernel makes `/dev/vsock` with no device attached; probe a connect to CID
+  2, not the file.
+- 127.0.0.1 inside a VM is the VM. A probe aimed at it finds itself.
+- A refusal proves nothing until a control opens the hole. `CONTROL=1` opens
+  only the probe's own TAP, so other apps keep strict rules mid-run.
+- In Lima, a VM's TCP SYN leaves through the NAT but no reply comes back, even
+  with every rule lifted; UDP DNS works. The internet control proves packets
+  leave, not that a connection completes.
+
 ## Signing the binary
 
 `app/build.sh`, `app/sign.sh`, `app/notarize.sh`. What each run taught:
