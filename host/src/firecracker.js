@@ -137,13 +137,19 @@ export async function terminate(pid, seconds = 10) {
   }
 }
 
-/** A fresh VM from the template disk: only the seed boots this way. */
-export async function boot(api, { kernel, disk, tap, uds, mac, cid, vcpus, mib }) {
+/**
+ * A fresh VM: the seed from the template disk, or an app. `readOnly` maps
+ * drive ids to extra disks attached read-only; an app has no `uds`, so no vsock.
+ */
+export async function boot(api, { kernel, disk, tap, uds, mac, cid, vcpus, mib, readOnly = {} }) {
   await api.put("/boot-source", { kernel_image_path: kernel, boot_args: BOOT_ARGS })
   await api.put("/drives/rootfs", { drive_id: "rootfs", path_on_host: disk, is_root_device: true, is_read_only: false })
+  for (const [id, path] of Object.entries(readOnly)) {
+    await api.put(`/drives/${id}`, { drive_id: id, path_on_host: path, is_root_device: false, is_read_only: true })
+  }
   await api.put("/machine-config", { vcpu_count: vcpus, mem_size_mib: mib })
   await api.put("/network-interfaces/eth0", { iface_id: "eth0", host_dev_name: tap, guest_mac: mac })
-  await api.put("/vsock", { guest_cid: cid, uds_path: uds })
+  if (uds) await api.put("/vsock", { guest_cid: cid, uds_path: uds })
   await api.put("/actions", { action_type: "InstanceStart" })
 }
 

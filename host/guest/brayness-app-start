@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Runs as the `app` user inside an app VM (brayness-app.service). The command
+# was inferred on the host and needs no shell: one argument per line, exec'd
+# directly from the app's own files.
+set -euo pipefail
+
+mapfile -t argv < /app/argv
+cd /app/code
+exec "${argv[@]}"

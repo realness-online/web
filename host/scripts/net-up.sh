@@ -20,6 +20,10 @@ UPLINK="${UPLINK:-$(ip -j route list default | jq -r '.[0].dev')}"
 # Private, loopback, link-local (cloud metadata), shared, multicast, reserved.
 BLOCKED="0.0.0.0/8 10.0.0.0/8 100.64.0.0/10 127.0.0.0/8 169.254.0.0/16 172.16.0.0/12 192.168.0.0/16 198.18.0.0/15 224.0.0.0/4 240.0.0.0/4"
 ACTOR_HOST_PORTS="${ACTOR_HOST_PORTS:-}"
+# App TAPs (host/src/apps.js) own /30s in their own range, under their own
+# prefix, so no actor rule ever matches an app and no app rule an actor.
+APP_MATCH="${APP_MATCH:-fc-app+}"
+APP_PORT="${APP_PORT:-8080}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 [ -n "$UPLINK" ] && [ "$UPLINK" != null ] || { echo "no default route on the host" >&2; exit 1; }
@@ -43,11 +47,11 @@ while iptables -D FORWARD -i "$TAP_MATCH" -o "$UPLINK" -s "$SUBNET" -j ACCEPT 2>
 
 # Egress: the open internet, nothing local. Guest root cannot touch these.
 # Chains are flushed and rebuilt each run, so edits here apply on re-run.
-chain() {  # chain <cmd> <table> <name> <parent>: fresh chain, jumped to first
-  local cmd="$1" table="$2" name="$3" parent="$4"
+chain() {  # chain <cmd> <table> <name> <parent> [match]: fresh chain, jumped to first
+  local cmd="$1" table="$2" name="$3" parent="$4" match="${5:-$TAP_MATCH}"
   $cmd -t "$table" -N "$name" 2> /dev/null || $cmd -t "$table" -F "$name"
-  $cmd -t "$table" -C "$parent" -i "$TAP_MATCH" -j "$name" 2> /dev/null \
-    || $cmd -t "$table" -I "$parent" 1 -i "$TAP_MATCH" -j "$name"
+  $cmd -t "$table" -C "$parent" -i "$match" -j "$name" 2> /dev/null \
+    || $cmd -t "$table" -I "$parent" 1 -i "$match" -j "$name"
 }
 chain iptables filter BRAYNESS-OUT FORWARD
 iptables -A BRAYNESS-OUT -o "$TAP_MATCH" -j DROP  # actor to actor
@@ -66,7 +70,24 @@ ip6tables -A BRAYNESS-OUT -j DROP
 chain ip6tables filter BRAYNESS-IN INPUT
 ip6tables -A BRAYNESS-IN -j DROP
 
+# Apps: the host may open $APP_PORT; nothing an app starts goes anywhere.
+# Conntrack keys on both addresses, so a reply rule never covers another app.
+chain iptables filter BRAYNESS-APP-OUT FORWARD "$APP_MATCH"
+iptables -A BRAYNESS-APP-OUT -j DROP
+chain iptables filter BRAYNESS-APP-IN INPUT "$APP_MATCH"
+iptables -A BRAYNESS-APP-IN -p tcp --sport "$APP_PORT" -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -A BRAYNESS-APP-IN -j DROP
+chain ip6tables filter BRAYNESS-APP-OUT FORWARD "$APP_MATCH"
+ip6tables -A BRAYNESS-APP-OUT -j DROP
+chain ip6tables filter BRAYNESS-APP-IN INPUT "$APP_MATCH"
+ip6tables -A BRAYNESS-APP-IN -j DROP
+# Nothing is routed to an app; only the host itself talks to one.
+for cmd in iptables ip6tables; do
+  $cmd -C FORWARD -o "$APP_MATCH" -j DROP 2> /dev/null || $cmd -I FORWARD 1 -o "$APP_MATCH" -j DROP
+done
+
 echo "OK: $TAP ${TAP_IP} -> $UPLINK"
 echo "    ip_forward=$(sysctl -n net.ipv4.ip_forward)"
 echo "    egress: internet only; host ports: ${ACTOR_HOST_PORTS:-none}"
+echo "    apps ($APP_MATCH): host reaches :$APP_PORT; no egress"
 echo "    FORWARD policy=$(iptables -nL FORWARD | sed -n '1s/.*policy \([A-Z]*\).*/\1/p')"

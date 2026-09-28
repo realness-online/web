@@ -49,13 +49,14 @@ function tapIndex(name) {
   return Number(match[1])
 }
 
-// Each actor owns a /30, so two actors never share an address (h2).
-export const tapGateway = (name) => `172.16.${tapIndex(name)}.1`
-export const tapGuest = (name) => `172.16.${tapIndex(name)}.2`
+// Each actor owns a /30, so two actors never share an address (h2). Apps own
+// /30s in 172.17, so no actor address is ever an app's.
+export const tapGateway = (name, net = "172.16") => `${net}.${tapIndex(name)}.1`
+export const tapGuest = (name, net = "172.16") => `${net}.${tapIndex(name)}.2`
 
-export function createTap(name) {
+export function createTap(name, net) {
   run(["ip", "tuntap", "add", "dev", name, "mode", "tap"])
-  run(["ip", "addr", "add", `${tapGateway(name)}/30`, "dev", name])
+  run(["ip", "addr", "add", `${tapGateway(name, net)}/30`, "dev", name])
   run(["ip", "link", "set", name, "up"])
 }
 
