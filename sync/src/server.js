@@ -11,7 +11,7 @@
  * No token is a stranger; a bad token is 401. Denial is 403 whether or not
  * the file exists, because the check runs before storage is touched.
  *
- * Browsers may call it only from `origins`, e.g. https://realness.online.
+ * Browsers may call it only from `origins`, the sites allowed to read and write.
  */
 import { createHash } from "node:crypto"
 import { createServer } from "node:http"

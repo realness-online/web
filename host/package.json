@@ -4,7 +4,8 @@
   "type": "module",
   "description": "The actor host: seed, actors, API, terminal, door. Standard library only.",
   "scripts": {
-    "serve": "node main.js serve"
+    "serve": "node main.js serve",
+    "test": "node --test 'test/*.test.js'"
   },
   "engines": {
     "node": ">=22.19.0"

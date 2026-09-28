@@ -86,11 +86,11 @@ model_secret_file="$DIR/dist/model-pass-secret"
 [ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
 export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
-origin_file="$DIR/dist/realness-origin"
+origin_file="$DIR/dist/sign-on-origin"
 if [ -f "$origin_file" ]; then
-  export REALNESS_ORIGIN="${REALNESS_ORIGIN:-$(< "$origin_file")}"
+  export SIGN_ON_ORIGIN="${SIGN_ON_ORIGIN:-$(< "$origin_file")}"
 else
-  export REALNESS_ORIGIN="${REALNESS_ORIGIN:-http://localhost:5173}"
+  export SIGN_ON_ORIGIN="${SIGN_ON_ORIGIN:-http://localhost:5173}"
 fi
 
 # The package is imported by name, so the import path is the project root.

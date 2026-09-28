@@ -10,9 +10,10 @@
  *   brayness-store sync  ~/brayness/plans can://~/plans/   two-way; --deletes sends all
  *   brayness-store login | logout | whoami
  *
- * `login` signs in through Realness in your browser and keeps the result in
- * the macOS keychain; every other command then signs itself. TOKEN, when set,
- * wins. SYNC_URL picks the service; REALNESS_URL picks the sign-in site.
+ * `login` signs in through the sign-on page in your browser and keeps the
+ * result in the macOS keychain; every other command then signs itself.
+ * TOKEN, when set, wins. SYNC_URL picks the service; SIGN_ON_URL picks the
+ * sign-in site.
  */
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
@@ -21,7 +22,7 @@ import { keychain, login, token_source } from "../src/login.js"
 
 // Development only for now: the sync service it talks to trusts dev sign-in.
 // Both flip to production together.
-const REALNESS = process.env.REALNESS_URL ?? "https://realness-development.web.app"
+const SIGN_ON = process.env.SIGN_ON_URL ?? "https://brayness-sign-on.web.app"
 const [command, ...args] = process.argv.slice(2)
 const signed_in = ["login", "logout"].includes(command) ? null : await token_source()()
 const store = client({ url: SYNC_URL, token: signed_in })
@@ -29,8 +30,8 @@ const mask = (phone) => (phone ? `${phone.slice(0, 2)}…${phone.slice(-2)}` : "
 
 const commands = {
   async login() {
-    console.log(`Opening ${REALNESS}/sign-on in your browser. Click to sign Brayness in.`)
-    const { id_token } = await login({ realness: REALNESS, open: (url) => promisify(execFile)("open", [url]) })
+    console.log(`Opening ${SIGN_ON}/sign-on in your browser. Click to sign Brayness in.`)
+    const { id_token } = await login({ sign_on: SIGN_ON, open: (url) => promisify(execFile)("open", [url]) })
     console.log(`Signed in as ${mask(phone_of(id_token))}. The keychain holds it.`)
   },
   async logout() {

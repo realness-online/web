@@ -494,8 +494,10 @@ goes.
 
 `host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
-`{"actor": "a-...", "cols": 80, "rows": 24}`; the server answers
-`{"ok": true}` and then relays the guest agent's frames byte for byte:
+`{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}` - the pass
+is the same five-minute bearer the API takes, so the pty is not a second door -
+and the server answers `{"ok": true}`, then relays the guest agent's frames byte
+for byte:
 
     client -> server   {"op": "data", "data_b64": "..."}
                        {"op": "resize", "cols": 100, "rows": 30}
@@ -506,8 +508,14 @@ The other end is `brayness-pty` (vsock port 53, socat fork per connection),
 which runs `/bin/bash` on a `pty.fork()` slave and copies between the master and
 the pipe. `TIOCSWINSZ` on the master is what makes a resize reach the shell. The
 relay never parses a frame, so the protocol has one definition and the browser
-websocket (r5) can speak the same one. `scripts/pty-client.py` drives it from
-the shell; `r3c-verify.sh` uses it for every check.
+websocket (r5) can speak the same one. `host/clients/login.js` is the shell
+client: it mints a pass for one phone, creates an actor when none is named, and
+releases it when the terminal exits (`KEEP=1` idles it instead). One command, no
+browser:
+
+```bash
+node host/clients/login.js --phone +14155550100
+```
 
 That leaves VT state on the client, so r5 picks an engine. Undecided: xterm.js,
 or libghostty-vt if we're feeling nasty - it parses better and renders nothing,
@@ -1037,6 +1045,10 @@ storage` call needing a local crc32c fails. Compare a bundle with the object's
   refusal left 20 GB billing unattached.
 - The host's first serve on a fresh host builds the seed (~36s of boot)
   before the listener answers, so `host-restart.sh` waits three minutes, not one.
+- A host refuses to start without both root-only secret files, 0600 root:
+  `/etc/brayness/model-pass-secret` and `/etc/brayness/host-pass-secret`. The
+  host pass secret is fleet-wide: the sync service mints a pass with the same
+  value from Secret Manager, and any host accepts it at its terminal.
 
 ## Scope
 

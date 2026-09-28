@@ -1,9 +1,9 @@
 /**
- * `brayness login`: Realness sign-in handed back to the terminal.
+ * `brayness login`: a sign-on handed back to the terminal.
  *
  * 1. Listen on 127.0.0.1 at a random port, with a one-time state.
- * 2. Open Realness `/sign-on?cli=<port>&state=<state>` in the default browser.
- * 3. After the person clicks to confirm, Realness posts the refresh token to
+ * 2. Open the sign-on page `/sign-on?cli=<port>&state=<state>` in the browser.
+ * 3. After the person clicks to confirm, the page posts the refresh token to
  *    http://127.0.0.1:<port>/callback with the same state.
  * 4. Keep the refresh token in the macOS keychain; mint hourly tokens from it.
  *
@@ -15,7 +15,7 @@ import { createServer } from "node:http"
 import { promisify } from "node:util"
 
 const SERVICE = "brayness"
-const ACCOUNT = "realness"
+const ACCOUNT = "brayness"
 const WAIT = 5 * 60 * 1000
 
 const page = (message) =>
@@ -63,10 +63,10 @@ export async function refresh({ refresh_token, api_key }, fetcher = fetch) {
 }
 
 /**
- * Wait for Realness to post the sign-in back. Resolves to the saved
+ * Wait for the sign-on page to post the sign-in back. Resolves to the saved
  * `{ refresh_token, api_key }`; rejects on timeout.
  */
-export async function login({ realness, open, store = keychain, fetcher = fetch, wait = WAIT }) {
+export async function login({ sign_on, open, store = keychain, fetcher = fetch, wait = WAIT }) {
   const state = randomBytes(24).toString("base64url")
   let finish
   const received = new Promise((resolve, reject) => {
@@ -86,7 +86,7 @@ export async function login({ realness, open, store = keychain, fetcher = fetch,
     finish.resolve({ refresh_token: form.get("refresh_token"), api_key: form.get("api_key") })
   })
   await new Promise((ready) => server.listen(0, "127.0.0.1", ready))
-  const url = `${realness}/sign-on?cli=${server.address().port}&state=${state}`
+  const url = `${sign_on}/sign-on?cli=${server.address().port}&state=${state}`
   const timer = setTimeout(() => finish.reject(new Error("no sign-in within 5 minutes")), wait)
 
   try {

@@ -18,7 +18,7 @@ project="${PROJECT:-realness-development}"
 bucket="${BUCKET:-$project.appspot.com}"
 region="${REGION:-us-central1}"
 account="brayness-sync@$project.iam.gserviceaccount.com"
-origins="${ORIGINS:-https://realness.local,https://realness.online}"
+origins="${ORIGINS:-https://brayness-sign-on.web.app,http://localhost:5173}"
 identity="${IDENTITY:-$project}"
 stage="$root/dist/sync-deploy"
 
@@ -51,6 +51,7 @@ gcloud run deploy brayness-sync \
   --source "$stage" \
   --service-account "$account" \
   --set-env-vars "^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins" \
+  --set-secrets "HOST_PASS_SECRET=HOST_PASS_SECRET:latest" \
   --min-instances 1 \
   --max-instances 1 \
   --memory 512Mi \

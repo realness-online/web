@@ -85,9 +85,9 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
   const server = createServer(async (request, response) => {
     const url = new URL(request.url, "http://host")
     if (request.method === "GET" && url.pathname === "/handoff") {
-      const origin = process.env.REALNESS_ORIGIN
-      if (!origin) return text(response, 503, "Realness origin is not configured\n")
-      const page = Buffer.from(`<!doctype html><title>Opening Brayness</title><p>Waiting for Realness...</p><script>const trusted=${JSON.stringify(origin)};window.addEventListener('message',async event=>{if(event.origin!==trusted||event.source!==window.opener||event.data?.type!=='brayness-pass')return;const response=await fetch('/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:event.data.pass})});if(response.ok)location.replace('/');else document.querySelector('p').textContent='Sign-in handoff failed'});if(window.opener)window.opener.postMessage({type:'brayness-ready'},trusted);</script>`)
+      const origin = process.env.SIGN_ON_ORIGIN
+      if (!origin) return text(response, 503, "sign-on origin is not configured\n")
+      const page = Buffer.from(`<!doctype html><title>Opening Brayness</title><p>Waiting for sign-in...</p><script>const trusted=${JSON.stringify(origin)};window.addEventListener('message',async event=>{if(event.origin!==trusted||event.source!==window.opener||event.data?.type!=='brayness-pass')return;const response=await fetch('/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:event.data.pass})});if(response.ok)location.replace('/');else document.querySelector('p').textContent='Sign-in handoff failed'});if(window.opener)window.opener.postMessage({type:'brayness-ready'},trusted);</script>`)
       response.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-length": page.length, "cache-control": "no-store", "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'" })
       return response.end(page)
     }
@@ -107,7 +107,7 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
       }
     }
     const phone = auth.owner(request.headers.cookie)
-    if (!phone && (url.pathname === "/ticket" || ["/", "/term", "/index.html"].includes(url.pathname))) return text(response, 401, "sign in through Realness\n")
+    if (!phone && (url.pathname === "/ticket" || ["/", "/term", "/index.html"].includes(url.pathname))) return text(response, 401, "sign in\n")
     if (request.method === "POST" && url.pathname === "/ticket") {
       if (!same_origin(request)) return text(response, 403, "bad origin\n")
       const id = url.searchParams.get("actor")

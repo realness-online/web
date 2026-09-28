@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "development": "realness-development",
+    "production": "realness-online"
+  },
+  "targets": {
+    "realness-development": {
+      "hosting": {
+        "brayness-sign-on": ["brayness-sign-on"]
+      }
+    }
+  }
+}

@@ -19,12 +19,15 @@ mkdir -p "$stage"
 printf '%s\n' "$pi_version" > "$stage/.pi-version"
 
 # The harness is an allowlist. Do not copy personal config, actors, or work/.
+# The published mirror lives inside the sync skill and is excluded by name:
+# it is a filtered copy of this tree, and shipping it would carry its .git.
 include=(AGENTS.md README.md LICENSE package.json bin skills prompts extensions
   .pi/agent/settings.json .pi/agent/models.json
   .pi/agent/npm/package.json)
 [[ ! -d "$root/themes" ]] || include+=(themes)
 tar -C "$root" -cf - --no-mac-metadata \
   --exclude='.DS_Store' --exclude='._*' --exclude='node_modules' \
+  --exclude='skills/brayness-sync/published' \
   "${include[@]}" | tar -C "$stage" -xf -
 # Pi discovers local extensions from its agent directory. Keep the same link
 # as the dev harness without copying the extensions a second time.
@@ -40,30 +43,33 @@ proxy_url="${BRAYNESS_PROXY_URL:-https://brayness-proxy-yelzvhhngq-uc.a.run.app}
   exit 1
 }
 # Packages a shipped harness cannot use cost startup seconds on two vCPUs:
-# the proxy is the only model (oauth), no MCP servers ship (mcp), long work runs
-# as autoresearch loops, never subagents (plans/brayness.md), and usage reports
-# proxy calls.
+# no MCP servers ship (mcp), long work runs as autoresearch loops, never
+# subagents (plans/brayness.md), and usage reports proxy calls. The Claude
+# OAuth adapter does ship: the proxy is the default model, and a person may
+# sign in with a subscription instead.
 node -e '
   const fs = require("fs"), [settings_path, npm_path, models_path, proxy_url] = process.argv.slice(1)
-  const unshipped = ["pi-claude-oauth-adapter", "pi-mcp-adapter", "pi-subagents-j0k3r", "pi-mono-usage"]
+  const unshipped = ["pi-mcp-adapter", "pi-subagents-j0k3r", "pi-mono-usage"]
   const settings = JSON.parse(fs.readFileSync(settings_path))
-  settings.defaultProvider = "realness"
+  settings.defaultProvider = "brayness"
   settings.defaultModel = "inkling"
-  settings.enabledModels = ["realness/inkling"]
+  // No enabledModels: the Mac list must not ship, and Pi cycles every
+  // authenticated model when the pattern list is absent.
+  delete settings.enabledModels
   settings.packages = settings.packages.filter(p => !unshipped.includes(p.replace(/^npm:/, "")))
   fs.writeFileSync(settings_path, JSON.stringify(settings, null, 2) + "\n")
   const npm = JSON.parse(fs.readFileSync(npm_path))
   for (const name of unshipped) delete npm.dependencies[name]
   fs.writeFileSync(npm_path, JSON.stringify(npm, null, 2) + "\n")
   const models = JSON.parse(fs.readFileSync(models_path))
-  models.providers = { realness: {
+  models.providers = { brayness: {
     baseUrl: proxy_url,
     apiKey: "!brayness-model-pass",
     api: "openai-completions",
     compat: { supportsDeveloperRole: false, supportsReasoningEffort: false },
     models: [{
       id: "inkling",
-      name: "Inkling (realness proxy)",
+      name: "Inkling (brayness proxy)",
       input: ["text"],
       contextWindow: 1048576,
       maxTokens: 32768,

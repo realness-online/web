@@ -28,7 +28,7 @@ before(async () => {
     rights: cache,
     project: issuer.project,
     certs: issuer.certs,
-    origins: ["https://realness.online"],
+    origins: ["https://brayness.example"],
     log: (l) => lines.push(l),
   })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))
@@ -172,16 +172,16 @@ test("only allowed sites may call from a browser", async () => {
     call("OPTIONS", `people/${A}/vault/`, {
       headers: { origin, "access-control-request-method": "GET", "access-control-request-headers": "authorization" },
     })
-  const good = await preflight("https://realness.online")
+  const good = await preflight("https://brayness.example")
   assert.equal(good.status, 204)
-  assert.equal(good.headers.get("access-control-allow-origin"), "https://realness.online")
+  assert.equal(good.headers.get("access-control-allow-origin"), "https://brayness.example")
   assert.match(good.headers.get("access-control-allow-headers"), /authorization/)
   const bad = await preflight("https://evil.example")
   assert.equal(bad.status, 403)
   assert.equal(bad.headers.get("access-control-allow-origin"), null)
 
-  const read = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://realness.online" } })
-  assert.equal(read.headers.get("access-control-allow-origin"), "https://realness.online")
+  const read = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://brayness.example" } })
+  assert.equal(read.headers.get("access-control-allow-origin"), "https://brayness.example")
   assert.equal(read.headers.get("access-control-expose-headers"), "etag")
   const stranger_site = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://evil.example" } })
   assert.equal(stranger_site.headers.get("access-control-allow-origin"), null)

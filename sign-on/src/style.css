@@ -1,0 +1,82 @@
+/* Brayness sign-on: one narrow column, system type, OS dark mode. */
+:root {
+  --ink: #14181c;
+  --paper: #f7f6f3;
+  --line: #c9c6bf;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ecedee;
+    --paper: #14181c;
+    --line: #3a3f45;
+  }
+}
+
+body {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-height: 100svh;
+  width: min(22rem, 100% - 2rem);
+  margin: 0 auto;
+  padding-block: 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    1rem/1.5 system-ui,
+    sans-serif;
+
+  #signing-on,
+  #sign-on {
+    display: grid;
+    gap: 1rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  form {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  label {
+    font-size: 0.875rem;
+  }
+
+  input {
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 0.35rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+
+  button {
+    padding: 0.6rem 0.9rem;
+    border: 0;
+    border-radius: 0.35rem;
+    background: var(--ink);
+    color: var(--paper);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  [role="alert"] {
+    color: #c0392b;
+  }
+
+  #captcha {
+    min-height: 1px;
+  }
+}

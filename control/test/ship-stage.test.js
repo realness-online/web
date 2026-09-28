@@ -27,26 +27,40 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   assert.ok(existsSync(join(prompts, 'site.md')))
 
   const settings = JSON.parse(readFileSync(join(ship, '.pi/agent/settings.json')))
-  assert.equal(`${settings.defaultProvider}/${settings.defaultModel}`, 'realness/inkling')
-  assert.deepEqual(settings.enabledModels, ['realness/inkling'])
+  assert.equal(`${settings.defaultProvider}/${settings.defaultModel}`, 'brayness/inkling')
+  // The Mac's model list must not travel, and no pin: other providers stay
+  // open, so Pi cycles every authenticated model.
+  assert.equal(settings.enabledModels, undefined)
   const npm = JSON.parse(readFileSync(join(ship, '.pi/agent/npm/package.json')))
-  for (const name of ['pi-claude-oauth-adapter', 'pi-mcp-adapter', 'pi-subagents-j0k3r', 'pi-mono-usage']) {
+  for (const name of ['pi-mcp-adapter', 'pi-subagents-j0k3r', 'pi-mono-usage']) {
     assert.ok(!settings.packages.includes(`npm:${name}`), name)
     assert.ok(!(name in npm.dependencies), name)
   }
+  // A shipped actor may sign in with a Claude subscription instead of the proxy.
+  assert.ok(settings.packages.includes('npm:pi-claude-oauth-adapter'))
+  assert.ok('pi-claude-oauth-adapter' in npm.dependencies)
   assert.ok(settings.packages.includes('npm:pi-mono-ask-user-question'))
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
-  assert.deepEqual(Object.keys(models.providers), ['realness'])
-  assert.ok(models.providers.realness.models.some(model => model.id === 'inkling'))
-  assert.equal(models.providers.realness.baseUrl, proxy_url)
-  assert.equal(models.providers.realness.apiKey, '!brayness-model-pass')
+  assert.deepEqual(Object.keys(models.providers), ['brayness'])
+  assert.ok(models.providers.brayness.models.some(model => model.id === 'inkling'))
+  assert.equal(models.providers.brayness.baseUrl, proxy_url)
+  assert.equal(models.providers.brayness.apiKey, '!brayness-model-pass')
   assert.ok(!existsSync(join(ship, 'agent-pass')))
   assert.ok(!readFileSync(join(ship, '.pi/agent/models.json'), 'utf8').includes('/etc/brayness/agent-pass'))
 
   assert.match(readFileSync(join(ship, '.pi-version'), 'utf8'), /^\d+\.\d+\.\d+/)
   for (const path of [
     'AGENTS.local.md', '.pi/agent/auth.json', 'work', 'examples', 'packages',
+    'skills/brayness-sync/published',
   ]) assert.ok(!existsSync(join(ship, path)), path)
+})
+
+test('the wrapper lets an installed pi win over the harness copy', () => {
+  // $root/bin last: put first, bin/pi resolves `pi` to itself, skips the guard,
+  // and fetches pi from the registry - a failure offline, a cost every start.
+  const wrapper = readFileSync(join(ship, 'bin/pi'), 'utf8')
+  assert.match(wrapper, /^export PATH="\$\(dirname "\$best_node"\):\$PATH:\$root\/bin"$/m)
+  assert.ok(existsSync(join(ship, 'bin/brayness-model-pass')))
 })
 
 test('the ship tree rejects a malformed proxy URL', () => {

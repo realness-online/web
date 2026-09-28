@@ -36,7 +36,7 @@ test("the link carries a loopback port and a long one-time state", async () => {
   let seen
   const store = memory()
   await login({
-    realness: "https://realness.local",
+    sign_on: "https://sign-on.local",
     store,
     fetcher: google(),
     open: async (url) => {
@@ -44,7 +44,7 @@ test("the link carries a loopback port and a long one-time state", async () => {
       await browser()(url)
     },
   })
-  assert.equal(seen.origin + seen.pathname, "https://realness.local/sign-on")
+  assert.equal(seen.origin + seen.pathname, "https://sign-on.local/sign-on")
   assert.match(seen.searchParams.get("cli"), /^\d{2,5}$/)
   assert.ok(seen.searchParams.get("state").length >= 32)
 })
@@ -52,7 +52,7 @@ test("the link carries a loopback port and a long one-time state", async () => {
 test("a matching sign-in lands in the keychain, refreshed once", async () => {
   const store = memory()
   const calls = []
-  const result = await login({ realness: "https://realness.local", store, fetcher: google(calls), open: browser() })
+  const result = await login({ sign_on: "https://sign-on.local", store, fetcher: google(calls), open: browser() })
   assert.equal(result.id_token, "id-for-r1")
   assert.deepEqual(store.peek(), { refresh_token: "rotated", api_key: "k1" })
   assert.equal(calls.length, 1)
@@ -62,7 +62,7 @@ test("a sign-in with the wrong state is refused and never saved", async () => {
   const store = memory()
   let status
   const attempt = login({
-    realness: "https://realness.local",
+    sign_on: "https://sign-on.local",
     store,
     fetcher: google(),
     wait: 300,
@@ -77,7 +77,7 @@ test("a sign-in with the wrong state is refused and never saved", async () => {
 
 test("only POST /callback answers", async () => {
   await login({
-    realness: "https://realness.local",
+    sign_on: "https://sign-on.local",
     store: memory(),
     fetcher: google(),
     open: async (url) => {
