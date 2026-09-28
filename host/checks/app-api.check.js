@@ -24,7 +24,7 @@ const pass = (phone) => `Bearer ${issue_host_pass({ phone }, secret)}`
 
 const fixtures = mkdtempSync("/opt/fc/actors/mnt/.app-api-check-")
 mkdirSync(join(fixtures, "demo"))
-writeFileSync(join(fixtures, "demo/server.js"), 'process.getBuiltinModule("node:http").createServer((_, res) => res.end("api demo\\n")).listen(process.env.PORT)\n')
+writeFileSync(join(fixtures, "demo/server.js"), 'export default { fetch: () => new Response("api demo\\n") }\n')
 writeFileSync(join(fixtures, "demo/package.json"), '{"name": "demo"}\n')
 mkdirSync(join(fixtures, "page"))
 writeFileSync(join(fixtures, "page/index.html"), "<p>site</p>\n")
@@ -50,7 +50,7 @@ try {
   const started = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/brayness/work/demo" })
   assert.equal(started.status, 201, JSON.stringify(started.body))
   id = started.body.id
-  assert.equal(started.body.kind, "node")
+  assert.equal(started.body.kind, "handler")
   console.log(`  ok   POST starts ${id} at ${started.body.address}:${started.body.port}`)
 
   const reply = await (await fetch(`http://${started.body.address}:${started.body.port}/`)).text()

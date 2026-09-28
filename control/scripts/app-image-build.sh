@@ -140,7 +140,12 @@ chroot "$TREE" dpkg-query -W systemd iproute2 ca-certificates > /dev/null \
 # ------------------------------------------------------------------- enable it
 log "enabling units"
 # --root writes symlinks into the tree; no running systemd required.
-systemctl --root="$TREE" enable serial-getty@ttyS0.service brayness-net.service brayness-app.service
+systemctl --root="$TREE" enable brayness-net.service brayness-app.service
+# No login anywhere: no getty on the serial console or a virtual terminal, and
+# no ext4 scrub; each is memory and a surface an app never needs. The serial
+# log still carries the boot and the app's own output.
+systemctl --root="$TREE" mask getty.target getty@.service serial-getty@.service getty-static.service \
+  e2scrub_reap.service e2scrub_all.timer e2scrub_all.service
 
 # Never a password prompt, and no sshd: the app has no login.
 chroot "$TREE" passwd -l root > /dev/null 2>&1 || true

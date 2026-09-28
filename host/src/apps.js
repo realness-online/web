@@ -23,14 +23,13 @@ const CODE = "code.ext4"
 const NET = "172.17"
 const ID = /^app-[0-9a-f]{12}$/
 
-// u2b caps, sized by u2e (app-memory-floor.sh): the guest OS takes ~54 MiB, and
-// node and python need 64 to serve, a static binary 48. Each cap sits above its
-// floor with room for the app. A store's `mib` option overrides both. The
-// writable disk cap is the root copy's size: SIZE in app-image-build.sh (1G).
-export const CAPS = { vcpus: 1, mib: { runtime: 96, binary: 64 } }
+// Caps, sized by u2n (app-memory-floor.sh): a handler serves at 64 MiB with
+// ~6 left; at 96 it has ~37 for its own work. A store's `mib` option overrides.
+// The writable disk cap is the root copy's size: SIZE in app-image-build.sh.
+export const CAPS = { vcpus: 1, mib: 96 }
 
-/** Memory for an app: the store's override, else by whether it needs a runtime. */
-export const mibFor = (needs, override) => override ?? (needs.runtime ? CAPS.mib.runtime : CAPS.mib.binary)
+/** Memory for an app: the store's override, else the cap. */
+export const mibFor = (needs, override) => override ?? CAPS.mib
 
 // u5. Closed-port sweeps before a restart; restarts per window before `crashed`.
 const MISSES = 3

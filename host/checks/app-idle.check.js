@@ -26,7 +26,7 @@ const via = (app, path, cookie) => new Promise((done, fail) => request({ host: "
   res.on("data", (chunk) => (body += chunk)).on("end", () => done({ status: res.statusCode, body, headers: res.headers }))
 }).on("error", fail).end())
 
-const server = 'process.getBuiltinModule("node:http").createServer((_, res) => res.end("from the work folder\\n")).listen(process.env.PORT)\n'
+const server = 'export default { fetch: () => new Response("from the work folder\\n") }\n'
 let actor
 let app
 try {

@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { after, test } from "node:test"
 import assert from "node:assert/strict"
 import { fileURLToPath } from "node:url"
-import { APP_PORT, InferError, infer } from "../src/infer.js"
+import { APP_PORT, InferError, START, infer } from "../src/infer.js"
 
 const base = fileURLToPath(new URL("../../../../artifacts/brayness/", import.meta.url))
 mkdirSync(base, { recursive: true })
@@ -18,62 +18,81 @@ function app(files) {
   return dir
 }
 
-test("package.json with a plain node start script", () => {
-  const dir = app({ "package.json": JSON.stringify({ scripts: { start: "node src/server.js" } }) })
-  assert.deepEqual(infer(dir), { kind: "node", runtime: "node", start: ["node", "src/server.js"], port: APP_PORT })
+const HANDLER = 'export default { async fetch(request) { return new Response("hi") } }\n'
+const ELF = Buffer.concat([Buffer.from([0x7f, 0x45, 0x4c, 0x46]), Buffer.alloc(60)])
+
+test("server.js with a default export is a handler on our server", () => {
+  assert.deepEqual(infer(app({ "server.js": HANDLER })), { kind: "handler", runtime: "node", start: START, port: APP_PORT })
 })
 
-test("package.json falls back to main, then a known entry file", () => {
-  assert.deepEqual(infer(app({ "package.json": JSON.stringify({ main: "api.js" }), "api.js": "" })).start, ["node", "api.js"])
-  assert.deepEqual(infer(app({ "package.json": "{}", "server.js": "" })).start, ["node", "server.js"])
+test("a handler may sit beside its static files and a plain package.json", () => {
+  const dir = app({ "server.js": HANDLER, "index.html": "<p>hi</p>", "package.json": '{"type": "module"}' })
+  assert.equal(infer(dir).kind, "handler")
 })
 
-test("a start script that is not plain node is refused, not guessed", () => {
-  const dir = app({ "package.json": JSON.stringify({ scripts: { start: "next start" } }) })
-  assert.throws(() => infer(dir), InferError)
+test("index.html alone is a site: no VM, no port", () => {
+  assert.deepEqual(infer(app({ "index.html": "<p>hi</p>" })), { kind: "site", runtime: null, start: null, port: null })
 })
 
-test("package.json with no server is build tooling; the site wins", () => {
-  const dir = app({ "package.json": JSON.stringify({ scripts: { build: "vite build" } }), "index.html": "" })
-  assert.deepEqual(infer(dir), { kind: "site", runtime: null, start: null, port: null })
+test("server.js without a default export is refused", () => {
+  const dir = app({ "server.js": 'process.getBuiltinModule("node:http").createServer().listen(8080)\n' })
+  assert.throws(() => infer(dir), (error) => error instanceof InferError && /no default export/.test(error.message))
 })
 
-test("python entry file", () => {
-  assert.deepEqual(infer(app({ "app.py": "", "requirements.txt": "" })), { kind: "python", runtime: "python", start: ["python3", "app.py"], port: APP_PORT })
+test("other stacks are refused by name, pointing at the handler", () => {
+  const cases = [
+    [{ Procfile: "web: node server.js\n", "server.js": HANDLER }, /a Procfile/],
+    [{ "main.py": "print(1)\n" }, /python \(main.py\)/],
+    [{ "app.py": "", "server.js": HANDLER }, /python \(app.py\)/],
+  ]
+  for (const [files, reason] of cases) {
+    assert.throws(() => infer(app(files)), (error) => error instanceof InferError && reason.test(error.message) && /fetch handler/.test(error.message))
+  }
 })
 
-test("a python server beside a package.json that only builds assets", () => {
-  const dir = app({ "package.json": JSON.stringify({ scripts: { build: "vite build" } }), "main.py": "" })
-  assert.equal(infer(dir).runtime, "python")
-})
-
-test("Procfile wins and names the runtime by its command", () => {
-  const dir = app({ Procfile: "web: python3 serve.py\n", "package.json": "{}", "server.js": "" })
-  assert.deepEqual(infer(dir).start, ["python3", "serve.py"])
-  assert.equal(infer(dir).runtime, "python")
-})
-
-test("Procfile commands that need a shell are refused", () => {
-  assert.throws(() => infer(app({ Procfile: "web: node a.js && node b.js" })), /needs a shell/)
-})
-
-test("Procfile with an unknown runtime is refused", () => {
-  assert.throws(() => infer(app({ Procfile: "web: ruby app.rb" })), /known runtimes/)
-})
-
-test("one ELF executable runs with no runtime", () => {
-  // The magic is all infer reads; a real binary would be Mach-O on the Mac.
-  const dir = app({ server: Buffer.from([0x7f, 0x45, 0x4c, 0x46, 2, 1, 1, 0]) })
+test("an executable is refused", () => {
+  const dir = app({ "index.html": "" })
+  writeFileSync(join(dir, "server"), ELF)
   chmodSync(join(dir, "server"), 0o755)
-  assert.deepEqual(infer(dir), { kind: "binary", runtime: null, start: ["./server"], port: APP_PORT })
+  assert.throws(() => infer(dir), /an executable \(server\)/)
 })
 
-test("an executable script is not a binary", () => {
-  const dir = app({ "run.sh": "#!/bin/sh\n", "index.html": "" })
-  chmodSync(join(dir, "run.sh"), 0o755)
-  assert.equal(infer(dir).kind, "site")
+test("nothing to run and nothing to serve is refused", () => {
+  assert.throws(() => infer(app({ "README.md": "hi" })), /no server.js and no index.html/)
 })
 
-test("nothing to run and nothing to serve", () => {
-  assert.throws(() => infer(app({ "README.md": "" })), /no server found/)
+// Built by concatenation: host files may not contain the literal (boundary test).
+const REQ = "req" + "uire"
+
+test("standard library only: node: built-ins and relative files pass", () => {
+  const dir = app({
+    "server.js": 'import { createHash } from "node:crypto"\nimport { page } from "./lib/page.js"\nexport default { fetch: () => new Response(page()) }\n',
+    "package.json": '{"type": "module"}',
+  })
+  mkdirSync(join(dir, "lib"))
+  writeFileSync(join(dir, "lib/page.js"), 'export * from "../util.js"\nexport const page = () => "hi"\n')
+  assert.equal(infer(dir).kind, "handler")
+})
+
+test("standard library only: each way past it is named", () => {
+  const cases = [
+    ['import express from "express"\n', /imports 'express'/],
+    ['import fs from "fs"\n', /imports 'fs'/],
+    ['const h = await import("hono")\n', /imports 'hono'/],
+    [`const x = ${REQ}("lodash")\n`, /imports 'lodash'/],
+    ['export { a } from "left-pad"\n', /imports 'left-pad'/],
+    ['import "/etc/passwd"\n', /imports '\/etc\/passwd'/],
+  ]
+  for (const [line, reason] of cases) {
+    const dir = app({ "server.js": `${line}export default { fetch: () => new Response("x") }\n` })
+    assert.throws(() => infer(dir), (error) => error instanceof InferError && /standard library only/.test(error.message) && reason.test(error.message), line)
+  }
+})
+
+test("standard library only: a modules folder and declared dependencies are refused", () => {
+  const withModules = app({ "server.js": HANDLER })
+  mkdirSync(join(withModules, ["node", "modules"].join("_"), "x"), { recursive: true })
+  assert.throws(() => infer(withModules), /_modules\/: apps take no dependencies/)
+  const declared = app({ "server.js": HANDLER, "package.json": JSON.stringify({ dependencies: { hono: "4" }, devDependencies: { vitest: "1" } }) })
+  assert.throws(() => infer(declared), (error) => /dependencies: hono/.test(error.message) && /devDependencies: vitest/.test(error.message))
 })

@@ -1,45 +1,27 @@
 #!/usr/bin/env bash
-# Runs inside the fc-local Lima guest. u2e: the smallest memory each kind of
-# app boots and serves in. For node, python, and a static binary, boot at each
-# size from MIBS, send REQUESTS requests, and record whether it answered, what
-# the guest had left (MemAvailable), and whether the serial log shows an OOM.
+# Runs inside the fc-local Lima guest. u2e, rerun by u2n for handlers: the
+# smallest memory a fetch handler boots and serves in. Boot at each size in
+# MIBS, send REQUESTS requests, and record what the guest had left.
 #
 #   sudo bash /mnt/fc/control/scripts/app-memory-floor.sh
 #   sudo MIBS="64 48" bash /mnt/fc/control/scripts/app-memory-floor.sh
 #
-# Writes $RUN/floor.tsv. The cap in host/src/apps.js should sit above the
-# largest floor, with the headroom the table shows.
+# Writes $RUN/floor.tsv. CAPS.mib in host/src/apps.js sits above the floor.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 RUN="${RUNS_DIR:-$REPO/dist}/app-memory-floor-$(date -u +%Y%m%dT%H%M%SZ)"
-MIBS="${MIBS:-128 96 64 48 40 32 24}"
+MIBS="${MIBS:-128 96 80 64 56 48 40}"
 REQUESTS="${REQUESTS:-50}"
 APPS="$RUN/apps"
-mkdir -p "$APPS/node" "$APPS/python" "$APPS/binary/www"
+mkdir -p "$APPS/handler"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 
-# Each app answers with the guest's MemAvailable in KiB.
-cat > "$APPS/node/server.js" <<'JS'
-const fs = require("node:fs")
-require("node:http").createServer((_, res) => res.end(`${/MemAvailable:\s+(\d+)/.exec(fs.readFileSync("/proc/meminfo", "utf8"))[1]}\n`)).listen(process.env.PORT)
-JS
-echo '{"name": "floor"}' > "$APPS/node/package.json"
-cat > "$APPS/python/main.py" <<'PY'
-import http.server, os, re
-class H(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        kib = re.search(r"MemAvailable:\s+(\d+)", open("/proc/meminfo").read()).group(1)
-        self.send_response(200); self.end_headers(); self.wfile.write(f"{kib}\n".encode())
-    def log_message(self, *a): pass
-http.server.HTTPServer(("", int(os.environ["PORT"])), H).serve_forever()
-PY
-# busybox httpd serves a file, so MemAvailable is not in its reply; the answer
-# alone is the measure.
-cp /bin/busybox "$APPS/binary/busybox"
-echo ok > "$APPS/binary/www/index.html"
-echo "web: ./busybox httpd -f -p 8080 -h www" > "$APPS/binary/Procfile"
+# The handler answers with free memory in KiB. os.freemem() is libuv reading
+# MemAvailable, so it works under --permission, which denies /proc to fs.
+echo 'import { freemem } from "node:os"
+export default { fetch: () => new Response(`${Math.round(freemem() / 1024)}`) }' > "$APPS/handler/server.js"
 
 # One boot at one size: prints "ok <MemAvailable or ->" or "fail <reason>".
 measure() {  # measure <dir> <mib>
@@ -73,7 +55,7 @@ measure() {  # measure <dir> <mib>
 }
 
 printf 'kind\tmib\tresult\tmem_available_kib\n' > "$RUN/floor.tsv"
-for kind in node python binary; do
+for kind in handler; do
   for mib in $MIBS; do
     read -r result avail <<< "$(measure "$APPS/$kind" "$mib")"
     printf '%s\t%s\t%s\t%s\n' "$kind" "$mib" "$result" "${avail:--}" | tee -a "$RUN/floor.tsv"

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Runs inside the fc-local Lima guest. u2c's check: a node app, a python app,
-# and a static binary each boot in their own VM and answer HTTP on 8080 from
-# their own address; a plain site gets no VM.
+# Runs inside the fc-local Lima guest. u2c's check, as u2n left it: two
+# handlers each boot in their own VM and answer on 8080 from their own address,
+# as a non-root user; a plain site gets no VM; every other stack is refused
+# with its reason before anything boots.
 #
 #   sudo bash /mnt/fc/control/scripts/app-boot-check.sh
 #
@@ -23,49 +24,41 @@ iptables -S INPUT | grep -q -- "-i fc-app+ -j BRAYNESS-APP-IN" \
   || { echo "no app rules: run 'sudo bash host/scripts/net-up.sh' first" >&2; exit 1; }
 
 # ------------------------------------------------------------------ fixtures
-# Each answers with its own name, so a reply cannot come from the wrong VM.
-mkdir -p "$APPS/node" "$APPS/python" "$APPS/binary/www" "$APPS/site"
-cat > "$APPS/node/server.js" <<'JS'
-require("node:http").createServer((_, res) => res.end(`node ${process.getuid()}\n`)).listen(process.env.PORT)
-JS
-echo '{"name": "check"}' > "$APPS/node/package.json"
-cat > "$APPS/python/main.py" <<'PY'
-import http.server, os
-class H(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(f"python {os.getuid()}\n".encode())
-http.server.HTTPServer(("", int(os.environ["PORT"])), H).serve_forever()
-PY
-cp /bin/busybox "$APPS/binary/busybox"
-echo "binary" > "$APPS/binary/www/index.html"
-echo "web: ./busybox httpd -f -p 8080 -h www" > "$APPS/binary/Procfile"
+# Each handler answers with its own name and uid, so a reply cannot come from
+# the wrong VM, and root would show.
+for name in one two; do
+  mkdir -p "$APPS/$name"
+  echo "export default { fetch: () => new Response(\`$name \${process.getuid()}\`) }" > "$APPS/$name/server.js"
+done
+mkdir -p "$APPS/site" "$APPS/python" "$APPS/binary" "$APPS/deps"
 echo "<p>site</p>" > "$APPS/site/index.html"
+echo "print(1)" > "$APPS/python/main.py"
+cp /bin/busybox "$APPS/binary/busybox"
+echo 'import { Hono } from "hono"
+export default new Hono()' > "$APPS/deps/server.js"
 
 # -------------------------------------------------------------------- checks
-started=()
+: > "$RUN/started"
 cleanup() {
-  for id in "${started[@]}"; do node "$REPO/host/app.js" stop "$id" > /dev/null 2>&1 || true; done
+  while read -r id; do node "$REPO/host/app.js" stop "$id" > /dev/null 2>&1 || true; done < "$RUN/started"
 }
 trap cleanup EXIT
 
-for name in node python binary; do
-  if ! record="$(node "$REPO/host/app.js" start "$APPS/$name" 2> "$RUN/$name.err" | tail -n 1)" || ! jq -e .id <<< "$record" > /dev/null 2>&1; then
+for name in one two; do
+  record="$(node "$REPO/host/app.js" start "$APPS/$name" 2> "$RUN/$name.err" | tail -n 1)" || true
+  if ! jq -e .id <<< "$record" > /dev/null 2>&1; then
     bad "$name: did not start ($(tail -3 "$RUN/$name.err" | tr '\n' ' '))"
     continue
   fi
   echo "$record" > "$RUN/$name.json"
-  id="$(jq -r .id <<< "$record")"
+  jq -r .id <<< "$record" >> "$RUN/started"
   address="$(jq -r .address <<< "$record")"
-  started+=("$id")
   reply="$(curl -fsS --max-time 5 "http://$address:8080/" || true)"
-  case "$name" in
-    binary) [ "$reply" = binary ] && ok "binary answers from $address" || bad "binary replied '$reply'" ;;
-    *) if [[ "$reply" == "$name "* ]] && [ "${reply#* }" != 0 ]; then
-         ok "$name answers from $address as uid ${reply#* }"
-       else
-         bad "$name replied '$reply' (want '$name <non-root uid>')"
-       fi ;;
-  esac
+  if [[ "$reply" == "$name "* ]] && [ "${reply#* }" != 0 ]; then
+    ok "$name answers from $address as uid ${reply#* }"
+  else
+    bad "$name replied '$reply' (want '$name <non-root uid>')"
+  fi
 done
 
 site="$(node "$REPO/host/app.js" start "$APPS/site" | tail -n 1)"
@@ -75,9 +68,19 @@ else
   bad "site: $site"
 fi
 
-# Distinct addresses, each on its own TAP.
-if [ "${#started[@]}" = 3 ] && [ "$(cat "$RUN"/*.json | jq -r .address | sort -u | wc -l)" = 3 ]; then
-  ok "three apps, three addresses"
+# Refused before any VM: the message names the stack and the way forward.
+for name in python binary deps; do
+  if node "$REPO/host/app.js" start "$APPS/$name" > "$RUN/$name.out" 2>&1; then
+    bad "$name started"
+  elif grep -qE "fetch handler|standard library only" "$RUN/$name.out"; then
+    ok "$name refused: $(grep -oE "python \(main.py\)|an executable \(busybox\)|imports 'hono'" "$RUN/$name.out" | head -1)"
+  else
+    bad "$name failed without a reason: $(tail -2 "$RUN/$name.out" | tr '\n' ' ')"
+  fi
+done
+
+if [ "$(cat "$RUN"/one.json "$RUN"/two.json 2> /dev/null | jq -r .address | sort -u | wc -l)" = 2 ]; then
+  ok "two apps, two addresses"
 else
   bad "apps did not get distinct addresses"
 fi

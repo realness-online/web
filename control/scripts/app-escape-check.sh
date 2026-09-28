@@ -38,16 +38,14 @@ start() {  # start <dir>: prints the record; the id is remembered for cleanup
 }
 
 # ------------------------------------------------------------------ the apps
-mkdir -p "$RUN/sibling/www"
-cp /bin/busybox "$RUN/sibling/busybox"
-echo sibling > "$RUN/sibling/www/index.html"
-echo "web: ./busybox httpd -f -p 8080 -h www" > "$RUN/sibling/Procfile"
+mkdir -p "$RUN/sibling"
+echo 'export default { fetch: () => new Response("sibling") }' > "$RUN/sibling/server.js"
 sibling="$(start "$RUN/sibling")"
 
 # The host's live listeners and addresses, for the probe to aim at. Not the app
 # TAPs, and not loopback: inside the VM 127.0.0.1 is the app's own.
 mkdir -p "$RUN/probe"
-cp "$REPO/control/escape-probe/main.py" "$RUN/probe/"
+cp "$REPO/control/escape-probe/server.js" "$RUN/probe/"
 ports="$(ss -ltnH | awk '{print $4}' | sed 's/.*://' | sort -un | jq -R 'tonumber' | jq -s .)"
 addresses="$(ip -4 -o addr show | awk '$2 !~ /^(fc-app|lo$)/ {split($4, a, "/"); print a[1]}' | jq -R . | jq -s .)"
 # Internet targets the host itself reaches, so a refusal is the app's rules.
@@ -95,6 +93,16 @@ if curl -sS --max-time 3 "http://$address:8081/" > /dev/null 2>&1; then
 else
   ok "only 8080: the app's side port 8081 is unreachable"
 fi
+# The VM itself, from Firecracker: no vsock device, and exactly its three
+# drives, the code and runtime read-only.
+sock="/opt/fc/actors/mnt/apps/$(jq -r .id <<< "$probe")/api.sock"
+config="$(curl -sS --unix-socket "$sock" http://fc/vm/config)"
+echo "$config" > "$RUN/vm-config.json"
+[ "$(jq -r '.vsock // "none"' <<< "$config")" = none ] && ok "no vsock device (Firecracker vm/config)" || bad "vsock device attached"
+drives="$(jq -r '[.drives[] | "\(.drive_id):\(.is_read_only)"] | sort | join(" ")' <<< "$config")"
+[ "$drives" = "code:true rootfs:false runtime:true" ] && ok "three drives; code and runtime read-only ($drives)" || bad "drives: $drives"
+[ "$(jq -r '.["machine-config"].mem_size_mib' <<< "$config")" = "$(jq -r .mib <<< "$probe")" ] \
+  && ok "memory cap applied: $(jq -r .mib <<< "$probe") MiB" || bad "memory cap not applied"
 # An actor cannot reach an app: actor egress drops all of 172.16.0.0/12.
 if iptables -C BRAYNESS-OUT -d 172.16.0.0/12 -j DROP 2> /dev/null; then
   ok "actor to app dropped (BRAYNESS-OUT -d 172.16.0.0/12)"

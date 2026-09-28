@@ -101,14 +101,14 @@ trap cleanup EXIT
 
 boot_waited=0
 while [ "$boot_waited" -lt 60 ]; do
-  if grep -qE "Reached target .*(Multi-User|Graphical)|login:" "$RUN/serial.log" 2> /dev/null; then break; fi
+  if grep -qE "Reached target .*(Multi-User|Graphical)" "$RUN/serial.log" 2> /dev/null; then break; fi
   sleep 1
   boot_waited=$((boot_waited + 1))
 done
 
 # grep's own exit status cannot be read directly: under set -e a 1 ends the
 # script before the counter sees it, so each is wrapped in an if.
-if grep -qE "Reached target .*(Multi-User|Graphical)|login:" "$RUN/serial.log"; then
+if grep -qE "Reached target .*(Multi-User|Graphical)" "$RUN/serial.log"; then
   ok "guest reached userspace"
 else
   bad "guest reached userspace"
@@ -134,7 +134,7 @@ fi
 
 # The image must not have started anything the actor template has. A failed
 # unit is still a unit, so absence is proven by no mention at all.
-for unit in brayness-vsock brayness-pty; do
+for unit in brayness-vsock brayness-pty getty@ serial-getty getty.target e2scrub; do
   if grep -q "$unit" "$RUN/serial.log"; then bad "unit present: $unit"; else ok "no $unit"; fi
 done
 

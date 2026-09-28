@@ -1,26 +1,23 @@
 #!/usr/bin/env bash
-# Runs where the microVM runs. Builds one read-only disk per language runtime:
+# Runs where the microVM runs. Builds the one runtime disk, read-only:
 #
-#   /opt/fc/runtimes/node.ext4     node, npm's CLI removed
-#   /opt/fc/runtimes/python.ext4   cpython, relocatable (python-build-standalone)
+#   /opt/fc/runtimes/node.ext4     node without npm, and our server
 #
 #   sudo bash /mnt/fc/control/scripts/runtime-build.sh
 #
-# An app VM gets a runtime only when its files ask for one (host/src/infer.js),
-# as a second drive mounted read-only at /opt/runtime. The base app image has
-# neither, so an app that needs no language has no interpreter to hand over.
-#
-# Each disk's root is the runtime's own prefix (bin/, lib/), so inside the VM
-# the interpreter is /opt/runtime/bin/node or /opt/runtime/bin/python3. Both are
-# self-contained: nothing links against the base image beyond glibc.
+# Brayness manages the server: every app is a fetch handler on Node, so every
+# app VM gets this disk at /opt/runtime and nothing else. The base image has no
+# interpreter of its own. The disk's root is node's prefix (bin/, lib/), plus
+# brayness/serve.js (host/guest/brayness-serve.js); nothing links against the
+# base image beyond glibc.
 set -euo pipefail
 
 ROOT="${ROOT:-/opt/fc}"
 OUT="${OUT:-$ROOT/runtimes}"
 
 case "$(uname -m)" in
-  x86_64) NODE_ARCH=x64; PY_ARCH=x86_64 ;;
-  aarch64 | arm64) NODE_ARCH=arm64; PY_ARCH=aarch64 ;;
+  x86_64) NODE_ARCH=x64 ;;
+  aarch64 | arm64) NODE_ARCH=arm64 ;;
   *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
 esac
 
@@ -28,9 +25,7 @@ NODE_VERSION="v24.21.0"
 NODE="node-$NODE_VERSION-linux-$NODE_ARCH.tar.xz"
 NODE_URL="https://nodejs.org/dist/$NODE_VERSION"
 
-PY_RELEASE="20260924"
-PY="cpython-3.12.14+$PY_RELEASE-$PY_ARCH-unknown-linux-gnu-install_only_stripped.tar.gz"
-PY_URL="https://github.com/astral-sh/python-build-standalone/releases/download/$PY_RELEASE"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 log() { printf '\n==> %s\n' "$*"; }
@@ -44,8 +39,6 @@ fetch() {  # fetch <url-dir> <file>; the file name may carry a '+', which URLs s
 
 fetch "$NODE_URL" "$NODE"
 (cd "$ROOT" && curl -fsSL "$NODE_URL/SHASUMS256.txt" | grep " $NODE\$" | sha256sum -c -)
-fetch "$PY_URL" "$PY"
-(cd "$ROOT" && curl -fsSL "$PY_URL/SHA256SUMS" | grep " $PY\$" | sha256sum -c -)
 
 # disk <name> <tree>: an ext4 sized to the tree plus a quarter, then e2fsck'd.
 disk() {
@@ -64,23 +57,17 @@ trap 'rm -rf "$work"' EXIT
 log "node $NODE_VERSION"
 mkdir -p "$work/node"
 tar xJf "$ROOT/$NODE" -C "$work/node" --strip-components=1
-# A server needs node, not a package manager: installs happen in the actor,
-# where the network is. npm and corepack would be one more tool for an intruder.
+# Apps take no dependencies, so no package manager: npm and corepack would
+# only be one more tool for an intruder.
 rm -rf "$work/node/lib/node_modules/npm" "$work/node/lib/node_modules/corepack" \
   "$work/node/bin/npm" "$work/node/bin/npx" "$work/node/bin/corepack" \
   "$work/node/include" "$work/node/share"
 "$work/node/bin/node" --version
+install -D -m 0644 "$REPO/host/guest/brayness-serve.js" "$work/node/brayness/serve.js"
+"$work/node/bin/node" --check "$work/node/brayness/serve.js"
 disk node "$work/node"
 
-log "python 3.12.14 ($PY_RELEASE)"
-mkdir -p "$work/python"
-tar xzf "$ROOT/$PY" -C "$work/python" --strip-components=1
-# pip for the same reason as npm; tests and idle for size.
-rm -rf "$work/python/bin/pip"* "$work/python/lib/python3.12/site-packages/pip" \
-  "$work/python/lib/python3.12/ensurepip" "$work/python/lib/python3.12/test" \
-  "$work/python/lib/python3.12/idlelib" "$work/python/include" "$work/python/share"
-"$work/python/bin/python3" -c 'import json, ssl, http.server; print("python", __import__("sys").version.split()[0])'
-disk python "$work/python"
+rm -f "$OUT/python.ext4"  # retired: apps are Node handlers
 
 log "done"
 ls -lh "$OUT"

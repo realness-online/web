@@ -16,10 +16,8 @@ test("argv is one argument per line, and refuses what would split", () => {
   assert.throws(() => argvText(["node", ""]), BadRequest)
 })
 
-test("memory sits above the measured floor, by kind", () => {
+test("memory sits above the measured handler floor", () => {
   assert.equal(CAPS.vcpus, 1)
   assert.ok(mibFor({ runtime: "node" }) > 64)
-  assert.ok(mibFor({ runtime: null }) > 48)
-  assert.ok(mibFor({ runtime: "python" }) > mibFor({ runtime: null }))
   assert.equal(mibFor({ runtime: "node" }, 40), 40)
 })

@@ -38,18 +38,21 @@ const app = join(fixtures, "app")
 mkdirSync(app)
 writeFileSync(join(app, "package.json"), '{"name": "supervised"}\n')
 writeFileSync(join(app, "server.js"), `
-const boot = process.getBuiltinModule("node:crypto").randomUUID()
+const boot = crypto.randomUUID()
 const hog = []
-process.getBuiltinModule("node:http").createServer((req, res) => {
-  if (req.url === "/exit") { res.end("bye\\n"); setTimeout(() => process.exit(1), 50); return }
-  if (req.url === "/oom") { res.end("eating\\n"); setInterval(() => hog.push(Buffer.alloc(16 << 20, 1)), 10); return }
-  res.end(boot + "\\n")
-}).listen(process.env.PORT)
+export default {
+  fetch(request) {
+    const path = new URL(request.url).pathname
+    if (path === "/exit") { setTimeout(() => process.exit(1), 50); return new Response("bye\\n") }
+    if (path === "/oom") { setInterval(() => hog.push(Buffer.alloc(16 << 20, 1)), 10); return new Response("eating\\n") }
+    return new Response(boot + "\\n")
+  },
+}
 `)
 const loop = join(fixtures, "loop")
 mkdirSync(loop)
 writeFileSync(join(loop, "package.json"), '{"name": "loop"}\n')
-writeFileSync(join(loop, "server.js"), 'process.getBuiltinModule("node:http").createServer((_, res) => res.end("x\\n")).listen(process.env.PORT); setTimeout(() => process.exit(1), 1500)\n')
+writeFileSync(join(loop, "server.js"), 'setTimeout(() => process.exit(1), 1500)\nexport default { fetch: () => new Response("x\\n") }\n')
 
 const ids = []
 try {

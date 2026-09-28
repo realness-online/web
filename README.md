@@ -323,6 +323,10 @@ runbook.
 - a2 - the host takes that tree out of the running actor and serves it at
   `/s/<id>/`, a real browser loads it and draws the diagram, and the copy dies
   with the actor - 17/17 plus the browser
+- u2 - a `fetch` handler runs in its own stripped VM: one `app-check.sh` run
+  from a fresh image, 12/12 steps - image 17/17, boot 7/7, escape 21/21, the
+  `CONTROL=1` run seeing 3 holes, 96 and 64 MiB serving (37 and 6 MiB left),
+  and the API, idle, and supervise checks green
 
 ## Boot (f1)
 
@@ -825,40 +829,56 @@ In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 1808
 to the API port. Nothing is reachable from outside the machine yet; that is the
 open 8090 question, and h1/h2. `scripts/a2-verify.sh` is 17 checks.
 
-## An app runs in its own VM (u2a-u2e)
+## An app runs in its own VM (u2)
 
-A published server is one Firecracker microVM from `/opt/fc/app.ext4`, a
-sibling of the actor template with nothing an app does not need. `SECURITY.md`
-lists each absence and the check that proves it.
+We manage the server. An author writes one handler, standard library only:
+
+```js
+// server.js
+export default {
+  async fetch(request) {
+    return new Response("hi");
+  },
+};
+```
+
+Our server (`host/guest/brayness-serve.js`, on the node runtime disk) turns
+HTTP on 8080 into a web `Request` and streams the `Response` back. Node runs it
+under `--permission`: it reads only the handler's files and itself. A plain
+`index.html` is a site: files, no VM. Anything else (a Procfile, python, a
+binary, a dependency) is refused at publish with its reason. Frameworks are an
+export (ex1): the same handler runs on Workers, Deno, Bun, or Hono.
+
+Each handler is one Firecracker microVM from `/opt/fc/app.ext4`, with nothing an
+app does not need. `SECURITY.md` lists each absence and the check that proves it.
 
 ```bash
 sudo bash /mnt/fc/control/scripts/app-image-build.sh      # the image
-sudo bash /mnt/fc/control/scripts/runtime-build.sh        # read-only runtime disks
+sudo bash /mnt/fc/control/scripts/runtime-build.sh        # node + our server, read-only
 sudo bash /mnt/fc/host/scripts/net-up.sh                  # fc-app rules
-sudo bash /mnt/fc/control/scripts/app-image-verify.sh     # 13 checks
-sudo bash /mnt/fc/control/scripts/app-boot-check.sh       # 5 checks
-sudo bash /mnt/fc/control/scripts/app-escape-check.sh     # 20 refusals
+sudo bash /mnt/fc/control/scripts/app-image-verify.sh     # 17 checks
+sudo bash /mnt/fc/control/scripts/app-boot-check.sh       # 7 checks
+sudo bash /mnt/fc/control/scripts/app-escape-check.sh     # 21 refusals
 sudo CONTROL=1 bash /mnt/fc/control/scripts/app-escape-check.sh  # holes seen
-sudo bash /mnt/fc/control/scripts/app-memory-floor.sh     # floor per kind
+sudo bash /mnt/fc/control/scripts/app-memory-floor.sh     # the floor
+sudo bash /mnt/fc/control/scripts/app-check.sh            # all of it: 12 steps
 ```
 
-- **Disks.** A reflink copy of the image is the only writable disk. The app's
-  files are a read-only ext4 labelled `app-code`, with its start command beside
-  them; the runtime, when there is one, is a second read-only disk. The guest
-  mounts both by label, so attach order does not matter.
-- **Start.** `brayness-app.service` mounts as root, then runs the command as
-  `app` with `NoNewPrivileges`. No shell parses it; `brayness-app-start` execs
-  argv. No code disk (a bare image boot) skips the unit.
+`app-check.sh` builds, verifies, and probes in one run, each step to its own
+log under `dist/app-check-<time>/`. Its `escape-ctrl` step passes by failing.
+
+- **Disks.** A reflink copy of the image is the only writable disk. The
+  handler's files are a read-only ext4 labelled `app-code`, with the start
+  command beside them; the node disk, labelled `rt-node`, is read-only too. The
+  guest mounts both by label, so attach order does not matter.
+- **Start.** `brayness-app.service` mounts as root, then runs our server as
+  `app` with `NoNewPrivileges`. No shell parses the command. No getty, no login.
 - **Network.** App TAPs are `fc-appN` on `172.17.N.0/30`; the MAC carries the
   address. The host may open 8080 and gets replies only from it. Nothing an app
   starts leaves, and nothing is routed to one. No vsock device is attached.
-- **Memory (u2e).** The guest OS takes about 54 MiB before any app. Node and
-  python served at 64 MiB, a static busybox at 48; below that the boot thrashes
+- **Memory.** The guest OS takes about 54 MiB. A handler serves at 64 MiB with
+  6 left; the cap is 96, leaving about 37. Below the floor the boot thrashes
   rather than hitting the OOM killer, so the failure is a timeout.
-
-The apps are becoming managed: one `fetch` handler, Node only, no dependencies
-(u2j-u2n). Python, binaries, and Procfiles go; the checks above rerun as
-handlers.
 
 What this taught:
 
@@ -872,11 +892,21 @@ What this taught:
 - The kernel makes `/dev/vsock` with no device attached; probe a connect to CID
   2, not the file.
 - 127.0.0.1 inside a VM is the VM. A probe aimed at it finds itself.
+- Under `--permission` a handler cannot read `/proc`, but `os.freemem()` works:
+  libuv reads MemAvailable itself, outside the fs module.
+- The permission model refuses first, so an inside probe cannot reach the
+  read-only disks beneath it; those are checked from the host.
 - A refusal proves nothing until a control opens the hole. `CONTROL=1` opens
   only the probe's own TAP, so other apps keep strict rules mid-run.
 - In Lima, a VM's TCP SYN leaves through the NAT but no reply comes back, even
   with every rule lifted; UDP DNS works. The internet control proves packets
   leave, not that a connection completes.
+- The control opens 3 of the 21 probes: host services, actors, and DNS.
+  Siblings stay shut by their own TAP rules; internet by Lima's NAT; metadata
+  has no route. The rest are file, process, user, and device refusals.
+- The floor script reports sizes and exits 0 below the floor; the one-run check
+  asserts the 96 and 64 rows say `ok` instead.
+- A run directory holds each VM's `api.sock`; `cp -R` skips it when archiving.
 
 ## Usage and the daily cap (o1, g3)
 
