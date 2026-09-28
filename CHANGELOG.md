@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.0 - 2026-09-28
+
 - **Prints are for sale** - `/prints` lists the posters finished by hand and
   shipped, priced at what the next sale costs right now. The ladder is global:
   the first print sold anywhere is $5, the second $100, and every one after that
