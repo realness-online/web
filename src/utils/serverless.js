@@ -90,8 +90,14 @@ export const init_serverless = async () => {
     storageBucket: String(import.meta.env.VITE_STORAGE_BUCKET || ''),
     messagingSenderId: String(import.meta.env.VITE_MESSAGING_SENDER_ID || '')
   }
-
+  // Hosting and the print functions share one Firebase project. A local dev
+  // config must never make the production site read a different poster bucket.
   try {
+    if (
+      window.location.hostname === 'realness.online' &&
+      init.projectId !== 'realness-online'
+    )
+      throw new Error('Production Firebase project mismatch')
     const firebase_app = initialize_firebase(init)
     app.value = firebase_app
     if (!firebase_app) console.error('Firebase app initialization failed')

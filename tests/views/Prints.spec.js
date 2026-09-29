@@ -1,12 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { shallowMount, flushPromises } from '@vue/test-utils'
-import { ref } from 'vue'
 import Prints from '@/views/Prints.vue'
 
 import.meta.env.VITE_ADMIN_ID ??= '/+14151234356'
 const admin_id = import.meta.env.VITE_ADMIN_ID
-const sold_id = `${admin_id}/posters/1700000000000`
-const open_id = `${admin_id}/posters/1700000000001`
+const first_id = `${admin_id}/posters/1700000000000`
+const second_id = `${admin_id}/posters/1700000000001`
 
 const { mock_for_person, mock_load, poster_list } = vi.hoisted(() => ({
   mock_for_person: vi.fn(),
@@ -15,8 +14,8 @@ const { mock_for_person, mock_load, poster_list } = vi.hoisted(() => ({
 }))
 
 poster_list.push(
-  { id: sold_id, type: 'posters' },
-  { id: open_id, type: 'posters' }
+  { id: first_id, type: 'posters' },
+  { id: second_id, type: 'posters' }
 )
 
 vi.mock('@/components/posters/as-figure', () => ({
@@ -30,96 +29,106 @@ vi.mock('@/use/poster', () => ({
   })
 }))
 
-vi.mock('@/utils/itemid', async importOriginal => {
-  const actual = await importOriginal()
-  return { ...actual, load: mock_load }
-})
+vi.mock('@/utils/itemid', async importOriginal => ({
+  ...(await importOriginal()),
+  load: mock_load
+}))
 
-/** @returns {{ ok: boolean, json: () => Promise<object> }} */
 const json_response = (body, ok = true) => ({
   ok,
   json: async () => body
 })
 
+const editions = (sold = []) => ({
+  amounts: [500, 10000, 50000],
+  sold,
+  currency: 'usd'
+})
 const mount_prints = () => shallowMount(Prints)
+const poster_buttons = wrapper =>
+  wrapper.findAll("ol[role='feed'] > li > button")
+const price_buttons = wrapper => wrapper.findAll('dialog form ol button')
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  poster_list.splice(
+    0,
+    poster_list.length,
+    { id: first_id, type: 'posters' },
+    { id: second_id, type: 'posters' }
+  )
+  mock_for_person.mockResolvedValue(undefined)
+  mock_load.mockResolvedValue({ viewbox: '0 0 512 512' })
+  global.fetch = vi.fn(() => Promise.resolve(json_response(editions())))
+  HTMLDialogElement.prototype.showModal ??= vi.fn()
+  HTMLDialogElement.prototype.close ??= vi.fn()
+})
 
 describe('@/views/Prints', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mock_for_person.mockResolvedValue(undefined)
-    mock_load.mockResolvedValue({ viewbox: '0 0 512 512' })
-    global.fetch = vi.fn(() =>
-      Promise.resolve(json_response({ amount: 500, currency: 'usd' }))
-    )
-    HTMLDialogElement.prototype.showModal ??= vi.fn()
-    HTMLDialogElement.prototype.close ??= vi.fn()
-  })
-
   it('renders the title and intro', async () => {
     const wrapper = mount_prints()
     await flushPromises()
-
     expect(wrapper.find('h1').text()).toBe('Hand-finished prints')
     expect(wrapper.text()).toContain('finished by hand')
   })
 
-  it('marks a sold print and leaves the rest open', async () => {
-    mock_load.mockImplementation(id =>
-      Promise.resolve(
-        id === sold_id
-          ? { viewbox: '0 0 512 512', sale: { date: '2026-01-01' } }
-          : { viewbox: '0 0 512 512' }
-      )
+  it('shows only the 21 newest admin posters', async () => {
+    const ids = Array.from(
+      { length: 25 },
+      (_, index) => `${admin_id}/posters/${1700000000025 - index}`
+    )
+    poster_list.splice(
+      0,
+      poster_list.length,
+      { id: '/+15551234567/posters/1800000000000', type: 'posters' },
+      ...ids.map(id => ({ id, type: 'posters' }))
     )
     const wrapper = mount_prints()
     await flushPromises()
-
-    const buttons = wrapper.findAll("ol[role='feed'] > li > button")
-    expect(buttons).toHaveLength(2)
-    expect(buttons[0].attributes('disabled')).toBeDefined()
-    expect(buttons[1].attributes('disabled')).toBeUndefined()
+    const shown = wrapper.findAll('ol[role="feed"] as-figure-stub')
+    expect(shown).toHaveLength(21)
+    expect(shown[0].attributes('itemid')).toBe(ids[0])
+    expect(shown.at(-1).attributes('itemid')).toBe(ids[20])
+    expect(mock_load).toHaveBeenCalledTimes(21)
   })
 
-  it('turns a print sold when sync reports the author changed', async () => {
-    const refresh = ref(null)
-    const wrapper = shallowMount(Prints, {
-      global: { provide: { feed_needs_refresh: refresh } }
-    })
+  it('opens a poster after its $5 sale, with a dot beside only $5', async () => {
+    global.fetch = vi.fn(() => Promise.resolve(json_response(editions([500]))))
+    const wrapper = mount_prints()
     await flushPromises()
-
-    const first_button = () =>
-      wrapper.findAll("ol[role='feed'] > li > button")[0]
-    expect(first_button().attributes('disabled')).toBeUndefined()
-
-    mock_load.mockImplementation(id =>
-      Promise.resolve(
-        id === sold_id
-          ? { viewbox: '0 0 512 512', sale: { date: '2026-01-01' } }
-          : { viewbox: '0 0 512 512' }
-      )
-    )
-    refresh.value = { at: Date.now() }
+    expect(poster_buttons(wrapper)[0].attributes('disabled')).toBeUndefined()
+    await poster_buttons(wrapper)[0].trigger('click')
     await flushPromises()
-
-    expect(first_button().attributes('disabled')).toBeDefined()
+    expect(wrapper.vm.showing).toBe(first_id)
+    expect(wrapper.find('dialog as-figure-stub').exists()).toBe(true)
+    expect(price_buttons(wrapper).map(button => button.text())).toEqual([
+      '$5●',
+      '$100',
+      '$500'
+    ])
+    expect(price_buttons(wrapper)[0].attributes('disabled')).toBeDefined()
+    expect(price_buttons(wrapper)[1].attributes('disabled')).toBeUndefined()
   })
 
-  it('shows the price the checkout function quotes', async () => {
+  it('keeps $500 available with a dot after a $500 sale', async () => {
     global.fetch = vi.fn(() =>
-      Promise.resolve(json_response({ amount: 10000, currency: 'usd' }))
+      Promise.resolve(json_response(editions([500, 10000, 50000])))
     )
     const wrapper = mount_prints()
     await flushPromises()
-
-    expect(wrapper.find('dialog button[type="submit"]').text()).toBe('$100')
+    await poster_buttons(wrapper)[0].trigger('click')
+    await flushPromises()
+    expect(price_buttons(wrapper)[2].text()).toBe('$500●')
+    expect(price_buttons(wrapper)[2].attributes('disabled')).toBeUndefined()
   })
 
-  it('hides checkout rather than guess a price when the fetch fails', async () => {
+  it('does not guess prices when the checkout endpoint fails', async () => {
     global.fetch = vi.fn(() => Promise.reject(new Error('offline')))
     const wrapper = mount_prints()
     await flushPromises()
-
-    expect(wrapper.find('dialog button[type="submit"]').exists()).toBe(false)
+    await poster_buttons(wrapper)[0].trigger('click')
+    await flushPromises()
+    expect(price_buttons(wrapper)).toHaveLength(0)
     expect(wrapper.find('dialog [role="status"]').text()).toBe(
       'Checkout unavailable'
     )
@@ -128,45 +137,47 @@ describe('@/views/Prints', () => {
     )
   })
 
-  it('opens the chosen print in the dialog', async () => {
+  it('asks for the selected poster editions', async () => {
     const wrapper = mount_prints()
     await flushPromises()
-
-    await wrapper.findAll("ol[role='feed'] > li > button")[1].trigger('click')
+    await poster_buttons(wrapper)[1].trigger('click')
     await flushPromises()
-
-    expect(wrapper.vm.showing).toBe(open_id)
-    expect(wrapper.find('dialog as-figure-stub').exists()).toBe(true)
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/prints-checkout?poster_id=${encodeURIComponent(second_id)}`
+    )
   })
 
-  it('posts the poster id to checkout', async () => {
+  it('posts the selected price and poster id to checkout', async () => {
     const wrapper = mount_prints()
     await flushPromises()
-
-    await wrapper.vm.buy(open_id)
-
+    await poster_buttons(wrapper)[1].trigger('click')
+    await flushPromises()
+    await wrapper.vm.buy(second_id, 10000)
     const [url, options] = global.fetch.mock.calls.at(-1)
     expect(url).toBe('/prints-checkout')
     expect(options.method).toBe('POST')
-    expect(JSON.parse(options.body)).toEqual({ poster_id: open_id })
+    expect(JSON.parse(options.body)).toEqual({
+      poster_id: second_id,
+      amount: 10000
+    })
   })
 
   it('surfaces a checkout error instead of failing silently', async () => {
     global.fetch = vi.fn((url, options) =>
       options?.method === 'POST'
         ? Promise.resolve(
-            json_response({ error: 'Poster is not for sale' }, false)
+            json_response({ error: 'Print edition already sold' }, false)
           )
-        : Promise.resolve(json_response({ amount: 500, currency: 'usd' }))
+        : Promise.resolve(json_response(editions()))
     )
     const wrapper = mount_prints()
     await flushPromises()
-
-    await wrapper.vm.buy(open_id)
-
-    expect(wrapper.vm.buy_error).toBe('Poster is not for sale')
-    expect(wrapper.find("[role='alert']").text()).toBe('Poster is not for sale')
-    expect(wrapper.find('dialog button[type="submit"]').exists()).toBe(false)
+    await poster_buttons(wrapper)[1].trigger('click')
+    await flushPromises()
+    await wrapper.vm.buy(second_id, 500)
+    expect(wrapper.find('[role="alert"]').text()).toBe(
+      'Print edition already sold'
+    )
     expect(wrapper.find('dialog a').attributes('href')).toBe(
       `sms:${admin_id.slice(1)}`
     )

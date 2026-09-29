@@ -10,27 +10,25 @@
   const admin_id = import.meta.env.VITE_ADMIN_ID
   const contact_url = `sms:${admin_id.slice(1)}`
   const CENTS_PER_DOLLAR = 100
+  const OPEN_AMOUNT = 50000
+  const PRINT_LIMIT = 21
 
   const prints = computed(() =>
-    posters.value.filter(p => as_author(p.id) === admin_id)
+    posters.value
+      .filter(p => as_author(p.id) === admin_id)
+      .slice(0, PRINT_LIMIT)
   )
-
-  // Sale records live inside each poster's own HTML (`<metadata itemprop="sale">`).
-  // `posters` carries only id/type stubs, so hydrate the sale state per poster.
-  // `sale` is the record for a single sale, an array once more sell.
-  const sold = ref(/** @type {Map<string, string>} */ (new Map()))
 
   // Every print covers the same area, so the shop weighs them equally and a
   // tall poster does not shout over a wide one. The ratio decides the shape;
   // the width that keeps the area is CSS's half of the job.
   const shapes = ref(/** @type {Map<string, number>} */ (new Map()))
 
-  // The ladder is global - the first print sold anywhere is $5, the second
-  // $100, every one after that $500 - and Stripe is the one counting. Ask the
-  // checkout function instead of re-deriving the tier from the prints on this
-  // page: a sale can be missing from the list, and realness-ops owns the
-  // ladder. Null until the answer lands, so we never show a number we guessed.
-  const price = ref(/** @type {number | null} */ (null))
+  // Stripe reports which editions of the selected poster have sold. The $500
+  // edition remains available after any number of sales.
+  const amounts = ref(/** @type {number[]} */ ([]))
+  const sold = ref(/** @type {number[]} */ ([]))
+  const loading_editions = ref(false)
   const currency = ref('usd')
 
   const as_money = (amount, code) =>
@@ -40,49 +38,50 @@
       maximumFractionDigits: 0
     }).format(amount / CENTS_PER_DOLLAR)
 
-  const load_price = async () => {
+  const load_editions = async poster_id => {
+    amounts.value = []
+    sold.value = []
+    loading_editions.value = true
     try {
-      const res = await fetch('/prints-checkout')
+      const res = await fetch(
+        `/prints-checkout?poster_id=${encodeURIComponent(poster_id)}`
+      )
       if (!res.ok) return
       const data = await res.json()
-      if (typeof data.amount !== 'number') return
-      price.value = data.amount
+      if (
+        showing.value !== poster_id ||
+        !Array.isArray(data.amounts) ||
+        !Array.isArray(data.sold)
+      )
+        return
+      amounts.value = data.amounts
+      sold.value = data.sold
       if (data.currency) currency.value = data.currency
     } catch {
-      // The dev server has no functions. The checkout POST still charges the
-      // ladder's real price, so a missing label is safe; a wrong one is not.
+      // An unavailable quote must not offer a checkout at a guessed price.
+    } finally {
+      if (showing.value === poster_id) loading_editions.value = false
     }
   }
 
   const hydrate = async () => {
     const loaded = await Promise.all(
       prints.value.map(p =>
-        load(p.id).then(item => {
-          const sale = item?.sale
-          const first = Array.isArray(sale) ? sale[0] : sale
-          return {
-            id: p.id,
-            date: first?.date ?? '',
-            ratio: poster_ratio(item?.viewbox)
-          }
-        })
+        load(p.id).then(item => ({
+          id: p.id,
+          ratio: poster_ratio(item?.viewbox)
+        }))
       )
-    )
-    sold.value = new Map(
-      loaded.filter(({ date }) => date).map(({ id, date }) => [id, date])
     )
     shapes.value = new Map(loaded.map(({ id, ratio }) => [id, ratio]))
   }
 
   mounted(async () => {
-    load_price()
     await for_person({ id: import.meta.env.VITE_ADMIN_ID })
     await hydrate()
   })
 
-  // Sync drops a poster's cached html when its stored hash moves (a sale), then
-  // says so here. Re-reading is what turns the button into a sold dot without a
-  // page reload.
+  // Sync can change poster dimensions while this page is open.
   const feed_needs_refresh = inject(
     'feed_needs_refresh',
     /** @type {import('vue').Ref<{ at: number } | null> | null} */ (null)
@@ -99,16 +98,11 @@
   const open = poster_id => {
     showing.value = poster_id
     buy_error.value = ''
-    // The tier can have moved since the page loaded. One cheap GET keeps the
-    // label honest against what Stripe will charge.
-    load_price()
+    load_editions(poster_id)
     viewer.value?.showModal()
   }
 
-  // Touch anything in here but the price and the print closes, which saves
-  // drawing an X. The poster paints layers that take pointer events of their
-  // own, so this asks what the press was not - the buy form - instead of
-  // testing for the dialog itself.
+  // Touch the art to close; the edition list stays interactive.
   const on_click = event => {
     if (event.target.closest('form')) return
     viewer.value.close()
@@ -117,15 +111,20 @@
 
   const buying = ref('')
 
-  const buy = async poster_id => {
-    if (buying.value) return
+  const buy = async (poster_id, amount) => {
+    if (
+      buying.value ||
+      !amounts.value.includes(amount) ||
+      (amount !== OPEN_AMOUNT && sold.value.includes(amount))
+    )
+      return
     buying.value = poster_id
     buy_error.value = ''
     try {
       const res = await fetch('/prints-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ poster_id })
+        body: JSON.stringify({ poster_id, amount })
       })
       // A 5xx from the function is JSON, a dev-server 404 is HTML - only the
       // former parses, so a failed parse is itself a failure, not a crash.
@@ -159,14 +158,9 @@
         :style="{ '--ratio': shapes.get(p.id) ?? 1 }">
         <!--
           The print is the control. The button brings its own focus ring,
-          Enter key and disabled state, so nothing has to sit on top of the
-          art to make it reachable.
+          and Enter key, so nothing sits on the art to make it reachable.
         -->
-        <button
-          type="button"
-          :disabled="sold.has(p.id)"
-          :aria-label="sold.has(p.id) ? 'Sold' : 'Open this print'"
-          @click="open(p.id)">
+        <button type="button" aria-label="Open this print" @click="open(p.id)">
           <as-figure :itemid="p.id" />
         </button>
       </li>
@@ -174,7 +168,7 @@
 
     <!--
       Click into a print and it is the print, as big as the window allows,
-      with one control wearing the price.
+      with its edition list below.
     -->
     <dialog
       ref="viewer"
@@ -189,16 +183,27 @@
         this one goes blank.
       -->
       <as-figure v-if="showing" :key="showing" :itemid="showing" pin />
-      <form @submit.prevent="buy(showing)">
-        <button
-          v-if="price !== null && !buy_error"
-          type="submit"
-          :aria-busy="buying === showing">
-          <data :value="price">{{ as_money(price, currency) }}</data>
-        </button>
+      <form @submit.prevent>
+        <ol v-if="amounts.length">
+          <li v-for="amount in amounts" :key="amount">
+            <button
+              type="button"
+              :disabled="amount !== OPEN_AMOUNT && sold.includes(amount)"
+              :aria-busy="buying === showing"
+              @click="buy(showing, amount)">
+              <data :value="amount">{{ as_money(amount, currency) }}</data>
+              <span v-if="sold.includes(amount)" aria-label="Sold"
+                >&#9679;</span
+              >
+            </button>
+          </li>
+        </ol>
         <p v-if="buy_error" role="alert">{{ buy_error }}</p>
-        <p v-else-if="price === null" role="status">Checkout unavailable</p>
-        <a v-if="buy_error || price === null" :href="contact_url"
+        <p v-else-if="loading_editions" role="status">Checking editions</p>
+        <p v-else-if="!amounts.length" role="status">Checkout unavailable</p>
+        <a
+          v-if="buy_error || (!loading_editions && !amounts.length)"
+          :href="contact_url"
           >Message the artist</a
         >
       </form>
@@ -273,26 +278,6 @@
             transform: none;
           }
 
-          // A red dot in the corner, the way a gallery marks a sold work. It
-          // says everything the word said, in a glance, at any size.
-          &:disabled {
-            opacity: 1;
-            cursor: default;
-            &::after {
-              content: '';
-              position: absolute;
-              // The poster's svg carries z-index 1, so the dot has to climb
-              // over it or it hangs behind the art.
-              z-index: 2;
-              top: base-line * 0.5;
-              right: base-line * 0.5;
-              width: base-line * 0.5;
-              height: base-line * 0.5;
-              border-radius: 50%;
-              background-color: var(--emphasis);
-            }
-          }
-
           // The art is not a control, the button around it is. Left alone the
           // poster eats the click to toggle its own crop.
           & > figure,
@@ -321,6 +306,9 @@
 
     & > dialog[data-modal] {
       display: grid;
+      &:not([open]) {
+        display: none;
+      }
       justify-items: center;
       gap: base-line;
       padding: base-line;
@@ -334,14 +322,35 @@
         gap: base-line * 0.5;
         width: auto;
 
-        & > button {
-          min-width: 0;
+        & > ol {
+          display: grid;
+          gap: base-line * 0.25;
           padding: 0;
-          border: 0;
-          background: none;
-          color: var(--text);
-          text-decoration: underline;
-          text-underline-offset: 0.2em;
+          list-style: none;
+
+          & button {
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--text);
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+            &:focus:not(:focus-visible) {
+              outline: none;
+            }
+            focus-ring();
+            &:disabled {
+              opacity: 1;
+              color: var(--text);
+              cursor: default;
+            }
+          }
+
+          & span[aria-label='Sold'] {
+            margin-inline-start: base-line * 0.25;
+            color: var(--emphasis);
+          }
         }
 
         & > p {
@@ -354,7 +363,7 @@
         // The same trade as the grid: a height budget and the poster's ratio
         // decide the width, so nothing crops and nothing overflows.
         // unquote: Stylus owns `min()` and cannot coerce a calc into it.
-        width: unquote('min(88vw, calc(64vh * var(--ratio, 1)))');
+        width: unquote('min(88vw, calc(52vh * var(--ratio, 1)))');
         aspect-ratio: var(--ratio, 1);
         min-height: 0;
         grid-column: auto;

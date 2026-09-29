@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v2.10.1 - 2026-09-29
+
+- **Print editions per poster** - One $5 print, one $100 print, and unlimited
+  $500 prints. The dialog lists all three prices without borders and marks
+  sold editions with dots. Sold posters still open, and closed dialogs no
+  longer block clicks. The page shows the 21 newest posters.
+- **Production poster source** - The site now reads the same Firebase project
+  as the print checkout and sale webhook.
+
 ## v2.10.0 - 2026-09-28
 
 - **Prints are for sale** - `/prints` lists the posters finished by hand and
