@@ -9,9 +9,12 @@ import json
 import os
 import socket
 import sys
+import re
 
 HOST_CID = 2
 DOOR_PORT = 54
+SITE_ROOT = "/brayness/work/site"
+SITE_ID = os.path.join(SITE_ROOT, ".brayness-site-id")
 
 path = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "/brayness/site")
 if not os.path.isfile(os.path.join(path, "index.html")):
@@ -24,7 +27,14 @@ try:
 except OSError as error:
     sys.exit(f"brayness publish: the host did not answer ({error})")
 with sock:
-    sock.sendall(json.dumps({"op": "publish", "path": path}).encode() + b"\n")
+    request = {"op": "publish", "path": path}
+    if path == SITE_ROOT or path.startswith(SITE_ROOT + "/"):
+        if os.path.isfile(SITE_ID):
+            site = open(SITE_ID, encoding="utf-8").read().strip()
+            if not re.fullmatch(r"a-[a-f0-9]{12}", site):
+                sys.exit("brayness publish: invalid saved site ID")
+            request["site"] = site
+    sock.sendall(json.dumps(request).encode() + b"\n")
     buf = b""
     while b"\n" not in buf:
         chunk = sock.recv(4096)
@@ -34,5 +44,8 @@ with sock:
 reply = json.loads(buf.partition(b"\n")[0] or b"{}")
 if not reply.get("ok"):
     sys.exit(f"brayness publish: {reply.get('error', 'no reply from the host')}")
+if (path == SITE_ROOT or path.startswith(SITE_ROOT + "/")) and reply.get("site"):
+    with open(SITE_ID, "w", encoding="utf-8") as marker:
+        marker.write(reply["site"] + "\n")
 print(f"published {path}")
 print(reply["url"])

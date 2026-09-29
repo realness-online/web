@@ -1,0 +1,85 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+
+vi.mock('@/utils/firebase', async () => {
+  const { ref } = await import('vue')
+  return { init_auth: vi.fn(), recaptcha: vi.fn(), sign_in: vi.fn(), current_user: ref(null) }
+})
+
+import LoopsAdmin from '@/loops-admin.vue'
+import { current_user } from '@/utils/firebase'
+import { read_loop } from '@/utils/loops'
+
+const record = (id, status, started) =>
+  `<article itemscope itemtype="/loop"><meta itemprop="id" content="${id}"><meta itemprop="host" content="brayness-1"><meta itemprop="owner" content="+14155550123"><meta itemprop="status" content="${status}"><meta itemprop="runs" content="3"><meta itemprop="tokens" content="900"><meta itemprop="started" content="${started}"><p itemprop="goal">faster tests</p></article>`
+
+let files
+beforeEach(() => {
+  vi.stubEnv('VITE_BRAYNESS_SYNC_URL', 'https://sync.test')
+  current_user.value = { getIdToken: async () => 'token' }
+  files = {
+    'a-00000000000a/record.html': record('a-00000000000a', 'stopped', '2026-09-28T02:00:00Z'),
+    'a-00000000000b/record.html': record('a-00000000000b', 'running', '2026-09-28T01:00:00Z')
+  }
+  vi.stubGlobal('fetch', vi.fn(async (url, init = {}) => {
+    const key = url.replace('https://sync.test/loops/', '')
+    if (key === '?deep') return new Response(JSON.stringify(Object.fromEntries(Object.keys(files).map(k => [k, '1']))))
+    if (init.method === 'PUT') return (files[key] = init.body), new Response('', { status: 200 })
+    return new Response(files[key])
+  }))
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+})
+
+describe('loops admin page', () => {
+  it('reads a /loop item', () => {
+    expect(read_loop(record('a-00000000000a', 'running', 'x'))).toMatchObject({ id: 'a-00000000000a', owner: '+14155550123', goal: 'faster tests' })
+  })
+
+  it('lists every loop, running first, and stops one', async () => {
+    const page = mount(LoopsAdmin)
+    await flushPromises()
+    const rows = page.findAll('tbody tr')
+    expect(rows.map(row => row.find('th').text())).toEqual(['a-00000000000b', 'a-00000000000a'])
+    expect(rows[1].find('button').exists()).toBe(false) // a stopped loop has no stop
+    await rows[0].find('button').trigger('click')
+    await flushPromises()
+    expect(files['a-00000000000b/stop.html']).toMatch(/Stop requested/)
+    expect(page.find('tbody tr button').text()).toBe('Stopping')
+    expect(page.find('tbody tr button').attributes('disabled')).toBeDefined()
+    expect(page.find('tbody tr output').text()).toBe('30s')
+  })
+
+  it('counts down while stopping and clears when the host reports stopped', async () => {
+    vi.useFakeTimers()
+    try {
+      const page = mount(LoopsAdmin)
+      await flushPromises()
+      await page.find('tbody tr button').trigger('click')
+      await flushPromises()
+      expect(page.find('tbody tr output').text()).toBe('30s')
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(page.find('tbody tr output').text()).toBe('29s')
+
+      files['a-00000000000b/record.html'] = record('a-00000000000b', 'stopped', '2026-09-28T01:00:00Z')
+      await vi.advanceTimersByTimeAsync(5000)
+      await flushPromises()
+      expect(page.find('tbody tr output').exists()).toBe(false)
+      expect(page.find('tbody tr button').exists()).toBe(false)
+      page.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('says so when the number is not an admin', async () => {
+    fetch.mockImplementation(async () => new Response('', { status: 403 }))
+    const page = mount(LoopsAdmin)
+    await flushPromises()
+    expect(page.find('[role=alert]').text()).toBe('This number is not a Brayness admin.')
+  })
+})

@@ -153,3 +153,38 @@ test("report carries the last tail and never execs", async () => {
   assert.equal(report.goal, undefined)
   assert.throws(() => loops.report("a-000000000001", "a-000000000999"), /no such loop/)
 })
+
+test("of_owner lists by actor owner, without the log tail", async () => {
+  const store = fake()
+  const loops = new Loops(store, { file: join(root, "owner.json") })
+  const { id } = await loops.start("a-000000000001", "goal")
+  loops.loops[id].tail = ["x"]
+  assert.deepEqual(loops.of_owner("+14155550123").map((loop) => [loop.id, loop.goal, loop.tail]), [[id, "goal", undefined]])
+  assert.deepEqual(loops.of_owner("+14155559999"), [])
+})
+
+test("mirror: records go to Storage; an admin stop request is obeyed", async () => {
+  const store = fake()
+  const files = new Map()
+  const mirror = { put: async (key, body) => files.set(key, body), get: async (key) => (files.has(key) ? { body: files.get(key) } : null) }
+  const loops = new Loops(store, { file: join(root, "mirror.json"), mirror, host: "brayness-1" })
+  const { id } = await loops.start("a-000000000001", 'goal with "quotes" & <tags>')
+  const record = files.get(`loops/${id}/record.html`)
+  assert.match(record, /itemprop="host" content="brayness-1"/)
+  assert.match(record, /itemprop="owner" content="\+14155550123"/)
+  assert.match(record, /itemprop="status" content="running"/)
+  assert.match(record, /goal with &quot;quotes&quot; &amp; &lt;tags>/)
+  files.set(`loops/${id}/stop.html`, "stop")
+  assert.deepEqual(await loops.watch(), [{ id, reason: "admin" }])
+  assert.deepEqual(store.execs.at(-1), [id, STOP_ARGV])
+  assert.match(files.get(`loops/${id}/record.html`), /itemprop="reason" content="admin"/)
+})
+
+test("no mirror: loops run alone; a broken mirror never stops a loop", async () => {
+  const store = fake()
+  const broken = { put: async () => { throw new Error("gcs down") }, get: async () => { throw new Error("gcs down") } }
+  const loops = new Loops(store, { file: join(root, "broken.json"), mirror: broken })
+  const { id } = await loops.start("a-000000000001", "goal")
+  assert.equal(loops.loops[id].status, "running")
+  assert.match(loops.loops[id].error, /mirror: gcs down/)
+})

@@ -4,7 +4,8 @@
  * who     null for a stranger, `{ phone: "+A" }` for a person,
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance.
  * action  "get", "list", "write", or "delete".
- * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, or `usage/+A/...`.
+ * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`,
+ *         or `loops/<id>/...`.
  * grants  triples read from the owner's rights page (see rights.js).
  *
  * Deny by default. Ownership comes from the path, never from stored data.
@@ -33,7 +34,7 @@ function segments(path) {
 /** The phone number behind a subject, and the instance id if it is one. */
 function subject(who) {
   if (!who) return {}
-  if (typeof who.phone === "string" && PHONE.test(who.phone)) return { phone: who.phone }
+  if (typeof who.phone === "string" && PHONE.test(who.phone)) return { phone: who.phone, admin: who.admin === true }
   const match = typeof who.instance === "string" && who.instance.match(INSTANCE)
   if (match) return { owner: match[1], id: match[2] }
   return {}
@@ -62,6 +63,13 @@ export function can(who, action, path, grants = []) {
   const [root, owner, ...rest] = parts
 
   if (root === "subscriptions") return Boolean(owner) && me.phone === owner
+  // Hosts write loop records with their own key (a1i). A global admin, whom
+  // sync names from `admins.html`, reads them all and may ask one to stop.
+  if (root === "loops") {
+    if (!me.admin) return false
+    if (action === "get" || action === "list") return true
+    return action === "write" && /^a-[a-f0-9]{12}$/.test(owner ?? "") && rest.join("/") === "stop.html"
+  }
   // The proxy alone writes the ledger; its owner may only read it.
   if (root === "usage") return Boolean(owner) && me.phone === owner && (action === "get" || action === "list")
 

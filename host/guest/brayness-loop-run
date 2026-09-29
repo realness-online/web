@@ -10,7 +10,7 @@ decides when the loop stops; closing stdin is Pi's orderly shutdown.
 
     /brayness/work/loop/goal.md        the goal, as given
     /brayness/work/loop/events.jsonl   Pi's RPC events
-    /brayness/work/loop/status.json    {"state": "running" | "exited", ...}
+    /brayness/work/loop/status.json    {"state": "running" | "exited", "tokens": N, ...}
 """
 import json
 import os
@@ -50,7 +50,8 @@ def main():
     )
     signal.signal(signal.SIGTERM, lambda *_: pi.stdin.close())  # host stop: orderly shutdown
     send = lambda value: (pi.stdin.write(json.dumps(value) + "\n"), pi.stdin.flush())
-    status(state="running", pid=pi.pid)
+    tokens = 0
+    status(state="running", pid=pi.pid, tokens=tokens)
     send({"id": "loop", "type": "prompt", "message": f"/autoresearch {goal}\n\nNobody is watching: never ask questions; start the loop now."})
 
     with open("events.jsonl", "a") as events:
@@ -61,12 +62,16 @@ def main():
                 event = json.loads(line)
             except ValueError:
                 continue
+            usage = (event.get("message") or {}).get("usage") if event.get("type") == "message_end" else None
+            if isinstance(usage, dict):
+                tokens += int(usage.get("input") or 0) + int(usage.get("output") or 0)
+                status(state="running", pid=pi.pid, tokens=tokens)
             if event.get("type") == "extension_ui_request" and event.get("method") in DIALOGS:
                 try:
                     send({"type": "extension_ui_response", "id": event["id"], "cancelled": True})
                 except (BrokenPipeError, ValueError):
                     pass
-    status(state="exited", code=pi.wait())
+    status(state="exited", code=pi.wait(), tokens=tokens)
 
 
 if __name__ == "__main__":

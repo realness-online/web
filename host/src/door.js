@@ -113,11 +113,22 @@ export class Door {
       LOG.info(`door: ${id} started loop ${loop.id} at depth ${loop.depth}`)
       return { ok: true, ...loop }
     }
+    const site = request.site ?? id
+    if (!this.store.syncSites && site !== id) throw new Error("site belongs to another actor; sync sites are not configured")
+    if (request.op === "site-versions") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot read site versions")
+      return { ok: true, versions: await this.store.siteVersions(id, site) }
+    }
+    if (request.op === "site-restore" || request.op === "site-remove") {
+      if (!owner || !can({ instance }, "write", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot manage site")
+      const result = request.op === "site-restore" ? await this.store.restoreSite(id, request.version, site) : await this.store.unpublishSite(id, site)
+      return { ok: true, ...result, url: this.siteUrl.replaceAll("{id}", site) }
+    }
     if (request.op !== "publish") throw new Error(`unknown op '${request.op}'`)
     if (!owner || !can({ instance }, "write", `people/${owner}/harnesses/${id}/site`)) throw new Error("actor cannot publish")
     const path = request.path || "/brayness/site"
-    await this.store.publish(id, path)
+    await this.store.publish(id, path, site)
     LOG.info(`door: ${id} published ${path}`)
-    return { ok: true, url: this.siteUrl.replaceAll("{id}", id) }
+    return { ok: true, site, url: this.siteUrl.replaceAll("{id}", site) }
   }
 }

@@ -1,16 +1,34 @@
-/* Brayness sign-on: one narrow column, system type, OS dark mode. */
+/* Brayness: warm surfaces, with water, clay, and slate from Realness. */
 :root {
-  --ink: #14181c;
-  --paper: #f7f6f3;
-  --line: #c9c6bf;
+  --chalk: oklch(0.94 0.01 100);
+  --bone: oklch(0.89 0.01 107);
+  --basalt: oklch(0.29 0.01 107);
+  --graphite: oklch(0.28 0.01 90);
+  --water-darken: oklch(0.5 0.06 195);
+  --water-lighten: oklch(0.74 0.07 196);
+  --clay-darken: oklch(0.46 0.13 21);
+  --clay-lighten: oklch(0.74 0.12 20);
+  --slate-darken: oklch(0.47 0.08 257);
+  --slate-lighten: oklch(0.69 0.06 257);
+  --ink: var(--graphite);
+  --paper: var(--chalk);
+  --panel: var(--bone);
+  --line: color-mix(in oklch, var(--ink) 24%, var(--paper));
+  --accent: var(--water-darken);
+  --emphasis: var(--clay-darken);
+  --working: var(--slate-darken);
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #ecedee;
-    --paper: #14181c;
-    --line: #3a3f45;
+    --ink: var(--bone);
+    --paper: var(--basalt);
+    --panel: color-mix(in oklch, var(--basalt) 85%, var(--bone));
+    --line: color-mix(in oklch, var(--ink) 28%, var(--paper));
+    --accent: var(--water-lighten);
+    --emphasis: var(--clay-lighten);
+    --working: var(--slate-lighten);
   }
 }
 
@@ -28,7 +46,12 @@ body {
     1rem/1.5 system-ui,
     sans-serif;
 
+  &:has(#loops-admin) {
+    width: min(64rem, 100% - 2rem);
+  }
+
   #signing-on,
+  #loops-admin,
   #sign-on {
     display: grid;
     gap: 1rem;
@@ -36,6 +59,7 @@ body {
 
   h1 {
     margin: 0;
+    color: var(--accent);
     font-size: 1.5rem;
   }
 
@@ -52,7 +76,7 @@ body {
     padding: 0.6rem 0.7rem;
     border: 1px solid var(--line);
     border-radius: 0.35rem;
-    background: transparent;
+    background: var(--panel);
     color: inherit;
     font: inherit;
   }
@@ -61,22 +85,68 @@ body {
     padding: 0.6rem 0.9rem;
     border: 0;
     border-radius: 0.35rem;
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--emphasis);
+    color: var(--chalk);
     font: inherit;
     cursor: pointer;
   }
 
   button:disabled {
-    opacity: 0.45;
+    opacity: 0.55;
     cursor: not-allowed;
   }
 
+  :is(button, input):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   [role="alert"] {
-    color: #c0392b;
+    color: var(--emphasis);
   }
 
   #captcha {
     min-height: 1px;
+  }
+}
+
+#loops-admin {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th,
+  td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--line);
+    text-align: start;
+  }
+
+  thead {
+    color: var(--accent);
+  }
+
+  tbody tr:nth-child(odd) {
+    background: var(--panel);
+  }
+
+  tbody th {
+    color: var(--accent);
+  }
+
+  tr[data-status="running"] td:nth-child(4) {
+    color: var(--working);
+  }
+
+  tr[data-status="stopped"] td:nth-child(4) {
+    color: var(--emphasis);
+  }
+
+  output {
+    margin-inline-start: 0.5rem;
+    color: var(--working);
+    font-variant-numeric: tabular-nums;
   }
 }

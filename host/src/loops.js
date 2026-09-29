@@ -3,12 +3,18 @@
 //
 //   <volume>/loops.json   { "<loop id>": { parent, depth, goal, status, started } }
 //
+// Admin is global (a1j): each host mirrors its loop records to Storage,
+//   loops/<id>/record.html   one /loop item, rewritten on every change
+//   loops/<id>/stop.html     an admin's stop request; obeyed on the next probe
+// Without a mirror (no LOOPS_BUCKET) the host runs loops alone.
+//
 // The host decides when a loop ends: the agent re-inits past autoresearch's
 // own maxIterations (plans/brayness.md, a1a). watch() stops each loop at its
 // run count, its deadline, or a spent quota, then idles the actor.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { hostname } from "node:os"
 import { BadRequest } from "./errors.js"
 
 const GOAL_LIMIT = 4000
@@ -33,7 +39,7 @@ status = json.loads(read(d + "/status.json") or "{}")
 runs = sum(1 for line in read(d + "/.auto/log.jsonl").splitlines() if '"run":' in line)
 quota = "quota exceeded" in read(d + "/events.jsonl", 65536)
 tail = read(d + "/.auto/log.jsonl", 16384).splitlines()[-20:]
-print(json.dumps({"state": status.get("state"), "runs": runs, "quota": quota, "tail": tail}))
+print(json.dumps({"state": status.get("state"), "tokens": status.get("tokens", 0), "runs": runs, "quota": quota, "tail": tail}))
 `]
 
 /** Why a running loop should stop now, or null. */
@@ -46,8 +52,8 @@ export function stop_reason(probe, loop, { maxRuns, deadlineMs, now = Date.now()
 }
 
 export class Loops {
-  constructor(store, { file = join(store.volume, "loops.json"), maxDepth = Number(process.env.LOOP_MAX_DEPTH ?? 1), maxChildren = Number(process.env.LOOP_MAX_CHILDREN ?? 3), maxRuns = Number(process.env.LOOP_MAX_RUNS ?? 20), deadlineMs = Number(process.env.LOOP_DEADLINE_MIN ?? 60) * 60_000 } = {}) {
-    Object.assign(this, { store, file, maxDepth, maxChildren, maxRuns, deadlineMs })
+  constructor(store, { file = join(store.volume, "loops.json"), maxDepth = Number(process.env.LOOP_MAX_DEPTH ?? 1), maxChildren = Number(process.env.LOOP_MAX_CHILDREN ?? 3), maxRuns = Number(process.env.LOOP_MAX_RUNS ?? 20), deadlineMs = Number(process.env.LOOP_DEADLINE_MIN ?? 60) * 60_000, mirror = null, host = hostname() } = {}) {
+    Object.assign(this, { store, file, maxDepth, maxChildren, maxRuns, deadlineMs, mirror, host })
     this.loops = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {}
     this.tail = Promise.resolve()
   }
@@ -88,6 +94,7 @@ export class Loops {
       throw error
     } finally {
       this.#save()
+      await this.#publish(record.id)
     }
     return { id: record.id, depth }
   }
@@ -103,6 +110,46 @@ export class Loops {
     return { id: loop_id, ...report }
   }
 
+  /** One loop as an HTML item for the global admin view. */
+  #record_html(id) {
+    const loop = { id, host: this.host, owner: this.store.get(id)?.owner ?? "", ...this.loops[id] }
+    const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")
+    const props = ["id", "host", "owner", "parent", "depth", "status", "reason", "runs", "tokens", "started", "ended", "checked", "error"]
+      .map((name) => `<meta itemprop="${name}" content="${esc(loop[name])}">`).join("")
+    return `<article itemscope itemtype="/loop">${props}<p itemprop="goal">${esc(loop.goal)}</p></article>\n`
+  }
+
+  /** Mirror a loop to Storage; a failed write waits for the next change. */
+  async #publish(id) {
+    if (!this.mirror) return
+    try {
+      await this.mirror.put(`loops/${id}/record.html`, this.#record_html(id))
+    } catch (error) {
+      this.loops[id].error = `mirror: ${error.message}`
+    }
+  }
+
+  async #stop_requested(id) {
+    if (!this.mirror) return false
+    try {
+      return Boolean(await this.mirror.get(`loops/${id}/stop.html`))
+    } catch {
+      return false
+    }
+  }
+
+  /** Every loop whose actor this owner holds, newest first. */
+  of_owner(owner) {
+    return this.all().filter((loop) => loop.owner === owner)
+  }
+
+  /** Every loop on this host with its owner; the admin view. */
+  all() {
+    return Object.entries(this.loops)
+      .map(([id, { tail, ...loop }]) => ({ id, owner: this.store.get(id)?.owner ?? null, ...loop }))
+      .sort((a, b) => b.started.localeCompare(a.started))
+  }
+
   /** One pass over running loops; each failure is its own. */
   async watch(now = Date.now()) {
     const stopped = []
@@ -110,10 +157,15 @@ export class Loops {
       if (loop.status !== "running") continue
       this.store.beginWork(id) // again after a host restart
       try {
+        if (await this.#stop_requested(id)) {
+          await this.stop(id, "admin")
+          stopped.push({ id, reason: "admin" })
+          continue
+        }
         const { exit_code, stdout_b64 } = await this.store.exec(id, PROBE_ARGV, { cwd: "/" })
         if (exit_code !== 0) throw new Error(`probe exit ${exit_code}`)
         const probe = JSON.parse(Buffer.from(stdout_b64, "base64").toString())
-        Object.assign(loop, { runs: probe.runs, tail: Array.isArray(probe.tail) ? probe.tail : [], checked: new Date(now).toISOString() })
+        Object.assign(loop, { runs: probe.runs, tokens: probe.tokens ?? 0, tail: Array.isArray(probe.tail) ? probe.tail : [], checked: new Date(now).toISOString() })
         const reason = stop_reason(probe, loop, { maxRuns: this.maxRuns, deadlineMs: this.deadlineMs, now })
         if (reason) {
           await this.stop(id, reason)
@@ -122,6 +174,7 @@ export class Loops {
       } catch (error) {
         loop.error = error.message
       }
+      if (loop.status === "running") await this.#publish(id)
     }
     this.#save()
     return stopped
@@ -132,6 +185,7 @@ export class Loops {
     if (reason !== "exited") await this.store.exec(id, STOP_ARGV, { cwd: "/" })
     Object.assign(loop, { status: "stopped", reason, ended: new Date().toISOString() })
     this.#save()
+    await this.#publish(id)
     this.store.endWork(id)
     await this.store.idle(id)
   }

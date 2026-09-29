@@ -12,6 +12,9 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parseArgs } from "node:util"
 import { Door } from "./src/door.js"
+import { Loops } from "./src/loops.js"
+import { SyncSites } from "./src/sync-sites.js"
+import { create_gcs, gcloud_token, metadata_token } from "../can-store/src/gcs.js"
 import { logger } from "./src/log.js"
 import * as pty from "./src/pty.js"
 import * as server from "./src/server.js"
@@ -50,6 +53,7 @@ const { positionals, values } = parseArgs({
     "pty-port": { type: "string", default: "8081" },
     "web-port": { type: "string", default: "8090" },
     term: { type: "string", default: join(HERE, "term") },
+    chat: { type: "string", default: join(HERE, "chat") },
     rebuild: { type: "boolean", default: false },
   },
 })
@@ -85,16 +89,23 @@ if (command === "seed") {
 }
 
 await store.ensureSeed()
+if (process.env.SYNC_SITE_URL) store.syncSites = new SyncSites({ url: process.env.SYNC_SITE_URL, secret: process.env.HOST_PASS_SECRET })
 const listen = (what, port) =>
   new Promise((done) => what.listen(Number(port), values.listen, done))
 
 await listen(pty.makeServer(store), values["pty-port"])
 LOG.info(`pty stream on ${values.listen}:${values["pty-port"]}`)
-await listen(webterm.makeServer({ pageRoot: values.term, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner) }), values["web-port"])
+await listen(webterm.makeServer({ pageRoot: values.term, chatRoot: values.chat, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner) }), values["web-port"])
 LOG.info(`browser terminal on ${values.listen}:${values["web-port"]}`)
-new Door(store, process.env.BRAYNESS_SITE_URL ?? "/s/{id}/").start()
+// Global admin (a1j): loop records mirror to Storage when a bucket is set.
+// A GCE host uses its service account; LOOPS_TOKEN=gcloud for a laptop.
+const loops_bucket = process.env.LOOPS_BUCKET
+const mirror = loops_bucket ? create_gcs({ bucket: loops_bucket, token: process.env.LOOPS_TOKEN === "gcloud" ? gcloud_token() : metadata_token() }) : null
+const loops = new Loops(store, { mirror })
+const site_url = store.syncSites ? `${(process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL).replace(/\/$/, "")}/sites/{id}/` : "/s/{id}/"
+new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops).start()
 const apps = new AppStore({ volume: values.volume, image: values["app-image"], kernel: values.kernel, firecracker: values.firecracker })
-await listen(server.makeServer(store, apps), values.port)
+await listen(server.makeServer(store, apps, undefined, loops), values.port)
 LOG.info(`listening on ${values.listen}:${values.port}`)
 
 const sweep = async () => {

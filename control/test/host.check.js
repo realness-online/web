@@ -247,23 +247,33 @@ describe("an actor's life", () => {
     assert.equal(status, 400)
   })
 
-  test("publish serves the tree at /s/<id>/ and <id>.localhost", async () => {
+  test("publish serves the tree at its returned URL", async () => {
     await sh(actor.id, "mkdir -p /brayness/site/blog && echo '<h1>hi</h1>' > /brayness/site/index.html && echo post > /brayness/site/blog/hello.html")
     const published = await call("POST", `/v1/actors/${actor.id}/publish`, {})
     assert.equal(published.status, 200, published.text)
-    assert.equal(published.json.url, `/s/${actor.id}/`)
     assert.equal(published.json.files, 2)
 
-    const index = await call("GET", `/s/${actor.id}/`)
-    assert.equal(index.status, 200)
-    assert.match(index.type, /text\/html/)
-    assert.equal(index.text, "<h1>hi</h1>\n")
-    assert.equal((await call("GET", `/s/${actor.id}/blog/hello`)).text, "post\n", "pretty links")
-    assert.equal((await call("GET", `/s/${actor.id}/missing.css`)).status, 404)
-
-    const port = new URL(API).port
-    const vhost = execFileSync("curl", ["-s", "-H", `Host: ${actor.id}.localhost:${port}`, `${API}/`]).toString()
-    assert.equal(vhost, "<h1>hi</h1>\n")
+    if (published.json.url.startsWith("/sites/")) {
+      const origin = process.env.SYNC_SITE_PUBLIC_URL ?? "http://127.0.0.1:18096"
+      const site = `${origin}${published.json.url}`
+      const index = await fetch(site)
+      assert.equal(index.status, 200)
+      assert.match(index.headers.get("content-type"), /text\/html/)
+      assert.equal(await index.text(), "<h1>hi</h1>\n")
+      assert.equal(await (await fetch(`${site}blog/hello`)).text(), "post\n", "pretty links")
+      assert.equal((await fetch(`${site}missing.css`)).status, 404)
+    } else {
+      assert.equal(published.json.url, `/s/${actor.id}/`)
+      const index = await call("GET", `/s/${actor.id}/`)
+      assert.equal(index.status, 200)
+      assert.match(index.type, /text\/html/)
+      assert.equal(index.text, "<h1>hi</h1>\n")
+      assert.equal((await call("GET", `/s/${actor.id}/blog/hello`)).text, "post\n", "pretty links")
+      assert.equal((await call("GET", `/s/${actor.id}/missing.css`)).status, 404)
+      const port = new URL(API).port
+      const vhost = execFileSync("curl", ["-s", "-H", `Host: ${actor.id}.localhost:${port}`, `${API}/`]).toString()
+      assert.equal(vhost, "<h1>hi</h1>\n")
+    }
   })
 
   test("publish refuses relative and climbing paths", async () => {

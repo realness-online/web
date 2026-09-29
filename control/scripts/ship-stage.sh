@@ -34,6 +34,15 @@ tar -C "$root" -cf - --no-mac-metadata \
 ln -s ../../extensions "$stage/.pi/agent/extensions"
 # Prompt templates (/site, /app) load from the agent directory too.
 ln -s ../../prompts "$stage/.pi/agent/prompts"
+# Sync the editable site and its stable ID at every Pi turn end.
+mkdir -p "$stage/plans"
+cat > "$stage/plans/site.md" <<'EOF'
+# Published site
+
+## Syncs
+
+- work/site
+EOF
 
 # The ship tree names its own one provider; the Mac's model list stays local.
 # Shipped Pi asks its host door for a person-bound pass on each proxy call.

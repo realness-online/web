@@ -1,8 +1,10 @@
 # Everything generated. A fresh clone is source only.
 dist/
 
-# The built browser terminal (control/scripts/terminal-build.sh).
+# The built browser terminal and chat (control/scripts/terminal-build.sh,
+# control/scripts/chat-build.sh).
 host/term/
+host/chat/
 
 # Python bytecode from host/clients and host/guest; run as root it would
 # leave root-owned files in the source tree.

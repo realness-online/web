@@ -34,7 +34,8 @@ const ARTIFACT_PATHS = ["brayness"]
 const TRACES = "traces"
 const EXPORTS = "exports"
 const PUBLISHED = "published"
-const NON_ACTOR_DIRS = new Set(["seed", "apps", TRACES, EXPORTS, PUBLISHED])
+const VERSIONS = "published-versions"
+const NON_ACTOR_DIRS = new Set(["seed", "apps", TRACES, EXPORTS, PUBLISHED, VERSIONS])
 // Ids are names on the volume; anything else would be a path.
 const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
 
@@ -151,6 +152,7 @@ export class ActorStore {
     this.tracesDir = join(this.volume, TRACES)
     this.exportsDir = join(this.volume, EXPORTS)
     this.publishedDir = join(this.volume, PUBLISHED)
+    this.versionsDir = join(this.volume, VERSIONS)
     this.lock = new Mutex()
     this.busy = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
@@ -516,6 +518,7 @@ export class ActorStore {
     if (record.tap) host.deleteTap(record.tap)
     rmSync(record.dir, { recursive: true, force: true })
     rmSync(join(this.publishedDir, record.id), { recursive: true, force: true })
+    rmSync(join(this.versionsDir, record.id), { recursive: true, force: true })
   }
 
   // --------------------------------------------------------------- trace
@@ -547,16 +550,88 @@ export class ActorStore {
    * untrusted: only files, directories, and links survive, and the server
    * refuses any path that resolves outside it.
    */
-  async publish(id, tree = "/brayness/site") {
+  publish(id, tree = "/brayness/site", site = id) {
+    return this.lock.run(async () => {
+      const target = join(this.publishedDir, id)
+      const staging = join(this.publishedDir, `.${id}.part`)
+      await this.copyOut(id, tree, staging)
+      if (this.syncSites) {
+        const source = join(this.publishedDir, `.${id}.source.part`)
+        try {
+          if (tree === "/brayness/work/site" || tree.startsWith("/brayness/work/site/")) await this.copyOut(id, "/brayness/work/site", source)
+          const published = await this.syncSites.publish(this.get(id).owner, site, staging, existsSync(source) ? source : staging)
+          this.trace(id, "publish", { site, path: tree, ...published })
+          return { id: site, path: tree, ...published }
+        } finally {
+          rmSync(staging, { recursive: true, force: true })
+          rmSync(source, { recursive: true, force: true })
+        }
+      }
+      const previous = this.saveSite(id)
+      try {
+        renameSync(staging, target)
+      } catch (error) {
+        if (previous) {
+          renameSync(join(this.versionsDir, id, previous), target)
+          unlink(join(this.versionsDir, id, `${previous}.json`))
+        }
+        throw error
+      }
+      const files = listFiles(target)
+      const published = { id, path: tree, files: files.length, bytes: files.reduce((sum, file) => sum + statSync(file).size, 0), url: `/s/${id}/` }
+      this.trace(id, "publish", published)
+      return published
+    })
+  }
+
+  /** Move the live site into private version storage, if one exists. */
+  saveSite(id) {
     const target = join(this.publishedDir, id)
-    const staging = join(this.publishedDir, `.${id}.part`)
-    await this.copyOut(id, tree, staging)
-    rmSync(target, { recursive: true, force: true })
-    renameSync(staging, target)
-    const files = listFiles(target)
-    const published = { id, path: tree, files: files.length, bytes: files.reduce((sum, file) => sum + statSync(file).size, 0), url: `/s/${id}/` }
-    this.trace(id, "publish", published)
-    return published
+    if (!existsSync(target)) return null
+    const version = randomBytes(6).toString("hex")
+    const directory = join(this.versionsDir, id)
+    mkdirSync(directory, { recursive: true })
+    renameSync(target, join(directory, version))
+    writeJson(join(directory, `${version}.json`), { id: version, saved: new Date().toISOString() })
+    return version
+  }
+
+  siteVersions(id, site = id) {
+    const actor = this.get(id)
+    if (this.syncSites) return this.syncSites.versions(actor.owner, site)
+    const directory = join(this.versionsDir, id)
+    if (!existsSync(directory)) return []
+    return readdirSync(directory).filter(name => /^[0-9a-f]{12}\.json$/.test(name))
+      .map(name => readJson(join(directory, name)))
+      .sort((a, b) => b.saved.localeCompare(a.saved))
+  }
+
+  restoreSite(id, version, site = id) {
+    return this.lock.run(async () => {
+      const actor = this.get(id)
+      if (this.syncSites) return this.syncSites.restore(actor.owner, site, version)
+      if (typeof version !== "string" || !/^[0-9a-f]{12}$/.test(version)) throw new BadRequest("invalid site version")
+      const directory = join(this.versionsDir, id)
+      const source = join(directory, version)
+      if (!existsSync(source)) throw new NotFound(version)
+      const target = join(this.publishedDir, id)
+      this.saveSite(id)
+      renameSync(source, target)
+      unlink(join(directory, `${version}.json`))
+      this.trace(id, "restore-site", { version })
+      return { url: `/s/${id}/` }
+    })
+  }
+
+  unpublishSite(id, site = id) {
+    return this.lock.run(async () => {
+      const actor = this.get(id)
+      if (this.syncSites) return this.syncSites.remove(actor.owner, site)
+      const version = this.saveSite(id)
+      if (!version) throw new NotFound(id)
+      this.trace(id, "unpublish", { version })
+      return { version }
+    })
   }
 
   /** Copy an actor's directory into a fresh `dest`; only plain entries survive. */

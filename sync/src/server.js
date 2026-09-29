@@ -16,9 +16,11 @@
 import { createHash } from "node:crypto"
 import { createServer } from "node:http"
 import { can, identify } from "brayness-can"
-import { issue_host_pass } from "./host-pass.js"
+import { issue_host_pass, verify_host_pass } from "./host-pass.js"
+import { site_request } from "./sites.js"
 import { recovery_path, verify_recovery_pass } from "./recovery-pass.js"
 import { rights_key } from "./rights.js"
+import { admins as admin_list } from "./admins.js"
 
 const LIMIT = 10 * 1024 * 1024
 const PHONES = /\+[1-9]\d{6,14}/g
@@ -93,7 +95,8 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
         const claims = verify_recovery_pass(token, host_pass_secret)
         return { recovery: claims.phone, id: claims.id, paths: claims.paths }
       } catch {
-        throw new Status(401)
+        try { return { ...verify_host_pass(token, host_pass_secret), host: true } }
+        catch { throw new Status(401) }
       }
     }
     try {
@@ -103,11 +106,16 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
     }
   }
 
+  const admins = admin_list(storage)
+
   async function handle(request, response, path, action, who) {
+    if (path.split("/")[0] === "loops" && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
     const owner = path.split("/")[1]
     const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
     if (who?.recovery) {
       if (!["get", "list"].includes(action) || !recovery_path(path, who.recovery, who.paths)) throw new Status(403)
+    } else if (who?.host) {
+      if (!path.startsWith(`people/${who.phone}/work/site/`) || !can(who, action, path, grants)) throw new Status(403)
     } else if (!can(who, action, path, grants)) throw new Status(403)
 
     if (action === "list") {
@@ -165,7 +173,15 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
         return
       }
       if (path === null) throw new Status(400)
-      if (path === "v1/host-pass" && request.method === "POST") {
+      if (path.startsWith("sites/") || path.startsWith("v1/sites/")) {
+        if (path.startsWith("v1/sites/")) {
+          const pass = /^Bearer (\S+)$/.exec(request.headers.authorization ?? "")?.[1]
+          if (!pass || !host_pass_secret) throw new Status(401)
+          try { who = verify_host_pass(pass, host_pass_secret) }
+          catch { throw new Status(401) }
+        }
+        await site_request({ storage, method: request.method, path, who, response, read_body: () => read_body(request) })
+      } else if (path === "v1/host-pass" && request.method === "POST") {
         who = await who_is(request)
         if (!who?.phone) throw new Status(401)
         if (!host_pass_secret) throw new Status(503)
@@ -178,7 +194,7 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
       }
       status = response.statusCode
     } catch (error) {
-      status = error instanceof Status ? error.status : 500
+      status = Number.isInteger(error.status) ? error.status : 500
       if (status === 500) log(hash_phones(`error ${error.stack ?? error}`))
       if (!response.headersSent) response.writeHead(status).end()
       else response.destroy()

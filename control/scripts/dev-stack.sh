@@ -71,8 +71,8 @@ echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail 
 
 # TAP0 plus its NAT rules. The seed boot needs a TAP; an actor's own egress is
 # h2's, so actors get TAPs this script knows nothing about.
-# 18095: the fresh-actor check's sync service, on the Lima host.
-ACTOR_HOST_PORTS="18095" bash "$DIR/host/scripts/net-up.sh"
+# 18095: fresh-actor check; 18096: durable site sync on the Lima host.
+ACTOR_HOST_PORTS="18095 18096" bash "$DIR/host/scripts/net-up.sh"
 
 # Dev only: one shared signing key for sync, host, and the contract check.
 secret_file="$DIR/dist/host-pass-secret"
@@ -81,6 +81,21 @@ if [ ! -f "$secret_file" ]; then
   exit 1
 fi
 export HOST_PASS_SECRET="$(< "$secret_file")"
+# Sync stays up when this host stops; public sites do not depend on actors.
+site_sync_pid="$DIR/dist/site-sync.pid"
+if ! [ -s "$site_sync_pid" ] || ! kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
+  mkdir -p "$DIR/dist/site-sync"
+  nohup env HOST_PASS_SECRET="$HOST_PASS_SECRET" PROJECT=realness-development LISTEN=0.0.0.0 PORT=18096 SYNC_DIR="$DIR/dist/site-sync" \
+    node "$DIR/sync/bin/sync-service.js" > "$DIR/dist/site-sync.log" 2>&1 &
+  echo $! > "$site_sync_pid"
+fi
+for attempt in {1..30}; do
+  if curl -s -o /dev/null --max-time 1 http://127.0.0.1:18096/sites/a-000000000000/; then break; fi
+  sleep 1
+done
+kill -0 "$(< "$site_sync_pid")" || { echo 'site sync failed to start' >&2; exit 1; }
+export SYNC_SITE_URL="${SYNC_SITE_URL:-http://127.0.0.1:18096}"
+export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-http://127.0.0.1:18096}"
 # Development host and local proxy use a separate model-signing key.
 model_secret_file="$DIR/dist/model-pass-secret"
 [ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
@@ -97,6 +112,8 @@ fi
 cd "$DIR"
 # The link `brayness publish` prints: each site at its own root, through
 # Lima's forward of the API port. Browsers resolve *.localhost locally.
-site_url_default='http://{id}.localhost:18080/'
-export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
+if [ -z "${SYNC_SITE_URL:-}" ]; then
+  site_url_default='http://{id}.localhost:18080/'
+  export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
+fi
 exec node host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

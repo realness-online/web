@@ -50,8 +50,8 @@ See `plans/brayness.md` nodes k1-k4 for the decisions and unfinished work. Do no
 Someone who will not run a setup script gets a working environment.
 
 - In three ways: a browser page, an attached terminal, the API.
-- Out two ways: served from the actor while it runs, or published to a host
-  and reachable with nothing running.
+- Out two ways: served from the actor while it runs, or stored in sync and
+  served from sync, reachable with nothing running.
 - Idle three ways: a memory sleep, where programs resume; a disk sleep, where
   files come back and programs do not; or nothing at all, where the trace and
   artifacts come back into a fresh disk and the volume is gone.
@@ -817,17 +817,26 @@ Articles are Markdown in `content/articles/`. The output is plain HTML with its
 own scripts; a page with a diagram gets `scripts/mermaid.min.js` copied in.
 `/app` does the same with the app example.
 
-## Publish it at a URL (a2)
+## Publish it at a URL (a2, c1e)
 
-`POST /v1/actors/{id}/publish {"path": "/brayness/site"}` runs `tar` in the guest
-over the exec channel, extracts it into `published/<id>/` on the volume with
-tar's `data` filter, and serves it at `/s/<id>/`. The actor keeps running; the
-copy dies with the actor, because the durable thing is the export bundle and
-not the copy.
+With sync configured, a site lives in sync, not on an actor:
 
-In the dev loop the URL is `http://127.0.0.1:18080/s/<id>/` - Lima forwards 18080
-to the API port. Nothing is reachable from outside the machine yet; that is the
-open 8090 question, and h1/h2. `scripts/a2-verify.sh` is 17 checks.
+- `POST /v1/actors/{id}/publish {"path": "/brayness/work/site"}` runs `tar` in
+  the guest, uploads the tree as an immutable version under `sites/<id>/`, then
+  points `sites/<id>/active` at it.
+- Sync serves `sites/<id>/` to anyone, with no actor alive. Versions are private
+  until active; restore re-points the pointer; remove clears it and keeps history.
+- The host writes through a signed owner pass that reaches only that owner's
+  `people/+A/work/site/`, so the same source tree comes back on a fresh actor and
+  the URL stays the same.
+
+Without `SYNC_SITE_URL`, publish falls back to the volume: it extracts the tree
+into `published/<id>/` and the actor's own server serves `/s/<id>/`. That copy
+dies with the actor; it is for the offline unit tests, not the live loop.
+
+In the dev loop sync listens on `127.0.0.1:18096` and the URL is
+`http://127.0.0.1:18096/sites/<id>/`. Nothing is reachable from outside the
+machine yet; that is the open 8090 question, and h1/h2.
 
 ## An app runs in its own VM (u2)
 

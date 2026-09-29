@@ -101,6 +101,21 @@ test("usage is read-only to its owner", () => {
   assert.equal(can(scott, "list", "usage/"), false)
 })
 
+test("loops: admins read all and may only request a stop", () => {
+  const admin = { phone: A, admin: true }
+  const id = "a-0123456789ab"
+  assert.equal(can(admin, "list", "loops/"), true)
+  assert.equal(can(admin, "get", `loops/${id}/record.html`), true)
+  assert.equal(can(admin, "write", `loops/${id}/stop.html`), true)
+  assert.equal(can(admin, "write", `loops/${id}/record.html`), false)
+  assert.equal(can(admin, "delete", `loops/${id}/stop.html`), false)
+  assert.equal(can(admin, "write", "loops/not-an-id/stop.html"), false)
+  assert.equal(can(scott, "get", `loops/${id}/record.html`), false) // a person is not an admin
+  assert.equal(can({ phone: A, admin: "yes" }, "list", "loops/"), false)
+  assert.equal(can(admin, "get", "admins.html"), false) // nobody reads or writes the list through sync
+  assert.equal(can(admin, "write", "admins.html"), false)
+})
+
 // Realness serves index.html.gz and three folders; the rest stays private.
 test("public is an allowlist", () => {
   assert.equal(can(stranger, "get", `people/${A}/thoughts/1738103761047.html.gz`), true)

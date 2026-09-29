@@ -24,7 +24,7 @@ async function files(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (["node_modules", "__pycache__", "term"].includes(entry.name)) continue
+      if (["node_modules", "__pycache__", "term", "chat"].includes(entry.name)) continue
       found.push(...(await files(path)))
     } else if (entry.isFile()) {
       found.push(path)

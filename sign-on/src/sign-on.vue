@@ -36,11 +36,12 @@
     })
   }
 
-  const on_open_terminal = async () => {
+  const on_open_terminal = async (page = 'terminal') => {
     const user = current_user.value
     if (!handoff.value || !user || !terminal_url || !sync_url) return
     const target = new URL(terminal_url)
-    const opened = window.open(`${target.origin}/handoff`, '_blank')
+    const handoff_url = `${target.origin}/handoff${page === 'chat' ? '?next=chat' : ''}`
+    const opened = window.open(handoff_url, '_blank')
     if (!opened) {
       error.value = 'Allow the terminal window, then try again.'
       return
@@ -68,7 +69,7 @@
       pass = (await response.json()).pass
       window.addEventListener('message', receive)
       // The handoff window may have sent ready before the pass arrived.
-      opened.location.href = `${target.origin}/handoff`
+      opened.location.href = handoff_url
     } catch (thrown) {
       error.value = thrown.message
       opened.close()
@@ -86,8 +87,16 @@
       type="button"
       id="open-terminal"
       :disabled="sending || !terminal_url || !sync_url"
-      @click="on_open_terminal">
+      @click="on_open_terminal()">
       Open the terminal
+    </button>
+    <button
+      v-if="handoff && signed_on"
+      type="button"
+      id="open-chat"
+      :disabled="sending || !terminal_url || !sync_url"
+      @click="on_open_terminal('chat')">
+      Open chat
     </button>
     <button
       v-if="cli && signed_on"

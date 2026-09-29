@@ -186,3 +186,17 @@ test("only allowed sites may call from a browser", async () => {
   const stranger_site = await call("GET", `people/${A}/posters/`, { headers: { origin: "https://evil.example" } })
   assert.equal(stranger_site.headers.get("access-control-allow-origin"), null)
 })
+
+test("a global admin reads every loop and may only request a stop", async () => {
+  const id = "a-0123456789ab"
+  await storage.put(`loops/${id}/record.html`, '<article itemscope itemtype="/loop"></article>')
+  await storage.put("admins.html", `<a href="tel:${B}">admin</a>`) // read once per 30 seconds
+  assert.equal(await status("GET", `loops/${id}/record.html`, { headers: as(A) }), 403)
+  assert.equal(await status("GET", `loops/${id}/record.html`, { headers: as(B) }), 200)
+  const listed = await (await call("GET", "loops/?deep", { headers: as(B) })).json()
+  assert.deepEqual(Object.keys(listed), [`${id}/record.html`])
+  assert.equal(await status("PUT", `loops/${id}/stop.html`, { headers: as(B), body: "stop" }), 200)
+  assert.equal(await status("PUT", `loops/${id}/record.html`, { headers: as(B), body: "forged" }), 403)
+  assert.equal(await status("GET", "admins.html", { headers: as(B) }), 403)
+  assert.equal(await status("PUT", "admins.html", { headers: as(A), body: `<a href="tel:${A}">me</a>` }), 403)
+})

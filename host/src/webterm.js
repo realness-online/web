@@ -16,7 +16,7 @@ import { logger } from "./log.js"
 import { CONTENT_TYPES } from "./server.js"
 import { terminal_auth } from "./terminal-auth.js"
 import { can } from "../../can/src/can.js"
-import { Lines } from "./vsock.js"
+import * as vsock from "./vsock.js"
 
 const LOG = logger("webterm")
 const GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -73,7 +73,7 @@ function text(response, status, body) {
   response.end(body)
 }
 
-export function makeServer({ pageRoot, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET) }) {
+export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET), connectChat = (record) => vsock.connect(record.vsockPath, 55) }) {
   const same_origin = (request) => {
     const origin = request.headers.origin
     return origin === `http://${request.headers.host}` || origin === `https://${request.headers.host}`
@@ -87,7 +87,8 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
     if (request.method === "GET" && url.pathname === "/handoff") {
       const origin = process.env.SIGN_ON_ORIGIN
       if (!origin) return text(response, 503, "sign-on origin is not configured\n")
-      const page = Buffer.from(`<!doctype html><title>Opening Brayness</title><p>Waiting for sign-in...</p><script>const trusted=${JSON.stringify(origin)};window.addEventListener('message',async event=>{if(event.origin!==trusted||event.source!==window.opener||event.data?.type!=='brayness-pass')return;const response=await fetch('/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:event.data.pass})});if(response.ok)location.replace('/');else document.querySelector('p').textContent='Sign-in handoff failed'});if(window.opener)window.opener.postMessage({type:'brayness-ready'},trusted);</script>`)
+      const destination = url.searchParams.get("next") === "chat" ? "/chat" : "/"
+      const page = Buffer.from(`<!doctype html><title>Opening Brayness</title><p>Waiting for sign-in...</p><script>const trusted=${JSON.stringify(origin)};window.addEventListener('message',async event=>{if(event.origin!==trusted||event.source!==window.opener||event.data?.type!=='brayness-pass')return;const response=await fetch('/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pass:event.data.pass})});if(response.ok)location.replace(${JSON.stringify(destination)});else document.querySelector('p').textContent='Sign-in handoff failed'});if(window.opener)window.opener.postMessage({type:'brayness-ready'},trusted);</script>`)
       response.writeHead(200, { "content-type": "text/html; charset=utf-8", "content-length": page.length, "cache-control": "no-store", "content-security-policy": "default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'" })
       return response.end(page)
     }
@@ -107,7 +108,56 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
       }
     }
     const phone = auth.owner(request.headers.cookie)
-    if (!phone && (url.pathname === "/ticket" || ["/", "/term", "/index.html"].includes(url.pathname))) return text(response, 401, "sign in\n")
+    const chat = url.pathname === "/chat" || url.pathname.startsWith("/chat/")
+    if (!phone && (url.pathname === "/ticket" || chat || ["/", "/term", "/index.html"].includes(url.pathname))) return text(response, 401, "sign in\n")
+    if (chat && url.searchParams.get("actor")) {
+      try {
+        if (!allowed(phone, url.searchParams.get("actor"))) return text(response, 404, "no actor\n")
+      } catch {
+        return text(response, 404, "no actor\n")
+      }
+    }
+    if (request.method === "POST" && url.pathname === "/chat/message") {
+      if (!phone || !same_origin(request)) return text(response, 403, "not signed in\n")
+      const id = url.searchParams.get("actor")
+      let record
+      try {
+        if (!allowed(phone, id)) return text(response, 404, "no actor\n")
+        record = store.get(id)
+      } catch {
+        return text(response, 404, "no actor\n")
+      }
+      let body = ""
+      for await (const chunk of request) {
+        body += chunk
+        if (Buffer.byteLength(body) > 16_384) return text(response, 413, "message too long\n")
+      }
+      let message
+      try {
+        message = JSON.parse(body).message
+      } catch {
+        return text(response, 400, "invalid message\n")
+      }
+      if (typeof message !== "string" || !message.trim()) return text(response, 400, "invalid message\n")
+      let guest
+      try {
+        record = await store.ensureRunning(id)
+        guest = await connectChat(record)
+      } catch (error) {
+        LOG.warn(`chat bridge failed for ${id}: ${error.message}`)
+        return text(response, 502, "chat is unavailable\n")
+      }
+      store.beginWork(id)
+      const end = () => { guest.socket.destroy(); store.endWork(id) }
+      response.once("close", end)
+      response.writeHead(200, { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" })
+      const early = guest.lines.rest()
+      if (early.length) response.write(early)
+      guest.socket.on("error", () => response.destroy())
+      guest.socket.pipe(response)
+      guest.socket.write(`${JSON.stringify({ message })}\n`)
+      return
+    }
     if (request.method === "POST" && url.pathname === "/ticket") {
       if (!same_origin(request)) return text(response, 403, "bad origin\n")
       const id = url.searchParams.get("actor")
@@ -120,7 +170,7 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
       response.writeHead(200, { "content-type": "application/json", "content-length": body.length, "cache-control": "no-store" })
       return response.end(body)
     }
-    if (["/", "/term", "/index.html"].includes(url.pathname)) {
+    if (["/", "/term", "/index.html", "/chat", "/chat/", "/chat/index.html"].includes(url.pathname)) {
       if (!url.searchParams.get("actor") && newActor) {
         if (!can({ phone }, "write", `people/${phone}/harnesses`)) return text(response, 403, "cannot create an actor\n")
         let record
@@ -132,7 +182,7 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
         }
         LOG.info(`bare page: created ${record.id}`)
         // A new Pi conversation in the new actor; old ones stay searchable.
-        response.writeHead(302, { location: `/?actor=${record.id}&exec=brayness`, "content-length": 0, connection: "close" })
+        response.writeHead(302, { location: chat ? `/chat?actor=${record.id}` : `/?actor=${record.id}&exec=brayness`, "content-length": 0, connection: "close" })
         return response.end()
       }
       if (url.searchParams.get("actor")) {
@@ -143,18 +193,19 @@ export function makeServer({ pageRoot, streamPort, newActor, store, auth = termi
         }
       }
       try {
-        const page = readFileSync(join(pageRoot, "index.html"))
+        const page = readFileSync(join(chat ? chatRoot : pageRoot, "index.html"))
         response.writeHead(200, { "content-type": CONTENT_TYPES[".html"], "content-length": page.length, connection: "close" })
         return response.end(page)
       } catch {
-        return text(response, 503, "no terminal page: term/ was not shipped\n")
+        return text(response, 503, chat ? "no chat page: chat/ was not shipped\n" : "no terminal page: term/ was not shipped\n")
       }
     }
     if (url.pathname === "/pty") return text(response, 400, request.headers["sec-websocket-key"] ? "no actor\n" : "no websocket key\n")
     // The built page's hashed assets and the wasm.
     try {
-      const root = realpathSync(pageRoot)
-      const target = realpathSync(join(root, decodeURIComponent(url.pathname)))
+      const root = realpathSync(chat ? chatRoot : pageRoot)
+      const path = chat ? url.pathname.slice("/chat".length) : url.pathname
+      const target = realpathSync(join(root, decodeURIComponent(path)))
       if (!target.startsWith(root + sep) || !statSync(target).isFile()) throw new Error()
       const body = readFileSync(target)
       response.writeHead(200, { "content-type": CONTENT_TYPES[extname(target)] ?? "application/octet-stream", "content-length": body.length, connection: "close" })
@@ -180,7 +231,7 @@ async function openPty(streamPort, hello) {
     stream.once("error", fail)
   })
   stream.setNoDelay(true)
-  const lines = new Lines(stream)
+  const lines = new vsock.Lines(stream)
   stream.write(`${JSON.stringify(hello)}\n`)
   const answer = (await lines.read(30))?.toString() ?? ""
   if (answer.includes('"error"') || !answer) {

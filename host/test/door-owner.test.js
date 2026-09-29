@@ -19,6 +19,9 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     liveActors: () => [record],
     get: () => record,
     publish: async (id, path) => { published.push([id, path]) },
+    siteVersions: () => [{ id: "012345abcdef", saved: "2026-09-29T00:00:00Z" }],
+    restoreSite: async (id, version) => { published.push([id, version]); return { url: `/s/${id}/` } },
+    unpublishSite: async (id) => { published.push([id, "remove"]); return { version: "012345abcdef" } },
   }
   const door = new Door(store)
   door.reconcile()
@@ -35,6 +38,10 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
   try {
     assert.equal((await send({ op: "publish", owner: "+14155559999", path: "/brayness/site" })).ok, true)
     assert.deepEqual(published, [[record.id, "/brayness/site"]])
+    assert.equal((await send({ op: "site-versions" })).versions[0].id, "012345abcdef")
+    assert.equal((await send({ op: "site-restore", version: "012345abcdef" })).url, `/s/${record.id}/`)
+    assert.equal((await send({ op: "site-remove" })).version, "012345abcdef")
+    assert.equal(published.length, 3)
     const recovery = await send({ op: "recovery-pass", owner: "+14155559999" })
     assert.equal(recovery.ok, true)
     assert.deepEqual(verify_recovery_pass(recovery.pass, process.env.HOST_PASS_SECRET), { phone: record.owner, id: record.id, paths: null })
@@ -56,7 +63,10 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     assert.equal((await send({ op: "model-pass" })).ok, false)
     assert.equal((await send({ op: "recovery-pass" })).ok, false)
     assert.equal((await send({ op: "publish", owner: "+14155550123" })).ok, false)
-    assert.equal(published.length, 1)
+    assert.equal((await send({ op: "site-versions" })).ok, false)
+    assert.equal((await send({ op: "site-restore", version: "012345abcdef" })).ok, false)
+    assert.equal((await send({ op: "site-remove" })).ok, false)
+    assert.equal(published.length, 3)
   } finally {
     await new Promise((done) => server.close(done))
     rmSync(root, { recursive: true, force: true })

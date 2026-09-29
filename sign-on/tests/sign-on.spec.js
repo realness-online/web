@@ -74,6 +74,7 @@ describe('sign-on page', () => {
     await nextTick()
 
     expect(page.find('#open-terminal').exists()).toBe(true)
+    expect(page.find('#open-chat').exists()).toBe(true)
     expect(page.find('#mobile').exists()).toBe(false)
   })
 
@@ -111,5 +112,9 @@ describe('sign-on page', () => {
       { type: 'brayness-pass', pass: 'P' },
       'http://terminal.example'
     )
+    await page.find('#open-chat').trigger('click')
+    await flushPromises()
+    expect(open).toHaveBeenLastCalledWith('http://terminal.example/handoff?next=chat', '_blank')
+    expect(opened.location.href).toBe('http://terminal.example/handoff?next=chat')
   })
 })

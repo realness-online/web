@@ -217,7 +217,7 @@ async function startApp(store, apps, owner, actor, request) {
   return apps.startFrom((dest) => store.copyOut(id, path, dest), { owner, actor: id, path })
 }
 
-async function route(store, apps, auth, request, response) {
+async function route(store, apps, auth, loops, request, response) {
   const url = new URL(request.url, "http://host")
   const path = url.pathname.replace(/\/+$/, "") || "/"
   const method = request.method
@@ -253,6 +253,16 @@ async function route(store, apps, auth, request, response) {
     const record = apps.record(id)
     if (record.owner !== owner) throw new NotFound(id)
     return record
+  }
+  if (path.startsWith("/v1/loops") && !loops) throw new NotFound("loops")
+  if (path === "/v1/loops" && method === "GET") return json(response, 200, { loops: loops.of_owner(owner) })
+  if (path.startsWith("/v1/loops/") && method === "POST") {
+    const [id, action] = path.slice("/v1/loops/".length).split("/")
+    if (action !== "stop" || !loops.loops[id]) throw new NotFound(id)
+    actor(id)
+    if (loops.loops[id].status !== "running") return json(response, 409, { error: `loop is ${loops.loops[id].status}` })
+    await loops.stop(id, "owner")
+    return json(response, 200, loops.of_owner(owner).find((loop) => loop.id === id))
   }
   if (path.startsWith("/v1/apps") && !apps) throw new NotFound("apps")
   if (path === "/v1/apps" && method === "GET") return json(response, 200, { apps: apps.list().filter((record) => record.owner === owner) })
@@ -337,10 +347,10 @@ async function route(store, apps, auth, request, response) {
 }
 
 /** `apps` is an AppStore; without one, /v1/apps answers 404. */
-export function makeServer(store, apps = null, auth = apps && app_auth(process.env.HOST_PASS_SECRET)) {
+export function makeServer(store, apps = null, auth = apps && app_auth(process.env.HOST_PASS_SECRET), loops = null) {
   const server = createServer(async (request, response) => {
     try {
-      await route(store, apps, auth, request, response)
+      await route(store, apps, auth, loops, request, response)
     } catch (error) {
       request.resume()
       if (error instanceof BadRequest) return json(response, 400, { error: error.message })

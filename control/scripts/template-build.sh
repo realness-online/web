@@ -94,8 +94,11 @@ install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
 install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"
 install -m 0755 "$GUEST_SRC/brayness-agent.py" "$TREE/usr/local/bin/brayness-agent"
 install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
+install -m 0755 "$GUEST_SRC/brayness-chat" "$TREE/usr/local/bin/brayness-chat"
+install -m 0644 "$GUEST_SRC/brayness-chat.md" "$TREE/usr/local/share/brayness-chat.md"
 install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
 install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
+install -m 0755 "$GUEST_SRC/brayness-site" "$TREE/usr/local/bin/brayness-site"
 install -m 0755 "$GUEST_SRC/brayness-loop-run" "$TREE/usr/local/bin/brayness-loop-run"
 install -m 0755 "$GUEST_SRC/brayness-loop" "$TREE/usr/local/bin/brayness-loop"
 install -m 0755 "$GUEST_SRC/brayness-recover" "$TREE/usr/local/bin/brayness-recover"
@@ -103,6 +106,7 @@ install -m 0755 "$GUEST_SRC/brayness-model-pass" "$TREE/usr/local/bin/brayness-m
 install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
 install -m 0644 "$GUEST_SRC/brayness-vsock.service" "$TREE/etc/systemd/system/brayness-vsock.service"
 install -m 0644 "$GUEST_SRC/brayness-pty.service" "$TREE/etc/systemd/system/brayness-pty.service"
+install -m 0644 "$GUEST_SRC/brayness-chat.service" "$TREE/etc/systemd/system/brayness-chat.service"
 
 # Host resolver, so apt in the chroot can reach the archive.
 cp /etc/resolv.conf "$TREE/etc/resolv.conf"
@@ -146,7 +150,7 @@ chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find > /dev/null \
 log "enabling units"
 # --root writes symlinks into the tree; no running systemd required.
 systemctl --root="$TREE" enable \
-  serial-getty@ttyS0.service brayness-net.service brayness-vsock.service brayness-pty.service
+  serial-getty@ttyS0.service brayness-net.service brayness-vsock.service brayness-pty.service brayness-chat.service
 
 # Never a password prompt, and no sshd in a hosted template: the control
 # channel is vsock.
