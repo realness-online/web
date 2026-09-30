@@ -109,7 +109,8 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
   const admins = admin_list(storage)
 
   async function handle(request, response, path, action, who) {
-    if (path.split("/")[0] === "loops" && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
+    // Admin is asked only where it grants something: loops and the usage ledger.
+    if (["loops", "usage"].includes(path.split("/")[0]) && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
     const owner = path.split("/")[1]
     const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
     if (who?.recovery) {

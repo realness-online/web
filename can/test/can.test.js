@@ -101,6 +101,21 @@ test("usage is read-only to its owner", () => {
   assert.equal(can(scott, "list", "usage/"), false)
 })
 
+test("usage: a global admin reads everyone's, and nothing more", () => {
+  const admin = { phone: B, admin: true }
+  assert.equal(can(admin, "list", "usage/"), true) // everyone with usage
+  assert.equal(can(admin, "list", `usage/${A}/2026-09-27/`), true)
+  assert.equal(can(admin, "get", `usage/${A}/2026-09-27/row.html`), true)
+  assert.equal(can(admin, "write", `usage/${A}/2026-09-27/row.html`), false) // the proxy alone writes
+  assert.equal(can(admin, "delete", `usage/${A}/2026-09-27/row.html`), false)
+  assert.equal(can({ phone: B, admin: "yes" }, "list", "usage/"), false)
+  assert.equal(can({ instance: `/${B}/harnesses/1726000000000`, admin: true }, "list", "usage/"), false)
+  // Admin reaches no one's files: people/ stays private.
+  assert.equal(can(admin, "get", `people/${A}/vault/note.md`), false)
+  assert.equal(can(admin, "list", `people/${A}/`), false)
+  assert.equal(can(admin, "get", `subscriptions/${A}/sub`), false)
+})
+
 test("loops: admins read all and may only request a stop", () => {
   const admin = { phone: A, admin: true }
   const id = "a-0123456789ab"

@@ -70,8 +70,8 @@ export function can(who, action, path, grants = []) {
     if (action === "get" || action === "list") return true
     return action === "write" && /^a-[a-f0-9]{12}$/.test(owner ?? "") && rest.join("/") === "stop.html"
   }
-  // The proxy alone writes the ledger; its owner may only read it.
-  if (root === "usage") return Boolean(owner) && me.phone === owner && (action === "get" || action === "list")
+  // The proxy alone writes the ledger; its owner and a global admin may read it.
+  if (root === "usage") return (action === "get" || action === "list") && (me.admin || (Boolean(owner) && me.phone === owner))
 
   if (root !== "people") return false
   if (!owner) return action === "list" && Boolean(me.phone) // the phonebook

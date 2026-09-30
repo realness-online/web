@@ -200,3 +200,18 @@ test("a global admin reads every loop and may only request a stop", async () => 
   assert.equal(await status("GET", "admins.html", { headers: as(B) }), 403)
   assert.equal(await status("PUT", "admins.html", { headers: as(A), body: `<a href="tel:${A}">me</a>` }), 403)
 })
+
+test("a global admin reads everyone's usage and still no one's files", async () => {
+  const row = `usage/${A}/2026-09-30/120000000-a-0123456789ab-abc123.html`
+  await storage.put("admins.html", `<a href="tel:${B}">admin</a>`)
+  await storage.put(row, '<p itemscope itemtype="/usage"></p>\n')
+  await storage.put(`people/${A}/vault/note.md`, "private")
+  assert.equal(await status("GET", row, { headers: as(A) }), 200) // its owner
+  assert.equal(await status("GET", "usage/", { headers: as(A) }), 403) // a person sees only their own
+  assert.equal(await status("GET", row, { headers: as(B) }), 200)
+  const people = await (await call("GET", "usage/", { headers: as(B) })).json()
+  assert.ok(people.folders.includes(A))
+  assert.equal(await status("PUT", row, { headers: as(B), body: "forged" }), 403)
+  assert.equal(await status("DELETE", row, { headers: as(B) }), 403)
+  assert.equal(await status("GET", `people/${A}/vault/note.md`, { headers: as(B) }), 403)
+})
