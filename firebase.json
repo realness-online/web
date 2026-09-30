@@ -24,6 +24,7 @@
         "source": "/check-phone-integrity",
         "function": "check_phone_integrity"
       },
+      { "regex": "/prints/[0-9]+", "function": "print_share" },
       { "source": "/prints-checkout", "function": "prints_checkout" },
       { "source": "/prints-webhook", "function": "prints_webhook" },
       { "source": "**", "destination": "/index.html" }

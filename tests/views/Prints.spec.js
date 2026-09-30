@@ -7,9 +7,19 @@ const admin_id = import.meta.env.VITE_ADMIN_ID
 const first_id = `${admin_id}/posters/1700000000000`
 const second_id = `${admin_id}/posters/1700000000001`
 
-const { mock_for_person, mock_load, poster_list } = vi.hoisted(() => ({
+const {
+  mock_for_person,
+  mock_load,
+  mock_list,
+  mock_history,
+  mock_directory,
+  poster_list
+} = vi.hoisted(() => ({
   mock_for_person: vi.fn(),
   mock_load: vi.fn(),
+  mock_list: vi.fn(),
+  mock_history: vi.fn(),
+  mock_directory: vi.fn(),
   poster_list: []
 }))
 
@@ -31,8 +41,12 @@ vi.mock('@/use/poster', () => ({
 
 vi.mock('@/utils/itemid', async importOriginal => ({
   ...(await importOriginal()),
-  load: mock_load
+  load: mock_load,
+  list: mock_list,
+  list_history_page: mock_history
 }))
+
+vi.mock('@/persistence/Directory', () => ({ as_directory: mock_directory }))
 
 const json_response = (body, ok = true) => ({
   ok,
@@ -59,6 +73,9 @@ beforeEach(() => {
   )
   mock_for_person.mockResolvedValue(undefined)
   mock_load.mockResolvedValue({ viewbox: '0 0 512 512' })
+  mock_list.mockResolvedValue([])
+  mock_history.mockResolvedValue([])
+  mock_directory.mockResolvedValue({ items: [] })
   global.fetch = vi.fn(() => Promise.resolve(json_response(editions())))
   HTMLDialogElement.prototype.showModal ??= vi.fn()
   HTMLDialogElement.prototype.close ??= vi.fn()
@@ -101,6 +118,9 @@ describe('@/views/Prints', () => {
     await flushPromises()
     expect(wrapper.vm.showing).toBe(first_id)
     expect(wrapper.find('dialog as-figure-stub').exists()).toBe(true)
+    expect(wrapper.find('dialog a').attributes('href')).toBe(
+      '/prints/1700000000000'
+    )
     expect(price_buttons(wrapper).map(button => button.text())).toEqual([
       '$5●',
       '$100',
@@ -122,6 +142,47 @@ describe('@/views/Prints', () => {
     expect(price_buttons(wrapper)[2].attributes('disabled')).toBeUndefined()
   })
 
+  it('shows the thought the print was made with', async () => {
+    mock_list.mockResolvedValue([
+      {
+        id: `${admin_id}/statements/1700000001000`,
+        type: 'thoughts',
+        statement: 'the harbor at first light'
+      },
+      {
+        id: `${admin_id}/statements/1700009000000`,
+        type: 'thoughts',
+        statement: 'an unrelated afternoon'
+      }
+    ])
+    const wrapper = mount_prints()
+    await flushPromises()
+    await poster_buttons(wrapper)[0].trigger('click')
+    await flushPromises()
+    expect(wrapper.find('p.print-thought').text()).toBe(
+      'the harbor at first light'
+    )
+  })
+
+  it('reads a thought kept in a history page', async () => {
+    mock_directory.mockResolvedValue({ items: ['index', '1699999000000'] })
+    mock_history.mockResolvedValue([
+      {
+        id: `${admin_id}/statements/1700000002000`,
+        type: 'thoughts',
+        statement: 'kept past paging'
+      }
+    ])
+    const wrapper = mount_prints()
+    await flushPromises()
+    await poster_buttons(wrapper)[0].trigger('click')
+    await flushPromises()
+    expect(mock_history).toHaveBeenCalledWith(
+      `${admin_id}/statements/1699999000000`
+    )
+    expect(wrapper.find('p.print-thought').text()).toBe('kept past paging')
+  })
+
   it('does not guess prices when the checkout endpoint fails', async () => {
     global.fetch = vi.fn(() => Promise.reject(new Error('offline')))
     const wrapper = mount_prints()
@@ -132,7 +193,7 @@ describe('@/views/Prints', () => {
     expect(wrapper.find('dialog [role="status"]').text()).toBe(
       'Checkout unavailable'
     )
-    expect(wrapper.find('dialog a').attributes('href')).toBe(
+    expect(wrapper.find('dialog a[href^="sms:"]').attributes('href')).toBe(
       `sms:${admin_id.slice(1)}`
     )
   })
@@ -178,7 +239,7 @@ describe('@/views/Prints', () => {
     expect(wrapper.find('[role="alert"]').text()).toBe(
       'Print edition already sold'
     )
-    expect(wrapper.find('dialog a').attributes('href')).toBe(
+    expect(wrapper.find('dialog a[href^="sms:"]').attributes('href')).toBe(
       `sms:${admin_id.slice(1)}`
     )
   })

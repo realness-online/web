@@ -3,7 +3,10 @@
   import AsFigure from '@/components/posters/as-figure'
   import { use_posters } from '@/use/poster'
   import { as_author } from '@/utils/itemid'
-  import { load } from '@/utils/itemid'
+  import { load, list, list_history_page } from '@/utils/itemid'
+  import { as_directory } from '@/persistence/Directory'
+  import { recent_number_first } from '@/utils/sorting'
+  import { thought_for_poster, thought_text } from '@realness.online/thoughts'
   import { poster_ratio } from '@/use/poster-aspect'
 
   const { posters, for_person } = use_posters()
@@ -12,6 +15,7 @@
   const CENTS_PER_DOLLAR = 100
   const OPEN_AMOUNT = 50000
   const PRINT_LIMIT = 21
+  const share_url = poster_id => `/prints/${poster_id.split('/').at(-1)}`
 
   const prints = computed(() =>
     posters.value
@@ -64,6 +68,38 @@
     }
   }
 
+  // The thought a print was made with, by the same rule the feed uses: a run
+  // of rows where each is within thirteen minutes of the one before.
+  const thoughts = ref(/** @type {Map<string, string>} */ (new Map()))
+
+  // The whole statement history, not only the live file: paging moves old
+  // statements into their own pages, and a thought must not change shape
+  // because it crossed a page boundary. The share page reads the same set.
+  const all_statements = async () => {
+    const live = await list(`${admin_id}/statements`)
+    const directory = await as_directory(`${admin_id}/statements`)
+    const pages = (directory?.items ?? [])
+      .filter(page => Number.isFinite(Number(page)))
+      .sort(recent_number_first)
+    const history = await Promise.all(
+      pages.map(page => list_history_page(`${admin_id}/statements/${page}`))
+    )
+    return [...live, ...history.flat()]
+  }
+
+  const hydrate_thoughts = async () => {
+    const statements = await all_statements()
+    if (!statements.length) return
+    const found = new Map()
+    for (const print of prints.value) {
+      const text = thought_text(
+        thought_for_poster([print, ...statements], print.id)
+      )
+      if (text) found.set(print.id, text)
+    }
+    thoughts.value = found
+  }
+
   const hydrate = async () => {
     const loaded = await Promise.all(
       prints.value.map(p =>
@@ -78,7 +114,7 @@
 
   mounted(async () => {
     await for_person({ id: import.meta.env.VITE_ADMIN_ID })
-    await hydrate()
+    await Promise.all([hydrate(), hydrate_thoughts()])
   })
 
   // Sync can change poster dimensions while this page is open.
@@ -88,7 +124,7 @@
   )
   watch(
     () => feed_needs_refresh?.value?.at,
-    () => void hydrate()
+    () => void Promise.all([hydrate(), hydrate_thoughts()])
   )
 
   const viewer = ref(/** @type {HTMLDialogElement | null} */ (null))
@@ -184,6 +220,12 @@
       -->
       <as-figure v-if="showing" :key="showing" :itemid="showing" pin />
       <form @submit.prevent>
+        <p v-if="showing && thoughts.get(showing)" class="print-thought">
+          {{ thoughts.get(showing) }}
+        </p>
+        <a v-if="showing" :href="share_url(showing)"
+          >Sale dates and share link</a
+        >
         <ol v-if="amounts.length">
           <li v-for="amount in amounts" :key="amount">
             <button
@@ -356,6 +398,13 @@
         & > p {
           margin: 0;
           text-align: center;
+        }
+
+        // The artist's own words about this print, set apart from the shop
+        // controls below. Italic is the one cue a quotation gets here.
+        & > p.print-thought {
+          max-width: base-line * 30;
+          font-style: italic;
         }
       }
 
