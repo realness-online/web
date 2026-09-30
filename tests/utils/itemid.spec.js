@@ -974,7 +974,11 @@ describe('@/utils/itemid', () => {
         as_download_url(id)
       ])
 
-      expect(url).toHaveBeenCalledTimes(1)
+      // Three callers share one lookup of each suffix, not three lookups.
+      expect(url.mock.calls.map(([filename]) => filename)).toEqual([
+        'people/+19159206481/index.html.gz',
+        'people/+19159206481/index.html'
+      ])
       url.mockResolvedValue('https://example.com/file.html.gz')
     })
 

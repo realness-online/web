@@ -69,6 +69,7 @@ beforeEach(async () => {
     const seed = context.storage()
     const paths = [
       relations,
+      `people/${OWNER}/relations.html`,
       profile,
       poster,
       statements,
@@ -86,35 +87,39 @@ beforeEach(async () => {
   })
 })
 
-describe('relations.html.gz is private', () => {
-  it('denies an anonymous read', async () => {
-    await assertFails(getBytes(ref(anonymous, relations)))
-  })
+describe.each(['relations.html', 'relations.html.gz'])(
+  '%s is private',
+  filename => {
+    const relations = `people/${OWNER}/${filename}`
+    it('denies an anonymous read', async () => {
+      await assertFails(getBytes(ref(anonymous, relations)))
+    })
 
-  it('denies another signed-in person a read', async () => {
-    await assertFails(getBytes(ref(stranger, relations)))
-  })
+    it('denies another signed-in person a read', async () => {
+      await assertFails(getBytes(ref(stranger, relations)))
+    })
 
-  it('allows the owner to read', async () => {
-    await assertSucceeds(getBytes(ref(owner, relations)))
-  })
+    it('allows the owner to read', async () => {
+      await assertSucceeds(getBytes(ref(owner, relations)))
+    })
 
-  it('allows the owner to write', async () => {
-    await assertSucceeds(uploadString(ref(owner, relations), 'mine', 'raw'))
-  })
+    it('allows the owner to write', async () => {
+      await assertSucceeds(uploadString(ref(owner, relations), 'mine', 'raw'))
+    })
 
-  it('allows the owner to delete', async () => {
-    await assertSucceeds(deleteObject(ref(owner, relations)))
-  })
+    it('allows the owner to delete', async () => {
+      await assertSucceeds(deleteObject(ref(owner, relations)))
+    })
 
-  it('denies another signed-in person a write', async () => {
-    await assertFails(uploadString(ref(stranger, relations), 'theirs', 'raw'))
-  })
+    it('denies another signed-in person a write', async () => {
+      await assertFails(uploadString(ref(stranger, relations), 'theirs', 'raw'))
+    })
 
-  it('denies an anonymous delete', async () => {
-    await assertFails(deleteObject(ref(anonymous, relations)))
-  })
-})
+    it('denies an anonymous delete', async () => {
+      await assertFails(deleteObject(ref(anonymous, relations)))
+    })
+  }
+)
 
 describe('the rest of a person is public to read', () => {
   it('allows an anonymous profile read', async () => {

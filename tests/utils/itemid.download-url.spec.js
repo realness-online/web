@@ -50,6 +50,37 @@ describe('download url cache', () => {
     url.mockResolvedValue('https://storage/profile.html.gz?token=a')
   })
 
+  it('reads a new-name object from an old-name client without marking it missing', async () => {
+    const { as_download_url } = await import('@/utils/itemid')
+    const { url } = await import('@/utils/serverless')
+    url.mockImplementation(async filename => {
+      if (filename.endsWith('.html.gz'))
+        throw Object.assign(new Error('missing'), {
+          code: 'storage/object-not-found'
+        })
+      return 'https://storage/new-name'
+    })
+    expect(await as_download_url(id)).toBe('https://storage/new-name')
+    expect(await as_download_url(id)).toBe('https://storage/new-name')
+    expect(url.mock.calls.map(([filename]) => filename)).toEqual([
+      'people/+16282281824/index.html.gz',
+      'people/+16282281824/index.html'
+    ])
+    expect(store.get('sync:index')?.[id]).toBeUndefined()
+  })
+
+  it('does not try another suffix after a permission failure', async () => {
+    const { as_download_url } = await import('@/utils/itemid')
+    const { url } = await import('@/utils/serverless')
+    const error = Object.assign(new Error('private'), {
+      code: 'storage/unauthorized'
+    })
+    url.mockRejectedValue(error)
+    await expect(as_download_url(id)).rejects.toBe(error)
+    expect(url).toHaveBeenCalledTimes(1)
+    expect(store.get('sync:index')?.[id]).toBeUndefined()
+  })
+
   it('asks Storage once and reuses the url after that', async () => {
     const { as_download_url } = await import('@/utils/itemid')
     const { url } = await import('@/utils/serverless')

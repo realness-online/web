@@ -6,6 +6,10 @@ service firebase.storage {
         && request.auth.token.phone_number == mobile;
     }
 
+    function is_private_name(name) {
+      return name in ['relations.html', 'relations.html.gz'];
+    }
+
     // Push subscriptions live outside the public `people/` tree so endpoints
     // are never world-readable. Owner-only; the admin SDK (functions send
     // path) bypasses these rules to read across all subscribers.
@@ -26,16 +30,12 @@ service firebase.storage {
       // name. Rules OR together, so one permissive match undoes every
       // restriction above it — a single-segment wildcard binds a string and
       // can be compared, where `{path=**}` binds a Path and cannot.
-      match /relations.html.gz {
-        allow read, write, delete: if owns(mobile);
-      }
-
       // Files sitting directly under a person: index.html.gz and friends.
       // `get`, not `read`: on a list `{file}` never binds, and comparing a null
       // segment to a string throws. A thrown rule denies, so this read the way
       // it was meant to while logging an evaluation error every time.
       match /{file} {
-        allow get: if file != 'relations.html.gz';
+        allow get: if !is_private_name(file) || owns(mobile);
         allow write, delete: if owns(mobile);
       }
 
@@ -54,7 +54,7 @@ service firebase.storage {
       // Overwriting bytes is a `create` here; `update` is metadata alone.
       // Delete stays open, because an archive move is copy, then delete.
       match /{folder}/{path=**} {
-        allow read: if folder != 'relations.html.gz';
+        allow read: if !is_private_name(folder);
         allow create, update: if owns(mobile)
           && (resource == null
             || resource.metadata == null
