@@ -58,7 +58,7 @@ export const prepare_upload_html = async items => {
     metadata: {
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
-      contentEncoding: 'deflate',
+      contentEncoding: 'gzip',
       contentDisposition: 'inline',
       contentLanguage: language, // Using ISO 639-1 language code
       customMetadata: {

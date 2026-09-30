@@ -3,7 +3,7 @@ import * as compressor from '@/workers/compressor'
 import { OPEN_ANGLE } from '@/utils/numbers'
 
 // The rest of the compressor suite mocks pako out, which proves the call shape
-// but not the bytes. Realness keeps every item as a deflated blob in Storage,
+// but not the bytes. Realness keeps every item as a compressed blob in Storage,
 // so the library that reads them is a wire format, not an implementation
 // detail: a major bump has to stay readable in both directions.
 
@@ -36,11 +36,21 @@ describe('compressor round trip', () => {
     expect(result.html).toBe(html)
   })
 
-  it('writes something the passthrough will not mistake for plain html', async () => {
+  it('writes gzip, which Storage and every reader decode', async () => {
     const { blob } = compressor.compress_html({ data: { html } })
     const compressed = new Uint8Array(await blob.arrayBuffer())
 
+    expect([compressed[0], compressed[1]]).toEqual([0x1f, 0x8b])
+  })
+
+  it('writes something the passthrough will not mistake for plain html', async () => {
+    // Gzip's header and trailer cost 18 bytes, so an item this tiny would
+    // grow. Real items run to kilobytes; size the sample like one.
+    const item = html.repeat(8)
+    const { blob } = compressor.compress_html({ data: { html: item } })
+    const compressed = new Uint8Array(await blob.arrayBuffer())
+
     expect(compressed[0]).not.toBe(OPEN_ANGLE)
-    expect(compressed.length).toBeLessThan(html.length)
+    expect(compressed.length).toBeLessThan(item.length)
   })
 })

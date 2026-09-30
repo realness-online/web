@@ -36,7 +36,7 @@ describe('@/utils/upload-processor', () => {
 
     expect(result.compressed).toBeInstanceOf(Blob)
     expect(result.metadata.contentType).toBe('text/html; charset=utf-8')
-    expect(result.metadata.contentEncoding).toBe('deflate')
+    expect(result.metadata.contentEncoding).toBe('gzip')
     expect(result.metadata.contentLanguage).toBe('en')
     expect(result.metadata.customMetadata.hash).toBeTruthy()
   })

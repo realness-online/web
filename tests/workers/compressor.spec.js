@@ -1,10 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vite-plus/test'
 import * as compressor from '@/workers/compressor'
-import { deflate, inflate } from 'pako'
+import { gzip, inflate } from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'
 
 vi.mock('pako', () => ({
-  deflate: vi.fn(),
+  gzip: vi.fn(),
   inflate: vi.fn()
 }))
 
@@ -17,12 +17,12 @@ describe('compressor worker', () => {
     it('compresses HTML string', () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3, 4])
-      deflate.mockReturnValue(mock_compressed)
+      gzip.mockReturnValue(mock_compressed)
 
       const message = { data: { html: mock_html } }
       const result = compressor.compress_html(message)
 
-      expect(deflate).toHaveBeenCalledWith(expect.any(Uint8Array), {
+      expect(gzip).toHaveBeenCalledWith(expect.any(Uint8Array), {
         level: 9
       })
       expect(result).toHaveProperty('blob')
@@ -63,7 +63,7 @@ describe('compressor worker', () => {
     it('routes compress:html message', () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3])
-      deflate.mockReturnValue(mock_compressed)
+      gzip.mockReturnValue(mock_compressed)
 
       const message = { data: { route: 'compress:html', html: mock_html } }
       const result = compressor.route_message(message)

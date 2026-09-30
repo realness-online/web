@@ -1,9 +1,9 @@
-import { deflate, inflate } from 'pako'
+import { gzip, inflate } from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'
 
 export const compress_html = message => {
   const uint8_array = new TextEncoder().encode(message.data.html)
-  const result = deflate(uint8_array, {
+  const result = gzip(uint8_array, {
     level: 9
   })
   const blob = new Blob([result], { type: 'application/octet-stream' })
