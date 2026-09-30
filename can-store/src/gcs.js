@@ -7,13 +7,27 @@
  * Run, `gcloud_token()` on a laptop. `prefix` scopes every key, so tests can
  * run inside a throwaway folder. Versions are object generations, and
  * `ifGenerationMatch=0` is a true create-only write.
+ *
+ * Text keys are stored gzip (`contentEncoding`). Fetch decodes on the way
+ * out, so `get` returns exactly what `put` was given.
  */
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
+import { gzipSync } from "node:zlib"
 import { Conflict } from "./disk.js"
 
 const API = "https://storage.googleapis.com/storage/v1/b"
 const UPLOAD = "https://storage.googleapis.com/upload/storage/v1/b"
+
+/** Keys worth compressing at rest; everything else is stored as given. */
+const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
+
+/** Gzip text when that makes it smaller; tiny files would grow. */
+const at_rest = (key, body) => {
+  if (!TEXT.test(key)) return { body }
+  const packed = gzipSync(Buffer.from(body))
+  return packed.length < Buffer.byteLength(body) ? { body: packed, encoding: "gzip" } : { body }
+}
 
 /** Cache a token until a minute before it expires. */
 const cached = (fetch_token) => {
@@ -68,11 +82,13 @@ export function create_gcs({ bucket, token, prefix = "" }) {
     },
 
     async put(key, body, { if_version } = {}) {
-      const query = [`uploadType=media`, `name=${object(key)}`, precondition(if_version)].filter(Boolean)
+      const stored = at_rest(key, body)
+      const encoding = stored.encoding && `contentEncoding=${stored.encoding}`
+      const query = [`uploadType=media`, `name=${object(key)}`, encoding, precondition(if_version)].filter(Boolean)
       const response = await call(`${UPLOAD}/${bucket}/o?${query.join("&")}`, {
         method: "POST",
         headers: { "content-type": "application/octet-stream" },
-        body,
+        body: stored.body,
       })
       if (response.status === 412) throw new Conflict(`${key} changed`)
       if (!response.ok) await fail(`put ${key}`, response)

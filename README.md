@@ -108,7 +108,8 @@ node control/bin/webspace.js dev setup   # once: Lima, firecracker, kernel, root
 node control/bin/webspace.js dev host up  # each time: volume, TAP, API; waits for the seed
 ```
 
-- API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`.
+- API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`
+  (`/chat` on the same port), site sync `http://127.0.0.1:18096/`.
 - `dev host down` stops it, `dev host restart` reloads the current code; a
   changed template fingerprint rebuilds the seed on the next serve.
 - The log is `dist/dev-up.log`; the guest side is `control/scripts/dev-stack.sh`.
@@ -321,8 +322,8 @@ runbook.
   and highlights it, and the site lands in the home directory an export bundles
   - 16/16
 - a2 - the host takes that tree out of the running actor and serves it at
-  `/s/<id>/`, a real browser loads it and draws the diagram, and the copy dies
-  with the actor - 17/17 plus the browser
+  `/s/<id>/`, a real browser loads it and draws the diagram - 17/17 plus the
+  browser. c1e moved the live site to sync, where the URL outlives the actor
 - u2 - a `fetch` handler runs in its own stripped VM: one `app-check.sh` run
   from a fresh image, 12/12 steps - image 17/17, boot 7/7, escape 21/21, the
   `CONTROL=1` run seeing 3 holes, 96 and 64 MiB serving (37 and 6 MiB left),
@@ -534,14 +535,14 @@ reconnect is a new terminal. Nothing outlives the socket.
 `scripts/r3d-verify.sh` runs on the Mac and drives create, exec and a PTY
 through the forwarded ports, so the API is a real network service and not
 something only reachable over `limactl shell`. `lima/fc-local.yaml` maps the
-Mac's 18080 to the guest's 8080 and 18081 to 8081 - explicitly, because the
-Mac's 8080 is often another service and Lima's automatic forward skips a taken
-host port without saying so.
+Mac's 18080 to the guest's 8080, 18081 to 8081, and 18096 to 18096 - explicitly,
+because the Mac's 8080 is often another service and Lima's automatic forward
+skips a taken host port without saying so.
 
 An instance created before the rule existed needs it applied and a restart:
 
     limactl stop fc-local
-    limactl edit fc-local --tty=false --set '.portForwards = [{"guestPort":8080,"hostPort":18080},{"guestPort":8081,"hostPort":18081}]'
+    limactl edit fc-local --tty=false --set '.portForwards = [{"guestPort":8080,"hostPort":18080},{"guestPort":8081,"hostPort":18081},{"guestPort":18096,"hostPort":18096}]'
     limactl start fc-local
     # then sudo bash /mnt/fc/control/scripts/dev-stack.sh again
 
@@ -615,6 +616,24 @@ Lima forwards 8090 to the Mac's 18090. `scripts/r5-verify.sh` runs on the Mac:
 `ws-client.py` proves the frames, and agent-browser proves a real browser typing
 makes the actor answer. It also checks the bare URL redirects to an actor that
 exists.
+
+## Chat, sites, and admin (c1, a1j)
+
+The same signed cookie gates `/chat`. `GET /chat?actor=<id>` serves `host/chat/`
+(the chat example, built by `control/scripts/chat-build.sh` and gitignored), and
+`POST /chat/message` streams line-delimited deltas from Pi in that actor over
+vsock. Another owner cannot attach or send.
+
+Pi runs with the guest prompt `host/guest/brayness-chat.md`. It keeps editable
+site source under `/brayness/work/site`, publishes with `brayness publish`, and
+lists, restores, or removes with `brayness-site versions|restore|remove`.
+Published sites live in sync, so the URL outlives the actor (see "Publish it at
+a URL").
+
+Loops: a host mirrors `loops/<id>/record.html` to Storage. `/admin` on the
+sign-on site lists every loop across hosts; a stop is a Storage write at
+`loops/<id>/stop.html` that the host obeys on its next 30-second probe. Sync
+serves the view, and `can()` admits only the admins named in `admins.html`.
 
 ## Export and restore (r7)
 
@@ -1156,7 +1175,7 @@ storage` call needing a local crc32c fails. Compare a bundle with the object's
   arch.
 - Lima's automatic port-forward skips a guest port whose host number is taken,
   silently. The dev host's ports are explicit in `lima/fc-local.yaml` (18080 ->
-  8080, 18081 -> 8081, 18090 -> 8090).
+  8080, 18081 -> 8081, 18090 -> 8090, 18096 -> 18096).
 - A zone stocks out across machine types, not one of them, and a stockout also
   refuses to _start_ a parked host: us-central1 took nine refusals across four
   machine types while us-west1-b took the host. `scripts/probe-capacity.sh` asks
