@@ -1,0 +1,29 @@
+{
+  "name": "@realness.online/thoughts",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The thought rulebook: which rows of one author make one thought",
+  "license": "GPL-2.0-only",
+  "author": "Scott Fryxell <sfryxell@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realness-online/web.git",
+    "directory": "packages/thoughts"
+  },
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@realness.online/itemid": "^0.1.0"
+  },
+  "scripts": {
+    "test": "vp test run",
+    "check": "vp check"
+  }
+}

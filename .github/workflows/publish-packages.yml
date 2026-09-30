@@ -1,6 +1,6 @@
 # Publish a workspace package to npm through trusted publishing (OIDC).
-# Tag to release: itemid-v0.1.1 or store-v0.2.0. The tag must match the
-# version in that package's package.json. No token, no 2FA prompt.
+# Tag to release: itemid-v0.1.1, store-v0.2.0, or thoughts-v0.1.0. The tag must
+# match the version in that package's package.json. No token, no 2FA prompt.
 name: Publish packages
 
 on:
@@ -8,6 +8,7 @@ on:
     tags:
       - itemid-v*
       - store-v*
+      - thoughts-v*
 
 permissions:
   contents: read

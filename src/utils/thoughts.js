@@ -1,129 +1,34 @@
-/** @typedef {import('@/types').Author} Author */
+// The rulebook moved to `packages/thoughts` (`@realness.online/thoughts`), so
+// the web app and the share page build a thought the same way. This shim keeps
+// every existing `@/utils/thoughts` import working, annotated with the app's
+// own types - the package speaks plain strings.
 /** @typedef {import('@/types').Item} Item */
-/** @typedef {import('@/types').Statement} Statement */
-/** @typedef {import('@/types').Statements} Statements */
 /** @typedef {import('@/types').Thought} Thought */
 
-import { as_author, as_created_at, as_type } from '@/utils/itemid'
-import { JS_TIME } from '@/utils/numbers'
+import {
+  THOUGHT_WINDOW_MS,
+  thoughts_for_author as rulebook_thoughts_for_author,
+  thought_feed_slots as rulebook_thought_feed_slots,
+  thought_for_poster as rulebook_thought_for_poster,
+  thought_text as rulebook_thought_text
+} from '@realness.online/thoughts'
 
-/**
- * Same author only. Chains posters and text rows (`type` `thoughts`) while each
- * step is at most thirteen minutes after the previous item (by id timestamp).
- *
- * @param {Item[]} items
- * @returns {Thought[]}
- */
-export const thoughts_for_author = items => {
-  const rows = items.filter(i => {
-    if (!i || typeof i !== 'object' || !i.id) return false
-    const typ = as_type(/** @type {import('@/types').Id} */ (i.id))
-    return typ === 'posters' || typ === 'thoughts'
-  })
-  rows.sort((a, b) => (as_created_at(a.id) ?? 0) - (as_created_at(b.id) ?? 0))
+export { THOUGHT_WINDOW_MS }
 
-  /** @type {Thought[]} */
-  const out = []
-  /** @type {{ author_id: Author, started_at: number, posters: Item[], statements: Statement[], last_t: number } | null} */
-  let cur = null
+/** @type {(items: Item[]) => Thought[]} */
+export const thoughts_for_author = /** @type {any} */ (
+  rulebook_thoughts_for_author
+)
 
-  for (const item of rows) {
-    const t = as_created_at(item.id)
-    // oxlint-disable-next-line eqeqeq -- intentional nullish check
-    if (t == null) continue
-    const author = as_author(item.id)
-    if (!author) continue
+/** @type {(thought: Thought) => Array<Item[] | Item>} */
+export const thought_feed_slots = /** @type {any} */ (
+  rulebook_thought_feed_slots
+)
 
-    if (!cur) {
-      const first = {
-        author_id: author,
-        started_at: t,
-        posters: [],
-        statements: [],
-        last_t: t
-      }
-      cur = first
-      push_thought_item(first, item)
-      continue
-    }
+/** @type {(items: Item[], poster_id: string) => Thought | null} */
+export const thought_for_poster = /** @type {any} */ (
+  rulebook_thought_for_poster
+)
 
-    const gap = t - cur.last_t
-    if (gap <= JS_TIME.THIRTEEN_MINUTES) {
-      push_thought_item(cur, item)
-      cur.last_t = t
-    } else {
-      out.push(finish_thought(cur))
-      const next = {
-        author_id: author,
-        started_at: t,
-        posters: [],
-        statements: [],
-        last_t: t
-      }
-      cur = next
-      push_thought_item(next, item)
-    }
-  }
-  if (cur) out.push(finish_thought(cur))
-  return out
-}
-
-/**
- * @param {{ posters: Item[], statements: Statement[], last_t: number, author_id: Author, started_at: number }} cur
- * @param {Item} item
- */
-const push_thought_item = (cur, item) => {
-  const typ = as_type(/** @type {import('@/types').Id} */ (item.id))
-  if (typ === 'posters') cur.posters.push(item)
-  else if (typ === 'thoughts')
-    cur.statements.push(/** @type {Statement} */ (item))
-}
-
-/**
- * @param {{ author_id: Author, started_at: number, posters: Item[], statements: Statement[] }} cur
- * @returns {Thought}
- */
-const finish_thought = cur => ({
-  author_id: cur.author_id,
-  started_at: cur.started_at,
-  posters: cur.posters,
-  statements: cur.statements
-})
-
-/**
- * Feed slots for one thought: chronological, text runs as `Statements` arrays, posters as items.
- *
- * @param {Thought} thought
- * @returns {Array<Statements|Item>}
- */
-export const thought_feed_slots = thought => {
-  /** @type {{ t: number, poster?: Item, stmt?: Statement }[]} */
-  const timed = []
-  for (const p of thought.posters) {
-    const t = as_created_at(p.id)
-    if (t !== null && t !== undefined) timed.push({ t, poster: p })
-  }
-  for (const s of thought.statements) {
-    const t = as_created_at(s.id)
-    if (t !== null && t !== undefined) timed.push({ t, stmt: s })
-  }
-  timed.sort((a, b) => a.t - b.t)
-
-  /** @type {Array<Statements|Item>} */
-  const slots = []
-  /** @type {Statement[]} */
-  let run = []
-  const flush = () => {
-    if (run.length) {
-      slots.push(run)
-      run = []
-    }
-  }
-  for (const x of timed)
-    if (x.poster) {
-      flush()
-      slots.push(x.poster)
-    } else if (x.stmt) run.push(x.stmt)
-  flush()
-  return slots
-}
+/** @type {(thought: Thought | null) => string} */
+export const thought_text = /** @type {any} */ (rulebook_thought_text)

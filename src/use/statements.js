@@ -2,20 +2,12 @@
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Statements} Statements */
 
-import {
-  as_created_at,
-  list,
-  list_history_page,
-  as_author,
-  as_type,
-  feed_slot_itemid
-} from '@/utils/itemid'
+import { list, list_history_page, as_author } from '@/utils/itemid'
 import { hydrate } from '@/utils/item'
 import { as_directory } from '@/persistence/Directory'
 import { recent_item_first, recent_number_first } from '@/utils/sorting'
 import { Statements as statements_storage } from '@/persistence/Storage'
 import { ref, inject, onMounted as mounted, nextTick as tick } from 'vue'
-import { JS_TIME } from '@/utils/numbers'
 const links = ['http://', 'https://']
 /** How many of the oldest loaded statements can pull the next page. */
 const PAGE_AHEAD_COUNT = 5
@@ -266,196 +258,27 @@ export const use = () => {
   }
 }
 
-/**
- * @param {Item[]} sacred_statements
- * @returns {Statements[]}
- */
-export function as_thoughts(sacred_statements) {
-  const stmts = /** @type {Item[]} */ ([...sacred_statements])
-  stmts.sort(recent_item_first)
-  const thoughts = /** @type {Statements[]} */ ([])
-  while (stmts.length) {
-    const stmt = stmts.pop()
-    if (!stmt) break
-    const thot = [stmt]
-    while (is_train_of_thought(thot, stmts)) {
-      const next = stmts.pop()
-      if (next) thot.push(next)
-    }
-    thoughts.push(/** @type {Statements} */ (thot))
-  }
-  return thoughts
-}
+// The thought rulebook moved to `packages/thoughts` (`@realness.online/thoughts`),
+// so the web app and the share page build a thought the same way. These
+// re-exports keep every existing `@/use/statements` import working, annotated
+// with the app's own types - the package speaks plain strings.
+import {
+  as_thoughts as rulebook_as_thoughts,
+  thoughts_sort as rulebook_thoughts_sort,
+  slot_key as rulebook_slot_key,
+  poster_thought_overlay_pairs as rulebook_poster_thought_overlay_pairs
+} from '@realness.online/thoughts'
 
-/**
- * @param {Statements} first
- * @param {Statements} second
- */
-export function thoughts_sort(first, second) {
-  const [a] = first
-  const [b] = second
-  return (as_created_at(a?.id) ?? 0) - (as_created_at(b?.id) ?? 0)
-}
+/** @type {(statements: Item[]) => Statements[]} */
+export const as_thoughts = /** @type {any} */ (rulebook_as_thoughts)
 
-export { feed_slot_itemid as slot_key }
+/** @type {(first: Statements, second: Statements) => number} */
+export const thoughts_sort = rulebook_thoughts_sort
 
-/**
- * Pairs posters with statement-thoughts from the same author when any statement
- * timestamp is within the train-of-thought window of the poster.
- *
- * @param {Array<import('@/types').Statements | import('@/types').Item>} day_items
- * @returns {{
- *   merged_thought_keys: Set<string>,
- *   poster_to_thought: Map<string, import('@/types').Statements>
- * }}
- */
-/**
- * Statement slots in `pool` that share a thirteen-minute train with this poster
- * (touch poster or chain to a slot that does).
- *
- * @param {import('@/types').Item} poster
- * @param {import('@/types').Statements[]} pool
- * @returns {import('@/types').Statements[]}
- */
-const connected_statement_slots = (poster, pool) => {
-  const poster_ts = as_created_at(poster.id)
-  // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-  if (poster_ts == null) return []
+/** @type {(slot: Statements | Item) => string} */
+export const slot_key = rulebook_slot_key
 
-  /** @param {import('@/types').Statements} slot */
-  const slot_touches_poster = slot => {
-    for (const stmt of slot) {
-      const t = as_created_at(stmt.id)
-      // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-      if (t == null) continue
-      if (Math.abs(poster_ts - t) <= JS_TIME.THIRTEEN_MINUTES) return true
-    }
-    return false
-  }
-
-  /** @param {import('@/types').Statements} a */
-  /** @param {import('@/types').Statements} b */
-  const slots_adjacent = (a, b) => {
-    for (const sa of a) {
-      const ta = as_created_at(sa.id)
-      // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-      if (ta == null) continue
-      for (const sb of b) {
-        const tb = as_created_at(sb.id)
-        // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-        if (tb == null) continue
-        if (Math.abs(ta - tb) <= JS_TIME.THIRTEEN_MINUTES) return true
-      }
-    }
-    return false
-  }
-
-  /** @type {Set<import('@/types').Statements>} */
-  const connected = new Set()
-  /** @type {import('@/types').Statements[]} */
-  const queue = []
-  for (const th of pool)
-    if (slot_touches_poster(th)) {
-      connected.add(th)
-      queue.push(th)
-    }
-  while (queue.length) {
-    const cur = /** @type {import('@/types').Statements} */ (queue.pop())
-    for (const th of pool) {
-      if (connected.has(th)) continue
-      if (slots_adjacent(cur, th)) {
-        connected.add(th)
-        queue.push(th)
-      }
-    }
-  }
-  return [...connected]
-}
-
-/**
- * @param {import('@/types').Statements[]} slots
- * @returns {import('@/types').Statements}
- */
-const merge_slots_chronological = slots => {
-  /** @type {import('@/types').Statement[]} */
-  const all = []
-  for (const s of slots) all.push(...s)
-  all.sort((a, b) => (as_created_at(a.id) ?? 0) - (as_created_at(b.id) ?? 0))
-  const seen = new Set()
-  /** @type {import('@/types').Statements} */
-  const out = []
-  for (const stmt of all) {
-    if (!stmt?.id || seen.has(stmt.id)) continue
-    seen.add(stmt.id)
-    out.push(stmt)
-  }
-  return out
-}
-
-export function poster_thought_overlay_pairs(day_items) {
-  const thoughts = day_items.filter(i => Array.isArray(i))
-  const items = day_items.filter(
-    /**
-     * @param {import('@/types').Item | import('@/types').Statements} i
-     * @returns {i is import('@/types').Item}
-     */
-    i => !Array.isArray(i)
-  )
-  const posters = items.filter(i => {
-    if (!i || typeof i !== 'object' || !i.id) return false
-    return (
-      i.type === 'posters' ||
-      as_type(/** @type {import('@/types').Id} */ (i.id)) === 'posters'
-    )
-  })
-  /** @type {Array<{ poster: import('@/types').Item, thought: import('@/types').Statements, dist: number }>} */
-  const candidates = []
-  for (const poster of posters) {
-    const poster_ts = as_created_at(poster.id)
-    // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-    if (poster_ts == null) continue
-    for (const thought of thoughts) {
-      if (as_author(poster.id) !== as_author(thought[0].id)) continue
-      let min_dist = Infinity
-      for (const stmt of thought) {
-        const t = as_created_at(stmt.id)
-        // oxlint-disable-next-line eqeqeq -- == null is nullish (null | undefined)
-        if (t == null) continue
-        const d = Math.abs(poster_ts - t)
-        if (d < min_dist) min_dist = d
-      }
-      if (min_dist <= JS_TIME.THIRTEEN_MINUTES)
-        candidates.push({ poster, thought, dist: min_dist })
-    }
-  }
-  candidates.sort((a, b) => a.dist - b.dist)
-  const merged_thought_keys = new Set()
-  const poster_to_thought = new Map()
-  const used_posters = new Set()
-  for (const c of candidates) {
-    if (used_posters.has(c.poster.id)) continue
-    const component = connected_statement_slots(c.poster, thoughts)
-    if (!component.length) continue
-    const merged = merge_slots_chronological(component)
-    if (!merged.length) continue
-    for (const th of component) merged_thought_keys.add(feed_slot_itemid(th))
-    used_posters.add(c.poster.id)
-    poster_to_thought.set(c.poster.id, merged)
-  }
-  return { merged_thought_keys, poster_to_thought }
-}
-
-/**
- * @param {Statements} thot
- * @param {Item[]} statements
- */
-function is_train_of_thought(thot, statements) {
-  const next = statements[statements.length - 1]
-  const nearest = thot[thot.length - 1]
-  if (next && nearest) {
-    const nearest_ts = as_created_at(nearest.id) ?? 0
-    const next_ts = as_created_at(next.id) ?? 0
-    return next_ts - nearest_ts <= JS_TIME.THIRTEEN_MINUTES
-  }
-  return false
-}
+/** @type {(day_items: Array<Statements | Item>) => { merged_thought_keys: Set<string>, poster_to_thought: Map<string, Statements> }} */
+export const poster_thought_overlay_pairs = /** @type {any} */ (
+  rulebook_poster_thought_overlay_pairs
+)
