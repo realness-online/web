@@ -26,6 +26,7 @@
   import { use_global_keymap } from '@/use/global-keymap'
   import { use_icon_settle } from '@/use/icon-settle'
   import { use_deferred_flag } from '@/use/deferred-unmount'
+  import { use_reload_on_update } from '@/use/reload-on-update'
   import { get_clipboard_files } from '@/utils/clipboard-images'
   import { use_vectorize_deferred } from '@/use/vectorize-deferred'
   import { posting } from '@/use/posting'
@@ -61,6 +62,7 @@
     status.value = working_count.value > 0 ? 'working' : null
   }
   provide('set_working', set_working)
+  use_reload_on_update(() => working_count.value > 0)
 
   // Stub directive — the real change listener is attached when the vectorize
   // module loads. Named vVectorizer so <script setup> registers it as
