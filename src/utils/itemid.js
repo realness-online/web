@@ -178,11 +178,11 @@ export const as_filename = async (itemid, options) => {
 
     if (archive) {
       const suffix = layer_name ? `-${layer_name}` : ''
-      return `${archive}${suffix}.html.gz`
+      return `${archive}${suffix}.html`
     }
 
     const suffix = layer_name ? `-${layer_name}` : ''
-    return `${poster_filename}${suffix}.html.gz`
+    return `${poster_filename}${suffix}.html`
   }
 
   let filename = itemid
@@ -194,15 +194,15 @@ export const as_filename = async (itemid, options) => {
     has_archive.includes(/** @type {typeof has_archive[number]} */ (item_type))
   ) {
     const archive = await as_archive(itemid, options)
-    if (archive) return `${archive}.html.gz`
-    return `${filename}.html.gz`
-  } else if (is_history(itemid)) return `${filename}.html.gz`
+    if (archive) return `${archive}.html`
+    return `${filename}.html`
+  } else if (is_history(itemid)) return `${filename}.html`
   else if (item_type === 'relations') {
     const base = filename.replace(/\/relations$/, '')
-    return `${base}/relations.html.gz`
+    return `${base}/relations.html`
   }
 
-  return `${filename}/index.html.gz`
+  return `${filename}/index.html`
 }
 
 /**
@@ -349,7 +349,7 @@ const as_top_level_filename = itemid => {
     : poster_id
   const layer_name = as_layer_name(itemid)
   const suffix = layer_name ? `-${layer_name}` : ''
-  return `${poster_filename}${suffix}.html.gz`
+  return `${poster_filename}${suffix}.html`
 }
 
 /**

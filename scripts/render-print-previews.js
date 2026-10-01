@@ -3,7 +3,7 @@
  * the poster (`people/<author>/posters/<created>.png`) with a Firebase
  * download token, which is what the checkout function hands to Stripe.
  *
- * The shop lists the live `posters/` folder's plain `<created>.html.gz`
+ * The shop lists the live `posters/` folder's plain `<created>.html`
  * files - the app's directory listing skips dashed (layer) filenames and
  * dedupes timestamps, so previews beside the posters are invisible to it.
  *
@@ -132,13 +132,19 @@ const gcloud_lines = gcloud_args => {
 
 const storage_prefix = `gs://${bucket}/people${author}/posters/`
 
-/** The shop's prints: live-folder plain `<created>.html.gz`, one per stamp. */
+/**
+ * The shop's prints: live-folder plain `<created>.html`, one per stamp. The
+ * legacy `.html.gz` name can sit beside it while both names are mirrored.
+ */
 const list_prints = () =>
-  gcloud_lines(['storage', 'ls', storage_prefix])
-    .map(url => path.posix.basename(url))
-    .filter(name => /^\d+\.html\.gz$/.test(name))
-    .map(name => Number(name.replace('.html.gz', '')))
-    .sort((a, b) => b - a)
+  [
+    ...new Set(
+      gcloud_lines(['storage', 'ls', storage_prefix])
+        .map(url => path.posix.basename(url))
+        .filter(name => /^\d+\.html(\.gz)?$/.test(name))
+        .map(name => Number(name.split('.')[0]))
+    )
+  ].sort((a, b) => b - a)
 
 /** Previews already on storage, by created stamp. */
 const list_previews = () =>

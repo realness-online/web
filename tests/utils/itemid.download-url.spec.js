@@ -50,21 +50,21 @@ describe('download url cache', () => {
     url.mockResolvedValue('https://storage/profile.html.gz?token=a')
   })
 
-  it('reads a new-name object from an old-name client without marking it missing', async () => {
+  it('reads a legacy-name object without marking it missing', async () => {
     const { as_download_url } = await import('@/utils/itemid')
     const { url } = await import('@/utils/serverless')
     url.mockImplementation(async filename => {
-      if (filename.endsWith('.html.gz'))
+      if (!filename.endsWith('.html.gz'))
         throw Object.assign(new Error('missing'), {
           code: 'storage/object-not-found'
         })
-      return 'https://storage/new-name'
+      return 'https://storage/legacy-name'
     })
-    expect(await as_download_url(id)).toBe('https://storage/new-name')
-    expect(await as_download_url(id)).toBe('https://storage/new-name')
+    expect(await as_download_url(id)).toBe('https://storage/legacy-name')
+    expect(await as_download_url(id)).toBe('https://storage/legacy-name')
     expect(url.mock.calls.map(([filename]) => filename)).toEqual([
-      'people/+16282281824/index.html.gz',
-      'people/+16282281824/index.html'
+      'people/+16282281824/index.html',
+      'people/+16282281824/index.html.gz'
     ])
     expect(store.get('sync:index')?.[id]).toBeUndefined()
   })
@@ -125,7 +125,7 @@ describe('download url cache', () => {
     const { url } = await import('@/utils/serverless')
     store.set('sync:urls', {
       [id]: {
-        filename: 'people/+16282281824/index.html.gz',
+        filename: 'people/+16282281824/index.html',
         url: 'https://old'
       }
     })
@@ -189,7 +189,7 @@ describe('download url cache', () => {
     const { url } = await import('@/utils/serverless')
     store.set('sync:urls', {
       [id]: {
-        filename: 'people/+16282281824/index.html.gz',
+        filename: 'people/+16282281824/index.html',
         url: 'https://old'
       }
     })
@@ -254,9 +254,9 @@ describe('items that are not there', () => {
     const poster = /** @type {import('@/types').Id} */ (
       '/+16282281824/posters/1712000000000'
     )
-    const top_level = 'people/+16282281824/posters/1712000000000.html.gz'
+    const top_level = 'people/+16282281824/posters/1712000000000.html'
     const archived =
-      'people/+16282281824/posters/1600000000000/1712000000000.html.gz'
+      'people/+16282281824/posters/1600000000000/1712000000000.html'
 
     // The cached listing predates the archiving: it still claims the poster
     // sits in the main directory, which is what sends `as_filename` to a path
@@ -291,7 +291,7 @@ describe('items that are not there', () => {
       '/+16282281824/posters/1712000000000'
     )
     const archived =
-      'people/+16282281824/posters/1600000000000/1712000000000.html.gz'
+      'people/+16282281824/posters/1600000000000/1712000000000.html'
 
     store.set('/+16282281824/posters/', {
       items: ['1712000000000'],

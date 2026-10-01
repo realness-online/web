@@ -28,7 +28,7 @@ describe('store paths', () => {
   // the storage rules deny.
   it('prefixes a slashless poster id with people/', async () => {
     expect(await paths.storage_path('+15551234567/posters/1000')).toBe(
-      'people/+15551234567/posters/1000.html.gz'
+      'people/+15551234567/posters/1000.html'
     )
   })
 
@@ -36,9 +36,9 @@ describe('store paths', () => {
     const files = await paths.files('+15551234567/posters/1000', 999)
 
     expect(files).toHaveLength(7)
-    expect(files[0]).toBe('people/+15551234567/posters/999/1000.html.gz')
+    expect(files[0]).toBe('people/+15551234567/posters/999/1000.html')
     expect(files.at(-1)).toBe(
-      'people/+15551234567/posters/999/1000-boulders.html.gz'
+      'people/+15551234567/posters/999/1000-boulders.html'
     )
   })
 

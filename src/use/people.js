@@ -43,7 +43,7 @@ const admin_person_id_from_env = () => {
 }
 
 /**
- * When `people/{author}/index.html.gz` is missing but the prefix exists, still list them.
+ * When `people/{author}/index.html` is missing but the prefix exists, still list them.
  * @param {Id} id
  * @returns {Person}
  */

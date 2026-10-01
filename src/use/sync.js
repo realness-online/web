@@ -405,7 +405,7 @@ export const sync_author_posters = async author_id => {
 }
 
 /**
- * Root `people/{author}/index.html.gz` blobs: refresh `sync:index`, then drop stale local
+ * Root `people/{author}/index.html` blobs: refresh `sync:index`, then drop stale local
  * cache when the hash disagrees. Each contact's statements file is hash checked here
  * too, on its own, for the reasons in `sync_contact_statements`. Does not fetch; `load_phonebook` / `load()` repopulate.
  * Clears cached folder listings via `clear_author_dirs` (`@/persistence/Directory`) when the profile

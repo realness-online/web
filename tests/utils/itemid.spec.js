@@ -24,7 +24,7 @@ vi.mock('@/utils/upload-processor', () => ({
   compress_html: vi.fn()
 }))
 vi.mock('@/utils/serverless', () => ({
-  url: vi.fn().mockResolvedValue('https://example.com/file.html.gz'),
+  url: vi.fn().mockResolvedValue('https://example.com/file.html'),
   storage_ready: Promise.resolve(),
   current_user: { value: null },
   directory: vi.fn(),
@@ -145,26 +145,26 @@ describe('@/utils/itemid', () => {
   describe('path generation', () => {
     it('generates correct path for user index', async () => {
       const result = await as_filename('/+16282281824')
-      expect(result).toBe('people/+16282281824/index.html.gz')
+      expect(result).toBe('people/+16282281824/index.html')
     })
 
     it('generates correct path for thoughts', async () => {
       const result = await as_filename('/+16282281824/thoughts')
-      expect(result).toBe('people/+16282281824/thoughts/index.html.gz')
+      expect(result).toBe('people/+16282281824/thoughts/index.html')
     })
 
     it('generates correct path for brand new poster', async () => {
       get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/posters/1737178477999')
-      expect(result).toBe('people/+16282281824/posters/1737178477999.html.gz')
+      expect(result).toBe('people/+16282281824/posters/1737178477999.html')
     })
 
     it('generates correct path for oldest poster in the root directory', async () => {
       get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/posters/1720119797893')
-      expect(result).toBe('people/+16282281824/posters/1720119797893.html.gz')
+      expect(result).toBe('people/+16282281824/posters/1720119797893.html')
     })
 
     it('generates correct path for last poster in second to last archive directory', async () => {
@@ -186,7 +186,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/posters/1715020920519')
       expect(result).toBe(
-        'people/+16282281824/posters/1712335058767/1715020920519.html.gz'
+        'people/+16282281824/posters/1712335058767/1715020920519.html'
       )
     })
 
@@ -207,7 +207,7 @@ describe('@/utils/itemid', () => {
       })
       const result = await as_filename('/+16282281824/posters/1720060222368')
       expect(result).toBe(
-        'people/+16282281824/posters/1715021054576/1720060222368.html.gz'
+        'people/+16282281824/posters/1715021054576/1720060222368.html'
       )
     })
 
@@ -229,7 +229,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/posters/1712335058767')
       expect(result).toBe(
-        'people/+16282281824/posters/1712335058767/1712335058767.html.gz'
+        'people/+16282281824/posters/1712335058767/1712335058767.html'
       )
     })
 
@@ -237,7 +237,7 @@ describe('@/utils/itemid', () => {
       get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/posters/1737178477987')
-      expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html')
     })
 
     it('generates correct archive path for archived poster', async () => {
@@ -258,7 +258,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/posters/1716520718216')
       expect(result).toBe(
-        'people/+16282281824/posters/1715021054576/1716520718216.html.gz'
+        'people/+16282281824/posters/1715021054576/1716520718216.html'
       )
     })
 
@@ -266,7 +266,7 @@ describe('@/utils/itemid', () => {
       get.mockResolvedValue(null)
 
       const result = await as_filename('/+16282281824/posters/1737178477987')
-      expect(result).toBe('people/+16282281824/posters/1737178477987.html.gz')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html')
     })
 
     it('generates correct path for shadow layer with suffix', async () => {
@@ -274,7 +274,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/shadows/1737178477987')
       expect(result).toBe(
-        'people/+16282281824/posters/1737178477987-shadows.html.gz'
+        'people/+16282281824/posters/1737178477987-shadows.html'
       )
     })
 
@@ -282,21 +282,21 @@ describe('@/utils/itemid', () => {
       get.mockResolvedValue(null)
 
       const result = await as_filename('/+16282281824/relations')
-      expect(result).toBe('people/+16282281824/relations.html.gz')
+      expect(result).toBe('people/+16282281824/relations.html')
     })
 
     it('generates correct path for history-type item with 3 parts', async () => {
       get.mockResolvedValue(null)
 
       const result = await as_filename('/+16282281824/thoughts/1737178477987')
-      expect(result).toBe('people/+16282281824/thoughts/1737178477987.html.gz')
+      expect(result).toBe('people/+16282281824/thoughts/1737178477987.html')
     })
 
     it('generates correct path for person type', async () => {
       get.mockResolvedValue(null)
 
       const result = await as_filename('/+16282281824/people')
-      expect(result).toBe('people/+16282281824/people/index.html.gz')
+      expect(result).toBe('people/+16282281824/people/index.html')
     })
 
     it('skips people prefix when itemid does not start with /+', async () => {
@@ -305,7 +305,7 @@ describe('@/utils/itemid', () => {
       const result = await as_filename(
         /** @type {import('@/types').Id} */ ('/guest/posters/1737178477987')
       )
-      expect(result).toBe('/guest/posters/1737178477987.html.gz')
+      expect(result).toBe('/guest/posters/1737178477987.html')
     })
 
     it('generates correct path for sediment layer with suffix', async () => {
@@ -313,7 +313,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/sediment/1737178477987')
       expect(result).toBe(
-        'people/+16282281824/posters/1737178477987-sediment.html.gz'
+        'people/+16282281824/posters/1737178477987-sediment.html'
       )
     })
 
@@ -321,9 +321,7 @@ describe('@/utils/itemid', () => {
       get.mockResolvedValue(directory)
 
       const result = await as_filename('/+16282281824/sand/1737178477987')
-      expect(result).toBe(
-        'people/+16282281824/posters/1737178477987-sand.html.gz'
-      )
+      expect(result).toBe('people/+16282281824/posters/1737178477987-sand.html')
     })
 
     it('generates correct path for archived shadow layer with suffix', async () => {
@@ -344,7 +342,7 @@ describe('@/utils/itemid', () => {
 
       const result = await as_filename('/+16282281824/shadows/1715020920519')
       expect(result).toBe(
-        'people/+16282281824/posters/1712335058767/1715020920519-shadows.html.gz'
+        'people/+16282281824/posters/1712335058767/1715020920519-shadows.html'
       )
     })
   })
@@ -712,7 +710,7 @@ describe('@/utils/itemid', () => {
         key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
       )
       const { url } = await import('@/utils/serverless')
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -764,7 +762,7 @@ describe('@/utils/itemid', () => {
         key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
       )
       const { url } = await import('@/utils/serverless')
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       const { decompress_html } = await import('@/utils/upload-processor')
       decompress_html.mockResolvedValueOnce(html)
       global.fetch = vi.fn().mockResolvedValue({
@@ -787,7 +785,7 @@ describe('@/utils/itemid', () => {
         key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
       )
       const { url } = await import('@/utils/serverless')
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       const { decompress_html } = await import('@/utils/upload-processor')
       decompress_html.mockResolvedValueOnce('')
       global.fetch = vi.fn().mockResolvedValue({
@@ -810,7 +808,7 @@ describe('@/utils/itemid', () => {
         key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
       )
       const { url } = await import('@/utils/serverless')
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       const { decompress_html } = await import('@/utils/upload-processor')
       decompress_html.mockResolvedValueOnce('')
       global.fetch = vi.fn().mockResolvedValue({
@@ -865,7 +863,7 @@ describe('@/utils/itemid', () => {
         key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(null)
       )
       const { url } = await import('@/utils/serverless')
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -976,10 +974,10 @@ describe('@/utils/itemid', () => {
 
       // Three callers share one lookup of each suffix, not three lookups.
       expect(url.mock.calls.map(([filename]) => filename)).toEqual([
-        'people/+19159206481/index.html.gz',
-        'people/+19159206481/index.html'
+        'people/+19159206481/index.html',
+        'people/+19159206481/index.html.gz'
       ])
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
     })
 
     it('skips Storage when sync:index holds an idb-cloned missing marker', async () => {
@@ -1032,7 +1030,7 @@ describe('@/utils/itemid', () => {
       const { url } = await import('@/utils/serverless')
       const { get } = await import('idb-keyval')
       url.mockReset()
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       const id = /** @type {import('@/types').Id} */ ('/+19159206481')
       // First call returns empty index, second call (inside retry) returns missing marker
       let callCount = 0
@@ -1056,7 +1054,7 @@ describe('@/utils/itemid', () => {
     beforeEach(async () => {
       const { url } = await import('@/utils/serverless')
       url.mockReset()
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
       const { decompress_html } = await import('@/utils/upload-processor')
       decompress_html.mockResolvedValue(
         '<address itemid="/+16282281824" itemscope><h3>Test</h3></address>'
@@ -1111,7 +1109,7 @@ describe('@/utils/itemid', () => {
     beforeEach(async () => {
       const { url } = await import('@/utils/serverless')
       url.mockReset()
-      url.mockResolvedValue('https://example.com/file.html.gz')
+      url.mockResolvedValue('https://example.com/file.html')
     })
 
     it('returns empty array when load throws error', async () => {
@@ -1207,9 +1205,7 @@ describe('@/utils/itemid', () => {
       const result = await as_filename(
         '/+16282281824/posters/history/1234567890'
       )
-      expect(result).toBe(
-        'people/+16282281824/posters/history/1234567890.html.gz'
-      )
+      expect(result).toBe('people/+16282281824/posters/history/1234567890.html')
     })
   })
 })

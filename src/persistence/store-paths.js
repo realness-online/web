@@ -42,11 +42,8 @@ const files = async (itemid, archive_id = null) => {
   if (as_type(path) !== 'posters') return [await as_filename(path)]
   const base = archive_id
     ? archive_path(path, archive_id)
-    : (await as_filename(path)).replace(/\.html\.gz$/, '')
-  return [
-    `${base}.html.gz`,
-    ...LAYER_TYPES.map(layer => `${base}-${layer}.html.gz`)
-  ]
+    : (await as_filename(path)).replace(/\.html$/, '')
+  return [`${base}.html`, ...LAYER_TYPES.map(layer => `${base}-${layer}.html`)]
 }
 
 export const paths = {
