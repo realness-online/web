@@ -3,14 +3,16 @@ import { onMounted, onUnmounted } from 'vue'
 /**
  * Carries an open page onto a new build.
  *
- * The service worker skips waiting and claims open pages, so a deploy takes
- * over a tab that keeps running the old code it already loaded. A tab left
+ * The built worker (vite-plugin-pwa, prompt mode) installs a new build and
+ * then waits: it only activates when a page posts SKIP_WAITING. Nothing did,
+ * so a deploy reached nobody until every realness tab was closed. A tab left
  * open for days never even hears of the deploy: moving between routes is not
  * a page load, and only page loads make the browser look for a new worker.
  *
- * So: look for a new worker whenever the page comes back into view, remember
- * when one takes over, and reload the next time the page is hidden with
- * nothing working and nothing half typed - a moment no one can see.
+ * So: look for a new worker whenever the page comes back into view. The next
+ * time the page is hidden with nothing working and nothing half typed - a
+ * moment no one can see - tell a waiting worker to activate, and reload once
+ * it controls the page. A worker another tab activated reloads the same way.
  */
 
 const TYPING =
@@ -43,19 +45,27 @@ export const watch_for_updates = ({ workers, doc, is_working, reload }) => {
   // some worker already controlled means the page is running old code.
   let controlled = Boolean(workers.controller)
   let taken_over = false
+  const is_safe = () =>
+    doc.visibilityState === 'hidden' && !is_working() && !is_typing(doc)
   const on_takeover = () => {
     if (controlled) taken_over = true
     controlled = true
+    if (taken_over && is_safe()) reload()
   }
-  const on_visibility = () => {
+  const registration = () => workers.getRegistration().catch(() => undefined)
+  const on_visibility = async () => {
     if (doc.visibilityState === 'visible') {
-      void workers
-        .getRegistration()
-        .then(registration => registration?.update())
-        .catch(() => {})
+      await (await registration())?.update().catch(() => {})
       return
     }
-    if (taken_over && !is_working() && !is_typing(doc)) reload()
+    if (!is_safe()) return
+    if (taken_over) {
+      reload()
+      return
+    }
+    // Only a page some worker controls is running a build that can be stale.
+    const waiting = controlled ? (await registration())?.waiting : null
+    if (waiting && is_safe()) waiting.postMessage({ type: 'SKIP_WAITING' })
   }
   workers.addEventListener('controllerchange', on_takeover)
   doc.addEventListener('visibilitychange', on_visibility)

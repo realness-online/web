@@ -1,34 +1,53 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { is_typing, watch_for_updates } from '@/use/reload-on-update'
 
-/** A service worker container: an event target with a controller. */
-const fake_workers = controlled => {
+/**
+ * Behaves like the built worker (vite-plugin-pwa, prompt mode): a new build
+ * waits, and only activates - firing controllerchange on controlled pages -
+ * when a page posts SKIP_WAITING to it.
+ */
+const fake_workers = ({ controlled = true, waiting = false } = {}) => {
   const workers = new EventTarget()
   const update = vi.fn(async () => {})
+  const registration = { update, waiting: null }
+  const activate = () => {
+    registration.waiting = null
+    workers.controller = {}
+    workers.dispatchEvent(new Event('controllerchange'))
+  }
+  const install = () => {
+    registration.waiting = {
+      postMessage: vi.fn(message => {
+        if (message?.type === 'SKIP_WAITING') activate()
+      })
+    }
+    return registration.waiting
+  }
   Object.assign(workers, {
     controller: controlled ? {} : null,
-    getRegistration: vi.fn(async () => ({ update }))
+    getRegistration: vi.fn(async () => registration)
   })
-  return { workers, update }
+  if (waiting) install()
+  return { workers, update, registration, install, activate }
 }
 
-/** A document whose visibility and focus the test sets. */
 const fake_doc = () => {
   const doc = new EventTarget()
   Object.assign(doc, { visibilityState: 'visible', activeElement: null })
   return doc
 }
 
-const show = doc => {
+const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+const show = async doc => {
   doc.visibilityState = 'visible'
   doc.dispatchEvent(new Event('visibilitychange'))
+  await settle()
 }
-const hide = doc => {
+const hide = async doc => {
   doc.visibilityState = 'hidden'
   doc.dispatchEvent(new Event('visibilitychange'))
+  await settle()
 }
-const take_over = workers =>
-  workers.dispatchEvent(new Event('controllerchange'))
 
 describe('@/use/reload-on-update', () => {
   let working, reload, stop
@@ -49,82 +68,120 @@ describe('@/use/reload-on-update', () => {
     })
   }
 
-  it('reloads once hidden after a new worker takes over', () => {
-    const { workers } = fake_workers(true)
+  it('activates a waiting build while hidden, then reloads', async () => {
+    const { workers } = fake_workers({ waiting: true })
     const doc = fake_doc()
     start(workers, doc)
-    take_over(workers)
     expect(reload).not.toHaveBeenCalled()
-    hide(doc)
+    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('leaves the page alone without a takeover', () => {
-    const { workers } = fake_workers(true)
+  it('never activates or reloads while the page is visible', async () => {
+    const { workers, registration } = fake_workers({ waiting: true })
+    const waiting = registration.waiting
     const doc = fake_doc()
     start(workers, doc)
-    hide(doc)
+    await show(doc)
+    expect(waiting.postMessage).not.toHaveBeenCalled()
     expect(reload).not.toHaveBeenCalled()
   })
 
-  it('ignores the first install, but not an update after it', () => {
-    const { workers } = fake_workers(false)
+  it('finds a build deployed while the tab was open, on return', async () => {
+    const { workers, update, install } = fake_workers()
+    update.mockImplementation(async () => {
+      install()
+    })
     const doc = fake_doc()
     start(workers, doc)
-    take_over(workers)
-    hide(doc)
+    await hide(doc)
     expect(reload).not.toHaveBeenCalled()
-    take_over(workers)
-    hide(doc)
+    await show(doc)
+    expect(update).toHaveBeenCalledTimes(1)
+    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('waits while anything is working, then reloads on a later hide', () => {
-    const { workers } = fake_workers(true)
+  it('leaves the page alone with nothing waiting', async () => {
+    const { workers } = fake_workers()
     const doc = fake_doc()
     start(workers, doc)
-    take_over(workers)
+    await hide(doc)
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('does not activate for a page no worker controls yet', async () => {
+    const { workers, registration } = fake_workers({
+      controlled: false,
+      waiting: true
+    })
+    const waiting = registration.waiting
+    const doc = fake_doc()
+    start(workers, doc)
+    await hide(doc)
+    expect(waiting.postMessage).not.toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('waits while anything is working, then updates on a later hide', async () => {
+    const { workers, registration } = fake_workers({ waiting: true })
+    const waiting = registration.waiting
+    const doc = fake_doc()
+    start(workers, doc)
     working = true
-    hide(doc)
-    expect(reload).not.toHaveBeenCalled()
+    await hide(doc)
+    expect(waiting.postMessage).not.toHaveBeenCalled()
     working = false
-    show(doc)
-    hide(doc)
+    await show(doc)
+    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('waits while a statement is half typed', () => {
-    const { workers } = fake_workers(true)
+  it('waits while a statement is half typed', async () => {
+    const { workers, registration } = fake_workers({ waiting: true })
+    const waiting = registration.waiting
     const doc = fake_doc()
     const textarea = document.createElement('textarea')
     textarea.value = 'half a thou'
     doc.activeElement = textarea
     start(workers, doc)
-    take_over(workers)
-    hide(doc)
-    expect(reload).not.toHaveBeenCalled()
+    await hide(doc)
+    expect(waiting.postMessage).not.toHaveBeenCalled()
     textarea.value = ''
-    show(doc)
-    hide(doc)
+    await show(doc)
+    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('looks for a new worker whenever the page comes back', async () => {
-    const { workers, update } = fake_workers(true)
+  it('reloads when another tab activated the build, at a safe moment', async () => {
+    const { workers, activate } = fake_workers()
     const doc = fake_doc()
     start(workers, doc)
-    hide(doc)
-    show(doc)
-    await vi.waitFor(() => expect(update).toHaveBeenCalledTimes(1))
+    activate()
+    expect(reload).not.toHaveBeenCalled()
+    await hide(doc)
+    expect(reload).toHaveBeenCalledTimes(1)
   })
 
-  it('stops listening', () => {
-    const { workers } = fake_workers(true)
+  it('ignores the first install, but not an update after it', async () => {
+    const { workers, activate } = fake_workers({ controlled: false })
+    const doc = fake_doc()
+    start(workers, doc)
+    activate()
+    await hide(doc)
+    expect(reload).not.toHaveBeenCalled()
+    activate()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('stops listening', async () => {
+    const { workers, registration } = fake_workers({ waiting: true })
+    const waiting = registration.waiting
     const doc = fake_doc()
     start(workers, doc)
     stop()
-    take_over(workers)
-    hide(doc)
+    await hide(doc)
+    expect(waiting.postMessage).not.toHaveBeenCalled()
     expect(reload).not.toHaveBeenCalled()
   })
 
