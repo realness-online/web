@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Open tabs now pick up new deploys: when the page is hidden and idle, it activates the new version and reloads.
+- New saves are stored gzipped in the cloud.
+- Pinned dependency versions.
+
 ## v2.10.1 - 2026-09-29
 
 - **Print editions per poster** - One $5 print, one $100 print, and unlimited
