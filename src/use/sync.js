@@ -574,6 +574,17 @@ const get_index_hash = async itemid =>
  * @param {Id} itemid
  * @returns {Promise<import('@/types').Sync_Index_Entry>}
  */
+/**
+ * The same item's name under the other suffix while both are in use.
+ * @param {string} filename
+ * @returns {string | null}
+ */
+const other_suffix = filename => {
+  if (filename.endsWith('.html.gz')) return filename.replace(/\.gz$/, '')
+  if (filename.endsWith('.html')) return `${filename}.gz`
+  return null
+}
+
 export const fresh_metadata = async itemid => {
   if (itemid.startsWith('/+/')) return DOES_NOT_EXIST
 
@@ -586,19 +597,27 @@ export const fresh_metadata = async itemid => {
 
   const pending = (async () => {
     try {
-      const path = location(await as_filename(itemid))
+      const filename = await as_filename(itemid)
+      const not_found = e =>
+        e &&
+        typeof e === 'object' &&
+        'code' in e &&
+        /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
+      // While both names are in use, a file can exist under only the other
+      // suffix. Ask for it before recording a missing marker that sticks.
+      const alternate = other_suffix(filename)
       let network
       try {
-        network = await metadata(path)
+        network = await metadata(location(filename))
       } catch (e) {
-        if (
-          e &&
-          typeof e === 'object' &&
-          'code' in e &&
-          /** @type {{code?: string}} */ (e).code === 'storage/object-not-found'
-        )
-          network = DOES_NOT_EXIST
-        else throw e
+        if (!not_found(e)) throw e
+        network = DOES_NOT_EXIST
+        if (alternate)
+          try {
+            network = await metadata(location(alternate))
+          } catch (alternate_error) {
+            if (!not_found(alternate_error)) throw alternate_error
+          }
       }
       if (!network) throw new Error(`Unable to create metadata for ${itemid}`)
 

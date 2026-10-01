@@ -377,6 +377,52 @@ describe('sync composable', () => {
       expect(result).toEqual(DOES_NOT_EXIST)
     })
 
+    it('finds a file under the other suffix before marking it missing', async () => {
+      const { metadata } = await import('@/utils/serverless')
+      const { as_filename } = await import('@/utils/itemid')
+      const not_found = Object.assign(new Error('Not found'), {
+        code: 'storage/object-not-found'
+      })
+      as_filename.mockResolvedValueOnce('people/+1234/statements/index.html')
+      metadata.mockReset()
+      metadata
+        .mockRejectedValueOnce(not_found)
+        .mockResolvedValueOnce({ updated: 'x', customMetadata: { hash: 'h' } })
+      const result = await fresh_metadata('/+1234/statements')
+      expect(result.customMetadata.hash).toBe('h')
+      expect(metadata.mock.calls.map(([path]) => path)).toEqual([
+        'storage/people/+1234/statements/index.html',
+        'storage/people/+1234/statements/index.html.gz'
+      ])
+    })
+
+    it('marks missing only when neither suffix exists', async () => {
+      const { metadata } = await import('@/utils/serverless')
+      const { as_filename } = await import('@/utils/itemid')
+      const not_found = Object.assign(new Error('Not found'), {
+        code: 'storage/object-not-found'
+      })
+      as_filename.mockResolvedValueOnce('people/+1234/index.html.gz')
+      metadata.mockReset()
+      metadata.mockRejectedValue(not_found)
+      expect(await fresh_metadata('/+1234')).toEqual(DOES_NOT_EXIST)
+      expect(metadata).toHaveBeenCalledTimes(2)
+      metadata.mockReset()
+    })
+
+    it('does not try the other suffix after a permission failure', async () => {
+      const { metadata } = await import('@/utils/serverless')
+      const { as_filename } = await import('@/utils/itemid')
+      as_filename.mockResolvedValueOnce('people/+1234/relations.html')
+      metadata.mockReset()
+      const denied = Object.assign(new Error('denied'), {
+        code: 'storage/unauthorized'
+      })
+      metadata.mockRejectedValueOnce(denied)
+      await expect(fresh_metadata('/+1234/relations')).rejects.toBe(denied)
+      expect(metadata).toHaveBeenCalledTimes(1)
+    })
+
     it('skips metadata when index has idb-cloned missing marker', async () => {
       const { get } = await import('idb-keyval')
       const { metadata } = await import('@/utils/serverless')
