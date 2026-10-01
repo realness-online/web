@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Saved files now end in `.html`; files under the old `.html.gz` name still open.
+
 ## v2.10.2 - 2026-10-01
 
 - Open tabs now pick up new deploys: when the page is hidden and idle, it activates the new version and reloads.
