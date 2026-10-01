@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.3 - 2026-10-01
+
 - Saved files now end in `.html`; files under the old `.html.gz` name still open.
 
 ## v2.10.2 - 2026-10-01
