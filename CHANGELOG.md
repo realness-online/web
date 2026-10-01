@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.2 - 2026-10-01
+
 - Open tabs now pick up new deploys: when the page is hidden and idle, it activates the new version and reloads.
 - New saves are stored gzipped in the cloud.
 - Pinned dependency versions.

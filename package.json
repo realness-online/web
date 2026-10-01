@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/web",
-  "version": "2.10.1",
+  "version": "2.10.2",
   "private": true,
   "type": "module",
   "workspaces": [
