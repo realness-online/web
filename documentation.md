@@ -2,8 +2,9 @@
 
 How the webspace is built and why. The [README](README.md) covers what it is and
 how to run it; this file holds the decisions, the record of what each milestone
-proved, costs, and gotchas. Milestone codes like f3 or r7 are node ids from
-`plans/brayness.md`.
+proved, costs, and gotchas. Milestone codes like f3 or r7 are node ids; their
+check scripts and runs are archived in
+`artifacts/firecracker/webspace-archive/`.
 
 ## Decisions
 
@@ -20,10 +21,11 @@ were close.
   beside `brayness-sync`, sharing its phone pins; `realness-ops` keeps no agent
   handler and no `AGENT_PASS`.
 - **The d3 host is `n2-standard-4` in `us-central1-a`**: a 20 GB `pd-standard`
-  boot disk plus a 30 GB `pd-standard` PD for actors: about $0.20/h running,
-  $0.80/mo parked. Spot is unavailable (`PREEMPTIBLE_CPUS` in us-central1 is 0)
-  and nested virt rules out every cheap family (E2, all ARM, the
-  memory-optimized M1/M2/M3, and every AMD but N4D).
+  boot disk plus a 30 GB `pd-standard` PD for actors: about
+  $0.20/h running,
+  $0.80/mo parked. Spot is unavailable (`PREEMPTIBLE_CPUS` in
+  us-central1 is 0) and nested virt rules out every cheap family (E2, all ARM,
+  the memory-optimized M1/M2/M3, and every AMD but N4D).
 - **The prod host idles stopped, itself.** `gcloud compute instances stop` keeps
   the boot disk, the xfs volume (`/etc/fstab` by UUID) and `/dev/kvm`; the disks
   are the only floor, $0.80/mo. A systemd timer checks every 5 minutes and stops
@@ -44,15 +46,16 @@ were close.
   rebuilt. 30 GB-months of standard PD is free, so the actors volume sits inside
   the free tier; bytes that outgrow it go to GCS at $0.02/GiB-mo, first 5 GiB
   free.
-- **Idle per host is $0: a parked host has no disk.** A parked host is deleted
+- **Idle per host is
+  $0: a parked host has no disk.** A parked host is deleted
   and rebuilt from one shared image; the durable state is the actors' traces and
   artifacts in GCS. The guest has no credentials, so the delete comes from the
   control plane, never the host's own timer. Per-host provisioned disks are the
-  whole bill at hundreds of hosts (20 GB standard is $0.80/mo each), and the 30
-  GB-months allowance is shared and per account, so it does not scale. The fleet
-  image exists: `brayness-host`, family `brayness-host`, 20 GB geometry. A
-  stopped host is a 20 GB boot plus a 30 GB actors volume, both standard, and
-  `host-down.sh --delete` returns it to nothing but the image.
+  whole bill at hundreds of hosts (20 GB standard is $0.80/mo
+  each), and the 30 GB-months allowance is shared and per account, so it does
+  not scale. The fleet image exists: `brayness-host`, family `brayness-host`, 20
+  GB geometry. A stopped host is a 20 GB boot plus a 30 GB actors volume, both
+  standard, and `host-down.sh --delete` returns it to nothing but the image.
 - **A $20/mo Compute Engine budget on `realness-online`** alerts at 50/90/100%.
   Leaving the host up trips it in about four days.
 - **The Lima loop is the dev loop; prod is x86_64.** Snapshots are
@@ -73,14 +76,13 @@ were close.
 - **What shipped is the bucket object, not a ledger.** No local record, so a
   re-run re-exports and re-uploads; an actor with no disk (a create that died
   mid-flight) is reported and skipped rather than blocking a delete forever.
-- **The drain reaches the host over
-  `gcloud compute ssh --command="curl ..."`**: the API is loopback-only until
-  h1 exists, and a tunnel would cost a background process and a fixed local port
-  per host to save a second a call.
+- **The drain reaches the host over `gcloud compute ssh --command="curl ..."`**:
+  the API is loopback-only until h1 exists, and a tunnel would cost a background
+  process and a fixed local port per host to save a second a call.
 - **The density branch is dropped.** m1 measured it: a restored actor dirties
   20-26 MiB of its 512 MiB. The win is density, and density is not the critical
-  path. RAM binds, and storage is the cheapest dimension. The measurement script is
-  archived with the checks.
+  path. RAM binds, and storage is the cheapest dimension. The measurement script
+  is archived with the checks.
 
 ### Pi inside an actor
 
@@ -136,10 +138,11 @@ runbook.
 - r4: idle tiers; workspace persists across a cold boot (23/23)
 - r5: browser terminal; page, websocket frames, real browser typing (13/13),
   including a bare URL that makes its own actor and redirects to it
-- d3: GCP x86_64 host, nested virt, xfs actors volume, self-stopping idle
-  guard (6/6), plus stop/start + a guest poweroff leaving it `TERMINATED` + the
-  volume swapped to 30 GB standard with reflink green again
-- x1: the loop on x86_64, with template 19/19, restore 7/7, actor over the API 11/11
+- d3: GCP x86_64 host, nested virt, xfs actors volume, self-stopping idle guard
+  (6/6), plus stop/start + a guest poweroff leaving it `TERMINATED` + the volume
+  swapped to 30 GB standard with reflink green again
+- x1: the loop on x86_64, with template 19/19, restore 7/7, actor over the API
+  11/11
 - r7: a destroyed actor comes back: export, destroy, restore, 24 checks on the
   host, then the same restore from a bundle that went to
   `gs://realness-online-brayness` and back byte for byte (13 + 11 checks), with
@@ -162,8 +165,8 @@ runbook.
 - a2: the host takes that tree out of the running actor and serves it at
   `/s/<id>/`, a real browser loads it and draws the diagram (17/17 plus the
   browser). c1e moved the live site to sync, where the URL outlives the actor
-- u2: a `fetch` handler runs in its own stripped VM. One `app-check.sh` run
-  from a fresh image passed 12/12 steps: image 17/17, boot 7/7, escape 21/21, the
+- u2: a `fetch` handler runs in its own stripped VM. One `app-check.sh` run from
+  a fresh image passed 12/12 steps: image 17/17, boot 7/7, escape 21/21, the
   `CONTROL=1` run seeing 3 holes, 96 and 64 MiB serving (37 and 6 MiB left), and
   the API, idle, and supervise checks green
 
@@ -250,7 +253,8 @@ relative path resolves against the process's working directory. `f5a` boots a
 copy of the template with `rootfs.ext4`, snapshots it, then restores it from a
 second directory holding a second disk. The clone opens that second disk and its
 writes land there, not in the seed. So an actor is a directory with its own
-`rootfs.ext4` and a Firecracker started in it, with no jailer and no mount namespace.
+`rootfs.ext4` and a Firecracker started in it, with no jailer and no mount
+namespace.
 
 ### xfs and reflink (f5b)
 
@@ -270,7 +274,7 @@ own `rootfs.ext4`; a file written in one is invisible to the other. That is f5:
 an actor is a directory plus a process. Needs root, and `net-up.sh` first.
 
 The second clone keeps the template's MAC-derived address, so only the first is
-NAT'd. Per-actor addresses belong to r3/h2.
+NAT'd. Per-actor addresses wait for r3/h2.
 
 ### An actor starts fresh (f6)
 
@@ -297,19 +301,19 @@ host over the f2 channel, which is the one call r3's actor API makes.
 and `host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
 
-The host builds the seed itself (boot the template, pause, snapshot) and
-records what it built from in `seed/seed.json`, so a start with a mismatched
-kernel, template or Firecracker rebuilds and `create` refuses a seed that does
-not match. In `host/src/`, `host.js` owns TAPs and the volume, `firecracker.js`
-the unix-socket REST calls, `vsock.js` the guest channel, `actors.js` the
+The host builds the seed itself (boot the template, pause, snapshot) and records
+what it built from in `seed/seed.json`, so a start with a mismatched kernel,
+template or Firecracker rebuilds and `create` refuses a seed that does not
+match. In `host/src/`, `host.js` owns TAPs and the volume, `firecracker.js` the
+unix-socket REST calls, `vsock.js` the guest channel, `actors.js` the
 create/destroy cycle, `server.js` the routes: `GET /v1/health`,
 `GET|POST /v1/actors`, `GET|DELETE /v1/actors/{id}`.
 
 An actor is one directory, holding `rootfs.ext4` reflinked from the seed (f5b),
-`api.sock`, `vsock.sock`, `actor.json`, and `firecracker.log`, with that directory
-as Firecracker's cwd, which is what makes the relative drive path in the
-snapshot resolve to its own disk (f5a). Destroy kills the process, deletes its
-TAP, and removes the directory. Actors get a TAP and no NAT: their egress is
+`api.sock`, `vsock.sock`, `actor.json`, and `firecracker.log`, with that
+directory as Firecracker's cwd, which is what makes the relative drive path in
+the snapshot resolve to its own disk (f5a). Destroy kills the process, deletes
+its TAP, and removes the directory. Actors get a TAP and no NAT: their egress is
 h2's. Only the seed boots on TAP0's NAT.
 
 ```bash
@@ -337,10 +341,10 @@ goes.
 
 `host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
-`{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}`. The pass
-is the same five-minute bearer the API takes, so the pty is not a second door;
-and the server answers `{"ok": true}`, then relays the guest agent's frames byte
-for byte:
+`{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}`. The pass is
+the same five-minute bearer the API takes, so the pty is not a second door. The
+server answers `{"ok": true}`, then relays the guest agent's frames byte for
+byte:
 
     client -> server   {"op": "data", "data_b64": "..."}
                        {"op": "resize", "cols": 100, "rows": 30}
@@ -373,9 +377,9 @@ reconnect is a new terminal. Nothing outlives the socket.
 `scripts/r3d-verify.sh` runs on the Mac and drives create, exec and a PTY
 through the forwarded ports, so the API is a real network service and not
 something only reachable over `limactl shell`. `lima/fc-local.yaml` maps the
-Mac's 18080 to the guest's 8080, 18081 to 8081, and 18096 to 18096. It maps them explicitly
-because the Mac's 8080 is often another service and Lima's automatic forward
-skips a taken host port without saying so.
+Mac's 18080 to the guest's 8080, 18081 to 8081, and 18096 to 18096. It maps them
+explicitly because the Mac's 8080 is often another service and Lima's automatic
+forward skips a taken host port without saying so.
 
 An instance created before the rule existed needs it applied and a restart:
 
@@ -392,8 +396,8 @@ The seed and the actors volume live on the guest disk and survive the restart.
 brings it back, and exec and the terminal reload on their own, so callers never
 see the tiers. `tier` is `memory` or `disk`:
 
-- **memory**: pause, snapshot `state` + `mem` into the actor directory, kill
-  the process. Reload restores it: the same boot, the same processes.
+- **memory**: pause, snapshot `state` + `mem` into the actor directory, kill the
+  process. Reload restores it: the same boot, the same processes.
 - **disk**: sync the guest, kill the process, keep only the disk. Reload boots
   the actor's own disk. Files and identity persist; processes do not.
 
@@ -490,11 +494,11 @@ manifest.json      sha256 and size of both, the identity it had, the seed it for
 ```
 
 The trace is the record, not a script: nothing replays it. Events are appended
-as they happen (`create`, `exec` (argv, cwd, exit code, duration, output
-sizes), `idle`, `reload`, `export`, `restore`, `destroy`) to
-`traces/<id>.jsonl` on the volume, which destroy does not remove. A restore
-copies the bundle's trace onto the new actor ahead of its own `create`, so the
-trace of an actor that is gone is the head of the trace that replaced it.
+as they happen (`create`, `exec` (argv, cwd, exit code, duration, output sizes),
+`idle`, `reload`, `export`, `restore`, `destroy`) to `traces/<id>.jsonl` on the
+volume, which destroy does not remove. A restore copies the bundle's trace onto
+the new actor ahead of its own `create`, so the trace of an actor that is gone
+is the head of the trace that replaced it.
 
 **What travels is `/brayness`, and that is the whole contract.** It holds the
 harness, so harness edits, Pi transcripts, and `work/` travel together. Identity
@@ -505,9 +509,9 @@ decides. Files come back; processes do not; nothing replays.
 
 The mechanism is a loop mount, not a channel into the guest. A stopped actor's
 disk is a file on the actors volume, so the host mounts it, tars `/brayness`,
-and unmounts, with no size limit, no guest-side code, and no credentials. Export stops
-the actor first, because a live guest writes under the mount and mounting rw
-replays its journal for it, and leaves it stopped; `reload` brings it back.
+and unmounts, with no size limit, no guest-side code, and no credentials. Export
+stops the actor first, because a live guest writes under the mount and mounting
+rw replays its journal for it, and leaves it stopped; `reload` brings it back.
 Restore is the same mount with the tar going the other way, and it costs two
 boots: the fresh actor starts, stops for the files, and starts again. Two
 restores of one export are two actors with the same files and different
@@ -546,8 +550,8 @@ its disks; `--delete` takes the disks too and leaves the image as the only cost.
 bundle to `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`, checks what
 the bucket stored against what was sent, drops the bundle from the volume, and
 only then deletes the instance and the disks it actually has. It runs on the
-control plane, not the host, because the host has no credentials, so it cannot upload a
-bundle or decide it is safe to die.
+control plane, not the host, because the host has no credentials, so it cannot
+upload a bundle or decide it is safe to die.
 
 `r9-verify.sh` is the proof, on the Mac: build a host, write 3 MiB in an actor,
 drain and delete the host, check the instance and both disks are gone, build a
@@ -641,9 +645,9 @@ build a seed, or `build_seed` stops with `no fc-tap0`.
 
 `scripts/x1-verify.sh` runs on `brayness-1` and proves the port end to end: the
 template is x86_64, the seed forks, and an actor runs a command and a terminal.
-The template build is arch-neutral: `template-build.sh` fetches its own
-inputs and picks amd64/x64 from `uname -m`, and the scripts resolve the repo
-from their own path instead of `/mnt/fc`.
+The template build is arch-neutral: `template-build.sh` fetches its own inputs
+and picks amd64/x64 from `uname -m`, and the scripts resolve the repo from their
+own path instead of `/mnt/fc`.
 
 ```bash
 # on brayness-1, after d3
@@ -744,7 +748,8 @@ under `dist/app-check-<time>/`. Its `escape-ctrl` step passes by failing.
   address. The host may open 8080 and gets replies only from it. Nothing an app
   starts leaves, and nothing is routed to one. No vsock device is attached.
 - **Memory.** The guest OS takes about 54 MiB. A handler serves at 64 MiB with 6
-  left; the cap is 96, leaving about 37. Below the floor the boot thrashes
+  left; the cap is 96, leaving about 37. On x86_64 (prod) the floor is 80 MiB,
+  and 96 leaves about 27. Below the floor the boot thrashes
   rather than hitting the OOM killer, so the failure is a timeout.
 
 What this taught:
@@ -796,8 +801,8 @@ Limits are per payer, per UTC day and per UTC month: 250k tokens a day and 3M a
 month free (`FREE_LIMITS` in `proxy/src/usage.js`). Free use runs a free model,
 so free limits count tokens. `FREE_TOKENS_PER_DAY`, `FREE_TOKENS_PER_MONTH`,
 `FREE_COST_PER_DAY`, and `FREE_COST_PER_MONTH` override them. The first call
-lists the month's day folders, then the proxy counts in memory. The count is exact for one
-instance.
+lists the month's day folders, then the proxy counts in memory. The count is
+exact for one instance.
 
 - Over a limit: 429, `insufficient_quota`, `limit: "day"|"month"`, message
   containing "quota exceeded". Pi retries any 429 unless the text says so; this
@@ -808,15 +813,15 @@ instance.
 Proven: `proxy` tests, and one real call to OpenRouter wrote a row to
 `realness-development.appspot.com`; a second call at a 1-token cap got 429.
 
-### Signing the binary
+## Signing the binary
 
 `app/build.sh`, `app/sign.sh`, `app/notarize.sh`. What each run taught:
 
 - One binary is the app. macOS opens a bare executable in Terminal, so a
   launcher `.app` buys nothing; Terminal is the floor, Ghostty an upgrade.
 - Notarization uses an App Store Connect API key (profile `brayness-notary`);
-  the app-specific password returned 401 twice. The `.p8` must stay put, because the
-  profile stores its path.
+  the app-specific password returned 401 twice. The `.p8` must stay put, because
+  the profile stores its path.
 
 - A universal binary is 376 MB and the zip about 113 MB; both slices carry the
   whole runtime. First launch needs internet, because the notarization ticket
@@ -863,10 +868,12 @@ Cost and design facts. Build and runtime gotchas are below.
   which is fast enough to boot an actor from, and reflink works on it (6/6, two
   clones in 5ms). That keeps the volume inside the free tier; only the boot disk
   bills.
-- Parked cost, measured: 20 GB boot + 30 GB actors, standard, is $0.80/mo
+- Parked cost, measured: 20 GB boot + 30 GB actors, standard, is
+  $0.80/mo
   because the 30 GiB-months allowance is shared and per account; the fleet image
-  adds $0.12/mo (2.35 GB compressed). 20 + 10 GB would fit inside the allowance
-  and cost nothing, and deleting the disks (r8) makes it $0.
+  adds $0.12/mo
+  (2.35 GB compressed). 20 + 10 GB would fit inside the allowance and cost
+  nothing, and deleting the disks (r8) makes it $0.
 
 ## Gotchas found here
 
@@ -972,8 +979,8 @@ Cost and design facts. Build and runtime gotchas are below.
   (`host/scripts/host-restart.sh`) so the pattern is never on the remote command
   line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
-  process named `firecracker`, and that is what every leftover check and the idle
-  guard count. One would hold a host awake forever. Reaping has to poll:
+  process named `firecracker`, and that is what every leftover check and the
+  idle guard count. One would hold a host awake forever. Reaping has to poll:
   `waitpid(pid, WNOHANG)` issued right after SIGKILL returns 0 while the process
   is still dying, and nothing else ever collects it. `host-smoke.sh` and
   `r7-verify.sh` both check for leftovers, which is how this was caught.
@@ -1017,8 +1024,8 @@ Cost and design facts. Build and runtime gotchas are below.
   point. `actors-volume.sh` deletes other entries for the mount before adding
   its own.
 - A stale seed forks an old kernel or pi silently. `create` refuses on the
-  `seed.json` fingerprint instead: template size and mtime, kernel,
-  firecracker, arch.
+  `seed.json` fingerprint instead: template size and mtime, kernel, firecracker,
+  arch.
 - Lima's automatic port-forward skips a guest port whose host number is taken,
   silently. The dev host's ports are explicit in `lima/fc-local.yaml` (18080 ->
   8080, 18081 -> 8081, 18090 -> 8090, 18096 -> 18096).

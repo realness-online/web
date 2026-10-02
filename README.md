@@ -5,8 +5,8 @@ snapshot. Each one is reachable three ways, idle in three tiers, and costs
 nothing while it sleeps. The prod host is a VM in `realness-online`; this is the
 code that builds it and serves it.
 
-- `control/`: Node. The control plane: makes hosts exist, puts the code on
-  them, takes them away. Reaches the live side only over its HTTP API. Run
+- `control/`: Node. The control plane: makes hosts exist, puts the code on them,
+  takes them away. Reaches the live side only over its HTTP API. Run
   `node bin/webspace.js`. Its `scripts/` are the Mac and Lima build/run steps.
 - `host/`: the actor API, exec, PTY, browser terminal, door (Node, standard
   library only). The live side: it runs on the host and owns actors. Its
@@ -18,8 +18,8 @@ code that builds it and serves it.
 - `can-store/`: Node, no dependencies. Where the paths `can()` asks about live:
   one adapter per provider (`./disk`, `./gcs`), and a contract every adapter
   passes. `cd can-store && npm test`; `npm run test:gcs` hits a real bucket.
-- `sync/`: Node. The sync service, the only holder of storage keys: phone
-  token, then `can()`, then storage. `npm run dev` runs it locally on disk;
+- `sync/`: Node. The sync service, the only holder of storage keys: phone token,
+  then `can()`, then storage. `npm run dev` runs it locally on disk;
   `sync/scripts/deploy.sh` deploys it to Cloud Run in realness-development.
   `sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
   two-way sync, all through the service. `login` signs in through Realness in
@@ -81,8 +81,7 @@ Commands run on the Mac unless a step says otherwise.
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections in
-[documentation.md](documentation.md) carry what
-each one proved.
+[documentation.md](documentation.md) carry what each one proved.
 
 ## Build the template
 
@@ -104,8 +103,8 @@ guest. After a rebuild the seed is stale. A seed whose template, kernel, or
 Firecracker fingerprint changed is not forked: `ensure_seed()` sees the mismatch
 and rebuilds it on the next serve, so a missed rebuild cannot fork an old image.
 
-Record in [documentation.md](documentation.md#what-is-proven): the template rootfs (f3), and the capability it carries, an actor that
-builds a site (a1).
+Record in [documentation.md](documentation.md#what-is-proven): the template
+rootfs (f3), and the capability it carries, an actor that builds a site (a1).
 
 ## Run it locally
 
@@ -129,9 +128,10 @@ node control/bin/webspace.js dev host up  # each time: volume, TAP, API; waits f
   `ok` as soon as it is listening, before the seed exists, so waiting on `ok`
   reports a stack as up when it cannot make an actor.
 
-Record in [documentation.md](documentation.md#what-is-proven): boot (f1), network and a control channel (f2), snapshot and restore
-(f4), the actor-disk mechanics (f5a-c, f6), and the API (r3a-r5) with idle tiers
-(r4) and the pages an actor dirties (m1).
+Record in [documentation.md](documentation.md#what-is-proven): boot (f1),
+network and a control channel (f2), snapshot and restore (f4), the actor-disk
+mechanics (f5a-c, f6), and the API (r3a-r5) with idle tiers (r4) and the pages
+an actor dirties (m1).
 
 ## Run a host
 
@@ -157,8 +157,9 @@ node control/bin/webspace.js prod host down brayness-2 --delete # drain actors, 
   it exits non-zero when none can).
 - The idle guard stops the host when nothing has run for 30 minutes.
 
-Record in [documentation.md](documentation.md#what-is-proven): the prod host (d3), a host from the image and one that can be deleted
-(r8, r9), and the loop on x86_64 (x1).
+Record in [documentation.md](documentation.md#what-is-proven): the prod host
+(d3), a host from the image and one that can be deleted (r8, r9), and the loop
+on x86_64 (x1).
 
 ## Move actors
 
@@ -179,10 +180,11 @@ does not: restoring one export twice is two actors with the same files and
 different identities. Files come back, processes do not, and nothing replays a
 command.
 
-Record in [documentation.md](documentation.md#what-is-proven): export and restore (r7), and the drain proof in (r8, r9).
+Record in [documentation.md](documentation.md#what-is-proven): export and
+restore (r7), and the drain proof in (r8, r9).
 
 ## More
 
 [documentation.md](documentation.md) holds the rest: the design decisions, what
-each milestone (f1-u2) proved with its commands, known costs, and the gotchas
-found along the way.
+each milestone proved with its commands, known costs, and the gotchas found
+along the way.
