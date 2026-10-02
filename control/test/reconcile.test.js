@@ -18,7 +18,11 @@ const fake_sync = (files) => ({
     if (!names.size) throw Object.assign(new Error("404"), { status: 404 })
     return [...names]
   },
-  cat: async (url) => Buffer.from(files[url.replace("can://", "")]),
+  cat: async (url) => {
+    const body = files[url.replace("can://", "")]
+    if (body === undefined) throw Object.assign(new Error("404"), { status: 404 })
+    return Buffer.from(body)
+  },
 })
 const files = {
   [`usage/${A}/2026-10-03/1-a.html`]: row(0.25),

@@ -94,6 +94,26 @@ export function contract({ test, assert, make }) {
     for (const r of results.filter((r) => r.status === "rejected")) assert.equal(r.reason.code, "conflict")
   })
 
+  test("stat gives the version, or null", async () => {
+    const store = await make()
+    assert.equal(await store.stat("usage/+1/d/index.html"), null)
+    const version = await store.put("usage/+1/d/index.html", "<p>one</p>\n", { gzip: true })
+    assert.equal(await store.stat("usage/+1/d/index.html"), version)
+  })
+
+  test("compose joins sources in order, guarded by version", async () => {
+    const store = await make()
+    await store.put("usage/+1/d/a.html", "<p>one</p>\n", { gzip: true })
+    await store.put("usage/+1/d/b.html", "<p>two</p>\n", { gzip: true })
+    const v1 = await store.compose("usage/+1/d/index.html", ["usage/+1/d/a.html"], { if_version: null })
+    await assert.rejects(store.compose("usage/+1/d/index.html", ["usage/+1/d/b.html"], { if_version: null }), { code: "conflict" })
+    const v2 = await store.compose("usage/+1/d/index.html", ["usage/+1/d/index.html", "usage/+1/d/b.html"], { if_version: v1 })
+    assert.equal(text(await store.get("usage/+1/d/index.html")), "<p>one</p>\n<p>two</p>\n")
+    assert.equal(await store.stat("usage/+1/d/index.html"), v2)
+    await assert.rejects(store.compose("usage/+1/d/index.html", ["usage/+1/d/index.html", "usage/+1/d/b.html"], { if_version: v1 }), { code: "conflict" })
+    await assert.rejects(store.compose("usage/+1/d/x.html", ["usage/+1/d/none.html"]), { code: "conflict" })
+  })
+
   test("bytes survive untouched", async () => {
     const store = await make()
     const bytes = Buffer.from([0, 255, 10, 13, 0x1f, 0x8b])

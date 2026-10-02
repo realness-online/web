@@ -41,15 +41,43 @@ test("key sits under the person's day", () => {
   assert.match(usage_key("+14155550123", "phone", new Date("2026-09-27T12:34:56.789Z")), /^usage\/\+14155550123\/2026-09-27\/123456789Z-phone-[a-f0-9]{6}\.html$/)
 })
 
-test("racing calls each get a file; the day sums them", async () => {
-  const ledger = usage_ledger(disk(base))
+test("l1: racing calls append to one day file; the day sums them", async () => {
+  const store = disk(base)
+  const ledger = usage_ledger(store, { wait: 5 })
   const now = new Date("2026-09-27T12:00:00Z")
   const row = { model: "m", actor: "a-abcdef123456", status: 200, request_bytes: 1, reply_bytes: 1, usage: { cost: 0.25 } }
   await Promise.all(Array.from({ length: 20 }, () => ledger.record("+14155550123", row, now)))
   const day = await ledger.day("+14155550123", "2026-09-27")
   assert.equal(day.rows.length, 20)
   assert.equal(day.cost, 5)
+  assert.equal(new Set(day.rows.map((row) => row.call)).size, 20)
+  assert.deepEqual((await store.list("usage/+14155550123/2026-09-27/")).files, ["index.html"])
   assert.deepEqual((await ledger.day("+14155550123", "2026-09-26")).rows, [])
+})
+
+test("l1: a piece left beside the index counts once; old call files still count", async () => {
+  const store = disk(`${base}${randomUUID()}`)
+  const folder = "usage/+14155550123/2026-09-27/"
+  const row = (call, cost) => usage_row({ model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { cost }, call })
+  await store.put(`${folder}index.html`, row("1-phone-aaaaaa.html", 1) + row("2-phone-bbbbbb.html", 2))
+  await store.put(`${folder}2-phone-bbbbbb.html`, row("2-phone-bbbbbb.html", 2)) // composed, not yet deleted
+  await store.put(`${folder}0-phone-cccccc.html`, row("", 4)) // written before l1
+  assert.equal((await usage_ledger(store).day("+14155550123", "2026-09-27")).cost, 7)
+})
+
+test("l1: a piece deleted between list and read is still counted", async () => {
+  const store = disk(`${base}${randomUUID()}`)
+  const folder = "usage/+14155550123/2026-09-27/"
+  const row = usage_row({ model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { cost: 1 }, call: "1-phone-aaaaaa.html" })
+  await store.put(`${folder}1-phone-aaaaaa.html`, row)
+  const list = store.list
+  store.list = async (...a) => {
+    const listed = await list(...a)
+    await store.compose(`${folder}index.html`, [`${folder}1-phone-aaaaaa.html`], { if_version: null })
+    await store.delete(`${folder}1-phone-aaaaaa.html`)
+    return listed
+  }
+  assert.equal((await usage_ledger(store).day("+14155550123", "2026-09-27")).cost, 1)
 })
 
 test("spent reads once, then counts in memory", async () => {
@@ -57,12 +85,13 @@ test("spent reads once, then counts in memory", async () => {
   const now = new Date()
   const row = { model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: 4, completion_tokens: 6, cost: 0.5 } }
   await usage_ledger(store).record("+14155550123", row, now)
-  const ledger = usage_ledger(store)
+  const ledger = usage_ledger(store, { wait: 5 })
   assert.deepEqual((await ledger.spent("+14155550123", now)).day, { tokens: 10, cost: 0.5 })
   let lists = 0
   const list = store.list
   store.list = (...a) => (lists++, list(...a))
   await ledger.record("+14155550123", row, now)
+  lists = 0 // the append lists its folder; spent must not
   assert.deepEqual((await ledger.spent("+14155550123", now)).day, { tokens: 20, cost: 1 })
   assert.equal(lists, 0)
 })

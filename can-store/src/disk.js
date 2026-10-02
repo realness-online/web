@@ -6,6 +6,8 @@
  *   delete(key, { if_version })
  *   list(prefix)                   { files, folders } directly under it
  *   walk(prefix)                   { relative name: version } for every file below
+ *   stat(key)                      version, or null when missing
+ *   compose(key, sources, { if_version })  key becomes sources' bytes joined
  *
  * `if_version` makes a write conditional: a version string must match, and
  * `null` means the key must not exist yet. A mismatch throws a Conflict.
@@ -63,6 +65,23 @@ export function disk(root) {
     put: (key, body, { if_version } = {}) =>
       serial(key, async () => {
         await check(key, if_version)
+        const path = at(key)
+        await mkdir(dirname(path), { recursive: true })
+        const temp = `${path}.${randomUUID()}.tmp`
+        await writeFile(temp, body)
+        await rename(temp, path)
+        return version_of(body)
+      }),
+
+    stat: async (key) => (await get(key))?.version ?? null,
+
+    compose: (key, sources, { if_version } = {}) =>
+      serial(key, async () => {
+        const files = await Promise.all(sources.map(get))
+        const gone = sources.find((_, i) => !files[i])
+        if (gone) throw new Conflict(`${gone} is missing`)
+        await check(key, if_version)
+        const body = Buffer.concat(files.map((file) => file.body))
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
         const temp = `${path}.${randomUUID()}.tmp`

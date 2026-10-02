@@ -1,6 +1,10 @@
-// The ledger: one create-only file per model call, outside `people/` so
-// only the proxy writes it; `can()` lets the owner read it.
+// The ledger: one file per person per day, outside `people/` so only the
+// proxy writes it; `can()` lets the owner read it.
+//   usage/+A/<day>/index.html
+// l1: each call writes its row as a create-only piece,
 //   usage/+A/<day>/<time>-<actor>-<nonce>.html
+// composes it onto index.html (gzip pieces stack), then deletes the piece.
+// A piece left by a crash still reads; rows dedupe by `call`, the piece name.
 // Rows carry sizes, tokens, and cost; never prompt or reply text.
 // b1a: each row names its payer (the phone billed) and how the call came:
 // `actor` (the person's harness), `app` (a published app; its owner pays),
@@ -11,8 +15,9 @@
 import { randomBytes } from "node:crypto"
 
 const LIMIT = 10 * 1024 * 1024
-const FIELDS = ["model", "actor", "payer", "via", "plan", "status", "request_bytes", "reply_bytes", "prompt_tokens", "completion_tokens", "cost"]
-const NUMBERS = FIELDS.slice(5)
+const NUMBERS = ["status", "request_bytes", "reply_bytes", "prompt_tokens", "completion_tokens", "cost"]
+const FIELDS = ["model", "actor", "payer", "via", "plan", ...NUMBERS, "call"]
+const INDEX = "index.html"
 
 /** How a call came, from the caller's id. */
 export const via_of = (actor) => (/^app-/.test(actor ?? "") ? "app" : /^a-/.test(actor ?? "") ? "actor" : "phone")
@@ -52,7 +57,7 @@ export function usage_meter() {
 const escape = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")
 
 /** One call as an HTML Lines row. */
-export function usage_row({ model, actor, payer, plan, status, request_bytes, reply_bytes, usage }) {
+export function usage_row({ model, actor, payer, plan, status, request_bytes, reply_bytes, usage, call = "" }) {
   const values = {
     model: usage?.model ?? model,
     actor,
@@ -65,17 +70,26 @@ export function usage_row({ model, actor, payer, plan, status, request_bytes, re
     prompt_tokens: usage?.prompt_tokens ?? 0,
     completion_tokens: usage?.completion_tokens ?? 0,
     cost: usage?.cost ?? 0,
+    call,
   }
-  const props = FIELDS.map((name) => `<meta itemprop="${name}" content="${escape(values[name])}">`).join("")
+  const props = FIELDS.filter((name) => name !== "call" || call).map((name) => `<meta itemprop="${name}" content="${escape(values[name])}">`).join("")
   return `<p itemscope itemtype="/usage">${props}</p>\n`
 }
 
-/** Reads rows back; unknown text is ignored. `payer` fills older rows. */
+/**
+ * Reads rows back; unknown text is ignored. `payer` fills older rows. A row
+ * seen twice (composed, its piece not yet deleted) counts once.
+ */
 export function read_rows(html, payer = "") {
   const rows = []
+  const seen = new Set()
   for (const [row] of html.matchAll(/<p itemscope itemtype="\/usage">.*?<\/p>/g)) {
     const values = {}
     for (const [, name, value] of row.matchAll(/itemprop="(\w+)" content="([^"]*)"/g)) values[name] = value
+    if (values.call) {
+      if (seen.has(values.call)) continue
+      seen.add(values.call)
+    }
     for (const name of NUMBERS) values[name] = Number(values[name])
     values.payer ||= payer
     values.via ||= via_of(values.actor)
@@ -86,6 +100,42 @@ export function read_rows(html, payer = "") {
 }
 
 export const usage_day = (phone, day) => `usage/${phone}/${day}/`
+
+/**
+ * A day folder's pieces, then index.html, listed or not. Read in this
+ * order: a piece deleted after the list has already been composed in.
+ */
+export const day_files = (files) => [...files.filter((name) => name.endsWith(".html") && name !== INDEX).sort(), INDEX]
+
+/** Google takes about one write a second per file; compose up to 32. */
+const BATCH = 31
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Fold the day's waiting pieces, ours among them, onto index.html and
+ * delete them. One compose carries every piece waiting, so a burst of calls
+ * costs a few writes. A conflict or a busy file waits and tries again; when
+ * our piece is gone, another call folded it.
+ */
+export async function append_piece(storage, folder, piece, { tries = 12, wait = 1000 } = {}) {
+  const index = folder + INDEX
+  for (let attempt = 0; attempt < tries; attempt++) {
+    const waiting = day_files((await storage.list(folder)).files).slice(0, -1)
+    if (!waiting.includes(piece)) return true
+    const batch = [piece, ...waiting.filter((name) => name !== piece)].slice(0, BATCH).sort()
+    const version = await storage.stat(index)
+    try {
+      const sources = batch.map((name) => folder + name)
+      await storage.compose(index, version === null ? sources : [index, ...sources], { if_version: version })
+      await Promise.all(sources.map((key) => storage.delete(key).catch(() => {})))
+      return true
+    } catch (error) {
+      if (error.code !== "conflict" && error.code !== "busy") throw error
+      await pause(wait * (0.5 + Math.random()) * Math.min(attempt + 1, 4))
+    }
+  }
+  return false // the piece stays; readers still count it
+}
 
 export function usage_key(phone, actor, now = new Date()) {
   const iso = now.toISOString()
@@ -126,7 +176,7 @@ export function sum_rows(rows) {
  * Storage-backed ledger for the proxy. Each day folder is read once, then
  * counted in memory; each proxy instance keeps its own count.
  */
-export function usage_ledger(storage) {
+export function usage_ledger(storage, append = {}) {
   const totals = new Map() // `${phone} ${day}` -> Promise<{ tokens, cost }>
   const total = (phone, day) => {
     const key = `${phone} ${day}`
@@ -155,22 +205,27 @@ export function usage_ledger(storage) {
       return sums.reduce(add, { tokens: 0, cost: 0 })
     },
     async record(phone, row, now = new Date()) {
-      const version = await storage.put(usage_key(phone, row.actor, now), usage_row(row), { if_version: null })
-      const key = `${phone} ${today(now)}`
-      if (totals.has(key)) {
-        const sum = await totals.get(key).catch(() => null)
+      const key = usage_key(phone, row.actor, now)
+      const folder = key.slice(0, key.lastIndexOf("/") + 1)
+      const piece = key.slice(folder.length)
+      const version = await storage.put(key, usage_row({ ...row, call: piece }), { if_version: null, gzip: true })
+      const total_key = `${phone} ${today(now)}`
+      if (totals.has(total_key)) {
+        const sum = await totals.get(total_key).catch(() => null)
         if (sum) {
           sum.tokens += free_tokens({ plan: row.plan, model: row.usage?.model ?? row.model, prompt_tokens: row.usage?.prompt_tokens ?? 0, completion_tokens: row.usage?.completion_tokens ?? 0 })
           sum.cost += row.usage?.cost ?? 0
         }
       }
+      await append_piece(storage, folder, piece, append).catch(() => false) // the piece already counts
       return version
     },
     async day(phone, day) {
       const folder = usage_day(phone, day)
       const { files } = await storage.list(folder)
-      const pages = await Promise.all(files.map((name) => storage.get(folder + name)))
-      const rows = pages.flatMap((page) => (page ? read_rows(page.body.toString("utf8"), phone) : []))
+      const pieces = await Promise.all(day_files(files).slice(0, -1).map((name) => storage.get(folder + name)))
+      const index = files.length ? await storage.get(folder + INDEX) : null // read last; see day_files
+      const rows = read_rows([index, ...pieces].map((page) => page?.body.toString("utf8") ?? "").join(""), phone)
       return { rows, cost: rows.reduce((sum, row) => sum + row.cost, 0) }
     },
   }

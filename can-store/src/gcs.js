@@ -22,11 +22,14 @@ const UPLOAD = "https://storage.googleapis.com/upload/storage/v1/b"
 /** Keys worth compressing at rest; everything else is stored as given. */
 const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
 
-/** Gzip text when that makes it smaller; tiny files would grow. */
-const at_rest = (key, body) => {
-  if (!TEXT.test(key)) return { body }
+/**
+ * Gzip text when that makes it smaller; tiny files would grow. `gzip: true`
+ * always packs, so the file can be composed onto other gzip files.
+ */
+const at_rest = (key, body, gzip) => {
+  if (!gzip && !TEXT.test(key)) return { body }
   const packed = gzipSync(Buffer.from(body))
-  return packed.length < Buffer.byteLength(body) ? { body: packed, encoding: "gzip" } : { body }
+  return gzip || packed.length < Buffer.byteLength(body) ? { body: packed, encoding: "gzip" } : { body }
 }
 
 /** Cache a token until a minute before it expires. */
@@ -81,8 +84,8 @@ export function create_gcs({ bucket, token, prefix = "" }) {
       return { body, version: response.headers.get("x-goog-generation") }
     },
 
-    async put(key, body, { if_version } = {}) {
-      const stored = at_rest(key, body)
+    async put(key, body, { if_version, gzip } = {}) {
+      const stored = at_rest(key, body, gzip)
       const encoding = stored.encoding && `contentEncoding=${stored.encoding}`
       const query = [`uploadType=media`, `name=${object(key)}`, encoding, precondition(if_version)].filter(Boolean)
       const response = await call(`${UPLOAD}/${bucket}/o?${query.join("&")}`, {
@@ -92,6 +95,34 @@ export function create_gcs({ bucket, token, prefix = "" }) {
       })
       if (response.status === 412) throw new Conflict(`${key} changed`)
       if (!response.ok) await fail(`put ${key}`, response)
+      return String((await response.json()).generation)
+    },
+
+    async stat(key) {
+      const response = await call(`${API}/${bucket}/o/${object(key)}?fields=generation`)
+      if (response.status === 404) return null
+      if (!response.ok) await fail(`stat ${key}`, response)
+      return String((await response.json()).generation)
+    },
+
+    /**
+     * Joins sources into key on Google's side; nothing downloads. Every
+     * source must be gzip (put with `gzip: true`): the result is marked gzip,
+     * and stacked gzip pieces read back as one text.
+     */
+    async compose(key, sources, { if_version } = {}) {
+      const query = precondition(if_version)
+      const response = await call(`${API}/${bucket}/o/${object(key)}/compose${query ? `?${query}` : ""}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          sourceObjects: sources.map((name) => ({ name: `${prefix}${name}` })),
+          destination: { contentEncoding: "gzip" },
+        }),
+      })
+      if (response.status === 412 || response.status === 404) throw new Conflict(`${key} changed`)
+      if (response.status === 429) throw Object.assign(new Error(`${key} is busy`), { code: "busy" }) // one write a second per file
+      if (!response.ok) await fail(`compose ${key}`, response)
       return String((await response.json()).generation)
     },
 

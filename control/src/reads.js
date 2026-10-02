@@ -3,7 +3,7 @@
 import { client } from "../../sync/src/client.js"
 import { token_source } from "../../sync/src/login.js"
 import { read_status } from "../../sync/src/host-status.js"
-import { days_since, free_limits, month_days, read_rows, sum_rows } from "../../proxy/src/usage.js"
+import { day_files, days_since, free_limits, month_days, read_rows, sum_rows } from "../../proxy/src/usage.js"
 import { billing_key, limit_status, paid_now, read_plan } from "../../proxy/src/billing.js"
 import { URLS } from "./status.js"
 import { randomUUID } from "node:crypto"
@@ -75,12 +75,17 @@ export async function usage(sync, phone, day = new Date().toISOString().slice(0,
   if (!DAY.test(day)) throw new Error("day must be YYYY-MM-DD")
   let files = []
   try {
-    files = (await sync.ls(`can://usage/${phone}/${day}/`)).filter((name) => name.endsWith(".html"))
+    files = day_files(await sync.ls(`can://usage/${phone}/${day}/`))
   } catch (error) {
     if (error.status !== 404) throw error
   }
-  const rows = []
-  for (const file of files) rows.push(...read_rows((await sync.cat(`can://usage/${phone}/${day}/${file}`)).toString("utf8"), phone))
+  const pages = []
+  for (const file of files) {
+    // a piece can be composed and deleted between ls and cat
+    const page = await sync.cat(`can://usage/${phone}/${day}/${file}`).catch((error) => { if (error.status !== 404) throw error })
+    pages.push(page?.toString("utf8") ?? "")
+  }
+  const rows = read_rows([pages.at(-1) ?? "", ...pages.slice(0, -1)].join(""), phone) // index, then pieces
   const tokens = rows.reduce((sum, row) => sum + row.prompt_tokens + row.completion_tokens, 0)
   const cost = rows.reduce((sum, row) => sum + row.cost, 0)
   return { phone, day, calls: rows.length, tokens, cost, rows }
