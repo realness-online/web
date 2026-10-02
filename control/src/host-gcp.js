@@ -119,6 +119,7 @@ export async function up(cloud, config, name, { smoke = false, ...options } = {}
   step("bootstrap on the host")
   await push(cloud, name)
   await cloud.ssh(name, `sudo bash ${config.root}/host/scripts/host-bootstrap.sh`)
+  await ensure_template(cloud, config, name)
 
   if (smoke) {
     step("smoke test")
@@ -162,11 +163,22 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
  */
 export async function push(cloud, name) {
   await buildTerminal()
+  step("stage the harness")
+  await run("bash", [join(ROOT, "control", "scripts", "harness-stage.sh")])
   step("copy the code")
-  await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
+  await cloud.ssh(name, "mkdir -p ~/brayness/control ~/brayness/dist && sudo chown -R $(whoami):$(whoami) ~/brayness")
   for (const dir of ["host", "sync", "proxy", "can", "can-store"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
+  // Template inputs: the build script and the harness it bakes in.
+  await cloud.stream(["scp", "--recurse", join(ROOT, "control", "scripts"), `${name}:~/brayness/control/`])
+  await cloud.stream(["scp", join(ROOT, "dist", "brayness-harness.tar.gz"), `${name}:~/brayness/dist/`])
+}
+
+/** Rebuild the actor template when its inputs changed; the seed follows. */
+export async function ensure_template(cloud, config, name) {
+  step("actor template")
+  await cloud.ssh(name, `sudo bash ${config.root}/control/scripts/template-ensure.sh`)
 }
 
 /** Start the host on the host, by path. */
@@ -179,6 +191,7 @@ export async function serve(cloud, config, name) {
 
 export async function restart(cloud, config, name) {
   await push(cloud, name)
+  await ensure_template(cloud, config, name)
   await provision_record_key(cloud, config, name)
   await serve(cloud, config, name)
   return summary(cloud, config, name)
