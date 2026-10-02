@@ -16,9 +16,11 @@
   /* A program on this computer is waiting. Any program here could open this
      link, so the sign-in only leaves on a click. */
   const cli = computed(() => cli_request(props.query))
-  /* The browser terminal is waiting: this page opens its handoff and posts the
-     pass over. Different origin, so a cookie cannot travel; a pass can. */
-  const handoff = computed(() => props.query.handoff === '1')
+  /* No program waiting and a host configured: signing in opens the chat. The
+     host is another origin, so a cookie cannot travel; a pass can. */
+  const handoff = computed(
+    () => !cli.value && !!import.meta.env.VITE_BRAYNESS_URL && !!import.meta.env.VITE_BRAYNESS_SYNC_URL
+  )
   const signed_on = computed(() => !!current_user.value)
   const sending = ref(false)
   const error = ref('')

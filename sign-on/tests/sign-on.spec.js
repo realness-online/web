@@ -79,7 +79,7 @@ describe('sign-on page', () => {
       .mockResolvedValue({ ok: true, json: async () => ({ pass: 'P/+' }) })
     vi.stubGlobal('fetch', fetch_mock)
 
-    const page = mount(SignOn, { props: { query: { handoff: '1' } } })
+    const page = mount(SignOn, { props: { query: {} } })
     await flushPromises()
 
     expect(fetch_mock).toHaveBeenCalledWith('http://sync.example/v1/host-pass', {
@@ -100,7 +100,7 @@ describe('sign-on page', () => {
     vi.stubGlobal('location', { replace: vi.fn() })
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
 
-    const page = mount(SignOn, { props: { query: { handoff: '1' } } })
+    const page = mount(SignOn, { props: { query: {} } })
     await flushPromises()
 
     expect(page.find('[role="alert"]').text()).toBe('Could not open Brayness')
