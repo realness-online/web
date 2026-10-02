@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""One chat prompt over guest vsock port 55; stream Pi text as JSON lines.
+"""One chat prompt over guest vsock port 55, relayed to the terminal's Pi.
 
-Each connection starts Pi against the actor's named chat session. A lock keeps
-simultaneous requests from editing that session at once. The session remains in
-Pi's normal sessions folder, beside sessions opened in the terminal.
+The actor runs one Pi, in its terminal. Its chat-bridge extension listens on a
+unix socket; this relays the browser's message there and its JSON-line reply
+back. Chat and terminal share one session. Nothing starts a Pi per message.
+
+`{"watch": true}` holds the connection open as a live view of that session,
+until either end closes it.
 """
-import fcntl
 import json
 import os
-import pwd
 import selectors
-import subprocess
+import socket
 import sys
 
-WORK = "/brayness/work"
-LOCK = "/run/brayness-chat.lock"
+SOCKET = "/run/brayness/pi-chat.sock"
+TIMEOUT = 600
 
 
 def send(value):
@@ -22,15 +23,37 @@ def send(value):
     sys.stdout.flush()
 
 
-def drop_privileges():
-    user = pwd.getpwnam("brayness")
-    os.initgroups(user.pw_name, user.pw_gid)
-    os.setgid(user.pw_gid)
-    os.setuid(user.pw_uid)
+def watch():
+    pi = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        pi.connect(SOCKET)
+    except OSError:
+        send({"type": "error", "text": "Pi is not running in the terminal"})
+        return
+    with pi, selectors.DefaultSelector() as ready:
+        pi.sendall(b'{"watch": true}\n')
+        ready.register(pi, selectors.EVENT_READ)
+        ready.register(sys.stdin.buffer, selectors.EVENT_READ)
+        while True:
+            for key, _ in ready.select():
+                if key.fileobj is sys.stdin.buffer:
+                    if not os.read(sys.stdin.fileno(), 4096):
+                        return  # the browser left
+                    continue
+                chunk = pi.recv(65536)
+                if not chunk:
+                    return  # Pi exited
+                sys.stdout.buffer.write(chunk)
+                sys.stdout.flush()
 
 
 def main():
     line = sys.stdin.buffer.readline(16385)
+    try:
+        if json.loads(line).get("watch") is True:
+            return watch()
+    except (ValueError, AttributeError):
+        pass
     try:
         message = json.loads(line)["message"]
         if not isinstance(message, str) or not message.strip() or len(line) > 16384:
@@ -39,69 +62,25 @@ def main():
         send({"type": "error", "text": "invalid message"})
         return
 
-    with open(LOCK, "w") as lock:
+    pi = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    pi.settimeout(TIMEOUT)
+    try:
+        pi.connect(SOCKET)
+    except OSError:
+        send({"type": "error", "text": "Pi is not running in the terminal"})
+        return
+    with pi:
+        pi.sendall((json.dumps({"message": message}) + "\n").encode())
         try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            send({"type": "error", "text": "chat is busy; try again"})
-            return
-        pi = subprocess.Popen(
-            ["/usr/local/bin/brayness", "--mode", "rpc", "--session-id", "brayness-chat", "--append-system-prompt", "/usr/local/share/brayness-chat.md"],
-            cwd=WORK,
-            env={**os.environ, "HOME": "/brayness", "USER": "brayness", "LOGNAME": "brayness"},
-            preexec_fn=drop_privileges,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        try:
-            pi.stdin.write((json.dumps({"id": "chat", "type": "prompt", "message": message}) + "\n").encode())
-            pi.stdin.flush()
-            with selectors.DefaultSelector() as watch:
-                watch.register(sys.stdin.buffer, selectors.EVENT_READ)
-                watch.register(pi.stdout, selectors.EVENT_READ)
-                pending = b""
-                while True:
-                    ready = watch.select(timeout=600)
-                    if not ready:
-                        send({"type": "error", "text": "Pi timed out"})
-                        return
-                    for key, _ in ready:
-                        if key.fileobj is sys.stdin.buffer:
-                            if not os.read(sys.stdin.fileno(), 4096):
-                                return  # browser disconnected: stop Pi below
-                            continue
-                        chunk = os.read(pi.stdout.fileno(), 65536)
-                        if not chunk:
-                            send({"type": "error", "text": f"Pi exited ({pi.wait()})"})
-                            return
-                        pending += chunk
-                        while b"\n" in pending:
-                            line, pending = pending.split(b"\n", 1)
-                            event = json.loads(line)
-                            if event.get("type") == "extension_ui_request" and event.get("method") in ("select", "confirm", "input", "editor"):
-                                pi.stdin.write((json.dumps({"type": "extension_ui_response", "id": event["id"], "cancelled": True}) + "\n").encode())
-                                pi.stdin.flush()
-                            if event.get("type") == "response" and event.get("id") == "chat" and not event.get("success"):
-                                send({"type": "error", "text": event.get("error", "Pi refused the message")})
-                                return
-                            update = event.get("assistantMessageEvent") if event.get("type") == "message_update" else None
-                            if update and update.get("type") == "text_delta":
-                                send({"type": "delta", "text": update["delta"]})
-                            if event.get("type") == "agent_settled":
-                                send({"type": "done"})
-                                return
-        finally:
-            pi.stdin.close()
-            try:
-                pi.wait(timeout=15)
-            except subprocess.TimeoutExpired:
-                pi.terminate()
-                pi.wait(timeout=5)
+            for reply in pi.makefile("rb"):
+                sys.stdout.buffer.write(reply)
+                sys.stdout.flush()
+        except socket.timeout:
+            send({"type": "error", "text": "Pi timed out"})
 
 
 if __name__ == "__main__":
     try:
         main()
     except (BrokenPipeError, ConnectionResetError):
-        pass  # The person left; closing Pi's stdin ends its process.
+        pass  # The person left; the turn finishes in the terminal.

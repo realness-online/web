@@ -82,7 +82,8 @@ class Mutex {
 
 /**
  * Start Pi in the seed's terminal and wait until a typed key echoes, so every
- * clone opens on a ready Pi. The key is erased so the editor starts empty.
+ * clone opens on a ready Pi. Every key typed is erased so the editor starts
+ * empty: a slow Pi gets more than one before the first echoes.
  */
 async function warmPi(uds, seconds = PI_WARM_SECONDS) {
   const { socket, lines } = await vsock.connect(uds, PTY_PORT)
@@ -91,6 +92,7 @@ async function warmPi(uds, seconds = PI_WARM_SECONDS) {
   let opened = false
   let prompt = false
   let lastKey = 0
+  let keys = 0
   let seen = ""
   try {
     socket.write(`${JSON.stringify({ op: "resize", cols: 80, rows: 24 })}\n`)
@@ -113,7 +115,7 @@ async function warmPi(uds, seconds = PI_WARM_SECONDS) {
           seen += chunk
           prompt = seen.includes(PI_PROMPT)
         } else if (lastKey && chunk.includes("q") && chunk.includes("\x1b[2K")) {
-          send(Buffer.from("\x7f"))
+          send(Buffer.from("\x7f".repeat(keys)))
           await sleep(1000)
           LOG.info(`pi warm in the seed after ${((Date.now() - started) / 1000).toFixed(1)}s`)
           return
@@ -126,6 +128,7 @@ async function warmPi(uds, seconds = PI_WARM_SECONDS) {
       }
       if (prompt && Date.now() - lastKey > 1000) {
         send(Buffer.from("q"))
+        keys++
         lastKey = Date.now()
       }
     }

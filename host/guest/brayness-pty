@@ -26,6 +26,7 @@ import json
 import os
 import pty
 import pwd
+import re
 import select
 import socket
 import struct
@@ -44,6 +45,13 @@ TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
 DEFAULT_COLS = 80
 DEFAULT_ROWS = 24
 OPENER = b"exec brayness\r"
+# Modes an app sets once at startup (Pi's fullscreen TUI: alternate screen,
+# mouse reports, focus, bracketed paste). A browser that attaches later never
+# saw them, so the holder remembers them and replays them on attach.
+REPLAY_MODES = (1049, 1000, 1002, 1003, 1004, 1006, 2004)
+DEC_MODE = re.compile(rb"\x1b\[\?([0-9;]+)([hl])")
+# Kitty keyboard: CSI > flags u pushes, CSI < n u pops.
+KITTY = re.compile(rb"\x1b\[([<>])([0-9]*)u")
 
 
 def frame(payload):
@@ -84,6 +92,9 @@ class Holder:
         self.pending = b""
         self.fresh = False
         self.size = (DEFAULT_COLS, DEFAULT_ROWS)
+        self.modes = {}
+        self.kitty = []
+        self.carry = b""
         self.pid, self.master = pty.fork()
         if self.pid == 0:
             os.environ.update(TERM_ENV)
@@ -100,6 +111,35 @@ class Holder:
         self.client = client
         self.pending = b""
         self.fresh = True
+        replay = self.replay()
+        if replay:
+            self.send(frame({"op": "data", "data_b64": base64.b64encode(replay).decode()}))
+
+    def track(self, data):
+        """Remember the replayable modes the app's output turns on or off."""
+        text = self.carry + data
+        # An escape still open at the end of a read finishes on the next one.
+        tail = text.rfind(b"\x1b")
+        if tail != -1 and len(text) - tail < 24 and not re.search(rb"[hlu]", text[tail + 2:]):
+            text, self.carry = text[:tail], text[tail:]
+        else:
+            self.carry = b""
+        for numbers, action in DEC_MODE.findall(text):
+            for number in numbers.split(b";"):
+                if number.isdigit() and int(number) in REPLAY_MODES:
+                    self.modes[int(number)] = action == b"h"
+        for kind, flags in KITTY.findall(text):
+            if kind == b">":
+                self.kitty.append(int(flags or 0))
+            elif self.kitty:
+                del self.kitty[-max(1, int(flags or 1)):]
+
+    def replay(self):
+        """Sequences that put a fresh browser terminal in the app's modes."""
+        on = [mode for mode in REPLAY_MODES if self.modes.get(mode)]
+        out = b"".join(b"\x1b[?%dh" % mode for mode in on)
+        out += b"".join(b"\x1b[>%du" % flags for flags in self.kitty)
+        return out
 
     def send(self, data):
         if not self.client:
@@ -149,6 +189,7 @@ class Holder:
                     self.send(frame({"op": "exit", "code": os.waitstatus_to_exitcode(status)}))
                     return
                 # With no client the bytes are dropped; the next attach repaints.
+                self.track(data)
                 self.send(frame({"op": "data", "data_b64": base64.b64encode(data).decode()}))
             if self.client and self.client in readable:
                 chunk = self.client.recv(65536)

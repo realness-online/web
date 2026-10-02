@@ -88,7 +88,7 @@
       id="open-terminal"
       :disabled="sending || !terminal_url || !sync_url"
       @click="on_open_terminal()">
-      Open the terminal
+      Open the TUI
     </button>
     <button
       v-if="handoff && signed_on"
@@ -96,7 +96,7 @@
       id="open-chat"
       :disabled="sending || !terminal_url || !sync_url"
       @click="on_open_terminal('chat')">
-      Open chat
+      Open the GUI
     </button>
     <button
       v-if="cli && signed_on"
