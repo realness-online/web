@@ -39,8 +39,11 @@ step boot          0    bash "$S/app-boot-check.sh"
 step escape        0    bash "$S/app-escape-check.sh"
 step escape-ctrl   fail env CONTROL=1 bash "$S/app-escape-check.sh"
 # The floor script reports; the check is that the cap and the serve size boot.
-step floor         0    env MIBS="96 64" bash "$S/app-memory-floor.sh"
-step floor-holds   0    sh -c "awk -F'\t' '\$3 == \"ok\"' $RUN/app-memory-floor-*/floor.tsv | wc -l | grep -qx 2 && echo '96 and 64 MiB serve'"
+# The 96 MiB cap must serve everywhere. 64 is the arm64 floor; the x86_64 guest
+# is heavier, so there 80 and 72 are measured and only reported.
+if [ "$(uname -m)" = x86_64 ]; then mibs="96 80 72 64" must="96"; else mibs="96 64" must="96 64"; fi
+step floor         0    env MIBS="$mibs" bash "$S/app-memory-floor.sh"
+step floor-holds   0    sh -c "for m in $must; do awk -F'\t' -v m=\$m '\$2 == m && \$3 == \"ok\"' $RUN/app-memory-floor-*/floor.tsv | grep -q . || exit 1; done; echo '$must MiB serve; floor:' \$(awk -F'\t' '\$3 == \"ok\" {print \$2}' $RUN/app-memory-floor-*/floor.tsv | sort -n | head -1)"
 for check in "$REPO"/host/checks/app-*.check.js; do
   step "$(basename "$check" .check.js)" 0 node "$check"
 done

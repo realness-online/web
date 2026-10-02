@@ -170,8 +170,10 @@ export async function push(cloud, name) {
   for (const dir of ["host", "sync", "proxy", "can", "can-store"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
-  // Template inputs: the build script and the harness it bakes in.
-  await cloud.stream(["scp", "--recurse", join(ROOT, "control", "scripts"), `${name}:~/brayness/control/`])
+  // Template inputs and app-check.sh: scripts, the escape probe, the harness.
+  for (const dir of ["scripts", "escape-probe"]) {
+    await cloud.stream(["scp", "--recurse", join(ROOT, "control", dir), `${name}:~/brayness/control/`])
+  }
   await cloud.stream(["scp", join(ROOT, "dist", "brayness-harness.tar.gz"), `${name}:~/brayness/dist/`])
 }
 
