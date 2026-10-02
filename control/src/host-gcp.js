@@ -14,7 +14,8 @@
  * one, which is how a 20 GB request once booted a 100 GB disk.
  */
 import { join } from "node:path"
-import { attempt, step, note } from "./exec.js"
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises"
+import { attempt, step, note, run } from "./exec.js"
 import { ROOT } from "./paths.js"
 import { buildTerminal } from "./terminal.js"
 
@@ -124,6 +125,7 @@ export async function up(cloud, config, name, { smoke = false, ...options } = {}
     await cloud.ssh(name, `bash ${config.root}/host/scripts/host-smoke.sh`)
   }
 
+  await provision_record_key(cloud, config, name)
   await serve(cloud, config, name)
   return summary(cloud, config, name)
 }
@@ -147,9 +149,7 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
   }
 
   step(`left in ${config.zone}`)
-  process.stdout.write(
-    await cloud.call(["disks", "list", "--format=table(name,sizeGb,type.basename(),users.basename())"]),
-  )
+  note(await cloud.call(["disks", "list", "--format=table(name,sizeGb,type.basename(),users.basename())"]))
 }
 
 /**
@@ -164,7 +164,7 @@ export async function push(cloud, name) {
   await buildTerminal()
   step("copy the code")
   await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
-  for (const dir of ["host"]) {
+  for (const dir of ["host", "sync"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
 }
@@ -179,8 +179,31 @@ export async function serve(cloud, config, name) {
 
 export async function restart(cloud, config, name) {
   await push(cloud, name)
+  await provision_record_key(cloud, config, name)
   await serve(cloud, config, name)
   return summary(cloud, config, name)
+}
+
+// The operator registers each host key; hosts never receive bucket access.
+// Dev passes `read_secret` to read it through Lima instead of ssh.
+export async function provision_record_key(cloud, config, name, {
+  upload = (file, destination) => run("gcloud", ["storage", "cp", file, destination, "--project=realness-development"]),
+  scratch = join(ROOT, "../../artifacts/brayness"),
+  read_secret = () => cloud.call(["ssh", name, "--quiet", `--command=sudo bash ${config.root}/host/scripts/record-key.sh`]),
+} = {}) {
+  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name)) throw new Error("invalid host name")
+  step(`register ${name} with sync`)
+  const secret = (await read_secret()).trim()
+  if (!/^[a-f0-9]{64}$/.test(secret)) throw new Error("host record secret is invalid")
+  await mkdir(scratch, { recursive: true })
+  const dir = await mkdtemp(join(scratch, "record-key-"))
+  try {
+    const file = join(dir, "key")
+    await writeFile(file, secret, { mode: 0o600 })
+    await upload(file, `gs://realness-development.appspot.com/host-keys/${name}`)
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
 }
 
 async function summary(cloud, config, name) {

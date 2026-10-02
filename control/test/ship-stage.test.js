@@ -43,6 +43,7 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
   assert.deepEqual(Object.keys(models.providers), ['brayness'])
   assert.ok(models.providers.brayness.models.some(model => model.id === 'inkling'))
+  assert.ok(models.providers.brayness.models.some(model => model.id === 'house'))
   assert.equal(models.providers.brayness.baseUrl, proxy_url)
   assert.equal(models.providers.brayness.apiKey, '!brayness-model-pass')
   assert.ok(!existsSync(join(ship, 'agent-pass')))

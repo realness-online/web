@@ -73,7 +73,7 @@ function text(response, status, body) {
   response.end(body)
 }
 
-export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET), connectChat = (record) => vsock.connect(record.vsockPath, 55) }) {
+export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET), connectChat = (record) => vsock.connect(record.vsockPath, 55), limits = null }) {
   const same_origin = (request) => {
     const origin = request.headers.origin
     return origin === `http://${request.headers.host}` || origin === `https://${request.headers.host}`
@@ -158,6 +158,55 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
       guest.socket.write(`${JSON.stringify({ message })}\n`)
       return
     }
+    // The GUI's live view of the actor's one Pi session: history, then every
+    // turn, whether typed in the TUI or sent from the GUI. Watching is not work,
+    // so an open page does not hold the actor awake.
+    if (request.method === "GET" && url.pathname === "/chat/events") {
+      if (!phone) return text(response, 403, "not signed in\n")
+      const id = url.searchParams.get("actor")
+      let record
+      try {
+        if (!allowed(phone, id)) return text(response, 404, "no actor\n")
+        record = await store.ensureRunning(id)
+      } catch {
+        return text(response, 404, "no actor\n")
+      }
+      let guest
+      try {
+        guest = await connectChat(record)
+      } catch (error) {
+        LOG.warn(`chat watch failed for ${id}: ${error.message}`)
+        return text(response, 502, "chat is unavailable\n")
+      }
+      response.once("close", () => guest.socket.destroy())
+      response.writeHead(200, { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" })
+      const early = guest.lines.rest()
+      if (early.length) response.write(early)
+      guest.socket.on("error", () => response.destroy())
+      guest.socket.pipe(response)
+      guest.socket.write(`${JSON.stringify({ watch: true })}\n`)
+      return
+    }
+    // b1c: the chat page asks after each reply; the proxy decides the warning.
+    if (request.method === "GET" && url.pathname === "/chat/limit") {
+      const id = url.searchParams.get("actor")
+      let record
+      try {
+        if (!allowed(phone, id)) return text(response, 404, "no actor\n")
+        record = store.get(id)
+      } catch {
+        return text(response, 404, "no actor\n")
+      }
+      let status = null
+      try {
+        status = limits ? await limits(record) : null
+      } catch (error) {
+        LOG.warn(`limit check failed for ${id}: ${error.message}`)
+      }
+      const body = Buffer.from(JSON.stringify(status ?? { warn: null }))
+      response.writeHead(200, { "content-type": "application/json", "content-length": body.length, "cache-control": "no-store" })
+      return response.end(body)
+    }
     if (request.method === "POST" && url.pathname === "/ticket") {
       if (!same_origin(request)) return text(response, 403, "bad origin\n")
       const id = url.searchParams.get("actor")
@@ -171,6 +220,15 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
       return response.end(body)
     }
     if (["/", "/term", "/index.html", "/chat", "/chat/", "/chat/index.html"].includes(url.pathname)) {
+      // Chat keeps one conversation: reuse the owner's most recently used actor.
+      if (chat && !url.searchParams.get("actor") && store?.list) {
+        const mine = store.list().filter((record) => record.owner === phone)
+        const newest = mine.sort((a, b) => String(b.last_activity || b.created).localeCompare(String(a.last_activity || a.created)))[0]
+        if (newest) {
+          response.writeHead(302, { location: `/chat?actor=${newest.id}`, "content-length": 0, connection: "close" })
+          return response.end()
+        }
+      }
       if (!url.searchParams.get("actor") && newActor) {
         if (!can({ phone }, "write", `people/${phone}/harnesses`)) return text(response, 403, "cannot create an actor\n")
         let record

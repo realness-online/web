@@ -131,6 +131,52 @@ test("loops: admins read all and may only request a stop", () => {
   assert.equal(can(admin, "write", "admins.html"), false)
 })
 
+test("hosts: a global admin reads host status; nobody writes it through sync", () => {
+  const admin = { phone: B, admin: true }
+  assert.equal(can(admin, "list", "hosts/"), true)
+  assert.equal(can(admin, "get", "hosts/brayness-1/status.html"), true)
+  assert.equal(can(admin, "write", "hosts/brayness-1/status.html"), false) // hosts write with their own key
+  assert.equal(can(admin, "delete", "hosts/brayness-1/status.html"), false)
+  assert.equal(can(scott, "get", "hosts/brayness-1/status.html"), false)
+  assert.equal(can(stranger, "list", "hosts/"), false)
+  assert.equal(can(box, "list", "hosts/"), false)
+})
+
+test("actor requests: admins write them, only the named host reads them", () => {
+  const admin = { phone: B, admin: true }
+  const host = { host_name: "brayness-1" }
+  const key = "hosts/brayness-1/requests/a-0123456789ab.html"
+  assert.equal(can(admin, "write", key), true)
+  assert.equal(can(admin, "delete", key), false)
+  assert.equal(can(admin, "write", "hosts/brayness-1/requests/../status.html"), false)
+  assert.equal(can(admin, "write", "hosts/brayness-1/requests/not-an-actor.html"), false)
+  assert.equal(can(scott, "write", key), false)
+  assert.equal(can(host, "get", key), true)
+  assert.equal(can(host, "write", key), false)
+  assert.equal(can({ host_name: "brayness-2" }, "get", key), false)
+})
+
+test("a host writes its own status and loop records; nothing more", () => {
+  const host = { host_name: "brayness-1" }
+  const id = "a-0123456789ab"
+  assert.equal(can(host, "write", "hosts/brayness-1/status.html"), true)
+  assert.equal(can(host, "get", "hosts/brayness-1/status.html"), true)
+  assert.equal(can(host, "write", "hosts/brayness-2/status.html"), false)
+  assert.equal(can(host, "write", "hosts/brayness-1/x.html"), false)
+  assert.equal(can(host, "list", "hosts/"), false)
+  assert.equal(can(host, "delete", "hosts/brayness-1/status.html"), false)
+  assert.equal(can(host, "write", `loops/${id}/record.html`), true)
+  assert.equal(can(host, "get", `loops/${id}/stop.html`), true)
+  assert.equal(can(host, "write", `loops/${id}/stop.html`), false)
+  assert.equal(can(host, "write", "loops/not-an-id/record.html"), false)
+  assert.equal(can(host, "list", "loops/"), false)
+  assert.equal(can(host, "get", `usage/${A}/x`), false)
+  assert.equal(can(host, "get", `people/${A}/posters/p.svg`), true) // public, like any stranger
+  assert.equal(can(host, "get", `people/${A}/vault/x.md`), false)
+  assert.equal(can({ host_name: "../x" }, "write", "hosts/../x/status.html"), false)
+  assert.equal(can({ host_name: "brayness-1", phone: A }, "write", "hosts/brayness-1/status.html"), false) // a phone is never a host
+})
+
 // Realness serves index.html.gz and three folders; the rest stays private.
 test("public is an allowlist", () => {
   assert.equal(can(stranger, "get", `people/${A}/thoughts/1738103761047.html.gz`), true)
@@ -230,4 +276,14 @@ test("a malformed rights page throws, so the caller denies", () => {
     null,
   ]
   for (const html of cases) assert.throws(() => read_rights(html))
+})
+
+test("b1d: billing is read-only: owner and admin read, nobody writes", () => {
+  const A = "+14155550123", B = "+14155550124"
+  const owner = { phone: A }, admin = { phone: B, admin: true }, other = { phone: B }
+  assert.equal(can(owner, "get", `billing/${A}/plan.html`), true)
+  assert.equal(can(admin, "get", `billing/${A}/plan.html`), true)
+  assert.equal(can(other, "get", `billing/${A}/plan.html`), false)
+  for (const who of [owner, admin]) assert.equal(can(who, "write", `billing/${A}/plan.html`), false)
+  assert.equal(can({ owner: A, id: "a-abcdef123456" }, "get", `billing/${A}/plan.html`), false)
 })

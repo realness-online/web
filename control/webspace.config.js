@@ -33,6 +33,23 @@ export const ENVIRONMENTS = {
     /** Sizes for the stack the host runs. */
     volume: "/opt/fc/actors",
     volumeSize: "6G",
+    /**
+     * o5: the Cloud Run services Brayness runs, and where billing lands.
+     * billing is the BigQuery billing export table, "project.dataset.table";
+     * null until the export is enabled in the console.
+     */
+    cloud: {
+      project: "realness-development",
+      region: "us-central1",
+      services: ["brayness-sync", "brayness-proxy"],
+      billing: "realness-development.billing_export.gcp_billing_export_v1_01F763_9EF3F8_28E859",
+      // o8: the proxy's own OpenRouter key, in this project; it reads its own totals.
+      openrouter: { key_secret: "OPENROUTER_API_KEY" },
+      // o8: services this environment's bill may charge; any other with cost is flagged.
+      expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice"],
+    },
+    /** o7: when `status` calls for attention. */
+    attention: { stale_s: 120, free_pct: 15, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
   },
 
   prod: {
@@ -51,6 +68,24 @@ export const ENVIRONMENTS = {
     /** Loopback-only until h1 exists, so the API is reached over ssh. */
     api: "http://127.0.0.1:8080",
     hostExports: "/opt/fc/actors/mnt/exports",
+    /**
+     * o5: the Cloud Run services Brayness runs, and where billing lands.
+     * billing is the BigQuery billing export table, "project.dataset.table";
+     * null until the export is enabled in the console.
+     */
+    cloud: {
+      project: "realness-development",
+      region: "us-central1",
+      services: ["brayness-sync", "brayness-proxy"],
+      // Production keeps its own billing account; null until its export is on.
+      billing: null,
+      // o8: production's own proxy key.
+      openrouter: { key_secret: "OPENROUTER_API_KEY" },
+      // o8: production also runs host VMs.
+      expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice", "Compute Engine"],
+    },
+    /** o7: when `status` calls for attention. */
+    attention: { stale_s: 120, free_pct: 15, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
   },
 }
 

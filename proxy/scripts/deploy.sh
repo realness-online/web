@@ -38,9 +38,21 @@ ENV NODE_ENV=production
 CMD ["node", "bin/proxy-service.js"]
 EOF
 
+# Payments turn on once proxy/scripts/stripe-setup.js has stored both secrets.
+secrets="MODEL_PASS_SECRET=MODEL_PASS_SECRET:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest"
+if gcloud secrets describe STRIPE_SECRET_KEY --project "$project" > /dev/null 2>&1 &&
+  gcloud secrets describe STRIPE_WEBHOOK_SECRET --project "$project" > /dev/null 2>&1; then
+  secrets="$secrets,STRIPE_SECRET_KEY=STRIPE_SECRET_KEY:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest"
+  echo "payments: on"
+else
+  echo "payments: off (run proxy/scripts/stripe-setup.js)"
+fi
+# The pay page reads /limit and starts checkout from these browser origins.
+origins="${ORIGINS:-https://brayness-sign-on.web.app,http://localhost:5173}"
+
 gcloud run deploy brayness-proxy \
   --project "$project" --region "$region" --source "$stage" \
   --service-account "$account" \
-  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket" \
-  --set-secrets "MODEL_PASS_SECRET=MODEL_PASS_SECRET:latest,OPENROUTER_API_KEY=OPENROUTER_API_KEY:latest" \
+  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins" \
+  --set-secrets "$secrets" \
   --allow-unauthenticated --quiet

@@ -13,14 +13,19 @@ import { fileURLToPath } from "node:url"
 import { parseArgs } from "node:util"
 import { Door } from "./src/door.js"
 import { Loops } from "./src/loops.js"
+import { HostStatus } from "./src/status.js"
+import { ActorRequests } from "./src/requests.js"
 import { SyncSites } from "./src/sync-sites.js"
-import { create_gcs, gcloud_token, metadata_token } from "../can-store/src/gcs.js"
+import { hostname } from "node:os"
+import { readFileSync } from "node:fs"
+import { SyncMirror } from "./src/sync-mirror.js"
 import { logger } from "./src/log.js"
 import * as pty from "./src/pty.js"
 import * as server from "./src/server.js"
 import { ActorStore } from "./src/actors.js"
 import { AppStore } from "./src/apps.js"
 import * as webterm from "./src/webterm.js"
+import { issue_model_pass } from "../proxy/src/model-pass.js"
 
 const LOG = logger("host")
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -30,6 +35,8 @@ const FLUSH_MS = 5000
 const SWEEP_MS = 60_000
 // How often to check each app's VM and port (u5).
 const APP_SWEEP_MS = 5000
+// How often to write this host's status to Storage (o1).
+const STATUS_MS = 30_000
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -95,12 +102,20 @@ const listen = (what, port) =>
 
 await listen(pty.makeServer(store), values["pty-port"])
 LOG.info(`pty stream on ${values.listen}:${values["pty-port"]}`)
-await listen(webterm.makeServer({ pageRoot: values.term, chatRoot: values.chat, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner) }), values["web-port"])
+// b1c: the owner's limit status from the proxy, under the actor's model pass.
+const proxy_url = (process.env.BRAYNESS_PROXY_URL ?? "https://brayness-proxy-yelzvhhngq-uc.a.run.app").replace(/\/$/, "")
+const limits = process.env.MODEL_PASS_SECRET
+  ? async (record) => {
+      const pass = issue_model_pass({ phone: record.owner, id: record.id }, process.env.MODEL_PASS_SECRET)
+      const reply = await fetch(`${proxy_url}/limit`, { headers: { authorization: `Bearer ${pass}` }, signal: AbortSignal.timeout(5000) })
+      if (!reply.ok) throw new Error(`proxy /limit ${reply.status}`)
+      return reply.json()
+    }
+  : null
+await listen(webterm.makeServer({ pageRoot: values.term, chatRoot: values.chat, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner), limits }), values["web-port"])
 LOG.info(`browser terminal on ${values.listen}:${values["web-port"]}`)
-// Global admin (a1j): loop records mirror to Storage when a bucket is set.
-// A GCE host uses its service account; LOOPS_TOKEN=gcloud for a laptop.
-const loops_bucket = process.env.LOOPS_BUCKET
-const mirror = loops_bucket ? create_gcs({ bucket: loops_bucket, token: process.env.LOOPS_TOKEN === "gcloud" ? gcloud_token() : metadata_token() }) : null
+// The host signs record passes; sync alone holds the Storage key.
+const mirror = process.env.SYNC_URL ? new SyncMirror({ url: process.env.SYNC_URL, secret: readFileSync(process.env.RECORD_SECRET_FILE, "utf8").trim(), host: hostname() }) : null
 const loops = new Loops(store, { mirror })
 const site_url = store.syncSites ? `${(process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL).replace(/\/$/, "")}/sites/{id}/` : "/s/{id}/"
 new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops).start()
@@ -139,3 +154,14 @@ const superviseApps = async () => {
   setTimeout(superviseApps, APP_SWEEP_MS)
 }
 superviseApps()
+
+// o1: the first record now, so a restarted host shows at once.
+const status = new HostStatus(store, { mirror, apps, loops, warn: (message) => LOG.warn(message) })
+// o6: admin idle and stop requests, obeyed before the record is written.
+const requests = new ActorRequests(store, { mirror, host: hostname(), warn: (message) => LOG.warn(message) })
+const report = async () => {
+  for (const { id, action } of await requests.obey()) LOG.info(`admin request: ${action} ${id}`)
+  await status.publish()
+  setTimeout(report, STATUS_MS)
+}
+if (mirror) report()

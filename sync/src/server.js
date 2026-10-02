@@ -16,7 +16,7 @@
 import { createHash } from "node:crypto"
 import { createServer } from "node:http"
 import { can, identify } from "brayness-can"
-import { issue_host_pass, verify_host_pass } from "./host-pass.js"
+import { issue_host_pass, verify_host_pass, verify_record_pass, record_host } from "./host-pass.js"
 import { site_request } from "./sites.js"
 import { recovery_path, verify_recovery_pass } from "./recovery-pass.js"
 import { rights_key } from "./rights.js"
@@ -96,7 +96,14 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
         return { recovery: claims.phone, id: claims.id, paths: claims.paths }
       } catch {
         try { return { ...verify_host_pass(token, host_pass_secret), host: true } }
-        catch { throw new Status(401) }
+        catch {
+          try {
+            const host = record_host(token)
+            const key = await storage.get(`host-keys/${host}`)
+            if (!key) throw new Status(401)
+            return { host_name: verify_record_pass(token, key.body.toString("utf8").trim()).host }
+          } catch { throw new Status(401) }
+        }
       }
     }
     try {
@@ -109,8 +116,8 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
   const admins = admin_list(storage)
 
   async function handle(request, response, path, action, who) {
-    // Admin is asked only where it grants something: loops and the usage ledger.
-    if (["loops", "usage"].includes(path.split("/")[0]) && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
+    // Admin is asked only where it grants something: loops, hosts, and the ledger.
+    if (["loops", "hosts", "usage", "billing"].includes(path.split("/")[0]) && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
     const owner = path.split("/")[1]
     const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
     if (who?.recovery) {

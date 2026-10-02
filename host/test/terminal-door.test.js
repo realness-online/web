@@ -110,3 +110,74 @@ test("chat streams only for the actor's owner, after a same-origin request", asy
     await close(server)
   }
 })
+
+test("chat events stream the session to the owner, without holding the actor awake", async () => {
+  const requests = []
+  let work = 0
+  const server = makeWebterm({ pageRoot: ".", streamPort: 1, store: {
+    get: (id) => ({ id, owner: id === "a-one" ? phone : "+14155559999" }),
+    ensureRunning: (id) => ({ id }),
+    beginWork: () => work++, endWork: () => {},
+  }, connectChat: async () => {
+    const socket = new Duplex({
+      read() {},
+      write(chunk, encoding, done) {
+        requests.push(JSON.parse(chunk.toString()))
+        this.push('{"type":"history","messages":[]}\n{"type":"user","text":"typed"}\n')
+        this.push(null)
+        done()
+      },
+    })
+    return { socket, lines: new Lines(socket) }
+  } })
+  await listen(server)
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    assert.equal((await fetch(`${base}/chat/events?actor=a-one`)).status, 401)
+    const exchange = await fetch(`${base}/auth`, { method: "POST", headers: { origin: base }, body: JSON.stringify({ pass }) })
+    const cookie = exchange.headers.get("set-cookie").split(";")[0]
+    assert.equal((await fetch(`${base}/chat/events?actor=a-foreign`, { headers: { cookie } })).status, 404)
+    const reply = await fetch(`${base}/chat/events?actor=a-one`, { headers: { cookie } })
+    assert.deepEqual((await reply.text()).trim().split("\n").map(JSON.parse), [{ type: "history", messages: [] }, { type: "user", text: "typed" }])
+    assert.deepEqual(requests, [{ watch: true }])
+    assert.equal(work, 0)
+  } finally {
+    server.closeAllConnections()
+    await close(server)
+  }
+})
+
+test("b1c: chat limit answers only the owner, with the proxy's warning", async () => {
+  const asked = []
+  const server = makeWebterm({ pageRoot: ".", streamPort: 1, store: {
+    get: (id) => ({ id, owner: id === "a-one" ? phone : "+14155559999" }),
+  }, limits: async (record) => (asked.push(record), { warn: { limit: "day", percent: 92, message: "92% ... https://pay" } }) })
+  await listen(server)
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    assert.equal((await fetch(`${base}/chat/limit?actor=a-one`)).status, 401)
+    const exchange = await fetch(`${base}/auth`, { method: "POST", headers: { origin: base }, body: JSON.stringify({ pass }) })
+    const cookie = exchange.headers.get("set-cookie").split(";")[0]
+    assert.equal((await fetch(`${base}/chat/limit?actor=a-foreign`, { headers: { cookie } })).status, 404)
+    const reply = await fetch(`${base}/chat/limit?actor=a-one`, { headers: { cookie } })
+    assert.equal((await reply.json()).warn.percent, 92)
+    assert.deepEqual(asked, [{ id: "a-one", owner: phone }])
+  } finally {
+    server.closeAllConnections()
+    await close(server)
+  }
+})
+
+test("b1c: chat limit is quiet when the proxy cannot answer", async () => {
+  const server = makeWebterm({ pageRoot: ".", streamPort: 1, store: { get: (id) => ({ id, owner: phone }) }, limits: async () => { throw new Error("down") } })
+  await listen(server)
+  const base = `http://127.0.0.1:${server.address().port}`
+  try {
+    const exchange = await fetch(`${base}/auth`, { method: "POST", headers: { origin: base }, body: JSON.stringify({ pass }) })
+    const cookie = exchange.headers.get("set-cookie").split(";")[0]
+    assert.deepEqual(await (await fetch(`${base}/chat/limit?actor=a-one`, { headers: { cookie } })).json(), { warn: null })
+  } finally {
+    server.closeAllConnections()
+    await close(server)
+  }
+})

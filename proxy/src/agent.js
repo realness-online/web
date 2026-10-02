@@ -1,10 +1,12 @@
 const UPSTREAM = "https://openrouter.ai/api/v1/chat/completions"
 export const MODEL = "thinkingmachines/inkling:free"
+// Paid plans may choose the house model; it passes through at cost.
+export const HOUSE_MODEL = process.env.HOUSE_MODEL ?? "deepseek/deepseek-v4-flash"
 const TIMEOUT_MS = 120_000
 const LIMIT = 10 * 1024 * 1024
 
 /** @param {Record<string, unknown>} body */
-export const call_upstream = (body, { key, fetcher = fetch } = {}) =>
+export const call_upstream = (body, { key, fetcher = fetch, model = MODEL } = {}) =>
   fetcher(UPSTREAM, {
     method: "POST",
     headers: {
@@ -13,7 +15,7 @@ export const call_upstream = (body, { key, fetcher = fetch } = {}) =>
       "HTTP-Referer": "https://pi.dev",
       "X-OpenRouter-Title": "pi",
     },
-    body: JSON.stringify({ ...body, model: MODEL, usage: { include: true } }),
+    body: JSON.stringify({ ...body, model, usage: { include: true } }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
 

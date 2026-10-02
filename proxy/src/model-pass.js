@@ -3,7 +3,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
 
 const PHONE = /^\+[1-9]\d{6,14}$/
-const ACTOR = /^a-[a-f0-9]{12}$/
+// An actor (`a-`) or a published app (`app-`); either way `phone` pays.
+const ACTOR = /^(a|app)-[a-f0-9]{12}$/
 const LIFETIME = 60
 
 /** @param {{ phone: string, id: string }} actor */

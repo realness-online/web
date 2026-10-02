@@ -3,7 +3,7 @@ import { after, test } from "node:test"
 import { randomUUID } from "node:crypto"
 import { rm } from "node:fs/promises"
 import { disk } from "brayness-can-store/disk"
-import { over_quota, read_rows, usage_key, usage_ledger, usage_meter, usage_row } from "../src/usage.js"
+import { FREE_LIMITS, days_since, month_days, over_limit, read_rows, usage_key, usage_ledger, usage_meter, usage_row } from "../src/usage.js"
 
 const base = new URL(`../../dist/usage-test-${randomUUID()}/`, import.meta.url).pathname
 after(() => rm(base, { recursive: true, force: true }))
@@ -30,7 +30,7 @@ test("meter reads a plain JSON reply; no usage is null", () => {
 test("a row keeps sizes and cost, never text", () => {
   const html = usage_row({ model: "m", actor: "a-abcdef123456", status: 200, request_bytes: 40, reply_bytes: 90, usage: { prompt_tokens: 7, completion_tokens: 3, cost: 0.002 } })
   assert.doesNotMatch(html, /secret|content"\s*>/)
-  assert.deepEqual(read_rows(html), [{ model: "m", actor: "a-abcdef123456", status: 200, request_bytes: 40, reply_bytes: 90, prompt_tokens: 7, completion_tokens: 3, cost: 0.002 }])
+  assert.deepEqual(read_rows(html), [{ model: "m", actor: "a-abcdef123456", payer: "", via: "actor", plan: "free", status: 200, request_bytes: 40, reply_bytes: 90, prompt_tokens: 7, completion_tokens: 3, cost: 0.002 }])
 })
 
 test("attribute values are escaped", () => {
@@ -58,18 +58,80 @@ test("spent reads once, then counts in memory", async () => {
   const row = { model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: 4, completion_tokens: 6, cost: 0.5 } }
   await usage_ledger(store).record("+14155550123", row, now)
   const ledger = usage_ledger(store)
-  assert.deepEqual(await ledger.spent("+14155550123", now), { tokens: 10, cost: 0.5 })
+  assert.deepEqual((await ledger.spent("+14155550123", now)).day, { tokens: 10, cost: 0.5 })
   let lists = 0
   const list = store.list
   store.list = (...a) => (lists++, list(...a))
   await ledger.record("+14155550123", row, now)
-  assert.deepEqual(await ledger.spent("+14155550123", now), { tokens: 20, cost: 1 })
+  assert.deepEqual((await ledger.spent("+14155550123", now)).day, { tokens: 20, cost: 1 })
   assert.equal(lists, 0)
 })
 
-test("over quota at either limit", () => {
-  assert.equal(over_quota({ tokens: 99, cost: 0 }, { tokens: 100 }), false)
-  assert.equal(over_quota({ tokens: 100, cost: 0 }, { tokens: 100 }), true)
-  assert.equal(over_quota({ tokens: 0, cost: 1 }, { cost: 1 }), true)
-  assert.equal(over_quota({ tokens: 1e9, cost: 1e9 }), false)
+test("b1b: month days run from the 1st to today", () => {
+  assert.deepEqual(month_days(new Date("2026-10-03T23:00:00Z")), ["2026-10-01", "2026-10-02", "2026-10-03"])
+  assert.equal(month_days(new Date("2026-12-31T00:00:00Z")).length, 31)
+})
+
+test("b1b: spent sums the month; the day is today only", async () => {
+  const ledger = usage_ledger(disk(`${base}${randomUUID()}`))
+  const row = (tokens) => ({ model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: tokens, completion_tokens: 0, cost: 0 } })
+  await ledger.record("+14155550123", row(100), new Date("2026-09-30T12:00:00Z")) // last month
+  await ledger.record("+14155550123", row(40), new Date("2026-10-01T12:00:00Z"))
+  await ledger.record("+14155550123", row(2), new Date("2026-10-02T12:00:00Z"))
+  const spent = await ledger.spent("+14155550123", new Date("2026-10-02T13:00:00Z"))
+  assert.equal(spent.day.tokens, 2)
+  assert.equal(spent.month.tokens, 42)
+  await ledger.record("+14155550123", row(5), new Date("2026-10-02T14:00:00Z"))
+  assert.equal((await ledger.spent("+14155550123", new Date("2026-10-02T15:00:00Z"))).month.tokens, 47)
+})
+
+test("b1b: either limit refuses; month wins when both are spent", () => {
+  const at = (day, month) => ({ day: { tokens: day, cost: 0 }, month: { tokens: month, cost: 0 } })
+  assert.equal(over_limit(at(249_999, 2_999_999), FREE_LIMITS), null)
+  assert.equal(over_limit(at(250_000, 250_000), FREE_LIMITS), "day")
+  assert.equal(over_limit(at(0, 3_000_000), FREE_LIMITS), "month")
+  assert.equal(over_limit(at(250_000, 3_000_000), FREE_LIMITS), "month")
+  assert.equal(over_limit({ day: { tokens: 0, cost: 1 }, month: { tokens: 0, cost: 1 } }, { day: { cost: 1 } }), "day")
+  assert.equal(over_limit(at(1e9, 1e9)), null)
+})
+
+test("b1a: each row names its payer and how the call came", () => {
+  const A = "+14155550123"
+  const row = (actor) => read_rows(usage_row({ model: "m", actor, payer: A, status: 200, request_bytes: 1, reply_bytes: 1 }))[0]
+  assert.deepEqual([row("a-abcdef123456").via, row("app-abcdef123456").via, row("phone").via], ["actor", "app", "phone"])
+  assert.equal(row("app-abcdef123456").payer, A) // a published app bills its owner
+})
+
+test("b1a: rows written before payer existed read with the folder's phone", () => {
+  const old = '<p itemscope itemtype="/usage"><meta itemprop="model" content="m"><meta itemprop="actor" content="a-abcdef123456"><meta itemprop="status" content="200"><meta itemprop="request_bytes" content="1"><meta itemprop="reply_bytes" content="2"><meta itemprop="prompt_tokens" content="3"><meta itemprop="completion_tokens" content="4"><meta itemprop="cost" content="0.5"></p>\n'
+  const [row] = read_rows(old, "+14155550123")
+  assert.equal(row.payer, "+14155550123")
+  assert.equal(row.via, "actor")
+  assert.equal(row.cost, 0.5)
+  assert.equal(row.completion_tokens, 4)
+})
+
+test("b1d: paid rows spend credit, never free tokens; spent_since crosses months", async () => {
+  const ledger = usage_ledger(disk(`${base}${randomUUID()}`))
+  const row = (plan, tokens, cost) => ({ model: "m", actor: "phone", plan, status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: tokens, completion_tokens: 0, cost } })
+  await ledger.record("+14155550123", row("paid", 500, 0.25), new Date("2026-09-30T12:00:00Z"))
+  await ledger.record("+14155550123", row("free", 40, 0), new Date("2026-10-01T12:00:00Z"))
+  await ledger.record("+14155550123", row("paid", 60, 0.5), new Date("2026-10-01T13:00:00Z"))
+  const now = new Date("2026-10-01T14:00:00Z")
+  assert.deepEqual((await ledger.spent("+14155550123", now)).day, { tokens: 40, cost: 0.5 })
+  assert.deepEqual(await ledger.spent_since("+14155550123", "2026-09-30", now), { tokens: 40, cost: 0.75 })
+  await ledger.record("+14155550123", row("paid", 10, 0.25), new Date("2026-10-01T15:00:00Z"))
+  assert.equal((await ledger.spent_since("+14155550123", "2026-09-30", new Date("2026-10-01T16:00:00Z"))).cost, 1)
+  assert.deepEqual(days_since("2026-12-30", new Date("2027-01-02T00:00:00Z")), ["2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02"])
+})
+
+test("free models never spend free tokens, read back or counted live", async () => {
+  const ledger = usage_ledger(disk(`${base}${randomUUID()}`))
+  const row = (model, tokens) => ({ model, actor: "phone", plan: "free", status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: tokens, completion_tokens: 0, cost: 0 } })
+  const now = new Date("2026-10-02T12:00:00Z")
+  await ledger.record("+14155550123", row("thinkingmachines/inkling:free", 900), now)
+  await ledger.record("+14155550123", row("priced/model", 30), now)
+  assert.equal((await ledger.spent("+14155550123", now)).day.tokens, 30)
+  await ledger.record("+14155550123", row("thinkingmachines/inkling:free", 900), now)
+  assert.equal((await ledger.spent("+14155550123", now)).day.tokens, 30)
 })

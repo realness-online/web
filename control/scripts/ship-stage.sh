@@ -83,6 +83,14 @@ node -e '
       contextWindow: 1048576,
       maxTokens: 32768,
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    }, {
+      // Paid plans only; the proxy refuses it without one. Cost per 1M tokens.
+      id: "house",
+      name: "DeepSeek (house model, paid plan)",
+      input: ["text"],
+      contextWindow: 1048576,
+      maxTokens: 32768,
+      cost: { input: 0.042, output: 0.084, cacheRead: 0.0084, cacheWrite: 0 },
     }],
   } }
   fs.writeFileSync(models_path, JSON.stringify(models, null, 2) + "\n")

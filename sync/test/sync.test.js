@@ -201,6 +201,17 @@ test("a global admin reads every loop and may only request a stop", async () => 
   assert.equal(await status("PUT", "admins.html", { headers: as(A), body: `<a href="tel:${A}">me</a>` }), 403)
 })
 
+test("a global admin reads host status; a person and a forger cannot", async () => {
+  const key = "hosts/brayness-1/status.html"
+  await storage.put("admins.html", `<a href="tel:${B}">admin</a>`)
+  await storage.put(key, '<article itemscope itemtype="/host"></article>\n')
+  assert.equal(await status("GET", key, { headers: as(B) }), 200)
+  const hosts = await (await call("GET", "hosts/", { headers: as(B) })).json()
+  assert.deepEqual(hosts.folders, ["brayness-1"])
+  assert.equal(await status("GET", key, { headers: as(A) }), 403)
+  assert.equal(await status("PUT", key, { headers: as(B), body: "forged" }), 403)
+})
+
 test("a global admin reads everyone's usage and still no one's files", async () => {
   const row = `usage/${A}/2026-09-30/120000000-a-0123456789ab-abc123.html`
   await storage.put("admins.html", `<a href="tel:${B}">admin</a>`)

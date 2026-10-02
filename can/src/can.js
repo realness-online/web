@@ -2,10 +2,11 @@
  * can(who, action, path, grants): the one rights engine.
  *
  * who     null for a stranger, `{ phone: "+A" }` for a person,
- *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance.
+ *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance,
+ *         `{ host_name: "brayness-1" }` for a host holding a record pass.
  * action  "get", "list", "write", or "delete".
- * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`,
- *         or `loops/<id>/...`.
+ * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
+ *         `loops/<id>/...`, or `hosts/<name>/...`.
  * grants  triples read from the owner's rights page (see rights.js).
  *
  * Deny by default. Ownership comes from the path, never from stored data.
@@ -15,6 +16,8 @@
 const ACTIONS = new Set(["get", "list", "write", "delete"])
 const PHONE = /^\+[1-9]\d{6,14}$/
 const INSTANCE = /^\/(\+[1-9]\d{6,14})\/harnesses\/([\w.-]+)$/
+const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
+const LOOP = /^a-[a-f0-9]{12}$/
 // What Realness serves to anyone. Everything else under a person is private.
 const PUBLIC_FILES = new Set(["index.html.gz"])
 const PUBLIC_FOLDERS = new Set(["posters", "statements", "thoughts"])
@@ -37,6 +40,7 @@ function subject(who) {
   if (typeof who.phone === "string" && PHONE.test(who.phone)) return { phone: who.phone, admin: who.admin === true }
   const match = typeof who.instance === "string" && who.instance.match(INSTANCE)
   if (match) return { owner: match[1], id: match[2] }
+  if (typeof who.host_name === "string" && HOST.test(who.host_name)) return { host: who.host_name }
   return {}
 }
 
@@ -63,15 +67,35 @@ export function can(who, action, path, grants = []) {
   const [root, owner, ...rest] = parts
 
   if (root === "subscriptions") return Boolean(owner) && me.phone === owner
-  // Hosts write loop records with their own key (a1i). A global admin, whom
-  // sync names from `admins.html`, reads them all and may ask one to stop.
+  // Hosts write loop records through sync with a record pass (a1i, o1) and
+  // read stop requests. A global admin, whom sync names from `admins.html`,
+  // reads them all and may ask one to stop.
   if (root === "loops") {
+    const file = LOOP.test(owner ?? "") ? rest.join("/") : null
+    if (me.host) return (action === "write" && file === "record.html") || (action === "get" && file === "stop.html")
     if (!me.admin) return false
     if (action === "get" || action === "list") return true
-    return action === "write" && /^a-[a-f0-9]{12}$/.test(owner ?? "") && rest.join("/") === "stop.html"
+    return action === "write" && file === "stop.html"
+  }
+  // Each host writes its own status (o1); a global admin reads them all.
+  // o6: an admin asks an actor to idle or stop at
+  // `hosts/<name>/requests/<actor>.html`; only that host reads it.
+  if (root === "hosts") {
+    const file = rest.join("/")
+    const request = rest.length === 2 && rest[0] === "requests" && /^a-[a-f0-9]{12}\.html$/.test(rest[1])
+    if (me.host) {
+      if (owner !== me.host) return false
+      if (file === "status.html") return action === "write" || action === "get"
+      return request && action === "get"
+    }
+    if (me.admin !== true) return false
+    if (action === "get" || action === "list") return true
+    return action === "write" && request
   }
   // The proxy alone writes the ledger; its owner and a global admin may read it.
   if (root === "usage") return (action === "get" || action === "list") && (me.admin || (Boolean(owner) && me.phone === owner))
+  // b1d: the proxy alone writes a paid plan, from Stripe; same readers.
+  if (root === "billing") return (action === "get" || action === "list") && (me.admin || (Boolean(owner) && me.phone === owner))
 
   if (root !== "people") return false
   if (!owner) return action === "list" && Boolean(me.phone) // the phonebook

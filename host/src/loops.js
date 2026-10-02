@@ -6,7 +6,7 @@
 // Admin is global (a1j): each host mirrors its loop records to Storage,
 //   loops/<id>/record.html   one /loop item, rewritten on every change
 //   loops/<id>/stop.html     an admin's stop request; obeyed on the next probe
-// Without a mirror (no LOOPS_BUCKET) the host runs loops alone.
+// Without sync (no SYNC_URL) the host runs loops alone.
 //
 // The host decides when a loop ends: the agent re-inits past autoresearch's
 // own maxIterations (plans/brayness.md, a1a). watch() stops each loop at its

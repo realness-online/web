@@ -7,6 +7,8 @@
  * possible. Node runs on this Mac only; the guest and host steps are bash.
  */
 import { execFile } from "node:child_process"
+import { StringDecoder } from "node:string_decoder"
+import { progress } from "./output.js"
 
 /** Collect output; never let a stream go to the terminal unnoticed. */
 function capture(command, args, options) {
@@ -62,17 +64,27 @@ export function stream(command, args = [], options = {}) {
       error.code = typeof error.code === "number" ? error.code : 1
       reject(error)
     })
-    child.stdout?.pipe(process.stdout)
-    child.stderr?.pipe(process.stderr)
+    for (const source of [child.stdout, child.stderr]) {
+      const decoder = new StringDecoder("utf8")
+      let pending = ""
+      source?.on("data", (chunk) => {
+        pending += decoder.write(chunk)
+        const end = pending.lastIndexOf("\n")
+        if (end < 0) return
+        progress(pending.slice(0, end + 1))
+        pending = pending.slice(end + 1)
+      })
+      source?.on("end", () => progress(pending + decoder.end()))
+    }
   })
 }
 
 /** Print a step heading. Every multi-step command announces each step. */
 export function step(text) {
-  process.stdout.write(`\n==> ${text}\n`)
+  progress(`\n==> ${text}\n`)
 }
 
 /** Print a fact under the current step. */
 export function note(text) {
-  process.stdout.write(`    ${text}\n`)
+  progress(`    ${text}\n`)
 }

@@ -1,0 +1,92 @@
+// o5: cloud reads - Cloud Run services, their logs, and billed cost.
+// Every call is gcloud or bq with an argv array; `run` is injectable for tests.
+import { attempt } from "./exec.js"
+
+const SINCE = /^\d+[mhd]$/
+
+export const call = async (run, command, args) => {
+  const { ok, out, err } = await run(command, args)
+  // bq prints its errors to stdout; gcloud to stderr.
+  if (!ok) throw new Error(`${command}: ${(err.trim() || out.trim()).replace(/\s+/g, " ")}`)
+  return out
+}
+
+/** Each Brayness service: URL, ready, the revision serving, when it deployed. */
+export async function services(cloud, { run = attempt } = {}) {
+  const out = await call(run, "gcloud", ["run", "services", "list", `--project=${cloud.project}`, `--region=${cloud.region}`, "--format=json"])
+  const known = new Map(JSON.parse(out || "[]").map((service) => [service.metadata.name, service]))
+  return cloud.services.map((name) => {
+    const service = known.get(name)
+    if (!service) return { name, found: false }
+    const ready = service.status?.conditions?.find((condition) => condition.type === "Ready")
+    return {
+      name,
+      found: true,
+      ready: ready?.status === "True",
+      url: service.status?.url ?? "",
+      revision: service.status?.latestReadyRevisionName ?? "",
+      deployed: ready?.lastTransitionTime ?? "",
+    }
+  })
+}
+
+/** Recent log lines for one service, newest first. */
+export async function logs(cloud, name, { since = "1h", errors = false, limit = 50, run = attempt } = {}) {
+  if (!cloud.services.includes(name)) throw new Error(`usage: webspace <env> logs <${cloud.services.join("|")}> [--since=1h] [--errors] [--limit=50]`)
+  if (!SINCE.test(since)) throw new Error("--since takes a count and m, h, or d, such as 30m or 2d")
+  const count = Number(limit)
+  if (!Number.isInteger(count) || count < 1 || count > 1000) throw new Error("--limit takes 1 to 1000")
+  const filter = [`resource.type="cloud_run_revision"`, `resource.labels.service_name="${name}"`, ...(errors ? ["severity>=ERROR"] : [])].join(" AND ")
+  const out = await call(run, "gcloud", ["logging", "read", filter, `--project=${cloud.project}`, `--freshness=${since}`, `--limit=${count}`, "--format=json"])
+  return JSON.parse(out || "[]").map((entry) => ({
+    time: entry.timestamp,
+    severity: entry.severity ?? "DEFAULT",
+    text: entry.textPayload ?? (entry.jsonPayload ? entry.jsonPayload.message ?? JSON.stringify(entry.jsonPayload) : entry.httpRequest ? `${entry.httpRequest.requestMethod} ${entry.httpRequest.status} ${entry.httpRequest.requestUrl}` : ""),
+  }))
+}
+
+export const TABLE = /^[a-z][a-z0-9-]{4,28}[a-z0-9]\.[A-Za-z0-9_]{1,1024}\.[A-Za-z0-9_]{1,1024}$/
+
+/** Billed cost per project and service from the billing export, net of credits. */
+export async function cost(cloud, projects, { days = 7, run = attempt } = {}) {
+  if (!cloud.billing) {
+    throw new Error("no billing export yet: in the console, Billing > Billing export > BigQuery export, then set cloud.billing in webspace.config.js to the export table")
+  }
+  if (!TABLE.test(cloud.billing)) throw new Error("cloud.billing must be project.dataset.table")
+  const count = Number(days)
+  if (!Number.isInteger(count) || count < 1 || count > 90) throw new Error("--days takes 1 to 90")
+  const ids = projects.map((id) => {
+    if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(id)) throw new Error(`bad project id ${id}`)
+    return `'${id}'`
+  })
+  const sql = `SELECT project.id AS project, service.description AS service, currency,
+  ROUND(SUM(cost) + SUM(IFNULL((SELECT SUM(c.amount) FROM UNNEST(credits) c), 0)), 2) AS net
+FROM \`${cloud.billing}\`
+WHERE usage_start_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL ${count} DAY)
+  AND project.id IN (${ids.join(", ")})
+GROUP BY project, service, currency
+HAVING net != 0
+ORDER BY net DESC`
+  // A second query says how fresh the export is: it lags by hours, and a new
+  // export backfills older months first, so "no rows" alone misleads.
+  const fresh = `SELECT FORMAT_TIMESTAMP('%FT%TZ', MAX(usage_end_time)) AS through FROM \`${cloud.billing}\` WHERE project.id IN (${ids.join(", ")})`
+  const query = (text) => call(run, "bq", [`--project_id=${cloud.billing.split(".")[0]}`, "query", "--use_legacy_sql=false", "--format=json", "--max_rows=200", text]).catch((error) => {
+    if (/Not found: Table/.test(error.message)) throw new Error("billing export is on, but no data yet; the first rows arrive within a day")
+    throw error
+  })
+  const [out, latest] = await Promise.all([query(sql), query(fresh)])
+  const rows = JSON.parse(out || "[]").map((row) => ({ ...row, net: Number(row.net) }))
+  const total = rows.reduce((sum, row) => sum + row.net, 0)
+  const through = JSON.parse(latest || "[]")[0]?.through ?? null
+  return { days: count, currency: rows[0]?.currency ?? "USD", total: Math.round(total * 100) / 100, through, rows }
+}
+
+export const cloud_text = {
+  services: (rows) => rows.map((s) => s.found ? `${s.name}  ${s.ready ? "ready" : "NOT READY"}  ${s.revision}  deployed ${s.deployed}  ${s.url}` : `${s.name}  not found`).join("\n"),
+  logs: (rows) => rows.length ? rows.map((l) => `${l.time}  ${l.severity.padEnd(7)}  ${l.text}`).join("\n") : "no log lines",
+  cost: (c) => [
+    `last ${c.days} days: ${c.total.toFixed(2)} ${c.currency}${c.rows.length ? "" : " billed"}`,
+    ...c.rows.map((r) => `  ${r.net.toFixed(2).padStart(9)}  ${r.project}  ${r.service}`),
+    c.through ? `export has usage through ${c.through.slice(0, 16).replace("T", " ")} UTC` : "export has no usage rows yet",
+  ].join("\n"),
+}

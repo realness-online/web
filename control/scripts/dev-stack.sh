@@ -81,8 +81,19 @@ if [ ! -f "$secret_file" ]; then
   exit 1
 fi
 export HOST_PASS_SECRET="$(< "$secret_file")"
-# Sync stays up when this host stops; public sites do not depend on actors.
+export RECORD_SECRET_FILE=/etc/brayness/record-secret
+SYNC_DIR="$DIR/dist/site-sync" node "$DIR/host/scripts/record-key-dev.js"
+# Restart sync with the current code when the dev host starts. A stale sync
+# process cannot verify new record passes; public sites pause briefly here.
 site_sync_pid="$DIR/dist/site-sync.pid"
+if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
+  kill "$(< "$site_sync_pid")"
+  for attempt in {1..30}; do
+    kill -0 "$(< "$site_sync_pid")" 2> /dev/null || break
+    sleep 1
+  done
+  if kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then echo 'site sync did not stop' >&2; exit 1; fi
+fi
 if ! [ -s "$site_sync_pid" ] || ! kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
   mkdir -p "$DIR/dist/site-sync"
   nohup env HOST_PASS_SECRET="$HOST_PASS_SECRET" PROJECT=realness-development LISTEN=0.0.0.0 PORT=18096 SYNC_DIR="$DIR/dist/site-sync" \
@@ -95,6 +106,9 @@ for attempt in {1..30}; do
 done
 kill -0 "$(< "$site_sync_pid")" || { echo 'site sync failed to start' >&2; exit 1; }
 export SYNC_SITE_URL="${SYNC_SITE_URL:-http://127.0.0.1:18096}"
+# Records (status, loops, requests) go to the cloud sync, beside the proxy's
+# ledger, so `webspace dev` sees one picture. Sites stay on local sync.
+export SYNC_URL="${SYNC_URL:-https://brayness-sync-639469569733.us-central1.run.app}"
 export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-http://127.0.0.1:18096}"
 # Development host and local proxy use a separate model-signing key.
 model_secret_file="$DIR/dist/model-pass-secret"

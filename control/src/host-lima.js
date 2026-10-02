@@ -15,6 +15,15 @@ import { attempt, step, note } from "./exec.js"
 import { ROOT } from "./paths.js"
 import { buildTerminal } from "./terminal.js"
 import { waitForHealth } from "./api.js"
+import { provision_record_key } from "./host-gcp.js"
+
+/** The dev host writes its records to the cloud sync, like a prod host. */
+async function register(lima, config) {
+  const name = (await lima.run("hostname")).trim()
+  await provision_record_key(null, config, name, {
+    read_secret: () => lima.run(`bash ${config.workdir}/host/scripts/record-key.sh`, { user: "root" }),
+  })
+}
 
 export async function up(lima, config, name, { smoke = false, fresh = false } = {}) {
   if (name && name !== config.vm) {
@@ -38,6 +47,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
 
   // --fresh wipes the actors volume, so the seed rebuilds from the new template.
   if (fresh) await down(lima, config, name)
+  await register(lima, config)
   step("start the stack")
   const started = await startStack(lima, config, { fresh })
   note(started.alreadyUp ? "already up" : "started")
@@ -92,6 +102,7 @@ export async function restart(lima, config, name) {
   if (health?.actors?.running) throw new Error(`${health.actors.running} actor(s) running; stop them before restarting the dev host`)
   await buildTerminal()
   await down(lima, config, name)
+  await register(lima, config)
   return serve(lima, config, name)
 }
 

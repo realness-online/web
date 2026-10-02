@@ -1,0 +1,78 @@
+/**
+ * A host's record pass (o1): hosts hold no storage key, so they write their
+ * status and loop records through sync, signed with the host secret.
+ */
+import assert from "node:assert/strict"
+import { after, before, test } from "node:test"
+import { randomUUID } from "node:crypto"
+import { mkdir, rm } from "node:fs/promises"
+import { disk } from "brayness-can-store/disk"
+import { dev_issuer } from "../src/dev-token.js"
+import { issue_host_pass, issue_record_pass, verify_host_pass, verify_record_pass } from "../src/host-pass.js"
+import { rights } from "../src/rights.js"
+import { sync_service } from "../src/server.js"
+
+const secret = "test-secret-123456789012345678901234567890"
+const other_secret = "other-secret-12345678901234567890123456789"
+const phone_secret = "phone-secret-12345678901234567890123456789"
+const A = "+15555550100"
+const loop = "a-0123456789ab"
+const issuer = dev_issuer()
+const dir = new URL(`../../dist/record-pass-test-${randomUUID()}`, import.meta.url).pathname
+const storage = disk(dir)
+let server, base
+
+before(async () => {
+  await mkdir(dir, { recursive: true })
+  await storage.put("host-keys/brayness-1", secret)
+  await storage.put("host-keys/brayness-2", other_secret)
+  server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, host_pass_secret: phone_secret, log: () => {} })
+  await new Promise((done) => server.listen(0, "127.0.0.1", done))
+  base = `http://127.0.0.1:${server.address().port}`
+})
+
+after(async () => {
+  server.close()
+  await rm(dir, { recursive: true, force: true })
+})
+
+const as_host = (name, now) => ({ authorization: `Bearer ${issue_record_pass(name, secret, now)}` })
+const status = async (method, path, headers, body) => (await fetch(`${base}/${path}`, { method, headers, body })).status
+
+test("a record pass names a host and is never a phone's host pass", () => {
+  const pass = issue_record_pass("brayness-1", secret)
+  assert.deepEqual(verify_record_pass(pass, secret), { host: "brayness-1" })
+  assert.throws(() => verify_host_pass(pass, secret))
+  assert.throws(() => verify_record_pass(issue_host_pass({ phone: A }, secret), secret))
+  assert.throws(() => verify_record_pass(pass, "another-secret-1234567890123456789012345"))
+  for (const bad of ["", "Brayness", "a/b", "../x", "-x", "x".repeat(64)]) assert.throws(() => issue_record_pass(bad, secret))
+  const old = issue_record_pass("brayness-1", secret, Date.now() - 301_000)
+  assert.throws(() => verify_record_pass(old, secret))
+})
+
+test("a host writes its own status and loop records, and nothing else", async () => {
+  const me = as_host("brayness-1")
+  assert.equal(await status("PUT", "hosts/brayness-1/status.html", me, "<article></article>"), 200)
+  assert.equal(await status("GET", "hosts/brayness-1/status.html", me), 200)
+  assert.equal(await status("PUT", "hosts/brayness-2/status.html", me, "forged"), 403)
+  assert.equal(await status("PUT", "hosts/brayness-1/other.html", me, "x"), 403)
+  assert.equal(await status("GET", "hosts/", me), 403) // no host lists the others
+  assert.equal(await status("PUT", `loops/${loop}/record.html`, me, "<article></article>"), 200)
+  assert.equal(await status("GET", `loops/${loop}/stop.html`, me), 404) // may read, none asked yet
+  assert.equal(await status("PUT", `loops/${loop}/stop.html`, me, "stop"), 403) // only an admin asks
+  assert.equal(await status("DELETE", `loops/${loop}/record.html`, me), 403)
+  assert.equal(await status("GET", "usage/", me), 403)
+  assert.equal(await status("GET", `people/${A}/`, me), 403)
+  assert.equal(await status("GET", "admins.html", me), 403)
+  assert.equal(await status("GET", "host-keys/brayness-1", me), 403)
+  assert.equal(await status("GET", "host-keys/brayness-1", { authorization: `Bearer ${issuer.token(A)}` }), 403)
+})
+
+test("a phone's host pass, an expired pass, or none cannot write host records", async () => {
+  const phone = { authorization: `Bearer ${issue_host_pass({ phone: A }, phone_secret)}` }
+  assert.equal(await status("PUT", "hosts/brayness-1/status.html", phone, "forged"), 403)
+  assert.equal(await status("PUT", "hosts/brayness-1/status.html", as_host("brayness-1", Date.now() - 301_000), "x"), 401)
+  assert.equal(await status("PUT", "hosts/brayness-1/status.html", {}, "x"), 403)
+  assert.equal(await status("PUT", "hosts/brayness-2/status.html", as_host("brayness-2"), "x"), 401) // wrong host key
+  assert.equal(await status("PUT", "hosts/brayness-3/status.html", as_host("brayness-3"), "x"), 401) // unprovisioned
+})

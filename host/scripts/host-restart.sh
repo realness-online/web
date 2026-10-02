@@ -11,6 +11,12 @@
 set -uo pipefail
 
 cd "$HOME/brayness"
+record_secret=/etc/brayness/record-secret
+if [ ! -s "$record_secret" ] || [ "$(stat -c %a "$record_secret")" != 600 ] || [ "$(stat -c %u "$record_secret")" != 0 ]; then
+  echo "missing root-only $record_secret (0600); refusing to restart" >&2
+  exit 1
+fi
+export RECORD_SECRET_FILE="$record_secret"
 sudo pkill -f "[n]ode host/main.js" || true
 sudo pkill -x firecracker || true
 sleep 2
@@ -38,6 +44,7 @@ if [ ! -s "$host_secret" ] || [ "$(stat -c %a "$host_secret")" != 600 ] || [ "$(
 fi
 export HOST_PASS_SECRET="$(sudo cat "$host_secret")"
 if [ "${#HOST_PASS_SECRET}" -lt 32 ]; then echo "host pass secret is too short" >&2; exit 1; fi
+export SYNC_URL="${SYNC_URL:-https://brayness-sync-639469569733.us-central1.run.app}"
 sudo -E nohup node host/main.js serve \
   --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 # Three minutes, not one: on a host that has no seed yet, the first serve builds

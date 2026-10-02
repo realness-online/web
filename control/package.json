@@ -18,7 +18,10 @@
     "check:publish": "node test/publish.check.js",
     "check:fresh-actor": "node --test --test-concurrency=1 test/fresh-actor.check.js",
     "check:boundary": "node --test --test-concurrency=1 test/actor-boundary.check.js",
-    "check:host": "node --test --test-concurrency=1 test/host.check.js"
+    "check:host": "node --test --test-concurrency=1 test/host.check.js",
+    "check:actor-request": "node test/actor-request.check.js",
+    "check:chat-limit": "node test/chat-limit.check.js",
+    "secret": "bash scripts/set-secret.sh"
   },
   "engines": {
     "node": ">=22.19.0"
