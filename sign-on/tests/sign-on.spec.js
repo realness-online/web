@@ -68,53 +68,42 @@ describe('sign-on page', () => {
     )
   })
 
-  it('offers the browser handoff when the terminal asks for one', async () => {
-    current_user.value = { getIdToken: vi.fn() }
-    const page = mount(SignOn, { props: { query: { handoff: '1' } } })
-    await nextTick()
-
-    expect(page.find('#open-terminal').exists()).toBe(true)
-    expect(page.find('#open-chat').exists()).toBe(true)
-    expect(page.find('#mobile').exists()).toBe(false)
-  })
-
-  it('opens the handoff, fetches a pass, and posts it to the terminal', async () => {
+  it('goes straight to the chat once signed in, carrying the pass', async () => {
     vi.stubEnv('VITE_BRAYNESS_URL', 'http://terminal.example')
     vi.stubEnv('VITE_BRAYNESS_SYNC_URL', 'http://sync.example')
     current_user.value = { getIdToken: vi.fn().mockResolvedValue('id-token') }
-    const opened = { postMessage: vi.fn(), close: vi.fn(), location: {} }
-    const open = vi.spyOn(window, 'open').mockReturnValue(opened)
+    const replace = vi.fn()
+    vi.stubGlobal('location', { replace })
     const fetch_mock = vi
       .fn()
-      .mockResolvedValue({ ok: true, json: async () => ({ pass: 'P' }) })
+      .mockResolvedValue({ ok: true, json: async () => ({ pass: 'P/+' }) })
     vi.stubGlobal('fetch', fetch_mock)
 
     const page = mount(SignOn, { props: { query: { handoff: '1' } } })
-    await nextTick()
-    await page.find('#open-terminal').trigger('click')
     await flushPromises()
 
-    expect(open).toHaveBeenCalledWith('http://terminal.example/handoff', '_blank')
     expect(fetch_mock).toHaveBeenCalledWith('http://sync.example/v1/host-pass', {
       method: 'POST',
       headers: { authorization: 'Bearer id-token' }
     })
-
-    window.dispatchEvent(
-      new MessageEvent('message', {
-        data: { type: 'brayness-ready' },
-        origin: 'http://terminal.example',
-        source: opened
-      })
+    expect(replace).toHaveBeenCalledWith(
+      'http://terminal.example/handoff?next=chat#pass=P%2F%2B'
     )
+    expect(page.find('#open-terminal').exists()).toBe(false)
+    expect(page.find('#mobile').exists()).toBe(false)
+  })
 
-    expect(opened.postMessage).toHaveBeenCalledWith(
-      { type: 'brayness-pass', pass: 'P' },
-      'http://terminal.example'
-    )
-    await page.find('#open-chat').trigger('click')
+  it('offers a retry when the pass fails', async () => {
+    vi.stubEnv('VITE_BRAYNESS_URL', 'http://terminal.example')
+    vi.stubEnv('VITE_BRAYNESS_SYNC_URL', 'http://sync.example')
+    current_user.value = { getIdToken: vi.fn().mockResolvedValue('id-token') }
+    vi.stubGlobal('location', { replace: vi.fn() })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
+
+    const page = mount(SignOn, { props: { query: { handoff: '1' } } })
     await flushPromises()
-    expect(open).toHaveBeenLastCalledWith('http://terminal.example/handoff?next=chat', '_blank')
-    expect(opened.location.href).toBe('http://terminal.example/handoff?next=chat')
+
+    expect(page.find('[role="alert"]').text()).toBe('Could not open Brayness')
+    expect(page.find('#open-chat').text()).toBe('Try again')
   })
 })
