@@ -54,15 +54,15 @@ export const ENVIRONMENTS = {
 
   prod: {
     target: "gcp",
-    project: "realness-online",
+    project: "realness-development",
     /** Default zone. Capacity is per machine type per zone; `probe` says which. */
-    zone: "us-central1-a",
+    zone: "us-west1-a",
     imageFamily: "brayness-host",
     machineType: "n2-standard-4",
     bootSize: "20GB",
     actorsSize: "30GB",
     /** Where bundles ship before a host is dropped. */
-    bucket: "realness-online-brayness",
+    bucket: "realness-development-brayness",
     /** The host's copy of the project. */
     root: "~/brayness",
     /** Loopback-only until h1 exists, so the API is reached over ssh. */

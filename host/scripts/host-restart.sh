@@ -12,7 +12,7 @@ set -uo pipefail
 
 cd "$HOME/brayness"
 record_secret=/etc/brayness/record-secret
-if [ ! -s "$record_secret" ] || [ "$(stat -c %a "$record_secret")" != 600 ] || [ "$(stat -c %u "$record_secret")" != 0 ]; then
+if ! sudo test -s "$record_secret" || [ "$(sudo stat -c %a "$record_secret")" != 600 ] || [ "$(sudo stat -c %u "$record_secret")" != 0 ]; then
   echo "missing root-only $record_secret (0600); refusing to restart" >&2
   exit 1
 fi
@@ -27,7 +27,7 @@ sudo bash "$HOME/brayness/host/scripts/idle-guard.sh" > /dev/null
 # The host has no service account. An operator provisions this root-only file
 # from Secret Manager; the guest and exports never receive it.
 model_secret=/etc/brayness/model-pass-secret
-if [ ! -s "$model_secret" ] || [ "$(stat -c %a "$model_secret")" != 600 ] || [ "$(stat -c %u "$model_secret")" != 0 ]; then
+if ! sudo test -s "$model_secret" || [ "$(sudo stat -c %a "$model_secret")" != 600 ] || [ "$(sudo stat -c %u "$model_secret")" != 0 ]; then
   echo "missing root-only $model_secret (0600); refusing to start" >&2
   exit 1
 fi
@@ -38,13 +38,15 @@ if [ "${#MODEL_PASS_SECRET}" -lt 32 ]; then echo "model pass secret is too short
 #   gcloud secrets versions access latest --secret=HOST_PASS_SECRET \
 #     --project=realness-development | sudo tee /etc/brayness/host-pass-secret
 host_secret=/etc/brayness/host-pass-secret
-if [ ! -s "$host_secret" ] || [ "$(stat -c %a "$host_secret")" != 600 ] || [ "$(stat -c %u "$host_secret")" != 0 ]; then
+if ! sudo test -s "$host_secret" || [ "$(sudo stat -c %a "$host_secret")" != 600 ] || [ "$(sudo stat -c %u "$host_secret")" != 0 ]; then
   echo "missing root-only $host_secret (0600); refusing to start" >&2
   exit 1
 fi
 export HOST_PASS_SECRET="$(sudo cat "$host_secret")"
 if [ "${#HOST_PASS_SECRET}" -lt 32 ]; then echo "host pass secret is too short" >&2; exit 1; fi
 export SYNC_URL="${SYNC_URL:-https://brayness-sync-639469569733.us-central1.run.app}"
+# /handoff answers 503 without it: the only page allowed to post a pass in.
+export SIGN_ON_ORIGIN="${SIGN_ON_ORIGIN:-https://brayness-sign-on.web.app}"
 sudo -E nohup node host/main.js serve \
   --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 # Three minutes, not one: on a host that has no seed yet, the first serve builds

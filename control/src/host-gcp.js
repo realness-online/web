@@ -155,16 +155,16 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
 /**
  * Copy the working tree up.
  *
- * The image carries a copy of both directories, but the code is the thing that
- * changes, so the host gets the local working copies rather than whatever was
- * baked in. The host runs as root and leaves a root-owned
+ * The image carries a copy of the code, but the code is the thing that changes,
+ * so the host gets the local working copies rather than whatever was baked in.
+ * `host` imports from every other directory listed here. The host runs as root and leaves a root-owned
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
 export async function push(cloud, name) {
   await buildTerminal()
   step("copy the code")
   await cloud.ssh(name, "sudo chown -R $(whoami):$(whoami) ~/brayness")
-  for (const dir of ["host", "sync"]) {
+  for (const dir of ["host", "sync", "proxy", "can", "can-store"]) {
     await cloud.stream(["scp", "--recurse", join(ROOT, dir), `${name}:~/brayness/`])
   }
 }
