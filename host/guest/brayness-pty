@@ -8,6 +8,7 @@ stdin and stdout. Frames are JSON lines:
           {"op": "resize", "cols": 100, "rows": 30}
     out   {"op": "data", "data_b64": "..."}
           {"op": "exit", "code": 0}
+          {"op": "taken"}   another connection took the terminal
 
 The terminal outlives the connection. One holder process per guest owns the pty
 and the shell; each connection is a thin relay to it over a unix socket. A new
@@ -40,6 +41,9 @@ USER = "brayness"
 # The visible terminal starts in the actor's work/ folder.
 WORK_DIR = "/brayness/work"
 SOCKET = "/run/brayness-pty.sock"
+# Keys typed from inside the actor (the chat bridge running a GUI command).
+# Unlike SOCKET it never takes the terminal from the browser.
+KEYS_SOCKET = "/run/brayness/pty-keys.sock"
 # The browser page draws with libghostty-vt: 256 colors and truecolor.
 TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
 DEFAULT_COLS = 80
@@ -88,6 +92,7 @@ def drop_to(name):
 class Holder:
     def __init__(self, listener):
         self.listener = listener
+        self.keys = open_keys_socket()
         self.client = None
         self.pending = b""
         self.fresh = False
@@ -107,13 +112,30 @@ class Holder:
 
     def attach(self, client):
         if self.client:
-            self.client.close()
+            # Tell the old page it lost the terminal, so it stops reconnecting
+            # instead of taking it back.
+            self.send(frame({"op": "taken"}))
+            if self.client:
+                self.client.close()
         self.client = client
         self.pending = b""
         self.fresh = True
         replay = self.replay()
         if replay:
             self.send(frame({"op": "data", "data_b64": base64.b64encode(replay).decode()}))
+
+    def type_keys(self):
+        """One connection, one write: the bytes go to the app as typed keys."""
+        conn = self.keys.accept()[0]
+        conn.settimeout(1)
+        try:
+            data = conn.recv(4096)
+            if data:
+                os.write(self.master, data)
+        except OSError:
+            pass
+        finally:
+            conn.close()
 
     def track(self, data):
         """Remember the replayable modes the app's output turns on or off."""
@@ -175,8 +197,10 @@ class Holder:
 
     def run(self):
         while True:
-            watch = [self.master, self.listener] + ([self.client] if self.client else [])
+            watch = [self.master, self.listener] + ([self.keys] if self.keys else []) + ([self.client] if self.client else [])
             readable, _, _ = select.select(watch, [], [])
+            if self.keys and self.keys in readable:
+                self.type_keys()
             if self.listener in readable:
                 self.attach(self.listener.accept()[0])
             if self.master in readable:
@@ -202,6 +226,24 @@ class Holder:
                     line, _, self.pending = self.pending.partition(b"\n")
                     if line.strip():
                         self.handle(line)
+
+
+def open_keys_socket():
+    """Owned by the user Pi runs as, so its extensions can type."""
+    try:
+        os.unlink(KEYS_SOCKET)
+    except FileNotFoundError:
+        pass
+    try:
+        keys = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        keys.bind(KEYS_SOCKET)
+        user = pwd.getpwnam(USER)
+        os.chown(KEYS_SOCKET, user.pw_uid, user.pw_gid)
+        os.chmod(KEYS_SOCKET, 0o600)
+        keys.listen(4)
+        return keys
+    except OSError:
+        return None
 
 
 def serve_holder(listener):

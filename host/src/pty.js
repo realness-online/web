@@ -5,7 +5,7 @@
 // guest's (brayness-pty, vsock port 53):
 //
 //   client -> server   {"op": "data", "data_b64"}  {"op": "resize", "cols", "rows"}
-//   server -> client   {"op": "data", "data_b64"}  {"op": "exit", "code"}
+//   server -> client   {"op": "data", "data_b64"}  {"op": "exit", "code"}  {"op": "taken"}
 //
 // The vsock path keeps actors apart; frames carry no actor id. The guest
 // holds the shell and Pi, so a reconnect reattaches to them.
