@@ -76,18 +76,23 @@ test("b1d: plan_source gives free always and paid inside the period", async () =
   assert.equal((await source(A, at)).free.day.tokens, 250_000)
 })
 
-test(`b1c: one warning from ${WARN_AT}%, each with a way to pay`, () => {
+test(`b1c: warnings at ${WARN_AT.join("% and ")}%, each with a way to pay`, () => {
   const free = { day: { tokens: 1000 }, month: { tokens: 10_000 } }
   const spent = (day, month, cost = 0) => ({ day: { tokens: day, cost: 0 }, month: { tokens: month, cost: 0 }, period: { tokens: 0, cost } })
-  assert.equal(limit_status({ free, paid: null }, spent(899, 899)).warn, null)
+  assert.equal(limit_status({ free, paid: null }, spent(749, 749)).warn, null)
+  assert.deepEqual(limit_status({ free, paid: null }, spent(750, 750)).warn.at, 75)
+  assert.deepEqual(limit_status({ free, paid: null }, spent(899, 899)).warn.at, 75)
   const day = limit_status({ free, paid: null }, spent(900, 900), { pay_url: "https://pay.test" })
-  assert.deepEqual([day.warn.limit, day.warn.percent], ["day", 90])
+  assert.deepEqual([day.warn.limit, day.warn.percent, day.warn.at], ["day", 90, 90])
   assert.match(day.warn.message, /https:\/\/pay\.test/)
   assert.equal(limit_status({ free, paid: null }, spent(950, 9500)).warn.limit, "month") // the longer wait first
   const credit = limit_status({ free, paid: plan }, spent(0, 0, 4.6))
   assert.deepEqual([credit.plan, credit.warn.limit, credit.paid.left.toFixed(2)], ["paid", "credit", "0.40"])
   assert.match(credit.warn.message, /2026-11-01/)
   assert.equal(limit_status({ free, paid: plan }, spent(0, 0, 1)).warn, null)
+  const cut = limit_status({ free, paid: null }, spent(1000, 1000))
+  assert.deepEqual([cut.warn.limit, cut.warn.at], ["day", 100])
+  assert.match(cut.warn.message, /^Today's free model use is spent\. Model calls stop until midnight UTC\./)
 })
 
 test("b1d: the price is found by lookup key, once; a miss retries", async () => {

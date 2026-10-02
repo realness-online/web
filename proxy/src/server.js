@@ -87,9 +87,10 @@ export function agent_handler({ identify_phone, secret, key, fetcher = fetch, le
         meter.add(chunk)
         response.write(chunk)
       }
-      response.end()
+      // Count the call before the reply ends: a /limit asked right after must see it.
       const row = { model, actor: who.id ?? "phone", payer: who.phone, plan: house ? "paid" : "free", status: upstream.status, request_bytes, ...meter.finish() }
       ledger?.record(who.phone, row).catch((error) => warn(`usage not recorded: ${error.message}`))
+      response.end()
     } catch (error) {
       if (!response.headersSent) response.writeHead(502).end()
       else response.destroy(error)

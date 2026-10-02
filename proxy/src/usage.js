@@ -208,15 +208,13 @@ export function usage_ledger(storage, append = {}) {
       const key = usage_key(phone, row.actor, now)
       const folder = key.slice(0, key.lastIndexOf("/") + 1)
       const piece = key.slice(folder.length)
-      const version = await storage.put(key, usage_row({ ...row, call: piece }), { if_version: null, gzip: true })
+      // Count in memory first, so a limit check right after the reply sees it.
       const total_key = `${phone} ${today(now)}`
-      if (totals.has(total_key)) {
-        const sum = await totals.get(total_key).catch(() => null)
-        if (sum) {
-          sum.tokens += free_tokens({ plan: row.plan, model: row.usage?.model ?? row.model, prompt_tokens: row.usage?.prompt_tokens ?? 0, completion_tokens: row.usage?.completion_tokens ?? 0 })
-          sum.cost += row.usage?.cost ?? 0
-        }
-      }
+      totals.get(total_key)?.then((sum) => {
+        sum.tokens += free_tokens({ plan: row.plan, model: row.usage?.model ?? row.model, prompt_tokens: row.usage?.prompt_tokens ?? 0, completion_tokens: row.usage?.completion_tokens ?? 0 })
+        sum.cost += row.usage?.cost ?? 0
+      }, () => {})
+      const version = await storage.put(key, usage_row({ ...row, call: piece }), { if_version: null, gzip: true })
       await append_piece(storage, folder, piece, append).catch(() => false) // the piece already counts
       return version
     },

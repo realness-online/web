@@ -12,7 +12,8 @@ const PHONE = /^\+[1-9]\d{6,14}$/
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 const STRIPE = "https://api.stripe.com/v1"
 const TOLERANCE_S = 300
-export const WARN_AT = 90
+/** The ramp: a warning at each step, once per limit per day; 100 is the cutoff. */
+export const WARN_AT = [75, 90, 100]
 export const PAY_URL = "https://brayness-sign-on.web.app/pay"
 
 export const billing_key = (phone) => `billing/${phone}/plan.html`
@@ -203,11 +204,20 @@ export function limit_status({ free, paid }, { day, month, period }, { pay_url =
     pay_url,
     warn: null,
   }
-  const candidates = [
-    status.paid && { limit: "credit", percent: status.paid.percent, message: `You've used ${status.paid.percent}% of this period's model credit. It tops up on ${paid.end.slice(0, 10)}; manage your plan at ${pay_url}` },
-    { limit: "month", percent: status.free.month.percent, message: `You've used ${status.free.month.percent}% of this month's free model use. Subscribe for more at ${pay_url}` },
-    { limit: "day", percent: status.free.day.percent, message: `You've used ${status.free.day.percent}% of today's free model use. Subscribe for more at ${pay_url}` },
-  ].filter((warning) => warning && warning.percent >= WARN_AT)
+  // [limit, percent, what is used, when it comes back, the way to pay]
+  const parts = [
+    status.paid && ["credit", status.paid.percent, "this period's model credit", `it tops up on ${paid.end.slice(0, 10)}`, `Manage your plan at ${pay_url}`],
+    ["month", status.free.month.percent, "this month's free model use", "the 1st, UTC", `Subscribe for more at ${pay_url}`],
+    ["day", status.free.day.percent, "today's free model use", "midnight UTC", `Subscribe for more at ${pay_url}`],
+  ]
+  const candidates = parts
+    .filter((part) => part && part[1] >= WARN_AT[0])
+    .map(([limit, percent, what, back, pay]) => {
+      const at = WARN_AT.filter((step) => percent >= step).at(-1)
+      const cap = what[0].toUpperCase() + what.slice(1)
+      const message = at === 100 ? `${cap} is spent. Model calls stop until ${back}. ${pay}` : `You've used ${percent}% of ${what}.${limit === "credit" ? ` It tops up on ${paid.end.slice(0, 10)}.` : ""} ${pay}`
+      return { limit, percent, at, message }
+    })
   status.warn = candidates[0] ?? null
   return status
 }

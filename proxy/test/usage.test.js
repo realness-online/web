@@ -96,6 +96,21 @@ test("spent reads once, then counts in memory", async () => {
   assert.equal(lists, 0)
 })
 
+test("b1c: a recorded call counts before its storage write ends", async () => {
+  const store = disk(`${base}${randomUUID()}`)
+  const now = new Date()
+  const ledger = usage_ledger(store)
+  await ledger.spent("+14155550123", now) // warm the day's total
+  let release
+  const put = store.put
+  store.put = (...a) => new Promise((done) => (release = () => done(put(...a))))
+  const row = { model: "m", actor: "phone", status: 200, request_bytes: 1, reply_bytes: 1, usage: { prompt_tokens: 4, completion_tokens: 6, cost: 0 } }
+  const recording = ledger.record("+14155550123", row, now)
+  assert.equal((await ledger.spent("+14155550123", now)).day.tokens, 10)
+  release()
+  await recording
+})
+
 test("b1b: month days run from the 1st to today", () => {
   assert.deepEqual(month_days(new Date("2026-10-03T23:00:00Z")), ["2026-10-01", "2026-10-02", "2026-10-03"])
   assert.equal(month_days(new Date("2026-12-31T00:00:00Z")).length, 31)
