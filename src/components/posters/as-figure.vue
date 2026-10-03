@@ -1069,13 +1069,24 @@
         animation: none;
       }
     }
+    // A hand on the poster orbits the 3D layers while the SVG under them holds
+    // still, so the pair reads as one broken poster mid-drag. Fade the 3D out
+    // for the length of the gesture and bring it back when the hand lets go.
+    & > [data-mode='inline'][data-moving] {
+      opacity: 0.15;
+      animation: none;
+    }
     [data-mode='inline'] {
       position: absolute;
       inset: 0;
       z-index: 2;
+      transition: opacity 240ms ease-out;
       disable-ios-touch-callout();
       border-radius: round((base-line * .03), 2);
       overflow: hidden;
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
     }
     & > figcaption {
       grid-area: 1 / 1;

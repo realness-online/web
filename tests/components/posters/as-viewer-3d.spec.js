@@ -126,6 +126,34 @@ describe('@/components/posters/as-viewer-3d.vue', () => {
     ).toBeLessThan(mock_viewer.start_enter.mock.invocationCallOrder[0])
   })
 
+  it('marks the surface moving for the length of a drag, then clears it', async () => {
+    const wrapper = shallowMount(as_viewer_3d, { props: { itemid } })
+    await flushPromises()
+
+    await wrapper.trigger('pointerdown')
+    expect(wrapper.element.getAttribute('data-moving')).toBeNull()
+
+    await wrapper.trigger('pointermove')
+    expect(wrapper.element.getAttribute('data-moving')).not.toBeNull()
+
+    await wrapper.trigger('pointerup')
+    expect(wrapper.element.getAttribute('data-moving')).not.toBeNull()
+
+    await new Promise(resolve => setTimeout(resolve, 320))
+    await wrapper.vm.$nextTick()
+    expect(wrapper.element.getAttribute('data-moving')).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('leaves a hover move alone', async () => {
+    const wrapper = shallowMount(as_viewer_3d, { props: { itemid } })
+    await flushPromises()
+
+    await wrapper.trigger('pointermove')
+    expect(wrapper.element.getAttribute('data-moving')).toBeNull()
+    wrapper.unmount()
+  })
+
   it('tags the surface on iOS so the canvas leaves the hit test', async () => {
     mock_ios.value = true
     const wrapper = shallowMount(as_viewer_3d, { props: { itemid } })
