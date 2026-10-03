@@ -26,6 +26,7 @@
       },
       { "regex": "/prints/[0-9]+", "function": "print_share" },
       { "source": "/prints-checkout", "function": "prints_checkout" },
+      { "source": "/prints-list", "function": "prints_list" },
       { "source": "/prints-webhook", "function": "prints_webhook" },
       { "source": "**", "destination": "/index.html" }
     ],

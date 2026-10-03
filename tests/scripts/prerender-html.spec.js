@@ -65,6 +65,29 @@ describe('prerender-html', () => {
     expect(html).toContain('rel="canonical"')
   })
 
+  it('drops the size hints of an image a page describes itself', () => {
+    const template = `<!doctype html>
+<html>
+  <head>
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="960" />
+    <meta property="og:image:type" content="image/jpeg" />
+  </head>
+  <body></body>
+</html>`
+
+    const html = apply_page_meta(template, {
+      og_image: 'https://storage.example/print.png?token=abc',
+      og_image_type: 'image/png',
+      og_image_width: null,
+      og_image_height: null
+    })
+
+    expect(html).not.toContain('og:image:width')
+    expect(html).not.toContain('og:image:height')
+    expect(html).toContain('property="og:image:type" content="image/png"')
+  })
+
   it('injects JSON-LD into the head', () => {
     const template = '<html><head></head><body></body></html>'
     const html = inject_json_ld(template, {

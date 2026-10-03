@@ -24,8 +24,20 @@ const replace_or_insert = (html, pattern, tag) => {
 }
 
 /**
+ * Set a tag, or take it out when a page brings nothing to say. `null` means
+ * the page knows better than the site-wide default, not that it repeats it.
  * @param {string} html
- * @param {{ title?: string, description?: string, og_title?: string, og_description?: string, og_url?: string, og_image?: string, og_image_alt?: string, og_image_type?: string, og_image_width?: number, og_image_height?: number, og_site_name?: string, twitter_title?: string, twitter_description?: string, twitter_image?: string, twitter_image_alt?: string, canonical?: string, robots?: string }} meta
+ * @param {RegExp} pattern
+ * @param {string | null} tag
+ */
+const set_or_drop = (html, pattern, tag) =>
+  tag === null
+    ? html.replace(pattern, '')
+    : replace_or_insert(html, pattern, tag)
+
+/**
+ * @param {string} html
+ * @param {{ title?: string, description?: string, og_title?: string, og_description?: string, og_url?: string, og_image?: string, og_image_alt?: string, og_image_type?: string | null, og_image_width?: number | null, og_image_height?: number | null, og_site_name?: string, twitter_title?: string, twitter_description?: string, twitter_image?: string, twitter_image_alt?: string, canonical?: string, robots?: string }} meta
  * @returns {string}
  */
 export const apply_page_meta = (html, meta) => {
@@ -63,30 +75,30 @@ export const apply_page_meta = (html, meta) => {
     const tag = `<meta property="og:image" content="${escape_attr(meta.og_image)}" />`
     out = replace_or_insert(out, /<meta property="og:image"[\s\S]*?\/>/i, tag)
   }
-  if (meta.og_image_width) {
-    const tag = `<meta property="og:image:width" content="${escape_attr(String(meta.og_image_width))}" />`
-    out = replace_or_insert(
+  if (meta.og_image_width !== undefined)
+    out = set_or_drop(
       out,
       /<meta property="og:image:width"[\s\S]*?\/>/i,
-      tag
+      meta.og_image_width === null
+        ? null
+        : `<meta property="og:image:width" content="${escape_attr(String(meta.og_image_width))}" />`
     )
-  }
-  if (meta.og_image_height) {
-    const tag = `<meta property="og:image:height" content="${escape_attr(String(meta.og_image_height))}" />`
-    out = replace_or_insert(
+  if (meta.og_image_height !== undefined)
+    out = set_or_drop(
       out,
       /<meta property="og:image:height"[\s\S]*?\/>/i,
-      tag
+      meta.og_image_height === null
+        ? null
+        : `<meta property="og:image:height" content="${escape_attr(String(meta.og_image_height))}" />`
     )
-  }
-  if (meta.og_image_type) {
-    const tag = `<meta property="og:image:type" content="${escape_attr(meta.og_image_type)}" />`
-    out = replace_or_insert(
+  if (meta.og_image_type !== undefined)
+    out = set_or_drop(
       out,
       /<meta property="og:image:type"[\s\S]*?\/>/i,
-      tag
+      meta.og_image_type === null
+        ? null
+        : `<meta property="og:image:type" content="${escape_attr(meta.og_image_type)}" />`
     )
-  }
   if (meta.og_image_alt) {
     const tag = `<meta property="og:image:alt" content="${escape_attr(meta.og_image_alt)}" />`
     out = replace_or_insert(

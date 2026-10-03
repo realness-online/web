@@ -6,6 +6,7 @@ import PrerenderShell from '@/prerender/prerender-shell.vue'
 import About from '@/views/About.vue'
 import Documentation from '@/views/Documentation.vue'
 import Prints from '@/views/Prints.vue'
+import Print from '@/views/Print.vue'
 import Pricing from '@/views/Pricing.vue'
 import Terms from '@/views/Terms.vue'
 import License from '@/views/License.vue'
@@ -20,6 +21,7 @@ const routes = [
   { path: '/about', component: About, meta: { support: true } },
   { path: '/docs', component: Documentation, meta: { support: true } },
   { path: '/prints', component: Prints, meta: { support: true } },
+  { path: '/prints/:id', component: Print, meta: { support: true } },
   { path: '/pricing', component: Pricing, meta: { support: true } },
   { path: '/pricing/:tier', component: Pricing, meta: { support: true } },
   { path: '/license', component: License, meta: { support: true } },

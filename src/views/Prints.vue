@@ -2,20 +2,16 @@
   import { computed, inject, onMounted as mounted, ref, watch } from 'vue'
   import AsFigure from '@/components/posters/as-figure'
   import { use_posters } from '@/use/poster'
-  import { as_author } from '@/utils/itemid'
-  import { load, list, list_history_page } from '@/utils/itemid'
-  import { as_directory } from '@/persistence/Directory'
-  import { recent_number_first } from '@/utils/sorting'
-  import { thought_for_poster, thought_text } from '@realness.online/thoughts'
+  import { as_author, load } from '@/utils/itemid'
   import { poster_ratio } from '@/use/poster-aspect'
 
   const { posters, for_person } = use_posters()
   const admin_id = import.meta.env.VITE_ADMIN_ID
-  const contact_url = `sms:${admin_id.slice(1)}`
-  const CENTS_PER_DOLLAR = 100
-  const OPEN_AMOUNT = 50000
   const PRINT_LIMIT = 21
-  const share_url = poster_id => `/prints/${poster_id.split('/').at(-1)}`
+
+  // The last segment of the poster id is the print's own address, the same one
+  // a sale page and a share link use.
+  const print_url = poster_id => `/prints/${poster_id.split('/').at(-1)}`
 
   const prints = computed(() =>
     posters.value
@@ -27,78 +23,6 @@
   // tall poster does not shout over a wide one. The ratio decides the shape;
   // the width that keeps the area is CSS's half of the job.
   const shapes = ref(/** @type {Map<string, number>} */ (new Map()))
-
-  // Stripe reports which editions of the selected poster have sold. The $500
-  // edition remains available after any number of sales.
-  const amounts = ref(/** @type {number[]} */ ([]))
-  const sold = ref(/** @type {number[]} */ ([]))
-  const loading_editions = ref(false)
-  const currency = ref('usd')
-
-  const as_money = (amount, code) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: (code || 'usd').toUpperCase(),
-      maximumFractionDigits: 0
-    }).format(amount / CENTS_PER_DOLLAR)
-
-  const load_editions = async poster_id => {
-    amounts.value = []
-    sold.value = []
-    loading_editions.value = true
-    try {
-      const res = await fetch(
-        `/prints-checkout?poster_id=${encodeURIComponent(poster_id)}`
-      )
-      if (!res.ok) return
-      const data = await res.json()
-      if (
-        showing.value !== poster_id ||
-        !Array.isArray(data.amounts) ||
-        !Array.isArray(data.sold)
-      )
-        return
-      amounts.value = data.amounts
-      sold.value = data.sold
-      if (data.currency) currency.value = data.currency
-    } catch {
-      // An unavailable quote must not offer a checkout at a guessed price.
-    } finally {
-      if (showing.value === poster_id) loading_editions.value = false
-    }
-  }
-
-  // The thought a print was made with, by the same rule the feed uses: a run
-  // of rows where each is within thirteen minutes of the one before.
-  const thoughts = ref(/** @type {Map<string, string>} */ (new Map()))
-
-  // The whole statement history, not only the live file: paging moves old
-  // statements into their own pages, and a thought must not change shape
-  // because it crossed a page boundary. The share page reads the same set.
-  const all_statements = async () => {
-    const live = await list(`${admin_id}/statements`)
-    const directory = await as_directory(`${admin_id}/statements`)
-    const pages = (directory?.items ?? [])
-      .filter(page => Number.isFinite(Number(page)))
-      .sort(recent_number_first)
-    const history = await Promise.all(
-      pages.map(page => list_history_page(`${admin_id}/statements/${page}`))
-    )
-    return [...live, ...history.flat()]
-  }
-
-  const hydrate_thoughts = async () => {
-    const statements = await all_statements()
-    if (!statements.length) return
-    const found = new Map()
-    for (const print of prints.value) {
-      const text = thought_text(
-        thought_for_poster([print, ...statements], print.id)
-      )
-      if (text) found.set(print.id, text)
-    }
-    thoughts.value = found
-  }
 
   const hydrate = async () => {
     const loaded = await Promise.all(
@@ -113,8 +37,8 @@
   }
 
   mounted(async () => {
-    await for_person({ id: import.meta.env.VITE_ADMIN_ID })
-    await Promise.all([hydrate(), hydrate_thoughts()])
+    await for_person({ id: admin_id })
+    await hydrate()
   })
 
   // Sync can change poster dimensions while this page is open.
@@ -124,59 +48,8 @@
   )
   watch(
     () => feed_needs_refresh?.value?.at,
-    () => void Promise.all([hydrate(), hydrate_thoughts()])
+    () => void hydrate()
   )
-
-  const viewer = ref(/** @type {HTMLDialogElement | null} */ (null))
-  const showing = ref('')
-  const buy_error = ref('')
-
-  const open = poster_id => {
-    showing.value = poster_id
-    buy_error.value = ''
-    load_editions(poster_id)
-    viewer.value?.showModal()
-  }
-
-  // Touch the art to close; the edition list stays interactive.
-  const on_click = event => {
-    if (event.target.closest('form')) return
-    viewer.value.close()
-    showing.value = ''
-  }
-
-  const buying = ref('')
-
-  const buy = async (poster_id, amount) => {
-    if (
-      buying.value ||
-      !amounts.value.includes(amount) ||
-      (amount !== OPEN_AMOUNT && sold.value.includes(amount))
-    )
-      return
-    buying.value = poster_id
-    buy_error.value = ''
-    try {
-      const res = await fetch('/prints-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ poster_id, amount })
-      })
-      // A 5xx from the function is JSON, a dev-server 404 is HTML - only the
-      // former parses, so a failed parse is itself a failure, not a crash.
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        buy_error.value = data.error || 'Checkout unavailable'
-        return
-      }
-      if (data.url) window.location.href = data.url
-      else buy_error.value = 'Checkout unavailable'
-    } catch {
-      buy_error.value = 'Checkout unavailable'
-    } finally {
-      buying.value = ''
-    }
-  }
 </script>
 
 <template>
@@ -192,50 +65,11 @@
         v-for="p in prints"
         :key="p.id"
         :style="{ '--ratio': shapes.get(p.id) ?? 1 }">
-        <button type="button" aria-label="Open this print" @click="open(p.id)">
+        <router-link :to="print_url(p.id)" :aria-label="'Open print ' + p.id">
           <as-figure :itemid="p.id" />
-        </button>
+        </router-link>
       </li>
     </ol>
-
-    <dialog
-      ref="viewer"
-      data-modal
-      aria-label="Hand-finished print"
-      :style="{ '--ratio': shapes.get(showing) ?? 1 }"
-      @click="on_click">
-      <as-figure v-if="showing" :key="showing" :itemid="showing" pin />
-      <form @submit.prevent>
-        <p v-if="showing && thoughts.get(showing)" class="print-thought">
-          {{ thoughts.get(showing) }}
-        </p>
-        <a v-if="showing" :href="share_url(showing)"
-          >Sale dates and share link</a
-        >
-        <ol v-if="amounts.length">
-          <li v-for="amount in amounts" :key="amount">
-            <button
-              type="button"
-              :disabled="amount !== OPEN_AMOUNT && sold.includes(amount)"
-              :aria-busy="buying === showing"
-              @click="buy(showing, amount)">
-              <data :value="amount">{{ as_money(amount, currency) }}</data>
-              <span v-if="sold.includes(amount)" aria-label="Sold"
-                >&#9679;</span
-              >
-            </button>
-          </li>
-        </ol>
-        <p v-if="buy_error" role="alert">{{ buy_error }}</p>
-        <p v-else-if="loading_editions" role="status">Checking editions</p>
-        <p v-else-if="!amounts.length" role="status">Checkout unavailable</p>
-        <a
-          v-if="buy_error || (!loading_editions && !amounts.length)"
-          :href="contact_url"
-          >Message the artist</a
-        >
-      </form>
-    </dialog>
   </section>
 </template>
 
@@ -284,10 +118,10 @@
           transition-duration: 0.01ms;
         }
 
-        // Everything the shared button treatment adds - pill border, padding,
+        // Everything the shared link treatment adds - pill border, padding,
         // capitalised label, a faded disabled state - is chrome on a
         // photograph. The print is the only thing to look at.
-        & > button {
+        & > a {
           position: relative;
           display: block;
           width: 100%;
@@ -297,6 +131,8 @@
           border-radius: round((base-line / 3), 2);
           background: none;
           cursor: pointer;
+          color: inherit;
+          text-decoration: none;
           // Nothing moves on hover. A print on a wall does not hop when you
           // walk up to it, and the pointer already says the whole thing is
           // the control. The keyboard still gets a ring, having no cursor
@@ -306,7 +142,7 @@
             transform: none;
           }
 
-          // The art is not a control, the button around it is. Left alone the
+          // The art is not a control, the link around it is. Left alone the
           // poster eats the click to toggle its own crop.
           & > figure,
           & > figure * {
@@ -329,94 +165,6 @@
             }
           }
         }
-      }
-    }
-
-    & > dialog[data-modal] {
-      display: grid;
-      &:not([open]) {
-        display: none;
-      }
-      justify-items: center;
-      gap: base-line;
-      padding: base-line;
-      // The house dialog wears a clay frame. Around a photograph it reads as
-      // a second, louder picture frame, so this one is just a surface.
-      border: 0;
-
-      & > form {
-        display: grid;
-        justify-items: center;
-        gap: base-line * 0.5;
-        width: auto;
-
-        & > ol {
-          display: grid;
-          gap: base-line * 0.25;
-          padding: 0;
-          list-style: none;
-
-          & button {
-            min-width: 0;
-            padding: 0;
-            border: 0;
-            background: none;
-            color: var(--text);
-            text-decoration: underline;
-            text-underline-offset: 0.2em;
-            &:focus:not(:focus-visible) {
-              outline: none;
-            }
-            focus-ring();
-            &:disabled {
-              opacity: 1;
-              color: var(--text);
-              cursor: default;
-            }
-          }
-
-          & span[aria-label='Sold'] {
-            margin-inline-start: base-line * 0.25;
-            color: var(--emphasis);
-          }
-        }
-
-        & > p {
-          margin: 0;
-          text-align: center;
-        }
-
-        // The artist's own words about this print, set apart from the shop
-        // controls below. Italic is the one cue a quotation gets here.
-        & > p.print-thought {
-          max-width: base-line * 30;
-          font-style: italic;
-        }
-      }
-
-      & > figure {
-        // The same trade as the grid: a height budget and the poster's ratio
-        // decide the width, so nothing crops and nothing overflows.
-        // unquote: Stylus owns `min()` and cannot coerce a calc into it.
-        width: unquote('min(88vw, calc(52vh * var(--ratio, 1)))');
-        aspect-ratio: var(--ratio, 1);
-        min-height: 0;
-        grid-column: auto;
-        grid-row: auto;
-        border-radius: round((base-line / 3), 2);
-
-        & > label > svg[itemid],
-        & > svg[itemid] {
-          height: 100%;
-          min-height: 0;
-          max-height: none;
-        }
-      }
-
-      // A press on the art reaches the dialog, and the dialog closes.
-      & > figure,
-      & > figure * {
-        pointer-events: none;
       }
     }
   }

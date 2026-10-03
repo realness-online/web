@@ -17,6 +17,11 @@ import {
   site_origin
 } from '../src/prerender/pages.js'
 import { software_application_schema } from '../src/prerender/schema.js'
+import { fetch_print_pages } from './print-pages.js'
+
+/** The site-wide OG image's own size, which is what the shell declares. */
+const DEFAULT_OG_IMAGE_WIDTH = 1280
+const DEFAULT_OG_IMAGE_HEIGHT = 960
 
 /** @type {Record<string, (page: { description: string, url: string }) => Record<string, unknown>>} */
 const json_ld_builders = {
@@ -45,8 +50,15 @@ if (!fs.existsSync(server_entry)) {
 const template = fs.readFileSync(template_path, 'utf8')
 const { render } = await import(pathToFileURL(server_entry).href)
 
+// One page per print carries its own address, image, and description, so a
+// shared link previews as that print rather than as the shop.
+const print_pages = await fetch_print_pages(
+  process.env.PRINTS_LIST_URL ?? `${site_origin}/prints-list`
+)
+const pages = [...prerender_pages, ...print_pages]
+
 await Promise.all(
-  prerender_pages.map(async page => {
+  pages.map(async page => {
     const render_path = page.render_path ?? page.path
     const canonical = page.canonical ?? page.path
     const app_html = await render(render_path)
@@ -55,6 +67,9 @@ await Promise.all(
 
     let html = inject_app_html(template, app_html)
     const og_image = page.og_image ?? default_og_image
+    // A page that brings its own image describes it; only the site-wide image
+    // is known to be 1280x960, and only it is known to be a JPEG.
+    const own_image = Boolean(page.og_image)
     html = apply_page_meta(html, {
       title: page.title,
       description: page.description,
@@ -63,15 +78,15 @@ await Promise.all(
       og_description: page.description,
       og_url: `${site_origin}${page.path}`,
       og_image,
-      og_image_alt,
-      og_image_type,
-      og_image_width: 1280,
-      og_image_height: 960,
+      og_image_alt: own_image ? page.og_image_alt : og_image_alt,
+      og_image_type: own_image ? page.og_image_type : og_image_type,
+      og_image_width: own_image ? null : DEFAULT_OG_IMAGE_WIDTH,
+      og_image_height: own_image ? null : DEFAULT_OG_IMAGE_HEIGHT,
       og_site_name: site_name,
       twitter_title: page.og_title,
       twitter_description: page.description,
       twitter_image: og_image,
-      twitter_image_alt: og_image_alt,
+      twitter_image_alt: own_image ? page.og_image_alt : og_image_alt,
       canonical: `${site_origin}${canonical}`
     })
 
@@ -99,7 +114,7 @@ await Promise.all(
 const sitemap_lastmod = new Date().toISOString().slice(0, ISO_DATE_LENGTH)
 const sitemap = build_sitemap_xml({
   site_origin,
-  pages: prerender_pages,
+  pages,
   lastmod: sitemap_lastmod,
   extra_urls: ['/', '/documentation.md']
 })

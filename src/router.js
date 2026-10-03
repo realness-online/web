@@ -20,6 +20,12 @@ const routes = [
     component: () => import('@/views/Prints.vue'),
     meta: { support: true }
   },
+  // One print, its own address, so it can be shared or bookmarked on its own.
+  {
+    path: '/prints/:id',
+    component: () => import('@/views/Print.vue'),
+    meta: { support: true }
+  },
   {
     path: '/docs',
     component: () => import('@/views/Documentation'),
