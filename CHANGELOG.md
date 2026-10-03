@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Every print has its own page** - A print opens at `/prints/<id>` instead of a
+  dialog: the poster, the thought it was made with, the three editions, and a
+  share button. The page shares as that print, with its own image in the link
+  preview. The shop's grid is now only the way in.
+- **Prices read as one row** - The three editions sit side by side on a phone
+  rather than stacked.
+- **Long press stays in the app on iOS** - Long pressing a poster while the 3D
+  view is on no longer offers Safari's Copy / Look Up / Translate menu over the
+  poster.
+
 ## v2.10.3 - 2026-10-01
 
 - Saved files now end in `.html`; files under the old `.html.gz` name still open.
