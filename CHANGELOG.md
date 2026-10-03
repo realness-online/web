@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.5 - 2026-10-03
+
 - **A print's page offers its editions** - The thought and the poster read in the
   background now. Words a visitor may not read no longer hold up the prices.
 
