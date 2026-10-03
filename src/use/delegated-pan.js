@@ -44,7 +44,11 @@ export const use_delegated_pan = container_ref => {
   let listeners_container = null
 
   const find_target = element => {
-    const svg = element.closest?.('svg[itemtype$="/posters"]')
+    const svg =
+      element.closest?.('svg[itemtype$="/posters"]') ||
+      element
+        .closest?.('label:has(> input[data-haptic])')
+        ?.parentElement?.querySelector(':scope > svg[itemtype$="/posters"]')
     if (!svg || !pan_targets.has(svg)) return null
     return svg
   }

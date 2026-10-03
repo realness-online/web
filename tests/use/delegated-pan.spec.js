@@ -61,6 +61,42 @@ describe('@/use/delegated-pan', () => {
     expect(pan.pan_offset.value).toBe(30)
   })
 
+  it('routes an overlay touch to its sibling poster, preserving pan and scroll', () => {
+    const { container, svg, pan } = setup()
+    const figure = document.createElement('figure')
+    const label = document.createElement('label')
+    const input = document.createElement('input')
+    input.setAttribute('data-haptic', '')
+    label.appendChild(input)
+    figure.append(svg, label)
+    container.appendChild(figure)
+
+    fire(label, 'touchstart', [{ clientX: 0, clientY: 0 }])
+    const vertical = fire(label, 'touchmove', [{ clientX: 5, clientY: 40 }])
+    expect(vertical.defaultPrevented).toBe(false)
+    expect(pan.pan_offset.value).toBe(0)
+    fire(label, 'touchend', [])
+
+    fire(label, 'touchstart', [{ clientX: 0, clientY: 0 }])
+    const horizontal = fire(label, 'touchmove', [{ clientX: 30, clientY: 0 }])
+    expect(horizontal.defaultPrevented).toBe(true)
+    expect(pan.pan_offset.value).toBe(30)
+    fire(label, 'touchend', [])
+    expect(pan.was_pan_gesture.value).toBe(true)
+  })
+
+  it('does not route a caption touch to the poster beside it', () => {
+    const { container, svg, pan } = setup()
+    const figure = document.createElement('figure')
+    const caption = document.createElement('figcaption')
+    figure.append(svg, caption)
+    container.appendChild(figure)
+    fire(caption, 'touchstart', [{ clientX: 0, clientY: 0 }])
+    const evt = fire(caption, 'touchmove', [{ clientX: 30, clientY: 0 }])
+    expect(evt.defaultPrevented).toBe(false)
+    expect(pan.panning.value).toBe(false)
+  })
+
   it('reads the max pan from callback and rubber-bands past it', () => {
     const { svg, pan } = setup({ max_pan: () => 100 })
     fire(svg, 'touchstart', [{ clientX: 0, clientY: 0 }])

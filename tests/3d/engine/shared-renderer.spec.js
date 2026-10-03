@@ -100,6 +100,23 @@ describe('shared_renderer register_viewer', () => {
     viewer.destroy()
   })
 
+  it('binds gestures to a separate input element when given one', () => {
+    const canvas = make_canvas()
+    const surface = document.createElement('div')
+    const add = vi.spyOn(surface, 'addEventListener')
+    const remove = vi.spyOn(surface, 'removeEventListener')
+    const viewer = register_viewer(canvas, make_scene_controller(), surface)
+
+    expect(add).toHaveBeenCalledWith('pointerdown', expect.any(Function))
+    expect(add).toHaveBeenCalledWith('wheel', expect.any(Function), {
+      passive: false
+    })
+
+    viewer.destroy()
+
+    expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function))
+  })
+
   it('start_enter drives svg zoom callback during enter phase', () => {
     const canvas = make_canvas()
     const scene_controller = make_scene_controller()

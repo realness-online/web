@@ -116,9 +116,6 @@
       color-interpolation-filters="sRGB">
       <feColorMatrix type="matrix" :values="flatten_matrix" />
     </filter>
-    <!-- Where shadow geometry is, dim the cutouts so it reads through; the
-      <use>s reference the live shadow paths, so morph moves the dimmed
-      region for free. White everywhere else leaves cutouts at base opacity. -->
     <mask
       :id="query('cutout-shadow-dim')"
       maskUnits="userSpaceOnUse"

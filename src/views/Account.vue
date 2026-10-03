@@ -78,8 +78,6 @@
 <template>
   <section id="account" data-page>
     <div>
-      <!-- A name is yours before an account is: realness stores it locally,
-           so the field stands whether or not you are signed in. -->
       <name-as-form />
 
       <section itemprop="preferences">

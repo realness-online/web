@@ -199,8 +199,6 @@
     return null
   })
 
-  defineExpose({ toggle_meet: on_click })
-
   provide('vector', vector)
 
   mounted(async () => {
@@ -417,6 +415,18 @@
     if (props.behind_canvas) event.preventDefault()
     else on_touch_contextmenu(event)
   }
+
+  defineExpose({
+    toggle_meet: on_click,
+    activate_pointer: {
+      pointerdown: on_pointerdown,
+      pointermove: on_pointermove,
+      pointerup: on_pointerup,
+      pointerleave: on_pointerleave,
+      pointercancel: on_pointerleave,
+      contextmenu: on_contextmenu
+    }
+  })
 
   /**
    * Screen pixels per viewBox unit. A transform on an SVG element is in user

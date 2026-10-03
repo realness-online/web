@@ -5,6 +5,7 @@
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import { defineAsyncComponent as define_async_component } from 'vue'
+  import { useMediaQuery } from '@vueuse/core'
 
   const AsViewer3d = define_async_component(
     () => import('@/components/posters/as-viewer-3d.vue')
@@ -30,7 +31,12 @@
     is_click,
     has_drawable_layer
   } from '@/use/poster'
-  import { mosaic, view_3d, enable_geology_layers } from '@/utils/preference'
+  import {
+    mosaic,
+    view_3d,
+    animate as animate_pref,
+    enable_geology_layers
+  } from '@/utils/preference'
   import { use_mask_pen, subject_hue } from '@/use/mask-pen'
   import { load_cutout_flags, GEOLOGY_DATE } from '@/utils/geology'
   import { load_shadow_into_vector } from '@/utils/poster-layers'
@@ -46,6 +52,7 @@
   import { export_poster_to_video_with_audio } from '@/utils/export-poster-video'
   import { use_poster_svg_activate_pointer } from '@/use/poster-svg-activate-pointer'
   import { use_delegated_pan } from '@/use/delegated-pan'
+  import { is_ios } from '@/utils/platform'
   import {
     ref,
     computed,
@@ -115,6 +122,22 @@
   const SVG_ZOOM_SCALE = 1.59
   const canvas_alive = ref(false)
   const canvas_leaving = ref(false)
+  const layer_comparison =
+    import.meta.env.DEV &&
+    typeof window !== 'undefined' &&
+    window.matchMedia('(hover: hover)').matches
+  const layer_view = ref('both')
+  const reduced_motion = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const focus_pull = ref(true)
+  const focus_pull_active = computed(
+    () =>
+      layer_comparison &&
+      canvas_alive.value &&
+      layer_view.value === 'both' &&
+      focus_pull.value &&
+      animate_pref.value &&
+      !reduced_motion.value
+  )
   const viewer_ref = ref(null)
 
   const overlay_text_visible = computed(() => {
@@ -257,15 +280,29 @@
   } = use_poster_svg_activate_pointer({
     on_activate: dom_reference_activate,
     touch_uses_long_press: true,
-    // These live on the figure now, so the haptic switch layered over the
-    // poster still reaches them. The canonical poster brings its own handlers.
+    // Referenced posters receive SVG and haptic-overlay events on the figure.
     is_disabled: computed(() => !use_dom_reference.value)
   })
 
-  /** One switch per poster on the page, so a label points at its own. */
   const haptic_id = computed(() => `haptic-${query_id.value}`)
-
+  const haptic_supported = is_ios()
+  const haptic_enabled = computed(
+    () => haptic_supported && !canvas_alive.value && !mask_pen.active.value
+  )
   const on_haptic_focus = () => poster.value?.focus()
+  const on_haptic_pointer = event => {
+    if (use_dom_reference.value) return
+    as_svg_ref.value?.activate_pointer?.[event.type]?.(event)
+  }
+  const on_haptic_click = () => {
+    if (use_dom_reference.value) on_poster_svg_click()
+  }
+
+  watch(haptic_enabled, enabled => {
+    if (enabled) return
+    as_svg_ref.value?.activate_pointer?.pointercancel()
+    on_dom_ref_pointerleave()
+  })
 
   const poster_label = computed(() => {
     const created = as_created_at(/** @type {Id} */ (props.itemid))
@@ -606,6 +643,8 @@
 <template>
   <figure
     ref="poster"
+    :data-layer-view="layer_comparison && canvas_alive ? layer_view : undefined"
+    :data-focus-pull="focus_pull_active || undefined"
     :aria-expanded="
       overlay_statements?.length ? overlay_text_visible : undefined
     "
@@ -620,64 +659,68 @@
     @pointerleave="on_dom_ref_pointerleave"
     @pointercancel="on_dom_ref_pointerleave"
     @contextmenu="on_dom_ref_contextmenu">
-    <!--
-      iOS buzzes for a switch a finger toggles, and for nothing a script does -
-      so the poster carries one. The switch itself is hidden; this label around
-      the poster is what your tap toggles, the same way the footer menu earns
-      its buzz. `display: contents` keeps the figure's own layout untouched, and
-      the poster still receives every event it did before.
-    -->
-    <label :for="haptic_id">
+    <svg
+      v-if="use_dom_reference"
+      itemscope
+      itemtype="https://realness.online/posters"
+      :itemid="itemid"
+      :viewBox="ref_dom_viewbox"
+      :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
+      role="img"
+      aria-roledescription="referenced poster"
+      :aria-label="poster_label"
+      :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
+      @click="on_poster_svg_click"
+      @selectstart.prevent>
+      <use :href="poster_reference_href" />
+      <rect
+        role="presentation"
+        aria-hidden="true"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        fill="transparent" />
+    </svg>
+    <as-svg
+      v-if="!use_dom_reference"
+      ref="as_svg_ref"
+      :itemid="itemid"
+      :slice="slice"
+      :sync_poster="sync_poster_for_svg"
+      :show_cutout_layers="cutouts_active && mosaic"
+      :pin="props.pin"
+      :paused="!poster_in_view || (canvas_alive && !layer_comparison)"
+      :behind_canvas="canvas_alive"
+      :focusable="false"
+      @show="on_show"
+      @click="on_poster_svg_click" />
+    <as-poster-symbol
+      v-if="shown && !use_dom_reference"
+      :itemid="itemid"
+      :vector="vector"
+      :show_cutout_symbols="cutouts_active && mosaic"
+      :shown="shown" />
+    <label
+      v-if="haptic_enabled"
+      :for="haptic_id"
+      aria-hidden="true"
+      @pointerdown="on_haptic_pointer"
+      @pointermove="on_haptic_pointer"
+      @pointerup="on_haptic_pointer"
+      @pointerleave="on_haptic_pointer"
+      @pointercancel="on_haptic_pointer"
+      @contextmenu="on_haptic_pointer"
+      @click="on_haptic_click"
+      @selectstart.prevent>
       <input
         :id="haptic_id"
         type="checkbox"
         switch
         tabindex="-1"
-        aria-hidden="true"
         data-haptic
+        @click.stop
         @focus="on_haptic_focus" />
-      <svg
-        v-if="use_dom_reference"
-        itemscope
-        itemtype="https://realness.online/posters"
-        :itemid="itemid"
-        :viewBox="ref_dom_viewbox"
-        :preserveAspectRatio="ref_dom_preserve_aspect_ratio"
-        role="img"
-        aria-roledescription="referenced poster"
-        :aria-label="poster_label"
-        :data-orientation="ref_dom_landscape ? 'horizontal' : 'vertical'"
-        @click="on_poster_svg_click"
-        @selectstart.prevent>
-        <use :href="poster_reference_href" />
-        <rect
-          role="presentation"
-          aria-hidden="true"
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
-          fill="transparent" />
-      </svg>
-      <as-svg
-        v-if="!use_dom_reference"
-        ref="as_svg_ref"
-        :itemid="itemid"
-        :slice="slice"
-        :sync_poster="sync_poster_for_svg"
-        :show_cutout_layers="cutouts_active && mosaic"
-        :pin="props.pin"
-        :paused="!poster_in_view || canvas_alive"
-        :behind_canvas="canvas_alive"
-        :focusable="false"
-        @show="on_show"
-        @click="on_poster_svg_click" />
-      <as-poster-symbol
-        v-if="shown && !use_dom_reference"
-        :itemid="itemid"
-        :vector="vector"
-        :show_cutout_symbols="cutouts_active && mosaic"
-        :shown="shown" />
     </label>
     <as-viewer-3d
       v-if="canvas_alive"
@@ -686,6 +729,29 @@
       :on_svg_zoom="set_svg_zoom"
       data-mode="inline"
       @select="on_poster_svg_click" />
+    <fieldset
+      v-if="layer_comparison && canvas_alive"
+      aria-label="Poster layers"
+      @pointerdown.stop
+      @pointerup.stop
+      @click.stop
+      @keydown.stop>
+      <select v-model="layer_view" aria-label="Poster layers">
+        <option value="svg">SVG only</option>
+        <option value="3d">3D only</option>
+        <option value="both">SVG + 3D</option>
+      </select>
+      <label>
+        <input
+          v-model="focus_pull"
+          type="checkbox"
+          aria-label="Focus pull"
+          :disabled="
+            layer_view !== 'both' || !animate_pref || reduced_motion
+          " />
+        Focus pull
+      </label>
+    </fieldset>
     <figcaption v-if="figcaption_visible">
       <header>
         <aside
@@ -815,6 +881,15 @@
 </template>
 
 <style lang="stylus">
+  @keyframes poster-focus-pull {
+    0%, 10%, 33.3333%, 43.3333%, 66.6667%, 76.6667%, 100% {
+      opacity: 0.5;
+    }
+    16.6667%, 26.6667%, 50%, 60%, 83.3333%, 93.3333% {
+      opacity: 0.15;
+    }
+  }
+
   figure:has([itemtype$='/posters']):not([itemtype]) {
     position: relative;
     display: grid;
@@ -897,16 +972,12 @@
       }
     }
     /* Keep `content-visibility` off the figure so figcaption (overlay text) is not skipped; Safari mishandles the subtree when the root has `auto`. */
-    /* The haptic label is `display: contents`, so the poster it wraps is still
-       the figure's own child as far as layout goes - the selector has to reach
-       through it. */
-    & > svg:not([data-poster-symbol-defs]),
-    & > label > svg:not([data-poster-symbol-defs]) {
+    & > svg:not([data-poster-symbol-defs]) {
       content-visibility: auto;
       contain-intrinsic-size: auto 512px;
     }
     /* The figure's own poster, not an author chip drawing the same one. */
-    & > label > svg[itemid] {
+    & > svg[itemid] {
       display: block;
       min-height: 512px;
       height: 100%;
@@ -921,18 +992,21 @@
         touch-action: pan-x pinch-zoom;
       }
     }
-    & > label > svg[itemid] rect[role='presentation'][aria-hidden='true'] {
+    & > svg[itemid] rect[role='presentation'][aria-hidden='true'] {
       pointer-events: all;
     }
-    /* The label is only here to carry taps to the switch - it must not take
-       part in the figure's layout. */
-    & > label:has(input[data-haptic]) {
-      display: contents;
+    & > label:has(> input[data-haptic]) {
+      grid-area: 1 / 1;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+      disable-ios-touch-callout();
+      touch-action: pan-y pinch-zoom;
     }
-    /* `all: initial` keeps the switch's native appearance, which our global
-       `input { appearance: none }` would otherwise strip, and a switch that
-       does not render natively does not buzz. It stays out of sight and out of
-       the way; the label around the poster is what gets touched. */
+    &:has(> svg[data-storytelling]) > label:has(> input[data-haptic]) {
+      touch-action: pan-x pinch-zoom;
+    }
+    /* Native switch appearance is required; the label receives the touch. */
     input[data-haptic] {
       all: initial;
       appearance: auto;
@@ -945,7 +1019,57 @@
     @media (prefers-reduced-motion: reduce) {
       transition-duration: 0.01ms;
     }
-    canvas[data-mode='inline'] {
+    & > fieldset:has(> select[aria-label='Poster layers']) {
+      position: absolute;
+      top: base-line;
+      left: base-line;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: base-line * 0.5;
+      padding: base-line * 0.5;
+      font-size: 0.78em;
+      color: var(--text);
+      border: 0;
+      margin: 0;
+      frosted-glass();
+      border-radius: base-line * 0.25;
+      select {
+        appearance: auto;
+        background: transparent;
+        cursor: pointer;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: base-line * 0.25;
+        white-space: nowrap;
+      }
+      input[type='checkbox'] {
+        appearance: auto;
+        width: 1em;
+        height: 1em;
+        margin: 0;
+        accent-color: var(--accent);
+        background: transparent;
+      }
+    }
+    &[data-layer-view='3d'] > svg[itemid] {
+      visibility: hidden;
+    }
+    &[data-layer-view='svg'] > [data-mode='inline'] {
+      visibility: hidden;
+    }
+    &[data-layer-view='both'] > [data-mode='inline'] {
+      opacity: 0.5;
+    }
+    &[data-focus-pull] > [data-mode='inline'] {
+      animation: poster-focus-pull 30s ease-in-out infinite;
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
+    [data-mode='inline'] {
       position: absolute;
       inset: 0;
       z-index: 2;
@@ -953,8 +1077,7 @@
       border-radius: round((base-line * .03), 2);
       overflow: hidden;
     }
-    & > figcaption,
-    & > label > figcaption {
+    & > figcaption {
       grid-area: 1 / 1;
       display: flex;
       flex-direction: column;

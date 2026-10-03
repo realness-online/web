@@ -6,6 +6,115 @@ vi.mock('@/3d/engine/bind-device-orientation.js', () => ({
 }))
 
 describe('create_input', () => {
+  describe('mouse hover', () => {
+    let canvas
+    let input
+
+    const move = (clientX = 90, clientY = 70) =>
+      canvas.dispatchEvent(
+        new PointerEvent('pointermove', {
+          pointerType: 'mouse',
+          clientX,
+          clientY
+        })
+      )
+
+    beforeEach(() => {
+      vi.useFakeTimers()
+      canvas = document.createElement('canvas')
+      document.body.appendChild(canvas)
+      canvas.getBoundingClientRect = () => ({
+        left: 0,
+        top: 0,
+        width: 100,
+        height: 100
+      })
+      canvas.setPointerCapture = vi.fn()
+      canvas.releasePointerCapture = vi.fn()
+      input = create_input({ canvas })
+    })
+
+    afterEach(() => {
+      input.dispose()
+      canvas.remove()
+      vi.useRealTimers()
+    })
+
+    it('returns the hover target to zero when the mouse leaves', () => {
+      move()
+      expect(input.state.pointer_x_norm).toBeCloseTo(0.8)
+      expect(input.state.pointer_y_norm).toBeCloseTo(0.4)
+      canvas.dispatchEvent(
+        new PointerEvent('pointerleave', { pointerType: 'mouse' })
+      )
+      expect(input.state.pointer_x_norm).toBe(0)
+      expect(input.state.pointer_y_norm).toBe(0)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('returns the hover target to zero after 500 ms without movement', () => {
+      move()
+      vi.advanceTimersByTime(499)
+      expect(input.state.pointer_x_norm).toBeCloseTo(0.8)
+      expect(input.state.pointer_y_norm).toBeCloseTo(0.4)
+      vi.advanceTimersByTime(1)
+      expect(input.state.pointer_x_norm).toBe(0)
+      expect(input.state.pointer_y_norm).toBe(0)
+    })
+
+    it('restarts the idle delay on each movement', () => {
+      move()
+      vi.advanceTimersByTime(400)
+      move(80, 60)
+      vi.advanceTimersByTime(400)
+      expect(input.state.pointer_x_norm).toBeCloseTo(0.6)
+      expect(input.state.pointer_y_norm).toBeCloseTo(0.2)
+      vi.advanceTimersByTime(100)
+      expect(input.state.pointer_x_norm).toBe(0)
+      expect(input.state.pointer_y_norm).toBe(0)
+    })
+
+    it('cancels a pending mouse reset when touch panning begins', () => {
+      move()
+      canvas.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          pointerType: 'touch',
+          pointerId: 7,
+          clientX: 30,
+          clientY: 40
+        })
+      )
+      vi.advanceTimersByTime(1000)
+      canvas.dispatchEvent(
+        new PointerEvent('pointerleave', { pointerType: 'touch' })
+      )
+      expect(input.state.touch_active).toBe(true)
+      expect(input.state.pointer_x_norm).toBeCloseTo(-0.4)
+      expect(input.state.pointer_y_norm).toBeCloseTo(-0.2)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('returns the hover target to zero when the window loses focus', () => {
+      move()
+      window.dispatchEvent(new Event('blur'))
+      expect(input.state.pointer_x_norm).toBe(0)
+      expect(input.state.pointer_y_norm).toBe(0)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it('clears the idle timer and leave listener on disposal', () => {
+      move()
+      input.dispose()
+      canvas.dispatchEvent(
+        new PointerEvent('pointerleave', { pointerType: 'mouse' })
+      )
+      vi.advanceTimersByTime(1000)
+      expect(input.state.pointer_x_norm).toBeCloseTo(0.8)
+      expect(input.state.pointer_y_norm).toBeCloseTo(0.4)
+      expect(vi.getTimerCount()).toBe(0)
+    })
+  })
+
   it('tracks touch drag and wheel pan when shift is held', () => {
     const canvas = document.createElement('canvas')
     document.body.appendChild(canvas)

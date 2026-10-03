@@ -15,6 +15,7 @@
   import { register_live_poster_scene } from '@/3d/scenes/live-poster-scene.js'
   import { attach_live_poster_texture } from '@/3d/utils/live-shadow-texture.js'
   import { live_texture_3d } from '@/utils/preference'
+  import { is_ios } from '@/utils/platform'
 
   const props = defineProps({
     itemid: {
@@ -62,6 +63,7 @@
   }
 
   const canvas_ref = ref(null)
+  const surface_ref = ref(null)
   /** @type {import('vue').Ref<PosterSceneController | null>} */
   const scene_ref = ref(null)
   let viewer = null
@@ -90,7 +92,11 @@
     await scene_controller.wait_for_textures()
     if (!mount_active) return
 
-    viewer = register_viewer(canvas_ref.value, scene_controller)
+    viewer = register_viewer(
+      canvas_ref.value,
+      scene_controller,
+      surface_ref.value ?? canvas_ref.value
+    )
     viewer.start_enter(props.on_svg_zoom)
     scene_ref.value = scene_controller
     // Track B experiment: when the origin-trial feature is present and the
@@ -126,23 +132,39 @@
 </script>
 
 <template>
-  <canvas
-    ref="canvas_ref"
+  <div
+    ref="surface_ref"
+    class="viewer-3d"
+    :data-ios="is_ios() || undefined"
     @pointerdown="on_pointerdown"
     @pointermove="on_pointer_move"
     @pointerup="on_pointerup"
     @pointercancel="on_pointerleave"
     @pointerleave="on_pointerleave"
     @contextmenu.prevent
-    @selectstart.prevent />
+    @selectstart.prevent>
+    <canvas ref="canvas_ref" />
+  </div>
 </template>
 
 <style lang="stylus">
-  canvas {
+  .viewer-3d {
     display: block;
     width: 100%;
     height: 100%;
     touch-action: none;
     disable-ios-touch-callout();
+
+    & > canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      disable-ios-touch-callout();
+    }
+
+    &[data-ios] > canvas {
+      pointer-events: none;
+    }
   }
 </style>

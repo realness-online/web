@@ -192,32 +192,18 @@
         v-for="p in prints"
         :key="p.id"
         :style="{ '--ratio': shapes.get(p.id) ?? 1 }">
-        <!--
-          The print is the control. The button brings its own focus ring,
-          and Enter key, so nothing sits on the art to make it reachable.
-        -->
         <button type="button" aria-label="Open this print" @click="open(p.id)">
           <as-figure :itemid="p.id" />
         </button>
       </li>
     </ol>
 
-    <!--
-      Click into a print and it is the print, as big as the window allows,
-      with its edition list below.
-    -->
     <dialog
       ref="viewer"
       data-modal
       aria-label="Hand-finished print"
       :style="{ '--ratio': shapes.get(showing) ?? 1 }"
       @click="on_click">
-      <!--
-        `pin` because two renderings of one poster share a single loaded
-        record: an unpinned copy that mounts before it is on screen deletes
-        the cutout flags off that record, and the copy in the grid behind
-        this one goes blank.
-      -->
       <as-figure v-if="showing" :key="showing" :itemid="showing" pin />
       <form @submit.prevent>
         <p v-if="showing && thoughts.get(showing)" class="print-thought">

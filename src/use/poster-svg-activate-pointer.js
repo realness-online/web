@@ -9,51 +9,11 @@ export const LONG_PRESS_TOGGLE_MS = 500
 /** Haptic length (ms) for long-press feedback; not all browsers support Vibration API. */
 const VIBRATE_LONG_PRESS_MS = 12
 
-/** @type {HTMLLabelElement | null} Kept in the body between long presses */
-let haptic_label = null
-
-/**
- * Safari has no Vibration API, but iOS buzzes when a
- * `<input type="checkbox" switch>` toggles - the same feel the footer menu
- * gives. Three details make it fire, and all three are easy to lose:
- *
- * - The click has to go through a `<label for>`; WebKit ignores a scripted
- *   click on the input itself.
- * - The input needs its native appearance. Our global `input { appearance:
- *   none }` strips the switch, and a switch that does not render does not buzz,
- *   so this one opts out with `all: initial`.
- * - It lives in the body, not the head, and stays there.
- */
-const toggle_haptic_switch = () => {
-  if (typeof document === 'undefined') return
-  if (!haptic_label) {
-    const id = 'haptic-switch'
-    const label = document.createElement('label')
-    label.htmlFor = id
-    label.ariaHidden = 'true'
-    label.style.display = 'none'
-    const input = document.createElement('input')
-    input.type = 'checkbox'
-    input.setAttribute('switch', '')
-    input.id = id
-    input.tabIndex = -1
-    input.style.all = 'initial'
-    input.style.appearance = 'auto'
-    input.style.display = 'none'
-    label.appendChild(input)
-    document.body.appendChild(label)
-    haptic_label = label
-  }
-  haptic_label.click()
-}
-
 export const vibrate_long_press = () => {
   try {
-    // Both, always: Safari can expose `vibrate` and do nothing with it, so the
-    // switch toggle is not a fallback - it is the thing that buzzes on iOS.
+    // iOS feedback comes from the figure's native label activation on release.
     // eslint-disable-next-line compat/compat -- optional: vibrate missing on some browsers; try/catch no-ops
     navigator.vibrate?.(VIBRATE_LONG_PRESS_MS)
-    toggle_haptic_switch()
   } catch {
     /* no-op: vibrate unsupported or blocked */
   }

@@ -1,7 +1,13 @@
 import { bind_device_orientation } from '@/3d/engine/bind-device-orientation.js'
 
+const HOVER_IDLE_MS = 500
+
 /**
- * @param {{ canvas: HTMLCanvasElement }} options
+ * The element that receives the gestures. It is usually the canvas, but a
+ * wrapper works the same: the size for normalized coordinates only has to
+ * match the drawn surface.
+ *
+ * @param {{ canvas: HTMLElement }} options
  */
 export const create_input = options => {
   const { canvas } = options
@@ -28,8 +34,24 @@ export const create_input = options => {
   /** @type {number | null} */
   let touch_pointer_id = null
   const arrow_keys = new Set()
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let hover_timer = null
+
+  const clear_hover_timer = () => {
+    if (hover_timer !== null) clearTimeout(hover_timer)
+    hover_timer = null
+  }
+
+  const reset_hover = () => {
+    clear_hover_timer()
+    state.pointer_x_norm = 0
+    state.pointer_y_norm = 0
+  }
 
   const update_norm = event => {
+    clear_hover_timer()
+    if (event.pointerType === 'mouse')
+      hover_timer = setTimeout(reset_hover, HOVER_IDLE_MS)
     const rect = canvas.getBoundingClientRect()
     const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1
     const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1
@@ -56,6 +78,10 @@ export const create_input = options => {
     state.pointer_dy += next_y - last_y
     last_x = next_x
     last_y = next_y
+  }
+
+  const on_pointer_leave = event => {
+    if (event.pointerType === 'mouse') reset_hover()
   }
 
   const on_pointer_up = event => {
@@ -123,6 +149,7 @@ export const create_input = options => {
   }
 
   const on_blur = () => {
+    reset_hover()
     state.shift_held = false
     state.alt_held = false
     state.cmd_held = false
@@ -134,6 +161,7 @@ export const create_input = options => {
 
   canvas.addEventListener('pointerdown', on_pointer_down)
   canvas.addEventListener('pointermove', on_pointer_move)
+  canvas.addEventListener('pointerleave', on_pointer_leave)
   canvas.addEventListener('pointerup', on_pointer_up)
   canvas.addEventListener('pointercancel', on_pointer_up)
   canvas.addEventListener('touchmove', on_touch_move, { passive: false })
@@ -152,8 +180,10 @@ export const create_input = options => {
       state.pan_wheel_y = 0
     },
     dispose() {
+      clear_hover_timer()
       canvas.removeEventListener('pointerdown', on_pointer_down)
       canvas.removeEventListener('pointermove', on_pointer_move)
+      canvas.removeEventListener('pointerleave', on_pointer_leave)
       canvas.removeEventListener('pointerup', on_pointer_up)
       canvas.removeEventListener('pointercancel', on_pointer_up)
       canvas.removeEventListener('touchmove', on_touch_move)

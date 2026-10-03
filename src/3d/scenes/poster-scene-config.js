@@ -144,7 +144,7 @@ export const GRADIENT_DRIFT_PHASE = 1.3
 
 export const INITIAL_GROUP_GAP = DEFAULT_GROUP_GAP
 export const FIT_HEIGHT = 3.5
-export const PARALLAX_AMOUNT = 0.35
+export const PARALLAX_AMOUNT = 0.175
 
 export const MIN_ZOOM = -2.5
 export const MAX_ZOOM = 2.5
@@ -169,7 +169,7 @@ export const BREATHING_TILT = 0.08
 export const PAN_ZOOM_BASE_DISTANCE = 6
 export const PAN_FOV_HALF_DEG = 17.5
 export const PAN_DEG_TO_RAD = 180
-export const POINTER_SMOOTH = 0.08
+export const POINTER_SMOOTH = 0.05
 export const DRIFT_PHASE_X = 0.6
 export const DRIFT_PHASE_Y = 0.7
 export const DRIFT_FREQ_Y = 1.1

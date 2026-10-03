@@ -116,29 +116,15 @@ describe('@/use/poster-svg-activate-pointer', () => {
     expect(() => vibrate_long_press()).not.toThrow()
   })
 
-  it('vibrate_long_press clicks a switch label (Safari haptic)', () => {
-    /** @type {HTMLElement[]} */
-    const clicked = []
-    const original = HTMLElement.prototype.click
-    HTMLElement.prototype.click = function () {
-      clicked.push(this)
+  it('uses the Vibration API without creating or clicking a scripted switch', () => {
+    const click = vi.spyOn(HTMLElement.prototype, 'click')
+    try {
+      vibrate_long_press()
+      expect(navigator.vibrate).toHaveBeenCalledWith(12)
+      expect(click).not.toHaveBeenCalled()
+      expect(document.querySelector('#haptic-switch')).toBeNull()
+    } finally {
+      click.mockRestore()
     }
-
-    vibrate_long_press()
-
-    HTMLElement.prototype.click = original
-
-    expect(clicked.length).toBe(1)
-    const label = clicked[0]
-    expect(label.tagName).toBe('LABEL')
-    const input = label.querySelector('input[type="checkbox"][switch]')
-    expect(input).toBeTruthy()
-    // The label drives the input, and the input keeps its native appearance
-    expect(label.htmlFor).toBe(input.id)
-    expect(input.style.appearance).toBe('auto')
-
-    // One element, reused
-    vibrate_long_press()
-    expect(document.querySelectorAll('input[switch]').length).toBe(1)
   })
 })

@@ -5,6 +5,15 @@ import { get } from 'idb-keyval'
 import { as_layer_id, as_query_id, load, load_from_cache } from '@/utils/itemid'
 import as_menu_author from '@/components/posters/as-menu-author'
 import as_figure from '@/components/posters/as-figure'
+import { POSTER_MEET_TOGGLE_ONLY } from '@/use/poster-dom-reference'
+
+vi.mock('@/components/posters/as-viewer-3d.vue', () => ({
+  __esModule: true,
+  default: defineComponent({
+    name: 'AsViewer3d',
+    setup: () => () => h('canvas')
+  })
+}))
 
 vi.mock('@/use/delegated-pan', () => ({
   use_delegated_pan: () => ({
@@ -20,12 +29,14 @@ vi.mock('@/use/delegated-pan', () => ({
 const {
   mock_menu,
   mock_mosaic,
+  mock_animate,
   mock_enable_geology,
   mock_export_video,
   mock_decode_audio,
   mock_am_canonical,
   mock_is_referenced,
-  mock_use_reference
+  mock_use_reference,
+  mock_is_ios
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_watchable = value =>
@@ -33,6 +44,7 @@ const {
   return {
     mock_menu: create_watchable(false),
     mock_mosaic: create_watchable(false),
+    mock_animate: create_watchable(false),
     mock_enable_geology: vi.fn(),
     mock_export_video: vi.fn().mockResolvedValue(undefined),
     mock_decode_audio: vi
@@ -40,13 +52,21 @@ const {
       .mockResolvedValue([{ buffer: new ArrayBuffer(1) }]),
     mock_am_canonical: create_watchable(false),
     mock_is_referenced: create_watchable(false),
-    mock_use_reference: create_watchable(false)
+    mock_use_reference: create_watchable(false),
+    mock_is_ios: vi.fn(() => false)
   }
 })
 
-vi.mock('@/utils/preference', () => ({
+vi.mock('@/utils/platform', async importOriginal => ({
+  ...(await importOriginal()),
+  is_ios: mock_is_ios
+}))
+
+vi.mock('@/utils/preference', async importOriginal => ({
+  ...(await importOriginal()),
   menu: mock_menu,
   mosaic: mock_mosaic,
+  animate: mock_animate,
   view_3d: { value: false },
   boulders: { value: false },
   rocks: { value: false },
@@ -96,6 +116,16 @@ const poster = {
 }
 describe('@/component/posters/as-figure.vue', () => {
   let wrapper
+  const hover_match_media = query => ({
+    matches: query === '(hover: hover)',
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn()
+  })
   const mock_key_commands = {
     add_context: vi.fn(),
     register_handler: vi.fn(),
@@ -105,12 +135,15 @@ describe('@/component/posters/as-figure.vue', () => {
   beforeEach(() => {
     mock_menu.value = false
     mock_mosaic.value = false
+    mock_animate.value = false
     mock_enable_geology.mockClear()
     mock_export_video.mockClear()
     mock_decode_audio.mockClear()
     mock_am_canonical.value = false
     mock_is_referenced.value = false
     mock_use_reference.value = false
+    mock_is_ios.mockReturnValue(false)
+    window.matchMedia = vi.fn(hover_match_media)
     vi.mocked(get).mockResolvedValue(null)
     // Queued `mockResolvedValueOnce` values outlive the test that set them and
     // get eaten by whoever loads next, so each test starts from nothing found.
@@ -134,6 +167,363 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
+  describe('haptic overlay', () => {
+    const mount_ios = (props = {}) => {
+      mock_is_ios.mockReturnValue(true)
+      return shallowMount(as_figure, {
+        props: { itemid: poster.id, ...props },
+        global: {
+          provide: { 'key-commands': mock_key_commands },
+          stubs: { AsSvg: false, AsDownload: true, AsViewer3d: true }
+        }
+      })
+    }
+
+    it('keeps the SVG directly in the figure and only the switch in the label', async () => {
+      const w = mount_ios()
+      try {
+        await flushPromises()
+        const svg = w.find('svg[itemtype$="/posters"]')
+        const label = w.find('label:has(input[data-haptic])')
+        expect(svg.element.parentElement).toBe(w.element)
+        expect(label.element.parentElement).toBe(w.element)
+        expect(label.element.children.length).toBe(1)
+        expect(label.attributes('for')).toBe(
+          label.find('input').attributes('id')
+        )
+        expect(label.attributes('aria-hidden')).toBe('true')
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('does not create the workaround off iOS', () => {
+      expect(wrapper.find('input[data-haptic]').exists()).toBe(false)
+      expect(
+        wrapper.findComponent({ name: 'AsSvg' }).element.parentElement
+      ).toBe(wrapper.element)
+    })
+
+    it('routes a long press once and does not activate again on the label click', async () => {
+      vi.useFakeTimers()
+      const w = mount_ios({ menu: true })
+      try {
+        await flushPromises()
+        const label = w.find('label:has(input[data-haptic])')
+        await label.trigger('pointerdown', {
+          pointerType: 'touch',
+          clientX: 10,
+          clientY: 10
+        })
+        vi.advanceTimersByTime(500)
+        await nextTick()
+        expect(
+          w.findComponent({ name: 'AsSvg' }).emitted('click')
+        ).toHaveLength(1)
+        expect(w.vm.menu_open).toBe(true)
+        await label.trigger('pointerup', { pointerType: 'touch' })
+        await label.trigger('click')
+        expect(
+          w.findComponent({ name: 'AsSvg' }).emitted('click')
+        ).toHaveLength(1)
+        expect(w.vm.menu_open).toBe(true)
+      } finally {
+        w.unmount()
+        vi.useRealTimers()
+      }
+    })
+
+    it('cancels the long press when the finger slides or the pointer is cancelled', async () => {
+      vi.useFakeTimers()
+      const w = mount_ios()
+      try {
+        await flushPromises()
+        const label = w.find('label:has(input[data-haptic])')
+        await label.trigger('pointerdown', {
+          pointerType: 'touch',
+          clientX: 0,
+          clientY: 0
+        })
+        await label.trigger('pointermove', {
+          pointerType: 'touch',
+          clientX: 0,
+          clientY: 30
+        })
+        vi.advanceTimersByTime(500)
+        expect(
+          w.findComponent({ name: 'AsSvg' }).emitted('click')
+        ).toBeUndefined()
+        await label.trigger('pointerdown', {
+          pointerType: 'touch',
+          clientX: 0,
+          clientY: 0
+        })
+        await label.trigger('pointercancel', { pointerType: 'touch' })
+        vi.advanceTimersByTime(500)
+        expect(
+          w.findComponent({ name: 'AsSvg' }).emitted('click')
+        ).toBeUndefined()
+      } finally {
+        w.unmount()
+        vi.useRealTimers()
+      }
+    })
+
+    it('blocks the touch callout through the overlay', async () => {
+      const w = mount_ios()
+      try {
+        await flushPromises()
+        const label = w.find('label:has(input[data-haptic])')
+        await label.trigger('pointerdown', { pointerType: 'touch' })
+        const event = new Event('contextmenu', {
+          bubbles: true,
+          cancelable: true
+        })
+        label.element.dispatchEvent(event)
+        expect(event.defaultPrevented).toBe(true)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('leaves referenced poster activation on the figure and stops switch clicks', async () => {
+      mock_use_reference.value = true
+      const w = mount_ios({ menu: true })
+      try {
+        await flushPromises()
+        expect(
+          w.find('svg[aria-roledescription="referenced poster"]').exists()
+        ).toBe(true)
+        const label = w.find('label:has(input[data-haptic])')
+        await label.trigger('click')
+        expect(w.vm.menu_open).toBe(true)
+        await label.find('input').trigger('click')
+        expect(w.vm.menu_open).toBe(true)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('removes the overlay and cancels a pending hold for mask editing and 3D', async () => {
+      vi.useFakeTimers()
+      const w = mount_ios()
+      try {
+        await flushPromises()
+        await w.find('label:has(input[data-haptic])').trigger('pointerdown', {
+          pointerType: 'touch',
+          clientX: 0,
+          clientY: 0
+        })
+        w.vm.mask_pen.active.value = true
+        await nextTick()
+        expect(w.find('input[data-haptic]').exists()).toBe(false)
+        vi.advanceTimersByTime(500)
+        expect(
+          w.findComponent({ name: 'AsSvg' }).emitted('click')
+        ).toBeUndefined()
+        w.vm.mask_pen.active.value = false
+        await nextTick()
+        expect(w.find('input[data-haptic]').exists()).toBe(true)
+        w.vm.canvas_alive = true
+        await nextTick()
+        expect(w.find('input[data-haptic]').exists()).toBe(false)
+      } finally {
+        w.unmount()
+        vi.useRealTimers()
+      }
+    })
+  })
+
+  describe('layer comparison', () => {
+    const mount_3d = async () => {
+      const w = shallowMount(as_figure, {
+        props: { itemid: poster.id },
+        global: {
+          provide: { 'key-commands': mock_key_commands },
+          stubs: {
+            AsDownload: true,
+            AsViewer3d: false
+          }
+        }
+      })
+      await flushPromises()
+      w.vm.poster_in_view = true
+      w.vm.canvas_alive = true
+      await flushPromises()
+      return w
+    }
+
+    it('only shows the comparison control while 3D is mounted', async () => {
+      expect(wrapper.find('select[aria-label="Poster layers"]').exists()).toBe(
+        false
+      )
+      const w = await mount_3d()
+      try {
+        const select = w.find('select[aria-label="Poster layers"]')
+        expect(select.element.value).toBe('both')
+        expect(w.attributes('data-layer-view')).toBe('both')
+        expect(select.findAll('option').map(option => option.text())).toEqual([
+          'SVG only',
+          '3D only',
+          'SVG + 3D'
+        ])
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('switches all three modes without replacing the SVG or canvas', async () => {
+      const w = await mount_3d()
+      try {
+        const svg = w.findComponent({ name: 'AsSvg' }).element
+        const canvas = w.find('canvas').element
+        const select = w.find('select[aria-label="Poster layers"]')
+        await select.setValue('svg')
+        expect(w.attributes('data-layer-view')).toBe('svg')
+        await select.setValue('both')
+        expect(w.attributes('data-layer-view')).toBe('both')
+        await select.setValue('3d')
+        expect(w.attributes('data-layer-view')).toBe('3d')
+        expect(w.find('canvas').element).toBe(canvas)
+        expect(w.findComponent({ name: 'AsSvg' }).element).toBe(svg)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('runs focus pull only with animation and the combined view enabled', async () => {
+      mock_animate.value = true
+      let w = await mount_3d()
+      try {
+        const toggle = w.find('input[aria-label="Focus pull"]')
+        expect(toggle.element.checked).toBe(true)
+        expect(w.attributes('data-focus-pull')).toBe('true')
+        await toggle.setValue(false)
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        await toggle.setValue(true)
+        const select = w.find('select[aria-label="Poster layers"]')
+        await select.setValue('svg')
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        expect(toggle.element.disabled).toBe(true)
+        await select.setValue('3d')
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        await select.setValue('both')
+        expect(w.attributes('data-focus-pull')).toBe('true')
+        mock_animate.value = false
+        w.unmount()
+        w = await mount_3d()
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        expect(w.find('canvas').exists()).toBe(true)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('leaves the pull off when reduced motion is preferred', async () => {
+      mock_animate.value = true
+      window.matchMedia = vi.fn(query => ({
+        ...hover_match_media(query),
+        matches:
+          query === '(hover: hover)' ||
+          query === '(prefers-reduced-motion: reduce)'
+      }))
+      let w
+      try {
+        w = await mount_3d()
+        expect(w.find('select[aria-label="Poster layers"]').exists()).toBe(true)
+        const toggle = w.find('input[aria-label="Focus pull"]')
+        expect(toggle.element.disabled).toBe(true)
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+      } finally {
+        w?.unmount()
+        window.matchMedia = vi.fn(hover_match_media)
+      }
+    })
+
+    it('hides the comparison on a touch device', async () => {
+      window.matchMedia = vi.fn(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn()
+      }))
+      let w
+      try {
+        w = await mount_3d()
+        expect(w.find('select[aria-label="Poster layers"]').exists()).toBe(
+          false
+        )
+        expect(w.attributes('data-layer-view')).toBeUndefined()
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        expect(w.findComponent({ name: 'AsSvg' }).props('paused')).toBe(true)
+      } finally {
+        w?.unmount()
+        window.matchMedia = vi.fn(hover_match_media)
+      }
+    })
+
+    it('keeps the source animation active in view and paused offscreen', async () => {
+      const w = await mount_3d()
+      try {
+        const source = w.findComponent({ name: 'AsSvg' })
+        expect(source.props('paused')).toBe(false)
+        expect(source.props('behind_canvas')).toBe(true)
+        w.vm.poster_in_view = false
+        await nextTick()
+        expect(source.props('paused')).toBe(true)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('does not let comparison controls activate the poster', async () => {
+      mock_use_reference.value = true
+      const w = await mount_3d()
+      try {
+        const select = w.find('select[aria-label="Poster layers"]')
+        const toggle = vi.spyOn(document, 'dispatchEvent')
+        try {
+          await select.trigger('pointerdown', { pointerType: 'mouse' })
+          await select.trigger('pointerup', { pointerType: 'mouse' })
+          await select.trigger('keydown', { key: 'Enter' })
+          await select.trigger('click')
+          expect(
+            toggle.mock.calls.filter(
+              ([event]) => event.type === POSTER_MEET_TOGGLE_ONLY
+            )
+          ).toHaveLength(0)
+          expect(w.vm.menu_open).toBe(false)
+        } finally {
+          toggle.mockRestore()
+        }
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('keeps production layer visibility and pausing unchanged', async () => {
+      vi.stubEnv('DEV', false)
+      let w
+      try {
+        w = await mount_3d()
+        expect(w.find('select[aria-label="Poster layers"]').exists()).toBe(
+          false
+        )
+        expect(w.attributes('data-layer-view')).toBeUndefined()
+        expect(w.find('input[aria-label="Focus pull"]').exists()).toBe(false)
+        expect(w.attributes('data-focus-pull')).toBeUndefined()
+        expect(w.findComponent({ name: 'AsSvg' }).props('paused')).toBe(true)
+      } finally {
+        w?.unmount()
+        vi.unstubAllEnvs()
+      }
+    })
+  })
+
   describe('Computed', () => {
     describe('.query_id', () => {
       it('Returns query id', () => {

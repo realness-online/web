@@ -78,10 +78,14 @@ const update_layer_parallax = ({
     get_drift_speed
   } = runtime
 
-  if (!pan_navigating) {
-    smooth.x += (input_state.pointer_x_norm - smooth.x) * POINTER_SMOOTH
-    smooth.y += (input_state.pointer_y_norm - smooth.y) * POINTER_SMOOTH
-  }
+  if (!pan_navigating)
+    if (cinematic) {
+      smooth.x += (input_state.pointer_x_norm - smooth.x) * POINTER_SMOOTH
+      smooth.y += (input_state.pointer_y_norm - smooth.y) * POINTER_SMOOTH
+    } else {
+      smooth.x = 0
+      smooth.y = 0
+    }
 
   const pan_rate = cinematic ? PAN_SMOOTH_RATE : 0
   pan.current.x = smooth_toward(pan.current.x, pan.target.x, pan_rate, delta_s)

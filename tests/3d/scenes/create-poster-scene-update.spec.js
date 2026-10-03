@@ -129,6 +129,32 @@ describe('create_poster_scene_update', () => {
     expect(mosaic.position.x).not.toBe(0)
   })
 
+  it('eases mouse parallax in and back to zero with small frame steps', () => {
+    const runtime = make_runtime()
+    update = create_poster_scene_update(runtime)
+    const input = input_state()
+    input.pointer_x_norm = 1
+    input.pointer_y_norm = -1
+
+    update(frame_state, input)
+    expect(runtime.smooth.x).toBeCloseTo(0.05)
+    expect(runtime.smooth.y).toBeCloseTo(-0.05)
+    const mosaic = runtime.layer_groups[0].group
+    const displaced_x = mosaic.position.x
+
+    input.pointer_x_norm = 0
+    input.pointer_y_norm = 0
+    update(frame_state, input)
+    expect(runtime.smooth.x).toBeCloseTo(0.0475)
+    expect(runtime.smooth.y).toBeCloseTo(-0.0475)
+    expect(mosaic.position.x).toBeGreaterThan(displaced_x)
+    expect(mosaic.position.x).toBeLessThan(0)
+
+    for (let frame = 0; frame < 120; frame++) update(frame_state, input)
+    expect(mosaic.position.x).toBeCloseTo(0, 3)
+    expect(mosaic.position.y).toBeCloseTo(0, 3)
+  })
+
   it('pans on touch drag without shift or alt modifiers', () => {
     const runtime = make_runtime()
     update = create_poster_scene_update(runtime)
@@ -194,6 +220,21 @@ describe('create_poster_scene_update', () => {
     update({ elapsed_s: 0, delta_s: 1 / 60 }, input)
 
     expect(runtime.root.position.x).toBe(runtime.pan.target.x)
+  })
+
+  it('keeps hover parallax centred when reduced motion is preferred', () => {
+    const runtime = make_runtime({ get_reduced_motion: () => true })
+    update = create_poster_scene_update(runtime)
+    const input = input_state()
+    input.pointer_x_norm = 1
+    input.pointer_y_norm = -1
+
+    update(frame_state, input)
+
+    expect(runtime.smooth.x).toBe(0)
+    expect(runtime.smooth.y).toBe(0)
+    expect(runtime.layer_groups[0].group.position.x).toBe(0)
+    expect(runtime.layer_groups[0].group.position.y).toBe(0)
   })
 
   it('clamps zoom target between MIN_ZOOM and MAX_ZOOM', () => {

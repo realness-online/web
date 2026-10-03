@@ -158,7 +158,14 @@ const ensure_loop = () => {
   loop.start()
 }
 
-export const register_viewer = (canvas, scene_controller) => {
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @param {import('@/3d/engine/types.js').PosterSceneController} scene_controller
+ * @param {HTMLElement} [input_element] Element that receives pointer gestures.
+ *   Defaults to the canvas. Pass a plain wrapper to keep iOS image analysis
+ *   off the canvas pixels.
+ */
+export const register_viewer = (canvas, scene_controller, input_element) => {
   const camera = new THREE.PerspectiveCamera(
     CAMERA_FOV,
     1,
@@ -168,7 +175,7 @@ export const register_viewer = (canvas, scene_controller) => {
   camera.position.set(0, 0, CAMERA_DISTANCE)
   scene_controller.mount({ camera })
 
-  const input = create_input({ canvas })
+  const input = create_input({ canvas: input_element ?? canvas })
   const ctx2d = canvas.getContext('2d')
   /** @type {{
    *   canvas: HTMLCanvasElement,
