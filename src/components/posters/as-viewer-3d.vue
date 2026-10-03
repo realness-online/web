@@ -51,45 +51,10 @@
       was_orbit.value = false
     }
   })
-  // A hand on the poster orbits the 3D layers; the SVG under them stays put, so
-  // the two part company for as long as the gesture lasts. The figure fades the
-  // 3D out while `moving` is set, then brings it back once the hand lets go.
-  const MOVING_SETTLE_MS = 260
-  const moving = ref(false)
-  let pressed = false
-  /** @type {ReturnType<typeof setTimeout> | null} */
-  let settle_timer = null
-
-  const mark_moving = () => {
-    moving.value = true
-    if (settle_timer !== null) clearTimeout(settle_timer)
-    settle_timer = setTimeout(() => {
-      settle_timer = null
-      moving.value = false
-    }, MOVING_SETTLE_MS)
-  }
-
-  // A tap or a hold stays still, so only an actual drag fades the 3D out.
-  const on_pointer_down = event => {
-    pressed = true
-    on_pointerdown(event)
-  }
-
-  const on_pointer_up = event => {
-    pressed = false
-    on_pointerup(event)
-  }
-
-  const on_pointer_leave = event => {
-    pressed = false
-    on_pointerleave(event)
-  }
-
   // The composable only move-cancels touch; flag a mouse orbit-drag so releasing it
   // doesn't open the menu.
   const on_pointer_move = event => {
     handle_pointermove(event)
-    if (pressed) mark_moving()
     if (event.pointerType === 'touch' || was_orbit.value) return
     const dx = Math.abs(event.clientX - orbit_down_x)
     const dy = Math.abs(event.clientY - orbit_down_y)
@@ -151,8 +116,6 @@
 
   before_unmount(() => {
     mount_active = false
-    if (settle_timer !== null) clearTimeout(settle_timer)
-    settle_timer = null
     release_live_texture?.()
     release_live_texture = null
     unregister_live_scene?.()
@@ -173,12 +136,11 @@
     ref="surface_ref"
     class="viewer-3d"
     :data-ios="is_ios() || undefined"
-    :data-moving="moving || undefined"
-    @pointerdown="on_pointer_down"
+    @pointerdown="on_pointerdown"
     @pointermove="on_pointer_move"
-    @pointerup="on_pointer_up"
-    @pointercancel="on_pointer_leave"
-    @pointerleave="on_pointer_leave"
+    @pointerup="on_pointerup"
+    @pointercancel="on_pointerleave"
+    @pointerleave="on_pointerleave"
     @contextmenu.prevent
     @selectstart.prevent>
     <canvas ref="canvas_ref" />
