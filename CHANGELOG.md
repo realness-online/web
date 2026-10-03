@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.4 - 2026-10-03
+
 - **Every print has its own page** - A print opens at `/prints/<id>` instead of a
   dialog: the poster, the thought it was made with, the three editions, and a
   share button. The page shares as that print, with its own image in the link
