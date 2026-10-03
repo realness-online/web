@@ -32,7 +32,9 @@
   } = use_print_editions(itemid)
 
   const hydrate = async () => {
-    const item = await load(itemid.value)
+    // Nothing before the quote may stop it: a poster that will not load and a
+    // thought that will not read both leave the editions on offer.
+    const item = await load(itemid.value).catch(() => null)
     ratio.value = poster_ratio(item?.viewbox) ?? 1
     thought.value = await print_thought(itemid.value)
     await load_editions()

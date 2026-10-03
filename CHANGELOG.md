@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **A print's page offers its editions** - The thought and the poster read in the
+  background now. Words a visitor may not read no longer hold up the prices.
+
 ## v2.10.4 - 2026-10-03
 
 - **Every print has its own page** - A print opens at `/prints/<id>` instead of a

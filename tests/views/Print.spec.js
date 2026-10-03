@@ -166,6 +166,23 @@ describe('@/views/Print', () => {
     )
   })
 
+  it('offers the editions even when the thought cannot be read', async () => {
+    mock_list.mockRejectedValue(new Error('not signed in'))
+    const wrapper = mount_print()
+    await flushPromises()
+
+    expect(wrapper.find('blockquote').exists()).toBe(false)
+    expect(price_buttons(wrapper)).toHaveLength(3)
+  })
+
+  it('offers the editions even when the poster cannot be loaded', async () => {
+    mock_load.mockRejectedValue(new Error('offline'))
+    const wrapper = mount_print()
+    await flushPromises()
+
+    expect(price_buttons(wrapper)).toHaveLength(3)
+  })
+
   it('says nothing about prices until the shop answers', async () => {
     global.fetch = vi.fn(() => new Promise(() => {}))
     const wrapper = mount_print()

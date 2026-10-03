@@ -41,18 +41,25 @@ const statements_for = async author => {
 
 /**
  * The thought a print was made with, by the same rule the feed uses: a run of
- * rows where each is within thirteen minutes of the one before.
+ * rows where each is within thirteen minutes of the one before. Best effort: a
+ * visitor who may not read the statements still gets the print's page.
  * @param {string} poster_id
  * @returns {Promise<string>}
  */
 export const print_thought = async poster_id => {
-  const author = as_author(/** @type {Id} */ (poster_id))
-  if (!author) return ''
-  const statements = await statements_for(/** @type {Id} */ (author))
-  if (!statements.length) return ''
-  return thought_text(
-    thought_for_poster([{ id: poster_id }, ...statements], poster_id)
-  )
+  try {
+    const author = as_author(/** @type {Id} */ (poster_id))
+    if (!author) return ''
+    const statements = await statements_for(/** @type {Id} */ (author))
+    if (!statements.length) return ''
+    return thought_text(
+      thought_for_poster([{ id: poster_id }, ...statements], poster_id)
+    )
+  } catch {
+    // The words are a flourish on the page, and the shop waits on nothing but
+    // its own quote.
+    return ''
+  }
 }
 
 /**
