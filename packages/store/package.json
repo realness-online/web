@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/store",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "The microdata document store: Storage, mixins, and Directory over an injected backend",
   "license": "GPL-2.0-only",
@@ -26,7 +26,7 @@
     "check": "vp check"
   },
   "dependencies": {
-    "@realness.online/itemid": "^0.1.0",
+    "@realness.online/itemid": "^1.0.0",
     "idb-keyval": "^6.2.2"
   },
   "peerDependencies": {

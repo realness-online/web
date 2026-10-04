@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/thoughts",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "The thought rulebook: which rows of one author make one thought",
   "license": "GPL-2.0-only",
@@ -20,7 +20,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@realness.online/itemid": "^0.1.0"
+    "@realness.online/itemid": "^1.0.0"
   },
   "scripts": {
     "test": "vp test run",

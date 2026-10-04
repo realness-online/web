@@ -1,6 +1,6 @@
 {
   "name": "@realness.online/itemid",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "The itemid rulebook: one string that names a thing and carries its facts",
   "license": "GPL-2.0-only",
