@@ -5,6 +5,7 @@
 //   node control/scripts/ship-stage.js        writes dist/ship/
 //   BRAYNESS_PROXY_URL=...                    the proxy the ship tree names
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { chmodSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,6 +38,8 @@ export const UNSHIPPED_PACKAGES = ['pi-mcp-adapter', 'pi-subagents-j0k3r', 'pi-m
 
 const PI_VERSION = /^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$/
 const PROXY_URL = /^https?:\/\/[^/\s]+(\/\S*)?$/
+/** The starter's identity, written last so it never hashes itself. */
+export const STARTER = 'starter.json'
 
 /** Whether a path, relative to the harness root, goes into the ship tree. */
 export const ships = path => {
@@ -66,6 +69,30 @@ const edit_json = (path, change) => {
   const value = JSON.parse(readFileSync(path, 'utf8'))
   change(value)
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+/**
+ * A starter's identity: a content hash over every shipped path, plus each
+ * path's hash or link target. Identical trees give one version; any change
+ * gives another. A person reads the list to see exactly what ships.
+ */
+export const starter_manifest = stage => {
+  const files = {}
+  const walk = (dir, base) => {
+    for (const name of readdirSync(dir).sort()) {
+      const from = join(dir, name)
+      const path = base ? `${base}/${name}` : name
+      const info = lstatSync(from)
+      if (info.isDirectory()) walk(from, path)
+      else if (info.isSymbolicLink()) files[path] = `link:${readlinkSync(from)}`
+      else files[path] = createHash('sha256').update(readFileSync(from)).digest('hex')
+    }
+  }
+  walk(stage, '')
+  const version = createHash('sha256')
+    .update(Object.keys(files).map(path => `${path}:${files[path]}`).join('\n'))
+    .digest('hex')
+  return { version, files }
 }
 
 // The ship tree names its own one provider; the Mac's model list stays local.
@@ -121,6 +148,10 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
   edit_json(join(stage, '.pi/agent/models.json'), models => {
     models.providers = { brayness: brayness_provider(proxy_url) }
   })
+  // k2: the tree names its own version and every file in it. Written last, so
+  // the manifest covers everything above and never hashes itself.
+  const manifest = starter_manifest(stage)
+  writeFileSync(join(stage, STARTER), `${JSON.stringify({ version: manifest.version, pi: pi_version, files: manifest.files }, null, 2)}\n`)
   // Examples are not shipped: actors download them from brayness-examples with
   // giget when a prompt asks, and install @realness.online packages from npm.
   return stage
@@ -128,7 +159,12 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    console.log(`ship tree: ${ship_stage()}`)
+    const stage = ship_stage()
+    const starter = JSON.parse(readFileSync(join(stage, STARTER), 'utf8'))
+    const paths = Object.keys(starter.files)
+    console.log(`ship tree: ${stage}`)
+    console.log(`starter: ${starter.version} (pi ${starter.pi}, ${paths.length} files)`)
+    if (process.argv.includes('--list')) for (const path of paths) console.log(`  ${path}`)
   } catch (error) {
     console.error(error.message)
     process.exit(1)

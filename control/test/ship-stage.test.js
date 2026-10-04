@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
-import { HOME_ONLY, ROOT, ships } from '../scripts/ship-stage.js'
+import { HOME_ONLY, ROOT, STARTER, ships, starter_manifest } from '../scripts/ship-stage.js'
 
 const project = new URL('../../', import.meta.url).pathname
 const ship = join(project, 'dist/ship')
@@ -72,6 +72,55 @@ test('home-only skills stay home', () => {
   assert.equal(ships(join('skills', 'web-md', 'SKILL.md')), true)
   assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
   assert.equal(ships(join('bin', '.DS_Store')), false)
+})
+
+test('the starter names its version and every shipped file', () => {
+  execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
+  })
+  const starter = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
+  assert.match(starter.version, /^[a-f0-9]{64}$/)
+  assert.match(starter.pi, /^\d+\.\d+\.\d+/)
+  assert.ok(starter.files['package.json'])
+  assert.ok(starter.files['skills/web-md/SKILL.md'])
+  assert.equal(starter.files[STARTER], undefined, 'the manifest never lists itself')
+  // What stays home never appears in the file list a person inspects.
+  for (const path of ['AGENTS.local.md', '.pi/agent/auth.json', 'skills/brayness-sync/SKILL.md'])
+    assert.equal(starter.files[path], undefined, path)
+  assert.ok(Object.keys(starter.files).every(path => !path.includes('node_modules') && !path.endsWith('.DS_Store')))
+})
+
+test('the starter version is stable and content-sensitive', () => {
+  const scratch = join(project, '../../artifacts/brayness-product')
+  mkdirSync(scratch, { recursive: true })
+  const one = mkdtempSync(join(scratch, 'starter-'))
+  const two = mkdtempSync(join(scratch, 'starter-'))
+  try {
+    for (const dir of [one, two]) {
+      mkdirSync(join(dir, 'nested'))
+      writeFileSync(join(dir, 'a.txt'), 'same\n')
+      writeFileSync(join(dir, 'nested/b.txt'), 'body\n')
+    }
+    assert.equal(starter_manifest(one).version, starter_manifest(two).version, 'same content, same version')
+    writeFileSync(join(two, 'a.txt'), 'changed\n')
+    assert.notEqual(starter_manifest(one).version, starter_manifest(two).version, 'changed bytes, new version')
+    writeFileSync(join(two, 'a.txt'), 'same\n')
+    writeFileSync(join(two, 'renamed.txt'), 'same\n')
+    rmSync(join(two, 'a.txt'))
+    assert.notEqual(starter_manifest(one).version, starter_manifest(two).version, 'a rename changes the version')
+    assert.equal(starter_manifest(one).files['nested/b.txt'], starter_manifest(two).files['nested/b.txt'])
+  } finally {
+    rmSync(one, { recursive: true, force: true })
+    rmSync(two, { recursive: true, force: true })
+  }
+})
+
+test('the starter rides in the tarball new actors install', () => {
+  execFileSync('bash', [join(project, 'control/scripts/harness-stage.sh')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
+  })
+  const listing = execFileSync('tar', ['tzf', join(project, 'dist/brayness-harness.tar.gz')], { encoding: 'utf8' })
+  assert.ok(listing.includes('./starter.json'), 'the version and file list ship to the actor')
 })
 
 test('the wrapper lets an installed pi win over the harness copy', () => {
