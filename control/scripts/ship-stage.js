@@ -21,7 +21,6 @@ export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bi
 
 // Skills that stay home, and why.
 export const HOME_ONLY = {
-  'brayness-sync': 'publishes the god harness and holds its .git mirror',
   'nvim-buffers': "reads Scott's Neovim",
   'zoom-to-ableton': "carries Scott's effect rack",
   'vuetify-to-semantic': "carries a client's codebase (seeq-app)",

@@ -53,7 +53,7 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   assert.match(readFileSync(join(ship, '.pi-version'), 'utf8'), /^\d+\.\d+\.\d+/)
   for (const path of [
     'AGENTS.local.md', '.pi/agent/auth.json', 'work', 'examples', 'packages',
-    'skills/brayness-sync/published',
+    '.pi/agent/sessions',
   ]) assert.ok(!existsSync(join(ship, path)), path)
 })
 
@@ -85,7 +85,7 @@ test('the starter names its version and every shipped file', () => {
   assert.ok(starter.files['skills/web-md/SKILL.md'])
   assert.equal(starter.files[STARTER], undefined, 'the manifest never lists itself')
   // What stays home never appears in the file list a person inspects.
-  for (const path of ['AGENTS.local.md', '.pi/agent/auth.json', 'skills/brayness-sync/SKILL.md'])
+  for (const path of ['AGENTS.local.md', '.pi/agent/auth.json', 'skills/nvim-buffers/SKILL.md'])
     assert.equal(starter.files[path], undefined, path)
   assert.ok(Object.keys(starter.files).every(path => !path.includes('node_modules') && !path.endsWith('.DS_Store')))
 })
