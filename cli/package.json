@@ -1,0 +1,17 @@
+{
+  "name": "brayness-cli",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Personal capabilities for the Brayness command-line interface",
+  "bin": {
+    "brayness": "./bin/brayness.js"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.js'",
+    "check": "node ../../../bin/no-mjs.js && npm test"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}
