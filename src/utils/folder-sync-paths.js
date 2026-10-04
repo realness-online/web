@@ -95,6 +95,14 @@ export const thought_folder_path = (thought, now = Date.now()) => {
 }
 
 /**
+ * The note filename inside a thought folder: the folder's title, as markdown.
+ * A titled note reads as a note in Obsidian; `notes.md` reads as a filename.
+ * @param {Thought} thought
+ * @returns {string}
+ */
+export const thought_file_name = thought => `${thought_folder_name(thought)}.md`
+
+/**
  * Time-based poster filename inside a thought folder.
  * @param {Id} itemid
  * @param {string} [ext]

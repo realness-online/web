@@ -82,6 +82,20 @@ describe('@/utils/export-poster', () => {
       expect(result.querySelector('stop')?.getAttribute('stop-color')).toBe('')
     })
 
+    it('folds inline --layer-opacity into an explicit opacity', () => {
+      const source = make_svg()
+      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+      use.setAttribute('itemprop', 'boulders')
+      use.setAttribute('style', '--layer-opacity: 0.5; visibility: visible')
+      source.appendChild(use)
+
+      const result = build_download_svg(source)
+      const exported = result.querySelector('use[itemprop="boulders"]')
+
+      expect(exported?.style.opacity).toBe('0.5')
+      expect(exported?.getAttribute('style')).not.toContain('--layer-opacity')
+    })
+
     it('strips composition grid overlay from exports', () => {
       const source = make_svg()
       const grid = document.createElementNS('http://www.w3.org/2000/svg', 'g')

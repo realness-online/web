@@ -40,6 +40,7 @@ import {
 import { thoughts_for_author } from '@/utils/thoughts'
 import {
   thought_folder_path,
+  thought_file_name,
   poster_file_name
 } from '@/utils/folder-sync-paths'
 import { sync_folder as sync_folder_pref, sync_svg } from '@/utils/preference'
@@ -64,6 +65,12 @@ export const detect_brave = async () => {
 const SYNC_FOLDER_HANDLE_KEY = 'sync_folder_handle'
 const SYNC_FOLDER_QUEUE_KEY = 'sync:folder-queue'
 const SYNC_FOLDER_MANIFEST_KEY = 'sync:folder-manifest'
+/**
+ * Bumped when the exported files change shape, so folders written by an older
+ * build are rewritten instead of trusted. The version rides the content key
+ * and the manifest, so stale output is never mistaken for current output.
+ */
+const SYNC_FORMAT_VERSION = 2
 const SVG_WAIT_TIMEOUT_MS = 30000
 const DRAIN_DEBOUNCE_MS = 400
 /** Newest-first history walk: this many thoughts per pass. */
@@ -337,29 +344,35 @@ const thought_content_key = thought => {
   const texts = thought.statements
     .map(s => `${s.id}:${s.statement ?? ''}`)
     .join('|')
-  return `${thought.started_at}|svg:${sync_svg.value}|${poster_ids}|${texts}`
+  return `v${SYNC_FORMAT_VERSION}|${thought.started_at}|svg:${sync_svg.value}|${poster_ids}|${texts}`
 }
 
 /**
- * @param {Statement[]} statements
+ * One note per thought: one frontmatter block, named for the thought. Obsidian
+ * reads one leading block; stacked per-statement blocks are not frontmatter.
+ * @param {Thought} thought
  * @returns {string}
  */
-const notes_markdown = statements => {
-  const body = statements
-    .map(statement => {
-      const created = as_created_at(statement.id)
-      return [
-        '---',
-        `id: ${statement.id}`,
-        `created: ${created ? new Date(created).toISOString() : ''}`,
-        '---',
-        '',
-        statement.statement ?? '',
-        ''
-      ].join('\n')
-    })
-    .join('\n')
-  return body
+const thought_markdown = thought => {
+  const itemid = `${thought.author_id}/thoughts/${thought.started_at}`
+  const created = new Date(thought.started_at).toISOString()
+  const body = thought.statements
+    .map(statement => (statement.statement ?? '').trim())
+    .filter(Boolean)
+    .join('\n\n')
+  // Statement ids, not times: each id carries its own created-at, so the note
+  // keeps every statement's time without writing it down twice.
+  const ids = thought.statements.map(statement => statement.id)
+  return [
+    '---',
+    `itemid: ${itemid}`,
+    `created: ${created}`,
+    ...(ids.length ? ['statements:', ...ids.map(id => `  - ${id}`)] : []),
+    '---',
+    '',
+    body,
+    ''
+  ].join('\n')
 }
 
 /**
@@ -631,6 +644,7 @@ const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
  * @property {Record<string, { path: string, key: string }>} manifest_thoughts
  * @property {Folder_Sync_Run} run
  * @property {Set<string>} prior_paths
+ * @property {boolean} force_export
  */
 
 /**
@@ -640,7 +654,7 @@ const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
  * @param {{ index: number, total: number }} progress
  */
 const sync_one_thought = async (session, thought, container, progress) => {
-  const { root, manifest_thoughts, run, prior_paths } = session
+  const { root, manifest_thoughts, run, prior_paths, force_export } = session
   assert_run_active(run)
   const key = thought_content_key(thought)
   const path = thought_folder_path(thought)
@@ -685,11 +699,18 @@ const sync_one_thought = async (session, thought, container, progress) => {
   assert_run_active(run)
 
   if (thought.statements.length) {
-    set_folder_sync_progress({ detail: 'Writing notes.md' })
-    const blob = new Blob([notes_markdown(thought.statements)], {
+    const note_name = thought_file_name(thought)
+    set_folder_sync_progress({ detail: `Writing ${note_name}` })
+    const blob = new Blob([thought_markdown(thought)], {
       type: 'text/markdown'
     })
-    await write_file(thought_dir, 'notes.md', blob)
+    await write_file(thought_dir, note_name, blob)
+    // Folders synced before the note was titled keep an untitled `notes.md`.
+    try {
+      await thought_dir.removeEntry('notes.md')
+    } catch {
+      /* absent on folders written after the rename */
+    }
     assert_run_active(run)
   }
 
@@ -708,14 +729,16 @@ const sync_one_thought = async (session, thought, container, progress) => {
           : 'Rendering poster'
     })
     // Poster files are content-stable per id — resume a partially synced
-    // thought without re-rendering what is already on disk.
+    // thought without re-rendering what is already on disk. A format change
+    // means what is on disk is not current, so re-export it.
     let already_written = false
-    try {
-      await thought_dir.getFileHandle(filename)
-      already_written = true
-    } catch {
-      /* not on disk yet */
-    }
+    if (!force_export)
+      try {
+        await thought_dir.getFileHandle(filename)
+        already_written = true
+      } catch {
+        /* not on disk yet */
+      }
     if (already_written) continue
     // Only export posters we can confirm: clear stale negative-cache rows so
     // loads re-verify against the server, then require the poster itself to
@@ -780,7 +803,8 @@ const entry_on_disk = async (root, entry, thought) => {
     for (const poster of posters)
       await dir.getFileHandle(poster_file_name(/** @type {Id} */ (poster.id)))
     /* oxlint-enable no-await-in-loop */
-    if (thought.statements.length) await dir.getFileHandle('notes.md')
+    if (thought.statements.length)
+      await dir.getFileHandle(thought_file_name(thought))
     return true
   } catch {
     return false
@@ -889,8 +913,12 @@ const run_folder_sync = async (opts = {}) => {
   try {
     assert_run_active(run)
     const thoughts = await gather_thoughts(/** @type {Id} */ (me))
-    /** @type {{ thoughts?: Record<string, { path: string, key: string }>, last_synced_at?: string }} */
+    /** @type {{ version?: number, thoughts?: Record<string, { path: string, key: string }>, last_synced_at?: string }} */
     const manifest = (await get(SYNC_FOLDER_MANIFEST_KEY)) || { thoughts: {} }
+    const manifest_version = manifest.version ?? 0
+    // An older format's files are not current, so re-export them rather than
+    // trust what is on disk.
+    const force_export = manifest_version !== SYNC_FORMAT_VERSION
     const manifest_thoughts = { ...manifest.thoughts }
     await validate_manifest_on_disk(root, manifest_thoughts, thoughts)
     const prior_paths = new Set(
@@ -914,7 +942,7 @@ const run_folder_sync = async (opts = {}) => {
     // Worker pool: each worker owns one off-screen container so layer loads
     // overlap instead of queueing behind one poster at a time.
     /** @type {Thought_Sync_Session} */
-    const session = { root, manifest_thoughts, run, prior_paths }
+    const session = { root, manifest_thoughts, run, prior_paths, force_export }
     let next_index = 0
     let completed = 0
     const worker = async container => {
@@ -960,6 +988,9 @@ const run_folder_sync = async (opts = {}) => {
 
     const last_synced_at = new Date().toISOString()
     await set(SYNC_FOLDER_MANIFEST_KEY, {
+      // Hold the old version until every thought is rewritten, so the force
+      // survives the history batches instead of stopping after the first.
+      version: remaining_unsynced > 0 ? manifest_version : SYNC_FORMAT_VERSION,
       thoughts: manifest_thoughts,
       last_synced_at
     })

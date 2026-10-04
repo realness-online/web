@@ -6,6 +6,7 @@ import {
   thought_snippet,
   thought_folder_name,
   thought_folder_path,
+  thought_file_name,
   poster_file_name
 } from '@/utils/folder-sync-paths'
 
@@ -49,6 +50,23 @@ describe('@/utils/folder-sync-paths', () => {
       ]
     })
     expect(name).toBe('07-18 Saturday morning — walking to the café')
+  })
+
+  it('names the thought note after the thought, as markdown', () => {
+    const started = new Date(2026, 6, 18, 9, 30).getTime()
+    expect(
+      thought_file_name({
+        author_id: author,
+        started_at: started,
+        posters: [],
+        statements: [
+          {
+            id: `${author}/statements/${started}`,
+            statement: 'walking to the café'
+          }
+        ]
+      })
+    ).toBe('07-18 Saturday morning — walking to the café.md')
   })
 
   it('omits the em dash when there is no snippet', () => {

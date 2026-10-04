@@ -160,7 +160,17 @@ export const build_download_svg = svg_element => {
     el.remove()
   })
 
-  // Keep inline presentation styles (e.g. mosaic opacity) so exported SVG
+  // Layer opacity rides a custom property so @starting-style can fade up. The
+  // clone carries the property but not the stylesheet rule that reads it, so
+  // fold it into an explicit opacity for the export.
+  svg_clone.querySelectorAll('[style*="--layer-opacity"]').forEach(element => {
+    const el = /** @type {SVGElement} */ (element)
+    const value = el.style.getPropertyValue('--layer-opacity').trim()
+    if (value) el.style.opacity = value
+    el.style.removeProperty('--layer-opacity')
+  })
+
+  // Other inline presentation styles ride along on the clone, so exported SVG
   // matches on-screen layer blending in third-party apps.
 
   const vue_components = svg_clone.querySelectorAll('as-animation')

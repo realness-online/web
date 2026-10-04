@@ -67,6 +67,7 @@ vi.mock('@/utils/thoughts', () => ({
 
 vi.mock('@/utils/folder-sync-paths', () => ({
   thought_folder_path: mock_folder_path,
+  thought_file_name: vi.fn(() => '07-18 Saturday morning — hello.md'),
   poster_file_name: vi.fn(() => '2026-07-18 morning 0930.svg')
 }))
 
@@ -289,7 +290,7 @@ describe('@/use/sync-folder', () => {
     expect(mock_build_download_svg).toHaveBeenCalled()
   })
 
-  it('writes notes.md for statements', async () => {
+  it('writes one titled note for a thought, with one frontmatter block', async () => {
     mock_thoughts_for_author.mockReturnValueOnce([
       {
         author_id: me,
@@ -308,10 +309,19 @@ describe('@/use/sync-folder', () => {
 
     await sync_now()
 
-    expect(get_file_handle).toHaveBeenCalledWith('notes.md', { create: true })
-    const blob = write.mock.calls[0][0]
-    expect(await blob.text()).toContain('first')
-    expect(await blob.text()).toContain('second')
+    expect(get_file_handle).toHaveBeenCalledWith(
+      '07-18 Saturday morning — hello.md',
+      { create: true }
+    )
+    const text = await write.mock.calls[0][0].text()
+    expect(text.startsWith(`---\nitemid: ${me}/thoughts/1000\n`)).toBe(true)
+    expect(text).toContain('created: 1970-01-01T00:00:01.000Z')
+    expect(text).toContain(
+      `statements:\n  - ${me}/statements/1001\n  - ${me}/statements/1002`
+    )
+    expect(text.match(/^---$/gm)).toHaveLength(2)
+    expect(text).toContain('first')
+    expect(text).toContain('second')
   })
 
   it('groups posters and statements into thoughts', async () => {
@@ -382,7 +392,10 @@ describe('@/use/sync-folder', () => {
 
     await sync_now()
 
-    expect(get_file_handle).toHaveBeenCalledWith('notes.md', { create: true })
+    expect(get_file_handle).toHaveBeenCalledWith(
+      '07-18 Saturday morning — hello.md',
+      { create: true }
+    )
     expect(mock_build_download_svg).not.toHaveBeenCalled()
   })
 
@@ -407,12 +420,12 @@ describe('@/use/sync-folder', () => {
 
   it('skips rewrite when manifest matches and files exist on disk', async () => {
     const path = '07-18 Saturday morning — hello'
-    const key = `1000|svg:true|${poster_id}|`
+    const key = `v2|1000|svg:true|${poster_id}|`
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return folder_handle
       if (k === 'sync:folder-queue') return []
       if (k === 'sync:folder-manifest')
-        return { thoughts: { 1000: { path, key } } }
+        return { version: 2, thoughts: { 1000: { path, key } } }
       return null
     })
     // Files exist on disk, so bare probes resolve
@@ -431,11 +444,66 @@ describe('@/use/sync-folder', () => {
     expect(write).not.toHaveBeenCalled()
   })
 
+  it('re-exports files written by an older format version', async () => {
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest') return { version: 1, thoughts: {} }
+      return null
+    })
+    // Files from the older format exist on disk, so bare probes resolve
+    get_file_handle.mockImplementation(() =>
+      Promise.resolve({
+        createWritable: vi.fn(() =>
+          Promise.resolve({ write, close: vi.fn(() => Promise.resolve()) })
+        )
+      })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(mock_build_download_svg).toHaveBeenCalled()
+    const saved = set.mock.calls.find(
+      ([k]) => k === 'sync:folder-manifest'
+    )?.[1]
+    expect(saved.version).toBe(2)
+  })
+
+  it('trusts files on disk when the format version matches', async () => {
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest') return { version: 2, thoughts: {} }
+      return null
+    })
+    get_file_handle.mockImplementation(() =>
+      Promise.resolve({
+        createWritable: vi.fn(() =>
+          Promise.resolve({ write, close: vi.fn(() => Promise.resolve()) })
+        )
+      })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(mock_build_download_svg).not.toHaveBeenCalled()
+  })
+
   // Thoughts already in the manifest used to be skipped outright, so a change
   // to the folder scheme only ever reached new work — years of history kept
   // their old paths forever.
   it('rewrites a thought whose folder moved, content unchanged', async () => {
-    const key = `1000|svg:true|${poster_id}|`
+    const key = `v2|1000|svg:true|${poster_id}|`
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return folder_handle
       if (k === 'sync:folder-queue') return []
