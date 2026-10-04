@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v2.10.6 - 2026-10-04
+
 - **Thoughts sync as notes** - Folder sync writes one titled markdown note per
   thought, with `itemid`, `created`, and a `statements:` list, so the files open
   as notes and keep every statement's time.
