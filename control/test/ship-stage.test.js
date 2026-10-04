@@ -3,13 +3,14 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
+import { HOME_ONLY, ROOT, ships } from '../scripts/ship-stage.js'
 
 const project = new URL('../../', import.meta.url).pathname
 const ship = join(project, 'dist/ship')
 const proxy_url = 'http://127.0.0.1:18788'
 
 test('the ship tree carries the harness and prompts, no examples', () => {
-  execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+  execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
     env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
   })
   for (const path of ['prompts/app.md', 'prompts/site.md'])
@@ -56,6 +57,23 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   ]) assert.ok(!existsSync(join(ship, path)), path)
 })
 
+// k0: a home-only skill never ships, and the list names skills that exist,
+// so a rename cannot quietly turn the rule off.
+test('home-only skills stay home', () => {
+  execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
+  })
+  for (const name of Object.keys(HOME_ONLY)) {
+    assert.ok(existsSync(join(ROOT, 'skills', name, 'SKILL.md')), `${name} is not a skill at home`)
+    assert.ok(!existsSync(join(ship, 'skills', name)), `${name} shipped`)
+  }
+  assert.ok(existsSync(join(ship, 'skills/web-md/SKILL.md')), 'a shared skill ships')
+  assert.equal(ships(join('skills', 'vuetify-to-semantic', 'SKILL.md')), false)
+  assert.equal(ships(join('skills', 'web-md', 'SKILL.md')), true)
+  assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
+  assert.equal(ships(join('bin', '.DS_Store')), false)
+})
+
 test('the wrapper lets an installed pi win over the harness copy', () => {
   // $root/bin last: put first, bin/pi resolves `pi` to itself, skips the guard,
   // and fetches pi from the registry - a failure offline, a cost every start.
@@ -65,7 +83,7 @@ test('the wrapper lets an installed pi win over the harness copy', () => {
 })
 
 test('the ship tree rejects a malformed proxy URL', () => {
-  assert.throws(() => execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+  assert.throws(() => execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
     env: { ...process.env, BRAYNESS_PROXY_URL: 'not-a-url' },
     stdio: 'pipe',
   }), /BRAYNESS_PROXY_URL/)
@@ -77,7 +95,7 @@ test('the ship tree captures one local version and rejects invalid versions', ()
   const bin = mkdtempSync(join(scratch, 'pi-test-'))
   try {
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho 9.8.7\n', { mode: 0o755 })
-    execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+    execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
       env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, BRAYNESS_PROXY_URL: proxy_url },
     })
     assert.equal(readFileSync(join(ship, '.pi-version'), 'utf8'), '9.8.7\n')
@@ -90,7 +108,7 @@ test('the ship tree captures one local version and rejects invalid versions', ()
     assert.ok(entry.replace('__PI_VERSION__', '9.8.7').includes('npm:@earendil-works/pi-coding-agent@9.8.7'))
     assert.ok(readFileSync(join(project, 'app/build.sh'), 'utf8').includes('sed -i \'\' "s|__PI_VERSION__|$pi_version|"'))
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho unknown\n', { mode: 0o755 })
-    assert.throws(() => execFileSync('bash', [join(project, 'control/scripts/ship-stage.sh')], {
+    assert.throws(() => execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
       env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, BRAYNESS_PROXY_URL: proxy_url },
       stdio: 'pipe',
     }), /invalid local pi version/)

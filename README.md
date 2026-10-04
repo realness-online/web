@@ -37,7 +37,7 @@ API. `cd control && npm test`.
 
 ## Starter ownership and updates
 
-`control/scripts/ship-stage.sh` makes an allowlisted ship tree from Scott's
+`control/scripts/ship-stage.js` makes an allowlisted ship tree from Scott's
 harness. The template puts that tree in `/brayness`; each actor then owns its
 copy. Today this is a build path, not a versioned update service.
 
@@ -94,7 +94,7 @@ actor.
 node control/bin/webspace.js dev build
 ```
 
-`ship-stage.sh` builds one allowlisted `dist/ship/` tree for the binary and
+`ship-stage.js` builds one allowlisted `dist/ship/` tree for the binary and
 records the local `pi --version` there. The binary compiles that version for all
 targets; `harness-stage.sh` tars the same version into
 `dist/brayness-harness.tar.gz`; then `template-build.sh` fetches its inputs

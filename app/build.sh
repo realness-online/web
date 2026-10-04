@@ -9,7 +9,7 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 out="$root/artifacts/brayness-product"
 stage="$out/build"
 
-bash "$root/work/brayness/control/scripts/ship-stage.sh"
+node "$root/work/brayness/control/scripts/ship-stage.js"
 rm -rf "$stage"
 mkdir -p "$stage"
 cp -R "$root/work/brayness/dist/ship/." "$stage/"

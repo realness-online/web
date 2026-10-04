@@ -3,7 +3,7 @@
 set -euo pipefail
 
 project="$(cd "$(dirname "$0")/../.." && pwd)"
-bash "$project/control/scripts/ship-stage.sh"
+node "$project/control/scripts/ship-stage.js"
 out="$project/dist"
 tar czf "$out/brayness-harness.tar.gz" --owner=0 --group=0 --numeric-owner \
   --no-mac-metadata -C "$out/ship" .
