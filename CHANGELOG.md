@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Thoughts sync as notes** - Folder sync writes one titled markdown note per
+  thought, with `itemid`, `created`, and a `statements:` list, so the files open
+  as notes and keep every statement's time.
+- **Downloaded posters keep their layers** - Layer opacity is written into the
+  exported SVG, so a downloaded or synced poster matches the screen.
+- **Older sync folders refresh themselves** - A format version makes sync
+  rewrite files written by an earlier build instead of trusting them.
+
 ## v2.10.5 - 2026-10-03
 
 - **A print's page offers its editions** - The thought and the poster read in the
