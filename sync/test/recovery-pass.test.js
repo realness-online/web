@@ -18,6 +18,7 @@ before(async () => {
   const storage = disk(dir)
   await storage.put(`people/${phone}/.pi/agent/sessions/test.jsonl`, "history")
   await storage.put(`people/${phone}/vault/secret.md`, "private")
+  await storage.put(`people/${phone}/vault/95% Of Your Problems.md`, "percentage note")
   server = sync_service({ storage, rights: rights(storage), project: "none", certs: async () => ({}), host_pass_secret: secret, log: () => {} })
   await new Promise((done) => server.listen(0, "127.0.0.1", done))
   url = `http://127.0.0.1:${server.address().port}`
@@ -46,6 +47,17 @@ test("a pass reads, never writes, anything its owner holds", async () => {
   assert.equal(recovery_path(`people/${phone}/.pi/agent/sessions/.env`, phone), false)
   assert.equal(recovery_path(`people/${phone}/.pi/agent/deferred.json`, phone), true)
   assert.equal(recovery_path(`people/${phone}/.pi/agent/auth.json`, phone), false)
+})
+
+test("percentage filenames keep recovery passes read-only and path-limited", async () => {
+  const path = "vault/95% Of Your Problems.md"
+  const pass = issue_recovery_pass({ phone, id, paths: [path] }, secret)
+  const key = `people/${phone}/${encodeURI(path)}`
+  assert.equal(await (await call(pass, key)).text(), "percentage note")
+  assert.equal((await call(pass, key, "PUT")).status, 403)
+  assert.equal((await call(pass, `people/${phone}/vault/secret.md`)).status, 403)
+  for (const path of ["vault/%2e%2e/secret", "vault/%252F", "vault/%00", "vault/%5c"])
+    assert.throws(() => issue_recovery_pass({ phone, id, paths: [path] }, secret))
 })
 
 test("a forged or expired pass cannot read history", async () => {

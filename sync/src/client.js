@@ -47,6 +47,9 @@ export function phone_of(token) {
   }
 }
 
+/** The sync service's upload limit (server.js LIMIT). */
+export const MAX_BYTES = 10 * 1024 * 1024
+
 export const is_remote = (path) => path.startsWith("can://")
 
 export function client({ url, token, fetcher = fetch }) {
@@ -119,22 +122,25 @@ export function client({ url, token, fetcher = fetch }) {
     },
 
     /** Two-way: whichever side moved from the base wins; both moving is a conflict. */
-    async sync(local, remote, { concurrency = 8, state = state_dir(), deletes = "explained", trash = trash_dir(state), defer_edits = false, sessions } = {}) {
+    async sync(local, remote, { concurrency = 8, state = state_dir(), deletes = "explained", trash = trash_dir(state), defer_edits = false, sessions, sessions_remote = "can://~/.pi/agent/sessions/", only = null, exclude = () => false, max_bytes = MAX_BYTES } = {}) {
       const folder = remote.endsWith("/") ? remote : `${remote}/`
       const pair = { local: resolve(local), remote: key(folder) }
-      const record_path = join(state, "sync", `${sha(`${pair.local}\n${pair.remote}`).slice(0, 16)}.json`)
+      // `only` syncs named files in a folder; each selection keeps its own record.
+      const selected = only && new Set(only)
+      const record_key = `${pair.local}\n${pair.remote}${selected ? `\n${[...selected].sort().join("\n")}` : ""}`
+      const record_path = join(state, "sync", `${sha(record_key).slice(0, 16)}.json`)
       const saved = JSON.parse(await readFile(record_path, "utf8").catch(() => "{}"))
       const manifest = saved.files ?? {}
       const deferred = saved.deferred ?? {}
-      const report = { pushed: [], pulled: [], deferred: [], deleted: [], held: [], removed: [], adopted: [], replayed: [], kept_both: [], unchanged: [], conflicts: [], sessions: {}, replay: {} }
+      const report = { too_big: [], pushed: [], pulled: [], deferred: [], deleted: [], held: [], removed: [], adopted: [], replayed: [], kept_both: [], unchanged: [], conflicts: [], sessions: {}, replay: {} }
 
       const log = edit_log(edit_log_path(state))
       const session_folder = sessions && resolve(sessions)
       const locals = new Map()
-      for (const file of await walk(local).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
+      for (const file of await walk(local, (path, is_dir) => exclude(relative(local, path).split(sep).join("/"), is_dir)).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
       const remotes = await api.walk(folder)
       // The never-sync list holds both ways: a remote `.env` is never pulled.
-      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name)))
+      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name) && !exclude(name, false) && (!selected || selected.has(name))))
 
       const file_of = (name) => join(pair.local, ...name.split("/"))
       const read_replay = (name, base, bytes) => {
@@ -160,7 +166,7 @@ export function client({ url, token, fetcher = fetch }) {
         if (!original || original.version !== base.version || sha(original.bytes) !== base.sha) return false
         for (const session of new Set(rows.map((row) => row.session))) {
           const session_name = relative(session_folder, session).split(sep).join("/")
-          const saved_session = await expect(await call("GET", `can://~/.pi/agent/sessions/${session_name}`), `saved session ${session_name}`, [200, 404])
+          const saved_session = await expect(await call("GET", `${sessions_remote}${session_name}`), `saved session ${session_name}`, [200, 404])
           if (saved_session.status === 404 || sha(Buffer.from(await saved_session.arrayBuffer())) !== sha(await readFile(session))) return false
         }
         const replayed = apply(original.bytes.toString("utf8"), calls)
@@ -189,6 +195,8 @@ export function client({ url, token, fetcher = fetch }) {
         const base = manifest[name]
         const file = locals.get(name)
         const bytes = file ? await readFile(file) : null
+        // The service refuses big uploads; leave them home and say so.
+        if (bytes && bytes.length > max_bytes) return report.too_big.push(name)
         const local_sha = bytes ? sha(bytes) : null
         const remote_version = remotes[name] ?? null
         const local_moved = local_sha !== (base?.sha ?? null)
@@ -338,12 +346,13 @@ async function is_dir(path) {
   return (await stat(path).catch(() => null))?.isDirectory() ?? false
 }
 
-async function walk(dir) {
+async function walk(dir, exclude = () => false) {
   const found = []
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     if (skipped_name(entry.name)) continue
     const path = join(dir, entry.name)
-    if (entry.isDirectory()) found.push(...(await walk(path)))
+    if (exclude(path, entry.isDirectory())) continue
+    if (entry.isDirectory()) found.push(...(await walk(path, exclude)))
     else if (entry.isFile()) found.push(path)
   }
   return found.sort()

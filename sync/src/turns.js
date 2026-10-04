@@ -1,6 +1,6 @@
 /**
- * Turn boundaries. A session's turn starts with a snapshot of every synced
- * file (mtime and size) and ends by diffing against it: whatever changed or
+ * Turn boundaries. A session's turn starts with a snapshot of every harness
+ * file sync carries (mtime and size) and ends by diffing against it: whatever changed or
  * vanished in between belongs to that turn, bash included, and is written to
  * the edit log as tool `turn`. Changes between turns never show in a diff,
  * so they stay unexplained.
@@ -10,22 +10,24 @@
 import { createHash } from "node:crypto"
 import { mkdirSync } from "node:fs"
 import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
-import { dirname, join } from "node:path"
+import { dirname, join, relative, sep } from "node:path"
 import { DatabaseSync } from "node:sqlite"
-import { plan_syncs, refused } from "./harness.js"
+import { harness_exclude, plan_syncs, refused, whole_enabled } from "./harness.js"
 import { skipped_name } from "./skip.js"
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex")
 const turn_file = (state, session) => join(state, "turns", `${sha(session).slice(0, 16)}.json`)
 
-/** Absolute path to "mtime:size" for every file below the plans' Syncs folders. */
+/** Absolute path to "mtime:size" for every harness file sync would carry. */
 export async function snapshot(root) {
   const found = {}
+  const exclude = await harness_exclude(root)
   const visit = async (dir) => {
     const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
     for (const entry of entries) {
       if (skipped_name(entry.name)) continue
       const path = join(dir, entry.name)
+      if (exclude(relative(root, path).split(sep).join("/"), entry.isDirectory())) continue
       if (entry.isDirectory()) await visit(path)
       else if (entry.isFile()) {
         const info = await stat(path).catch(() => null)
@@ -33,7 +35,14 @@ export async function snapshot(root) {
       }
     }
   }
-  for (const [path] of await plan_syncs(root)) if (!refused(path)) await visit(join(root, path))
+  if (await whole_enabled(root)) await visit(root)
+  else for (const [path] of await plan_syncs(root)) {
+    if (refused(path)) continue
+    const target = join(root, path)
+    const info = await stat(target).catch(() => null)
+    if (info?.isFile()) found[target] = `${info.mtimeMs}:${info.size}`
+    else await visit(target)
+  }
   return found
 }
 

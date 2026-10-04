@@ -2,8 +2,9 @@
 /**
  * The harness command.
  *
- *   brayness sync            Pi session history and every plan's Syncs folders
- *   brayness sync brayness   Pi session history and plans/brayness.md's folders
+ *   brayness sync            the whole harness, minus .ignore; plus
+ *                            each plan's Syncs folders at their old places
+ *   brayness sync brayness   Pi session history and the configured brayness.md's folders
  *   brayness sync --deletes  also send deletes no session explains
  *   brayness turn-start --session <file>
  *   brayness turn-end   --session <file> --turn <n>   logs the turn, then syncs
@@ -12,7 +13,7 @@
  * files to the Trash. The edit-log extension calls turn-start and turn-end.
  *
  * Sign in first with `brayness-store login`. BRAYNESS_ROOT picks the harness;
- * otherwise the nearest folder above holding plans/.
+ * otherwise the nearest harness package, ignore file, Pi config, or vault/plans/.
  */
 import { basename } from "node:path"
 import { client, state_dir, SYNC_URL, SyncError } from "../src/client.js"
@@ -35,8 +36,10 @@ const who = (ours) => (ours ? ` (ours: turn ${ours.turn} of ${basename(ours.sess
 async function sync({ defer_edits = false } = {}) {
   const token = await token_source()()
   if (!token) throw new Error("not signed in; run brayness-store login")
-  const { synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes, defer_edits })
-  for (const [path, report] of Object.entries(synced)) {
+  const { harness, synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes, defer_edits })
+  const reports = { ...(harness && { "harness history": harness.sessions, harness: harness.files }), ...Object.fromEntries(Object.entries(synced).map(([path, report]) => [harness ? `old place ${path}` : path, report])) }
+  for (const name of harness?.files.too_big ?? []) console.log(`  too big, left home: ${name}`)
+  for (const [path, report] of Object.entries(reports)) {
     const moved = Object.entries(report).filter(([kind, names]) => Array.isArray(names) && kind !== "unchanged" && names.length)
     console.log(`${path}: ${moved.map(([kind, names]) => `${kind} ${names.length}`).join(", ") || "unchanged"}`)
     for (const kind of ["kept_both", "held", "conflicts"])

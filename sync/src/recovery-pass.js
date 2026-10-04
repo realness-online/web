@@ -9,7 +9,7 @@ const SECRET_BYTES = 32
 /** A relative path an actor may be limited to: no traversal, no secrets. */
 export const limit_path = (path) =>
   typeof path === "string" && path.length <= 512 && !skipped(path) &&
-  path.split("/").every((part) => part && part !== "." && part !== ".." && !/[\\%\0]/.test(part))
+  path.split("/").every((part) => part && part !== "." && part !== ".." && !/[\\\0]|%[0-9a-f]{2}/i.test(part))
 
 export function issue_recovery_pass({ phone, id, paths = null }, secret, now = Date.now()) {
   if (!secret || Buffer.byteLength(secret) < SECRET_BYTES) throw new Error("recovery secret must be at least 32 bytes")
@@ -45,5 +45,5 @@ export function recovery_path(path, phone, paths = null) {
   if (!parts.length) return paths === null
   const clean = parts.join("/")
   if (paths && !paths.some((allowed) => clean === allowed || clean.startsWith(`${allowed}/`))) return false
-  return !skipped(rest) && parts.every((part) => part && part !== "." && part !== ".." && !/[\\%\0]/.test(part))
+  return !skipped(rest) && parts.every((part) => part && part !== "." && part !== ".." && !/[\\\0]|%[0-9a-f]{2}/i.test(part))
 }

@@ -7,7 +7,7 @@
  *   brayness-store cp    note.md can://~/vault/
  *   brayness-store cp    can://~/vault/note.md .
  *   brayness-store rm    can://~/vault/note.md
- *   brayness-store sync  ~/brayness/plans can://~/plans/   two-way; --deletes sends all
+ *   brayness-store sync  ~/brayness/vault/plans can://~/vault/plans/   two-way; --deletes sends all
  *   brayness-store login | logout | whoami
  *
  * `login` signs in through the sign-on page in your browser and keeps the

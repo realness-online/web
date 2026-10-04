@@ -71,6 +71,20 @@ test("names are decoded once; double encoding and bad encoding are refused", asy
   assert.equal(await status("GET", `people/${A}/vault/%E0%A4%A`, { headers: as(A) }), 400)
 })
 
+test("percentage filenames upload, list, read, and delete without changing names", async () => {
+  const title = "5 Exercises That Fix 95% Of Your Problems - YouTube.md"
+  const path = `people/${A}/vault/${encodeURIComponent(title)}`
+  assert.equal(await status("PUT", path, { headers: as(A), body: "note" }), 200)
+  assert.equal(await (await call("GET", path, { headers: as(A) })).text(), "note")
+  const listed = await (await call("GET", `people/${A}/vault/`, { headers: as(A) })).json()
+  assert.ok(listed.files.includes(title))
+  assert.equal(await status("GET", path, { headers: as(B) }), 403)
+  assert.equal(await status("GET", path), 403)
+  for (const encoded of ["%252e%252e", "%252F", "%255c", "%2500"])
+    assert.equal(await status("PUT", `people/${A}/vault/${encoded}/secret`, { headers: as(A), body: "x" }), 403)
+  assert.equal(await status("DELETE", path, { headers: as(A) }), 204)
+})
+
 test("another person never reaches my private files", async () => {
   await call("PUT", `people/${A}/vault/secret.md`, { headers: as(A), body: "secret" })
   await call("PUT", `people/${A}/relations.html.gz`, { headers: as(A), body: "friends" })

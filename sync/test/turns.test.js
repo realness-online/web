@@ -21,7 +21,7 @@ test("a turn owns what changed during it, bash deletes included; outside edits s
   const harness = join(root, "harness")
   const state = join(root, "state")
   await files(harness, {
-    "plans/p.md": "## Syncs\n\n- notes\n",
+    "vault/plans/p.md": "## Syncs\n\n- notes\n",
     "notes/gone.md": "g",
     "notes/edited.md": "e",
     "notes/outside.md": "o",
@@ -44,6 +44,16 @@ test("a turn owns what changed during it, bash deletes included; outside edits s
   assert.equal(log.last(join(harness, "notes/edited.md")).turn, 3)
   assert.equal(log.last(join(harness, "notes/outside.md")), undefined)
   log.close()
+})
+
+test("a turn logs a selected single file", async () => {
+  const harness = join(root, "single")
+  const state = join(root, "single-state")
+  await files(harness, { "vault/plans/p.md": "## Syncs\n\n- AGENTS.local.md\n", "AGENTS.local.md": "a" })
+  await turn_start({ root: harness, state, session: "s.jsonl" })
+  await writeFile(join(harness, "AGENTS.local.md"), "changed")
+  const logged = await turn_end({ root: harness, state, session: "s.jsonl", turn: 1 })
+  assert.deepEqual(logged, [join(harness, "AGENTS.local.md")])
 })
 
 test("turn_end without a turn_start logs nothing", async () => {

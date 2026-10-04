@@ -59,7 +59,8 @@ test("paths outside the harness or never synced are refused", () => {
 
 test("a lost disk restores Pi conversation JSON from sync alone", async () => {
   const first = await files(join(root, "restore-first"), {
-    "plans/brayness.md": "# Brayness\n",
+    ".ignore": "",
+    "vault/plans/brayness.md": "# Brayness\n",
     ".pi/agent/sessions/--brayness--/call.jsonl": [
       JSON.stringify({ type: "session", version: 3, id: "00000000-0000-4000-8000-000000000001", timestamp: "2026-09-27T00:00:00.000Z", cwd: "/brayness" }),
       JSON.stringify({ type: "message", id: "abcdef12", parentId: null, timestamp: "2026-09-27T00:00:01.000Z", message: { role: "user", content: [{ type: "text", text: "remember this" }], timestamp: 1790467201000 } }),
@@ -73,10 +74,10 @@ test("a lost disk restores Pi conversation JSON from sync alone", async () => {
   await rm(first, { recursive: true, force: true })
 
   const fresh = await files(join(root, "restore-fresh"), {
-    "plans/brayness.md": "# Brayness\n",
+    "vault/plans/brayness.md": "# Brayness\n",
   })
   const restored = await sync_harness({ root: fresh, store: recovery_store })
-  assert.deepEqual(restored.synced[".pi/agent/sessions"].pulled, ["--brayness--/call.jsonl"])
+  assert.deepEqual(restored.harness.sessions.pulled, ["--brayness--/call.jsonl"])
   const session_file = join(fresh, ".pi/agent/sessions/--brayness--/call.jsonl")
   const entries = (await readFile(session_file, "utf8")).trimEnd().split("\n").map(JSON.parse)
   assert.equal(entries[0].type, "session")
@@ -86,21 +87,68 @@ test("a lost disk restores Pi conversation JSON from sync alone", async () => {
   await assert.rejects(readFile(join(fresh, ".pi/agent/memory.db")), { code: "ENOENT" })
 })
 
-test("the root is the nearest folder above holding plans/", async () => {
-  const harness = await files(join(root, "find"), { "plans/p.md": "", "work/deep/x.md": "" })
+test("v8: root discovery uses vault/plans, never an old plans folder", async () => {
+  const harness = await files(join(root, "find"), { "vault/plans/p.md": "", "work/deep/x.md": "" })
   assert.equal(find_root(join(harness, "work/deep"), {}), harness)
   assert.equal(find_root("/", { BRAYNESS_ROOT: harness }), harness)
+  const old = await files(join(root, "old-root"), { "plans/p.md": "", "work/deep/x.md": "" })
+  assert.notEqual(find_root(join(old, "work/deep"), {}), old)
+})
+
+test("h1: root discovery and default sync work without plans", async () => {
+  const harness = await files(join(root, "no-plans"), {
+    ".ignore": "",
+    "notes/deep/idea.md": "idea",
+  })
+  assert.equal(find_root(join(harness, "notes/deep"), {}), harness)
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550106") })
+  const report = await sync_harness({ root: harness, store: owner })
+  assert.ok(report.harness.files.pushed.includes("notes/deep/idea.md"))
+  await assert.rejects(sync_harness({ root: harness, store: owner, plans: ["missing"] }), { code: "ENOENT" })
+})
+
+test("h1: Pi configuration identifies a harness without plans", async () => {
+  const harness = await files(join(root, "pi-root"), { ".pi/agent/settings.json": "{}", "notes/deep/idea.md": "idea" })
+  assert.equal(find_root(join(harness, "notes/deep"), {}), harness)
+})
+
+test("v8: default sync reads vault plans and ignores old plans", async () => {
+  const harness = await files(join(root, "default-plans"), {
+    "vault/plans/p.md": "# P\n\n## Syncs\n- notes\n",
+    "plans/p.md": "# Old\n\n## Syncs\n- old-notes\n",
+    "notes/a.md": "current",
+    "old-notes/a.md": "old",
+  })
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550118") })
+  const report = await sync_harness({ root: harness, store: owner })
+  assert.deepEqual(Object.keys(report.synced), [".pi/agent/sessions", "notes"])
+  assert.equal((await owner.cat("can://~/notes/a.md")).toString(), "current")
+  await assert.rejects(owner.cat("can://~/old-notes/a.md"), { status: 404 })
+})
+
+test("v5: sync reads plans from the package.json setting", async () => {
+  const harness = await files(join(root, "configured-plans"), {
+    "package.json": JSON.stringify({ brayness: { plans: "custom/plans" } }),
+    "custom/plans/p.md": "# P\n\n## Syncs\n- notes\n",
+    "notes/a.md": "configured plan",
+  })
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550108") })
+  assert.equal(find_root(join(harness, "notes"), {}), harness)
+  const report = await sync_harness({ root: harness, store: owner, plans: ["p"] })
+  assert.deepEqual(report.synced.notes.pushed, ["a.md"])
+  assert.equal((await owner.cat("can://~/notes/a.md")).toString(), "configured plan")
 })
 
 test("two harnesses share each plan's folders; repos are refused", async () => {
   const laptop = await files(join(root, "laptop"), {
-    "plans/a.md": "# A\n\n## Syncs\n\n- `work/thoughts`\n- work/repo\n",
-    "plans/b.md": "# B\n\n## Syncs\n\n- work/thoughts\n- ../escape\n",
+    ".ignore": "",
+    "vault/plans/a.md": "# A\n\n## Syncs\n\n- `work/thoughts`\n- work/repo\n",
+    "vault/plans/b.md": "# B\n\n## Syncs\n\n- work/thoughts\n- ../escape\n",
     "work/thoughts/2026-09-27.md": "a thought",
     "work/repo/README.md": "code",
   })
   await promisify(execFile)("git", ["init", "-q", join(laptop, "work/repo")])
-  const session = await files(join(root, "session"), { "plans/a.md": "# A\n\n## Syncs\n\n- work/thoughts\n" })
+  const session = await files(join(root, "session"), { "vault/plans/a.md": "# A\n\n## Syncs\n\n- work/thoughts\n" })
 
   const first = await sync_harness({ root: laptop, store })
   assert.deepEqual(Object.keys(first.synced), [".pi/agent/sessions", "work/thoughts"])
@@ -108,9 +156,132 @@ test("two harnesses share each plan's folders; repos are refused", async () => {
   assert.deepEqual(first.refused, { "work/repo": "inside a git repo (a.md)", "../escape": "outside the harness (b.md)" })
 
   const pulled = await sync_harness({ root: session, store, plans: ["a"] })
-  assert.deepEqual(pulled.synced["work/thoughts"].pulled, ["2026-09-27.md"])
+  assert.ok(pulled.harness.files.pulled.includes("work/thoughts/2026-09-27.md"))
   assert.equal(await readFile(join(session, "work/thoughts/2026-09-27.md"), "utf8"), "a thought")
   assert.deepEqual(Object.keys(await store.walk("can://~/work/")), ["thoughts/2026-09-27.md"], "the repo never uploads")
+})
+
+test("h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files; edits return", async () => {
+  const phone = "+15555550104"
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token(phone) })
+  // A layout that follows no convention: no plans, no vault, no Syncs lists.
+  const desktop = await files(join(root, "h1-desktop"), {
+    ".ignore": "# mine\nrenders/\n*.mov\n!keep.mov\n",
+    "AGENTS.local.md": "memory\n",
+    ".pi/agent/settings.json": "{}\n",
+    ".pi/agent/auth.json": "SECRET",
+    ".pi/agent/memory.db": "derived index",
+    "notes/inbox/idea.md": "idea\n",
+    "renders/frame.png": "big render",
+    "clip.mov": "movie",
+    "keep.mov": "kept",
+    "code/README.md": "repo",
+    "node_modules/x/index.js": "dep",
+  })
+  await mkdir(join(desktop, "code/.git"), { recursive: true })
+  await writeFile(join(desktop, "huge.bin"), Buffer.alloc(11 * 1024 * 1024))
+
+  const first = await sync_harness({ root: desktop, store: owner, legacy: false })
+  assert.deepEqual(first.harness.files.too_big, ["huge.bin"])
+  assert.deepEqual(Object.keys(await owner.walk("can://~/harness/")).sort(), [
+    ".ignore", ".pi/agent/settings.json", "AGENTS.local.md", "keep.mov", "notes/inbox/idea.md",
+  ])
+
+  const vm = await files(join(root, "h1-vm"), {})
+  await sync_harness({ root: vm, store: owner, legacy: false })
+  assert.equal(await readFile(join(vm, "AGENTS.local.md"), "utf8"), "memory\n")
+  assert.equal(await readFile(join(vm, "notes/inbox/idea.md"), "utf8"), "idea\n")
+  for (const path of [".pi/agent/auth.json", ".pi/agent/memory.db", "renders/frame.png", "clip.mov", "code/README.md", "huge.bin"])
+    await assert.rejects(readFile(join(vm, path)), { code: "ENOENT" }, path)
+
+  await writeFile(join(vm, "AGENTS.local.md"), "memory\nlearned in VM\n")
+  await sync_harness({ root: vm, store: owner, legacy: false })
+  const back = await sync_harness({ root: desktop, store: owner, legacy: false })
+  assert.deepEqual(back.harness.files.pulled, ["AGENTS.local.md"])
+  assert.equal(await readFile(join(desktop, "AGENTS.local.md"), "utf8"), "memory\nlearned in VM\n")
+})
+
+test("h1: personal ignores also apply to legacy plan-selected paths", async () => {
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550107") })
+  const desktop = await files(join(root, "h1-legacy-ignores"), {
+    ".ignore": "notes/private.md\nprivate/\nhidden.txt\n",
+    "vault/plans/p.md": "# P\n\n## Syncs\n- notes\n- private\n- private.txt\n- hidden.txt\n",
+    "notes/public.md": "public",
+    "notes/private.md": "private",
+    "private/a.md": "private",
+    "private.txt": "public single file",
+    "hidden.txt": "private single file",
+  })
+  await sync_harness({ root: desktop, store: owner })
+  assert.equal((await owner.cat("can://~/notes/public.md")).toString(), "public")
+  assert.equal((await owner.cat("can://~/private.txt")).toString(), "public single file")
+  for (const path of ["notes/private.md", "private/a.md", "hidden.txt"])
+    for (const base of ["can://~/", "can://~/harness/"])
+      await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
+})
+
+test("h1: artifacts stay local on upload and restore, even when listed", async () => {
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550109") })
+  const desktop = await files(join(root, "artifacts-desktop"), {
+    ".ignore": "",
+    "vault/plans/p.md": "# P\n\n## Syncs\n- artifacts\n- notes\n",
+    "artifacts/preview.txt": "local preview",
+    "notes/note.md": "saved note",
+    "notes/artifacts/result.svg": "local result",
+  })
+  await sync_harness({ root: desktop, store: owner })
+  for (const path of ["artifacts/preview.txt", "notes/artifacts/result.svg"])
+    for (const base of ["can://~/", "can://~/harness/"])
+      await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
+  assert.equal(await readFile(join(desktop, "artifacts/preview.txt"), "utf8"), "local preview")
+  // Files uploaded before this rule must not return to a fresh harness.
+  await owner.put("can://~/harness/artifacts/old.txt", "old artifact")
+  await owner.put("can://~/harness/notes/artifacts/old.txt", "old artifact")
+  const fresh = await files(join(root, "artifacts-fresh"), {})
+  await sync_harness({ root: fresh, store: owner })
+  assert.equal(await readFile(join(fresh, "notes/note.md"), "utf8"), "saved note")
+  await assert.rejects(readFile(join(fresh, "artifacts/old.txt")), { code: "ENOENT" })
+  await assert.rejects(readFile(join(fresh, "notes/artifacts/old.txt")), { code: "ENOENT" })
+})
+
+for (const [index, folder] of [".obsidian", ".smart-env"].entries()) {
+  test(`h2: ${folder} stays local on upload and restore, even when listed`, async () => {
+    const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token(`+1555555011${index}`) })
+    const desktop = await files(join(root, `${folder}-desktop`), {
+      ".ignore": "",
+      "vault/plans/p.md": `# P\n\n## Syncs\n- ${folder}\n- vault\n`,
+      [`${folder}/config.json`]: "local config",
+      [`vault/nested/${folder}/index.bin`]: "local index",
+      "vault/note.md": "saved note",
+    })
+    await sync_harness({ root: desktop, store: owner })
+    for (const path of [`${folder}/config.json`, `vault/nested/${folder}/index.bin`]) {
+      for (const base of ["can://~/", "can://~/harness/"])
+        await assert.rejects(owner.cat(`${base}${path}`), { status: 404 })
+      assert.ok(await readFile(join(desktop, path)))
+    }
+    for (const path of [`${folder}/old.json`, `vault/nested/${folder}/old.bin`])
+      await owner.put(`can://~/harness/${path}`, "old metadata")
+    const fresh = await files(join(root, `${folder}-fresh`), {})
+    await sync_harness({ root: fresh, store: owner })
+    assert.equal(await readFile(join(fresh, "vault/note.md"), "utf8"), "saved note")
+    for (const path of [`${folder}/old.json`, `vault/nested/${folder}/old.bin`])
+      await assert.rejects(readFile(join(fresh, path)), { code: "ENOENT" })
+  })
+}
+
+test("h1: without a .ignore, only listed folders and history sync", async () => {
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550105") })
+  const desktop = await files(join(root, "h1-unreviewed"), {
+    "vault/plans/p.md": "# P\n\n## Syncs\n\n- notes\n",
+    "notes/a.md": "listed",
+    "artifacts/big.bin": "not reviewed",
+  })
+  const report = await sync_harness({ root: desktop, store: owner })
+  assert.equal(report.harness, null)
+  assert.deepEqual(report.synced.notes.pushed, ["a.md"])
+  await assert.rejects(owner.walk("can://~/harness/").then((found) => { if (!Object.keys(found).length) throw Object.assign(new Error("empty"), { status: 404 }) }), { status: 404 })
+  await assert.rejects(owner.cat("can://~/artifacts/big.bin"), { status: 404 })
 })
 
 test("turn-end defers a saved-history edit and pushes a write", async () => {
@@ -118,7 +289,7 @@ test("turn-end defers a saved-history edit and pushes a write", async () => {
   const { createHash } = await import("node:crypto")
   const hash = (text) => createHash("sha256").update(text).digest("hex")
   const actor = await files(join(root, "defer"), {
-    "plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n",
+    "vault/plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n",
     "work/notes/doc.md": "title\nbody\n",
     "work/notes/raw.md": "one\n",
   })
@@ -143,7 +314,7 @@ test("turn-end defers a saved-history edit and pushes a write", async () => {
   assert.deepEqual(Object.keys(JSON.parse(await owner.cat("can://~/.pi/agent/deferred.json"))), ["work/notes/doc.md"])
 
   // The actor is lost; a fresh one rebuilds the edit from saved history.
-  const fresh = await files(join(root, "defer-fresh"), { "plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n" })
+  const fresh = await files(join(root, "defer-fresh"), { "vault/plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n" })
   const pulled = await sync_harness({ root: fresh, store: owner })
   assert.deepEqual(pulled.applied, ["work/notes/doc.md"])
   assert.equal(await readFile(join(fresh, "work/notes/doc.md"), "utf8"), "title\nBODY\n")
@@ -161,7 +332,7 @@ test("s1f: a crash at any upload loses only work after the last completed sync",
   const { createHash } = await import("node:crypto")
   const hash = (text) => createHash("sha256").update(text).digest("hex")
   const url = `http://127.0.0.1:${server.address().port}`
-  const plan = { "plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n" }
+  const plan = { "vault/plans/p.md": "# P\n\n## Syncs\n\n- work/notes\n" }
   let completed = 0
   for (let crash_at = 0; ; crash_at++) {
     const phone = `+1555555${String(1000 + crash_at).padStart(4, "0")}`

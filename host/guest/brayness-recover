@@ -5,8 +5,9 @@ The host door verifies this VM and issues a short, read-only pass; a new one
 is fetched whenever the old one lapses. The sync service checks it on every
 request. No owner credential is stored.
 
-Pulled: Pi history, plans, every plan's `## Syncs` folder, and
-`.pi/agent/deferred.json`, whose edits are replayed onto their exact base.
+Pull the whole harness when its saved `.ignore` exists. Otherwise,
+pull Pi history, plans, and each plan's `## Syncs` folders. Replay deferred
+edits onto their exact base.
 An actor started with a path list pulls only those paths; sync enforces it.
 """
 import base64
@@ -26,7 +27,8 @@ DOOR_PORT = 54
 ROOT = os.environ.get("BRAYNESS_ROOT", "/brayness")
 SESSIONS = ".pi/agent/sessions"
 DEFERRED = ".pi/agent/deferred.json"
-SKIP = {".git", ".env", "auth.json", "credentials.json", ".npmrc", ".netrc", "service-account.json"}
+LOCAL_ONLY = {"artifacts", ".obsidian", ".smart-env"}
+SKIP = LOCAL_ONLY | {".git", ".env", "auth.json", "credentials.json", ".npmrc", ".netrc", "service-account.json"}
 SKIP.add("node" + "_modules")
 
 
@@ -76,15 +78,28 @@ class Passes:
 def safe(name):
     parts = name.split("/")
     return bool(name) and all(
-        part not in ("", ".", "..") and "\\" not in part and "%" not in part and part not in SKIP
+        part not in ("", ".", "..") and "\\" not in part and not re.search(r"%[0-9a-f]{2}", part, re.I) and part not in SKIP
         for part in parts
     )
+
+
+def plans_path(root):
+    """The harness-relative plans folder from package.json."""
+    try:
+        with open(os.path.join(root, "package.json"), encoding="utf-8") as file:
+            settings = json.load(file)
+    except FileNotFoundError:
+        return "vault/plans"
+    path = settings.get("brayness", {}).get("plans", "vault/plans")
+    if not isinstance(path, str) or not path or "\\" in path or any(part in ("", ".", "..") for part in path.split("/")):
+        raise ValueError("brayness.plans must be a relative folder inside the harness")
+    return path
 
 
 def declared(root):
     """Every plan's `## Syncs` paths, as `brayness sync` reads them."""
     found = []
-    for plan in sorted(glob.glob(os.path.join(root, "plans", "*.md"))):
+    for plan in sorted(glob.glob(os.path.join(root, plans_path(root), "*.md"))):
         inside = False
         with open(plan, encoding="utf-8") as text:
             for line in text:
@@ -115,18 +130,21 @@ def write(root, path, data):
 
 
 def pull_folder(url, passes, root, folder):
-    prefix = f"{url}/{folder}/"
+    if LOCAL_ONLY.intersection(folder.split("/")):
+        return 0
+    prefix = f"{url}/{urllib.parse.quote(folder, safe='/')}/" if folder else f"{url}/"
     try:
         names = json.loads(passes.get(prefix + "?deep"))
     except urllib.error.HTTPError as error:
         if error.code == 404:
             return 0
         raise
+    names = [name for name in names if not LOCAL_ONLY.intersection(name.split("/"))]
     for name in names:
         if not safe(name):
             raise ValueError(f"unsafe path: {name!r}")
     for name in names:
-        write(root, f"{folder}/{name}", passes.get(prefix + urllib.parse.quote(name, safe="/")))
+        write(root, f"{folder}/{name}" if folder else name, passes.get(prefix + urllib.parse.quote(name, safe="/")))
     return len(names)
 
 
@@ -211,9 +229,20 @@ def recover(url, issue, root=ROOT):
             raise ValueError("unsafe path limit")
         count = sum(pull_path(base, passes, root, path) for path in limit)
     else:
-        count = pull_folder(base, passes, root, SESSIONS) + pull_folder(base, passes, root, "plans")
-        for folder in declared(root):
-            count += pull_folder(base, passes, root, folder)
+        try:
+            passes.get(f"{base}/harness/.ignore")
+            whole = True
+        except urllib.error.HTTPError as error:
+            if error.code != 404:
+                raise
+            whole = False
+        if whole:
+            base = f"{base}/harness"
+            count = pull_folder(base, passes, root, "")
+        else:
+            count = pull_folder(base, passes, root, SESSIONS) + pull_folder(base, passes, root, plans_path(root))
+            for folder in declared(root):
+                count += pull_folder(base, passes, root, folder)
     try:
         pending = json.loads(passes.get(f"{base}/{DEFERRED}"))
     except urllib.error.HTTPError as error:

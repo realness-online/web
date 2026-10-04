@@ -60,7 +60,7 @@ before(async () => {
     { type: "message", id: "m0000002", parentId: "m0000001", timestamp: at(2), ...call },
   ]
   put(".pi/agent/sessions/--brayness--/s.jsonl", `${session.map((entry) => JSON.stringify(entry)).join("\n")}\n`)
-  put("plans/fresh.md", "# Fresh\n\n## Syncs\n\n- work/notes\n")
+  put("vault/Projects/fresh.md", "# Fresh\n\n## Syncs\n\n- work/notes\n")
   put("work/notes/doc.md", "title\nbody\n")
   put("work/other/skip.md", "not declared")
   put("vault/limited.md", "for a limited actor")

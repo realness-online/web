@@ -158,7 +158,7 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
 
   return createServer(async (request, response) => {
     const started = Date.now()
-    // Decoded once; `can()` refuses a `%` left over, so double encoding fails.
+    // Decode once; `can()` refuses remaining percent escapes, not plain `%`.
     let path = (request.url ?? "/").split("?")[0].slice(1)
     try {
       path = decodeURIComponent(path)

@@ -10,6 +10,20 @@ test("dependencies, builds, auth, secrets, and git never sync", () => {
     assert.ok(skipped(path), path)
 })
 
+test("artifacts never sync, at the root or inside a project", () => {
+  assert.ok(skipped("artifacts/starter-harness/package.json"))
+  assert.ok(skipped("work/project/artifacts/result.svg"))
+  assert.ok(!skipped("notes/artifacts.md"))
+})
+
+test("local vault metadata never syncs at any depth", () => {
+  for (const folder of [".obsidian", ".smart-env"]) {
+    assert.ok(skipped(`${folder}/config.json`))
+    assert.ok(skipped(`vault/nested/${folder}/index.bin`))
+    assert.ok(!skipped(`vault/${folder}.md`))
+  }
+})
+
 test("ordinary files sync", () => {
   for (const path of ["vault/note.md", "plans/brayness.md", "posters/1.html.gz", "src/environment.js", "keyboard.md"])
     assert.ok(!skipped(path), path)
