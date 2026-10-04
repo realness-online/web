@@ -55,6 +55,8 @@ For a person using GUI and TUI on one actor.
 
 ### Decisions
 
+- restore-fresh was inert in the seed; s1 replaced it.
+
 - Gate 1 (a-series): approved; built directly.
 - One Pi per actor: the terminal's, started at boot.
 - Never start or restart Pi per chat message.
@@ -72,4 +74,3 @@ For a person using GUI and TUI on one actor.
 ### Open questions
 
 - Should a closed browser abort the running turn?
-- restore-fresh guards on /etc/brayness too; is it inert?

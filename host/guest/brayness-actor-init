@@ -46,19 +46,24 @@ network_up() {
 }
 network_up
 
-# The seed snapshot holds a running Pi (h4), so every resume wakes it inside
-# the seed's conversation. Its restore-fresh extension starts a new one on
-# SIGUSR2, with an id from the kernel. No pid file means no handler, and the
-# signal's default action would kill Pi. /run is memory: it names this actor
-# after its own resume, and not after a reload from the seed.
+# The seed snapshot holds a running Pi (h4), and every clone wakes with its
+# memory: the seed's conversation, and the seed's random state in V8 and
+# OpenSSL, which make ids and TLS keys. Nothing reseeds a running Node, so
+# each clone replaces it (s1). Pi writes nothing before its first reply.
+# The pty holder exits with Pi; a new one types the opener the page would,
+# so Pi starts before anyone attaches. /run is memory: the marker names this
+# actor after its own resume, and not after a reload from the seed.
 fresh_pi() {
-  pid_file=/run/brayness/pi.pid
   marker=/run/brayness-pi-fresh
-  [ -r "$pid_file" ] || return 0
   [ "$(cat "$marker" 2> /dev/null)" = "$actor_id" ] && return 0
   printf '%s\n' "$actor_id" > "$marker"
-  cat /proc/sys/kernel/random/uuid > /run/brayness/pi-session-id
-  kill -USR2 "$(cat "$pid_file")" 2> /dev/null || true
+  rm -f /run/brayness/pi.pid /run/brayness/pi-random
+  pkill -x pi 2> /dev/null || true
+  for _ in $(seq 100); do pgrep -x pi > /dev/null || break; sleep 0.1; done
+  pkill -9 -x pi 2> /dev/null || true
+  for _ in $(seq 50); do [ -e /run/brayness-pty.sock ] || break; sleep 0.1; done
+  opener="$(printf 'exec brayness\r' | base64)"
+  printf '{"op":"data","data_b64":"%s"}\n' "$opener" | /usr/local/bin/brayness-pty > /dev/null 2>&1 || true
 }
 
 short_id="$(printf '%s' "$actor_id" | tr -cd '0-9a-f' | cut -c1-8)"

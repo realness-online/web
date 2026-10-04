@@ -344,6 +344,15 @@ describe("terminal", () => {
     assert.equal(status, "400")
   })
 
+  // s1: actor-init replaces the seed's Pi; the page's attach must land in it.
+  test("a new actor's terminal opens in Pi, as the page attaches", async () => {
+    const actor = await create()
+    const opener = Buffer.from("exec brayness\r").toString("base64")
+    const text = await terminal(actor.id, /inkling/, { ms: 120000, send: [{ op: "resize", cols: 80, rows: 24 }, { op: "data", data_b64: opener }] })
+    assert.match(text, /inkling/)
+    await destroy(actor.id)
+  })
+
   test("a terminal opens and draws", async () => {
     const actor = await create()
     const text = await terminal(actor.id, /\S/)
@@ -355,7 +364,7 @@ describe("terminal", () => {
 // A websocket to the actor's terminal. Frames are the guest's
 // `{"op": "data", "data_b64"}` lines; resolves with the decoded text once
 // `until` matches, leaving the socket open when `keep` is set.
-async function terminal(id, until, { keep = false, ms = 30000 } = {}) {
+async function terminal(id, until, { keep = false, ms = 30000, send = [] } = {}) {
   const auth = await fetch(`${TERM_URL}/auth`, {
     method: "POST", headers: { origin: TERM_URL }, body: JSON.stringify({ pass: hostPass() }),
   })
@@ -385,6 +394,7 @@ async function terminal(id, until, { keep = false, ms = 30000 } = {}) {
         if (!status.startsWith("HTTP/1.1 101")) { clearTimeout(timer); socket.destroy(); return reject(new Error(status)) }
         buffer = buffer.subarray(end + 4)
         upgraded = true
+        for (const message of send) socket.write(clientFrame(JSON.stringify(message)))
       }
       while (buffer.length >= 2) {
         const length = buffer[1] & 127
@@ -403,6 +413,15 @@ async function terminal(id, until, { keep = false, ms = 30000 } = {}) {
       }
     })
   })
+}
+
+// A browser's text frame: clients must mask (RFC 6455).
+function clientFrame(text) {
+  const payload = Buffer.from(text)
+  const mask = randomBytes(4)
+  const size = payload.length
+  const head = size < 126 ? Buffer.from([0x81, 0x80 | size]) : Buffer.from([0x81, 0x80 | 126, size >> 8, size & 255])
+  return Buffer.concat([head, mask, payload.map((byte, i) => byte ^ mask[i % 4])])
 }
 
 describe("h3 lessons", () => {

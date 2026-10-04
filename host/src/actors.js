@@ -6,6 +6,7 @@
 // list of actors.
 
 import { createHash, randomBytes } from "node:crypto"
+import { writeFileDurable } from "./durable.js"
 import { createReadStream, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, appendFileSync } from "node:fs"
 import { arch } from "node:os"
 import { basename, join } from "node:path"
@@ -42,7 +43,7 @@ const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 export const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, "+00:00")
 const mintId = () => `a-${randomBytes(6).toString("hex")}`
-const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+const writeJson = (path, value) => writeFileDurable(path, `${JSON.stringify(value, null, 2)}\n`)
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"))
 const unlink = (path) => rmSync(path, { force: true })
 const machine = () => ({ arm64: "aarch64", x64: "x86_64" })[arch()] ?? arch()

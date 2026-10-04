@@ -12,7 +12,8 @@
 // own maxIterations (plans/brayness.md, a1a). watch() stops each loop at its
 // run count, its deadline, or a spent quota, then idles the actor.
 
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
+import { writeFileDurable } from "./durable.js"
 import { join } from "node:path"
 import { hostname } from "node:os"
 import { BadRequest } from "./errors.js"
@@ -191,7 +192,6 @@ export class Loops {
   }
 
   #save() {
-    writeFileSync(`${this.file}.tmp`, `${JSON.stringify(this.loops, null, 2)}\n`)
-    renameSync(`${this.file}.tmp`, this.file)
+    writeFileDurable(this.file, `${JSON.stringify(this.loops, null, 2)}\n`)
   }
 }

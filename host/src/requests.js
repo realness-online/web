@@ -5,7 +5,8 @@
 // so a host restart does not idle a person's actor a second time.
 // Requests older than MAX_AGE are ignored, so a host back from a long stop
 // does not act on stale wishes.
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
+import { writeFileDurable } from "./durable.js"
 import { join } from "node:path"
 import { read_request, request_key } from "../../sync/src/actor-request.js"
 
@@ -42,7 +43,6 @@ export class ActorRequests {
   }
 
   #save() {
-    writeFileSync(`${this.file}.tmp`, `${JSON.stringify(this.done, null, 2)}\n`)
-    renameSync(`${this.file}.tmp`, this.file)
+    writeFileDurable(this.file, `${JSON.stringify(this.done, null, 2)}\n`)
   }
 }
