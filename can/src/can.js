@@ -29,7 +29,7 @@ function segments(path) {
   const parts = path.split("/")
   if (parts.at(-1) === "") parts.pop() // a folder: `people/+A/posters/`
   for (const part of parts) {
-    if (!part || part === "." || part === ".." || /[\\%\0]/.test(part)) return null
+    if (!part || part === "." || part === ".." || /[\\\0]|%[0-9a-f]{2}/i.test(part)) return null
   }
   return parts.length ? parts : null
 }

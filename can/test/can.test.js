@@ -49,11 +49,26 @@ test("paths that could escape deny, even for the owner", () => {
     `people/${A}//rights.html`,
     `/people/${A}/rights.html`,
     `people/${A}/%2e%2e/x`,
+    `people/${A}/%2Fsecret`,
+    `people/${A}/%252e%252e/x`,
+    `people/${A}/%00`,
+    `people/${A}/%5csecret`,
     `people/${A}/a\\b`,
     "",
     null,
   ]) {
     assert.equal(can(scott, "get", path), false, String(path))
+  }
+})
+
+test("plain percentages in filenames keep owner-only rights", () => {
+  for (const name of ["95% Of Your Problems.md", "100%.md", "50%+tax.md"]) {
+    const path = `people/${A}/vault/${name}`
+    for (const action of ["get", "list", "write", "delete"]) {
+      assert.equal(can(scott, action, path), true)
+      assert.equal(can(other, action, path), false)
+      assert.equal(can(stranger, action, path), false)
+    }
   }
 })
 

@@ -15,7 +15,7 @@
  */
 import { createHash, randomUUID } from "node:crypto"
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises"
-import { dirname, resolve, sep } from "node:path"
+import { dirname, join, resolve, sep } from "node:path"
 
 export class Conflict extends Error {
   code = "conflict"
@@ -67,7 +67,7 @@ export function disk(root) {
         await check(key, if_version)
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
-        const temp = `${path}.${randomUUID()}.tmp`
+        const temp = join(dirname(path), `${randomUUID()}.tmp`)
         await writeFile(temp, body)
         await rename(temp, path)
         return version_of(body)
@@ -84,7 +84,7 @@ export function disk(root) {
         const body = Buffer.concat(files.map((file) => file.body))
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
-        const temp = `${path}.${randomUUID()}.tmp`
+        const temp = join(dirname(path), `${randomUUID()}.tmp`)
         await writeFile(temp, body)
         await rename(temp, path)
         return version_of(body)
