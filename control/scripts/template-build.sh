@@ -130,6 +130,7 @@ BASE_PACKAGES=(
                                   # the boot stalls on dev-ttyS0.device
   iproute2 socat python3           # python3, not -minimal: the agent imports
                                   # json, which the minimal stdlib does not ship
+  python3-yaml                    # skill-writer's spec validator
   ca-certificates curl git ripgrep fd-find jq unzip
   less
 )
@@ -289,6 +290,14 @@ chroot "$TREE" chown -R brayness:brayness /brayness /var/tmp/jiti /var/tmp/node-
 cat > "$TREE/etc/tmpfiles.d/brayness-run.conf" <<'TMPFILES'
 d /run/brayness 0755 brayness brayness
 TMPFILES
+
+# k1: every shipped skill's check passes as the actor's user, or no template.
+if [ "$STAGE" != base ]; then
+  log "skill checks"
+  chroot "$TREE" runuser -u brayness -- env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
+    sh -c 'cd /brayness && node bin/check-skills.js --run' \
+    || { echo "a shipped skill's check failed" >&2; exit 1; }
+fi
 
 # ------------------------------------------------------------------ build image
 log "building $IMG"
