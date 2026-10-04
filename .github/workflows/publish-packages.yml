@@ -40,5 +40,15 @@ jobs:
       # Trusted publishing needs npm 11.5.1 or newer.
       - run: npm install -g npm@latest
 
-      - run: npm publish
+      # Idempotent: a version already on npm is a success, not a failure. Lets a
+      # tag be pushed for a package published before the workflow existed.
+      - name: Publish unless already published
         working-directory: packages/${{ steps.pkg.outputs.name }}
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "$name@$version is already published - nothing to do"
+            exit 0
+          fi
+          npm publish
