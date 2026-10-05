@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // b1c: the chat page's /chat/limit reaches the proxy under the actor's pass.
 // Run with a dev host: npm run check:chat-limit
-import { createHmac } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { readFileSync as read_file_sync } from "node:fs"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const WEB = process.env.WEB ?? "http://127.0.0.1:18090"
 const owner = "+14156667777"
-const secret = process.env.HOST_PASS_SECRET ?? readFileSync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
+const secret = process.env.HOST_PASS_SECRET ?? read_file_sync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
 const pass = () => {
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 const api = async (path, options = {}) => {
   const response = await fetch(`${API}${path}`, { ...options, headers: { authorization: `Bearer ${pass()}` } })

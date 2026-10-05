@@ -2,16 +2,16 @@
 // Needs `webspace dev host up` (with current host code) and `webspace dev admin login`.
 //   npm run check:actor-request
 import assert from "node:assert/strict"
-import { createHmac } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { readFileSync as read_file_sync } from "node:fs"
 import { reader, actors, request_actor } from "../src/reads.js"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const owner = "+14156667777"
-const secret = readFileSync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
+const secret = read_file_sync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
 const pass = () => {
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 const call = async (method, path, body) => {
   const response = await fetch(`${API}${path}`, { method, headers: { authorization: `Bearer ${pass()}`, "content-type": "application/json" }, body: body && JSON.stringify(body) })

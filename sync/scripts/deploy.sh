@@ -9,8 +9,8 @@
 #   PROJECT=... BUCKET=... sync/scripts/deploy.sh
 #
 # Stages can, can-store, and sync into dist/sync-deploy so the file: links
-# resolve inside the image, then builds with Cloud Build. One copy, always
-# awake, running as its own service account that reaches one bucket only.
+# resolve inside the image, then builds with Cloud Build. One copy, scaled to
+# zero when nothing calls it (the alert clock wakes it on a schedule).
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -45,14 +45,26 @@ echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": fal
   > "$stage/lifecycle.json"
 gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
 
+# m8 alerts turn on once the scheduler secret and the webhook exist:
+#   sync/scripts/alert-schedule.sh stores ALERT_TOKEN and the webhook URL.
+secrets="HOST_PASS_SECRET=HOST_PASS_SECRET:latest"
+env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins"
+if gcloud secrets describe ALERT_TOKEN --project "$project" > /dev/null 2>&1 &&
+  gcloud secrets describe HOST_ALERT_WEBHOOK --project "$project" > /dev/null 2>&1; then
+  secrets="$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HOST_ALERT_WEBHOOK=HOST_ALERT_WEBHOOK:latest"
+  echo "host alerts: on"
+else
+  echo "host alerts: off (run sync/scripts/alert-schedule.sh)"
+fi
+
 gcloud run deploy brayness-sync \
   --project "$project" \
   --region "$region" \
   --source "$stage" \
   --service-account "$account" \
-  --set-env-vars "^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins" \
-  --set-secrets "HOST_PASS_SECRET=HOST_PASS_SECRET:latest" \
-  --min-instances 1 \
+  --set-env-vars "$env_vars" \
+  --set-secrets "$secrets" \
+  --min-instances 0 \
   --max-instances 1 \
   --memory 512Mi \
   --cpu 1 \

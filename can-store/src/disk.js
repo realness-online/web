@@ -13,18 +13,18 @@
  * `null` means the key must not exist yet. A mismatch throws a Conflict.
  * Versions are content hashes, so equal bytes share a version.
  */
-import { createHash, randomUUID } from "node:crypto"
-import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises"
+import { createHash as create_hash, randomUUID as random_uuid } from "node:crypto"
+import { mkdir, readFile as read_file, readdir, rename, rm, writeFile as write_file } from "node:fs/promises"
 import { dirname, join, resolve, sep } from "node:path"
 
 export class Conflict extends Error {
   code = "conflict"
 }
 
-const version_of = (body) => createHash("sha256").update(body).digest("base64url").slice(0, 22)
+const version_of = (body) => create_hash("sha256").update(body).digest("base64url").slice(0, 22)
 const missing = (error) => ["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)
 
-export function disk(root) {
+export const disk = (root) => {
   root = resolve(root)
   const locks = new Map()
 
@@ -45,7 +45,7 @@ export function disk(root) {
 
   const get = async (key) => {
     try {
-      const body = await readFile(at(key))
+      const body = await read_file(at(key))
       return { body, version: version_of(body) }
     } catch (error) {
       if (missing(error)) return null
@@ -67,8 +67,8 @@ export function disk(root) {
         await check(key, if_version)
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
-        const temp = join(dirname(path), `${randomUUID()}.tmp`)
-        await writeFile(temp, body)
+        const temp = join(dirname(path), `${random_uuid()}.tmp`)
+        await write_file(temp, body)
         await rename(temp, path)
         return version_of(body)
       }),
@@ -84,8 +84,8 @@ export function disk(root) {
         const body = Buffer.concat(files.map((file) => file.body))
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
-        const temp = join(dirname(path), `${randomUUID()}.tmp`)
-        await writeFile(temp, body)
+        const temp = join(dirname(path), `${random_uuid()}.tmp`)
+        await write_file(temp, body)
         await rename(temp, path)
         return version_of(body)
       }),

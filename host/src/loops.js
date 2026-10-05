@@ -12,8 +12,8 @@
 // own maxIterations (plans/brayness.md, a1a). watch() stops each loop at its
 // run count, its deadline, or a spent quota, then idles the actor.
 
-import { existsSync, readFileSync } from "node:fs"
-import { writeFileDurable } from "./durable.js"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
+import { writeFileDurable as write_file_durable } from "./durable.js"
 import { join } from "node:path"
 import { hostname } from "node:os"
 import { BadRequest } from "./errors.js"
@@ -44,7 +44,7 @@ print(json.dumps({"state": status.get("state"), "tokens": status.get("tokens", 0
 `]
 
 /** Why a running loop should stop now, or null. */
-export function stop_reason(probe, loop, { maxRuns, deadlineMs, now = Date.now() }) {
+export const stop_reason = (probe, loop, { maxRuns, deadlineMs, now = Date.now() }) => {
   if (probe.state === "exited") return "exited"
   if (probe.quota) return "quota"
   if (probe.runs >= maxRuns) return "runs"
@@ -55,7 +55,7 @@ export function stop_reason(probe, loop, { maxRuns, deadlineMs, now = Date.now()
 export class Loops {
   constructor(store, { file = join(store.volume, "loops.json"), maxDepth = Number(process.env.LOOP_MAX_DEPTH ?? 1), maxChildren = Number(process.env.LOOP_MAX_CHILDREN ?? 3), maxRuns = Number(process.env.LOOP_MAX_RUNS ?? 20), deadlineMs = Number(process.env.LOOP_DEADLINE_MIN ?? 60) * 60_000, mirror = null, host = hostname() } = {}) {
     Object.assign(this, { store, file, maxDepth, maxChildren, maxRuns, deadlineMs, mirror, host })
-    this.loops = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {}
+    this.loops = exists_sync(file) ? JSON.parse(read_file_sync(file, "utf8")) : {}
     this.tail = Promise.resolve()
   }
 
@@ -192,6 +192,6 @@ export class Loops {
   }
 
   #save() {
-    writeFileDurable(this.file, `${JSON.stringify(this.loops, null, 2)}\n`)
+    write_file_durable(this.file, `${JSON.stringify(this.loops, null, 2)}\n`)
   }
 }

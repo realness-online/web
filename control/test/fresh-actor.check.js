@@ -2,52 +2,57 @@
 // service and replays pending edits. Needs `webspace dev host up` and a
 // template built with the current host/guest/brayness-recover.
 import assert from "node:assert/strict"
-import { spawn, spawnSync } from "node:child_process"
-import { createHash, createHmac, randomUUID } from "node:crypto"
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { spawn, spawnSync as spawn_sync } from "node:child_process"
+import { createHash as create_hash, createHmac as create_hmac, randomUUID as random_uuid } from "node:crypto"
+import { mkdirSync as mkdir_sync, readFileSync as read_file_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from "node:fs"
 import { dirname, join } from "node:path"
 import { after, before, test } from "node:test"
+import { client } from "../../sync/src/client.js"
+import { issue_harness_pass } from "../../sync/src/recovery-pass.js"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const PORT = Number(process.env.SYNC_PORT ?? 18095)
 const owner = "+14156667777"
 const root = new URL("../..", import.meta.url).pathname // /mnt/fc inside Lima
-const secret = readFileSync(join(root, "dist/host-pass-secret"), "utf8").trim()
-const run = `fresh-actor-${randomUUID().slice(0, 8)}`
+const secret = read_file_sync(join(root, "dist/host-pass-secret"), "utf8").trim()
+const run = `fresh-actor-${random_uuid().slice(0, 8)}`
 const data = join(root, "dist", run)
-const hash = (text) => createHash("sha256").update(text).digest("hex")
-const made = new Set()
+const hash = (text) => create_hash("sha256").update(text).digest("hex")
+const made = new Map()
 let sync
 
-function hostPass() {
-  const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+const hostPass = (phone = owner) => {
+  const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
-async function call(method, path, body) {
+// The fixture signs on the Mac; Lima may be a few milliseconds behind.
+const harness_pass = (phone, id) => issue_harness_pass({ phone, id }, secret, Date.now() - 1000)
+
+const call = async (method, path, body, phone = owner) => {
   const response = await fetch(`${API}${path}`, {
     method,
-    headers: { authorization: `Bearer ${hostPass()}`, ...(body && { "content-type": "application/json" }) },
+    headers: { authorization: `Bearer ${hostPass(phone)}`, ...(body && { "content-type": "application/json" }) },
     body: body && JSON.stringify(body),
   })
   const text = await response.text()
   return { status: response.status, text, json: text.startsWith("{") ? JSON.parse(text) : undefined }
 }
-async function create(body = {}) {
-  const result = await call("POST", "/v1/actors", body)
+const create = async (body = {}, phone = owner) => {
+  const result = await call("POST", "/v1/actors", body, phone)
   assert.equal(result.status, 201, result.text)
-  made.add(result.json.id)
+  made.set(result.json.id, phone)
   return result.json.id
 }
-async function sh(id, command) {
-  const result = await call("POST", `/v1/actors/${id}/exec`, { argv: ["/bin/sh", "-c", command], timeout: 120 })
+const sh = async (id, command, phone = owner) => {
+  const result = await call("POST", `/v1/actors/${id}/exec`, { argv: ["/bin/sh", "-c", command], timeout: 120 }, phone)
   assert.equal(result.status, 200, result.text)
   const text = (b64) => Buffer.from(b64, "base64").toString()
   return { code: result.json.exit_code, out: text(result.json.stdout_b64), err: text(result.json.stderr_b64) }
 }
 const put = (path, body) => {
   const file = join(data, "people", owner, path)
-  mkdirSync(dirname(file), { recursive: true })
-  writeFileSync(file, body)
+  mkdir_sync(dirname(file), { recursive: true })
+  write_file_sync(file, body)
 }
 const recover = (id) => sh(id, `brayness-recover "http://$(ip route | awk '/default/{print $3; exit}'):${PORT}"`)
 
@@ -55,7 +60,7 @@ before(async () => {
   const call = { type: "message", message: { role: "assistant", content: [{ type: "toolCall", id: "c1", name: "edit", arguments: { path: "doc.md", edits: [{ oldText: "body", newText: "BODY" }] } }] } }
   const at = (n) => new Date(Date.UTC(2026, 8, 27, 0, 0, n)).toISOString()
   const session = [
-    { type: "session", version: 3, id: randomUUID(), timestamp: at(0), cwd: "/brayness" },
+    { type: "session", version: 3, id: random_uuid(), timestamp: at(0), cwd: "/brayness" },
     { type: "message", id: "m0000001", parentId: null, timestamp: at(1), message: { role: "user", content: [{ type: "text", text: `remember ${run}` }], timestamp: Date.parse(at(1)) } },
     { type: "message", id: "m0000002", parentId: "m0000001", timestamp: at(2), ...call },
   ]
@@ -78,11 +83,11 @@ before(async () => {
 })
 
 after(async () => {
-  for (const id of made) await call("DELETE", `/v1/actors/${id}`)
-  const pid = readFileSync(join(data, "sync.pid"), "utf8").trim()
-  if (/^\d+$/.test(pid)) spawnSync("limactl", ["shell", "fc-local", "--", "kill", pid], { stdio: "ignore" })
+  for (const [id, phone] of made) await call("DELETE", `/v1/actors/${id}`, undefined, phone)
+  const pid = read_file_sync(join(data, "sync.pid"), "utf8").trim()
+  if (/^\d+$/.test(pid)) spawn_sync("limactl", ["shell", "fc-local", "--", "kill", pid], { stdio: "ignore" })
   sync?.kill()
-  rmSync(data, { recursive: true, force: true })
+  rm_sync(data, { recursive: true, force: true })
 })
 
 test("a fresh actor pulls its owner's saved files and replays the pending edit", async () => {
@@ -92,7 +97,7 @@ test("a fresh actor pulls its owner's saved files and replays the pending edit",
   assert.match(result.out, /replayed 1 pending edits/)
   assert.equal((await sh(id, "cat /brayness/work/notes/doc.md")).out, "title\nBODY\n")
   // Pi itself parses the restored history; no model call.
-  const opened = await sh(id, "cd /brayness && mkdir -p artifacts && pi --export .pi/agent/sessions/--brayness--/s.jsonl artifacts/history.html && python3 -c \"import base64, re; html = open('artifacts/history.html').read(); print(base64.b64decode(re.search(r'id=.session-data[^>]*>([^<]*)', html).group(1)).decode())\"")
+  const opened = await sh(id, `cd /brayness && mkdir -p artifacts && pi --export .pi/agent/sessions/--brayness--/s.jsonl artifacts/history.html && node -e 'const html = require("node:fs").readFileSync("artifacts/history.html", "utf8"); const encoded = html.match(/id=.session-data[^>]*>([^<]*)/)[1]; process.stdout.write(Buffer.from(encoded, "base64").toString())'`)
   assert.equal(opened.code, 0, opened.err)
   assert.match(opened.out, new RegExp(run), "Pi opens the old history")
   assert.notEqual((await sh(id, "test -e /brayness/work/other/skip.md")).code, 0, "undeclared folders stay behind")
@@ -110,4 +115,87 @@ test("a limited actor pulls only its listed paths", async () => {
 test("the host refuses a path list that names secrets", async () => {
   const result = await call("POST", "/v1/actors", { paths: [".pi/agent/auth.json"] })
   assert.equal(result.status, 400, result.text)
+})
+
+test('a fresh actor updates stock files and keeps personal edits and deletions', async () => {
+  const id = await create()
+  const installed = await sh(id, 'cat /usr/local/share/brayness-starter/starter.json')
+  assert.equal(installed.code, 0, installed.err)
+  const latest = JSON.parse(installed.out)
+  const removed = 'prompts/site.md'
+  assert.ok(latest.files.LICENSE)
+  assert.ok(latest.files['README.md'])
+  assert.ok(latest.files[removed])
+  const original = (await sh(id, 'cat /usr/local/share/brayness-starter/LICENSE')).out
+  put('harness/.ignore', '')
+  put('harness/starter.json', JSON.stringify({
+    version: hash('previous starter'), built_at: '2026-09-01T00:00:00.000Z',
+    files: { LICENSE: hash('old license'), 'README.md': hash('old readme'), [removed]: hash('old prompt') },
+  }))
+  put('harness/LICENSE', 'old license')
+  put('harness/README.md', 'personal readme')
+  // The old manifest names this file but saved storage does not: a deletion.
+  const result = await recover(id)
+  assert.equal(result.code, 0, result.err)
+  assert.equal((await sh(id, 'cat /brayness/LICENSE')).out, original)
+  assert.equal((await sh(id, 'cat /brayness/README.md')).out, 'personal readme')
+  assert.notEqual((await sh(id, `test -e /brayness/${removed}`)).code, 0)
+  const saved = (await sh(id, 'cat /brayness/starter.json')).out
+  assert.equal(JSON.parse(saved).version, latest.version)
+})
+
+test("a1: two accounts sync the static example privately", async () => {
+  const example = JSON.parse(read_file_sync(join(root, '../brayness-examples/static/site.json'), 'utf8'))
+  const source = read_file_sync(join(root, '../brayness-examples/static/build.js')).toString('base64')
+  const desktop = new URL(`../../../../artifacts/brayness/${run}-apps/`, import.meta.url).pathname
+  const accounts = []
+  try {
+    for (const [index, phone] of [owner, '+14156667778'].entries()) {
+      const id = await create({}, phone)
+      const folder = await sh(id, 'test -d /brayness/apps && test -f /brayness/.ignore', phone)
+      assert.equal(folder.code, 0, 'new actors have private apps and sync defaults')
+      const config = JSON.stringify({ ...example, name: `Account ${index}` })
+      const encoded = Buffer.from(config).toString('base64')
+      const pushed = await sh(id, `cd /brayness && mkdir -p apps/site && printf '%s' '${encoded}' | base64 -d > apps/site/site.json && printf '%s' '${source}' | base64 -d > apps/site/build.js && chown -R brayness:brayness apps/site && SYNC_URL="http://$(ip route | awk '/default/{print $3; exit}'):${PORT}" runuser -u brayness -- brayness sync`, phone)
+      assert.equal(pushed.code, 0, pushed.err)
+      const store = client({ url: `http://127.0.0.1:${PORT}`, phone, token: harness_pass(phone, id) })
+      const local = join(desktop, String(index))
+      await store.sync(local, 'can://~/harness/apps/', { state: join(desktop, `${index}-state`) })
+      assert.deepEqual(JSON.parse(read_file_sync(join(local, 'site/site.json'), 'utf8')), JSON.parse(config))
+      assert.equal(read_file_sync(join(local, 'site/build.js')).toString('base64'), source)
+      accounts.push({ store, phone })
+    }
+    for (const [index, { store }] of accounts.entries()) {
+      const stranger = accounts[1 - index].phone
+      const path = `can://people/${stranger}/harness/apps/site/site.json`
+      await assert.rejects(store.cat(path), { status: 403 })
+      await assert.rejects(store.put(path, 'overwrite'), { status: 403 })
+    }
+  } finally {
+    rm_sync(desktop, { recursive: true, force: true })
+  }
+})
+
+test("an actor turn sends a file edit back to the desktop", async () => {
+  put('harness/.ignore', '')
+  put('harness/vault/return.md', 'desktop original\n')
+  const id = await create()
+  const recovered = await recover(id)
+  assert.equal(recovered.code, 0, recovered.err)
+  const synced = await sh(id, 'cd /brayness && runuser -u brayness -- brayness sync')
+  assert.equal(synced.code, 0, synced.err)
+  const desktop = new URL(`../../../../artifacts/brayness/${run}-desktop/`, import.meta.url).pathname
+  const state = `${desktop}-state`
+  const store = client({ url: `http://127.0.0.1:${PORT}`, phone: owner, token: harness_pass(owner, id) })
+  try {
+    await store.sync(desktop, 'can://~/harness/', { state })
+    assert.equal(read_file_sync(join(desktop, 'vault/return.md'), 'utf8'), 'desktop original\n')
+    const changed = await sh(id, `cd /brayness && runuser -u brayness -- brayness turn-start --session return-check && printf 'VM change\\n' > vault/return.md && runuser -u brayness -- brayness turn-end --session return-check --turn 1`)
+    assert.equal(changed.code, 0, changed.err)
+    await store.sync(desktop, 'can://~/harness/', { state })
+    assert.equal(read_file_sync(join(desktop, 'vault/return.md'), 'utf8'), 'VM change\n')
+  } finally {
+    rm_sync(desktop, { recursive: true, force: true })
+    rm_sync(state, { recursive: true, force: true })
+  }
 })

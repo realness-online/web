@@ -19,7 +19,7 @@ import { attempt } from "./exec.js"
  * pausing it (about 36s). Waiting on `ok` alone reports a stack as up when it
  * has no seed and cannot make an actor.
  */
-export async function waitForHealth(api, { tries, delayMs, requireSeed = true }) {
+export const waitForHealth = async (api, { tries, delayMs, requireSeed = true }) => {
   let last = "no response"
   for (let i = 0; i < tries; i += 1) {
     const health = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
@@ -36,7 +36,7 @@ export async function waitForHealth(api, { tries, delayMs, requireSeed = true })
 }
 
 /** Is the API up and able to make an actor? Does not throw. */
-export async function healthy(api) {
+export const healthy = async (api) => {
   const result = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
   if (!result.ok || !result.out.trim()) return false
   try {
@@ -46,7 +46,7 @@ export async function healthy(api) {
   }
 }
 
-export function sleep(ms) {
+export const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -56,7 +56,7 @@ export function sleep(ms) {
  * Returns a `curl` invocation quoted for the remote shell. The API is only
  * bound to loopback there, so this is the only way in without a tunnel.
  */
-export function remoteApi(name, { zone }) {
+export const remoteApi = (name, { zone }) => {
   const base = "http://127.0.0.1:8080"
 
   /** Quote a string for a single shell word. */

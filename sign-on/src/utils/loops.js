@@ -13,7 +13,7 @@ export const read_loop = html => {
 }
 
 /** Every loop on every host, running first, then newest. 403: not an admin. */
-export async function list_loops(sync_url, token) {
+export const list_loops = async (sync_url, token) => {
   const headers = { authorization: `Bearer ${token}` }
   const listing = await fetch(`${sync_url}/loops/?deep`, { headers })
   if (listing.status === 403) throw new Error('This number is not a Brayness admin.')
@@ -33,7 +33,7 @@ export async function list_loops(sync_url, token) {
 }
 
 /** Ask the loop's host to stop it on its next probe. */
-export async function stop_loop(sync_url, token, id) {
+export const stop_loop = async (sync_url, token, id) => {
   const response = await fetch(`${sync_url}/loops/${id}/stop.html`, {
     method: 'PUT',
     headers: { authorization: `Bearer ${token}`, 'if-none-match': '*' },

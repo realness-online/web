@@ -25,9 +25,9 @@
  * environment variable, so a typo fails instead of running against prod.
  */
 import { cloud_text as reconcile_cloud_text, reconcile_cloud, reconcile_models, reconcile_text } from "../src/reconcile.js"
-import { environment, isLocal } from "../webspace.config.js"
+import { environment, isLocal as is_local } from "../webspace.config.js"
 import { gcloud } from "../src/cloud.js"
-import { limaTarget } from "../src/lima.js"
+import { limaTarget as lima_target } from "../src/lima.js"
 import { note, step } from "../src/exec.js"
 import * as dev from "../src/dev.js"
 import * as hostGcp from "../src/host-gcp.js"
@@ -78,7 +78,7 @@ const USAGE = `usage: webspace <dev|prod> <command> [options]
 `
 
 /** Flags come after the subcommand; only a few are booleans. */
-function parseFlags(args) {
+const parseFlags = (args) => {
   const flags = {}
   const rest = []
   for (const arg of args) {
@@ -92,13 +92,13 @@ function parseFlags(args) {
 }
 
 /** A host name is required for everything but `up`. */
-function requireName(rest, usage) {
+const requireName = (rest, usage) => {
   const name = rest[0]
   if (!name) throw new Error(usage)
   return name
 }
 
-async function main(argv) {
+const main = async (argv) => {
   json_output = argv.includes("--json")
   set_json_output(json_output)
   const [envName, ...tail] = argv.filter((arg) => arg !== "--json")
@@ -108,14 +108,14 @@ async function main(argv) {
   }
 
   const config = environment(envName)
-  const local = isLocal(config)
+  const local = is_local(config)
   const { flags, rest } = parseFlags(tail)
   const [command, ...args] = rest
 
   // One object per environment, with the same four verbs. Everything below
   // goes through this, so nothing has to ask which target it is talking to.
   const hosts = local
-    ? { kind: "lima", target: limaTarget(config), mod: hostLima }
+    ? { kind: "lima", target: lima_target(config), mod: hostLima }
     : { kind: "gcp", target: gcloud(config), mod: hostGcp }
 
   switch (command) {
@@ -214,7 +214,7 @@ async function main(argv) {
   }
 }
 
-async function hostCommand(hosts, config, args, flags) {
+const hostCommand = async (hosts, config, args, flags) => {
   const [action, ...rest] = args
   const { target, mod } = hosts
 
@@ -228,7 +228,7 @@ async function hostCommand(hosts, config, args, flags) {
 
     case "down": {
       const name = requireName(rest, `usage: webspace <env> host down <name> [--delete]`)
-      if (flags.delete && !flags["no-drain"] && !isLocal(config)) {
+      if (flags.delete && !flags["no-drain"] && !is_local(config)) {
         // The drain is the safe delete; --no-drain is the blunt path.
         return drain.drain(target, config, name, { delete: true })
       }
@@ -243,7 +243,7 @@ async function hostCommand(hosts, config, args, flags) {
       )
 
     case "drain": {
-      if (isLocal(config)) {
+      if (is_local(config)) {
         // The drain ships bundles to a bucket and verifies what the bucket
         // stored. Dev has friends on one machine, not actors to preserve.
         throw new Error("there is nothing to drain in dev: the host is this Mac's VM")
@@ -256,7 +256,7 @@ async function hostCommand(hosts, config, args, flags) {
       return listHosts(target, config, hosts.kind)
 
     case "status": {
-      const records = await host_status(isLocal(config) ? "dev" : "prod", rest[0])
+      const records = await host_status(is_local(config) ? "dev" : "prod", rest[0])
       return { records, text: format_status(records) }
     }
 
@@ -265,7 +265,7 @@ async function hostCommand(hosts, config, args, flags) {
   }
 }
 
-async function listHosts(target, config, kind) {
+const listHosts = async (target, config, kind) => {
   step(`${kind} hosts in ${config.project ?? config.vm}`)
   if (kind === "lima") return { host: config.vm }
 
@@ -285,7 +285,7 @@ async function listHosts(target, config, kind) {
  * A probe that found nothing is a failure; a drain that shipped nothing is not.
  * The command decides by returning counts or throwing.
  */
-function finish(value) {
+const finish = (value) => {
   if (value?.records) {
     result(value.records, value.text)
     return 0
@@ -307,7 +307,7 @@ function finish(value) {
   return 0
 }
 
-function format(value) {
+const format = (value) => {
   if (value === true) return "yes"
   if (Array.isArray(value)) return value.join(" ") || "none"
   if (typeof value === "object") return JSON.stringify(value)

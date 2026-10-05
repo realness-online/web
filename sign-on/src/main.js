@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp as create_app } from 'vue'
 import SignOn from './sign-on.vue'
 import LoopsAdmin from './loops-admin.vue'
 import Pay from './pay.vue'
@@ -12,6 +12,6 @@ init_auth()
 const path = window.location.pathname.replace(/\/+$/, '')
 const pages = { '/admin': LoopsAdmin, '/pay': Pay }
 const page = pages[path] ?? SignOn
-createApp(page, {
+create_app(page, {
   ...(page === SignOn ? { query: Object.fromEntries(new URLSearchParams(window.location.search)) } : {})
 }).mount('#app')

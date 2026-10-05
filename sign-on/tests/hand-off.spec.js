@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach as after_each, describe, expect, it, vi } from 'vitest'
 import { cli_request, hand_off } from '@/utils/hand-off'
 
 const state = 'a'.repeat(32)
@@ -22,7 +22,7 @@ describe('cli_request', () => {
 })
 
 describe('hand_off', () => {
-  afterEach(() => {
+  after_each(() => {
     document.body.innerHTML = ''
     vi.restoreAllMocks()
   })

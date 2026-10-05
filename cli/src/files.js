@@ -8,17 +8,17 @@ export class CapabilityError extends Error {
   }
 }
 
-function required(value, name) {
+const required = (value, name) => {
   if (typeof value !== "string" || !value) throw new CapabilityError("usage", `${name} is required`)
 }
 
-function require_personal_path(path) {
+const require_personal_path = (path) => {
   required(path, "remote path")
   if (!path.startsWith("can://~/")) throw new CapabilityError("usage", "use a personal path: can://~/...")
 }
 
 /** @param {{ store: ReturnType<typeof import("../../sync/src/client.js").client> }} options */
-export function file_capabilities({ store }) {
+export const file_capabilities = ({ store }) => {
   return {
     async sync({ local, remote }) {
       required(local, "local folder")

@@ -5,10 +5,10 @@
 //   sudo node host/app.js start <files-dir>   prints the record as JSON
 //   sudo node host/app.js stop <id>
 
-import { parseArgs } from "node:util"
+import { parseArgs as parse_args } from "node:util"
 import { AppStore } from "./src/apps.js"
 
-const { positionals, values } = parseArgs({
+const { positionals, values } = parse_args({
   allowPositionals: true,
   options: {
     volume: { type: "string", default: "/opt/fc/actors/mnt" },

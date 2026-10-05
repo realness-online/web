@@ -3,7 +3,7 @@
  */
 import { after, before, test } from "node:test"
 import assert from "node:assert/strict"
-import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises"
+import { mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises"
 import { createHash, randomUUID } from "node:crypto"
 import { join } from "node:path"
 import { DatabaseSync } from "node:sqlite"
@@ -96,6 +96,38 @@ test("downloads obey the never-sync list", async () => {
   const report = await a.sync(dir, "can://~/pull-skip/")
   assert.deepEqual(report.pulled, ["note.md"])
   assert.deepEqual(await readdir(dir), ["note.md"])
+})
+
+test("read-only recovery never uploads local files, deletes, or sync records", async () => {
+  const owner = as(A)
+  await owner.put("can://~/read-only/saved.md", "saved")
+  const dir = await local("read-only", { "local.md": "local", "saved.md": "starter" })
+  const state = join(root, "read-only-state")
+  const methods = []
+  const reader = client({ url, token: issuer.token(A), fetcher: (url, options) => {
+    methods.push(options.method)
+    return fetch(url, options)
+  } })
+  const report = await reader.sync(dir, "can://~/read-only/", { pull_only: true, state })
+  assert.deepEqual(report.pulled, ["saved.md"])
+  assert.equal(await readFile(join(dir, "saved.md"), "utf8"), "saved")
+  assert.equal(await readFile(join(dir, "local.md"), "utf8"), "local")
+  assert.ok(methods.every(method => method === "GET"))
+  await assert.rejects(readdir(state), { code: "ENOENT" })
+  await assert.rejects(owner.cat("can://~/read-only/local.md"), { status: 404 })
+})
+
+test("recovery refuses symlink targets and remote traversal", async () => {
+  const owner = as(A)
+  await owner.put("can://~/linked/nested/note.md", "remote")
+  const dir = await local("linked", { "local.md": "local" })
+  const outside = await local("outside", { "note.md": "keep" })
+  await symlink(outside, join(dir, "nested"))
+  await assert.rejects(owner.sync(dir, "can://~/linked/", { pull_only: true }), /target is a link/)
+  assert.equal(await readFile(join(outside, "note.md"), "utf8"), "keep")
+  await assert.rejects(owner.sync(dir, "can://~/linked/", {
+    pull_only: true, remote_files: { "../escape.md": "version" },
+  }), /unsafe sync path|403/)
 })
 
 test("edits travel both ways between two folders", async () => {

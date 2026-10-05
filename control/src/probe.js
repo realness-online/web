@@ -25,7 +25,7 @@ const DEFAULTS = [
   "n2-standard-4:us-east1-b",
 ]
 
-export async function probe(config, candidates = []) {
+export const probe = async (config, candidates = []) => {
   const list = candidates.length > 0 ? candidates : DEFAULTS
   step(`${list.length} candidates in ${config.project}`)
 
@@ -73,7 +73,7 @@ export async function probe(config, candidates = []) {
   return { ok, failed: list.length - ok.length }
 }
 
-function split(candidate) {
+const split = (candidate) => {
   const [type, zone] = candidate.split(":")
   if (!type || !zone) {
     throw new Error(`expected <machine-type>:<zone>, got "${candidate}"`)
@@ -81,7 +81,7 @@ function split(candidate) {
   return [type, zone]
 }
 
-function lastLine(text) {
+const lastLine = (text) => {
   return text
     .trim()
     .split("\n")

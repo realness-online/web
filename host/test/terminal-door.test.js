@@ -111,6 +111,35 @@ test("chat streams only for the actor's owner, after a same-origin request", asy
   }
 })
 
+test("the first accepted chat message records the first turn, once", async () => {
+  const turns = []
+  const server = makeWebterm({ pageRoot: ".", streamPort: 1, store: {
+    get: (id) => ({ id, owner: phone }),
+    ensureRunning: (id) => ({ id }),
+    beginWork: () => {}, endWork: () => {},
+    firstTurn: (id) => turns.push(id),
+  }, connectChat: async () => {
+    const socket = new Duplex({ read() {}, write(chunk, encoding, done) { this.push(null); done() } })
+    return { socket, lines: new Lines(socket) }
+  } })
+  await listen(server)
+  const base = `http://127.0.0.1:${server.address().port}`
+  const post = (body) => fetch(`${base}/chat/message?actor=a-one`, { method: "POST", headers: { cookie, origin: base }, body })
+  let cookie
+  try {
+    const exchange = await fetch(`${base}/auth`, { method: "POST", headers: { origin: base }, body: JSON.stringify({ pass }) })
+    cookie = exchange.headers.get("set-cookie").split(";")[0]
+    assert.equal((await post('{"message":null}')).status, 400)
+    assert.deepEqual(turns, [])
+    assert.equal((await post('{"message":"Hi"}')).status, 200)
+    assert.equal((await post('{"message":"Again"}')).status, 200)
+    assert.deepEqual(turns, ["a-one", "a-one"])
+  } finally {
+    server.closeAllConnections()
+    await close(server)
+  }
+})
+
 test("chat events stream the session to the owner, without holding the actor awake", async () => {
   const requests = []
   let work = 0

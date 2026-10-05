@@ -12,7 +12,7 @@
 // fills them from the folder's phone and the actor id.
 // b1d: `plan` says which allowance paid: `free` (free model, counted in
 // tokens) or `paid` (house model, counted in dollars). Older rows are free.
-import { randomBytes } from "node:crypto"
+import { randomBytes as random_bytes } from "node:crypto"
 
 const LIMIT = 10 * 1024 * 1024
 const NUMBERS = ["status", "request_bytes", "reply_bytes", "prompt_tokens", "completion_tokens", "cost"]
@@ -23,7 +23,7 @@ const INDEX = "index.html"
 export const via_of = (actor) => (/^app-/.test(actor ?? "") ? "app" : /^a-/.test(actor ?? "") ? "actor" : "phone")
 
 /** Watches a reply as it streams past; finish() returns its usage. */
-export function usage_meter() {
+export const usage_meter = () => {
   let pending = ""
   let bytes = 0
   let whole = "" // a non-streamed JSON reply, kept until parsed
@@ -57,7 +57,7 @@ export function usage_meter() {
 const escape = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")
 
 /** One call as an HTML Lines row. */
-export function usage_row({ model, actor, payer, plan, status, request_bytes, reply_bytes, usage, call = "" }) {
+export const usage_row = ({ model, actor, payer, plan, status, request_bytes, reply_bytes, usage, call = "" }) => {
   const values = {
     model: usage?.model ?? model,
     actor,
@@ -80,7 +80,7 @@ export function usage_row({ model, actor, payer, plan, status, request_bytes, re
  * Reads rows back; unknown text is ignored. `payer` fills older rows. A row
  * seen twice (composed, its piece not yet deleted) counts once.
  */
-export function read_rows(html, payer = "") {
+export const read_rows = (html, payer = "") => {
   const rows = []
   const seen = new Set()
   for (const [row] of html.matchAll(/<p itemscope itemtype="\/usage">.*?<\/p>/g)) {
@@ -117,7 +117,7 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
  * costs a few writes. A conflict or a busy file waits and tries again; when
  * our piece is gone, another call folded it.
  */
-export async function append_piece(storage, folder, piece, { tries = 12, wait = 1000 } = {}) {
+export const append_piece = async (storage, folder, piece, { tries = 12, wait = 1000 } = {}) => {
   const index = folder + INDEX
   for (let attempt = 0; attempt < tries; attempt++) {
     const waiting = day_files((await storage.list(folder)).files).slice(0, -1)
@@ -137,15 +137,15 @@ export async function append_piece(storage, folder, piece, { tries = 12, wait = 
   return false // the piece stays; readers still count it
 }
 
-export function usage_key(phone, actor, now = new Date()) {
+export const usage_key = (phone, actor, now = new Date()) => {
   const iso = now.toISOString()
-  return `${usage_day(phone, iso.slice(0, 10))}${iso.slice(11).replace(/[:.]/g, "")}-${actor}-${randomBytes(3).toString("hex")}.html`
+  return `${usage_day(phone, iso.slice(0, 10))}${iso.slice(11).replace(/[:.]/g, "")}-${actor}-${random_bytes(3).toString("hex")}.html`
 }
 
 const today = (now = new Date()) => now.toISOString().slice(0, 10)
 
 /** Every UTC day from `start` (YYYY-MM-DD) through `now`'s day. */
-export function days_since(start, now = new Date()) {
+export const days_since = (start, now = new Date()) => {
   const days = []
   const end = today(now)
   for (let at = new Date(`${start}T00:00:00Z`); at.toISOString().slice(0, 10) <= end; at.setUTCDate(at.getUTCDate() + 1)) days.push(at.toISOString().slice(0, 10))
@@ -165,7 +165,7 @@ export const free_model = (model) => typeof model === "string" && model.endsWith
 const free_tokens = (row) => (row.plan === "paid" || free_model(row.model) ? 0 : row.prompt_tokens + row.completion_tokens)
 
 /** Free-plan tokens and all cost; paid rows and free models spend none. */
-export function sum_rows(rows) {
+export const sum_rows = (rows) => {
   return {
     tokens: rows.reduce((sum, row) => sum + free_tokens(row), 0),
     cost: rows.reduce((sum, row) => sum + row.cost, 0),
@@ -176,7 +176,7 @@ export function sum_rows(rows) {
  * Storage-backed ledger for the proxy. Each day folder is read once, then
  * counted in memory; each proxy instance keeps its own count.
  */
-export function usage_ledger(storage, append = {}) {
+export const usage_ledger = (storage, append = {}) => {
   const totals = new Map() // `${phone} ${day}` -> Promise<{ tokens, cost }>
   const total = (phone, day) => {
     const key = `${phone} ${day}`
@@ -234,7 +234,7 @@ export function usage_ledger(storage, append = {}) {
 export const FREE_LIMITS = { day: { tokens: 250_000 }, month: { tokens: 3_000_000 } }
 
 /** Free limits after env overrides; "Infinity" lifts one. */
-export function free_limits(env = {}) {
+export const free_limits = (env = {}) => {
   const pick = (name, fallback = Infinity) => (env[name] ? Number(env[name]) : fallback)
   return {
     day: { tokens: pick("FREE_TOKENS_PER_DAY", FREE_LIMITS.day.tokens), cost: pick("FREE_COST_PER_DAY") },
@@ -247,7 +247,7 @@ export function free_limits(env = {}) {
  * each `{ tokens, cost }`; a missing limit is no limit. Paid plans (b1d) pass
  * their own limits through the same check.
  */
-export function over_limit(spent, limits = {}) {
+export const over_limit = (spent, limits = {}) => {
   const over = (used, { tokens = Infinity, cost = Infinity } = {}) => used.tokens >= tokens || used.cost >= cost
   if (over(spent.month, limits.month)) return "month"
   if (over(spent.day, limits.day)) return "day"

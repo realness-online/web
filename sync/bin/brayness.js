@@ -33,7 +33,7 @@ const args = rest.filter((arg) => arg !== "--deletes")
 
 const who = (ours) => (ours ? ` (ours: turn ${ours.turn} of ${basename(ours.session)})` : "")
 
-async function sync({ defer_edits = false } = {}) {
+const sync = async ({ defer_edits = false } = {}) => {
   const token = await token_source()()
   if (!token) throw new Error("not signed in; run brayness-store login")
   const { harness, synced, refused } = await sync_harness({ root: find_root(), store: client({ url: SYNC_URL, token }), plans: args, deletes, defer_edits })

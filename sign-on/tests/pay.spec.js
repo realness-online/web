@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { afterEach as after_each, beforeEach as before_each, describe, expect, it, vi } from 'vitest'
+import { enableAutoUnmount as enable_auto_unmount, flushPromises as flush_promises, mount } from '@vue/test-utils'
 
 vi.mock('@/utils/firebase', async () => {
   const { ref } = await import('vue')
@@ -17,10 +17,10 @@ const free_status = (day = 1000) => ({
   warn: day >= 225000 ? { limit: 'day', percent: 90, message: "You've used 90% of today's free model use. Subscribe for more at https://pay.test/pay" } : null
 })
 
-enableAutoUnmount(afterEach)
+enable_auto_unmount(after_each)
 
 let calls, assign
-beforeEach(() => {
+before_each(() => {
   vi.stubEnv('VITE_BRAYNESS_PROXY_URL', 'https://proxy.test')
   current_user.value = { getIdToken: async () => 'token' }
   calls = []
@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.stubGlobal('location', { ...window.location, search: '', assign })
 })
 
-afterEach(() => {
+after_each(() => {
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
 })
@@ -45,11 +45,11 @@ describe('pay page', () => {
   it('shows free use, the warning, and subscribes through Stripe', async () => {
     serve(free_status(230000))
     const page = mount(Pay)
-    await flushPromises()
+    await flush_promises()
     expect(page.text()).toContain('Today: 230,000 of 250,000 free tokens')
     expect(page.find('[role="status"]').text()).toBe("You've used 90% of today's free model use.")
     await page.find('button').trigger('click')
-    await flushPromises()
+    await flush_promises()
     expect(calls.at(-1)).toMatchObject({ url: 'https://proxy.test/pay/checkout', method: 'POST', auth: 'Bearer token' })
     expect(assign).toHaveBeenCalledWith('https://checkout.stripe.com/c/x')
   })
@@ -57,7 +57,7 @@ describe('pay page', () => {
   it('a paid person sees credit and renewal, no subscribe button', async () => {
     serve({ ...free_status(), plan: 'paid', paid: { credit: 5, used: 1.25, left: 3.75, percent: 25, renews: '2026-11-01T00:00:00.000Z', ends: '2026-11-01T00:00:00.000Z' } })
     const page = mount(Pay)
-    await flushPromises()
+    await flush_promises()
     expect(page.text()).toContain('House model credit: $1.25 of $5.00')
     expect(page.text()).toContain('renews on 2026-11-01')
     expect(page.find('button').exists()).toBe(false)
@@ -67,7 +67,7 @@ describe('pay page', () => {
     current_user.value = null
     serve(free_status())
     const page = mount(Pay, { global: { stubs: { AsSignOn: { template: '<form id="sign-in" />' } } } })
-    await flushPromises()
+    await flush_promises()
     expect(page.find('#sign-in').exists()).toBe(true)
     expect(calls).toHaveLength(0)
   })

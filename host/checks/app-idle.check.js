@@ -5,14 +5,14 @@
 //   sudo node host/checks/app-idle.check.js
 
 import assert from "node:assert/strict"
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
 import { request } from "node:http"
 import { issue_host_pass } from "../src/host-pass.js"
 
 const API = "http://127.0.0.1:8080"
 // Dev keeps the secret in dist/; a prod host keeps it root-only in /etc.
 const dev_secret = new URL("../../dist/host-pass-secret", import.meta.url)
-const secret = readFileSync(existsSync(dev_secret) ? dev_secret : "/etc/brayness/host-pass-secret", "utf8").trim()
+const secret = read_file_sync(exists_sync(dev_secret) ? dev_secret : "/etc/brayness/host-pass-secret", "utf8").trim()
 const alice = "+14155550123"
 const call = async (method, path, body) => {
   const response = await fetch(API + path, {

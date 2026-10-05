@@ -201,6 +201,54 @@ test("h1: a whole harness reaches a fresh VM, minus ignores, repos, and big file
   assert.equal(await readFile(join(desktop, "AGENTS.local.md"), "utf8"), "memory\nlearned in VM\n")
 })
 
+test("a1: two accounts sync matching app paths without sharing private files", async () => {
+  const url = `http://127.0.0.1:${server.address().port}`
+  const accounts = []
+  for (const [index, phone] of ['+15555550131', '+15555550132'].entries()) {
+    const owner = client({ url, token: issuer.token(phone) })
+    const desktop = await files(join(root, `apps-${index}-desktop`), {
+      '.ignore': '',
+      'apps/site/site.json': JSON.stringify({ name: `Private site ${index}` }),
+      'apps/site/content/articles/post.md': `private post ${index}\n`,
+      'apps/site/node_modules/dependency.js': 'local dependency',
+      'apps/site/dist/index.html': 'local build',
+      'apps/site/.env': 'local secret',
+    })
+    await sync_harness({ root: desktop, store: owner, legacy: false })
+    const vm = join(root, `apps-${index}-vm`)
+    await mkdir(vm, { recursive: true })
+    await sync_harness({ root: vm, store: owner, legacy: false })
+    assert.equal(await readFile(join(vm, 'apps/site/content/articles/post.md'), 'utf8'), `private post ${index}\n`)
+    for (const path of ['node_modules/dependency.js', 'dist/index.html', '.env'])
+      await assert.rejects(readFile(join(vm, 'apps/site', path)), { code: 'ENOENT' })
+    accounts.push({ phone, owner, desktop, vm })
+  }
+  for (const [index, { owner, desktop, vm }] of accounts.entries()) {
+    await writeFile(join(vm, 'apps/site/content/articles/post.md'), `VM post ${index}\n`)
+    await sync_harness({ root: vm, store: owner, legacy: false })
+    await sync_harness({ root: desktop, store: owner, legacy: false })
+    assert.equal(await readFile(join(desktop, 'apps/site/content/articles/post.md'), 'utf8'), `VM post ${index}\n`)
+    const stranger = accounts[1 - index].phone
+    const path = `can://people/${stranger}/harness/apps/site/content/articles/post.md`
+    await assert.rejects(owner.cat(path), { status: 403 })
+    await assert.rejects(owner.put(path, 'overwrite'), { status: 403 })
+    await assert.rejects(owner.walk(`can://people/${stranger}/harness/apps/`), { status: 403 })
+    const response = await fetch(`${url}/people/${accounts[index].phone}/harness/apps/site/content/articles/post.md`)
+    assert.equal(response.status, 403, 'sync does not publish an app')
+  }
+})
+
+test("a1: restoring an empty workspace still creates its apps folder", async () => {
+  const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token('+15555550133') })
+  await owner.put('can://~/harness/.ignore', '')
+  const fresh = join(root, 'empty-apps')
+  await mkdir(fresh, { recursive: true })
+  await sync_harness({ root: fresh, store: owner, legacy: false })
+  await writeFile(join(fresh, 'apps/first.md'), 'first app file')
+  await sync_harness({ root: fresh, store: owner, legacy: false })
+  assert.equal((await owner.cat('can://~/harness/apps/first.md')).toString(), 'first app file')
+})
+
 test("h1: personal ignores also apply to legacy plan-selected paths", async () => {
   const owner = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token("+15555550107") })
   const desktop = await files(join(root, "h1-legacy-ignores"), {

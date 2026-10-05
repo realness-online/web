@@ -10,10 +10,10 @@
 //   KILL="gcloud compute ssh brayness-1 --zone=us-central1-a --command='sudo kill -9 {pid}'" \
 //   npm run check:host
 
-import { execFileSync } from "node:child_process"
-import { createHmac, randomBytes } from "node:crypto"
+import { execFileSync as exec_file_sync } from "node:child_process"
+import { createHmac as create_hmac, randomBytes as random_bytes } from "node:crypto"
 import { connect } from "node:net"
-import { existsSync, readFileSync } from "node:fs"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 
@@ -25,15 +25,15 @@ const KILL = process.env.KILL ?? "limactl shell fc-local sudo kill -9 {pid}"
 const made = new Set()
 const owner = "+14156667777"
 const secretPath = new URL("../../dist/host-pass-secret", import.meta.url)
-const secret = process.env.HOST_PASS_SECRET ?? (existsSync(secretPath) ? readFileSync(secretPath, "utf8").trim() : null)
+const secret = process.env.HOST_PASS_SECRET ?? (exists_sync(secretPath) ? read_file_sync(secretPath, "utf8").trim() : null)
 
-function hostPass(phone = owner) {
+const hostPass = (phone = owner) => {
   assert.ok(secret && Buffer.byteLength(secret) >= 32, "HOST_PASS_SECRET required for check:host")
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 
-async function call(method, path, body, phone = owner) {
+const call = async (method, path, body, phone = owner) => {
   const init = { method, headers: { authorization: `Bearer ${hostPass(phone)}` } }
   if (body !== undefined) {
     init.headers["content-type"] = "application/json"
@@ -46,20 +46,20 @@ async function call(method, path, body, phone = owner) {
   return { status: response.status, type, text, json }
 }
 
-async function create(body) {
+const create = async (body) => {
   const result = await call("POST", "/v1/actors", body)
   assert.equal(result.status, 201, result.text)
   made.add(result.json.id)
   return result.json
 }
 
-async function destroy(id) {
+const destroy = async (id) => {
   const result = await call("DELETE", `/v1/actors/${id}`)
   made.delete(id)
   return result
 }
 
-async function sh(id, command, timeout = 60) {
+const sh = async (id, command, timeout = 60) => {
   const result = await call("POST", `/v1/actors/${id}/exec`, {
     argv: ["/bin/sh", "-c", command],
     timeout,
@@ -271,7 +271,7 @@ describe("an actor's life", () => {
       assert.equal((await call("GET", `/s/${actor.id}/blog/hello`)).text, "post\n", "pretty links")
       assert.equal((await call("GET", `/s/${actor.id}/missing.css`)).status, 404)
       const port = new URL(API).port
-      const vhost = execFileSync("curl", ["-s", "-H", `Host: ${actor.id}.localhost:${port}`, `${API}/`]).toString()
+      const vhost = exec_file_sync("curl", ["-s", "-H", `Host: ${actor.id}.localhost:${port}`, `${API}/`]).toString()
       assert.equal(vhost, "<h1>hi</h1>\n")
     }
   })
@@ -286,7 +286,7 @@ describe("an actor's life", () => {
   })
 
   test("a published path cannot leave the site", async () => {
-    const out = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--path-as-is",
+    const out = exec_file_sync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}", "--path-as-is",
       `${API}/s/${actor.id}/../../etc/passwd`]).toString()
     assert.notEqual(out, "200")
   })
@@ -338,7 +338,7 @@ describe("an actor's life", () => {
 
 describe("terminal", () => {
   test("a websocket without an actor is a 400", () => {
-    const status = execFileSync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}",
+    const status = exec_file_sync("curl", ["-s", "-o", "/dev/null", "-w", "%{http_code}",
       "-H", "Upgrade: websocket", "-H", "Connection: Upgrade", "-H", "Sec-WebSocket-Key: x",
       `${TERM_URL}/pty`]).toString()
     assert.equal(status, "400")
@@ -364,7 +364,7 @@ describe("terminal", () => {
 // A websocket to the actor's terminal. Frames are the guest's
 // `{"op": "data", "data_b64"}` lines; resolves with the decoded text once
 // `until` matches, leaving the socket open when `keep` is set.
-async function terminal(id, until, { keep = false, ms = 30000, send = [] } = {}) {
+const terminal = async (id, until, { keep = false, ms = 30000, send = [] } = {}) => {
   const auth = await fetch(`${TERM_URL}/auth`, {
     method: "POST", headers: { origin: TERM_URL }, body: JSON.stringify({ pass: hostPass() }),
   })
@@ -377,7 +377,7 @@ async function terminal(id, until, { keep = false, ms = 30000, send = [] } = {})
   const { ticket: key } = await ticket.json()
   const url = new URL(TERM_URL)
   const socket = connect(Number(url.port), url.hostname)
-  const handshake = randomBytes(16).toString("base64")
+  const handshake = random_bytes(16).toString("base64")
   socket.write(`GET /pty?actor=${id}&cols=80&rows=24&ticket=${key} HTTP/1.1\r\nHost: ${url.host}\r\nOrigin: ${TERM_URL}\r\nCookie: ${cookie}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ${handshake}\r\n\r\n`)
   let buffer = Buffer.alloc(0)
   let text = ""
@@ -416,9 +416,9 @@ async function terminal(id, until, { keep = false, ms = 30000, send = [] } = {})
 }
 
 // A browser's text frame: clients must mask (RFC 6455).
-function clientFrame(text) {
+const clientFrame = (text) => {
   const payload = Buffer.from(text)
-  const mask = randomBytes(4)
+  const mask = random_bytes(4)
   const size = payload.length
   const head = size < 126 ? Buffer.from([0x81, 0x80 | size]) : Buffer.from([0x81, 0x80 | 126, size >> 8, size & 255])
   return Buffer.concat([head, mask, payload.map((byte, i) => byte ^ mask[i % 4])])
@@ -442,7 +442,7 @@ describe("h3 lessons", () => {
     const count = 3000
     await sh(actor.id, `mkdir -p /brayness/h4a && cd /brayness/h4a && i=0; while [ $i -lt ${count} ]; do echo $i > f$i; i=$((i+1)); done`, 120)
     // What a host crash looks like: the VM process dies, no idle, no sync.
-    execFileSync("sh", ["-c", KILL.replaceAll("{pid}", String(actor.pid))], { stdio: "ignore" })
+    exec_file_sync("sh", ["-c", KILL.replaceAll("{pid}", String(actor.pid))], { stdio: "ignore" })
     const reload = await call("POST", `/v1/actors/${actor.id}/reload`)
     assert.equal(reload.status, 200, reload.text)
     const empty = await sh(actor.id, `cd /brayness/h4a || exit 9; ls | wc -l; find . -type f -empty | wc -l`)

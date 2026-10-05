@@ -7,19 +7,19 @@
  *
  * The edit log's schema is shared with `extensions/edit-log/log.ts`.
  */
-import { createHash } from "node:crypto"
-import { mkdirSync } from "node:fs"
-import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises"
+import { createHash as create_hash } from "node:crypto"
+import { mkdirSync as mkdir_sync } from "node:fs"
+import { mkdir, readFile as read_file, readdir, rm, stat, writeFile as write_file } from "node:fs/promises"
 import { dirname, join, relative, sep } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 import { harness_exclude, plan_syncs, refused, whole_enabled } from "./harness.js"
 import { skipped_name } from "./skip.js"
 
-const sha = (bytes) => createHash("sha256").update(bytes).digest("hex")
+const sha = (bytes) => create_hash("sha256").update(bytes).digest("hex")
 const turn_file = (state, session) => join(state, "turns", `${sha(session).slice(0, 16)}.json`)
 
 /** Absolute path to "mtime:size" for every harness file sync would carry. */
-export async function snapshot(root) {
+export const snapshot = async (root) => {
   const found = {}
   const exclude = await harness_exclude(root)
   const visit = async (dir) => {
@@ -46,16 +46,16 @@ export async function snapshot(root) {
   return found
 }
 
-export async function turn_start({ root, state, session }) {
+export const turn_start = async ({ root, state, session }) => {
   const path = turn_file(state, session)
   await mkdir(dirname(path), { recursive: true })
-  await writeFile(path, JSON.stringify(await snapshot(root)))
+  await write_file(path, JSON.stringify(await snapshot(root)))
 }
 
 /** Log what changed since turn_start; returns the paths it logged. */
-export async function turn_end({ root, state, session, turn }) {
+export const turn_end = async ({ root, state, session, turn }) => {
   const path = turn_file(state, session)
-  const before = JSON.parse(await readFile(path, "utf8").catch(() => "null"))
+  const before = JSON.parse(await read_file(path, "utf8").catch(() => "null"))
   if (!before) return []
   const after = await snapshot(root)
   const changed = [...new Set([...Object.keys(before), ...Object.keys(after)])].filter((file) => before[file] !== after[file])
@@ -66,7 +66,7 @@ export async function turn_end({ root, state, session, turn }) {
   )
   const logged = []
   for (const file of changed.sort()) {
-    const now = file in after ? sha(await readFile(file).catch(() => Buffer.alloc(0))) : null
+    const now = file in after ? sha(await read_file(file).catch(() => Buffer.alloc(0))) : null
     if (last.get(file)?.sha === now) continue
     insert.run(file, now, session, turn, new Date().toISOString())
     logged.push(file)
@@ -76,8 +76,8 @@ export async function turn_end({ root, state, session, turn }) {
   return logged
 }
 
-function open_log(path) {
-  mkdirSync(dirname(path), { recursive: true })
+const open_log = (path) => {
+  mkdir_sync(dirname(path), { recursive: true })
   const db = new DatabaseSync(path)
   db.exec(`
     PRAGMA journal_mode = WAL;

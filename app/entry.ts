@@ -1,6 +1,6 @@
 // brayness - boots pi with the embedded harness beside the binary
 import { dirname, join } from "node:path"
-import { existsSync, mkdirSync, cpSync, chmodSync, statSync, readdirSync } from "node:fs"
+import { existsSync as exists_sync, mkdirSync as mkdir_sync, cpSync as cp_sync, chmodSync as chmod_sync, statSync as stat_sync, readdirSync as readdir_sync } from "node:fs"
 
 const here = dirname(Deno.execPath())
 const workspace = join(here, "brayness-workspace")
@@ -12,21 +12,21 @@ const extracted: string[] = []
 for (const part of ["skills", "extensions", "prompts", "themes", "AGENTS.md"]) {
   const dest = join(workspace, part)
   const src = join(embedded, part)
-  if (existsSync(dest) || !existsSync(src)) continue
-  cpSync(src, dest, { recursive: true })
+  if (exists_sync(dest) || !exists_sync(src)) continue
+  cp_sync(src, dest, { recursive: true })
   extracted.push(dest)
 }
-// embedded files arrive read-only - make the extracted copy editable
-function make_writable(path: string) {
-  const info = statSync(path)
-  chmodSync(path, info.isDirectory() ? 0o755 : 0o644)
+/** Embedded files arrive read-only; the extracted copy must be editable. */
+const make_writable = (path: string) => {
+  const info = stat_sync(path)
+  chmod_sync(path, info.isDirectory() ? 0o755 : 0o644)
   if (info.isDirectory()) {
-    for (const child of readdirSync(path)) make_writable(join(path, child))
+    for (const child of readdir_sync(path)) make_writable(join(path, child))
   }
 }
 for (const path of extracted) make_writable(path)
 
-mkdirSync(agent_dir, { recursive: true })
+mkdir_sync(agent_dir, { recursive: true })
 
 Deno.env.set("PI_CODING_AGENT_DIR", agent_dir)
 Deno.chdir(workspace)

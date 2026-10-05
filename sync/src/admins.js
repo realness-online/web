@@ -10,7 +10,7 @@ const FRESH_MS = 30_000
 
 export const read_admins = (html) => new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
 
-export function admins(storage, { now = Date.now } = {}) {
+export const admins = (storage, { now = Date.now } = {}) => {
   let cached = null
   let until = 0
   return {

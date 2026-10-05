@@ -49,7 +49,7 @@ export const ENVIRONMENTS = {
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice"],
     },
     /** o7: when `status` calls for attention. */
-    attention: { stale_s: 120, free_pct: 15, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
+    attention: { free_pct: 15, mem_available_bytes: 2 * 1024 ** 3, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
   },
 
   prod: {
@@ -85,11 +85,11 @@ export const ENVIRONMENTS = {
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice", "Compute Engine"],
     },
     /** o7: when `status` calls for attention. */
-    attention: { stale_s: 120, free_pct: 15, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
+    attention: { free_pct: 15, mem_available_bytes: 2 * 1024 ** 3, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
   },
 }
 
-export function environment(name) {
+export const environment = (name) => {
   const config = ENVIRONMENTS[name]
   if (!config) {
     const known = Object.keys(ENVIRONMENTS).join(", ")

@@ -9,7 +9,7 @@ import { read_rights } from "brayness-can"
 
 export const rights_key = (owner) => `people/${owner}/rights.html`
 
-export function rights(storage) {
+export const rights = (storage) => {
   const cache = new Map() // owner -> { version, grants }
   const generation = new Map() // owner -> count of forgets, so a slow read never caches stale
 

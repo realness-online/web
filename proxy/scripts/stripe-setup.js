@@ -9,12 +9,12 @@
 //   2. a webhook to <proxy>/pay/webhook for paid invoices and cancellations
 //   3. its signing secret, stored as STRIPE_WEBHOOK_SECRET
 // Then redeploy the proxy (proxy/scripts/deploy.sh) to turn payments on.
-import { execFileSync } from "node:child_process"
+import { execFileSync as exec_file_sync } from "node:child_process"
 import { PLAN, PRICE_KEY, WEBHOOK_EVENTS, stripe_api } from "../src/billing.js"
 
 const project = process.env.PROJECT ?? "realness-development"
 const region = process.env.REGION ?? "us-central1"
-const gcloud = (args, input) => execFileSync("gcloud", [...args, `--project=${project}`], { encoding: "utf8", input, stdio: [input ? "pipe" : "ignore", "pipe", "pipe"] }).trim()
+const gcloud = (args, input) => exec_file_sync("gcloud", [...args, `--project=${project}`], { encoding: "utf8", input, stdio: [input ? "pipe" : "ignore", "pipe", "pipe"] }).trim()
 const secret = (name) => { try { return gcloud(["secrets", "versions", "access", "latest", `--secret=${name}`]) } catch { return null } }
 
 const key = secret("STRIPE_SECRET_KEY")

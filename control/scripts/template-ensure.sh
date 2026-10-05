@@ -17,7 +17,7 @@ cd "$repo"
 # its bytes: tar timestamps would force a rebuild every time.
 harness=dist/brayness-harness.tar.gz
 inputs="$({
-  find control/scripts/template-build.sh host/guest -type f -print0 | sort -z | xargs -0 sha256sum
+  find control/scripts/template-build.sh host/guest sync/src -type f -print0 | sort -z | xargs -0 sha256sum
   tar -tzf "$harness" | sort
   tar -xzOf "$harness" | sha256sum
 } | sha256sum | cut -d' ' -f1)"

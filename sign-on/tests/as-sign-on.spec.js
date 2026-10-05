@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { beforeEach as before_each, describe, expect, it, vi } from 'vitest'
+import { flushPromises as flush_promises, mount } from '@vue/test-utils'
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('@/utils/firebase', async () => {
 
 import AsSignOn from '@/components/as-sign-on.vue'
 
-beforeEach(() => {
+before_each(() => {
   vi.clearAllMocks()
   mocks.recaptcha.mockReturnValue({ type: 'recaptcha' })
   mocks.sign_in.mockResolvedValue({ confirm: mocks.confirm })
@@ -46,7 +46,7 @@ describe('as-sign-on', () => {
     const form = mount(AsSignOn)
     await form.find('#mobile').setValue('(555) 555-0101')
     await form.find('form').trigger('submit')
-    await flushPromises()
+    await flush_promises()
 
     expect(mocks.sign_in).toHaveBeenCalledWith('+15555550101', {
       type: 'recaptcha'
@@ -58,11 +58,11 @@ describe('as-sign-on', () => {
     const form = mount(AsSignOn)
     await form.find('#mobile').setValue('5555550101')
     await form.find('form').trigger('submit')
-    await flushPromises()
+    await flush_promises()
 
     await form.find('#verification-code').setValue('123456')
     await form.find('form').trigger('submit')
-    await flushPromises()
+    await flush_promises()
 
     expect(mocks.confirm).toHaveBeenCalledWith('123456')
     expect(form.emitted('signed_in')).toHaveLength(1)
@@ -74,11 +74,11 @@ describe('as-sign-on', () => {
     const form = mount(AsSignOn)
     await form.find('#mobile').setValue('5555550101')
     await form.find('form').trigger('submit')
-    await flushPromises()
+    await flush_promises()
 
     await form.find('#verification-code').setValue('000000')
     await form.find('form').trigger('submit')
-    await flushPromises()
+    await flush_promises()
 
     expect(form.find('[role="alert"]').text()).toContain('incorrect')
     expect(form.find('#verification-code').exists()).toBe(true)

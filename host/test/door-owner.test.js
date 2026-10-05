@@ -5,7 +5,7 @@ import { test } from "node:test"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { Door } from "../src/door.js"
-import { verify_recovery_pass } from "../../sync/src/recovery-pass.js"
+import { verify_harness_pass, verify_recovery_pass } from "../../sync/src/recovery-pass.js"
 import { verify_model_pass } from "../../proxy/src/model-pass.js"
 
 const root = mkdtempSync(fileURLToPath(new URL("../../../../artifacts/brayness/door-owner-", import.meta.url)))
@@ -45,6 +45,13 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     const recovery = await send({ op: "recovery-pass", owner: "+14155559999" })
     assert.equal(recovery.ok, true)
     assert.deepEqual(verify_recovery_pass(recovery.pass, process.env.HOST_PASS_SECRET), { phone: record.owner, id: record.id, paths: null })
+    const harness = await send({ op: "harness-pass", owner: "+14155559999", paths: ["apps"] })
+    assert.equal(harness.ok, true)
+    assert.deepEqual(verify_harness_pass(harness.pass, process.env.HOST_PASS_SECRET), { phone: record.owner, id: record.id, paths: null })
+    record.paths = ["apps/blog"]
+    const limited = await send({ op: "harness-pass", paths: null })
+    assert.deepEqual(verify_harness_pass(limited.pass, process.env.HOST_PASS_SECRET).paths, record.paths)
+    delete record.paths
     const model = await send({ op: "model-pass", owner: "+14155559999" })
     assert.equal(model.ok, true)
     assert.deepEqual(verify_model_pass(model.pass, process.env.MODEL_PASS_SECRET), { phone: record.owner, id: record.id })
@@ -62,6 +69,7 @@ test("VM-bound door ignores a claimed owner and denies actors without one", asyn
     assert.equal(loops.length, 2)
     assert.equal((await send({ op: "model-pass" })).ok, false)
     assert.equal((await send({ op: "recovery-pass" })).ok, false)
+    assert.equal((await send({ op: "harness-pass" })).ok, false)
     assert.equal((await send({ op: "publish", owner: "+14155550123" })).ok, false)
     assert.equal((await send({ op: "site-versions" })).ok, false)
     assert.equal((await send({ op: "site-restore", version: "012345abcdef" })).ok, false)

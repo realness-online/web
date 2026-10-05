@@ -7,7 +7,7 @@
  */
 import { run, attempt, stream } from "./exec.js"
 
-export function limaTarget(config) {
+export const limaTarget = (config) => {
   const shellArgs = (command, { user = null } = {}) => {
     const args = ["shell", `--workdir=${config.workdir}`, config.vm]
     if (!command) return args

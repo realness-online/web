@@ -14,16 +14,16 @@
  * one, which is how a 20 GB request once booted a 100 GB disk.
  */
 import { join } from "node:path"
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises"
+import { mkdtemp, mkdir, writeFile as write_file, rm } from "node:fs/promises"
 import { attempt, step, note, run } from "./exec.js"
 import { ROOT } from "./paths.js"
-import { buildTerminal } from "./terminal.js"
+import { buildTerminal as build_terminal } from "./terminal.js"
 
 const bootDisk = (name) => `${name}-boot`
 const actorsDisk = (name) => `${name}-actors`
 
 /** Config supplies the sizes; a call may override any of them. */
-function sizes(config, options) {
+const sizes = (config, options) => {
   return {
     imageFamily: options.imageFamily ?? config.imageFamily,
     machineType: options.machineType ?? config.machineType,
@@ -32,7 +32,7 @@ function sizes(config, options) {
   }
 }
 
-export async function up(cloud, config, name, { smoke = false, ...options } = {}) {
+export const up = async (cloud, config, name, { smoke = false, ...options } = {}) => {
   const { imageFamily, machineType, bootSize, actorsSize } = sizes(config, options)
   const boot = bootDisk(name)
   const actors = actorsDisk(name)
@@ -132,7 +132,7 @@ export async function up(cloud, config, name, { smoke = false, ...options } = {}
 }
 
 /** Stop it, keeping the disks. A start serves again in seconds. */
-export async function down(cloud, config, name, { mode = "stop" } = {}) {
+export const down = async (cloud, config, name, { mode = "stop" } = {}) => {
   if (mode === "delete") {
     step(`deleting ${name} and ${actorsDisk(name)}`)
     // The boot disk has auto-delete, so deleting the instance takes it too.
@@ -161,8 +161,8 @@ export async function down(cloud, config, name, { mode = "stop" } = {}) {
  * `host` imports from every other directory listed here. The host runs as root and leaves a root-owned
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
-export async function push(cloud, name) {
-  await buildTerminal()
+export const push = async (cloud, name) => {
+  await build_terminal()
   step("stage the harness")
   await run("bash", [join(ROOT, "control", "scripts", "harness-stage.sh")])
   step("copy the code")
@@ -178,20 +178,20 @@ export async function push(cloud, name) {
 }
 
 /** Rebuild the actor template when its inputs changed; the seed follows. */
-export async function ensure_template(cloud, config, name) {
+export const ensure_template = async (cloud, config, name) => {
   step("actor template")
   await cloud.ssh(name, `sudo bash ${config.root}/control/scripts/template-ensure.sh`)
 }
 
 /** Start the host on the host, by path. */
-export async function serve(cloud, config, name) {
+export const serve = async (cloud, config, name) => {
   step("serve")
   // By path, not inline: an ssh command line holding a pkill pattern would
   // kill the shell running the ssh command.
   await cloud.ssh(name, `bash ${config.root}/host/scripts/host-restart.sh`)
 }
 
-export async function restart(cloud, config, name) {
+export const restart = async (cloud, config, name) => {
   await push(cloud, name)
   await ensure_template(cloud, config, name)
   await provision_record_key(cloud, config, name)
@@ -201,11 +201,11 @@ export async function restart(cloud, config, name) {
 
 // The operator registers each host key; hosts never receive bucket access.
 // Dev passes `read_secret` to read it through Lima instead of ssh.
-export async function provision_record_key(cloud, config, name, {
+export const provision_record_key = async (cloud, config, name, {
   upload = (file, destination) => run("gcloud", ["storage", "cp", file, destination, "--project=realness-development"]),
   scratch = join(ROOT, "../../artifacts/brayness"),
   read_secret = () => cloud.call(["ssh", name, "--quiet", `--command=sudo bash ${config.root}/host/scripts/record-key.sh`]),
-} = {}) {
+} = {}) => {
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name)) throw new Error("invalid host name")
   step(`register ${name} with sync`)
   const secret = (await read_secret()).trim()
@@ -214,14 +214,14 @@ export async function provision_record_key(cloud, config, name, {
   const dir = await mkdtemp(join(scratch, "record-key-"))
   try {
     const file = join(dir, "key")
-    await writeFile(file, secret, { mode: 0o600 })
+    await write_file(file, secret, { mode: 0o600 })
     await upload(file, `gs://realness-development.appspot.com/host-keys/${name}`)
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
 }
 
-async function summary(cloud, config, name) {
+const summary = async (cloud, config, name) => {
   return {
     name,
     ip: await cloud.ip(name),
@@ -231,11 +231,11 @@ async function summary(cloud, config, name) {
   }
 }
 
-function pause(ms) {
+const pause = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function lastLine(text) {
+const lastLine = (text) => {
   return (
     text
       .trim()

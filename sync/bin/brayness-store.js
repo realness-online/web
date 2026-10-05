@@ -15,7 +15,7 @@
  * TOKEN, when set, wins. SYNC_URL picks the service; SIGN_ON_URL picks the
  * sign-in site.
  */
-import { execFile } from "node:child_process"
+import { execFile as exec_file } from "node:child_process"
 import { promisify } from "node:util"
 import { client, phone_of, SYNC_URL, SyncError } from "../src/client.js"
 import { keychain, login, token_source } from "../src/login.js"
@@ -31,7 +31,7 @@ const mask = (phone) => (phone ? `${phone.slice(0, 2)}…${phone.slice(-2)}` : "
 const commands = {
   async login() {
     console.log(`Opening ${SIGN_ON}/sign-on in your browser. Click to sign Brayness in.`)
-    const { id_token } = await login({ sign_on: SIGN_ON, open: (url) => promisify(execFile)("open", [url]) })
+    const { id_token } = await login({ sign_on: SIGN_ON, open: (url) => promisify(exec_file)("open", [url]) })
     console.log(`Signed in as ${mask(phone_of(id_token))}. The keychain holds it.`)
   },
   async logout() {

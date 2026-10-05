@@ -13,12 +13,14 @@
  *
  * Browsers may call it only from `origins`, the sites allowed to read and write.
  */
-import { createHash } from "node:crypto"
-import { createServer } from "node:http"
+import { createHash as create_hash, timingSafeEqual as timing_safe_equal } from "node:crypto"
+import { createServer as create_server } from "node:http"
 import { can, identify } from "brayness-can"
 import { issue_host_pass, verify_host_pass, verify_record_pass, record_host } from "./host-pass.js"
+import { run_host_alerts } from "./host-alerts.js"
+import { host_health } from "./host-watch.js"
 import { site_request } from "./sites.js"
-import { recovery_path, verify_recovery_pass } from "./recovery-pass.js"
+import { harness_path, recovery_path, verify_harness_pass, verify_recovery_pass } from "./recovery-pass.js"
 import { rights_key } from "./rights.js"
 import { admins as admin_list } from "./admins.js"
 
@@ -27,7 +29,7 @@ const PHONES = /\+[1-9]\d{6,14}/g
 
 /** Logs hash numbers and never store them raw. */
 export const hash_phones = (text) =>
-  text.replace(PHONES, (phone) => `#${createHash("sha256").update(phone).digest("hex").slice(0, 12)}`)
+  text.replace(PHONES, (phone) => `#${create_hash("sha256").update(phone).digest("hex").slice(0, 12)}`)
 
 /**
  * Pins live at `pins/+A`, written once; `can()` denies that root to everyone.
@@ -63,7 +65,7 @@ const action_for = (method, path) =>
 
 const version_from = (value) => value?.replace(/^W\//, "").replace(/^"|"$/g, "")
 
-async function read_body(request) {
+const read_body = async (request) => {
   const chunks = []
   let size = 0
   for await (const chunk of request) {
@@ -80,11 +82,19 @@ const PREFLIGHT = {
   "access-control-max-age": "600",
 }
 
-export function sync_service({ storage, rights, project, certs, host_pass_secret, origins = [], log = console.log }) {
+export const sync_service = ({ storage, rights, project, certs, host_pass_secret, alert_token = null, alert_webhook = null, origins = [], log = console.log }) => {
   const pins = storage_pins(storage)
   const allowed = new Set(origins)
 
-  async function who_is(request) {
+  /** Cloud Scheduler presents a shared secret; nothing else calls this. */
+  const alert_call = (request) => {
+    if (!alert_token) return false
+    const given = Buffer.from(/^Bearer (\S+)$/.exec(request.headers.authorization ?? "")?.[1] ?? "")
+    const wanted = Buffer.from(alert_token)
+    return given.length === wanted.length && timing_safe_equal(given, wanted)
+  }
+
+  const who_is = async (request) => {
     const header = request.headers.authorization
     if (!header) return null
     const token = /^Bearer (\S+)$/.exec(header)?.[1]
@@ -95,14 +105,19 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
         const claims = verify_recovery_pass(token, host_pass_secret)
         return { recovery: claims.phone, id: claims.id, paths: claims.paths }
       } catch {
-        try { return { ...verify_host_pass(token, host_pass_secret), host: true } }
-        catch {
-          try {
-            const host = record_host(token)
-            const key = await storage.get(`host-keys/${host}`)
-            if (!key) throw new Status(401)
-            return { host_name: verify_record_pass(token, key.body.toString("utf8").trim()).host }
-          } catch { throw new Status(401) }
+        try {
+          const claims = verify_harness_pass(token, host_pass_secret)
+          return { harness: claims.phone, id: claims.id, paths: claims.paths }
+        } catch {
+          try { return { ...verify_host_pass(token, host_pass_secret), host: true } }
+          catch {
+            try {
+              const host = record_host(token)
+              const key = await storage.get(`host-keys/${host}`)
+              if (!key) throw new Status(401)
+              return { host_name: verify_record_pass(token, key.body.toString("utf8").trim()).host }
+            } catch { throw new Status(401) }
+          }
         }
       }
     }
@@ -115,12 +130,14 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
 
   const admins = admin_list(storage)
 
-  async function handle(request, response, path, action, who) {
+  const handle = async (request, response, path, action, who) => {
     // Admin is asked only where it grants something: loops, hosts, and the ledger.
     if (["loops", "hosts", "usage", "billing"].includes(path.split("/")[0]) && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
     const owner = path.split("/")[1]
     const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
-    if (who?.recovery) {
+    if (who?.harness) {
+      if (!harness_path(path, who.harness, who.paths)) throw new Status(403)
+    } else if (who?.recovery) {
       if (!["get", "list"].includes(action) || !recovery_path(path, who.recovery, who.paths)) throw new Status(403)
     } else if (who?.host) {
       if (!path.startsWith(`people/${who.phone}/work/site/`) || !can(who, action, path, grants)) throw new Status(403)
@@ -156,7 +173,7 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
     response.end()
   }
 
-  return createServer(async (request, response) => {
+  return create_server(async (request, response) => {
     const started = Date.now()
     // Decode once; `can()` refuses remaining percent escapes, not plain `%`.
     let path = (request.url ?? "/").split("?")[0].slice(1)
@@ -189,6 +206,19 @@ export function sync_service({ storage, rights, project, certs, host_pass_secret
           catch { throw new Status(401) }
         }
         await site_request({ storage, method: request.method, path, who, response, read_body: () => read_body(request) })
+      } else if (path === "v1/host-watch/run" && request.method === "POST") {
+        // m8: the alert clock is outside sync, which sleeps at zero usage.
+        if (!alert_call(request)) throw new Status(401)
+        const sent = await run_host_alerts({ storage, webhook: alert_webhook, warn: (message) => log(hash_phones(message)) })
+        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        response.end(JSON.stringify({ sent }))
+      } else if (path === "hosts/quiet.json" && request.method === "GET") {
+        // m7: a derived answer, admin-only. Nothing is stored for it.
+        who = await who_is(request)
+        if (!who?.phone) throw new Status(401)
+        if (!(await admins.has(who.phone))) throw new Status(403)
+        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        response.end(JSON.stringify(await host_health(storage)))
       } else if (path === "v1/host-pass" && request.method === "POST") {
         who = await who_is(request)
         if (!who?.phone) throw new Status(401)

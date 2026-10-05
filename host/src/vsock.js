@@ -4,7 +4,7 @@
 // "CONNECT <port>\n", read "OK <n>\n", then it is a byte stream. On the other
 // end is brayness-agent, one JSON request per line and one response per line.
 
-import { connect as connectUnix } from "node:net"
+import { connect as connect_unix } from "node:net"
 import { VsockError } from "./errors.js"
 
 export const VSOCK_PORT = 52
@@ -90,8 +90,8 @@ export class Lines {
 }
 
 /** A socket wired to the guest's `port`, handshake done, with its line reader. */
-export async function connect(udsPath, port = VSOCK_PORT) {
-  const socket = connectUnix(udsPath)
+export const connect = async (udsPath, port = VSOCK_PORT) => {
+  const socket = connect_unix(udsPath)
   await new Promise((done, fail) => {
     socket.once("connect", done)
     socket.once("error", (error) => fail(new VsockError(`cannot reach ${udsPath} (${error.code ?? error.message})`)))
@@ -114,7 +114,7 @@ export async function connect(udsPath, port = VSOCK_PORT) {
 }
 
 /** Run argv in the guest: { code, out, err } with Buffers. */
-export async function execInGuest(udsPath, argv, { cwd = null, stdin = Buffer.alloc(0), timeout = 90, port = VSOCK_PORT } = {}) {
+export const execInGuest = async (udsPath, argv, { cwd = null, stdin = Buffer.alloc(0), timeout = 90, port = VSOCK_PORT } = {}) => {
   const { socket, lines } = await connect(udsPath, port)
   let line
   try {
@@ -133,14 +133,14 @@ export async function execInGuest(udsPath, argv, { cwd = null, stdin = Buffer.al
 }
 
 /** Run argv and return stdout as text, throwing if it failed. */
-export async function runOk(udsPath, argv, options = {}) {
+export const runOk = async (udsPath, argv, options = {}) => {
   const { code, out, err } = await execInGuest(udsPath, argv, options)
   if (code !== 0) throw new VsockError(`${JSON.stringify(argv)} exited ${code}: ${err.toString().trim()}`)
   return out.toString()
 }
 
 /** Wait until /bin/true answers: the guest is up and its agent started. */
-export async function waitForAgent(udsPath, seconds = 60, port = VSOCK_PORT) {
+export const waitForAgent = async (udsPath, seconds = 60, port = VSOCK_PORT) => {
   const deadline = Date.now() + seconds * 1000
   let last
   while (Date.now() < deadline) {

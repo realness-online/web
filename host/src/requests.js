@@ -5,8 +5,8 @@
 // so a host restart does not idle a person's actor a second time.
 // Requests older than MAX_AGE are ignored, so a host back from a long stop
 // does not act on stale wishes.
-import { existsSync, readFileSync } from "node:fs"
-import { writeFileDurable } from "./durable.js"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
+import { writeFileDurable as write_file_durable } from "./durable.js"
 import { join } from "node:path"
 import { read_request, request_key } from "../../sync/src/actor-request.js"
 
@@ -16,7 +16,7 @@ const TIER = { idle: "memory", stop: "disk" }
 export class ActorRequests {
   constructor(store, { mirror, host, file = join(store.volume, "requests.json"), now = () => Date.now(), warn = () => {} }) {
     Object.assign(this, { store, mirror, host, file, now, warn })
-    this.done = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {}
+    this.done = exists_sync(file) ? JSON.parse(read_file_sync(file, "utf8")) : {}
   }
 
   /** One pass; returns what it did. Each actor's failure is its own. */
@@ -43,6 +43,6 @@ export class ActorRequests {
   }
 
   #save() {
-    writeFileDurable(this.file, `${JSON.stringify(this.done, null, 2)}\n`)
+    write_file_durable(this.file, `${JSON.stringify(this.done, null, 2)}\n`)
   }
 }

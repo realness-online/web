@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach as before_each, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   auth: { currentUser: null },
@@ -20,7 +20,7 @@ vi.mock('firebase/auth', () => ({
 
 import { auth, init_auth, sign_in, sign_off } from '@/utils/firebase'
 
-beforeEach(() => {
+before_each(() => {
   vi.clearAllMocks()
   mocks.getAuth.mockReturnValue(mocks.auth)
   init_auth()

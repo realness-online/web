@@ -6,7 +6,7 @@
 //   sudo node host/checks/app-supervise.check.js
 
 import assert from "node:assert/strict"
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from "node:fs"
 import { join } from "node:path"
 import { AppStore } from "../src/apps.js"
 import * as firecracker from "../src/firecracker.js"
@@ -17,7 +17,7 @@ const get = (record, path = "/") => fetch(`http://${record.address}:${record.por
 const vmPid = (id) => firecracker.pidForApiSock(apps.path(id, "api.sock"))
 
 /** Sweep until the app answers with a new boot id, or fail after `seconds`. */
-async function returns(record, before, seconds = 90) {
+const returns = async (record, before, seconds = 90) => {
   const deadline = Date.now() + seconds * 1000
   while (Date.now() < deadline) {
     const steps = await apps.sweep()
@@ -29,15 +29,15 @@ async function returns(record, before, seconds = 90) {
   throw new Error(`${record.id} did not come back in ${seconds}s`)
 }
 
-const fixtures = mkdtempSync("/opt/fc/actors/mnt/.app-supervise-check-")
+const fixtures = mkdtemp_sync("/opt/fc/actors/mnt/.app-supervise-check-")
 // Its own apps folder: a running dev host sweeps /opt/fc/actors/mnt/apps, and
 // two supervisors rebooting one VM kill each other's boots.
 const options = { volume: fixtures, kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker" }
 let apps = new AppStore(options)
 const app = join(fixtures, "app")
-mkdirSync(app)
-writeFileSync(join(app, "package.json"), '{"name": "supervised"}\n')
-writeFileSync(join(app, "server.js"), `
+mkdir_sync(app)
+write_file_sync(join(app, "package.json"), '{"name": "supervised"}\n')
+write_file_sync(join(app, "server.js"), `
 const boot = crypto.randomUUID()
 const hog = []
 export default {
@@ -50,9 +50,9 @@ export default {
 }
 `)
 const loop = join(fixtures, "loop")
-mkdirSync(loop)
-writeFileSync(join(loop, "package.json"), '{"name": "loop"}\n')
-writeFileSync(join(loop, "server.js"), 'setTimeout(() => process.exit(1), 1500)\nexport default { fetch: () => new Response("x\\n") }\n')
+mkdir_sync(loop)
+write_file_sync(join(loop, "package.json"), '{"name": "loop"}\n')
+write_file_sync(join(loop, "server.js"), 'setTimeout(() => process.exit(1), 1500)\nexport default { fetch: () => new Response("x\\n") }\n')
 
 const ids = []
 try {
@@ -74,7 +74,7 @@ try {
   let peak = 0
   const watch = setInterval(() => {
     const pid = vmPid(record.id) // none while the sweep reboots it
-    const status = pid && readFileSync(`/proc/${pid}/status`, "utf8").match(/VmRSS:\s+(\d+)/)
+    const status = pid && read_file_sync(`/proc/${pid}/status`, "utf8").match(/VmRSS:\s+(\d+)/)
     if (status) peak = Math.max(peak, Number(status[1]) >> 10)
   }, 200)
   try {
@@ -109,5 +109,5 @@ try {
   console.log("app-supervise-check: all green")
 } finally {
   for (const id of ids) await apps.stop(id).catch(() => {})
-  rmSync(fixtures, { recursive: true, force: true })
+  rm_sync(fixtures, { recursive: true, force: true })
 }

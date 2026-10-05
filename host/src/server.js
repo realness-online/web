@@ -4,15 +4,15 @@
 // Errors are JSON: 400 malformed, 404 unknown actor or route, 500 with the
 // host or Firecracker message, which is where the fix usually is.
 
-import { readFileSync, realpathSync, statSync } from "node:fs"
-import { createServer, request as httpRequest } from "node:http"
+import { readFileSync as read_file_sync, realpathSync as realpath_sync, statSync as stat_sync } from "node:fs"
+import { createServer as create_server, request as http_request } from "node:http"
 import { connect } from "node:net"
 import { extname, join, sep } from "node:path"
 import { BadRequest, HOST_FAILURES, NotFound } from "./errors.js"
 import { verify_host_pass } from "./host-pass.js"
 import { limit_path } from "../../sync/src/recovery-pass.js"
 import { can } from "../../can/src/can.js"
-import { app_auth, ENTER, withoutAppCookie } from "./app-auth.js"
+import { app_auth, ENTER, withoutAppCookie as without_app_cookie } from "./app-auth.js"
 import { logger } from "./log.js"
 
 const LOG = logger("server")
@@ -35,19 +35,19 @@ export const CONTENT_TYPES = {
   ".wasm": "application/wasm",
 }
 
-function send(response, status, headers, body) {
+const send = (response, status, headers, body) => {
   response.writeHead(status, { ...headers, "content-length": body.length })
   response.end(body)
 }
 
-function json(response, status, payload) {
+const json = (response, status, payload) => {
   if (status === 204) return send(response, 204, {}, Buffer.alloc(0))
   send(response, status, { "content-type": "application/json" }, Buffer.from(`${JSON.stringify(payload, null, 2)}\n`))
 }
 
 const plain = (response, status, message) => send(response, status, { "content-type": "text/plain; charset=utf-8" }, Buffer.from(`${message}\n`))
 
-function readBody(request) {
+const readBody = (request) => {
   return new Promise((done, fail) => {
     const chunks = []
     request.on("data", (chunk) => chunks.push(chunk))
@@ -57,7 +57,7 @@ function readBody(request) {
 }
 
 /** The body as a JSON object; an empty body is {}. */
-async function readJson(request) {
+const readJson = async (request) => {
   const raw = await readBody(request)
   if (!raw.length) return {}
   let payload
@@ -71,14 +71,14 @@ async function readJson(request) {
 }
 
 /** A file from a published tree. A directory serves index.html; a bare name its .html. */
-function site(store, response, id, rel) {
+const site = (store, response, id, rel) => {
   const root = store.publishedSite(id)
   if (!root) return plain(response, 404, `nothing published for ${id}`)
-  const realRoot = realpathSync(root)
+  const realRoot = realpath_sync(root)
   const inside = (path) => path === realRoot || path.startsWith(realRoot + sep)
   const is = (path, kind) => {
     try {
-      return statSync(path)[kind]()
+      return stat_sync(path)[kind]()
     } catch {
       return false
     }
@@ -93,11 +93,11 @@ function site(store, response, id, rel) {
   if (is(target, "isDirectory")) target = join(target, "index.html")
   else if (!is(target, "isFile") && is(`${target}.html`, "isFile")) target = `${target}.html`
   if (!is(target, "isFile")) return plain(response, 404, `no ${rel} in ${id}`)
-  if (!inside(realpathSync(target))) return plain(response, 403, "that path leaves the published site")
-  send(response, 200, { "content-type": CONTENT_TYPES[extname(target).toLowerCase()] ?? "application/octet-stream", "cache-control": "no-store" }, readFileSync(target))
+  if (!inside(realpath_sync(target))) return plain(response, 403, "that path leaves the published site")
+  send(response, 200, { "content-type": CONTENT_TYPES[extname(target).toLowerCase()] ?? "application/octet-stream", "cache-control": "no-store" }, read_file_sync(target))
 }
 
-function health(store) {
+const health = (store) => {
   const seed = store.seedStatus()
   const counts = {}
   for (const record of store.list()) counts[record.state] = (counts[record.state] ?? 0) + 1
@@ -115,7 +115,7 @@ function health(store) {
   }
 }
 
-async function exec(store, request, id) {
+const exec = async (store, request, id) => {
   const payload = await readJson(request)
   const stdinB64 = payload.stdin_b64 || ""
   if (typeof stdinB64 !== "string") throw new BadRequest("stdin_b64 must be a base64 string")
@@ -136,7 +136,7 @@ const appOfHost = (header) => APP_HOST.exec((header ?? "").split(":")[0])?.[1] ?
  * The app's record if this request may reach it now; otherwise the reason.
  * A private app is 404 to everyone but its owner, so strangers learn nothing.
  */
-function appTarget(apps, auth, id, request) {
+const appTarget = (apps, auth, id, request) => {
   let record
   try {
     record = apps.record(id)
@@ -150,22 +150,22 @@ function appTarget(apps, auth, id, request) {
 }
 
 /** The request's headers for the app: our cookie gone, forwarding added. */
-function forwarded(request) {
+const forwarded = (request) => {
   const headers = { ...request.headers, "x-forwarded-for": request.socket.remoteAddress, "x-forwarded-host": request.headers.host ?? "" }
-  const cookie = withoutAppCookie(request.headers.cookie)
+  const cookie = without_app_cookie(request.headers.cookie)
   if (cookie) headers.cookie = cookie
   else delete headers.cookie
   return headers
 }
 
 /** A ticket from POST /v1/apps/<id>/enter becomes the owner's cookie, on the app's host. */
-function enterApp(auth, id, url, response) {
+const enterApp = (auth, id, url, response) => {
   const cookie = auth.enter(url.searchParams.get("ticket") ?? "", id)
   if (!cookie) return plain(response, 403, "that link is used or expired; ask for a new one")
   send(response, 302, { "set-cookie": cookie, location: "/", "cache-control": "no-store" }, Buffer.alloc(0))
 }
 
-function proxyApp(apps, auth, id, request, response) {
+const proxyApp = (apps, auth, id, request, response) => {
   const url = new URL(request.url, "http://app")
   if (url.pathname === ENTER) {
     request.resume()
@@ -176,7 +176,7 @@ function proxyApp(apps, auth, id, request, response) {
     request.resume()
     return plain(response, status, message)
   }
-  const upstream = httpRequest({ host: record.address, port: record.port, method: request.method, path: request.url, headers: forwarded(request) }, (reply) => {
+  const upstream = http_request({ host: record.address, port: record.port, method: request.method, path: request.url, headers: forwarded(request) }, (reply) => {
     response.writeHead(reply.statusCode, reply.rawHeaders)
     reply.pipe(response)
   })
@@ -188,7 +188,7 @@ function proxyApp(apps, auth, id, request, response) {
 }
 
 /** A WebSocket (or any) upgrade: replay the request head, then splice the sockets. */
-function upgradeApp(apps, auth, request, socket, head) {
+const upgradeApp = (apps, auth, request, socket, head) => {
   const id = appOfHost(request.headers.host)
   const { record } = id ? appTarget(apps, auth, id, request) : {}
   if (!record) return socket.end("HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n")
@@ -207,7 +207,7 @@ function upgradeApp(apps, auth, request, socket, head) {
 // u2f. App files come from the harness's work folder, nowhere else.
 const APP_TREE = /^\/brayness\/work\/[^\0]+$/
 
-async function startApp(store, apps, owner, actor, request) {
+const startApp = async (store, apps, owner, actor, request) => {
   const payload = await readJson(request)
   const path = payload.path
   if (typeof payload.actor !== "string") throw new BadRequest("actor must be an actor id")
@@ -217,7 +217,7 @@ async function startApp(store, apps, owner, actor, request) {
   return apps.startFrom((dest) => store.copyOut(id, path, dest), { owner, actor: id, path })
 }
 
-async function route(store, apps, auth, loops, request, response) {
+const route = async (store, apps, auth, loops, request, response) => {
   const url = new URL(request.url, "http://host")
   const path = url.pathname.replace(/\/+$/, "") || "/"
   const method = request.method
@@ -347,8 +347,8 @@ async function route(store, apps, auth, loops, request, response) {
 }
 
 /** `apps` is an AppStore; without one, /v1/apps answers 404. */
-export function makeServer(store, apps = null, auth = apps && app_auth(process.env.HOST_PASS_SECRET), loops = null) {
-  const server = createServer(async (request, response) => {
+export const makeServer = (store, apps = null, auth = apps && app_auth(process.env.HOST_PASS_SECRET), loops = null) => {
+  const server = create_server(async (request, response) => {
     try {
       await route(store, apps, auth, loops, request, response)
     } catch (error) {

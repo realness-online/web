@@ -8,7 +8,7 @@ export const USAGE = `usage: brayness files sync <local-folder> <can://~/folder/
 Uses the same sign-in as brayness-store. File sync is two-way.
 `
 
-function parse(args) {
+const parse = (args) => {
   const words = args.filter((arg) => arg !== "--json")
   if (!words.length || (words.length === 1 && ["--help", "-h"].includes(words[0]))) return { command: "help" }
   if (words[0] === "files" && words[1] === "sync" && words.length === 4) return { command: "files.sync", local: words[2], remote: words[3] }
@@ -16,7 +16,7 @@ function parse(args) {
   throw new CapabilityError("usage", USAGE.trimEnd())
 }
 
-function sync_text(report) {
+const sync_text = (report) => {
   const lines = []
   for (const [kind, names] of Object.entries(report)) {
     if (!Array.isArray(names) || !names.length) continue
@@ -32,12 +32,12 @@ function sync_text(report) {
  * CLI adapter over the shared capabilities. JSON is one result on stdout.
  * Errors have a nonzero exit status; partial sync reports are preserved.
  */
-export async function run(args, {
+export const run = async (args, {
   get_token = token_source(),
   service_url = SYNC_URL,
   stdout = process.stdout,
   stderr = process.stderr,
-} = {}) {
+} = {}) => {
   const json = args.includes("--json")
   let command
   try {

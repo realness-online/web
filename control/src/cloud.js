@@ -20,7 +20,7 @@ import { run, attempt, stream } from "./exec.js"
  * point of use rather than here, so the environment is the only place to put
  * them.
  */
-export function gcloud(config) {
+export const gcloud = (config) => {
   const env = {
     CLOUDSDK_CORE_PROJECT: config.project,
     CLOUDSDK_COMPUTE_ZONE: config.zone,
@@ -103,7 +103,7 @@ export function gcloud(config) {
 }
 
 /** ssh argv, shared by the streaming and non-streaming forms. */
-function module_sshArgs(config, name, command) {
+const module_sshArgs = (config, name, command) => {
   const args = ["compute", "ssh", name]
   if (config.zone) args.push(`--zone=${config.zone}`)
   args.push("--quiet", `--command=${command}`)
@@ -117,7 +117,7 @@ function module_sshArgs(config, name, command) {
  * the guest, so a deep path fails with `cd: No such file or directory` before
  * the command runs.
  */
-export function lima(config) {
+export const lima = (config) => {
   const shell = (command, { user = null } = {}) => {
     const args = ["shell", `--workdir=${config.workdir}`, config.vm]
     if (user === "root") args.push("--", "sudo", "sh", "-c", command)

@@ -1,7 +1,7 @@
 // The host uploads a built tree to sync. Activation happens only after every
 // file arrives; readers keep seeing the previous version if upload fails.
-import { randomBytes } from "node:crypto"
-import { readFile, readdir } from "node:fs/promises"
+import { randomBytes as random_bytes } from "node:crypto"
+import { readFile as read_file, readdir } from "node:fs/promises"
 import { join, relative, sep } from "node:path"
 import { issue_host_pass } from "./host-pass.js"
 import { skipped } from "../../sync/src/skip.js"
@@ -39,7 +39,7 @@ export class SyncSites {
         else if (entry.isFile()) {
           saved.add(name)
           const path = `${prefix}${name.split("/").map(encodeURIComponent).join("/")}`
-          const response = await fetch(`${this.url}/${path}`, { method: "PUT", headers, body: await readFile(file) })
+          const response = await fetch(`${this.url}/${path}`, { method: "PUT", headers, body: await read_file(file) })
           if (!response.ok) throw new Error(`sync site source ${name}: ${response.status}`)
         }
       }
@@ -58,7 +58,7 @@ export class SyncSites {
 
   async publish(owner, site, root, source = root) {
     if (!ID.test(site)) throw new Error("invalid site ID")
-    const version = randomBytes(6).toString("hex")
+    const version = random_bytes(6).toString("hex")
     let count = 0
     let bytes = 0
     const upload = async (directory) => {
@@ -68,7 +68,7 @@ export class SyncSites {
         if (entry.isDirectory()) await upload(file)
         else if (entry.isFile()) {
           const name = relative(root, file).split(sep).map(encodeURIComponent).join("/")
-          const contents = await readFile(file)
+          const contents = await read_file(file)
           await this.request(owner, "PUT", `${site}/versions/${version}/files/${name}`, contents)
           count++
           bytes += contents.length

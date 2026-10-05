@@ -5,7 +5,7 @@
  *
  * Keys are relative, `/`-separated; versions are opaque strings.
  */
-export function contract({ test, assert, make }) {
+export const contract = ({ test, assert, make }) => {
   const text = (file) => file?.body.toString("utf8")
 
   test("a missing key reads as null", async () => {

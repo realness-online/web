@@ -23,7 +23,7 @@ const port = Number(process.env.PORT ?? 8787)
 // LISTEN=0.0.0.0 lets dev actors reach it through their gateway.
 const host = process.env.LISTEN ?? (process.env.K_SERVICE ? "0.0.0.0" : "127.0.0.1")
 
-function open_store() {
+const open_store = () => {
   const kind = process.env.STORE ?? "disk"
   if (kind === "disk") {
     const dir = resolve(process.env.SYNC_DIR ?? new URL("../../dist/sync-data", import.meta.url).pathname)
@@ -54,7 +54,9 @@ if (dev) {
 }
 
 const origins = (process.env.ORIGINS ?? "").split(",").filter(Boolean)
+// m8: both come from Secret Manager; without them the alert route answers 401.
+const alerts = { alert_token: process.env.ALERT_TOKEN, alert_webhook: process.env.HOST_ALERT_WEBHOOK }
 
-sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET }).listen(port, host, () =>
+sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET, ...alerts }).listen(port, host, () =>
   console.log(`# sync service on http://${host}:${port}, storage ${where}`),
 )

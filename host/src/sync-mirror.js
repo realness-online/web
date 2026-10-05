@@ -1,11 +1,11 @@
 // The host's records go through sync (o1): the host holds no storage key, so
 // it signs a record pass with the host secret. Same put/get as a store, so
 // Loops and HostStatus do not know where their records live.
-import { createHmac } from "node:crypto"
+import { createHmac as create_hmac } from "node:crypto"
 
-function issue_record_pass(host, secret) {
+const issue_record_pass = (host, secret) => {
   const body = Buffer.from(JSON.stringify({ aud: "brayness-records", host, exp: Math.floor(Date.now() / 1000) + 300 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 
 const key_path = (key) => key.split("/").map(encodeURIComponent).join("/")

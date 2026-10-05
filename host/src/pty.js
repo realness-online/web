@@ -10,7 +10,7 @@
 // The vsock path keeps actors apart; frames carry no actor id. The guest
 // holds the shell and Pi, so a reconnect reattaches to them.
 
-import { createServer } from "node:net"
+import { createServer as create_server } from "node:net"
 import { NotFound } from "./errors.js"
 import { logger } from "./log.js"
 import { PTY_PORT } from "./actors.js"
@@ -21,12 +21,12 @@ import * as vsock from "./vsock.js"
 const LOG = logger("pty")
 const HELLO_LIMIT = 1 << 16
 
-function reject(client, message) {
+const reject = (client, message) => {
   LOG.warn(`pty refused: ${message}`)
   client.end(`${JSON.stringify({ error: message })}\n`)
 }
 
-async function handle(store, client, helloSeconds) {
+const handle = async (store, client, helloSeconds) => {
   client.setNoDelay(true)
   const lines = new vsock.Lines(client, HELLO_LIMIT)
   let hello
@@ -84,8 +84,8 @@ async function handle(store, client, helloSeconds) {
   guest.socket.once("close", () => LOG.info(`pty detached from ${id}`))
 }
 
-export function makeServer(store, { helloSeconds = 30 } = {}) {
-  return createServer((client) => {
+export const makeServer = (store, { helloSeconds = 30 } = {}) => {
+  return create_server((client) => {
     handle(store, client, helloSeconds).catch((error) => {
       LOG.error(`pty failed`, error)
       client.destroy()

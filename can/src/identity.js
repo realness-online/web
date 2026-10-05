@@ -4,7 +4,7 @@
  * Realness phone sign-in issues the token; Brayness keeps no accounts.
  * A recycled number arrives with a new uid, so the pin refuses it.
  */
-import { createPublicKey, createVerify } from "node:crypto"
+import { createPublicKey as create_public_key, createVerify as create_verify } from "node:crypto"
 
 export const GOOGLE_CERTS =
   "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
@@ -15,7 +15,7 @@ const base64url = (text) => Buffer.from(text, "base64url")
 const json = (text) => JSON.parse(base64url(text).toString("utf8"))
 
 /** Fetch Google's signing certificates, cached until they say to refetch. */
-export function google_certs(fetcher = fetch) {
+export const google_certs = (fetcher = fetch) => {
   let cached = null
   let until = 0
   return async () => {
@@ -33,7 +33,7 @@ export function google_certs(fetcher = fetch) {
  * The verified `{ uid, phone }` behind a token, or a throw.
  * `certs` resolves to `{ kid: pem }`; `now` is seconds since the epoch.
  */
-export async function verify_token(token, { project, certs, now = Date.now() / 1000 }) {
+export const verify_token = async (token, { project, certs, now = Date.now() / 1000 }) => {
   if (!project) throw new Error("token: no project")
   const parts = typeof token === "string" ? token.split(".") : []
   if (parts.length !== 3) throw new Error("token: not a JWT")
@@ -43,9 +43,9 @@ export async function verify_token(token, { project, certs, now = Date.now() / 1
   if (header.alg !== "RS256") throw new Error("token: wrong algorithm")
   const keys = await certs()
   if (!Object.hasOwn(keys, header.kid)) throw new Error("token: unknown key")
-  const verifier = createVerify("RSA-SHA256")
+  const verifier = create_verify("RSA-SHA256")
   verifier.update(`${head}.${body}`)
-  if (!verifier.verify(createPublicKey(keys[header.kid]), base64url(signature))) {
+  if (!verifier.verify(create_public_key(keys[header.kid]), base64url(signature))) {
     throw new Error("token: bad signature")
   }
 
@@ -63,13 +63,13 @@ export async function verify_token(token, { project, certs, now = Date.now() / 1
  * Pin each uid to one number. `pins.claim(phone, uid)` stores the uid only if
  * the number has none (a create-if-absent put) and resolves to the pinned uid.
  */
-export async function pin(identity, pins) {
+export const pin = async (identity, pins) => {
   const pinned = await pins.claim(identity.phone, identity.uid)
   if (pinned !== identity.uid) throw new Error("identity: number belongs to another uid")
   return { phone: identity.phone }
 }
 
 /** A token in, a `can()` subject out: `{ phone }`. Throws on anything doubtful. */
-export async function identify(token, { pins, ...options }) {
+export const identify = async (token, { pins, ...options }) => {
   return pin(await verify_token(token, options), pins)
 }

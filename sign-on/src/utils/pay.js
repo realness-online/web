@@ -2,14 +2,14 @@
    POST /pay/checkout for a Stripe Checkout URL. Both take the ID token. */
 
 /** The caller's limits, use, and warning. */
-export async function get_limit(proxy_url, token) {
+export const get_limit = async (proxy_url, token) => {
   const response = await fetch(`${proxy_url}/limit`, { headers: { authorization: `Bearer ${token}` } })
   if (!response.ok) throw new Error(`Could not read your limits (${response.status})`)
   return response.json()
 }
 
 /** Starts a subscription; resolves to Stripe's hosted checkout URL. */
-export async function start_checkout(proxy_url, token) {
+export const start_checkout = async (proxy_url, token) => {
   const response = await fetch(`${proxy_url}/pay/checkout`, { method: 'POST', headers: { authorization: `Bearer ${token}` } })
   const body = await response.json().catch(() => ({}))
   if (!response.ok || !body.url) throw new Error(body.error ?? `Could not start checkout (${response.status})`)
@@ -17,7 +17,7 @@ export async function start_checkout(proxy_url, token) {
 }
 
 /** One line per limit, for people. */
-export function limit_lines(status) {
+export const limit_lines = (status) => {
   const n = value => (value == null ? 'no limit' : value.toLocaleString('en-US'))
   const lines = [
     `Today: ${n(status.free.day.used)} of ${n(status.free.day.limit)} free tokens`,

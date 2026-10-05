@@ -12,7 +12,7 @@ export const call = async (run, command, args) => {
 }
 
 /** Each Brayness service: URL, ready, the revision serving, when it deployed. */
-export async function services(cloud, { run = attempt } = {}) {
+export const services = async (cloud, { run = attempt } = {}) => {
   const out = await call(run, "gcloud", ["run", "services", "list", `--project=${cloud.project}`, `--region=${cloud.region}`, "--format=json"])
   const known = new Map(JSON.parse(out || "[]").map((service) => [service.metadata.name, service]))
   return cloud.services.map((name) => {
@@ -31,7 +31,7 @@ export async function services(cloud, { run = attempt } = {}) {
 }
 
 /** Recent log lines for one service, newest first. */
-export async function logs(cloud, name, { since = "1h", errors = false, limit = 50, run = attempt } = {}) {
+export const logs = async (cloud, name, { since = "1h", errors = false, limit = 50, run = attempt } = {}) => {
   if (!cloud.services.includes(name)) throw new Error(`usage: webspace <env> logs <${cloud.services.join("|")}> [--since=1h] [--errors] [--limit=50]`)
   if (!SINCE.test(since)) throw new Error("--since takes a count and m, h, or d, such as 30m or 2d")
   const count = Number(limit)
@@ -48,7 +48,7 @@ export async function logs(cloud, name, { since = "1h", errors = false, limit = 
 export const TABLE = /^[a-z][a-z0-9-]{4,28}[a-z0-9]\.[A-Za-z0-9_]{1,1024}\.[A-Za-z0-9_]{1,1024}$/
 
 /** Billed cost per project and service from the billing export, net of credits. */
-export async function cost(cloud, projects, { days = 7, run = attempt } = {}) {
+export const cost = async (cloud, projects, { days = 7, run = attempt } = {}) => {
   if (!cloud.billing) {
     throw new Error("no billing export yet: in the console, Billing > Billing export > BigQuery export, then set cloud.billing in webspace.config.js to the export table")
   }

@@ -24,7 +24,7 @@ const PUBLIC_FOLDERS = new Set(["posters", "statements", "thoughts"])
 const GRANTED = { read: new Set(["get", "list"]), write: ACTIONS }
 
 /** Split a storage key into segments, or null if it is not one we accept. */
-function segments(path) {
+const segments = (path) => {
   if (typeof path !== "string" || path.startsWith("/")) return null
   const parts = path.split("/")
   if (parts.at(-1) === "") parts.pop() // a folder: `people/+A/posters/`
@@ -35,7 +35,7 @@ function segments(path) {
 }
 
 /** The phone number behind a subject, and the instance id if it is one. */
-function subject(who) {
+const subject = (who) => {
   if (!who) return {}
   if (typeof who.phone === "string" && PHONE.test(who.phone)) return { phone: who.phone, admin: who.admin === true }
   const match = typeof who.instance === "string" && who.instance.match(INSTANCE)
@@ -45,21 +45,21 @@ function subject(who) {
 }
 
 /** Anyone, signed in or not, may read this. */
-function is_public(action, [first, ...inside]) {
+const is_public = (action, [first, ...inside]) => {
   if (action === "list") return PUBLIC_FOLDERS.has(first)
   if (action !== "get") return false
   return inside.length ? PUBLIC_FOLDERS.has(first) : PUBLIC_FILES.has(first)
 }
 
 /** A grant covers a path if it names it, or names a folder above it. */
-function covers(grant, owner, key) {
+const covers = (grant, owner, key) => {
   const want = `people/${owner}/`
   const path = grant.path.startsWith("/") ? `people${grant.path}` : ""
   if (!path.startsWith(want) || !segments(path)) return false
   return path.endsWith("/") ? `${key}/`.startsWith(path) : key === path
 }
 
-export function can(who, action, path, grants = []) {
+export const can = (who, action, path, grants = []) => {
   if (!ACTIONS.has(action)) return false
   const parts = segments(path)
   if (!parts) return false

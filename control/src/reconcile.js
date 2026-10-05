@@ -15,7 +15,7 @@ const OPENROUTER = "https://openrouter.ai/api/v1"
 export const TOLERANCE = { cost: 0.01, share: 0.01 }
 
 /** A secret from the environment's own project. */
-export async function read_secret(project, name, { run = attempt } = {}) {
+export const read_secret = async (project, name, { run = attempt } = {}) => {
   const { ok, out } = await run("gcloud", ["secrets", "versions", "access", "latest", `--secret=${name}`, `--project=${project}`])
   const value = ok ? out.trim() : ""
   if (!value) throw new Error(`no secret ${name} in ${project}`)
@@ -23,7 +23,7 @@ export async function read_secret(project, name, { run = attempt } = {}) {
 }
 
 /** What OpenRouter says the key spent: today and this month. */
-export async function key_totals(key, fetcher = fetch) {
+export const key_totals = async (key, fetcher = fetch) => {
   const response = await fetcher(`${OPENROUTER}/key`, { headers: { authorization: `Bearer ${key}` } })
   const body = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(`openrouter key: ${body?.error?.message ?? response.status}`)
@@ -32,7 +32,7 @@ export async function key_totals(key, fetcher = fetch) {
 }
 
 /** The ledger's cost for this UTC month, and today, across everyone. */
-export async function ledger_totals(sync, now = Date.now()) {
+export const ledger_totals = async (sync, now = Date.now()) => {
   const days = month_days(new Date(now))
   const phones = (await sync.ls("can://usage/").catch((error) => { if (error.status === 404) return []; throw error }))
     .filter((name) => name.endsWith("/")).map((name) => name.slice(0, -1))
@@ -51,7 +51,7 @@ export const apart = (a, b) => {
 }
 
 /** Today and this month: the ledger against OpenRouter for the proxy's key. */
-export async function reconcile_models(sync, config, { now = Date.now(), run = attempt, fetcher = fetch } = {}) {
+export const reconcile_models = async (sync, config, { now = Date.now(), run = attempt, fetcher = fetch } = {}) => {
   const openrouter = config.cloud?.openrouter
   if (!openrouter) throw new Error("no cloud.openrouter in webspace.config.js")
   const key = await read_secret(config.cloud.project, openrouter.key_secret, { run })
@@ -73,7 +73,7 @@ export const reconcile_text = (r) => [
 export const CLOUD = { baseline_days: 7, spike_ratio: 2, spike_floor: 1 }
 
 /** Daily net cost per service from the export, for the last `days` days. */
-export async function bill_days(cloud, { days = 14, run = attempt } = {}) {
+export const bill_days = async (cloud, { days = 14, run = attempt } = {}) => {
   if (!cloud.billing) throw new Error("no billing export for this environment; set cloud.billing")
   if (!TABLE.test(cloud.billing)) throw new Error("cloud.billing must be project.dataset.table")
   if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(cloud.project)) throw new Error("bad project id")
@@ -90,7 +90,7 @@ GROUP BY day, service`
 const day_before = (day, n) => new Date(Date.parse(`${day}T00:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10)
 
 /** The checks, over rows from bill_days. Pure, so tests plant gaps directly. */
-export function check_bill(rows, expected = [], limits = CLOUD) {
+export const check_bill = (rows, expected = [], limits = CLOUD) => {
   const latest = rows.reduce((max, row) => (row.day > max ? row.day : max), "")
   if (!latest) return { latest: null, total: 0, baseline: 0, gaps: [] }
   const total_on = (day) => rows.filter((row) => row.day === day).reduce((n, row) => n + row.net, 0)
@@ -105,7 +105,7 @@ export function check_bill(rows, expected = [], limits = CLOUD) {
 }
 
 /** The GCP side of o8 for one environment. */
-export async function reconcile_cloud(config, { run = attempt } = {}) {
+export const reconcile_cloud = async (config, { run = attempt } = {}) => {
   const rows = await bill_days(config.cloud, { days: CLOUD.baseline_days + 7, run })
   return check_bill(rows, config.cloud.expected ?? [], { ...CLOUD, ...config.cloud.spike })
 }

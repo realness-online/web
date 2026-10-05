@@ -6,14 +6,14 @@
  * path with a space cannot turn into two arguments, and no quoting bug is
  * possible. Node runs on this Mac only; the guest and host steps are bash.
  */
-import { execFile } from "node:child_process"
+import { execFile as exec_file } from "node:child_process"
 import { StringDecoder } from "node:string_decoder"
 import { progress } from "./output.js"
 
 /** Collect output; never let a stream go to the terminal unnoticed. */
-function capture(command, args, options) {
+const capture = (command, args, options) => {
   return new Promise((resolve, reject) => {
-    execFile(
+    exec_file(
       command,
       args,
       { maxBuffer: 32 * 1024 * 1024, ...options },
@@ -31,13 +31,13 @@ function capture(command, args, options) {
 }
 
 /** Run a command and throw if it fails. Returns stdout. */
-export async function run(command, args = [], options = {}) {
+export const run = async (command, args = [], options = {}) => {
   const { stdout } = await capture(command, args, options)
   return stdout
 }
 
 /** Run a command and return everything, including on failure. */
-export async function attempt(command, args = [], options = {}) {
+export const attempt = async (command, args = [], options = {}) => {
   try {
     const { stdout, stderr, code } = await capture(command, args, options)
     return { ok: true, out: stdout, err: stderr, code }
@@ -57,9 +57,9 @@ export async function attempt(command, args = [], options = {}) {
  * For anything slow: a template build, a host bootstrap. The output is the
  * progress report, and capturing it would mean showing nothing for minutes.
  */
-export function stream(command, args = [], options = {}) {
+export const stream = (command, args = [], options = {}) => {
   return new Promise((resolve, reject) => {
-    const child = execFile(command, args, { ...options }, (error) => {
+    const child = exec_file(command, args, { ...options }, (error) => {
       if (!error) return resolve()
       error.code = typeof error.code === "number" ? error.code : 1
       reject(error)
@@ -80,11 +80,11 @@ export function stream(command, args = [], options = {}) {
 }
 
 /** Print a step heading. Every multi-step command announces each step. */
-export function step(text) {
+export const step = (text) => {
   progress(`\n==> ${text}\n`)
 }
 
 /** Print a fact under the current step. */
-export function note(text) {
+export const note = (text) => {
   progress(`    ${text}\n`)
 }

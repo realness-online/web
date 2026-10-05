@@ -4,12 +4,12 @@
  *
  *   TOKEN=<id token> PROJECT=<firebase project> npm run check:google
  */
-import { createPublicKey } from "node:crypto"
+import { createPublicKey as create_public_key } from "node:crypto"
 import { google_certs, verify_token } from "../src/identity.js"
 
 const certs = google_certs()
 for (const [kid, pem] of Object.entries(await certs())) {
-  console.log(`${kid}: ${createPublicKey(pem).asymmetricKeyType}`)
+  console.log(`${kid}: ${create_public_key(pem).asymmetricKeyType}`)
 }
 
 const { TOKEN, PROJECT } = process.env

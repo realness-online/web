@@ -1,10 +1,10 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp as initialize_app } from 'firebase/app'
 import {
   RecaptchaVerifier,
-  getAuth,
-  onAuthStateChanged,
-  signInWithPhoneNumber,
-  signOut
+  getAuth as get_auth,
+  onAuthStateChanged as on_auth_state_changed,
+  signInWithPhoneNumber as sign_in_with_phone_number,
+  signOut as sign_out
 } from 'firebase/auth'
 import { ref } from 'vue'
 
@@ -30,9 +30,9 @@ export const current_user = ref(
 /** Built on first use, so importing this module needs no config. */
 export const init_auth = () => {
   if (instance) return instance
-  instance = getAuth(initializeApp(config))
+  instance = get_auth(initialize_app(config))
   auth.value = instance
-  onAuthStateChanged(instance, user => {
+  on_auth_state_changed(instance, user => {
     current_user.value = user
   })
   return instance
@@ -48,6 +48,6 @@ export const recaptcha = (element, theme = 'light') =>
 
 /** The modular call, with this page's auth instance bound in. */
 export const sign_in = (phone_number, verifier) =>
-  signInWithPhoneNumber(auth.value, phone_number, verifier)
+  sign_in_with_phone_number(auth.value, phone_number, verifier)
 
-export const sign_off = () => auth.value && signOut(auth.value)
+export const sign_off = () => auth.value && sign_out(auth.value)

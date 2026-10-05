@@ -1,27 +1,25 @@
 // The in-actor pull script against a real sync service on disk.
 import assert from "node:assert/strict"
-import { execFile } from "node:child_process"
 import { createHash, randomUUID } from "node:crypto"
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
 import { join } from "node:path"
 import { after, before, test } from "node:test"
-import { promisify } from "node:util"
 import { disk } from "../../can-store/src/disk.js"
 import { rights } from "../../sync/src/rights.js"
 import { issue_recovery_pass } from "../../sync/src/recovery-pass.js"
 import { sync_service } from "../../sync/src/server.js"
+import { recover } from "../../sync/src/recover.js"
 
 const secret = "recover-test-secret-at-least-thirty-two-bytes"
 const phone = "+14155550123"
 const id = "a-abcdef123456"
 const whole_phone = "+14155550124"
-const script = new URL("../guest/brayness-recover", import.meta.url).pathname
 const dir = new URL(`../../../../artifacts/brayness/recover-${randomUUID()}/`, import.meta.url).pathname
 const hash = (text) => createHash("sha256").update(text).digest("hex")
-let server, url
+let storage, server, url
 
 before(async () => {
-  const storage = disk(join(dir, "bucket"))
+  storage = disk(join(dir, "bucket"))
   const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   const call = { type: "message", message: { role: "assistant", content: [{ type: "toolCall", id: "c1", name: "edit", arguments: { path: "doc.md", edits: [{ oldText: "body", newText: "BODY" }] } }] } }
   await put(".pi/agent/sessions/s.jsonl", `${JSON.stringify(call)}\n`)
@@ -59,19 +57,10 @@ after(async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
-// Drive recover() with passes from a file, so a test can hand out an expired one first.
+// Exercise the shared client, including a pass expiring on the first request.
 const run = async (root, passes) => {
   await mkdir(root, { recursive: true })
-  const driver = `
-import importlib.machinery, importlib.util, json, sys
-loader = importlib.machinery.SourceFileLoader("recover", sys.argv[1])
-spec = importlib.util.spec_from_loader("recover", loader)
-module = importlib.util.module_from_spec(spec); loader.exec_module(module)
-passes = json.loads(sys.argv[4])
-print(json.dumps(module.recover(sys.argv[2], lambda: passes.pop(0), sys.argv[3])))
-`
-  const { stdout } = await promisify(execFile)("python3", ["-c", driver, script, url, root, JSON.stringify(passes)])
-  return JSON.parse(stdout)
+  return recover(url, () => passes.shift(), root)
 }
 
 test("a fresh actor pulls saved files and replays pending edits", async () => {
@@ -117,6 +106,34 @@ test("v7: a limited actor restores a percentage filename", async () => {
   const [count] = await run(root, [issue_recovery_pass({ phone, id, paths: [path] }, secret)])
   assert.equal(count, 1)
   assert.equal(await readFile(join(root, path), "utf8"), "percentage note")
+})
+
+test("starter updates preserve a managed file's pending session edits", async () => {
+  const phone = '+14155550125'
+  const root = join(dir, 'starter-pending')
+  const directory = join(dir, 'starter-distribution')
+  const original = 'title\nbody\n'
+  const target = 'title\nBODY\n'
+  const latest = 'new title\nbody\n'
+  const old_manifest = { version: hash('old starter'), files: { 'skill.md': hash(original) } }
+  const next_manifest = { version: hash('new starter'), files: { 'skill.md': hash(latest) } }
+  await mkdir(directory, { recursive: true })
+  await mkdir(root, { recursive: true })
+  await writeFile(join(directory, 'starter.json'), JSON.stringify(next_manifest))
+  await writeFile(join(directory, 'skill.md'), latest)
+  await writeFile(join(root, 'skill.md'), latest)
+  const put = (path, body) => storage.put(`people/${phone}/harness/${path}`, body)
+  await put('.ignore', '')
+  await put('starter.json', JSON.stringify(old_manifest))
+  await put('skill.md', original)
+  const call = { message: { content: [{ type: 'toolCall', name: 'edit', id: 'pending', arguments: { edits: [{ oldText: 'body', newText: 'BODY' }] } }] } }
+  await put('.pi/agent/sessions/s.jsonl', JSON.stringify(call) + '\n')
+  await put('.pi/agent/deferred.json', JSON.stringify({
+    'skill.md': { base_sha: hash(original), target_sha: hash(target), calls: [{ session: 's.jsonl', tool_call: 'pending' }] },
+  }))
+  const [, applied] = await recover(url, () => issue_recovery_pass({ phone, id }, secret), root, { starter: directory })
+  assert.deepEqual(applied, ['skill.md'])
+  assert.equal(await readFile(join(root, 'skill.md'), 'utf8'), target)
 })
 
 test("an expired pass renews once", async () => {

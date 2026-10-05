@@ -1,24 +1,24 @@
-import { closeSync, fsyncSync, openSync, renameSync, writeSync } from "node:fs"
+import { closeSync as close_sync, fsyncSync as fsync_sync, openSync as open_sync, renameSync as rename_sync, writeSync as write_sync } from "node:fs"
 import { dirname } from "node:path"
 
 /**
  * Replace a file so a crash leaves the old copy or the new, never an empty one.
  * Rename without fsync can land before the data on XFS: a 0-byte file.
  */
-export function writeFileDurable(path, text) {
+export const writeFileDurable = (path, text) => {
   const tmp = `${path}.tmp`
-  const fd = openSync(tmp, "w")
+  const fd = open_sync(tmp, "w")
   try {
-    writeSync(fd, text)
-    fsyncSync(fd)
+    write_sync(fd, text)
+    fsync_sync(fd)
   } finally {
-    closeSync(fd)
+    close_sync(fd)
   }
-  renameSync(tmp, path)
-  const dir = openSync(dirname(path), "r")
+  rename_sync(tmp, path)
+  const dir = open_sync(dirname(path), "r")
   try {
-    fsyncSync(dir)
+    fsync_sync(dir)
   } finally {
-    closeSync(dir)
+    close_sync(dir)
   }
 }

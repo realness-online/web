@@ -1,24 +1,37 @@
 // o7: what in an overview needs a person. Pure: data in, lines out.
 // Each line: { kind, subject, text }. An empty list means all clear.
 const pct = (free, total) => (Number(total) > 0 ? (100 * Number(free)) / Number(total) : 100)
+const gb = (bytes) => (Number(bytes) / 1024 ** 3).toFixed(2)
 
-export function attention(view, limits, now = Date.now()) {
+export const attention = (view, limits, now = Date.now()) => {
   const out = []
   const flag = (kind, subject, text) => out.push({ kind, subject, text })
   for (const failed of view.unread ?? []) flag("unread", failed.source, `could not read ${failed.source}: ${failed.error}`)
 
   for (const { host, age_s, actors } of view.hosts ?? []) {
-    if (age_s > limits.stale_s) flag("stale", host.name, `${host.name} last reported ${age_s}s ago`)
     if (host.seed !== "ready") flag("seed", host.name, `${host.name} seed is ${host.seed}`)
     const disk = pct(host.volume_free, host.volume_size)
     if (disk < limits.free_pct) flag("disk", host.name, `${host.name} volume ${disk.toFixed(0)}% free`)
     const memory = pct(host.mem_free, host.mem_total)
     if (memory < limits.free_pct) flag("memory", host.name, `${host.name} memory ${memory.toFixed(0)}% free`)
+    const available = Number(host.mem_available)
+    if (Number.isFinite(available) && available > 0 && available < limits.mem_available_bytes) flag("memory", host.name, `${host.name} has ${gb(available)} GiB available`)
+    const taps_used = Number(host.actor_taps_used)
+    const taps_limit = Number(host.actor_taps_limit)
+    if (Number.isFinite(taps_used) && taps_used >= taps_limit) flag("taps", host.name, `${host.name} has no free actor TAP (${taps_used} of ${taps_limit})`)
+    if (host.resource_error) flag("resources", host.name, `${host.name} cannot read its resources: ${host.resource_error}`)
     for (const actor of actors) {
       const quiet_h = (now - Date.parse(actor.last_activity)) / 3600e3
       if (actor.state === "running" && quiet_h >= limits.quiet_running_h) flag("long", actor.id, `${actor.id} running, quiet ${quiet_h.toFixed(1)}h (owner ${actor.owner || "-"})`)
       if (actor.state === "incomplete") flag("incomplete", actor.id, `${actor.id} on ${host.name} is a half-made actor`)
+      if (actor.probe_status === "failed") flag("probe", actor.id, `${actor.id} on ${host.name} did not answer: ${actor.probe_error || "no response"}`)
     }
+  }
+
+  // m7: sync owns the verdict; a host that never told anyone is still seen.
+  if (view.quiet?.setup) flag("watch", "hosts", `host health is not reported: ${view.quiet.setup}`)
+  for (const quiet of view.quiet?.quiet ?? []) {
+    flag("down", quiet.name, `${quiet.name} stopped reporting${quiet.age_s === null ? " (no readable time)" : ` (${quiet.age_s}s ago)`}`)
   }
 
   for (const loop of view.loops ?? []) {

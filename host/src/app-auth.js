@@ -1,7 +1,7 @@
 // u6: private apps. The owner trades a host pass for a one-use, app-bound
 // ticket; opening it on the app's own host sets a signed, host-only cookie.
 // The proxy strips that cookie, so an app never holds its owner's credential.
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto"
+import { createHmac as create_hmac, randomBytes as random_bytes, timingSafeEqual as timing_safe_equal } from "node:crypto"
 
 export const COOKIE = "brayness_app"
 export const ENTER = "/.brayness/enter"
@@ -9,15 +9,15 @@ const COOKIE_AGE = 12 * 60 * 60
 const TICKET_AGE = 30 * 1000
 const PHONE = /^\+[1-9]\d{6,14}$/
 
-export function app_auth(secret, { now = Date.now } = {}) {
+export const app_auth = (secret, { now = Date.now } = {}) => {
   if (!secret || Buffer.byteLength(secret) < 32) throw new Error("app signing secret must be at least 32 bytes")
-  const sign = (body) => createHmac("sha256", secret).update(`app:${body}`).digest("base64url")
+  const sign = (body) => create_hmac("sha256", secret).update(`app:${body}`).digest("base64url")
   const tickets = new Map()
 
   const issue = (phone, app) => {
     for (const [key, claim] of tickets) if (claim.expires <= now()) tickets.delete(key)
     if (tickets.size >= 10000) throw new Error("too many app tickets")
-    const ticket = randomBytes(32).toString("base64url")
+    const ticket = random_bytes(32).toString("base64url")
     tickets.set(ticket, { phone, app, expires: now() + TICKET_AGE })
     return ticket
   }
@@ -38,7 +38,7 @@ export function app_auth(secret, { now = Date.now } = {}) {
     if (extra || !body || !mac) return null
     const expected = Buffer.from(sign(body))
     const actual = Buffer.from(mac)
-    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null
+    if (actual.length !== expected.length || !timing_safe_equal(actual, expected)) return null
     try {
       const claims = JSON.parse(Buffer.from(body, "base64url").toString("utf8"))
       return claims.app === app && claims.exp > now() && PHONE.test(claims.phone) ? claims.phone : null
@@ -51,7 +51,7 @@ export function app_auth(secret, { now = Date.now } = {}) {
 }
 
 /** The Cookie header without ours; undefined when nothing else is left. */
-export function withoutAppCookie(header) {
+export const withoutAppCookie = (header) => {
   const rest = (header ?? "").split(/;\s*/).filter((part) => part && !part.startsWith(`${COOKIE}=`))
   return rest.length ? rest.join("; ") : undefined
 }

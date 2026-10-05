@@ -8,35 +8,35 @@
 // so a running host on :8080 is left alone.
 
 import assert from "node:assert/strict"
-import { randomBytes } from "node:crypto"
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { randomBytes as random_bytes } from "node:crypto"
+import { cpSync as cp_sync, existsSync as exists_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from "node:fs"
 import { request } from "node:http"
 import { join } from "node:path"
 import { AppStore } from "../src/apps.js"
 import { NotFound } from "../src/errors.js"
 import { issue_host_pass } from "../src/host-pass.js"
-import { makeServer } from "../src/server.js"
+import { makeServer as make_server } from "../src/server.js"
 
-const secret = (process.env.HOST_PASS_SECRET ||= randomBytes(32).toString("hex"))
+const secret = (process.env.HOST_PASS_SECRET ||= random_bytes(32).toString("hex"))
 const alice = "+14155550123"
 const bob = "+14155559999"
 const pass = (phone) => `Bearer ${issue_host_pass({ phone }, secret)}`
 
-const fixtures = mkdtempSync("/opt/fc/actors/mnt/.app-api-check-")
-mkdirSync(join(fixtures, "demo"))
-writeFileSync(join(fixtures, "demo/server.js"), 'export default { fetch: () => new Response("api demo\\n") }\n')
-writeFileSync(join(fixtures, "demo/package.json"), '{"name": "demo"}\n')
-mkdirSync(join(fixtures, "page"))
-writeFileSync(join(fixtures, "page/index.html"), "<p>site</p>\n")
+const fixtures = mkdtemp_sync("/opt/fc/actors/mnt/.app-api-check-")
+mkdir_sync(join(fixtures, "demo"))
+write_file_sync(join(fixtures, "demo/server.js"), 'export default { fetch: () => new Response("api demo\\n") }\n')
+write_file_sync(join(fixtures, "demo/package.json"), '{"name": "demo"}\n')
+mkdir_sync(join(fixtures, "page"))
+write_file_sync(join(fixtures, "page/index.html"), "<p>site</p>\n")
 
 const actor = { id: "a-check", owner: alice }
 const actors = {
   get: (id) => { if (id !== actor.id) throw new NotFound(id); return actor },
-  copyOut: async (id, tree, dest) => cpSync(join(fixtures, tree.slice("/brayness/work/".length)), dest, { recursive: true }),
+  copyOut: async (id, tree, dest) => cp_sync(join(fixtures, tree.slice("/brayness/work/".length)), dest, { recursive: true }),
 }
 // Its own apps folder, out of reach of a running dev host's sweep.
 const apps = new AppStore({ volume: fixtures, kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker" })
-const server = makeServer(actors, apps)
+const server = make_server(actors, apps)
 await new Promise((done) => server.listen(8180, "127.0.0.1", done))
 const call = async (method, path, who, body) => {
   const response = await fetch(`http://127.0.0.1:8180${path}`, {
@@ -102,18 +102,18 @@ try {
   const site = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/brayness/work/page" })
   assert.equal(site.status, 201)
   assert.equal(site.body.kind, "site")
-  assert.equal(existsSync(apps.path(site.body.id)), false)
+  assert.equal(exists_sync(apps.path(site.body.id)), false)
   console.log("  ok   a site gets a record and no VM")
 
   assert.equal((await call("DELETE", `/v1/apps/${id}`, alice)).status, 204)
-  assert.equal(existsSync(apps.path(id)), false)
+  assert.equal(exists_sync(apps.path(id)), false)
   assert.equal((await call("GET", `/v1/apps/${id}`, alice)).status, 404)
   id = null
   console.log("  ok   DELETE stops the VM and removes its files")
   console.log("app-api-check: all green")
 } finally {
   if (id) await apps.stop(id).catch(() => {})
-  rmSync(fixtures, { recursive: true, force: true })
+  rm_sync(fixtures, { recursive: true, force: true })
   server.closeAllConnections()
   server.close()
 }

@@ -12,7 +12,7 @@ export const URLS = {
 const mask_phone = (phone) => typeof phone === "string" && /^\+[1-9]\d{6,14}$/.test(phone)
   ? `${phone.slice(0, 2)}***${phone.slice(-2)}` : phone
 
-export async function host_status(env, name, { url = URLS[env], token = token_source(), now = Date.now() } = {}) {
+export const host_status = async (env, name, { url = URLS[env], token = token_source(), now = Date.now() } = {}) => {
   if (!url) throw new Error(`no sync URL for ${env}`)
   const bearer = await token()
   if (!bearer) throw new Error("sign in to sync first")
@@ -28,7 +28,7 @@ export async function host_status(env, name, { url = URLS[env], token = token_so
   return hosts
 }
 
-export function format_status(hosts) {
+export const format_status = (hosts) => {
   if (!hosts.length) return "hosts: none"
   return hosts.map(({ host, age_s, actors }) => `${host.name}: seed ${host.seed}, ${host.actors_running} running, ${actors.length} actors, last seen ${age_s}s ago`).join("\n")
 }

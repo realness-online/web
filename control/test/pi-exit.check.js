@@ -2,23 +2,23 @@
 // A real model reply must let Pi's print mode exit, not keep the actor busy.
 // Run with a dev host: npm run check:pi-exit
 // This calls the realness model proxy and has a fixed upper time bound.
-import { createHmac } from "node:crypto"
-import { existsSync, readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const owner = "+14156667777"
 const secret_path = new URL("../../dist/host-pass-secret", import.meta.url)
-const secret = process.env.HOST_PASS_SECRET ?? (existsSync(secret_path) ? readFileSync(secret_path, "utf8").trim() : null)
+const secret = process.env.HOST_PASS_SECRET ?? (exists_sync(secret_path) ? read_file_sync(secret_path, "utf8").trim() : null)
 const reply_limit_ms = Number(process.env.PI_REPLY_LIMIT_MS ?? 120000)
 const exit_limit_ms = Number(process.env.PI_EXIT_LIMIT_MS ?? 5000)
 
-function host_pass() {
+const host_pass = () => {
   if (!secret || Buffer.byteLength(secret) < 32) throw new Error("HOST_PASS_SECRET required for check:pi-exit")
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 
-async function request(path, options = {}) {
+const request = async (path, options = {}) => {
   const response = await fetch(`${API}${path}`, {
     ...options,
     headers: { ...options.headers, authorization: `Bearer ${host_pass()}` },
@@ -28,7 +28,7 @@ async function request(path, options = {}) {
   return body
 }
 
-async function main() {
+const main = async () => {
   const health = await request("/v1/health")
   if (!health.seed?.matches) throw new Error("host seed is not ready")
   let actor

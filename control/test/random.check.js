@@ -3,22 +3,22 @@
 // repeats in each one unless something reseeds it. Run inside Lima:
 //   API=http://127.0.0.1:8080 node --test control/test/random.check.js
 import assert from "node:assert/strict"
-import { createHmac } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { readFileSync as read_file_sync } from "node:fs"
 import { join } from "node:path"
 import { after, test } from "node:test"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const owner = "+14156667777"
 const root = new URL("../..", import.meta.url).pathname
-const secret = readFileSync(join(root, "dist/host-pass-secret"), "utf8").trim()
+const secret = read_file_sync(join(root, "dist/host-pass-secret"), "utf8").trim()
 const made = []
 
-function hostPass() {
+const hostPass = () => {
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
-async function call(method, path, body) {
+const call = async (method, path, body) => {
   const response = await fetch(`${API}${path}`, {
     method,
     headers: { authorization: `Bearer ${hostPass()}`, ...(body && { "content-type": "application/json" }) },
@@ -27,7 +27,7 @@ async function call(method, path, body) {
   const text = await response.text()
   return { status: response.status, text, json: text.startsWith("{") ? JSON.parse(text) : undefined }
 }
-async function sh(id, command) {
+const sh = async (id, command) => {
   const result = await call("POST", `/v1/actors/${id}/exec`, { argv: ["/bin/sh", "-c", command], timeout: 120 })
   assert.equal(result.status, 200, result.text)
   return Buffer.from(result.json.stdout_b64, "base64").toString().trim()

@@ -19,27 +19,27 @@
 //   npm run check:boundary
 
 import assert from "node:assert/strict"
-import { createHmac } from "node:crypto"
-import { existsSync, readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
 import { after, before, describe, test } from "node:test"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const PROXY = process.env.BRAYNESS_PROXY_URL ?? "https://brayness-proxy-yelzvhhngq-uc.a.run.app"
 const owner = "+14156667777"
 const secret_path = new URL("../../dist/host-pass-secret", import.meta.url)
-const secret = process.env.HOST_PASS_SECRET ?? (existsSync(secret_path) ? readFileSync(secret_path, "utf8").trim() : null)
+const secret = process.env.HOST_PASS_SECRET ?? (exists_sync(secret_path) ? read_file_sync(secret_path, "utf8").trim() : null)
 
 const made = new Set()
 let actor, neighbour
 
 /** A short-lived pass naming one owner. The host door checks the signature. */
-function host_pass(phone = owner) {
+const host_pass = (phone = owner) => {
   assert.ok(secret && Buffer.byteLength(secret) >= 32, "HOST_PASS_SECRET required for check:boundary")
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 
-async function call(method, path, body) {
+const call = async (method, path, body) => {
   const init = { method, headers: { authorization: `Bearer ${host_pass()}` } }
   if (body !== undefined) {
     init.headers["content-type"] = "application/json"
@@ -51,20 +51,20 @@ async function call(method, path, body) {
   return { status: response.status, text, json: type.includes("json") && text ? JSON.parse(text) : undefined }
 }
 
-async function create() {
+const create = async () => {
   const result = await call("POST", "/v1/actors")
   assert.equal(result.status, 201, result.text)
   made.add(result.json.id)
   return result.json.id
 }
 
-async function destroy(id) {
+const destroy = async (id) => {
   await call("DELETE", `/v1/actors/${id}`)
   made.delete(id)
 }
 
 /** Run argv in an actor. The channel execs directly, so argv is the whole story. */
-async function run(id, argv, timeout = 60) {
+const run = async (id, argv, timeout = 60) => {
   const result = await call("POST", `/v1/actors/${id}/exec`, { argv, timeout })
   assert.equal(result.status, 200, result.text)
   const stdout = Buffer.from(result.json.stdout_b64, "base64").toString()

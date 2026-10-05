@@ -171,6 +171,11 @@ log "node $NODE_VERSION"
 tar xJf "$ROOT/$NODE" -C "$TREE/usr/local" --strip-components=1
 chroot "$TREE" /usr/local/bin/node --version
 
+# The guest uses the desktop sync modules, not a second downloader.
+mkdir -p "$TREE/usr/local/lib/brayness-sync"
+cp "$REPO"/sync/src/*.js "$TREE/usr/local/lib/brayness-sync/"
+printf '{"type":"module"}\n' > "$TREE/usr/local/lib/brayness-sync/package.json"
+
 # -------------------------------------------------------------------------- pi
 # The documented install: https://.../docs/containerization.md
 [ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
@@ -189,6 +194,11 @@ log "stock harness -> /brayness"
 [ -f "$HARNESS_TAR" ] || { echo "run control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
 mkdir -p "$TREE/brayness"
 tar xzf "$HARNESS_TAR" -C "$TREE/brayness"
+# Keep the distributed bytes outside personal recovery and exports. Sync
+# compares saved files with their old starter and reads updates from here.
+mkdir -p "$TREE/usr/local/share/brayness-starter"
+tar xzf "$HARNESS_TAR" -C "$TREE/usr/local/share/brayness-starter"
+chmod -R a+rX "$TREE/usr/local/share/brayness-starter"
 
 # pi packages (the harness's own extensions) live in .pi/agent/npm
 log "harness pi-packages"
@@ -207,8 +217,14 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
 # make it look for /usr/local/skills.
 cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
 #!/bin/sh
+# Local sync records never travel with the actor's harness.
+export BRAYNESS_STATE="${BRAYNESS_STATE:-/brayness/artifacts/sync-state}"
 # `brayness publish [dir]` asks the host to serve a built site (the door).
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
+# Actor sync uses the installed shared Node client and a door-issued pass.
+case "${1:-}" in sync|turn-start|turn-end)
+  exec /usr/local/bin/node /usr/local/lib/brayness-sync/actor.js "$@" ;;
+esac
 # `brayness loop "<goal>"` hands long work to a loop in its own actor.
 if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/brayness-loop "$@"; fi
 case "${1:-}" in -h|--help)

@@ -7,9 +7,9 @@
 // this server makes one and redirects with its id on the URL. The websocket is
 // RFC 6455 by hand, text frames only: the host takes no dependencies.
 
-import { createHash } from "node:crypto"
-import { readFileSync, realpathSync, statSync } from "node:fs"
-import { createServer } from "node:http"
+import { createHash as create_hash } from "node:crypto"
+import { readFileSync as read_file_sync, realpathSync as realpath_sync, statSync as stat_sync } from "node:fs"
+import { createServer as create_server } from "node:http"
 import { connect } from "node:net"
 import { extname, join, sep } from "node:path"
 import { logger } from "./log.js"
@@ -22,7 +22,7 @@ const LOG = logger("webterm")
 const GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 const [CONTINUATION, TEXT, CLOSE, PING, PONG] = [0x0, 0x1, 0x8, 0x9, 0xa]
 
-function frame(opcode, payload) {
+const frame = (opcode, payload) => {
   const length = payload.length
   let header
   if (length < 126) header = Buffer.from([0x80 | opcode, length])
@@ -40,7 +40,7 @@ function frame(opcode, payload) {
 }
 
 /** Parse as many complete frames as `buffer` holds; returns the frames and the remainder. */
-function parse(buffer) {
+const parse = (buffer) => {
   const frames = []
   for (;;) {
     if (buffer.length < 2) break
@@ -68,12 +68,12 @@ function parse(buffer) {
   return { frames, rest: buffer }
 }
 
-function text(response, status, body) {
+const text = (response, status, body) => {
   response.writeHead(status, { "content-type": "text/plain; charset=utf-8", "content-length": Buffer.byteLength(body), connection: "close" })
   response.end(body)
 }
 
-export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET), connectChat = (record) => vsock.connect(record.vsockPath, 55), limits = null }) {
+export const makeServer = ({ pageRoot, chatRoot = null, streamPort, newActor, store, auth = terminal_auth(process.env.HOST_PASS_SECRET), connectChat = (record) => vsock.connect(record.vsockPath, 55), limits = null }) => {
   const same_origin = (request) => {
     const origin = request.headers.origin
     return origin === `http://${request.headers.host}` || origin === `https://${request.headers.host}`
@@ -82,7 +82,7 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
     const record = store.get(id)
     return record.owner === phone && can({ phone }, "get", `people/${phone}/harnesses/${id}`)
   }
-  const server = createServer(async (request, response) => {
+  const server = create_server(async (request, response) => {
     const url = new URL(request.url, "http://host")
     if (request.method === "GET" && url.pathname === "/handoff") {
       const origin = process.env.SIGN_ON_ORIGIN
@@ -139,6 +139,8 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
         return text(response, 400, "invalid message\n")
       }
       if (typeof message !== "string" || !message.trim()) return text(response, 400, "invalid message\n")
+      // m3: the first message this host accepts is the first turn; time it from create.
+      store.firstTurn?.(id)
       let guest
       try {
         record = await store.ensureRunning(id)
@@ -251,7 +253,7 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
         }
       }
       try {
-        const page = readFileSync(join(chat ? chatRoot : pageRoot, "index.html"))
+        const page = read_file_sync(join(chat ? chatRoot : pageRoot, "index.html"))
         response.writeHead(200, { "content-type": CONTENT_TYPES[".html"], "content-length": page.length, connection: "close" })
         return response.end(page)
       } catch {
@@ -261,11 +263,11 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
     if (url.pathname === "/pty") return text(response, 400, request.headers["sec-websocket-key"] ? "no actor\n" : "no websocket key\n")
     // The built page's hashed assets and the wasm.
     try {
-      const root = realpathSync(chat ? chatRoot : pageRoot)
+      const root = realpath_sync(chat ? chatRoot : pageRoot)
       const path = chat ? url.pathname.slice("/chat".length) : url.pathname
-      const target = realpathSync(join(root, decodeURIComponent(path)))
-      if (!target.startsWith(root + sep) || !statSync(target).isFile()) throw new Error()
-      const body = readFileSync(target)
+      const target = realpath_sync(join(root, decodeURIComponent(path)))
+      if (!target.startsWith(root + sep) || !stat_sync(target).isFile()) throw new Error()
+      const body = read_file_sync(target)
       response.writeHead(200, { "content-type": CONTENT_TYPES[extname(target)] ?? "application/octet-stream", "content-length": body.length, connection: "close" })
       response.end(body)
     } catch {
@@ -277,12 +279,12 @@ export function makeServer({ pageRoot, chatRoot = null, streamPort, newActor, st
   return server
 }
 
-function refuse(socket, status, message) {
+const refuse = (socket, status, message) => {
   socket.end(`HTTP/1.1 ${status} ${status === 400 ? "Bad Request" : "Bad Gateway"}\r\ncontent-type: text/plain; charset=utf-8\r\ncontent-length: ${Buffer.byteLength(message)}\r\nconnection: close\r\n\r\n${message}`)
 }
 
 /** Open the framed stream and finish its hello, so a refusal is a 502, not a blank terminal. */
-async function openPty(streamPort, hello) {
+const openPty = async (streamPort, hello) => {
   const stream = connect(streamPort, "127.0.0.1")
   await new Promise((done, fail) => {
     stream.once("connect", done)
@@ -299,7 +301,7 @@ async function openPty(streamPort, hello) {
   return { stream, lines }
 }
 
-async function bridge(request, socket, streamPort, auth, allowed, same_origin) {
+const bridge = async (request, socket, streamPort, auth, allowed, same_origin) => {
   const url = new URL(request.url, "http://host")
   if (url.pathname !== "/pty") return refuse(socket, 400, "no route\n")
   const actor = url.searchParams.get("actor")
@@ -323,7 +325,7 @@ async function bridge(request, socket, streamPort, auth, allowed, same_origin) {
     return refuse(socket, 502, `${error.message}\n`)
   }
 
-  const accept = createHash("sha1").update(key + GUID).digest("base64")
+  const accept = create_hash("sha1").update(key + GUID).digest("base64")
   socket.write(`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`)
   socket.setNoDelay(true)
 

@@ -9,15 +9,15 @@
 // the door for each running actor. `seed` stops after building it.
 
 import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
-import { parseArgs } from "node:util"
+import { fileURLToPath as file_url_to_path } from "node:url"
+import { parseArgs as parse_args } from "node:util"
 import { Door } from "./src/door.js"
 import { Loops } from "./src/loops.js"
 import { HostStatus } from "./src/status.js"
 import { ActorRequests } from "./src/requests.js"
 import { SyncSites } from "./src/sync-sites.js"
 import { hostname } from "node:os"
-import { readFileSync } from "node:fs"
+import { readFileSync as read_file_sync } from "node:fs"
 import { SyncMirror } from "./src/sync-mirror.js"
 import { logger } from "./src/log.js"
 import * as pty from "./src/pty.js"
@@ -28,7 +28,7 @@ import * as webterm from "./src/webterm.js"
 import { issue_model_pass } from "../proxy/src/model-pass.js"
 
 const LOG = logger("host")
-const HERE = dirname(fileURLToPath(import.meta.url))
+const HERE = dirname(file_url_to_path(import.meta.url))
 // Terminal writes never pass through exec; this bounds what a hard stop loses.
 const FLUSH_MS = 5000
 // How often to step idle actors down (h3).
@@ -38,7 +38,7 @@ const APP_SWEEP_MS = 5000
 // How often to write this host's status to Storage (o1).
 const STATUS_MS = 30_000
 
-const { positionals, values } = parseArgs({
+const { positionals, values } = parse_args({
   allowPositionals: true,
   options: {
     volume: { type: "string", default: "/opt/fc/actors/mnt" },
@@ -115,7 +115,7 @@ const limits = process.env.MODEL_PASS_SECRET
 await listen(webterm.makeServer({ pageRoot: values.term, chatRoot: values.chat, streamPort: Number(values["pty-port"]), store, newActor: (owner) => store.create(owner), limits }), values["web-port"])
 LOG.info(`browser terminal on ${values.listen}:${values["web-port"]}`)
 // The host signs record passes; sync alone holds the Storage key.
-const mirror = process.env.SYNC_URL ? new SyncMirror({ url: process.env.SYNC_URL, secret: readFileSync(process.env.RECORD_SECRET_FILE, "utf8").trim(), host: hostname() }) : null
+const mirror = process.env.SYNC_URL ? new SyncMirror({ url: process.env.SYNC_URL, secret: read_file_sync(process.env.RECORD_SECRET_FILE, "utf8").trim(), host: hostname() }) : null
 const loops = new Loops(store, { mirror })
 const site_url = store.syncSites ? `${(process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL).replace(/\/$/, "")}/sites/{id}/` : "/s/{id}/"
 new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops).start()

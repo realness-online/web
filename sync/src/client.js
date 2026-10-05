@@ -14,13 +14,14 @@
  * `deletes: "all"`; the rest are held. Remote deletes move files to the Trash.
  * A remote change mid-run is left for the next run and reported as a conflict.
  */
-import { createHash } from "node:crypto"
-import { copyFile, mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises"
+import { createHash as create_hash } from "node:crypto"
+import { chmod, copyFile as copy_file, lstat, mkdir, readFile as read_file, readdir, rename, rm, stat, writeFile as write_file } from "node:fs/promises"
 import { edit_log, edit_log_path } from "./edits.js"
 import { apply, load_calls, replayable } from "./replay.js"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
 import { skipped, skipped_name } from "./skip.js"
+import { starter_base, starter_bytes, starter_choice } from "./starter.js"
 
 /** The development sync service, unless SYNC_URL says otherwise. */
 export const SYNC_URL = process.env.SYNC_URL ?? "https://brayness-sync-639469569733.us-central1.run.app"
@@ -35,10 +36,10 @@ export class SyncError extends Error {
   }
 }
 
-const sha = (bytes) => createHash("sha256").update(bytes).digest("hex")
+const sha = (bytes) => create_hash("sha256").update(bytes).digest("hex")
 
 /** The phone number a token names, read locally only to build paths. */
-export function phone_of(token) {
+export const phone_of = (token) => {
   if (!token) return null
   try {
     return JSON.parse(Buffer.from(token.split(".")[1], "base64url")).phone_number ?? null
@@ -52,8 +53,8 @@ export const MAX_BYTES = 10 * 1024 * 1024
 
 export const is_remote = (path) => path.startsWith("can://")
 
-export function client({ url, token, fetcher = fetch }) {
-  const me = phone_of(token)
+export const client = ({ url, token, fetcher = fetch, phone = phone_of(token) }) => {
+  const me = phone
 
   const key = (path) => {
     let rest = path.replace(/^can:\/\//, "")
@@ -65,7 +66,8 @@ export function client({ url, token, fetcher = fetch }) {
   }
 
   const call = async (method, path, { body, headers = {}, query = "" } = {}) => {
-    const auth = token ? { authorization: `Bearer ${token}` } : {}
+    const current_token = typeof token === "function" ? await token() : token
+    const auth = current_token ? { authorization: `Bearer ${current_token}` } : {}
     const encoded = key(path).split("/").map(encodeURIComponent).join("/")
     return fetcher(`${url}/${encoded}${query && `?${query}`}`, { method, body, headers: { ...auth, ...headers } })
   }
@@ -105,13 +107,13 @@ export function client({ url, token, fetcher = fetch }) {
       if (is_remote(from) === is_remote(to)) throw new Error("cp copies between local and can://")
       if (!is_remote(from)) {
         const target = to.endsWith("/") ? `${to}${basename(from)}` : to
-        await api.put(target, await readFile(from))
+        await api.put(target, await read_file(from))
         return target
       }
       let target = to
       if (to.endsWith(sep) || to.endsWith("/") || (await is_dir(to))) target = join(to, basename(key(from)))
       await mkdir(dirname(target), { recursive: true })
-      await writeFile(target, await api.cat(from))
+      await write_file(target, await api.cat(from))
       return target
     },
 
@@ -122,14 +124,14 @@ export function client({ url, token, fetcher = fetch }) {
     },
 
     /** Two-way: whichever side moved from the base wins; both moving is a conflict. */
-    async sync(local, remote, { concurrency = 8, state = state_dir(), deletes = "explained", trash = trash_dir(state), defer_edits = false, sessions, sessions_remote = "can://~/.pi/agent/sessions/", only = null, exclude = () => false, max_bytes = MAX_BYTES } = {}) {
+    async sync(local, remote, { concurrency = 8, state = state_dir(), deletes = "explained", trash = trash_dir(state), defer_edits = false, sessions, sessions_remote = "can://~/.pi/agent/sessions/", only = null, exclude = () => false, max_bytes = MAX_BYTES, pull_only = false, remote_files = null, starter = null } = {}) {
       const folder = remote.endsWith("/") ? remote : `${remote}/`
       const pair = { local: resolve(local), remote: key(folder) }
       // `only` syncs named files in a folder; each selection keeps its own record.
       const selected = only && new Set(only)
       const record_key = `${pair.local}\n${pair.remote}${selected ? `\n${[...selected].sort().join("\n")}` : ""}`
       const record_path = join(state, "sync", `${sha(record_key).slice(0, 16)}.json`)
-      const saved = JSON.parse(await readFile(record_path, "utf8").catch(() => "{}"))
+      const saved = pull_only ? {} : JSON.parse(await read_file(record_path, "utf8").catch(() => "{}"))
       const manifest = saved.files ?? {}
       const deferred = saved.deferred ?? {}
       const report = { too_big: [], pushed: [], pulled: [], deferred: [], deleted: [], held: [], removed: [], adopted: [], replayed: [], kept_both: [], unchanged: [], conflicts: [], sessions: {}, replay: {} }
@@ -138,9 +140,14 @@ export function client({ url, token, fetcher = fetch }) {
       const session_folder = sessions && resolve(sessions)
       const locals = new Map()
       for (const file of await walk(local, (path, is_dir) => exclude(relative(local, path).split(sep).join("/"), is_dir)).catch(() => [])) locals.set(relative(local, file).split(sep).join("/"), file)
-      const remotes = await api.walk(folder)
+      const remotes = remote_files ?? await api.walk(folder)
+      const stock = await starter_base(api, folder, starter)
+      const managed = new Set([
+        ...Object.entries(stock?.latest.files ?? {}),
+        ...Object.entries(stock?.previous?.files ?? {}),
+      ].filter(([, value]) => !value.startsWith("link:")).map(([name]) => name))
       // The never-sync list holds both ways: a remote `.env` is never pulled.
-      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest)].filter((name) => !skipped(name) && !exclude(name, false) && (!selected || selected.has(name))))
+      const names = new Set([...locals.keys(), ...Object.keys(remotes), ...Object.keys(manifest), ...managed].filter((name) => !skipped(name) && !exclude(name, false) && (!selected || selected.has(name))))
 
       const file_of = (name) => join(pair.local, ...name.split("/"))
       const read_replay = (name, base, bytes) => {
@@ -167,7 +174,7 @@ export function client({ url, token, fetcher = fetch }) {
         for (const session of new Set(rows.map((row) => row.session))) {
           const session_name = relative(session_folder, session).split(sep).join("/")
           const saved_session = await expect(await call("GET", `${sessions_remote}${session_name}`), `saved session ${session_name}`, [200, 404])
-          if (saved_session.status === 404 || sha(Buffer.from(await saved_session.arrayBuffer())) !== sha(await readFile(session))) return false
+          if (saved_session.status === 404 || sha(Buffer.from(await saved_session.arrayBuffer())) !== sha(await read_file(session))) return false
         }
         const replayed = apply(original.bytes.toString("utf8"), calls)
         if (replayed === null || !Buffer.from(replayed).equals(bytes)) return false
@@ -184,17 +191,19 @@ export function client({ url, token, fetcher = fetch }) {
         return { bytes: Buffer.from(await response.arrayBuffer()), version: version_of(response) }
       }
       const pull = async (name, theirs) => {
+        await safe_target(local, name)
         const target = join(local, name)
         await mkdir(dirname(target), { recursive: true })
-        await writeFile(target, theirs.bytes)
+        await write_file(target, theirs.bytes)
         agree(name, theirs.bytes, theirs.version)
       }
       const conditional = (base) => (base ? { "if-match": `"${base.version}"` } : { "if-none-match": "*" })
 
       const one = async (name) => {
+        if (stock && name === "starter.json") return
         const base = manifest[name]
         const file = locals.get(name)
-        const bytes = file ? await readFile(file) : null
+        const bytes = file ? await read_file(file) : null
         // The service refuses big uploads; leave them home and say so.
         if (bytes && bytes.length > max_bytes) return report.too_big.push(name)
         const local_sha = bytes ? sha(bytes) : null
@@ -203,6 +212,62 @@ export function client({ url, token, fetcher = fetch }) {
         const remote_moved = remote_version !== (base?.version ?? null)
 
         try {
+          const updating_starter = stock && managed.has(name) && !stock.pending.has(name) && (pull_only || stock.previous?.version !== stock.latest.version)
+          if (updating_starter) {
+            const theirs = remote_version ? await fetch_remote(name) : null
+            const choice = starter_choice(stock, name, bytes, theirs?.bytes ?? null)
+            if (choice === "keep-local" && !pull_only && (deletes === "all" || log.explained(file_of(name), null))) {
+              if (theirs) await expect(await call("DELETE", `${folder}${name}`, { headers: conditional(theirs) }), `rm ${name}`, [204])
+              forget(name)
+              return report.deleted.push(name)
+            }
+            if (choice === "keep-local" || (choice === "personal" && pull_only)) return report.held.push(name)
+            if (choice === "remote") {
+              await pull(name, theirs)
+              return report.pulled.push(name)
+            }
+            if (choice === "remove" || choice === "remove-local") {
+              if (choice === "remove" && theirs && !pull_only) {
+                await expect(await call("DELETE", `${folder}${name}`, { headers: conditional(theirs) }), `rm ${name}`, [204])
+                report.deleted.push(name)
+              }
+              if (bytes) {
+                await safe_target(local, name)
+                await to_trash(join(local, name), trash)
+                report.removed.push(name)
+              }
+              forget(name)
+              return
+            }
+            if (choice === "latest") {
+              const updated = await starter_bytes(stock, name)
+              if (updated.length > max_bytes) return report.too_big.push(name)
+              await safe_target(local, name)
+              await mkdir(dirname(join(local, name)), { recursive: true })
+              if (!bytes?.equals(updated)) await write_file(join(local, name), updated)
+              if (!bytes) await chmod(join(local, name), (await stat(join(stock.directory, name))).mode & 0o777)
+              if (pull_only) return report.pulled.push(name)
+              if (theirs?.bytes.equals(updated)) {
+                agree(name, updated, theirs.version)
+                return report.adopted.push(name)
+              }
+              agree(name, updated, await api.put(`${folder}${name}`, updated, conditional(theirs)))
+              return report.pushed.push(name)
+            }
+          }
+          // Recovery uses the same file transport, without writes or deletes.
+          if (pull_only) {
+            await safe_target(local, name)
+            if (!remote_version) return report.unchanged.push(name)
+            const theirs = await fetch_remote(name)
+            if (!theirs) return report.conflicts.push(name)
+            if (bytes && sha(theirs.bytes) === local_sha) {
+              agree(name, bytes, theirs.version)
+              return report.adopted.push(name)
+            }
+            await pull(name, theirs)
+            return report.pulled.push(name)
+          }
           if (!local_moved && !remote_moved) {
             if (deferred[name] && bytes) {
               if (local_sha === deferred[name] && await can_defer(name, base, bytes, true)) return report.deferred.push(name)
@@ -241,7 +306,7 @@ export function client({ url, token, fetcher = fetch }) {
                 return report.adopted.push(name)
               }
               const copy = conflict_name(name, (taken) => locals.has(taken) || taken in remotes)
-              await writeFile(join(local, copy), theirs.bytes)
+              await write_file(join(local, copy), theirs.bytes)
               agree(copy, theirs.bytes, await api.put(`${folder}${copy}`, theirs.bytes, conditional(null)))
               agree(name, bytes, await api.put(`${folder}${name}`, bytes, conditional(theirs)))
               return report.kept_both.push(name)
@@ -276,7 +341,7 @@ export function client({ url, token, fetcher = fetch }) {
           const replayed = rows && apply(theirs.bytes.toString("utf8"), await load_calls(rows))
           if (typeof replayed === "string") {
             const merged = Buffer.from(replayed)
-            await writeFile(join(local, name), merged)
+            await write_file(join(local, name), merged)
             agree(name, merged, await api.put(`${folder}${name}`, merged, conditional(theirs)))
             return report.replayed.push(name)
           }
@@ -285,7 +350,7 @@ export function client({ url, token, fetcher = fetch }) {
           if (ours) report.sessions[name] = { session: ours.session, turn: ours.turn }
           const copy = conflict_name(name, (taken) => locals.has(taken) || taken in remotes)
           locals.set(copy, join(local, copy))
-          await writeFile(join(local, copy), theirs.bytes)
+          await write_file(join(local, copy), theirs.bytes)
           agree(copy, theirs.bytes, await api.put(`${folder}${copy}`, theirs.bytes, conditional(null)))
           agree(name, bytes, await api.put(`${folder}${name}`, bytes, conditional(theirs)))
           report.kept_both.push(name)
@@ -299,8 +364,29 @@ export function client({ url, token, fetcher = fetch }) {
       const all = [...names].sort()
       for (let i = 0; i < all.length; i += concurrency) await Promise.all(all.slice(i, i + concurrency).map(one))
       log.close()
-      await mkdir(dirname(record_path), { recursive: true })
-      await writeFile(record_path, `${JSON.stringify({ ...pair, files: manifest, deferred }, null, 2)}\n`)
+      // Advance the base only after every file settled. A raced or held update
+      // retries against the old starter instead of losing its comparison base.
+      if (stock && !report.conflicts.length && !report.held.length && !report.too_big.length) {
+        const current = stock.outdated || stock.previous?.version === stock.latest.version ? stock.previous : stock.latest
+        const bytes = Buffer.from(`${JSON.stringify(current, null, 2)}\n`)
+        await safe_target(local, "starter.json")
+        let version = remotes["starter.json"]
+        if (!pull_only && !stock.previous_bytes?.equals(bytes)) {
+          try { version = await api.put(`${folder}starter.json`, bytes, conditional(version ? { version } : null)) } catch (error) {
+            if (error.status !== 412) throw error
+            report.conflicts.push("starter.json")
+          }
+        }
+        if (!report.conflicts.length) {
+          await mkdir(local, { recursive: true })
+          await write_file(join(local, "starter.json"), bytes)
+          if (!pull_only) agree("starter.json", bytes, version)
+        }
+      }
+      if (!pull_only) {
+        await mkdir(dirname(record_path), { recursive: true })
+        await write_file(record_path, `${JSON.stringify({ ...pair, files: manifest, deferred }, null, 2)}\n`)
+      }
       for (const list of Object.values(report)) if (Array.isArray(list)) list.sort()
       return report
     },
@@ -313,7 +399,7 @@ export const trash_dir = (state, env = process.env) =>
   env.BRAYNESS_TRASH ?? (process.platform === "darwin" ? join(homedir(), ".Trash") : join(state, "trash"))
 
 /** Move a file aside, never destroy it: `note.md` lands as `note 2026-09-27T….md`. */
-async function to_trash(path, trash) {
+const to_trash = async (path, trash) => {
   const stamp = new Date().toISOString().replace(/:/g, "-")
   const name = basename(path)
   const dot = name.lastIndexOf(".")
@@ -324,13 +410,13 @@ async function to_trash(path, trash) {
   } catch (error) {
     if (error.code === "ENOENT") return
     if (error.code !== "EXDEV") throw error
-    await copyFile(path, target)
+    await copy_file(path, target)
     await rm(path, { force: true })
   }
 }
 
 /** `note.md` becomes `note.conflict.md`, then `note.conflict-2.md`, until one is free. */
-export function conflict_name(name, taken) {
+export const conflict_name = (name, taken) => {
   const slash = name.lastIndexOf("/") + 1
   const dot = name.indexOf(".", slash + 1)
   const [stem, ext] = dot === -1 ? [name, ""] : [name.slice(0, dot), name.slice(dot)]
@@ -340,13 +426,28 @@ export function conflict_name(name, taken) {
   }
 }
 
+/** Refuse traversal and links before a remote file can replace local bytes. */
+const safe_target = async (root, name) => {
+  const parts = name.split("/")
+  if (parts.some(part => !part || part === "." || part === ".." || /[\\\0]/.test(part))) throw new Error(`unsafe sync path: ${name}`)
+  let target = resolve(root)
+  for (const part of ["", ...parts]) {
+    if (part) target = join(target, part)
+    const info = await lstat(target).catch(error => {
+      if (error.code === "ENOENT") return null
+      throw error
+    })
+    if (info?.isSymbolicLink()) throw new Error(`target is a link: ${target}`)
+  }
+}
+
 const version_of = (response) => response.headers.get("etag")?.replace(/"/g, "")
 
-async function is_dir(path) {
+const is_dir = async (path) => {
   return (await stat(path).catch(() => null))?.isDirectory() ?? false
 }
 
-async function walk(dir, exclude = () => false) {
+const walk = async (dir, exclude = () => false) => {
   const found = []
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     if (skipped_name(entry.name)) continue

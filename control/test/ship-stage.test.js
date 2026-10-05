@@ -15,6 +15,10 @@ test('the ship tree carries the harness and prompts, no examples', () => {
   })
   for (const path of ['prompts/app.md', 'prompts/site.md'])
     assert.ok(existsSync(join(ship, path)), path)
+  assert.ok(existsSync(join(ship, 'apps')), 'every new workspace has an apps folder')
+  assert.equal(readFileSync(join(ship, '.ignore'), 'utf8'), '', 'private harness sync is enabled without copying personal rules')
+  assert.match(readFileSync(join(ship, 'prompts/site.md'), 'utf8'), /apps\/site/)
+  assert.match(readFileSync(join(ship, 'prompts/app.md'), 'utf8'), /apps\/app/)
   // Prompts download the examples; none ride in the ship tree.
   for (const name of ['app', 'site'])
     assert.match(readFileSync(join(ship, `prompts/${name}.md`), 'utf8'), /giget gh:scott-fryxell\/brayness-examples\//)
@@ -81,6 +85,13 @@ test('the starter names its version and every shipped file', () => {
   const starter = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
   assert.match(starter.version, /^[a-f0-9]{64}$/)
   assert.match(starter.pi, /^\d+\.\d+\.\d+/)
+  assert.equal(new Date(starter.built_at).toISOString(), starter.built_at)
+  execFileSync(process.execPath, [join(project, 'control/scripts/ship-stage.js')], {
+    env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url },
+  })
+  const rebuilt = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
+  assert.equal(rebuilt.version, starter.version)
+  assert.equal(rebuilt.built_at, starter.built_at, 'an identical rebuild keeps its date')
   assert.ok(starter.files['package.json'])
   assert.ok(starter.files['skills/web-md/SKILL.md'])
   assert.equal(starter.files[STARTER], undefined, 'the manifest never lists itself')
@@ -121,6 +132,8 @@ test('the starter rides in the tarball new actors install', () => {
   })
   const listing = execFileSync('tar', ['tzf', join(project, 'dist/brayness-harness.tar.gz')], { encoding: 'utf8' })
   assert.ok(listing.includes('./starter.json'), 'the version and file list ship to the actor')
+  assert.ok(listing.includes('./apps/'), 'the empty apps folder ships')
+  assert.ok(listing.includes('./.ignore'), 'the default sync rules ship')
 })
 
 test('the wrapper lets an installed pi win over the harness copy', () => {

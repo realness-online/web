@@ -10,13 +10,13 @@
 // One listener per running actor, kept in step by a reconciler rather than
 // hooks in every start, reload, and destroy path.
 
-import { existsSync, rmSync } from "node:fs"
-import { createServer } from "node:net"
+import { existsSync as exists_sync, rmSync as rm_sync } from "node:fs"
+import { createServer as create_server } from "node:net"
 import { logger } from "./log.js"
 import { Loops } from "./loops.js"
 import { Lines } from "./vsock.js"
 import { can } from "../../can/src/can.js"
-import { issue_recovery_pass } from "../../sync/src/recovery-pass.js"
+import { issue_harness_pass, issue_recovery_pass } from "../../sync/src/recovery-pass.js"
 import { issue_model_pass } from "../../proxy/src/model-pass.js"
 
 const LOG = logger("door")
@@ -61,7 +61,7 @@ export class Door {
   reconcile() {
     const live = new Map(this.store.liveActors().map((record) => [record.id, record]))
     for (const [id, { path, server }] of this.listeners) {
-      if (!live.has(id) || !existsSync(path)) {
+      if (!live.has(id) || !exists_sync(path)) {
         server.close()
         this.listeners.delete(id)
       }
@@ -71,8 +71,8 @@ export class Door {
 
   #listen(record) {
     const path = `${record.vsockPath}_${DOOR_PORT}`
-    rmSync(path, { force: true })
-    const server = createServer((conn) => this.#handle(record.id, conn))
+    rm_sync(path, { force: true })
+    const server = create_server((conn) => this.#handle(record.id, conn))
     server.on("error", (error) => LOG.warn(`door for ${record.id}: ${error.message}`))
     server.listen(path)
     this.listeners.set(record.id, { path, server })
@@ -98,6 +98,10 @@ export class Door {
     if (request.op === "recovery-pass") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot recover")
       return { ok: true, pass: issue_recovery_pass({ phone: owner, id, paths: record.paths ?? null }, process.env.HOST_PASS_SECRET) }
+    }
+    if (request.op === "harness-pass") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot sync")
+      return { ok: true, pass: issue_harness_pass({ phone: owner, id, paths: record.paths ?? null }, process.env.HOST_PASS_SECRET) }
     }
     if (request.op === "model-pass") {
       if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot call models")

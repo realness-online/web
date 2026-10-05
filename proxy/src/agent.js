@@ -20,7 +20,7 @@ export const call_upstream = (body, { key, fetcher = fetch, model = MODEL } = {}
   })
 
 /** @param {AsyncIterable<Uint8Array>} request */
-export async function read_body(request) {
+export const read_body = async (request) => {
   const chunks = []
   let size = 0
   for await (const chunk of request) {

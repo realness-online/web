@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 // Guest-to-door site lifecycle. With sync configured, prove the public site
 // survives actor deletion and a fresh actor keeps the same URL.
-import { createHmac } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { readFileSync as read_file_sync } from "node:fs"
 
 const api = process.env.API ?? "http://127.0.0.1:18080"
 const phone = "+14156667777"
-const secret = process.env.HOST_PASS_SECRET ?? readFileSync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
+const secret = process.env.HOST_PASS_SECRET ?? read_file_sync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
 const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-const pass = `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+const pass = `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 const sync_port = Number(process.env.SYNC_SITE_PORT ?? 18096)
 
-async function request(path, options = {}) {
+const request = async (path, options = {}) => {
   const response = await fetch(`${api}${path}`, { ...options, headers: { ...options.headers, authorization: `Bearer ${pass}` } })
   if (!response.ok) throw new Error(`${path}: ${response.status} ${await response.text()}`)
   return response.status === 204 ? null : response.json()
 }
 const create = async () => (await request("/v1/actors", { method: "POST" })).id
-async function run(actor, argv) {
+const run = async (actor, argv) => {
   const result = await request(`/v1/actors/${actor}/exec`, {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ argv, timeout: 120 }),
   })

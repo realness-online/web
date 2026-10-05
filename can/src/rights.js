@@ -30,7 +30,7 @@ const attributes = (text) => {
 }
 
 /** Grants as `{ grantee, action, path }` triples. Throws on a malformed page. */
-export function read_rights(html) {
+export const read_rights = (html) => {
   if (typeof html !== "string") throw new Error("rights page is not text")
   html = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
   if (/<(script|template|textarea)\b/i.test(html)) throw new Error("rights page: raw or inert content")
@@ -67,7 +67,7 @@ export function read_rights(html) {
   return grants
 }
 
-function finish(props) {
+const finish = (props) => {
   const one = (name) => {
     const values = props[name] ?? []
     if (values.length !== 1) throw new Error(`rights page: need exactly one ${name}`)

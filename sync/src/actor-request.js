@@ -7,14 +7,14 @@ const unesc = (value) => value.replace(/&lt;/g, "<").replace(/&quot;/g, '"').rep
 export const ACTOR_ACTIONS = new Set(["idle", "stop"])
 export const request_key = (host, actor) => `hosts/${host}/requests/${actor}.html`
 
-export function request_html({ id, action, requested }) {
+export const request_html = ({ id, action, requested }) => {
   if (!ACTOR_ACTIONS.has(action)) throw new Error(`unknown actor action ${action}`)
   const props = Object.entries({ id, action, requested }).map(([name, value]) => `<meta itemprop="${name}" content="${esc(value)}">`).join("")
   return `<article itemscope itemtype="/request">${props}</article>\n`
 }
 
 /** The request, or null for anything malformed. */
-export function read_request(html) {
+export const read_request = (html) => {
   const match = String(html).match(/<article itemscope itemtype="\/request">(.*?)<\/article>/s)
   if (!match) return null
   const values = {}

@@ -14,7 +14,7 @@ const file_key = (id, version, path) => `sites/${id}/versions/${version}/files/$
 const safe_path = (path) => path && path.length <= 1024 && path.split("/").every((part) => part && part !== "." && part !== ".." && !/[\\%\0\x00-\x1f]/.test(part))
 const send = (response, status, body = "", headers = {}) => response.writeHead(status, { "x-content-type-options": "nosniff", ...headers }).end(body)
 
-export async function site_request({ storage, method, path, who, response, read_body }) {
+export const site_request = async ({ storage, method, path, who, response, read_body }) => {
   const parts = path.split("/")
   const public_site = parts[0] === "sites"
   const [root, id] = public_site ? parts : parts.slice(1)
@@ -32,8 +32,12 @@ export async function site_request({ storage, method, path, who, response, read_
     let file = await storage.get(file_key(id, version, name))
     let served = name
     if (!file && !name.includes(".") && !relative.endsWith("/")) {
-      served = `${name}.html`
+      served = `${name}/index.html`
       file = await storage.get(file_key(id, version, served))
+      if (!file) {
+        served = `${name}.html`
+        file = await storage.get(file_key(id, version, served))
+      }
     }
     if (!file) throw new SiteError(404)
     return send(response, 200, file.body, { "content-type": MIME[served.split(".").at(-1).toLowerCase()] ?? "application/octet-stream", "cache-control": "no-cache" })

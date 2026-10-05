@@ -21,20 +21,20 @@
  * `set -eu` script that dies still exits 0. Both disappear here - values are
  * returned, and a throw is a throw - which is most of why this file is shorter.
  */
-import { createHash } from "node:crypto"
+import { createHash as create_hash } from "node:crypto"
 import { spawn } from "node:child_process"
-import { mkdir, open, readFile, readdir, rm, stat } from "node:fs/promises"
+import { mkdir, open, readFile as read_file, readdir, rm, stat } from "node:fs/promises"
 import { join } from "node:path"
 import { attempt, step, note } from "./exec.js"
-import { remoteApi } from "./api.js"
+import { remoteApi as remote_api } from "./api.js"
 
 export class DrainError extends Error {}
 
 /** The three files every bundle must contain. */
 const PARTS = ["artifacts.tar.gz", "trace.jsonl", "manifest.json"]
 
-export async function drain(cloud, config, name, { delete: drop = false, runDir } = {}) {
-  const api = remoteApi(name, { zone: config.zone })
+export const drain = async (cloud, config, name, { delete: drop = false, runDir } = {}) => {
+  const api = remote_api(name, { zone: config.zone })
   const run = runDir ?? join(dist(), `drain-${stamp()}`)
 
   step(`${name} (${config.project}/${config.zone}), bucket gs://${config.bucket}`)
@@ -101,7 +101,7 @@ export async function drain(cloud, config, name, { delete: drop = false, runDir 
 }
 
 /** Export one actor, prove it arrived, then drop it from the volume. */
-async function shipOne(cloud, config, name, api, id, run) {
+const shipOne = async (cloud, config, name, api, id, run) => {
   const status = await api.call(`/v1/actors/${id}/export`, { method: "POST", timeout: 300 })
   // The export endpoint answers with the manifest itself.
   let manifest
@@ -133,7 +133,7 @@ async function shipOne(cloud, config, name, api, id, run) {
   if (missing.length > 0) throw new DrainError(`the bundle is missing: ${missing.join(", ")}`)
 
   const artifacts = join(extracted, "artifacts.tar.gz")
-  const actual = createHash("sha256").update(await readFile(artifacts)).digest("hex")
+  const actual = create_hash("sha256").update(await read_file(artifacts)).digest("hex")
   if (actual !== expected) {
     throw new DrainError(`what came down (${actual}) is not the bundle (${expected})`)
   }
@@ -161,7 +161,7 @@ async function shipOne(cloud, config, name, api, id, run) {
  * A composite upload has no whole-object md5, so the size is what is left. Said
  * out loud rather than passed off as an integrity check.
  */
-async function storedProof(archive, object, id) {
+const storedProof = async (archive, object, id) => {
   const described = await attempt("gcloud", [
     "storage",
     "objects",
@@ -174,7 +174,7 @@ async function storedProof(archive, object, id) {
   const [md5, size] = described.out.trim().split(/\s+/)
   const local = await stat(archive)
   if (md5) {
-    const digest = createHash("md5").update(await readFile(archive)).digest("base64")
+    const digest = create_hash("md5").update(await read_file(archive)).digest("base64")
     if (digest !== md5) {
       throw new DrainError(`the bucket has md5 ${md5}, not what was sent (${digest})`)
     }
@@ -193,7 +193,7 @@ async function storedProof(archive, object, id) {
  * string, which mangles a gzip stream. spawn writes the bytes to a file
  * descriptor instead, the way the shell's `>` did.
  */
-async function streamToFile(cloud, config, name, target, id) {
+const streamToFile = async (cloud, config, name, target, id) => {
   const exports = config.hostExports ?? "/opt/fc/actors/mnt/exports"
   const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
   const handle = await open(target, "w")
@@ -224,7 +224,7 @@ async function streamToFile(cloud, config, name, target, id) {
  * brayness-1, whose volume is named `brayness-sessions`: the guess deletes the
  * instance and leaves a 30 GB disk behind, unattached and still billed.
  */
-async function deleteHostAndDisks(cloud, config, name) {
+const deleteHostAndDisks = async (cloud, config, name) => {
   step("delete the host and the disks it has")
   const disks = await attachedDisks(cloud, name)
   note(`attached: ${disks.join(" ")}`)
@@ -263,13 +263,13 @@ async function deleteHostAndDisks(cloud, config, name) {
  * segment. Verified against brayness-1, whose two disks are the boot disk and
  * a volume whose name does not match any pattern.
  */
-async function attachedDisks(cloud, name) {
+const attachedDisks = async (cloud, name) => {
   const instance = await cloud.json(["instances", "describe", name])
   const [self] = Array.isArray(instance) ? instance : [instance]
   return (self?.disks ?? []).map((disk) => String(disk.source ?? "").split("/").pop()).filter(Boolean)
 }
 
-async function probeHealth(api) {
+const probeHealth = async (api) => {
   try {
     const health = JSON.parse(await api.call("/v1/health", { timeout: 30 }))
     return health.ok ? health : null
@@ -278,15 +278,15 @@ async function probeHealth(api) {
   }
 }
 
-function lastLine(text) {
+const lastLine = (text) => {
   return text.trim().split("\n").pop()?.trim() ?? ""
 }
 
-function stamp() {
+const stamp = () => {
   return new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "Z")
 }
 
 /** Everything generated lands here: dist/ is ignored, source is not. */
-function dist() {
+const dist = () => {
   return new URL("../../dist/", import.meta.url).pathname.replace(/\/$/, "")
 }

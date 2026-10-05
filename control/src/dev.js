@@ -16,7 +16,7 @@ import { ROOT } from "./paths.js"
  * Once per Mac: the Lima VM, the firecracker artifacts, a boot check.
  * Idempotent, so it is also the way to prove a guest still works.
  */
-export async function setup(lima) {
+export const setup = async (lima) => {
   const { step, note } = await import("./exec.js")
 
   step(`lima: ${lima.config.vm}`)
@@ -31,7 +31,7 @@ export async function setup(lima) {
 }
 
 /** Stage the harness and build template.ext4. */
-export async function build(lima) {
+export const build = async (lima) => {
   const { stream, step, note } = await import("./exec.js")
 
   step("stage the harness")

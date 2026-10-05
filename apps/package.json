@@ -1,0 +1,15 @@
+{
+  "name": "brayness-apps",
+  "private": true,
+  "type": "module",
+  "description": "Vault files as blog and plans apps, built with the static example",
+  "bin": {
+    "brayness-apps": "./bin/apps.js"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.js'"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

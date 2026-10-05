@@ -15,20 +15,20 @@
 //     LOOPS_ACCESS_TOKEN="$(gcloud auth print-access-token)" node host/checks/loop.check.js
 
 import assert from "node:assert/strict"
-import { createHmac } from "node:crypto"
-import { readFileSync, rmSync } from "node:fs"
+import { createHmac as create_hmac } from "node:crypto"
+import { readFileSync as read_file_sync, rmSync as rm_sync } from "node:fs"
 import { create_gcs } from "../../can-store/src/gcs.js"
 import { ActorStore } from "../src/actors.js"
 import { Door } from "../src/door.js"
 import { Loops } from "../src/loops.js"
-import { makeServer } from "../src/server.js"
+import { makeServer as make_server } from "../src/server.js"
 
 const owner = "+14156667777"
-const secret = readFileSync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
+const secret = read_file_sync(new URL("../../dist/host-pass-secret", import.meta.url), "utf8").trim()
 process.env.HOST_PASS_SECRET = secret
 const pass = () => {
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `Bearer ${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `Bearer ${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 const text = (b64) => Buffer.from(b64 ?? "", "base64").toString().trim()
@@ -45,22 +45,22 @@ const mirror = {
 
 const volume = "/opt/fc/actors/mnt"
 const file = `${volume}/.loop-check.json`
-rmSync(file, { force: true })
+rm_sync(file, { force: true })
 const store = new ActorStore({ volume, template: "/opt/fc/template.ext4", kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker" })
 const loops = new Loops(store, { file, mirror, deadlineMs: 60 * 60_000 })
 const door = new Door(store, "/s/{id}/", loops)
-const server = makeServer(store, null, undefined, loops)
+const server = make_server(store, null, undefined, loops)
 await new Promise((done) => server.listen(0, "127.0.0.1", done))
 const api = (method, path) => fetch(`http://127.0.0.1:${server.address().port}${path}`, { method, headers: { authorization: pass() } })
 
 /** Run argv in an actor as the brayness user, with the door open for it. */
-async function sh(id, argv) {
+const sh = async (id, argv) => {
   door.reconcile()
   const { exit_code, stdout_b64, stderr_b64 } = await store.exec(id, ["runuser", "-u", "brayness", "--", ...argv], { cwd: "/" })
   return { code: exit_code, out: text(stdout_b64), err: text(stderr_b64) }
 }
 
-async function start(parent, goal) {
+const start = async (parent, goal) => {
   const run = await sh(parent, ["brayness", "loop", goal])
   assert.equal(run.code, 0, run.err)
   const id = run.out.match(/a-[0-9a-z]+/)?.[0]
@@ -69,7 +69,7 @@ async function start(parent, goal) {
 }
 
 /** Stopped, for this reason, with its actor idled. */
-function stopped(id, reason) {
+const stopped = (id, reason) => {
   assert.equal(loops.loops[id].status, "stopped")
   assert.equal(loops.loops[id].reason, reason)
   assert.equal(store.get(id).state, "idle")
@@ -155,5 +155,5 @@ try {
       console.error(`cleanup ${id}: ${error.message}`)
     }
   }
-  rmSync(file, { force: true })
+  rm_sync(file, { force: true })
 }

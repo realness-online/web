@@ -9,7 +9,7 @@
 //   export default { async fetch(request) { return new Response("hi") } }
 //   export default async function (request) { ... }   also accepted
 
-import { createServer } from "node:http"
+import { createServer as create_server } from "node:http"
 import { Readable } from "node:stream"
 
 const HANDLER = "/app/code/server.js"
@@ -22,7 +22,7 @@ if (typeof handle !== "function") {
   process.exit(1)
 }
 
-function toRequest(req) {
+const toRequest = (req) => {
   const headers = new Headers()
   for (const [name, value] of Object.entries(req.headers)) {
     for (const one of [value].flat()) headers.append(name, one)
@@ -36,7 +36,7 @@ function toRequest(req) {
   })
 }
 
-createServer(async (req, res) => {
+create_server(async (req, res) => {
   let response
   try {
     response = await handle(toRequest(req))

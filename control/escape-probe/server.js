@@ -7,19 +7,19 @@
 // file and process probes therefore meet Node's permission model first; the
 // read-only disks and the non-root user beneath it are checked from the host.
 
-import { readFileSync, writeFileSync } from "node:fs"
-import { execFileSync } from "node:child_process"
+import { readFileSync as read_file_sync, writeFileSync as write_file_sync } from "node:fs"
+import { execFileSync as exec_file_sync } from "node:child_process"
 import { Worker } from "node:worker_threads"
-import { connect, createServer } from "node:net"
+import { connect, createServer as create_server } from "node:net"
 import { lookup } from "node:dns/promises"
-import { networkInterfaces } from "node:os"
+import { networkInterfaces as network_interfaces } from "node:os"
 
-const TARGETS = JSON.parse(readFileSync(new URL("./targets.json", import.meta.url), "utf8"))
+const TARGETS = JSON.parse(read_file_sync(new URL("./targets.json", import.meta.url), "utf8"))
 
-const ownAddress = () => networkInterfaces().eth0.find((a) => a.family === "IPv4").address
+const ownAddress = () => network_interfaces().eth0.find((a) => a.family === "IPv4").address
 
 /** Refused when the TCP connect fails; a timeout (dropped) counts as refused. */
-function tryConnect(host, port, ms = 1500) {
+const tryConnect = (host, port, ms = 1500) => {
   return new Promise((done) => {
     const socket = connect({ host, port })
     const finish = (refused, detail) => {
@@ -32,13 +32,13 @@ function tryConnect(host, port, ms = 1500) {
   })
 }
 
-async function reach(targets) {
+const reach = async (targets) => {
   const tries = await Promise.all(targets.map(([h, p]) => tryConnect(h, p)))
   const open = tries.filter(([refused]) => !refused).map(([, d]) => d)
   return [open.length === 0, open.join("; ") || `${tries.length} tries, none connected`]
 }
 
-function attempt(what) {
+const attempt = (what) => {
   try {
     what()
     return [false, "allowed"]
@@ -47,7 +47,7 @@ function attempt(what) {
   }
 }
 
-async function probes() {
+const probes = async () => {
   const me = ownAddress()
   const gateway = me.replace(/\.\d+$/, ".1")
   const results = {}
@@ -66,12 +66,12 @@ async function probes() {
   }
 
   // Node's permission model: nothing outside its own code, no processes.
-  results["write its code"] = attempt(() => writeFileSync("/app/code/escape", "x"))
-  results["write /tmp"] = attempt(() => writeFileSync("/tmp/escape", "x"))
-  results["read /etc/shadow"] = attempt(() => readFileSync("/etc/shadow"))
-  results["read /proc"] = attempt(() => readFileSync("/proc/self/status"))
-  results["read the runtime"] = attempt(() => readFileSync("/opt/runtime/bin/node"))
-  results["spawn a process"] = attempt(() => execFileSync("/bin/sh", ["-c", "id"]))
+  results["write its code"] = attempt(() => write_file_sync("/app/code/escape", "x"))
+  results["write /tmp"] = attempt(() => write_file_sync("/tmp/escape", "x"))
+  results["read /etc/shadow"] = attempt(() => read_file_sync("/etc/shadow"))
+  results["read /proc"] = attempt(() => read_file_sync("/proc/self/status"))
+  results["read the runtime"] = attempt(() => read_file_sync("/opt/runtime/bin/node"))
+  results["spawn a process"] = attempt(() => exec_file_sync("/bin/sh", ["-c", "id"]))
   results["start a worker"] = attempt(() => new Worker("0", { eval: true }))
   results["not root"] = [process.getuid() !== 0, `uid ${process.getuid()}`]
 
@@ -86,4 +86,4 @@ export default {
 }
 
 // A second listener: the host must reach no port but 8080.
-createServer((socket) => socket.end("side door\n")).listen(8081)
+create_server((socket) => socket.end("side door\n")).listen(8081)

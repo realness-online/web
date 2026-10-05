@@ -5,10 +5,11 @@
 // back everything it took, because a leftover TAP or process is invisible in a
 // list of actors.
 
-import { createHash, randomBytes } from "node:crypto"
-import { writeFileDurable } from "./durable.js"
-import { createReadStream, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync, appendFileSync } from "node:fs"
+import { createHash as create_hash, randomBytes as random_bytes } from "node:crypto"
+import { writeFileDurable as write_file_durable } from "./durable.js"
+import { createReadStream as create_read_stream, existsSync as exists_sync, lstatSync as lstat_sync, mkdirSync as mkdir_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, renameSync as rename_sync, rmSync as rm_sync, statSync as stat_sync, unlinkSync as unlink_sync, writeFileSync as write_file_sync, appendFileSync as append_file_sync } from "node:fs"
 import { arch } from "node:os"
+import { performance } from "node:perf_hooks"
 import { basename, join } from "node:path"
 import { BadRequest, Busy, HostError, NotFound, VsockError } from "./errors.js"
 import * as firecracker from "./firecracker.js"
@@ -42,16 +43,16 @@ const ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 export const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, "+00:00")
-const mintId = () => `a-${randomBytes(6).toString("hex")}`
-const writeJson = (path, value) => writeFileDurable(path, `${JSON.stringify(value, null, 2)}\n`)
-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"))
-const unlink = (path) => rmSync(path, { force: true })
+const mintId = () => `a-${random_bytes(6).toString("hex")}`
+const writeJson = (path, value) => write_file_durable(path, `${JSON.stringify(value, null, 2)}\n`)
+const readJson = (path) => JSON.parse(read_file_sync(path, "utf8"))
+const unlink = (path) => rm_sync(path, { force: true })
 const machine = () => ({ arm64: "aarch64", x64: "x86_64" })[arch()] ?? arch()
 
-function sha256File(path) {
+const sha256File = (path) => {
   return new Promise((done, fail) => {
-    const hash = createHash("sha256")
-    createReadStream(path)
+    const hash = create_hash("sha256")
+    create_read_stream(path)
       .on("data", (chunk) => hash.update(chunk))
       .on("end", () => done(hash.digest("hex")))
       .on("error", fail)
@@ -86,7 +87,7 @@ class Mutex {
  * clone opens on a ready Pi. Every key typed is erased so the editor starts
  * empty: a slow Pi gets more than one before the first echoes.
  */
-async function warmPi(uds, seconds = PI_WARM_SECONDS) {
+const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
   const { socket, lines } = await vsock.connect(uds, PTY_PORT)
   const send = (data) => socket.write(`${JSON.stringify({ op: "data", data_b64: data.toString("base64") })}\n`)
   const started = Date.now()
@@ -159,6 +160,8 @@ export class ActorStore {
     this.versionsDir = join(this.volume, VERSIONS)
     this.lock = new Mutex()
     this.busy = new Set()
+    // m3: ids whose first turn has been recorded, so it is traced once.
+    this.turned = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
     host.requireRoot("creating TAPs and Firecracker")
     host.requireMount(this.volume, "mount the actors volume (the dev stack script)")
@@ -173,7 +176,7 @@ export class ActorStore {
 
   // ---------------------------------------------------------------- seed
   cheapFingerprint() {
-    const stat = statSync(this.template, { bigint: true })
+    const stat = stat_sync(this.template, { bigint: true })
     return {
       schema: FINGERPRINT_SCHEMA,
       arch: machine(),
@@ -189,7 +192,7 @@ export class ActorStore {
   seedStatus() {
     const status = { built: false, matches: false, mismatches: [], record: null }
     const recordPath = join(this.seedDir, "seed.json")
-    if (!existsSync(recordPath) || !existsSync(join(this.seedDir, STATE))) return status
+    if (!exists_sync(recordPath) || !exists_sync(join(this.seedDir, STATE))) return status
     const record = readJson(recordPath)
     const current = this.cheapFingerprint()
     status.built = true
@@ -216,8 +219,8 @@ export class ActorStore {
     const target = this.seedDir
     if (status.built) LOG.warn(`seed does not match the current build: ${status.mismatches.join("; ")}`)
     LOG.info(`building the seed from ${this.template}`)
-    rmSync(target, { recursive: true, force: true })
-    mkdirSync(target, { recursive: true })
+    rm_sync(target, { recursive: true, force: true })
+    mkdir_sync(target, { recursive: true })
     host.run(["cp", "--sparse=always", this.template, join(target, DISK)])
     if (!host.tapExists(this.seedTap)) throw new HostError(`no ${this.seedTap}: run 'sudo bash host/scripts/net-up.sh' first`)
 
@@ -267,19 +270,22 @@ export class ActorStore {
 
   async #create(owner, { paths = null } = {}) {
     if (!/^\+[1-9]\d{6,14}$/.test(owner)) throw new BadRequest("verified owner required")
+    const started = performance.now()
     const seed = await this.ensureSeed()
     if (!seed.matches) throw new Busy(`seed does not match the current build: ${seed.mismatches.join("; ")}`)
     const id = mintId()
     const record = new Actor({ id, created: nowIso(), tap: "", pid: 0, dir: join(this.volume, id), owner, paths, last_activity: nowIso() })
     try {
-      mkdirSync(record.dir, { recursive: true })
+      mkdir_sync(record.dir, { recursive: true })
       this.#reflinkSeedDisk(record.dir)
       record.tap = host.freeTap(this.tapPrefix)
       host.createTap(record.tap)
-      await this.#start(record, join(this.seedDir, STATE), join(this.seedDir, MEM))
+      const timings = await this.#start(record, join(this.seedDir, STATE), join(this.seedDir, MEM))
+      const init_started = performance.now()
       Object.assign(record, await this.#initActor(record))
+      const init_ms = performance.now() - init_started
       this.#write(record)
-      this.trace(record.id, "create", { hostname: record.hostname, machine_id: record.machine_id, tap: record.tap, pid: record.pid })
+      this.trace(record.id, "create", { hostname: record.hostname, machine_id: record.machine_id, tap: record.tap, pid: record.pid, ...timings, init_ms, ms: performance.now() - started })
     } catch (error) {
       LOG.warn(`create failed for ${id}, rolling back`)
       await this.#teardown(record)
@@ -300,6 +306,7 @@ export class ActorStore {
 
   /** Load a snapshot as this actor: its TAP, its vsock, and (from cwd) its disk. */
   async #start(record, state, mem) {
+    const started = performance.now()
     // A terminated process leaves its sockets; Firecracker cannot bind over them.
     unlink(record.apiSock)
     unlink(record.vsockPath)
@@ -309,7 +316,10 @@ export class ActorStore {
       await firecracker.waitForApiSocket(record.apiSock)
       const api = new firecracker.Api(record.apiSock, this.apiTimeout)
       await firecracker.loadSnapshot(api, state, mem, record.tap, record.vsockPath)
+      const vm_ms = performance.now() - started
+      const agent_started = performance.now()
       await vsock.waitForAgent(record.vsockPath, this.bootTimeout, this.vsockPort)
+      return { vm_ms, agent_ms: performance.now() - agent_started }
     } catch (error) {
       await firecracker.terminate(record.pid)
       throw error
@@ -318,6 +328,7 @@ export class ActorStore {
 
   /** Cold tier: boot the actor's own disk; the seed's memory would see a stale /brayness. */
   async #bootActor(record) {
+    const started = performance.now()
     unlink(record.apiSock)
     unlink(record.vsockPath)
     const child = firecracker.spawn(this.firecracker, record.dir, record.apiSock, join(record.dir, "firecracker.log"))
@@ -326,7 +337,10 @@ export class ActorStore {
       await firecracker.waitForApiSocket(record.apiSock)
       const api = new firecracker.Api(record.apiSock, this.apiTimeout)
       await firecracker.boot(api, { kernel: this.kernel, disk: DISK, tap: record.tap, uds: record.vsockPath, mac: this.guestMac, cid: this.guestCid, vcpus: this.vcpus, mib: this.mib })
+      const vm_ms = performance.now() - started
+      const agent_started = performance.now()
       await vsock.waitForAgent(record.vsockPath, this.bootTimeout, this.vsockPort)
+      return { vm_ms, agent_ms: performance.now() - agent_started }
     } catch (error) {
       await firecracker.terminate(record.pid)
       throw error
@@ -448,10 +462,10 @@ export class ActorStore {
   /** An export is safe to retire when its manifest and bundle agree. */
   #exportVerified(id) {
     const dir = join(this.exportsDir, id)
-    if (!existsSync(join(dir, "manifest.json"))) return false
+    if (!exists_sync(join(dir, "manifest.json"))) return false
     const manifest = readJson(join(dir, "manifest.json"))
     const artifacts = join(dir, manifest.artifacts?.path ?? "artifacts.tar.gz")
-    return existsSync(artifacts) && statSync(artifacts).size === manifest.artifacts?.bytes
+    return exists_sync(artifacts) && stat_sync(artifacts).size === manifest.artifacts?.bytes
   }
 
   /** `memory` snapshots the actor; `disk` keeps only the disk. Idempotent. */
@@ -487,19 +501,23 @@ export class ActorStore {
   async #reload(id) {
     const record = this.get(id)
     if (record.state === "running") return record
+    const started = performance.now()
+    let timings
     const state = join(record.dir, STATE)
     const mem = join(record.dir, MEM)
-    const fromMemory = existsSync(state) && existsSync(mem)
+    const fromMemory = exists_sync(state) && exists_sync(mem)
     if (fromMemory) {
       LOG.info(`reloading actor ${id} from its memory snapshot`)
-      await this.#start(record, state, mem)
+      timings = await this.#start(record, state, mem)
     } else {
       LOG.info(`booting actor ${id} from its disk`)
-      await this.#bootActor(record)
+      timings = await this.#bootActor(record)
     }
+    const init_started = performance.now()
     Object.assign(record, await this.#initActor(record))
+    const init_ms = performance.now() - init_started
     this.#write(record)
-    this.trace(id, "reload", { from_memory: fromMemory, machine_id: record.machine_id, hostname: record.hostname })
+    this.trace(id, "reload", { from_memory: fromMemory, machine_id: record.machine_id, hostname: record.hostname, ...timings, init_ms, ms: performance.now() - started })
     LOG.info(`actor ${id} is up, ${record.hostname}`)
     return this.get(id)
   }
@@ -520,9 +538,9 @@ export class ActorStore {
   async #teardown(record) {
     await firecracker.terminate(firecracker.pidForApiSock(record.apiSock) ?? record.pid)
     if (record.tap) host.deleteTap(record.tap)
-    rmSync(record.dir, { recursive: true, force: true })
-    rmSync(join(this.publishedDir, record.id), { recursive: true, force: true })
-    rmSync(join(this.versionsDir, record.id), { recursive: true, force: true })
+    rm_sync(record.dir, { recursive: true, force: true })
+    rm_sync(join(this.publishedDir, record.id), { recursive: true, force: true })
+    rm_sync(join(this.versionsDir, record.id), { recursive: true, force: true })
   }
 
   // --------------------------------------------------------------- trace
@@ -534,8 +552,8 @@ export class ActorStore {
   trace(id, event, fields = {}) {
     const line = Object.fromEntries(Object.entries({ ts: nowIso(), event, ...fields }).sort(([a], [b]) => (a < b ? -1 : 1)))
     try {
-      mkdirSync(this.tracesDir, { recursive: true })
-      appendFileSync(this.#tracePath(id), `${JSON.stringify(line)}\n`)
+      mkdir_sync(this.tracesDir, { recursive: true })
+      append_file_sync(this.#tracePath(id), `${JSON.stringify(line)}\n`)
     } catch (error) {
       LOG.warn(`could not trace ${id} ${event}: ${error.message}`)
     }
@@ -543,9 +561,23 @@ export class ActorStore {
 
   traceOf(id, limit) {
     const path = this.#tracePath(id)
-    if (!existsSync(path)) return []
-    const events = readFileSync(path, "utf8").split("\n").filter((line) => line.trim()).map((line) => JSON.parse(line))
+    if (!exists_sync(path)) return []
+    const events = read_file_sync(path, "utf8").split("\n").filter((line) => line.trim()).map((line) => JSON.parse(line))
     return limit ? events.slice(-limit) : events
+  }
+
+  /**
+   * m3: time from create to the first accepted turn, the moment user code runs.
+   * Recorded once; a host restart re-reads the trace rather than trusting memory.
+   */
+  firstTurn(id, now = Date.now()) {
+    if (this.turned.has(id)) return null
+    this.turned.add(id)
+    if (this.traceOf(id).some((row) => row.event === "first-turn")) return null
+    const created = Date.parse(this.get(id).created)
+    const ms = Number.isFinite(created) ? now - created : null
+    this.trace(id, "first-turn", ms === null ? {} : { ms })
+    return ms
   }
 
   // ------------------------------------------------------------- publish
@@ -563,26 +595,26 @@ export class ActorStore {
         const source = join(this.publishedDir, `.${id}.source.part`)
         try {
           if (tree === "/brayness/work/site" || tree.startsWith("/brayness/work/site/")) await this.copyOut(id, "/brayness/work/site", source)
-          const published = await this.syncSites.publish(this.get(id).owner, site, staging, existsSync(source) ? source : staging)
+          const published = await this.syncSites.publish(this.get(id).owner, site, staging, exists_sync(source) ? source : staging)
           this.trace(id, "publish", { site, path: tree, ...published })
           return { id: site, path: tree, ...published }
         } finally {
-          rmSync(staging, { recursive: true, force: true })
-          rmSync(source, { recursive: true, force: true })
+          rm_sync(staging, { recursive: true, force: true })
+          rm_sync(source, { recursive: true, force: true })
         }
       }
       const previous = this.saveSite(id)
       try {
-        renameSync(staging, target)
+        rename_sync(staging, target)
       } catch (error) {
         if (previous) {
-          renameSync(join(this.versionsDir, id, previous), target)
+          rename_sync(join(this.versionsDir, id, previous), target)
           unlink(join(this.versionsDir, id, `${previous}.json`))
         }
         throw error
       }
       const files = listFiles(target)
-      const published = { id, path: tree, files: files.length, bytes: files.reduce((sum, file) => sum + statSync(file).size, 0), url: `/s/${id}/` }
+      const published = { id, path: tree, files: files.length, bytes: files.reduce((sum, file) => sum + stat_sync(file).size, 0), url: `/s/${id}/` }
       this.trace(id, "publish", published)
       return published
     })
@@ -591,11 +623,11 @@ export class ActorStore {
   /** Move the live site into private version storage, if one exists. */
   saveSite(id) {
     const target = join(this.publishedDir, id)
-    if (!existsSync(target)) return null
-    const version = randomBytes(6).toString("hex")
+    if (!exists_sync(target)) return null
+    const version = random_bytes(6).toString("hex")
     const directory = join(this.versionsDir, id)
-    mkdirSync(directory, { recursive: true })
-    renameSync(target, join(directory, version))
+    mkdir_sync(directory, { recursive: true })
+    rename_sync(target, join(directory, version))
     writeJson(join(directory, `${version}.json`), { id: version, saved: new Date().toISOString() })
     return version
   }
@@ -604,8 +636,8 @@ export class ActorStore {
     const actor = this.get(id)
     if (this.syncSites) return this.syncSites.versions(actor.owner, site)
     const directory = join(this.versionsDir, id)
-    if (!existsSync(directory)) return []
-    return readdirSync(directory).filter(name => /^[0-9a-f]{12}\.json$/.test(name))
+    if (!exists_sync(directory)) return []
+    return readdir_sync(directory).filter(name => /^[0-9a-f]{12}\.json$/.test(name))
       .map(name => readJson(join(directory, name)))
       .sort((a, b) => b.saved.localeCompare(a.saved))
   }
@@ -617,10 +649,10 @@ export class ActorStore {
       if (typeof version !== "string" || !/^[0-9a-f]{12}$/.test(version)) throw new BadRequest("invalid site version")
       const directory = join(this.versionsDir, id)
       const source = join(directory, version)
-      if (!existsSync(source)) throw new NotFound(version)
+      if (!exists_sync(source)) throw new NotFound(version)
       const target = join(this.publishedDir, id)
       this.saveSite(id)
-      renameSync(source, target)
+      rename_sync(source, target)
       unlink(join(directory, `${version}.json`))
       this.trace(id, "restore-site", { version })
       return { url: `/s/${id}/` }
@@ -648,13 +680,13 @@ export class ActorStore {
       const detail = Buffer.from(result.stderr_b64, "base64").toString().trim()
       throw new BadRequest(`nothing to copy at ${tree}: ${detail || "tar failed"}`)
     }
-    rmSync(dest, { recursive: true, force: true })
-    mkdirSync(dest, { recursive: true })
+    rm_sync(dest, { recursive: true, force: true })
+    mkdir_sync(dest, { recursive: true })
     try {
       host.run(["tar", "-xzf", "-", "-C", dest, "--no-same-owner", "--no-same-permissions"], { input: Buffer.from(result.stdout_b64, "base64") })
       keepPlainEntries(dest)
     } catch (error) {
-      rmSync(dest, { recursive: true, force: true })
+      rm_sync(dest, { recursive: true, force: true })
       throw error
     }
   }
@@ -662,15 +694,15 @@ export class ActorStore {
   publishedSite(id) {
     if (!ID.test(id)) return null
     const root = join(this.publishedDir, id)
-    return existsSync(root) && statSync(root).isDirectory() ? root : null
+    return exists_sync(root) && stat_sync(root).isDirectory() ? root : null
   }
 
   // ------------------------------------------------------------- exports
   exports() {
-    if (!existsSync(this.exportsDir)) return []
-    return readdirSync(this.exportsDir)
+    if (!exists_sync(this.exportsDir)) return []
+    return readdir_sync(this.exportsDir)
       .sort()
-      .filter((name) => existsSync(join(this.exportsDir, name, "manifest.json")))
+      .filter((name) => exists_sync(join(this.exportsDir, name, "manifest.json")))
       .map((name) => readJson(join(this.exportsDir, name, "manifest.json")))
       .sort((a, b) => (b.exported ?? "").localeCompare(a.exported ?? ""))
   }
@@ -684,19 +716,19 @@ export class ActorStore {
       let record = this.get(id)
       if (record.state === "running") record = await this.#idle(id, "disk")
       const disk = join(record.dir, DISK)
-      if (!existsSync(disk)) throw new Busy(`actor ${id} has no disk to export`)
+      if (!exists_sync(disk)) throw new Busy(`actor ${id} has no disk to export`)
       const target = join(this.exportsDir, id)
       const staging = join(this.exportsDir, `.${id}.part`)
-      rmSync(staging, { recursive: true, force: true })
-      mkdirSync(staging, { recursive: true })
+      rm_sync(staging, { recursive: true, force: true })
+      mkdir_sync(staging, { recursive: true })
       let manifest
       try {
         const artifacts = join(staging, "artifacts.tar.gz")
         await host.mounted(disk, (tree) => host.run(["tar", "-czf", artifacts, "-C", tree, ...ARTIFACT_PATHS]))
         const listed = host.run(["tar", "-tzf", artifacts]).output
         const tracePath = this.#tracePath(id)
-        const traceText = existsSync(tracePath) ? readFileSync(tracePath, "utf8") : ""
-        writeFileSync(join(staging, "trace.jsonl"), traceText)
+        const traceText = exists_sync(tracePath) ? read_file_sync(tracePath, "utf8") : ""
+        write_file_sync(join(staging, "trace.jsonl"), traceText)
         manifest = {
           schema: 1,
           id,
@@ -704,7 +736,7 @@ export class ActorStore {
           actor: { id: record.id, created: record.created, machine_id: record.machine_id, hostname: record.hostname, owner: record.owner },
           artifacts: {
             path: "artifacts.tar.gz",
-            bytes: statSync(artifacts).size,
+            bytes: stat_sync(artifacts).size,
             sha256: await sha256File(artifacts),
             entries: listed.split("\n").filter(Boolean).length,
             paths: ARTIFACT_PATHS,
@@ -713,10 +745,10 @@ export class ActorStore {
           seed: this.seedFingerprint(),
         }
         writeJson(join(staging, "manifest.json"), manifest)
-        rmSync(target, { recursive: true, force: true })
-        renameSync(staging, target)
+        rm_sync(target, { recursive: true, force: true })
+        rename_sync(staging, target)
       } catch (error) {
-        rmSync(staging, { recursive: true, force: true })
+        rm_sync(staging, { recursive: true, force: true })
         throw error
       }
       this.trace(id, "export", { export: target, artifacts_sha256: manifest.artifacts.sha256, bytes: manifest.artifacts.bytes })
@@ -729,7 +761,7 @@ export class ActorStore {
     return this.lock.run(async () => {
       if (!ID.test(exportId)) throw new NotFound(`export ${exportId}`)
       const exportDir = join(this.exportsDir, exportId)
-      if (!existsSync(join(exportDir, "manifest.json"))) throw new NotFound(`export ${exportId}`)
+      if (!exists_sync(join(exportDir, "manifest.json"))) throw new NotFound(`export ${exportId}`)
       const manifest = readJson(join(exportDir, "manifest.json"))
       if (!manifest.actor?.owner || manifest.actor.owner !== owner) throw new NotFound(`export ${exportId}`)
       const artifacts = join(exportDir, manifest.artifacts.path)
@@ -742,8 +774,8 @@ export class ActorStore {
         await this.#idle(record.id, "disk")
         await host.mounted(join(record.dir, DISK), (tree) => host.run(["tar", "-xzf", artifacts, "-C", tree, "--no-same-owner"]))
         const tracePath = this.#tracePath(record.id)
-        const current = existsSync(tracePath) ? readFileSync(tracePath, "utf8") : ""
-        writeFileSync(tracePath, readFileSync(join(exportDir, "trace.jsonl"), "utf8") + current)
+        const current = exists_sync(tracePath) ? read_file_sync(tracePath, "utf8") : ""
+        write_file_sync(tracePath, read_file_sync(join(exportDir, "trace.jsonl"), "utf8") + current)
         const seed = this.seedFingerprint()
         this.trace(record.id, "restore", { source: exportId, artifacts_sha256: digest, seed, seed_of_export: manifest.seed ?? null, seed_matches: JSON.stringify(seed) === JSON.stringify(manifest.seed) })
         if (start) record = await this.#reload(record.id)
@@ -780,7 +812,7 @@ export class ActorStore {
       last_activity: stored.last_activity ?? stored.created ?? "",
     })
     if (firecracker.pidForApiSock(record.apiSock)) record.state = "running"
-    else if (existsSync(join(dir, STATE)) && existsSync(join(dir, MEM))) record.state = "idle"
+    else if (exists_sync(join(dir, STATE)) && exists_sync(join(dir, MEM))) record.state = "idle"
     else record.state = "stopped"
     return record
   }
@@ -788,16 +820,16 @@ export class ActorStore {
   get(id) {
     if (typeof id !== "string" || !ID.test(id) || NON_ACTOR_DIRS.has(id)) throw new NotFound(String(id))
     const dir = join(this.volume, id)
-    if (!existsSync(join(dir, "actor.json"))) throw new NotFound(id)
+    if (!exists_sync(join(dir, "actor.json"))) throw new NotFound(id)
     return this.#read(dir)
   }
 
   list() {
     const records = []
-    for (const name of readdirSync(this.volume).sort()) {
+    for (const name of readdir_sync(this.volume).sort()) {
       const dir = join(this.volume, name)
-      if (NON_ACTOR_DIRS.has(name) || !lstatSync(dir).isDirectory()) continue
-      if (existsSync(join(dir, "actor.json"))) {
+      if (NON_ACTOR_DIRS.has(name) || !lstat_sync(dir).isDirectory()) continue
+      if (exists_sync(join(dir, "actor.json"))) {
         records.push(this.#read(dir))
       } else {
         // A create that died mid-flight. Reported: a leak nobody sees is worse.
@@ -814,16 +846,16 @@ export class ActorStore {
 }
 
 /** Drop devices, fifos, and sockets from an untrusted tree. */
-function keepPlainEntries(root) {
-  for (const entry of readdirSync(root, { withFileTypes: true })) {
+const keepPlainEntries = (root) => {
+  for (const entry of readdir_sync(root, { withFileTypes: true })) {
     const path = join(root, entry.name)
     if (entry.isDirectory()) keepPlainEntries(path)
-    else if (!entry.isFile() && !entry.isSymbolicLink()) unlinkSync(path)
+    else if (!entry.isFile() && !entry.isSymbolicLink()) unlink_sync(path)
   }
 }
 
-function listFiles(root) {
-  return readdirSync(root, { withFileTypes: true, recursive: true })
+const listFiles = (root) => {
+  return readdir_sync(root, { withFileTypes: true, recursive: true })
     .filter((entry) => entry.isFile())
     .map((entry) => join(entry.parentPath ?? entry.path, entry.name))
 }

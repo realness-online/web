@@ -4,7 +4,7 @@ import { mkdir, rm } from "node:fs/promises"
 import { after, before, test } from "node:test"
 import { disk } from "brayness-can-store/disk"
 import { rights } from "../src/rights.js"
-import { issue_recovery_pass, recovery_path, verify_recovery_pass } from "../src/recovery-pass.js"
+import { harness_path, issue_harness_pass, issue_recovery_pass, recovery_path, verify_harness_pass, verify_recovery_pass } from "../src/recovery-pass.js"
 import { sync_service } from "../src/server.js"
 
 const secret = "recovery-test-secret-at-least-thirty-two-bytes"
@@ -58,6 +58,28 @@ test("percentage filenames keep recovery passes read-only and path-limited", asy
   assert.equal((await call(pass, `people/${phone}/vault/secret.md`)).status, 403)
   for (const path of ["vault/%2e%2e/secret", "vault/%252F", "vault/%00", "vault/%5c"])
     assert.throws(() => issue_recovery_pass({ phone, id, paths: [path] }, secret))
+})
+
+test("a harness pass writes only its owner's safe harness paths", async () => {
+  const pass = issue_harness_pass({ phone, id }, secret)
+  assert.deepEqual(verify_harness_pass(pass, secret), { phone, id, paths: null })
+  assert.throws(() => verify_recovery_pass(pass, secret))
+  assert.throws(() => verify_harness_pass(issue_recovery_pass({ phone, id }, secret), secret))
+  const key = `people/${phone}/harness/apps/blog/post.md`
+  assert.equal((await call(pass, key, "PUT")).status, 200)
+  assert.equal((await call(pass, key)).status, 200)
+  assert.equal((await call(pass, key, "DELETE")).status, 204)
+  for (const path of [`people/+14155559999/harness/note.md`, `people/${phone}/vault/note.md`, `people/${phone}/harness/.pi/agent/auth.json`, `people/${phone}/harness/apps/.env`, `people/${phone}/harness/artifacts/note.md`])
+    assert.equal((await call(pass, path, "PUT")).status, 403, path)
+  assert.equal((await call(pass, "v1/host-pass", "POST")).status, 401)
+  assert.equal(harness_path(`people/${phone}/harness/vault/%2e%2e/note.md`, phone), false)
+  const limited = issue_harness_pass({ phone, id, paths: ["apps/blog"] }, secret)
+  assert.equal((await call(limited, key, "PUT")).status, 200)
+  assert.equal((await call(limited, `people/${phone}/harness/apps/other/post.md`, "PUT")).status, 403)
+  assert.equal((await call(limited, `people/${phone}/harness/?deep`)).status, 403)
+  const expired = issue_harness_pass({ phone, id }, secret, Date.now() - 600_000)
+  assert.equal((await call(expired, key, "PUT")).status, 401)
+  assert.equal((await call(pass.slice(0, -2) + "xx", key, "PUT")).status, 401)
 })
 
 test("a forged or expired pass cannot read history", async () => {

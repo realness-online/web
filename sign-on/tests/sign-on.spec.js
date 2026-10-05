@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { afterEach as after_each, beforeEach as before_each, describe, expect, it, vi } from 'vitest'
+import { flushPromises as flush_promises, mount } from '@vue/test-utils'
+import { nextTick as next_tick } from 'vue'
 
 const mocks = vi.hoisted(() => ({
   hand_off: vi.fn()
@@ -26,12 +26,12 @@ import { current_user } from '@/utils/firebase'
 
 const state = 'c'.repeat(32)
 
-beforeEach(() => {
+before_each(() => {
   vi.clearAllMocks()
   current_user.value = null
 })
 
-afterEach(() => {
+after_each(() => {
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
@@ -48,7 +48,7 @@ describe('sign-on page', () => {
   it('offers the terminal button to a waiting program once signed in', async () => {
     current_user.value = { refreshToken: 'r' }
     const page = mount(SignOn, { props: { query: { cli: '53124', state } } })
-    await nextTick()
+    await next_tick()
 
     expect(page.find('#send-to-terminal').exists()).toBe(true)
     expect(page.find('#mobile').exists()).toBe(false)
@@ -58,7 +58,7 @@ describe('sign-on page', () => {
     vi.stubEnv('VITE_API_KEY', 'test-key')
     current_user.value = { refreshToken: 'refresh' }
     const page = mount(SignOn, { props: { query: { cli: '53124', state } } })
-    await nextTick()
+    await next_tick()
 
     await page.find('#send-to-terminal').trigger('click')
 
@@ -80,7 +80,7 @@ describe('sign-on page', () => {
     vi.stubGlobal('fetch', fetch_mock)
 
     const page = mount(SignOn, { props: { query: {} } })
-    await flushPromises()
+    await flush_promises()
 
     expect(fetch_mock).toHaveBeenCalledWith('http://sync.example/v1/host-pass', {
       method: 'POST',
@@ -101,7 +101,7 @@ describe('sign-on page', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
 
     const page = mount(SignOn, { props: { query: {} } })
-    await flushPromises()
+    await flush_promises()
 
     expect(page.find('[role="alert"]').text()).toBe('Could not open Brayness')
     expect(page.find('#open-chat').text()).toBe('Try again')

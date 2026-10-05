@@ -18,13 +18,13 @@
  * The pty stream is the API's port plus one, which is what `main.js serve`
  * uses. Override with --pty.
  */
-import { createConnection } from "node:net"
-import { readFileSync } from "node:fs"
+import { createConnection as create_connection } from "node:net"
+import { readFileSync as read_file_sync } from "node:fs"
 import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath as file_url_to_path } from "node:url"
 import { issue_host_pass } from "../src/host-pass.js"
 
-const HERE = dirname(fileURLToPath(import.meta.url))
+const HERE = dirname(file_url_to_path(import.meta.url))
 const ROOT = join(HERE, "..", "..")
 const SECRET_FILES = [
   process.env.HOST_PASS_SECRET_FILE,
@@ -33,16 +33,16 @@ const SECRET_FILES = [
 ].filter(Boolean)
 
 /** A value after `--name`, or the default. */
-function value_of(argv, name, fallback) {
+const value_of = (argv, name, fallback) => {
   const at = argv.indexOf(`--${name}`)
   return at === -1 ? fallback : argv[at + 1]
 }
 
-function read_secret() {
+const read_secret = () => {
   const tried = []
   for (const path of SECRET_FILES) {
     try {
-      const secret = readFileSync(path, "utf8").trim()
+      const secret = read_file_sync(path, "utf8").trim()
       if (secret.length < 32) throw new Error(`${path} holds a secret shorter than 32 bytes`)
       return secret
     } catch (error) {
@@ -54,7 +54,7 @@ function read_secret() {
 }
 
 /** One JSON line per frame, in both directions. */
-function frames(socket) {
+const frames = (socket) => {
   let buffer = ""
   const queue = []
   const waiters = []
@@ -90,13 +90,13 @@ function frames(socket) {
   }
 }
 
-async function create_actor({ api, pass, phone }) {
+const create_actor = async ({ api, pass, phone }) => {
   const response = await fetch(`${api}/v1/actors`, { method: "POST", headers: { authorization: `Bearer ${pass}` } })
   if (!response.ok) throw new Error(`could not create an actor for ${phone}: ${response.status} ${await response.text()}`)
   return (await response.json()).id
 }
 
-async function release({ api, pass, actor, keep }) {
+const release = async ({ api, pass, actor, keep }) => {
   // A hung API answer must not hold the terminal open.
   const init = { headers: { authorization: `Bearer ${pass}` }, signal: AbortSignal.timeout(5000) }
   const action = keep
@@ -105,7 +105,7 @@ async function release({ api, pass, actor, keep }) {
   await action.catch(() => {})
 }
 
-async function main(argv) {
+const main = async (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     process.stdout.write("usage: login.js --phone +E164 [--actor <id>] [--send 'exec brayness'] [--api <url>] [--pty <host:port>]\n")
     return 0
@@ -124,7 +124,7 @@ async function main(argv) {
   const actor = value_of(argv, "actor") ?? (await create_actor({ api, pass, phone }))
   process.stderr.write(`actor ${actor}${value_of(argv, "actor") ? "" : ` (new for ${phone})`}\n`)
 
-  const socket = createConnection({ host: pty.hostname, port: Number(pty.port) })
+  const socket = create_connection({ host: pty.hostname, port: Number(pty.port) })
   await new Promise((done, fail) => {
     socket.once("connect", done)
     socket.once("error", fail)

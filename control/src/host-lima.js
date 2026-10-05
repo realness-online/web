@@ -13,19 +13,19 @@
 import { join } from "node:path"
 import { attempt, step, note } from "./exec.js"
 import { ROOT } from "./paths.js"
-import { buildTerminal } from "./terminal.js"
-import { waitForHealth } from "./api.js"
+import { buildTerminal as build_terminal } from "./terminal.js"
+import { waitForHealth as wait_for_health } from "./api.js"
 import { provision_record_key } from "./host-gcp.js"
 
 /** The dev host writes its records to the cloud sync, like a prod host. */
-async function register(lima, config) {
+const register = async (lima, config) => {
   const name = (await lima.run("hostname")).trim()
   await provision_record_key(null, config, name, {
     read_secret: () => lima.run(`bash ${config.workdir}/host/scripts/record-key.sh`, { user: "root" }),
   })
 }
 
-export async function up(lima, config, name, { smoke = false, fresh = false } = {}) {
+export const up = async (lima, config, name, { smoke = false, fresh = false } = {}) => {
   if (name && name !== config.vm) {
     // One Lima VM per environment, named in the config. A second would need its
     // own config block, which is a real thing to add but not this command.
@@ -43,7 +43,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
   step("boot check")
   await lima.streamScript("control/scripts/boot-check.sh")
 
-  await buildTerminal()
+  await build_terminal()
 
   // --fresh wipes the actors volume, so the seed rebuilds from the new template.
   if (fresh) await down(lima, config, name)
@@ -57,7 +57,7 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
     await lima.streamScript("host/scripts/host-smoke.sh", { user: "root" })
   }
 
-  const health = await waitForHealth(config.api, { tries: 90, delayMs: 2000 })
+  const health = await wait_for_health(config.api, { tries: 90, delayMs: 2000 })
   return {
     host: config.vm,
     api: `${config.api}/v1/health`,
@@ -69,19 +69,19 @@ export async function up(lima, config, name, { smoke = false, fresh = false } = 
 
 /** Put the code on the host. In dev it is already there: the Mac's directory is
  *  mounted at /mnt/fc, so there is nothing to copy. */
-export async function push(lima, config, name) {
+export const push = async (lima, config, name) => {
   step("code")
   note(`${join(ROOT)} is mounted at ${config.workdir}; nothing to copy`)
   return { copied: false }
 }
 
 /** Start the host, if it is not already answering. */
-export async function serve(lima, config, name) {
+export const serve = async (lima, config, name) => {
   return startStack(lima, config)
 }
 
 /** Stop the host and any microVM it left running. */
-export async function down(lima, config, name, { mode = "stop" } = {}) {
+export const down = async (lima, config, name, { mode = "stop" } = {}) => {
   step(`stopping the dev stack${mode === "delete" ? " and the Lima VM" : ""}`)
   await lima.run(
     'pkill -f "[n]ode host/main.js" || true; pkill -x firecracker || true',
@@ -97,10 +97,10 @@ export async function down(lima, config, name, { mode = "stop" } = {}) {
   return { stopped: true, deleted: mode === "delete" }
 }
 
-export async function restart(lima, config, name) {
+export const restart = async (lima, config, name) => {
   const health = await probeHealth(config.api)
   if (health?.actors?.running) throw new Error(`${health.actors.running} actor(s) running; stop them before restarting the dev host`)
-  await buildTerminal()
+  await build_terminal()
   await down(lima, config, name)
   await register(lima, config)
   return serve(lima, config, name)
@@ -113,7 +113,7 @@ export async function restart(lima, config, name) {
  * it is started detached - the host outlives this command and limactl
  * must not wait for a process that never exits.
  */
-async function startStack(lima, config, { fresh = false } = {}) {
+const startStack = async (lima, config, { fresh = false } = {}) => {
   const health = await probeHealth(config.api)
   if (health && !fresh) return { alreadyUp: true, health }
 
@@ -122,10 +122,10 @@ async function startStack(lima, config, { fresh = false } = {}) {
     `mkdir -p ${config.workdir}/dist && nohup ${prefix}bash ` +
     `${config.workdir}/control/scripts/dev-stack.sh > ${config.workdir}/dist/dev-up.log 2>&1 &`
   await lima.run(command, { user: "root", timeout: 30_000 })
-  return { alreadyUp: false, health: await waitForHealth(config.api, { tries: 90, delayMs: 2000 }) }
+  return { alreadyUp: false, health: await wait_for_health(config.api, { tries: 90, delayMs: 2000 }) }
 }
 
-async function probeHealth(api) {
+const probeHealth = async (api) => {
   try {
     const { stdout } = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
     const health = JSON.parse(stdout)
@@ -135,7 +135,7 @@ async function probeHealth(api) {
   }
 }
 
-function countOf(actors) {
+const countOf = (actors) => {
   const counts = Object.entries(actors ?? {})
     .map(([state, n]) => `${n} ${state}`)
     .join(", ")

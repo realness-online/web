@@ -11,9 +11,9 @@
  * Text keys are stored gzip (`contentEncoding`). Fetch decodes on the way
  * out, so `get` returns exactly what `put` was given.
  */
-import { execFile } from "node:child_process"
+import { execFile as exec_file } from "node:child_process"
 import { promisify } from "node:util"
-import { gzipSync } from "node:zlib"
+import { gzipSync as gzip_sync } from "node:zlib"
 import { Conflict } from "./disk.js"
 
 const API = "https://storage.googleapis.com/storage/v1/b"
@@ -28,7 +28,7 @@ const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
  */
 const at_rest = (key, body, gzip) => {
   if (!gzip && !TEXT.test(key)) return { body }
-  const packed = gzipSync(Buffer.from(body))
+  const packed = gzip_sync(Buffer.from(body))
   return gzip || packed.length < Buffer.byteLength(body) ? { body: packed, encoding: "gzip" } : { body }
 }
 
@@ -57,11 +57,11 @@ export const metadata_token = () =>
 /** On a laptop: whoever `gcloud auth login` signed in. */
 export const gcloud_token = () =>
   cached(async () => {
-    const { stdout } = await promisify(execFile)("gcloud", ["auth", "print-access-token"])
+    const { stdout } = await promisify(exec_file)("gcloud", ["auth", "print-access-token"])
     return { access_token: stdout.trim(), expires_in: 30 * 60 }
   })
 
-export function create_gcs({ bucket, token, prefix = "" }) {
+export const create_gcs = ({ bucket, token, prefix = "" }) => {
   if (!bucket) throw new Error("create_gcs needs a bucket")
   if (typeof token !== "function") throw new Error("create_gcs needs token()")
   if (prefix && !prefix.endsWith("/")) throw new Error("prefix must end in /")

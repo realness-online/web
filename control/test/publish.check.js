@@ -8,7 +8,7 @@
 //   npm run check:publish            two runs
 //   RUNS=1 npm run check:publish
 
-import { execFileSync } from "node:child_process"
+import { execFileSync as exec_file_sync } from "node:child_process"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const RUNS = Number(process.env.RUNS ?? 2)
@@ -17,7 +17,7 @@ const SITE = "/brayness/work/site"
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-async function exec(actor, command, timeout = 120) {
+const exec = async (actor, command, timeout = 120) => {
   const response = await fetch(`${API}/v1/actors/${actor}/exec`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -31,7 +31,7 @@ async function exec(actor, command, timeout = 120) {
   return out
 }
 
-async function until(what, ms, test) {
+const until = async (what, ms, test) => {
   const start = Date.now()
   while (Date.now() - start < ms) {
     if (await test()) return
@@ -40,9 +40,9 @@ async function until(what, ms, test) {
   throw new Error(`${what}: not within ${ms}ms`)
 }
 
-async function run(n) {
+const run = async (n) => {
   const ab = (...args) =>
-    execFileSync("agent-browser", ["--session", `brayness-p7-check-${process.pid}-${n}`, ...args], {
+    exec_file_sync("agent-browser", ["--session", `brayness-p7-check-${process.pid}-${n}`, ...args], {
       encoding: "utf8",
     }).trim()
   // The example's header partial ignores site.json; the name reaches <title>.

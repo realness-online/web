@@ -9,9 +9,9 @@
  *
  * The refresh token never touches a file or a command line.
  */
-import { randomBytes } from "node:crypto"
-import { execFile, spawn } from "node:child_process"
-import { createServer } from "node:http"
+import { randomBytes as random_bytes } from "node:crypto"
+import { execFile as exec_file, spawn } from "node:child_process"
+import { createServer as create_server } from "node:http"
 import { promisify } from "node:util"
 
 const SERVICE = "brayness"
@@ -25,7 +25,7 @@ const page = (message) =>
 export const keychain = {
   async read() {
     try {
-      const { stdout } = await promisify(execFile)("security", ["find-generic-password", "-s", SERVICE, "-a", ACCOUNT, "-w"])
+      const { stdout } = await promisify(exec_file)("security", ["find-generic-password", "-s", SERVICE, "-a", ACCOUNT, "-w"])
       return JSON.parse(stdout.trim())
     } catch {
       return null
@@ -40,7 +40,7 @@ export const keychain = {
   },
 }
 
-function run_security(commands) {
+const run_security = (commands) => {
   return new Promise((done, fail) => {
     const child = spawn("security", ["-i"], { stdio: ["pipe", "ignore", "pipe"] })
     let errors = ""
@@ -51,7 +51,7 @@ function run_security(commands) {
 }
 
 /** Trade a refresh token for a fresh ID token with Google's token endpoint. */
-export async function refresh({ refresh_token, api_key }, fetcher = fetch) {
+export const refresh = async ({ refresh_token, api_key }, fetcher = fetch) => {
   const response = await fetcher(`https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(api_key)}`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -66,14 +66,14 @@ export async function refresh({ refresh_token, api_key }, fetcher = fetch) {
  * Wait for the sign-on page to post the sign-in back. Resolves to the saved
  * `{ refresh_token, api_key }`; rejects on timeout.
  */
-export async function login({ sign_on, open, store = keychain, fetcher = fetch, wait = WAIT }) {
-  const state = randomBytes(24).toString("base64url")
+export const login = async ({ sign_on, open, store = keychain, fetcher = fetch, wait = WAIT }) => {
+  const state = random_bytes(24).toString("base64url")
   let finish
   const received = new Promise((resolve, reject) => {
     finish = { resolve, reject }
   })
 
-  const server = createServer(async (request, response) => {
+  const server = create_server(async (request, response) => {
     if (request.method !== "POST" || request.url !== "/callback") return response.writeHead(404).end()
     let body = ""
     for await (const chunk of request) body += chunk
@@ -103,7 +103,7 @@ export async function login({ sign_on, open, store = keychain, fetcher = fetch, 
 }
 
 /** An ID token for every call: TOKEN if set, else minted from the keychain and cached. */
-export function token_source({ store = keychain, fetcher = fetch, env = process.env } = {}) {
+export const token_source = ({ store = keychain, fetcher = fetch, env = process.env } = {}) => {
   let cached = null
   let until = 0
   return async () => {

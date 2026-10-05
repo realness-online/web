@@ -9,24 +9,24 @@
 //   npm run check:browser            two runs
 //   npm run check:browser:cold       one disk reload before opening the page
 
-import { execFileSync } from "node:child_process"
-import { createHmac } from "node:crypto"
-import { existsSync, readFileSync } from "node:fs"
+import { execFileSync as exec_file_sync } from "node:child_process"
+import { createHmac as create_hmac } from "node:crypto"
+import { existsSync as exists_sync, readFileSync as read_file_sync } from "node:fs"
 
 const API = process.env.API ?? "http://127.0.0.1:18080"
 const PAGE = process.env.PAGE ?? "http://127.0.0.1:18090/"
 const RUNS = Number(process.env.RUNS ?? 2)
 const owner = "+14156667777"
 const secret_path = new URL("../../dist/host-pass-secret", import.meta.url)
-const secret = process.env.HOST_PASS_SECRET ?? (existsSync(secret_path) ? readFileSync(secret_path, "utf8").trim() : null)
+const secret = process.env.HOST_PASS_SECRET ?? (exists_sync(secret_path) ? read_file_sync(secret_path, "utf8").trim() : null)
 
-function host_pass() {
+const host_pass = () => {
   if (!secret || Buffer.byteLength(secret) < 32) throw new Error("HOST_PASS_SECRET required for check:browser")
   const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
-  return `${body}.${createHmac("sha256", secret).update(body).digest("base64url")}`
+  return `${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 
-function actor_request(path, options = {}) {
+const actor_request = (path, options = {}) => {
   return fetch(`${API}${path}`, { ...options, headers: { ...options.headers, authorization: `Bearer ${host_pass()}` } })
 }
 
@@ -39,9 +39,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // AGENT_BROWSER_HEADED=1 shows the window, to watch a run.
 const browser = (name) => (...args) =>
-  execFileSync("agent-browser", ["--session", name, ...args], { encoding: "utf8" }).trim()
+  exec_file_sync("agent-browser", ["--session", name, ...args], { encoding: "utf8" }).trim()
 
-async function until(what, ms, test) {
+const until = async (what, ms, test) => {
   const start = Date.now()
   while (Date.now() - start < ms) {
     const value = await test()
@@ -51,7 +51,7 @@ async function until(what, ms, test) {
   throw new Error(`${what}: not within ${ms}ms`)
 }
 
-async function run(n, cold = false) {
+const run = async (n, cold = false) => {
   const name = `brayness-z1-check-${process.pid}-${n}`
   const ab = browser(name)
   // eval prints its result as JSON; functions keep names out of the shared global scope.

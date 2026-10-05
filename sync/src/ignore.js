@@ -12,7 +12,7 @@
 
 const escape = (text) => text.replace(/[.+^${}()|[\]\\]/g, "\\$&")
 
-function to_regex(glob) {
+const to_regex = (glob) => {
   let out = ""
   for (let i = 0; i < glob.length; i++) {
     const char = glob[i]
@@ -28,7 +28,7 @@ function to_regex(glob) {
 }
 
 /** Rules from file text; blank lines and comments drop out. */
-export function parse_ignore(text = "") {
+export const parse_ignore = (text = "") => {
   const rules = []
   for (const raw of text.split("\n")) {
     let line = raw.trim()
@@ -47,7 +47,7 @@ export function parse_ignore(text = "") {
 }
 
 /** `(path, is_dir) => boolean` for `/`-separated paths relative to the root. */
-export function ignorer(rules) {
+export const ignorer = (rules) => {
   const decide = (path, is_dir) => {
     let ignored = false
     for (const rule of rules) {

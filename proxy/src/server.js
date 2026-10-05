@@ -1,4 +1,4 @@
-import { createServer } from "node:http"
+import { createServer as create_server } from "node:http"
 import { MODEL, HOUSE_MODEL, call_upstream, read_body } from "./agent.js"
 import { verify_model_pass } from "./model-pass.js"
 import { over_limit, usage_meter } from "./usage.js"
@@ -17,7 +17,7 @@ export const QUOTA_MESSAGES = quota_messages()
 export const wants_house = (body) => /^(house|deepseek)/.test(String(body?.model ?? "").replace(/^brayness\//, ""))
 
 /** Bearer: a model pass (actor or app) or a phone ID token. */
-export function bearer_identity({ identify_phone, secret }) {
+export const bearer_identity = ({ identify_phone, secret }) => {
   if (!secret || Buffer.byteLength(secret) < 32) throw new Error("model pass secret must be at least 32 bytes")
   const identify = async (token) => {
     if (typeof token !== "string") throw new Error("missing bearer")
@@ -44,7 +44,7 @@ const json = (response, status, body) => {
  * One HTTP handler for both local Node and a deployed function.
  * `plan_for(phone)` returns `{ free: { day, month }, paid }` for the payer.
  */
-export function agent_handler({ identify_phone, secret, key, fetcher = fetch, ledger, plan_for, pay_url = PAY_URL, warn = console.error }) {
+export const agent_handler = ({ identify_phone, secret, key, fetcher = fetch, ledger, plan_for, pay_url = PAY_URL, warn = console.error }) => {
   if (!key) throw new Error("upstream key required")
   const who_is = bearer_identity({ identify_phone, secret })
   const messages = quota_messages(pay_url)
@@ -99,7 +99,7 @@ export function agent_handler({ identify_phone, secret, key, fetcher = fetch, le
 }
 
 /** GET /limit: the caller's limits, use, and any warning. */
-export function limit_handler({ identify_phone, secret, ledger, plan_for, pay_url = PAY_URL }) {
+export const limit_handler = ({ identify_phone, secret, ledger, plan_for, pay_url = PAY_URL }) => {
   const who_is = bearer_identity({ identify_phone, secret })
   return async (request, response) => {
     const who = await who_is(request)
@@ -115,7 +115,7 @@ export function limit_handler({ identify_phone, secret, ledger, plan_for, pay_ur
 }
 
 /** POST /pay/checkout: a signed-in person starts a subscription. */
-export function checkout_handler({ identify_phone, secret, stripe, price, pay_url = PAY_URL }) {
+export const checkout_handler = ({ identify_phone, secret, stripe, price, pay_url = PAY_URL }) => {
   const who_is = bearer_identity({ identify_phone, secret })
   return async (request, response) => {
     if (!stripe || !price) return json(response, 503, { error: "payments are not set up" })
@@ -130,7 +130,7 @@ export function checkout_handler({ identify_phone, secret, stripe, price, pay_ur
 }
 
 /** POST /pay/webhook: Stripe tells us an invoice is paid. */
-export function webhook_handler({ stripe, billing, webhook_secret, warn = console.error, log = console.log }) {
+export const webhook_handler = ({ stripe, billing, webhook_secret, warn = console.error, log = console.log }) => {
   return async (request, response) => {
     if (!stripe || !webhook_secret) return response.writeHead(503).end()
     const chunks = []
@@ -156,7 +156,7 @@ export function webhook_handler({ stripe, billing, webhook_secret, warn = consol
  * Routes: GET /limit, POST /pay/checkout, POST /pay/webhook; every other POST
  * is a model call. Browsers on `origins` may call /limit and /pay/checkout.
  */
-export function proxy_handler({ agent, limit, pay, webhook, origins = [] }) {
+export const proxy_handler = ({ agent, limit, pay, webhook, origins = [] }) => {
   return async (request, response) => {
     const path = new URL(request.url ?? "/", "http://proxy").pathname.replace(/\/+$/, "")
     const origin = request.headers.origin
@@ -177,4 +177,4 @@ export function proxy_handler({ agent, limit, pay, webhook, origins = [] }) {
 }
 
 /** Local model endpoint. */
-export const agent_service = (options) => createServer(agent_handler(options))
+export const agent_service = (options) => create_server(agent_handler(options))

@@ -16,7 +16,7 @@ const owner = process.env.OWNER ?? "+14156667777"
 const secret = process.env.HOST_PASS_SECRET
 assert.ok(secret, "HOST_PASS_SECRET is not set")
 
-async function call(method, path, body) {
+const call = async (method, path, body) => {
   const response = await fetch(`${API}${path}`, {
     method,
     headers: { authorization: `Bearer ${issue_host_pass({ phone: owner }, secret)}`, ...(body && { "content-type": "application/json" }) },

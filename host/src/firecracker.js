@@ -4,8 +4,8 @@
 // its TAP and vsock. An actor's disk is not in any request: the snapshot
 // records the drive path relative to Firecracker's cwd (f5a).
 
-import { spawn as spawnProcess, spawnSync } from "node:child_process"
-import { existsSync, openSync, closeSync, readdirSync, readFileSync, realpathSync } from "node:fs"
+import { spawn as spawn_process, spawnSync as spawn_sync } from "node:child_process"
+import { existsSync as exists_sync, openSync as open_sync, closeSync as close_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, realpathSync as realpath_sync } from "node:fs"
 import { request } from "node:http"
 import { resolve } from "node:path"
 import { FirecrackerError } from "./errors.js"
@@ -52,26 +52,26 @@ export class Api {
 }
 
 /** The first line of `--version`; the exit banner after it would change every run. */
-export function version(binary) {
-  const result = spawnSync(binary, ["--version"], { encoding: "utf8" })
+export const version = (binary) => {
+  const result = spawn_sync(binary, ["--version"], { encoding: "utf8" })
   const first = `${result.stdout ?? ""}`.trim().split("\n")[0]?.trim()
   return first || "unknown"
 }
 
 /** Start Firecracker with `cwd` as its working directory; the cwd picks the disk (f5a). */
-export function spawn(binary, cwd, apiSock, logPath) {
-  const log = openSync(logPath, "a")
+export const spawn = (binary, cwd, apiSock, logPath) => {
+  const log = open_sync(logPath, "a")
   try {
-    return spawnProcess(binary, ["--api-sock", apiSock], { cwd, stdio: ["ignore", log, log] })
+    return spawn_process(binary, ["--api-sock", apiSock], { cwd, stdio: ["ignore", log, log] })
   } finally {
-    closeSync(log)
+    close_sync(log)
   }
 }
 
-export async function waitForApiSocket(path, seconds = 10) {
+export const waitForApiSocket = async (path, seconds = 10) => {
   const deadline = Date.now() + seconds * 1000
   while (Date.now() < deadline) {
-    if (existsSync(path)) return
+    if (exists_sync(path)) return
     await sleep(50)
   }
   throw new FirecrackerError(`no api socket at ${path} after ${seconds}s`)
@@ -79,7 +79,7 @@ export async function waitForApiSocket(path, seconds = 10) {
 
 const real = (path) => {
   try {
-    return realpathSync(path)
+    return realpath_sync(path)
   } catch {
     return resolve(path)
   }
@@ -89,13 +89,13 @@ const real = (path) => {
  * The Firecracker that owns `apiSock`, or null. The command line is the
  * identity, not a recorded pid: after a host reboot a reused pid is a stranger.
  */
-export function pidForApiSock(apiSock) {
+export const pidForApiSock = (apiSock) => {
   const want = real(apiSock)
-  for (const name of readdirSync("/proc")) {
+  for (const name of readdir_sync("/proc")) {
     if (!/^\d+$/.test(name)) continue
     let args
     try {
-      args = readFileSync(`/proc/${name}/cmdline`).toString().split("\0").filter(Boolean)
+      args = read_file_sync(`/proc/${name}/cmdline`).toString().split("\0").filter(Boolean)
     } catch {
       continue
     }
@@ -106,10 +106,10 @@ export function pidForApiSock(apiSock) {
 }
 
 /** Running, and not a zombie: a zombie holds nothing but is still named firecracker. */
-export function alive(pid) {
+export const alive = (pid) => {
   if (!pid) return false
   try {
-    const stat = readFileSync(`/proc/${pid}/stat`, "utf8")
+    const stat = read_file_sync(`/proc/${pid}/stat`, "utf8")
     if (stat.slice(stat.lastIndexOf(") ") + 2).split(" ")[0] === "Z") return false
     process.kill(pid, 0)
     return true
@@ -122,7 +122,7 @@ export function alive(pid) {
  * SIGTERM, then SIGKILL. Node reaps its own children; an unreaped one would be
  * a zombie named firecracker that holds the idle guard awake forever.
  */
-export async function terminate(pid, seconds = 10) {
+export const terminate = async (pid, seconds = 10) => {
   if (!alive(pid)) return
   try {
     process.kill(pid, "SIGTERM")
@@ -141,7 +141,7 @@ export async function terminate(pid, seconds = 10) {
  * A fresh VM: the seed from the template disk, or an app. `readOnly` maps
  * drive ids to extra disks attached read-only; an app has no `uds`, so no vsock.
  */
-export async function boot(api, { kernel, disk, tap, uds, mac, cid, vcpus, mib, readOnly = {} }) {
+export const boot = async (api, { kernel, disk, tap, uds, mac, cid, vcpus, mib, readOnly = {} }) => {
   await api.put("/boot-source", { kernel_image_path: kernel, boot_args: BOOT_ARGS })
   await api.put("/drives/rootfs", { drive_id: "rootfs", path_on_host: disk, is_root_device: true, is_read_only: false })
   for (const [id, path] of Object.entries(readOnly)) {

@@ -5,7 +5,7 @@
 // Model use passes through at cost, so the subscription is the credit: each
 // paid invoice resets the credit for the new billing period. Free use keeps
 // its token limits; the house model spends only the paid credit.
-import { createHmac, timingSafeEqual } from "node:crypto"
+import { createHmac as create_hmac, timingSafeEqual as timing_safe_equal } from "node:crypto"
 import { free_limits } from "./usage.js"
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -22,12 +22,12 @@ const escape = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&q
 const PLAN_FIELDS = ["status", "credit", "start", "end", "subscription", "customer", "invoice"]
 
 /** A plan as one `/plan` item. */
-export function plan_html(plan) {
+export const plan_html = (plan) => {
   const props = PLAN_FIELDS.map((name) => `<meta itemprop="${name}" content="${escape(plan[name] ?? "")}">`).join("")
   return `<article itemscope itemtype="/plan">${props}</article>\n`
 }
 
-export function read_plan(html) {
+export const read_plan = (html) => {
   const item = html.match(/<article itemscope itemtype="\/plan">.*?<\/article>/s)?.[0]
   if (!item) return null
   const plan = {}
@@ -37,7 +37,7 @@ export function read_plan(html) {
 }
 
 /** Paid now: the period has started and not ended. A canceled plan keeps its period. */
-export function paid_now(plan, now = new Date()) {
+export const paid_now = (plan, now = new Date()) => {
   if (!plan || !["active", "canceled"].includes(plan.status)) return null
   if (!DAY.test(plan.start ?? "") || !(plan.credit > 0)) return null
   if (now < new Date(`${plan.start}T00:00:00Z`) || now >= new Date(plan.end)) return null
@@ -45,7 +45,7 @@ export function paid_now(plan, now = new Date()) {
 }
 
 /** Plan records in storage, cached briefly per instance. */
-export function billing_store(storage, { ttl_ms = 30_000 } = {}) {
+export const billing_store = (storage, { ttl_ms = 30_000 } = {}) => {
   const cache = new Map()
   return {
     async get(phone) {
@@ -73,7 +73,7 @@ export const plan_source = (billing, env = {}) => {
 // --- Stripe, over plain fetch ---
 
 /** Stripe's form encoding, with nested keys as a[b][c]. */
-export function form(params, prefix = "", out = new URLSearchParams()) {
+export const form = (params, prefix = "", out = new URLSearchParams()) => {
   for (const [key, value] of Object.entries(params)) {
     const name = prefix ? `${prefix}[${key}]` : key
     if (value == null) continue
@@ -83,7 +83,7 @@ export function form(params, prefix = "", out = new URLSearchParams()) {
   return out
 }
 
-export function stripe_api(key, fetcher = fetch) {
+export const stripe_api = (key, fetcher = fetch) => {
   if (!key) throw new Error("stripe key required")
   const call = async (method, path, params) => {
     const response = await fetcher(`${STRIPE}${path}`, {
@@ -104,7 +104,7 @@ export const PLAN = { amount: 500, currency: "usd", interval: "month", name: "Br
 export const WEBHOOK_EVENTS = ["invoice.paid", "customer.subscription.deleted"]
 
 /** The plan's price id, looked up once. */
-export function price_lookup(stripe, key = PRICE_KEY) {
+export const price_lookup = (stripe, key = PRICE_KEY) => {
   let found
   return () => (found ??= stripe.get(`/prices?active=true&lookup_keys[]=${key}`).then(({ data }) => {
     if (!data?.[0]?.id) throw new Error(`no active Stripe price ${key}; run proxy/scripts/stripe-setup.js`)
@@ -113,7 +113,7 @@ export function price_lookup(stripe, key = PRICE_KEY) {
 }
 
 /** A Checkout Session for the paid plan; returns Stripe's hosted URL. */
-export async function checkout(stripe, { phone, price, pay_url = PAY_URL }) {
+export const checkout = async (stripe, { phone, price, pay_url = PAY_URL }) => {
   if (!PHONE.test(phone ?? "")) throw new Error("checkout needs a phone")
   if (!price) throw new Error("checkout needs a price")
   const session = await stripe.post("/checkout/sessions", {
@@ -129,15 +129,15 @@ export async function checkout(stripe, { phone, price, pay_url = PAY_URL }) {
 }
 
 /** Checks the `Stripe-Signature` header against the raw body. */
-export function verify_stripe(raw, header, secret, now = Date.now()) {
+export const verify_stripe = (raw, header, secret, now = Date.now()) => {
   if (!secret) throw new Error("webhook secret required")
   const parts = Object.groupBy(String(header ?? "").split(",").map((part) => part.split("=")), ([name]) => name)
   const time = Number(parts.t?.[0]?.[1])
   if (!Number.isSafeInteger(time) || Math.abs(now / 1000 - time) > TOLERANCE_S) throw new Error("stale or missing signature")
-  const expected = createHmac("sha256", secret).update(`${time}.${raw}`).digest()
+  const expected = create_hmac("sha256", secret).update(`${time}.${raw}`).digest()
   const ok = (parts.v1 ?? []).some(([, value]) => {
     const actual = Buffer.from(value ?? "", "hex")
-    return actual.length === expected.length && timingSafeEqual(actual, expected)
+    return actual.length === expected.length && timing_safe_equal(actual, expected)
   })
   if (!ok) throw new Error("bad signature")
   return JSON.parse(raw)
@@ -147,7 +147,7 @@ const day_of = (seconds) => new Date(seconds * 1000).toISOString().slice(0, 10)
 const iso_of = (seconds) => new Date(seconds * 1000).toISOString()
 
 /** The billing period on a subscription, old or new API shape. */
-function period(subscription) {
+const period = (subscription) => {
   const item = subscription.items?.data?.[0] ?? {}
   const start = subscription.current_period_start ?? item.current_period_start
   const end = subscription.current_period_end ?? item.current_period_end
@@ -163,7 +163,7 @@ const subscription_of = (invoice) =>
  * amount paid for the new period; a deleted subscription keeps what is paid.
  * Returns what changed, or null for events it ignores.
  */
-export async function apply_event(event, { stripe, billing }) {
+export const apply_event = async (event, { stripe, billing }) => {
   const object = event?.data?.object ?? {}
   if (event?.type === "invoice.paid") {
     const id = subscription_of(object)
@@ -195,7 +195,7 @@ const percent = (used, cap) => (Number.isFinite(cap) && cap > 0 ? Math.min(100, 
  * Limits, use, and the one warning worth showing, from `{ free, paid }` and
  * what is spent. Each warning offers a way to pay.
  */
-export function limit_status({ free, paid }, { day, month, period }, { pay_url = PAY_URL } = {}) {
+export const limit_status = ({ free, paid }, { day, month, period }, { pay_url = PAY_URL } = {}) => {
   const part = (used, cap) => ({ used: used.tokens, limit: finite(cap.tokens), left: finite(Math.max(0, cap.tokens - used.tokens)), percent: percent(used.tokens, cap.tokens) })
   const status = {
     plan: paid ? "paid" : "free",

@@ -4,13 +4,13 @@
 //
 //   node control/scripts/ship-stage.js        writes dist/ship/
 //   BRAYNESS_PROXY_URL=...                    the proxy the ship tree names
-import { execFileSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
-import { chmodSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { execFileSync as exec_file_sync } from 'node:child_process'
+import { createHash as create_hash } from 'node:crypto'
+import { chmodSync as chmod_sync, existsSync as exists_sync, lstatSync as lstat_sync, mkdirSync as mkdir_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, readlinkSync as readlink_sync, rmSync as rm_sync, symlinkSync as symlink_sync, writeFileSync as write_file_sync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath as file_url_to_path } from 'node:url'
 
-const project = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const project = join(dirname(file_url_to_path(import.meta.url)), '..', '..')
 export const ROOT = join(project, '..', '..')
 export const STAGE = join(project, 'dist', 'ship')
 const DEFAULT_PROXY = 'https://brayness-proxy-yelzvhhngq-uc.a.run.app'
@@ -51,23 +51,23 @@ export const ships = path => {
 
 // Files by their bytes: no Mac metadata, symlinks kept as links.
 const copy = (from, to, root) => {
-  const info = lstatSync(from)
+  const info = lstat_sync(from)
   if (!ships(relative(root, from))) return
-  if (info.isSymbolicLink()) return symlinkSync(readlinkSync(from), to)
+  if (info.isSymbolicLink()) return symlink_sync(readlink_sync(from), to)
   if (info.isDirectory()) {
-    mkdirSync(to, { recursive: true })
-    for (const name of readdirSync(from)) copy(join(from, name), join(to, name), root)
+    mkdir_sync(to, { recursive: true })
+    for (const name of readdir_sync(from)) copy(join(from, name), join(to, name), root)
     return
   }
-  mkdirSync(dirname(to), { recursive: true })
-  writeFileSync(to, readFileSync(from))
-  chmodSync(to, info.mode & 0o777)
+  mkdir_sync(dirname(to), { recursive: true })
+  write_file_sync(to, read_file_sync(from))
+  chmod_sync(to, info.mode & 0o777)
 }
 
 const edit_json = (path, change) => {
-  const value = JSON.parse(readFileSync(path, 'utf8'))
+  const value = JSON.parse(read_file_sync(path, 'utf8'))
   change(value)
-  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+  write_file_sync(path, `${JSON.stringify(value, null, 2)}\n`)
 }
 
 /**
@@ -78,17 +78,17 @@ const edit_json = (path, change) => {
 export const starter_manifest = stage => {
   const files = {}
   const walk = (dir, base) => {
-    for (const name of readdirSync(dir).sort()) {
+    for (const name of readdir_sync(dir).sort()) {
       const from = join(dir, name)
       const path = base ? `${base}/${name}` : name
-      const info = lstatSync(from)
+      const info = lstat_sync(from)
       if (info.isDirectory()) walk(from, path)
-      else if (info.isSymbolicLink()) files[path] = `link:${readlinkSync(from)}`
-      else files[path] = createHash('sha256').update(readFileSync(from)).digest('hex')
+      else if (info.isSymbolicLink()) files[path] = `link:${readlink_sync(from)}`
+      else files[path] = create_hash('sha256').update(read_file_sync(from)).digest('hex')
     }
   }
   walk(stage, '')
-  const version = createHash('sha256')
+  const version = create_hash('sha256')
     .update(Object.keys(files).map(path => `${path}:${files[path]}`).join('\n'))
     .digest('hex')
   return { version, files }
@@ -114,24 +114,29 @@ const brayness_provider = proxy_url => ({
 export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env.BRAYNESS_PROXY_URL || DEFAULT_PROXY } = {}) => {
   let pi_version
   try {
-    pi_version = execFileSync('pi', ['--version'], { encoding: 'utf8' }).trim()
+    pi_version = exec_file_sync('pi', ['--version'], { encoding: 'utf8' }).trim()
   } catch {
     throw new Error('pi is not installed on PATH')
   }
   if (!PI_VERSION.test(pi_version)) throw new Error(`invalid local pi version: ${pi_version}`)
   if (!PROXY_URL.test(proxy_url)) throw new Error('BRAYNESS_PROXY_URL must be an http(s) endpoint')
 
-  rmSync(stage, { recursive: true, force: true })
-  mkdirSync(stage, { recursive: true })
-  writeFileSync(join(stage, '.pi-version'), `${pi_version}\n`)
-  for (const path of INCLUDE) if (existsSync(join(root, path))) copy(join(root, path), join(stage, path), root)
+  const previous = exists_sync(join(stage, STARTER)) ? JSON.parse(read_file_sync(join(stage, STARTER), 'utf8')) : null
+  rm_sync(stage, { recursive: true, force: true })
+  mkdir_sync(stage, { recursive: true })
+  write_file_sync(join(stage, '.pi-version'), `${pi_version}\n`)
+  for (const path of INCLUDE) if (exists_sync(join(root, path))) copy(join(root, path), join(stage, path), root)
+
+  // Every new workspace has private apps carried by normal harness sync.
+  mkdir_sync(join(stage, 'apps'), { recursive: true })
+  write_file_sync(join(stage, '.ignore'), '')
 
   // Pi finds extensions and prompt templates (/site, /app) in its agent folder.
-  symlinkSync('../../extensions', join(stage, '.pi/agent/extensions'))
-  symlinkSync('../../prompts', join(stage, '.pi/agent/prompts'))
+  symlink_sync('../../extensions', join(stage, '.pi/agent/extensions'))
+  symlink_sync('../../prompts', join(stage, '.pi/agent/prompts'))
   // Sync the editable site and its stable ID at every Pi turn end.
-  mkdirSync(join(stage, 'plans'), { recursive: true })
-  writeFileSync(join(stage, 'plans/site.md'), '# Published site\n\n## Syncs\n\n- work/site\n')
+  mkdir_sync(join(stage, 'plans'), { recursive: true })
+  write_file_sync(join(stage, 'plans/site.md'), '# Published site\n\n## Syncs\n\n- work/site\n')
 
   edit_json(join(stage, '.pi/agent/settings.json'), settings => {
     settings.defaultProvider = 'brayness'
@@ -150,16 +155,17 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
   // k2: the tree names its own version and every file in it. Written last, so
   // the manifest covers everything above and never hashes itself.
   const manifest = starter_manifest(stage)
-  writeFileSync(join(stage, STARTER), `${JSON.stringify({ version: manifest.version, pi: pi_version, files: manifest.files }, null, 2)}\n`)
+  const built_at = previous?.version === manifest.version && previous.built_at ? previous.built_at : new Date().toISOString()
+  write_file_sync(join(stage, STARTER), `${JSON.stringify({ version: manifest.version, pi: pi_version, built_at, files: manifest.files }, null, 2)}\n`)
   // Examples are not shipped: actors download them from brayness-examples with
   // giget when a prompt asks, and install @realness.online packages from npm.
   return stage
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] === file_url_to_path(import.meta.url)) {
   try {
     const stage = ship_stage()
-    const starter = JSON.parse(readFileSync(join(stage, STARTER), 'utf8'))
+    const starter = JSON.parse(read_file_sync(join(stage, STARTER), 'utf8'))
     const paths = Object.keys(starter.files)
     console.log(`ship tree: ${stage}`)
     console.log(`starter: ${starter.version} (pi ${starter.pi}, ${paths.length} files)`)

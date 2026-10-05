@@ -6,7 +6,7 @@ import { read_status } from "../../sync/src/host-status.js"
 import { day_files, days_since, free_limits, month_days, read_rows, sum_rows } from "../../proxy/src/usage.js"
 import { billing_key, limit_status, paid_now, read_plan } from "../../proxy/src/billing.js"
 import { URLS } from "./status.js"
-import { randomUUID } from "node:crypto"
+import { randomUUID as random_uuid } from "node:crypto"
 import { ACTOR_ACTIONS, request_html, request_key } from "../../sync/src/actor-request.js"
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -16,7 +16,7 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/
 const unesc = (value) => value.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&")
 
 /** A signed-in sync client for one environment. */
-export async function reader(env, { url = URLS[env], token = token_source() } = {}) {
+export const reader = async (env, { url = URLS[env], token = token_source() } = {}) => {
   if (!url) throw new Error(`no sync URL for ${env}`)
   const bearer = await token()
   if (!bearer) throw new Error("not signed in; run webspace <env> admin login")
@@ -26,7 +26,7 @@ export async function reader(env, { url = URLS[env], token = token_source() } = 
 const folders = async (sync, path) => (await sync.ls(path)).filter((name) => name.endsWith("/")).map((name) => name.slice(0, -1))
 
 /** Unmasked host records; output masks phones on the way out. */
-export async function hosts(sync, name, now = Date.now()) {
+export const hosts = async (sync, name, now = Date.now()) => {
   const names = name ? [name] : await folders(sync, "can://hosts/")
   const out = []
   for (const host_name of names) {
@@ -38,8 +38,19 @@ export async function hosts(sync, name, now = Date.now()) {
   return out
 }
 
+/** m7: sync's own verdict on which hosts have stopped reporting. */
+export const quiet_hosts = async (sync) => {
+  try {
+    return JSON.parse((await sync.cat("can://hosts/quiet.json")).toString("utf8"))
+  } catch (error) {
+    // An older sync has no derived record; say so rather than reporting calm.
+    if (error.status === 404) return { setup: "sync does not report host health yet" }
+    throw error
+  }
+}
+
 /** Every actor any host last reported, tagged with that host. */
-export async function actors(sync, id, now) {
+export const actors = async (sync, id, now) => {
   const rows = (await hosts(sync, null, now)).flatMap(({ host, age_s, actors }) => actors.map((actor) => ({ ...actor, host: host.name, age_s })))
   if (!id) return rows
   const found = rows.filter((actor) => actor.id === id)
@@ -47,7 +58,7 @@ export async function actors(sync, id, now) {
   return found
 }
 
-export function read_loop(html) {
+export const read_loop = (html) => {
   const match = html.match(/<article itemscope itemtype="\/loop">(.*?)<\/article>/s)
   if (!match) return null
   const loop = {}
@@ -58,7 +69,7 @@ export function read_loop(html) {
   return loop
 }
 
-export async function loops(sync, id) {
+export const loops = async (sync, id) => {
   if (id && !LOOP.test(id)) throw new Error("invalid loop id")
   const ids = id ? [id] : (await folders(sync, "can://loops/")).filter((name) => LOOP.test(name))
   const out = []
@@ -70,7 +81,7 @@ export async function loops(sync, id) {
 }
 
 /** One person's ledger for one UTC day, with totals. */
-export async function usage(sync, phone, day = new Date().toISOString().slice(0, 10)) {
+export const usage = async (sync, phone, day = new Date().toISOString().slice(0, 10)) => {
   if (!PHONE.test(phone ?? "")) throw new Error("usage: webspace <env> usage <phone> [--day=YYYY-MM-DD]")
   if (!DAY.test(day)) throw new Error("day must be YYYY-MM-DD")
   let files = []
@@ -95,7 +106,7 @@ export async function usage(sync, phone, day = new Date().toISOString().slice(0,
  * b1e: one person's limits, use, and what is left, today, this month, and in
  * a paid period. The same status the proxy gives the person, warning included.
  */
-export async function limit(sync, phone, now = new Date()) {
+export const limit = async (sync, phone, now = new Date()) => {
   if (!PHONE.test(phone ?? "")) throw new Error("usage: webspace <env> limit <phone>")
   const missing = (error) => { if (error.status !== 404) throw error }
   const days = await sync.ls(`can://usage/${phone}/`).catch((error) => (missing(error), []))
@@ -110,7 +121,7 @@ export async function limit(sync, phone, now = new Date()) {
 }
 
 /** What an admin may see of one person: actors, loops, today's usage. */
-export async function person(sync, phone, { day, now } = {}) {
+export const person = async (sync, phone, { day, now } = {}) => {
   if (!PHONE.test(phone ?? "")) throw new Error("usage: webspace <env> person <phone>")
   const [all_actors, all_loops, spent] = await Promise.all([actors(sync, null, now), loops(sync), usage(sync, phone, day)])
   const { rows, ...totals } = spent
@@ -142,17 +153,17 @@ export const text = {
 // o6 writes: requests in Storage; hosts obey on their next pass.
 
 /** Ask the actor's host to idle or stop it; returns the request. */
-export async function request_actor(sync, id, action, now = Date.now()) {
+export const request_actor = async (sync, id, action, now = Date.now()) => {
   if (!ACTOR_ACTIONS.has(action)) throw new Error(`usage: webspace <env> actor idle|stop <id>`)
   const [actor] = await actors(sync, id, now)
   if (actor.state === "stopped" || (action === "idle" && actor.state === "idle")) return { id, host: actor.host, action, already: actor.state }
-  const request = { id: randomUUID(), action, requested: new Date(now).toISOString() }
+  const request = { id: random_uuid(), action, requested: new Date(now).toISOString() }
   await sync.put(`can://${request_key(actor.host, id)}`, Buffer.from(request_html(request)))
   return { id, host: actor.host, action, request: request.id, obeyed: "on the host's next pass, within a minute" }
 }
 
 /** Ask a running loop to stop; the host checks on its next probe. */
-export async function request_loop_stop(sync, id) {
+export const request_loop_stop = async (sync, id) => {
   const [loop] = await loops(sync, id)
   if (!loop) throw new Error(`no loop ${id}`)
   if (loop.status !== "running" && loop.status !== "starting") return { id, already: loop.status }

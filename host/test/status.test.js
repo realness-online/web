@@ -16,10 +16,10 @@ const fake_store = (volume = "/") => ({
 const fake_apps = { list: () => [{ id: "p-000000000001", owner: A, public: false }] }
 const fake_loops = { all: () => [{ id: "a-000000000002", status: "running" }, { id: "a-000000000009", status: "stopped" }] }
 
-test("a status record reads back as the host, its actors, and its apps", () => {
+test("a status record reads back as the host, its actors, and its apps", async () => {
   const now = new Date("2026-09-30T12:00:30Z")
   const status = new HostStatus(fake_store(), { apps: fake_apps, loops: fake_loops, host: "brayness-1", now: () => now })
-  const read = read_status(status_html(status.snapshot()))
+  const read = read_status(status_html(await status.snapshot()))
   assert.equal(read.host.name, "brayness-1")
   assert.equal(read.host.checked, now.toISOString())
   assert.equal(read.host.seed, "ready")
@@ -64,9 +64,9 @@ test("a failed write is reported and never thrown", async () => {
   assert.match(warned[0], /503 from storage/)
 })
 
-test("a volume that cannot be read reports zero, and the record still writes", () => {
+test("a volume that cannot be read reports zero, and the record still writes", async () => {
   const status = new HostStatus(fake_store("/no/such/volume"), { host: "h" })
-  const read = read_status(status_html(status.snapshot()))
+  const read = read_status(status_html(await status.snapshot()))
   assert.equal(read.host.volume_size, "0")
   assert.equal(read.actors.length, 3)
 })
