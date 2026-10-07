@@ -8,9 +8,9 @@
     watch_chat
   } from '@/utils/brayness-chat'
   import { message_html } from '@/utils/message-markdown'
+  import WorkingBorder from '@/components/working-border.vue'
+  import SiteNav from '@/components/site-nav'
   import {
-    inject,
-    watch as vue_watch,
     nextTick as next_tick,
     onBeforeUnmount as on_before_unmount,
     onMounted as on_mounted,
@@ -36,9 +36,6 @@
   const draft = ref('')
   const status = ref('')
   const working = ref(false)
-  // Pi working lights the same edge sweep as Realness syncing (App.vue).
-  const set_working = inject('set_working', () => {})
-  vue_watch(working, on => set_working(on), { flush: 'sync' })
   const view = ref('both')
   const tui_shown = ref(false)
   const conversation = ref(null)
@@ -52,13 +49,6 @@
   const to_end = async () => {
     await next_tick()
     conversation.value?.lastElementChild?.scrollIntoView({ block: 'end' })
-  }
-
-  const fit_input = () => {
-    const box = input.value
-    if (!box) return
-    box.style.height = 'auto'
-    box.style.height = `${box.scrollHeight}px`
   }
 
   /** Near a model-use limit, say so once per step per day. */
@@ -128,15 +118,11 @@
     if (!message || !actor.value) return
     draft.value = ''
     status.value = ''
-    await next_tick()
-    fit_input()
     try {
       await send_chat(current_user.value, actor.value, message)
     } catch (thrown) {
       status.value = readable_error(thrown.message)
       if (!draft.value) draft.value = message
-      await next_tick()
-      fit_input()
     }
   }
 
@@ -182,7 +168,21 @@
       key (event.code) so macOS Option characters never land in the input;
       Pi binds no Alt+digit, and the browser keeps Cmd/Ctrl+digit. */
   const SHORTCUTS = { Digit1: 'gui', Digit2: 'both', Digit3: 'tui' }
+  const VIEW_NAMES = { gui: 'GUI', both: 'Both', tui: 'TUI' }
+  const ORDER = ['both', 'gui', 'tui']
+  const next_view = () => ORDER[(ORDER.indexOf(view.value) + 1) % ORDER.length]
+  /** Cmd+K clears the GUI's conversation, as it clears the TUI's scrollback
+      when the TUI has focus. Only the view: Pi keeps the session, and a
+      reconnect draws its history again. */
+  const on_clear = event => {
+    if (!event.metaKey || event.key.toLowerCase() !== 'k') return
+    if (pane.value?.contains(document.activeElement)) return
+    event.preventDefault()
+    messages.value = []
+  }
+
   const on_cycle = event => {
+    on_clear(event)
     const next = SHORTCUTS[event.code]
     if (!next || !event.altKey || event.ctrlKey || event.metaKey) return
     if (!wide?.matches || !tui_shown.value) return
@@ -211,7 +211,6 @@
 
   on_before_unmount(() => {
     left = true
-    if (working.value) set_working(false)
     window.removeEventListener('keydown', on_cycle, { capture: true })
     wide?.removeEventListener('change', mount_tui)
     watching?.abort()
@@ -220,38 +219,23 @@
 </script>
 
 <template>
-  <section id="chat">
+  <section id="chat" :data-view="view">
     <header>
-      <h1><router-link to="/" aria-label="Home">Brayness</router-link></h1>
-      <nav aria-label="View">
-        <button
-          type="button"
-          value="gui"
-          aria-keyshortcuts="Alt+1"
-          title="Alt+1"
-          :aria-pressed="String(view === 'gui')"
-          @click="on_view('gui')">
-          GUI
-        </button>
-        <button
-          type="button"
-          value="both"
-          aria-keyshortcuts="Alt+2"
-          title="Alt+2"
-          :aria-pressed="String(view === 'both')"
-          @click="on_view('both')">
-          Both
-        </button>
-        <button
-          type="button"
-          value="tui"
-          aria-keyshortcuts="Alt+3"
-          title="Alt+3"
-          :aria-pressed="String(view === 'tui')"
-          @click="on_view('tui')">
-          TUI
-        </button>
-      </nav>
+      <site-nav />
+      <button
+        type="button"
+        :value="view"
+        :aria-label="`View: ${VIEW_NAMES[view]}. Next: ${VIEW_NAMES[next_view()]}`"
+        aria-keyshortcuts="Alt+1 Alt+2 Alt+3"
+        :title="`${VIEW_NAMES[view]} (Option+1, 2, 3)`"
+        @click="on_view(next_view())">
+        <svg viewBox="0 0 16 12" aria-hidden="true">
+          <rect x="0.5" y="0.5" width="15" height="11" rx="2" />
+          <line v-if="view === 'both'" x1="6" y1="0.5" x2="6" y2="11.5" />
+          <line v-if="view === 'gui'" x1="5" y1="9" x2="11" y2="9" />
+          <polyline v-if="view === 'tui'" points="3.5,4 5.5,6 3.5,8" />
+        </svg>
+      </button>
     </header>
     <ol ref="conversation" aria-label="Conversation" aria-live="polite">
       <li
@@ -264,6 +248,7 @@
       </li>
     </ol>
     <form :aria-busy="working ? 'true' : null" @submit.prevent="on_send">
+      <working-border :active="working" />
       <textarea
         ref="input"
         v-model="draft"
@@ -271,7 +256,6 @@
         rows="1"
         aria-label="Message"
         required
-        @input="fit_input"
         @keydown="on_key" />
     </form>
     <p role="status">{{ status }}</p>
@@ -285,44 +269,44 @@
 
 <style lang="stylus">
   section#chat {
-    column = page-width + base-line * 2
     width: 100%;
     block-size: 100dvh;
     display: grid;
-    grid-template-columns: minmax(0, column);
-    grid-template-rows: auto minmax(0, page-width) auto auto 1fr;
-    grid-template-areas: 'header' 'conversation' 'input' 'status' 'box';
-    justify-content: center;
+    // The site nav spans the window, as on About; the GUI is centered below.
+    grid-template-columns: minmax(0, 1fr) minmax(0, page-width) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1440px) auto auto 1fr;
+    grid-template-areas: 'header header header' '. conversation .' '. input .' '. status .' '. box .';
     column-gap: base-line;
     overflow: hidden;
     & > header {
       grid-area: header;
-      padding: base-line;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      & > h1 {
-        margin: 0;
-        font-weight: 300;
-        line-height: 1;
-        color: var(--accent);
-        & > a {
-          color: inherit;
-          text-decoration: none;
-        }
-      }
+      // The site nav as on About; the view icon closes its row.
       & > nav {
+        flex: 1;
+      }
+      & > button {
         display: none;
-        gap: (base-line / 2);
-        & > button {
-          standard-button: var(--accent);
-          color: var(--accent);
-          cursor: pointer;
-          focus-ring();
-          &[aria-pressed='true'] {
-            background-color: var(--accent);
-            color: var(--surface);
-          }
+        padding: 0;
+        margin-inline-end: base-line;
+        border: 0;
+        background: none;
+        color: var(--accent);
+        opacity: 0.6;
+        cursor: pointer;
+        focus-ring();
+        &:hover {
+          opacity: 1;
+        }
+        & > svg {
+          display: block;
+          inline-size: base-line;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1;
+          stroke-linecap: round;
+          stroke-linejoin: round;
         }
       }
     }
@@ -331,9 +315,28 @@
       margin: 0;
       padding: 0 base-line;
       overflow-y: auto;
-      display: grid;
-      align-content: end;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      // Newest at the bottom. An end-aligned grid pushes overflow above the
+      // top, where it cannot scroll; an auto margin on the first message
+      // pins a short chat to the bottom and lets a long one scroll back.
+      display: flex;
+      flex-direction: column;
       gap: base-line;
+      & > li {
+        flex-shrink: 0;
+        min-inline-size: 0;
+        overflow-wrap: anywhere;
+      }
+      & > li:first-child {
+        margin-block-start: auto;
+      }
+      // Wide code scrolls in its own block, not the whole conversation.
+      & pre {
+        max-inline-size: 100%;
+        overflow-x: auto;
+        overflow-wrap: normal;
+      }
       & > li > strong[itemprop='sender'] {
         display: block;
         font-weight: 300;
@@ -347,6 +350,33 @@
       grid-area: input;
       max-width: none;
       padding: base-line;
+      position: relative;
+      // The app's working-border, held to the input instead of the window.
+      & > div.working-border {
+        position: absolute;
+        inset: base-line auto base-line base-line;
+        inline-size: 'calc(100% - %s)' % (base-line * 2);
+        max-inline-size: page-width;
+        border-radius: base-line;
+        padding: 2px;
+        // A wide, short ring: a rotating wedge only grazes the long edges, so
+        // the light travels the edge itself at an even pace instead.
+        & > div {
+          inset: auto;
+          left: 0;
+          top: 0;
+          width: base-line * 6;
+          height: base-line * 1.5;
+          background: radial-gradient(closest-side, var(--accent) 40%, transparent);
+          offset-path: inset(0 round base-line);
+          offset-rotate: 0deg;
+          transform: none;
+          animation: chat-edge-travel 2.5s linear infinite;
+          @media (prefers-reduced-motion: reduce) {
+            animation: none;
+          }
+        }
+      }
       & > textarea {
         box-sizing: border-box;
         inline-size: 100%;
@@ -358,7 +388,11 @@
         color: var(--text);
         caret-color: var(--text);
         resize: none;
-        overflow: hidden;
+        // Grows with each line typed, up to a third of the screen, then scrolls.
+        field-sizing: content;
+        min-block-size: base-line * 2;
+        max-block-size: 33dvh;
+        overflow-y: auto;
       }
 
     }
@@ -402,26 +436,26 @@
     }
     @media (min-width: display-begins) {
       &:has(> section[aria-label='TUI']) {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+        // The GUI stays the width of its input; the TUI takes the rest.
+        grid-template-columns: minmax(0, page-width) minmax(0, 1fr);
         grid-template-areas: 'header header' 'conversation tui' 'input tui' 'status tui' 'box tui';
         justify-content: stretch;
-        & > header > nav {
-          display: flex;
+        & > header > button {
+          display: block;
         }
         & > section[aria-label='TUI'] {
           display: block;
           border-left: 1px solid var(--code-surface);
         }
       }
-      &:has(> header button[value='gui'][aria-pressed='true']) {
-        grid-template-columns: minmax(0, column);
-        grid-template-areas: 'header' 'conversation' 'input' 'status' 'box';
-        justify-content: center;
+      &:has(> section[aria-label='TUI'])[data-view='gui'] {
+        grid-template-columns: minmax(0, 1fr) minmax(0, page-width) minmax(0, 1fr);
+        grid-template-areas: 'header header header' '. conversation .' '. input .' '. status .' '. box .';
         & > section[aria-label='TUI'] {
           display: none;
         }
       }
-      &:has(> header button[value='tui'][aria-pressed='true']) {
+      &:has(> section[aria-label='TUI'])[data-view='tui'] {
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas: 'header' 'tui' 'tui' 'tui' 'tui';
         & > ol,
@@ -431,6 +465,17 @@
           display: none;
         }
       }
+    }
+  }
+</style>
+
+<style>
+  @keyframes chat-edge-travel {
+    from {
+      offset-distance: 0%;
+    }
+    to {
+      offset-distance: 100%;
     }
   }
 </style>

@@ -126,10 +126,8 @@ describe('chat page', () => {
       true
     )
     expect(page.find('section[aria-label="TUI"]').exists()).toBe(false)
-    await page.find('nav button[value="gui"]').trigger('click')
-    expect(
-      page.find('nav button[value="gui"]').attributes('aria-pressed')
-    ).toBe('true')
+    await page.find('header > button').trigger('click')
+    expect(page.attributes('data-view')).toBe('gui')
     expect(calls.some(call => call.url.includes('/pty'))).toBe(false)
   })
 
@@ -170,14 +168,14 @@ describe('chat markdown', () => {
   })
 })
 
-describe('chat working', () => {
-  it('lights the app edge sweep while Pi works', async () => {
-    watch_replies = [ndjson({ type: 'working', on: true })]
-    const set_working = vi.fn()
-    mount(Chat, {
-      global: { stubs: { RouterLink: true }, provide: { set_working } }
-    })
-    await flush_promises()
-    expect(set_working.mock.calls).toEqual([[true], [false]])
+describe('chat keys', () => {
+  it('Cmd+K clears the conversation view', async () => {
+    const page = await open()
+    expect(page.findAll('ol > li').length).toBeGreaterThan(0)
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', metaKey: true })
+    )
+    await page.vm.$nextTick()
+    expect(page.findAll('ol > li')).toHaveLength(0)
   })
 })
