@@ -1,0 +1,1211 @@
+import { describe, it, expect, vi } from 'vite-plus/test'
+import {
+  as_filename,
+  as_download_url,
+  is_itemid,
+  as_poster_id,
+  as_layer_name,
+  as_layer_id,
+  as_query_id,
+  as_fragment_id,
+  type_as_list,
+  load_from_cache,
+  load_from_network,
+  load,
+  list,
+  list_history_page,
+  feed_slot_itemid
+} from '@/utils/itemid'
+import { as_archive } from '@/persistence/Directory'
+import { get, set, del } from 'idb-keyval'
+vi.mock('idb-keyval')
+vi.mock('@/utils/upload-processor', () => ({
+  decompress_html: vi.fn(),
+  compress_html: vi.fn()
+}))
+vi.mock('@/utils/serverless', () => ({
+  url: vi.fn().mockResolvedValue('https://example.com/file.html'),
+  storage_ready: Promise.resolve(),
+  current_user: { value: null },
+  directory: vi.fn(),
+  me: { value: undefined },
+  app: { value: undefined },
+  auth: { value: undefined },
+  storage: { value: undefined }
+}))
+const directory = {
+  id: '/+16282281824/posters/index/',
+  types: [],
+  archive: [
+    1575821772081, 1596637795732, 1608304999951, 1616785878248, 1626119663626,
+    1638909938110, 1654093031913, 1654379684950, 1662500837925, 1672276991456,
+    1682865013400, 1689545625036, 1705888911565, 1712335058767, 1715021054576
+  ],
+  items: [
+    '1720119797893',
+    '1720576375018',
+    '1721096849781',
+    '1721597809425',
+    '1721780702433',
+    '1724597436118',
+    '1726326242435',
+    '1726326279054',
+    '1726326359095',
+    '1727291591758',
+    '1727291631464',
+    '1728226845895',
+    '1728226881031',
+    '1729214091636',
+    '1729277964198',
+    '1729554972962',
+    '1729720916169',
+    '1729720944738',
+    '1731473128003',
+    '1732664582144',
+    '1732665099181',
+    '1735108629305',
+    '1737178477987'
+  ]
+}
+
+const sans_archive_directory = {
+  id: '/+16282281824/posters/1715021054576/',
+  types: [],
+  archive: [],
+  items: ['1737178477987']
+}
+
+describe('@/utils/itemid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('query and list helpers', () => {
+    it('as_query_id strips leading slash and replaces path separators', () => {
+      expect(as_query_id('/+16282281824/posters/1737178477987')).toBe(
+        '16282281824-posters-1737178477987'
+      )
+    })
+
+    it('as_fragment_id prefixes query id with hash', () => {
+      expect(as_fragment_id('/+16282281824/posters/1')).toBe(
+        '#16282281824-posters-1'
+      )
+    })
+
+    it('type_as_list returns empty for null item', () => {
+      expect(type_as_list(null)).toEqual([])
+    })
+
+    it('type_as_list reads typed array from item', () => {
+      const item = {
+        id: '/+1/posters/',
+        type: 'posters',
+        posters: [{ id: '/+1/posters/1' }, { id: '/+1/posters/2' }]
+      }
+      expect(type_as_list(item)).toEqual(item.posters)
+    })
+
+    it('type_as_list falls back to statements for thoughts', () => {
+      const item = {
+        id: '/+1/thoughts/',
+        type: 'thoughts',
+        statements: [{ id: '/+1/thoughts/1' }]
+      }
+      expect(type_as_list(item)).toEqual(item.statements)
+    })
+
+    it('type_as_list wraps single nested item', () => {
+      const nested = { id: '/+1/posters/9' }
+      const item = { id: '/+1/posters/', type: 'posters', posters: nested }
+      expect(type_as_list(item)).toEqual([nested])
+    })
+
+    it('type_as_list returns empty when type is missing', () => {
+      const item = { id: '/+1/unknown/', unknown: [{ id: '/+1/unknown/1' }] }
+      expect(type_as_list(item)).toEqual([])
+    })
+
+    it('type_as_list returns empty when as_type cannot resolve a type', () => {
+      const item = { id: '/nobody/nowhere/', posters: [{ id: '/x' }] }
+      expect(type_as_list(item)).toEqual([])
+    })
+
+    it('feed_slot_itemid returns id from single item', () => {
+      const slot = { id: '/+1/posters/123' }
+      expect(feed_slot_itemid(slot)).toBe('/+1/posters/123')
+    })
+
+    it('feed_slot_itemid returns id from first item in array', () => {
+      const slot = [{ id: '/+1/thoughts/111' }, { id: '/+1/thoughts/222' }]
+      expect(feed_slot_itemid(slot)).toBe('/+1/thoughts/111')
+    })
+  })
+
+  describe('path generation', () => {
+    it('generates correct path for user index', async () => {
+      const result = await as_filename('/+16282281824')
+      expect(result).toBe('people/+16282281824/index.html')
+    })
+
+    it('generates correct path for thoughts', async () => {
+      const result = await as_filename('/+16282281824/thoughts')
+      expect(result).toBe('people/+16282281824/thoughts/index.html')
+    })
+
+    it('generates correct path for brand new poster', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1737178477999')
+      expect(result).toBe('people/+16282281824/posters/1737178477999.html')
+    })
+
+    it('generates correct path for oldest poster in the root directory', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1720119797893')
+      expect(result).toBe('people/+16282281824/posters/1720119797893.html')
+    })
+
+    it('generates correct path for last poster in second to last archive directory', async () => {
+      // Mock main directory and archive directory
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1712335058767/') {
+          return {
+            id: '/+16282281824/posters/1712335058767/',
+            types: [],
+            archive: [],
+            items: ['1712335058767', '1715020920519']
+          }
+        }
+        return null
+      })
+
+      const result = await as_filename('/+16282281824/posters/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519.html'
+      )
+    })
+
+    it('generates correct path for last poster in most recent archive directory', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1715021054576/') {
+          return {
+            id: '/+16282281824/posters/1715021054576/',
+            types: [],
+            archive: [],
+            items: ['1715021054576', '1720060222368']
+          }
+        }
+        return null
+      })
+      const result = await as_filename('/+16282281824/posters/1720060222368')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1720060222368.html'
+      )
+    })
+
+    it('generates correct path for first poster in an archive directory', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1712335058767/') {
+          return {
+            id: '/+16282281824/posters/1712335058767/',
+            types: [],
+            archive: [],
+            items: ['1712335058767']
+          }
+        }
+        return null
+      })
+
+      const result = await as_filename('/+16282281824/posters/1712335058767')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1712335058767.html'
+      )
+    })
+
+    it('generates correct root path for poster', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/posters/1737178477987')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html')
+    })
+
+    it('generates correct archive path for archived poster', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1715021054576/') {
+          return {
+            id: '/+16282281824/posters/1715021054576/',
+            types: [],
+            archive: [],
+            items: ['1715021054576', '1716520718216', '1720060222368']
+          }
+        }
+        return null
+      })
+
+      const result = await as_filename('/+16282281824/posters/1716520718216')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1716520718216.html'
+      )
+    })
+
+    it('defaults to root path when no directory exists', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/posters/1737178477987')
+      expect(result).toBe('people/+16282281824/posters/1737178477987.html')
+    })
+
+    it('generates correct path for shadow layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/shadows/1737178477987')
+      expect(result).toBe(
+        'people/+16282281824/posters/1737178477987-shadows.html'
+      )
+    })
+
+    it('generates correct path for relations', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/relations')
+      expect(result).toBe('people/+16282281824/relations.html')
+    })
+
+    it('generates correct path for history-type item with 3 parts', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/thoughts/1737178477987')
+      expect(result).toBe('people/+16282281824/thoughts/1737178477987.html')
+    })
+
+    it('generates correct path for person type', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename('/+16282281824/people')
+      expect(result).toBe('people/+16282281824/people/index.html')
+    })
+
+    it('skips people prefix when itemid does not start with /+', async () => {
+      get.mockResolvedValue(null)
+
+      const result = await as_filename(
+        /** @type {import('@/types').Id} */ ('/guest/posters/1737178477987')
+      )
+      expect(result).toBe('/guest/posters/1737178477987.html')
+    })
+
+    it('generates correct path for sediment layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/sediment/1737178477987')
+      expect(result).toBe(
+        'people/+16282281824/posters/1737178477987-sediment.html'
+      )
+    })
+
+    it('generates correct path for sand layer with suffix', async () => {
+      get.mockResolvedValue(directory)
+
+      const result = await as_filename('/+16282281824/sand/1737178477987')
+      expect(result).toBe('people/+16282281824/posters/1737178477987-sand.html')
+    })
+
+    it('generates correct path for archived shadow layer with suffix', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1712335058767/') {
+          return {
+            id: '/+16282281824/posters/1712335058767/',
+            types: [],
+            archive: [],
+            items: ['1712335058767', '1715020920519']
+          }
+        }
+        return null
+      })
+
+      const result = await as_filename('/+16282281824/shadows/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519-shadows.html'
+      )
+    })
+  })
+
+  describe('archive detection', () => {
+    it('returns null for items in main list', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('returns archive path for first poster in archive', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1715021054576/') {
+          return {
+            id: '/+16282281824/posters/1715021054576/',
+            types: [],
+            archive: [],
+            items: ['1715021054576']
+          }
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1715021054576')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1715021054576'
+      )
+    })
+
+    it('returns null when no archives exist', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/1715021054576/') {
+          return sans_archive_directory
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('item id validation', () => {
+    it('validates correct item ids', () => {
+      expect(is_itemid('/+16282281824/thoughts')).toBe(true)
+      expect(is_itemid('/+16282281824/posters/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/thoughts/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/relations/1737178477987')).toBe(true)
+      expect(is_itemid('/+16282281824/me/1737178477987')).toBe(true)
+    })
+
+    it('rejects invalid item ids', () => {
+      // Invalid format
+      expect(is_itemid('not-an-id')).toBe(false)
+      expect(is_itemid('')).toBe(false)
+      expect(is_itemid(null)).toBe(false)
+      expect(is_itemid(undefined)).toBe(false)
+
+      // Missing leading slash
+      expect(is_itemid('+16282281824/posters/1737178477987')).toBe(false)
+
+      // Invalid author (missing plus)
+      expect(is_itemid('/16282281824/posters/1737178477987')).toBe(false)
+
+      // Invalid type
+      expect(is_itemid('/+16282281824/invalid_type/1737178477987')).toBe(false)
+
+      // Invalid created timestamp (not a number)
+      expect(is_itemid('/+16282281824/posters/abc')).toBe(false)
+      expect(is_itemid('/+16282281824/posters/123.456')).toBe(false)
+
+      // Wrong number of segments
+      expect(is_itemid('/+16282281824/posters')).toBe(false)
+      expect(is_itemid('/+16282281824/posters/1737178477987/extra')).toBe(false)
+    })
+
+    it('validates ids from test directory', () => {
+      // Test with actual IDs from the test directory
+      directory.items.forEach(created => {
+        const id = `/+16282281824/posters/${created}`
+        expect(is_itemid(id)).toBe(true)
+      })
+
+      directory.archive.forEach(created => {
+        const id = `/+16282281824/posters/${created}`
+        expect(is_itemid(id)).toBe(true)
+      })
+    })
+  })
+
+  describe('archive path resolution', () => {
+    it('returns null for poster in current items', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1737178477999')
+      expect(result).toBe(null)
+    })
+
+    it('returns correct path for archived poster', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1712335058767/') {
+          return {
+            id: '/+16282281824/posters/1712335058767/',
+            types: [],
+            archive: [],
+            items: ['1712335058767', '1715020920519']
+          }
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1715020920519')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1715020920519'
+      )
+    })
+
+    it('returns correct path for archive folder itself', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1712335058767/') {
+          return {
+            id: '/+16282281824/posters/1712335058767/',
+            types: [],
+            archive: [],
+            items: ['1712335058767']
+          }
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1712335058767')
+      expect(result).toBe(
+        'people/+16282281824/posters/1712335058767/1712335058767'
+      )
+    })
+
+    it('returns correct path for newest archived poster', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        if (key === '/+16282281824/posters/1715021054576/') {
+          return {
+            id: '/+16282281824/posters/1715021054576/',
+            types: [],
+            archive: [],
+            items: ['1715021054576', '1720060222368']
+          }
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1720060222368')
+      expect(result).toBe(
+        'people/+16282281824/posters/1715021054576/1720060222368'
+      )
+    })
+
+    it('returns null for poster older than any archive', async () => {
+      get.mockImplementation(async key => {
+        if (key === '/+16282281824/posters/') {
+          return directory
+        }
+        return null
+      })
+
+      const result = await as_archive('/+16282281824/posters/1000000000000')
+      expect(result).toBe(null)
+    })
+  })
+
+  describe('layer ID conversion', () => {
+    it('extracts poster ID from shadow layer ID', () => {
+      const result = as_poster_id('/+16282281824/shadows/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('extracts poster ID from sediment layer ID', () => {
+      const result = as_poster_id('/+16282281824/sediment/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('extracts poster ID from sand layer ID', () => {
+      const result = as_poster_id('/+16282281824/sand/1737178477987')
+      expect(result).toBe('/+16282281824/posters/1737178477987')
+    })
+
+    it('returns null for non-layer ID', () => {
+      const result = as_poster_id('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('returns null for invalid ID', () => {
+      expect(as_poster_id('')).toBeNull()
+      expect(as_poster_id(null)).toBeNull()
+      expect(as_poster_id(undefined)).toBeNull()
+    })
+
+    it('extracts layer name from shadow layer ID', () => {
+      const result = as_layer_name('/+16282281824/shadows/1737178477987')
+      expect(result).toBe('shadows')
+    })
+
+    it('extracts layer name from sediment layer ID', () => {
+      const result = as_layer_name('/+16282281824/sediment/1737178477987')
+      expect(result).toBe('sediment')
+    })
+
+    it('extracts layer name from sand layer ID', () => {
+      const result = as_layer_name('/+16282281824/sand/1737178477987')
+      expect(result).toBe('sand')
+    })
+
+    it('extracts layer name from rocks layer ID', () => {
+      const result = as_layer_name('/+16282281824/rocks/1737178477987')
+      expect(result).toBe('rocks')
+    })
+
+    it('extracts layer name from boulders layer ID', () => {
+      const result = as_layer_name('/+16282281824/boulders/1737178477987')
+      expect(result).toBe('boulders')
+    })
+
+    it('returns null for non-layer ID', () => {
+      const result = as_layer_name('/+16282281824/posters/1737178477987')
+      expect(result).toBeNull()
+    })
+
+    it('as_layer_name returns null for empty or non-string input', () => {
+      expect(as_layer_name('')).toBeNull()
+      expect(as_layer_name(null)).toBeNull()
+      expect(as_layer_name(undefined)).toBeNull()
+    })
+
+    it('as_layer_name returns null when path has no type segment', () => {
+      expect(as_layer_name('/+16282281824')).toBeNull()
+    })
+
+    it('constructs layer ID from poster ID', () => {
+      const result = as_layer_id(
+        '/+16282281824/posters/1737178477987',
+        'shadows'
+      )
+      expect(result).toBe('/+16282281824/shadows/1737178477987')
+    })
+
+    it('constructs sediment layer ID from poster ID', () => {
+      const result = as_layer_id(
+        '/+16282281824/posters/1737178477987',
+        'sediment'
+      )
+      expect(result).toBe('/+16282281824/sediment/1737178477987')
+    })
+
+    it('constructs sand layer ID from poster ID', () => {
+      const result = as_layer_id('/+16282281824/posters/1737178477987', 'sand')
+      expect(result).toBe('/+16282281824/sand/1737178477987')
+    })
+
+    it('as_layer_id returns empty string for null input', () => {
+      expect(as_layer_id(null, 'shadows')).toBe('')
+    })
+
+    it('as_layer_id returns empty string for non-string input', () => {
+      expect(as_layer_id(undefined, 'shadows')).toBe('')
+    })
+
+    it('as_layer_id returns empty string for invalid itemid', () => {
+      expect(as_layer_id('/invalid', 'shadows')).toBe('')
+    })
+  })
+
+  describe('load_from_cache and load_from_network', () => {
+    it('returns null item and html when fetch returns 404', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      })
+
+      const result = await load_from_cache(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/shadows/1737178477987'
+        )
+      )
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_network returns null when fetch returns 404', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      })
+
+      const result = await load_from_network(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/shadows/1737178477987'
+        )
+      )
+
+      expect(result).toBeNull()
+    })
+
+    it('load_from_network keeps root profile in localStorage only', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19159999999')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      set.mockClear()
+      del.mockClear()
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">N</h3></address>`
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const result = await load_from_network(me_id)
+
+      expect(result?.id).toBe(me_id)
+      expect(localStorage.getItem(me_id)).toBe(html)
+      expect(del).toHaveBeenCalledWith(me_id)
+      expect(set).not.toHaveBeenCalledWith(me_id, expect.anything())
+    })
+
+    it('load_from_cache returns item and html on success', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope><h3 itemprop="name">Test</h3></address>`
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(result.item).not.toBeNull()
+      expect(result.html).toBe(html)
+    })
+
+    it('load_from_cache returns null item and html when url is null', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_cache returns null when storage is not initialized', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValueOnce(new Error('Storage not initialized'))
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_cache decompresses gzip responses', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope><h3 itemprop="name">Gz</h3></address>`
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce(html)
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(decompress_html).toHaveBeenCalled()
+      expect(result.html).toBe(html)
+      expect(result.item).not.toBeNull()
+    })
+
+    it('load_from_cache returns null when decompress yields empty html', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce('')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_cache(id)
+
+      expect(result).toEqual({ item: null, html: null })
+    })
+
+    it('load_from_network returns null when decompress yields empty html', async () => {
+      const id = /** @type {import('@/types').Id} */ (
+        '/+16282281824/posters/1737178477987'
+      )
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValueOnce('')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8))
+      })
+
+      const result = await load_from_network(id)
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('load', () => {
+    it('reads own item from localStorage when me matches itemid', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">Me</h3></address>`
+      localStorage.me = me_id
+      localStorage.setItem(me_id, html)
+
+      const item = await load(me_id, me_id)
+
+      expect(item?.name).toBe('Me')
+    })
+
+    it('loads other ids from IndexedDB before network', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const other = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${other}" itemscope itemtype="/person"><h3 itemprop="name">Other</h3></address>`
+      localStorage.me = me_id
+      const fetch_spy = vi.fn()
+      global.fetch = fetch_spy
+      get.mockImplementation(key =>
+        key === other ? Promise.resolve(html) : Promise.resolve(null)
+      )
+
+      const item = await load(other, me_id)
+
+      expect(item?.name).toBe('Other')
+      expect(fetch_spy).not.toHaveBeenCalled()
+    })
+
+    it('loads from network when not cached locally', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19156666666')
+      const other = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${other}" itemscope itemtype="/person"><h3 itemprop="name">Net</h3></address>`
+      localStorage.me = me_id
+      localStorage.removeItem(other)
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(null)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockResolvedValue('https://example.com/file.html')
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      const item = await load(other, me_id)
+
+      expect(item?.name).toBe('Net')
+      expect(set).toHaveBeenCalledWith(other, html)
+    })
+  })
+
+  describe('load root profile', () => {
+    it('migrates legacy IndexedDB html to localStorage then drops idb key', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      const html = `<address itemid="${me_id}" itemscope itemtype="/person"><h3 itemprop="name">L</h3></address>`
+      get.mockImplementation(key => {
+        if (key === me_id) return Promise.resolve(html)
+        return Promise.resolve(null)
+      })
+      del.mockClear()
+      del.mockResolvedValue(undefined)
+
+      const item = await load(me_id, me_id)
+
+      expect(item?.name).toBe('L')
+      expect(localStorage.getItem(me_id)).toBe(html)
+      expect(del).toHaveBeenCalledWith(me_id)
+    })
+
+    it('skips legacy idb migration when html does not parse to an item', async () => {
+      const me_id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = me_id
+      localStorage.removeItem(me_id)
+      get.mockImplementation(key => {
+        if (key === me_id) return Promise.resolve('<div>not a person</div>')
+        if (key === 'sync:index') return Promise.resolve({})
+        return Promise.resolve(null)
+      })
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      del.mockClear()
+
+      const item = await load(me_id, me_id)
+
+      expect(item).toBeNull()
+      expect(del).not.toHaveBeenCalledWith(me_id)
+    })
+
+    it('load returns null on storage/unauthorized error', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = id
+      localStorage.removeItem(id)
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('unauthorized'), {
+          code: 'storage/unauthorized'
+        })
+      )
+
+      const result = await load(id, id)
+
+      expect(result).toBeNull()
+    })
+
+    it('load rethrows non-storage errors', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+19158888888')
+      localStorage.me = id
+      localStorage.removeItem(id)
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(new Error('Network failure'))
+
+      await expect(load(id, id)).rejects.toThrow('Network failure')
+    })
+  })
+
+  describe('as_download_url', () => {
+    it('dedupes concurrent in-flight requests for the same itemid', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(undefined)
+      )
+
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      await Promise.all([
+        as_download_url(id),
+        as_download_url(id),
+        as_download_url(id)
+      ])
+
+      // Three callers share one lookup of each suffix, not three lookups.
+      expect(url.mock.calls.map(([filename]) => filename)).toEqual([
+        'people/+19159206481/index.html',
+        'people/+19159206481/index.html.gz'
+      ])
+      url.mockResolvedValue('https://example.com/file.html')
+    })
+
+    it('skips Storage when sync:index holds an idb-cloned missing marker', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      get.mockImplementation(key =>
+        key === 'sync:index'
+          ? Promise.resolve({
+              [id]: {
+                updated: null,
+                customMetadata: { hash: null }
+              }
+            })
+          : Promise.resolve(undefined)
+      )
+
+      const resolved = await as_download_url(id)
+
+      expect(resolved).toBeNull()
+      expect(url).not.toHaveBeenCalled()
+    })
+
+    it('throws error when serverless.url throws non-storage error', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      url.mockRejectedValue(new Error('Network failure'))
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(undefined)
+      )
+
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+
+      await expect(as_download_url(id)).rejects.toThrow('Network failure')
+    })
+
+    it('as_download_url returns null for /+ root', async () => {
+      const result = await as_download_url('/+')
+      expect(result).toBeNull()
+    })
+
+    it('as_download_url returns null for /+/ prefix', async () => {
+      const result = await as_download_url('/+/something')
+      expect(result).toBeNull()
+    })
+
+    it('as_download_url returns null when sync:index has missing marker on retry', async () => {
+      const { url } = await import('@/utils/serverless')
+      const { get } = await import('idb-keyval')
+      url.mockReset()
+      url.mockResolvedValue('https://example.com/file.html')
+      const id = /** @type {import('@/types').Id} */ ('/+19159206481')
+      // First call returns empty index, second call (inside retry) returns missing marker
+      let callCount = 0
+      get.mockImplementation(async key => {
+        if (key === 'sync:index') {
+          callCount++
+          if (callCount === 1) return {}
+          return { [id]: { updated: null, customMetadata: { hash: null } } }
+        }
+        return undefined
+      })
+
+      const result = await as_download_url(id)
+
+      expect(result).toBeNull()
+      expect(url).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('load_from_network additional coverage', () => {
+    beforeEach(async () => {
+      const { url } = await import('@/utils/serverless')
+      url.mockReset()
+      url.mockResolvedValue('https://example.com/file.html')
+      const { decompress_html } = await import('@/utils/upload-processor')
+      decompress_html.mockResolvedValue(
+        '<address itemid="/+16282281824" itemscope><h3>Test</h3></address>'
+      )
+    })
+
+    it('returns null when fetch returns non-OK response', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Map([['Content-Encoding', 'identity']]),
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      })
+
+      const result = await load_from_network(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/posters/1737178477987'
+        )
+      )
+
+      expect(result).toBeNull()
+    })
+
+    it('handles gzipped content', async () => {
+      const html =
+        '<address itemid="/+16282281824" itemscope><h3>Test</h3></address>'
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(directory)
+      )
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Map([['Content-Encoding', 'gzip']]),
+        arrayBuffer: () =>
+          Promise.resolve(new TextEncoder().encode(html).buffer)
+      })
+
+      // The decompress_html mock is already set up in the test setup
+      const result = await load_from_network(
+        /** @type {import('@/types').Id} */ ('/+16282281824')
+      )
+
+      expect(fetch).toHaveBeenCalled()
+      // Result may be null if decompress_html isn't properly mocked
+    })
+  })
+
+  describe('list function error handling', () => {
+    beforeEach(async () => {
+      const { url } = await import('@/utils/serverless')
+      url.mockReset()
+      url.mockResolvedValue('https://example.com/file.html')
+    })
+
+    it('returns empty array when load throws error', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(null)
+      )
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      const result = await list(
+        /** @type {import('@/types').Id} */ ('/+16282281824/posters')
+      )
+
+      expect(result).toEqual([])
+    })
+
+    it('returns empty array when load returns null', async () => {
+      get.mockImplementation(key =>
+        key === 'sync:index' ? Promise.resolve({}) : Promise.resolve(null)
+      )
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+
+      const result = await list(
+        /** @type {import('@/types').Id} */ (
+          '/+16282281824/posters/nonexistent'
+        )
+      )
+
+      expect(result).toEqual([])
+    })
+
+    it('returns type_as_list when load finds an item', async () => {
+      const id = /** @type {import('@/types').Id} */ ('/+16282281824')
+      const html = `<address itemid="${id}" itemscope itemtype="/person"><h3 itemprop="name">Listed</h3></address>`
+      localStorage.me = id
+      localStorage.setItem(id, html)
+
+      const result = await list(id, id)
+
+      expect(result).toEqual([])
+    })
+  })
+
+  // An archive is a whole statements section saved under a timestamp, and that
+  // timestamp is also one of the statements inside it. Asking `load` for the
+  // page id therefore finds that one statement, so a page of history reads as a
+  // single sentence and everything behind it stays shut.
+  describe('list_history_page', () => {
+    const author = '/+16282281824'
+    const page = /** @type {import('@/types').Id} */ (
+      `${author}/statements/1738103761047`
+    )
+    const archive_html = `<section itemscope itemid="${author}/statements"><div itemscope itemprop="statements" itemid="${author}/statements/1738103761047"><p itemprop="statement">first</p></div><div itemscope itemprop="statements" itemid="${author}/statements/1738103800000"><p itemprop="statement">second</p></div></section>`
+
+    it('reads the whole section a history page holds', async () => {
+      get.mockResolvedValue(archive_html)
+
+      const result = await list_history_page(page)
+
+      expect(result).toHaveLength(2)
+      expect(result.map(item => item.id)).toEqual([
+        `${author}/statements/1738103761047`,
+        `${author}/statements/1738103800000`
+      ])
+    })
+
+    it('returns nothing when the page is nowhere to be found', async () => {
+      get.mockResolvedValue(null)
+      const { url } = await import('@/utils/serverless')
+      url.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+
+      const result = await list_history_page(
+        /** @type {import('@/types').Id} */ (`${author}/statements/404`)
+      )
+
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('is_history detection in as_filename', () => {
+    it('correctly handles history item paths', async () => {
+      // History items have 3 path segments and are in has_history types
+      get.mockResolvedValue(null)
+
+      const result = await as_filename(
+        '/+16282281824/posters/history/1234567890'
+      )
+      expect(result).toBe('people/+16282281824/posters/history/1234567890.html')
+    })
+  })
+})

@@ -1,0 +1,84 @@
+// Numeric constants and mixins every element and every Stylus block in the
+// project can assume are already in scope. Zero CSS output on its own -
+// safe to auto-inject into every Stylus compilation (see vite.config.js's
+// css.preprocessorOptions.stylus.imports). The actual reset/root-vars/type
+// rules that DO emit CSS live in reset.styl, loaded exactly once via
+// style/index.styl, so they don't get duplicated into every component chunk.
+
+@require 'mixins'
+
+base-line = 1.333rem
+
+min-modular = 1.250
+max-modular = 1.414
+
+min-font = 1.125rem
+max-font = 1.33rem
+
+pad-begins = round(base-line * 26)
+typing-begins = round(base-line * 48)
+display-begins = round(base-line * 60)
+
+page-width = round(base-line * 22)
+
+// Breakpoint gate: triggers a layout change at this viewport width (see
+// standard-grid() and its call sites). Not a content max-width.
+page-width-large = round(base-line * 32)
+
+// Content limit: caps a wide, grid-heavy container's width. Distinct from
+// page-width-large, which is a breakpoint, not a cap.
+page-width-max = round(base-line * 48)
+
+// Ultra-wide viewport: where the shared standard-grid() min (420px) starts
+// yielding 5+ columns and posters stretch absurdly. Raise the poster column
+// minimum here so fewer, larger posters pack the row instead.
+page-width-4k = round(base-line * 92, 0)
+poster-wide-min = round(base-line * 24, 0)
+
+// Content limit for support pages (docs, terms, privacy) - wider than prose
+// measure (page-width) since these mix headings, sidebars and body copy.
+support-page-width = round(base-line * 52)
+
+poster-min-width = round(base-line * 10, 0)
+
+poster-grid-height = round(base-line * 22, 0)
+
+poster-thoughts-height = round((page-width), 2)
+
+// Stylus-side aliases for role tokens defined in color.css.
+// unquote is required: Stylus parses `var(...)` as a function call.
+accent   = unquote('var(--accent)')
+working  = unquote('var(--working)')
+emphasis = unquote('var(--emphasis)')
+warning  = unquote('var(--warning)')
+
+// Stylus-side aliases for the motion constants defined in motion.css.
+duration-press   = unquote('var(--duration-press)')
+duration-quick   = unquote('var(--duration-quick)')
+duration-reveal  = unquote('var(--duration-reveal)')
+duration-subject = unquote('var(--duration-subject)')
+
+ease-reveal = unquote('var(--ease-reveal)')
+ease-settle = unquote('var(--ease-settle)')
+ease-exit   = unquote('var(--ease-exit)')
+
+stagger-step = unquote('var(--stagger-step)')
+
+// ***************** modular-scale ********************************************
+$h1-min = round(min-modular ** 4 * 1rem, 3) // 1.602
+$h1-max = round(max-modular ** 4 * 1rem, 3) // 2.441
+
+$h2-min = round(min-modular ** 3 * 1rem, 3) // 1.424
+$h2-max = round(max-modular ** 3 * 1rem, 3) // 1.953
+
+$h3-min = round(min-modular ** 2 * 1rem, 3) // 1.266
+$h3-max = round(max-modular ** 2 * 1rem, 3) // 1.563
+
+$h4-min = round(min-modular * 1rem, 3) // 1.125
+$h4-max = round(max-modular * 1rem, 3) // 1.25
+
+$h5-min= 1rem
+$h5-max= 1rem
+
+$h6-min= round(1rem / min-modular, 3) //.888
+$h6-max= round(1rem / max-modular, 3) //.8

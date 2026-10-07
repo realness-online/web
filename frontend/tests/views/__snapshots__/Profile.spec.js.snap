@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Profile > renders profile view 1`] = `
+<section
+  data-page=""
+  id="profile"
+>
+  <header>
+    <logo-as-link-stub />
+    <icon-stub
+      name="nothing"
+    />
+  </header>
+  <as-figure-stub
+    display="page"
+    editable="false"
+    person="[object Object]"
+  />
+  <as-days-stub
+    paginate="true"
+    posters="[object Object]"
+    statements="[object Object]"
+    storytelling="false"
+    working="false"
+  />
+</section>
+`;

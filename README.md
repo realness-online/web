@@ -1,43 +1,63 @@
-# Brayness webspace
+# Brayness
+
+Folders define responsibilities. Services, publishing, and terminal builds
+reuse one root install. The Realness frontend lives in `frontend/` and uses
+the same install, with Vite+ for dev, test, lint, and build.
+
+```sh
+npm install
+npm test
+npm run build
+npm run webspace -- local status
+```
+
+Product imports use `#root/`; other apps use the root package's public exports.
+Realness imports the shared sign-in flow through `brayness/sign-on/flow`.
+Node login and host-pass exports are unavailable to browser builds.
 
 Hosted actors. One host runs many microVM actors, all forked from one booted
 snapshot. Each one is reachable three ways, idle in three tiers, and costs
-nothing while it sleeps. The prod host is a VM in `realness-online`; this is the
-code that builds it and serves it.
+nothing while it sleeps. Hosts are VMs in their environment's project; development hosts run in
+`realness-development`. This is the code that builds and serves them.
 
-- `control/`: Node. The control plane: makes hosts exist, puts the code on them,
+- `tools/control/`: Node. The control plane: makes hosts exist, puts the code on them,
   takes them away. Reaches the live side only over its HTTP API. Run
-  `node bin/webspace.js`. Its `scripts/` are the Mac and Lima build/run steps.
-- `host/`: the actor API, exec, PTY, browser terminal, door (Node, standard
+  `npm run webspace -- <env> <command>`. Its `scripts/` are the Mac and Lima build/run steps.
+- `server/host/`: the actor API, exec, PTY, browser terminal, door (Node, standard
   library only). The live side: it runs on the host and owns actors. Its
   `scripts/` are the host syscalls, its `guest/` runs inside an actor, and its
-  `clients/` are the host-shell tools. `cd control && npm run check:host` is its
+  `clients/` are the host-shell tools. `npm run check:host` is its
   contract.
-- `can/`: Node, no dependencies. `can()`, rights pages, and phone identity;
-  every door imports it. `cd can && npm test`.
-- `can-store/`: Node, no dependencies. Where the paths `can()` asks about live:
-  one adapter per provider (`./disk`, `./gcs`), and a contract every adapter
-  passes. `cd can-store && npm test`; `npm run test:gcs` hits a real bucket.
-- `sync/`: Node. The sync service, the only holder of storage keys: phone token,
-  then `can()`, then storage. `npm run dev` runs it locally on disk;
-  `sync/scripts/deploy.sh` deploys it to Cloud Run in realness-development.
-  `sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
-  two-way sync, all through the service. `login` signs in through Realness in
-  your browser and keeps it in the macOS keychain; `TOKEN=` still wins.
-  `sync/bin/brayness.js sync` syncs every plan's `## Syncs` folders both ways;
+- `lib/can/`: Node, no dependencies. `can()`, rights pages, and phone identity,
+  which every door imports; and where the paths `can()` asks about live, one
+  adapter per provider (`disk.js`, `gcs.js`) against a shared contract.
+  `GCS_TEST_BUCKET=<bucket> npm run test:node` includes the cloud contract.
+- `server/sync/`: Node. The sync service, the only holder of storage keys: phone token,
+  then `can()`, then storage. `npm run dev:sync` runs it locally on disk;
+  `server/sync/scripts/deploy.sh` deploys it to Cloud Run in realness-development.
+  `server/sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
+  two-way sync, all through the service. Login opens the configured sign-on
+  page and keeps credentials in the macOS keychain; `TOKEN=` still wins.
+  `server/sync/bin/brayness.js sync` syncs every plan's `## Syncs` folders both ways;
   paths inside a git repo are refused.
-- Examples live in `brayness-examples`; actors download them with giget.
-- `lima/fc-local.yaml`: the dev loop on this Mac.
-- `dist/`: everything generated (the staged harness, boot and template check
-  runs, drain logs). Ignored; a fresh clone is source only.
+- `tools/examples/`: standalone example apps; `static` and `app` ship in the starter.
+- `tools/publish/`: builds the recipes in a harness's `apps/` and publishes them.
+- `tools/desktop/`: the signed download that boots pi with the harness inside.
+- `server/lima/fc-local.yaml`: the dev loop on this Mac.
+- `frontend/`: imported Realness app, profiles, artwork, and tests.
+  `apps/realness` in the harness is a compatibility link here.
+- `lib/sign-on/`: shared sign-in flow, Node login, and host passes; the page is Realness `/sign-on`.
+- `lib/output.js` and `lib/output.sh`: one output rule for Node and shell.
+  `BRAYNESS_OUT` wins; otherwise `artifacts/brayness` in a harness, or `dist`
+  on a host. Output selection is a helper, not a package.
 
-`control/` and `host/` are separate worlds and a test enforces it: the host must
+`tools/control/` and `server/host/` are separate worlds and a test enforces it: the host must
 not know the control plane exists, and control may only reach it through the
-API. `cd control && npm test`.
+API. Root `npm test` follows their actual source imports to enforce this.
 
 ## Starter ownership and updates
 
-`control/scripts/ship-stage.js` makes an allowlisted ship tree from Scott's
+`tools/control/scripts/ship-stage.js` makes an allowlisted ship tree from Scott's
 harness. The template puts that tree in `/brayness`; each actor then owns its
 copy. Today this is a build path, not a versioned update service.
 
@@ -69,15 +89,15 @@ Someone who will not run a setup script gets a working environment.
 
 ## The four directions
 
-All four run through `control/`, as `node control/bin/webspace.js <env> ...`.
+All four run through `tools/control/`, as `node tools/control/bin/webspace.js <env> ...`.
 Commands run on the Mac unless a step says otherwise.
 
 | Direction          | Command               | What it does                             |
 | ------------------ | --------------------- | ---------------------------------------- |
 | Build the template | `dev build`           | stage the harness, build `template.ext4` |
 | Run it locally     | `dev setup`, `dev up` | Lima guest, then volume + TAP + API      |
-| Run a host         | `prod host up <name>` | create, bootstrap, check, serve          |
-| Move actors        | `prod host drain`     | export every actor to GCS                |
+| Run a host         | `cloud host up <name>` | create, bootstrap, check, serve          |
+| Move actors        | `cloud host drain`     | export every actor to GCS                |
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections in
@@ -86,12 +106,11 @@ The per-node proofs behind all four are archived with their runs in
 ## Build the template
 
 The template is the Ubuntu 24.04 image every actor forks from: pi, git, node,
-and the stock harness. Examples are not in the image: `/site` and `/app`
-download them from `brayness-examples` and install their dependencies in the
-actor.
+and the stock harness. The starter carries `tools/examples/static` and `tools/examples/app`;
+`/site` and `/app` copy one and install its dependencies in the actor.
 
 ```bash
-node control/bin/webspace.js dev build
+node tools/control/bin/webspace.js local build
 ```
 
 `ship-stage.js` builds one allowlisted `dist/ship/` tree for the binary and
@@ -114,17 +133,17 @@ Firecracker cannot run on macOS, so the dev loop is Lima: one aarch64 guest with
 from `firecracker-ci/v1.15/aarch64`; artifacts live in the guest at `/opt/fc`.
 
 ```bash
-node control/bin/webspace.js dev setup   # once: Lima, firecracker, kernel, rootfs, boot check
-node control/bin/webspace.js dev host up  # each time: volume, TAP, API; waits for the seed
+node tools/control/bin/webspace.js local setup   # once: Lima, firecracker, kernel, rootfs, boot check
+node tools/control/bin/webspace.js local host up  # each time: volume, TAP, API; waits for the seed
 ```
 
-- API `http://127.0.0.1:18080/v1/health`, terminal `http://127.0.0.1:18090/`
-  (`/chat` on the same port), site sync `http://127.0.0.1:18096/`.
-- `dev host down` stops it, `dev host restart` reloads the current code; a
+- API `http://127.0.0.1:18080/v1/health` (chat under `/v1/actors/<id>/chat/`),
+  framed terminal `127.0.0.1:18081`, site sync `http://127.0.0.1:18096/`.
+- `local host down` stops it, `local host restart` reloads the current code; a
   changed template fingerprint rebuilds the seed on the next serve.
 - The log is `dist/dev-up.log`; the guest side is
-  `control/scripts/dev-stack.sh`.
-- `dev host up` waits for `seed.built`, not just for health: the API answers
+  `tools/control/scripts/dev-stack.sh`.
+- `local host up` waits for `seed.built`, not just for health: the API answers
   `ok` as soon as it is listening, before the seed exists, so waiting on `ok`
   reports a stack as up when it cannot make an actor.
 
@@ -135,29 +154,29 @@ an actor dirties (m1).
 
 ## Run a host
 
-A host is a GCP VM in `realness-online` that boots the fleet image and serves
-actors. Everything below runs from the Mac.
+A host is a GCP VM in the environment's project, `realness-development` for
+development, that boots the fleet image and serves actors. Everything below runs from the Mac.
 
 ```bash
-node control/bin/webspace.js prod host up brayness-2 --smoke    # create, bootstrap, check, serve
-node control/bin/webspace.js prod host restart brayness-2       # push the current code, re-serve
-node control/bin/webspace.js prod host down brayness-2          # park: stop, disks kept ($0.80/mo)
-node control/bin/webspace.js prod host down brayness-2 --delete # drain actors, then delete ($0)
+node tools/control/bin/webspace.js development host up brayness-2 --smoke    # create, bootstrap, check, serve
+node tools/control/bin/webspace.js development host restart brayness-2       # push the current code, re-serve
+node tools/control/bin/webspace.js development host down brayness-2          # park: stop, disks kept ($0.80/mo)
+node tools/control/bin/webspace.js development host down brayness-2 --delete # drain actors, then delete ($0)
 ```
 
 - The API is loopback-only; tunnel it with
-  `gcloud compute ssh brayness-2 -- -N -L 8080:127.0.0.1:8080`, the terminal
-  with 8090.
+  `gcloud compute ssh brayness-2 -- -N -L 8080:127.0.0.1:8080`,
+  for operators only. People reach actors through the gate.
 - `--delete` drains first and only deletes when every actor came back confirmed;
   `--no-drain` skips the export. The delete enumerates the disks the instance
   actually has. `disks[].source.basename()` returns the _instance_ name, so a
   delete loop built on it removes nothing and the actors volume keeps billing.
-- `node control/bin/webspace.js prod probe` says which zone and machine type can
+- `node tools/control/bin/webspace.js development probe` says which zone and machine type can
   create now (the default list is us-central1 a/b/c, us-west1 a/b, us-east1-b;
   it exits non-zero when none can).
 - The idle guard stops the host when nothing has run for 30 minutes.
 
-Record in [documentation.md](documentation.md#what-is-proven): the prod host
+Record in [documentation.md](documentation.md#what-is-proven): the cloud host
 (d3), a host from the image and one that can be deleted (r8, r9), and the loop
 on x86_64 (x1).
 
@@ -165,8 +184,8 @@ on x86_64 (x1).
 
 An actor's durable form is its export bundle: `artifacts.tar.gz` (its
 `/brayness`), `trace.jsonl`, and a manifest with both hashes and the seed it
-forked from. Bundles live in
-`gs://realness-online-brayness/actors/<id>/bundle.tar.gz`.
+forked from. Bundles live in the environment's bucket, `gs://realness-development-brayness/actors/<id>/bundle.tar.gz`
+in development.
 
 ```bash
 # on a host, against its loopback API

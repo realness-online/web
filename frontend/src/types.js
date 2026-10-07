@@ -1,0 +1,223 @@
+// Realness's itemid vocabulary now lives in `packages/itemid`; this file keeps
+// the app typedefs and re-exports the values so existing imports do not move.
+import { types, has_archive, has_history } from '@realness.online/itemid'
+
+/** @typedef {string | SVGPathElement} Path */
+/** @typedef {string | SVGRectElement} Rect */
+
+/** @typedef {string} Author */
+/** @typedef {number} Created */
+
+/**
+ * @typedef {`${Author}/${Type}/${Created}` | `${Author}/shadows/${Created}` | `${Author}/sediment/${Created}` | `${Author}/sand/${Created}` | `${Author}/gravel/${Created}` | `${Author}/rocks/${Created}` | `${Author}/boulders/${Created}`} Id
+ */
+
+/**
+ * @typedef {Object} rgba_color
+ * @property {number} r
+ * @property {number} g
+ * @property {number} b
+ * @property {number} a
+ */
+
+/**
+ * @typedef {Object} Item
+ * @property {Id} id
+ * @property {Type} type
+ * @property {Id} [avatar] - Poster itemid when present (e.g. profile photo)
+ */
+
+/**
+ * @typedef {Object} Cutout
+ * @property {string} d - SVG path data
+ * @property {string} fill - Fill color
+ * @property {string|null|undefined} transform - SVG transform attribute
+ * @property {string} [fill-opacity] - Fill opacity
+ * @property {number} [data-progress] - Progress bucket value
+ */
+
+/**
+ * @typedef {Object} Trace_Result
+ * @property {Array<{d: string, fill: string, stroke: string, stroke_width: number}>} paths
+ */
+
+/**
+ * Organized cutout layers mapped by geology layer name.
+ * Each key is present only when that layer has cutouts.
+ * @typedef {Object} Cutout_Layers
+ * @property {SVGSymbolElement} [sediment]
+ * @property {SVGSymbolElement} [sand]
+ * @property {SVGSymbolElement} [gravel]
+ * @property {SVGSymbolElement} [rocks]
+ * @property {SVGSymbolElement} [boulders]
+ */
+
+/** @typedef {'sediment' | 'sand' | 'gravel' | 'rocks' | 'boulders'} Layer_Name */
+
+/**
+ * @typedef {Object} Poster_Gradients
+ * @property {number} width
+ * @property {number} height
+ * @property {string[]} radial
+ * @property {string[]} [horizontal]
+ * @property {string[]} [vertical]
+ */
+
+/**
+ * @typedef {Object} Poster
+ * @property {Id} id
+ * @property {Rect} background
+ * @property {Path} light
+ * @property {Path} regular
+ * @property {Path} medium
+ * @property {Path} bold
+ * @property {Path[] | Path | undefined} [cutout]
+ * @property {Cutout_Layers} [cutouts] - Cutouts organized by geology layer
+ * @property {boolean} [completed] - Runtime flag during vectorization
+ * @property {number} width
+ * @property {number} height
+ * @property {string} viewbox
+ * @property {boolean} optimized
+ * @property {Trace_Result} [trace] - Traced paths with color quantization
+ * @property {Poster_Gradients} [gradients]
+ * @property {Type} [type]
+ */
+
+/**
+ * @typedef {Object} MeItem
+ * @property {Id} id
+ * @property {Type} type
+ * @property {string} [name]
+ * @property {Id} [avatar]
+ * @property {string} [visited]
+ */
+
+/**
+ * @typedef {Object} PersonQuery
+ * @property {Id} id
+ */
+/**
+ * @typedef {Object} Relation
+ * @property {Id} id
+ * @property {string} type
+ * @property {string} name
+ * @property {Id} [avatar]
+ * @property {string[]} viewed
+ * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`|null} [visited] - ISO 8601 UTC date string
+ */
+
+/**
+ * @typedef {Object} Person
+ * @property {Id} id
+ * @property {'person'} [type]
+ * @property {string} [name]
+ * @property {Id} [avatar]
+ * @property {`${number}-${number}-${number}T${number}:${number}:${number}.${number}Z`} [visited] - ISO 8601 UTC date string
+ */
+
+/**
+ * One persisted text row (`/…/statements/…`, microdata `itemprop="statement"`).
+ * @typedef {Object} Statement
+ * @property {Id} id
+ * @property {string} [statement]
+ */
+
+/**
+ * Same author: one or more posters and/or statement rows from `started_at`
+ * until a gap longer than thirteen minutes with no new poster or statement.
+ * @typedef {Object} Thought
+ * @property {Author} author_id
+ * @property {number} started_at
+ * @property {Item[]} posters
+ * @property {Statement[]} statements
+ */
+
+/**
+ * Chained text rows in one feed slot (one slice of a {@link Thought}).
+ * @typedef {Statement[]} Statements
+ */
+
+export { types, has_archive, has_history }
+
+/** @typedef {typeof types[number]} Type */
+
+/**
+ * @typedef {Object} Available_Command
+ * @property {string} key - Normalized key combination
+ * @property {string} command - Command identifier
+ * @property {Object} parameters - Command parameters
+ * @property {string} context - Context name
+ */
+
+/**
+ * @typedef {Object} Toc_Item
+ * @property {string} id - Section ID
+ * @property {string} title - Section title
+ * @property {number} level - Heading level (2-6)
+ */
+
+/**
+ * @typedef {Object} Content_File
+ * @property {string} name - File name without extension
+ * @property {string} title - Display title
+ * @property {string} content - Markdown content
+ */
+
+/**
+ * @typedef {Object} Key_Binding
+ * @property {string} key - Key combination (e.g., "ctrl+s", "enter", "f")
+ * @property {string|Array} command - Command to execute, optionally with parameters
+ * @property {string} [description] - Human-readable description of the command
+ */
+
+/**
+ * @typedef {Object} Keymap_Context
+ * @property {string} [context] - Context identifier (e.g., "Editor", "PosterMenu")
+ * @property {boolean} use_key_equivalents - Use platform-specific key equivalents
+ * @property {Object.<string, string|Array>} bindings - Key to command mappings
+ * @property {Object.<string, string>} [descriptions] - Command descriptions for this context
+ */
+
+/**
+ * @typedef {Object} Sync_Deps
+ * @property {import('vue').Ref<HTMLElement|null>} sync_element
+ * @property {import('vue').Ref<Relation[]>} relations
+ * @property {import('vue').Ref<Item[]>} my_statements
+ * @property {import('vue').Ref<{visited?: string}|undefined>} me
+ * @property {(event: string, ...args: unknown[]) => void} emit
+ * @property {(() => Promise<void>) | undefined} [load_phonebook] - optional; repopulate UI after index cache invalidation
+ */
+
+/**
+ * @typedef {Object} Sync_Offline_Item
+ * @property {'save'|'delete'} action
+ * @property {Id} id
+ */
+
+/**
+ * @typedef {Object} Sync_Index_Custom_Metadata
+ * @property {string|null} [hash]
+ */
+
+/**
+ * @typedef {Object} Sync_Index_Entry
+ * @property {Object|null} [updated]
+ * @property {Sync_Index_Custom_Metadata} [customMetadata]
+ */
+
+/**
+ * What sync changed, so a feed reloads those authors instead of everything.
+ * @typedef {Object} Feed_Refresh
+ * @property {number} [at] - Stamp so each emit is a new object the watchers see
+ * @property {boolean} [reload_phonebook] - Contact list itself moved
+ * @property {Id[]|null} [authors] - Authors to reload; null or absent means all loaded authors
+ */
+
+/**
+ * @typedef {Object} Sync_Return
+ * @property {import('vue').Ref<HTMLElement|null>} sync_element
+ * @property {import('vue').Ref<HTMLElement|null>} sync_poster
+ * @property {() => Promise<void>} sync_offline_actions
+ * @property {(options?: {optimize?: boolean}) => Promise<boolean>} sync_posters_directory
+ * @property {() => Promise<void>} sync_me
+ */

@@ -1,0 +1,1321 @@
+@font-face {
+  font-display: swap;
+  font-family: Lato;
+  font-style: normal;
+  font-weight: 300;
+  src: url(/fonts/Lato-Light-Subset.woff2) format("woff2");
+}
+@font-face {
+  font-display: swap;
+  font-family: Lato;
+  font-style: normal;
+  font-weight: 400;
+  src: url(/fonts/Lato-Regular-Subset.woff2) format("woff2");
+}
+@font-face {
+  font-display: swap;
+  font-family: Lato;
+  font-style: normal;
+  font-weight: 800;
+  src: url(/fonts/Lato-Heavy-Subset.woff2) format("woff2");
+}
+
+:root {
+  --base-line: 1.333rem;
+  --max-width: 48rem;
+  /* prose measure: ch tracks the fluid font size, rem would not */
+  --measure: 50ch;
+  /* plates, code and tables break past the measure to here */
+  --wide: 64rem;
+
+  /* realness materials and roles (work/realness/src/style). Copy, don't
+     re-derive. */
+  --graphite: oklch(0.44 0 90);
+  --chalk: oklch(0.94 0.01 100);
+  --bone: oklch(0.89 0.01 107);
+  --basalt: oklch(0.29 0.01 107);
+
+  --water-lighten: oklch(0.74 0.07 196);
+  --water-darken: oklch(0.5 0.06 195);
+  --clay-lighten: oklch(0.74 0.12 20);
+  --clay-darken: oklch(0.46 0.13 21);
+
+  --accent: var(--water-darken);
+  --emphasis: var(--clay-darken);
+  --text: var(--graphite);
+  --surface: var(--chalk);
+  --contrast: var(--chalk);
+  --muted-text: color-mix(in srgb, var(--graphite) 70%, var(--chalk));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: var(--water-lighten);
+    --emphasis: var(--clay-lighten);
+    --text: var(--bone);
+    --surface: var(--basalt);
+    --muted-text: color-mix(in srgb, var(--bone) 70%, var(--basalt));
+  }
+}
+
+body {
+  font-family: Lato, system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(
+    1.125rem,
+    1.125rem + (1.333rem - 1.125rem) * (100dvw - 24rem) / (80rem - 24rem),
+    1.333rem
+  );
+  background: var(--surface);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Site header ── */
+
+main {
+  min-height: 100dvh;
+
+  > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: calc(var(--base-line) * 0.5) var(--base-line);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface);
+
+    hgroup {
+      display: flex;
+      align-items: baseline;
+      gap: calc(var(--base-line) * 0.5);
+
+      p {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 300;
+        color: var(--muted-text);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+
+      a {
+        background: linear-gradient(60deg, var(--accent), var(--emphasis));
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  width: 3em;
+  margin: var(--base-line) auto;
+  background: color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+@media (max-width: 30rem) {
+  main > header hgroup {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+nav {
+  display: flex;
+  gap: var(--base-line);
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.875rem;
+
+    &:hover {
+      color: var(--emphasis);
+    }
+  }
+}
+
+/* ── Figure / poster ── */
+
+figure {
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1fr;
+  height: min(56.25vw, 72dvh);
+  overflow: hidden;
+
+  img {
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--focus, 50% 50%);
+    grid-area: 1 / 1;
+    justify-self: end;
+    display: block;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+figcaption {
+  grid-area: 1 / 1;
+  align-self: end;
+  padding: var(--base-line);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--basalt) 72%, transparent) 0%,
+    transparent 100%
+  );
+  color: var(--contrast);
+
+  h1,
+  h2 {
+    margin: 0 0 calc(var(--base-line) * 0.25);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-size: clamp(
+      1.602rem,
+      1.602rem + (2.441rem - 1.602rem) * (100dvw - 24rem) / (80rem - 24rem),
+      2.441rem
+    );
+    color: inherit;
+  }
+
+  h2 {
+    font-size: clamp(
+      1.266rem,
+      1.266rem + (1.953rem - 1.266rem) * (100dvw - 24rem) / (80rem - 24rem),
+      1.953rem
+    );
+  }
+
+  time {
+    font-size: 0.8em;
+    opacity: 0.75;
+    font-weight: 300;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 0.04em;
+      text-underline-offset: 0.15em;
+    }
+  }
+}
+
+strong,
+b {
+  font-weight: 800;
+  color: var(--emphasis);
+}
+
+/* ── Index / details expand ── */
+
+section {
+  > article {
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+}
+
+details {
+  > summary {
+    display: block;
+    list-style: none;
+    cursor: pointer;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    figcaption {
+      position: relative;
+      padding-right: calc(var(--base-line) * 2.5);
+
+      &::after {
+        content: "+";
+        position: absolute;
+        right: var(--base-line);
+        bottom: var(--base-line);
+        font-size: clamp(
+          1.602rem,
+          1.602rem + (2.441rem - 1.602rem) * (100dvw - 24rem) / (80rem - 24rem),
+          2.441rem
+        );
+        font-weight: 300;
+        line-height: 1;
+        transition: rotate 0.3s ease;
+      }
+    }
+  }
+
+  &[open] {
+    > summary figcaption::after {
+      rotate: 45deg;
+    }
+
+    /* Open: the crop window narrows until the whole poster fits the band,
+       pinned right; the caption becomes a vertically centered left column */
+    > summary {
+      figure img {
+        width: calc(min(56.25vw, 72dvh) * var(--ratio, 1.78));
+      }
+
+      figcaption {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: none;
+        color: var(--text);
+        animation: fade-in 0.45s ease both;
+
+        /* Title and date ride the same curve as the poster — title leads, date follows */
+        > * {
+          animation: slide-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        time {
+          animation-delay: 0.15s;
+        }
+
+        &::after {
+          right: auto;
+          left: var(--base-line);
+          animation: slide-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+        }
+      }
+    }
+
+    > section {
+      animation: slide-down 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  details[open] > summary figcaption {
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--basalt) 92%, transparent) 0%,
+      color-mix(in srgb, var(--basalt) 55%, transparent) 30%,
+      transparent 60%
+    );
+    color: var(--contrast);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    translate: calc(var(--base-line) * -1.5) 0;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+  to {
+    clip-path: inset(0 0 0% 0);
+    opacity: 1;
+  }
+}
+
+/* ── Article page ── */
+
+article[itemscope] {
+  > figure {
+    img {
+      width: calc(min(56.25vw, 72dvh) * var(--ratio, 1.78));
+    }
+
+    figcaption {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      /* Light mode: no scrim, dark text on the page surface */
+      background: none;
+      color: var(--text);
+
+      h1 {
+        font-size: clamp(
+          1.266rem,
+          1.266rem + (1.953rem - 1.266rem) * (100dvw - 24rem) / (80rem - 24rem),
+          1.953rem
+        );
+      }
+    }
+
+    .back-link {
+      position: absolute;
+      left: var(--base-line);
+      bottom: var(--base-line);
+      display: block;
+      width: calc(var(--base-line) * 1.75);
+      height: calc(var(--base-line) * 1.75);
+      color: transparent;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &::before {
+        content: "+";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: clamp(
+          1.602rem,
+          1.602rem + (2.441rem - 1.602rem) * (100dvw - 24rem) / (80rem - 24rem),
+          2.441rem
+        );
+        font-weight: 300;
+        line-height: 1;
+        rotate: 45deg;
+        color: var(--contrast);
+      }
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  article[itemscope] > figure figcaption {
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--basalt) 92%, transparent) 0%,
+      color-mix(in srgb, var(--basalt) 55%, transparent) 30%,
+      transparent 60%
+    );
+    color: var(--contrast);
+  }
+}
+
+/* Narrow screens have no room beside the poster, so the split becomes a
+   stack: art on top, caption below on the surface instead of over the art. */
+@media (max-width: 40rem) {
+  article[itemscope] > figure {
+    height: auto;
+    grid-template-rows: auto auto;
+  }
+
+  article[itemscope] > figure img {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  article[itemscope] > figure figcaption {
+    grid-area: 2 / 1;
+    background: none;
+    color: var(--text);
+    padding-bottom: calc(var(--base-line) * 3);
+  }
+
+  article[itemscope] > figure .back-link::before {
+    color: var(--text);
+  }
+
+  /* the arc needs the gutters too - let it run edge to edge */
+  section[itemprop="articleBody"] > .plate:has(img[src*="frontier-zone"]) {
+    grid-column: full;
+  }
+}
+
+/* Three tracks: prose sits on text, plates and code widen to wide, nothing
+   needs full yet but the gutter is there when something does. */
+section[itemprop="articleBody"] {
+  --gutter: var(--base-line);
+  --bleed: calc((var(--wide) - var(--measure)) / 2);
+
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter), 1fr)
+    [wide-start] minmax(0, var(--bleed))
+    [text-start] min(var(--measure), 100% - var(--gutter) * 2) [text-end]
+    minmax(0, var(--bleed))
+    [wide-end] minmax(var(--gutter), 1fr) [full-end];
+  padding: calc(var(--base-line) * 2) 0;
+
+  > * {
+    grid-column: text;
+  }
+
+  > .plate,
+  > pre,
+  > table,
+  > iframe {
+    grid-column: wide;
+  }
+
+  > iframe {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    margin: calc(var(--base-line) * 2) 0;
+  }
+
+  /* scripts/diagrams.js draws into these; wide graphs scroll sideways */
+  > pre.mermaid {
+    justify-self: stretch;
+    max-width: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    overflow-x: auto;
+    font-family: inherit;
+    white-space: normal;
+
+    & svg {
+      height: auto;
+    }
+  }
+
+  > details,
+  > .inline-reveal-panel {
+    grid-column: wide;
+  }
+
+  > details > summary {
+    max-width: var(--measure);
+  }
+
+  > .inline-reveal-panel[hidden] {
+    display: none;
+  }
+
+  .plate {
+    margin: calc(var(--base-line) * 2) 0;
+    height: auto;
+    overflow: visible;
+    grid-template-rows: auto;
+
+    & img {
+      display: block;
+      justify-self: center;
+      object-fit: contain;
+      width: 100%;
+      max-width: var(--measure);
+      height: auto;
+    }
+
+    & figcaption {
+      grid-area: auto;
+      align-self: auto;
+      justify-self: center;
+      padding: 0;
+      background: none;
+      width: 100%;
+      max-width: calc(var(--measure) / 0.8);
+      margin-top: calc(var(--base-line) / 2);
+      font-size: 0.8em;
+      font-weight: 300;
+      line-height: 1.4;
+      color: color-mix(in srgb, var(--text) 60%, transparent);
+    }
+  }
+
+  p {
+    margin: 0 0 var(--base-line);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: calc(var(--base-line) * 2) 0 var(--base-line);
+    background: linear-gradient(60deg, var(--accent), var(--emphasis));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 0.08vmin solid var(--accent);
+    transition: color 0.8s ease-in-out 0.1s;
+
+    &:hover {
+      color: var(--emphasis);
+    }
+  }
+
+  blockquote {
+    border-left: 3px solid var(--emphasis);
+    margin: var(--base-line) 0;
+    padding-left: var(--base-line);
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  pre {
+    max-width: var(--measure);
+    justify-self: center;
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    padding: var(--base-line);
+    overflow-x: auto;
+    margin: var(--base-line) 0;
+    border-radius: 0.25rem;
+
+    /* shiki writes both themes into every span; pick the light one by default */
+    & span {
+      color: var(--shiki-light);
+      font-style: var(--shiki-light-font-style, normal);
+    }
+  }
+
+  code {
+    font-family: "Monaco", "Menlo", monospace;
+    font-size: 0.875em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--base-line) 0;
+    text-align: left;
+
+    & th,
+    & td {
+      padding: calc(var(--base-line) / 3) calc(var(--base-line) / 2);
+      border-bottom: 1px solid
+        color-mix(in srgb, var(--accent) 20%, transparent);
+      vertical-align: baseline;
+    }
+
+    & th {
+      font-weight: 600;
+    }
+
+    & td:first-child {
+      font-family: "Monaco", "Menlo", monospace;
+      font-size: 0.875em;
+      white-space: nowrap;
+    }
+  }
+
+  ul,
+  ol {
+    padding-left: calc(var(--base-line) * 1.5);
+    margin: 0 0 var(--base-line);
+  }
+
+  li {
+    margin-bottom: calc(var(--base-line) * 0.33);
+  }
+  .skill-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: calc(var(--base-line) * 0.5);
+
+    section {
+      padding: calc(var(--base-line) * 0.75);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--text) 12%, transparent);
+
+      &.lead {
+        background: color-mix(in srgb, var(--emphasis) 14%, transparent);
+        outline: 1.5px solid var(--emphasis);
+      }
+    }
+
+    h3 {
+      margin: 0 0 calc(var(--base-line) * 0.5);
+      padding-bottom: calc(var(--base-line) * 0.25);
+      border-bottom: 1px solid color-mix(in srgb, var(--text) 25%, transparent);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.04em;
+      background: none;
+      color: var(--text);
+    }
+
+    section.lead h3,
+    section.lead li {
+      color: var(--emphasis);
+      font-weight: 700;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 0.72rem;
+      line-height: 2.1;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  section[itemprop="articleBody"] pre span {
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style, normal);
+  }
+}
+
+/* Print-only apparatus: the numbers and their endnote list (see @media print) */
+.note-mark,
+.notes {
+  display: none;
+}
+
+footer {
+  height: calc(var(--base-line) * 4);
+}
+
+/* ── Resume ── */
+
+section[itemtype*="Person"] > header {
+  display: grid;
+  grid-template-rows: 1fr;
+  height: min(56.25vw, 72dvh);
+  overflow: hidden;
+
+  img {
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    grid-area: 1 / 1;
+    justify-self: end;
+    display: block;
+  }
+}
+
+/* Same reveal as an opening card, played on arrival: the poster sweeps
+   to fit the band on the right, the contact column rides in on the left */
+@media (min-width: 48rem) {
+  section[itemtype*="Person"] > header img {
+    width: calc(min(56.25vw, 72dvh) * var(--ratio, 1.78));
+    animation: poster-fit 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  section[itemtype*="Person"] > header address {
+    align-self: stretch;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    background: none;
+    color: var(--text);
+    animation: fade-in 0.45s ease both;
+  }
+
+  section[itemtype*="Person"] > header address > * {
+    animation: slide-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  section[itemtype*="Person"] > header address > *:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+}
+
+@keyframes poster-fit {
+  from {
+    width: 100%;
+  }
+}
+
+section[itemtype*="Person"] > header {
+  address {
+    grid-area: 1 / 1;
+    align-self: end;
+    padding: var(--base-line);
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--basalt) 72%, transparent) 0%,
+      transparent 100%
+    );
+    color: var(--contrast);
+    font-style: normal;
+    display: flex;
+    gap: var(--base-line);
+    align-items: baseline;
+
+    p {
+      margin: 0;
+      font-weight: 300;
+      font-size: clamp(
+        1.266rem,
+        1.266rem + (1.953rem - 1.266rem) * (100dvw - 24rem) / (80rem - 24rem),
+        1.953rem
+      );
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    a {
+      color: color-mix(in srgb, var(--contrast) 78%, transparent);
+      text-decoration: none;
+      font-size: 0.9em;
+
+      &:hover {
+        color: var(--contrast);
+      }
+    }
+  }
+}
+
+#skills,
+#experience {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: calc(var(--base-line) * 2) var(--base-line);
+}
+
+#skills {
+  h2 {
+    margin: 0 0 var(--base-line);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-size: clamp(
+      1.424rem,
+      1.424rem + (1.953rem - 1.424rem) * (100dvw - 24rem) / (80rem - 24rem),
+      1.953rem
+    );
+    background: linear-gradient(60deg, var(--accent), var(--emphasis));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+    font-size: 0.875em;
+    line-height: 1.7;
+  }
+}
+
+#experience {
+  > header {
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+    padding-bottom: calc(var(--base-line) * 1.5);
+    margin-bottom: calc(var(--base-line) * 1.5);
+
+    h2 {
+      margin: 0 0 var(--base-line);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      font-size: clamp(
+        1.424rem,
+        1.424rem + (1.953rem - 1.424rem) * (100dvw - 24rem) / (80rem - 24rem),
+        1.953rem
+      );
+      background: linear-gradient(60deg, var(--accent), var(--emphasis));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    p {
+      margin: 0 0 var(--base-line);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  > footer {
+    height: auto;
+    padding: calc(var(--base-line) * 2) 0 0;
+    color: color-mix(in srgb, var(--text) 60%, transparent);
+    font-size: 0.875em;
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  }
+}
+
+article[itemtype*="Job"] {
+  padding: calc(var(--base-line) * 1.5) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  > header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: calc(var(--base-line) * 0.25) var(--base-line);
+    margin-bottom: calc(var(--base-line) * 0.75);
+
+    h3 {
+      margin: 0;
+      font-weight: 400;
+      font-size: clamp(
+        1.125rem,
+        1.125rem + (1.266rem - 1.125rem) * (100dvw - 24rem) / (80rem - 24rem),
+        1.266rem
+      );
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+
+      a[itemprop="url"] {
+        color: var(--accent);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--emphasis);
+        }
+      }
+    }
+
+    h6 {
+      margin: 0;
+      font-weight: 300;
+      font-size: 0.8em;
+      color: color-mix(in srgb, var(--text) 55%, transparent);
+      white-space: nowrap;
+    }
+  }
+
+  p[itemprop="description"] {
+    margin: 0 0 calc(var(--base-line) * 0.75);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 0.08vmin solid var(--accent);
+      transition: color 0.8s ease-in-out 0.1s;
+
+      &:hover {
+        color: var(--emphasis);
+      }
+    }
+  }
+}
+
+time[itemprop="startdate"],
+time[itemprop="enddate"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Skill map ── */
+
+/* Five stops of the planning loop. auto-fit means the columns fold to two,
+   then one, as the measure narrows - no breakpoints, no shrinking text. */
+
+/* ── Print ──
+   Paper has no dark mode, no hover, no scroll. Gradient-clipped headings go
+   invisible, the poster band eats a page, and the article grid wastes the
+   sheet. Rebuild the page as a document: one column, black on white, links
+   that print where they point. */
+
+@page {
+  margin: 18mm 16mm;
+}
+
+@media print {
+  :root {
+    --text: black;
+    --surface: white;
+    --accent: black;
+    --emphasis: black;
+    --base-line: 12pt;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /* The resume runs tighter than an article - sixteen jobs at article
+     size costs two extra sheets, and a resume is scanned, not read. */
+  body:has(section[itemtype*="Person"]) {
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  main {
+    min-height: 0;
+  }
+
+  /* Chrome/Safari keep backgrounds off by default; say so anyway */
+  * {
+    background: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Site chrome, the poster band, and the affordances that only work on a
+     screen have no job on paper */
+  main > header nav,
+  footer,
+  figure img,
+  details > summary figcaption::after,
+  .inline-reveal-panel {
+    display: none;
+  }
+
+  /* The close "x" is positioned by a rule specific enough (article > figure
+     .back-link) to beat a bare .back-link here, so match that specificity -
+     otherwise it survives onto paper as a stray mark. */
+  article[itemscope] > figure .back-link {
+    display: none;
+  }
+
+  main > header {
+    position: static;
+    padding: 0 0 6pt;
+    border-bottom: 0.5pt solid black;
+    margin-bottom: 12pt;
+  }
+
+  main > header h1 {
+    font-size: 10pt;
+  }
+
+  main > header h1 a,
+  main > header hgroup p {
+    color: black;
+    -webkit-text-fill-color: black;
+  }
+
+  /* The poster is decorative (alt=""). What survives is the caption, which
+     becomes the article's title block. */
+  figure {
+    display: block;
+    height: auto;
+    overflow: visible;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
+  figcaption {
+    display: block;
+    padding: 0;
+    color: black;
+  }
+
+  figcaption h1,
+  figcaption h2 {
+    font-size: 20pt;
+    font-weight: 400;
+    margin: 0 0 3pt;
+    color: black;
+  }
+
+  figcaption time {
+    font-size: 9pt;
+    opacity: 1;
+    color: black;
+  }
+
+  /* One column, full measure of the page */
+  section[itemprop="articleBody"] {
+    display: block;
+    padding: 12pt 0 0;
+  }
+
+  section[itemprop="articleBody"] > .plate,
+  section[itemprop="articleBody"] > pre,
+  section[itemprop="articleBody"] > table,
+  section[itemprop="articleBody"] > details {
+    max-width: none;
+  }
+
+  /* Gradient text prints as nothing - put the ink back */
+  section[itemprop="articleBody"] h1,
+  section[itemprop="articleBody"] h2,
+  section[itemprop="articleBody"] h3,
+  #skills h2,
+  #experience > header h2 {
+    background: none;
+    -webkit-text-fill-color: black;
+    color: black;
+    font-weight: 600;
+    break-after: avoid;
+    break-inside: avoid;
+    margin: 16pt 0 6pt;
+  }
+
+  section[itemprop="articleBody"] h1 {
+    font-size: 16pt;
+  }
+  section[itemprop="articleBody"] h2 {
+    font-size: 14pt;
+  }
+  section[itemprop="articleBody"] h3 {
+    font-size: 12pt;
+  }
+
+  p,
+  li,
+  blockquote {
+    orphans: 3;
+    widows: 3;
+  }
+
+  section[itemprop="articleBody"] p {
+    margin: 0 0 8pt;
+  }
+
+  /* A printed link is a dead end unless it says where it goes. Articles
+     carry numbered endnotes; a resume job prints its URL on the line under
+     the company name. */
+  article[itemtype*="Job"] a[href^="http"]::after {
+    content: attr(href);
+    display: block;
+    font-size: 0.72em;
+    font-weight: 300;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .note-mark {
+    display: inline;
+    font-size: 0.7em;
+    font-weight: 600;
+    line-height: 0;
+    vertical-align: super;
+  }
+
+  .notes {
+    display: block;
+    break-before: avoid;
+    margin: 16pt 0 0;
+    padding: 8pt 0 0 18pt;
+    border-top: 0.5pt solid color-mix(in srgb, var(--text) 30%, transparent);
+    font-size: 8.5pt;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .notes li {
+    margin-bottom: 2pt;
+  }
+
+  section[itemprop="articleBody"] a,
+  article[itemtype*="Job"] a {
+    color: black;
+    /* border, not text-decoration - a line-through underlines the URL too */
+    text-decoration: none;
+    border-bottom: 0.5pt solid black;
+  }
+
+  /* The company name carries its URL on the next line, so the printed name
+     reads as plain text */
+  article[itemtype*="Job"] a[href^="http"] {
+    border-bottom: none;
+  }
+
+  section[itemprop="articleBody"] blockquote {
+    border-left: 1pt solid black;
+    opacity: 1;
+    break-inside: avoid;
+  }
+
+  /* Shiki writes both themes into every span - paper takes the light one */
+  section[itemprop="articleBody"] pre {
+    border: 0.5pt solid color-mix(in srgb, var(--text) 30%, transparent);
+    padding: 8pt;
+    font-size: 8.5pt;
+    line-height: 1.4;
+    overflow: visible;
+    white-space: pre-wrap;
+    word-break: break-word;
+    break-inside: avoid;
+
+    & span {
+      color: var(--shiki-light) !important;
+    }
+  }
+
+  section[itemprop="articleBody"] table {
+    break-inside: avoid;
+    font-size: 9.5pt;
+
+    & th,
+    & td {
+      border-bottom: 0.5pt solid
+        color-mix(in srgb, var(--text) 30%, transparent);
+    }
+
+    & td:first-child {
+      white-space: normal;
+    }
+  }
+
+  section[itemprop="articleBody"] thead {
+    display: table-header-group;
+  }
+
+  /* Diagrams are content - keep them, just stop them from straddling a break */
+  .plate {
+    break-inside: avoid;
+    margin: 12pt 0;
+
+    & img {
+      max-width: 100%;
+      max-height: 8in;
+      height: auto;
+    }
+
+    & figcaption {
+      font-size: 9pt;
+      color: var(--text);
+    }
+  }
+
+  .skill-map {
+    break-inside: avoid;
+
+    & section {
+      border: 0.5pt solid color-mix(in srgb, var(--text) 30%, transparent);
+    }
+
+    & section.lead {
+      outline: none;
+      border-width: 1.5pt;
+    }
+
+    & li {
+      color: black !important;
+      line-height: 1.5;
+    }
+  }
+
+  /* Index: the cards are a screen affordance. Print the open ones as
+     articles and leave the closed ones as a titled list. */
+  section > article:not([itemtype*="Job"]) {
+    border-bottom: none;
+    break-before: page;
+  }
+
+  section > article:not([itemtype*="Job"]):first-child {
+    break-before: auto;
+  }
+
+  details > summary {
+    cursor: auto;
+  }
+
+  details:not([open]) {
+    break-before: auto;
+  }
+
+  details:not([open]) figcaption h2 {
+    font-size: 12pt;
+  }
+
+  /* ── Resume ── */
+
+  section[itemtype*="Person"] > header {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  section[itemtype*="Person"] > header img {
+    display: none;
+  }
+
+  section[itemtype*="Person"] > header address {
+    display: block;
+    padding: 0;
+    color: black;
+  }
+
+  section[itemtype*="Person"] > header address p {
+    font-size: 18pt;
+    margin: 0 0 3pt;
+  }
+
+  section[itemtype*="Person"] > header address a {
+    color: black;
+    font-size: 10pt;
+    margin-right: 12pt;
+  }
+
+  #skills,
+  #experience {
+    max-width: none;
+    padding: 8pt 0 0;
+  }
+
+  /* Jobs may split across a break - keeping each one whole strands a third
+     of every page. The heading rules below stop a title orphaning at a
+     page foot, which is the part that actually reads badly. */
+  article[itemtype*="Job"] {
+    break-inside: auto;
+    padding: 2.5pt 0;
+    border-bottom: 0.5pt solid color-mix(in srgb, var(--text) 20%, transparent);
+  }
+
+  article[itemtype*="Job"] h3 {
+    break-after: avoid;
+    margin: 0 0 2pt;
+  }
+
+  article[itemtype*="Job"] p {
+    margin: 0 0 4pt;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Two sheets is the cap. Sixteen roles run three, so the printed resume
+     stops at LRN and the note at the end carries the rest. */
+  article[itemtype*="Job"]:nth-of-type(n + 11) {
+    display: none;
+  }
+
+  #experience > footer {
+    display: block;
+    padding-top: 6pt;
+  }
+}

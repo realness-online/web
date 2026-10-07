@@ -1,0 +1,76 @@
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+dialog {
+  outline: none;
+  margin: base-line auto 0;
+  padding: base-line (base-line * 0.5);
+  border: round(base-line / 7, 2) solid var(--emphasis);
+  border-radius: base-line * 0.5;
+  color: var(--text);
+  background-color: var(--surface);
+  opacity: 0;
+  transition: opacity 120ms ease;
+  &:focus {
+    outline: none;
+  }
+  &::backdrop {
+    frosted-glass();
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  &[open] {
+    opacity: 1;
+  }
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+}
+
+dialog[data-modal] {
+  z-index: 9;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+dialog[data-confirm] {
+  @extend dialog[data-modal];
+  & > article {
+    max-width: 100%
+    @media (orientation: portrait) and (max-width: pad-begins) {
+      min-width: calc(100vw - var(--base-line) * 3)
+    }
+    header {
+      padding: base-line;
+      display: flex;
+      flex-direction: column;
+      h1 {
+        text-align: center;
+        width: 100%;
+        color: var(--emphasis);
+      }
+      p {
+        width: 100%;
+        color: var(--accent);
+      }
+    }
+    p {
+      text-align: center;
+      color: var(--text);
+    }
+    menu {
+      padding: base-line;
+      display: flex;
+      justify-content: space-between;
+      button.delete {
+        border-color: var(--emphasis);
+        color: var(--emphasis);
+        font-weight: bold;
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Runs as root inside an app VM, before the app starts (brayness-app.service).
+# Mounts the app's code disk at /app and, when the files asked for one, its
+# runtime disk at /opt/runtime. Both read-only; disks are found by label, so
+# the order Firecracker attached them in does not matter.
+#
+#   /app/code   the app's files          (label app-code, server/host/src/apps.js)
+#   /app/argv   its start command, one argument per line
+#   /opt/runtime/bin/{node,python3}      (label rt-*, runtime-build.sh)
+set -euo pipefail
+
+udevadm settle
+mount -o ro,nosuid,nodev /dev/disk/by-label/app-code /app
+
+shopt -s nullglob
+runtimes=(/dev/disk/by-label/rt-*)
+if [ "${#runtimes[@]}" -gt 1 ]; then
+  echo "brayness-app-mount: more than one runtime disk: ${runtimes[*]}" >&2
+  exit 1
+fi
+if [ "${#runtimes[@]}" = 1 ]; then
+  mount -o ro,nosuid,nodev "${runtimes[0]}" /opt/runtime
+fi
+echo "brayness-app-mount: /app${runtimes:+, ${runtimes[0]##*/} at /opt/runtime}"

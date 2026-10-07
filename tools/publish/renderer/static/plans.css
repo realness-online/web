@@ -1,0 +1,251 @@
+/* plans: finished nodes */
+tr:has(del) {
+  opacity: 0.45;
+
+  & del {
+    text-decoration: none;
+  }
+}
+
+/* The header is sticky, so scrolling a plan to the top would hide its title
+   behind it. Leave the header's height clear. */
+article:has(> details) {
+  scroll-margin-top: 4rem;
+}
+
+/* plans: covers */
+
+/* Diagrams are drawn after load, so the list would otherwise appear as empty
+   boxes and then jump. Hold the page back until the first screenful is drawn. */
+html[data-diagrams="pending"] {
+  body {
+    visibility: hidden;
+  }
+
+  main::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--surface);
+    visibility: visible;
+  }
+}
+
+/* The whole cover is the link: the title's link stretches over the figure, so a
+   click on the diagram goes to the plan the same as a click on its name. */
+section {
+  > article > figure {
+    position: relative;
+    cursor: pointer;
+
+    & a[itemprop="url"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    & :is(pre.mermaid, img) {
+      pointer-events: none;
+    }
+  }
+
+  /* Outranks the example's article[itemscope] > figure figcaption, which is
+     relative and would trap the stretched link inside the caption. */
+  > article[itemscope] > figure > figcaption {
+    position: static;
+  }
+}
+
+/* A drawn cover is a picture, not a control; clicks fall through to the link. */
+
+/* Standard navigation: one short cross-fade, no shared-element morph. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* Opening a plan morphs the summary into the page instead of cutting. */
+@view-transition {
+  navigation: auto;
+}
+
+/* One motion, not two. The old page fades out over the same 240ms the title
+   takes to travel, so nothing moves over content that is already final. */
+::view-transition-old(root) {
+  animation: 240ms cubic-bezier(0.2, 0, 0, 1) both fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 240ms cubic-bezier(0.2, 0, 0, 1) both fade-in;
+}
+
+/* The title travels on its own layer and never cross-fades, so it reads as one
+   object moving between two places rather than two titles swapping. */
+::view-transition-group(plan) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  /* stay above the page cross-fade for the whole move */
+  z-index: 1;
+}
+
+::view-transition-old(plan),
+::view-transition-new(plan) {
+  animation: none;
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The body is new to the page, so it enters rather than cutting in. It starts
+   part-way rather than at zero, which reads as speed instead of a fade. */
+::view-transition-new(plan-body) {
+  animation: 280ms cubic-bezier(0.2, 0, 0, 1) both body-in;
+  animation-delay: 60ms;
+}
+
+@keyframes body-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--base-line));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+figure:has(> pre.mermaid) {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+
+  & figcaption {
+    grid-area: 2 / 1;
+    background: none;
+    color: inherit;
+  }
+}
+
+figure > pre.mermaid {
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--base-line);
+  max-height: min(56.25vw, 72dvh);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: none;
+
+  & svg {
+    max-width: 100%;
+    max-height: calc(min(56.25vw, 72dvh) - var(--base-line) * 2);
+  }
+}
+
+/* On the index the cover is a thumbnail, not a reading surface, so cap its
+   height. The plan page keeps the full-size diagram. */
+section {
+  > article > figure > pre.mermaid {
+    max-height: 24rem;
+
+    & svg {
+      max-height: calc(24rem - var(--base-line) * 2);
+    }
+  }
+}
+
+/* the title sits under the diagram, not over it */
+
+/* open, the body has the same diagram */
+details[open] {
+  > summary figure > pre.mermaid {
+    display: none;
+  }
+
+  /* with no poster beside it, the close mark stays right */
+  > summary figure:not(:has(img)) figcaption::after {
+    left: auto;
+    right: var(--base-line);
+  }
+}
+
+article[itemscope] > figure:not(:has(img)) .back-link {
+  left: auto;
+  right: var(--base-line);
+}
+
+/* a plan's DAG in the body fills the screen, not the text column */
+section {
+  pre.mermaid {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    padding-inline: var(--base-line);
+    box-sizing: border-box;
+    background: none;
+    overflow: auto;
+    max-height: 80dvh;
+    cursor: zoom-out;
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    &[aria-pressed="false"] {
+      cursor: zoom-in;
+    }
+
+    &[aria-pressed="false"] svg {
+      width: 100%;
+      max-height: 80dvh;
+    }
+
+    & svg {
+      display: block;
+      width: auto;
+      max-width: none !important;
+      height: auto;
+      max-height: none;
+      margin-inline: auto;
+    }
+  }
+}
+
+/* the node table breaks out of the text column, capped at 80rem */
+section[itemprop="articleBody"] table {
+  width: min(100vw - var(--base-line) * 2, 80rem);
+  margin-inline: calc(50% - min(50vw - var(--base-line), 40rem));
+}
+
+/* no picture and no diagram: just the title bar */
+figure:not(:has(img, pre.mermaid)) {
+  height: auto;
+}

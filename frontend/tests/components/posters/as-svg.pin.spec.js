@@ -1,0 +1,169 @@
+import { shallowMount, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
+import as_svg from '@/components/posters/as-svg'
+import { load_cutout_symbols } from '../../helpers/cutout-symbols'
+
+const itemid = '/+16282281824/posters/559666932867'
+
+/** @returns {Record<string, unknown>} */
+const vector_fixture = () => ({
+  id: itemid,
+  type: 'posters',
+  viewbox: '0 0 400 200',
+  width: '400',
+  height: '200',
+  regular: true,
+  cutouts: {
+    sediment: true,
+    sand: true,
+    gravel: false,
+    rocks: false,
+    boulders: false
+  }
+})
+
+const {
+  mock_slice_alignment,
+  mock_aspect_ratio_mode,
+  mock_mosaic,
+  mock_storytelling,
+  mock_drama_back,
+  mock_drama_front,
+  mock_shadow,
+  mock_stroke,
+  mock_animate_pref,
+  mock_morph_pref,
+  mock_grid,
+  mock_camera_y,
+  mock_background,
+  mock_light,
+  mock_regular,
+  mock_medium,
+  mock_bold,
+  mock_boulders,
+  mock_rocks,
+  mock_gravel,
+  mock_sand,
+  mock_sediment
+} = vi.hoisted(() => {
+  const create_watchable = value =>
+    Object.assign({ value }, { __v_isRef: true })
+  return {
+    mock_slice_alignment: create_watchable('ymid'),
+    mock_aspect_ratio_mode: create_watchable('auto'),
+    mock_mosaic: create_watchable(true),
+    mock_storytelling: create_watchable(false),
+    mock_drama_back: create_watchable(false),
+    mock_drama_front: create_watchable(false),
+    mock_shadow: create_watchable(true),
+    mock_stroke: create_watchable(false),
+    mock_animate_pref: create_watchable(false),
+    mock_morph_pref: create_watchable(false),
+    mock_grid: create_watchable(false),
+    mock_camera_y: create_watchable(0),
+    mock_background: create_watchable(true),
+    mock_light: create_watchable(true),
+    mock_regular: create_watchable(true),
+    mock_medium: create_watchable(true),
+    mock_bold: create_watchable(true),
+    mock_boulders: create_watchable(true),
+    mock_rocks: create_watchable(true),
+    mock_gravel: create_watchable(true),
+    mock_sand: create_watchable(true),
+    mock_sediment: create_watchable(true)
+  }
+})
+
+vi.mock('@/utils/preference', () => ({
+  slice_alignment: mock_slice_alignment,
+  aspect_ratio_mode: mock_aspect_ratio_mode,
+  mosaic: mock_mosaic,
+  storytelling: mock_storytelling,
+  drama_back: mock_drama_back,
+  drama_front: mock_drama_front,
+  shadow: mock_shadow,
+  stroke: mock_stroke,
+  animate: mock_animate_pref,
+  morph: mock_morph_pref,
+  grid: mock_grid,
+  camera_y: mock_camera_y,
+  background: mock_background,
+  light: mock_light,
+  regular: mock_regular,
+  medium: mock_medium,
+  bold: mock_bold,
+  boulders: mock_boulders,
+  rocks: mock_rocks,
+  gravel: mock_gravel,
+  sand: mock_sand,
+  sediment: mock_sediment
+}))
+
+vi.mock('@vueuse/core', async importOriginal => {
+  const mod = await importOriginal()
+  return {
+    ...mod,
+    /** Hero off-screen: first callback is not intersecting. */
+    useIntersectionObserver: (_target, cb) => {
+      queueMicrotask(() => {
+        cb([{ isIntersecting: false }])
+      })
+      return { stop: vi.fn() }
+    }
+  }
+})
+
+vi.mock('@/utils/itemid', async importOriginal => {
+  const mod = await importOriginal()
+  return {
+    ...mod,
+    load: vi.fn(async () => vector_fixture())
+  }
+})
+
+describe('@/components/posters/as-svg.vue pin', () => {
+  beforeEach(() => {
+    // as-svg draws a cutout only once its symbol has loaded, and the symbols
+    // live in a sibling component that a shallow mount never renders.
+    load_cutout_symbols(itemid)
+    mock_mosaic.value = true
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({
+      matches: String(query).includes('portrait'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }))
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('keeps cutout layers in the tree when pin and intersection reports false', async () => {
+    const wrapper = shallowMount(as_svg, {
+      props: {
+        itemid,
+        pin: true,
+        show_cutout_layers: true
+      }
+    })
+    await flushPromises()
+    expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(true)
+  })
+
+  it('without pin, removes cutouts when intersection reports false', async () => {
+    const wrapper = shallowMount(as_svg, {
+      props: {
+        itemid,
+        pin: false,
+        show_cutout_layers: true
+      }
+    })
+    await flushPromises()
+    expect(wrapper.find('use[itemprop="sediment"]').exists()).toBe(false)
+  })
+})

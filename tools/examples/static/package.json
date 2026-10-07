@@ -1,0 +1,22 @@
+{
+  "name": "static",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#root/*": "./*"
+  },
+  "description": "A static site: Markdown articles rendered as semantic HTML",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node serve.js",
+    "test": "node --test 'test/*.test.js'"
+  },
+  "dependencies": {
+    "@comark/html": "^0.4.0",
+    "comark": "^0.4.0",
+    "mermaid": "12.0.0",
+    "sharp": "^0.35.4",
+    "shiki": "^4.4.3",
+    "template-for-polyfill": "^0.1.1"
+  }
+}

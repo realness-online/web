@@ -1,0 +1,43 @@
+# Realness - Contributing
+
+![Realness](/public/icons.svg)
+
+Joining [realness](https://realness.online) is the best way to get support (moral, and technical). We'd love to have your help.
+
+The best way to start is deploy your own instance of realness and then read about the the [philosopy](philosophy.md) and [architecture](architecture.md).
+
+Touching palette code? Read [the color system](color-system.md) first - it covers the materials/roles split, naming conventions, and the guardrail tests before you change a value.
+
+## Scripts
+
+A standard setup is usually three tabs in a terminal running the following scripts
+
+- `npm run dev` runs the client code on `http://localhost:8080`
+- `npm run dev:workers` keeps the workers current
+- `nmp run pre-commit` runs All our checks
+- `nmp run tests:coverage` is of note
+
+### Config
+
+For a fully functioning local setup, copy `.env.example` to `.env.local` and fill it in with your Firebase keys. If you deploy without changes, this is not necessary.
+
+Start your local server and `localhost:8080` will be good to go
+
+## Pull Request Guidelines
+
+- The `main` branch is just a snapshot of the latest stable release. All development should be done in dedicated branches. **Do not submit PRs against the `main` branch.**
+
+- Work in the `src` folder and **DO NOT** checkin `dist` or `artifacts` in the commits.
+
+- It's OK to have multiple small commits as you work on the PR
+
+- Make sure `yarn test --coverage` passes. Deploying will fail if your changes drop code coverage.
+
+- If adding a new feature:
+  - Add accompanying test case.
+  - Provide a convincing reason to add this feature. Ideally, you should open a suggestion issue first and have it approved before working on it.
+
+- If fixing bug:
+  - If you are resolving a special issue, add `(fix #xxxx[,#xxxx])` (#xxxx is the issue id) in your PR title for a better release log,
+  - Provide a detailed description of the bug in the PR. Live demo preferred.
+  - Add appropriate test coverage if applicable.

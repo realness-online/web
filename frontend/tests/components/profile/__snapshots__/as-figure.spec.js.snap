@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/component/profile/as-figure.vue > Renders > Render a person's profile info 1`] = `
+<div
+  data-v-app=""
+>
+  
+  <!--v-if-->
+  <figure
+    data-display="phonebook"
+  >
+    <icon-stub
+      name="silhouette"
+    />
+    <figcaption>
+      <as-address-stub
+        editable="false"
+        person="[object Object]"
+      />
+      <menu>
+        
+        <profile-messenger-stub
+          itemid="/+16282281823"
+        />
+        
+      </menu>
+    </figcaption>
+  </figure>
+  
+</div>
+`;

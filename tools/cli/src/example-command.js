@@ -1,0 +1,25 @@
+import { cp, mkdir } from 'node:fs/promises'
+import { existsSync as exists_sync } from 'node:fs'
+import { createRequire as create_require } from 'node:module'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath as file_url_to_path, pathToFileURL as path_to_file_url } from 'node:url'
+
+const project = file_url_to_path(new URL('../../../', import.meta.url))
+
+/** Export a portable starter; actors already carry the generated examples. */
+export const run_example = async ([kind, destination], { actor = false, root, stdout = process.stdout } = {}) => {
+  if (!['static', 'app'].includes(kind) || !destination) throw new Error('usage: brayness example static|app <destination>')
+  destination = resolve(destination)
+  if (exists_sync(destination)) throw new Error(`destination exists: ${destination}`)
+  if (!actor && kind === 'static') {
+    const entry = create_require(join(project, 'package.json')).resolve('brayness/publish/view')
+    const { export_static } = await import(path_to_file_url(entry))
+    await export_static(destination)
+  } else {
+    const source = actor ? join(root ?? process.env.BRAYNESS_ROOT ?? '/brayness', 'examples', kind) : join(project, 'tools/examples', kind)
+    await mkdir(dirname(destination), { recursive: true })
+    await cp(source, destination, { recursive: true, force: false, errorOnExist: true })
+  }
+  stdout.write(destination + '\n')
+  return 0
+}

@@ -1,12 +1,9 @@
-# Everything generated. A fresh clone is source only.
+# Generated files follow lib/output.js and lib/output.sh: a harness's artifacts/brayness, or dist/
+# on a host. A fresh clone is source only.
 dist/
 
-# The built browser terminal and chat (control/scripts/terminal-build.sh,
-# control/scripts/chat-build.sh).
-host/term/
-host/chat/
 
-# Python bytecode from host/clients and host/guest; run as root it would
+# Python bytecode from server/host/clients and server/host/guest; run as root it would
 # leave root-owned files in the source tree.
 __pycache__/
 *.pyc
@@ -20,3 +17,4 @@ node_modules/
 
 # macOS
 .DS_Store
+tools/publish/renderer/.cache/

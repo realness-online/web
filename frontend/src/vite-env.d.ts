@@ -1,0 +1,45 @@
+/// <reference types="vite-plus/client" />
+/// <reference types="vite-plugin-pwa/client" />
+
+declare module '@/*' {
+  const component: any
+  export default component
+}
+
+declare module '@/wasm/tracer.js' {
+  export class ColorImageConverter {
+    static new_with_string(params: string): ColorImageConverter
+    init(image_data: ImageData): void
+    tick(): string | null
+    progress(): number
+    free(): void
+  }
+  export function init_panic_hook(): void
+  export default function init_tracer_wasm(options: {
+    module_or_path: string
+  }): Promise<void>
+}
+
+declare module '*.js'
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
+  const component: DefineComponent<{}, {}, any>
+  export default component
+}
+
+declare module 'country-code-emoji' {
+  export function countryCodeEmoji(countryCode: string): string
+}
+
+declare module 'virtual:pwa-register' {
+  export interface RegisterSWOptions {
+    immediate?: boolean
+    onNeedRefresh?: () => void
+    onOfflineReady?: () => void
+    onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void
+    onRegisterError?: (error: any) => void
+  }
+  export function registerSW(
+    options?: RegisterSWOptions
+  ): (reloadPage?: boolean) => Promise<void>
+}

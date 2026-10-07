@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/posters/as-menu-author.vue > Renders > a menu to edit a poster 1`] = `
+<menu>
+  <button
+    aria-label="Delete poster"
+    type="button"
+  >
+    <icon-stub
+      name="remove"
+    />
+  </button>
+  <!--v-if-->
+  <as-download-stub
+    itemid="/+14151234356/posters/1737178477987"
+  />
+</menu>
+`;

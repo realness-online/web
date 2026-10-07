@@ -1,0 +1,54 @@
+/* Semantic roles and document color wiring. Swatches live in palette.css. */
+:root {
+  --warning: var(--ochre-darken);
+
+  --accent: var(--water-darken);
+  --emphasis: var(--clay-darken);
+  --working: var(--slate-darken);
+  --surface-glass: var(--chalk-transparent);
+
+  --text: var(--graphite);
+  --surface: var(--chalk);
+  --code-surface: color-mix(in srgb, var(--graphite) 6%, transparent);
+  --muted-text: color-mix(in srgb, var(--graphite) 70%, var(--chalk));
+
+  /* Content on top of an emphasis-toned or dark surface (button hover fills,
+     toggle-switch knobs). Deliberately not scheme-split: the surfaces it sits
+     on already flip per-scheme, so this stays the same near-white either way. */
+  --contrast: var(--chalk);
+
+  accent-color: var(--emphasis);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --warning: var(--ochre-lighten);
+    --accent: var(--water-lighten);
+    --emphasis: var(--clay-lighten);
+    --working: var(--slate-lighten);
+    --surface-glass: var(--basalt-transparent);
+
+    --text: var(--bone);
+    --surface: var(--basalt);
+    --code-surface: color-mix(in srgb, var(--bone) 8%, transparent);
+  }
+}
+
+html {
+  color: var(--text);
+  background-color: var(--surface);
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100%;
+  background-color: inherit;
+}
+
+main#realness {
+  background-color: inherit;
+}
+
+section[data-page] {
+  background-color: var(--surface);
+}

@@ -1,0 +1,161 @@
+<script setup>
+  /** @typedef {import('@/types').Statement} Statement */
+  /** @typedef {import('@/types').Statements} Statements */
+  import {
+    ref,
+    computed,
+    onMounted as mounted,
+    onBeforeUnmount as before_unmount
+  } from 'vue'
+  import { load, as_author, as_created_at } from '@/utils/itemid'
+  import { as_time } from '@/utils/date'
+  import Icon from '@/components/Icon'
+  import AsThought from '@/components/thoughts/as-thought'
+  import AsAvatar from '@/components/posters/as-avatar'
+  import AsMessenger from '@/components/profile/as-messenger'
+
+  const props = defineProps({
+    statements: {
+      /** @type {import('vue').PropType<Statements>} */
+      type: Array,
+      required: true
+    },
+    verbose: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  })
+
+  const emit = defineEmits({
+    show: (/** @type {Statements} */ stmt) => Array.isArray(stmt),
+    focused: (/** @type {Statement} */ thought) =>
+      thought && typeof thought === 'object',
+    blurred: (/** @type {Statement} */ thought) =>
+      thought && typeof thought === 'object'
+  })
+
+  const observer = ref(null)
+  const author = ref(null)
+  const focused = ref(false)
+  const el = ref(null)
+  const thought_refs = ref([])
+  const thought_starts_at = computed(() =>
+    as_time(as_created_at(props.statements[0].id))
+  )
+
+  mounted(() => {
+    observer.value = new IntersectionObserver(check_intersection, {
+      rootMargin: '1024px 0px 0px 0px',
+      threshold: 0
+    })
+    observer.value.observe(el.value)
+    if (props.verbose) {
+      const author_id = as_author(props.statements[0].id)
+      if (author_id) load(author_id).then(result => (author.value = result))
+    }
+  })
+
+  before_unmount(() => {
+    observer.value?.unobserve(el.value)
+  })
+
+  const check_intersection = entries => {
+    const [entry] = entries
+    if (entry.isIntersecting) {
+      show()
+      observer.value.unobserve(el.value)
+    }
+  }
+
+  const show = () => emit('show', props.statements)
+
+  const on_focused = thought => {
+    focused.value = true
+    emit('focused', thought)
+  }
+
+  const BLUR_DELAY_MS = 750
+
+  const on_blurred = thought => {
+    focused.value = false
+    setTimeout(() => {
+      if (!focused.value) emit('blurred', thought)
+    }, BLUR_DELAY_MS)
+  }
+</script>
+
+<template>
+  <article ref="el" data-thought>
+    <header v-if="author">
+      <router-link :to="author.id" tabindex="-1" :aria-label="author.name">
+        <as-avatar v-if="author.avatar" :itemid="author.avatar" />
+        <icon v-else name="silhouette" />
+      </router-link>
+      <address>
+        <span>{{ author.name }}</span>
+        <time>{{ thought_starts_at }}</time>
+      </address>
+      <menu>
+        <as-messenger :itemid="author.id" />
+      </menu>
+    </header>
+    <header v-else>
+      <time>{{ thought_starts_at }}</time>
+    </header>
+    <as-thought
+      v-for="thought in statements"
+      :key="thought.id"
+      ref="thought_refs"
+      itemprop="statements"
+      :thought="thought"
+      :editable="editable"
+      @focused="on_focused"
+      @blurred="on_blurred" />
+  </article>
+</template>
+
+<style>
+  article[data-thought] {
+    & > header {
+      display: flex;
+      justify-content: flex-start;
+      flex-direction: row;
+      margin-bottom: var(--base-line);
+      & > a > svg {
+        width: calc(var(--base-line) * 2);
+        height: calc(var(--base-line) * 2);
+        min-height: inherit;
+        cursor: pointer;
+        shape-outside: circle();
+        border-radius: calc(var(--base-line) * 2);
+        margin-right: calc(var(--base-line) / 4);
+        &.icon {
+          fill: var(--accent);
+          scale: 0.6;
+        }
+      }
+      & > address {
+        flex: 1;
+        & > span {
+          margin-right: calc(var(--base-line) / 4);
+          font-weight: 300;
+          display: inline-block;
+        }
+      }
+      & > menu > a > svg {
+        fill: var(--accent);
+        opacity: 0.25;
+        &:hover,
+        &:active {
+          opacity: 1;
+        }
+      }
+    }
+  }
+</style>

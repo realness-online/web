@@ -1,0 +1,37 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": "vite.prerender.config.js, vitest.config.storage-rules.js,.fallowrc.json,.tooling.md, firebase.test.json, rootCA.pem,realness.local*, .env.local, .firebaserc, localhost.pem, localhost-key.pem, .gitignore, firebase.json,storage.rules, .env.example,jsdoc.json, workers.config.js, package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .prettier*, prettier*, .editorconfig, .npmignore, tsconfig.json, vite.config.js, deno.json, .cursorrules"
+  },
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.oxc": "explicit"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "onFocusChange",
+  "deno.enable": true,
+  "deno.enablePaths": ["./src", "./scripts", "./tests"],
+  "deno.importMap": "./import_map.json",
+  "files.exclude": {
+    ".vite-hooks/_/**/*": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "oxc.fmt.configPath": "./vite.config.js"
+}

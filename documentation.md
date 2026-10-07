@@ -14,9 +14,10 @@ were close.
 - **Self-host Firecracker.** Boot once, snapshot, fork.
 - **Nested virt on GCP.** Actors wait on model calls, so density comes from
   oversubscription; bare metal is priced for CPU this is not.
-- **The prod host is a VM in `realness-online`**, the server project.
-  `realness-ops` is the server repo and `realness` the client repo;
-  `realness-development` is the client's dev project.
+- **Each environment is one project.** Development hosts, sync, proxy, sign-in,
+  and storage share `realness-development`; production waits in
+  `realness-online`. Early hosts ran in `realness-online`; the proofs below say
+  so where it matters.
 - **Brayness owns its proxy.** `brayness-proxy` runs in `realness-development`
   beside `brayness-sync`, sharing its phone pins; `realness-ops` keeps no agent
   handler and no `AGENT_PASS`.
@@ -29,7 +30,7 @@ were close.
 - **The prod host idles stopped, itself.** `gcloud compute instances stop` keeps
   the boot disk, the xfs volume (`/etc/fstab` by UUID) and `/dev/kvm`; the disks
   are the only floor, $0.80/mo. A systemd timer checks every 5 minutes and stops
-  the host after 30 with no `firecracker`, no `node host/main.js` and no
+  the host after 30 with no `firecracker`, no `node server/host/main.js` and no
   interactive login; `/run/brayness-hold` (tmpfs) holds it open for work that is
   not a running VM. h3 folds host lifecycle into the host.
 - **The artifact set is the actor's home directory and the trace is its event
@@ -38,8 +39,8 @@ were close.
   plus a manifest holding both sha256s, the identity the actor had, and the seed
   it forked from. The harness is in `/brayness`, so it travels; identity stays
   behind, so restoring one export twice is two actors with the same files and
-  different identities. Bundles go to
-  `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`, moved by the
+  different identities. Bundles go to the environment's bucket,
+  `gs://realness-development-brayness/actors/<id>/bundle.tar.gz`, moved by the
   control plane because the host has no credentials.
 - **Idle holds no rented capacity.** An actor is its trace, its artifacts and
   its actors directory; the microVM disk and memory are caches that can be
@@ -63,8 +64,8 @@ were close.
   the lifecycle only (x1).
 - **ubuntu-base plus the CI kernel, not the CI rootfs.** The CI rootfs has an
   empty dpkg and is a boot fixture, not an actor image.
-- **The host is ours, Node standard library**, in `host/`; rejected
-  firecracker-go-sdk, Kata, and flintlock. It began as Python (`host/`, gone
+- **The host is ours, Node standard library**, in `server/host/`; rejected
+  firecracker-go-sdk, Kata, and flintlock. It began as Python (`server/host/`, gone
   after h4b); `check:host` is the contract both passed.
 - **Actors get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
@@ -198,7 +199,7 @@ request per line (`argv`, `cwd`, `stdin_b64`) and answers with one (`exit_code`,
 channel; no shell, so `argv` is exec'd directly and an actor that wants a shell
 asks for one.
 
-`host/clients/vsock-exec.py` is the host-side client. It exits with the guest
+`server/host/clients/vsock-exec.py` is the host-side client. It exits with the guest
 command's own exit code, so shell composition works:
 
 ```bash
@@ -296,15 +297,15 @@ host over the f2 channel, which is the one call r3's actor API makes.
 
 ### The actor API (r3a)
 
-`control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at
+`tools/control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at
 `/opt/fc/actors` (persistent across runs, `FRESH=1` to wipe), TAP0 and its NAT,
-and `host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
+and `server/host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
 
 The host builds the seed itself (boot the template, pause, snapshot) and records
 what it built from in `seed/seed.json`, so a start with a mismatched kernel,
 template or Firecracker rebuilds and `create` refuses a seed that does not
-match. In `host/src/`, `host.js` owns TAPs and the volume, `firecracker.js` the
+match. In `server/host/src/`, `host.js` owns TAPs and the volume, `firecracker.js` the
 unix-socket REST calls, `vsock.js` the guest channel, `actors.js` the
 create/destroy cycle, `server.js` the routes: `GET /v1/health`,
 `GET|POST /v1/actors`, `GET|DELETE /v1/actors/{id}`.
@@ -339,7 +340,7 @@ goes.
 
 ### A terminal (r3c)
 
-`host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
+`server/host/src/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
 `{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}`. The pass is
 the same five-minute bearer the API takes, so the pty is not a second door. The
@@ -355,13 +356,13 @@ The other end is `brayness-pty` (vsock port 53, socat fork per connection),
 which runs `/bin/bash` on a `pty.fork()` slave and copies between the master and
 the pipe. `TIOCSWINSZ` on the master is what makes a resize reach the shell. The
 relay never parses a frame, so the protocol has one definition and the browser
-websocket (r5) can speak the same one. `host/clients/login.js` is the shell
+websocket (r5) can speak the same one. `server/host/clients/login.js` is the shell
 client: it mints a pass for one phone, creates an actor when none is named, and
 releases it when the terminal exits (`KEEP=1` idles it instead). One command, no
 browser:
 
 ```bash
-node host/clients/login.js --phone +14155550100
+node server/host/clients/login.js --phone +14155550100
 ```
 
 That leaves VT state on the client, so r5 picks an engine. Undecided: xterm.js,
@@ -376,7 +377,7 @@ reconnect is a new terminal. Nothing outlives the socket.
 
 `scripts/r3d-verify.sh` runs on the Mac and drives create, exec and a PTY
 through the forwarded ports, so the API is a real network service and not
-something only reachable over `limactl shell`. `lima/fc-local.yaml` maps the
+something only reachable over `limactl shell`. `server/lima/fc-local.yaml` maps the
 Mac's 18080 to the guest's 8080, 18081 to 8081, and 18096 to 18096. It maps them
 explicitly because the Mac's 8080 is often another service and Lima's automatic
 forward skips a taken host port without saying so.
@@ -414,8 +415,8 @@ checks hid this by calling `sync` after every write by hand.
 
 #### The idle sweep (h3)
 
-The host steps actors down on its own (`host/src/lifecycle.js`, run each minute
-from `host/main.js`):
+The host steps actors down on its own (`server/host/src/lifecycle.js`, run each minute
+from `server/host/main.js`):
 
 - running and quiet for 15 minutes -> memory
 - idle for 2 hours -> disk
@@ -426,55 +427,29 @@ exec and by a live terminal. An actor with no verified owner is never retired.
 The export is checked (manifest and bundle agree) before the destroy; there is
 no remote copy yet, so nothing leaves the host volume.
 
-### A browser terminal (r5)
+### The terminal and chat (r5, c1, x1)
 
-`host/src/webterm.js` serves a page on 8090 and upgrades `/pty?actor=<id>` to a
-websocket, then bridges websocket messages to the framed terminal stream
-on 8081. The websocket is a transport in front of `pty.js`, not a second
-terminal; a message is one of the same JSON frames, so the bridge is a line <->
-message pump.
+Hosts take no internet traffic and serve no pages. Realness serves the
+terminal and chat; the gate (`server/gate/src/gate.js`) checks the Firebase
+token, finds the person's host, and carries:
 
-The page is the terminal example, `brayness-examples/terminal`: Ghostty's
-libghostty-vt as WebAssembly, drawn on a canvas, so pi's TUI draws as it does in
-a native terminal. `control/scripts/terminal-build.sh` fetches it with giget,
-builds it, and puts `dist/` at `host/term/` (gitignored), which ships with the
-host code. The door redirects with `&exec=brayness`, and the page sends that
-line on every connect, so a visitor lands in a new Pi conversation in the same
-hosted actor. Pi's exit lands in bash. Past conversations stay saved and
-searchable through `/remember` without sending their full history to the model
-on refresh.
+- `/pty` websockets to the framed terminal on 8081, under a short host pass.
+- `/v1/actors/<id>/chat/{message,events,limit}` to the host API.
 
-A bare `GET /` is the door: the page cannot make an actor itself, because the
-API that creates one is on loopback and the browser would need that port open,
-so `host/src/webterm.js` makes one in process and redirects to it with `?actor=`
-on the URL. A refresh keeps that actor; a second bare URL makes a second one.
+The framed terminal and the API each verify the pass and the actor's owner,
+so an actor id alone cannot attach or send. The terminal page is the example
+`tools/examples/terminal`: Ghostty's libghostty-vt as WebAssembly on a canvas.
 
-Sign-in is Realness's. A signed pass from sync is exchanged at `POST /auth` for
-an HttpOnly, SameSite cookie (`host/src/terminal-auth.js`); the page and the
-`/handoff` window need it, and each websocket needs a one-use, actor-bound
-ticket from `POST /ticket`. The framed terminal on 8081 verifies the same pass
-itself, so an actor id alone cannot attach to either.
+### Sites and admin (a1j)
 
-Lima forwards 8090 to the Mac's 18090. `scripts/r5-verify.sh` runs on the Mac:
-`ws-client.py` proves the frames, and agent-browser proves a real browser typing
-makes the actor answer. It also checks the bare URL redirects to an actor that
-exists.
-
-### Chat, sites, and admin (c1, a1j)
-
-The same signed cookie gates `/chat`. `GET /chat?actor=<id>` serves `host/chat/`
-(the chat example, built by `control/scripts/chat-build.sh` and gitignored), and
-`POST /chat/message` streams line-delimited deltas from Pi in that actor over
-vsock. Another owner cannot attach or send.
-
-Pi runs with the guest prompt `host/guest/brayness-chat.md`. It keeps editable
+Pi runs with the guest prompt `server/host/guest/brayness-chat.md`. It keeps editable
 site source under `/brayness/work/site`, publishes with `brayness publish`, and
 lists, restores, or removes with `brayness-site versions|restore|remove`.
 Published sites live in sync, so the URL outlives the actor (see "Publish it at
 a URL").
 
 Loops: a host mirrors `loops/<id>/record.html` to Storage. `/admin` on the
-sign-on site lists every loop across hosts; a stop is a Storage write at
+Realness frontend lists every loop across hosts; a stop is a Storage write at
 `loops/<id>/stop.html` that the host obeys on its next 30-second probe. Sync
 serves the view, and `can()` admits only the admins named in `admins.html`.
 
@@ -504,7 +479,7 @@ is the head of the trace that replaced it.
 harness, so harness edits, Pi transcripts, and `work/` travel together. Identity
 (`/etc/machine-id`, the actor id) does not: restoring an identity would make two
 actors share one. An actor that writes outside `/brayness` is outside the
-contract, and `ARTIFACT_PATHS` in `host/src/actors.js` is the one place that
+contract, and `ARTIFACT_PATHS` in `server/host/src/actors.js` is the one place that
 decides. Files come back; processes do not; nothing replays.
 
 The mechanism is a loop mount, not a channel into the guest. A stopped actor's
@@ -590,12 +565,12 @@ disks, the mount and `/dev/kvm` all come back.
 
 `idle-guard.sh` installs the timer that stops the host when nothing is
 happening: every 5 minutes, stop after 30 with no `firecracker`, no
-`node host/main.js` and no interactive login. `gcloud compute ssh --command`
+`node server/host/main.js` and no interactive login. `gcloud compute ssh --command`
 actors are `@notty` and do not count, so work that is not a running VM has to
 hold it open:
 
 ```bash
-sudo bash ~/brayness/host/scripts/idle-guard.sh
+sudo bash ~/brayness/server/host/scripts/idle-guard.sh
 sudo touch /run/brayness-hold     # tmpfs; cleared by a boot
 ```
 
@@ -609,11 +584,11 @@ The family `brayness-host` bakes /opt/fc (pinned Node included), the scripts and
 the idle guard into a 20 GB-geometry image, so a host is one command:
 
 ```bash
-node control/bin/webspace.js prod host up brayness-2 --smoke
+node tools/control/bin/webspace.js development host up brayness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
-actors volume, copies `host/`, and runs its `scripts/host-bootstrap.sh` on the
+actors volume, copies `server/host/`, and runs its `scripts/host-bootstrap.sh` on the
 host: grow the root partition if it lags, `net-up.sh`, `actors-volume.sh`,
 `idle-guard.sh`, then one state line per resource. `--smoke` then runs
 `host-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
@@ -621,7 +596,7 @@ execs in it, destroys it, and checks the actor's machine-id is not the seed's.
 
 Measured: **2m50s** from nothing to a host that serves an actor (the seed is 36s
 of that), and 5/5 on the smoke test.
-`webspace prod host down brayness-2 --delete` takes it back to the image and
+`webspace development host down brayness-2 --delete` takes it back to the image and
 leaves no disk behind.
 
 Bake a new image from a stopped host that has the change; the family serves the
@@ -632,7 +607,7 @@ gcloud compute images create brayness-host-v<N> --family brayness-host \
   --source-disk brayness-1-boot --source-disk-zone us-central1-a
 ```
 
-v3 carries Node and a source tree with only `host/`; a fresh host from it
+v3 carries Node and a source tree with only `server/host/`; a fresh host from it
 printed `node v22.23.3 present` at bootstrap. Delete older images once a new one
 passes `--smoke`.
 
@@ -654,7 +629,7 @@ own path instead of `/mnt/fc`.
 sudo bash ~/brayness/scripts/template-build.sh
 bash ~/brayness/scripts/f3-verify.sh          # 19/19
 sudo bash ~/brayness/scripts/f4-verify.sh     # 7/7, the x1 done-when
-sudo node host/main.js serve --volume /opt/fc/actors/mnt &
+sudo node server/host/main.js serve --volume /opt/fc/actors/mnt &
 bash ~/brayness/scripts/x1-verify.sh          # 11/11
 ```
 
@@ -666,10 +641,10 @@ hosts.
 
 ### An actor builds a site (a1)
 
-The `/site` prompt downloads the static example and builds it:
+The `/site` prompt copies the starter's static example and builds it:
 
 ```bash
-npx giget gh:scott-fryxell/brayness-examples/static site
+mkdir site && tar -C tools/examples/static -cf - . | tar -C site -xf -
 cd site && npm install && npm run build
 brayness publish dist
 ```
@@ -697,8 +672,7 @@ into `published/<id>/` and the actor's own server serves `/s/<id>/`. That copy
 dies with the actor; it is for the offline unit tests, not the live loop.
 
 In the dev loop sync listens on `127.0.0.1:18096` and the URL is
-`http://127.0.0.1:18096/sites/<id>/`. Nothing is reachable from outside the
-machine yet; that is the open 8090 question, and h1/h2.
+`http://127.0.0.1:18096/sites/<id>/`. Hosts take no internet traffic; live app origins are x9.
 
 ### An app runs in its own VM (u2)
 
@@ -713,7 +687,7 @@ export default {
 };
 ```
 
-Our server (`host/guest/brayness-serve.js`, on the node runtime disk) turns HTTP
+Our server (`server/host/guest/brayness-serve.js`, on the node runtime disk) turns HTTP
 on 8080 into a web `Request` and streams the `Response` back. Node runs it under
 `--permission`: it reads only the handler's files and itself. A plain
 `index.html` is a site: files, no VM. Anything else (a Procfile, python, a
@@ -798,7 +772,7 @@ owner `get` and `list` their own `usage/+A/`, and nothing else. One file per
 call because Storage has no append; racing calls never conflict.
 
 Limits are per payer, per UTC day and per UTC month: 250k tokens a day and 3M a
-month free (`FREE_LIMITS` in `proxy/src/usage.js`). Free use runs a free model,
+month free (`FREE_LIMITS` in `server/proxy/src/usage.js`). Free use runs a free model,
 so free limits count tokens. `FREE_TOKENS_PER_DAY`, `FREE_TOKENS_PER_MONTH`,
 `FREE_COST_PER_DAY`, and `FREE_COST_PER_MONTH` override them. The first call
 lists the month's day folders, then the proxy counts in memory. The count is
@@ -806,7 +780,7 @@ exact for one instance.
 
 - Over a limit: 429, `insufficient_quota`, `limit: "day"|"month"`, message
   containing "quota exceeded". Pi retries any 429 unless the text says so; this
-  one it shows at once. `proxy/test/server.test.js` runs Pi's own classifier on
+  one it shows at once. `server/proxy/test/server.test.js` runs Pi's own classifier on
   it.
 - Total unreadable: 503, and no upstream call.
 
@@ -815,7 +789,7 @@ Proven: `proxy` tests, and one real call to OpenRouter wrote a row to
 
 ## Signing the binary
 
-`app/build.sh`, `app/sign.sh`, `app/notarize.sh`. What each run taught:
+`tools/desktop/build.sh`, `tools/desktop/sign.sh`, `tools/desktop/notarize.sh`. What each run taught:
 
 - One binary is the app. macOS opens a bare executable in Terminal, so a
   launcher `.app` buys nothing; Terminal is the floor, Ghostty an upgrade.
@@ -902,7 +876,7 @@ Cost and design facts. Build and runtime gotchas are below.
   `iptables -t nat -C ...` works, `iptables -C -t nat ...` dies with
   `Bad argument 'nat'`.
 - `fcnet-setup.sh`, the MAC-to-address script `brayness-net-up` calls, is
-  Firecracker CI's and is not in ubuntu-base. It is vendored in `host/guest/`
+  Firecracker CI's and is not in ubuntu-base. It is vendored in `server/host/guest/`
   rather than read out of `squashfs-root`, which is a leftover of the f1 fetch
   and may not exist on a fresh host.
 - Run the tap and NAT setup with `sudo`; Firecracker here runs as root, so the
@@ -976,7 +950,7 @@ Cost and design facts. Build and runtime gotchas are below.
   twice over: once plainly, and once when the same command also contains the
   text the pattern matches (a restart one-liner holds both the `pkill` and the
   `nohup ... serve`). Put it in a script and run it with `bash -s`
-  (`host/scripts/host-restart.sh`) so the pattern is never on the remote command
+  (`server/host/scripts/host-restart.sh`) so the pattern is never on the remote command
   line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
   process named `firecracker`, and that is what every leftover check and the
@@ -1027,8 +1001,8 @@ Cost and design facts. Build and runtime gotchas are below.
   `seed.json` fingerprint instead: template size and mtime, kernel, firecracker,
   arch.
 - Lima's automatic port-forward skips a guest port whose host number is taken,
-  silently. The dev host's ports are explicit in `lima/fc-local.yaml` (18080 ->
-  8080, 18081 -> 8081, 18090 -> 8090, 18096 -> 18096).
+  silently. The dev host's ports are explicit in `server/lima/fc-local.yaml` (18080 ->
+  8080, 18081 -> 8081, 18096 -> 18096).
 - A zone stocks out across machine types, not one of them, and a stockout also
   refuses to _start_ a parked host: us-central1 took nine refusals across four
   machine types while us-west1-b took the host. `scripts/probe-capacity.sh` asks

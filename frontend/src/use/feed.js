@@ -1,0 +1,195 @@
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
+/** @typedef {import('@/types').Statements} Statements */
+
+import { ref, watch, inject } from 'vue'
+import { as_author } from '@/utils/itemid'
+import { poster_thought_overlay_pairs } from '@/use/statements'
+import { feed_slot_itemid } from '@/utils/itemid'
+
+const my_id = () =>
+  (typeof window !== 'undefined' ? window.localStorage?.me : null) ?? null
+
+/**
+ * The authors sync named, narrowed to the ones this feed shows. A refresh carrying
+ * no list means all of them.
+ * @param {unknown} detail
+ * @param {Id[]} loaded
+ * @returns {Id[]}
+ */
+export const authors_to_reload = (detail, loaded) => {
+  const requested =
+    /** @type {import('@/types').Feed_Refresh} */ (detail)?.authors
+  if (!Array.isArray(requested)) return loaded
+  const shown = new Set(loaded)
+  return requested.filter(id => shown.has(id))
+}
+
+/**
+ * @typedef {Object} Use_Feed_Options
+ * @property {import('vue').Ref<Item[]>} posters
+ * @property {import('vue').Ref<Item[]|null>} statements
+ * @property {(query: { id: Id }) => Promise<void>} statements_for_person
+ * @property {(query: { id: Id }) => Promise<void>} posters_for_person
+ * @property {import('vue').Ref<import('@/types').Feed_Refresh|number|null>|null} [refresh_signal]
+ * @property {import('vue').Ref<Array<unknown>>|null} [queue_items]
+ * @property {(detail?: import('@/types').Feed_Refresh) => Promise<void>} [on_refresh] replaces default refresh when set (e.g. reload phonebook then feed)
+ * @property {(working: boolean) => void} [set_working] when set (including explicitly `undefined`), skips inject; tests use this
+ */
+
+/**
+ * Shared feed behavior for Thoughts/Profile.
+ *
+ * @param {Use_Feed_Options} options
+ */
+export const use_feed = options => {
+  const {
+    posters,
+    statements,
+    statements_for_person,
+    posters_for_person,
+    refresh_signal = null,
+    queue_items = null,
+    on_refresh = null
+  } = options
+  const set_working =
+    'set_working' in options ? options.set_working : inject('set_working')
+  const loaded_people_ids = ref(/** @type {Id[]} */ ([]))
+  /** @type {Map<string, ReturnType<typeof poster_thought_overlay_pairs>>} */
+  const overlay_cache = new Map()
+
+  // Keyed by id, so an edited statement keeps its key and would be served from
+  // the pairing captured before the edit. `update_statement` replaces the
+  // statement objects rather than mutating them, so the cached pairs go stale
+  // the moment anyone rewrites a statement - drop them and pair again.
+  watch(statements, () => overlay_cache.clear())
+
+  /**
+   * Same calendar bucket often gets a new array instance each render; key by item ids.
+   * @param {unknown[]} day
+   */
+  const overlay_cache_key = day => {
+    if (!Array.isArray(day) || day.length === 0) return ''
+    return day
+      .map(item =>
+        feed_slot_itemid(
+          /** @type {import('@/types').Item | import('@/types').Statements} */ (
+            item
+          )
+        )
+      )
+      .join('\0')
+  }
+
+  /**
+   * @param {Id[]} people_ids
+   * @param {{ reset?: boolean }} [options]
+   */
+  const load_feed_for_people = async (people_ids, options = {}) => {
+    const { reset = false } = options
+    const unique_people_ids = [...new Set(people_ids.filter(Boolean))]
+    if (reset) {
+      posters.value = []
+      statements.value = []
+      overlay_cache.clear()
+    }
+    // Who the feed is showing. A reset replaces them; reloading a few named
+    // authors leaves the rest on screen, so it adds rather than replaces.
+    loaded_people_ids.value = /** @type {Id[]} */ (
+      reset
+        ? unique_people_ids
+        : [...new Set([...loaded_people_ids.value, ...unique_people_ids])]
+    )
+    await Promise.all(
+      unique_people_ids.map(async raw_id => {
+        const id = /** @type {Id} */ (raw_id)
+        await Promise.all([
+          statements_for_person({ id }),
+          posters_for_person({ id })
+        ])
+      })
+    )
+  }
+
+  /**
+   * @param {Statements} item
+   */
+  const is_editable = item => {
+    const me = my_id()
+    if (!me) return false
+    return as_author(item?.[0]?.id) === me
+  }
+
+  /**
+   * @param {unknown[]} day
+   */
+  const overlay_for_day = day => {
+    const key = overlay_cache_key(day)
+    let hit = overlay_cache.get(key)
+    if (!hit) {
+      hit = poster_thought_overlay_pairs(
+        /** @type {Array<Item|Statements>} */ (day)
+      )
+      overlay_cache.set(key, hit)
+    }
+    return hit
+  }
+
+  /**
+   * @param {unknown[]} day
+   * @param {Item} poster
+   */
+  const overlay_statements_for_poster = (day, poster) => {
+    const thought = overlay_for_day(day).poster_to_thought.get(poster.id)
+    if (!thought) return null
+    return thought
+  }
+
+  /**
+   * @param {unknown[]} day
+   * @param {Item} poster
+   */
+  const overlay_editable_for_poster = (day, poster) => {
+    const thought = overlay_statements_for_poster(day, poster)
+    if (!thought) return false
+    return is_editable(thought)
+  }
+
+  // Pulling in what sync found is the visible half of a sync tick, so it carries
+  // the border.
+  if (refresh_signal)
+    watch(refresh_signal, async detail => {
+      if (on_refresh) {
+        await on_refresh(/** @type {import('@/types').Feed_Refresh} */ (detail))
+        return
+      }
+      const people_ids = authors_to_reload(detail, loaded_people_ids.value)
+      if (!people_ids.length) return
+      set_working?.(true)
+      try {
+        await load_feed_for_people(people_ids)
+      } finally {
+        set_working?.(false)
+      }
+    })
+
+  if (queue_items)
+    watch(
+      queue_items,
+      async (new_queue, old_queue) => {
+        if (!old_queue) return
+        if (new_queue?.length >= old_queue.length) return
+        if (!loaded_people_ids.value.length) return
+        await load_feed_for_people(loaded_people_ids.value)
+      },
+      { deep: true }
+    )
+
+  return {
+    load_feed_for_people,
+    is_editable,
+    overlay_for_day,
+    overlay_statements_for_poster,
+    overlay_editable_for_poster
+  }
+}

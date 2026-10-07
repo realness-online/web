@@ -1,0 +1,210 @@
+import {
+  configDefaults as config_defaults,
+  defineConfig as define_config
+} from 'vite-plus'
+import vue from '@vitejs/plugin-vue'
+import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
+import { fileURLToPath as file_url_to_path } from 'node:url'
+import { existsSync as exists_sync, readFileSync as read_file_sync } from 'fs'
+import path from 'path'
+
+const has_certs =
+  exists_sync('realness.local-key.pem') && exists_sync('realness.local.pem')
+const https_port = 443
+const http_port = 5173
+import wasm from 'vite-plugin-wasm'
+
+const icon_version = process.env['npm_package_version'] || '1'
+const project_root = file_url_to_path(new URL('.', import.meta.url))
+const manual_chunk_rules = {
+  firebase_auth: ['@firebase/auth'],
+  vendor: [
+    'vue',
+    'vue-router',
+    '@vueuse/core',
+    '@firebase/app',
+    '@firebase/firestore',
+    '@firebase/storage'
+  ],
+  libphonenumber: ['libphonenumber-js']
+}
+
+const get_manual_chunk = id => {
+  for (const [chunk_name, package_names] of Object.entries(manual_chunk_rules))
+    for (const package_name of package_names)
+      if (id.includes(`/node_modules/${package_name}/`)) return chunk_name
+}
+
+export default define_config({
+  build: {
+    target: 'esnext',
+    cssMinify: 'lightningcss',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: get_manual_chunk
+      }
+    }
+  },
+  define: {
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
+      process.env['npm_package_version']
+    )
+  },
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['realness.local'],
+    // e3: like Hosting, the app address forwards /v1 to sync and /pay to proxy.
+    proxy: {
+      '/v1/': {
+        target: 'https://brayness-sync-639469569733.us-central1.run.app',
+        changeOrigin: true
+      },
+      '/pay/': {
+        target: 'https://brayness-proxy-639469569733.us-central1.run.app',
+        changeOrigin: true
+      }
+    },
+    port: has_certs ? https_port : http_port,
+    watch: {
+      ignored: ['**/artifacts/**', '**/dist/**', '**/node_modules/**']
+    },
+    ...(has_certs && {
+      https: {
+        key: read_file_sync('realness.local-key.pem'),
+        cert: read_file_sync('realness.local.pem')
+      },
+      hmr: {
+        host: 'realness.local',
+        port: https_port,
+        protocol: 'wss'
+      }
+    }),
+    headers: {
+      'Access-Control-Allow-Private-Network': 'true'
+    }
+  },
+  resolve: {
+    dedupe: ['vue'],
+    alias: {
+      '@': path.resolve(project_root, './src'),
+      '@@': file_url_to_path(new URL('./tests/mocks', import.meta.url))
+    },
+    extensions: ['.js', '.json', '.vue']
+  },
+  css: {
+    preprocessorOptions: {
+      stylus: {
+        imports: [path.resolve(project_root, './src/style/base-line.styl')]
+      }
+    }
+  },
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag.startsWith('stripe-')
+        }
+      }
+    }),
+    wasm(),
+    vite_pwa({
+      devOptions: { enabled: false },
+      filename: 'service.worker.js',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 4000000,
+        // The terminal engine only runs online, through the gate.
+        globIgnores: ['**/ghostty-vt-*.wasm'],
+        navigateFallbackDenylist: [/\.(?:xml|txt|md|json)$/i],
+        // Web Push handlers, imported into the generated SW (keeps generateSW
+        // precaching untouched). Source: public/push-handlers.js.
+        importScripts: ['/push-handlers.js']
+      },
+      minify: true,
+      includeAssets: [
+        'vector.worker.js',
+        'fonts/*.woff2',
+        'icons.svg',
+        'brands/*.svg',
+        'brands/*.png',
+        'sitemap.xml',
+        'robots.txt',
+        'llms.txt',
+        'documentation.md'
+      ],
+      manifest: {
+        display: 'standalone',
+        lang: 'en',
+        start_url: '/',
+        background_color: '#2c2c26',
+        name: 'Realness',
+        short_name: 'Realness',
+        description: 'Realness',
+        scope: '/',
+        orientation: 'portrait',
+        theme_color: '#2c2c26',
+        icons: [
+          {
+            src: `192.png?v=${icon_version}`,
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: `512.png?v=${icon_version}`,
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      }
+    })
+  ],
+  test: {
+    root: '.',
+    globals: true,
+    environment: 'happy-dom',
+    reporters: ['default'],
+    include: ['tests/**/*.spec.js', 'packages/*/tests/**/*.spec.js'],
+    exclude: [...config_defaults.exclude, '**/setup.js', '**/mocks/**'],
+    testTimeout: 30000,
+    coverage: {
+      include: ['src/**/*.js', 'src/**/*.vue'],
+      exclude: [
+        'tests/**',
+        'mocks/**',
+        'node_modules/**',
+        'dist/**',
+        'docs/**',
+        'public/**',
+        'src/main.js',
+        'src/router.js',
+        'src/wasm/**'
+      ],
+      lines: 80,
+      branches: 80,
+      statements: 80,
+      functions: 80,
+      all: true,
+      excludeNodeModules: true,
+      provider: 'v8',
+      reporter: ['text', 'html', 'json'],
+      reportsDirectory: './coverage',
+      reportOnFailure: true
+    },
+    mockReset: false,
+    setupFiles: [
+      './tests/setup.js',
+      './tests/mocks/default.js',
+      './tests/mocks/browser/console.js',
+      './tests/mocks/browser/fetch.js',
+      './tests/mocks/browser/worker.js',
+      './tests/mocks/browser/indexedDB.js',
+      './tests/mocks/browser/localStorage.js',
+      './tests/mocks/browser/createrange.js',
+      './tests/mocks/browser/scrollIntoView.js',
+      './tests/mocks/browser/IntersectionObserver.js',
+      './tests/mocks/browser/FileReaderSync.js'
+    ]
+  }
+})

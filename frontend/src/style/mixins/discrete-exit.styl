@@ -1,0 +1,24 @@
+// Both directions of a show/hide, for a node that stays mounted while its
+// preference is off.
+//
+// The discrete `display` transition is what carries the exit: with
+// allow-discrete the browser holds `display` at its old value for the length
+// of the transition, so opacity has time to run before the node goes away.
+// Without it, display: none applies on the first frame and nothing animates.
+//
+// Entry for a genuinely new node still needs an @starting-style origin; the
+// mixin cannot emit one, because the origin selector has to name the element
+// from the root, not from inside the rule.
+// One sibling's place in a staggered group. The first property in the caller's
+// transition list keeps a zero delay, so hover-style feedback stays instant
+// while the fade waits its turn.
+stagger(step) {
+  transition-delay: 0s, step, step, step;
+}
+
+discrete-exit(duration = duration-reveal, easing = ease-exit) {
+  transition:
+    opacity duration easing,
+    display duration easing;
+  transition-behavior: allow-discrete;
+}

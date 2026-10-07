@@ -33,7 +33,7 @@ run passed 12 of 12 steps.
 | The vsock agent and the terminal                    | same, from the boot: no `brayness-vsock`, `-pty`  |
 | Every getty: serial, virtual terminals, the target  | same: no `getty@`, `serial-getty`, `getty.target` |
 | e2scrub timers                                      | same: no `e2scrub`                                |
-| Procfiles, Python apps, other stacks                | `host/test/infer.test.js`; `app-boot-check.sh`    |
+| Procfiles, Python apps, other stacks                | `server/host/test/infer.test.js`; `app-boot-check.sh`    |
 | Author binaries                                     | same: an executable is refused                    |
 | npm dependencies, `node_modules`, bare imports      | `infer.test.js`: standard library only            |
 | Author servers; we run the only one                 | `infer.test.js`: no default export is refused     |
@@ -42,7 +42,7 @@ run passed 12 of 12 steps.
 
 | Claim                                                         | Check                                                         |
 | ------------------------------------------------------------- | ------------------------------------------------------------- |
-| No interpreter in the base image: no node, python, perl       | `control/scripts/app-image-verify.sh` reads the image offline |
+| No interpreter in the base image: no node, python, perl       | `tools/control/scripts/app-image-verify.sh` reads the image offline |
 | No harness, Pi, git, socat, sshd, or vsock agent              | same script                                                   |
 | No login anywhere: no getty on serial or a terminal; no scrub | same script reads the boot                                    |
 | No vsock device: the host's only ways in are 8080 and serial  | `app-escape-check.sh` reads Firecracker's `vm/config`         |
@@ -53,7 +53,7 @@ run passed 12 of 12 steps.
 
 | Claim                                                          | Check                                                               |
 | -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| An app reaches nothing: no internet, no host, no actor, no app | `host/scripts/net-up.sh`, chains `BRAYNESS-APP-*`                   |
+| An app reaches nothing: no internet, no host, no actor, no app | `server/host/scripts/net-up.sh`, chains `BRAYNESS-APP-*`                   |
 | The host may open 8080; only replies come back                 | `BRAYNESS-APP-IN` accepts sport 8080, ESTABLISHED only              |
 | Nothing is routed to an app                                    | `FORWARD -o fc-app+ -j DROP`                                        |
 | Apps and actors never share an address range or rule           | apps on `172.17/16` and `fc-app*`; actors on `172.16` and `fc-tap*` |
@@ -62,15 +62,15 @@ run passed 12 of 12 steps.
 
 | Claim                                                                               | Check                                                    |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Only a handler or a site is accepted; every other stack is refused                  | `host/src/infer.js`, `app-boot-check.sh`                 |
+| Only a handler or a site is accepted; every other stack is refused                  | `server/host/src/infer.js`, `app-boot-check.sh`                 |
 | Standard library only: no dependencies, no bare imports                             | `infer.js`; and no modules folder reaches the disk       |
 | The handler runs as `app`, never root, with no new privileges                       | `app-boot-check.sh` asserts a non-root uid               |
-| Node's permission model: reads only its code; no writes, processes, workers, addons | `host/src/infer.js` `START`; `app-escape-check.sh`       |
-| Code and runtime are read-only disks beneath that                                   | `host/guest/brayness-app-mount` mounts `ro,nosuid,nodev` |
+| Node's permission model: reads only its code; no writes, processes, workers, addons | `server/host/src/infer.js` `START`; `app-escape-check.sh`       |
+| Code and runtime are read-only disks beneath that                                   | `server/host/guest/brayness-app-mount` mounts `ro,nosuid,nodev` |
 
 ### Escape probes
 
-`control/scripts/app-escape-check.sh` boots a probe handler beside a live
+`tools/control/scripts/app-escape-check.sh` boots a probe handler beside a live
 sibling. From inside, the probe tries each route below; every one must be
 refused. `CONTROL=1` opens only the probe's own TAP first; that run must fail.
 It opens 3 probes: host services, actors, and DNS. Sibling apps stay shut by

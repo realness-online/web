@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/thoughts/as-article.vue > Renders > Loads the thought author if verbose is true 1`] = `
+<article
+  data-thought=""
+>
+  <header>
+    <time>
+      3:40 PM
+    </time>
+  </header>
+  
+  <as-thought-stub
+    editable="false"
+    itemprop="statements"
+    thought="[object Object]"
+  />
+  <as-thought-stub
+    editable="false"
+    itemprop="statements"
+    thought="[object Object]"
+  />
+  
+</article>
+`;
+
+exports[`@/components/thoughts/as-article.vue > Renders > Render a thought as an article element 1`] = `
+<article
+  data-thought=""
+>
+  <header>
+    <time>
+      3:40 PM
+    </time>
+  </header>
+  
+  <as-thought-stub
+    editable="false"
+    itemprop="statements"
+    thought="[object Object]"
+  />
+  <as-thought-stub
+    editable="false"
+    itemprop="statements"
+    thought="[object Object]"
+  />
+  
+</article>
+`;

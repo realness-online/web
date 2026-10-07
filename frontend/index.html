@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      // Reveal the static Thoughts LCP shell only on the app's home route.
+      // index.html is the SPA fallback for /account and /:profile too; gating
+      // by pathname keeps those routes from flashing "Thoughts" before mount.
+      if (location.pathname === '/')
+        document.documentElement.dataset.route = 'thoughts'
+    </script>
+    <title>Realness Online — Rotoscope Photos into Layered SVG Posters</title>
+    <link
+      rel="preload"
+      href="/fonts/Lato-Light-Subset.woff2"
+      as="font"
+      crossorigin="anonymous"
+      type="font/woff2" />
+    <link
+      rel="preload"
+      href="/fonts/Lato-Regular-Subset.woff2"
+      as="font"
+      crossorigin="anonymous"
+      type="font/woff2" />
+    <meta charset="utf-8" />
+    <link rel="canonical" href="https://realness.online/" />
+    <meta
+      name="description"
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Realness Online — Rotoscope Photos into Layered SVG Posters" />
+    <meta
+      name="twitter:description"
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
+    <meta name="twitter:image" content="https://realness.online/og.jpg" />
+    <meta
+      name="twitter:image:alt"
+      content="Realness Online — Make some posters today" />
+    <meta property="og:url" content="https://realness.online" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Realness Online" />
+    <meta property="og:image" content="https://realness.online/og.jpg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="960" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta
+      property="og:image:alt"
+      content="Realness Online — Make some posters today" />
+    <meta
+      property="og:title"
+      content="Realness Online — Rotoscope Photos into Layered SVG Posters" />
+    <meta
+      property="og:description"
+      content="Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities." />
+
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ecebe4" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#2c2c26" />
+    <meta name="application-name" content="Realness" />
+    <meta name="apple-mobile-web-app-title" content="Realness" />
+    <meta name="darkreader-lock" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/192.png?v=2.5.1" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/192.png?v=2.5.1" />
+    <link rel="apple-touch-icon" href="/192.png?v=2.5.1" />
+    <link rel="mask-icon" href="/icons.svg" color="#2c2c26" />
+    <link rel="icon" type="image/svg+xml" href="/icons.svg" />
+    <style>
+      /* Static Thoughts shell: sibling of main#realness so Vue mount cannot remove it before
+         LCP. Hidden unless the head script marked this as the home route (see above).
+         Thoughts.vue drops it after the live <h1> paints. */
+      .thoughts-shell {
+        display: none;
+      }
+      html[data-route='thoughts'] .thoughts-shell {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        pointer-events: none;
+        /* chalk / graphite — keep in sync with src/style/palette.css */
+        background-color: #ecebe4;
+        color: #525252;
+      }
+      @media (prefers-color-scheme: dark) {
+        html[data-route='thoughts'] .thoughts-shell {
+          background-color: rgb(44, 44, 38);
+          color: rgba(215, 214, 203, 0.95);
+        }
+      }
+      html[data-route='thoughts'] .thoughts-shell > h1 {
+        margin: 0;
+        text-align: center;
+        padding: 0 1.5rem 1.5rem;
+        line-height: 1;
+      }
+      .thoughts-shell > header {
+        min-height: 2.6rem;
+      }
+      body {
+        position: relative;
+      }
+      html {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      /* Crawler / no-JS site links: present in the DOM for SEO, never shown.
+         Visually hidden (not display:none) so crawlers still follow them.
+         Also removed on app mount (see main.js). */
+      nav#site {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <nav id="site" aria-label="Site">
+      <a href="/">Realness</a>
+      <a href="/about">About</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <section class="page thoughts-shell" aria-hidden="true">
+      <header></header>
+      <h1>Thoughts</h1>
+    </section>
+    <main id="realness">
+      <noscript>
+        <h3>Realness doesn't work.</h3>
+        <p>Please enable javascript to continue.</p>
+      </noscript>
+      <style media="screen">
+        @media (prefers-color-scheme: dark) {
+          html {
+            background-color: rgb(44, 44, 38);
+            color: rgba(215, 214, 203, 0.95);
+          }
+        }
+      </style>
+      <svg
+        class="working"
+        viewBox="0 0 9 4"
+        style="
+          width: 9rem;
+          height: 4rem;
+          display: block;
+          margin: auto;
+          margin-top: 12rem;
+        "
+        fill-opacity="0.73"
+        fill="#EC364C">
+        <rect x="1" y="1.05" width="2" height="2" rx="1"></rect>
+        <rect x="3.5" y="1.05" width="2" height="2" rx="1"></rect>
+        <rect x="6" y="1.05" width="2" height="2" rx="1"></rect>
+      </svg>
+    </main>
+  </body>
+  <script>
+    if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent)) {
+      window.addEventListener(
+        'orientationchange',
+        () => {
+          const viewport = document.querySelector('meta[name=viewport]')
+          if (viewport) {
+            const content = viewport.getAttribute('content')
+            viewport.setAttribute('content', content + ', maximum-scale=1.0')
+            setTimeout(_ => {
+              viewport.setAttribute('content', content)
+            }, 90)
+          }
+        },
+        false
+      )
+    }
+  </script>
+</html>

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Drop agent credit trailers. Claude Code and Cursor add these on their own.
+# Human co-authors are left alone.
+msg="$1"
+tmp="$msg.credit-scrub"
+sed -E \
+  -e '/^[[:space:]]*[Cc]o-[Aa]uthored-[Bb]y:.*(anthropic|cursor)\.com/d' \
+  -e '/^[[:space:]]*[Cc]laude-[Ss]ession:/d' \
+  "$msg" >"$tmp" && mv "$tmp" "$msg"

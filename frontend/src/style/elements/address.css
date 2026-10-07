@@ -1,0 +1,11 @@
+address {
+  font-style: normal;
+  & p {
+    user-select: none;
+  }
+  & h1 {
+    padding-left: var(--base-line);
+    text-align: left;
+    width: 100dvw;
+  }
+}

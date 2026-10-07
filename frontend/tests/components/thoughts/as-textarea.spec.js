@@ -1,0 +1,76 @@
+import { shallowMount } from '@vue/test-utils'
+import { vi } from 'vite-plus/test'
+import wat from '@/components/thoughts/as-textarea'
+
+vi.mock('@/use/statements', () => ({
+  use: () => ({
+    save: vi.fn()
+  })
+}))
+
+vi.mock('@/use/key-commands', () => ({
+  use_keymap: vi.fn(() => ({
+    register: vi.fn()
+  }))
+}))
+
+Object.defineProperty(document, 'querySelector', {
+  value: vi.fn(() => ({
+    focus: vi.fn(),
+    scrollIntoView: vi.fn(),
+    style: {}
+  })),
+  writable: true
+})
+
+Object.defineProperty(window, 'scrollTo', {
+  value: vi.fn(),
+  writable: true
+})
+
+describe('@/components/thoughts/as-textarea.vue', () => {
+  let wrapper
+
+  beforeEach(() => {
+    wrapper = shallowMount(wat, {
+      global: {
+        stubs: {
+          icon: false
+        }
+      }
+    })
+  })
+
+  describe('Renders', () => {
+    it('A textarea for thought input', () => {
+      expect(wrapper.find('textarea#wat').exists()).toBe(true)
+    })
+
+    it('renders with proper attributes', () => {
+      const textarea = wrapper.find('textarea#wat')
+      expect(textarea.exists()).toBe(true)
+      expect(textarea.attributes('placeholder')).toBeDefined()
+    })
+  })
+
+  describe('Props and Data', () => {
+    it('has thought_text ref', () => {
+      expect(wrapper.vm.thought_text).toBeDefined()
+    })
+  })
+
+  describe('Methods', () => {
+    describe('#on_prepare_thought', () => {
+      it('exists as a function', () => {
+        expect(typeof wrapper.vm.on_prepare_thought).toBe('function')
+      })
+    })
+  })
+
+  describe('Events', () => {
+    it('emits toggle-keyboard when on_prepare_thought runs (on blur)', async () => {
+      await wrapper.vm.on_prepare_thought()
+      expect(wrapper.emitted('toggle-keyboard')).toBeTruthy()
+    })
+  })
+})

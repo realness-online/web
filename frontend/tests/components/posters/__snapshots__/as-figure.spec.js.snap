@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/component/posters/as-figure.vue > Renders > A new poster 1`] = `
+<figure
+  new_poster="[object Object]"
+>
+  <!--v-if-->
+  <as-svg-stub
+    as_avatar="false"
+    behind_canvas="false"
+    focusable="false"
+    itemid="/+14151234356/posters/1770000000000"
+    paused="true"
+    pin="false"
+    show_cutout_layers="false"
+    tabable="false"
+    touch_uses_long_press="true"
+  />
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+</figure>
+`;
+
+exports[`@/component/posters/as-figure.vue > Renders > A poster 1`] = `
+<figure>
+  <!--v-if-->
+  <as-svg-stub
+    as_avatar="false"
+    behind_canvas="false"
+    focusable="false"
+    itemid="/+14151234356/posters/1770000000000"
+    paused="true"
+    pin="false"
+    show_cutout_layers="false"
+    tabable="false"
+    touch_uses_long_press="true"
+  />
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
+</figure>
+`;
