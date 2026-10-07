@@ -36,11 +36,13 @@ for (let i = 0; i < FILES; i++) {
 const timed = async (label) => {
   requests = 0
   const start = performance.now()
-  await sync_harness({ root: harness, store })
-  console.log(`${label}: ${Math.round(performance.now() - start)} ms, ${requests} requests`)
+  const report = await sync_harness({ root: harness, store })
+  console.log(`${label}: ${Math.round(performance.now() - start)} ms, ${requests} requests, ${report.harness.files.listing}`)
 }
 process.env.BRAYNESS_STATE = join(base, "state")
 await timed(`first sync, ${FILES} files`)
+// Past the feed's 5-second look-back, as between real syncs.
+await new Promise((done) => setTimeout(done, 6000))
 await timed("no change")
 await writeFile(join(harness, "notes/7/7.md"), "changed\n")
 await timed("one file changed")

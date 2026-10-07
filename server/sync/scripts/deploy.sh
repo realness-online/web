@@ -18,7 +18,8 @@ account="brayness-sync@$project.iam.gserviceaccount.com"
 stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
 
 # Every overwrite and delete stays recoverable: old versions live 30 days.
-echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } } ] }' \
+# h3 change records expire after 7 days; sync answers 410 past 6.
+echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } }, { "action": { "type": "Delete" }, "condition": { "age": 7, "matchesPrefix": ["changes/"] } } ] }' \
   > "$stage/lifecycle.json"
 gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
 

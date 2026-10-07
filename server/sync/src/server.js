@@ -20,6 +20,7 @@ import { issue_host_pass, verify_host_pass, verify_record_pass, record_host } fr
 import { run_host_alerts } from "./host-alerts.js"
 import { host_health } from "./host-watch.js"
 import { site_request } from "./sites.js"
+import { read_changes, record_change } from "./changes.js"
 import { harness_path, recovery_path, verify_harness_pass, verify_recovery_pass } from "#root/lib/sign-on/src/node/recovery-pass.js"
 import { rights_key } from "./rights.js"
 import { admins as admin_list } from "./admins.js"
@@ -144,9 +145,16 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
     } else if (!can(who, action, path, grants)) throw new Status(403)
 
     if (action === "list") {
+      const query = new URLSearchParams((request.url ?? "").split("?")[1] ?? "")
+      // h3: `?changes=<cursor>` answers what moved since; an empty cursor starts one.
+      if (query.has("changes")) {
+        const feed = await read_changes(storage, path, query.get("changes"))
+        if (!feed) throw new Status(410)
+        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        return response.end(JSON.stringify(feed))
+      }
       response.writeHead(200, { "content-type": "application/json" })
-      const deep = new URLSearchParams((request.url ?? "").split("?")[1] ?? "").has("deep")
-      return response.end(JSON.stringify(await (deep ? storage.walk(path) : storage.list(path))))
+      return response.end(JSON.stringify(await (query.has("deep") ? storage.walk(path) : storage.list(path))))
     }
     if (action === "get") {
       const file = await storage.get(path)
@@ -160,9 +168,11 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
     try {
       if (action === "write") {
         const version = await storage.put(path, await read_body(request), { if_version })
+        await record_change(storage, path, version)
         response.writeHead(200, { etag: `"${version}"` })
       } else {
         await storage.delete(path, { if_version })
+        await record_change(storage, path, null)
         response.writeHead(204)
       }
     } catch (error) {
