@@ -440,6 +440,13 @@ The framed terminal and the API each verify the pass and the actor's owner,
 so an actor id alone cannot attach or send. The terminal page is the example
 `tools/examples/terminal`: Ghostty's libghostty-vt as WebAssembly on a canvas.
 
+### A host restart and a woken actor (x4)
+
+A host restart drops every actor TAP. A woken actor keeps its TAP name, because
+its address is baked in, so reload rebuilds that TAP with its gateway first;
+otherwise Firecracker opens a bare one and the actor has no network. A TAP held
+by another running actor refuses the reload.
+
 ### Sites and admin (a1j)
 
 Pi runs with the guest prompt `server/host/guest/brayness-chat.md`. It keeps editable
@@ -452,6 +459,9 @@ Loops: a host mirrors `loops/<id>/record.html` to Storage. `/admin` on the
 Realness frontend lists every loop across hosts; a stop is a Storage write at
 `loops/<id>/stop.html` that the host obeys on its next 30-second probe. Sync
 serves the view, and `can()` admits only the admins named in `admins.html`.
+Each bucket needs its own `admins.html`; without it admin login fails with 403.
+Sync answers every error `no-store`, so Hosting never keeps a site's 404 past
+its first publish.
 
 ### Export and restore (r7)
 
@@ -593,6 +603,8 @@ host: grow the root partition if it lags, `net-up.sh`, `actors-volume.sh`,
 `idle-guard.sh`, then one state line per resource. `--smoke` then runs
 `host-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
 execs in it, destroys it, and checks the actor's machine-id is not the seed's.
+It predates the host secrets and now kills the serving host, so deployed hosts
+are checked with `check:host` through a tunnel instead (`.tooling.md`).
 
 Measured: **2m50s** from nothing to a host that serves an actor (the seed is 36s
 of that), and 5/5 on the smoke test.
@@ -1029,6 +1041,11 @@ is not passed, so virtio is on the legacy MMIO transport; PCI is faster for
 block and net, and worth revisiting when r3 measures anything.
 
 ## Proven how
+
+Deployed on 2026-10-07 (x4): `check:host` 28/28 and `check:chat` passed against
+`brayness-demo` through a tunnel, and a phone sign-in reached Pi in the browser
+terminal.
+
 
 Every script was read and run for real on 2026-09-18; the checks now live in
 `artifacts/firecracker/webspace-archive/scripts/`. `dev-build.sh` kept a prior

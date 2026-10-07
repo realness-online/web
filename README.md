@@ -38,8 +38,9 @@ nothing while it sleeps. Hosts are VMs in their environment's project; developme
   `server/sync/bin/brayness-store.js` is a gsutil-like client: ls, cat, cp, rm, and
   two-way sync, all through the service. Login opens the configured sign-on
   page and keeps credentials in the macOS keychain; `TOKEN=` still wins.
-  `server/sync/bin/brayness.js sync` syncs every plan's `## Syncs` folders both ways;
-  paths inside a git repo are refused.
+  `server/sync/bin/brayness.js sync` syncs the whole harness both ways once a
+  `.ignore` exists; without one, only every plan's `## Syncs` folders. Paths
+  inside a git repo are refused.
 - `tools/examples/`: standalone example apps; `static` and `app` ship in the starter.
 - `tools/publish/`: builds the recipes in a harness's `apps/` and publishes them.
 - `tools/desktop/`: the signed download that boots pi with the harness inside.
