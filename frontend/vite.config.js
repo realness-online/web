@@ -38,6 +38,7 @@ const get_manual_chunk = id => {
 export default define_config({
   build: {
     target: 'esnext',
+    cssTarget: ['safari15', 'chrome111'],
     cssMinify: 'lightningcss',
     sourcemap: true,
     rollupOptions: {

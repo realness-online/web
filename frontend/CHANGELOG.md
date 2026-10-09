@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Statement editing stays in the feed** - Tap on touch, double-click on
+  desktop, or use Tab then Enter. Drafts survive a sync refresh, line breaks
+  stay intact, and saving a caption keeps its poster open.
+- **Touch callouts stay off app controls** - Native text selection stays
+  available inside editors and on desktop. Haptic switches keep their native
+  click path. Builds now check the Safari selection rules.
+
 ## v2.10.7 - 2026-10-06
 
 - **One Brayness install** - Realness builds, tests, and checks from the

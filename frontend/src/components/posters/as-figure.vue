@@ -156,7 +156,7 @@
   )
 
   watch(
-    () => props.overlay_statements,
+    () => props.overlay_statements?.map(statement => statement.id).join('\0'),
     () => {
       thought_overlay_open.value = false
     }
@@ -577,7 +577,12 @@
    */
   const on_activate_poster = event => {
     const target = /** @type {Element | null} */ (event?.target)
-    if (target?.closest?.('[contenteditable="true"], input, textarea')) return
+    if (
+      target?.closest?.(
+        'figcaption, [contenteditable="true"], input, textarea, select, button, a'
+      )
+    )
+      return
     event?.preventDefault()
     poster_toggle_target()?.toggle_meet?.()
   }
@@ -752,7 +757,13 @@
         Focus pull
       </label>
     </fieldset>
-    <figcaption v-if="figcaption_visible">
+    <figcaption
+      v-if="figcaption_visible"
+      @pointerdown.stop
+      @pointermove.stop
+      @pointerup.stop
+      @pointercancel.stop
+      @contextmenu.stop>
       <header>
         <aside
           v-if="overlay_text_visible"

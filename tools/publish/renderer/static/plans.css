@@ -223,7 +223,8 @@ section {
     }
 
     &[aria-pressed="false"] svg {
-      width: 100%;
+      width: auto;
+      max-width: 100% !important;
       max-height: 80dvh;
     }
 

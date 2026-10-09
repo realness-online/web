@@ -30,7 +30,7 @@ const snapshot = async (directory, prefix) => {
       if (entry.isDirectory()) await walk(file, name)
       else if (entry.isFile()) {
         let bytes = await read_file(file)
-        if (/\.(html|css|xml|txt)$/.test(name) || /^scripts\/(plan-covers|diagrams|detect)\.js$/.test(name)) {
+        if (/\.(html|fragment|webmanifest|css|xml|txt)$/.test(name) || /^scripts\/(plan-covers|diagrams|detect|pwa)\.js$/.test(name)) {
           let text = site_links(bytes.toString('utf8'), prefix)
           bytes = Buffer.from(text)
         }
@@ -78,7 +78,12 @@ export const publish_app = async (root, name, { url, site_url = url, get_token =
   }
   await call('POST', 'activate', version)
   const reads = site_url.replace(/\/$/, '')
-  return { id: built.id, version, url: `${reads}${prefix}`, files: files.length, sources: built.sources.map(source => ({ id: source.id, url: `${reads}${prefix}blog/${source.slug}/` })) }
+  const sources = built.sources.map(source => {
+    const route = source.route.slice(1)
+    const suffix = route.endsWith('.html') || route.endsWith('/') ? '' : '/'
+    return { id: source.id, url: `${reads}${prefix}${route}${suffix}` }
+  })
+  return { id: built.id, version, url: `${reads}${prefix}`, files: files.length, sources }
 }
 
 /** Remove the active public snapshot; private files are unchanged. */

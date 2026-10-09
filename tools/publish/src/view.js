@@ -112,7 +112,7 @@ const copy_files = async (from, to) => {
 export const build_app = async (root, name, { drafts = false, example: local } = {}) => {
   if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`bad app name: ${name}`)
   const app_dir = join(root, 'apps', name)
-  const { app, sources, assets } = await app_sources(app_dir)
+  const { app, sources, assets, pages } = await app_sources(app_dir)
   const example = await engine(root, local)
   const output = join(root, 'artifacts/apps', name)
   await rm(output, { recursive: true, force: true })
@@ -127,6 +127,7 @@ export const build_app = async (root, name, { drafts = false, example: local } =
   const site = JSON.parse(await read_file(join(app_dir, 'site.json'), 'utf8'))
   site.poster ??= 'example.svg'
   site.type = app.type
+  site.selected_pages = pages.map(page => `/${page.path.replace(/index\.html$/, '')}`)
   await write_file(join(output, 'site.json'), `${JSON.stringify(site, null, 2)}\n`)
 
   for (const folder of ['static', 'partials']) {
@@ -138,6 +139,17 @@ export const build_app = async (root, name, { drafts = false, example: local } =
     await mkdir(dirname(target), { recursive: true })
     await cp(asset.file, target)
   }
+  const copied = new Set()
+  for (const page of pages) {
+    for (const selection of [{ file: page.file, path: page.path }, { file: page.file, path: `${page.id.slice(1)}/index.html` }, ...page.files]) {
+      if (copied.has(selection.path)) continue
+      copied.add(selection.path)
+      const target = join(output, 'static', selection.path)
+      if (exists_sync(target)) throw new Error(`route already used: ${selection.path}`)
+      await mkdir(dirname(target), { recursive: true })
+      await cp(selection.file, target)
+    }
+  }
   // Poster sizes are read from the site's own posters; the renderer's default counts.
   const poster = join(output, 'static/posters', site.poster)
   const fallback = join(example, 'static/posters', site.poster)
@@ -146,7 +158,13 @@ export const build_app = async (root, name, { drafts = false, example: local } =
   await run(process.execPath, [join(example, 'build.js'), ...(drafts ? ['--drafts'] : [])], { cwd: output, maxBuffer: MAX })
 
   const dist = join(output, 'dist')
-  return { id: app.id, type: app.type, name, dist, sources: sources.map(({ id, slug, route }) => ({ id, slug, route })) }
+  return {
+    id: app.id, type: app.type, name, dist,
+    sources: [
+      ...sources.map(({ id, slug, route }) => ({ id, slug, route })),
+      ...pages.map(({ id, path }) => ({ id, route: `/${path.replace(/index\.html$/, '')}` }))
+    ]
+  }
 }
 
 export { app_assets } from './sources.js'

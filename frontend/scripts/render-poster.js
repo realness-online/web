@@ -1,13 +1,10 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath as file_url_to_path } from 'node:url'
 import { artifacts_dir } from './lib/artifacts.js'
 import { mkdtempSync as mkdtemp_sync, rmSync as rm_sync } from 'node:fs'
 import { tmpdir } from 'node:os'
 
-const __dirname = path.dirname(file_url_to_path(import.meta.url))
-const project_root = path.join(__dirname, '..')
 const out_dir = path.join(artifacts_dir, 'poster-driver')
 
 const DRIVER_ORIGIN = process.env.REALNESS_URL || 'https://realness.online'

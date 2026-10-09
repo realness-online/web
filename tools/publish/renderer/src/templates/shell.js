@@ -46,7 +46,7 @@ export const shell = (site, title, body, meta = {}, watch = false) => {
     <link rel="stylesheet" href="/font.css">
     <link rel="stylesheet" href="/style.css">${plans ? '\n  <link rel="stylesheet" href="/plans.css">' : ''}
     <link rel="icon" type="image/svg+xml" href="/icons.svg">
-    <link rel="apple-touch-icon" href="/192.png">
+    <link rel="apple-touch-icon" href="/192.png">${site.pwa ? '\n    <link rel="manifest" href="/manifest.webmanifest">\n    <script type="module" src="/scripts/pwa.js"></script>' : ''}
     <script type="module" src="/scripts/detect.js"></script>
     <script type="module" src="/scripts/reveal.js"></script>
     ${plans ? '<script type="module" src="/scripts/plan-covers.js"></script>' : ''}
@@ -55,9 +55,9 @@ export const shell = (site, title, body, meta = {}, watch = false) => {
   </head>
   <body>
   <main>
-    <template src="/partials/header.html"></template>
+    <template src="/partials/header.fragment"></template>
     ${body}
-    <template src="/partials/footer.html"></template>
+    <template src="/partials/footer.fragment"></template>
   </main>
   </body>
   </html>`

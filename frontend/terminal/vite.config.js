@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process'
 import { defineConfig as define_config } from 'vite'
 
-const BRIDGE_PORT = Number(process.env.BRIDGE_PORT || 8779)
+const DEFAULT_BRIDGE_PORT = 8779
+const BRIDGE_PORT = Number(process.env.BRIDGE_PORT || DEFAULT_BRIDGE_PORT)
 
 // In dev, a local pty bridge stands in for a hosted session's /pty.
 const pty_bridge = () => ({

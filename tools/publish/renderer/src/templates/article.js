@@ -19,7 +19,7 @@ export const related_nav = (links, current) => {
 }
 
 export const article_body = (poster, data, title, html, notes, related = '') => {
-    return `<article itemscope itemtype="http://schema.org/BlogPosting">
+    return `<article itemscope${data.itemid ? ` itemid="${escape_html(data.itemid)}"` : ''} itemtype="http://schema.org/BlogPosting">
       ${related}
       ${poster(data, title, 'h1', null, { close_href: '/' })}
       <section itemprop="articleBody">${html}${notes}</section>

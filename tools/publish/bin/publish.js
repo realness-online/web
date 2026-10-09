@@ -2,11 +2,9 @@
 /**
  * The apps command, from a harness root.
  *
- *   brayness-publish catalog add <vault-file> [--kind k] [--tag t]...
- *   brayness-publish catalog classify <id> [--kind k] [--tag t]...
- *   brayness-publish catalog move <id> <vault-file>
- *   brayness-publish catalog remove <id>
- *   brayness-publish catalog list
+ *   brayness-publish items list
+ *   brayness-publish items mint <vault-file> --type articles|plans|pages|...
+ *   brayness-publish items settle      give each copied itemid to its copy
  *   brayness-publish app add <name> --type blog|plans [--source <id>=<slug>]...
  *   brayness-publish app build <name> [--drafts]
  *   brayness-publish app list
@@ -19,11 +17,12 @@
 import { existsSync as exists_sync } from 'node:fs'
 import { readFile as read_file, readdir, writeFile as write_file } from 'node:fs/promises'
 import { join, relative, resolve } from 'node:path'
-import { add_source, app_sources, classify_source, move_source, new_app_id, read_app, read_catalog, remove_source, write_app } from '../src/sources.js'
+import { app_sources, mint_item, new_app_id, read_app, scan_vault, write_app } from '../src/sources.js'
 import { build_app } from '../src/view.js'
 import { publish_app, unpublish_app } from '../src/publish.js'
 import { publish_github } from '../src/github.js'
 import { SYNC_URL } from '#root/lib/files/src/client.js'
+import { person } from '#root/lib/harness/src/settings.js'
 
 const [command, ...rest] = process.argv.slice(2)
 
@@ -68,32 +67,21 @@ const write_site_json = async (path, body) => {
 }
 
 const commands = {
-  async catalog() {
+  async items() {
     const [action, ...args] = rest
     const root = root_here()
     const vault = vault_of(root)
-    const { values, words, many } = options(args)
-    if (action === 'add') {
-      const [path] = words
-      const saved = await add_source(vault, path, { kind: values.kind ?? 'article', tags: many.tag ?? [] })
-      console.log(`${saved.id}  ${saved.path}`)
-    } else if (action === 'classify') {
-      const [id] = words
-      const saved = await classify_source(vault, id, { ...(values.kind && { kind: values.kind }), tags: many.tag ?? [] })
-      console.log(`${id}  ${saved.kind}  ${saved.tags.join(', ') || '(no tags)'}`)
-    } else if (action === 'move') {
-      const [id, path] = words
-      await move_source(vault, id, path)
-      console.log(`${id}  ${path}`)
-    } else if (action === 'remove') {
-      await remove_source(vault, words[0])
-      console.log(`removed ${words[0]}`)
-    } else if (action === 'list') {
-      const catalog = await read_catalog(vault)
-      const entries = Object.entries(catalog.sources)
-      if (!entries.length) return console.log('the catalog is empty')
-      for (const [id, source] of entries) console.log(`${id}  ${source.path}  ${source.kind}  ${source.tags.join(', ')}`)
-    } else throw new Error('catalog add|classify|move|remove|list')
+    const { values, words } = options(args)
+    if (action === 'list') {
+      const { items, copies } = await scan_vault(vault)
+      for (const [id, path] of items) console.log(`${id}  ${path}`)
+      for (const copy of copies) console.log(`copy of ${copy.id}  ${copy.path}`)
+    } else if (action === 'mint') {
+      console.log(await mint_item(vault, words[0], { author: person(root), type: values.type }))
+    } else if (action === 'settle') {
+      const scan = await scan_vault(vault)
+      for (const copy of scan.copies) console.log(`${await mint_item(vault, copy.path, { author: person(root), scan })}  ${copy.path}`)
+    } else throw new Error('items list|mint|settle')
   },
 
   async app() {
@@ -111,8 +99,8 @@ const commands = {
         return { id: pair.slice(0, at), slug: pair.slice(at + 1) }
       })
       const vault = vault_of(root)
-      const catalog = await read_catalog(vault)
-      for (const source of sources) if (!catalog.sources[source.id]) throw new Error(`unknown source: ${source.id}`)
+      const { items } = await scan_vault(vault)
+      for (const source of sources) if (!items.has(source.id)) throw new Error(`unknown item: ${source.id}`)
       await write_app(directory, { id: new_app_id(), type: values.type, vault: values.vault ?? vault_in_app(root, vault), sources, assets: [] })
       await write_site_json(join(directory, 'site.json'), `${JSON.stringify({ name, tagline: '', url: '', description: '', poster: 'example.svg' }, null, 2)}\n`)
       console.log(`${name}: ${join(directory, 'app.json')}`)
@@ -148,7 +136,7 @@ const commands = {
 }
 
 try {
-  if (!commands[command]) throw new Error('usage: brayness-publish catalog <action> | app <action>')
+  if (!commands[command]) throw new Error('usage: brayness-publish items <action> | app <action>')
   await commands[command]()
 } catch (error) {
   console.error(`brayness-publish: ${error.message}`)

@@ -2,67 +2,53 @@ import { load_engine, apply_theme, KEY, paste_encode } from './ghostty-vt.js'
 import { draw_frame, cell_metrics } from './render-canvas.js'
 import { subliminal } from './themes/subliminal.js'
 
-/**
- * Draw a live actor terminal into `stage`, which holds a canvas and an output.
- * `base` is where the host's `ticket` and `pty` routes live. `open`, when
- * given, makes the socket instead: ({ cols, rows }) => WebSocket; a thrown
- * error with status 401 or 403 stops reconnecting. Returns { close }.
- */
-export const mount = async (
-  stage,
-  {
-    actor = null,
-    exec = null,
-    base = document.baseURI,
-    wasm_url = new URL('ghostty-vt.wasm', document.baseURI),
-    focus = true,
-    open = null
-  } = {}
-) => {
-  // Every listener on a shared target is removed by close().
-  const removers = []
-  const listen = (target, type, handler, options) => {
-    target.addEventListener(type, handler, options)
-    removers.push(() => target.removeEventListener?.(type, handler, options))
-  }
+const FONT_SIZE = 14
+const MIN_COLS = 20
+const MIN_ROWS = 6
+const HORIZONTAL_PADDING = 16
+const VERTICAL_PADDING = 8
+const NOTE_MS = 1600
+const BLINK_MS = 530
+const RETRY_BASE_MS = 500
+const HTTP_UNAUTHORIZED = 401
+const HTTP_FORBIDDEN = 403
+const LETTER_KEY_START = 20
+const WHEEL_UP = 64
+const WHEEL_DOWN = 65
+const MAX_WHEEL_REPORTS = 10
+const SCROLL_ROWS = 3
+const ALT_MODIFIER = 4
+const RESIZE_MS = 150
+const RETRY_MS = Array.from(
+  { length: 5 },
+  (_, attempt) => RETRY_BASE_MS * 2 ** attempt
+)
 
-  const status = stage.querySelector('output')
-  const canvas = stage.querySelector('canvas')
-  const ctx = canvas.getContext('2d')
+const KEY_MAP = {
+  Escape: KEY.ESCAPE,
+  Enter: KEY.ENTER,
+  Tab: KEY.TAB,
+  Backspace: KEY.BACKSPACE,
+  ArrowUp: KEY.ARROW_UP,
+  ArrowDown: KEY.ARROW_DOWN,
+  ArrowLeft: KEY.ARROW_LEFT,
+  ArrowRight: KEY.ARROW_RIGHT,
+  Home: KEY.HOME,
+  End: KEY.END,
+  PageUp: KEY.PAGE_UP,
+  PageDown: KEY.PAGE_DOWN,
+  Delete: KEY.DELETE
+}
 
-  const FONT_SIZE = 14
-  const metrics = cell_metrics(ctx, FONT_SIZE)
+const LETTER_KEY = {}
+'abcdefghijklmnopqrstuvwxyz'.split('').forEach((letter, index) => {
+  LETTER_KEY[letter] = LETTER_KEY_START + index // GhosttyKey A..Z
+})
 
-  const size_terminal = () => {
-    const cols = Math.max(
-      20,
-      Math.floor((stage.clientWidth - 16) / metrics.width)
-    )
-    const rows = Math.max(
-      6,
-      Math.floor((stage.clientHeight - 8) / metrics.height)
-    )
-    return { cols, rows }
-  }
-
-  const engine = await load_engine(wasm_url)
-
-  canvas.addEventListener('click', () => canvas.focus())
-  if (focus) canvas.focus()
-
-  let { cols, rows } = size_terminal()
-  const term = engine.terminal(cols, rows)
-  apply_theme(term, subliminal)
-  stage.style.background = `rgb(${subliminal.background.join(',')})`
-  const encoder = engine.key_encoder(term)
-
-  let bracketed = false
-  let connected = false
-  let closed = false
+const create_display = ({ state, term, ctx, status }) => {
   let raf = 0
   let blink_on = true
   let blink_timer = 0
-  let sel = null
   let note = ''
   let note_timer = 0
   const redraw = () => {
@@ -82,8 +68,8 @@ export const mount = async (
   }
 
   const connection_text = () => {
-    if (closed) return exited ? 'disconnected' : 'reconnecting...'
-    return connected ? '' : 'connecting...'
+    if (state.closed) return state.exited ? 'disconnected' : 'reconnecting...'
+    return state.connected ? '' : 'connecting...'
   }
 
   const set_note = text => {
@@ -92,17 +78,17 @@ export const mount = async (
     note_timer = setTimeout(() => {
       note = ''
       redraw()
-    }, 1600)
+    }, NOTE_MS)
   }
 
   // Selection lives in viewport cells; re-applied each frame so pi's writes do
   // not drop it.
   const apply_selection = () => {
-    if (!sel) return
+    if (!state.sel) return
     try {
-      term.select_range(sel.ax, sel.ay, sel.bx, sel.by)
+      term.select_range(state.sel.ax, state.sel.ay, state.sel.bx, state.sel.by)
     } catch {
-      sel = null
+      state.sel = null
     }
   }
 
@@ -113,25 +99,42 @@ export const mount = async (
     blink_timer = setTimeout(() => {
       blink_on = !blink_on
       redraw()
-    }, 530)
+    }, BLINK_MS)
+  }
+
+  return {
+    redraw,
+    set_note,
+    close() {
+      clearTimeout(blink_timer)
+      clearTimeout(note_timer)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }
+}
+
+const create_connection = (
+  { state, term, encoder, canvas, status, redraw, set_note },
+  { actor, exec, base, open }
+) => {
+  const send = bytes => {
+    if (ws?.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({ op: 'data', data_b64: to_base64(bytes) }))
   }
 
   // The wire is the orchestrator's pty protocol: JSON text frames, bytes as
   // base64. {op: "data", data_b64} both ways, {op: "resize", cols, rows} up,
   // {op: "exit", code} down.
   const scheme = location.protocol === 'https:' ? 'wss' : 'ws'
-  const query = new URLSearchParams({ cols, rows })
+  const query = new URLSearchParams({ cols: state.cols, rows: state.rows })
   if (actor) query.set('actor', actor)
   const pty_url = `${scheme}://${location.host}${new URL('pty', base).pathname}`
   // A dropped socket (host restart, idled VM) reconnects; attaching wakes the
   // actor. The holder ignores `exec` when Pi is running, so this is safe either way.
-  const RETRY_MS = [500, 1000, 2000, 4000, 8000]
   let ws = null
   let retries = 0
-  let exited = false
   // Another page took this terminal. Retrying would take it back, and the two
   // pages would trade it forever; wait for a click here instead.
-  let taken = false
 
   const to_base64 = bytes => {
     let binary = ''
@@ -144,7 +147,9 @@ export const mount = async (
 
   const send_resize = () => {
     if (ws?.readyState === WebSocket.OPEN)
-      ws.send(JSON.stringify({ op: 'resize', cols, rows }))
+      ws.send(
+        JSON.stringify({ op: 'resize', cols: state.cols, rows: state.rows })
+      )
   }
 
   const retry = () => {
@@ -156,18 +161,21 @@ export const mount = async (
   const connect = async () => {
     if (open) {
       try {
-        ws = await open({ cols, rows })
+        ws = await open({ cols: state.cols, rows: state.rows })
       } catch (error) {
-        closed = true
-        if (error?.status === 401 || error?.status === 403) {
-          exited = true
+        state.closed = true
+        if (
+          error?.status === HTTP_UNAUTHORIZED ||
+          error?.status === HTTP_FORBIDDEN
+        ) {
+          state.exited = true
           set_note('Sign in again to reconnect')
           return
         }
         retry()
         return
       }
-      if (exited) return ws.close()
+      if (state.exited) return ws.close()
       ws.onopen = on_open
       ws.onmessage = on_message
       ws.onclose = on_close
@@ -180,21 +188,24 @@ export const mount = async (
         new URL(`ticket?actor=${encodeURIComponent(actor)}`, base),
         { method: 'POST' }
       )
-      if (response.status === 401 || response.status === 403) {
-        closed = true
-        exited = true
+      if (
+        response.status === HTTP_UNAUTHORIZED ||
+        response.status === HTTP_FORBIDDEN
+      ) {
+        state.closed = true
+        state.exited = true
         set_note('Sign in through Realness to reconnect')
         return
       }
       if (!response.ok) throw new Error(`ticket ${response.status}`)
       ;({ ticket } = await response.json())
     } catch {
-      closed = true
+      state.closed = true
       retry()
       return
     }
-    query.set('cols', cols)
-    query.set('rows', rows)
+    query.set('cols', state.cols)
+    query.set('rows', state.rows)
     query.set('ticket', ticket)
     ws = new WebSocket(`${pty_url}?${query}`)
     ws.onopen = on_open
@@ -208,8 +219,8 @@ export const mount = async (
       term.write(new TextEncoder().encode('\x1bc'))
       redraw()
     }
-    connected = true
-    closed = false
+    state.connected = true
+    state.closed = false
     retries = 0
     send_resize()
     // exec replaces the shell with a command, so its exit lands in the shell.
@@ -219,12 +230,12 @@ export const mount = async (
   const on_message = event => {
     const message = JSON.parse(event.data)
     if (message.op === 'taken') {
-      taken = true
+      state.taken = true
       ws.close()
       return
     }
     if (message.op === 'exit') {
-      exited = true
+      state.exited = true
       set_note(`exit ${message.code}`)
       ws.close()
       return
@@ -232,8 +243,8 @@ export const mount = async (
     if (message.op !== 'data') return
     const bytes = from_base64(message.data_b64)
     const text = new TextDecoder().decode(bytes)
-    if (text.includes('\x1b[?2004h')) bracketed = true
-    if (text.includes('\x1b[?2004l')) bracketed = false
+    if (text.includes('\x1b[?2004h')) state.bracketed = true
+    if (text.includes('\x1b[?2004l')) state.bracketed = false
     term.write(bytes)
     // pi pushes Kitty keyboard after startup; keep the encoder in sync.
     if (text.includes('\x1b[')) encoder.set_from_terminal(term)
@@ -241,13 +252,13 @@ export const mount = async (
   }
 
   const on_close = () => {
-    connected = false
-    closed = true
-    if (exited) {
+    state.connected = false
+    state.closed = true
+    if (state.exited) {
       status.textContent = 'disconnected'
       return
     }
-    if (taken) {
+    if (state.taken) {
       status.textContent = 'open in another tab - click to use here'
       return
     }
@@ -256,43 +267,38 @@ export const mount = async (
 
   connect()
   canvas.addEventListener('click', () => {
-    if (!taken) return
-    taken = false
+    if (!state.taken) return
+    state.taken = false
     retries = 0
     status.textContent = 'reconnecting...'
     connect()
   })
 
-  const KEY_MAP = {
-    Escape: KEY.ESCAPE,
-    Enter: KEY.ENTER,
-    Tab: KEY.TAB,
-    Backspace: KEY.BACKSPACE,
-    ArrowUp: KEY.ARROW_UP,
-    ArrowDown: KEY.ARROW_DOWN,
-    ArrowLeft: KEY.ARROW_LEFT,
-    ArrowRight: KEY.ARROW_RIGHT,
-    Home: KEY.HOME,
-    End: KEY.END,
-    PageUp: KEY.PAGE_UP,
-    PageDown: KEY.PAGE_DOWN,
-    Delete: KEY.DELETE
+  return {
+    send,
+    send_resize,
+    close() {
+      state.exited = true
+      state.closed = true
+      ws?.close()
+    }
   }
+}
 
-  const LETTER_KEY = {}
-  'abcdefghijklmnopqrstuvwxyz'.split('').forEach((letter, index) => {
-    LETTER_KEY[letter] = 20 + index // GhosttyKey A..Z
-  })
-
-  const send = bytes => {
-    if (ws?.readyState === WebSocket.OPEN)
-      ws.send(JSON.stringify({ op: 'data', data_b64: to_base64(bytes) }))
-  }
-
+const bind_selection = ({
+  state,
+  term,
+  canvas,
+  metrics,
+  listen,
+  send,
+  redraw,
+  set_note
+}) => {
   const clear_scrollback = () => {
     term.clear_scrollback()
     term.scroll_to_bottom()
-    sel = null
+    state.sel = null
     set_note('scrollback cleared')
     redraw()
   }
@@ -322,11 +328,11 @@ export const mount = async (
   const cell_at = event => {
     const rect = canvas.getBoundingClientRect()
     const x = Math.min(
-      cols - 1,
+      state.cols - 1,
       Math.max(0, Math.floor((event.clientX - rect.left) / metrics.width))
     )
     const y = Math.min(
-      rows - 1,
+      state.rows - 1,
       Math.max(0, Math.floor((event.clientY - rect.top) / metrics.height))
     )
     return { x, y }
@@ -335,21 +341,26 @@ export const mount = async (
   canvas.addEventListener('mousedown', event => {
     canvas.focus()
     const cell = cell_at(event)
-    sel = { ax: cell.x, ay: cell.y, bx: cell.x, by: cell.y }
+    state.sel = { ax: cell.x, ay: cell.y, bx: cell.x, by: cell.y }
     redraw()
   })
 
   listen(window, 'mousemove', event => {
-    if (!sel || event.buttons === 0) return
+    if (!state.sel || event.buttons === 0) return
     const cell = cell_at(event)
-    if (cell.x === sel.bx && cell.y === sel.by) return
-    sel.bx = cell.x
-    sel.by = cell.y
+    if (cell.x === state.sel.bx && cell.y === state.sel.by) return
+    state.sel.bx = cell.x
+    state.sel.by = cell.y
     redraw()
   })
 
   listen(window, 'mouseup', () => {
-    if (sel && sel.ax === sel.bx && sel.ay === sel.by) sel = null
+    if (
+      state.sel &&
+      state.sel.ax === state.sel.bx &&
+      state.sel.ay === state.sel.by
+    )
+      state.sel = null
     redraw()
   })
 
@@ -362,7 +373,7 @@ export const mount = async (
     'wheel',
     event => {
       event.preventDefault()
-      sel = null
+      state.sel = null
       if (term.mouse_tracking()) {
         // Trackpads send many small deltas; one report per row of travel.
         wheel_px +=
@@ -373,17 +384,31 @@ export const mount = async (
         const { x, y } = cell_at(event)
         // Pi parses one report per read, so each goes out on its own.
         const report = new TextEncoder().encode(
-          `\x1b[<${steps > 0 ? 65 : 64};${x + 1};${y + 1}M`
+          `\x1b[<${steps > 0 ? WHEEL_DOWN : WHEEL_UP};${x + 1};${y + 1}M`
         )
-        for (let i = 0; i < Math.min(Math.abs(steps), 10); i++) send(report)
+        for (let i = 0; i < Math.min(Math.abs(steps), MAX_WHEEL_REPORTS); i++)
+          send(report)
         return
       }
-      term.scroll(event.deltaY > 0 ? 3 : -3)
+      term.scroll(event.deltaY > 0 ? SCROLL_ROWS : -SCROLL_ROWS)
       redraw()
     },
     { passive: false }
   )
 
+  return { clear_scrollback, copy_selection }
+}
+
+const bind_keyboard = ({
+  state,
+  canvas,
+  encoder,
+  engine,
+  listen,
+  send,
+  clear_scrollback,
+  copy_selection
+}) => {
   listen(window, 'keydown', event => {
     if (document.activeElement !== canvas) return
     if (event.metaKey && event.key.toLowerCase() === 'k') {
@@ -391,7 +416,7 @@ export const mount = async (
       clear_scrollback()
       return
     }
-    if (event.metaKey && event.key.toLowerCase() === 'c' && sel) {
+    if (event.metaKey && event.key.toLowerCase() === 'c' && state.sel) {
       event.preventDefault()
       copy_selection()
       return
@@ -415,7 +440,7 @@ export const mount = async (
       let mods = 0
       if (event.shiftKey) mods |= 1
       if (event.ctrlKey) mods |= 2
-      if (event.altKey) mods |= 4
+      if (event.altKey) mods |= ALT_MODIFIER
       send(encoder.encode({ key: KEY_MAP[event.key], mods }))
       return
     }
@@ -430,22 +455,93 @@ export const mount = async (
     const text = event.clipboardData.getData('text')
     if (!text) return
     event.preventDefault()
-    send(paste_encode(engine, text, bracketed))
+    send(paste_encode(engine, text, state.bracketed))
   })
+}
 
+/**
+ * Draw a live actor terminal into `stage`, which holds a canvas and an output.
+ * `base` is where the host's `ticket` and `pty` routes live. `open`, when
+ * given, makes the socket instead: ({ cols, rows }) => WebSocket; a thrown
+ * error with status 401 or 403 stops reconnecting. Returns { close }.
+ */
+export const mount = async (
+  stage,
+  {
+    actor = null,
+    exec = null,
+    base = document.baseURI,
+    wasm_url = new URL('ghostty-vt.wasm', document.baseURI),
+    focus = true,
+    open = null
+  } = {}
+) => {
+  const removers = []
+  const listen = (target, type, handler, options) => {
+    target.addEventListener(type, handler, options)
+    removers.push(() => target.removeEventListener?.(type, handler, options))
+  }
+  const status = stage.querySelector('output')
+  const canvas = stage.querySelector('canvas')
+  const ctx = canvas.getContext('2d')
+  const metrics = cell_metrics(ctx, FONT_SIZE)
+  const size_terminal = () => ({
+    cols: Math.max(
+      MIN_COLS,
+      Math.floor((stage.clientWidth - HORIZONTAL_PADDING) / metrics.width)
+    ),
+    rows: Math.max(
+      MIN_ROWS,
+      Math.floor((stage.clientHeight - VERTICAL_PADDING) / metrics.height)
+    )
+  })
+  const engine = await load_engine(wasm_url)
+  canvas.addEventListener('click', () => canvas.focus())
+  if (focus) canvas.focus()
+  const state = {
+    ...size_terminal(),
+    bracketed: false,
+    connected: false,
+    closed: false,
+    exited: false,
+    taken: false,
+    sel: null
+  }
+  const term = engine.terminal(state.cols, state.rows)
+  apply_theme(term, subliminal)
+  stage.style.background = `rgb(${subliminal.background.join(',')})`
+  const encoder = engine.key_encoder(term)
+  const display = create_display({ state, term, ctx, status })
+  const { redraw, set_note } = display
+  const connection = create_connection(
+    { state, term, encoder, canvas, status, redraw, set_note },
+    { actor, exec, base, open }
+  )
+  const { send, send_resize } = connection
+  const selection = bind_selection({
+    state,
+    term,
+    canvas,
+    metrics,
+    listen,
+    send,
+    redraw,
+    set_note
+  })
+  bind_keyboard({ state, canvas, encoder, engine, listen, send, ...selection })
+  const { clear_scrollback, copy_selection } = selection
   let resize_timer = 0
   listen(window, 'resize', () => {
     clearTimeout(resize_timer)
     resize_timer = setTimeout(() => {
       const next = size_terminal()
-      if (next.cols === cols && next.rows === rows) return
-      ;({ cols, rows } = next)
-      term.resize(cols, rows)
+      if (next.cols === state.cols && next.rows === state.rows) return
+      Object.assign(state, next)
+      term.resize(state.cols, state.rows)
       send_resize()
       redraw()
-    }, 150)
+    }, RESIZE_MS)
   })
-
   window.brayness = {
     frame: () => term.frame(),
     screen_text: () => term.screen_text(),
@@ -457,28 +553,24 @@ export const mount = async (
       redraw()
     },
     copy: copy_selection,
-    resize: (c, r) => {
-      cols = c
-      rows = r
-      term.resize(c, r)
+    resize: (cols, rows) => {
+      state.cols = cols
+      state.rows = rows
+      term.resize(cols, rows)
       send_resize()
       redraw()
     }
   }
-
   redraw()
-
   return {
     close() {
-      exited = true
-      closed = true
+      state.exited = true
+      state.closed = true
       for (const remove of removers.splice(0)) remove()
-      clearTimeout(blink_timer)
-      clearTimeout(note_timer)
+      display.close()
       clearTimeout(resize_timer)
-      if (raf) cancelAnimationFrame(raf)
       if (window.brayness?.frame) delete window.brayness
-      ws?.close()
+      connection.close()
     }
   }
 }

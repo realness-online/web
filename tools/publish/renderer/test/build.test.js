@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
-import { mkdir, mkdtemp, readFile, writeFile, rm, utimes } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, writeFile, rm, utimes } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
@@ -77,12 +77,33 @@ test('a snapshot keeps only the renderer files its type and mode use', async () 
   }
 })
 
+test('an enabled PWA caches the selected snapshot, fragments, and diagrams', async () => {
+  const f = await fixture('plans')
+  try {
+    await writeFile(join(f.root, 'site.json'), JSON.stringify({ ...f.site, pwa: true }))
+    await copyFile(new URL('../../../../frontend/public/512.png', import.meta.url), join(f.root, 'static/512.png'))
+    await writeFile(join(f.root, 'content/articles/note.md'), '---\nitemid: "/+15550001111/plans/1791571682897"\n---\n# Note\n\n```mermaid\nflowchart LR\n a --> b\n```\n')
+    await f.build()
+    const manifest = JSON.parse(await readFile(join(f.root, 'dist/manifest.webmanifest'), 'utf8'))
+    assert.equal(manifest.scope, '/')
+    assert.equal(manifest.display, 'standalone')
+    assert.deepEqual(manifest.icons.map(icon => icon.sizes), ['192x192', '512x512'])
+    const worker = await readFile(join(f.root, 'dist/service.worker.js'), 'utf8')
+    for (const path of ['blog/note/index.html', 'partials/header.fragment', 'scripts/mermaid.min.js']) assert.ok(worker.includes(path), path)
+    assert.match(worker, /event\.data\.type === ['"]SKIP_WAITING['"]/, 'activation is guarded by an explicit message')
+    assert.doesNotMatch(await readFile(join(f.root, 'dist/scripts/pwa.js'), 'utf8'), /SKIP_WAITING|location\.reload/, 'the page never activates or reloads an update automatically')
+    const index = await readFile(join(f.root, 'dist/index.html'), 'utf8')
+    assert.match(index, /itemid="\/\+15550001111\/plans\/1791571682897"/)
+    assert.match(index, /href="\/manifest.webmanifest"/)
+  } finally { await rm(f.root, { recursive: true, force: true }) }
+})
+
 test('the renderer header carries the site name and tagline, escaped', async () => {
   const f = await fixture('plans')
   try {
     await writeFile(join(f.root, 'content/articles/note.md'), '# Note\n\nBody.\n')
     await f.build()
-    const header = await readFile(join(f.root, 'dist/partials/header.html'), 'utf8')
+    const header = await readFile(join(f.root, 'dist/partials/header.fragment'), 'utf8')
     assert.match(header, />A &amp; B</)
     assert.match(header, />Notes</)
     assert.doesNotMatch(header, /Your Name|What you do/)

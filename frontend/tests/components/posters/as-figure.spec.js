@@ -909,6 +909,98 @@ describe('@/component/posters/as-figure.vue', () => {
       expect(figcaption.element.closest('label')).toBe(null)
     })
 
+    it('keeps a caption open when its statement text is saved', async () => {
+      const id = '/+14151234356/statements/1'
+      await wrapper.setProps({
+        overlay_statements: [{ id, statement: 'Before' }],
+        overlay_editable: true,
+        menu: false
+      })
+      await wrapper.findComponent({ name: 'AsSvg' }).vm.$emit('click', true)
+      await flushPromises()
+      expect(wrapper.find('figcaption aside').exists()).toBe(true)
+      await wrapper.setProps({
+        overlay_statements: [{ id, statement: 'After' }]
+      })
+      expect(wrapper.find('figcaption aside').exists()).toBe(true)
+      expect(wrapper.attributes('aria-expanded')).toBe('true')
+    })
+
+    it('keeps native text selection available in a touch-opened caption', async () => {
+      const w = shallowMount(as_figure, {
+        attachTo: document.body,
+        props: {
+          itemid: poster.id,
+          overlay_statements: [
+            { id: '/+14151234356/statements/1', statement: 'Caption' }
+          ],
+          overlay_editable: true,
+          menu: false
+        },
+        global: {
+          provide: {
+            'key-commands': mock_key_commands,
+            update_statement: vi.fn()
+          },
+          stubs: { AsThought: false }
+        }
+      })
+      try {
+        await w.trigger('pointerdown', { pointerType: 'touch' })
+        w.vm.on_poster_svg_click()
+        await flushPromises()
+        await w.find('figcaption p[itemprop="statement"]').trigger('click')
+        const editor = w.find('figcaption [contenteditable="true"]')
+        expect(editor.exists()).toBe(true)
+        const event = new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true
+        })
+        editor.element.dispatchEvent(event)
+        expect(event.defaultPrevented).toBe(false)
+      } finally {
+        w.unmount()
+      }
+    })
+
+    it('keeps caption gestures out of a referenced poster', async () => {
+      mock_use_reference.value = true
+      const toggle = vi.fn()
+      document.addEventListener(POSTER_MEET_TOGGLE_ONLY, toggle)
+      vi.useFakeTimers()
+      const w = shallowMount(as_figure, {
+        props: {
+          itemid: poster.id,
+          overlay_statements: [
+            { id: '/+14151234356/statements/1', statement: 'Caption' }
+          ],
+          overlay_editable: true,
+          menu: false
+        },
+        global: { provide: { 'key-commands': mock_key_commands } }
+      })
+      try {
+        w.vm.on_poster_svg_click()
+        await nextTick()
+        const caption = w.find('figcaption aside')
+        await caption.trigger('pointerdown', {
+          pointerType: 'touch',
+          clientX: 0,
+          clientY: 0
+        })
+        vi.advanceTimersByTime(500)
+        await caption.trigger('pointerup', { pointerType: 'touch' })
+        expect(toggle).not.toHaveBeenCalled()
+        await caption.trigger('pointerdown', { pointerType: 'mouse' })
+        await caption.trigger('pointerup', { pointerType: 'mouse' })
+        expect(toggle).not.toHaveBeenCalled()
+      } finally {
+        w.unmount()
+        vi.useRealTimers()
+        document.removeEventListener(POSTER_MEET_TOGGLE_ONLY, toggle)
+      }
+    })
+
     it('resets thought overlay expanded state when overlay_statements change', async () => {
       const stmts_a = [{ id: '/+14151234356/statements/1', statement: 'a' }]
       const stmts_b = [{ id: '/+14151234356/statements/2', statement: 'b' }]

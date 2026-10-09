@@ -53,7 +53,7 @@ export const build_site = async (engine, { drafts = false, watch = false } = {})
     if (exists_sync(partials)) await cp(partials, join(output, 'partials'), { recursive: true })
   }
   // The renderer's own header is a placeholder; a site's name and tagline fill it.
-  const header = join(output, 'partials/header.html')
+  const header = join(output, 'partials/header.fragment')
   if (exists_sync(header)) await write_file(header, (await read_file(header, 'utf8'))
     .replace('>Your Name<', `>${escape_html(site.name ?? '')}<`)
     .replace('>What you do<', `>${escape_html(site.tagline ?? '')}<`))
@@ -65,10 +65,16 @@ export const build_site = async (engine, { drafts = false, watch = false } = {})
   const files = await markdown_files('content/articles')
   await pages.load_groups(files)
   const articles = await Promise.all(files.map(pages.build_article))
-  if (articles.some(article => article.html?.includes('<pre class="mermaid">')))
+  const selected_pages = await Promise.all((site.selected_pages ?? []).map(path =>
+    read_file(join(output, path.slice(1), path.endsWith('/') ? 'index.html' : ''), 'utf8')))
+  if ([...articles.map(article => article.html ?? ''), ...selected_pages].some(html => html.includes('<pre class="mermaid">')))
     await cp(new URL(import.meta.resolve('mermaid/dist/mermaid.min.js')), join(output, 'scripts/mermaid.min.js'))
   await pages.build_index(articles)
   await pages.build_sitemap(articles, await pages.build_pages())
+  if (site.pwa && !watch) {
+    const { build_pwa } = await import('./pwa.js')
+    await build_pwa(site)
+  }
   if (watch) await write_file(join(output, 'build-stamp.txt'), String(Date.now()))
   console.log(`built ${articles.length} articles`)
 }

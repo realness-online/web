@@ -7,23 +7,30 @@ const NO_VALUE = -4
 const OUT_OF_SPACE = -3
 
 // GhosttyRenderStateData
+const DATA_ROW_ITERATOR = 4
+const DATA_CURSOR = 18
+const DATA_COLORS = 19
 const DATA = {
   COLS: 1,
   ROWS: 2,
   DIRTY: 3,
-  ROW_ITERATOR: 4,
-  CURSOR: 18,
-  COLORS: 19
+  ROW_ITERATOR: DATA_ROW_ITERATOR,
+  CURSOR: DATA_CURSOR,
+  COLORS: DATA_COLORS
 }
 // GhosttyRenderStateRowData
-const ROW_DATA = { DIRTY: 1, CELLS: 3, SELECTION: 4 }
+const ROW_DATA_SELECTION = 4
+const ROW_DATA = { DIRTY: 1, CELLS: 3, SELECTION: ROW_DATA_SELECTION }
 // GhosttyRenderStateRowCellsData
+const CELL_DATA_FG_COLOR = 6
+const CELL_DATA_SELECTED = 7
+const CELL_DATA_GRAPHEMES_UTF8 = 9
 const CELL_DATA = {
   STYLE: 2,
-  FG_COLOR: 6,
+  FG_COLOR: CELL_DATA_FG_COLOR,
   BG_COLOR: 5,
-  SELECTED: 7,
-  GRAPHEMES_UTF8: 9
+  SELECTED: CELL_DATA_SELECTED,
+  GRAPHEMES_UTF8: CELL_DATA_GRAPHEMES_UTF8
 }
 // GhosttyStyleColorTag
 const COLOR_TAG = { NONE: 0, PALETTE: 1, RGB: 2 }
@@ -49,25 +56,40 @@ const COLORS_SIZE = 784
 const CURSOR_SIZE = 20
 const ROW_SELECTION_SIZE = 8
 const BUFFER_SIZE = 12
+const DEFAULT_CELL_HEIGHT = 16
 
 // GhosttyKeyAction
 const KEY_ACTION = { RELEASE: 0, PRESS: 1, REPEAT: 2 }
 // GhosttyKey values used by the page.
+const KEY_ESCAPE = 120
+const KEY_ENTER = 58
+const KEY_TAB = 64
+const KEY_BACKSPACE = 53
+const KEY_ARROW_UP = 78
+const KEY_ARROW_DOWN = 75
+const KEY_ARROW_LEFT = 76
+const KEY_ARROW_RIGHT = 77
+const KEY_HOME = 71
+const KEY_END = 69
+const KEY_PAGE_UP = 74
+const KEY_PAGE_DOWN = 73
+const KEY_DELETE = 68
+const KEY_SPACE = 63
 export const KEY = {
-  ESCAPE: 120,
-  ENTER: 58,
-  TAB: 64,
-  BACKSPACE: 53,
-  ARROW_UP: 78,
-  ARROW_DOWN: 75,
-  ARROW_LEFT: 76,
-  ARROW_RIGHT: 77,
-  HOME: 71,
-  END: 69,
-  PAGE_UP: 74,
-  PAGE_DOWN: 73,
-  DELETE: 68,
-  SPACE: 63
+  ESCAPE: KEY_ESCAPE,
+  ENTER: KEY_ENTER,
+  TAB: KEY_TAB,
+  BACKSPACE: KEY_BACKSPACE,
+  ARROW_UP: KEY_ARROW_UP,
+  ARROW_DOWN: KEY_ARROW_DOWN,
+  ARROW_LEFT: KEY_ARROW_LEFT,
+  ARROW_RIGHT: KEY_ARROW_RIGHT,
+  HOME: KEY_HOME,
+  END: KEY_END,
+  PAGE_UP: KEY_PAGE_UP,
+  PAGE_DOWN: KEY_PAGE_DOWN,
+  DELETE: KEY_DELETE,
+  SPACE: KEY_SPACE
 }
 
 /**
@@ -77,6 +99,7 @@ export const KEY = {
  * @param {{background: number[], foreground: number[], cursor: number[], palette: number[][]}} theme
  */
 export const apply_theme = (terminal, theme) => {
+  const PALETTE_LENGTH = 256
   const e = terminal.engine
 
   const set_rgb = (option, rgb) => {
@@ -91,8 +114,8 @@ export const apply_theme = (terminal, theme) => {
   set_rgb(OPT_COLOR_BACKGROUND, theme.background)
   set_rgb(OPT_COLOR_CURSOR, theme.cursor)
 
-  const base = e.alloc(768)
-  const out = e.alloc(768)
+  const base = e.alloc(PALETTE_LENGTH * 3)
+  const out = e.alloc(PALETTE_LENGTH * 3)
   const bg_ptr = e.alloc(3)
   const fg_ptr = e.alloc(3)
   const bytes = e.bytes()
@@ -111,8 +134,8 @@ export const apply_theme = (terminal, theme) => {
     OPT_COLOR_PALETTE,
     out
   )
-  e.free(base, 768)
-  e.free(out, 768)
+  e.free(base, PALETTE_LENGTH * 3)
+  e.free(out, PALETTE_LENGTH * 3)
   e.free(bg_ptr, 3)
   e.free(fg_ptr, 3)
   if (result !== SUCCESS) throw new Error(`theme palette: ${result}`)
@@ -251,6 +274,8 @@ export class Encoder {
    * @returns {Uint8Array}
    */
   encode(event) {
+    const ENCODE_BUFFER_SIZE = 256
+    const U32_SIZE = 4
     const e = this.engine
     const { ex } = e
     const slot = e.alloc_opaque()
@@ -278,13 +303,13 @@ export class Encoder {
       ex.ghostty_key_event_set_utf8(handle, utf8_ptr, utf8_len)
     }
 
-    const out = e.alloc(256)
-    const written_ptr = e.alloc(4)
+    const out = e.alloc(ENCODE_BUFFER_SIZE)
+    const written_ptr = e.alloc(U32_SIZE)
     result = ex.ghostty_key_encoder_encode(
       this.handle,
       handle,
       out,
-      256,
+      ENCODE_BUFFER_SIZE,
       written_ptr
     )
     if (result !== SUCCESS)
@@ -292,8 +317,8 @@ export class Encoder {
     const written = e.read_u32(written_ptr)
     const bytes = e.bytes().slice(out, out + written)
 
-    e.free(out, 256)
-    e.free(written_ptr, 4)
+    e.free(out, ENCODE_BUFFER_SIZE)
+    e.free(written_ptr, U32_SIZE)
     if (utf8_ptr) e.free(utf8_ptr, utf8_len)
     ex.ghostty_key_event_free(handle)
     return bytes
@@ -306,26 +331,28 @@ export class Encoder {
 
 /** Wrap paste text the way the terminal would. Modifies nothing of the input. */
 export const paste_encode = (engine, text, bracketed) => {
+  const PASTE_OVERHEAD = 16
+  const U32_SIZE = 4
   const e = engine
   const bytes = new TextEncoder().encode(text)
   const data_ptr = e.alloc(bytes.length)
   e.write_bytes(data_ptr, bytes)
-  const out = e.alloc(bytes.length + 16)
-  const written_ptr = e.alloc(4)
+  const out = e.alloc(bytes.length + PASTE_OVERHEAD)
+  const written_ptr = e.alloc(U32_SIZE)
   const result = e.ex.ghostty_paste_encode(
     data_ptr,
     bytes.length,
     bracketed,
     out,
-    bytes.length + 16,
+    bytes.length + PASTE_OVERHEAD,
     written_ptr
   )
   if (result !== SUCCESS) throw new Error(`ghostty_paste_encode: ${result}`)
   const written = e.read_u32(written_ptr)
   const encoded = e.bytes().slice(out, out + written)
   e.free(data_ptr, bytes.length)
-  e.free(out, bytes.length + 16)
-  e.free(written_ptr, 4)
+  e.free(out, bytes.length + PASTE_OVERHEAD)
+  e.free(written_ptr, U32_SIZE)
   return encoded
 }
 
@@ -350,7 +377,7 @@ export class Terminal {
     this.engine.free(ptr, Math.max(bytes.length, 1))
   }
 
-  resize(cols, rows, cell_width_px = 8, cell_height_px = 16) {
+  resize(cols, rows, cell_width_px = 8, cell_height_px = DEFAULT_CELL_HEIGHT) {
     const result = this.engine.ex.ghostty_terminal_resize(
       this.handle,
       cols,
@@ -369,6 +396,7 @@ export class Terminal {
    * @returns {{cols: number, rows: number, dirty: number, cursor: object, colors: object, rows_data: Array}}
    */
   frame() {
+    const TEXT_BUFFER_SIZE = 256
     const e = this.engine
     const { ex } = e
 
@@ -403,7 +431,7 @@ export class Terminal {
     if (result !== SUCCESS) throw new Error(`row_cells_new: ${result}`)
     const cells = e.take_opaque(cells_slot)
 
-    const text_ptr = e.alloc(256)
+    const text_ptr = e.alloc(TEXT_BUFFER_SIZE)
     const buffer_ptr = e.alloc(BUFFER_SIZE)
     const style_ptr = e.alloc(STYLE_SIZE)
     const selection_ptr = e.alloc(ROW_SELECTION_SIZE)
@@ -449,7 +477,7 @@ export class Terminal {
       })
     }
 
-    e.free(text_ptr, 256)
+    e.free(text_ptr, TEXT_BUFFER_SIZE)
     e.free(buffer_ptr, BUFFER_SIZE)
     e.free(style_ptr, STYLE_SIZE)
     e.free(selection_ptr, ROW_SELECTION_SIZE)
@@ -485,52 +513,63 @@ export class Terminal {
 
   /** Select the range between two viewport cells (inclusive). */
   select_range(x1, y1, x2, y2) {
+    const SELECTION_SIZE = 32
+    const START_OFFSET = 4
+    const END_OFFSET = 16
+    const RECTANGULAR_OFFSET = 28
+    const GRID_REF_SIZE = 12
     const e = this.engine
     const start = this.#grid_ref(x1, y1)
     const end = this.#grid_ref(x2, y2)
-    const sel = e.alloc(32)
-    e.view().setUint32(sel, 32, true)
-    e.bytes().copyWithin(sel + 4, start, start + 12)
-    e.bytes().copyWithin(sel + 16, end, end + 12)
-    e.bytes()[sel + 28] = 0
+    const sel = e.alloc(SELECTION_SIZE)
+    e.view().setUint32(sel, SELECTION_SIZE, true)
+    e.bytes().copyWithin(sel + START_OFFSET, start, start + GRID_REF_SIZE)
+    e.bytes().copyWithin(sel + END_OFFSET, end, end + GRID_REF_SIZE)
+    e.bytes()[sel + RECTANGULAR_OFFSET] = 0
     const result = e.ex.ghostty_terminal_set(this.handle, OPT_SELECTION, sel)
-    e.free(start, 12)
-    e.free(end, 12)
-    e.free(sel, 32)
+    e.free(start, GRID_REF_SIZE)
+    e.free(end, GRID_REF_SIZE)
+    e.free(sel, SELECTION_SIZE)
     if (result !== SUCCESS) throw new Error(`set selection: ${result}`)
   }
 
   select_all() {
+    const SELECTION_SIZE = 32
     const e = this.engine
-    const sel = e.alloc(32)
-    e.view().setUint32(sel, 32, true)
+    const sel = e.alloc(SELECTION_SIZE)
+    e.view().setUint32(sel, SELECTION_SIZE, true)
     const result = e.ex.ghostty_terminal_select_all(this.handle, sel)
     if (result === NO_VALUE) {
-      e.free(sel, 32)
+      e.free(sel, SELECTION_SIZE)
       return false
     }
     if (result !== SUCCESS) {
-      e.free(sel, 32)
+      e.free(sel, SELECTION_SIZE)
       throw new Error(`select_all: ${result}`)
     }
     const set = e.ex.ghostty_terminal_set(this.handle, OPT_SELECTION, sel)
-    e.free(sel, 32)
+    e.free(sel, SELECTION_SIZE)
     if (set !== SUCCESS) throw new Error(`set selection: ${set}`)
     return true
   }
 
   /** The active selection as plain text, or "" when there is none. */
   selection_text() {
+    const OPTIONS_SIZE = 16
+    const FORMAT_OFFSET = 4
+    const TRIM_OFFSET = 9
+    const FLAGS_OFFSET = 12
+    const U32_SIZE = 4
     const e = this.engine
-    const options = e.alloc(16)
+    const options = e.alloc(OPTIONS_SIZE)
     const view = e.view()
-    view.setUint32(options, 16, true)
-    view.setUint32(options + 4, FORMAT_PLAIN, true)
+    view.setUint32(options, OPTIONS_SIZE, true)
+    view.setUint32(options + FORMAT_OFFSET, FORMAT_PLAIN, true)
     view.setUint8(options + 8, 0)
-    view.setUint8(options + 9, 0)
-    view.setUint32(options + 12, 0, true)
-    const out_ptr = e.alloc(4)
-    const out_len = e.alloc(4)
+    view.setUint8(options + TRIM_OFFSET, 0)
+    view.setUint32(options + FLAGS_OFFSET, 0, true)
+    const out_ptr = e.alloc(U32_SIZE)
+    const out_len = e.alloc(U32_SIZE)
     const result = e.ex.ghostty_terminal_selection_format_alloc(
       this.handle,
       0,
@@ -546,9 +585,9 @@ export class Terminal {
         text = new TextDecoder().decode(e.bytes().slice(ptr, ptr + len))
       e.ex.ghostty_free(0, ptr, len)
     }
-    e.free(options, 16)
-    e.free(out_ptr, 4)
-    e.free(out_len, 4)
+    e.free(options, OPTIONS_SIZE)
+    e.free(out_ptr, U32_SIZE)
+    e.free(out_len, U32_SIZE)
     return text
   }
 
@@ -567,8 +606,9 @@ export class Terminal {
 
   /** Erase retained history, keeping the visible screen. */
   clear_scrollback() {
+    const U32_SIZE = 4
     const e = this.engine
-    const zero = e.alloc(4)
+    const zero = e.alloc(U32_SIZE)
     e.view().setUint32(zero, 0, true)
     const result = e.ex.ghostty_terminal_set(
       this.handle,
@@ -577,7 +617,7 @@ export class Terminal {
     )
     // NULL removes the byte limit so scrollback keeps working.
     e.ex.ghostty_terminal_set(this.handle, OPT_SCROLLBACK_MAX_BYTES, 0)
-    e.free(zero, 4)
+    e.free(zero, U32_SIZE)
     if (result !== SUCCESS) throw new Error(`clear_scrollback: ${result}`)
   }
 
@@ -597,62 +637,75 @@ export class Terminal {
 
   /** {total, offset, len} in rows, or null. */
   scrollbar() {
+    const SCROLLBAR_SIZE = 24
+    const LENGTH_OFFSET = 16
     const e = this.engine
-    const ptr = e.alloc(24)
+    const ptr = e.alloc(SCROLLBAR_SIZE)
     const result = e.ex.ghostty_terminal_get(this.handle, DATA_SCROLLBAR, ptr)
     if (result !== SUCCESS) {
-      e.free(ptr, 24)
+      e.free(ptr, SCROLLBAR_SIZE)
       return null
     }
     const view = e.view()
     const bar = {
       total: Number(view.getBigUint64(ptr, true)),
       offset: Number(view.getBigUint64(ptr + 8, true)),
-      len: Number(view.getBigUint64(ptr + 16, true))
+      len: Number(view.getBigUint64(ptr + LENGTH_OFFSET, true))
     }
-    e.free(ptr, 24)
+    e.free(ptr, SCROLLBAR_SIZE)
     return bar
   }
 
   #grid_ref(x, y) {
+    const POINT_SIZE = 24
+    const TAG_OFFSET = 4
+    const Y_OFFSET = 12
+    const GRID_REF_SIZE = 12
     const e = this.engine
-    const point = e.alloc(24)
+    const point = e.alloc(POINT_SIZE)
     const view = e.view()
-    view.setUint32(point, 24, true)
-    view.setUint32(point + 4, POINT_VIEWPORT, true)
+    view.setUint32(point, POINT_SIZE, true)
+    view.setUint32(point + TAG_OFFSET, POINT_VIEWPORT, true)
     view.setUint16(point + 8, x, true)
-    view.setUint32(point + 12, y, true)
-    const ref = e.alloc(12)
-    view.setUint32(ref, 12, true)
+    view.setUint32(point + Y_OFFSET, y, true)
+    const ref = e.alloc(GRID_REF_SIZE)
+    view.setUint32(ref, GRID_REF_SIZE, true)
     const result = e.ex.ghostty_terminal_grid_ref(this.handle, point, ref)
-    e.free(point, 24)
+    e.free(point, POINT_SIZE)
     if (result !== SUCCESS) {
-      e.free(ref, 12)
+      e.free(ref, GRID_REF_SIZE)
       throw new Error(`grid_ref(${x},${y}): ${result}`)
     }
     return ref
   }
 
   #scroll_viewport(tag, delta) {
+    const SCROLL_SIZE = 24
     const e = this.engine
-    const behavior = e.alloc(24)
+    const behavior = e.alloc(SCROLL_SIZE)
     const view = e.view()
     view.setUint32(behavior, tag, true)
     view.setInt32(behavior + 8, delta, true)
     e.ex.ghostty_terminal_scroll_viewport(this.handle, behavior)
-    e.free(behavior, 24)
+    e.free(behavior, SCROLL_SIZE)
   }
 
   #read_state_u32(state, data) {
+    const U32_SIZE = 4
     const e = this.engine
-    const ptr = e.alloc(4)
+    const ptr = e.alloc(U32_SIZE)
     const result = e.ex.ghostty_render_state_get(state, data, ptr)
     const value = result === SUCCESS ? e.read_u32(ptr) : 0
-    e.free(ptr, 4)
+    e.free(ptr, U32_SIZE)
     return value
   }
 
   #read_colors(state) {
+    const BACKGROUND_OFFSET = 4
+    const FOREGROUND_OFFSET = 7
+    const CURSOR_OFFSET = 10
+    const PALETTE_OFFSET = 14
+    const PALETTE_LENGTH = 256
     const e = this.engine
     const { ex } = e
     const ptr = e.alloc(COLORS_SIZE)
@@ -666,16 +719,23 @@ export class Terminal {
       view.getUint8(off + 2)
     ]
     const colors = {
-      background: read_rgb(ptr + 4),
-      foreground: read_rgb(ptr + 7),
-      cursor: read_rgb(ptr + 10),
-      palette: Array.from({ length: 256 }, (_, i) => read_rgb(ptr + 14 + i * 3))
+      background: read_rgb(ptr + BACKGROUND_OFFSET),
+      foreground: read_rgb(ptr + FOREGROUND_OFFSET),
+      cursor: read_rgb(ptr + CURSOR_OFFSET),
+      palette: Array.from({ length: PALETTE_LENGTH }, (_, i) =>
+        read_rgb(ptr + PALETTE_OFFSET + i * 3)
+      )
     }
     e.free(ptr, COLORS_SIZE)
     return colors
   }
 
   #read_cursor(state) {
+    const VISIBLE_OFFSET = 11
+    const BLINKING_OFFSET = 12
+    const VIEWPORT_OFFSET = 4
+    const X_OFFSET = 6
+    const STYLE_OFFSET = 16
     const e = this.engine
     const { ex } = e
     const ptr = e.alloc(CURSOR_SIZE)
@@ -684,18 +744,20 @@ export class Terminal {
     if (result !== SUCCESS) throw new Error(`render cursor: ${result}`)
     const view = e.view()
     const cursor = {
-      visible: view.getUint8(ptr + 11) !== 0,
-      blinking: view.getUint8(ptr + 12) !== 0,
-      viewport_has_value: view.getUint8(ptr + 4) !== 0,
-      x: view.getUint16(ptr + 6, true),
+      visible: view.getUint8(ptr + VISIBLE_OFFSET) !== 0,
+      blinking: view.getUint8(ptr + BLINKING_OFFSET) !== 0,
+      viewport_has_value: view.getUint8(ptr + VIEWPORT_OFFSET) !== 0,
+      x: view.getUint16(ptr + X_OFFSET, true),
       y: view.getUint16(ptr + 8, true),
-      visual_style: view.getUint32(ptr + 16, true)
+      visual_style: view.getUint32(ptr + STYLE_OFFSET, true)
     }
     e.free(ptr, CURSOR_SIZE)
     return cursor
   }
 
   #read_row_selection(iterator, ptr) {
+    const START_OFFSET = 4
+    const END_OFFSET = 6
     const e = this.engine
     e.view().setUint32(ptr, ROW_SELECTION_SIZE, true)
     const result = e.ex.ghostty_render_state_row_get(
@@ -706,8 +768,8 @@ export class Terminal {
     if (result !== SUCCESS) return null
     const view = e.view()
     return {
-      start_x: view.getUint16(ptr + 4, true),
-      end_x: view.getUint16(ptr + 6, true)
+      start_x: view.getUint16(ptr + START_OFFSET, true),
+      end_x: view.getUint16(ptr + END_OFFSET, true)
     }
   }
 
@@ -721,11 +783,13 @@ export class Terminal {
   }
 
   #read_graphemes(cells, buffer_ptr, text_ptr) {
+    const CAPACITY_OFFSET = 4
+    const TEXT_BUFFER_SIZE = 256
     const e = this.engine
     const { ex } = e
     const view = e.view()
     view.setUint32(buffer_ptr, text_ptr, true)
-    view.setUint32(buffer_ptr + 4, 256, true)
+    view.setUint32(buffer_ptr + CAPACITY_OFFSET, TEXT_BUFFER_SIZE, true)
     view.setUint32(buffer_ptr + 8, 0, true)
     let result = ex.ghostty_render_state_row_cells_get(
       cells,
@@ -737,7 +801,7 @@ export class Terminal {
       if (needed === 0) return ''
       const big = e.alloc(needed)
       view.setUint32(buffer_ptr, big, true)
-      view.setUint32(buffer_ptr + 4, needed, true)
+      view.setUint32(buffer_ptr + CAPACITY_OFFSET, needed, true)
       result = ex.ghostty_render_state_row_cells_get(
         cells,
         CELL_DATA.GRAPHEMES_UTF8,
@@ -783,32 +847,43 @@ export class Terminal {
   }
 
   #read_flags(style_ptr) {
+    const BG_OFFSET = 24
+    const BOLD_OFFSET = 56
+    const ITALIC_OFFSET = 57
+    const FAINT_OFFSET = 58
+    const BLINK_OFFSET = 59
+    const INVISIBLE_OFFSET = 61
+    const STRIKETHROUGH_OFFSET = 62
+    const OVERLINE_OFFSET = 63
+    const UNDERLINE_OFFSET = 64
     const b = this.engine.bytes()
     const fg = this.#read_style_color(style_ptr + 8)
-    const bg = this.#read_style_color(style_ptr + 24)
+    const bg = this.#read_style_color(style_ptr + BG_OFFSET)
     return {
       fg_color: fg,
       bg_color: bg,
-      bold: b[style_ptr + 56] !== 0,
-      italic: b[style_ptr + 57] !== 0,
-      faint: b[style_ptr + 58] !== 0,
-      blink: b[style_ptr + 59] !== 0,
+      bold: b[style_ptr + BOLD_OFFSET] !== 0,
+      italic: b[style_ptr + ITALIC_OFFSET] !== 0,
+      faint: b[style_ptr + FAINT_OFFSET] !== 0,
+      blink: b[style_ptr + BLINK_OFFSET] !== 0,
       inverse: b[style_ptr + 60] !== 0,
-      invisible: b[style_ptr + 61] !== 0,
-      strikethrough: b[style_ptr + 62] !== 0,
-      overline: b[style_ptr + 63] !== 0,
-      underline: this.engine.view().getInt32(style_ptr + 64, true)
+      invisible: b[style_ptr + INVISIBLE_OFFSET] !== 0,
+      strikethrough: b[style_ptr + STRIKETHROUGH_OFFSET] !== 0,
+      overline: b[style_ptr + OVERLINE_OFFSET] !== 0,
+      underline: this.engine.view().getInt32(style_ptr + UNDERLINE_OFFSET, true)
     }
   }
 
   #read_style_color(ptr) {
+    const GREEN_OFFSET = 9
+    const BLUE_OFFSET = 10
     const view = this.engine.view()
     const tag = view.getUint32(ptr, true)
     if (tag === COLOR_TAG.RGB)
       return [
         view.getUint8(ptr + 8),
-        view.getUint8(ptr + 9),
-        view.getUint8(ptr + 10)
+        view.getUint8(ptr + GREEN_OFFSET),
+        view.getUint8(ptr + BLUE_OFFSET)
       ]
 
     if (tag === COLOR_TAG.PALETTE) return { palette: view.getUint8(ptr + 8) }

@@ -28,6 +28,7 @@
   import { use_icon_settle } from '@/use/icon-settle'
   import { use_deferred_flag } from '@/use/deferred-unmount'
   import { use_reload_on_update } from '@/use/reload-on-update'
+  import { use_touch_callout } from '@/use/touch-callout'
   import { get_clipboard_files } from '@/utils/clipboard-images'
   import { use_vectorize_deferred } from '@/use/vectorize-deferred'
   import { posting } from '@/use/posting'
@@ -66,6 +67,7 @@
   }
   provide('set_working', set_working)
   use_reload_on_update(() => working_count.value > 0)
+  use_touch_callout()
 
   // Stub directive — the real change listener is attached when the vectorize
   // module loads. Named vVectorizer so <script setup> registers it as

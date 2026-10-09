@@ -38,6 +38,7 @@ const to_hex = value => {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 1
   const context = canvas.getContext('2d')
+  if (!context) throw new Error('Mermaid colors require a 2D canvas context')
   context.fillStyle = '#000'
   context.fillStyle = value
   context.fillRect(0, 0, 1, 1)

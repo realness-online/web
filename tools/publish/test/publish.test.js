@@ -1,14 +1,22 @@
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { test } from 'node:test'
+
+const author = '/+15550001111'
+
+/** An edit keeps the note's frontmatter, so it keeps its itemid. */
+const edit_body = async (file, body) => writeFile(file, (await readFile(file, 'utf8')).match(/^---\n[\s\S]*?\n---\n/)[0] + body)
+
+/** Make a vault file an item, the way the apps command does. */
+const add = async (vault, path, type = 'articles') => ({ id: await mint_item(vault, path, { author, type }) })
 import { disk } from '#root/lib/can/src/disk.js'
 import { dev_issuer } from '#root/server/sync/src/dev-token.js'
 import { rights } from '#root/server/sync/src/rights.js'
 import { sync_service } from '#root/server/sync/src/server.js'
-import { add_source, move_source, write_app } from '../src/sources.js'
+import { mint_item, read_app, write_app } from '../src/sources.js'
 import { build_app, renderer_path as example } from '../src/view.js'
 import { publish_app, site_links, unpublish_app } from '../src/publish.js'
 
@@ -25,9 +33,9 @@ async function fixture(type = 'blog') {
   await writeFile(join(vault, 'public.md'), '# Public\n\nSelected content.\n\n[Private](private.md)\n\n![Private image](private.svg)\n\n![Selected image](/media/public.svg)\n')
   await writeFile(join(vault, 'private.md'), 'PRIVATE NOTE')
   await writeFile(join(vault, 'private.svg'), '<svg>PRIVATE IMAGE</svg>')
-  const source = await add_source(vault, 'public.md')
+  const source = await add(vault, 'public.md')
   await writeFile(join(vault, 'public.svg'), '<svg xmlns="http://www.w3.org/2000/svg"><title>Selected image</title></svg>')
-  const image = await add_source(vault, 'public.svg', { kind: 'image' })
+  const image = await add(vault, 'public.svg', 'diagrams')
   await write_app(join(root, 'apps', 'test'), { id, type, vault: '../../vault', sources: [{ id: source.id, slug: 'public' }], assets: [{ id: image.id, path: 'media/public.svg' }] })
   await writeFile(join(root, 'apps/test/site.json'), JSON.stringify({ name: 'Test', url: '', tagline: '', poster: 'example.svg' }))
   const storage = disk(join(root, 'storage'))
@@ -67,8 +75,10 @@ for (const type of ['blog', 'plans']) test(`the public ${type} CLI publishes sta
     assert.match(await (await fetch(`${f.url}/sites/${id}/media/public.svg`)).text(), /Selected image/)
     for (const name of ['private.md', 'private.svg', 'vault/private.md', 'catalog.json', 'app.json', '.env'])
       assert.equal((await fetch(`${f.url}/sites/${id}/${name}`)).status, 404, name)
-    await move_source(f.vault, f.source.id, 'Archive/moved.md')
-    await writeFile(join(f.vault, 'Archive/moved.md'), '# Public\n\nMoved source.\n')
+    await mkdir(join(f.vault, 'Archive'), { recursive: true })
+    await rename(join(f.vault, 'public.md'), join(f.vault, 'Archive/moved.md'))
+    const moved = await readFile(join(f.vault, 'Archive/moved.md'), 'utf8')
+    await writeFile(join(f.vault, 'Archive/moved.md'), moved.replace(/# Public[\s\S]*$/, '# Public\n\nMoved source.\n'))
     const second = await publish_app(f.root, 'test', f.options)
     assert.equal(second.sources[0].url, page_url)
     const elsewhere = await publish_app(f.root, 'test', { ...f.options, site_url: 'https://sites.example/' })
@@ -86,7 +96,7 @@ test('a failed upload preserves the public snapshot; a removed source disappears
   const f = await fixture()
   try {
     const first = await publish_app(f.root, 'test', f.options)
-    await writeFile(join(f.vault, 'public.md'), '# Public\n\nUnpublished edit.\n')
+    await edit_body(join(f.vault, 'public.md'), '# Public\n\nUnpublished edit.\n')
     assert.doesNotMatch(await (await fetch(first.sources[0].url)).text(), /Unpublished edit/)
     await assert.rejects(publish_app(f.root, 'test', { ...f.options, fetcher: (url, options) => options.method === 'PUT' && url.endsWith('/index.html') ? new Response('', { status: 503 }) : fetch(url, options) }), /503/)
     assert.match(await (await fetch(first.sources[0].url)).text(), /Selected content/)
@@ -99,7 +109,7 @@ test('a failed upload preserves the public snapshot; a removed source disappears
 test('a plans publication keeps covers, script paths, and page navigation under its site', async () => {
   const f = await fixture('plans')
   try {
-    await writeFile(join(f.vault, 'public.md'), '# Plan\n\n```mermaid\nflowchart LR\n  a["a"] --> b["b"]\n```\n')
+    await edit_body(join(f.vault, 'public.md'), '# Plan\n\n```mermaid\nflowchart LR\n  a["a"] --> b["b"]\n```\n')
     const published = await publish_app(f.root, 'test', f.options)
     const vendor = await (await fetch(`${published.url}scripts/mermaid.min.js`)).arrayBuffer()
     assert.deepEqual(Buffer.from(vendor), await readFile(join(f.root, 'artifacts/apps/test/dist/scripts/mermaid.min.js')), 'vendor code is not rewritten')
@@ -109,6 +119,29 @@ test('a plans publication keeps covers, script paths, and page navigation under 
     const script = await (await fetch(`${published.url}scripts/diagrams.js`)).text()
     assert.match(script, new RegExp(`script.src = '/sites/${id}/scripts/mermaid.min.js'`))
     assert.equal((await fetch(`${published.url}scripts/plan-diagrams.js`)).status, 200)
+  } finally { await f.close() }
+})
+
+test('vault pages, fragments, and PWA URLs stay under the published site', async () => {
+  const f = await fixture('plans')
+  try {
+    await writeFile(join(f.vault, 'map.html'), '<html itemscope itemtype="https://schema.org/WebPage"><head><link rel="manifest" href="/manifest.webmanifest"></head><body>Vault map</body></html>')
+    const page = await add(f.vault, 'map.html', 'pages')
+    const app_dir = join(f.root, 'apps/test')
+    await write_app(app_dir, { ...await read_app(app_dir), pages: [{ id: page.id, path: 'maps/map.html' }] })
+    await mkdir(join(app_dir, 'static'), { recursive: true })
+    await writeFile(join(app_dir, 'static/manifest.webmanifest'), JSON.stringify({ name: 'Map', scope: '/', start_url: '/' }))
+    const result = await publish_app(f.root, 'test', f.options)
+    const link = result.sources.find(source => source.id === page.id)
+    assert.equal(link.url, `${result.url}maps/map.html`)
+    assert.match(await (await fetch(link.url)).text(), new RegExp(`/sites/${id}/manifest.webmanifest`))
+    const fragment = await (await fetch(`${result.url}partials/header.fragment`)).text()
+    assert.match(fragment, new RegExp(`/sites/${id}/partials/nav.fragment`))
+    const manifest = await (await fetch(`${result.url}manifest.webmanifest`)).json()
+    assert.equal(manifest.scope, `/sites/${id}/`)
+    const registration = await (await fetch(`${result.url}scripts/pwa.js`)).text()
+    assert.match(registration, new RegExp(`/sites/${id}/service.worker.js`))
+    assert.equal((await fetch(`${result.url}${page.id.slice(1)}/index.html`)).status, 200)
   } finally { await f.close() }
 })
 

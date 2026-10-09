@@ -17,6 +17,7 @@ const load_mermaid = async () => (await import('mermaid')).default
 export const create_parts = (load = load_mermaid) => {
   const svgs = new Map()
   const pending = new Map()
+  /** @type {ReturnType<typeof load> | null} */
   let ready = null
   let count = 0
   const mermaid = () =>

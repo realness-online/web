@@ -1,11 +1,16 @@
 // Draw a libghostty-vt frame onto a 2D canvas. Browser and Node (OffscreenCanvas).
 
+const LINE_HEIGHT = 1.4
+const FONT_SIZE = 14
+const SELECTION_OPACITY = 0.6
+const PIXEL_CENTER = 0.5
+
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace'
 
 export const cell_metrics = (ctx, font_size) => {
   ctx.font = `${font_size}px ${MONO}`
   const width = Math.ceil(ctx.measureText('M').width)
-  const height = Math.ceil(font_size * 1.4)
+  const height = Math.ceil(font_size * LINE_HEIGHT)
   return { width, height }
 }
 
@@ -15,7 +20,7 @@ export const cell_metrics = (ctx, font_size) => {
  * @param {{font_size?: number, dpr?: number}} [opts]
  */
 export const draw_frame = (ctx, frame, opts = {}) => {
-  const font_size = opts.font_size ?? 14
+  const font_size = opts.font_size ?? FONT_SIZE
   const dpr = opts.dpr ?? (globalThis.devicePixelRatio || 1)
   const metrics = cell_metrics(ctx, font_size)
   const width = frame.cols * metrics.width
@@ -83,10 +88,15 @@ const draw_cursor = (ctx, frame, metrics, blink_on) => {
       break
     case 3: // hollow block
       ctx.strokeStyle = rgb(frame.colors.cursor)
-      ctx.strokeRect(px + 0.5, py + 0.5, metrics.width - 1, metrics.height - 1)
+      ctx.strokeRect(
+        px + PIXEL_CENTER,
+        py + PIXEL_CENTER,
+        metrics.width - 1,
+        metrics.height - 1
+      )
       break
     default: // block
-      ctx.globalAlpha = 0.6
+      ctx.globalAlpha = SELECTION_OPACITY
       ctx.fillRect(px, py, metrics.width, metrics.height)
       ctx.globalAlpha = 1
   }

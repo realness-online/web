@@ -16,11 +16,14 @@
  * @property {string} [head] Author-controlled HTML.
  * @property {string} [back_label]
  * @property {Object<string, PageMetadata>} [pages]
+ * @property {string[]} [selected_pages] Public routes of selected full HTML pages.
+ * @property {boolean} [pwa] Generate the public snapshot's manifest and worker.
  */
 
 /**
  * @typedef {object} Article
  * @property {string} slug
+ * @property {string} [itemid]
  * @property {string} title
  * @property {boolean} draft
  * @property {string} [date]

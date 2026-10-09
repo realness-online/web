@@ -54,7 +54,7 @@ The feed moves on an eight-hour rhythm, not a live stream. What you post on this
 
 #### Statements
 
-Text entries in the feed, grouped by day. Tap any statement to edit it in place. URLs stay as plain text, not links. Works offline without sign-in, and syncs once you sign in.
+Text entries in the feed, grouped by day. Edit your own statements with a tap on touch, a double-click on desktop, or Tab then Enter. Enter saves; Shift-Enter adds a line. The same editor works in poster captions. URLs stay as plain text, not links. Works offline without sign-in, and syncs once you sign in.
 
 #### Profile
 

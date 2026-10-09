@@ -71,9 +71,15 @@ export const create_pages = (site, templates, images, drafts = false) => {
       await mkdir(join(output_directory, 'blog', slug), { recursive: true })
       const description = data.description || strip_tags(html).slice(0, 160).trim()
       const og_image_path = await raster_og_image(data.img)
-      await write_file(join(output_directory, 'blog', slug, 'index.html'),
-        shell(title, article, { url: `/blog/${slug}`, og_image_path, description, type: 'article' }))
-      return { slug, title, date: data.date, img: data.img, focus: data.focus, draft, html, notes, updated: (await stat(file)).mtimeMs }
+      const page = shell(title, article, { url: `/blog/${slug}`, og_image_path, description, type: 'article' })
+      await write_file(join(output_directory, 'blog', slug, 'index.html'), page)
+      if (data.itemid) {
+        if (!/^\/\+\d+\/[a-z][a-z-]*\/\d+$/.test(data.itemid)) throw new Error(`unsafe itemid: ${data.itemid}`)
+        const item_directory = join(output_directory, data.itemid.slice(1))
+        await mkdir(item_directory, { recursive: true })
+        await write_file(join(item_directory, 'index.html'), page)
+      }
+      return { slug, title, itemid: data.itemid, date: data.date, img: data.img, focus: data.focus, draft, html, notes, updated: (await stat(file)).mtimeMs }
     },
 
     /** @param {import('./types.js').Article[]} articles */
@@ -116,6 +122,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
       const urls = [
         { loc: '/', lastmod: published[0]?.date },
         ...pages.map(name => ({ loc: `/${name}` })),
+        ...(site.selected_pages ?? []).map(loc => ({ loc })),
         ...published.map(a => ({ loc: `/blog/${a.slug}`, lastmod: a.date }))
       ]
       const xml = sitemap(urls)

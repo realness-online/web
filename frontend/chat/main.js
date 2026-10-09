@@ -126,6 +126,7 @@ const show_error = text => {
 
 /* Near a model-use limit, say so with a way to pay. The host asks the proxy,
    which words it; each step (75%, 90%, the 100% cutoff) shows once per limit per day. */
+const DATE_LENGTH = 10
 const check_limit = async () => {
   try {
     const response = await fetch(
@@ -133,7 +134,7 @@ const check_limit = async () => {
     )
     const warn = response.ok ? (await response.json()).warn : null
     if (!warn?.message) return
-    const key = `brayness-warned ${new Date().toISOString().slice(0, 10)} ${warn.limit} ${warn.at ?? ''}`
+    const key = `brayness-warned ${new Date().toISOString().slice(0, DATE_LENGTH)} ${warn.limit} ${warn.at ?? ''}`
     if (localStorage.getItem(key)) return
     localStorage.setItem(key, '1')
     status.replaceChildren()

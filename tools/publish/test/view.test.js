@@ -3,7 +3,12 @@ import { mkdir, mkdtemp, readFile, rm, writeFile, utimes } from 'node:fs/promise
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { add_source } from '../src/sources.js'
+
+const author = '/+15550001111'
+
+/** Make a vault file an item, the way the apps command does. */
+const add = async (vault, path, type = 'articles') => ({ id: await mint_item(vault, path, { author, type }) })
+import { mint_item } from '../src/sources.js'
 import { write_app, read_app } from '../src/sources.js'
 import { build_app, engine, renderer_path as example } from '../src/view.js'
 
@@ -16,7 +21,7 @@ async function harness(name, note, app) {
   const vault = join(root, 'vault')
   await mkdir(vault, { recursive: true })
   await writeFile(join(vault, 'note.md'), note)
-  const source = await add_source(vault, 'note.md', { kind: 'article' })
+  const source = await add(vault, 'note.md')
   await write_app(join(root, 'apps', app.type), { id: 'a-0123456789ab', ...app, vault: '../../vault', sources: [{ id: source.id, slug: 'note' }] })
   await writeFile(join(root, 'apps', app.type, 'site.json'), `${JSON.stringify({ name: 'Test', tagline: '', url: '', description: '', poster: 'example.svg' }, null, 2)}\n`)
   // The reference renderer reuses the product's root install.
@@ -41,6 +46,11 @@ test('a blog app renders a selected vault note with its own microdata', async ()
     const page = await readFile(join(built.dist, 'blog/note/index.html'), 'utf8')
     assert.match(page, /<article itemscope/)
     assert.match(page, /Body text\./)
+    const { id } = built.sources[0]
+    assert.ok(page.includes(`itemid="${id}"`))
+    assert.equal(await readFile(join(built.dist, id.slice(1), 'index.html'), 'utf8'), page)
+    const source = await readFile(join(root, 'vault/note.md'), 'utf8')
+    assert.ok(source.includes(`itemid: "${id}"`))
     assert.doesNotMatch(page, /data-diagrams/, 'a page without a diagram is never held back')
     assert.ok(existsSync(join(built.dist, 'sitemap.xml')))
   } finally { await rm(root, { recursive: true, force: true }) }
@@ -66,12 +76,12 @@ test('an explicitly selected asset overrides an example asset with the same path
   try {
     const poster = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="blue"/></svg>'
     await writeFile(join(root, 'vault/portrait.svg'), poster)
-    const asset = await add_source(join(root, 'vault'), 'portrait.svg', { kind: 'image' })
+    const asset = await add(join(root, 'vault'), 'portrait.svg', 'diagrams')
     const app_dir = join(root, 'apps/blog')
     const app = await read_app(app_dir)
     await write_app(app_dir, { ...app, assets: [{ id: asset.id, path: 'posters/example.svg' }] })
     const built = await build_app(root, 'blog', { example })
-    assert.equal(await readFile(join(built.dist, 'posters/example.svg'), 'utf8'), poster)
+    assert.equal(await readFile(join(built.dist, 'posters/example.svg'), 'utf8'), await readFile(join(root, 'vault/portrait.svg'), 'utf8'))
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
@@ -129,7 +139,7 @@ test('plans index orders sources by modification time, not selection order', asy
     const vault = join(root, 'vault')
     const older = (await read_app(join(root, 'apps/plans'))).sources[0]
     await writeFile(join(vault, 'new.md'), '# Newer\n')
-    const newer = await add_source(vault, 'new.md')
+    const newer = await add(vault, 'new.md')
     await utimes(join(vault, 'note.md'), 1000, 1000)
     await utimes(join(vault, 'new.md'), 2000, 2000)
     await write_app(join(root, 'apps/plans'), {
@@ -141,6 +151,52 @@ test('plans index orders sources by modification time, not selection order', asy
     assert.ok(index.indexOf('href="/blog/newer"') < index.indexOf('href="/blog/older"'))
     assert.doesNotMatch(index, /<details>/)
     assert.match(index, /<template>/)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('vault pages keep public and itemid routes, selected files, and survive moves', async () => {
+  const root = await harness('pages', '# Note\n', { type: 'plans' })
+  try {
+    const vault = join(root, 'vault')
+    const app_dir = join(root, 'apps/plans')
+    await writeFile(join(vault, 'map.html'), '<!doctype html><html lang="en" itemscope itemtype="https://schema.org/WebPage"><head><title>Map</title><link rel="stylesheet" href="/maps/map.css"></head><body><h1>Map</h1><pre class="mermaid">flowchart LR\n a --> b</pre></body></html>')
+    await writeFile(join(vault, 'map.css'), 'h1 { color: var(--accent) }')
+    const { id } = await add(vault, 'map.html', 'pages')
+    const app = await read_app(app_dir)
+    const pages = [{ id, path: 'maps/map.html', files: [{ from: 'map.css', path: 'maps/map.css' }] }]
+    await write_app(app_dir, { ...app, pages })
+    const built = await build_app(root, 'plans', { example })
+    assert.deepEqual(built.sources.find(source => source.id === id), { id, route: '/maps/map.html' })
+    const html = await readFile(join(built.dist, 'maps/map.html'), 'utf8')
+    assert.ok(html.includes(`itemid="${id}"`))
+    assert.ok(existsSync(join(built.dist, 'scripts/mermaid.min.js')), 'a vault-only diagram also ships Mermaid')
+    assert.equal(await readFile(join(built.dist, id.slice(1), 'index.html'), 'utf8'), html)
+    assert.match(await readFile(join(built.dist, 'maps/map.css'), 'utf8'), /var\(--accent\)/)
+    assert.match(await readFile(join(built.dist, 'sitemap.xml'), 'utf8'), /\/maps\/map.html/)
+    const { rename } = await import('node:fs/promises')
+    await rename(join(vault, 'map.html'), join(vault, 'moved.html'))
+    assert.equal(await readFile(join((await build_app(root, 'plans', { example })).dist, 'maps/map.html'), 'utf8'), html)
+    await write_app(app_dir, { ...app, pages: [] })
+    const dropped = await build_app(root, 'plans', { example })
+    assert.equal(existsSync(join(dropped.dist, 'maps/map.html')), false)
+    assert.equal(existsSync(join(dropped.dist, id.slice(1), 'index.html')), false)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('vault page files refuse traversal and public route collisions', async () => {
+  const root = await harness('page-boundary', '# Note\n', { type: 'plans' })
+  try {
+    const vault = join(root, 'vault')
+    await writeFile(join(vault, 'map.html'), '<html itemscope itemtype="https://schema.org/WebPage"></html>')
+    const { id } = await add(vault, 'map.html', 'pages')
+    const app_dir = join(root, 'apps/plans')
+    const app = await read_app(app_dir)
+    for (const path of ['../map.html', 'blog/note/index.html', 'index.html']) {
+      await write_app(app_dir, { ...app, pages: [{ id, path }] })
+      await assert.rejects(build_app(root, 'plans', { example }), /unsafe path|route already used/)
+    }
+    await write_app(app_dir, { ...app, pages: [{ id, path: 'map.html', files: [{ from: '../private.css', path: 'map.css' }] }] })
+    await assert.rejects(build_app(root, 'plans', { example }), /unsafe path/)
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 

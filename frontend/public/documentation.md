@@ -54,7 +54,7 @@ The feed moves on an eight-hour rhythm, not a live stream. What you post on this
 
 #### Statements
 
-Text entries in the feed, grouped by day. Tap any statement to edit it in place. URLs stay as plain text, not links. Works offline without sign-in, and syncs once you sign in.
+Text entries in the feed, grouped by day. Edit your own statements with a tap on touch, a double-click on desktop, or Tab then Enter. Enter saves; Shift-Enter adds a line. The same editor works in poster captions. URLs stay as plain text, not links. Works offline without sign-in, and syncs once you sign in.
 
 #### Profile
 
@@ -145,7 +145,7 @@ From the repo, after `npm run build`:
 CHROME_PATH=/path/to/Chromium npm run poster -- photo.jpg
 ```
 
-The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/poster-driver/` as SVG and PNG, named from the poster id.
+The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/brayness/poster-driver/` as SVG and PNG, named from the poster id.
 
 You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
 

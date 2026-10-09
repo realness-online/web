@@ -1,29 +1,32 @@
 // Ghostty theme "Subliminal", from /Applications/Ghostty.app/Contents/Resources/ghostty/themes/Subliminal
 // palette lines 0-15, plus background/foreground/cursor and selection.
 
+const HEX_RADIX = 16
+const rgb = hex => hex.match(/../g).map(channel => parseInt(channel, HEX_RADIX))
+
 export const subliminal = {
-  background: [0x28, 0x2c, 0x35],
-  foreground: [0xd4, 0xd4, 0xd4],
-  cursor: [0xc7, 0xc7, 0xc7],
-  cursor_text: [0x8c, 0x8c, 0x8c],
-  selection_background: [0x48, 0x4e, 0x5b],
-  selection_foreground: [0xff, 0xff, 0xff],
+  background: rgb('282c35'),
+  foreground: rgb('d4d4d4'),
+  cursor: rgb('c7c7c7'),
+  cursor_text: rgb('8c8c8c'),
+  selection_background: rgb('484e5b'),
+  selection_foreground: rgb('ffffff'),
   palette: [
-    [0x7f, 0x7f, 0x7f],
-    [0xe1, 0x5a, 0x60],
-    [0xa9, 0xcf, 0xa4],
-    [0xff, 0xe2, 0xa9],
-    [0x66, 0x99, 0xcc],
-    [0xf1, 0xa5, 0xab],
-    [0x5f, 0xb3, 0xb3],
-    [0xd4, 0xd4, 0xd4],
-    [0x7f, 0x7f, 0x7f],
-    [0xe1, 0x5a, 0x60],
-    [0xa9, 0xcf, 0xa4],
-    [0xff, 0xe2, 0xa9],
-    [0x66, 0x99, 0xcc],
-    [0xf1, 0xa5, 0xab],
-    [0x5f, 0xb3, 0xb3],
-    [0xd4, 0xd4, 0xd4]
+    rgb('7f7f7f'),
+    rgb('e15a60'),
+    rgb('a9cfa4'),
+    rgb('ffe2a9'),
+    rgb('6699cc'),
+    rgb('f1a5ab'),
+    rgb('5fb3b3'),
+    rgb('d4d4d4'),
+    rgb('7f7f7f'),
+    rgb('e15a60'),
+    rgb('a9cfa4'),
+    rgb('ffe2a9'),
+    rgb('6699cc'),
+    rgb('f1a5ab'),
+    rgb('5fb3b3'),
+    rgb('d4d4d4')
   ]
 }

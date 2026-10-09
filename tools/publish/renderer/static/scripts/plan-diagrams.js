@@ -7,11 +7,9 @@ export const size_diagrams = (diagrams) => {
     diagram.setAttribute('role', 'button')
     diagram.setAttribute('tabindex', '0')
     diagram.setAttribute('aria-label', 'Full-size diagram')
-    diagram.setAttribute('aria-pressed', 'true')
-    const first = svg.querySelector('.node')
-    if (first) diagram.scrollLeft = first.getBoundingClientRect().left - diagram.getBoundingClientRect().left - diagram.clientWidth / 2 + first.getBoundingClientRect().width / 2
-    let scroll_left = diagram.scrollLeft
-    let scroll_top = diagram.scrollTop
+    diagram.setAttribute('aria-pressed', 'false')
+    let scroll_left = null
+    let scroll_top = 0
     const toggle = () => {
       const expanded = diagram.getAttribute('aria-pressed') === 'true'
       if (expanded) {
@@ -19,6 +17,11 @@ export const size_diagrams = (diagrams) => {
         scroll_top = diagram.scrollTop
       }
       diagram.setAttribute('aria-pressed', String(!expanded))
+      if (!expanded && scroll_left === null) {
+        // first expand: center the first node
+        const first = svg.querySelector('.node')
+        scroll_left = first ? first.getBoundingClientRect().left - diagram.getBoundingClientRect().left - diagram.clientWidth / 2 + first.getBoundingClientRect().width / 2 : 0
+      }
       diagram.scrollLeft = expanded ? 0 : scroll_left
       diagram.scrollTop = expanded ? 0 : scroll_top
     }

@@ -18,10 +18,13 @@ const DAY = 10
  * @param {{ on_change?: () => void }} [options]
  */
 export const use_chat = (actor, { on_change = () => {} } = {}) => {
-  const messages = ref([])
+  const messages = ref(
+    /** @type {Array<{sender: string, text: string}>} */ ([])
+  )
   const draft = ref('')
   const status = ref('')
   const working = ref(false)
+  /** @type {AbortController | null} */
   let watching = null
   let stopped = false
 
@@ -69,10 +72,12 @@ export const use_chat = (actor, { on_change = () => {} } = {}) => {
   }
 
   const watch = async () => {
+    const actor_id = actor.value
+    if (!actor_id) return
     watching = new AbortController()
     let reply = null
     try {
-      const records = await watch_chat(current_user.value, actor.value, {
+      const records = await watch_chat(current_user.value, actor_id, {
         signal: watching.signal
       })
       for await (const record of records) {
