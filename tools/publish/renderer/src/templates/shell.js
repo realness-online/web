@@ -41,6 +41,9 @@ export const shell = (site, title, body, meta = {}, watch = false) => {
     <meta name="twitter:description" content="${escape_html(description)}">
     <meta name="twitter:image" content="${escape_html(og_image)}">
     <meta name="twitter:image:alt" content="${escape_html(full_title)}">
+    <link rel="stylesheet" href="/palette.css">
+    <link rel="stylesheet" href="/color.css">
+    <link rel="stylesheet" href="/font.css">
     <link rel="stylesheet" href="/style.css">${plans ? '\n  <link rel="stylesheet" href="/plans.css">' : ''}
     <link rel="icon" type="image/svg+xml" href="/icons.svg">
     <link rel="apple-touch-icon" href="/192.png">

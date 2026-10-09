@@ -39,11 +39,11 @@
     type="button"
     role="switch"
     itemprop="feed_filter"
-    :aria-checked="only_mine"
+    :aria-checked="String(!only_mine)"
     :data-enter="phonebook_motion === 'enter' ? 'phonebook' : null"
     :data-leave="phonebook_motion === 'leave' ? 'phonebook' : null"
-    aria-label="Toggle unshortened feed"
-    title="Unshortened"
+    :aria-label="only_mine ? 'Community off' : 'Community on'"
+    :title="only_mine ? 'Community off' : 'Community on'"
     @click="on_toggle">
     <svg viewBox="0 0 16 16" aria-hidden="true">
       <g itemprop="followed_person">
@@ -107,7 +107,7 @@
       outline: none;
     }
     focus-ring();
-    &[aria-checked='true'] {
+    &[aria-checked='false'] {
       color: var(--accent);
     }
     @media (hover: hover) and (pointer: fine) {
@@ -141,7 +141,7 @@
         transform: translate(0, 0);
       }
     }
-    &[data-enter='phonebook']:not([aria-checked='true']) > svg {
+    &[data-enter='phonebook']:not([aria-checked='false']) > svg {
       & > g:nth-child(1),
       & > g:nth-child(2) {
         feed-silhouette-slide();
@@ -154,7 +154,7 @@
         animation-delay: 0.04s;
       }
     }
-    &[data-leave='phonebook'][aria-checked='true'] > svg {
+    &[data-leave='phonebook'][aria-checked='false'] > svg {
       & > g:nth-child(1),
       & > g:nth-child(2) {
         feed-silhouette-slide();
@@ -168,7 +168,7 @@
         animation-delay: 0.04s;
       }
     }
-    &[aria-checked='true']:not([data-leave='phonebook']) > svg {
+    &[aria-checked='false']:not([data-leave='phonebook']) > svg {
       & > g:nth-child(1) {
         transform: translate(-12%, -40%) scale(0.82);
         opacity: 0;

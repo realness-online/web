@@ -72,5 +72,5 @@ test('harness extensions call the brayness command, never a runtime file path', 
     )
   assert.deepEqual(named, [])
   assert.match(build, /export BRAYNESS_ACTOR=1/)
-  assert.match(build, /turn-end\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\)/)
+  assert.match(build, /turn-end\|fetch\|git-credential\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\)/)
 })

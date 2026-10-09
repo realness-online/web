@@ -1,11 +1,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { artifacts_dir } from './lib/artifacts.js'
 import { read_jpeg_size } from './lib/jpeg-size.js'
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const project_root = path.join(__dirname, '..')
-const candidates_dir = path.join(project_root, 'artifacts', 'og-candidates')
+const candidates_dir = path.join(artifacts_dir, 'og-candidates')
 const og_path = path.join(project_root, 'public', 'og.jpg')
 
 const OG_WIDTH = 1200
@@ -18,7 +19,7 @@ const fail = message => {
 
 const [, , requested] = process.argv
 if (!requested)
-  fail('usage: npm run og:pick <file> (see artifacts/og-candidates)')
+  fail('usage: npm run og:pick <file> (see artifacts/brayness/og-candidates)')
 
 const file = requested.endsWith('.jpg') ? requested : `${requested}.jpg`
 const source = path.join(candidates_dir, file)

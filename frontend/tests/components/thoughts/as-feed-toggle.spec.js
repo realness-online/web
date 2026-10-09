@@ -23,10 +23,16 @@ describe('@/components/thoughts/as-feed-toggle.vue', () => {
 
   const button_attr = name => wrapper.get('button').element.getAttribute(name)
 
-  it('renders a toggle switch with the model value as aria-checked', () => {
-    const w = mount_comp(true)
-    expect(w.get('button').attributes('role')).toBe('switch')
-    expect(w.get('button').attributes('aria-checked')).toBe('true')
+  it('is a switch for the community, named by the state it is in', () => {
+    const off = mount_comp(true)
+    expect(off.get('button').attributes('role')).toBe('switch')
+    expect(off.get('button').attributes('aria-checked')).toBe('false')
+    expect(off.get('button').attributes('aria-label')).toBe('Community off')
+    expect(off.get('button').attributes('title')).toBe('Community off')
+    off.unmount()
+    const on = mount_comp(false)
+    expect(on.get('button').attributes('aria-checked')).toBe('true')
+    expect(on.get('button').attributes('aria-label')).toBe('Community on')
   })
 
   it('toggles from off to on and starts a leaving motion', async () => {

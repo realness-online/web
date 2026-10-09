@@ -57,7 +57,9 @@ if (dev) {
 const origins = (process.env.ORIGINS ?? "").split(",").filter(Boolean)
 // m8: both come from Secret Manager; without them the alert route answers 401.
 const alerts = { alert_token: process.env.ALERT_TOKEN, alert_webhook: process.env.HOST_ALERT_WEBHOOK }
+// h7: the GitHub App sync mints VM tokens with; without both, git answers 503.
+const git_app = process.env.GITHUB_APP_ID && process.env.GITHUB_APP_KEY ? { app_id: process.env.GITHUB_APP_ID, private_key: process.env.GITHUB_APP_KEY } : null
 
-sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET, ...alerts }).listen(port, host, () =>
+sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET, git_app, ...alerts }).listen(port, host, () =>
   console.log(`# sync service on http://${host}:${port}, storage ${where}`),
 )

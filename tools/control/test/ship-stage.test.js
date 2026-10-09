@@ -50,7 +50,8 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
   // A shipped actor may sign in with a Claude subscription instead of the proxy.
   assert.ok(settings.packages.includes('npm:pi-claude-oauth-adapter'))
   assert.ok('pi-claude-oauth-adapter' in npm.dependencies)
-  assert.ok(settings.packages.includes('npm:pi-mono-ask-user-question'))
+  // No forms: the question-dialog package stays home.
+  assert.ok(!settings.packages.includes('npm:pi-mono-ask-user-question'))
   const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
   assert.deepEqual(Object.keys(models.providers), ['brayness'])
   assert.ok(models.providers.brayness.models.some(model => model.id === 'inkling'))

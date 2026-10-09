@@ -1,32 +1,14 @@
 import { codeToHtml as code_to_html } from 'shiki'
+import { card_html } from '../static/scripts/parts.js'
 
 const entities = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }
 const code_block = /<pre(?: language="([^"]*)")?><code[^>]*>([\s\S]*?)<\/code><\/pre>/g
 const card_block = /<pre language="cardlink"><code[^>]*>([\s\S]*?)<\/code><\/pre>/g
 
-const escape = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const unescape_entities = text => text.replace(/&(amp|lt|gt|quot|#39);/g, (_, name) => entities[name])
 
-/**
- * An Obsidian cardlink fence: a pasted link as `key: value` lines, written by
- * the plugin from the page's own metadata. No fetch: the fields are already in
- * the note. Rendered as a link with its title, description, and host.
- */
-const cardlink = (code) => {
-  const fields = {}
-  for (const line of code.replace(/<[^>]*>/g, '').split('\n')) {
-    const found = /^\s*([a-z_]+)\s*:\s*(.*)$/i.exec(line)
-    if (found) fields[found[1].toLowerCase()] = unescape_entities(found[2]).trim().replace(/^"|"$/g, '')
-  }
-  if (!/^https?:\/\//.test(fields.url ?? '')) return null
-  const host = fields.host || new URL(fields.url).hostname
-  const title = fields.title || fields.url
-  const description = fields.description ? `<p itemprop="description">${escape(fields.description)}</p>` : ''
-  const icon = fields.favicon ? `<img src="${escape(fields.favicon)}" alt="" loading="lazy" width="16" height="16">` : ''
-  const image = fields.image ? `<img itemprop="image" src="${escape(fields.image)}" alt="" loading="lazy">` : ''
-  // The card is a link: the whole card is the target, so it holds the figure.
-  return `<a itemprop="url" href="${escape(fields.url)}"><figure>${image}<figcaption>${icon}<strong itemprop="name">${escape(title)}</strong><span itemprop="provider">${escape(host)}</span>${description}</figcaption></figure></a>`
-}
+/** An Obsidian cardlink fence, as comark escaped it, drawn by the shared part. */
+const cardlink = code => card_html(unescape_entities(code.replace(/<[^>]*>/g, '')))
 
 const card_paragraph = /<p>(<a itemprop="url"[\s\S]*?<figure>[\s\S]*?<\/figure><\/a>)<\/p>/g
 

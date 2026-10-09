@@ -6,10 +6,10 @@ Getting a downloaded `brayness-mac` to open on a stranger's Mac took two days
 ## Steps
 
 ```bash
-bash work/brayness/tools/desktop/build.sh      # universal binary -> artifacts/brayness-product/brayness-mac
-bash work/brayness/tools/desktop/sign.sh       # Developer ID + hardened runtime + entitlements.plist
-bash work/brayness/tools/desktop/notarize.sh   # zip, submit, wait for Accepted
-bash work/brayness/tools/desktop/gatekeeper-check.sh artifacts/brayness-product/brayness-mac
+bash apps/brayness/tools/desktop/build.sh      # universal binary -> artifacts/brayness-product/brayness-mac
+bash apps/brayness/tools/desktop/sign.sh       # Developer ID + hardened runtime + entitlements.plist
+bash apps/brayness/tools/desktop/notarize.sh   # zip, submit, wait for Accepted
+bash apps/brayness/tools/desktop/gatekeeper-check.sh artifacts/brayness-product/brayness-mac
 ```
 
 Order matters. Any change to the binary voids the signature, and a re-sign

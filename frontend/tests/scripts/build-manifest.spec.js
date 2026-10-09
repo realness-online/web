@@ -4,6 +4,7 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { artifacts_dir } from '../../scripts/lib/artifacts.js'
 
 const project_root = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -25,7 +26,7 @@ const run_manifest = () =>
 
 describe('build-manifest', () => {
   beforeEach(() => {
-    const artifacts = path.join(project_root, 'artifacts')
+    const artifacts = artifacts_dir
     fs.mkdirSync(artifacts, { recursive: true })
     dist_dir = fs.mkdtempSync(path.join(artifacts, 'build-manifest-'))
     manifest_path = path.join(dist_dir, 'build-manifest.json')

@@ -2,14 +2,14 @@
 # Signs the handed-out binary with the Developer ID certificate and the hardened
 # runtime, which is what notarization requires.
 #
-#   bash work/brayness/tools/desktop/sign.sh
+#   bash apps/brayness/tools/desktop/sign.sh
 #
 # The signature covers the file, so any change to the binary needs a new sign.
 # Rebuild first (tools/desktop/build.sh), then sign, then notarize (tools/desktop/notarize.sh).
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
-app="$root/work/brayness/tools/desktop"
+app="$root/apps/brayness/tools/desktop"
 binary="$root/artifacts/brayness-product/brayness-mac"
 
 identity="${BRAYNESS_SIGN_IDENTITY:-}"

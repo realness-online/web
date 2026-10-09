@@ -99,6 +99,8 @@ install -m 0755 "$GUEST_SRC/brayness-chat" "$TREE/usr/local/bin/brayness-chat"
 install -m 0644 "$GUEST_SRC/brayness-chat.md" "$TREE/usr/local/share/brayness-chat.md"
 install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
 install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
+install -m 0755 "$GUEST_SRC/brayness-chrome" "$TREE/usr/local/bin/brayness-chrome"
+install -m 0755 "$GUEST_SRC/brayness-read" "$TREE/usr/local/bin/brayness-read"
 install -m 0755 "$GUEST_SRC/brayness-site" "$TREE/usr/local/bin/brayness-site"
 install -m 0755 "$GUEST_SRC/brayness-loop-run" "$TREE/usr/local/bin/brayness-loop-run"
 install -m 0755 "$GUEST_SRC/brayness-loop" "$TREE/usr/local/bin/brayness-loop"
@@ -193,6 +195,31 @@ log "pi $PI_VERSION (global, from local build)"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
   --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION" --no-fund --no-audit
 
+# --------------------------------------------------------------- agent-browser
+# c3: the CLI only; actors have no Chrome. The wrapper leases a Chrome VM
+# through the door on first use (brayness-chrome) and drives it over CDP.
+AGENT_BROWSER_VERSION="${AGENT_BROWSER_VERSION:-0.31.1}"
+log "agent-browser $AGENT_BROWSER_VERSION (leases Chrome)"
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
+  --ignore-scripts "agent-browser@$AGENT_BROWSER_VERSION" --no-fund --no-audit
+chmod 0755 "$TREE"/usr/local/lib/node_modules/agent-browser/bin/agent-browser-linux-*
+rm -f "$TREE/usr/local/bin/agent-browser"
+cat > "$TREE/usr/local/bin/agent-browser" <<'WRAPPER'
+#!/bin/sh
+# agent-browser in an actor: every browser command runs in a leased Chrome VM.
+REAL=/usr/local/lib/node_modules/agent-browser/bin/agent-browser.js
+case "${1:-}" in ""|--version|-V|--help|-h|help|install|skills) exec /usr/local/bin/node "$REAL" "$@" ;; esac
+# One lease per user; a dead or expired one is replaced on the next command.
+LEASE="/tmp/brayness-chrome-$(id -u)"
+url="$(cat "$LEASE" 2> /dev/null)"
+if [ -z "$url" ] || ! curl -fs -m 3 -o /dev/null "$url/json/version"; then
+  url="$(/usr/local/bin/brayness-chrome)" || exit 1
+  printf '%s\n' "$url" > "$LEASE"
+fi
+exec /usr/local/bin/node "$REAL" --cdp "$url" "$@"
+WRAPPER
+chmod 0755 "$TREE/usr/local/bin/agent-browser"
+
 # ---------------------------------------------------------------------- harness
 # Actor files live at /brayness; exports carry the harness and its work/.
 log "stock harness -> /brayness"
@@ -228,16 +255,20 @@ export BRAYNESS_STATE="${BRAYNESS_STATE:-/brayness/.pi/agent/state}"
 export BRAYNESS_ACTOR=1
 # `brayness publish [dir]` asks the host to serve a built site (the door).
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
+# `brayness chrome` leases a fresh Chrome VM through the door (c2).
+if [ "${1:-}" = chrome ]; then shift; exec /usr/local/bin/brayness-chrome "$@"; fi
 # Actor sync uses the installed shared Node client and a door-issued pass.
-case "${1:-}" in sync|turn-start|turn-end|files|store|login|logout|whoami|ls|cat|cp|rm|example)
+case "${1:-}" in sync|turn-start|turn-end|fetch|git-credential|files|store|login|logout|whoami|ls|cat|cp|rm|example)
   exec /usr/local/bin/node /usr/local/lib/brayness/tools/cli/bin/brayness.js "$@" ;;
 esac
 # `brayness loop "<goal>"` hands long work to a loop in its own actor.
 if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/brayness-loop "$@"; fi
 case "${1:-}" in -h|--help)
   echo "brayness publish [dir]  serve a built site from this actor; prints its link"
+  echo "brayness chrome [return]  lease a fresh Chrome; prints its DevTools address"
   echo "brayness loop \"<goal>\"  start a loop in its own actor; prints its id"
   echo "brayness loop report <id>  a loop's status, runs, and log tail"
+  echo "brayness fetch <path>  pull a file this light actor left in storage"
   echo ;;
 esac
 # exec, not a symlink: bin/pi resolves the harness root from its own path.
@@ -252,6 +283,11 @@ export TMPDIR=/var/tmp
 exec /brayness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/brayness"
+
+# h7: git asks sync, through this VM's own pass, for an hour-long GitHub token.
+# Nothing is stored; useHttpPath tells the helper which repo.
+chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/brayness git-credential'
+chroot "$TREE" git config --system credential.https://github.com.useHttpPath true
 
 # Keep the caches out of /var/tmp's 30-day age cleaning.
 cat > "$TREE/etc/tmpfiles.d/brayness-pi-cache.conf" <<'TMPFILES'
@@ -318,7 +354,7 @@ TMPFILES
 if [ "$STAGE" != base ]; then
   log "skill checks"
   chroot "$TREE" runuser -u brayness -- env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
-    sh -c 'cd /brayness && node bin/check-skills.js --run' \
+    sh -c 'cd /brayness && node bin/check-skills.js --run --no-browser' \
     || { echo "a shipped skill's check failed" >&2; exit 1; }
 fi
 

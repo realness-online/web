@@ -9,12 +9,12 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 out="$root/artifacts/brayness-product"
 stage="$out/build"
 
-node "$root/work/brayness/tools/control/scripts/ship-stage.js"
+node "$root/apps/brayness/tools/control/scripts/ship-stage.js"
 rm -rf "$stage"
 mkdir -p "$stage"
-. "$root/work/brayness/lib/output.sh"
+. "$root/apps/brayness/lib/output.sh"
 cp -R "$OUT/ship/." "$stage/"
-cp "$root/work/brayness/tools/desktop/entry.ts" "$root/work/brayness/tools/desktop/deno.json" "$stage/"
+cp "$root/apps/brayness/tools/desktop/entry.ts" "$root/apps/brayness/tools/desktop/deno.json" "$stage/"
 
 # One captured version for every target, with a static import Deno can bundle.
 pi_version="$(<"$stage/.pi-version")"

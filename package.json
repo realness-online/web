@@ -85,6 +85,7 @@
     "og:candidates": "npm run build:frontend && cd frontend && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/generate-og-candidates.js",
     "og:pick": "cd frontend && node scripts/pick-og.js",
     "poster": "cd frontend && node scripts/render-poster.js",
+    "eval:chat-parts": "node frontend/scripts/chat-parts-eval.js",
     "prints:previews": "npm run build:frontend && cd frontend && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/render-print-previews.js",
     "score": "cd frontend && CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
     "serve:frontend": "cd frontend && vp preview",

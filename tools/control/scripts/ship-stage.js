@@ -30,10 +30,7 @@ export const HOME_IN_PI = ['skills', 'prompts', 'extensions']
 export const HOME_ONLY = {
   'nvim-buffers': "reads Scott's Neovim",
   'zoom-to-ableton': "carries Scott's effect rack",
-  'vuetify-to-semantic': "carries a client's codebase (seeq-app)",
-  // Chrome takes ~45 s to start in 483 MB; web-md reads by fetch or Firecrawl.
-  'agent-browser': 'actors have no browser until c3',
-  'vue-inspect': 'drives agent-browser'
+  'vuetify-to-semantic': "carries a client's codebase (seeq-app)"
 }
 
 // Packages a shipped harness cannot use cost startup seconds on two vCPUs: no

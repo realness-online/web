@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
 import { ref, nextTick, defineComponent, h } from 'vue'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import Thoughts from '@/views/Thoughts.vue'
+import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
 import { del } from 'idb-keyval'
 import { posting, scroll_position } from '@/use/posting'
 import { storytelling, only_mine } from '@/utils/preference'
@@ -182,6 +183,7 @@ vi.mock('@/utils/preference', () => ({
   aspect_ratio_mode: mock_aspect_ratio_mode,
   menu: mock_menu,
   only_mine: mock_only_mine,
+  home_view: { value: 'thoughts' },
   mosaic: { value: false },
   boulders: { value: false },
   rocks: { value: false },
@@ -229,6 +231,10 @@ const stubs = {
     name: 'AsFeedToggle',
     props: ['modelValue'],
     template: '<div class="as-feed-toggle-stub" />'
+  },
+  'as-workspace': {
+    name: 'AsWorkspace',
+    template: '<aside class="as-workspace-stub" />'
   },
   'as-svg-processing': {
     name: 'AsSvgProcessing',
@@ -315,9 +321,12 @@ describe('Thoughts', () => {
       const wrapper = await settled(mount())
       expect(wrapper.find('section#thoughts[data-page]').exists()).toBe(true)
       expect(wrapper.find('h1').text()).toBe('Thoughts')
+      // Signed in, the feed toggle lives in the chat panel; chat takes its place.
       expect(wrapper.findComponent({ name: 'AsFeedToggle' }).exists()).toBe(
-        true
+        false
       )
+      expect(wrapper.findComponent(AsChatToggle).exists()).toBe(true)
+      expect(wrapper.findComponent({ name: 'AsWorkspace' }).exists()).toBe(true)
       expect(wrapper.findComponent({ name: 'AsTextarea' }).exists()).toBe(true)
       expect(wrapper.findComponent({ name: 'AsDays' }).exists()).toBe(true)
       expect(wrapper.find('.poster-stub').exists()).toBe(true)

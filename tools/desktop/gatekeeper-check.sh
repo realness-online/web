@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Does a downloaded copy of the binary open on this Mac?
 #
-#   bash work/brayness/tools/desktop/gatekeeper-check.sh artifacts/brayness-product/brayness-mac
+#   bash apps/brayness/tools/desktop/gatekeeper-check.sh artifacts/brayness-product/brayness-mac
 #
 # Copies the binary into a fresh directory, zips it, unzips it elsewhere, marks
 # the copy as downloaded, and runs it. This is what a stranger's double-click

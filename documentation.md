@@ -112,7 +112,7 @@ Gotchas that bit; carry them through the h4 port.
 - Actors read Realness-owned folders, never write or sync them.
 - The host pass is read-only, renews itself, may list paths.
 - Sync is the only key holder; hosted actors cannot switch checks off.
-- Sync never merges; both changed keeps both copies.
+- Sync merges Pi sessions entry by entry; other files changed on both sides keep both copies.
 - Each folder has one writer: Realness or the harness.
 - Each sync deploy trusts only its own project's sign-in.
 - Phone numbers never appear in app URLs, logs, or referrers.
@@ -1045,7 +1045,6 @@ block and net, and worth revisiting when r3 measures anything.
 Deployed on 2026-10-07 (x4): `check:host` 28/28 and `check:chat` passed against
 `brayness-demo` through a tunnel, and a phone sign-in reached Pi in the browser
 terminal.
-
 
 Every script was read and run for real on 2026-09-18; the checks now live in
 `artifacts/firecracker/webspace-archive/scripts/`. `dev-build.sh` kept a prior

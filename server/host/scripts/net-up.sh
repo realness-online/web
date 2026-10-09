@@ -24,6 +24,13 @@ ACTOR_HOST_PORTS="${ACTOR_HOST_PORTS:-}"
 # prefix, so no actor rule ever matches an app and no app rule an actor.
 APP_MATCH="${APP_MATCH:-fc-app+}"
 APP_PORT="${APP_PORT:-8080}"
+# Chrome VMs (c1) own /30s in 172.18: the open internet like an actor, and the
+# host may open DevTools on $CHROME_PORT. Nothing else reaches one.
+CHROME_MATCH="${CHROME_MATCH:-fc-chrome+}"
+CHROME_SUBNET="${CHROME_SUBNET:-172.18.0.0/16}"
+CHROME_PORT="${CHROME_PORT:-9222}"
+POOL_MATCH="${POOL_MATCH:-brc+}"
+POOL_SUBNET="${POOL_SUBNET:-172.19.0.0/16}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 [ -n "$UPLINK" ] && [ "$UPLINK" != null ] || { echo "no default route on the host" >&2; exit 1; }
@@ -86,8 +93,48 @@ for cmd in iptables ip6tables; do
   $cmd -C FORWARD -o "$APP_MATCH" -j DROP 2> /dev/null || $cmd -I FORWARD 1 -o "$APP_MATCH" -j DROP
 done
 
+# Chrome VMs: internet egress, nothing local, no Chrome to Chrome.
+add_rule filter FORWARD -i "$UPLINK" -o "$CHROME_MATCH" -d "$CHROME_SUBNET" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+add_rule nat POSTROUTING -s "$CHROME_SUBNET" -o "$UPLINK" -j MASQUERADE
+chain iptables filter BRAYNESS-CHROME-OUT FORWARD "$CHROME_MATCH"
+iptables -A BRAYNESS-CHROME-OUT -o "$CHROME_MATCH" -j DROP
+for range in $BLOCKED; do iptables -A BRAYNESS-CHROME-OUT -d "$range" -j DROP; done
+iptables -A BRAYNESS-CHROME-OUT -s "$CHROME_SUBNET" -o "$UPLINK" -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A BRAYNESS-CHROME-OUT -j DROP
+chain iptables filter BRAYNESS-CHROME-IN INPUT "$CHROME_MATCH"
+iptables -A BRAYNESS-CHROME-IN -p tcp --sport "$CHROME_PORT" -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -A BRAYNESS-CHROME-IN -j DROP
+chain ip6tables filter BRAYNESS-CHROME-OUT FORWARD "$CHROME_MATCH"
+ip6tables -A BRAYNESS-CHROME-OUT -j DROP
+chain ip6tables filter BRAYNESS-CHROME-IN INPUT "$CHROME_MATCH"
+ip6tables -A BRAYNESS-CHROME-IN -j DROP
+
+# Chrome pool copies (c2, chrome-pool.js): each in its own namespace behind a
+# veth named brc-<n>-o at 172.19.<n>.1. Internet egress, nothing local, no
+# copy to copy. BRAYNESS-LEASE, filled per lease, comes first in both the
+# actor and pool chains: it opens one actor to its one copy and back.
+add_rule filter FORWARD -i "$UPLINK" -o "$POOL_MATCH" -d "$POOL_SUBNET" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+add_rule nat POSTROUTING -s "$POOL_SUBNET" -o "$UPLINK" -j MASQUERADE
+iptables -N BRAYNESS-LEASE 2> /dev/null || true  # never flushed here: leases outlive a re-run
+iptables -C BRAYNESS-OUT -j BRAYNESS-LEASE 2> /dev/null || iptables -I BRAYNESS-OUT 1 -j BRAYNESS-LEASE
+chain iptables filter BRAYNESS-POOL-OUT FORWARD "$POOL_MATCH"
+iptables -A BRAYNESS-POOL-OUT -j BRAYNESS-LEASE
+iptables -A BRAYNESS-POOL-OUT -o "$POOL_MATCH" -j DROP
+for range in $BLOCKED; do iptables -A BRAYNESS-POOL-OUT -d "$range" -j DROP; done
+iptables -A BRAYNESS-POOL-OUT -s "$POOL_SUBNET" -o "$UPLINK" -m conntrack --ctstate NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A BRAYNESS-POOL-OUT -j DROP
+chain iptables filter BRAYNESS-POOL-IN INPUT "$POOL_MATCH"
+iptables -A BRAYNESS-POOL-IN -p tcp --sport "$CHROME_PORT" -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -A BRAYNESS-POOL-IN -j DROP
+chain ip6tables filter BRAYNESS-POOL-OUT FORWARD "$POOL_MATCH"
+ip6tables -A BRAYNESS-POOL-OUT -j DROP
+chain ip6tables filter BRAYNESS-POOL-IN INPUT "$POOL_MATCH"
+ip6tables -A BRAYNESS-POOL-IN -j DROP
+
 echo "OK: $TAP ${TAP_IP} -> $UPLINK"
 echo "    ip_forward=$(sysctl -n net.ipv4.ip_forward)"
 echo "    egress: internet only; host ports: ${ACTOR_HOST_PORTS:-none}"
 echo "    apps ($APP_MATCH): host reaches :$APP_PORT; no egress"
+echo "    chrome ($CHROME_MATCH): host reaches :$CHROME_PORT; internet only"
+echo "    pool ($POOL_MATCH): host reaches :$CHROME_PORT; internet only; leases in BRAYNESS-LEASE"
 echo "    FORWARD policy=$(iptables -nL FORWARD | sed -n '1s/.*policy \([A-Z]*\).*/\1/p')"

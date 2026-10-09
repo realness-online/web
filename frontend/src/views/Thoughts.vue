@@ -47,6 +47,9 @@
   import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
   import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
+  import AsWorkspace from '@/components/chat/as-workspace.vue'
+  import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
+  import { use_home_view } from '@/use/home-view'
 
   const from_blog = ref(
     new URLSearchParams(window.location.search).get('from') === 'blog'
@@ -458,6 +461,10 @@
     document.querySelector('.thoughts-shell')?.remove()
   }
 
+  /* Asking is not posting: chat has its own input, on the left, beside
+     thoughts or the TUI, or alone. Covered, the feed is inert. */
+  const { view: home_view, shows } = use_home_view()
+
   const { register } = use_keymap('Thoughts')
   register('poster::Create_New', () => select_photo?.())
 
@@ -566,11 +573,13 @@
     ref="statements_ref"
     data-page
     :data-storytelling="storytelling || undefined"
-    :data-slice="aspect_ratio_mode !== 'auto' || undefined">
+    :data-slice="aspect_ratio_mode !== 'auto' || undefined"
+    :data-chat="home_view === 'chat-thoughts' || undefined"
+    :inert="!shows.thoughts || undefined">
     <header>
-      <as-feed-toggle v-model="only_mine" />
+      <as-feed-toggle v-if="!current_user" v-model="only_mine" />
+      <as-chat-toggle v-if="current_user" />
       <a v-if="from_blog" :href="from_blog">←</a>
-      <router-link v-if="current_user" id="chat" to="/chat">Chat</router-link>
       <router-link id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>
@@ -627,11 +636,26 @@
       </template>
     </as-days>
   </section>
+  <as-workspace v-if="current_user" />
 </template>
 
 <style lang="stylus">
+  // Covered by chat or the TUI, the feed holds still and its toolbar steps out.
+  :root:has(section#thoughts[inert]) {
+    overflow: hidden;
+    & footer[data-footer-visible] {
+      visibility: hidden;
+    }
+  }
   section#thoughts {
     position: relative;
+    // With chat open on a wide screen, the feed makes room beside it.
+    transition: padding-inline-start var(--duration-subject, 0.3s) var(--ease-reveal, ease-out);
+    @media (min-width: display-begins) {
+      &[data-chat] {
+        padding-inline-start: page-width;
+      }
+    }
     display: flex;
     flex-direction: column;
     & > section[data-processing-queue] {
@@ -698,12 +722,9 @@
       & > a > svg {
        fill: var(--accent);
       }
-      & > a#chat {
-        margin-left: auto;
-        color: var(--accent);
-      }
-      & > a#chat + a#about {
-        margin-left: 0;
+      // Hangs from the header's top, level with chat's community toggle.
+      & > button[data-chat-toggle] {
+        align-self: flex-start;
       }
       & > a#about {
         margin-left: auto;

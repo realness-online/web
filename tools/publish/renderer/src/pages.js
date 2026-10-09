@@ -13,7 +13,7 @@ import { title_case } from './text.js'
  * @param {boolean} [drafts=false]
  */
 export const create_pages = (site, templates, images, drafts = false) => {
-  const { shell, article_body, index_body, sitemap } = templates
+  const { shell, article_body, index_body, sitemap, related_nav } = templates
   const { raster_og_image } = images
   const plans = site.type === 'plans'
   const articles_directory = 'content/articles'
@@ -28,7 +28,30 @@ export const create_pages = (site, templates, images, drafts = false) => {
     return parts.join('/')
   }
   
+  const path_of = (href) => href.replace(/\/+$/, '') || '/'
+  /** @type {Map<string, {title: string, href: string}[]>} page path to its group */
+  const groups = new Map()
+
   return {
+    /**
+     * Read every plan's front matter `related` before any page renders, so
+     * each page in a group knows the group.
+     * @param {string[]} files
+     */
+    async load_groups(files) {
+      for (const file of files) {
+        const src = await read_file(file, 'utf8')
+        const { frontmatter: data } = await parse(src)
+        const links = (Array.isArray(data.related) ? data.related : []).filter(l => l?.title && l?.href)
+        if (!links.length) continue
+        const heading = src.match(/^# (.+)$/m)
+        const slug = article_slug(file)
+        const owner = { title: data.title || heading?.[1] || title_case(slug.replace(/-/g, ' ')), href: `/blog/${slug}` }
+        const group = [owner, ...links]
+        for (const { href } of group) if (!groups.has(path_of(href))) groups.set(path_of(href), group)
+      }
+    },
+
     /** @param {string} file */
     async build_article(file) {
       const src = await read_file(file, 'utf8')
@@ -44,7 +67,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
       const draft = data.draft === true || data.draft === 'true'
       if (draft && !drafts) return { slug, title, date: data.date, draft }
       const { html, notes } = footnote(plate(await highlight(body)))
-      const article = article_body(data, title, html, notes)
+      const article = article_body(data, title, html, notes, related_nav(groups.get(`/blog/${slug}`), `/blog/${slug}`))
       await mkdir(join(output_directory, 'blog', slug), { recursive: true })
       const description = data.description || strip_tags(html).slice(0, 160).trim()
       const og_image_path = await raster_og_image(data.img)
@@ -70,7 +93,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
       const og_image_path = await raster_og_image()
       for (const name of names) {
         const meta = site.pages?.[name] || {}
-        const body = await read_file(join(pages_directory, `${name}.html`), 'utf8')
+        const body = related_nav(groups.get(`/${name}`), `/${name}`) + await read_file(join(pages_directory, `${name}.html`), 'utf8')
         await mkdir(join(output_directory, name), { recursive: true })
         await write_file(join(output_directory, name, 'index.html'), shell(meta.title || title_case(name.replace(/-/g, ' ')), body, {
           url: `/${name}`,

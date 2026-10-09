@@ -141,13 +141,13 @@ export const terminate = async (pid, seconds = 10) => {
  * A fresh VM: the seed from the template disk, or an app. `readOnly` maps
  * drive ids to extra disks attached read-only; an app has no `uds`, so no vsock.
  */
-export const boot = async (api, { kernel, disk, tap, uds, mac, cid, vcpus, mib, readOnly = {} }) => {
+export const boot = async (api, { kernel, disk, tap, uds, mac, cid, vcpus, mib, huge_pages, readOnly = {} }) => {
   await api.put("/boot-source", { kernel_image_path: kernel, boot_args: BOOT_ARGS })
   await api.put("/drives/rootfs", { drive_id: "rootfs", path_on_host: disk, is_root_device: true, is_read_only: false })
   for (const [id, path] of Object.entries(readOnly)) {
     await api.put(`/drives/${id}`, { drive_id: id, path_on_host: path, is_root_device: false, is_read_only: true })
   }
-  await api.put("/machine-config", { vcpu_count: vcpus, mem_size_mib: mib })
+  await api.put("/machine-config", { vcpu_count: vcpus, mem_size_mib: mib, ...(huge_pages && { huge_pages }) })
   await api.put("/network-interfaces/eth0", { iface_id: "eth0", host_dev_name: tap, guest_mac: mac })
   if (uds) await api.put("/vsock", { guest_cid: cid, uds_path: uds })
   await api.put("/actions", { action_type: "InstanceStart" })
@@ -158,12 +158,12 @@ export const pause = (api) => api.patch("/vm", { state: "Paused" })
 export const createSnapshot = (api, state, mem) =>
   api.put("/snapshot/create", { snapshot_type: "Full", snapshot_path: state, mem_file_path: mem })
 
-/** Resume a snapshot as an actor, running on return, still the seed until init (f6). */
+/** Resume a snapshot, running on return. Actors pass a vsock; a Chrome VM has none (c1). */
 export const loadSnapshot = (api, state, mem, tap, uds) =>
   api.put("/snapshot/load", {
     snapshot_path: state,
     mem_backend: { backend_path: mem, backend_type: "File" },
     network_overrides: [{ iface_id: "eth0", host_dev_name: tap }],
-    vsock_override: { uds_path: uds },
+    ...(uds && { vsock_override: { uds_path: uds } }),
     resume_vm: true,
   })

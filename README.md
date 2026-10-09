@@ -46,7 +46,6 @@ nothing while it sleeps. Hosts are VMs in their environment's project; developme
 - `tools/desktop/`: the signed download that boots pi with the harness inside.
 - `server/lima/fc-local.yaml`: the dev loop on this Mac.
 - `frontend/`: imported Realness app, profiles, artwork, and tests.
-  `apps/realness` in the harness is a compatibility link here.
 - `lib/sign-on/`: shared sign-in flow, Node login, and host passes; the page is Realness `/sign-on`.
 - `lib/output.js` and `lib/output.sh`: one output rule for Node and shell.
   `BRAYNESS_OUT` wins; otherwise `artifacts/brayness` in a harness, or `dist`
@@ -93,10 +92,10 @@ Someone who will not run a setup script gets a working environment.
 All four run through `tools/control/`, as `node tools/control/bin/webspace.js <env> ...`.
 Commands run on the Mac unless a step says otherwise.
 
-| Direction          | Command               | What it does                             |
-| ------------------ | --------------------- | ---------------------------------------- |
-| Build the template | `dev build`           | stage the harness, build `template.ext4` |
-| Run it locally     | `dev setup`, `dev up` | Lima guest, then volume + TAP + API      |
+| Direction          | Command                | What it does                             |
+| ------------------ | ---------------------- | ---------------------------------------- |
+| Build the template | `dev build`            | stage the harness, build `template.ext4` |
+| Run it locally     | `dev setup`, `dev up`  | Lima guest, then volume + TAP + API      |
 | Run a host         | `cloud host up <name>` | create, bootstrap, check, serve          |
 | Move actors        | `cloud host drain`     | export every actor to GCS                |
 

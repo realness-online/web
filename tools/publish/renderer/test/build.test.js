@@ -8,7 +8,7 @@ import { test } from 'node:test'
 
 const execute = promisify(execFile)
 const engine = new URL('../build.js', import.meta.url).pathname
-const scratch = new URL('../../../../../artifacts/brayness/renderer/', import.meta.url).pathname
+const scratch = new URL('../../../../../../artifacts/brayness/renderer/', import.meta.url).pathname
 const svg = color => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${color}"/></svg>`
 
 async function fixture(type = 'blog') {

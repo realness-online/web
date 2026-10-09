@@ -99,6 +99,8 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
   let lastKey = 0
   let keys = 0
   let seen = ""
+  // The terminal's last output, so a Pi that exits says why.
+  let tail = ""
   try {
     socket.write(`${JSON.stringify({ op: "resize", cols: 80, rows: 24 })}\n`)
     while (Date.now() - started < seconds * 1000) {
@@ -109,8 +111,12 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
       if (line === null && lines.closed) throw new VsockError("the seed's terminal closed while warming pi")
       if (line?.length) {
         const message = JSON.parse(line)
-        if (message.op === "exit") throw new VsockError(`pi exited while warming: ${line}`)
+        if (message.op === "exit") {
+          const said = tail.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "").trim().slice(-600)
+          throw new VsockError(`pi exited while warming: ${line}${said ? `\n${said}` : ""}`)
+        }
         const chunk = Buffer.from(message.data_b64 ?? "", "base64").toString("latin1")
+        tail = (tail + chunk).slice(-4000)
         if (!opened) {
           if (chunk.includes("# ")) {
             send(PI_OPENER)
@@ -287,6 +293,14 @@ export class ActorStore {
     } catch (error) {
       LOG.warn(`actor ${record.id} recovery failed: ${error.message}`)
     }
+    // Recovered or not, the terminal gets its Pi now; a failed recovery is in the trace.
+    try {
+      const { code, err } = await vsock.execInGuest(record.vsockPath, [ACTOR_INIT, "start-pi"], { timeout: this.bootTimeout, port: this.vsockPort })
+      if (code !== 0) LOG.warn(`actor ${record.id} Pi start exited ${code}: ${err.toString().trim().slice(-200)}`)
+      this.trace(record.id, "pi-start", { ms: Date.now() - started })
+    } catch (error) {
+      LOG.warn(`actor ${record.id} Pi start failed: ${error.message}`)
+    }
   }
 
   /** k1: before pausing, push the actor's work to sync as its owner; retire waits for this. */
@@ -318,7 +332,7 @@ export class ActorStore {
       host.createTap(record.tap)
       const timings = await this.#start(record, join(this.seedDir, STATE), join(this.seedDir, MEM))
       const init_started = performance.now()
-      Object.assign(record, await this.#initActor(record))
+      Object.assign(record, await this.#initActor(record, { pi_after_recovery: Boolean(this.syncUrl) }))
       const init_ms = performance.now() - init_started
       this.#write(record)
       this.trace(record.id, "create", { hostname: record.hostname, machine_id: record.machine_id, tap: record.tap, pid: record.pid, ...timings, init_ms, ms: performance.now() - started })
@@ -384,8 +398,10 @@ export class ActorStore {
   }
 
   /** Turn the resumed clone into this actor (f6): clock, identity, address. */
-  async #initActor(record) {
-    const argv = [ACTOR_INIT, record.id, String(Math.floor(Date.now() / 1000)), `${host.tapGuest(record.tap)}/30`]
+  async #initActor(record, { pi_after_recovery = false } = {}) {
+    // o0: a new actor's Pi waits for recovery, so its extensions see the harness.
+    const later = pi_after_recovery ? ["env", "BRAYNESS_PI_AFTER_RECOVERY=1"] : []
+    const argv = [...later, ACTOR_INIT, record.id, String(Math.floor(Date.now() / 1000)), `${host.tapGuest(record.tap)}/30`]
     const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, { timeout: this.bootTimeout, port: this.vsockPort })
     if (code !== 0) throw new VsockError(`actor-init on ${record.id} exited ${code}: ${err.toString().trim()}`)
     LOG.info(`actor ${record.id} initialized: ${out.toString().trim()}`)

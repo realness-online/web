@@ -1,6 +1,6 @@
 import { shell } from './templates/shell.js'
 import { poster } from './templates/figure.js'
-import { article_body } from './templates/article.js'
+import { article_body, related_nav } from './templates/article.js'
 import { index_body } from './templates/index.js'
 import { sitemap } from './templates/sitemap.js'
 
@@ -26,6 +26,9 @@ export const create_templates = (site, poster_sizes, watch = false) => {
     },
     poster(...args) {
       return render_poster(...args)
+    },
+    related_nav(...args) {
+      return related_nav(...args)
     },
     article_body(...args) {
       return article_body(render_poster, ...args)

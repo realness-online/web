@@ -8,10 +8,10 @@ catalog identity and assigns stable slugs. Builds stay in `artifacts/apps/`.
 ## Commands
 
 ```sh
-node work/brayness/tools/publish/bin/publish.js app build blog
-node work/brayness/tools/publish/bin/publish.js app publish blog --url <sync-url>
-node work/brayness/tools/publish/bin/publish.js app unpublish blog --url <sync-url>
-node work/brayness/tools/publish/bin/publish.js app publish blog --github <owner/repo> [--dry-run]
+node apps/brayness/tools/publish/bin/publish.js app build blog
+node apps/brayness/tools/publish/bin/publish.js app publish blog --url <sync-url>
+node apps/brayness/tools/publish/bin/publish.js app unpublish blog --url <sync-url>
+node apps/brayness/tools/publish/bin/publish.js app publish blog --github <owner/repo> [--dry-run]
 ```
 
 `--github` builds without drafts and commits `dist/` onto the `gh-pages`
@@ -33,13 +33,13 @@ names the folder (default `examples`). `APPS_EXAMPLE` overrides it. Outdated
 renderers are refused.
 
 ```sh
-node work/brayness/tools/publish/bin/publish.js app build plans
+node apps/brayness/tools/publish/bin/publish.js app build plans
 ```
 
 ## Tests
 
 ```sh
-cd work/brayness && npm test
+cd apps/brayness && npm test
 ```
 
 The publish checks run the public command against a real local sync service,

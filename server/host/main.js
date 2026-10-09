@@ -11,12 +11,15 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { parseArgs as parse_args } from 'node:util'
 import { Door } from './src/door.js'
+import { ChromePool, render_page } from './src/chrome-pool.js'
+import { WebEngine } from './src/web-engine.js'
+import { ChromeLeases } from './src/chrome-leases.js'
 import { Loops } from './src/loops.js'
 import { HostStatus } from './src/status.js'
 import { ActorRequests } from './src/requests.js'
 import { SyncSites } from './src/sync-sites.js'
 import { hostname } from 'node:os'
-import { readFileSync as read_file_sync } from 'node:fs'
+import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
 import { SyncMirror } from './src/sync-mirror.js'
 import { logger } from './src/log.js'
 import * as pty from './src/pty.js'
@@ -142,7 +145,32 @@ const loops = new Loops(store, { mirror, host })
 const site_url = store.syncSites
   ? `${(process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
-new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops).start()
+// Actors lease Chrome only where the host has the Chrome image (c2); off by BRAYNESS_CHROME_POOL=off.
+const chrome_image = process.env.BRAYNESS_CHROME_IMAGE ?? '/opt/fc/chrome.ext4'
+const chrome_pool =
+  process.env.BRAYNESS_CHROME_POOL !== 'off' && exists_sync(chrome_image)
+    ? new ChromePool({ root: join(values.volume, 'chrome-pool'), image: chrome_image, kernel: values.kernel, binary: values.firecracker })
+    : null
+const chrome = chrome_pool ? new ChromeLeases(chrome_pool) : null
+// The internet engine (r2): one shared cache per host; Chrome renders in a throwaway copy.
+const render = chrome_pool
+  ? async (url) => {
+      const copy = await chrome_pool.restore()
+      try {
+        return await render_page(copy.address, url)
+      } finally {
+        await chrome_pool.destroy(copy.n)
+      }
+    }
+  : null
+const web_firecrawl_file = process.env.FIRECRAWL_API_KEY_FILE
+const web = new WebEngine({
+  root: join(values.volume, 'web-cache'),
+  render,
+  firecrawl_key: process.env.FIRECRAWL_API_KEY ?? (web_firecrawl_file && exists_sync(web_firecrawl_file) ? read_file_sync(web_firecrawl_file, 'utf8').trim() : null)
+})
+setInterval(() => web.prune(), 6 * 3_600_000).unref()
+new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops, chrome, web).start()
 const apps = new AppStore({
   volume: values.volume,
   image: values['app-image'],

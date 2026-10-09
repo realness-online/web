@@ -24,6 +24,7 @@ import { read_changes, record_change } from "./changes.js"
 import { harness_path, recovery_path, verify_harness_pass, verify_recovery_pass } from "#root/lib/sign-on/src/node/recovery-pass.js"
 import { rights_key } from "./rights.js"
 import { admins as admin_list } from "./admins.js"
+import { git_token, GitRefused } from "./git.js"
 
 const LIMIT = 10 * 1024 * 1024
 const PHONES = /\+[1-9]\d{6,14}/g
@@ -83,7 +84,7 @@ const PREFLIGHT = {
   "access-control-max-age": "600",
 }
 
-export const sync_service = ({ storage, rights, project, certs, host_pass_secret, alert_token = null, alert_webhook = null, origins = [], log = console.log }) => {
+export const sync_service = ({ storage, rights, project, certs, host_pass_secret, alert_token = null, alert_webhook = null, origins = [], git_app = null, git_fetch = fetch, log = console.log }) => {
   const pins = storage_pins(storage)
   const allowed = new Set(origins)
 
@@ -154,7 +155,9 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
         return response.end(JSON.stringify(feed))
       }
       response.writeHead(200, { "content-type": "application/json" })
-      return response.end(JSON.stringify(await (query.has("deep") ? storage.walk(path) : storage.list(path))))
+      // `deep=meta` adds size and last update (h4); plain `deep` stays name to version.
+      const listing = query.get("deep") === "meta" ? storage.walk_meta(path) : query.has("deep") ? storage.walk(path) : storage.list(path)
+      return response.end(JSON.stringify(await listing))
     }
     if (action === "get") {
       const file = await storage.get(path)
@@ -228,6 +231,22 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
         if (!(await admins.has(who.phone))) throw new Status(403)
         response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
         response.end(JSON.stringify(await host_health(storage)))
+      } else if (path === "v1/git-token" && request.method === "POST") {
+        // h7: only a VM's own harness pass, for a repo its person shared.
+        who = await who_is(request)
+        if (!who?.harness) throw new Status(401)
+        let repo
+        try { repo = JSON.parse((await read_body(request)).toString("utf8")).repo }
+        catch { throw new Status(400) }
+        try {
+          const minted = await git_token({ storage, phone: who.harness, repo, app: git_app, fetcher: git_fetch })
+          response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          response.end(JSON.stringify(minted))
+        } catch (error) {
+          if (!(error instanceof GitRefused)) throw error
+          if (error.status === 502) log(hash_phones(`git: ${error.message}`))
+          throw new Status(error.status)
+        }
       } else if (path === "v1/host-pass" && request.method === "POST") {
         who = await who_is(request)
         if (!who?.phone) throw new Status(401)

@@ -145,7 +145,7 @@ From the repo, after `npm run build`:
 CHROME_PATH=/path/to/Chromium npm run poster -- photo.jpg
 ```
 
-The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/poster-driver/` as SVG and PNG, named from the poster id.
+The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/brayness/poster-driver/` as SVG and PNG, named from the poster id.
 
 You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
 

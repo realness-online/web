@@ -39,7 +39,7 @@ const LEADS = [
     ROOT
   ],
   [new RegExp(`(?<![\\w/.$}-])(${TOP}/${FILE})`, 'g'), ROOT],
-  [new RegExp(`(?:\\$root/|(?<![\\w/]))(work/brayness/${FILE})`, 'g'), HARNESS],
+  [new RegExp(`(?:\\$root/|(?<![\\w/]))(apps/brayness/${FILE})`, 'g'), HARNESS],
   // A climb out of the file's own folder, read from that folder.
   [
     new RegExp(

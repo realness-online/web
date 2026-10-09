@@ -34,6 +34,14 @@ if gcloud secrets describe ALERT_TOKEN --project "$project" > /dev/null 2>&1 &&
 else
   echo "host alerts: off (run server/sync/scripts/alert-schedule.sh)"
 fi
+# h7: VM git tokens turn on once the GitHub App's id and private key are stored.
+if gcloud secrets describe GITHUB_APP_ID --project "$project" > /dev/null 2>&1 &&
+  gcloud secrets describe GITHUB_APP_KEY --project "$project" > /dev/null 2>&1; then
+  secrets="$secrets,GITHUB_APP_ID=GITHUB_APP_ID:latest,GITHUB_APP_KEY=GITHUB_APP_KEY:latest"
+  echo "vm git: on"
+else
+  echo "vm git: off (store GITHUB_APP_ID and GITHUB_APP_KEY in Secret Manager)"
+fi
 
 gcloud run deploy brayness-sync \
   --project "$project" \

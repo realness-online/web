@@ -1,14 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {
-  changelog_root,
   extract_changelog_section,
   package_version,
   read_changelog,
   release_notes_footer
 } from './lib/changelog.js'
 
-const artifacts_dir = path.join(changelog_root, 'artifacts')
+import { artifacts_dir } from './lib/artifacts.js'
 const default_out = path.join(artifacts_dir, 'release-notes.md')
 
 const main = () => {

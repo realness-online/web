@@ -6,6 +6,9 @@
 //   {"op": "publish", "path": "/brayness/site"}  ->  {"ok": true, "url": "..."}
 //   {"op": "loop", "goal": "..."}                ->  {"ok": true, "id": "a-...", "depth": 1}
 //   {"op": "loop-report", "id": "a-..."}         ->  {"ok": true, "loop": {status, runs, tail, ...}}
+//   {"op": "chrome-lease"}                       ->  {"ok": true, "devtools": "http://...:9222", "expires": "..."}
+//   {"op": "chrome-return"}                      ->  {"ok": true, "returned": true}
+//   {"op": "read", "url": "https://..."}         ->  {"ok": true, "source": "cache|static|chrome|firecrawl", "kind", "body", "title"}
 //
 // One listener per running actor, kept in step by a reconciler rather than
 // hooks in every start, reload, and destroy path.
@@ -15,6 +18,7 @@ import { createServer as create_server } from "node:net"
 import { logger } from "./log.js"
 import { Loops } from "./loops.js"
 import { Lines } from "./vsock.js"
+import { tapGuest } from "./host.js"
 import { can } from "#root/lib/can/src/can.js"
 import { issue_harness_pass, issue_recovery_pass } from "#root/lib/sign-on/src/node/recovery-pass.js"
 import { issue_model_pass } from "#root/server/proxy/src/model-pass.js"
@@ -39,10 +43,12 @@ export const wait_for_door = async (vsock_path, { timeout_ms = 5000, every_ms = 
 }
 
 export class Door {
-  constructor(store, siteUrl = "/s/{id}/", loops = null) {
+  constructor(store, siteUrl = "/s/{id}/", loops = null, chrome = null, web = null) {
+    this.web = web // WebEngine, or null
     this.store = store
     this.siteUrl = siteUrl
     this.loops = loops
+    this.chrome = chrome // ChromeLeases, or null where the host has no Chrome pool
     this.listeners = new Map() // actor id -> { path, server }
   }
 
@@ -80,6 +86,13 @@ export class Door {
       }
     }
     for (const [id, record] of live) if (!this.listeners.has(id)) this.#listen(record)
+    // Leases end with their time or their actor; one reap at a time.
+    if (this.chrome && !this.reaping) {
+      this.reaping = this.chrome
+        .reap([...live.keys()])
+        .catch((error) => LOG.error("chrome lease reap failed", error))
+        .finally(() => (this.reaping = null))
+    }
   }
 
   #listen(record) {
@@ -129,6 +142,18 @@ export class Door {
       const loop = await (this.loops ??= new Loops(this.store)).start(id, request.goal)
       LOG.info(`door: ${id} started loop ${loop.id} at depth ${loop.depth}`)
       return { ok: true, ...loop }
+    }
+    if (request.op === "read") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot read the web")
+      if (!this.web) throw new Error("this host has no internet engine")
+      return { ok: true, ...(await this.web.read(String(request.url ?? ""), { actor: id, fresh: request.fresh === true })) }
+    }
+    if (request.op === "chrome-lease" || request.op === "chrome-return") {
+      if (!owner || !can({ instance }, "get", `people/${owner}/harnesses/${id}`)) throw new Error("actor cannot use chrome")
+      if (!this.chrome) throw new Error("this host has no chrome pool")
+      if (request.op === "chrome-return") return { ok: true, returned: await this.chrome.give_back(id) }
+      if (!record.tap) throw new Error("actor has no network")
+      return { ok: true, ...(await this.chrome.lease(id, tapGuest(record.tap))) }
     }
     const site = request.site ?? id
     if (!this.store.syncSites && site !== id) throw new Error("site belongs to another actor; sync sites are not configured")

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Zips the signed binary, submits it to Apple's notary service, and waits.
 #
-#   bash work/brayness/tools/desktop/notarize.sh
+#   bash apps/brayness/tools/desktop/notarize.sh
 #
 # The credentials profile is made once, by hand:
 #

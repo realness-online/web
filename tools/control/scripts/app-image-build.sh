@@ -116,6 +116,9 @@ APP_PACKAGES=(
   ca-certificates                 # an app that speaks TLS needs the bundle
   tini                            # pid 1 inside a container-shaped app, if it wants one
 )
+# chrome-image-build.sh builds on this base and adds its browser's libraries.
+read -r -a EXTRA <<< "${EXTRA_PACKAGES:-}"
+APP_PACKAGES+=("${EXTRA[@]}")
 
 log "apt: ${APP_PACKAGES[*]}"
 chroot "$TREE" env DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 \
@@ -207,6 +210,7 @@ e2fsck -fn "$IMG.new" > /dev/null && mv "$IMG.new" "$IMG"
 
 fi
 
+cleanup_mounts
 log "done"
 du -sh "$TREE" | sed 's/^/  tree: /'
 ls -lh "$IMG" 2> /dev/null | awk '{print "  image: " $5 " " $9}'

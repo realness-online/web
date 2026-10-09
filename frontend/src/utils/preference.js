@@ -74,6 +74,8 @@ export const enable_shadow_layers = () => {
 export const info = storage('info', false)
 export const storytelling = storage('storytelling', false)
 export const only_mine = storage('only_mine', false)
+/** The homepage layout: thoughts, chat, and the TUI, alone or chat beside one. */
+export const home_view = storage('home_view', 'thoughts')
 
 export const animation_speed = storage(
   'animation_speed',
