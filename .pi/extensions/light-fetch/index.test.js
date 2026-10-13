@@ -4,6 +4,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import light, { harness_path } from "./index.js"
 
+mkdirSync(new URL("../../../artifacts/brayness/", import.meta.url), { recursive: true })
+
 const setup = (env, { lands = true } = {}) => {
   const handlers = {}, fetched = []
   const fetch_file = async (path) => {

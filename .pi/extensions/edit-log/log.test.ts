@@ -6,6 +6,7 @@ import { last, openLog, record, sha } from "./log.ts";
 import edit_log_extension from "./index.ts";
 
 const scratch = resolve(import.meta.dirname, "../../../artifacts/brayness");
+mkdirSync(scratch, { recursive: true });
 
 test("the newest edit to a path wins; other paths stay apart", () => {
 	const dir = mkdtempSync(join(scratch, "edit-log-"));

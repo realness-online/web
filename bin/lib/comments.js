@@ -7,10 +7,8 @@
  */
 
 import { createRequire } from "node:module"
-import { join } from "node:path"
-import { pathToFileURL } from "node:url"
 
-const require = createRequire(pathToFileURL(join(process.cwd(), "apps/realness/package.json")))
+const require = createRequire(import.meta.url)
 let parser = null
 let vue_parse = null
 try { parser = require("@babel/parser") } catch {}

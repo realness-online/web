@@ -75,5 +75,9 @@
     "@mozilla/readability": "^0.6.0",
     "linkedom": "^0.18.13",
     "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@babel/parser": "7.29.9",
+    "@vue/compiler-sfc": "3.5.43"
   }
 }

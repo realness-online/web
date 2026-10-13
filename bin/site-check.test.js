@@ -21,7 +21,7 @@ const fixture = t => {
     { src: '192.png', sizes: '192x192', type: 'image/png' },
     { src: '512.png', sizes: '512x512', type: 'image/png' }
   ] }))
-  for (const size of [192, 512]) copy(new URL(`../apps/realness/frontend/public/${size}.png`, import.meta.url), join(root, `${size}.png`))
+  for (const size of [192, 512]) copy(new URL(`./fixtures/site-${size}.png`, import.meta.url), join(root, `${size}.png`))
   write_file(join(root, 'main.js'), "import './register.js'\n")
   write_file(join(root, 'register.js'), "navigator.serviceWorker.register('/service.worker.js')\n")
   write_file(join(root, 'service.worker.js'), "self.addEventListener('fetch', () => {})\n")
