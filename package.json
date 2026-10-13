@@ -79,5 +79,8 @@
   "devDependencies": {
     "@babel/parser": "7.29.9",
     "@vue/compiler-sfc": "3.5.43"
+  },
+  "overrides": {
+    "postcss": "8.5.29"
   }
 }
