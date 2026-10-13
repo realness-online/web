@@ -8,6 +8,10 @@ node_modules/
 
 /vault/
 /work/
+/skills/
+/examples/
+/apps/*
+!/apps/realness/
 /artifacts/
 /.npm/
 /.bash_history
