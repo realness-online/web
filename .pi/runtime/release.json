@@ -1,0 +1,19 @@
+{
+  "version": "1.2.0",
+  "source_commit": "ca61f53f56876a9c115d9046df025127608ac93d",
+  "source_dirty": false,
+  "upstream_tag": "v1.2.0",
+  "upstream_commit": "06a466935536f8c9bcacb2d5efc0fc021be1bdff",
+  "archives": {
+    "tarballs/earendil-works-chord-1.2.0-8443a6a96c5f.tgz": "db7ed49f8a505aa250dc4d3132f451c640b9cb18a714953b2a33e1df978b5233",
+    "tarballs/earendil-works-pi-agent-core-1.2.0-a54474bd8986.tgz": "a0fbbf07736c394933b18483e559ae15dfa07d128dd1983f866df4c770a3ee81",
+    "tarballs/earendil-works-pi-ai-1.2.0-289f3cdf4cff.tgz": "3904aca57a52c10ea1a8e9b871200cc513a04decefe5ff5c3e639880d5f25f47",
+    "tarballs/earendil-works-pi-codemode-1.2.0-51917b20dd08.tgz": "0ae49bbd62d812d7309d53c420c1bd96e03687ea07ae301b649ab6bad99af5dd",
+    "tarballs/earendil-works-pi-coding-agent-1.2.0-aeb6d7becdbd.tgz": "cb633d434219dc40a5c6d9530a3ba36545d76f1d8a1165c950e8909e781ddc8f",
+    "tarballs/earendil-works-pi-durable-1.2.0-da40f22bb1d5.tgz": "ad33e04506d51b0386456d2bf749855bd72ff8b2c8db22e96682d9f6718cac58",
+    "tarballs/earendil-works-pi-env-1.2.0-5632df8f20c6.tgz": "4b13398c8886186f2d614189bb1b1ed2c928833c95b47ea2d5e939bad911d515",
+    "tarballs/earendil-works-pi-mcp-1.2.0-7abb54bf8d2b.tgz": "130ce1fe17da094ae9762c4d2979d4ed6022dff90eaec25cf76aa9fe41bee21f",
+    "tarballs/earendil-works-pi-telemetry-1.2.0-359dda244e9d.tgz": "9992b05b25f1696d5e2ceed1687a5b631eb1ee0297e7fc5d2faf994938c10716",
+    "tarballs/earendil-works-pi-tui-1.2.0-39d242898925.tgz": "e911b15b50f8e364e3c0e5fc9e19f806036696e5ebf53da33c58173707041d21"
+  }
+}

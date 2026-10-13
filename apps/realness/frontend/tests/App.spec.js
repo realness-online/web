@@ -1,0 +1,1226 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
+import { shallowMount } from '@vue/test-utils'
+import { ref } from 'vue'
+import App from '@/App.vue'
+
+const {
+  mock_image_picker,
+  mock_register,
+  mock_register_preference,
+  mock_shadow,
+  mock_stroke,
+  mock_mosaic,
+  mock_drama,
+  mock_drama_back,
+  mock_drama_front,
+  mock_bold,
+  mock_medium,
+  mock_regular,
+  mock_light,
+  mock_background,
+  mock_boulders,
+  mock_rocks,
+  mock_gravel,
+  mock_sand,
+  mock_sediment,
+  mock_animate,
+  mock_info,
+  mock_storytelling,
+  mock_grid,
+  mock_menu,
+  mock_aspect_ratio_mode,
+  mock_slice_alignment,
+  mock_animation_speed,
+  mock_camera_y,
+  mock_footer_visible,
+  mock_current_route,
+  mock_select_photo,
+  mock_open_camera
+} = vi.hoisted(() => {
+  const create_ref = value => ({ value })
+  const create_template_ref = value =>
+    Object.assign(create_ref(value), { __v_isRef: true })
+  return {
+    mock_image_picker: create_template_ref(null),
+    mock_register: vi.fn(),
+    mock_register_preference: vi.fn(),
+    mock_shadow: create_ref(false),
+    mock_stroke: create_ref(false),
+    mock_mosaic: create_ref(false),
+    mock_drama: create_ref(false),
+    mock_drama_back: create_ref(false),
+    mock_drama_front: create_ref(false),
+    mock_bold: create_ref(false),
+    mock_medium: create_ref(false),
+    mock_regular: create_ref(false),
+    mock_light: create_ref(false),
+    mock_background: create_ref(false),
+    mock_boulders: create_ref(false),
+    mock_rocks: create_ref(false),
+    mock_gravel: create_ref(false),
+    mock_sand: create_ref(false),
+    mock_sediment: create_ref(false),
+    mock_animate: create_ref(false),
+    mock_info: create_ref(false),
+    mock_storytelling: create_ref(false),
+    mock_grid: create_ref(false),
+    mock_menu: create_ref(true),
+    mock_aspect_ratio_mode: create_ref('auto'),
+    mock_slice_alignment: create_ref('ymid'),
+    mock_animation_speed: create_ref('normal'),
+    mock_camera_y: create_ref(0),
+    mock_footer_visible: create_ref(true),
+    mock_current_route: create_ref({ path: '/', fullPath: '/' }),
+    mock_select_photo: vi.fn(),
+    mock_open_camera: vi.fn()
+  }
+})
+
+vi.mock('@/use/vectorize', () => ({
+  use: () => ({
+    image_picker: mock_image_picker,
+    new_vector: { value: null },
+    current_processing: { value: null },
+    open_camera: mock_open_camera,
+    select_photo: mock_select_photo,
+    queue_supported_files: vi.fn().mockResolvedValue(false),
+    init_processing_queue: vi.fn(),
+    queue_items: { value: [] },
+    mount_workers: vi.fn(),
+    unmount: vi.fn()
+  })
+}))
+
+vi.mock('@/use/key-commands', () => ({
+  use_keymap: () => ({
+    register: mock_register,
+    register_preference: mock_register_preference
+  })
+}))
+
+vi.mock('@/utils/serverless', () => ({
+  init_serverless: vi.fn()
+}))
+
+vi.mock('@vueuse/core', () => ({
+  useFps: vi.fn(() => ({ value: 60 })),
+  useMagicKeys: vi.fn(() => ({
+    shift: { value: false }
+  })),
+  useFullscreen: vi.fn(() => ({ isFullscreen: { value: false } })),
+  useActiveElement: vi.fn(() => ({ value: null }))
+}))
+
+const mock_router_push = vi.fn()
+const mock_route = { meta: {} }
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: mock_router_push,
+    currentRoute: mock_current_route
+  }),
+  useRoute: () => mock_route
+}))
+
+vi.mock('@/utils/preference', async () => {
+  const { ref } = await import('vue')
+  const { toggle_layer } = await vi.importActual('@/utils/layer-toggle')
+  const shadow_ref = ref(false)
+  const stroke_ref = ref(false)
+  const mosaic_ref = ref(false)
+  const drama_ref = ref(false)
+  const drama_back_ref = ref(false)
+  const drama_front_ref = ref(false)
+  const drama_last_ref = ref('both')
+  const bold_ref = ref(false)
+  const medium_ref = ref(false)
+  const regular_ref = ref(false)
+  const light_ref = ref(false)
+  const background_ref = ref(false)
+  const boulders_ref = ref(false)
+  const rocks_ref = ref(false)
+  const gravel_ref = ref(false)
+  const sand_ref = ref(false)
+  const sediment_ref = ref(false)
+  const animate_ref = ref(false)
+  const morph_ref = ref(false)
+  const info_ref = ref(false)
+  const storytelling_ref = ref(false)
+  const grid_ref = ref(false)
+  const menu_ref = ref(true)
+  const aspect_ratio_mode_ref = ref('auto')
+  const slice_alignment_ref = ref('ymid')
+  const footer_visible_ref = ref(true)
+  const view_3d_ref = ref(false)
+
+  Object.defineProperty(mock_shadow, 'value', {
+    get: () => shadow_ref.value,
+    set: v => {
+      shadow_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_stroke, 'value', {
+    get: () => stroke_ref.value,
+    set: v => {
+      stroke_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_mosaic, 'value', {
+    get: () => mosaic_ref.value,
+    set: v => {
+      mosaic_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_drama, 'value', {
+    get: () => drama_ref.value,
+    set: v => {
+      drama_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_drama_back, 'value', {
+    get: () => drama_back_ref.value,
+    set: v => {
+      drama_back_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_drama_front, 'value', {
+    get: () => drama_front_ref.value,
+    set: v => {
+      drama_front_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_bold, 'value', {
+    get: () => bold_ref.value,
+    set: v => {
+      bold_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_medium, 'value', {
+    get: () => medium_ref.value,
+    set: v => {
+      medium_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_regular, 'value', {
+    get: () => regular_ref.value,
+    set: v => {
+      regular_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_light, 'value', {
+    get: () => light_ref.value,
+    set: v => {
+      light_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_background, 'value', {
+    get: () => background_ref.value,
+    set: v => {
+      background_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_boulders, 'value', {
+    get: () => boulders_ref.value,
+    set: v => {
+      boulders_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_rocks, 'value', {
+    get: () => rocks_ref.value,
+    set: v => {
+      rocks_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_gravel, 'value', {
+    get: () => gravel_ref.value,
+    set: v => {
+      gravel_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_sand, 'value', {
+    get: () => sand_ref.value,
+    set: v => {
+      sand_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_sediment, 'value', {
+    get: () => sediment_ref.value,
+    set: v => {
+      sediment_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_animate, 'value', {
+    get: () => animate_ref.value,
+    set: v => {
+      animate_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_info, 'value', {
+    get: () => info_ref.value,
+    set: v => {
+      info_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_storytelling, 'value', {
+    get: () => storytelling_ref.value,
+    set: v => {
+      storytelling_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_grid, 'value', {
+    get: () => grid_ref.value,
+    set: v => {
+      grid_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_menu, 'value', {
+    get: () => menu_ref.value,
+    set: v => {
+      menu_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_aspect_ratio_mode, 'value', {
+    get: () => aspect_ratio_mode_ref.value,
+    set: v => {
+      aspect_ratio_mode_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_slice_alignment, 'value', {
+    get: () => slice_alignment_ref.value,
+    set: v => {
+      slice_alignment_ref.value = v
+    }
+  })
+  Object.defineProperty(mock_footer_visible, 'value', {
+    get: () => footer_visible_ref.value,
+    set: v => {
+      footer_visible_ref.value = v
+    }
+  })
+
+  const enable_shadow_layers = () => {
+    bold_ref.value = true
+    medium_ref.value = true
+    regular_ref.value = true
+    light_ref.value = true
+    background_ref.value = true
+  }
+
+  const enable_geology_layers = () => {
+    boulders_ref.value = true
+    rocks_ref.value = true
+    gravel_ref.value = true
+    sand_ref.value = true
+    sediment_ref.value = true
+  }
+
+  const toggle_shadow = () => {
+    const new_state = !shadow_ref.value
+    shadow_ref.value = new_state
+    if (new_state) enable_shadow_layers()
+  }
+
+  const toggle_mosaic = () => {
+    const new_state = !mosaic_ref.value
+    mosaic_ref.value = new_state
+    if (new_state) enable_geology_layers()
+  }
+
+  const set_drama = enabled => {
+    drama_ref.value = enabled
+    drama_back_ref.value = enabled
+    drama_front_ref.value = enabled
+  }
+
+  const toggle_drama = () => set_drama(!drama_ref.value)
+
+  const sync_drama_master = () => {
+    drama_ref.value = drama_back_ref.value || drama_front_ref.value
+  }
+
+  const cycle_drama = () => {
+    if (!drama_back_ref.value && !drama_front_ref.value) {
+      drama_back_ref.value = true
+      drama_front_ref.value = false
+    } else if (drama_back_ref.value && !drama_front_ref.value) {
+      drama_back_ref.value = false
+      drama_front_ref.value = true
+    } else if (!drama_back_ref.value && drama_front_ref.value) {
+      drama_back_ref.value = true
+      drama_front_ref.value = true
+    } else {
+      drama_back_ref.value = false
+      drama_front_ref.value = false
+    }
+    sync_drama_master()
+  }
+
+  const camera_y_ref = ref(0)
+  const color_cycle_ref = ref(false)
+  const only_mine_ref = ref(false)
+  Object.defineProperty(mock_camera_y, 'value', {
+    get: () => camera_y_ref.value,
+    set: v => {
+      camera_y_ref.value = v
+    }
+  })
+  const animation_speed_ref = ref('normal')
+  Object.defineProperty(mock_animation_speed, 'value', {
+    get: () => animation_speed_ref.value,
+    set: v => {
+      animation_speed_ref.value = v
+    }
+  })
+  const cycle_animation_speed = () => {
+    animation_speed_ref.value = 'fast'
+  }
+
+  const ASPECT_RATIOS = ['auto', '1/1', '1.618/1', '16/9', '2.35/1', '2.76/1']
+  const cycle_aspect_ratio = reverse => {
+    const current = aspect_ratio_mode_ref.value || 'auto'
+    const current_index = ASPECT_RATIOS.indexOf(current)
+    const next_index = reverse
+      ? (current_index - 1 + ASPECT_RATIOS.length) % ASPECT_RATIOS.length
+      : (current_index + 1) % ASPECT_RATIOS.length
+    aspect_ratio_mode_ref.value = ASPECT_RATIOS[next_index]
+  }
+
+  return {
+    shadow: shadow_ref,
+    stroke: stroke_ref,
+    mosaic: mosaic_ref,
+    drama: drama_ref,
+    drama_back: drama_back_ref,
+    drama_front: drama_front_ref,
+    drama_last: drama_last_ref,
+    bold: bold_ref,
+    medium: medium_ref,
+    regular: regular_ref,
+    light: light_ref,
+    background: background_ref,
+    boulders: boulders_ref,
+    rocks: rocks_ref,
+    gravel: gravel_ref,
+    sand: sand_ref,
+    sediment: sediment_ref,
+    animate: animate_ref,
+    morph: morph_ref,
+    info: info_ref,
+    storytelling: storytelling_ref,
+    animation_speed: animation_speed_ref,
+    grid: grid_ref,
+    menu: menu_ref,
+    aspect_ratio_mode: aspect_ratio_mode_ref,
+    slice_alignment: slice_alignment_ref,
+    footer_visible: footer_visible_ref,
+    view_3d: view_3d_ref,
+    toggle_shadow,
+    toggle_mosaic,
+    toggle_drama,
+    cycle_drama,
+    cycle_animation_speed,
+    cycle_aspect_ratio,
+    ASPECT_RATIOS,
+    toggle_layer,
+    camera_y: camera_y_ref,
+    color_cycle: color_cycle_ref,
+    only_mine: only_mine_ref
+  }
+})
+
+describe('App.vue', () => {
+  let wrapper
+  let registered_handlers = {}
+  let registered_preferences = {}
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mock_router_push.mockClear()
+    registered_handlers = {}
+    registered_preferences = {}
+
+    mock_register.mockImplementation((command, handler) => {
+      registered_handlers[command] = handler
+    })
+    mock_register_preference.mockImplementation((command, preference_ref) => {
+      registered_preferences[command] = preference_ref
+    })
+
+    mock_shadow.value = false
+    mock_stroke.value = false
+    mock_mosaic.value = false
+    mock_drama.value = false
+    mock_drama_back.value = false
+    mock_drama_front.value = false
+    mock_bold.value = false
+    mock_medium.value = false
+    mock_regular.value = false
+    mock_light.value = false
+    mock_background.value = false
+    mock_boulders.value = false
+    mock_rocks.value = false
+    mock_gravel.value = false
+    mock_sand.value = false
+    mock_sediment.value = false
+    mock_aspect_ratio_mode.value = 'auto'
+    mock_slice_alignment.value = 'ymid'
+    mock_menu.value = true
+    mock_storytelling.value = false
+    mock_current_route.value = { path: '/', fullPath: '/' }
+
+    const sessionStorage_storage = {
+      about: false,
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn()
+    }
+    Object.defineProperty(window, 'sessionStorage', {
+      value: sessionStorage_storage,
+      writable: true
+    })
+    Object.defineProperty(sessionStorage_storage, 'about', {
+      value: false,
+      writable: true,
+      configurable: true
+    })
+
+    const localStorage_storage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      sync_time: 'test'
+    }
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorage_storage,
+      writable: true
+    })
+    Object.defineProperty(localStorage_storage, 'sync_time', {
+      value: 'test',
+      writable: true,
+      configurable: true
+    })
+
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn(function (query) {
+        return {
+          matches: query === '(display-mode: standalone)',
+          media: query,
+          onchange: null,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          dispatchEvent: vi.fn()
+        }
+      })
+    })
+
+    document.documentElement.style.setProperty = vi.fn()
+    document.documentElement.requestFullscreen = vi.fn()
+    document.exitFullscreen = vi.fn()
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: null,
+      writable: true,
+      configurable: true
+    })
+
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        standalone: false
+      },
+      writable: true,
+      configurable: true
+    })
+
+    Object.defineProperty(document, 'referrer', {
+      value: '',
+      writable: true,
+      configurable: true
+    })
+
+    vi.stubGlobal('requestAnimationFrame', cb => cb(0))
+
+    document.body.innerHTML = '<main id="realness"></main>'
+    wrapper = shallowMount(App, {
+      attachTo: document.querySelector('main#realness'),
+      shallow: true,
+      global: {
+        stubs: {
+          sync: { template: '<aside></aside>', emits: ['active'] },
+          'router-view': true,
+          'site-nav': true,
+          'as-dialog-preferences': true,
+          'as-dialog-documentation': true,
+          'as-fps': true
+        },
+        mocks: {
+          $router: {
+            push: vi.fn()
+          }
+        }
+      }
+    })
+  })
+
+  afterEach(() => {
+    wrapper.unmount()
+    vi.unstubAllGlobals()
+  })
+
+  describe('Rendering', () => {
+    it('renders straight into body > main#realness', () => {
+      const main = document.querySelector('body > main#realness')
+      expect(main.querySelector('footer')).toBe(wrapper.find('footer').element)
+      expect(document.querySelectorAll('main').length).toBe(1)
+    })
+
+    it('renders router view', () => {
+      expect(wrapper.find('support-layout-stub').exists()).toBe(true)
+    })
+
+    it('renders sync component', () => {
+      const main = document.querySelector('main#realness')
+      expect(main.contains(wrapper.find('aside').element)).toBe(true)
+    })
+
+    it('renders image picker input', () => {
+      const image_picker = wrapper.find('input[type="file"]')
+      expect(image_picker.exists()).toBe(true)
+    })
+
+    it('keeps global menu while storytelling is on', async () => {
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
+      mock_storytelling.value = true
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
+      mock_storytelling.value = false
+      await wrapper.vm.$nextTick()
+    })
+
+    it('hides global menu when menu preference is off', async () => {
+      expect(wrapper.find('footer').attributes('data-menu')).toBe('true')
+      expect(wrapper.find('nav[aria-label="App actions"]').exists()).toBe(true)
+      mock_menu.value = false
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('footer').attributes('data-menu')).toBe('false')
+      mock_menu.value = true
+      await wrapper.vm.$nextTick()
+    })
+  })
+
+  describe('Status Classes', () => {
+    it('applies offline attribute when status is offline', async () => {
+      wrapper.vm.status = 'offline'
+      await wrapper.vm.$nextTick()
+      expect(
+        document.querySelector('main#realness').getAttribute('data-offline')
+      ).toBe('true')
+    })
+
+    it('has no status attribute when status is null', async () => {
+      wrapper.vm.status = null
+      await wrapper.vm.$nextTick()
+      const main_element = document.querySelector('main#realness')
+      expect(main_element.hasAttribute('data-offline')).toBe(false)
+    })
+  })
+
+  describe('Sync Events', () => {
+    it('handles sync active event', async () => {
+      wrapper.vm.status = null
+      wrapper.vm.on_active(true)
+      expect(wrapper.vm.status).toBe('working')
+    })
+
+    it('handles sync inactive event', async () => {
+      wrapper.vm.status = 'working'
+      wrapper.vm.on_active(false)
+      expect(wrapper.vm.status).toBe(null)
+    })
+  })
+
+  describe('Component References', () => {
+    it('has preferences dialog reference', () => {
+      expect(wrapper.vm.preferences_dialog).toBeDefined()
+    })
+
+    it('has documentation reference', () => {
+      expect(wrapper.vm.documentation).toBeDefined()
+    })
+
+    it('has image picker reference', () => {
+      expect(wrapper.vm.image_picker).toBeDefined()
+    })
+  })
+
+  describe('set_working', () => {
+    it('sets status to working when active is true', () => {
+      wrapper.vm.set_working(true)
+      expect(wrapper.vm.status).toBe('working')
+    })
+
+    it('sets status to null when active is false', () => {
+      wrapper.vm.status = 'working'
+      wrapper.vm.set_working(false)
+      expect(wrapper.vm.status).toBe(null)
+    })
+  })
+
+  describe('Preference Handlers', () => {
+    describe('Toggle_Shadow', () => {
+      it('toggles shadow preference', () => {
+        const handler = registered_handlers['pref::Toggle_Shadow']
+        expect(handler).toBeDefined()
+        handler()
+        expect(mock_shadow.value).toBe(true)
+      })
+
+      it('enables all shadow layers when shadow is turned on', () => {
+        const handler = registered_handlers['pref::Toggle_Shadow']
+        handler()
+        expect(mock_bold.value).toBe(true)
+        expect(mock_medium.value).toBe(true)
+        expect(mock_regular.value).toBe(true)
+        expect(mock_light.value).toBe(true)
+        expect(mock_background.value).toBe(true)
+      })
+    })
+
+    describe('Toggle_Mosaic', () => {
+      it('toggles mosaic preference', () => {
+        const handler = registered_handlers['pref::Toggle_Mosaic']
+        expect(handler).toBeDefined()
+        handler()
+        expect(mock_mosaic.value).toBe(true)
+      })
+
+      it('enables all geology layers when mosaic is turned on', () => {
+        const handler = registered_handlers['pref::Toggle_Mosaic']
+        handler()
+        expect(mock_boulders.value).toBe(true)
+        expect(mock_rocks.value).toBe(true)
+        expect(mock_gravel.value).toBe(true)
+        expect(mock_sand.value).toBe(true)
+        expect(mock_sediment.value).toBe(true)
+      })
+    })
+
+    describe('layer keys', () => {
+      it('Toggle_Light changes only the light layer while shadow is on', () => {
+        const handler = registered_handlers['pref::Toggle_Light']
+        expect(handler).toBeDefined()
+        mock_shadow.value = true
+        mock_light.value = true
+        mock_bold.value = true
+
+        handler()
+
+        expect(mock_light.value).toBe(false)
+        expect(mock_bold.value).toBe(true)
+        expect(mock_shadow.value).toBe(true)
+      })
+
+      it('Toggle_Rocks brings the mosaic back carrying rocks alone', () => {
+        const handler = registered_handlers['pref::Toggle_Rocks']
+        expect(handler).toBeDefined()
+        mock_mosaic.value = false
+        mock_boulders.value = true
+        mock_rocks.value = false
+
+        handler()
+
+        expect(mock_mosaic.value).toBe(true)
+        expect(mock_rocks.value).toBe(true)
+        expect(mock_boulders.value).toBe(false)
+      })
+    })
+
+    describe('camera keys', () => {
+      it('Camera_Down moves the camera down and Camera_Center returns it', () => {
+        const down = registered_handlers['pref::Camera_Down']
+        const centre = registered_handlers['pref::Camera_Center']
+        expect(down).toBeDefined()
+        expect(centre).toBeDefined()
+
+        down()
+        expect(mock_camera_y.value).toBeGreaterThan(0)
+
+        centre()
+        expect(mock_camera_y.value).toBe(0)
+      })
+
+      it('Camera_Up moves the other way', () => {
+        const up = registered_handlers['pref::Camera_Up']
+        up()
+        expect(mock_camera_y.value).toBeLessThan(0)
+      })
+    })
+
+    describe('Toggle_Drama', () => {
+      it('toggles drama and syncs drama_back and drama_front', () => {
+        const handler = registered_handlers['pref::Toggle_Drama']
+        expect(handler).toBeDefined()
+        handler()
+        expect(mock_drama.value).toBe(true)
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(true)
+      })
+
+      it('restores the lights it was switched off with', () => {
+        const handler = registered_handlers['pref::Toggle_Drama']
+        mock_drama.value = true
+        mock_drama_back.value = true
+        mock_drama_front.value = false
+        handler()
+        expect(mock_drama.value).toBe(false)
+        expect(mock_drama_back.value).toBe(false)
+        expect(mock_drama_front.value).toBe(false)
+        handler()
+        expect(mock_drama.value).toBe(true)
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(false)
+      })
+    })
+
+    describe('Cycle_Drama', () => {
+      it('cycles through drama states: back only', () => {
+        const handler = registered_handlers['pref::Cycle_Drama']
+        expect(handler).toBeDefined()
+        mock_drama_back.value = true
+        mock_drama_front.value = true
+        handler()
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(false)
+        expect(mock_drama.value).toBe(true)
+      })
+
+      it('cycles through drama states: front only', () => {
+        const handler = registered_handlers['pref::Cycle_Drama']
+        mock_drama_back.value = true
+        mock_drama_front.value = false
+        handler()
+        expect(mock_drama_back.value).toBe(false)
+        expect(mock_drama_front.value).toBe(true)
+        expect(mock_drama.value).toBe(true)
+      })
+
+      it('cycles through drama states: both', () => {
+        const handler = registered_handlers['pref::Cycle_Drama']
+        mock_drama_back.value = false
+        mock_drama_front.value = true
+        handler()
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(true)
+        expect(mock_drama.value).toBe(true)
+      })
+
+      it('never lands on off - both lights come back on', () => {
+        const handler = registered_handlers['pref::Cycle_Drama']
+        mock_drama_back.value = false
+        mock_drama_front.value = false
+        handler()
+        expect(mock_drama_back.value).toBe(true)
+        expect(mock_drama_front.value).toBe(true)
+        expect(mock_drama.value).toBe(true)
+      })
+    })
+
+    describe('Cycle_Aspect_Ratio', () => {
+      it('cycles to next aspect ratio', () => {
+        const handler = registered_handlers['pref::Cycle_Aspect_Ratio']
+        expect(handler).toBeDefined()
+        handler()
+        expect(mock_aspect_ratio_mode.value).toBe('1/1')
+        expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
+          '1/1'
+        )
+      })
+
+      it('cycles through aspect ratios correctly', () => {
+        const handler = registered_handlers['pref::Cycle_Aspect_Ratio']
+        mock_aspect_ratio_mode.value = 'auto'
+        handler()
+        expect(mock_aspect_ratio_mode.value).toBe('1/1')
+
+        mock_aspect_ratio_mode.value = '2.76/1'
+        handler()
+        expect(mock_aspect_ratio_mode.value).toBe('auto')
+      })
+    })
+
+    describe('Cycle_Animation_Speed', () => {
+      it('advances to the next canonical speed', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        expect(handler).toBeDefined()
+        mock_animation_speed.value = 'crawl'
+        handler()
+        expect(mock_animation_speed.value).toBe('amble')
+      })
+
+      it('wraps from the fastest speed back to the slowest', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = 'sprint'
+        handler()
+        expect(mock_animation_speed.value).toBe('freeze')
+      })
+
+      it('resolves a legacy name before advancing', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = 'slow'
+        handler()
+        expect(mock_animation_speed.value).toBe('amble')
+      })
+
+      it('starts from the default when the speed is unset', () => {
+        const handler = registered_handlers['pref::Cycle_Animation_Speed']
+        mock_animation_speed.value = ''
+        handler()
+        expect(mock_animation_speed.value).toBe('stride')
+      })
+    })
+  })
+
+  describe('Watch aspect_ratio_mode', () => {
+    it('updates data-aspect-ratio when aspect_ratio_mode changes', async () => {
+      mock_aspect_ratio_mode.value = '16/9'
+      await wrapper.vm.$nextTick()
+      await wrapper.vm.$nextTick()
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
+        '16/9'
+      )
+    })
+
+    it('sets to auto when aspect_ratio_mode is auto', async () => {
+      mock_aspect_ratio_mode.value = 'auto'
+      await wrapper.vm.$nextTick()
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
+        'auto'
+      )
+    })
+  })
+
+  describe('UI Handlers', () => {
+    it('shows documentation dialog', () => {
+      const handler = registered_handlers['ui::Show_Documentation']
+      expect(handler).toBeDefined()
+      wrapper.vm.documentation = { show: vi.fn() }
+      handler()
+      expect(wrapper.vm.documentation.show).toHaveBeenCalled()
+    })
+
+    it('shows preferences dialog', () => {
+      const handler = registered_handlers['ui::Open_Settings']
+      expect(handler).toBeDefined()
+      wrapper.vm.preferences_dialog = { show: vi.fn() }
+      handler()
+      expect(wrapper.vm.preferences_dialog.show).toHaveBeenCalled()
+    })
+
+    it('navigates to /account', () => {
+      const handler = registered_handlers['ui::Open_Account']
+      expect(handler).toBeDefined()
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/account')
+    })
+
+    it('clears sync time from localStorage', () => {
+      const handler = registered_handlers['ui::Clear_Sync_Time']
+      expect(handler).toBeDefined()
+      handler()
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith('sync_time')
+    })
+
+    it('toggles presentation mode - enters fullscreen', () => {
+      const handler = registered_handlers['ui::Toggle_Presentation']
+      expect(handler).toBeDefined()
+      document.fullscreenElement = null
+      handler()
+      expect(document.documentElement.requestFullscreen).toHaveBeenCalled()
+    })
+
+    it('toggles presentation mode - exits fullscreen', () => {
+      const handler = registered_handlers['ui::Toggle_Presentation']
+      document.fullscreenElement = document.documentElement
+      handler()
+      expect(document.exitFullscreen).toHaveBeenCalled()
+    })
+  })
+
+  describe('Navigation Handlers', () => {
+    it('navigates to home', () => {
+      const handler = registered_handlers['nav::Go_Home']
+      expect(handler).toBeDefined()
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+    })
+
+    it('navigates to statements', () => {
+      const handler = registered_handlers['nav::Go_Statements']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+    })
+
+    it('navigates to thoughts', () => {
+      const handler = registered_handlers['nav::Go_Thoughts']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+    })
+
+    it('navigates to about', () => {
+      const handler = registered_handlers['nav::Go_About']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/about')
+    })
+
+    it('navigates to account', () => {
+      const handler = registered_handlers['nav::Go_Account']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/account')
+    })
+
+    it('navigates to docs', () => {
+      const handler = registered_handlers['nav::Go_Docs']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/docs')
+    })
+
+    it('navigates to pricing', () => {
+      const handler = registered_handlers['nav::Go_Pricing']
+      handler()
+      expect(mock_router_push).toHaveBeenCalledWith('/pricing')
+    })
+  })
+
+  describe('Upload and camera', () => {
+    const trigger_menu_input = aria_label => {
+      const input = wrapper.find(`label[aria-label="${aria_label}"] input`)
+      input.element.checked = true
+      return input.trigger('change')
+    }
+
+    beforeEach(() => {
+      mock_select_photo.mockClear()
+      mock_open_camera.mockClear()
+    })
+
+    it('navigates to thoughts before upload when not on home', async () => {
+      mock_current_route.value = { path: '/about', fullPath: '/about' }
+      await trigger_menu_input('Add poster')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+      expect(mock_select_photo).toHaveBeenCalled()
+    })
+
+    it('stays on thoughts when upload is triggered from home', async () => {
+      mock_current_route.value = { path: '/', fullPath: '/' }
+      mock_router_push.mockClear()
+      await trigger_menu_input('Add poster')
+      expect(mock_router_push).not.toHaveBeenCalled()
+      expect(mock_select_photo).toHaveBeenCalled()
+    })
+
+    it('navigates to thoughts before camera when not on home', async () => {
+      mock_current_route.value = { path: '/phonebook', fullPath: '/phonebook' }
+      await trigger_menu_input('Open camera')
+      expect(mock_router_push).toHaveBeenCalledWith('/')
+      expect(mock_open_camera).toHaveBeenCalled()
+    })
+
+    it('stays on thoughts when camera is triggered from home', async () => {
+      mock_current_route.value = { path: '/', fullPath: '/' }
+      mock_router_push.mockClear()
+      await trigger_menu_input('Open camera')
+      expect(mock_router_push).not.toHaveBeenCalled()
+      expect(mock_open_camera).toHaveBeenCalled()
+    })
+  })
+
+  describe('Online/Offline Handlers', () => {
+    it('sets contenteditable to true on online', () => {
+      const editable = document.createElement('div')
+      editable.setAttribute('contenteditable', 'false')
+      document.body.appendChild(editable)
+      wrapper.vm.online()
+      expect(editable.getAttribute('contenteditable')).toBe('true')
+      document.body.removeChild(editable)
+    })
+
+    it('sets status to null on online', () => {
+      wrapper.vm.status = 'offline'
+      wrapper.vm.online()
+      expect(wrapper.vm.status).toBe(null)
+    })
+
+    it('sets contenteditable to false on offline', () => {
+      const editable = document.createElement('div')
+      editable.setAttribute('contenteditable', 'true')
+      document.body.appendChild(editable)
+      wrapper.vm.offline()
+      expect(editable.getAttribute('contenteditable')).toBe('false')
+      document.body.removeChild(editable)
+    })
+
+    it('sets status to offline on offline', () => {
+      wrapper.vm.status = null
+      wrapper.vm.offline()
+      expect(wrapper.vm.status).toBe('offline')
+    })
+  })
+
+  describe('Mounted Hook', () => {
+    it('initializes drama preferences if not set', async () => {
+      window.localStorage.getItem.mockImplementation(key => {
+        if (key === 'drama_back' || key === 'drama_front') return null
+        return null
+      })
+      mock_drama.value = true
+      const new_wrapper = shallowMount(App, {
+        shallow: true,
+        global: {
+          stubs: {
+            sync: { template: '<aside></aside>', emits: ['active'] },
+            'router-view': true,
+            'site-nav': true,
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
+          },
+          mocks: {
+            $router: {
+              push: vi.fn()
+            }
+          }
+        }
+      })
+      await new_wrapper.vm.$nextTick()
+      expect(mock_drama_back.value).toBe(true)
+      expect(mock_drama_front.value).toBe(true)
+      new_wrapper.unmount()
+    })
+
+    it('sets data-aspect-ratio on mount', async () => {
+      mock_aspect_ratio_mode.value = '16/9'
+      const new_wrapper = shallowMount(App, {
+        shallow: true,
+        global: {
+          stubs: {
+            sync: { template: '<aside></aside>', emits: ['active'] },
+            'router-view': true,
+            'site-nav': true,
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
+          },
+          mocks: {
+            $router: {
+              push: vi.fn()
+            }
+          }
+        }
+      })
+      await new_wrapper.vm.$nextTick()
+      expect(document.documentElement.getAttribute('data-aspect-ratio')).toBe(
+        '16/9'
+      )
+      new_wrapper.unmount()
+    })
+
+    it('detects standalone mode and sets sessionStorage', async () => {
+      window.matchMedia.mockImplementation(query => ({
+        matches: query === '(display-mode: standalone)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn()
+      }))
+      const new_wrapper = shallowMount(App, {
+        shallow: true,
+        global: {
+          stubs: {
+            sync: { template: '<aside></aside>', emits: ['active'] },
+            'router-view': true,
+            'site-nav': true,
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
+          },
+          mocks: {
+            $router: {
+              push: vi.fn()
+            }
+          }
+        }
+      })
+      await new_wrapper.vm.$nextTick()
+      expect(window.sessionStorage.about).toBe(true)
+      new_wrapper.unmount()
+    })
+
+    it('adds online and offline event listeners', async () => {
+      const add_listener_spy = vi.spyOn(window, 'addEventListener')
+      const new_wrapper = shallowMount(App, {
+        shallow: true,
+        global: {
+          stubs: {
+            sync: { template: '<aside></aside>', emits: ['active'] },
+            'router-view': true,
+            'site-nav': true,
+            'as-dialog-preferences': true,
+            'as-dialog-documentation': true,
+            'as-fps': true
+          },
+          mocks: {
+            $router: {
+              push: vi.fn()
+            }
+          }
+        }
+      })
+      await new_wrapper.vm.$nextTick()
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'online',
+        expect.any(Function)
+      )
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'offline',
+        expect.any(Function)
+      )
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'dragover',
+        expect.any(Function)
+      )
+      expect(add_listener_spy).toHaveBeenCalledWith(
+        'drop',
+        expect.any(Function)
+      )
+      new_wrapper.unmount()
+    })
+  })
+
+  describe('Dismount Hook', () => {
+    it('removes online and offline event listeners', () => {
+      const remove_listener_spy = vi.spyOn(window, 'removeEventListener')
+      wrapper.unmount()
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'online',
+        expect.any(Function)
+      )
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'offline',
+        expect.any(Function)
+      )
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'dragover',
+        expect.any(Function)
+      )
+      expect(remove_listener_spy).toHaveBeenCalledWith(
+        'drop',
+        expect.any(Function)
+      )
+    })
+  })
+})

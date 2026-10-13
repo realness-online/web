@@ -1,0 +1,24 @@
+#!/bin/bash
+VAULT="${VAULT:-$(cd "$(dirname "$0")/../../vault" && pwd)}"
+
+for section in "Projects" "Areas" "Resources" "Archive"; do
+  for feed in "$VAULT/$section"/*/:feed.md; do
+    dir=$(dirname "$feed")
+    [ ! -d "$dir" ] && rm "$feed" && echo "Pruned: $feed"
+  done
+
+  for dir in "$VAULT/$section"/*/; do
+    name=$(basename "$dir")
+    cat > "$dir/:feed.md" <<EOF
+# ${name} Feed
+
+\`\`\`dataview
+TABLE created AS "Date", github AS "Source"
+FROM "${section}/${name}"
+WHERE file.name != ":feed"
+SORT created DESC
+\`\`\`
+EOF
+    echo "Created: $section/$name"
+  done
+done

@@ -1,0 +1,10 @@
+stagger(step) {
+  transition-delay: 0s, step, step, step;
+}
+
+discrete-exit(duration = duration-reveal, easing = ease-exit) {
+  transition:
+    opacity duration easing,
+    display duration easing;
+  transition-behavior: allow-discrete;
+}

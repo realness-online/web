@@ -1,0 +1,100 @@
+fallow-report.json
+/design/
+.DS_Store
+node_modules
+/tests/e2e/videos/
+/tests/e2e/screenshots/
+/tests/unit/coverage/
+/tests/unit/cache/
+/tests/e2e/reports/
+/functions/coverage
+/public/**.worker.js
+/public/**.worker.js.map
+/public/**.wasm
+/coverage/
+/artifacts/
+/src/prerender/toc.js
+/.deno_lsp/
+/dist
+/storage/
+/storage.zip
+.firebase/
+.firebase/hosting*
+firebase-debug.log
+.firebaserc
+.fallow/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# reports
+javascript_report.html
+worker_report.html
+*.LICENSE.txt
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+docs/generated/
+
+# SSL Certificates
+*.pem
+
+.env
+
+# Service account credentials
+service-account.json
+
+# Rust build directory
+/target/
+**/target/
+
+# Rust generated files
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# WASM build artifacts
+/artifacts/
+**/artifacts/
+*.wasm
+/tracer/tracer
+
+# WASM build artifacts
+tracer/pkg/
+src/wasm/
+tracer/target/
+visionmagic/
+vtracer/
+
+
+# Keymap generated files
+docs/keymap.md
+docs/keymap.schema.json
+docs/keymap.ref.json
+scripts/service-account*
+
+public/192.png
+public/512.png
+.lighthouseci
+.claude/
+
+# autoresearch session files
+.auto/
+
+# test videos - too large for git
+public/*.mov

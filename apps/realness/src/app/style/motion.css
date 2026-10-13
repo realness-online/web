@@ -1,0 +1,75 @@
+@property --duration-scale {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --duration-press {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 120ms;
+}
+
+@property --duration-quick {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 200ms;
+}
+
+@property --duration-reveal {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 280ms;
+}
+
+@property --duration-subject {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 440ms;
+}
+
+@property --duration-camera {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 640ms;
+}
+
+@property --stagger-step {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 60ms;
+}
+
+:root {
+  --duration-scale: 1;
+
+  --duration-press: calc(120ms * var(--duration-scale));
+  --duration-quick: calc(200ms * var(--duration-scale));
+  --duration-reveal: calc(280ms * var(--duration-scale));
+  --duration-subject: calc(440ms * var(--duration-scale));
+  --duration-camera: calc(640ms * var(--duration-scale));
+
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-settle: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-exit: ease-out;
+  --ease-camera: linear(
+    0,
+    0.02 6%,
+    0.09 14%,
+    0.28 26%,
+    0.55 40%,
+    0.76 53%,
+    0.89 65%,
+    0.955 77%,
+    0.99 89%,
+    1
+  );
+
+  --stagger-step: calc(60ms * var(--duration-scale));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-scale: 0.0001;
+  }
+}

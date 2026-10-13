@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+"""Brayness actor terminal - a pty on the guest end of the vsock channel.
+
+socat runs one copy of this per connection (VSOCK-LISTEN:53,fork) with pipes on
+stdin and stdout. Frames are JSON lines:
+
+    in    {"op": "data", "data_b64": "..."}
+          {"op": "resize", "cols": 100, "rows": 30}
+    out   {"op": "data", "data_b64": "..."}
+          {"op": "exit", "code": 0}
+          {"op": "taken"}   another connection took the terminal
+
+The terminal outlives the connection. One holder process per guest owns the pty
+and the shell; each connection is a thin relay to it over a unix socket. A new
+connection takes the terminal over from the old one, so a browser refresh
+reattaches to the running Pi instead of paying its startup again.
+
+The page opens every connection by typing `exec brayness`. When Pi is already
+running, the holder drops it: a refresh returns to the same conversation.
+
+No authentication and no egress policy: the channel is a host-local unix socket.
+h1/h2 in plans/brayness.md own identity and network.
+"""
+import base64
+import fcntl
+import json
+import os
+import pty
+import pwd
+import re
+import select
+import socket
+import struct
+import sys
+import termios
+import time
+
+SHELL = "/bin/bash"
+# Pi and its shell run as this user; the holder itself stays root.
+USER = "brayness"
+# The visible terminal starts in the actor's work/ folder.
+WORK_DIR = "/brayness/work"
+SOCKET = "/run/brayness-pty.sock"
+# Keys typed from inside the actor (the chat bridge running a GUI command).
+# Unlike SOCKET it never takes the terminal from the browser.
+KEYS_SOCKET = "/run/brayness/pty-keys.sock"
+# The browser page draws with libghostty-vt: 256 colors and truecolor.
+TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
+DEFAULT_COLS = 80
+DEFAULT_ROWS = 24
+OPENER = b"exec brayness\r"
+# Modes an app sets once at startup (Pi's fullscreen TUI: alternate screen,
+# mouse reports, focus, bracketed paste). A browser that attaches later never
+# saw them, so the holder remembers them and replays them on attach.
+REPLAY_MODES = (1049, 1000, 1002, 1003, 1004, 1006, 2004)
+DEC_MODE = re.compile(rb"\x1b\[\?([0-9;]+)([hl])")
+# Kitty keyboard: CSI > flags u pushes, CSI < n u pops.
+KITTY = re.compile(rb"\x1b\[([<>])([0-9]*)u")
+
+
+def frame(payload):
+    return (json.dumps(payload) + "\n").encode()
+
+
+def set_window(master, cols, rows):
+    """The size the client wants. The kernel also signals SIGWINCH for us."""
+    fcntl.ioctl(master, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, 0, 0))
+
+
+def running_command(pid):
+    """True once the shell has exec'd something else (Pi).
+
+    Right after pty.fork the child is still this Python, before it execs the
+    shell; that is not a running command, or the first opener is dropped.
+    """
+    try:
+        exe = os.readlink(f"/proc/{pid}/exe")
+    except OSError:
+        return False
+    return exe not in (os.path.realpath(SHELL), os.path.realpath(sys.executable))
+
+
+def drop_to(name):
+    """Become `name` for good: groups, then gid, then uid, then its env."""
+    entry = pwd.getpwnam(name)
+    os.initgroups(name, entry.pw_gid)
+    os.setgid(entry.pw_gid)
+    os.setuid(entry.pw_uid)
+    os.environ.update({"HOME": entry.pw_dir, "USER": name, "LOGNAME": name})
+
+
+class Holder:
+    def __init__(self, listener):
+        self.listener = listener
+        self.keys = open_keys_socket()
+        self.client = None
+        self.pending = b""
+        self.fresh = False
+        self.size = (DEFAULT_COLS, DEFAULT_ROWS)
+        self.modes = {}
+        self.kitty = []
+        self.carry = b""
+        self.pid, self.master = pty.fork()
+        if self.pid == 0:
+            os.environ.update(TERM_ENV)
+            drop_to(USER)
+            os.makedirs(WORK_DIR, exist_ok=True)
+            os.chdir(WORK_DIR)
+            os.execvp(SHELL, [SHELL])
+            os._exit(127)
+        set_window(self.master, *self.size)
+
+    def attach(self, client):
+        if self.client:
+            # Tell the old page it lost the terminal, so it stops reconnecting
+            # instead of taking it back.
+            self.send(frame({"op": "taken"}))
+            if self.client:
+                self.client.close()
+        self.client = client
+        self.pending = b""
+        self.fresh = True
+        replay = self.replay()
+        if replay:
+            self.send(frame({"op": "data", "data_b64": base64.b64encode(replay).decode()}))
+
+    def type_keys(self):
+        """One connection, one write: the bytes go to the app as typed keys."""
+        conn = self.keys.accept()[0]
+        conn.settimeout(1)
+        try:
+            data = conn.recv(4096)
+            if data:
+                os.write(self.master, data)
+        except OSError:
+            pass
+        finally:
+            conn.close()
+
+    def track(self, data):
+        """Remember the replayable modes the app's output turns on or off."""
+        text = self.carry + data
+        # An escape still open at the end of a read finishes on the next one.
+        tail = text.rfind(b"\x1b")
+        if tail != -1 and len(text) - tail < 24 and not re.search(rb"[hlu]", text[tail + 2:]):
+            text, self.carry = text[:tail], text[tail:]
+        else:
+            self.carry = b""
+        for numbers, action in DEC_MODE.findall(text):
+            for number in numbers.split(b";"):
+                if number.isdigit() and int(number) in REPLAY_MODES:
+                    self.modes[int(number)] = action == b"h"
+        for kind, flags in KITTY.findall(text):
+            if kind == b">":
+                self.kitty.append(int(flags or 0))
+            elif self.kitty:
+                del self.kitty[-max(1, int(flags or 1)):]
+
+    def replay(self):
+        """Sequences that put a fresh browser terminal in the app's modes."""
+        on = [mode for mode in REPLAY_MODES if self.modes.get(mode)]
+        out = b"".join(b"\x1b[?%dh" % mode for mode in on)
+        out += b"".join(b"\x1b[>%du" % flags for flags in self.kitty)
+        return out
+
+    def send(self, data):
+        if not self.client:
+            return
+        try:
+            self.client.sendall(data)
+        except OSError:
+            self.client.close()
+            self.client = None
+
+    def resize(self, cols, rows):
+        # Nudge the width so a reattached TUI repaints even at the same size.
+        if self.fresh and cols > 1:
+            set_window(self.master, cols - 1, rows)
+            time.sleep(0.05)
+        self.size = (cols, rows)
+        set_window(self.master, cols, rows)
+
+    def handle(self, line):
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            return
+        if message.get("op") == "resize":
+            self.resize(int(message["cols"]), int(message["rows"]))
+        elif message.get("op") == "data":
+            data = base64.b64decode(message.get("data_b64") or "")
+            opener = self.fresh and data == OPENER
+            self.fresh = False
+            if opener and running_command(self.pid):
+                return
+            os.write(self.master, data)
+
+    def run(self):
+        while True:
+            watch = [self.master, self.listener] + ([self.keys] if self.keys else []) + ([self.client] if self.client else [])
+            readable, _, _ = select.select(watch, [], [])
+            if self.keys and self.keys in readable:
+                self.type_keys()
+            if self.listener in readable:
+                self.attach(self.listener.accept()[0])
+            if self.master in readable:
+                try:
+                    data = os.read(self.master, 65536)
+                except OSError:
+                    data = b""
+                if not data:
+                    _, status = os.waitpid(self.pid, 0)
+                    self.send(frame({"op": "exit", "code": os.waitstatus_to_exitcode(status)}))
+                    return
+                # With no client the bytes are dropped; the next attach repaints.
+                self.track(data)
+                self.send(frame({"op": "data", "data_b64": base64.b64encode(data).decode()}))
+            if self.client and self.client in readable:
+                chunk = self.client.recv(65536)
+                if not chunk:
+                    self.client.close()
+                    self.client = None
+                    continue
+                self.pending += chunk
+                while b"\n" in self.pending:
+                    line, _, self.pending = self.pending.partition(b"\n")
+                    if line.strip():
+                        self.handle(line)
+
+
+def open_keys_socket():
+    """Owned by the user Pi runs as, so its extensions can type."""
+    try:
+        os.unlink(KEYS_SOCKET)
+    except FileNotFoundError:
+        pass
+    try:
+        keys = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        keys.bind(KEYS_SOCKET)
+        user = pwd.getpwnam(USER)
+        os.chown(KEYS_SOCKET, user.pw_uid, user.pw_gid)
+        os.chmod(KEYS_SOCKET, 0o600)
+        keys.listen(4)
+        return keys
+    except OSError:
+        return None
+
+
+def serve_holder(listener):
+    """Detached from socat: the holder must survive the connection that made it."""
+    if os.fork():
+        return
+    os.setsid()
+    if os.fork():
+        os._exit(0)
+    devnull = os.open(os.devnull, os.O_RDWR)
+    for fd in (0, 1, 2):
+        os.dup2(devnull, fd)
+    try:
+        Holder(listener).run()
+    finally:
+        try:
+            os.unlink(SOCKET)
+        except FileNotFoundError:
+            pass
+        os._exit(0)
+
+
+def connect():
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        sock.connect(SOCKET)
+        return sock
+    except OSError:
+        sock.close()
+    try:
+        os.unlink(SOCKET)
+    except FileNotFoundError:
+        pass
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(SOCKET)
+    listener.listen(4)
+    serve_holder(listener)
+    listener.close()
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect(SOCKET)
+    return sock
+
+
+def main():
+    holder = connect()
+    stdin = sys.stdin.fileno()
+    out = sys.stdout.buffer
+    while True:
+        readable, _, _ = select.select([holder, stdin], [], [])
+        if holder in readable:
+            data = holder.recv(65536)
+            if not data:
+                return
+            out.write(data)
+            out.flush()
+        if stdin in readable:
+            chunk = os.read(stdin, 65536)
+            if not chunk:
+                return
+            holder.sendall(chunk)
+
+
+main()

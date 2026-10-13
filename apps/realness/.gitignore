@@ -1,0 +1,33 @@
+# Generated files follow lib/output.js and lib/output.sh: a harness's artifacts/brayness, or dist/
+# on a host. A fresh clone is source only.
+dist/
+
+
+# Python bytecode from server/host/clients and server/host/guest; run as root it would
+# leave root-owned files in the source tree.
+__pycache__/
+*.pyc
+
+# The old names for dist/. Kept so a working tree that still has them does not
+# have them committed by accident.
+build/
+runs/
+
+node_modules/
+
+# Firebase Functions local configuration and generated output
+functions/.env*
+!functions/.env.example
+functions/.runtimeconfig.json
+functions/coverage/
+functions/service-account*.json
+firebase-debug*.log
+firestore-debug.log
+
+# Browser generators write here; platform assets stay in frontend/.
+src/app/prerender/toc.js
+src/app/wasm/
+
+# macOS
+.DS_Store
+tools/publish/renderer/.cache/

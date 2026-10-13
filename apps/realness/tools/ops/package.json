@@ -1,0 +1,25 @@
+{
+  "name": "realness-ops",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ads": "node ads-metrics.js",
+    "traffic": "node hosting-traffic.js",
+    "serve": "npm --prefix ../../functions run serve",
+    "logs": "npm --prefix ../../functions run logs",
+    "deploy": "npm --prefix ../../functions run deploy",
+    "lint": "npm --prefix ../../functions run lint",
+    "test": "npm --prefix ../../functions run test",
+    "test:watch": "npm --prefix ../../functions run test:watch",
+    "test:coverage": "npm --prefix ../../functions run test:coverage",
+    "test:gcs": "GCS_TEST_TOKEN=$(gcloud auth print-access-token) npm --prefix ../../functions test -- tests/services/mirror-guards.gcs.spec.js",
+    "test:emulators": "firebase emulators:exec --only firestore,storage --project demo-realness-migration --config ../../firebase.functions.test.json 'npm --prefix ../../functions test -- tests/services/mirror-journal.emulator.spec.js tests/services/mirror-reconcile.emulator.spec.js'",
+    "pre-commit": "npm run lint && npm run test",
+    "prepare": "husky",
+    "repair": "node repair-people.js",
+    "migration:report": "node report-html-migration.js"
+  },
+  "devDependencies": {
+    "husky": "9.1.7"
+  }
+}

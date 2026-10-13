@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+package-lock.json
+firebase-debug.log
+firestore-debug.log
+.firebase/
+ui-debug.log
+pubsub-debug.log
+
+functions/.env
+functions/.env.local
+functions/.runtimeconfig.json
+
+service-account*.json
+/artifacts/
+functions/coverage/

@@ -1,0 +1,480 @@
+<script setup>
+  import {
+    build_download_svg,
+    prepare_poster_svg_for_3d,
+    get_filename_for_poster
+  } from '@/utils/export-poster'
+  import { as_query_id } from '@/utils/itemid'
+  import { is_vector_id } from '@/use/poster'
+  import { get_live_poster_scene } from '@/3d/scenes/live-poster-scene.js'
+  import { with_poster_scene } from '@/3d/scenes/with-poster-scene.js'
+  import {
+    render_svg_layers_to_psd,
+    extract_all_layers
+  } from '@/utils/svg-to-psd'
+  import { render_complete_poster_to_canvas } from '@/utils/poster-canvas'
+  import { export_poster_to_video_with_audio } from '@/utils/export-poster-video'
+  import icon from '@/components/icon'
+  import {
+    ref,
+    inject,
+    onMounted as mounted,
+    onUnmounted as unmounted
+  } from 'vue'
+  const props = defineProps({
+    itemid: {
+      type: String,
+      required: true,
+      validator: is_vector_id
+    }
+  })
+
+  defineOptions({
+    name: 'DownloadVector'
+  })
+
+  const file_name = ref(null)
+  const menu_open = ref(false)
+  const menu_ref = ref(null)
+  const button_ref = ref(null)
+  const set_working = inject('set_working')
+  const video_exporting = ref(false)
+  const video_progress = ref(0)
+  const video_total = ref(0)
+
+  const on_download_svg = event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    const download_svg = build_download_svg(svg)
+    const svg_string = new XMLSerializer().serializeToString(download_svg)
+    const blob = new Blob([svg_string], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = file_name.value
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const on_toggle_menu = event => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (video_exporting.value) return
+    menu_open.value = !menu_open.value
+  }
+
+  const close_menu = () => {
+    menu_open.value = false
+  }
+
+  const handle_click_outside = event => {
+    if (video_exporting.value) return
+    if (
+      menu_open.value &&
+      menu_ref.value &&
+      button_ref.value &&
+      !menu_ref.value.contains(event.target) &&
+      !button_ref.value.contains(event.target)
+    )
+      close_menu()
+  }
+
+  const is_ios_safari = () => {
+    const ua = navigator.userAgent
+    const is_ios = /iPad|iPhone|iPod/.test(ua)
+    const is_safari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua)
+    return is_ios && is_safari
+  }
+
+  const download_psd = async (svg_element, filename, buffer) => {
+    const is_ios = is_ios_safari()
+
+    let psd_buffer = buffer
+    let psd_filename = filename
+
+    if (!psd_buffer) {
+      set_working(true)
+
+      try {
+        psd_filename =
+          filename || (await get_filename_for_poster(props.itemid, 'psd'))
+        const target_width = is_ios_safari() ? null : undefined
+        psd_buffer = await render_svg_layers_to_psd(
+          svg_element,
+          props.itemid,
+          target_width
+        )
+      } catch (error) {
+        console.error('[PSD Download] PSD generation failed:', error)
+        console.error('[PSD Download] Error stack:', error.stack)
+        set_working(false)
+        return
+      }
+      set_working(false)
+    }
+
+    const blob = new Blob([psd_buffer], { type: 'image/vnd.adobe.photoshop' })
+
+    const url = URL.createObjectURL(blob)
+
+    if (is_ios) {
+      try {
+        const new_window = window.open(url, '_blank')
+
+        if (new_window) return
+      } catch (error) {
+        console.error('[PSD Download] window.open failed:', error)
+      }
+
+      const a = document.createElement('a')
+      a.href = url
+      a.download = psd_filename
+      a.target = '_blank'
+
+      a.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 1rem 2rem;
+        background: var(--emphasis);
+        color: var(--bone);
+        text-decoration: none;
+        border-radius: 0.5rem;
+        z-index: 6;
+        font-size: 1.2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
+      `
+      a.textContent = `Tap to download ${psd_filename}`
+      a.id = 'ios-psd-download-link'
+
+      document.body.appendChild(a)
+
+      try {
+        a.click()
+      } catch (error) {
+        console.error('[PSD Download] Programmatic click failed:', error)
+      }
+    } else {
+      const a = document.createElement('a')
+      a.href = url
+      a.download = psd_filename
+      document.body.appendChild(a)
+
+      try {
+        a.click()
+      } catch (error) {
+        console.error('[PSD Download] Standard download failed:', error)
+      }
+
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+  }
+
+  const on_download_psd = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) {
+      console.error('[PSD Download] SVG element not found', {
+        query_id: as_query_id(props.itemid)
+      })
+      return
+    }
+
+    await download_psd(svg)
+  }
+
+  const on_download_video = event => {
+    event.preventDefault()
+    event.stopPropagation()
+    void export_video()
+  }
+
+  /**
+   * Renders and downloads the poster as 4K H.264 MOV, optionally muxing one or
+   * more decoded audio buffers as the soundtrack. When audio is provided the
+   * video runs exactly as long as the audio, looping the animation cycle to
+   * cover it.
+   * @param {AudioBuffer[]} [audio_buffers] - Decoded audio to embed as the track
+   */
+  const export_video = async audio_buffers => {
+    video_exporting.value = true
+    video_progress.value = 0
+    video_total.value = 0
+    set_working(true)
+
+    try {
+      await export_poster_to_video_with_audio(props.itemid, {
+        audio_buffers,
+        on_progress: (frame, total) => {
+          video_progress.value = frame
+          video_total.value = total
+        }
+      })
+    } finally {
+      video_exporting.value = false
+      video_progress.value = 0
+      video_total.value = 0
+      set_working(false)
+      close_menu()
+    }
+  }
+
+  defineExpose({ export_video })
+
+  const on_png_layers = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    set_working(true)
+
+    try {
+      const viewbox = svg.viewBox.baseVal
+      const aspect_ratio = viewbox.width / viewbox.height
+      const FOUR_K_WIDTH = 3840
+      const width = FOUR_K_WIDTH
+      const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
+
+      const layers = await extract_all_layers(svg, props.itemid, FOUR_K_WIDTH)
+
+      const base_name = file_name.value?.replace('.svg', '') || 'poster'
+
+      for await (const layer of layers) {
+        const canvas = new OffscreenCanvas(width, height)
+        const ctx = canvas.getContext('2d')
+        ctx.putImageData(layer.imageData, 0, 0)
+
+        const blob = await canvas.convertToBlob({ type: 'image/png' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        const safe_layer_name = layer.name.toLowerCase().replace(/\s+/g, '_')
+        a.download = `${base_name}_${safe_layer_name}.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    } finally {
+      set_working(false)
+    }
+  }
+
+  const on_download_png = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg = document.getElementById(as_query_id(props.itemid))
+    if (!svg || !(svg instanceof SVGSVGElement)) return
+
+    set_working(true)
+
+    try {
+      const viewbox = svg.viewBox.baseVal
+      const aspect_ratio = viewbox.width / viewbox.height
+      const FOUR_K_WIDTH = 3840
+      const width = FOUR_K_WIDTH
+      const height = Math.round(FOUR_K_WIDTH / aspect_ratio)
+
+      const canvas = await render_complete_poster_to_canvas(svg, width, height)
+
+      const blob = await canvas.convertToBlob({ type: 'image/png' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const base_name = file_name.value?.replace('.svg', '') || 'poster'
+      a.download = `${base_name}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } finally {
+      set_working(false)
+    }
+  }
+
+  const on_download_glb = async event => {
+    event.preventDefault()
+    event.stopPropagation()
+    close_menu()
+
+    const svg_el = document.getElementById(as_query_id(props.itemid))
+    if (!svg_el || !(svg_el instanceof SVGSVGElement)) return
+
+    set_working(true)
+
+    const { itemid } = props
+    const filename = file_name.value?.replace('.svg', '') || 'poster'
+    const live_scene = get_live_poster_scene(itemid)
+
+    try {
+      if (live_scene) {
+        await live_scene.wait_for_textures()
+        live_scene.export_glb(filename)
+        return
+      }
+
+      const svg_string = await prepare_poster_svg_for_3d(svg_el, itemid)
+      await with_poster_scene(svg_string, async scene => {
+        await scene.wait_for_textures()
+        scene.export_glb(filename)
+      })
+    } finally {
+      set_working(false)
+    }
+  }
+
+  mounted(async () => {
+    file_name.value = await get_filename_for_poster(props.itemid, 'svg')
+    document.addEventListener('click', handle_click_outside)
+  })
+
+  unmounted(() => {
+    document.removeEventListener('click', handle_click_outside)
+  })
+</script>
+
+<template>
+  <nav aria-label="Download options" ref="button_ref">
+    <a @click="on_toggle_menu" title="Download" aria-label="Download options">
+      <icon name="download" />
+    </a>
+    <menu v-if="menu_open" ref="menu_ref">
+      <template v-if="!video_exporting">
+        <button type="button" @click="on_download_svg">SVG</button>
+        <span role="group">
+          <button type="button" title="PNG layers" @click="on_png_layers">
+            <icon name="add" />
+          </button>
+          <button type="button" @click="on_download_png">PNG</button>
+        </span>
+        <button type="button" @click="on_download_psd">PSD</button>
+        <button type="button" @click="on_download_video">Video</button>
+        <button type="button" @click="on_download_glb">GLB</button>
+      </template>
+      <output v-else>{{ video_progress }}/{{ video_total }} frames</output>
+    </menu>
+  </nav>
+</template>
+
+<style lang="stylus">
+  sheet-ease = cubic-bezier(0.22, 1, 0.36, 1)
+
+  nav[aria-label='Download options'] {
+    position: relative;
+
+    & > a:first-child {
+      display: block;
+    }
+
+    menu {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      left: auto;
+      margin-bottom: base-line * 1.25;
+      width: max-content;
+      max-width: calc(100vw - var(--base-line) * 4);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: base-line * 0.25;
+      frosted-glass();
+      border-radius: base-line * 0.25;
+      z-index: 6;
+      transform-origin: bottom right;
+      animation: download-sheet 0.28s sheet-ease both;
+      button {
+        appearance: none;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: inherit;
+        line-height: 1.4;
+        padding-inline: base-line * 0.33;
+        border-radius: base-line * 0.125;
+        white-space: nowrap;
+        text-align: right;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+          background: var(--accent);
+          color: var(--contrast);
+        }
+      }
+
+      & > span[role='group'] {
+        position: relative;
+
+        & > button:last-child {
+          display: block;
+          width: 100%;
+        }
+
+        & > button:first-child {
+          position: absolute;
+          top: 50%;
+          right: 100%;
+          translate: 0 -50%;
+          margin-right: base-line * 0.25;
+          display: flex;
+          padding: base-line * 0.165;
+          border-radius: 50%;
+          frosted-glass();
+          animation: download-layers 0.2s sheet-ease 0.22s both;
+
+          & > svg {
+            width: base-line * 0.75;
+            height: base-line * 0.75;
+          }
+        }
+      }
+
+      output {
+        padding-inline: base-line * 0.33;
+        text-align: right;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  @keyframes download-sheet {
+    from {
+      opacity: 0;
+      translate: 0 base-line * 0.75;
+      scale: 0.96;
+    }
+  }
+
+  @keyframes download-layers {
+    from {
+      opacity: 0;
+      translate: base-line * 0.5 -50%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    nav[aria-label='Download options'] menu,
+    nav[aria-label='Download options'] menu span[role='group'] > button:first-child {
+      animation-duration: 0.01ms;
+      animation-delay: 0ms;
+    }
+  }
+</style>

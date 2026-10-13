@@ -1,0 +1,131 @@
+
+@require 'base-line'
+
+:root {
+  interpolate-size: allow-keywords;
+
+  --base-line: base-line;
+  --min-modular: min-modular;
+  --max-modular: max-modular;
+  --min-font: min-font;
+  --max-font: max-font;
+
+  --pad-begins: pad-begins;
+  --typing-begins: typing-begins;
+  --display-begins: display-begins;
+  --page-width: page-width;
+  --page-width-large: page-width-large;
+  --page-width-max: page-width-max;
+  --support-page-width: support-page-width;
+  --poster-min-width: poster-min-width;
+  --poster-grid-height: poster-grid-height;
+  --poster-thoughts-height: poster-thoughts-height;
+
+  --h1-min: $h1-min;
+  --h1-max: $h1-max;
+  --h2-min: $h2-min;
+  --h2-max: $h2-max;
+  --h3-min: $h3-min;
+  --h3-max: $h3-max;
+  --h4-min: $h4-min;
+  --h4-max: $h4-max;
+  --h5-min: $h5-min;
+  --h5-max: $h5-max;
+  --h6-min: $h6-min;
+  --h6-max: $h6-max;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  line-height: 1.33;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+:focus-visible {
+  outline: round(base-line / 10, 2) solid var(--emphasis);
+  outline-offset: round(base-line / 10, 2);
+}
+
+[outline],
+[outline] *:not(svg):not(svg *) {
+  outline: 0.15vmin dashed var(--graphite);
+}
+
+[hidden] {
+  display: none;
+}
+
+html {
+  font-family: 'Lato', -apple-system, system-ui;
+  font-size: clamp(var(--min-font), fluid-calc(), var(--max-font));
+  text-rendering: optimizeLegibility;
+  @media (prefers-color-scheme: dark) {
+    color: var(--bone);
+    font-smoothing: antialiased;
+  }
+}
+p, textarea:focus, input, blockquote, form {
+  max-width: var(--page-width);
+}
+
+h1 {
+  font-size: clamp(var(--h1-min), fluid-calc($h1-min, $h1-max), var(--h1-max));
+}
+h2 {
+  font-size: clamp(var(--h2-min), fluid-calc($h2-min, $h2-max), var(--h2-max));
+}
+h3, address > b {
+  font-size: clamp(var(--h3-min), fluid-calc($h3-min, $h3-max), var(--h3-max));
+}
+h4, span#fps {
+  font-size: clamp(var(--h4-min), fluid-calc($h4-min, $h4-max), var(--h4-max));
+}
+h5 {
+  font-size: var(--h5-min);
+}
+h6 {
+  font-size: clamp(var(--h6-max), fluid-calc($h6-min, $h6-max), var(--h6-min));
+}
+
+
+p {
+  line-height: 1.33;
+  margin-bottom: var(--base-line);
+}
+dl {
+  padding: 0 var(--base-line);
+}
+dt {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  user-select: text;
+  letter-spacing: -.02em;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: var(--base-line);
+}
+h3,h4,h5,h6 {
+  letter-spacing: -.01em;
+}
+
+h1,h2,h3,h4 {
+  margin-top: calc((var(--base-line) - 1em) + var(--base-line) * 2);
+}
+
+h5 {
+  margin-top: calc((var(--base-line) - 1em) + var(--base-line) * 1);
+}
+
+h6 {
+  margin-top: calc(var(--base-line) - 1em);
+}

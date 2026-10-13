@@ -1,0 +1,6 @@
+:root {
+  --paper: oklch(0.96 0.01 280);
+  --ink: oklch(0.22 0.02 280);
+  --iris: oklch(0.6 0.16 300);
+  --signal: oklch(0.65 0.18 30);
+}

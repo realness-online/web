@@ -1,0 +1,41 @@
+local palettes = {
+  dark = {
+    base00 = "#1d1d18",
+    base01 = "#2c2c26",
+    base02 = "#3b3b35",
+    base03 = "#8a7357",
+    base04 = "#b59074",
+    base05 = "#c4c4c4",
+    base06 = "#dbdbd4",
+    base07 = "#ecebe4",
+    base08 = "#ed8b8b",
+    base09 = "#d6bba8",
+    base0A = "#e1be89",
+    base0B = "#74b9b9",
+    base0C = "#4e9394",
+    base0D = "#849dc1",
+    base0E = "#d6bba8",
+    base0F = "#8e5353",
+  },
+  light = {
+    base00 = "#ecebe4",
+    base01 = "#dbdbd4",
+    base02 = "#c4c4c4",
+    base03 = "#9e7f69",
+    base04 = "#64523d",
+    base05 = "#525252",
+    base06 = "#332618",
+    base07 = "#17130f",
+    base08 = "#933237",
+    base09 = "#a17557",
+    base0A = "#7e531c",
+    base0B = "#356e6e",
+    base0C = "#4e9394",
+    base0D = "#3d5c87",
+    base0E = "#654934",
+    base0F = "#643a3a",
+  },
+}
+
+require("mini.base16").setup({ palette = palettes[vim.o.background] or palettes.dark, use_cterm = true })
+vim.g.colors_name = "realness"

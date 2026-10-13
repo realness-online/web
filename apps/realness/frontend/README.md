@@ -1,0 +1,266 @@
+# Realness Online
+
+![Realness](public/icons.svg)
+
+Realness is for churches, punks, and veterans: any organization whose core tenets are at odds with advertising-based social networking.
+
+Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
+
+Realness works solely on the client. There is no tracking and no analytics, and the server does authentication and storage only.
+
+See Realness in action: the [About](https://realness.online/about) page walks through what it does with live posters, and the in-app [Documentation](https://realness.online/docs) explains every feature and preference. The richer, visual explanations live there.
+
+Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
+
+## What Realness does
+
+Realness turns your pictures and designs into vector graphics. Take a photo on your phone and it comes back as a poster built from five animatable layers, with eighteen gradients drawn from the picture's prominent colors. Opacity merges the colors between layers, which is where the movement comes from. Posters are small and quick to draw, and they are SVG, so they fit any workflow that reads SVG. It works on any device, including an iPad in split view, and exports into Affinity Designer.
+
+Run an instance for your design team, your family, your union hall, or any community small enough to know each other. Each instance has one moderator, and that moderator is responsible for what gets posted. There is no email, no likes, no links, and no SEO, and as a progressive web app it stays unindexed by search engines. Moderating one is a good way to understand what the internet can do.
+
+For developers: HTML is the database, so an application can be built without coordinating with a backend. The work happens at the edge, on the device, which keeps sensitive data off the server and the attack surface small. The markup is semantic and described with microdata. Where the data actually lives is in [architecture](docs/architecture.md).
+
+## Install
+
+Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `vp`. The npm scripts proxy to it, so `npm run dev`, `npm run build`, and `npm test` all work - you can also call `vp` directly.
+
+### Clone and install
+
+```bash
+git clone git@github.com:realness-online/web.git
+cd web
+npm install
+npm run dev
+```
+
+This starts a plain HTTP dev server on `http://localhost:5173`.
+
+### Local HTTPS (optional)
+
+Some features (camera, service workers, secure contexts) need HTTPS. To serve over HTTPS on `realness.local`:
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert) and create a local CA
+
+```bash
+brew install mkcert
+mkcert -install
+```
+
+2. Generate certs in the project root
+
+```bash
+mkcert realness.local
+```
+
+3. Add `realness.local` to `/etc/hosts`
+
+```bash
+echo "127.0.0.1 realness.local" | sudo tee -a /etc/hosts
+```
+
+4. Run the dev server - it detects the certs and serves HTTPS on port 443
+
+```bash
+npm run dev
+```
+
+Visit `https://realness.local`.
+
+### Configure firebase
+
+Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be its url for your social network
+
+`https://${project-name}.web.app`
+
+Once your project is created you will want to enable phone authentication and file storage.
+
+#### Enable phone authentication
+
+- Click getting started from the authentication screen
+- Edit the configuration for phone
+- Enable and save
+
+#### Enable storage
+
+- Click to get started from storage tab
+- Accept the default security rules (they will be configured with deploy)
+- Pick your region
+
+### Deploy to firebase
+
+`npm run deploy` builds the WebAssembly tracer, the workers, and the app, then deploys hosting and storage. Building the tracer needs [Rust](https://rustup.rs) and [wasm-pack](https://rustwasm.github.io/wasm-pack/).
+
+Install the Firebase CLI, log in, and deploy:
+
+```bash
+npm install -g firebase-tools
+
+firebase login
+
+npm run deploy
+```
+
+Visit `https://${project-name}.web.app`. You can sign in and invite your friends.
+
+### Hot release (production cut)
+
+Every ship of `realness.online` ties three things together: changelog story,
+tagged commit, and GitHub manifesto. That is what makes
+`npm run verify` an independent check. Same `dist/` for deploy and GitHub -
+do not rebuild between them. Firebase account must own the project
+(`firebase login` / `firebase use production`).
+
+1. **Write under Unreleased** - bullets go in `CHANGELOG.md` under
+   `## Unreleased` (hidden from `/docs#changelog` until you cut).
+2. **Cut the version**
+
+   ```bash
+   npm version patch -m "chore(release): v%s"
+   # or: minor | major
+   ```
+
+   Bumps `package.json`, promotes Unreleased → `## vX.Y.Z - YYYY-MM-DD`,
+   commits `chore(release): vX.Y.Z`, tags `vX.Y.Z`. Fails if Unreleased is empty.
+   Always pass `-m "chore(release): v%s"` so every tag reads the same.
+
+   Which bump - read the Unreleased bullets, not the commit log:
+
+   - **patch** - fixes, performance, build and deploy work, copy. Nothing new
+     to do in the app.
+   - **minor** - a bullet describes something you can now do that you could
+     not before. One feature is enough.
+   - **major** - a stored file format, a storage rule, or a URL changes in a
+     way an existing install cannot read.
+
+3. **Ship**
+
+   ```bash
+   npm run ship
+   ```
+
+   Runs `deploy` → `release:gh` → `verify`. Expect `LEGIT` twice (local
+   manifesto, then GitHub as root of trust). `release:gh` attaches
+   `dist/build-manifest.json` and changelog notes to GitHub release `vX.Y.Z`.
+
+Or step through: `npm run deploy` then `npm run release:gh` then `npm run verify`.
+
+Anyone else can run `npm run verify` after step 3. Detail:
+[docs/verify-release.md](docs/verify-release.md).
+
+## Optional server features (`realness-functions`)
+
+**Default: do not deploy functions.** The web app is complete with Firebase
+**Auth + Storage only**. Posters, feed, thoughts, phone sign-in, and moderation
+all work without a backend beyond Firebase.
+
+Deploy [realness-functions](https://github.com/realness-online/functions) only
+when a moderator wants one of the optional capabilities below. It is a
+**separate repo** deployed to the **same Firebase project** as this web app.
+
+### When to deploy functions
+
+| You want...                                                   | Deploy `realness-functions`? | Also configure                                                                        |
+| ------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| A working Realness instance (posters, feed, auth, storage)    | **No**                       | Firebase Auth (phone) + Storage only                                                  |
+| Web push notifications (Account toggle + scheduled broadcast) | **Yes**                      | `VAPID_PRIVATE_KEY` secret + matching public key in both repos (see functions README) |
+| Block VoIP / virtual numbers before SMS (Twilio Lookup)       | **Yes**                      | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` secrets                                    |
+| Stripe sponsorship checkout                                   | **No**                       | Hosted Stripe link in the web app; no server-side Stripe in functions                 |
+
+If none of the optional rows apply, skip functions entirely.
+
+### How the app decides (runtime, not build-time)
+
+The app never assumes functions exist. At runtime it probes capabilities on the
+**same origin**:
+
+1. `GET /capabilities` - live manifest when hosting rewrites to deployed functions
+2. `GET /capabilities.json` - static fallback shipped with the web app (all flags `false`)
+
+Probe logic: `src/use/instance-capabilities.js`. Feature gates read the result:
+
+| Flag              | When `true`                                                                                 | When `false` (default)                                  |
+| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `push`            | Account notifications UI shown; subscriptions saved to Storage; scheduled broadcast can run | Notifications toggle hidden; no server push             |
+| `phone_integrity` | Sign-in calls `POST /check-phone-integrity` before Firebase sends SMS                       | Sign-in uses Firebase phone auth only; no Twilio Lookup |
+
+Web-only deploys never hit functions - the static fallback keeps every flag off.
+No env vars are required in the web app for moderators (`VITE_FUNCTIONS_URL` is
+an optional dev override for the functions emulator).
+
+### Deploy functions (only if needed)
+
+```bash
+# In the realness-functions repo, same Firebase project as the web app
+npm run deploy
+```
+
+Then redeploy hosting from this repo so the rewrites in `firebase.json` are
+active (`/capabilities`, `/check-phone-integrity` → functions).
+
+**Phone integrity:** `firebase functions:secrets:set TWILIO_ACCOUNT_SID` and
+`TWILIO_AUTH_TOKEN`, then redeploy functions. Until both secrets exist,
+`phone_integrity` stays `false` and the sign-in gate is off.
+
+**Push:** set `VAPID_PRIVATE_KEY` and keep the public key in sync across both
+repos - see `realness-functions/README.md`.
+
+**Verify:** `GET https://your-instance.web.app/capabilities` should return JSON
+(not the SPA). Confirm flags match what you configured before treating a
+capability as live.
+
+Details and emulator setup: [`realness-functions` README](../realness-functions/README.md).
+
+## Contributing
+
+Moderators are ideal contributors. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
+
+## Support
+
+We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating
+
+## License
+
+Realness is licensed under the **GPL-2.0**. See [LICENSE](LICENSE) for the
+full text. Anyone may run, modify, and redistribute Realness, including for
+commercial use, provided derivative works stay GPL-2.0 with source available.
+
+### One instance, one moderator
+
+While the GPL governs the code, Realness is designed around a product
+principle: one instance of Realness per human person, and that human person is
+the moderator.
+
+A moderator takes responsibility for the content that is created within their
+instance of Realness.
+
+By moderating an instance of Realness you become part of a chain of
+responsibility that is diffuse. Each instance of Realness is a unique
+opportunity for users to negotiate norms with their moderator. This way, human
+beings can move between networks naturally; choosing a Realness that is a good
+fit for them.
+
+It is the explicit goal of realness to create a democratic environment where
+people feel free to share and communicate yet it is clear whose ass is on the
+line for what gets said, organized, and done.
+
+### Commercial support
+
+Commercial tiers at <https://realness.online/pricing> provide a formal
+license agreement, support, and indemnification for teams and organizations.
+The GPL permits commercial use freely; the commercial tiers are a service and
+contract wrapper, not a license gate.
+
+### Trademarks
+
+The "Realness" name and logos are trademarks of Scott Fryxell and are not
+licensed under the GPL. A redistributed or modified version must not use the
+Realness marks in a way that implies it is the official project or is
+endorsed by the author.
+
+### Attribution
+
+Realness's vector tracing is built on two GPL-2.0 projects: potrace by Peter
+Selinger (<http://potrace.sourceforge.net/>) and node-potrace by mattmc
+(<https://github.com/tooolbox/node-potrace>), the JavaScript port
+`src/potrace/` is derived from. Both are credited on `/license` and remain
+GPL-2.0.

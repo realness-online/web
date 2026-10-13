@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+. "$DIR/lib/output.sh"
+local_values="$(node "$DIR/src/settings/cli.js" shell local)"
+eval "$local_values"
+unset local_values
+VOL="${VOL:-/opt/fc/actors}"
+IMAGE="$VOL/xfs.img"
+MOUNT="$VOL/mnt"
+SIZE="${SIZE:-6G}"
+PORT="${PORT:-$host_port}"
+
+[ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
+
+if [ "${FRESH:-0}" = 1 ]; then
+  echo "FRESH=1: wiping $IMAGE"
+  if mountpoint -q "$MOUNT"; then umount "$MOUNT"; fi
+  rm -rf "$VOL"
+fi
+
+mkdir -p "$VOL" "$MOUNT"
+
+size_bytes="$(numfmt --from=iec "$SIZE")"
+host_free="$(df --output=avail -B1 "$VOL" | tail -1)"
+already=0
+if [ -e "$IMAGE" ]; then already="$(du -B1 "$IMAGE" | cut -f1)"; fi
+want=$((size_bytes - already))
+if [ "$want" -gt "$host_free" ]; then
+  printf 'actors volume wants %s but %s MiB is free on the host disk\n' \
+    "$SIZE" "$((host_free / 1024 / 1024))" >&2
+  printf 'lower SIZE, or free space - finished work dirs live in /opt/fc\n' >&2
+  exit 1
+fi
+
+if [ ! -e "$IMAGE" ]; then
+  echo "new actors volume: $IMAGE ($SIZE, sparse)"
+  truncate -s "$SIZE" "$IMAGE"
+  mkfs.xfs -q -f "$IMAGE"
+fi
+
+if ! mountpoint -q "$MOUNT"; then
+  echo "mounting $IMAGE at $MOUNT"
+  mount -o loop "$IMAGE" "$MOUNT"
+fi
+
+fstrim "$MOUNT" || true
+( while sleep 300 && kill -0 $$ 2> /dev/null; do fstrim "$MOUNT" 2> /dev/null || true; done ) &
+
+echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
+
+ACTOR_HOST_PORTS="18095 $site_port" bash "$DIR/server/host/scripts/net-up.sh"
+
+secret_file="$OUT/host-pass-secret"
+if [ ! -f "$secret_file" ]; then
+  echo "missing $secret_file: generate a 32-byte secret before starting the local host" >&2
+  exit 1
+fi
+export HOST_PASS_SECRET="$(< "$secret_file")"
+export RECORD_SECRET_FILE=/etc/brayness/record-secret
+SYNC_DIR="$OUT/site-sync" node "$DIR/server/host/scripts/record-key-dev.js"
+site_sync_pid="$OUT/site-sync.pid"
+if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
+  kill "$(< "$site_sync_pid")"
+  for attempt in {1..30}; do
+    kill -0 "$(< "$site_sync_pid")" 2> /dev/null || break
+    sleep 1
+  done
+  if kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then echo 'site sync did not stop' >&2; exit 1; fi
+fi
+if ! [ -s "$site_sync_pid" ] || ! kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
+  mkdir -p "$OUT/site-sync"
+  nohup env HOST_PASS_SECRET="$HOST_PASS_SECRET" PROJECT="$dev_project" LISTEN=0.0.0.0 PORT="$site_port" SYNC_DIR="$OUT/site-sync" \
+    node "$DIR/server/sync/bin/sync-service.js" > "$OUT/site-sync.log" 2>&1 &
+  echo $! > "$site_sync_pid"
+fi
+for attempt in {1..30}; do
+  if curl -s -o /dev/null --max-time 1 "http://127.0.0.1:$site_port/sites/a-000000000000/"; then break; fi
+  sleep 1
+done
+kill -0 "$(< "$site_sync_pid")" || { echo 'site sync failed to start' >&2; exit 1; }
+export SYNC_SITE_URL="${SYNC_SITE_URL:-http://127.0.0.1:$site_port}"
+export SYNC_URL="${SYNC_URL:-$sync_url_default}"
+export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-http://127.0.0.1:$site_port}"
+model_secret_file="$OUT/model-pass-secret"
+[ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
+export MODEL_PASS_SECRET="$(< "$model_secret_file")"
+[ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
+
+cd "$DIR"
+if [ -z "${SYNC_SITE_URL:-}" ]; then
+  site_url_default='http://{id}.localhost:18080/'
+  export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
+fi
+exec node server/host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

@@ -1,0 +1,147 @@
+import assert from "node:assert/strict"
+import { Duplex } from "node:stream"
+import { test } from "node:test"
+import { issue_host_pass } from "#root/src/sign-on/node/host-pass.js"
+import { makeServer } from "../../../src/host/server.js"
+import { Lines } from "../../../src/host/vsock.js"
+
+const secret = "chat-api-test-secret-at-least-thirty-two-bytes"
+process.env.HOST_PASS_SECRET = secret
+const alice = "+14155550123"
+const bob = "+14155559999"
+const auth = (phone) => ({ authorization: `Bearer ${issue_host_pass({ phone }, secret)}` })
+
+const start = async ({ limits = async (record) => ({ warn: null, owner: record.owner }) } = {}) => {
+  const seen = { hellos: [], wakes: 0, work: [], closed: 0, turns: [] }
+  const records = { "a-alice0000000": { id: "a-alice0000000", owner: alice }, "a-bob000000000": { id: "a-bob000000000", owner: bob } }
+  const store = {
+    get: (id) => records[id] ?? (() => { throw new Error("no actor") })(),
+    list: () => Object.values(records),
+    ensureRunning: (id) => (seen.wakes++, records[id]),
+    beginWork: (id) => seen.work.push(`begin ${id}`),
+    endWork: (id) => seen.work.push(`end ${id}`),
+    firstTurn: (id) => seen.turns.push(id),
+  }
+  const connectChat = async () => {
+    const socket = new Duplex({
+      read() {},
+      write(chunk, encoding, done) {
+        const hello = JSON.parse(chunk.toString())
+        seen.hellos.push(hello)
+        if (hello.message) {
+          this.push('{"type":"delta","text":"Hello"}\n{"type":"done"}\n')
+          this.push(null)
+        } else if (hello.command) {
+          this.push(`${JSON.stringify({ type: "done", text: `ran ${hello.command}` })}\n`)
+          this.push(null)
+        } else this.push('{"type":"history","turns":[]}\n')
+        done()
+      },
+      destroy(error, done) {
+        seen.closed++
+        done(error)
+      },
+    })
+    return { socket, lines: new Lines(socket) }
+  }
+  const server = makeServer(store, null, undefined, null, { connectChat, limits })
+  await new Promise((done) => server.listen(0, "127.0.0.1", done))
+  return { server, seen, at: `http://127.0.0.1:${server.address().port}/v1/actors` }
+}
+
+test("an owner sends a message and reads the streamed turn", async () => {
+  const { server, seen, at } = await start()
+  try {
+    const reply = await fetch(`${at}/a-alice0000000/chat/message`, { method: "POST", headers: { ...auth(alice), "content-type": "application/json" }, body: '{"message":"Hi"}' })
+    assert.equal(reply.status, 200)
+    assert.match(reply.headers.get("content-type"), /ndjson/)
+    assert.deepEqual((await reply.text()).trim().split("\n").map(JSON.parse), [{ type: "delta", text: "Hello" }, { type: "done" }])
+    assert.deepEqual(seen.hellos, [{ message: "Hi" }])
+    assert.deepEqual(seen.work, ["begin a-alice0000000", "end a-alice0000000"])
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test("events stream until the reader leaves; limit answers JSON", async () => {
+  const { server, seen, at } = await start()
+  try {
+    const controller = new AbortController()
+    const events = await fetch(`${at}/a-alice0000000/chat/events`, { headers: auth(alice), signal: controller.signal })
+    const reader = events.body.getReader()
+    assert.deepEqual(JSON.parse(new TextDecoder().decode((await reader.read()).value)), { type: "history", turns: [] })
+    assert.deepEqual(seen.hellos, [{ watch: true }])
+    controller.abort()
+    for (let i = 0; i < 50 && !seen.closed; i++) await new Promise((done) => setTimeout(done, 10))
+    assert.equal(seen.closed, 1)
+    assert.deepEqual(seen.work, [], "watching is not work")
+    const limit = await fetch(`${at}/a-alice0000000/chat/limit`, { headers: auth(alice) })
+    assert.deepEqual(await limit.json(), { warn: null, owner: alice })
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test("each accepted message records a turn; a refused one does not", async () => {
+  const { server, seen, at } = await start()
+  try {
+    const post = (body) => fetch(`${at}/a-alice0000000/chat/message`, { method: "POST", headers: { ...auth(alice), "content-type": "application/json" }, body })
+    assert.equal((await post('{"message":null}')).status, 400)
+    assert.deepEqual(seen.turns, [])
+    await (await post('{"message":"Hi"}')).text()
+    await (await post('{"message":"Again"}')).text()
+    assert.deepEqual(seen.turns, ["a-alice0000000", "a-alice0000000"])
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test("an owner runs a chat command; it is work, not a turn", async () => {
+  const { server, seen, at } = await start()
+  try {
+    const post = (body, headers = auth(alice)) => fetch(`${at}/a-alice0000000/chat/command`, { method: "POST", headers: { ...headers, "content-type": "application/json" }, body })
+    const reply = await post('{"command":"compact","args":"keep the plan"}')
+    assert.equal(reply.status, 200)
+    assert.deepEqual((await reply.text()).trim().split("\n").map(JSON.parse), [{ type: "done", text: "ran compact" }])
+    assert.deepEqual(seen.hellos, [{ command: "compact", args: "keep the plan" }])
+    assert.deepEqual(seen.work, ["begin a-alice0000000", "end a-alice0000000"])
+    assert.deepEqual(seen.turns, [], "a command is not a first turn")
+    for (const body of ['{"command":"login"}', '{"command":"stop","args":4}', '{"command":""}', "nope"]) assert.equal((await post(body)).status, 400, body)
+    assert.equal((await fetch(`${at}/a-bob000000000/chat/command`, { method: "POST", headers: auth(alice), body: '{"command":"stop"}' })).status, 404)
+    assert.equal(seen.hellos.length, 1)
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test("b1c: limit is quiet when the proxy cannot answer", async () => {
+  const { server, at } = await start({ limits: async () => { throw new Error("down") } })
+  try {
+    assert.deepEqual(await (await fetch(`${at}/a-alice0000000/chat/limit`, { headers: auth(alice) })).json(), { warn: null })
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test("no pass, another owner, a bad message, or a wrong method never reach the guest", async () => {
+  const { server, seen, at } = await start()
+  try {
+    const post = (id, headers, body = '{"message":"Hi"}') => fetch(`${at}/${id}/chat/message`, { method: "POST", headers, body })
+    assert.equal((await post("a-alice0000000", {})).status, 401)
+    assert.equal((await post("a-bob000000000", auth(alice))).status, 404)
+    assert.equal((await fetch(`${at}/a-bob000000000/chat/events`, { headers: auth(alice) })).status, 404)
+    assert.equal((await post("a-alice0000000", auth(alice), '{"message":"  "}')).status, 400)
+    assert.equal((await post("a-alice0000000", auth(alice), JSON.stringify({ message: "x".repeat(20_000) }))).status, 413)
+    assert.equal((await fetch(`${at}/a-alice0000000/chat/message`, { headers: auth(alice) })).status, 404)
+    assert.equal((await fetch(`${at}/a-alice0000000/chat/other`, { headers: auth(alice) })).status, 404)
+    assert.equal(seen.hellos.length, 0)
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})

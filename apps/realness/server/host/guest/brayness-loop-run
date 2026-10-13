@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Run one autoresearch loop headless, as the brayness user.
+
+    brayness-loop-run <goal>
+
+The host starts this in a loop actor under systemd-run. Pi runs in RPC mode:
+print mode drops the autoresearch tools (plans/brayness.md, a1a). Nobody
+answers dialogs here, so each one is cancelled. The host, not this script,
+decides when the loop stops; closing stdin is Pi's orderly shutdown.
+
+    /brayness/work/loop/goal.md        the goal, as given
+    /brayness/work/loop/events.jsonl   Pi's RPC events
+    /brayness/work/loop/status.json    {"state": "running" | "exited", "tokens": N, ...}
+"""
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+
+LOOP = "/brayness/work/loop"
+DIALOGS = {"select", "confirm", "input", "editor"}
+
+
+def status(**fields):
+    tmp = f"{LOOP}/status.json.tmp"
+    with open(tmp, "w") as f:
+        json.dump({**fields, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}, f)
+    os.replace(tmp, f"{LOOP}/status.json")
+
+
+def main():
+    goal = sys.argv[1] if len(sys.argv) == 2 else ""
+    if not goal.strip():
+        sys.exit("usage: brayness-loop-run <goal>")
+    os.makedirs(LOOP, exist_ok=True)
+    os.chdir(LOOP)
+    if not os.path.isdir(".git"):
+        subprocess.run(["git", "init", "-q"], check=True)
+    with open("goal.md", "w") as f:
+        f.write(goal + "\n")
+
+    pi = subprocess.Popen(
+        ["/usr/local/bin/brayness", "--mode", "rpc", "--session-dir", f"{LOOP}/sessions"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True,
+        bufsize=1,
+    )
+    signal.signal(signal.SIGTERM, lambda *_: pi.stdin.close())  # host stop: orderly shutdown
+    send = lambda value: (pi.stdin.write(json.dumps(value) + "\n"), pi.stdin.flush())
+    tokens = 0
+    status(state="running", pid=pi.pid, tokens=tokens)
+    send({"id": "loop", "type": "prompt", "message": f"/autoresearch {goal}\n\nNobody is watching: never ask questions; start the loop now."})
+
+    with open("events.jsonl", "a") as events:
+        for line in pi.stdout:
+            events.write(line)
+            events.flush()
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            usage = (event.get("message") or {}).get("usage") if event.get("type") == "message_end" else None
+            if isinstance(usage, dict):
+                tokens += int(usage.get("input") or 0) + int(usage.get("output") or 0)
+                status(state="running", pid=pi.pid, tokens=tokens)
+            if event.get("type") == "extension_ui_request" and event.get("method") in DIALOGS:
+                try:
+                    send({"type": "extension_ui_response", "id": event["id"], "cancelled": True})
+                except (BrokenPipeError, ValueError):
+                    pass
+    status(state="exited", code=pi.wait(), tokens=tokens)
+
+
+if __name__ == "__main__":
+    main()

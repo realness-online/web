@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`@/components/profile/as-messenger > Renders > Messenger button 1`] = `
+<a
+  aria-label="Send a text message"
+  href="sms:14155550142"
+>
+  <icon-stub
+    name="message"
+  />
+</a>
+`;

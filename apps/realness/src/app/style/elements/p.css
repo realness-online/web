@@ -1,0 +1,16 @@
+p,
+[itemprop='statement'] {
+  user-select: text;
+}
+[itemprop='statement'] {
+  min-height: var(--base-line);
+  white-space: pre-wrap;
+  -webkit-touch-callout: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  [itemprop='statement']:not([contenteditable='true']) {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}

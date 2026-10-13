@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GUI - Brayness</title>
+    <link rel="stylesheet" href="/chat/palette.css" />
+    <link rel="stylesheet" href="/chat/style.css" />
+    <script type="module" src="/chat/main.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Brayness</h1>
+      <nav aria-label="View">
+        <button type="button" value="gui" aria-pressed="false">GUI</button>
+        <button type="button" value="both" aria-pressed="true">Both</button>
+        <button type="button" value="tui" aria-pressed="false">TUI</button>
+      </nav>
+    </header>
+    <main>
+      <ol id="conversation" aria-label="Conversation" aria-live="polite"></ol>
+      <form>
+        <textarea
+          id="message"
+          name="message"
+          rows="1"
+          aria-label="Message"
+          required></textarea>
+      </form>
+      <p id="status" role="status"></p>
+      <aside aria-hidden="true"></aside>
+    </main>
+    <section id="terminal-pane" aria-label="TUI" hidden>
+      <canvas tabindex="0"></canvas>
+      <output></output>
+    </section>
+  </body>
+</html>

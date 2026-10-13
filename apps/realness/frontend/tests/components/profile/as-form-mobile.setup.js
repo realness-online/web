@@ -1,0 +1,99 @@
+import { vi } from 'vite-plus/test'
+
+vi.mock('@/use/people', () => ({
+  use_me: () => ({
+    me: {
+      value: {
+        id: '/+14151234356',
+        name: 'Scott Fryxell'
+      }
+    }
+  }),
+  as_phone_number: vi.fn(() => '4151234356')
+}))
+
+vi.mock('@/utils/serverless', () => ({
+  auth: { value: {} }
+}))
+
+vi.mock('@/utils/serverless-auth', () => ({
+  Recaptcha: vi.fn(function () {
+    return {
+      verify: vi.fn()
+    }
+  }),
+  sign_in: vi.fn(() =>
+    Promise.resolve({
+      confirm: vi.fn(() => Promise.resolve())
+    })
+  )
+}))
+
+vi.mock('@/use/instance-capabilities', () => ({
+  use_instance_capabilities: () => ({
+    phone_integrity: { value: false },
+    probe: vi.fn().mockResolvedValue({ push: false, phone_integrity: false })
+  })
+}))
+
+vi.mock('@/utils/phone-integrity', () => ({
+  check_phone_integrity: vi.fn().mockResolvedValue({ allowed: true })
+}))
+
+vi.mock('libphonenumber-js', () => {
+  const create_parsed_phone = (number_string, country) => {
+    const digits = number_string?.replace(/\D/g, '')
+    const is_valid = digits && digits.length >= 10
+    return is_valid
+      ? {
+          isValid: () => true,
+          nationalNumber: digits.slice(-10),
+          phone: digits
+        }
+      : null
+  }
+
+  const mock_fns = {
+    AsYouType: vi.fn(function () {
+      return {
+        input: vi.fn(national_number => national_number ?? '')
+      }
+    }),
+    parseNumber: vi.fn(number_string => {
+      const digits = number_string?.replace(/\D/g, '')
+      return { phone: digits && digits.length >= 10 ? digits : '' }
+    }),
+    parsePhoneNumberFromString: vi.fn((number_string, options) =>
+      create_parsed_phone(number_string, options?.defaultCountry)
+    ),
+    findPhoneNumbersInText: vi.fn(text => {
+      const digits = text?.replace(/\D/g, '')
+      if (digits && digits.length >= 10) {
+        return [
+          {
+            number: {
+              number: `+${digits}`
+            }
+          }
+        ]
+      }
+      return []
+    }),
+    __v_isShallow: undefined,
+    __v_isRef: undefined,
+    __v_isReadonly: undefined,
+    __v_raw: undefined,
+    __v_skip: undefined
+  }
+
+  return {
+    ...mock_fns,
+    default: mock_fns
+  }
+})
+
+export const person = {
+  id: '/+14151234356',
+  name: 'Scott Fryxell',
+  mobile: '4151234356'
+}

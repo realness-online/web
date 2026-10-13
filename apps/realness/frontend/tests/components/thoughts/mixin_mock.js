@@ -1,0 +1,26 @@
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'VectorMock',
+  template: '<span></span>',
+  data() {
+    return {
+      observer: null
+    }
+  },
+  methods: {
+    check_intersection(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.show()
+        }
+      })
+    },
+    show() {},
+    unmount() {
+      if (this.observer) {
+        this.observer.unobserve()
+      }
+    }
+  }
+})

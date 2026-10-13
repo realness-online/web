@@ -1,0 +1,37 @@
+[38;2;102;102;102mModel scope: openrouter/free, z-ai/glm-5.2, claude-fable-5, thinkingmachines/inkling, moonshotai/kimi-k3, deepseek/deepseek-v4-flash-0731, thinkingmachines/inkling-small, thinkingmachines/inkling-small:free, thinkingmachines/inkling:free, deepseek/deepseek-v4.1-flash[38;2;128;128;128m (Ctrl+P to cycle)[39m[39m
+[?2004h[>7u[?u[c[?25l[16t]0;π - brayness-browser-pi[?2026h[0m]8;;
+ [1m[38;2;138;190;183mpi[39m[22m[38;2;102;102;102m v0.87.0[39m                                                                     [0m]8;;
+ [38;2;102;102;102mescape[39m[38;2;128;128;128m interrupt[39m[38;2;128;128;128m · [39m[38;2;102;102;102mctrl+c/ctrl+d[39m[38;2;128;128;128m clear/exit[39m[38;2;128;128;128m · [39m[38;2;102;102;102m/[39m[38;2;128;128;128m commands[39m[38;2;128;128;128m · [39m[38;2;102;102;102m![39m[38;2;128;128;128m bash[39m[38;2;128;128;128m · [39m[38;2;102;102;102mctrl+o[39m[38;2;128;128;128m     [0m]8;;
+ [38;2;128;128;128mmore[39m                                                                           [0m]8;;
+ [38;2;102;102;102mPress ctrl+o to show full startup help and loaded resources.[39m                   [0m]8;;
+                                                                                [0m]8;;
+ [38;2;102;102;102mPi can explain its own features and look up its docs. Ask it how to use or     [0m]8;;
+ [38;2;102;102;102mextend Pi.[39m                                                                     [0m]8;;
+[0m]8;;
+[38;2;240;198;116m[Skills][39m                                                                        [0m]8;;
+[38;2;102;102;102m  agent-browser, brayness-sync, critic, flexible-visual-system, hyperframes,    [0m]8;;
+[38;2;102;102;102minterview-prep, logo-finder, memory, motion-systems, nvim-buffers, planning,    [0m]8;;
+[38;2;102;102;102mprevious-work, project-tooling, readable, rust-best-practices, simplify,        [0m]8;;
+[38;2;102;102;102mskill-finder, skill-writer, test-coverage, typography, useless, user-interface, [0m]8;;
+[38;2;102;102;102mvault, vue-inspect, vuetify-to-semantic, zoom-to-ableton[39m                        [0m]8;;
+[0m]8;;
+[0m]8;;
+[38;2;255;95;255m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[7m [0m                                                                               [0m]8;;
+[38;2;255;95;255m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[38;2;102;102;102m~/Desktop/brayness/artifacts/brayness-browser-pi[39m[0m]8;;
+[38;2;102;102;102m0.0%/1.0M (auto)[39m[38;2;102;102;102m                 (openrouter) deepseek/deepseek-v4.1-flash • max[39m[0m]8;;[?2026l[3A[1G[?25l[1G[?25l[?2026h[1A[2K[38;2;255;255;0m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[2K [1m[38;2;255;255;0mPackage Updates Available[39m[22m                                                      [0m]8;;
+[2K [38;2;128;128;128mPackage updates are available. Run [39m[38;2;138;190;183mpi update --extensions[39m                      [0m]8;;
+[2K [38;2;128;128;128mPackages:[39m                                                                      [0m]8;;
+[2K - pi-rewind-hook                                                               [0m]8;;
+[2K - pi-autoresearch                                                              [0m]8;;
+[2K - pi-mcp-adapter                                                               [0m]8;;
+[2K - pi-subagents-j0k3r                                                           [0m]8;;
+[2K[38;2;255;255;0m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[2K[0m]8;;
+[2K[38;2;255;95;255m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[2K[7m [0m                                                                               [0m]8;;
+[2K[38;2;255;95;255m────────────────────────────────────────────────────────────────────────────────[39m[0m]8;;
+[2K[38;2;102;102;102m~/Desktop/brayness/artifacts/brayness-browser-pi[39m[0m]8;;
+[2K[38;2;102;102;102m0.0%/1.0M (auto)[39m[38;2;102;102;102m                 (openrouter) deepseek/deepseek-v4.1-flash • max[39m[0m]8;;[?2026l[3A[1G[?25l[1G[?25l

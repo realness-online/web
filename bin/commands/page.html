@@ -1,0 +1,121 @@
+<!doctype html>
+<html
+  lang="en"
+  itemscope
+  itemtype="https://schema.org/WebPage"
+  itemid="/+16282281824/pages/1791752490821"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Commands | Plans</title>
+    <link rel="stylesheet" href="/palette.css" />
+    <link rel="stylesheet" href="/color.css" />
+    <link rel="stylesheet" href="/font.css" />
+    <link rel="stylesheet" href="/commands.css" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="module" src="/scripts/pwa.js"></script>
+    <script type="module" src="/commands.js"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="/">Plans</a>
+        <h1 itemprop="name">Commands</h1>
+        <p>
+          Run from the Realness root. Replace &lt;placeholders&gt; before
+          running.
+        </p>
+      </header>
+      <search>
+        <label for="command-search">Find a command</label>
+        <input
+          id="command-search"
+          type="search"
+          placeholder="watch, frontend, deploy, plans..."
+          autocomplete="off"
+          aria-controls="command-list"
+        />
+        <output aria-live="polite">{{count}} commands</output>
+      </search>
+      <fieldset id="command-filters">
+        <legend>Filter by task</legend>
+        {{navigation}}
+      </fieldset>
+      <fieldset id="review-filters">
+        <legend>Filter by review</legend>
+        <button
+          type="button"
+          value="all"
+          aria-pressed="true"
+          aria-controls="command-list"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          value="Keep"
+          aria-pressed="false"
+          aria-controls="command-list"
+        >
+          Keep
+        </button>
+        <button
+          type="button"
+          value="Remove"
+          aria-pressed="false"
+          aria-controls="command-list"
+        >
+          Remove
+        </button>
+        <button
+          type="button"
+          value="Unknown"
+          aria-pressed="false"
+          aria-controls="command-list"
+        >
+          Unknown
+        </button>
+      </fieldset>
+      <div id="command-list">{{commands}}</div>
+      <details>
+        <summary>Audit notes</summary>
+        <p>{{scope}}</p>
+        <p>
+          Inventory refreshed by <code>npm run commands</code> and
+          <code>npm run plans</code>. Defined commands are not proof of
+          successful execution.
+        </p>
+        {{warnings}}
+        <h2>Package executables</h2>
+        <p>
+          Bare names require installation. Desktop CLI entries above copy full
+          paths; actor commands run inside actors.
+        </p>
+        {{bins}}
+      </details>
+      <details>
+        <summary>Glossary</summary>
+        <dl>
+          <dt>npm run</dt>
+          <dd>Runs a package script.</dd>
+          <dt>--prefix</dt>
+          <dd>Selects a nested package. Copy keeps this path.</dd>
+          <dt>CLI command</dt>
+          <dd>A subcommand accepted by a command-line interface.</dd>
+          <dt>Entry file</dt>
+          <dd>
+            A detected source entry. Arguments and execution context need
+            review.
+          </dd>
+          <dt>--</dt>
+          <dd>Passes arguments to an npm script.</dd>
+          <dt>npx</dt>
+          <dd>
+            Runs a package executable; external tools own their command lists.
+          </dd>
+        </dl>
+      </details>
+    </main>
+  </body>
+</html>

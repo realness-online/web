@@ -1,0 +1,68 @@
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import { Local } from '@/persistence/Local'
+import { Storage } from '@/persistence/Storage'
+
+class TestLocal extends Local(Storage) {
+  constructor(id) {
+    super(id)
+  }
+}
+
+describe('@/persistence/Local', () => {
+  let local
+  let mock_storage
+
+  beforeEach(() => {
+    mock_storage = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn()
+    }
+    global.localStorage = mock_storage
+    local = new TestLocal('test_collection')
+  })
+
+  describe('Storage Operations', () => {
+    it('saves data to localStorage', () => {
+      const mock_element = {
+        outerHTML: '<div>test content</div>'
+      }
+
+      global.document = {
+        querySelector: vi.fn().mockReturnValue(mock_element)
+      }
+
+      local.save()
+      expect(mock_storage.setItem).toHaveBeenCalledWith(
+        'test_collection',
+        '<div>test content</div>'
+      )
+    })
+
+    it('handles missing DOM element', () => {
+      global.document = {
+        querySelector: vi.fn().mockReturnValue(null)
+      }
+
+      local.save()
+      expect(mock_storage.setItem).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('handles storage errors', () => {
+      mock_storage.setItem.mockImplementation(() => {
+        throw new Error('Storage full')
+      })
+
+      const mock_element = {
+        outerHTML: '<div>test content</div>'
+      }
+      global.document = {
+        querySelector: vi.fn().mockReturnValue(mock_element)
+      }
+
+      expect(() => local.save()).toThrow('Storage full')
+    })
+  })
+})

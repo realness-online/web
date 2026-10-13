@@ -1,0 +1,129 @@
+/** @typedef {import('@/types').Id} Id */
+/** @typedef {import('@/types').Item} Item */
+import { History } from '@/persistence/History'
+import { from_e64 } from '@/utils/person-identity'
+import { current_user } from '@/utils/serverless'
+import { get_item, get_itemprops, hydrate } from '@/utils/item'
+import {
+  as_created_at,
+  list,
+  load_from_network,
+  type_as_list
+} from '@/utils/itemid'
+import {
+  SIZE,
+  elements_as_kilobytes,
+  itemid_as_kilobytes
+} from '@/utils/numbers'
+import { recent_item_first } from '@/utils/sorting'
+
+const get_oldest = (elements, prop_name) => {
+  const list = get_itemprops(elements)
+  const props = list[prop_name]
+  props.sort(recent_item_first)
+  const oldest = props[props.length - 1]
+  const created = as_created_at(oldest.id) ?? 0
+  return new Date(created)
+}
+const is_fat = (items, prop_name) => {
+  const today = new Date().setHours(0, 0, 0, 0)
+  if (
+    elements_as_kilobytes(items) > SIZE.MIN &&
+    get_oldest(items, prop_name).getTime() < today
+  )
+    return true
+  return false
+}
+
+/**
+ * @template {new (...args: any[]) => any} T
+ * @param {T} superclass
+ * @returns {T}
+ */
+export const Paged = superclass =>
+  class extends superclass {
+    async optimize() {
+      await super.optimize()
+
+      if (itemid_as_kilobytes(this.id) > SIZE.MAX) {
+        const stored = localStorage.getItem(this.id)
+        const frag = stored ? hydrate(stored) : null
+        if (!frag) return
+        const [current] = frag.childNodes
+        if (!current) return
+        const oldest = get_oldest(current, this.type)
+        const offload = document.createDocumentFragment()
+        const original_size = elements_as_kilobytes(current)
+        let amount_moved = 0
+        while (is_fat(current, this.type) && amount_moved <= SIZE.MID) {
+          const fatty = current.childNodes[current.childNodes.length - 1]
+          const new_sibling = offload.childNodes[0] || null
+          offload.insertBefore(current.removeChild(fatty), new_sibling)
+          amount_moved = original_size - elements_as_kilobytes(current)
+        }
+        const div = document.createElement(current.nodeName)
+        div.setAttribute('itemscope', '')
+        div.setAttribute('itemid', this.id)
+        div.appendChild(offload)
+        const user = /** @type {{phoneNumber?: string}} */ (
+          /** @type {unknown} */ (current_user.value)
+        )
+        if (!user?.phoneNumber) return
+        const { type } = this
+        if (!type) return
+        const me_val = from_e64(user.phoneNumber)
+        const id = /** @type {Id} */ (`${me_val}/${type}/${oldest.getTime()}`)
+
+        const history = new History(id)
+        const success = await history.save(div)
+        if (success) await this.save(/** @type {Element} */ (current))
+        if (elements_as_kilobytes(current) > SIZE.MAX) await this.optimize()
+      }
+    }
+
+    async sync() {
+      let oldest_at = 0
+      const cloud_item = await load_from_network(this.id)
+      /** @type {Item[]} */
+      let cloud = []
+      if (cloud_item) cloud = type_as_list(cloud_item).sort(recent_item_first)
+      if (cloud.length > 0) {
+        const oldest_id = cloud[cloud.length - 1].id
+        oldest_at = as_created_at(oldest_id) ?? 0
+      }
+
+      const local_items = await list(this.id)
+      /** @type {Item[]} */
+      const local = local_items.sort(recent_item_first).filter(local_item => {
+        const created_at = as_created_at(local_item.id) ?? 0
+        if (oldest_at > created_at) return false
+        return !cloud.some(server_item => local_item.id === server_item.id)
+      })
+
+      const offline_html = localStorage.getItem(`/+/${this.type}`) ?? ''
+      const offline_id = `/+/${this.type}`
+      const offline_item = get_item(
+        offline_html,
+        /** @type {Id} */ (offline_id)
+      )
+      /** @type {Item[]} */
+      const offline = type_as_list(offline_item)
+      const user = /** @type {{phoneNumber?: string}} */ (
+        /** @type {unknown} */ (current_user.value)
+      )
+      const { type } = this
+      offline.forEach(item => {
+        if (!user?.phoneNumber) return
+        const created = as_created_at(item.id)
+        if (created === null || created === undefined || !type) return
+        const me_val = from_e64(user.phoneNumber)
+        const new_id = /** @type {Id} */ (`${me_val}/${type}/${created}`)
+        item.id = new_id
+      })
+
+      const items = [...local, ...cloud, ...offline]
+      items.sort(recent_item_first)
+
+      return items
+    }
+  }

@@ -1,0 +1,41 @@
+[
+  { "kind": "text", "prompt": "hey there!" },
+  { "kind": "text", "prompt": "thanks, that worked" },
+  { "kind": "text", "prompt": "What does HTTP stand for?" },
+  {
+    "kind": "table",
+    "prompt": "Compare GitHub Pages and a Brayness site for a small blog: cost, custom domain, how I publish. Short, general terms, no files."
+  },
+  {
+    "kind": "table",
+    "prompt": "Compare SQLite and Postgres for a hobby app: setup, concurrency, backups. Short."
+  },
+  {
+    "kind": "table",
+    "prompt": "Coffee, tea, or yerba mate: caffeine, taste, cost. Short."
+  },
+  {
+    "kind": "diagram",
+    "prompt": "In general terms, how does a chat message go from my browser to a model and back? Short answer, no files."
+  },
+  {
+    "kind": "diagram",
+    "prompt": "Walk me through how a GitHub pull request gets merged, step by step, in general terms. Short."
+  },
+  {
+    "kind": "diagram",
+    "prompt": "How does a letter get from my mailbox to someone across the country? Short."
+  },
+  {
+    "kind": "card",
+    "prompt": "Where can I read about Realness? Just point me at the main site, https://realness.online."
+  },
+  {
+    "kind": "card",
+    "prompt": "Where are the Vue 3 docs? Point me to the main page, https://vuejs.org."
+  },
+  {
+    "kind": "card",
+    "prompt": "Link me to MDN's page on the dialog element, https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog."
+  }
+]

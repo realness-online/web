@@ -1,126 +1,79 @@
 {
-  "name": "@realness.online/web",
-  "version": "2.10.6",
-  "private": true,
-  "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
+  "name": "realness",
+  "version": "1.0.1",
+  "description": "Realness - a harness for your anxious digital brain",
   "keywords": [
-    "svg",
-    "computer-graphics",
-    "vector-graphics",
-    "Private",
-    "Realtime Graphics",
-    "animation",
-    "Social Network",
-    "potrace",
-    "trace",
-    "tracing",
-    "posterization"
+    "pi-package"
   ],
-  "description": "Rotoscope photos into layered SVG posters — mosaics, shadows, and gradients. On-device tracing for artists and communities.",
-  "author": "Scott Fryxell <sfryxell@gmail.com>",
+  "pi": {
+    "extensions": [
+      "./.pi/extensions"
+    ],
+    "skills": [
+      "./.pi/skills"
+    ],
+    "prompts": [
+      "./.pi/prompts"
+    ],
+    "themes": [
+      "./.pi/agent/themes"
+    ],
+    "sessions": [
+      "./sessions"
+    ]
+  },
+  "brayness": {
+    "plans": "vault/Projects",
+    "plansIgnore": [
+      "Todo's.md"
+    ],
+    "examples": ".pi/examples",
+    "light": {
+      "days": 14,
+      "bytes": 2097152
+    },
+    "sessions": "vault/Sessions"
+  },
   "scripts": {
-    "dev": "node scripts/generate-toc.js && vp dev",
-    "check": "vp check",
-    "check:fix": "vp check --fix",
-    "certs": "./generate-certs.sh",
-    "dev:workers": "node scripts/watch-workers.js",
-    "build": "vp run build:icons && vp run build:wasm && node scripts/generate-toc.js && vp build && vp build -c vite.prerender.config.js && node scripts/prerender.js && node scripts/build-manifest.js",
-    "build:prerender-ssr": "vp build -c vite.prerender.config.js",
-    "build:prerender": "node scripts/prerender.js",
-    "build:manifest": "node scripts/build-manifest.js",
-    "build:toc": "node scripts/generate-toc.js",
-    "build:icons": "node scripts/generate-icons.js",
-    "build:workers": "WORKER_NAME=vector vp build -c workers.config.js && WORKER_NAME=compressor vp build -c workers.config.js && WORKER_NAME=tracer vp build -c workers.config.js",
-    "build:wasm": "wasm-pack build tracer --target web --out-dir ../artifacts/wasm",
-    "og:candidates": "vp run build && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/generate-og-candidates.js",
-    "og:pick": "node scripts/pick-og.js",
-    "poster": "node scripts/render-poster.js",
-    "prints:previews": "vp run build && CHROME_PATH=\"${CHROME_PATH:-/Applications/Brave Browser.app/Contents/MacOS/Brave Browser}\" node scripts/render-print-previews.js",
-    "score": "CHROME_PATH=\"/Applications/Brave Browser.app/Contents/MacOS/Brave Browser\" lhci autorun --collect.url=https://realness.online/ --collect.numberOfRuns=5 --collect.settings.maxWaitForLoad=90000 --upload.target=temporary-public-storage && node scripts/print-lighthouse-metrics.js",
-    "serve": "vp preview",
-    "serve:https": "serve dist",
-    "deploy": "vp run build:wasm && vp run build:workers && vp run build && firebase deploy --only hosting,storage -m $npm_package_version && node scripts/verify-deploy.js --manifest dist/build-manifest.json --url https://realness.online",
-    "preversion": "node scripts/check-release.js --unreleased",
-    "version": "node scripts/promote-changelog.js && git add CHANGELOG.md",
-    "postversion": "git push && git push --tags",
-    "release:gh": "node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version dist/build-manifest.json --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file artifacts/release-notes.md",
-    "ship": "npm run deploy && npm run release:gh && npm run verify -- --release",
-    "verify": "node scripts/verify-deploy.js",
-    "verify:deploy": "node scripts/verify-deploy.js",
-    "verify:deploy:site": "node scripts/verify-deploy.js --from-site",
-    "prepare": "vp config",
-    "docs": "jsdoc -c jsdoc.json",
-    "test": "vp test run --reporter=verbose",
-    "test:update": "vp test run -u --reporter=dot",
-    "test:coverage": "vp test run --coverage --reporter=dot",
-    "fallow": "fallow",
-    "fallow:report": "fallow --format json --quiet > fallow-report.json",
-    "test:risk": "npm run test:coverage && npm run fallow:report && npm run test:risk:report",
-    "test:risk:report": "node ../../skills/test-coverage/scripts/prioritize-refactor-risk.js --root .",
-    "test:coverage:summary": "node ../../skills/test-coverage/scripts/summarize-coverage.js --root .",
-    "test:watch": "vp test watch",
-    "test:ui": "vp test --ui",
-    "test:fail-fast": "vp test run --bail=1 --reporter=dot",
-    "test:rules": "firebase emulators:exec --only storage --config firebase.test.json 'vp test run -c vitest.config.storage-rules.js'",
-    "fallow:fix": "fallow fix",
-    "type": "tsc --pretty",
-    "pre-commit": "npm run check:fix && npm run type && vp test run && npm run test:rules"
+    "postinstall": "node bin/install-pi.js",
+    "realness": "./bin/pi",
+    "brayness": "./bin/pi",
+    "start": "./bin/pi",
+    "local": "node bin/local.js",
+    "test": "node --test --experimental-strip-types .pi/skills/previous-work/scripts/search-pi.test.js .pi/extensions/memory/index-db.test.ts .pi/extensions/edit-log/log.test.ts .pi/extensions/chat-bridge/index.test.js bin/plans.test.js bin/commands.test.js bin/vault-paths.test.js bin/lib/harness-settings.test.js bin/lib/product.test.js bin/lib/pi-release.test.js bin/lib/session-migration.test.js bin/lib/session-relocation.test.js bin/lib/session-cutover.test.js bin/pi-fork.test.js bin/pi-start.test.js bin/session-location.test.js bin/artifacts-prune.test.js bin/check-skills.test.js bin/soundness-check.test.js bin/comment-check.test.js bin/site-check.test.js bin/themes.test.js bin/lib/web-md-cache.test.js bin/home-paths.test.js bin/lib/web-md-log.test.js .pi/extensions/web-md/rules.test.js .pi/extensions/session-gap/index.test.js .pi/extensions/light-fetch/index.test.js && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette",
+    "plan-shape": "node ./bin/plan-shape.js",
+    "check:soundness": "node ./bin/soundness-check.js apps/realness work/blog work/decision-ontology work/kata-machine work/realness-flex work/seeq-models bin",
+    "check:soundness:gate": "node ./bin/soundness-check.js apps/realness bin",
+    "check:comments": "node ./bin/comment-check.js apps/realness apps/blog work/seeq-app work/decision-ontology work/realness-flex work/seeq-models work/site work/haight-ship work/nvim work/kata-machine bin skills .pi/skills .pi/extensions",
+    "check:site": "node ./bin/soundness-check.js --site",
+    "check:ext": "node ./bin/no-mjs.js",
+    "check:skills": "node ./bin/check-skills.js",
+    "pi:update": "node bin/install-pi.js",
+    "pi:list": "./bin/pi list",
+    "test:sessions": "./bin/test-sessions.sh",
+    "feeds": "./.pi/skills/vault/rebuild-feeds.sh",
+    "commands": "node ./bin/commands.js",
+    "plans": "node ./bin/plans.js",
+    "plans:serve": "node ./bin/plans-serve.js",
+    "make:animation": "node ./bin/make-animation.js",
+    "make:posters": "node ./bin/make-posters.js",
+    "gallery": "node ./bin/gallery.js",
+    "prune:artifacts": "node ./bin/artifacts-prune.js",
+    "palette": "node ./bin/themes.js && node ./bin/palette-sync.js",
+    "check:palette": "node ./bin/themes.js --check && node ./bin/palette-sync.js --check",
+    "web-md:report": "node ./bin/web-md-report.js",
+    "web-md:times": "node ./bin/web-md-report.js --times",
+    "web-md:prune": "node ./bin/web-md-report.js --prune"
   },
-  "dependencies": {
-    "@vueuse/core": "14.4.0",
-    "ag-psd": "31.0.2",
-    "country-code-emoji": "2.3.0",
-    "firebase": "12.12.0",
-    "idb-keyval": "6.2.2",
-    "libphonenumber-js": "1.12.41",
-    "marked": "18.0.9",
-    "marked-gfm-heading-id": "4.1.4",
-    "mediabunny": "1.40.1",
-    "svgo": "4.1.0",
-    "three": "0.185.1",
-    "tweakpane": "4.0.5",
-    "vue": "3.5.41",
-    "vue-router": "5.0.4"
-  },
-  "devDependencies": {
-    "@firebase/rules-unit-testing": "5.0.1",
-    "@lhci/cli": "0.15.1",
-    "@testing-library/jest-dom": "6.9.1",
-    "@vitejs/plugin-vue": "6.0.5",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/eslint-plugin": "1.6.15",
-    "@vitest/ui": "4.1.10",
-    "@vue/test-utils": "2.4.11",
-    "canvas": "3.2.3",
-    "eslint-plugin-compat": "7.0.1",
-    "fake-indexeddb": "6.2.5",
-    "fallow": "3.10.0",
-    "happy-dom": "20.11.1",
-    "jsdoc": "4.0.5",
-    "pako": "3.0.1",
-    "stylus": "0.64.0",
-    "typescript": "7.0.2",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.8",
-    "vite-plugin-pwa": "1.2.0",
-    "vite-plugin-wasm": "3.6.0",
-    "vite-plus": "0.2.8"
-  },
-  "browserslist": [
-    ">0.5%",
-    "not dead",
-    "not IE 11",
-    "not IE_Mob 11",
-    "not op_mini all",
-    "not ios_saf < 16"
-  ],
   "license": "GPL-2.0",
-  "packageManager": "npm@11.13.0",
-  "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.8",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/ui": "4.1.10"
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "packageManager": "npm@11.14.1",
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.13",
+    "turndown": "^7.2.4"
   }
 }

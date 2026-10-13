@@ -1,266 +1,242 @@
-# Realness Online
+# Realness
 
-![Realness](public/icons.svg)
+_A harness for your anxious digital brain._
 
-Realness is for churches, punks, and veterans: any organization whose core tenets are at odds with advertising-based social networking.
+A shared harness for [pi](https://github.com/earendil-works/pi-coding-agent): skills, extensions, agent config, and the Realness product under `apps/realness/`.
 
-Realness web is the source code for [realness.online](https://realness.online). This code is a tool for you to build and moderate your own social networks.
+The hosted starter is a separate allowlisted build of this harness. Each person owns their copy: they can use proposed starter updates, stop receiving them, or export their harness and Pi history. The update flow is planned; today, a hosted actor starts from the image and keeps its own files.
 
-Realness works solely on the client. There is no tracking and no analytics, and the server does authentication and storage only.
+## Where things live
 
-See Realness in action: the [About](https://realness.online/about) page walks through what it does with live posters, and the in-app [Documentation](https://realness.online/docs) explains every feature and preference. The richer, visual explanations live there.
+The harness sits at the root. Personal state and build output stay local.
 
-Learn more about the [philosophy](docs/philosophy.md), [architecture](docs/architecture.md), how to [contribute](docs/contributing.md), or dive in and setup a Realness of your own.
-
-## What Realness does
-
-Realness turns your pictures and designs into vector graphics. Take a photo on your phone and it comes back as a poster built from five animatable layers, with eighteen gradients drawn from the picture's prominent colors. Opacity merges the colors between layers, which is where the movement comes from. Posters are small and quick to draw, and they are SVG, so they fit any workflow that reads SVG. It works on any device, including an iPad in split view, and exports into Affinity Designer.
-
-Run an instance for your design team, your family, your union hall, or any community small enough to know each other. Each instance has one moderator, and that moderator is responsible for what gets posted. There is no email, no likes, no links, and no SEO, and as a progressive web app it stays unindexed by search engines. Moderating one is a good way to understand what the internet can do.
-
-For developers: HTML is the database, so an application can be built without coordinating with a backend. The work happens at the edge, on the device, which keeps sensitive data off the server and the attack surface small. The markup is semantic and described with microdata. Where the data actually lives is in [architecture](docs/architecture.md).
-
-## Install
-
-Realness uses [Vite+](https://viteplus.dev), a unified toolchain whose CLI is `vp`. The npm scripts proxy to it, so `npm run dev`, `npm run build`, and `npm test` all work - you can also call `vp` directly.
-
-### Clone and install
-
-```bash
-git clone git@github.com:realness-online/web.git
-cd web
-npm install
-npm run dev
+```
+realness/
+├── apps/realness/       reference product and cloud tools
+├── bin/                 harness launcher and helpers
+├── vault/               personal notes (edit)
+│   └── Projects/        every plan, one file each (edit)
+├── work/                projects (edit)
+│
+└── .pi/
+    ├── skills/          your skills (edit)
+    ├── extensions/      your extensions (edit)
+    ├── prompts/         your prompt templates (edit)
+    ├── runtime/         reviewed Pi release and dependency lock
+    └── agent/           PI'S HOME - all agent state in one place
+        ├── settings.json    pi config (edit)
+        ├── memory.db        session memory index (auto-generated, never synced)
+        ├── models.json      model catalog (edit)
+        └── npm/             ADD-ON CUPBOARD  (auto-generated - do not edit)
+            └── node_modules/  THE ADD-ONS (loop, btw, autoresearch, ...)
 ```
 
-This starts a plain HTTP dev server on `http://localhost:5173`.
+`memory.db` is a derived FTS5 index over the configured session folder, built
+by `.pi/extensions/memory/` so past work can be recalled by relevance. Delete
+it any time; `remember` rebuilds it from the original transcripts. Compressed
+sessions use the installed decoder, without a fork source checkout. The index
+is never synced.
 
-### Local HTTPS (optional)
+`bin/pi` keeps checkout state in `.pi/agent/`. An existing `~/.pi` stays separate;
+startup does not copy or delete its configuration or credentials.
 
-Some features (camera, service workers, secure contexts) need HTTPS. To serve over HTTPS on `realness.local`:
+`.pi/skills/` and `.pi/extensions/` are the heart of the harness - they're where you teach the agent to work the way you do. Start with the ones you have, then build more as the need shows up.
 
-1. Install [mkcert](https://github.com/FiloSottile/mkcert) and create a local CA
+They live in pi's standard project folders, `.pi/skills/`, `.pi/extensions/`, and `.pi/prompts/`. pi finds them on its own. Nothing goes in pi's global folder.
 
-```bash
-brew install mkcert
-mkcert -install
+`.pi/skills/` is the single source of truth for skills:
+
+- **pi** reads it directly.
+- **Cursor**, **Claude Code**, and other agents read it through the `.cursor/skills`, `.claude/skills`, and `.agents/skills` symlinks.
+
+Write a skill once in `.pi/skills/`, and it is available in every harness.
+
+The shipped starter keeps `skills/`, `extensions/`, and `prompts/` at its root; the ship stage copies them from `.pi/`.
+
+### The app
+
+The harness uses a pinned build of our Pi fork, packaged under `.pi/runtime/`.
+`npm install` installs the root dependencies and that runtime. Startup does not
+download upstream Pi or borrow a globally installed Pi.
+
+The release pin records the fork commit, upstream commit, and archive hashes.
+`npm run pi:update` reinstalls the current pin; it does not advance upstream.
+New fork releases follow `work/pi/FORK.md` and require review before changing the pin.
+An explicit local `fork-path` marker still takes priority for development.
+
+### The add-ons
+
+`.pi/agent/npm/node_modules/` holds **extra pi packages** listed in `.pi/agent/settings.json` (loop, btw, autoresearch, etc.).
+
+Update them: `./bin/pi update --extensions`
+
+### Why is there a folder called `npm/`?
+
+The name is misleading. It is **not** the npm program.
+
+pi always stores downloaded add-ons in a folder called `npm/` inside its home directory - here, `.pi/agent/npm/`.
+
+Think of it as **the add-on cupboard**, not "npm".
+
+## Starter and personal files
+
+The published starter includes `AGENTS.md`, selected skills, extensions, and required configuration. `AGENTS.local.md` is the personal place for agent instructions. The vault, `work/`, `artifacts/`, and Pi sessions belong to the person. A starter update must compare managed files with the version first received and show any personal edits before replacing them. Sessions help explain edits, but cannot detect all changes alone.
+
+Plans live in a configured folder. This harness sets `brayness.plans` to `vault/Projects` in `package.json`; the built-in default is `vault/plans`. `brayness.plansIgnore` lists files in that folder that are not plans (here, `Todo's.md`). Readers do not fall back to top-level `plans/`.
+
+## What to edit vs ignore
+
+| You edit                                     | Auto-generated (ignore)         |
+| -------------------------------------------- | ------------------------------- |
+| `.pi/skills/`                                | `.pi/agent/npm/`                |
+| `.pi/extensions/`                            | `.pi/agent/memory.db`           |
+| `.pi/prompts/`                               | everything else in `.pi/agent/` |
+| `vault/`                                     |                                 |
+| `.pi/agent/settings.json`                    |                                 |
+| `AGENTS.md`                                  |                                 |
+| `AGENTS.local.md` (personal, gitignored)     |                                 |
+| `person.local.html` (personal, gitignored) |                                 |
+
+`AGENTS.local.md` holds your preferences and quirks for the agent; it stays out of git. `person.local.html` says who this checkout belongs to, the phone itemids are minted under:
+
+```html
+<p itemscope itemtype="https://schema.org/Person">
+  <a itemprop="telephone" href="tel:+14155551234">Your name</a>
+</p>
 ```
 
-2. Generate certs in the project root
+Without it, a fresh checkout mints nothing. It also makes you an admin of your local stack, and the first admin of a new environment when you deploy its sync. After that, admins live in each environment's bucket: `npm --prefix apps/realness run webspace -- <env> admins`.
+
+## How conversations go
+
+Default to **discussion**: prose, talking it through, no question forms, no jumping to planning.
+As we near the planning phase, shift to questions.
+
+**All plans go in the configured plans folder (`vault/Projects/` here).** One file per plan, named `<project>-<topic>.md`. Never
+inside a `work/<project>/` tree, not even a project's `docs/` - plans are read
+across projects and belong in the vault.
+
+## Personal context on demand
+
+`/insert` splices `AGENTS.local.md` into `README.md` right before the last
+command block and loads that combined view on your next prompt. Use it when you
+want harness docs plus personal context in one shot instead of the default
+session load.
+
+## Start pi
 
 ```bash
-mkcert realness.local
+npm install    # install dependencies and the pinned Pi fork
+npm start      # open the harness
 ```
 
-3. Add `realness.local` to `/etc/hosts`
+Requires Node >= 22.19 and Bash (macOS, Linux, or WSL). The first install needs
+network access for runtime dependencies. Startup itself uses the installed fork.
+
+Use `/login` in Pi to configure your own provider, then `/model` to choose a model.
+Provider API-key environment variables also work. Saved credentials stay in
+`.pi/agent/auth.json`; never commit that file. No Realness cloud account is required.
+
+## Commands
+
+Run npm commands from the repository root.
+
+The shared command index is the Plans [Commands page](http://127.0.0.1:4323/commands/).
+Run `npm run plans` to refresh and build it; `npm run plans:serve` serves it.
+`npm run commands` refreshes the source page and `artifacts/commands/catalog.json`
+without building Plans. The index covers package scripts, reviewed CLI routes,
+and detected helpers, including Bash. Task buttons and search filter the list.
+Entries carry source paths and execution limits; detection is not
+proof that a command runs. Work projects and external tool subcommands are outside
+this index.
+
+| Command                              | Purpose and requirements                                                                                               |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `npm start` / `npm run realness`     | Start through `bin/pi`; Node >= 22.19.                                                                                 |
+| `npm run pi:list`                    | List installed pi packages.                                                                                            |
+| `npm run pi:update`                  | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                   |
+| `npm test`                           | Run the memory index tests.                                                                                            |
+| `npm run check:ext`                  | Run `bin/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
+| `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                      |
+| `npm run make:animation -- clip.mov` | Run `bin/make-animation.js`; requirements below.                                                                       |
+| `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                          |
+| `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                            |
+
+`npm run brayness` remains a compatibility alias for `npm run realness`.
+Configuration keys such as `brayness.plans` remain compatible during migration;
+they are not the public product name.
+
+The feeds row is not a standalone clean-checkout command.
+
+### Session storage migration
+
+Close every Pi process. From a separate terminal in this folder:
 
 ```bash
-echo "127.0.0.1 realness.local" | sudo tee -a /etc/hosts
+node bin/session-relocate.js migrate
 ```
 
-4. Run the dev server - it detects the certs and serves HTTPS on port 443
+The command verifies closed history copies before setting `brayness.sessions`
+to `vault/Sessions`. Duplicate filenames receive path-based suffixes. Original
+files remain in `.pi/agent/sessions/`; the manifest records every original path.
+Keep Pi closed until the command finishes. Restart through `bin/pi` afterward.
+
+To reverse the move, close Pi again and run:
 
 ```bash
-npm run dev
+node bin/session-relocate.js rollback
 ```
 
-Visit `https://realness.local`.
+Rollback preserves later entries and new sessions. It restores the legacy
+setting without replacing unrelated settings. Changed originals block rollback.
+Both locations remain available; neither command deletes history.
 
-### Configure firebase
+### Video to traced animation
 
-Add a project from the [firebase console](https://console.firebase.google.com). Bear in mind that the name you give your project will be its url for your social network
-
-`https://${project-name}.web.app`
-
-Once your project is created you will want to enable phone authentication and file storage.
-
-#### Enable phone authentication
-
-- Click getting started from the authentication screen
-- Edit the configuration for phone
-- Enable and save
-
-#### Enable storage
-
-- Click to get started from storage tab
-- Accept the default security rules (they will be configured with deploy)
-- Pick your region
-
-### Deploy to firebase
-
-`npm run deploy` builds the WebAssembly tracer, the workers, and the app, then deploys hosting and storage. Building the tracer needs [Rust](https://rustup.rs) and [wasm-pack](https://rustwasm.github.io/wasm-pack/).
-
-Install the Firebase CLI, log in, and deploy:
+Install FFmpeg and a Chromium browser (Chrome, Brave, Chromium, or Edge).
+On macOS, FFmpeg is available with `brew install ffmpeg`.
+The script uses the deployed `https://realness.online/poster-driver` page,
+so rendering needs network access and that page must be available.
 
 ```bash
-npm install -g firebase-tools
-
-firebase login
-
-npm run deploy
+npm run make:animation -- clip.mov --fps 12 --workers 2
 ```
 
-Visit `https://${project-name}.web.app`. You can sign in and invite your friends.
+Output goes to `artifacts/animation/`. Traced SVG files remain for reuse.
 
-### Hot release (production cut)
+| Option          | Default     | Effect                                                 |
+| --------------- | ----------- | ------------------------------------------------------ |
+| `--fps N`       | 24          | Frames per second.                                     |
+| `--workers N`   | 6           | Parallel browser workers; reduce for lower memory use. |
+| `--width N`     | Source size | Raster output width.                                   |
+| `--crf N`       | 23          | Video compression, 0-51; higher makes smaller files.   |
+| `--keep-frames` | Off         | Keep raster frames after encoding.                     |
 
-Every ship of `realness.online` ties three things together: changelog story,
-tagged commit, and GitHub manifesto. That is what makes
-`npm run verify` an independent check. Same `dist/` for deploy and GitHub -
-do not rebuild between them. Firebase account must own the project
-(`firebase login` / `firebase use production`).
+Set `CHROME_PATH` to a browser executable if detection fails.
+Set `REALNESS_URL` to use a different Realness deployment.
+This command traces video frames; it does not generate artwork.
 
-1. **Write under Unreleased** - bullets go in `CHANGELOG.md` under
-   `## Unreleased` (hidden from `/docs#changelog` until you cut).
-2. **Cut the version**
+### Web media copies
 
-   ```bash
-   npm version patch -m "chore(release): v%s"
-   # or: minor | major
-   ```
-
-   Bumps `package.json`, promotes Unreleased → `## vX.Y.Z - YYYY-MM-DD`,
-   commits `chore(release): vX.Y.Z`, tags `vX.Y.Z`. Fails if Unreleased is empty.
-   Always pass `-m "chore(release): v%s"` so every tag reads the same.
-
-   Which bump - read the Unreleased bullets, not the commit log:
-
-   - **patch** - fixes, performance, build and deploy work, copy. Nothing new
-     to do in the app.
-   - **minor** - a bullet describes something you can now do that you could
-     not before. One feature is enough.
-   - **major** - a stored file format, a storage rule, or a URL changes in a
-     way an existing install cannot read.
-
-3. **Ship**
-
-   ```bash
-   npm run ship
-   ```
-
-   Runs `deploy` → `release:gh` → `verify`. Expect `LEGIT` twice (local
-   manifesto, then GitHub as root of trust). `release:gh` attaches
-   `dist/build-manifest.json` and changelog notes to GitHub release `vX.Y.Z`.
-
-Or step through: `npm run deploy` then `npm run release:gh` then `npm run verify`.
-
-Anyone else can run `npm run verify` after step 3. Detail:
-[docs/verify-release.md](docs/verify-release.md).
-
-## Optional server features (`realness-functions`)
-
-**Default: do not deploy functions.** The web app is complete with Firebase
-**Auth + Storage only**. Posters, feed, thoughts, phone sign-in, and moderation
-all work without a backend beyond Firebase.
-
-Deploy [realness-functions](https://github.com/realness-online/functions) only
-when a moderator wants one of the optional capabilities below. It is a
-**separate repo** deployed to the **same Firebase project** as this web app.
-
-### When to deploy functions
-
-| You want...                                                   | Deploy `realness-functions`? | Also configure                                                                        |
-| ------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
-| A working Realness instance (posters, feed, auth, storage)    | **No**                       | Firebase Auth (phone) + Storage only                                                  |
-| Web push notifications (Account toggle + scheduled broadcast) | **Yes**                      | `VAPID_PRIVATE_KEY` secret + matching public key in both repos (see functions README) |
-| Block VoIP / virtual numbers before SMS (Twilio Lookup)       | **Yes**                      | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` secrets                                    |
-| Stripe sponsorship checkout                                   | **No**                       | Hosted Stripe link in the web app; no server-side Stripe in functions                 |
-
-If none of the optional rows apply, skip functions entirely.
-
-### How the app decides (runtime, not build-time)
-
-The app never assumes functions exist. At runtime it probes capabilities on the
-**same origin**:
-
-1. `GET /capabilities` - live manifest when hosting rewrites to deployed functions
-2. `GET /capabilities.json` - static fallback shipped with the web app (all flags `false`)
-
-Probe logic: `src/use/instance-capabilities.js`. Feature gates read the result:
-
-| Flag              | When `true`                                                                                 | When `false` (default)                                  |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `push`            | Account notifications UI shown; subscriptions saved to Storage; scheduled broadcast can run | Notifications toggle hidden; no server push             |
-| `phone_integrity` | Sign-in calls `POST /check-phone-integrity` before Firebase sends SMS                       | Sign-in uses Firebase phone auth only; no Twilio Lookup |
-
-Web-only deploys never hit functions - the static fallback keeps every flag off.
-No env vars are required in the web app for moderators (`VITE_FUNCTIONS_URL` is
-an optional dev override for the functions emulator).
-
-### Deploy functions (only if needed)
+`bin/for-web.sh` uses macOS file-size commands. Images require ImageMagick;
+videos require FFmpeg (`brew install imagemagick ffmpeg`).
 
 ```bash
-# In the realness-functions repo, same Firebase project as the web app
-npm run deploy
+./bin/for-web.sh photo.jpg clip.mov
 ```
 
-Then redeploy hosting from this repo so the rewrites in `firebase.json` are
-active (`/capabilities`, `/check-phone-integrity` → functions).
+It writes `-web.jpg`, `-web.webp`, and `-web.mp4` beside the source files.
+Originals stay unchanged. Existing output copies can be overwritten.
+Without arguments, it processes supported files in the current directory.
 
-**Phone integrity:** `firebase functions:secrets:set TWILIO_ACCOUNT_SID` and
-`TWILIO_AUTH_TOKEN`, then redeploy functions. Until both secrets exist,
-`phone_integrity` stays `false` and the sign-in gate is off.
+## Scratch space
 
-**Push:** set `VAPID_PRIVATE_KEY` and keep the public key in sync across both
-repos - see `realness-functions/README.md`.
+Everything the agent writes stays inside this repository - never `/tmp`, never outside the harness.
+Scratch and one-off experiment files go in `artifacts/<project>/` at the harness root.
+Leave scratch output for the owner to review before deleting it.
 
-**Verify:** `GET https://your-instance.web.app/capabilities` should return JSON
-(not the SPA). Confirm flags match what you configured before treating a
-capability as live.
+## More
 
-Details and emulator setup: [`realness-functions` README](../realness-functions/README.md).
-
-## Contributing
-
-Moderators are ideal contributors. Setting up an instance of realness is also setting yourself up to help. Please read our [guidelines](docs/contributing.md)
-
-## Support
-
-We invite you to [Join realness online](https://realness.online) if you are interested in contributing or getting some friendly technical support for Moderating
-
-## License
-
-Realness is licensed under the **GPL-2.0**. See [LICENSE](LICENSE) for the
-full text. Anyone may run, modify, and redistribute Realness, including for
-commercial use, provided derivative works stay GPL-2.0 with source available.
-
-### One instance, one moderator
-
-While the GPL governs the code, Realness is designed around a product
-principle: one instance of Realness per human person, and that human person is
-the moderator.
-
-A moderator takes responsibility for the content that is created within their
-instance of Realness.
-
-By moderating an instance of Realness you become part of a chain of
-responsibility that is diffuse. Each instance of Realness is a unique
-opportunity for users to negotiate norms with their moderator. This way, human
-beings can move between networks naturally; choosing a Realness that is a good
-fit for them.
-
-It is the explicit goal of realness to create a democratic environment where
-people feel free to share and communicate yet it is clear whose ass is on the
-line for what gets said, organized, and done.
-
-### Commercial support
-
-Commercial tiers at <https://realness.online/pricing> provide a formal
-license agreement, support, and indemnification for teams and organizations.
-The GPL permits commercial use freely; the commercial tiers are a service and
-contract wrapper, not a license gate.
-
-### Trademarks
-
-The "Realness" name and logos are trademarks of Scott Fryxell and are not
-licensed under the GPL. A redistributed or modified version must not use the
-Realness marks in a way that implies it is the official project or is
-endorsed by the author.
-
-### Attribution
-
-Realness's vector tracing is built on two GPL-2.0 projects: potrace by Peter
-Selinger (<http://potrace.sourceforge.net/>) and node-potrace by mattmc
-(<https://github.com/tooolbox/node-potrace>), the JavaScript port
-`src/potrace/` is derived from. Both are credited on `/license` and remain
-GPL-2.0.
+- Agent instructions: `AGENTS.md`
+- Setup: install Node >= 22.19, then run `npm install` and `npm start` from this checkout.
+- Starter build: `apps/realness/tools/control/scripts/ship-stage.js` writes a versioned tree.

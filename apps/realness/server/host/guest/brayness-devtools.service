@@ -1,0 +1,9 @@
+[Unit]
+Description=DevTools proxy: 9222 to Chrome on localhost 9223
+Requires=brayness-chrome.service
+After=brayness-chrome.service
+
+[Service]
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:9223
+DynamicUser=yes
+PrivateNetwork=no

@@ -1,0 +1,88 @@
+import { vi } from 'vite-plus/test'
+import { shallowMount } from '@vue/test-utils'
+import icon from '@/components/icon'
+
+const next_frame = () => new Promise(resolve => requestAnimationFrame(resolve))
+
+describe('@/components/icon', () => {
+  describe('Renders', () => {
+    it('An icon', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'gear' }
+      })
+      expect(wrapper.find('svg.icon').exists()).toBe(true)
+      expect(wrapper.find('svg').attributes('data-icon')).toBe('gear')
+      expect(wrapper.find('use').attributes('href')).toContain('#gear')
+    })
+
+    it('The realness logo, inline and animated', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'realness' },
+        global: { stubs: { SmaltiGlints: false } }
+      })
+      expect(wrapper.find('svg.icon').exists()).toBe(true)
+      expect(wrapper.find('svg').classes()).toContain('realness')
+      const uses = wrapper.findAll('use')
+      expect(
+        uses.every(use => !use.attributes('href')?.includes('icons.svg'))
+      ).toBe(true)
+      expect(wrapper.findAll('path[data-tile]')).toHaveLength(6)
+      expect(wrapper.findAll('svg > use[data-tile]')).toHaveLength(6)
+      expect(wrapper.findAll('path[data-glint]').length).toBeGreaterThan(20)
+    })
+
+    it('The no-ai mark, inline and holdable', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'no-ai' },
+        global: { stubs: { NoAi: false } }
+      })
+      expect(wrapper.find("svg[data-icon='no-ai']").exists()).toBe(true)
+      expect(wrapper.find('use').exists()).toBe(false)
+      expect(wrapper.findAll('path[data-sparkle]')).toHaveLength(3)
+      expect(wrapper.findAll('rect[data-slash]')).toHaveLength(2)
+    })
+  })
+
+  describe('Rewinding after a click', () => {
+    const make = extra => ({
+      currentTime: 400,
+      play: vi.fn(),
+      pause: vi.fn(),
+      cancel: vi.fn(),
+      ...extra
+    })
+
+    it('rewinds keyframes but leaves the release transition running', async () => {
+      const drift = make({ animationName: 'realness-drift-up-left' })
+      const fade = make()
+      const original = Element.prototype.getAnimations
+      Element.prototype.getAnimations = function () {
+        return this.tagName === 'use' ? [fade] : [drift]
+      }
+
+      const wrapper = shallowMount(icon, {
+        props: { name: 'realness' },
+        global: { stubs: { SmaltiGlints: false } }
+      })
+      await wrapper.find('svg.icon.realness').trigger('pointerup')
+      await next_frame()
+
+      expect(drift.pause).toHaveBeenCalled()
+      expect(drift.currentTime).toBe(0)
+      expect(fade.pause).not.toHaveBeenCalled()
+      expect(fade.currentTime).toBe(400)
+
+      Element.prototype.getAnimations = original
+    })
+  })
+
+  describe('Props', () => {
+    it('accepts name prop', () => {
+      const wrapper = shallowMount(icon, {
+        props: { name: 'test-icon' }
+      })
+      expect(wrapper.props('name')).toBe('test-icon')
+      expect(wrapper.find('svg').attributes('data-icon')).toBe('test-icon')
+    })
+  })
+})
