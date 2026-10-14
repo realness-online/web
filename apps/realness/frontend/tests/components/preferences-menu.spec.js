@@ -70,3 +70,68 @@ describe('@/components/preferences-menu', () => {
     wrapper.unmount()
   })
 })
+
+describe('@/components/preferences-menu pane lifecycle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    preferences.view_3d.value = false
+  })
+
+  afterEach(() => {
+    preferences.view_3d.value = false
+  })
+
+  it('leaves the pane alone while 3D is on', async () => {
+    preferences.view_3d.value = true
+    const wrapper = mount()
+    await flushPromises()
+    mock_pane.dispose.mockClear()
+
+    wrapper.vm.on_slide_transition_end({ propertyName: 'grid-template-rows' })
+
+    expect(mock_pane.dispose).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('ignores a transition that is not the slide', async () => {
+    preferences.view_3d.value = true
+    const wrapper = mount()
+    await flushPromises()
+    mock_pane.dispose.mockClear()
+
+    wrapper.vm.on_slide_transition_end({ propertyName: 'opacity' })
+
+    expect(mock_pane.dispose).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('disposes the pane when the slide closes', async () => {
+    vi.stubGlobal('matchMedia', query => ({
+      matches: String(query).includes('reduced-motion'),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn()
+    }))
+    preferences.view_3d.value = true
+    const wrapper = mount()
+    await flushPromises()
+
+    preferences.view_3d.value = false
+    await flushPromises()
+    wrapper.vm.on_slide_transition_end({ propertyName: 'grid-template-rows' })
+
+    expect(mock_pane.dispose).toHaveBeenCalled()
+    vi.unstubAllGlobals()
+    wrapper.unmount()
+  })
+
+  it('does not mount a pane while 3D is off', async () => {
+    preferences.view_3d.value = false
+    const wrapper = mount()
+    await flushPromises()
+
+    const { Pane } = await import('tweakpane')
+    expect(Pane).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+})
