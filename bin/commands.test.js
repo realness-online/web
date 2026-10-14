@@ -5,7 +5,7 @@ import { resolve, join } from 'node:path'
 import { collect_commands } from './commands/catalog.js'
 import { update_commands } from './commands.js'
 import { cli_families } from './commands/cli.js'
-import { parseHTML as parse_html } from 'linkedom'
+import { parse_html } from './lib/harness-dependencies.js'
 import { runInNewContext as run_in_new_context } from 'node:vm'
 import { setImmediate as next_turn } from 'node:timers/promises'
 

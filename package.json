@@ -35,12 +35,12 @@
     "sessions": "vault/Sessions"
   },
   "scripts": {
-    "postinstall": "node bin/install-pi.js",
+    "postinstall": "npm --prefix .pi ci && node bin/install-pi.js",
     "realness": "./bin/pi",
     "brayness": "./bin/pi",
     "start": "./bin/pi",
     "local": "node bin/local.js",
-    "test": "node --test --experimental-strip-types .pi/skills/previous-work/scripts/search-pi.test.js .pi/extensions/memory/index-db.test.ts .pi/extensions/edit-log/log.test.ts .pi/extensions/chat-bridge/index.test.js bin/plans.test.js bin/commands.test.js bin/vault-paths.test.js bin/lib/harness-settings.test.js bin/lib/product.test.js bin/lib/pi-release.test.js bin/lib/session-migration.test.js bin/lib/session-relocation.test.js bin/lib/session-cutover.test.js bin/pi-fork.test.js bin/pi-start.test.js bin/session-location.test.js bin/artifacts-prune.test.js bin/check-skills.test.js bin/soundness-check.test.js bin/comment-check.test.js bin/site-check.test.js bin/themes.test.js bin/lib/web-md-cache.test.js bin/home-paths.test.js bin/lib/web-md-log.test.js .pi/extensions/web-md/rules.test.js .pi/extensions/session-gap/index.test.js .pi/extensions/light-fetch/index.test.js && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette",
+    "test": "node --test --experimental-strip-types bin/harness-dependencies.test.js .pi/skills/previous-work/scripts/search-pi.test.js .pi/extensions/memory/index-db.test.ts .pi/extensions/edit-log/log.test.ts .pi/extensions/chat-bridge/index.test.js bin/plans.test.js bin/commands.test.js bin/vault-paths.test.js bin/lib/harness-settings.test.js bin/lib/product.test.js bin/lib/pi-release.test.js bin/lib/session-migration.test.js bin/lib/session-relocation.test.js bin/lib/session-cutover.test.js bin/pi-fork.test.js bin/pi-start.test.js bin/session-location.test.js bin/artifacts-prune.test.js bin/check-skills.test.js bin/soundness-check.test.js bin/comment-check.test.js bin/site-check.test.js bin/themes.test.js bin/lib/web-md-cache.test.js bin/home-paths.test.js bin/lib/web-md-log.test.js .pi/extensions/web-md/rules.test.js .pi/extensions/session-gap/index.test.js .pi/extensions/light-fetch/index.test.js && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette",
     "plan-shape": "node ./bin/plan-shape.js",
     "check:soundness": "node ./bin/soundness-check.js apps/realness work/blog work/decision-ontology work/kata-machine work/realness-flex work/seeq-models bin",
     "check:soundness:gate": "node ./bin/soundness-check.js apps/realness bin",
@@ -70,17 +70,5 @@
   "engines": {
     "node": ">=22.19.0"
   },
-  "packageManager": "npm@11.14.1",
-  "dependencies": {
-    "@mozilla/readability": "^0.6.0",
-    "linkedom": "^0.18.13",
-    "turndown": "^7.2.4"
-  },
-  "devDependencies": {
-    "@babel/parser": "7.29.9",
-    "@vue/compiler-sfc": "3.5.43"
-  },
-  "overrides": {
-    "postcss": "8.5.29"
-  }
+  "packageManager": "npm@11.14.1"
 }

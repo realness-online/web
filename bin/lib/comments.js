@@ -6,9 +6,7 @@
  * @returns {{start: number, end: number, keep: boolean}[]} comment ranges
  */
 
-import { createRequire } from "node:module"
-
-const require = createRequire(import.meta.url)
+import { harness_require as require } from "./harness-dependencies.js"
 let parser = null
 let vue_parse = null
 try { parser = require("@babel/parser") } catch {}

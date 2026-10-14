@@ -1,6 +1,6 @@
 import { readFileSync as read_file, readdirSync as readdir, realpathSync as realpath } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
-import { parseHTML as parse_html } from 'linkedom'
+import { parse_html } from './lib/harness-dependencies.js'
 import { create_itemid } from '../apps/realness/frontend/packages/itemid/src/index.js'
 
 const style_root = new URL('../apps/realness/src/app/style/', import.meta.url)

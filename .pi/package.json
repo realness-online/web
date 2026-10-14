@@ -1,0 +1,21 @@
+{
+  "name": "realness-harness-dependencies",
+  "version": "1.0.1",
+  "private": true,
+  "license": "GPL-2.0",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.13",
+    "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@babel/parser": "7.29.9",
+    "@vue/compiler-sfc": "3.5.43"
+  },
+  "overrides": {
+    "postcss": "8.5.29"
+  }
+}

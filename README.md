@@ -19,6 +19,8 @@ realness/
 ├── work/                projects (edit)
 │
 └── .pi/
+    ├── examples/        optional reference apps
+    ├── node_modules/    harness dependencies (generated)
     ├── skills/          your skills (edit)
     ├── extensions/      your extensions (edit)
     ├── prompts/         your prompt templates (edit)
@@ -56,7 +58,7 @@ The shipped starter keeps `skills/`, `extensions/`, and `prompts/` at its root; 
 ### The app
 
 The harness uses a pinned build of our Pi fork, packaged under `.pi/runtime/`.
-`npm install` installs the root dependencies and that runtime. Startup does not
+`npm install` installs harness dependencies under `.pi/node_modules/` and that runtime. Startup does not
 download upstream Pi or borrow a globally installed Pi.
 
 The release pin records the fork commit, upstream commit, and archive hashes.
