@@ -429,4 +429,115 @@ describe('@/component/posters/as-animation.vue', () => {
       .filter(animation => animation.attributes('attributename') === 'd')
     expect(after.length).toBe(0)
   })
+
+  describe('keyboard scrubbing', () => {
+    const mount_animation = () => {
+      const svg = as_svg()
+      svg.setCurrentTime = vi.fn()
+      return {
+        svg,
+        wrapper: mount(as_animation, {
+          props: {
+            id: poster_id,
+            svg,
+            paused: false,
+            in_view: true,
+            vector: {}
+          }
+        })
+      }
+    }
+
+    it('scrubs the timeline on an arrow key', async () => {
+      const { wrapper, svg } = mount_animation()
+      use_fake_timers()
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+      vi.advanceTimersByTime(200)
+      await nextTick()
+
+      expect(svg.setCurrentTime).toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('leaves other keys to the page', async () => {
+      const { wrapper, svg } = mount_animation()
+      use_fake_timers()
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        cancelable: true
+      })
+      window.dispatchEvent(event)
+      vi.advanceTimersByTime(200)
+      await nextTick()
+
+      expect(svg.setCurrentTime).not.toHaveBeenCalled()
+      expect(event.defaultPrevented).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('leaves the arrows alone when a modifier is held', async () => {
+      const { wrapper, svg } = mount_animation()
+      use_fake_timers()
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowLeft',
+        ctrlKey: true,
+        cancelable: true
+      })
+      window.dispatchEvent(event)
+      vi.advanceTimersByTime(200)
+      await nextTick()
+
+      expect(svg.setCurrentTime).not.toHaveBeenCalled()
+      expect(event.defaultPrevented).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('stops listening once the animation unmounts', async () => {
+      const { wrapper, svg } = mount_animation()
+      use_fake_timers()
+      wrapper.unmount()
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+      vi.advanceTimersByTime(200)
+
+      expect(svg.setCurrentTime).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('visibility', () => {
+    it('re-pauses SMIL when the page is shown again with animation off', async () => {
+      animate.value = false
+      const svg = as_svg()
+      const wrapper = mount(as_animation, {
+        props: { id: poster_id, svg, paused: false, in_view: true, vector: {} }
+      })
+      await flushPromises()
+      svg.pauseAnimations.mockClear()
+
+      window.dispatchEvent(new Event('pageshow'))
+      await nextTick()
+
+      expect(svg.pauseAnimations).toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('leaves SMIL running on a pageshow while animation is on', async () => {
+      animate.value = true
+      const svg = as_svg()
+      const wrapper = mount(as_animation, {
+        props: { id: poster_id, svg, paused: false, in_view: true, vector: {} }
+      })
+      await flushPromises()
+      svg.pauseAnimations.mockClear()
+
+      window.dispatchEvent(new Event('pageshow'))
+      await nextTick()
+
+      expect(svg.pauseAnimations).not.toHaveBeenCalled()
+      wrapper.unmount()
+    })
+  })
 })
