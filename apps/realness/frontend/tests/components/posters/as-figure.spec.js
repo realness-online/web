@@ -1116,6 +1116,52 @@ describe('@/component/posters/as-figure.vue', () => {
       })
     })
 
+    describe('mask pen panel', () => {
+      /** Selecting is a real toggle into the active subject, as painting does. */
+      const select_cells = async keys => {
+        wrapper.vm.mask_pen.active.value = true
+        for (const key of keys) wrapper.vm.mask_pen.toggle_path(key)
+        await nextTick()
+      }
+
+      it('counts the selected cells on the toggle button', async () => {
+        await select_cells(['sand:0', 'sand:1'])
+
+        const toggle = wrapper.find('[aria-label="Toggle mask pen"]')
+        expect(toggle.exists()).toBe(true)
+        expect(toggle.attributes('aria-pressed')).toBe('true')
+        expect(toggle.text()).toContain('2')
+      })
+
+      it('offers a clear button only once cells are selected', async () => {
+        wrapper.vm.mask_pen.active.value = true
+        await nextTick()
+        expect(wrapper.find('[aria-label="Clear mask"]').exists()).toBe(false)
+
+        wrapper.vm.mask_pen.toggle_path('sediment:0')
+        await nextTick()
+        expect(wrapper.find('[aria-label="Clear mask"]').exists()).toBe(true)
+      })
+
+      it('clears the selection from the clear button', async () => {
+        await select_cells(['sediment:0'])
+
+        await wrapper.find('[aria-label="Clear mask"]').trigger('click')
+        await nextTick()
+
+        expect(wrapper.vm.mask_pen.selected.value.size).toBe(0)
+      })
+
+      it('keeps the clear button from toggling the pen itself', async () => {
+        await select_cells(['sediment:0'])
+
+        await wrapper.find('[aria-label="Clear mask"]').trigger('click')
+        await nextTick()
+
+        expect(wrapper.vm.mask_pen.active.value).toBe(true)
+      })
+    })
+
     describe('mask pen toggle', () => {
       it('turns on mosaic and geology layers, closes menu; turning off does neither', async () => {
         expect(wrapper.vm.mask_pen.active.value).toBe(false)
