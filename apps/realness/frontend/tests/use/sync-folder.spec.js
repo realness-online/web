@@ -994,6 +994,73 @@ describe('@/use/sync-folder', () => {
     )
   })
 
+  it('reads archived posters over the network when the cache is empty', async () => {
+    const { load_directory_from_network } = await import(
+      '@/persistence/Directory'
+    )
+    mock_as_directory.mockImplementation(async id =>
+      String(id).endsWith('/1000/')
+        ? { items: [2000] }
+        : { items: [], archive: ['1000'] }
+    )
+    load_directory_from_network.mockResolvedValueOnce({ items: [2000] })
+    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    await flushPromises()
+
+    await sync_now()
+
+    const [gathered] = mock_thoughts_for_author.mock.calls.at(-1)
+    expect(gathered).toContainEqual(
+      expect.objectContaining({ id: `${me}/posters/2000` })
+    )
+  })
+
+  it('keeps going when an archive listing cannot be read', async () => {
+    silence_console('warn')
+    mock_as_directory.mockImplementation(async id => {
+      if (String(id).endsWith('/1000/')) return null
+      return { items: [1000], archive: ['1000'] }
+    })
+    const { load_directory_from_network } = await import(
+      '@/persistence/Directory'
+    )
+    load_directory_from_network.mockResolvedValue(null)
+    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    await flushPromises()
+
+    await expect(sync_now()).resolves.toBeUndefined()
+  })
+
+  it('warns and carries on when the poster listing cannot be fetched', async () => {
+    const warn = silence_console('warn')
+    const { load_directory_from_network } = await import(
+      '@/persistence/Directory'
+    )
+    mock_as_directory.mockResolvedValue(null)
+    mock_build_local_directory.mockResolvedValue({ items: [], archive: [] })
+    keys.mockResolvedValue([])
+    load_directory_from_network.mockRejectedValue(new Error('offline'))
+    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    await flushPromises()
+
+    await sync_now()
+
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] network posters failed',
+      expect.any(Error)
+    )
+  })
+
+  it('skips an archive id that is not a page number', async () => {
+    mock_as_directory.mockResolvedValue({ items: ['index'], archive: [] })
+    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    await flushPromises()
+
+    await sync_now()
+
+    expect(mock_list_history_page).not.toHaveBeenCalled()
+  })
+
   it('shows a shared drain instead of starting a second one', async () => {
     const first = drain_folder_queue({ force: true, set_working })
     const second = drain_folder_queue({ force: true, set_working })
