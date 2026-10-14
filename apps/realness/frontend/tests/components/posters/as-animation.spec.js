@@ -655,3 +655,5 @@ describe('@/component/posters/as-animation keyboard and visibility', () => {
   })
 
 })
+
+

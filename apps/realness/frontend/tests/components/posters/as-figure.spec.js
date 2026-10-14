@@ -1493,3 +1493,71 @@ describe('@/component/posters/as-figure computed guards', () => {
     expect(wrapper.vm.want_3d).toBe(false)
   })
 })
+
+describe('@/component/posters/as-figure event guards', () => {
+  const mounted = []
+
+  const mount_figure = async props => {
+    const wrapper = shallowMount(as_figure, {
+      props: { itemid: poster.id, ...props },
+      global: {
+        provide: {
+          'key-commands': {
+            add_context: vi.fn(),
+            register_handler: vi.fn(),
+            remove_context: vi.fn(),
+            unregister_handler: vi.fn()
+          }
+        }
+      }
+    })
+    mounted.push(wrapper)
+    await flushPromises()
+    return wrapper
+  }
+
+  afterEach(() => {
+    mounted.splice(0).forEach(wrapper => wrapper.unmount())
+  })
+
+  it('routes a haptic pointer through without throwing', async () => {
+    const wrapper = await mount_figure()
+
+    expect(() =>
+      wrapper.vm.on_haptic_pointer({ type: 'pointerdown' })
+    ).not.toThrow()
+  })
+
+  it('leaves a referenced figure to dispatch its own pointer events', async () => {
+    mock_use_reference.value = true
+    const wrapper = await mount_figure()
+    wrapper.vm.on_haptic_pointer({ type: 'pointerdown' })
+
+    expect(wrapper.find('svg[itemtype$="/posters"]').exists()).toBe(true)
+  })
+
+  it('clears the poster zoom when asked for zero', async () => {
+    const wrapper = await mount_figure()
+    wrapper.vm.as_svg_ref = { $el: { style: { scale: '1.4' } } }
+
+    wrapper.vm.set_svg_zoom(0)
+
+    expect(wrapper.vm.as_svg_ref.$el.style.scale).toBe('')
+  })
+
+  it('scales the poster svg while entering', async () => {
+    const wrapper = await mount_figure()
+    wrapper.vm.as_svg_ref = { $el: { style: { scale: '' } } }
+
+    wrapper.vm.set_svg_zoom(1)
+
+    expect(wrapper.vm.as_svg_ref.$el.style.scale).not.toBe('')
+  })
+
+  it('ignores a zoom call before the svg is mounted', async () => {
+    const wrapper = await mount_figure()
+    wrapper.vm.as_svg_ref = null
+
+    expect(() => wrapper.vm.set_svg_zoom(1)).not.toThrow()
+  })
+})
