@@ -1294,3 +1294,125 @@ describe('@/component/posters/as-figure.vue', () => {
     })
   })
 })
+
+describe('@/component/posters/as-figure guards', () => {
+  const local_key_commands = {
+    add_context: vi.fn(),
+    register_handler: vi.fn(),
+    remove_context: vi.fn(),
+    unregister_handler: vi.fn()
+  }
+
+  const mount_figure = async props => {
+    const wrapper = shallowMount(as_figure, {
+      props: { itemid: poster.id, ...props },
+      global: { provide: { 'key-commands': local_key_commands } }
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  beforeEach(() => {
+    mock_menu.value = false
+    mock_mosaic.value = false
+    mock_animate.value = false
+    window.matchMedia = vi.fn(query => ({
+      matches: query === '(hover: hover)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }))
+  })
+
+  it('leaves the menu closed while it is always visible', async () => {
+    mock_menu.value = true
+    const wrapper = await mount_figure({ menu_always_visible: true })
+
+    wrapper.vm.vector_click()
+
+    expect(wrapper.vm.menu_open).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('opens the menu on a poster click when the menu is offered', async () => {
+    const wrapper = await mount_figure({ menu: true })
+
+    wrapper.vm.vector_click()
+
+    expect(wrapper.vm.menu_open).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('keeps the overlay closed while the mask pen is active', async () => {
+    const wrapper = await mount_figure({
+      overlay_statements: [{ id: '/+1/statements/1' }]
+    })
+    wrapper.vm.mask_pen.active.value = true
+    await nextTick()
+
+    expect(wrapper.vm.overlay_text_visible).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('toggles the overlay on a poster click', async () => {
+    const wrapper = await mount_figure({
+      overlay_statements: [{ id: '/+1/statements/1' }]
+    })
+
+    wrapper.vm.on_poster_svg_click()
+
+    expect(wrapper.vm.overlay_text_visible).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('does nothing on a mask-pen click while the pen is active', async () => {
+    const wrapper = await mount_figure({
+      overlay_statements: [{ id: '+1/statements/1' }]
+    })
+    wrapper.vm.mask_pen.active.value = true
+    await nextTick()
+
+    wrapper.vm.on_poster_svg_click()
+
+    expect(wrapper.vm.overlay_text_visible).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('allows a drag over a poster carrying audio', async () => {
+    const wrapper = await mount_figure()
+    const audio = new File(['x'], 'clip.mp3', { type: 'audio/mp3' })
+    const event = new Event('dragover', { cancelable: true, bubbles: true })
+    Object.defineProperty(event, 'dataTransfer', { value: { files: [audio] } })
+
+    wrapper.find('figure').element.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('leaves a non-audio drag alone', async () => {
+    const wrapper = await mount_figure()
+    const text = new File(['x'], 'notes.txt', { type: 'text/plain' })
+    const event = new Event('dragover', { cancelable: true, bubbles: true })
+    Object.defineProperty(event, 'dataTransfer', { value: { files: [text] } })
+
+    wrapper.find('figure').element.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('ignores a drop with no data transfer at all', async () => {
+    const wrapper = await mount_figure()
+    const event = new Event('drop', { cancelable: true, bubbles: true })
+
+    wrapper.find('figure').element.dispatchEvent(event)
+
+    expect(mock_decode_audio).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+})
