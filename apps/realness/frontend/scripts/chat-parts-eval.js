@@ -95,7 +95,7 @@ const parse_grade = text => {
 }
 
 /** Run jobs a few at a time. */
-const pooled = async (jobs, size) => {
+export const pooled = async (jobs, size) => {
   const results = []
   let next = 0
   const worker = async () => {

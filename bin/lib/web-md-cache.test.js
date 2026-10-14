@@ -99,6 +99,23 @@ const run = (...args) =>
       (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr })
     )
   )
+
+/** A run with its own cache, so a method marked failing by one test cannot hide another. */
+const run_alone = (label, ...args) =>
+  new Promise(done =>
+    execFile(
+      'node',
+      [web_md, ...args],
+      {
+        env: {
+          PATH: `${node_only}:/usr/bin:/bin`,
+          WEB_MD_CACHE: join(scratch, `cache-${label}`),
+          WEB_MD_LOG: join(scratch, `log-${label}`)
+        }
+      },
+      (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr })
+    )
+  )
 const log_lines = () => read_day(join(scratch, 'log'), new Date().toISOString().slice(0, 10))
 const last_line = url => log_lines().filter(l => l.url === hash(url)).at(-1)
 const site_record = () => JSON.parse(readFileSync(join(cache_root, 'sites', new URL(base).host + '.json'), 'utf8'))
@@ -196,4 +213,144 @@ test('web-md and the host engine read the same cache-time rules', () => {
   const here = readFileSync(new URL('./web-md-cache-times.json', import.meta.url), 'utf8')
   const host = readFileSync(new URL('../../apps/realness/src/host/web-times.json', import.meta.url), 'utf8')
   assert.equal(host, here, 'copy bin/lib/web-md-cache-times.json to apps/realness/src/host/web-times.json')
+})
+
+test('the command names its usage when given no url', async () => {
+  const result = await run('--max', '100')
+  assert.equal(result.code, 1)
+  assert.match(result.stderr, /usage: web-md\.js <url>/)
+})
+
+test('--max cuts the text and says so in the header comment', async () => {
+  const result = await run_alone('max', `${base}/etag`, '--max', '120', '--fresh')
+  assert.equal(result.code, 0, result.stderr)
+  const body = result.stdout.split('\n\n').slice(1).join('\n\n')
+  assert.ok(body.length <= 121, `kept ${body.length} chars`)
+  assert.match(result.stdout, /cut to 120/)
+})
+
+test('--links keeps link targets that are dropped by default', async () => {
+  const plain = await run_alone('links-off', `${base}/etag`, '--fresh')
+  const linked = await run_alone('links-on', `${base}/etag`, '--fresh', '--links')
+  assert.doesNotMatch(plain.stdout, /\]\(\/next\)/)
+  assert.match(linked.stdout, /\[Next\]\(\/next\)/)
+})
+
+test('--grep keeps matching paragraphs and their headings, and drops the rest', async () => {
+  const kept = await run_alone('grep-kept', `${base}/etag`, '--fresh', '--grep', 'Article')
+  assert.equal(kept.code, 0, kept.stderr)
+  assert.match(kept.stdout, /# Article/)
+  assert.match(kept.stdout, /Words that make a real article/)
+  const dropped = await run_alone('grep-dropped', `${base}/etag`, '--fresh', '--grep', 'zzzz')
+  assert.match(dropped.stdout, /# Article/)
+  assert.doesNotMatch(dropped.stdout, /Words that make a real article/)
+})
+
+test('a kept copy is served from cache, and --fresh reads again', async () => {
+  const url = `${base}/etag`
+  const first = await run_alone('cache', url)
+  assert.match(first.stdout, /\| static \|/)
+  // A page with an ETag stays current, so the next read is served from cache.
+  const second = await run_alone('cache', url)
+  assert.match(second.stdout, /\| cached static/)
+  const third = await run_alone('cache', url, '--fresh')
+  assert.match(third.stdout, /\| static \|/)
+})
+
+test('--max-age asks the cache to treat the copy as young', async () => {
+  const url = `${base}/etag`
+  assert.equal((await run_alone('age', url)).code, 0)
+  const young = await run_alone('age', url, '--max-age', '48')
+  assert.match(young.stdout, /\| cached static/)
+})
+
+test('a browser-only method is refused when the tool is not installed', async () => {
+  const result = await run_alone('browser', `${base}/etag`, '--browser', '--fresh')
+  assert.equal(result.code, 3)
+  assert.match(result.stderr, /browser: /)
+})
+
+test('the actor engine renders a page when one is installed', async t => {
+  const engine = join(scratch, 'fake-engine')
+  writeFileSync(
+    engine,
+    `#!/bin/sh\necho '{"kind":"markdown","title":"From the engine","body":"${'Words that make a real article. '.repeat(12)}","source":"reader"}'\n`,
+    { mode: 0o755 }
+  )
+  const result = await new Promise(done =>
+    execFile(
+      'node',
+      [web_md, `${base}/etag`],
+      {
+        env: {
+          PATH: `${node_only}:/usr/bin:/bin`,
+          WEB_MD_CACHE: join(scratch, 'cache-engine'),
+          WEB_MD_LOG: join(scratch, 'log-engine'),
+          BRAYNESS_ACTOR: '1',
+          WEB_MD_ENGINE: engine
+        }
+      },
+      (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr })
+    )
+  )
+  assert.equal(result.code, 0, result.stderr)
+  assert.match(result.stdout, /# From the engine/)
+  assert.match(result.stdout, /\| engine reader \|/)
+})
+
+test('the actor engine reports its own failure and stops', async t => {
+  const engine = join(scratch, 'bad-engine')
+  writeFileSync(engine, "#!/bin/sh\necho 'brayness-read: page never loaded' 1>&2\nexit 3\n", { mode: 0o755 })
+  const result = await new Promise(done =>
+    execFile(
+      'node',
+      [web_md, `${base}/etag`],
+      {
+        env: {
+          PATH: `${node_only}:/usr/bin:/bin`,
+          WEB_MD_CACHE: join(scratch, 'cache-engine2'),
+          WEB_MD_LOG: join(scratch, 'log-engine2'),
+          BRAYNESS_ACTOR: '1',
+          WEB_MD_ENGINE: engine
+        }
+      },
+      (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr })
+    )
+  )
+  assert.equal(result.code, 3)
+  assert.match(result.stderr, /engine: page never loaded/)
+})
+
+test('a bot check is reported as blocked, with the page it saw', async t => {
+  const server = createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html' })
+    res.end('<html><head><title>Just a moment...</title></head><body><p>Checking your browser before accessing.</p></body></html>')
+  })
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  t.after(() => server.close())
+  const result = await run_alone('blocked', `http://127.0.0.1:${server.address().port}/`)
+  assert.equal(result.code, 2)
+  assert.match(result.stdout, /\| blocked \|/)
+  assert.match(result.stdout, /# Just a moment/)
+  assert.match(result.stdout, /Blocked: the site served a bot check/)
+})
+
+test('a gone page is not retried through firecrawl', async t => {
+  const result = await new Promise(done =>
+    execFile(
+      'node',
+      [web_md, `${base}/gone`],
+      {
+        env: {
+          PATH: `${node_only}:/usr/bin:/bin`,
+          WEB_MD_CACHE: join(scratch, 'cache-gone'),
+          WEB_MD_LOG: join(scratch, 'log-gone'),
+          FIRECRAWL_API_KEY: 'fc-test'
+        }
+      },
+      (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr })
+    )
+  )
+  assert.equal(result.code, 3)
+  assert.match(result.stderr, /firecrawl: skipped, HTTP 404/)
 })

@@ -33,12 +33,9 @@ Operators: after deploy, attach the same dist manifesto to the release:
   npm run release:gh
 `
 
-const parse_args = () => {
-  const args = process.argv.slice(2)
-  if (args.includes('--help') || args.includes('-h')) {
-    console.info(help_text)
-    process.exit(0)
-  }
+export const parse_args = (argv = process.argv.slice(2)) => {
+  const args = [...argv]
+  if (args.includes('--help') || args.includes('-h')) return { help: true }
 
   let base_url = default_url
   let manifest_path = null
@@ -216,7 +213,7 @@ export const load_github_manifest = async (
   )
 }
 
-const load_manifest = async ({
+export const load_manifest = async ({
   base_url,
   manifest_path,
   release,
@@ -243,7 +240,7 @@ const load_manifest = async ({
 }
 
 /** @param {string} base_url @param {string} file_path @param {string} expected */
-const verify_file = async (base_url, file_path, expected) => {
+export const verify_file = async (base_url, file_path, expected) => {
   const url = `${base_url}${file_path}`
   const response = await fetch(url, { cache: 'no-store' })
   if (!response.ok)
@@ -259,9 +256,17 @@ const verify_file = async (base_url, file_path, expected) => {
   }
 }
 
-export const main = async () => {
-  const { base_url, manifest_path, release, from_site, repo } = parse_args()
-  const { manifest, source } = await load_manifest({
+export const main = async (
+  argv = process.argv.slice(2),
+  { load = load_manifest, verify = verify_file } = {}
+) => {
+  const parsed = parse_args(argv)
+  if (parsed.help) {
+    console.info(help_text)
+    return 0
+  }
+  const { base_url, manifest_path, release, from_site, repo } = parsed
+  const { manifest, source } = await load({
     base_url,
     manifest_path,
     release,
@@ -275,7 +280,7 @@ export const main = async () => {
 
   if (!entries.length) {
     console.error('Manifesto has no files to verify')
-    process.exit(1)
+    return 1
   }
 
   let trust = 'site manifesto only (not independent)'
@@ -296,9 +301,7 @@ export const main = async () => {
     )
 
   const results = await Promise.all(
-    entries.map(([file_path, expected]) =>
-      verify_file(base_url, file_path, expected)
-    )
+    entries.map(([file_path, expected]) => verify(base_url, file_path, expected))
   )
 
   let passed = 0
@@ -314,11 +317,11 @@ export const main = async () => {
   console.info(`Files:     ${passed}/${passed + failed} match`)
   if (failed > 0) {
     console.error('Result:    NOT LEGIT')
-    process.exit(1)
+    return 1
   }
 
   console.info('Result:    LEGIT')
-  process.exit(0)
+  return 0
 }
 
 const is_main =
@@ -326,7 +329,7 @@ const is_main =
 
 if (is_main)
   try {
-    await main()
+    process.exit(await main())
   } catch (error) {
     console.error(error instanceof Error ? error.message : error)
     process.exit(1)

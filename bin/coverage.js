@@ -20,7 +20,8 @@ const NODE_INCLUDE = [
   'apps/realness/lib/**/*.js',
   'apps/realness/tools/**/*.js',
   'apps/realness/server/**/*.js',
-  'apps/realness/themes/**/*.js'
+  'apps/realness/themes/**/*.js',
+  'apps/realness/frontend/scripts/**/*.js'
 ]
 const NODE_EXCLUDE = [
   '**/*.test.js',

@@ -15,7 +15,7 @@ try { vue_parse = require("@vue/compiler-sfc").parse } catch {}
 const KEEP_PATTERNS = [
   /^\s*eslint-(disable|enable|env)/,
   /^\s*(oxlint|biome)-ignore/,
-  /^\s*(tslint|deno-lint)-ignore/,
+  /^\s*(tslint|deno-lint)[-:](ignore|disable)/,
   /^\s*@ts-(check|nocheck|ignore|expect-error)/,
   /^\s*@jsx/,
   /^\s*@vue-(ignore|expect-error|generic)/,

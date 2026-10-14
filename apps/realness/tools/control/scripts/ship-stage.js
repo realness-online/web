@@ -145,8 +145,11 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
     }
   })
 
-  symlink_sync('../../extensions', join(stage, '.pi/agent/extensions'))
-  symlink_sync('../../prompts', join(stage, '.pi/agent/prompts'))
+  for (const link of ['extensions', 'prompts']) {
+    const at = join(stage, `.pi/agent/${link}`)
+    rm_sync(at, { recursive: true, force: true })
+    symlink_sync(`../../${link}`, at)
+  }
   mkdir_sync(join(stage, 'plans'), { recursive: true })
   write_file_sync(join(stage, 'plans/site.md'), '# Published site\n\n## Syncs\n\n- work/site\n')
 

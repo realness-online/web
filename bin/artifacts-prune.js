@@ -62,7 +62,7 @@ const twin_of = (path) => {
   const match = twin.exec(path)
   if (!match) return null
   const [, stem, number, ext = ""] = match
-  const lower = join(dirname(path), `${stem}-${String(Number(number) - 1).padStart(4, "0")}${ext}`)
+  const lower = `${stem}-${String(Number(number) - 1).padStart(4, "0")}${ext}`
   if (!exists_sync(lower) || !lstat_sync(lower).isFile()) return null
   return stat_sync(lower).size === stat_sync(path).size ? lower : null
 }

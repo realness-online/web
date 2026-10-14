@@ -29,7 +29,10 @@ const {
   mock_thoughts_for_author: vi.fn(() => []),
   mock_folder_path: vi.fn(() => '07-18 Saturday morning — hello'),
   mock_sync_svg: { value: true },
-  mock_sync_folder_pref: { value: true },
+  mock_sync_folder_pref: (() => {
+    const { ref } = require('vue')
+    return ref(true)
+  })(),
   mock_figure_props: [],
   mock_figure_show: { value: true },
   mock_figure_missing: { value: false }
@@ -1187,5 +1190,70 @@ describe('@/use/sync-folder', () => {
       poster_id,
       expect.any(Error)
     )
+  })
+
+  it('turning the preference off cancels the run, clears the queue, and stops', async () => {
+    vi.useFakeTimers()
+    const { folder_sync_status } = with_setup(() => use())
+    await flushPromises()
+    mock_sync_folder_pref.value = false
+    await flushPromises()
+    expect(set).toHaveBeenCalledWith('sync:folder-queue', [])
+    expect(folder_sync_status.value).toBe('idle')
+    expect(get_directory_handle).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('turning the preference back on clears past failures and drains at once', async () => {
+    vi.useFakeTimers()
+    with_setup(() => use())
+    await flushPromises()
+    mock_sync_folder_pref.value = false
+    await flushPromises()
+    mock_sync_folder_pref.value = true
+    await vi.runAllTimersAsync()
+    await flushPromises()
+    expect(get_directory_handle).toHaveBeenCalled()
+    vi.useRealTimers()
+  })
+
+  it('a visible page schedules a drain only while the preference is on', async () => {
+    const { folder_sync_status } = with_setup(() => use())
+    await flushPromises()
+    const set_visibility = state => {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => state
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+    }
+
+    mock_sync_folder_pref.value = false
+    await flushPromises()
+    set_visibility('visible')
+    await flushPromises()
+    expect(folder_sync_status.value).toBe('idle')
+
+    mock_sync_folder_pref.value = true
+    await flushPromises()
+    set_visibility('visible')
+    await Promise.resolve()
+    expect(folder_sync_status.value).toBe('idle')
+  })
+
+  it('two drains at once share one run', async () => {
+    let runs = 0
+    get.mockImplementation(async key => {
+      if (key === 'sync_folder_handle') return folder_handle
+      if (key === 'sync:folder-queue') return []
+      if (key === 'sync:folder-manifest') return { thoughts: {} }
+      if (key === 'sync:folder-queue') runs += 1
+      return null
+    })
+    const first = drain_folder_queue({ force: true })
+    const second = drain_folder_queue({ force: true })
+    await Promise.all([first, second])
+    await flushPromises()
+    expect(get_directory_handle).toHaveBeenCalledTimes(1)
   })
 })

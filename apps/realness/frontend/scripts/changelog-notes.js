@@ -7,11 +7,11 @@ import {
   release_notes_footer
 } from './lib/changelog.js'
 
+import { fileURLToPath as file_url_to_path } from 'node:url'
 import { out_path as output_path } from '#root/src/settings/output.js'
 const default_out = output_path('frontend', 'release-notes.md')
 
-const main = () => {
-  const args = process.argv.slice(2)
+export const main = (args = process.argv.slice(2)) => {
   let version = package_version()
   let out_path = default_out
 
@@ -23,7 +23,7 @@ const main = () => {
         'Usage: node scripts/changelog-notes.js [--version X.Y.Z] [--out path]\n' +
           'Writes GitHub release notes from CHANGELOG.md (heading + body + verify footer).'
       )
-      process.exit(0)
+      return { help: true }
     }
 
   const changelog = read_changelog()
@@ -35,11 +35,13 @@ const main = () => {
   fs.mkdirSync(path.dirname(out_path), { recursive: true })
   fs.writeFileSync(out_path, notes)
   console.info(`Wrote ${out_path} (${notes.trim().split('\n').length} lines)`)
+  return { out_path, notes }
 }
 
-try {
-  main()
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error)
-  process.exit(1)
-}
+if (process.argv[1] === file_url_to_path(import.meta.url))
+  try {
+    main()
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error)
+    process.exit(1)
+  }

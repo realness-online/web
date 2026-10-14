@@ -18,18 +18,18 @@ const content_dir = join(app_root, 'content')
 const out_path = join(app_root, 'prerender', 'toc.js')
 
 /** @param {string} title */
-const heading_id = title =>
+export const heading_id = title =>
   String(title || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/^-+|-+$/g, '')
 
 /**
  * @param {string} content
  * @returns {Array<{ id: string, title: string, level: number }>}
  */
-const markdown_toc = content => {
+export const markdown_toc = content => {
   const toc = []
   for (const line of content.split('\n')) {
     const match = line.match(/^(#{2,6})\s+(.+)$/)

@@ -161,7 +161,7 @@ const print = (page, source) => {
   console.log(`# ${page.title}\n<!-- ${url} | ${source} | ${total} chars${truncated ? `, cut to ${max}` : ''} -->\n\n${md}`)
 }
 
-const ENGINE = '/usr/local/bin/brayness-read'
+const ENGINE = process.env.WEB_MD_ENGINE ?? '/usr/local/bin/brayness-read'
 if (process.env.BRAYNESS_ACTOR && !forced && existsSync(ENGINE)) {
   let reply = null
   try {

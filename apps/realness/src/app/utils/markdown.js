@@ -41,13 +41,13 @@ export const inline_documentation_icons = html =>
   )
 
 /** @param {string} title */
-const heading_id = title => {
+export const heading_id = title => {
   const title_str = String(title || '')
   return title_str
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 /** @type {Array<{ id: string, title: string, level: number }>} */
