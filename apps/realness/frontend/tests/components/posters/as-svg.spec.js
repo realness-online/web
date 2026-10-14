@@ -790,6 +790,33 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
 
+  describe('mask pen mount', () => {
+    it('mounts the mask pen only while it is active', async () => {
+      const mask_pen = { active: ref(false) }
+      const with_pen = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture(), pin: true },
+        global: { provide: { 'mask-pen': mask_pen } }
+      })
+      await flushPromises()
+      expect(with_pen.find('as-mask-pen-stub').exists()).toBe(false)
+
+      mask_pen.active.value = true
+      await with_pen.vm.$nextTick()
+      expect(with_pen.find('as-mask-pen-stub').exists()).toBe(true)
+    })
+  })
+
+  describe('avatar loading', () => {
+    it('loads an avatar poster without waiting for the viewport', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, as_avatar: true }
+      })
+      await flushPromises()
+
+      expect(wrapper.find('svg').attributes('data-animate')).toBeUndefined()
+    })
+  })
+
   describe('composition aids', () => {
     it('shows the grid overlay when the grid preference is on', async () => {
       mock_grid.value = true
