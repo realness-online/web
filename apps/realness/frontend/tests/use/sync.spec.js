@@ -1293,6 +1293,47 @@ describe('sync composable', () => {
       expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
     })
 
+    it('signed out with no admin configured still loads the phonebook', async () => {
+      const { current_user, directory } = await import('@/utils/serverless')
+      const load_phonebook = vi.fn(() => Promise.resolve())
+      current_user.value = null
+      vi.stubEnv('VITE_ADMIN_ID', '')
+      directory.mockResolvedValue({ prefixes: [] })
+
+      ;({ wrapper } = with_setup(() => use_sync(emit, { load_phonebook })))
+      await flushPromises()
+      load_phonebook.mockClear()
+      emit.mockClear()
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(load_phonebook).toHaveBeenCalled()
+      expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
+    })
+
+    it('signed out and offline does no sync work at all', async () => {
+      const { current_user, metadata } = await import('@/utils/serverless')
+      current_user.value = null
+      Object.defineProperty(navigator, 'onLine', {
+        value: false,
+        configurable: true
+      })
+
+      ;({ wrapper } = with_setup(() => use_sync(emit)))
+      await flushPromises()
+      metadata.mockClear()
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(metadata).not.toHaveBeenCalled()
+      Object.defineProperty(navigator, 'onLine', {
+        value: true,
+        configurable: true
+      })
+    })
+
     it('signed-in stale sync purges missing index rows and runs phonebook', async () => {
       const { current_user, metadata, directory } =
         await import('@/utils/serverless')
