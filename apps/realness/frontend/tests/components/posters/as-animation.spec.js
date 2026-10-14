@@ -604,6 +604,44 @@ describe('@/component/posters/as-animation keyboard and visibility', () => {
     wrapper.unmount()
   })
 
+
+  it('leaves the arrows alone while a text field has focus', async () => {
+    const svg = as_svg()
+    svg.setCurrentTime = vi.fn()
+    const wrapper = mount(as_animation, {
+      props: { id: poster_id, svg, paused: false, in_view: true, vector: {} },
+      global: {
+        provide: { 'key-commands': { check_input_focus: () => true } }
+      }
+    })
+    use_fake_timers()
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+    vi.advanceTimersByTime(300)
+
+    expect(svg.setCurrentTime).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('speeds up as the arrow is held or repeated', async () => {
+    const svg = as_svg()
+    const times = []
+    svg.setCurrentTime = time => times.push(time)
+    const wrapper = mount(as_animation, {
+      props: { id: poster_id, svg, paused: false, in_view: true, vector: {} }
+    })
+    use_fake_timers()
+
+    for (let press = 0; press < 3; press++) {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+      vi.advanceTimersByTime(80)
+    }
+
+    expect(times.length).toBeGreaterThan(1)
+    expect(times.at(-1)).toBeGreaterThan(times[0])
+    wrapper.unmount()
+  })
+
   it('throttles a burst of arrow presses', async () => {
     const { wrapper, svg } = mount_animation()
     use_fake_timers()
