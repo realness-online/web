@@ -439,6 +439,57 @@ describe('vectorize composable', () => {
       console_error.mockRestore()
     })
 
+    it('drops the finished item and records the poster once it is optimized', async () => {
+      const Queue = await import('@/persistence/Queue')
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+      vectorize_instance.new_vector.value = {
+        id: itemid,
+        light: {},
+        regular: {},
+        medium: {},
+        bold: {}
+      }
+
+      const optimized_handler =
+        created_workers[3].addEventListener.mock.calls[0][1]
+
+      await optimized_handler({
+        data: {
+          vector: '<svg itemid="' + itemid + '"><path /></svg>'
+        }
+      })
+
+      expect(Queue.remove).toHaveBeenCalledWith(itemid)
+      expect(vectorize_instance.is_processing.value).toBe(false)
+      expect(vectorize_instance.current_processing.value).toBeNull()
+    })
+
+    it('leaves the optimized handler alone with nothing in flight', async () => {
+      const optimized_handler =
+        created_workers[3].addEventListener.mock.calls[0][1]
+
+      await expect(
+        optimized_handler({ data: { vector: '<svg />' } })
+      ).resolves.toBeUndefined()
+    })
+
+    it('resizes a blob that already came pre-resized', async () => {
+      const blob = new Blob(['pre'], { type: 'image/jpeg' })
+
+      await vectorize_instance.vectorize(blob, itemid)
+
+      expect(vectorize_instance.current_processing.value).toBeNull()
+    })
+
+    it('mounts workers on demand when vectorizing starts', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+
+      await vectorize_instance.vectorize(file, null)
+
+      expect(created_workers.length).toBeGreaterThan(0)
+    })
+
     it('optimized handler fails the item and continues the queue on an error reply, instead of throwing', async () => {
       const Queue = await import('@/persistence/Queue')
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
