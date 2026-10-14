@@ -469,6 +469,109 @@ describe('vectorize composable', () => {
     })
   })
 
+  describe('tracer progress and paths', () => {
+    let created_workers
+    const itemid = '/+14151234356/posters/1770000000000'
+
+    beforeEach(async () => {
+      created_workers = []
+      global.Worker = vi.fn(function () {
+        const instance = {
+          addEventListener: vi.fn(),
+          postMessage: vi.fn(),
+          terminate: vi.fn(),
+          removeEventListener: vi.fn()
+        }
+        created_workers.push(instance)
+        return instance
+      })
+      global.createImageBitmap = vi.fn(() =>
+        Promise.resolve({ width: 1000, height: 1000, close: vi.fn() })
+      )
+      vectorize_instance.mount_workers()
+    })
+
+    const traced_handler = () =>
+      created_workers[2].addEventListener.mock.calls[0][1]
+
+    it('records a progress tick from the tracer', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await traced_handler()({ data: { type: 'progress', progress: 42 } })
+
+      expect(vectorize_instance.progress.value).toBe(42)
+    })
+
+    it('buffers a cutout path that arrives before the vector is ready', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await traced_handler()({
+        data: {
+          type: 'path',
+          progress: 10,
+          path: { d: 'M0 0 L1 1', color: { r: 1, g: 2, b: 3 }, offset: { x: 0, y: 0 } }
+        }
+      })
+      const cid = await import('@/use/vectorize/state').then(m => m.current_item_id)
+      expect(cid.value).toBe(itemid)
+    })
+
+    it('notes completion that arrives before the vector is ready', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await expect(
+        traced_handler()({ data: { type: 'complete' } })
+      ).resolves.toBeUndefined()
+    })
+
+    it('logs a tracer error without stopping the pipeline', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await traced_handler()({ data: { type: 'error', error: 'trace died' } })
+
+      expect(error).toHaveBeenCalledWith('Tracer error:', 'trace died')
+      error.mockRestore()
+    })
+
+    it('accepts a tracer error passed as an Error instance', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await traced_handler()({
+        data: { type: 'error', error: new Error('bad shape') }
+      })
+
+      expect(error).toHaveBeenCalledWith('Tracer error:', 'bad shape')
+      error.mockRestore()
+    })
+
+    it('ignores a tracer message that is not a known type', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+
+      await expect(
+        traced_handler()({ data: { type: 'unknown', progress: 1 } })
+      ).resolves.toBeUndefined()
+    })
+
+    it('ignores worker replies after the composable unmounted', async () => {
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
+      await vectorize_instance.vectorize(file, itemid)
+      vectorize_instance.unmount()
+
+      await expect(
+        traced_handler()({ data: { type: 'progress', progress: 99 } })
+      ).resolves.toBeUndefined()
+      expect(vectorize_instance.progress.value).not.toBe(99)
+    })
+  })
+
   describe('add_to_queue', () => {
     beforeEach(async () => {
       global.Worker = vi.fn(function () {
