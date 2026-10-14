@@ -857,6 +857,143 @@ describe('@/use/sync-folder', () => {
     expect(folder_sync_error.value).toBeNull()
   })
 
+  it('writes one note per thought and keeps the folder in step afterwards', async () => {
+    mock_thoughts_for_author.mockReturnValueOnce([
+      {
+        author_id: me,
+        started_at: 1000,
+        posters: [],
+        statements: [{ id: `${me}/statements/1`, statement: 'first light' }]
+      }
+    ])
+    const { sync_now, sync_folder_name, folder_sync_last_at } = with_setup(
+      () => use(),
+      { provide: { set_working } }
+    )
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(write).toHaveBeenCalled()
+    expect(sync_folder_name.value).toBe('Exports')
+    expect(typeof folder_sync_last_at.value).toBe('string')
+    const saved = set.mock.calls.find(([k]) => k === 'sync:folder-manifest')?.[1]
+    expect(saved.thoughts['1000']).toBeTruthy()
+  })
+
+  it('keeps an old format version while thoughts are still waiting', async () => {
+    vi.useFakeTimers()
+    try {
+      const thoughts = Array.from({ length: 30 }, (_, index) => ({
+        author_id: me,
+        started_at: 1000 + index,
+        posters: [],
+        statements: [
+          { id: `${me}/statements/${1000 + index}`, statement: `note ${index}` }
+        ]
+      }))
+      mock_thoughts_for_author.mockReturnValueOnce(thoughts)
+      const { sync_now, folder_sync_status } = with_setup(() => use(), {
+        provide: { set_working }
+      })
+      await flushPromises()
+
+      await sync_now()
+      await flushPromises()
+
+      const saved = set.mock.calls.find(
+        ([k]) => k === 'sync:folder-manifest'
+      )?.[1]
+      expect(saved.version).toBe(0)
+      expect(folder_sync_status.value).toBe('syncing')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('skips an unchanged thought on a later sync', async () => {
+    const path = '07-18 Saturday morning — hello'
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest')
+        return {
+          version: 2,
+          thoughts: {
+            1000: {
+              path,
+              key: `v2|1000|svg:true|${poster_id}|`
+            }
+          }
+        }
+      return null
+    })
+    get_file_handle.mockImplementation(() =>
+      Promise.resolve({ createWritable: vi.fn() })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(write).not.toHaveBeenCalled()
+    expect(mock_build_download_svg).not.toHaveBeenCalled()
+  })
+
+  it('sorts the newest thought first in the batch', async () => {
+    mock_thoughts_for_author.mockReturnValueOnce([
+      {
+        author_id: me,
+        started_at: 500,
+        posters: [],
+        statements: [{ id: `${me}/statements/500`, statement: 'older' }]
+      },
+      {
+        author_id: me,
+        started_at: 900,
+        posters: [],
+        statements: [{ id: `${me}/statements/900`, statement: 'newer' }]
+      }
+    ])
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    const written = write.mock.calls[0][0]
+    const text = await written.text()
+    expect(text).toContain('newer')
+  })
+
+  it('names the batch it is about to write', async () => {
+    mock_thoughts_for_author.mockReturnValueOnce([
+      {
+        author_id: me,
+        started_at: 1000,
+        posters: [],
+        statements: [{ id: `${me}/statements/1`, statement: 'one' }]
+      }
+    ])
+    const { sync_now, folder_sync_progress } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(folder_sync_progress.value.current).toBe(
+      folder_sync_progress.value.total
+    )
+  })
+
   it('shows a shared drain instead of starting a second one', async () => {
     const first = drain_folder_queue({ force: true, set_working })
     const second = drain_folder_queue({ force: true, set_working })
