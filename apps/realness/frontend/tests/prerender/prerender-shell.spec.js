@@ -1,24 +1,13 @@
-import { describe, it, expect } from 'vite-plus/test'
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import { describe, expect, it } from 'vite-plus/test'
+import { flushPromises as flush_promises, mount } from '@vue/test-utils'
 import PrerenderShell from '@/prerender/prerender-shell.vue'
-import SupportLayout from '@/components/support-layout'
 
-describe('@/prerender/prerender-shell', () => {
+describe('prerender-shell', () => {
   it('renders the support layout inside a suspense boundary', async () => {
-    const wrapper = shallowMount(PrerenderShell, {
-      global: {
-        stubs: {
-          Suspense: false,
-          'support-layout': {
-            name: 'SupportLayout',
-            template: '<div class="support-layout-stub" />'
-          }
-        }
-      }
+    const shell = mount(PrerenderShell, {
+      global: { stubs: { SupportLayout: { template: '<main data-layout />' } } }
     })
-    await flushPromises()
-
-    expect(wrapper.find('.support-layout-stub').exists()).toBe(true)
-    expect(SupportLayout).toBeTruthy()
+    await flush_promises()
+    expect(shell.find('main[data-layout]').exists()).toBe(true)
   })
 })

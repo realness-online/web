@@ -13,31 +13,53 @@
  *
  * Browsers may call it only from `origins`, the sites allowed to read and write.
  */
-import { createHash as create_hash, timingSafeEqual as timing_safe_equal } from "node:crypto"
-import { createServer as create_server } from "node:http"
-import { can, identify } from "#root/src/can/index.js"
-import { issue_host_pass, verify_host_pass, verify_record_pass, record_host } from "#root/src/sign-on/node/host-pass.js"
-import { run_host_alerts } from "./host-alerts.js"
-import { host_health } from "./host-watch.js"
-import { site_request } from "./sites.js"
-import { read_changes, record_change } from "./changes.js"
-import { harness_path, recovery_path, verify_harness_pass, verify_recovery_pass } from "#root/src/sign-on/node/recovery-pass.js"
-import { rights_key } from "./rights.js"
-import { admins as admin_list } from "./admins.js"
-import { git_token, GitRefused } from "./git.js"
+import {
+  createHash as create_hash,
+  timingSafeEqual as timing_safe_equal
+} from 'node:crypto'
+import { createServer as create_server } from 'node:http'
+import { can, identify } from '#root/src/can/index.js'
+import {
+  issue_host_pass,
+  verify_host_pass,
+  verify_record_pass,
+  record_host
+} from '#root/src/sign-on/node/host-pass.js'
+import { run_host_alerts } from './host-alerts.js'
+import { host_health } from './host-watch.js'
+import { site_request } from './sites.js'
+import { read_changes, record_change } from './changes.js'
+import {
+  harness_path,
+  recovery_path,
+  verify_harness_pass,
+  verify_recovery_pass
+} from '#root/src/sign-on/node/recovery-pass.js'
+import { rights_key } from './rights.js'
+import { admins as admin_list } from './admins.js'
+import { git_token, GitRefused } from './git.js'
+import { HTTP } from '#root/lib/http.js'
+import { MIB } from '#root/lib/units.js'
 
-const LIMIT = 10 * 1024 * 1024
+const LIMIT_MIB = 10
+const HASH_SHOWN = 12
+
+const LIMIT = LIMIT_MIB * MIB
 const PHONES = /\+[1-9]\d{6,14}/g
 
 /** Logs hash numbers and never store them raw. */
-export const hash_phones = (text) =>
-  text.replace(PHONES, (phone) => `#${create_hash("sha256").update(phone).digest("hex").slice(0, 12)}`)
+export const hash_phones = text =>
+  text.replace(
+    PHONES,
+    phone =>
+      `#${create_hash('sha256').update(phone).digest('hex').slice(0, HASH_SHOWN)}`
+  )
 
 /**
  * Pins live at `pins/+A`, written once; `can()` denies that root to everyone.
  * A pin never changes once written, so each is read from storage only once.
  */
-export const storage_pins = (storage) => {
+export const storage_pins = storage => {
   const known = new Map()
   return {
     async claim(phone, uid) {
@@ -46,12 +68,12 @@ export const storage_pins = (storage) => {
       try {
         await storage.put(`pins/${phone}`, uid, { if_version: null })
       } catch (error) {
-        if (error.code !== "conflict") throw error
-        pinned = (await storage.get(`pins/${phone}`))?.body.toString("utf8")
+        if (error.code !== 'conflict') throw error
+        pinned = (await storage.get(`pins/${phone}`))?.body.toString('utf8')
       }
       if (pinned) known.set(phone, pinned)
       return pinned
-    },
+    }
   }
 }
 
@@ -63,46 +85,80 @@ class Status extends Error {
 }
 
 const action_for = (method, path) =>
-  ({ GET: path.endsWith("/") || path === "" ? "list" : "get", PUT: "write", DELETE: "delete" })[method]
+  ({
+    GET: path.endsWith('/') || path === '' ? 'list' : 'get',
+    PUT: 'write',
+    DELETE: 'delete'
+  })[method]
 
-const version_from = (value) => value?.replace(/^W\//, "").replace(/^"|"$/g, "")
+const version_from = value => value?.replace(/^W\//, '').replace(/^"|"$/g, '')
 
-const read_body = async (request) => {
+const read_body = async request => {
   const chunks = []
   let size = 0
   for await (const chunk of request) {
     size += chunk.length
-    if (size > LIMIT) throw new Status(413)
+    if (size > LIMIT) throw new Status(HTTP.PAYLOAD_TOO_LARGE)
     chunks.push(chunk)
   }
   return Buffer.concat(chunks)
 }
 
 const PREFLIGHT = {
-  "access-control-allow-methods": "GET, PUT, DELETE, POST",
-  "access-control-allow-headers": "authorization, content-type, if-match, if-none-match",
-  "access-control-max-age": "600",
+  'access-control-allow-methods': 'GET, PUT, DELETE, POST',
+  'access-control-allow-headers':
+    'authorization, content-type, if-match, if-none-match',
+  'access-control-max-age': '600'
 }
 
-export const sync_service = ({ storage, rights, project, certs, host_pass_secret, alert_token = null, alert_webhook = null, origins = [], git_app = null, git_fetch = fetch, log = console.log }) => {
+export const sync_service = ({
+  storage,
+  rights,
+  project,
+  certs,
+  host_pass_secret,
+  alert_token = null,
+  alert_webhook = null,
+  origins = [],
+  git_app = null,
+  git_fetch = fetch,
+  log = console.info
+}) => {
   const pins = storage_pins(storage)
   const allowed = new Set(origins)
 
   /** Cloud Scheduler presents a shared secret; nothing else calls this. */
-  const alert_call = (request) => {
+  const alert_call = request => {
     if (!alert_token) return false
-    const given = Buffer.from(/^Bearer (\S+)$/.exec(request.headers.authorization ?? "")?.[1] ?? "")
+    const given = Buffer.from(
+      /^Bearer (\S+)$/.exec(request.headers.authorization ?? '')?.[1] ?? ''
+    )
     const wanted = Buffer.from(alert_token)
     return given.length === wanted.length && timing_safe_equal(given, wanted)
   }
 
-  const who_is = async (request) => {
+  /** A host's record pass, checked against the key it registered. */
+  const record_identity = async token => {
+    try {
+      const host = record_host(token)
+      const key = await storage.get(`host-keys/${host}`)
+      if (!key) throw new Status(HTTP.UNAUTHORIZED)
+      return {
+        host_name: verify_record_pass(token, key.body.toString('utf8').trim())
+          .host
+      }
+    } catch {
+      throw new Status(HTTP.UNAUTHORIZED)
+    }
+  }
+
+  const who_is = async request => {
     const header = request.headers.authorization
     if (!header) return null
     const token = /^Bearer (\S+)$/.exec(header)?.[1]
-    if (!token) throw new Status(401)
-    if (token.split(".").length === 2) {
-      if (!host_pass_secret) throw new Status(401)
+    if (!token) throw new Status(HTTP.UNAUTHORIZED)
+    if (token.split('.').length === 2) {
+      if (!host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
       try {
         const claims = verify_recovery_pass(token, host_pass_secret)
         return { recovery: claims.phone, id: claims.id, paths: claims.paths }
@@ -111,14 +167,10 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
           const claims = verify_harness_pass(token, host_pass_secret)
           return { harness: claims.phone, id: claims.id, paths: claims.paths }
         } catch {
-          try { return { ...verify_host_pass(token, host_pass_secret), host: true } }
-          catch {
-            try {
-              const host = record_host(token)
-              const key = await storage.get(`host-keys/${host}`)
-              if (!key) throw new Status(401)
-              return { host_name: verify_record_pass(token, key.body.toString("utf8").trim()).host }
-            } catch { throw new Status(401) }
+          try {
+            return { ...verify_host_pass(token, host_pass_secret), host: true }
+          } catch {
+            return record_identity(token)
           }
         }
       }
@@ -126,57 +178,83 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
     try {
       return await identify(token, { project, certs, pins })
     } catch {
-      throw new Status(401)
+      throw new Status(HTTP.UNAUTHORIZED)
     }
   }
 
   const admins = admin_list(storage)
 
-  const handle = async (request, response, path, action, who) => {
-    if (["loops", "hosts", "usage", "billing"].includes(path.split("/")[0]) && who?.phone) who = { ...who, admin: await admins.has(who.phone) }
-    const owner = path.split("/")[1]
-    const grants = who?.instance && owner ? (await rights.grants(owner)).grants : []
+  const handle = async (request, response, path, action, caller) => {
+    const who =
+      ['loops', 'hosts', 'usage', 'billing'].includes(path.split('/')[0]) &&
+      caller?.phone
+        ? { ...caller, admin: await admins.has(caller.phone) }
+        : caller
+    const [, owner] = path.split('/')
+    const grants =
+      who?.instance && owner ? (await rights.grants(owner)).grants : []
     if (who?.harness) {
-      if (!harness_path(path, who.harness, who.paths)) throw new Status(403)
+      if (!harness_path(path, who.harness, who.paths))
+        throw new Status(HTTP.FORBIDDEN)
     } else if (who?.recovery) {
-      if (!["get", "list"].includes(action) || !recovery_path(path, who.recovery, who.paths)) throw new Status(403)
+      if (
+        !['get', 'list'].includes(action) ||
+        !recovery_path(path, who.recovery, who.paths)
+      )
+        throw new Status(HTTP.FORBIDDEN)
     } else if (who?.host) {
-      if (!path.startsWith(`people/${who.phone}/work/site/`) || !can(who, action, path, grants)) throw new Status(403)
-    } else if (!can(who, action, path, grants)) throw new Status(403)
+      if (
+        !path.startsWith(`people/${who.phone}/work/site/`) ||
+        !can(who, action, path, grants)
+      )
+        throw new Status(HTTP.FORBIDDEN)
+    } else if (!can(who, action, path, grants)) throw new Status(HTTP.FORBIDDEN)
 
-    if (action === "list") {
-      const query = new URLSearchParams((request.url ?? "").split("?")[1] ?? "")
-      if (query.has("changes")) {
-        const feed = await read_changes(storage, path, query.get("changes"))
-        if (!feed) throw new Status(410)
-        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+    if (action === 'list') {
+      const query = new URLSearchParams((request.url ?? '').split('?')[1] ?? '')
+      if (query.has('changes')) {
+        const feed = await read_changes(storage, path, query.get('changes'))
+        if (!feed) throw new Status(HTTP.GONE)
+        response.writeHead(HTTP.OK, {
+          'content-type': 'application/json',
+          'cache-control': 'no-store'
+        })
         return response.end(JSON.stringify(feed))
       }
-      response.writeHead(200, { "content-type": "application/json" })
-      const listing = query.get("deep") === "meta" ? storage.walk_meta(path) : query.has("deep") ? storage.walk(path) : storage.list(path)
+      response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
+      let listing = storage.list(path)
+      if (query.get('deep') === 'meta') listing = storage.walk_meta(path)
+      else if (query.has('deep')) listing = storage.walk(path)
       return response.end(JSON.stringify(await listing))
     }
-    if (action === "get") {
+    if (action === 'get') {
       const file = await storage.get(path)
-      if (!file) throw new Status(404)
-      response.writeHead(200, { etag: `"${file.version}"`, "content-type": "application/octet-stream" })
+      if (!file) throw new Status(HTTP.NOT_FOUND)
+      response.writeHead(HTTP.OK, {
+        etag: `"${file.version}"`,
+        'content-type': 'application/octet-stream'
+      })
       return response.end(file.body)
     }
 
     const if_version =
-      request.headers["if-none-match"] === "*" ? null : version_from(request.headers["if-match"])
+      request.headers['if-none-match'] === '*'
+        ? null
+        : version_from(request.headers['if-match'])
     try {
-      if (action === "write") {
-        const version = await storage.put(path, await read_body(request), { if_version })
+      if (action === 'write') {
+        const version = await storage.put(path, await read_body(request), {
+          if_version
+        })
         await record_change(storage, path, version)
-        response.writeHead(200, { etag: `"${version}"` })
+        response.writeHead(HTTP.OK, { etag: `"${version}"` })
       } else {
         await storage.delete(path, { if_version })
         await record_change(storage, path, null)
-        response.writeHead(204)
+        response.writeHead(HTTP.NO_CONTENT)
       }
     } catch (error) {
-      if (error.code === "conflict") throw new Status(412)
+      if (error.code === 'conflict') throw new Status(HTTP.PRECONDITION_FAILED)
       throw error
     }
     if (owner && path === rights_key(owner)) rights.forget(owner)
@@ -185,82 +263,129 @@ export const sync_service = ({ storage, rights, project, certs, host_pass_secret
 
   return create_server(async (request, response) => {
     const started = Date.now()
-    let path = (request.url ?? "/").split("?")[0].slice(1)
+    let path = (request.url ?? '/').split('?')[0].slice(1)
     try {
       path = decodeURIComponent(path)
     } catch {
       path = null
     }
-    const origin = request.headers.origin
+    const { origin } = request.headers
     let who = null
-    let status = 200
+    let status = HTTP.OK
     if (origin && allowed.has(origin)) {
-      response.setHeader("access-control-allow-origin", origin)
-      response.setHeader("access-control-expose-headers", "etag")
+      response.setHeader('access-control-allow-origin', origin)
+      response.setHeader('access-control-expose-headers', 'etag')
     }
-    response.setHeader("vary", "origin")
+    response.setHeader('vary', 'origin')
     try {
-      if (request.method === "OPTIONS") {
-        if (!origin || !allowed.has(origin)) throw new Status(403)
-        response.writeHead((status = 204), PREFLIGHT).end()
+      if (request.method === 'OPTIONS') {
+        if (!origin || !allowed.has(origin)) throw new Status(HTTP.FORBIDDEN)
+        response.writeHead((status = HTTP.NO_CONTENT), PREFLIGHT).end()
         return
       }
-      if (path === null) throw new Status(400)
-      if (path.startsWith("sites/") || path.startsWith("v1/sites/")) {
-        if (path.startsWith("v1/sites/")) {
-          const pass = /^Bearer (\S+)$/.exec(request.headers.authorization ?? "")?.[1]
-          if (!pass || !host_pass_secret) throw new Status(401)
-          try { who = verify_host_pass(pass, host_pass_secret) }
-          catch { throw new Status(401) }
+      if (path === null) throw new Status(HTTP.BAD_REQUEST)
+      if (path.startsWith('sites/') || path.startsWith('v1/sites/')) {
+        if (path.startsWith('v1/sites/')) {
+          const pass = /^Bearer (\S+)$/.exec(
+            request.headers.authorization ?? ''
+          )?.[1]
+          if (!pass || !host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
+          try {
+            who = verify_host_pass(pass, host_pass_secret)
+          } catch {
+            throw new Status(HTTP.UNAUTHORIZED)
+          }
         }
-        await site_request({ storage, method: request.method, path, who, response, read_body: () => read_body(request) })
-      } else if (path === "v1/host-watch/run" && request.method === "POST") {
-        if (!alert_call(request)) throw new Status(401)
-        const sent = await run_host_alerts({ storage, webhook: alert_webhook, warn: (message) => log(hash_phones(message)) })
-        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        await site_request({
+          storage,
+          method: request.method,
+          path,
+          who,
+          response,
+          read_body: () => read_body(request)
+        })
+      } else if (path === 'v1/host-watch/run' && request.method === 'POST') {
+        if (!alert_call(request)) throw new Status(HTTP.UNAUTHORIZED)
+        const sent = await run_host_alerts({
+          storage,
+          webhook: alert_webhook,
+          warn: message => log(hash_phones(message))
+        })
+        response.writeHead(HTTP.OK, {
+          'content-type': 'application/json',
+          'cache-control': 'no-store'
+        })
         response.end(JSON.stringify({ sent }))
-      } else if (path === "hosts/quiet.json" && request.method === "GET") {
+      } else if (path === 'hosts/quiet.json' && request.method === 'GET') {
         who = await who_is(request)
-        if (!who?.phone) throw new Status(401)
-        if (!(await admins.has(who.phone))) throw new Status(403)
-        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+        if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
+        if (!(await admins.has(who.phone))) throw new Status(HTTP.FORBIDDEN)
+        response.writeHead(HTTP.OK, {
+          'content-type': 'application/json',
+          'cache-control': 'no-store'
+        })
         response.end(JSON.stringify(await host_health(storage)))
-      } else if (path === "v1/git-token" && request.method === "POST") {
+      } else if (path === 'v1/git-token' && request.method === 'POST') {
         who = await who_is(request)
-        if (!who?.harness) throw new Status(401)
+        if (!who?.harness) throw new Status(HTTP.UNAUTHORIZED)
         let repo
-        try { repo = JSON.parse((await read_body(request)).toString("utf8")).repo }
-        catch { throw new Status(400) }
         try {
-          const minted = await git_token({ storage, phone: who.harness, repo, app: git_app, fetcher: git_fetch })
-          response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
+          ;({ repo } = JSON.parse((await read_body(request)).toString('utf8')))
+        } catch {
+          throw new Status(HTTP.BAD_REQUEST)
+        }
+        try {
+          const minted = await git_token({
+            storage,
+            phone: who.harness,
+            repo,
+            app: git_app,
+            fetcher: git_fetch
+          })
+          response.writeHead(HTTP.OK, {
+            'content-type': 'application/json',
+            'cache-control': 'no-store'
+          })
           response.end(JSON.stringify(minted))
         } catch (error) {
           if (!(error instanceof GitRefused)) throw error
-          if (error.status === 502) log(hash_phones(`git: ${error.message}`))
+          if (error.status === HTTP.BAD_GATEWAY)
+            log(hash_phones(`git: ${error.message}`))
           throw new Status(error.status)
         }
-      } else if (path === "v1/host-pass" && request.method === "POST") {
+      } else if (path === 'v1/host-pass' && request.method === 'POST') {
         who = await who_is(request)
-        if (!who?.phone) throw new Status(401)
-        if (!host_pass_secret) throw new Status(503)
-        response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" })
-        response.end(JSON.stringify({ pass: issue_host_pass(who, host_pass_secret), expires_in: 300 }))
+        if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
+        if (!host_pass_secret) throw new Status(HTTP.UNAVAILABLE)
+        response.writeHead(HTTP.OK, {
+          'content-type': 'application/json',
+          'cache-control': 'no-store'
+        })
+        response.end(
+          JSON.stringify({
+            pass: issue_host_pass(who, host_pass_secret),
+            expires_in: 300
+          })
+        )
       } else {
-        const record = path.startsWith("v1/") ? path.slice(3) : path
+        const record = path.startsWith('v1/') ? path.slice(3) : path
         const action = action_for(request.method, record)
-        if (!action) throw new Status(405)
+        if (!action) throw new Status(HTTP.METHOD_NOT_ALLOWED)
         who = await who_is(request)
         await handle(request, response, record, action, who)
       }
       status = response.statusCode
     } catch (error) {
-      status = Number.isInteger(error.status) ? error.status : 500
-      if (status === 500) log(hash_phones(`error ${error.stack ?? error}`))
-      if (!response.headersSent) response.writeHead(status, { "cache-control": "no-store" }).end()
+      status = Number.isInteger(error.status)
+        ? error.status
+        : HTTP.INTERNAL_ERROR
+      if (status === HTTP.INTERNAL_ERROR)
+        log(hash_phones(`error ${error.stack ?? error}`))
+      if (!response.headersSent)
+        response.writeHead(status, { 'cache-control': 'no-store' }).end()
       else response.destroy()
     } finally {
-      const line = `${new Date().toISOString()} ${who?.phone ?? "-"} ${request.method} /${path ?? "(bad encoding)"} ${status} ${Date.now() - started}ms`
+      const line = `${new Date().toISOString()} ${who?.phone ?? '-'} ${request.method} /${path ?? '(bad encoding)'} ${status} ${Date.now() - started}ms`
       log(hash_phones(line))
     }
   })

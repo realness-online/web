@@ -1,5 +1,5 @@
 import { gate_api, gate_fetch } from '@/utils/brayness-gate'
-import { records } from '../../chat/stream.js'
+import { records } from '@/utils/stream-records'
 
 const chat_path = (actor, what) =>
   `/v1/actors/${encodeURIComponent(actor)}/chat/${what}`

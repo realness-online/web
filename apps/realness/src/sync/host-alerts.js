@@ -1,10 +1,16 @@
-import { quiet_hosts } from "./host-watch.js"
+import { quiet_hosts } from './host-watch.js'
+import { MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 
-export const FIRST_REPEAT_MS = 5 * 60_000
-export const REPEAT_MS = 60 * 60_000
-const STATE_KEY = "alerts/host-watch.json"
+const ALERT_TIMEOUT_MS = 10_000
 
-const span = (ms) => (ms < 60_000 ? `${Math.round(ms / 1000)}s` : `${Math.round(ms / 60_000)}m`)
+export const FIRST_REPEAT_MS = 5 * MS_PER_MINUTE
+export const REPEAT_MS = MS_PER_HOUR
+const STATE_KEY = 'alerts/host-watch.json'
+
+const span = ms =>
+  ms < MS_PER_MINUTE
+    ? `${Math.round(ms / MS_PER_SECOND)}s`
+    : `${Math.round(ms / MS_PER_MINUTE)}m`
 
 /**
  * What to send now, and the state to keep once each send succeeds. Pure:
@@ -13,48 +19,73 @@ const span = (ms) => (ms < 60_000 ? `${Math.round(ms / 1000)}s` : `${Math.round(
  */
 export const host_alerts = (state, quiet, now) => {
   const actions = []
-  const reporting = new Set(quiet.map((host) => host.name))
+  const reporting = new Set(quiet.map(host => host.name))
   for (const host of quiet) {
     const prev = state[host.name]
-    if (!prev) {
-      actions.push({ kind: "down", name: host.name, text: `brayness host ${host.name} stopped reporting`, next: { since: now, sent: now, repeats: 0 } })
-    } else if (now - prev.sent >= (prev.repeats === 0 ? FIRST_REPEAT_MS : REPEAT_MS)) {
-      actions.push({ kind: "repeat", name: host.name, text: `brayness host ${host.name} is still quiet (${span(now - prev.since)})`, next: { ...prev, sent: now, repeats: prev.repeats + 1 } })
-    }
+    if (!prev)
+      actions.push({
+        kind: 'down',
+        name: host.name,
+        text: `brayness host ${host.name} stopped reporting`,
+        next: { since: now, sent: now, repeats: 0 }
+      })
+    else if (
+      now - prev.sent >=
+      (prev.repeats === 0 ? FIRST_REPEAT_MS : REPEAT_MS)
+    )
+      actions.push({
+        kind: 'repeat',
+        name: host.name,
+        text: `brayness host ${host.name} is still quiet (${span(now - prev.since)})`,
+        next: { ...prev, sent: now, repeats: prev.repeats + 1 }
+      })
   }
-  for (const name of Object.keys(state)) {
-    if (!reporting.has(name)) actions.push({ kind: "up", name, text: `brayness host ${name} is reporting again`, next: null })
-  }
+  for (const name of Object.keys(state))
+    if (!reporting.has(name))
+      actions.push({
+        kind: 'up',
+        name,
+        text: `brayness host ${name} is reporting again`,
+        next: null
+      })
+
   return actions
 }
 
 /** Slack reads `text`, Discord reads `content`; each ignores the other key. */
-export const webhook_body = (url, text) => (String(url).includes("discord") ? { content: text } : { text })
+export const webhook_body = (url, text) =>
+  String(url).includes('discord') ? { content: text } : { text }
 
 const deliver = async (webhook, text, fetcher = fetch) => {
-  if (!webhook) throw new Error("no HOST_ALERT_WEBHOOK is set")
+  if (!webhook) throw new Error('no HOST_ALERT_WEBHOOK is set')
   const response = await fetcher(webhook, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify(webhook_body(webhook, text)),
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(ALERT_TIMEOUT_MS)
   })
   if (!response.ok) throw new Error(`webhook answered ${response.status}`)
 }
 
 /** One pass. Returns what was sent. A read failure skips the pass, never recovers. */
-export const run_host_alerts = async ({ storage, webhook, now = Date.now, warn = () => {}, fetcher = fetch }) => {
+export const run_host_alerts = async ({
+  storage,
+  webhook,
+  now = Date.now,
+  warn = () => {},
+  fetcher = fetch
+}) => {
   let state, quiet
   try {
     const file = await storage.get(STATE_KEY)
-    state = file ? JSON.parse(file.body.toString("utf8")) : {}
+    state = file ? JSON.parse(file.body.toString('utf8')) : {}
     quiet = await quiet_hosts(storage, { now: now() })
   } catch (error) {
     warn(`host alerts skipped: ${error.message}`)
     return []
   }
   const sent = []
-  for (const action of host_alerts(state, quiet, now())) {
+  for (const action of host_alerts(state, quiet, now()))
     try {
       await deliver(webhook, action.text, fetcher)
       if (action.next) state[action.name] = action.next
@@ -63,13 +94,13 @@ export const run_host_alerts = async ({ storage, webhook, now = Date.now, warn =
     } catch (error) {
       warn(`host alert ${action.kind} ${action.name}: ${error.message}`)
     }
-  }
-  if (sent.length) {
+
+  if (sent.length)
     try {
       await storage.put(STATE_KEY, `${JSON.stringify(state, null, 2)}\n`)
     } catch (error) {
       warn(`host alert state not saved: ${error.message}`)
     }
-  }
+
   return sent
 }

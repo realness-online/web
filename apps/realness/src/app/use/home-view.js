@@ -24,7 +24,8 @@ const WITH_OR_WITHOUT_CHAT = {
   tui: 'chat-tui'
 }
 
-const wide = ref(false)
+/** Whether the screen is wide enough for panes side by side; shared by every caller. */
+export const wide = ref(false)
 let measuring = false
 const measure = () => {
   if (measuring || typeof window === 'undefined' || !window.matchMedia) return

@@ -1,13 +1,10 @@
-import { describe, it, expect } from 'vite-plus/test'
-import { shallowMount } from '@vue/test-utils'
+import { describe, expect, it } from 'vite-plus/test'
+import { mount } from '@vue/test-utils'
 import Terminal from '@/views/Terminal.vue'
 
-describe('@/views/Terminal', () => {
-  it('renders the site navigation shell', () => {
-    const wrapper = shallowMount(Terminal, {
-      global: { stubs: { 'site-nav': true } }
-    })
-
-    expect(wrapper.find('site-nav-stub').exists()).toBe(true)
+describe('Terminal', () => {
+  it('shows the site navigation; the workspace draws the terminal', () => {
+    const page = mount(Terminal, { global: { stubs: { SiteNav: true } } })
+    expect(page.findComponent({ name: 'SiteNav' }).exists()).toBe(true)
   })
 })

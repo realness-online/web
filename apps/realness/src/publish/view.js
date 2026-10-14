@@ -9,27 +9,56 @@
  * vault, so no original is ever copied. `dist/` there is publishable.
  */
 import { execFile as exec_file } from 'node:child_process'
-import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
-import { cp, mkdir, readFile as read_file, readdir, rm, symlink, writeFile as write_file } from 'node:fs/promises'
-import { dirname, isAbsolute as is_absolute, join, resolve } from 'node:path'
+import {
+  existsSync as exists_sync,
+  readFileSync as read_file_sync
+} from 'node:fs'
+import {
+  cp,
+  mkdir,
+  readFile as read_file,
+  readdir,
+  rm,
+  symlink,
+  writeFile as write_file
+} from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { createRequire as create_require } from 'node:module'
 import { app_sources } from './sources.js'
 import { product_paths } from '#root/src/settings/layout.js'
+import { MIB } from '#root/lib/units.js'
+/* eslint-disable no-await-in-loop -- copies run in order so later overlays win */
+
+const LIMIT_MIB = 10
 
 const run = promisify(exec_file)
-const MAX = 10 << 20
-const { root: project, renderer: renderer_path, static_preset } = product_paths()
+const MAX = LIMIT_MIB * MIB
+const {
+  root: project,
+  renderer: renderer_path,
+  static_preset
+} = product_paths()
 export { renderer_path }
 const product_manifest = join(project, 'package.json')
 
 /** Export a self-contained starter from the versioned product source. */
 export const export_static = async destination => {
-  if (exists_sync(destination)) throw new Error(`destination exists: ${destination}`)
+  if (exists_sync(destination))
+    throw new Error(`destination exists: ${destination}`)
   const excluded = new Set(['node_modules', 'dist', '.cache', '.DS_Store'])
-  await cp(renderer_path, destination, { recursive: true, filter: path => !excluded.has(path.split(/[\\/]/).at(-1)) })
-  await cp(join(static_preset, 'package.json'), join(destination, 'package.json'))
-  await cp(join(static_preset, 'package-lock.json'), join(destination, 'package-lock.json'))
+  await cp(renderer_path, destination, {
+    recursive: true,
+    filter: path => !excluded.has(path.split(/[\\/]/).at(-1))
+  })
+  await cp(
+    join(static_preset, 'package.json'),
+    join(destination, 'package.json')
+  )
+  await cp(
+    join(static_preset, 'package-lock.json'),
+    join(destination, 'package-lock.json')
+  )
   return destination
 }
 
@@ -38,11 +67,20 @@ export const export_static = async destination => {
  * @param {string} root Harness root.
  * @returns {string} Folder path.
  */
-export const examples_path = (root) => {
+export const examples_path = root => {
   const file = join(root, 'package.json')
-  const path = exists_sync(file) ? JSON.parse(read_file_sync(file, 'utf8')).brayness?.examples ?? 'examples' : 'examples'
-  if (typeof path !== 'string' || !path || path.split('/').some((part) => !part || part === '.' || part === '..'))
-    throw new Error('brayness.examples must be a relative folder inside the harness')
+  const path = exists_sync(file)
+    ? (JSON.parse(read_file_sync(file, 'utf8')).brayness?.examples ??
+      'examples')
+    : 'examples'
+  if (
+    typeof path !== 'string' ||
+    !path ||
+    path.split('/').some(part => !part || part === '.' || part === '..')
+  )
+    throw new Error(
+      'brayness.examples must be a relative folder inside the harness'
+    )
   return path
 }
 
@@ -53,15 +91,26 @@ export const examples_path = (root) => {
  * @returns {Promise<string>} Renderer directory.
  */
 export const engine = async (root, local = process.env.APPS_EXAMPLE) => {
-  const directory = local ? (is_absolute(local) ? resolve(local) : resolve(root, local)) : renderer_path
+  const directory = local ? resolve(root, local) : renderer_path
   if (!exists_sync(directory)) throw new Error(`no renderer: ${directory}`)
-  if (!exists_sync(join(directory, 'src/build.js')) || !exists_sync(join(directory, 'static/plans.css')))
-    throw new Error(`outdated renderer: ${directory}; set APPS_EXAMPLE to the updated static example`)
-  const manifest = directory === renderer_path ? product_manifest : join(directory, 'package.json')
-  const dependencies_file = directory === renderer_path ? join(static_preset, 'package.json') : manifest
-  const { dependencies = {} } = JSON.parse(await read_file(dependencies_file, 'utf8'))
+  if (
+    !exists_sync(join(directory, 'src/build.js')) ||
+    !exists_sync(join(directory, 'static/plans.css'))
+  )
+    throw new Error(
+      `outdated renderer: ${directory}; set APPS_EXAMPLE to the updated static example`
+    )
+  const manifest =
+    directory === renderer_path
+      ? product_manifest
+      : join(directory, 'package.json')
+  const dependencies_file =
+    directory === renderer_path ? join(static_preset, 'package.json') : manifest
+  const { dependencies = {} } = JSON.parse(
+    await read_file(dependencies_file, 'utf8')
+  )
   const require = create_require(manifest)
-  const installed = Object.keys(dependencies).every((name) => {
+  const installed = Object.keys(dependencies).every(name => {
     try {
       require.resolve(name)
       return true
@@ -70,8 +119,14 @@ export const engine = async (root, local = process.env.APPS_EXAMPLE) => {
     }
   })
   if (!installed) {
-    if (directory === renderer_path) throw new Error('product renderer dependencies missing; run npm install in the product')
-    await run('npm', ['install', '--no-fund', '--no-audit'], { cwd: directory, maxBuffer: MAX })
+    if (directory === renderer_path)
+      throw new Error(
+        'product renderer dependencies missing; run npm install in the product'
+      )
+    await run('npm', ['install', '--no-fund', '--no-audit'], {
+      cwd: directory,
+      maxBuffer: MAX
+    })
   }
   return directory
 }
@@ -109,7 +164,11 @@ const copy_files = async (from, to) => {
  * @param {string} name App name.
  * @param {{drafts?: boolean, example?: string}} [options]
  */
-export const build_app = async (root, name, { drafts = false, example: local } = {}) => {
+export const build_app = async (
+  root,
+  name,
+  { drafts = false, example: local } = {}
+) => {
   if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`bad app name: ${name}`)
   const app_dir = join(root, 'apps', name)
   const { app, sources, assets, pages } = await app_sources(app_dir)
@@ -127,8 +186,13 @@ export const build_app = async (root, name, { drafts = false, example: local } =
   const site = JSON.parse(await read_file(join(app_dir, 'site.json'), 'utf8'))
   site.poster ??= 'example.svg'
   site.type = app.type
-  site.selected_pages = pages.map(page => `/${page.path.replace(/index\.html$/, '')}`)
-  await write_file(join(output, 'site.json'), `${JSON.stringify(site, null, 2)}\n`)
+  site.selected_pages = pages.map(
+    page => `/${page.path.replace(/index\.html$/, '')}`
+  )
+  await write_file(
+    join(output, 'site.json'),
+    `${JSON.stringify(site, null, 2)}\n`
+  )
 
   for (const folder of ['static', 'partials']) {
     const overlay = join(app_dir, folder)
@@ -140,28 +204,44 @@ export const build_app = async (root, name, { drafts = false, example: local } =
     await cp(asset.file, target)
   }
   const copied = new Set()
-  for (const page of pages) {
-    for (const selection of [{ file: page.file, path: page.path }, { file: page.file, path: `${page.id.slice(1)}/index.html` }, ...page.files]) {
+  for (const page of pages)
+    for (const selection of [
+      { file: page.file, path: page.path },
+      { file: page.file, path: `${page.id.slice(1)}/index.html` },
+      ...page.files
+    ]) {
       if (copied.has(selection.path)) continue
       copied.add(selection.path)
       const target = join(output, 'static', selection.path)
-      if (exists_sync(target)) throw new Error(`route already used: ${selection.path}`)
+      if (exists_sync(target))
+        throw new Error(`route already used: ${selection.path}`)
       await mkdir(dirname(target), { recursive: true })
       await cp(selection.file, target)
     }
-  }
+
   const poster = join(output, 'static/posters', site.poster)
   const fallback = join(example, 'static/posters', site.poster)
   if (!exists_sync(poster) && exists_sync(fallback)) await cp(fallback, poster)
-  if (exists_sync(join(app_dir, 'pages'))) await copy_files(join(app_dir, 'pages'), join(output, 'pages'))
-  await run(process.execPath, [join(example, 'build.js'), ...(drafts ? ['--drafts'] : [])], { cwd: output, maxBuffer: MAX })
+  if (exists_sync(join(app_dir, 'pages')))
+    await copy_files(join(app_dir, 'pages'), join(output, 'pages'))
+  await run(
+    process.execPath,
+    [join(example, 'build.js'), ...(drafts ? ['--drafts'] : [])],
+    { cwd: output, maxBuffer: MAX }
+  )
 
   const dist = join(output, 'dist')
   return {
-    id: app.id, type: app.type, name, dist,
+    id: app.id,
+    type: app.type,
+    name,
+    dist,
     sources: [
       ...sources.map(({ id, slug, route }) => ({ id, slug, route })),
-      ...pages.map(({ id, path }) => ({ id, route: `/${path.replace(/index\.html$/, '')}` }))
+      ...pages.map(({ id, path }) => ({
+        id,
+        route: `/${path.replace(/index\.html$/, '')}`
+      }))
     ]
   }
 }

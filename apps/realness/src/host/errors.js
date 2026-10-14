@@ -1,4 +1,3 @@
-
 export class HostError extends Error {}
 export class FirecrackerError extends Error {}
 export class VsockError extends Error {}

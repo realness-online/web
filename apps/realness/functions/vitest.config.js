@@ -13,7 +13,7 @@ export default define_config({
       all: true,
       excludeNodeModules: true,
       provider: 'v8',
-      reporter: ['text', 'html', 'json'],
+      reporter: ['text', 'html', 'json', 'lcov'],
       reportsDirectory: './coverage',
       reportOnFailure: true
     }

@@ -182,7 +182,9 @@ export default define_config({
     coverage: {
       include: [
         path.join(app_root, '**/*.js'),
-        path.join(app_root, '**/*.vue')
+        path.join(app_root, '**/*.vue'),
+        'packages/*/src/**/*.js',
+        'scripts/**/*.js'
       ],
       allowExternal: true,
       exclude: [
@@ -203,7 +205,7 @@ export default define_config({
         functions: 80
       },
       provider: 'v8',
-      reporter: ['text', 'html', 'json'],
+      reporter: ['text', 'html', 'json', 'lcov'],
       reportsDirectory: out_path('frontend', 'coverage'),
       reportOnFailure: true
     },

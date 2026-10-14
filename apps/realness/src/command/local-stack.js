@@ -128,7 +128,9 @@ export const probe_local = async service => {
   if (service.name === 'host')
     return { running: true, ready: Boolean(JSON.parse(reply.body).seed?.built) }
   if (service.name === 'gate' && reply.body.trim() !== 'ok')
-    throw new Error(`Port ${local_settings.gate_port} is occupied by another service`)
+    throw new Error(
+      `Port ${local_settings.gate_port} is occupied by another service`
+    )
   if (service.name === 'frontend') {
     if (!reply.body.includes('/@vite/client'))
       throw new Error(`${service.url} is not the Vite development server`)

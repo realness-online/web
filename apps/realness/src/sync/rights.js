@@ -5,11 +5,11 @@
  * for. Sync is the only writer, so a write through it forgets the entry at
  * once. A malformed page grants nothing; the owner can still fix it.
  */
-import { read_rights } from "#root/src/can/index.js"
+import { read_rights } from '#root/src/can/index.js'
 
-export const rights_key = (owner) => `people/${owner}/rights.html`
+export const rights_key = owner => `people/${owner}/rights.html`
 
-export const rights = (storage) => {
+export const rights = storage => {
   const cache = new Map()
   const generation = new Map()
 
@@ -21,7 +21,7 @@ export const rights = (storage) => {
       const page = await storage.get(rights_key(owner))
       let grants = []
       try {
-        if (page) grants = read_rights(page.body.toString("utf8"))
+        if (page) grants = read_rights(page.body.toString('utf8'))
       } catch {
         grants = []
       }
@@ -33,6 +33,6 @@ export const rights = (storage) => {
     forget(owner) {
       cache.delete(owner)
       generation.set(owner, (generation.get(owner) ?? 0) + 1)
-    },
+    }
   }
 }

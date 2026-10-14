@@ -1,5 +1,11 @@
-import { closeSync as close_sync, fsyncSync as fsync_sync, openSync as open_sync, renameSync as rename_sync, writeSync as write_sync } from "node:fs"
-import { dirname } from "node:path"
+import {
+  closeSync as close_sync,
+  fsyncSync as fsync_sync,
+  openSync as open_sync,
+  renameSync as rename_sync,
+  writeSync as write_sync
+} from 'node:fs'
+import { dirname } from 'node:path'
 
 /**
  * Replace a file so a crash leaves the old copy or the new, never an empty one.
@@ -7,7 +13,7 @@ import { dirname } from "node:path"
  */
 export const writeFileDurable = (path, text) => {
   const tmp = `${path}.tmp`
-  const fd = open_sync(tmp, "w")
+  const fd = open_sync(tmp, 'w')
   try {
     write_sync(fd, text)
     fsync_sync(fd)
@@ -15,7 +21,7 @@ export const writeFileDurable = (path, text) => {
     close_sync(fd)
   }
   rename_sync(tmp, path)
-  const dir = open_sync(dirname(path), "r")
+  const dir = open_sync(dirname(path), 'r')
   try {
     fsync_sync(dir)
   } finally {

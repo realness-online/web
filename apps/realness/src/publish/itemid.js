@@ -5,10 +5,19 @@
  * and when, in milliseconds. Realness's own types stay valid because the vault
  * holds its posters and thoughts.
  */
-import { create_itemid, types as realness_types } from '#root/frontend/packages/itemid/src/index.js'
+import {
+  create_itemid,
+  types as realness_types
+} from '#root/frontend/packages/itemid/src/index.js'
 
 /** What the vault and apps hold beyond Realness's types. */
-export const brayness_types = ['plans', 'articles', 'diagrams', 'sources', 'pages']
+export const brayness_types = [
+  'plans',
+  'articles',
+  'diagrams',
+  'sources',
+  'pages'
+]
 
 /** Types Realness makes: their main file lives in Realness, so the vault may hold several copies. */
 export const made_elsewhere = [...realness_types]

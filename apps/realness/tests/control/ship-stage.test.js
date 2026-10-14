@@ -1,0 +1,409 @@
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import {
+  existsSync,
+  readFileSync,
+  mkdtempSync,
+  mkdirSync,
+  readlinkSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
+import { join } from 'node:path'
+import test from 'node:test'
+import {
+  HOME_ONLY,
+  ROOT,
+  STARTER,
+  ship_stage,
+  ships,
+  starter_manifest
+} from '../../tools/control/scripts/ship-stage.js'
+import { out_path } from '#root/lib/output.js'
+
+const project = new URL('../../', import.meta.url).pathname
+const ship = out_path('ship')
+const proxy_url = 'http://127.0.0.1:18788'
+
+const pi_scratch = join(project, '../../artifacts/brayness-product')
+mkdirSync(pi_scratch, { recursive: true })
+const fake_pi = mkdtempSync(join(pi_scratch, 'pi-path-'))
+writeFileSync(join(fake_pi, 'pi'), '#!/bin/sh\necho 1.2.3\n', { mode: 0o755 })
+process.env.PATH = `${fake_pi}:${process.env.PATH}`
+test.after(() => rmSync(fake_pi, { recursive: true, force: true }))
+
+test('the ship tree carries the harness, prompts, and starting examples', () => {
+  execFileSync(
+    process.execPath,
+    [join(project, 'tools/control/scripts/ship-stage.js')],
+    {
+      env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url }
+    }
+  )
+  for (const path of ['prompts/app.md', 'prompts/site.md'])
+    assert.ok(existsSync(join(ship, path)), path)
+  assert.ok(
+    existsSync(join(ship, 'apps')),
+    'every new workspace has an apps folder'
+  )
+  assert.equal(
+    readFileSync(join(ship, './.ignore'), 'utf8'),
+    '',
+    'private harness sync is enabled without copying personal rules'
+  )
+  assert.match(
+    readFileSync(join(ship, 'prompts/site.md'), 'utf8'),
+    /apps\/site/
+  )
+  assert.match(readFileSync(join(ship, 'prompts/app.md'), 'utf8'), /apps\/app/)
+  for (const name of ['app', 'site'])
+    assert.doesNotMatch(
+      readFileSync(join(ship, `prompts/${name}.md`), 'utf8'),
+      /giget/
+    )
+  for (const path of [
+    'examples/static/src/build.js',
+    'examples/app/package.json'
+  ])
+    assert.ok(existsSync(join(ship, path)), path)
+  for (const path of [
+    'examples/static/node_modules',
+    'examples/static/dist',
+    'examples/chat',
+    'examples/terminal'
+  ])
+    assert.ok(!existsSync(join(ship, path)), path)
+  assert.equal(
+    JSON.parse(readFileSync(join(ship, 'package.json'), 'utf8')).brayness
+      ?.examples,
+    undefined
+  )
+
+  const extensions = join(ship, '.pi/agent/extensions')
+  assert.equal(readlinkSync(extensions), '../../extensions')
+  assert.ok(existsSync(join(extensions, 'memory/index.js')))
+  const prompts = join(ship, '.pi/agent/prompts')
+  assert.equal(readlinkSync(prompts), '../../prompts')
+  assert.ok(existsSync(join(prompts, 'site.md')))
+
+  const settings = JSON.parse(
+    readFileSync(join(ship, '.pi/agent/settings.json'))
+  )
+  assert.equal(
+    `${settings.defaultProvider}/${settings.defaultModel}`,
+    'brayness/inkling'
+  )
+  for (const scheme of ['light', 'dark']) {
+    const theme = JSON.parse(
+      readFileSync(join(ship, `.pi/agent/themes/realness-${scheme}.json`))
+    )
+    assert.equal(theme.colors.userMessageText, 'accent')
+  }
+  assert.equal(settings.enabledModels, undefined)
+  const npm = JSON.parse(readFileSync(join(ship, '.pi/agent/npm/package.json')))
+  for (const name of [
+    'pi-mcp-adapter',
+    'pi-subagents-j0k3r',
+    'pi-mono-usage'
+  ]) {
+    assert.ok(!settings.packages.includes(`npm:${name}`), name)
+    assert.ok(!(name in npm.dependencies), name)
+  }
+  assert.ok(settings.packages.includes('npm:pi-claude-oauth-adapter'))
+  assert.ok('pi-claude-oauth-adapter' in npm.dependencies)
+  assert.ok(!settings.packages.includes('npm:pi-mono-ask-user-question'))
+  const models = JSON.parse(readFileSync(join(ship, '.pi/agent/models.json')))
+  assert.deepEqual(Object.keys(models.providers), ['brayness'])
+  assert.ok(
+    models.providers.brayness.models.some(model => model.id === 'inkling')
+  )
+  assert.ok(
+    models.providers.brayness.models.some(model => model.id === 'house')
+  )
+  assert.equal(models.providers.brayness.baseUrl, proxy_url)
+  assert.equal(models.providers.brayness.apiKey, '!brayness-model-pass')
+  assert.ok(!existsSync(join(ship, 'agent-pass')))
+  assert.ok(
+    !readFileSync(join(ship, '.pi/agent/models.json'), 'utf8').includes(
+      '/etc/brayness/agent-pass'
+    )
+  )
+
+  assert.match(
+    readFileSync(join(ship, './.pi-version'), 'utf8'),
+    /^\d+\.\d+\.\d+/
+  )
+  for (const path of [
+    'AGENTS.local.md',
+    '.pi/agent/auth.json',
+    'work',
+    'packages',
+    '.pi/agent/sessions'
+  ])
+    assert.ok(!existsSync(join(ship, path)), path)
+})
+
+test('a clean checkout stages the starter without personal Pi settings', () => {
+  const scratch = join(project, '../../artifacts/brayness-product')
+  mkdirSync(scratch, { recursive: true })
+  const root = mkdtempSync(join(scratch, 'clean-root-'))
+  try {
+    for (const path of [
+      'package.json',
+      '.pi/starter/settings.json',
+      '.pi/starter/npm/package.json'
+    ]) {
+      mkdirSync(join(root, path, '..'), { recursive: true })
+      writeFileSync(join(root, path), readFileSync(join(ROOT, path)))
+    }
+    const stage = ship_stage({ root, stage: join(root, 'ship'), proxy_url })
+    assert.ok(!existsSync(join(root, '.pi/agent/settings.json')))
+    const settings = JSON.parse(
+      readFileSync(join(stage, '.pi/agent/settings.json'), 'utf8')
+    )
+    assert.deepEqual(
+      settings,
+      JSON.parse(readFileSync(join(ROOT, '.pi/starter/settings.json'), 'utf8'))
+    )
+    assert.deepEqual(
+      Object.keys(
+        JSON.parse(readFileSync(join(stage, '.pi/agent/models.json'), 'utf8'))
+          .providers
+      ),
+      ['brayness']
+    )
+    assert.ok(existsSync(join(stage, '.pi/agent/npm/package.json')))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('home-only skills stay home', () => {
+  execFileSync(
+    process.execPath,
+    [join(project, 'tools/control/scripts/ship-stage.js')],
+    {
+      env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url }
+    }
+  )
+  for (const name of Object.keys(HOME_ONLY)) {
+    assert.ok(
+      existsSync(join(ROOT, '.pi/skills', name, 'SKILL.md')),
+      `${name} is not a skill at home`
+    )
+    assert.ok(!existsSync(join(ship, 'skills', name)), `${name} shipped`)
+  }
+  assert.ok(
+    existsSync(join(ship, 'skills/web-md/SKILL.md')),
+    'a shared skill ships'
+  )
+  assert.equal(ships(join('skills', 'vuetify-to-semantic', 'SKILL.md')), false)
+  assert.equal(ships(join('skills', 'web-md', 'SKILL.md')), true)
+  assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
+  assert.equal(ships(join('bin', '.DS_Store')), false)
+})
+
+test('the starter names its version and every shipped file', () => {
+  execFileSync(
+    process.execPath,
+    [join(project, 'tools/control/scripts/ship-stage.js')],
+    {
+      env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url }
+    }
+  )
+  const starter = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
+  assert.match(starter.version, /^[a-f0-9]{64}$/)
+  assert.match(starter.pi, /^\d+\.\d+\.\d+/)
+  assert.equal(new Date(starter.built_at).toISOString(), starter.built_at)
+  execFileSync(
+    process.execPath,
+    [join(project, 'tools/control/scripts/ship-stage.js')],
+    {
+      env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url }
+    }
+  )
+  const rebuilt = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
+  assert.equal(rebuilt.version, starter.version)
+  assert.equal(
+    rebuilt.built_at,
+    starter.built_at,
+    'an identical rebuild keeps its date'
+  )
+  assert.ok(starter.files['package.json'])
+  assert.ok(starter.files['skills/web-md/SKILL.md'])
+  assert.equal(
+    starter.files[STARTER],
+    undefined,
+    'the manifest never lists itself'
+  )
+  for (const path of [
+    'AGENTS.local.md',
+    '.pi/agent/auth.json',
+    'skills/nvim-buffers/SKILL.md'
+  ])
+    assert.equal(starter.files[path], undefined, path)
+  assert.ok(
+    Object.keys(starter.files).every(
+      path => !path.includes('node_modules') && !path.endsWith('.DS_Store')
+    )
+  )
+})
+
+test('the starter version is stable and content-sensitive', () => {
+  const scratch = join(project, '../../artifacts/brayness-product')
+  mkdirSync(scratch, { recursive: true })
+  const one = mkdtempSync(join(scratch, 'starter-'))
+  const two = mkdtempSync(join(scratch, 'starter-'))
+  try {
+    for (const dir of [one, two]) {
+      mkdirSync(join(dir, 'nested'))
+      writeFileSync(join(dir, 'a.txt'), 'same\n')
+      writeFileSync(join(dir, 'nested/b.txt'), 'body\n')
+    }
+    assert.equal(
+      starter_manifest(one).version,
+      starter_manifest(two).version,
+      'same content, same version'
+    )
+    writeFileSync(join(two, 'a.txt'), 'changed\n')
+    assert.notEqual(
+      starter_manifest(one).version,
+      starter_manifest(two).version,
+      'changed bytes, new version'
+    )
+    writeFileSync(join(two, 'a.txt'), 'same\n')
+    writeFileSync(join(two, 'renamed.txt'), 'same\n')
+    rmSync(join(two, 'a.txt'))
+    assert.notEqual(
+      starter_manifest(one).version,
+      starter_manifest(two).version,
+      'a rename changes the version'
+    )
+    assert.equal(
+      starter_manifest(one).files['nested/b.txt'],
+      starter_manifest(two).files['nested/b.txt']
+    )
+  } finally {
+    rmSync(one, { recursive: true, force: true })
+    rmSync(two, { recursive: true, force: true })
+  }
+})
+
+test('the starter rides in the tarball new actors install', () => {
+  execFileSync(
+    'bash',
+    [join(project, 'tools/control/scripts/harness-stage.sh')],
+    {
+      env: { ...process.env, BRAYNESS_PROXY_URL: proxy_url }
+    }
+  )
+  const listing = execFileSync(
+    'tar',
+    ['tzf', out_path('brayness-harness.tar.gz')],
+    { encoding: 'utf8' }
+  )
+  assert.ok(
+    listing.includes('./starter.json'),
+    'the version and file list ship to the actor'
+  )
+  assert.ok(listing.includes('./apps/'), 'the empty apps folder ships')
+  assert.ok(listing.includes('./.ignore'), 'the default sync rules ship')
+})
+
+test('the wrapper lets an installed pi win over the harness copy', () => {
+  const wrapper = readFileSync(join(ship, 'bin/pi'), 'utf8')
+  assert.match(
+    wrapper,
+    /^export PATH="\$\(dirname "\$best_node"\):\$PATH:\$root\/bin"$/m
+  )
+  assert.ok(existsSync(join(ship, 'bin/brayness-model-pass')))
+})
+
+test('the ship tree rejects a malformed proxy URL', () => {
+  assert.throws(
+    () =>
+      execFileSync(
+        process.execPath,
+        [join(project, 'tools/control/scripts/ship-stage.js')],
+        {
+          env: { ...process.env, BRAYNESS_PROXY_URL: 'not-a-url' },
+          stdio: 'pipe'
+        }
+      ),
+    /BRAYNESS_PROXY_URL/
+  )
+})
+
+test('the ship tree captures one local version and rejects invalid versions', () => {
+  const scratch = join(project, '../../artifacts/brayness-product')
+  mkdirSync(scratch, { recursive: true })
+  const bin = mkdtempSync(join(scratch, 'pi-test-'))
+  try {
+    writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho 9.8.7\n', { mode: 0o755 })
+    execFileSync(
+      process.execPath,
+      [join(project, 'tools/control/scripts/ship-stage.js')],
+      {
+        env: {
+          ...process.env,
+          PATH: `${bin}:${process.env.PATH}`,
+          BRAYNESS_PROXY_URL: proxy_url
+        }
+      }
+    )
+    assert.equal(readFileSync(join(ship, './.pi-version'), 'utf8'), '9.8.7\n')
+    execFileSync(
+      'bash',
+      [join(project, 'tools/control/scripts/harness-stage.sh')],
+      {
+        env: {
+          ...process.env,
+          PATH: `${bin}:${process.env.PATH}`,
+          BRAYNESS_PROXY_URL: proxy_url
+        }
+      }
+    )
+    assert.equal(
+      execFileSync(
+        'tar',
+        ['xOzf', out_path('brayness-harness.tar.gz'), './.pi-version'],
+        { encoding: 'utf8' }
+      ),
+      '9.8.7\n'
+    )
+    const entry = readFileSync(join(project, 'tools/desktop/entry.ts'), 'utf8')
+    assert.ok(
+      entry.includes('npm:@earendil-works/pi-coding-agent@__PI_VERSION__')
+    )
+    assert.ok(
+      entry
+        .replace('__PI_VERSION__', '9.8.7')
+        .includes('npm:@earendil-works/pi-coding-agent@9.8.7')
+    )
+    assert.ok(
+      readFileSync(join(project, 'tools/desktop/build.sh'), 'utf8').includes(
+        'sed -i \'\' "s|__PI_VERSION__|$pi_version|"'
+      )
+    )
+    writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho unknown\n', { mode: 0o755 })
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [join(project, 'tools/control/scripts/ship-stage.js')],
+          {
+            env: {
+              ...process.env,
+              PATH: `${bin}:${process.env.PATH}`,
+              BRAYNESS_PROXY_URL: proxy_url
+            },
+            stdio: 'pipe'
+          }
+        ),
+      /invalid local pi version/
+    )
+    assert.equal(readFileSync(join(ship, './.pi-version'), 'utf8'), '9.8.7\n')
+  } finally {
+    rmSync(bin, { recursive: true, force: true })
+  }
+})

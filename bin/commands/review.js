@@ -68,7 +68,7 @@ export const reviewed = {
   'apps/realness/tools/publish/bin/publish.js#app unpublish <name>': ['Keep', 'Publishing surface; removes a published app.'],
 
   'apps/realness/frontend/.auto/checks.sh': ['Keep', 'Referenced by frontend/.auto/prompt.md; gate of the local .auto loop.'],
-  'apps/realness/frontend/terminal/build-wasm.sh': ['Keep', 'Rebuilds the pinned terminal wasm by hand when a pin moves.'],
+  'apps/realness/frontend/scripts/build-ghostty-wasm.sh': ['Keep', 'Rebuilds the pinned terminal wasm by hand when a pin moves.'],
   'apps/realness/tools/control/scripts/chrome-pool-check.js': ['Keep', 'Chrome VM pool gate; exercises ChromePool.'],
   'apps/realness/tools/control/scripts/chrome-render-pages.js': ['Keep', 'Chrome VM render gate; records per-page CPU.'],
 }

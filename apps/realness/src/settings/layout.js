@@ -15,9 +15,7 @@ export const source_folders = {
   sync: 'src/sync',
   proxy: 'src/proxy',
   gate: 'src/gate',
-  app: 'src/app',
-  chat: 'src/chat',
-  terminal: 'src/terminal'
+  app: 'src/app'
 }
 
 /** Absolute paths for checkout tools; runtime modules never need a harness root. */
@@ -27,31 +25,75 @@ export const product_paths = (root = project_root) => ({
   themes: join(root, 'themes'),
   renderer: join(root, 'tools/publish/renderer'),
   static_preset: join(root, 'tools/examples/static'),
-  ...Object.fromEntries(Object.entries(source_folders).map(([name, folder]) => [name, join(root, folder)]))
+  ...Object.fromEntries(
+    Object.entries(source_folders).map(([name, folder]) => [
+      name,
+      join(root, folder)
+    ])
+  )
 })
 
-const shared_folders = () => ['lib', 'src/settings', source_folders.can, source_folders.files, source_folders.harness, `${source_folders.sign_on}/node`]
+const shared_folders = () => [
+  'lib',
+  'src/settings',
+  source_folders.can,
+  source_folders.files,
+  source_folders.harness,
+  `${source_folders.sign_on}/node`
+]
 
-export const actor_folders = () => [...shared_folders(), source_folders.command, 'tools/cli/bin', source_folders.control, 'tools/control']
+export const actor_folders = () => [
+  ...shared_folders(),
+  source_folders.command,
+  'tools/cli/bin',
+  source_folders.control,
+  'tools/control'
+]
 
-export const host_files = ['package.json', 'lib/lines.js', 'lib/output.js', 'lib/output.sh', 'lib/websocket.js', 'tools/control/webspace.config.js']
+export const host_files = [
+  'package.json',
+  'lib/http.js',
+  'lib/path-parts.js',
+  'lib/units.js',
+  'lib/lines.js',
+  'lib/output.js',
+  'lib/output.sh',
+  'lib/websocket.js',
+  'tools/control/webspace.config.js'
+]
 
 /** A pushed host carries the same actor dependencies as a locally built template. */
 export const host_folders = () => {
   const folders = [
-    ...actor_folders().filter(folder => !['lib', 'tools/control'].includes(folder)),
-    source_folders.host, source_folders.sync, source_folders.proxy,
-    'server/host', 'server/sync', 'server/proxy', 'server/scripts',
-    'tools/control/scripts', 'tools/control/escape-probe'
+    ...actor_folders().filter(
+      folder => !['lib', 'tools/control'].includes(folder)
+    ),
+    source_folders.host,
+    source_folders.sync,
+    source_folders.proxy,
+    'server/host',
+    'server/sync',
+    'server/proxy',
+    'server/scripts',
+    'tools/control/scripts',
+    'tools/control/escape-probe'
   ]
-  return folders.filter(folder => !folders.some(parent => parent !== folder && folder.startsWith(parent + '/')))
+  return folders.filter(
+    folder =>
+      !folders.some(
+        parent => parent !== folder && folder.startsWith(`${parent}/`)
+      )
+  )
 }
 
 /** Standard-library services include only their dependency domains and stable entry points. */
 export const service_folders = service => {
-  if (!['sync', 'proxy', 'gate'].includes(service)) throw Error(`unknown service: ${service}`)
+  if (!['sync', 'proxy', 'gate'].includes(service))
+    throw Error(`unknown service: ${service}`)
   return [
-    ...shared_folders(), source_folders.sync, `server/${service}/bin`,
+    ...shared_folders(),
+    source_folders.sync,
+    `server/${service}/bin`,
     ...(service === 'sync' ? [] : [source_folders.proxy]),
     ...(service === 'gate' ? [source_folders.gate] : [])
   ]

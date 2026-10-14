@@ -19,12 +19,17 @@
  *
  * Pushing needs its own grant, which this does not give.
  */
-import { createSign as create_sign } from "node:crypto"
+import { createSign as create_sign } from 'node:crypto'
+import { HTTP } from '#root/lib/http.js'
+import { MS_PER_SECOND } from '#root/lib/units.js'
 
-const API = "https://api.github.com"
+const TOKEN_LIFE_S = 540
+
+const API = 'https://api.github.com'
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/
 const INSTALLATION = /itemprop="identifier"\s+content="(\d{1,20})"/
-const REPOSITORY = /itemprop="codeRepository"\s+href="https:\/\/github\.com\/([^"/]+\/[^"/]+?)(?:\.git)?\/?"/g
+const REPOSITORY =
+  /itemprop="codeRepository"\s+href="https:\/\/github\.com\/([^"/]+\/[^"/]+?)(?:\.git)?\/?"/g
 
 export class GitRefused extends Error {
   constructor(status, message) {
@@ -34,7 +39,7 @@ export class GitRefused extends Error {
 }
 
 /** Each repo the person's VMs may clone, lowercased, to its installation. */
-export const read_git_record = (html) => {
+export const read_git_record = html => {
   const repos = new Map()
   for (const article of html.split(/<article\b/i)) {
     const installation = INSTALLATION.exec(article)?.[1]
@@ -48,19 +53,33 @@ export const read_git_record = (html) => {
 }
 
 /** `owner/name` from what git's credential helper sends, or null. */
-export const repo_name = (value) => {
-  const repo = String(value ?? "").replace(/^\/+/, "").replace(/\.git$/, "").replace(/\/+$/, "")
-  return REPO.test(repo) && !repo.split("/").some((part) => part === "." || part === "..") ? repo : null
+export const repo_name = value => {
+  const repo = String(value ?? '')
+    .replace(/^\/+/, '')
+    .replace(/\.git$/, '')
+    .replace(/\/+$/, '')
+  return REPO.test(repo) &&
+    !repo.split('/').some(part => part === '.' || part === '..')
+    ? repo
+    : null
 }
 
-const base64url = (value) => Buffer.from(value).toString("base64url")
+const base64url = value => Buffer.from(value).toString('base64url')
 
 /** The app's own ten-minute JWT, RS256, as GitHub asks. */
 export const app_jwt = ({ app_id, private_key }, now = Date.now()) => {
-  const seconds = Math.floor(now / 1000)
-  const head = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }))
-  const body = base64url(JSON.stringify({ iat: seconds - 60, exp: seconds + 540, iss: String(app_id) }))
-  const signature = create_sign("RSA-SHA256").update(`${head}.${body}`).sign(private_key, "base64url")
+  const seconds = Math.floor(now / MS_PER_SECOND)
+  const head = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
+  const body = base64url(
+    JSON.stringify({
+      iat: seconds - 60,
+      exp: seconds + TOKEN_LIFE_S,
+      iss: String(app_id)
+    })
+  )
+  const signature = create_sign('RSA-SHA256')
+    .update(`${head}.${body}`)
+    .sign(private_key, 'base64url')
   return `${head}.${body}.${signature}`
 }
 
@@ -69,25 +88,47 @@ export const app_jwt = ({ app_id, private_key }, now = Date.now()) => {
  * 503 without an app, 404 for a repo not in the person's record (so a VM
  * cannot probe for other people's repos), 502 when GitHub says no.
  */
-export const git_token = async ({ storage, phone, repo, app, fetcher = fetch, now = Date.now() }) => {
-  if (!app?.app_id || !app?.private_key) throw new GitRefused(503, "git is not set up on this service")
+export const git_token = async ({
+  storage,
+  phone,
+  repo,
+  app,
+  fetcher = fetch,
+  now = Date.now()
+}) => {
+  if (!app?.app_id || !app?.private_key)
+    throw new GitRefused(HTTP.UNAVAILABLE, 'git is not set up on this service')
   const name = repo_name(repo)
-  if (!name) throw new GitRefused(400, "repo must be owner/name")
+  if (!name) throw new GitRefused(HTTP.BAD_REQUEST, 'repo must be owner/name')
   const page = await storage.get(`git/${phone}.html`)
-  const installation = read_git_record(page ? page.body.toString("utf8") : "").get(name.toLowerCase())
-  if (!installation) throw new GitRefused(404, "repo is not shared with this harness")
-  const response = await fetcher(`${API}/app/installations/${installation}/access_tokens`, {
-    method: "POST",
-    headers: {
-      accept: "application/vnd.github+json",
-      authorization: `Bearer ${app_jwt(app, now)}`,
-      "content-type": "application/json",
-      "x-github-api-version": "2022-11-28",
-    },
-    body: JSON.stringify({ repositories: [name.split("/")[1]], permissions: { contents: "read" } }),
-  })
-  if (response.status !== 201) throw new GitRefused(502, `GitHub refused a token: ${response.status}`)
+  const installation = read_git_record(
+    page ? page.body.toString('utf8') : ''
+  ).get(name.toLowerCase())
+  if (!installation)
+    throw new GitRefused(HTTP.NOT_FOUND, 'repo is not shared with this harness')
+  const response = await fetcher(
+    `${API}/app/installations/${installation}/access_tokens`,
+    {
+      method: 'POST',
+      headers: {
+        accept: 'application/vnd.github+json',
+        authorization: `Bearer ${app_jwt(app, now)}`,
+        'content-type': 'application/json',
+        'x-github-api-version': '2022-11-28'
+      },
+      body: JSON.stringify({
+        repositories: [name.split('/')[1]],
+        permissions: { contents: 'read' }
+      })
+    }
+  )
+  if (response.status !== HTTP.CREATED)
+    throw new GitRefused(
+      HTTP.BAD_GATEWAY,
+      `GitHub refused a token: ${response.status}`
+    )
   const { token, expires_at } = await response.json()
-  if (typeof token !== "string" || !token) throw new GitRefused(502, "GitHub sent no token")
+  if (typeof token !== 'string' || !token)
+    throw new GitRefused(HTTP.BAD_GATEWAY, 'GitHub sent no token')
   return { token, expires_at }
 }

@@ -10,7 +10,7 @@ const skipped = new Set(['node_modules', '.git', 'dist', 'coverage', 'artifacts'
 const skipped_files = new Set(['person.local.html', 'AGENTS.local.md', 'package-lock.json'])
 
 const allowed = new Map([
-  ['apps/realness/frontend/terminal/test/capture/pi.tui', 'terminal recording; bytes are the fixture'],
+  ['apps/realness/frontend/tests/terminal/capture/pi.tui', 'terminal recording; bytes are the fixture'],
   ['.pi/skills/zoom-to-ableton/references/scott-2024-effect-rack-devices.xml', 'exported Ableton rack; device paths are recorded data'],
   ['apps/realness/frontend/public/brands/inkscape.svg', 'third-party logo; its authoring metadata names its designer'],
 ])

@@ -21,7 +21,7 @@ node_modules
 .firebase/
 .firebase/hosting*
 firebase-debug.log
-.firebaserc
+!.firebaserc
 .fallow/
 
 # local env files

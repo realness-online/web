@@ -10,7 +10,8 @@ const environments = {
       gate_url: 'https://brayness-gate-639469569733.us-central1.run.app',
       sites_url: 'https://realness-development-sites.web.app',
       starter_proxy_url: 'https://brayness-proxy-yelzvhhngq-uc.a.run.app',
-      origins: 'https://realness-development.web.app,https://realness-development.firebaseapp.com,https://realness.local,http://localhost:5173'
+      origins:
+        'https://realness-development.web.app,https://realness-development.firebaseapp.com,https://realness.local,http://localhost:5173'
     }
   },
   production: {
@@ -21,7 +22,8 @@ const environments = {
 
 /** Select an environment explicitly; production services remain unconfigured until promotion. */
 export const environment_settings = name => {
-  if (!Object.hasOwn(environments, name)) throw Error(`unknown environment "${name}"`)
+  if (!Object.hasOwn(environments, name))
+    throw Error(`unknown environment "${name}"`)
   return environments[name]
 }
 
@@ -42,12 +44,19 @@ export const local_settings = {
 
 /** All services share one target, identity, and bucket; overrides cannot cross environments. */
 export const deployment_settings = (name, env = process.env) => {
-  if (!name) throw Error('deployment environment is required: development|production')
+  if (!name)
+    throw Error('deployment environment is required: development|production')
   const selected = environment_settings(name)
-  if (!selected.services) throw Error(`service settings for ${name} are not configured`)
-  for (const [key, expected] of [['PROJECT', selected.project], ['IDENTITY_PROJECT', selected.project], ['BUCKET', selected.services.bucket]]) {
-    if (env[key] && env[key] !== expected) throw Error(`${key} conflicts with ${name}`)
-  }
+  if (!selected.services)
+    throw Error(`service settings for ${name} are not configured`)
+  for (const [key, expected] of [
+    ['PROJECT', selected.project],
+    ['IDENTITY_PROJECT', selected.project],
+    ['BUCKET', selected.services.bucket]
+  ])
+    if (env[key] && env[key] !== expected)
+      throw Error(`${key} conflicts with ${name}`)
+
   return {
     project: selected.project,
     identity: selected.project,
