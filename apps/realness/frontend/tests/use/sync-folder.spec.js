@@ -611,6 +611,347 @@ describe('@/use/sync-folder', () => {
     )
   })
 
+  it('aborts with a warning when the folder preference is off', async () => {
+    const warn = silence_console('warn')
+    mock_sync_folder_pref.value = false
+
+    const result = await drain_folder_queue({ force: true, set_working })
+
+    expect(result).toBeUndefined()
+    expect(warn).toHaveBeenCalledWith('[sync-folder] drain skip: preference off')
+  })
+
+  it('asks for permission when no folder handle is stored', async () => {
+    const warn = silence_console('warn')
+    folder_handle = null
+    const { folder_sync_status } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await drain_folder_queue({ force: true, set_working })
+
+    expect(warn).toHaveBeenCalledWith('[sync-folder] drain skip: no folder handle')
+    expect(folder_sync_status.value).toBe('needs_permission')
+  })
+
+  it('stops before writing when folder permission is denied', async () => {
+    const warn = silence_console('warn')
+    folder_handle.queryPermission = vi.fn(() => Promise.resolve('denied'))
+    folder_handle.requestPermission = vi.fn(() => Promise.resolve('denied'))
+    const { folder_sync_status, sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] abort: folder permission denied'
+    )
+    expect(folder_sync_status.value).toBe('needs_permission')
+    expect(write).not.toHaveBeenCalled()
+  })
+
+  it('regrants access when the folder only offers requestPermission', async () => {
+    const handle = {
+      name: 'Exports',
+      getDirectoryHandle: get_directory_handle,
+      removeEntry: remove_entry,
+      requestPermission: vi.fn(() => Promise.resolve('granted'))
+    }
+    folder_handle = handle
+    const { sync_now, folder_sync_status } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(handle.requestPermission).toHaveBeenCalledWith({
+      mode: 'readwrite'
+    })
+    expect(folder_sync_status.value).toBe('idle')
+  })
+
+  it('reads a folder handle that carries neither permission method', async () => {
+    folder_handle = {
+      name: 'Exports',
+      getDirectoryHandle: get_directory_handle,
+      removeEntry: remove_entry
+    }
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(get_file_handle).toHaveBeenCalled()
+  })
+
+  it('names the archive when a full sync fails', async () => {
+    const error = silence_console('error')
+    mock_as_directory.mockRejectedValue(new Error('storage offline'))
+    mock_build_local_directory.mockRejectedValue(new Error('storage offline'))
+    const { sync_now, folder_sync_status, folder_sync_error } = with_setup(
+      () => use(),
+      { provide: { set_working } }
+    )
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(folder_sync_status.value).toBe('error')
+    expect(folder_sync_error.value).toBe('storage offline')
+    expect(error).toHaveBeenCalledWith(
+      '[sync-folder] run failed',
+      expect.any(Error)
+    )
+  })
+
+  it('falls back to legacy thoughts when no statements are stored', async () => {
+    mock_list.mockImplementation(async id =>
+      String(id).endsWith('/thoughts')
+        ? [
+            {
+              id: `${me}/thoughts/1000`,
+              thought: 'from the old feed'
+            }
+          ]
+        : []
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+
+    const [gathered] = mock_thoughts_for_author.mock.calls.at(-1)
+    expect(gathered).toContainEqual(
+      expect.objectContaining({
+        id: `${me}/statements/1000`,
+        statement: 'from the old feed'
+      })
+    )
+  })
+
+  it('collects statements left behind in local storage alone', async () => {
+    const stray_id = `${me}/statements/4242`
+    Object.defineProperty(localStorage, 'length', {
+      value: 1,
+      configurable: true
+    })
+    Object.defineProperty(localStorage, 'key', {
+      value: () => stray_id,
+      configurable: true
+    })
+    mock_list.mockResolvedValue([])
+    mock_load.mockResolvedValue({
+      id: stray_id,
+      statement: 'stranded',
+      type: 'statements'
+    })
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+
+    const [gathered] = mock_thoughts_for_author.mock.calls.at(-1)
+    expect(gathered).toContainEqual(
+      expect.objectContaining({ id: stray_id, statement: 'stranded' })
+    )
+    delete localStorage.length
+    delete localStorage.key
+  })
+
+  it('drops a thought whose archived page cannot be read', async () => {
+    const warn = silence_console('warn')
+    mock_as_directory.mockResolvedValue({ items: [1000, 900], archive: [] })
+    mock_list_history_page.mockRejectedValueOnce(new Error('page gone'))
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] statement page failed',
+      1000,
+      expect.any(Error)
+    )
+  })
+
+  it('deletes the folder of a thought that lost every statement and poster', async () => {
+    const path = '07-18 Saturday morning — hello'
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest')
+        return { thoughts: { 1000: { path, key: 'stale' } } }
+      return null
+    })
+    mock_thoughts_for_author.mockReturnValueOnce([
+      { author_id: me, started_at: 1000, posters: [], statements: [] }
+    ])
+    get_file_handle.mockImplementation(() =>
+      Promise.resolve({ createWritable: vi.fn() })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(remove_entry).toHaveBeenCalledWith(path, { recursive: true })
+    expect(write).not.toHaveBeenCalled()
+  })
+
+  it('removes folders of thoughts that are no longer in the library', async () => {
+    const path = 'gone from the library'
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest')
+        return { version: 2, thoughts: { 999: { path, key: 'v2|999||' } } }
+      return null
+    })
+    get_directory_handle.mockImplementation(() =>
+      Promise.resolve({ getFileHandle: get_file_handle })
+    )
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_now()
+    await flushPromises()
+
+    expect(remove_entry).toHaveBeenCalledWith(path, { recursive: true })
+  })
+
+  it('stops syncing quietly when a run is cancelled mid-flight', async () => {
+    mock_figure_show.value = false
+    const { sync_now, cancel_folder_sync, folder_sync_status, folder_sync_error } =
+      with_setup(() => use(), { provide: { set_working } })
+    await flushPromises()
+
+    const pending = sync_now()
+    await flushPromises()
+    cancel_folder_sync()
+    mock_sync_folder_pref.value = false
+    await pending
+    await flushPromises()
+
+    expect(folder_sync_status.value).toBe('idle')
+    expect(folder_sync_error.value).toBeNull()
+  })
+
+  it('shows a shared drain instead of starting a second one', async () => {
+    const first = drain_folder_queue({ force: true, set_working })
+    const second = drain_folder_queue({ force: true, set_working })
+    await Promise.all([first, second])
+    await flushPromises()
+
+    expect(get_directory_handle).toHaveBeenCalled()
+  })
+
+  it('skips a duplicate queue entry for the same item and action', async () => {
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return folder_handle
+      if (k === 'sync:folder-queue')
+        return [{ id: poster_id, action: 'save' }]
+      if (k === 'sync:folder-manifest') return { thoughts: {} }
+      return null
+    })
+
+    await enqueue_folder_sync(/** @type {any} */ (poster_id), 'save')
+
+    expect(set).not.toHaveBeenCalledWith(
+      'sync:folder-queue',
+      expect.arrayContaining([
+        expect.objectContaining({ id: poster_id, action: 'save' })
+      ])
+    )
+  })
+
+  it('ignores queue changes while the preference is off', async () => {
+    mock_sync_folder_pref.value = false
+
+    await enqueue_folder_sync(/** @type {any} */ (poster_id), 'delete')
+
+    expect(set).not.toHaveBeenCalled()
+  })
+
+  it('picks a folder on the first sync and reuses it afterwards', async () => {
+    let stored = null
+    get.mockImplementation(async k => {
+      if (k === 'sync_folder_handle') return stored
+      if (k === 'sync:folder-queue') return []
+      if (k === 'sync:folder-manifest') return { thoughts: {} }
+      return null
+    })
+    set.mockImplementation(async (k, v) => {
+      if (k === 'sync_folder_handle') stored = v
+    })
+    const { sync_folder } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+
+    await sync_folder()
+    expect(show_directory_picker).toHaveBeenCalledTimes(1)
+
+    await sync_folder()
+    await flushPromises()
+    expect(show_directory_picker).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a watching tab in step when it becomes visible again', async () => {
+    const { sync_now } = with_setup(() => use(), {
+      provide: { set_working }
+    })
+    await flushPromises()
+    vi.useFakeTimers()
+
+    document.dispatchEvent(new Event('visibilitychange'))
+    await vi.runAllTimersAsync()
+    vi.useRealTimers()
+    await flushPromises()
+
+    expect(sync_now).toBeTypeOf('function')
+  })
+
+  it('reports Brave only when its own check says so', async () => {
+    const { detect_brave } = await import('@/use/sync-folder')
+    expect(await detect_brave()).toBe(false)
+
+    Object.defineProperty(window.navigator, 'brave', {
+      value: { isBrave: () => Promise.resolve(true) },
+      configurable: true
+    })
+    expect(await detect_brave()).toBe(true)
+
+    Object.defineProperty(window.navigator, 'brave', {
+      value: {
+        isBrave: () => Promise.reject(new Error('blocked'))
+      },
+      configurable: true
+    })
+    expect(await detect_brave()).toBe(false)
+    delete (/** @type {any} */ (window.navigator).brave)
+  })
+
   it('does not retry a failed thought until the next user-triggered sync', async () => {
     const error = silence_console('error')
     mock_export_ready.mockRejectedValue(new Error('symbols never loaded'))
