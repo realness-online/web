@@ -90,3 +90,63 @@ describe('@/components/posters/as-avatar', () => {
     expect(wrapper.emitted('click')).toHaveLength(1)
   })
 })
+
+describe('@/components/posters/as-avatar reference sync', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    document.body.innerHTML = ''
+    mock_use_reference.value = false
+  })
+
+  const canonical_svg = (itemid, viewbox) => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.id = itemid.replace(/\//g, '-').slice(1)
+    svg.setAttribute('viewBox', viewbox)
+    document.body.appendChild(svg)
+    return svg
+  }
+
+  it('keeps its own viewBox when the canonical is not there yet', async () => {
+    mock_use_reference.value = true
+    const wrapper = mount()
+    await nextTick()
+
+    expect(wrapper.find('svg[aria-roledescription]').attributes('viewBox')).toBe(
+      '0 0 16 16'
+    )
+  })
+
+  it('ignores a canonical node that is not an svg', async () => {
+    mock_use_reference.value = true
+    const div = document.createElement('div')
+    div.id = itemid.replace(/\//g, '-').slice(1)
+    document.body.appendChild(div)
+    const wrapper = mount()
+    await nextTick()
+
+    expect(wrapper.find('svg[aria-roledescription]').attributes('viewBox')).toBe(
+      '0 0 16 16'
+    )
+  })
+
+  it('does not mount poster symbols for an empty show', async () => {
+    const wrapper = mount()
+    await wrapper.findComponent({ name: 'AsSvg' }).vm.$emit('show', null)
+    await flushPromises()
+
+    expect(mock_load_cutout_flags).not.toHaveBeenCalled()
+    expect(wrapper.findComponent({ name: 'as-poster-symbol' }).exists()).toBe(
+      false
+    )
+  })
+
+  it('keeps cutouts the vector already carries', async () => {
+    const wrapper = mount()
+    const shown = { id: itemid, cutouts: { sand: true } }
+
+    await wrapper.findComponent({ name: 'AsSvg' }).vm.$emit('show', shown)
+    await flushPromises()
+
+    expect(mock_load_cutout_flags).not.toHaveBeenCalled()
+  })
+})
