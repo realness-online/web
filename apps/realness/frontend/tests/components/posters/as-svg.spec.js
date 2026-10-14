@@ -388,6 +388,69 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
 
+  describe('poster label', () => {
+    it('names the day a dated poster was made', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      const label = wrapper.find('svg').attributes('aria-label')
+      expect(label.startsWith('Poster from ')).toBe(true)
+    })
+
+    it('says today for a poster made today', async () => {
+      const now = Date.now()
+      const wrapper = shallowMount(as_svg, {
+        props: {
+          itemid: `/+14155550142/posters/${now}`,
+          sync_poster: vector_fixture()
+        }
+      })
+      await flushPromises()
+
+      const label = wrapper.find('svg').attributes('aria-label')
+      expect(label.startsWith('Poster from ')).toBe(true)
+    })
+  })
+
+  describe('cutout opacity', () => {
+    it('lifts cutouts when only the outlines are down there', async () => {
+      mock_shadow.value = false
+      mock_stroke.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 0.65')
+    })
+
+    it('drops cutouts when the stroke is off too', async () => {
+      mock_shadow.value = false
+      mock_stroke.value = false
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 0.8')
+    })
+
+    it('dims the cutouts once a shadow fill sits under them', async () => {
+      mock_shadow.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      const cutout = wrapper.find('use[itemprop="sediment"]')
+      expect(cutout.attributes('style')).toContain('opacity: 0.5')
+    })
+  })
+
   describe('cutout symbol readiness', () => {
     it('holds a cutout back until its symbol has geometry', async () => {
       load_cutout_symbols(itemid, false)
