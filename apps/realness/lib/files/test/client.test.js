@@ -6,8 +6,8 @@ import assert from "node:assert/strict"
 import { mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises"
 import { createHash, randomUUID } from "node:crypto"
 import { join, resolve } from "node:path"
-import { sessionJsonlToHtml as session_jsonl_to_html } from "../../../../../work/pi/packages/coding-agent/src/core/session-html.ts"
-import { compress_session_chunk } from "../../../../../work/pi/packages/coding-agent/src/core/session-gzip.ts"
+import { sessionJsonlToHtml as session_jsonl_to_html } from "../../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js"
+import { compress_session_chunk } from "../../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js"
 import { DatabaseSync } from "node:sqlite"
 import { gunzipSync } from "node:zlib"
 import { disk } from "#root/src/can/disk.js"
@@ -26,7 +26,7 @@ let server
 let url
 
 before(async () => {
-  process.env.PI_SESSION_READER = resolve(import.meta.dirname, "../../../../../work/pi/packages/coding-agent/dist/session-read.js")
+  process.env.PI_SESSION_READER = resolve(import.meta.dirname, "../../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/session-read.js")
   process.env.BRAYNESS_STATE = join(root, "state")
   process.env.BRAYNESS_TRASH = join(root, "trash")
   server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })

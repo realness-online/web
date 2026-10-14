@@ -8,6 +8,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { existsSync as exists_sync, readFileSync as read_file_sync } from 'fs'
 import path from 'path'
 import { product_paths } from '#root/src/settings/layout.js'
+import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const has_certs =
   exists_sync('realness.local-key.pem') && exists_sync('realness.local.pem')
@@ -38,6 +39,8 @@ const get_manual_chunk = id => {
 
 export default define_config({
   build: {
+    outDir: frontend_out(),
+    emptyOutDir: true,
     target: 'esnext',
     cssTarget: ['safari15', 'chrome111'],
     cssMinify: 'lightningcss',
@@ -176,7 +179,11 @@ export default define_config({
     exclude: [...config_defaults.exclude, '**/setup.js', '**/mocks/**'],
     testTimeout: 30000,
     coverage: {
-      include: ['../src/app/**/*.js', '../src/app/**/*.vue'],
+      include: [
+        path.join(app_root, '**/*.js'),
+        path.join(app_root, '**/*.vue')
+      ],
+      allowExternal: true,
       exclude: [
         'tests/**',
         'mocks/**',
@@ -184,19 +191,19 @@ export default define_config({
         'dist/**',
         'docs/**',
         'public/**',
-        '../src/app/main.js',
-        '../src/app/router.js',
-        '../src/app/wasm/**'
+        path.join(app_root, 'main.js'),
+        path.join(app_root, 'router.js'),
+        path.join(app_root, 'wasm/**')
       ],
-      lines: 80,
-      branches: 80,
-      statements: 80,
-      functions: 80,
-      all: true,
-      excludeNodeModules: true,
+      thresholds: {
+        lines: 80,
+        branches: 80,
+        statements: 80,
+        functions: 80
+      },
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
-      reportsDirectory: './coverage',
+      reportsDirectory: out_path('frontend', 'coverage'),
       reportOnFailure: true
     },
     mockReset: false,

@@ -7,8 +7,8 @@ import {
   release_notes_footer
 } from './lib/changelog.js'
 
-import { artifacts_dir } from './lib/artifacts.js'
-const default_out = path.join(artifacts_dir, 'release-notes.md')
+import { out_path as output_path } from '#root/src/settings/output.js'
+const default_out = output_path('frontend', 'release-notes.md')
 
 const main = () => {
   const args = process.argv.slice(2)

@@ -5,7 +5,7 @@
   "hosting": [
     {
       "target": "app",
-      "public": "dist",
+      "public": "../../../artifacts/brayness/frontend/dist",
       "trailingSlash": false,
       "ignore": [
         "firebase.json",

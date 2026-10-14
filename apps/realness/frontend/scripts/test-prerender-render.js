@@ -1,13 +1,7 @@
-import {
-  fileURLToPath as file_url_to_path,
-  pathToFileURL as path_to_file_url
-} from 'node:url'
-import path from 'node:path'
+import { pathToFileURL as path_to_file_url } from 'node:url'
+import { frontend_out } from '#root/src/settings/output.js'
 
-const server_entry = path.join(
-  path.dirname(file_url_to_path(import.meta.url)),
-  '../dist/server/entry-server.js'
-)
+const server_entry = frontend_out('server', 'entry-server.js')
 
 console.info('loading', server_entry)
 const mod = await import(path_to_file_url(server_entry).href)

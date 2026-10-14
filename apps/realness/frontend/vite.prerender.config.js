@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { readFileSync as read_file_sync } from 'node:fs'
 import { product_paths } from '#root/src/settings/layout.js'
+import { frontend_out } from '#root/src/settings/output.js'
 
 const project_root = file_url_to_path(new URL('.', import.meta.url))
 const { app: app_root } = product_paths()
@@ -45,7 +46,7 @@ export default define_config({
   ],
   build: {
     ssr: path.join(app_root, 'prerender/entry-server.js'),
-    outDir: 'dist/server',
+    outDir: frontend_out('server'),
     emptyOutDir: true,
     target: 'node20',
     rollupOptions: {
@@ -56,6 +57,6 @@ export default define_config({
     }
   },
   ssr: {
-    noExternal: ['marked', 'marked-gfm-heading-id']
+    noExternal: true
   }
 })

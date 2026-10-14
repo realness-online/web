@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { is_release_junk } from './release-junk.js'
+import { frontend_out } from '#root/src/settings/output.js'
 
 const default_repo = 'realness-online/web'
 const default_url = 'https://realness.online'
@@ -121,7 +122,7 @@ const latest_release_tag_with_manifest = async repo => {
     `No GitHub release on ${repo} has a ${manifest_asset} asset yet.\n` +
       `Operators: deploy from dist/, then publish that same manifesto:\n` +
       `  npm run release:gh\n` +
-      `Or: gh release upload <tag> dist/build-manifest.json`
+      `Or: gh release upload <tag> "${frontend_out(manifest_asset)}"`
   )
 }
 
@@ -210,7 +211,7 @@ export const load_github_manifest = async (
     `Could not download ${manifest_asset} for release ${tag} from ${repo}. Tried:\n` +
       `${tried.map(u => `  ${u}`).join('\n')}\n` +
       `Operators: attach the deployed dist manifesto with:\n` +
-      `  gh release upload ${tag} dist/build-manifest.json\n` +
+      `  gh release upload ${tag} "${frontend_out(manifest_asset)}"\n` +
       `Or: npm run release:gh`
   )
 }

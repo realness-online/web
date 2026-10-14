@@ -9,9 +9,10 @@ import {
 import path from 'node:path'
 import { pathToFileURL as path_to_file_url } from 'node:url'
 import { artifacts_dir } from './lib/artifacts.js'
+import { frontend_out } from '#root/src/settings/output.js'
 
 /** Exercise the page/chat DOM contract with the shipped styles in headless Brave. */
-const assets = new URL('../dist/assets/', import.meta.url)
+const assets = path_to_file_url(`${frontend_out('assets')}/`)
 const files = (await read_directory(assets)).filter(name =>
   name.endsWith('.css')
 )

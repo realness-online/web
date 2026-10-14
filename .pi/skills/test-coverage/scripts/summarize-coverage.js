@@ -22,9 +22,10 @@ const get_arg = (flag, fallback) => {
 const project_root = get_arg('--root', process.cwd())
 const threshold = Number(get_arg('--threshold', '80'))
 const top_n = Number(get_arg('--top', '30'))
-const coverage_dir = join(project_root, 'coverage')
+const coverage_file = get_arg('--coverage', join(project_root, 'coverage', 'coverage-final.json'))
+const coverage_dir = join(coverage_file, '..')
 
-const by_src = load_coverage_by_src(project_root)
+const by_src = load_coverage_by_src(project_root, coverage_file)
 
 if (!by_src?.size) {
   console.error(`Missing ${join(coverage_dir, 'coverage-final.json')}`)

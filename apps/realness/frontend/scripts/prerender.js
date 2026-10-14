@@ -1,9 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import {
-  fileURLToPath as file_url_to_path,
-  pathToFileURL as path_to_file_url
-} from 'node:url'
+import { pathToFileURL as path_to_file_url } from 'node:url'
 import {
   apply_page_meta,
   build_sitemap_xml,
@@ -22,6 +19,7 @@ import {
 import { software_application_schema } from '../../src/app/prerender/schema.js'
 import { fetch_print_pages } from './print-pages.js'
 import { product_paths } from '#root/src/settings/layout.js'
+import { frontend_out } from '#root/src/settings/output.js'
 
 /** The site-wide OG image's own size, which is what the shell declares. */
 const DEFAULT_OG_IMAGE_WIDTH = 1280
@@ -32,10 +30,8 @@ const json_ld_builders = {
   software_application: software_application_schema
 }
 
-const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const ISO_DATE_LENGTH = 10
-const project_root = path.join(__dirname, '..')
-const dist_dir = path.join(project_root, 'dist')
+const dist_dir = frontend_out()
 const server_entry = path.join(dist_dir, 'server', 'entry-server.js')
 const template_path = path.join(dist_dir, 'index.html')
 

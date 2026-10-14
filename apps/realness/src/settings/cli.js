@@ -1,6 +1,6 @@
 import { actor_folders, host_files, host_folders, project_root, service_folders } from './layout.js'
 import { deployment_settings, local_settings } from './environments.js'
-import { out_root } from './output.js'
+import { frontend_out, out_path, out_root } from './output.js'
 
 /** Quote trusted settings for Bash without executing their values. */
 const shell_values = values => Object.entries(values).map(([key, value]) => `${key}='${String(value).replaceAll("'", "'\\''")}'`).join('\n')
@@ -8,6 +8,10 @@ const shell_values = values => Object.entries(values).map(([key, value]) => `${k
 const [command, target, ...args] = process.argv.slice(2)
 if (command === 'output' && (!target || (target === '--root' && args.length === 1))) {
   process.stdout.write(out_root({ root: args[0] || project_root }) + '\n')
+} else if (command === 'output' && target === 'frontend' && !args.length) {
+  process.stdout.write(frontend_out() + '\n')
+} else if (command === 'output' && target === 'frontend-notes' && !args.length) {
+  process.stdout.write(out_path('frontend', 'release-notes.md') + '\n')
 } else if (command === 'folders' && target === 'actor' && !args.length) {
   process.stdout.write(actor_folders().join('\n') + '\n')
 } else if (command === 'folders' && target === 'host' && !args.length) {
@@ -30,5 +34,5 @@ if (command === 'output' && (!target || (target === '--root' && args.length === 
     site_port: local_settings.site_port
   }) + '\n')
 } else {
-  throw Error('usage: settings output [--root path] | folders actor|host | files host | folders service sync|proxy|gate | shell deploy --env development|production | shell local')
+  throw Error('usage: settings output [frontend|frontend-notes|--root path] | folders actor|host | files host | folders service sync|proxy|gate | shell deploy --env development|production | shell local')
 }

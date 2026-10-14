@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import { readFile as read_file } from 'node:fs/promises'
 import { product_paths } from '#root/src/settings/layout.js'
 import { environment_settings } from '#root/src/settings/environments.js'
+import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const { root, frontend: frontend_path } = product_paths()
 const project = `${root}/`
@@ -60,8 +61,9 @@ export const run_frontend = async (args, { stdout = process.stdout, stderr = pro
   if (action === 'deploy') {
     const { version } = JSON.parse(await read_file(`${project}package.json`, 'utf8'))
     const target = environment_settings(environment).project
-    steps.push({ command: 'npm', args: ['exec', '--', 'firebase', 'deploy', '--only', production ? 'hosting:app,storage' : 'hosting', '--project', target, '-m', version], cwd: frontend })
-    if (production) node('scripts/verify-deploy.js', ['--manifest', 'dist/build-manifest.json', '--url', environment_settings(environment).public_url])
+    node('scripts/build-hosting-config.js')
+    steps.push({ command: 'npm', args: ['exec', '--', 'firebase', 'deploy', '--only', production ? 'hosting:app,storage' : 'hosting', '--project', target, '-m', version, '--config', out_path('frontend', 'firebase.json')], cwd: frontend })
+    if (production) node('scripts/verify-deploy.js', ['--manifest', frontend_out('build-manifest.json'), '--url', environment_settings(environment).public_url])
   }
   if (dry_run) {
     stdout.write(JSON.stringify({ action, environment, steps }, null, 2) + '\n')

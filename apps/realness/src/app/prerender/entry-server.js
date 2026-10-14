@@ -1,10 +1,10 @@
-import './prerender-globals.js'
 import { createSSRApp as create_ssr_app } from 'vue'
 import { renderToString as render_to_string } from 'vue/server-renderer'
 import {
   createMemoryHistory as create_memory_history,
   createRouter as create_router
 } from 'vue-router'
+import './prerender-globals.js'
 import PrerenderShell from '@/prerender/prerender-shell.vue'
 import About from '@/views/About.vue'
 import Documentation from '@/views/Documentation.vue'

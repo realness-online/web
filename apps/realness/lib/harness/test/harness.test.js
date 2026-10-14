@@ -6,7 +6,7 @@ import assert from "node:assert/strict"
 import { execFile } from "node:child_process"
 import { randomUUID } from "node:crypto"
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { promisify } from "node:util"
 import { disk } from "#root/src/can/disk.js"
 import { client } from "#root/src/files/client.js"
@@ -21,10 +21,12 @@ const A = "+15555550100"
 const RESTORE_OWNER = "+15555550102"
 const root = new URL(`../../../../../artifacts/brayness/harness-test-${randomUUID()}/`, import.meta.url).pathname
 const issuer = dev_issuer()
+const git_ceiling = process.env.GIT_CEILING_DIRECTORIES
 let server
 let store
 
 before(async () => {
+  process.env.GIT_CEILING_DIRECTORIES = dirname(root)
   process.env.BRAYNESS_STATE = join(root, "state")
   const storage = disk(join(root, "bucket"))
   server = sync_service({ storage, rights: rights(storage), project: issuer.project, certs: issuer.certs, log: () => {} })
@@ -32,6 +34,8 @@ before(async () => {
   store = client({ url: `http://127.0.0.1:${server.address().port}`, token: issuer.token(A) })
 })
 after(async () => {
+  if (git_ceiling === undefined) delete process.env.GIT_CEILING_DIRECTORIES
+  else process.env.GIT_CEILING_DIRECTORIES = git_ceiling
   server.close()
   await rm(root, { recursive: true, force: true })
 })

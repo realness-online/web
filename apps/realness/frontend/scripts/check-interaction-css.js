@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict'
+import { pathToFileURL as path_to_file_url } from 'node:url'
+import { frontend_out } from '#root/src/settings/output.js'
 import {
   readdir as read_directory,
   readFile as read_file
 } from 'node:fs/promises'
 
-const assets = new URL('../dist/assets/', import.meta.url)
+const assets = path_to_file_url(`${frontend_out('assets')}/`)
 const files = (await read_directory(assets)).filter(name =>
   name.endsWith('.css')
 )

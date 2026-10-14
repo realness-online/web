@@ -90,15 +90,15 @@ Plans live in a configured folder. This harness sets `brayness.plans` to `vault/
 
 ## What to edit vs ignore
 
-| You edit                                     | Auto-generated (ignore)         |
-| -------------------------------------------- | ------------------------------- |
-| `.pi/skills/`                                | `.pi/agent/npm/`                |
-| `.pi/extensions/`                            | `.pi/agent/memory.db`           |
-| `.pi/prompts/`                               | everything else in `.pi/agent/` |
-| `vault/`                                     |                                 |
-| `.pi/agent/settings.json`                    |                                 |
-| `AGENTS.md`                                  |                                 |
-| `AGENTS.local.md` (personal, gitignored)     |                                 |
+| You edit                                   | Auto-generated (ignore)         |
+| ------------------------------------------ | ------------------------------- |
+| `.pi/skills/`                              | `.pi/agent/npm/`                |
+| `.pi/extensions/`                          | `.pi/agent/memory.db`           |
+| `.pi/prompts/`                             | everything else in `.pi/agent/` |
+| `vault/`                                   |                                 |
+| `.pi/agent/settings.json`                  |                                 |
+| `AGENTS.md`                                |                                 |
+| `AGENTS.local.md` (personal, gitignored)   |                                 |
 | `person.local.html` (personal, gitignored) |                                 |
 
 `AGENTS.local.md` holds your preferences and quirks for the agent; it stays out of git. `person.local.html` says who this checkout belongs to, the phone itemids are minted under:

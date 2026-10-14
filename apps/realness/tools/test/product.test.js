@@ -24,7 +24,7 @@ const files = async (dir) => {
   return found
 }
 
-test("product services share one install; Functions and ops have explicit packages", async () => {
+test("product services and ops share one install; Functions has its own package", async () => {
   const manifest = JSON.parse(await read_file(join(root, "package.json"), "utf8"))
   assert.equal(manifest.name, "brayness")
   assert.equal(manifest.workspaces, undefined)
@@ -32,15 +32,23 @@ test("product services share one install; Functions and ops have explicit packag
   for (const folder of [...folders, "functions"]) {
     packages.push(...(await files(join(root, folder))).filter(path => path.endsWith("/package.json") && !starter(path)).map(path => relative(root, path)))
   }
-  assert.deepEqual(packages.sort(), ["functions/package.json", "tools/ops/package.json"])
+  assert.deepEqual(packages.sort(), ["functions/package.json"])
   const functions = JSON.parse(await read_file(join(root, "functions/package.json"), "utf8"))
   assert.equal(functions.name, "realness-functions")
   assert.ok(functions.dependencies["firebase-admin"])
   assert.equal(functions.dependencies.vue, undefined)
-  const ops = JSON.parse(await read_file(join(root, "tools/ops/package.json"), "utf8"))
-  assert.equal(ops.name, "realness-ops")
-  assert.equal(ops.scripts.test, "npm --prefix ../../functions run test")
+  for (const path of ["package.json", "package-lock.json", "node_modules", ".npmrc", ".husky"]) await assert.rejects(access(join(root, "tools/ops", path)), { code: "ENOENT" })
+  assert.equal(manifest.scripts["pre-commit:functions"], "npm run check:functions && npm run test:functions")
+  assert.equal(manifest.scripts["test:functions:coverage"], "npm --prefix functions run test:coverage")
   await assert.rejects(access(join(root, "out")), { code: "ENOENT" })
+})
+
+test("operator commands run from the product without a separate install", async () => {
+  for (const name of ["traffic", "ads", "repair"]) {
+    const { stdout } = await run("npm", ["run", name, "--", "--help"], { cwd: root })
+    assert.match(stdout, /usage/i)
+  }
+  await assert.rejects(run("npm", ["run", "migration:report"], { cwd: root }), /Both --project and --bucket are required/)
 })
 
 test("product imports resolve through the root instead of retired packages", async () => {

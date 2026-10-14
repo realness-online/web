@@ -1,8 +1,7 @@
 import fs from 'node:fs'
-import path from 'node:path'
+import { frontend_out } from '#root/src/settings/output.js'
 import {
   bare_version,
-  changelog_root,
   extract_changelog_section,
   package_version,
   read_changelog,
@@ -28,7 +27,7 @@ const main = () => {
   const bare = bare_version(version)
   extract_changelog_section(changelog, bare)
 
-  const manifest_path = path.join(changelog_root, 'dist/build-manifest.json')
+  const manifest_path = frontend_out('build-manifest.json')
   if (!fs.existsSync(manifest_path))
     throw new Error(
       `Missing ${manifest_path}. Run npm run deploy (or build) before release:gh.`

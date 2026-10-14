@@ -1,11 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["../src/app/workers/*.js", "scripts/*.js"],
+  "entry": [
+    "frontend/index.html",
+    "src/app/workers/*.js",
+    "frontend/scripts/*.js"
+  ],
   "ignorePatterns": [
     "**/artifacts/**",
     "**/dist/**",
     "**/coverage/**",
-    "**/src/wasm/**",
+    "src/app/wasm/**",
     "**/public/wasm/**",
     "**/docs/generated/**"
   ],
@@ -18,7 +22,13 @@
   },
   "overrides": [
     {
-      "files": ["tests/**/*.js", "tests/**/*.spec.js", "**/tests/mocks/**"],
+      "files": [
+        "frontend/tests/**/*.js",
+        "frontend/tests/**/*.spec.js",
+        "**/test/**/*.js",
+        "**/*.test.js",
+        "**/tests/mocks/**"
+      ],
       "rules": {
         "unused-exports": "off",
         "unused-files": "off"
@@ -26,9 +36,9 @@
     },
     {
       "files": [
-        "../src/app/components/icon.vue",
-        "../src/app/components/events/as-button.vue",
-        "tests/mocks/html/**"
+        "src/app/components/icon.vue",
+        "src/app/components/events/as-button.vue",
+        "frontend/tests/mocks/html/**"
       ],
       "rules": {
         "unresolved-imports": "off"
@@ -41,65 +51,65 @@
     "minLines": 8
   },
   "health": {
-    "ignore": ["**/tests/**", "**/src/wasm/**"],
+    "ignore": ["**/tests/**", "**/test/**", "**/*.test.js", "src/app/wasm/**"],
     "maxCyclomatic": 20,
     "maxCognitive": 15
   },
   "ignoreExports": [
     {
-      "file": "../src/app/use/layer.js",
+      "file": "src/app/use/layer.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/utils/opacity.js",
+      "file": "src/app/utils/opacity.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/utils/color-converters.js",
+      "file": "src/app/utils/color-converters.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/utils/colors.js",
+      "file": "src/app/utils/colors.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/directory-processor.js",
+      "file": "src/app/use/directory-processor.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/optimize.js",
+      "file": "src/app/use/optimize.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/path.js",
+      "file": "src/app/use/path.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/pattern.js",
+      "file": "src/app/use/pattern.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/people.js",
+      "file": "src/app/use/people.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/poster.js",
+      "file": "src/app/use/poster.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/statements.js",
+      "file": "src/app/use/statements.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/sync-folder.js",
+      "file": "src/app/use/sync-folder.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/sync.js",
+      "file": "src/app/use/sync.js",
       "exports": ["*"]
     },
     {
-      "file": "../src/app/use/vectorize.js",
+      "file": "src/app/use/vectorize.js",
       "exports": ["*"]
     }
   ]

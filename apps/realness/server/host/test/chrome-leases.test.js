@@ -1,9 +1,9 @@
 import assert from "node:assert/strict"
-import { mkdtempSync, rmSync } from "node:fs"
+import { mkdirSync as mkdir_sync, mkdtempSync, rmSync } from "node:fs"
 import { connect } from "node:net"
 import { join } from "node:path"
 import { test } from "node:test"
-import { fileURLToPath } from "node:url"
+import { out_path } from "#root/lib/output.js"
 import { ChromeLeases, lease_rules } from "../../../src/host/chrome-leases.js"
 import { copy_net, namespace_commands } from "../../../src/host/chrome-pool.js"
 import { Door } from "../../../src/host/door.js"
@@ -97,7 +97,8 @@ test("a lease returned while its copy restores is destroyed on arrival", async (
 })
 
 test("the door leases and returns Chrome for its own actor only", async () => {
-  const root = mkdtempSync(fileURLToPath(new URL("../../../../../artifacts/brayness/door-chrome-", import.meta.url)))
+  mkdir_sync(out_path(), { recursive: true })
+  const root = mkdtempSync(out_path("door-chrome-"))
   const record = { id: "a-abcdef123456", owner: "+14155550123", tap: "fc-tap4", vsockPath: join(root, "vsock.sock") }
   const store = { liveActors: () => [record], get: () => record }
   const pool = fake_pool()

@@ -27,8 +27,8 @@ const threshold = Number(get_arg('--threshold', '80'))
 const top_n = Number(get_arg('--top', '25'))
 const coverage_only = args.includes('--coverage-only')
 
-const fallow_path = join(project_root, 'fallow-report.json')
-const coverage = load_coverage_by_src(project_root)
+const fallow_path = get_arg('--fallow', join(project_root, 'fallow-report.json'))
+const coverage = load_coverage_by_src(project_root, get_arg('--coverage', undefined))
 
 if (!coverage?.size) {
   console.error(`Missing coverage/coverage-final.json under ${project_root}`)
@@ -99,17 +99,18 @@ const priority_prefixes = [
 
 const product_priority = path => {
   for (const [label, prefix] of priority_prefixes) {
-    if (path.startsWith(prefix)) return label
+    if (path.replace(/^src\/app\//, 'src/').startsWith(prefix)) return label
   }
   return 'P2'
 }
 
 const spec_paths = src_path => {
   const stem = src_path
-    .replace(/^src\//, '')
+    .replace(/^src\/(?:app\/)?/, '')
     .replace(/\.vue$/, '')
     .replace(/\.js$/, '')
-  return [`tests/${stem}.spec.js`, `tests/${stem}.spec.ts`]
+  const prefix = src_path.startsWith('src/app/') ? 'frontend/' : ''
+  return [`${prefix}tests/${stem}.spec.js`, `${prefix}tests/${stem}.spec.ts`]
 }
 
 const has_spec = src_path =>

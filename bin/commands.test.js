@@ -44,7 +44,16 @@ test('every package script has exactly one full copy command and a source', asyn
       if (source !== 'package.json') assert.match(matches[0].command, /--prefix/)
     }
   }
-  assert.equal(catalog.packages.length, 9)
+  assert.deepEqual(catalog.packages, [
+    'package.json',
+    'apps/realness/frontend/packages/itemid/package.json',
+    'apps/realness/frontend/packages/store/package.json',
+    'apps/realness/frontend/packages/thoughts/package.json',
+    'apps/realness/functions/package.json',
+    'apps/realness/package.json',
+    '.pi/examples/app/package.json',
+    '.pi/examples/static/package.json',
+  ])
   assert.equal(new Set(catalog.entries.map(entry => entry.id)).size, catalog.entries.length)
 })
 

@@ -4,12 +4,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { is_release_junk } from './release-junk.js'
+import { frontend_out } from '#root/src/settings/output.js'
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const project_root = path.join(__dirname, '..')
-const dist_dir = process.env.DIST_DIR
-  ? path.resolve(process.env.DIST_DIR)
-  : path.join(project_root, 'dist')
+const dist_dir = frontend_out()
 const manifest_name = 'build-manifest.json'
 const manifest_path = path.join(dist_dir, manifest_name)
 

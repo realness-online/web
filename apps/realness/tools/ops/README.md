@@ -2,7 +2,8 @@
 
 Functions live in `apps/realness/functions/`. Paths below are relative to the product root.
 Run Functions commands there as `npm run test:functions`, `serve:functions`, `logs:functions`, or `deploy:functions`.
-Traffic, ads, repair, and migration reporting are separate operator tools in this folder.
+Traffic, ads, repair, and migration reporting are operator tools in this folder.
+They use the product package; no install is needed here.
 
 **Optional.** Server-side capabilities for Realness instances. Most moderators
 never need this repo.

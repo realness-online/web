@@ -10,3 +10,5 @@ export const out_root = ({ env = process.env, root = project_root } = {}) => {
 }
 
 export const out_path = (...parts) => join(out_root(), ...parts)
+
+export const frontend_out = (...parts) => join(process.env.DIST_DIR ? resolve(process.env.DIST_DIR) : out_path('frontend', 'dist'), ...parts)
