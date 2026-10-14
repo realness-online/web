@@ -3,7 +3,8 @@ import {
   build_download_svg,
   get_filename_for_poster,
   prepare_poster_svg_for_3d,
-  revalidate_poster_files
+  revalidate_poster_files,
+  wait_for_poster_export_ready
 } from '@/utils/export-poster'
 import { geology_layers } from '@/use/poster'
 
@@ -314,6 +315,161 @@ describe('@/utils/export-poster', () => {
 
       await prepared
       expect(fill_set).toBe(true)
+    })
+  })
+
+  describe('wait_for_poster_export_ready', () => {
+    const with_symbol_defs = () => {
+      const figure = document.createElement('figure')
+      const poster_svg = make_svg()
+      const symbol_defs = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      symbol_defs.setAttribute('data-poster-symbol-defs', '')
+      figure.append(poster_svg, symbol_defs)
+      document.body.append(figure)
+      return { poster_svg, symbol_defs }
+    }
+
+    it('resolves at once when the poster has no symbol defs beside it', async () => {
+      const svg = make_svg()
+
+      await expect(
+        wait_for_poster_export_ready(
+          svg,
+          /** @type {import('@/types').Id} */ ('/+1/posters/1')
+        )
+      ).resolves.toBeUndefined()
+    })
+
+    it('waits for a geology symbol that is present but still empty', async () => {
+      const { poster_svg, symbol_defs } = with_symbol_defs()
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      symbol.setAttribute('itemid', '/+1/posters/1/sediment')
+      symbol_defs.appendChild(symbol)
+
+      let filled = false
+      const ready = wait_for_poster_export_ready(
+        poster_svg,
+        /** @type {import('@/types').Id} */ ('/+1/posters/1')
+      )
+      requestAnimationFrame(() => {
+        symbol.innerHTML = '<path d="M0 0 L1 1" />'
+        filled = true
+      })
+
+      await ready
+      expect(filled).toBe(true)
+    })
+
+    it('rejects when a symbol never gains content', async () => {
+      vi.useFakeTimers()
+      const { poster_svg, symbol_defs } = with_symbol_defs()
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      symbol.setAttribute('itemid', '/+1/posters/1/boulders')
+      symbol_defs.appendChild(symbol)
+
+      const ready = wait_for_poster_export_ready(
+        poster_svg,
+        /** @type {import('@/types').Id} */ ('/+1/posters/1')
+      )
+      const settled = expect(ready).rejects.toThrow(
+        'Timeout waiting for poster symbol'
+      )
+      await vi.advanceTimersByTimeAsync(16000)
+      await settled
+      vi.useRealTimers()
+    })
+  })
+
+  describe('id normalization for download', () => {
+    it('names a layer symbol for its itemprop', () => {
+      const source = make_svg()
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      symbol.setAttribute('id', 'a-long-runtime-id')
+      symbol.setAttribute('itemprop', 'regular')
+      source.append(symbol)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('symbol[id="regular"]')).not.toBeNull()
+      expect(result.querySelector('[id="a-long-runtime-id"]')).toBeNull()
+    })
+
+    it('names a layer element for the layer in its itemid', () => {
+      const source = make_svg()
+      const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask')
+      mask.setAttribute('id', 'mask-a-long-runtime-id')
+      mask.setAttribute('itemid', '/+1/sediment/9')
+      source.append(mask)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('mask[id="sediment"]')).not.toBeNull()
+    })
+
+    it('points url() references at the renamed layer', () => {
+      const source = make_svg()
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      symbol.setAttribute('id', 'a-long-runtime-id')
+      symbol.setAttribute('itemprop', 'regular')
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('fill', 'url(#a-long-runtime-id)')
+      source.append(symbol, path)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('path')?.getAttribute('fill')).toBe(
+        'url(#regular)'
+      )
+    })
+
+    it('points a shadow use at the renamed shadows symbol', () => {
+      const source = make_svg()
+      const shadow = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      shadow.setAttribute('id', 'runtime-shadow-id')
+      shadow.setAttribute('itemid', '/+1/shadows/9')
+      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+      use.setAttribute('href', '#runtime-shadow-id')
+      use.setAttribute('itemprop', 'shadow')
+      source.append(shadow, use)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('symbol[id="shadows"]')).not.toBeNull()
+      expect(result.querySelector('use')?.getAttribute('href')).toBe(
+        '#shadows'
+      )
+    })
+
+    it('leaves an id that carries no layer meaning alone', () => {
+      const source = make_svg()
+      const group = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'g'
+      )
+      group.setAttribute('id', 'clip-path-1')
+      source.append(group)
+
+      const result = build_download_svg(source)
+
+      expect(result.querySelector('g[id="clip-path-1"]')).not.toBeNull()
     })
   })
 })
