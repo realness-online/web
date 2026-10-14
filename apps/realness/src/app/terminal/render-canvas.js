@@ -13,9 +13,34 @@ export const cell_metrics = (ctx, font_size) => {
 }
 
 /**
+ * @typedef {object} Frame
+ * @property {number} cols
+ * @property {number} rows
+ * @property {{ background: number[], foreground: number[], cursor?: number[] }} colors
+ * @property {{ cells: Cell[] }[]} rows_data
+ */
+
+/**
+ * @typedef {object} Cell
+ * @property {string} [text]
+ * @property {number[]} [fg]
+ * @property {number[]} [bg]
+ * @property {boolean} [selected]
+ * @property {{ bold?: boolean, italic?: boolean, underline?: boolean, inverse?: boolean }} [flags]
+ */
+
+/**
+ * @typedef {object} DrawOptions
+ * @property {number} [font_size]
+ * @property {number} [dpr]
+ * @property {boolean} [blink_on]
+ * @property {number[]} [selection_color]
+ */
+
+/**
  * @param {CanvasRenderingContext2D} ctx
- * @param {object} frame from Terminal.frame()
- * @param {{font_size?: number, dpr?: number}} [opts]
+ * @param {Frame} frame from Terminal.frame()
+ * @param {DrawOptions} [opts]
  */
 export const draw_frame = (ctx, frame, opts = {}) => {
   const font_size = opts.font_size ?? FONT_SIZE

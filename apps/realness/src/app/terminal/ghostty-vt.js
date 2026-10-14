@@ -132,21 +132,16 @@ export const apply_theme = (terminal, theme) => {
  */
 export const load_engine = async source => {
   const bytes = await to_bytes(source)
-  const { instance } = await WebAssembly.instantiate(bytes, {
-    env: { log: () => {} }
-  })
+  const { instance } = await WebAssembly.instantiate(
+    /** @type {BufferSource} */ (bytes),
+    { env: { log: () => {} } }
+  )
   return new Engine(instance.exports)
 }
 
 const to_bytes = async source => {
   if (source instanceof Uint8Array || source instanceof ArrayBuffer)
     return source
-  const is_node =
-    typeof process !== 'undefined' && process.versions && process.versions.node
-  if (is_node) {
-    const { readFile } = await import('node:fs/promises')
-    return readFile(source)
-  }
   const response = await fetch(source)
   return new Uint8Array(await response.arrayBuffer())
 }

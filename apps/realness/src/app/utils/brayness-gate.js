@@ -1,4 +1,4 @@
-import { records } from '../../chat/stream.js'
+import { records } from '@/utils/stream-records'
 
 const gate_url = () => {
   const url = import.meta.env.VITE_BRAYNESS_GATE_URL

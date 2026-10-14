@@ -28,7 +28,7 @@ const installed_paths = new Map([
   ["web/palette.css", "apps/realness/src/app/style/palette.css"],
   ["web/color.css", "apps/realness/src/app/style/color.css"],
   ...["light", "dark"].flatMap(scheme => [
-    [`ghostty/realness-${scheme}`, `apps/realness/src/terminal/themes/realness-${scheme}`],
+    [`ghostty/realness-${scheme}`, `apps/realness/src/app/terminal/themes/realness-${scheme}`],
     [`pi/realness-${scheme}.json`, `.pi/agent/themes/realness-${scheme}.json`],
   ]),
   ["nvim/realness.lua", "work/nvim/colors/realness.lua"],

@@ -13,7 +13,7 @@
     ref,
     watch
   } from 'vue'
-  import wasm_url from '../../../../frontend/terminal/public/ghostty-vt.wasm?url'
+  import wasm_url from '@/terminal/ghostty-vt.wasm?url'
 
   const props = defineProps({
     actor: { type: String, default: null },
@@ -119,7 +119,7 @@
     set_loading(true)
     try {
       await next_tick()
-      const { mount } = await import('../../../terminal/terminal.js')
+      const { mount } = await import('@/terminal/terminal.js')
       if (left) return
       const user = current_user.value
       const { actor } = props

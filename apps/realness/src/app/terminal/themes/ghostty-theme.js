@@ -8,6 +8,7 @@ const rgb = hex =>
 
 /** Theme text to `{ background, foreground, cursor, ..., palette }`. Throws when incomplete. */
 export const parse_theme = text => {
+  /** @type {{ palette: number[][], [key: string]: number[] | number[][] }} */
   const theme = { palette: [] }
   for (const line of text.split('\n')) {
     const match = /^\s*([\w-]+)\s*=\s*(.+?)\s*$/.exec(line)

@@ -123,6 +123,7 @@ const create_connection = (
   const query = new URLSearchParams({ cols: state.cols, rows: state.rows })
   if (actor) query.set('actor', actor)
   const pty_url = `${scheme}://${location.host}${new URL('pty', base).pathname}`
+  /** @type {WebSocket | null} */
   let ws = null
   let retries = 0
 
@@ -148,11 +149,20 @@ const create_connection = (
     retries += 1
   }
 
+  /** @param {WebSocket} socket */
+  const attach = socket => {
+    ws = socket
+    socket.onopen = on_open
+    socket.onmessage = on_message
+    socket.onclose = on_close
+  }
+
   const connect = async () => {
     if (state.exited) return
     if (open) {
+      let socket
       try {
-        ws = await open({ cols: state.cols, rows: state.rows })
+        socket = await open({ cols: state.cols, rows: state.rows })
       } catch (error) {
         if (state.exited) return
         state.closed = true
@@ -167,10 +177,8 @@ const create_connection = (
         retry()
         return
       }
-      if (state.exited) return ws.close()
-      ws.onopen = on_open
-      ws.onmessage = on_message
-      ws.onclose = on_close
+      if (state.exited) return socket.close()
+      attach(socket)
       return
     }
     let ticket
@@ -198,10 +206,7 @@ const create_connection = (
     query.set('cols', state.cols)
     query.set('rows', state.rows)
     query.set('ticket', ticket)
-    ws = new WebSocket(`${pty_url}?${query}`)
-    ws.onopen = on_open
-    ws.onmessage = on_message
-    ws.onclose = on_close
+    attach(new WebSocket(`${pty_url}?${query}`))
   }
 
   const on_open = () => {
@@ -220,13 +225,13 @@ const create_connection = (
     const message = JSON.parse(event.data)
     if (message.op === 'taken') {
       state.taken = true
-      ws.close()
+      ws?.close()
       return
     }
     if (message.op === 'exit') {
       state.exited = true
       set_note(`exit ${message.code}`)
-      ws.close()
+      ws?.close()
       return
     }
     if (message.op !== 'data') return

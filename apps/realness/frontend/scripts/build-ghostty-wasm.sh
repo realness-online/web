@@ -5,8 +5,9 @@ GHOSTTY_COMMIT=4ae9f1a2de
 ZIG_URL=https://ziglang.org/download/0.16.0/zig-aarch64-macos-0.16.0.tar.xz
 ZIG_SHA256=b23d70deaa879b5c2d486ed3316f7eaa53e84acf6fc9cc747de152450d401489
 
-here=$(cd "$(dirname "$0")" && pwd)
-cache="$here/.cache"
+project=$(cd "$(dirname "$0")/../.." && pwd)
+output="$project/src/app/terminal/ghostty-vt.wasm"
+cache="$(node "$project/src/settings/cli.js" output --root "$project")/ghostty"
 mkdir -p "$cache"
 
 if [ ! -x "$cache/zig/zig" ]; then
@@ -24,5 +25,5 @@ git -C "$cache/ghostty" checkout --quiet "$GHOSTTY_COMMIT"
 
 cd "$cache/ghostty"
 "$cache/zig/zig" build -Demit-lib-vt -Dtarget=wasm32-freestanding -Doptimize=ReleaseFast
-cp zig-out/bin/ghostty-vt.wasm "$here/public/ghostty-vt.wasm"
-echo "wrote public/ghostty-vt.wasm"
+cp zig-out/bin/ghostty-vt.wasm "$output"
+echo "wrote $output"

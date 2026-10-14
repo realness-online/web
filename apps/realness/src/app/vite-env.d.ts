@@ -20,6 +20,10 @@ declare module '@/wasm/tracer.js' {
   }): Promise<void>
 }
 
+interface Window {
+  brayness?: Record<string, (...args: any[]) => unknown>
+}
+
 declare module '*.js'
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'

@@ -1,7 +1,7 @@
+import { capture_file, wasm_bytes } from './wasm.js'
 import { readFile as read_file } from 'node:fs/promises'
 
-const WASM = new URL('../public/ghostty-vt.wasm', import.meta.url)
-const wasm = await WebAssembly.instantiate(await read_file(WASM), {
+const wasm = await WebAssembly.instantiate(wasm_bytes, {
   env: { log: () => {} }
 })
 const ex = wasm.instance.exports
@@ -144,57 +144,39 @@ const format_plain = term => {
   return text
 }
 
-const capture_file = process.argv[2]
-if (capture_file) {
-  const captured = await read_file(capture_file, 'utf8')
-  const term = new_terminal(120, 30)
-  write(term, captured)
-  const text = format_plain(term)
-  console.log(text)
-  const ok =
-    text.includes('pi') &&
-    /v0\.\d+\.\d+/.test(text) &&
-    text.includes('interrupt')
-  console.log(
-    ok ? 'PASS: parsed a captured pi TUI stream' : 'FAIL: pi screen not found'
-  )
-  process.exit(ok ? 0 : 1)
-}
+const pi_capture = capture_file('pi.tui')
 
-const primary = [
-  'first line\r\n',
-  '\x1b[1;32mgreen bold\x1b[0m and \x1b[4munderline\x1b[0m\r\n',
-  '\x1b[3;1H\x1b[2Kthird line erased first',
-  '\x1b[s\x1b[10;20Hcursor here\x1b[u'
-].join('')
-const alt = '\x1b[?1049hALT SCREEN\x1b[5;3Hat 5,3'
+describe('ghostty engine exports', () => {
+  it('parses a captured pi screen', async () => {
+    const term = new_terminal(120, 30)
+    write(term, await read_file(pi_capture, 'utf8'))
+    const text = format_plain(term)
+    expect(text).toContain('pi')
+    expect(text).toMatch(/v0\.\d+\.\d+/)
+    expect(text).toContain('interrupt')
+  })
 
-const term = new_terminal(80, 24)
-write(term, primary)
-const data = layout.types.GhosttyTerminalData.values
-const primary_cursor = [get(term, data.CURSOR_X), get(term, data.CURSOR_Y)]
-const primary_text = format_plain(term)
-
-write(term, alt)
-const alt_cursor = [get(term, data.CURSOR_X), get(term, data.CURSOR_Y)]
-const alt_text = format_plain(term)
-
-console.log(primary_text)
-console.log('---')
-console.log(alt_text)
-console.log('---')
-console.log(`cursor primary ${primary_cursor} alt ${alt_cursor}`)
-const ok =
-  primary_text.includes('green bold') &&
-  primary_text.includes('underline') &&
-  primary_text.includes('third line erased first') &&
-  alt_text.includes('ALT SCREEN') &&
-  alt_text.includes('at 5,3') &&
-  primary_cursor[0] === 23 &&
-  primary_cursor[1] === 2 &&
-  alt_cursor[0] === 8 &&
-  alt_cursor[1] === 4
-console.log(
-  ok ? 'PASS: parsed, formatted, cursor read' : 'FAIL: unexpected screen'
-)
-process.exit(ok ? 0 : 1)
+  it('formats both screens and reads the cursor', () => {
+    const primary = [
+      'first line\r\n',
+      '\x1b[1;32mgreen bold\x1b[0m and \x1b[4munderline\x1b[0m\r\n',
+      '\x1b[3;1H\x1b[2Kthird line erased first',
+      '\x1b[s\x1b[10;20Hcursor here\x1b[u'
+    ].join('')
+    const term = new_terminal(80, 24)
+    const data = layout.types.GhosttyTerminalData.values
+    write(term, primary)
+    const primary_text = format_plain(term)
+    expect([get(term, data.CURSOR_X), get(term, data.CURSOR_Y)]).toEqual([
+      23, 2
+    ])
+    expect(primary_text).toContain('green bold')
+    expect(primary_text).toContain('underline')
+    expect(primary_text).toContain('third line erased first')
+    write(term, '\x1b[?1049hALT SCREEN\x1b[5;3Hat 5,3')
+    const alt_text = format_plain(term)
+    expect([get(term, data.CURSOR_X), get(term, data.CURSOR_Y)]).toEqual([8, 4])
+    expect(alt_text).toContain('ALT SCREEN')
+    expect(alt_text).toContain('at 5,3')
+  })
+})

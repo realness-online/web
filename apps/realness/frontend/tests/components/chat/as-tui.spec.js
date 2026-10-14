@@ -26,7 +26,7 @@ const { mock_mount, mock_close, mock_start_actor, mock_open_terminal } =
       mock_open_terminal: vi.fn()
     }
   })
-vi.mock('../../../../src/terminal/terminal.js', () => ({ mount: mock_mount }))
+vi.mock('@/terminal/terminal.js', () => ({ mount: mock_mount }))
 vi.mock('@/utils/brayness-gate', async import_original => ({
   ...(await import_original()),
   start_actor: mock_start_actor,
