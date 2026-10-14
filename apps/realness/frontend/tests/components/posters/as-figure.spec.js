@@ -1416,3 +1416,80 @@ describe('@/component/posters/as-figure guards', () => {
     wrapper.unmount()
   })
 })
+
+describe('@/component/posters/as-figure computed guards', () => {
+  const mounted = []
+
+  const mount_figure = async props => {
+    const wrapper = shallowMount(as_figure, {
+      props: { itemid: poster.id, ...props },
+      global: {
+        provide: {
+          'key-commands': {
+            add_context: vi.fn(),
+            register_handler: vi.fn(),
+            remove_context: vi.fn(),
+            unregister_handler: vi.fn()
+          }
+        }
+      }
+    })
+    mounted.push(wrapper)
+    await flushPromises()
+    return wrapper
+  }
+
+  afterEach(() => {
+    mounted.splice(0).forEach(wrapper => wrapper.unmount())
+  })
+
+  it('labels a dated poster with its day', async () => {
+    const wrapper = await mount_figure()
+
+    expect(wrapper.vm.poster_label.startsWith('Poster from ')).toBe(true)
+  })
+
+  it('falls back to the word Poster with no date', async () => {
+    const wrapper = await mount_figure({
+      itemid: '/+14151234356/posters/not-a-date'
+    })
+
+    expect(wrapper.vm.poster_label).toBe('Poster')
+  })
+
+  it('reports an empty time with no date', async () => {
+    const wrapper = await mount_figure({
+      itemid: '/+14151234356/posters/not-a-date'
+    })
+
+    expect(wrapper.vm.poster_time).toBe('')
+  })
+
+  it('names the author behind the poster', async () => {
+    const wrapper = await mount_figure()
+
+    expect(wrapper.vm.profile_path).toBe('/+14151234356')
+  })
+
+  it('knows which poster is yours', async () => {
+    window.localStorage.me = '/+14151234356'
+    const mine = await mount_figure()
+    const theirs = await mount_figure({ itemid: '/+19995550000/posters/1' })
+
+    expect(mine.vm.is_my_poster).toBe(true)
+    expect(theirs.vm.is_my_poster).toBe(false)
+  })
+
+  it('owns no poster while signed out', async () => {
+    delete window.localStorage.me
+    const wrapper = await mount_figure()
+
+    expect(wrapper.vm.is_my_poster).toBe(false)
+  })
+
+  it('does not want the 3D canvas until the poster is ready and in view', async () => {
+    const wrapper = await mount_figure()
+
+    expect(wrapper.vm.want_3d).toBe(false)
+  })
+})
