@@ -1,5 +1,5 @@
 <script setup>
-  import icon from '@/components/Icon'
+  import icon from '@/components/icon'
   import { load, as_author } from '@/utils/itemid'
   import AsAvatar from '@/components/posters/as-svg'
   import AsAddress from '@/components/profile/as-address'

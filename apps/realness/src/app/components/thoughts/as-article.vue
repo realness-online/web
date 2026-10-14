@@ -9,7 +9,7 @@
   } from 'vue'
   import { load, as_author, as_created_at } from '@/utils/itemid'
   import { as_time } from '@/utils/date'
-  import Icon from '@/components/Icon'
+  import Icon from '@/components/icon'
   import AsThought from '@/components/thoughts/as-thought'
   import AsAvatar from '@/components/posters/as-avatar'
   import AsMessenger from '@/components/profile/as-messenger'
