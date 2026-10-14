@@ -396,3 +396,117 @@ describe('@/components/posters/as-mask-pen', () => {
     wrapper.unmount()
   })
 })
+
+describe('@/components/posters/as-mask-pen geometry', () => {
+  let mask_pen
+
+  const patch_path_el_with = (el, box, ctm) => {
+    el.getBBox = () => box
+    el.getScreenCTM = () => ctm
+    el.isPointInFill = () => ctm !== null
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    document.body.innerHTML = ''
+    mask_pen = create_mask_pen()
+  })
+
+  it('carries a path transform into the hit layer', async () => {
+    mock_collect.mockReturnValueOnce([
+      { key: 'sand:0', d: 'M0 0 L1 1 Z', transform: 'translate(3 4)' }
+    ])
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+
+    const hit = wrapper.find('g[aria-hidden="true"] path')
+    expect(hit.attributes('transform')).toBe('translate(3 4)')
+    wrapper.unmount()
+  })
+
+  it('clears the hover when the cursor leaves every cell', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    const paths = [...wrapper.find('g[aria-hidden="true"]').element.children]
+    for (const el of paths)
+      patch_path_el_with(el, { x: 0, y: 0, width: 10, height: 10 }, null)
+    wrapper.find('svg').element.createSVGPoint = function () {
+      return {
+        x: 0,
+        y: 0,
+        matrixTransform() {
+          return { x: this.x, y: this.y }
+        }
+      }
+    }
+
+    await wrapper.find('rect').trigger('pointermove', { clientX: 5, clientY: 5 })
+
+    expect(mask_pen.hovered_key.value).toBeNull()
+    wrapper.unmount()
+  })
+
+  it('falls back to the origin when a cell has no transform matrix', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    const paths = [...wrapper.find('g[aria-hidden="true"]').element.children]
+    for (const el of paths)
+      patch_path_el_with(el, { x: 5, y: 5, width: 10, height: 10 }, null)
+    wrapper.find('svg').element.createSVGPoint = function () {
+      return {
+        x: 0,
+        y: 0,
+        matrixTransform() {
+          return { x: this.x, y: this.y }
+        }
+      }
+    }
+    Object.defineProperty(wrapper.find('rect').element, 'setPointerCapture', {
+      value: vi.fn(),
+      configurable: true
+    })
+
+    await wrapper.find('rect').trigger('pointerdown', { clientX: 5, clientY: 5 })
+    await wrapper.find('rect').trigger('pointermove', { clientX: 25, clientY: 25 })
+
+    expect(mask_pen.painting.value).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('ignores a pointer move that is not over any cell', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    const paths = [...wrapper.find('g[aria-hidden="true"]').element.children]
+    for (const el of paths)
+      patch_path_el_with(el, { x: 100, y: 100, width: 10, height: 10 }, {
+        a: 1,
+        b: 0,
+        c: 0,
+        d: 1,
+        e: 0,
+        f: 0,
+        inverse() {
+          return this
+        }
+      })
+    wrapper.find('svg').element.createSVGPoint = function () {
+      return {
+        x: 0,
+        y: 0,
+        matrixTransform() {
+          return { x: this.x, y: this.y }
+        }
+      }
+    }
+    for (const el of paths) el.isPointInFill = () => false
+
+    await wrapper.find('rect').trigger('pointermove', { clientX: 5, clientY: 5 })
+
+    expect(mask_pen.hovered_key.value).toBeNull()
+    wrapper.unmount()
+  })
+})
