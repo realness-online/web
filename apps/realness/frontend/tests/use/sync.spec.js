@@ -1134,6 +1134,38 @@ describe('sync composable', () => {
         expect(emit).not.toHaveBeenCalledWith('refreshed', expect.anything())
       })
 
+      it('reports your own author beside the reload when your posters moved', async () => {
+        const { get } = await import('idb-keyval')
+        await arrange([])
+        get.mockImplementation(key => {
+          if (String(key).endsWith('/posters/'))
+            return Promise.resolve({ items: ['1000'] })
+          return Promise.resolve(null)
+        })
+
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(emit).toHaveBeenCalledWith('refreshed', {
+          reload_phonebook: false,
+          authors: ['/+14151234356']
+        })
+      })
+
+      it('skips a signed-in tick while the tab is hidden', async () => {
+        await arrange([])
+        Object.defineProperty(document, 'visibilityState', {
+          value: 'hidden',
+          configurable: true
+        })
+        emit.mockClear()
+
+        window.dispatchEvent(new Event('online'))
+        await flushPromises()
+
+        expect(emit).not.toHaveBeenCalled()
+      })
+
       it('reloads you when a thought arrives from another device', async () => {
         await arrange([{ id: '/+14151234356/statements/1', type: 'thoughts' }])
 
@@ -1489,5 +1521,65 @@ describe('sync_author_posters', () => {
 
     expect(changed).toBe(false)
     expect(as_directory).not.toHaveBeenCalled()
+  })
+
+  it('does nothing without an author', async () => {
+    const { as_directory } = await import('@/persistence/Directory')
+
+    expect(await sync_author_posters(null)).toBe(false)
+    expect(as_directory).not.toHaveBeenCalled()
+  })
+
+  it('does nothing while offline', async () => {
+    const on_line = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const { as_directory } = await import('@/persistence/Directory')
+
+    expect(await sync_author_posters(author_id)).toBe(false)
+    expect(as_directory).not.toHaveBeenCalled()
+    on_line.mockRestore()
+  })
+
+  it('walks again once the eight hours are up', async () => {
+    localStorage.posters_synced_at = new Date(
+      Date.now() - 9 * 60 * 60 * 1000
+    ).toISOString()
+    const { as_directory } = await import('@/persistence/Directory')
+
+    await sync_author_posters(author_id)
+
+    expect(as_directory).toHaveBeenCalled()
+    expect(localStorage.posters_synced_at).toBeTypeOf('string')
+  })
+
+  it('leaves a server entry without a hash alone', async () => {
+    const { get, del } = await import('idb-keyval')
+    const { metadata } = await import('@/utils/serverless')
+    get.mockImplementation(key =>
+      Promise.resolve(key === poster_id ? cached_poster : null)
+    )
+    metadata.mockResolvedValue({
+      updated: new Date().toISOString(),
+      customMetadata: {}
+    })
+
+    expect(await sync_author_posters(author_id)).toBe(false)
+    expect(del).not.toHaveBeenCalled()
+  })
+
+  it('skips a poster this device never cached', async () => {
+    const { get, del } = await import('idb-keyval')
+    const { metadata } = await import('@/utils/serverless')
+    get.mockResolvedValue(null)
+
+    expect(await sync_author_posters(author_id)).toBe(false)
+    expect(metadata).not.toHaveBeenCalled()
+    expect(del).not.toHaveBeenCalled()
+  })
+
+  it('survives a listing with no items', async () => {
+    const { as_directory } = await import('@/persistence/Directory')
+    as_directory.mockResolvedValue(null)
+
+    expect(await sync_author_posters(author_id)).toBe(false)
   })
 })
