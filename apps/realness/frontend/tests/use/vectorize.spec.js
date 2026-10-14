@@ -698,6 +698,24 @@ describe('exported utilities', () => {
           close: vi.fn()
         })
       )
+      global.OffscreenCanvas = class {
+        constructor(width, height) {
+          this.width = width
+          this.height = height
+          this.convertToBlob = mock_convert_to_blob
+        }
+        getContext() {
+          return {
+            drawImage: vi.fn(),
+            getImageData: vi.fn(() => ({
+              data: new Uint8ClampedArray(512 * 512 * 4),
+              width: 512,
+              height: 512
+            })),
+            putImageData: vi.fn()
+          }
+        }
+      }
     })
 
     it('resizes regular image file to blob', async () => {
@@ -708,6 +726,98 @@ describe('exported utilities', () => {
       expect(result.blob).toBeInstanceOf(Blob)
       expect(result.width).toBeGreaterThan(0)
       expect(result.height).toBeGreaterThan(0)
+    })
+
+    it('rasterizes an SVG file into a jpeg blob', async () => {
+      global.OffscreenCanvas = class {
+        constructor(width, height) {
+          this.width = width
+          this.height = height
+        }
+        getContext() {
+          return {
+            drawImage: vi.fn(),
+            getImageData: vi.fn(() => ({
+              data: new Uint8ClampedArray(512 * 512 * 4),
+              width: 512,
+              height: 512
+            })),
+            putImageData: vi.fn()
+          }
+        }
+        convertToBlob() {
+          return Promise.resolve(new Blob([''], { type: 'image/jpeg' }))
+        }
+      }
+      const file = new File(['<svg width="10" height="10"/>'], 'art.svg', {
+        type: 'image/svg+xml'
+      })
+
+      const result = await resize_to_blob(file)
+
+      expect(result.blob).toBeInstanceOf(Blob)
+      expect(result.width).toBe(512)
+      expect(result.height).toBe(512)
+    })
+
+    it('loads formats the browser cannot decode through an img element', async () => {
+      const file = new File([''], 'photo.tiff', { type: 'image/tiff' })
+
+      const result = await resize_to_blob(file)
+
+      expect(result.blob).toBeInstanceOf(Blob)
+      expect(global.createImageBitmap).toHaveBeenCalled()
+    })
+
+    it('reports a decode failure by file name', async () => {
+      global.Image = class {
+        constructor() {
+          this.width = 10
+          this.height = 10
+        }
+        set src(value) {
+          if (this.onerror) this.onerror()
+        }
+        set onload(handler) {}
+        get onload() {
+          return null
+        }
+        set onerror(handler) {
+          this._onerror = handler
+        }
+        get onerror() {
+          return this._onerror
+        }
+      }
+      const file = new File([''], 'broken.bmp', { type: 'image/bmp' })
+
+      await expect(resize_to_blob(file)).rejects.toThrow(
+        'Failed to decode image: broken.bmp'
+      )
+    })
+
+    it('wraps a bitmap failure with the file name and a suggestion', async () => {
+      global.createImageBitmap = vi.fn(() =>
+        Promise.reject(new Error('out of memory'))
+      )
+      const file = new File([''], 'huge.jpg', { type: 'image/jpeg' })
+
+      await expect(resize_to_blob(file)).rejects.toThrow(
+        'File too large for browser to process (huge.jpg): out of memory'
+      )
+    })
+
+    it('throws when the canvas has no 2d context', async () => {
+      global.OffscreenCanvas = class {
+        getContext() {
+          return null
+        }
+      }
+      const file = new File([''], 'nocontext.jpg', { type: 'image/jpeg' })
+
+      await expect(resize_to_blob(file)).rejects.toThrow(
+        'Failed to get 2d context'
+      )
     })
   })
 
@@ -740,6 +850,35 @@ describe('exported utilities', () => {
       expect(result.sediment.tagName).toBe('symbol')
       expect(result.sand.tagName).toBe('symbol')
       expect(result.gravel.tagName).toBe('symbol')
+    })
+
+    it('keeps one cutout as a single element and folds the deepest layer in', () => {
+      const only = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
+      only.setAttribute('data-progress', '95')
+
+      const single = sort_cutouts_into_layers(
+        { width: 10, height: 10, cutout: only },
+        '/user/posters/123'
+      )
+      expect(Object.keys(single)).toEqual(['boulders'])
+      expect(single.boulders.firstChild).toBe(only)
+
+      const none = sort_cutouts_into_layers(
+        { width: 10, height: 10 },
+        '/user/posters/123'
+      )
+      expect(Object.keys(none)).toEqual([])
+    })
+
+    it('ignores cutout entries that are not elements', () => {
+      const result = sort_cutouts_into_layers(
+        { width: 10, height: 10, cutout: ['not-an-element'] },
+        '/user/posters/123'
+      )
+      expect(Object.keys(result)).toEqual([])
     })
   })
 
@@ -786,6 +925,50 @@ describe('exported utilities', () => {
       await save_poster('/user/posters/1234567890')
 
       expect(mock_cutout_constructor).not.toHaveBeenCalled()
+    })
+
+    it('warns and stops when the poster element is missing', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      vi.spyOn(document, 'querySelector').mockReturnValue(null)
+
+      await save_poster('/user/posters/1234567890')
+
+      expect(warn).toHaveBeenCalledWith(
+        '[save_poster] Could not find element for /user/posters/1234567890'
+      )
+      expect(mock_poster_constructor).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('warns when no shadow element is found', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const poster = mock_layer_element('<path d="M0 0" />')
+      vi.spyOn(document, 'querySelector').mockImplementation(selector =>
+        String(selector).includes('/shadows/') ? null : poster
+      )
+
+      await save_poster('/user/posters/1234567890', poster)
+
+      expect(warn).toHaveBeenCalledWith(
+        '[save_poster] Could not find shadow element for /user/shadows/1234567890'
+      )
+      warn.mockRestore()
+    })
+
+    it('takes layered cutout symbols from the caller when the poster has none', async () => {
+      const symbol = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'symbol'
+      )
+      symbol.innerHTML = '<path d="M0 0" />'
+      const cutouts = /** @type {any} */ ({ sediment: symbol })
+      const poster = mock_layer_element('<path d="M0 0" />')
+
+      await save_poster('/user/posters/1234567890', poster, cutouts)
+
+      expect(mock_cutout_constructor).toHaveBeenCalledWith(
+        '/user/sediment/1234567890'
+      )
     })
   })
 })
