@@ -98,6 +98,7 @@ export default define_config({
   resolve: {
     dedupe: ['vue'],
     alias: {
+      '@/wasm': out_path('wasm'),
       '@': app_root,
       '/src/app': app_root,
       '@@': file_url_to_path(new URL('./tests/mocks', import.meta.url))
