@@ -1,0 +1,26 @@
+{
+  "lastChangelogVersion": "1.2.0",
+  "defaultProvider": "brayness",
+  "defaultModel": "inkling",
+  "defaultThinkingLevel": "off",
+  "packages": [
+    "npm:pi-mono-btw",
+    "npm:pi-mono-auto-fix",
+    "npm:pi-mono-loop",
+    "npm:pi-rewind-hook",
+    "npm:pi-autoresearch",
+    "npm:pi-claude-oauth-adapter"
+  ],
+  "theme": "realness-light/realness-dark",
+  "hideThinkingBlock": false,
+  "quietStartup": "header",
+  "warnings": {
+    "anthropicExtraUsage": false
+  },
+  "defaultTools": [
+    "+codemode"
+  ],
+  "editorPaddingX": 2,
+  "showHardwareCursor": true,
+  "collapseChangelog": true
+}

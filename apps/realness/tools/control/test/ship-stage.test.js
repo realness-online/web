@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, mkdtempSync, mkdirSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
-import { HOME_ONLY, ROOT, STARTER, ships, starter_manifest } from '../scripts/ship-stage.js'
+import { HOME_ONLY, ROOT, STARTER, ship_stage, ships, starter_manifest } from '../scripts/ship-stage.js'
 import { out_path } from '#root/lib/output.js'
 
 const project = new URL('../../../', import.meta.url).pathname
@@ -64,6 +64,26 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
     'AGENTS.local.md', '.pi/agent/auth.json', 'work', 'packages',
     '.pi/agent/sessions',
   ]) assert.ok(!existsSync(join(ship, path)), path)
+})
+
+test('a clean checkout stages the starter without personal Pi settings', () => {
+  const scratch = join(project, '../../artifacts/brayness-product')
+  mkdirSync(scratch, { recursive: true })
+  const root = mkdtempSync(join(scratch, 'clean-root-'))
+  try {
+    for (const path of ['package.json', '.pi/starter/settings.json', '.pi/starter/npm/package.json']) {
+      mkdirSync(join(root, path, '..'), { recursive: true })
+      writeFileSync(join(root, path), readFileSync(join(ROOT, path)))
+    }
+    const stage = ship_stage({ root, stage: join(root, 'ship'), proxy_url })
+    assert.ok(!existsSync(join(root, '.pi/agent/settings.json')))
+    const settings = JSON.parse(readFileSync(join(stage, '.pi/agent/settings.json'), 'utf8'))
+    assert.deepEqual(settings, JSON.parse(readFileSync(join(ROOT, '.pi/starter/settings.json'), 'utf8')))
+    assert.deepEqual(Object.keys(JSON.parse(readFileSync(join(stage, '.pi/agent/models.json'), 'utf8')).providers), ['brayness'])
+    assert.ok(existsSync(join(stage, '.pi/agent/npm/package.json')))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })
 
 test('home-only skills stay home', () => {

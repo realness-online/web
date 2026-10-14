@@ -15,8 +15,10 @@ export const ROOT = join(project, '..', '..')
 export const STAGE = out_path('ship')
 const DEFAULT_PROXY = development_settings.services.starter_proxy_url
 
-export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', 'skills', 'prompts', 'extensions', 'themes',
-  '.pi/agent/settings.json', '.pi/agent/models.json', '.pi/agent/themes', '.pi/agent/npm/package.json']
+export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', 'skills', 'prompts', 'extensions', 'themes', '.pi/agent/themes']
+
+/** Tracked public Pi defaults; personal `.pi/agent` settings never ship. */
+export const STARTER_DEFAULTS = { '.pi/starter/settings.json': '.pi/agent/settings.json', '.pi/starter/npm/package.json': '.pi/agent/npm/package.json' }
 
 /** Shipped at the tree root, kept in .pi/ at home. */
 export const HOME_IN_PI = ['skills', 'prompts', 'extensions']
@@ -135,6 +137,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
       copy(join(project, 'tools/examples/static/package-lock.json'), join(destination, 'package-lock.json'), project)
     } else copy(join(project, 'tools', 'examples', name), destination, join(project, 'tools'))
   }
+  for (const [from, to] of Object.entries(STARTER_DEFAULTS)) copy(join(root, from), join(stage, to), root)
   edit_json(join(stage, 'package.json'), pkg => {
     if (pkg.brayness) delete pkg.brayness.examples
     for (const asset of ['skills', 'prompts', 'extensions']) {
@@ -156,9 +159,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
   edit_json(join(stage, '.pi/agent/npm/package.json'), npm => {
     for (const name of UNSHIPPED_PACKAGES) delete npm.dependencies[name]
   })
-  edit_json(join(stage, '.pi/agent/models.json'), models => {
-    models.providers = { brayness: brayness_provider(proxy_url) }
-  })
+  write_file_sync(join(stage, '.pi/agent/models.json'), `${JSON.stringify({ providers: { brayness: brayness_provider(proxy_url) } }, null, 2)}\n`)
   const manifest = starter_manifest(stage)
   const built_at = previous?.version === manifest.version && previous.built_at ? previous.built_at : new Date().toISOString()
   write_file_sync(join(stage, STARTER), `${JSON.stringify({ version: manifest.version, pi: pi_version, built_at, files: manifest.files }, null, 2)}\n`)
