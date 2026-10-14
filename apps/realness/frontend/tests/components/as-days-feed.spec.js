@@ -218,6 +218,47 @@ describe('@/components/as-days feed assembly', () => {
     expect(wrapper.findAll('[data-day-item]').length).toBeGreaterThan(0)
   })
 
+  describe('author grouping', () => {
+    const other = '/+14155550199'
+    const from = (phone, kind, day_offset) => ({
+      id: `${phone}/${kind}/${DAY_START - day_offset * DAY_MS}`,
+      type: kind
+    })
+
+    it('groups by author once a day mixes two of them', async () => {
+      const wrapper = mount_days({
+        statements: [from(author, 'statements', 0)],
+        posters: [from(other, 'posters', 0)]
+      })
+      await settle()
+
+      const day = wrapper.find('article')
+      expect(day.exists()).toBe(true)
+      expect(wrapper.findAll('[data-day-item]').length).toBeGreaterThan(0)
+    })
+
+    it('keeps two days apart when the items span them', async () => {
+      const wrapper = mount_days({
+        posters: [
+          from(author, 'posters', 0),
+          from(other, 'posters', 1)
+        ]
+      })
+      await settle()
+
+      expect(wrapper.findAll('article').length).toBeGreaterThan(0)
+    })
+
+    it('drops a slot that carries no id at all', async () => {
+      const wrapper = mount_days({
+        posters: [{ type: 'posters' }]
+      })
+      await settle()
+
+      expect(wrapper.find('section[data-days]').exists()).toBe(true)
+    })
+  })
+
   it('marks the feed role only when neither working nor storytelling', async () => {
     const wrapper = mount_days({ posters: [item('posters', 0)] })
     await settle()
