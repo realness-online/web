@@ -796,7 +796,7 @@ exact for one instance.
 
 - Over a limit: 429, `insufficient_quota`, `limit: "day"|"month"`, message
   containing "quota exceeded". Pi retries any 429 unless the text says so; this
-  one it shows at once. `server/proxy/test/server.test.js` runs Pi's own classifier on
+  one it shows at once. `tests/proxy/server.test.js` runs Pi's own classifier on
   it.
 - Total unreadable: 503, and no upstream call.
 
