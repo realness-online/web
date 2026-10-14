@@ -162,3 +162,92 @@ describe('@/components/posters/as-viewer-3d.vue', () => {
     expect(mock_scene.set_motion_enabled).toHaveBeenCalledWith(true)
   })
 })
+
+describe('@/components/posters/as-viewer-3d orbit guard', () => {
+  const itemid = '/+14151234356/posters/1737178477987'
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    document.body.innerHTML = ''
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.id = as_query_id(itemid)
+    document.body.appendChild(svg)
+  })
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  const mount_viewer = async () => {
+    const wrapper = shallowMount(as_viewer_3d, { props: { itemid } })
+    await flushPromises()
+    return wrapper
+  }
+
+  it('cancels the orbit once the pointer travels far enough', async () => {
+    const wrapper = await mount_viewer()
+    const surface = wrapper.find('div.viewer-3d')
+
+    await surface.trigger('pointerdown', {
+      pointerType: 'mouse',
+      clientX: 0,
+      clientY: 0
+    })
+    await surface.trigger('pointermove', {
+      pointerType: 'mouse',
+      clientX: 40,
+      clientY: 0
+    })
+
+    expect(wrapper.find('div.viewer-3d').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('keeps a small movement as an orbit', async () => {
+    const wrapper = await mount_viewer()
+    const surface = wrapper.find('div.viewer-3d')
+
+    await surface.trigger('pointerdown', {
+      pointerType: 'mouse',
+      clientX: 0,
+      clientY: 0
+    })
+    await surface.trigger('pointermove', {
+      pointerType: 'mouse',
+      clientX: 1,
+      clientY: 1
+    })
+
+    expect(wrapper.find('div.viewer-3d').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('lets a touch move straight through', async () => {
+    const wrapper = await mount_viewer()
+    const surface = wrapper.find('div.viewer-3d')
+
+    await surface.trigger('pointerdown', {
+      pointerType: 'touch',
+      clientX: 0,
+      clientY: 0
+    })
+    await surface.trigger('pointermove', {
+      pointerType: 'touch',
+      clientX: 40,
+      clientY: 40
+    })
+
+    expect(wrapper.find('div.viewer-3d').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('leaves the canvas on the way out', async () => {
+    const wrapper = await mount_viewer()
+    const on_done = vi.fn()
+
+    wrapper.vm.start_leave(null, on_done)
+
+    expect(mock_viewer.start_leave).toHaveBeenCalled()
+    wrapper.unmount()
+  })
+})
