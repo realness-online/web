@@ -17,6 +17,16 @@ vi.mock('@/utils/geology', () => ({
   collect_geology_paths: (...args) => mock_collect(...args)
 }))
 
+const { mock_read_subjects, mock_write_subjects } = vi.hoisted(() => ({
+  mock_read_subjects: vi.fn(() => []),
+  mock_write_subjects: vi.fn()
+}))
+
+vi.mock('@/utils/subjects', () => ({
+  read_subjects: (...args) => mock_read_subjects(...args),
+  write_subjects: (...args) => mock_write_subjects(...args)
+}))
+
 vi.mock('@/use/poster', () => ({
   geology_layers: ['sediment', 'sand', 'gravel', 'rocks', 'boulders']
 }))
@@ -57,6 +67,21 @@ const patch_path_el = (el, index) => {
       pt.y >= box.y &&
       pt.y <= box.y + box.height
     )
+  }
+}
+
+/** The hit layer is built after mount, so the synthetic geometry arrives late. */
+const patch_hit_paths = wrapper => {
+  const hit_paths = [...wrapper.find('g[aria-hidden="true"]').element.children]
+  hit_paths.forEach(patch_path_el)
+  wrapper.find('svg').element.createSVGPoint = function () {
+    return {
+      x: 0,
+      y: 0,
+      matrixTransform() {
+        return { x: this.x, y: this.y }
+      }
+    }
   }
 }
 
@@ -183,24 +208,152 @@ describe('@/components/posters/as-mask-pen', () => {
     wrapper.unmount()
   })
 
+  it('restores saved subjects when the poster carries them', async () => {
+    mock_read_subjects.mockReturnValueOnce([
+      { id: 'saved', keys: new Set(['sand:0']) }
+    ])
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+
+    expect(mask_pen.subjects.value).toEqual([
+      { id: 'saved', keys: new Set(['sand:0']) }
+    ])
+    wrapper.unmount()
+  })
+
+  it('saves subjects to the poster once editing settles', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mount_mask_pen(mask_pen)
+      await flushPromises()
+      await nextTick()
+      mask_pen.subjects.value = [{ id: 's1', keys: new Set(['sand:0']) }]
+      await nextTick()
+
+      expect(mock_write_subjects).not.toHaveBeenCalled()
+      vi.advanceTimersByTime(400)
+
+      expect(mock_write_subjects).toHaveBeenCalledWith(
+        expect.anything(),
+        itemid,
+        mask_pen.subjects.value
+      )
+      wrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('saves a pending edit when the poster closes first', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mount_mask_pen(mask_pen)
+      await flushPromises()
+      await nextTick()
+      mask_pen.subjects.value = [{ id: 's1', keys: new Set(['sand:0']) }]
+      await nextTick()
+
+      wrapper.unmount()
+
+      expect(mock_write_subjects).toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows a hover outline over the cell under the cursor', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    patch_hit_paths(wrapper)
+
+    const rect = wrapper.find('rect')
+    await rect.trigger('pointermove', { clientX: 5, clientY: 5 })
+
+    expect(mask_pen.hovered_key.value).toBe('sand:0')
+    await nextTick()
+    expect(wrapper.find('path[data-mask-pen="hover"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('erases selected cells when a drag starts on one', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    patch_hit_paths(wrapper)
+    mask_pen.selected.value = new Set(['sand:0'])
+
+    const rect = wrapper.find('rect')
+    await rect.trigger('pointerdown', { clientX: 5, clientY: 5 })
+    await rect.trigger('pointermove', { clientX: 25, clientY: 25 })
+    await rect.trigger('pointerup', { clientX: 25, clientY: 25 })
+
+    expect(mask_pen.remove_members).toHaveBeenCalled()
+    expect(mask_pen.add_members).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('ignores a second finger so a pinch does not paint', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    patch_hit_paths(wrapper)
+
+    const rect = wrapper.find('rect')
+    await rect.trigger('pointerdown', {
+      pointerId: 1,
+      pointerType: 'touch',
+      clientX: 5,
+      clientY: 5
+    })
+    await rect.trigger('pointerdown', {
+      pointerId: 2,
+      pointerType: 'touch',
+      clientX: 40,
+      clientY: 40
+    })
+    await rect.trigger('pointermove', {
+      pointerId: 1,
+      pointerType: 'touch',
+      clientX: 40,
+      clientY: 40
+    })
+
+    expect(mask_pen.add_members).not.toHaveBeenCalled()
+    await rect.trigger('pointerup', {
+      pointerId: 1,
+      pointerType: 'touch'
+    })
+    await rect.trigger('pointerup', {
+      pointerId: 2,
+      pointerType: 'touch'
+    })
+    expect(mask_pen.add_members).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('draws nothing when the pointer never reaches the drag threshold', async () => {
+    const wrapper = mount_mask_pen(mask_pen)
+    await flushPromises()
+    await nextTick()
+    patch_hit_paths(wrapper)
+
+    const rect = wrapper.find('rect')
+    await rect.trigger('pointerdown', { clientX: 5, clientY: 5 })
+    await rect.trigger('pointermove', { clientX: 6, clientY: 5 })
+
+    expect(mask_pen.painting.value).toBe(false)
+    expect(wrapper.find('circle[data-mask-pen="radius"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('grows selection while dragging and commits members', async () => {
     const wrapper = mount_mask_pen(mask_pen)
     await flushPromises()
     await nextTick()
 
-    const hit_paths = [
-      ...wrapper.find('g[aria-hidden="true"]').element.children
-    ]
-    hit_paths.forEach(patch_path_el)
-    wrapper.find('svg').element.createSVGPoint = function () {
-      return {
-        x: 0,
-        y: 0,
-        matrixTransform() {
-          return { x: this.x, y: this.y }
-        }
-      }
-    }
+    patch_hit_paths(wrapper)
     wrapper.find('svg').element.getScreenCTM = () => ({
       a: 1,
       b: 0,
