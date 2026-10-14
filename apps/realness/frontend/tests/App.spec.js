@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import App from '@/App.vue'
 
@@ -35,7 +35,9 @@ const {
   mock_footer_visible,
   mock_current_route,
   mock_select_photo,
-  mock_open_camera
+  mock_open_camera,
+  mock_queue_files,
+  mock_queue_clipboard
 } = vi.hoisted(() => {
   const create_ref = value => ({ value })
   const create_template_ref = value =>
@@ -72,7 +74,9 @@ const {
     mock_footer_visible: create_ref(true),
     mock_current_route: create_ref({ path: '/', fullPath: '/' }),
     mock_select_photo: vi.fn(),
-    mock_open_camera: vi.fn()
+    mock_open_camera: vi.fn(),
+    mock_queue_files: vi.fn().mockResolvedValue(false),
+    mock_queue_clipboard: vi.fn().mockResolvedValue(false)
   }
 })
 
@@ -83,7 +87,8 @@ vi.mock('@/use/vectorize', () => ({
     current_processing: { value: null },
     open_camera: mock_open_camera,
     select_photo: mock_select_photo,
-    queue_supported_files: vi.fn().mockResolvedValue(false),
+    queue_supported_files: mock_queue_files,
+    queue_supported_clipboard_items: mock_queue_clipboard,
     init_processing_queue: vi.fn(),
     queue_items: { value: [] },
     mount_workers: vi.fn(),
@@ -1198,6 +1203,72 @@ describe('App.vue', () => {
         expect.any(Function)
       )
       new_wrapper.unmount()
+    })
+  })
+
+  describe('paste and drop', () => {
+    const file_event = (type, files) => {
+      const event = new Event(type, { bubbles: true, cancelable: true })
+      const list = {
+        length: files.length,
+        item: index => files[index] ?? null,
+        [Symbol.iterator]: function* () {
+          yield* files
+        }
+      }
+      Object.defineProperty(event, 'dataTransfer', { value: { files: list } })
+      return event
+    }
+
+    it('queues an image dropped on the window', async () => {
+      mock_queue_files.mockResolvedValueOnce(true)
+      const file = new File(['x'], 'shot.png', { type: 'image/png' })
+      /** The vectorizer loads a frame after mount, so give it that frame. */
+      await flushPromises()
+
+      window.dispatchEvent(file_event('drop', [file]))
+      await flushPromises()
+
+      expect(mock_queue_files).toHaveBeenCalled()
+    })
+
+    it('ignores a drop with no files', async () => {
+      mock_queue_files.mockClear()
+
+      window.dispatchEvent(file_event('drop', []))
+      await flushPromises()
+
+      expect(mock_queue_files).not.toHaveBeenCalled()
+    })
+
+    it('allows a dragover so the drop can happen', () => {
+      const event = file_event('dragover', [
+        new File(['x'], 'a.png', { type: 'image/png' })
+      ])
+
+      window.dispatchEvent(event)
+
+      expect(event.defaultPrevented).toBe(true)
+    })
+  })
+
+  describe('footer visibility', () => {
+    it('remembers the footer switch', async () => {
+      const toggle = wrapper.find('input[name="footer_visible"]')
+      expect(toggle.exists()).toBe(true)
+
+      await toggle.setValue(false)
+
+      expect(mock_footer_visible.value).toBe(false)
+      expect(wrapper.find('footer').attributes('data-footer-visible')).toBe(
+        'false'
+      )
+    })
+
+    it('keeps the switch shown when focus is outside a thought', async () => {
+      await flushPromises()
+
+      expect(wrapper.find('input[name="footer_visible"]').exists()).toBe(true)
     })
   })
 
