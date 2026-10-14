@@ -181,3 +181,47 @@ describe('@/components/posters/as-symbol-shadow.vue', () => {
     })
   })
 })
+
+describe('@/components/posters/as-symbol-shadow queries', () => {
+  it('answers the bare layer id when no suffix is asked for', () => {
+    const wrapper = shallowMount(as_symbol_shadow, {
+      props: { vector: mock_vector }
+    })
+
+    expect(wrapper.vm.query()).toBe('14151234356-shadows-1000')
+  })
+
+  it('takes a rect background as the valid rect', () => {
+    const background = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect'
+    )
+    pattern_vector = { ...mock_vector, background }
+    const wrapper = shallowMount(as_symbol_shadow)
+
+    expect(wrapper.vm.valid_rect).toEqual(background)
+    pattern_vector = null
+  })
+
+  it('ignores a background that is not a rect', () => {
+    pattern_vector = {
+      ...mock_vector,
+      background: document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
+    }
+    const wrapper = shallowMount(as_symbol_shadow)
+
+    expect(wrapper.vm.valid_rect).toBeNull()
+    pattern_vector = null
+  })
+
+  it('has no valid rect without any background', () => {
+    pattern_vector = { ...mock_vector, background: undefined }
+    const wrapper = shallowMount(as_symbol_shadow)
+
+    expect(wrapper.vm.valid_rect).toBeNull()
+    pattern_vector = null
+  })
+})
