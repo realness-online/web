@@ -16,7 +16,7 @@ const load_push_handlers = () => {
 
 const load_commands_page = () => {
   vi.resetModules()
-  return import('#root/bin/commands/page.js')
+  return import('../../../../../bin/commands/page.js').then(module => module.wire_page(document))
 }
 
 after_each(() => {

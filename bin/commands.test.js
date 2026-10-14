@@ -6,22 +6,30 @@ import { collect_commands } from './commands/catalog.js'
 import { update_commands } from './commands.js'
 import { cli_families } from './commands/cli.js'
 import { parse_html } from './lib/harness-dependencies.js'
-import { runInNewContext as run_in_new_context } from 'node:vm'
 import { setImmediate as next_turn } from 'node:timers/promises'
+import { wire_page } from './commands/page.js'
 
 const root = resolve(import.meta.dirname, '..')
 const catalog = await update_commands(root)
 
 const load_page = async () => {
   const html = await read_file(join(root, 'artifacts/commands/index.html'), 'utf8')
-  const script = await read_file(join(root, 'artifacts/commands/commands.js'), 'utf8')
   const { document, window } = parse_html(html)
   let copied = null
-  run_in_new_context(script, {
-    document, window,
-    navigator: { clipboard: { async writeText(text) { copied = text } } },
-    setTimeout: () => {},
+  globalThis.document = document
+  globalThis.window = window
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      clipboard: {
+        async writeText(text) {
+          copied = text
+        }
+      }
+    }
   })
+  globalThis.setTimeout = () => {}
+  wire_page(document)
   return {
     document,
     copied: () => copied,

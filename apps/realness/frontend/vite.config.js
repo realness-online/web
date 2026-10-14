@@ -187,7 +187,8 @@ export default define_config({
         'scripts/**/*.js',
         'public/push-handlers.js',
         path.join(product_root, 'src/sign-on/browser/**/*.js'),
-        path.join(product_root, 'tools/publish/renderer/static/scripts/**/*.js')
+        path.join(product_root, 'tools/publish/renderer/static/scripts/**/*.js'),
+        path.join(product_root, '..', 'bin/commands/page.js')
       ],
       allowExternal: true,
       exclude: [
