@@ -183,7 +183,8 @@ export default define_config({
       include: [
         path.join(app_root, '**/*.js'),
         path.join(app_root, '**/*.vue'),
-        'packages/*/src/**/*.js'
+        'packages/*/src/**/*.js',
+        'scripts/**/*.js'
       ],
       allowExternal: true,
       exclude: [

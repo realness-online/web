@@ -1,20 +1,69 @@
 import assert from 'node:assert/strict'
+import { resolve } from 'node:path'
 import { test } from 'node:test'
-import { lcov_totals, summary } from './coverage.js'
+import { merge, parse_lcov, source_files, summary, totals, untested } from './coverage.js'
 
-test('lcov totals add every file in a report', () => {
-  const report = 'SF:a.js\nFNF:2\nFNH:1\nBRF:4\nBRH:3\nLF:10\nLH:8\nend_of_record\nSF:b.js\nFNF:2\nFNH:2\nBRF:0\nBRH:0\nLF:10\nLH:10\nend_of_record\n'
-  assert.deepEqual(lcov_totals(report), { lines: [20, 18], branches: [4, 3], functions: [4, 3] })
+const report = files =>
+  files
+    .map(({ path, lines, branches = [], functions = [] }) =>
+      [
+        `SF:${path}`,
+        ...functions.map(([name]) => `FN:1,${name}`),
+        ...functions.map(([name, count]) => `FNDA:${count},${name}`),
+        ...branches.map(([key, taken]) => `BRDA:${key},${taken}`),
+        ...lines.map(([number, count]) => `DA:${number},${count}`),
+        'end_of_record'
+      ].join('\n')
+    )
+    .join('\n')
+
+test('lcov paths resolve against the folder each report is relative to', () => {
+  const files = parse_lcov(report([{ path: '../src/a.js', lines: [[1, 1]] }]), '/repo/frontend')
+  assert.deepEqual([...files.keys()], ['/repo/src/a.js'])
 })
 
-test('the summary weighs parts by size and marks failures', () => {
-  const text = summary([
-    { name: 'small', totals: { lines: [10, 10], branches: [0, 0], functions: [1, 1] }, ok: true },
-    { name: 'large', totals: { lines: [90, 45], branches: [10, 5], functions: [9, 0] }, ok: false },
-    { name: 'gone', totals: null, ok: false }
-  ])
-  assert.match(text, /small\s+100\.00%\s+-\s+100\.00%\s+ok/)
-  assert.match(text, /large\s+50\.00%\s+50\.00%\s+0\.00%\s+FAILED/)
-  assert.match(text, /gone\s+no report\s+FAILED/)
-  assert.match(text, /all\s+55\.00%\s+50\.00%\s+10\.00%/)
+test('totals count lines, branches, and functions, hit when run at least once', () => {
+  const files = parse_lcov(
+    report([
+      { path: 'a.js', lines: [[1, 2], [2, 0]], branches: [['1,0,0', 1], ['1,0,1', '-']], functions: [['f', 1], ['g', 0]] }
+    ]),
+    '/repo'
+  )
+  assert.deepEqual(totals(files), { files: 1, lines: [2, 1], branches: [2, 1], functions: [2, 1] })
+})
+
+test('merging counts a shared file once and keeps any part that ran a line', () => {
+  const harness = parse_lcov(report([{ path: 'shared.js', lines: [[1, 1], [2, 0]] }]), '/repo')
+  const backend = parse_lcov(
+    report([
+      { path: 'shared.js', lines: [[1, 0], [2, 3]] },
+      { path: 'only.js', lines: [[1, 0]] }
+    ]),
+    '/repo'
+  )
+  assert.deepEqual(totals(merge([harness, backend])), { files: 2, lines: [3, 2], branches: [0, 0], functions: [0, 0] })
+})
+
+test('the summary shows each part, a missing report, and the merged whole', () => {
+  const files = parse_lcov(report([{ path: 'a.js', lines: [[1, 1], [2, 0]] }]), '/repo')
+  const text = summary(
+    [
+      { name: 'harness', files, ok: true },
+      { name: 'frontend', files: null, ok: false }
+    ],
+    files
+  )
+  assert.match(text, /harness\s+1\s+50\.00%\s+-\s+-\s+ok/)
+  assert.match(text, /frontend\s+no report\s+FAILED/)
+  assert.match(text, /all\s+1\s+50\.00%/)
+})
+
+test('source files skip tests, fixtures, configs, and types', () => {
+  const listed = ['bin/a.js', 'bin/a.test.js', 'apps/realness/tests/x.js', 'apps/realness/frontend/vite.config.js', 'apps/realness/src/b.vue', 'apps/realness/x.d.ts', 'apps/realness/s.sh', 'README.md'].join('\n')
+  assert.deepEqual(source_files(() => listed), ['bin/a.js', 'apps/realness/src/b.vue', 'apps/realness/s.sh'])
+})
+
+test('untested files are the sources no report mentions, scripts apart from other languages', () => {
+  const whole = parse_lcov(report([{ path: 'bin/a.js', lines: [[1, 1]] }]), resolve(import.meta.dirname, '..'))
+  assert.deepEqual(untested(['bin/a.js', 'bin/b.js', 'x.sh'], whole), { scripts: ['bin/b.js'], other: ['x.sh'] })
 })
