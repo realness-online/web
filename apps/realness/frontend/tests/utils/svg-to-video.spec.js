@@ -245,6 +245,150 @@ describe('@/utils/svg-to-video', () => {
   })
 })
 
+describe('@/utils/svg-to-video edge paths', () => {
+  let svg
+
+  beforeEach(() => {
+    add_calls.length = 0
+    audio_calls.length = 0
+    audio_config = null
+    vi.clearAllMocks()
+    svg = make_svg()
+    global.Image = class {
+      set src(_value) {
+        this.onload?.()
+      }
+    }
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      clearRect: vi.fn(),
+      drawImage: vi.fn()
+    })
+    vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: () => ''
+    })
+  })
+
+  it('rejects anything that is not an SVG element', async () => {
+    await expect(
+      render_svg_to_video_blob(document.createElement('div'))
+    ).rejects.toThrow('Element must be an SVGSVGElement')
+  })
+
+  it('encodes a single frame for a zero-length export', async () => {
+    await render_svg_to_video_blob(svg, { fps: 1, max_duration: 0 })
+
+    expect(svg.pauseAnimations).toHaveBeenCalled()
+    expect(add_calls.length).toBeGreaterThan(0)
+    expect(add_calls[0].timestamp).toBe(0)
+  })
+
+  it('reports progress for every encoded frame', async () => {
+    const on_progress = vi.fn()
+
+    await render_svg_to_video_blob(svg, {
+      fps: 2,
+      max_duration: 1,
+      on_progress
+    })
+
+    expect(on_progress).toHaveBeenLastCalledWith(3, 3)
+  })
+
+  it('delivers the file to the save picker instead of a blob', async () => {
+    const writable = { write: vi.fn(), close: vi.fn() }
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      value: vi.fn(() =>
+        Promise.resolve({ createWritable: () => Promise.resolve(writable) })
+      ),
+      configurable: true,
+      writable: true
+    })
+
+    const saved = await render_svg_to_video_blob(svg, {
+      suggested_filename: 'poster.mov'
+    })
+
+    expect(saved).toBeNull()
+    delete window.showSaveFilePicker
+  })
+
+  it('falls back to a blob when the reader cancels the picker', async () => {
+    const abort = Object.assign(new Error('cancelled'), { name: 'AbortError' })
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      value: vi.fn(() => Promise.reject(abort)),
+      configurable: true,
+      writable: true
+    })
+
+    expect(await render_svg_to_video_blob(svg)).toBeInstanceOf(Blob)
+    delete window.showSaveFilePicker
+  })
+
+  it('warns and uses a blob when the picker fails for another reason', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      value: vi.fn(() => Promise.reject(new Error('disk full'))),
+      configurable: true,
+      writable: true
+    })
+
+    expect(
+      await render_svg_to_video_blob(svg, { suggested_filename: 'poster.mov' })
+    ).toBeInstanceOf(Blob)
+    expect(warn).toHaveBeenCalledWith(
+      '[Video] File System Access API error, using memory buffer:',
+      expect.any(Error)
+    )
+    warn.mockRestore()
+    delete window.showSaveFilePicker
+  })
+
+  it('ignores a save picker with no suggested name', async () => {
+    Object.defineProperty(window, 'showSaveFilePicker', {
+      value: vi.fn(),
+      configurable: true,
+      writable: true
+    })
+
+    expect(await render_svg_to_video_blob(svg)).toBeInstanceOf(Blob)
+    expect(window.showSaveFilePicker).not.toHaveBeenCalled()
+    delete window.showSaveFilePicker
+  })
+
+  it('restores the poster visibility flag after encoding', async () => {
+    svg.style.contentVisibility = 'hidden'
+
+    await render_svg_to_video_blob(svg, { max_duration: 0 })
+
+    expect(svg.style.contentVisibility).toBe('hidden')
+  })
+
+  it('reports and rethrows a frame the encoder refuses', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mock_canvas_source.add.mockRejectedValueOnce(new Error('encoder closed'))
+
+    await expect(
+      render_svg_to_video_blob(svg, { max_duration: 0 })
+    ).rejects.toThrow('encoder closed')
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('[Video] Error adding frame'),
+      expect.any(Error)
+    )
+    expect(mock_canvas_source.close).toHaveBeenCalled()
+    error.mockRestore()
+  })
+
+  it('refuses to finish when the memory buffer is empty', async () => {
+    mock_output.finalize.mockImplementationOnce(async () => {
+      mock_output.target = { buffer: null }
+    })
+
+    await expect(
+      render_svg_to_video_blob(svg, { max_duration: 0 })
+    ).rejects.toThrow('Output buffer is null')
+  })
+})
+
 describe('level51_video_size', () => {
   const macroblocks = ({ width, height }) =>
     Math.ceil(width / 16) * Math.ceil(height / 16)
