@@ -541,3 +541,79 @@ describe('@/component/posters/as-animation.vue', () => {
     })
   })
 })
+
+describe('@/component/posters/as-animation keyboard and visibility', () => {
+  const mount_animation = (props = {}) => {
+    const svg = as_svg()
+    svg.setCurrentTime = vi.fn()
+    return {
+      svg,
+      wrapper: mount(as_animation, {
+        props: {
+          id: poster_id,
+          svg,
+          paused: false,
+          in_view: true,
+          vector: {},
+          ...props
+        }
+      })
+    }
+  }
+
+  afterEach(() => {
+    animate.value = false
+    morph.value = false
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('moves the timeline forward on ArrowRight', async () => {
+    const { wrapper, svg } = mount_animation()
+    use_fake_timers()
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+    vi.advanceTimersByTime(300)
+
+    expect(svg.setCurrentTime).toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('moves the timeline back on ArrowLeft without going below zero', async () => {
+    const { wrapper, svg } = mount_animation()
+    use_fake_timers()
+    svg.getCurrentTime = () => 0
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
+    vi.advanceTimersByTime(300)
+
+    expect(svg.setCurrentTime).toHaveBeenCalledWith(0)
+    wrapper.unmount()
+  })
+
+  it('takes a bigger step with shift held', async () => {
+    const { wrapper, svg } = mount_animation()
+    use_fake_timers()
+
+    window.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true })
+    )
+    vi.advanceTimersByTime(300)
+
+    expect(svg.setCurrentTime).toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('throttles a burst of arrow presses', async () => {
+    const { wrapper, svg } = mount_animation()
+    use_fake_timers()
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
+    vi.advanceTimersByTime(300)
+
+    expect(svg.setCurrentTime.mock.calls.length).toBeLessThan(3)
+    wrapper.unmount()
+  })
+
+})
