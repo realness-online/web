@@ -161,8 +161,8 @@ if (!folder || folder.startsWith('--'))
 const posters_dir = resolve(folder)
 if (!exists_sync(posters_dir)) fail(`not found: ${posters_dir}`)
 
-await setup()
 const records = load(posters_dir)
+await setup()
 write_site(basename(posters_dir), write_content(posters_dir, records))
 console.info(`gallery: ${records.length} posters from ${posters_dir}`)
 

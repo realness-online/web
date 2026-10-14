@@ -7,7 +7,8 @@ import { plans_path, plans_ignore } from "./lib/harness-settings.js"
 import { legend } from "./lib/palette.js"
 
 const ROOT = join(dirname(file_url_to_path(import.meta.url)), "..")
-const PLANS = join(ROOT, plans_path(ROOT))
+const plans_at = process.argv.indexOf("--plans")
+const PLANS = plans_at > 0 ? process.argv[plans_at + 1] : join(ROOT, plans_path(ROOT))
 const IGNORED = new Set(plans_ignore(ROOT))
 
 const LEGEND = new Set(legend(ROOT))
@@ -101,7 +102,7 @@ const check = (name, text) => {
 }
 
 if (!exists_sync(PLANS)) {
-  console.log(`no ${plans_path(ROOT)}/ - nothing to check`)
+  console.log(`no ${PLANS}/ - nothing to check`)
   process.exit(0)
 }
 

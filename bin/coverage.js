@@ -26,15 +26,15 @@ const NODE_EXCLUDE = [
   '**/*.test.js',
   '**/node_modules/**',
   '**/dist/**',
-  'apps/realness/src/app/**',
-  'apps/realness/src/sign-on/browser/**'
+  'apps/realness/src/app/**'
 ]
 
-/** The test files `npm run test:harness` runs, read from its script so the two never drift. */
-const harness_files = () => {
-  const script = JSON.parse(read_file_sync(join(root, 'package.json'), 'utf8')).scripts['test:harness']
-  return script.split(/\s+/).filter(word => word.endsWith('.test.js'))
-}
+/** The test globs `npm run test:harness` runs, read from its script so the two never drift. */
+export const harness_files = (script = JSON.parse(read_file_sync(join(root, 'package.json'), 'utf8')).scripts['test:harness']) =>
+  script
+    .split(/\s+/)
+    .map(word => word.replace(/^'|'$/g, ''))
+    .filter(word => word.endsWith('.test.js'))
 
 /** Node's built-in coverage, run from the harness root, writing lcov to `name.lcov`. */
 const node_part = (name, files) => ({

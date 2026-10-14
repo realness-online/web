@@ -4,7 +4,7 @@ export default define_config({
   test: {
     environment: 'node',
     coverage: {
-      include: ['src/**/*.js'],
+      include: ['src/**/*.js', 'index.js'],
       exclude: ['tests/**', 'node_modules/**'],
       lines: 80,
       branches: 80,

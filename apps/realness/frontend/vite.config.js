@@ -7,7 +7,7 @@ import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { existsSync as exists_sync, readFileSync as read_file_sync } from 'fs'
 import path from 'path'
-import { product_paths } from '#root/src/settings/layout.js'
+import { product_paths, project_root as product_root } from '#root/src/settings/layout.js'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const has_certs =
@@ -184,7 +184,10 @@ export default define_config({
         path.join(app_root, '**/*.js'),
         path.join(app_root, '**/*.vue'),
         'packages/*/src/**/*.js',
-        'scripts/**/*.js'
+        'scripts/**/*.js',
+        'public/push-handlers.js',
+        path.join(product_root, 'src/sign-on/browser/**/*.js'),
+        path.join(product_root, 'tools/publish/renderer/static/scripts/**/*.js')
       ],
       allowExternal: true,
       exclude: [
@@ -193,7 +196,6 @@ export default define_config({
         'node_modules/**',
         'dist/**',
         'docs/**',
-        'public/**',
         path.join(app_root, 'main.js'),
         path.join(app_root, 'router.js'),
         path.join(app_root, 'wasm/**')

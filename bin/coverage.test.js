@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
 import { test } from 'node:test'
-import { merge, parse_lcov, source_files, summary, totals, untested } from './coverage.js'
+import { harness_files, merge, parse_lcov, source_files, summary, totals, untested } from './coverage.js'
 
 const report = files =>
   files
@@ -66,4 +66,8 @@ test('source files skip tests, fixtures, configs, and types', () => {
 test('untested files are the sources no report mentions, scripts apart from other languages', () => {
   const whole = parse_lcov(report([{ path: 'bin/a.js', lines: [[1, 1]] }]), resolve(import.meta.dirname, '..'))
   assert.deepEqual(untested(['bin/a.js', 'bin/b.js', 'x.sh'], whole), { scripts: ['bin/b.js'], other: ['x.sh'] })
+})
+
+test('harness coverage runs the same test globs as npm run test:harness', () => {
+  assert.deepEqual(harness_files("node --test 'bin/**/*.test.js' '.pi/extensions/**/*.test.js'"), ['bin/**/*.test.js', '.pi/extensions/**/*.test.js'])
 })
