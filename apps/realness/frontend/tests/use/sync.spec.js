@@ -25,6 +25,7 @@ import {
   sync_me,
   sync_posters_directory,
   sync_author_posters,
+  sync_phonebook_people,
   DOES_NOT_EXIST,
   use as use_sync
 } from '@/use/sync'
@@ -1502,6 +1503,81 @@ describe('sync composable', () => {
       expect(del).toHaveBeenCalledWith('/+14151234356/relations')
       expect(save).toHaveBeenCalled()
     })
+  })
+})
+
+describe('sync_phonebook_people', () => {
+  /** from_e64 turns a storage prefix name into the author id. */
+  const contact_id = '/+19995551234'
+  const deps = { load_phonebook: vi.fn() }
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    vi.mocked(get_keyval).mockResolvedValue(null)
+    const { current_user, directory, metadata } =
+      await import('@/utils/serverless')
+    current_user.value = { uid: 'test-user' }
+    directory.mockResolvedValue({ prefixes: [{ name: '+19995551234' }] })
+    metadata.mockResolvedValue({
+      updated: new Date().toISOString(),
+      customMetadata: { hash: 'same' }
+    })
+    const { create_hash } = await import('@/utils/upload-processor')
+    create_hash.mockResolvedValue('same')
+    localStorage.me = '/+14151234356'
+  })
+
+  it('does nothing while signed out', async () => {
+    const { current_user } = await import('@/utils/serverless')
+    current_user.value = null
+
+    expect(await sync_phonebook_people(deps)).toBe(false)
+    expect(deps.load_phonebook).not.toHaveBeenCalled()
+  })
+
+  it('loads the phonebook after walking the contacts', async () => {
+    await sync_phonebook_people(deps)
+
+    expect(deps.load_phonebook).toHaveBeenCalled()
+  })
+
+  it('visits each contact in the prefix list', async () => {
+    const { metadata } = await import('@/utils/serverless')
+
+    await sync_phonebook_people(deps)
+
+    expect(metadata).toHaveBeenCalledWith(
+      expect.stringContaining('19995551234')
+    )
+  })
+
+  it('leaves a contact alone when everything matches', async () => {
+    const { get, del } = await import('idb-keyval')
+    const { metadata } = await import('@/utils/serverless')
+    const { create_hash } = await import('@/utils/upload-processor')
+    metadata.mockResolvedValue({
+      updated: new Date().toISOString(),
+      customMetadata: { hash: 'same' }
+    })
+    create_hash.mockResolvedValue('same')
+    get.mockResolvedValue(null)
+    localStorage.getItem = vi.fn(() => null)
+
+    const changed = await sync_phonebook_people(deps)
+
+    expect(changed).toBe(false)
+    expect(del).not.toHaveBeenCalled()
+  })
+
+  it('skips the local user in the prefix list', async () => {
+    const { get } = await import('idb-keyval')
+    get.mockResolvedValue(null)
+
+    await sync_phonebook_people(deps)
+
+    expect(get).not.toHaveBeenCalledWith(
+      expect.stringContaining('14151234356')
+    )
   })
 })
 
