@@ -661,6 +661,99 @@ describe('@/components/posters/as-svg.vue', () => {
     })
   })
 
+  describe('document wide meet toggle', () => {
+    it('switches this poster when the event names it', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      expect(wrapper.find('svg').attributes('preserveAspectRatio')).toContain(
+        'slice'
+      )
+
+      const event = new Event('poster-toggle-meet-only')
+      Object.defineProperty(event, 'detail', { value: { itemid } })
+      document.dispatchEvent(event)
+      await flushPromises()
+
+      expect(wrapper.find('svg').attributes('preserveAspectRatio')).toBe(
+        'xMidYMid meet'
+      )
+    })
+
+    it('leaves another poster alone', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      const event = new Event('poster-toggle-meet-only')
+      Object.defineProperty(event, 'detail', {
+        value: { itemid: '/+1/posters/2' }
+      })
+      document.dispatchEvent(event)
+      await flushPromises()
+
+      expect(wrapper.find('svg').attributes('preserveAspectRatio')).toContain(
+        'slice'
+      )
+    })
+
+    it('ignores an event with no itemid', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      document.dispatchEvent(new Event('poster-toggle-meet-only'))
+      await flushPromises()
+
+      expect(wrapper.find('svg').attributes('preserveAspectRatio')).toContain(
+        'slice'
+      )
+    })
+
+    it('stops listening once the poster unmounts', async () => {
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+      wrapper.unmount()
+
+      const event = new Event('poster-toggle-meet-only')
+      Object.defineProperty(event, 'detail', { value: { itemid } })
+
+      expect(() => document.dispatchEvent(event)).not.toThrow()
+    })
+  })
+
+  describe('composition aids', () => {
+    it('shows the grid overlay when the grid preference is on', async () => {
+      mock_grid.value = true
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      expect(
+        wrapper.find('g[data-grid-overlay]').attributes('data-grid-visible')
+      ).toBe('true')
+      expect(wrapper.findAll('g[data-grid-overlay] line')).toHaveLength(4)
+    })
+
+    it('keeps the grid hidden by default', async () => {
+      mock_grid.value = false
+      const wrapper = shallowMount(as_svg, {
+        props: { itemid, sync_poster: vector_fixture() }
+      })
+      await flushPromises()
+
+      expect(
+        wrapper.find('g[data-grid-overlay]').attributes('data-grid-visible')
+      ).toBe('false')
+    })
+  })
+
   describe('contextmenu', () => {
     it('leaves the mouse menu alone, but blocks it behind the 3D canvas', async () => {
       const mouse_down = { pointerType: 'mouse', clientX: 0, clientY: 0 }
