@@ -262,6 +262,27 @@ describe('@/views/PosterDriver', () => {
       expect(mocks.del).toHaveBeenCalledWith(`${poster.itemid}/tenor`)
     })
 
+    it('leaves the previous snippet label alone once the copy window passes', async () => {
+      vi.stubGlobal('navigator', {
+        ...navigator,
+        clipboard: { writeText: vi.fn().mockResolvedValue(undefined) }
+      })
+      vi.useFakeTimers()
+      try {
+        const wrapper = render_driver()
+        await flushPromises()
+        const buttons = wrapper.findAll('pre button')
+        await buttons[0].trigger('click')
+        vi.advanceTimersByTime(3000)
+        await flushPromises()
+
+        expect(buttons[0].text()).toBe('Copy')
+        wrapper.unmount()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
     it('reports each phase so a driving script can log progress', async () => {
       const wrapper = render_driver()
       await flushPromises()
