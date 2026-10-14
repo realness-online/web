@@ -1248,6 +1248,51 @@ describe('sync composable', () => {
       })
     })
 
+    it('reports the admin change when the profile has never been indexed', async () => {
+      const { current_user, metadata, directory } =
+        await import('@/utils/serverless')
+      const { clear_author_dirs } = await import('@/persistence/Directory')
+      const { get, set } = await import('idb-keyval')
+      const load_phonebook = vi.fn(() => Promise.resolve())
+
+      current_user.value = null
+      vi.stubEnv('VITE_ADMIN_ID', '+14151234356')
+      metadata.mockRejectedValue(
+        Object.assign(new Error('not found'), {
+          code: 'storage/object-not-found'
+        })
+      )
+      directory.mockResolvedValue({ prefixes: [] })
+
+      let index = /** @type {Record<string, unknown>} */ ({
+        '/+14151234356': {
+          updated: null,
+          customMetadata: { hash: null }
+        }
+      })
+      get.mockImplementation(key => {
+        if (key === 'sync:index') return Promise.resolve(index)
+        return Promise.resolve(null)
+      })
+      set.mockImplementation((key, val) => {
+        if (key === 'sync:index')
+          index = /** @type {Record<string, unknown>} */ (val)
+        return Promise.resolve()
+      })
+      localStorage.getItem.mockReturnValue(null)
+
+      ;({ wrapper } = with_setup(() => use_sync(emit, { load_phonebook })))
+      await flushPromises()
+      clear_author_dirs.mockClear()
+      emit.mockClear()
+
+      window.dispatchEvent(new Event('online'))
+      await flushPromises()
+
+      expect(clear_author_dirs).toHaveBeenCalledWith('/+14151234356')
+      expect(load_phonebook).toHaveBeenCalled()
+    })
+
     it('signed-out play leaves the cached posters listing alone when the admin has not moved', async () => {
       const { current_user, metadata, directory } =
         await import('@/utils/serverless')
