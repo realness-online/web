@@ -9,7 +9,12 @@
  * command running curl. In dev it is Lima's port forward, so it is plain
  * fetch. Both are behind `call()`.
  */
-import { attempt } from "./exec.js"
+import { attempt } from './exec.js'
+import { HTTP } from '#root/lib/http.js'
+import { MS_PER_SECOND } from '#root/lib/units.js'
+/* eslint-disable no-await-in-loop -- health polling waits between tries */
+
+const CALL_TIMEOUT_S = 30
 
 /**
  * Wait for /v1/health to answer, and for the seed to exist.
@@ -19,25 +24,39 @@ import { attempt } from "./exec.js"
  * pausing it (about 36s). Waiting on `ok` alone reports a stack as up when it
  * has no seed and cannot make an actor.
  */
-export const waitForHealth = async (api, { tries, delayMs, requireSeed = true }) => {
-  let last = "no response"
+export const waitForHealth = async (
+  api,
+  { tries, delayMs, requireSeed = true }
+) => {
+  let last = 'no response'
   for (let i = 0; i < tries; i += 1) {
-    const health = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
+    const health = await attempt('curl', [
+      '-sf',
+      '--max-time',
+      '3',
+      `${api}/v1/health`
+    ])
     if (health.ok && health.out.trim()) {
       const parsed = JSON.parse(health.out)
       if (!requireSeed || parsed.seed?.built) return parsed
-      last = "listening, seed not built yet"
-    } else {
-      last = health.err.trim().split("\n").pop() || last
-    }
+      last = 'listening, seed not built yet'
+    } else last = health.err.trim().split('\n').pop() || last
+
     await sleep(delayMs)
   }
-  throw new Error(`no health after ${((tries * delayMs) / 1000).toFixed(0)}s: ${last}`)
+  throw new Error(
+    `no health after ${((tries * delayMs) / MS_PER_SECOND).toFixed(0)}s: ${last}`
+  )
 }
 
 /** Is the API up and able to make an actor? Does not throw. */
-export const healthy = async (api) => {
-  const result = await attempt("curl", ["-sf", "--max-time", "3", `${api}/v1/health`])
+export const healthy = async api => {
+  const result = await attempt('curl', [
+    '-sf',
+    '--max-time',
+    '3',
+    `${api}/v1/health`
+  ])
   if (!result.ok || !result.out.trim()) return false
   try {
     return Boolean(JSON.parse(result.out).seed?.built)
@@ -46,9 +65,10 @@ export const healthy = async (api) => {
   }
 }
 
-export const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+export const sleep = ms =>
+  new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
 
 /**
  * The API as reached over ssh, for a host.
@@ -57,15 +77,15 @@ export const sleep = (ms) => {
  * bound to loopback there, so this is the only way in without a tunnel.
  */
 export const remoteApi = (name, { zone }) => {
-  const base = "http://127.0.0.1:8080"
+  const base = 'http://127.0.0.1:8080'
 
   /** Quote a string for a single shell word. */
-  const quote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`
+  const quote = value => `'${String(value).replaceAll("'", "'\\''")}'`
 
-  const sshArgs = (command) => {
-    const args = ["compute", "ssh", name]
+  const sshArgs = command => {
+    const args = ['compute', 'ssh', name]
     if (zone) args.push(`--zone=${zone}`)
-    args.push("--quiet", `--command=${command}`)
+    args.push('--quiet', `--command=${command}`)
     return args
   }
 
@@ -73,13 +93,23 @@ export const remoteApi = (name, { zone }) => {
     sshArgs,
 
     /** curl the API on the host and return stdout. Throws on a bad exit. */
-    async call(path, { method = "GET", body = null, timeout = 30 } = {}) {
-      const parts = ["curl", "-sS", "--max-time", String(timeout)]
-      if (method !== "GET") parts.push("-X", method)
-      if (body !== null) parts.push("-H", "'content-type: application/json'", "-d", quote(JSON.stringify(body)))
+    async call(
+      path,
+      { method = 'GET', body = null, timeout = CALL_TIMEOUT_S } = {}
+    ) {
+      const parts = ['curl', '-sS', '--max-time', String(timeout)]
+      if (method !== 'GET') parts.push('-X', method)
+      if (body !== null)
+        parts.push(
+          '-H',
+          "'content-type: application/json'",
+          '-d',
+          quote(JSON.stringify(body))
+        )
       parts.push(quote(`${base}${path}`))
-      const result = await attempt("gcloud", sshArgs(parts.join(" ")))
-      if (!result.ok) throw new Error(result.err.trim() || `ssh to ${name} failed`)
+      const result = await attempt('gcloud', sshArgs(parts.join(' ')))
+      if (!result.ok)
+        throw new Error(result.err.trim() || `ssh to ${name} failed`)
       return result.out
     },
 
@@ -89,8 +119,10 @@ export const remoteApi = (name, { zone }) => {
       try {
         return JSON.parse(text)
       } catch {
-        throw new Error(`${path} did not answer JSON: ${text.slice(0, 200)}`)
+        throw new Error(
+          `${path} did not answer JSON: ${text.slice(0, HTTP.OK)}`
+        )
       }
-    },
+    }
   }
 }

@@ -4,14 +4,30 @@ import { join } from 'node:path'
 import { skipped } from '#root/src/files/skip.js'
 import { token_source } from '#root/src/sign-on/node/login.js'
 import { build_app } from './view.js'
+import { HTTP } from '#root/lib/http.js'
+import { ID_BYTES, MIB } from '#root/lib/units.js'
+import { has_control } from '#root/lib/path-parts.js'
+/* eslint-disable no-await-in-loop -- site files upload one at a time to bound memory */
+
+const LIMIT_MIB = 10
 
 /** Prefix local URLs so each site works beneath its own stable address. */
 export const site_links = (text, prefix) => {
-  const route = path => path.startsWith(prefix) ? path : `${prefix}${path.slice(1)}`
+  const route = path =>
+    path.startsWith(prefix) ? path : `${prefix}${path.slice(1)}`
   return text
-    .replace(/(["'])\/(?!\/)([^\s"'<>]*)/g, (_, quote, path) => `${quote}${route(`/${path}`)}`)
-    .replace(/url\(\/(?!\/)([^)]*)\)/g, (_, path) => `url(${route(`/${path}`)})`)
-    .replace(/<loc>\/(?!\/)([^<]*)<\/loc>/g, (_, path) => `<loc>${route(`/${path}`)}</loc>`)
+    .replace(
+      /(["'])\/(?!\/)([^\s"'<>]*)/g,
+      (_, quote, path) => `${quote}${route(`/${path}`)}`
+    )
+    .replace(
+      /url\(\/(?!\/)([^)]*)\)/g,
+      (_, path) => `url(${route(`/${path}`)})`
+    )
+    .replace(
+      /<loc>\/(?!\/)([^<]*)<\/loc>/g,
+      (_, path) => `<loc>${route(`/${path}`)}</loc>`
+    )
 }
 
 /**
@@ -25,51 +41,82 @@ const snapshot = async (directory, prefix) => {
   const walk = async (directory, base = '') => {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       const name = base ? `${base}/${entry.name}` : entry.name
-      if (skipped(name) || /[\\%\0\x00-\x1f]/.test(name)) throw new Error(`not publishable: ${name}`)
+      if (
+        skipped(name) ||
+        name.includes('\\') ||
+        name.includes('%') ||
+        has_control(name)
+      )
+        throw new Error(`not publishable: ${name}`)
       const file = join(directory, entry.name)
       if (entry.isDirectory()) await walk(file, name)
       else if (entry.isFile()) {
         let bytes = await read_file(file)
-        if (/\.(html|fragment|webmanifest|css|xml|txt)$/.test(name) || /^scripts\/(plan-covers|diagrams|detect|pwa)\.js$/.test(name)) {
-          let text = site_links(bytes.toString('utf8'), prefix)
+        if (
+          /\.(html|fragment|webmanifest|css|xml|txt)$/.test(name) ||
+          /^scripts\/(plan-covers|diagrams|detect|pwa)\.js$/.test(name)
+        ) {
+          const text = site_links(bytes.toString('utf8'), prefix)
           bytes = Buffer.from(text)
         }
-        if (bytes.length > 10 * 1024 * 1024) throw new Error(`publish file too large: ${name}`)
+        if (bytes.length > LIMIT_MIB * MIB)
+          throw new Error(`publish file too large: ${name}`)
         files.push({ name, bytes })
       } else throw new Error(`links cannot be published: ${name}`)
     }
   }
   await walk(directory)
-  if (!files.some(file => file.name === 'index.html')) throw new Error('publish needs index.html')
+  if (!files.some(file => file.name === 'index.html'))
+    throw new Error('publish needs index.html')
   return files
 }
 
 /** Publish is explicit. Failed uploads never replace the previous active version. */
 /** `site_url` is where people read the site (s1: never the app address); writes still go to `url`. */
-export const publish_app = async (root, name, { url, site_url = url, get_token = token_source(), fetcher = fetch, example } = {}) => {
-  if (!/^https?:\/\//.test(url ?? '')) throw new Error('publish needs a sync URL')
+export const publish_app = async (
+  root,
+  name,
+  {
+    url,
+    site_url = url,
+    get_token = token_source(),
+    fetcher = fetch,
+    example
+  } = {}
+) => {
+  if (!/^https?:\/\//.test(url ?? ''))
+    throw new Error('publish needs a sync URL')
   const base = url.replace(/\/$/, '')
   const built = await build_app(root, name, { example })
   const prefix = `/sites/${built.id}/`
   const files = await snapshot(built.dist, prefix)
-  const version = random_bytes(6).toString('hex')
+  const version = random_bytes(ID_BYTES).toString('hex')
   let pass
   const authorize = async () => {
     const token = await get_token()
     if (!token) throw new Error('not signed in; run brayness-store login')
-    const response = await fetcher(`${base}/v1/host-pass`, { method: 'POST', headers: { authorization: `Bearer ${token}` } })
+    const response = await fetcher(`${base}/v1/host-pass`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` }
+    })
     if (!response.ok) throw new Error(`publish sign-in: ${response.status}`)
-    pass = (await response.json()).pass
+    ;({ pass } = await response.json())
   }
   await authorize()
   const call = async (method, path, body) => {
-    const request = () => fetcher(`${base}/v1/sites/${built.id}/${path}`, { method, headers: { authorization: `Bearer ${pass}` }, body })
+    const request = () =>
+      fetcher(`${base}/v1/sites/${built.id}/${path}`, {
+        method,
+        headers: { authorization: `Bearer ${pass}` },
+        body
+      })
     let response = await request()
-    if (response.status === 401) {
+    if (response.status === HTTP.UNAUTHORIZED) {
       await authorize()
       response = await request()
     }
-    if (!response.ok) throw new Error(`publish ${method} ${path}: ${response.status}`)
+    if (!response.ok)
+      throw new Error(`publish ${method} ${path}: ${response.status}`)
     return response
   }
   for (const { name, bytes } of files) {
@@ -83,19 +130,34 @@ export const publish_app = async (root, name, { url, site_url = url, get_token =
     const suffix = route.endsWith('.html') || route.endsWith('/') ? '' : '/'
     return { id: source.id, url: `${reads}${prefix}${route}${suffix}` }
   })
-  return { id: built.id, version, url: `${reads}${prefix}`, files: files.length, sources }
+  return {
+    id: built.id,
+    version,
+    url: `${reads}${prefix}`,
+    files: files.length,
+    sources
+  }
 }
 
 /** Remove the active public snapshot; private files are unchanged. */
-export const unpublish_app = async (id, { url, get_token = token_source(), fetcher = fetch } = {}) => {
+export const unpublish_app = async (
+  id,
+  { url, get_token = token_source(), fetcher = fetch } = {}
+) => {
   if (!/^a-[a-f0-9]{12}$/.test(id)) throw new Error('invalid app id')
   const token = await get_token()
   if (!token) throw new Error('not signed in; run brayness-store login')
   const base = url.replace(/\/$/, '')
-  const authorized = await fetcher(`${base}/v1/host-pass`, { method: 'POST', headers: { authorization: `Bearer ${token}` } })
+  const authorized = await fetcher(`${base}/v1/host-pass`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` }
+  })
   if (!authorized.ok) throw new Error(`publish sign-in: ${authorized.status}`)
   const { pass } = await authorized.json()
-  const response = await fetcher(`${base}/v1/sites/${id}/active`, { method: 'DELETE', headers: { authorization: `Bearer ${pass}` } })
+  const response = await fetcher(`${base}/v1/sites/${id}/active`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${pass}` }
+  })
   if (!response.ok) throw new Error(`unpublish: ${response.status}`)
   return response.json()
 }

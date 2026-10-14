@@ -40,14 +40,24 @@ const log_tail = async service => {
 }
 
 /** Render one local snapshot within the terminal bounds. */
-export const local_frame = (sections, { url, columns = DEFAULT_COLUMNS, rows = DEFAULT_ROWS, on = false } = {}) => {
+export const local_frame = (
+  sections,
+  { url, columns = DEFAULT_COLUMNS, rows = DEFAULT_ROWS, on = false } = {}
+) => {
   const lines = sections.flatMap(section => [
-    ...panel({ title: paint(`${section.name}  ${section.state}`, section.state, on), detail: section.ownership, lines: section.lines, width: columns, on }),
+    ...panel({
+      title: paint(`${section.name}  ${section.state}`, section.state, on),
+      detail: section.ownership,
+      lines: section.lines,
+      width: columns,
+      on
+    }),
     ''
   ])
   const capacity = Math.max(0, rows - FRAME_MARGIN)
   return `${[
-    paint('BRAYNESS LOCAL', 'running', on), url,
+    paint('BRAYNESS LOCAL', 'running', on),
+    url,
     ...lines.slice(0, capacity),
     'Ctrl-C/q stop local children  r refresh  u 15s  m 60s  h 5m',
     'The host and reused services stay running.'
@@ -77,7 +87,12 @@ export const monitor_local = async (
           return { name: service.name, state, ownership, lines }
         })
       )
-      const frame = local_frame(sections, { url, columns: stdout.columns, rows: stdout.rows, on })
+      const frame = local_frame(sections, {
+        url,
+        columns: stdout.columns,
+        rows: stdout.rows,
+        on
+      })
       stdout.write(`${stdout.isTTY ? '\x1b[2J\x1b[H' : ''}${frame}`)
       const waiting = new AbortController()
       const combined = AbortSignal.any([signal, waiting.signal])

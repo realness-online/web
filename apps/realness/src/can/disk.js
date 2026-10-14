@@ -14,24 +14,43 @@
  * `null` means the key must not exist yet. A mismatch throws a Conflict.
  * Versions are content hashes, so equal bytes share a version.
  */
-import { createHash as create_hash, randomUUID as random_uuid } from "node:crypto"
-import { mkdir, readFile as read_file, readdir, rename, rm, stat, writeFile as write_file } from "node:fs/promises"
-import { dirname, join, resolve, sep } from "node:path"
+import {
+  createHash as create_hash,
+  randomUUID as random_uuid
+} from 'node:crypto'
+import {
+  mkdir,
+  readFile as read_file,
+  readdir,
+  rename,
+  rm,
+  stat,
+  writeFile as write_file
+} from 'node:fs/promises'
+import { dirname, join, resolve, sep } from 'node:path'
+/* eslint-disable no-await-in-loop -- tree walks go one entry at a time to bound open files */
+
+const VERSION_LENGTH = 22
 
 export class Conflict extends Error {
-  code = "conflict"
+  code = 'conflict'
 }
 
-const version_of = (body) => create_hash("sha256").update(body).digest("base64url").slice(0, 22)
-const missing = (error) => ["ENOENT", "ENOTDIR", "EISDIR"].includes(error.code)
+const version_of = body =>
+  create_hash('sha256')
+    .update(body)
+    .digest('base64url')
+    .slice(0, VERSION_LENGTH)
+const missing = error => ['ENOENT', 'ENOTDIR', 'EISDIR'].includes(error.code)
 
-export const disk = (root) => {
-  root = resolve(root)
+export const disk = root_path => {
+  const root = resolve(root_path)
   const locks = new Map()
 
-  const at = (key) => {
+  const at = key => {
     const path = resolve(root, key)
-    if (!path.startsWith(root + sep)) throw new Error(`disk: ${key} escapes the root`)
+    if (!path.startsWith(root + sep))
+      throw new Error(`disk: ${key} escapes the root`)
     return path
   }
 
@@ -43,7 +62,7 @@ export const disk = (root) => {
     return run
   }
 
-  const get = async (key) => {
+  const get = async key => {
     try {
       const body = await read_file(at(key))
       return { body, version: version_of(body) }
@@ -73,7 +92,7 @@ export const disk = (root) => {
         return version_of(body)
       }),
 
-    stat: async (key) => (await get(key))?.version ?? null,
+    stat: async key => (await get(key))?.version ?? null,
 
     compose: (key, sources, { if_version } = {}) =>
       serial(key, async () => {
@@ -81,7 +100,7 @@ export const disk = (root) => {
         const gone = sources.find((_, i) => !files[i])
         if (gone) throw new Conflict(`${gone} is missing`)
         await check(key, if_version)
-        const body = Buffer.concat(files.map((file) => file.body))
+        const body = Buffer.concat(files.map(file => file.body))
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
         const temp = join(dirname(path), `${random_uuid()}.tmp`)
@@ -97,44 +116,60 @@ export const disk = (root) => {
       }),
 
     async list(prefix) {
-      const trimmed = prefix.replace(/\/$/, "")
+      const trimmed = prefix.replace(/\/$/, '')
       let entries
       try {
-        entries = await readdir(trimmed ? at(trimmed) : root, { withFileTypes: true })
+        entries = await readdir(trimmed ? at(trimmed) : root, {
+          withFileTypes: true
+        })
       } catch (error) {
         if (missing(error)) return { files: [], folders: [] }
         throw error
       }
-      const shown = entries.filter((entry) => !entry.name.endsWith(".tmp"))
-      const names = (test) => shown.filter(test).map((entry) => entry.name).sort()
-      return { files: names((e) => e.isFile()), folders: names((e) => e.isDirectory()) }
+      const shown = entries.filter(entry => !entry.name.endsWith('.tmp'))
+      const names = test =>
+        shown
+          .filter(test)
+          .map(entry => entry.name)
+          .sort()
+      return {
+        files: names(e => e.isFile()),
+        folders: names(e => e.isDirectory())
+      }
     },
 
     /** File names directly in a folder that sort after `after`, in order. */
-    async list_after(folder, after = "") {
-      return (await this.list(folder)).files.filter((name) => name > after)
+    async list_after(folder, after = '') {
+      return (await this.list(folder)).files.filter(name => name > after)
     },
 
     async walk(prefix) {
-      const folder = prefix.replace(/\/?$/, "/").replace(/^\/$/, "")
+      const folder = prefix.replace(/\/?$/, '/').replace(/^\/$/, '')
       const found = {}
-      const visit = async (under) => {
+      const visit = async under => {
         const { files, folders } = await this.list(`${folder}${under}`)
-        for (const name of files) found[`${under}${name}`] = (await get(`${folder}${under}${name}`)).version
+        for (const name of files)
+          found[`${under}${name}`] = (
+            await get(`${folder}${under}${name}`)
+          ).version
         for (const name of folders) await visit(`${under}${name}/`)
       }
-      await visit("")
+      await visit('')
       return found
     },
 
     async walk_meta(prefix) {
-      const folder = prefix.replace(/\/?$/, "/").replace(/^\/$/, "")
+      const folder = prefix.replace(/\/?$/, '/').replace(/^\/$/, '')
       const found = {}
       for (const [name, version] of Object.entries(await this.walk(prefix))) {
         const info = await stat(at(`${folder}${name}`))
-        found[name] = { version, size: info.size, updated: info.mtime.toISOString() }
+        found[name] = {
+          version,
+          size: info.size,
+          updated: info.mtime.toISOString()
+        }
       }
       return found
-    },
+    }
   }
 }

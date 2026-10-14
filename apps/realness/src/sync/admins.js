@@ -8,7 +8,8 @@
 const TEL = /href="tel:(\+[1-9]\d{6,14})"/g
 const FRESH_MS = 30_000
 
-export const read_admins = (html) => new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
+export const read_admins = html =>
+  new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
 
 export const admins = (storage, { now = Date.now } = {}) => {
   let cached = null
@@ -16,11 +17,11 @@ export const admins = (storage, { now = Date.now } = {}) => {
   return {
     async has(phone) {
       if (!cached || now() >= until) {
-        const page = await storage.get("admins.html")
-        cached = read_admins(page ? page.body.toString("utf8") : "")
+        const page = await storage.get('admins.html')
+        cached = read_admins(page ? page.body.toString('utf8') : '')
         until = now() + FRESH_MS
       }
       return cached.has(phone)
-    },
+    }
   }
 }

@@ -9,37 +9,41 @@
  * The steps stay bash. Node is not installed in the guest, and these are root
  * syscalls - mkfs, mount, chroot - which shell expresses directly.
  */
-import { join } from "node:path"
-import { ROOT } from "./paths.js"
+import { join } from 'node:path'
+import { ROOT } from './paths.js'
 
 /**
  * Once per Mac: the Lima VM, the firecracker artifacts, a boot check.
  * Idempotent, so it is also the way to prove a guest still works.
  */
-export const setup = async (lima) => {
-  const { step, note } = await import("./exec.js")
+export const setup = async lima => {
+  const { step, note } = await import('./exec.js')
 
   step(`lima: ${lima.config.vm}`)
-  note(await lima.start(join(ROOT, "server", "lima", "fc-local.yaml")))
+  note(await lima.start(join(ROOT, 'server', 'lima', 'fc-local.yaml')))
 
-  step("firecracker, kernel, rootfs")
-  await lima.streamScript("tools/control/scripts/guest-setup.sh")
+  step('firecracker, kernel, rootfs')
+  await lima.streamScript('tools/control/scripts/guest-setup.sh')
 
-  step("boot check")
-  await lima.streamScript("tools/control/scripts/boot-check.sh")
+  step('boot check')
+  await lima.streamScript('tools/control/scripts/boot-check.sh')
   return { host: lima.config.vm, ready: true }
 }
 
 /** Stage the harness and build template.ext4. */
-export const build = async (lima) => {
-  const { stream, step, note } = await import("./exec.js")
+export const build = async lima => {
+  const { stream, step, note } = await import('./exec.js')
 
-  step("stage the harness")
-  await stream("bash", [join(ROOT, "tools", "control", "scripts", "harness-stage.sh")])
+  step('stage the harness')
+  await stream('bash', [
+    join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh')
+  ])
 
-  step("build the template in the guest")
-  await lima.streamScript("tools/control/scripts/template-build.sh", { user: "root" })
+  step('build the template in the guest')
+  await lima.streamScript('tools/control/scripts/template-build.sh', {
+    user: 'root'
+  })
 
-  note("after a rebuild the seed is stale: webspace local host up --fresh")
+  note('after a rebuild the seed is stale: webspace local host up --fresh')
   return { rebuilt: true }
 }

@@ -4,13 +4,21 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { state_path } from './settings.js'
 
 /** Move old actor records out of temporary artifacts without overwriting state. */
-export const prepare_actor_state = async (root, { state } = {}) => {
+export const prepare_actor_state = async (
+  root,
+  { state: state_option } = {}
+) => {
   const legacy = join(root, 'artifacts/sync-state')
-  state ??= process.env.BRAYNESS_STATE ?? join(root, state_path(root))
+  let state =
+    state_option ?? process.env.BRAYNESS_STATE ?? join(root, state_path(root))
   if (resolve(state) === resolve(legacy)) state = join(root, state_path(root))
-  if (relative(root, state).split(/[\\/]/)[0] === 'artifacts') throw new Error('sync state must stay outside artifacts')
+  if (relative(root, state).split(/[\\/]/)[0] === 'artifacts')
+    throw new Error('sync state must stay outside artifacts')
   if (exists_sync(legacy)) {
-    if (exists_sync(state)) throw new Error('both legacy and current sync state exist; review migration before syncing')
+    if (exists_sync(state))
+      throw new Error(
+        'both legacy and current sync state exist; review migration before syncing'
+      )
     await mkdir(dirname(state), { recursive: true })
     await rename(legacy, state)
   }

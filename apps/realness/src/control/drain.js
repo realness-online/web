@@ -21,54 +21,71 @@
  * `set -eu` script that dies still exits 0. Both disappear here - values are
  * returned, and a throw is a throw - which is most of why this file is shorter.
  */
-import { createHash as create_hash } from "node:crypto"
-import { spawn } from "node:child_process"
-import { mkdir, open, readFile as read_file, readdir, rm, stat } from "node:fs/promises"
-import { join } from "node:path"
-import { attempt, step, note } from "./exec.js"
-import { remoteApi as remote_api } from "./api.js"
-import { out_root } from "#root/lib/output.js"
+import { createHash as create_hash } from 'node:crypto'
+import { spawn } from 'node:child_process'
+import {
+  mkdir,
+  open,
+  readFile as read_file,
+  readdir,
+  rm,
+  stat
+} from 'node:fs/promises'
+import { join } from 'node:path'
+import { attempt, step, note } from './exec.js'
+import { remoteApi as remote_api } from './api.js'
+import { out_root } from '#root/lib/output.js'
+import { HTTP } from '#root/lib/http.js'
+/* eslint-disable no-await-in-loop -- actors ship one at a time so each export is proven before the next */
 
 export class DrainError extends Error {}
 
 /** The three files every bundle must contain. */
-const PARTS = ["artifacts.tar.gz", "trace.jsonl", "manifest.json"]
+const PARTS = ['artifacts.tar.gz', 'trace.jsonl', 'manifest.json']
 
-export const drain = async (cloud, config, name, { delete: drop = false, runDir } = {}) => {
+export const drain = async (
+  cloud,
+  config,
+  name,
+  { delete: drop = false, runDir } = {}
+) => {
   const api = remote_api(name, { zone: config.zone })
   const run = runDir ?? join(dist(), `drain-${stamp()}`)
 
-  step(`${name} (${config.project}/${config.zone}), bucket gs://${config.bucket}`)
+  step(
+    `${name} (${config.project}/${config.zone}), bucket gs://${config.bucket}`
+  )
 
-  if (!(await cloud.exists(["instances", "describe", name]))) {
-    throw new DrainError(`no such instance ${name} in ${config.project}/${config.zone}`)
-  }
+  if (!(await cloud.exists(['instances', 'describe', name])))
+    throw new DrainError(
+      `no such instance ${name} in ${config.project}/${config.zone}`
+    )
 
   const health = await probeHealth(api)
-  if (!health) {
+  if (!health)
     throw new DrainError(
-      "no host answering - start it with server/host/scripts/host-restart.sh",
+      'no host answering - start it with server/host/scripts/host-restart.sh'
     )
-  }
-  note("health: seed and actors answered")
 
-  const actors = JSON.parse(await api.call("/v1/actors")).actors ?? []
-  step("actors on the host")
-  if (actors.length === 0) note("none")
+  note('health: seed and actors answered')
+
+  const actors = JSON.parse(await api.call('/v1/actors')).actors ?? []
+  step('actors on the host')
+  if (actors.length === 0) note('none')
   for (const actor of actors) note(`${actor.id}: ${actor.state}`)
 
   await mkdir(run, { recursive: true })
 
-  step("export and ship")
+  step('export and ship')
   const counts = { shipped: 0, skipped: 0, failed: 0 }
   for (const actor of actors) {
-    if (actor.state === "incomplete") {
+    if (actor.state === 'incomplete') {
       note(`SKIP ${actor.id}: no disk (state ${actor.state})`)
       counts.skipped += 1
       continue
     }
     try {
-      const shipped = await shipOne(cloud, config, name, api, actor.id, run)
+      const shipped = await shipOne({ cloud, config, name, api, run }, actor.id)
       note(`${actor.id}: ${shipped.bytes} bytes, ${shipped.proof}`)
       counts.shipped += 1
     } catch (error) {
@@ -78,12 +95,13 @@ export const drain = async (cloud, config, name, { delete: drop = false, runDir 
     }
   }
 
-  note(`${counts.shipped} shipped, ${counts.skipped} skipped, ${counts.failed} failed`)
-  if (counts.failed > 0) {
+  note(
+    `${counts.shipped} shipped, ${counts.skipped} skipped, ${counts.failed} failed`
+  )
+  if (counts.failed > 0)
     throw new DrainError(
-      "the host is left up: fix and re-run, or the delete takes actors with it",
+      'the host is left up: fix and re-run, or the delete takes actors with it'
     )
-  }
 
   if (!drop) {
     note(`bundles: gs://${config.bucket}/actors/<id>/bundle.tar.gz`)
@@ -96,49 +114,66 @@ export const drain = async (cloud, config, name, { delete: drop = false, runDir 
 }
 
 /** Export one actor, prove it arrived, then drop it from the volume. */
-const shipOne = async (cloud, config, name, api, id, run) => {
-  const status = await api.call(`/v1/actors/${id}/export`, { method: "POST", timeout: 300 })
+const shipOne = async ({ cloud, config, name, api, run }, id) => {
+  const status = await api.call(`/v1/actors/${id}/export`, {
+    method: 'POST',
+    timeout: 300
+  })
   let manifest
   try {
     manifest = JSON.parse(status)
   } catch {
-    throw new DrainError(`export did not answer a manifest: ${status.slice(0, 200)}`)
+    throw new DrainError(
+      `export did not answer a manifest: ${status.slice(0, HTTP.OK)}`
+    )
   }
   const expected = manifest.artifacts?.sha256
   const bytes = manifest.artifacts?.bytes ?? 0
-  if (!expected) throw new DrainError("the manifest has no artifacts.sha256")
+  if (!expected) throw new DrainError('the manifest has no artifacts.sha256')
 
   const archive = join(run, `${id}.tgz`)
   await streamToFile(cloud, config, name, archive, id)
 
   const extracted = join(run, id)
   await rm(extracted, { recursive: true, force: true })
-  const untar = await attempt("tar", ["-xzf", archive, "-C", run])
-  if (!untar.ok) throw new DrainError(`the bundle will not untar: ${lastLine(untar.err)}`)
+  const untar = await attempt('tar', ['-xzf', archive, '-C', run])
+  if (!untar.ok)
+    throw new DrainError(`the bundle will not untar: ${lastLine(untar.err)}`)
 
   const present = new Set(await readdir(extracted))
   const missing = PARTS.filter(part => !present.has(part))
-  if (missing.length > 0) throw new DrainError(`the bundle is missing: ${missing.join(", ")}`)
+  if (missing.length > 0)
+    throw new DrainError(`the bundle is missing: ${missing.join(', ')}`)
 
-  const artifacts = join(extracted, "artifacts.tar.gz")
-  const actual = create_hash("sha256").update(await read_file(artifacts)).digest("hex")
-  if (actual !== expected) {
-    throw new DrainError(`what came down (${actual}) is not the bundle (${expected})`)
-  }
+  const artifacts = join(extracted, 'artifacts.tar.gz')
+  const actual = create_hash('sha256')
+    .update(await read_file(artifacts))
+    .digest('hex')
+  if (actual !== expected)
+    throw new DrainError(
+      `what came down (${actual}) is not the bundle (${expected})`
+    )
 
   const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
-  const copied = await attempt("gcloud", ["storage", "cp", "--quiet", archive, object])
+  const copied = await attempt('gcloud', [
+    'storage',
+    'cp',
+    '--quiet',
+    archive,
+    object
+  ])
   if (!copied.ok) throw new DrainError(`upload failed: ${lastLine(copied.err)}`)
 
   const proof = await storedProof(archive, object, id)
   const removed = await attempt(
-    "gcloud",
+    'gcloud',
     cloud.sshArgs(
       name,
-      `sudo rm -rf ${config.hostExports ?? "/opt/fc/actors/mnt/exports"}/${id}`,
-    ),
+      `sudo rm -rf ${config.hostExports ?? '/opt/fc/actors/mnt/exports'}/${id}`
+    )
   )
-  if (!removed.ok) throw new DrainError("could not drop the bundle from the volume")
+  if (!removed.ok)
+    throw new DrainError('could not drop the bundle from the volume')
 
   return { bytes, proof }
 }
@@ -150,28 +185,34 @@ const shipOne = async (cloud, config, name, api, id, run) => {
  * out loud rather than passed off as an integrity check.
  */
 const storedProof = async (archive, object, id) => {
-  const described = await attempt("gcloud", [
-    "storage",
-    "objects",
-    "describe",
+  const described = await attempt('gcloud', [
+    'storage',
+    'objects',
+    'describe',
     object,
-    "--format=value(md5Hash,size)",
+    '--format=value(md5Hash,size)'
   ])
   if (!described.ok) throw new DrainError(`the bucket has no object for ${id}`)
 
   const [md5, size] = described.out.trim().split(/\s+/)
   const local = await stat(archive)
   if (md5) {
-    const digest = create_hash("md5").update(await read_file(archive)).digest("base64")
-    if (digest !== md5) {
-      throw new DrainError(`the bucket has md5 ${md5}, not what was sent (${digest})`)
-    }
+    const digest = create_hash('md5')
+      .update(await read_file(archive))
+      .digest('base64')
+    if (digest !== md5)
+      throw new DrainError(
+        `the bucket has md5 ${md5}, not what was sent (${digest})`
+      )
+
     return `md5 ${md5}`
   }
-  if (String(local.size) !== size) {
-    throw new DrainError(`the bucket has ${size} bytes, not the ${local.size} sent`)
-  }
-  return "size only (composite upload)"
+  if (String(local.size) !== size)
+    throw new DrainError(
+      `the bucket has ${size} bytes, not the ${local.size} sent`
+    )
+
+  return 'size only (composite upload)'
 }
 
 /**
@@ -182,20 +223,20 @@ const storedProof = async (archive, object, id) => {
  * descriptor instead, the way the shell's `>` did.
  */
 const streamToFile = async (cloud, config, name, target, id) => {
-  const exports = config.hostExports ?? "/opt/fc/actors/mnt/exports"
+  const exports = config.hostExports ?? '/opt/fc/actors/mnt/exports'
   const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
-  const handle = await open(target, "w")
+  const handle = await open(target, 'w')
   try {
     await new Promise((resolve, reject) => {
-      const child = spawn("gcloud", args, {
-        stdio: ["ignore", handle.fd, "pipe"],
+      const child = spawn('gcloud', args, {
+        stdio: ['ignore', handle.fd, 'pipe']
       })
-      let err = ""
-      child.stderr.on("data", (chunk) => {
+      let err = ''
+      child.stderr.on('data', chunk => {
         err += chunk
       })
-      child.on("error", reject)
-      child.on("close", (code) => {
+      child.on('error', reject)
+      child.on('close', code => {
         if (code === 0) return resolve()
         reject(new DrainError(`could not stream ${id} down: ${lastLine(err)}`))
       })
@@ -213,30 +254,32 @@ const streamToFile = async (cloud, config, name, target, id) => {
  * instance and leaves a 30 GB disk behind, unattached and still billed.
  */
 const deleteHostAndDisks = async (cloud, config, name) => {
-  step("delete the host and the disks it has")
+  step('delete the host and the disks it has')
   const disks = await attachedDisks(cloud, name)
-  note(`attached: ${disks.join(" ")}`)
+  note(`attached: ${disks.join(' ')}`)
 
-  await cloud.stream(["instances", "delete", name, "--quiet"])
-  for (const disk of disks) {
-    await cloud.try(["disks", "delete", disk, "--quiet"])
-  }
+  await cloud.stream(['instances', 'delete', name, '--quiet'])
+  for (const disk of disks)
+    await cloud.try(['disks', 'delete', disk, '--quiet'])
 
-  if (await cloud.exists(["instances", "describe", name])) {
-    throw new DrainError("the instance is still there")
-  }
+  if (await cloud.exists(['instances', 'describe', name]))
+    throw new DrainError('the instance is still there')
+
   const left = []
-  for (const disk of disks) {
-    if (await cloud.exists(["disks", "describe", disk])) left.push(disk)
-  }
-  if (left.length > 0) throw new DrainError(`disks left behind: ${left.join(" ")}`)
+  for (const disk of disks)
+    if (await cloud.exists(['disks', 'describe', disk])) left.push(disk)
+
+  if (left.length > 0)
+    throw new DrainError(`disks left behind: ${left.join(' ')}`)
 
   note(`${name} and its disks are gone; the bundles are the state`)
   const remaining = await cloud.value(
-    ["disks", "list", `--filter=zone:${config.zone}`, "--format=value(name)"],
-    "value(name)",
+    ['disks', 'list', `--filter=zone:${config.zone}`, '--format=value(name)'],
+    'value(name)'
   )
-  note(`left in ${config.zone}: ${remaining.replaceAll("\n", " ") || "nothing"}`)
+  note(
+    `left in ${config.zone}: ${remaining.replaceAll('\n', ' ') || 'nothing'}`
+  )
 }
 
 /**
@@ -250,29 +293,30 @@ const deleteHostAndDisks = async (cloud, config, name) => {
  * a volume whose name does not match any pattern.
  */
 const attachedDisks = async (cloud, name) => {
-  const instance = await cloud.json(["instances", "describe", name])
+  const instance = await cloud.json(['instances', 'describe', name])
   const [self] = Array.isArray(instance) ? instance : [instance]
-  return (self?.disks ?? []).map((disk) => String(disk.source ?? "").split("/").pop()).filter(Boolean)
+  return (self?.disks ?? [])
+    .map(disk =>
+      String(disk.source ?? '')
+        .split('/')
+        .pop()
+    )
+    .filter(Boolean)
 }
 
-const probeHealth = async (api) => {
+const probeHealth = async api => {
   try {
-    const health = JSON.parse(await api.call("/v1/health", { timeout: 30 }))
+    const health = JSON.parse(await api.call('/v1/health', { timeout: 30 }))
     return health.ok ? health : null
   } catch {
     return null
   }
 }
 
-const lastLine = (text) => {
-  return text.trim().split("\n").pop()?.trim() ?? ""
-}
+const lastLine = text => text.trim().split('\n').pop()?.trim() ?? ''
 
-const stamp = () => {
-  return new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "Z")
-}
+const stamp = () =>
+  new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, 'Z')
 
 /** Everything generated lands where lib/output.js says, never in the source tree. */
-const dist = () => {
-  return out_root()
-}
+const dist = () => out_root()

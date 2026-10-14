@@ -1,14 +1,17 @@
+import { createServer as create_server } from 'node:net'
+import { NotFound } from './errors.js'
+import { logger } from './log.js'
+import { PTY_PORT } from './actors.js'
+import { verify_host_pass } from '#root/src/sign-on/node/host-pass.js'
+import { can } from '#root/src/can/can.js'
+import * as vsock from './vsock.js'
 
-import { createServer as create_server } from "node:net"
-import { NotFound } from "./errors.js"
-import { logger } from "./log.js"
-import { PTY_PORT } from "./actors.js"
-import { verify_host_pass } from "#root/src/sign-on/node/host-pass.js"
-import { can } from "#root/src/can/can.js"
-import * as vsock from "./vsock.js"
+const HELLO_LIMIT_BITS = 16
+const DEFAULT_ROWS = 24
+const HELLO_SECONDS = 30
 
-const LOG = logger("pty")
-const HELLO_LIMIT = 1 << 16
+const LOG = logger('pty')
+const HELLO_LIMIT = 1 << HELLO_LIMIT_BITS
 
 const reject = (client, message) => {
   LOG.warn(`pty refused: ${message}`)
@@ -25,28 +28,37 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
     return client.destroy()
   }
   if (hello === null) return
-  if (hello.length >= HELLO_LIMIT) return reject(client, "hello line is too long")
+  if (hello.length >= HELLO_LIMIT)
+    return reject(client, 'hello line is too long')
 
   let id, cols, rows, pass
   try {
     const request = JSON.parse(hello)
-    id = request.actor
-    pass = request.pass
+    ;({ actor: id, pass } = request)
     cols = Number.parseInt(request.cols || 80, 10)
-    rows = Number.parseInt(request.rows || 24, 10)
-    if (Number.isNaN(cols) || Number.isNaN(rows)) throw new Error("cols and rows must be numbers")
+    rows = Number.parseInt(request.rows || DEFAULT_ROWS, 10)
+    if (Number.isNaN(cols) || Number.isNaN(rows))
+      throw new Error('cols and rows must be numbers')
   } catch (error) {
     return reject(client, `bad hello: ${error.message}`)
   }
-  if (typeof id !== "string" || !id) return reject(client, "hello needs an actor id")
+  if (typeof id !== 'string' || !id)
+    return reject(client, 'hello needs an actor id')
 
   let record
   try {
     const owner = verify_host_pass(pass, process.env.HOST_PASS_SECRET).phone
     record = store.get(id)
-    if (record.owner !== owner || !can({ phone: owner }, "get", `people/${owner}/harnesses/${id}`)) throw new NotFound(id)
+    if (
+      record.owner !== owner ||
+      !can({ phone: owner }, 'get', `people/${owner}/harnesses/${id}`)
+    )
+      throw new NotFound(id)
   } catch (error) {
-    return reject(client, error instanceof NotFound ? `no such actor ${id}` : error.message)
+    return reject(
+      client,
+      error instanceof NotFound ? `no such actor ${id}` : error.message
+    )
   }
 
   if (client.destroyed) return
@@ -63,12 +75,15 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
     if (remaining) terminal_clients.set(id, remaining)
     else terminal_clients.delete(id)
     if (working) store.endWork(id)
-    if (!remaining) {
-      store.idle(id, "disk").catch(error => LOG.error(`disconnect shutdown failed for ${id}`, error))
-    }
+    if (!remaining)
+      store
+        .idle(id, 'disk')
+        .catch(error =>
+          LOG.error(`disconnect shutdown failed for ${id}`, error)
+        )
   }
-  client.on("close", end)
-  client.on("error", end)
+  client.on('close', end)
+  client.on('error', end)
   try {
     await store.ensureRunning(id)
     if (ended || client.destroyed) return end()
@@ -87,21 +102,21 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   working = true
   const leftover = lines.rest()
   const early = guest.lines.rest()
-  guest.socket.write(`${JSON.stringify({ op: "resize", cols, rows })}\n`)
+  guest.socket.write(`${JSON.stringify({ op: 'resize', cols, rows })}\n`)
   client.write('{"ok": true}\n')
   if (early.length) client.write(early)
   if (leftover.length) guest.socket.write(leftover)
   client.pipe(guest.socket)
   guest.socket.pipe(client)
-  guest.socket.on("close", end)
-  guest.socket.on("error", end)
-  guest.socket.once("close", () => LOG.info(`pty detached from ${id}`))
+  guest.socket.on('close', end)
+  guest.socket.on('error', end)
+  guest.socket.once('close', () => LOG.info(`pty detached from ${id}`))
 }
 
-export const makeServer = (store, { helloSeconds = 30 } = {}) => {
+export const makeServer = (store, { helloSeconds = HELLO_SECONDS } = {}) => {
   const terminal_clients = new Map()
-  return create_server((client) => {
-    handle(store, client, helloSeconds, terminal_clients).catch((error) => {
+  return create_server(client => {
+    handle(store, client, helloSeconds, terminal_clients).catch(error => {
       LOG.error(`pty failed`, error)
       client.destroy()
     })
