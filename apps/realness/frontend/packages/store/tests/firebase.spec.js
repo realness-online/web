@@ -81,8 +81,11 @@ describe('create_firebase_backend', () => {
   it('ignores object-not-found on remove', async () => {
     deleteObject.mockRejectedValueOnce({ code: 'storage/object-not-found' })
     const backend = make_backend()
+    const warned = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await backend.remove('gone.html.gz')
+    expect(warned).toHaveBeenCalledWith('gone.html.gz', 'already deleted')
+    warned.mockRestore()
   })
 
   it('rethrows other remove errors', async () => {
@@ -119,8 +122,14 @@ describe('create_firebase_backend', () => {
   it('takes the copy with it when the source delete fails', async () => {
     deleteObject.mockRejectedValueOnce({ code: 'storage/unknown' })
     const backend = make_backend()
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(await backend.move('a.html.gz', 'b.html.gz')).toBe(false)
+    expect(logged).toHaveBeenCalledWith(
+      'Failed to move a.html.gz',
+      '[object Object]'
+    )
+    logged.mockRestore()
     expect(deleteObject).toHaveBeenLastCalledWith(
       expect.objectContaining({ path: 'b.html.gz' })
     )
@@ -129,8 +138,11 @@ describe('create_firebase_backend', () => {
   it('reports false when the copy fails', async () => {
     uploadBytes.mockRejectedValueOnce(new Error('offline'))
     const backend = make_backend()
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(await backend.move('a.html.gz', 'b.html.gz')).toBe(false)
+    expect(logged).toHaveBeenCalledWith('Failed to move a.html.gz', 'offline')
+    logged.mockRestore()
     expect(deleteObject).not.toHaveBeenCalled()
   })
 

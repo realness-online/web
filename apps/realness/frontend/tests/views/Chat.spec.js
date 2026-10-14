@@ -15,7 +15,7 @@ import { reactive } from 'vue'
 import Chat from '@/views/Chat.vue'
 import SupportLayout from '@/components/support-layout.vue'
 import { home_view } from '@/utils/preference'
-import { use_home_view } from '@/use/home-view'
+import { wide } from '@/use/home-view'
 import { read_contextual_message } from '@/utils/chat-context'
 
 const { mock_replace } = vi.hoisted(() => ({ mock_replace: vi.fn() }))
@@ -38,7 +38,7 @@ before_each(() => {
   vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
   mock_route.query = { actor: 'a-0123456789ab' }
   home_view.value = 'thoughts'
-  use_home_view().wide.value = false
+  wide.value = false
   calls = []
   watch_replies = [
     ndjson(

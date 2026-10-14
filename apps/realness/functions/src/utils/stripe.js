@@ -1,5 +1,6 @@
 import { createHmac as create_hmac, timingSafeEqual as timing_safe_equal } from 'node:crypto'
 import { defineSecret as define_secret } from 'firebase-functions/params'
+import { secret_set } from '#utils/secrets.js'
 
 export const stripe_secret_key = define_secret('STRIPE_SECRET_KEY')
 export const stripe_webhook_secret = define_secret('STRIPE_WEBHOOK_SECRET')
@@ -7,7 +8,7 @@ export const stripe_webhook_secret = define_secret('STRIPE_WEBHOOK_SECRET')
 export const stripe_secret_bindings = [stripe_secret_key]
 export const stripe_webhook_bindings = [stripe_secret_key, stripe_webhook_secret]
 
-export const stripe_ready = () => !!stripe_secret_key.value()?.trim()
+export const stripe_ready = () => secret_set(stripe_secret_key)
 
 const API = 'https://api.stripe.com/v1/'
 

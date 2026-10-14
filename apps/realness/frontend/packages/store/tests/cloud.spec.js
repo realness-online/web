@@ -259,8 +259,14 @@ describe('Cloud mixin', () => {
       prefixes: []
     })
 
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
     await new Poster('/+1/posters').optimize()
 
+    expect(logged).toHaveBeenCalledWith(
+      expect.stringContaining('Rolled back partial archive'),
+      1
+    )
+    logged.mockRestore()
     expect(backend.move).toHaveBeenCalledWith(
       'people/+1/posters/1000/1000.html.gz',
       'files/+1/posters/1000.html.gz'

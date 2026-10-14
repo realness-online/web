@@ -21,7 +21,7 @@ import SupportLayout from '@/components/support-layout.vue'
 import { key_commands_plugin } from '@/plugins/key-commands'
 import { current_user } from '@/utils/serverless'
 import { home_view } from '@/utils/preference'
-import { use_home_view } from '@/use/home-view'
+import { wide } from '@/use/home-view'
 
 vi.mock('vue-router', async () => await vi.importActual('vue-router'))
 
@@ -42,7 +42,7 @@ let requests
 before_each(() => {
   current_user.value = { getIdToken: async () => 'id.token' }
   home_view.value = 'thoughts'
-  use_home_view().wide.value = true
+  wide.value = true
   vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
   requests = []
   vi.stubGlobal(
@@ -181,7 +181,7 @@ describe('app-wide chat', () => {
   })
 
   it('keeps a close control when chat covers the page on a narrow screen', async () => {
-    use_home_view().wide.value = false
+    wide.value = false
     const { page } = await open()
     await page.get('button[aria-label="Open chat"]').trigger('click')
     await flush_promises()

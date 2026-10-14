@@ -423,7 +423,9 @@ describe('@/use/sync-folder', () => {
       return null
     })
     get_file_handle.mockImplementation(() =>
-      Promise.resolve({ createWritable: vi.fn() })
+      Promise.resolve({
+        createWritable: vi.fn(async () => ({ write: vi.fn(), close: vi.fn() }))
+      })
     )
     const { sync_now } = with_setup(() => use(), {
       provide: { set_working }
@@ -503,7 +505,9 @@ describe('@/use/sync-folder', () => {
       return null
     })
     get_file_handle.mockImplementation(() =>
-      Promise.resolve({ createWritable: vi.fn() })
+      Promise.resolve({
+        createWritable: vi.fn(async () => ({ write: vi.fn(), close: vi.fn() }))
+      })
     )
     const { sync_now } = with_setup(() => use(), {
       provide: { set_working }
