@@ -49,6 +49,35 @@ describe('rgb_to_hex', () => {
   })
 })
 
+describe('rgb_to_hex string and alpha forms', () => {
+  it('reads an rgb CSS string', () => {
+    expect(rgb_to_hex('rgb(255, 0, 0)')).toBe('#ff0000')
+    expect(rgb_to_hex('rgb(0 128 0)')).toBe('#008000')
+  })
+
+  it('reads an rgba CSS string with an alpha fraction', () => {
+    expect(rgb_to_hex('rgba(255, 0, 0, 0.5)')).toBe('#ff000080')
+  })
+
+  it('reads percentages in an rgb string', () => {
+    expect(rgb_to_hex('rgb(100%, 0%, 0%)')).toBe('#ff0000')
+  })
+
+  it('reads a numeric alpha as a fraction', () => {
+    expect(rgb_to_hex(255, 0, 0, 0.5)).toBe('#ff000080')
+  })
+
+  it('rejects an alpha outside the range', () => {
+    expect(() => rgb_to_hex(255, 0, 0, 5)).toThrow(
+      'Expected alpha value (5) as a fraction or percentage'
+    )
+  })
+
+  it('takes an alpha given as a string', () => {
+    expect(rgb_to_hex(255, 0, 0, '0.5')).toBe('#ff000080')
+  })
+})
+
 describe('hsl_to_hex', () => {
   it('converts HSL to hex', () => {
     expect(hsl_to_hex(0, 100, 50)).toBe('#ff0000')
@@ -65,6 +94,51 @@ describe('hsl_to_hex', () => {
   it('clamps saturation and lightness', () => {
     expect(hsl_to_hex(0, 150, 50)).toBe('#ff0000')
     expect(hsl_to_hex(0, 100, -10)).toBe('#000000')
+  })
+
+  it('reads an hsl CSS string', () => {
+    expect(hsl_to_hex('hsl(120, 100%, 25%)')).toBe('#008000')
+  })
+
+  it('reads a modern hsl string with spaces', () => {
+    expect(hsl_to_hex('hsl(240 100% 50%)')).toBe('#0000ff')
+  })
+
+  it('falls through when the string carries no hue and no saturation argument', () => {
+    /** Only a second argument lets the parser run; a lone string is parsed as a hue. */
+    expect(typeof hsl_to_hex('not a color')).toBe('string')
+  })
+})
+
+describe('oklch parsing guards', () => {
+  it('returns undefined for input with no oklch function', () => {
+    expect(parse_css_oklch_string('#ff0000')).toBeUndefined()
+  })
+
+  it('returns undefined when fewer than three components are given', () => {
+    expect(parse_css_oklch_string('oklch(0.5 0.1)')).toBeUndefined()
+  })
+
+  it('reads a slash separated alpha', () => {
+    expect(parse_css_oklch_string('oklch(0.5 0.1 200 / 0.4)')).toEqual({
+      l: 0.5,
+      c: 0.1,
+      h: 200,
+      a: 0.4
+    })
+  })
+
+  it('defaults the alpha to opaque', () => {
+    expect(parse_css_oklch_string('oklch(0.5 0.1 200)').a).toBe(1)
+  })
+})
+
+describe('oklch_to_rgb without a hue', () => {
+  it('treats a missing hue as zero chroma', () => {
+    const [r, g, b] = oklch_to_rgb(0.5, 0.1, NaN)
+
+    expect(r).toBe(g)
+    expect(g).toBe(b)
   })
 })
 
