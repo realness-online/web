@@ -24,7 +24,7 @@ test('launcher preserves old history until configured, then passes the vault loc
     assert.equal(run().stdout.trim(), '')
     write_file_sync(join(root, 'package.json'), JSON.stringify({ type: 'module', brayness: { sessions: 'vault/Private/Sessions' } }))
     assert.equal(run().stdout.trim(), join(root, 'vault/Private/Sessions'))
-    const recall = spawn_sync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', `import { SESSIONS_DIR } from ${JSON.stringify(new URL('../.pi/extensions/memory/index-db.ts', import.meta.url).href)}; process.stdout.write(SESSIONS_DIR)`], {
+    const recall = spawn_sync(process.execPath, ['--input-type=module', '-e', `import { SESSIONS_DIR } from ${JSON.stringify(new URL('../.pi/extensions/memory/index-db.js', import.meta.url).href)}; process.stdout.write(SESSIONS_DIR)`], {
       env: { ...env, PI_CODING_AGENT_SESSION_DIR: join(root, 'vault/Private/Sessions') }, encoding: 'utf8',
     })
     assert.equal(recall.status, 0, recall.stderr)

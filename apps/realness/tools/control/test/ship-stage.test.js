@@ -30,7 +30,7 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
 
   const extensions = join(ship, '.pi/agent/extensions')
   assert.equal(readlinkSync(extensions), '../../extensions')
-  assert.ok(existsSync(join(extensions, 'memory/index.ts')))
+  assert.ok(existsSync(join(extensions, 'memory/index.js')))
   const prompts = join(ship, '.pi/agent/prompts')
   assert.equal(readlinkSync(prompts), '../../prompts')
   assert.ok(existsSync(join(prompts, 'site.md')))

@@ -77,6 +77,7 @@ explanations.
 
 - `snake_case` for variables and functions.
 - Semicolon-free, modern JavaScript where it fits.
+- Owned `.pi/` code uses `.js` with JSDoc; run `npm run check:ext`.
 - Only JSDoc comments in code, for needed type information. No explanatory
   comments, section labels, or commented-out code. Do not move prose into JSDoc.
 - Imports at the top of the file.

@@ -5,7 +5,7 @@
  * the edit log as tool `turn`. Changes between turns never show in a diff,
  * so they stay unexplained.
  *
- * The edit log's schema is shared with `extensions/edit-log/log.ts`.
+ * The edit log's schema is shared with `extensions/edit-log/log.js`.
  */
 import { createHash as create_hash } from "node:crypto"
 import { mkdirSync as mkdir_sync } from "node:fs"

@@ -2,6 +2,7 @@
   "name": "realness-harness-dependencies",
   "version": "1.0.1",
   "private": true,
+  "type": "module",
   "license": "GPL-2.0",
   "engines": {
     "node": ">=22.19.0"

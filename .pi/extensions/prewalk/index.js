@@ -21,135 +21,117 @@
  *
  * Default target: deepseek/deepseek-v4-flash
  */
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent"
-
-const DEFAULT_TARGET = "deepseek/deepseek-v4-flash"
-
+/** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
+const DEFAULT_TARGET = 'deepseek/deepseek-v4-flash'
 const TODO_PATTERN = /(?:^|[\\/])(?:TODO|todo|TASK|task|PLAN|plan|CHECKLIST|checklist)\.(?:md|txt)$/
-
-export default function (pi: ExtensionAPI) {
+export default /** @param {ExtensionAPI} pi */ (pi) => {
   let armed = false
   let handoffDone = false
   let targetModelId = DEFAULT_TARGET
   let todoCreated = false
   let editOrWriteThisTurn = false
-
-  pi.on("tool_call", (event) => {
+  pi.on('tool_call', (event) => {
     if (handoffDone || !armed) return
-
     const isTodoWrite =
-      event.toolName === "write" && event.input.path && TODO_PATTERN.test(String(event.input.path))
-
+      event.toolName === 'write' && event.input.path && TODO_PATTERN.test(String(event.input.path))
     if (isTodoWrite) {
       todoCreated = true
       return
     }
-
-    if (event.toolName === "edit" || event.toolName === "write") {
+    if (event.toolName === 'edit' || event.toolName === 'write') {
       editOrWriteThisTurn = true
     }
   })
-
-  pi.on("turn_end", async (_event, ctx) => {
+  pi.on('turn_end', async (_event, ctx) => {
     if (!armed || handoffDone || !todoCreated || !editOrWriteThisTurn) {
       editOrWriteThisTurn = false
       return
     }
-
-    const [provider, ...rest] = targetModelId.split("/")
-    const modelId = rest.join("/")
+    const [provider, ...rest] = targetModelId.split('/')
+    const modelId = rest.join('/')
     const targetModel = ctx.modelRegistry.find(provider, modelId)
-
     if (!targetModel) {
-      ctx.ui.notify(`Prewalk: model "${targetModelId}" not found`, "error")
+      ctx.ui.notify(`Prewalk: model "${targetModelId}" not found`, 'error')
       armed = false
       return
     }
-
     handoffDone = true
     await pi.setModel(targetModel)
-    ctx.ui.notify(`Prewalk: switched to ${targetModelId}`, "info")
+    ctx.ui.notify(`Prewalk: switched to ${targetModelId}`, 'info')
   })
-
-  pi.on("before_agent_start", (event) => {
+  pi.on('before_agent_start', (event) => {
     if (!armed) return
-
     if (!handoffDone) {
       return {
         systemPrompt:
           event.systemPrompt +
-          "\n\n" +
-          "Start by writing a concrete plan. Create a TODO.md breaking down the " +
-          "work into small, verifiable items. Then start implementing.",
+          '\n\n' +
+          'Start by writing a concrete plan. Create a TODO.md breaking down the ' +
+          'work into small, verifiable items. Then start implementing.',
       }
     }
-
     return {
       systemPrompt:
         event.systemPrompt +
-        "\n\n" +
-        "Before finishing, go through the TODO.md and verify every item is complete. " +
-        "Mark items as done once verified.",
+        '\n\n' +
+        'Before finishing, go through the TODO.md and verify every item is complete. ' +
+        'Mark items as done once verified.',
     }
   })
-
-  pi.on("session_start", () => {
+  pi.on('session_start', () => {
     armed = false
     handoffDone = false
     todoCreated = false
     editOrWriteThisTurn = false
   })
-
-  pi.registerCommand("prewalk", {
-    description: "Smart model plans, cheap model executes. /prewalk [smart] [target] | off",
+  pi.registerCommand('prewalk', {
+    description: 'Smart model plans, cheap model executes. /prewalk [smart] [target] | off',
     handler: async (args, ctx) => {
-      if (args === "off") {
+      if (args === 'off') {
         armed = false
         handoffDone = false
         todoCreated = false
-        ctx.ui.notify("Prewalk disarmed", "info")
+        ctx.ui.notify('Prewalk disarmed', 'info')
         return
       }
-
       const parts = args ? args.trim().split(/\s+/) : []
-      let smartModelId: string | null = null
-
+      /** @type {string | null} */
+      let smartModelId = null
       if (parts.length >= 2) {
         smartModelId = parts[0]
         targetModelId = parts[1]
       } else if (parts.length === 1) {
         targetModelId = parts[0]
       }
-
-      const [tp, ...tr] = targetModelId.split("/")
-      const targetModel = ctx.modelRegistry.find(tp, tr.join("/"))
+      const [tp, ...tr] = targetModelId.split('/')
+      const targetModel = ctx.modelRegistry.find(tp, tr.join('/'))
       if (!targetModel) {
-        ctx.ui.notify(`Prewalk: target "${targetModelId}" not found in model catalog`, "error")
+        ctx.ui.notify(`Prewalk: target "${targetModelId}" not found in model catalog`, 'error')
         return
       }
-
       if (smartModelId) {
-        const [sp, ...sr] = smartModelId.split("/")
-        const smartModel = ctx.modelRegistry.find(sp, sr.join("/"))
+        const [sp, ...sr] = smartModelId.split('/')
+        const smartModel = ctx.modelRegistry.find(sp, sr.join('/'))
         if (!smartModel) {
-          ctx.ui.notify(`Prewalk: smart model "${smartModelId}" not found in model catalog`, "error")
+          ctx.ui.notify(
+            `Prewalk: smart model "${smartModelId}" not found in model catalog`,
+            'error',
+          )
           return
         }
         const ok = await pi.setModel(smartModel)
         if (!ok) {
-          ctx.ui.notify(`Prewalk: failed to switch to ${smartModelId}`, "error")
+          ctx.ui.notify(`Prewalk: failed to switch to ${smartModelId}`, 'error')
           return
         }
       }
-
-      const smart = smartModelId || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : "current")
-
+      const smart =
+        smartModelId || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : 'current')
       armed = true
       handoffDone = false
       todoCreated = false
       editOrWriteThisTurn = false
-
-      ctx.ui.notify(`Prewalk armed: ${smart} → ${targetModelId}`, "info")
+      ctx.ui.notify(`Prewalk armed: ${smart} → ${targetModelId}`, 'info')
     },
   })
 }

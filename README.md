@@ -53,6 +53,8 @@ They live in pi's standard project folders, `.pi/skills/`, `.pi/extensions/`, an
 
 Write a skill once in `.pi/skills/`, and it is available in every harness.
 
+Owned code in `.pi/` uses `.js` with JSDoc. `npm run check:ext` rejects TypeScript there and `.mjs` in owned source. Installed dependencies, private agent state, external projects, and build output are excluded.
+
 The shipped starter keeps `skills/`, `extensions/`, and `prompts/` at its root; the ship stage copies them from `.pi/`.
 
 ### The app
