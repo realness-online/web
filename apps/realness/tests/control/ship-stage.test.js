@@ -449,3 +449,14 @@ test('each environment bakes its own model proxy; none is assumed', () => {
   assert.notEqual(bare.status, 0)
   assert.match(bare.stderr, /usage: ship-stage.js --env/)
 })
+
+test('the actor Pi trusts its own harness, so the terminal never waits on a prompt', () => {
+  const stage = ship_stage({
+    stage: join(project, '../../artifacts/realness/trust-stage'),
+    proxy_url
+  })
+  assert.deepEqual(
+    JSON.parse(readFileSync(join(stage, '.pi/agent/trust.json'), 'utf8')),
+    { '/realness': true }
+  )
+})

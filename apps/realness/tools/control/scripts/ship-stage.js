@@ -35,6 +35,9 @@ export const UNSHIPPED_PACKAGES = ['pi-mcp-adapter', 'pi-subagents-j0k3r', 'pi-m
 const PI_VERSION = /^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$/
 const PROXY_URL = /^https?:\/\/[^/\s]+(\/\S*)?$/
 /** Examples a workspace starts apps from; chat and terminal build into images. */
+/** Where the harness sits in every actor. */
+export const ACTOR_HARNESS = '/realness'
+
 export const SHIPPED_EXAMPLES = ['static', 'app']
 
 /** The starter's identity, written last so it never hashes itself. */
@@ -140,6 +143,8 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
     } else copy(join(root, '.pi/examples', name), destination, root)
   }
   for (const [from, to] of Object.entries(STARTER_DEFAULTS)) copy(join(root, from), join(stage, to), root)
+  // The terminal starts at the harness root; Pi asks before trusting a folder with .pi, and nobody is there to answer.
+  write_file_sync(join(stage, '.pi/agent/trust.json'), `${JSON.stringify({ [ACTOR_HARNESS]: true }, null, 2)}\n`)
   edit_json(join(stage, 'package.json'), pkg => {
     if (pkg.realness) delete pkg.realness.examples
   })
