@@ -3,7 +3,12 @@ import { copyFile as copy_file, mkdir, rename } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { state_path } from './settings.js'
 
-/** Move old actor records out of temporary artifacts without overwriting state. */
+/**
+ * Move old actor records out of temporary artifacts without overwriting state.
+ * @param {string} root
+ * @param {object} [options]
+ * @param {string} [options.state] an explicit state directory
+ */
 export const prepare_actor_state = async (
   root,
   { state: state_option } = {}

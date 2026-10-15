@@ -13,8 +13,8 @@ import { mkdir, writeFile as write_file } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { MIB, MS_PER_DAY } from '#root/lib/units.js'
 
-export const SESSIONS = '.pi/agent/sessions'
-export const LIGHT_DEFAULTS = { days: 14, bytes: 2 * MIB }
+const SESSIONS = '.pi/agent/sessions'
+const LIGHT_DEFAULTS = { days: 14, bytes: 2 * MIB }
 const FILE = 'light.json'
 
 /** `brayness.light` from package.json text: null when unset, defaults filled in. */

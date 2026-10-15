@@ -54,7 +54,9 @@ try {
   assert.ok(boot)
   console.log(`  ok   ${record.id} answers at ${record.address}`)
 
-  process.kill(vmPid(record.id), "SIGKILL")
+  const pid = vmPid(record.id)
+  assert.ok(pid, "the app's VM is running")
+  process.kill(pid, "SIGKILL")
   boot = await returns(record, boot)
   console.log("  ok   killed VM returns, same address")
 
@@ -94,7 +96,7 @@ try {
     state = apps.record(looping.id).state
   }
   assert.equal(state, "crashed")
-  assert.equal(apps.record(looping.id).restarts.length, 5)
+  assert.equal(apps.record(looping.id).restarts?.length, 5)
   assert.equal(vmPid(looping.id), null)
   console.log("  ok   a crash loop stops at crashed after five restarts")
   console.log("app-supervise-check: all green")

@@ -41,6 +41,7 @@ export const build_pwa = async site => {
     plugins
   }, 'build')
   const plugin = plugins.find(plugin => plugin.name === 'vite-plugin-pwa')
+  if (!plugin) throw new Error('the PWA plugin did not load')
   const bundle = plugin.api.generateBundle({})
   for (const asset of Object.values(bundle)) await write_file(join('dist', asset.fileName), asset.source)
   await plugin.api.generateSW()

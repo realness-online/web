@@ -36,9 +36,15 @@ export const door_pass = (op = 'recovery-pass') =>
         resolve(answer.pass)
       }
     )
-    child.stdin.end(`${JSON.stringify({ op })}\n`)
+    if (child.stdin) child.stdin.end(`${JSON.stringify({ op })}\n`)
+    else reject(new Error('socat has no stdin'))
   })
 
+/**
+ * Pull the harness back onto a light VM. Returns `[count, applied]`, with a
+ * `light` property when the run used the path-limited light mode.
+ * @returns {Promise<[number, string[]] & { light: { skipped: number } | null }>}
+ */
 export const recover = async (
   url,
   issue,
@@ -125,6 +131,7 @@ export const recover = async (
     )
   }
   let saved = base
+  /** @type {{ skipped: number } | null} */
   let light = null
   if (claims.paths !== undefined) {
     const whole = (await optional(`${base}harness/.ignore`)) !== null
@@ -192,7 +199,9 @@ export const recover = async (
     root,
     pending ? JSON.parse(pending.toString()) : {}
   )
-  return Object.assign([count, applied], { light })
+  return Object.assign(/** @type {[number, string[]]} */ ([count, applied]), {
+    light
+  })
 }
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
@@ -201,10 +210,13 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
   if (!url || !/^https?:\/\//.test(url))
     throw new Error('usage: brayness-recover <sync-url>')
   const owner = await stat(root)
-  if (process.getuid() === 0 && owner.uid !== 0) {
-    process.setgroups([])
-    process.setgid(owner.gid)
-    process.setuid(owner.uid)
+  const { getuid, setgroups, setgid, setuid } = process
+  if (getuid?.() === 0 && owner.uid !== 0) {
+    if (!setgroups || !setgid || !setuid)
+      throw new Error('dropping privileges needs setgroups, setgid, and setuid')
+    setgroups([])
+    setgid(owner.gid)
+    setuid(owner.uid)
   }
   const state = await prepare_actor_state(root)
   const recovered = await recover(url, door_pass, root, { state })

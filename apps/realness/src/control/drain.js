@@ -38,11 +38,20 @@ import { out_root } from '#root/lib/output.js'
 import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- actors ship one at a time so each export is proven before the next */
 
-export class DrainError extends Error {}
+class DrainError extends Error {}
 
 /** The three files every bundle must contain. */
 const PARTS = ['artifacts.tar.gz', 'trace.jsonl', 'manifest.json']
 
+/**
+ * Drain one host: export every actor, then remove or stop the VM.
+ * @param {{ exists: (argv: string[]) => Promise<boolean>, sshArgs: (name: string, command: string) => string[], stream: (argv: string[]) => Promise<unknown>, try: (argv: string[]) => Promise<unknown>, value: (argv: string[], format: string) => Promise<string> }} cloud
+ * @param {{ project?: string, zone: string, bucket: string, host: string, hostExports?: string }} config
+ * @param {string} name
+ * @param {object} [options]
+ * @param {boolean} [options.delete] remove the instance after draining
+ * @param {string} [options.runDir] where the bundles land; a stamp folder by default
+ */
 export const drain = async (
   cloud,
   config,
@@ -227,12 +236,13 @@ const streamToFile = async (cloud, config, name, target, id) => {
   const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
   const handle = await open(target, 'w')
   try {
-    await new Promise((resolve, reject) => {
+    /** @type {Promise<void>} */
+    const printed = new Promise((resolve, reject) => {
       const child = spawn('gcloud', args, {
         stdio: ['ignore', handle.fd, 'pipe']
       })
       let err = ''
-      child.stderr.on('data', chunk => {
+      child.stderr?.on('data', chunk => {
         err += chunk
       })
       child.on('error', reject)
@@ -241,6 +251,7 @@ const streamToFile = async (cloud, config, name, target, id) => {
         reject(new DrainError(`could not stream ${id} down: ${lastLine(err)}`))
       })
     })
+    await printed
   } finally {
     await handle.close()
   }

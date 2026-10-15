@@ -24,9 +24,9 @@ const EVAL_TIMEOUT_MS = 15_000
 const SETTLED_FOR_MS = 500
 const DEFAULT_MIB = 1024
 
-export const SEED_TAP = 'fc-chrome1'
+const SEED_TAP = 'fc-chrome1'
 const SEED_GATEWAY = '172.18.1.1'
-export const SEED_GUEST = '172.18.1.2'
+const SEED_GUEST = '172.18.1.2'
 const SEED_MAC = '06:00:AC:12:01:02'
 export const DEVTOOLS_PORT = 9222
 const DISK = 'rootfs.ext4'
@@ -109,7 +109,7 @@ const firecracker_in = (ns, binary, cwd, api_sock, log_path) => {
 }
 
 /** DevTools' /json/version at `address`, or throw after `seconds`. */
-export const devtools = async (address, seconds = 5) => {
+const devtools = async (address, seconds = 5) => {
   const deadline = Date.now() + seconds * MS_PER_SECOND
   for (;;) {
     try {
@@ -128,13 +128,32 @@ export const devtools = async (address, seconds = 5) => {
 }
 
 /** Remove a copy's namespace and veth; safe to repeat. */
-export const remove_namespace = n => {
+const remove_namespace = n => {
   const { ns, outside } = copy_net(n)
   run(['ip', 'link', 'del', outside], { check: false })
   run(['ip', 'netns', 'del', ns], { check: false })
 }
 
 export class ChromePool {
+  /** @type {string} */
+  root
+  /** @type {string} */
+  image
+  /** @type {string} */
+  kernel
+  /** @type {string} */
+  binary
+  /** @type {number} */
+  mib
+  /** @type {number} */
+  vcpus
+  /** @type {number} */
+  max
+  /** @type {string} */
+  seed_dir
+  /** @type {Map<number, { dir: string, pid: number | null, address: string }>} */
+  copies = new Map()
+
   /**
    * root: where the seed and copies live. image: the Chrome ext4. Copies are
    * numbered 1..max; the seed boots in namespace brc-0's place, number `max + 1`.
@@ -253,7 +272,9 @@ export class ChromePool {
         api_sock,
         join(dir, 'firecracker.log')
       )
-      this.copies.get(n).pid = child.pid
+      const copy = this.copies.get(n)
+      if (!copy) throw new Error(`chrome copy ${n} vanished before it started`)
+      copy.pid = child.pid ?? null
       await firecracker.waitForApiSocket(api_sock)
       await firecracker.loadSnapshot(
         new firecracker.Api(api_sock),

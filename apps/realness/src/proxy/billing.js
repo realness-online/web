@@ -282,6 +282,11 @@ export const limit_status = (
     left: finite(Math.max(0, cap.tokens - used.tokens)),
     percent: percent(used.tokens, cap.tokens)
   })
+  /**
+   * @typedef {{ used: number, limit: number | null, left: number | null, percent: number | null }} SpendPart
+   *
+   * @type {{ plan: string, free: { day: SpendPart, month: SpendPart }, paid: { credit: number, used: number, left: number, percent: number | null, renews: string | null, ends: string } | null, pay_url: string, warn: { limit: string, percent: number, at: number | undefined, message: string } | null }}
+   */
   const status = {
     plan: paid ? 'paid' : 'free',
     free: { day: part(day, free.day), month: part(month, free.month) },
@@ -298,14 +303,21 @@ export const limit_status = (
     pay_url,
     warn: null
   }
+  /**
+   * One warning candidate per limit: what to call it, how full it is, how to
+   * describe it, when it resets, and how to pay. A null entry is skipped.
+   * @type {([string, number | null, string, string, string] | null)[]}
+   */
   const parts = [
-    status.paid && [
-      'credit',
-      status.paid.percent,
-      "this period's model credit",
-      `it tops up on ${paid.end.slice(0, ISO_DATE)}`,
-      `Manage your plan at ${pay_url}`
-    ],
+    status.paid
+      ? [
+          'credit',
+          status.paid.percent,
+          "this period's model credit",
+          `it tops up on ${paid.end.slice(0, ISO_DATE)}`,
+          `Manage your plan at ${pay_url}`
+        ]
+      : null,
     [
       'month',
       status.free.month.percent,
@@ -321,17 +333,20 @@ export const limit_status = (
       `Subscribe for more at ${pay_url}`
     ]
   ]
-  const candidates = parts
-    .filter(part => part && part[1] >= WARN_AT[0])
-    .map(([limit, percent, what, back, pay]) => {
-      const at = WARN_AT.filter(step => percent >= step).at(-1)
-      const cap = what[0].toUpperCase() + what.slice(1)
-      const message =
-        at === PERCENT
-          ? `${cap} is spent. Model calls stop until ${back}. ${pay}`
-          : `You've used ${percent}% of ${what}.${limit === 'credit' ? ` It tops up on ${paid.end.slice(0, ISO_DATE)}.` : ''} ${pay}`
-      return { limit, percent, at, message }
-    })
+  /** @type {{ limit: string, percent: number, at: number | undefined, message: string }[]} */
+  const candidates = []
+  for (const part of parts) {
+    if (!part) continue
+    const [limit, percent, what, back, pay] = part
+    if (typeof percent !== 'number' || percent < WARN_AT[0]) continue
+    const at = WARN_AT.filter(step => percent >= step).at(-1)
+    const cap = what[0].toUpperCase() + what.slice(1)
+    const message =
+      at === PERCENT
+        ? `${cap} is spent. Model calls stop until ${back}. ${pay}`
+        : `You've used ${percent}% of ${what}.${limit === 'credit' ? ` It tops up on ${paid.end.slice(0, ISO_DATE)}.` : ''} ${pay}`
+    candidates.push({ limit, percent, at, message })
+  }
   status.warn = candidates[0] ?? null
   return status
 }

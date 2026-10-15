@@ -9,7 +9,7 @@ const origin = 'https://realness.online'
 const PREVIEW_TOKEN = 'firebaseStorageDownloadTokens'
 
 /** The app's parser reads compressed posters the same way. */
-export const as_html = stored =>
+const as_html = stored =>
   stored[0] === 60 ? stored.toString('utf8') : unzip_sync(stored).toString('utf8')
 
 /**
@@ -18,7 +18,7 @@ export const as_html = stored =>
  * @param {string} html
  * @returns {Array<{ id: string, statement: string }>}
  */
-export const as_statements = html => {
+const as_statements = html => {
   const window = new Window({ url: origin })
   const container = window.document.createElement('div')
   container.innerHTML = html
@@ -36,7 +36,7 @@ export const as_statements = html => {
  * @param {string} author - e.g. `/+16282281824`
  * @returns {Promise<Array<{ id: string, statement: string }>>}
  */
-export const author_statements = async author => {
+const author_statements = async author => {
   const prefix = `people/${author.replace(/^\//, '')}/statements/`
   const [objects] = await bucket.getFiles({ prefix })
   const statements = []
@@ -46,23 +46,6 @@ export const author_statements = async author => {
     statements.push(...as_statements(as_html(stored)))
   }
   return statements
-}
-
-/**
- * Best effort: a print without a readable thought still shares its date.
- * @param {string} poster_id - e.g. `/+16282281824/posters/1712000000000`
- * @returns {Promise<string>}
- */
-export const print_thought = async poster_id => {
-  try {
-    const [, author] = poster_id.split('/')
-    const statements = await author_statements(`/${author}`)
-    return thought_text(
-      thought_for_poster([{ id: poster_id }, ...statements], poster_id)
-    )
-  } catch {
-    return ''
-  }
 }
 
 /**
@@ -129,7 +112,7 @@ export const print_details = async poster_id => {
  * @param {string} poster_id
  * @returns {string}
  */
-export const thought_from = (statements, poster_id) =>
+const thought_from = (statements, poster_id) =>
   thought_text(thought_for_poster([{ id: poster_id }, ...statements], poster_id))
 
 /**
@@ -165,7 +148,7 @@ export const print_rows = async (author, stamps) => {
  * @param {string} author - e.g. `+16282281824`
  * @returns {Promise<Array<{ id: string, statement: string }>>}
  */
-export const print_statements = async author => {
+const print_statements = async author => {
   if (!author) return []
   try {
     return await author_statements(`/${author}`)

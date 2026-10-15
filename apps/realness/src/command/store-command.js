@@ -18,7 +18,61 @@ const SHOWN_DIGITS = 2
 const mask = phone =>
   phone ? `${phone.slice(0, 2)}...${phone.slice(-SHOWN_DIGITS)}` : 'nobody'
 
-/** Keep the old store operations available through the single product entry. */
+/**
+ * Run one signed-in store command. Returns the exit code, or null when the
+ * command needs neither.
+ * @returns {Promise<number | null>}
+ */
+const run_store_command = async (command, rest, { print, store, stdout }) => {
+  if (command === 'whoami') {
+    print(
+      store.me
+        ? `Signed in as ${mask(store.me)}`
+        : 'Not signed in; run realness login'
+    )
+    return null
+  }
+  if (command === 'ls') {
+    for (const name of await store.ls(rest[0] ?? 'can://~/')) print(name)
+    return null
+  }
+  if (command === 'cat') {
+    stdout.write(await store.cat(rest[0]))
+    return null
+  }
+  if (command === 'cp') {
+    print(await store.cp(rest[0], rest[1]))
+    return null
+  }
+  if (command === 'rm') {
+    for (const path of rest) await store.rm(path)
+    return null
+  }
+  const [local, remote] = rest.filter(arg => arg !== '--deletes')
+  const report = await store.sync(local, remote, {
+    deletes: rest.includes('--deletes') ? 'all' : 'explained'
+  })
+  for (const [kind, names] of Object.entries(report)) {
+    if (!Array.isArray(names) || !names.length) continue
+    print(
+      `${kind}: ${names.length}${['conflicts', 'kept_both', 'held'].includes(kind) ? `\n  ${names.join('\n  ')}` : ''}`
+    )
+  }
+  return report.conflicts.length ? 1 : 0
+}
+
+/**
+ * Keep the old store operations available through the single product entry.
+ * @param {string[]} args
+ * @param {object} [options]
+ * @param {boolean} [options.actor]
+ * @param {string | null} [options.root]
+ * @param {() => Promise<string | null>} [options.get_token]
+ * @param {string} [options.service_url]
+ * @param {() => Promise<string>} [options.issue]
+ * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
+ * @param {NodeJS.WriteStream & { fd: 2 }} [options.stderr]
+ */
 export const run_store = async (
   args,
   {
@@ -72,44 +126,21 @@ export const run_store = async (
       }
       if (root) use_harness_state(root)
     }
+    let store
     if (actor) {
-      root ??= process.env.BRAYNESS_ROOT ?? '/brayness'
-      process.env.BRAYNESS_STATE = await prepare_actor_state(root)
+      const actor_root = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+      process.env.BRAYNESS_STATE = await prepare_actor_state(actor_root)
+      ;({ store } = await actor_client({
+        url: service_url ?? (await actor_url(actor_root)),
+        issue
+      }))
+    } else {
+      const token = await get_token()
+      store = client({ url: service_url ?? SYNC_URL, token })
     }
-    const token = actor ? null : await get_token()
-    const store = actor
-      ? (
-          await actor_client({
-            url: service_url ?? (await actor_url(root)),
-            issue
-          })
-        ).store
-      : client({ url: service_url ?? SYNC_URL, token })
-    if (command === 'whoami')
-      print(
-        store.me
-          ? `Signed in as ${mask(store.me)}`
-          : 'Not signed in; run realness login'
-      )
-    else if (command === 'ls')
-      for (const name of await store.ls(rest[0] ?? 'can://~/')) print(name)
-    else if (command === 'cat') stdout.write(await store.cat(rest[0]))
-    else if (command === 'cp') print(await store.cp(rest[0], rest[1]))
-    else if (command === 'rm') for (const path of rest) await store.rm(path)
-    else if (command === 'sync') {
-      const [local, remote] = rest.filter(arg => arg !== '--deletes')
-      const report = await store.sync(local, remote, {
-        deletes: rest.includes('--deletes') ? 'all' : 'explained'
-      })
-      for (const [kind, names] of Object.entries(report)) {
-        if (!Array.isArray(names) || !names.length) continue
-        print(
-          `${kind}: ${names.length}${['conflicts', 'kept_both', 'held'].includes(kind) ? `\n  ${names.join('\n  ')}` : ''}`
-        )
-      }
-      return report.conflicts.length ? 1 : 0
-    }
-    return 0
+    return (
+      (await run_store_command(command, rest, { print, store, stdout })) ?? 0
+    )
   } catch (error) {
     const hints = {
       401: 'sign in again: TOKEN is missing, expired, or from another project',

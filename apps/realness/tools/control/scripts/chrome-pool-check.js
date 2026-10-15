@@ -9,6 +9,10 @@ const URL = process.env.URL ?? "https://example.com/"
 const COPIES = Number(process.env.COPIES ?? 3)
 const run = out_path(`chrome-pool-${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "")}`)
 const pool = new ChromePool({ root: process.env.POOL_ROOT ?? "/opt/fc/chrome-pool", mib: Number(process.env.MIB ?? 1024) })
+/**
+ * The check report, read by the summary at the end.
+ * @type {{ url: string, copies: number, failures: string[], [field: string]: unknown }}
+ */
 const result = { url: URL, copies: COPIES, failures: [] }
 const fail = (what) => result.failures.push(what)
 
@@ -21,14 +25,30 @@ try {
   let clock = performance.now()
   const leased = await Promise.all(Array.from({ length: COPIES }, () => pool.restore()))
   result.restore_all_s = (performance.now() - clock) / 1000
-  result.restored = leased.map(({ n, address, disk_s, restore_s, pid }) => ({ n, address, disk_s, restore_s, rss_mib: mib(rss(pid)) }))
+  result.restored = leased.map(({ n, address, disk_s, restore_s, pid }) => ({
+    n,
+    address,
+    disk_s,
+    restore_s,
+    rss_mib: pid ? mib(rss(pid)) : null,
+  }))
   if (new Set(leased.map((c) => c.address)).size !== COPIES) fail("copies share an address")
 
   clock = performance.now()
   const pages = await Promise.all(leased.map((c) => render(c.address, URL, { screenshot: false })))
   result.render_all_s = (performance.now() - clock) / 1000
-  result.pages = pages.map(({ ok, reason, load, title, chars }, i) => ({ n: leased[i].n, ok, reason, load, title, chars }))
-  for (const p of result.pages) if (!p.ok) fail(`copy ${p.n} did not render: ${p.reason}`)
+  /** @type {{ n: number, ok: boolean, reason: string | null, load: number, title: string, chars: number }[]} */
+  const rendered = pages.map(({ ok, reason, load, title, chars }, i) => ({
+    n: leased[i].n,
+    ok,
+    reason,
+    load,
+    title,
+    chars,
+  }))
+  result.pages = rendered
+  for (const p of rendered)
+    if (!p.ok) fail(`copy ${p.n} did not render: ${p.reason}`)
 
   if (COPIES >= 2) {
     const [a, b] = leased
@@ -37,7 +57,7 @@ try {
     result.copy_to_self = await reached(`http://127.0.0.1:9223/json/version`)
     if (result.copy_to_copy) fail("copy reached another copy")
   }
-  result.rss_after_mib = leased.map((c) => mib(rss(c.pid)))
+  result.rss_after_mib = leased.map((c) => (c.pid ? mib(rss(c.pid)) : null))
 } catch (error) {
   fail(error.message)
 } finally {

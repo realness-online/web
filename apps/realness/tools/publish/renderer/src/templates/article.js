@@ -5,7 +5,8 @@ const path_of = (href) => href.replace(/\/+$/, '') || '/'
 /**
  * A plan's front matter `related` (a list of `{ title, href }`) makes a group:
  * the plan, then its links. Every page in the group shows the same bar on top.
- * @param {{ title: string, href: string }[]} links
+ * @param {{ title: string, href: string }[] | undefined} links A page with no
+ * related group passes undefined and gets an empty bar.
  * @param {string} current This page's path.
  */
 export const related_nav = (links, current) => {

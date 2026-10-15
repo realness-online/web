@@ -1,10 +1,10 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { readFileSync as read_file_sync, writeFileSync as write_file_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, cpSync as cp_sync, rmSync as rm_sync, existsSync as exists_sync } from "node:fs"
+import { readFileSync as read_file_sync, writeFileSync as write_file_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, cpSync as cp_sync, rmSync as rm_sync, existsSync as exists_sync, readlinkSync as readlink_sync, symlinkSync as symlink_sync } from "node:fs"
 import { spawnSync as spawn_sync } from "node:child_process"
-import { join, resolve } from "node:path"
+import { join, relative, resolve } from "node:path"
 import { load_theme } from "../apps/realness/themes/load.js"
-import { render_theme } from "./themes.js"
+import { link_ghostty, render_theme } from "./themes.js"
 
 const root = resolve(import.meta.dirname, "..")
 const baseline = name => read_file_sync(join(import.meta.dirname, "fixtures/theme-baseline", name), "utf8")
@@ -89,4 +89,18 @@ test("missing or invalid client input fails before writing outputs", t => {
   const absent = join(directory, "absent")
   assert.equal(cli("--theme", "example-client", "--out", absent, "--check").status, 1)
   assert.equal(exists_sync(absent), false)
+})
+
+test("Ghostty links repair a moved checkout and keep a user's own theme file", t => {
+  const home = scratch(t)
+  const directory = join(home, ".config/ghostty/themes")
+  mkdir_sync(directory, { recursive: true })
+  symlink_sync("/old/checkout/realness-dark", join(directory, "realness-dark"))
+  write_file_sync(join(directory, "realness-light"), "mine")
+  link_ghostty({ root, home })
+  assert.equal(readlink_sync(join(directory, "realness-dark")), relative(directory, join(root, "apps/realness/src/app/terminal/themes/realness-dark")))
+  assert.equal(read_file_sync(join(directory, "realness-light"), "utf8"), "mine")
+  rm_sync(join(directory, "realness-light"))
+  link_ghostty({ root, home })
+  assert.match(read_file_sync(join(directory, "realness-light"), "utf8"), /^# realness light/)
 })

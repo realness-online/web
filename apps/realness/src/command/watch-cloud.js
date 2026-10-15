@@ -11,8 +11,18 @@ const SPEND_EVERY_MINUTES = 15
 const HEALTH_EVERY_MINUTES = 5
 
 /** Cache slow reads, including failures, so refresh keys do not run paid queries. */
+/**
+ * Wrap a reader so it runs at most once per interval; every caller shares the
+ * pending promise.
+ * @template T
+ * @param {() => Promise<T>} read
+ * @param {number} interval_ms
+ * @param {() => number} [now]
+ * @returns {() => Promise<T>}
+ */
 export const cached_read = (read, interval_ms, now = Date.now) => {
   let next = 0
+  /** @type {Promise<T> | null} */
   let pending = null
   return () => {
     const time = now()

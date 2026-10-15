@@ -12,6 +12,25 @@ const MAX_AGE_MS = MS_PER_HOUR
 const TIER = { idle: 'memory', stop: 'disk' }
 
 export class ActorRequests {
+  /** @type {import('./actors.js').ActorStore} */
+  store
+  /** @type {import('./sync-mirror.js').SyncMirror | null} */
+  mirror
+  /** @type {string} */
+  host
+  /** @type {string} */
+  file
+  /** @type {() => number} */
+  now
+  /** @type {(message: string) => void} */
+  warn
+  /** @type {Record<string, string>} */
+  done = {}
+
+  /**
+   * @param {import('./actors.js').ActorStore} store
+   * @param {{ mirror: import('./sync-mirror.js').SyncMirror | null, host: string, file?: string, now?: () => number, warn?: (message: string) => void }} options
+   */
   constructor(
     store,
     {

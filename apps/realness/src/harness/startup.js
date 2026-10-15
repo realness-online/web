@@ -28,6 +28,23 @@ export const startup_stages = Object.freeze({
  * An external started_at must use the same clock origin.
  * @param {{id: string, report: (event: StartupEvent) => void, clock?: () => number, started_at?: number | null}} options
  */
+/**
+ * A startup trace: the id it was minted with, a `begin` that returns the
+ * `finish` for one stage, and `run`, which wraps a stage's work.
+ * @typedef {object} StartupTrace
+ * @property {string} id
+ * @property {(stage: string) => (state?: StartupResult) => void} begin
+ * @property {(stage: string, work: () => Promise<unknown> | unknown, options?: object) => Promise<unknown>} run
+ */
+
+/**
+ * @param {object} options
+ * @param {string} options.id
+ * @param {(fields: object) => void} options.report
+ * @param {() => number} [options.clock]
+ * @param {number | null} [options.started_at]
+ * @returns {StartupTrace}
+ */
 export const create_startup_trace = ({
   id,
   report,

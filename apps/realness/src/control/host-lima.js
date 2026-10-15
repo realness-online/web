@@ -93,16 +93,8 @@ export const up = async (
   }
 }
 
-/** Put the code on the host. In dev it is already there: the Mac's directory is
- *  mounted at /mnt/fc, so there is nothing to copy. */
-export const push = (lima, config, name) => {
-  step('code')
-  note(`${join(ROOT)} is mounted at ${config.workdir}; nothing to copy`)
-  return { copied: false }
-}
-
 /** Start the host, if it is not already answering. */
-export const serve = (lima, config, name) => startStack(lima, config)
+const serve = (lima, config, name) => startStack(lima, config)
 
 /** Stop the host and any microVM it left running. */
 export const down = async (lima, config, name, { mode = 'stop' } = {}) => {

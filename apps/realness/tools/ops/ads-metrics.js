@@ -183,6 +183,7 @@ export const aggregate_topic_hits_by_day = (entries, { host, topic_param, since 
 
   for (const entry of entries) {
     const http_request = http_request_from_entry(entry)
+    if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths: false })) continue
     if (is_bot_ua(String(http_request.userAgent ?? ''))) continue
     if (!query_param_value(String(http_request.requestUrl ?? ''), topic_param)) continue

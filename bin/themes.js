@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { existsSync as exists_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, writeFileSync as write_file_sync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import { existsSync as exists_sync, lstatSync as lstat_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, readlinkSync as readlink_sync, rmSync as rm_sync, symlinkSync as symlink_sync, writeFileSync as write_file_sync } from "node:fs"
+import { homedir } from "node:os"
+import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath as file_url_to_path } from "node:url"
 import { load_theme, theme_name } from "../apps/realness/themes/load.js"
 import { ghostty } from "../apps/realness/themes/adapters/ghostty.js"
@@ -57,6 +58,25 @@ export const generate = ({ root = ROOT, name = "realness", output, check = false
   return stale
 }
 
+/** Ghostty loads themes by name from ~/.config/ghostty/themes. A regular file there belongs to the user and stays. */
+export const link_ghostty = ({ root = ROOT, home = homedir() } = {}) => {
+  const directory = join(home, ".config/ghostty/themes")
+  mkdir_sync(directory, { recursive: true })
+  for (const scheme of ["light", "dark"]) {
+    const link = join(directory, `realness-${scheme}`)
+    const target = relative(directory, join(root, installed_paths.get(`ghostty/realness-${scheme}`)))
+    const stat = lstat_sync(link, { throwIfNoEntry: false })
+    if (stat && !stat.isSymbolicLink()) {
+      console.log(`kept ${link}; not a link`)
+      continue
+    }
+    if (stat && readlink_sync(link) === target) continue
+    if (stat) rm_sync(link)
+    symlink_sync(target, link)
+    console.log(`linked ${link}`)
+  }
+}
+
 export const main = () => {
   const args = process.argv.slice(2)
   const options = {}
@@ -70,6 +90,7 @@ export const main = () => {
     } else throw new Error(`unknown argument: ${arg}`)
   }
   process.exitCode = generate(options) ? 1 : 0
+  if (!options.check && !options.output) link_ghostty()
 }
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) main()

@@ -8,8 +8,13 @@ const unesc = value =>
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&')
 
-/** One host record as `{ host, actors, apps }`; unknown fields are ignored. */
+/**
+ * One host record as `{ host, actors, apps }`; unknown fields are ignored.
+ * @typedef {Record<string, string>} StatusFields
+ * @returns {{ host: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }}
+ */
 export const read_status = html => {
+  /** @type {{ host: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }} */
   const read = { host: null, actors: [], apps: [] }
   for (const [, type, body] of html.matchAll(
     /<article itemscope itemtype="\/(host|actor|app)">(.*?)<\/article>/g
@@ -25,19 +30,7 @@ export const read_status = html => {
   return read
 }
 
-/** Every state a panel row may hold; the terminal colors each one. */
-export const STATES = [
-  'running',
-  'sleeping',
-  'idle',
-  'quiet',
-  'failed',
-  'unknown'
-]
-
-export const QUIET_AFTER_MS = 120_000
-
-const DAY = /^\d{4}-\d{2}-\d{2}$/
+const QUIET_AFTER_MS = 120_000
 
 const number = value => (Number.isFinite(Number(value)) ? Number(value) : null)
 
@@ -58,6 +51,13 @@ const host_state = ({ quiet, running, idle, stopped }) => {
 }
 
 /** One `{ status, at }` result per read, so a failure shows its own age. */
+/**
+ * Panels may be sync or async; awaiting a plain value is the same thing.
+ * @template T
+ * @param {() => Promise<T> | T} read
+ * @param {() => string} [at]
+ * @returns {Promise<T | { status: string, error: string, at: string }>}
+ */
 const attempt = async (read, at = () => new Date().toISOString()) => {
   try {
     return { ...(await read()), status: 'ok', at: at() }
@@ -112,6 +112,16 @@ const hosts_panel = async ({ store, now = Date.now(), quiet_ms }) => {
 }
 
 /** Model spend: the operator's own ledger, read the way the proxy writes it. */
+/**
+ * @typedef {{ tokens: number, cost: number }} SpendSum
+ * @typedef {{ day: SpendSum, month: SpendSum, daily: SpendSum[] }} Spend
+ *
+ * @param {object} options
+ * @param {object} options.store
+ * @param {string[]} options.people
+ * @param {{ spent: (phone: string) => Promise<Spend> }} options.ledger
+ * @param {string[]} [options.named]
+ */
 const cost_panel = async ({ store, people, ledger, named = [] }) => {
   const rows = []
   for (const phone of people) {
@@ -194,6 +204,17 @@ const publish_panel = async ({ store, people }) => {
 /**
  * One health snapshot. `now` and `at` are injectable so the shape is tested
  * without a clock. A panel failure leaves the other panels usable.
+ * @param {object} options
+ * @param {object} options.store
+ * @param {string | null} [options.token]
+ * @param {{ spent: (phone: string) => Promise<Spend> }} options.ledger
+ * @param {string[]} [options.named]
+ * @param {object} [options.records]
+ * @param {string | null} [options.service]
+ * @param {number} [options.quiet_ms]
+ * @param {number} [options.now]
+ * @param {() => string} [options.at]
+ * @param {{ billing: () => Promise<object>, services: () => Promise<object>, resources?: () => Promise<object> } | null} [options.cloud]
  */
 export const health_snapshot = async ({
   store,
@@ -209,13 +230,13 @@ export const health_snapshot = async ({
 }) => {
   const who = who_from(token)
   const people = people_for(who, named)
-  const panels = {
+  const panels = /** @type {Record<string, unknown>} */ ({
     hosts: await attempt(() => hosts_panel({ store, now, quiet_ms }), at),
     cost: await attempt(() => cost_panel({ store, people, ledger, named }), at),
     sync: await attempt(() => sync_panel({ store, who, records }), at),
     sign_on: await attempt(() => sign_on_panel({ who, service }), at),
     publish: await attempt(() => publish_panel({ store, people }), at)
-  }
+  })
   const [billing, services, resources] = await Promise.all([
     attempt(
       () =>
@@ -259,5 +280,3 @@ export const who_from = token => {
   }
   return { phone, exp: number(claims.exp) }
 }
-
-export { DAY }

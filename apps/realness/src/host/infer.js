@@ -13,8 +13,8 @@ const ELF_MAGIC = Buffer.from('7f454c46', 'hex')
 const EXECUTABLE_BITS = 0o111
 
 export const APP_PORT = 8080
-export const HANDLER = 'server.js'
-export const SERVE = '/opt/runtime/brayness/serve.js'
+const HANDLER = 'server.js'
+const SERVE = '/opt/runtime/brayness/serve.js'
 export const START = [
   'node',
   '--permission',
@@ -44,7 +44,7 @@ function* walk(dir, rel = '') {
 }
 
 /** Every reason the files reach past the standard library. */
-export const outsideStdlib = dir => {
+const outsideStdlib = dir => {
   const found = []
   for (const { path, dir: isDir } of walk(dir)) {
     if (isDir && path.split('/').pop() === MODULES)

@@ -19,19 +19,25 @@ export const source_folders = {
 }
 
 /** Absolute paths for checkout tools; runtime modules never need a harness root. */
-export const product_paths = (root = project_root) => ({
-  root,
-  frontend: join(root, 'frontend'),
-  themes: join(root, 'themes'),
-  renderer: join(root, 'tools/publish/renderer'),
-  static_preset: join(root, 'tools/examples/static'),
-  ...Object.fromEntries(
-    Object.entries(source_folders).map(([name, folder]) => [
-      name,
-      join(root, folder)
-    ])
-  )
-})
+/**
+ * Every source folder under `root`, by the name used in `source_folders`.
+ * @param {string} [root]
+ * @returns {{ root: string, frontend: string, themes: string, renderer: string, static_preset: string } & { [folder: string]: string }}
+ */
+export const product_paths = (root = project_root) => {
+  /** @type {Record<string, string>} */
+  const folders = {}
+  for (const [name, folder] of Object.entries(source_folders))
+    folders[name] = join(root, folder)
+  return {
+    root,
+    frontend: join(root, 'frontend'),
+    themes: join(root, 'themes'),
+    renderer: join(root, 'tools/publish/renderer'),
+    static_preset: join(root, 'tools/examples/static'),
+    ...folders
+  }
+}
 
 const shared_folders = () => [
   'lib',

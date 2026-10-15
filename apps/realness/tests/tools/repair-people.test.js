@@ -63,19 +63,28 @@ test('the metadata names the encoding, cache, and hash the app checks', () => {
 })
 
 test('missing_for reads a listing with and without the .gz suffix', () => {
-  assert.deepEqual(missing_for(PHONE, []), { e64: PHONE, profile: true, statements: true })
+  assert.deepEqual(missing_for(PHONE, []), {
+    e64: PHONE,
+    profile: true,
+    statements: true
+  })
+  assert.deepEqual(missing_for(PHONE, [`people/${PHONE}/index.html.gz`]), {
+    e64: PHONE,
+    profile: false,
+    statements: true
+  })
   assert.deepEqual(
-    missing_for(PHONE, [`people/${PHONE}/index.html.gz`]),
-    { e64: PHONE, profile: false, statements: true }
-  )
-  assert.deepEqual(
-    missing_for(PHONE, [`people/${PHONE}/index.html`, `people/${PHONE}/statements/index.html`]),
+    missing_for(PHONE, [
+      `people/${PHONE}/index.html`,
+      `people/${PHONE}/statements/index.html`
+    ]),
     { e64: PHONE, profile: false, statements: false }
   )
-  assert.deepEqual(
-    missing_for(PHONE, [`people/+19999999999/index.html`]),
-    { e64: PHONE, profile: true, statements: true }
-  )
+  assert.deepEqual(missing_for(PHONE, [`people/+19999999999/index.html`]), {
+    e64: PHONE,
+    profile: true,
+    statements: true
+  })
 })
 
 test('e64_from_prefix reads a phone prefix and refuses anything else', () => {
@@ -87,8 +96,24 @@ test('e64_from_prefix reads a phone prefix and refuses anything else', () => {
 })
 
 test('parse_args reads --write and --only, and defaults to a report', () => {
-  assert.deepEqual(parse_args([]), { write: false, only: [], project: 'realness-online' })
-  assert.deepEqual(parse_args(['--write']), { write: true, only: [], project: 'realness-online' })
-  assert.deepEqual(parse_args(['--only', PHONE]), { write: false, only: [PHONE], project: 'realness-online' })
-  assert.deepEqual(parse_args(['--project', 'other']), { write: false, only: [], project: 'other' })
+  assert.deepEqual(parse_args([]), {
+    write: false,
+    only: [],
+    project: 'realness-online'
+  })
+  assert.deepEqual(parse_args(['--write']), {
+    write: true,
+    only: [],
+    project: 'realness-online'
+  })
+  assert.deepEqual(parse_args(['--only', PHONE]), {
+    write: false,
+    only: [PHONE],
+    project: 'realness-online'
+  })
+  assert.deepEqual(parse_args(['--project', 'other']), {
+    write: false,
+    only: [],
+    project: 'other'
+  })
 })

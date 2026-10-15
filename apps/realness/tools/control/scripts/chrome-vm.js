@@ -14,8 +14,12 @@ const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
 export const seconds = (since) => Number(((performance.now() - since) / 1000).toFixed(2))
 export const mib = (bytes) => Math.round(bytes / 1048576)
 
-/** A process's resident memory, bytes. */
-export const rss = (pid) => Number(/VmRSS:\s+(\d+)/.exec(read_file_sync(`/proc/${pid}/status`, "utf8"))[1]) * 1024
+/** A process's resident memory, bytes. @param {number} pid */
+export const rss = (pid) => {
+  const match = /VmRSS:\s+(\d+)/.exec(read_file_sync(`/proc/${pid}/status`, "utf8"))
+  if (!match) throw new Error(`no VmRSS for pid ${pid}`)
+  return Number(match[1]) * 1024
+}
 
 /** A process's user plus system CPU, seconds: what the host paid for the VM. */
 export const cpu = (pid) => {
@@ -25,13 +29,43 @@ export const cpu = (pid) => {
 }
 
 export class ChromeVm {
+  /** @type {string} */
+  work
+  /** @type {number} */
+  mib
+  /** @type {number} */
+  vcpus
+  /** @type {string | undefined} */
+  huge_pages
+  /** @type {number[]} */
+  pids
+  /** @type {string} */
+  tap
+  /** @type {string} */
+  address
+  /** @type {string} */
+  mac
+  /** @type {string} */
+  state
+  /** @type {string} */
+  mem
+  /** @type {string} */
+  api_sock
+  /** @type {import('node:child_process').ChildProcess | undefined} */
+  child
+  /** @type {import('#root/src/host/firecracker.js').Api | undefined} */
+  api
+
+  /** @param {{ work: string, mib?: number, vcpus?: number, huge_pages?: string }} options */
   constructor({ work, mib = 1024, vcpus = 2, huge_pages }) {
     host.requireRoot("creating TAPs and Firecracker")
     mkdir_sync(work, { recursive: true })
     Object.assign(this, { work, mib, vcpus, huge_pages, pids: [] })
     this.tap = host.freeTap("fc-chrome")
     this.address = host.tapGuest(this.tap, NET)
-    this.mac = `06:00:AC:12:${Number(/\d+$/.exec(this.tap)[0]).toString(16).padStart(2, "0").toUpperCase()}:02`
+    const index = /\d+$/.exec(this.tap)
+    if (!index) throw new Error(`tap name ${this.tap} has no trailing number`)
+    this.mac = `06:00:AC:12:${Number(index[0]).toString(16).padStart(2, "0").toUpperCase()}:02`
     this.state = join(work, "chrome.state")
     this.mem = join(work, "chrome.mem")
     host.createTap(this.tap, NET)
@@ -41,8 +75,14 @@ export class ChromeVm {
     const api_sock = join(this.work, "api.sock")
     rm_sync(api_sock, { force: true })
     this.child = firecracker.spawn(FC, this.work, api_sock, join(this.work, "firecracker.log"))
-    this.pids.push(this.child.pid)
+    this.pids.push(this.pid)
     this.api_sock = api_sock
+  }
+
+  /** The Firecracker pid, for CPU and RSS reads. Fails loudly before spawn. */
+  get pid() {
+    if (!this.child?.pid) throw new Error("the VM has not been spawned")
+    return this.child.pid
   }
 
   /** DevTools answers, or throw after `limit` seconds. */
@@ -73,7 +113,7 @@ export class ChromeVm {
   async snapshot() {
     await firecracker.pause(this.api)
     await firecracker.createSnapshot(this.api, this.state, this.mem)
-    await firecracker.terminate(this.child.pid)
+    await firecracker.terminate(this.pid)
     return { mem_mib: mib(stat_sync(this.mem).size) }
   }
 
@@ -88,6 +128,13 @@ export class ChromeVm {
   /**
    * Open `url` in a new tab, wait for load, read its text, screenshot, close.
    * `ok` means it loaded with real text and no interstitial.
+   */
+  /**
+   * Load a URL in the running VM. A failure carries `ok: false` and a reason;
+   * only a success fills title, chars, and png.
+   * @param {string} url
+   * @param {{ limit?: number, screenshot?: boolean, keep_text?: boolean }} [options]
+   * @returns {Promise<{ ok: boolean, reason: string | null, status?: number, load: number, title?: string, chars?: number, png?: Buffer | null, text?: string }>}
    */
   async render(url, { limit = 30_000, screenshot = true, keep_text = false } = {}) {
     const { webSocketDebuggerUrl } = await this.devtools()

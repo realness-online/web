@@ -386,7 +386,9 @@ export const rewrite_jsonl_cache = (cache_path, rows) => {
  * @returns {{ oldest: string | null, newest: string | null }}
  */
 export const cache_bounds = rows => {
+  /** @type {string | null} */
   let oldest = null
+  /** @type {string | null} */
   let newest = null
   for (const row of rows) {
     const ts = row.timestamp
@@ -416,6 +418,7 @@ export const aggregate_entries = (
   for (const entry of entries) {
     scanned++
     const http_request = http_request_from_entry(entry)
+    if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths })) continue
     matched++
 
@@ -532,6 +535,7 @@ export const aggregate_window = (
   let countable = 0
   for (const entry of entries) {
     const http_request = http_request_from_entry(entry)
+    if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths })) continue
     if (!include_bots && is_bot_ua(String(http_request.userAgent ?? ''))) continue
     countable++
@@ -553,6 +557,7 @@ export const aggregate_window = (
 
   for (const entry of ordered) {
     const http_request = http_request_from_entry(entry)
+    if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths })) continue
 
     const bot = is_bot_ua(String(http_request.userAgent ?? ''))
@@ -775,6 +780,7 @@ export const aggregate_by_day = (
 
   for (const entry of entries) {
     const http_request = http_request_from_entry(entry)
+    if (!http_request) continue
     if (!is_document_hit(http_request, { host, all_paths })) continue
 
     const bot = is_bot_ua(String(http_request.userAgent ?? ''))
@@ -1160,9 +1166,10 @@ const main = async () => {
     refresh: args.refresh
   })
 
-  const span = synced.bounds.oldest
-    ? `${synced.bounds.oldest.slice(0, 10)} → ${synced.bounds.newest.slice(0, 10)}`
-    : 'empty'
+  const span =
+    synced.bounds.oldest && synced.bounds.newest
+      ? `${synced.bounds.oldest.slice(0, 10)} → ${synced.bounds.newest.slice(0, 10)}`
+      : 'empty'
   const age = exists_sync(cache_path)
     ? `synced ${format_age(Date.now() - stat_sync(cache_path).mtimeMs)} ago`
     : 'no cache yet'

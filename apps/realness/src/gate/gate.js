@@ -6,7 +6,7 @@ import { issue_host_pass } from '#root/src/sign-on/node/host-pass.js'
 import { accept, open_pty, pump, refuse } from '#root/lib/websocket.js'
 import { HTTP } from '#root/lib/http.js'
 
-export const PROTOCOL = 'brayness'
+const PROTOCOL = 'brayness'
 const DEFAULT_COLS = 80
 const DEFAULT_ROWS = 24
 const API_PORT = 8080
@@ -41,50 +41,59 @@ export const one_host = (address, api_port = API_PORT) => {
   return () => ({ host, port: Number(port), api_port: Number(api_port) })
 }
 
-/** Forward one browser call to the host API under a host pass; streams both ways. */
+/**
+ * Forward one browser call to the host API under a host pass; streams both ways.
+ * @param {import('node:http').IncomingMessage} request
+ * @param {import('node:http').ServerResponse} response
+ * @param {{ host: string, port: number, api_port: number }} where
+ * @param {string} pass
+ */
 const forward = (request, response, where, pass) =>
-  new Promise(done => {
-    const headers = Object.fromEntries(
-      Object.entries(request.headers).filter(([name]) => !DROPPED.has(name))
-    )
-    const upstream = http_request(
-      {
-        host: where.host,
-        port: where.api_port,
-        method: request.method,
-        path: request.url,
-        headers: { ...headers, authorization: `Bearer ${pass}` }
-      },
-      reply => {
-        response.writeHead(
-          reply.statusCode,
-          Object.fromEntries(
-            Object.entries(reply.headers).filter(
-              ([name]) =>
-                !DROPPED.has(name) && !name.startsWith('access-control-')
+  /** @type {Promise<void>} */
+  (
+    new Promise(done => {
+      const headers = Object.fromEntries(
+        Object.entries(request.headers).filter(([name]) => !DROPPED.has(name))
+      )
+      const upstream = http_request(
+        {
+          host: where.host,
+          port: where.api_port,
+          method: request.method ?? 'GET',
+          path: request.url ?? '/',
+          headers: { ...headers, authorization: `Bearer ${pass}` }
+        },
+        reply => {
+          response.writeHead(
+            reply.statusCode ?? HTTP.BAD_GATEWAY,
+            Object.fromEntries(
+              Object.entries(reply.headers).filter(
+                ([name]) =>
+                  !DROPPED.has(name) && !name.startsWith('access-control-')
+              )
             )
           )
-        )
-        reply.pipe(response)
-        reply.on('end', done)
-      }
-    )
-    upstream.on('error', () => {
-      if (!response.headersSent)
-        response.writeHead(HTTP.BAD_GATEWAY, {
-          'content-type': 'text/plain; charset=utf-8'
-        })
-      response.end('host unreachable\n')
-      done()
+          reply.pipe(response)
+          reply.on('end', done)
+        }
+      )
+      upstream.on('error', () => {
+        if (!response.headersSent)
+          response.writeHead(HTTP.BAD_GATEWAY, {
+            'content-type': 'text/plain; charset=utf-8'
+          })
+        response.end('host unreachable\n')
+        done()
+      })
+      response.on('close', () => upstream.destroy())
+      request.pipe(upstream)
     })
-    response.on('close', () => upstream.destroy())
-    request.pipe(upstream)
-  })
+  )
 
 /**
  * @param {{
  *   identify: (token: string) => Promise<{ phone: string }>,
- *   host_for: (who: { phone: string, actor: string }) => { host: string, port: number },
+ *   host_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number },
  *   secret: string,
  *   origins: string[],
  *   log?: (line: string) => void
@@ -102,7 +111,7 @@ export const make_gate = ({
       .writeHead(status, { 'content-type': 'text/plain; charset=utf-8' })
       .end(text)
   const server = create_server(async (request, response) => {
-    const path = new URL(request.url, 'http://gate').pathname
+    const path = new URL(request.url ?? '/', 'http://gate').pathname
     if (request.method === 'GET' && path === '/health')
       return plain(response, HTTP.OK, 'ok\n')
     if (!path.startsWith('/v1/'))
@@ -140,7 +149,7 @@ export const make_gate = ({
 
   server.on('upgrade', async (request, socket) => {
     socket.on('error', () => socket.destroy())
-    const url = new URL(request.url, 'http://gate')
+    const url = new URL(request.url ?? '/', 'http://gate')
     if (url.pathname !== '/pty')
       return refuse(socket, HTTP.NOT_FOUND, 'no route\n')
     const key = request.headers['sec-websocket-key']
@@ -151,7 +160,8 @@ export const make_gate = ({
         HTTP.BAD_REQUEST,
         'needs a websocket key and an actor\n'
       )
-    if (!origins.includes(request.headers.origin))
+    const origin = request.headers.origin ?? ''
+    if (!origins.includes(origin))
       return refuse(socket, HTTP.FORBIDDEN, 'origin not allowed\n')
     const token = offered_token(request.headers['sec-websocket-protocol'])
     if (!token) return refuse(socket, HTTP.UNAUTHORIZED, 'sign in first\n')

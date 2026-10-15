@@ -11,7 +11,13 @@ const FRESH_MS = 30_000
 export const read_admins = html =>
   new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
 
+/**
+ * A cached admins list. The page is read at most once per FRESH_MS.
+ * @param {{ get: (key: string) => Promise<{ body: Buffer } | null> }} storage
+ * @param {{ now?: () => number }} [options]
+ */
 export const admins = (storage, { now = Date.now } = {}) => {
+  /** @type {Set<string> | null} */
   let cached = null
   let until = 0
   return {

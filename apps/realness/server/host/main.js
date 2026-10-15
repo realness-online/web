@@ -122,16 +122,22 @@ const limits = process.env.MODEL_PASS_SECRET
     }
   : null
 const host = hostname().split('.')[0]
+const record_secret_file = process.env.RECORD_SECRET_FILE
+if (process.env.SYNC_URL && !record_secret_file)
+  throw new Error('SYNC_URL needs RECORD_SECRET_FILE')
 const mirror = process.env.SYNC_URL
   ? new SyncMirror({
       url: process.env.SYNC_URL,
-      secret: read_file_sync(process.env.RECORD_SECRET_FILE, 'utf8').trim(),
+      secret: read_file_sync(String(record_secret_file), 'utf8').trim(),
       host
     })
   : null
 const loops = new Loops(store, { mirror, host })
+const site_public = process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL
+if (store.syncSites && !site_public)
+  throw new Error('sync sites need SYNC_SITE_PUBLIC_URL or SYNC_SITE_URL')
 const site_url = store.syncSites
-  ? `${(process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL).replace(/\/$/, '')}/sites/{id}/`
+  ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
 const chrome_image = process.env.BRAYNESS_CHROME_IMAGE ?? '/opt/fc/chrome.ext4'
 const chrome_pool =

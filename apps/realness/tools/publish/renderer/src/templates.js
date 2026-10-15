@@ -13,8 +13,22 @@ import { sitemap } from './templates/sitemap.js'
  * @param {boolean} [watch=false]
  */
 export const create_templates = (site, poster_sizes, watch = false) => {
-  site = { name: '', tagline: '', description: '', url: '', ...site }
-  const render_poster = (...args) => poster(site, poster_sizes, ...args)
+  const settings = {
+    tagline: '',
+    description: '',
+    ...site
+  }
+  /**
+   * The poster helper the article and index bodies call, with this build's
+   * settings and sizes already bound.
+   * @param {{ itemid?: string, img?: string, focus?: string, draft?: boolean }} data front matter
+   * @param {string} title
+   * @param {'h1' | 'h2'} [heading]
+   * @param {string | null} [href]
+   * @param {object} [options]
+   */
+  const render_poster = (data, title, heading, href, options) =>
+    poster(settings, poster_sizes, data, title, heading, href, options)
   return {
     /**
      * @param {string} title
@@ -22,16 +36,26 @@ export const create_templates = (site, poster_sizes, watch = false) => {
      * @param {import('./types.js').PagePreview} [meta]
      */
     shell(title, body, meta) {
-      return shell(site, title, body, meta, watch)
+      return shell(settings, title, body, meta, watch)
     },
-    poster(...args) {
-      return render_poster(...args)
+    poster: render_poster,
+    render_poster,
+    /**
+     * @param {{ title: string, href: string }[] | undefined} links
+     * @param {string} current
+     */
+    related_nav(links, current) {
+      return related_nav(links, current)
     },
-    related_nav(...args) {
-      return related_nav(...args)
-    },
-    article_body(...args) {
-      return article_body(render_poster, ...args)
+    /**
+     * @param {{ itemid?: string }} data front matter
+     * @param {string} title
+     * @param {string} html
+     * @param {string} notes
+     * @param {string} [related]
+     */
+    article_body(data, title, html, notes, related) {
+      return article_body(render_poster, data, title, html, notes, related)
     },
     /** @param {import('./types.js').Article[]} articles */
     index_body(articles) {

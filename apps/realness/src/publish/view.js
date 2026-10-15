@@ -49,7 +49,7 @@ export const export_static = async destination => {
   const excluded = new Set(['node_modules', 'dist', '.cache', '.DS_Store'])
   await cp(renderer_path, destination, {
     recursive: true,
-    filter: path => !excluded.has(path.split(/[\\/]/).at(-1))
+    filter: path => !excluded.has(path.split(/[\\/]/).at(-1) ?? '')
   })
   await cp(
     join(static_preset, 'package.json'),

@@ -27,7 +27,7 @@ const FIELDS = ['model', 'actor', 'payer', 'via', 'plan', ...NUMBERS, 'call']
 const INDEX = 'index.html'
 
 /** How a call came, from the caller's id. */
-export const via_of = actor => {
+const via_of = actor => {
   if (actor?.startsWith('app-')) return 'app'
   if (actor?.startsWith('a-')) return 'actor'
   return 'phone'
@@ -53,7 +53,7 @@ export const usage_meter = () => {
       if (whole.length + text.length <= LIMIT) whole += text
       pending += text
       const lines = pending.split('\n')
-      pending = lines.pop()
+      pending = lines.pop() ?? ''
       for (const line of lines)
         if (line.startsWith('data: ') && line.includes('"usage"'))
           read(line.slice(DATA_PREFIX))
@@ -133,7 +133,7 @@ export const read_rows = (html, payer = '') => {
   return rows
 }
 
-export const usage_day = (phone, day) => `usage/${phone}/${day}/`
+const usage_day = (phone, day) => `usage/${phone}/${day}/`
 
 /**
  * A day folder's pieces, then index.html, listed or not. Read in this
@@ -157,7 +157,7 @@ const pause = ms =>
  * costs a few writes. A conflict or a busy file waits and tries again; when
  * our piece is gone, another call folded it.
  */
-export const append_piece = async (
+const append_piece = async (
   storage,
   folder,
   piece,
@@ -220,8 +220,7 @@ const add = (a, b) => ({ tokens: a.tokens + b.tokens, cost: a.cost + b.cost })
 const KEEP_DAYS = 62
 
 /** A zero-price upstream model, e.g. "thinkingmachines/inkling:free". */
-export const free_model = model =>
-  typeof model === 'string' && model.endsWith(':free')
+const free_model = model => typeof model === 'string' && model.endsWith(':free')
 
 /** Tokens a row spends of the free limit: free plan, priced model only. */
 const free_tokens = row =>

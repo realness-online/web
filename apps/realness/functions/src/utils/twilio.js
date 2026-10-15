@@ -1,8 +1,8 @@
 import { defineSecret as define_secret } from 'firebase-functions/params'
 import { secret_set } from '#utils/secrets.js'
 
-export const twilio_account_sid = define_secret('TWILIO_ACCOUNT_SID')
-export const twilio_auth_token = define_secret('TWILIO_AUTH_TOKEN')
+const twilio_account_sid = define_secret('TWILIO_ACCOUNT_SID')
+const twilio_auth_token = define_secret('TWILIO_AUTH_TOKEN')
 
 export const twilio_secret_bindings = [
   twilio_account_sid,

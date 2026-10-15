@@ -4,10 +4,17 @@ import { createServer } from 'node:http'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import { load_manifest, verify_file } from '../../frontend/scripts/verify-deploy.js'
+import {
+  load_manifest,
+  verify_file
+} from '../../frontend/scripts/verify-deploy.js'
 
-const digest = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
-const scratch = resolve(import.meta.dirname, '../../../artifacts/verify-deploy-run')
+const digest = bytes =>
+  `sha256:${createHash('sha256').update(bytes).digest('hex')}`
+const scratch = resolve(
+  import.meta.dirname,
+  '../../../artifacts/verify-deploy-run'
+)
 
 let server
 let base
@@ -33,7 +40,10 @@ after(() => {
 describe('load_manifest', () => {
   it('reads a local manifesto file and names its source', async () => {
     const file = join(scratch, 'manifest.json')
-    writeFileSync(file, JSON.stringify({ version: '1.0.0', files: { '/a.js': 'sha256:aa' } }))
+    writeFileSync(
+      file,
+      JSON.stringify({ version: '1.0.0', files: { '/a.js': 'sha256:aa' } })
+    )
     const { manifest, source } = await load_manifest({
       base_url: base,
       manifest_path: file,
@@ -46,7 +56,10 @@ describe('load_manifest', () => {
   })
 
   it('reads a site manifesto when no release or file is given', async () => {
-    served['/build-manifest.json'] = JSON.stringify({ version: '2.0.0', files: {} })
+    served['/build-manifest.json'] = JSON.stringify({
+      version: '2.0.0',
+      files: {}
+    })
     const { manifest, source } = await load_manifest({
       base_url: base,
       manifest_path: null,
@@ -76,10 +89,13 @@ describe('load_manifest', () => {
 describe('verify_file', () => {
   it('passes a file whose bytes hash to the manifesto value', async () => {
     served['/a.js'] = 'the built file'
-    assert.deepEqual(await verify_file(base, '/a.js', digest('the built file')), {
-      file_path: '/a.js',
-      ok: true
-    })
+    assert.deepEqual(
+      await verify_file(base, '/a.js', digest('the built file')),
+      {
+        file_path: '/a.js',
+        ok: true
+      }
+    )
     const mismatch = await verify_file(base, '/a.js', digest('other'))
     assert.equal(mismatch.ok, false)
     assert.match(mismatch.message, /expected sha256:/)

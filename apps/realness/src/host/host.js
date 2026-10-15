@@ -9,7 +9,11 @@ const UNIX_PATH_MAX = 108
 
 const REFLINK_FILESYSTEMS = ['xfs', 'btrfs']
 
-/** Run a host command; output is stdout and stderr together, as text. */
+/**
+ * Run a host command; output is stdout and stderr together, as text.
+ * @param {string[]} argv
+ * @param {{ check?: boolean, input?: Buffer | string }} [options]
+ */
 export const run = (argv, { check = true, input } = {}) => {
   const result = spawn_sync(argv[0], argv.slice(1), {
     input,
@@ -23,8 +27,9 @@ export const run = (argv, { check = true, input } = {}) => {
   return { code, output }
 }
 
+/** @param {string} what */
 export const requireRoot = what => {
-  if (process.geteuid() !== 0)
+  if (process.geteuid?.() !== 0)
     throw new HostError(`${what} needs root: re-run with sudo`)
 }
 
@@ -57,7 +62,7 @@ const tapIndex = name => {
   return Number(match[1])
 }
 
-export const tapGateway = (name, net = '172.16') => `${net}.${tapIndex(name)}.1`
+const tapGateway = (name, net = '172.16') => `${net}.${tapIndex(name)}.1`
 export const tapGuest = (name, net = '172.16') => `${net}.${tapIndex(name)}.2`
 
 export const createTap = (name, net) => {

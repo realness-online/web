@@ -42,6 +42,13 @@ export const wait_for_door = async (
 }
 
 export class Door {
+  /**
+   * @param {import('./actors.js').ActorStore} store
+   * @param {string} [siteUrl]
+   * @param {import('./loops.js').Loops | null} [loops]
+   * @param {import('./chrome-leases.js').ChromeLeases | null} [chrome]
+   * @param {import('./web-engine.js').WebEngine | null} [web]
+   */
   constructor(
     store,
     siteUrl = '/s/{id}/',
@@ -121,7 +128,10 @@ export class Door {
       const line = await new Lines(conn, LINE_LIMIT).read(HELLO_SECONDS)
       if (line && line.length >= LINE_LIMIT)
         throw new Error('request line is too long')
-      reply = await this.#answer(id, JSON.parse(line?.length ? line : '{}'))
+      reply = await this.#answer(
+        id,
+        JSON.parse(line?.length ? line.toString('utf8') : '{}')
+      )
     } catch (error) {
       if (!(error instanceof SyntaxError) && error.name !== 'BadRequest')
         LOG.warn(`door request from ${id} failed: ${error.message}`)
@@ -134,12 +144,13 @@ export class Door {
     const record = this.store.get(id)
     const { owner } = record
     const instance = `/${owner}/harnesses/${id}`
+    const permit = (message, action = 'get', suffix = '') => {
+      const path = `people/${owner}/harnesses/${id}${suffix}`
+      if (!owner || !can({ instance }, action, path)) throw new Error(message)
+      return owner
+    }
     if (request.op === 'recovery-pass') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot recover')
+      permit('actor cannot recover')
       return {
         ok: true,
         pass: issue_recovery_pass(
@@ -149,11 +160,7 @@ export class Door {
       }
     }
     if (request.op === 'harness-pass') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot sync')
+      permit('actor cannot sync')
       return {
         ok: true,
         pass: issue_harness_pass(
@@ -163,36 +170,24 @@ export class Door {
       }
     }
     if (request.op === 'model-pass') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot call models')
+      const owner_phone = permit('actor cannot call models')
       return {
         ok: true,
         pass: issue_model_pass(
-          { phone: owner, id },
-          process.env.MODEL_PASS_SECRET
+          { phone: owner_phone, id },
+          process.env.MODEL_PASS_SECRET ?? ''
         )
       }
     }
     if (request.op === 'loop-report') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot read loops')
+      permit('actor cannot read loops')
       return {
         ok: true,
         loop: (this.loops ??= new Loops(this.store)).report(id, request.id)
       }
     }
     if (request.op === 'loop') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot start loops')
+      permit('actor cannot start loops')
       const loop = await (this.loops ??= new Loops(this.store)).start(
         id,
         request.goal
@@ -201,11 +196,7 @@ export class Door {
       return { ok: true, ...loop }
     }
     if (request.op === 'read') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot read the web')
+      permit('actor cannot read the web')
       if (!this.web) throw new Error('this host has no internet engine')
       return {
         ok: true,
@@ -216,11 +207,7 @@ export class Door {
       }
     }
     if (request.op === 'chrome-lease' || request.op === 'chrome-return') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}`)
-      )
-        throw new Error('actor cannot use chrome')
+      permit('actor cannot use chrome')
       if (!this.chrome) throw new Error('this host has no chrome pool')
       if (request.op === 'chrome-return')
         return { ok: true, returned: await this.chrome.give_back(id) }
@@ -236,19 +223,11 @@ export class Door {
         'site belongs to another actor; sync sites are not configured'
       )
     if (request.op === 'site-versions') {
-      if (
-        !owner ||
-        !can({ instance }, 'get', `people/${owner}/harnesses/${id}/site`)
-      )
-        throw new Error('actor cannot read site versions')
+      permit('actor cannot read site versions', 'get', '/site')
       return { ok: true, versions: await this.store.siteVersions(id, site) }
     }
     if (request.op === 'site-restore' || request.op === 'site-remove') {
-      if (
-        !owner ||
-        !can({ instance }, 'write', `people/${owner}/harnesses/${id}/site`)
-      )
-        throw new Error('actor cannot manage site')
+      permit('actor cannot manage site', 'write', '/site')
       const result =
         request.op === 'site-restore'
           ? await this.store.restoreSite(id, request.version, site)
@@ -256,11 +235,7 @@ export class Door {
       return { ok: true, ...result, url: this.siteUrl.replaceAll('{id}', site) }
     }
     if (request.op !== 'publish') throw new Error(`unknown op '${request.op}'`)
-    if (
-      !owner ||
-      !can({ instance }, 'write', `people/${owner}/harnesses/${id}/site`)
-    )
-      throw new Error('actor cannot publish')
+    permit('actor cannot publish', 'write', '/site')
     const path = request.path || '/brayness/site'
     await this.store.publish(id, path, site)
     LOG.info(`door: ${id} published ${path}`)

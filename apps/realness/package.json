@@ -95,6 +95,8 @@
     "check:frontend": "vp check frontend src/app",
     "check:frontend:fix": "vp check --fix frontend src/app",
     "type": "cd frontend && tsc --pretty",
+    "type:backend": "tsc --project tsconfig.backend.json --pretty false",
+    "check:backend": "vp check src tests",
     "certs": "cd frontend && ./scripts/generate-certs.sh",
     "check:interaction-css": "cd frontend && node scripts/check-interaction-css.js",
     "check:page-layout": "cd frontend && node scripts/check-page-layout.js",

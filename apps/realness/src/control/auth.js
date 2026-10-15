@@ -33,9 +33,16 @@ export const admin_login = async (
     sign_on,
     open,
     store: {
+      /** @returns {Promise<never>} */
+      read: () =>
+        Promise.reject(new Error('admin login keeps no readable credentials')),
+      /** @returns {Promise<void>} */
       write: value => {
         credentials = value
-      }
+        return Promise.resolve()
+      },
+      /** @returns {Promise<void>} */
+      remove: () => Promise.resolve()
     }
   })
   await check_admin(env, url, signed.id_token)

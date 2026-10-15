@@ -18,14 +18,14 @@ try {
     await vm.restore()
   }
   for (const url of urls) {
-    const before = cpu(vm.child.pid)
+    const before = cpu(vm.pid)
     const page = await vm.render(url, { screenshot: false })
-    const spent = cpu(vm.child.pid) - before
-    const after = cpu(vm.child.pid)
+    const spent = cpu(vm.pid) - before
+    const after = cpu(vm.pid)
     await new Promise((done) => setTimeout(done, 5000))
-    const idle = cpu(vm.child.pid) - after
+    const idle = cpu(vm.pid) - after
     rows.push({ url, ok: page.ok, reason: page.reason ?? "", load_s: page.load, cpu_s: Number(spent.toFixed(2)), idle_cpu_s: Number(idle.toFixed(2)), chars: page.chars ?? 0 })
-    rss_mib = mib(rss(vm.child.pid))
+    rss_mib = mib(rss(vm.pid))
     const line = `${page.ok ? "ok  " : "FAIL"} ${page.load}s ${rows.at(-1).cpu_s}cpu ${rows.at(-1).idle_cpu_s}idle ${url}${page.reason ? ` (${page.reason})` : ""}`
     append_file_sync(join(run, "progress.log"), `${line}\n`)
     console.log(line)
@@ -42,7 +42,7 @@ const summary = {
   success: Number((ok.length / rows.length).toFixed(2)),
   cpu_s_per_page: Number((sum(rows, "cpu_s") / rows.length).toFixed(2)),
   load_s_median: rows.map((row) => row.load_s).sort((a, b) => a - b)[Math.floor(rows.length / 2)],
-  failures: Object.fromEntries(Object.entries(Object.groupBy(rows.filter((row) => !row.ok), (row) => row.reason)).map(([reason, list]) => [reason, list.length])),
+  failures: Object.fromEntries(Object.entries(Object.groupBy(rows.filter((row) => !row.ok), (row) => row.reason)).map(([reason, list]) => [reason, list?.length ?? 0])),
   rss_after_mib: rss_mib,
   mib: vm.mib,
   huge_pages: vm.huge_pages ?? "none",

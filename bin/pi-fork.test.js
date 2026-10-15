@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { spawnSync as spawn_sync } from 'node:child_process'
-import { copyFileSync as copy_file_sync, existsSync as exists_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import { copyFileSync as copy_file_sync, renameSync as rename_sync, existsSync as exists_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { select_fork, rollback_launcher } from './pi-fork.js'
 
@@ -37,7 +37,8 @@ test('selection uses the development fork; rollback restores the checkout pin', 
     const result = f.run()
     assert.equal(result.status, 0, result.stderr)
     assert.equal(result.stdout, `fork:--version:html.gz:${join(f.root, '.pi/agent/state/pi-forks/install/consumer/node_modules/.bin/pi-session-read')}\n`)
-    assert.equal(read_file_sync(join(f.root, '.pi/agent/state/fork-path'), 'utf8'), `${binary}\n`)
+    assert.equal(read_file_sync(join(f.root, '.pi/agent/state/fork-path'), 'utf8'), '.pi/agent/state/pi-forks/install/consumer/node_modules/.bin/pi\n')
+    assert.equal(binary, join(f.root, '.pi/agent/state/pi-forks/install/consumer/node_modules/.bin/pi'))
     assert.throws(() => select_fork(f), /already selected/)
     rollback_launcher(f.root)
     rollback_launcher(f.root)
@@ -59,6 +60,18 @@ test('the selected install survives removal of staged artifacts', () => {
     select_fork({ root: f.root, install: managed })
     assert.match(f.run().stdout, /^fork:--version:html.gz:/)
   } finally { rm_sync(f.root, { recursive: true }) }
+})
+
+test('the selected fork survives renaming the checkout', () => {
+  const f = fixture()
+  const moved = `${f.root}-moved`
+  try {
+    select_fork(f)
+    rename_sync(f.root, moved)
+    const result = spawn_sync('/bin/bash', [join(moved, 'bin/pi'), '--version'], { env: { PATH: process.env.PATH, HOME: moved }, encoding: 'utf8' })
+    assert.equal(result.status, 0, result.stderr)
+    assert.equal(result.stdout, `fork:--version:html.gz:${join(moved, '.pi/agent/state/pi-forks/install/consumer/node_modules/.bin/pi-session-read')}\n`)
+  } finally { rm_sync(moved, { recursive: true, force: true }) }
 })
 
 test('a missing selected fork fails closed instead of falling back', () => {

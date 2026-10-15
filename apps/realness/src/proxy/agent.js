@@ -8,7 +8,14 @@ export const HOUSE_MODEL =
 const TIMEOUT_MS = 120_000
 const LIMIT = LIMIT_MIB * MIB
 
-/** @param {Record<string, unknown>} body */
+/**
+ * Ask the upstream model provider, streaming the answer back.
+ * @param {Record<string, unknown>} body
+ * @param {object} [options]
+ * @param {string} [options.key] the provider key; the header reads undefined without one
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string} [options.model]
+ */
 export const call_upstream = (
   body,
   { key, fetcher = fetch, model = MODEL } = {}

@@ -31,6 +31,15 @@ const walk = async dir => {
   return files.flat()
 }
 
+/**
+ * Merge `.conflict` session copies back into their originals.
+ * @param {object} options
+ * @param {string} options.root
+ * @param {{ rm: (path: string) => Promise<void> }} options.store
+ * @param {string} options.state
+ * @param {boolean} [options.dry_run]
+ * @returns {Promise<{ folded: string[], left: string[] }>}
+ */
 export const fold_conflicts = async ({
   root,
   store,
@@ -39,6 +48,7 @@ export const fold_conflicts = async ({
 }) => {
   const SESSIONS = runtime_sessions_path(root)
   const folder = join(root, SESSIONS)
+  /** @type {{ folded: string[], left: string[] }} */
   const report = { folded: [], left: [] }
   const copies = (await walk(folder)).filter(file => COPY.test(file)).sort()
   const merged = new Map()

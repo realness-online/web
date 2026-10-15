@@ -11,10 +11,10 @@ const EXTRA_DAYS = 7
 
 const OPENROUTER = 'https://openrouter.ai/api/v1'
 /** Differences smaller than this are rounding or a call still landing. */
-export const TOLERANCE = { cost: 0.01, share: 0.01 }
+const TOLERANCE = { cost: 0.01, share: 0.01 }
 
 /** A secret from the environment's own project. */
-export const read_secret = async (project, name, { run = attempt } = {}) => {
+const read_secret = async (project, name, { run = attempt } = {}) => {
   const { ok, out } = await run('gcloud', [
     'secrets',
     'versions',
@@ -29,7 +29,7 @@ export const read_secret = async (project, name, { run = attempt } = {}) => {
 }
 
 /** What OpenRouter says the key spent: today and this month. */
-export const key_totals = async (key, fetcher = fetch) => {
+const key_totals = async (key, fetcher = fetch) => {
   const response = await fetcher(`${OPENROUTER}/key`, {
     headers: { authorization: `Bearer ${key}` }
   })
@@ -47,7 +47,7 @@ export const key_totals = async (key, fetcher = fetch) => {
 }
 
 /** The ledger's cost for this UTC month, and today, across everyone. */
-export const ledger_totals = async (sync, now = Date.now()) => {
+const ledger_totals = async (sync, now = Date.now()) => {
   const days = month_days(new Date(now))
   const phones = (
     await sync.ls('can://usage/').catch(error => {
@@ -119,7 +119,7 @@ export const reconcile_text = r =>
       : '  matches'
   ].join('\n')
 
-export const CLOUD = { baseline_days: 7, spike_ratio: 2, spike_floor: 1 }
+const CLOUD = { baseline_days: 7, spike_ratio: 2, spike_floor: 1 }
 
 /** Daily net cost per service from the export, for the last `days` days. */
 export const bill_days = async (

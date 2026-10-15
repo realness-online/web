@@ -35,10 +35,17 @@ export const render_vm_config = (
   })
 }
 
-/** Write the filled config beside the generated files; Lima reads it once, at creation. */
-export const write_vm_config = async (
+/**
+ * Write the filled config beside the generated files; Lima reads it once, at
+ * creation.
+ * @param {string} template_path
+ * @param {object} [options]
+ * @param {string} [options.project] defaults to the checkout root
+ * @param {string} [options.out]
+ */
+const write_vm_config = async (
   template_path,
-  { project, out = out_root() } = {}
+  { project = ROOT, out = out_root() } = {}
 ) => {
   const filled = render_vm_config(await read_file(template_path, 'utf8'), {
     project,

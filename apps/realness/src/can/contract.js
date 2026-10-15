@@ -1,6 +1,21 @@
 import { MS_PER_MINUTE } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- writes are ordered so the change feed sees them in order */
 /**
+ * Options every adapter accepts on a write.
+ *
+ * `if_version` is the version the caller last read: a string matches it, and
+ * `null` means create only when the key is absent. Leaving it undefined
+ * writes without a precondition.
+ * @typedef {{ if_version?: string | null }} VersionGuard
+ */
+
+/**
+ * `gzip: true` always packs the body, so it can be composed onto other gzip
+ * files; leaving it undefined packs only when that makes the file smaller.
+ * @typedef {{ gzip?: boolean }} Packing
+ */
+
+/**
  * The contract every adapter passes. Each adapter's test calls:
  *
  *   contract({ test, assert, make })   make() resolves to a fresh, empty store

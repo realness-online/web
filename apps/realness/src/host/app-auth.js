@@ -7,7 +7,7 @@ const TICKET_SECONDS = 30
 const MAX_TICKETS = 10_000
 const TICKET_BYTES = 32
 
-export const COOKIE = 'brayness_app'
+const COOKIE = 'brayness_app'
 export const ENTER = '/.brayness/enter'
 const COOKIE_AGE = COOKIE_HOURS * SECONDS_PER_HOUR
 const TICKET_AGE = TICKET_SECONDS * MS_PER_SECOND

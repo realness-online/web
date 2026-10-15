@@ -57,6 +57,7 @@ export const attempt = async (command, args = [], options = {}) => {
  * For anything slow: a template build, a host bootstrap. The output is the
  * progress report, and capturing it would mean showing nothing for minutes.
  */
+/** @type {(command: string, args?: string[], options?: object) => Promise<void>} */
 export const stream = (command, args = [], options = {}) =>
   new Promise((resolve, reject) => {
     const child = exec_file(command, args, { ...options }, error => {

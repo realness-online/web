@@ -5,7 +5,14 @@ import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL as path_to_file_url } from 'node:url'
 import { project_root as project } from '#root/src/settings/layout.js'
 
-/** Export a portable starter; actors already carry the generated examples. */
+/**
+ * Export a portable starter; actors already carry the generated examples.
+ * @param {string[]} args
+ * @param {object} [options]
+ * @param {boolean} [options.actor]
+ * @param {string} [options.root]
+ * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
+ */
 export const run_example = async (
   [kind, destination_arg],
   { actor = false, root, stdout = process.stdout } = {}
@@ -19,7 +26,7 @@ export const run_example = async (
     const entry = create_require(join(project, 'package.json')).resolve(
       'brayness/publish/view'
     )
-    const { export_static } = await import(path_to_file_url(entry))
+    const { export_static } = await import(path_to_file_url(entry).href)
     await export_static(destination)
   } else {
     const source = actor

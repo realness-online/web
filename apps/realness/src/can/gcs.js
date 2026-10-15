@@ -27,10 +27,7 @@ const UPLOAD = 'https://storage.googleapis.com/upload/storage/v1/b'
 /** Keys worth compressing at rest; everything else is stored as given. */
 const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
 
-/**
- * Gzip text when that makes it smaller; tiny files would grow. `gzip: true`
- * always packs, so the file can be composed onto other gzip files.
- */
+/** Gzip text when that makes it smaller; `gzip: true` always packs. */
 const at_rest = (key, body, gzip) => {
   if (!gzip && !TEXT.test(key)) return { body }
   const packed = gzip_sync(Buffer.from(body))
@@ -77,6 +74,33 @@ export const gcloud_token = () =>
     }
   })
 
+/** Every page of an object listing, following `nextPageToken`. */
+const pages = async ({
+  bucket,
+  call,
+  fail,
+  fields,
+  label,
+  scope,
+  start_offset = ''
+}) => {
+  const found = []
+  const folders = []
+  let page = ''
+  do {
+    const query = new URLSearchParams({ prefix: scope, fields })
+    if (start_offset) query.set('startOffset', start_offset)
+    if (page) query.set('pageToken', page)
+    const response = await call(`${API}/${bucket}/o?${query}`)
+    if (!response.ok) await fail(label, response)
+    const listed = await response.json()
+    found.push(...(listed.items ?? []))
+    folders.push(...(listed.prefixes ?? []))
+    page = listed.nextPageToken ?? ''
+  } while (page)
+  return { folders, items: found }
+}
+
 export const create_gcs = ({ bucket, token, prefix = '' }) => {
   if (!bucket) throw new Error('create_gcs needs a bucket')
   if (typeof token !== 'function') throw new Error('create_gcs needs token()')
@@ -107,6 +131,11 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       return { body, version: response.headers.get('x-goog-generation') }
     },
 
+    /**
+     * @param {string} key
+     * @param {Buffer | string} body
+     * @param {import('./contract.js').VersionGuard & import('./contract.js').Packing} [options]
+     */
     async put(key, body, { if_version, gzip } = {}) {
       const stored = at_rest(key, body, gzip)
       const encoding = stored.encoding && `contentEncoding=${stored.encoding}`
@@ -141,6 +170,11 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
      * source must be gzip (put with `gzip: true`): the result is marked gzip,
      * and stacked gzip pieces read back as one text.
      */
+    /**
+     * @param {string} key
+     * @param {string[]} sources
+     * @param {import('./contract.js').VersionGuard} [options]
+     */
     async compose(key, sources, { if_version } = {}) {
       const query = precondition(if_version)
       const response = await call(
@@ -165,6 +199,10 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       return String((await response.json()).generation)
     },
 
+    /**
+     * @param {string} key
+     * @param {import('./contract.js').VersionGuard} [options]
+     */
     async delete(key, { if_version } = {}) {
       const query = precondition(if_version)
       const response = await call(
@@ -184,98 +222,78 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
 
     async list(folder) {
       const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
-      const files = []
-      const folders = []
-      let page = ''
-      do {
-        const query = new URLSearchParams({
-          prefix: scope,
-          delimiter: '/',
-          fields: 'items(name),prefixes,nextPageToken'
-        })
-        if (page) query.set('pageToken', page)
-        const response = await call(`${API}/${bucket}/o?${query}`)
-        if (!response.ok) await fail(`list ${folder}`, response)
-        const found = await response.json()
-        for (const item of found.items ?? [])
-          files.push(item.name.slice(scope.length))
-        for (const name of found.prefixes ?? [])
-          folders.push(name.slice(scope.length, -1))
-        page = found.nextPageToken ?? ''
-      } while (page)
-      return { files: files.filter(Boolean).sort(), folders: folders.sort() }
+      const { folders, items } = await pages({
+        bucket,
+        call,
+        fail,
+        fields: 'items(name),prefixes,nextPageToken',
+        label: `list ${folder}`,
+        scope
+      })
+      const files = items.map(item => item.name.slice(scope.length))
+      return {
+        files: files.filter(Boolean).sort(),
+        folders: folders.map(name => name.slice(scope.length, -1)).sort()
+      }
     },
 
     /** File names directly in a folder that sort after `after`, in order. */
     async list_after(folder, after = '') {
       const scope = `${prefix}${folder.replace(/\/?$/, '/')}`
-      const names = []
-      let page = ''
-      do {
-        const query = new URLSearchParams({
-          prefix: scope,
-          delimiter: '/',
-          fields: 'items(name),nextPageToken'
-        })
-        if (after) query.set('startOffset', `${scope}${after}`)
-        if (page) query.set('pageToken', page)
-        const response = await call(`${API}/${bucket}/o?${query}`)
-        if (!response.ok) await fail(`list ${folder}`, response)
-        const found = await response.json()
-        for (const item of found.items ?? [])
-          names.push(item.name.slice(scope.length))
-        page = found.nextPageToken ?? ''
-      } while (page)
-      return names.filter(name => name > after).sort()
+      const { items } = await pages({
+        bucket,
+        call,
+        fail,
+        fields: 'items(name),nextPageToken',
+        label: `list ${folder}`,
+        scope,
+        start_offset: after ? `${scope}${after}` : ''
+      })
+      return items
+        .map(item => item.name.slice(scope.length))
+        .filter(name => name > after)
+        .sort()
     },
 
     async walk(folder) {
       const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
+      const { items } = await pages({
+        bucket,
+        call,
+        fail,
+        fields: 'items(name,generation),nextPageToken',
+        label: `walk ${folder}`,
+        scope
+      })
       const found = {}
-      let page = ''
-      do {
-        const query = new URLSearchParams({
-          prefix: scope,
-          fields: 'items(name,generation),nextPageToken'
-        })
-        if (page) query.set('pageToken', page)
-        const response = await call(`${API}/${bucket}/o?${query}`)
-        if (!response.ok) await fail(`walk ${folder}`, response)
-        const listed = await response.json()
-        for (const item of listed.items ?? []) {
-          const name = item.name.slice(scope.length)
-          if (name && !name.endsWith('/')) found[name] = item.generation
-        }
-        page = listed.nextPageToken ?? ''
-      } while (page)
+      for (const item of items) {
+        const name = item.name.slice(scope.length)
+        if (name && !name.endsWith('/')) found[name] = item.generation
+      }
       return found
     },
 
     /** Like walk, with each file's byte size and last update. */
     async walk_meta(folder) {
       const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
+      const { items } = await pages({
+        bucket,
+        call,
+        fail,
+        fields: 'items(name,generation,size,updated),nextPageToken',
+        label: `walk ${folder}`,
+        scope
+      })
       const found = {}
-      let page = ''
-      do {
-        const query = new URLSearchParams({
-          prefix: scope,
-          fields: 'items(name,generation,size,updated),nextPageToken'
-        })
-        if (page) query.set('pageToken', page)
-        const response = await call(`${API}/${bucket}/o?${query}`)
-        if (!response.ok) await fail(`walk ${folder}`, response)
-        const listed = await response.json()
-        for (const item of listed.items ?? []) {
-          const name = item.name.slice(scope.length)
-          if (name && !name.endsWith('/'))
-            found[name] = {
-              version: item.generation,
-              size: Number(item.size),
-              updated: item.updated
-            }
-        }
-        page = listed.nextPageToken ?? ''
-      } while (page)
+      for (const item of items) {
+        const name = item.name.slice(scope.length)
+        if (name && !name.endsWith('/'))
+          found[name] = {
+            version: item.generation,
+            size: Number(item.size),
+            updated: item.updated
+          }
+      }
       return found
     }
   }

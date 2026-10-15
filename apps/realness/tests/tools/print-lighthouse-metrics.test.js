@@ -52,7 +52,10 @@ describe('get_thoughts_render_ms', () => {
       { name: 'thoughts-rendered', duration: 123.4 }
     ]
     assert.equal(get_thoughts_render_ms(items), 123.4)
-    assert.equal(get_thoughts_render_ms([{ label: 'Thoughts-Rendered', startTime: 88 }]), 88)
+    assert.equal(
+      get_thoughts_render_ms([{ label: 'Thoughts-Rendered', startTime: 88 }]),
+      88
+    )
   })
 
   it('answers null when the page has no such timing', () => {
@@ -67,21 +70,46 @@ describe('get_thoughts_render_ms', () => {
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { after } from 'node:test'
-import { get_lhr_paths, report } from '../../frontend/scripts/print-lighthouse-metrics.js'
+import {
+  get_lhr_paths,
+  report
+} from '../../frontend/scripts/print-lighthouse-metrics.js'
 
-const scratch = resolve(import.meta.dirname, '../../../artifacts/lighthouse-metrics-spec')
+const scratch = resolve(
+  import.meta.dirname,
+  '../../../artifacts/lighthouse-metrics-spec'
+)
 after(() => rmSync(scratch, { recursive: true, force: true }))
 
 /** One Lighthouse report file for a page. */
-const lhr = ({ score = 0.9, fcp = 1000, lcp = 2000, observed_fcp = null, observed_lcp = null, thoughts = null } = {}) => ({
+const lhr = ({
+  score = 0.9,
+  fcp = 1000,
+  lcp = 2000,
+  observed_fcp = null,
+  observed_lcp = null,
+  thoughts = null
+} = {}) => ({
   categories: { performance: { score } },
   audits: {
     'first-contentful-paint': { numericValue: fcp },
     'largest-contentful-paint': { numericValue: lcp },
-    metrics: { details: { items: [{ observedFirstContentfulPaint: observed_fcp, observedLargestContentfulPaint: observed_lcp }] } },
+    metrics: {
+      details: {
+        items: [
+          {
+            observedFirstContentfulPaint: observed_fcp,
+            observedLargestContentfulPaint: observed_lcp
+          }
+        ]
+      }
+    },
     'user-timings': {
       details: {
-        items: thoughts === null ? [] : [{ name: 'thoughts-rendered', duration: thoughts }]
+        items:
+          thoughts === null
+            ? []
+            : [{ name: 'thoughts-rendered', duration: thoughts }]
       }
     }
   }
@@ -91,7 +119,10 @@ const write_runs = (name, reports) => {
   const dir = join(scratch, name)
   mkdirSync(dir, { recursive: true })
   reports.forEach((one, index) =>
-    writeFileSync(join(dir, `lhr-${String(index).padStart(3, '0')}.json`), JSON.stringify(one))
+    writeFileSync(
+      join(dir, `lhr-${String(index).padStart(3, '0')}.json`),
+      JSON.stringify(one)
+    )
   )
   return dir
 }
@@ -113,12 +144,22 @@ const capture = fn => {
 
 describe('get_lhr_paths', () => {
   it('reads only lhr json files, sorted, at most the last five runs', () => {
-    const dir = write_runs('selection', [lhr(), lhr(), lhr(), lhr(), lhr(), lhr(), lhr()])
+    const dir = write_runs('selection', [
+      lhr(),
+      lhr(),
+      lhr(),
+      lhr(),
+      lhr(),
+      lhr(),
+      lhr()
+    ])
     writeFileSync(join(dir, 'manifest.json'), '{}')
     writeFileSync(join(dir, 'notes.txt'), 'x')
     const paths = get_lhr_paths(dir)
     assert.equal(paths.length, 5, 'the newest five runs')
-    assert.ok(paths.every(path => path.includes('lhr-') && path.endsWith('.json')))
+    assert.ok(
+      paths.every(path => path.includes('lhr-') && path.endsWith('.json'))
+    )
     assert.deepEqual(paths, [...paths].sort(), 'sorted by name')
   })
 
@@ -145,10 +186,22 @@ describe('report', () => {
   })
 
   it('prints one line per run with rounded scores and both timings', () => {
-    const dir = write_runs('one', [lhr({ score: 0.876, fcp: 1234, lcp: 2345, observed_fcp: 1200, observed_lcp: 2300, thoughts: 456 })])
+    const dir = write_runs('one', [
+      lhr({
+        score: 0.876,
+        fcp: 1234,
+        lcp: 2345,
+        observed_fcp: 1200,
+        observed_lcp: 2300,
+        thoughts: 456
+      })
+    ])
     const result = capture(() => report(dir))
     assert.equal(result.code, 0)
-    assert.match(result.said, /Run 1: Performance 88 \| FCP 1234ms \(obs 1200ms\) \| LCP 2345ms \(obs 2300ms\) \| Thoughts rendered 456ms/)
+    assert.match(
+      result.said,
+      /Run 1: Performance 88 \| FCP 1234ms \(obs 1200ms\) \| LCP 2345ms \(obs 2300ms\) \| Thoughts rendered 456ms/
+    )
     assert.doesNotMatch(result.said, /Median/, 'one run has no median')
   })
 
@@ -156,7 +209,10 @@ describe('report', () => {
     const dir = write_runs('missing', [{ categories: {}, audits: {} }])
     const result = capture(() => report(dir))
     assert.equal(result.code, 0)
-    assert.match(result.said, /Run 1: Performance n\/a \| FCP n\/a \| LCP n\/a \| Thoughts rendered n\/a/)
+    assert.match(
+      result.said,
+      /Run 1: Performance n\/a \| FCP n\/a \| LCP n\/a \| Thoughts rendered n\/a/
+    )
   })
 
   it('reports an observed time with no throttled one', () => {
@@ -167,14 +223,31 @@ describe('report', () => {
 
   it('prints a median line once there is more than one run', () => {
     const dir = write_runs('many', [
-      lhr({ score: 0.8, fcp: 1000, lcp: 2000, observed_fcp: 900, observed_lcp: 1900, thoughts: 100 }),
-      lhr({ score: 0.9, fcp: 3000, lcp: 4000, observed_fcp: 2900, observed_lcp: 3900, thoughts: 300 })
+      lhr({
+        score: 0.8,
+        fcp: 1000,
+        lcp: 2000,
+        observed_fcp: 900,
+        observed_lcp: 1900,
+        thoughts: 100
+      }),
+      lhr({
+        score: 0.9,
+        fcp: 3000,
+        lcp: 4000,
+        observed_fcp: 2900,
+        observed_lcp: 3900,
+        thoughts: 300
+      })
     ])
     const result = capture(() => report(dir))
     assert.equal(result.code, 0)
     assert.match(result.said, /Run 1:/)
     assert.match(result.said, /Run 2:/)
-    assert.match(result.said, /Median \(2 runs\): Performance 85 \| FCP 2000ms \(obs 1900ms\) \| LCP 3000ms \(obs 2900ms\) \| Thoughts rendered 200ms/)
+    assert.match(
+      result.said,
+      /Median \(2 runs\): Performance 85 \| FCP 2000ms \(obs 1900ms\) \| LCP 3000ms \(obs 2900ms\) \| Thoughts rendered 200ms/
+    )
   })
 
   it('takes the median of the runs that measured a number', () => {
@@ -185,7 +258,10 @@ describe('report', () => {
     ])
     const result = capture(() => report(dir))
     // No run measured an observed time, so the median line omits it rather than printing NaN.
-    assert.match(result.said, /Median \(3 runs\): Performance 80 \| FCP 2000ms \| LCP 3000ms \| Thoughts rendered 200ms/)
+    assert.match(
+      result.said,
+      /Median \(3 runs\): Performance 80 \| FCP 2000ms \| LCP 3000ms \| Thoughts rendered 200ms/
+    )
     assert.doesNotMatch(result.said, /NaN/)
   })
 })

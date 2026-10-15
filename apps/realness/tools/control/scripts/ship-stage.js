@@ -132,7 +132,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
     const destination = join(stage, 'examples', name)
     if (name === 'static') {
       const excluded = new Set(['node_modules', 'dist', '.cache', '.DS_Store'])
-      cp_sync(STATIC_RENDERER, destination, { recursive: true, filter: path => !excluded.has(path.split(sep).at(-1)) })
+      cp_sync(STATIC_RENDERER, destination, { recursive: true, filter: path => !excluded.has(path.split(sep).at(-1) ?? '') })
       copy(join(project, 'tools/examples/static/package.json'), join(destination, 'package.json'), project)
       copy(join(project, 'tools/examples/static/package-lock.json'), join(destination, 'package-lock.json'), project)
     } else copy(join(project, 'tools', 'examples', name), destination, join(project, 'tools'))

@@ -35,7 +35,7 @@ const turn_file = (state, session) =>
   join(state, 'turns', `${sha(session).slice(0, KEY_LENGTH)}.json`)
 
 /** Absolute path to "mtime:size" for every harness file sync would carry. */
-export const snapshot = async root => {
+const snapshot = async root => {
   const found = {}
   const exclude = await harness_exclude(root)
   const visit = async dir => {

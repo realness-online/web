@@ -61,7 +61,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
       if (heading) body = body.replace(leading_h1, '')
       const title = data.title ? title_case(data.title)
         : heading ? strip_tags(heading[1])
-        : title_case(slug.split('/').pop().replace(/-/g, ' '))
+        : title_case((slug.split('/').pop() ?? '').replace(/-/g, ' '))
       const draft = data.draft === true || data.draft === 'true'
       if (draft && !drafts) return { slug, title, date: data.date, draft }
       const { html, notes } = footnote(plate(await highlight(body)))
@@ -84,7 +84,11 @@ export const create_pages = (site, templates, images, drafts = false) => {
     async build_index(articles) {
       const published = articles
         .filter(a => drafts || !a.draft)
-        .sort((a, b) => plans ? b.updated - a.updated : (b.date || '').localeCompare(a.date || ''))
+        .sort((a, b) =>
+          plans
+            ? (b.updated ?? 0) - (a.updated ?? 0)
+            : (b.date || '').localeCompare(a.date || '')
+        )
       const latest = published.find(a => a.img)
       const og_image_path = await raster_og_image(latest?.img)
       await write_file(join(output_directory, 'index.html'),

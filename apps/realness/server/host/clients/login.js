@@ -27,11 +27,13 @@ import { out_path } from "#root/lib/output.js"
 
 const HERE = dirname(file_url_to_path(import.meta.url))
 const ROOT = join(HERE, "..", "..", "..")
+const configured_secret = process.env.HOST_PASS_SECRET_FILE
+/** @type {string[]} */
 const SECRET_FILES = [
-  process.env.HOST_PASS_SECRET_FILE,
+  ...(configured_secret ? [configured_secret] : []),
   "/etc/brayness/host-pass-secret",
   out_path("host-pass-secret"),
-].filter(Boolean)
+]
 
 /** A value after `--name`, or the default. */
 const value_of = (argv, name, fallback) => {
@@ -105,6 +107,12 @@ const release = async ({ api, pass, actor, keep }) => {
   await action.catch(() => {})
 }
 
+/**
+ * Attach to one actor through the host door. `finish` exits the process, so
+ * the interactive path never returns a code to the caller.
+ * @param {string[]} argv
+ * @returns {Promise<number | void>}
+ */
 const main = async (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
     process.stdout.write("usage: login.js --phone +E164 [--actor <id>] [--send 'exec brayness'] [--api <url>] [--pty <host:port>]\n")
@@ -166,7 +174,7 @@ const main = async (argv) => {
 }
 
 try {
-  process.exitCode = await main(process.argv.slice(2))
+  process.exitCode = (await main(process.argv.slice(2))) ?? 0
 } catch (error) {
   process.stderr.write(`login: ${error.message}\n`)
   process.exitCode = 1

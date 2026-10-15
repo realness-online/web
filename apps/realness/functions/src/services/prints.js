@@ -4,7 +4,7 @@ export const TIER_AMOUNTS = [500, 10000, 50000]
 export const OPEN_AMOUNT = 50000
 export const CURRENCY = 'usd'
 
-export const PRODUCT = 'print'
+const PRODUCT = 'print'
 
 const ALLOWED_ORIGINS = /^https:\/\/realness\.(online|local)(:\d+)?$|^http:\/\/localhost(:\d+)?$/
 const PRODUCTION_ORIGIN = 'https://realness.online'

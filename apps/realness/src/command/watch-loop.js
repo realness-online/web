@@ -15,11 +15,34 @@ const DEFAULT_COLUMNS = 100
 const DEFAULT_ROWS = 30
 const SCROLL_STEP = 5
 
-export const DEFAULT_INTERVAL_MS = 60_000
+const DEFAULT_INTERVAL_MS = 60_000
+
+/** @returns {'quit' | 'abort' | null} */
+const key_action = key => {
+  if (key === '\u0003' || key === 'q') return 'quit'
+  if (key === 'abort') return 'abort'
+  return null
+}
 
 /**
  * Draw frames until `signal` aborts. `read` defaults to a health snapshot;
  * tests pass their own, so no service is contacted.
+ * @param {object} [options]
+ * @param {(() => Promise<object>) | null} [options.read]
+ * @param {object} [options.store]
+ * @param {string | null} [options.token]
+ * @param {{ spent: (phone: string) => Promise<import('#root/src/command/watch-health.js').Spend> } | null} [options.ledger]
+ * @param {string[]} [options.named]
+ * @param {object} [options.records]
+ * @param {string | null} [options.service]
+ * @param {{ billing: () => Promise<object>, services: () => Promise<object>, resources?: () => Promise<object> } | null} [options.cloud]
+ * @param {number} [options.quiet_ms]
+ * @param {number} [options.interval_ms]
+ * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
+ * @param {NodeJS.ReadStream & { fd: 0 }} [options.stdin]
+ * @param {AbortSignal | null} [options.signal]
+ * @param {() => Date} [options.now]
+ * @param {boolean} [options.clear]
  */
 export const watch = async ({
   read,
@@ -41,8 +64,10 @@ export const watch = async ({
   const on = color_enabled(process.env, stdout)
   const read_snapshot =
     read ??
-    (() =>
-      health_snapshot({
+    (() => {
+      if (!store || !ledger)
+        throw new Error('watch needs a store and a ledger, or its own read')
+      return health_snapshot({
         store,
         token,
         ledger,
@@ -51,9 +76,12 @@ export const watch = async ({
         service,
         cloud,
         quiet_ms
-      }))
+      })
+    })
   let interval = interval_ms
+  /** @type {object | null} */
   let snapshot = null
+  /** @type {string | null} */
   let message = null
   let offset = 0
   let details = false
@@ -108,8 +136,8 @@ export const watch = async ({
         throw error
       })
     ]).finally(() => waiting.abort())
-    if (signal?.aborted || key === 'abort') break
-    if (key === '\u0003' || key === 'q') break
+    const action = key_action(key)
+    if (signal?.aborted || action) break
     if (key === 'd') {
       details = !details
       offset = 0
@@ -130,5 +158,3 @@ export const watch = async ({
   if (clear) stdout.write('\x1b[2J\x1b[H')
   return snapshot
 }
-
-export { frame }

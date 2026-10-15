@@ -33,7 +33,14 @@ const TAG =
   /<(\/?)([a-zA-Z][\w-]*)((?:\s+[^\s=/>]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>/g
 const ATTR = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g
 
+/**
+ * Attribute names to values, lowercased. A bare attribute maps to an empty
+ * string, which is how `itemscope` and `itemref` are detected.
+ * @param {string} text
+ * @returns {Record<string, string>}
+ */
 const attributes = text => {
+  /** @type {Record<string, string>} */
   const found = {}
   for (const [, name, a, b, c] of text.matchAll(ATTR))
     found[name.toLowerCase()] = a ?? b ?? c ?? ''
@@ -48,6 +55,10 @@ export const read_rights = source => {
     throw new Error('rights page: raw or inert content')
   const stack = []
   const grants = []
+  /**
+   * The permission currently being read.
+   * @type {{ depth: number, props: Record<string, string[]> } | null}
+   */
   let open = null
   for (const [, closing, raw, attrs, self] of html.matchAll(TAG)) {
     const name = raw.toLowerCase()

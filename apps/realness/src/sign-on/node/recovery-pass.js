@@ -3,6 +3,10 @@ import { skipped } from '#root/src/files/skip.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
 
+/** @param {string} path @param {string[]} paths */
+const within_paths = (path, paths) =>
+  paths.some(allowed => path === allowed || path.startsWith(`${allowed}/`))
+
 const MAX_PATHS = 100
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -15,6 +19,12 @@ export const issue_recovery_pass = (claims, secret, now = Date.now()) =>
 export const issue_harness_pass = (claims, secret, now = Date.now()) =>
   issue_pass(claims, secret, now, 'brayness-harness')
 
+/**
+ * @param {{ phone: string, id: string, paths?: string[] | null }} claims
+ * @param {string} secret
+ * @param {number} now
+ * @param {string} audience
+ */
 const issue_pass = ({ phone, id, paths = null }, secret, now, audience) => {
   check_secret(secret, 'recovery')
   if (!PHONE.test(phone) || !ID.test(id))
@@ -56,7 +66,12 @@ const verify_pass = (pass, secret, now, audience) => {
   return { phone: claims.phone, id: claims.id, paths: claims.paths ?? null }
 }
 
-/** Write passes reach only the owner's harness and the actor's selected paths. */
+/**
+ * Write passes reach only the owner's harness and the actor's selected paths.
+ * @param {string} path
+ * @param {string} phone
+ * @param {string[] | null} paths
+ */
 export const harness_path = (path, phone, paths = null) => {
   const prefix = `people/${phone}/harness/`
   if (!path.startsWith(prefix)) return false
@@ -67,6 +82,11 @@ export const harness_path = (path, phone, paths = null) => {
   )
 }
 
+/**
+ * @param {string} path
+ * @param {string} phone
+ * @param {string[] | null} paths
+ */
 export const recovery_path = (path, phone, paths = null) => {
   const prefix = `people/${phone}/`
   if (!path.startsWith(prefix)) return false
@@ -75,15 +95,13 @@ export const recovery_path = (path, phone, paths = null) => {
   if (parts.at(-1) === '') parts.pop()
   if (!parts.length) return paths === null
   const clean = parts.join('/')
-  const within = path =>
-    paths.some(allowed => path === allowed || path.startsWith(`${allowed}/`))
   if (
     paths &&
-    !within(clean) &&
+    !within_paths(clean, paths) &&
     !(
       parts[0] === 'harness' &&
       parts.length > 1 &&
-      within(parts.slice(1).join('/'))
+      within_paths(parts.slice(1).join('/'), paths)
     )
   )
     return false

@@ -56,6 +56,7 @@ export const keychain = {
   }
 }
 
+/** @type {(commands: string) => Promise<void>} */
 const run_security = commands =>
   new Promise((done, fail) => {
     const child = spawn('security', ['-i'], {
@@ -132,10 +133,15 @@ export const login = async ({
       api_key: form.get('api_key')
     })
   })
-  await new Promise(ready => {
-    server.listen(0, '127.0.0.1', ready)
+  /** @type {Promise<void>} */
+  const listening = new Promise(resolve => {
+    server.listen(0, '127.0.0.1', () => resolve())
   })
-  const url = `${sign_on}/sign-on?cli=${server.address().port}&state=${state}`
+  await listening
+  const address = server.address()
+  if (!address || typeof address === 'string')
+    throw new Error('the sign-on listener is not on a TCP port')
+  const url = `${sign_on}/sign-on?cli=${address.port}&state=${state}`
   const timer = setTimeout(
     () => finish.reject(new Error('no sign-in within 5 minutes')),
     wait

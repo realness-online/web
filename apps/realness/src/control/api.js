@@ -49,23 +49,7 @@ export const waitForHealth = async (
   )
 }
 
-/** Is the API up and able to make an actor? Does not throw. */
-export const healthy = async api => {
-  const result = await attempt('curl', [
-    '-sf',
-    '--max-time',
-    '3',
-    `${api}/v1/health`
-  ])
-  if (!result.ok || !result.out.trim()) return false
-  try {
-    return Boolean(JSON.parse(result.out).seed?.built)
-  } catch {
-    return false
-  }
-}
-
-export const sleep = ms =>
+const sleep = ms =>
   new Promise(resolve => {
     setTimeout(resolve, ms)
   })

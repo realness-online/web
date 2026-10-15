@@ -5,6 +5,31 @@ import { mirror_copy } from '#services/mirror-copy.js'
 import { mirror_delete } from '#services/mirror-delete.js'
 import { representation } from '#services/migration-report.js'
 
+/**
+ * One stored revision, as the journal records it.
+ * @typedef {{ generation: string | undefined, metageneration: string | undefined }} Revision
+ */
+
+/**
+ * Live metadata by object name; null means the object is absent.
+ * @typedef {Record<string, import('@google-cloud/storage').FileMetadata | null>} Heads
+ */
+
+/**
+ * An operation the journal started but never finished.
+ * @typedef {object} PendingOperation
+ * @property {string} name
+ * @property {string} action
+ * @property {string} [source_generation]
+ * @property {string} [source_metageneration]
+ * @property {object} [source_representation]
+ */
+
+/**
+ * The metadata for one object, or null when it does not exist.
+ * @param {import('@google-cloud/storage').Bucket} bucket
+ * @param {string} name
+ */
 const head = async (bucket, name) => {
   try {
     const [metadata] = await bucket.file(name).getMetadata()
@@ -17,6 +42,11 @@ const head = async (bucket, name) => {
 
 const stored = object => JSON.parse(JSON.stringify(representation(object)))
 
+/**
+ * A stored revision for the journal, or null when the object is gone.
+ * @param {{ generation?: string | number, metageneration?: string | number } | null} object
+ * @returns {Revision | null}
+ */
 const revision = object => object && ({
   generation: String(object.generation), metageneration: String(object.metageneration)
 })
@@ -32,10 +62,14 @@ const revisions = heads => Object.fromEntries(
  * becomes the new baseline. Otherwise the baseline stands and the pair is
  * planned afresh: a copy that never ran is re-planned under fresh guards,
  * and anything a client changed meanwhile is judged like any other edit.
- * @returns {object} synced baseline to plan against
+ * @param {PendingOperation} pending the interrupted operation
+ * @param {Record<string, Revision | null>} synced baseline before the operation
+ * @param {Heads} heads live metadata for both names
+ * @returns {Record<string, Revision | null>} synced baseline to plan against
  */
 const recover = (pending, synced, heads) => {
   const target_name = mirror_name(pending.name)
+  if (!target_name) return synced
   const target = heads[target_name]
   if (pending.action === 'copy' && target &&
     is_deep_strict_equal(stored(target), pending.source_representation))
@@ -57,10 +91,15 @@ const recover = (pending, synced, heads) => {
  * stand, later events for the pair return the same conflict without retrying;
  * any change to either name re-plans it.
  * @param {object} options
- * @param {object} options.bucket
- * @param {object} options.journal with_pair(name, callback), session.read/write
+ * @param {import('@google-cloud/storage').Bucket} options.bucket
+ * @param {{ with_pair: (name: string, run: (session: { read: () => Promise<MirrorState | null>, write: (state: MirrorState) => Promise<unknown> }) => Promise<object>) => Promise<{ action: string, reason?: string, recorded?: boolean }> }} options.journal
  * @param {string} options.name
- * @param {object} [options.deletion]
+ * @param {{ name: string, generation: string }} [options.deletion]
+ *
+ * @typedef {object} MirrorState
+ * @property {PendingOperation} [pending]
+ * @property {Record<string, Revision | null>} [synced]
+ * @property {{ reason: string, heads: object }} [conflict]
  */
 export const mirror_reconcile = async ({ bucket, journal, name, deletion }) => {
   const paired = mirror_name(name)
@@ -88,14 +127,16 @@ export const mirror_reconcile = async ({ bucket, journal, name, deletion }) => {
       await session.write({ synced, conflict: { reason: plan.reason, heads: revisions(heads) } })
       return plan
     }
-    if (!['copy', 'delete'].includes(plan.action)) {
+    if (plan.action !== 'copy' && plan.action !== 'delete') {
       await session.write({ synced })
       return plan
     }
     const source = heads[plan.name]
-    const pending = plan.action === 'copy'
-      ? { ...plan, source_representation: stored(source) }
-      : plan
+    /** @type {PendingOperation} */
+    const pending =
+      plan.action === 'copy'
+        ? { ...plan, source_representation: stored(source) }
+        : plan
     await session.write({ synced, pending })
     try {
       if (plan.action === 'copy') await mirror_copy({ bucket, ...plan })

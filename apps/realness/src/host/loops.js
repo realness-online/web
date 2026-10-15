@@ -59,7 +59,56 @@ export const stop_reason = (
   return null
 }
 
+/**
+ * One tracked loop, as saved in the loops file.
+ * @typedef {object} LoopRecord
+ * @property {string} [parent] absent on the record `report` returns
+ * @property {number} depth
+ * @property {string} [goal] absent on the record `report` returns
+ * @property {string} status
+ * @property {string} started
+ * @property {string} [reason]
+ * @property {number} [runs]
+ * @property {number} [tokens]
+ * @property {string[]} [tail] the last lines of the loop's own log
+ * @property {string} [ended]
+ * @property {string} [checked]
+ * @property {string} [error]
+ */
+
 export class Loops {
+  /** @type {import('./actors.js').ActorStore} */
+  store
+  /** @type {string} */
+  file
+  /** @type {number} */
+  maxDepth
+  /** @type {number} */
+  maxChildren
+  /** @type {number} */
+  maxRuns
+  /** @type {number} */
+  deadlineMs
+  /** @type {{ put: (path: string, body: string) => Promise<unknown>, get: (path: string) => Promise<unknown> } | null} */
+  mirror
+  /** @type {string} */
+  host
+  /** @type {Record<string, LoopRecord>} */
+  loops = {}
+  /** @type {Promise<unknown>} */
+  tail = Promise.resolve()
+
+  /**
+   * @param {import('./actors.js').ActorStore} store
+   * @param {object} [options]
+   * @param {string} [options.file]
+   * @param {number} [options.maxDepth]
+   * @param {number} [options.maxChildren]
+   * @param {number} [options.maxRuns]
+   * @param {number} [options.deadlineMs]
+   * @param {{ put: (path: string, body: string) => Promise<unknown>, get: (path: string) => Promise<unknown> } | null} [options.mirror]
+   * @param {string} [options.host]
+   */
   constructor(
     store,
     {

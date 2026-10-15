@@ -14,7 +14,7 @@ export const rules_protect_both = source =>
  * @param {object} options
  * @param {string} options.project
  * @param {string} options.bucket_name
- * @param {(url: string) => Promise<object>} options.fetch_json authorized GET
+ * @param {(url: string) => Promise<{ rulesetName?: string, source?: { files?: { content: string }[] } }>} options.fetch_json authorized GET
  * @returns {Promise<string>}
  */
 export const released_storage_rules = async ({ project, bucket_name, fetch_json }) => {

@@ -67,7 +67,7 @@ export const repo_name = value => {
 const base64url = value => Buffer.from(value).toString('base64url')
 
 /** The app's own ten-minute JWT, RS256, as GitHub asks. */
-export const app_jwt = ({ app_id, private_key }, now = Date.now()) => {
+const app_jwt = ({ app_id, private_key }, now = Date.now()) => {
   const seconds = Math.floor(now / MS_PER_SECOND)
   const head = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
   const body = base64url(

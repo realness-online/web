@@ -29,6 +29,7 @@ import * as vsock from './vsock.js'
 import { next_step } from './lifecycle.js'
 import { wait_for_door } from './door.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
+/** @typedef {import('#root/src/harness/startup.js').StartupTrace} StartupTrace */
 import { ID_BYTES, MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 import { stripVTControlCharacters as strip_vt } from 'node:util'
 /* eslint-disable no-await-in-loop -- lifecycle steps run in order; warming waits for each echo */
@@ -79,8 +80,7 @@ const sleep = ms =>
   new Promise(done => {
     setTimeout(done, ms)
   })
-export const nowIso = () =>
-  new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
+const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
 const mintId = () => `a-${random_bytes(ID_BYTES).toString('hex')}`
 const writeJson = (path, value) =>
   write_file_durable(path, `${JSON.stringify(value, null, 2)}\n`)
@@ -97,7 +97,61 @@ const sha256File = path =>
       .on('error', fail)
   })
 
+/**
+ * One actor record. `Object.assign` fills these, so they are declared here for
+ * the type checker and the reader.
+ * @typedef {object} ActorFields
+ * @property {string} id
+ * @property {StartupTrace | null} [startup]
+ * @property {string} state
+ * @property {string} created
+ * @property {string} tap
+ * @property {number} pid
+ * @property {string} hostname
+ * @property {string} machine_id
+ * @property {string} boot_id
+ * @property {string} dir
+ * @property {string | null} owner
+ * @property {string[] | null} [paths]
+ * @property {string} last_activity
+ * @property {string} synced_at
+ */
+
 export class Actor {
+  /** @type {string} */
+  id = ''
+  /** @type {StartupTrace | null} */
+  startup = null
+  /** @type {string} */
+  state
+  /** @type {string} */
+  created = ''
+  /** @type {string} */
+  tap = ''
+  /** @type {number} */
+  pid = 0
+  /** @type {string} */
+  hostname = ''
+  /** @type {string} */
+  machine_id = ''
+  /** @type {string} */
+  boot_id = ''
+  /** @type {string} */
+  dir = ''
+  /** @type {string | null} */
+  owner = null
+  /** @type {string[] | null} */
+  paths = null
+  /** @type {string} */
+  last_activity = ''
+  /** @type {string} */
+  synced_at = ''
+  /** @type {string} */
+  apiSock = ''
+  /** @type {string} */
+  vsockPath = ''
+
+  /** @param {Partial<ActorFields>} fields */
   constructor(fields) {
     Object.assign(
       this,
@@ -153,7 +207,15 @@ export class Actor {
 
 /** One lock for everything that changes an actor; exec and reads stay outside it. */
 class Mutex {
+  /** @type {Promise<unknown>} */
   #tail = Promise.resolve()
+
+  /**
+   * Run `work` after everything queued before it.
+   * @template T
+   * @param {() => Promise<T> | T} work
+   * @returns {Promise<T>}
+   */
   run(work) {
     const result = this.#tail.then(work)
     this.#tail = result.catch(() => {})
@@ -182,6 +244,7 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
   try {
     socket.write(`${JSON.stringify({ op: 'resize', cols: 80, rows: 24 })}\n`)
     while (Date.now() - started < seconds * MS_PER_SECOND) {
+      /** @type {Buffer | null} */
       let line = null
       try {
         line = await lines.read(1)
@@ -189,7 +252,7 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
       if (line === null && lines.closed)
         throw new VsockError("the seed's terminal closed while warming pi")
       if (line?.length) {
-        const message = JSON.parse(line)
+        const message = JSON.parse(line.toString('utf8'))
         if (message.op === 'exit') {
           const said = strip_vt(tail).trim().slice(-WARM_TAIL)
           throw new VsockError(
@@ -237,7 +300,78 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
   }
 }
 
+/**
+ * The host-side actor store. `Object.assign` fills the options, so they are
+ * declared here for the type checker and the reader.
+ * @typedef {object} ActorStoreOptions
+ * @property {string} volume
+ * @property {string} template
+ * @property {string} kernel
+ * @property {string} firecracker
+ * @property {string} guestMac
+ * @property {number} guestCid
+ * @property {number} vsockPort
+ * @property {number} vcpus
+ * @property {number} mib
+ * @property {string} tapPrefix
+ * @property {string} seedTap
+ * @property {number} bootTimeout
+ * @property {number} apiTimeout
+ * @property {string | null} [syncUrl]
+ * @property {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} [syncSites]
+ */
+
 export class ActorStore {
+  /** @type {string} */
+  volume
+  /** @type {string} */
+  template
+  /** @type {string} */
+  kernel
+  /** @type {string} */
+  firecracker
+  /** @type {string} */
+  guestMac
+  /** @type {number} */
+  guestCid
+  /** @type {number} */
+  vsockPort
+  /** @type {number} */
+  vcpus
+  /** @type {number} */
+  mib
+  /** @type {string} */
+  tapPrefix
+  /** @type {string} */
+  seedTap
+  /** @type {number} */
+  bootTimeout
+  /** @type {number} */
+  apiTimeout
+  /** @type {string | null} */
+  syncUrl = null
+  /** @type {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} */
+  syncSites
+  /** @type {string} */
+  seedDir
+  /** @type {string} */
+  tracesDir
+  /** @type {string} */
+  exportsDir
+  /** @type {string} */
+  publishedDir
+  /** @type {string} */
+  versionsDir
+  /** @type {string} */
+  firecrackerVersion
+  /** @type {Mutex} */
+  lock
+  /** @type {Set<string>} */
+  busy = new Set()
+  /** @type {Set<string>} */
+  turned = new Set()
+
+  /** @param {Partial<ActorStoreOptions>} options */
   constructor(options) {
     Object.assign(this, {
       guestCid: 3,
@@ -289,6 +423,7 @@ export class ActorStore {
 
   /** Whether a seed exists and matches the build; a stale seed forks quietly, so say so. */
   seedStatus() {
+    /** @type {{ built: boolean, matches: boolean, mismatches: string[], record: Record<string, number> | null }} */
     const status = {
       built: false,
       matches: false,
@@ -411,6 +546,11 @@ export class ActorStore {
     )
   }
 
+  /**
+   * @param {string} owner
+   * @param {{ paths?: string[] | null, startup?: object | null }} [options]
+   * @returns {Promise<Actor>}
+   */
   async create(owner, { paths = null, startup = null } = {}) {
     const record = await this.lock.run(() =>
       this.#create(owner, { paths, startup })
@@ -443,7 +583,7 @@ export class ActorStore {
             LOG.warn(`actor ${record.id} door not open before recovery`)
           const result = await vsock.execInGuest(
             record.vsockPath,
-            ['/usr/local/bin/brayness-recover', this.syncUrl],
+            ['/usr/local/bin/brayness-recover', this.syncUrl ?? ''],
             { timeout: RECOVER_SECONDS, port: this.vsockPort }
           )
           await this.#flush(record)
@@ -515,6 +655,11 @@ export class ActorStore {
     }
   }
 
+  /**
+   * @param {string} owner
+   * @param {{ paths?: string[] | null, startup?: object | null }} [options]
+   * @returns {Promise<Actor>}
+   */
   async #create(owner, { paths = null, startup: progress = null } = {}) {
     if (!/^\+[1-9]\d{6,14}$/.test(owner))
       throw new BadRequest('verified owner required')
@@ -713,6 +858,11 @@ export class ActorStore {
    * is flushed before answering: a hard stop after an exec returned must not
    * lose what it wrote (h3).
    */
+  /**
+   * @param {string} id
+   * @param {string[]} argv
+   * @param {{ cwd?: string | null, stdin?: Buffer, timeout?: number | null }} [options]
+   */
   async exec(
     id,
     argv,
@@ -809,6 +959,11 @@ export class ActorStore {
   /**
    * Step idle actors down: memory, disk, export, then delete after a verified
    * export. Only verified owners are retired (lifecycle.next_step).
+   */
+  /**
+   * @param {object} [options]
+   * @param {number} [options.now]
+   * @param {((record: Actor, step: string) => Promise<void>) | null} [options.apply]
    */
   sweep({ now = Date.now(), apply = null } = {}) {
     return this.lock.run(async () => {
@@ -1012,7 +1167,7 @@ export class ActorStore {
           )
             await this.copyOut(id, '/brayness/work/site', source)
           const published = await this.syncSites.publish(
-            this.get(id).owner,
+            this.ownerOf(id),
             site,
             staging,
             exists_sync(source) ? source : staging
@@ -1063,8 +1218,7 @@ export class ActorStore {
   }
 
   siteVersions(id, site = id) {
-    const actor = this.get(id)
-    if (this.syncSites) return this.syncSites.versions(actor.owner, site)
+    if (this.syncSites) return this.syncSites.versions(this.ownerOf(id), site)
     const directory = join(this.versionsDir, id)
     if (!exists_sync(directory)) return []
     return readdir_sync(directory)
@@ -1075,9 +1229,8 @@ export class ActorStore {
 
   restoreSite(id, version, site = id) {
     return this.lock.run(() => {
-      const actor = this.get(id)
       if (this.syncSites)
-        return this.syncSites.restore(actor.owner, site, version)
+        return this.syncSites.restore(this.ownerOf(id), site, version)
       if (typeof version !== 'string' || !/^[0-9a-f]{12}$/.test(version))
         throw new BadRequest('invalid site version')
       const directory = join(this.versionsDir, id)
@@ -1094,8 +1247,7 @@ export class ActorStore {
 
   unpublishSite(id, site = id) {
     return this.lock.run(() => {
-      const actor = this.get(id)
-      if (this.syncSites) return this.syncSites.remove(actor.owner, site)
+      if (this.syncSites) return this.syncSites.remove(this.ownerOf(id), site)
       const version = this.saveSite(id)
       if (!version) throw new NotFound(id)
       this.trace(id, 'unpublish', { version })
@@ -1333,6 +1485,17 @@ export class ActorStore {
     return this.#read(dir)
   }
 
+  /**
+   * The owner of an actor that must have one, for a site or a pass.
+   * @param {string} id
+   * @returns {string}
+   */
+  ownerOf(id) {
+    const { owner } = this.get(id)
+    if (!owner) throw new NotFound(id)
+    return owner
+  }
+
   list() {
     const records = []
     for (const name of readdir_sync(this.volume).sort()) {
@@ -1373,4 +1536,4 @@ const keepPlainEntries = root => {
 const listFiles = root =>
   readdir_sync(root, { withFileTypes: true, recursive: true })
     .filter(entry => entry.isFile())
-    .map(entry => join(entry.parentPath ?? entry.path, entry.name))
+    .map(entry => join(entry.parentPath, entry.name))

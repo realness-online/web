@@ -16,8 +16,16 @@ export const representation = object => ({
  * Report only. Never pick a winner for divergent copies from a listing.
  * Generation IDs stay strings; tokens and private metadata stay out of output.
  * Matching hashes alone are insufficient: sold flags and encoding matter too.
- * @param {Array<object>} objects Storage object metadata, not File handles
+ * @param {StorageObject[]} objects Storage object metadata, not File handles
  * @returns {Array<object>}
+ */
+
+/**
+ * One Storage object as the listing returns it. Generation stays a string.
+ * @typedef {object} StorageObject
+ * @property {string} name
+ * @property {string} [generation]
+ * @property {string} [md5Hash]
  */
 export const migration_report = objects => {
   const by_name = new Map(objects.map(object => [object.name, object]))

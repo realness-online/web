@@ -62,7 +62,7 @@ export const argvText = start => {
 }
 
 /** A read-only ext4 of the files plus argv; everything readable by `app`, nothing writable. */
-export const buildCodeDisk = (files, disk, start, work) => {
+const buildCodeDisk = (files, disk, start, work) => {
   const stage = join(work, 'stage')
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage)
@@ -105,7 +105,57 @@ const tail = (path, lines = TAIL_LINES) =>
         .join('\n')
     : ''
 
+/**
+ * One app as saved in its app.json.
+ * @typedef {object} AppRecord
+ * @property {string} id
+ * @property {string} kind
+ * @property {string} [owner] absent when the in-guest tool starts an app
+ * @property {string} address
+ * @property {number} port
+ * @property {string} tap
+ * @property {number} pid
+ * @property {number} vcpus
+ * @property {number} mib
+ * @property {string} [state] set to crashed when the sweep gives up
+ * @property {string} created
+ * @property {string} [booted]
+ * @property {string | null} [runtime]
+ * @property {string[] | null} [start]
+ * @property {string} [reason]
+ * @property {boolean} [public]
+ * @property {string[]} [restarts] ISO times, newest last
+ */
+
 export class AppStore {
+  /** @type {string} */
+  image
+  /** @type {string} */
+  runtimes
+  /** @type {string} */
+  tapPrefix
+  /** @type {number} */
+  bootTimeout
+  /** @type {number} */
+  apiTimeout
+  /** @type {number} */
+  vcpus
+  /** @type {string} */
+  volume
+  /** @type {string} */
+  kernel
+  /** @type {string} */
+  firecracker
+  /** @type {number} */
+  mib
+  /** @type {string} */
+  dir
+  /** @type {Map<string, Promise<unknown>>} */
+  queues = new Map()
+  /** @type {Map<string, number>} */
+  misses = new Map()
+
+  /** @param {object} options */
   constructor(options) {
     Object.assign(this, {
       image: '/opt/fc/app.ext4',
@@ -125,6 +175,7 @@ export class AppStore {
     return join(this.dir, id, ...rest)
   }
 
+  /** @returns {AppRecord} */
   record(id) {
     const file = this.path(id, 'app.json')
     if (!exists_sync(file)) throw new NotFound(id)
@@ -161,6 +212,11 @@ export class AppStore {
   }
 
   /** `copy(dest)` fills a staging folder; start runs from it, then it goes. */
+  /**
+   * @param {(dest: string) => Promise<void>} copy
+   * @param {{ owner: string, state?: string, actor?: string, path?: string, public?: boolean }} meta
+   * @returns {Promise<AppRecord>}
+   */
   async startFrom(copy, meta) {
     mkdir_sync(this.dir, { recursive: true })
     const stage = join(
@@ -175,6 +231,10 @@ export class AppStore {
     }
   }
 
+  /**
+   * @param {AppRecord} record
+   * @returns {AppRecord}
+   */
   write(record) {
     write_file_sync(
       this.path(record.id, 'app.json'),
@@ -184,6 +244,12 @@ export class AppStore {
   }
 
   /** One operation per app at a time: the sweep and the API never race. */
+  /**
+   * @template T
+   * @param {string} id
+   * @param {() => Promise<T> | T} work
+   * @returns {Promise<T>}
+   */
   serial(id, work) {
     this.queues ??= new Map()
     const next = (this.queues.get(id) ?? Promise.resolve()).then(work, work)
@@ -195,10 +261,16 @@ export class AppStore {
   }
 
   /** Infer, build, boot, and wait for the port. A site gets a record and no VM. */
+  /**
+   * @param {string} files a folder to inspect and run
+   * @param {{ owner?: string, state?: string, actor?: string, path?: string, public?: boolean }} [meta] record fields from the caller
+   * @returns {Promise<AppRecord>} a site gets id and kind only; no VM boots
+   */
   async start(files, meta = {}) {
     const needs = infer(files)
     const id = mintId()
-    if (needs.kind === 'site') return { id, kind: 'site', ...meta }
+    if (needs.kind === 'site')
+      return /** @type {AppRecord} */ ({ id, kind: 'site', ...meta })
     const runtime = needs.runtime
       ? join(this.runtimes, `${needs.runtime}.ext4`)
       : null
@@ -241,6 +313,7 @@ export class AppStore {
    * A fresh boot from the record: a new copy of the image, the same code disk,
    * TAP, MAC, and address. Any VM still on the api socket goes first.
    */
+  /** @returns {Promise<AppRecord>} */
   async boot(id) {
     const record = this.record(id)
     const dir = this.path(id)
@@ -284,6 +357,7 @@ export class AppStore {
     LOG.info(
       `app ${id} (${record.kind}) on ${record.address}:${record.port}, tap ${record.tap}`
     )
+    if (!child.pid) throw new HostError(`app ${id} spawned with no pid`)
     return this.write({
       ...record,
       pid: child.pid,
@@ -338,7 +412,8 @@ export class AppStore {
       this.misses.delete(id)
       return 'crashed'
     }
-    const last = restarts.length ? Date.parse(restarts.at(-1)) : 0
+    const newest = restarts.at(-1)
+    const last = newest ? Date.parse(newest) : 0
     if (
       now - last <
       (restarts.length ? MS_PER_SECOND * 2 ** restarts.length : 0)

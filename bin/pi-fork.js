@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { existsSync as exists_sync, cpSync as cp_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, renameSync as rename_sync, unlinkSync as unlink_sync, writeFileSync as write_file_sync } from 'node:fs'
-import { basename, join, resolve } from 'node:path'
+import { basename, join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { verify_install } from './lib/pi-release.js'
 
@@ -31,7 +31,7 @@ export const select_fork = ({ root, install }) => {
   assert.ok(exists_sync(join(managed, 'consumer/node_modules/.bin/pi-session-read')), 'Managed reader is missing')
   verify_install(join(managed, 'consumer'))
   const temporary = `${marker}.writing`
-  write_file_sync(temporary, `${binary}\n`, { flag: 'wx', mode: 0o600, flush: true })
+  write_file_sync(temporary, `${relative(root, binary)}\n`, { flag: 'wx', mode: 0o600, flush: true })
   rename_sync(temporary, marker)
   return binary
 }

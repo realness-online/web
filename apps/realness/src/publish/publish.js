@@ -71,8 +71,22 @@ const snapshot = async (directory, prefix) => {
   return files
 }
 
-/** Publish is explicit. Failed uploads never replace the previous active version. */
-/** `site_url` is where people read the site (s1: never the app address); writes still go to `url`. */
+/**
+ * Publish is explicit. Failed uploads never replace the previous active version.
+ * `site_url` is where people read the site (s1: never the app address); writes
+ * still go to `url`.
+ * @param {string} root
+ * @param {string} name
+ * @param {object} [options]
+ * @param {string} [options.url] the sync URL that receives the files; the
+ *   guard below rejects a call without one
+ * @param {string | null} [options.site_url] where readers load the site from;
+ *   null falls back to `url`
+ * @param {() => Promise<string | null>} [options.get_token]
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string} [options.example] an engine directory to build from,
+ *   instead of the app's own sources
+ */
 export const publish_app = async (
   root,
   name,
@@ -84,9 +98,10 @@ export const publish_app = async (
     example
   } = {}
 ) => {
-  if (!/^https?:\/\//.test(url ?? ''))
+  if (!url || !/^https?:\/\//.test(url))
     throw new Error('publish needs a sync URL')
   const base = url.replace(/\/$/, '')
+  const reads_from = (site_url ?? url).replace(/\/$/, '')
   const built = await build_app(root, name, { example })
   const prefix = `/sites/${built.id}/`
   const files = await snapshot(built.dist, prefix)
@@ -124,7 +139,7 @@ export const publish_app = async (
     await call('PUT', `versions/${version}/files/${encoded}`, bytes)
   }
   await call('POST', 'activate', version)
-  const reads = site_url.replace(/\/$/, '')
+  const reads = reads_from
   const sources = built.sources.map(source => {
     const route = source.route.slice(1)
     const suffix = route.endsWith('.html') || route.endsWith('/') ? '' : '/'
@@ -139,12 +154,20 @@ export const publish_app = async (
   }
 }
 
-/** Remove the active public snapshot; private files are unchanged. */
+/**
+ * Remove the active public snapshot; private files are unchanged.
+ * @param {string} id the app id
+ * @param {object} options
+ * @param {string} [options.url] the sync URL
+ * @param {() => Promise<string | null>} [options.get_token]
+ * @param {typeof fetch} [options.fetcher]
+ */
 export const unpublish_app = async (
   id,
   { url, get_token = token_source(), fetcher = fetch } = {}
 ) => {
   if (!/^a-[a-f0-9]{12}$/.test(id)) throw new Error('invalid app id')
+  if (!url) throw new Error('unpublish needs a sync URL')
   const token = await get_token()
   if (!token) throw new Error('not signed in; run brayness-store login')
   const base = url.replace(/\/$/, '')

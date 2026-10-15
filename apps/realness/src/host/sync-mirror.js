@@ -6,6 +6,19 @@ const SYNC_TIMEOUT_MS = 10_000
 const key_path = key => key.split('/').map(encodeURIComponent).join('/')
 
 export class SyncMirror {
+  /** @type {string} */
+  url
+  /** @type {string} */
+  secret
+  /** @type {string} */
+  host
+
+  /**
+   * @param {object} options
+   * @param {string} options.url the sync service, without a trailing slash
+   * @param {string} options.secret the host record secret
+   * @param {string} options.host this host's name
+   */
   constructor({ url, secret, host }) {
     if (!url || !secret || !host)
       throw new Error(

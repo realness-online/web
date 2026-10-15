@@ -5,7 +5,7 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- leases return one at a time so each copy is freed before the next */
 
 const LOG = logger('chrome-leases')
-export const LEASE_MINUTES = 30
+const LEASE_MINUTES = 30
 const CHAIN = 'BRAYNESS-LEASE'
 
 /** The iptables rule bodies for one lease, actor and copy as addresses. Pure. */
@@ -72,7 +72,7 @@ export const lease_rules = (actor, copy) => [
   ]
 ]
 
-export const iptables_firewall = {
+const iptables_firewall = {
   open: (actor, copy) => {
     for (const rule of lease_rules(actor, copy))
       run(['iptables', '-A', CHAIN, ...rule])
@@ -85,7 +85,32 @@ export const iptables_firewall = {
   }
 }
 
+/**
+ * One handed-out Chrome copy. `ready` is set once the pending entry becomes a
+ * real lease; `n` is null for a copy the pool could not number.
+ * @typedef {object} Lease
+ * @property {number | null} n
+ * @property {string} actor_ip
+ * @property {string} address
+ * @property {string} devtools
+ * @property {number} expires
+ */
+
 export class ChromeLeases {
+  /** @type {{ restore: () => Promise<{ n: number, address: string, devtools: string, browser: string, pid: number }>, destroy: (n: number) => Promise<unknown> }} */
+  pool
+  /** @type {{ open: (actor_ip: string, copy_ip: string) => void, close: (actor_ip: string, copy_ip: string) => void }} */
+  firewall
+  /** @type {number} */
+  minutes
+  /** @type {() => number} */
+  now
+  /**
+   * A `{ ready: null }` placeholder while the pool restores, then the lease.
+   * @type {Map<string, Lease | { ready: null }>}
+   */
+  leases = new Map()
+
   /** pool: restore() and destroy(n). firewall: open/close(actor_ip, copy_ip). */
   constructor(
     pool,
@@ -137,6 +162,7 @@ export class ChromeLeases {
     const lease = this.leases.get(actor_id)
     if (!lease) return false
     this.leases.delete(actor_id)
+    if (!('n' in lease)) return true
     if (lease.n === null || lease.n === undefined) return true
     this.firewall.close(lease.actor_ip, lease.address)
     await this.pool.destroy(lease.n)
@@ -149,6 +175,7 @@ export class ChromeLeases {
     const live = new Set(live_ids)
     const reaped = []
     for (const [id, lease] of this.leases) {
+      if (!('n' in lease)) continue
       if (lease.n === null || lease.n === undefined) continue
       if (!live.has(id) || this.now() >= lease.expires) {
         reaped.push(id)

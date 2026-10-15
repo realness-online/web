@@ -24,16 +24,8 @@ const execute = step =>
     })
   })
 
-/** Desktop build and deploy share a pipeline; deploy targets never use Firebase's active project. */
-export const run_frontend = async (
-  args,
-  { stdout = process.stdout, stderr = process.stderr, actor = false } = {}
-) => {
-  if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
-    stdout.write(usage)
-    return 0
-  }
-  const [action] = args
+/** @param {string[]} args */
+const frontend_options = args => {
   let environment
   let dry_run = false
   for (let index = 1; index < args.length; index++) {
@@ -45,11 +37,28 @@ export const run_frontend = async (
     )
       environment = args[++index]
     else if (arg === '--dry-run' && !dry_run) dry_run = true
-    else {
-      stderr.write(usage)
-      return 1
-    }
+    else return null
   }
+  return { environment, dry_run }
+}
+
+/** Desktop build and deploy share a pipeline; deploy targets never use Firebase's active project. */
+export const run_frontend = async (
+  args,
+  { stdout = process.stdout, stderr = process.stderr, actor = false } = {}
+) => {
+  if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
+    stdout.write(usage)
+    return 0
+  }
+  const [action] = args
+  const options = frontend_options(args)
+  if (!options) {
+    stderr.write(usage)
+    return 1
+  }
+  let { environment } = options
+  const { dry_run } = options
   if (
     actor ||
     !['build', 'deploy'].includes(action) ||

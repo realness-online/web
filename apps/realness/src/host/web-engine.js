@@ -35,7 +35,7 @@ const RENDER_TIMEOUT_MS = 60_000
 const AGE_PLACES = 4
 
 const HOUR = 3_600_000
-export const IDLE_DAYS = 30
+const IDLE_DAYS = 30
 const DEFAULT_HOURS = 24
 const MIN_HOURS = 0.25
 const MAX_HOURS = 2160
@@ -52,7 +52,7 @@ const GONE = new Set([HTTP.NOT_FOUND, HTTP.GONE])
 const BLOCKED_TEXT =
   /just a moment|attention required|verify you are human|access denied|are you a robot|captcha|enable javascript and cookies/i
 
-export const hash = text => create_hash('sha256').update(text).digest('hex')
+const hash = text => create_hash('sha256').update(text).digest('hex')
 
 /** Private, loopback, link-local (cloud metadata), shared, multicast, reserved: never fetched for an actor. */
 const PRIVATE = new BlockList()
@@ -123,14 +123,24 @@ export const safe_fetch = (
 ) =>
   new Promise((done, fail) => {
     const url = check_url(raw)
+    /**
+     * Every lookup asks for all addresses so each one is checked. The callback
+     * then answers in whichever shape the caller asked for: the whole array
+     * when `all` is set, otherwise the first address and its family.
+     * @type {import('node:net').LookupFunction}
+     */
     const lookup = (host, options, callback) =>
       dns_lookup(host, { ...options, all: true }, (error, addresses) => {
-        if (error) return callback(error)
+        if (error) return callback(error, '', 0)
         const bad = addresses.find(
           ({ address }) => !allow_private && is_private(address)
         )
         if (bad)
-          return callback(new Error(`${host} resolves to a private address`))
+          return callback(
+            new Error(`${host} resolves to a private address`),
+            '',
+            0
+          )
         if (options.all) return callback(null, addresses)
         callback(null, addresses[0].address, addresses[0].family)
       })
@@ -156,7 +166,7 @@ export const safe_fetch = (
         }
       },
       response => {
-        const status = response.statusCode
+        const status = response.statusCode ?? HTTP.OK
         if (
           status >= REDIRECT_MIN &&
           status < HTTP.BAD_REQUEST &&
@@ -200,7 +210,7 @@ export const safe_fetch = (
   })
 
 /** Visible text, roughly: enough to tell a real page from a shell or a bot wall. */
-export const visible_text = html =>
+const visible_text = html =>
   html
     .replace(/<(script|style|noscript|template)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
@@ -208,10 +218,43 @@ export const visible_text = html =>
     .replace(/\s+/g, ' ')
     .trim()
 
-export const title_of = html =>
+const title_of = html =>
   (/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? '')
     .replace(/\s+/g, ' ')
     .trim()
+
+/** Why a plain fetch is not good enough, or null. */
+const static_shortfall = reply => {
+  if (reply.status >= HTTP.BAD_REQUEST) return `HTTP ${reply.status}`
+  if (!/html|xml|text\/plain/i.test(reply.type)) return 'not html'
+  return shortfall(reply.body)
+}
+
+/** Why a rendered or crawled page is not good enough, or null. */
+const page_shortfall = page =>
+  page.status >= HTTP.BAD_REQUEST ? `HTTP ${page.status}` : shortfall(page.html)
+
+/**
+ * A page the engine will keep: how it was read, its kind, body, and title.
+ * @typedef {{ method: string, kind: string, body: string, title: string }} PageRead
+ */
+
+/**
+ * A page already in the cache, as `#read_at` saved it.
+ * @typedef {{ method: string, hash: string, headers: object, learned_hours?: number }} KeptPage
+ */
+
+/** The read record for an HTML body. */
+const html_read = (method, body) => ({
+  method,
+  kind: 'html',
+  body,
+  title: title_of(body)
+})
+
+/** Firecrawl returns markdown, so thin text is the only failure. */
+const markdown_shortfall = page =>
+  page.markdown.replace(/\s+/g, ' ').trim().length < MIN_TEXT ? 'thin' : null
 
 /** Why a read is not good enough, or null. */
 export const shortfall = html => {
@@ -226,12 +269,20 @@ export const shortfall = html => {
  * `private` is ignored: the engine fetches with no cookies or login, so every
  * reader would get the same anonymous page (GitHub and Hacker News send it).
  */
-export const shareable_headers = (headers = {}) =>
+const shareable_headers = (headers = {}) =>
   !/no-store/i.test(headers.cache_control ?? '')
 
 /**
  * How long a shared page counts as current, and how long past that it may be
  * served stale while refreshing. headers carry cache_control and expires.
+ */
+/**
+ * @param {object} options
+ * @param {string} options.url
+ * @param {{ cache_control?: string | null, expires?: string | null }} [options.headers]
+ * @param {number | null} [options.learned_hours]
+ * @param {{ default_hours?: number, default_stale_hours?: number, rules: { pattern: string, hours: number, kind: string, stale_hours?: number }[] }} options.times
+ * @param {number} [options.now]
  */
 export const cache_time = ({
   url,
@@ -328,9 +379,32 @@ export const is_idle = (
 }
 
 export class WebEngine {
+  /** @type {string} */
+  root
+  /** @type {((url: string) => Promise<{ status: number, html: string }>) | null} */
+  render
+  /** @type {string | null} */
+  firecrawl_key
+  /** @type {boolean} */
+  allow_private
+  /** @type {() => number} */
+  now
+  /** @type {{ default_hours?: number, default_stale_hours?: number, rules: { pattern: string, hours: number, kind: string, stale_hours?: number }[] }} */
+  times
+  /** @type {Map<string, { text: string, at: number }>} */
+  robots = new Map()
+  /** @type {Map<string, Promise<unknown>>} */
+  refreshing = new Map()
+
   /**
-   * root: the shared cache. render(url) -> {status, html} in a Chrome copy, or null
-   * where the host has none. firecrawl_key: optional. allow_private: tests only.
+   * @param {object} options
+   * @param {string} options.root the shared cache
+   * @param {((url: string) => Promise<{ status: number, html: string }>) | null} [options.render]
+   *   reads a page in a Chrome copy, or null where the host has none
+   * @param {string | null} [options.firecrawl_key]
+   * @param {boolean} [options.allow_private] tests only
+   * @param {() => number} [options.now]
+   * @param {object} [options.times] the cache-time rules, read from disk by default
    */
   constructor({
     root,
@@ -352,6 +426,11 @@ export class WebEngine {
     this.refreshing = new Map()
   }
 
+  /**
+   * @param {string} url
+   * @param {{ etag?: string | null, last_modified?: string | null, cache_control?: string | null }} headers
+   * @param {number | null} [learned_hours]
+   */
   time(url, headers, learned_hours = null) {
     return cache_time({
       url,
@@ -525,70 +604,94 @@ export class WebEngine {
     }
   }
 
+  /**
+   * Whether a new read differs from the kept one, or null when there is
+   * nothing to compare: a changed method or a page with no stored hash.
+   */
+  #changed(kept, got, digest) {
+    if (!kept || !kept.hash || kept.method !== got.method) return null
+    return kept.hash !== digest
+  }
+
+  /** The re-read time, doubled when nothing changed and halved when it did. */
+  #learned(url, kept, changed) {
+    const hours = kept?.learned_hours ?? null
+    if (changed === null || !kept) return hours
+    return learn(hours ?? this.time(url, kept.headers).hours, changed)
+  }
+
+  /**
+   * Try one non-static reader. Records the attempt, and returns the read when
+   * it is good enough along with any gone status the reader reported.
+   */
+  async #try_render({ attempts, get_page, method, page_of, why_of }) {
+    try {
+      const page = await get_page()
+      const gone = GONE.has(page.status) ? page.status : null
+      const why = why_of(page)
+      attempts.push({ method, outcome: why ?? 'ok' })
+      return { gone, got: why ? null : page_of(page) }
+    } catch (error) {
+      attempts.push({ method, outcome: error.message })
+      return { gone: null, got: null }
+    }
+  }
+
   /** Read it now (static, Chrome, Firecrawl) and keep it if it may be shared. kept teaches the cache time. */
+  /**
+   * @param {string} url
+   * @param {KeptPage | null} [kept] the cached page, which teaches the new time
+   * @param {{ method: string, outcome: string }[]} [attempts]
+   */
   async #read_now(url, kept = null, attempts = []) {
+    /** @type {{ etag?: string | null, last_modified?: string | null, cache_control?: string | null }} */
     let headers = {}
+    /** @type {number | null} */
     let gone = null
+    /** @type {PageRead | null} */
     let got = null
     try {
       const reply = await safe_fetch(url, { allow_private: this.allow_private })
       ;({ headers } = reply)
       if (GONE.has(reply.status)) gone = reply.status
-      let why
-      if (reply.status >= HTTP.BAD_REQUEST) why = `HTTP ${reply.status}`
-      else if (!/html|xml|text\/plain/i.test(reply.type)) why = 'not html'
-      else why = shortfall(reply.body)
+      const why = static_shortfall(reply)
       attempts.push({ method: 'static', outcome: why ?? 'ok' })
-      if (!why)
-        got = {
-          method: 'static',
-          kind: 'html',
-          body: reply.body,
-          title: title_of(reply.body)
-        }
+      if (!why) got = html_read('static', reply.body)
     } catch (error) {
       attempts.push({ method: 'static', outcome: error.message })
       if (/private address|credentials|only http/.test(error.message))
         throw error
     }
-    if (!got && !gone && this.render)
-      try {
-        const page = await this.render(url)
-        if (GONE.has(page.status)) gone = page.status
-        const why =
-          page.status >= HTTP.BAD_REQUEST
-            ? `HTTP ${page.status}`
-            : shortfall(page.html)
-        attempts.push({ method: 'chrome', outcome: why ?? 'ok' })
-        if (!why)
-          got = {
-            method: 'chrome',
-            kind: 'html',
-            body: page.html,
-            title: title_of(page.html)
-          }
-      } catch (error) {
-        attempts.push({ method: 'chrome', outcome: error.message })
-      }
-
-    if (!got && !gone && this.firecrawl_key)
-      try {
-        const page = await this.#firecrawl(url)
-        const why =
-          page.markdown.replace(/\s+/g, ' ').trim().length < MIN_TEXT
-            ? 'thin'
-            : null
-        attempts.push({ method: 'firecrawl', outcome: why ?? 'ok' })
-        if (!why)
-          got = {
-            method: 'firecrawl',
-            kind: 'markdown',
-            body: page.markdown,
-            title: page.title
-          }
-      } catch (error) {
-        attempts.push({ method: 'firecrawl', outcome: error.message })
-      }
+    const { render } = this
+    if (!got && !gone && render) {
+      const tried = await this.#try_render({
+        attempts,
+        get_page: () => render(url),
+        method: 'chrome',
+        page_of: page => html_read('chrome', page.html),
+        why_of: page_shortfall
+      })
+      const { got: read, gone: was_gone } = tried
+      got = read
+      gone ??= was_gone
+    }
+    if (!got && !gone && this.firecrawl_key) {
+      const tried = await this.#try_render({
+        attempts,
+        get_page: () => this.#firecrawl(url),
+        method: 'firecrawl',
+        page_of: page => ({
+          method: 'firecrawl',
+          kind: 'markdown',
+          body: page.markdown,
+          title: page.title
+        }),
+        why_of: markdown_shortfall
+      })
+      const { got: read, gone: was_gone } = tried
+      got = read
+      gone ??= was_gone
+    }
 
     if (!got)
       throw new Error(
@@ -596,16 +699,8 @@ export class WebEngine {
       )
 
     const digest = hash(got.body)
-    const changed =
-      kept && kept.method === got.method && kept.hash
-        ? kept.hash !== digest
-        : null
-    let learned_hours = kept?.learned_hours ?? null
-    if (changed !== null && changed !== undefined)
-      learned_hours = learn(
-        learned_hours ?? this.time(url, kept.headers).hours,
-        changed
-      )
+    const changed = this.#changed(kept, got, digest)
+    const learned_hours = this.#learned(url, kept, changed)
     const time = this.time(url, headers, learned_hours)
 
     const parsed = new URL(url)

@@ -68,6 +68,15 @@ const deliver = async (webhook, text, fetcher = fetch) => {
 }
 
 /** One pass. Returns what was sent. A read failure skips the pass, never recovers. */
+/**
+ * Send the alerts that are due, then save the state that says so.
+ * @param {object} options
+ * @param {{ get: (key: string) => Promise<{ body: Buffer } | null>, put: (key: string, body: string) => Promise<unknown> }} options.storage
+ * @param {string | null} options.webhook
+ * @param {() => number} [options.now]
+ * @param {(message: string) => void} [options.warn]
+ * @param {typeof fetch} [options.fetcher]
+ */
 export const run_host_alerts = async ({
   storage,
   webhook,

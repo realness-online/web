@@ -8,6 +8,7 @@ export const size_diagrams = (diagrams) => {
     diagram.setAttribute('tabindex', '0')
     diagram.setAttribute('aria-label', 'Full-size diagram')
     diagram.setAttribute('aria-pressed', 'false')
+    /** @type {number | null} */
     let scroll_left = null
     let scroll_top = 0
     const toggle = () => {

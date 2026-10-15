@@ -64,16 +64,18 @@ export const hosts = async (sync, name, now = Date.now()) => {
     const record = read_status(
       (await sync.cat(`can://hosts/${host_name}/status.html`)).toString('utf8')
     )
+    const { host } = record
     if (
-      record.host?.name !== host_name ||
-      !Number.isFinite(Date.parse(record.host.checked))
+      !host ||
+      host.name !== host_name ||
+      !Number.isFinite(Date.parse(host.checked))
     )
       throw new Error(`invalid status for ${host_name}`)
     out.push({
       ...record,
       age_s: Math.max(
         0,
-        Math.floor((now - Date.parse(record.host.checked)) / MS_PER_SECOND)
+        Math.floor((now - Date.parse(host.checked)) / MS_PER_SECOND)
       )
     })
   }
@@ -105,7 +107,7 @@ export const actors = async (sync, id, now) => {
   return found
 }
 
-export const read_loop = html => {
+const read_loop = html => {
   const match = html.match(
     /<article itemscope itemtype="\/loop">(.*?)<\/article>/s
   )
@@ -197,7 +199,10 @@ export const limit = async (sync, phone, now = new Date()) => {
   ].filter(day => days.includes(day) || days.includes(`${day}/`))
   const rows = new Map(
     await Promise.all(
-      wanted.map(async day => [day, (await usage(sync, phone, day)).rows])
+      wanted.map(async day => /** @type {[string, object[]]} */ ([
+        day,
+        (await usage(sync, phone, day)).rows
+      ]))
     )
   )
   const total = list => sum_rows(list.flatMap(day => rows.get(day) ?? []))
@@ -209,7 +214,12 @@ export const limit = async (sync, phone, now = new Date()) => {
   return { phone, ...limit_status({ free: free_limits(), paid }, spent) }
 }
 
-/** What an admin may see of one person: actors, loops, today's usage. */
+/**
+ * What an admin may see of one person: actors, loops, today's usage.
+ * @param {object} sync
+ * @param {string} phone
+ * @param {{ day?: string, now?: number }} [options]
+ */
 export const person = async (sync, phone, { day, now } = {}) => {
   if (!PHONE.test(phone ?? ''))
     throw new Error('usage: webspace <env> person <phone>')
@@ -218,8 +228,13 @@ export const person = async (sync, phone, { day, now } = {}) => {
     loops(sync),
     usage(sync, phone, day)
   ])
-  const totals = { ...spent }
-  delete totals.rows
+  const totals = {
+    phone: spent.phone,
+    day: spent.day,
+    calls: spent.calls,
+    tokens: spent.tokens,
+    cost: spent.cost
+  }
   return {
     phone,
     actors: all_actors.filter(actor => actor.owner === phone),

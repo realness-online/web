@@ -10,7 +10,7 @@ import { format_date, escape_html } from '../text.js'
  * @param {{close_href?: string}} [options]
  */
 export const poster = (site, poster_sizes, data, title, heading = 'h2', href = null, options = {}) => {
-    const size = poster_sizes[data.img]
+    const size = data.img ? poster_sizes[data.img] : undefined
     const ratio = size ? (size.width / size.height).toFixed(4) : null
     const focus = data.focus ? `; --focus: ${data.focus}` : ''
     const figure_style = ratio ? ` style="${escape_html(`--ratio: ${ratio}${focus}`)}"` : ''

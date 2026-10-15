@@ -17,7 +17,7 @@ import { MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 
 const FILES_SYNC_WORDS = 4
 
-export const USAGE = `usage: realness sync [--deletes] [plan ...]
+const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness turn-start --session <file>
        realness turn-end --session <file> --turn <n>
        realness login|logout|whoami|ls|cat|cp|rm ...
@@ -96,6 +96,228 @@ const read_stdin = async (stream = process.stdin) => {
   return text
 }
 
+/** The store a files command talks to: an actor pass, or the signed-in keychain. */
+const open_store = async (
+  args,
+  { actor, get_token, issue, root, service_url, state }
+) => {
+  if (actor) {
+    const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+    const actor_state = await prepare_actor_state(home, { state })
+    process.env.BRAYNESS_STATE = actor_state
+    const { store } = await actor_client({
+      url: service_url ?? (await actor_url(home, actor_state)),
+      issue
+    })
+    return store
+  }
+  const token = await get_token()
+  if (!token)
+    throw new CapabilityError(
+      'not_signed_in',
+      'not signed in; run realness login'
+    )
+  return client({ url: service_url ?? SYNC_URL, token })
+}
+
+/** Run a `files` subcommand and print its result. */
+const run_files_command = async (
+  args,
+  { command, json, stdout, store, request }
+) => {
+  const files = file_capabilities({ store })
+  const result =
+    command === 'files.sync'
+      ? await files.sync(request)
+      : await files.read(request)
+  if (json) stdout.write(`${JSON.stringify({ ok: true, command, result })}\n`)
+  else
+    stdout.write(
+      command === 'files.sync'
+        ? sync_text(result)
+        : Buffer.from(result.content, result.encoding)
+    )
+  return 0
+}
+
+/** Print a failed run, JSON or plain. */
+const report_failure = (error, { command, json, stderr, stdout }) => {
+  const failure = {
+    code: error.code ?? (error.status ? 'service_error' : 'capability_error'),
+    message: error.message,
+    ...(error.status && { status: error.status })
+  }
+  if (json)
+    stdout.write(
+      `${JSON.stringify({
+        ok: false,
+        command,
+        result: error.result,
+        error: failure
+      })}\n`
+    )
+  else {
+    if (error.result) stdout.write(sync_text(error.result))
+    stderr.write(`realness: ${failure.message}\n`)
+  }
+  return 1
+}
+
+/** Merge `.conflict` session copies on the desktop harness. */
+const run_fold = async (
+  args,
+  { actor, get_token, json, root, service_url, state, stdout }
+) => {
+  if (actor)
+    throw new CapabilityError(
+      'usage',
+      'realness fold runs on the desktop harness'
+    )
+  const home = root ?? find_root()
+  use_harness_state(home)
+  const token = await get_token()
+  if (!token) throw new Error('not signed in; run realness login')
+  const result = await fold_conflicts({
+    root: home,
+    state: state ?? state_dir(),
+    store: client({ url: service_url ?? SYNC_URL, token }),
+    dry_run: args.includes('--dry-run')
+  })
+  if (json)
+    stdout.write(`${JSON.stringify({ ok: true, command: 'fold', result })}\n`)
+  else {
+    stdout.write(
+      `${args.includes('--dry-run') ? 'would fold' : 'folded'} ${result.folded.length} session copies; left ${result.left.length}\n`
+    )
+    for (const name of result.left) stdout.write(`  left: ${name}\n`)
+  }
+  return 0
+}
+
+/** Pull a file the light VM left in storage. */
+const run_fetch = async (
+  args,
+  { actor, issue, json, root, service_url, state, stdout }
+) => {
+  const path = args.slice(1).find(arg => arg !== '--json')
+  if (!actor)
+    throw new CapabilityError(
+      'usage',
+      'realness fetch runs on a light VM; this harness holds every file'
+    )
+  if (!path)
+    throw new CapabilityError('usage', 'usage: realness fetch <harness-path>')
+  const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+  const actor_state = await prepare_actor_state(home, { state })
+  process.env.BRAYNESS_STATE = actor_state
+  const { store } = await actor_client({
+    url: service_url ?? (await actor_url(home, actor_state)),
+    issue
+  })
+  const result = await fetch_skipped({
+    root: home,
+    state: actor_state,
+    store,
+    path: path.replace(/^\/brayness\//, '').replace(/^\.\//, '')
+  })
+  stdout.write(
+    json
+      ? `${JSON.stringify({ ok: true, command: 'fetch', result })}\n`
+      : `${result.fetched ? 'fetched' : 'already here'}: ${result.path}\n`
+  )
+  return 0
+}
+
+/** Git's credential helper on a VM. */
+const run_git_credential = async (
+  args,
+  { actor, issue, root, service_url, state, stdin, stdout }
+) => {
+  if (!actor)
+    throw new CapabilityError('usage', 'realness git-credential runs on a VM')
+  const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+  const actor_state = await prepare_actor_state(home, { state })
+  const text = await read_stdin(stdin)
+  const [, operation] = args
+  if (operation !== 'get') return 0
+  const { store } = await actor_client({
+    url: service_url ?? (await actor_url(home, actor_state)),
+    issue
+  })
+  stdout.write(await git_answer(operation, text, store))
+  return 0
+}
+
+/** Watch host health on the desktop harness until interrupted. */
+const run_watch_command = async (
+  args,
+  { actor, get_token, json, service_url, state, stdin, stdout }
+) => {
+  if (actor)
+    throw new CapabilityError(
+      'usage',
+      'realness watch runs on the desktop harness'
+    )
+  const token = await get_token()
+  if (!token)
+    throw new CapabilityError(
+      'not_signed_in',
+      'not signed in; run realness login'
+    )
+  let interval_ms = MS_PER_MINUTE
+  const named = []
+  for (let at = 1; at < args.length; at++)
+    if (args[at] === '--interval')
+      interval_ms = Math.max(
+        MS_PER_SECOND,
+        Number(args[++at]) * MS_PER_SECOND || MS_PER_MINUTE
+      )
+    else if (args[at] === '--person') named.push(args[++at])
+
+  const { watch } = await import('./watch-loop.js')
+  const { ledger } = await import('./watch-ledger.js')
+  const { cloud_sources } = await import('./watch-cloud.js')
+  const store = client({ url: service_url ?? SYNC_URL, token })
+  const controller = new AbortController()
+  process.once('SIGINT', () => controller.abort())
+  process.once('SIGTERM', () => controller.abort())
+  const records = await sync_records(state)
+  const run_watch = () =>
+    watch({
+      store,
+      token,
+      ledger: ledger(store),
+      named,
+      records,
+      service: service_url ?? SYNC_URL,
+      cloud: cloud_sources(),
+      interval_ms,
+      signal: controller.signal,
+      stdout,
+      stdin
+    })
+  if (json)
+    stdout.write(
+      `${JSON.stringify({ ok: true, command: 'watch', result: await run_watch() })}\n`
+    )
+  else await run_watch()
+  return 0
+}
+
+/**
+ * The product entry point: every realness subcommand starts here.
+ * @param {string[]} args
+ * @param {object} [options]
+ * @param {() => Promise<string | null>} [options.get_token]
+ * @param {string} [options.service_url]
+ * @param {boolean} [options.actor]
+ * @param {string} [options.root]
+ * @param {string} [options.state]
+ * @param {() => Promise<string>} [options.issue]
+ * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
+ * @param {NodeJS.WriteStream & { fd: 2 }} [options.stderr]
+ * @param {NodeJS.ReadStream & { fd: 0 }} [options.stdin]
+ */
 export const run = async (
   args,
   {
@@ -111,8 +333,8 @@ export const run = async (
     stdin = process.stdin
   } = {}
 ) => {
-  let root = root_option
-  let state = state_option
+  const root = root_option
+  const state = state_option
   const json = args.includes('--json')
   let command
   try {
@@ -141,148 +363,18 @@ export const run = async (
       ;[command] = args
       return await run_harness(args, options)
     }
-    if (args[0] === 'fold') {
-      command = 'fold'
-      if (actor)
-        throw new CapabilityError(
-          'usage',
-          'realness fold runs on the desktop harness'
-        )
-      root ??= find_root()
-      use_harness_state(root)
-      const token = await get_token()
-      if (!token) throw new Error('not signed in; run realness login')
-      const result = await fold_conflicts({
-        root,
-        state: state ?? state_dir(),
-        store: client({ url: service_url ?? SYNC_URL, token }),
-        dry_run: args.includes('--dry-run')
-      })
-      if (json)
-        stdout.write(`${JSON.stringify({ ok: true, command, result })}\n`)
-      else {
-        stdout.write(
-          `${args.includes('--dry-run') ? 'would fold' : 'folded'} ${result.folded.length} session copies; left ${result.left.length}\n`
-        )
-        for (const name of result.left) stdout.write(`  left: ${name}\n`)
-      }
-      return 0
-    }
-    if (args[0] === 'fetch') {
-      command = 'fetch'
-      const path = args.slice(1).find(arg => arg !== '--json')
-      if (!actor)
-        throw new CapabilityError(
-          'usage',
-          'realness fetch runs on a light VM; this harness holds every file'
-        )
-      if (!path)
-        throw new CapabilityError(
-          'usage',
-          'usage: realness fetch <harness-path>'
-        )
-      root ??= process.env.BRAYNESS_ROOT ?? '/brayness'
-      state = await prepare_actor_state(root, { state })
-      process.env.BRAYNESS_STATE = state
-      const { store } = await actor_client({
-        url: service_url ?? (await actor_url(root, state)),
-        issue
-      })
-      const result = await fetch_skipped({
-        root,
-        state,
-        store,
-        path: path.replace(/^\/brayness\//, '').replace(/^\.\//, '')
-      })
-      stdout.write(
-        json
-          ? `${JSON.stringify({ ok: true, command, result })}\n`
-          : `${result.fetched ? 'fetched' : 'already here'}: ${result.path}\n`
-      )
-      return 0
-    }
-    if (args[0] === 'git-credential') {
-      command = 'git-credential'
-      if (!actor)
-        throw new CapabilityError(
-          'usage',
-          'realness git-credential runs on a VM'
-        )
-      root ??= process.env.BRAYNESS_ROOT ?? '/brayness'
-      state = await prepare_actor_state(root, { state })
-      const text = await read_stdin(stdin)
-      const [, operation] = args
-      if (operation !== 'get') return 0
-      const { store } = await actor_client({
-        url: service_url ?? (await actor_url(root, state)),
-        issue
-      })
-      stdout.write(await git_answer(operation, text, store))
-      return 0
-    }
+    ;[command] = args
+    const common = { ...options, json, stdin }
+    if (args[0] === 'fold') return await run_fold(args, common)
+    if (args[0] === 'fetch') return await run_fetch(args, common)
+    if (args[0] === 'git-credential')
+      return await run_git_credential(args, common)
+    if (args[0] === 'watch') return await run_watch_command(args, common)
     if (args[0] === 'store') return await run_store(args.slice(1), options)
     if (
       ['login', 'logout', 'whoami', 'ls', 'cat', 'cp', 'rm'].includes(args[0])
     )
       return await run_store(args, options)
-    if (args[0] === 'watch') {
-      command = 'watch'
-      if (actor)
-        throw new CapabilityError(
-          'usage',
-          'realness watch runs on the desktop harness'
-        )
-      const token = await get_token()
-      if (!token)
-        throw new CapabilityError(
-          'not_signed_in',
-          'not signed in; run realness login'
-        )
-      let interval_ms = MS_PER_MINUTE
-      const named = []
-      for (let at = 1; at < args.length; at++)
-        if (args[at] === '--interval')
-          interval_ms = Math.max(
-            MS_PER_SECOND,
-            Number(args[++at]) * MS_PER_SECOND || MS_PER_MINUTE
-          )
-        else if (args[at] === '--person') named.push(args[++at])
-
-      const { watch } = await import('./watch-loop.js')
-      const { ledger } = await import('./watch-ledger.js')
-      const { cloud_sources } = await import('./watch-cloud.js')
-      const cloud = cloud_sources()
-      const store = client({ url: service_url ?? SYNC_URL, token })
-      const controller = new AbortController()
-      process.once('SIGINT', () => controller.abort())
-      process.once('SIGTERM', () => controller.abort())
-      const records = await sync_records(state)
-      const service = service_url ?? SYNC_URL
-      const run_watch = () =>
-        watch({
-          store,
-          token,
-          ledger: ledger(store),
-          named,
-          records,
-          service,
-          cloud,
-          interval_ms,
-          signal: controller.signal,
-          stdout,
-          stdin
-        })
-      if (json)
-        stdout.write(
-          `${JSON.stringify({
-            ok: true,
-            command,
-            result: await run_watch()
-          })}\n`
-        )
-      else await run_watch()
-      return 0
-    }
     const request = parse(args)
     ;({ command } = request)
     if (command === 'help') {
@@ -297,56 +389,22 @@ export const run = async (
       )
       return 0
     }
-    let store
-    if (actor) {
-      root ??= process.env.BRAYNESS_ROOT ?? '/brayness'
-      state = await prepare_actor_state(root, { state })
-      process.env.BRAYNESS_STATE = state
-      ;({ store } = await actor_client({
-        url: service_url ?? (await actor_url(root, state)),
-        issue
-      }))
-    } else {
-      const token = await get_token()
-      if (!token)
-        throw new CapabilityError(
-          'not_signed_in',
-          'not signed in; run realness login'
-        )
-      store = client({ url: service_url ?? SYNC_URL, token })
-    }
-    const files = file_capabilities({ store })
-    const result =
-      command === 'files.sync'
-        ? await files.sync(request)
-        : await files.read(request)
-    if (json) stdout.write(`${JSON.stringify({ ok: true, command, result })}\n`)
-    else
-      stdout.write(
-        command === 'files.sync'
-          ? sync_text(result)
-          : Buffer.from(result.content, result.encoding)
-      )
-    return 0
+    const store = await open_store(args, {
+      actor,
+      get_token,
+      issue,
+      root,
+      service_url,
+      state
+    })
+    return await run_files_command(args, {
+      command,
+      json,
+      request,
+      stdout,
+      store
+    })
   } catch (error) {
-    const failure = {
-      code: error.code ?? (error.status ? 'service_error' : 'capability_error'),
-      message: error.message,
-      ...(error.status && { status: error.status })
-    }
-    if (json)
-      stdout.write(
-        `${JSON.stringify({
-          ok: false,
-          command,
-          result: error.result,
-          error: failure
-        })}\n`
-      )
-    else {
-      if (error.result) stdout.write(sync_text(error.result))
-      stderr.write(`realness: ${failure.message}\n`)
-    }
-    return 1
+    return report_failure(error, { command, json, stderr, stdout })
   }
 }

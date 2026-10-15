@@ -1,3 +1,4 @@
+/** @type {string | null} */
 let stamp = null
 setInterval(async () => {
   const next = await fetch('/build-stamp.txt', { cache: 'no-store' })

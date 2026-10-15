@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
 import { createHash } from 'node:crypto'
 import { join, resolve } from 'node:path'
 import { after, describe, it } from 'node:test'
@@ -10,7 +16,10 @@ const frontend = resolve(import.meta.dirname, '../../frontend')
 const product = resolve(import.meta.dirname, '../..')
 const candidates = resolve(product, '../../artifacts/brayness/og-candidates')
 const og_path = join(frontend, 'public', 'og.jpg')
-const scratch = resolve(import.meta.dirname, '../../../artifacts/entry-points-spec')
+const scratch = resolve(
+  import.meta.dirname,
+  '../../../artifacts/entry-points-spec'
+)
 
 after(() => rmSync(scratch, { recursive: true, force: true }))
 
@@ -98,13 +107,20 @@ describe('pick-og', () => {
       join(candidates, 'manifest.json'),
       JSON.stringify({
         candidates: [
-          { file: 'chosen-1200x630.jpg', itemid: '/+1/posters/2', style: 'card' }
+          {
+            file: 'chosen-1200x630.jpg',
+            itemid: '/+1/posters/2',
+            style: 'card'
+          }
         ]
       })
     )
     try {
       const { said } = attempt(() => pick('chosen-1200x630', destination))
-      assert.match(said.join('\n'), /public\/og\.jpg is now chosen-1200x630\.jpg/)
+      assert.match(
+        said.join('\n'),
+        /public\/og\.jpg is now chosen-1200x630\.jpg/
+      )
       assert.match(said.join('\n'), /source poster \/\+1\/posters\/2 \(card\)/)
       assert.deepEqual(readFileSync(destination), jpeg(1200, 630))
     } finally {
@@ -121,8 +137,13 @@ describe('pick-og', () => {
     writeFileSync(join(candidates, 'named-1200x630.jpg'), jpeg(1200, 630))
     try {
       mkdirSync(scratch, { recursive: true })
-      const { said } = attempt(() => pick('named-1200x630.jpg', join(scratch, 'og.jpg')))
-      assert.match(said.join('\n'), /public\/og\.jpg is now named-1200x630\.jpg/)
+      const { said } = attempt(() =>
+        pick('named-1200x630.jpg', join(scratch, 'og.jpg'))
+      )
+      assert.match(
+        said.join('\n'),
+        /public\/og\.jpg is now named-1200x630\.jpg/
+      )
     } finally {
       rmSync(join(candidates, 'named-1200x630.jpg'), { force: true })
     }
@@ -151,7 +172,10 @@ describe('changelog-notes', () => {
     ).version
     const result = main(['--version', version, '--out', out])
     assert.equal(result.out_path, out)
-    assert.match(result.notes, new RegExp(`^## v${version.replace(/\./g, '\\.')}`))
+    assert.match(
+      result.notes,
+      new RegExp(`^## v${version.replace(/\./g, '\\.')}`)
+    )
     assert.match(result.notes, /npm run verify/)
     assert.equal(readFileSync(out, 'utf8'), result.notes)
   })
@@ -163,7 +187,10 @@ describe('changelog-notes', () => {
       readFileSync(join(product, 'package.json'), 'utf8')
     ).version
     const result = main(['--out', out])
-    assert.match(result.notes, new RegExp(`^## v${version.replace(/\./g, '\\.')}`))
+    assert.match(
+      result.notes,
+      new RegExp(`^## v${version.replace(/\./g, '\\.')}`)
+    )
   })
 
   it('fails loudly for a version the changelog does not have', () => {

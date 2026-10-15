@@ -41,7 +41,7 @@ const DEFERRED = 'can://~/.pi/agent/deferred.json'
 export const HARNESS = 'can://~/harness/'
 const HARNESS_DEFERRED = `${HARNESS}.pi/agent/deferred.json`
 /** A person's own ignore rules, at the harness root. */
-export const IGNORE_FILE = '.ignore'
+const IGNORE_FILE = '.ignore'
 /** The whole harness syncs once its ignore file exists here or in storage. */
 export const whole_enabled = (root, store) => {
   if (exists_sync(join(root, IGNORE_FILE))) return true
@@ -133,7 +133,7 @@ export const refused = path => {
 }
 
 /** The repo a path sits in, checked from its nearest existing folder. */
-export const repo_of = async path => {
+const repo_of = async path => {
   let dir = resolve(path)
   while (!exists_sync(dir)) dir = dirname(dir)
   try {
@@ -214,11 +214,21 @@ export const plan_syncs = async (root, names = []) => {
  * so any edit deferred to them is already saved. Without a `.ignore`, only the
  * plans' Syncs paths sync, at `can://~/<path>/`.
  */
+/**
+ * Sync the whole harness, or only the named plan files.
+ * @param {object} options
+ * @param {string} options.root
+ * @param {{ cat: (path: string) => Promise<Buffer>, put: (path: string, bytes: Buffer) => Promise<string>, sync: (local: string, remote: string, options?: object) => Promise<import('#root/src/files/client.js').SyncReport> }} options.store
+ * @param {string[]} [options.plans]
+ * @param {'all' | 'explained'} [options.deletes]
+ * @param {boolean} [options.defer_edits]
+ * @param {string | null} [options.starter]
+ */
 export const sync_harness = async ({
   root,
   store,
   plans = [],
-  deletes,
+  deletes = 'explained',
   defer_edits = false,
   starter = process.env.BRAYNESS_STARTER ??
     (exists_sync(join(STARTER_DIRECTORY, 'starter.json'))

@@ -11,23 +11,22 @@ import {
 } from '#root/frontend/packages/itemid/src/index.js'
 
 /** What the vault and apps hold beyond Realness's types. */
-export const brayness_types = [
-  'plans',
-  'articles',
-  'diagrams',
-  'sources',
-  'pages'
-]
+const brayness_types = ['plans', 'articles', 'diagrams', 'sources', 'pages']
 
-/** Types Realness makes: their main file lives in Realness, so the vault may hold several copies. */
+/**
+ * Types Realness makes: their main file lives in Realness, so the vault may
+ * hold several copies. Typed as plain strings because `as_type` returns any
+ * type name, including the app types that are not listed here.
+ * @type {string[]}
+ */
 export const made_elsewhere = [...realness_types]
 
 export const types = [...realness_types, ...brayness_types]
 
 /** Every vault item is minted with its creation time. */
-export const requires_timestamp = ['posters', 'thoughts', ...brayness_types]
+const requires_timestamp = ['posters', 'thoughts', ...brayness_types]
 
-export const itemid = create_itemid({ types, requires_timestamp })
+const itemid = create_itemid({ types, requires_timestamp })
 
 export const { as_author, as_type, as_created_at, is_itemid } = itemid
 

@@ -8,7 +8,7 @@ export const DISK_AFTER = 2 * MS_PER_HOUR
 export const EXPORT_AFTER = EXPORT_DAYS * MS_PER_DAY
 
 /** Whether the actor's last final sync happened after its last activity. */
-export const synced_since_activity = record => {
+const synced_since_activity = record => {
   const synced = Date.parse(record.synced_at ?? '')
   const last = Date.parse(record.last_activity ?? record.created)
   return Number.isFinite(synced) && Number.isFinite(last) && synced >= last

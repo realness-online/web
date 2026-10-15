@@ -13,11 +13,11 @@ const MASK_BYTES = 4
 const NEWLINE = 10
 
 const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
-export const CONTINUATION = 0x0
+const CONTINUATION = 0x0
 export const TEXT = 0x1
-export const CLOSE = 0x8
-export const PING = 0x9
-export const PONG = 0xa
+const CLOSE = 0x8
+const PING = 0x9
+const PONG = 0xa
 const SHORT = 126
 const MEDIUM = 65536
 const HELLO_SECONDS = 30
@@ -87,6 +87,12 @@ export const refuse = (socket, status, message) => {
 }
 
 /** Answer the upgrade; `protocol` echoes the subprotocol the client offered. */
+/**
+ * Complete the handshake, echoing `protocol` when one was offered.
+ * @param {import('node:stream').Duplex & { setNoDelay?: (on?: boolean) => void }} socket
+ * @param {string} key
+ * @param {string | null} [protocol]
+ */
 export const accept = (socket, key, protocol = null) => {
   const digest = create_hash('sha1')
     .update(key + GUID)
@@ -94,7 +100,7 @@ export const accept = (socket, key, protocol = null) => {
   socket.write(
     `HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${digest}\r\n${protocol ? `Sec-WebSocket-Protocol: ${protocol}\r\n` : ''}\r\n`
   )
-  socket.setNoDelay(true)
+  socket.setNoDelay?.(true)
 }
 
 /**

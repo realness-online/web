@@ -51,11 +51,21 @@ export const actor_url = async (root = '/brayness', state_option) => {
   )
 }
 
+/**
+ * Sync one actor through its own host pass.
+ * @param {object} options
+ * @param {string} options.url
+ * @param {string} [options.root]
+ * @param {() => Promise<string>} [options.issue]
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string} [options.state]
+ * @param {boolean} [options.defer_edits]
+ */
 export const sync_actor = async ({
   url,
   root = '/brayness',
   issue,
-  fetcher,
+  fetcher = fetch,
   state = state_dir(),
   defer_edits = false
 }) => {

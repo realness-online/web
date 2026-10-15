@@ -13,6 +13,40 @@ const unchanged = (object, previous) =>
   Boolean(previous && is_deep_strict_equal(revision(object), previous))
 
 /**
+ * One of six outcomes. Only `settled` carries the new baseline, and only
+ * `copy` and `delete` name revisions for the reconciler's guards.
+ * @typedef {object} PlanSettled
+ * @property {'settled'} action
+ * @property {Record<string, { generation: string, metageneration: string } | null>} synced
+ *
+ * @typedef {object} PlanCopy
+ * @property {'copy'} action
+ * @property {string} name
+ * @property {string} source_generation
+ * @property {string} source_metageneration
+ * @property {string} target_generation
+ * @property {string} [target_metageneration]
+ *
+ * @typedef {object} PlanDelete
+ * @property {'delete'} action
+ * @property {string} name
+ * @property {string} target_generation
+ * @property {string} target_metageneration
+ *
+ * @typedef {object} PlanIgnore
+ * @property {'ignore'} action
+ *
+ * @typedef {object} PlanWait
+ * @property {'wait'} action
+ * @property {string} reason
+ *
+ * @typedef {object} PlanConflict
+ * @property {'conflict'} action
+ * @property {string} reason
+ *
+ * @typedef {PlanSettled | PlanCopy | PlanDelete | PlanIgnore | PlanWait | PlanConflict} MirrorPlan
+ */
+/**
  * Pure reconciliation policy. Inspect LIVE heads, never act on event payload
  * bytes. Synced holds the exact two revisions last confirmed equivalent.
  * A durable coordinator must serialize each pair and recover pending storage
@@ -28,6 +62,7 @@ const unchanged = (object, previous) =>
  * @param {object} [options.synced] Last equivalent byte/metadata revisions
  * @param {{name: string, generation: string}} [options.deletion] Delete event
  * @param {boolean} [options.pending] An operation has an unresolved outcome
+ * @returns {MirrorPlan} the next step for the pair
  */
 export const mirror_plan = ({ name, heads, synced = {}, deletion, pending = false }) => {
   const paired = mirror_name(name)
@@ -39,9 +74,12 @@ export const mirror_plan = ({ name, heads, synced = {}, deletion, pending = fals
   if (present.some(key => !valid(heads[key])))
     return { action: 'conflict', reason: 'unverified-revision' }
 
+  /** @returns {PlanCopy | PlanIgnore | PlanConflict} */
   const copy = source_name => {
     const source = heads[source_name]
-    const target = heads[mirror_name(source_name)]
+    const source_pair = mirror_name(source_name)
+    if (!source_pair) return { action: 'ignore' }
+    const target = heads[source_pair]
     if (target?.metadata?.sold === 'true' && source.metadata?.sold !== 'true')
       return { action: 'conflict', reason: 'sold-state-regression' }
     return {
@@ -56,6 +94,7 @@ export const mirror_plan = ({ name, heads, synced = {}, deletion, pending = fals
   if (present.length === 1) {
     const [live_name] = present
     const missing_name = mirror_name(live_name)
+    if (!missing_name) return { action: 'ignore' }
     if (!synced[missing_name]) return copy(live_name)
     if (!deletion || deletion.name !== missing_name ||
       deletion.generation !== synced[missing_name].generation)

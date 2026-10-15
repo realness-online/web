@@ -8,7 +8,12 @@ import { networkInterfaces as network_interfaces } from "node:os"
 
 const TARGETS = JSON.parse(read_file_sync(new URL("./targets.json", import.meta.url), "utf8"))
 
-const ownAddress = () => network_interfaces().eth0.find((a) => a.family === "IPv4").address
+const ownAddress = () => {
+  const eth0 = network_interfaces().eth0 ?? []
+  const found = eth0.find((a) => a.family === "IPv4")
+  if (!found) throw new Error("no IPv4 address on eth0")
+  return found.address
+}
 
 /** Refused when the TCP connect fails; a timeout (dropped) counts as refused. */
 const tryConnect = (host, port, ms = 1500) => {
@@ -20,7 +25,9 @@ const tryConnect = (host, port, ms = 1500) => {
     }
     socket.setTimeout(ms, () => finish(true, `${host}:${port} timeout`))
     socket.on("connect", () => finish(false, `connected to ${host}:${port}`))
-    socket.on("error", (error) => finish(true, `${host}:${port} ${error.code}`))
+    socket.on("error", (error) =>
+      finish(true, `${host}:${port} ${/** @type {NodeJS.ErrnoException} */ (error).code}`),
+    )
   })
 }
 
@@ -63,7 +70,8 @@ const probes = async () => {
   results["read the runtime"] = attempt(() => read_file_sync("/opt/runtime/bin/node"))
   results["spawn a process"] = attempt(() => exec_file_sync("/bin/sh", ["-c", "id"]))
   results["start a worker"] = attempt(() => new Worker("0", { eval: true }))
-  results["not root"] = [process.getuid() !== 0, `uid ${process.getuid()}`]
+  const uid = process.getuid?.()
+  results["not root"] = [uid !== 0, `uid ${uid ?? 'unknown'}`]
 
   return Object.fromEntries(Object.entries(results).map(([name, [refused, detail]]) => [name, { refused, detail }]))
 }

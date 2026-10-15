@@ -60,28 +60,35 @@ export const local_plan = () => {
   }
 }
 
-/** Readiness checks never start a server. Only refused connections mean it is absent. */
+/**
+ * Readiness checks never start a server. Only refused connections mean it is absent.
+ * @param {string} url
+ * @returns {Promise<{ status: number | undefined, body: string } | null>} null when the port is closed
+ */
 export const local_request = url =>
   new Promise((resolve, reject) => {
-    const get = url.startsWith('https:') ? https_get : http_get
-    const request = get(
-      url,
-      { rejectUnauthorized: false, timeout: REQUEST_TIMEOUT_MS, agent: false },
-      response => {
-        let body = ''
-        response.setEncoding('utf8')
-        response.on('data', chunk => {
-          body += chunk
-        })
-        response.on('end', () => resolve({ status: response.statusCode, body }))
-        response.on('error', reject)
-      }
-    )
+    const secure = url.startsWith('https:')
+    const options = {
+      timeout: REQUEST_TIMEOUT_MS,
+      agent: false,
+      ...(secure && { rejectUnauthorized: false })
+    }
+    const get = secure ? https_get : http_get
+    const request = get(url, options, response => {
+      let body = ''
+      response.setEncoding('utf8')
+      response.on('data', chunk => {
+        body += chunk
+      })
+      response.on('end', () => resolve({ status: response.statusCode, body }))
+      response.on('error', reject)
+    })
     request.on('timeout', () =>
       request.destroy(new Error(`No response from ${url}`))
     )
     request.on('error', error => {
-      if (error.code === 'ECONNREFUSED') resolve(null)
+      if (/** @type {NodeJS.ErrnoException} */ (error).code === 'ECONNREFUSED')
+        resolve(null)
       else reject(error)
     })
   })
@@ -194,7 +201,30 @@ const stop_local = async (child, service) => {
   kill('SIGKILL')
 }
 
-/** Startup and shutdown stay separate from the read-only terminal monitor. */
+/**
+ * One local service, as the stack tracks it.
+ * @typedef {object} LocalService
+ * @property {string} name
+ * @property {string} url
+ * @property {string} [state]
+ * @property {number} [pid]
+ * @property {boolean} [reused]
+ * @property {boolean} [persistent]
+ * @property {string} [error]
+ */
+
+/**
+ * Startup and shutdown stay separate from the read-only terminal monitor.
+ * @param {LocalService[]} services
+ * @param {object} [options]
+ * @param {AbortSignal} [options.signal]
+ * @param {(service: LocalService) => Promise<{ running: boolean, ready: boolean }>} [options.probe]
+ * @param {(service: LocalService) => Promise<import('node:child_process').ChildProcess>} [options.launch]
+ * @param {(child: import('node:child_process').ChildProcess, service: LocalService) => Promise<void>} [options.stop]
+ * @param {typeof delay} [options.pause]
+ * @param {() => number} [options.now]
+ * @param {(service: LocalService) => void} [options.changed]
+ */
 export const start_local = async (
   services,
   {

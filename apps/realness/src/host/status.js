@@ -33,6 +33,9 @@ const item = (type, values) =>
     .join('')}</article>\n`
 
 /** The host, its actors, and its apps as HTML Lines. */
+/**
+ * @param {{ host: object, actors?: object[], apps?: object[] }} status
+ */
 export const status_html = ({ host, actors = [], apps = [] }) =>
   item('host', host) +
   actors.map(actor => item('actor', actor)).join('') +
@@ -47,6 +50,7 @@ export const host_resources = (
   } = {}
 ) => {
   const errors = []
+  /** @type {number | null} */
   let mem_available = null
   try {
     const match = /^MemAvailable:\s+(\d+) kB$/m.exec(read_file('/proc/meminfo'))
@@ -54,6 +58,7 @@ export const host_resources = (
   } catch (error) {
     errors.push(error.message)
   }
+  /** @type {number | null} */
   let actor_taps_used = null
   try {
     actor_taps_used = list_network().filter(
@@ -83,6 +88,43 @@ const volume_space = path => {
 }
 
 export class HostStatus {
+  /** @type {import('./actors.js').ActorStore} */
+  store
+  /** @type {{ get: (path: string) => Promise<unknown>, put: (path: string, body: string) => Promise<unknown> } | null} */
+  mirror
+  /** @type {import('./apps.js').AppStore | null} */
+  apps
+  /** @type {import('./loops.js').Loops | null} */
+  loops
+  /** @type {string} */
+  host
+  /** @type {() => Date} */
+  now
+  /** @type {(message: string) => void} */
+  warn
+  /** @type {() => { mem_available: number | null, actor_taps_used: number | null, actor_taps_limit: number, resource_error: string | null }} */
+  resources
+  /** @type {((record: import('./actors.js').Actor, port: number) => Promise<void>) | null} */
+  probe
+  /** @type {() => number} */
+  clock
+  /** @type {() => object[]} */
+  traces
+
+  /**
+   * @param {import('./actors.js').ActorStore} store
+   * @param {object} [options]
+   * @param {{ get: (path: string) => Promise<unknown>, put: (path: string, body: string) => Promise<unknown> } | null} [options.mirror]
+   * @param {import('./apps.js').AppStore | null} [options.apps]
+   * @param {import('./loops.js').Loops | null} [options.loops]
+   * @param {string} [options.host]
+   * @param {() => Date} [options.now]
+   * @param {(message: string) => void} [options.warn]
+   * @param {() => { mem_available: number | null, actor_taps_used: number | null, actor_taps_limit: number, resource_error: string | null }} [options.resources]
+   * @param {((record: import('./actors.js').Actor, port: number) => Promise<void>) | null} [options.probe]
+   * @param {() => number} [options.clock]
+   * @param {(() => object[]) | null} [options.traces]
+   */
   constructor(
     store,
     {

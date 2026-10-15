@@ -12,7 +12,7 @@ import { MS_PER_SECOND } from '#root/lib/units.js'
 
 const MAX_SUBJECT = 128
 
-export const GOOGLE_CERTS =
+const GOOGLE_CERTS =
   'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
 const PHONE = /^\+[1-9]\d{6,14}$/
 const SKEW = 60
@@ -21,20 +21,29 @@ const base64url = text => Buffer.from(text, 'base64url')
 const json = text => JSON.parse(base64url(text).toString('utf8'))
 
 /** Fetch Google's signing certificates, cached until they say to refetch. */
+/**
+ * Google's signing keys as `{ kid: pem }`, cached for the response's max-age.
+ * @param {typeof fetch} [fetcher]
+ * @returns {() => Promise<Record<string, string>>}
+ */
 export const google_certs = (fetcher = fetch) => {
+  /** @type {Record<string, string> | null} */
   let cached = null
   let until = 0
   return async () => {
-    if (cached && Date.now() < until) return cached
+    const fresh = cached
+    if (fresh && Date.now() < until) return fresh
     const response = await fetcher(GOOGLE_CERTS)
     if (!response.ok) throw new Error(`certs: ${response.status}`)
     const age = Number(
       /max-age=(\d+)/.exec(response.headers.get('cache-control') ?? '')?.[1] ??
         0
     )
-    cached = await response.json()
+    /** @type {Record<string, string>} */
+    const keys = await response.json()
+    cached = keys
     until = Date.now() + age * MS_PER_SECOND
-    return cached
+    return keys
   }
 }
 
@@ -92,6 +101,10 @@ export const pin = async (identity, pins) => {
   return { phone: identity.phone }
 }
 
-/** A token in, a `can()` subject out: `{ phone }`. Throws on anything doubtful. */
+/**
+ * A token in, a `can()` subject out: `{ phone }`. Throws on anything doubtful.
+ * @param {string} token
+ * @param {{ pins: object, project: string, certs: () => Promise<object>, now?: number }} options
+ */
 export const identify = async (token, { pins, ...options }) =>
   pin(await verify_token(token, options), pins)

@@ -18,8 +18,11 @@ const status = new HostStatus(store, { mirror, warn: (message) => warned.push(me
 
 assert.equal(await status.publish(), true, warned.join("; "))
 const stored = await mirror.get(`hosts/${status.host}/status.html`)
+assert.ok(stored, 'the status page was published')
 const read = read_status(stored.body.toString("utf8"))
-assert.equal(read.host.name, status.host)
+const host = read.host
+assert.ok(host, 'the status page has a host record')
+assert.equal(host.name, status.host)
 assert.equal(read.actors.length, store.list().length)
-assert.ok(Number(read.host.mem_total) > 0 && Number(read.host.volume_size) > 0)
-console.log(`  ok   hosts/${status.host}/status.html: checked ${read.host.checked}, seed ${read.host.seed}, ${read.actors.length} actors`)
+assert.ok(Number(host.mem_total) > 0 && Number(host.volume_size) > 0)
+console.log(`  ok   hosts/${status.host}/status.html: checked ${host.checked}, seed ${host.seed}, ${read.actors.length} actors`)

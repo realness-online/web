@@ -18,12 +18,20 @@ const toRequest = (req) => {
     for (const one of [value].flat()) headers.append(name, one)
   }
   const hasBody = req.method !== "GET" && req.method !== "HEAD"
-  return new Request(`http://${req.headers.host ?? "app"}${req.url}`, {
+  /**
+   * `duplex` is required by undici for a streaming request body, but the DOM
+   * RequestInit type does not carry it.
+   * @type {RequestInit & { duplex?: 'half' }}
+   */
+  const init = {
     method: req.method,
     headers,
-    body: hasBody ? Readable.toWeb(req) : undefined,
-    duplex: hasBody ? "half" : undefined,
-  })
+    body: hasBody
+      ? /** @type {ReadableStream} */ (Readable.toWeb(req))
+      : undefined,
+    duplex: hasBody ? 'half' : undefined,
+  }
+  return new Request(`http://${req.headers.host ?? 'app'}${req.url}`, init)
 }
 
 create_server(async (req, res) => {
@@ -38,5 +46,7 @@ create_server(async (req, res) => {
   }
   res.writeHead(response.status, response.statusText, [...response.headers].flat())
   if (!response.body || req.method === "HEAD") return res.end()
-  Readable.fromWeb(response.body).on("error", () => res.destroy()).pipe(res)
+  Readable.fromWeb(/** @type {import("node:stream/web").ReadableStream} */ (response.body))
+    .on("error", () => res.destroy())
+    .pipe(res)
 }).listen(PORT)

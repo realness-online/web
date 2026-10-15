@@ -20,7 +20,7 @@ const MIME = {
   pdf: 'application/pdf'
 }
 
-export class SiteError extends Error {
+class SiteError extends Error {
   constructor(status) {
     super(String(status))
     this.status = status
@@ -44,6 +44,86 @@ const send = (response, status, body = '', headers = {}) =>
     .writeHead(status, { 'x-content-type-options': 'nosniff', ...headers })
     .end(body)
 
+/** Claim the site for this phone the first time, then store one version file. */
+const put_version_file = async (
+  storage,
+  response,
+  { id, name, owner, version, who, read_body }
+) => {
+  if (!safe_path(name)) throw new SiteError(HTTP.FORBIDDEN)
+  if (!owner)
+    try {
+      await storage.put(owner_key(id), who.phone, { if_version: null })
+    } catch (error) {
+      if (error.code !== 'conflict') throw error
+      if (
+        (await storage.get(owner_key(id)))?.body.toString('utf8') !== who.phone
+      )
+        throw new SiteError(HTTP.FORBIDDEN)
+    }
+  try {
+    await storage.put(file_key(id, version, name), await read_body(), {
+      if_version: null
+    })
+  } catch (error) {
+    if (error.code === 'conflict') throw new SiteError(HTTP.CONFLICT)
+    throw error
+  }
+  return send(response, HTTP.CREATED)
+}
+
+/** Every saved version below the active one, newest first. */
+const list_versions = async (storage, response, id) => {
+  const listing = await storage.list(`sites/${id}/versions/`)
+  const current = (await storage.get(active_key(id)))?.body.toString('utf8')
+  const versions = await Promise.all(
+    listing.folders
+      .filter(version => VERSION.test(version) && version !== current)
+      .map(async version => ({
+        id: version,
+        saved:
+          (
+            await storage.get(`sites/${id}/versions/${version}/saved`)
+          )?.body.toString('utf8') ?? ''
+      }))
+  )
+  return send(
+    response,
+    HTTP.OK,
+    JSON.stringify(versions.sort((a, b) => b.saved.localeCompare(a.saved))),
+    { 'content-type': 'application/json' }
+  )
+}
+
+/** Serve one file from a published site, with the index fallbacks. */
+const serve_public = async (storage, response, { id, parts }) => {
+  const relative = parts.slice(2).join('/')
+  const name =
+    relative && !relative.endsWith('/') ? relative : `${relative}index.html`
+  if (!safe_path(name)) throw new SiteError(HTTP.FORBIDDEN)
+  const active = await storage.get(active_key(id))
+  if (!active) throw new SiteError(HTTP.NOT_FOUND)
+  const version = active.body.toString('utf8')
+  if (!VERSION.test(version)) throw new SiteError(HTTP.INTERNAL_ERROR)
+  let file = await storage.get(file_key(id, version, name))
+  let served = name
+  if (!file && !name.includes('.') && !relative.endsWith('/')) {
+    served = `${name}/index.html`
+    file = await storage.get(file_key(id, version, served))
+    if (!file) {
+      served = `${name}.html`
+      file = await storage.get(file_key(id, version, served))
+    }
+  }
+  if (!file) throw new SiteError(HTTP.NOT_FOUND)
+  return send(response, HTTP.OK, file.body, {
+    'content-type':
+      MIME[served.split('.').at(-1).toLowerCase()] ??
+      'application/octet-stream',
+    'cache-control': 'no-cache'
+  })
+}
+
 export const site_request = async ({
   storage,
   method,
@@ -60,33 +140,7 @@ export const site_request = async ({
   if (!public_site && (root !== 'sites' || parts[0] !== 'v1' || !who?.phone))
     throw new SiteError(HTTP.FORBIDDEN)
 
-  if (public_site) {
-    const relative = parts.slice(2).join('/')
-    const name =
-      relative && !relative.endsWith('/') ? relative : `${relative}index.html`
-    if (!safe_path(name)) throw new SiteError(HTTP.FORBIDDEN)
-    const active = await storage.get(active_key(id))
-    if (!active) throw new SiteError(HTTP.NOT_FOUND)
-    const version = active.body.toString('utf8')
-    if (!VERSION.test(version)) throw new SiteError(HTTP.INTERNAL_ERROR)
-    let file = await storage.get(file_key(id, version, name))
-    let served = name
-    if (!file && !name.includes('.') && !relative.endsWith('/')) {
-      served = `${name}/index.html`
-      file = await storage.get(file_key(id, version, served))
-      if (!file) {
-        served = `${name}.html`
-        file = await storage.get(file_key(id, version, served))
-      }
-    }
-    if (!file) throw new SiteError(HTTP.NOT_FOUND)
-    return send(response, HTTP.OK, file.body, {
-      'content-type':
-        MIME[served.split('.').at(-1).toLowerCase()] ??
-        'application/octet-stream',
-      'cache-control': 'no-cache'
-    })
-  }
+  if (public_site) return await serve_public(storage, response, { id, parts })
 
   const owner = await storage.get(owner_key(id))
   if (owner && owner.body.toString('utf8') !== who.phone)
@@ -97,53 +151,18 @@ export const site_request = async ({
     tail[0] === 'versions' &&
     VERSION.test(tail[1] ?? '') &&
     tail[2] === 'files'
-  ) {
-    const name = tail.slice(3).join('/')
-    if (!safe_path(name)) throw new SiteError(HTTP.FORBIDDEN)
-    if (!owner)
-      try {
-        await storage.put(owner_key(id), who.phone, { if_version: null })
-      } catch (error) {
-        if (error.code !== 'conflict') throw error
-        if (
-          (await storage.get(owner_key(id)))?.body.toString('utf8') !==
-          who.phone
-        )
-          throw new SiteError(HTTP.FORBIDDEN)
-      }
-
-    try {
-      await storage.put(file_key(id, tail[1], name), await read_body(), {
-        if_version: null
-      })
-    } catch (error) {
-      if (error.code === 'conflict') throw new SiteError(HTTP.CONFLICT)
-      throw error
-    }
-    return send(response, HTTP.CREATED)
-  }
+  )
+    return await put_version_file(storage, response, {
+      id,
+      name: tail.slice(3).join('/'),
+      owner,
+      read_body,
+      version: tail[1],
+      who
+    })
   if (!owner) throw new SiteError(HTTP.NOT_FOUND)
-  if (method === 'GET' && tail.join('/') === 'versions') {
-    const listing = await storage.list(`sites/${id}/versions/`)
-    const current = (await storage.get(active_key(id)))?.body.toString('utf8')
-    const versions = await Promise.all(
-      listing.folders
-        .filter(version => VERSION.test(version) && version !== current)
-        .map(async version => ({
-          id: version,
-          saved:
-            (
-              await storage.get(`sites/${id}/versions/${version}/saved`)
-            )?.body.toString('utf8') ?? ''
-        }))
-    )
-    return send(
-      response,
-      HTTP.OK,
-      JSON.stringify(versions.sort((a, b) => b.saved.localeCompare(a.saved))),
-      { 'content-type': 'application/json' }
-    )
-  }
+  if (method === 'GET' && tail.join('/') === 'versions')
+    return await list_versions(storage, response, id)
   if (method === 'POST' && tail.join('/') === 'activate') {
     const version = (await read_body()).toString('utf8')
     if (!VERSION.test(version)) throw new SiteError(HTTP.BAD_REQUEST)

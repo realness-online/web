@@ -5,8 +5,7 @@ import { development_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
 
 /** The development gate, unless GATE_URL says otherwise. */
-export const GATE_URL =
-  process.env.GATE_URL ?? development_settings.services.gate_url
+const GATE_URL = process.env.GATE_URL ?? development_settings.services.gate_url
 
 /**
  * `realness task <plan>` names what a task on that plan may touch;
@@ -31,6 +30,7 @@ export const run_task = async (
     return 2
   }
   const paths = await task_paths(root, plan)
+  /** @type {{ id: string } | null} */
   let actor = null
   if (start) {
     const token = await get_token()

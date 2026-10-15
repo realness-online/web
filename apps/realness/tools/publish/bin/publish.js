@@ -56,8 +56,12 @@ const root_here = () => {
 
 const vault_of = (root) => process.env.BRAYNESS_VAULT ? resolve(process.env.BRAYNESS_VAULT) : join(root, 'vault')
 
-/** The vault as app.json names it: relative to the app folder. */
-const vault_in_app = (root, vault) => relative(join(root, 'apps'), vault)
+/**
+ * The vault as app.json names it: relative to the app folder, which is where
+ * the record is written and where app_sources resolves it from. A base of
+ * `<root>/apps` writes '../vault', which app list then cannot resolve.
+ */
+const vault_in_app = (directory, vault) => relative(directory, vault)
 
 const write_site_json = async (path, body) => {
   try { await read_file(path) } catch (error) {
@@ -101,7 +105,7 @@ const commands = {
       const vault = vault_of(root)
       const { items } = await scan_vault(vault)
       for (const source of sources) if (!items.has(source.id)) throw new Error(`unknown item: ${source.id}`)
-      await write_app(directory, { id: new_app_id(), type: values.type, vault: values.vault ?? vault_in_app(root, vault), sources, assets: [] })
+      await write_app(directory, { id: new_app_id(), type: values.type, vault: values.vault ?? vault_in_app(directory, vault), sources, assets: [] })
       await write_site_json(join(directory, 'site.json'), `${JSON.stringify({ name, tagline: '', url: '', description: '', poster: 'example.svg' }, null, 2)}\n`)
       console.log(`${name}: ${join(directory, 'app.json')}`)
     } else if (action === 'build') {

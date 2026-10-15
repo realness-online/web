@@ -65,13 +65,15 @@ export class Lines {
       }
       const left = deadline - Date.now()
       if (left <= 0) throw this.timed_out(seconds)
-      await new Promise(done => {
+      /** @type {Promise<void>} */
+      const waiting = new Promise(done => {
         const timer = Number.isFinite(left) ? setTimeout(done, left) : null
         this.waiting = () => {
           if (timer) clearTimeout(timer)
           done()
         }
       })
+      await waiting
     }
   }
 

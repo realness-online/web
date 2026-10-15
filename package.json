@@ -35,7 +35,7 @@
     "sessions": "vault/Sessions"
   },
   "scripts": {
-    "postinstall": "npm --prefix .pi ci && node bin/install-pi.js",
+    "postinstall": "npm --prefix .pi ci && node bin/install-pi.js && node bin/themes.js",
     "realness": "./bin/pi",
     "brayness": "./bin/pi",
     "start": "./bin/pi",

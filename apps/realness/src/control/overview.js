@@ -4,7 +4,7 @@ import { reconcile_cloud, reconcile_models } from './reconcile.js'
 import { GIB, ISO_DATE } from '#root/lib/units.js'
 
 /** Each source takes { sync, config, now } and returns plain data. */
-export const SOURCES = {
+const SOURCES = {
   hosts: ({ sync, now }) => reads.hosts(sync, null, now),
   quiet: ({ sync }) => reads.quiet_hosts(sync),
   loops: ({ sync }) => reads.loops(sync),
@@ -67,7 +67,7 @@ const service_state = (service, missing) => {
 const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0)
 
 /** m5: VM start, guest response, and first turn, as p50/p99 milliseconds. */
-export const timing_line = host => {
+const timing_line = host => {
   const phase = (name, label) => {
     const p50 = Number(host[`${name}_p50`])
     const p99 = Number(host[`${name}_p99`])
@@ -90,6 +90,10 @@ export const gather = async (
   names = Object.keys(SOURCES),
   sources = SOURCES
 ) => {
+  /**
+   * One entry per panel, plus the panels that could not be read.
+   * @type {{ checked: string, unread: { source: string, error: string }[], [panel: string]: unknown }}
+   */
   const view = { checked: new Date(context.now).toISOString(), unread: [] }
   const results = await Promise.allSettled(
     names.map(name => sources[name](context))

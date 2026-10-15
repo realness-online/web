@@ -22,7 +22,9 @@ const ok = (line) => console.log(`  ok   ${line}`)
 
 const real = process.env.LOOPS_BUCKET
 const bucket = new Map()
-const gcs = real && create_gcs({ bucket: real, token: async () => process.env.LOOPS_ACCESS_TOKEN })
+const gcs = real
+  ? create_gcs({ bucket: real, token: async () => process.env.LOOPS_ACCESS_TOKEN })
+  : null
 const mirror = {
   put: async (path, body) => (bucket.set(path, body), gcs?.put(path, body)),
   get: async (path) => (gcs ? gcs.get(path) : bucket.get(path) ?? null),
@@ -35,8 +37,15 @@ const store = new ActorStore({ volume, template: "/opt/fc/template.ext4", kernel
 const loops = new Loops(store, { file, mirror, deadlineMs: 60 * 60_000 })
 const door = new Door(store, "/s/{id}/", loops)
 const server = make_server(store, null, undefined, loops)
-await new Promise((done) => server.listen(0, "127.0.0.1", done))
-const api = (method, path) => fetch(`http://127.0.0.1:${server.address().port}${path}`, { method, headers: { authorization: pass() } })
+/** @type {Promise<void>} */
+const listening = new Promise(resolve => {
+  server.listen(0, "127.0.0.1", () => resolve())
+})
+await listening
+const address = server.address()
+if (!address || typeof address === "string")
+  throw new Error("the check server is not on a TCP port")
+const api = (method, path) => fetch(`http://127.0.0.1:${address.port}${path}`, { method, headers: { authorization: pass() } })
 
 /** Run argv in an actor as the brayness user, with the door open for it. */
 const sh = async (id, argv) => {

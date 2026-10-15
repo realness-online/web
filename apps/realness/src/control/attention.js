@@ -5,16 +5,7 @@ const pct = (free, total) =>
   Number(total) > 0 ? (PERCENT * Number(free)) / Number(total) : PERCENT
 const gb = bytes => (Number(bytes) / GIB).toFixed(2)
 
-export const attention = (view, limits, now = Date.now()) => {
-  const out = []
-  const flag = (kind, subject, text) => out.push({ kind, subject, text })
-  for (const failed of view.unread ?? [])
-    flag(
-      'unread',
-      failed.source,
-      `could not read ${failed.source}: ${failed.error}`
-    )
-
+const host_attention = (view, limits, now, flag) => {
   for (const { host, actors } of view.hosts ?? []) {
     if (host.seed !== 'ready')
       flag('seed', host.name, `${host.name} seed is ${host.seed}`)
@@ -75,16 +66,9 @@ export const attention = (view, limits, now = Date.now()) => {
         )
     }
   }
+}
 
-  if (view.quiet?.setup)
-    flag('watch', 'hosts', `host health is not reported: ${view.quiet.setup}`)
-  for (const quiet of view.quiet?.quiet ?? [])
-    flag(
-      'down',
-      quiet.name,
-      `${quiet.name} stopped reporting${quiet.age_s === null ? ' (no readable time)' : ` (${quiet.age_s}s ago)`}`
-    )
-
+const loop_attention = (view, limits, now, flag) => {
   for (const loop of view.loops ?? []) {
     const live = loop.status === 'running' || loop.status === 'starting'
     if (loop.error)
@@ -99,6 +83,30 @@ export const attention = (view, limits, now = Date.now()) => {
     if (live && Number(loop.depth) >= limits.deep_loop)
       flag('deep', loop.id, `loop ${loop.id} is ${loop.depth} deep`)
   }
+}
+
+export const attention = (view, limits, now = Date.now()) => {
+  const out = []
+  const flag = (kind, subject, text) => out.push({ kind, subject, text })
+  for (const failed of view.unread ?? [])
+    flag(
+      'unread',
+      failed.source,
+      `could not read ${failed.source}: ${failed.error}`
+    )
+
+  host_attention(view, limits, now, flag)
+
+  if (view.quiet?.setup)
+    flag('watch', 'hosts', `host health is not reported: ${view.quiet.setup}`)
+  for (const quiet of view.quiet?.quiet ?? [])
+    flag(
+      'down',
+      quiet.name,
+      `${quiet.name} stopped reporting${quiet.age_s === null ? ' (no readable time)' : ` (${quiet.age_s}s ago)`}`
+    )
+
+  loop_attention(view, limits, now, flag)
 
   for (const { name, found, ready } of view.services ?? [])
     if (!found) flag('service', name, `${name} not deployed`)

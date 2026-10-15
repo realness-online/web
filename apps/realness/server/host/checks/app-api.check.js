@@ -28,7 +28,11 @@ const actors = {
 }
 const apps = new AppStore({ volume: fixtures, kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker" })
 const server = make_server(actors, apps)
-await new Promise((done) => server.listen(8180, "127.0.0.1", done))
+/** @type {Promise<void>} */
+const listening = new Promise(resolve => {
+  server.listen(8180, "127.0.0.1", () => resolve())
+})
+await listening
 const call = async (method, path, who, body) => {
   const response = await fetch(`http://127.0.0.1:8180${path}`, {
     method, headers: { authorization: pass(who), "content-type": "application/json" }, ...(body && { body: JSON.stringify(body) }),

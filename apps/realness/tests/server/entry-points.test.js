@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import { spawn, spawnSync as spawn_sync } from 'node:child_process'
-import { mkdtempSync as mkdtemp_sync, mkdirSync as mkdir_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  mkdtempSync as mkdtemp_sync,
+  mkdirSync as mkdir_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { createServer as create_server } from 'node:net'
 import { once } from 'node:events'
 import { join, resolve } from 'node:path'
@@ -58,24 +62,36 @@ test('the sync service starts in dev mode on disk and answers health', async t =
 })
 
 test('the sync service refuses an unknown store or a bucket-less gcs', () => {
-  const unknown = spawn_sync(process.execPath, [entry('server/sync/bin/sync-service.js'), '--dev'], {
-    env: { ...process.env, STORE: 'tape' },
-    encoding: 'utf8'
-  })
+  const unknown = spawn_sync(
+    process.execPath,
+    [entry('server/sync/bin/sync-service.js'), '--dev'],
+    {
+      env: { ...process.env, STORE: 'tape' },
+      encoding: 'utf8'
+    }
+  )
   assert.notEqual(unknown.status, 0)
   assert.match(unknown.stderr, /unknown STORE=tape/)
-  const gcs = spawn_sync(process.execPath, [entry('server/sync/bin/sync-service.js'), '--dev'], {
-    env: { ...process.env, STORE: 'gcs', GCS_BUCKET: '' },
-    encoding: 'utf8'
-  })
+  const gcs = spawn_sync(
+    process.execPath,
+    [entry('server/sync/bin/sync-service.js'), '--dev'],
+    {
+      env: { ...process.env, STORE: 'gcs', GCS_BUCKET: '' },
+      encoding: 'utf8'
+    }
+  )
   assert.match(gcs.stderr, /STORE=gcs needs GCS_BUCKET/)
 })
 
 test('the gate needs its secret, then listens', async t => {
-  const missing = spawn_sync(process.execPath, [entry('server/gate/bin/gate-service.js')], {
-    env: { ...process.env, HOST_PASS_SECRET: '' },
-    encoding: 'utf8'
-  })
+  const missing = spawn_sync(
+    process.execPath,
+    [entry('server/gate/bin/gate-service.js')],
+    {
+      env: { ...process.env, HOST_PASS_SECRET: '' },
+      encoding: 'utf8'
+    }
+  )
   assert.match(missing.stderr, /gate needs HOST_PASS_SECRET/)
   const port = await free_port()
   await start(t, 'server/gate/bin/gate-service.js', {
@@ -93,10 +109,18 @@ test('the gate needs its secret, then listens', async t => {
 test('the proxy listens and refuses an unsigned model call', async t => {
   const port = await free_port()
   await start(t, 'server/proxy/bin/proxy-service.js', {
-    env: { PORT: String(port), PINS_BUCKET: 'entry-test', MODEL_PASS_SECRET: 'entry-test-secret-at-least-thirty-two', STRIPE_SECRET_KEY: '' },
+    env: {
+      PORT: String(port),
+      PINS_BUCKET: 'entry-test',
+      MODEL_PASS_SECRET: 'entry-test-secret-at-least-thirty-two',
+      STRIPE_SECRET_KEY: ''
+    },
     ready: /proxy on 127\.0\.0\.1/
   })
-  const response = await fetch(`http://127.0.0.1:${port}/v1/chat/completions`, { method: 'POST', body: '{}' })
+  const response = await fetch(`http://127.0.0.1:${port}/v1/chat/completions`, {
+    method: 'POST',
+    body: '{}'
+  })
   assert.equal(response.status, 401)
 })
 
@@ -106,28 +130,48 @@ test('the proxy package exports its service and upstream call', () => {
 })
 
 test('the brayness commands print usage through their entry points', () => {
-  const help = spawn_sync(process.execPath, [entry('server/sync/bin/brayness.js'), '--help'], { encoding: 'utf8' })
+  const help = spawn_sync(
+    process.execPath,
+    [entry('server/sync/bin/brayness.js'), '--help'],
+    { encoding: 'utf8' }
+  )
   assert.equal(help.status, 0, help.stderr)
   assert.match(help.stdout, /^usage: realness sync/)
-  const store = spawn_sync(process.execPath, [entry('server/sync/bin/brayness-store.js'), 'nonsense'], { encoding: 'utf8' })
+  const store = spawn_sync(
+    process.execPath,
+    [entry('server/sync/bin/brayness-store.js'), 'nonsense'],
+    { encoding: 'utf8' }
+  )
   assert.equal(store.status, 2)
   assert.match(store.stderr, /usage: realness login\|logout/)
 })
 
 test('the host app command names its usage', () => {
-  const result = spawn_sync(process.execPath, [entry('server/host/app.js')], { encoding: 'utf8' })
+  const result = spawn_sync(process.execPath, [entry('server/host/app.js')], {
+    encoding: 'utf8'
+  })
   assert.equal(result.status, 2)
   assert.match(result.stderr, /usage: app\.js start <files-dir> \| stop <id>/)
 })
 
 test('the host main and login client name their usage', () => {
-  const host = spawn_sync(process.execPath, [entry('server/host/main.js')], { encoding: 'utf8' })
+  const host = spawn_sync(process.execPath, [entry('server/host/main.js')], {
+    encoding: 'utf8'
+  })
   assert.equal(host.status, 2)
   assert.match(host.stderr, /usage: main\.js serve\|seed/)
-  const login = spawn_sync(process.execPath, [entry('server/host/clients/login.js'), '--help'], { encoding: 'utf8' })
+  const login = spawn_sync(
+    process.execPath,
+    [entry('server/host/clients/login.js'), '--help'],
+    { encoding: 'utf8' }
+  )
   assert.equal(login.status, 0, login.stderr)
   assert.match(login.stdout, /usage: login\.js --phone \+E164/)
-  const no_phone = spawn_sync(process.execPath, [entry('server/host/clients/login.js')], { encoding: 'utf8' })
+  const no_phone = spawn_sync(
+    process.execPath,
+    [entry('server/host/clients/login.js')],
+    { encoding: 'utf8' }
+  )
   assert.notEqual(no_phone.status, 0)
   assert.match(no_phone.stderr, /--phone is required/)
 })

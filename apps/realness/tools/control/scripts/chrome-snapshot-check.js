@@ -14,7 +14,7 @@ try {
   result.chrome = (await vm.boot()).Browser
   result.cold_devtools_s = seconds(clock)
   result.cold_render_s = (await vm.render(URL, { screenshot: false })).load
-  result.cold_rss_mib = mib(rss(vm.child.pid))
+  result.cold_rss_mib = mib(rss(vm.pid))
 
   clock = performance.now()
   result.snapshot_mem_mib = (await vm.snapshot()).mem_mib
@@ -23,11 +23,11 @@ try {
   clock = performance.now()
   await vm.restore()
   result.restore_devtools_s = seconds(clock)
-  result.restore_rss_mib = mib(rss(vm.child.pid))
+  result.restore_rss_mib = mib(rss(vm.pid))
   const page = await vm.render(URL)
   result.restore_render_s = page.load
   result.restore_total_s = seconds(clock)
-  result.restore_rss_after_render_mib = mib(rss(vm.child.pid))
+  result.restore_rss_after_render_mib = mib(rss(vm.pid))
   result.title = page.title
   result.png_bytes = page.png?.length ?? 0
   if (page.png) write_file_sync(join(run, "page.png"), page.png)

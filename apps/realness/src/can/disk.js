@@ -81,6 +81,11 @@ export const disk = root_path => {
   return {
     get,
 
+    /**
+     * @param {string} key
+     * @param {Buffer | string} body
+     * @param {import('./contract.js').VersionGuard} [options]
+     */
     put: (key, body, { if_version } = {}) =>
       serial(key, async () => {
         await check(key, if_version)
@@ -94,13 +99,20 @@ export const disk = root_path => {
 
     stat: async key => (await get(key))?.version ?? null,
 
+    /**
+     * @param {string} key
+     * @param {string[]} sources
+     * @param {import('./contract.js').VersionGuard} [options]
+     */
     compose: (key, sources, { if_version } = {}) =>
       serial(key, async () => {
         const files = await Promise.all(sources.map(get))
-        const gone = sources.find((_, i) => !files[i])
+        const gone = sources.find((name, index) => !files[index])
         if (gone) throw new Conflict(`${gone} is missing`)
         await check(key, if_version)
-        const body = Buffer.concat(files.map(file => file.body))
+        const body = Buffer.concat(
+          files.flatMap(file => (file ? [file.body] : []))
+        )
         const path = at(key)
         await mkdir(dirname(path), { recursive: true })
         const temp = join(dirname(path), `${random_uuid()}.tmp`)
@@ -109,6 +121,10 @@ export const disk = root_path => {
         return version_of(body)
       }),
 
+    /**
+     * @param {string} key
+     * @param {import('./contract.js').VersionGuard} [options]
+     */
     delete: (key, { if_version } = {}) =>
       serial(key, async () => {
         await check(key, if_version)
@@ -148,10 +164,10 @@ export const disk = root_path => {
       const found = {}
       const visit = async under => {
         const { files, folders } = await this.list(`${folder}${under}`)
-        for (const name of files)
-          found[`${under}${name}`] = (
-            await get(`${folder}${under}${name}`)
-          ).version
+        for (const name of files) {
+          const file = await get(`${folder}${under}${name}`)
+          if (file) found[`${under}${name}`] = file.version
+        }
         for (const name of folders) await visit(`${under}${name}/`)
       }
       await visit('')

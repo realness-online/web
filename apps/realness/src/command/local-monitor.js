@@ -19,6 +19,11 @@ const FRAME_MARGIN = 5
 const DEFAULT_COLUMNS = 100
 const DEFAULT_ROWS = 30
 
+/**
+ * The last lines of one service log, or none when the stack reused it.
+ * @param {import('./local-stack.js').LocalService} service
+ * @returns {Promise<string[]>}
+ */
 const log_tail = async service => {
   if (service.reused) return []
   let file
@@ -39,7 +44,24 @@ const log_tail = async service => {
   }
 }
 
-/** Render one local snapshot within the terminal bounds. */
+/**
+ * One rendered service row.
+ * @typedef {object} MonitorSection
+ * @property {string} name
+ * @property {string} state
+ * @property {string} ownership
+ * @property {string[]} lines
+ */
+
+/**
+ * Render one local snapshot within the terminal bounds.
+ * @param {MonitorSection[]} sections
+ * @param {object} [options]
+ * @param {string} [options.url]
+ * @param {number} [options.columns]
+ * @param {number} [options.rows]
+ * @param {boolean} [options.on]
+ */
 export const local_frame = (
   sections,
   { url, columns = DEFAULT_COLUMNS, rows = DEFAULT_ROWS, on = false } = {}
@@ -64,7 +86,15 @@ export const local_frame = (
   ].join('\n')}\n`
 }
 
-/** Reuse the existing watch controls and rendering; monitoring never owns processes. */
+/**
+ * Reuse the existing watch controls and rendering; monitoring never owns processes.
+ * @param {import('./local-stack.js').LocalService[]} services
+ * @param {object} [options]
+ * @param {string} [options.url]
+ * @param {AbortSignal | null} [options.signal]
+ * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
+ * @param {NodeJS.ReadStream & { fd: 0 }} [options.stdin]
+ */
 export const monitor_local = async (
   services,
   { url, signal, stdout = process.stdout, stdin = process.stdin } = {}
@@ -72,7 +102,7 @@ export const monitor_local = async (
   const on = color_enabled(process.env, stdout)
   let interval = REFRESH_MS
   try {
-    while (!signal.aborted) {
+    while (!signal?.aborted) {
       const sections = await Promise.all(
         services.map(async service => {
           if (service.error) throw new Error(service.error)
@@ -95,7 +125,9 @@ export const monitor_local = async (
       })
       stdout.write(`${stdout.isTTY ? '\x1b[2J\x1b[H' : ''}${frame}`)
       const waiting = new AbortController()
-      const combined = AbortSignal.any([signal, waiting.signal])
+      const combined = AbortSignal.any(
+        signal ? [signal, waiting.signal] : [waiting.signal]
+      )
       let key
       try {
         key = await Promise.race([

@@ -24,7 +24,10 @@ describe('form_of', () => {
   })
 
   it('prefers the first fence when a reply has more than one kind', () => {
-    assert.equal(form_of('```mermaid\nx\n```\n\n```cardlink\ny\n```'), 'diagram')
+    assert.equal(
+      form_of('```mermaid\nx\n```\n\n```cardlink\ny\n```'),
+      'diagram'
+    )
   })
 
   it('answers text for an empty reply', () => {
@@ -38,7 +41,12 @@ describe('cards_draw', () => {
   })
 
   it('is true when every card fence draws a card', () => {
-    const reply = ['```cardlink', 'title: Example', 'url: https://example.com', '```'].join('\n')
+    const reply = [
+      '```cardlink',
+      'title: Example',
+      'url: https://example.com',
+      '```'
+    ].join('\n')
     assert.equal(cards_draw(reply), true)
   })
 

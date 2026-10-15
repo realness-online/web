@@ -55,11 +55,10 @@ export class Api {
           response.on('data', chunk => chunks.push(chunk))
           response.on('end', () => {
             const raw = Buffer.concat(chunks).toString()
-            if (response.statusCode >= HTTP.BAD_REQUEST)
+            const status = response.statusCode ?? HTTP.OK
+            if (status >= HTTP.BAD_REQUEST)
               return fail(
-                new FirecrackerError(
-                  `${where}: ${response.statusCode} ${raw.trim()}`
-                )
+                new FirecrackerError(`${where}: ${status} ${raw.trim()}`)
               )
             done(raw ? JSON.parse(raw) : {})
           })
@@ -118,6 +117,11 @@ const real = path => {
  * The Firecracker that owns `apiSock`, or null. The command line is the
  * identity, not a recorded pid: after a host reboot a reused pid is a stranger.
  */
+/**
+ * The pid holding `apiSock` open, or null when no process does.
+ * @param {string} apiSock
+ * @returns {number | null}
+ */
 export const pidForApiSock = apiSock => {
   const want = real(apiSock)
   for (const name of readdir_sync('/proc')) {
@@ -173,6 +177,18 @@ export const terminate = async (pid, seconds = WAIT_S) => {
 /**
  * A fresh VM: the seed from the template disk, or an app. `readOnly` maps
  * drive ids to extra disks attached read-only; an app has no `uds`, so no vsock.
+ * @param {Api} api
+ * @param {object} options
+ * @param {string} options.kernel
+ * @param {string} options.disk
+ * @param {string} options.tap
+ * @param {string} options.mac
+ * @param {number} options.vcpus
+ * @param {number} options.mib
+ * @param {string} [options.uds]
+ * @param {number} [options.cid]
+ * @param {string} [options.huge_pages]
+ * @param {Record<string, string>} [options.readOnly]
  */
 export const boot = async (
   api,

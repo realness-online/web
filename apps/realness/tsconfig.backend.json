@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "lib": ["esnext", "dom"]
+  },
+  "include": [
+    "src/**/*.js",
+    "lib/**/*.js",
+    "server/**/*.js",
+    "tools/**/*.js",
+    "tools/**/*.d.ts",
+    "themes/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/app",
+    "src/chat",
+    "src/terminal",
+    "src/sign-on/browser",
+    "tools/examples",
+    "**/dist/**",
+    "**/tests/**",
+    "**/test/**"
+  ]
+}

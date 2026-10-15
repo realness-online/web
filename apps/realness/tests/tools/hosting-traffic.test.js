@@ -75,11 +75,16 @@ test('parse_args reads every flag and its defaults', () => {
     pages: false
   })
   const parsed = parse_args([
-    '--days', '30',
-    '--buckets', '6',
-    '--project', 'p',
-    '--host', 'h.test',
-    '--cache', '/tmp/x.jsonl',
+    '--days',
+    '30',
+    '--buckets',
+    '6',
+    '--project',
+    'p',
+    '--host',
+    'h.test',
+    '--cache',
+    '/tmp/x.jsonl',
     '--include-bots',
     '--all-paths',
     '--by-day',
@@ -103,11 +108,26 @@ test('parse_args reads every flag and its defaults', () => {
 })
 
 test('parse_args refuses bad numbers, unknown flags, and a contradictory pair', () => {
-  assert.throws(() => parse_args(['--days', '0']), /--days must be a positive number/)
-  assert.throws(() => parse_args(['--days', 'later']), /--days must be a positive number/)
-  assert.throws(() => parse_args(['--buckets', '0']), /--buckets must be at least 1/)
-  assert.throws(() => parse_args(['--sample', '-1']), /--sample must be a non-negative number/)
-  assert.throws(() => parse_args(['--nonsense']), /Unknown argument: --nonsense/)
+  assert.throws(
+    () => parse_args(['--days', '0']),
+    /--days must be a positive number/
+  )
+  assert.throws(
+    () => parse_args(['--days', 'later']),
+    /--days must be a positive number/
+  )
+  assert.throws(
+    () => parse_args(['--buckets', '0']),
+    /--buckets must be at least 1/
+  )
+  assert.throws(
+    () => parse_args(['--sample', '-1']),
+    /--sample must be a non-negative number/
+  )
+  assert.throws(
+    () => parse_args(['--nonsense']),
+    /Unknown argument: --nonsense/
+  )
   assert.throws(() => parse_args(['--cache-only', '--refresh']), /not both/)
 })
 
@@ -124,7 +144,10 @@ test('path_from_url normalises a real url and a bare path', () => {
 })
 
 test('is_bot_ua reads a real user agent string only', () => {
-  assert.equal(is_bot_ua('Googlebot/2.1 (+http://www.google.com/bot.html)'), true)
+  assert.equal(
+    is_bot_ua('Googlebot/2.1 (+http://www.google.com/bot.html)'),
+    true
+  )
   assert.equal(is_bot_ua('Mozilla/5.0 (Macintosh)'), false)
   assert.equal(is_bot_ua(undefined), false)
   assert.equal(is_bot_ua(null), false)
@@ -133,33 +156,86 @@ test('is_bot_ua reads a real user agent string only', () => {
 test('is_document_hit keeps only public marketing page views', () => {
   const options = { host: 'realness.online', all_paths: false }
   assert.equal(is_document_hit(request(), options), true)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/' }), options), true)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/nope' }), options), false)
-  assert.equal(is_document_hit(request({ requestMethod: 'POST' }), options), false)
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://realness.online/' }),
+      options
+    ),
+    true
+  )
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://realness.online/nope' }),
+      options
+    ),
+    false
+  )
+  assert.equal(
+    is_document_hit(request({ requestMethod: 'POST' }), options),
+    false
+  )
   assert.equal(is_document_hit(request({ status: 404 }), options), false)
   assert.equal(is_document_hit(request({ status: 204 }), options), true)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://other.test/about' }), options), false)
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://other.test/about' }),
+      options
+    ),
+    false
+  )
   assert.equal(is_document_hit(null, options), false)
   assert.equal(is_document_hit('nope', options), false)
 
   const all = { host: 'realness.online', all_paths: true }
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/anything' }), all), true)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/assets/app.js' }), all), false)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/media/a.png' }), all), false)
-  assert.equal(is_document_hit(request({ requestUrl: 'https://realness.online/' }), { host: '', all_paths: false }), true)
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://realness.online/anything' }),
+      all
+    ),
+    true
+  )
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://realness.online/assets/app.js' }),
+      all
+    ),
+    false
+  )
+  assert.equal(
+    is_document_hit(
+      request({ requestUrl: 'https://realness.online/media/a.png' }),
+      all
+    ),
+    false
+  )
+  assert.equal(
+    is_document_hit(request({ requestUrl: 'https://realness.online/' }), {
+      host: '',
+      all_paths: false
+    }),
+    true
+  )
 })
 
 test('http_request_from_entry reads every shape an entry uses', () => {
   assert.deepEqual(http_request_from_entry({ httpRequest: { a: 1 } }), { a: 1 })
-  assert.deepEqual(http_request_from_entry({ http_request: { a: 2 } }), { a: 2 })
-  assert.deepEqual(http_request_from_entry({ protoPayload: { httpRequest: { a: 3 } } }), { a: 3 })
+  assert.deepEqual(http_request_from_entry({ http_request: { a: 2 } }), {
+    a: 2
+  })
+  assert.deepEqual(
+    http_request_from_entry({ protoPayload: { httpRequest: { a: 3 } } }),
+    { a: 3 }
+  )
   assert.equal(http_request_from_entry({ protoPayload: 'text' }), null)
   assert.equal(http_request_from_entry({}), null)
   assert.equal(http_request_from_entry(null), null)
 })
 
 test('referer_host names a host, and says when there is none', () => {
-  assert.equal(referer_host('https://news.ycombinator.com/item?id=1'), 'news.ycombinator.com')
+  assert.equal(
+    referer_host('https://news.ycombinator.com/item?id=1'),
+    'news.ycombinator.com'
+  )
   assert.equal(referer_host('https://example.com:8443/x'), 'example.com:8443')
   assert.equal(referer_host(''), '(none)')
   assert.equal(referer_host('   '), '(none)')
@@ -178,8 +254,14 @@ test('visitor_key is stable per ip and user agent, and short', () => {
 test('entry_timestamp reads a string and a seconds object', () => {
   const iso = '2026-10-01T00:00:00.000Z'
   assert.equal(entry_timestamp({ timestamp: iso }), iso)
-  assert.equal(entry_timestamp({ timestamp: { seconds: 1_700_000_000 } }), new Date(1_700_000_000_000).toISOString())
-  assert.equal(entry_timestamp({ timestamp: { seconds: '1700000000' } }), new Date(1_700_000_000_000).toISOString())
+  assert.equal(
+    entry_timestamp({ timestamp: { seconds: 1_700_000_000 } }),
+    new Date(1_700_000_000_000).toISOString()
+  )
+  assert.equal(
+    entry_timestamp({ timestamp: { seconds: '1700000000' } }),
+    new Date(1_700_000_000_000).toISOString()
+  )
   assert.equal(entry_timestamp({ timestamp: { seconds: 'later' } }), null)
   assert.equal(entry_timestamp({ timestamp: 42 }), null)
   assert.equal(entry_timestamp({}), null)
@@ -188,22 +270,36 @@ test('entry_timestamp reads a string and a seconds object', () => {
 
 test('entry_id prefers insertId and is otherwise stable for one request', () => {
   assert.equal(entry_id({ insertId: 'abc' }), 'abc')
-  const entry = { timestamp: '2026-10-01T00:00:00.000Z', httpRequest: request() }
+  const entry = {
+    timestamp: '2026-10-01T00:00:00.000Z',
+    httpRequest: request()
+  }
   assert.equal(entry_id(entry), entry_id({ ...entry }))
   assert.equal(entry_id(entry).length, 24)
-  assert.notEqual(entry_id(entry), entry_id({ ...entry, httpRequest: request({ remoteIp: '9.9.9.9' }) }))
+  assert.notEqual(
+    entry_id(entry),
+    entry_id({ ...entry, httpRequest: request({ remoteIp: '9.9.9.9' }) })
+  )
   assert.equal(entry_id(null), '')
   assert.equal(entry_id('nope'), '')
 })
 
 test('compact_entry keeps the id, time, and request only', () => {
-  const entry = { insertId: 'keep', timestamp: '2026-10-01T00:00:00.000Z', httpRequest: request(), extra: 'dropped' }
+  const entry = {
+    insertId: 'keep',
+    timestamp: '2026-10-01T00:00:00.000Z',
+    httpRequest: request(),
+    extra: 'dropped'
+  }
   assert.deepEqual(compact_entry(entry), {
     insertId: 'keep',
     timestamp: '2026-10-01T00:00:00.000Z',
     httpRequest: request()
   })
-  const no_id = compact_entry({ timestamp: '2026-10-01T00:00:00.000Z', httpRequest: request() })
+  const no_id = compact_entry({
+    timestamp: '2026-10-01T00:00:00.000Z',
+    httpRequest: request()
+  })
   assert.equal(no_id.insertId.length, 24)
 })
 
@@ -212,32 +308,69 @@ test('cache_bounds names the first and last entry times', () => {
     { timestamp: '2026-10-01T00:00:00.000Z' },
     { timestamp: '2026-10-03T00:00:00.000Z' }
   ]
-  assert.deepEqual(cache_bounds(rows), { oldest: '2026-10-01T00:00:00.000Z', newest: '2026-10-03T00:00:00.000Z' })
+  assert.deepEqual(cache_bounds(rows), {
+    oldest: '2026-10-01T00:00:00.000Z',
+    newest: '2026-10-03T00:00:00.000Z'
+  })
   assert.deepEqual(cache_bounds([]), { oldest: null, newest: null })
-  assert.deepEqual(cache_bounds([{ timestamp: '' }, { timestamp: 7 }]), { oldest: null, newest: null })
+  assert.deepEqual(cache_bounds([{ timestamp: '' }, { timestamp: 7 }]), {
+    oldest: null,
+    newest: null
+  })
 })
 
 test('burst_ips flags only an address with both enough hits and enough share', () => {
-  const flagged = burst_ips([['1.1.1.1', 40], ['2.2.2.2', 60], ['3.3.3.3', 5]], 105)
+  const flagged = burst_ips(
+    [
+      ['1.1.1.1', 40],
+      ['2.2.2.2', 60],
+      ['3.3.3.3', 5]
+    ],
+    105
+  )
   assert.ok(flagged.has('1.1.1.1'))
   assert.ok(flagged.has('2.2.2.2'))
   assert.ok(!flagged.has('3.3.3.3'), 'too few hits')
-  assert.equal(burst_ips([['1.1.1.1', 25]], 1000).size, 0, 'enough hits but a tiny share')
+  assert.equal(
+    burst_ips([['1.1.1.1', 25]], 1000).size,
+    0,
+    'enough hits but a tiny share'
+  )
   assert.equal(burst_ips([['1.1.1.1', 25]], 0).size, 0)
 })
 
 test('utc_day, each_utc_day, and aggregate_by_day walk real days', () => {
   assert.equal(utc_day('2026-10-01T23:59:59.000Z'), '2026-10-01')
-  const days = [...each_utc_day('2026-10-01T00:00:00.000Z', '2026-10-03T00:00:00.000Z')]
+  const days = [
+    ...each_utc_day('2026-10-01T00:00:00.000Z', '2026-10-03T00:00:00.000Z')
+  ]
   assert.deepEqual(days, ['2026-10-01', '2026-10-02', '2026-10-03'])
-  assert.deepEqual([...each_utc_day('2026-10-03T00:00:00.000Z', '2026-10-01T00:00:00.000Z')], [])
+  assert.deepEqual(
+    [...each_utc_day('2026-10-03T00:00:00.000Z', '2026-10-01T00:00:00.000Z')],
+    []
+  )
 
   const entries = [
-    { timestamp: '2026-10-01T01:00:00.000Z', httpRequest: request({ requestUrl: 'https://realness.online/' }), insertId: 'a' },
-    { timestamp: '2026-10-01T02:00:00.000Z', httpRequest: request({ requestUrl: 'https://realness.online/about' }), insertId: 'b' },
-    { timestamp: '2026-10-02T01:00:00.000Z', httpRequest: request({ requestUrl: 'https://realness.online/pricing' }), insertId: 'c' }
+    {
+      timestamp: '2026-10-01T01:00:00.000Z',
+      httpRequest: request({ requestUrl: 'https://realness.online/' }),
+      insertId: 'a'
+    },
+    {
+      timestamp: '2026-10-01T02:00:00.000Z',
+      httpRequest: request({ requestUrl: 'https://realness.online/about' }),
+      insertId: 'b'
+    },
+    {
+      timestamp: '2026-10-02T01:00:00.000Z',
+      httpRequest: request({ requestUrl: 'https://realness.online/pricing' }),
+      insertId: 'c'
+    }
   ]
-  const rows = aggregate_by_day(entries, { host: 'realness.online', since: '2026-10-01T00:00:00.000Z' })
+  const rows = aggregate_by_day(entries, {
+    host: 'realness.online',
+    since: '2026-10-01T00:00:00.000Z'
+  })
   // The day list runs from `since` to today, so it holds today as well.
   assert.equal(rows[0].day, '2026-10-01')
   assert.ok(rows.length >= 2, `walked ${rows.length} days`)
@@ -250,13 +383,38 @@ test('utc_day, each_utc_day, and aggregate_by_day walk real days', () => {
 
 test('aggregate_by_day counts a bot separately from a person', () => {
   const entries = [
-    { timestamp: '2026-10-01T01:00:00.000Z', httpRequest: request({ userAgent: 'Googlebot/2.1 (+http://www.google.com/bot.html)' }), insertId: 'bot' },
-    { timestamp: '2026-10-01T02:00:00.000Z', httpRequest: request(), insertId: 'person' }
+    {
+      timestamp: '2026-10-01T01:00:00.000Z',
+      httpRequest: request({
+        userAgent: 'Googlebot/2.1 (+http://www.google.com/bot.html)'
+      }),
+      insertId: 'bot'
+    },
+    {
+      timestamp: '2026-10-01T02:00:00.000Z',
+      httpRequest: request(),
+      insertId: 'person'
+    }
   ]
-  const without = aggregate_by_day(entries, { host: 'realness.online', since: '2026-10-01T00:00:00.000Z' })
-  assert.equal(without[0].paths['/about'].humans, 1, 'the bot is left out by default')
-  const with_bots = aggregate_by_day(entries, { host: 'realness.online', since: '2026-10-01T00:00:00.000Z', include_bots: true })
-  assert.equal(with_bots[0].paths['/about'].humans, 2, 'the bot counts when asked for')
+  const without = aggregate_by_day(entries, {
+    host: 'realness.online',
+    since: '2026-10-01T00:00:00.000Z'
+  })
+  assert.equal(
+    without[0].paths['/about'].humans,
+    1,
+    'the bot is left out by default'
+  )
+  const with_bots = aggregate_by_day(entries, {
+    host: 'realness.online',
+    since: '2026-10-01T00:00:00.000Z',
+    include_bots: true
+  })
+  assert.equal(
+    with_bots[0].paths['/about'].humans,
+    2,
+    'the bot counts when asked for'
+  )
 })
 
 test('format_series and format_delta describe a change plainly', () => {
@@ -276,7 +434,10 @@ test('format_insight says when a period has no visitor data yet', () => {
 
   const entries = Array.from({ length: 12 }, (_, index) => ({
     timestamp: new Date(Date.now() - index * 60_000).toISOString(),
-    httpRequest: request({ requestUrl: 'https://realness.online/', remoteIp: `10.0.0.${index}` }),
+    httpRequest: request({
+      requestUrl: 'https://realness.online/',
+      remoteIp: `10.0.0.${index}`
+    }),
     insertId: `hit-${index}`
   }))
   const trend = aggregate_trend(entries, {
@@ -294,8 +455,14 @@ test('format_insight says when a period has no visitor data yet', () => {
 
 test('classify_referer separates direct, internal, and external', () => {
   assert.equal(classify_referer('', 'realness.online'), 'direct')
-  assert.equal(classify_referer('https://www.realness.online/about', 'realness.online'), 'internal')
-  assert.equal(classify_referer('https://google.com/search?q=x', 'realness.online'), 'external')
+  assert.equal(
+    classify_referer('https://www.realness.online/about', 'realness.online'),
+    'internal'
+  )
+  assert.equal(
+    classify_referer('https://google.com/search?q=x', 'realness.online'),
+    'external'
+  )
 })
 
 test('format_by_day names the tracked paths and their two columns', () => {

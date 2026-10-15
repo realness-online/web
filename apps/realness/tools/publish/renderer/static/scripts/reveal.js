@@ -1,7 +1,11 @@
 document.addEventListener('click', event => {
-  const link = event.target.closest('a[data-reveal-target]')
+  const target = event.target
+  if (!(target instanceof Element)) return
+  const link = target.closest('a[data-reveal-target]')
   if (!link) return
-  const panel = document.getElementById(link.getAttribute('data-reveal-target'))
+  const id = link.getAttribute('data-reveal-target')
+  if (!id) return
+  const panel = document.getElementById(id)
   if (!panel) return
   event.preventDefault()
   panel.hidden = !panel.hidden

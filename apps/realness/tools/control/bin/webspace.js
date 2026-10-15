@@ -30,8 +30,16 @@ import { gcloud } from "../../../src/control/cloud.js"
 import { limaTarget as lima_target } from "../../../src/control/lima.js"
 import { note, step } from "../../../src/control/exec.js"
 import * as dev from "../../../src/control/dev.js"
-import * as hostGcp from "../../../src/control/host-gcp.js"
-import * as hostLima from "../../../src/control/host-lima.js"
+import {
+  up as gcp_up,
+  down as gcp_down,
+  restart as gcp_restart,
+} from "../../../src/control/host-gcp.js"
+import {
+  up as lima_up,
+  down as lima_down,
+  restart as lima_restart,
+} from "../../../src/control/host-lima.js"
 import * as drain from "../../../src/control/drain.js"
 import { probe } from "../../../src/control/probe.js"
 import { host_status, format_status } from "../../../src/control/status.js"
@@ -125,8 +133,16 @@ const main = async (argv) => {
   const [command, ...args] = rest
 
   const hosts = local
-    ? { kind: "lima", target: lima_target(config), mod: hostLima }
-    : { kind: "gcp", target: gcloud(config), mod: hostGcp }
+    ? {
+        kind: "lima",
+        target: lima_target(config),
+        mod: { up: lima_up, down: lima_down, restart: lima_restart },
+      }
+    : {
+        kind: "gcp",
+        target: gcloud(config),
+        mod: { up: gcp_up, down: gcp_down, restart: gcp_restart },
+      }
 
   switch (command) {
     case "setup":
@@ -138,7 +154,7 @@ const main = async (argv) => {
       return finish(await dev.build(hosts.target))
 
     case "host":
-      return finish(await hostCommand(hosts, config, args, flags))
+      return finish(await hostCommand(hosts, config, args, flags, envName))
 
     case "admin": {
       if (args.length !== 1) throw new Error("usage: webspace <env> admin login|logout|whoami")
@@ -224,7 +240,11 @@ const main = async (argv) => {
     case "reconcile": {
       if (args.length) throw new Error("usage: webspace <env> reconcile")
       const [models, gcp] = await Promise.allSettled([reconcile_models(await reads.reader(envName), config), reconcile_cloud(config)])
-      const found = { models: models.value ?? { error: models.reason?.message }, gcp: gcp.value ?? { error: gcp.reason?.message } }
+      const settled = result =>
+        result.status === "fulfilled"
+          ? result.value
+          : { error: result.reason?.message ?? String(result.reason) }
+      const found = { models: settled(models), gcp: settled(gcp) }
       const part = (r, text) => (r.error ? `  not checked: ${r.error}` : text(r))
       result(found, [part(found.models, reconcile_text), part(found.gcp, reconcile_cloud_text)].join("\n"))
       return (found.models.gaps?.length || found.gcp.gaps?.length) ? 2 : models.status === "rejected" || gcp.status === "rejected" ? 1 : 0
@@ -239,7 +259,7 @@ const main = async (argv) => {
   }
 }
 
-const hostCommand = async (hosts, config, args, flags) => {
+const hostCommand = async (hosts, config, args, flags, envName) => {
   const [action, ...rest] = args
   const { target, mod } = hosts
 

@@ -21,7 +21,11 @@ const pay_url = env.PAY_URL ?? PAY_URL
 const stripe = env.STRIPE_SECRET_KEY?.trim() ? stripe_api(env.STRIPE_SECRET_KEY.trim()) : null
 const price = stripe ? price_lookup(stripe) : null
 const webhook_secret = env.STRIPE_WEBHOOK_SECRET?.trim()
-const origins = (env.ORIGINS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean)
+/** @type {string[]} */
+const origins = (env.ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
 const handler = proxy_handler({
   agent: agent_handler({ identify_phone, secret, key, ledger, plan_for, pay_url }),

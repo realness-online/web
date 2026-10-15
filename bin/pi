@@ -68,6 +68,7 @@ if [[ -n "${PI_ONLINE:-}" ]]; then unset PI_OFFLINE; else export PI_OFFLINE=1; f
 # Both fork routes write compressed sessions and supply a read-only decoder.
 if [[ -f "$PI_CODING_AGENT_DIR/state/fork-path" ]]; then
   IFS= read -r fork_binary < "$PI_CODING_AGENT_DIR/state/fork-path"
+  [[ "$fork_binary" == /* ]] || fork_binary="$root/$fork_binary"
   if [[ ! -x "$fork_binary" || ! -x "$(dirname "$fork_binary")/pi-session-read" ]]; then
     echo "Selected fork is missing. Restore the previous route: node $root/bin/pi-fork.js rollback" >&2
     exit 1

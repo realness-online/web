@@ -9,7 +9,10 @@ if (!secret) throw new Error("gate needs HOST_PASS_SECRET")
 const token = env.K_SERVICE ? metadata_token() : gcloud_token()
 const identify = phone_identity({ project: env.IDENTITY_PROJECT, bucket: env.PINS_BUCKET, token })
 const origins = (env.ORIGINS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean)
-const gate = make_gate({ identify, host_for: one_host(env.GATE_HOST, env.GATE_API_PORT), secret, origins })
+const gate = make_gate({ identify, host_for: one_host(
+    env.GATE_HOST,
+    env.GATE_API_PORT ? Number(env.GATE_API_PORT) : undefined
+  ), secret, origins })
 
 const port = Number(env.PORT ?? 8792)
 const listen = env.LISTEN ?? (env.K_SERVICE ? "0.0.0.0" : "127.0.0.1")

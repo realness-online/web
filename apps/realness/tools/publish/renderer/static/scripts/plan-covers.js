@@ -8,7 +8,9 @@ const articles = [...document.querySelectorAll('section > article:has(> template
 for (const article of articles) {
   const figure = article.querySelector(':scope > figure')
   if (!figure || figure.querySelector('img, pre.mermaid')) continue
-  const diagrams = article.querySelector(':scope > template').content.querySelectorAll('pre.mermaid')
+  const template = article.querySelector(':scope > template')
+  if (!(template instanceof HTMLTemplateElement)) continue
+  const diagrams = template.content.querySelectorAll('pre.mermaid')
   figure.prepend(...[...diagrams].map(diagram => diagram.cloneNode(true)))
 }
 

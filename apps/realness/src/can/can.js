@@ -61,60 +61,43 @@ const covers = (grant, owner, key) => {
   return path.endsWith('/') ? `${key}/`.startsWith(path) : key === path
 }
 
-export const can = (who, action, path, grants = []) => {
-  if (!ACTIONS.has(action)) return false
-  const parts = segments(path)
-  if (!parts) return false
-  const me = subject(who)
-  const [root, owner, ...rest] = parts
+/** A person reads only their own usage or billing row; an admin reads any. */
+const owns_row = (action, owner, me) =>
+  (action === 'get' || action === 'list') &&
+  (me.admin || (Boolean(owner) && me.phone === owner))
 
-  if (root === 'subscriptions') return Boolean(owner) && me.phone === owner
-  if (root === 'loops') {
-    const file = LOOP.test(owner ?? '') ? rest.join('/') : null
-    if (me.host)
-      return (
-        (action === 'write' && file === 'record.html') ||
-        (action === 'get' && file === 'stop.html')
-      )
-    if (!me.admin) return false
-    if (action === 'get' || action === 'list') return true
-    return action === 'write' && file === 'stop.html'
-  }
-  if (root === 'hosts') {
-    const file = rest.join('/')
-    const request =
-      rest.length === 2 &&
-      rest[0] === 'requests' &&
-      /^a-[a-f0-9]{12}\.html$/.test(rest[1])
-    if (me.host) {
-      if (owner !== me.host) return false
-      if (file === 'status.html') return action === 'write' || action === 'get'
-      return request && action === 'get'
-    }
-    if (me.admin !== true) return false
-    if (action === 'get' || action === 'list') return true
-    return action === 'write' && request
-  }
-  if (root === 'usage')
+const loops_allowed = (action, owner, rest, me) => {
+  const file = LOOP.test(owner ?? '') ? rest.join('/') : null
+  if (me.host)
     return (
-      (action === 'get' || action === 'list') &&
-      (me.admin || (Boolean(owner) && me.phone === owner))
+      (action === 'write' && file === 'record.html') ||
+      (action === 'get' && file === 'stop.html')
     )
-  if (root === 'billing')
-    return (
-      (action === 'get' || action === 'list') &&
-      (me.admin || (Boolean(owner) && me.phone === owner))
-    )
+  if (!me.admin) return false
+  if (action === 'get' || action === 'list') return true
+  return action === 'write' && file === 'stop.html'
+}
 
-  if (root !== 'people') return false
-  if (!owner) return action === 'list' && Boolean(me.phone)
-  if (!PHONE.test(owner)) return false
-  if (me.phone === owner) return true
-  if (is_public(action, rest)) return true
-  if (me.owner !== owner) return false
+const hosts_allowed = (action, owner, rest, me) => {
+  const file = rest.join('/')
+  const request =
+    rest.length === 2 &&
+    rest[0] === 'requests' &&
+    /^a-[a-f0-9]{12}\.html$/.test(rest[1])
+  if (me.host) {
+    if (owner !== me.host) return false
+    if (file === 'status.html') return action === 'write' || action === 'get'
+    return request && action === 'get'
+  }
+  if (me.admin !== true) return false
+  if (action === 'get' || action === 'list') return true
+  return action === 'write' && request
+}
 
-  if (rest[0] === 'harnesses' && rest[1] === me.id) return true
-  if (rest.join('/') === 'rights.html') return false
+/** A grant covers this path, from a harness the same person owns. */
+const granted = (action, owner, parts, me, grants) => {
+  if (parts[2] === 'harnesses' && parts[3] === me.id) return true
+  if (parts.slice(2).join('/') === 'rights.html') return false
   const key = parts.join('/')
   const instance = `/${me.owner}/harnesses/${me.id}`
   return (Array.isArray(grants) ? grants : []).some(
@@ -123,4 +106,29 @@ export const can = (who, action, path, grants = []) => {
       GRANTED[grant.action]?.has(action) &&
       covers(grant, owner, key)
   )
+}
+
+const people_allowed = (action, owner, rest, me, grants) => {
+  if (!owner) return action === 'list' && Boolean(me.phone)
+  if (!PHONE.test(owner)) return false
+  if (me.phone === owner) return true
+  if (is_public(action, rest)) return true
+  if (me.owner !== owner) return false
+  return granted(action, owner, ['people', owner, ...rest], me, grants)
+}
+
+export const can = (who, action, path, grants = []) => {
+  if (!ACTIONS.has(action)) return false
+  const parts = segments(path)
+  if (!parts) return false
+  const me = subject(who)
+  const [root, owner, ...rest] = parts
+
+  if (root === 'subscriptions') return Boolean(owner) && me.phone === owner
+  if (root === 'loops') return loops_allowed(action, owner, rest, me)
+  if (root === 'hosts') return hosts_allowed(action, owner, rest, me)
+  if (root === 'usage') return owns_row(action, owner, me)
+  if (root === 'billing') return owns_row(action, owner, me)
+  if (root !== 'people') return false
+  return people_allowed(action, owner, rest, me, grants)
 }

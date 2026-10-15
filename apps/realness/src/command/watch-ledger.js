@@ -14,7 +14,7 @@ const NUMBERS = [
 ]
 
 /** Every UTC day of `now`'s month, up to and including today. */
-export const month_days = (now = new Date()) => {
+const month_days = (now = new Date()) => {
   const end = now.toISOString().slice(0, ISO_DATE)
   const days = []
   for (
@@ -33,7 +33,7 @@ export const day_files = files => [
 ]
 
 /** The ledger path for one person and day, under `usage/`. */
-export const usage_day = (phone, day) => `usage/${phone}/${day}/`
+const usage_day = (phone, day) => `usage/${phone}/${day}/`
 
 /** Rows as the proxy writes them; unknown text is ignored, one row per call. */
 export const read_rows = (html, payer = '') => {

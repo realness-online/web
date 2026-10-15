@@ -13,7 +13,7 @@ import { HTTP } from '#root/lib/http.js'
 
 const MIN_SECRET_BYTES = 32
 
-export const quota_messages = (pay_url = PAY_URL) => ({
+const quota_messages = (pay_url = PAY_URL) => ({
   day: `Today's free model use is spent: quota exceeded. It resets at midnight UTC. Subscribe for more at ${pay_url}`,
   month: `This month's free model use is spent: quota exceeded. It resets on the 1st, UTC. Subscribe for more at ${pay_url}`,
   plan: `The house model needs a paid plan: quota exceeded. Subscribe at ${pay_url}`,
@@ -26,7 +26,7 @@ export const wants_house = body =>
   /^(house|deepseek)/.test(String(body?.model ?? '').replace(/^brayness\//, ''))
 
 /** Bearer: a model pass (actor or app) or a phone ID token. */
-export const bearer_identity = ({ identify_phone, secret }) => {
+const bearer_identity = ({ identify_phone, secret }) => {
   if (!secret || Buffer.byteLength(secret) < MIN_SECRET_BYTES)
     throw new Error('model pass secret must be at least 32 bytes')
   const identify = token => {
@@ -120,6 +120,7 @@ export const agent_handler = ({
           upstream.headers.get('content-type') ?? 'application/json'
       })
       const meter = usage_meter()
+      if (!upstream.body) throw new Error('upstream answered without a body')
       for await (const chunk of upstream.body) {
         meter.add(chunk)
         response.write(chunk)
@@ -242,8 +243,15 @@ export const webhook_handler =
   }
 
 /**
- * Routes: GET /limit (also /pay/limit, the app address), POST /pay/checkout, POST /pay/webhook; every other POST
- * is a model call. Browsers on `origins` may call everything but the webhook.
+ * Routes: GET /limit (also /pay/limit, the app address), POST /pay/checkout,
+ * POST /pay/webhook; every other POST is a model call. Browsers on `origins`
+ * may call everything but the webhook.
+ * @param {object} handlers
+ * @param {Function} handlers.agent
+ * @param {Function} handlers.limit
+ * @param {Function} handlers.pay
+ * @param {Function} handlers.webhook
+ * @param {string[]} [handlers.origins]
  */
 export const proxy_handler =
   ({ agent, limit, pay, webhook, origins = [] }) =>

@@ -11,7 +11,6 @@ const DEFAULT_HEIGHT = 30
 const PANEL_WIDTH = 40
 const LABEL_SHARE = 0.35
 const PHONE_TAIL = 3
-const LABEL_WIDTH = 16
 const FAST_MS = 15_000
 const SLOW_MS = 300_000
 const ESC = '\x1b['
@@ -45,7 +44,15 @@ const fit = (text, width) => {
 const clip = (text, width) =>
   width_of(text) <= width ? text : fit(text, width)
 
-/** A dim label above clipped data rows, with no filled background. */
+/**
+ * A dim label above clipped data rows, with no filled background.
+ * @param {object} options
+ * @param {string} options.title
+ * @param {string} [options.detail]
+ * @param {string[]} [options.lines]
+ * @param {number} [options.width]
+ * @param {boolean} [options.on]
+ */
 export const panel = ({
   title,
   detail = '',
@@ -178,7 +185,7 @@ export const resource_lines = (result, width = DEFAULT_WIDTH, on = true) => {
   return lines
 }
 
-export const service_lines = (result, width = DEFAULT_WIDTH, on = true) => {
+const service_lines = (result, width = DEFAULT_WIDTH, on = true) => {
   if (result?.status !== 'ok')
     return [
       paint('UNAVAILABLE - cloud service status', 'failed', on),
@@ -207,14 +214,6 @@ export const host_lines = (rows = [], on = true) =>
         return `${paint(text, row.state, on)}${row.detail ? paint(`  ${row.detail}`, 'unknown', on) : ''}`
       })
     : ['no host records']
-
-export const cost_lines = (rows = [], on = true) =>
-  rows.length
-    ? rows.map(row => {
-        const label = `${row.phone.slice(0, 5)}…${row.phone.slice(-PHONE_TAIL)}${row.named ? ' *' : ''}`
-        return `${fit(label, LABEL_WIDTH)} ${usd(row.day.cost)} day  ${usd(row.month.cost)} month`
-      })
-    : ['no ledger for this token']
 
 /** Daily cost bars share a zero baseline; narrow views sum adjacent days. */
 export const spend_chart = (daily = [], width = 80) => {
@@ -265,7 +264,7 @@ export const spend_chart = (daily = [], width = 80) => {
   return rows
 }
 
-export const spend_lines = (rows = [], width = 80) =>
+const spend_lines = (rows = [], width = 80) =>
   rows.length
     ? rows.flatMap(row => [
         `${row.phone.slice(0, 5)}...${row.phone.slice(-PHONE_TAIL)}  TODAY ${usd(row.day.cost)}  MONTH ${usd(row.month.cost)}`,
@@ -297,7 +296,7 @@ export const sync_lines = (rows = [], on = true, width = DEFAULT_WIDTH) => {
   return lines
 }
 
-export const sign_on_lines = info =>
+const sign_on_lines = info =>
   info?.rows?.length
     ? info.rows.map(
         row =>
@@ -305,7 +304,7 @@ export const sign_on_lines = info =>
       )
     : [info?.detail ?? 'not signed in']
 
-export const publish_lines = (rows = []) =>
+const publish_lines = (rows = []) =>
   rows.length
     ? rows.map(
         row =>
@@ -326,14 +325,8 @@ const error_lines = (panel_result, on = true) =>
     : []
 
 /** Ordered monitor rows, shared by rendering and scroll bounds. */
-export const frame_rows = (
-  snapshot,
-  width = DEFAULT_WIDTH,
-  on = true,
-  details = false,
-  now = Date.now()
-) => {
-  const panels = snapshot?.panels ?? {}
+/** Every panel with its full rows, for the scrollable detail view. */
+const detail_rows = (panels, width, on, now) => {
   const rows = []
   const section = (title, lines) =>
     rows.push(
@@ -341,79 +334,66 @@ export const frame_rows = (
       ...lines.map(line => clip(line, width)),
       ''
     )
-  if (details) {
-    const { billing } = panels
-    const scope = (billing?.exports ?? []).flatMap(bill => [
-      ...wrap(`Export: ${bill.table}`, width),
-      `Usage through ${bill.through}; queried ${bill.checked}`
-    ])
-    section('BILLING DETAILS', error_lines(billing, on).concat(scope))
-    section(
-      'CLOUD SERVICES',
-      error_lines(panels.services, on).concat(
-        service_lines(panels.services, width, on)
-      )
-    )
-    const resources = (panels.resources?.inventories ?? []).flatMap(
-      inventory => [
-        ...inventory.instances.map(
-          row =>
-            `${row.name}  ${row.status}  ${row.machine}  ${inventory.project}`
-        ),
-        ...inventory.disks.map(
-          row =>
-            `${row.name}  ${row.size_gb} GB  ${row.attached.length ? row.attached.join(', ') : 'unattached'}`
-        )
-      ]
-    )
-    const inventories = panels.resources?.inventories ?? []
-    const inventory_summary =
-      panels.resources?.status === 'ok'
-        ? `Cloud inventory: ${inventories.reduce((sum, item) => sum + item.instances.length, 0)} machines, ${inventories.reduce((sum, item) => sum + item.disks.length, 0)} disks`
-        : 'Cloud inventory unavailable'
-    section('CLOUD RESOURCE DETAILS', [
-      inventory_summary,
-      ...error_lines(panels.resources, on),
-      ...resources
-    ])
-    const reports = (panels.hosts?.rows ?? []).map(row =>
-      paint(
-        `${row.name}  ${row.age_s === null || row.age_s === undefined ? 'no dated agent report' : `last agent report ${age(row.age_s)} ago`}`,
-        'unknown',
-        on
-      )
-    )
-    section(
-      'AGENT REPORT HISTORY',
-      error_lines(panels.hosts, on).concat(reports)
-    )
-    section(
-      'MODEL SPEND - account ledger only',
-      error_lines(panels.cost, on).concat(spend_lines(panels.cost?.rows, width))
-    )
-    section(
-      'SYNC',
-      error_lines(panels.sync, on).concat(
-        sync_lines(panels.sync?.rows, on, width)
-      )
-    )
-    rows.push(
-      ...error_lines(panels.sign_on, on),
-      ...error_lines(panels.publish, on),
-      ...sign_on_lines(panels.sign_on),
-      ...publish_lines(panels.publish?.rows)
-    )
-    return rows
-  }
-  section('CLOUD BILLING', billing_lines(panels.billing, width, on, now))
-  const checked = Date.parse(panels.resources?.checked ?? '')
-  const resource_age = Number.isFinite(checked)
-    ? `  read ${age(Math.max(0, Math.floor((now - checked) / MS_PER_SECOND)))} ago`
-    : ''
+  const { billing } = panels
+  const scope = (billing?.exports ?? []).flatMap(bill => [
+    ...wrap(`Export: ${bill.table}`, width),
+    `Usage through ${bill.through}; queried ${bill.checked}`
+  ])
+  section('BILLING DETAILS', error_lines(billing, on).concat(scope))
   section(
-    `CLOUD MACHINES${resource_age}`,
-    resource_lines(panels.resources, width, on)
+    'CLOUD SERVICES',
+    error_lines(panels.services, on).concat(
+      service_lines(panels.services, width, on)
+    )
   )
+  const resources = (panels.resources?.inventories ?? []).flatMap(inventory => [
+    ...inventory.instances.map(
+      row => `${row.name}  ${row.status}  ${row.machine}  ${inventory.project}`
+    ),
+    ...inventory.disks.map(
+      row =>
+        `${row.name}  ${row.size_gb} GB  ${row.attached.length ? row.attached.join(', ') : 'unattached'}`
+    )
+  ])
+  const inventories = panels.resources?.inventories ?? []
+  const inventory_summary =
+    panels.resources?.status === 'ok'
+      ? `Cloud inventory: ${inventories.reduce((sum, item) => sum + item.instances.length, 0)} machines, ${inventories.reduce((sum, item) => sum + item.disks.length, 0)} disks`
+      : 'Cloud inventory unavailable'
+  section('CLOUD RESOURCE DETAILS', [
+    inventory_summary,
+    ...error_lines(panels.resources, on),
+    ...resources
+  ])
+  const reports = (panels.hosts?.rows ?? []).map(row =>
+    paint(
+      `${row.name}  ${row.age_s === null || row.age_s === undefined ? 'no dated agent report' : `last agent report ${age(row.age_s)} ago`}`,
+      'unknown',
+      on
+    )
+  )
+  section('AGENT REPORT HISTORY', error_lines(panels.hosts, on).concat(reports))
+  section(
+    'MODEL SPEND - account ledger only',
+    error_lines(panels.cost, on).concat(spend_lines(panels.cost?.rows, width))
+  )
+  section(
+    'SYNC',
+    error_lines(panels.sync, on).concat(
+      sync_lines(panels.sync?.rows, on, width)
+    )
+  )
+  rows.push(
+    ...error_lines(panels.sign_on, on),
+    ...error_lines(panels.publish, on),
+    ...sign_on_lines(panels.sign_on),
+    ...publish_lines(panels.publish?.rows)
+  )
+  return rows
+}
+
+/** One line per cloud, sync, host, and cost problem. */
+const status_lines = (panels, width, on) => {
   const status = []
   if (panels.services?.status !== 'ok')
     status.push(paint('Cloud service status unavailable', 'failed', on))
@@ -454,6 +434,35 @@ export const frame_rows = (
       )
   if (panels.cost?.status === 'failed')
     status.push('Model cost unavailable - see details')
+  return status
+}
+
+export const frame_rows = (
+  snapshot,
+  width = DEFAULT_WIDTH,
+  on = true,
+  details = false,
+  now = Date.now()
+) => {
+  const panels = snapshot?.panels ?? {}
+  const rows = []
+  const section = (title, lines) =>
+    rows.push(
+      paint(title, 'unknown', on),
+      ...lines.map(line => clip(line, width)),
+      ''
+    )
+  if (details) return detail_rows(panels, width, on, now)
+  section('CLOUD BILLING', billing_lines(panels.billing, width, on, now))
+  const checked = Date.parse(panels.resources?.checked ?? '')
+  const resource_age = Number.isFinite(checked)
+    ? `  read ${age(Math.max(0, Math.floor((now - checked) / MS_PER_SECOND)))} ago`
+    : ''
+  section(
+    `CLOUD MACHINES${resource_age}`,
+    resource_lines(panels.resources, width, on)
+  )
+  const status = status_lines(panels, width, on)
   section('STATUS', status)
   const model_cost = panels.cost?.rows ?? []
   if (model_cost.some(row => row.month.cost !== 0))
@@ -463,7 +472,19 @@ export const frame_rows = (
   return rows
 }
 
-/** Billing first, with scrollable sections and a fixed control footer. */
+/**
+ * Billing first, with scrollable sections and a fixed control footer.
+ * @param {object} options
+ * @param {object | null} [options.snapshot]
+ * @param {number} [options.width]
+ * @param {number} [options.height]
+ * @param {number} [options.interval_ms]
+ * @param {number} [options.now]
+ * @param {boolean} [options.on]
+ * @param {string | null} [options.message] the last read failure, or null
+ * @param {number} [options.offset]
+ * @param {boolean} [options.details]
+ */
 export const frame = ({
   snapshot,
   width = DEFAULT_WIDTH,
@@ -495,6 +516,11 @@ export const frame = ({
 }
 
 /** Reads one keypress without echoing it; resolves null on any other input. */
+/**
+ * The next key, or 'abort' when `signal` fires first.
+ * @param {NodeJS.ReadStream & { fd: 0 }} [input]
+ * @param {AbortSignal | null} [signal]
+ */
 export const read_key = (input = process.stdin, signal = null) => {
   if (signal?.aborted) return null
   if (input.setRawMode) input.setRawMode(true)

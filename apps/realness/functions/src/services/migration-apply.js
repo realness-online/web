@@ -18,6 +18,7 @@ export const migration_apply = async ({ rows, reconcile, concurrency = 8 }) => {
   const worker = async () => {
     while (pending.length) {
       const name = pending.shift()
+      if (name === undefined) break
       try {
         // eslint-disable-next-line no-await-in-loop -- bounded pool of workers
         const result = await reconcile(name)

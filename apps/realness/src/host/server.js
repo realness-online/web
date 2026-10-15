@@ -30,7 +30,7 @@ const MAX_PATHS = 100
 const LOG = logger('server')
 const EXEC_TIMEOUT_MAX = 1800
 
-export const CONTENT_TYPES = {
+const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -271,7 +271,7 @@ const proxyApp = (apps, auth, id, request, response) => {
     plain(
       response,
       HTTP.BAD_GATEWAY,
-      `${id} is not answering: ${error.code ?? error.message}`
+      `${id} is not answering: ${/** @type {NodeJS.ErrnoException} */ (error).code ?? error.message}`
     )
   })
   request.pipe(upstream)
@@ -330,6 +330,233 @@ const startApp = async (store, apps, owner, actor, request) => {
   })
 }
 
+/** The actor chat API: events, limit, message, command. */
+const route_chat = (
+  chat,
+  { actor, id, kind, method, owner, path, request, response, what, extra }
+) => {
+  if (!chat || !path.startsWith('/v1/actors/') || kind !== 'chat') return false
+  actor(id)
+  if (extra === undefined && what === 'events' && method === 'GET') {
+    chat.events(id, response)
+    return true
+  }
+  if (extra === undefined && what === 'limit' && method === 'GET') {
+    chat.limit(id, response)
+    return true
+  }
+  if (
+    extra === undefined &&
+    (what === 'message' || what === 'command') &&
+    method === 'POST'
+  ) {
+    if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
+      throw new NotFound(id)
+    if (what === 'message') chat.message(id, request, response)
+    else chat.command(id, request, response)
+    return true
+  }
+  throw new NotFound(id)
+}
+
+/** The loop API: list and stop. */
+const route_loops = async (loops, { actor, method, owner, path, response }) => {
+  if (!path.startsWith('/v1/loops')) return false
+  if (!loops) throw new NotFound('loops')
+  if (path === '/v1/loops' && method === 'GET') {
+    json(response, HTTP.OK, { loops: loops.of_owner(owner) })
+    return true
+  }
+  if (path.startsWith('/v1/loops/') && method === 'POST') {
+    const [id, action] = path.slice('/v1/loops/'.length).split('/')
+    if (action !== 'stop' || !loops.loops[id]) throw new NotFound(id)
+    actor(id)
+    if (loops.loops[id].status !== 'running') {
+      json(response, HTTP.CONFLICT, {
+        error: `loop is ${loops.loops[id].status}`
+      })
+      return true
+    }
+    await loops.stop(id, 'owner')
+    json(
+      response,
+      HTTP.OK,
+      loops.of_owner(owner).find(loop => loop.id === id)
+    )
+    return true
+  }
+  return false
+}
+
+/** The app API: list, start, status, enter, visibility, stop. */
+const route_apps = async (
+  apps,
+  { actor, auth, method, owner, path, request, response, store }
+) => {
+  if (!path.startsWith('/v1/apps')) return false
+  if (!apps) throw new NotFound('apps')
+  if (path === '/v1/apps' && method === 'GET') {
+    json(response, HTTP.OK, {
+      apps: apps.list().filter(record => record.owner === owner)
+    })
+    return true
+  }
+  if (path === '/v1/apps' && method === 'POST') {
+    json(
+      response,
+      HTTP.CREATED,
+      await startApp(store, apps, owner, actor, request)
+    )
+    return true
+  }
+  if (!path.startsWith('/v1/apps/')) return false
+  const [id, action] = path.slice('/v1/apps/'.length).split('/')
+  const record = apps.record(id)
+  if (record.owner !== owner) throw new NotFound(id)
+  if (method === 'GET' && !action) {
+    json(response, HTTP.OK, await apps.status(id))
+    return true
+  }
+  if (method === 'POST' && action === 'enter') {
+    request.resume()
+    const port = request.headers.host?.split(':')[1]
+    json(response, HTTP.OK, {
+      url: `http://${id}.localhost${port ? `:${port}` : ''}${ENTER}?ticket=${auth.issue(owner, id)}`
+    })
+    return true
+  }
+  if (method === 'POST' && action === 'visibility') {
+    const payload = await readJson(request)
+    if (typeof payload.public !== 'boolean')
+      throw new BadRequest('public must be true or false')
+    json(response, HTTP.OK, await apps.setPublic(id, payload.public))
+    return true
+  }
+  if (method === 'DELETE' && !action) {
+    await apps.stop(id)
+    json(response, HTTP.NO_CONTENT)
+    return true
+  }
+  return false
+}
+
+/** GET /v1/actors, /v1/exports, /s/<id>/..., and one actor's trace or record. */
+const route_reads = ({
+  actor,
+  method,
+  owns,
+  owner,
+  path,
+  response,
+  store,
+  url
+}) => {
+  if (method !== 'GET') return false
+  if (path === '/v1/actors') {
+    json(response, HTTP.OK, { actors: store.list().filter(owns) })
+    return true
+  }
+  if (path === '/v1/exports') {
+    json(response, HTTP.OK, {
+      exports: store
+        .exports()
+        .filter(
+          item =>
+            item.actor?.owner === owner &&
+            can({ phone: owner }, 'get', `people/${owner}/harnesses/${item.id}`)
+        )
+    })
+    return true
+  }
+  if (url.pathname.startsWith('/s/')) {
+    const [id, ...parts] = url.pathname.slice(3).split('/')
+    site(store, response, id, parts.join('/'))
+    return true
+  }
+  if (!path.startsWith('/v1/actors/')) return false
+  const [id, action] = path.slice('/v1/actors/'.length).split('/')
+  actor(id)
+  if (action === 'trace') {
+    json(response, HTTP.OK, { events: store.traceOf(id) })
+    return true
+  }
+  if (action === undefined) {
+    json(response, HTTP.OK, store.get(id))
+    return true
+  }
+  return false
+}
+
+/** POST /v1/actors to create or restore, and the per-actor actions. */
+const route_actor_writes = async ({
+  actor,
+  method,
+  owner,
+  path,
+  request,
+  response,
+  store
+}) => {
+  if (method !== 'POST') return false
+  if (path === '/v1/actors') {
+    const payload = await readJson(request)
+    if (!can({ phone: owner }, 'write', `people/${owner}/harnesses`))
+      throw new NotFound('actor')
+    const paths = payload.paths ?? null
+    if (
+      paths !== null &&
+      (!Array.isArray(paths) ||
+        paths.length > MAX_PATHS ||
+        !paths.every(limit_path))
+    )
+      throw new BadRequest('paths must be relative paths without secrets')
+    if (payload.restore_from === undefined || payload.restore_from === null) {
+      json(response, HTTP.CREATED, await store.create(owner, { paths }))
+      return true
+    }
+    if (typeof payload.restore_from !== 'string' || !payload.restore_from)
+      throw new BadRequest('restore_from must be an export id')
+    json(
+      response,
+      HTTP.CREATED,
+      await store.restore(payload.restore_from, owner)
+    )
+    return true
+  }
+  if (!path.startsWith('/v1/actors/')) return false
+  const [id, action] = path.slice('/v1/actors/'.length).split('/')
+  actor(id)
+  if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
+    throw new NotFound(id)
+  if (action === 'exec') {
+    json(response, HTTP.OK, await exec(store, request, id))
+    return true
+  }
+  if (action === 'idle') {
+    const payload = await readJson(request)
+    const tier = payload.tier || 'memory'
+    if (typeof tier !== 'string') throw new BadRequest('tier must be a string')
+    json(response, HTTP.OK, await store.idle(id, tier))
+    return true
+  }
+  if (action === 'reload') {
+    json(response, HTTP.OK, await store.reload(id))
+    return true
+  }
+  if (action === 'export') {
+    json(response, HTTP.OK, await store.export(id))
+    return true
+  }
+  if (action === 'publish') {
+    const payload = await readJson(request)
+    const tree = payload.path ?? '/brayness/site'
+    if (typeof tree !== 'string') throw new BadRequest('path must be a string')
+    json(response, HTTP.OK, await store.publish(id, tree || '/brayness/site'))
+    return true
+  }
+  return false
+}
+
 const route = async (
   { store, apps, auth, loops, chat, startup },
   request,
@@ -379,174 +606,38 @@ const route = async (
   if (method === 'POST' && path === '/v1/startup')
     return startup.start(owner, await readJson(request), response)
 
-  if (chat && path.startsWith('/v1/actors/')) {
-    const [id, kind, what, extra] = path.slice('/v1/actors/'.length).split('/')
-    if (kind === 'chat') {
-      actor(id)
-      if (extra === undefined && what === 'events' && method === 'GET')
-        return chat.events(id, response)
-      if (extra === undefined && what === 'limit' && method === 'GET')
-        return chat.limit(id, response)
-      if (extra === undefined && what === 'message' && method === 'POST') {
-        if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
-          throw new NotFound(id)
-        return chat.message(id, request, response)
-      }
-      if (extra === undefined && what === 'command' && method === 'POST') {
-        if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
-          throw new NotFound(id)
-        return chat.command(id, request, response)
-      }
-      throw new NotFound(id)
-    }
+  const context = {
+    actor,
+    auth,
+    method,
+    owner,
+    path,
+    request,
+    response,
+    store
   }
+  const [id, kind, what, extra] = path.startsWith('/v1/actors/')
+    ? path.slice('/v1/actors/'.length).split('/')
+    : []
+  if (route_chat(chat, { ...context, extra, id, kind, what })) return
+  if (await route_loops(loops, context)) return
+  if (await route_apps(apps, context)) return
 
-  const app = id => {
-    const record = apps.record(id)
-    if (record.owner !== owner) throw new NotFound(id)
-    return record
-  }
-  if (path.startsWith('/v1/loops') && !loops) throw new NotFound('loops')
-  if (path === '/v1/loops' && method === 'GET')
-    return json(response, HTTP.OK, { loops: loops.of_owner(owner) })
-  if (path.startsWith('/v1/loops/') && method === 'POST') {
-    const [id, action] = path.slice('/v1/loops/'.length).split('/')
-    if (action !== 'stop' || !loops.loops[id]) throw new NotFound(id)
-    actor(id)
-    if (loops.loops[id].status !== 'running')
-      return json(response, HTTP.CONFLICT, {
-        error: `loop is ${loops.loops[id].status}`
-      })
-    await loops.stop(id, 'owner')
-    return json(
+  if (route_reads({ actor, method, owns, owner, path, response, store, url }))
+    return
+
+  if (
+    await route_actor_writes({
+      actor,
+      method,
+      owner,
+      path,
+      request,
       response,
-      HTTP.OK,
-      loops.of_owner(owner).find(loop => loop.id === id)
-    )
-  }
-  if (path.startsWith('/v1/apps') && !apps) throw new NotFound('apps')
-  if (path === '/v1/apps' && method === 'GET')
-    return json(response, HTTP.OK, {
-      apps: apps.list().filter(record => record.owner === owner)
+      store
     })
-  if (path === '/v1/apps' && method === 'POST')
-    return json(
-      response,
-      HTTP.CREATED,
-      await startApp(store, apps, owner, actor, request)
-    )
-  if (path.startsWith('/v1/apps/')) {
-    const [id, action] = path.slice('/v1/apps/'.length).split('/')
-    app(id)
-    if (method === 'GET' && !action)
-      return json(response, HTTP.OK, await apps.status(id))
-    if (method === 'POST' && action === 'enter') {
-      request.resume()
-      const port = request.headers.host?.split(':')[1]
-      return json(response, HTTP.OK, {
-        url: `http://${id}.localhost${port ? `:${port}` : ''}${ENTER}?ticket=${auth.issue(owner, id)}`
-      })
-    }
-    if (method === 'POST' && action === 'visibility') {
-      const payload = await readJson(request)
-      if (typeof payload.public !== 'boolean')
-        throw new BadRequest('public must be true or false')
-      return json(response, HTTP.OK, await apps.setPublic(id, payload.public))
-    }
-    if (method === 'DELETE' && !action) {
-      await apps.stop(id)
-      return json(response, HTTP.NO_CONTENT)
-    }
-  }
-
-  if (method === 'GET') {
-    if (path === '/v1/actors')
-      return json(response, HTTP.OK, { actors: store.list().filter(owns) })
-    if (path === '/v1/exports')
-      return json(response, HTTP.OK, {
-        exports: store
-          .exports()
-          .filter(
-            item =>
-              item.actor?.owner === owner &&
-              can(
-                { phone: owner },
-                'get',
-                `people/${owner}/harnesses/${item.id}`
-              )
-          )
-      })
-    if (url.pathname.startsWith('/s/')) {
-      const [id, ...parts] = url.pathname.slice(3).split('/')
-      return site(store, response, id, parts.join('/'))
-    }
-    if (path.startsWith('/v1/actors/')) {
-      const [id, action] = path.slice('/v1/actors/'.length).split('/')
-      actor(id)
-      if (action === 'trace')
-        return json(response, HTTP.OK, { events: store.traceOf(id) })
-      if (action === undefined) return json(response, HTTP.OK, store.get(id))
-    }
-  }
-
-  if (method === 'POST') {
-    if (path === '/v1/actors') {
-      const payload = await readJson(request)
-      if (!can({ phone: owner }, 'write', `people/${owner}/harnesses`))
-        throw new NotFound('actor')
-      const paths = payload.paths ?? null
-      if (
-        paths !== null &&
-        (!Array.isArray(paths) ||
-          paths.length > MAX_PATHS ||
-          !paths.every(limit_path))
-      )
-        throw new BadRequest('paths must be relative paths without secrets')
-      if (payload.restore_from === undefined || payload.restore_from === null)
-        return json(
-          response,
-          HTTP.CREATED,
-          await store.create(owner, { paths })
-        )
-      if (typeof payload.restore_from !== 'string' || !payload.restore_from)
-        throw new BadRequest('restore_from must be an export id')
-      return json(
-        response,
-        HTTP.CREATED,
-        await store.restore(payload.restore_from, owner)
-      )
-    }
-    if (path.startsWith('/v1/actors/')) {
-      const [id, action] = path.slice('/v1/actors/'.length).split('/')
-      actor(id)
-      if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
-        throw new NotFound(id)
-      if (action === 'exec')
-        return json(response, HTTP.OK, await exec(store, request, id))
-      if (action === 'idle') {
-        const payload = await readJson(request)
-        const tier = payload.tier || 'memory'
-        if (typeof tier !== 'string')
-          throw new BadRequest('tier must be a string')
-        return json(response, HTTP.OK, await store.idle(id, tier))
-      }
-      if (action === 'reload')
-        return json(response, HTTP.OK, await store.reload(id))
-      if (action === 'export')
-        return json(response, HTTP.OK, await store.export(id))
-      if (action === 'publish') {
-        const payload = await readJson(request)
-        const tree = payload.path ?? '/brayness/site'
-        if (typeof tree !== 'string')
-          throw new BadRequest('path must be a string')
-        return json(
-          response,
-          HTTP.OK,
-          await store.publish(id, tree || '/brayness/site')
-        )
-      }
-    }
-  }
+  )
+    return
 
   if (method === 'DELETE' && path.startsWith('/v1/actors/')) {
     const id = path.split('/').at(-1)
@@ -561,7 +652,16 @@ const route = async (
   json(response, HTTP.NOT_FOUND, { error: `no route for ${method} ${path}` })
 }
 
-/** `apps` is an AppStore; without one, /v1/apps answers 404. */
+/**
+ * `apps` is an AppStore; without one, /v1/apps answers 404.
+ * @param {import('./actors.js').ActorStore} store
+ * @param {import('./apps.js').AppStore | null} [apps]
+ * @param {object | null} [auth]
+ * @param {import('./loops.js').Loops | null} [loops]
+ * @param {object} [options]
+ * @param {(record: import('./actors.js').Actor) => Promise<{ socket: object, lines: object }>} [options.connectChat]
+ * @param {((record: import('./actors.js').Actor) => Promise<object>) | null} [options.limits]
+ */
 export const makeServer = (
   store,
   apps = null,

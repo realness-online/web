@@ -13,9 +13,9 @@ import { MS_PER_DAY, MS_PER_SECOND } from '#root/lib/units.js'
 
 const RETENTION_DAYS = 6
 
-export const RETENTION_MS = RETENTION_DAYS * MS_PER_DAY
+const RETENTION_MS = RETENTION_DAYS * MS_PER_DAY
 /** A write in flight when the cursor was taken lands just behind it; reads look back this far. */
-export const OVERLAP_MS = 5 * MS_PER_SECOND
+const OVERLAP_MS = 5 * MS_PER_SECOND
 const PERSON = /^people\/(\+[1-9]\d{6,14})\/(.+)$/
 
 const encode = text => Buffer.from(text).toString('base64url')

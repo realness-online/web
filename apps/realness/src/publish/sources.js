@@ -190,7 +190,8 @@ export const scan_vault = async vault => {
       id,
       files.map(file => file.path)
     )
-    if (made_elsewhere.includes(as_type(id))) continue
+    const elsewhere = as_type(id)
+    if (elsewhere && made_elsewhere.includes(elsewhere)) continue
     for (const copy of files.slice(1)) copies.push({ id, path: copy.path })
   }
   return { items, views, copies }
@@ -207,6 +208,13 @@ const unused = (items, author, type, created) => {
  * Make a vault file an item. A file that carries an itemid keeps it, unless it
  * is a copy of an older file, which then gets its own. A file with none gets
  * one minted for `author` as `type` at `created`, written into the file.
+ * @param {string} vault
+ * @param {string} path
+ * @param {object} [options]
+ * @param {string | null} [options.author] null when the vault names no person
+ * @param {string | null} [options.type] the flag parser yields null when unset
+ * @param {number} [options.created]
+ * @param {{ items: Map<string, string> }} [options.scan] an existing vault scan
  */
 export const mint_item = async (
   vault,
@@ -221,9 +229,12 @@ export const mint_item = async (
   const { items } = scan ?? (await scan_vault(vault))
   const carried = carried_itemid(await head(file))
   const holder = carried && items.get(carried)
+  const carried_type = carried ? as_type(carried) : null
   if (
     carried &&
-    (!holder || holder === path || made_elsewhere.includes(as_type(carried)))
+    (!holder ||
+      holder === path ||
+      (carried_type && made_elsewhere.includes(carried_type)))
   ) {
     items.set(carried, path)
     return carried

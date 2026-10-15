@@ -28,7 +28,7 @@ export const connect = async (udsPath, port = VSOCK_PORT) => {
     socket.once('error', error =>
       fail(
         new VsockError(
-          `cannot reach ${udsPath} (${error.code ?? error.message})`
+          `cannot reach ${udsPath} (${/** @type {NodeJS.ErrnoException} */ (error).code ?? error.message})`
         )
       )
     )
@@ -49,7 +49,16 @@ export const connect = async (udsPath, port = VSOCK_PORT) => {
   return { socket, lines }
 }
 
-/** Run argv in the guest: { code, out, err } with Buffers. */
+/**
+ * Run argv in the guest: { code, out, err } with Buffers.
+ * @param {string} udsPath
+ * @param {string[]} argv
+ * @param {object} [options]
+ * @param {string | null} [options.cwd] null runs in the agent's own directory
+ * @param {Buffer | string} [options.stdin]
+ * @param {number} [options.timeout]
+ * @param {number} [options.port]
+ */
 export const execInGuest = async (
   udsPath,
   argv,

@@ -21,7 +21,7 @@ import {
   writeFile as write_file,
   rm
 } from 'node:fs/promises'
-import { attempt, step, note, run } from './exec.js'
+import { step, note, run } from './exec.js'
 import { ROOT } from './paths.js'
 import { out_path } from '#root/lib/output.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
@@ -196,7 +196,7 @@ export const down = async (cloud, config, name, { mode = 'stop' } = {}) => {
  * `host` imports from every other directory listed here. The host runs as root and leaves a root-owned
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
-export const push = async (cloud, name) => {
+const push = async (cloud, name) => {
   step('stage the harness')
   await run('bash', [
     join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh')
@@ -233,7 +233,7 @@ export const push = async (cloud, name) => {
 }
 
 /** Rebuild the actor template when its inputs changed; the seed follows. */
-export const ensure_template = async (cloud, config, name) => {
+const ensure_template = async (cloud, config, name) => {
   step('actor template')
   await cloud.ssh(
     name,
@@ -242,7 +242,7 @@ export const ensure_template = async (cloud, config, name) => {
 }
 
 /** Start the host on the host, by path. */
-export const serve = async (cloud, config, name) => {
+const serve = async (cloud, config, name) => {
   step('serve')
   await cloud.ssh(
     name,
@@ -320,5 +320,3 @@ const lastLine = text =>
     .filter(line => !line.startsWith('WARNING'))
     .pop()
     ?.trim() ?? ''
-
-export { attempt }

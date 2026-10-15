@@ -3,7 +3,22 @@
   "entry": [
     "frontend/index.html",
     "src/app/workers/*.js",
-    "frontend/scripts/*.js"
+    "frontend/scripts/*.js",
+    "tools/publish/renderer/static/**",
+    "**/*.check.js",
+    "tests/**/*.check.js",
+    "src/settings/cli.js",
+    "server/host/app.js",
+    "server/host/clients/login.js",
+    "server/*/scripts/*.js",
+    "tools/control/scripts/*.js",
+    "tools/desktop/entry.ts",
+    "tools/publish/renderer/serve.js",
+    "server/host/guest/brayness-serve.js",
+    "tools/control/escape-probe/server.js",
+    "themes/load.js",
+    "themes/adapters/*.js",
+    "themes/*/palette.css"
   ],
   "ignorePatterns": [
     "**/artifacts/**",

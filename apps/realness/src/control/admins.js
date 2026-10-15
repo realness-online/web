@@ -77,6 +77,14 @@ export const plan_admins = (list, { verb, phone, name = '' }) => {
 /**
  * Read, plan, and (with `yes`) write. Without `yes` nothing is written and
  * the result says what would change.
+ * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null } | null>, put: (key: string, body: string, options?: { if_version?: string | null }) => Promise<unknown> }} storage
+ * @param {object} [options]
+ * @param {'list' | 'init' | 'add' | 'remove'} [options.verb]
+ * @param {string} [options.phone]
+ * @param {string} [options.name]
+ * @param {boolean} [options.yes]
+ * @param {boolean} [options.create_only]
+ * @returns {Promise<{ before: object[], after: object[], changed: boolean, written: boolean, note?: string }>}
  */
 export const manage_admins = async (
   storage,
@@ -158,7 +166,11 @@ export const not_admin_hint = (env, phone) =>
   `${phone ?? 'this account'} is signed in but is not an admin in ${env}. ` +
   `An admin can run: webspace ${env} admins add ${phone ?? '<your phone>'} --yes`
 
-/** Plain text for the terminal; phones are masked by the caller's output rule. */
+/**
+ * Plain text for the terminal; phones are masked by the caller's output rule.
+ * @param {{ before: object[], after: object[], changed: boolean, written: boolean, note?: string }} result
+ * @param {{ verb?: string }} [options]
+ */
 export const admins_text = (
   { before, after, changed, written, note },
   { verb = 'list' } = {}
