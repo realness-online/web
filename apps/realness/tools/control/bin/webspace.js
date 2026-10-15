@@ -640,13 +640,11 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           restore: async (host, id, owner, bundle) => {
             const { remoteApi: api_for } =
               await import('../../../src/control/api.js')
-            const listing = await api_for(host, {
-              zone: config.zone
-            }).json('/v1/exports')
-            const exported = (listing.exports ?? []).find(
-              entry => entry.id === id
-            )
-            if (!exported) throw new Error(`${id} is not in ${host}'s exports`)
+            const { place_bundle } =
+              await import('../../../src/control/bundle.js')
+            // Drain removed the export folder from the host it came from, so
+            // the bundle has to be put back before restore can read it.
+            await place_bundle(target, config, host, id, { object: bundle })
             return JSON.parse(
               await api_for(host, { zone: config.zone }).call('/v1/actors', {
                 method: 'POST',
