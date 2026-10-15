@@ -144,6 +144,52 @@ const MEMORY_STAGES = [
   { name: 'after a page fetch', run: 'true' }
 ]
 
+/**
+ * hs-mem: one reading of an actor. The host side is the Firecracker process
+ * Pss, which is what the host cannot give to another actor; the guest side is
+ * its own MemAvailable, read through the actor API.
+ */
+const sample_actor = async (cloud, config, host, actor, api) => {
+  const pid = (
+    await cloud.call([
+      ...cloud.sshArgs(host, `pgrep -f 'firecracker.*${actor}' | head -1`),
+      '--quiet'
+    ])
+  ).trim()
+  if (!/^\d+$/.test(pid)) throw new Error(`no firecracker process for ${actor}`)
+  const rolled = await cloud.call([
+    ...cloud.sshArgs(host, `cat /proc/${pid}/smaps_rollup`),
+    '--quiet'
+  ])
+  const pss = /^Pss:\s+(\d+)/m.exec(rolled)
+  if (!pss) throw new Error(`no Pss for ${actor}`)
+  const inside = await api.call(`/v1/actors/${actor}/exec`, {
+    method: 'POST',
+    body: {
+      argv: [
+        'sh',
+        '-c',
+        "awk '/MemTotal|MemAvailable/{print $2}' /proc/meminfo; ps -eo rss,comm --sort=-rss | sed -n 2,4p"
+      ],
+      timeout: 60
+    }
+  })
+  const text = Buffer.from(
+    JSON.parse(inside).stdout_b64 ?? '',
+    'base64'
+  ).toString()
+  const [total, available, ...top] = text.trim().split('\n')
+  return {
+    host_mib: Math.round(Number(pss[1]) / 1024),
+    guest_used_mib: Math.round((Number(total) - Number(available)) / 1024),
+    top: top.map(line =>
+      line
+        .trim()
+        .replace(/^(\d+)/, (_, kb) => `${Math.round(Number(kb) / 1024)}M`)
+    )
+  }
+}
+
 /** A field read as a number, or null when it is missing. */
 const fraction = value =>
   Number.isFinite(Number(value)) ? Number(value) : null
@@ -531,14 +577,13 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     case 'memory': {
       const actor = requireName(
         rest,
-        'usage: realness <env> host memory <actor>'
+        'usage: realness <env> host memory <actor> [host]'
       )
+      const host_name = rest[1] ?? config.hostName ?? 'realness-1'
       const { measure } = await import('../../../src/control/memory.js')
       const { remoteApi } = await import('../../../src/control/api.js')
       if (is_local(config)) throw new Error('memory measures a cloud host')
-      const api = remoteApi(config.hostName ?? rest[1] ?? 'realness-1', {
-        zone: config.zone
-      })
+      const api = remoteApi(host_name, { zone: config.zone })
       return finish(
         await measure({
           actor,
@@ -548,14 +593,10 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
               method: 'POST',
               body: { argv, timeout: 120 }
             }),
-          sample: async () => {
-            const health = await api.json('/v1/health')
-            return {
-              host_mib: Number(health.memory?.host_mib ?? 0),
-              guest_used_mib: Number(health.memory?.guest_used_mib ?? 0),
-              top: health.memory?.top ?? []
-            }
-          }
+          // The host's cost is the Firecracker process; the guest's own use
+          // comes from its MemAvailable, so nothing new is reported at rest.
+          sample: async () =>
+            await sample_actor(target, config, host_name, actor, api)
         })
       )
     }
