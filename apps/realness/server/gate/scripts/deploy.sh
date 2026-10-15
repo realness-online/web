@@ -16,6 +16,6 @@ gcloud run deploy realness-gate \
   --network default --subnet default --vpc-egress private-ranges-only \
   --timeout 3600 \
   --min-instances 0 \
-  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins@GATE_HOST=$host@GATE_HOST_NAME=$host_name@GATE_HOST_ZONE=$host_zone" \
+  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins@GATE_HOST=$host@GATE_HOST_NAME=$host_name@GATE_HOST_ZONE=$host_zone@SYNC_URL=$sync_url" \
   --set-secrets "HOST_PASS_SECRET=HOST_PASS_SECRET:latest" \
   --allow-unauthenticated --quiet

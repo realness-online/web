@@ -4,7 +4,8 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  *
  * who     null for a stranger, `{ phone: "+A" }` for a person,
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance,
- *         `{ host_name: "realness-1" }` for a host holding a record pass.
+ *         `{ host_name: "realness-1" }` for a host holding a record pass,
+ *         `{ gate: "realness-1" }` for the gate that may wake that host.
  * action  "get", "list", "write", or "delete".
  * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
  *         `loops/<id>/...`, or `hosts/<name>/...`.
@@ -19,6 +20,8 @@ const PHONE = /^\+[1-9]\d{6,14}$/
 const INSTANCE = /^\/(\+[1-9]\d{6,14})\/harnesses\/([\w.-]+)$/
 const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LOOP = /^a-[a-f0-9]{12}$/
+/** hs-n2: `placements/<phone digits>.html`, written only by the gate. */
+const PLACEMENT = /^[1-9]\d{6,14}\.html$/
 const PUBLIC_FILES = new Set(['index.html.gz'])
 const PUBLIC_FOLDERS = new Set(['posters', 'statements', 'thoughts'])
 const GRANTED = { read: new Set(['get', 'list']), write: ACTIONS }
@@ -43,6 +46,8 @@ const subject = who => {
   if (match) return { owner: match[1], id: match[2] }
   if (typeof who.host_name === 'string' && HOST.test(who.host_name))
     return { host: who.host_name }
+  if (typeof who.gate === 'string' && HOST.test(who.gate))
+    return { gate: who.gate }
   return {}
 }
 
@@ -84,6 +89,12 @@ const hosts_allowed = (action, owner, rest, me) => {
     rest.length === 2 &&
     rest[0] === 'requests' &&
     /^a-[a-f0-9]{12}\.html$/.test(rest[1])
+  if (me.gate)
+    return (
+      owner === me.gate &&
+      file === 'lifecycle.html' &&
+      (action === 'get' || action === 'write')
+    )
   if (me.host) {
     if (owner !== me.host) return false
     if (file === 'status.html' || file === 'lifecycle.html')
@@ -128,6 +139,13 @@ export const can = (who, action, path, grants = []) => {
   if (root === 'subscriptions') return Boolean(owner) && me.phone === owner
   if (root === 'loops') return loops_allowed(action, owner, rest, me)
   if (root === 'hosts') return hosts_allowed(action, owner, rest, me)
+  if (root === 'placements')
+    return (
+      Boolean(me.gate) &&
+      rest.length === 0 &&
+      PLACEMENT.test(owner ?? '') &&
+      (action === 'get' || action === 'write')
+    )
   if (root === 'usage') return owns_row(action, owner, me)
   if (root === 'billing') return owns_row(action, owner, me)
   if (root !== 'people') return false

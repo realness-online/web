@@ -25,6 +25,7 @@ import {
   verify_record_pass,
   record_host
 } from '#root/src/sign-on/node/host-pass.js'
+import { verify_gate_pass } from '#root/src/sign-on/node/gate-pass.js'
 import { run_host_alerts } from './host-alerts.js'
 import { host_health } from './host-watch.js'
 import { site_request } from './sites.js'
@@ -193,6 +194,8 @@ const pass_identity = async (token, { host_pass_secret, storage, fenced }) => {
     }
   if (harness)
     return { harness: harness.phone, id: harness.id, paths: harness.paths }
+  const gate = attempt(() => verify_gate_pass(token, host_pass_secret))
+  if (gate) return gate
   const host = attempt(() => verify_host_pass(token, host_pass_secret))
   if (host) return { ...host, host: true }
   return record_identity(token, storage, fenced)

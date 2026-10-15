@@ -19,11 +19,5 @@ gcloud compute instances add-iam-policy-binding "$host_name" \
   --member "serviceAccount:$account" \
   --role "projects/$project/roles/$role" --quiet > /dev/null
 
-object="projects/_/buckets/$bucket/objects/hosts/$host_name/lifecycle.html"
-gcloud storage buckets add-iam-policy-binding "gs://$bucket" \
-  --member "serviceAccount:$account" \
-  --role roles/storage.objectUser \
-  --condition "expression=resource.name == \"$object\",title=gate-wake-$host_name" \
-  --quiet > /dev/null
-
-printf 'gate %s may start %s and write %s\n' "$account" "$host_name" "$object"
+# The wake record goes through sync, whose rules decide; no bucket grant here.
+printf 'gate %s may start %s\n' "$account" "$host_name"

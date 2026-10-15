@@ -77,7 +77,8 @@ test('service deploy requires a configured environment and refuses cross-environ
     bucket: 'realness-online.appspot.com',
     region: 'us-west2',
     origins:
-      'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com'
+      'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com',
+    sync_url: 'https://realness-sync-276668807926.us-west2.run.app'
   })
   assert.throws(
     () =>

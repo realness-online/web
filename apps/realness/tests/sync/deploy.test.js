@@ -96,14 +96,14 @@ test('every deploy reads the shared environment, with the sign-in page allowed',
   assert.equal(missing.stdout, '')
 })
 
-test('the gate deploy grants wake access for one instance and one record only', () => {
+test('the gate deploy may start one instance and writes its record through sync', () => {
   const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
   const gate = read('../../server/gate/scripts/deploy.sh')
   const access = read('../../server/gate/scripts/wake-access.sh')
   assert.match(gate, /wake-access\.sh/)
   assert.match(access, /--permissions compute\.instances\.start /)
   assert.match(access, /compute instances add-iam-policy-binding "\$host_name"/)
-  assert.match(access, /resource\.name == \\"\$object\\"/)
-  assert.match(access, /objects\/hosts\/\$host_name\/lifecycle\.html/)
+  assert.doesNotMatch(access, /buckets add-iam-policy-binding/)
+  assert.match(gate, /SYNC_URL=\$sync_url/)
   assert.doesNotMatch(access, /projects add-iam-policy-binding/)
 })

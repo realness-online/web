@@ -3,7 +3,8 @@ import { make_gate, one_host } from '../../../src/gate/gate.js'
 import { placed_hosts } from '../../../src/gate/placement.js'
 import { gce_start, make_waker, tcp_probe } from '../../../src/gate/wake.js'
 import { phone_identity } from '#root/src/proxy/identity.js'
-import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
+import { gcloud_token, metadata_token } from '#root/src/can/gcs.js'
+import { sync_records } from '../../../src/gate/sync-records.js'
 import {
   lifecycle_html,
   lifecycle_key,
@@ -23,19 +24,25 @@ const origins = (env.ORIGINS ?? '')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean)
-/** hs-n2: the placement reads and writes through the sync bucket. */
-const store = () => {
-  const gcs = records()
-  return { read: key => gcs.get(key), write: (key, body) => gcs.put(key, body) }
-}
-
-/** hs-n2: the record store the placement reads and writes; sync's bucket. */
+/**
+ * The gate holds no bucket access: its records go through sync, whose rules
+ * allow only the woken host's lifecycle and the placements.
+ */
 const records = () =>
-  create_gcs({
-    bucket: env.PINS_BUCKET,
-    token,
-    prefix: env.GCS_PREFIX ?? ''
+  sync_records({
+    url: String(env.SYNC_URL),
+    secret,
+    host: String(env.GATE_HOST_NAME)
   })
+
+/** hs-n2: the placement reads and writes through sync. */
+const store = () => {
+  const sync = records()
+  return {
+    read: key => sync.get(key),
+    write: (key, body) => sync.put(key, body)
+  }
+}
 
 /**
  * hs-n2: with GATE_HOSTS each person keeps one host; with GATE_HOST everyone

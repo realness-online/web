@@ -87,6 +87,7 @@ export const deployment_settings = (name, env = {}) => {
     identity: selected.project,
     bucket: selected.services.bucket,
     region: env.REGION || selected.services.region,
-    origins: env.ORIGINS || selected.services.origins
+    origins: env.ORIGINS || selected.services.origins,
+    sync_url: selected.services.sync_url
   }
 }

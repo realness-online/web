@@ -101,3 +101,27 @@ test('fence reads are cached briefly, then read again', async () => {
   assert.equal(await fenced(null), false)
   assert.equal(reads, 2)
 })
+
+test('a gate pass reaches only its host lifecycle and the placements', async () => {
+  const { issue_gate_pass } =
+    await import('#root/src/sign-on/node/gate-pass.js')
+  const gate = issue_gate_pass('new-host', secret)
+  assert.equal((await put('hosts/new-host/lifecycle.html', gate)).status, 200)
+  const read = await fetch(`${url}/hosts/new-host/lifecycle.html`, {
+    headers: { authorization: `Bearer ${gate}` }
+  })
+  assert.equal(read.status, 200)
+  assert.equal((await put('placements/14155550188.html', gate)).status, 200)
+  for (const path of [
+    'hosts/old-host/lifecycle.html',
+    'hosts/new-host/status.html',
+    `people/${phone}/harness/notes.md`,
+    'placements/nested/x.html',
+    'host-keys/new-host'
+  ])
+    assert.equal((await put(path, gate)).status, 403, path)
+  const listing = await fetch(`${url}/placements/`, {
+    headers: { authorization: `Bearer ${gate}` }
+  })
+  assert.equal(listing.status, 403)
+})
