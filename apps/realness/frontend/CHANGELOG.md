@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Your own computer in Realness** - Signing in gives you a private
+  machine with Pi, a terminal, and chat. Your files sync to it and back.
+- **It sleeps when you leave** - The machine stops after you go idle and
+  starts again when you sign in, in about a minute, showing each stage.
+- **Closer to the West Coast** - Realness services now run in Los Angeles.
 - **Statement editing stays in the feed** - Tap on touch, double-click on
   desktop, or use Tab then Enter. Drafts survive a sync refresh, line breaks
   stay intact, and saving a caption keeps its poster open.
