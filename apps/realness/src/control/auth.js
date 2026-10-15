@@ -13,6 +13,8 @@ const check_admin = async (env, url, token) => {
   } catch (error) {
     if (error.status === HTTP.FORBIDDEN)
       throw new Error(not_admin_hint(env, phone_of(token)))
+    // A sync with no hosts yet answers 404; that is not a refusal.
+    if (error.status === HTTP.NOT_FOUND) return
     throw error
   }
 }

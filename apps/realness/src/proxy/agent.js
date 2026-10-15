@@ -5,6 +5,12 @@ const UPSTREAM = 'https://openrouter.ai/api/v1/chat/completions'
 export const MODEL = 'thinkingmachines/inkling:free'
 export const HOUSE_MODEL =
   process.env.HOUSE_MODEL ?? 'deepseek/deepseek-v4-flash'
+/** Never pay above $0.30/$1.20 per 1M tokens, cheapest first, no fp4. */
+export const ROUTING = {
+  max_price: { prompt: 0.3, completion: 1.2 },
+  sort: 'price',
+  quantizations: ['fp8', 'unknown']
+}
 const TIMEOUT_MS = 120_000
 const LIMIT = LIMIT_MIB * MIB
 
@@ -28,7 +34,12 @@ export const call_upstream = (
       'HTTP-Referer': 'https://pi.dev',
       'X-OpenRouter-Title': 'pi'
     },
-    body: JSON.stringify({ ...body, model, usage: { include: true } }),
+    body: JSON.stringify({
+      ...body,
+      model,
+      ...(model === HOUSE_MODEL && { provider: ROUTING }),
+      usage: { include: true }
+    }),
     signal: AbortSignal.timeout(TIMEOUT_MS)
   })
 

@@ -123,7 +123,7 @@ const forward = (request, response, where, pass, streaming = false) =>
 /**
  * @param {{
  *   identify: (token: string) => Promise<{ phone: string }>,
- *   host_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number },
+ *   host_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number } | Promise<{ host: string, port: number, api_port: number }>,
  *   secret: string,
  *   origins: string[],
  *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
@@ -188,7 +188,7 @@ export const make_gate = ({
       await forward(
         request,
         response,
-        host_for({ phone: who.phone }),
+        await host_for({ phone: who.phone }),
         issue_host_pass(who, secret),
         response.headersSent
       )
@@ -234,7 +234,7 @@ export const make_gate = ({
 
     let pty
     try {
-      const where = host_for({ phone: who.phone, actor })
+      const where = await host_for({ phone: who.phone, actor })
       pty = await open_pty(where, {
         actor,
         pass: issue_host_pass(who, secret),
