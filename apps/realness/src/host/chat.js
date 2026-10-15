@@ -48,7 +48,7 @@ const read_json = async request => {
 }
 
 /**
- * @param {{ store: import('./actors.js').ActorStore, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null }} options
+ * @param {{ store: import('./server.js').RouteStore, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null }} options
  */
 export const chat_handlers = ({ store, connect, limits = null }) => {
   /** Hand one request to the guest's chat bridge; the actor is working until it answers. */

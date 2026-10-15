@@ -5,6 +5,7 @@ import { cpSync as cp_sync, existsSync as exists_sync, mkdirSync as mkdir_sync, 
 import { request } from "node:http"
 import { join } from "node:path"
 import { AppStore } from "../../../src/host/apps.js"
+import { Actor } from "../../../src/host/actors.js"
 import { NotFound } from "../../../src/host/errors.js"
 import { issue_host_pass } from "#root/src/sign-on/node/host-pass.js"
 import { makeServer as make_server } from "../../../src/host/server.js"
@@ -21,10 +22,36 @@ write_file_sync(join(fixtures, "demo/package.json"), '{"name": "demo"}\n')
 mkdir_sync(join(fixtures, "page"))
 write_file_sync(join(fixtures, "page/index.html"), "<p>site</p>\n")
 
-const actor = { id: "a-check", owner: alice }
+/**
+ * The routes reach a store for these eighteen methods; this check exercises
+ * `get` and `copyOut` only. A named throw keeps an accidental reach loud
+ * instead of answering wrongly.
+ */
+const unreached = (name) => () => {
+  throw new Error(`app-api-check does not stand in store.${name}`)
+}
+
+const actor = new Actor({ id: "a-check", owner: alice })
+/** @type {import('../../../src/host/server.js').RouteStore} */
 const actors = {
   get: (id) => { if (id !== actor.id) throw new NotFound(id); return actor },
   copyOut: async (id, tree, dest) => cp_sync(join(fixtures, tree.slice("/brayness/work/".length)), dest, { recursive: true }),
+  create: unreached("create"),
+  destroy: unreached("destroy"),
+  exec: unreached("exec"),
+  export: unreached("export"),
+  idle: unreached("idle"),
+  list: unreached("list"),
+  publish: unreached("publish"),
+  publishedSite: unreached("publishedSite"),
+  reload: unreached("reload"),
+  restore: unreached("restore"),
+  seedStatus: unreached("seedStatus"),
+  traceOf: unreached("traceOf"),
+  ensureRunning: unreached("ensureRunning"),
+  beginWork: unreached("beginWork"),
+  endWork: unreached("endWork"),
+  firstTurn: unreached("firstTurn"),
 }
 const apps = new AppStore({ volume: fixtures, kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker" })
 const server = make_server(actors, apps)

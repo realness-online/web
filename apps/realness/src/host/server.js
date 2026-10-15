@@ -653,8 +653,20 @@ const route = async (
 }
 
 /**
+ * The store methods the host server asks for, and nothing else.
+ *
+ * `ActorStore` satisfies this as written, so nothing at the call site changes.
+ * Naming it lets a stand-in provide these eighteen rather than all of
+ * ActorStore's fields, and it documents the seam: routes use the first
+ * fourteen, startup adds `ensureRunning`, and chat adds `beginWork`,
+ * `endWork`, and `firstTurn`. Derived from ActorStore, so a renamed method
+ * fails here rather than at runtime.
+ * @typedef {Pick<import('./actors.js').ActorStore, 'beginWork' | 'copyOut' | 'create' | 'destroy' | 'endWork' | 'ensureRunning' | 'exec' | 'export' | 'firstTurn' | 'get' | 'idle' | 'list' | 'publish' | 'publishedSite' | 'reload' | 'restore' | 'seedStatus' | 'traceOf'>} RouteStore
+ */
+
+/**
  * `apps` is an AppStore; without one, /v1/apps answers 404.
- * @param {import('./actors.js').ActorStore} store
+ * @param {RouteStore} store
  * @param {import('./apps.js').AppStore | null} [apps]
  * @param {object | null} [auth]
  * @param {import('./loops.js').Loops | null} [loops]
