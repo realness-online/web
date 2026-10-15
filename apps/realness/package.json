@@ -114,7 +114,7 @@
     "preversion": "cd frontend && node scripts/check-release.js --unreleased",
     "version": "cd frontend && node scripts/promote-changelog.js && cd .. && git add frontend/CHANGELOG.md package.json",
     "postversion": "git commit -m v$npm_package_version && git tag v$npm_package_version && git push -u origin HEAD && git push origin v$npm_package_version",
-    "release:gh": "cd frontend && node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version $(case $npm_package_version in *-*) echo --prerelease;; esac) \"$(node ../src/settings/cli.js output frontend)/build-manifest.json\" --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file \"$(node ../src/settings/cli.js output frontend-notes)\"",
+    "release:gh": "cd frontend && node scripts/check-release.js && node scripts/changelog-notes.js && gh release create v$npm_package_version $(case $npm_package_version in (*-*) echo --prerelease;; esac) \"$(node ../src/settings/cli.js output frontend)/build-manifest.json\" --title v$npm_package_version --target \"$(git rev-parse HEAD)\" --notes-file \"$(node ../src/settings/cli.js output frontend-notes)\"",
     "ship": "node tools/cli/bin/realness.js frontend deploy --env production && npm run release:gh && npm run verify -- --release",
     "verify": "cd frontend && node scripts/verify-deploy.js",
     "verify:deploy:site": "cd frontend && node scripts/verify-deploy.js --from-site",
