@@ -43,7 +43,7 @@ export const development_settings = environments.development
 
 const browser_modes = {
   development: { gate_url: development_settings.services.gate_url },
-  production: { gate_url: development_settings.services.gate_url },
+  production: { gate_url: environments.production.services.gate_url },
   local: { gate_url: '/gate' }
 }
 

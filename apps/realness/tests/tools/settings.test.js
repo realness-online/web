@@ -57,10 +57,13 @@ test('frontend targets retain Firebase aliases; local services keep development 
   )
 })
 
-test('browser modes preserve the cloud gate and isolate local routing', () => {
+test('each browser mode reaches its own gate and local stays local', () => {
   const gate_url = environment_settings('development').services.gate_url
-  for (const mode of ['development', 'production', 'test'])
+  for (const mode of ['development', 'test'])
     assert.deepEqual(browser_settings(mode), { gate_url })
+  assert.deepEqual(browser_settings('production'), {
+    gate_url: environment_settings('production').services.gate_url
+  })
   assert.deepEqual(browser_settings('local'), { gate_url: '/gate' })
   for (const mode of ['dev', 'toString', undefined])
     assert.throws(() => browser_settings(mode), /unknown browser mode/)
