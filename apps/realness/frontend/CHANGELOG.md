@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## v3.0.0 - 2026-10-15
+## v3.0.0-a - 2026-10-15
 
 - **Your own computer in Realness** - Signing in gives you a private
   machine with Pi, a terminal, and chat. Your files sync to it and back.
