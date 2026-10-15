@@ -6,7 +6,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> ownership"
 if [ -n "${SUDO_USER:-}" ]; then
-  chown -R "$SUDO_USER:$SUDO_USER" "/home/$SUDO_USER/brayness" 2> /dev/null || true
+  chown -R "$SUDO_USER:$SUDO_USER" "/home/$SUDO_USER/realness" 2> /dev/null || true
 fi
 
 echo "==> root partition"
@@ -24,7 +24,7 @@ echo "==> net"
 bash "$HERE/net-up.sh"
 
 echo "==> actors volume"
-if [ -e /dev/disk/by-id/google-brayness-actors ]; then
+if [ -e /dev/disk/by-id/google-realness-actors ]; then
   bash "$HERE/actors-volume.sh" | tail -4
 else
   echo "no actors volume attached - skipped"
@@ -32,7 +32,7 @@ fi
 
 echo "==> idle guard"
 bash "$HERE/idle-guard.sh" | tail -2
-systemctl is-active brayness-idle-check.timer
+systemctl is-active realness-idle-check.timer
 
 echo "==> state"
 printf '      vmx flags: %s\n' "$(grep -cw vmx /proc/cpuinfo)"
@@ -42,4 +42,4 @@ printf '      kernel: %s\n' "$(ls -l /opt/fc/vmlinux-* 2>/dev/null | awk '{print
 printf '      template: %s\n' "$(ls -lh /opt/fc/template.ext4 2>/dev/null | awk '{print $5}')"
 printf '      volume: %s\n' "$(findmnt -no SOURCE,FSTYPE,AVAIL /opt/fc/actors/mnt 2>/dev/null || echo 'not mounted')"
 printf '      seed: %s\n' "$(ls -d /opt/fc/actors/mnt/seed 2>/dev/null || echo 'none yet (built on first serve)')"
-printf '      hold: %s\n' "$(ls /run/brayness-hold 2>/dev/null || echo 'not held')"
+printf '      hold: %s\n' "$(ls /run/realness-hold 2>/dev/null || echo 'not held')"

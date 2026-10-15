@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Manage the actor's published site through the host door.
+
+  realness-site versions
+  realness-site restore <version>
+  realness-site remove
+
+Use `realness-publish <dir>` to publish or revise the site.
+"""
+import json
+import os
+import re
+import socket
+import sys
+
+if len(sys.argv) not in (2, 3) or sys.argv[1] not in ("versions", "restore", "remove"):
+    sys.exit("usage: realness-site versions|restore <version>|remove")
+action = sys.argv[1]
+if (action == "restore") != (len(sys.argv) == 3):
+    sys.exit("restore needs one version; other actions take none")
+request = {"op": {"versions": "site-versions", "restore": "site-restore", "remove": "site-remove"}[action]}
+marker = "/realness/work/site/.realness-site-id"
+if os.path.isfile(marker):
+    with open(marker, encoding="utf-8") as saved:
+        site = saved.read().strip()
+    if not re.fullmatch(r"a-[a-f0-9]{12}", site):
+        sys.exit("realness-site: invalid saved site ID")
+    request["site"] = site
+if action == "restore":
+    request["version"] = sys.argv[2]
+with socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM) as sock:
+    sock.settimeout(120)
+    sock.connect((2, 54))
+    sock.sendall(json.dumps(request).encode() + b"\n")
+    data = b""
+    while b"\n" not in data:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        data += chunk
+reply = json.loads(data.partition(b"\n")[0] or b"{}")
+if not reply.get("ok"):
+    sys.exit(reply.get("error", "host did not answer"))
+if action == "versions":
+    for version in reply["versions"]:
+        print(version["id"], version["saved"])
+elif action == "restore":
+    print(reply["url"])
+else:
+    print("unpublished; restore with version", reply["version"])

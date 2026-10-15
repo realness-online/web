@@ -55,7 +55,7 @@ export const admin_identity = async (
   { url = URLS[env], token = token_source() } = {}
 ) => {
   const bearer = await token()
-  if (!bearer) throw new Error('not signed in; run webspace <env> admin login')
+  if (!bearer) throw new Error('not signed in; run realness <env> admin login')
   await check_admin(env, url, bearer)
   return { admin: true, phone: phone_of(bearer) }
 }

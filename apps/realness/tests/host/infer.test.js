@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 import { APP_PORT, InferError, START, infer } from '../../src/host/infer.js'
 
 const base = fileURLToPath(
-  new URL('../../../../artifacts/brayness/', import.meta.url)
+  new URL('../../../../artifacts/realness/', import.meta.url)
 )
 mkdirSync(base, { recursive: true })
 const root = mkdtempSync(join(base, 'infer-test-'))

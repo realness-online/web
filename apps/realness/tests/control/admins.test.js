@@ -16,10 +16,7 @@ import {
 
 const SCOTT = '+14156667777'
 const ADA = '+14155550123'
-const webspace = resolve(
-  import.meta.dirname,
-  '../../tools/control/bin/webspace.js'
-)
+const webspace = resolve(import.meta.dirname, '../../tools/cli/bin/realness.js')
 
 const scratch = async t => {
   const dir = await mkdtemp(join(tmpdir(), 'admins-'))
@@ -134,7 +131,7 @@ test('a write loses to a concurrent edit instead of overwriting it', async t => 
   )
 })
 
-test('webspace local admins: dry-run, --yes, list (phones masked)', async t => {
+test('realness local admins: dry-run, --yes, list (phones masked)', async t => {
   const dir = await scratch(t)
   const run = (...args) =>
     promisify(exec_file)(process.execPath, [
@@ -155,7 +152,7 @@ test('webspace local admins: dry-run, --yes, list (phones masked)', async t => {
   const listed = await run('list')
   assert.match(listed.stdout, /\+1\*\*\*77 {2}Scott/)
   assert.ok(!listed.stdout.includes(SCOTT))
-  await assert.rejects(run('grant', ADA), /usage: webspace <env> admins/)
+  await assert.rejects(run('grant', ADA), /usage: realness <env> admins/)
 })
 
 const person_page = (phone, name) =>
@@ -186,7 +183,7 @@ test('init gives a new environment its first admin and never edits an existing l
   )
 })
 
-test('webspace local admins init reads person.local.html from the harness', async t => {
+test('realness local admins init reads person.local.html from the harness', async t => {
   const dir = await scratch(t)
   const harness = await scratch(t)
   const { writeFile: write_file } = await import('node:fs/promises')
@@ -231,6 +228,6 @@ test('a signed-in non-admin is told who can add them', async () => {
   const { not_admin_hint } = await import('../../src/control/admins.js')
   assert.equal(
     not_admin_hint('development', ADA),
-    `${ADA} is signed in but is not an admin in development. An admin can run: webspace development admins add ${ADA} --yes`
+    `${ADA} is signed in but is not an admin in development. An admin can run: realness development admins add ${ADA} --yes`
   )
 })

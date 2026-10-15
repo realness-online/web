@@ -10,7 +10,7 @@ process.env.HOST_PASS_SECRET = secret
 const phone = '+14155550123'
 const body = Buffer.from(
   JSON.stringify({
-    aud: 'brayness-host',
+    aud: 'realness-host',
     phone,
     exp: Math.floor(Date.now() / 1000) + 240
   })

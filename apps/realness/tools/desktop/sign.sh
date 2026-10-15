@@ -3,13 +3,10 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 app="$root/apps/realness/tools/desktop"
-binary="$root/artifacts/brayness-product/brayness-mac"
+binary="$root/artifacts/realness-product/realness-mac"
 
-identity="${BRAYNESS_SIGN_IDENTITY:-}"
-if [[ -z "$identity" ]]; then
-  identity="$(security find-identity -v -p codesigning \
-    | awk -F'"' '/Developer ID Application/{print $2; exit}')"
-fi
+identity="$(security find-identity -v -p codesigning \
+  | awk -F'"' '/Developer ID Application/{print $2; exit}')"
 [[ -n "$identity" ]] || { echo "no Developer ID Application identity in the keychain" >&2; exit 1; }
 [[ -f "$binary" ]] || { echo "no binary at $binary - run tools/desktop/build.sh first" >&2; exit 1; }
 

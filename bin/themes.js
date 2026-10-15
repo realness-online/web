@@ -39,7 +39,7 @@ export const generate = ({ root = ROOT, name = "realness", output, check = false
   theme_name(name)
   if (name !== "realness" && !output) throw new Error("client themes require --out; export does not install")
   const destination = output ? resolve(root, output) : root
-  if (destination !== root && !destination.startsWith(root + "/")) throw new Error("output must stay inside brayness")
+  if (destination !== root && !destination.startsWith(root + "/")) throw new Error("output must stay inside realness")
   const files = render_theme(load_theme(join(root, "apps/realness/themes", name), name))
   let stale = 0
   for (const [relative, want] of files) {

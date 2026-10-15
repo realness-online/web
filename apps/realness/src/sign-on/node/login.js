@@ -1,5 +1,5 @@
 /**
- * `brayness login`: a sign-on handed back to the terminal.
+ * `realness login`: a sign-on handed back to the terminal.
  *
  * 1. Listen on 127.0.0.1 at a random port, with a one-time state.
  * 2. Open the sign-on page `/sign-on?cli=<port>&state=<state>` in the browser.
@@ -19,12 +19,12 @@ import { MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 const STATE_BYTES = 24
 const REFRESH_MARGIN_S = 120
 
-const SERVICE = 'brayness'
-const ACCOUNT = 'brayness'
+const SERVICE = 'realness'
+const ACCOUNT = 'realness'
 const WAIT = 5 * MS_PER_MINUTE
 
 const page = message =>
-  `<!doctype html><meta charset="utf-8"><title>Brayness</title><p style="font:1.2rem system-ui;margin:3rem">${message}</p>`
+  `<!doctype html><meta charset="utf-8"><title>Realness</title><p style="font:1.2rem system-ui;margin:3rem">${message}</p>`
 
 /** The macOS keychain, driven through `security -i` so secrets stay off argv. */
 export const keychain = {
@@ -83,7 +83,7 @@ export const refresh = async ({ refresh_token, api_key }, fetcher = fetch) => {
     }
   )
   if (!response.ok)
-    throw new Error(`refresh: ${response.status}; run brayness login again`)
+    throw new Error(`refresh: ${response.status}; run realness login again`)
   const body = await response.json()
   return {
     id_token: body.id_token,
@@ -127,7 +127,7 @@ export const login = async ({
     }
     response
       .writeHead(HTTP.OK, { 'content-type': 'text/html' })
-      .end(page('Brayness is signed in. You can close this tab.'))
+      .end(page('Realness is signed in. You can close this tab.'))
     finish.resolve({
       refresh_token: form.get('refresh_token'),
       api_key: form.get('api_key')

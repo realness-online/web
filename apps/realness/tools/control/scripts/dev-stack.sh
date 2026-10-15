@@ -58,7 +58,7 @@ if [ ! -f "$secret_file" ]; then
   exit 1
 fi
 export HOST_PASS_SECRET="$(< "$secret_file")"
-export RECORD_SECRET_FILE=/etc/brayness/record-secret
+export RECORD_SECRET_FILE=/etc/realness/record-secret
 SYNC_DIR="$OUT/site-sync" node "$DIR/server/host/scripts/record-key-dev.js"
 site_sync_pid="$OUT/site-sync.pid"
 if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
@@ -89,8 +89,5 @@ export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 
 cd "$DIR"
-if [ -z "${SYNC_SITE_URL:-}" ]; then
-  site_url_default='http://{id}.localhost:18080/'
-  export BRAYNESS_SITE_URL="${BRAYNESS_SITE_URL:-$site_url_default}"
-fi
-exec node server/host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"
+exec node server/host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
+  --site-url "${SYNC_SITE_PUBLIC_URL%/}/sites/{id}/"

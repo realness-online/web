@@ -24,7 +24,7 @@ const PAGES = (
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -54,15 +54,15 @@ const create = async () => {
   return result.json
 }
 const web_md = async (id, url, extra = '') => {
-  const command = `cd /brayness && BRAYNESS_ACTOR=1 node bin/web-md.js '${url}' --max 300 ${extra}`
+  const command = `cd /realness && node bin/web-md.js '${url}' --max 300 ${extra}`
   const result = await call('POST', `/v1/actors/${id}/exec`, {
     argv: [
       'runuser',
       '-u',
-      'brayness',
+      'realness',
       '--',
       'env',
-      'HOME=/brayness',
+      'HOME=/realness',
       'PATH=/usr/local/bin:/usr/bin:/bin',
       'sh',
       '-c',
@@ -92,7 +92,7 @@ test(
   async () => {
     assert.ok(
       secret,
-      'HOST_PASS_SECRET or artifacts/brayness/host-pass-secret required'
+      'HOST_PASS_SECRET or artifacts/realness/host-pass-secret required'
     )
     const [first, second] = await Promise.all([create(), create()])
     const rows = []

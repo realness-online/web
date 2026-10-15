@@ -57,6 +57,14 @@ const {
   }
 })
 
+vi.mock('@/components/download-vector.vue', () => ({
+  default: defineComponent({
+    name: 'DownloadVector',
+    props: ['itemid'],
+    setup: () => () => h('button')
+  })
+}))
+
 vi.mock('@/utils/platform', async importOriginal => ({
   ...(await importOriginal()),
   is_ios: mock_is_ios

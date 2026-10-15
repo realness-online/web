@@ -1,7 +1,32 @@
-import { readFileSync as read_file_sync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  existsSync as exists_sync,
+  readFileSync as read_file_sync
+} from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 
-/** The harness-relative plans folder, from package.json's brayness.plans. */
+export const harness_root = (start = process.cwd()) => {
+  for (let dir = resolve(start); ; dir = dirname(dir)) {
+    const manifest = join(dir, 'package.json')
+    if (
+      exists_sync(manifest) &&
+      JSON.parse(read_file_sync(manifest, 'utf8')).realness
+    )
+      return dir
+    if (
+      ['.ignore', '.pi/agent', 'vault/plans'].some(marker =>
+        exists_sync(join(dir, marker))
+      )
+    )
+      return dir
+    if (dirname(dir) === dir) return undefined
+  }
+}
+
+export const is_actor = (root = '/') =>
+  exists_sync(join(root, 'etc/realness/actor')) ||
+  exists_sync(join(root, 'usr/local/lib/realness/package.json'))
+
+/** The harness-relative plans folder, from package.json's realness.plans. */
 export const plans_path = root => {
   let settings
   try {
@@ -10,7 +35,7 @@ export const plans_path = root => {
     if (error.code === 'ENOENT') return 'vault/plans'
     throw error
   }
-  const path = settings.brayness?.plans ?? 'vault/plans'
+  const path = settings.realness?.plans ?? 'vault/plans'
   if (
     typeof path !== 'string' ||
     !path ||
@@ -18,7 +43,7 @@ export const plans_path = root => {
     path.split('/').some(part => !part || part === '.' || part === '..')
   )
     throw new Error(
-      'brayness.plans must be a relative folder inside the harness'
+      'realness.plans must be a relative folder inside the harness'
     )
 
   return path
@@ -26,7 +51,7 @@ export const plans_path = root => {
 
 /**
  * The harness-relative folder for local sync state (edit log, turns, records,
- * sync.log), from package.json's brayness.state. It never syncs.
+ * sync.log), from package.json's realness.state. It never syncs.
  */
 export const state_path = root => {
   let settings
@@ -36,7 +61,7 @@ export const state_path = root => {
     if (error.code === 'ENOENT') return '.pi/agent/state'
     throw error
   }
-  const path = settings.brayness?.state ?? '.pi/agent/state'
+  const path = settings.realness?.state ?? '.pi/agent/state'
   if (
     typeof path !== 'string' ||
     !path ||
@@ -44,7 +69,7 @@ export const state_path = root => {
     path.split('/').some(part => !part || part === '.' || part === '..')
   )
     throw new Error(
-      'brayness.state must be a relative folder inside the harness'
+      'realness.state must be a relative folder inside the harness'
     )
 
   return path
@@ -92,7 +117,7 @@ export const local_person = root => {
 
 /**
  * The person this harness mints itemids for, as `/+<phone>`. The untracked
- * person.local.html wins; package.json's brayness.person is the older
+ * person.local.html wins; package.json's realness.person is the older
  * fallback. Null when neither is set: nothing is minted.
  */
 export const person = root => {
@@ -100,7 +125,7 @@ export const person = root => {
   const settings = local ? undefined : read_text(join(root, 'package.json'))
   const phone =
     local?.phone ??
-    (settings === undefined ? undefined : JSON.parse(settings).brayness?.person)
+    (settings === undefined ? undefined : JSON.parse(settings).realness?.person)
   if (phone === undefined || phone === null) return null
   if (typeof phone !== 'string' || !/^\+\d{6,15}$/.test(phone))
     throw new Error('person must be a phone number like +14155551234')
@@ -117,9 +142,9 @@ export const sessions_path = root => {
     throw error
   }
   const path =
-    settings.brayness?.sessions === undefined
+    settings.realness?.sessions === undefined
       ? 'vault/Sessions'
-      : settings.brayness.sessions
+      : settings.realness.sessions
   if (
     typeof path !== 'string' ||
     !path.startsWith('vault/') ||
@@ -127,7 +152,7 @@ export const sessions_path = root => {
     path.split('/').some(part => !part || part === '.' || part === '..')
   )
     throw new Error(
-      'brayness.sessions must be a relative folder inside the vault'
+      'realness.sessions must be a relative folder inside the vault'
     )
 
   return path
@@ -142,12 +167,12 @@ export const runtime_sessions_path = root => {
     if (error.code === 'ENOENT') return '.pi/agent/sessions'
     throw error
   }
-  return settings.brayness?.sessions === undefined
+  return settings.realness?.sessions === undefined
     ? '.pi/agent/sessions'
     : sessions_path(root)
 }
 
-/** File names in the plans folder that are not plans, from brayness.plansIgnore. */
+/** File names in the plans folder that are not plans, from realness.plansIgnore. */
 export const plans_ignore = root => {
   let settings
   try {
@@ -156,7 +181,7 @@ export const plans_ignore = root => {
     if (error.code === 'ENOENT') return []
     throw error
   }
-  const names = settings.brayness?.plansIgnore ?? []
+  const names = settings.realness?.plansIgnore ?? []
   if (
     !Array.isArray(names) ||
     names.some(
@@ -167,7 +192,7 @@ export const plans_ignore = root => {
         name.includes('\\')
     )
   )
-    throw new Error('brayness.plansIgnore must be a list of file names')
+    throw new Error('realness.plansIgnore must be a list of file names')
 
   return names
 }

@@ -1,0 +1,58 @@
+#!/usr/bin/env node
+/**
+ * Print the model credential the `realness` provider runs per request.
+ *
+ * Pi's models.json names this command (`!realness-model-pass`), so the same
+ * name must work everywhere the harness runs:
+ *
+ *   an actor - /usr/local/bin/realness-model-pass asks the host door over
+ *              vsock for a sixty-second person-bound pass; this forwards to it
+ *   a Mac   - the keychain holds the phone sign-in, and the proxy accepts an
+ *              ID token minted from it, so that token is the pass
+ *
+ * Nothing is written to disk: the keychain refreshes itself, and every token
+ * lives only in the pipe.
+ */
+import { execFile } from "node:child_process"
+import { promisify } from "node:util"
+
+const run = promisify(execFile)
+const SERVICE = "realness"
+const ACCOUNT = "realness"
+const DOOR = "/usr/local/bin/realness-model-pass"
+
+/** An actor's pass: the host door signs it, and no credential is stored here. */
+async function door_pass() {
+  const { stdout } = await run(DOOR, [], { encoding: "utf8" })
+  return stdout.trim()
+}
+
+/** A Mac's pass: refresh the saved sign-in and print the phone's ID token. */
+async function phone_pass() {
+  let saved
+  try {
+    const { stdout } = await run("security", ["find-generic-password", "-s", SERVICE, "-a", ACCOUNT, "-w"], { encoding: "utf8" })
+    saved = stdout.trim()
+  } catch {
+    throw new Error("not signed in; run realness login first")
+  }
+  const { refresh_token, api_key } = JSON.parse(saved)
+  if (!refresh_token || !api_key) throw new Error("the keychain entry has no refresh token")
+  const response = await fetch(`https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(api_key)}`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", refresh_token }),
+  })
+  if (!response.ok) throw new Error(`sign-in refresh failed (${response.status}); run realness login again`)
+  const { id_token } = await response.json()
+  if (!id_token) throw new Error("sign-in refresh gave no token; run realness login again")
+  return id_token
+}
+
+const in_actor = process.platform === "linux"
+try {
+  process.stdout.write(`${in_actor ? await door_pass() : await phone_pass()}\n`)
+} catch (error) {
+  process.stderr.write(`realness-model-pass: ${error.message}\n`)
+  process.exit(1)
+}

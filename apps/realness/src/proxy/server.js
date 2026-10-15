@@ -23,7 +23,7 @@ export const QUOTA_MESSAGES = quota_messages()
 
 /** The house model is asked for by name; anything else is the free model. */
 export const wants_house = body =>
-  /^(house|deepseek)/.test(String(body?.model ?? '').replace(/^brayness\//, ''))
+  /^(house|deepseek)/.test(String(body?.model ?? '').replace(/^realness\//, ''))
 
 /** Bearer: a model pass (actor or app) or a phone ID token. */
 const bearer_identity = ({ identify_phone, secret }) => {

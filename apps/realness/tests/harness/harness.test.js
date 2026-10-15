@@ -1,5 +1,5 @@
 /**
- * `brayness sync`: plan Syncs sections against a real sync service on disk.
+ * `realness sync`: plan Syncs sections against a real sync service on disk.
  */
 import { after, before, test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -26,7 +26,7 @@ import { sync_service } from '#root/src/sync/server.js'
 const A = '+15555550100'
 const RESTORE_OWNER = '+15555550102'
 const root = new URL(
-  `../../../../artifacts/brayness/harness-test-${randomUUID()}/`,
+  `../../../../artifacts/realness/harness-test-${randomUUID()}/`,
   import.meta.url
 ).pathname
 const issuer = dev_issuer()
@@ -36,7 +36,6 @@ let store
 
 before(async () => {
   process.env.GIT_CEILING_DIRECTORIES = dirname(root)
-  process.env.BRAYNESS_STATE = join(root, 'state')
   const storage = disk(join(root, 'bucket'))
   server = sync_service({
     storage,
@@ -47,6 +46,8 @@ before(async () => {
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   store = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token(A)
   })
@@ -66,10 +67,35 @@ const files = async (dir, entries) => {
   return dir
 }
 
+test('whole-harness sync ignores the removed legacy starter override', async context => {
+  const previous = process.env.REALNESS_STARTER
+  context.after(() => {
+    if (previous === undefined) delete process.env.REALNESS_STARTER
+    else process.env.REALNESS_STARTER = previous
+  })
+  process.env.REALNESS_STARTER = join(root, 'missing-starter')
+  const harness = await files(join(root, 'legacy-starter'), {
+    '.ignore': '',
+    'note.md': 'personal\n'
+  })
+  const isolated = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
+    url: `http://127.0.0.1:${server.address().port}`,
+    token: issuer.token('+15555550999')
+  })
+  const report = await sync_harness({ root: harness, store: isolated })
+  assert.ok(report.harness.files.pushed.includes('note.md'))
+  assert.equal(
+    (await isolated.cat('can://~/harness/note.md')).toString(),
+    'personal\n'
+  )
+})
+
 test('configured vault sessions sync first and stay in task and light policies', async () => {
   const harness = await files(join(root, 'vault-history'), {
     'package.json': JSON.stringify({
-      brayness: { sessions: 'vault/Sessions' }
+      realness: { sessions: 'vault/Sessions' }
     }),
     '.ignore': '',
     'vault/plans/p.md': '# P\n\n## Syncs\n\n- work/notes\n',
@@ -77,10 +103,12 @@ test('configured vault sessions sync first and stay in task and light policies',
       JSON.stringify({
         type: 'session',
         id: 'vault-session',
-        cwd: '/brayness'
+        cwd: '/realness'
       }) + '\n'
   })
   const isolated = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550139')
   })
@@ -106,22 +134,24 @@ test('configured vault sessions sync first and stay in task and light policies',
 
 test('offline branches merge at the configured vault session path', async () => {
   const isolated = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550141')
   })
   const body =
-    JSON.stringify({ type: 'session', id: 'vault-merge', cwd: '/brayness' }) +
+    JSON.stringify({ type: 'session', id: 'vault-merge', cwd: '/realness' }) +
     '\n'
   const a = await files(join(root, 'merge-a'), {
     '.ignore': '',
     'package.json': JSON.stringify({
-      brayness: { sessions: 'vault/Sessions' }
+      realness: { sessions: 'vault/Sessions' }
     }),
     'vault/Sessions/s.jsonl': body
   })
   const b = await files(join(root, 'merge-b'), {
     '.ignore': '',
-    'package.json': JSON.stringify({ brayness: { sessions: 'vault/Sessions' } })
+    'package.json': JSON.stringify({ realness: { sessions: 'vault/Sessions' } })
   })
   const sync = harness =>
     sync_harness({
@@ -181,15 +211,15 @@ test('paths outside the harness or never synced are refused', () => {
 test('a lost disk restores Pi conversation JSON from sync alone', async () => {
   const first = await files(join(root, 'restore-first'), {
     '.ignore': '',
-    'vault/plans/brayness.md': '# Brayness\n',
-    '.pi/agent/sessions/--brayness--/call.jsonl':
+    'vault/plans/realness.md': '# Realness\n',
+    '.pi/agent/sessions/--realness--/call.jsonl':
       [
         JSON.stringify({
           type: 'session',
           version: 3,
           id: '00000000-0000-4000-8000-000000000001',
           timestamp: '2026-09-27T00:00:00.000Z',
-          cwd: '/brayness'
+          cwd: '/realness'
         }),
         JSON.stringify({
           type: 'message',
@@ -207,23 +237,25 @@ test('a lost disk restores Pi conversation JSON from sync alone', async () => {
     '.pi/agent/memory.db': 'derived index'
   })
   const recovery_store = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token(RESTORE_OWNER)
   })
   const original = await sync_harness({ root: first, store: recovery_store })
   assert.deepEqual(original.harness.sessions.pushed, [
-    '--brayness--/call.jsonl'
+    '--realness--/call.jsonl'
   ])
   await rm(first, { recursive: true, force: true })
 
   const fresh = await files(join(root, 'restore-fresh'), {
-    'vault/plans/brayness.md': '# Brayness\n'
+    'vault/plans/realness.md': '# Realness\n'
   })
   const restored = await sync_harness({ root: fresh, store: recovery_store })
   assert.deepEqual(restored.harness.sessions.pulled, [
-    '--brayness--/call.jsonl'
+    '--realness--/call.jsonl'
   ])
-  const session_file = join(fresh, '.pi/agent/sessions/--brayness--/call.jsonl')
+  const session_file = join(fresh, '.pi/agent/sessions/--realness--/call.jsonl')
   const entries = (await readFile(session_file, 'utf8'))
     .trimEnd()
     .split('\n')
@@ -239,13 +271,19 @@ test('a lost disk restores Pi conversation JSON from sync alone', async () => {
   })
 })
 
-test('v8: root discovery uses vault/plans, never an old plans folder', async () => {
+test('v8: root discovery uses vault/plans, never an old plans folder', async context => {
   const harness = await files(join(root, 'find'), {
     'vault/plans/p.md': '',
     'work/deep/x.md': ''
   })
-  assert.equal(find_root(join(harness, 'work/deep'), {}), harness)
-  assert.equal(find_root('/', { BRAYNESS_ROOT: harness }), harness)
+  const previous = process.env.REALNESS_ROOT
+  context.after(() => {
+    if (previous === undefined) delete process.env.REALNESS_ROOT
+    else process.env.REALNESS_ROOT = previous
+  })
+  process.env.REALNESS_ROOT = harness
+  assert.equal(find_root(join(harness, 'work/deep')), harness)
+  assert.throws(() => find_root('/'), /no harness here/)
   const old = await files(join(root, 'old-root'), {
     'plans/p.md': '',
     'work/deep/x.md': ''
@@ -260,6 +298,8 @@ test('h1: root discovery and default sync work without plans', async () => {
   })
   assert.equal(find_root(join(harness, 'notes/deep'), {}), harness)
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550106')
   })
@@ -267,18 +307,21 @@ test('h1: root discovery and default sync work without plans', async () => {
   assert.ok(report.harness.files.pushed.includes('notes/deep/idea.md'))
 })
 
-test('local state lives in the harness, follows brayness.state, and never syncs', async () => {
+test('local state lives in the harness, follows realness.state, and never syncs', async () => {
   const harness = await files(join(root, 'own-state'), {
     '.ignore': '',
-    'package.json': JSON.stringify({ brayness: { state: 'local/state' } }),
+    'package.json': JSON.stringify({ realness: { state: 'local/state' } }),
     'local/state/sync.log': 'refresh: 400',
     'notes/a.md': 'a'
   })
-  const outer = process.env.BRAYNESS_STATE
-  delete process.env.BRAYNESS_STATE
+  const outer = process.env.REALNESS_STATE
+  process.env.REALNESS_STATE = join(root, 'ignored-state')
   try {
     assert.equal(use_harness_state(harness), join(harness, 'local/state'))
+    assert.equal(process.env.REALNESS_STATE, join(root, 'ignored-state'))
     const owner = client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
       url: `http://127.0.0.1:${server.address().port}`,
       token: issuer.token('+15555550107')
     })
@@ -288,7 +331,8 @@ test('local state lives in the harness, follows brayness.state, and never syncs'
       !report.harness.files.pushed.some(path => path.startsWith('local/state'))
     )
   } finally {
-    process.env.BRAYNESS_STATE = outer
+    if (outer === undefined) delete process.env.REALNESS_STATE
+    else process.env.REALNESS_STATE = outer
   }
 })
 
@@ -308,6 +352,8 @@ test('v8: default sync reads vault plans and ignores old plans', async () => {
     'old-notes/a.md': 'old'
   })
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550118')
   })
@@ -319,11 +365,13 @@ test('v8: default sync reads vault plans and ignores old plans', async () => {
 
 test('v5: sync reads plans from the package.json setting', async () => {
   const harness = await files(join(root, 'configured-plans'), {
-    'package.json': JSON.stringify({ brayness: { plans: 'custom/plans' } }),
+    'package.json': JSON.stringify({ realness: { plans: 'custom/plans' } }),
     'custom/plans/p.md': '# P\n\n## Syncs\n- notes\n',
     'notes/a.md': 'configured plan'
   })
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550108')
   })
@@ -379,6 +427,8 @@ test("two harnesses share each plan's folders; repos are refused", async () => {
 test('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files; edits return', async () => {
   const phone = '+15555550104'
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token(phone)
   })
@@ -439,7 +489,12 @@ test('a1: two accounts sync matching app paths without sharing private files', a
   const url = `http://127.0.0.1:${server.address().port}`
   const accounts = []
   for (const [index, phone] of ['+15555550131', '+15555550132'].entries()) {
-    const owner = client({ url, token: issuer.token(phone) })
+    const owner = client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
+      url,
+      token: issuer.token(phone)
+    })
     const desktop = await files(join(root, `apps-${index}-desktop`), {
       '.ignore': '',
       'apps/site/site.json': JSON.stringify({ name: `Private site ${index}` }),
@@ -496,6 +551,8 @@ test('a1: two accounts sync matching app paths without sharing private files', a
 
 test('a1: restoring an empty workspace still creates its apps folder', async () => {
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550133')
   })
@@ -513,6 +570,8 @@ test('a1: restoring an empty workspace still creates its apps folder', async () 
 
 test('x10: with .ignore, plan Syncs paths no longer write their old places', async () => {
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550107')
   })
@@ -538,6 +597,8 @@ test('x10: with .ignore, plan Syncs paths no longer write their old places', asy
 
 test('h1: artifacts stay local on upload and restore, even when listed', async () => {
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550109')
   })
@@ -575,6 +636,8 @@ test('h1: artifacts stay local on upload and restore, even when listed', async (
 for (const [index, folder] of ['.obsidian', '.smart-env'].entries()) {
   test(`h2: ${folder} stays local on upload and restore, even when listed`, async () => {
     const owner = client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
       url: `http://127.0.0.1:${server.address().port}`,
       token: issuer.token(`+1555555011${index}`)
     })
@@ -609,6 +672,8 @@ for (const [index, folder] of ['.obsidian', '.smart-env'].entries()) {
 
 test('h1: without a .ignore, only listed folders and history sync', async () => {
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550105')
   })
@@ -640,6 +705,8 @@ test('turn-end defers a saved-history edit and pushes a write', async () => {
     'work/notes/raw.md': 'one\n'
   })
   const owner = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550103')
   })
@@ -668,7 +735,7 @@ test('turn-end defers a saved-history edit and pushes a write', async () => {
     'work/notes/doc.md': 'title\nBODY\n',
     'work/notes/raw.md': 'two\n'
   })
-  const db = new DatabaseSync(join(root, 'state', 'edits.db'))
+  const db = new DatabaseSync(join(actor, '.pi/agent/state', 'edits.db'))
   db.exec(
     'CREATE TABLE IF NOT EXISTS edit (id INTEGER PRIMARY KEY, path TEXT, sha TEXT, session TEXT, turn INTEGER, tool TEXT, tool_call TEXT, ts TEXT)'
   )
@@ -755,7 +822,12 @@ test('s1f: a crash at any upload loses only work after the last completed sync',
   let completed = 0
   for (let crash_at = 0; ; crash_at++) {
     const phone = `+1555555${String(1000 + crash_at).padStart(4, '0')}`
-    const store = client({ url, token: issuer.token(phone) })
+    const store = client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
+      url,
+      token: issuer.token(phone)
+    })
     const actor = await files(join(root, `s1f-${crash_at}`), {
       ...plan,
       'work/notes/doc.md': 'title\nbody\n',
@@ -786,7 +858,7 @@ test('s1f: a crash at any upload loses only work after the last completed sync',
       'work/notes/doc.md': 'title\nBODY\n',
       'work/notes/raw.md': 'two\n'
     })
-    const db = new DatabaseSync(join(root, 'state', 'edits.db'))
+    const db = new DatabaseSync(join(actor, '.pi/agent/state', 'edits.db'))
     db.exec(
       'CREATE TABLE IF NOT EXISTS edit (id INTEGER PRIMARY KEY, path TEXT, sha TEXT, session TEXT, turn INTEGER, tool TEXT, tool_call TEXT, ts TEXT)'
     )
@@ -814,6 +886,8 @@ test('s1f: a crash at any upload loses only work after the last completed sync',
 
     let puts = 0
     const dying = client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
       url,
       token: issuer.token(phone),
       fetcher: (target, init) => {

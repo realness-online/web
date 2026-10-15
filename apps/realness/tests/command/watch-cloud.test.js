@@ -9,7 +9,7 @@ const cloud = {
   billing,
   project: 'realness-development',
   region: 'us-central1',
-  services: ['brayness-sync']
+  services: ['realness-sync']
 }
 const row = {
   date: '2026-10-11',

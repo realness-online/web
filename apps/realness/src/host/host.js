@@ -4,7 +4,8 @@ import { HostError } from './errors.js'
 
 const OUTPUT_LIMIT_BITS = 28
 const NOT_FOUND_CODE = 127
-const LAST_TAP = 63
+/** Actor TAPs are 172.16.<n>.0/30 in a /16; tap0 is the seed, so 1..254. */
+export const LAST_TAP = 254
 const UNIX_PATH_MAX = 108
 
 const REFLINK_FILESYSTEMS = ['xfs', 'btrfs']
@@ -109,7 +110,7 @@ export const shortEnoughForUnix = path =>
  * so a stale mount never makes the volume look non-empty.
  */
 export const mounted = async (disk, work, { readonly = false } = {}) => {
-  const where = mkdtemp_sync('/run/brayness-mnt-')
+  const where = mkdtemp_sync('/run/realness-mnt-')
   try {
     run(['mount', '-o', readonly ? 'loop,ro' : 'loop', disk, where])
   } catch (error) {

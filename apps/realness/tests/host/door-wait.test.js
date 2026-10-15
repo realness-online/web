@@ -7,7 +7,7 @@ import { door_path, wait_for_door } from '../../src/host/door.js'
 
 const root = mkdtempSync(
   fileURLToPath(
-    new URL('../../../../artifacts/brayness/door-wait-', import.meta.url)
+    new URL('../../../../artifacts/realness/door-wait-', import.meta.url)
   )
 )
 test.after(() => rmSync(root, { recursive: true, force: true }))

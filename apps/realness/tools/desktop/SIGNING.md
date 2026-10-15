@@ -1,15 +1,15 @@
 # Signing and notarizing the Mac binary
 
-Getting a downloaded `brayness-mac` to open on a stranger's Mac took two days
+Getting a downloaded `realness-mac` to open on a stranger's Mac took two days
 (Sept 21-22, 2026). This is what worked and what broke along the way.
 
 ## Steps
 
 ```bash
-bash apps/realness/tools/desktop/build.sh      # universal binary -> artifacts/brayness-product/brayness-mac
+bash apps/realness/tools/desktop/build.sh      # universal binary -> artifacts/realness-product/realness-mac
 bash apps/realness/tools/desktop/sign.sh       # Developer ID + hardened runtime + entitlements.plist
 bash apps/realness/tools/desktop/notarize.sh   # zip, submit, wait for Accepted
-bash apps/realness/tools/desktop/gatekeeper-check.sh artifacts/brayness-product/brayness-mac
+bash apps/realness/tools/desktop/gatekeeper-check.sh artifacts/realness-product/realness-mac
 ```
 
 Order matters. Any change to the binary voids the signature, and a re-sign
@@ -18,10 +18,10 @@ voids the notary ticket. After a rebuild, run all three again.
 ## One-time setup
 
 - **Identity:** "Developer ID Application: Scott Fryxell (FHE652UPZG)" in the
-  login keychain. `sign.sh` finds it; override with `BRAYNESS_SIGN_IDENTITY`.
-- **Notary profile:** `xcrun notarytool store-credentials brayness-notary`
+  login keychain. `sign.sh` finds it without an environment override.
+- **Notary profile:** `xcrun notarytool store-credentials realness-notary`
   with an app-specific password (see the header of `notarize.sh`).
-- **Key material:** `~/.private_keys/brayness-signing/` holds the private key,
+- **Key material:** `~/.private_keys/realness-signing/` holds the private key,
   the certificate request, the Developer ID and G2 CA certificates, and the App
   Store Connect API key (`AuthKey_V4H22R578J.p8`). Apple lets you download the
   `.p8` only once, so keep a backup. Nothing uses it today.
@@ -56,7 +56,7 @@ voids the notary ticket. After a rebuild, run all three again.
   `lipo -thin <arch>`, then compare `codesign -dvvv` against the ticket. In
   our case both slices matched, which ruled out a ticketing gap.
 - **Test machines serve stale copies.** Safari got a 304 and reused an old
-  zip. Serve under a fresh name (for example `brayness-mac-<submission id>.zip`)
+  zip. Serve under a fresh name (for example `realness-mac-<submission id>.zip`)
   and compare `shasum -a 256` hashes.
 - **`curl` sets no quarantine flag**, so it skips Gatekeeper. Use it to test
   the signature and entitlements alone, then double-click for the real test.

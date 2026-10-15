@@ -30,8 +30,8 @@ let server, base
 
 before(async () => {
   await mkdir(dir, { recursive: true })
-  await storage.put('host-keys/brayness-1', secret)
-  await storage.put('host-keys/brayness-2', other_secret)
+  await storage.put('host-keys/realness-1', secret)
+  await storage.put('host-keys/realness-2', other_secret)
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -56,8 +56,8 @@ const status = async (method, path, headers, body) =>
   (await fetch(`${base}/${path}`, { method, headers, body })).status
 
 test("a record pass names a host and is never a phone's host pass", () => {
-  const pass = issue_record_pass('brayness-1', secret)
-  assert.deepEqual(verify_record_pass(pass, secret), { host: 'brayness-1' })
+  const pass = issue_record_pass('realness-1', secret)
+  assert.deepEqual(verify_record_pass(pass, secret), { host: 'realness-1' })
   assert.throws(() => verify_host_pass(pass, secret))
   assert.throws(() =>
     verify_record_pass(issue_host_pass({ phone: A }, secret), secret)
@@ -65,29 +65,29 @@ test("a record pass names a host and is never a phone's host pass", () => {
   assert.throws(() =>
     verify_record_pass(pass, 'another-secret-1234567890123456789012345')
   )
-  for (const bad of ['', 'Brayness', 'a/b', '../x', '-x', 'x'.repeat(64)])
+  for (const bad of ['', 'Realness', 'a/b', '../x', '-x', 'x'.repeat(64)])
     assert.throws(() => issue_record_pass(bad, secret))
-  const old = issue_record_pass('brayness-1', secret, Date.now() - 301_000)
+  const old = issue_record_pass('realness-1', secret, Date.now() - 301_000)
   assert.throws(() => verify_record_pass(old, secret))
 })
 
 test('a host writes its own status and loop records, and nothing else', async () => {
-  const me = as_host('brayness-1')
+  const me = as_host('realness-1')
   assert.equal(
     await status(
       'PUT',
-      'hosts/brayness-1/status.html',
+      'hosts/realness-1/status.html',
       me,
       '<article></article>'
     ),
     200
   )
-  assert.equal(await status('GET', 'hosts/brayness-1/status.html', me), 200)
+  assert.equal(await status('GET', 'hosts/realness-1/status.html', me), 200)
   assert.equal(
-    await status('PUT', 'hosts/brayness-2/status.html', me, 'forged'),
+    await status('PUT', 'hosts/realness-2/status.html', me, 'forged'),
     403
   )
-  assert.equal(await status('PUT', 'hosts/brayness-1/other.html', me, 'x'), 403)
+  assert.equal(await status('PUT', 'hosts/realness-1/other.html', me, 'x'), 403)
   assert.equal(await status('GET', 'hosts/', me), 403)
   assert.equal(
     await status('PUT', `loops/${loop}/record.html`, me, '<article></article>'),
@@ -99,9 +99,9 @@ test('a host writes its own status and loop records, and nothing else', async ()
   assert.equal(await status('GET', 'usage/', me), 403)
   assert.equal(await status('GET', `people/${A}/`, me), 403)
   assert.equal(await status('GET', 'admins.html', me), 403)
-  assert.equal(await status('GET', 'host-keys/brayness-1', me), 403)
+  assert.equal(await status('GET', 'host-keys/realness-1', me), 403)
   assert.equal(
-    await status('GET', 'host-keys/brayness-1', {
+    await status('GET', 'host-keys/realness-1', {
       authorization: `Bearer ${issuer.token(A)}`
     }),
     403
@@ -113,27 +113,27 @@ test("a phone's host pass, an expired pass, or none cannot write host records", 
     authorization: `Bearer ${issue_host_pass({ phone: A }, phone_secret)}`
   }
   assert.equal(
-    await status('PUT', 'hosts/brayness-1/status.html', phone, 'forged'),
+    await status('PUT', 'hosts/realness-1/status.html', phone, 'forged'),
     403
   )
   assert.equal(
     await status(
       'PUT',
-      'hosts/brayness-1/status.html',
-      as_host('brayness-1', Date.now() - 301_000),
+      'hosts/realness-1/status.html',
+      as_host('realness-1', Date.now() - 301_000),
       'x'
     ),
     401
   )
   assert.equal(
-    await status('PUT', 'hosts/brayness-1/status.html', {}, 'x'),
+    await status('PUT', 'hosts/realness-1/status.html', {}, 'x'),
     403
   )
   assert.equal(
     await status(
       'PUT',
-      'hosts/brayness-2/status.html',
-      as_host('brayness-2'),
+      'hosts/realness-2/status.html',
+      as_host('realness-2'),
       'x'
     ),
     401
@@ -141,8 +141,8 @@ test("a phone's host pass, an expired pass, or none cannot write host records", 
   assert.equal(
     await status(
       'PUT',
-      'hosts/brayness-3/status.html',
-      as_host('brayness-3'),
+      'hosts/realness-3/status.html',
+      as_host('realness-3'),
       'x'
     ),
     401

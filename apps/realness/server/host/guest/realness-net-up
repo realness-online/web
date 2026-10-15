@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Runs inside the microVM at boot, from realness-net.service.
+#
+# Step 1 is Firecracker CI's own fcnet-setup.sh: it derives the guest IP from
+# the MAC (06:00:AC:10:00:02 -> 172.16.0.2/30) and brings the link up. It does
+# not add a route or a resolver, so steps 2 and 3 do that. Without step 2 the
+# guest has an address and no way off its own /30.
+set -euo pipefail
+
+DNS1=1.1.1.1
+DNS2=8.8.8.8
+
+/usr/local/bin/fcnet-setup.sh
+
+# In a /30 the two usable addresses are .1 and .2. The host holds one, we hold
+# the other, so the gateway is whichever one we are not.
+for dev in $(ls /sys/class/net | grep -v '^lo$'); do
+  addr=$(ip -4 -o addr show dev "$dev" | awk '{print $4}' | head -1)
+  [ -n "$addr" ] || continue
+  [ "${addr#*/}" = "30" ] || continue
+  net="${addr%.*}"      # 172.16.0.2/30 -> 172.16.0
+  last="${addr##*.}"     # 172.16.0.2/30 -> 2/30
+  last="${last%/*}"      # 2/30 -> 2
+  if [ "$last" = "2" ]; then gw="$net.1"; else gw="$net.2"; fi
+  ip route replace default via "$gw" dev "$dev"
+  ip link set "$dev" up
+  echo "realness-net: $dev has $addr, default via $gw"
+done
+
+# glibc asks A and AAAA in parallel; if the AAAA query stalls on host NAT every
+# lookup pays for it. single-request-reopen serializes them.
+printf 'nameserver %s\nnameserver %s\noptions single-request-reopen\n' "$DNS1" "$DNS2" \
+  > /etc/resolv.conf
+
+ip -br addr show
+ip route show default

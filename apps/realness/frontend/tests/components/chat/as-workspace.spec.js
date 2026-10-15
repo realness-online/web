@@ -31,7 +31,7 @@ import { home_view } from '@/utils/preference'
 let calls
 const set_working = vi.fn()
 before_each(() => {
-  vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
+  vi.stubEnv('MODE', 'development')
   mock_route.query = {}
   mock_route.path = undefined
   home_view.value = 'thoughts'

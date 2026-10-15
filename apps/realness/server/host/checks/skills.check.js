@@ -21,9 +21,9 @@ const made = await call("POST", "/v1/actors", {})
 assert.equal(made.status, 201, made.text)
 const id = made.json.id
 try {
-  const command = "cd /brayness && node bin/check-skills.js --run"
+  const command = "cd /realness && node bin/check-skills.js --run"
   const result = await call("POST", `/v1/actors/${id}/exec`, {
-    argv: ["runuser", "-u", "brayness", "--", "env", "HOME=/brayness", "PATH=/usr/local/bin:/usr/bin:/bin", "sh", "-c", command],
+    argv: ["runuser", "-u", "realness", "--", "env", "HOME=/realness", "PATH=/usr/local/bin:/usr/bin:/bin", "sh", "-c", command],
     timeout: 300,
   })
   assert.equal(result.status, 200, result.text)

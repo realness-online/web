@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 root="$(cd "$(dirname "$0")/.." && pwd)"
 export PI_CODING_AGENT_DIR="$root/.pi/agent"
+actor=0
+if [[ "${1:-}" == "--actor" ]]; then actor=1; shift; fi
 
 # Checkout state is separate from an existing ~/.pi; neither is copied or deleted.
 
@@ -48,7 +50,7 @@ if [[ -z "$best_node" ]]; then
 fi
 
 # The harness's own commands come first so a bare name resolves
-# (`!brayness-model-pass` in models.json). $root/bin goes last: an installed pi
+# (`!realness-model-pass` in models.json). $root/bin goes last: an installed pi
 # must win, or this wrapper skips itself and fetches pi from the registry.
 export PATH="$(dirname "$best_node"):$PATH:$root/bin"
 
@@ -86,7 +88,7 @@ if [[ -x "$pinned_pi" && -x "$pinned_reader" ]]; then
   exec "$pinned_pi" "$@"
 fi
 
-if [[ "${BRAYNESS_ACTOR:-}" == "1" ]]; then
+if [[ "$actor" == 1 || -r /etc/realness/actor || -r /usr/local/lib/realness/package.json ]]; then
   if pi_on_path="$(command -v pi 2>/dev/null)"; then
     if [[ "$pi_on_path" != "$root/bin/pi" ]]; then exec "$pi_on_path" "$@"; fi
   fi

@@ -7,7 +7,7 @@ import { out_path } from "#root/lib/output.js"
 
 const API = "http://127.0.0.1:8080"
 const dev_secret = out_path("host-pass-secret")
-const secret = read_file_sync(exists_sync(dev_secret) ? dev_secret : "/etc/brayness/host-pass-secret", "utf8").trim()
+const secret = read_file_sync(exists_sync(dev_secret) ? dev_secret : "/etc/realness/host-pass-secret", "utf8").trim()
 const alice = "+14155550123"
 const call = async (method, path, body) => {
   const response = await fetch(API + path, {
@@ -28,12 +28,12 @@ let app
 try {
   actor = (await call("POST", "/v1/actors")).id
   console.log(`  ok   actor ${actor}`)
-  const script = `mkdir -p /brayness/work/idle-demo && cd /brayness/work/idle-demo && printf '%s' '{"name":"idle-demo"}' > package.json && cat > server.js`
+  const script = `mkdir -p /realness/work/idle-demo && cd /realness/work/idle-demo && printf '%s' '{"name":"idle-demo"}' > package.json && cat > server.js`
   const made = await call("POST", `/v1/actors/${actor}/exec`, { argv: ["sh", "-c", script], stdin_b64: Buffer.from(server).toString("base64") })
   assert.equal(made.exit_code, 0, Buffer.from(made.stderr_b64 ?? "", "base64").toString())
 
-  app = (await call("POST", "/v1/apps", { actor, path: "/brayness/work/idle-demo" })).id
-  console.log(`  ok   app ${app} from /brayness/work/idle-demo`)
+  app = (await call("POST", "/v1/apps", { actor, path: "/realness/work/idle-demo" })).id
+  console.log(`  ok   app ${app} from /realness/work/idle-demo`)
 
   await call("POST", `/v1/actors/${actor}/idle`, { tier: "memory" })
   assert.equal((await call("GET", `/v1/actors/${actor}`)).state, "idle")

@@ -15,7 +15,7 @@ const harness = async t => {
   t.after(() => rm(root, { recursive: true, force: true }))
   await write_file(
     join(root, 'package.json'),
-    JSON.stringify({ brayness: { plans: 'vault/plans' } })
+    JSON.stringify({ realness: { plans: 'vault/plans' } })
   )
   const state = join(root, '.pi/agent/state')
   await mkdir(state, { recursive: true })

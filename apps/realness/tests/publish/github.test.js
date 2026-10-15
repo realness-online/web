@@ -8,7 +8,7 @@ import { github_remote, publish_github } from '../../src/publish/github.js'
 
 const run = promisify(execFile)
 const scratch = new URL(
-  '../../../../artifacts/brayness/apps-github-test/',
+  '../../../../artifacts/realness/apps-github-test/',
   import.meta.url
 ).pathname
 const git = async (cwd, ...args) =>

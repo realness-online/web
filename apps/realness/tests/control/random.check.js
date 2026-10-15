@@ -14,7 +14,7 @@ const made = []
 const hostPass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -48,9 +48,9 @@ const sh = async (id, command) => {
 
 const PROBE = [
   "head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \\n'; echo",
-  'for i in $(seq 900); do [ -s /run/brayness/pi-random ] && break; sleep 0.1; done',
+  'for i in $(seq 900); do [ -s /run/realness/pi-random ] && break; sleep 0.1; done',
   'pgrep -x pi | wc -l',
-  'cat /run/brayness/pi-random 2>/dev/null || echo none'
+  'cat /run/realness/pi-random 2>/dev/null || echo none'
 ].join('; ')
 
 after(async () => {

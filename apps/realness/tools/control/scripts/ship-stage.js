@@ -15,13 +15,10 @@ export const ROOT = join(project, '..', '..')
 export const STAGE = out_path('ship')
 const DEFAULT_PROXY = development_settings.services.starter_proxy_url
 
-export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', 'skills', 'prompts', 'extensions', 'themes', '.pi/agent/themes']
+export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', '.pi/skills', '.pi/prompts', '.pi/extensions', 'themes', '.pi/agent/themes', '.pi/package.json', '.pi/package-lock.json']
 
 /** Tracked public Pi defaults; personal `.pi/agent` settings never ship. */
 export const STARTER_DEFAULTS = { '.pi/starter/settings.json': '.pi/agent/settings.json', '.pi/starter/npm/package.json': '.pi/agent/npm/package.json' }
-
-/** Shipped at the tree root, kept in .pi/ at home. */
-export const HOME_IN_PI = ['skills', 'prompts', 'extensions']
 
 export const HOME_ONLY = {
   'nvim-buffers': "reads Scott's Neovim",
@@ -44,7 +41,7 @@ export const ships = path => {
   const parts = path.split(sep)
   const name = parts.at(-1)
   if (name === '.DS_Store' || name.startsWith('._') || parts.includes('node_modules')) return false
-  if (parts[0] === 'skills' && Object.hasOwn(HOME_ONLY, parts[1])) return false
+  if (parts[0] === '.pi' && parts[1] === 'skills' && Object.hasOwn(HOME_ONLY, parts[2])) return false
   if (parts[0] === 'examples' && (name === 'dist' || name === '.cache')) return false
   return true
 }
@@ -93,13 +90,13 @@ export const starter_manifest = stage => {
   return { version, files }
 }
 
-const brayness_provider = proxy_url => ({
+const realness_provider = proxy_url => ({
   baseUrl: proxy_url,
-  apiKey: '!brayness-model-pass',
+  apiKey: '!realness-model-pass',
   api: 'openai-completions',
   compat: { supportsDeveloperRole: false, supportsReasoningEffort: false },
   models: [
-    { id: 'inkling', name: 'Inkling (brayness proxy)', input: ['text'], contextWindow: 1048576, maxTokens: 32768,
+    { id: 'inkling', name: 'Inkling (realness proxy)', input: ['text'], contextWindow: 1048576, maxTokens: 32768,
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
     { id: 'house', name: 'DeepSeek (house model, paid plan)', input: ['text'], contextWindow: 1048576, maxTokens: 32768,
       cost: { input: 0.042, output: 0.084, cacheRead: 0.0084, cacheWrite: 0 } }
@@ -107,7 +104,7 @@ const brayness_provider = proxy_url => ({
 })
 
 /** Build the ship tree. Checks run first, so a bad input keeps the last tree. */
-export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env.BRAYNESS_PROXY_URL || DEFAULT_PROXY } = {}) => {
+export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = DEFAULT_PROXY } = {}) => {
   let pi_version
   try {
     pi_version = exec_file_sync('pi', ['--version'], { encoding: 'utf8' }).trim()
@@ -115,15 +112,14 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
     throw new Error('pi is not installed on PATH')
   }
   if (!PI_VERSION.test(pi_version)) throw new Error(`invalid local pi version: ${pi_version}`)
-  if (!PROXY_URL.test(proxy_url)) throw new Error('BRAYNESS_PROXY_URL must be an http(s) endpoint')
+  if (!PROXY_URL.test(proxy_url)) throw new Error('proxy_url must be an http(s) endpoint')
 
   const previous = exists_sync(join(stage, STARTER)) ? JSON.parse(read_file_sync(join(stage, STARTER), 'utf8')) : null
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage, { recursive: true })
   write_file_sync(join(stage, '.pi-version'), `${pi_version}\n`)
   for (const path of INCLUDE) {
-    const base = HOME_IN_PI.includes(path) ? join(root, '.pi') : root
-    if (exists_sync(join(base, path))) copy(join(base, path), join(stage, path), base)
+    if (exists_sync(join(root, path))) copy(join(root, path), join(stage, path), root)
   }
 
   mkdir_sync(join(stage, 'apps'), { recursive: true })
@@ -139,22 +135,13 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
   }
   for (const [from, to] of Object.entries(STARTER_DEFAULTS)) copy(join(root, from), join(stage, to), root)
   edit_json(join(stage, 'package.json'), pkg => {
-    if (pkg.brayness) delete pkg.brayness.examples
-    for (const asset of ['skills', 'prompts', 'extensions']) {
-      if (pkg.pi?.[asset]) pkg.pi[asset] = [`./${asset}`]
-    }
+    if (pkg.realness) delete pkg.realness.examples
   })
-
-  for (const link of ['extensions', 'prompts']) {
-    const at = join(stage, `.pi/agent/${link}`)
-    rm_sync(at, { recursive: true, force: true })
-    symlink_sync(`../../${link}`, at)
-  }
   mkdir_sync(join(stage, 'plans'), { recursive: true })
   write_file_sync(join(stage, 'plans/site.md'), '# Published site\n\n## Syncs\n\n- work/site\n')
 
   edit_json(join(stage, '.pi/agent/settings.json'), settings => {
-    settings.defaultProvider = 'brayness'
+    settings.defaultProvider = 'realness'
     settings.defaultModel = 'inkling'
     delete settings.enabledModels
     settings.packages = settings.packages.filter(p => !UNSHIPPED_PACKAGES.includes(p.replace(/^npm:/, '')))
@@ -162,7 +149,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = process.env
   edit_json(join(stage, '.pi/agent/npm/package.json'), npm => {
     for (const name of UNSHIPPED_PACKAGES) delete npm.dependencies[name]
   })
-  write_file_sync(join(stage, '.pi/agent/models.json'), `${JSON.stringify({ providers: { brayness: brayness_provider(proxy_url) } }, null, 2)}\n`)
+  write_file_sync(join(stage, '.pi/agent/models.json'), `${JSON.stringify({ providers: { realness: realness_provider(proxy_url) } }, null, 2)}\n`)
   const manifest = starter_manifest(stage)
   const built_at = previous?.version === manifest.version && previous.built_at ? previous.built_at : new Date().toISOString()
   write_file_sync(join(stage, STARTER), `${JSON.stringify({ version: manifest.version, pi: pi_version, built_at, files: manifest.files }, null, 2)}\n`)

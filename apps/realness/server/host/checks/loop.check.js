@@ -13,7 +13,7 @@ const owner = "+14156667777"
 const secret = read_file_sync(out_path("host-pass-secret"), "utf8").trim()
 process.env.HOST_PASS_SECRET = secret
 const pass = () => {
-  const body = Buffer.from(JSON.stringify({ aud: "brayness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
+  const body = Buffer.from(JSON.stringify({ aud: "realness-host", phone: owner, exp: Math.floor(Date.now() / 1000) + 240 })).toString("base64url")
   return `Bearer ${body}.${create_hmac("sha256", secret).update(body).digest("base64url")}`
 }
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
@@ -47,15 +47,15 @@ if (!address || typeof address === "string")
   throw new Error("the check server is not on a TCP port")
 const api = (method, path) => fetch(`http://127.0.0.1:${address.port}${path}`, { method, headers: { authorization: pass() } })
 
-/** Run argv in an actor as the brayness user, with the door open for it. */
+/** Run argv in an actor as the realness user, with the door open for it. */
 const sh = async (id, argv) => {
   door.reconcile()
-  const { exit_code, stdout_b64, stderr_b64 } = await store.exec(id, ["runuser", "-u", "brayness", "--", ...argv], { cwd: "/" })
+  const { exit_code, stdout_b64, stderr_b64 } = await store.exec(id, ["runuser", "-u", "realness", "--", ...argv], { cwd: "/" })
   return { code: exit_code, out: text(stdout_b64), err: text(stderr_b64) }
 }
 
 const start = async (parent, goal) => {
-  const run = await sh(parent, ["brayness", "loop", goal])
+  const run = await sh(parent, ["realness", "loop", goal])
   assert.equal(run.code, 0, run.err)
   const id = run.out.match(/a-[0-9a-z]+/)?.[0]
   assert.ok(id, `no loop id in: ${run.out}`)
@@ -85,19 +85,19 @@ try {
   let session
   for (let i = 0; i < 30 && !session; i++) {
     await sleep(1000)
-    session = (await sh(first, ["sh", "-c", "cat /brayness/work/loop/goal.md && ls /brayness/work/loop/sessions"])).out
+    session = (await sh(first, ["sh", "-c", "cat /realness/work/loop/goal.md && ls /realness/work/loop/sessions"])).out
     if (!session.includes("\n")) session = null
   }
   assert.ok(session?.startsWith("make the check faster"), `no goal or session: ${session}`)
-  ok(`brayness loop started ${first}; goal and session folder in it`)
+  ok(`realness loop started ${first}; goal and session folder in it`)
 
   await loops.watch()
-  const report = await sh(parent, ["brayness", "loop", "report", first])
+  const report = await sh(parent, ["realness", "loop", "report", first])
   assert.equal(report.code, 0, report.err)
   assert.match(report.out, /running/)
-  ok("brayness loop report shows it running")
+  ok("realness loop report shows it running")
 
-  const nested = await sh(first, ["brayness", "loop", "go deeper"])
+  const nested = await sh(first, ["realness", "loop", "go deeper"])
   assert.notEqual(nested.code, 0)
   assert.match(nested.err, /nest 1 deep/)
   ok(`loop inside a loop refused: ${nested.err}`)

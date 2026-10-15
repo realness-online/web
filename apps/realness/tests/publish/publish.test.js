@@ -39,7 +39,7 @@ import {
 
 const execute = promisify(execFile)
 const scratch = new URL(
-  '../../../../artifacts/brayness/apps-publish/',
+  '../../../../artifacts/realness/apps-publish/',
   import.meta.url
 ).pathname
 const command = new URL('../../tools/publish/bin/publish.js', import.meta.url)
@@ -126,7 +126,6 @@ for (const type of ['blog', 'plans'])
           cwd: f.root,
           env: {
             ...process.env,
-            BRAYNESS_ROOT: f.root,
             APPS_EXAMPLE: example,
             TOKEN: f.issuer.token(f.phone)
           }

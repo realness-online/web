@@ -2,7 +2,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
-out="$root/artifacts/brayness-product"
+out="$root/artifacts/realness-product"
 stage="$out/build"
 
 node "$root/apps/realness/tools/control/scripts/ship-stage.js"
@@ -31,12 +31,12 @@ build() {
   deno compile -A --target "$1" --output "$out/$2" "${includes[@]}" entry.ts
 }
 
-build aarch64-apple-darwin "brayness-mac-arm64"
-build x86_64-apple-darwin "brayness-mac-intel"
-build x86_64-pc-windows-msvc "brayness-win.exe"
+build aarch64-apple-darwin "realness-mac-arm64"
+build x86_64-apple-darwin "realness-mac-intel"
+build x86_64-pc-windows-msvc "realness-win.exe"
 
-lipo -create "$out/brayness-mac-arm64" "$out/brayness-mac-intel" -output "$out/brayness-mac"
-rm -f "$out/brayness-mac-arm64" "$out/brayness-mac-intel"
+lipo -create "$out/realness-mac-arm64" "$out/realness-mac-intel" -output "$out/realness-mac"
+rm -f "$out/realness-mac-arm64" "$out/realness-mac-intel"
 
-lipo -archs "$out/brayness-mac"
-ls -lh "$out"/brayness-mac "$out"/brayness-win.exe
+lipo -archs "$out/realness-mac"
+ls -lh "$out"/realness-mac "$out"/realness-win.exe

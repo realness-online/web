@@ -31,10 +31,11 @@ for (const service of ['sync', 'proxy', 'gate']) {
       try {
         const { stdout } = await run(
           'bash',
-          ['server/scripts/stage-service.sh', service],
-          { cwd: root, env: { ...process.env, BRAYNESS_OUT: directory } }
+          ['server/scripts/stage-service.sh', service, directory],
+          { cwd: root }
         )
         const stage = stdout.trim()
+        assert.equal(stage, join(directory, `${service}-deploy`))
         assert.deepEqual(
           JSON.parse(await read_file(join(stage, 'package.json'), 'utf8')),
           JSON.parse(await read_file(new URL('package.json', root), 'utf8'))

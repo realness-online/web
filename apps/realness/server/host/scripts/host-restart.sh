@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-cd "$HOME/brayness"
-record_secret=/etc/brayness/record-secret
+cd "$HOME/realness"
+record_secret=/etc/realness/record-secret
 if ! sudo test -s "$record_secret" || [ "$(sudo stat -c %a "$record_secret")" != 600 ] || [ "$(sudo stat -c %u "$record_secret")" != 0 ]; then
   echo "missing root-only $record_secret (0600); refusing to restart" >&2
   exit 1
@@ -11,17 +11,18 @@ export RECORD_SECRET_FILE="$record_secret"
 sudo pkill -f "[n]ode (server/)?host/main\.js" || true
 sudo pkill -x firecracker || true
 sleep 2
-sudo bash "$HOME/brayness/server/host/scripts/net-up.sh" | head -1
-sudo bash "$HOME/brayness/server/host/scripts/node-install.sh" | tail -1
-sudo bash "$HOME/brayness/server/host/scripts/idle-guard.sh" > /dev/null
-model_secret=/etc/brayness/model-pass-secret
+sudo bash "$HOME/realness/server/host/scripts/net-up.sh" | head -1
+sudo bash "$HOME/realness/server/host/scripts/node-install.sh" | tail -1
+sudo bash "$HOME/realness/server/host/scripts/idle-guard.sh" > /dev/null
+sudo bash "$HOME/realness/server/host/scripts/boot-serve.sh" "$(whoami)"
+model_secret=/etc/realness/model-pass-secret
 if ! sudo test -s "$model_secret" || [ "$(sudo stat -c %a "$model_secret")" != 600 ] || [ "$(sudo stat -c %u "$model_secret")" != 0 ]; then
   echo "missing root-only $model_secret (0600); refusing to start" >&2
   exit 1
 fi
 export MODEL_PASS_SECRET="$(sudo cat "$model_secret")"
 if [ "${#MODEL_PASS_SECRET}" -lt 32 ]; then echo "model pass secret is too short" >&2; exit 1; fi
-host_secret=/etc/brayness/host-pass-secret
+host_secret=/etc/realness/host-pass-secret
 if ! sudo test -s "$host_secret" || [ "$(sudo stat -c %a "$host_secret")" != 600 ] || [ "$(sudo stat -c %u "$host_secret")" != 0 ]; then
   echo "missing root-only $host_secret (0600); refusing to start" >&2
   exit 1
@@ -37,7 +38,7 @@ export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-$sites_url_default}"
 private_ip="$(curl -sf -H Metadata-Flavor:Google http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)"
 if [ -z "$private_ip" ]; then echo "no private address from metadata" >&2; exit 1; fi
 sudo -E nohup node server/host/main.js serve \
-  --volume /opt/fc/actors/mnt --listen 127.0.0.1 --pty-listen "127.0.0.1,$private_ip" --api-listen "127.0.0.1,$private_ip" --port 8080 > /tmp/orch.log 2>&1 &
+  --volume /opt/fc/actors/mnt --listen 127.0.0.1 --pty-listen "127.0.0.1,$private_ip" --api-listen "127.0.0.1,$private_ip" --port 8080 --park > /tmp/orch.log 2>&1 &
 for _ in $(seq 1 90); do
   sleep 2
   curl -sf --max-time 3 http://127.0.0.1:8080/v1/health > /dev/null && break

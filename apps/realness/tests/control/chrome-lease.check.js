@@ -20,7 +20,7 @@ const made = new Set()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -93,7 +93,7 @@ test(
   async () => {
     assert.ok(
       secret,
-      'HOST_PASS_SECRET or artifacts/brayness/host-pass-secret required'
+      'HOST_PASS_SECRET or artifacts/realness/host-pass-secret required'
     )
     const [actor, other] = await Promise.all([create(), create()])
     const marker = `c2-dev-server-${Date.now()}`
@@ -105,7 +105,7 @@ test(
     assert.equal(served.out, 'started', served.err)
 
     let clock = performance.now()
-    const lease = await sh(actor.id, 'brayness chrome')
+    const lease = await sh(actor.id, 'realness chrome')
     const lease_s = (performance.now() - clock) / 1000
     assert.equal(lease.code, 0, lease.err)
     const devtools = lease.out
@@ -147,7 +147,7 @@ test(
       'another actor cannot reach the leased Chrome'
     )
 
-    const returned = await sh(actor.id, 'brayness chrome return')
+    const returned = await sh(actor.id, 'realness chrome return')
     assert.equal(returned.out, 'returned', returned.err)
     const gone = await sh(
       actor.id,

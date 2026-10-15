@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 
 const script = new URL('./soundness-check.js', import.meta.url).pathname
-const scratch = new URL('../artifacts/brayness/h7/', import.meta.url).pathname
+const scratch = new URL('../artifacts/realness/h7/', import.meta.url).pathname
 const page = `<!doctype html><html><head>
 <link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/color.css">
 <link rel="manifest" href="/manifest.webmanifest"><script type="module" src="/main.js"></script>

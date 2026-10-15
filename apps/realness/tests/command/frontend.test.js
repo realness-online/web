@@ -6,7 +6,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const entry = file_url_to_path(
-  new URL('../../tools/cli/bin/brayness.js', import.meta.url)
+  new URL('../../tools/cli/bin/realness.js', import.meta.url)
 )
 const project = file_url_to_path(new URL('../../', import.meta.url))
 const { version } = JSON.parse(
@@ -15,7 +15,7 @@ const { version } = JSON.parse(
 const invoke = args =>
   spawn_sync(process.execPath, [entry, 'frontend', ...args], {
     encoding: 'utf8',
-    env: { ...process.env, BRAYNESS_ACTOR: '0', PROFILE: 'desktop' }
+    env: { ...process.env, REALNESS_ACTOR: '0', PROFILE: 'desktop' }
   })
 const plan = args => {
   const result = invoke([...args, '--dry-run'])

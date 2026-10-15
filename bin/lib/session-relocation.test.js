@@ -10,7 +10,7 @@ import { entryToHtmlLine as entry_to_html_line, sessionHtmlToEntries as session_
 import { relocate_history, restore_history } from './session-relocation.js'
 
 const fixture = t => {
-  const scratch = resolve(import.meta.dirname, '../../artifacts/brayness/s2c')
+  const scratch = resolve(import.meta.dirname, '../../artifacts/realness/s2c')
   mkdir_sync(scratch, { recursive: true })
   const harness = mkdtemp_sync(join(scratch, 'trial-'))
   t.after(() => rm_sync(harness, { recursive: true, force: true }))

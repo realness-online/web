@@ -10,7 +10,7 @@ const secret =
   read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
 const body = Buffer.from(
   JSON.stringify({
-    aud: 'brayness-host',
+    aud: 'realness-host',
     phone,
     exp: Math.floor(Date.now() / 1000) + 240
   })
@@ -48,11 +48,11 @@ try {
     await run(actor, [
       '/bin/sh',
       '-c',
-      `mkdir -p /brayness/work/site; printf '%s' '${text}' > /brayness/work/site/index.html`
+      `mkdir -p /realness/work/site; printf '%s' '${text}' > /realness/work/site/index.html`
     ])
     const published = await run(actor, [
-      '/usr/local/bin/brayness-publish',
-      '/brayness/work/site'
+      '/usr/local/bin/realness-publish',
+      '/realness/work/site'
     ])
     const url = published.trim().split('\n').at(-1)
     if (!url.startsWith('http'))
@@ -63,13 +63,13 @@ try {
       throw new Error('published site has wrong content')
   }
   const versions = await run(actor, [
-    '/usr/local/bin/brayness-site',
+    '/usr/local/bin/realness-site',
     'versions'
   ])
   const version = versions.split(' ')[0]
   if (!/^[a-f0-9]{12}$/.test(version))
     throw new Error(`missing version: ${versions}`)
-  await run(actor, ['/usr/local/bin/brayness-site', 'restore', version])
+  await run(actor, ['/usr/local/bin/realness-site', 'restore', version])
   if ((await content(site)) !== 'first')
     throw new Error('restore did not return the first site')
 
@@ -81,31 +81,31 @@ try {
   const recovered = await run(next, [
     '/bin/sh',
     '-c',
-    `brayness-recover "http://$(ip route | awk '/default/{print $3; exit}'):${sync_port}"`
+    `realness-recover "http://$(ip route | awk '/default/{print $3; exit}'):${sync_port}"`
   ])
   if (!recovered.includes('pulled'))
     throw new Error(`source recovery failed: ${recovered}`)
   const saved_id = await run(next, [
     '/bin/cat',
-    '/brayness/work/site/.brayness-site-id'
+    '/realness/work/site/.realness-site-id'
   ])
   if (!site.includes(saved_id.trim()))
     throw new Error('recovered site ID does not match the URL')
   await run(next, [
     '/bin/sh',
     '-c',
-    'printf third > /brayness/work/site/index.html'
+    'printf third > /realness/work/site/index.html'
   ])
   const revised = await run(next, [
-    '/usr/local/bin/brayness-publish',
-    '/brayness/work/site'
+    '/usr/local/bin/realness-publish',
+    '/realness/work/site'
   ])
   if (
     revised.trim().split('\n').at(-1) !== site ||
     (await content(site)) !== 'third'
   )
     throw new Error('new actor did not revise the stable URL')
-  const removed = await run(next, ['/usr/local/bin/brayness-site', 'remove'])
+  const removed = await run(next, ['/usr/local/bin/realness-site', 'remove'])
   if (!removed.includes('unpublished') || (await fetch(site)).status !== 404)
     throw new Error('removed site is still served')
   console.log(

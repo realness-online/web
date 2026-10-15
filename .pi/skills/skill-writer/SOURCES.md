@@ -30,5 +30,5 @@ This file tracks source material synthesized into `skill-writer`, plus iterative
 
 ## Changelog
 
-- 2026-10-01: `quick_validate.py` - running without PyYAML prints the `uv run` command instead of a traceback; trigger phrases also accept "use on/before/after", "when the user", "when asked"; integration depth gates run only with `--strict-depth`. Brayness-specific checks live in `bin/check-skills.js` (`npm run check:skills`).
+- 2026-10-01: `quick_validate.py` - running without PyYAML prints the `uv run` command instead of a traceback; trigger phrases also accept "use on/before/after", "when the user", "when asked"; integration depth gates run only with `--strict-depth`. Realness-specific checks live in `bin/check-skills.js` (`npm run check:skills`).
 - 2026-03-05: Initialized `SOURCES.md` with baseline source pack (local canonical, Codex upstream, Claude upstream, spec, and repo conventions).

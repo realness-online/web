@@ -1,9 +1,9 @@
 /**
  * An actor host: create it, put code on it, take it away.
  *
- *   webspace development host up brayness-2 [--smoke]
- *   webspace development host down brayness-2 [--delete] [--no-drain]
- *   webspace development host restart brayness-2
+ *   realness development host up realness-2 [--smoke]
+ *   realness development host down realness-2 [--delete] [--no-drain]
+ *   realness development host restart realness-2
  *
  * The host has no credentials at all - it is created with --no-service-account
  * - so it cannot upload its own bundles and cannot be trusted to decide it is
@@ -32,6 +32,12 @@ const READY_TRIES = 30
 const RETRY_MS = 5 * MS_PER_SECOND
 const LOG_TAIL = 2
 
+/** A provider-side deadline: GCE deletes the instance and its disks, even if this Mac is gone. */
+const expiry = expire =>
+  expire
+    ? [`--max-run-duration=${expire}`, '--instance-termination-action=DELETE']
+    : []
+
 const bootDisk = name => `${name}-boot`
 const actorsDisk = name => `${name}-actors`
 
@@ -47,7 +53,7 @@ export const up = async (
   cloud,
   config,
   name,
-  { smoke = false, ...options } = {}
+  { smoke = false, expire, ...options } = {}
 ) => {
   const { imageFamily, machineType, bootSize, actorsSize } = sizes(
     config,
@@ -77,7 +83,7 @@ export const up = async (
     `--size=${bootSize}`,
     '--type=pd-standard',
     `--image-family=${imageFamily}`,
-    '--labels=app=brayness,role=actor-host'
+    '--labels=app=realness,role=actor-host'
   ])
 
   step(`instance ${name} (${machineType}, nested virt, no service account)`)
@@ -90,8 +96,9 @@ export const up = async (
     `--disk=name=${boot},boot=yes,auto-delete=yes`,
     '--no-service-account',
     '--no-scopes',
-    '--tags=brayness-host',
-    '--labels=app=brayness,role=actor-host'
+    '--tags=realness-host',
+    '--labels=app=realness,role=actor-host',
+    ...expiry(expire)
   ])
   if (!created.ok) {
     note(lastLine(created.err))
@@ -124,15 +131,23 @@ export const up = async (
     actors,
     `--size=${actorsSize}`,
     '--type=pd-standard',
-    '--labels=app=brayness,role=actors'
+    '--labels=app=realness,role=actors'
   ])
   await cloud.stream([
     'instances',
     'attach-disk',
     name,
     `--disk=${actors}`,
-    '--device-name=brayness-actors'
+    '--device-name=realness-actors'
   ])
+  if (expire)
+    await cloud.stream([
+      'instances',
+      'set-disk-auto-delete',
+      name,
+      `--disk=${actors}`,
+      '--auto-delete'
+    ])
 
   step('bootstrap on the host')
   await push(cloud, name)
@@ -212,20 +227,20 @@ const push = async (cloud, name) => {
     ])
     await cloud.ssh(
       name,
-      'mkdir -p ~/brayness/dist && sudo chown -R $(whoami):$(whoami) ~/brayness'
+      'mkdir -p ~/realness/dist && sudo chown -R $(whoami):$(whoami) ~/realness'
     )
     for (const entry of await readdir(stage))
       await cloud.stream([
         'scp',
         '--recurse',
         join(stage, entry),
-        `${name}:~/brayness/`
+        `${name}:~/realness/`
       ])
 
     await cloud.stream([
       'scp',
-      out_path('brayness-harness.tar.gz'),
-      `${name}:~/brayness/dist/`
+      out_path('realness-harness.tar.gz'),
+      `${name}:~/realness/dist/`
     ])
   } finally {
     await rm(stage, { recursive: true, force: true })
@@ -271,7 +286,7 @@ export const provision_record_key = async (
         destination,
         '--project=realness-development'
       ]),
-    scratch = join(ROOT, '../../artifacts/brayness'),
+    scratch = join(ROOT, '../../artifacts/realness'),
     read_secret = () =>
       cloud.call([
         'ssh',
@@ -304,8 +319,8 @@ export const provision_record_key = async (
 const summary = async (cloud, config, name) => ({
   name,
   ip: await cloud.ip(name),
-  park: `webspace development host down ${name}`,
-  drop: `webspace development host down ${name} --delete`
+  park: `realness development host down ${name}`,
+  drop: `realness development host down ${name} --delete`
 })
 
 const pause = ms =>

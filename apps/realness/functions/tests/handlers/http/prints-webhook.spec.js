@@ -80,7 +80,7 @@ beforeEach(() => {
   mock_file.download.mockResolvedValue([deflateSync(poster_html())])
   mock_file.getMetadata.mockResolvedValue([
     {
-      name: `people${POSTER}.html.gz`,
+      name: `people${POSTER}.html`,
       cacheControl: 'private, max-age=18000',
       contentType: 'text/html; charset=utf-8',
       contentEncoding: 'deflate',
@@ -198,7 +198,7 @@ describe('#handlers/http/prints-webhook recording', () => {
     await prints_webhook_handler(signed_request(completed()), res)
 
     expect(bucket.file).toHaveBeenCalledWith(
-      'people/+14155550142/posters/1712000000000.html.gz'
+      'people/+14155550142/posters/1712000000000.html'
     )
     const html = saved_html()
     expect(html).toContain(`itemid="${POSTER}"`)
@@ -230,7 +230,7 @@ describe('#handlers/http/prints-webhook recording', () => {
   })
 
   it('writes the sale into a poster the app has archived', async () => {
-    const archived = `people${AUTHOR}/posters/1600000000000/1712000000000.html.gz`
+    const archived = `people${AUTHOR}/posters/1600000000000/1712000000000.html`
     mock_file.exists.mockResolvedValue([false])
     mock_get_files.mockResolvedValue([[{ name: archived }]])
     const res = fake_res()

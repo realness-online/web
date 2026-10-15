@@ -62,13 +62,18 @@ test('the metadata names the encoding, cache, and hash the app checks', () => {
   assert.equal(metadata_for(html).fullLocale, 'en')
 })
 
-test('missing_for reads a listing with and without the .gz suffix', () => {
+test('missing_for reads .html names; a retired .gz copy is not present', () => {
   assert.deepEqual(missing_for(PHONE, []), {
     e64: PHONE,
     profile: true,
     statements: true
   })
   assert.deepEqual(missing_for(PHONE, [`people/${PHONE}/index.html.gz`]), {
+    e64: PHONE,
+    profile: true,
+    statements: true
+  })
+  assert.deepEqual(missing_for(PHONE, [`people/${PHONE}/index.html`]), {
     e64: PHONE,
     profile: false,
     statements: true

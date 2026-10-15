@@ -42,7 +42,7 @@ export const migrate_sessions = (root = harness_root, { trial = false } = {}) =>
   root = root_check(root, trial)
   const config_bytes = read_file_sync(config_path(root))
   const config = JSON.parse(config_bytes)
-  if (config.brayness?.sessions !== undefined) throw new Error('Vault sessions are already configured; no migration performed')
+  if (config.realness?.sessions !== undefined) throw new Error('Vault sessions are already configured; no migration performed')
   const target_name = sessions_path(root)
   const state_name = state_path(root)
   if (!state_name || state_name.startsWith('/') || state_name.split('/').some(part => !part || part === '.' || part === '..')) throw new Error('Invalid harness state folder')
@@ -55,7 +55,7 @@ export const migrate_sessions = (root = harness_root, { trial = false } = {}) =>
   atomic_write(journal_path(root), journal)
   assert.ok(read_file_sync(config_path(root)).equals(config_bytes), 'Harness settings changed during migration; copies retained, activation refused')
   if (!trial) assert_no_live_pi()
-  config.brayness = { ...config.brayness, sessions: target_name }
+  config.realness = { ...config.realness, sessions: target_name }
   atomic_write(config_path(root), config)
   journal.status = 'activated'
   atomic_write(journal_path(root), journal)
@@ -69,11 +69,11 @@ export const rollback_sessions = (root = harness_root, { trial = false } = {}) =
   if (journal.version !== 1 || journal.previous !== null || journal.target !== 'vault/Sessions' || resolve(journal.manifest) !== join(root, journal.target, 'location-manifest.json')) throw new Error('Invalid session cutover journal')
   const config_bytes = read_file_sync(config_path(root))
   const config = JSON.parse(config_bytes)
-  if (config.brayness?.sessions !== undefined && config.brayness.sessions !== journal.target) throw new Error('Session settings changed after cutover; rollback refused')
+  if (config.realness?.sessions !== undefined && config.realness.sessions !== journal.target) throw new Error('Session settings changed after cutover; rollback refused')
   const result = restore_history(journal.manifest, { live: !trial })
   assert.ok(read_file_sync(config_path(root)).equals(config_bytes), 'Harness settings changed during rollback; activation unchanged')
   if (!trial) assert_no_live_pi()
-  if (config.brayness) delete config.brayness.sessions
+  if (config.realness) delete config.realness.sessions
   atomic_write(config_path(root), config)
   journal.status = 'restored'
   atomic_write(journal_path(root), journal)

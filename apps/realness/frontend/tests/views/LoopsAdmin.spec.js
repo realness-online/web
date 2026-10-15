@@ -18,7 +18,7 @@ import { current_user } from '@/utils/serverless'
 import { read_loop } from '@/utils/loops'
 
 const record = (id, status, started) =>
-  `<article itemscope itemtype="/loop"><meta itemprop="id" content="${id}"><meta itemprop="host" content="brayness-1"><meta itemprop="owner" content="+14155550123"><meta itemprop="status" content="${status}"><meta itemprop="runs" content="3"><meta itemprop="tokens" content="900"><meta itemprop="started" content="${started}"><p itemprop="goal">faster tests</p></article>`
+  `<article itemscope itemtype="/loop"><meta itemprop="id" content="${id}"><meta itemprop="host" content="realness-1"><meta itemprop="owner" content="+14155550123"><meta itemprop="status" content="${status}"><meta itemprop="runs" content="3"><meta itemprop="tokens" content="900"><meta itemprop="started" content="${started}"><p itemprop="goal">faster tests</p></article>`
 
 let files
 before_each(() => {
@@ -115,7 +115,7 @@ describe('loops admin page', () => {
     const page = mount(LoopsAdmin)
     await flush_promises()
     expect(page.find('[role=alert]').text()).toBe(
-      'This number is not a Realness admin. Ask an admin to run: webspace <environment> admins add <your phone> --yes'
+      'This number is not a Realness admin. Ask an admin to run: realness <environment> admins add <your phone> --yes'
     )
   })
 })

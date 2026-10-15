@@ -30,9 +30,16 @@ test('the deploy turns host alerts on only when both secrets exist', () => {
   )
 })
 
-test('sync is scaled to zero', () => {
-  assert.match(deploy, /--min-instances 0/)
-  assert.doesNotMatch(deploy, /--min-instances 1/)
+test('every request-driven service is scaled to zero, never left at an old floor', () => {
+  for (const name of ['sync', 'gate', 'proxy']) {
+    const script = readFileSync(
+      new URL(`../../server/${name}/scripts/deploy.sh`, import.meta.url),
+      'utf8'
+    )
+    assert.match(script, /--min-instances 0 /, name)
+    assert.doesNotMatch(script, /--min-instances [1-9]/, name)
+    assert.doesNotMatch(script, /--no-cpu-throttling/, name)
+  }
 })
 
 test('the service reads the alert secrets the deploy sets', () => {
@@ -87,4 +94,16 @@ test('every deploy reads the shared environment, with the sign-in page allowed',
   )
   assert.notEqual(missing.status, 0)
   assert.equal(missing.stdout, '')
+})
+
+test('the gate deploy grants wake access for one instance and one record only', () => {
+  const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
+  const gate = read('../../server/gate/scripts/deploy.sh')
+  const access = read('../../server/gate/scripts/wake-access.sh')
+  assert.match(gate, /wake-access\.sh/)
+  assert.match(access, /--permissions compute\.instances\.start /)
+  assert.match(access, /compute instances add-iam-policy-binding "\$host_name"/)
+  assert.match(access, /resource\.name == \\"\$object\\"/)
+  assert.match(access, /objects\/hosts\/\$host_name\/lifecycle\.html/)
+  assert.doesNotMatch(access, /projects add-iam-policy-binding/)
 })

@@ -44,6 +44,6 @@ export const build = async lima => {
     user: 'root'
   })
 
-  note('after a rebuild the seed is stale: webspace local host up --fresh')
+  note('after a rebuild the seed is stale: realness local host up --fresh')
   return { rebuilt: true }
 }

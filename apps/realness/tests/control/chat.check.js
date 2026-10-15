@@ -11,7 +11,7 @@ const secret =
   read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
 const body = Buffer.from(
   JSON.stringify({
-    aud: 'brayness-host',
+    aud: 'realness-host',
     phone,
     exp: Math.floor(Date.now() / 1000) + 240
   })
@@ -63,7 +63,7 @@ try {
     return text
   }
   const created = await say(
-    'Create a simple static site in /brayness/work/site with index.html that says Copper light. Publish it with brayness publish /brayness/work/site. Reply with the site URL.'
+    'Create a simple static site in /realness/work/site with index.html that says Copper light. Publish it with realness publish /realness/work/site. Reply with the site URL.'
   )
   if (
     !created.includes(site) ||
@@ -79,7 +79,7 @@ try {
   )
     throw new Error(`site was not revised: ${revised}`)
   const restored = await say(
-    'List the published site versions with brayness-site versions. Restore the version that says Copper light. Confirm the URL after checking the live site.'
+    'List the published site versions with realness-site versions. Restore the version that says Copper light. Confirm the URL after checking the live site.'
   )
   if (
     !restored.includes(site) ||
@@ -87,7 +87,7 @@ try {
   )
     throw new Error(`site was not restored: ${restored}`)
   const removed = await say(
-    'Take this site offline with brayness-site remove. Tell me when it is offline.'
+    'Take this site offline with realness-site remove. Tell me when it is offline.'
   )
   if (
     !removed.toLowerCase().includes('offline') ||

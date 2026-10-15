@@ -10,7 +10,7 @@ const secret = read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })

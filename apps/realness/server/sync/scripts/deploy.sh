@@ -3,7 +3,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
 . "$root/server/scripts/service-env.sh"
-account="brayness-sync@$project.iam.gserviceaccount.com"
+account="realness-sync@$project.iam.gserviceaccount.com"
 stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
 
 echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } }, { "action": { "type": "Delete" }, "condition": { "age": 7, "matchesPrefix": ["changes/"] } } ] }' \
@@ -11,7 +11,7 @@ echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": fal
 gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
 
 secrets="HOST_PASS_SECRET=HOST_PASS_SECRET:latest"
-env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins"
+env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins@HOST_POWER_PROJECT=$project"
 if gcloud secrets describe ALERT_TOKEN --project "$project" > /dev/null 2>&1 &&
   gcloud secrets describe HOST_ALERT_WEBHOOK --project "$project" > /dev/null 2>&1; then
   secrets="$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HOST_ALERT_WEBHOOK=HOST_ALERT_WEBHOOK:latest"
@@ -27,7 +27,7 @@ else
   echo "vm git: off (store GITHUB_APP_ID and GITHUB_APP_KEY in Secret Manager)"
 fi
 
-gcloud run deploy brayness-sync \
+gcloud run deploy realness-sync \
   --project "$project" \
   --region "$region" \
   --source "$stage" \
@@ -41,4 +41,4 @@ gcloud run deploy brayness-sync \
   --allow-unauthenticated \
   --quiet
 
-node "$root/tools/control/bin/webspace.js" "$1" admins init
+node "$root/tools/cli/bin/realness.js" "$1" admins init

@@ -1,5 +1,5 @@
 /**
- * `brayness login` with a fake browser, a fake keychain, and a fake Google
+ * `realness login` with a fake browser, a fake keychain, and a fake Google
  * token endpoint. The real keychain is never touched here.
  */
 import { test } from 'node:test'
@@ -138,6 +138,6 @@ test('no keychain entry means not signed in; a revoked one says to log in', asyn
   assert.equal(await token_source({ env: {}, store: memory() })(), null)
   await assert.rejects(
     refresh({ refresh_token: 'revoked', api_key: 'k' }, google()),
-    /brayness login/
+    /realness login/
   )
 })

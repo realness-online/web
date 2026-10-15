@@ -13,7 +13,7 @@ import {
 
 const root = mkdtempSync(
   fileURLToPath(
-    new URL('../../../../artifacts/brayness/loops-', import.meta.url)
+    new URL('../../../../artifacts/realness/loops-', import.meta.url)
   )
 )
 after(() => rmSync(root, { recursive: true, force: true }))
@@ -254,14 +254,14 @@ test('mirror: records go to Storage; an admin stop request is obeyed', async () 
   const loops = new Loops(store, {
     file: join(root, 'mirror.json'),
     mirror,
-    host: 'brayness-1'
+    host: 'realness-1'
   })
   const { id } = await loops.start(
     'a-000000000001',
     'goal with "quotes" & <tags>'
   )
   const record = files.get(`loops/${id}/record.html`)
-  assert.match(record, /itemprop="host" content="brayness-1"/)
+  assert.match(record, /itemprop="host" content="realness-1"/)
   assert.match(record, /itemprop="owner" content="\+14155550123"/)
   assert.match(record, /itemprop="status" content="running"/)
   assert.match(record, /goal with &quot;quotes&quot; &amp; &lt;tags>/)

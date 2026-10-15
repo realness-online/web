@@ -21,6 +21,7 @@ import {
 } from '#root/src/proxy/usage.js'
 import { read_status as sync_read_status } from '#root/src/sync/host-status.js'
 import { status_html } from '#root/src/host/status.js'
+import { intent_now, lifecycle_html } from '#root/src/sync/host-lifecycle.js'
 import {
   billing_lines,
   cost_bars,
@@ -137,7 +138,7 @@ test('sync records become the folders the panel names, newest time winning', asy
   const { mkdir, mkdtemp, writeFile, rm } = await import('node:fs/promises')
   const { join } = await import('node:path')
   const artifacts = new URL(
-    '../../../../artifacts/brayness/watch-tests/',
+    '../../../../artifacts/realness/watch-tests/',
     import.meta.url
   ).pathname
   await mkdir(artifacts, { recursive: true })
@@ -160,7 +161,7 @@ test('sync records become the folders the panel names, newest time winning', asy
   await writeFile(
     join(state, 'sync', 'c.json'),
     JSON.stringify({
-      remote: `people/${phone}/artifacts/brayness/practice/`,
+      remote: `people/${phone}/artifacts/realness/practice/`,
       walked_at: '2026-10-09T20:00:00.000Z'
     })
   )
@@ -199,6 +200,27 @@ test('a host record with no recent report is quiet, and its age is shown', async
   assert.equal(snapshot.panels.hosts.rows[0].state, 'quiet')
   assert.ok(snapshot.panels.hosts.rows[0].age_s >= 300)
   assert.equal(snapshot.panels.cost.rows[0].month.cost, 1.5)
+})
+
+test('a planned park reads parked, never quiet', async () => {
+  const now = Date.now()
+  const old = new Date(now - 3_600_000).toISOString()
+  const snapshot = await health_snapshot({
+    store: store({
+      'can://hosts/': ['host-1/'],
+      'can://hosts/host-1/status.html': status_page({ checked: old }),
+      'can://hosts/host-1/lifecycle.html': lifecycle_html(
+        intent_now('parked', { now: now - 3_000_000 })
+      )
+    }),
+    token: claims(),
+    ledger: ledger({
+      day: { tokens: 0, cost: 0 },
+      month: { tokens: 0, cost: 0 }
+    }),
+    now
+  })
+  assert.equal(snapshot.panels.hosts.rows[0].state, 'parked')
 })
 
 test('a host with running actors reports running, and no actors reports sleeping', async () => {
@@ -339,7 +361,7 @@ test('the frame holds the panels, interval, and controls', () => {
     on: false,
     details: true
   })
-  assert.match(text, /BRAYNESS SERVICE WATCH/)
+  assert.match(text, /REALNESS SERVICE WATCH/)
   assert.match(text, /AGENT REPORT HISTORY/)
   assert.match(text, /MODEL SPEND/)
   assert.match(text, /every 60s/)
@@ -661,7 +683,7 @@ test('details keep deleted machine reports separate from empty cloud inventory',
         status: 'ok',
         rows: [
           {
-            name: 'brayness-demo',
+            name: 'realness-demo',
             state: 'quiet',
             age_s: 1620,
             actors: { running: 0, idle: 1, stopped: 0 }
@@ -679,7 +701,7 @@ test('details keep deleted machine reports separate from empty cloud inventory',
   const text = frame({ snapshot, details: true, on: false, height: 60 })
   assert.match(text, /Cloud inventory: 0 machines, 0 disks/)
   assert.match(text, /AGENT REPORT HISTORY/)
-  assert.match(text, /brayness-demo  last agent report 27m ago/)
+  assert.match(text, /realness-demo  last agent report 27m ago/)
   assert.match(text, /chat-ui  last agent report 28m ago/)
   assert.ok(!text.includes('1 idle'))
   assert.ok(!text.includes('1 stopped'))
@@ -771,7 +793,7 @@ test('the loop hands the token to the health read, so a panel can name the perso
   setTimeout(() => controller.abort(), 30)
   const snapshot = await loop
   assert.equal(snapshot.who.phone, phone)
-  assert.ok(drawn.join('').includes('BRAYNESS SERVICE WATCH'))
+  assert.ok(drawn.join('').includes('REALNESS SERVICE WATCH'))
 })
 
 test('details, scroll and quit do not trigger another health read', async () => {
@@ -782,7 +804,7 @@ test('details, scroll and quit do not trigger another health read', async () => 
     columns: 100,
     rows: 20,
     write: text => {
-      if (!text.includes('BRAYNESS SERVICE WATCH')) return
+      if (!text.includes('REALNESS SERVICE WATCH')) return
       frames++
       setImmediate(() =>
         stdin.write(frames === 1 ? 'd' : frames === 2 ? 'j' : 'q')
@@ -836,6 +858,6 @@ test('the loop draws a first frame, refreshes on the interval, and stops', async
   await loop
   assert.ok(reads >= 2)
   assert.ok(
-    written.filter(text => text.includes('BRAYNESS SERVICE WATCH')).length >= 2
+    written.filter(text => text.includes('REALNESS SERVICE WATCH')).length >= 2
   )
 })

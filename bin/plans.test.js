@@ -2,6 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { runInNewContext } from 'node:vm'
+import { harness_require } from './lib/harness-dependencies.js'
+
+const { parseHTML: parse_html } = harness_require('linkedom')
 
 import { size_diagrams } from '../apps/realness/tools/publish/renderer/static/scripts/plan-diagrams.js'
 
@@ -67,30 +70,30 @@ test('diagrams load fitted; click and keyboard expand, then restore scroll posit
   assert.equal(attributes.get('aria-pressed'), 'false')
 })
 
-function plan(slug, copies) {
-  const diagrams = [1, 2].map(id => ({ cloneNode: deep => ({ slug, id, deep }) }))
-  const figure = { querySelector: () => null, prepend: (...nodes) => copies.push(...nodes) }
-  const parts = {
-    'figure a[href^="/blog/"]': { getAttribute: () => `/blog/${slug}` },
-    ':scope > figure': figure,
-    ':scope > template': { content: { querySelectorAll: () => diagrams } }
-  }
-  return { slug, querySelector: selector => parts[selector] }
-}
-
 test('plan list copies every DAG onto its cover', () => {
-  const order = []
-  const copies = []
-  const parentElement = { append: article => order.push(article.slug) }
-  const articles = ['old', 'recent'].map(slug => Object.assign(plan(slug, copies), { parentElement }))
-  const document = {
-    documentElement: { dataset: { diagrams: 'pending' } },
-    querySelectorAll: selector => selector === 'section > article:has(> template)' ? articles : []
-  }
-  runInNewContext(covers, { document })
-  assert.deepEqual(order, [])
+  const { document, HTMLTemplateElement } = parse_html(`
+    <html data-diagrams="pending"><body><section>
+      <article id="old"><figure><a href="/blog/old">Old</a></figure>
+        <template><pre class="mermaid"><svg><text>First</text></svg></pre><pre class="mermaid"><svg><text>Second</text></svg></pre></template>
+      </article>
+      <article id="recent"><figure><a href="/blog/recent">Recent</a></figure>
+        <template><pre class="mermaid"><svg><text>Third</text></svg></pre><pre class="mermaid"><svg><text>Fourth</text></svg></pre></template>
+      </article>
+    </section></body></html>
+  `)
+  runInNewContext(covers, {
+    document,
+    HTMLTemplateElement,
+    requestAnimationFrame: callback => callback()
+  })
+  assert.deepEqual([...document.querySelectorAll('article')].map(article => article.id), ['old', 'recent'])
+  const copies = [...document.querySelectorAll('figure pre.mermaid')]
   assert.equal(copies.length, 4)
-  assert.ok(copies.every(node => node.deep))
+  assert.deepEqual(copies.map(node => node.textContent), ['First', 'Second', 'Third', 'Fourth'])
+  for (const article of document.querySelectorAll('article')) {
+    const original = article.querySelector('template').content.querySelector('pre')
+    assert.notEqual(article.querySelector('figure pre'), original)
+  }
   assert.equal(document.documentElement.dataset.diagrams, 'ready')
 })
 
@@ -99,14 +102,14 @@ test('the plans app follows the plans folder and keeps chosen slugs', async () =
   const { join } = await import('node:path')
   const { select_plans } = await import('./plans.js')
   const { read_app } = await import('../apps/realness/src/publish/sources.js')
-  const scratch = new URL('../artifacts/brayness/plans-test/', import.meta.url).pathname
+  const scratch = new URL('../artifacts/realness/plans-test/', import.meta.url).pathname
   await mkdir(scratch, { recursive: true })
   const root = await mkdtemp(join(scratch, 'root-'))
   try {
     await mkdir(join(root, 'vault/Projects'), { recursive: true })
     await mkdir(join(root, 'vault/Areas'), { recursive: true })
     await mkdir(join(root, 'apps/plans'), { recursive: true })
-    await writeFile(join(root, 'package.json'), JSON.stringify({ brayness: { person: '+15550001111', plans: 'vault/Projects', plansIgnore: ['Todo.md'] } }))
+    await writeFile(join(root, 'package.json'), JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects', plansIgnore: ['Todo.md'] } }))
     await writeFile(join(root, 'apps/plans/app.json'), JSON.stringify({ id: 'a-0123456789ab', type: 'plans', vault: '../../vault', sources: [] }))
     for (const name of ['one.md', 'two.md', 'Todo.md']) await writeFile(join(root, 'vault/Projects', name), `# ${name}\n`)
     const first = await select_plans(root)
@@ -125,13 +128,13 @@ test('h5: a plan keeps its chosen slug and itemid with no catalog file', async (
   const { mkdir, mkdtemp, rm, stat, writeFile } = await import('node:fs/promises')
   const { join } = await import('node:path')
   const { select_plans } = await import('./plans.js')
-  const scratch = new URL('../artifacts/brayness/plans-test/', import.meta.url).pathname
+  const scratch = new URL('../artifacts/realness/plans-test/', import.meta.url).pathname
   await mkdir(scratch, { recursive: true })
   const root = await mkdtemp(join(scratch, 'vault-catalog-'))
   try {
     await mkdir(join(root, 'vault/Projects'), { recursive: true })
     await mkdir(join(root, 'apps/plans'), { recursive: true })
-    await writeFile(join(root, 'package.json'), JSON.stringify({ brayness: { person: '+15550001111', plans: 'vault/Projects' } }))
+    await writeFile(join(root, 'package.json'), JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects' } }))
     const itemid = '/+15550001111/plans/1791571682897'
     await writeFile(join(root, 'vault/Projects/one.md'), `---\nitemid: "${itemid}"\n---\n# one\n`)
     await writeFile(join(root, 'apps/plans/app.json'), JSON.stringify({ id: 'a-0123456789ab', type: 'plans', vault: '../../vault', sources: [{ id: itemid, slug: 'chosen' }] }))

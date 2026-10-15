@@ -85,7 +85,7 @@ test("missing or invalid client input fails before writing outputs", t => {
   assert.throws(() => load_theme(join(directory, "themes/example-client"), "example-client"), /unknown material/)
   assert.equal(cli("--theme", "example-client").status, 1)
   assert.equal(cli("--theme", "../realness", "--out", directory).status, 1)
-  assert.equal(cli("--out", "../outside-brayness").status, 1)
+  assert.equal(cli("--out", "../outside-realness").status, 1)
   const absent = join(directory, "absent")
   assert.equal(cli("--theme", "example-client", "--out", absent, "--check").status, 1)
   assert.equal(exists_sync(absent), false)

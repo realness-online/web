@@ -5,7 +5,7 @@ import {
 } from '@vue/test-utils'
 import { defineComponent as define_component, ref } from 'vue'
 import { readFile as read_file } from 'node:fs/promises'
-import { use_sign_on } from 'brayness/sign-on/flow'
+import { use_sign_on } from 'realness/sign-on/flow'
 
 const mount_flow = (profile, user = null) =>
   shallow_mount(

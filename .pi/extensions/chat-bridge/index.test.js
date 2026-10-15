@@ -8,8 +8,8 @@ import { bridge, history_of, prints_only } from "./index.js"
 const scratch = new URL("../../../artifacts/", import.meta.url).pathname
 
 const MODELS = [
-  { provider: "brayness", id: "fast", name: "Fast" },
-  { provider: "brayness", id: "deep", name: "Deep" },
+  { provider: "realness", id: "fast", name: "Fast" },
+  { provider: "realness", id: "deep", name: "Deep" },
 ]
 
 /** A stand-in Pi: records handlers, messages, and session control calls; idles on demand. */
@@ -175,10 +175,10 @@ test("compact passes instructions and reports completion", async () => {
 test("model lists available models and switches by name", async () => {
   const { pi, path, close } = setup()
   assert.deepEqual(await command(path, "model"), [
-    { type: "done", text: "Model: brayness/fast", model: "brayness/fast", models: ["brayness/fast", "brayness/deep"] },
+    { type: "done", text: "Model: realness/fast", model: "realness/fast", models: ["realness/fast", "realness/deep"] },
   ])
-  assert.deepEqual(await command(path, "model", "deep"), [{ type: "done", text: "Model: brayness/deep", model: "brayness/deep" }])
-  assert.deepEqual(await command(path, "model", "brayness/fast"), [{ type: "done", text: "Model: brayness/fast", model: "brayness/fast" }])
+  assert.deepEqual(await command(path, "model", "deep"), [{ type: "done", text: "Model: realness/deep", model: "realness/deep" }])
+  assert.deepEqual(await command(path, "model", "realness/fast"), [{ type: "done", text: "Model: realness/fast", model: "realness/fast" }])
   assert.deepEqual(await command(path, "model", "nope"), [{ type: "error", text: "No model named nope" }])
   assert.deepEqual(pi.calls, [["model", "deep"], ["model", "fast"]])
   close()

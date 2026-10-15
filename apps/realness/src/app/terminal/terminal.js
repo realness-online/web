@@ -185,7 +185,9 @@ const create_connection = (
     try {
       const response = await fetch(
         new URL(`ticket?actor=${encodeURIComponent(actor)}`, base),
-        { method: 'POST' }
+        {
+          method: 'POST'
+        }
       )
       if (
         response.status === HTTP_UNAUTHORIZED ||
@@ -539,7 +541,7 @@ export const mount = async (
       redraw()
     }, RESIZE_MS)
   })
-  window.brayness = {
+  window.realness = {
     frame: () => term.frame(),
     screen_text: () => term.screen_text(),
     selection_text: () => term.selection_text(),
@@ -566,7 +568,7 @@ export const mount = async (
       for (const remove of removers.splice(0)) remove()
       display.close()
       clearTimeout(resize_timer)
-      if (window.brayness?.frame) delete window.brayness
+      if (window.realness?.frame) delete window.realness
       connection.close()
     }
   }

@@ -2,7 +2,7 @@
 name: previous-work
 description: Search past agent sessions across all three harnesses (pi, Cursor, Claude Code) when asked about earlier work. Use when the user asks "what did we do about X", "did we already discuss/try/fix X", "find that earlier session", "review previous work", or when a task smells like a repeat of something already done. Knows where each tool stores its JSONL transcripts and how to search them without tripping over ignore files.
 metadata:
-  check: "node scripts/search-sessions.js brayness-skill-check > /dev/null"
+  check: "node scripts/search-sessions.js realness-skill-check > /dev/null"
 ---
 
 # Previous Work
@@ -31,7 +31,7 @@ looks empty or stale, `remember` action `index` rebuilds it (about a second for
 
 ## Where sessions live
 
-`<slug>` is the harness folder's absolute path, `/` replaced by `-`: `home-ana-brayness`
+`<slug>` is the harness folder's absolute path, `/` replaced by `-`: `home-ana-realness`
 for Cursor, with a leading `-` for Claude Code.
 
 | Agent       | Path                                                              | Shape                      |

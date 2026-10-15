@@ -16,7 +16,7 @@ const id = 'a-abcdef123456'
 
 test('an actor edit reaches a desktop through normal sync, renewing an expired pass', async () => {
   const directory = new URL(
-    `../../../../artifacts/brayness/actor-sync-${randomUUID()}/`,
+    `../../../../artifacts/realness/actor-sync-${randomUUID()}/`,
     import.meta.url
   ).pathname
   const root = join(directory, 'actor')

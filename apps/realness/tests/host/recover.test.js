@@ -19,7 +19,7 @@ const phone = '+14155550123'
 const id = 'a-abcdef123456'
 const whole_phone = '+14155550124'
 const dir = new URL(
-  `../../../../artifacts/brayness/recover-${randomUUID()}/`,
+  `../../../../artifacts/realness/recover-${randomUUID()}/`,
   import.meta.url
 ).pathname
 const hash = text => createHash('sha256').update(text).digest('hex')
@@ -76,7 +76,7 @@ before(async () => {
   await storage.put(`people/${whole_phone}/harness/.ignore`, '')
   await storage.put(
     `people/${whole_phone}/harness/package.json`,
-    JSON.stringify({ brayness: { plans: 'vault/plans' } })
+    JSON.stringify({ realness: { plans: 'vault/plans' } })
   )
   await storage.put(
     `people/${whole_phone}/harness/vault/plans/p.md`,
@@ -128,11 +128,11 @@ test('vault session settings survive whole and listed recovery', async () => {
       JSON.stringify({
         type: 'session',
         id: 'vault-session',
-        cwd: '/brayness'
+        cwd: '/realness'
       }) + '\n'
     await storage.put(
       `${prefix}package.json`,
-      JSON.stringify({ brayness: { sessions: 'vault/Sessions' } })
+      JSON.stringify({ realness: { sessions: 'vault/Sessions' } })
     )
     if (whole) await storage.put(`${prefix}.ignore`, '')
     await storage.put(`${prefix}vault/Sessions/s.jsonl`, body)
@@ -185,7 +185,7 @@ test('v5: recovery uses the plans folder from package.json', async () => {
   await mkdir(root, { recursive: true })
   await writeFile(
     join(root, 'package.json'),
-    JSON.stringify({ brayness: { plans: 'custom/plans' } })
+    JSON.stringify({ realness: { plans: 'custom/plans' } })
   )
   const [count, applied] = await run(root, [
     issue_recovery_pass({ phone, id }, secret)
@@ -386,13 +386,12 @@ for (const [name, gone] of [
     await turn_start({ root, state, session: 's.jsonl' })
     await rm(join(root, gone))
     await turn_end({ root, state, session: 's.jsonl', turn: 0 })
-    process.env.BRAYNESS_STARTER = starter
     const report = await sync_actor({
       url,
       root,
       state,
       issue: async () => issue_harness_pass({ phone, id }, secret)
-    }).finally(() => delete process.env.BRAYNESS_STARTER)
+    })
     assert.deepEqual(report.harness.files.deleted, [gone])
     assert.equal(await storage.get(`people/${phone}/harness/${gone}`), null)
     assert.equal(

@@ -9,7 +9,7 @@ const group_for = name => {
   if (/^test/.test(name)) return 'Test'
   if (/^(check|type|pre-commit|fallow|plan-shape)/.test(name)) return 'Check'
   if (/^build/.test(name)) return 'Build'
-  if (/^(local|dev|serve|start|realness|brayness)/.test(name)) return 'Run locally'
+  if (/^(local|dev|serve|start|realness|realness)/.test(name)) return 'Run locally'
   return 'Tools'
 }
 
@@ -187,7 +187,7 @@ export const collect_commands = async root => {
     if (entry.id.startsWith('bin/session-format.js#')) {
       entry.review_reason = 'Migration ran, but four JSONL files and two recovery backups remain.'
       if (entry.id.endsWith('#rollback <manifest>')) entry.review = 'Keep'
-    } else if (/^brayness (turn-start|turn-end|fetch|git-credential)( |$)/.test(entry.display)) {
+    } else if (/^realness (turn-start|turn-end|fetch|git-credential)( |$)/.test(entry.display)) {
       entry.review = 'Keep'
       entry.review_reason = 'Used by the edit-log extension or actor runtime.'
     } else if (['preversion', 'version', 'postversion'].includes(script_name)) {
@@ -205,9 +205,7 @@ export const collect_commands = async root => {
   }
   const warnings = [
     ...missing_targets,
-    { source: 'apps/realness/tools/control/bin/webspace.js', message: 'Help still says dev/prod; configuration rejects those names. Use local/development.' },
-    { source: 'apps/realness/tools/control/bin/webspace.js', message: 'host status references envName outside its scope; listed as defined, not working.' },
-    { source: 'package.json#scripts.start', message: 'npm start and npm run realness start Pi; npm run brayness remains an alias. The app package has a separate operator command.' },
+    { source: 'package.json#scripts.start', message: 'npm start and npm run realness start Pi; npm run realness remains an alias. The app package has a separate operator command.' },
     ...(JSON.parse(await text_of('package.json')).scripts.local ? [] : [{ source: 'npm run local', message: 'Planned only. No local launcher script exists yet.' }]),
   ]
   return { scope: 'Harness root bin/, apps/, .pi/skills/ and skills/. Work projects, dependencies, builds, fixtures and individual tests are excluded. External tool subcommands are delegated to their own help.', packages, bins, candidates, shell_libraries, warnings, entries }

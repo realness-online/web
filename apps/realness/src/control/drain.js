@@ -1,8 +1,8 @@
 /**
  * Move a host's actors to a bucket, and only then let the host go.
  *
- *   webspace development host drain brayness-2            # export and ship, host stays
- *   webspace development host drain brayness-2 --delete   # ... and delete it after
+ *   realness development host drain realness-2            # export and ship, host stays
+ *   realness development host drain realness-2 --delete   # ... and delete it after
  *
  * Runs on the control plane, not the host: the host has no credentials at all
  * (`host up` creates it with --no-service-account), so it cannot upload its own
@@ -261,7 +261,7 @@ const streamToFile = async (cloud, config, name, target, id) => {
  * Delete the host and the disks it actually has.
  *
  * Enumerated, not guessed. Assuming `<name>-actors` is wrong for
- * brayness-1, whose volume is named `brayness-sessions`: the guess deletes the
+ * realness-1, whose volume is named `realness-sessions`: the guess deletes the
  * instance and leaves a 30 GB disk behind, unattached and still billed.
  */
 const deleteHostAndDisks = async (cloud, config, name) => {
@@ -300,7 +300,7 @@ const deleteHostAndDisks = async (cloud, config, name) => {
  * format looks right and returns the *instance* name - so a delete loop over it
  * removes nothing and a 30 GB actors disk keeps billing after its host is
  * gone. `source` is a full URL to the disk itself; this takes its last path
- * segment. Verified against brayness-1, whose two disks are the boot disk and
+ * segment. Verified against realness-1, whose two disks are the boot disk and
  * a volume whose name does not match any pattern.
  */
 const attachedDisks = async (cloud, name) => {

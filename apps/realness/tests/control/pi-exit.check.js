@@ -20,7 +20,7 @@ const host_pass = () => {
     throw new Error('HOST_PASS_SECRET required for check:pi-exit')
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -51,7 +51,7 @@ const main = async () => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         argv: [
-          '/usr/local/bin/brayness',
+          '/usr/local/bin/realness',
           '--mode',
           'json',
           '--no-session',
@@ -60,7 +60,7 @@ const main = async () => {
           '--no-context-files',
           'Reply with exactly: ready'
         ],
-        cwd: '/brayness',
+        cwd: '/realness',
         timeout: Math.ceil((reply_limit_ms + exit_limit_ms) / 1000)
       }),
       signal: AbortSignal.timeout(reply_limit_ms + exit_limit_ms + 10000)

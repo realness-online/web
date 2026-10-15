@@ -18,7 +18,8 @@ import { compress_session_chunk } from '../../../../.pi/runtime/node_modules/@ea
 import { DatabaseSync } from 'node:sqlite'
 import { gunzipSync } from 'node:zlib'
 import { disk } from '#root/src/can/disk.js'
-import { client, conflict_name } from '#root/src/files/client.js'
+import { homedir } from 'node:os'
+import { client, conflict_name, trash_dir } from '#root/src/files/client.js'
 import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
@@ -37,8 +38,6 @@ before(async () => {
     import.meta.dirname,
     '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/session-read.js'
   )
-  process.env.BRAYNESS_STATE = join(root, 'state')
-  process.env.BRAYNESS_TRASH = join(root, 'trash')
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -54,7 +53,13 @@ after(async () => {
   await rm(root, { recursive: true, force: true })
 })
 
-const as = phone => client({ url, token: issuer.token(phone) })
+const as = phone =>
+  client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
+    url,
+    token: issuer.token(phone)
+  })
 const local = async (name, files) => {
   const dir = join(root, name)
   for (const [path, body] of Object.entries(files)) {
@@ -64,10 +69,34 @@ const local = async (name, files) => {
   return dir
 }
 
+test('the default trash path ignores the removed environment override', context => {
+  const previous = process.env.REALNESS_TRASH
+  context.after(() => {
+    if (previous === undefined) delete process.env.REALNESS_TRASH
+    else process.env.REALNESS_TRASH = previous
+  })
+  process.env.REALNESS_TRASH = join(root, 'ignored-trash')
+  const state = join(root, 'state')
+  assert.equal(
+    trash_dir(state),
+    process.platform === 'darwin'
+      ? join(homedir(), '.Trash')
+      : join(state, 'trash')
+  )
+})
+
 test("can://~ names the token's own folder", () => {
   assert.equal(as(A).key('can://~/vault/x.md'), `people/${A}/vault/x.md`)
   assert.equal(as(A).key('can://~'), `people/${A}`)
-  assert.throws(() => client({ url: 'x' }).key('can://~/x'), /needs a token/)
+  assert.throws(
+    () =>
+      client({
+        state: join(root, 'state'),
+        trash: join(root, 'trash'),
+        url: 'x'
+      }).key('can://~/x'),
+    /needs a token/
+  )
 })
 
 test('cp up, ls, cat, cp down, rm', async () => {
@@ -90,9 +119,16 @@ test('another person is refused, with the status', async () => {
   await assert.rejects(as(B).cat(`can://people/${A}/vault/secret.md`), {
     status: 403
   })
-  await assert.rejects(client({ url }).ls(`can://people/${A}/vault/`), {
-    status: 403
-  })
+  await assert.rejects(
+    client({
+      state: join(root, 'state'),
+      trash: join(root, 'trash'),
+      url
+    }).ls(`can://people/${A}/vault/`),
+    {
+      status: 403
+    }
+  )
 })
 
 test('sync pushes, then skips what has not changed', async () => {
@@ -153,6 +189,8 @@ test('read-only recovery never uploads local files, deletes, or sync records', a
   const state = join(root, 'read-only-state')
   const methods = []
   const reader = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url,
     token: issuer.token(A),
     fetcher: (url, options) => {

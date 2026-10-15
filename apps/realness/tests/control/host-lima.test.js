@@ -21,7 +21,7 @@ import {
 
 const config = {
   vm: 'realness-dev',
-  workdir: '/home/scott/realness',
+  workdir: '/home/person/realness',
   api: 'http://127.0.0.1:8080'
 }
 

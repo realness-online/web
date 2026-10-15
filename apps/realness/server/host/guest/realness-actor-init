@@ -1,0 +1,145 @@
+#!/bin/sh
+# realness-actor-init <actor-id> <epoch-seconds>
+#
+# Called once by the host over the vsock control channel after /snapshot/load.
+# A memory snapshot is a fork of a booted machine, so a clone resumes carrying
+# the seed boot's identity and whatever the seed wrote. This turns the clone
+# into an actor: the clock to now, an identity of its own, and none of the
+# seed's residue.
+#
+# Idempotent. An actor id already recorded on this disk means this disk is
+# already that actor, so nothing is minted. The running system still has to
+# agree: a disk-tier reload is loaded from the seed snapshot, so its /run and
+# its kernel hostname are the seed's, and `sd_id128_get_machine()` reads
+# /run/machine-id first (f6). Re-apply the disk's identity - same values on a
+# memory resume, the actor's values on a disk reload.
+#
+# The wipe list is what f6a-audit.sh measures from a live clone. Extend that
+# audit first, then this list.
+set -eu
+
+# o0: `realness-actor-init start-pi` starts the terminal's Pi, once the host
+# has recovered the harness: extensions read plans and memory when Pi starts.
+type_opener() {
+  for _ in $(seq 50); do [ -e /run/realness-pty.sock ] || break; sleep 0.1; done
+  opener="$(printf 'exec realness\r' | base64)"
+  printf '{"op":"data","data_b64":"%s"}\n' "$opener" | /usr/local/bin/realness-pty > /dev/null 2>&1 || true
+}
+if [ "${1:-}" = start-pi ]; then
+  pgrep -x pi > /dev/null || type_opener
+  exit 0
+fi
+
+actor_id="${1:?usage: realness-actor-init <actor-id> <epoch> <address>/<prefix>}"
+epoch="${2:?usage: realness-actor-init <actor-id> <epoch> <address>/<prefix>}"
+address="${3:?usage: realness-actor-init <actor-id> <epoch> <address>/<prefix>}"
+case "${4:-}" in
+  '') pi_after_recovery=0 ;;
+  --after-recovery) pi_after_recovery=1 ;;
+  *) echo "unknown actor-init option: $4" >&2; exit 2 ;;
+esac
+
+state_dir=/etc/realness
+state_file="$state_dir/actor"
+
+# The clock is always wrong after a resume: the guest comes up at snapshot
+# time (f4). Set it before anything here writes a timestamp.
+date -u -s "@$epoch" > /dev/null
+
+# Networking is a snapshot property too: every clone resumes carrying the seed's
+# 172.16.0.2/30 and its route. Re-address from the actor's own /30 before
+# anything needs the network, and do it on the idempotent path as well - a disk
+# reload can come back on a different TAP (h2).
+network_up() {
+  ip_addr="${address%%/*}"
+  prefix="${address##*/}"
+  gateway="${ip_addr%.*}.1"
+  for dev in $(ls /sys/class/net | grep -v '^lo$'); do
+    ip addr flush dev "$dev"
+    ip addr add "$ip_addr/$prefix" dev "$dev"
+    ip link set "$dev" up
+    ip route replace default via "$gateway" dev "$dev"
+  done
+}
+network_up
+
+# The seed snapshot holds a running Pi (h4), and every clone wakes with its
+# memory: the seed's conversation, and the seed's random state in V8 and
+# OpenSSL, which make ids and TLS keys. Nothing reseeds a running Node, so
+# each clone replaces it (s1). Pi writes nothing before its first reply.
+# The pty holder exits with Pi; a new one types the opener the page would,
+# so Pi starts before anyone attaches. /run is memory: the marker names this
+# actor after its own resume, and not after a reload from the seed.
+fresh_pi() {
+  marker=/run/realness-pi-fresh
+  [ "$(cat "$marker" 2> /dev/null)" = "$actor_id" ] && return 0
+  printf '%s\n' "$actor_id" > "$marker"
+  rm -f /run/realness/pi.pid /run/realness/pi-random
+  pkill -x pi 2> /dev/null || true
+  for _ in $(seq 100); do pgrep -x pi > /dev/null || break; sleep 0.1; done
+  pkill -9 -x pi 2> /dev/null || true
+  # A new actor recovers its harness first; the host then runs `start-pi`.
+  [ "$pi_after_recovery" = 1 ] && return 0
+  type_opener
+}
+
+short_id="$(printf '%s' "$actor_id" | tr -cd '0-9a-f' | cut -c1-8)"
+[ -n "$short_id" ] || short_id="$(cat /proc/sys/kernel/random/uuid | cut -c1-8)"
+
+if [ -r "$state_file" ] && [ "$(cat "$state_file")" = "$actor_id" ]; then
+  machine_id="$(cat /etc/machine-id)"
+  printf '%s\n' "$machine_id" > /run/machine-id
+  if [ -e /var/lib/dbus/machine-id ] && [ ! -L /var/lib/dbus/machine-id ]; then
+    printf '%s\n' "$machine_id" > /var/lib/dbus/machine-id
+  fi
+  printf 'realness-%s\n' "$short_id" > /etc/hostname
+  hostname "realness-$short_id"
+  fresh_pi
+  echo "actor $actor_id already initialized"
+  exit 0
+fi
+
+# ------------------------------------------------------------------ identity
+# systemd writes a machine-id at first boot, so every clone of the seed
+# snapshot carries the seed's. Mint one and keep the running system in step:
+# /run/machine-id is what sd_id128_get_machine() reads first.
+mkdir -p "$state_dir"
+printf '%s\n' "$actor_id" > "$state_file"
+
+machine_id="$(cat /proc/sys/kernel/random/uuid | tr -d '-')"
+printf '%s\n' "$machine_id" > /etc/machine-id
+printf '%s\n' "$machine_id" > /run/machine-id
+if [ -e /var/lib/dbus/machine-id ] && [ ! -L /var/lib/dbus/machine-id ]; then
+  printf '%s\n' "$machine_id" > /var/lib/dbus/machine-id
+fi
+
+# Hostname from the actor id: observable, and two clones are distinguishable
+# in logs and on the wire.
+printf 'realness-%s\n' "$short_id" > /etc/hostname
+hostname "realness-$short_id"
+
+# --------------------------------------------------- the seed boot's residue
+# Nothing the seed wrote should be visible to the actor.
+rm -rf /var/log/journal/* /run/log/journal/*
+rm -f /var/lib/systemd/random-seed
+find /var/log -maxdepth 1 -type f -delete 2> /dev/null || true
+find /tmp -mindepth 1 -delete 2> /dev/null || true
+rm -f /realness/.bash_history /realness/.lesshst
+# Files only: the seed's running Pi made its actor folder at startup and
+# will not make it again.
+find /realness/.pi/agent/sessions -type f -delete 2> /dev/null || true
+if [ -e /run/utmp ]; then : > /run/utmp; fi
+
+# journald holds the old journal open, so deleting it is not enough: the boot's
+# entries come back from memory until it starts a new file.
+systemctl restart systemd-journald 2> /dev/null || true
+
+fresh_pi
+
+{
+  printf 'actor %s\n' "$actor_id"
+  printf 'started %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "$state_dir/started"
+
+printf 'actor %s: machine-id %s, hostname realness-%s, clock %s\n' \
+  "$actor_id" "$machine_id" "$short_id" "$(date -u +%s)"

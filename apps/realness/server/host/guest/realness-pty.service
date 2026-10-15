@@ -1,0 +1,15 @@
+[Unit]
+Description=Realness actor terminal (vsock port 53)
+# Like realness-vsock: the control channel is what debugs the network, so it
+# must come up even when networking is broken.
+
+[Service]
+Type=simple
+# fork: one pty agent per connection. reuseaddr: survive a restart without a
+# wait. See realness-pty for the frames on the other end of each connection.
+ExecStart=/usr/bin/socat VSOCK-LISTEN:53,fork,reuseaddr EXEC:/usr/local/bin/realness-pty
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

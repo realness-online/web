@@ -19,8 +19,8 @@ before(async () => {
   await mkdir(dir, { recursive: true })
   await storage.put('admins.html', `<a href="tel:${phone}">Admin</a>`)
   await storage.put(
-    'hosts/brayness-1/status.html',
-    `<article itemscope itemtype="/host"><meta itemprop="name" content="brayness-1"><meta itemprop="seed" content="ready"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"><meta itemprop="actors_running" content="1"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-0123456789ab"><meta itemprop="owner" content="${phone}"></article>\n`
+    'hosts/realness-1/status.html',
+    `<article itemscope itemtype="/host"><meta itemprop="name" content="realness-1"><meta itemprop="seed" content="ready"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"><meta itemprop="actors_running" content="1"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-0123456789ab"><meta itemprop="owner" content="${phone}"></article>\n`
   )
   server = sync_service({
     storage,
@@ -50,7 +50,7 @@ test("operator lists status through sync and sees a stopped host's last report",
   assert.equal(JSON.stringify(rows).includes(phone), false)
   assert.match(
     format_status(rows),
-    /brayness-1: seed ready, 1 running, 1 actors, last seen 60s ago/
+    /realness-1: seed ready, 1 running, 1 actors, last seen 60s ago/
   )
 })
 

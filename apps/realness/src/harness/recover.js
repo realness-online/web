@@ -48,7 +48,7 @@ export const door_pass = (op = 'recovery-pass') =>
 export const recover = async (
   url,
   issue,
-  root = '/brayness',
+  root = '/realness',
   {
     state: state_option = join(root, state_path(root)),
     fetcher = fetch,
@@ -205,10 +205,10 @@ export const recover = async (
 }
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
-  const root = process.env.BRAYNESS_ROOT || '/brayness'
+  const root = '/realness'
   const [, , url] = process.argv
   if (!url || !/^https?:\/\//.test(url))
-    throw new Error('usage: brayness-recover <sync-url>')
+    throw new Error('usage: realness-recover <sync-url>')
   const owner = await stat(root)
   const { getuid, setgroups, setgid, setuid } = process
   if (getuid?.() === 0 && owner.uid !== 0) {

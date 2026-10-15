@@ -34,6 +34,7 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
 import { skipped, skipped_name } from './skip.js'
 import { starter_base, starter_bytes, starter_choice } from './starter.js'
+import { harness_root, state_path } from '#root/src/harness/settings.js'
 import { development_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
 import { MIB, MS_PER_DAY } from '#root/lib/units.js'
@@ -50,8 +51,8 @@ export const SYNC_URL =
   process.env.SYNC_URL ?? development_settings.services.sync_url
 
 /** Sync records live here, never inside the folders they describe. */
-export const state_dir = (env = process.env) =>
-  env.BRAYNESS_STATE ?? join(homedir(), '.local/state/brayness')
+export const state_dir = (root = harness_root()) =>
+  root ? join(root, state_path(root)) : join(homedir(), '.local/state/realness')
 
 export class SyncError extends Error {
   constructor(status, what) {
@@ -940,19 +941,28 @@ const read_api = ({ call, expect, key }) => {
   return api
 }
 
+/**
+ * @param {object} options
+ * @param {string} options.url
+ * @param {string | null | (() => string | Promise<string>)} [options.token]
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string | null} [options.phone]
+ * @param {string} [options.state]
+ * @param {string} [options.trash]
+ */
 export const client = ({
   url,
   token,
   fetcher = fetch,
-  phone = phone_of(token)
+  phone = phone_of(token),
+  state: default_state,
+  trash: default_trash
 }) => {
-  const me = phone
-
   const key = path => {
     let rest = path.replace(/^can:\/\//, '')
     if (rest === '~' || rest.startsWith('~/')) {
-      if (!me) throw new Error('can://~ needs a token with a phone number')
-      rest = `people/${me}${rest.slice(1)}`
+      if (!phone) throw new Error('can://~ needs a token with a phone number')
+      rest = `people/${phone}${rest.slice(1)}`
     }
     return rest
   }
@@ -983,7 +993,7 @@ export const client = ({
   }
 
   const api = {
-    me,
+    me: phone,
     key,
     ...read_api({ call, expect, key }),
 
@@ -1013,9 +1023,9 @@ export const client = ({
       remote,
       {
         concurrency = CONCURRENCY,
-        state = state_dir(),
+        state = default_state ?? state_dir(),
         deletes = 'explained',
-        trash = trash_dir(state),
+        trash = default_trash ?? trash_dir(state),
         defer_edits = false,
         sessions,
         sessions_remote = 'can://~/.pi/agent/sessions/',
@@ -1141,11 +1151,10 @@ export const client = ({
 }
 
 /** macOS keeps a Trash; elsewhere removed files wait in harness state. */
-export const trash_dir = (state, env = process.env) =>
-  env.BRAYNESS_TRASH ??
-  (process.platform === 'darwin'
+export const trash_dir = state =>
+  process.platform === 'darwin'
     ? join(homedir(), '.Trash')
-    : join(state, 'trash'))
+    : join(state, 'trash')
 
 /** Move a file aside, never destroy it: `note.md` lands as `note 2026-09-27T….md`. */
 export const to_trash = async (path, trash) => {

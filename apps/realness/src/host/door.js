@@ -236,7 +236,7 @@ export class Door {
     }
     if (request.op !== 'publish') throw new Error(`unknown op '${request.op}'`)
     permit('actor cannot publish', 'write', '/site')
-    const path = request.path || '/brayness/site'
+    const path = request.path || '/realness/site'
     await this.store.publish(id, path, site)
     LOG.info(`door: ${id} published ${path}`)
     return { ok: true, site, url: this.siteUrl.replaceAll('{id}', site) }

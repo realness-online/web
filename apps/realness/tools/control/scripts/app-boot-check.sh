@@ -13,7 +13,7 @@ ok()  { printf '  ok   %s\n' "$*"; PASS=$((PASS + 1)); }
 bad() { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
-iptables -S INPUT | grep -q -- "-i fc-app+ -j BRAYNESS-APP-IN" \
+iptables -S INPUT | grep -q -- "-i fc-app+ -j REALNESS-APP-IN" \
   || { echo "no app rules: run 'sudo bash server/host/scripts/net-up.sh' first" >&2; exit 1; }
 
 for name in one two; do

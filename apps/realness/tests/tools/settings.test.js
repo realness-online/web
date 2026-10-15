@@ -8,7 +8,8 @@ import {
   mkdirSync as mkdir_sync,
   mkdtempSync as mkdtemp_sync,
   rmSync as rm_sync,
-  readFileSync as read_file_sync
+  readFileSync as read_file_sync,
+  writeFileSync as write_file_sync
 } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -19,11 +20,13 @@ import {
   service_folders
 } from '#root/src/settings/layout.js'
 import {
+  browser_settings,
   deployment_settings,
   environment_settings,
   local_settings
 } from '#root/src/settings/environments.js'
 import { out_root } from '#root/src/settings/output.js'
+import { is_actor } from '#root/src/harness/settings.js'
 
 const cli = join(project_root, 'src/settings/cli.js')
 
@@ -54,12 +57,35 @@ test('frontend targets retain Firebase aliases; local services keep development 
   )
 })
 
+test('browser modes preserve the cloud gate and isolate local routing', () => {
+  const gate_url = environment_settings('development').services.gate_url
+  for (const mode of ['development', 'production', 'test'])
+    assert.deepEqual(browser_settings(mode), { gate_url })
+  assert.deepEqual(browser_settings('local'), { gate_url: '/gate' })
+  for (const mode of ['dev', 'toString', undefined])
+    assert.throws(() => browser_settings(mode), /unknown browser mode/)
+})
+
 test('service deploy requires a configured environment and refuses cross-environment data', () => {
   assert.throws(
     () => deployment_settings(undefined, {}),
     /environment is required/
   )
-  assert.throws(() => deployment_settings('production', {}), /not configured/)
+  assert.deepEqual(deployment_settings('production', {}), {
+    project: 'realness-online',
+    identity: 'realness-online',
+    bucket: 'realness-online.appspot.com',
+    region: 'us-central1',
+    origins:
+      'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com'
+  })
+  assert.throws(
+    () =>
+      deployment_settings('production', {
+        BUCKET: 'realness-development.firebasestorage.app'
+      }),
+    /conflicts with production/
+  )
   for (const env of [
     { PROJECT: 'realness-online' },
     { IDENTITY_PROJECT: 'realness-online' },
@@ -76,10 +102,25 @@ test('service deploy requires a configured environment and refuses cross-environ
   )
 })
 
+test('actor detection follows the guest marker and the installed runtime', t => {
+  const parent = join(project_root, '../../artifacts/realness/actor-detection')
+  mkdir_sync(parent, { recursive: true })
+  const root = mkdtemp_sync(join(parent, 'guest-'))
+  t.after(() => rm_sync(root, { recursive: true, force: true }))
+  assert.equal(is_actor(root), false)
+  mkdir_sync(join(root, 'etc/realness'), { recursive: true })
+  write_file_sync(join(root, 'etc/realness/actor'), 'actor-id\n')
+  assert.equal(is_actor(root), true)
+  rm_sync(join(root, 'etc'), { recursive: true })
+  mkdir_sync(join(root, 'usr/local/lib/realness'), { recursive: true })
+  write_file_sync(join(root, 'usr/local/lib/realness/package.json'), '{}')
+  assert.equal(is_actor(root), true)
+})
+
 test('Bash and Node use one output rule from a checkout with spaces', t => {
   const artifacts = join(
     project_root,
-    '../../artifacts/brayness/settings-tests'
+    '../../artifacts/realness/settings-tests'
   )
   mkdir_sync(artifacts, { recursive: true })
   const scratch = mkdtemp_sync(join(artifacts, 'settings-'))
@@ -93,18 +134,23 @@ test('Bash and Node use one output rule from a checkout with spaces', t => {
   cp_sync(join(project_root, 'lib/output.sh'), join(root, 'lib/output.sh'))
   cp_sync(join(project_root, 'package.json'), join(root, 'package.json'))
   const shell = 'source "$1/lib/output.sh"; printf "%s" "$OUT"'
-  for (const override of [
-    '',
-    join(scratch, "output with spaces and 'quotes'")
-  ]) {
-    const env = { ...process.env, BRAYNESS_OUT: override }
-    const output = exec_file_sync(
-      'bash',
-      ['-e', '-c', shell, 'settings-test', root],
-      { env, encoding: 'utf8' }
-    )
-    assert.equal(output, out_root({ root, env }))
-  }
+  const output = exec_file_sync(
+    'bash',
+    ['-e', '-c', shell, 'settings-test', root],
+    { encoding: 'utf8' }
+  )
+  assert.equal(output, out_root({ root }))
+})
+
+test('settings output ignores the removed legacy override', () => {
+  const output = exec_file_sync(process.execPath, [cli, 'output'], {
+    env: {
+      ...process.env,
+      REALNESS_OUT: join(project_root, 'ignored output')
+    },
+    encoding: 'utf8'
+  })
+  assert.equal(output.trim(), out_root())
 })
 
 test('settings CLI rejects missing fields before Bash can use them', () => {

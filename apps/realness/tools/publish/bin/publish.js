@@ -2,15 +2,15 @@
 /**
  * The apps command, from a harness root.
  *
- *   brayness-publish items list
- *   brayness-publish items mint <vault-file> --type articles|plans|pages|...
- *   brayness-publish items settle      give each copied itemid to its copy
- *   brayness-publish app add <name> --type blog|plans [--source <id>=<slug>]...
- *   brayness-publish app build <name> [--drafts]
- *   brayness-publish app list
- *   brayness-publish app publish <name> [--url <sync-url>] [--site-url <public-url>]
- *   brayness-publish app publish <name> --github <owner/repo> [--branch gh-pages] [--dry-run]
- *   brayness-publish app unpublish <name> [--url <sync-url>]
+ *   realness-publish items list
+ *   realness-publish items mint <vault-file> --type articles|plans|pages|...
+ *   realness-publish items settle      give each copied itemid to its copy
+ *   realness-publish app add <name> --type blog|plans [--source <id>=<slug>]...
+ *   realness-publish app build <name> [--drafts]
+ *   realness-publish app list
+ *   realness-publish app publish <name> [--url <sync-url>] [--site-url <public-url>]
+ *   realness-publish app publish <name> --github <owner/repo> [--branch gh-pages] [--dry-run]
+ *   realness-publish app unpublish <name> [--url <sync-url>]
  *
  * Builds stay local. Only app publish activates a public snapshot.
  */
@@ -47,14 +47,13 @@ const options = (args) => {
 }
 
 const root_here = () => {
-  if (process.env.BRAYNESS_ROOT) return resolve(process.env.BRAYNESS_ROOT)
   for (let dir = resolve('.'); ; dir = resolve(dir, '..')) {
     if (exists_sync(join(dir, 'apps')) || exists_sync(join(dir, 'vault')) || exists_sync(join(dir, '.ignore'))) return dir
-    if (dir === resolve(dir, '..')) throw new Error('run this from a harness root, or set BRAYNESS_ROOT')
+    if (dir === resolve(dir, '..')) throw new Error('run this from a harness root')
   }
 }
 
-const vault_of = (root) => process.env.BRAYNESS_VAULT ? resolve(process.env.BRAYNESS_VAULT) : join(root, 'vault')
+const vault_of = (root) => join(root, 'vault')
 
 /**
  * The vault as app.json names it: relative to the app folder, which is where
@@ -117,7 +116,7 @@ const commands = {
       const [name] = words
       const built = await build_app(root, name)
       const push = !values['dry-run']
-      const result = await publish_github({ dist: built.dist, work: join(root, 'artifacts/apps-github', name), repository: values.github, branch: values.branch, message: `Publish ${name} from Brayness`, push })
+      const result = await publish_github({ dist: built.dist, work: join(root, 'artifacts/apps-github', name), repository: values.github, branch: values.branch, message: `Publish ${name} from Realness`, push })
       console.log(`${name} -> ${values.github} ${values.branch ?? 'gh-pages'}: ${result.summary}${result.changed && !push ? ' (dry run, not pushed)' : ''}`)
     } else if (action === 'publish') {
       const result = await publish_app(root, words[0], { url: values.url ?? SYNC_URL, site_url: values['site-url'] ?? process.env.SYNC_SITE_PUBLIC_URL ?? values.url ?? SYNC_URL })
@@ -140,9 +139,9 @@ const commands = {
 }
 
 try {
-  if (!commands[command]) throw new Error('usage: brayness-publish items <action> | app <action>')
+  if (!commands[command]) throw new Error('usage: realness-publish items <action> | app <action>')
   await commands[command]()
 } catch (error) {
-  console.error(`brayness-publish: ${error.message}`)
+  console.error(`realness-publish: ${error.message}`)
   process.exit(1)
 }

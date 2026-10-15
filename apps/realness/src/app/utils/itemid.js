@@ -369,22 +369,11 @@ export const as_download_url = async itemid => {
       if (is_sync_index_missing(idx[itemid])) return null
       const { url, storage_ready } = await import('@/utils/serverless')
       await storage_ready
-      const compatible_url = async filename => {
-        try {
-          return await url(filename)
-        } catch (error) {
-          if (!is_storage_not_found(error)) throw error
-          const alternate = filename.endsWith('.html.gz')
-            ? filename.replace(/\.gz$/, '')
-            : `${filename}.gz`
-          return url(alternate)
-        }
-      }
       const filename = await as_filename(itemid)
       const remembered = await cached_download_url(itemid, filename)
       if (remembered) return remembered
       try {
-        const fresh = await compatible_url(filename)
+        const fresh = await url(filename)
         await remember_download_url(itemid, filename, fresh)
         return fresh
       } catch (e) {
@@ -392,7 +381,7 @@ export const as_download_url = async itemid => {
         const fallback = as_top_level_filename(itemid)
         if (fallback && fallback !== filename)
           try {
-            const fallback_url = await compatible_url(fallback)
+            const fallback_url = await url(fallback)
             await remember_download_url(itemid, fallback, fallback_url)
             return fallback_url
           } catch (fallback_error) {
@@ -402,7 +391,7 @@ export const as_download_url = async itemid => {
         const searched = await as_filename(itemid, { search_archives: true })
         if (searched !== filename && searched !== fallback)
           try {
-            const searched_url = await compatible_url(searched)
+            const searched_url = await url(searched)
             await remember_download_url(itemid, searched, searched_url)
             return searched_url
           } catch (searched_error) {

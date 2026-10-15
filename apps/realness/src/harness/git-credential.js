@@ -3,7 +3,7 @@
  * GitHub https URL this answers with an hour-long token from sync. It never
  * stores one, so `store` and `erase` do nothing.
  *
- *   git config --system credential.https://github.com.helper '!brayness git-credential'
+ *   git config --system credential.https://github.com.helper '!realness git-credential'
  *   git config --system credential.https://github.com.useHttpPath true
  */
 

@@ -31,7 +31,7 @@ const response = (...events) =>
   new Response(events.map(event => `${JSON.stringify(event)}\n`).join(''))
 
 before_each(() => {
-  vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
+  vi.stubEnv('MODE', 'development')
   vi.stubGlobal('fetch', vi.fn())
   working.mockClear()
 })
@@ -41,6 +41,37 @@ after_each(() => {
 })
 
 describe('@/use/actor-startup', () => {
+  it('shows the gate wake as progress without taking its correlation', async () => {
+    const waking = {
+      type: 'startup-stage',
+      source: 'gate',
+      stage: 'starting_host',
+      state: 'starting',
+      elapsed_ms: 1200
+    }
+    let controller
+    fetch.mockResolvedValueOnce(
+      new Response(
+        new ReadableStream({
+          start(value) {
+            controller = value
+          }
+        })
+      )
+    )
+    const startup = use_actor_startup(user, { set_working: working })
+    const pending = startup.prepare()
+    controller.enqueue(new TextEncoder().encode(`${JSON.stringify(waking)}\n`))
+    await vi.waitFor(() =>
+      expect(startup.progress.value?.stage).toBe('starting_host')
+    )
+    expect(startup.startup_id.value).toBe(null)
+    controller.enqueue(new TextEncoder().encode(`${JSON.stringify(ready)}\n`))
+    controller.close()
+    await pending
+    expect(startup.startup_id.value).toBe('startup-1')
+  })
+
   it('shares a pending observer and does not expose the actor before readiness', async () => {
     let controller
     fetch.mockResolvedValueOnce(

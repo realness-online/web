@@ -51,7 +51,7 @@ Then carry on with the original task.
 Each subfolder has a `:feed.md` with a dataview query listing its contents by date added. `:feed.md` is the convention for "show me what's in this section."
 
 A plan is active only while it sits in the configured plans folder
-(`brayness.plans`). A plan filed in an Area is parked; moving it back resumes
+(`realness.plans`). A plan filed in an Area is parked; moving it back resumes
 it. This skill owns where a plan lives; the `planning` skill owns its shape.
 
 ## Reading the vault

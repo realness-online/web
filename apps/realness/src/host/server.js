@@ -9,7 +9,13 @@ import {
 } from 'node:http'
 import { connect } from 'node:net'
 import { extname, join, sep } from 'node:path'
-import { BadRequest, HOST_FAILURES, NotFound } from './errors.js'
+import {
+  BadRequest,
+  Full,
+  HOST_FAILURES,
+  NotFound,
+  Parking
+} from './errors.js'
 import { verify_host_pass } from '#root/src/sign-on/node/host-pass.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { can } from '#root/src/can/can.js'
@@ -29,6 +35,7 @@ const MAX_PATHS = 100
 
 const LOG = logger('server')
 const EXEC_TIMEOUT_MAX = 1800
+const PARKING_RETRY_S = 5
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -299,7 +306,7 @@ const upgradeApp = (apps, auth, request, socket, head) => {
   socket.on('error', close)
 }
 
-const APP_TREE = '/brayness/work/'
+const APP_TREE = '/realness/work/'
 /** A path inside the actor's work tree, with no NUL to cut it short. */
 const in_app_tree = path =>
   typeof path === 'string' &&
@@ -318,7 +325,7 @@ const startApp = async (store, apps, owner, actor, request) => {
     path.split('/').includes('..')
   )
     throw new BadRequest(
-      'path must sit under /brayness/work, with no .. segments'
+      'path must sit under /realness/work, with no .. segments'
     )
   const { id } = actor(payload.actor)
   if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
@@ -549,9 +556,9 @@ const route_actor_writes = async ({
   }
   if (action === 'publish') {
     const payload = await readJson(request)
-    const tree = payload.path ?? '/brayness/site'
+    const tree = payload.path ?? '/realness/site'
     if (typeof tree !== 'string') throw new BadRequest('path must be a string')
-    json(response, HTTP.OK, await store.publish(id, tree || '/brayness/site'))
+    json(response, HTTP.OK, await store.publish(id, tree || '/realness/site'))
     return true
   }
   return false
@@ -699,6 +706,12 @@ export const makeServer = (
         return json(response, HTTP.BAD_REQUEST, { error: error.message })
       if (error instanceof NotFound)
         return json(response, HTTP.NOT_FOUND, { error: 'no such actor' })
+      if (error instanceof Full)
+        return json(response, HTTP.UNAVAILABLE, { error: error.message })
+      if (error instanceof Parking) {
+        response.setHeader('retry-after', String(PARKING_RETRY_S))
+        return json(response, HTTP.UNAVAILABLE, { error: error.message })
+      }
       if (HOST_FAILURES.some(kind => error instanceof kind)) {
         LOG.warn(`request failed: ${error.message}`)
         return json(response, HTTP.INTERNAL_ERROR, { error: error.message })

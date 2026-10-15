@@ -3,7 +3,7 @@
  * A real terminal into one actor.
  *
  *   node server/host/clients/login.js --phone +14156667777
- *   node server/host/clients/login.js --actor a-abc123 --send 'exec brayness'
+ *   node server/host/clients/login.js --actor a-abc123 --send 'exec realness'
  *
  * Mints a host pass for that phone, creates an actor when none is named, and
  * pipes this terminal through the actor's pty. The actor is destroyed when the
@@ -12,7 +12,7 @@
  *
  * The pass is signed with the fleet-wide host secret - the same value the sync
  * service mints from - read from HOST_PASS_SECRET_FILE, else
- * /etc/brayness/host-pass-secret, else <out>/host-pass-secret (lib/output.js).
+ * /etc/realness/host-pass-secret, else <out>/host-pass-secret (lib/output.js).
  * Nothing is written to disk.
  *
  * The pty stream is the API's port plus one, which is what `main.js serve`
@@ -31,7 +31,7 @@ const configured_secret = process.env.HOST_PASS_SECRET_FILE
 /** @type {string[]} */
 const SECRET_FILES = [
   ...(configured_secret ? [configured_secret] : []),
-  "/etc/brayness/host-pass-secret",
+  "/etc/realness/host-pass-secret",
   out_path("host-pass-secret"),
 ]
 
@@ -115,7 +115,7 @@ const release = async ({ api, pass, actor, keep }) => {
  */
 const main = async (argv) => {
   if (argv.includes("--help") || argv.includes("-h")) {
-    process.stdout.write("usage: login.js --phone +E164 [--actor <id>] [--send 'exec brayness'] [--api <url>] [--pty <host:port>]\n")
+    process.stdout.write("usage: login.js --phone +E164 [--actor <id>] [--send 'exec realness'] [--api <url>] [--pty <host:port>]\n")
     return 0
   }
   const phone = value_of(argv, "phone")

@@ -18,7 +18,7 @@ del_rule filter FORWARD -i "$TAP_MATCH" -o "$UPLINK" -s "$SUBNET" -j ACCEPT
 del_rule filter FORWARD -i "$UPLINK" -o "$TAP_MATCH" -d "$SUBNET" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 del_rule nat POSTROUTING -s "$SUBNET" -o "$UPLINK" -j MASQUERADE
 for cmd in iptables ip6tables; do
-  for pair in FORWARD:BRAYNESS-OUT INPUT:BRAYNESS-IN; do
+  for pair in FORWARD:REALNESS-OUT INPUT:REALNESS-IN; do
     $cmd -D "${pair%%:*}" -i "$TAP_MATCH" -j "${pair#*:}" 2> /dev/null || true
     $cmd -F "${pair#*:}" 2> /dev/null && $cmd -X "${pair#*:}" || true
   done

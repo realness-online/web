@@ -5,22 +5,33 @@ const environments = {
     services: {
       region: 'us-central1',
       bucket: 'realness-development.firebasestorage.app',
-      sync_url: 'https://brayness-sync-639469569733.us-central1.run.app',
-      proxy_url: 'https://brayness-proxy-639469569733.us-central1.run.app',
-      gate_url: 'https://brayness-gate-639469569733.us-central1.run.app',
+      sync_url: 'https://realness-sync-639469569733.us-central1.run.app',
+      proxy_url: 'https://realness-proxy-639469569733.us-central1.run.app',
+      gate_url: 'https://realness-gate-639469569733.us-central1.run.app',
       sites_url: 'https://realness-development-sites.web.app',
-      starter_proxy_url: 'https://brayness-proxy-yelzvhhngq-uc.a.run.app',
+      starter_proxy_url: 'https://realness-proxy-yelzvhhngq-uc.a.run.app',
+      hosting_routes: ['realness-sync', 'realness-proxy'],
       origins:
         'https://realness-development.web.app,https://realness-development.firebaseapp.com,https://realness.local,http://localhost:5173'
     }
   },
   production: {
     project: 'realness-online',
-    public_url: 'https://realness.online'
+    public_url: 'https://realness.online',
+    services: {
+      region: 'us-central1',
+      bucket: 'realness-online.appspot.com',
+      sync_url: 'https://realness-sync-276668807926.us-central1.run.app',
+      proxy_url: 'https://realness-proxy-276668807926.us-central1.run.app',
+      gate_url: 'https://realness-gate-276668807926.us-central1.run.app',
+      hosting_routes: [],
+      origins:
+        'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com'
+    }
   }
 }
 
-/** Select an environment explicitly; production services remain unconfigured until promotion. */
+/** Select an environment explicitly. Production service URLs follow Cloud Run's project-number form. */
 export const environment_settings = name => {
   if (!Object.hasOwn(environments, name))
     throw Error(`unknown environment "${name}"`)
@@ -28,6 +39,19 @@ export const environment_settings = name => {
 }
 
 export const development_settings = environments.development
+
+const browser_modes = {
+  development: { gate_url: development_settings.services.gate_url },
+  production: { gate_url: development_settings.services.gate_url },
+  local: { gate_url: '/gate' }
+}
+
+export const browser_settings = mode => {
+  const name = mode === 'test' ? 'development' : mode
+  if (!Object.hasOwn(browser_modes, name))
+    throw Error(`unknown browser mode "${mode}"`)
+  return browser_modes[name]
+}
 
 export const local_settings = {
   cloud: environments.development,
@@ -43,7 +67,7 @@ export const local_settings = {
 }
 
 /** All services share one target, identity, and bucket; overrides cannot cross environments. */
-export const deployment_settings = (name, env = process.env) => {
+export const deployment_settings = (name, env = {}) => {
   if (!name)
     throw Error('deployment environment is required: development|production')
   const selected = environment_settings(name)

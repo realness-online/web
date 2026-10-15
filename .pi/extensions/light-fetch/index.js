@@ -7,6 +7,7 @@ import { execFile } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
 import { isAbsolute, join, relative, resolve } from "node:path"
 import { promisify } from "node:util"
+import { is_actor, state_path } from "../../../bin/lib/harness-settings.js"
 
 const run = promisify(execFile)
 
@@ -23,10 +24,8 @@ export const skipped_list = (state) => {
 }
 
 /** @param {import("@earendil-works/pi-coding-agent").ExtensionAPI} pi */
-export default function (pi, { env = process.env, fetch_file = (path) => run("brayness", ["fetch", path], { timeout: 120_000 }) } = {}) {
-  if (env.BRAYNESS_ACTOR !== "1") return
-  const root = env.BRAYNESS_ROOT ?? "/brayness"
-  const state = env.BRAYNESS_STATE ?? join(root, ".pi/agent/state")
+const light_fetch = (pi, { actor = is_actor(), root = "/realness", state = join(root, state_path(root)), fetch_file = (path) => run("realness", ["fetch", path], { timeout: 120_000 }) } = {}) => {
+  if (!actor) return
 
   pi.on("tool_call", async (event, ctx) => {
     if (event.toolName !== "read" || typeof event.input?.path !== "string") return
@@ -40,3 +39,5 @@ export default function (pi, { env = process.env, fetch_file = (path) => run("br
     if (!existsSync(join(root, path))) return { block: true, reason: `${path} is in storage; fetching it did not bring it here` }
   })
 }
+
+export default light_fetch

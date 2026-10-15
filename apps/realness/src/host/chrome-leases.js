@@ -6,7 +6,7 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
 
 const LOG = logger('chrome-leases')
 const LEASE_MINUTES = 30
-const CHAIN = 'BRAYNESS-LEASE'
+const CHAIN = 'REALNESS-LEASE'
 
 /** The iptables rule bodies for one lease, actor and copy as addresses. Pure. */
 export const lease_rules = (actor, copy) => [
@@ -105,22 +105,30 @@ export class ChromeLeases {
   minutes
   /** @type {() => number} */
   now
+  /** @type {{ beginWork: (id: string, key: string) => void, endWork: (id: string, key: string) => void } | null} */
+  work
   /**
    * A `{ ready: null }` placeholder while the pool restores, then the lease.
    * @type {Map<string, Lease | { ready: null }>}
    */
   leases = new Map()
 
-  /** pool: restore() and destroy(n). firewall: open/close(actor_ip, copy_ip). */
+  /**
+   * pool: restore() and destroy(n). firewall: open/close(actor_ip, copy_ip).
+   * work: holds the actor busy while it holds a copy.
+   * @param {ChromeLeases['pool'] | import('./chrome-pool.js').ChromePool} pool
+   * @param {{ firewall?: ChromeLeases['firewall'], minutes?: number, now?: () => number, work?: ChromeLeases['work'] }} [options]
+   */
   constructor(
     pool,
     {
       firewall = iptables_firewall,
       minutes = LEASE_MINUTES,
-      now = () => Date.now()
+      now = () => Date.now(),
+      work = null
     } = {}
   ) {
-    Object.assign(this, { pool, firewall, minutes, now })
+    Object.assign(this, { pool, firewall, minutes, now, work })
     this.leases = new Map()
   }
 
@@ -149,6 +157,7 @@ export class ChromeLeases {
     }
     this.firewall.open(actor_ip, copy.address)
     this.leases.set(actor_id, lease)
+    this.work?.beginWork(actor_id, 'browser')
     LOG.info(
       `${actor_id} leased chrome copy ${copy.n} (${copy.address}) for ${this.minutes} min`
     )
@@ -162,6 +171,7 @@ export class ChromeLeases {
     const lease = this.leases.get(actor_id)
     if (!lease) return false
     this.leases.delete(actor_id)
+    this.work?.endWork(actor_id, 'browser')
     if (!('n' in lease)) return true
     if (lease.n === null || lease.n === undefined) return true
     this.firewall.close(lease.actor_ip, lease.address)

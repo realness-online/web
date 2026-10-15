@@ -5,7 +5,7 @@ Not built yet. This is the brief for when it is.
 ## Who
 
 [Vacation SF](https://vacation-sf.com/) is a vintage store in North Beach, San
-Francisco. It sells through Shopify today. It is the kind of customer Brayness
+Francisco. It sells through Shopify today. It is the kind of customer Realness
 is for: a small independent shop that wants its own site and shop, owned
 outright, without a platform taking a cut of every sale.
 
@@ -33,11 +33,11 @@ After a fresh `giget`, someone can browse, add to the cart, and check out.
   an order sent by email that the shop confirms by hand?
 - Who marks an item sold, and how does every visitor's page learn it?
 - Where do items live once published? The browser-only store will not do; this
-  waits for the host file API (g5 in the Brayness plan).
+  waits for the host file API (g5 in the Realness plan).
 - Does the shop owner edit items in the published site, or only in their session?
 - Photos: traced posters from Realness, the original photos, or both?
 
-## What it needs from Brayness
+## What it needs from Realness
 
 - **g5, host file API:** items and sold state stored on the host.
 - **g1, identity:** only the owner edits items; anyone can browse.

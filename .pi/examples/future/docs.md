@@ -21,7 +21,7 @@ right section, and the dialog opens over the terminal and chat.
 - One file for the whole product, or a folder with a page each?
 - Does the dialog live in the host page or in the example itself?
 
-## What it needs from Brayness
+## What it needs from Realness
 
 - A markdown source the terminal and chat pages can fetch same-origin.
 - Heading anchors stable enough to link from an error message.

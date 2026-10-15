@@ -12,6 +12,11 @@ import {
   quiet_hosts
 } from '../../src/sync/host-watch.js'
 import { out_path } from '#root/lib/output.js'
+import {
+  intent_now,
+  lifecycle_html,
+  lifecycle_key
+} from '../../src/sync/host-lifecycle.js'
 
 const dir = out_path(`host-watch-test-${randomUUID()}`)
 const issuer = dev_issuer()
@@ -30,8 +35,8 @@ const record = (name, checked) =>
 before(async () => {
   await mkdir(dir, { recursive: true })
   await storage.put('admins.html', `<a href="tel:${admin}">Admin</a>`)
-  await record('brayness-1', '2026-10-05T12:00:00.000Z')
-  await record('brayness-2', '2026-10-05T11:59:30.000Z')
+  await record('realness-1', '2026-10-05T12:00:00.000Z')
+  await record('realness-2', '2026-10-05T11:59:30.000Z')
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -56,8 +61,18 @@ test('a host quiet past the threshold is named, with its age', async () => {
     now: Date.parse('2026-10-05T12:02:30Z')
   })
   assert.deepEqual(quiet, [
-    { name: 'brayness-2', checked: '2026-10-05T11:59:30.000Z', age_s: 180 },
-    { name: 'brayness-1', checked: '2026-10-05T12:00:00.000Z', age_s: 150 }
+    {
+      name: 'realness-2',
+      checked: '2026-10-05T11:59:30.000Z',
+      age_s: 180,
+      cause: 'unknown'
+    },
+    {
+      name: 'realness-1',
+      checked: '2026-10-05T12:00:00.000Z',
+      age_s: 150,
+      cause: 'unknown'
+    }
   ])
 })
 
@@ -71,14 +86,14 @@ test('a host inside the threshold is not quiet, and the boundary is exclusive', 
   })
   assert.deepEqual(
     just.map(h => h.name),
-    ['brayness-2']
+    ['realness-2']
   )
   const past = await quiet_hosts(storage, {
     now: Date.parse('2026-10-05T12:02:01Z')
   })
   assert.deepEqual(
     past.map(h => h.name),
-    ['brayness-2', 'brayness-1']
+    ['realness-2', 'realness-1']
   )
 })
 
@@ -87,26 +102,46 @@ test('the threshold is the report interval with room to miss three', () => {
 })
 
 test('a record with no readable time is quiet, not alive', async () => {
-  await record('brayness-3', '')
+  await record('realness-3', '')
   const quiet = await quiet_hosts(storage, { now: at })
   assert.deepEqual(
     quiet.map(h => h.name),
-    ['brayness-3']
+    ['realness-3']
   )
   assert.equal(quiet[0].age_s, null)
 })
 
 test('a host directory with no record is quiet', async () => {
-  await storage.put('hosts/brayness-4/notes.txt', 'half-made')
+  await storage.put('hosts/realness-4/notes.txt', 'half-made')
   const quiet = await quiet_hosts(storage, { now: at })
-  assert.ok(quiet.some(h => h.name === 'brayness-4' && h.age_s === null))
+  assert.ok(quiet.some(h => h.name === 'realness-4' && h.age_s === null))
 })
 
 test('the derived answer carries its own reading time and threshold', async () => {
   const health = await host_health(storage, { now: at })
   assert.equal(health.checked, '2026-10-05T12:01:00.000Z')
   assert.equal(health.quiet_ms, QUIET_AFTER_MS)
-  assert.ok(health.quiet.some(h => h.name === 'brayness-3'))
+  assert.ok(health.quiet.some(h => h.name === 'realness-3'))
+})
+
+test('a parked host leaves the quiet list; every host carries its state', async () => {
+  await storage.put(
+    'hosts/realness-5/status.html',
+    '<article itemscope itemtype="/host"><meta itemprop="name" content="realness-5"><meta itemprop="checked" content="2026-10-05T11:00:00.000Z"></article>\n'
+  )
+  await storage.put(
+    lifecycle_key('realness-5'),
+    lifecycle_html(
+      intent_now('parked', { now: Date.parse('2026-10-05T11:00:30Z') })
+    )
+  )
+  const health = await host_health(storage, { now: at })
+  assert.ok(!health.quiet.some(h => h.name === 'realness-5'))
+  assert.deepEqual(
+    health.hosts.find(h => h.name === 'realness-5'),
+    { name: 'realness-5', state: 'parked' }
+  )
+  assert.equal(health.hosts.find(h => h.name === 'realness-3').state, 'failed')
 })
 
 test('only an admin reads host health, and it is never stored', async () => {
@@ -114,6 +149,6 @@ test('only an admin reads host health, and it is never stored', async () => {
   assert.equal((await get()).status, 401)
   assert.equal((await get(as(other))).status, 403)
   const body = await (await get(as(admin))).json()
-  assert.ok(body.quiet.some(h => h.name === 'brayness-3'))
+  assert.ok(body.quiet.some(h => h.name === 'realness-3'))
   assert.equal(await storage.get('hosts/quiet.json'), null)
 })

@@ -6,7 +6,7 @@ import { contract } from '../../src/can/contract.js'
 import { disk } from '../../src/can/disk.js'
 
 const base = new URL(
-  `../../../../artifacts/brayness/can-store-test-${randomUUID()}/`,
+  `../../../../artifacts/realness/can-store-test-${randomUUID()}/`,
   import.meta.url
 ).pathname
 after(() => rm(base, { recursive: true, force: true }))

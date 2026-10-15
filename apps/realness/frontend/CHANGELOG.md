@@ -11,8 +11,8 @@
 
 ## v2.10.7 - 2026-10-06
 
-- **One Brayness install** - Realness builds, tests, and checks from the
-  Brayness root with Vite+; its published packages link in by `file:`.
+- **One Realness install** - Realness builds, tests, and checks from the
+  Realness root with Vite+; its published packages link in by `file:`.
 
 ## v2.10.6 - 2026-10-04
 
@@ -68,7 +68,7 @@
   $500, with Stripe keeping count. A print sells once. Sold prints wear a red
   dot, and one that sells while your tab is open turns into a dot on its own.
 - **Footage to artwork** - Realness traces your footage into layered artwork.
-  Brayness, an optional harness, can run that tracing frame by frame and make
+  Realness, an optional harness, can run that tracing frame by frame and make
   a video. You choose the footage and finish the art. About lists it, and the
   guide's "Converting a video" shows how. Using Realness never requires it.
 
@@ -97,7 +97,7 @@
   out with the realness icon burned into a corner.
 
 - **Making a movie from a poster moved to the harness** - `npm run
-make:animation` from the brayness root does what `render-poster-video.js`
+make:animation` from the realness root does what `render-poster-video.js`
   did inside this repo. The driver page and the documentation say so, and the
   prompt the page hands a coding assistant points at the new script.
 

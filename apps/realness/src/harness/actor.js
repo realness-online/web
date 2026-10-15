@@ -9,11 +9,18 @@ import { prepare_actor_state } from './state.js'
 import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- harness folders sync one at a time so a failure stops the rest */
 
-/** A renewing VM-bound client shared by harness and file commands. */
+/**
+ * @param {object} options
+ * @param {string} options.url
+ * @param {() => Promise<string>} [options.issue]
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string} [options.state]
+ */
 export const actor_client = async ({
   url,
   issue = () => door_pass('harness-pass'),
-  fetcher = fetch
+  fetcher = fetch,
+  state
 }) => {
   if (!url || !/^https?:\/\//.test(url))
     throw new Error('actor sync needs SYNC_URL')
@@ -21,12 +28,13 @@ export const actor_client = async ({
   const claims = JSON.parse(
     Buffer.from(pass.split('.')[0], 'base64url').toString()
   )
-  if (claims.aud !== 'brayness-harness')
+  if (claims.aud !== 'realness-harness')
     throw new Error('actor sync needs a harness pass')
   const store = client({
     url,
     phone: claims.phone,
     token: () => pass,
+    state,
     fetcher: async (url, options) => {
       let response = await fetcher(url, options)
       if (response.status === HTTP.UNAUTHORIZED) {
@@ -43,7 +51,7 @@ export const actor_client = async ({
 }
 
 /** The recovered service URL stays with persistent state. */
-export const actor_url = async (root = '/brayness', state_option) => {
+export const actor_url = async (root = '/realness', state_option) => {
   const state = await prepare_actor_state(root, { state: state_option })
   return (
     process.env.SYNC_URL ??
@@ -63,18 +71,15 @@ export const actor_url = async (root = '/brayness', state_option) => {
  */
 export const sync_actor = async ({
   url,
-  root = '/brayness',
+  root = '/realness',
   issue,
   fetcher = fetch,
-  state = state_dir(),
+  state = state_dir(root),
   defer_edits = false
 }) => {
-  const { store, claims } = await actor_client({ url, issue, fetcher })
-  const { sync } = store
-  store.sync = (local, remote, options) =>
-    sync(local, remote, { ...options, state })
+  const { store, claims } = await actor_client({ url, issue, fetcher, state })
   if (claims.paths !== undefined) {
-    const exclude = await harness_exclude(root)
+    const exclude = await harness_exclude(root, state)
     const reports = {}
     for (const path of claims.paths) {
       if (await is_file_entry(root, path)) {
@@ -104,5 +109,5 @@ export const sync_actor = async ({
   }
   if (!exists_sync(join(root, '.ignore')))
     throw new Error('actor whole-harness sync needs .ignore')
-  return sync_harness({ root, store, defer_edits })
+  return sync_harness({ root, store, state, defer_edits })
 }

@@ -21,7 +21,7 @@ declare module '@/wasm/tracer.js' {
 }
 
 interface Window {
-  brayness?: Record<string, (...args: any[]) => unknown>
+  realness?: Record<string, (...args: any[]) => unknown>
 }
 
 declare module '*.js'

@@ -61,14 +61,14 @@ beforeEach(() => {
   process.env.PRINTS_AUTHOR = author
   mock_store.clear()
   mock_objects.length = 0
-  mock_store.set(`people${poster_id}.html.gz`, deflateSync(poster_html))
+  mock_store.set(`people${poster_id}.html`, deflateSync(poster_html))
   mock_store.set(`people${poster_id}.png`, Buffer.from('png'))
 })
 
 describe('print share', () => {
   it('shows sale dates and the print image without exposing payment identifiers', async () => {
     const res = await serve()
-    expect(bucket.file).toHaveBeenCalledWith(`people${poster_id}.html.gz`)
+    expect(bucket.file).toHaveBeenCalledWith(`people${poster_id}.html`)
     expect(res.status).toHaveBeenCalledWith(200)
     const [[page]] = res.send.mock.calls
     expect(page).toContain(
@@ -82,10 +82,10 @@ describe('print share', () => {
   })
 
   it('reads a poster and statements stored gzip', async () => {
-    mock_store.set(`people${poster_id}.html.gz`, gzipSync(poster_html))
-    mock_objects.push({ name: `people${author}/statements/index.html.gz` })
+    mock_store.set(`people${poster_id}.html`, gzipSync(poster_html))
+    mock_objects.push({ name: `people${author}/statements/index.html` })
     mock_store.set(
-      `people${author}/statements/index.html.gz`,
+      `people${author}/statements/index.html`,
       gzipSync(statements_html([{ at: created + 60000, text: 'stored gzip' }]))
     )
     const res = await serve()
@@ -96,7 +96,7 @@ describe('print share', () => {
   })
 
   it('shares the thought the print was made with', async () => {
-    store_statements(`people${author}/statements/index.html.gz`, [
+    store_statements(`people${author}/statements/index.html`, [
       { at: created + 60000, text: 'the harbor at first light' },
       { at: created + 40 * 60 * 1000, text: 'an unrelated afternoon' }
     ])
@@ -110,10 +110,10 @@ describe('print share', () => {
   })
 
   it('reads the whole thought across every statements page', async () => {
-    store_statements(`people${author}/statements/index.html.gz`, [
+    store_statements(`people${author}/statements/index.html`, [
       { at: created + 120000, text: 'after' }
     ])
-    store_statements(`people${author}/statements/${created - 600000}.html.gz`, [
+    store_statements(`people${author}/statements/${created - 600000}.html`, [
       { at: created - 60000, text: 'before' },
       { at: created - 960000, text: 'a thought of its own' }
     ])
@@ -140,7 +140,7 @@ describe('print share', () => {
 
   it('shows an unsold print without a preview', async () => {
     mock_store.set(
-      `people${poster_id}.html.gz`,
+      `people${poster_id}.html`,
       Buffer.from(`<svg itemid="${poster_id}"></svg>`)
     )
     mock_store.delete(`people${poster_id}.png`)

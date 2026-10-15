@@ -38,7 +38,9 @@ else if (
   args.length === 2 &&
   args[0] === '--env'
 )
-  process.stdout.write(`${shell_values(deployment_settings(args[1]))}\n`)
+  process.stdout.write(
+    `${shell_values(deployment_settings(args[1], process.env))}\n`
+  )
 else if (command === 'shell' && target === 'local' && !args.length)
   process.stdout.write(
     `${shell_values({

@@ -29,7 +29,7 @@ const hostPass = (phone = owner) => {
   )
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -272,18 +272,18 @@ describe("an actor's life", () => {
   })
 
   test('idle to memory, then exec wakes it with files kept', async () => {
-    await sh(actor.id, 'echo kept > /brayness/h4a-memory')
+    await sh(actor.id, 'echo kept > /realness/h4a-memory')
     const idle = await call('POST', `/v1/actors/${actor.id}/idle`, {})
     assert.equal(idle.status, 200)
     assert.equal(idle.json.state, 'idle')
     const again = await call('POST', `/v1/actors/${actor.id}/idle`, {})
     assert.equal(again.status, 200, 'idle is idempotent')
-    const read = await sh(actor.id, 'cat /brayness/h4a-memory')
+    const read = await sh(actor.id, 'cat /realness/h4a-memory')
     assert.equal(read.out, 'kept\n')
   })
 
   test('idle to disk stops it; reload boots the same disk', async () => {
-    await sh(actor.id, 'echo kept > /brayness/h4a-disk')
+    await sh(actor.id, 'echo kept > /realness/h4a-disk')
     const idle = await call('POST', `/v1/actors/${actor.id}/idle`, {
       tier: 'disk'
     })
@@ -292,7 +292,7 @@ describe("an actor's life", () => {
     assert.equal(reload.status, 200)
     assert.equal(reload.json.state, 'running')
     assert.equal(reload.json.machine_id, actor.machine_id, 'identity persists')
-    assert.equal((await sh(actor.id, 'cat /brayness/h4a-disk')).out, 'kept\n')
+    assert.equal((await sh(actor.id, 'cat /realness/h4a-disk')).out, 'kept\n')
   })
 
   test('an unknown idle tier is a 400', async () => {
@@ -305,7 +305,7 @@ describe("an actor's life", () => {
   test('publish serves the tree at its returned URL', async () => {
     await sh(
       actor.id,
-      "mkdir -p /brayness/site/blog && echo '<h1>hi</h1>' > /brayness/site/index.html && echo post > /brayness/site/blog/hello.html"
+      "mkdir -p /realness/site/blog && echo '<h1>hi</h1>' > /realness/site/index.html && echo post > /realness/site/blog/hello.html"
     )
     const published = await call('POST', `/v1/actors/${actor.id}/publish`, {})
     assert.equal(published.status, 200, published.text)
@@ -352,7 +352,7 @@ describe("an actor's life", () => {
   })
 
   test('publish refuses relative and climbing paths', async () => {
-    for (const path of ['site', '/brayness/../etc', 5]) {
+    for (const path of ['site', '/realness/../etc', 5]) {
       const { status } = await call('POST', `/v1/actors/${actor.id}/publish`, {
         path
       })
@@ -391,7 +391,7 @@ describe("an actor's life", () => {
     assert.equal(manifest.status, 200, manifest.text)
     assert.equal(manifest.json.schema, 1)
     assert.equal(manifest.json.id, actor.id)
-    assert.deepEqual(manifest.json.artifacts.paths, ['brayness'])
+    assert.deepEqual(manifest.json.artifacts.paths, ['realness'])
     assert.match(manifest.json.artifacts.sha256, /^[0-9a-f]{64}$/)
     assert.equal(
       (await call('GET', `/v1/actors/${actor.id}`)).json.state,
@@ -412,13 +412,13 @@ describe("an actor's life", () => {
     const copy = await create({ restore_from: actor.id })
     assert.notEqual(copy.id, actor.id)
     assert.notEqual(copy.machine_id, actor.machine_id)
-    assert.equal((await sh(copy.id, 'cat /brayness/h4a-disk')).out, 'kept\n')
+    assert.equal((await sh(copy.id, 'cat /realness/h4a-disk')).out, 'kept\n')
     const restored = await sh(
       copy.id,
-      'test -f /brayness/bin/pi && test ! -e /root/brayness && printf \'%s\' "$HOME"'
+      'test -f /realness/bin/pi && test ! -e /root/realness && printf \'%s\' "$HOME"'
     )
     assert.equal(restored.code, 0, restored.err)
-    assert.equal(restored.out, '/brayness')
+    assert.equal(restored.out, '/realness')
     const trace = await call('GET', `/v1/actors/${copy.id}/trace`)
     const events = trace.json.events.map(e => e.event)
     assert.ok(events.includes('publish'), "the source's trace came along")
@@ -451,7 +451,7 @@ describe('terminal', () => {
 
   test("a new actor's terminal opens in Pi, as the page attaches", async () => {
     const actor = await create()
-    const opener = Buffer.from('exec brayness\r').toString('base64')
+    const opener = Buffer.from('exec realness\r').toString('base64')
     const text = await terminal(actor.id, /inkling/, {
       ms: 120000,
       send: [
@@ -547,7 +547,7 @@ describe('h3 lessons', () => {
     const count = 3000
     await sh(
       actor.id,
-      `mkdir -p /brayness/h4a && cd /brayness/h4a && i=0; while [ $i -lt ${count} ]; do echo $i > f$i; i=$((i+1)); done`,
+      `mkdir -p /realness/h4a && cd /realness/h4a && i=0; while [ $i -lt ${count} ]; do echo $i > f$i; i=$((i+1)); done`,
       120
     )
     exec_file_sync('sh', ['-c', KILL.replaceAll('{pid}', String(actor.pid))], {
@@ -557,9 +557,9 @@ describe('h3 lessons', () => {
     assert.equal(reload.status, 200, reload.text)
     const empty = await sh(
       actor.id,
-      `cd /brayness/h4a || exit 9; ls | wc -l; find . -type f -empty | wc -l`
+      `cd /realness/h4a || exit 9; ls | wc -l; find . -type f -empty | wc -l`
     )
-    assert.equal(empty.code, 0, '/brayness/h4a survived the stop')
+    assert.equal(empty.code, 0, '/realness/h4a survived the stop')
     const [files, blank] = empty.out.trim().split(/\s+/).map(Number)
     assert.equal(files, count, 'every file exists')
     assert.equal(blank, 0, 'no file lost its contents')

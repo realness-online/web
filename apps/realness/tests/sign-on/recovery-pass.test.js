@@ -18,7 +18,7 @@ const secret = 'recovery-test-secret-at-least-thirty-two-bytes'
 const phone = '+14155550123'
 const id = 'a-abcdef123456'
 const dir = new URL(
-  `../../../../artifacts/brayness/recovery-pass-${randomUUID()}/`,
+  `../../../../artifacts/realness/recovery-pass-${randomUUID()}/`,
   import.meta.url
 ).pathname
 let server, url

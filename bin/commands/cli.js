@@ -30,21 +30,21 @@ export const cli_families = [
     ],
   },
   {
-    name: 'Actor Chrome', entry: 'apps/realness/server/host/guest/brayness-chrome', source: 'apps/realness/server/host/guest/brayness-chrome', launcher: 'brayness chrome',
+    name: 'Actor Chrome', entry: 'apps/realness/server/host/guest/realness-chrome', source: 'apps/realness/server/host/guest/realness-chrome', launcher: 'realness chrome',
     routes: [
       ['lease', 'Actor commands', 'Lease a Chrome VM.', '', 'Actor only; starts a browser VM.'],
       ['return', 'Actor commands', 'Return the leased Chrome VM.', '', 'Actor only; destroys the browser copy.'],
     ],
   },
   {
-    name: 'Actor loop', entry: 'apps/realness/server/host/guest/brayness-loop', source: 'apps/realness/server/host/guest/brayness-loop', launcher: 'brayness loop',
+    name: 'Actor loop', entry: 'apps/realness/server/host/guest/realness-loop', source: 'apps/realness/server/host/guest/realness-loop', launcher: 'realness loop',
     routes: [
       ['"<goal>"', 'Actor commands', 'Start an autonomous loop.', '', 'Actor only; starts work and can incur model cost.'],
       ['report <id>', 'Actor commands', 'Read the loop status and log tail.', '', 'Actor only.'],
     ],
   },
   {
-    name: 'Actor site', entry: 'apps/realness/server/host/guest/brayness-site', source: 'apps/realness/server/host/guest/brayness-site', launcher: 'brayness-site',
+    name: 'Actor site', entry: 'apps/realness/server/host/guest/realness-site', source: 'apps/realness/server/host/guest/realness-site', launcher: 'realness-site',
     routes: [
       ['versions', 'Actor commands', 'List published site versions.', '', 'Actor only.'],
       ['restore <version>', 'Actor commands', 'Restore a published site version.', '', 'Actor only; changes publication.'],
@@ -52,7 +52,7 @@ export const cli_families = [
     ],
   },
   {
-    name: 'Actor publish', entry: 'apps/realness/server/host/guest/brayness-publish', source: 'apps/realness/server/host/guest/brayness-publish', launcher: 'brayness publish',
+    name: 'Actor publish', entry: 'apps/realness/server/host/guest/realness-publish', source: 'apps/realness/server/host/guest/realness-publish', launcher: 'realness publish',
     routes: [['<directory>', 'Actor commands', 'Publish a built site through the host.', '', 'Actor only; changes publication.']],
   },
   {
@@ -77,13 +77,15 @@ export const cli_families = [
       ['task <plan>', 'Tools', 'List the files selected by a plan.', '--start; --json', '--start creates a remote actor.'],
       ['fold', 'Tools', 'Merge session conflict copies.', '--dry-run; --json', 'Desktop; sign-in; changes local history.'],
       ['fetch <harness-path>', 'Internal helpers', 'Fetch a file into a light actor.', '--json', 'Actor only; writes a local file.'],
+      ['local --help', 'Hosts and services', 'List local operator commands.', '', 'Desktop; no service changes.'],
+      ['development --help', 'Hosts and services', 'List development operator commands.', '', 'Desktop; no service changes.'],
       ['git-credential get', 'Internal helpers', 'Read a Git credential for an actor.', '', 'Actor only; prints a credential.'],
       ['turn-start --session <file>', 'Internal helpers', 'Record the start of a harness turn.', '--json', 'Writes local state.'],
       ['turn-end --session <file> --turn <number>', 'Internal helpers', 'Record and sync a completed turn.', '--json', 'Writes local and remote state.'],
     ],
   },
   {
-    name: 'Webspace', entry: operator, source: operator,
+    name: 'Realness control', entry: operator, source: operator, launcher: 'realness',
     routes: [
       ['local setup', 'Hosts and services', 'Set up the local Lima host.', '', 'Mac; installs and changes the VM.'],
       ['local build', 'Build', 'Build the local host template.', '', 'Mac; writes VM images.'],
@@ -92,7 +94,7 @@ export const cli_families = [
       ['<environment> host down <name>', 'Hosts and services', 'Park or delete a host.', '--delete; --no-drain', 'Stops services; can delete resources.'],
       ['<environment> host drain <name>', 'Hosts and services', 'Export actors before removing a cloud host.', '--delete', 'Cloud only; writes exports.'],
       ['<environment> host list', 'Hosts and services', 'List hosts.', '', 'Local or cloud read.'],
-      ['<environment> host status', 'Monitor', 'Read last-seen host records.', '[name]; --json', 'Sync read; see audit notes for known defects.'],
+      ['<environment> host status', 'Monitor', 'Read last-seen host records.', '[name]; --json', 'Sync read.'],
       ['<environment> admin login', 'Sign-in and files', 'Sign in as an administrator.', '', 'Browser; network; saves identity.'],
       ['<environment> admins list', 'Sign-in and files', 'List global admins from admins.html.', '--json', 'Bucket read with your gcloud credentials; local reads the dev sync folder. Phones masked.'],
       ['<environment> admins init', 'Sign-in and files', 'Give a new environment its first admin from person.local.html.', '--dir and --harness for local', 'Bucket write only when admins.html is missing; never edits an existing list. Sync deploy runs it.'],

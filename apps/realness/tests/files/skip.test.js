@@ -53,7 +53,7 @@ test('session locks, writer markers, repair files, and backups never sync', () =
 test('ordinary files sync', () => {
   for (const path of [
     'vault/note.md',
-    'plans/brayness.md',
+    'plans/realness.md',
     'posters/1.html.gz',
     'src/environment.js',
     'keyboard.md'

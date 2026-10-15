@@ -135,12 +135,12 @@ export const stripe_api = (key, fetcher = fetch) => {
   }
 }
 
-export const PRICE_KEY = 'brayness-plan-monthly'
+export const PRICE_KEY = 'realness-plan-monthly'
 export const PLAN = {
   amount: 500,
   currency: 'usd',
   interval: 'month',
-  name: 'Brayness plan'
+  name: 'Realness plan'
 }
 export const WEBHOOK_EVENTS = ['invoice.paid', 'customer.subscription.deleted']
 

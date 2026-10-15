@@ -129,17 +129,17 @@ test('the proxy package exports its service and upstream call', () => {
   assert.equal(typeof proxy.call_upstream, 'function')
 })
 
-test('the brayness commands print usage through their entry points', () => {
+test('the realness commands print usage through their entry points', () => {
   const help = spawn_sync(
     process.execPath,
-    [entry('server/sync/bin/brayness.js'), '--help'],
+    [entry('server/sync/bin/realness.js'), '--help'],
     { encoding: 'utf8' }
   )
   assert.equal(help.status, 0, help.stderr)
   assert.match(help.stdout, /^usage: realness sync/)
   const store = spawn_sync(
     process.execPath,
-    [entry('server/sync/bin/brayness-store.js'), 'nonsense'],
+    [entry('server/sync/bin/realness-store.js'), 'nonsense'],
     { encoding: 'utf8' }
   )
   assert.equal(store.status, 2)

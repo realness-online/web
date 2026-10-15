@@ -18,7 +18,7 @@ node apps/realness/tools/publish/bin/publish.js app publish blog --github <owner
 branch with your own git login, keeping history, `CNAME`, and `.nojekyll`.
 `--dry-run` commits in `artifacts/apps-github/<name>` and skips the push.
 
-Publishing uses the existing `brayness-store` sign-in. `TOKEN` can supply an
+Publishing uses the existing `realness-store` sign-in. `TOKEN` can supply an
 ID token for tests. No storage key goes into the app or its output.
 
 - Build and private sync do not publish.
@@ -28,7 +28,7 @@ ID token for tests. No storage key goes into the app or its output.
 - App identity and slugs preserve links when sources move.
 - Unpublish removes the active snapshot, leaving personal files intact.
 
-The renderer is `<examples>/static`, where package.json's `brayness.examples`
+The renderer is `<examples>/static`, where package.json's `realness.examples`
 names the folder (default `examples`). `APPS_EXAMPLE` overrides it. Outdated
 renderers are refused.
 

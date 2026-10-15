@@ -27,17 +27,17 @@ import { join, relative, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Type } from 'typebox'
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const BRAYNESS_ROOT = resolve(__dirname, '..', '..')
-const PROJECT_DIRS = [join(BRAYNESS_ROOT, 'work'), join(BRAYNESS_ROOT, 'apps')]
+const root = resolve(__dirname, '../../..')
+const PROJECT_DIRS = [join(root, 'work'), join(root, 'apps')]
 
 /** The folder holding a project, or undefined. */
 /**
  * @param {string} name
  * @returns {string | undefined}
  */
-const projectDir = (name) => {
-  return PROJECT_DIRS.map((dir) => join(dir, name)).find((dir) =>
-    existsSync(join(dir, 'package.json')),
+const projectDir = name => {
+  return PROJECT_DIRS.map(dir => join(dir, name)).find(dir =>
+    existsSync(join(dir, 'package.json'))
   )
 }
 const TOOLING_FILE = '.tooling.md'
@@ -46,17 +46,27 @@ const TOOLING_FILE = '.tooling.md'
  * Group script names by intent so the output reads as a menu, not a flat
  * dump. High-value diagnostic buckets first.
  */
-const GROUP_ORDER = ['test', 'lint', 'type', 'build', 'deploy', 'logs', 'dev', 'other']
+const GROUP_ORDER = [
+  'test',
+  'lint',
+  'type',
+  'build',
+  'deploy',
+  'logs',
+  'dev',
+  'other'
+]
 /**
  * @param {string} name
  * @returns {string}
  */
-const classifyScript = (name) => {
+const classifyScript = name => {
   const n = name.toLowerCase()
   if (/(^|:)test|cover(coverage)?|fallow|risk/.test(n)) return 'test'
   if (/(^|:)lint/.test(n)) return 'lint'
   if (/(^|:)type|check/.test(n)) return 'type'
-  if (/(^|:)build|wasm|worker|icons|toc|prerender|manifest/.test(n)) return 'build'
+  if (/(^|:)build|wasm|worker|icons|toc|prerender|manifest/.test(n))
+    return 'build'
   if (/(^|:)deploy|ship|release|verify|publish/.test(n)) return 'deploy'
   if (/(^|:)log/.test(n)) return 'logs'
   if (/(^|:)dev|serve|watch|emu/.test(n)) return 'dev'
@@ -64,8 +74,8 @@ const classifyScript = (name) => {
 }
 /** @returns {string[]} */
 const listProjects = () => {
-  const names = PROJECT_DIRS.filter((dir) => existsSync(dir)).flatMap((dir) =>
-    readdirSync(dir).filter((name) => existsSync(join(dir, name, 'package.json'))),
+  const names = PROJECT_DIRS.filter(dir => existsSync(dir)).flatMap(dir =>
+    readdirSync(dir).filter(name => existsSync(join(dir, name, 'package.json')))
   )
   return [...new Set(names)].sort()
 }
@@ -73,17 +83,17 @@ const listProjects = () => {
  * @param {string} dir
  * @returns {string[]}
  */
-const listDirNames = (dir) => {
+const listDirNames = dir => {
   if (!existsSync(dir)) return []
   return readdirSync(dir)
-    .filter((name) => !name.startsWith('.'))
+    .filter(name => !name.startsWith('.'))
     .sort()
 }
 /**
  * @param {string} projectDir
  * @returns {Promise<Array<{ label: string; scripts: string[]; }>>}
  */
-const readProjectScripts = async (projectDir) => {
+const readProjectScripts = async projectDir => {
   const pkgFile = join(projectDir, 'package.json')
   if (!existsSync(pkgFile)) return []
   /** @type {Record<string, string>} */
@@ -113,7 +123,7 @@ const readProjectScripts = async (projectDir) => {
     names.sort()
     groups.push({
       label,
-      scripts: names,
+      scripts: names
     })
   }
   return groups
@@ -122,7 +132,7 @@ const readProjectScripts = async (projectDir) => {
  * @param {string} projectDir
  * @returns {Promise<string | null>}
  */
-const readCuratedNotes = async (projectDir) => {
+const readCuratedNotes = async projectDir => {
   const file = join(projectDir, TOOLING_FILE)
   if (!existsSync(file)) return null
   try {
@@ -135,11 +145,11 @@ const readCuratedNotes = async (projectDir) => {
  * @param {string} name
  * @returns {Promise<string>}
  */
-const describeProject = async (name) => {
+const describeProject = async name => {
   const dir = projectDir(name)
   if (!dir) return `### ${name}\nNot found under work/ or apps/.`
   /** @type {string[]} */
-  const lines = [`### ${name} (${relative(BRAYNESS_ROOT, dir)})`]
+  const lines = [`### ${name} (${relative(root, dir)})`]
   const curated = await readCuratedNotes(dir)
   if (curated) {
     lines.push('Curated notes (`.tooling.md`):')
@@ -164,14 +174,14 @@ const describeProject = async (name) => {
   return lines.join('\n')
 }
 /** @param {ExtensionAPI} pi */
-const projectToolingExtension = (pi) => {
+const projectToolingExtension = pi => {
   pi.registerCommand('ptooling', {
     description:
       'Show tooling for a work/ or apps/ project (scripts, scripts/, tools/, .tooling.md). Usage: /ptooling [project|all]',
     handler: async (args, ctx) => {
       const want = (args || 'all').trim()
       const projects = want === 'all' ? listProjects() : [want]
-      const missing = projects.filter((p) => !projectDir(p))
+      const missing = projects.filter(p => !projectDir(p))
       /** @type {string[]} */
       const blocks = []
       for (const project of projects) {
@@ -187,7 +197,7 @@ const projectToolingExtension = (pi) => {
       const lines = text.split('\n')
       ctx.ui.notify(`project-tooling: ${want}`, 'info')
       ctx.ui.setWidget('ptooling', lines)
-    },
+    }
   })
   pi.registerTool({
     name: 'project_tooling',
@@ -197,27 +207,28 @@ const projectToolingExtension = (pi) => {
       '(package.json scripts grouped by purpose, scripts/ and tools/ dirs, and any ' +
       '.tooling.md). Use before working in, diagnosing, deploying, or running tests for ' +
       'a project so you use its existing tooling instead of guessing.',
-    promptSnippet: 'List project scripts and tooling for a work/ or apps/ project',
+    promptSnippet:
+      'List project scripts and tooling for a work/ or apps/ project',
     promptGuidelines: [
       'Before editing, diagnosing, testing, building, or deploying a project in work/ or apps/, ' +
         'call project_tooling to see its existing scripts and helpers. Mention the ' +
-        'relevant npm run command you intend to use.',
+        'relevant npm run command you intend to use.'
     ],
     parameters: Type.Object({
       project: Type.Optional(
         Type.String({
           description:
-            'Project directory name under work/ or apps/ (e.g. brayness, seeq-app). ' +
-            'Omit or pass "all" to list every project.',
-        }),
-      ),
+            'Project directory name under work/ or apps/ (e.g. realness, seeq-app). ' +
+            'Omit or pass "all" to list every project.'
+        })
+      )
     }),
     /** @param {{ project?: string; }} params */ async execute(
       _toolCallId,
       params,
       _signal,
       onUpdate,
-      _ctx,
+      _ctx
     ) {
       const want = params.project?.trim()
       const projects = want && want !== 'all' ? [want] : listProjects()
@@ -226,22 +237,23 @@ const projectToolingExtension = (pi) => {
           content: [
             {
               type: 'text',
-              text: 'No work/ or apps/ projects found.',
-            },
+              text: 'No work/ or apps/ projects found.'
+            }
           ],
-          details: {},
+          details: {}
         }
       }
       onUpdate?.({
         content: [
           {
             type: 'text',
-            text: `Reading tooling for ${projects.join(', ')}...`,
-          },
+            text: `Reading tooling for ${projects.join(', ')}...`
+          }
         ],
-        details: {},
+        details: {}
       })
-      const missing = want && want !== 'all' ? projects.filter((p) => !projectDir(p)) : []
+      const missing =
+        want && want !== 'all' ? projects.filter(p => !projectDir(p)) : []
       /** @type {string[]} */
       const blocks = []
       for (const project of projects) {
@@ -258,14 +270,14 @@ const projectToolingExtension = (pi) => {
         content: [
           {
             type: 'text',
-            text,
-          },
+            text
+          }
         ],
         details: {
-          projects: blocks.length,
-        },
+          projects: blocks.length
+        }
       }
-    },
+    }
   })
 }
 export default projectToolingExtension

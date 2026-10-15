@@ -7,7 +7,7 @@ import { ActorStore } from '../../src/host/actors.js'
 
 const root = mkdtempSync(
   fileURLToPath(
-    new URL('../../../../artifacts/brayness/owner-test-', import.meta.url)
+    new URL('../../../../artifacts/realness/owner-test-', import.meta.url)
   )
 )
 

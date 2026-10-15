@@ -8,11 +8,10 @@ import {
 } from 'node:fs'
 import { after, before, describe, test } from 'node:test'
 import { out_path } from '#root/lib/output.js'
+import { development_settings } from '#root/src/settings/environments.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
-const PROXY =
-  process.env.BRAYNESS_PROXY_URL ??
-  'https://brayness-proxy-yelzvhhngq-uc.a.run.app'
+const PROXY = development_settings.services.starter_proxy_url
 const owner = '+14156667777'
 const secret_path = out_path('host-pass-secret')
 const secret =
@@ -30,7 +29,7 @@ const host_pass = (phone = owner) => {
   )
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -80,11 +79,11 @@ const run = async (id, argv, timeout = 60) => {
   }
 }
 
-/** The same script, but as `brayness`: the user Pi runs as. */
-const as_brayness = script => [
+/** The same script, but as `realness`: the user Pi runs as. */
+const as_realness = script => [
   '/usr/bin/setpriv',
-  '--reuid=brayness',
-  '--regid=brayness',
+  '--reuid=realness',
+  '--regid=realness',
   '--clear-groups',
   '/bin/bash',
   '-c',
@@ -101,31 +100,31 @@ after(async () => {
 })
 
 describe("g2d: the actor's boundaries", () => {
-  test('non-root: Pi is brayness, and brayness is walled off from system paths', async () => {
+  test('non-root: Pi is realness, and realness is walled off from system paths', async () => {
     const processes = await run(actor, [
       '/bin/bash',
       '-c',
-      'ps -u brayness -o comm='
+      'ps -u realness -o comm='
     ])
     assert.match(
       processes.out,
       /^pi$/m,
-      `no pi process owned by brayness:\n${processes.all}`
+      `no pi process owned by realness:\n${processes.all}`
     )
 
     const probe = await run(
       actor,
-      as_brayness(
+      as_realness(
         [
           'echo UID=$(id -u)',
           'echo USER=$(id -un)',
-          'touch /usr/local/bin/brayness-probe 2>/dev/null && echo WRITE_ALLOWED || echo WRITE_DENIED',
+          'touch /usr/local/bin/realness-probe 2>/dev/null && echo WRITE_ALLOWED || echo WRITE_DENIED',
           'cat /etc/shadow > /dev/null 2>&1 && echo SHADOW_READABLE || echo SHADOW_DENIED'
         ].join('\n')
       )
     )
     assert.match(probe.all, /UID=(?!0\b)\d+/, probe.all)
-    assert.match(probe.all, /USER=brayness/, probe.all)
+    assert.match(probe.all, /USER=realness/, probe.all)
     assert.match(probe.all, /WRITE_DENIED/, probe.all)
     assert.match(probe.all, /SHADOW_DENIED/, probe.all)
   })
@@ -133,7 +132,7 @@ describe("g2d: the actor's boundaries", () => {
   test('egress: the internet answers, the neighbour, host, and metadata do not', async () => {
     const mine = await run(
       actor,
-      as_brayness(
+      as_realness(
         `curl -s -o /dev/null -w '%{http_code}' --max-time 20 -X POST ${PROXY} -d '{}'`
       )
     )
@@ -166,7 +165,7 @@ describe("g2d: the actor's boundaries", () => {
 
     const local = await run(
       actor,
-      as_brayness(
+      as_realness(
         [
           'GW=$(ip -4 route show default | awk \'{for (i = 1; i <= NF; i++) if ($i == "via") print $(i + 1)}\')',
           `echo NEIGHBOUR=$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 http://${neighbour_ip}:8000/)`,
@@ -183,10 +182,10 @@ describe("g2d: the actor's boundaries", () => {
   test('model pass: none on disk, the door mints one, the proxy takes it', async () => {
     const probe = await run(
       actor,
-      as_brayness(
+      as_realness(
         [
-          'test -e /etc/brayness/agent-pass && echo PASS_PRESENT || echo PASS_ABSENT',
-          'PASS=$(brayness-model-pass) || echo MINT_FAILED',
+          'test -e /etc/realness/agent-pass && echo PASS_PRESENT || echo PASS_ABSENT',
+          'PASS=$(realness-model-pass) || echo MINT_FAILED',
           "echo PARTS=$(printf '%s' \"$PASS\" | awk -F. '{print NF}')",
           `echo CALL=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -X POST ${PROXY} -H "authorization: Bearer $PASS" -H 'content-type: application/json' -d '{"messages":[{"role":"user","content":"say hi in one word"}],"stream":true}')`
         ].join('\n')

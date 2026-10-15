@@ -1,7 +1,7 @@
 /**
  * Chat bridge: the browser chat talks to the terminal's running Pi.
  *
- * A hosted actor runs one Pi, in its terminal. `brayness-chat` connects to this
+ * A hosted actor runs one Pi, in its terminal. `realness-chat` connects to this
  * socket, writes one JSON line `{"message": "..."}`, and reads JSON lines back:
  * `{"type":"delta","text":...}`, then `{"type":"done"}` or `{"type":"error"}`.
  * The message becomes a turn in the terminal's own session, so both views
@@ -16,8 +16,8 @@
 import { readFileSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
 
-const SOCKET = "/run/brayness/pi-chat.sock"
-const CHAT_PROMPT = "/usr/local/share/brayness-chat.md"
+const SOCKET = "/run/realness/pi-chat.sock"
+const CHAT_PROMPT = "/usr/local/share/realness-chat.md"
 const MAX_LINE = 16384
 
 const send = (socket, value) => {
@@ -71,7 +71,7 @@ export const prints_only = (command) => {
 
 const THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max"]
 /** Registered so `new` runs with a command context; session replacement is command-only. */
-const NEW_SESSION_COMMAND = "brayness-chat-new"
+const NEW_SESSION_COMMAND = "realness-chat-new"
 
 const model_name = (model) => (model ? `${model.provider}/${model.id}` : "none")
 

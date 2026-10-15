@@ -1,5 +1,5 @@
 /**
- * Hands a finished sign-in to a terminal on this computer (`brayness login`).
+ * Hands a finished sign-in to a terminal on this computer (`realness login`).
  *
  * The terminal listens on 127.0.0.1 and opens /sign-on?cli=<port>&state=<s>.
  * After the person confirms, this posts the refresh token there with the same

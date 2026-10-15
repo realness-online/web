@@ -1,8 +1,8 @@
 /**
  * Which (machine type, zone) can actually make a host right now.
  *
- *   webspace development probe
- *   webspace development probe n2-standard-4:us-west1-b n2-standard-8:us-east1-b
+ *   realness development probe
+ *   realness development probe n2-standard-4:us-west1-b n2-standard-8:us-east1-b
  *
  * Capacity is per machine type per zone and a stockout refuses both create and
  * start, so the only honest probe is a create. Each probe makes a 20 GB disk
@@ -86,7 +86,7 @@ export const probe = async (config, candidates = []) => {
   if (ok.length === 0) {
     process.stderr.write(`\nno candidate zone can make a host right now\n`)
     process.stderr.write(
-      `try more: webspace development probe <type>:<zone> ...\n`
+      `try more: realness development probe <type>:<zone> ...\n`
     )
     return { ok: [], failed: list.length }
   }

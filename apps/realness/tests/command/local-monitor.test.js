@@ -43,7 +43,7 @@ const section = (over = {}) => ({
 
 test('a frame names the stack, the url, and one panel per service', () => {
   const frame = local_frame([section()], { url: 'http://localhost:5173' })
-  assert.match(frame, /^BRAYNESS LOCAL\n/)
+  assert.match(frame, /^REALNESS LOCAL\n/)
   assert.match(frame, /\nhttp:\/\/localhost:5173\n/)
   assert.match(frame, /sync {2}running/)
   assert.match(frame, /PID 42/)
@@ -76,7 +76,7 @@ test('a frame stops at the height it is given', () => {
 
 test('a frame with no services still says what the keys do', () => {
   const frame = local_frame([], { url: 'http://x' })
-  assert.match(frame, /BRAYNESS LOCAL/)
+  assert.match(frame, /REALNESS LOCAL/)
   assert.match(frame, /Ctrl-C\/q stop local children/)
 })
 

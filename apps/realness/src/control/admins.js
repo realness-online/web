@@ -70,7 +70,7 @@ export const plan_admins = (list, { verb, phone, name = '' }) => {
     return { list: list.filter(admin => admin.phone !== phone), changed: true }
   }
   throw new Error(
-    'usage: webspace <env> admins list | add <phone> [name] | remove <phone> [--yes]'
+    'usage: realness <env> admins list | add <phone> [name] | remove <phone> [--yes]'
   )
 }
 
@@ -164,7 +164,7 @@ export const ensure_admins = async (
 /** The hint a refused operator sees instead of a bare 403. */
 export const not_admin_hint = (env, phone) =>
   `${phone ?? 'this account'} is signed in but is not an admin in ${env}. ` +
-  `An admin can run: webspace ${env} admins add ${phone ?? '<your phone>'} --yes`
+  `An admin can run: realness ${env} admins add ${phone ?? '<your phone>'} --yes`
 
 /**
  * Plain text for the terminal; phones are masked by the caller's output rule.

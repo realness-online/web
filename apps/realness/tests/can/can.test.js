@@ -32,7 +32,7 @@ test('strangers are denied everything private', () => {
       false
     )
     assert.equal(can(stranger, action, `subscriptions/${A}/sub`), false)
-    assert.equal(can(stranger, action, `people/${A}/plans/brayness.md`), false)
+    assert.equal(can(stranger, action, `people/${A}/plans/realness.md`), false)
   }
   assert.equal(can(stranger, 'write', `people/${A}/posters/1.html.gz`), false)
   assert.equal(can(stranger, 'list', 'people/'), false)
@@ -162,43 +162,55 @@ test('loops: admins read all and may only request a stop', () => {
 test('hosts: a global admin reads host status; nobody writes it through sync', () => {
   const admin = { phone: B, admin: true }
   assert.equal(can(admin, 'list', 'hosts/'), true)
-  assert.equal(can(admin, 'get', 'hosts/brayness-1/status.html'), true)
-  assert.equal(can(admin, 'write', 'hosts/brayness-1/status.html'), false)
-  assert.equal(can(admin, 'delete', 'hosts/brayness-1/status.html'), false)
-  assert.equal(can(scott, 'get', 'hosts/brayness-1/status.html'), false)
+  assert.equal(can(admin, 'get', 'hosts/realness-1/status.html'), true)
+  assert.equal(can(admin, 'write', 'hosts/realness-1/status.html'), false)
+  assert.equal(can(admin, 'delete', 'hosts/realness-1/status.html'), false)
+  assert.equal(can(scott, 'get', 'hosts/realness-1/status.html'), false)
   assert.equal(can(stranger, 'list', 'hosts/'), false)
   assert.equal(can(box, 'list', 'hosts/'), false)
 })
 
+test('lifecycle: admins and the named host record intent; nobody deletes it', () => {
+  const admin = { phone: B, admin: true }
+  const key = 'hosts/realness-1/lifecycle.html'
+  assert.equal(can(admin, 'write', key), true)
+  assert.equal(can(admin, 'get', key), true)
+  assert.equal(can(admin, 'delete', key), false)
+  assert.equal(can({ host_name: 'realness-1' }, 'write', key), true)
+  assert.equal(can({ host_name: 'realness-2' }, 'write', key), false)
+  assert.equal(can(scott, 'write', key), false)
+  assert.equal(can(scott, 'get', key), false)
+})
+
 test('actor requests: admins write them, only the named host reads them', () => {
   const admin = { phone: B, admin: true }
-  const host = { host_name: 'brayness-1' }
-  const key = 'hosts/brayness-1/requests/a-0123456789ab.html'
+  const host = { host_name: 'realness-1' }
+  const key = 'hosts/realness-1/requests/a-0123456789ab.html'
   assert.equal(can(admin, 'write', key), true)
   assert.equal(can(admin, 'delete', key), false)
   assert.equal(
-    can(admin, 'write', 'hosts/brayness-1/requests/../status.html'),
+    can(admin, 'write', 'hosts/realness-1/requests/../status.html'),
     false
   )
   assert.equal(
-    can(admin, 'write', 'hosts/brayness-1/requests/not-an-actor.html'),
+    can(admin, 'write', 'hosts/realness-1/requests/not-an-actor.html'),
     false
   )
   assert.equal(can(scott, 'write', key), false)
   assert.equal(can(host, 'get', key), true)
   assert.equal(can(host, 'write', key), false)
-  assert.equal(can({ host_name: 'brayness-2' }, 'get', key), false)
+  assert.equal(can({ host_name: 'realness-2' }, 'get', key), false)
 })
 
 test('a host writes its own status and loop records; nothing more', () => {
-  const host = { host_name: 'brayness-1' }
+  const host = { host_name: 'realness-1' }
   const id = 'a-0123456789ab'
-  assert.equal(can(host, 'write', 'hosts/brayness-1/status.html'), true)
-  assert.equal(can(host, 'get', 'hosts/brayness-1/status.html'), true)
-  assert.equal(can(host, 'write', 'hosts/brayness-2/status.html'), false)
-  assert.equal(can(host, 'write', 'hosts/brayness-1/x.html'), false)
+  assert.equal(can(host, 'write', 'hosts/realness-1/status.html'), true)
+  assert.equal(can(host, 'get', 'hosts/realness-1/status.html'), true)
+  assert.equal(can(host, 'write', 'hosts/realness-2/status.html'), false)
+  assert.equal(can(host, 'write', 'hosts/realness-1/x.html'), false)
   assert.equal(can(host, 'list', 'hosts/'), false)
-  assert.equal(can(host, 'delete', 'hosts/brayness-1/status.html'), false)
+  assert.equal(can(host, 'delete', 'hosts/realness-1/status.html'), false)
   assert.equal(can(host, 'write', `loops/${id}/record.html`), true)
   assert.equal(can(host, 'get', `loops/${id}/stop.html`), true)
   assert.equal(can(host, 'write', `loops/${id}/stop.html`), false)
@@ -213,9 +225,9 @@ test('a host writes its own status and loop records; nothing more', () => {
   )
   assert.equal(
     can(
-      { host_name: 'brayness-1', phone: A },
+      { host_name: 'realness-1', phone: A },
       'write',
-      'hosts/brayness-1/status.html'
+      'hosts/realness-1/status.html'
     ),
     false
   )
@@ -263,7 +275,7 @@ test('an instance reaches its own folder and nothing else ungranted', () => {
   assert.equal(can(box, 'get', `people/${A}/relations.html.gz`), false)
   assert.equal(can(box, 'get', `people/${A}/rights.html`), false)
   assert.equal(can(box, 'get', `subscriptions/${A}/sub`), false)
-  assert.equal(can(box, 'get', `people/${A}/plans/brayness.md`), false)
+  assert.equal(can(box, 'get', `people/${A}/plans/realness.md`), false)
 })
 
 test('grants give an instance exactly what they name', () => {
@@ -275,10 +287,10 @@ test('grants give an instance exactly what they name', () => {
         grant(box.instance, 'Write', `/${B}/vault/`)
     )
   )
-  assert.equal(can(box, 'get', `people/${A}/plans/brayness.md`, grants), true)
+  assert.equal(can(box, 'get', `people/${A}/plans/realness.md`, grants), true)
   assert.equal(can(box, 'list', `people/${A}/plans/`, grants), true)
   assert.equal(
-    can(box, 'write', `people/${A}/plans/brayness.md`, grants),
+    can(box, 'write', `people/${A}/plans/realness.md`, grants),
     false
   )
   assert.equal(can(box, 'write', `people/${A}/vault/note.md`, grants), true)

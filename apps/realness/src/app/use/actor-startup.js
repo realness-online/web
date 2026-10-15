@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { start_actor } from '@/utils/brayness-gate'
-import { readable_error } from '@/utils/brayness-chat'
+import { start_actor } from '@/utils/gate'
+import { readable_error } from '@/utils/chat'
 
 const NOT_FOUND = 404
 
@@ -40,6 +40,10 @@ export const use_actor_startup = (user, { set_working = () => {} } = {}) => {
     let failed = false
     const on_progress = event => {
       if (stopped || controller !== observing) return
+      if (event.source === 'gate') {
+        progress.value = event
+        return
+      }
       startup_id.value = event.startup_id
       if (event.type === 'startup') progress.value = null
       if (event.type === 'startup-stage')

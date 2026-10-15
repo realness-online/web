@@ -68,23 +68,20 @@ describe('tools/repair-people', () => {
         statements: true
       })
       expect(
-        missing_for(e64, ['people/+14155550101/index.html.gz'])
+        missing_for(e64, ['people/+14155550101/index.html'])
       ).toMatchObject({ profile: false, statements: true })
       expect(
         missing_for(e64, [
-          'people/+14155550101/index.html.gz',
-          'people/+14155550101/statements/index.html.gz'
+          'people/+14155550101/index.html',
+          'people/+14155550101/statements/index.html'
         ])
       ).toMatchObject({ profile: false, statements: false })
     })
 
-    it('counts new names and mixed names as present', () => {
+    it('a retired .html.gz copy does not count as present', () => {
       expect(
-        missing_for(e64, [
-          'people/+14155550101/index.html',
-          'people/+14155550101/statements/index.html.gz'
-        ])
-      ).toMatchObject({ profile: false, statements: false })
+        missing_for(e64, ['people/+14155550101/index.html.gz'])
+      ).toMatchObject({ profile: true })
     })
 
     it('does not mistake a lookalike for the file', () => {
@@ -96,7 +93,7 @@ describe('tools/repair-people', () => {
     it('is not fooled by a statements folder with no file in it', () => {
       expect(
         missing_for(e64, [
-          'people/+14155550101/index.html.gz',
+          'people/+14155550101/index.html',
           'people/+14155550101/statements/'
         ])
       ).toMatchObject({ statements: true })

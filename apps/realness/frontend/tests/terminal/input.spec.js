@@ -88,14 +88,18 @@ describe('terminal keyboard and clipboard', () => {
       })
     })
     await env.settle(1)
-    expect(window.brayness.screen_text()).toContain('hello world')
+    expect(window.realness.screen_text()).toContain('hello world')
 
-    const at = (column, row) => ({ clientX: column * 8, clientY: row * 20, buttons: 1 })
+    const at = (column, row) => ({
+      clientX: column * 8,
+      clientY: row * 20,
+      buttons: 1
+    })
     env.fire_canvas('mousedown', at(0, 0))
     env.fire('mousemove', at(4, 0))
     env.fire('mouseup', {})
     env.paint()
-    const selected = window.brayness.selection_text()
+    const selected = window.realness.selection_text()
     expect(selected).toBe('hello')
 
     key(env, { key: 'c', metaKey: true })
@@ -205,9 +209,12 @@ describe('terminal scroll, resize, and theme', () => {
 
   it('reports wheel movement to a program that wants the mouse', async () => {
     const { sent } = await open_terminal(env)
-    const terminal = window.brayness
+    const terminal = window.realness
     env.sockets[0].onmessage({
-      data: JSON.stringify({ op: 'data', data_b64: btoa('\x1b[?1000h\x1b[?1006h') })
+      data: JSON.stringify({
+        op: 'data',
+        data_b64: btoa('\x1b[?1000h\x1b[?1006h')
+      })
     })
     env.paint()
     env.fire_canvas('wheel', {
@@ -217,7 +224,9 @@ describe('terminal scroll, resize, and theme', () => {
       clientY: 0,
       preventDefault() {}
     })
-    const reports = sent.map(one => atob(one.data_b64)).filter(text => text.includes('\x1b[<'))
+    const reports = sent
+      .map(one => atob(one.data_b64))
+      .filter(text => text.includes('\x1b[<'))
     expect(reports.length).toBeGreaterThan(0)
     expect(reports[0]).toMatch(/^\x1b\[<6[45];1;1M$/)
     expect(terminal.scrollbar()).not.toBeUndefined()
@@ -225,7 +234,7 @@ describe('terminal scroll, resize, and theme', () => {
 
   it('scrolls the view when the program does not want the mouse', async () => {
     await open_terminal(env)
-    const before = window.brayness.screen_text()
+    const before = window.realness.screen_text()
     env.fire_canvas('wheel', {
       deltaY: -60,
       deltaMode: 0,
@@ -234,7 +243,7 @@ describe('terminal scroll, resize, and theme', () => {
       preventDefault() {}
     })
     env.paint()
-    expect(window.brayness.screen_text()).toBe(before)
+    expect(window.realness.screen_text()).toBe(before)
   })
 
   it('resizes the terminal only when the cell counts change', async () => {
@@ -270,7 +279,9 @@ describe('terminal scroll, resize, and theme', () => {
       scheme,
       load_theme: async () => {
         themed += 1
-        return parse_theme(read_file_sync(terminal_file('themes/realness-dark'), 'utf8'))
+        return parse_theme(
+          read_file_sync(terminal_file('themes/realness-dark'), 'utf8')
+        )
       }
     })
     await env.settle()

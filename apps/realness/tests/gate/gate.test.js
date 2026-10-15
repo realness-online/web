@@ -60,7 +60,7 @@ after_each(() => {
 const open = (
   gate,
   {
-    protocols = `brayness, good.id.token`,
+    protocols = `realness, good.id.token`,
     from = origin,
     path = '/pty?actor=a-000000000001&cols=100&rows=30'
   } = {}
@@ -112,7 +112,7 @@ test("a signed-in browser reaches its host's terminal through the gate", async (
   try {
     const { socket, status, head, rest } = await open(gate)
     assert.equal(status, 101)
-    assert.match(head, /Sec-WebSocket-Protocol: brayness\r?$/m)
+    assert.match(head, /Sec-WebSocket-Protocol: realness\r?$/m)
     assert.deepEqual(
       { ...host.hellos[0], pass: undefined },
       { actor: 'a-000000000001', cols: 100, rows: 30, pass: undefined }
@@ -153,7 +153,7 @@ test('another origin, no token, or a bad token is refused before any host', asyn
     )
     assert.equal((await open(gate, { protocols: '' })).status, 401)
     assert.equal(
-      (await open(gate, { protocols: 'brayness, bad.id.token' })).status,
+      (await open(gate, { protocols: 'realness, bad.id.token' })).status,
       401
     )
     assert.equal((await open(gate, { path: '/pty?cols=80' })).status, 400)
@@ -178,11 +178,11 @@ test('a host that refuses the pass is a 502, not a blank terminal', async () => 
   }
 })
 
-test('only a brayness subprotocol carries a token', () => {
-  assert.equal(offered_token('brayness, a.b.c'), 'a.b.c')
+test('only a realness subprotocol carries a token', () => {
+  assert.equal(offered_token('realness, a.b.c'), 'a.b.c')
   assert.equal(offered_token('other, a.b.c'), null)
-  assert.equal(offered_token('brayness'), null)
-  assert.equal(offered_token('brayness, a.b.c, extra'), null)
+  assert.equal(offered_token('realness'), null)
+  assert.equal(offered_token('realness, a.b.c, extra'), null)
 })
 
 /** A stand-in host API: records what arrives, answers JSON, or streams on /v1/stream. */
@@ -222,7 +222,7 @@ const fake_api = async () => {
   return { server, seen, port: server.address().port }
 }
 
-const api_gate = async api => {
+const api_gate = async (api, wake) => {
   const identify = async token =>
     token === 'good.id.token'
       ? { phone }
@@ -232,6 +232,7 @@ const api_gate = async api => {
     host_for: one_host('127.0.0.1:1', api.port),
     secret,
     origins: [origin],
+    wake,
     log: () => {}
   })
   await new Promise(done => gate.listen(0, '127.0.0.1', done))
@@ -340,4 +341,145 @@ test('r2a: an unreachable host is a 502', async () => {
     502
   )
   gate.close()
+})
+
+test('z3: only a signed-in call wakes the host, before it is forwarded', async () => {
+  const api = await fake_api()
+  const order = []
+  const { gate, at } = await api_gate(api, async () => {
+    order.push('wake')
+  })
+  assert.equal(
+    (await fetch(`${at}/v1/actors`, { headers: { origin } })).status,
+    401
+  )
+  assert.equal(
+    (
+      await fetch(`${at}/v1/actors`, {
+        headers: { authorization: 'Bearer bad', origin }
+      })
+    ).status,
+    401
+  )
+  assert.deepEqual(order, [])
+  const reply = await fetch(`${at}/v1/actors`, {
+    headers: { authorization: 'Bearer good.id.token', origin }
+  })
+  assert.equal(reply.status, 201)
+  assert.deepEqual(order, ['wake'])
+  assert.equal(api.seen.length, 1)
+  gate.close()
+  api.server.close()
+})
+
+test('z3: a failed wake is a 503 with a retry time, and nothing is forwarded', async () => {
+  const api = await fake_api()
+  const { gate, at } = await api_gate(api, async () => {
+    throw new Error('the host did not wake in time; try again')
+  })
+  const reply = await fetch(`${at}/v1/actors`, {
+    headers: { authorization: 'Bearer good.id.token', origin }
+  })
+  assert.equal(reply.status, 503)
+  assert.equal(reply.headers.get('retry-after'), '5')
+  assert.match(await reply.text(), /try again/)
+  assert.equal(api.seen.length, 0)
+  gate.close()
+  api.server.close()
+})
+
+const ndjson_api = async status => {
+  const server = create_http_server((request, response) => {
+    request.resume()
+    response.writeHead(status, { 'content-type': 'application/x-ndjson' })
+    response.end(
+      status === 200
+        ? '{"type":"startup","startup_id":"s1"}\n{"type":"actor-ready","startup_id":"s1","actor_id":"a-1"}\n'
+        : 'parking'
+    )
+  })
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  return { server, port: server.address().port, seen: [] }
+}
+
+const lines = async reply =>
+  (await reply.text())
+    .trim()
+    .split('\n')
+    .map(line => JSON.parse(line))
+
+const wake_with =
+  events =>
+  async ({ watch } = {}) => {
+    for (const event of events) watch?.(event)
+  }
+
+test('z5: startup progress begins with the gate wake, then the host stages', async () => {
+  const api = await ndjson_api(200)
+  const { gate, at } = await api_gate(
+    api,
+    wake_with([
+      { stage: 'starting_host', state: 'starting', elapsed_ms: 0 },
+      { stage: 'starting_host', state: 'complete', elapsed_ms: 900 }
+    ])
+  )
+  const reply = await fetch(`${at}/v1/startup`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer good.id.token', origin },
+    body: '{}'
+  })
+  assert.equal(reply.status, 200)
+  assert.deepEqual(
+    (await lines(reply)).map(event => [
+      event.type,
+      event.stage ?? event.state ?? '',
+      event.source ?? ''
+    ]),
+    [
+      ['startup-stage', 'starting_host', 'gate'],
+      ['startup-stage', 'starting_host', 'gate'],
+      ['startup', '', ''],
+      ['actor-ready', '', '']
+    ]
+  )
+  gate.close()
+  api.server.close()
+})
+
+test('z5: a refusal after the wake streamed becomes an error record', async () => {
+  const api = await ndjson_api(503)
+  const { gate, at } = await api_gate(
+    api,
+    wake_with([{ stage: 'starting_host', state: 'complete', elapsed_ms: 1 }])
+  )
+  const reply = await fetch(`${at}/v1/startup`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer good.id.token', origin },
+    body: '{}'
+  })
+  const events = await lines(reply)
+  assert.deepEqual(events.at(-1), { type: 'error', text: '503: parking' })
+  gate.close()
+  api.server.close()
+})
+
+test('z5: a wake that fails mid-stream ends with an error record', async () => {
+  const api = await ndjson_api(200)
+  const { gate, at } = await api_gate(api, async ({ watch } = {}) => {
+    watch?.({ stage: 'starting_host', state: 'failed', elapsed_ms: 90_000 })
+    throw new Error('the host did not wake in time; try again')
+  })
+  const reply = await fetch(`${at}/v1/startup`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer good.id.token', origin },
+    body: '{}'
+  })
+  const events = await lines(reply)
+  assert.equal(events[0].state, 'failed')
+  assert.deepEqual(events.at(-1), {
+    type: 'error',
+    text: 'the host did not wake in time; try again'
+  })
+  gate.close()
+  api.server.close()
 })

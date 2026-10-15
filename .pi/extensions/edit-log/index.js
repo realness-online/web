@@ -8,47 +8,37 @@
  * Formatters (pi-mono-auto-fix) rewrite files once the agent stops, so every
  * touched path is fingerprinted again once it holds still, as tool `settle`.
  *
- * Each agent run is bracketed by `brayness turn-start` and `turn-end`, which
+ * Each agent run is bracketed by `realness turn-start` and `turn-end`, which
  * log whatever changed in synced folders during it (bash too). Desktop turns
  * upload only with REALNESS_TURN_SYNC=1 while sync is rebuilt; actors still sync.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile, spawn } from 'node:child_process'
-import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, openSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { mkdirSync, openSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
-import { openLog, record, sha, stateDir, useHarnessState } from './log.js'
-const MANIFEST = 'apps/realness/package.json'
-/** In an actor the `brayness` wrapper is on PATH and marks itself; never a file path. */
-const in_actor = () => process.env.BRAYNESS_ACTOR === '1'
-/** Desktop runs the repo's command; an actor runs its `brayness` wrapper. */
+import { openLog, record, sha, stateDir, logPath } from './log.js'
+import { is_actor, harness_root } from '../../../bin/lib/harness-settings.js'
+import { product_entry } from '../../../bin/lib/product.js'
+
+const in_actor = is_actor
+/** Desktop runs the repo's command; an actor runs its `realness` wrapper. */
 /**
- * @param {string} root
  * @param {string[]} args
  * @returns {[string, string[]]}
  */
-const sync_command = (root, args) =>
-  !in_actor() && existsSync(join(root, MANIFEST))
-    ? [process.execPath, [createRequire(join(root, MANIFEST)).resolve('brayness/command'), ...args]]
-    : ['brayness', args]
+const sync_command = (args) =>
+  !in_actor()
+    ? [process.execPath, [product_entry('command'), ...args]]
+    : ['realness', args]
 
-/** The harness root holding the brayness command, from cwd upward. */
 /**
  * @param {string} cwd
  * @returns {string | undefined}
  */
-const harness = (cwd) => {
-  for (let dir = resolve(cwd); ; dir = dirname(dir)) {
-    if (existsSync(join(dir, MANIFEST)) || (in_actor() && existsSync(join(dir, '.pi/agent'))))
-      return dir
-    if (dirname(dir) === dir) return undefined
-  }
-}
+const harness = harness_root
 /** @param {ExtensionAPI} pi */
 const editLog = (pi) => {
-  const home = harness(process.cwd())
-  if (home) useHarnessState(home)
   /** @type {ReturnType<typeof openLog> | undefined} */
   let db
   let turn = 0
@@ -63,12 +53,12 @@ const editLog = (pi) => {
     }
   }
   /**
-   * @param {{ ui: { notify: (m: string, l: "warning") => void; }; }} ctx
+   * @param {{ cwd: string; ui: { notify: (m: string, l: "warning") => void; }; }} ctx
    * @param {Parameters<typeof record>[1]} edit
    */
   const log = (ctx, edit) => {
     try {
-      db ??= openLog()
+      db ??= openLog(logPath(ctx.cwd))
       record(db, edit)
     } catch (error) {
       ctx.ui.notify(`edit-log: ${/** @type {Error} */ (error).message}`, 'warning')
@@ -110,11 +100,11 @@ const editLog = (pi) => {
     if (!open) return
     const { root, session } = open
     open = undefined
-    mkdirSync(stateDir(), {
+    mkdirSync(stateDir(root), {
       recursive: true,
     })
-    const out = openSync(join(stateDir(), 'sync.log'), 'a')
-    const [command, args] = sync_command(root, [
+    const out = openSync(join(stateDir(root), 'sync.log'), 'a')
+    const [command, args] = sync_command([
       'turn-end',
       '--session',
       session,
@@ -170,7 +160,7 @@ const editLog = (pi) => {
     if (!root) return
     const session = ctx.sessionManager.getSessionFile() ?? 'ephemeral'
     try {
-      const [command, args] = sync_command(root, ['turn-start', '--session', session])
+      const [command, args] = sync_command(['turn-start', '--session', session])
       await promisify(execFile)(command, args, {
         cwd: root,
       })

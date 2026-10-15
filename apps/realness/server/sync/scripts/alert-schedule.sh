@@ -3,8 +3,8 @@ set -euo pipefail
 
 project="${PROJECT:-realness-development}"
 region="${REGION:-us-central1}"
-service="brayness-sync"
-job="brayness-host-watch"
+service="realness-sync"
+job="realness-host-watch"
 webhook="${1:-}"
 
 if [ -z "$webhook" ]; then

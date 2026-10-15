@@ -35,7 +35,7 @@ const ndjson = (...records) =>
 
 let calls, watch_replies
 before_each(() => {
-  vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
+  vi.stubEnv('MODE', 'development')
   mock_route.query = { actor: 'a-0123456789ab' }
   home_view.value = 'thoughts'
   wide.value = false
@@ -109,19 +109,19 @@ describe('chat page', () => {
     const items = page.findAll('li[itemtype="https://schema.org/Message"]')
     expect(
       items.map(item => item.find('[itemprop="sender"]').attributes('content'))
-    ).toEqual(['You', 'Brayness', 'You', 'Brayness'])
+    ).toEqual(['You', 'Realness', 'You', 'Realness'])
     expect(items[1].findAll('[itemprop="text"] > p')).toHaveLength(2)
     expect(items[1].find('a').attributes('href')).toBe('https://example.com')
     expect(items[3].text()).toContain('Two parts')
     expect(calls[0]).toMatchObject({
-      url: 'https://gate.test/v1/startup',
+      url: 'https://realness-gate-639469569733.us-central1.run.app/v1/startup',
       method: 'POST'
     })
     expect(JSON.parse(calls[0].init.body)).toEqual({ actor: 'a-0123456789ab' })
     expect(calls[0].init.headers.authorization).toBe('Bearer id.token')
     const watch = calls.find(call => call.url.endsWith('/chat/events'))
     expect(watch.url).toBe(
-      'https://gate.test/v1/actors/a-0123456789ab/chat/events'
+      'https://realness-gate-639469569733.us-central1.run.app/v1/actors/a-0123456789ab/chat/events'
     )
     expect(watch.init.headers.authorization).toBe('Bearer id.token')
   })
@@ -136,7 +136,10 @@ describe('chat page', () => {
     expect(sent.method).toBe('POST')
     expect(
       read_contextual_message(JSON.parse(sent.init.body).message)
-    ).toMatchObject({ text: 'Hello there', context: { path: '/chat' } })
+    ).toMatchObject({
+      text: 'Hello there',
+      context: { path: '/chat' }
+    })
     expect(box.element.value).toBe('')
 
     fetch.mockImplementationOnce(async () => new Response('', { status: 502 }))

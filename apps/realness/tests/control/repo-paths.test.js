@@ -32,7 +32,7 @@ const FILE = '[\\w./-]+?\\.(?:sh|js|ts|json|vue)(?![\\w.])'
 const LEADS = [
   [
     new RegExp(
-      `(?:\\$\\{?(?:REPO|DIR|repo|root_dir)\\}?|\\$\\{config\\.workdir\\}|\\$HOME/brayness|~/brayness|/mnt/fc)/(${FILE})`,
+      `(?:\\$\\{?(?:REPO|DIR|repo|root_dir)\\}?|\\$\\{config\\.workdir\\}|\\$HOME/realness|~/realness|/mnt/fc)/(${FILE})`,
       'g'
     ),
     ROOT

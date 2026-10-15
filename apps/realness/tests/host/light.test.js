@@ -23,12 +23,12 @@ const secret = 'light-test-secret-at-least-thirty-two-bytes!'
 const phone = '+14155550125'
 const id = 'a-11a700000001'
 const dir = new URL(
-  `../../../../artifacts/brayness/light-${randomUUID()}/`,
+  `../../../../artifacts/realness/light-${randomUUID()}/`,
   import.meta.url
 ).pathname
 const DAY = 24 * 60 * 60 * 1000
-const OLD = '.pi/agent/sessions/--brayness--/old.jsonl'
-const NEW = '.pi/agent/sessions/--brayness--/new.jsonl'
+const OLD = '.pi/agent/sessions/--realness--/old.jsonl'
+const NEW = '.pi/agent/sessions/--realness--/new.jsonl'
 const BIG = 'work/big.bin'
 let storage, server, url
 
@@ -39,7 +39,7 @@ before(async () => {
   await put('.ignore', '')
   await put(
     'package.json',
-    JSON.stringify({ brayness: { light: { days: 14, bytes: 1000 } } })
+    JSON.stringify({ realness: { light: { days: 14, bytes: 1000 } } })
   )
   await put('vault/plans/p.md', '# Plan\n')
   await put(NEW, '{"type":"session"}\n')
@@ -66,7 +66,6 @@ after(async () => {
   server.closeAllConnections()
   await new Promise(done => server.close(done))
   await rm(dir, { recursive: true, force: true })
-  delete process.env.BRAYNESS_STATE
 })
 
 test('vault history stays remote on a light VM until fetched', async () => {
@@ -78,7 +77,7 @@ test('vault history stays remote on a light VM until fetched', async () => {
   await storage.put(
     `${prefix}package.json`,
     JSON.stringify({
-      brayness: { sessions: 'vault/Sessions', light: { days: 14, bytes: 1000 } }
+      realness: { sessions: 'vault/Sessions', light: { days: 14, bytes: 1000 } }
     })
   )
   await storage.put(`${prefix}${old}`, '{"type":"session","id":"old"}\n')
@@ -87,7 +86,6 @@ test('vault history stays remote on a light VM until fetched', async () => {
   await utimes(join(dir, 'bucket', `${prefix}${old}`), month_ago, month_ago)
   const root = join(dir, 'vault-vm')
   const state = join(root, '.pi/agent/state')
-  process.env.BRAYNESS_STATE = state
   await mkdir(root, { recursive: true })
   const recovered = await recover(
     url,
@@ -119,14 +117,14 @@ test('vault history stays remote on a light VM until fetched', async () => {
 })
 
 test('light policy: unset is full; true takes defaults; bad numbers refuse', () => {
-  assert.equal(light_policy(JSON.stringify({ brayness: {} })), null)
+  assert.equal(light_policy(JSON.stringify({ realness: {} })), null)
   assert.equal(light_policy(null), null)
   assert.deepEqual(
-    light_policy(JSON.stringify({ brayness: { light: true } })),
+    light_policy(JSON.stringify({ realness: { light: true } })),
     { days: 14, bytes: 2 * 1024 * 1024 }
   )
   assert.throws(
-    () => light_policy(JSON.stringify({ brayness: { light: { days: 0 } } })),
+    () => light_policy(JSON.stringify({ realness: { light: { days: 0 } } })),
     /days/
   )
 })
@@ -149,7 +147,6 @@ test('a light VM leaves old history and big files in storage, keeps them through
   const root = join(dir, 'vm')
   const state = join(root, '.pi/agent/state')
   await mkdir(root, { recursive: true })
-  process.env.BRAYNESS_STATE = state
 
   const recovered = await recover(
     url,

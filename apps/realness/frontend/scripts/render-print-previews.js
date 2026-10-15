@@ -134,16 +134,13 @@ const gcloud_lines = gcloud_args => {
 
 const storage_prefix = `gs://${bucket}/people${author}/posters/`
 
-/**
- * The shop's prints: live-folder plain `<created>.html`, one per stamp. The
- * legacy `.html.gz` name can sit beside it while both names are mirrored.
- */
+/** The shop's prints: live-folder plain `<created>.html`, one per stamp. */
 const list_prints = () =>
   [
     ...new Set(
       gcloud_lines(['storage', 'ls', storage_prefix])
         .map(url => path.posix.basename(url))
-        .filter(name => /^\d+\.html(\.gz)?$/.test(name))
+        .filter(name => /^\d+\.html$/.test(name))
         .map(name => Number(name.split('.')[0]))
     )
   ].sort((a, b) => b - a)

@@ -19,7 +19,7 @@ naming the app. A stranger's visit spends nothing.
 - Which model and label set?
 - Labels only, or a saved history?
 
-## What it needs from Brayness
+## What it needs from Realness
 
 - A door from an app to a model, scoped to its owner. An app VM has no egress
   and no key today.

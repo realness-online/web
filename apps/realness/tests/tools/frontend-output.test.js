@@ -17,9 +17,9 @@ const fixture = context => {
   mkdir_sync(parent, { recursive: true })
   const directory = mkdtemp_sync(join(parent, 'test-'))
   context.after(() => rm_sync(directory, { recursive: true, force: true }))
+  const output_root = join(directory, "output with spaces and 'quotes'")
   const env = {
     ...process.env,
-    BRAYNESS_OUT: join(directory, 'output with spaces'),
     DIST_DIR: join(directory, 'site with spaces')
   }
   const run = (...args) =>
@@ -28,12 +28,12 @@ const fixture = context => {
       env,
       encoding: 'utf8'
     })
-  return { env, run }
+  return { env, output_root, run }
 }
 
 test('Vite, prerender, and settings select the same external frontend directory', context => {
   const { env, run } = fixture(context)
-  const source = `import browser from './vite.config.js'; import server from './vite.prerender.config.js'; console.log(JSON.stringify({ browser: browser.build.outDir, server: server.build.outDir, bundled: server.ssr.noExternal }))`
+  const source = `import browser from './vite.config.js'; import server from './vite.prerender.config.js'; console.log(JSON.stringify({ browser: browser({ mode: 'development' }).build.outDir, server: server.build.outDir, bundled: server.ssr.noExternal }))`
   const config = JSON.parse(run('--input-type=module', '-e', source))
   assert.equal(config.browser, env.DIST_DIR)
   assert.equal(config.server, join(env.DIST_DIR, 'server'))
@@ -45,10 +45,10 @@ test('Vite, prerender, and settings select the same external frontend directory'
 })
 
 test('hosting configuration retains targets, rules and secondary hosting paths', context => {
-  const { env, run } = fixture(context)
-  run('scripts/build-hosting-config.js')
+  const { env, output_root, run } = fixture(context)
+  run('scripts/build-hosting-config.js', output_root)
   const generated = JSON.parse(
-    read_file_sync(join(env.BRAYNESS_OUT, 'frontend/firebase.json'), 'utf8')
+    read_file_sync(join(output_root, 'frontend/firebase.json'), 'utf8')
   )
   const template = JSON.parse(
     read_file_sync(join(root, 'frontend/firebase.json'), 'utf8')
@@ -63,8 +63,22 @@ test('hosting configuration retains targets, rules and secondary hosting paths',
   expected.storage.rules = join(root, 'frontend/storage.rules')
   assert.deepEqual(generated, expected)
   assert.equal(
-    read_file_sync(join(env.BRAYNESS_OUT, 'frontend/.firebaserc'), 'utf8'),
+    read_file_sync(join(output_root, 'frontend/.firebaserc'), 'utf8'),
     read_file_sync(join(root, 'frontend/.firebaserc'), 'utf8')
+  )
+})
+
+test('production hosting drops routes to services the project has not deployed', context => {
+  const { output_root, run } = fixture(context)
+  run('scripts/build-hosting-config.js', output_root, '--env', 'production')
+  const generated = JSON.parse(
+    read_file_sync(join(output_root, 'frontend/firebase.json'), 'utf8')
+  )
+  const routes = generated.hosting.flatMap(hosting => hosting.rewrites ?? [])
+  assert.ok(routes.length > 0, 'page rewrites remain')
+  assert.deepEqual(
+    routes.filter(rewrite => rewrite.run),
+    []
   )
 })
 

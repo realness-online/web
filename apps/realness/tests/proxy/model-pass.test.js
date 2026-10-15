@@ -47,7 +47,7 @@ test('cannot use another audience, malformed claims, or an invalid owner', () =>
     /bad model pass/
   )
   const body = Buffer.from(
-    JSON.stringify({ aud: 'brayness-host', ...actor, exp: now / 1000 + 60 })
+    JSON.stringify({ aud: 'realness-host', ...actor, exp: now / 1000 + 60 })
   ).toString('base64url')
   const signature = createHmac('sha256', secret)
     .update(body)

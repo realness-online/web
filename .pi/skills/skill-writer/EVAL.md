@@ -68,11 +68,11 @@ cd "$EVAL_DIR"
 Then invoke the harness you are in, non-interactively, with the filled-in
 template as the prompt:
 
-| Harness     | Command                                          |
-| ----------- | ------------------------------------------------ |
+| Harness     | Command                                             |
+| ----------- | --------------------------------------------------- |
 | pi          | `./bin/pi -p --no-session "$(cat eval-prompt.txt)"` |
-| Claude Code | `claude -p "$(cat eval-prompt.txt)"`             |
-| Cursor      | `cursor-agent -p "$(cat eval-prompt.txt)"`       |
+| Claude Code | `claude -p "$(cat eval-prompt.txt)"`                |
+| Cursor      | `cursor-agent -p "$(cat eval-prompt.txt)"`          |
 
 For deterministic traces to diff baseline against candidate, add the harness's
 JSON output flag (pi: `--mode json`).
@@ -80,8 +80,8 @@ JSON output flag (pi: `--mode json`).
 Validate whatever the run produced:
 
 ```bash
-uv run skills/skill-writer/scripts/quick_validate.py \
-  skills/{{skill-name}} \
+node .pi/skills/skill-writer/scripts/quick-validate.js \
+  .pi/skills/{{skill-name}} \
   --skill-class integration-documentation \
   --strict-depth
 ```

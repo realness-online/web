@@ -1,4 +1,5 @@
 import { quiet_hosts } from './host-watch.js'
+import { CAUSE_TEXT } from './host-power.js'
 import { MS_PER_HOUR, MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 
 const ALERT_TIMEOUT_MS = 10_000
@@ -11,6 +12,8 @@ const span = ms =>
   ms < MS_PER_MINUTE
     ? `${Math.round(ms / MS_PER_SECOND)}s`
     : `${Math.round(ms / MS_PER_MINUTE)}m`
+
+const cause = host => (host.cause ? `: ${CAUSE_TEXT[host.cause]}` : '')
 
 /**
  * What to send now, and the state to keep once each send succeeds. Pure:
@@ -26,7 +29,7 @@ export const host_alerts = (state, quiet, now) => {
       actions.push({
         kind: 'down',
         name: host.name,
-        text: `brayness host ${host.name} stopped reporting`,
+        text: `realness host ${host.name} stopped reporting${cause(host)}`,
         next: { since: now, sent: now, repeats: 0 }
       })
     else if (
@@ -36,7 +39,7 @@ export const host_alerts = (state, quiet, now) => {
       actions.push({
         kind: 'repeat',
         name: host.name,
-        text: `brayness host ${host.name} is still quiet (${span(now - prev.since)})`,
+        text: `realness host ${host.name} is still quiet (${span(now - prev.since)})${cause(host)}`,
         next: { ...prev, sent: now, repeats: prev.repeats + 1 }
       })
   }
@@ -45,7 +48,7 @@ export const host_alerts = (state, quiet, now) => {
       actions.push({
         kind: 'up',
         name,
-        text: `brayness host ${name} is reporting again`,
+        text: `realness host ${name} is reporting again`,
         next: null
       })
 
@@ -73,6 +76,7 @@ const deliver = async (webhook, text, fetcher = fetch) => {
  * @param {object} options
  * @param {{ get: (key: string) => Promise<{ body: Buffer } | null>, put: (key: string, body: string) => Promise<unknown> }} options.storage
  * @param {string | null} options.webhook
+ * @param {(() => Promise<Map<string, string>>) | null} [options.statuses]
  * @param {() => number} [options.now]
  * @param {(message: string) => void} [options.warn]
  * @param {typeof fetch} [options.fetcher]
@@ -80,6 +84,7 @@ const deliver = async (webhook, text, fetcher = fetch) => {
 export const run_host_alerts = async ({
   storage,
   webhook,
+  statuses = null,
   now = Date.now,
   warn = () => {},
   fetcher = fetch
@@ -88,7 +93,7 @@ export const run_host_alerts = async ({
   try {
     const file = await storage.get(STATE_KEY)
     state = file ? JSON.parse(file.body.toString('utf8')) : {}
-    quiet = await quiet_hosts(storage, { now: now() })
+    quiet = await quiet_hosts(storage, { now: now(), statuses })
   } catch (error) {
     warn(`host alerts skipped: ${error.message}`)
     return []

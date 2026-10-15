@@ -45,7 +45,7 @@ tar xzf "$ROOT/$UBUNTU_BASE" -C "$TREE"
 printf '  %s unpacked: %s\n' "$UBUNTU_BASE" "$(du -sh "$TREE" | cut -f1)"
 
 log "boot config"
-echo brayness-app > "$TREE/etc/hostname"
+echo realness-app > "$TREE/etc/hostname"
 printf '# no fstab: Firecracker passes root=/dev/vda rw on the cmdline\n' > "$TREE/etc/fstab"
 : > "$TREE/etc/resolv.conf"
 
@@ -53,8 +53,8 @@ printf '#!/bin/sh\nexit 101\n' > "$TREE/usr/sbin/policy-rc.d"
 chmod 0755 "$TREE/usr/sbin/policy-rc.d"
 
 install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
-install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"
-install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
+install -m 0755 "$GUEST_SRC/realness-net-up" "$TREE/usr/local/bin/realness-net-up"
+install -m 0644 "$GUEST_SRC/realness-net.service" "$TREE/etc/systemd/system/realness-net.service"
 
 cp /etc/resolv.conf "$TREE/etc/resolv.conf"
 
@@ -89,16 +89,16 @@ log "installed packages: $(chroot "$TREE" dpkg-query -f '.\n' -W | wc -l)"
 
 mkdir -p "$TREE/app" "$TREE/opt/runtime"
 chroot "$TREE" useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin app
-for script in brayness-app-mount brayness-app-start; do
+for script in realness-app-mount realness-app-start; do
   install -m 0755 "$GUEST_SRC/$script" "$TREE/usr/local/bin/$script"
 done
-install -m 0644 "$GUEST_SRC/brayness-app.service" "$TREE/etc/systemd/system/brayness-app.service"
+install -m 0644 "$GUEST_SRC/realness-app.service" "$TREE/etc/systemd/system/realness-app.service"
 
 chroot "$TREE" dpkg-query -W systemd iproute2 ca-certificates > /dev/null \
   || { echo "dpkg does not agree the base packages installed" >&2; exit 1; }
 
 log "enabling units"
-systemctl --root="$TREE" enable brayness-net.service brayness-app.service
+systemctl --root="$TREE" enable realness-net.service realness-app.service
 systemctl --root="$TREE" mask getty.target getty@.service serial-getty@.service getty-static.service \
   e2scrub_reap.service e2scrub_all.timer e2scrub_all.service
 
@@ -116,8 +116,8 @@ for tool in node python3 python perl pi git socat; do
     exit 1
   fi
 done
-if [ -e "$TREE/brayness" ]; then
-  echo "/brayness is in the app image - it should be stripped" >&2
+if [ -e "$TREE/realness" ]; then
+  echo "/realness is in the app image - it should be stripped" >&2
   exit 1
 fi
 

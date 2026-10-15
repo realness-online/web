@@ -37,6 +37,7 @@ const walk = async dir => {
  * @param {string} options.root
  * @param {{ rm: (path: string) => Promise<void> }} options.store
  * @param {string} options.state
+ * @param {string} [options.trash]
  * @param {boolean} [options.dry_run]
  * @returns {Promise<{ folded: string[], left: string[] }>}
  */
@@ -44,6 +45,7 @@ export const fold_conflicts = async ({
   root,
   store,
   state,
+  trash = trash_dir(state),
   dry_run = false
 }) => {
   const SESSIONS = runtime_sessions_path(root)
@@ -80,7 +82,6 @@ export const fold_conflicts = async ({
   )
   report.folded = report.folded.filter(name => !busy.includes(name))
   report.left.push(...busy)
-  const trash = trash_dir(state)
   for (const name of report.folded) {
     await store.rm(`${HARNESS}${SESSIONS}/${name}`).catch(error => {
       if (error.status !== HTTP.NOT_FOUND) throw error

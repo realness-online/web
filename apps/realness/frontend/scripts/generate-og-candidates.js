@@ -237,7 +237,7 @@ const run = async () => {
     )
 
     console.info(
-      `og-candidates: wrote ${candidates.length} files to artifacts/brayness/og-candidates`
+      `og-candidates: wrote ${candidates.length} files to artifacts/realness/og-candidates`
     )
     console.info('og-candidates: pick one with npm run og:pick <file>')
   } finally {

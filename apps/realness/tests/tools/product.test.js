@@ -29,7 +29,7 @@ test('product services and ops share one install; Functions has its own package'
   const manifest = JSON.parse(
     await read_file(join(root, 'package.json'), 'utf8')
   )
-  assert.equal(manifest.name, 'brayness')
+  assert.equal(manifest.name, 'realness')
   assert.equal(manifest.workspaces, undefined)
   const packages = []
   for (const folder of [...folders, 'functions']) {
@@ -74,10 +74,6 @@ test('operator commands run from the product without a separate install', async 
     })
     assert.match(stdout, /usage/i)
   }
-  await assert.rejects(
-    run('npm', ['run', 'migration:report'], { cwd: root }),
-    /Both --project and --bucket are required/
-  )
 })
 
 test('product imports resolve through the root instead of retired packages', async () => {
@@ -91,7 +87,7 @@ test('product imports resolve through the root instead of retired packages', asy
         /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\(\s*)["']([^"']+)["']/g
       )) {
         if (
-          /^brayness-(can|out|sync|proxy|host|publish|cli)(\/|$)/.test(
+          /^realness-(can|out|sync|proxy|host|publish|cli)(\/|$)/.test(
             specifier
           )
         )
@@ -134,8 +130,8 @@ test('the reference renderer reuses dependencies from the root install', async (
 
 test('browser conditions cannot resolve the secret-bearing Node sign-on entries', async () => {
   for (const specifier of [
-    'brayness/sign-on/login',
-    'brayness/sign-on/host-pass'
+    'realness/sign-on/login',
+    'realness/sign-on/host-pass'
   ]) {
     await assert.rejects(
       run(

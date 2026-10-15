@@ -5,7 +5,7 @@ src="${1:?usage: gatekeeper-check.sh <binary>}"
 src="$(cd "$(dirname "$src")" && pwd)/$(basename "$src")"
 name="$(basename "$src")"
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
-work="$root/artifacts/brayness-signing/downloads/$name"
+work="$root/artifacts/realness-signing/downloads/$name"
 
 rm -rf "$work"
 mkdir -p "$work/sent" "$work/landed"

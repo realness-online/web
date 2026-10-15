@@ -6,7 +6,7 @@ import {
   run_chat_command,
   send_chat,
   watch_chat
-} from '@/utils/brayness-chat'
+} from '@/utils/chat'
 import { chat_commands, parse_chat_command } from '@/utils/chat-commands'
 import { computed, ref } from 'vue'
 import {
@@ -148,7 +148,7 @@ export const use_chat = (
     const warn = await chat_warning(current_user.value, actor.value)
     if (!warn) return
     const day = new Date().toISOString().slice(0, DAY)
-    const key = `brayness-warned ${day} ${warn.limit} ${warn.at ?? ''}`
+    const key = `realness-warned ${day} ${warn.limit} ${warn.at ?? ''}`
     if (localStorage.getItem(key)) return
     localStorage.setItem(key, '1')
     status.value = warn.message
@@ -160,7 +160,7 @@ export const use_chat = (
     if (record.type === 'history') {
       startup.ready()
       messages.value = record.messages.map(message => ({
-        sender: message.role === 'user' ? 'You' : 'Brayness',
+        sender: message.role === 'user' ? 'You' : 'Realness',
         ...(message.role === 'user'
           ? read_contextual_message(message.text)
           : { text: message.text })
@@ -174,7 +174,7 @@ export const use_chat = (
       })
     if (record.type === 'delta') {
       if (!reply) {
-        messages.value.push({ sender: 'Brayness', text: '' })
+        messages.value.push({ sender: 'Realness', text: '' })
         reply = messages.value.at(-1)
       }
       reply.text += record.text
@@ -183,7 +183,7 @@ export const use_chat = (
       if (!record.text.trim()) {
         if (reply) messages.value.splice(messages.value.indexOf(reply), 1)
       } else if (reply) reply.text = record.text
-      else messages.value.push({ sender: 'Brayness', text: record.text })
+      else messages.value.push({ sender: 'Realness', text: record.text })
       if (record.error) status.value = readable_error(record.error)
       else check_limit()
       return null
@@ -221,7 +221,7 @@ export const use_chat = (
   }
 
   const last_reply = () =>
-    messages.value.findLast(message => message.sender === 'Brayness')?.text
+    messages.value.findLast(message => message.sender === 'Realness')?.text
 
   /** Run a command and report it; resolves false when it failed. */
   const run = async command => {

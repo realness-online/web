@@ -4,7 +4,7 @@ import { execFileSync as exec_file_sync } from 'node:child_process'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const RUNS = Number(process.env.RUNS ?? 2)
-const SITE = '/brayness/work/site'
+const SITE = '/realness/work/site'
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -38,7 +38,7 @@ const run = async n => {
   const ab = (...args) =>
     exec_file_sync(
       'agent-browser',
-      ['--session', `brayness-p7-check-${process.pid}-${n}`, ...args],
+      ['--session', `realness-p7-check-${process.pid}-${n}`, ...args],
       {
         encoding: 'utf8'
       }
@@ -63,7 +63,7 @@ const run = async n => {
     await step('start the site from the example', () =>
       exec(
         actor,
-        `mkdir -p /brayness/work && cd /brayness/work && mkdir site && tar -C /brayness/examples/static -cf - . | tar -C site -xf - && cd site && npm install --no-fund --no-audit && sync`,
+        `mkdir -p /realness/work && cd /realness/work && mkdir site && tar -C /realness/examples/static -cf - . | tar -C site -xf - && cd site && npm install --no-fund --no-audit && sync`,
         900
       )
     )
@@ -71,7 +71,7 @@ const run = async n => {
     const link = await step('build and publish', async () => {
       const out = await exec(
         actor,
-        `cd ${SITE} && npm run build && brayness publish dist`,
+        `cd ${SITE} && npm run build && realness publish dist`,
         300
       )
       const url = out.trim().split('\n').pop()
@@ -91,7 +91,7 @@ const run = async n => {
     await step('change, rebuild, republish', () =>
       exec(
         actor,
-        `cd ${SITE} && node -e 'const f="site.json",s=JSON.parse(require("fs").readFileSync(f));s.name=process.argv[1];require("fs").writeFileSync(f,JSON.stringify(s,null,2))' ${JSON.stringify(name)} && npm run build && brayness publish dist`,
+        `cd ${SITE} && node -e 'const f="site.json",s=JSON.parse(require("fs").readFileSync(f));s.name=process.argv[1];require("fs").writeFileSync(f,JSON.stringify(s,null,2))' ${JSON.stringify(name)} && npm run build && realness publish dist`,
         300
       )
     )

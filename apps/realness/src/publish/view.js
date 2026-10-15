@@ -63,14 +63,14 @@ export const export_static = async destination => {
 }
 
 /**
- * The harness-relative examples folder, from package.json's brayness.examples.
+ * The harness-relative examples folder, from package.json's realness.examples.
  * @param {string} root Harness root.
  * @returns {string} Folder path.
  */
 export const examples_path = root => {
   const file = join(root, 'package.json')
   const path = exists_sync(file)
-    ? (JSON.parse(read_file_sync(file, 'utf8')).brayness?.examples ??
+    ? (JSON.parse(read_file_sync(file, 'utf8')).realness?.examples ??
       'examples')
     : 'examples'
   if (
@@ -79,7 +79,7 @@ export const examples_path = root => {
     path.split('/').some(part => !part || part === '.' || part === '..')
   )
     throw new Error(
-      'brayness.examples must be a relative folder inside the harness'
+      'realness.examples must be a relative folder inside the harness'
     )
   return path
 }

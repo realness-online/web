@@ -109,7 +109,7 @@ export const publish_app = async (
   let pass
   const authorize = async () => {
     const token = await get_token()
-    if (!token) throw new Error('not signed in; run brayness-store login')
+    if (!token) throw new Error('not signed in; run realness-store login')
     const response = await fetcher(`${base}/v1/host-pass`, {
       method: 'POST',
       headers: { authorization: `Bearer ${token}` }
@@ -169,7 +169,7 @@ export const unpublish_app = async (
   if (!/^a-[a-f0-9]{12}$/.test(id)) throw new Error('invalid app id')
   if (!url) throw new Error('unpublish needs a sync URL')
   const token = await get_token()
-  if (!token) throw new Error('not signed in; run brayness-store login')
+  if (!token) throw new Error('not signed in; run realness-store login')
   const base = url.replace(/\/$/, '')
   const authorized = await fetcher(`${base}/v1/host-pass`, {
     method: 'POST',

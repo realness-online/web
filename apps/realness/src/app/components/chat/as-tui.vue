@@ -1,7 +1,7 @@
 <script setup>
   import AsConnectionFeedback from '@/components/chat/as-connection-feedback.vue'
   import { current_user } from '@/utils/serverless'
-  import { open_terminal } from '@/utils/brayness-gate'
+  import { open_terminal } from '@/utils/gate'
   import { use_home_view } from '@/use/home-view'
   import { use_actor_startup } from '@/use/actor-startup'
   import { create_startup_trace } from '../../../harness/startup.js'

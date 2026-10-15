@@ -54,7 +54,6 @@ const BLOCKED_TEXT =
 
 const hash = text => create_hash('sha256').update(text).digest('hex')
 
-/** Private, loopback, link-local (cloud metadata), shared, multicast, reserved: never fetched for an actor. */
 const PRIVATE = new BlockList()
 for (const range of [
   '0.0.0.0/8',
@@ -91,7 +90,6 @@ export const is_private = address => {
   return is_ipv4(address) && PRIVATE.check(address, 'ipv4')
 }
 
-/** A public http(s) URL with no credentials, or throw. */
 export const check_url = raw => {
   let url
   try {
@@ -107,11 +105,6 @@ export const check_url = raw => {
   return url
 }
 
-/**
- * GET one URL with the standard library. DNS is resolved here and every
- * answer checked, so a name cannot point the host at itself or the metadata
- * server; redirects are followed by hand and checked the same way.
- */
 export const safe_fetch = (
   raw,
   {
@@ -124,9 +117,6 @@ export const safe_fetch = (
   new Promise((done, fail) => {
     const url = check_url(raw)
     /**
-     * Every lookup asks for all addresses so each one is checked. The callback
-     * then answers in whichever shape the caller asked for: the whole array
-     * when `all` is set, otherwise the first address and its family.
      * @type {import('node:net').LookupFunction}
      */
     const lookup = (host, options, callback) =>
@@ -209,7 +199,6 @@ export const safe_fetch = (
     request.end()
   })
 
-/** Visible text, roughly: enough to tell a real page from a shell or a bot wall. */
 const visible_text = html =>
   html
     .replace(/<(script|style|noscript|template)[\s\S]*?<\/\1>/gi, ' ')
@@ -223,28 +212,23 @@ const title_of = html =>
     .replace(/\s+/g, ' ')
     .trim()
 
-/** Why a plain fetch is not good enough, or null. */
 const static_shortfall = reply => {
   if (reply.status >= HTTP.BAD_REQUEST) return `HTTP ${reply.status}`
   if (!/html|xml|text\/plain/i.test(reply.type)) return 'not html'
   return shortfall(reply.body)
 }
 
-/** Why a rendered or crawled page is not good enough, or null. */
 const page_shortfall = page =>
   page.status >= HTTP.BAD_REQUEST ? `HTTP ${page.status}` : shortfall(page.html)
 
 /**
- * A page the engine will keep: how it was read, its kind, body, and title.
  * @typedef {{ method: string, kind: string, body: string, title: string }} PageRead
  */
 
 /**
- * A page already in the cache, as `#read_at` saved it.
  * @typedef {{ method: string, hash: string, headers: object, learned_hours?: number }} KeptPage
  */
 
-/** The read record for an HTML body. */
 const html_read = (method, body) => ({
   method,
   kind: 'html',
@@ -252,11 +236,9 @@ const html_read = (method, body) => ({
   title: title_of(body)
 })
 
-/** Firecrawl returns markdown, so thin text is the only failure. */
 const markdown_shortfall = page =>
   page.markdown.replace(/\s+/g, ' ').trim().length < MIN_TEXT ? 'thin' : null
 
-/** Why a read is not good enough, or null. */
 export const shortfall = html => {
   const text = visible_text(html)
   if (BLOCKED_TEXT.test(`${title_of(html)} ${text.slice(0, BLOCK_SCAN)}`))
@@ -264,18 +246,9 @@ export const shortfall = html => {
   return text.length < MIN_TEXT ? 'thin' : null
 }
 
-/**
- * May a page with these headers be kept for others? Only no-store says no.
- * `private` is ignored: the engine fetches with no cookies or login, so every
- * reader would get the same anonymous page (GitHub and Hacker News send it).
- */
 const shareable_headers = (headers = {}) =>
   !/no-store/i.test(headers.cache_control ?? '')
 
-/**
- * How long a shared page counts as current, and how long past that it may be
- * served stale while refreshing. headers carry cache_control and expires.
- */
 /**
  * @param {object} options
  * @param {string} options.url
@@ -317,11 +290,9 @@ export const cache_time = ({
     : answer(times.default_hours ?? DEFAULT_HOURS, 'default')
 }
 
-/** A re-read that finds the page unchanged doubles its time; a change halves it. */
 export const learn = (hours, changed) =>
   Math.min(MAX_HOURS, Math.max(MIN_HOURS, changed ? hours / 2 : hours * 2))
 
-/** robots.txt rules for user-agent *: is `path` allowed? Longest match wins; Allow beats Disallow on ties. */
 export const robots_allows = (text, path) => {
   let applies = false
   let in_group = false
@@ -366,7 +337,6 @@ const write_json = (file, value) => {
   rename_sync(tmp, file)
 }
 
-/** Should a shared page be dropped? r4's rule. */
 export const is_idle = (
   page,
   { now = Date.now(), idle_days = IDLE_DAYS } = {}
@@ -495,7 +465,6 @@ export class WebEngine {
     }
   }
 
-  /** Read a public page for an actor. Throws when every step failed. */
   async read(raw, { actor = null, fresh = false } = {}) {
     const url = check_url(raw).href
     const started = this.now()
@@ -604,26 +573,17 @@ export class WebEngine {
     }
   }
 
-  /**
-   * Whether a new read differs from the kept one, or null when there is
-   * nothing to compare: a changed method or a page with no stored hash.
-   */
   #changed(kept, got, digest) {
     if (!kept || !kept.hash || kept.method !== got.method) return null
     return kept.hash !== digest
   }
 
-  /** The re-read time, doubled when nothing changed and halved when it did. */
   #learned(url, kept, changed) {
     const hours = kept?.learned_hours ?? null
     if (changed === null || !kept) return hours
     return learn(hours ?? this.time(url, kept.headers).hours, changed)
   }
 
-  /**
-   * Try one non-static reader. Records the attempt, and returns the read when
-   * it is good enough along with any gone status the reader reported.
-   */
   async #try_render({ attempts, get_page, method, page_of, why_of }) {
     try {
       const page = await get_page()
@@ -637,7 +597,6 @@ export class WebEngine {
     }
   }
 
-  /** Read it now (static, Chrome, Firecrawl) and keep it if it may be shared. kept teaches the cache time. */
   /**
    * @param {string} url
    * @param {KeptPage | null} [kept] the cached page, which teaches the new time
@@ -728,7 +687,6 @@ export class WebEngine {
     return { ...got, fetched, shared, time, changed }
   }
 
-  /** Drop idle shared pages (r4). Returns how many. */
   prune(options = {}) {
     let dropped = 0
     let files = []
@@ -750,7 +708,6 @@ export class WebEngine {
   }
 }
 
-/** Reads counted: the hit rate is reads answered from the shared cache. */
 export const engine_report = lines => {
   const by_outcome = {}
   for (const l of lines)

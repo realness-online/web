@@ -18,7 +18,7 @@ In a hosted actor there is no local Chrome: `agent-browser` leases a fresh
 Chrome VM through the host on first use and drives it over CDP. The leased
 Chrome reaches the internet and this actor's own dev servers at the actor's
 address (`hostname -I`), not `localhost`. It lasts 30 minutes;
-`brayness chrome return` gives it back early.
+`realness chrome return` gives it back early.
 
 ## Start here
 

@@ -1,6 +1,6 @@
 {
   "lastChangelogVersion": "1.2.0",
-  "defaultProvider": "brayness",
+  "defaultProvider": "realness",
   "defaultModel": "inkling",
   "defaultThinkingLevel": "off",
   "packages": [

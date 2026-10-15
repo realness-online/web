@@ -1,7 +1,7 @@
 /**
  * Phone identity: verify a Firebase ID token, then pin its uid to its number.
  *
- * Realness phone sign-in issues the token; Brayness keeps no accounts.
+ * Realness phone sign-in issues the token; Realness keeps no accounts.
  * A recycled number arrives with a new uid, so the pin refuses it.
  */
 import {

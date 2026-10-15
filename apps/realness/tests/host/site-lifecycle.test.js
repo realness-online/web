@@ -14,7 +14,7 @@ import { ActorStore } from '../../src/host/actors.js'
 test('publish, revise, restore, and unpublish keep reversible site versions', async () => {
   const root = mkdtempSync(
     fileURLToPath(
-      new URL('../../../../artifacts/brayness/site-life-', import.meta.url)
+      new URL('../../../../artifacts/realness/site-life-', import.meta.url)
     )
   )
   const id = 'a-abcdef123456'

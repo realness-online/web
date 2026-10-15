@@ -7,13 +7,13 @@ const TICKET_SECONDS = 30
 const MAX_TICKETS = 10_000
 const TICKET_BYTES = 32
 
-const COOKIE = 'brayness_app'
-export const ENTER = '/.brayness/enter'
+const COOKIE = 'realness_app'
+export const ENTER = '/.realness/enter'
 const COOKIE_AGE = COOKIE_HOURS * SECONDS_PER_HOUR
 const TICKET_AGE = TICKET_SECONDS * MS_PER_SECOND
 const PHONE = /^\+[1-9]\d{6,14}$/
 const APP_COOKIE = {
-  audience: 'brayness-app',
+  audience: 'realness-app',
   life_s: COOKIE_AGE,
   name: 'app cookie'
 }

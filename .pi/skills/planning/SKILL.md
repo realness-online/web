@@ -9,7 +9,7 @@ description: >-
   the Building an Advanced Agentic Harness article's Planner role, inverted so
   the harness plans and the human decides.
 metadata:
-  check: "node ../../bin/check-skills.js planning"
+  check: "node ../../../bin/check-skills.js planning"
   category: Workflow
   tags:
     - planning
@@ -159,7 +159,7 @@ One order, every time. Text above the nodes does not get read.
 
 **Put the DAG in a plan file.** `<plans>/<plan>.md`, or a companion
 `<plans>/<plan>.plan.md` if that file should stay pure spec. Read `<plans>` from
-`brayness.plans` in `package.json`. One file per plan,
+`realness.plans` in `package.json`. One file per plan,
 normally with one work DAG. A diagram that only explains may sit beside it.
 Gate decisions land in Decisions as one-liners, nowhere else.
 

@@ -2,7 +2,7 @@
 name: chat-parts
 description: Answer in Realness chat with parts - a mermaid diagram or a cardlink card - when a picture or a link card explains better than prose. Use when replying to someone in chat and the answer is a flow, sequence, hierarchy, or comparison of steps, or when it points to one web page worth opening. Plain text stays the default.
 metadata:
-  check: "node ../../bin/check-skills.js chat-parts"
+  check: "node ../../../bin/check-skills.js chat-parts"
 ---
 
 # Chat parts
@@ -59,4 +59,4 @@ description: A social network you run yourself.
 
 Parts are drawn by `apps/realness/tools/publish/renderer/static/scripts/parts.js`;
 chat allows them in `apps/realness/src/app/utils/message-markdown.js`.
-The plan is `vault/Projects/brayness-chat-ui.md`.
+The parked plan is `vault/Areas/Realness/realness-chat-ui.md`.

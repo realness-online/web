@@ -12,7 +12,7 @@ ok()  { printf '  ok   %s\n' "$*"; PASS=$((PASS + 1)); }
 bad() { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
-iptables -S INPUT | grep -q -- "-i fc-app+ -j BRAYNESS-APP-IN" \
+iptables -S INPUT | grep -q -- "-i fc-app+ -j REALNESS-APP-IN" \
   || { echo "no app rules: run 'sudo bash server/host/scripts/net-up.sh' first" >&2; exit 1; }
 
 cleanup() {
@@ -44,15 +44,15 @@ address="$(jq -r .address <<< "$probe")"
 tap="$(jq -r .tap <<< "$probe")"
 
 if [ "${CONTROL:-0}" = 1 ]; then
-  iptables -I BRAYNESS-APP-IN 1 -i "$tap" -j ACCEPT
-  iptables -I BRAYNESS-APP-OUT 1 -i "$tap" -j ACCEPT
+  iptables -I REALNESS-APP-IN 1 -i "$tap" -j ACCEPT
+  iptables -I REALNESS-APP-OUT 1 -i "$tap" -j ACCEPT
   iptables -I FORWARD 1 -o "$tap" -j ACCEPT
   iptables -t nat -I POSTROUTING 1 -s "$address" -j MASQUERADE
   unopen() {
     iptables -D FORWARD -o "$tap" -j ACCEPT 2> /dev/null || true
     iptables -t nat -D POSTROUTING -s "$address" -j MASQUERADE 2> /dev/null || true
-    iptables -D BRAYNESS-APP-IN -i "$tap" -j ACCEPT 2> /dev/null || true
-    iptables -D BRAYNESS-APP-OUT -i "$tap" -j ACCEPT 2> /dev/null || true
+    iptables -D REALNESS-APP-IN -i "$tap" -j ACCEPT 2> /dev/null || true
+    iptables -D REALNESS-APP-OUT -i "$tap" -j ACCEPT 2> /dev/null || true
     cleanup
   }
   trap unopen EXIT
@@ -82,13 +82,13 @@ drives="$(jq -r '[.drives[] | "\(.drive_id):\(.is_read_only)"] | sort | join(" "
 [ "$drives" = "code:true rootfs:false runtime:true" ] && ok "three drives; code and runtime read-only ($drives)" || bad "drives: $drives"
 [ "$(jq -r '.["machine-config"].mem_size_mib' <<< "$config")" = "$(jq -r .mib <<< "$probe")" ] \
   && ok "memory cap applied: $(jq -r .mib <<< "$probe") MiB" || bad "memory cap not applied"
-if iptables -C BRAYNESS-OUT -d 172.16.0.0/12 -j DROP 2> /dev/null; then
-  ok "actor to app dropped (BRAYNESS-OUT -d 172.16.0.0/12)"
+if iptables -C REALNESS-OUT -d 172.16.0.0/12 -j DROP 2> /dev/null; then
+  ok "actor to app dropped (REALNESS-OUT -d 172.16.0.0/12)"
 else
   bad "no actor rule covering 172.17"
 fi
-dropped="$(iptables -nvxL BRAYNESS-APP-OUT | awk '$3 == "DROP" {print $1}')"
-[ "${dropped:-0}" -gt 0 ] && ok "BRAYNESS-APP-OUT dropped $dropped packets" || bad "BRAYNESS-APP-OUT dropped nothing"
+dropped="$(iptables -nvxL REALNESS-APP-OUT | awk '$3 == "DROP" {print $1}')"
+[ "${dropped:-0}" -gt 0 ] && ok "REALNESS-APP-OUT dropped $dropped packets" || bad "REALNESS-APP-OUT dropped nothing"
 
 echo
 echo "$PASS passed, $FAIL failed  (run: $RUN)"

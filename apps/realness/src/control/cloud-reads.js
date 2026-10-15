@@ -19,7 +19,7 @@ export const call = async (run, command, args) => {
   return out
 }
 
-/** Each Brayness service: URL, ready, the revision serving, when it deployed. */
+/** Each Realness service: URL, ready, the revision serving, when it deployed. */
 export const services = async (cloud, { run = attempt } = {}) => {
   const out = await call(run, 'gcloud', [
     'run',
@@ -65,7 +65,7 @@ export const logs = async (
 ) => {
   if (!cloud.services.includes(name))
     throw new Error(
-      `usage: webspace <env> logs <${cloud.services.join('|')}> [--since=1h] [--errors] [--limit=50]`
+      `usage: realness <env> logs <${cloud.services.join('|')}> [--since=1h] [--errors] [--limit=50]`
     )
   if (!SINCE.test(since))
     throw new Error('--since takes a count and m, h, or d, such as 30m or 2d')

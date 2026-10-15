@@ -15,9 +15,9 @@ const NAME = 'recovery pass'
 const LIFE_S = 300
 
 export const issue_recovery_pass = (claims, secret, now = Date.now()) =>
-  issue_pass(claims, secret, now, 'brayness-recovery')
+  issue_pass(claims, secret, now, 'realness-recovery')
 export const issue_harness_pass = (claims, secret, now = Date.now()) =>
-  issue_pass(claims, secret, now, 'brayness-harness')
+  issue_pass(claims, secret, now, 'realness-harness')
 
 /**
  * @param {{ phone: string, id: string, paths?: string[] | null }} claims
@@ -44,9 +44,9 @@ const issue_pass = ({ phone, id, paths = null }, secret, now, audience) => {
 }
 
 export const verify_recovery_pass = (pass, secret, now = Date.now()) =>
-  verify_pass(pass, secret, now, 'brayness-recovery')
+  verify_pass(pass, secret, now, 'realness-recovery')
 export const verify_harness_pass = (pass, secret, now = Date.now()) =>
-  verify_pass(pass, secret, now, 'brayness-harness')
+  verify_pass(pass, secret, now, 'realness-harness')
 
 const verify_pass = (pass, secret, now, audience) => {
   check_secret(secret, 'recovery')

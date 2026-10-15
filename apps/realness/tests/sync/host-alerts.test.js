@@ -26,7 +26,7 @@ const memory = (stored = null) => ({
     this.saved = body
   },
   async list() {
-    return { files: [], folders: ['brayness-1'] }
+    return { files: [], folders: ['realness-1'] }
   }
 })
 
@@ -53,16 +53,16 @@ const paper = names => ({
 })
 
 test('a host that goes quiet sends one alert, then nothing until the first repeat is due', () => {
-  const first = host_alerts({}, quiet('brayness-1'), at)
+  const first = host_alerts({}, quiet('realness-1'), at)
   assert.deepEqual(
     first.map(a => a.kind),
     ['down']
   )
-  assert.match(first[0].text, /brayness-1 stopped reporting/)
+  assert.match(first[0].text, /realness-1 stopped reporting/)
 
-  const state = { 'brayness-1': first[0].next }
-  assert.deepEqual(host_alerts(state, quiet('brayness-1'), at + 60_000), [])
-  const due = host_alerts(state, quiet('brayness-1'), at + FIRST_REPEAT_MS)
+  const state = { 'realness-1': first[0].next }
+  assert.deepEqual(host_alerts(state, quiet('realness-1'), at + 60_000), [])
+  const due = host_alerts(state, quiet('realness-1'), at + FIRST_REPEAT_MS)
   assert.deepEqual(
     due.map(a => a.kind),
     ['repeat']
@@ -73,19 +73,19 @@ test('a host that goes quiet sends one alert, then nothing until the first repea
 
 test('after the first repeat, the same outage repeats hourly', () => {
   const state = {
-    'brayness-1': { since: at, sent: at + FIRST_REPEAT_MS, repeats: 1 }
+    'realness-1': { since: at, sent: at + FIRST_REPEAT_MS, repeats: 1 }
   }
   assert.deepEqual(
     host_alerts(
       state,
-      quiet('brayness-1'),
+      quiet('realness-1'),
       at + FIRST_REPEAT_MS + REPEAT_MS - 1
     ),
     []
   )
   const hourly = host_alerts(
     state,
-    quiet('brayness-1'),
+    quiet('realness-1'),
     at + FIRST_REPEAT_MS + REPEAT_MS
   )
   assert.deepEqual(
@@ -97,13 +97,13 @@ test('after the first repeat, the same outage repeats hourly', () => {
 
 test('a host that reports again sends a recovery note and is forgotten', () => {
   const state = {
-    'brayness-1': { since: at, sent: at, repeats: 0 },
-    'brayness-2': { since: at, sent: at, repeats: 0 }
+    'realness-1': { since: at, sent: at, repeats: 0 },
+    'realness-2': { since: at, sent: at, repeats: 0 }
   }
-  const actions = host_alerts(state, quiet('brayness-2'), at + 1000)
+  const actions = host_alerts(state, quiet('realness-2'), at + 1000)
   assert.deepEqual(
     actions.map(a => [a.kind, a.name]),
-    [['up', 'brayness-1']]
+    [['up', 'realness-1']]
   )
   assert.equal(actions[0].next, null)
   assert.match(actions[0].text, /reporting again/)
@@ -112,8 +112,8 @@ test('a host that reports again sends a recovery note and is forgotten', () => {
 test('a quiet list that empties sends nothing for hosts never seen quiet', () => {
   assert.deepEqual(host_alerts({}, [], at), [])
   assert.deepEqual(
-    host_alerts({}, quiet('brayness-1', 'brayness-2'), at).map(a => a.name),
-    ['brayness-1', 'brayness-2']
+    host_alerts({}, quiet('realness-1', 'realness-2'), at).map(a => a.name),
+    ['realness-1', 'realness-2']
   )
 })
 
@@ -127,7 +127,7 @@ test('Slack reads text, Discord reads content', () => {
 })
 
 test('a run sends what is due and keeps only what it sent', async () => {
-  const storage = paper(['brayness-1'])
+  const storage = paper(['realness-1'])
   const webhook = 'https://hooks.slack.com/services/x'
   const fetcher = async () => ({ ok: true, status: 200 })
   const first = await run_host_alerts({
@@ -136,9 +136,9 @@ test('a run sends what is due and keeps only what it sent', async () => {
     now: () => at,
     fetcher
   })
-  assert.deepEqual(first, [{ kind: 'down', name: 'brayness-1' }])
+  assert.deepEqual(first, [{ kind: 'down', name: 'realness-1' }])
   assert.deepEqual(JSON.parse(storage.saved), {
-    'brayness-1': { since: at, sent: at, repeats: 0 }
+    'realness-1': { since: at, sent: at, repeats: 0 }
   })
 
   const second = await run_host_alerts({
@@ -148,11 +148,11 @@ test('a run sends what is due and keeps only what it sent', async () => {
     fetcher
   })
   assert.deepEqual(second, [])
-  assert.equal(JSON.parse(storage.saved)['brayness-1'].sent, at)
+  assert.equal(JSON.parse(storage.saved)['realness-1'].sent, at)
 })
 
 test('a failed send keeps the state, so the next run tries again', async () => {
-  const storage = paper(['brayness-1'])
+  const storage = paper(['realness-1'])
   const warned = []
   const fetcher = async () => ({ ok: false, status: 500 })
   const sent = await run_host_alerts({
@@ -172,11 +172,11 @@ test('a failed send keeps the state, so the next run tries again', async () => {
     now: () => at + 60_000,
     fetcher: async () => ({ ok: true, status: 200 })
   })
-  assert.deepEqual(retry, [{ kind: 'down', name: 'brayness-1' }])
+  assert.deepEqual(retry, [{ kind: 'down', name: 'realness-1' }])
 })
 
 test('no webhook configured is a warning per host, never a silent pass', async () => {
-  const storage = paper(['brayness-1'])
+  const storage = paper(['realness-1'])
   const warned = []
   const sent = await run_host_alerts({
     storage,

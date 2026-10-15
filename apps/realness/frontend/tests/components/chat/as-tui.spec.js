@@ -27,7 +27,7 @@ const { mock_mount, mock_close, mock_start_actor, mock_open_terminal } =
     }
   })
 vi.mock('@/terminal/terminal.js', () => ({ mount: mock_mount }))
-vi.mock('@/utils/brayness-gate', async import_original => ({
+vi.mock('@/utils/gate', async import_original => ({
   ...(await import_original()),
   start_actor: mock_start_actor,
   open_terminal: mock_open_terminal
@@ -77,8 +77,8 @@ describe('@/components/chat/as-tui', () => {
     await pane.setProps({ finding: true })
     expect(pane.get('[role="status"]').text()).toBe('Connecting...')
     expect(pane.get('#tui-pane').attributes('aria-busy')).toBe('true')
-    await pane.setProps({ finding: false, problem: 'Brayness answered 502' })
-    expect(pane.get('[role="alert"]').text()).toContain('Brayness answered 502')
+    await pane.setProps({ finding: false, problem: 'Realness answered 502' })
+    expect(pane.get('[role="alert"]').text()).toContain('Realness answered 502')
     expect(pane.get('#tui-pane').attributes('aria-busy')).toBeUndefined()
     await pane.get('button').trigger('click')
     expect(pane.emitted('retry')).toHaveLength(1)
@@ -182,7 +182,9 @@ describe('@/components/chat/as-tui', () => {
     pane.unmount()
     await expect(
       mock_mount.mock.calls[0][1].open({ cols: 80, rows: 24 })
-    ).rejects.toMatchObject({ name: 'AbortError' })
+    ).rejects.toMatchObject({
+      name: 'AbortError'
+    })
     finish({
       id: 'a-mine00000000',
       startup_id: 'terminal-startup',

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Recovery uses the same Node client as desktop sync.
+exec /usr/local/bin/node /usr/local/lib/realness/src/harness/recover.js "$@"

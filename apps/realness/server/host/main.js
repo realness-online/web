@@ -12,14 +12,21 @@ import { HostStatus } from '../../src/host/status.js'
 import { ActorRequests } from '../../src/host/requests.js'
 import { SyncSites } from '../../src/host/sync-sites.js'
 import { hostname } from 'node:os'
-import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  readFileSync as read_file_sync
+} from 'node:fs'
 import { SyncMirror } from '../../src/host/sync-mirror.js'
 import { logger } from '../../src/host/log.js'
 import * as pty from '../../src/host/pty.js'
 import * as server from '../../src/host/server.js'
 import { ActorStore } from '../../src/host/actors.js'
 import { AppStore } from '../../src/host/apps.js'
+import { Parker } from '../../src/host/parking.js'
+import { execFile as exec_file } from 'node:child_process'
+import { promisify } from 'node:util'
 import { issue_model_pass } from '#root/src/proxy/model-pass.js'
+import { development_settings } from '#root/src/settings/environments.js'
 
 const LOG = logger('host')
 const HERE = dirname(file_url_to_path(import.meta.url))
@@ -50,7 +57,9 @@ const { positionals, values } = parse_args({
     'pty-port': { type: 'string', default: '8081' },
     'pty-listen': { type: 'string' },
     'api-listen': { type: 'string' },
-    rebuild: { type: 'boolean', default: false }
+    'site-url': { type: 'string' },
+    rebuild: { type: 'boolean', default: false },
+    park: { type: 'boolean', default: false }
   }
 })
 
@@ -103,10 +112,10 @@ for (const address of addresses(values['pty-listen'])) {
   await listen(pty.makeServer(store), values['pty-port'], address)
   LOG.info(`pty stream on ${address}:${values['pty-port']}`)
 }
-const proxy_url = (
-  process.env.BRAYNESS_PROXY_URL ??
-  'https://brayness-proxy-yelzvhhngq-uc.a.run.app'
-).replace(/\/$/, '')
+const proxy_url = development_settings.services.starter_proxy_url.replace(
+  /\/$/,
+  ''
+)
 const limits = process.env.MODEL_PASS_SECRET
   ? async record => {
       const pass = issue_model_pass(
@@ -133,20 +142,27 @@ const mirror = process.env.SYNC_URL
     })
   : null
 const loops = new Loops(store, { mirror, host })
-const site_public = process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL
+const site_public =
+  process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL
 if (store.syncSites && !site_public)
   throw new Error('sync sites need SYNC_SITE_PUBLIC_URL or SYNC_SITE_URL')
 const site_url = store.syncSites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
-const chrome_image = process.env.BRAYNESS_CHROME_IMAGE ?? '/opt/fc/chrome.ext4'
-const chrome_pool =
-  process.env.BRAYNESS_CHROME_POOL !== 'off' && exists_sync(chrome_image)
-    ? new ChromePool({ root: join(values.volume, 'chrome-pool'), image: chrome_image, kernel: values.kernel, binary: values.firecracker })
-    : null
-const chrome = chrome_pool ? new ChromeLeases(chrome_pool) : null
+const chrome_image = '/opt/fc/chrome.ext4'
+const chrome_pool = exists_sync(chrome_image)
+  ? new ChromePool({
+      root: join(values.volume, 'chrome-pool'),
+      image: chrome_image,
+      kernel: values.kernel,
+      binary: values.firecracker
+    })
+  : null
+const chrome = chrome_pool
+  ? new ChromeLeases(chrome_pool, { work: store })
+  : null
 const render = chrome_pool
-  ? async (url) => {
+  ? async url => {
       const copy = await chrome_pool.restore()
       try {
         return await render_page(copy.address, url)
@@ -159,10 +175,14 @@ const web_firecrawl_file = process.env.FIRECRAWL_API_KEY_FILE
 const web = new WebEngine({
   root: join(values.volume, 'web-cache'),
   render,
-  firecrawl_key: process.env.FIRECRAWL_API_KEY ?? (web_firecrawl_file && exists_sync(web_firecrawl_file) ? read_file_sync(web_firecrawl_file, 'utf8').trim() : null)
+  firecrawl_key:
+    process.env.FIRECRAWL_API_KEY ??
+    (web_firecrawl_file && exists_sync(web_firecrawl_file)
+      ? read_file_sync(web_firecrawl_file, 'utf8').trim()
+      : null)
 })
 setInterval(() => web.prune(), 6 * 3_600_000).unref()
-new Door(store, process.env.BRAYNESS_SITE_URL ?? site_url, loops, chrome, web).start()
+new Door(store, values['site-url'] ?? site_url, loops, chrome, web).start()
 const apps = new AppStore({
   volume: values.volume,
   image: values['app-image'],
@@ -178,7 +198,28 @@ for (const address of addresses(values['api-listen'])) {
   LOG.info(`listening on ${address}:${values.port}`)
 }
 
+const parker =
+  values.park && mirror
+    ? new Parker({
+        store,
+        loops,
+        apps_running: async () =>
+          (
+            await Promise.all(apps.list().map(app => apps.status(app.id)))
+          ).filter(app => app.running).length,
+        held: () => exists_sync('/run/realness-hold'),
+        mirror,
+        host,
+        poweroff: () =>
+          promisify(exec_file)('systemctl', ['--no-block', 'poweroff'])
+      })
+    : null
+
 const sweep = async () => {
+  if (parker) {
+    const decided = await parker.check()
+    if (decided.state === 'parked') return
+  }
   try {
     const done = await store.sweep()
     for (const { id, step } of done) LOG.info(`lifecycle: ${id} -> ${step}`)

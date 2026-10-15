@@ -7,7 +7,7 @@ import { test } from 'node:test'
 import { out_path } from '#root/src/settings/output.js'
 
 const program = new URL(
-  '../../server/host/guest/brayness-chat',
+  '../../server/host/guest/realness-chat',
   import.meta.url
 ).pathname
 
@@ -34,9 +34,7 @@ const bridge = async reply => {
 
 const run = (path, line) =>
   new Promise((resolve, reject) => {
-    const child = spawn('python3', [program], {
-      env: { ...process.env, BRAYNESS_CHAT_SOCKET: path }
-    })
+    const child = spawn('python3', [program, path])
     let out = ''
     child.stdout.on('data', chunk => (out += chunk))
     child.on('error', reject)

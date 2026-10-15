@@ -19,7 +19,7 @@ export const fail = message => {
 
 export const pick = (requested, destination = og_path) => {
   if (!requested)
-    fail('usage: npm run og:pick <file> (see artifacts/brayness/og-candidates)')
+    fail('usage: npm run og:pick <file> (see artifacts/realness/og-candidates)')
 
   const file = requested.endsWith('.jpg') ? requested : `${requested}.jpg`
   const source = path.join(candidates_dir, file)

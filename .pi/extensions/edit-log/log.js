@@ -18,34 +18,20 @@
  * @property {string} ts
  */
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync } from 'node:fs'
+import { mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { state_path, harness_root } from '../../../bin/lib/harness-settings.js'
 
-/**
- * Point BRAYNESS_STATE at this harness's state folder unless already set:
- * package.json's brayness.state, default `.pi/agent/state`. Matches sync's
- * `use_harness_state`; child processes inherit it.
- */
-/**
- * @param {string} root
- * @returns {string}
- */
-export const useHarnessState = (root) => {
-  if (!process.env.BRAYNESS_STATE) {
-    let path = '.pi/agent/state'
-    try {
-      path = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).brayness?.state ?? path
-    } catch {}
-    process.env.BRAYNESS_STATE = join(root, path)
-  }
-  return process.env.BRAYNESS_STATE
+/** @param {string} root */
+export const useHarnessState = (root) => join(root, state_path(root))
+
+export const stateDir = (cwd = process.cwd()) => {
+  const root = harness_root(cwd)
+  return root ? useHarnessState(root) : join(homedir(), '.local/state/realness')
 }
-
-/** The state folder: BRAYNESS_STATE, else the old home location. */
-export const stateDir = () => process.env.BRAYNESS_STATE ?? join(homedir(), '.local/state/brayness')
-export const logPath = () => join(stateDir(), 'edits.db')
+export const logPath = (cwd = process.cwd()) => join(stateDir(cwd), 'edits.db')
 /** @param {Uint8Array} bytes */
 export const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
 /**

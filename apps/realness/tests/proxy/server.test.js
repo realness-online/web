@@ -258,7 +258,7 @@ async function routed({ paid = null, cost = 0, stripe = null }) {
 
 test('b1d: the house model is asked for by name', () => {
   assert.equal(wants_house({ model: 'house' }), true)
-  assert.equal(wants_house({ model: 'brayness/deepseek' }), true)
+  assert.equal(wants_house({ model: 'realness/deepseek' }), true)
   assert.equal(wants_house({ model: 'inkling' }), false)
   assert.equal(wants_house({}), false)
 })

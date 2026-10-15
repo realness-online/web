@@ -4,7 +4,7 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  *
  * who     null for a stranger, `{ phone: "+A" }` for a person,
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance,
- *         `{ host_name: "brayness-1" }` for a host holding a record pass.
+ *         `{ host_name: "realness-1" }` for a host holding a record pass.
  * action  "get", "list", "write", or "delete".
  * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
  *         `loops/<id>/...`, or `hosts/<name>/...`.
@@ -86,12 +86,13 @@ const hosts_allowed = (action, owner, rest, me) => {
     /^a-[a-f0-9]{12}\.html$/.test(rest[1])
   if (me.host) {
     if (owner !== me.host) return false
-    if (file === 'status.html') return action === 'write' || action === 'get'
+    if (file === 'status.html' || file === 'lifecycle.html')
+      return action === 'write' || action === 'get'
     return request && action === 'get'
   }
   if (me.admin !== true) return false
   if (action === 'get' || action === 'list') return true
-  return action === 'write' && request
+  return action === 'write' && (request || file === 'lifecycle.html')
 }
 
 /** A grant covers this path, from a harness the same person owns. */

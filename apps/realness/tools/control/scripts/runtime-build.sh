@@ -49,8 +49,8 @@ rm -rf "$work/node/lib/node_modules/npm" "$work/node/lib/node_modules/corepack" 
   "$work/node/bin/npm" "$work/node/bin/npx" "$work/node/bin/corepack" \
   "$work/node/include" "$work/node/share"
 "$work/node/bin/node" --version
-install -D -m 0644 "$REPO/server/host/guest/brayness-serve.js" "$work/node/brayness/serve.js"
-"$work/node/bin/node" --check "$work/node/brayness/serve.js"
+install -D -m 0644 "$REPO/server/host/guest/realness-serve.js" "$work/node/realness/serve.js"
+"$work/node/bin/node" --check "$work/node/realness/serve.js"
 disk node "$work/node"
 
 rm -f "$OUT/python.ext4"

@@ -35,7 +35,7 @@ export const select_plans = async (root) => {
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
   const root = resolve(dirname(file_url_to_path(import.meta.url)), '..')
-  await update_commands(root)
+  await update_commands(root, { page: join(root, 'vault/Areas/Realness/pages/commands.html') })
   const sources = await select_plans(root)
   const { dist } = await build_app(root, 'plans')
   console.log(`${sources.length} plans -> ${relative(root, dist)}`)

@@ -21,7 +21,15 @@ import {
 import { arch } from 'node:os'
 import { performance } from 'node:perf_hooks'
 import { basename, join } from 'node:path'
-import { BadRequest, Busy, HostError, NotFound, VsockError } from './errors.js'
+import {
+  BadRequest,
+  Busy,
+  Full,
+  HostError,
+  NotFound,
+  Parking,
+  VsockError
+} from './errors.js'
 import * as firecracker from './firecracker.js'
 import * as host from './host.js'
 import { logger } from './log.js'
@@ -30,7 +38,14 @@ import { next_step } from './lifecycle.js'
 import { wait_for_door } from './door.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
 /** @typedef {import('#root/src/harness/startup.js').StartupTrace} StartupTrace */
-import { ID_BYTES, MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
+import {
+  GIB,
+  ID_BYTES,
+  KIB,
+  MIB,
+  MS_PER_MINUTE,
+  MS_PER_SECOND
+} from '#root/lib/units.js'
 import { stripVTControlCharacters as strip_vt } from 'node:util'
 /* eslint-disable no-await-in-loop -- lifecycle steps run in order; warming waits for each echo */
 
@@ -46,9 +61,9 @@ const RECOVER_SECONDS = 300
 const DISK = 'rootfs.ext4'
 const STATE = 'state'
 const MEM = 'mem'
-const ACTOR_INIT = '/usr/local/bin/brayness-actor-init'
+const ACTOR_INIT = '/usr/local/bin/realness-actor-init'
 export const PTY_PORT = 53
-const PI_OPENER = Buffer.from('exec brayness\r')
+const PI_OPENER = Buffer.from('exec realness\r')
 const PI_PROMPT = 'inkling'
 const PI_WARM_SECONDS = 300
 const FINGERPRINT_SCHEMA = 1
@@ -61,7 +76,7 @@ const CHEAP_FIELDS = [
   'template_mtime_ns',
   'vcpu_count'
 ]
-const ARTIFACT_PATHS = ['brayness']
+const ARTIFACT_PATHS = ['realness']
 const TRACES = 'traces'
 const EXPORTS = 'exports'
 const PUBLISHED = 'published'
@@ -81,6 +96,18 @@ const sleep = ms =>
     setTimeout(done, ms)
   })
 const nowIso = () => new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
+/** MemAvailable in bytes, or null where /proc/meminfo cannot be read. */
+const read_mem_available = () => {
+  try {
+    const match = /^MemAvailable:\s+(\d+) kB$/m.exec(
+      read_file_sync('/proc/meminfo', 'utf8')
+    )
+    return match ? Number(match[1]) * KIB : null
+  } catch {
+    return null
+  }
+}
+const gib = bytes => (bytes / GIB).toFixed(2)
 const mintId = () => `a-${random_bytes(ID_BYTES).toString('hex')}`
 const writeJson = (path, value) =>
   write_file_durable(path, `${JSON.stringify(value, null, 2)}\n`)
@@ -366,10 +393,23 @@ export class ActorStore {
   firecrackerVersion
   /** @type {Mutex} */
   lock
-  /** @type {Set<string>} */
-  busy = new Set()
+  /** @type {Map<string, Set<string>>} */
+  busy = new Map()
   /** @type {Set<string>} */
   turned = new Set()
+  /** hs-over: the last TAP taken reads as a full host, not a host failure. */
+  #freeTap() {
+    try {
+      return host.freeTap(this.tapPrefix)
+    } catch (error) {
+      if (error instanceof HostError && /no free TAP/.test(error.message))
+        throw new Full(`host full: ${error.message}`)
+      throw error
+    }
+  }
+
+  /** Refuses new starts while parking. */
+  closed = false
 
   /** @param {Partial<ActorStoreOptions>} options */
   constructor(options) {
@@ -382,6 +422,8 @@ export class ActorStore {
       seedTap: 'fc-tap0',
       bootTimeout: 60,
       apiTimeout: 30,
+      memoryReserve: 2 * GIB,
+      memAvailable: read_mem_available,
       ...options
     })
     this.seedDir = join(this.volume, 'seed')
@@ -390,7 +432,7 @@ export class ActorStore {
     this.publishedDir = join(this.volume, PUBLISHED)
     this.versionsDir = join(this.volume, VERSIONS)
     this.lock = new Mutex()
-    this.busy = new Set()
+    this.busy = new Map()
     this.turned = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
     host.requireRoot('creating TAPs and Firecracker')
@@ -507,7 +549,7 @@ export class ActorStore {
         [
           '/bin/sh',
           '-c',
-          "logger -t brayness-seed 'seed boot marker'; touch /tmp/brayness-seed-marker; sync"
+          "logger -t realness-seed 'seed boot marker'; touch /tmp/realness-seed-marker; sync"
         ],
         { timeout: this.apiTimeout, port: this.vsockPort }
       )
@@ -583,7 +625,7 @@ export class ActorStore {
             LOG.warn(`actor ${record.id} door not open before recovery`)
           const result = await vsock.execInGuest(
             record.vsockPath,
-            ['/usr/local/bin/brayness-recover', this.syncUrl ?? ''],
+            ['/usr/local/bin/realness-recover', this.syncUrl ?? ''],
             { timeout: RECOVER_SECONDS, port: this.vsockPort }
           )
           await this.#flush(record)
@@ -625,33 +667,40 @@ export class ActorStore {
     }
   }
 
-  /** k1: before pausing, push the actor's work to sync as its owner; retire waits for this. */
+  /**
+   * k1: before pausing, push the actor's work to sync as its owner; retire waits for this.
+   * @returns {Promise<boolean>} whether the actor's files reached sync
+   */
   async #final_sync(record) {
-    if (!this.syncUrl) return
+    if (!this.syncUrl) return true
     try {
       const argv = [
         'runuser',
         '-u',
-        'brayness',
+        'realness',
         '--',
         'env',
         `SYNC_URL=${this.syncUrl}`,
-        '/usr/local/bin/brayness',
+        '/usr/local/bin/realness',
         'sync'
       ]
       const { code, err } = await vsock.execInGuest(record.vsockPath, argv, {
         timeout: RECOVER_SECONDS,
         port: this.vsockPort
       })
-      if (code !== 0)
-        return LOG.warn(
+      if (code !== 0) {
+        LOG.warn(
           `actor ${record.id} final sync exited ${code}: ${err.toString().trim().slice(-ERROR_TAIL)}`
         )
+        return false
+      }
       record.synced_at = nowIso()
       this.#write(record)
       this.trace(record.id, 'final-sync', {})
+      return true
     } catch (error) {
       LOG.warn(`actor ${record.id} final sync failed: ${error.message}`)
+      return false
     }
   }
 
@@ -660,9 +709,38 @@ export class ActorStore {
    * @param {{ paths?: string[] | null, startup?: object | null }} [options]
    * @returns {Promise<Actor>}
    */
-  async #create(owner, { paths = null, startup: progress = null } = {}) {
+  async #create(owner, options = {}) {
+    if (this.closed) throw new Parking('the host is parking; try again')
     if (!/^\+[1-9]\d{6,14}$/.test(owner))
       throw new BadRequest('verified owner required')
+    this.#claimMemory()
+    try {
+      return await this.#createClaimed(owner, options)
+    } finally {
+      this.#claimed -= this.mib * MIB
+    }
+  }
+
+  /** Memory promised to creates still starting; they have not touched it yet. */
+  #claimed = 0
+
+  /** hs-over: refuse before any disk or TAP when memory would run out. Unknown memory does not refuse. */
+  #claimMemory() {
+    const available = this.memAvailable()
+    const need = this.memoryReserve + this.#claimed + this.mib * MIB
+    if (available !== null && available < need)
+      throw new Full(
+        `host full: ${gib(available)} GiB free, ${gib(need)} GiB needed for another actor`
+      )
+    this.#claimed += this.mib * MIB
+  }
+
+  /**
+   * @param {string} owner
+   * @param {{ paths?: string[] | null, startup?: object | null }} [options]
+   * @returns {Promise<Actor>}
+   */
+  async #createClaimed(owner, { paths = null, startup: progress = null } = {}) {
     const started = performance.now()
     const id = mintId()
     const startup = this.#startup(id, progress ?? {})
@@ -687,7 +765,7 @@ export class ActorStore {
     try {
       mkdir_sync(record.dir, { recursive: true })
       this.#reflinkSeedDisk(record.dir)
-      record.tap = host.freeTap(this.tapPrefix)
+      record.tap = this.#freeTap()
       host.createTap(record.tap)
       const timings = await this.#start(
         record,
@@ -772,7 +850,7 @@ export class ActorStore {
     }
   }
 
-  /** Cold tier: boot the actor's own disk; the seed's memory would see a stale /brayness. */
+  /** Cold tier: boot the actor's own disk; the seed's memory would see a stale /realness. */
   async #bootActor(record, startup) {
     const started = performance.now()
     unlink(record.apiSock)
@@ -814,15 +892,12 @@ export class ActorStore {
 
   /** Turn the resumed clone into this actor (f6): clock, identity, address. */
   async #initActor(record, { pi_after_recovery = false } = {}) {
-    const later = pi_after_recovery
-      ? ['env', 'BRAYNESS_PI_AFTER_RECOVERY=1']
-      : []
     const argv = [
-      ...later,
       ACTOR_INIT,
       record.id,
       String(Math.floor(Date.now() / MS_PER_SECOND)),
-      `${host.tapGuest(record.tap)}/30`
+      `${host.tapGuest(record.tap)}/30`,
+      ...(pi_after_recovery ? ['--after-recovery'] : [])
     ]
     const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, {
       timeout: this.bootTimeout,
@@ -879,7 +954,8 @@ export class ActorStore {
       throw new BadRequest('cwd must be a string')
     const record = await this.ensureRunning(id)
     const started = Date.now()
-    this.beginWork(id)
+    const work = `exec:${random_uuid()}`
+    this.beginWork(id, work)
     try {
       const { code, out, err } = await vsock.execInGuest(
         record.vsockPath,
@@ -906,7 +982,7 @@ export class ActorStore {
         stderr_b64: err.toString('base64')
       }
     } finally {
-      this.endWork(id)
+      this.endWork(id, work)
     }
   }
 
@@ -930,17 +1006,67 @@ export class ActorStore {
   }
 
   ensureRunning(id, options = {}) {
+    if (this.closed) throw new Parking('the host is parking; try again')
     return this.reload(id, options)
   }
 
-  /** Mark an actor as doing work, so the idle sweep leaves it alone. */
-  beginWork(id) {
-    this.busy.add(id)
+  /**
+   * Sync every running actor, then stop it keeping its disk. Any busy actor
+   * or failed sync stops the pass and reopens the host; nothing is lost.
+   * New starts are refused from the first step.
+   * @returns {Promise<{ ok: true } | { ok: false, reason: string }>}
+   */
+  park() {
+    this.closed = true
+    return this.lock.run(async () => {
+      for (const record of this.liveActors()) {
+        if (this.isBusy(record.id)) return unpark(this, `${record.id} is busy`)
+        if (!(await this.#final_sync(record)))
+          return unpark(this, `${record.id} did not sync`)
+        await this.#idle(record.id, 'disk')
+      }
+      if (this.busy.size) return unpark(this, 'work arrived while parking')
+      return { ok: true }
+    })
   }
 
-  endWork(id) {
-    this.busy.delete(id)
+  /** Serve again after a parking pass that could not finish. */
+  reopen() {
+    this.closed = false
+  }
+
+  /**
+   * Hold an actor busy under one key, so the idle sweep and parking leave it
+   * alone. The key's kind is the text before `:`; holding a key twice is one hold.
+   */
+  beginWork(id, key = 'work') {
+    const held = this.busy.get(id) ?? new Set()
+    held.add(key)
+    this.busy.set(id, held)
+  }
+
+  /** Release one key; releasing a key not held does nothing. */
+  endWork(id, key = 'work') {
+    const held = this.busy.get(id)
+    if (!held?.delete(key)) return
+    if (!held.size) this.busy.delete(id)
     this.touch(id).catch(() => {})
+  }
+
+  isBusy(id) {
+    return this.busy.has(id)
+  }
+
+  /** Busy actors and held work by kind: connection, turn, loop, exec, browser. */
+  activity() {
+    /** @type {Record<string, number>} */
+    const kinds = {}
+    for (const held of this.busy.values())
+      for (const key of held) {
+        const [kind] = key.split(':')
+        kinds[kind] = (kinds[kind] ?? 0) + 1
+      }
+    return { actors: this.busy.size, kinds }
   }
 
   /** Record activity, writing at most once a minute. */
@@ -969,7 +1095,7 @@ export class ActorStore {
     return this.lock.run(async () => {
       const done = []
       for (const record of this.list()) {
-        if (this.busy.has(record.id)) continue
+        if (this.isBusy(record.id)) continue
         const step = next_step(record, now, { synced: Boolean(this.syncUrl) })
         if (!step) continue
         if (apply) await apply(record, step)
@@ -1039,6 +1165,7 @@ export class ActorStore {
   async #reload(id, progress = null) {
     const record = this.get(id)
     if (record.state === 'running') return record
+    if (this.closed) throw new Parking('the host is parking; try again')
     const started = performance.now()
     const startup = this.#startup(id, progress ?? {})
     let timings
@@ -1153,7 +1280,7 @@ export class ActorStore {
    * untrusted: only files, directories, and links survive, and the server
    * refuses any path that resolves outside it.
    */
-  publish(id, tree = '/brayness/site', site = id) {
+  publish(id, tree = '/realness/site', site = id) {
     return this.lock.run(async () => {
       const target = join(this.publishedDir, id)
       const staging = join(this.publishedDir, `.${id}.part`)
@@ -1162,10 +1289,10 @@ export class ActorStore {
         const source = join(this.publishedDir, `.${id}.source.part`)
         try {
           if (
-            tree === '/brayness/work/site' ||
-            tree.startsWith('/brayness/work/site/')
+            tree === '/realness/work/site' ||
+            tree.startsWith('/realness/work/site/')
           )
-            await this.copyOut(id, '/brayness/work/site', source)
+            await this.copyOut(id, '/realness/work/site', source)
           const published = await this.syncSites.publish(
             this.ownerOf(id),
             site,
@@ -1522,6 +1649,12 @@ export class ActorStore {
   liveActors() {
     return this.list().filter(record => record.state === 'running')
   }
+}
+
+/** End a parking pass early: serve again, and say why. */
+const unpark = (store, reason) => {
+  store.reopen()
+  return /** @type {const} */ ({ ok: false, reason })
 }
 
 /** Drop devices, fifos, and sockets from an untrusted tree. */

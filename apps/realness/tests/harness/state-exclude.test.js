@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import { harness_exclude } from '../../src/harness/harness.js'
 
 const artifacts = new URL(
-  '../../../../artifacts/brayness/state-exclude/',
+  '../../../../artifacts/realness/state-exclude/',
   import.meta.url
 ).pathname
 

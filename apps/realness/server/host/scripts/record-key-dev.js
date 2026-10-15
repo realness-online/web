@@ -3,9 +3,9 @@ import { mkdirSync as mkdir_sync, readFileSync as read_file_sync, writeFileSync 
 import { hostname } from "node:os"
 import { disk } from "#root/src/can/disk.js"
 
-const path = "/etc/brayness/record-secret"
+const path = "/etc/realness/record-secret"
 const name = hostname()
-mkdir_sync("/etc/brayness", { recursive: true, mode: 0o700 })
+mkdir_sync("/etc/realness", { recursive: true, mode: 0o700 })
 if (!exists_sync(path)) write_file_sync(path, random_bytes(32).toString("hex"), { mode: 0o600, flag: "wx" })
 chmod_sync(path, 0o600)
 const key = read_file_sync(path, "utf8").trim()

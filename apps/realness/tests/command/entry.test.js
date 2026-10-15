@@ -15,7 +15,7 @@ import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
 
 const artifacts = new URL(
-  '../../../../artifacts/brayness/entry-tests/',
+  '../../../../artifacts/realness/entry-tests/',
   import.meta.url
 ).pathname
 

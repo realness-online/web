@@ -1,5 +1,9 @@
 import { phone_of } from '#root/src/files/client.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
+import {
+  host_state as lifecycle_state,
+  read_lifecycle
+} from '#root/src/sync/host-lifecycle.js'
 /* eslint-disable no-await-in-loop -- reads are paced one at a time to keep the sync service quiet */
 
 const unesc = value =>
@@ -78,7 +82,31 @@ const hosts_panel = async ({ store, now = Date.now(), quiet_ms }) => {
       .cat(`can://hosts/${name}/status.html`)
       .catch(() => null)
     const values = page ? (read_status(page.toString('utf8')).host ?? {}) : null
+    const life = await store
+      .cat(`can://hosts/${name}/lifecycle.html`)
+      .catch(() => null)
+    const planned = lifecycle_state({
+      lifecycle: life ? read_lifecycle(life.toString('utf8')) : null,
+      checked: values?.checked ?? '',
+      now,
+      quiet_ms
+    })
     const at = Date.parse(values?.checked ?? '')
+    if (
+      planned === 'parked' ||
+      planned === 'starting' ||
+      planned === 'stopping'
+    ) {
+      rows.push({
+        name,
+        state: planned,
+        age_s: Number.isFinite(at)
+          ? Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
+          : null,
+        detail: null
+      })
+      continue
+    }
     if (!values || !Number.isFinite(at)) {
       rows.push({
         name,
@@ -137,7 +165,7 @@ const cost_panel = async ({ store, people, ledger, named = [] }) => {
   return { rows }
 }
 
-/** Sync: the change feed, plus what the last `brayness sync` in this harness did. */
+/** Sync: the change feed, plus what the last `realness sync` in this harness did. */
 const sync_panel = async ({ store, who, records = {} }) => {
   const saved = Object.keys(records)
   const folders = saved.length

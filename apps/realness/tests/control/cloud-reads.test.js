@@ -10,7 +10,7 @@ import {
 const cloud = {
   project: 'realness-development',
   region: 'us-central1',
-  services: ['brayness-sync', 'brayness-proxy'],
+  services: ['realness-sync', 'realness-proxy'],
   billing: 'realness-development.billing.gcp_billing_export_v1_X'
 }
 const fake = out => {
@@ -27,7 +27,7 @@ const fake = out => {
 test('services report each configured name, missing ones too', async () => {
   const f = fake([
     {
-      metadata: { name: 'brayness-sync' },
+      metadata: { name: 'realness-sync' },
       status: {
         url: 'https://s',
         latestReadyRevisionName: 'r7',
@@ -39,30 +39,30 @@ test('services report each configured name, missing ones too', async () => {
   assert.deepEqual(
     rows.map(r => [r.name, r.found, r.ready ?? null]),
     [
-      ['brayness-sync', true, true],
-      ['brayness-proxy', false, null]
+      ['realness-sync', true, true],
+      ['realness-proxy', false, null]
     ]
   )
-  assert.match(cloud_text.services(rows), /brayness-proxy  not found/)
+  assert.match(cloud_text.services(rows), /realness-proxy  not found/)
 })
 
 test('logs build one filter, refuse unknown services and bad flags', async () => {
   const f = fake([
     { timestamp: 't', severity: 'ERROR', textPayload: 'boom +14156667777' }
   ])
-  const rows = await logs(cloud, 'brayness-sync', { errors: true, run: f.run })
+  const rows = await logs(cloud, 'realness-sync', { errors: true, run: f.run })
   assert.equal(rows[0].text, 'boom +14156667777')
   assert.match(
     f.calls[0][1][2],
-    /service_name="brayness-sync" AND severity>=ERROR/
+    /service_name="realness-sync" AND severity>=ERROR/
   )
   await assert.rejects(logs(cloud, 'realness', { run: f.run }), /usage/)
   await assert.rejects(
-    logs(cloud, 'brayness-sync', { since: '1h; rm', run: f.run }),
+    logs(cloud, 'realness-sync', { since: '1h; rm', run: f.run }),
     /--since/
   )
   await assert.rejects(
-    logs(cloud, 'brayness-sync', { limit: 0, run: f.run }),
+    logs(cloud, 'realness-sync', { limit: 0, run: f.run }),
     /--limit/
   )
 })

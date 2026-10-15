@@ -23,24 +23,24 @@ beforeEach(() => {
   ].map(name => ({ name }))])
 })
 
-describe('poster_file transition', () => {
-  it.each(['.html.gz', '.html'])('reads a live %s poster', async suffix => {
-    const name = `${prefix}456${suffix}`
+describe('poster_file', () => {
+  it('reads a live poster', async () => {
+    const name = `${prefix}456.html`
     objects.set(name, true)
     expect((await poster_file(id)).name).toBe(name)
     expect(bucket.getFiles).not.toHaveBeenCalled()
   })
 
-  it.each(['.html.gz', '.html'])('reads an archived %s poster', async suffix => {
-    const name = `${prefix}123/456${suffix}`
+  it('reads an archived poster', async () => {
+    const name = `${prefix}123/456.html`
     objects.set(name, true)
     expect((await poster_file(id)).name).toBe(name)
   })
 
-  it('prefers the active legacy writer when both names exist', async () => {
-    objects.set(`${prefix}456.html`, true)
+  it('never answers with a retired .html.gz copy', async () => {
     objects.set(`${prefix}456.html.gz`, true)
-    expect((await poster_file(id)).name).toBe(`${prefix}456.html.gz`)
+    objects.set(`${prefix}123/456.html.gz`, true)
+    expect(await poster_file(id)).toBeNull()
   })
 
   it('does not mistake another poster for the requested one', async () => {

@@ -7,7 +7,7 @@ import { unique_html_files } from '#services/html-files.js'
 const OPEN_ANGLE = 60
 
 /**
- * Where a poster's html lives: `people/<author>/posters/<created>.html.gz`,
+ * Where a poster's html lives: `people/<author>/posters/<created>.html`,
  * or an archive folder one level deeper once the app has paged the oldest
  * posters away. The sale has to land wherever the app put the file.
  * @param {string} poster_id - e.g. `/+16282281824/posters/1712000000000`
@@ -17,14 +17,12 @@ export const poster_file = async poster_id => {
   const [, author, type, created] = poster_id.split('/')
   if (!author || type !== 'posters' || !created) return null
   const prefix = `people/${author}/posters/`
-  const live = bucket.file(`${prefix}${created}.html.gz`)
+  const live = bucket.file(`${prefix}${created}.html`)
   if ((await live.exists())[0]) return live
-  const alternate = bucket.file(`${prefix}${created}.html`)
-  if ((await alternate.exists())[0]) return alternate
 
   const [files] = await bucket.getFiles({ prefix })
   const archived = unique_html_files(files).find(file =>
-    file.name.replace(/\.gz$/, '').endsWith(`/${created}.html`)
+    file.name.endsWith(`/${created}.html`)
   )
   return archived ? bucket.file(archived.name) : null
 }

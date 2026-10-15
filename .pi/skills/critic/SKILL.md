@@ -1,8 +1,8 @@
 ---
 name: critic
-description: Verification-first habit for brayness. Run cheap deterministic checks before expensive or final steps; never let the producer grade its own homework. Use on every task before calling work done - structural checks (does it build, do the tests pass, is the expected item present) before any LLM judge, cost-heavy review, or user sign-off.
+description: Verification-first habit for realness. Run cheap deterministic checks before expensive or final steps; never let the producer grade its own homework. Use on every task before calling work done - structural checks (does it build, do the tests pass, is the expected item present) before any LLM judge, cost-heavy review, or user sign-off.
 metadata:
-  check: "node ../../bin/check-skills.js critic"
+  check: "node ../../../bin/check-skills.js critic"
 ---
 
 # Critic

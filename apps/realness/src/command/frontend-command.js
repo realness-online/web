@@ -104,7 +104,7 @@ export const run_frontend = async (
       await read_file(`${project}package.json`, 'utf8')
     )
     const target = environment_settings(environment).project
-    node('scripts/build-hosting-config.js')
+    node('scripts/build-hosting-config.js', ['--env', environment])
     steps.push({
       command: 'npm',
       args: [

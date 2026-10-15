@@ -72,7 +72,7 @@ const memoryExtension = (pi) => {
       ),
       project: Type.Optional(
         Type.String({
-          description: 'Filter by part of the working directory, e.g. realness, seeq, brayness.',
+          description: 'Filter by part of the working directory, e.g. realness, seeq, realness.',
         }),
       ),
       since: Type.Optional(

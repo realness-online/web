@@ -1,6 +1,6 @@
 # Readable renderer
 
-Source: the Brayness renderer review in this session, applied to
+Source: the Realness renderer review in this session, applied to
 `apps/realness/tools/examples/static` and `apps/realness/tools/publish`.
 
 ## Architecture

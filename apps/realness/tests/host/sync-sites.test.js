@@ -51,7 +51,7 @@ test("sync holds the published versions after the publishing host's tree goes aw
     authorization: `Bearer ${issue_host_pass({ phone: owner }, secret)}`
   }
   assert.equal(
-    await (await fetch(`${source}.brayness-site-id`, { headers: auth })).text(),
+    await (await fetch(`${source}.realness-site-id`, { headers: auth })).text(),
     `${id}\n`
   )
   await writeFile(join(root, 'obsolete.css'), 'old')

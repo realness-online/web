@@ -19,13 +19,13 @@ const secret = 'task-test-secret-at-least-thirty-two-bytes!'
 const phone = '+14155550128'
 const id = 'a-7a5c00000001'
 const dir = new URL(
-  `../../../../artifacts/brayness/task-${randomUUID()}/`,
+  `../../../../artifacts/realness/task-${randomUUID()}/`,
   import.meta.url
 ).pathname
 let storage, server, url
 
 const PLAN =
-  '# Brayness\n\n## Nodes\n\n| a |\n\n## Syncs\n\n- work/demo\n- `bin/`\n\n## Notes\n\n- x\n'
+  '# Realness\n\n## Nodes\n\n| a |\n\n## Syncs\n\n- work/demo\n- `bin/`\n\n## Notes\n\n- x\n'
 
 before(async () => {
   storage = disk(join(dir, 'bucket'))
@@ -34,10 +34,10 @@ before(async () => {
   await put('.ignore', '')
   await put(
     'package.json',
-    JSON.stringify({ brayness: { plans: 'vault/Projects' } })
+    JSON.stringify({ realness: { plans: 'vault/Projects' } })
   )
   await put('AGENTS.md', 'guidance\n')
-  await put('vault/Projects/brayness.md', PLAN)
+  await put('vault/Projects/realness.md', PLAN)
   await put('work/demo/a.js', 'one\n')
   await put('work/other/private.md', "another plan's folder\n")
   await put('vault/Areas/diary.md', 'personal\n')
@@ -56,7 +56,6 @@ after(async () => {
   server.closeAllConnections()
   await new Promise(done => server.close(done))
   await rm(dir, { recursive: true, force: true })
-  delete process.env.BRAYNESS_STATE
 })
 
 test("a task's paths are its plan's Syncs, the plans folder, and the basics", async () => {
@@ -64,9 +63,9 @@ test("a task's paths are its plan's Syncs, the plans folder, and the basics", as
   await mkdir(join(root, 'vault/Projects'), { recursive: true })
   await writeFile(
     join(root, 'package.json'),
-    JSON.stringify({ brayness: { plans: 'vault/Projects' } })
+    JSON.stringify({ realness: { plans: 'vault/Projects' } })
   )
-  await writeFile(join(root, 'vault/Projects/brayness.md'), PLAN)
+  await writeFile(join(root, 'vault/Projects/realness.md'), PLAN)
   await writeFile(
     join(root, 'vault/Projects/empty.md'),
     '# Empty\n\n## Nodes\n'
@@ -75,7 +74,7 @@ test("a task's paths are its plan's Syncs, the plans folder, and the basics", as
     join(root, 'vault/Projects/bad.md'),
     '# Bad\n\n## Syncs\n\n- ../outside\n- .env\n'
   )
-  assert.deepEqual(await task_paths(root, 'brayness'), [
+  assert.deepEqual(await task_paths(root, 'realness'), [
     'work/demo',
     'bin',
     'vault/Projects',
@@ -94,7 +93,6 @@ test('a task VM gets only its paths, writes files and folders there, and cannot 
   const root = join(dir, 'vm')
   const state = join(root, '.pi/agent/state')
   await mkdir(root, { recursive: true })
-  process.env.BRAYNESS_STATE = state
   const paths = ['work/demo', 'vault/Projects', 'AGENTS.md', '.ignore']
 
   await recover(

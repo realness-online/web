@@ -64,12 +64,12 @@ test('VM-bound door ignores a claimed owner and denies actors without one', asyn
         await send({
           op: 'publish',
           owner: '+14155559999',
-          path: '/brayness/site'
+          path: '/realness/site'
         })
       ).ok,
       true
     )
-    assert.deepEqual(published, [[record.id, '/brayness/site']])
+    assert.deepEqual(published, [[record.id, '/realness/site']])
     assert.equal(
       (await send({ op: 'site-versions' })).versions[0].id,
       '012345abcdef'

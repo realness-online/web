@@ -23,7 +23,7 @@ import {
 } from '../../src/publish/sources.js'
 
 const author = '/+15550001111'
-const scratch = new URL('../../../../artifacts/brayness/apps/', import.meta.url)
+const scratch = new URL('../../../../artifacts/realness/apps/', import.meta.url)
   .pathname
 
 const vault_at = async (name, entries) => {

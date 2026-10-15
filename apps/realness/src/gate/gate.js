@@ -6,10 +6,11 @@ import { issue_host_pass } from '#root/src/sign-on/node/host-pass.js'
 import { accept, open_pty, pump, refuse } from '#root/lib/websocket.js'
 import { HTTP } from '#root/lib/http.js'
 
-const PROTOCOL = 'brayness'
+const PROTOCOL = 'realness'
 const DEFAULT_COLS = 80
 const DEFAULT_ROWS = 24
 const API_PORT = 8080
+const RETRY_AFTER_S = 5
 const PREFLIGHT = {
   'access-control-allow-methods': 'GET, POST, DELETE',
   'access-control-allow-headers': 'authorization, content-type',
@@ -41,14 +42,22 @@ export const one_host = (address, api_port = API_PORT) => {
   return () => ({ host, port: Number(port), api_port: Number(api_port) })
 }
 
+const record = event => `${JSON.stringify(event)}\n`
+const NDJSON = {
+  'content-type': 'application/x-ndjson; charset=utf-8',
+  'cache-control': 'no-store',
+  'x-accel-buffering': 'no'
+}
+
 /**
  * Forward one browser call to the host API under a host pass; streams both ways.
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ host: string, port: number, api_port: number }} where
  * @param {string} pass
+ * @param {boolean} [streaming] headers are already sent: a refusal becomes an error record
  */
-const forward = (request, response, where, pass) =>
+const forward = (request, response, where, pass, streaming = false) =>
   /** @type {Promise<void>} */
   (
     new Promise(done => {
@@ -64,6 +73,23 @@ const forward = (request, response, where, pass) =>
           headers: { ...headers, authorization: `Bearer ${pass}` }
         },
         reply => {
+          if (streaming) {
+            if (reply.statusCode === HTTP.OK) reply.pipe(response)
+            else {
+              const parts = []
+              reply.on('data', part => parts.push(part))
+              reply.on('end', () =>
+                response.end(
+                  record({
+                    type: 'error',
+                    text: `${reply.statusCode}: ${Buffer.concat(parts).toString('utf8').trim()}`
+                  })
+                )
+              )
+            }
+            reply.on('end', done)
+            return
+          }
           response.writeHead(
             reply.statusCode ?? HTTP.BAD_GATEWAY,
             Object.fromEntries(
@@ -78,6 +104,10 @@ const forward = (request, response, where, pass) =>
         }
       )
       upstream.on('error', () => {
+        if (streaming) {
+          response.end(record({ type: 'error', text: 'host unreachable' }))
+          return done()
+        }
         if (!response.headersSent)
           response.writeHead(HTTP.BAD_GATEWAY, {
             'content-type': 'text/plain; charset=utf-8'
@@ -96,6 +126,7 @@ const forward = (request, response, where, pass) =>
  *   host_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number },
  *   secret: string,
  *   origins: string[],
+ *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
  *   log?: (line: string) => void
  * }} options
  */
@@ -104,6 +135,7 @@ export const make_gate = ({
   host_for,
   secret,
   origins,
+  wake = async () => {},
   log = console.info
 }) => {
   const plain = (response, status, text) =>
@@ -133,12 +165,32 @@ export const make_gate = ({
     } catch {
       return plain(response, HTTP.UNAUTHORIZED, 'sign in first\n')
     }
+    const streaming = request.method === 'POST' && path === '/v1/startup'
+    /** Startup progress shows the wake as its first stage; other calls just wait. */
+    const watch = streaming
+      ? event => {
+          if (!response.headersSent) response.writeHead(HTTP.OK, NDJSON)
+          response.write(
+            record({ type: 'startup-stage', source: 'gate', ...event })
+          )
+        }
+      : undefined
+    try {
+      await wake({ watch })
+    } catch (error) {
+      log(`gate: wake failed: ${error.message}`)
+      if (response.headersSent)
+        return response.end(record({ type: 'error', text: error.message }))
+      response.setHeader('retry-after', String(RETRY_AFTER_S))
+      return plain(response, HTTP.UNAVAILABLE, `${error.message}\n`)
+    }
     try {
       await forward(
         request,
         response,
         host_for({ phone: who.phone }),
-        issue_host_pass(who, secret)
+        issue_host_pass(who, secret),
+        response.headersSent
       )
     } catch (error) {
       log(`gate: api refused: ${error.message}`)
@@ -171,6 +223,13 @@ export const make_gate = ({
       who = await identify(token)
     } catch {
       return refuse(socket, HTTP.UNAUTHORIZED, 'sign in first\n')
+    }
+
+    try {
+      await wake()
+    } catch (error) {
+      log(`gate: wake failed: ${error.message}`)
+      return refuse(socket, HTTP.UNAVAILABLE, `${error.message}\n`)
     }
 
     let pty

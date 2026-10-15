@@ -43,7 +43,7 @@ before_each(() => {
   current_user.value = { getIdToken: async () => 'id.token' }
   home_view.value = 'thoughts'
   wide.value = true
-  vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
+  vi.stubEnv('MODE', 'development')
   requests = []
   vi.stubGlobal(
     'fetch',

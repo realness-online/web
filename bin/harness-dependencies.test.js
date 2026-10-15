@@ -21,7 +21,7 @@ test('harness dependencies resolve inside .pi without a root dependency store', 
 test('skills and examples have only their configured .pi locations', () => {
   const config = manifest('package.json')
   assert.deepEqual(config.pi.skills, ['./.pi/skills'])
-  assert.equal(config.brayness.examples, '.pi/examples')
+  assert.equal(config.realness.examples, '.pi/examples')
   for (const name of ['skills', 'examples']) {
     assert.equal(exists_sync(join(root, name)), false)
     assert.ok(exists_sync(join(root, '.pi', name)))

@@ -15,6 +15,7 @@ import { test } from 'node:test'
 const state = (globalThis.startup_timing_test = {
   clock: 0,
   calls: [],
+  guest_argv: [],
   running: false
 })
 const modules = {
@@ -56,8 +57,9 @@ const modules = {
       if (state.fail_agent) throw new Error("guest unavailable")
     }
     export const execInGuest = async (_, argv) => {
+      state.guest_argv.push(argv)
       state.clock += 50
-      return { code: argv.includes("/usr/local/bin/brayness-recover") ? state.recover_code : 0, out: Buffer.from("ready"), err: Buffer.alloc(0) }
+      return { code: argv.includes("/usr/local/bin/realness-recover") ? state.recover_code : 0, out: Buffer.from("ready"), err: Buffer.alloc(0) }
     }
     export const runOk = async () => { state.clock += 5; return "machine actor boot 1" }
   `
@@ -83,15 +85,16 @@ hooks.deregister()
 
 const scratch = fileURLToPath(
   new URL(
-    '../../../../artifacts/brayness-host-scale/test-data/',
+    '../../../../artifacts/realness-host-scale/test-data/',
     import.meta.url
   )
 )
 mkdirSync(scratch, { recursive: true })
 
-function fixture(t) {
+const fixture = t => {
   state.clock = 0
   state.calls = []
+  state.guest_argv = []
   state.running = false
   state.fail_agent = false
   state.recover_code = 0
@@ -107,7 +110,7 @@ function fixture(t) {
   return store
 }
 
-function fields(store, id, event) {
+const fields = (store, id, event) => {
   const trace = store.traceOf(id).find(row => row.event === event)
   assert.ok(trace, `${event} trace exists`)
   return Object.fromEntries(
@@ -125,6 +128,17 @@ test('create separates VM load, guest response, initialization, and total', asyn
     ms: 162
   })
   assert.deepEqual(state.calls, ['snapshot'])
+})
+
+test('recovery defers Pi through an actor-init argument', async t => {
+  const store = fixture(t)
+  store.syncUrl = 'https://sync.test'
+  await store.create('+14156667777')
+  const argv = state.guest_argv.find(args =>
+    args.includes('/usr/local/bin/realness-actor-init')
+  )
+  assert.equal(argv[0], '/usr/local/bin/realness-actor-init')
+  assert.equal(argv.at(-1), '--after-recovery')
 })
 
 for (const from_memory of [true, false]) {

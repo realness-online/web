@@ -43,7 +43,7 @@ Structure skills so agents load only what they need, when they need it.
 3. **Resources** (loaded on demand) - reference files, loaded conditionally based on the task context
 
 Keep frontmatter valid YAML: an unquoted colon inside `description:` breaks
-parsing and silently drops the skill (we hit this in brayness). Quote the
+parsing and silently drops the skill (we hit this in realness). Quote the
 whole description when in doubt.
 
 ```markdown

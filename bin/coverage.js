@@ -72,7 +72,7 @@ const parts = () => [
   node_part('harness', harness_files()),
   node_part('backend', ['apps/realness/tests/**/*.test.js']),
   npm_part('functions', 'test:functions:coverage', join(product, 'functions/coverage/lcov.info'), join(product, 'functions')),
-  npm_part('frontend', 'test:coverage', join(root, 'artifacts/brayness/frontend/coverage/lcov.info'), join(product, 'frontend'))
+  npm_part('frontend', 'test:coverage', join(root, 'artifacts/realness/frontend/coverage/lcov.info'), join(product, 'frontend'))
 ]
 
 /**
@@ -181,7 +181,7 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
     `\n${summary(rows, whole)}\n\n"all" counts each file once, hit if any part ran it.\n` +
       `untested: ${scripts.length} JavaScript and Vue files no test loads, left out of every percentage\n` +
       `not measured: ${other.length} shell, Python, Rust, and TypeScript files\n` +
-      `lists: ${join(out, 'untested.txt')}\nreports: ${out}, product functions/coverage, artifacts/brayness/frontend/coverage\n`
+      `lists: ${join(out, 'untested.txt')}\nreports: ${out}, product functions/coverage, artifacts/realness/frontend/coverage\n`
   )
   process.exitCode = rows.every(({ ok }) => ok) ? 0 : 1
 }

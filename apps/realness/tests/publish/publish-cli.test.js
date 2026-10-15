@@ -31,14 +31,35 @@ const make_root = () => {
   return root
 }
 
-const publish = (root, args) => {
+const publish = (root, args, env = process.env) => {
   const result = spawn_sync(process.execPath, [SCRIPT, ...args], {
     cwd: root,
-    env: { ...process.env, BRAYNESS_ROOT: root },
+    env,
     encoding: 'utf8'
   })
   return { code: result.status, out: result.stdout, err: result.stderr }
 }
+
+for (const key of ['REALNESS_ROOT', 'REALNESS_VAULT'])
+  test(`publishing ignores the removed ${key} input`, () => {
+    const root = make_root()
+    try {
+      const ignored = join(root, 'ignored')
+      mkdirSync(join(ignored, 'vault'), { recursive: true })
+      mkdirSync(join(ignored, 'apps'))
+      const result = publish(root, ['app', 'add', 'blog', '--type', 'blog'], {
+        ...process.env,
+        [key]: key === 'REALNESS_ROOT' ? ignored : join(ignored, 'vault')
+      })
+      assert.equal(result.code, 0, result.err)
+      const record = JSON.parse(
+        read_file_sync(join(root, 'apps/blog/app.json'), 'utf8')
+      )
+      assert.equal(record.vault, '../../vault')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
 
 test('a bare run says how to use it and exits 1', () => {
   const root = make_root()
@@ -47,7 +68,7 @@ test('a bare run says how to use it and exits 1', () => {
     assert.equal(code, 1)
     assert.match(
       err,
-      /brayness-publish: usage: brayness-publish items <action> \| app <action>/
+      /realness-publish: usage: realness-publish items <action> \| app <action>/
     )
   } finally {
     rmSync(root, { recursive: true, force: true })

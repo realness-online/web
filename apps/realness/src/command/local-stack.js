@@ -9,13 +9,12 @@ import {
 import { get as http_get } from 'node:http'
 import { get as https_get } from 'node:https'
 import path from 'node:path'
-import { pathToFileURL as path_to_file_url } from 'node:url'
 import { product_paths } from '#root/src/settings/layout.js'
 import { local_settings } from '#root/src/settings/environments.js'
 import { out_path } from '#root/src/settings/output.js'
 import { setTimeout as delay } from 'node:timers/promises'
 
-const { root, frontend, app } = product_paths()
+const { root, frontend } = product_paths()
 const project = `${root}/`
 export const local_artifacts = out_path('local')
 const secret_file = out_path('host-pass-secret')
@@ -39,7 +38,7 @@ export const local_plan = () => {
     services: [
       {
         name: 'host',
-        args: ['run', 'webspace', '--', 'local', 'host', 'up'],
+        args: ['run', 'realness', '--', 'local', 'host', 'up'],
         url: `http://127.0.0.1:${local_settings.api_port}/v1/health`,
         persistent: true
       },
@@ -52,9 +51,8 @@ export const local_plan = () => {
       },
       {
         name: 'frontend',
-        args: ['run', 'dev:frontend'],
-        url: probe_url,
-        env: { BRAYNESS_LOCAL: '1', VITE_BRAYNESS_GATE_URL: `${url}/gate` }
+        args: ['run', 'dev:frontend', '--', '--mode', 'local'],
+        url: probe_url
       }
     ].map(service => ({ command: 'npm', cwd: project, ...service }))
   }
@@ -63,7 +61,7 @@ export const local_plan = () => {
 /**
  * Readiness checks never start a server. Only refused connections mean it is absent.
  * @param {string} url
- * @returns {Promise<{ status: number | undefined, body: string } | null>} null when the port is closed
+ * @returns {Promise<{ status: number | undefined, body: string, headers: import('node:http').IncomingHttpHeaders } | null>}
  */
 export const local_request = url =>
   new Promise((resolve, reject) => {
@@ -80,7 +78,13 @@ export const local_request = url =>
       response.on('data', chunk => {
         body += chunk
       })
-      response.on('end', () => resolve({ status: response.statusCode, body }))
+      response.on('end', () =>
+        resolve({
+          status: response.statusCode,
+          body,
+          headers: response.headers
+        })
+      )
       response.on('error', reject)
     })
     request.on('timeout', () =>
@@ -141,10 +145,7 @@ export const probe_local = async service => {
   if (service.name === 'frontend') {
     if (!reply.body.includes('/@vite/client'))
       throw new Error(`${service.url} is not the Vite development server`)
-    const module = await local_request(
-      `${service.url}/@fs${path_to_file_url(path.join(app, 'utils/brayness-gate.js')).pathname}`
-    )
-    if (!module?.body.includes(service.env.VITE_BRAYNESS_GATE_URL))
+    if (reply.headers['x-vite-mode'] !== 'local')
       throw new Error(
         'The frontend is already running with another gate. Stop that dev server, then run npm run local again.'
       )

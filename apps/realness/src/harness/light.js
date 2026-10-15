@@ -1,9 +1,9 @@
 /**
- * h4: light VMs. A harness whose package.json sets `brayness.light` starts
+ * h4: light VMs. A harness whose package.json sets `realness.light` starts
  * its VMs light: session history older than `days`, and any file over
  * `bytes`, stays in storage. The skipped names live in the state folder, so
  * the VM's own sync neither pulls them nor reads their absence as a delete.
- * Reading one fetches it: `brayness fetch <path>`, or the light-fetch hook.
+ * Reading one fetches it: `realness fetch <path>`, or the light-fetch hook.
  */
 import {
   existsSync as exists_sync,
@@ -17,12 +17,12 @@ const SESSIONS = '.pi/agent/sessions'
 const LIGHT_DEFAULTS = { days: 14, bytes: 2 * MIB }
 const FILE = 'light.json'
 
-/** `brayness.light` from package.json text: null when unset, defaults filled in. */
+/** `realness.light` from package.json text: null when unset, defaults filled in. */
 export const light_policy = package_text => {
   if (!package_text) return null
   let light
   try {
-    light = JSON.parse(package_text).brayness?.light
+    light = JSON.parse(package_text).realness?.light
   } catch {
     return null
   }
@@ -30,7 +30,7 @@ export const light_policy = package_text => {
   const policy = { ...LIGHT_DEFAULTS, ...(light === true ? {} : light) }
   for (const key of ['days', 'bytes'])
     if (!Number.isFinite(policy[key]) || policy[key] <= 0)
-      throw new Error(`brayness.light.${key} must be a positive number`)
+      throw new Error(`realness.light.${key} must be a positive number`)
 
   return policy
 }

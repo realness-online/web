@@ -86,7 +86,7 @@ Think of it as **the add-on cupboard**, not "npm".
 
 The published starter includes `AGENTS.md`, selected skills, extensions, and required configuration. `AGENTS.local.md` is the personal place for agent instructions. The vault, `work/`, `artifacts/`, and Pi sessions belong to the person. A starter update must compare managed files with the version first received and show any personal edits before replacing them. Sessions help explain edits, but cannot detect all changes alone.
 
-Plans live in a configured folder. This harness sets `brayness.plans` to `vault/Projects` in `package.json`; the built-in default is `vault/plans`. `brayness.plansIgnore` lists files in that folder that are not plans (here, `Todo's.md`). Readers do not fall back to top-level `plans/`.
+Plans live in a configured folder. This harness sets `realness.plans` to `vault/Projects` in `package.json`; the built-in default is `vault/plans`. `realness.plansIgnore` lists files in that folder that are not plans (here, `Todo's.md`). Readers do not fall back to top-level `plans/`.
 
 ## What to edit vs ignore
 
@@ -166,8 +166,8 @@ this index.
 | `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                          |
 | `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                            |
 
-`npm run brayness` remains a compatibility alias for `npm run realness`.
-Configuration keys such as `brayness.plans` remain compatible during migration;
+`npm run realness` remains a compatibility alias for `npm run realness`.
+Configuration keys such as `realness.plans` remain compatible during migration;
 they are not the public product name.
 
 The feeds row is not a standalone clean-checkout command.
@@ -180,7 +180,7 @@ Close every Pi process. From a separate terminal in this folder:
 node bin/session-relocate.js migrate
 ```
 
-The command verifies closed history copies before setting `brayness.sessions`
+The command verifies closed history copies before setting `realness.sessions`
 to `vault/Sessions`. Duplicate filenames receive path-based suffixes. Original
 files remain in `.pi/agent/sessions/`; the manifest records every original path.
 Keep Pi closed until the command finishes. Restart through `bin/pi` afterward.

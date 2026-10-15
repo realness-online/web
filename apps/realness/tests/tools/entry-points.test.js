@@ -14,7 +14,7 @@ import { pick } from '../../frontend/scripts/pick-og.js'
 
 const frontend = resolve(import.meta.dirname, '../../frontend')
 const product = resolve(import.meta.dirname, '../..')
-const candidates = resolve(product, '../../artifacts/brayness/og-candidates')
+const candidates = resolve(product, '../../artifacts/realness/og-candidates')
 const og_path = join(frontend, 'public', 'og.jpg')
 const scratch = resolve(
   import.meta.dirname,

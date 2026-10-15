@@ -13,9 +13,9 @@ const here = path.dirname(file_url_to_path(import.meta.url))
 const harness = path.resolve(here, '../../../..')
 const chat_prompt = path.resolve(
   here,
-  '../../server/host/guest/brayness-chat.md'
+  '../../server/host/guest/realness-chat.md'
 )
-const PRODUCER = 'brayness/inkling'
+const PRODUCER = 'realness/inkling'
 const JUDGE = 'openai-codex/gpt-6-sol'
 const PARALLEL = 4
 const MIN_FORM = 0.9

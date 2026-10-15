@@ -20,12 +20,12 @@ import { run } from '../../src/command/command.js'
 import { CapabilityError, file_capabilities } from '../../src/command/files.js'
 
 const executable = fileURLToPath(
-  new URL('../../tools/cli/bin/brayness.js', import.meta.url)
+  new URL('../../tools/cli/bin/realness.js', import.meta.url)
 )
 const artifacts = fileURLToPath(
-  new URL('../../../../artifacts/brayness/cli-tests/', import.meta.url)
+  new URL('../../../../artifacts/realness/cli-tests/', import.meta.url)
 )
-const project = 'brayness-cli-test'
+const project = 'realness-cli-test'
 const phone = '+15555550123'
 const { privateKey: private_key, publicKey: public_key } = generateKeyPairSync(
   'rsa',
@@ -58,6 +58,10 @@ function token(claims = {}) {
 async function fixture(t) {
   await mkdir(artifacts, { recursive: true })
   const root = await mkdtemp(join(artifacts, 'run-'))
+  await writeFile(
+    join(root, 'package.json'),
+    JSON.stringify({ realness: { state: 'state' } })
+  )
   t.after(() => rm(root, { recursive: true, force: true }))
   const storage = disk(join(root, 'storage'))
   const server = sync_service({
@@ -78,18 +82,17 @@ async function fixture(t) {
   const url = `http://127.0.0.1:${server.address().port}`
   const bin = join(root, 'bin')
   await mkdir(bin)
-  await symlink(executable, join(bin, 'brayness'))
+  await symlink(executable, join(bin, 'realness'))
   const signed_token = token()
   const invoke = (args, overrides = {}) =>
     new Promise((resolve, reject) => {
-      const child = spawn('brayness', args, {
+      const child = spawn('realness', args, {
         cwd: root,
         env: {
           ...process.env,
           PATH: `${bin}${delimiter}${process.env.PATH}`,
           TOKEN: signed_token,
           SYNC_URL: url,
-          BRAYNESS_STATE: join(root, 'state'),
           ...overrides
         }
       })
@@ -119,7 +122,7 @@ function result(output) {
   return parsed.result
 }
 
-test('public brayness command syncs an edit between two folders through the service', async t => {
+test('public realness command syncs an edit between two folders through the service', async t => {
   const { root, invoke } = await fixture(t)
   const first = join(root, 'first folder'),
     second = join(root, 'second folder')

@@ -78,7 +78,7 @@ export const local_frame = (
   ])
   const capacity = Math.max(0, rows - FRAME_MARGIN)
   return `${[
-    paint('BRAYNESS LOCAL', 'running', on),
+    paint('REALNESS LOCAL', 'running', on),
     url,
     ...lines.slice(0, capacity),
     'Ctrl-C/q stop local children  r refresh  u 15s  m 60s  h 5m',

@@ -14,22 +14,22 @@ const MAX_RUNS = 20
 const GOAL_LIMIT = 4000
 export const launch_argv = goal => [
   'systemd-run',
-  '--unit=brayness-loop',
-  '--uid=brayness',
-  '--gid=brayness',
+  '--unit=realness-loop',
+  '--uid=realness',
+  '--gid=realness',
   '--collect',
-  '/usr/local/bin/brayness-loop-run',
+  '/usr/local/bin/realness-loop-run',
   goal
 ]
 const LIVE = new Set(['starting', 'running'])
-export const STOP_ARGV = ['systemctl', 'stop', 'brayness-loop']
+export const STOP_ARGV = ['systemctl', 'stop', 'realness-loop']
 
 export const PROBE_ARGV = [
   'python3',
   '-c',
   `
 import json
-d = "/brayness/work/loop"
+d = "/realness/work/loop"
 def read(path, tail=0):
     try:
         with open(path, "rb") as f:
@@ -187,7 +187,7 @@ export class Loops {
             .trim() || `exit ${exit_code}`
         )
       loop.status = 'running'
-      this.store.beginWork(record.id)
+      this.store.beginWork(record.id, 'loop')
     } catch (error) {
       Object.assign(loop, { status: 'failed', error: error.message })
       throw error
@@ -284,7 +284,7 @@ export class Loops {
     const stopped = []
     for (const [id, loop] of Object.entries(this.loops)) {
       if (loop.status !== 'running') continue
-      this.store.beginWork(id)
+      this.store.beginWork(id, 'loop')
       try {
         if (await this.#stop_requested(id)) {
           await this.stop(id, 'admin')
@@ -332,7 +332,7 @@ export class Loops {
     })
     this.#save()
     await this.#publish(id)
-    this.store.endWork(id)
+    this.store.endWork(id, 'loop')
     await this.store.idle(id)
   }
 

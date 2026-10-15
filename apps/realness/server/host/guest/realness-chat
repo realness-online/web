@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""One chat prompt over guest vsock port 55, relayed to the terminal's Pi.
+
+The actor runs one Pi, in its terminal. Its chat-bridge extension listens on a
+unix socket; this relays the browser's message there and its JSON-line reply
+back. Chat and terminal share one session. Nothing starts a Pi per message.
+
+`{"watch": true}` holds the connection open as a live view of that session,
+until either end closes it. `{"command", "args"}` runs one chat command and
+relays its single reply.
+"""
+import json
+import os
+import selectors
+import socket
+import sys
+
+SOCKET = sys.argv[1] if len(sys.argv) > 1 else "/run/realness/pi-chat.sock"
+LINE_LIMIT = 16384
+TIMEOUT = 600
+
+
+def send(value):
+    sys.stdout.write(json.dumps(value) + "\n")
+    sys.stdout.flush()
+
+
+def watch():
+    pi = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        pi.connect(SOCKET)
+    except OSError:
+        send({"type": "error", "text": "Pi is not running in the terminal"})
+        return
+    with pi, selectors.DefaultSelector() as ready:
+        pi.sendall(b'{"watch": true}\n')
+        ready.register(pi, selectors.EVENT_READ)
+        ready.register(sys.stdin.buffer, selectors.EVENT_READ)
+        while True:
+            for key, _ in ready.select():
+                if key.fileobj is sys.stdin.buffer:
+                    if not os.read(sys.stdin.fileno(), 4096):
+                        return  # the browser left
+                    continue
+                chunk = pi.recv(65536)
+                if not chunk:
+                    return  # Pi exited
+                sys.stdout.buffer.write(chunk)
+                sys.stdout.flush()
+
+
+def relay(request):
+    """Send one request to the terminal's Pi and pass its reply lines through."""
+    pi = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    pi.settimeout(TIMEOUT)
+    try:
+        pi.connect(SOCKET)
+    except OSError:
+        send({"type": "error", "text": "Pi is not running in the terminal"})
+        return
+    with pi:
+        pi.sendall((json.dumps(request) + "\n").encode())
+        try:
+            for reply in pi.makefile("rb"):
+                sys.stdout.buffer.write(reply)
+                sys.stdout.flush()
+        except socket.timeout:
+            send({"type": "error", "text": "Pi timed out"})
+
+
+def main():
+    line = sys.stdin.buffer.readline(LINE_LIMIT + 1)
+    try:
+        request = json.loads(line)
+    except ValueError:
+        request = None
+    if not isinstance(request, dict) or len(line) > LINE_LIMIT:
+        send({"type": "error", "text": "invalid message"})
+        return
+    if request.get("watch") is True:
+        return watch()
+    if "command" in request:
+        command, args = request["command"], request.get("args", "")
+        if not isinstance(command, str) or not command or not isinstance(args, str):
+            send({"type": "error", "text": "invalid command"})
+            return
+        return relay({"command": command, "args": args})
+    message = request.get("message")
+    if not isinstance(message, str) or not message.strip():
+        send({"type": "error", "text": "invalid message"})
+        return
+    relay({"message": message})
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (BrokenPipeError, ConnectionResetError):
+        pass  # The person left; the turn finishes in the terminal.

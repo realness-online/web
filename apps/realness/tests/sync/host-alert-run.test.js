@@ -21,7 +21,7 @@ const quiet = `<article itemscope itemtype="/host"><meta itemprop="checked" cont
 
 before(async () => {
   await mkdir(dir, { recursive: true })
-  await storage.put('hosts/brayness-1/status.html', quiet)
+  await storage.put('hosts/realness-1/status.html', quiet)
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -65,23 +65,23 @@ test('the run posts a webhook and stores backoff state, then stays quiet', async
   }
   try {
     const first = await (await run(`Bearer ${token}`)).json()
-    assert.deepEqual(first.sent, [{ kind: 'down', name: 'brayness-1' }])
+    assert.deepEqual(first.sent, [{ kind: 'down', name: 'realness-1' }])
     assert.equal(messages[0].target, 'https://hooks.slack.com/services/x')
-    assert.match(messages[0].body.text, /brayness-1 stopped reporting/)
+    assert.match(messages[0].body.text, /realness-1 stopped reporting/)
 
     const stored = JSON.parse(
       (await storage.get('alerts/host-watch.json')).body.toString('utf8')
     )
-    assert.ok(stored['brayness-1'].sent > 0, 'state remembers when it was sent')
+    assert.ok(stored['realness-1'].sent > 0, 'state remembers when it was sent')
 
     const again = await (await run(`Bearer ${token}`)).json()
     assert.deepEqual(again.sent, [])
     assert.equal(messages.length, 1)
 
-    stored['brayness-1'].sent = Date.now() - FIRST_REPEAT_MS
+    stored['realness-1'].sent = Date.now() - FIRST_REPEAT_MS
     await storage.put('alerts/host-watch.json', `${JSON.stringify(stored)}\n`)
     const repeat = await (await run(`Bearer ${token}`)).json()
-    assert.deepEqual(repeat.sent, [{ kind: 'repeat', name: 'brayness-1' }])
+    assert.deepEqual(repeat.sent, [{ kind: 'repeat', name: 'realness-1' }])
     assert.equal(messages.length, 2)
   } finally {
     globalThis.fetch = original

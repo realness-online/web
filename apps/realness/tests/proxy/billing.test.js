@@ -253,7 +253,7 @@ test('b1d: the price is found by lookup key, once; a miss retries', async () => 
   const lookup = price_lookup({
     get: async path => (
       asks++,
-      assert.match(path, /lookup_keys\[\]=brayness-plan-monthly/),
+      assert.match(path, /lookup_keys\[\]=realness-plan-monthly/),
       { data }
     )
   })

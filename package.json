@@ -22,7 +22,7 @@
       "./sessions"
     ]
   },
-  "brayness": {
+  "realness": {
     "plans": "vault/Projects",
     "plansIgnore": [
       "Todo's.md"
@@ -37,7 +37,6 @@
   "scripts": {
     "postinstall": "npm --prefix .pi ci && node bin/install-pi.js && node bin/themes.js",
     "realness": "./bin/pi",
-    "brayness": "./bin/pi",
     "start": "./bin/pi",
     "local": "node bin/local.js",
     "test": "npm run test:harness && npm run check:harness && npm run test:product",

@@ -37,7 +37,7 @@ export class SyncSites {
   }
 
   async save_source(owner, site, root) {
-    const saved = new Set(['.brayness-site-id'])
+    const saved = new Set(['.realness-site-id'])
     const prefix = `people/${encodeURIComponent(owner)}/work/site/`
     const headers = {
       authorization: `Bearer ${issue_host_pass({ phone: owner }, this.secret)}`
@@ -73,7 +73,7 @@ export class SyncSites {
       if (!response.ok)
         throw new Error(`sync site source delete ${name}: ${response.status}`)
     }
-    const marker = await fetch(`${this.url}/${prefix}.brayness-site-id`, {
+    const marker = await fetch(`${this.url}/${prefix}.realness-site-id`, {
       method: 'PUT',
       headers,
       body: `${site}\n`
@@ -88,7 +88,7 @@ export class SyncSites {
     let bytes = 0
     const upload = async directory => {
       for (const entry of await readdir(directory, { withFileTypes: true })) {
-        if (entry.name === '.brayness-site-id') continue
+        if (entry.name === '.realness-site-id') continue
         const file = join(directory, entry.name)
         if (entry.isDirectory()) await upload(file)
         else if (entry.isFile()) {

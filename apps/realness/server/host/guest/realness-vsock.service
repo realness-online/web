@@ -1,0 +1,15 @@
+[Unit]
+Description=Realness actor agent (vsock control channel, port 52)
+# Deliberately does not wait for the network. The control channel is the thing
+# used to debug the network, so it must come up even when networking is broken.
+
+[Service]
+Type=simple
+# fork: one agent per connection. reuseaddr: survive a restart without a wait.
+ExecStart=/usr/bin/socat VSOCK-LISTEN:52,fork,reuseaddr EXEC:/usr/local/bin/realness-agent
+Restart=always
+RestartSec=1
+# KillMode=control-group (the default) also stops forked agents on shutdown.
+
+[Install]
+WantedBy=multi-user.target

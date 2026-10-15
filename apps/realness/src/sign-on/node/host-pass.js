@@ -9,12 +9,12 @@ const PHONE = /^\+[1-9]\d{6,14}$/
 const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LIFE_S = 300
 const HOST_PASS = {
-  audience: 'brayness-host',
+  audience: 'realness-host',
   life_s: LIFE_S,
   name: 'host pass'
 }
 const RECORD_PASS = {
-  audience: 'brayness-records',
+  audience: 'realness-records',
   life_s: LIFE_S,
   name: 'record pass'
 }

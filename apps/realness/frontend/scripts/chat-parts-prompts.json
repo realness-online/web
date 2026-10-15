@@ -4,7 +4,7 @@
   { "kind": "text", "prompt": "What does HTTP stand for?" },
   {
     "kind": "table",
-    "prompt": "Compare GitHub Pages and a Brayness site for a small blog: cost, custom domain, how I publish. Short, general terms, no files."
+    "prompt": "Compare GitHub Pages and a Realness site for a small blog: cost, custom domain, how I publish. Short, general terms, no files."
   },
   {
     "kind": "table",

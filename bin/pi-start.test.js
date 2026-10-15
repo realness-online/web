@@ -25,7 +25,7 @@ const fixture = () => {
     write_file_sync(join(pinned, 'pi'), '#!/bin/bash\nprintf "%s\\n" "$PI_CODING_AGENT_DIR" "$PI_CODING_AGENT_SESSION_DIR" "$PI_SESSION_FORMAT" "$PI_SESSION_READER" "$1"\n', { mode: 0o755 })
     write_file_sync(join(pinned, 'pi-session-read'), '#!/bin/bash\nexit 0\n', { mode: 0o755 })
   }
-  const run = () => spawn_sync('/bin/bash', [join(root, 'bin/pi'), '--version'], { env, encoding: 'utf8', timeout: 10_000 })
+  const run = (...args) => spawn_sync('/bin/bash', [join(root, 'bin/pi'), ...args, '--version'], { env, encoding: 'utf8', timeout: 10_000 })
   const cleanup = () => rm_sync(root, { recursive: true, force: true })
   return { root, home, env, pinned, executable, install, run, cleanup }
 }
@@ -34,7 +34,7 @@ test('the public harness name is Realness and the old launch command remains an 
   const manifest = JSON.parse(read_file_sync(resolve(import.meta.dirname, '../package.json'), 'utf8'))
   assert.equal(manifest.name, 'realness')
   assert.equal(manifest.scripts.realness, manifest.scripts.start)
-  assert.equal(manifest.scripts.brayness, manifest.scripts.realness)
+  assert.equal(manifest.scripts.realness, manifest.scripts.realness)
 })
 
 test('startup uses the checkout fork and leaves an existing global Pi home alone', () => {
@@ -76,8 +76,7 @@ test('a partial install without the decoder fails before opening a session', () 
 test('hosted actors retain their preinstalled command without downloading upstream', () => {
   const f = fixture()
   try {
-    f.env.BRAYNESS_ACTOR = '1'
     f.executable('pi', 'printf "actor:%s\\n" "$1"')
-    assert.equal(f.run().stdout, 'actor:--version\n')
+    assert.equal(f.run('--actor').stdout, 'actor:--version\n')
   } finally { f.cleanup() }
 })

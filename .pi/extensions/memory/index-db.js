@@ -76,7 +76,7 @@ const read_session_text = async (file) => {
 
 /**
  * Sessions live under the agent directory, which pi reports as
- * `PI_CODING_AGENT_DIR` - a project-local `.pi/agent` when brayness runs through
+ * `PI_CODING_AGENT_DIR` - a project-local `.pi/agent` when realness runs through
  * `bin/pi`, and `~/.pi/agent` under a bare pi install. Both the tree and the
  * store follow it so a checkout and a global install keep separate memories.
  *

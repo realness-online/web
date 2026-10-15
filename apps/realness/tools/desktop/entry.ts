@@ -2,7 +2,7 @@ import { dirname, join } from "node:path"
 import { existsSync as exists_sync, mkdirSync as mkdir_sync, cpSync as cp_sync, chmodSync as chmod_sync, statSync as stat_sync, readdirSync as readdir_sync } from "node:fs"
 
 const here = dirname(Deno.execPath())
-const workspace = join(here, "brayness-workspace")
+const workspace = join(here, "realness-workspace")
 const agent_dir = join(workspace, ".pi", "agent")
 
 const embedded = import.meta.dirname ?? here

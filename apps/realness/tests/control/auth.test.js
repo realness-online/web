@@ -34,7 +34,7 @@ for (const status of [200, 403]) {
     if (status === 403) {
       await assert.rejects(
         promise,
-        /is not an admin in local\. An admin can run: webspace local admins add/
+        /is not an admin in local\. An admin can run: realness local admins add/
       )
       assert.deepEqual(saved, [])
     } else {

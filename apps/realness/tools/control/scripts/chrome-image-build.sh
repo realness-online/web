@@ -37,14 +37,14 @@ missing="$(chroot "$TREE" ldd /opt/chrome/headless_shell | grep 'not found' || t
 chroot "$TREE" /opt/chrome/headless_shell --version 2> /dev/null || true
 
 log "chrome user and unit"
-echo brayness-chrome > "$TREE/etc/hostname"
+echo realness-chrome > "$TREE/etc/hostname"
 chroot "$TREE" id chrome > /dev/null 2>&1 || chroot "$TREE" useradd --system --home-dir /var/lib/chrome --shell /usr/sbin/nologin chrome
-for unit in brayness-chrome.service brayness-devtools.socket brayness-devtools.service; do
+for unit in realness-chrome.service realness-devtools.socket realness-devtools.service; do
   install -m 0644 "$GUEST_SRC/$unit" "$TREE/etc/systemd/system/$unit"
 done
-systemctl --root="$TREE" disable brayness-app.service > /dev/null 2>&1 || true
-rm -f "$TREE/etc/systemd/system/brayness-app.service"
-systemctl --root="$TREE" enable brayness-chrome.service brayness-devtools.socket
+systemctl --root="$TREE" disable realness-app.service > /dev/null 2>&1 || true
+rm -f "$TREE/etc/systemd/system/realness-app.service"
+systemctl --root="$TREE" enable realness-chrome.service realness-devtools.socket
 chroot "$TREE" /bin/sh -c 'command -v unzip' > /dev/null && rm -f "$TREE/usr/bin/unzip"
 
 log "building $IMG"

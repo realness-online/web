@@ -12,7 +12,7 @@ const bob = '+14155559999'
 function pass(phone) {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -27,7 +27,7 @@ async function serve(t) {
     id: 'app-000000000001',
     owner: alice,
     actor: 'a-alice',
-    path: '/brayness/work/demo'
+    path: '/realness/work/demo'
   }
   const store = {
     get: id => {
@@ -95,7 +95,7 @@ test('apps answer only their owner', async t => {
     (
       await request('POST', '/v1/apps', bob, {
         actor: 'a-alice',
-        path: '/brayness/work/demo'
+        path: '/realness/work/demo'
       })
     ).status,
     404
@@ -120,10 +120,10 @@ test('apps answer only their owner', async t => {
 test("apps start from the owner's work folder only", async t => {
   const { calls, request } = await serve(t)
   for (const path of [
-    '/brayness/site',
+    '/realness/site',
     '/etc',
-    '/brayness/work/../../etc',
-    '/brayness/work/',
+    '/realness/work/../../etc',
+    '/realness/work/',
     7
   ]) {
     assert.equal(
@@ -136,13 +136,13 @@ test("apps start from the owner's work folder only", async t => {
   assert.deepEqual(calls, [])
   const response = await request('POST', '/v1/apps', alice, {
     actor: 'a-alice',
-    path: '/brayness/work/demo'
+    path: '/realness/work/demo'
   })
   assert.equal(response.status, 201)
   assert.equal((await response.json()).owner, alice)
   assert.deepEqual(calls, [
-    ['copyOut', 'a-alice', '/brayness/work/demo'],
-    ['start', { owner: alice, actor: 'a-alice', path: '/brayness/work/demo' }]
+    ['copyOut', 'a-alice', '/realness/work/demo'],
+    ['start', { owner: alice, actor: 'a-alice', path: '/realness/work/demo' }]
   ])
 })
 

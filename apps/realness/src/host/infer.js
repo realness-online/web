@@ -14,17 +14,17 @@ const EXECUTABLE_BITS = 0o111
 
 export const APP_PORT = 8080
 const HANDLER = 'server.js'
-const SERVE = '/opt/runtime/brayness/serve.js'
+const SERVE = '/opt/runtime/realness/serve.js'
 export const START = [
   'node',
   '--permission',
   '--allow-fs-read=/app/code/',
-  '--allow-fs-read=/opt/runtime/brayness/',
+  '--allow-fs-read=/opt/runtime/realness/',
   SERVE
 ]
 
 const EXPORT =
-  'brayness runs one fetch handler: export default { fetch(request) } from server.js'
+  'realness runs one fetch handler: export default { fetch(request) } from server.js'
 
 export class InferError extends Error {}
 

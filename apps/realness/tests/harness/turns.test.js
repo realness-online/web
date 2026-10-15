@@ -7,7 +7,7 @@ import { edit_log } from '#root/src/files/edits.js'
 import { turn_end, turn_start } from '#root/src/harness/turns.js'
 
 const root = new URL(
-  `../../../../artifacts/brayness/turns-test-${randomUUID()}/`,
+  `../../../../artifacts/realness/turns-test-${randomUUID()}/`,
   import.meta.url
 ).pathname
 after(() => rm(root, { recursive: true, force: true }))

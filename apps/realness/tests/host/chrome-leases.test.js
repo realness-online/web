@@ -183,3 +183,19 @@ test('the door leases and returns Chrome for its own actor only', async () => {
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+test('a lease holds its actor busy until returned, released once', async () => {
+  const held = []
+  const work = {
+    beginWork: (id, key) => held.push(`+${id} ${key}`),
+    endWork: (id, key) => held.push(`-${id} ${key}`)
+  }
+  const leases = new ChromeLeases(fake_pool(), {
+    firewall: fake_firewall().firewall,
+    work
+  })
+  await leases.lease('a-1', '172.16.4.2')
+  await leases.give_back('a-1')
+  await leases.give_back('a-1')
+  assert.deepEqual(held, ['+a-1 browser', '-a-1 browser'])
+})

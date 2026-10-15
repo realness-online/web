@@ -44,7 +44,7 @@ export const list_loops = async token => {
   if (listing.status === FORBIDDEN)
     throw new Error(
       'This number is not a Realness admin. Ask an admin to run: ' +
-        'webspace <environment> admins add <your phone> --yes'
+        'realness <environment> admins add <your phone> --yes'
     )
   if (!listing.ok) throw new Error(`Could not list loops (${listing.status})`)
   const keys = Object.keys(await listing.json())

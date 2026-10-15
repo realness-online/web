@@ -50,23 +50,19 @@ describe('download url cache', () => {
     url.mockResolvedValue('https://storage/profile.html.gz?token=a')
   })
 
-  it('reads a legacy-name object without marking it missing', async () => {
+  it('never asks for the retired .html.gz name', async () => {
     const { as_download_url } = await import('@/utils/itemid')
     const { url } = await import('@/utils/serverless')
     url.mockImplementation(async filename => {
-      if (!filename.endsWith('.html.gz'))
-        throw Object.assign(new Error('missing'), {
-          code: 'storage/object-not-found'
-        })
-      return 'https://storage/legacy-name'
+      if (filename.endsWith('.html.gz')) return 'https://storage/legacy-name'
+      throw Object.assign(new Error('missing'), {
+        code: 'storage/object-not-found'
+      })
     })
-    expect(await as_download_url(id)).toBe('https://storage/legacy-name')
-    expect(await as_download_url(id)).toBe('https://storage/legacy-name')
-    expect(url.mock.calls.map(([filename]) => filename)).toEqual([
-      'people/+14155550142/index.html',
+    expect(await as_download_url(id)).toBe(null)
+    expect(url.mock.calls.map(([filename]) => filename)).not.toContain(
       'people/+14155550142/index.html.gz'
-    ])
-    expect(store.get('sync:index')?.[id]).toBeUndefined()
+    )
   })
 
   it('does not try another suffix after a permission failure', async () => {

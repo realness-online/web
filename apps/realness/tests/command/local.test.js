@@ -14,6 +14,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import {
   local_plan,
   local_request,
+  probe_local,
   start_local,
   local_artifacts
 } from '../../src/command/local-stack.js'
@@ -71,7 +72,14 @@ test('one command works from another directory and leaves npm start as the harne
     '18080'
   )
   const frontend = plan.services.find(service => service.name === 'frontend')
-  assert.equal(frontend.env.VITE_BRAYNESS_GATE_URL, `${plan.url}/gate`)
+  assert.deepEqual(frontend.args, [
+    'run',
+    'dev:frontend',
+    '--',
+    '--mode',
+    'local'
+  ])
+  assert.equal(frontend.env, undefined)
   assert.equal(new URL(frontend.url).hostname, '127.0.0.1')
   assert.ok(!result.stdout.includes('HOST_PASS_SECRET'))
 })
@@ -230,9 +238,28 @@ test('readiness reads a real HTTP endpoint and distinguishes connection refusal'
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const url = `http://127.0.0.1:${server.address().port}/health`
   try {
-    assert.deepEqual(await local_request(url), { status: 200, body: 'ok\n' })
+    const { status, body, headers } = await local_request(url)
+    assert.deepEqual({ status, body }, { status: 200, body: 'ok\n' })
+    assert.equal(headers['content-length'], '3')
   } finally {
     await new Promise(resolve => server.close(resolve))
   }
   assert.equal(await local_request(url), null)
+})
+
+test('frontend reuse checks the running Vite mode without restarting it', async context => {
+  let mode = 'local'
+  const server = create_server((request, response) => {
+    response.setHeader('X-Vite-Mode', mode)
+    response.end('<script type="module" src="/@vite/client"></script>')
+  })
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  context.after(() => new Promise(resolve => server.close(resolve)))
+  const service = {
+    name: 'frontend',
+    url: `http://127.0.0.1:${server.address().port}`
+  }
+  assert.deepEqual(await probe_local(service), { running: true, ready: true })
+  mode = 'development'
+  await assert.rejects(probe_local(service), /another gate/)
 })

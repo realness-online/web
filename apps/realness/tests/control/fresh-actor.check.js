@@ -31,7 +31,7 @@ let sync
 const hostPass = (phone = owner) => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -86,7 +86,7 @@ const put = (path, body) => {
 const recover = id =>
   sh(
     id,
-    `brayness-recover "http://$(ip route | awk '/default/{print $3; exit}'):${PORT}"`
+    `realness-recover "http://$(ip route | awk '/default/{print $3; exit}'):${PORT}"`
   )
 
 before(async () => {
@@ -114,7 +114,7 @@ before(async () => {
       version: 3,
       id: random_uuid(),
       timestamp: at(0),
-      cwd: '/brayness'
+      cwd: '/realness'
     },
     {
       type: 'message',
@@ -136,7 +136,7 @@ before(async () => {
     }
   ]
   put(
-    '.pi/agent/sessions/--brayness--/s.jsonl',
+    '.pi/agent/sessions/--realness--/s.jsonl',
     `${session.map(entry => JSON.stringify(entry)).join('\n')}\n`
   )
   put('vault/Projects/fresh.md', '# Fresh\n\n## Syncs\n\n- work/notes\n')
@@ -150,7 +150,7 @@ before(async () => {
       'work/notes/doc.md': {
         base_sha: hash('title\nbody\n'),
         target_sha: hash('title\nBODY\n'),
-        calls: [{ session: '--brayness--/s.jsonl', tool_call: 'c1' }]
+        calls: [{ session: '--realness--/s.jsonl', tool_call: 'c1' }]
       }
     })
   )
@@ -162,7 +162,7 @@ before(async () => {
       '--',
       'sh',
       '-c',
-      `echo $$ > /artifacts/brayness/${run}/sync.pid; exec env HOST_PASS_SECRET=${secret} LISTEN=0.0.0.0 PORT=${PORT} SYNC_DIR=/artifacts/brayness/${run} node /mnt/fc/server/sync/bin/sync-service.js --dev`
+      `echo $$ > /artifacts/realness/${run}/sync.pid; exec env HOST_PASS_SECRET=${secret} LISTEN=0.0.0.0 PORT=${PORT} SYNC_DIR=/artifacts/realness/${run} node /mnt/fc/server/sync/bin/sync-service.js --dev`
     ],
     { stdio: ['ignore', 'pipe', 'inherit'] }
   )
@@ -193,22 +193,22 @@ test("a fresh actor pulls its owner's saved files and replays the pending edit",
   assert.equal(result.code, 0, result.err)
   assert.match(result.out, /replayed 1 pending edits/)
   assert.equal(
-    (await sh(id, 'cat /brayness/work/notes/doc.md')).out,
+    (await sh(id, 'cat /realness/work/notes/doc.md')).out,
     'title\nBODY\n'
   )
   const opened = await sh(
     id,
-    `cd /brayness && mkdir -p artifacts && pi --export .pi/agent/sessions/--brayness--/s.jsonl artifacts/history.html && node -e 'const html = require("node:fs").readFileSync("artifacts/history.html", "utf8"); const encoded = html.match(/id=.session-data[^>]*>([^<]*)/)[1]; process.stdout.write(Buffer.from(encoded, "base64").toString())'`
+    `cd /realness && mkdir -p artifacts && pi --export .pi/agent/sessions/--realness--/s.jsonl artifacts/history.html && node -e 'const html = require("node:fs").readFileSync("artifacts/history.html", "utf8"); const encoded = html.match(/id=.session-data[^>]*>([^<]*)/)[1]; process.stdout.write(Buffer.from(encoded, "base64").toString())'`
   )
   assert.equal(opened.code, 0, opened.err)
   assert.match(opened.out, new RegExp(run), 'Pi opens the old history')
   assert.notEqual(
-    (await sh(id, 'test -e /brayness/work/other/skip.md')).code,
+    (await sh(id, 'test -e /realness/work/other/skip.md')).code,
     0,
     'undeclared folders stay behind'
   )
   assert.notEqual(
-    (await sh(id, 'grep -q SECRET /brayness/.pi/agent/auth.json')).code,
+    (await sh(id, 'grep -q SECRET /realness/.pi/agent/auth.json')).code,
     0,
     'secrets never travel'
   )
@@ -219,10 +219,10 @@ test('a limited actor pulls only its listed paths', async () => {
   const result = await recover(id)
   assert.equal(result.code, 0, result.err)
   assert.equal(
-    (await sh(id, 'cat /brayness/vault/limited.md')).out,
+    (await sh(id, 'cat /realness/vault/limited.md')).out,
     'for a limited actor'
   )
-  assert.notEqual((await sh(id, 'test -e /brayness/work/notes/doc.md')).code, 0)
+  assert.notEqual((await sh(id, 'test -e /realness/work/notes/doc.md')).code, 0)
 })
 
 test('the host refuses a path list that names secrets', async () => {
@@ -236,7 +236,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   const id = await create()
   const installed = await sh(
     id,
-    'cat /usr/local/share/brayness-starter/starter.json'
+    'cat /usr/local/share/realness-starter/starter.json'
   )
   assert.equal(installed.code, 0, installed.err)
   const latest = JSON.parse(installed.out)
@@ -245,7 +245,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   assert.ok(latest.files['README.md'])
   assert.ok(latest.files[removed])
   const original = (
-    await sh(id, 'cat /usr/local/share/brayness-starter/LICENSE')
+    await sh(id, 'cat /usr/local/share/realness-starter/LICENSE')
   ).out
   put('harness/.ignore', '')
   put(
@@ -264,10 +264,10 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   put('harness/README.md', 'personal readme')
   const result = await recover(id)
   assert.equal(result.code, 0, result.err)
-  assert.equal((await sh(id, 'cat /brayness/LICENSE')).out, original)
-  assert.equal((await sh(id, 'cat /brayness/README.md')).out, 'personal readme')
-  assert.notEqual((await sh(id, `test -e /brayness/${removed}`)).code, 0)
-  const saved = (await sh(id, 'cat /brayness/starter.json')).out
+  assert.equal((await sh(id, 'cat /realness/LICENSE')).out, original)
+  assert.equal((await sh(id, 'cat /realness/README.md')).out, 'personal readme')
+  assert.notEqual((await sh(id, `test -e /realness/${removed}`)).code, 0)
+  const saved = (await sh(id, 'cat /realness/starter.json')).out
   assert.equal(JSON.parse(saved).version, latest.version)
 })
 
@@ -279,7 +279,7 @@ test('a1: two accounts sync the static example privately', async () => {
     join(root, 'tools/publish/renderer/build.js')
   ).toString('base64')
   const desktop = new URL(
-    `../../../../../artifacts/brayness/${run}-apps/`,
+    `../../../../../artifacts/realness/${run}-apps/`,
     import.meta.url
   ).pathname
   const accounts = []
@@ -288,7 +288,7 @@ test('a1: two accounts sync the static example privately', async () => {
       const id = await create({}, phone)
       const folder = await sh(
         id,
-        'test -d /brayness/apps && test -f /brayness/.ignore',
+        'test -d /realness/apps && test -f /realness/.ignore',
         phone
       )
       assert.equal(
@@ -300,7 +300,7 @@ test('a1: two accounts sync the static example privately', async () => {
       const encoded = Buffer.from(config).toString('base64')
       const pushed = await sh(
         id,
-        `cd /brayness && mkdir -p apps/site && printf '%s' '${encoded}' | base64 -d > apps/site/site.json && printf '%s' '${source}' | base64 -d > apps/site/build.js && chown -R brayness:brayness apps/site && SYNC_URL="http://$(ip route | awk '/default/{print $3; exit}'):${PORT}" runuser -u brayness -- brayness sync`,
+        `cd /realness && mkdir -p apps/site && printf '%s' '${encoded}' | base64 -d > apps/site/site.json && printf '%s' '${source}' | base64 -d > apps/site/build.js && chown -R realness:realness apps/site && SYNC_URL="http://$(ip route | awk '/default/{print $3; exit}'):${PORT}" runuser -u realness -- realness sync`,
         phone
       )
       assert.equal(pushed.code, 0, pushed.err)
@@ -342,11 +342,11 @@ test('an actor turn sends a file edit back to the desktop', async () => {
   assert.equal(recovered.code, 0, recovered.err)
   const synced = await sh(
     id,
-    'cd /brayness && runuser -u brayness -- brayness sync'
+    'cd /realness && runuser -u realness -- realness sync'
   )
   assert.equal(synced.code, 0, synced.err)
   const desktop = new URL(
-    `../../../../../artifacts/brayness/${run}-desktop/`,
+    `../../../../../artifacts/realness/${run}-desktop/`,
     import.meta.url
   ).pathname
   const state = `${desktop}-state`
@@ -363,7 +363,7 @@ test('an actor turn sends a file edit back to the desktop', async () => {
     )
     const changed = await sh(
       id,
-      `cd /brayness && runuser -u brayness -- brayness turn-start --session return-check && printf 'VM change\\n' > vault/return.md && runuser -u brayness -- brayness turn-end --session return-check --turn 1`
+      `cd /realness && runuser -u realness -- realness turn-start --session return-check && printf 'VM change\\n' > vault/return.md && runuser -u realness -- realness turn-end --session return-check --turn 1`
     )
     assert.equal(changed.code, 0, changed.err)
     await store.sync(desktop, 'can://~/harness/', { state })

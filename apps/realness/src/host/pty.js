@@ -1,3 +1,4 @@
+import { randomUUID as random_uuid } from 'node:crypto'
 import { createServer as create_server } from 'node:net'
 import { NotFound } from './errors.js'
 import { logger } from './log.js'
@@ -65,6 +66,7 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   let guest
   let ended = false
   let working = false
+  const connection = `connection:${random_uuid()}`
   terminal_clients.set(id, (terminal_clients.get(id) ?? 0) + 1)
   const end = () => {
     if (ended) return
@@ -74,7 +76,7 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
     const remaining = terminal_clients.get(id) - 1
     if (remaining) terminal_clients.set(id, remaining)
     else terminal_clients.delete(id)
-    if (working) store.endWork(id)
+    if (working) store.endWork(id, connection)
     if (!remaining)
       store
         .idle(id, 'disk')
@@ -98,7 +100,7 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   }
 
   LOG.info(`pty attached to ${id} from ${client.remoteAddress}`)
-  store.beginWork(id)
+  store.beginWork(id, connection)
   working = true
   const leftover = lines.rest()
   const early = guest.lines.rest()

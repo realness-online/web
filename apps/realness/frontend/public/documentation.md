@@ -145,15 +145,15 @@ From the repo, after `npm run build`:
 CHROME_PATH=/path/to/Chromium npm run poster -- photo.jpg
 ```
 
-The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/brayness/poster-driver/` as SVG and PNG, named from the poster id.
+The script serves `dist/`, not `src/`. If you changed tracing code, rebuild first. Otherwise the run waits two minutes and reports that the driver never became ready. Set `CHROME_PATH`. Each run takes one photo. Files land in `artifacts/realness/poster-driver/` as SVG and PNG, named from the poster id.
 
 You need the repo, Node, and a Chromium browser. Tracing stays on that machine.
 
 ##### Converting a video
 
-In the app, Video export animates one poster. To trace a whole clip, use [Brayness](https://github.com/scott-fryxell/brayness), an optional harness. Realness traces your footage into layered artwork. Brayness can run that tracing frame by frame and make a video. You choose the footage and finish the art.
+In the app, Video export animates one poster. To trace a whole clip, use [Realness](https://github.com/scott-fryxell/realness), an optional harness. Realness traces your footage into layered artwork. Realness can run that tracing frame by frame and make a video. You choose the footage and finish the art.
 
-Brayness's `make:animation` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack. It runs from the Brayness root - no Realness checkout needed. Using Realness never requires Brayness.
+Realness's `make:animation` traces each frame of a clip and encodes the posters as an mp4, with the clip's soundtrack. It runs from the Realness root - no Realness checkout needed. Using Realness never requires Realness.
 
 ```
 npm run make:animation clip.mov

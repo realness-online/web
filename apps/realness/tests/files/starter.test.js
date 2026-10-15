@@ -20,7 +20,7 @@ import { sync_service } from '#root/src/sync/server.js'
 import { starter_choice } from '#root/src/files/starter.js'
 
 const root = new URL(
-  `../../../../artifacts/brayness/starter-${randomUUID()}/`,
+  `../../../../artifacts/realness/starter-${randomUUID()}/`,
   import.meta.url
 ).pathname
 const issuer = dev_issuer()

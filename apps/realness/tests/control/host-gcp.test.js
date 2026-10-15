@@ -13,11 +13,11 @@ import { down, up } from '../../src/control/host-gcp.js'
 const config = {
   project: 'realness-development',
   zone: 'us-central1-a',
-  imageFamily: 'brayness-host',
+  imageFamily: 'realness-host',
   machineType: 'n2-standard-4',
   bootSize: '20GB',
   actorsSize: '50GB',
-  root: '/srv/brayness'
+  root: '/srv/realness'
 }
 
 /** A gcloud stand-in that records what it was asked. */
@@ -88,7 +88,7 @@ test('up sizes the boot disk from the config unless the call overrides it', asyn
   await assert.rejects(up(cloud, config, 'h1'), /instance create failed/)
   assert.match(
     boot_stream(cloud),
-    /^disks create h1-boot --size=20GB --type=pd-standard --image-family=brayness-host/
+    /^disks create h1-boot --size=20GB --type=pd-standard --image-family=realness-host/
   )
 
   const overridden = refused_create()
@@ -149,14 +149,36 @@ test('up waits for ssh, reads the block device, then attaches the actors disk', 
     .filter(([kind]) => kind === 'stream')
     .map(([, argv]) => argv.join(' '))
   assert.deepEqual(streams, [
-    'disks create h1-boot --size=20GB --type=pd-standard --image-family=brayness-host --labels=app=brayness,role=actor-host',
-    'disks create h1-actors --size=50GB --type=pd-standard --labels=app=brayness,role=actors',
-    'instances attach-disk h1 --disk=h1-actors --device-name=brayness-actors'
+    'disks create h1-boot --size=20GB --type=pd-standard --image-family=realness-host --labels=app=realness,role=actor-host',
+    'disks create h1-actors --size=50GB --type=pd-standard --labels=app=realness,role=actors',
+    'instances attach-disk h1 --disk=h1-actors --device-name=realness-actors'
   ])
   const probes = cloud.asked.filter(
     ([kind, argv]) => kind === 'try' && argv[0] === 'ssh'
   )
   assert.equal(probes.length, 1, 'ssh answers on the first try, so no waiting')
+})
+
+test('up --expire gives GCE a deadline that deletes the host and both disks', async () => {
+  const cloud = fake_cloud({
+    value: () => 'sda 20G disk',
+    stream: argv => {
+      if (argv[1] === 'set-disk-auto-delete') throw new Error('stopped here')
+    }
+  })
+  await assert.rejects(up(cloud, config, 'h1', { expire: '2h' }), /stopped here/)
+  const create = cloud.asked
+    .find(([, argv]) => argv[0] === 'instances' && argv[1] === 'create')[1]
+    .join(' ')
+  assert.match(create, /--max-run-duration=2h --instance-termination-action=DELETE/)
+  assert.equal(
+    cloud.asked.at(-1)[1].join(' '),
+    'instances set-disk-auto-delete h1 --disk=h1-actors --auto-delete'
+  )
+
+  const plain = refused_create()
+  await assert.rejects(up(plain, config, 'h1'), /instance create failed/)
+  assert.doesNotMatch(plain.asked.flat(2).join(' '), /max-run-duration/)
 })
 
 test('down stops the host and waits for it to report TERMINATED', async () => {

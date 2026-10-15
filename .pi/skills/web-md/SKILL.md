@@ -2,7 +2,7 @@
 name: web-md
 description: Read web pages as compact markdown instead of raw HTML or full browser snapshots. Use when you need to read, research, summarize, or quote content from a URL, compare several pages, or check docs online. A plain fetch runs first; agent-browser or Firecrawl renders the page only when it needs JavaScript. Not for clicking, filling forms, or logging in - use agent-browser for those.
 metadata:
-  check: "node ../../bin/web-md.js 2>&1 | grep -q usage"
+  check: "node ../../../bin/web-md.js 2>&1 | grep -q usage"
 ---
 
 # web-md

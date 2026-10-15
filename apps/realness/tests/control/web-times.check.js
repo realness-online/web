@@ -23,7 +23,7 @@ const made = new Set()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-host',
+      aud: 'realness-host',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -77,7 +77,7 @@ test(
   async () => {
     assert.ok(
       secret,
-      'HOST_PASS_SECRET or artifacts/brayness/host-pass-secret required'
+      'HOST_PASS_SECRET or artifacts/realness/host-pass-secret required'
     )
     const actor = await call('POST', '/v1/actors', {})
     assert.equal(actor.status, 201, actor.text)
@@ -86,7 +86,7 @@ test(
     const rows = []
     for (const url of [BUSY, PINNED]) {
       const result = await call('POST', `/v1/actors/${actor.json.id}/exec`, {
-        argv: ['sh', '-c', `brayness-read '${url}' --fresh | head -c 200`],
+        argv: ['sh', '-c', `realness-read '${url}' --fresh | head -c 200`],
         timeout: 240
       })
       assert.equal(

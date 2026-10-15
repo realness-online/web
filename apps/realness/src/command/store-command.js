@@ -118,25 +118,29 @@ export const run_store = async (
       print('Signed out; the keychain entry is gone.')
       return 0
     }
-    if (!actor) {
+    if (!actor)
       try {
         root ??= find_root()
       } catch {
         root = null
       }
-      if (root) use_harness_state(root)
-    }
+
     let store
     if (actor) {
-      const actor_root = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
-      process.env.BRAYNESS_STATE = await prepare_actor_state(actor_root)
+      const actor_root = root ?? '/realness'
+      const actor_state = await prepare_actor_state(actor_root)
       ;({ store } = await actor_client({
-        url: service_url ?? (await actor_url(actor_root)),
+        url: service_url ?? (await actor_url(actor_root, actor_state)),
+        state: actor_state,
         issue
       }))
     } else {
       const token = await get_token()
-      store = client({ url: service_url ?? SYNC_URL, token })
+      store = client({
+        url: service_url ?? SYNC_URL,
+        token,
+        state: root ? use_harness_state(root) : undefined
+      })
     }
     return (
       (await run_store_command(command, rest, { print, store, stdout })) ?? 0

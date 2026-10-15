@@ -10,20 +10,20 @@ import {
 const secret = 's'.repeat(32)
 const now = Date.parse('2026-10-06T12:00:00Z')
 const options = {
-  audience: 'brayness-test',
+  audience: 'realness-test',
   life_s: 60,
   name: 'test pass',
   now
 }
 const pass = sign_pass(
-  { aud: 'brayness-test', phone: '+14155550123' },
+  { aud: 'realness-test', phone: '+14155550123' },
   secret,
   { life_s: 60, now }
 )
 
 test('a pass opens for its audience inside its life', () => {
   assert.deepEqual(open_pass(pass, secret, options), {
-    aud: 'brayness-test',
+    aud: 'realness-test',
     phone: '+14155550123',
     exp: now / 1000 + 60
   })
@@ -31,14 +31,14 @@ test('a pass opens for its audience inside its life', () => {
 
 test('another audience, secret, or a tampered body is refused', () => {
   assert.throws(
-    () => open_pass(pass, secret, { ...options, audience: 'brayness-other' }),
+    () => open_pass(pass, secret, { ...options, audience: 'realness-other' }),
     /expired or invalid test pass/
   )
   assert.throws(() => open_pass(pass, 't'.repeat(32), options), /bad test pass/)
   const [, signature] = pass.split('.')
   const forged = Buffer.from(
     JSON.stringify({
-      aud: 'brayness-test',
+      aud: 'realness-test',
       phone: '+14155550199',
       exp: now / 1000 + 60
     })
@@ -55,13 +55,13 @@ test('an expired pass, or one claiming a longer life, is refused', () => {
     () => open_pass(pass, secret, { ...options, now: now + 61_000 }),
     /expired or invalid/
   )
-  const long = sign_pass({ aud: 'brayness-test' }, secret, { life_s: 600, now })
+  const long = sign_pass({ aud: 'realness-test' }, secret, { life_s: 600, now })
   assert.throws(() => open_pass(long, secret, options), /expired or invalid/)
 })
 
 test('a short secret signs nothing and opens nothing', () => {
   assert.throws(
-    () => sign_pass({ aud: 'brayness-test' }, 'short', { life_s: 60, now }),
+    () => sign_pass({ aud: 'realness-test' }, 'short', { life_s: 60, now }),
     /at least 32 bytes/
   )
   assert.throws(

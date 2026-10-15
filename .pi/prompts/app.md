@@ -6,7 +6,7 @@ argument-hint: "[folder] [type]"
 From the harness root, start an app in `${1:-apps/app}` from the app example,
 unless that folder already exists:
 
-    from="$(node -p "require('./package.json').brayness?.examples ?? 'examples'")/app"
+    from="$(node -p "require('./package.json').realness?.examples ?? 'examples'")/app"
     mkdir -p ${1:-apps/app} && tar -C "$from" -cf - --exclude=node_modules --exclude=dist --exclude=.cache . | tar -C ${1:-apps/app} -xf -
     cd ${1:-apps/app} && npm install
 
@@ -37,6 +37,6 @@ To add a type:
 Build and publish:
 
     npm run build
-    brayness publish dist
+    realness publish dist
 
 Do not add a database, a schema, or a second store.

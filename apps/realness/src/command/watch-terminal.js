@@ -19,6 +19,9 @@ const RESET = `${ESC}0m`
 const COLORS = {
   running: '32',
   sleeping: '34',
+  parked: '34',
+  starting: '33',
+  stopping: '33',
   idle: '33',
   quiet: '35',
   failed: '31',
@@ -502,7 +505,7 @@ export const frame = ({
   const body = rows
     .slice(start, start + capacity)
     .map(line => clip(line, width))
-  const head = `${paint('BRAYNESS SERVICE WATCH', 'running', on)}  ${details ? 'details' : 'costs'}  every ${Math.round(interval_ms / MS_PER_SECOND)}s${message ? `  ${paint(message, 'idle', on)}` : ''}`
+  const head = `${paint('REALNESS SERVICE WATCH', 'running', on)}  ${details ? 'details' : 'costs'}  every ${Math.round(interval_ms / MS_PER_SECOND)}s${message ? `  ${paint(message, 'idle', on)}` : ''}`
   const position =
     rows.length > capacity
       ? `rows ${start + 1}-${start + body.length}/${rows.length}  j/k scroll`

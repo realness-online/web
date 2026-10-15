@@ -6,7 +6,7 @@
  *   STORE=gcs GCS_BUCKET=... npm run dev  local tokens, a real bucket
  *   PROJECT=realness-online STORE=gcs GCS_BUCKET=... npm start
  *
- * GCS_PREFIX scopes every key, e.g. brayness-test/<run>/ while trying it out.
+ * GCS_PREFIX scopes every key, e.g. realness-test/<run>/ while trying it out.
  * ORIGINS lists the sites a browser may call from, comma separated.
  * On Cloud Run (K_SERVICE is set) tokens come from the metadata server.
  */
@@ -17,6 +17,7 @@ import { create_gcs, gcloud_token, metadata_token } from "#root/src/can/gcs.js"
 import { dev_issuer } from "../../../src/sync/dev-token.js"
 import { rights } from "../../../src/sync/rights.js"
 import { sync_service } from "../../../src/sync/server.js"
+import { gce_statuses } from "../../../src/sync/host-power.js"
 import { out_path } from "#root/lib/output.js"
 
 const dev = process.argv.includes("--dev")
@@ -55,8 +56,11 @@ if (dev) {
 
 const origins = (process.env.ORIGINS ?? "").split(",").filter(Boolean)
 const alerts = { alert_token: process.env.ALERT_TOKEN, alert_webhook: process.env.HOST_ALERT_WEBHOOK }
+const power_project = process.env.HOST_POWER_PROJECT
+const power_token = process.env.K_SERVICE ? metadata_token() : gcloud_token()
+const host_statuses = power_project ? gce_statuses({ project: power_project, token: async () => String(await power_token()) }) : null
 const git_app = process.env.GITHUB_APP_ID && process.env.GITHUB_APP_KEY ? { app_id: process.env.GITHUB_APP_ID, private_key: process.env.GITHUB_APP_KEY } : null
 
-sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET, git_app, ...alerts }).listen(port, host, () =>
+sync_service({ storage, rights: rights(storage), project, certs, origins, host_pass_secret: process.env.HOST_PASS_SECRET, git_app, host_statuses, ...alerts }).listen(port, host, () =>
   console.log(`# sync service on http://${host}:${port}, storage ${where}`),
 )

@@ -161,14 +161,14 @@ const print = (page, source) => {
   console.log(`# ${page.title}\n<!-- ${url} | ${source} | ${total} chars${truncated ? `, cut to ${max}` : ''} -->\n\n${md}`)
 }
 
-const ENGINE = process.env.WEB_MD_ENGINE ?? '/usr/local/bin/brayness-read'
-if (process.env.BRAYNESS_ACTOR && !forced && existsSync(ENGINE)) {
+const ENGINE = process.env.WEB_MD_ENGINE ?? '/usr/local/bin/realness-read'
+if (!forced && existsSync(ENGINE)) {
   let reply = null
   try {
     const out = exec_file_sync(ENGINE, [url, ...(fresh ? ['--fresh'] : [])], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 200_000, maxBuffer: 64 * 1024 * 1024 })
     reply = JSON.parse(out)
   } catch (error) {
-    console.error(`web-md: render failed: engine: ${String(error.stderr || error.message).trim().replace(/^brayness-read: /, '')}`)
+    console.error(`web-md: render failed: engine: ${String(error.stderr || error.message).trim().replace(/^realness-read: /, '')}`)
     process.exit(3)
   }
   const page = reply.kind === 'html' ? to_markdown(reply.body) : { title: reply.title, markdown: reply.body }

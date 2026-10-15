@@ -9,7 +9,7 @@ import { promisify } from 'node:util'
 const run = promisify(exec_file)
 const root = join(dirname(file_url_to_path(import.meta.url)), '..')
 const skills_root = [join(root, '.pi/skills'), join(root, 'skills')].find(dir => exists_sync(dir))
-const validator = join(skills_root, 'skill-writer/scripts/quick_validate.py')
+const validator = join(skills_root, 'skill-writer/scripts/quick-validate.js')
 export const MAX_BLOCK_LINES = 15
 
 const is_dir = path => {
@@ -122,7 +122,7 @@ export const run_check = async (skill_dir, command, { timeout = 60_000 } = {}) =
   }
 }
 
-/** Brayness checks for one skill folder. */
+/** Realness checks for one skill folder. */
 export const check_skill = async (skill_dir, harness_root = root) => {
   const errors = []
   const warnings = []
@@ -156,13 +156,12 @@ export const check_skill = async (skill_dir, harness_root = root) => {
   return { errors, warnings, name: markdown.match(/^name:\s*["']?([^"'\n]+)/m)?.[1].trim() }
 }
 
-/** quick_validate.py through uv; null when uv is missing. */
-const spec_check = async skill_dir => {
+/** Run the spec validator with the current Node executable. */
+export const spec_check = async skill_dir => {
   try {
-    const { stdout } = await run('uv', ['run', '--quiet', validator, skill_dir])
+    const { stdout } = await run(process.execPath, [validator, skill_dir])
     return JSON.parse(stdout)
   } catch (error) {
-    if (error.code === 'ENOENT') return null
     try {
       return JSON.parse(error.stdout)
     } catch {
@@ -224,12 +223,10 @@ const main = async () => {
 
   const failed = results.filter(r => r.errors.length).length
   const warned = results.filter(r => !r.errors.length && r.warnings.length).length
-  const skipped = results.some(r => r.spec === null)
   const no_check = results.filter(r => r.skipped)
   if (no_check.length) console.log(`checks not run here: ${no_check.map(r => `${r.name} (${r.skipped})`).join(', ')}`)
   console.log(
-    `\n${results.length} skills: ${results.length - failed - warned} clean, ${warned} with warnings, ${failed} with errors` +
-      (skipped ? '\nspec checks skipped: uv not found (https://docs.astral.sh/uv/)' : '')
+    `\n${results.length} skills: ${results.length - failed - warned} clean, ${warned} with warnings, ${failed} with errors`
   )
   process.exit(failed ? 1 : 0)
 }

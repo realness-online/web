@@ -13,7 +13,7 @@ test('the Lima template names no checkout; both mounts are filled from this one'
   assert.doesNotMatch(template, /\/Users\/|\/home\//)
   const filled = render_vm_config(template, {
     project: '/Users/person x/realness/apps/realness',
-    out: '/Users/person x/realness/artifacts/brayness'
+    out: '/Users/person x/realness/artifacts/realness'
   })
   assert.match(
     filled,
@@ -21,7 +21,7 @@ test('the Lima template names no checkout; both mounts are filled from this one'
   )
   assert.match(
     filled,
-    /- location: "\/Users\/person x\/realness\/artifacts\/brayness"\n\s+mountPoint: \/artifacts\/brayness\n/
+    /- location: "\/Users\/person x\/realness\/artifacts\/realness"\n\s+mountPoint: \/artifacts\/realness\n/
   )
   assert.doesNotMatch(filled, /\{\{|""/)
 })

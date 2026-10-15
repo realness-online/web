@@ -21,7 +21,7 @@ if (!price) {
   console.log(`price: created ${price.id}`)
 } else console.log(`price: ${price.id} exists`)
 
-const proxy = gcloud(["run", "services", "describe", "brayness-proxy", `--region=${region}`, "--format=value(status.url)"])
+const proxy = gcloud(["run", "services", "describe", "realness-proxy", `--region=${region}`, "--format=value(status.url)"])
 const url = `${proxy}/pay/webhook`
 const endpoints = await stripe.get("/webhook_endpoints?limit=100")
 const existing = endpoints.data.find((endpoint) => endpoint.url === url)
@@ -29,12 +29,12 @@ const stored = secret("STRIPE_WEBHOOK_SECRET")
 if (existing && stored) console.log(`webhook: ${existing.id} exists`)
 else {
   if (existing) await stripe.post(`/webhook_endpoints/${existing.id}`, { disabled: true })
-  const endpoint = await stripe.post("/webhook_endpoints", { url, enabled_events: WEBHOOK_EVENTS, description: "brayness proxy" })
+  const endpoint = await stripe.post("/webhook_endpoints", { url, enabled_events: WEBHOOK_EVENTS, description: "realness proxy" })
   try { gcloud(["secrets", "describe", "STRIPE_WEBHOOK_SECRET"]) } catch { gcloud(["secrets", "create", "STRIPE_WEBHOOK_SECRET", "--replication-policy=automatic"]) }
   gcloud(["secrets", "versions", "add", "STRIPE_WEBHOOK_SECRET", "--data-file=-"], endpoint.secret)
   console.log(`webhook: created ${endpoint.id} -> ${url}; secret stored`)
 }
-const account = gcloud(["run", "services", "describe", "brayness-proxy", `--region=${region}`, "--format=value(spec.template.spec.serviceAccountName)"])
+const account = gcloud(["run", "services", "describe", "realness-proxy", `--region=${region}`, "--format=value(spec.template.spec.serviceAccountName)"])
 for (const name of ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]) {
   gcloud(["secrets", "add-iam-policy-binding", name, `--member=serviceAccount:${account}`, "--role=roles/secretmanager.secretAccessor", "--condition=None"])
 }

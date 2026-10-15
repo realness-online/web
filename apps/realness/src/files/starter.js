@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { limit_path } from './paths.js'
 import { HTTP } from '#root/lib/http.js'
 
-export const STARTER_DIRECTORY = '/usr/local/share/brayness-starter'
+export const STARTER_DIRECTORY = '/usr/local/share/realness-starter'
 
 const hash = bytes =>
   bytes === null ? null : create_hash('sha256').update(bytes).digest('hex')

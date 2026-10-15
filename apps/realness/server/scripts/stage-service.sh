@@ -2,10 +2,10 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
-service="${1:?usage: stage-service.sh sync|proxy|gate}"
+service="${1:?usage: stage-service.sh sync|proxy|gate [output-root]}"
 case "$service" in sync|proxy|gate) ;; *) echo "unknown service: $service" >&2; exit 1 ;; esac
 . "$root/lib/output.sh"
-stage="$OUT/$service-deploy"
+stage="${2:-$OUT}/$service-deploy"
 rm -rf "$stage"
 mkdir -p "$stage"
 cp "$root/package.json" "$stage/package.json"

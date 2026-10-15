@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import { use_chat } from '@/use/chat'
-import { run_chat_command, send_chat } from '@/utils/brayness-chat'
+import { run_chat_command, send_chat } from '@/utils/chat'
 
 vi.mock('@/utils/serverless', () => ({ current_user: { value: null } }))
-vi.mock('@/utils/brayness-chat', () => ({
+vi.mock('@/utils/chat', () => ({
   watch_chat: vi.fn(async () => []),
   send_chat: vi.fn(async () => 'done'),
   run_chat_command: vi.fn(),
@@ -43,14 +43,14 @@ describe('chat commands from the input', () => {
   it('lists models when /model has no name', async () => {
     run_chat_command.mockResolvedValue({
       type: 'done',
-      text: 'Model: brayness/fast',
-      model: 'brayness/fast',
-      models: ['brayness/fast', 'brayness/deep']
+      text: 'Model: realness/fast',
+      model: 'realness/fast',
+      models: ['realness/fast', 'realness/deep']
     })
     const chat = chat_with('/model')
     await chat.send()
     expect(chat.status.value).toBe(
-      'Model: brayness/fast. Available: brayness/fast, brayness/deep'
+      'Model: realness/fast. Available: realness/fast, realness/deep'
     )
   })
 
@@ -89,9 +89,9 @@ describe('chat commands from the input', () => {
     })
     const chat = chat_with('/copy')
     chat.messages.value = [
-      { sender: 'Brayness', text: 'first' },
+      { sender: 'Realness', text: 'first' },
       { sender: 'You', text: 'more' },
-      { sender: 'Brayness', text: 'last reply' }
+      { sender: 'Realness', text: 'last reply' }
     ]
     await chat.send()
     expect(write_text).toHaveBeenCalledWith('last reply')

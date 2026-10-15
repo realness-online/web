@@ -96,7 +96,7 @@ export const metadata_for = (html, locale = default_locale) => ({
  */
 export const missing_for = (e64, listed) => {
   const { profile, statements } = paths_for(e64)
-  const has = new Set(listed.map(name => name.replace(/\.gz$/, '')))
+  const has = new Set(listed)
   return {
     e64,
     profile: !has.has(profile),
@@ -240,9 +240,7 @@ const main = () => {
 
   const listed = [
     ...list(bucket, 'people/*/index.html'),
-    ...list(bucket, 'people/*/index.html.gz'),
-    ...list(bucket, 'people/*/statements/index.html'),
-    ...list(bucket, 'people/*/statements/index.html.gz')
+    ...list(bucket, 'people/*/statements/index.html')
   ]
 
   console.log(

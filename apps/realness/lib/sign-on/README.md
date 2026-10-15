@@ -1,4 +1,4 @@
-# Brayness sign-on
+# Realness sign-on
 
 Signing in happens on the Realness frontend, `frontend/`, at `/sign-on`.
 Development serves it from `https://realness-development.web.app`.
@@ -6,7 +6,7 @@ This folder keeps the pieces other code imports.
 
 - `src/browser/flow.js`: the phone and name steps. Realness supplies the
   profile adapter, which owns loading and saving.
-- `src/node/login.js`: `brayness login`, the waiting program, and keychain
+- `src/node/login.js`: `realness login`, the waiting program, and keychain
   credentials.
 - `src/node/host-pass.js`: host and record passes.
 

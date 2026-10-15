@@ -28,7 +28,7 @@ const ndjson = (...records) =>
 
 let calls
 before_each(() => {
-  vi.stubEnv('VITE_BRAYNESS_GATE_URL', 'https://gate.test')
+  vi.stubEnv('MODE', 'development')
   calls = []
   let watched = false
   vi.stubGlobal(
@@ -152,10 +152,10 @@ describe('@/components/chat/as-panel', () => {
 
   it('shows lookup failure in shared feedback with Retry below the message', async () => {
     home_view.value = 'chat'
-    const panel = open_panel({ actor: null, problem: 'Brayness answered 502' })
+    const panel = open_panel({ actor: null, problem: 'Realness answered 502' })
     await flush_promises()
     const feedback = panel.get('section[aria-label="Connection status"]')
-    expect(feedback.get('[role="alert"]').text()).toBe('Brayness answered 502')
+    expect(feedback.get('[role="alert"]').text()).toBe('Realness answered 502')
     expect(feedback.element.children[1].tagName).toBe('BUTTON')
     expect(panel.find('textarea').exists()).toBe(false)
     expect(panel.find('aside[aria-label="Status"]').exists()).toBe(false)

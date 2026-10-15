@@ -965,8 +965,7 @@ describe('@/utils/itemid', () => {
       ])
 
       expect(url.mock.calls.map(([filename]) => filename)).toEqual([
-        'people/+19159206481/index.html',
-        'people/+19159206481/index.html.gz'
+        'people/+19159206481/index.html'
       ])
       url.mockResolvedValue('https://example.com/file.html')
     })

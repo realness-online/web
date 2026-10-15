@@ -24,8 +24,8 @@ Realness traces photos into animatable vector posters. Export SVG, PNG, PSD, vid
 
 ## Optional
 
-- [Converting a video](https://realness.online/docs#converting-a-video): Brayness, an optional harness, traces a clip frame by frame into a video of posters
-- [Brayness](https://github.com/scott-fryxell/brayness): The harness and its `make:animation` script
+- [Converting a video](https://realness.online/docs#converting-a-video): Realness, an optional harness, traces a clip frame by frame into a video of posters
+- [Realness](https://github.com/scott-fryxell/realness): The harness and its `make:animation` script
 
 ## Source
 

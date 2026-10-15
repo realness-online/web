@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEV="${DEV:-/dev/disk/by-id/google-brayness-actors}"
+DEV="${DEV:-/dev/disk/by-id/google-realness-actors}"
 MNT="${MNT:-/opt/fc/actors/mnt}"
 IMAGE="${IMAGE:-/opt/fc/rootfs.ext4}"
 SEED="$MNT/seed.ext4"

@@ -5,7 +5,7 @@ The product renderer lives in `tools/publish/renderer`.
 Export a self-contained starter with:
 
 ```sh
-brayness example static <destination>
+realness example static <destination>
 ```
 
 The exported folder includes its source, assets, tests, and package manifest.

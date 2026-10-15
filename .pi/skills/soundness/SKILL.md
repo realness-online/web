@@ -9,7 +9,7 @@ description:
   and Progressive Web App build and browser checks. Defer motion to
   motion-systems and client type voice to typography.
 metadata:
-  check: "node ../../bin/check-skills.js soundness"
+  check: "node ../../../bin/check-skills.js soundness"
   category: Design & Frontend
   tags:
     - architecture
@@ -206,7 +206,7 @@ node bin/soundness-check.js <paths...>
 
 `npm run check:soundness` covers the projects that follow this skill, realness
 included. `npm run check:soundness:gate` is what `npm test` runs: the projects
-this repo owns, so another repo cannot fail the brayness suite. A line with
+this repo owns, so another repo cannot fail the realness suite. A line with
 `soundness-allow: <reason>` excuses the matching hit. Everything else in this skill
 is prose and stays yours to apply.
 

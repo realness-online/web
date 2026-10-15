@@ -10,7 +10,7 @@
  * fails instead of quietly running against prod.
  *
  *    node tools/control/bin/webspace.js local host up lima-1
- *    node tools/control/bin/webspace.js development host up brayness-2 --smoke
+ *    node tools/control/bin/webspace.js development host up realness-2 --smoke
  */
 
 import { environment_settings, local_settings } from '#root/src/settings/environments.js'
@@ -36,14 +36,14 @@ export const ENVIRONMENTS = {
     volume: "/opt/fc/actors",
     volumeSize: "6G",
     /**
-     * o5: the Cloud Run services Brayness runs, and where billing lands.
+     * o5: the Cloud Run services Realness runs, and where billing lands.
      * billing is the BigQuery billing export table, "project.dataset.table";
      * null until the export is enabled in the console.
      */
     cloud: {
       project: development.project,
       region: development.services.region,
-      services: ["brayness-sync", "brayness-proxy"],
+      services: ["realness-sync", "realness-proxy"],
       billing: "realness-development.billing_export.gcp_billing_export_v1_01F763_9EF3F8_28E859",
       openrouter: { key_secret: "OPENROUTER_API_KEY" },
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice"],
@@ -57,26 +57,26 @@ export const ENVIRONMENTS = {
     project: development.project,
     /** Default zone. Capacity is per machine type per zone; `probe` says which. */
     zone: "us-east1-b",
-    imageFamily: "brayness-host",
+    imageFamily: "realness-host",
     machineType: "n2-standard-4",
     bootSize: "20GB",
     actorsSize: "30GB",
     /** Where bundles ship before a host is dropped. */
-    bucket: "realness-development-brayness",
+    bucket: "realness-development-realness",
     /** The host's copy of the project. */
-    root: "~/brayness",
+    root: "~/realness",
     /** Loopback-only until h1 exists, so the API is reached over ssh. */
     api: `http://127.0.0.1:${local_settings.host_port}`,
     hostExports: "/opt/fc/actors/mnt/exports",
     /**
-     * o5: the Cloud Run services Brayness runs, and where billing lands.
+     * o5: the Cloud Run services Realness runs, and where billing lands.
      * billing is the BigQuery billing export table, "project.dataset.table";
      * null until the export is enabled in the console.
      */
     cloud: {
       project: development.project,
       region: development.services.region,
-      services: ["brayness-sync", "brayness-proxy"],
+      services: ["realness-sync", "realness-proxy"],
       billing: null,
       openrouter: { key_secret: "OPENROUTER_API_KEY" },
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice", "Compute Engine"],

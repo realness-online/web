@@ -20,7 +20,7 @@ const engine = new URL(
   import.meta.url
 ).pathname
 const scratch = new URL(
-  '../../../../../artifacts/brayness/renderer/',
+  '../../../../../artifacts/realness/renderer/',
   import.meta.url
 ).pathname
 const svg = color =>

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { LAST_TAP } from '#root/src/host/host.js'
 import {
   HostStatus,
   host_resources,
@@ -97,12 +98,13 @@ test('available memory uses MemAvailable and TAPs count actual network devices',
       'fc-tap1',
       'fc-tap63',
       'fc-app1',
-      'fc-tap64'
+      'fc-tap200',
+      'fc-tap255'
     ]
   })
   assert.equal(result.mem_available, 2048 * 1024)
-  assert.equal(result.actor_taps_used, 2)
-  assert.equal(result.actor_taps_limit, 63)
+  assert.equal(result.actor_taps_used, 3)
+  assert.equal(result.actor_taps_limit, LAST_TAP)
 })
 
 test('unreadable resources are unknown rather than zero capacity', () => {

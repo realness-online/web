@@ -40,7 +40,7 @@ export const startup_stages = Object.freeze({
 /**
  * @param {object} options
  * @param {string} options.id
- * @param {(fields: object) => void} options.report
+ * @param {(fields: StartupEvent) => void} options.report
  * @param {() => number} [options.clock]
  * @param {number | null} [options.started_at]
  * @returns {StartupTrace}

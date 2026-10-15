@@ -1,5 +1,5 @@
 import { basename } from 'node:path'
-import { client, state_dir, SYNC_URL } from '#root/src/files/client.js'
+import { client, SYNC_URL } from '#root/src/files/client.js'
 import { actor_url, sync_actor } from '#root/src/harness/actor.js'
 import {
   find_root,
@@ -145,14 +145,10 @@ export const run_harness = async (
     else stderr.write(`realness: ${message}\n`)
     return 2
   }
-  root ??= actor ? (process.env.BRAYNESS_ROOT ?? '/brayness') : find_root()
-  if (actor) {
-    state = await prepare_actor_state(root, { state })
-    process.env.BRAYNESS_STATE = state
-  } else {
-    use_harness_state(root)
-    state ??= state_dir()
-  }
+  root ??= actor ? '/realness' : find_root()
+  if (actor) state = await prepare_actor_state(root, { state })
+  else state ??= use_harness_state(root)
+
   if (command === 'turn-start') {
     await turn_start({ root, state, session })
     if (json)
@@ -188,7 +184,8 @@ export const run_harness = async (
   if (!token) throw new Error('not signed in; run realness login')
   const result = await sync_harness({
     root,
-    store: client({ url: service_url ?? SYNC_URL, token }),
+    state,
+    store: client({ url: service_url ?? SYNC_URL, token, state }),
     plans: rest.filter(arg => !['--deletes', '--json'].includes(arg)),
     deletes: rest.includes('--deletes') ? 'all' : 'explained',
     defer_edits: command === 'turn-end'

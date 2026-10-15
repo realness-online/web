@@ -6,7 +6,7 @@ repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 stamp=/opt/fc/template.inputs
 cd "$repo"
 . "$repo/lib/output.sh"
-harness="$OUT/brayness-harness.tar.gz"
+harness="$OUT/realness-harness.tar.gz"
 runtime_folders="$(node "$repo/src/settings/cli.js" folders actor)"
 inputs="$({
   find package.json tools/control/scripts/template-build.sh tools/control/scripts/stage-runtime.sh server/host/guest $runtime_folders -type f -print0 | sort -z | xargs -0 sha256sum

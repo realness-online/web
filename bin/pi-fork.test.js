@@ -71,6 +71,12 @@ test('the selected fork survives renaming the checkout', () => {
     const result = spawn_sync('/bin/bash', [join(moved, 'bin/pi'), '--version'], { env: { PATH: process.env.PATH, HOME: moved }, encoding: 'utf8' })
     assert.equal(result.status, 0, result.stderr)
     assert.equal(result.stdout, `fork:--version:html.gz:${join(moved, '.pi/agent/state/pi-forks/install/consumer/node_modules/.bin/pi-session-read')}\n`)
+    rollback_launcher(moved)
+    const managed = join(moved, '.pi/agent/state/pi-forks/install')
+    select_fork({ root: moved, install: managed })
+    const enabled = spawn_sync('/bin/bash', [join(moved, 'bin/pi'), '--version'], { env: { PATH: process.env.PATH, HOME: moved }, encoding: 'utf8' })
+    assert.equal(enabled.status, 0, enabled.stderr)
+    assert.equal(enabled.stdout, result.stdout)
   } finally { rm_sync(moved, { recursive: true, force: true }) }
 })
 

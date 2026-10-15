@@ -54,7 +54,7 @@ export const macFor = tap => {
   return `06:00:AC:11:${index.toString(HEX).padStart(2, '0').toUpperCase()}:02`
 }
 
-/** The start command as brayness-app-start reads it: one argument per line. */
+/** The start command as realness-app-start reads it: one argument per line. */
 export const argvText = start => {
   if (!start?.length || start.some(arg => !arg || /\n/.test(arg)))
     throw new BadRequest(`bad start command: ${JSON.stringify(start)}`)
@@ -303,8 +303,7 @@ export class AppStore {
         firecracker.pidForApiSock(join(dir, 'api.sock'))
       )
       if (tap) host.deleteTap(tap)
-      if (!process.env.BRAYNESS_KEEP_FAILED)
-        rm_sync(dir, { recursive: true, force: true })
+      rm_sync(dir, { recursive: true, force: true })
       throw error
     }
   }

@@ -35,7 +35,7 @@ const actor = new Actor({ id: "a-check", owner: alice })
 /** @type {import('../../../src/host/server.js').RouteStore} */
 const actors = {
   get: (id) => { if (id !== actor.id) throw new NotFound(id); return actor },
-  copyOut: async (id, tree, dest) => cp_sync(join(fixtures, tree.slice("/brayness/work/".length)), dest, { recursive: true }),
+  copyOut: async (id, tree, dest) => cp_sync(join(fixtures, tree.slice("/realness/work/".length)), dest, { recursive: true }),
   create: unreached("create"),
   destroy: unreached("destroy"),
   exec: unreached("exec"),
@@ -69,7 +69,7 @@ const call = async (method, path, who, body) => {
 
 let id
 try {
-  const started = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/brayness/work/demo" })
+  const started = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/realness/work/demo" })
   assert.equal(started.status, 201, JSON.stringify(started.body))
   id = started.body.id
   assert.equal(started.body.kind, "handler")
@@ -120,7 +120,7 @@ try {
   assert.equal((await call("DELETE", `/v1/apps/${id}`, bob)).status, 404)
   console.log("  ok   another owner sees nothing and stops nothing")
 
-  const site = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/brayness/work/page" })
+  const site = await call("POST", "/v1/apps", alice, { actor: "a-check", path: "/realness/work/page" })
   assert.equal(site.status, 201)
   assert.equal(site.body.kind, "site")
   assert.equal(exists_sync(apps.path(site.body.id)), false)

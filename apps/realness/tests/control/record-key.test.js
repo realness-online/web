@@ -7,7 +7,7 @@ import { out_path } from '#root/lib/output.js'
 
 const scratch = out_path(`record-key-test-${randomUUID()}`)
 const key = 'a'.repeat(64)
-const config = { root: '~/brayness' }
+const config = { root: '~/realness' }
 const calls = []
 const cloud = {
   call: async argv => {
@@ -21,7 +21,7 @@ after(() => rm(scratch, { recursive: true, force: true }))
 
 test("operator registers the host key in sync's bucket, then removes the local copy", async () => {
   let saved
-  await provision_record_key(cloud, config, 'brayness-1', {
+  await provision_record_key(cloud, config, 'realness-1', {
     scratch,
     upload: async (file, destination) => {
       saved = {
@@ -34,13 +34,13 @@ test("operator registers the host key in sync's bucket, then removes the local c
   })
   assert.deepEqual(calls.at(-1), [
     'ssh',
-    'brayness-1',
+    'realness-1',
     '--quiet',
-    '--command=sudo bash ~/brayness/server/host/scripts/record-key.sh'
+    '--command=sudo bash ~/realness/server/host/scripts/record-key.sh'
   ])
   assert.equal(
     saved.destination,
-    'gs://realness-development.firebasestorage.app/host-keys/brayness-1'
+    'gs://realness-development.firebasestorage.app/host-keys/realness-1'
   )
   assert.equal(saved.body, key)
   assert.equal(saved.mode, 0o600)
@@ -55,7 +55,7 @@ test('failed registration removes the local copy; bad names never reach SSH', as
   )
   assert.equal(calls.length, prior)
   await assert.rejects(
-    provision_record_key(cloud, config, 'brayness-1', {
+    provision_record_key(cloud, config, 'realness-1', {
       scratch,
       upload: async () => {
         throw new Error('upload failed')
@@ -69,7 +69,7 @@ test('failed registration removes the local copy; bad names never reach SSH', as
 test('a bad key returned by SSH is not registered', async () => {
   const bad = { call: async () => 'not a key' }
   await assert.rejects(
-    provision_record_key(bad, config, 'brayness-1', { scratch }),
+    provision_record_key(bad, config, 'realness-1', { scratch }),
     /invalid/
   )
   assert.deepEqual(await readdir(scratch), [])

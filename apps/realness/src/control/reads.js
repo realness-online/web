@@ -2,6 +2,11 @@ import { client } from '#root/src/files/client.js'
 import { token_source } from '#root/src/sign-on/node/login.js'
 import { read_status } from '#root/src/sync/host-status.js'
 import {
+  intent_now,
+  lifecycle_html,
+  lifecycle_key
+} from '#root/src/sync/host-lifecycle.js'
+import {
   day_files,
   days_since,
   free_limits,
@@ -46,7 +51,7 @@ export const reader = async (
 ) => {
   if (!url) throw new Error(`no sync URL for ${env}`)
   const bearer = await token()
-  if (!bearer) throw new Error('not signed in; run webspace <env> admin login')
+  if (!bearer) throw new Error('not signed in; run realness <env> admin login')
   return client({ url, token: bearer })
 }
 
@@ -147,7 +152,7 @@ export const usage = async (
   day = new Date().toISOString().slice(0, ISO_DATE)
 ) => {
   if (!PHONE.test(phone ?? ''))
-    throw new Error('usage: webspace <env> usage <phone> [--day=YYYY-MM-DD]')
+    throw new Error('usage: realness <env> usage <phone> [--day=YYYY-MM-DD]')
   if (!DAY.test(day)) throw new Error('day must be YYYY-MM-DD')
   let files = []
   try {
@@ -182,7 +187,7 @@ export const usage = async (
  */
 export const limit = async (sync, phone, now = new Date()) => {
   if (!PHONE.test(phone ?? ''))
-    throw new Error('usage: webspace <env> limit <phone>')
+    throw new Error('usage: realness <env> limit <phone>')
   const missing = error => {
     if (error.status !== HTTP.NOT_FOUND) throw error
   }
@@ -222,7 +227,7 @@ export const limit = async (sync, phone, now = new Date()) => {
  */
 export const person = async (sync, phone, { day, now } = {}) => {
   if (!PHONE.test(phone ?? ''))
-    throw new Error('usage: webspace <env> person <phone>')
+    throw new Error('usage: realness <env> person <phone>')
   const [all_actors, all_loops, spent] = await Promise.all([
     actors(sync, null, now),
     loops(sync),
@@ -289,7 +294,7 @@ export const text = {
 /** Ask the actor's host to idle or stop it; returns the request. */
 export const request_actor = async (sync, id, action, now = Date.now()) => {
   if (!ACTOR_ACTIONS.has(action))
-    throw new Error(`usage: webspace <env> actor idle|stop <id>`)
+    throw new Error(`usage: realness <env> actor idle|stop <id>`)
   const [actor] = await actors(sync, id, now)
   if (
     actor.state === 'stopped' ||
@@ -325,4 +330,15 @@ export const request_loop_stop = async (sync, id) => {
     Buffer.from(`<p>stop requested ${new Date().toISOString()}</p>\n`)
   )
   return { id, action: 'stop', obeyed: "on the host's next probe" }
+}
+
+/** Record what the operator is doing to a host, so monitors can tell parking from failure. */
+export const record_intent = async (sync, name, intent, options = {}) => {
+  if (!HOST.test(name)) throw new Error('invalid host name')
+  const record = intent_now(intent, { by: 'operator', ...options })
+  await sync.put(
+    `can://${lifecycle_key(name)}`,
+    Buffer.from(lifecycle_html(record))
+  )
+  return record
 }

@@ -1,10 +1,12 @@
 import { client, state_dir, SYNC_URL } from '#root/src/files/client.js'
+import { is_actor } from '#root/src/harness/settings.js'
 import { token_source } from '#root/src/sign-on/node/login.js'
 import { CapabilityError, file_capabilities } from './files.js'
 import { run_harness } from './harness-command.js'
 import { run_store } from './store-command.js'
 import { run_example } from './example-command.js'
 import { run_frontend } from './frontend-command.js'
+import { run_control } from './control-command.js'
 import { run_task } from './task-command.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
@@ -28,12 +30,14 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness git-credential get     (VM: git's helper for GitHub repos)
        realness task <plan> [--start]  (what a task on a plan may touch; start its VM)
        realness watch [--interval <seconds>] [--person +1...]...
+       realness <local|development> <command> [options]
+       realness <local|development> --help
        realness store sync <local-folder> <can://~/folder/> [--deletes]
        realness files sync <local-folder> <can://~/folder/> [--json]
        realness files cat <can://~/file> [--json]
 
 Desktop uses sign-in; actors use their host-issued, path-limited passes.
-File sync is two-way. brayness-store remains a compatibility alias.
+File sync is two-way. realness-store remains a compatibility alias.
 `
 
 const parse = args => {
@@ -102,11 +106,11 @@ const open_store = async (
   { actor, get_token, issue, root, service_url, state }
 ) => {
   if (actor) {
-    const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+    const home = root ?? '/realness'
     const actor_state = await prepare_actor_state(home, { state })
-    process.env.BRAYNESS_STATE = actor_state
     const { store } = await actor_client({
       url: service_url ?? (await actor_url(home, actor_state)),
+      state: actor_state,
       issue
     })
     return store
@@ -117,7 +121,11 @@ const open_store = async (
       'not_signed_in',
       'not signed in; run realness login'
     )
-  return client({ url: service_url ?? SYNC_URL, token })
+  return client({
+    url: service_url ?? SYNC_URL,
+    token,
+    state: state ?? (root ? use_harness_state(root) : undefined)
+  })
 }
 
 /** Run a `files` subcommand and print its result. */
@@ -174,12 +182,12 @@ const run_fold = async (
       'realness fold runs on the desktop harness'
     )
   const home = root ?? find_root()
-  use_harness_state(home)
+  const sync_state = state ?? use_harness_state(home)
   const token = await get_token()
   if (!token) throw new Error('not signed in; run realness login')
   const result = await fold_conflicts({
     root: home,
-    state: state ?? state_dir(),
+    state: sync_state,
     store: client({ url: service_url ?? SYNC_URL, token }),
     dry_run: args.includes('--dry-run')
   })
@@ -207,9 +215,8 @@ const run_fetch = async (
     )
   if (!path)
     throw new CapabilityError('usage', 'usage: realness fetch <harness-path>')
-  const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+  const home = root ?? '/realness'
   const actor_state = await prepare_actor_state(home, { state })
-  process.env.BRAYNESS_STATE = actor_state
   const { store } = await actor_client({
     url: service_url ?? (await actor_url(home, actor_state)),
     issue
@@ -218,7 +225,7 @@ const run_fetch = async (
     root: home,
     state: actor_state,
     store,
-    path: path.replace(/^\/brayness\//, '').replace(/^\.\//, '')
+    path: path.replace(/^\/realness\//, '').replace(/^\.\//, '')
   })
   stdout.write(
     json
@@ -235,7 +242,7 @@ const run_git_credential = async (
 ) => {
   if (!actor)
     throw new CapabilityError('usage', 'realness git-credential runs on a VM')
-  const home = root ?? process.env.BRAYNESS_ROOT ?? '/brayness'
+  const home = root ?? '/realness'
   const actor_state = await prepare_actor_state(home, { state })
   const text = await read_stdin(stdin)
   const [, operation] = args
@@ -313,6 +320,7 @@ const run_watch_command = async (
  * @param {boolean} [options.actor]
  * @param {string} [options.root]
  * @param {string} [options.state]
+ * @param {(destination: string) => Promise<unknown>} [options.export_static]
  * @param {() => Promise<string>} [options.issue]
  * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
  * @param {NodeJS.WriteStream & { fd: 2 }} [options.stderr]
@@ -323,10 +331,10 @@ export const run = async (
   {
     get_token = token_source(),
     service_url,
-    actor = process.env.BRAYNESS_ACTOR === '1' ||
-      process.env.PROFILE === 'actor',
+    actor = is_actor(),
     root: root_option,
     state: state_option,
+    export_static,
     issue,
     stdout = process.stdout,
     stderr = process.stderr,
@@ -344,10 +352,13 @@ export const run = async (
       actor,
       root,
       state,
+      export_static,
       issue,
       stdout,
       stderr
     }
+    if (['local', 'development'].includes(args[0]))
+      return await run_control(args, { actor, stdin, stdout, stderr })
     if (args[0] === 'frontend')
       return await run_frontend(args.slice(1), { stdout, stderr, actor })
     if (args[0] === 'example') return await run_example(args.slice(1), options)

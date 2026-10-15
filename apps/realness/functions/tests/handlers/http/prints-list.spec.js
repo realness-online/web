@@ -56,11 +56,11 @@ const store_print = (stamp, thought = '') => {
   mock_objects.push({ name: `people${author}/posters/${stamp}.png` })
   mock_store.set(`people${author}/posters/${stamp}.png`, Buffer.from('png'))
   mock_store.set(
-    `people${author}/posters/${stamp}.html.gz`,
+    `people${author}/posters/${stamp}.html`,
     deflateSync(poster_html(stamp))
   )
   if (!thought) return
-  const statements = `people${author}/statements/index.html.gz`
+  const statements = `people${author}/statements/index.html`
   if (!mock_objects.some(object => object.name === statements))
     mock_objects.push({ name: statements })
   mock_store.set(
@@ -118,9 +118,9 @@ describe('prints list', () => {
 
   it('counts only posters with a preview PNG as prints', async () => {
     store_print(newer)
-    mock_objects.push({ name: `people${author}/posters/${older}.html.gz` })
+    mock_objects.push({ name: `people${author}/posters/${older}.html` })
     mock_store.set(
-      `people${author}/posters/${older}.html.gz`,
+      `people${author}/posters/${older}.html`,
       deflateSync(poster_html(older))
     )
 
@@ -129,9 +129,9 @@ describe('prints list', () => {
 
   it('reads the created stamps out of a listing with other files in it', async () => {
     mock_objects.push(
-      { name: `people${author}/posters/index.html.gz` },
+      { name: `people${author}/posters/index.html` },
       { name: 'people/+15551234567/posters/1712000000002.png' },
-      { name: `people${author}/statements/index.html.gz` }
+      { name: `people${author}/statements/index.html` }
     )
     store_print(newer)
 

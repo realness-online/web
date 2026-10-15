@@ -37,11 +37,11 @@ test('a locally staged host loads its real entry and can stage an actor without 
   })
   const help = exec_file_sync(
     process.execPath,
-    ['tools/cli/bin/brayness.js', '--help'],
+    ['tools/cli/bin/realness.js', '--help'],
     {
       cwd: runtime,
       encoding: 'utf8',
-      env: { ...process.env, BRAYNESS_ACTOR: '1', PROFILE: 'actor' }
+      env: { ...process.env, REALNESS_ACTOR: '1', PROFILE: 'actor' }
     }
   )
   assert.match(help, /files sync/)

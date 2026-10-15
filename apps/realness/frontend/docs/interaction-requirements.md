@@ -38,7 +38,7 @@ From `apps/realness`:
 npm run test:frontend
 npm run check:frontend
 npm run type
-node tools/cli/bin/brayness.js frontend build --env production
+node tools/cli/bin/realness.js frontend build --env production
 ```
 
 The build runs `check-interaction-css.js` against the shipped CSS. It fails if Safari selection prefixes or callout rules disappear. `npm run check:interaction-css` repeats that check on an existing build.

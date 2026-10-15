@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { last, openLog, record, sha } from './log.js'
 import edit_log_extension from './index.js'
-const scratch = resolve(import.meta.dirname, '../../../artifacts/brayness')
+const scratch = resolve(import.meta.dirname, '../../../artifacts/realness')
 mkdirSync(scratch, {
   recursive: true,
 })
@@ -55,8 +55,7 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
     recursive: true,
   })
   const dir = mkdtempSync(join(scratch, 'edit-format-'))
-  const previous = process.env.BRAYNESS_STATE
-  process.env.BRAYNESS_STATE = dir
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ realness: {} }))
   /** @type {Map<string, (event: unknown, ctx: unknown) => void>} */
   const handlers = new Map()
   const pi = {
@@ -96,7 +95,7 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
         },
         ctx,
       )
-      const db = openLog(join(dir, 'edits.db'))
+      const db = openLog(join(dir, '.pi/agent/state/edits.db'))
       try {
         assert.equal(last(db, file)?.session, session)
       } finally {
@@ -112,8 +111,6 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
         },
       },
     )
-    if (previous === undefined) delete process.env.BRAYNESS_STATE
-    else process.env.BRAYNESS_STATE = previous
     rmSync(dir, {
       recursive: true,
     })

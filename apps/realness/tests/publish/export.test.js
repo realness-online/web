@@ -16,7 +16,7 @@ import { run } from '#root/src/command/command.js'
 
 const execute = promisify(exec_file)
 const artifacts = new URL(
-  '../../../../artifacts/brayness/static-export/',
+  '../../../../artifacts/realness/static-export/',
   import.meta.url
 ).pathname
 const project = new URL('../../', import.meta.url).pathname
@@ -30,6 +30,7 @@ test('the public command exports a starter that builds without product source im
     get_token: () => {
       throw Error('export must stay offline')
     },
+    export_static,
     stdout: { write: () => {} }
   })
   assert.equal(result, 0)
@@ -51,4 +52,16 @@ test('the public command exports a starter that builds without product source im
   await execute(process.execPath, ['build.js'], { cwd: destination })
   await access(join(destination, 'dist/index.html'))
   await assert.rejects(export_static(destination), /destination exists/)
+  const cli_destination = join(root, 'cli-site')
+  const reply = await execute(process.execPath, [
+    join(project, 'tools/cli/bin/realness.js'),
+    'example',
+    'static',
+    cli_destination
+  ])
+  assert.equal(reply.stdout.trim(), cli_destination)
+  assert.equal(
+    await read_file(join(cli_destination, 'src/build.js'), 'utf8'),
+    await read_file(join(destination, 'src/build.js'), 'utf8')
+  )
 })

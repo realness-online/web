@@ -2,7 +2,7 @@
 name: user-interface
 description: Designs or reviews user interfaces that are self-evident, low-friction, and easy to understand with minimal explanation. Use when simplifying UI text, removing helper copy, improving affordances, tightening hierarchy, making forms more obvious, or evaluating whether an interface works without instructions.
 metadata:
-  check: 'node ../../bin/check-skills.js user-interface'
+  check: 'node ../../../bin/check-skills.js user-interface'
   category: Design & UX
   pairs-with:
   - skill: soundness

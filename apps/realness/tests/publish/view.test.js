@@ -25,7 +25,7 @@ import {
   renderer_path as example
 } from '../../src/publish/view.js'
 
-const scratch = new URL('../../../../artifacts/brayness/apps/', import.meta.url)
+const scratch = new URL('../../../../artifacts/realness/apps/', import.meta.url)
   .pathname
 
 /** A harness root: a vault of one note, one app, and the example checkout. */

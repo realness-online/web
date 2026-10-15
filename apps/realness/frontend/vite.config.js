@@ -7,8 +7,12 @@ import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { existsSync as exists_sync, readFileSync as read_file_sync } from 'fs'
 import path from 'path'
-import { product_paths, project_root as product_root } from '#root/src/settings/layout.js'
+import {
+  product_paths,
+  project_root as product_root
+} from '#root/src/settings/layout.js'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
+import { local_settings } from '#root/src/settings/environments.js'
 
 const has_certs =
   exists_sync('realness.local-key.pem') && exists_sync('realness.local.pem')
@@ -37,7 +41,7 @@ const get_manual_chunk = id => {
       if (id.includes(`/node_modules/${package_name}/`)) return chunk_name
 }
 
-export default define_config({
+export default define_config(({ mode }) => ({
   build: {
     outDir: frontend_out(),
     emptyOutDir: true,
@@ -60,19 +64,19 @@ export default define_config({
     host: '0.0.0.0',
     allowedHosts: ['realness.local'],
     proxy: {
-      ...(process.env.BRAYNESS_LOCAL === '1' && {
+      ...(mode === 'local' && {
         '/gate': {
-          target: 'http://127.0.0.1:8792',
+          target: `http://127.0.0.1:${local_settings.gate_port}`,
           ws: true,
           rewrite: url => url.replace(/^\/gate/, '')
         }
       }),
       '/v1/': {
-        target: 'https://brayness-sync-639469569733.us-central1.run.app',
+        target: 'https://realness-sync-639469569733.us-central1.run.app',
         changeOrigin: true
       },
       '/pay/': {
-        target: 'https://brayness-proxy-639469569733.us-central1.run.app',
+        target: 'https://realness-proxy-639469569733.us-central1.run.app',
         changeOrigin: true
       }
     },
@@ -92,7 +96,8 @@ export default define_config({
       }
     }),
     headers: {
-      'Access-Control-Allow-Private-Network': 'true'
+      'Access-Control-Allow-Private-Network': 'true',
+      'X-Vite-Mode': mode
     }
   },
   resolve: {
@@ -187,7 +192,10 @@ export default define_config({
         'scripts/**/*.js',
         'public/push-handlers.js',
         path.join(product_root, 'src/sign-on/browser/**/*.js'),
-        path.join(product_root, 'tools/publish/renderer/static/scripts/**/*.js'),
+        path.join(
+          product_root,
+          'tools/publish/renderer/static/scripts/**/*.js'
+        ),
         path.join(product_root, '..', 'bin/commands/page.js')
       ],
       allowExternal: true,
@@ -227,4 +235,4 @@ export default define_config({
       './tests/mocks/browser/FileReaderSync.js'
     ]
   }
-})
+}))

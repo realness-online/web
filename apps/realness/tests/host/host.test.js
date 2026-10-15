@@ -11,6 +11,7 @@ import assert from 'node:assert/strict'
 import {
   ensureTap,
   freeTap,
+  LAST_TAP,
   requireRoot,
   run,
   shortEnoughForUnix,
@@ -101,4 +102,10 @@ test('ensureTap rebuilds a TAP that is down, missing its gateway, or gone', () =
     ['remove', 'tap2'],
     ['create', 'tap2']
   ])
+})
+
+test('the last actor TAP still has its own /30 inside 172.16.0.0/16', () => {
+  assert.ok(LAST_TAP >= 200, 'hs-tap: a host can address 200 actors')
+  assert.ok(LAST_TAP <= 254)
+  assert.equal(tapGuest(`fc-tap${LAST_TAP}`), `172.16.${LAST_TAP}.2`)
 })

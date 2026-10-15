@@ -9,9 +9,10 @@ import {
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { prepare_actor_state } from '../../src/harness/state.js'
+import { use_harness_state } from '../../src/harness/harness.js'
 
 const artifacts = new URL(
-  '../../../../artifacts/brayness/state-tests/',
+  '../../../../artifacts/realness/state-tests/',
   import.meta.url
 ).pathname
 const fixture = async t => {
@@ -44,6 +45,20 @@ test('actor state survives removal of temporary artifacts, including legacy reco
     await read_file(join(state, 'recovery/url'), 'utf8'),
     'https://sync.example\n'
   )
+})
+
+test('state lookup stays independent across harnesses and does not set an environment input', async t => {
+  const first = await fixture(t)
+  const second = await fixture(t)
+  await write_file(
+    join(first, 'package.json'),
+    JSON.stringify({ realness: { state: 'local/state' } })
+  )
+  const previous = process.env.REALNESS_STATE
+  assert.equal(use_harness_state(first), join(first, 'local/state'))
+  assert.equal(use_harness_state(second), join(second, '.pi/agent/state'))
+  assert.equal(use_harness_state(first), join(first, 'local/state'))
+  assert.equal(process.env.REALNESS_STATE, previous)
 })
 
 test('state migration refuses to overwrite another history', async t => {

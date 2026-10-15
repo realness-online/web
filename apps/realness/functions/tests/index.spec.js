@@ -4,6 +4,8 @@ const {
   fake_capabilities,
   fake_check_phone_integrity,
   fake_prints_checkout,
+  fake_prints_list,
+  fake_prints_reconcile,
   fake_print_share,
   fake_prints_webhook,
   fake_notification
@@ -11,6 +13,8 @@ const {
   fake_capabilities: { name: 'capabilities' },
   fake_check_phone_integrity: { name: 'check_phone_integrity' },
   fake_prints_checkout: { name: 'prints_checkout' },
+  fake_prints_list: { name: 'prints_list' },
+  fake_prints_reconcile: { name: 'prints_reconcile' },
   fake_print_share: { name: 'print_share' },
   fake_prints_webhook: { name: 'prints_webhook' },
   fake_notification: { name: 'notification' }
@@ -32,10 +36,11 @@ vi.mock('#handlers/http/prints-webhook.js', () => ({
 vi.mock('#handlers/scheduled/notification.js', () => ({
   notification: fake_notification
 }))
-vi.mock('#handlers/storage/mirror-names.js', () => ({
-  mirror_names_written: { name: 'mirror_names_written' },
-  mirror_names_deleted: { name: 'mirror_names_deleted' },
-  mirror_names_archived: { name: 'mirror_names_archived' }
+vi.mock('#handlers/http/prints-list.js', () => ({
+  prints_list: fake_prints_list
+}))
+vi.mock('#handlers/scheduled/prints-reconcile.js', () => ({
+  prints_reconcile: fake_prints_reconcile
 }))
 
 describe('index.js', () => {
@@ -48,8 +53,19 @@ describe('index.js', () => {
     expect(exported.print_share).toBe(fake_print_share)
     expect(exported.prints_webhook).toBe(fake_prints_webhook)
     expect(exported.notification).toBe(fake_notification)
-    expect(exported.mirror_names_written.name).toBe('mirror_names_written')
-    expect(exported.mirror_names_deleted.name).toBe('mirror_names_deleted')
-    expect(exported.mirror_names_archived.name).toBe('mirror_names_archived')
+    expect(exported.prints_list).toBe(fake_prints_list)
+    expect(exported.prints_reconcile).toBe(fake_prints_reconcile)
+    expect(Object.keys(exported).sort()).toEqual(
+      [
+        'capabilities',
+        'check_phone_integrity',
+        'prints_checkout',
+        'prints_list',
+        'print_share',
+        'prints_webhook',
+        'prints_reconcile',
+        'notification'
+      ].sort()
+    )
   })
 })

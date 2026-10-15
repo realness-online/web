@@ -1,5 +1,5 @@
 /**
- * `brayness fold`: keep-both session copies merge back into one file,
+ * `realness fold`: keep-both session copies merge back into one file,
  * locally and in storage, against a real sync service on disk.
  */
 import { after, before, test } from 'node:test'
@@ -17,7 +17,7 @@ import { sync_service } from '#root/src/sync/server.js'
 
 const A = '+15555550100'
 const root = new URL(
-  `../../../../artifacts/brayness/fold-test-${randomUUID()}/`,
+  `../../../../artifacts/realness/fold-test-${randomUUID()}/`,
   import.meta.url
 ).pathname
 const issuer = dev_issuer()
@@ -25,8 +25,6 @@ let server
 let store
 
 before(async () => {
-  process.env.BRAYNESS_STATE = join(root, 'state')
-  process.env.BRAYNESS_TRASH = join(root, 'trash')
   const storage = disk(join(root, 'bucket'))
   server = sync_service({
     storage,
@@ -37,6 +35,8 @@ before(async () => {
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   store = client({
+    state: join(root, 'state'),
+    trash: join(root, 'trash'),
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token(A)
   })
@@ -90,6 +90,7 @@ test('fold merges every copy into its original, here and in storage', async () =
     root: harness,
     store,
     state: join(root, 'state'),
+    trash: join(root, 'trash'),
     dry_run: true
   })
   assert.deepEqual(dry, {
@@ -101,7 +102,8 @@ test('fold merges every copy into its original, here and in storage', async () =
   const report = await fold_conflicts({
     root: harness,
     store,
-    state: join(root, 'state')
+    state: join(root, 'state'),
+    trash: join(root, 'trash')
   })
   assert.deepEqual(report.folded, dry.folded)
   assert.deepEqual((await readdir(sessions)).sort(), [

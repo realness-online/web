@@ -1,15 +1,12 @@
 /**
- * What `brayness sync` carries: the whole harness, at `can://~/harness/`,
+ * What `realness sync` carries: the whole harness, at `can://~/harness/`,
  * minus fixed ignores (skip.js), the person's `.ignore`, git repos,
  * and files over the upload limit. Pi session history goes first. Without a
  * `.ignore`, only the plans' Syncs paths and history sync, as before.
  *
  */
 import { execFile as exec_file } from 'node:child_process'
-import {
-  existsSync as exists_sync,
-  readFileSync as read_file_sync
-} from 'node:fs'
+import { existsSync as exists_sync } from 'node:fs'
 import { mkdir, readFile as read_file, readdir, stat } from 'node:fs/promises'
 import {
   basename,
@@ -27,7 +24,7 @@ import { writeFile as write_file } from 'node:fs/promises'
 import { apply, load_calls } from '#root/src/files/replay.js'
 import { ignorer, parse_ignore } from '#root/src/files/ignore.js'
 import { skipped } from '#root/src/files/skip.js'
-import { state_path } from './settings.js'
+import { state_path, harness_root } from './settings.js'
 import { state_dir } from '#root/src/files/client.js'
 import { plans_path, runtime_sessions_path } from './settings.js'
 import { STARTER_DIRECTORY } from '#root/src/files/starter.js'
@@ -66,46 +63,24 @@ const sha = bytes => create_hash('sha256').update(bytes).digest('hex')
 
 const run = promisify(exec_file)
 
-/**
- * Point every default state folder at this harness: BRAYNESS_STATE if set,
- * else package.json's brayness.state. Child processes inherit it.
- * @param {string} root Harness root.
- * @returns {string} Absolute state folder.
- */
-export const use_harness_state = root => {
-  process.env.BRAYNESS_STATE ??= join(root, state_path(root))
-  return process.env.BRAYNESS_STATE
-}
+export const use_harness_state = root => state_dir(root)
 
 /** The state folder as a harness path, when it sits inside the harness. */
-const inside_state = root => {
-  const path = relative(root, state_dir())
+const inside_state = (root, state = state_dir(root)) => {
+  const path = relative(root, state)
   return path && !path.startsWith('..') && !is_absolute(path)
     ? path.split('\\').join('/')
     : null
 }
 
-/** BRAYNESS_ROOT, else the nearest harness package, ignore file, Pi config, or vault plans. */
-export const find_root = (start = process.cwd(), env = process.env) => {
-  if (env.BRAYNESS_ROOT) return resolve(env.BRAYNESS_ROOT)
-  for (let dir = resolve(start); ; dir = dirname(dir)) {
-    const package_file = join(dir, 'package.json')
-    if (
-      exists_sync(package_file) &&
-      JSON.parse(read_file_sync(package_file, 'utf8')).brayness
+/** The nearest harness package, ignore file, Pi config, or vault plans. */
+export const find_root = (start = process.cwd()) => {
+  const root = harness_root(start)
+  if (!root)
+    throw new Error(
+      'no harness here: no harness package.json, .ignore, .pi/agent, or vault/plans/ above'
     )
-      return dir
-    if (
-      [IGNORE_FILE, '.pi/agent', 'vault/plans'].some(marker =>
-        exists_sync(join(dir, marker))
-      )
-    )
-      return dir
-    if (dirname(dir) === dir)
-      throw new Error(
-        'no harness here: no harness package.json, .ignore, .pi/agent, or vault/plans/ above, and BRAYNESS_ROOT is unset'
-      )
-  }
+  return root
 }
 
 /** List items under `## Syncs`, until the next heading of that level or higher. */
@@ -160,14 +135,14 @@ export const is_file_entry = async (root, path) => {
  * `(path, is_dir) => boolean` for root-relative paths: fixed ignores, the
  * person's `.ignore`, and anything inside a git repo (git carries it).
  */
-export const harness_exclude = async root => {
-  const states = [state_path(root), inside_state(root)].filter(Boolean)
+export const harness_exclude = async (root, state = state_dir(root)) => {
+  const states = [state_path(root), inside_state(root, state)].filter(Boolean)
   const ignored = ignorer(
     parse_ignore(
       await read_file(join(root, IGNORE_FILE), 'utf8').catch(() => '')
     )
   )
-  const light = read_skipped(state_dir())
+  const light = read_skipped(state)
   const repos = new Map()
   const is_repo = dir => {
     if (!repos.has(dir)) repos.set(dir, exists_sync(join(root, dir, '.git')))
@@ -220,6 +195,7 @@ export const plan_syncs = async (root, names = []) => {
  * @param {string} options.root
  * @param {{ cat: (path: string) => Promise<Buffer>, put: (path: string, bytes: Buffer) => Promise<string>, sync: (local: string, remote: string, options?: object) => Promise<import('#root/src/files/client.js').SyncReport> }} options.store
  * @param {string[]} [options.plans]
+ * @param {string} [options.state]
  * @param {'all' | 'explained'} [options.deletes]
  * @param {boolean} [options.defer_edits]
  * @param {string | null} [options.starter]
@@ -228,18 +204,19 @@ export const sync_harness = async ({
   root,
   store,
   plans = [],
+  state: sync_state = state_dir(root),
   deletes = 'explained',
   defer_edits = false,
-  starter = process.env.BRAYNESS_STARTER ??
-    (exists_sync(join(STARTER_DIRECTORY, 'starter.json'))
-      ? STARTER_DIRECTORY
-      : null)
+  starter = exists_sync(join(STARTER_DIRECTORY, 'starter.json'))
+    ? STARTER_DIRECTORY
+    : null
 }) => {
   if (!(await whole_enabled(root, store))) {
     const listed = await sync_listed({
       root,
       store,
       plans,
+      state: sync_state,
       deletes,
       defer_edits
     })
@@ -251,10 +228,11 @@ export const sync_harness = async ({
     }
   }
   await mkdir(join(root, 'apps'), { recursive: true })
-  const exclude = await harness_exclude(root)
+  const exclude = await harness_exclude(root, sync_state)
   const SESSIONS = runtime_sessions_path(root)
   const sessions = join(root, SESSIONS)
   const options = {
+    state: sync_state,
     deletes,
     sessions,
     sessions_remote: `${HARNESS}${SESSIONS}/`
@@ -263,7 +241,7 @@ export const sync_harness = async ({
     ...options,
     exclude: (path, is_dir) => exclude(`${SESSIONS}/${path}`, is_dir)
   })
-  const state = inside_state(root)
+  const state = inside_state(root, sync_state)
   const own_state = path =>
     state !== null && (path === state || path.startsWith(`${state}/`))
   const files = await store.sync(root, HARNESS, {
@@ -315,9 +293,16 @@ const settle = async (root, store, location, reports) => {
 }
 
 /** Without a `.ignore`: each plan's Syncs paths at `can://~/<path>/`. Refused paths are named, never synced. */
-const sync_listed = async ({ root, store, plans, deletes, defer_edits }) => {
+const sync_listed = async ({
+  root,
+  store,
+  plans,
+  state,
+  deletes,
+  defer_edits
+}) => {
   const SESSIONS = runtime_sessions_path(root)
-  const exclude = await harness_exclude(root)
+  const exclude = await harness_exclude(root, state)
   const synced = {}
   const refusals = {}
   const bases = {}
@@ -333,6 +318,7 @@ const sync_listed = async ({ root, store, plans, deletes, defer_edits }) => {
       const folder = dirname(path)
       const remote = folder === '.' ? 'can://~/' : `can://~/${folder}/`
       synced[path] = await store.sync(dirname(local), remote, {
+        state,
         deletes,
         defer_edits,
         sessions: join(root, SESSIONS),
@@ -343,6 +329,7 @@ const sync_listed = async ({ root, store, plans, deletes, defer_edits }) => {
       bases[path] = folder === '.' ? '' : folder
     } else {
       synced[path] = await store.sync(local, `can://~/${path}/`, {
+        state,
         deletes,
         defer_edits: defer_edits && path !== SESSIONS,
         sessions: join(root, SESSIONS),

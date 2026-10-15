@@ -2,10 +2,10 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
-binary="$root/artifacts/brayness-product/brayness-mac"
-out="$root/artifacts/brayness-product"
-zip="$out/brayness-mac.zip"
-profile="${BRAYNESS_NOTARY_PROFILE:-brayness-notary}"
+binary="$root/artifacts/realness-product/realness-mac"
+out="$root/artifacts/realness-product"
+zip="$out/realness-mac.zip"
+profile=realness-notary
 report="$out/notary-submit.json"
 
 [[ -f "$binary" ]] || { echo "no binary at $binary - run tools/desktop/build.sh first" >&2; exit 1; }

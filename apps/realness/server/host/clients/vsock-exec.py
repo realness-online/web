@@ -6,7 +6,7 @@
 Firecracker maps guest AF_VSOCK ports 1:1 onto host unix sockets. The host
 connects to uds_path, writes "CONNECT <port>\n", and reads "OK <host_port>\n"
 before the channel is a plain byte stream (docs/vsock.md, "Host-Initiated
-Connections"). On the other end is brayness-agent, which speaks one JSON line
+Connections"). On the other end is realness-agent, which speaks one JSON line
 in, one JSON line out.
 
 Prints the command's stdout, relays its stderr to stderr, and exits with the

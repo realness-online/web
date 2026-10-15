@@ -14,8 +14,7 @@ export const prepare_actor_state = async (
   { state: state_option } = {}
 ) => {
   const legacy = join(root, 'artifacts/sync-state')
-  let state =
-    state_option ?? process.env.BRAYNESS_STATE ?? join(root, state_path(root))
+  let state = state_option ?? join(root, state_path(root))
   if (resolve(state) === resolve(legacy)) state = join(root, state_path(root))
   if (relative(root, state).split(/[\\/]/)[0] === 'artifacts')
     throw new Error('sync state must stay outside artifacts')

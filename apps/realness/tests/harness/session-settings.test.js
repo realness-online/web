@@ -10,7 +10,7 @@ import * as settings from '#root/src/harness/settings.js'
 
 const scratch = resolve(
   import.meta.dirname,
-  '../../../../artifacts/brayness/session-settings'
+  '../../../../artifacts/realness/session-settings'
 )
 
 test('session location defaults to the vault and accepts a vault override', () => {
@@ -20,12 +20,12 @@ test('session location defaults to the vault and accepts a vault override', () =
     assert.equal(settings.sessions_path(scratch), 'vault/Sessions')
     write_file_sync(
       join(scratch, 'package.json'),
-      JSON.stringify({ brayness: {} })
+      JSON.stringify({ realness: {} })
     )
     assert.equal(settings.sessions_path(scratch), 'vault/Sessions')
     write_file_sync(
       join(scratch, 'package.json'),
-      JSON.stringify({ brayness: { sessions: 'vault/Private/Sessions' } })
+      JSON.stringify({ realness: { sessions: 'vault/Private/Sessions' } })
     )
     assert.equal(settings.sessions_path(scratch), 'vault/Private/Sessions')
     for (const sessions of [
@@ -42,9 +42,9 @@ test('session location defaults to the vault and accepts a vault override', () =
     ]) {
       write_file_sync(
         join(scratch, 'package.json'),
-        JSON.stringify({ brayness: { sessions } })
+        JSON.stringify({ realness: { sessions } })
       )
-      assert.throws(() => settings.sessions_path(scratch), /brayness.sessions/)
+      assert.throws(() => settings.sessions_path(scratch), /realness.sessions/)
     }
     write_file_sync(join(scratch, 'package.json'), '{')
     assert.throws(() => settings.sessions_path(scratch), SyntaxError)

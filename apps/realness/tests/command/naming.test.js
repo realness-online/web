@@ -13,42 +13,41 @@ import { test } from 'node:test'
 const product = resolve(import.meta.dirname, '../..')
 const scratch = resolve(product, '../../artifacts/realness/naming-tests')
 
-test('public Realness operator command and legacy alias share help, errors, and dry-run plans', () => {
+test('public Realness operator command supports help, errors, and dry-run plans', () => {
   const manifest = JSON.parse(
     read_file_sync(join(product, 'package.json'), 'utf8')
   )
   assert.equal(manifest.bin.realness, './tools/cli/bin/realness.js')
   assert.equal(manifest.scripts.realness, 'node tools/cli/bin/realness.js')
+  assert.equal(manifest.bin.webspace, undefined)
+  assert.equal(manifest.scripts.webspace, undefined)
   mkdir_sync(scratch, { recursive: true })
   const root = mkdtemp_sync(join(scratch, 'commands-'))
   try {
-    for (const name of ['realness', 'brayness'])
-      symlink_sync(join(product, manifest.bin[name]), join(root, name))
+    symlink_sync(join(product, manifest.bin.realness), join(root, 'realness'))
     const env = {
       HOME: root,
       PATH: `${root}:${dirname(process.execPath)}:/usr/bin:/bin`,
-      BRAYNESS_ACTOR: '0',
-      PROFILE: 'desktop'
+      REALNESS_ACTOR: '1',
+      PROFILE: 'actor'
     }
     const invoke = (name, args) =>
       spawn_sync(name, args, { env, encoding: 'utf8', timeout: 10_000 })
     for (const args of [
       ['--help'],
+      ['local', '--help'],
+      ['development', '--help'],
+      ['local', 'unknown-command'],
       ['unknown-command'],
       ['turn-start'],
       ['frontend', 'build', '--env', 'production', '--dry-run']
     ]) {
       const current = invoke('realness', args)
-      const legacy = invoke('brayness', args)
-      assert.deepEqual(
-        [current.status, current.stdout, current.stderr],
-        [legacy.status, legacy.stdout, legacy.stderr]
-      )
       assert.equal(current.error, undefined)
-      if (args[0] === '--help') {
+      if (args.includes('--help')) {
         assert.equal(current.status, 0)
         assert.match(current.stdout, /^usage: realness /)
-        assert.doesNotMatch(current.stdout, /^\s*brayness /m)
+        assert.doesNotMatch(current.stdout, /webspace|<dev\|prod>/)
       } else if (args[0] === 'frontend') {
         assert.equal(current.status, 0)
         assert.equal(JSON.parse(current.stdout).environment, 'production')

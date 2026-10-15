@@ -1,3 +1,4 @@
+import { randomUUID as random_uuid } from 'node:crypto'
 import { logger } from './log.js'
 import { HTTP } from '#root/lib/http.js'
 
@@ -60,10 +61,11 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
       LOG.warn(`chat bridge failed for ${id}: ${error.message}`)
       return text(response, HTTP.BAD_GATEWAY, 'chat is unavailable\n')
     }
-    store.beginWork(id)
+    const turn = `turn:${random_uuid()}`
+    store.beginWork(id, turn)
     response.once('close', () => {
       guest.socket.destroy()
-      store.endWork(id)
+      store.endWork(id, turn)
     })
     stream(response, guest, hello)
   }

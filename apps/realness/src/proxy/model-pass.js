@@ -4,7 +4,7 @@ const PHONE = /^\+[1-9]\d{6,14}$/
 const ACTOR = /^(a|app)-[a-f0-9]{12}$/
 const LIFETIME = 60
 const MODEL_PASS = {
-  audience: 'brayness-model',
+  audience: 'realness-model',
   life_s: LIFETIME,
   name: 'model pass'
 }

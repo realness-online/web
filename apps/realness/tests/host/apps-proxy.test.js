@@ -160,20 +160,20 @@ test("a private app answers only its owner's cookie, which it never sees", async
   const { call, auth } = await setup(t)
   const host = 'app-000000000004.localhost'
   assert.equal((await call(host)).status, 404)
-  assert.equal((await call(host, '/.brayness/enter?ticket=nope')).status, 403)
+  assert.equal((await call(host, '/.realness/enter?ticket=nope')).status, 403)
   const other = auth.issue(alice, 'app-000000000001')
   assert.equal(
-    (await call(host, `/.brayness/enter?ticket=${other}`)).status,
+    (await call(host, `/.realness/enter?ticket=${other}`)).status,
     403,
     'a ticket is bound to its app'
   )
   const ticket = auth.issue(alice, 'app-000000000004')
-  const entered = await call(host, `/.brayness/enter?ticket=${ticket}`)
+  const entered = await call(host, `/.realness/enter?ticket=${ticket}`)
   assert.equal(entered.status, 302)
   const cookie = entered.headers['set-cookie'][0].split(';')[0]
   assert.match(entered.headers['set-cookie'][0], /HttpOnly/)
   assert.equal(
-    (await call(host, `/.brayness/enter?ticket=${ticket}`)).status,
+    (await call(host, `/.realness/enter?ticket=${ticket}`)).status,
     403,
     'tickets are one-use'
   )
@@ -205,7 +205,7 @@ test('the proxy strips the owner cookie before the app', async t => {
   const host = 'app-000000000004.localhost'
   const entered = await call(
     host,
-    `/.brayness/enter?ticket=${auth.issue(alice, 'app-000000000004')}`
+    `/.realness/enter?ticket=${auth.issue(alice, 'app-000000000004')}`
   )
   const cookie = entered.headers['set-cookie'][0].split(';')[0]
   const reply = await call(host, '/headers', {

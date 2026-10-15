@@ -2,7 +2,7 @@
 name: nvim-buffers
 description: Read the user's currently open Neovim buffers and active view so you can discuss their actual working files and teach them their own nvim keymaps in context. Use when the user asks to "talk about what I have open", mentions a file they're working on without naming it, asks "how do I do X in vim", wants to learn git/search/navigation keys, or says they have files open and wants you to look at them.
 metadata:
-  check: 'node ../../bin/check-skills.js nvim-buffers'
+  check: 'node ../../../bin/check-skills.js nvim-buffers'
 ---
 
 # Nvim Buffers

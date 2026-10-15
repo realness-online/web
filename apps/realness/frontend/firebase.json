@@ -5,7 +5,7 @@
   "hosting": [
     {
       "target": "app",
-      "public": "../../../artifacts/brayness/frontend/dist",
+      "public": "../../../artifacts/realness/frontend/dist",
       "trailingSlash": false,
       "ignore": [
         "firebase.json",
@@ -50,14 +50,14 @@
         {
           "source": "/v1/**",
           "run": {
-            "serviceId": "brayness-sync",
+            "serviceId": "realness-sync",
             "region": "us-central1"
           }
         },
         {
           "source": "/pay/**",
           "run": {
-            "serviceId": "brayness-proxy",
+            "serviceId": "realness-proxy",
             "region": "us-central1"
           }
         },
@@ -140,7 +140,7 @@
         {
           "source": "/sites/**",
           "run": {
-            "serviceId": "brayness-sync",
+            "serviceId": "realness-sync",
             "region": "us-central1"
           }
         }

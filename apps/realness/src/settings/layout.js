@@ -51,6 +51,7 @@ const shared_folders = () => [
 export const actor_folders = () => [
   ...shared_folders(),
   source_folders.command,
+  source_folders.sync,
   'tools/cli/bin',
   source_folders.control,
   'tools/control'

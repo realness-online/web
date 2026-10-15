@@ -93,6 +93,14 @@ const action_for = (method, path) =>
 
 const version_from = value => value?.replace(/^W\//, '').replace(/^"|"$/g, '')
 
+const request_path = url => {
+  try {
+    return decodeURIComponent((url ?? '/').split('?')[0].slice(1))
+  } catch {
+    return null
+  }
+}
+
 const read_body = async request => {
   const chunks = []
   let size = 0
@@ -248,12 +256,13 @@ const site_caller = (path, request, host_pass_secret) => {
 const answer_host_alerts = async (
   request,
   response,
-  { alert_call, alert_webhook, log, storage }
+  { alert_call, alert_webhook, host_statuses, log, storage }
 ) => {
   if (!alert_call(request)) throw new Status(HTTP.UNAUTHORIZED)
   const sent = await run_host_alerts({
     storage,
     webhook: alert_webhook,
+    statuses: host_statuses,
     warn: message => log(hash_phones(message))
   })
   response.writeHead(HTTP.OK, {
@@ -264,13 +273,19 @@ const answer_host_alerts = async (
 }
 
 /** GET /hosts/quiet.json: the admin's host health report. */
-const answer_quiet = async (response, who, { admins, storage }) => {
+const answer_quiet = async (
+  response,
+  who,
+  { admins, host_statuses, storage }
+) => {
   if (!(await admins.has(who.phone))) throw new Status(HTTP.FORBIDDEN)
   response.writeHead(HTTP.OK, {
     'content-type': 'application/json',
     'cache-control': 'no-store'
   })
-  response.end(JSON.stringify(await host_health(storage)))
+  response.end(
+    JSON.stringify(await host_health(storage, { statuses: host_statuses }))
+  )
 }
 
 /**
@@ -283,6 +298,7 @@ const answer_quiet = async (response, who, { admins, storage }) => {
  * @param {string | undefined} options.host_pass_secret enables the pass routes
  * @param {string | null} [options.alert_token]
  * @param {string | null} [options.alert_webhook]
+ * @param {(() => Promise<Map<string, string>>) | null} [options.host_statuses] provider status per host name
  * @param {string[]} [options.origins] sites allowed to read and write
  * @param {{ app_id: string, private_key: string } | null} [options.git_app]
  * @param {typeof fetch} [options.git_fetch]
@@ -296,6 +312,7 @@ export const sync_service = ({
   host_pass_secret,
   alert_token = null,
   alert_webhook = null,
+  host_statuses = null,
   origins = [],
   git_app = null,
   git_fetch = fetch,
@@ -410,6 +427,7 @@ export const sync_service = ({
       await answer_host_alerts(request, response, {
         alert_call,
         alert_webhook,
+        host_statuses,
         log,
         storage
       })
@@ -418,7 +436,7 @@ export const sync_service = ({
     if (path === 'hosts/quiet.json' && method === 'GET') {
       const who = await who_is(request)
       if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
-      await answer_quiet(response, who, { admins, storage })
+      await answer_quiet(response, who, { admins, host_statuses, storage })
       return who
     }
     if (path === 'v1/git-token' && method === 'POST') {
@@ -448,13 +466,7 @@ export const sync_service = ({
 
   return create_server(async (request, response) => {
     const started = Date.now()
-    /** @type {string | null} */
-    let path = (request.url ?? '/').split('?')[0].slice(1)
-    try {
-      path = decodeURIComponent(path)
-    } catch {
-      path = null
-    }
+    const path = request_path(request.url)
     const { origin } = request.headers
     /** @type {{ phone: string } | { host_name: string } | { recovery: string, id: string, paths: string[] | null } | { harness: string, id: string, paths: string[] | null } | null} */
     let who = null

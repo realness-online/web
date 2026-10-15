@@ -29,7 +29,7 @@ before(async () => {
     rights: cache,
     project: issuer.project,
     certs: issuer.certs,
-    origins: ['https://brayness.example'],
+    origins: ['https://realness.example'],
     log: l => lines.push(l)
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -361,11 +361,11 @@ test('only allowed sites may call from a browser', async () => {
         'access-control-request-headers': 'authorization'
       }
     })
-  const good = await preflight('https://brayness.example')
+  const good = await preflight('https://realness.example')
   assert.equal(good.status, 204)
   assert.equal(
     good.headers.get('access-control-allow-origin'),
-    'https://brayness.example'
+    'https://realness.example'
   )
   assert.match(
     good.headers.get('access-control-allow-headers'),
@@ -376,11 +376,11 @@ test('only allowed sites may call from a browser', async () => {
   assert.equal(bad.headers.get('access-control-allow-origin'), null)
 
   const read = await call('GET', `people/${A}/posters/`, {
-    headers: { origin: 'https://brayness.example' }
+    headers: { origin: 'https://realness.example' }
   })
   assert.equal(
     read.headers.get('access-control-allow-origin'),
-    'https://brayness.example'
+    'https://realness.example'
   )
   assert.equal(read.headers.get('access-control-expose-headers'), 'etag')
   const stranger_site = await call('GET', `people/${A}/posters/`, {
@@ -448,12 +448,12 @@ test('a global admin reads every loop and may only request a stop', async () => 
 })
 
 test('a global admin reads host status; a person and a forger cannot', async () => {
-  const key = 'hosts/brayness-1/status.html'
+  const key = 'hosts/realness-1/status.html'
   await storage.put('admins.html', `<a href="tel:${B}">admin</a>`)
   await storage.put(key, '<article itemscope itemtype="/host"></article>\n')
   assert.equal(await status('GET', key, { headers: as(B) }), 200)
   const hosts = await (await call('GET', 'hosts/', { headers: as(B) })).json()
-  assert.deepEqual(hosts.folders, ['brayness-1'])
+  assert.deepEqual(hosts.folders, ['realness-1'])
   assert.equal(await status('GET', key, { headers: as(A) }), 403)
   assert.equal(
     await status('PUT', key, { headers: as(B), body: 'forged' }),

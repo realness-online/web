@@ -16,7 +16,8 @@ const record = (id, state, age, owner = '+14155550123') => ({
 function fake(records) {
   const store = Object.create(ActorStore.prototype)
   store.lock = { run: work => work() }
-  store.busy = new Set()
+  store.busy = new Map()
+  store.touch = async () => {}
   store.list = () => records
   return store
 }
@@ -30,7 +31,7 @@ test('sweep steps each stale actor once and leaves busy ones alone', async () =>
     record('a-ownerless', 'stopped', EXPORT_AFTER, null)
   ]
   const store = fake(records)
-  store.busy.add('a-run')
+  store.beginWork('a-run', 'turn:1')
   const applied = []
   const done = await store.sweep({
     now,
@@ -72,4 +73,23 @@ test('k1: with sync, sweep retires a synced idle actor instead of dropping it to
     ['a-synced', 'retire'],
     ['a-unsynced', 'disk']
   ])
+})
+
+test('work is held per key: a second release, or another key, does not free the actor', () => {
+  const store = fake([])
+  store.beginWork('a-1', 'turn:1')
+  store.beginWork('a-1', 'connection:1')
+  store.beginWork('a-1', 'loop')
+  store.beginWork('a-1', 'loop')
+  assert.deepEqual(store.activity(), {
+    actors: 1,
+    kinds: { turn: 1, connection: 1, loop: 1 }
+  })
+  store.endWork('a-1', 'turn:1')
+  store.endWork('a-1', 'turn:1')
+  assert.equal(store.isBusy('a-1'), true)
+  store.endWork('a-1', 'connection:1')
+  store.endWork('a-1', 'loop')
+  assert.equal(store.isBusy('a-1'), false)
+  assert.deepEqual(store.activity(), { actors: 0, kinds: {} })
 })

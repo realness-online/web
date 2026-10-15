@@ -8,7 +8,7 @@ TREE="${TREE:-$ROOT/template-tree}"
 IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
 STAGE="${STAGE:-full}"
-HARNESS_TAR="${HARNESS_TAR:-$OUT/brayness-harness.tar.gz}"
+HARNESS_TAR="${HARNESS_TAR:-$OUT/realness-harness.tar.gz}"
 GUEST_SRC="${GUEST_SRC:-$REPO/server/host/guest}"
 RUNS="${RUNS_DIR:-$OUT}"
 RUN="$RUNS/template-$(date -u +%Y%m%dT%H%M%SZ)"
@@ -51,7 +51,7 @@ tar xzf "$ROOT/$UBUNTU_BASE" -C "$TREE"
 printf '  %s unpacked: %s\n' "$UBUNTU_BASE" "$(du -sh "$TREE" | cut -f1)"
 
 log "boot config"
-echo brayness > "$TREE/etc/hostname"
+echo realness > "$TREE/etc/hostname"
 printf '# no fstab: Firecracker passes root=/dev/vda rw on the cmdline\n' > "$TREE/etc/fstab"
 : > "$TREE/etc/resolv.conf"
 
@@ -59,24 +59,24 @@ printf '#!/bin/sh\nexit 101\n' > "$TREE/usr/sbin/policy-rc.d"
 chmod 0755 "$TREE/usr/sbin/policy-rc.d"
 
 install -m 0755 "$GUEST_SRC/fcnet-setup.sh" "$TREE/usr/local/bin/fcnet-setup.sh"
-install -m 0755 "$GUEST_SRC/brayness-net-up" "$TREE/usr/local/bin/brayness-net-up"
-install -m 0755 "$GUEST_SRC/brayness-agent.py" "$TREE/usr/local/bin/brayness-agent"
-install -m 0755 "$GUEST_SRC/brayness-pty" "$TREE/usr/local/bin/brayness-pty"
-install -m 0755 "$GUEST_SRC/brayness-chat" "$TREE/usr/local/bin/brayness-chat"
-install -m 0644 "$GUEST_SRC/brayness-chat.md" "$TREE/usr/local/share/brayness-chat.md"
-install -m 0755 "$GUEST_SRC/brayness-actor-init" "$TREE/usr/local/bin/brayness-actor-init"
-install -m 0755 "$GUEST_SRC/brayness-publish" "$TREE/usr/local/bin/brayness-publish"
-install -m 0755 "$GUEST_SRC/brayness-chrome" "$TREE/usr/local/bin/brayness-chrome"
-install -m 0755 "$GUEST_SRC/brayness-read" "$TREE/usr/local/bin/brayness-read"
-install -m 0755 "$GUEST_SRC/brayness-site" "$TREE/usr/local/bin/brayness-site"
-install -m 0755 "$GUEST_SRC/brayness-loop-run" "$TREE/usr/local/bin/brayness-loop-run"
-install -m 0755 "$GUEST_SRC/brayness-loop" "$TREE/usr/local/bin/brayness-loop"
-install -m 0755 "$GUEST_SRC/brayness-recover" "$TREE/usr/local/bin/brayness-recover"
-install -m 0755 "$GUEST_SRC/brayness-model-pass" "$TREE/usr/local/bin/brayness-model-pass"
-install -m 0644 "$GUEST_SRC/brayness-net.service" "$TREE/etc/systemd/system/brayness-net.service"
-install -m 0644 "$GUEST_SRC/brayness-vsock.service" "$TREE/etc/systemd/system/brayness-vsock.service"
-install -m 0644 "$GUEST_SRC/brayness-pty.service" "$TREE/etc/systemd/system/brayness-pty.service"
-install -m 0644 "$GUEST_SRC/brayness-chat.service" "$TREE/etc/systemd/system/brayness-chat.service"
+install -m 0755 "$GUEST_SRC/realness-net-up" "$TREE/usr/local/bin/realness-net-up"
+install -m 0755 "$GUEST_SRC/realness-agent.py" "$TREE/usr/local/bin/realness-agent"
+install -m 0755 "$GUEST_SRC/realness-pty" "$TREE/usr/local/bin/realness-pty"
+install -m 0755 "$GUEST_SRC/realness-chat" "$TREE/usr/local/bin/realness-chat"
+install -m 0644 "$GUEST_SRC/realness-chat.md" "$TREE/usr/local/share/realness-chat.md"
+install -m 0755 "$GUEST_SRC/realness-actor-init" "$TREE/usr/local/bin/realness-actor-init"
+install -m 0755 "$GUEST_SRC/realness-publish" "$TREE/usr/local/bin/realness-publish"
+install -m 0755 "$GUEST_SRC/realness-chrome" "$TREE/usr/local/bin/realness-chrome"
+install -m 0755 "$GUEST_SRC/realness-read" "$TREE/usr/local/bin/realness-read"
+install -m 0755 "$GUEST_SRC/realness-site" "$TREE/usr/local/bin/realness-site"
+install -m 0755 "$GUEST_SRC/realness-loop-run" "$TREE/usr/local/bin/realness-loop-run"
+install -m 0755 "$GUEST_SRC/realness-loop" "$TREE/usr/local/bin/realness-loop"
+install -m 0755 "$GUEST_SRC/realness-recover" "$TREE/usr/local/bin/realness-recover"
+install -m 0755 "$GUEST_SRC/realness-model-pass" "$TREE/usr/local/bin/realness-model-pass"
+install -m 0644 "$GUEST_SRC/realness-net.service" "$TREE/etc/systemd/system/realness-net.service"
+install -m 0644 "$GUEST_SRC/realness-vsock.service" "$TREE/etc/systemd/system/realness-vsock.service"
+install -m 0644 "$GUEST_SRC/realness-pty.service" "$TREE/etc/systemd/system/realness-pty.service"
+install -m 0644 "$GUEST_SRC/realness-chat.service" "$TREE/etc/systemd/system/realness-chat.service"
 
 cp /etc/resolv.conf "$TREE/etc/resolv.conf"
 
@@ -113,7 +113,7 @@ chroot "$TREE" dpkg-query -W systemd git socat python3 fd-find > /dev/null \
 
 log "enabling units"
 systemctl --root="$TREE" enable \
-  serial-getty@ttyS0.service brayness-net.service brayness-vsock.service brayness-pty.service brayness-chat.service
+  serial-getty@ttyS0.service realness-net.service realness-vsock.service realness-pty.service realness-chat.service
 
 chroot "$TREE" passwd -l root > /dev/null 2>&1 || true
 rm -f "$TREE/etc/systemd/system/sockets.target.wants/ssh.socket"
@@ -130,7 +130,7 @@ log "node $NODE_VERSION"
 tar xJf "$ROOT/$NODE" -C "$TREE/usr/local" --strip-components=1
 chroot "$TREE" /usr/local/bin/node --version
 
-runtime="$TREE/usr/local/lib/brayness"
+runtime="$TREE/usr/local/lib/realness"
 mkdir -p "$runtime"
 bash "$REPO/tools/control/scripts/stage-runtime.sh" "$runtime"
 
@@ -153,59 +153,61 @@ rm -f "$TREE/usr/local/bin/agent-browser"
 cat > "$TREE/usr/local/bin/agent-browser" <<'WRAPPER'
 REAL=/usr/local/lib/node_modules/agent-browser/bin/agent-browser.js
 case "${1:-}" in ""|--version|-V|--help|-h|help|install|skills) exec /usr/local/bin/node "$REAL" "$@" ;; esac
-LEASE="/tmp/brayness-chrome-$(id -u)"
+LEASE="/tmp/realness-chrome-$(id -u)"
 url="$(cat "$LEASE" 2> /dev/null)"
 if [ -z "$url" ] || ! curl -fs -m 3 -o /dev/null "$url/json/version"; then
-  url="$(/usr/local/bin/brayness-chrome)" || exit 1
+  url="$(/usr/local/bin/realness-chrome)" || exit 1
   printf '%s\n' "$url" > "$LEASE"
 fi
 exec /usr/local/bin/node "$REAL" --cdp "$url" "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/agent-browser"
 
-log "stock harness -> /brayness"
+log "stock harness -> /realness"
 [ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
-mkdir -p "$TREE/brayness"
-tar xzf "$HARNESS_TAR" -C "$TREE/brayness"
-mkdir -p "$TREE/usr/local/share/brayness-starter"
-tar xzf "$HARNESS_TAR" -C "$TREE/usr/local/share/brayness-starter"
-chmod -R a+rX "$TREE/usr/local/share/brayness-starter"
+mkdir -p "$TREE/realness"
+tar xzf "$HARNESS_TAR" -C "$TREE/realness"
+mkdir -p "$TREE/usr/local/share/realness-starter"
+tar xzf "$HARNESS_TAR" -C "$TREE/usr/local/share/realness-starter"
+chmod -R a+rX "$TREE/usr/local/share/realness-starter"
 
 log "harness pi-packages"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --ignore-scripts --no-fund --no-audit --prefix /brayness/.pi/agent/npm
+  npm install --ignore-scripts --no-fund --no-audit --prefix /realness/.pi/agent/npm
+
+log "harness dependencies"
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
+  npm ci --ignore-scripts --no-fund --no-audit --prefix /realness/.pi
 
 log "prettier for auto-fix"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /brayness prettier@3.9.9
+  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /realness prettier@3.9.9
 
-cat > "$TREE/usr/local/bin/brayness" <<'WRAPPER'
-export BRAYNESS_STATE="${BRAYNESS_STATE:-/brayness/.pi/agent/state}"
-export BRAYNESS_ACTOR=1
-if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/brayness-publish "$@"; fi
-if [ "${1:-}" = chrome ]; then shift; exec /usr/local/bin/brayness-chrome "$@"; fi
+cat > "$TREE/usr/local/bin/realness" <<'WRAPPER'
+if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/realness-publish "$@"; fi
+if [ "${1:-}" = chrome ]; then shift; exec /usr/local/bin/realness-chrome "$@"; fi
 case "${1:-}" in sync|turn-start|turn-end|fetch|git-credential|files|store|login|logout|whoami|ls|cat|cp|rm|example)
-  exec /usr/local/bin/node /usr/local/lib/brayness/tools/cli/bin/brayness.js "$@" ;;
+  exec /usr/local/bin/node /usr/local/lib/realness/tools/cli/bin/actor.js "$@" ;;
 esac
-if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/brayness-loop "$@"; fi
+if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/realness-loop "$@"; fi
 case "${1:-}" in -h|--help)
-  echo "brayness publish [dir]  serve a built site from this actor; prints its link"
-  echo "brayness chrome [return]  lease a fresh Chrome; prints its DevTools address"
-  echo "brayness loop \"<goal>\"  start a loop in its own actor; prints its id"
-  echo "brayness loop report <id>  a loop's status, runs, and log tail"
-  echo "brayness fetch <path>  pull a file this light actor left in storage"
+  echo "realness publish [dir]  serve a built site from this actor; prints its link"
+  echo "realness chrome [return]  lease a fresh Chrome; prints its DevTools address"
+  echo "realness loop \"<goal>\"  start a loop in its own actor; prints its id"
+  echo "realness loop report <id>  a loop's status, runs, and log tail"
+  echo "realness fetch <path>  pull a file this light actor left in storage"
   echo ;;
 esac
 export PI_OFFLINE=1
 export TMPDIR=/var/tmp
-exec /brayness/bin/pi "$@"
+exec /realness/bin/pi "$@"
 WRAPPER
-chmod 0755 "$TREE/usr/local/bin/brayness"
+chmod 0755 "$TREE/usr/local/bin/realness"
 
-chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/brayness git-credential'
+chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/realness git-credential'
 chroot "$TREE" git config --system credential.https://github.com.useHttpPath true
 
-cat > "$TREE/etc/tmpfiles.d/brayness-pi-cache.conf" <<'TMPFILES'
+cat > "$TREE/etc/tmpfiles.d/realness-pi-cache.conf" <<'TMPFILES'
 x /var/tmp/jiti
 x /var/tmp/node-compile-cache
 TMPFILES
@@ -226,31 +228,31 @@ chroot "$TREE" apt-get clean
 
 chroot "$TREE" /usr/bin/fdfind --version
 
-log "brayness starts, and resolves pi without the network"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
-  /usr/local/bin/brayness --version
-chroot "$TREE" /brayness/node_modules/.bin/prettier --version
+log "realness starts, and resolves pi without the network"
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
+  /usr/local/bin/realness --version
+chroot "$TREE" /realness/node_modules/.bin/prettier --version
 
 log "warm the extension caches"
 rm -rf "$TREE/var/tmp/jiti" "$TREE/var/tmp/node-compile-cache"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
-  sh -c 'cd /brayness && /usr/local/bin/brayness --help > /dev/null'
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
+  sh -c 'cd /realness && /usr/local/bin/realness --help > /dev/null'
 jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
 [ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
 log "jiti cache: $jiti_files files"
 
-log "brayness user owns /brayness and the caches"
-chroot "$TREE" id -u brayness > /dev/null 2>&1 \
-  || chroot "$TREE" useradd -M -U -d /brayness -s /bin/bash brayness
-chroot "$TREE" chown -R brayness:brayness /brayness /var/tmp/jiti /var/tmp/node-compile-cache
-cat > "$TREE/etc/tmpfiles.d/brayness-run.conf" <<'TMPFILES'
-d /run/brayness 0755 brayness brayness
+log "realness user owns /realness and the caches"
+chroot "$TREE" id -u realness > /dev/null 2>&1 \
+  || chroot "$TREE" useradd -M -U -d /realness -s /bin/bash realness
+chroot "$TREE" chown -R realness:realness /realness /var/tmp/jiti /var/tmp/node-compile-cache
+cat > "$TREE/etc/tmpfiles.d/realness-run.conf" <<'TMPFILES'
+d /run/realness 0755 realness realness
 TMPFILES
 
 if [ "$STAGE" != base ]; then
   log "skill checks"
-  chroot "$TREE" runuser -u brayness -- env PATH=/usr/local/bin:/usr/bin:/bin HOME=/brayness \
-    sh -c 'cd /brayness && node bin/check-skills.js --run --no-browser' \
+  chroot "$TREE" runuser -u realness -- env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
+    sh -c 'cd /realness && node bin/check-skills.js --run --no-browser' \
     || { echo "a shipped skill's check failed" >&2; exit 1; }
 fi
 

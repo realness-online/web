@@ -1,0 +1,24 @@
+[Unit]
+Description=Realness Chrome (headless, DevTools on localhost 9223)
+After=realness-net.service
+Requires=realness-net.service
+
+[Service]
+Type=exec
+User=chrome
+Group=chrome
+# Each boot starts with an empty profile; the snapshot keeps the warm one.
+ExecStartPre=+/bin/sh -c 'rm -rf /var/lib/chrome && install -d -o chrome -g chrome -m 0700 /var/lib/chrome'
+ExecStart=/opt/chrome/headless_shell \
+  --remote-debugging-port=9223 \
+  --user-data-dir=/var/lib/chrome --no-first-run --no-default-browser-check \
+  --disable-gpu --disable-dev-shm-usage --hide-scrollbars --mute-audio \
+  about:blank
+Environment=HOME=/var/lib/chrome
+NoNewPrivileges=yes
+StandardOutput=journal+console
+StandardError=journal+console
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

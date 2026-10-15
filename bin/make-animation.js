@@ -16,8 +16,8 @@ import {
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const __filename = file_url_to_path(import.meta.url)
-const brayness_root = path.join(__dirname, '..')
-const out_dir = path.join(brayness_root, 'artifacts', 'animation')
+const realness_root = path.join(__dirname, '..')
+const out_dir = path.join(realness_root, 'artifacts', 'animation')
 
 const PROGRESS_TICK_MS = 500
 const US_PER_SECOND = 1e6

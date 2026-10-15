@@ -48,12 +48,15 @@ for (let i = 0; i < FILES; i++) {
 const timed = async label => {
   requests = 0
   const start = performance.now()
-  const report = await sync_harness({ root: harness, store })
+  const report = await sync_harness({
+    root: harness,
+    store,
+    state: join(base, 'state')
+  })
   console.log(
     `${label}: ${Math.round(performance.now() - start)} ms, ${requests} requests, ${report.harness.files.listing}`
   )
 }
-process.env.BRAYNESS_STATE = join(base, 'state')
 await timed(`first sync, ${FILES} files`)
 await new Promise(done => setTimeout(done, 6000))
 await timed('no change')

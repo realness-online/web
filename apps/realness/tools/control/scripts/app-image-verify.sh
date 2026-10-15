@@ -20,7 +20,7 @@ bad()  { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
 
 log_absences() {
   local out
-  for path in /brayness /usr/local/bin/pi /usr/bin/git /usr/bin/socat \
+  for path in /realness /usr/local/bin/pi /usr/bin/git /usr/bin/socat \
     /usr/local/bin/node /usr/bin/python3 /usr/bin/perl; do
     out="$(debugfs -R "stat $path" "$IMG" 2> /dev/null | head -1 || true)"
     if [ -z "$out" ]; then ok "absent: $path"; else bad "present: $path"; fi
@@ -97,7 +97,7 @@ else
   ip neigh show dev "$TAP" >&2 || true
 fi
 
-for unit in brayness-vsock brayness-pty getty@ serial-getty getty.target e2scrub; do
+for unit in realness-vsock realness-pty getty@ serial-getty getty.target e2scrub; do
   if grep -q "$unit" "$RUN/serial.log"; then bad "unit present: $unit"; else ok "no $unit"; fi
 done
 

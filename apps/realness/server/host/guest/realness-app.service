@@ -1,0 +1,25 @@
+[Unit]
+Description=Realness app (its files, its runtime, its one command)
+# No code disk means a bare image boot (app-image-verify.sh): nothing to run.
+ConditionPathExists=/dev/disk/by-label/app-code
+After=realness-net.service
+Requires=realness-net.service
+
+[Service]
+Type=exec
+User=app
+Group=app
+# `+` runs the mount step as root; the app itself never is.
+ExecStartPre=+/usr/local/bin/realness-app-mount
+ExecStart=/usr/local/bin/realness-app-start
+Environment=PORT=8080
+Environment=PATH=/opt/runtime/bin:/usr/bin:/bin
+NoNewPrivileges=yes
+# The serial log is the host's only view in; the app's output lands there.
+StandardOutput=journal+console
+StandardError=journal+console
+# u5 supervises restarts; here a crash stays down and visible.
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

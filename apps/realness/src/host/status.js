@@ -6,6 +6,7 @@ import {
 import { freemem, hostname, totalmem, uptime } from 'node:os'
 import { metrics_from, metric_fields } from './metrics.js'
 import { connect } from './vsock.js'
+import { LAST_TAP as TAP_LIMIT } from './host.js'
 import { KIB } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- guests are probed one at a time to bound host load */
 
@@ -14,7 +15,6 @@ export { read_status } from '#root/src/sync/host-status.js'
 
 const PROBE_LIMIT = 4
 const PROBE_TIMEOUT_MS = 2000
-const TAP_LIMIT = 63
 const TRACE_WINDOW = 200
 
 const seed_state = seed => {
@@ -31,6 +31,19 @@ const item = (type, values) =>
   `<article itemscope itemtype="/${type}">${Object.entries(values)
     .map(([name, value]) => `<meta itemprop="${name}" content="${esc(value)}">`)
     .join('')}</article>\n`
+
+const HELD_KINDS = ['connection', 'turn', 'loop', 'exec', 'browser']
+
+/** Busy actors and held work by kind as flat record fields; absent when unknown. */
+export const activity_fields = activity =>
+  activity
+    ? {
+        actors_busy: activity.actors,
+        ...Object.fromEntries(
+          HELD_KINDS.map(kind => [`held_${kind}`, activity.kinds[kind] ?? 0])
+        )
+      }
+    : {}
 
 /** The host, its actors, and its apps as HTML Lines. */
 /**
@@ -259,6 +272,7 @@ export class HostStatus {
           loop => loop.status === 'running'
         ).length,
         apps: apps.length,
+        ...activity_fields(this.store.activity?.()),
         ...metrics
       },
       actors: actors.map(({ id, owner, state, created, last_activity }) => ({

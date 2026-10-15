@@ -1,7 +1,7 @@
 /**
  * The contract against a real bucket. Skipped unless GCS_TEST_BUCKET is set:
  *
- *   npm run test:gcs     realness-development, under brayness-test/<run>/
+ *   npm run test:gcs     realness-development, under realness-test/<run>/
  *
  * Every run writes under its own prefix and deletes it afterwards.
  */
@@ -13,7 +13,7 @@ import { contract } from '../../src/can/contract.js'
 import { create_gcs, gcloud_token } from '../../src/can/gcs.js'
 
 const bucket = process.env.GCS_TEST_BUCKET
-const run = `brayness-test/${randomUUID()}/`
+const run = `realness-test/${randomUUID()}/`
 const token = gcloud_token()
 const notes =
   '# Notes\n\n' + 'A line that repeats, the way markdown notes do.\n'.repeat(50)

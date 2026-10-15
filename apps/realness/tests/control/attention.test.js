@@ -38,8 +38,8 @@ const clean = {
     { id: 'a-3', status: 'running', started: ago(10), depth: 1 },
     { id: 'a-4', status: 'stopped', started: ago(600), depth: 1 }
   ],
-  services: [{ name: 'brayness-sync', found: true, ready: true }],
-  errors: [{ service: 'brayness-sync', count: 0, last: '' }],
+  services: [{ name: 'realness-sync', found: true, ready: true }],
+  errors: [{ service: 'realness-sync', count: 0, last: '' }],
   spend: { cost: 4.99 }
 }
 const kinds = view =>
@@ -57,8 +57,8 @@ test('a quiet host is named, with its age or the lack of one', () => {
     ...clean,
     quiet: {
       quiet: [
-        { name: 'brayness-1', age_s: null },
-        { name: 'brayness-2', age_s: 200 }
+        { name: 'realness-1', age_s: null },
+        { name: 'realness-2', age_s: 200 }
       ]
     }
   }
@@ -69,20 +69,20 @@ test('a quiet host is named, with its age or the lack of one', () => {
   )
   assert.match(
     lines[0].text,
-    /brayness-1 stopped reporting \(no readable time\)/
+    /realness-1 stopped reporting \(no readable time\)/
   )
-  assert.match(lines[1].text, /brayness-2 stopped reporting \(200s ago\)/)
+  assert.match(lines[1].text, /realness-2 stopped reporting \(200s ago\)/)
 })
 
 test('host health shows in the picture, and an undeployed watch is called out', () => {
   assert.match(overview_text(clean, []), /hosts not reporting: none/)
   const late = {
     ...clean,
-    quiet: { quiet: [{ name: 'brayness-1', age_s: 400 }] }
+    quiet: { quiet: [{ name: 'realness-1', age_s: 400 }] }
   }
   assert.match(
     overview_text(late, []),
-    /hosts not reporting: brayness-1 \(400s\)/
+    /hosts not reporting: realness-1 \(400s\)/
   )
   const old = {
     ...clean,
@@ -211,13 +211,13 @@ test('each rule flags its own case', () => {
       { loops: [{ id: 'a-3', status: 'running', started: ago(5), depth: 2 }] },
       'deep'
     ],
-    [{ services: [{ name: 'brayness-proxy', found: false }] }, 'service'],
+    [{ services: [{ name: 'realness-proxy', found: false }] }, 'service'],
     [
-      { services: [{ name: 'brayness-proxy', found: true, ready: false }] },
+      { services: [{ name: 'realness-proxy', found: true, ready: false }] },
       'service'
     ],
     [
-      { errors: [{ service: 'brayness-sync', count: 3, last: 'boom' }] },
+      { errors: [{ service: 'realness-sync', count: 3, last: 'boom' }] },
       'errors'
     ],
     [{ spend: { cost: 5.01 } }, 'spend'],
@@ -241,7 +241,7 @@ test('each rule flags its own case', () => {
       'probe'
     ],
     [{ unread: [{ source: 'errors', error: 'gcloud: auth' }] }, 'unread'],
-    [{ quiet: { quiet: [{ name: 'brayness-1', age_s: 400 }] } }, 'down'],
+    [{ quiet: { quiet: [{ name: 'realness-1', age_s: 400 }] } }, 'down'],
     [{ quiet: { setup: 'sync does not report host health yet' } }, 'watch']
   ]
   for (const [view, kind] of cases)

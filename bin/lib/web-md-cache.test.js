@@ -286,7 +286,7 @@ test('the actor engine renders a page when one is installed', async t => {
           PATH: `${node_only}:/usr/bin:/bin`,
           WEB_MD_CACHE: join(scratch, 'cache-engine'),
           WEB_MD_LOG: join(scratch, 'log-engine'),
-          BRAYNESS_ACTOR: '1',
+          REALNESS_ACTOR: '1',
           WEB_MD_ENGINE: engine
         }
       },
@@ -300,7 +300,7 @@ test('the actor engine renders a page when one is installed', async t => {
 
 test('the actor engine reports its own failure and stops', async t => {
   const engine = join(scratch, 'bad-engine')
-  writeFileSync(engine, "#!/bin/sh\necho 'brayness-read: page never loaded' 1>&2\nexit 3\n", { mode: 0o755 })
+  writeFileSync(engine, "#!/bin/sh\necho 'realness-read: page never loaded' 1>&2\nexit 3\n", { mode: 0o755 })
   const result = await new Promise(done =>
     execFile(
       'node',
@@ -310,7 +310,7 @@ test('the actor engine reports its own failure and stops', async t => {
           PATH: `${node_only}:/usr/bin:/bin`,
           WEB_MD_CACHE: join(scratch, 'cache-engine2'),
           WEB_MD_LOG: join(scratch, 'log-engine2'),
-          BRAYNESS_ACTOR: '1',
+          REALNESS_ACTOR: '1',
           WEB_MD_ENGINE: engine
         }
       },

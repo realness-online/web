@@ -10,7 +10,7 @@ import { MS_PER_SECOND, SECONDS_PER_HOUR } from '#root/lib/units.js'
 
 const b64 = value => Buffer.from(JSON.stringify(value)).toString('base64url')
 
-export const dev_issuer = (project = 'brayness-dev') => {
+export const dev_issuer = (project = 'realness-dev') => {
   const { privateKey, publicKey } = generate_key_pair_sync('rsa', {
     modulusLength: 2048
   })

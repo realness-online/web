@@ -1,4 +1,4 @@
-# Brayness webspace documentation
+# Realness webspace documentation
 
 How the webspace is built and why. The [README](README.md) covers what it is and
 how to run it; this file holds the decisions, the record of what each milestone
@@ -18,8 +18,8 @@ were close.
   and storage share `realness-development`; production waits in
   `realness-online`. Early hosts ran in `realness-online`; the proofs below say
   so where it matters.
-- **Brayness owns its proxy.** `brayness-proxy` runs in `realness-development`
-  beside `brayness-sync`, sharing its phone pins; `realness-ops` keeps no agent
+- **Realness owns its proxy.** `realness-proxy` runs in `realness-development`
+  beside `realness-sync`, sharing its phone pins; `realness-ops` keeps no agent
   handler and no `AGENT_PASS`.
 - **The d3 host is `n2-standard-4` in `us-central1-a`**: a 20 GB `pd-standard`
   boot disk plus a 30 GB `pd-standard` PD for actors: about
@@ -31,16 +31,16 @@ were close.
   the boot disk, the xfs volume (`/etc/fstab` by UUID) and `/dev/kvm`; the disks
   are the only floor, $0.80/mo. A systemd timer checks every 5 minutes and stops
   the host after 30 with no `firecracker`, no `node server/host/main.js` and no
-  interactive login; `/run/brayness-hold` (tmpfs) holds it open for work that is
+  interactive login; `/run/realness-hold` (tmpfs) holds it open for work that is
   not a running VM. h3 folds host lifecycle into the host.
 - **The artifact set is the actor's home directory and the trace is its event
   log** (r7). Files come back and processes do not, and nothing replays a
-  command. A bundle is `artifacts.tar.gz` (of `/brayness`) plus `trace.jsonl`
+  command. A bundle is `artifacts.tar.gz` (of `/realness`) plus `trace.jsonl`
   plus a manifest holding both sha256s, the identity the actor had, and the seed
-  it forked from. The harness is in `/brayness`, so it travels; identity stays
+  it forked from. The harness is in `/realness`, so it travels; identity stays
   behind, so restoring one export twice is two actors with the same files and
   different identities. Bundles go to the environment's bucket,
-  `gs://realness-development-brayness/actors/<id>/bundle.tar.gz`, moved by the
+  `gs://realness-development-realness/actors/<id>/bundle.tar.gz`, moved by the
   control plane because the host has no credentials.
 - **Idle holds no rented capacity.** An actor is its trace, its artifacts and
   its actors directory; the microVM disk and memory are caches that can be
@@ -54,7 +54,7 @@ were close.
   control plane, never the host's own timer. Per-host provisioned disks are the
   whole bill at hundreds of hosts (20 GB standard is $0.80/mo
   each), and the 30 GB-months allowance is shared and per account, so it does
-  not scale. The fleet image exists: `brayness-host`, family `brayness-host`, 20
+  not scale. The fleet image exists: `realness-host`, family `realness-host`, 20
   GB geometry. A stopped host is a 20 GB boot plus a 30 GB actors volume, both
   standard, and `host-down.sh --delete` returns it to nothing but the image.
 - **A $20/mo Compute Engine budget on `realness-online`** alerts at 50/90/100%.
@@ -146,16 +146,16 @@ runbook.
   11/11
 - r7: a destroyed actor comes back: export, destroy, restore, 24 checks on the
   host, then the same restore from a bundle that went to
-  `gs://realness-online-brayness` and back byte for byte (13 + 11 checks), with
+  `gs://realness-online-realness` and back byte for byte (13 + 11 checks), with
   the 3 MiB file intact and the new actor holding its own identity
-- r8: the host loop is one command each way: `host-up.sh brayness-2 --smoke`
+- r8: the host loop is one command each way: `host-up.sh realness-2 --smoke`
   made a 20 GB host from the image and had it serving an actor in 2m50s (seed
-  36s, smoke 5/5), and `host-down.sh brayness-2 --delete` took the host and its
+  36s, smoke 5/5), and `host-down.sh realness-2 --delete` took the host and its
   volume away. A deleted host leaves the image as the fleet's only standing cost
 - r9: a host is deleted with a live actor on it and the actor comes back: 20
   checks, run in us-west1-b because us-central1 had no n2 capacity. The drain
   exported the actor, put its 3 MB bundle in
-  `gs://realness-online-brayness/actors/<id>/bundle.tar.gz` with a matching
+  `gs://realness-online-realness/actors/<id>/bundle.tar.gz` with a matching
   md5Hash, and took the instance and both disks away; `host-up.sh` built a host
   whose creation time is new and whose volume held none of it; the bundle came
   back, the 3 MiB payload hashed identically, the identity did not, and the
@@ -186,14 +186,14 @@ not the serial console.
 (`net-up.sh`). Guest addressing comes from Firecracker CI's own
 `fcnet-setup.sh`, which is already in the rootfs: it turns the MAC into an
 address, so `06:00:AC:10:00:02` is `172.16.0.2/30`. That script is also all it
-does - **no default route, no resolver**, so `brayness-net-up` adds both. The
+does - **no default route, no resolver**, so `realness-net-up` adds both. The
 gateway is the other address in the /30.
 
 **In.** A vsock device (`guest_cid` 3) and a host-local unix socket. Firecracker
 maps guest vsock ports 1:1 onto unix sockets: the host connects to `uds_path`,
 writes `CONNECT 52\n`, reads `OK <port>\n`, and gets a byte stream to the
-guest's listener. `brayness-vsock.service` runs `socat VSOCK-LISTEN:52,fork` in
-the guest, handing each connection to `brayness-agent`, which takes one JSON
+guest's listener. `realness-vsock.service` runs `socat VSOCK-LISTEN:52,fork` in
+the guest, handing each connection to `realness-agent`, which takes one JSON
 request per line (`argv`, `cwd`, `stdin_b64`) and answers with one (`exit_code`,
 `stdout_b64`, `stderr_b64`). Base64 so binary output survives a line-oriented
 channel; no shell, so `argv` is exec'd directly and an actor that wants a shell
@@ -285,14 +285,14 @@ the template image as baseline: the image ships an empty machine-id, and the
 restored clone resumes with one the seed's boot wrote, plus the seed's hostname,
 journal, `/tmp` and random-seed file. `f6-verify.sh` then boots the template
 once, writes two markers the seed owns, snapshots, forks a reflinked disk per
-actor with its own TAP, and runs `brayness-actor-init <id> <epoch>` on each.
+actor with its own TAP, and runs `realness-actor-init <id> <epoch>` on each.
 Before init the clones agree on machine-id; after, machine-id, hostname, journal
 and `/tmp` differ or are cleared, the clock is now, and a second init with the
 same id changes nothing: a disk-only reload is the same actor. Needs root (xfs,
 TAPs). `boot_id` stays shared: it is the kernel's, not the actor's, and identity
 is machine-id plus actor id.
 
-`brayness-actor-init` is installed by the template builder and called by the
+`realness-actor-init` is installed by the template builder and called by the
 host over the f2 channel, which is the one call r3's actor API makes.
 
 ### The actor API (r3a)
@@ -352,7 +352,7 @@ byte:
     server -> client   {"op": "data", "data_b64": "..."}
                        {"op": "exit", "code": 0}
 
-The other end is `brayness-pty` (vsock port 53, socat fork per connection),
+The other end is `realness-pty` (vsock port 53, socat fork per connection),
 which runs `/bin/bash` on a `pty.fork()` slave and copies between the master and
 the pipe. `TIOCSWINSZ` on the master is what makes a resize reach the shell. The
 relay never parses a frame, so the protocol has one definition and the browser
@@ -404,7 +404,7 @@ see the tiers. `tier` is `memory` or `disk`:
 
 A disk-tier reload does **not** load the seed's memory. That memory carries the
 seed's mounted filesystem and its caches for a disk the actor has been writing,
-so the guest reads the seed's stale view (a file just written under `/brayness`
+so the guest reads the seed's stale view (a file just written under `/realness`
 was invisible while `/etc` was fine), and dropping the caches surfaces an
 unclean ext4 journal (`Bad message`). Booting the disk replays the journal and
 mounts what it is actually given.
@@ -449,9 +449,9 @@ by another running actor refuses the reload.
 
 ### Sites and admin (a1j)
 
-Pi runs with the guest prompt `server/host/guest/brayness-chat.md`. It keeps editable
-site source under `/brayness/work/site`, publishes with `brayness publish`, and
-lists, restores, or removes with `brayness-site versions|restore|remove`.
+Pi runs with the guest prompt `server/host/guest/realness-chat.md`. It keeps editable
+site source under `/realness/work/site`, publishes with `realness publish`, and
+lists, restores, or removes with `realness-site versions|restore|remove`.
 Published sites live in sync, so the URL outlives the actor (see "Publish it at
 a URL").
 
@@ -477,7 +477,7 @@ actor's events.
 A bundle is three files in the volume's `exports/<id>/`:
 
 ```
-artifacts.tar.gz   the actor's harness and work (/brayness), gzipped
+artifacts.tar.gz   the actor's harness and work (/realness), gzipped
 trace.jsonl        every event the host saw
 manifest.json      sha256 and size of both, the identity it had, the seed it forked from
 ```
@@ -489,15 +489,15 @@ volume, which destroy does not remove. A restore copies the bundle's trace onto
 the new actor ahead of its own `create`, so the trace of an actor that is gone
 is the head of the trace that replaced it.
 
-**What travels is `/brayness`, and that is the whole contract.** It holds the
+**What travels is `/realness`, and that is the whole contract.** It holds the
 harness, so harness edits, Pi transcripts, and `work/` travel together. Identity
 (`/etc/machine-id`, the actor id) does not: restoring an identity would make two
-actors share one. An actor that writes outside `/brayness` is outside the
+actors share one. An actor that writes outside `/realness` is outside the
 contract, and `ARTIFACT_PATHS` in `src/host/actors.js` is the one place that
 decides. Files come back; processes do not; nothing replays.
 
 The mechanism is a loop mount, not a channel into the guest. A stopped actor's
-disk is a file on the actors volume, so the host mounts it, tars `/brayness`,
+disk is a file on the actors volume, so the host mounts it, tars `/realness`,
 and unmounts, with no size limit, no guest-side code, and no credentials. Export
 stops the actor first, because a live guest writes under the mount and mounting
 rw replays its journal for it, and leaves it stopped; `reload` brings it back.
@@ -510,7 +510,7 @@ identities.
 checks), and `scripts/r7-gcs-verify.sh` runs the same thing from the Mac with a
 GCS round trip in the middle, because the host has no credentials. The bundle is
 deleted from the volume before the restore, so what comes back is what the
-bucket held: `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`,
+bucket held: `gs://realness-online-realness/actors/<id>/bundle.tar.gz`,
 us-central1, standard.
 
 ### How many pages an actor dirties (m1)
@@ -536,7 +536,7 @@ its disks; `--delete` takes the disks too and leaves the image as the only cost.
 
 `host-down.sh --delete` does not ask what is on the host.
 `host-drain.sh <name> [--delete]` does: it exports every actor, streams each
-bundle to `gs://realness-online-brayness/actors/<id>/bundle.tar.gz`, checks what
+bundle to `gs://realness-online-realness/actors/<id>/bundle.tar.gz`, checks what
 the bucket stored against what was sent, drops the bundle from the volume, and
 only then deletes the instance and the disks it actually has. It runs on the
 control plane, not the host, because the host has no credentials, so it cannot
@@ -552,21 +552,21 @@ a stockout.
 
 ### The prod host (d3)
 
-`brayness-1` in `realness-online` (us-central1-a, `n2-standard-4`, nested virt
+`realness-1` in `realness-online` (us-central1-a, `n2-standard-4`, nested virt
 on). Every command runs from here and reaches the host over gcloud; the account
 is `sfryxell@gmail.com`. The host mirrors the Lima layout: `/opt/fc` holds the
 artifacts and `/opt/fc/actors/mnt` is the xfs actors volume.
 
 ```bash
-gcloud compute ssh brayness-1 --zone=us-central1-a --command='mkdir -p ~/brayness'
-gcloud compute scp --zone=us-central1-a --recurse scripts src brayness-1:~/brayness
+gcloud compute ssh realness-1 --zone=us-central1-a --command='mkdir -p ~/realness'
+gcloud compute scp --zone=us-central1-a --recurse scripts src realness-1:~/realness
 
-gcloud compute ssh brayness-1 --zone=us-central1-a --command='bash ~/brayness/scripts/d3-fetch-x86_64.sh'
-gcloud compute ssh brayness-1 --zone=us-central1-a --command='ROOT=/opt/fc RUNS_DIR=$HOME/brayness/runs bash ~/brayness/scripts/boot-check.sh'
-gcloud compute ssh brayness-1 --zone=us-central1-a --command='sudo bash ~/brayness/scripts/actors-volume.sh'
+gcloud compute ssh realness-1 --zone=us-central1-a --command='bash ~/realness/scripts/d3-fetch-x86_64.sh'
+gcloud compute ssh realness-1 --zone=us-central1-a --command='ROOT=/opt/fc RUNS_DIR=$HOME/realness/runs bash ~/realness/scripts/boot-check.sh'
+gcloud compute ssh realness-1 --zone=us-central1-a --command='sudo bash ~/realness/scripts/actors-volume.sh'
 
-gcloud compute instances stop brayness-1 --zone=us-central1-a     # manual stop
-gcloud compute instances start brayness-1 --zone=us-central1-a
+gcloud compute instances stop realness-1 --zone=us-central1-a     # manual stop
+gcloud compute instances start realness-1 --zone=us-central1-a
 ```
 
 `d3-fetch-x86_64.sh` is `guest-setup.sh` with the x86_64 SHA pinned; the f3
@@ -584,21 +584,21 @@ actors are `@notty` and do not count, so work that is not a running VM has to
 hold it open:
 
 ```bash
-sudo bash ~/brayness/server/host/scripts/idle-guard.sh
-sudo touch /run/brayness-hold     # tmpfs; cleared by a boot
+sudo bash ~/realness/server/host/scripts/idle-guard.sh
+sudo touch /run/realness-hold     # tmpfs; cleared by a boot
 ```
 
 A guest `poweroff` does become `TERMINATED`: with the hold removed and the host
 stopped, the timer stopped the host 2.5 minutes later, no API call involved.
-Resume with `gcloud compute instances start brayness-1`.
+Resume with `gcloud compute instances start realness-1`.
 
 #### A host from the image
 
-The family `brayness-host` bakes /opt/fc (pinned Node included), the scripts and
+The family `realness-host` bakes /opt/fc (pinned Node included), the scripts and
 the idle guard into a 20 GB-geometry image, so a host is one command:
 
 ```bash
-node tools/control/bin/webspace.js development host up brayness-2 --smoke
+node tools/control/bin/webspace.js development host up realness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
@@ -612,15 +612,15 @@ are checked with `check:host` through a tunnel instead (`.tooling.md`).
 
 Measured: **2m50s** from nothing to a host that serves an actor (the seed is 36s
 of that), and 5/5 on the smoke test.
-`webspace development host down brayness-2 --delete` takes it back to the image and
+`webspace development host down realness-2 --delete` takes it back to the image and
 leaves no disk behind.
 
 Bake a new image from a stopped host that has the change; the family serves the
 newest, and older images stay for rollback:
 
 ```bash
-gcloud compute images create brayness-host-v<N> --family brayness-host \
-  --source-disk brayness-1-boot --source-disk-zone us-central1-a
+gcloud compute images create realness-host-v<N> --family realness-host \
+  --source-disk realness-1-boot --source-disk-zone us-central1-a
 ```
 
 v3 carries Node and a source tree with only `server/host/`; a fresh host from it
@@ -634,19 +634,19 @@ build a seed, or `build_seed` stops with `no fc-tap0`.
 
 ### The loop on x86_64 (x1)
 
-`scripts/x1-verify.sh` runs on `brayness-1` and proves the port end to end: the
+`scripts/x1-verify.sh` runs on `realness-1` and proves the port end to end: the
 template is x86_64, the seed forks, and an actor runs a command and a terminal.
 The template build is arch-neutral: `template-build.sh` fetches its own inputs
 and picks amd64/x64 from `uname -m`, and the scripts resolve the repo from their
 own path instead of `/mnt/fc`.
 
 ```bash
-# on brayness-1, after d3
-sudo bash ~/brayness/scripts/template-build.sh
-bash ~/brayness/scripts/f3-verify.sh          # 19/19
-sudo bash ~/brayness/scripts/f4-verify.sh     # 7/7, the x1 done-when
+# on realness-1, after d3
+sudo bash ~/realness/scripts/template-build.sh
+bash ~/realness/scripts/f3-verify.sh          # 19/19
+sudo bash ~/realness/scripts/f4-verify.sh     # 7/7, the x1 done-when
 sudo node server/host/main.js serve --volume /opt/fc/actors/mnt &
-bash ~/brayness/scripts/x1-verify.sh          # 11/11
+bash ~/realness/scripts/x1-verify.sh          # 11/11
 ```
 
 Two bugs the arm64 runs had hidden, both teardown races: `f4-verify.sh` loads
@@ -662,7 +662,7 @@ The `/site` prompt copies the starter's static example and builds it:
 ```bash
 mkdir site && tar -C tools/examples/static -cf - . | tar -C site -xf -
 cd site && npm install && npm run build
-brayness publish dist
+realness publish dist
 ```
 
 Articles are Markdown in `content/articles/`. The output is plain HTML with its
@@ -673,7 +673,7 @@ own scripts; a page with a diagram gets `scripts/mermaid.min.js` copied in.
 
 With sync configured, a site lives in sync, not on an actor:
 
-- `POST /v1/actors/{id}/publish {"path": "/brayness/work/site"}` runs `tar` in
+- `POST /v1/actors/{id}/publish {"path": "/realness/work/site"}` runs `tar` in
   the guest, uploads the tree as an immutable version under `sites/<id>/`, then
   points `sites/<id>/active` at it.
 - Sync serves `sites/<id>/` to anyone, with no actor alive. Versions are private
@@ -703,7 +703,7 @@ export default {
 };
 ```
 
-Our server (`server/host/guest/brayness-serve.js`, on the node runtime disk) turns HTTP
+Our server (`server/host/guest/realness-serve.js`, on the node runtime disk) turns HTTP
 on 8080 into a web `Request` and streams the `Response` back. Node runs it under
 `--permission`: it reads only the handler's files and itself. A plain
 `index.html` is a site: files, no VM. Anything else (a Procfile, python, a
@@ -732,7 +732,7 @@ under `dist/app-check-<time>/`. Its `escape-ctrl` step passes by failing.
   handler's files are a read-only ext4 labelled `app-code`, with the start
   command beside them; the node disk, labelled `rt-node`, is read-only too. The
   guest mounts both by label, so attach order does not matter.
-- **Start.** `brayness-app.service` mounts as root, then runs our server as
+- **Start.** `realness-app.service` mounts as root, then runs our server as
   `app` with `NoNewPrivileges`. No shell parses the command. No getty, no login.
 - **Network.** App TAPs are `fc-appN` on `172.17.N.0/30`; the MAC carries the
   address. The host may open 8080 and gets replies only from it. Nothing an app
@@ -772,7 +772,7 @@ What this taught:
 
 ### Usage and the daily cap (o1, g3)
 
-Every model call through `brayness-proxy` writes one create-only file:
+Every model call through `realness-proxy` writes one create-only file:
 
 ```
 usage/+A/<day>/<time>-<actor>-<nonce>.html
@@ -809,7 +809,7 @@ Proven: `proxy` tests, and one real call to OpenRouter wrote a row to
 
 - One binary is the app. macOS opens a bare executable in Terminal, so a
   launcher `.app` buys nothing; Terminal is the floor, Ghostty an upgrade.
-- Notarization uses an App Store Connect API key (profile `brayness-notary`);
+- Notarization uses an App Store Connect API key (profile `realness-notary`);
   the app-specific password returned 401 twice. The `.p8` must stay put, because
   the profile stores its path.
 
@@ -872,7 +872,7 @@ Cost and design facts. Build and runtime gotchas are below.
   that reads like a passing run. It now defaults to a candidate list and exits
   non-zero when none of them can make a host. Found while proving host-up.
 - `us-central1-a` has no `n2-standard-4` capacity right now; a stockout refuses
-  both `instances create` and `instances start`, so `brayness-1` cannot be woken
+  both `instances create` and `instances start`, so `realness-1` cannot be woken
   and a new host has to go to `us-west1-b` or `us-east1-b` (probed, both OK).
 
 - comark 0.4.0 moved `language` onto `<pre>`
@@ -891,7 +891,7 @@ Cost and design facts. Build and runtime gotchas are below.
 - `iptables-nft` (Ubuntu 24.04) wants the table flag _before_ the command:
   `iptables -t nat -C ...` works, `iptables -C -t nat ...` dies with
   `Bad argument 'nat'`.
-- `fcnet-setup.sh`, the MAC-to-address script `brayness-net-up` calls, is
+- `fcnet-setup.sh`, the MAC-to-address script `realness-net-up` calls, is
   Firecracker CI's and is not in ubuntu-base. It is vendored in `server/host/guest/`
   rather than read out of `squashfs-root`, which is a leftover of the f1 fetch
   and may not exist on a fresh host.
@@ -924,9 +924,9 @@ Cost and design facts. Build and runtime gotchas are below.
   every call, which made the seed fingerprint mismatch and every start rebuild
   the seed. Take the first line.
 - A socat listener's command line names the program it execs
-  (`EXEC:/usr/local/bin/brayness-pty`), so `pgrep -f brayness-pty` always finds
+  (`EXEC:/usr/local/bin/realness-pty`), so `pgrep -f realness-pty` always finds
   the listener. Evidence that counts agents must match the agent's own command
-  line, e.g. `[p]ython3 /usr/local/bin/brayness-pty`.
+  line, e.g. `[p]ython3 /usr/local/bin/realness-pty`.
 - `vsock.connect` reads the handshake without `makefile()`: a buffered reader
   hides read-ahead from `select`, and the pty relay selects on the same socket
   it handshakes on.
@@ -950,7 +950,7 @@ Cost and design facts. Build and runtime gotchas are below.
   first letter.
 - A GCP disk's `deviceName` decides its `/dev/disk/by-id` path, and defaults to
   `persistent-disk-1` rather than the resource name. Create it with an explicit
-  `--device-name=brayness-actors` or the path will not match the script. The
+  `--device-name=realness-actors` or the path will not match the script. The
   name is per-instance, so every host can use the same one.
 - `--zone` and `--project` are not accepted above a subcommand:
   `gcloud --project=p --zone=z compute disks create` and
@@ -979,7 +979,7 @@ Cost and design facts. Build and runtime gotchas are below.
   `failed to upload directory`. Chown the tree before copying
   (`host-bootstrap.sh` does).
 - A disk whose name collides with an instance's is attached rather than created:
-  asking for a 20 GB boot disk while the 100 GB `brayness-1` still existed
+  asking for a 20 GB boot disk while the 100 GB `realness-1` still existed
   booted the instance from the 100 GB disk and reported success. Check `lsblk`.
 - `gcloud compute instances detach-disk` rejects `--disk` and `--device-name`
   together, and a `&&` chain will happily run the next command anyway if you do
@@ -1028,7 +1028,7 @@ Cost and design facts. Build and runtime gotchas are below.
 - The host's first serve on a fresh host builds the seed (~36s of boot) before
   the listener answers, so `host-restart.sh` waits three minutes, not one.
 - A host refuses to start without both root-only secret files, 0600 root:
-  `/etc/brayness/model-pass-secret` and `/etc/brayness/host-pass-secret`. The
+  `/etc/realness/model-pass-secret` and `/etc/realness/host-pass-secret`. The
   host pass secret is fleet-wide: the sync service mints a pass with the same
   value from Secret Manager, and any host accepts it at its terminal.
 
@@ -1047,7 +1047,7 @@ block and net, and worth revisiting when r3 measures anything.
 ## Proven how
 
 Deployed on 2026-10-07 (x4): `check:host` 28/28 and `check:chat` passed against
-`brayness-demo` through a tunnel, and a phone sign-in reached Pi in the browser
+`realness-demo` through a tunnel, and a phone sign-in reached Pi in the browser
 terminal.
 
 Every script was read and run for real on 2026-09-18; the checks now live in
@@ -1060,12 +1060,12 @@ walkthrough are in `artifacts/firecracker/probe-20260918/`:
 - `dev-setup.sh`: booted a microVM (`dist/boot-<utc>/`, 473 serial lines,
   `PASS: guest reached userspace`)
 - `dev-up.sh`: `--fresh` wiped the volume and rebuilt the seed; health `ok`
-- `host-up.sh probe-brayness-2 --smoke --zone=us-west1-b`: host created,
+- `host-up.sh probe-realness-2 --smoke --zone=us-west1-b`: host created,
   bootstrapped, 5/5 smoke, serving
 - `host-drain.sh` and `host-down.sh --delete`: an actor with a 100 KB payload
   exported to
-  `gs://realness-online-brayness/actors/a-2c3939d4a288/bundle.tar.gz` (103,375
+  `gs://realness-online-realness/actors/a-2c3939d4a288/bundle.tar.gz` (103,375
   bytes, md5 `pFK6XsalyMdOkOmpzOKTHQ==`), then the host and both its disks
-  deleted; `gcloud compute instances list` back to `brayness-1` alone
+  deleted; `gcloud compute instances list` back to `realness-1` alone
 - `probe-capacity.sh`: us-central1 a/b/c and us-west1-a: no n2-standard-4;
   us-west1-b and us-east1-b: OK

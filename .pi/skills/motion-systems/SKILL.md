@@ -2,7 +2,7 @@
 name: motion-systems
 description: Use when designing or implementing motion for web interfaces, including CSS transitions and keyframes, `linear()` easing design, transform strategy (`translate`/`rotate` vs `transform`/`translate3d()`), and deep View Transitions API patterns for route and state continuity.
 metadata:
-  check: 'node ../../bin/check-skills.js motion-systems'
+  check: 'node ../../../bin/check-skills.js motion-systems'
   category: Design & Frontend
   pairs-with:
   - skill: motion-choreography-patterns

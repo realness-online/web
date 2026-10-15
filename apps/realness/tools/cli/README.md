@@ -1,6 +1,6 @@
 # Personal file capabilities
 
-The personal capability adapter for `realness`; `brayness` remains a compatibility alias. It reuses the existing sync client, sign-in, and service permissions. It does not replace the desktop harness command or the VM launcher yet.
+The personal capability adapter for `realness`; `realness` remains a compatibility alias. It reuses the existing sync client, sign-in, and service permissions. It does not replace the desktop harness command or the VM launcher yet.
 
 ## Commands
 
@@ -12,7 +12,7 @@ realness files sync <local-folder> <can://~/folder/> --json
 
 Sync is two-way. Both paths are required; nothing defaults to the whole harness. Only personal remote paths (`can://~/...`) are accepted. Destructive flags are not exposed by this adapter.
 
-Sign-in uses the same keychain credentials as `brayness-store`. `SYNC_URL` selects the service; the existing development service is the default.
+Sign-in uses the same keychain credentials as `realness-store`. `SYNC_URL` selects the service; the existing development service is the default.
 
 ## Service monitor
 
@@ -59,7 +59,7 @@ Other Node adapters can import `file_capabilities` from `src/files.js` and suppl
 ## Development
 
 `tools/cli/bin/realness.js` is the public operator entry. The old
-`tools/cli/bin/brayness.js` forwards to it. From the product root:
+`tools/cli/bin/realness.js` forwards to it. From the product root:
 
 ```bash
 npm run realness -- --help
@@ -68,4 +68,4 @@ npm run realness -- files cat <can://~/file>
 
 This is a local development entry point, not a global install or an actor-image change.
 
-Run root `npm run check:cli` for scoped checks and tests, or root `npm test` for the whole product. Tests invoke `brayness` by name against the real local sync service, disk storage, and signed test credentials. Scratch files and derived sync records stay under `artifacts/brayness/cli-tests/`. No cloud credentials or deployment are needed.
+Run root `npm run check:cli` for scoped checks and tests, or root `npm test` for the whole product. Tests invoke `realness` by name against the real local sync service, disk storage, and signed test credentials. Scratch files and derived sync records stay under `artifacts/realness/cli-tests/`. No cloud credentials or deployment are needed.

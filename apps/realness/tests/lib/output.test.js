@@ -5,28 +5,24 @@ import test from 'node:test'
 import { out_root } from '#root/lib/output.js'
 
 const scratch = new URL(
-  '../../../../artifacts/brayness/out-test/',
+  '../../../../artifacts/realness/out-test/',
   import.meta.url
 ).pathname
 
-test('BRAYNESS_OUT wins, a harness gets its artifacts, a host keeps dist', () => {
+test('a harness gets its artifacts and a host keeps dist', () => {
   rm_sync(scratch, { recursive: true, force: true })
   const harness = join(scratch, 'harness')
-  const project = join(harness, 'work', 'brayness')
+  const project = join(harness, 'work', 'realness')
   mkdir_sync(project, { recursive: true })
   mkdir_sync(join(harness, 'artifacts'))
-  const host = join(scratch, 'home', 'user', 'brayness')
+  const host = join(scratch, 'home', 'user', 'realness')
   mkdir_sync(host, { recursive: true })
   try {
     assert.equal(
-      out_root({ env: { BRAYNESS_OUT: '/elsewhere' }, root: project }),
-      '/elsewhere'
+      out_root({ root: project }),
+      join(harness, 'artifacts', 'realness')
     )
-    assert.equal(
-      out_root({ env: {}, root: project }),
-      join(harness, 'artifacts', 'brayness')
-    )
-    assert.equal(out_root({ env: {}, root: host }), join(host, 'dist'))
+    assert.equal(out_root({ root: host }), join(host, 'dist'))
   } finally {
     rm_sync(scratch, { recursive: true, force: true })
   }

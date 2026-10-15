@@ -8,7 +8,8 @@ import { verify_install } from './lib/pi-release.js'
 /** Select a tested install without changing history or the previous launcher route. */
 export const select_fork = ({ root, install }) => {
   const proof = JSON.parse(read_file_sync(join(install, 'verification.json'), 'utf8'))
-  assert.equal(resolve(proof.root), resolve(install))
+  const managed = join(resolve(root), '.pi/agent/state/pi-forks', basename(resolve(install)))
+  if (resolve(install) !== managed) assert.equal(resolve(proof.root), resolve(install))
   for (const key of ['installed_sdk_cli_pass', 'installed_compressed_write_resume', 'installed_reader_pass', 'installed_remember_pass']) assert.equal(proof[key], true, `Missing check: ${key}`)
   assert.ok(exists_sync(join(resolve(install), 'consumer/node_modules/.bin/pi')), 'Installed Pi is missing')
   assert.ok(exists_sync(join(resolve(install), 'consumer/node_modules/.bin/pi-session-read')), 'Installed reader is missing')
@@ -16,7 +17,6 @@ export const select_fork = ({ root, install }) => {
   const state = join(root, '.pi/agent/state')
   const marker = join(state, 'fork-path')
   assert.ok(!exists_sync(marker), 'A fork is already selected; rollback first')
-  const managed = join(state, 'pi-forks', basename(resolve(install)))
   mkdir_sync(state, { recursive: true, mode: 0o700 })
   if (!exists_sync(managed)) {
     mkdir_sync(managed, { recursive: true, mode: 0o700 })

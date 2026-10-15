@@ -1,0 +1,35 @@
+{
+  "api": "http://127.0.0.1:8080",
+  "owner": "+14155550000",
+  "levels": [1, 2, 4],
+  "concurrency": 4,
+  "duration_ms": 300000,
+  "request_ms": 15000,
+  "sample_ms": 1000,
+  "min_memory_bytes": 2684354560,
+  "min_disk_bytes": 5368709120,
+  "max_cpu_fraction": 0.95,
+  "hourly_cost": 1,
+  "budget": 0.2,
+  "sample_argv": [
+    "node",
+    "tools/control/bin/capacity-sample.js",
+    "/var/lib/realness/actors"
+  ],
+  "workloads": [
+    {
+      "name": "memory",
+      "argv": ["node", "-", "memory", "256", "1000"],
+      "stdin_file": "bin/capacity-workload.js",
+      "timeout_s": 10,
+      "max_ms": 10000
+    },
+    {
+      "name": "cpu",
+      "argv": ["node", "-", "cpu", "100", "1000"],
+      "stdin_file": "bin/capacity-workload.js",
+      "timeout_s": 10,
+      "max_ms": 10000
+    }
+  ]
+}

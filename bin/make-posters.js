@@ -13,7 +13,7 @@ import { list_sources, poster_paths_for, slices_of } from './lib/sources.js'
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const __filename = file_url_to_path(import.meta.url)
-const brayness_root = path.join(__dirname, '..')
+const realness_root = path.join(__dirname, '..')
 
 const DEFAULT_WORKERS = 4
 const DEBUG_PORT = 9340
@@ -212,7 +212,7 @@ const summarize = sources => {
 
 const run_master = async (folder, { workers, dry_run }) => {
   const root = path.resolve(folder)
-  const out_root = path.join(brayness_root, 'artifacts', 'posters', path.basename(root))
+  const out_root = path.join(realness_root, 'artifacts', 'posters', path.basename(root))
   const sources = list_sources(root)
   if (!sources.length) fail(`no files under ${root}`)
   status(`${sources.length} files under ${root}`)

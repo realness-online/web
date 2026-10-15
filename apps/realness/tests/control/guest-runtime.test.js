@@ -14,14 +14,14 @@ import { test } from 'node:test'
 import { ROOT } from '../../src/control/paths.js'
 import { actor_folders } from '#root/src/settings/layout.js'
 
-const RUNTIME = '/usr/local/lib/brayness/'
+const RUNTIME = '/usr/local/lib/realness/'
 const read = path => read_file_sync(`${ROOT}/${path}`, 'utf8')
 const build = read('tools/control/scripts/template-build.sh')
 const copied = actor_folders()
-const called = [build, read('server/host/guest/brayness-recover')].flatMap(
+const called = [build, read('server/host/guest/realness-recover')].flatMap(
   text =>
     [
-      ...text.matchAll(/\/usr\/local\/lib\/(brayness[\w-]*\/[\w./-]+\.js)/g)
+      ...text.matchAll(/\/usr\/local\/lib\/(realness[\w-]*\/[\w./-]+\.js)/g)
     ].map(match => match[1])
 )
 
@@ -54,10 +54,10 @@ test('every runtime file a guest wrapper calls is copied into the template', () 
   )
   for (const full of called) {
     assert.ok(
-      full.startsWith('brayness/'),
+      full.startsWith('realness/'),
       `/usr/local/lib/${full} is outside the runtime`
     )
-    const path = full.slice('brayness/'.length)
+    const path = full.slice('realness/'.length)
     const folder = path.slice(0, path.lastIndexOf('/'))
     assert.ok(
       copied.includes(folder),
@@ -72,7 +72,7 @@ test('every runtime file a guest wrapper calls is copied into the template', () 
 })
 
 test('the copied actor CLI and its cloud dependency chain load from the staged tree', t => {
-  const artifacts = `${ROOT}/../../artifacts/brayness/guest-runtime-tests/`
+  const artifacts = `${ROOT}/../../artifacts/realness/guest-runtime-tests/`
   mkdir_sync(artifacts, { recursive: true })
   const scratch = mkdtemp_sync(join(artifacts, 'runtime-check-'))
   t.after(() => rm_sync(scratch, { recursive: true, force: true }))
@@ -84,11 +84,11 @@ test('the copied actor CLI and its cloud dependency chain load from the staged t
   const options = {
     cwd: scratch,
     encoding: 'utf8',
-    env: { ...process.env, BRAYNESS_ACTOR: '1', PROFILE: 'actor' }
+    env: { ...process.env, REALNESS_ACTOR: '1', PROFILE: 'actor' }
   }
   const help = exec_file_sync(
     process.execPath,
-    ['tools/cli/bin/brayness.js', '--help'],
+    ['tools/cli/bin/actor.js', '--help'],
     options
   )
   assert.match(help, /files sync/)
@@ -104,7 +104,7 @@ test('the copied actor CLI and its cloud dependency chain load from the staged t
   assert.equal(loaded, '')
 })
 
-test('harness extensions call the brayness command, never a runtime file path', () => {
+test('harness extensions call the realness command, never a runtime file path', () => {
   const harness = JSON.parse(
     read_file_sync(`${ROOT}/../../package.json`, 'utf8')
   )
@@ -112,12 +112,12 @@ test('harness extensions call the brayness command, never a runtime file path', 
   const named = readdir_sync(extensions, { recursive: true })
     .filter(name => /\.(ts|js)$/.test(name) && !name.includes('node_modules'))
     .filter(name =>
-      /\/usr\/local\/lib\/brayness/.test(
+      /\/usr\/local\/lib\/realness/.test(
         read_file_sync(`${extensions}/${name}`, 'utf8')
       )
     )
   assert.deepEqual(named, [])
-  assert.match(build, /export BRAYNESS_ACTOR=1/)
+  assert.doesNotMatch(build, /export REALNESS_ACTOR=/)
   assert.match(
     build,
     /turn-end\|fetch\|git-credential\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\)/

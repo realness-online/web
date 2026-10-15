@@ -18,7 +18,7 @@ let server, url
 
 before(async () => {
   await mkdir(dir, { recursive: true })
-  await storage.put('host-keys/brayness-1', secret)
+  await storage.put('host-keys/realness-1', secret)
   server = sync_service({
     storage,
     rights: rights(storage),
@@ -43,20 +43,20 @@ const store = {
 }
 
 test('host status reaches storage through sync, with no storage key', async () => {
-  const mirror = new SyncMirror({ url, secret, host: 'brayness-1' })
+  const mirror = new SyncMirror({ url, secret, host: 'realness-1' })
   assert.equal(
-    await new HostStatus(store, { mirror, host: 'brayness-1' }).publish(),
+    await new HostStatus(store, { mirror, host: 'realness-1' }).publish(),
     true
   )
-  const stored = await storage.get('hosts/brayness-1/status.html')
+  const stored = await storage.get('hosts/realness-1/status.html')
   assert.equal(
     read_status(stored.body.toString('utf8')).host.name,
-    'brayness-1'
+    'realness-1'
   )
 })
 
 test('loop records write, and a missing stop request reads as null', async () => {
-  const mirror = new SyncMirror({ url, secret, host: 'brayness-1' })
+  const mirror = new SyncMirror({ url, secret, host: 'realness-1' })
   await mirror.put('loops/a-0123456789ab/record.html', '<article></article>')
   assert.equal(await mirror.get('loops/a-0123456789ab/stop.html'), null)
   await storage.put('loops/a-0123456789ab/stop.html', 'stop')
@@ -67,15 +67,15 @@ test('loop records write, and a missing stop request reads as null', async () =>
 })
 
 test("a host cannot write another host's status, and a wrong secret is refused", async () => {
-  const mirror = new SyncMirror({ url, secret, host: 'brayness-1' })
+  const mirror = new SyncMirror({ url, secret, host: 'realness-1' })
   await assert.rejects(
-    mirror.put('hosts/brayness-2/status.html', 'forged'),
+    mirror.put('hosts/realness-2/status.html', 'forged'),
     /403/
   )
   const stranger = new SyncMirror({
     url,
     secret: 'another-secret-1234567890123456789012345',
-    host: 'brayness-1'
+    host: 'realness-1'
   })
-  await assert.rejects(stranger.put('hosts/brayness-1/status.html', 'x'), /401/)
+  await assert.rejects(stranger.put('hosts/realness-1/status.html', 'x'), /401/)
 })
