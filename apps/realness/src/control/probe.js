@@ -48,6 +48,9 @@ export const probe = async (config, candidates = []) => {
       `--machine-type=${type}`,
       '--enable-nested-virtualization',
       `--image-family=${config.imageFamily}`,
+      ...(config.imageProject
+        ? [`--image-project=${config.imageProject}`]
+        : []),
       '--boot-disk-size=20GB',
       '--boot-disk-type=pd-standard',
       '--no-service-account',

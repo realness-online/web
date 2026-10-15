@@ -7,7 +7,7 @@ import {
 } from '../../src/control/lockdown.js'
 import { gcloud } from '../../src/control/cloud.js'
 
-const config = { project: 'realness-online', cloud: { region: 'us-west1' } }
+const config = { project: 'realness-online', cloud: { region: 'us-west2' } }
 
 test('the plan opens the narrow paths before it closes the wide ones', () => {
   const plan = lockdown_plan(config).map(argv => argv.join(' '))
@@ -17,7 +17,7 @@ test('the plan opens the narrow paths before it closes the wide ones', () => {
   )
   assert.match(
     plan[1],
-    /create realness-host-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.138\.0\.0\/20/
+    /create realness-host-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.168\.0\.0\/20/
   )
   assert.match(
     plan[2],

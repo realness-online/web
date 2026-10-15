@@ -75,7 +75,7 @@ test('service deploy requires a configured environment and refuses cross-environ
     project: 'realness-online',
     identity: 'realness-online',
     bucket: 'realness-online.appspot.com',
-    region: 'us-west1',
+    region: 'us-west2',
     origins:
       'https://realness.online,https://realness-online.web.app,https://realness-online.firebaseapp.com'
   })

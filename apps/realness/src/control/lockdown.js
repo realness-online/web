@@ -16,6 +16,7 @@ export const IAP_RANGE = '35.235.240.0/20'
 export const GATE_RANGES = {
   'us-central1': '10.128.0.0/20',
   'us-west1': '10.138.0.0/20',
+  'us-west2': '10.168.0.0/20',
   'us-east1': '10.142.0.0/20'
 }
 const TAG = 'realness-host'
