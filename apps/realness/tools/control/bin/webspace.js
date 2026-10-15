@@ -131,9 +131,11 @@ const main = async (argv) => {
     return 0
   }
 
-  const config = environment(envName)
-  const local = is_local(config)
   const { flags, rest } = parseFlags(tail)
+  const named = environment(envName)
+  /** A zone with capacity today; `probe` says which. */
+  const config = typeof flags.zone === "string" ? { ...named, zone: flags.zone } : named
+  const local = is_local(config)
   const [command, ...args] = rest
 
   const hosts = local
@@ -175,7 +177,7 @@ const main = async (argv) => {
       if (!['list', 'init', 'add', 'remove'].includes(verb) || (bare ? args.length > 1 : !phone)) throw new Error(usage)
       const storage = local
         ? disk(typeof flags.dir === "string" ? flags.dir : out_path("site-sync"))
-        : create_gcs({ bucket: deployment_settings(envName, process.env).bucket, token: gcloud_token })
+        : create_gcs({ bucket: deployment_settings(envName, process.env).bucket, token: gcloud_token() })
       const harness = typeof flags.harness === "string" ? flags.harness : join(project_root, "../..")
       const done = verb === "init"
         ? await ensure_admins(storage, [local_person(harness)], { create_only: true })
@@ -290,6 +292,8 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           smoke: Boolean(flags.smoke),
           fresh: Boolean(flags.fresh),
           ...(typeof flags.expire === "string" && { expire: flags.expire }),
+          ...(typeof flags["image-family"] === "string" && { imageFamily: flags["image-family"] }),
+          ...(typeof flags["image-project"] === "string" && { imageProject: flags["image-project"] }),
         }),
       )
 

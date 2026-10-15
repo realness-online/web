@@ -30,8 +30,8 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness git-credential get     (VM: git's helper for GitHub repos)
        realness task <plan> [--start]  (what a task on a plan may touch; start its VM)
        realness watch [--interval <seconds>] [--person +1...]...
-       realness <local|development> <command> [options]
-       realness <local|development> --help
+       realness <local|development|production> <command> [options]
+       realness <local|development|production> --help
        realness store sync <local-folder> <can://~/folder/> [--deletes]
        realness files sync <local-folder> <can://~/folder/> [--json]
        realness files cat <can://~/file> [--json]
@@ -357,7 +357,7 @@ export const run = async (
       stdout,
       stderr
     }
-    if (['local', 'development'].includes(args[0]))
+    if (['local', 'development', 'production'].includes(args[0]))
       return await run_control(args, { actor, stdin, stdout, stderr })
     if (args[0] === 'frontend')
       return await run_frontend(args.slice(1), { stdout, stderr, actor })

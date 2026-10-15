@@ -118,3 +118,30 @@ test('revoke fences the host in sync, then drops its record key', async () => {
   assert.deepEqual(await readdir(scratch), [])
   await assert.rejects(revoke(config, '../x', { scratch }), /invalid host name/)
 })
+
+test('pass secrets reach the host on stdin, root-only, never on argv', async () => {
+  const { install_secrets } = await import('../../src/control/host-gcp.js')
+  const sent = []
+  const host = {
+    sshArgs: (name, command) => ['compute', 'ssh', name, `--command=${command}`]
+  }
+  await install_secrets(host, config, 'realness-1', {
+    read: async secret => `${secret.toLowerCase()}-${'x'.repeat(32)}\n`,
+    send: async (argv, input) => sent.push({ argv: argv.join(' '), input })
+  })
+  assert.equal(sent.length, 2)
+  assert.match(
+    sent[0].argv,
+    /install -D -m 0600 -o root -g root \/dev\/stdin \/etc\/realness\/host-pass-secret$/
+  )
+  assert.match(sent[1].argv, /\/etc\/realness\/model-pass-secret$/)
+  assert.ok(sent.every(({ argv, input }) => !argv.includes(input)))
+  assert.equal(sent[0].input, `host_pass_secret-${'x'.repeat(32)}`)
+  await assert.rejects(
+    install_secrets(host, config, 'realness-1', {
+      read: async () => 'short',
+      send: async () => {}
+    }),
+    /HOST_PASS_SECRET is missing or too short/
+  )
+})

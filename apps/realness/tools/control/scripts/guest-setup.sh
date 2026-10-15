@@ -2,8 +2,13 @@
 set -euo pipefail
 
 FC_VERSION="v1.17.0"
-FC_SHA256="e351ebe4f7a16b5873bbd51005d2e6767103cff4d5ebc829df2d3f95a93e2256"
-CI_PREFIX="firecracker-ci/v1.15/aarch64"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  aarch64) FC_SHA256="e351ebe4f7a16b5873bbd51005d2e6767103cff4d5ebc829df2d3f95a93e2256" ;;
+  x86_64) FC_SHA256="06094a1108ae9e82aa4c23a775aa92758f53f1175d422270d9d6162cb9ade558" ;;
+  *) echo "unsupported architecture $ARCH" >&2; exit 1 ;;
+esac
+CI_PREFIX="firecracker-ci/v1.15/$ARCH"
 KERNEL_VERSION="6.1.155"
 S3="https://s3.amazonaws.com/spec.ccfc.min"
 ROOT="/opt/fc"
@@ -22,12 +27,12 @@ bash "$(dirname "$0")/../../../server/host/scripts/node-install.sh"
 if [ ! -x firecracker ]; then
   log "firecracker $FC_VERSION"
   curl -fsSL -o fc.tgz \
-    "https://github.com/firecracker-microvm/firecracker/releases/download/$FC_VERSION/firecracker-$FC_VERSION-aarch64.tgz"
+    "https://github.com/firecracker-microvm/firecracker/releases/download/$FC_VERSION/firecracker-$FC_VERSION-$ARCH.tgz"
   echo "$FC_SHA256  fc.tgz" | sha256sum -c -
-  tar xzf fc.tgz "release-$FC_VERSION-aarch64"
-  mv "release-$FC_VERSION-aarch64/firecracker-$FC_VERSION-aarch64" firecracker
-  mv "release-$FC_VERSION-aarch64/jailer-$FC_VERSION-aarch64" jailer
-  rm -rf fc.tgz "release-$FC_VERSION-aarch64"
+  tar xzf fc.tgz "release-$FC_VERSION-$ARCH"
+  mv "release-$FC_VERSION-$ARCH/firecracker-$FC_VERSION-$ARCH" firecracker
+  mv "release-$FC_VERSION-$ARCH/jailer-$FC_VERSION-$ARCH" jailer
+  rm -rf fc.tgz "release-$FC_VERSION-$ARCH"
 fi
 ./firecracker --version
 

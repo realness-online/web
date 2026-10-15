@@ -14,6 +14,7 @@
  * one, which is how a 20 GB request once booted a 100 GB disk.
  */
 import { join } from 'node:path'
+import { spawn } from 'node:child_process'
 import {
   mkdtemp,
   mkdir,
@@ -53,7 +54,7 @@ const sizes = (config, options) => ({
  * @param {any} cloud
  * @param {any} config
  * @param {string} name
- * @param {{ smoke?: boolean, expire?: string, imageFamily?: string, machineType?: string, bootSize?: string, actorsSize?: string }} [options]
+ * @param {{ smoke?: boolean, expire?: string, imageProject?: string, imageFamily?: string, machineType?: string, bootSize?: string, actorsSize?: string }} [options]
  *   expire: a GCE duration such as 2h, after which the provider deletes the host
  */
 export const up = async (
@@ -90,6 +91,9 @@ export const up = async (
     `--size=${bootSize}`,
     '--type=pd-standard',
     `--image-family=${imageFamily}`,
+    ...((options.imageProject ?? config.imageProject)
+      ? [`--image-project=${options.imageProject ?? config.imageProject}`]
+      : []),
     '--labels=app=realness,role=actor-host'
   ])
 
@@ -162,6 +166,11 @@ export const up = async (
     name,
     `sudo bash ${config.root}/server/host/scripts/host-bootstrap.sh`
   )
+  // A host from a plain base image has no Firecracker, kernel, or rootfs yet.
+  await cloud.ssh(
+    name,
+    `test -x /opt/fc/firecracker || (sudo apt-get -qq update && sudo apt-get -qq install -y squashfs-tools && bash ${config.root}/tools/control/scripts/guest-setup.sh)`
+  )
   await ensure_template(cloud, config, name)
 
   if (smoke) {
@@ -173,6 +182,7 @@ export const up = async (
   }
 
   await provision_record_key(cloud, config, name)
+  await install_secrets(cloud, config, name)
   await serve(cloud, config, name)
   return summary(cloud, config, name)
 }
@@ -264,6 +274,62 @@ const ensure_template = async (cloud, config, name) => {
   )
 }
 
+/** Secret Manager names and the root-only files host-restart.sh reads. */
+export const HOST_SECRETS = {
+  HOST_PASS_SECRET: 'host-pass-secret',
+  MODEL_PASS_SECRET: 'model-pass-secret'
+}
+
+/** Send argv to gcloud with `input` on stdin, so a secret never sits on a command line. */
+const pipe_to = (cloud, argv, input) =>
+  /** @type {Promise<void>} */ (
+    new Promise((done, fail) => {
+      const child = spawn('gcloud', argv, {
+        env: { ...process.env, ...cloud.env },
+        stdio: ['pipe', 'ignore', 'pipe']
+      })
+      let err = ''
+      child.stderr.on('data', chunk => (err += chunk))
+      child.on('close', code =>
+        code ? fail(new Error(err.trim().split('\n').at(-1))) : done()
+      )
+      child.stdin.end(input)
+    })
+  )
+
+/** Copy the pass secrets from Secret Manager onto the host, root-only. */
+export const install_secrets = async (
+  cloud,
+  config,
+  name,
+  {
+    read = secret =>
+      run('gcloud', [
+        'secrets',
+        'versions',
+        'access',
+        'latest',
+        `--secret=${secret}`,
+        `--project=${config.project}`
+      ]),
+    send = (argv, input) => pipe_to(cloud, argv, input)
+  } = {}
+) => {
+  step('pass secrets')
+  for (const [secret, file] of Object.entries(HOST_SECRETS)) {
+    const value = (await read(secret)).trim()
+    if (value.length < 32) throw new Error(`${secret} is missing or too short`)
+    await send(
+      cloud.sshArgs(
+        name,
+        `sudo install -D -m 0600 -o root -g root /dev/stdin /etc/realness/${file}`
+      ),
+      value
+    )
+    note(`${file}: installed`)
+  }
+}
+
 /** Start the host on the host, by path. */
 const serve = async (cloud, config, name) => {
   if (!['development', 'production'].includes(config.name))
@@ -283,6 +349,7 @@ export const restart = async (cloud, config, name) => {
   await push(cloud, config, name)
   await ensure_template(cloud, config, name)
   await provision_record_key(cloud, config, name)
+  await install_secrets(cloud, config, name)
   await serve(cloud, config, name)
   return summary(cloud, config, name)
 }
