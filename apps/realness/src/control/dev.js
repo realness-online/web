@@ -36,7 +36,8 @@ export const build = async lima => {
 
   step('stage the harness')
   await stream('bash', [
-    join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh')
+    join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh'),
+    'development'
   ])
 
   step('build the template in the guest')

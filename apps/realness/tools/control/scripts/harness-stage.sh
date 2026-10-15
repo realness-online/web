@@ -2,7 +2,8 @@
 set -euo pipefail
 
 project="$(cd "$(dirname "$0")/../../.." && pwd)"
-node "$project/tools/control/scripts/ship-stage.js"
+env="${1:?usage: harness-stage.sh development|production}"
+node "$project/tools/control/scripts/ship-stage.js" --env "$env"
 . "$project/lib/output.sh"
 out="$OUT"
 tar czf "$out/realness-harness.tar.gz" --owner=0 --group=0 --numeric-owner \

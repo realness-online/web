@@ -1,16 +1,27 @@
 import { client } from '#root/src/files/client.js'
-import { token_source } from '#root/src/sign-on/node/login.js'
+import { keychain_for, token_source } from '#root/src/sign-on/node/login.js'
 import { read_status } from '#root/src/sync/host-status.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { environment_settings } from '#root/src/settings/environments.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- hosts are read one at a time to keep the sync service quiet */
 
 const SHOWN_DIGITS = 2
 
 export const URLS = {
-  local: development_settings.services.sync_url,
-  development: development_settings.services.sync_url
+  local: environment_settings('development').services.sync_url,
+  development: environment_settings('development').services.sync_url,
+  production: environment_settings('production').services.sync_url
 }
+
+/** Where an operator signs in for one environment; local uses development. */
+export const SIGN_ON = {
+  local: environment_settings('development').public_url,
+  development: environment_settings('development').public_url,
+  production: environment_settings('production').public_url
+}
+
+/** Tokens minted from the sign-in kept for this environment only. */
+export const env_token = env => token_source({ store: keychain_for(env) })
 
 const mask_phone = phone =>
   typeof phone === 'string' && /^\+[1-9]\d{6,14}$/.test(phone)
@@ -20,7 +31,7 @@ const mask_phone = phone =>
 export const host_status = async (
   env,
   name,
-  { url = URLS[env], token = token_source(), now = Date.now() } = {}
+  { url = URLS[env], token = env_token(env), now = Date.now() } = {}
 ) => {
   if (!url) throw new Error(`no sync URL for ${env}`)
   const bearer = await token()

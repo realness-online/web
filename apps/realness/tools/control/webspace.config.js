@@ -16,10 +16,14 @@
 import { environment_settings, local_settings } from '#root/src/settings/environments.js'
 
 const development = environment_settings('development')
+const production = environment_settings('production')
 
 export const ENVIRONMENTS = {
   local: {
     target: "lima",
+    /** Local hosts use the development cloud: its project and sync bucket. */
+    project: development.project,
+    storage: development.services.bucket,
     /** The Lima VM that is the host. */
     vm: "fc-local",
     /**
@@ -53,8 +57,11 @@ export const ENVIRONMENTS = {
   },
 
   development: {
+    name: "development",
     target: "gcp",
     project: development.project,
+    /** Sync's bucket: host record keys land here. */
+    storage: development.services.bucket,
     /** Default zone. Capacity is per machine type per zone; `probe` says which. */
     zone: "us-east1-b",
     imageFamily: "realness-host",
@@ -82,6 +89,39 @@ export const ENVIRONMENTS = {
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice", "Compute Engine"],
     },
     /** o7: when `status` calls for attention. */
+    attention: { free_pct: 15, mem_available_bytes: 2 * 1024 ** 3, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
+  },
+
+  /**
+   * pr2: changing commands need --approved. Missing at preflight (2026-10-15):
+   * the realness-host image, the bundle bucket, sync/proxy/gate services, and
+   * the HOST_PASS_SECRET and MODEL_PASS_SECRET secrets.
+   */
+  production: {
+    name: "production",
+    target: "gcp",
+    approval: true,
+    /** pr3: ssh goes through IAP once `host lockdown --apply` has run. */
+    iap: true,
+    project: production.project,
+    storage: production.services.bucket,
+    zone: "us-central1-a",
+    imageFamily: "realness-host",
+    machineType: "n2-standard-4",
+    bootSize: "20GB",
+    actorsSize: "30GB",
+    bucket: "realness-online-realness",
+    root: "~/realness",
+    api: `http://127.0.0.1:${local_settings.host_port}`,
+    hostExports: "/opt/fc/actors/mnt/exports",
+    cloud: {
+      project: production.project,
+      region: production.services.region,
+      services: ["realness-sync", "realness-proxy", "realness-gate"],
+      billing: null,
+      openrouter: { key_secret: "OPENROUTER_API_KEY" },
+      expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Functions", "Compute Engine", "Invoice"],
+    },
     attention: { free_pct: 15, mem_available_bytes: 2 * 1024 ** 3, spend_day: 5, quiet_running_h: 2, deep_loop: 2, loop_deadline_min: 60 },
   },
 }

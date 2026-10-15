@@ -26,7 +26,7 @@ import { Parker } from '../../src/host/parking.js'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { issue_model_pass } from '#root/src/proxy/model-pass.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { environment_settings } from '#root/src/settings/environments.js'
 
 const LOG = logger('host')
 const HERE = dirname(file_url_to_path(import.meta.url))
@@ -58,6 +58,7 @@ const { positionals, values } = parse_args({
     'pty-listen': { type: 'string' },
     'api-listen': { type: 'string' },
     'site-url': { type: 'string' },
+    environment: { type: 'string' },
     rebuild: { type: 'boolean', default: false },
     park: { type: 'boolean', default: false }
   }
@@ -68,6 +69,9 @@ if (command !== 'serve' && command !== 'seed') {
   console.error('usage: main.js serve|seed [--volume PATH] ...')
   process.exit(2)
 }
+// Serve names its environment; there is no default to fall back to.
+const environment =
+  command === 'serve' ? environment_settings(values.environment ?? '') : null
 
 const store = new ActorStore({
   volume: values.volume,
@@ -112,10 +116,9 @@ for (const address of addresses(values['pty-listen'])) {
   await listen(pty.makeServer(store), values['pty-port'], address)
   LOG.info(`pty stream on ${address}:${values['pty-port']}`)
 }
-const proxy_url = development_settings.services.starter_proxy_url.replace(
-  /\/$/,
-  ''
-)
+const proxy_url = (
+  environment.services.starter_proxy_url ?? environment.services.proxy_url
+).replace(/\/$/, '')
 const limits = process.env.MODEL_PASS_SECRET
   ? async record => {
       const pass = issue_model_pass(

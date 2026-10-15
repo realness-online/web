@@ -117,8 +117,9 @@ and the stock harness. The starter carries `tools/examples/static` and `tools/ex
 node tools/cli/bin/realness.js local build
 ```
 
-`ship-stage.js` builds one allowlisted `dist/ship/` tree for the binary and
-records the local `pi --version` there. The binary compiles that version for all
+`ship-stage.js --env development|production` builds one allowlisted `dist/ship/`
+tree for the binary, with that environment's model proxy, and records the local
+`pi --version` there. Each environment builds its own image. The binary compiles that version for all
 targets; `harness-stage.sh` tars the same version into
 `dist/realness-harness.tar.gz`; then `template-build.sh` fetches its inputs
 (checksummed, cached in `/opt/fc`) and builds `/opt/fc/template.ext4` in the

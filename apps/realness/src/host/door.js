@@ -1,4 +1,5 @@
 import { existsSync as exists_sync, rmSync as rm_sync } from 'node:fs'
+import { hostname } from 'node:os'
 import { createServer as create_server } from 'node:net'
 import { logger } from './log.js'
 import { Loops } from './loops.js'
@@ -16,6 +17,12 @@ const LINE_LIMIT_BITS = 16
 const WAIT_MS = 5000
 const POLL_MS = 100
 const HELLO_SECONDS = 10
+
+/** hs-f2: the GCE instance name, which sync fences by; omitted when the name is not one. */
+const host_claim = () => {
+  const name = hostname().split('.')[0].toLowerCase()
+  return /^[a-z0-9][a-z0-9-]{0,62}$/.test(name) ? { host: name } : {}
+}
 
 const LOG = logger('door')
 const DOOR_PORT = 54
@@ -154,7 +161,7 @@ export class Door {
       return {
         ok: true,
         pass: issue_recovery_pass(
-          { phone: owner, id, paths: record.paths ?? null },
+          { phone: owner, id, paths: record.paths ?? null, ...host_claim() },
           process.env.HOST_PASS_SECRET
         )
       }
@@ -164,7 +171,7 @@ export class Door {
       return {
         ok: true,
         pass: issue_harness_pass(
-          { phone: owner, id, paths: record.paths ?? null },
+          { phone: owner, id, paths: record.paths ?? null, ...host_claim() },
           process.env.HOST_PASS_SECRET
         )
       }

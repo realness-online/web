@@ -1,3 +1,4 @@
+import { hostname } from 'node:os'
 import assert from 'node:assert/strict'
 import { mkdirSync as mkdir_sync, mkdtempSync, rmSync } from 'node:fs'
 import { connect } from 'node:net'
@@ -84,7 +85,12 @@ test('VM-bound door ignores a claimed owner and denies actors without one', asyn
     assert.equal(recovery.ok, true)
     assert.deepEqual(
       verify_recovery_pass(recovery.pass, process.env.HOST_PASS_SECRET),
-      { phone: record.owner, id: record.id, paths: null }
+      {
+        phone: record.owner,
+        id: record.id,
+        paths: null,
+        host: hostname().split('.')[0].toLowerCase()
+      }
     )
     const harness = await send({
       op: 'harness-pass',
@@ -94,7 +100,12 @@ test('VM-bound door ignores a claimed owner and denies actors without one', asyn
     assert.equal(harness.ok, true)
     assert.deepEqual(
       verify_harness_pass(harness.pass, process.env.HOST_PASS_SECRET),
-      { phone: record.owner, id: record.id, paths: null }
+      {
+        phone: record.owner,
+        id: record.id,
+        paths: null,
+        host: hostname().split('.')[0].toLowerCase()
+      }
     )
     record.paths = ['apps/blog']
     const limited = await send({ op: 'harness-pass', paths: null })

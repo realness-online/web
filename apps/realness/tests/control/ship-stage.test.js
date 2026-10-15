@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import {
   existsSync,
   readFileSync,
@@ -14,6 +14,7 @@ import {
   HOME_ONLY,
   ROOT,
   STARTER,
+  proxy_for,
   ship_stage,
   ships,
   starter_manifest
@@ -35,7 +36,11 @@ test.after(() => rmSync(fake_pi, { recursive: true, force: true }))
 test('the ship tree carries the harness, prompts, and starting examples', () => {
   execFileSync(
     process.execPath,
-    [join(project, 'tools/control/scripts/ship-stage.js')],
+    [
+      join(project, 'tools/control/scripts/ship-stage.js'),
+      '--env',
+      'development'
+    ],
     {
       env: { ...process.env, REALNESS_PROXY_URL: proxy_url }
     }
@@ -55,7 +60,10 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
     readFileSync(join(ship, '.pi/prompts/site.md'), 'utf8'),
     /apps\/site/
   )
-  assert.match(readFileSync(join(ship, '.pi/prompts/app.md'), 'utf8'), /apps\/app/)
+  assert.match(
+    readFileSync(join(ship, '.pi/prompts/app.md'), 'utf8'),
+    /apps\/app/
+  )
   for (const name of ['app', 'site'])
     assert.doesNotMatch(
       readFileSync(join(ship, `.pi/prompts/${name}.md`), 'utf8'),
@@ -191,7 +199,11 @@ test('a clean checkout stages the starter without personal Pi settings', () => {
 test('home-only skills stay home', () => {
   execFileSync(
     process.execPath,
-    [join(project, 'tools/control/scripts/ship-stage.js')],
+    [
+      join(project, 'tools/control/scripts/ship-stage.js'),
+      '--env',
+      'development'
+    ],
     {}
   )
   for (const name of Object.keys(HOME_ONLY)) {
@@ -205,7 +217,10 @@ test('home-only skills stay home', () => {
     existsSync(join(ship, '.pi/skills/web-md/SKILL.md')),
     'a shared skill ships'
   )
-  assert.equal(ships(join('.pi', 'skills', 'vuetify-to-semantic', 'SKILL.md')), false)
+  assert.equal(
+    ships(join('.pi', 'skills', 'vuetify-to-semantic', 'SKILL.md')),
+    false
+  )
   assert.equal(ships(join('.pi', 'skills', 'web-md', 'SKILL.md')), true)
   assert.equal(ships(join('extensions', 'x', 'node_modules', 'y.js')), false)
   assert.equal(ships(join('bin', '.DS_Store')), false)
@@ -214,7 +229,11 @@ test('home-only skills stay home', () => {
 test('the starter names its version and every shipped file', () => {
   execFileSync(
     process.execPath,
-    [join(project, 'tools/control/scripts/ship-stage.js')],
+    [
+      join(project, 'tools/control/scripts/ship-stage.js'),
+      '--env',
+      'development'
+    ],
     {}
   )
   const starter = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
@@ -223,7 +242,11 @@ test('the starter names its version and every shipped file', () => {
   assert.equal(new Date(starter.built_at).toISOString(), starter.built_at)
   execFileSync(
     process.execPath,
-    [join(project, 'tools/control/scripts/ship-stage.js')],
+    [
+      join(project, 'tools/control/scripts/ship-stage.js'),
+      '--env',
+      'development'
+    ],
     {}
   )
   const rebuilt = JSON.parse(readFileSync(join(ship, STARTER), 'utf8'))
@@ -296,7 +319,7 @@ test('the starter version is stable and content-sensitive', () => {
 test('the starter rides in the tarball new actors install', () => {
   execFileSync(
     'bash',
-    [join(project, 'tools/control/scripts/harness-stage.sh')],
+    [join(project, 'tools/control/scripts/harness-stage.sh'), 'development'],
     {}
   )
   const listing = execFileSync(
@@ -336,7 +359,11 @@ test('the ship tree captures one local version and rejects invalid versions', ()
     writeFileSync(join(bin, 'pi'), '#!/bin/sh\necho 9.8.7\n', { mode: 0o755 })
     execFileSync(
       process.execPath,
-      [join(project, 'tools/control/scripts/ship-stage.js')],
+      [
+        join(project, 'tools/control/scripts/ship-stage.js'),
+        '--env',
+        'development'
+      ],
       {
         env: {
           ...process.env,
@@ -347,7 +374,7 @@ test('the ship tree captures one local version and rejects invalid versions', ()
     assert.equal(readFileSync(join(ship, './.pi-version'), 'utf8'), '9.8.7\n')
     execFileSync(
       'bash',
-      [join(project, 'tools/control/scripts/harness-stage.sh')],
+      [join(project, 'tools/control/scripts/harness-stage.sh'), 'development'],
       {
         env: {
           ...process.env,
@@ -382,7 +409,11 @@ test('the ship tree captures one local version and rejects invalid versions', ()
       () =>
         execFileSync(
           process.execPath,
-          [join(project, 'tools/control/scripts/ship-stage.js')],
+          [
+            join(project, 'tools/control/scripts/ship-stage.js'),
+            '--env',
+            'development'
+          ],
           {
             env: {
               ...process.env,
@@ -397,4 +428,18 @@ test('the ship tree captures one local version and rejects invalid versions', ()
   } finally {
     rmSync(bin, { recursive: true, force: true })
   }
+})
+
+test('each environment bakes its own model proxy; none is assumed', () => {
+  assert.match(proxy_for('production'), /276668807926/)
+  assert.doesNotMatch(proxy_for('production'), /639469569733|yelzvhhngq/)
+  assert.throws(() => proxy_for('local'), /unknown environment/)
+  assert.throws(() => ship_stage({}), /proxy_url is required/)
+  const bare = spawnSync(
+    process.execPath,
+    [join(project, 'tools/control/scripts/ship-stage.js')],
+    { encoding: 'utf8' }
+  )
+  assert.notEqual(bare.status, 0)
+  assert.match(bare.stderr, /usage: ship-stage.js --env/)
 })

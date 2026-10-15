@@ -344,6 +344,8 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
  * @property {string} seedTap
  * @property {number} bootTimeout
  * @property {number} apiTimeout
+ * @property {number} memoryReserve bytes a create must leave free (hs-over)
+ * @property {() => number | null} memAvailable free memory in bytes, null when unknown
  * @property {string | null} [syncUrl]
  * @property {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} [syncSites]
  */
@@ -375,6 +377,10 @@ export class ActorStore {
   bootTimeout
   /** @type {number} */
   apiTimeout
+  /** @type {number} */
+  memoryReserve
+  /** @type {() => number | null} */
+  memAvailable
   /** @type {string | null} */
   syncUrl = null
   /** @type {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} */
@@ -594,11 +600,18 @@ export class ActorStore {
    * @returns {Promise<Actor>}
    */
   async create(owner, { paths = null, startup = null } = {}) {
-    const record = await this.lock.run(() =>
-      this.#create(owner, { paths, startup })
-    )
-    await this.#recover(record, record.startup)
-    return record
+    if (this.closed) throw new Parking('the host is parking; try again')
+    // Queued and recovering creates hold their memory until create returns.
+    this.#claimMemory()
+    try {
+      const record = await this.lock.run(() =>
+        this.#create(owner, { paths, startup })
+      )
+      await this.#recover(record, record.startup)
+      return record
+    } finally {
+      this.#claimed -= this.mib * MIB
+    }
   }
 
   #startup(id, progress = {}) {
@@ -709,19 +722,7 @@ export class ActorStore {
    * @param {{ paths?: string[] | null, startup?: object | null }} [options]
    * @returns {Promise<Actor>}
    */
-  async #create(owner, options = {}) {
-    if (this.closed) throw new Parking('the host is parking; try again')
-    if (!/^\+[1-9]\d{6,14}$/.test(owner))
-      throw new BadRequest('verified owner required')
-    this.#claimMemory()
-    try {
-      return await this.#createClaimed(owner, options)
-    } finally {
-      this.#claimed -= this.mib * MIB
-    }
-  }
-
-  /** Memory promised to creates still starting; they have not touched it yet. */
+  /** Memory promised to creates still queued or starting; they have not touched it yet. */
   #claimed = 0
 
   /** hs-over: refuse before any disk or TAP when memory would run out. Unknown memory does not refuse. */
@@ -740,7 +741,10 @@ export class ActorStore {
    * @param {{ paths?: string[] | null, startup?: object | null }} [options]
    * @returns {Promise<Actor>}
    */
-  async #createClaimed(owner, { paths = null, startup: progress = null } = {}) {
+  async #create(owner, { paths = null, startup: progress = null } = {}) {
+    if (this.closed) throw new Parking('the host is parking; try again')
+    if (!/^\+[1-9]\d{6,14}$/.test(owner))
+      throw new BadRequest('verified owner required')
     const started = performance.now()
     const id = mintId()
     const startup = this.#startup(id, progress ?? {})
@@ -1229,7 +1233,10 @@ export class ActorStore {
       recursive: true,
       force: true
     })
-    rm_sync(join(this.versionsDir, record.id), { recursive: true, force: true })
+    rm_sync(join(this.versionsDir, record.id), {
+      recursive: true,
+      force: true
+    })
   }
 
   #tracePath(id) {
@@ -1521,36 +1528,42 @@ export class ActorStore {
           `export ${exportId} is corrupt: ${digest.slice(0, DIGEST_SHOWN)} != ${manifest.artifacts.sha256.slice(0, DIGEST_SHOWN)}`
         )
 
-      let record = await this.#create(owner)
+      // Under the lock no other create runs, so the claim covers the whole restore.
+      this.#claimMemory()
       try {
-        await this.#idle(record.id, 'disk')
-        await host.mounted(join(record.dir, DISK), tree =>
-          host.run(['tar', '-xzf', artifacts, '-C', tree, '--no-same-owner'])
-        )
-        const tracePath = this.#tracePath(record.id)
-        const current = exists_sync(tracePath)
-          ? read_file_sync(tracePath, 'utf8')
-          : ''
-        write_file_sync(
-          tracePath,
-          read_file_sync(join(exportDir, 'trace.jsonl'), 'utf8') + current
-        )
-        const seed = this.seedFingerprint()
-        this.trace(record.id, 'restore', {
-          source: exportId,
-          artifacts_sha256: digest,
-          seed,
-          seed_of_export: manifest.seed ?? null,
-          seed_matches: JSON.stringify(seed) === JSON.stringify(manifest.seed)
-        })
-        if (start) record = await this.#reload(record.id)
-      } catch (error) {
-        LOG.warn(`restore of ${exportId} failed, rolling back`)
-        await this.#teardown(record)
-        throw error
+        let record = await this.#create(owner)
+        try {
+          await this.#idle(record.id, 'disk')
+          await host.mounted(join(record.dir, DISK), tree =>
+            host.run(['tar', '-xzf', artifacts, '-C', tree, '--no-same-owner'])
+          )
+          const tracePath = this.#tracePath(record.id)
+          const current = exists_sync(tracePath)
+            ? read_file_sync(tracePath, 'utf8')
+            : ''
+          write_file_sync(
+            tracePath,
+            read_file_sync(join(exportDir, 'trace.jsonl'), 'utf8') + current
+          )
+          const seed = this.seedFingerprint()
+          this.trace(record.id, 'restore', {
+            source: exportId,
+            artifacts_sha256: digest,
+            seed,
+            seed_of_export: manifest.seed ?? null,
+            seed_matches: JSON.stringify(seed) === JSON.stringify(manifest.seed)
+          })
+          if (start) record = await this.#reload(record.id)
+        } catch (error) {
+          LOG.warn(`restore of ${exportId} failed, rolling back`)
+          await this.#teardown(record)
+          throw error
+        }
+        LOG.info(`actor ${record.id} restored from ${exportId}`)
+        return record
+      } finally {
+        this.#claimed -= this.mib * MIB
       }
-      LOG.info(`actor ${record.id} restored from ${exportId}`)
-      return record
     })
   }
 

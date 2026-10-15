@@ -11,6 +11,8 @@ const MAX_PATHS = 100
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const ID = /^a-[a-f0-9]{12}$/
+/** hs-f2: the issuing host, so sync can fence a failed one. Older passes omit it. */
+const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
 const NAME = 'recovery pass'
 const LIFE_S = 300
 
@@ -20,12 +22,18 @@ export const issue_harness_pass = (claims, secret, now = Date.now()) =>
   issue_pass(claims, secret, now, 'realness-harness')
 
 /**
- * @param {{ phone: string, id: string, paths?: string[] | null }} claims
+ * @param {{ phone: string, id: string, paths?: string[] | null, host?: string }} claims
  * @param {string} secret
  * @param {number} now
  * @param {string} audience
  */
-const issue_pass = ({ phone, id, paths = null }, secret, now, audience) => {
+const issue_pass = (
+  { phone, id, paths = null, host },
+  secret,
+  now,
+  audience
+) => {
+  if (host !== undefined && !HOST.test(host)) throw new Error('bad host name')
   check_secret(secret, 'recovery')
   if (!PHONE.test(phone) || !ID.test(id))
     throw new Error('recovery needs a verified owner and session')
@@ -37,7 +45,13 @@ const issue_pass = ({ phone, id, paths = null }, secret, now, audience) => {
   )
     throw new Error('bad path limit')
   return sign_pass(
-    { aud: audience, phone, id, ...(paths && { paths }) },
+    {
+      aud: audience,
+      phone,
+      id,
+      ...(paths && { paths }),
+      ...(host && { host })
+    },
     secret,
     { life_s: LIFE_S, now }
   )
@@ -63,7 +77,14 @@ const verify_pass = (pass, secret, now, audience) => {
     (!Array.isArray(claims.paths) || !claims.paths.every(limit_path))
   )
     throw new Error(`bad ${NAME}`)
-  return { phone: claims.phone, id: claims.id, paths: claims.paths ?? null }
+  if (claims.host !== undefined && !HOST.test(claims.host))
+    throw new Error(`bad ${NAME}`)
+  return {
+    phone: claims.phone,
+    id: claims.id,
+    paths: claims.paths ?? null,
+    ...(claims.host && { host: claims.host })
+  }
 }
 
 /**

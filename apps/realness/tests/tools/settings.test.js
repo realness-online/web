@@ -157,6 +157,9 @@ test('settings CLI rejects missing fields before Bash can use them', () => {
   for (const args of [
     ['shell', 'deploy'],
     ['shell', 'deploy', '--env', 'prod'],
+    ['shell', 'host'],
+    ['shell', 'host', '--env', ''],
+    ['shell', 'host', '--env', 'local'],
     ['folders', 'service'],
     ['folders', 'other']
   ]) {
@@ -187,4 +190,30 @@ test('settings CLI rejects missing fields before Bash can use them', () => {
     { encoding: 'utf8' }
   )
   assert.equal(actual, env.ORIGINS)
+})
+
+test('a cloud host reads only the services of its own environment', () => {
+  const read = env =>
+    Object.fromEntries(
+      exec_file_sync(process.execPath, [cli, 'shell', 'host', '--env', env], {
+        encoding: 'utf8'
+      })
+        .trim()
+        .split('\n')
+        .map(line => line.split('=').map(part => part.replaceAll("'", '')))
+    )
+  const production = read('production')
+  assert.equal(
+    production.sync_url_default,
+    environment_settings('production').services.sync_url
+  )
+  assert.equal(production.sites_url_default, '')
+  assert.doesNotMatch(
+    JSON.stringify(production),
+    /realness-development|639469569733/
+  )
+  assert.equal(
+    read('development').sync_url_default,
+    environment_settings('development').services.sync_url
+  )
 })

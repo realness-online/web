@@ -1,9 +1,8 @@
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { client, phone_of } from '#root/src/files/client.js'
-import { keychain, login, token_source } from '#root/src/sign-on/node/login.js'
-import { URLS } from './status.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { keychain_for, login } from '#root/src/sign-on/node/login.js'
+import { env_token, SIGN_ON, URLS } from './status.js'
 import { not_admin_hint } from './admins.js'
 import { HTTP } from '#root/lib/http.js'
 
@@ -21,9 +20,9 @@ const check_admin = async (env, url, token) => {
 export const admin_login = async (
   env,
   {
-    sign_on = process.env.SIGN_ON_URL ?? development_settings.public_url,
+    sign_on = SIGN_ON[env],
     url = URLS[env],
-    store = keychain,
+    store = keychain_for(env),
     sign_in = login,
     open = address => promisify(exec_file)('open', [address])
   } = {}
@@ -52,7 +51,7 @@ export const admin_login = async (
 
 export const admin_identity = async (
   env,
-  { url = URLS[env], token = token_source() } = {}
+  { url = URLS[env], token = env_token(env) } = {}
 ) => {
   const bearer = await token()
   if (!bearer) throw new Error('not signed in; run realness <env> admin login')
@@ -60,7 +59,7 @@ export const admin_identity = async (
   return { admin: true, phone: phone_of(bearer) }
 }
 
-export const admin_logout = async () => {
-  await keychain.remove()
+export const admin_logout = async env => {
+  await keychain_for(env).remove()
   return { signed_out: true }
 }

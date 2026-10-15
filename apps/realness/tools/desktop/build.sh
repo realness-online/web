@@ -5,7 +5,7 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 out="$root/artifacts/realness-product"
 stage="$out/build"
 
-node "$root/apps/realness/tools/control/scripts/ship-stage.js"
+node "$root/apps/realness/tools/control/scripts/ship-stage.js" --env "${1:?usage: build.sh development|production}"
 rm -rf "$stage"
 mkdir -p "$stage"
 . "$root/apps/realness/lib/output.sh"

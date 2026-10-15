@@ -1,5 +1,4 @@
 import { client } from '#root/src/files/client.js'
-import { token_source } from '#root/src/sign-on/node/login.js'
 import { read_status } from '#root/src/sync/host-status.js'
 import {
   intent_now,
@@ -20,7 +19,7 @@ import {
   paid_now,
   read_plan
 } from '#root/src/proxy/billing.js'
-import { URLS } from './status.js'
+import { env_token, URLS } from './status.js'
 import { randomUUID as random_uuid } from 'node:crypto'
 import {
   ACTOR_ACTIONS,
@@ -47,7 +46,7 @@ const unesc = value =>
 /** A signed-in sync client for one environment. */
 export const reader = async (
   env,
-  { url = URLS[env], token = token_source() } = {}
+  { url = URLS[env], token = env_token(env) } = {}
 ) => {
   if (!url) throw new Error(`no sync URL for ${env}`)
   const bearer = await token()

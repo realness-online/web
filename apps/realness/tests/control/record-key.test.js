@@ -7,7 +7,11 @@ import { out_path } from '#root/lib/output.js'
 
 const scratch = out_path(`record-key-test-${randomUUID()}`)
 const key = 'a'.repeat(64)
-const config = { root: '~/realness' }
+const config = {
+  root: '~/realness',
+  project: 'realness-online',
+  storage: 'realness-online.appspot.com'
+}
 const calls = []
 const cloud = {
   call: async argv => {
@@ -40,7 +44,7 @@ test("operator registers the host key in sync's bucket, then removes the local c
   ])
   assert.equal(
     saved.destination,
-    'gs://realness-development.firebasestorage.app/host-keys/realness-1'
+    'gs://realness-online.appspot.com/host-keys/realness-1'
   )
   assert.equal(saved.body, key)
   assert.equal(saved.mode, 0o600)
@@ -73,4 +77,44 @@ test('a bad key returned by SSH is not registered', async () => {
     /invalid/
   )
   assert.deepEqual(await readdir(scratch), [])
+})
+
+test('a config without project or storage registers nothing', async () => {
+  const prior = calls.length
+  await assert.rejects(
+    provision_record_key(cloud, { root: '~/realness' }, 'realness-1', {
+      scratch
+    }),
+    /needs project and storage/
+  )
+  assert.equal(calls.length, prior)
+})
+
+test('revoke fences the host in sync, then drops its record key', async () => {
+  const { revoke } = await import('../../src/control/host-gcp.js')
+  const asked = []
+  let fence
+  const result = await revoke(config, 'realness-1', {
+    scratch,
+    now: () => '2026-10-15T00:00:00.000Z',
+    gcloud: async argv => {
+      asked.push(argv.join(' '))
+      if (argv[1] === 'cp') fence = JSON.parse(await readFile(argv[2], 'utf8'))
+    }
+  })
+  assert.deepEqual(result, { host: 'realness-1', fenced: true })
+  assert.match(
+    asked[0],
+    /gs:\/\/realness-online\.appspot\.com\/host-fences\/realness-1$/
+  )
+  assert.equal(
+    asked[1],
+    'storage rm --continue-on-error gs://realness-online.appspot.com/host-keys/realness-1'
+  )
+  assert.deepEqual(fence, {
+    host: 'realness-1',
+    revoked_at: '2026-10-15T00:00:00.000Z'
+  })
+  assert.deepEqual(await readdir(scratch), [])
+  await assert.rejects(revoke(config, '../x', { scratch }), /invalid host name/)
 })

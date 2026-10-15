@@ -227,3 +227,25 @@ test('a pass limited to paths reads only those', async () => {
     issue_recovery_pass({ phone, id, paths: ['.pi/agent/auth.json'] }, secret)
   )
 })
+
+test('hs-f2: a pass names the host that issued it, when given', async () => {
+  const { issue_harness_pass, verify_harness_pass } =
+    await import('#root/src/sign-on/node/recovery-pass.js')
+  const key = 'pass-host-secret-at-least-thirty-two-bytes!!'
+  const claims = { phone: '+14155550100', id: 'a-000000000001' }
+  assert.equal(
+    verify_harness_pass(
+      issue_harness_pass({ ...claims, host: 'realness-1' }, key),
+      key
+    ).host,
+    'realness-1'
+  )
+  assert.equal(
+    verify_harness_pass(issue_harness_pass(claims, key), key).host,
+    undefined
+  )
+  assert.throws(
+    () => issue_harness_pass({ ...claims, host: '../x' }, key),
+    /bad host name/
+  )
+})

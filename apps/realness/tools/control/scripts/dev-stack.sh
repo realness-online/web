@@ -89,5 +89,5 @@ export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 
 cd "$DIR"
-exec node server/host/main.js serve --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
+exec node server/host/main.js serve --environment development --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
   --site-url "${SYNC_SITE_PUBLIC_URL%/}/sites/{id}/"

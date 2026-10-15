@@ -3,6 +3,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync
@@ -40,7 +41,11 @@ const modules = {
     export const requireMount = () => {}
     export const shortEnoughForUnix = () => true
     export const run = argv => { if (argv[0] === "cp") copyFileSync(argv[2], argv[3]); return { code: 0, output: "" } }
-    export const freeTap = () => "fc-tap1"
+    export const freeTap = () => {
+      const state = globalThis.startup_timing_test
+      if (state.no_tap) throw new state.HostError("no free TAP in fc-tap1..254")
+      return "fc-tap1"
+    }
     export const createTap = () => {}
     export const deleteTap = () => {}
     export const ensureTap = () => false
@@ -82,6 +87,8 @@ const hooks = registerHooks({
 })
 const { ActorStore } = await import('../../src/host/actors.js')
 hooks.deregister()
+const { Full, HostError } = await import('../../src/host/errors.js')
+state.HostError = HostError
 
 const scratch = fileURLToPath(
   new URL(
@@ -98,6 +105,7 @@ const fixture = t => {
   state.running = false
   state.fail_agent = false
   state.recover_code = 0
+  state.no_tap = false
   const volume = mkdtempSync(join(scratch, 'timing-'))
   t.after(() => rmSync(volume, { recursive: true, force: true }))
   const store = new ActorStore({ volume, firecracker: 'test' })
@@ -383,4 +391,47 @@ test('already running actors do not produce a restore measurement', async t => {
     store.traceOf(actor.id).filter(row => row.event === 'reload').length,
     0
   )
+})
+
+const GIB = 1024 ** 3
+const created_dirs = store =>
+  readdirSync(store.volume).filter(name => name.startsWith('a-'))
+
+test('hs-over: a create past free memory fails clearly before any disk or TAP', async t => {
+  const store = fixture(t)
+  store.memAvailable = () => 2.25 * GIB
+  await assert.rejects(store.create('+14156667777'), error => {
+    assert.ok(error instanceof Full)
+    assert.match(error.message, /^host full: 2\.25 GiB free, 2\.50 GiB needed/)
+    return true
+  })
+  assert.deepEqual(created_dirs(store), [])
+  assert.deepEqual(state.calls, [])
+})
+
+test('hs-over: creates in flight hold their memory; a finished create gives it back', async t => {
+  const store = fixture(t)
+  store.memAvailable = () => 2.75 * GIB
+  const first = store.create('+14156667777')
+  await assert.rejects(store.create('+14156667777'), Full)
+  await first
+  await store.create('+14156667777')
+  assert.equal(created_dirs(store).length, 2)
+})
+
+test('hs-over: unknown memory does not refuse', async t => {
+  const store = fixture(t)
+  store.memAvailable = () => null
+  await store.create('+14156667777')
+})
+
+test('hs-over: the last TAP taken reads as a full host', async t => {
+  const store = fixture(t)
+  store.memAvailable = () => 64 * GIB
+  state.no_tap = true
+  await assert.rejects(store.create('+14156667777'), error => {
+    assert.ok(error instanceof Full)
+    assert.match(error.message, /^host full: no free TAP/)
+    return true
+  })
 })

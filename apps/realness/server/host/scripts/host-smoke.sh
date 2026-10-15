@@ -15,7 +15,7 @@ echo "==> seed"
 sudo timeout 300 node server/host/main.js seed --volume /opt/fc/actors/mnt --rebuild 2>&1 | tail -2
 
 echo "==> serve"
-sudo nohup node server/host/main.js serve --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
+sudo nohup node server/host/main.js serve --environment development --volume /opt/fc/actors/mnt --listen 127.0.0.1 --port 8080 > /tmp/orch.log 2>&1 &
 for _ in $(seq 1 20); do
   sleep 2
   curl -sf --max-time 3 http://127.0.0.1:8080/v1/health > /tmp/health.json && break

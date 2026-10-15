@@ -21,6 +21,11 @@ import { run, attempt, stream } from './exec.js'
  * them.
  */
 export const gcloud = config => {
+  // pr3: a locked-down host takes ssh only through IAP.
+  const tunnel = args =>
+    config.iap && ['ssh', 'scp'].includes(args[0])
+      ? [...args, '--tunnel-through-iap']
+      : args
   const env = {
     CLOUDSDK_CORE_PROJECT: config.project,
     CLOUDSDK_COMPUTE_ZONE: config.zone
@@ -31,21 +36,21 @@ export const gcloud = config => {
 
     /** Run `gcloud compute <args>` and return stdout. Throws on failure. */
     call: (args, options = {}) =>
-      run('gcloud', ['compute', ...args], {
+      run('gcloud', ['compute', ...tunnel(args)], {
         env: { ...process.env, ...env },
         ...options
       }),
 
     /** As `call`, but returns { ok, out, err, code } instead of throwing. */
     try: (args, options = {}) =>
-      attempt('gcloud', ['compute', ...args], {
+      attempt('gcloud', ['compute', ...tunnel(args)], {
         env: { ...process.env, ...env },
         ...options
       }),
 
     /** Run it with output going to this terminal. For anything slow. */
     stream: args =>
-      stream('gcloud', ['compute', ...args], {
+      stream('gcloud', ['compute', ...tunnel(args)], {
         env: { ...process.env, ...env }
       }),
 
@@ -105,6 +110,7 @@ export const gcloud = config => {
       if (config.zone) args.push(`--zone=${config.zone}`)
       args.push('--quiet')
       if (recurse) args.push('--recurse')
+      if (config.iap) args.push('--tunnel-through-iap')
       args.push(source, destination)
       return args
     }
@@ -116,5 +122,6 @@ const module_sshArgs = (config, name, command) => {
   const args = ['compute', 'ssh', name]
   if (config.zone) args.push(`--zone=${config.zone}`)
   args.push('--quiet', `--command=${command}`)
+  if (config.iap) args.push('--tunnel-through-iap')
   return args
 }

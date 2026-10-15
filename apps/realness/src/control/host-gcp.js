@@ -49,6 +49,13 @@ const sizes = (config, options) => ({
   actorsSize: options.actorsSize ?? config.actorsSize
 })
 
+/**
+ * @param {any} cloud
+ * @param {any} config
+ * @param {string} name
+ * @param {{ smoke?: boolean, expire?: string, imageFamily?: string, machineType?: string, bootSize?: string, actorsSize?: string }} [options]
+ *   expire: a GCE duration such as 2h, after which the provider deletes the host
+ */
 export const up = async (
   cloud,
   config,
@@ -150,7 +157,7 @@ export const up = async (
     ])
 
   step('bootstrap on the host')
-  await push(cloud, name)
+  await push(cloud, config, name)
   await cloud.ssh(
     name,
     `sudo bash ${config.root}/server/host/scripts/host-bootstrap.sh`
@@ -211,10 +218,11 @@ export const down = async (cloud, config, name, { mode = 'stop' } = {}) => {
  * `host` imports from every other directory listed here. The host runs as root and leaves a root-owned
  * __pycache__, which makes the next scp fail, so hand the tree back first.
  */
-const push = async (cloud, name) => {
-  step('stage the harness')
+const push = async (cloud, config, name) => {
+  step(`stage the harness (${config.name})`)
   await run('bash', [
-    join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh')
+    join(ROOT, 'tools', 'control', 'scripts', 'harness-stage.sh'),
+    config.name
   ])
   step('copy the code')
   const scratch = out_path('host-stages')
@@ -258,7 +266,13 @@ const ensure_template = async (cloud, config, name) => {
 
 /** Start the host on the host, by path. */
 const serve = async (cloud, config, name) => {
-  step('serve')
+  if (!['development', 'production'].includes(config.name))
+    throw new Error('host config needs name: development or production')
+  step(`serve (${config.name})`)
+  await cloud.ssh(
+    name,
+    `echo ${config.name} | sudo install -D -m 0644 /dev/stdin /etc/realness/environment`
+  )
   await cloud.ssh(
     name,
     `bash ${config.root}/server/host/scripts/host-restart.sh`
@@ -266,7 +280,7 @@ const serve = async (cloud, config, name) => {
 }
 
 export const restart = async (cloud, config, name) => {
-  await push(cloud, name)
+  await push(cloud, config, name)
   await ensure_template(cloud, config, name)
   await provision_record_key(cloud, config, name)
   await serve(cloud, config, name)
@@ -284,7 +298,7 @@ export const provision_record_key = async (
         'cp',
         file,
         destination,
-        '--project=realness-development'
+        `--project=${config.project}`
       ]),
     scratch = join(ROOT, '../../artifacts/realness'),
     read_secret = () =>
@@ -298,6 +312,8 @@ export const provision_record_key = async (
 ) => {
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name))
     throw new Error('invalid host name')
+  if (!config.project || !config.storage)
+    throw new Error('host config needs project and storage')
   step(`register ${name} with sync`)
   const secret = (await read_secret()).trim()
   if (!/^[a-f0-9]{64}$/.test(secret))
@@ -307,20 +323,60 @@ export const provision_record_key = async (
   try {
     const file = join(dir, 'key')
     await write_file(file, secret, { mode: 0o600 })
-    await upload(
-      file,
-      `gs://realness-development.firebasestorage.app/host-keys/${name}`
-    )
+    await upload(file, `gs://${config.storage}/host-keys/${name}`)
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
 }
 
+/**
+ * hs-f2: take a failed host's authority before its actors are recovered.
+ * Sync refuses passes the host minted and its record writes; the host may
+ * still be running somewhere, so nothing here needs to reach it.
+ */
+export const revoke = async (
+  config,
+  name,
+  {
+    gcloud = argv => run('gcloud', [...argv, `--project=${config.project}`]),
+    scratch = join(ROOT, '../../artifacts/realness'),
+    now = () => new Date().toISOString()
+  } = {}
+) => {
+  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(name))
+    throw new Error('invalid host name')
+  if (!config.project || !config.storage)
+    throw new Error('host config needs project and storage')
+  step(`fence ${name} in sync`)
+  await mkdir(scratch, { recursive: true })
+  const dir = await mkdtemp(join(scratch, 'fence-'))
+  try {
+    const file = join(dir, 'fence')
+    await write_file(file, JSON.stringify({ host: name, revoked_at: now() }))
+    await gcloud([
+      'storage',
+      'cp',
+      file,
+      `gs://${config.storage}/host-fences/${name}`
+    ])
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+  step(`drop ${name}'s record key`)
+  await gcloud([
+    'storage',
+    'rm',
+    '--continue-on-error',
+    `gs://${config.storage}/host-keys/${name}`
+  ])
+  return { host: name, fenced: true }
+}
+
 const summary = async (cloud, config, name) => ({
   name,
   ip: await cloud.ip(name),
-  park: `realness development host down ${name}`,
-  drop: `realness development host down ${name} --delete`
+  park: `realness ${config.name} host down ${name}`,
+  drop: `realness ${config.name} host down ${name} --delete`
 })
 
 const pause = ms =>

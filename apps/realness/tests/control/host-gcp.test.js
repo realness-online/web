@@ -166,11 +166,17 @@ test('up --expire gives GCE a deadline that deletes the host and both disks', as
       if (argv[1] === 'set-disk-auto-delete') throw new Error('stopped here')
     }
   })
-  await assert.rejects(up(cloud, config, 'h1', { expire: '2h' }), /stopped here/)
+  await assert.rejects(
+    up(cloud, config, 'h1', { expire: '2h' }),
+    /stopped here/
+  )
   const create = cloud.asked
     .find(([, argv]) => argv[0] === 'instances' && argv[1] === 'create')[1]
     .join(' ')
-  assert.match(create, /--max-run-duration=2h --instance-termination-action=DELETE/)
+  assert.match(
+    create,
+    /--max-run-duration=2h --instance-termination-action=DELETE/
+  )
   assert.equal(
     cloud.asked.at(-1)[1].join(' '),
     'instances set-disk-auto-delete h1 --disk=h1-actors --auto-delete'

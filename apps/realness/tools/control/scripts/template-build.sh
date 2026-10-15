@@ -134,7 +134,7 @@ runtime="$TREE/usr/local/lib/realness"
 mkdir -p "$runtime"
 bash "$REPO/tools/control/scripts/stage-runtime.sh" "$runtime"
 
-[ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
+[ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh <env> on the Mac first" >&2; exit 1; }
 PI_VERSION="$(tar xOzf "$HARNESS_TAR" ./.pi-version)"
 [[ "$PI_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]] || {
   echo "invalid pi version in $HARNESS_TAR: $PI_VERSION" >&2
@@ -164,7 +164,7 @@ WRAPPER
 chmod 0755 "$TREE/usr/local/bin/agent-browser"
 
 log "stock harness -> /realness"
-[ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh on the Mac first" >&2; exit 1; }
+[ -f "$HARNESS_TAR" ] || { echo "run tools/control/scripts/harness-stage.sh <env> on the Mac first" >&2; exit 1; }
 mkdir -p "$TREE/realness"
 tar xzf "$HARNESS_TAR" -C "$TREE/realness"
 mkdir -p "$TREE/usr/local/share/realness-starter"

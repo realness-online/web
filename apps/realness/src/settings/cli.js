@@ -5,7 +5,11 @@ import {
   project_root,
   service_folders
 } from './layout.js'
-import { deployment_settings, local_settings } from './environments.js'
+import {
+  deployment_settings,
+  environment_settings,
+  local_settings
+} from './environments.js'
 import { frontend_out, out_path, out_root } from './output.js'
 
 /** Quote trusted settings for Bash without executing their values. */
@@ -41,7 +45,21 @@ else if (
   process.stdout.write(
     `${shell_values(deployment_settings(args[1], process.env))}\n`
   )
-else if (command === 'shell' && target === 'local' && !args.length)
+else if (
+  command === 'shell' &&
+  target === 'host' &&
+  args.length === 2 &&
+  args[0] === '--env'
+) {
+  // A cloud host serves one environment; nothing here falls back to another.
+  const { services } = environment_settings(args[1])
+  process.stdout.write(
+    `${shell_values({
+      sync_url_default: services.sync_url,
+      sites_url_default: services.sites_url ?? ''
+    })}\n`
+  )
+} else if (command === 'shell' && target === 'local' && !args.length)
   process.stdout.write(
     `${shell_values({
       dev_project: local_settings.cloud.project,
@@ -56,5 +74,5 @@ else if (command === 'shell' && target === 'local' && !args.length)
   )
 else
   throw Error(
-    'usage: settings output [frontend|frontend-notes|--root path] | folders actor|host | files host | folders service sync|proxy|gate | shell deploy --env development|production | shell local'
+    'usage: settings output [frontend|frontend-notes|--root path] | folders actor|host | files host | folders service sync|proxy|gate | shell deploy|host --env development|production | shell local'
   )

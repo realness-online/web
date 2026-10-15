@@ -176,10 +176,56 @@ const answer_get = async (storage, response, path) => {
 const request_line = (who, request, path, status, started) =>
   `${new Date().toISOString()} ${who && 'phone' in who ? who.phone : '-'} ${request.method} /${path ?? '(bad encoding)'} ${status} ${Date.now() - started}ms`
 
+/** A two-part pass: recovery, harness, owner, or a host record; a fenced host is refused. */
+const pass_identity = async (token, { host_pass_secret, storage, fenced }) => {
+  if (!host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
+  const recovery = attempt(() => verify_recovery_pass(token, host_pass_secret))
+  const harness = recovery
+    ? null
+    : attempt(() => verify_harness_pass(token, host_pass_secret))
+  if (await fenced((recovery ?? harness)?.host))
+    throw new Status(HTTP.UNAUTHORIZED)
+  if (recovery)
+    return {
+      recovery: recovery.phone,
+      id: recovery.id,
+      paths: recovery.paths
+    }
+  if (harness)
+    return { harness: harness.phone, id: harness.id, paths: harness.paths }
+  const host = attempt(() => verify_host_pass(token, host_pass_secret))
+  if (host) return { ...host, host: true }
+  return record_identity(token, storage, fenced)
+}
+
+/** A verified pass, or null when this kind does not verify. */
+const attempt = verify => {
+  try {
+    return verify()
+  } catch {
+    return null
+  }
+}
+
+/** hs-f2: a revoked host's fence; read through a short cache so each sync call is not a storage read. */
+const FENCE_CACHE_MS = 10_000
+export const fence_reader = (storage, now = Date.now) => {
+  const seen = new Map()
+  return async host => {
+    if (!host) return false
+    const hit = seen.get(host)
+    if (hit && now() - hit.at < FENCE_CACHE_MS) return hit.fenced
+    const fenced = Boolean(await storage.get(`host-fences/${host}`))
+    seen.set(host, { fenced, at: now() })
+    return fenced
+  }
+}
+
 /** A host's record pass, checked against the key it registered. */
-const record_identity = async (token, storage) => {
+const record_identity = async (token, storage, fenced) => {
   try {
     const host = record_host(token)
+    if (await fenced(host)) throw new Status(HTTP.UNAUTHORIZED)
     const key = await storage.get(`host-keys/${host}`)
     if (!key) throw new Status(HTTP.UNAUTHORIZED)
     return {
@@ -331,30 +377,16 @@ export const sync_service = ({
     return given.length === wanted.length && timing_safe_equal(given, wanted)
   }
 
+  const fenced = fence_reader(storage)
+
   /** A host's record pass, checked against the key it registered. */
   const who_is = async request => {
     const header = request.headers.authorization
     if (!header) return null
     const token = /^Bearer (\S+)$/.exec(header)?.[1]
     if (!token) throw new Status(HTTP.UNAUTHORIZED)
-    if (token.split('.').length === 2) {
-      if (!host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
-      try {
-        const claims = verify_recovery_pass(token, host_pass_secret)
-        return { recovery: claims.phone, id: claims.id, paths: claims.paths }
-      } catch {
-        try {
-          const claims = verify_harness_pass(token, host_pass_secret)
-          return { harness: claims.phone, id: claims.id, paths: claims.paths }
-        } catch {
-          try {
-            return { ...verify_host_pass(token, host_pass_secret), host: true }
-          } catch {
-            return record_identity(token, storage)
-          }
-        }
-      }
-    }
+    if (token.split('.').length === 2)
+      return pass_identity(token, { host_pass_secret, storage, fenced })
     try {
       return await identify(token, { project, certs, pins })
     } catch {

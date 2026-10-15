@@ -77,7 +77,9 @@ export const deleteTap = name => {
 }
 
 const tapReady = name => {
-  const shown = run(['ip', '-4', 'addr', 'show', 'dev', name], { check: false })
+  const shown = run(['ip', '-4', 'addr', 'show', 'dev', name], {
+    check: false
+  })
   return (
     shown.code === 0 &&
     shown.output.includes(`inet ${tapGateway(name)}/30`) &&

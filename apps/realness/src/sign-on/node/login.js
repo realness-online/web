@@ -27,7 +27,7 @@ const page = message =>
   `<!doctype html><meta charset="utf-8"><title>Realness</title><p style="font:1.2rem system-ui;margin:3rem">${message}</p>`
 
 /** The macOS keychain, driven through `security -i` so secrets stay off argv. */
-export const keychain = {
+const keychain_entry = account => ({
   async read() {
     try {
       const { stdout } = await promisify(exec_file)('security', [
@@ -35,7 +35,7 @@ export const keychain = {
         '-s',
         SERVICE,
         '-a',
-        ACCOUNT,
+        account,
         '-w'
       ])
       return JSON.parse(stdout.trim())
@@ -46,15 +46,21 @@ export const keychain = {
   async write(value) {
     const secret = JSON.stringify(value).replace(/(["\\])/g, '\\$1')
     await run_security(
-      `add-generic-password -U -s ${SERVICE} -a ${ACCOUNT} -w "${secret}"\n`
+      `add-generic-password -U -s ${SERVICE} -a ${account} -w "${secret}"\n`
     )
   },
   async remove() {
     await run_security(
-      `delete-generic-password -s ${SERVICE} -a ${ACCOUNT}\n`
+      `delete-generic-password -s ${SERVICE} -a ${account}\n`
     ).catch(() => {})
   }
-}
+})
+
+export const keychain = keychain_entry(ACCOUNT)
+
+/** Operators keep one sign-in per environment; development keeps the original entry. */
+export const keychain_for = env =>
+  env === 'production' ? keychain_entry(`${ACCOUNT}:production`) : keychain
 
 /** @type {(commands: string) => Promise<void>} */
 const run_security = commands =>

@@ -9,13 +9,7 @@ import {
 } from 'node:http'
 import { connect } from 'node:net'
 import { extname, join, sep } from 'node:path'
-import {
-  BadRequest,
-  Full,
-  HOST_FAILURES,
-  NotFound,
-  Parking
-} from './errors.js'
+import { BadRequest, Full, HOST_FAILURES, NotFound, Parking } from './errors.js'
 import { verify_host_pass } from '#root/src/sign-on/node/host-pass.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { can } from '#root/src/can/can.js'

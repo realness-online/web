@@ -6,14 +6,18 @@ import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { out_path } from '#root/lib/output.js'
 import { cpSync as cp_sync } from 'node:fs'
-import { development_settings } from '#root/src/settings/environments.js'
+import { environment_settings } from '#root/src/settings/environments.js'
 import { project_root as project, product_paths } from '#root/src/settings/layout.js'
 
 
 const STATIC_RENDERER = product_paths().renderer
 export const ROOT = join(project, '..', '..')
 export const STAGE = out_path('ship')
-const DEFAULT_PROXY = development_settings.services.starter_proxy_url
+/** The model proxy baked into the image; each environment builds its own. */
+export const proxy_for = env => {
+  const { services } = environment_settings(env)
+  return services.starter_proxy_url ?? services.proxy_url
+}
 
 export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', '.pi/skills', '.pi/prompts', '.pi/extensions', 'themes', '.pi/agent/themes', '.pi/package.json', '.pi/package-lock.json']
 
@@ -104,7 +108,9 @@ const realness_provider = proxy_url => ({
 })
 
 /** Build the ship tree. Checks run first, so a bad input keeps the last tree. */
-export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = DEFAULT_PROXY } = {}) => {
+/** @param {{ root?: string, stage?: string, proxy_url?: string }} [options] */
+export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
+  if (!proxy_url) throw new Error('proxy_url is required: pass --env development|production')
   let pi_version
   try {
     pi_version = exec_file_sync('pi', ['--version'], { encoding: 'utf8' }).trim()
@@ -158,7 +164,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url = DEFAULT_PRO
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {
   try {
-    const stage = ship_stage()
+    const env = process.argv[process.argv.indexOf('--env') + 1]
+    if (!process.argv.includes('--env')) throw new Error('usage: ship-stage.js --env development|production [--list]')
+    const stage = ship_stage({ proxy_url: proxy_for(env) })
     const starter = JSON.parse(read_file_sync(join(stage, STARTER), 'utf8'))
     const paths = Object.keys(starter.files)
     console.log(`ship tree: ${stage}`)

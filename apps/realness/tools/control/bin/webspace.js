@@ -34,6 +34,7 @@ import {
   up as gcp_up,
   down as gcp_down,
   restart as gcp_restart,
+  revoke as gcp_revoke,
 } from "../../../src/control/host-gcp.js"
 import {
   up as lima_up,
@@ -69,6 +70,8 @@ const USAGE = `usage: realness <local|development> <command> [options]
   host up [<name>] [--smoke] [--expire=2h]  make a host, put the code on it, serve (~3 min in GCP)
   host restart <name>          push the code and re-serve
   host down <name> [--delete]  park it, or drain and delete
+  host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
+  host revoke <name>           fence a failed host: sync refuses its writes (hs-f2)
   host drain <name> [--delete] export every actor to the bucket
   host list                    the hosts this environment has
   host status [<name>] [--json] read last-seen host records through sync
@@ -142,7 +145,7 @@ const main = async (argv) => {
     : {
         kind: "gcp",
         target: gcloud(config),
-        mod: { up: gcp_up, down: gcp_down, restart: gcp_restart },
+        mod: { up: gcp_up, down: gcp_down, restart: gcp_restart, revoke: gcp_revoke },
       }
 
   switch (command) {
@@ -160,7 +163,7 @@ const main = async (argv) => {
     case "admin": {
       if (args.length !== 1) throw new Error("usage: realness <env> admin login|logout|whoami")
       if (args[0] === "login") return finish(await admin_login(envName))
-      if (args[0] === "logout") return finish(await admin_logout())
+      if (args[0] === "logout") return finish(await admin_logout(envName))
       if (args[0] === "whoami") return finish(await admin_identity(envName))
       throw new Error("usage: realness <env> admin login|logout|whoami")
     }
@@ -270,8 +273,14 @@ const with_intent = async (envName, name, work) => {
   return done
 }
 
+/** Host verbs that create, change, or remove cloud resources. */
+export const CHANGES = ["up", "restart", "down", "drain", "revoke", "lockdown"]
+
 const hostCommand = async (hosts, config, args, flags, envName) => {
   const [action, ...rest] = args
+  const changes = CHANGES.includes(action) && !(action === "lockdown" && !flags.apply)
+  if (config.approval && changes && !flags.approved)
+    throw new Error(`${envName} host ${action} changes production; rerun with --approved`)
   const { target, mod } = hosts
 
   switch (action) {
@@ -283,6 +292,19 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           ...(typeof flags.expire === "string" && { expire: flags.expire }),
         }),
       )
+
+    case "lockdown": {
+      if (is_local(config)) throw new Error("lockdown is for cloud projects")
+      const { attempt } = await import("../../../src/control/exec.js")
+      const { lockdown } = await import("../../../src/control/lockdown.js")
+      return lockdown(config, { apply: Boolean(flags.apply), run: argv => attempt("gcloud", argv) })
+    }
+
+    case "revoke": {
+      const name = requireName(rest, `usage: realness <env> host revoke <name>`)
+      if (is_local(config)) throw new Error("revoke is for cloud hosts")
+      return mod.revoke(config, name)
+    }
 
     case "down": {
       const name = requireName(rest, `usage: realness <env> host down <name> [--delete]`)
