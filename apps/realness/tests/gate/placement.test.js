@@ -9,6 +9,7 @@ import {
   placement_html,
   placement_key,
   placed_hosts,
+  release_placements,
   read_placement,
   reassign
 } from '../../src/gate/placement.js'
@@ -137,5 +138,39 @@ test('the gate reaches the placed host at its own address', async () => {
   assert.throws(
     () => placed_hosts({ addresses: { 'realness-1': { host: 'h' } } }),
     /bad address for realness-1/
+  )
+})
+
+test('hs-n4: releasing a host drops only its own placements', async () => {
+  const records = new Map()
+  const one = store(records)
+  await placement(phone, { hosts: ['realness-1'], ...one })
+  await placement(other, { hosts: ['realness-1'], ...one })
+  records.set(
+    placement_key('+14155550188'),
+    placement_html({ phone: '+14155550188', host: 'realness-2', placed: 'x' })
+  )
+  const released = await release_placements('realness-1', {
+    list: async () => [...records.keys()],
+    read: one.read,
+    remove: async key => records.delete(key)
+  })
+  assert.equal(released, 2)
+  assert.deepEqual([...records.keys()], [placement_key('+14155550188')])
+  assert.equal(
+    await release_placements('realness-9', {
+      list: async () => [...records.keys()],
+      read: one.read,
+      remove: async key => records.delete(key)
+    }),
+    0
+  )
+  await assert.rejects(
+    release_placements('Not A Host', {
+      list: async () => [],
+      read: one.read,
+      remove: async () => {}
+    }),
+    /bad host name/
   )
 })

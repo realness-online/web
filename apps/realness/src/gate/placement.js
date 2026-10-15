@@ -7,6 +7,7 @@
  * when an actor has been recreated elsewhere.
  */
 import { createHash } from 'node:crypto'
+/* eslint-disable no-await-in-loop -- placements are read and removed one at a time so a failure names its key */
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
@@ -134,4 +135,27 @@ export const placed_hosts = ({ addresses, read, write, now = null }) => {
     known.set(phone, found)
     return found
   }
+}
+
+/**
+ * Drop every placement that names this host, so its people are placed again.
+ * hs-n4 calls this once the host holds no actor; each person is written to a
+ * remaining host on their next request.
+ *
+ * @param {string} host
+ * @param {{ list: () => Promise<string[]>, read: (key: string) => Promise<{ body: Buffer } | null>, remove: (key: string) => Promise<unknown> }} options
+ * @returns {Promise<number>} how many placements named the host
+ */
+export const release_placements = async (host, { list, read, remove }) => {
+  if (!HOST.test(host)) throw new Error('bad host name')
+  const keys = await list()
+  let released = 0
+  for (const key of keys) {
+    const held = await read(key)
+    const found = held ? read_placement(held.body.toString('utf8')) : null
+    if (!found || found.host !== host) continue
+    await remove(key)
+    released += 1
+  }
+  return released
 }

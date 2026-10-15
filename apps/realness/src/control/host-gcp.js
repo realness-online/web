@@ -274,6 +274,9 @@ const ensure_template = async (cloud, config, name) => {
   )
 }
 
+/** A pass secret shorter than this is a mistake, not a secret. */
+const SECRET_MIN = 32
+
 /** Secret Manager names and the root-only files host-restart.sh reads. */
 export const HOST_SECRETS = {
   HOST_PASS_SECRET: 'host-pass-secret',
@@ -318,7 +321,8 @@ export const install_secrets = async (
   step('pass secrets')
   for (const [secret, file] of Object.entries(HOST_SECRETS)) {
     const value = (await read(secret)).trim()
-    if (value.length < 32) throw new Error(`${secret} is missing or too short`)
+    if (value.length < SECRET_MIN)
+      throw new Error(`${secret} is missing or too short`)
     await send(
       cloud.sshArgs(
         name,
