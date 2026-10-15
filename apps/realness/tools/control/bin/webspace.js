@@ -88,6 +88,7 @@ const USAGE = `usage: realness <local|development> <command> [options]
   host up [<name>] [--smoke] [--expire=2h]  make a host, put the code on it, serve (~3 min in GCP)
   host restart <name>          push the code and re-serve
   host down <name> [--delete]  park it, or drain and delete
+  host recover <name> [--yes]  recreate a failed host's actors elsewhere (hs-f3)
   host move <phone> <host>     move one actor to another host (hs-n3)
   host retire <name> [--delete] stop a host whose actors have moved (hs-n4)
   host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
@@ -474,7 +475,8 @@ export const CHANGES = [
   'revoke',
   'lockdown',
   'retire',
-  'move'
+  'move',
+  'recover'
 ]
 
 const hostCommand = async (hosts, config, args, flags, envName) => {
@@ -502,6 +504,75 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           })
         })
       )
+
+    case 'recover': {
+      const name = requireName(
+        rest,
+        'usage: realness <env> host recover <name> [--yes]'
+      )
+      if (!flags.yes)
+        throw new Error(
+          `recover tears down ${name}'s authority and recreates its actors;` +
+            ' rerun with --yes'
+        )
+      const { remoteApi } = await import('../../../src/control/api.js')
+      const { recover } = await import('../../../src/control/recover.js')
+      const { revoke } = await import('../../../src/control/host-gcp.js')
+      const { reassign } = await import('../../../src/gate/placement.js')
+      const sync = await reads.reader(envName)
+      const fleet = await reads.hosts(sync)
+      const failed = fleet.find(host => host.host.name === name)
+      if (!failed) throw new Error(`no host record for ${name}`)
+      const alive = fleet
+        .filter(host => host.host.name !== name)
+        .map(host => host.host.name)
+      const survivors = alive.map(host => ({
+        name: host,
+        actors: fleet.find(row => row.host.name === host)?.actors?.length ?? 0
+      }))
+      const gcs = placement_store(envName)
+      const by_host = new Map(survivors.map(host => [host.name, host.actors]))
+      return finish(
+        await recover(name, {
+          reason: `last reported ${failed.age_s}s ago`,
+          actors: failed.actors,
+          hosts: alive,
+          api: host => remoteApi(host, { zone: config.zone }),
+          revoke: host => revoke(config, host),
+          bundle: async id => {
+            const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
+            const found = await attempt('gcloud', [
+              'storage',
+              'objects',
+              'describe',
+              object,
+              '--format=value(name)'
+            ])
+            return found.ok && found.out.trim() ? { bundle: object } : null
+          },
+          restore: async (host, id, owner, bundle) => {
+            const { remoteApi: api_for } =
+              await import('../../../src/control/api.js')
+            const listing = await api_for(host, {
+              zone: config.zone
+            }).json('/v1/exports')
+            const exported = (listing.exports ?? []).find(
+              entry => entry.id === id
+            )
+            if (!exported) throw new Error(`${id} is not in ${host}'s exports`)
+            return JSON.parse(
+              await api_for(host, { zone: config.zone }).call('/v1/actors', {
+                method: 'POST',
+                body: { owner, restore_from: id }
+              })
+            )
+          },
+          place: (who, host) =>
+            reassign(who, host, { read: gcs.read, write: gcs.write }),
+          load: async host => by_host.get(host) ?? 0
+        })
+      )
+    }
 
     case 'move': {
       const [phone, target_host] = rest

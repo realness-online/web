@@ -76,7 +76,12 @@ export const remoteApi = (name, { zone }) => {
   return {
     sshArgs,
 
-    /** curl the API on the host and return stdout. Throws on a bad exit. */
+    /**
+     * curl the API on the host and return stdout. Throws on a bad exit.
+     * @param {string} path
+     * @param {{ method?: string, body?: object | null, timeout?: number }} [options]
+     * @returns {Promise<string>}
+     */
     async call(
       path,
       { method = 'GET', body = null, timeout = CALL_TIMEOUT_S } = {}
