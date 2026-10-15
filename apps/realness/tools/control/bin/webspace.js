@@ -33,6 +33,7 @@ import {
 import { environment, isLocal as is_local } from '../webspace.config.js'
 import { gcloud } from '../../../src/control/cloud.js'
 import { limaTarget as lima_target } from '../../../src/control/lima.js'
+import { readFile as read_file } from 'node:fs/promises'
 import { attempt, note, step } from '../../../src/control/exec.js'
 import { mkdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -91,6 +92,7 @@ const USAGE = `usage: realness <local|development> <command> [options]
   host recover <name> [--yes]  recreate a failed host's actors elsewhere (hs-f3)
   host memory <actor>          what one actor costs the host, by stage (hs-mem)
   host hot                     which hosts are over their limits (hs-hot)
+  host scale --report <file>   one host or a swarm, from measured capacity (hs-d1)
   host move <phone> <host>     move one actor to another host (hs-n3)
   host retire <name> [--delete] stop a host whose actors have moved (hs-n4)
   host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
@@ -599,6 +601,30 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
             await sample_actor(target, config, host_name, actor, api)
         })
       )
+    }
+
+    case 'scale': {
+      const { scale_choice, scale_text } =
+        await import('../../../src/control/scale.js')
+      const report = typeof flags.report === 'string' ? flags.report : null
+      if (!report)
+        throw new Error(
+          'usage: realness <env> host scale --report <capacity report json> [--demand N]'
+        )
+      const measured = JSON.parse(await read_file(report, 'utf8'))
+      const actors_per_host =
+        Number(flags.demand) || Number(measured.actors_per_host ?? 0)
+      const choice = scale_choice({
+        actors_per_host: Number(measured.actors_per_host ?? actors_per_host),
+        hourly_cost: Number(
+          flags['hourly-cost'] ??
+            measured.hourly_cost ??
+            config.hourly_cost ??
+            0
+        ),
+        ...(flags.demand && { demand: Number(flags.demand) })
+      })
+      return finish({ ...choice, text: scale_text(choice) })
     }
 
     case 'hot': {
