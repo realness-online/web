@@ -33,7 +33,9 @@ import {
 import { environment, isLocal as is_local } from '../webspace.config.js'
 import { gcloud } from '../../../src/control/cloud.js'
 import { limaTarget as lima_target } from '../../../src/control/lima.js'
-import { note, step } from '../../../src/control/exec.js'
+import { attempt, note, step } from '../../../src/control/exec.js'
+import { mkdir, stat } from 'node:fs/promises'
+import { join } from 'node:path'
 import * as dev from '../../../src/control/dev.js'
 import {
   up as gcp_up,
@@ -71,7 +73,6 @@ import {
 } from '../../../src/control/admins.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { project_root } from '#root/src/settings/layout.js'
-import { join } from 'node:path'
 import { disk } from '../../../src/can/disk.js'
 import { create_gcs, gcloud_token } from '../../../src/can/gcs.js'
 import { deployment_settings } from '#root/src/settings/environments.js'
@@ -87,6 +88,8 @@ const USAGE = `usage: realness <local|development> <command> [options]
   host up [<name>] [--smoke] [--expire=2h]  make a host, put the code on it, serve (~3 min in GCP)
   host restart <name>          push the code and re-serve
   host down <name> [--delete]  park it, or drain and delete
+  host move <phone> <host>     move one actor to another host (hs-n3)
+  host retire <name> [--delete] stop a host whose actors have moved (hs-n4)
   host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
   host revoke <name>           fence a failed host: sync refuses its writes (hs-f2)
   host drain <name> [--delete] export every actor to the bucket
@@ -132,6 +135,73 @@ const parseFlags = args => {
 }
 
 /** A host name is required for everything but `up`. */
+/** The placement records live in sync's bucket, in the list/read/remove shape. */
+const placement_store = envName => {
+  const gcs = create_gcs({
+    bucket: deployment_settings(envName, process.env).bucket,
+    token: gcloud_token()
+  })
+  return {
+    get: key => gcs.get(key),
+    delete: key => gcs.delete(key),
+    read: key => gcs.get(key),
+    write: (key, body) => gcs.put(key, body),
+    list: async () =>
+      (await gcs.list('placements')).files.map(file => `placements/${file}`)
+  }
+}
+
+/** Where the person is placed, or an error naming what is missing. */
+const placement_of = async (phone, gcs) => {
+  const { placement_key, read_placement } =
+    await import('../../../src/gate/placement.js')
+  const held = await gcs.get(placement_key(phone))
+  const placement = held ? read_placement(held.body.toString('utf8')) : null
+  if (!placement) throw new Error(`no placement for ${phone}`)
+  return placement.host
+}
+
+/** The one live actor this person owns, from what the fleet last reported. */
+const running_actor = async (envName, phone) => {
+  const sync = await reads.reader(envName)
+  const rows = await reads.actors(sync)
+  const found = rows.find(
+    actor => actor.owner === phone && actor.state !== 'incomplete'
+  )
+  if (!found) throw new Error(`no running actor for ${phone}`)
+  return found
+}
+
+/**
+ * hs-n3: bring the export down from the source host and put it in the bucket,
+ * the way drain ships one. The host holds no storage credentials, so the copy
+ * passes through here.
+ */
+const ship_bundle = async (name, config, actor, object) => {
+  const scratch = join(out_path('moves'), actor)
+  await mkdir(scratch, { recursive: true })
+  const archive = join(scratch, 'bundle.tar.gz')
+  const pulled = await attempt('gcloud', [
+    'compute',
+    'scp',
+    `${name}:${config.hostExports ?? '/opt/fc/actors/mnt/exports'}/${actor}/artifacts.tar.gz`,
+    archive,
+    `--zone=${config.zone}`,
+    '--quiet'
+  ])
+  if (!pulled.ok)
+    throw new Error(`could not fetch the export: ${pulled.err.trim()}`)
+  const copied = await attempt('gcloud', [
+    'storage',
+    'cp',
+    '--quiet',
+    archive,
+    object
+  ])
+  if (!copied.ok) throw new Error(`upload failed: ${copied.err.trim()}`)
+  return { shipped: true, bytes: (await stat(archive)).size }
+}
+
 /**
  * hs-n5: the actors every host last reported through sync, for the drain
  * confirmation. A host that has not reported is simply absent.
@@ -396,7 +466,16 @@ const with_intent = async (envName, name, work) => {
 }
 
 /** Host verbs that create, change, or remove cloud resources. */
-export const CHANGES = ['up', 'restart', 'down', 'drain', 'revoke', 'lockdown']
+export const CHANGES = [
+  'up',
+  'restart',
+  'down',
+  'drain',
+  'revoke',
+  'lockdown',
+  'retire',
+  'move'
+]
 
 const hostCommand = async (hosts, config, args, flags, envName) => {
   const [action, ...rest] = args
@@ -423,6 +502,66 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           })
         })
       )
+
+    case 'move': {
+      const [phone, target_host] = rest
+      if (!phone || !target_host)
+        throw new Error('usage: realness <env> host move <phone> <host>')
+      const { remoteApi } = await import('../../../src/control/api.js')
+      const { move } = await import('../../../src/control/move.js')
+      const { reassign } = await import('../../../src/gate/placement.js')
+      const gcs = placement_store(envName)
+      const where = await placement_of(phone, gcs)
+      const actor = await running_actor(envName, phone)
+      return finish(
+        await move(actor.id, phone, {
+          from: remoteApi(where, { zone: config.zone }),
+          to: remoteApi(target_host, { zone: config.zone }),
+          bundle: async id => {
+            const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
+            return {
+              object,
+              ...(await ship_bundle(where, config, id, object))
+            }
+          },
+          place: (who, host) =>
+            reassign(who, host, { read: gcs.read, write: gcs.write }),
+          host: target_host,
+          release: true
+        })
+      )
+    }
+
+    case 'retire': {
+      const name = requireName(
+        rest,
+        'usage: realness <env> host retire <name> [--delete]'
+      )
+      const { remoteApi } = await import('../../../src/control/api.js')
+      const { retire } = await import('../../../src/control/retire.js')
+      const { release_placements } =
+        await import('../../../src/gate/placement.js')
+      const store = placement_store(envName)
+      return finish(
+        await retire(
+          remoteApi(name, { zone: config.zone }),
+          {
+            release: host =>
+              release_placements(host, {
+                list: () => store.list(),
+                read: key => store.get(key),
+                remove: key => store.delete(key)
+              })
+          },
+          {
+            stop: () => target.call(['instances', 'stop', name, '--quiet']),
+            drop: () => mod.down(target, config, name, { mode: 'delete' })
+          },
+          name,
+          { delete: Boolean(flags.delete) }
+        )
+      )
+    }
 
     case 'lockdown': {
       if (is_local(config)) throw new Error('lockdown is for cloud projects')

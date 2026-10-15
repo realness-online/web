@@ -15,7 +15,7 @@ class RetireError extends Error {}
 
 /**
  * @param {{ call: (path: string) => Promise<string> }} api the old host's API
- * @param {{ list: () => Promise<string[]>, release: (host: string) => Promise<number> }} placements
+ * @param {{ release: (host: string) => Promise<number> }} placements
  * @param {{ stop: (name: string) => Promise<void>, drop: (name: string) => Promise<void> }} host
  * @param {string} name
  * @param {{ delete?: boolean }} [options]
