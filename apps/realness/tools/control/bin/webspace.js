@@ -89,6 +89,8 @@ const USAGE = `usage: realness <local|development> <command> [options]
   host restart <name>          push the code and re-serve
   host down <name> [--delete]  park it, or drain and delete
   host recover <name> [--yes]  recreate a failed host's actors elsewhere (hs-f3)
+  host memory <actor>          what one actor costs the host, by stage (hs-mem)
+  host hot                     which hosts are over their limits (hs-hot)
   host move <phone> <host>     move one actor to another host (hs-n3)
   host retire <name> [--delete] stop a host whose actors have moved (hs-n4)
   host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
@@ -136,6 +138,15 @@ const parseFlags = args => {
 }
 
 /** A host name is required for everything but `up`. */
+/** hs-mem: the stages an actor is measured in. */
+const MEMORY_STAGES = [
+  { name: 'as created', run: '' },
+  { name: 'after a page fetch', run: 'true' }
+]
+
+/** hs-hot: when a host counts as crowded. */
+const HOT_LIMITS = { cpu_fraction: 0.9, mem_used_fraction: 0.9, actors: 30 }
+
 /** The placement records live in sync's bucket, in the list/read/remove shape. */
 const placement_store = envName => {
   const gcs = create_gcs({
@@ -504,6 +515,73 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
           })
         })
       )
+
+    case 'memory': {
+      const actor = requireName(
+        rest,
+        'usage: realness <env> host memory <actor>'
+      )
+      const { measure } = await import('../../../src/control/memory.js')
+      const { remoteApi } = await import('../../../src/control/api.js')
+      if (is_local(config)) throw new Error('memory measures a cloud host')
+      const api = remoteApi(config.hostName ?? rest[1] ?? 'realness-1', {
+        zone: config.zone
+      })
+      return finish(
+        await measure({
+          actor,
+          stages: MEMORY_STAGES,
+          run: argv =>
+            api.call(`/v1/actors/${actor}/exec`, {
+              method: 'POST',
+              body: { argv, timeout: 120 }
+            }),
+          sample: async () => {
+            const health = await api.json('/v1/health')
+            return {
+              host_mib: Number(health.memory?.host_mib ?? 0),
+              guest_used_mib: Number(health.memory?.guest_used_mib ?? 0),
+              top: health.memory?.top ?? []
+            }
+          }
+        })
+      )
+    }
+
+    case 'hot': {
+      const { hot_hosts, hot_text, relieve } =
+        await import('../../../src/control/hot.js')
+      const sync = await reads.reader(envName)
+      const fleet = await reads.hosts(sync)
+      const rows = fleet.map(row => ({
+        name: row.host.name,
+        cpu_fraction: Number.isFinite(Number(row.host.cpu_fraction))
+          ? Number(row.host.cpu_fraction)
+          : null,
+        mem_used_fraction: Number.isFinite(Number(row.host.mem_used_fraction))
+          ? Number(row.host.mem_used_fraction)
+          : null,
+        actors: row.actors.length
+      }))
+      const hot = hot_hosts(rows, HOT_LIMITS)
+      if (!flags.owner)
+        return finish({
+          hosts: hot,
+          text: hot.length ? hot_text(hot) : 'no host is over its limits'
+        })
+      const crowded = fleet.find(row => row.host.name === hot[0]?.host)
+      if (!crowded) throw new Error('no crowded host to relieve')
+      const plan = relieve(
+        rows,
+        HOT_LIMITS,
+        { host: crowded.host.name, actors: crowded.actors },
+        String(flags.owner)
+      )
+      return finish({
+        ...plan,
+        text: `${hot_text([plan])}\n\nrun: realness ${envName} host move ${plan.owner} ${plan.to}`
+      })
+    }
 
     case 'recover': {
       const name = requireName(
