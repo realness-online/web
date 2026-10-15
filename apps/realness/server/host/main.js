@@ -145,8 +145,10 @@ const mirror = process.env.SYNC_URL
     })
   : null
 const loops = new Loops(store, { mirror, host })
+// An environment without a public sites domain exports an empty value; fall
+// back to sync itself rather than refusing to serve.
 const site_public =
-  process.env.SYNC_SITE_PUBLIC_URL ?? process.env.SYNC_SITE_URL
+  process.env.SYNC_SITE_PUBLIC_URL || process.env.SYNC_SITE_URL
 if (store.syncSites && !site_public)
   throw new Error('sync sites need SYNC_SITE_PUBLIC_URL or SYNC_SITE_URL')
 const site_url = store.syncSites
