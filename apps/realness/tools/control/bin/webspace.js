@@ -132,6 +132,21 @@ const parseFlags = args => {
 }
 
 /** A host name is required for everything but `up`. */
+/**
+ * hs-n5: the actors every host last reported through sync, for the drain
+ * confirmation. A host that has not reported is simply absent.
+ */
+const fleet_reader = envName => async () => {
+  const sync = await reads.reader(envName)
+  const rows = await reads.actors(sync)
+  const by_host = new Map()
+  for (const actor of rows) {
+    if (!by_host.has(actor.host)) by_host.set(actor.host, [])
+    by_host.get(actor.host).push(actor)
+  }
+  return [...by_host].map(([name, actors]) => ({ name, actors }))
+}
+
 const requireName = (rest, usage) => {
   const name = rest[0]
   if (!name) throw new Error(usage)
@@ -431,7 +446,10 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
         `usage: realness <env> host down <name> [--delete]`
       )
       if (flags.delete && !flags['no-drain'] && !is_local(config)) {
-        return drain.drain(target, config, name, { delete: true })
+        return drain.drain(target, config, name, {
+          delete: true,
+          fleet: fleet_reader(envName)
+        })
       }
       if (flags.delete)
         return mod.down(target, config, name, { mode: 'delete' })

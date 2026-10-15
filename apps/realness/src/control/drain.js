@@ -36,6 +36,7 @@ import { attempt, step, note } from './exec.js'
 import { remoteApi as remote_api } from './api.js'
 import { out_root } from '#root/lib/output.js'
 import { HTTP } from '#root/lib/http.js'
+import { confirm_text, require_homes } from './drain-confirm.js'
 /* eslint-disable no-await-in-loop -- actors ship one at a time so each export is proven before the next */
 
 class DrainError extends Error {}
@@ -51,12 +52,13 @@ const PARTS = ['artifacts.tar.gz', 'trace.jsonl', 'manifest.json']
  * @param {object} [options]
  * @param {boolean} [options.delete] remove the instance after draining
  * @param {string} [options.runDir] where the bundles land; a stamp folder by default
+ * @param {(leaving: { name: string, api: object }) => Promise<{ name: string, actors: { id: string, state: string }[] }[]>} [options.fleet] hs-n5: read the other hosts before a delete
  */
 export const drain = async (
   cloud,
   config,
   name,
-  { delete: drop = false, runDir } = {}
+  { delete: drop = false, runDir, fleet } = {}
 ) => {
   const api = remote_api(name, { zone: config.zone })
   const run = runDir ?? join(dist(), `drain-${stamp()}`)
@@ -116,6 +118,13 @@ export const drain = async (
     note(`bundles: gs://${config.bucket}/actors/<id>/bundle.tar.gz`)
     note(`run log: ${run}`)
     return { ...counts, run, deleted: false }
+  }
+
+  // hs-n5: a bundle in the bucket is not a home. Ask the fleet first.
+  if (fleet) {
+    step('confirm every actor has a home')
+    const homes = require_homes(name, { actors }, await fleet({ name, api }))
+    note(confirm_text(name)(homes))
   }
 
   await deleteHostAndDisks(cloud, config, name)
