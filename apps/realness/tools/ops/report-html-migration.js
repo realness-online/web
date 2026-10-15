@@ -1,5 +1,7 @@
-import { createRequire as create_require } from 'node:module'
 import { pathToFileURL as path_to_file_url } from 'node:url'
+import { initializeApp, applicationDefault, deleteApp } from 'firebase-admin/app'
+import { getStorage } from 'firebase-admin/storage'
+import { getFirestore } from 'firebase-admin/firestore'
 import { migration_report } from '../../functions/src/services/migration-report.js'
 
 const USAGE = 'Usage: npm run migration:report -- --project ID --bucket NAME [--apply]'
@@ -35,12 +37,9 @@ export const report_options = args => {
 
 export const main = async args => {
   const { project, bucket_name, apply } = report_options(args)
-  const require = create_require(new URL('../../functions/package.json', import.meta.url))
-  const { initializeApp, applicationDefault, deleteApp } = require('firebase-admin/app')
-  const { getStorage } = require('firebase-admin/storage')
-  const { getFirestore } = require('firebase-admin/firestore')
+  const credential = applicationDefault()
   const app = initializeApp({
-    credential: applicationDefault(), projectId: project, storageBucket: bucket_name
+    credential, projectId: project, storageBucket: bucket_name
   }, 'html-migration-report')
   try {
     const bucket = getStorage(app).bucket()
@@ -56,7 +55,7 @@ export const main = async args => {
     const { rules_protect_both, released_storage_rules } =
       await import('../../functions/src/services/rules-preflight.js')
     const fetch_json = async url => {
-      const { access_token } = await app.options.credential.getAccessToken()
+      const { access_token } = await credential.getAccessToken()
       const response = await fetch(url, {
         headers: { authorization: `Bearer ${access_token}`, 'x-goog-user-project': project }
       })

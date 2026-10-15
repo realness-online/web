@@ -157,6 +157,7 @@
     "comark": "0.4.0",
     "country-code-emoji": "2.3.0",
     "firebase": "12.19.0",
+    "firebase-admin": "13.1.0",
     "idb-keyval": "6.2.2",
     "libphonenumber-js": "1.12.41",
     "marked": "18.0.9",
