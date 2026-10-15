@@ -144,6 +144,18 @@ const MEMORY_STAGES = [
   { name: 'after a page fetch', run: 'true' }
 ]
 
+/** A field read as a number, or null when it is missing. */
+const fraction = value =>
+  Number.isFinite(Number(value)) ? Number(value) : null
+
+/** The record reports bytes; the share in use is what a limit compares. */
+const used_fraction = host => {
+  const total = Number(host.mem_total)
+  const free = Number(host.mem_free)
+  if (!total || !Number.isFinite(free)) return null
+  return 1 - free / total
+}
+
 /** hs-hot: when a host counts as crowded. */
 const HOT_LIMITS = { cpu_fraction: 0.9, mem_used_fraction: 0.9, actors: 30 }
 
@@ -555,12 +567,9 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
       const fleet = await reads.hosts(sync)
       const rows = fleet.map(row => ({
         name: row.host.name,
-        cpu_fraction: Number.isFinite(Number(row.host.cpu_fraction))
-          ? Number(row.host.cpu_fraction)
-          : null,
-        mem_used_fraction: Number.isFinite(Number(row.host.mem_used_fraction))
-          ? Number(row.host.mem_used_fraction)
-          : null,
+        cpu_fraction: fraction(row.host.cpu_fraction),
+        // The record carries bytes, not a fraction: mem_free of mem_total.
+        mem_used_fraction: used_fraction(row.host),
         actors: row.actors.length
       }))
       const hot = hot_hosts(rows, HOT_LIMITS)

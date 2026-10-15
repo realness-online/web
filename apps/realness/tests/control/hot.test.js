@@ -156,3 +156,37 @@ test('a person with no actor there, or a full fleet, is refused plainly', () => 
     /every other host is at its limit; add a host/
   )
 })
+
+test('the fields host hot reads are the fields a host reports', async () => {
+  const { read_status } = await import('#root/src/sync/host-status.js')
+  const { HostStatus } = await import('#root/src/host/status.js')
+  let written = ''
+  const store = {
+    list: () => [],
+    seedStatus: () => ({ built: true, matches: true }),
+    volume: '/tmp',
+    activity: () => null
+  }
+  const status = new HostStatus(store, {
+    host: 'realness-1',
+    mirror: {
+      put: async (key, body) => {
+        written = body
+      }
+    },
+    resources: () => ({
+      mem_available: 1024,
+      actor_taps_used: 1,
+      actor_taps_limit: 254,
+      resource_error: null
+    })
+  })
+  assert.equal(await status.publish(), true)
+  const record = read_status(written)
+  for (const name of ['mem_total', 'mem_free', 'actors_running', 'actors_idle'])
+    assert.ok(Object.hasOwn(record.host, name), `a host record carries ${name}`)
+  assert.ok(
+    Number(record.host.mem_total) > 0,
+    'mem_total is bytes, which is what the share in use is computed from'
+  )
+})
