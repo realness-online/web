@@ -105,7 +105,7 @@ export const ENVIRONMENTS = {
     iap: true,
     project: production.project,
     storage: production.services.bucket,
-    zone: "us-central1-a",
+    zone: "us-west1-b",
     imageFamily: "realness-host",
     machineType: "n2-standard-4",
     bootSize: "20GB",

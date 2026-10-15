@@ -7,7 +7,7 @@ import {
 } from '../../src/control/lockdown.js'
 import { gcloud } from '../../src/control/cloud.js'
 
-const config = { project: 'realness-online' }
+const config = { project: 'realness-online', cloud: { region: 'us-west1' } }
 
 test('the plan opens the narrow paths before it closes the wide ones', () => {
   const plan = lockdown_plan(config).map(argv => argv.join(' '))
@@ -17,7 +17,7 @@ test('the plan opens the narrow paths before it closes the wide ones', () => {
   )
   assert.match(
     plan[1],
-    /create realness-host-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.128\.0\.0\/20/
+    /create realness-host-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.138\.0\.0\/20/
   )
   assert.match(
     plan[2],
@@ -82,4 +82,16 @@ test('a locked-down config sends ssh and scp through IAP', () => {
   const open = gcloud({ project: 'p', zone: 'z' })
   assert.ok(!open.sshArgs('h', 'true').includes('--tunnel-through-iap'))
   assert.equal(IAP_RANGE, '35.235.240.0/20')
+})
+
+test('the gate subnet follows the region, and an unknown region is refused', () => {
+  const central = lockdown_plan({
+    project: 'p',
+    cloud: { region: 'us-central1' }
+  })
+  assert.match(central[1].join(' '), /--source-ranges=10\.128\.0\.0\/20/)
+  assert.throws(
+    () => lockdown_plan({ project: 'p', cloud: { region: 'mars-1' } }),
+    /no gate subnet known for region mars-1/
+  )
 })

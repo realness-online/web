@@ -12,8 +12,12 @@ import { note } from './exec.js'
 
 /** Google's published source range for IAP TCP forwarding. */
 export const IAP_RANGE = '35.235.240.0/20'
-/** The default network's us-central1 subnet, where the gate's VPC egress lands. */
-export const GATE_RANGE = '10.128.0.0/20'
+/** The default network's subnet per region, where the gate's VPC egress lands. */
+export const GATE_RANGES = {
+  'us-central1': '10.128.0.0/20',
+  'us-west1': '10.138.0.0/20',
+  'us-east1': '10.142.0.0/20'
+}
 const TAG = 'realness-host'
 const OPEN_DEFAULTS = [
   'default-allow-ssh',
@@ -22,8 +26,11 @@ const OPEN_DEFAULTS = [
 ]
 
 /** The gcloud argv lists, in order: allow the narrow paths before closing the wide ones. */
-export const lockdown_plan = ({ project, gate_range = GATE_RANGE }) => {
+export const lockdown_plan = ({ project, cloud, gate_range }) => {
   if (!project) throw new Error('lockdown needs a project')
+  const range = gate_range ?? GATE_RANGES[cloud?.region]
+  if (!range)
+    throw new Error(`no gate subnet known for region ${cloud?.region}`)
   const rule = (name, ports, range) => [
     'compute',
     'firewall-rules',
@@ -38,7 +45,7 @@ export const lockdown_plan = ({ project, gate_range = GATE_RANGE }) => {
   ]
   return [
     rule('realness-host-iap-ssh', 'tcp:22', IAP_RANGE),
-    rule('realness-host-api', 'tcp:8080,tcp:8081', gate_range),
+    rule('realness-host-api', 'tcp:8080,tcp:8081', range),
     ...OPEN_DEFAULTS.map(name => [
       'compute',
       'firewall-rules',

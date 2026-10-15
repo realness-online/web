@@ -162,14 +162,15 @@ export const up = async (
 
   step('bootstrap on the host')
   await push(cloud, config, name)
-  await cloud.ssh(
-    name,
-    `sudo bash ${config.root}/server/host/scripts/host-bootstrap.sh`
-  )
-  // A host from a plain base image has no Firecracker, kernel, or rootfs yet.
+  // A host from a plain base image has no Firecracker, kernel, or rootfs yet,
+  // and bootstrap's actors volume step reads the rootfs, so this goes first.
   await cloud.ssh(
     name,
     `test -x /opt/fc/firecracker || (sudo apt-get -qq update && sudo apt-get -qq install -y squashfs-tools && bash ${config.root}/tools/control/scripts/guest-setup.sh)`
+  )
+  await cloud.ssh(
+    name,
+    `sudo bash ${config.root}/server/host/scripts/host-bootstrap.sh`
   )
   await ensure_template(cloud, config, name)
 
