@@ -16,6 +16,23 @@ sampler, or contacting a host. Example numbers are test inputs, not approved
 limits or current prices. Replace the owner, actual actor disk path, hourly
 compute price, budget, and limits before approval.
 
+## Run sizes
+
+Two runs answer two different questions, and the second one is hs-tap.
+
+- `capacity.example.json` stops at 4 actors. Use it to check the workloads and
+the runner against a fresh host before paying for a long run.
+- `capacity.taps.example.json` walks 25, 50, 100, 150 and 200 actors on one host.
+That is what proves the TAP ceiling (hs-tap): 200 actors on one host with 200
+distinct addresses. 200 actors at 512 MiB each need about 100 GiB of memory, so
+this run wants a highmem machine, and the TAP count is the limit it is testing.
+
+Host size is a separate choice from the level count. `n2-standard-4` is 4 vCPU
+and 16 GiB; `n2-standard-2` is 2 vCPU and 8 GiB, so it holds roughly half the
+actors and costs roughly half. Actors are limited by memory, not by cores, so a
+smaller machine buys money, not density. Measure the size you intend to run, and
+see hs-d1 for what its price means against the monthly ceiling.
+
 ## Workload cases
 
 - Memory: touch 256 MiB repeatedly for one second. Increase toward configured
