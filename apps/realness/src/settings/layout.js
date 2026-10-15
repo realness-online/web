@@ -34,7 +34,7 @@ export const product_paths = (root = project_root) => {
     frontend: join(root, 'frontend'),
     themes: join(root, 'themes'),
     renderer: join(root, 'tools/publish/renderer'),
-    static_preset: join(root, 'tools/examples/static'),
+    static_preset: resolve(root, '../../.pi/examples/static'),
     ...folders
   }
 }

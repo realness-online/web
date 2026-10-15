@@ -1,7 +1,7 @@
 # Readable renderer
 
 Source: the Realness renderer review in this session, applied to
-`apps/realness/tools/examples/static` and `apps/realness/tools/publish`.
+`.pi/examples/static` and `apps/realness/tools/publish`.
 
 ## Architecture
 

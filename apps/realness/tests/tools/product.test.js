@@ -110,7 +110,10 @@ test('product imports resolve through the root instead of retired packages', asy
 test('the reference renderer reuses dependencies from the root install', async () => {
   const directory = join(root, 'tools/publish/renderer')
   const manifest = JSON.parse(
-    await read_file(join(root, 'tools/examples/static/package.json'), 'utf8')
+    await read_file(
+      join(root, '../../.pi/examples/static/package.json'),
+      'utf8'
+    )
   )
   const require = create_require(join(root, 'package.json'))
   for (const name of Object.keys(manifest.dependencies)) {

@@ -79,6 +79,7 @@ export const cli_families = [
       ['fetch <harness-path>', 'Internal helpers', 'Fetch a file into a light actor.', '--json', 'Actor only; writes a local file.'],
       ['local --help', 'Hosts and services', 'List local operator commands.', '', 'Desktop; no service changes.'],
       ['development --help', 'Hosts and services', 'List development operator commands.', '', 'Desktop; no service changes.'],
+      ['production --help', 'Hosts and services', 'List production operator commands.', '', 'Desktop; no service changes.'],
       ['git-credential get', 'Internal helpers', 'Read a Git credential for an actor.', '', 'Actor only; prints a credential.'],
       ['turn-start --session <file>', 'Internal helpers', 'Record the start of a harness turn.', '--json', 'Writes local state.'],
       ['turn-end --session <file> --turn <number>', 'Internal helpers', 'Record and sync a completed turn.', '--json', 'Writes local and remote state.'],

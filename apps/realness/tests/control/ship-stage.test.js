@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import {
+  cpSync,
   existsSync,
   readFileSync,
   mkdtempSync,
@@ -70,15 +71,15 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
       /giget/
     )
   for (const path of [
-    'examples/static/src/build.js',
-    'examples/app/package.json'
+    '.pi/examples/static/src/build.js',
+    '.pi/examples/app/package.json'
   ])
     assert.ok(existsSync(join(ship, path)), path)
   for (const path of [
-    'examples/static/node_modules',
-    'examples/static/dist',
-    'examples/chat',
-    'examples/terminal'
+    '.pi/examples/static/node_modules',
+    '.pi/examples/static/dist',
+    '.pi/examples/chat',
+    '.pi/examples/terminal'
   ])
     assert.ok(!existsSync(join(ship, path)), path)
   assert.equal(
@@ -169,6 +170,11 @@ test('a clean checkout stages the starter without personal Pi settings', () => {
       mkdirSync(join(root, path, '..'), { recursive: true })
       writeFileSync(join(root, path), readFileSync(join(ROOT, path)))
     }
+    // The starting examples are tracked harness files, so a clean checkout has them.
+    cpSync(join(ROOT, '.pi/examples'), join(root, '.pi/examples'), {
+      recursive: true,
+      filter: path => !path.split('/').includes('node_modules')
+    })
     const stage = ship_stage({ root, stage: join(root, 'ship'), proxy_url })
     assert.equal(
       JSON.parse(readFileSync(join(stage, '.pi/agent/models.json'), 'utf8'))

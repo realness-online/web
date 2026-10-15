@@ -46,7 +46,7 @@ export const ships = path => {
   const name = parts.at(-1)
   if (name === '.DS_Store' || name.startsWith('._') || parts.includes('node_modules')) return false
   if (parts[0] === '.pi' && parts[1] === 'skills' && Object.hasOwn(HOME_ONLY, parts[2])) return false
-  if (parts[0] === 'examples' && (name === 'dist' || name === '.cache')) return false
+  if (parts[0] === '.pi' && parts[1] === 'examples' && (name === 'dist' || name === '.cache')) return false
   return true
 }
 
@@ -131,13 +131,13 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   mkdir_sync(join(stage, 'apps'), { recursive: true })
   write_file_sync(join(stage, '.ignore'), '')
   for (const name of SHIPPED_EXAMPLES) {
-    const destination = join(stage, 'examples', name)
+    const destination = join(stage, '.pi/examples', name)
     if (name === 'static') {
       const excluded = new Set(['node_modules', 'dist', '.cache', '.DS_Store'])
       cp_sync(STATIC_RENDERER, destination, { recursive: true, filter: path => !excluded.has(path.split(sep).at(-1) ?? '') })
-      copy(join(project, 'tools/examples/static/package.json'), join(destination, 'package.json'), project)
-      copy(join(project, 'tools/examples/static/package-lock.json'), join(destination, 'package-lock.json'), project)
-    } else copy(join(project, 'tools', 'examples', name), destination, join(project, 'tools'))
+      copy(join(root, '.pi/examples/static/package.json'), join(destination, 'package.json'), project)
+      copy(join(root, '.pi/examples/static/package-lock.json'), join(destination, 'package-lock.json'), project)
+    } else copy(join(root, '.pi/examples', name), destination, root)
   }
   for (const [from, to] of Object.entries(STARTER_DEFAULTS)) copy(join(root, from), join(stage, to), root)
   edit_json(join(stage, 'package.json'), pkg => {

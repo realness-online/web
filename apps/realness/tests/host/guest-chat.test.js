@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -95,4 +95,13 @@ test('messages still relay, and bad lines never reach the bridge', async () => {
   } finally {
     pi.close()
   }
+})
+
+test('the terminal starts at the harness root, where Pi finds its extensions', () => {
+  const pty = readFileSync(
+    new URL('../../server/host/guest/realness-pty', import.meta.url),
+    'utf8'
+  )
+  assert.match(pty, /^HARNESS_DIR = "\/realness"$/m)
+  assert.match(pty, /os\.chdir\(HARNESS_DIR\)/)
 })

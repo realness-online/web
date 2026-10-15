@@ -29,7 +29,6 @@
     "src/chat",
     "src/terminal",
     "src/sign-on/browser",
-    "tools/examples",
     "**/dist/**",
     "**/tests/**",
     "**/test/**"

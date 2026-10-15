@@ -6,7 +6,7 @@ import { fileURLToPath as file_url_to_path } from "node:url"
 const ROOT = join(dirname(file_url_to_path(import.meta.url)), "..")
 const SOURCE = join(ROOT, "apps/realness/src/app/style")
 const FILES = ["palette.css", "color.css", "font.css"]
-const TARGETS = ["examples/static/static", "apps/realness/tools/publish/renderer/static"]
+const TARGETS = [".pi/examples/static/static", "apps/realness/tools/publish/renderer/static"]
 const SCANNED = [...TARGETS, "apps/plans/static"]
 
 const LITERAL = /oklch\(|#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i

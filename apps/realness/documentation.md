@@ -660,7 +660,7 @@ hosts.
 The `/site` prompt copies the starter's static example and builds it:
 
 ```bash
-mkdir site && tar -C tools/examples/static -cf - . | tar -C site -xf -
+mkdir site && tar -C ../../.pi/examples/static -cf - . | tar -C site -xf -
 cd site && npm install && npm run build
 realness publish dist
 ```

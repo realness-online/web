@@ -71,8 +71,8 @@ export const examples_path = root => {
   const file = join(root, 'package.json')
   const path = exists_sync(file)
     ? (JSON.parse(read_file_sync(file, 'utf8')).realness?.examples ??
-      'examples')
-    : 'examples'
+      '.pi/examples')
+    : '.pi/examples'
   if (
     typeof path !== 'string' ||
     !path ||

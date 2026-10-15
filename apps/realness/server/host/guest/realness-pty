@@ -38,8 +38,9 @@ import time
 SHELL = "/bin/bash"
 # Pi and its shell run as this user; the holder itself stays root.
 USER = "realness"
-# The visible terminal starts in the actor's work/ folder.
-WORK_DIR = "/realness/work"
+# The visible terminal starts at the harness root, as on the person's own
+# machine: Pi finds .pi, bin, and AGENTS.md from where it starts.
+HARNESS_DIR = "/realness"
 SOCKET = "/run/realness-pty.sock"
 # Keys typed from inside the actor (the chat bridge running a GUI command).
 # Unlike SOCKET it never takes the terminal from the browser.
@@ -104,8 +105,7 @@ class Holder:
         if self.pid == 0:
             os.environ.update(TERM_ENV)
             drop_to(USER)
-            os.makedirs(WORK_DIR, exist_ok=True)
-            os.chdir(WORK_DIR)
+            os.chdir(HARNESS_DIR)
             os.execvp(SHELL, [SHELL])
             os._exit(127)
         set_window(self.master, *self.size)

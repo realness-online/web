@@ -200,11 +200,6 @@ case "${1:-}" in -h|--help)
 esac
 export PI_OFFLINE=1
 export TMPDIR=/var/tmp
-# Pi reads project extensions only from <cwd>/.pi. The terminal starts in
-# work/, so load the chat bridge by path unless the harness is the cwd.
-if [ "$PWD" != /realness ]; then
-  set -- --extension /realness/.pi/extensions/chat-bridge/index.js "$@"
-fi
 exec /realness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/realness"

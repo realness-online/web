@@ -44,7 +44,6 @@ nothing while it sleeps. Hosts are VMs in their environment's project; developme
   `server/sync/bin/realness.js sync` syncs the whole harness both ways once a
   `.ignore` exists; without one, only every plan's `## Syncs` folders. Paths
   inside a git repo are refused.
-- `tools/examples/`: link to the harness's optional `.pi/examples/`; `static` and `app` ship in the starter.
 - `tools/publish/`: builds the recipes in a harness's `apps/` and publishes them.
 - `tools/desktop/`: the signed download that boots pi with the harness inside.
 - `server/lima/fc-local.yaml`: the dev loop on this Mac.
@@ -110,7 +109,7 @@ The per-node proofs behind all four are archived with their runs in
 ## Build the template
 
 The template is the Ubuntu 24.04 image every actor forks from: pi, git, node,
-and the stock harness. The starter carries `tools/examples/static` and `tools/examples/app`;
+and the stock harness. The starter carries `.pi/examples/static` and `.pi/examples/app`;
 `/site` and `/app` copy one and install its dependencies in the actor.
 
 ```bash
