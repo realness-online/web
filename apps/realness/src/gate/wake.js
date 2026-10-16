@@ -4,6 +4,12 @@ import { MS_PER_SECOND } from '#root/lib/units.js'
 import { WAKE_DEADLINE_MS, intent_now } from '#root/src/sync/host-lifecycle.js'
 
 const POLL_MS = 2 * MS_PER_SECOND
+/**
+ * A start sent while the host is still stopping is dropped by Compute Engine,
+ * so the starter repeats it. A start on a running host does nothing.
+ */
+const RESTART_SECONDS = 15
+const RESTART_MS = RESTART_SECONDS * MS_PER_SECOND
 const PROBE_TIMEOUT_MS = 2 * MS_PER_SECOND
 
 /** The host missed the wake deadline; the caller shows a failure with retry. */
@@ -56,6 +62,7 @@ export const gce_start =
  * @param {(ms: number) => Promise<void>} [options.pause]
  * @param {number} [options.deadline_ms]
  * @param {number} [options.poll_ms]
+ * @param {number} [options.restart_ms] how often the starter repeats its start while waiting
  * @param {(stage: string) => void} [options.stage]
  */
 export const make_waker = ({
@@ -70,6 +77,7 @@ export const make_waker = ({
     }),
   deadline_ms = WAKE_DEADLINE_MS,
   poll_ms = POLL_MS,
+  restart_ms = RESTART_MS,
   stage = () => {}
 }) => {
   /** @type {Promise<void> | null} */
@@ -93,6 +101,9 @@ export const make_waker = ({
     const shared_until =
       intent?.intent === 'starting' ? Date.parse(intent.until) : NaN
     let until
+    /** When this instance last asked for a start; null when another instance is starting. */
+    /** @type {number | null} */
+    let started_at = null
     if (Number.isFinite(shared_until) && now() < shared_until) {
       until = shared_until
       emit('starting', 'waiting for another wake')
@@ -106,10 +117,16 @@ export const make_waker = ({
       until = Date.parse(record.until)
       emit('starting', 'starting host')
       await start()
+      started_at = now()
     }
     while (now() < until) {
       // eslint-disable-next-line no-await-in-loop -- polling waits between tries
       await pause(poll_ms)
+      if (started_at !== null && now() - started_at >= restart_ms) {
+        started_at = now()
+        // eslint-disable-next-line no-await-in-loop -- a repeat start waits like the first
+        await start().catch(error => stage(`start repeated: ${error.message}`))
+      }
       // eslint-disable-next-line no-await-in-loop -- one probe per pause
       if (await probe()) {
         // eslint-disable-next-line no-await-in-loop -- terminal write runs once after readiness

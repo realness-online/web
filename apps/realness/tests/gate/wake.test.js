@@ -82,6 +82,36 @@ test('a host that never answers fails at the deadline, and the next call retries
   assert.equal(seen.starts, 2)
 })
 
+test('a start lost to a host still stopping is repeated until the host answers', async () => {
+  const { seen, options } = world({ up_after: Infinity })
+  let stopped = false
+  // The first start lands while the host is stopping and is dropped; a later one boots it.
+  options.start = async () => {
+    seen.starts += 1
+    if (seen.starts === 1) return
+    stopped = true
+  }
+  let booted_at = null
+  options.probe = async () => {
+    seen.probes += 1
+    if (stopped && booted_at === null) booted_at = seen.probes
+    return booted_at !== null && seen.probes > booted_at + 2
+  }
+  await make_waker({ ...options, poll_ms: 2000, restart_ms: 15_000 })()
+  assert.equal(seen.starts, 2)
+  assert.deepEqual(seen.writes, ['starting', 'running'])
+})
+
+test('a waiter joining another instance never sends its own starts', async () => {
+  const until = new Date(Date.parse('2026-10-15T12:01:00Z')).toISOString()
+  const { seen, options } = world({
+    up_after: 20,
+    intent: { intent: 'starting', until }
+  })
+  await make_waker({ ...options, restart_ms: 1000 })()
+  assert.equal(seen.starts, 0)
+})
+
 test('the start call names one instance and carries the token', async () => {
   const calls = []
   await gce_start({

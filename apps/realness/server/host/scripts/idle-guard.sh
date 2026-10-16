@@ -8,6 +8,7 @@ CHECK="/usr/local/bin/realness-idle-check"
 UNIT="/etc/systemd/system/realness-idle-check"
 
 cat > "$CHECK" <<'SH'
+#!/usr/bin/env bash
 set -euo pipefail
 
 IDLE_SECONDS="${IDLE_SECONDS:-1800}"
