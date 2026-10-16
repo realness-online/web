@@ -8,7 +8,7 @@ import {
 
 const LOG = logger('parking')
 
-export const PARK_AFTER_MS = 5 * MS_PER_MINUTE
+export const PARK_AFTER_MS = 13 * MS_PER_MINUTE
 
 /**
  * Why the host must stay up, as short phrases; empty means idle. Pure.
@@ -26,7 +26,7 @@ export const park_blockers = (
 ]
 
 /**
- * Parks the host after five idle minutes: stopping, sync and stop every actor,
+ * Parks the host after thirteen idle minutes: stopping, sync and stop every actor,
  * parked, then power off. A blocked pass reopens and records running.
  */
 export class Parker {
