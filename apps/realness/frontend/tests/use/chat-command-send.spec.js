@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import { use_chat } from '@/use/chat'
-import { run_chat_command, send_chat } from '@/utils/chat'
+import { run_chat_command, send_chat, watch_chat } from '@/utils/chat'
 
 vi.mock('@/utils/serverless', () => ({ current_user: { value: null } }))
 vi.mock('@/utils/chat', () => ({
@@ -101,8 +101,11 @@ describe('chat commands from the input', () => {
 
   it('says a message sent while Pi works is queued', async () => {
     send_chat.mockResolvedValue('queued')
+    watch_chat.mockResolvedValueOnce([{ type: 'history', messages: [] }])
     const chat = chat_with('and then this')
+    await chat.watch()
     await chat.send()
     expect(chat.status.value).toBe('Queued for after this turn')
+    chat.stop()
   })
 })

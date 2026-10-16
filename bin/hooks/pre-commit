@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+roots='^(apps/realness|apps/blog|work/[^/]+|bin|skills|\.pi/skills|\.pi/extensions)/'
+skip='/(node_modules|artifacts|vault|dist|build|coverage|vendor|public|tmp)/'
+files=()
+while IFS= read -r -d '' file; do
+  [[ "$file" =~ $roots && ! "/$file" =~ $skip ]] && files+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+(( ${#files[@]} )) || exit 0
+node bin/comment-check.js "${files[@]}"

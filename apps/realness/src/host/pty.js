@@ -10,6 +10,8 @@ import * as vsock from './vsock.js'
 const HELLO_LIMIT_BITS = 16
 const DEFAULT_ROWS = 24
 const HELLO_SECONDS = 30
+/** A terminal with no bytes either way for this long stops holding the host. */
+export const QUIET_MS = 60_000
 
 const LOG = logger('pty')
 const HELLO_LIMIT = 1 << HELLO_LIMIT_BITS
@@ -19,7 +21,12 @@ const reject = (client, message) => {
   client.end(`${JSON.stringify({ error: message })}\n`)
 }
 
-const handle = async (store, client, helloSeconds, terminal_clients) => {
+const handle = async (
+  store,
+  client,
+  { helloSeconds, quiet_ms },
+  terminal_clients
+) => {
   client.setNoDelay(true)
   const lines = new vsock.Lines(client, HELLO_LIMIT)
   let hello
@@ -66,6 +73,8 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   let guest
   let ended = false
   let working = false
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let quiet_timer
   const connection = `connection:${random_uuid()}`
   terminal_clients.set(id, (terminal_clients.get(id) ?? 0) + 1)
   const end = () => {
@@ -76,6 +85,7 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
     const remaining = terminal_clients.get(id) - 1
     if (remaining) terminal_clients.set(id, remaining)
     else terminal_clients.delete(id)
+    clearTimeout(quiet_timer)
     if (working) store.endWork(id, connection)
     if (!remaining)
       store
@@ -100,10 +110,21 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   }
 
   LOG.info(`pty attached to ${id} from ${client.remoteAddress}`)
-  store.beginWork(id, connection)
-  working = true
+  const active = () => {
+    if (ended) return
+    if (!working) store.beginWork(id, connection)
+    working = true
+    clearTimeout(quiet_timer)
+    quiet_timer = setTimeout(() => {
+      working = false
+      store.endWork(id, connection)
+    }, quiet_ms)
+  }
   const leftover = lines.rest()
   const early = guest.lines.rest()
+  active()
+  client.on('data', active)
+  guest.socket.on('data', active)
   guest.socket.write(`${JSON.stringify({ op: 'resize', cols, rows })}\n`)
   client.write('{"ok": true}\n')
   if (early.length) client.write(early)
@@ -115,10 +136,13 @@ const handle = async (store, client, helloSeconds, terminal_clients) => {
   guest.socket.once('close', () => LOG.info(`pty detached from ${id}`))
 }
 
-export const makeServer = (store, { helloSeconds = HELLO_SECONDS } = {}) => {
+export const makeServer = (
+  store,
+  { helloSeconds = HELLO_SECONDS, quiet_ms = QUIET_MS } = {}
+) => {
   const terminal_clients = new Map()
   return create_server(client => {
-    handle(store, client, helloSeconds, terminal_clients).catch(error => {
+    handle(store, client, { helloSeconds, quiet_ms }, terminal_clients).catch(error => {
       LOG.error(`pty failed`, error)
       client.destroy()
     })

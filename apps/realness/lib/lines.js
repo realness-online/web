@@ -8,7 +8,7 @@ const NEWLINE = 10
  * a handshake followed by data is never dropped.
  */
 export class Lines {
-  constructor(socket, limit = 1 << (LIMIT_MIB * MIB)) {
+  constructor(socket, limit = LIMIT_MIB * MIB) {
     this.socket = socket
     this.limit = limit
     this.buffer = Buffer.alloc(0)

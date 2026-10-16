@@ -26,6 +26,89 @@ const reply_status = reply =>
     ? `${reply.text}. Available: ${reply.models.join(', ')}`
     : (reply?.text ?? '')
 
+/**
+ * Chat commands run against the actor and report through the status line.
+ * Reloading the view after \`/new\` needs the messages ref, so the setter comes in.
+ * @param {{ actor: import('vue').Ref<string | null>, messages: { value: Array<{ sender: string, text: string }> }, status: { value: string }, set_messages: (next: never[]) => void }} options
+ */
+const make_command_runner = ({ actor, messages, status, set_messages }) => {
+  const last_reply = () =>
+    messages.value.findLast(message => message.sender === 'Realness')?.text
+
+  /** Run a command and report it; resolves false when it failed. */
+  return async command => {
+    status.value = ''
+    try {
+      if (command.name === 'copy') {
+        const reply = last_reply()
+        if (!reply) throw new Error('No reply to copy')
+        await navigator.clipboard.writeText(reply)
+        status.value = 'Copied'
+        return
+      }
+      const reply = await run_chat_command(
+        current_user.value,
+        actor.value,
+        command.name,
+        command.args
+      )
+      if (command.name === 'new') set_messages([])
+      status.value = reply_status(reply)
+    } catch (thrown) {
+      status.value = readable_error(thrown.message)
+      return false
+    }
+    return true
+  }
+}
+
+/**
+ * A message handed over while the host is still waking: held in the composer,
+ * announced in the status line, and sent the moment history proves Pi answers.
+ * @param {{ actor: { value: string | null }, draft: { value: string }, status: { value: string }, open_watch: () => Promise<unknown> }} options
+ */
+const make_waiting = ({ actor, draft, status, open_watch }) => {
+  const waiting = ref(false)
+  /** @type {{ text: string, context: object | null } | null} */
+  let held = null
+
+  const deliver = async () => {
+    if (!held) return
+    const message = held
+    held = null
+    waiting.value = false
+    if (draft.value === message.text) draft.value = ''
+    try {
+      const outcome = await send_chat(
+        current_user.value,
+        actor.value,
+        contextual_message(message.text, message.context)
+      )
+      status.value = outcome === 'queued' ? 'Queued for after this turn' : ''
+    } catch (thrown) {
+      status.value = readable_error(thrown.message)
+      if (!draft.value) draft.value = message.text
+    }
+  }
+
+  return {
+    waiting,
+    /** Keep the message; it stays in the composer until the host answers. */
+    hold(text, context) {
+      held = { text, context }
+      draft.value = text
+      waiting.value = true
+      status.value = 'Sending when the host is up'
+      void open_watch()
+    },
+    deliver,
+    clear() {
+      held = null
+      waiting.value = false
+    }
+  }
+}
+
 /** Keep initial bridge readiness separate from failures after Pi has started. */
 const create_startup_status = (status, set_working, get_startup_id) => {
   const starting = ref(false)
@@ -55,6 +138,8 @@ const create_startup_status = (status, set_working, get_startup_id) => {
   return {
     starting,
     events,
+    /** Whether the bridge has answered at least once. */
+    ready_now: () => ready.value,
     connection_problem: computed(() =>
       !ready.value && events.value.at(-1)?.state === 'failed'
         ? status.value
@@ -137,6 +222,13 @@ export const use_chat = (
   const working = ref(false)
   const startup = create_startup_status(status, set_working, get_startup_id)
   /** @type {ReturnType<typeof setTimeout> | undefined} */
+  const waiting_state = make_waiting({
+    actor,
+    draft,
+    status,
+    open_watch: () => (in_flight ? undefined : watch())
+  })
+  let in_flight = false
   let watch_timer = undefined
   let watch_generation = 0
   /** @type {AbortController | null} */
@@ -159,6 +251,7 @@ export const use_chat = (
     let reply = streaming
     if (record.type === 'history') {
       startup.ready()
+      void waiting_state.deliver()
       messages.value = record.messages.map(message => ({
         sender: message.role === 'user' ? 'You' : 'Realness',
         ...(message.role === 'user'
@@ -202,6 +295,7 @@ export const use_chat = (
     startup.begin()
     watching = new AbortController()
     let reply = null
+    in_flight = true
     try {
       const records = await watch_chat(current_user.value, actor_id, {
         signal: watching.signal
@@ -214,56 +308,51 @@ export const use_chat = (
     } catch (thrown) {
       if (stopped || generation !== watch_generation) return
       startup.failed(thrown.message)
+    } finally {
+      if (generation === watch_generation) in_flight = false
     }
     if (stopped || generation !== watch_generation) return
     working.value = false
     watch_timer = setTimeout(watch, RECONNECT_MS)
   }
 
-  const last_reply = () =>
-    messages.value.findLast(message => message.sender === 'Realness')?.text
-
-  /** Run a command and report it; resolves false when it failed. */
-  const run = async command => {
-    status.value = ''
-    try {
-      if (command.name === 'copy') {
-        const reply = last_reply()
-        if (!reply) throw new Error('No reply to copy')
-        await navigator.clipboard.writeText(reply)
-        status.value = 'Copied'
-        return
-      }
-      const reply = await run_chat_command(
-        current_user.value,
-        actor.value,
-        command.name,
-        command.args
-      )
-      if (command.name === 'new') messages.value = []
-      status.value = reply_status(reply)
-    } catch (thrown) {
-      status.value = readable_error(thrown.message)
-      return false
+  const run = make_command_runner({
+    actor,
+    messages,
+    status,
+    set_messages: next => {
+      messages.value = next
     }
-    return true
+  })
+
+  /**
+   * A command runs now; an ordinary message waits for the host when it is still
+   * waking. Returns the text to send, or null when nothing is left to send.
+   */
+  const prepare = async message => {
+    const command = parse_chat_command(message)
+    if (command?.unknown) {
+      status.value = `Unknown command /${command.name}. Try ${chat_commands.map(known => `/${known.name}`).join(', ')}`
+      return null
+    }
+    if (command) {
+      draft.value = ''
+      if (!(await run(command)) && !draft.value) draft.value = message
+      return null
+    }
+    const context = get_context()
+    const sent_message = contextual_message(message, context)
+    if (startup.ready_now()) return sent_message
+    waiting_state.hold(message, context)
+    return null
   }
 
   const send = async () => {
     const message = draft.value.trim()
     if (!message || !actor.value) return
-    const command = parse_chat_command(message)
-    if (command?.unknown) {
-      status.value = `Unknown command /${command.name}. Try ${chat_commands.map(known => `/${known.name}`).join(', ')}`
-      return
-    }
-    if (command) {
-      draft.value = ''
-      if (!(await run(command)) && !draft.value) draft.value = message
-      return
-    }
-    const sent_message = contextual_message(message, get_context())
     const previous_messages = new Set(messages.value)
+    const sent_message = await prepare(message)
+    if (!sent_message) return
     draft.value = ''
     status.value = ''
     try {
@@ -292,6 +381,7 @@ export const use_chat = (
 
   const stop = () => {
     stopped = true
+    waiting_state.clear()
     clearTimeout(watch_timer)
     watching?.abort()
     startup.stop()
@@ -303,6 +393,7 @@ export const use_chat = (
     status,
     working,
     starting: startup.starting,
+    waiting: waiting_state.waiting,
     get startup_id() {
       return startup.id
     },

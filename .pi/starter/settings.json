@@ -11,6 +11,12 @@
     "npm:pi-autoresearch",
     "npm:pi-claude-oauth-adapter"
   ],
+  "extensions": [
+    "../extensions"
+  ],
+  "prompts": [
+    "../prompts"
+  ],
   "theme": "realness-light/realness-dark",
   "hideThinkingBlock": false,
   "quietStartup": "header",

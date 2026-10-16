@@ -35,6 +35,7 @@
     "sessions": "vault/Sessions"
   },
   "scripts": {
+    "prepare": "git config core.hooksPath bin/hooks",
     "postinstall": "npm --prefix .pi ci && node bin/install-pi.js && node bin/themes.js",
     "realness": "./bin/pi",
     "start": "./bin/pi",

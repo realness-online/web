@@ -81,3 +81,51 @@ test('last terminal disconnect stops once, retains disk, and permits repeated re
   }
   assert.ok(stops.every(stop => stop.id === 'a-one' && stop.tier === 'disk'))
 })
+
+test('a quiet terminal stops holding the host; typing holds it again', async t => {
+  const sockets = new Set()
+  const guest = create_server(socket => {
+    sockets.add(socket)
+    socket.on('error', () => {})
+    socket.once('data', () => socket.write('OK 53\n'))
+  })
+  await listen(guest)
+  let work = 0
+  const server = make_server(
+    {
+      get: () => ({
+        owner: phone,
+        vsockPath: { port: guest.address().port, host: '127.0.0.1' }
+      }),
+      ensureRunning: async () => {},
+      beginWork: () => {
+        work++
+      },
+      endWork: () => {
+        work--
+      },
+      idle: async () => {}
+    },
+    { quiet_ms: 40 }
+  )
+  await listen(server)
+  t.after(async () => {
+    for (const socket of sockets) socket.destroy()
+    await Promise.all([close(server), close(guest)])
+  })
+  const socket = connect(server.address().port, '127.0.0.1')
+  sockets.add(socket)
+  const lines = new Lines(socket)
+  await new Promise(done => socket.once('connect', done))
+  socket.write(`${JSON.stringify({ actor: 'a-one', pass })}\n`)
+  assert.deepEqual(JSON.parse(await lines.read(1)), { ok: true })
+  assert.equal(work, 1, 'an attached terminal holds the host')
+  await wait_for(() => work === 0)
+  assert.equal(socket.destroyed, false, 'the terminal stays open while quiet')
+  socket.write('ls\n')
+  await wait_for(() => work === 1)
+  await wait_for(() => work === 0)
+  socket.destroy()
+  await new Promise(done => setTimeout(done, 20))
+  assert.equal(work, 0, 'closing a quiet terminal releases nothing twice')
+})

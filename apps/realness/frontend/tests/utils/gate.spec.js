@@ -12,7 +12,10 @@ import {
   open_terminal,
   start_actor
 } from '@/utils/gate'
-import { development_settings } from '../../../src/settings/environments.js'
+import {
+  development_settings,
+  environment_settings
+} from '../../../src/settings/environments.js'
 
 const cloud_gate = development_settings.services.gate_url
 const user = { getIdToken: async () => 'id.token' }
@@ -239,14 +242,15 @@ describe('realness gate', () => {
     })
   })
 
-  it.each(['development', 'production', 'test'])(
-    '%s mode keeps the existing cloud gate',
-    async mode => {
-      vi.stubEnv('MODE', mode)
-      await gate_api(user, '/v1/actors')
-      expect(calls[0].url).toBe(`${cloud_gate}/v1/actors`)
-    }
-  )
+  it.each([
+    ['development', cloud_gate],
+    ['test', cloud_gate],
+    ['production', environment_settings('production').services.gate_url]
+  ])('%s mode uses its own cloud gate', async (mode, gate) => {
+    vi.stubEnv('MODE', mode)
+    await gate_api(user, '/v1/actors')
+    expect(calls[0].url).toBe(`${gate}/v1/actors`)
+  })
 
   it('uses the current origin for the local gate', async () => {
     vi.stubEnv('MODE', 'local')
