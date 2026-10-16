@@ -205,6 +205,8 @@ case "${1:-}" in -h|--help)
 esac
 export PI_OFFLINE=1
 export TMPDIR=/var/tmp
+export PI_SESSION_FORMAT=html.gz
+export PI_SESSION_READER=/usr/local/bin/pi-session-read
 exec /realness/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/realness"
