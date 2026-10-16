@@ -206,10 +206,7 @@ describe('@/components/posters/as-symbol-shadow queries', () => {
   it('ignores a background that is not a rect', () => {
     pattern_vector = {
       ...mock_vector,
-      background: document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'path'
-      )
+      background: document.createElementNS('http://www.w3.org/2000/svg', 'path')
     }
     const wrapper = shallowMount(as_symbol_shadow)
 

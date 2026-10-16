@@ -163,11 +163,7 @@ describe('@/components/download-vector.vue download paths', () => {
       'Poster_mosaic_top.png'
     ])
     expect(set_working).toHaveBeenLastCalledWith(false)
-    expect(mock_extract).toHaveBeenCalledWith(
-      expect.anything(),
-      itemid,
-      3840
-    )
+    expect(mock_extract).toHaveBeenCalledWith(expect.anything(), itemid, 3840)
   })
 
   it('downloads one flattened PNG at the poster aspect ratio', async () => {
@@ -180,7 +176,11 @@ describe('@/components/download-vector.vue download paths', () => {
     })
 
     expect(clicks[0].download).toBe('Poster.png')
-    expect(mock_render_canvas).toHaveBeenCalledWith(expect.anything(), 3840, 1920)
+    expect(mock_render_canvas).toHaveBeenCalledWith(
+      expect.anything(),
+      3840,
+      1920
+    )
   })
 
   it('names a layer file without the svg suffix', async () => {

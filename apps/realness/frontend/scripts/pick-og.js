@@ -53,7 +53,6 @@ export const pick = (requested, destination = og_path) => {
   if (entry)
     console.info(`pick-og: source poster ${entry.itemid} (${entry.style})`)
   console.info('pick-og: commit public/og.jpg, then npm run deploy')
-
 }
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) pick(process.argv[2])

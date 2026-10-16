@@ -604,7 +604,6 @@ describe('@/component/posters/as-animation keyboard and visibility', () => {
     wrapper.unmount()
   })
 
-
   it('leaves the arrows alone while a text field has focus', async () => {
     const svg = as_svg()
     svg.setCurrentTime = vi.fn()
@@ -653,7 +652,4 @@ describe('@/component/posters/as-animation keyboard and visibility', () => {
     expect(svg.setCurrentTime.mock.calls.length).toBeLessThan(3)
     wrapper.unmount()
   })
-
 })
-
-

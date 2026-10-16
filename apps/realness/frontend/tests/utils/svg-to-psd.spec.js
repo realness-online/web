@@ -182,9 +182,8 @@ describe('@/utils/svg-to-psd', () => {
         'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15'
       vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(iphone_agent)
       vi.resetModules()
-      const { render_svg_layers_to_psd: render_on_ios } = await import(
-        '@/utils/svg-to-psd'
-      )
+      const { render_svg_layers_to_psd: render_on_ios } =
+        await import('@/utils/svg-to-psd')
       const poster = make_poster()
 
       await render_on_ios(poster, poster_id)
@@ -235,9 +234,9 @@ describe('@/utils/svg-to-psd', () => {
       empty.setAttribute('viewBox', '0 0 10 10')
       document.body.appendChild(empty)
 
-      await expect(
-        render_svg_layers_to_psd(empty, poster_id)
-      ).rejects.toThrow('No layers found to export')
+      await expect(render_svg_layers_to_psd(empty, poster_id)).rejects.toThrow(
+        'No layers found to export'
+      )
       expect(error).toHaveBeenCalledWith(
         '[PSD Generation] No layers found to export'
       )

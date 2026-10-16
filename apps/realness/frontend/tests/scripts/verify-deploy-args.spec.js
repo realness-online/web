@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { createServer } from 'node:http'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import {
   github_download_url,
   load_manifest,
@@ -10,7 +10,8 @@ import {
   verify_file
 } from '../../scripts/verify-deploy.js'
 
-const digest = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
+const digest = bytes =>
+  `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 
 describe('parse_args', () => {
   it('defaults to the latest release on the live site', () => {
@@ -29,7 +30,12 @@ describe('parse_args', () => {
   })
 
   it('reads a url without a trailing slash and a named release', () => {
-    const parsed = parse_args(['--url', 'https://a.test/', '--release', 'v2.5.8'])
+    const parsed = parse_args([
+      '--url',
+      'https://a.test/',
+      '--release',
+      'v2.5.8'
+    ])
     expect(parsed.base_url).toBe('https://a.test')
     expect(parsed.release).toBe('v2.5.8')
   })
@@ -63,5 +69,30 @@ describe('github_download_url', () => {
     expect(github_download_url('realness-online/web', 'v2.5.8')).toBe(
       'https://github.com/realness-online/web/releases/download/v2.5.8/build-manifest.json'
     )
+  })
+})
+
+describe('verify_file', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('matches, mismatches, and reports HTTP failures', async () => {
+    const body = new TextEncoder().encode('hello').buffer
+    vi.stubGlobal('fetch', async url =>
+      url.endsWith('/missing')
+        ? { ok: false, status: 404 }
+        : { ok: true, arrayBuffer: async () => body }
+    )
+    expect(await verify_file('https://a.test', '/a', digest('hello'))).toEqual({
+      file_path: '/a',
+      ok: true
+    })
+    const wrong = await verify_file('https://a.test', '/a', 'sha256:nope')
+    expect(wrong.ok).toBe(false)
+    expect(wrong.message).toContain(digest('hello'))
+    expect(await verify_file('https://a.test', '/missing', 'x')).toEqual({
+      file_path: '/missing',
+      ok: false,
+      message: 'HTTP 404'
+    })
   })
 })

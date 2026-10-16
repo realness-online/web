@@ -2,14 +2,18 @@ import { describe, expect, it } from 'vite-plus/test'
 import { main } from '../../scripts/verify-deploy.js'
 
 /** Capture what a run printed, since main writes to the console. */
-const capture = async (run) => {
+const capture = async run => {
   const lines = { out: [], err: [] }
   const original_info = console.info
   const original_error = console.error
   console.info = message => lines.out.push(String(message))
   console.error = message => lines.err.push(String(message))
   try {
-    return { code: await run(), said: lines.out.join('\n'), failed: lines.err.join('\n') }
+    return {
+      code: await run(),
+      said: lines.out.join('\n'),
+      failed: lines.err.join('\n')
+    }
   } finally {
     console.info = original_info
     console.error = original_error
@@ -39,7 +43,10 @@ describe('verify-deploy main', () => {
   })
 
   it('names the GitHub release as independent evidence', async () => {
-    const result = await run({ version: '2.0.0', files: { '/a.js': 'sha256:a' } }, 'github:o/r@v2.0.0')
+    const result = await run(
+      { version: '2.0.0', files: { '/a.js': 'sha256:a' } },
+      'github:o/r@v2.0.0'
+    )
     expect(result.code, 0)
     expect(result.said, /Trust:     GitHub release \(independent\)/)
     expect(result.said, /Source:    github:o\/r@v2\.0\.0/)
@@ -47,9 +54,15 @@ describe('verify-deploy main', () => {
   })
 
   it('names a local manifesto, and the site alone as not independent', async () => {
-    const local = await run({ files: { '/a.js': 'sha256:a' } }, 'file:/tmp/m.json')
+    const local = await run(
+      { files: { '/a.js': 'sha256:a' } },
+      'file:/tmp/m.json'
+    )
     expect(local.said, /Trust:     local manifesto/)
-    const site = await run({ files: { '/a.js': 'sha256:a' } }, 'site:https://a.test/build-manifest.json')
+    const site = await run(
+      { files: { '/a.js': 'sha256:a' } },
+      'site:https://a.test/build-manifest.json'
+    )
     expect(site.said, /Trust:     site manifesto only \(not independent\)/)
   })
 
@@ -68,7 +81,10 @@ describe('verify-deploy main', () => {
   })
 
   it('says (none) for a manifesto without a version or commit', async () => {
-    const result = await run({ files: { '/a.js': 'sha256:a' } }, 'file:/tmp/m.json')
+    const result = await run(
+      { files: { '/a.js': 'sha256:a' } },
+      'file:/tmp/m.json'
+    )
     expect(result.said, /Version:   \(none\)/)
     expect(result.said, /Commit:    \(none\)/)
     expect(result.said, /Bundle:/)
@@ -76,7 +92,11 @@ describe('verify-deploy main', () => {
 
   it('prints the bundle hash when the manifesto carries one', async () => {
     const result = await run(
-      { version: '1.0.0', bundle_sha256: 'sha256:abc', files: { '/a.js': 'sha256:a' } },
+      {
+        version: '1.0.0',
+        bundle_sha256: 'sha256:abc',
+        files: { '/a.js': 'sha256:a' }
+      },
       'file:/tmp/m.json'
     )
     expect(result.said, /Bundle:    sha256:abc/)
@@ -85,8 +105,14 @@ describe('verify-deploy main', () => {
   it('names each file that does not match and fails', async () => {
     const result = await capture(() =>
       main([], {
-        load: async () => ({ manifest: { files: { '/a.js': 'sha256:a', '/b.js': 'sha256:b' } }, source: 'file:/tmp/m.json' }),
-        verify: async (base, file_path) => ({ file_path, ok: file_path === '/a.js' })
+        load: async () => ({
+          manifest: { files: { '/a.js': 'sha256:a', '/b.js': 'sha256:b' } },
+          source: 'file:/tmp/m.json'
+        }),
+        verify: async (base, file_path) => ({
+          file_path,
+          ok: file_path === '/a.js'
+        })
       })
     )
     expect(result.code, 1)
@@ -100,7 +126,13 @@ describe('verify-deploy main', () => {
     const result = await capture(() =>
       main([], {
         load: async () => ({
-          manifest: { files: { '/z.js': 'sha256:z', '/a.js': 'sha256:a', '/m.js': 'sha256:m' } },
+          manifest: {
+            files: {
+              '/z.js': 'sha256:z',
+              '/a.js': 'sha256:a',
+              '/m.js': 'sha256:m'
+            }
+          },
           source: 'file:/tmp/m.json'
         }),
         verify: async (base, file_path) => {

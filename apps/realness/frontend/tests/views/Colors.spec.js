@@ -76,7 +76,9 @@ describe('@/views/Colors', () => {
 
     it('opens the weights from the keyboard too', async () => {
       const wrapper = mount(Colors)
-      const toggle = wrapper.find('article[itemprop="roles"] header[role="button"]')
+      const toggle = wrapper.find(
+        'article[itemprop="roles"] header[role="button"]'
+      )
 
       await toggle.trigger('keydown.enter')
 
@@ -91,7 +93,8 @@ describe('@/views/Colors', () => {
 
       expect(bar.findAll('b[itemprop="variant"]')).toHaveLength(2)
       expect(
-        wrapper.find('article[itemprop="palette"] code[itemprop="role"]')
+        wrapper
+          .find('article[itemprop="palette"] code[itemprop="role"]')
           .exists()
       ).toBe(true)
     })
@@ -109,7 +112,8 @@ describe('@/views/Colors', () => {
       expect(shown).toEqual(pair)
       expect(choice.attributes('aria-pressed')).toBe('true')
       expect(
-        wrapper.find('article[itemprop="palette"] code[itemprop="role"]')
+        wrapper
+          .find('article[itemprop="palette"] code[itemprop="role"]')
           .exists()
       ).toBe(false)
     })
@@ -123,7 +127,8 @@ describe('@/views/Colors', () => {
 
       expect(buttons[0].attributes('aria-pressed')).toBe('true')
       expect(
-        wrapper.find('article[itemprop="palette"] code[itemprop="role"]')
+        wrapper
+          .find('article[itemprop="palette"] code[itemprop="role"]')
           .exists()
       ).toBe(true)
     })
@@ -154,9 +159,7 @@ describe('@/views/Colors', () => {
 
     it('lists every variant and signal as a shelf stop', () => {
       const wrapper = mount(Colors)
-      const stops = wrapper.findAll(
-        'article[itemprop="palette"] li[itemscope]'
-      )
+      const stops = wrapper.findAll('article[itemprop="palette"] li[itemscope]')
 
       expect(stops.map(stop => stop.attributes('itemprop'))).toEqual([
         'water',

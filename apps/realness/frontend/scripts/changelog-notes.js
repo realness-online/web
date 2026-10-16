@@ -7,7 +7,7 @@ import {
   release_notes_footer
 } from './lib/changelog.js'
 
-import { fileURLToPath as file_url_to_path } from 'node:url'
+import { run_entry } from './lib/entry.js'
 import { out_path as output_path } from '#root/src/settings/output.js'
 const default_out = output_path('frontend', 'release-notes.md')
 
@@ -38,10 +38,4 @@ export const main = (args = process.argv.slice(2)) => {
   return { out_path, notes }
 }
 
-if (process.argv[1] === file_url_to_path(import.meta.url))
-  try {
-    main()
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : error)
-    process.exit(1)
-  }
+await run_entry(import.meta.url, main)

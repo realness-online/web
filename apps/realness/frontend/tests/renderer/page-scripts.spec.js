@@ -16,7 +16,9 @@ const load_push_handlers = () => {
 
 const load_commands_page = () => {
   vi.resetModules()
-  return import('../../../../../bin/commands/page.js').then(module => module.wire_page(document))
+  return import('../../../../../bin/commands/page.js').then(module =>
+    module.wire_page(document)
+  )
 }
 
 after_each(() => {
@@ -42,7 +44,9 @@ describe('commands page', () => {
   })
 
   const shown = () =>
-    [...document.querySelectorAll('li:not([hidden]) header')].map(h => h.textContent)
+    [...document.querySelectorAll('li:not([hidden]) header')].map(
+      h => h.textContent
+    )
 
   it('counts every command at first, then filters by search, group, and review', async () => {
     await load_commands_page()
@@ -83,7 +87,9 @@ describe('commands page', () => {
   it('selects the command for copying by hand when the clipboard refuses', async () => {
     vi.stubGlobal('navigator', {
       ...navigator,
-      clipboard: { writeText: vi.fn(async () => Promise.reject(new Error('no'))) }
+      clipboard: {
+        writeText: vi.fn(async () => Promise.reject(new Error('no')))
+      }
     })
     const range = { selectNodeContents: vi.fn() }
     vi.spyOn(document, 'createRange').mockReturnValue(range)
@@ -127,7 +133,13 @@ describe('push handlers', () => {
 
   it('shows a push with its title and link, defaulting what it leaves out', async () => {
     await fire('push', {
-      data: { json: () => ({ title: 'New poster', body: 'Look', url: '/+1/posters/2' }) }
+      data: {
+        json: () => ({
+          title: 'New poster',
+          body: 'Look',
+          url: '/+1/posters/2'
+        })
+      }
     })
     expect(shown).toHaveBeenCalledWith('New poster', {
       body: 'Look',
@@ -158,7 +170,9 @@ describe('push handlers', () => {
       navigate: vi.fn(async () => {})
     }
     windows = [open_window]
-    await fire('notificationclick', { notification: { close, data: { url: '/' } } })
+    await fire('notificationclick', {
+      notification: { close, data: { url: '/' } }
+    })
     expect(close).toHaveBeenCalled()
     expect(open_window.focus).toHaveBeenCalled()
     expect(open_window.navigate).not.toHaveBeenCalled()
@@ -180,7 +194,12 @@ describe('sign-on flow', () => {
       save: vi.fn(async () => {})
     }
     const current_user = ref(user)
-    return { emit, profile, current_user, flow: use_sign_on({ current_user, profile, emit }) }
+    return {
+      emit,
+      profile,
+      current_user,
+      flow: use_sign_on({ current_user, profile, emit })
+    }
   }
 
   it('signs in at once when the profile already has a name', async () => {

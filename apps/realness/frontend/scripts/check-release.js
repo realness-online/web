@@ -7,9 +7,13 @@ import {
   read_changelog,
   read_unreleased
 } from './lib/changelog.js'
+import { run_entry } from './lib/entry.js'
 
-const main = () => {
-  const args = process.argv.slice(2)
+/**
+ * Check the changelog and built manifest agree before a release.
+ * @param {string[]} [args]
+ */
+export const main = (args = process.argv.slice(2)) => {
   const unreleased_only = args.includes('--unreleased')
   const changelog = read_changelog()
 
@@ -42,9 +46,4 @@ const main = () => {
   console.info(`check-release ok (v${bare}, manifesto matches)`)
 }
 
-try {
-  main()
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error)
-  process.exit(1)
-}
+await run_entry(import.meta.url, main)

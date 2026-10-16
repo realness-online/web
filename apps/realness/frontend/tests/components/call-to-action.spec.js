@@ -13,9 +13,7 @@ describe('@/components/call-to-action', () => {
   it('links the realness wordmark to pricing', () => {
     const wrapper = mount(CallToAction)
 
-    expect(wrapper.find('router-link-stub').attributes('to')).toBe(
-      '/pricing'
-    )
+    expect(wrapper.find('router-link-stub').attributes('to')).toBe('/pricing')
   })
 
   it('carries the medium-is-the-message line', () => {

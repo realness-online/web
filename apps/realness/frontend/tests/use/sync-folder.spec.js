@@ -625,7 +625,9 @@ describe('@/use/sync-folder', () => {
     const result = await drain_folder_queue({ force: true, set_working })
 
     expect(result).toBeUndefined()
-    expect(warn).toHaveBeenCalledWith('[sync-folder] drain skip: preference off')
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] drain skip: preference off'
+    )
   })
 
   it('asks for permission when no folder handle is stored', async () => {
@@ -638,7 +640,9 @@ describe('@/use/sync-folder', () => {
 
     await drain_folder_queue({ force: true, set_working })
 
-    expect(warn).toHaveBeenCalledWith('[sync-folder] drain skip: no folder handle')
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] drain skip: no folder handle'
+    )
     expect(folder_sync_status.value).toBe('needs_permission')
   })
 
@@ -849,8 +853,12 @@ describe('@/use/sync-folder', () => {
 
   it('stops syncing quietly when a run is cancelled mid-flight', async () => {
     mock_figure_show.value = false
-    const { sync_now, cancel_folder_sync, folder_sync_status, folder_sync_error } =
-      with_setup(() => use(), { provide: { set_working } })
+    const {
+      sync_now,
+      cancel_folder_sync,
+      folder_sync_status,
+      folder_sync_error
+    } = with_setup(() => use(), { provide: { set_working } })
     await flushPromises()
 
     const pending = sync_now()
@@ -885,7 +893,9 @@ describe('@/use/sync-folder', () => {
     expect(write).toHaveBeenCalled()
     expect(sync_folder_name.value).toBe('Exports')
     expect(typeof folder_sync_last_at.value).toBe('string')
-    const saved = set.mock.calls.find(([k]) => k === 'sync:folder-manifest')?.[1]
+    const saved = set.mock.calls.find(
+      ([k]) => k === 'sync:folder-manifest'
+    )?.[1]
     expect(saved.thoughts['1000']).toBeTruthy()
   })
 
@@ -1002,9 +1012,8 @@ describe('@/use/sync-folder', () => {
   })
 
   it('reads archived posters over the network when the cache is empty', async () => {
-    const { load_directory_from_network } = await import(
-      '@/persistence/Directory'
-    )
+    const { load_directory_from_network } =
+      await import('@/persistence/Directory')
     mock_as_directory.mockImplementation(async id =>
       String(id).endsWith('/1000/')
         ? { items: [2000] }
@@ -1028,9 +1037,8 @@ describe('@/use/sync-folder', () => {
       if (String(id).endsWith('/1000/')) return null
       return { items: [1000], archive: ['1000'] }
     })
-    const { load_directory_from_network } = await import(
-      '@/persistence/Directory'
-    )
+    const { load_directory_from_network } =
+      await import('@/persistence/Directory')
     load_directory_from_network.mockResolvedValue(null)
     const { sync_now } = with_setup(() => use(), { provide: { set_working } })
     await flushPromises()
@@ -1040,9 +1048,8 @@ describe('@/use/sync-folder', () => {
 
   it('warns and carries on when the poster listing cannot be fetched', async () => {
     const warn = silence_console('warn')
-    const { load_directory_from_network } = await import(
-      '@/persistence/Directory'
-    )
+    const { load_directory_from_network } =
+      await import('@/persistence/Directory')
     mock_as_directory.mockResolvedValue(null)
     mock_build_local_directory.mockResolvedValue({ items: [], archive: [] })
     keys.mockResolvedValue([])
@@ -1080,8 +1087,7 @@ describe('@/use/sync-folder', () => {
   it('skips a duplicate queue entry for the same item and action', async () => {
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return folder_handle
-      if (k === 'sync:folder-queue')
-        return [{ id: poster_id, action: 'save' }]
+      if (k === 'sync:folder-queue') return [{ id: poster_id, action: 'save' }]
       if (k === 'sync:folder-manifest') return { thoughts: {} }
       return null
     })

@@ -62,11 +62,9 @@ describe('@/persistence/History', () => {
 
     expect(await history.save(items)).toBe(true)
     expect(mock_prepare).toHaveBeenCalledWith(items)
-    expect(mock_upload).toHaveBeenCalledWith(
-      'history.html.gz',
-      'body',
-      { hash: 'abc' }
-    )
+    expect(mock_upload).toHaveBeenCalledWith('history.html.gz', 'body', {
+      hash: 'abc'
+    })
   })
 
   it('reports a failed upload without throwing', async () => {

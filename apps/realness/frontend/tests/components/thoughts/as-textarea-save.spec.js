@@ -30,8 +30,7 @@ const with_textarea = (value = '') => {
   return textarea
 }
 
-const mount_wat = () =>
-  shallowMount(Wat, { global: { stubs: { icon: true } } })
+const mount_wat = () => shallowMount(Wat, { global: { stubs: { icon: true } } })
 
 describe('@/components/thoughts/as-textarea saving', () => {
   beforeEach(() => {

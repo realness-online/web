@@ -8,7 +8,8 @@ describe('@/utils/css-var', () => {
 
   it('reads a custom property from the document root', () => {
     vi.spyOn(window, 'getComputedStyle').mockReturnValue({
-      getPropertyValue: name => (name === '--accent' ? ' oklch(0.6 0.1 20) ' : '')
+      getPropertyValue: name =>
+        name === '--accent' ? ' oklch(0.6 0.1 20) ' : ''
     })
 
     expect(css_var('--accent')).toBe(' oklch(0.6 0.1 20) ')

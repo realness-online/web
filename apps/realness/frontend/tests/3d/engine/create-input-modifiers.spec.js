@@ -10,19 +10,33 @@ describe('create_input listeners and modifiers', () => {
   let input
 
   const pointer = (type, options = {}) =>
-    canvas.dispatchEvent(new PointerEvent(type, { pointerType: 'mouse', clientX: 10, clientY: 10, ...options }))
+    canvas.dispatchEvent(
+      new PointerEvent(type, {
+        pointerType: 'mouse',
+        clientX: 10,
+        clientY: 10,
+        ...options
+      })
+    )
   const wheel = (options = {}) => {
     const event = new WheelEvent('wheel', { cancelable: true, ...options })
     canvas.dispatchEvent(event)
     return event
   }
   const key = (type, value) =>
-    window.dispatchEvent(new KeyboardEvent(type, { key: value, cancelable: true }))
+    window.dispatchEvent(
+      new KeyboardEvent(type, { key: value, cancelable: true })
+    )
 
   beforeEach(() => {
     canvas = document.createElement('canvas')
     document.body.appendChild(canvas)
-    canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 100, height: 200 })
+    canvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 200
+    })
     canvas.setPointerCapture = vi.fn()
     canvas.releasePointerCapture = vi.fn()
     input = create_input({ canvas })

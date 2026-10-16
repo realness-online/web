@@ -111,9 +111,9 @@ describe('@/components/posters/as-avatar reference sync', () => {
     const wrapper = mount()
     await nextTick()
 
-    expect(wrapper.find('svg[aria-roledescription]').attributes('viewBox')).toBe(
-      '0 0 16 16'
-    )
+    expect(
+      wrapper.find('svg[aria-roledescription]').attributes('viewBox')
+    ).toBe('0 0 16 16')
   })
 
   it('ignores a canonical node that is not an svg', async () => {
@@ -124,9 +124,9 @@ describe('@/components/posters/as-avatar reference sync', () => {
     const wrapper = mount()
     await nextTick()
 
-    expect(wrapper.find('svg[aria-roledescription]').attributes('viewBox')).toBe(
-      '0 0 16 16'
-    )
+    expect(
+      wrapper.find('svg[aria-roledescription]').attributes('viewBox')
+    ).toBe('0 0 16 16')
   })
 
   it('does not mount poster symbols for an empty show', async () => {

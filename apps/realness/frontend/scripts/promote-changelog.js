@@ -5,19 +5,25 @@ import {
   write_changelog,
   changelog_path
 } from './lib/changelog.js'
+import { run_entry } from './lib/entry.js'
 
-const main = () => {
-  const version = package_version()
-  const next = promote_unreleased(read_changelog(), version)
-  write_changelog(next)
+/**
+ * Turn the Unreleased changelog section into the package version's section.
+ * @param {object} [options]
+ * @param {() => string} [options.version]
+ * @param {() => string} [options.read]
+ * @param {(text: string) => void} [options.write]
+ */
+export const main = ({
+  version = package_version,
+  read = read_changelog,
+  write = write_changelog
+} = {}) => {
+  const current = version()
+  write(promote_unreleased(read(), current))
   console.info(
-    `Promoted ## Unreleased → v${version.replace(/^v/, '')} in ${changelog_path}`
+    `Promoted ## Unreleased → v${current.replace(/^v/, '')} in ${changelog_path}`
   )
 }
 
-try {
-  main()
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error)
-  process.exit(1)
-}
+await run_entry(import.meta.url, main)

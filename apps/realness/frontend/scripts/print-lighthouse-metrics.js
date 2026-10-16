@@ -39,7 +39,8 @@ export const median = values => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
-export const format_ms = value => (value === null ? 'n/a' : `${Math.round(value)}ms`)
+export const format_ms = value =>
+  value === null ? 'n/a' : `${Math.round(value)}ms`
 
 export const format_timed = (throttled, observed) => {
   if (throttled === null && observed === null) return 'n/a'

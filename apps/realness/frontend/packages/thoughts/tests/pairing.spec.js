@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import {
-  poster_thought_overlay_pairs,
-  slot_key
-} from '../src/pairing.js'
+import { poster_thought_overlay_pairs, slot_key } from '../src/pairing.js'
 
 const author = '/+1000000000000'
 const at = 1_700_000_000_000
@@ -10,7 +7,7 @@ const statement = (when, text = 'words') => ({
   id: `${author}/statements/${when}`,
   statement: text
 })
-const poster = (when) => ({ id: `${author}/posters/${when}`, type: 'posters' })
+const poster = when => ({ id: `${author}/posters/${when}`, type: 'posters' })
 
 describe('poster_thought_overlay_pairs chains and edges', () => {
   it('chains a slot that touches the poster only through another slot', () => {
@@ -21,7 +18,7 @@ describe('poster_thought_overlay_pairs chains and edges', () => {
       poster_thought_overlay_pairs([near, middle, far, poster(at + 60_000)])
     expect(merged_thought_keys.size).toBe(3)
     const merged = poster_to_thought.get(`${author}/posters/${at + 60_000}`)
-    expect(merged.map((one) => one.statement)).toEqual([
+    expect(merged.map(one => one.statement)).toEqual([
       'words',
       'words',
       'words'
@@ -50,12 +47,15 @@ describe('poster_thought_overlay_pairs chains and edges', () => {
       poster(at + 30_000)
     ])
     const merged = poster_to_thought.get(`${author}/posters/${at + 30_000}`)
-    expect(merged.map((one) => one.statement)).toEqual(['words', 'next'])
+    expect(merged.map(one => one.statement)).toEqual(['words', 'next'])
   })
 
   it('ignores statements and posters with no readable timestamp', () => {
     const untimed = [{ id: `${author}/statements/not-a-time`, statement: 'x' }]
-    const no_time_poster = { id: `${author}/posters/not-a-time`, type: 'posters' }
+    const no_time_poster = {
+      id: `${author}/posters/not-a-time`,
+      type: 'posters'
+    }
     const { merged_thought_keys, poster_to_thought } =
       poster_thought_overlay_pairs([untimed, no_time_poster, poster(at)])
     expect(merged_thought_keys.size).toBe(0)

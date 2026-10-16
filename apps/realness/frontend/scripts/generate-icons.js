@@ -2,9 +2,8 @@ import { createCanvas as create_canvas, loadImage as load_image } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath as file_url_to_path } from 'url'
-import { tmpdir } from 'os'
-import crypto from 'node:crypto'
 import { oklch_to_rgb } from '../../src/app/utils/color-converters.js'
+import { run_entry } from './lib/entry.js'
 
 const __filename = file_url_to_path(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,7 +13,7 @@ const ICON_SIZE_LARGE = 512
 const ICON_SIZES = [ICON_SIZE_SMALL, ICON_SIZE_LARGE]
 const THEME_COLOR = '#dbdbd4'
 
-const extract_realness_symbol = icons_svg => {
+export const extract_realness_symbol = icons_svg => {
   const symbol_match = icons_svg.match(
     /<symbol id="realness"[^>]*viewBox="([\d.-]+) ([\d.-]+) ([\d.]+) ([\d.]+)"[^>]*>([\s\S]*?)<\/symbol>/
   )
@@ -47,7 +46,7 @@ const extract_realness_symbol = icons_svg => {
   return { symbol_content, fills_defs, shapes_defs, symbol_viewbox }
 }
 
-const replace_oklch_with_rgb = svg =>
+export const replace_oklch_with_rgb = svg =>
   svg.replace(
     /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)/g,
     (_, l, c, h) => {
@@ -68,7 +67,7 @@ const generate_icon_png = async (size, output_path, icons_svg) => {
   fs.writeFileSync(output_path, canvas.toBuffer('image/png'))
 }
 
-const render_symbol_image = async (size, icons_svg) => {
+const render_symbol_image = (size, icons_svg) => {
   const { symbol_content, fills_defs, shapes_defs, symbol_viewbox } =
     extract_realness_symbol(icons_svg)
   const { x, y, width, height } = symbol_viewbox
@@ -80,21 +79,21 @@ const render_symbol_image = async (size, icons_svg) => {
   ${symbol_content}
 </svg>`)
 
-  const temp_svg_path = path.join(
-    tmpdir(),
-    `icon-${size}-${Date.now()}-${crypto.randomUUID()}.svg`
-  )
-  fs.writeFileSync(temp_svg_path, svg_content)
-
-  const img = await load_image(temp_svg_path)
-  fs.unlinkSync(temp_svg_path)
-  return img
+  return load_image(Buffer.from(svg_content))
 }
 
-const generate_all_icons = async () => {
-  const icons_svg_path = path.join(__dirname, '../public/icons.svg')
-  const icons_svg = fs.readFileSync(icons_svg_path, 'utf-8')
-  const public_dir = path.join(__dirname, '../public')
+/**
+ * Draw the PWA icons from the realness symbol and copy the documentation.
+ * @param {{ public_dir?: string, documentation_md?: string }} [options]
+ */
+export const main = async ({
+  public_dir = path.join(__dirname, '../public'),
+  documentation_md = path.join(
+    __dirname,
+    '../../src/app/content/documentation.md'
+  )
+} = {}) => {
+  const icons_svg = fs.readFileSync(path.join(public_dir, 'icons.svg'), 'utf-8')
 
   const stale = ['192-m.png', '512-m.png', '192-ios.png', '180.png']
   for (const name of stale) {
@@ -108,14 +107,7 @@ const generate_all_icons = async () => {
     )
   )
 
-  const documentation_md = path.join(
-    __dirname,
-    '../../src/app/content/documentation.md'
-  )
   fs.copyFileSync(documentation_md, path.join(public_dir, 'documentation.md'))
 }
 
-generate_all_icons().catch(error => {
-  console.error('Failed to generate icons:', error)
-  process.exit(1)
-})
+await run_entry(import.meta.url, main)

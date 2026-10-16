@@ -20,107 +20,85 @@
  *                    VITE_ADMIN_ID from .env.local)
  *   PRINTS_BUCKET    storage bucket (defaults to realness-online.appspot.com)
  */
-import { execFileSync as exec_file_sync, spawn } from 'node:child_process'
+import { execFileSync as exec_file_sync } from 'node:child_process'
 import { randomUUID as random_uuid } from 'node:crypto'
 import fs from 'node:fs'
-import http from 'node:http'
 import path from 'node:path'
-import { fileURLToPath as file_url_to_path } from 'node:url'
 import { artifacts_dir } from './lib/artifacts.js'
+import { run_entry } from './lib/entry.js'
+import {
+  launch_browser,
+  make_profile,
+  open_page,
+  remove_profile,
+  serve_dist,
+  wait_for_driver
+} from './lib/headless.js'
 import { frontend_out } from '#root/src/settings/output.js'
-import { mkdtempSync as mkdtemp_sync, rmSync as rm_sync } from 'node:fs'
-import { tmpdir } from 'node:os'
-
-const __dirname = path.dirname(file_url_to_path(import.meta.url))
-const project_root = path.join(__dirname, '..')
-const dist_dir = frontend_out()
-const out_dir = path.join(artifacts_dir, 'print-previews')
 
 const DRIVER_ROUTE = '/poster-driver'
 const SERVER_PORT = 4181
 const DEBUG_PORT = 9335
 const READY_TIMEOUT_MS = 120000
 const POLL_MS = 1000
-const BROWSER_TIMEOUT_MS = 20000
-const BROWSER_POLL_MS = 200
-const PROFILE_RM_RETRIES = 5
-const PROFILE_RM_DELAY_MS = 200
-const HTTP_OK = 200
-const NOT_FOUND = 404
+const LABEL = 'print-previews'
+const BRAVE = '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
 
-const chrome_path =
-  process.env.CHROME_PATH ??
-  '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
-const bucket = process.env.PRINTS_BUCKET ?? 'realness-online.appspot.com'
-
-const content_types = {
-  '.css': 'text/css',
-  '.gz': 'application/gzip',
-  '.html': 'text/html',
-  '.jpg': 'image/jpeg',
-  '.js': 'text/javascript',
-  '.json': 'application/json',
-  '.md': 'text/markdown',
-  '.png': 'image/png',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain',
-  '.wasm': 'application/wasm',
-  '.woff2': 'font/woff2',
-  '.xml': 'application/xml'
+/** @param {string[]} args */
+export const parse_args = args => {
+  const at = args.indexOf('--limit')
+  return {
+    limit: Number(at === -1 ? 0 : args[at + 1]),
+    force: args.includes('--force'),
+    upload: !args.includes('--no-upload')
+  }
 }
 
-const fail = message => {
-  console.error(`print-previews: ${message}`)
-  process.exit(1)
-}
-
-const [, , ...args] = process.argv
-const flag = name => args.includes(name)
-const option = name => {
-  const index = args.indexOf(name)
-  return index === -1 ? null : args[index + 1]
-}
-const limit = Number(option('--limit') ?? 0)
-const force = flag('--force')
-const upload = !flag('--no-upload')
-
-if (!fs.existsSync(path.join(dist_dir, 'index.html')))
-  fail('dist/index.html missing - npm run prints:previews builds first')
-if (!fs.existsSync(chrome_path)) fail(`CHROME_PATH not found: ${chrome_path}`)
-
-/** The author whose posters are for sale: `PRINTS_AUTHOR`, else `.env.local`. */
-const author = (() => {
-  const raw =
-    process.env.PRINTS_AUTHOR ||
-    (() => {
-      for (const name of ['.env.local', '.env']) {
-        const file = path.join(project_root, name)
-        if (!fs.existsSync(file)) continue
-        const match = fs
-          .readFileSync(file, 'utf8')
-          .match(/^\s*VITE_ADMIN_ID\s*=\s*(.+?)\s*$/m)
-        if (match) return match[1].replace(/^['"]|['"]$/g, '')
-      }
-      return null
-    })()
-  if (!raw) fail('no author: set PRINTS_AUTHOR or VITE_ADMIN_ID in .env.local')
+/**
+ * The author whose posters are for sale: `PRINTS_AUTHOR`, else
+ * `VITE_ADMIN_ID` from `.env.local` or `.env`.
+ * @param {string | undefined} from_env
+ * @param {string} project_root
+ */
+export const find_author = (from_env, project_root) => {
+  let raw = from_env
+  for (const name of ['.env.local', '.env']) {
+    if (raw) break
+    const file = path.join(project_root, name)
+    if (!fs.existsSync(file)) continue
+    const match = fs
+      .readFileSync(file, 'utf8')
+      .match(/^\s*VITE_ADMIN_ID\s*=\s*(.+?)\s*$/m)
+    if (match) raw = match[1].replace(/^['"]|['"]$/g, '')
+  }
+  if (!raw)
+    throw new Error(
+      'no author: set PRINTS_AUTHOR or VITE_ADMIN_ID in .env.local'
+    )
   return `/${raw.replace(/^\/+/, '')}`
-})()
+}
 
-const gcloud = gcloud_args => {
+/**
+ * Run gcloud, failing with its error output.
+ * @param {string[]} args
+ */
+export const gcloud = args => {
   try {
-    return exec_file_sync('gcloud', gcloud_args, { encoding: 'utf8' })
+    return exec_file_sync('gcloud', args, { encoding: 'utf8' })
   } catch (error) {
-    fail(
-      `gcloud failed (${gcloud_args.join(' ')}): ${error.stderr?.trim() || error.message}`
+    throw new Error(
+      `gcloud failed (${args.join(' ')}): ${error.stderr?.trim() || error.message}`
     )
   }
 }
 
-/** An object listing, empty when the prefix holds nothing. */
-const gcloud_lines = gcloud_args => {
+/**
+ * An object listing, empty when the prefix holds nothing.
+ * @param {string} prefix
+ */
+export const storage_list = prefix => {
   try {
-    return exec_file_sync('gcloud', gcloud_args, {
+    return exec_file_sync('gcloud', ['storage', 'ls', prefix], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore']
     })
@@ -132,131 +110,29 @@ const gcloud_lines = gcloud_args => {
   }
 }
 
-const storage_prefix = `gs://${bucket}/people${author}/posters/`
-
-/** The shop's prints: live-folder plain `<created>.html`, one per stamp. */
-const list_prints = () =>
+/**
+ * Created stamps of objects with this extension, newest first, no repeats.
+ * @param {string[]} urls
+ * @param {string} extension
+ */
+export const stamps = (urls, extension) =>
   [
     ...new Set(
-      gcloud_lines(['storage', 'ls', storage_prefix])
+      urls
         .map(url => path.posix.basename(url))
-        .filter(name => /^\d+\.html$/.test(name))
+        .filter(name => new RegExp(`^\\d+\\.${extension}$`).test(name))
         .map(name => Number(name.split('.')[0]))
     )
   ].sort((a, b) => b - a)
 
-/** Previews already on storage, by created stamp. */
-const list_previews = () =>
-  new Set(
-    gcloud_lines(['storage', 'ls', storage_prefix])
-      .map(url => path.posix.basename(url))
-      .filter(name => /^\d+\.png$/.test(name))
-      .map(name => Number(name.replace('.png', '')))
-  )
-
-const serve_dist = () =>
-  new Promise(resolve => {
-    const server = http.createServer((request, response) => {
-      const url_path = decodeURIComponent(
-        (request.url ?? '/').split('?')[0]
-      ).replace(/^\/+/, '')
-      let file = path.join(dist_dir, url_path)
-      if (!file.startsWith(dist_dir)) {
-        response.writeHead(NOT_FOUND)
-        response.end()
-        return
-      }
-      if (!fs.existsSync(file) || fs.statSync(file).isDirectory())
-        file = path.join(dist_dir, 'index.html')
-
-      response.writeHead(HTTP_OK, {
-        'content-type':
-          content_types[path.extname(file)] ?? 'application/octet-stream'
-      })
-      fs.createReadStream(file).pipe(response)
-    })
-    server.listen(SERVER_PORT, '127.0.0.1', () => resolve(server))
-  })
-
-const sleep = ms =>
-  new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-
-const page_socket_url = async () => {
-  const deadline = Date.now() + BROWSER_TIMEOUT_MS
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/list`)
-      const targets = await response.json()
-      const page = targets.find(
-        target => target.type === 'page' && target.webSocketDebuggerUrl
-      )
-      if (page) return page.webSocketDebuggerUrl
-    } catch {}
-    await sleep(BROWSER_POLL_MS)
-  }
-  throw new Error('browser never exposed a page target')
-}
-
-const connect = socket_url =>
-  new Promise((resolve, reject) => {
-    const socket = new WebSocket(socket_url)
-    socket.onopen = () => resolve(socket)
-    socket.onerror = () => reject(new Error('devtools socket failed'))
-  })
-
-const devtools = socket => {
-  let next_id = 0
-  const pending = new Map()
-  socket.onmessage = event => {
-    const message = JSON.parse(String(event.data))
-    if (message.id !== undefined && pending.has(message.id)) {
-      const { resolve, reject } = pending.get(message.id)
-      pending.delete(message.id)
-      if (message.error) reject(new Error(message.error.message))
-      else resolve(message.result)
-      return
-    }
-    if (message.method === 'Runtime.exceptionThrown')
-      console.error(
-        'print-previews: page error',
-        message.params?.exceptionDetails?.text
-      )
-  }
-  const send = (method, params = {}) =>
-    new Promise((resolve, reject) => {
-      const id = ++next_id
-      pending.set(id, { resolve, reject })
-      socket.send(JSON.stringify({ id, method, params }))
-    })
-  const evaluate = async expression => {
-    const result = await send('Runtime.evaluate', {
-      expression,
-      awaitPromise: true,
-      returnByValue: true
-    })
-    if (result.exceptionDetails)
-      throw new Error(
-        result.exceptionDetails.exception?.description ??
-          result.exceptionDetails.text ??
-          'evaluate failed'
-      )
-    return result.result?.value
-  }
-  return { send, evaluate }
-}
-
-const write_preview = (created, data_url) => {
-  fs.mkdirSync(out_dir, { recursive: true })
-  const file = path.join(out_dir, `${created}.png`)
-  fs.writeFileSync(file, Buffer.from(data_url.split(',')[1], 'base64'))
-  return file
-}
-
-const upload_preview = (created, file) => {
-  const destination = `${storage_prefix}${created}.png`
-  gcloud([
+/**
+ * Upload a preview with a Firebase download token.
+ * @param {string} destination
+ * @param {string} file
+ * @param {typeof gcloud} [run]
+ */
+export const upload_preview = (destination, file, run = gcloud) =>
+  run([
     'storage',
     'cp',
     file,
@@ -264,100 +140,128 @@ const upload_preview = (created, file) => {
     '--content-type=image/png',
     `--custom-metadata=firebaseStorageDownloadTokens=${random_uuid()}`
   ])
+
+/**
+ * Write a preview PNG from its data URL.
+ * @param {string} out_dir
+ * @param {number} created
+ * @param {string} data_url
+ */
+export const write_preview = (out_dir, created, data_url) => {
+  fs.mkdirSync(out_dir, { recursive: true })
+  const file = path.join(out_dir, `${created}.png`)
+  fs.writeFileSync(file, Buffer.from(data_url.split(',')[1], 'base64'))
+  return file
 }
 
-const run = async () => {
-  const prints = list_prints()
-  if (!prints.length) fail(`no prints found under ${storage_prefix}`)
-  const existing = upload ? list_previews() : new Set()
+/**
+ * Render and upload the previews the shop is missing.
+ * @param {object} [options]
+ * @param {string[]} [options.args]
+ * @param {string} [options.dist_dir]
+ * @param {string} [options.out_dir]
+ * @param {string} [options.chrome_path]
+ * @param {string} [options.bucket]
+ * @param {() => string} [options.author]
+ * @param {typeof storage_list} [options.list]
+ * @param {(destination: string, file: string) => unknown} [options.put]
+ * @param {number} [options.port]
+ * @param {number} [options.poll_ms]
+ * @param {number} [options.ready_timeout_ms]
+ * @param {(options: { chrome_path: string, target_url: string, profile_dir: string }) => { kill: () => void }} [options.launch]
+ * @param {() => Promise<{ evaluate: (expression: string) => Promise<any> }>} [options.page]
+ * @returns {Promise<{ rendered: number[], failed: number[] }>}
+ */
+export const main = async ({
+  args = process.argv.slice(2),
+  dist_dir = frontend_out(),
+  out_dir = path.join(artifacts_dir, 'print-previews'),
+  chrome_path = process.env.CHROME_PATH ?? BRAVE,
+  bucket = process.env.PRINTS_BUCKET ?? 'realness-online.appspot.com',
+  author = () =>
+    find_author(
+      process.env.PRINTS_AUTHOR,
+      path.join(import.meta.dirname, '..')
+    ),
+  list = storage_list,
+  put = upload_preview,
+  port = SERVER_PORT,
+  poll_ms = POLL_MS,
+  ready_timeout_ms = READY_TIMEOUT_MS,
+  launch = options => launch_browser({ ...options, debug_port: DEBUG_PORT }),
+  page = () => open_page(DEBUG_PORT, LABEL)
+} = {}) => {
+  const { limit, force, upload } = parse_args(args)
+  if (!fs.existsSync(path.join(dist_dir, 'index.html')))
+    throw new Error(
+      'dist/index.html missing - npm run prints:previews builds first'
+    )
+  if (!fs.existsSync(chrome_path))
+    throw new Error(`CHROME_PATH not found: ${chrome_path}`)
+  const owner = author()
+  const prefix = `gs://${bucket}/people${owner}/posters/`
+
+  const listing = list(prefix)
+  const prints = stamps(listing, 'html')
+  if (!prints.length) throw new Error(`no prints found under ${prefix}`)
+  const existing = new Set(upload ? stamps(listing, 'png') : [])
   const wanted = prints.filter(created => force || !existing.has(created))
   const batch = limit > 0 ? wanted.slice(0, limit) : wanted
 
   console.info(
-    `print-previews: ${prints.length} prints, ${existing.size} previews, ` +
-      `${batch.length} to render (author ${author})`
+    `${LABEL}: ${prints.length} prints, ${existing.size} previews, ` +
+      `${batch.length} to render (author ${owner})`
   )
   if (!batch.length) {
-    console.info('print-previews: nothing to do; --force re-renders')
-    return
+    console.info(`${LABEL}: nothing to do; --force re-renders`)
+    return { rendered: [], failed: [] }
   }
 
-  const server = await serve_dist()
-  const profile_dir = mkdtemp_sync(path.join(tmpdir(), 'print-previews-'))
-  const target_url = `http://127.0.0.1:${SERVER_PORT}${DRIVER_ROUTE}`
-  const browser = spawn(
-    chrome_path,
-    [
-      '--headless=new',
-      '--disable-gpu',
-      '--no-first-run',
-      '--no-default-browser-check',
-      `--remote-debugging-port=${DEBUG_PORT}`,
-      `--user-data-dir=${profile_dir}`,
-      target_url
-    ],
-    { stdio: 'ignore' }
-  )
+  const server = await serve_dist(dist_dir, port)
+  const profile_dir = make_profile(LABEL)
+  const target_url = `http://127.0.0.1:${server.address().port}${DRIVER_ROUTE}`
+  const browser = launch({ chrome_path, target_url, profile_dir })
 
-  const shutdown = () => {
-    browser.kill()
-    server.close()
-    try {
-      rm_sync(profile_dir, {
-        recursive: true,
-        force: true,
-        maxRetries: PROFILE_RM_RETRIES,
-        retryDelay: PROFILE_RM_DELAY_MS
-      })
-    } catch {
-      console.warn(`print-previews: left profile dir behind at ${profile_dir}`)
-    }
-  }
-
-  const failures = []
+  const rendered = []
+  const failed = []
   try {
-    const socket = await connect(await page_socket_url())
-    const { evaluate } = devtools(socket)
-
-    const ready = await (async () => {
-      const deadline = Date.now() + READY_TIMEOUT_MS
-      while (Date.now() < deadline) {
-        if (await evaluate('window.poster_driver?.ready === true')) return true
-        await sleep(POLL_MS)
-      }
-      return false
-    })()
-    if (!ready) throw new Error('poster driver never became ready')
-
+    const { evaluate } = await page()
+    await wait_for_driver(evaluate, { timeout_ms: ready_timeout_ms, poll_ms })
     for (const created of batch) {
-      const itemid = `${author}/posters/${created}`
+      const itemid = `${owner}/posters/${created}`
       try {
         const result = await evaluate(
           `window.poster_driver.render_stored(${JSON.stringify(itemid)})`
         )
         if (!result?.png) throw new Error('render returned no png')
-        const file = write_preview(created, result.png)
-        if (upload) upload_preview(created, file)
+        const file = write_preview(out_dir, created, result.png)
+        if (upload) put(`${prefix}${created}.png`, file)
+        rendered.push(created)
         console.info(
-          `print-previews: ${created} ${result.width}x${result.height}` +
+          `${LABEL}: ${created} ${result.width}x${result.height}` +
             `${upload ? ' uploaded' : ' (no upload)'}`
         )
       } catch (error) {
-        failures.push(created)
-        console.error(`print-previews: ${created} failed - ${error.message}`)
+        failed.push(created)
+        console.error(`${LABEL}: ${created} failed - ${error.message}`)
       }
     }
   } finally {
-    shutdown()
+    browser.kill()
+    server.close()
+    remove_profile(profile_dir, LABEL)
   }
 
-  if (failures.length) fail(`${failures.length} failed: ${failures.join(', ')}`)
-  console.info(
-    `print-previews: done, ${batch.length - failures.length} rendered`
-  )
+  if (failed.length)
+    throw new Error(`${failed.length} failed: ${failed.join(', ')}`)
+  console.info(`${LABEL}: done, ${rendered.length} rendered`)
+  return { rendered, failed }
 }
 
-run().catch(error => {
-  console.error(`print-previews: ${error.message}`)
-  process.exit(1)
+await run_entry(import.meta.url, async () => {
+  try {
+    await main()
+  } catch (error) {
+    throw new Error(`${LABEL}: ${error.message}`)
+  }
 })

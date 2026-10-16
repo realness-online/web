@@ -20,6 +20,7 @@ import { software_application_schema } from '../../src/app/prerender/schema.js'
 import { fetch_print_pages } from './print-pages.js'
 import { product_paths } from '#root/src/settings/layout.js'
 import { frontend_out } from '#root/src/settings/output.js'
+import { run_entry } from './lib/entry.js'
 
 /** The site-wide OG image's own size, which is what the shell declares. */
 const DEFAULT_OG_IMAGE_WIDTH = 1280
@@ -31,96 +32,104 @@ const json_ld_builders = {
 }
 
 const ISO_DATE_LENGTH = 10
-const dist_dir = frontend_out()
-const server_entry = path.join(dist_dir, 'server', 'entry-server.js')
-const template_path = path.join(dist_dir, 'index.html')
 
-if (!fs.existsSync(template_path)) {
-  console.error('prerender: dist/index.html missing — run vp build first')
-  process.exit(1)
-}
+/**
+ * Render every public page into the built site, then write the sitemap and docs.
+ * @param {object} [options]
+ * @param {string} [options.dist_dir]
+ * @param {(url: string) => Promise<{ render: (route: string) => Promise<string> }>} [options.load]
+ * @param {typeof fetch_print_pages} [options.fetch_prints]
+ * @param {string} [options.prints_url]
+ * @param {string} [options.documentation_md]
+ * @param {() => Date} [options.now]
+ */
+export const main = async ({
+  dist_dir = frontend_out(),
+  load = url => import(url),
+  fetch_prints = fetch_print_pages,
+  prints_url = process.env.PRINTS_LIST_URL ?? `${site_origin}/prints-list`,
+  documentation_md = path.join(product_paths().app, 'content/documentation.md'),
+  now = () => new Date()
+} = {}) => {
+  const server_entry = path.join(dist_dir, 'server', 'entry-server.js')
+  const template_path = path.join(dist_dir, 'index.html')
+  if (!fs.existsSync(template_path))
+    throw new Error('prerender: dist/index.html missing — run vp build first')
+  if (!fs.existsSync(server_entry))
+    throw new Error(
+      'prerender: dist/server/entry-server.js missing — run build:prerender-ssr first'
+    )
 
-if (!fs.existsSync(server_entry)) {
-  console.error(
-    'prerender: dist/server/entry-server.js missing — run build:prerender-ssr first'
-  )
-  process.exit(1)
-}
+  const template = fs.readFileSync(template_path, 'utf8')
+  const { render } = await load(path_to_file_url(server_entry).href)
+  const pages = [...prerender_pages, ...(await fetch_prints(prints_url))]
 
-const template = fs.readFileSync(template_path, 'utf8')
-const { render } = await import(path_to_file_url(server_entry).href)
+  await Promise.all(
+    pages.map(async page => {
+      const render_path = page.render_path ?? page.path
+      const canonical = page.canonical ?? page.path
+      const app_html = await render(render_path)
+      const dir = path.join(dist_dir, prerender_dir_for_route(page.path))
+      fs.mkdirSync(dir, { recursive: true })
 
-const print_pages = await fetch_print_pages(
-  process.env.PRINTS_LIST_URL ?? `${site_origin}/prints-list`
-)
-const pages = [...prerender_pages, ...print_pages]
+      let html = inject_app_html(template, app_html)
+      const og_image = page.og_image ?? default_og_image
+      const own_image = Boolean(page.og_image)
+      html = apply_page_meta(html, {
+        title: page.title,
+        description: page.description,
+        robots: 'index, follow',
+        og_title: page.og_title,
+        og_description: page.description,
+        og_url: `${site_origin}${page.path}`,
+        og_image,
+        og_image_alt: own_image ? page.og_image_alt : og_image_alt,
+        og_image_type: own_image ? page.og_image_type : og_image_type,
+        og_image_width: own_image ? null : DEFAULT_OG_IMAGE_WIDTH,
+        og_image_height: own_image ? null : DEFAULT_OG_IMAGE_HEIGHT,
+        og_site_name: site_name,
+        twitter_title: page.og_title,
+        twitter_description: page.description,
+        twitter_image: og_image,
+        twitter_image_alt: own_image ? page.og_image_alt : og_image_alt,
+        canonical: `${site_origin}${canonical}`
+      })
 
-await Promise.all(
-  pages.map(async page => {
-    const render_path = page.render_path ?? page.path
-    const canonical = page.canonical ?? page.path
-    const app_html = await render(render_path)
-    const dir = path.join(dist_dir, prerender_dir_for_route(page.path))
-    fs.mkdirSync(dir, { recursive: true })
+      if (page.json_ld) {
+        const builder =
+          typeof page.json_ld === 'function'
+            ? page.json_ld
+            : json_ld_builders[page.json_ld]
+        if (builder)
+          html = inject_json_ld(
+            html,
+            builder({
+              description: page.description,
+              url: `${site_origin}${page.path}`
+            })
+          )
+      }
 
-    let html = inject_app_html(template, app_html)
-    const og_image = page.og_image ?? default_og_image
-    const own_image = Boolean(page.og_image)
-    html = apply_page_meta(html, {
-      title: page.title,
-      description: page.description,
-      robots: 'index, follow',
-      og_title: page.og_title,
-      og_description: page.description,
-      og_url: `${site_origin}${page.path}`,
-      og_image,
-      og_image_alt: own_image ? page.og_image_alt : og_image_alt,
-      og_image_type: own_image ? page.og_image_type : og_image_type,
-      og_image_width: own_image ? null : DEFAULT_OG_IMAGE_WIDTH,
-      og_image_height: own_image ? null : DEFAULT_OG_IMAGE_HEIGHT,
-      og_site_name: site_name,
-      twitter_title: page.og_title,
-      twitter_description: page.description,
-      twitter_image: og_image,
-      twitter_image_alt: own_image ? page.og_image_alt : og_image_alt,
-      canonical: `${site_origin}${canonical}`
+      const out_path = path.join(dir, 'index.html')
+      fs.writeFileSync(out_path, html)
+      console.info(`prerender: wrote ${out_path}`)
     })
+  )
 
-    if (page.json_ld) {
-      const builder =
-        typeof page.json_ld === 'function'
-          ? page.json_ld
-          : json_ld_builders[page.json_ld]
-      if (builder)
-        html = inject_json_ld(
-          html,
-          builder({
-            description: page.description,
-            url: `${site_origin}${page.path}`
-          })
-        )
-    }
-
-    const out_path = path.join(dir, 'index.html')
-    fs.writeFileSync(out_path, html)
-    console.info(`prerender: wrote ${out_path}`)
+  const sitemap_lastmod = now().toISOString().slice(0, ISO_DATE_LENGTH)
+  const sitemap = build_sitemap_xml({
+    site_origin,
+    pages,
+    lastmod: sitemap_lastmod,
+    extra_urls: ['/', '/documentation.md']
   })
-)
+  fs.writeFileSync(path.join(dist_dir, 'sitemap.xml'), sitemap)
+  console.info(`prerender: wrote ${path.join(dist_dir, 'sitemap.xml')}`)
 
-const sitemap_lastmod = new Date().toISOString().slice(0, ISO_DATE_LENGTH)
-const sitemap = build_sitemap_xml({
-  site_origin,
-  pages,
-  lastmod: sitemap_lastmod,
-  extra_urls: ['/', '/documentation.md']
-})
-fs.writeFileSync(path.join(dist_dir, 'sitemap.xml'), sitemap)
-console.info(`prerender: wrote ${path.join(dist_dir, 'sitemap.xml')}`)
+  const documentation_out = path.join(dist_dir, 'documentation.md')
+  fs.copyFileSync(documentation_md, documentation_out)
+  console.info(`prerender: wrote ${documentation_out}`)
+  return pages
+}
 
-const documentation_md = path.join(
-  product_paths().app,
-  'content/documentation.md'
-)
-const documentation_out = path.join(dist_dir, 'documentation.md')
-fs.copyFileSync(documentation_md, documentation_out)
-console.info(`prerender: wrote ${documentation_out}`)
+await run_entry(import.meta.url, main)

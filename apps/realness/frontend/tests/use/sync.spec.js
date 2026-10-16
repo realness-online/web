@@ -1603,9 +1603,7 @@ describe('sync_phonebook_people', () => {
 
     await sync_phonebook_people(deps)
 
-    expect(get).not.toHaveBeenCalledWith(
-      expect.stringContaining('14151234356')
-    )
+    expect(get).not.toHaveBeenCalledWith(expect.stringContaining('14151234356'))
   })
 })
 

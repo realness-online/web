@@ -442,7 +442,9 @@ describe('@/components/posters/as-mask-pen geometry', () => {
       }
     }
 
-    await wrapper.find('rect').trigger('pointermove', { clientX: 5, clientY: 5 })
+    await wrapper
+      .find('rect')
+      .trigger('pointermove', { clientX: 5, clientY: 5 })
 
     expect(mask_pen.hovered_key.value).toBeNull()
     wrapper.unmount()
@@ -469,8 +471,12 @@ describe('@/components/posters/as-mask-pen geometry', () => {
       configurable: true
     })
 
-    await wrapper.find('rect').trigger('pointerdown', { clientX: 5, clientY: 5 })
-    await wrapper.find('rect').trigger('pointermove', { clientX: 25, clientY: 25 })
+    await wrapper
+      .find('rect')
+      .trigger('pointerdown', { clientX: 5, clientY: 5 })
+    await wrapper
+      .find('rect')
+      .trigger('pointermove', { clientX: 25, clientY: 25 })
 
     expect(mask_pen.painting.value).toBe(true)
     wrapper.unmount()
@@ -482,17 +488,21 @@ describe('@/components/posters/as-mask-pen geometry', () => {
     await nextTick()
     const paths = [...wrapper.find('g[aria-hidden="true"]').element.children]
     for (const el of paths)
-      patch_path_el_with(el, { x: 100, y: 100, width: 10, height: 10 }, {
-        a: 1,
-        b: 0,
-        c: 0,
-        d: 1,
-        e: 0,
-        f: 0,
-        inverse() {
-          return this
+      patch_path_el_with(
+        el,
+        { x: 100, y: 100, width: 10, height: 10 },
+        {
+          a: 1,
+          b: 0,
+          c: 0,
+          d: 1,
+          e: 0,
+          f: 0,
+          inverse() {
+            return this
+          }
         }
-      })
+      )
     wrapper.find('svg').element.createSVGPoint = function () {
       return {
         x: 0,
@@ -504,7 +514,9 @@ describe('@/components/posters/as-mask-pen geometry', () => {
     }
     for (const el of paths) el.isPointInFill = () => false
 
-    await wrapper.find('rect').trigger('pointermove', { clientX: 5, clientY: 5 })
+    await wrapper
+      .find('rect')
+      .trigger('pointermove', { clientX: 5, clientY: 5 })
 
     expect(mask_pen.hovered_key.value).toBeNull()
     wrapper.unmount()

@@ -5,12 +5,11 @@ import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { is_release_junk } from './release-junk.js'
 import { frontend_out } from '#root/src/settings/output.js'
+import { run_entry } from './lib/entry.js'
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const project_root = path.join(__dirname, '..')
-const dist_dir = frontend_out()
 const manifest_name = 'build-manifest.json'
-const manifest_path = path.join(dist_dir, manifest_name)
 
 /** @param {string} file_path */
 const sha256_file = file_path => {
@@ -36,7 +35,7 @@ const git_commit = () => {
  * @param {string} base_dir
  * @returns {Record<string, string>}
  */
-const hash_dist_files = (dir, base_dir = dist_dir) => {
+const hash_dist_files = (dir, base_dir) => {
   /** @type {Record<string, string>} */
   const files = {}
   for (const name of fs.readdirSync(dir)) {
@@ -61,29 +60,37 @@ const hash_dist_files = (dir, base_dir = dist_dir) => {
   return files
 }
 
-if (!fs.existsSync(dist_dir))
-  throw new Error(`dist/ not found - run npm run build first`)
+/** Hash the built site into dist/build-manifest.json. */
+export const main = () => {
+  const dist_dir = frontend_out()
+  const manifest_path = path.join(dist_dir, manifest_name)
+  if (!fs.existsSync(dist_dir))
+    throw new Error(`dist/ not found - run npm run build first`)
 
-const package_json = JSON.parse(
-  fs.readFileSync(path.join(project_root, '..', 'package.json'), 'utf8')
-)
+  const package_json = JSON.parse(
+    fs.readFileSync(path.join(project_root, '..', 'package.json'), 'utf8')
+  )
 
-const files = hash_dist_files(dist_dir)
-const paths = Object.keys(files).sort()
-const bundle_digest = create_hash('sha256')
-for (const url_path of paths)
-  bundle_digest.update(`${url_path}\n${files[url_path]}\n`)
+  const files = hash_dist_files(dist_dir, dist_dir)
+  const paths = Object.keys(files).sort()
+  const bundle_digest = create_hash('sha256')
+  for (const url_path of paths)
+    bundle_digest.update(`${url_path}\n${files[url_path]}\n`)
 
-const manifest = {
-  version: package_json.version,
-  git_commit: git_commit(),
-  built_at: new Date().toISOString(),
-  origin: 'https://realness.online',
-  bundle_sha256: `sha256:${bundle_digest.digest('hex')}`,
-  files
+  const manifest = {
+    version: package_json.version,
+    git_commit: git_commit(),
+    built_at: new Date().toISOString(),
+    origin: 'https://realness.online',
+    bundle_sha256: `sha256:${bundle_digest.digest('hex')}`,
+    files
+  }
+
+  fs.writeFileSync(manifest_path, `${JSON.stringify(manifest, null, 2)}\n`)
+  console.info(
+    `Wrote ${manifest_path} (${paths.length} files, v${manifest.version})`
+  )
+  return manifest
 }
 
-fs.writeFileSync(manifest_path, `${JSON.stringify(manifest, null, 2)}\n`)
-console.info(
-  `Wrote ${manifest_path} (${paths.length} files, v${manifest.version})`
-)
+await run_entry(import.meta.url, main)

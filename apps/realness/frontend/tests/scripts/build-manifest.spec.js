@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { artifacts_dir } from '../../scripts/lib/artifacts.js'
+import { main } from '../../scripts/build-manifest.js'
 
 const project_root = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -14,11 +15,16 @@ const project_root = path.join(
 let dist_dir
 let manifest_path
 
-const run_manifest = () =>
-  execSync('node scripts/build-manifest.js', {
-    cwd: project_root,
-    env: { ...process.env, DIST_DIR: dist_dir }
-  })
+const run_manifest = () => {
+  const previous = process.env.DIST_DIR
+  process.env.DIST_DIR = dist_dir
+  try {
+    return main()
+  } finally {
+    if (previous === undefined) delete process.env.DIST_DIR
+    else process.env.DIST_DIR = previous
+  }
+}
 
 describe('build-manifest', () => {
   beforeEach(() => {
@@ -42,6 +48,20 @@ describe('build-manifest', () => {
     expect(manifest.files['/index.html']).toBe(expected)
     expect(manifest.version).toBeTruthy()
     expect(manifest.bundle_sha256).toMatch(/^sha256:/)
+  })
+
+  it('runs as a command', () => {
+    execSync('node scripts/build-manifest.js', {
+      cwd: project_root,
+      env: { ...process.env, DIST_DIR: dist_dir },
+      stdio: 'pipe'
+    })
+    expect(fs.existsSync(manifest_path)).toBe(true)
+  })
+
+  it('fails without a built site', () => {
+    fs.rmSync(dist_dir, { recursive: true, force: true })
+    expect(run_manifest).toThrow(/dist\/ not found/)
   })
 
   it('strips and omits OS junk from dist and the manifest', () => {

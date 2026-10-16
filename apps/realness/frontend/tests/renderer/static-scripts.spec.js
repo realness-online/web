@@ -8,17 +8,20 @@ import {
 } from 'vite-plus/test'
 
 const SCRIPTS = {
-  include: () => import('#root/tools/publish/renderer/static/scripts/include.js'),
+  include: () =>
+    import('#root/tools/publish/renderer/static/scripts/include.js'),
   reveal: () => import('#root/tools/publish/renderer/static/scripts/reveal.js'),
   pwa: () => import('#root/tools/publish/renderer/static/scripts/pwa.js'),
   'live-reload': () =>
     import('#root/tools/publish/renderer/static/scripts/live-reload.js'),
   'plan-covers': () =>
     import('#root/tools/publish/renderer/static/scripts/plan-covers.js'),
-  diagrams: () => import('#root/tools/publish/renderer/static/scripts/diagrams.js')
+  diagrams: () =>
+    import('#root/tools/publish/renderer/static/scripts/diagrams.js')
 }
 const PARTS = '#root/tools/publish/renderer/static/scripts/parts.js'
-const PLAN_DIAGRAMS = '#root/tools/publish/renderer/static/scripts/plan-diagrams.js'
+const PLAN_DIAGRAMS =
+  '#root/tools/publish/renderer/static/scripts/plan-diagrams.js'
 
 /** Run a page script fresh, the way a page load does. */
 const load = name => {
@@ -48,7 +51,8 @@ describe('include', () => {
       'fetch',
       vi.fn(async url => ({ text: async () => partials[url] }))
     )
-    document.body.innerHTML = '<template src="/partials/header.html"></template>'
+    document.body.innerHTML =
+      '<template src="/partials/header.html"></template>'
     const { include } = await load('include')
     await include(document)
     expect(document.querySelector('template')).toBeNull()
@@ -82,7 +86,9 @@ describe('pwa', () => {
     vi.stubGlobal('navigator', { ...navigator, serviceWorker: { register } })
     await load('pwa')
     window.dispatchEvent(new Event('load'))
-    await vi.waitFor(() => expect(register).toHaveBeenCalledWith('/service.worker.js'))
+    await vi.waitFor(() =>
+      expect(register).toHaveBeenCalledWith('/service.worker.js')
+    )
     await Promise.resolve()
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
     document.dispatchEvent(new Event('visibilitychange'))

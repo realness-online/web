@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { is_release_junk } from './release-junk.js'
+import { run_entry } from './lib/entry.js'
 import { frontend_out } from '#root/src/settings/output.js'
 
 const default_repo = 'realness-online/web'
@@ -301,7 +302,9 @@ export const main = async (
     )
 
   const results = await Promise.all(
-    entries.map(([file_path, expected]) => verify(base_url, file_path, expected))
+    entries.map(([file_path, expected]) =>
+      verify(base_url, file_path, expected)
+    )
   )
 
   let passed = 0
@@ -324,13 +327,4 @@ export const main = async (
   return 0
 }
 
-const is_main =
-  process.argv[1] && path.resolve(process.argv[1]) === path.resolve(script_path)
-
-if (is_main)
-  try {
-    process.exit(await main())
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : error)
-    process.exit(1)
-  }
+await run_entry(import.meta.url, async () => process.exit(await main()))

@@ -33,7 +33,8 @@ const mount_days = props =>
       ...props
     },
     slots: {
-      default: '<template #default="{ day, date }"><i data-day-item /></template>'
+      default:
+        '<template #default="{ day, date }"><i data-day-item /></template>'
     },
     attachTo: document.body
   })
@@ -98,9 +99,9 @@ describe('@/components/as-days feed assembly', () => {
     await settle()
 
     expect(wrapper.find('section[data-days] > article').exists()).toBe(true)
-    expect(wrapper.findAll('section[data-days] > article > section').length).toBe(
-      wrapper.findAll('[data-day-item]').length
-    )
+    expect(
+      wrapper.findAll('section[data-days] > article > section').length
+    ).toBe(wrapper.findAll('[data-day-item]').length)
   })
 
   it('keeps every slot when pagination is off', async () => {
@@ -134,9 +135,14 @@ describe('@/components/as-days feed assembly', () => {
     await settle()
     const first = wrapper.findAll('[data-day-item]').length
 
-    observers.at(-1).callback([
-      { isIntersecting: true, target: wrapper.find('[data-feed-end]').element }
-    ])
+    observers
+      .at(-1)
+      .callback([
+        {
+          isIntersecting: true,
+          target: wrapper.find('[data-feed-end]').element
+        }
+      ])
     await settle()
 
     expect(wrapper.findAll('[data-day-item]').length).toBeGreaterThan(first)
@@ -206,9 +212,7 @@ describe('@/components/as-days feed assembly', () => {
 
   it('recomputes the batch when the window resizes', async () => {
     const wrapper = mount_days({
-      posters: Array.from({ length: 30 }, (_, index) =>
-        item('posters', index)
-      )
+      posters: Array.from({ length: 30 }, (_, index) => item('posters', index))
     })
     await settle()
 
@@ -239,10 +243,7 @@ describe('@/components/as-days feed assembly', () => {
 
     it('keeps two days apart when the items span them', async () => {
       const wrapper = mount_days({
-        posters: [
-          from(author, 'posters', 0),
-          from(other, 'posters', 1)
-        ]
+        posters: [from(author, 'posters', 0), from(other, 'posters', 1)]
       })
       await settle()
 
@@ -265,6 +266,8 @@ describe('@/components/as-days feed assembly', () => {
     expect(wrapper.find('section[data-days]').attributes('role')).toBe('feed')
 
     await wrapper.setProps({ storytelling: true })
-    expect(wrapper.find('section[data-days]').attributes('role')).toBeUndefined()
+    expect(
+      wrapper.find('section[data-days]').attributes('role')
+    ).toBeUndefined()
   })
 })

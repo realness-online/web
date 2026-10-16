@@ -562,10 +562,16 @@ describe('vectorize composable', () => {
         data: {
           type: 'path',
           progress: 10,
-          path: { d: 'M0 0 L1 1', color: { r: 1, g: 2, b: 3 }, offset: { x: 0, y: 0 } }
+          path: {
+            d: 'M0 0 L1 1',
+            color: { r: 1, g: 2, b: 3 },
+            offset: { x: 0, y: 0 }
+          }
         }
       })
-      const cid = await import('@/use/vectorize/state').then(m => m.current_item_id)
+      const cid = await import('@/use/vectorize/state').then(
+        m => m.current_item_id
+      )
       expect(cid.value).toBe(itemid)
     })
 

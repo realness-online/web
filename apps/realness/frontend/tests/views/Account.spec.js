@@ -147,7 +147,6 @@ describe('Account', () => {
     })
   })
 
-
   it('renders the account section when signed in', () => {
     const wrapper = mount()
     expect(wrapper.find('section#account[data-page]').exists()).toBe(true)

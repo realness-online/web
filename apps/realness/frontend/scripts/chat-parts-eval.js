@@ -8,6 +8,7 @@ import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { card_html } from '../../tools/publish/renderer/static/scripts/parts.js'
 import { artifacts_dir } from './lib/artifacts.js'
+import { is_entry } from './lib/entry.js'
 
 const here = path.dirname(file_url_to_path(import.meta.url))
 const harness = path.resolve(here, '../../../..')
@@ -23,18 +24,18 @@ const KIND_WIDTH = 8
 const MARK_WIDTH = 14
 const PROMPT_WIDTH = 56
 
-const option = (name, fallback) => {
-  const at = process.argv.indexOf(`--${name}`)
-  return at === -1 ? fallback : Number(process.argv[at + 1])
+const option = (args, name, fallback) => {
+  const at = args.indexOf(`--${name}`)
+  return at === -1 ? fallback : Number(args[at + 1])
 }
 
 /**
  * One Pi turn, no session kept, run from the harness so its skills load.
  * Stdin stays closed: print mode reads a piped stdin before it answers.
  */
-const pi = (model, message, extra = []) =>
+export const pi = (model, message, extra = [], run = spawn) =>
   new Promise((resolve, reject) => {
-    const child = spawn(
+    const child = run(
       'pi',
       ['-p', '--no-session', '--model', model, ...extra, message],
       {
@@ -108,7 +109,7 @@ export const pooled = async (jobs, size) => {
   return results
 }
 
-const grade = async ({ kind, prompt }, context) => {
+const grade = async ({ kind, prompt }, context, pi) => {
   const message = `[Chat context]\n${context}\n[Message]\n${prompt}`
   try {
     const reply = await pi(PRODUCER, message).catch(() => pi(PRODUCER, message))
@@ -133,15 +134,23 @@ const grade = async ({ kind, prompt }, context) => {
 const mean = values =>
   values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
 
-const main = async () => {
-  const runs = option('runs', 1)
-  const min = option('min', MIN_FORM)
+/**
+ * Ask the producer each prompt, have the judge grade it, and save the run.
+ * @param {{ args?: string[], ask?: typeof pi, out_dir?: string }} [options]
+ */
+export const main = async ({
+  args = process.argv.slice(2),
+  ask = pi,
+  out_dir = path.join(artifacts_dir, 'chat-parts-eval')
+} = {}) => {
+  const runs = option(args, 'runs', 1)
+  const min = option(args, 'min', MIN_FORM)
   const prompts = JSON.parse(
     await read_file(path.join(here, 'chat-parts-prompts.json'), 'utf8')
   )
   const context = await read_file(chat_prompt, 'utf8')
   const jobs = prompts.flatMap(item =>
-    Array.from({ length: runs }, () => () => grade(item, context))
+    Array.from({ length: runs }, () => () => grade(item, context, ask))
   )
   const results = await pooled(jobs, PARALLEL)
 
@@ -185,7 +194,6 @@ const main = async () => {
     `\nform ${fixed(summary.form_accuracy)} · clarity ${fixed(summary.clarity)} · usefulness ${fixed(summary.usefulness)} · completeness ${fixed(summary.completeness)} · cards draw ${summary.cards_draw} · errors ${summary.errors}`
   )
 
-  const out_dir = path.join(artifacts_dir, 'chat-parts-eval')
   await mkdir(out_dir, { recursive: true })
   const out = path.join(
     out_dir,
@@ -193,8 +201,10 @@ const main = async () => {
   )
   await write_file(out, `${JSON.stringify({ summary, results }, null, 2)}\n`)
   console.info(path.relative(harness, out))
-  if (summary.form_accuracy < min || summary.errors || !summary.cards_draw)
-    process.exitCode = 1
+  const passed =
+    summary.form_accuracy >= min && !summary.errors && summary.cards_draw
+  if (!passed) process.exitCode = 1
+  return { summary, results, out, passed }
 }
 
-if (process.argv[1] === file_url_to_path(import.meta.url)) await main()
+if (is_entry(import.meta.url)) await main()

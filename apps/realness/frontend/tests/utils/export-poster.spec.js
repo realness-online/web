@@ -408,7 +408,10 @@ describe('@/utils/export-poster', () => {
 
     it('names a layer element for the layer in its itemid', () => {
       const source = make_svg()
-      const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask')
+      const mask = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'mask'
+      )
       mask.setAttribute('id', 'mask-a-long-runtime-id')
       mask.setAttribute('itemid', '/+1/sediment/9')
       source.append(mask)
@@ -426,7 +429,10 @@ describe('@/utils/export-poster', () => {
       )
       symbol.setAttribute('id', 'a-long-runtime-id')
       symbol.setAttribute('itemprop', 'regular')
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      const path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
       path.setAttribute('fill', 'url(#a-long-runtime-id)')
       source.append(symbol, path)
 
@@ -453,17 +459,12 @@ describe('@/utils/export-poster', () => {
       const result = build_download_svg(source)
 
       expect(result.querySelector('symbol[id="shadows"]')).not.toBeNull()
-      expect(result.querySelector('use')?.getAttribute('href')).toBe(
-        '#shadows'
-      )
+      expect(result.querySelector('use')?.getAttribute('href')).toBe('#shadows')
     })
 
     it('leaves an id that carries no layer meaning alone', () => {
       const source = make_svg()
-      const group = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'g'
-      )
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
       group.setAttribute('id', 'clip-path-1')
       source.append(group)
 
