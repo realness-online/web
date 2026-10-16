@@ -93,7 +93,7 @@ const press = init =>
   window.dispatchEvent(new KeyboardEvent('keydown', { altKey: true, ...init }))
 
 describe('@/components/chat/as-workspace', () => {
-  it('shows the same streamed startup stage in chat and terminal before assigning the actor', async () => {
+  it('streams startup to the terminal while chat already takes input', async () => {
     mock_route.path = '/terminal'
     home_view.value = 'chat-tui'
     let controller
@@ -120,11 +120,8 @@ describe('@/components/chat/as-workspace', () => {
     const terminal = page.findComponent({ name: 'AsTui' })
     expect(terminal.props('actor')).toBe(null)
     expect(terminal.props('progress').stage).toBe('restoring_files')
-    expect(page.get('#chat-panel [role="status"]').text()).toBe(
-      'Restoring files'
-    )
-    expect(page.get('#chat-panel time').text()).toBe('8.4 s reported')
-    expect(page.find('textarea').exists()).toBe(false)
+    expect(page.get('#chat-panel [role="status"]').text()).toBe('')
+    expect(page.find('#chat-panel textarea').exists()).toBe(true)
     controller.enqueue(
       new TextEncoder().encode(
         `${JSON.stringify({ type: 'actor-ready', startup_id: 'startup-test', actor_id: 'a-mine00000000', created: false })}\n`

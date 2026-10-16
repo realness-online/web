@@ -150,30 +150,23 @@ describe('@/components/chat/as-panel', () => {
     expect(calls.some(url => url.endsWith('/chat/events'))).toBe(true)
   })
 
-  it('shows lookup failure in shared feedback with Retry below the message', async () => {
+  it('keeps the input open while a lookup failure offers Retry', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null, problem: 'Realness answered 502' })
     await flush_promises()
     const feedback = panel.get('section[aria-label="Connection status"]')
     expect(feedback.get('[role="alert"]').text()).toBe('Realness answered 502')
-    expect(feedback.element.children[1].tagName).toBe('BUTTON')
-    expect(panel.find('textarea').exists()).toBe(false)
-    expect(panel.find('aside[aria-label="Status"]').exists()).toBe(false)
+    expect(panel.find('textarea').exists()).toBe(true)
     await feedback.get('button').trigger('click')
     expect(panel.emitted('retry')).toHaveLength(1)
     await panel.setProps({ problem: '', finding: true })
-    expect(panel.get('[role="status"]').text()).toBe('Connecting...')
-    expect(feedback.attributes('aria-busy')).toBe('true')
-    expect(feedback.find('button').exists()).toBe(false)
-    await panel.setProps({ finding: false, actor: 'a-mine00000000' })
-    await flush_promises()
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
     expect(panel.find('textarea').exists()).toBe(true)
   })
 
-  it('shows Connecting chat until history arrives, using the host startup ID', async () => {
+  it('looks ready while chat starts, with no startup display', async () => {
     home_view.value = 'chat'
     let finish
     fetch.mockImplementationOnce(
@@ -187,27 +180,23 @@ describe('@/components/chat/as-panel', () => {
       startup_id: 'host-startup'
     })
     await flush_promises()
-    expect(panel.get('[role="status"]').text()).toBe('Connecting chat')
-    expect(panel.find('textarea').exists()).toBe(false)
-    expect(
-      panel.findComponent({ name: 'AsConnectionFeedback' }).props('progress')
-        .startup_id
-    ).toBe('host-startup')
-    finish(ndjson({ type: 'history', messages: [] }))
-    await flush_promises()
+    expect(panel.find('textarea').exists()).toBe(true)
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
+    expect(panel.get('[role="status"]').text()).toBe('')
+    finish(ndjson({ type: 'history', messages: [] }))
+    await flush_promises()
     expect(panel.find('textarea').exists()).toBe(true)
   })
 
-  it('retries initial chat failure through shared feedback', async () => {
+  it('retries an initial chat failure beside the open input', async () => {
     home_view.value = 'chat'
     fetch.mockResolvedValueOnce(new Response('', { status: 502 }))
     const panel = open_panel()
     await flush_promises()
     expect(panel.get('[role="alert"]').text()).toBe('Realness answered 502')
-    expect(panel.find('textarea').exists()).toBe(false)
+    expect(panel.find('textarea').exists()).toBe(true)
     await panel
       .get('section[aria-label="Connection status"] button')
       .trigger('click')
@@ -215,7 +204,6 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
-    expect(panel.find('textarea').exists()).toBe(true)
   })
 
   it('shows the status in the box below the conversation', async () => {

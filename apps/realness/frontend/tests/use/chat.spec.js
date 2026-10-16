@@ -287,7 +287,7 @@ describe('chat watch', () => {
 })
 
 describe('chat while the host wakes', () => {
-  it('holds a message typed during startup and sends it when history arrives', async () => {
+  it('shows a message sent during startup at once and delivers it when history arrives', async () => {
     let open_bridge
     watch_chat.mockImplementationOnce(
       () =>
@@ -299,18 +299,26 @@ describe('chat while the host wakes', () => {
     const watching = chat.watch()
     chat.draft.value = 'are you up yet'
     await chat.send()
+    expect(chat.draft.value).toBe('')
+    expect(chat.messages.value).toEqual([
+      { sender: 'You', text: 'are you up yet' }
+    ])
+    expect(chat.working.value).toBe(true)
     expect(chat.waiting.value).toBe(true)
-    expect(chat.status.value).toBe('Sending when the host is up')
     expect(send_chat).not.toHaveBeenCalled()
     send_chat.mockResolvedValueOnce('sent')
-    open_bridge([{ type: 'history', messages: [] }])
+    open_bridge([
+      { type: 'history', messages: [] },
+      { type: 'user', text: 'are you up yet' }
+    ])
     await watching
     await vi.advanceTimersByTimeAsync(0)
     expect(send_chat).toHaveBeenCalledTimes(1)
     expect(send_chat.mock.calls[0][2]).toBe('are you up yet')
-    expect(chat.draft.value).toBe('')
+    expect(chat.messages.value).toEqual([
+      { sender: 'You', text: 'are you up yet' }
+    ])
     expect(chat.waiting.value).toBe(false)
-    expect(chat.status.value).toBe('')
     chat.stop()
   })
 

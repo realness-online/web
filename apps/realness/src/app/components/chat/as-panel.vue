@@ -9,6 +9,7 @@
   import { use_deferred_flag } from '@/use/deferred-unmount'
   import { page_context } from '@/utils/chat-context'
   import {
+    computed,
     defineAsyncComponent as define_async_component,
     inject,
     nextTick as next_tick,
@@ -75,6 +76,13 @@
     }
   }
 
+  const failed = computed(
+    () => Boolean(props.problem) || Boolean(chat.connection_problem.value)
+  )
+  const status_line = computed(() =>
+    failed.value || chat.status.value === 'Starting...' ? '' : chat.status.value
+  )
+
   const retry = () => (props.problem ? emit('retry') : chat.retry())
   on_before_unmount(() => chat.stop())
 </script>
@@ -95,28 +103,16 @@
         v-model="only_mine" />
       <slot />
     </header>
-    <as-connection-feedback
-      v-if="
-        problem ||
-        finding ||
-        chat.starting.value ||
-        chat.connection_problem.value
-      "
-      :problem="problem || chat.connection_problem.value"
-      :progress="
-        !actor || finding ? progress : chat.startup_events.value.at(-1)
-      "
-      @retry="retry" />
-    <as-conversation v-else ref="talk" :chat="chat" />
-    <aside
-      v-if="
-        !problem &&
-        !finding &&
-        !chat.starting.value &&
-        !chat.connection_problem.value
-      "
-      aria-label="Status">
-      <p role="status">{{ chat.status.value }}</p>
+    <as-conversation ref="talk" :chat="chat" />
+    <aside aria-label="Status">
+      <as-connection-feedback
+        v-if="failed"
+        :problem="problem || chat.connection_problem.value"
+        :progress="
+          !actor || finding ? progress : chat.startup_events.value.at(-1)
+        "
+        @retry="retry" />
+      <p role="status">{{ status_line }}</p>
       <as-fps v-if="fps_mounted" :data-leaving="fps_leaving || undefined" />
     </aside>
   </aside>
@@ -162,9 +158,6 @@
         margin-inline-start: auto;
       }
     }
-    & > section[aria-label='Connection status'] {
-      flex: 1;
-    }
     & > ol[data-chat] {
       flex: 10000 1 0;
       min-block-size: 0;
@@ -179,6 +172,15 @@
       border-radius: base-line;
       background: var(--code-surface);
       overflow: auto;
+      & > section[aria-label='Connection status'] {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: (base-line / 2) base-line;
+        padding: (base-line / 2) base-line;
+        text-align: start;
+        background: none;
+      }
       & > p {
         margin: 0;
         padding: (base-line / 2) base-line;
@@ -202,7 +204,7 @@
       flex: 0 0 auto;
       block-size: 'calc(%s + 2px)' % (base-line * 2);
       min-block-size: 'calc(%s + 2px)' % (base-line * 2);
-      &:has(> p:not(:empty)) {
+      &:has(> p:not(:empty)), &:has(> section) {
         block-size: auto;
         min-block-size: base-line * 3;
       }

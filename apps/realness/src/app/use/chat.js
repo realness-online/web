@@ -63,21 +63,36 @@ const make_command_runner = ({ actor, messages, status, set_messages }) => {
 }
 
 /**
- * A message handed over while the host is still waking: held in the composer,
- * announced in the status line, and sent the moment history proves Pi answers.
- * @param {{ actor: { value: string | null }, draft: { value: string }, status: { value: string }, open_watch: () => Promise<unknown> }} options
+ * A message sent before Pi answers shows in the conversation at once and goes
+ * to Pi the moment history proves it is listening.
+ * @param {{ actor: { value: string | null }, draft: { value: string }, status: { value: string }, messages: { value: Array<object> }, working: { value: boolean }, open_watch: () => Promise<unknown> }} options
  */
-const make_waiting = ({ actor, draft, status, open_watch }) => {
+const make_waiting = ({
+  actor,
+  draft,
+  status,
+  messages,
+  working,
+  open_watch
+}) => {
   const waiting = ref(false)
   /** @type {{ text: string, context: object | null } | null} */
   let held = null
+  /** @type {{ sender: string, text: string } | null} */
+  let shown = null
+
+  const forget_shown = () => {
+    if (!shown) return
+    const at = messages.value.indexOf(shown)
+    if (at >= 0) messages.value.splice(at, 1)
+    shown = null
+  }
 
   const deliver = async () => {
     if (!held) return
     const message = held
     held = null
     waiting.value = false
-    if (draft.value === message.text) draft.value = ''
     try {
       const outcome = await send_chat(
         current_user.value,
@@ -86,6 +101,8 @@ const make_waiting = ({ actor, draft, status, open_watch }) => {
       )
       status.value = outcome === 'queued' ? 'Queued for after this turn' : ''
     } catch (thrown) {
+      forget_shown()
+      working.value = false
       status.value = readable_error(thrown.message)
       if (!draft.value) draft.value = message.text
     }
@@ -93,17 +110,41 @@ const make_waiting = ({ actor, draft, status, open_watch }) => {
 
   return {
     waiting,
-    /** Keep the message; it stays in the composer until the host answers. */
     hold(text, context) {
       held = { text, context }
-      draft.value = text
+      shown = { sender: 'You', text, ...(context ? { context } : {}) }
+      messages.value.push(shown)
+      draft.value = ''
+      status.value = ''
       waiting.value = true
-      status.value = 'Sending when the host is up'
+      working.value = true
       void open_watch()
     },
     deliver,
+    /** History replaced the view; keep the message until Pi echoes it. */
+    keep_shown() {
+      if (shown && !messages.value.includes(shown)) messages.value.push(shown)
+    },
+    /** Pi echoed a message; true when it was the one already on screen. */
+    echoed(text) {
+      if (!shown || shown.text !== read_contextual_message(text).text)
+        return false
+      shown = null
+      return true
+    },
+    /** The wake failed: take the message back to the composer. */
+    give_back() {
+      if (!held) return
+      const { text } = held
+      held = null
+      waiting.value = false
+      working.value = false
+      forget_shown()
+      if (!draft.value) draft.value = text
+    },
     clear() {
       held = null
+      shown = null
       waiting.value = false
     }
   }
@@ -226,6 +267,8 @@ export const use_chat = (
     actor,
     draft,
     status,
+    messages,
+    working,
     open_watch: () => (in_flight ? undefined : watch())
   })
   let in_flight = false
@@ -258,9 +301,10 @@ export const use_chat = (
           ? read_contextual_message(message.text)
           : { text: message.text })
       }))
+      waiting_state.keep_shown()
     }
     if (record.type === 'working') working.value = record.on
-    if (record.type === 'user')
+    if (record.type === 'user' && !waiting_state.echoed(record.text))
       messages.value.push({
         sender: 'You',
         ...read_contextual_message(record.text)
@@ -308,11 +352,12 @@ export const use_chat = (
     } catch (thrown) {
       if (stopped || generation !== watch_generation) return
       startup.failed(thrown.message)
+      if (!startup.starting.value) waiting_state.give_back()
     } finally {
       if (generation === watch_generation) in_flight = false
     }
     if (stopped || generation !== watch_generation) return
-    working.value = false
+    working.value = waiting_state.waiting.value
     watch_timer = setTimeout(watch, RECONNECT_MS)
   }
 
@@ -342,14 +387,14 @@ export const use_chat = (
     }
     const context = get_context()
     const sent_message = contextual_message(message, context)
-    if (startup.ready_now()) return sent_message
+    if (actor.value && startup.ready_now()) return sent_message
     waiting_state.hold(message, context)
     return null
   }
 
   const send = async () => {
     const message = draft.value.trim()
-    if (!message || !actor.value) return
+    if (!message) return
     const previous_messages = new Set(messages.value)
     const sent_message = await prepare(message)
     if (!sent_message) return

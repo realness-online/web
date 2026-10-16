@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Chat is ready when you are** - Chat opens straight to the conversation.
+  Send right away; your message shows while your machine wakes, then Pi
+  answers. Problems show only if waking fails.
+
 ## v3.0.0-b - 2026-10-16
 
 - **Chat waits for your machine** - A message sent while your machine is
