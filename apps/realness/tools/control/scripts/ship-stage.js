@@ -19,7 +19,7 @@ export const proxy_for = env => {
   return services.starter_proxy_url ?? services.proxy_url
 }
 
-export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', '.pi/skills', '.pi/prompts', '.pi/extensions', 'themes', '.pi/agent/themes', '.pi/package.json', '.pi/package-lock.json']
+export const INCLUDE = ['AGENTS.md', 'README.md', 'LICENSE', 'package.json', 'bin', '.pi/skills', '.pi/prompts', '.pi/extensions', 'themes', '.pi/agent/themes', '.pi/package.json', '.pi/package-lock.json', '.pi/runtime']
 
 /** Tracked public Pi defaults; personal `.pi/agent` settings never ship. */
 export const STARTER_DEFAULTS = { '.pi/starter/settings.json': '.pi/agent/settings.json', '.pi/starter/npm/package.json': '.pi/agent/npm/package.json' }
@@ -143,7 +143,6 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
     } else copy(join(root, '.pi/examples', name), destination, root)
   }
   for (const [from, to] of Object.entries(STARTER_DEFAULTS)) copy(join(root, from), join(stage, to), root)
-  // The terminal starts at the harness root; Pi asks before trusting a folder with .pi, and nobody is there to answer.
   write_file_sync(join(stage, '.pi/agent/trust.json'), `${JSON.stringify({ [ACTOR_HARNESS]: true }, null, 2)}\n`)
   edit_json(join(stage, 'package.json'), pkg => {
     if (pkg.realness) delete pkg.realness.examples

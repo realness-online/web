@@ -106,3 +106,25 @@ test('an actor resumes within the length of a thought', async () => {
   const minutes = read_file_sync(join(import.meta.dirname, 'pi'), 'utf8').match(/^thought_minutes=(\d+)$/m)[1]
   assert.equal(Number(minutes) * 60_000, THOUGHT_WINDOW_MS)
 })
+
+test('Pi keeps scratch output inside the harness', () => {
+  const f = fixture()
+  try {
+    mkdir_sync(f.pinned, { recursive: true })
+    write_file_sync(join(f.pinned, 'pi'), '#!/bin/bash\nprintf "%s\\n" "$TMPDIR"\n', { mode: 0o755 })
+    write_file_sync(join(f.pinned, 'pi-session-read'), '#!/bin/bash\nexit 0\n', { mode: 0o755 })
+    const result = f.run()
+    assert.equal(result.stdout, `${f.root}/artifacts/pi\n`)
+  } finally { f.cleanup() }
+})
+
+test('an actor runs the installed fork with compressed sessions, like a person', () => {
+  const f = fixture()
+  try {
+    f.executable('pi', 'printf "%s\\n" "$PI_SESSION_FORMAT" "$PI_SESSION_READER"')
+    f.executable('pi-session-read', 'exit 0')
+    const result = f.run('--actor')
+    assert.equal(result.status, 0, result.stderr)
+    assert.equal(result.stdout, `html.gz\n${join(f.root, 'test-bin')}/pi-session-read\n`)
+  } finally { f.cleanup() }
+})

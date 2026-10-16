@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 root="$(cd "$(dirname "$0")/.." && pwd)"
 export PI_CODING_AGENT_DIR="$root/.pi/agent"
+export TMPDIR="$root/artifacts/pi"
+mkdir -p "$TMPDIR"
 actor=0
 if [[ "${1:-}" == "--actor" ]]; then actor=1; shift; fi
 if [[ "$actor" == 1 || -r /etc/realness/actor || -r /usr/local/lib/realness/package.json ]]; then
@@ -98,7 +100,13 @@ fi
 
 if [[ "$actor" == 1 ]]; then
   if pi_on_path="$(command -v pi 2>/dev/null)"; then
-    if [[ "$pi_on_path" != "$root/bin/pi" ]]; then exec "$pi_on_path" "$@"; fi
+    if [[ "$pi_on_path" != "$root/bin/pi" ]]; then
+      if reader_on_path="$(command -v pi-session-read 2>/dev/null)"; then
+        export PI_SESSION_READER="$reader_on_path"
+        export PI_SESSION_FORMAT=html.gz
+      fi
+      exec "$pi_on_path" "$@"
+    fi
   fi
 fi
 

@@ -140,9 +140,14 @@ PI_VERSION="$(tar xOzf "$HARNESS_TAR" ./.pi-version)"
   echo "invalid pi version in $HARNESS_TAR: $PI_VERSION" >&2
   exit 1
 }
-log "pi $PI_VERSION (global, from local build)"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
-  --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION" --no-fund --no-audit
+log "pi $PI_VERSION (our fork, from .pi/runtime)"
+mkdir -p "$TREE/usr/local/lib/realness-pi"
+tar xzf "$HARNESS_TAR" -C "$TREE/usr/local/lib/realness-pi" --strip-components=3 ./.pi/runtime
+chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
+  npm ci --ignore-scripts --no-fund --no-audit --prefix /usr/local/lib/realness-pi
+for command in pi pi-session-read; do
+  ln -sf "/usr/local/lib/realness-pi/node_modules/.bin/$command" "$TREE/usr/local/bin/$command"
+done
 
 AGENT_BROWSER_VERSION="${AGENT_BROWSER_VERSION:-0.31.1}"
 log "agent-browser $AGENT_BROWSER_VERSION (leases Chrome)"
