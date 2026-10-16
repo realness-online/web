@@ -3,7 +3,7 @@ import {
   timingSafeEqual as timing_safe_equal
 } from 'node:crypto'
 import { free_limits } from './usage.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { person_settings } from '#root/src/settings/environments.js'
 import { ISO_DATE, MS_PER_SECOND, PERCENT } from '#root/lib/units.js'
 
 const FIRST_WARNING = 75
@@ -16,7 +16,7 @@ const STRIPE = 'https://api.stripe.com/v1'
 const TOLERANCE_S = 300
 /** The ramp: a warning at each step, once per limit per day; 100 is the cutoff. */
 export const WARN_AT = [FIRST_WARNING, 90, PERCENT]
-export const PAY_URL = `${development_settings.public_url}/pay`
+export const PAY_URL = `${person_settings.public_url}/pay`
 
 export const billing_key = phone => `billing/${phone}/plan.html`
 

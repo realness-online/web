@@ -6,11 +6,15 @@ import {
   SYNC_URL,
   SyncError
 } from '#root/src/files/client.js'
-import { keychain, login, token_source } from '#root/src/sign-on/node/login.js'
+import {
+  login,
+  person_keychain,
+  token_source
+} from '#root/src/sign-on/node/login.js'
 import { find_root, use_harness_state } from '#root/src/harness/harness.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { person_settings } from '#root/src/settings/environments.js'
 /* eslint-disable no-await-in-loop -- removes run in the order given */
 
 const SHOWN_DIGITS = 2
@@ -88,7 +92,7 @@ export const run_store = async (
   let root = root_option
   const [command, ...rest] = args
   const print = text => stdout.write(`${text}\n`)
-  const sign_on = process.env.SIGN_ON_URL ?? development_settings.public_url
+  const sign_on = process.env.SIGN_ON_URL ?? person_settings.public_url
   if (
     !['login', 'logout', 'whoami', 'ls', 'cat', 'cp', 'rm', 'sync'].includes(
       command
@@ -114,7 +118,7 @@ export const run_store = async (
       return 0
     }
     if (command === 'logout') {
-      await keychain.remove()
+      await person_keychain.remove()
       print('Signed out; the keychain entry is gone.')
       return 0
     }

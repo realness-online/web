@@ -41,6 +41,9 @@ export const environment_settings = name => {
 
 export const development_settings = environments.development
 
+/** The environment people sign on to, sync with, and pay in. */
+export const person_settings = environments.production
+
 const browser_modes = {
   development: { gate_url: development_settings.services.gate_url },
   production: { gate_url: environments.production.services.gate_url },

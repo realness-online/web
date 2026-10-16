@@ -1,11 +1,11 @@
 import { find_root } from '#root/src/harness/harness.js'
 import { task_paths } from '#root/src/harness/task.js'
 import { token_source } from '#root/src/sign-on/node/login.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { person_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
 
 /** The development gate, unless GATE_URL says otherwise. */
-const GATE_URL = process.env.GATE_URL ?? development_settings.services.gate_url
+const GATE_URL = process.env.GATE_URL ?? person_settings.services.gate_url
 
 /**
  * `realness task <plan>` names what a task on that plan may touch;

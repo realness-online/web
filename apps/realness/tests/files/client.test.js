@@ -668,3 +668,66 @@ test('session history the remote lost is pushed back, never trashed', async () =
   assert.deepEqual(report.pushed, ['s/2026-04-21T05-05-35-050Z_a.jsonl'])
   assert.ok(await a.cat('can://~/hist/s/2026-04-21T05-05-35-050Z_a.jsonl'))
 })
+
+/** The real service behind a front that answers 404 to any deep walk of `missing`. */
+const missing_walks = async missing => {
+  const { createServer: create_server, request: forward } =
+    await import('node:http')
+  const target = new URL(url)
+  const front = create_server((incoming, outgoing) => {
+    if (
+      incoming.method === 'GET' &&
+      incoming.url.includes(missing) &&
+      incoming.url.includes('deep')
+    ) {
+      outgoing.writeHead(404).end()
+      return
+    }
+    const upstream = forward(
+      {
+        host: target.hostname,
+        port: target.port,
+        path: incoming.url,
+        method: incoming.method,
+        headers: incoming.headers
+      },
+      reply => {
+        outgoing.writeHead(reply.statusCode, reply.headers)
+        reply.pipe(outgoing)
+      }
+    )
+    incoming.pipe(upstream)
+  })
+  await new Promise(done => front.listen(0, '127.0.0.1', done))
+  return {
+    url: `http://127.0.0.1:${front.address().port}`,
+    close: () => new Promise(done => front.close(done))
+  }
+}
+
+test('a folder the service has never seen syncs up from empty; a known one that goes missing stops', async () => {
+  const front = await missing_walks('/never-seen/')
+  try {
+    const a = client({
+      state: join(root, 'state-missing'),
+      trash: join(root, 'trash'),
+      url: front.url,
+      token: issuer.token(A)
+    })
+    const dir = await local('never-seen', { 'a.md': 'a' })
+    assert.deepEqual((await a.sync(dir, 'can://~/never-seen/')).pushed, [
+      'a.md'
+    ])
+    const records = join(root, 'state-missing', 'sync')
+    for (const name of await readdir(records)) {
+      const record = JSON.parse(await readFile(join(records, name), 'utf8'))
+      delete record.cursor
+      delete record.walked_at
+      await writeFile(join(records, name), JSON.stringify(record))
+    }
+    await assert.rejects(a.sync(dir, 'can://~/never-seen/'), { status: 404 })
+    assert.equal(await readFile(join(dir, 'a.md'), 'utf8'), 'a')
+  } finally {
+    await front.close()
+  }
+})

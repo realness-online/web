@@ -35,7 +35,7 @@ import { merge_session } from './session-merge.js'
 import { skipped, skipped_name } from './skip.js'
 import { starter_base, starter_bytes, starter_choice } from './starter.js'
 import { harness_root, state_path } from '#root/src/harness/settings.js'
-import { development_settings } from '#root/src/settings/environments.js'
+import { person_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
 import { MIB, MS_PER_DAY } from '#root/lib/units.js'
 import { unsafe_part } from '#root/lib/path-parts.js'
@@ -48,7 +48,7 @@ const MAX_MIB = 10
 
 /** The development sync service, unless SYNC_URL says otherwise. */
 export const SYNC_URL =
-  process.env.SYNC_URL ?? development_settings.services.sync_url
+  process.env.SYNC_URL ?? person_settings.services.sync_url
 
 /** Sync records live here, never inside the folders they describe. */
 export const state_dir = (root = harness_root()) =>
@@ -165,7 +165,11 @@ const plan_sync = async ({
       else remotes[name] = version
   }
   if (!remotes) {
-    remotes = await api.walk(folder)
+    remotes = await api.walk(folder).catch(error => {
+      if (error.status === HTTP.NOT_FOUND && !Object.keys(manifest).length)
+        return {}
+      throw error
+    })
     walked_at = new Date().toISOString()
   }
   if (remote_files) report.listing = 'given'

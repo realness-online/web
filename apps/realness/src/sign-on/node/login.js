@@ -62,6 +62,9 @@ export const keychain = keychain_entry(ACCOUNT)
 export const keychain_for = env =>
   env === 'production' ? keychain_entry(`${ACCOUNT}:production`) : keychain
 
+/** The person's own sign-in, in the environment people use. */
+export const person_keychain = keychain_for('production')
+
 /** @type {(commands: string) => Promise<void>} */
 const run_security = commands =>
   new Promise((done, fail) => {
@@ -105,7 +108,7 @@ export const refresh = async ({ refresh_token, api_key }, fetcher = fetch) => {
 export const login = async ({
   sign_on,
   open,
-  store = keychain,
+  store = person_keychain,
   fetcher = fetch,
   wait = WAIT
 }) => {
@@ -168,7 +171,7 @@ export const login = async ({
 
 /** An ID token for every call: TOKEN if set, else minted from the keychain and cached. */
 export const token_source = ({
-  store = keychain,
+  store = person_keychain,
   fetcher = fetch,
   env = process.env
 } = {}) => {
