@@ -212,11 +212,6 @@ chmod 0755 "$TREE/usr/local/bin/realness"
 chroot "$TREE" git config --system credential.https://github.com.helper '!/usr/local/bin/realness git-credential'
 chroot "$TREE" git config --system credential.https://github.com.useHttpPath true
 
-cat > "$TREE/etc/tmpfiles.d/realness-pi-cache.conf" <<'TMPFILES'
-x /var/tmp/jiti
-x /var/tmp/node-compile-cache
-TMPFILES
-
 fi
 
 log "template hygiene"
@@ -239,17 +234,18 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
 chroot "$TREE" /realness/node_modules/.bin/prettier --version
 
 log "warm the extension caches"
-rm -rf "$TREE/var/tmp/jiti" "$TREE/var/tmp/node-compile-cache"
+scratch=/realness/artifacts/pi
+rm -rf "$TREE$scratch/jiti" "$TREE$scratch/node-compile-cache"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
   sh -c 'cd /realness && /usr/local/bin/realness --help > /dev/null'
-jiti_files="$(find "$TREE/var/tmp/jiti" -type f 2> /dev/null | wc -l)"
-[ "$jiti_files" -gt 0 ] || { echo "warm-up left /var/tmp/jiti empty" >&2; exit 1; }
+jiti_files="$(find "$TREE$scratch/jiti" -type f 2> /dev/null | wc -l)"
+[ "$jiti_files" -gt 0 ] || { echo "warm-up left $scratch/jiti empty" >&2; exit 1; }
 log "jiti cache: $jiti_files files"
 
 log "realness user owns /realness and the caches"
 chroot "$TREE" id -u realness > /dev/null 2>&1 \
   || chroot "$TREE" useradd -M -U -d /realness -s /bin/bash realness
-chroot "$TREE" chown -R realness:realness /realness /var/tmp/jiti /var/tmp/node-compile-cache
+chroot "$TREE" chown -R realness:realness /realness
 cat > "$TREE/etc/tmpfiles.d/realness-run.conf" <<'TMPFILES'
 d /run/realness 0755 realness realness
 TMPFILES
