@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-b - 2026-10-16
+
 - **Chat waits for your machine** - A message sent while your machine is
   waking stays in the box, then sends as soon as it is ready.
 - **A quiet terminal lets it sleep** - An open terminal no longer keeps your
