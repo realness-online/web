@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Chat waits for your machine** - A message sent while your machine is
+  waking stays in the box, then sends as soon as it is ready.
+- **A quiet terminal lets it sleep** - An open terminal no longer keeps your
+  machine awake when nothing is happening; your next message wakes it.
+- **Long replies sync whole** - Replies over 24 KB no longer cut off.
+
 ## v3.0.0-a - 2026-10-15
 
 - **Your own computer in Realness** - Signing in gives you a private
