@@ -133,6 +133,9 @@ const create_connection = (
   /** @type {WebSocket | null} */
   let ws = null
   let retries = 0
+  let retry_timer = 0
+  let dialing = false
+  let live = false
 
   const to_base64 = bytes => {
     let binary = ''
@@ -152,20 +155,33 @@ const create_connection = (
 
   const retry = () => {
     status.textContent = 'reconnecting...'
-    setTimeout(connect, RETRY_MS[Math.min(retries, RETRY_MS.length - 1)])
+    retry_timer = setTimeout(
+      connect,
+      RETRY_MS[Math.min(retries, RETRY_MS.length - 1)]
+    )
     retries += 1
   }
 
   /** @param {WebSocket} socket */
   const attach = socket => {
     ws = socket
+    live = true
     socket.onopen = on_open
     socket.onmessage = on_message
     socket.onclose = on_close
   }
 
   const connect = async () => {
-    if (state.exited) return
+    if (state.exited || dialing || live) return
+    dialing = true
+    try {
+      await dial()
+    } finally {
+      dialing = false
+    }
+  }
+
+  const dial = async () => {
     if (open) {
       let socket
       try {
@@ -254,6 +270,7 @@ const create_connection = (
   }
 
   const on_close = () => {
+    live = false
     state.connected = false
     state.closed = true
     if (state.exited) {
@@ -276,12 +293,24 @@ const create_connection = (
     connect()
   })
 
+  /** A background tab's retry timer can be held back for minutes; returning to the tab retries at once. */
+  const on_visible = () => {
+    if (document.visibilityState !== 'visible') return
+    if (!state.closed || state.exited || state.taken) return
+    clearTimeout(retry_timer)
+    retries = 0
+    connect()
+  }
+  document.addEventListener('visibilitychange', on_visible)
+
   return {
     send,
     send_resize,
     close() {
       state.exited = true
       state.closed = true
+      document.removeEventListener('visibilitychange', on_visible)
+      clearTimeout(retry_timer)
       ws?.close()
     }
   }

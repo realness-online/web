@@ -51,8 +51,13 @@ export const make_stage = () => {
   const by_type = new Map()
   const timers = []
   const sockets = []
+  const page_events = new EventTarget()
   vi.stubGlobal('document', {
     baseURI: 'http://host.test/term/',
+    visibilityState: 'visible',
+    addEventListener: page_events.addEventListener.bind(page_events),
+    removeEventListener: page_events.removeEventListener.bind(page_events),
+    dispatchEvent: page_events.dispatchEvent.bind(page_events),
     get activeElement() {
       return active.activeElement
     },

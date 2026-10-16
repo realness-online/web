@@ -68,4 +68,58 @@ describe('terminal reconnects', () => {
     await new Promise(resolve => setImmediate(resolve))
     expect(env.timers).toHaveLength(0)
   })
+
+  describe('when the tab comes back into view', () => {
+    beforeEach(() => {
+      document.visibilityState = 'hidden'
+    })
+    const show = async () => {
+      document.visibilityState = 'visible'
+      document.dispatchEvent(new Event('visibilitychange'))
+      await new Promise(resolve => setImmediate(resolve))
+    }
+
+    it('retries at once instead of waiting on a held-back timer', async () => {
+      const open = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('host waking'))
+        .mockImplementation(async () => new WebSocket('wss://gate/pty'))
+      await mount(env.stage, { ...mount_options, actor: 'a1', open })
+      await new Promise(resolve => setImmediate(resolve))
+      expect(open).toHaveBeenCalledTimes(1)
+      expect(env.timers.length).toBeGreaterThan(0)
+      await show()
+      expect(open).toHaveBeenCalledTimes(2)
+      expect(env.sockets).toHaveLength(1)
+    })
+
+    it('never opens a second socket while one is opening or open', async () => {
+      let finish
+      const open = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('host waking'))
+        .mockImplementation(() => new Promise(resolve => (finish = resolve)))
+      await mount(env.stage, { ...mount_options, actor: 'a1', open })
+      await new Promise(resolve => setImmediate(resolve))
+      await show()
+      await show()
+      expect(open).toHaveBeenCalledTimes(2)
+      finish(new WebSocket('wss://gate/pty'))
+      await new Promise(resolve => setImmediate(resolve))
+      await show()
+      expect(open).toHaveBeenCalledTimes(2)
+      expect(env.sockets).toHaveLength(1)
+    })
+
+    it('leaves a terminal another tab took', async () => {
+      const open = vi.fn(async () => new WebSocket('wss://gate/pty'))
+      await mount(env.stage, { ...mount_options, actor: 'a1', open })
+      await new Promise(resolve => setImmediate(resolve))
+      const [socket] = env.sockets
+      socket.onmessage({ data: JSON.stringify({ op: 'taken' }) })
+      socket.onclose()
+      await show()
+      expect(open).toHaveBeenCalledTimes(1)
+    })
+  })
 })
