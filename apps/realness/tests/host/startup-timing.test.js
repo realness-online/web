@@ -175,7 +175,7 @@ for (const from_memory of [true, false]) {
   })
 }
 
-test('startup stages preserve ordering and identify each cold reconnect', async t => {
+test('z12: a cold reconnect starts Pi as its own stage, after initialization', async t => {
   const store = fixture(t)
   const actor = await store.create('+14156667777')
   const completed = store
@@ -211,11 +211,12 @@ test('startup stages preserve ordering and identify each cold reconnect', async 
     [
       ['starting_actor', 90],
       ['waiting_guest', 40],
-      ['initializing_actor', 55]
+      ['initializing_actor', 55],
+      ['starting_pi', 50]
     ]
   )
   assert.notEqual(reconnect[0].startup_id, completed[0].startup_id)
-  assert.equal(reconnect.at(-1).elapsed_ms, 185)
+  assert.equal(reconnect.at(-1).elapsed_ms, 235)
 })
 
 test('live progress keeps one request ID through recovery and includes queued time', async t => {
@@ -434,4 +435,19 @@ test('hs-over: the last TAP taken reads as a full host', async t => {
     assert.match(error.message, /^host full: no free TAP/)
     return true
   })
+})
+
+test('z12: a reconnect leaves Pi to start-pi, so the opener is typed once', async t => {
+  const store = fixture(t)
+  const actor = await store.create('+14156667777')
+  state.running = false
+  state.guest_argv = []
+  await store.reload(actor.id)
+  const init = state.guest_argv.filter(
+    args => args[0] === '/usr/local/bin/realness-actor-init'
+  )
+  assert.deepEqual(
+    init.map(args => args.at(-1)),
+    ['--after-recovery', 'start-pi']
+  )
 })

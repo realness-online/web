@@ -659,6 +659,11 @@ export class ActorStore {
     } catch (error) {
       LOG.warn(`actor ${record.id} recovery failed: ${error.message}`)
     }
+    await this.#startPi(record, startup)
+  }
+
+  /** o0: start the terminal's Pi as its own traced stage; a Pi already running is left alone. */
+  async #startPi(record, startup) {
     try {
       const pi_started = performance.now()
       const { code, err } = await startup.run(
@@ -1194,7 +1199,9 @@ export class ActorStore {
     const init_started = performance.now()
     Object.assign(
       record,
-      await startup.run('initializing_actor', () => this.#initActor(record))
+      await startup.run('initializing_actor', () =>
+        this.#initActor(record, { pi_after_recovery: true })
+      )
     )
     const init_ms = performance.now() - init_started
     this.#write(record)
@@ -1207,6 +1214,7 @@ export class ActorStore {
       ms: performance.now() - started
     })
     LOG.info(`actor ${id} is up, ${record.hostname}`)
+    await this.#startPi(record, startup)
     return this.get(id)
   }
 
