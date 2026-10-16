@@ -20,7 +20,10 @@ const https_port = 443
 const http_port = 5173
 import wasm from 'vite-plugin-wasm'
 
-const icon_version = process.env['npm_package_version'] || '1'
+const package_version = JSON.parse(
+  read_file_sync(new URL('../package.json', import.meta.url), 'utf8')
+).version
+const icon_version = package_version
 const { app: app_root } = product_paths()
 const manual_chunk_rules = {
   firebase_auth: ['@firebase/auth'],
@@ -56,9 +59,7 @@ export default define_config(({ mode }) => ({
     }
   },
   define: {
-    'import.meta.env.PACKAGE_VERSION': JSON.stringify(
-      process.env['npm_package_version']
-    )
+    'import.meta.env.PACKAGE_VERSION': JSON.stringify(package_version)
   },
   server: {
     host: '0.0.0.0',
