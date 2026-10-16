@@ -69,7 +69,7 @@ const waker = () => {
   const zone = env.GATE_HOST_ZONE
   if (!name || !zone) return undefined
   return make_waker({
-    // Any host answers the probe; which one does not matter for liveness.
+    /** Any host answers the probe; which one does not matter for liveness. */
     probe: async () => tcp_probe(await host_for({ phone: PROBE_PHONE })),
     start: gce_start({
       project: String(env.GATE_HOST_PROJECT ?? env.IDENTITY_PROJECT),

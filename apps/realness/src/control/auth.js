@@ -6,14 +6,16 @@ import { env_token, SIGN_ON, URLS } from './status.js'
 import { not_admin_hint } from './admins.js'
 import { HTTP } from '#root/lib/http.js'
 
-/** Sync answers 403 to a signed-in non-admin; say what to do about it. */
+/**
+ * Sync answers 403 to a signed-in non-admin; say what to do about it. A sync
+ * with no hosts yet answers 404, which is not a refusal.
+ */
 const check_admin = async (env, url, token) => {
   try {
     await client({ url, token }).ls('can://hosts/')
   } catch (error) {
     if (error.status === HTTP.FORBIDDEN)
       throw new Error(not_admin_hint(env, phone_of(token)))
-    // A sync with no hosts yet answers 404; that is not a refusal.
     if (error.status === HTTP.NOT_FOUND) return
     throw error
   }

@@ -21,7 +21,7 @@ import { run, attempt, stream } from './exec.js'
  * them.
  */
 export const gcloud = config => {
-  // pr3: a locked-down host takes ssh only through IAP.
+  /** pr3: a locked-down host takes ssh only through IAP. */
   const tunnel = args =>
     config.iap && ['ssh', 'scp'].includes(args[0])
       ? [...args, '--tunnel-through-iap']

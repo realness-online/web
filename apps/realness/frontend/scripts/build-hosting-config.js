@@ -10,6 +10,13 @@ import { environment_settings } from '#root/src/settings/environments.js'
 import { run_entry } from './lib/entry.js'
 
 /**
+ * Hosting refuses a release that routes to a service the project lacks.
+ * @param {Set<string>} deployed
+ */
+const routes_to = deployed => rewrite =>
+  !rewrite.run || deployed.has(rewrite.run.serviceId)
+
+/**
  * Write Firebase hosting config with absolute paths under the output root.
  * @param {string[]} [argv]
  */
@@ -33,12 +40,9 @@ export const main = (argv = process.argv.slice(2)) => {
         ? frontend_out()
         : resolve(frontend, hosting.public)
   config.storage.rules = resolve(frontend, config.storage.rules)
-  /** Hosting refuses a release that routes to a service the project lacks. */
   for (const hosting of config.hosting)
     if (hosting.rewrites)
-      hosting.rewrites = hosting.rewrites.filter(
-        rewrite => !rewrite.run || deployed.has(rewrite.run.serviceId)
-      )
+      hosting.rewrites = hosting.rewrites.filter(routes_to(deployed))
   mkdir_sync(resolve(output_root, 'frontend'), { recursive: true })
   write_file_sync(
     resolve(output_root, 'frontend', 'firebase.json'),

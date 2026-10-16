@@ -20,6 +20,8 @@ import { note, step } from './exec.js'
 class RecoverError extends Error {}
 
 /**
+ * Move each actor off a failed host. hs-f2 and hs-n2: authority over the old
+ * actor is gone before a restore, and the person follows the restored actor.
  * @param {string} from the failed host name
  * @param {object} options
  * @param {string} options.reason why it is being recovered, for the log
@@ -83,7 +85,6 @@ export const recover = async (
       continue
     }
 
-    // hs-f2 and hs-n2: authority is already gone; now the person follows.
     if (restored.id === actor.id)
       throw new RecoverError(
         `${target} reused ${actor.id}; the old actor may still be reachable`

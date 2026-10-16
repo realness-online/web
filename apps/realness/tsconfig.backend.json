@@ -13,7 +13,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "types": ["node"],
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "paths": {
+      "/scripts/watch-for-updates.js": ["./src/app/use/watch-for-updates.js"]
+    }
   },
   "include": [
     "src/**/*.js",

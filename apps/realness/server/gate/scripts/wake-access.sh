@@ -19,5 +19,4 @@ gcloud compute instances add-iam-policy-binding "$host_name" \
   --member "serviceAccount:$account" \
   --role "projects/$project/roles/$role" --quiet > /dev/null
 
-# The wake record goes through sync, whose rules decide; no bucket grant here.
 printf 'gate %s may start %s\n' "$account" "$host_name"

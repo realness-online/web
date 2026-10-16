@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { is_typing, watch_for_updates } from '@/use/reload-on-update'
+import { is_typing, watch_for_updates } from '@/use/watch-for-updates'
 
 /**
  * Behaves like the built worker (vite-plugin-pwa, prompt mode): a new build
@@ -49,7 +49,7 @@ const hide = async doc => {
   await settle()
 }
 
-describe('@/use/reload-on-update', () => {
+describe('@/use/watch-for-updates', () => {
   let working, reload, stop
 
   beforeEach(() => {
@@ -77,6 +77,27 @@ describe('@/use/reload-on-update', () => {
     expect(reload).toHaveBeenCalledTimes(1)
   })
 
+  it('a build that arrives as the page hides is installed, activated, and reloaded', async () => {
+    const { workers, update, registration, install } = fake_workers()
+    update.mockImplementation(async () => {
+      const worker = new EventTarget()
+      worker.state = 'installing'
+      registration.installing = worker
+      setTimeout(() => {
+        registration.installing = null
+        install()
+        worker.state = 'installed'
+        worker.dispatchEvent(new Event('statechange'))
+      }, 0)
+    })
+    const doc = fake_doc()
+    start(workers, doc)
+    await hide(doc)
+    await settle()
+    expect(update).toHaveBeenCalledTimes(1)
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
   it('never activates or reloads while the page is visible', async () => {
     const { workers, registration } = fake_workers({ waiting: true })
     const waiting = registration.waiting
@@ -87,7 +108,7 @@ describe('@/use/reload-on-update', () => {
     expect(reload).not.toHaveBeenCalled()
   })
 
-  it('finds a build deployed while the tab was open, on return', async () => {
+  it('finds a build deployed while the tab was open, the first time it hides', async () => {
     const { workers, update, install } = fake_workers()
     update.mockImplementation(async () => {
       install()
@@ -95,10 +116,7 @@ describe('@/use/reload-on-update', () => {
     const doc = fake_doc()
     start(workers, doc)
     await hide(doc)
-    expect(reload).not.toHaveBeenCalled()
-    await show(doc)
     expect(update).toHaveBeenCalledTimes(1)
-    await hide(doc)
     expect(reload).toHaveBeenCalledTimes(1)
   })
 

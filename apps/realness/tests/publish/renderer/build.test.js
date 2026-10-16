@@ -189,10 +189,15 @@ test('an enabled PWA caches the selected snapshot, fragments, and diagrams', asy
       /event\.data\.type === ['"]SKIP_WAITING['"]/,
       'activation is guarded by an explicit message'
     )
-    assert.doesNotMatch(
+    assert.match(
       await readFile(join(f.root, 'dist/scripts/pwa.js'), 'utf8'),
-      /SKIP_WAITING|location\.reload/,
-      'the page never activates or reloads an update automatically'
+      /from '\/scripts\/watch-for-updates\.js'/,
+      'the page leaves updates to the shared update rule'
+    )
+    assert.match(
+      await readFile(join(f.root, 'dist/scripts/watch-for-updates.js'), 'utf8'),
+      /export const watch_for_updates/,
+      'the build ships the update rule the page imports'
     )
     const index = await readFile(join(f.root, 'dist/index.html'), 'utf8')
     assert.match(index, /itemid="\/\+15550001111\/plans\/1791571682897"/)

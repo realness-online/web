@@ -11,6 +11,7 @@ import {
   billing_store,
   checkout,
   form,
+  grant_plan,
   limit_status,
   paid_now,
   plan_html,
@@ -262,4 +263,67 @@ test('b1d: the price is found by lookup key, once; a miss retries', async () => 
   assert.equal(await lookup(), 'price_1')
   assert.equal(await lookup(), 'price_1')
   assert.equal(asks, 2)
+})
+
+test('an admin grant pays for the house model from today for the given days', async () => {
+  const billing = billing_store(disk(`${base}${randomUUID()}`), { ttl_ms: 0 })
+  const now = new Date('2026-10-16T21:00:00Z')
+  const granted = await grant_plan(billing, A, { credit: 20, days: 30, now })
+  assert.deepEqual(granted, {
+    phone: A,
+    status: 'active',
+    credit: 20,
+    start: '2026-10-16',
+    end: '2026-11-15T21:00:00.000Z'
+  })
+  const plans = plan_source(billing)
+  assert.equal((await plans(A, now)).paid.credit, 20)
+  assert.equal((await plans(A, new Date('2026-11-16T00:00:00Z'))).paid, null)
+})
+
+test('an admin grant never replaces a paid Stripe subscription', async () => {
+  const billing = billing_store(disk(`${base}${randomUUID()}`), { ttl_ms: 0 })
+  await billing.put(A, plan)
+  await assert.rejects(
+    grant_plan(billing, A, {
+      credit: 20,
+      days: 30,
+      now: new Date('2026-10-16T00:00:00Z')
+    }),
+    /paid Stripe subscription/
+  )
+  assert.equal((await billing.get(A)).subscription, 'sub_1')
+})
+
+test('an admin grant refuses a bad phone, credit, or day count', async () => {
+  const billing = billing_store(disk(`${base}${randomUUID()}`), { ttl_ms: 0 })
+  await assert.rejects(
+    grant_plan(billing, '555', { credit: 1, days: 1 }),
+    /phone/
+  )
+  await assert.rejects(grant_plan(billing, A, { credit: 0, days: 1 }), /credit/)
+  await assert.rejects(grant_plan(billing, A, { credit: 1, days: 1.5 }), /days/)
+})
+
+test('a granted plan ends; only a subscription renews', () => {
+  const spent = {
+    day: { tokens: 0, cost: 0 },
+    month: { tokens: 0, cost: 0 },
+    period: { tokens: 0, cost: 0 }
+  }
+  const granted = {
+    status: 'active',
+    credit: 1,
+    start: '2026-10-16',
+    end: '2026-10-17T00:00:00.000Z'
+  }
+  assert.equal(
+    limit_status({ free: { day: 1, month: 1 }, paid: granted }, spent).paid
+      .renews,
+    null
+  )
+  assert.equal(
+    limit_status({ free: { day: 1, month: 1 }, paid: plan }, spent).paid.renews,
+    plan.end
+  )
 })

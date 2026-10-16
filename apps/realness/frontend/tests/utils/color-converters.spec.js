@@ -106,7 +106,8 @@ describe('hsl_to_hex', () => {
 
   it('falls through when the string carries no hue and no saturation argument', () => {
     /** Only a second argument lets the parser run; a lone string is parsed as a hue. */
-    expect(typeof hsl_to_hex('not a color')).toBe('string')
+    const lone_string = 'not a color'
+    expect(typeof hsl_to_hex(lone_string)).toBe('string')
   })
 })
 

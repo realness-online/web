@@ -46,7 +46,6 @@ export const place_bundle = async (
     throw new BundleError(`no bundle for ${id}: ${last_line(pulled.err)}`)
 
   step(`unpack ${id} on ${name}`)
-  // The bundle holds artifacts.tar.gz and manifest.json, which is an export.
   const exports = config.hostExports ?? '/opt/fc/actors/mnt/exports'
   const unpacked = await run([
     ...cloud.sshArgs(

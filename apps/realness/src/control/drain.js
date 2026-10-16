@@ -45,7 +45,8 @@ class DrainError extends Error {}
 const PARTS = ['artifacts.tar.gz', 'trace.jsonl', 'manifest.json']
 
 /**
- * Drain one host: export every actor, then remove or stop the VM.
+ * Drain one host: export every actor, then remove or stop the VM. hs-n5: a
+ * bundle in the bucket is not a home, so a delete asks the fleet first.
  * @param {{ exists: (argv: string[]) => Promise<boolean>, sshArgs: (name: string, command: string) => string[], stream: (argv: string[]) => Promise<unknown>, try: (argv: string[]) => Promise<unknown>, value: (argv: string[], format: string) => Promise<string> }} cloud
  * @param {{ project?: string, zone: string, bucket: string, host: string, hostExports?: string }} config
  * @param {string} name
@@ -120,7 +121,6 @@ export const drain = async (
     return { ...counts, run, deleted: false }
   }
 
-  // hs-n5: a bundle in the bucket is not a home. Ask the fleet first.
   if (fleet) {
     step('confirm every actor has a home')
     const homes = require_homes(name, { actors }, await fleet({ name, api }))

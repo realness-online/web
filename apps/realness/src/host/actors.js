@@ -595,13 +595,13 @@ export class ActorStore {
   }
 
   /**
+   * Queued and recovering creates hold their memory until create returns.
    * @param {string} owner
    * @param {{ paths?: string[] | null, startup?: object | null }} [options]
    * @returns {Promise<Actor>}
    */
   async create(owner, { paths = null, startup = null } = {}) {
     if (this.closed) throw new Parking('the host is parking; try again')
-    // Queued and recovering creates hold their memory until create returns.
     this.#claimMemory()
     try {
       const record = await this.lock.run(() =>
@@ -1511,7 +1511,11 @@ export class ActorStore {
     return manifest
   }
 
-  /** Land a bundle on a fresh disk: the export's files, a new identity, the old trace. */
+  /**
+   * Land a bundle on a fresh disk: the export's files, a new identity, the old
+   * trace. Under the lock no other create runs, so one memory claim covers the
+   * whole restore.
+   */
   restore(exportId, owner, { start = true } = {}) {
     return this.lock.run(async () => {
       if (!ID.test(exportId)) throw new NotFound(`export ${exportId}`)
@@ -1528,7 +1532,6 @@ export class ActorStore {
           `export ${exportId} is corrupt: ${digest.slice(0, DIGEST_SHOWN)} != ${manifest.artifacts.sha256.slice(0, DIGEST_SHOWN)}`
         )
 
-      // Under the lock no other create runs, so the claim covers the whole restore.
       this.#claimMemory()
       try {
         let record = await this.#create(owner)

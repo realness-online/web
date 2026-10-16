@@ -179,6 +179,9 @@ export default define_config(({ mode }) => ({
   ],
   test: {
     root: '.',
+    alias: {
+      '/scripts/watch-for-updates.js': `${app_root}/use/watch-for-updates.js`
+    },
     globals: true,
     environment: 'happy-dom',
     reporters: ['default'],

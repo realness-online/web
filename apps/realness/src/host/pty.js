@@ -142,9 +142,11 @@ export const makeServer = (
 ) => {
   const terminal_clients = new Map()
   return create_server(client => {
-    handle(store, client, { helloSeconds, quiet_ms }, terminal_clients).catch(error => {
-      LOG.error(`pty failed`, error)
-      client.destroy()
-    })
+    handle(store, client, { helloSeconds, quiet_ms }, terminal_clients).catch(
+      error => {
+        LOG.error(`pty failed`, error)
+        client.destroy()
+      }
+    )
   })
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Service accounts, roles, and pass secrets the sync, proxy, and gate deploys expect.
+# Each service builds its own source with its own account; sync also reads
+# compute so it can label quiet hosts (hs-m7b).
 # Safe to rerun: existing accounts, secrets, and bindings are kept.
 #   bash tools/control/scripts/service-accounts.sh production
 set -euo pipefail
@@ -26,7 +28,6 @@ for service in sync proxy gate; do
   account="realness-$service@$project.iam.gserviceaccount.com"
   gcloud iam service-accounts describe "$account" --project "$project" > /dev/null 2>&1 ||
     g iam service-accounts create "realness-$service" --display-name "realness $service"
-  # Each service builds its own source with its own account.
   g projects add-iam-policy-binding "$project" --member="serviceAccount:$account" --role=roles/run.builder --condition=None
   g storage buckets add-iam-policy-binding "gs://$bucket" --member="serviceAccount:$account" --role=roles/storage.objectAdmin
   echo "account $account: ready"
@@ -38,7 +39,6 @@ for name in MODEL_PASS_SECRET OPENROUTER_API_KEY STRIPE_SECRET_KEY STRIPE_WEBHOO
   gcloud secrets describe "$name" --project "$project" > /dev/null 2>&1 &&
     secret_access "realness-proxy@$project.iam.gserviceaccount.com" "$name"
 done
-# Sync labels quiet hosts from the provider (hs-m7b).
 g projects add-iam-policy-binding "$project" --member="serviceAccount:realness-sync@$project.iam.gserviceaccount.com" \
   --role=roles/compute.viewer --condition=None
 echo "secrets and roles: ready"

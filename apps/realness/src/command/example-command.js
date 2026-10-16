@@ -26,7 +26,6 @@ export const run_example = async (
       throw new Error('static export requires the desktop command')
     await export_static(destination)
   } else {
-    // Examples sit at .pi/examples in every harness, the actor's and the person's.
     const harness = actor ? (root ?? '/realness') : resolve(project, '../..')
     const source = join(harness, '.pi/examples', kind)
     await mkdir(dirname(destination), { recursive: true })

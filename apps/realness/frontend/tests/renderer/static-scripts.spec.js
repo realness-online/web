@@ -83,7 +83,12 @@ describe('pwa', () => {
   it('registers the worker on load and checks for updates when visible again', async () => {
     const registration = { update: vi.fn(async () => {}) }
     const register = vi.fn(async () => registration)
-    vi.stubGlobal('navigator', { ...navigator, serviceWorker: { register } })
+    const serviceWorker = Object.assign(new EventTarget(), {
+      controller: {},
+      register,
+      getRegistration: vi.fn(async () => registration)
+    })
+    vi.stubGlobal('navigator', { ...navigator, serviceWorker })
     await load('pwa')
     window.dispatchEvent(new Event('load'))
     await vi.waitFor(() =>
@@ -92,7 +97,7 @@ describe('pwa', () => {
     await Promise.resolve()
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
     document.dispatchEvent(new Event('visibilitychange'))
-    expect(registration.update).toHaveBeenCalledTimes(1)
+    await vi.waitFor(() => expect(registration.update).toHaveBeenCalledTimes(1))
   })
 })
 

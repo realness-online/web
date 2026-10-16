@@ -241,6 +241,21 @@ const create_startup_status = (status, set_working, get_startup_id) => {
 }
 
 /**
+ * Near a model-use limit, say so once per step per day.
+ * @param {import('vue').Ref<string | null>} actor
+ * @param {import('vue').Ref<string>} status
+ */
+const check_limit = async (actor, status) => {
+  const warn = await chat_warning(current_user.value, actor.value)
+  if (!warn) return
+  const day = new Date().toISOString().slice(0, DAY)
+  const key = `realness-warned ${day} ${warn.limit} ${warn.at ?? ''}`
+  if (localStorage.getItem(key)) return
+  localStorage.setItem(key, '1')
+  status.value = warn.message
+}
+
+/**
  * The actor's one Pi session as a conversation: the watch draws both sides
  * of every turn, and sending hands Pi the message with its page snapshot.
  * @param {import('vue').Ref<string | null>} actor
@@ -278,17 +293,6 @@ export const use_chat = (
   let watching = null
   let stopped = false
 
-  /** Near a model-use limit, say so once per step per day. */
-  const check_limit = async () => {
-    const warn = await chat_warning(current_user.value, actor.value)
-    if (!warn) return
-    const day = new Date().toISOString().slice(0, DAY)
-    const key = `realness-warned ${day} ${warn.limit} ${warn.at ?? ''}`
-    if (localStorage.getItem(key)) return
-    localStorage.setItem(key, '1')
-    status.value = warn.message
-  }
-
   /** One watch record onto the page; returns the reply still streaming. */
   const apply = (record, streaming) => {
     let reply = streaming
@@ -322,7 +326,7 @@ export const use_chat = (
       } else if (reply) reply.text = record.text
       else messages.value.push({ sender: 'Realness', text: record.text })
       if (record.error) status.value = readable_error(record.error)
-      else check_limit()
+      else check_limit(actor, status)
       return null
     }
     if (record.type === 'assistant') return null

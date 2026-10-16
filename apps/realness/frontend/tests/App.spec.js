@@ -1224,7 +1224,8 @@ describe('App.vue', () => {
       mock_queue_files.mockResolvedValueOnce(true)
       const file = new File(['x'], 'shot.png', { type: 'image/png' })
       /** The vectorizer loads a frame after mount, so give it that frame. */
-      await flushPromises()
+      const frame_loaded = flushPromises()
+      await frame_loaded
 
       window.dispatchEvent(file_event('drop', [file]))
       await flushPromises()

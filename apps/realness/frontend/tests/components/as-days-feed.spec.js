@@ -135,14 +135,12 @@ describe('@/components/as-days feed assembly', () => {
     await settle()
     const first = wrapper.findAll('[data-day-item]').length
 
-    observers
-      .at(-1)
-      .callback([
-        {
-          isIntersecting: true,
-          target: wrapper.find('[data-feed-end]').element
-        }
-      ])
+    observers.at(-1).callback([
+      {
+        isIntersecting: true,
+        target: wrapper.find('[data-feed-end]').element
+      }
+    ])
     await settle()
 
     expect(wrapper.findAll('[data-day-item]').length).toBeGreaterThan(first)

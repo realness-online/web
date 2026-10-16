@@ -60,7 +60,6 @@ export const move = async (
   if (release) {
     step(`stop ${id} on the source host`)
     await from.call(`/v1/actors/${id}`, { method: 'DELETE' }).catch(error => {
-      // The move is already done; say so instead of hiding it.
       note(`the old actor could not be removed: ${error.message}`)
     })
   }

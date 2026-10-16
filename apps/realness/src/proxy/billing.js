@@ -89,6 +89,39 @@ export const billing_store = (storage, { ttl_ms = CACHE_MS } = {}) => {
   }
 }
 
+const MS_PER_DAY = 86_400_000
+
+/**
+ * An admin grant: house-model credit for a number of days, starting today.
+ * It never replaces a Stripe subscription that is still paid.
+ * @param {{ get: (phone: string) => Promise<any>, put: (phone: string, plan: object) => Promise<void> }} billing
+ * @param {string} phone
+ * @param {{ credit: number, days: number, now?: Date }} options
+ */
+export const grant_plan = async (
+  billing,
+  phone,
+  { credit, days, now = new Date() }
+) => {
+  if (!PHONE.test(phone ?? '')) throw new Error('grant needs a phone')
+  if (!(credit > 0)) throw new Error('--credit must be more than 0 dollars')
+  if (!(Number.isInteger(days) && days > 0))
+    throw new Error('--days must be a whole number above 0')
+  const current = paid_now(await billing.get(phone), now)
+  if (current?.subscription)
+    throw new Error(
+      `${phone} has a paid Stripe subscription until ${current.end}`
+    )
+  const plan = {
+    status: 'active',
+    credit,
+    start: now.toISOString().slice(0, ISO_DATE),
+    end: new Date(now.getTime() + days * MS_PER_DAY).toISOString()
+  }
+  await billing.put(phone, plan)
+  return { phone, ...plan }
+}
+
 /** What limits a person has now: free always, paid while a period runs. */
 export const plan_source = (billing, env = {}) => {
   const free = free_limits(env)
@@ -296,7 +329,8 @@ export const limit_status = (
           used: period.cost,
           left: Math.max(0, paid.credit - period.cost),
           percent: percent(period.cost, paid.credit),
-          renews: paid.status === 'active' ? paid.end : null,
+          renews:
+            paid.status === 'active' && paid.subscription ? paid.end : null,
           ends: paid.end
         }
       : null,

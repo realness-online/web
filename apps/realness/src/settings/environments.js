@@ -19,7 +19,7 @@ const environments = {
     project: 'realness-online',
     public_url: 'https://realness.online',
     services: {
-      // Next to the hosts, so the gate-to-host hop stays inside one region.
+      /** Next to the hosts, so the gate-to-host hop stays inside one region. */
       region: 'us-west2',
       bucket: 'realness-online.appspot.com',
       sync_url: 'https://realness-sync-276668807926.us-west2.run.app',

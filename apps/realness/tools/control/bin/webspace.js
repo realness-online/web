@@ -76,6 +76,7 @@ import { local_person } from '#root/src/harness/settings.js'
 import { project_root } from '#root/src/settings/layout.js'
 import { disk } from '../../../src/can/disk.js'
 import { create_gcs, gcloud_token } from '../../../src/can/gcs.js'
+import { billing_store, grant_plan } from '../../../src/proxy/billing.js'
 import { deployment_settings } from '#root/src/settings/environments.js'
 import { out_path } from '#root/src/settings/output.js'
 
@@ -113,6 +114,7 @@ const USAGE = `usage: realness <local|development> <command> [options]
   person <phone>               one person's actors, loops, and usage
   usage <phone> [--day=DATE]   one UTC day of the ledger; default today
   limit <phone>                limits, use, and what is left: today and month
+  plan grant <phone> --credit=<dollars> --days=<n>   house-model credit, starting today
   status                       everything at once, attention last; exits 2 on attention
   service list                 Cloud Run services: ready, revision, deployed
   logs <service> [--since=1h] [--errors] [--limit=50]
@@ -437,6 +439,28 @@ const main = async argv => {
       return finish({ records: found, text: reads.text.limit(found) })
     }
 
+    case 'plan': {
+      const [verb, phone] = args
+      if (verb !== 'grant' || args.length !== 2)
+        throw new Error(
+          'usage: realness <env> plan grant <phone> --credit=<dollars> --days=<n>'
+        )
+      const billing = billing_store(
+        create_gcs({
+          bucket: deployment_settings(envName, process.env).bucket,
+          token: gcloud_token()
+        })
+      )
+      const plan = await grant_plan(billing, phone, {
+        credit: Number(flags.credit),
+        days: Number(flags.days)
+      })
+      return finish({
+        records: plan,
+        text: `${plan.phone}: $${plan.credit.toFixed(2)} house credit until ${plan.end.slice(0, 10)}`
+      })
+    }
+
     case 'usage': {
       const found = await reads.usage(
         await reads.reader(envName),
@@ -595,8 +619,7 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
               method: 'POST',
               body: { argv, timeout: 120 }
             }),
-          // The host's cost is the Firecracker process; the guest's own use
-          // comes from its MemAvailable, so nothing new is reported at rest.
+          /** The host's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
           sample: async () =>
             await sample_actor(target, config, host_name, actor, api)
         })
@@ -635,7 +658,7 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
       const rows = fleet.map(row => ({
         name: row.host.name,
         cpu_fraction: fraction(row.host.cpu_fraction),
-        // The record carries bytes, not a fraction: mem_free of mem_total.
+        /** The record carries bytes, not a fraction: mem_free of mem_total. */
         mem_used_fraction: used_fraction(row.host),
         actors: row.actors.length
       }))
@@ -704,13 +727,12 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
             ])
             return found.ok && found.out.trim() ? { bundle: object } : null
           },
+          /** Drain removed the export folder from the host it came from, so the bundle is put back before restore reads it. */
           restore: async (host, id, owner, bundle) => {
             const { remoteApi: api_for } =
               await import('../../../src/control/api.js')
             const { place_bundle } =
               await import('../../../src/control/bundle.js')
-            // Drain removed the export folder from the host it came from, so
-            // the bundle has to be put back before restore can read it.
             await place_bundle(target, config, host, id, { object: bundle })
             return JSON.parse(
               await api_for(host, { zone: config.zone }).call('/v1/actors', {

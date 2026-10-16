@@ -697,10 +697,12 @@ export const format_insight = (trend, { days, color = false }) => {
   const current = trend[trend.length - 1]
   const lines = []
 
-  if (!current.covered || current.landed === 0) {
+  if (current.landed === 0) {
     lines.push(dim('  no visitor data for this period yet', color))
     return lines.join('\n')
   }
+  if (!current.covered)
+    lines.push(dim('  partial period: logs start after the window opens', color))
 
   const count = value => bold(green(String(value), color), color)
   const ratio = Math.round((current.deeper / current.landed) * 100)

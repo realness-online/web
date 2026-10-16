@@ -176,11 +176,12 @@ const cost_panel = async ({ store, people, ledger, named = [] }) => {
  */
 export const newest_session = names => {
   const stamps = names
-    .map(name => /^(\d{4}-\d\d-\d\d)T(\d\d)-(\d\d)-(\d\d)/.exec(name))
-    .filter(Boolean)
-    .map(
-      ([, day, hour, minute, second]) => `${day}T${hour}:${minute}:${second}Z`
-    )
+    .flatMap(name => {
+      const found = /^(\d{4}-\d\d-\d\d)T(\d\d)-(\d\d)-(\d\d)/.exec(name)
+      if (!found) return []
+      const [, day, hour, minute, second] = found
+      return [`${day}T${hour}:${minute}:${second}Z`]
+    })
     .sort()
   return stamps.at(-1) ?? null
 }

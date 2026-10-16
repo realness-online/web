@@ -69,7 +69,7 @@ if (command !== 'serve' && command !== 'seed') {
   console.error('usage: main.js serve|seed [--volume PATH] ...')
   process.exit(2)
 }
-// Serve names its environment; there is no default to fall back to.
+/** Serve names its environment; there is no default to fall back to. */
 const environment =
   command === 'serve' ? environment_settings(values.environment ?? '') : null
 
@@ -145,8 +145,7 @@ const mirror = process.env.SYNC_URL
     })
   : null
 const loops = new Loops(store, { mirror, host })
-// An environment without a public sites domain exports an empty value; fall
-// back to sync itself rather than refusing to serve.
+/** An environment without a public sites domain exports an empty value; fall back to sync itself rather than refusing to serve. */
 const site_public =
   process.env.SYNC_SITE_PUBLIC_URL || process.env.SYNC_SITE_URL
 if (store.syncSites && !site_public)

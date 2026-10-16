@@ -52,9 +52,7 @@ export const scale_choice = ({
   const monthly = hosts * hourly_cost * HOURS
   const room = Math.floor(budget_usd / (hourly_cost * HOURS))
 
-  // What runs out first, in the order a host would hit it. Memory is what
-  // fills a host, so it comes before the budget; addresses are per host, so
-  // they come last.
+  /** What runs out first, in the order a host would hit it. Memory is what fills a host, so it comes before the budget; addresses are per host, so they come last. */
   const binding = first_limit({ demand, actors_per_host, hosts, room, taps })
 
   return {

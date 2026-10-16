@@ -51,7 +51,6 @@ else if (
   args.length === 2 &&
   args[0] === '--env'
 ) {
-  // A cloud host serves one environment; nothing here falls back to another.
   const { services } = environment_settings(args[1])
   process.stdout.write(
     `${shell_values({
