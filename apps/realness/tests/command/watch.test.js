@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import { PassThrough as pass_through } from 'node:stream'
 import {
   health_snapshot,
+  newest_session,
   people_for,
   read_status,
   who_from
@@ -289,7 +290,22 @@ test('an unsigned watch reports unknown sign-on and an empty cost panel', async 
   })
   assert.equal(snapshot.panels.sign_on.state, 'unknown')
   assert.deepEqual(snapshot.panels.cost.rows, [])
-  assert.equal(snapshot.panels.sync.rows.length, 2)
+  assert.deepEqual(
+    snapshot.panels.sync.rows.map(row => row.folder),
+    ['vault/Sessions/']
+  )
+})
+
+test('the newest session time comes from session names', () => {
+  assert.equal(
+    newest_session([
+      '2026-10-16T03-24-27-026Z_a.jsonl',
+      'notes.md',
+      '2026-10-16T03-30-01-000Z_b.html.gz'
+    ]),
+    '2026-10-16T03:30:01Z'
+  )
+  assert.equal(newest_session(['notes.md']), null)
 })
 
 test('panel labels stay dim while data keeps its contrast', () => {

@@ -47,7 +47,7 @@ export const ENVIRONMENTS = {
     cloud: {
       project: development.project,
       region: development.services.region,
-      services: ["realness-sync", "realness-proxy"],
+      services: [],
       billing: "realness-development.billing_export.gcp_billing_export_v1_01F763_9EF3F8_28E859",
       openrouter: { key_secret: "OPENROUTER_API_KEY" },
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice"],
@@ -83,7 +83,7 @@ export const ENVIRONMENTS = {
     cloud: {
       project: development.project,
       region: development.services.region,
-      services: ["realness-sync", "realness-proxy"],
+      services: [],
       billing: null,
       openrouter: { key_secret: "OPENROUTER_API_KEY" },
       expected: ["Cloud Run", "Cloud Storage", "App Engine", "Firebase Hosting", "Identity Platform", "Secret Manager", "Cloud Build", "Artifact Registry", "BigQuery", "Cloud Logging", "Invoice", "Compute Engine"],

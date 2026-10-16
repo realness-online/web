@@ -1,3 +1,7 @@
+import {
+  harness_root,
+  runtime_sessions_path
+} from '#root/src/harness/settings.js'
 import { phone_of } from '#root/src/files/client.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 import {
@@ -165,15 +169,35 @@ const cost_panel = async ({ store, people, ledger, named = [] }) => {
   return { rows }
 }
 
+/**
+ * When the newest session in a listing began, from its name's timestamp.
+ * @param {string[]} names
+ * @returns {string | null}
+ */
+export const newest_session = names => {
+  const stamps = names
+    .map(name => /^(\d{4}-\d\d-\d\d)T(\d\d)-(\d\d)-(\d\d)/.exec(name))
+    .filter(Boolean)
+    .map(
+      ([, day, hour, minute, second]) => `${day}T${hour}:${minute}:${second}Z`
+    )
+    .sort()
+  return stamps.at(-1) ?? null
+}
+
 /** Sync: the change feed, plus what the last `realness sync` in this harness did. */
 const sync_panel = async ({ store, who, records = {} }) => {
   const saved = Object.keys(records)
   const folders = saved.length
     ? [...new Set(saved)]
-    : ['can://~/harness/', 'can://~/.pi/agent/sessions/']
+    : [`can://~/${runtime_sessions_path(harness_root())}/`]
   const rows = []
   for (const folder of folders) {
-    const listed = await store.ls(folder).catch(() => null)
+    let error = null
+    const listed = await store.ls(folder).catch(thrown => {
+      error = thrown.message
+      return null
+    })
     const feed =
       typeof store.changes === 'function'
         ? await store.changes(folder).catch(() => null)
@@ -183,6 +207,8 @@ const sync_panel = async ({ store, who, records = {} }) => {
       folder: folder.replace('can://~/', ''),
       files: listed ? undefined : null,
       listing: Boolean(listed),
+      error,
+      newest: newest_session(listed ?? []),
       cursor: feed?.cursor ?? null,
       changes: feed ? Object.keys(feed.changes).length : null,
       last_sync: record?.at ?? null,

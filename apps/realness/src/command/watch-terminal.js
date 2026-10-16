@@ -407,7 +407,7 @@ const status_lines = (panels, width, on) => {
     for (const row of problems)
       status.push(
         paint(
-          `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'}`,
+          `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
           'failed',
           on
         )
@@ -418,7 +418,19 @@ const status_lines = (panels, width, on) => {
   else
     for (const row of panels.sync?.rows ?? [])
       if (!row.listing)
-        status.push(...wrap(`Cannot read sync folder: ${row.folder}`, width))
+        status.push(
+          ...wrap(
+            `Cannot read sync folder ${row.folder}: ${row.error ?? 'no reason given'}`,
+            width
+          )
+        )
+      else if (row.newest)
+        status.push(
+          ...wrap(
+            `Newest synced session: ${new Date(row.newest).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
+            width
+          )
+        )
   const running = new Set(
     (panels.resources?.inventories ?? []).flatMap(inventory =>
       inventory.instances
