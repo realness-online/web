@@ -1,5 +1,5 @@
 <script setup>
-  import { computed } from 'vue'
+  import { computed, onBeforeUnmount, ref, watch } from 'vue'
   import { startup_stages } from '../../../harness/startup.js'
 
   const props = defineProps({
@@ -14,20 +14,26 @@
       return 'Connecting...'
     const name = startup_stages[stage]
     if (props.progress.state === 'failed') return `${name} failed`
-    if (props.progress.state === 'complete') return `${name} complete`
     return name
   })
-  const duration = computed(() => {
-    const ms = props.progress?.ms
-    return Number.isFinite(ms) && ms >= 0
-      ? (ms / MS_PER_SECOND).toFixed(1)
-      : null
-  })
+  const now = ref(Date.now())
+  const received_at = ref(Date.now())
+  watch(
+    () => props.progress,
+    () => {
+      received_at.value = Date.now()
+      now.value = received_at.value
+    }
+  )
+  const timer = setInterval(() => {
+    now.value = Date.now()
+  }, MS_PER_SECOND)
+  onBeforeUnmount(() => clearInterval(timer))
   const seconds = computed(() => {
-    const elapsed = props.progress?.elapsed_ms
-    return Number.isFinite(elapsed) && elapsed >= 0
-      ? (elapsed / MS_PER_SECOND).toFixed(1)
-      : null
+    const reported = props.progress?.elapsed_ms
+    const elapsed = Number.isFinite(reported) && reported >= 0 ? reported : 0
+    const waiting = props.problem ? 0 : now.value - received_at.value
+    return Math.floor((elapsed + waiting) / MS_PER_SECOND)
   })
 </script>
 
@@ -37,18 +43,7 @@
     <p v-else :role="progress?.state === 'failed' ? 'alert' : 'status'">
       {{ label }}
     </p>
-    <time
-      v-if="seconds !== null"
-      :datetime="`PT${seconds}S`"
-      title="Elapsed at last reported stage"
-      >{{ seconds }} s reported</time
-    >
-    <time
-      v-if="duration !== null"
-      :datetime="`PT${duration}S`"
-      title="Stage duration"
-      >{{ duration }} s in this step</time
-    >
+    <time :datetime="`PT${seconds}S`">{{ seconds }} s</time>
     <button v-if="problem" type="button" @click="emit('retry')">Retry</button>
   </section>
 </template>

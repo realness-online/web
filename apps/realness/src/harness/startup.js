@@ -1,14 +1,14 @@
 /** Shared stage vocabulary; a stage is reported only by the code doing it. */
 export const startup_stages = Object.freeze({
-  checking_seed: 'Checking starter',
-  starting_actor: 'Starting actor',
-  waiting_guest: 'Waiting for guest',
-  initializing_actor: 'Initializing actor',
-  restoring_files: 'Restoring files',
+  checking_seed: 'Getting ready',
+  starting_actor: 'Starting your computer',
+  waiting_guest: 'Starting your computer',
+  initializing_actor: 'Setting up your computer',
+  restoring_files: 'Bringing back your files',
   starting_pi: 'Starting Pi',
-  connecting_chat: 'Connecting chat',
-  connecting_terminal: 'Connecting terminal',
-  starting_host: 'Starting host'
+  connecting_chat: 'Connecting',
+  connecting_terminal: 'Connecting',
+  starting_host: 'Waking up'
 })
 
 /** @typedef {'complete' | 'failed' | 'cancelled'} StartupResult */

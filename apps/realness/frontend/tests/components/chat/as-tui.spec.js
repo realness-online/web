@@ -127,8 +127,8 @@ describe('@/components/chat/as-tui', () => {
       return { close: mock_close }
     })
     const pane = await open()
-    expect(pane.get('[role="status"]').text()).toBe('Starting actor')
-    expect(pane.get('time').text()).toBe('8.4 s reported')
+    expect(pane.get('[role="status"]').text()).toBe('Starting your computer')
+    expect(pane.get('time').text()).toBe('8 s')
     expect(mock_open_terminal).not.toHaveBeenCalled()
     finish({
       id: 'a-mine00000000',
@@ -136,7 +136,7 @@ describe('@/components/chat/as-tui', () => {
       created: false
     })
     await flush_promises()
-    expect(pane.get('[role="status"]').text()).toBe('Connecting terminal')
+    expect(pane.get('[role="status"]').text()).toBe('Connecting')
     expect(set_working).toHaveBeenLastCalledWith(true)
     socket.dispatchEvent(new Event('open'))
     await flush_promises()
