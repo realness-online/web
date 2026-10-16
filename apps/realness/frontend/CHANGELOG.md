@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v3.0.0-d - 2026-10-16
+
+- **Startup speaks plainly** - Waking shows steps like "Waking up" and
+  "Bringing back your files", with a clock that counts every second.
+- **Chat is ready to type** - Showing chat puts the cursor in the message
+  box.
+- **A cursor you can see** - The terminal cursor blinks when the terminal
+  has focus and shows as an outline when it does not.
+
 ## v3.0.0-c - 2026-10-16
 
 - **Chat is ready when you are** - Chat opens straight to the conversation.
