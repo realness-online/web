@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-c - 2026-10-16
+
 - **Chat is ready when you are** - Chat opens straight to the conversation.
   Send right away; your message shows while your machine wakes, then Pi
   answers. Problems show only if waking fails.
