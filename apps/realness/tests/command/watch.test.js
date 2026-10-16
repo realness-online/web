@@ -292,7 +292,7 @@ test('an unsigned watch reports unknown sign-on and an empty cost panel', async 
   assert.deepEqual(snapshot.panels.cost.rows, [])
   assert.deepEqual(
     snapshot.panels.sync.rows.map(row => row.folder),
-    ['vault/Sessions/']
+    ['harness/vault/Sessions/']
   )
 })
 
