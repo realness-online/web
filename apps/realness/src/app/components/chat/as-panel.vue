@@ -95,7 +95,8 @@
     :data-alone="view === 'chat' || undefined"
     :inert="!shows.chat || undefined"
     @keydown="on_key"
-    @transitionstart.self="on_reveal">
+    @transitionstart.self="on_reveal"
+    @transitionend.self="on_reveal">
     <site-nav v-if="view === 'chat' || route?.path === '/chat'" />
     <header>
       <as-feed-toggle

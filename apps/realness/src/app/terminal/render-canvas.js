@@ -2,6 +2,7 @@ const LINE_HEIGHT = 1.4
 const FONT_SIZE = 14
 const SELECTION_OPACITY = 0.6
 const PIXEL_CENTER = 0.5
+const HOLLOW_BLOCK = 3
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace'
 
@@ -34,6 +35,7 @@ export const cell_metrics = (ctx, font_size) => {
  * @property {number} [font_size]
  * @property {number} [dpr]
  * @property {boolean} [blink_on]
+ * @property {boolean} [focused] whether the cursor blinks or shows hollow
  * @property {number[]} [selection_color]
  */
 
@@ -89,19 +91,23 @@ export const draw_frame = (ctx, frame, opts = {}) => {
     })
   })
 
-  draw_cursor(ctx, frame, metrics, opts.blink_on ?? true)
+  draw_cursor(ctx, frame, metrics, {
+    blink_on: opts.blink_on ?? true,
+    focused: opts.focused ?? true
+  })
 
   return { metrics, width, height }
 }
 
-const draw_cursor = (ctx, frame, metrics, blink_on) => {
+/** Focused: the cursor blinks in its own style. Unfocused: a steady hollow box. */
+const draw_cursor = (ctx, frame, metrics, { blink_on, focused }) => {
   const { cursor } = frame
   if (!cursor.visible || !cursor.viewport_has_value) return
-  if (cursor.blinking && !blink_on) return
+  if (focused && !blink_on) return
   const px = cursor.x * metrics.width
   const py = cursor.y * metrics.height
   ctx.fillStyle = rgb(frame.colors.cursor)
-  switch (cursor.visual_style) {
+  switch (focused ? cursor.visual_style : HOLLOW_BLOCK) {
     case 0:
       ctx.fillRect(px, py, 2, metrics.height)
       break

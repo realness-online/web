@@ -57,13 +57,15 @@ const create_display = ({ state, term, ctx, status, colors }) => {
       raf = 0
       apply_selection()
       const frame = term.frame()
+      const focused = document.activeElement === ctx.canvas
       draw_frame(ctx, frame, {
         font_size: FONT_SIZE,
         blink_on,
+        focused,
         selection_color: colors.selection_background
       })
       status.textContent = note || connection_text()
-      schedule_blink(frame)
+      schedule_blink(frame, focused)
     })
   }
 
@@ -90,9 +92,9 @@ const create_display = ({ state, term, ctx, status, colors }) => {
     }
   }
 
-  const schedule_blink = frame => {
+  const schedule_blink = (frame, focused) => {
     clearTimeout(blink_timer)
-    if (!frame.cursor.visible || !frame.cursor.blinking) return
+    if (!frame.cursor.visible || !focused) return
     blink_timer = setTimeout(() => {
       blink_on = !blink_on
       redraw()
@@ -102,6 +104,11 @@ const create_display = ({ state, term, ctx, status, colors }) => {
   return {
     redraw,
     set_note,
+    /** Show the cursor at once after a focus change, then blink from there. */
+    wake_cursor() {
+      blink_on = true
+      redraw()
+    },
     close() {
       clearTimeout(blink_timer)
       clearTimeout(note_timer)
@@ -507,6 +514,8 @@ export const mount = async (
   use_theme(await load_theme())
   const encoder = engine.key_encoder(term)
   const display = create_display({ state, term, ctx, status, colors })
+  for (const event of ['focus', 'blur'])
+    canvas.addEventListener(event, () => display.wake_cursor())
   const { redraw, set_note } = display
   listen(scheme, 'change', async () => {
     use_theme(await load_theme())

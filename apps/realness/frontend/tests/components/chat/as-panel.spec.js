@@ -140,6 +140,23 @@ describe('@/components/chat/as-panel', () => {
     expect(document.activeElement).not.toBe(panel.find('textarea').element)
   })
 
+  it('focuses the message again once the opening transition ends', async () => {
+    home_view.value = 'thoughts'
+    const panel = mount(AsPanel, {
+      attachTo: document.body,
+      props: { actor: null },
+      global: { stubs: { RouterLink: true } }
+    })
+    home_view.value = 'chat'
+    await flush_promises()
+    panel.find('textarea').element.blur()
+    await panel.find('#chat-panel').trigger('transitionend', {
+      propertyName: 'visibility'
+    })
+    expect(document.activeElement).toBe(panel.find('textarea').element)
+    panel.unmount()
+  })
+
   it('waits for an actor before connecting', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null })
