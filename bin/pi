@@ -3,6 +3,10 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 export PI_CODING_AGENT_DIR="$root/.pi/agent"
 actor=0
 if [[ "${1:-}" == "--actor" ]]; then actor=1; shift; fi
+if [[ "$actor" == 1 || -r /etc/realness/actor || -r /usr/local/lib/realness/package.json ]]; then
+  actor=1
+fi
+thought_minutes=13
 
 # Checkout state is separate from an existing ~/.pi; neither is copied or deleted.
 
@@ -59,6 +63,10 @@ if [[ -z "${PI_CODING_AGENT_SESSION_DIR:-}" ]]; then
   export PI_CODING_AGENT_SESSION_DIR
 fi
 
+if [[ "$actor" == 1 && $# == 0 && -n "$(find "$PI_CODING_AGENT_SESSION_DIR" -type f -mmin -"$thought_minutes" 2>/dev/null | head -1)" ]]; then
+  set -- --continue
+fi
+
 # No update checks at startup: pi otherwise runs `npm view` for every package
 # and asks pi.dev for its version on each launch. Update with `pi update`.
 # PI_ONLINE=1 pi turns the startup network work back on (it also refreshes the
@@ -88,7 +96,7 @@ if [[ -x "$pinned_pi" && -x "$pinned_reader" ]]; then
   exec "$pinned_pi" "$@"
 fi
 
-if [[ "$actor" == 1 || -r /etc/realness/actor || -r /usr/local/lib/realness/package.json ]]; then
+if [[ "$actor" == 1 ]]; then
   if pi_on_path="$(command -v pi 2>/dev/null)"; then
     if [[ "$pi_on_path" != "$root/bin/pi" ]]; then exec "$pi_on_path" "$@"; fi
   fi

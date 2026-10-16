@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { copyFileSync as copy_file_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, rmSync as rm_sync, symlinkSync as symlink_sync, writeFileSync as write_file_sync } from 'node:fs'
+import { copyFileSync as copy_file_sync, mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, rmSync as rm_sync, symlinkSync as symlink_sync, utimesSync as utimes_sync, writeFileSync as write_file_sync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { spawnSync as spawn_sync } from 'node:child_process'
 
@@ -79,4 +79,30 @@ test('hosted actors retain their preinstalled command without downloading upstre
     f.executable('pi', 'printf "actor:%s\\n" "$1"')
     assert.equal(f.run('--actor').stdout, 'actor:--version\n')
   } finally { f.cleanup() }
+})
+
+test('an actor resumes a session used in the last 13 minutes; older or none starts fresh', () => {
+  const f = fixture()
+  try {
+    f.install()
+    const start = (...args) => spawn_sync('/bin/bash', [join(f.root, 'bin/pi'), ...args], { env: f.env, encoding: 'utf8', timeout: 10_000 })
+    const first_arg = result => result.stdout.split('\n')[4]
+    const sessions = join(f.root, 'vault/Sessions')
+    assert.equal(first_arg(start('--actor')), '')
+    mkdir_sync(sessions, { recursive: true })
+    const session = join(sessions, 'last.html.gz')
+    write_file_sync(session, '')
+    assert.equal(first_arg(start('--actor')), '--continue')
+    assert.equal(first_arg(start('--actor', '--version')), '--version')
+    assert.equal(first_arg(start()), '')
+    const old = new Date(Date.now() - 14 * 60_000)
+    utimes_sync(session, old, old)
+    assert.equal(first_arg(start('--actor')), '')
+  } finally { f.cleanup() }
+})
+
+test('an actor resumes within the length of a thought', async () => {
+  const { THOUGHT_WINDOW_MS } = await import('../apps/realness/frontend/packages/thoughts/src/thoughts.js')
+  const minutes = read_file_sync(join(import.meta.dirname, 'pi'), 'utf8').match(/^thought_minutes=(\d+)$/m)[1]
+  assert.equal(Number(minutes) * 60_000, THOUGHT_WINDOW_MS)
 })
