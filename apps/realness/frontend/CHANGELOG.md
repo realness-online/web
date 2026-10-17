@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-g - 2026-10-17
+
 - **Halo in the monitor** - The service watch labels its machine panel HALOS.
 - Old loop and startup names are no longer accepted.
 
