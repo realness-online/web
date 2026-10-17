@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Two tabs, one terminal** - A tab that loses the terminal to another tab
+  says so, and a tab you come back to reconnects at once.
+- **Pi is there when you wake** - A woken computer shows Pi without a
+  reload.
+- **Your desktop syncs to Realness** - `realness sync` on your own computer
+  reaches your Realness files.
+
 ## v3.0.0-d - 2026-10-16
 
 - **Startup speaks plainly** - Waking shows steps like "Waking up" and
