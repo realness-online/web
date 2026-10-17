@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-f - 2026-10-17
+
 - **Sharper terminal graphs** - Braille dots, bar blocks, and box lines draw
   to the cell edges, so charts in the terminal join up cleanly.
 - **Faces on posters** - A poster's author shows as a small profile chip.
