@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-e - 2026-10-17
+
 - **Two tabs, one terminal** - A tab that loses the terminal to another tab
   says so, and a tab you come back to reconnects at once.
 - **Pi is there when you wake** - A woken computer shows Pi without a
