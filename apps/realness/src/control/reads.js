@@ -60,7 +60,7 @@ const folders = async (sync, path) =>
     .map(name => name.slice(0, -1))
 
 /** Unmasked halo records; output masks phones on the way out. */
-export const hosts = async (sync, name, now = Date.now()) => {
+export const halos = async (sync, name, now = Date.now()) => {
   const names = name ? [name] : await folders(sync, 'can://halos/')
   const out = []
   for (const halo_name of names) {
@@ -101,7 +101,7 @@ export const quiet_halos = async sync => {
 
 /** Every actor any halo last reported, tagged with that halo. */
 export const actors = async (sync, id, now) => {
-  const rows = (await hosts(sync, null, now)).flatMap(
+  const rows = (await halos(sync, null, now)).flatMap(
     ({ halo, age_s, actors }) =>
       actors.map(actor => ({ ...actor, halo: halo.name, age_s }))
   )
@@ -126,8 +126,7 @@ const read_loop = html => {
   for (const name of ['depth', 'runs', 'tokens'])
     if (loop[name] !== undefined && loop[name] !== '')
       loop[name] = Number(loop[name])
-  /** A loop record written before the rename carries `halo`; both name a halo. */
-  loop.halo = loop.halo ?? loop.host ?? ''
+  loop.halo = loop.halo ?? ''
   return loop
 }
 

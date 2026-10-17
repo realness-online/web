@@ -132,14 +132,14 @@ describe('realness gate', () => {
       {
         type: 'startup-stage',
         source: 'gate',
-        stage: 'starting_host',
+        stage: 'starting_halo',
         state: 'starting',
         elapsed_ms: 0
       },
       {
         type: 'startup-stage',
         source: 'gate',
-        stage: 'starting_host',
+        stage: 'starting_halo',
         state: 'complete',
         elapsed_ms: 900
       },
@@ -168,7 +168,7 @@ describe('realness gate', () => {
   it('a wake that fails mid-stream is a 503 with the gate message', async () => {
     fetch.mockResolvedValueOnce(
       new Response(
-        `${JSON.stringify({ type: 'startup-stage', source: 'gate', stage: 'starting_host', state: 'failed' })}\n${JSON.stringify({ type: 'error', text: 'the halo did not wake in time; try again' })}\n`
+        `${JSON.stringify({ type: 'startup-stage', source: 'gate', stage: 'starting_halo', state: 'failed' })}\n${JSON.stringify({ type: 'error', text: 'the halo did not wake in time; try again' })}\n`
       )
     )
     await expect(start_actor(user)).rejects.toMatchObject({

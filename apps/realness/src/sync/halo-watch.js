@@ -17,7 +17,7 @@ const halo_states = async (
   { now = Date.now(), quiet_ms = QUIET_AFTER_MS } = {}
 ) => {
   const folders = (await storage.list('halos/')).folders ?? []
-  const hosts = []
+  const halos = []
   for (const name of folders) {
     if (!HALO.test(name)) continue
     const { checked, state } = await read_halo_state(storage, name, {
@@ -28,13 +28,13 @@ const halo_states = async (
     const age_s = Number.isFinite(at)
       ? Math.max(0, Math.floor((now - at) / MS_PER_SECOND))
       : null
-    hosts.push({ name, checked, age_s, state })
+    halos.push({ name, checked, age_s, state })
   }
-  return hosts
+  return halos
 }
 
-const failed = hosts =>
-  hosts
+const failed = halos =>
+  halos
     .filter(host => host.state === 'failed')
     .map(({ name, checked, age_s }) => ({ name, checked, age_s }))
     .sort((a, b) => (b.age_s ?? Infinity) - (a.age_s ?? Infinity))
@@ -55,11 +55,11 @@ export const halo_health = async (
   storage,
   { now = Date.now(), quiet_ms = QUIET_AFTER_MS, statuses = null } = {}
 ) => {
-  const hosts = await halo_states(storage, { now, quiet_ms })
+  const halos = await halo_states(storage, { now, quiet_ms })
   return {
     checked: new Date(now).toISOString(),
     quiet_ms,
-    quiet: await with_causes(failed(hosts), statuses),
-    hosts: hosts.map(({ name, state }) => ({ name, state }))
+    quiet: await with_causes(failed(halos), statuses),
+    halos: halos.map(({ name, state }) => ({ name, state }))
   }
 }

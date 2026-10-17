@@ -140,7 +140,7 @@ test('dashboard shows halos, projection, and model tokens from fixtures', () => 
   const snapshot = {
     panels: {
       billing: { status: 'ok', exports: [bill] },
-      hosts: {
+      halos: {
         rows: [
           {
             name: 'host-a',
@@ -175,7 +175,7 @@ test('dashboard shows halos, projection, and model tokens from fixtures', () => 
 test('health lights cover halo, sync, proxy, and gate with words', async () => {
   const { health_lights } = await import('#root/src/command/watch-terminal.js')
   const panels = {
-    hosts: { rows: [{ name: 'h', state: 'quiet' }] },
+    halos: { rows: [{ name: 'h', state: 'quiet' }] },
     services: {
       status: 'ok',
       rows: [
@@ -228,7 +228,7 @@ test('budget panel lines show cost and budget with projection', async () => {
 
 test('people panel from fixtures', async () => {
   const { people_lines } = await import('#root/src/command/watch-terminal.js')
-  const hosts = {
+  const halos = {
     rows: [
       {
         name: 'r-1',
@@ -239,7 +239,7 @@ test('people panel from fixtures', async () => {
     ]
   }
   const cost = { rows: [{ day: { cost: 3.4 }, month: { cost: 44.05 } }] }
-  const lines = people_lines({ hosts, cost }, 50, false)
+  const lines = people_lines({ halos, cost }, 50, false)
   assert.ok(lines.some(l => l.includes('Active 1/1')))
   assert.ok(lines.some(l => l.includes('2m ago')))
   assert.ok(lines.every(l => [...l.replace(/\[[0-9;]*m/g, '')].length <= 50))

@@ -452,8 +452,8 @@ test('a global admin reads halo status; a person and a forger cannot', async () 
   await storage.put('admins.html', `<a href="tel:${B}">admin</a>`)
   await storage.put(key, '<article itemscope itemtype="/halo"></article>\n')
   assert.equal(await status('GET', key, { headers: as(B) }), 200)
-  const hosts = await (await call('GET', 'halos/', { headers: as(B) })).json()
-  assert.deepEqual(hosts.folders, ['realness-1'])
+  const halos = await (await call('GET', 'halos/', { headers: as(B) })).json()
+  assert.deepEqual(halos.folders, ['realness-1'])
   assert.equal(await status('GET', key, { headers: as(A) }), 403)
   assert.equal(
     await status('PUT', key, { headers: as(B), body: 'forged' }),

@@ -65,7 +65,7 @@ const make_command_runner = ({ actor, messages, status, set_messages }) => {
 /**
  * A message sent before Pi answers shows in the conversation at once and goes
  * to Pi the moment history proves it is listening.
- * @param {{ actor: { value: string | null }, draft: { value: string }, status: { value: string }, messages: { value: Array<object> }, working: { value: boolean }, open_watch: () => Promise<unknown> }} options
+ * @param {{ actor: { value: string | null }, draft: { value: string }, status: { value: string }, messages: { value: Array<object> }, working: { value: boolean }, open_watch: () => Promise<unknown> | undefined }} options
  */
 const make_waiting = ({
   actor,
@@ -277,7 +277,6 @@ export const use_chat = (
   const status = ref('')
   const working = ref(false)
   const startup = create_startup_status(status, set_working, get_startup_id)
-  /** @type {ReturnType<typeof setTimeout> | undefined} */
   const waiting_state = make_waiting({
     actor,
     draft,
@@ -287,6 +286,7 @@ export const use_chat = (
     open_watch: () => (in_flight ? undefined : watch())
   })
   let in_flight = false
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
   let watch_timer = undefined
   let watch_generation = 0
   /** @type {AbortController | null} */

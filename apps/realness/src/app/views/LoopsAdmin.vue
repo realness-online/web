@@ -105,7 +105,7 @@
         <tr v-for="loop in loops" :key="loop.id" :data-status="loop.status">
           <th scope="row" :title="loop.goal">{{ loop.id }}</th>
           <td>{{ loop.owner }}</td>
-          <td>{{ loop.halo ?? loop.host }}</td>
+          <td>{{ loop.halo }}</td>
           <td>
             {{ loop.reason ? `${loop.status}: ${loop.reason}` : loop.status }}
           </td>

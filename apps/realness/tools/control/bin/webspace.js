@@ -322,7 +322,7 @@ const main = async argv => {
   const local = is_local(config)
   const [command, ...args] = rest
 
-  const hosts = local
+  const halos = local
     ? {
         kind: 'lima',
         target: lima_target(config),
@@ -345,17 +345,17 @@ const main = async argv => {
         throw new Error(
           'setup makes the local Lima VM; there is nothing to set up in prod'
         )
-      return finish(await dev.setup(hosts.target))
+      return finish(await dev.setup(halos.target))
 
     case 'build':
       if (!local)
         throw new Error(
           'build makes the local template; cloud halos boot the fleet image'
         )
-      return finish(await dev.build(hosts.target))
+      return finish(await dev.build(halos.target))
 
     case 'halo':
-      return finish(await halo_command(hosts, config, args, flags, envName))
+      return finish(await halo_command(halos, config, args, flags, envName))
 
     case 'admin': {
       if (args.length !== 1)
@@ -577,7 +577,7 @@ const CHANGES = [
   'migrate'
 ]
 
-const halo_command = async (hosts, config, args, flags, envName) => {
+const halo_command = async (halos, config, args, flags, envName) => {
   const [action, ...rest] = args
   const changes =
     CHANGES.includes(action) && !(action === 'lockdown' && !flags.apply)
@@ -585,7 +585,7 @@ const halo_command = async (hosts, config, args, flags, envName) => {
     throw new Error(
       `${envName} halo ${action} changes production; rerun with --approved`
     )
-  const { target, mod } = hosts
+  const { target, mod } = halos
 
   switch (action) {
     case 'up':
@@ -657,7 +657,7 @@ const halo_command = async (hosts, config, args, flags, envName) => {
       const { hot_halos, hot_text, relieve } =
         await import('../../../src/control/hot.js')
       const sync = await reads.reader(envName)
-      const fleet = await reads.hosts(sync)
+      const fleet = await reads.halos(sync)
       const rows = fleet.map(row => ({
         name: row.halo.name,
         cpu_fraction: fraction(row.halo.cpu_fraction),
@@ -700,7 +700,7 @@ const halo_command = async (hosts, config, args, flags, envName) => {
       const { revoke } = await import('../../../src/control/halo-gcp.js')
       const { reassign } = await import('../../../src/gate/placement.js')
       const sync = await reads.reader(envName)
-      const fleet = await reads.hosts(sync)
+      const fleet = await reads.halos(sync)
       const failed = fleet.find(row => row.halo.name === name)
       if (!failed) throw new Error(`no halo record for ${name}`)
       const alive = fleet
@@ -876,7 +876,7 @@ const halo_command = async (hosts, config, args, flags, envName) => {
     }
 
     case 'list':
-      return listHalos(target, config, hosts.kind)
+      return listHalos(target, config, halos.kind)
 
     case 'status': {
       const records = await halo_status(envName, rest[0])
@@ -897,7 +897,7 @@ const listHalos = async (target, config, kind) => {
     'value(name,status,zone.basename())'
   )
   for (const line of names.split('\n').filter(Boolean)) note(line)
-  return { hosts: names.split('\n').filter(Boolean) }
+  return { halos: names.split('\n').filter(Boolean) }
 }
 
 /**

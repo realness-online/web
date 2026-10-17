@@ -138,10 +138,10 @@ test('a parked halo leaves the quiet list; every halo carries its state', async 
   const health = await halo_health(storage, { now: at })
   assert.ok(!health.quiet.some(h => h.name === 'realness-5'))
   assert.deepEqual(
-    health.hosts.find(h => h.name === 'realness-5'),
+    health.halos.find(h => h.name === 'realness-5'),
     { name: 'realness-5', state: 'parked' }
   )
-  assert.equal(health.hosts.find(h => h.name === 'realness-3').state, 'failed')
+  assert.equal(health.halos.find(h => h.name === 'realness-3').state, 'failed')
 })
 
 test('only an admin reads halo health, and it is never stored', async () => {

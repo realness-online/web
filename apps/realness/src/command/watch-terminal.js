@@ -465,14 +465,14 @@ const detail_rows = (panels, width, on, now) => {
     ...error_lines(panels.resources, on),
     ...resources
   ])
-  const reports = (panels.hosts?.rows ?? []).map(row =>
+  const reports = (panels.halos?.rows ?? []).map(row =>
     paint(
       `${row.name}  ${row.age_s === null || row.age_s === undefined ? 'no dated agent report' : `last agent report ${age(row.age_s)} ago`}`,
       'unknown',
       on
     )
   )
-  section('AGENT REPORT HISTORY', error_lines(panels.hosts, on).concat(reports))
+  section('AGENT REPORT HISTORY', error_lines(panels.halos, on).concat(reports))
   section(
     'MODEL SPEND - account ledger only',
     error_lines(panels.cost, on).concat(spend_lines(panels.cost?.rows, width))
@@ -535,7 +535,7 @@ const status_lines = (panels, width, on) => {
         .map(row => row.name)
     )
   )
-  for (const row of panels.hosts?.rows ?? [])
+  for (const row of panels.halos?.rows ?? [])
     if (running.has(row.name) && row.state === 'quiet')
       status.push(
         paint(
@@ -690,9 +690,9 @@ const usage = (label, free, total, on, bar = true) => {
 }
 
 /** Two rows per halo: actors and report age, then memory and disk meters. */
-const halo_panel_lines = (hosts, on, width = DEFAULT_WIDTH) => {
-  if (hosts?.status === 'failed') return [paint('UNAVAILABLE', 'failed', on)]
-  const rows = hosts?.rows ?? []
+const halo_panel_lines = (halos, on, width = DEFAULT_WIDTH) => {
+  if (halos?.status === 'failed') return [paint('UNAVAILABLE', 'failed', on)]
+  const rows = halos?.rows ?? []
   if (!rows.length) return ['no halo records']
   return rows.flatMap(row => {
     const name = paint(row.name, row.state, on)
@@ -749,11 +749,11 @@ const SERVICES = ['sync', 'proxy', 'gate']
 
 /**
  * The halo light: running and reporting, sleeping, quiet, or unknown.
- * @param {any} hosts
+ * @param {any} halos
  */
-const halo_light = hosts => {
-  if (hosts?.status === 'failed') return 'unknown'
-  const rows = hosts?.rows ?? []
+const halo_light = halos => {
+  if (halos?.status === 'failed') return 'unknown'
+  const rows = halos?.rows ?? []
   if (!rows.length) return 'unknown'
   if (rows.some(row => row.state === 'quiet')) return 'quiet'
   if (rows.some(row => row.state === 'running' || row.state === 'idle'))
@@ -784,7 +784,7 @@ const LIGHT_WORDS = {
 /** One colored light per piece; without color each light names its state. */
 export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
   const lights = [
-    ['halo', halo_light(panels.hosts)],
+    ['halo', halo_light(panels.halos)],
     ...SERVICES.map(name => [name, service_light(panels.services, name)])
   ]
   const lit = lights.map(
@@ -938,7 +938,7 @@ const right_natural = (panels, on) =>
   widest([
     ...health_lights(panels, on, Infinity),
     ...machine_panel(panels.resources, on).lines,
-    ...halo_panel_lines(panels.hosts, on, Infinity),
+    ...halo_panel_lines(panels.halos, on, Infinity),
     model_panel_lines(panels.cost, Infinity, on)[0]
   ]) + BOX_SIDES
 
@@ -1054,7 +1054,7 @@ const dashboard = (panels, width, height, on, now) => {
   )
   const model_lines = model_panel_lines(panels.cost, right - BOX_SIDES, on)
   const lights = health_lights(panels, on, right - BOX_SIDES)
-  const halo_lines = halo_panel_lines(panels.hosts, on, right - BOX_SIDES)
+  const halo_lines = halo_panel_lines(panels.halos, on, right - BOX_SIDES)
   const model_height = model_lines.length + 2
   const health_height = lights.length + 2
   const fixed = health_height + model_height
@@ -1075,7 +1075,7 @@ const dashboard = (panels, width, height, on, now) => {
     ...tile('HEALTH', lights, right, health_height, on),
     ...tile(machines_title, machine_lines, right, machines_rows, on),
     ...tile(
-      `HOSTS  ${(panels.hosts?.rows ?? []).length}`,
+      `HALOS  ${(panels.halos?.rows ?? []).length}`,
       halo_lines,
       right,
       halos_rows,
@@ -1159,10 +1159,10 @@ export const interval_for = (key, current_ms) => {
 }
 
 export const people_lines = (panels, width = DEFAULT_WIDTH, on = true) => {
-  const hosts = panels.hosts?.rows ?? []
-  const running = hosts.filter(h => h.state === 'running').length
-  const last_report = hosts.length
-    ? Math.min(...hosts.map(h => h.age_s ?? Infinity))
+  const halos = panels.halos?.rows ?? []
+  const running = halos.filter(h => h.state === 'running').length
+  const last_report = halos.length
+    ? Math.min(...halos.map(h => h.age_s ?? Infinity))
     : null
   const cost = panels.cost?.rows ?? []
   const today = cost.reduce((s, r) => s + (r.day?.cost ?? 0), 0)
@@ -1170,7 +1170,7 @@ export const people_lines = (panels, width = DEFAULT_WIDTH, on = true) => {
   return [
     pack(
       [
-        `Active ${running}/${hosts.length}`,
+        `Active ${running}/${halos.length}`,
         last_report !== null && Number.isFinite(last_report)
           ? `${age(Math.max(0, Math.floor(last_report)))} ago`
           : 'no report',
@@ -1179,7 +1179,7 @@ export const people_lines = (panels, width = DEFAULT_WIDTH, on = true) => {
       width,
       '  '
     ),
-    ...hosts.map(
+    ...halos.map(
       row =>
         `${row.name}  ${row.actors ? `${row.actors.running} run` : '?'}  ${row.age_s === null ? 'no report' : `${age(row.age_s)} ago`}`
     )

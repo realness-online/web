@@ -197,9 +197,9 @@ test('a halo record with no recent report is quiet, and its age is shown', async
     }),
     now
   })
-  assert.equal(snapshot.panels.hosts.status, 'ok')
-  assert.equal(snapshot.panels.hosts.rows[0].state, 'quiet')
-  assert.ok(snapshot.panels.hosts.rows[0].age_s >= 300)
+  assert.equal(snapshot.panels.halos.status, 'ok')
+  assert.equal(snapshot.panels.halos.rows[0].state, 'quiet')
+  assert.ok(snapshot.panels.halos.rows[0].age_s >= 300)
   assert.equal(snapshot.panels.cost.rows[0].month.cost, 1.5)
 })
 
@@ -221,7 +221,7 @@ test('a planned park reads parked, never quiet', async () => {
     }),
     now
   })
-  assert.equal(snapshot.panels.hosts.rows[0].state, 'parked')
+  assert.equal(snapshot.panels.halos.rows[0].state, 'parked')
 })
 
 test('a halo with running actors reports running, and no actors reports sleeping', async () => {
@@ -240,7 +240,7 @@ test('a halo with running actors reports running, and no actors reports sleeping
     }),
     now
   })
-  assert.equal(running.panels.hosts.rows[0].state, 'running')
+  assert.equal(running.panels.halos.rows[0].state, 'running')
   const asleep = await health_snapshot({
     store: store({
       'can://halos/': ['host-1/'],
@@ -257,7 +257,7 @@ test('a halo with running actors reports running, and no actors reports sleeping
     }),
     now
   })
-  assert.equal(asleep.panels.hosts.rows[0].state, 'sleeping')
+  assert.equal(asleep.panels.halos.rows[0].state, 'sleeping')
 })
 
 test('one failing read fails only its own panel', async () => {
@@ -273,7 +273,7 @@ test('one failing read fails only its own panel', async () => {
       }
     }
   })
-  assert.equal(snapshot.panels.hosts.status, 'ok')
+  assert.equal(snapshot.panels.halos.status, 'ok')
   assert.equal(snapshot.panels.cost.status, 'failed')
   assert.match(snapshot.panels.cost.error, /ledger unreadable/)
   assert.equal(snapshot.panels.sign_on.status, 'ok')
@@ -320,8 +320,8 @@ test('panel labels stay dim while data keeps its contrast', () => {
   assert.equal(lines[1], 'TODAY $1.24')
   assert.ok(!lines.join('\n').includes('\x1b[7m'))
   assert.deepEqual(
-    panel({ title: 'HOSTS', lines: ['host-a running'], on: false }),
-    ['HOSTS', 'host-a running']
+    panel({ title: 'HALOS', lines: ['host-a running'], on: false }),
+    ['HALOS', 'host-a running']
   )
 })
 
@@ -331,7 +331,7 @@ test('the frame holds the panels, interval, and controls', () => {
       checked: '2026-10-09T17:00:00.000Z',
       who: { phone },
       panels: {
-        hosts: {
+        halos: {
           status: 'ok',
           rows: [
             {
@@ -393,7 +393,7 @@ test('a failed panel prints its error and the time of the last read', () => {
       checked: '2026-10-09T17:00:00.000Z',
       who: null,
       panels: {
-        hosts: {
+        halos: {
           status: 'failed',
           error: 'boom',
           at: '2026-10-09T16:59:00.000Z'
@@ -595,7 +595,7 @@ test('sync shows a summary and wraps full problem paths', () => {
 test('scrolling exposes all rows instead of silently hiding sections', () => {
   const snapshot = {
     panels: {
-      hosts: {
+      halos: {
         rows: Array.from({ length: 30 }, (_, index) => ({
           name: `host-${index}`,
           state: 'sleeping'
@@ -648,7 +648,7 @@ test('main view shows charts and cloud power state without diagnostic noise', ()
           }
         ]
       },
-      hosts: { rows: [{ name: 'chat-ui', state: 'sleeping' }] },
+      halos: { rows: [{ name: 'chat-ui', state: 'sleeping' }] },
       services: {
         status: 'ok',
         rows: [{ name: 'sync', found: true, ready: true }]
@@ -693,7 +693,7 @@ test('details keep deleted machine reports separate from empty cloud inventory',
           { project: 'realness-development', instances: [], disks: [] }
         ]
       },
-      hosts: {
+      halos: {
         status: 'ok',
         rows: [
           {

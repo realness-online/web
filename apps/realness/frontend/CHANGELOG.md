@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Halo in the monitor** - The service watch labels its machine panel HALOS.
+- Old loop and startup names are no longer accepted.
+
 ## v3.0.0-f - 2026-10-17
 
 - **Sharper terminal graphs** - Braille dots, bar blocks, and box lines draw

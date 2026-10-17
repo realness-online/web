@@ -45,7 +45,7 @@ describe('@/use/actor-startup', () => {
     const waking = {
       type: 'startup-stage',
       source: 'gate',
-      stage: 'starting_host',
+      stage: 'starting_halo',
       state: 'starting',
       elapsed_ms: 1200
     }
@@ -63,7 +63,7 @@ describe('@/use/actor-startup', () => {
     const pending = startup.prepare()
     controller.enqueue(new TextEncoder().encode(`${JSON.stringify(waking)}\n`))
     await vi.waitFor(() =>
-      expect(startup.progress.value?.stage).toBe('starting_host')
+      expect(startup.progress.value?.stage).toBe('starting_halo')
     )
     expect(startup.startup_id.value).toBe(null)
     controller.enqueue(new TextEncoder().encode(`${JSON.stringify(ready)}\n`))

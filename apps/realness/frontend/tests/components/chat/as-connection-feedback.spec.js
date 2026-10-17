@@ -26,7 +26,7 @@ describe('@/components/chat/as-connection-feedback', () => {
     expect(feedback.get('time').text()).toBe('11 s')
     await feedback.setProps({
       progress: {
-        stage: 'starting_host',
+        stage: 'starting_halo',
         state: 'complete',
         elapsed_ms: 15000
       }
@@ -47,7 +47,7 @@ describe('@/components/chat/as-connection-feedback', () => {
     expect(feedback.text()).not.toContain('Waking up')
     expect(feedback.get('time').text()).toBe('40 s')
     await feedback.setProps({
-      progress: { stage: ['starting_host'], elapsed_ms: 40000 }
+      progress: { stage: ['starting_halo'], elapsed_ms: 40000 }
     })
     expect(feedback.get('[role="status"]').text()).toBe('Connecting...')
     feedback.unmount()

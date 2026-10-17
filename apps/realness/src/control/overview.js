@@ -5,7 +5,7 @@ import { GIB, ISO_DATE } from '#root/lib/units.js'
 
 /** Each source takes { sync, config, now } and returns plain data. */
 const SOURCES = {
-  halos: ({ sync, now }) => reads.hosts(sync, null, now),
+  halos: ({ sync, now }) => reads.halos(sync, null, now),
   quiet: ({ sync }) => reads.quiet_halos(sync),
   loops: ({ sync }) => reads.loops(sync),
   services: ({ config }) => cloud.services(config.cloud),
