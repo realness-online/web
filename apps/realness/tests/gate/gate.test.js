@@ -419,8 +419,8 @@ test('z5: startup progress begins with the gate wake, then the halo stages', asy
   const { gate, at } = await api_gate(
     api,
     wake_with([
-      { stage: 'starting_host', state: 'starting', elapsed_ms: 0 },
-      { stage: 'starting_host', state: 'complete', elapsed_ms: 900 }
+      { stage: 'starting_halo', state: 'starting', elapsed_ms: 0 },
+      { stage: 'starting_halo', state: 'complete', elapsed_ms: 900 }
     ])
   )
   const reply = await fetch(`${at}/v1/startup`, {
@@ -436,8 +436,8 @@ test('z5: startup progress begins with the gate wake, then the halo stages', asy
       event.source ?? ''
     ]),
     [
-      ['startup-stage', 'starting_host', 'gate'],
-      ['startup-stage', 'starting_host', 'gate'],
+      ['startup-stage', 'starting_halo', 'gate'],
+      ['startup-stage', 'starting_halo', 'gate'],
       ['startup', '', ''],
       ['actor-ready', '', '']
     ]
@@ -450,7 +450,7 @@ test('z5: a refusal after the wake streamed becomes an error record', async () =
   const api = await ndjson_api(503)
   const { gate, at } = await api_gate(
     api,
-    wake_with([{ stage: 'starting_host', state: 'complete', elapsed_ms: 1 }])
+    wake_with([{ stage: 'starting_halo', state: 'complete', elapsed_ms: 1 }])
   )
   const reply = await fetch(`${at}/v1/startup`, {
     method: 'POST',
@@ -466,7 +466,7 @@ test('z5: a refusal after the wake streamed becomes an error record', async () =
 test('z5: a wake that fails mid-stream ends with an error record', async () => {
   const api = await ndjson_api(200)
   const { gate, at } = await api_gate(api, async ({ watch } = {}) => {
-    watch?.({ stage: 'starting_host', state: 'failed', elapsed_ms: 90_000 })
+    watch?.({ stage: 'starting_halo', state: 'failed', elapsed_ms: 90_000 })
     throw new Error('the halo did not wake in time; try again')
   })
   const reply = await fetch(`${at}/v1/startup`, {

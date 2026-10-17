@@ -90,7 +90,7 @@ export const make_waker = ({
 
   /** @param {'starting' | 'complete' | 'failed'} state */
   const emit = (state, note) => {
-    last = { stage: 'starting_host', state, elapsed_ms: now() - began, note }
+    last = { stage: 'starting_halo', state, elapsed_ms: now() - began, note }
     stage(note)
     for (const watch of watchers) watch(last)
   }
@@ -162,5 +162,5 @@ export const make_waker = ({
 }
 
 /**
- * @typedef {{ stage: 'starting_host', state: 'starting' | 'complete' | 'failed', elapsed_ms: number, note: string }} WakeEvent
+ * @typedef {{ stage: 'starting_halo', state: 'starting' | 'complete' | 'failed', elapsed_ms: number, note: string }} WakeEvent
  */

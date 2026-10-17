@@ -216,7 +216,6 @@ export class Loops {
     const loop = {
       id,
       halo: this.halo,
-      host: this.halo,
       owner: this.store.get(id)?.owner ?? '',
       ...this.loops[id]
     }
@@ -228,7 +227,6 @@ export class Loops {
     const props = [
       'id',
       'halo',
-      'host',
       'owner',
       'parent',
       'depth',
