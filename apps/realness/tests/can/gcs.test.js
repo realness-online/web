@@ -28,14 +28,61 @@ const fake_fetch = t => {
   return calls
 }
 
-test('text is uploaded gzip, marked with contentEncoding', async t => {
+/** The JSON resource and the bytes of one multipart/related upload. */
+const parts = ({ headers, body }) => {
+  const boundary = headers['content-type'].split('boundary=')[1]
+  const text = body.toString('latin1')
+  const [, json_part, bytes_part] = text.split(`--${boundary}`)
+  const resource = JSON.parse(json_part.split('\r\n\r\n')[1])
+  const bytes = Buffer.from(
+    bytes_part.split('\r\n\r\n').slice(1).join('\r\n\r\n').slice(0, -2),
+    'latin1'
+  )
+  return { resource, bytes }
+}
+
+test('text is uploaded gzip, marked with contentEncoding and its real size', async t => {
   const calls = fake_fetch(t)
-  await create_gcs({ bucket: 'b', token: async () => 't' }).put(
+  await create_gcs({ bucket: 'b', token: async () => 't', prefix: 'p/' }).put(
     'people/+1/notes.md',
     notes
   )
-  assert.match(calls[0].url, /[?&]contentEncoding=gzip(&|$)/)
-  assert.equal(gunzipSync(calls[0].init.body).toString('utf8'), notes)
+  assert.match(calls[0].url, /[?&]uploadType=multipart(&|$)/)
+  const { resource, bytes } = parts(calls[0].init)
+  assert.deepEqual(resource, {
+    name: 'p/people/+1/notes.md',
+    contentEncoding: 'gzip',
+    metadata: { size: String(Buffer.byteLength(notes)) }
+  })
+  assert.equal(gunzipSync(bytes).toString('utf8'), notes)
+})
+
+test('walk_meta reports the real size of a gzip object, and stored size for older ones', async t => {
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async () =>
+      new Response(
+        JSON.stringify({
+          items: [
+            {
+              name: 'f/new.md',
+              generation: '2',
+              size: '74',
+              updated: 'u',
+              metadata: { size: '10000' }
+            },
+            { name: 'f/old.md', generation: '1', size: '74', updated: 'u' }
+          ]
+        })
+      )
+  )
+  const found = await create_gcs({
+    bucket: 'b',
+    token: async () => 't'
+  }).walk_meta('f/')
+  assert.equal(found['new.md'].size, 10000)
+  assert.equal(found['old.md'].size, 74)
 })
 
 test('binary keys and tiny text are uploaded as given', async t => {

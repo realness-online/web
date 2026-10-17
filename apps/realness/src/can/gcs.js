@@ -11,6 +11,7 @@
  * Text keys are stored gzip (`contentEncoding`). Fetch decodes on the way
  * out, so `get` returns exactly what `put` was given.
  */
+import { randomUUID as random_uuid } from 'node:crypto'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { gzipSync as gzip_sync } from 'node:zlib'
@@ -35,6 +36,34 @@ const at_rest = (key, body, gzip) => {
     ? { body: packed, encoding: 'gzip' }
     : { body }
 }
+
+/** One multipart/related upload body: the object's JSON resource, then its bytes. */
+const multipart = (resource, bytes) => {
+  const boundary = `realness-${random_uuid()}`
+  return {
+    type: `multipart/related; boundary=${boundary}`,
+    body: Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\ncontent-type: application/json; charset=utf-8\r\n\r\n${JSON.stringify(resource)}\r\n--${boundary}\r\ncontent-type: application/octet-stream\r\n\r\n`
+      ),
+      bytes,
+      Buffer.from(`\r\n--${boundary}--\r\n`)
+    ])
+  }
+}
+
+/** The upload for one stored body: gzip carries its real size in metadata. */
+const upload_of = (name, body, stored) =>
+  stored.encoding
+    ? multipart(
+        {
+          name,
+          contentEncoding: stored.encoding,
+          metadata: { size: String(Buffer.byteLength(body)) }
+        },
+        stored.body
+      )
+    : { type: 'application/octet-stream', body: stored.body }
 
 /** Cache a token until a minute before it expires. */
 const cached = fetch_token => {
@@ -138,17 +167,16 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
      */
     async put(key, body, { if_version, gzip } = {}) {
       const stored = at_rest(key, body, gzip)
-      const encoding = stored.encoding && `contentEncoding=${stored.encoding}`
       const query = [
-        `uploadType=media`,
-        `name=${object(key)}`,
-        encoding,
+        `uploadType=${stored.encoding ? 'multipart' : 'media'}`,
+        stored.encoding ? '' : `name=${object(key)}`,
         precondition(if_version)
       ].filter(Boolean)
+      const upload = upload_of(`${prefix}${key}`, body, stored)
       const response = await call(`${UPLOAD}/${bucket}/o?${query.join('&')}`, {
         method: 'POST',
-        headers: { 'content-type': 'application/octet-stream' },
-        body: stored.body
+        headers: { 'content-type': upload.type },
+        body: upload.body
       })
       if (response.status === HTTP.PRECONDITION_FAILED)
         throw new Conflict(`${key} changed`)
@@ -280,7 +308,8 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         bucket,
         call,
         fail,
-        fields: 'items(name,generation,size,updated),nextPageToken',
+        fields:
+          'items(name,generation,size,updated,metadata/size),nextPageToken',
         label: `walk ${folder}`,
         scope
       })
@@ -290,7 +319,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         if (name && !name.endsWith('/'))
           found[name] = {
             version: item.generation,
-            size: Number(item.size),
+            size: Number(item.metadata?.size ?? item.size),
             updated: item.updated
           }
       }

@@ -83,7 +83,11 @@ test('put returns the new generation and asks for it with a media upload', async
 test('text long enough to shrink is stored gzip and the query says so', async t => {
   const calls = routed_fetch(t, () => json({ generation: '1' }))
   await store().put('people/+1/notes.md', '# Notes\n'.repeat(50))
-  assert.match(calls[0].url, /contentEncoding=gzip/)
+  assert.match(calls[0].url, /uploadType=multipart/)
+  assert.match(
+    calls[0].init.body.toString('latin1'),
+    /"contentEncoding":"gzip"/
+  )
 })
 
 test('text too short to shrink is stored as given', async t => {
