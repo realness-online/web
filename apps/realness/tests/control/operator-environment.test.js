@@ -19,7 +19,7 @@ test('a production sign-in never reads the development keychain entry', () => {
   assert.notEqual(keychain_for('production'), keychain)
 })
 
-test('local and development hosts register keys in the development sync bucket', async () => {
+test('local and development halos register keys in the development sync bucket', async () => {
   const { environment } = await import('../../tools/control/webspace.config.js')
   for (const name of ['local', 'development']) {
     assert.equal(environment(name).project, 'realness-development')
@@ -31,14 +31,16 @@ test('local and development hosts register keys in the development sync bucket',
   assert.equal(environment('development').name, 'development')
 })
 
-test('production host changes refuse to run without --approved', async () => {
+test('production halo changes require --approved', async () => {
   const { spawnSync } = await import('node:child_process')
   const bin = new URL('../../tools/control/bin/webspace.js', import.meta.url)
     .pathname
-  for (const verb of ['up', 'restart', 'down', 'drain', 'revoke']) {
+  for (const [command, verb] of ['halo'].flatMap(command =>
+    ['up', 'restart', 'down', 'drain', 'revoke'].map(verb => [command, verb])
+  )) {
     const run = spawnSync(
       process.execPath,
-      [bin, 'production', 'host', verb, 'realness-1'],
+      [bin, 'production', command, verb, 'realness-1'],
       {
         encoding: 'utf8',
         timeout: 20_000
@@ -48,13 +50,13 @@ test('production host changes refuse to run without --approved', async () => {
     assert.match(
       run.stdout + run.stderr,
       new RegExp(
-        `production host ${verb} changes production; rerun with --approved`
+        `production halo ${verb} changes production; rerun with --approved`
       )
     )
   }
 })
 
-test('production hosts register keys in the production sync bucket only', async () => {
+test('production halos register keys in the production sync bucket only', async () => {
   const { environment } = await import('../../tools/control/webspace.config.js')
   const config = environment('production')
   assert.equal(config.name, 'production')

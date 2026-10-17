@@ -4,7 +4,7 @@
  * Everything in the control plane is a call to something else - `gcloud`,
  * `limactl`, `bash`. argv arrays rather than a shell string, so a hostname or a
  * path with a space cannot turn into two arguments, and no quoting bug is
- * possible. Node runs on this Mac only; the guest and host steps are bash.
+ * possible. Node runs on this Mac only; the guest and halo steps are bash.
  */
 import { execFile as exec_file } from 'node:child_process'
 import { StringDecoder } from 'node:string_decoder'
@@ -54,7 +54,7 @@ export const attempt = async (command, args = [], options = {}) => {
 /**
  * Run a command with its output going straight to this terminal.
  *
- * For anything slow: a template build, a host bootstrap. The output is the
+ * For anything slow: a template build, a halo bootstrap. The output is the
  * progress report, and capturing it would mean showing nothing for minutes.
  */
 /** @type {(command: string, args?: string[], options?: object) => Promise<void>} */

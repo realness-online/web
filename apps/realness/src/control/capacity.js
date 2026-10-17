@@ -138,7 +138,7 @@ export const run_capacity = async (
   const request = async (method, path, body, cleanup = false) => {
     const payload = Buffer.from(
       JSON.stringify({
-        aud: 'realness-host',
+        aud: 'realness-halo',
         phone: config.owner,
         exp: Math.floor(Date.now() / ms_per_second) + pass_lifetime_seconds
       })
@@ -177,7 +177,7 @@ export const run_capacity = async (
     await checkpoint()
     const health = await request('GET', '/v1/health')
     if (!health.ok || !health.seed?.matches)
-      throw new Error('host seed is not ready')
+      throw new Error('halo seed is not ready')
     monitoring = monitor()
     for (const count of config.levels) {
       while (report.actors.length < count) {

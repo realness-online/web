@@ -47,7 +47,7 @@ hosting. It supports these paths rather than being another step in every request
 | Model proxy      | Model access and spending controls         | Model credentials and account limits stay outside the person's environment.      |
 
 An execution server can run multiple isolated harness environments.
-The code calls this server the **host**.
+The code calls this server the **halo**.
 Gate, sync, and model proxy are services, not three more personal machines.
 They serve many people.
 

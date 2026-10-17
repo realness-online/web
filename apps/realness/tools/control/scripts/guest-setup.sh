@@ -22,7 +22,7 @@ sudo mkdir -p "$ROOT"
 sudo chown "$(id -u):$(id -g)" "$ROOT"
 cd "$ROOT"
 
-bash "$(dirname "$0")/../../../server/host/scripts/node-install.sh"
+bash "$(dirname "$0")/../../../server/halo/scripts/node-install.sh"
 
 if [ ! -x firecracker ]; then
   log "firecracker $FC_VERSION"

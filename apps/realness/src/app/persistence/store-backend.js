@@ -94,7 +94,7 @@ export const after_directory = async itemids => {
  * @param {object} meta
  * @returns {Promise<object>} the upload, or the stored copy's metadata
  */
-export const upload_unless_sold = async (path, body, meta) => {
+const upload_unless_sold = async (path, body, meta) => {
   try {
     return await upload(path, body, meta)
   } catch (error) {

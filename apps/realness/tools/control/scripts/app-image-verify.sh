@@ -36,7 +36,7 @@ else
 fi
 
 if ! ip link show "$TAP" > /dev/null 2>&1; then
-  echo "no $TAP: run 'sudo bash /mnt/fc/server/host/scripts/net-up.sh' first" >&2
+  echo "no $TAP: run 'sudo bash /mnt/fc/server/halo/scripts/net-up.sh' first" >&2
   exit 1
 fi
 

@@ -11,72 +11,72 @@ import {
   scale_text
 } from '../../src/control/scale.js'
 
-/* A price that leaves room for a second host inside the ceiling. */
+/* A price that leaves room for a second halo inside the ceiling. */
 const price = 0.06
 
-test('one host holds the demand, so no second host earns its bill', () => {
+test('one halo holds the demand, so no second halo earns its bill', () => {
   const choice = scale_choice({
-    actors_per_host: 34,
+    actors_per_halo: 34,
     hourly_cost: price,
     demand: 20
   })
-  assert.equal(choice.hosts, 1)
+  assert.equal(choice.halos, 1)
   assert.equal(choice.binding, 'none today')
-  assert.match(choice.choice, /^one host/)
-  assert.match(choice.because[0], /20 actors \/ 34 per host = 1 host\(s\)/)
+  assert.match(choice.choice, /^one halo/)
+  assert.match(choice.because[0], /20 actors \/ 34 per halo = 1 halo\(s\)/)
   assert.match(choice.because[1], /ceiling \$100/)
 })
 
-test('demand past one host names memory as what binds', () => {
+test('demand past one halo names memory as what binds', () => {
   const choice = scale_choice({
-    actors_per_host: 34,
+    actors_per_halo: 34,
     hourly_cost: price,
     demand: 60
   })
-  assert.equal(choice.hosts, 2)
+  assert.equal(choice.halos, 2)
   assert.equal(choice.binding, 'memory')
-  assert.match(choice.choice, /^2 hosts: 60 actors/)
+  assert.match(choice.choice, /^2 halos: 60 actors/)
   assert.ok(
     choice.monthly_usd < BUDGET_USD,
-    'two hosts are still inside the ceiling'
+    'two halos are still inside the ceiling'
   )
 })
 
 test('a price that breaks the ceiling names budget instead', () => {
   const choice = scale_choice({
-    actors_per_host: 34,
+    actors_per_halo: 34,
     hourly_cost: 0.5,
     demand: 30
   })
-  assert.equal(choice.hosts, 1)
+  assert.equal(choice.halos, 1)
   assert.equal(choice.binding, 'budget')
-  assert.equal(choice.budget_room_hosts, Math.floor(BUDGET_USD / (0.5 * 730)))
+  assert.equal(choice.budget_room_halos, Math.floor(BUDGET_USD / (0.5 * 730)))
   assert.match(choice.because[1], /ceiling \$100/)
 })
 
-test('demand inside one host, close to the tap ceiling, names addresses', () => {
+test('demand inside one halo, close to the tap ceiling, names addresses', () => {
   const nearly_full = scale_choice({
-    actors_per_host: 250,
+    actors_per_halo: 250,
     hourly_cost: price,
     demand: 250
   })
-  assert.equal(nearly_full.hosts, 1)
+  assert.equal(nearly_full.halos, 1)
   assert.equal(nearly_full.binding, 'addresses')
   assert.ok(
-    nearly_full.budget_room_hosts >= 1,
+    nearly_full.budget_room_halos >= 1,
     'the price still fits the ceiling'
   )
   assert.match(
     scale_text(nearly_full),
-    /254 TAPs is per host: more actors need another host, not a bigger one/
+    /254 TAPs is per halo: more actors need another halo, not a bigger one/
   )
 })
 
-test('more actors than one host can address is refused outright', () => {
+test('more actors than one halo can address is refused outright', () => {
   assert.throws(
     () =>
       scale_choice({
-        actors_per_host: 200,
+        actors_per_halo: 200,
         hourly_cost: price,
         demand: ACTOR_TAPS + 1
       }),
@@ -90,17 +90,17 @@ test('more actors than one host can address is refused outright', () => {
 
 test('an unmeasured actor count or price is refused', () => {
   assert.throws(
-    () => scale_choice({ actors_per_host: 0, hourly_cost: price }),
+    () => scale_choice({ actors_per_halo: 0, hourly_cost: price }),
     /measured actor count/
   )
   assert.throws(
-    () => scale_choice({ actors_per_host: 34, hourly_cost: 0 }),
+    () => scale_choice({ actors_per_halo: 34, hourly_cost: 0 }),
     /hourly price/
   )
 })
 
-test('demand defaults to what one host holds, which is always one host', () => {
-  const choice = scale_choice({ actors_per_host: 40, hourly_cost: price })
+test('demand defaults to what one halo holds, which is always one halo', () => {
+  const choice = scale_choice({ actors_per_halo: 40, hourly_cost: price })
   assert.equal(choice.demand, 40)
-  assert.equal(choice.hosts, 1)
+  assert.equal(choice.halos, 1)
 })

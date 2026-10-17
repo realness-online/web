@@ -227,7 +227,7 @@ class Engine {
   }
 }
 
-export class Encoder {
+class Encoder {
   constructor(engine, handle) {
     this.engine = engine
     this.handle = handle
@@ -336,7 +336,7 @@ export const paste_encode = (engine, text, bracketed) => {
   return encoded
 }
 
-export class Terminal {
+class Terminal {
   constructor(engine, handle, cols, rows) {
     this.engine = engine
     this.handle = handle

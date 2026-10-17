@@ -62,7 +62,7 @@ const LISTENERS = [
   }
 ]
 
-export const KEY_GROUPS = [
+const KEY_GROUPS = [
   {
     id: 'appearance',
     title: 'Poster appearance',

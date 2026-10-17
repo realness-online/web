@@ -17,7 +17,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 const { root, frontend } = product_paths()
 const project = `${root}/`
 export const local_artifacts = out_path('local')
-const secret_file = out_path('host-pass-secret')
+const secret_file = out_path('halo-pass-secret')
 const REQUEST_TIMEOUT_MS = 3000
 const START_TIMEOUT_MS = 300_000
 const POLL_MS = 500
@@ -157,9 +157,9 @@ const launch_local = async service => {
   await mkdir(local_artifacts, { recursive: true })
   const env = { ...process.env, ...service.env }
   if (service.name === 'gate') {
-    env.HOST_PASS_SECRET = (await read_file(secret_file, 'utf8')).trim()
-    if (!env.HOST_PASS_SECRET)
-      throw new Error('The local host pass secret is empty')
+    env.HALO_PASS_SECRET = (await read_file(secret_file, 'utf8')).trim()
+    if (!env.HALO_PASS_SECRET)
+      throw new Error('The local halo pass secret is empty')
   }
   const child = spawn(service.command, service.args, {
     cwd: service.cwd,

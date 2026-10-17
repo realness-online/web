@@ -4,11 +4,11 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  *
  * who     null for a stranger, `{ phone: "+A" }` for a person,
  *         `{ instance: "/+A/harnesses/<id>" }` for a harness instance,
- *         `{ host_name: "realness-1" }` for a host holding a record pass,
- *         `{ gate: "realness-1" }` for the gate that may wake that host.
+ *         `{ halo_name: "realness-1" }` for a halo holding a record pass,
+ *         `{ gate: "realness-1" }` for the gate that may wake that halo.
  * action  "get", "list", "write", or "delete".
  * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
- *         `loops/<id>/...`, or `hosts/<name>/...`.
+ *         `loops/<id>/...`, or `halos/<name>/...`.
  * grants  triples read from the owner's rights page (see rights.js).
  *
  * Deny by default. Ownership comes from the path, never from stored data.
@@ -18,7 +18,7 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
 const ACTIONS = new Set(['get', 'list', 'write', 'delete'])
 const PHONE = /^\+[1-9]\d{6,14}$/
 const INSTANCE = /^\/(\+[1-9]\d{6,14})\/harnesses\/([\w.-]+)$/
-const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
+const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LOOP = /^a-[a-f0-9]{12}$/
 /** hs-n2: `placements/<phone digits>.html`, written only by the gate. */
 const PLACEMENT = /^[1-9]\d{6,14}\.html$/
@@ -44,9 +44,9 @@ const subject = who => {
     return { phone: who.phone, admin: who.admin === true }
   const match = typeof who.instance === 'string' && who.instance.match(INSTANCE)
   if (match) return { owner: match[1], id: match[2] }
-  if (typeof who.host_name === 'string' && HOST.test(who.host_name))
-    return { host: who.host_name }
-  if (typeof who.gate === 'string' && HOST.test(who.gate))
+  const { halo_name: halo } = who
+  if (typeof halo === 'string' && HALO.test(halo)) return { halo }
+  if (typeof who.gate === 'string' && HALO.test(who.gate))
     return { gate: who.gate }
   return {}
 }
@@ -73,7 +73,7 @@ const owns_row = (action, owner, me) =>
 
 const loops_allowed = (action, owner, rest, me) => {
   const file = LOOP.test(owner ?? '') ? rest.join('/') : null
-  if (me.host)
+  if (me.halo)
     return (
       (action === 'write' && file === 'record.html') ||
       (action === 'get' && file === 'stop.html')
@@ -83,7 +83,7 @@ const loops_allowed = (action, owner, rest, me) => {
   return action === 'write' && file === 'stop.html'
 }
 
-const hosts_allowed = (action, owner, rest, me) => {
+const halos_allowed = (action, owner, rest, me) => {
   const file = rest.join('/')
   const request =
     rest.length === 2 &&
@@ -95,8 +95,8 @@ const hosts_allowed = (action, owner, rest, me) => {
       file === 'lifecycle.html' &&
       (action === 'get' || action === 'write')
     )
-  if (me.host) {
-    if (owner !== me.host) return false
+  if (me.halo) {
+    if (owner !== me.halo) return false
     if (file === 'status.html' || file === 'lifecycle.html')
       return action === 'write' || action === 'get'
     return request && action === 'get'
@@ -138,7 +138,7 @@ export const can = (who, action, path, grants = []) => {
 
   if (root === 'subscriptions') return Boolean(owner) && me.phone === owner
   if (root === 'loops') return loops_allowed(action, owner, rest, me)
-  if (root === 'hosts') return hosts_allowed(action, owner, rest, me)
+  if (root === 'halos') return halos_allowed(action, owner, rest, me)
   if (root === 'placements')
     return (
       Boolean(me.gate) &&

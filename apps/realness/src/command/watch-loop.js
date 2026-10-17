@@ -2,6 +2,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { health_snapshot } from './watch-health.js'
 import {
   color_enabled,
+  body_capacity,
   frame,
   frame_rows,
   interval_for,
@@ -14,8 +15,32 @@ const QUIET_MS = 2 * MS_PER_MINUTE
 const DEFAULT_COLUMNS = 100
 const DEFAULT_ROWS = 30
 const SCROLL_STEP = 5
+const BOX_SIDES = 4
 
 const DEFAULT_INTERVAL_MS = 60_000
+
+/**
+ * Overwrite the previous frame from the top-left. Each line is erased before
+ * it is written, because erasing after a full-width row clears its last cell.
+ * The last row gets no newline, so a full-height frame never scrolls.
+ * @param {string} text
+ */
+export const in_place = text =>
+  `\x1b[H${text
+    .replace(/\n$/, '')
+    .split('\n')
+    .map(line => `\x1b[2K${line}`)
+    .join('\n')}\x1b[J`
+
+/**
+ * Redraw on terminal resize; returns the function that stops listening.
+ * @param {{ on?: Function, off?: Function }} stdout
+ * @param {() => void} draw
+ */
+const on_resize = (stdout, draw) => {
+  stdout.on?.('resize', draw)
+  return () => stdout.off?.('resize', draw)
+}
 
 /** @returns {'quit' | 'abort' | null} */
 const key_action = key => {
@@ -93,25 +118,24 @@ export const watch = async ({
       offset,
       Math.max(
         0,
-        frame_rows(snapshot, columns, on, details).length -
-          Math.max(0, rows - 5)
+        frame_rows(snapshot, columns - BOX_SIDES, on, details).length -
+          body_capacity(rows)
       )
     )
-    if (clear) stdout.write('\x1b[2J\x1b[H')
-    stdout.write(
-      frame({
-        snapshot,
-        width: columns,
-        height: rows,
-        interval_ms: interval,
-        now: Date.now(),
-        on,
-        message,
-        offset,
-        details
-      })
-    )
+    const text = frame({
+      snapshot,
+      width: columns,
+      height: rows,
+      interval_ms: interval,
+      now: Date.now(),
+      on,
+      message,
+      offset,
+      details
+    })
+    stdout.write(clear ? in_place(text) : text)
   }
+  const stop_resize = on_resize(stdout, draw)
 
   const once = async () => {
     try {
@@ -153,6 +177,7 @@ export const watch = async ({
       interval = interval_for(key.trim().toLowerCase(), interval)
     await once()
   }
+  stop_resize()
   if (stdin.setRawMode) stdin.setRawMode(false)
   stdin.pause?.()
   if (clear) stdout.write('\x1b[2J\x1b[H')

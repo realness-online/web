@@ -168,7 +168,7 @@ describe('@/components/chat/as-workspace', () => {
     const terminal = page.findComponent({ name: 'AsTui' })
     expect(terminal.props('finding')).toBe(true)
     expect(set_working).toHaveBeenLastCalledWith(true)
-    finish(new Response('host unreachable', { status: 502 }))
+    finish(new Response('halo unreachable', { status: 502 }))
     await flush_promises()
     expect(terminal.props('finding')).toBe(false)
     expect(terminal.props('problem')).toBe('Realness answered 502')

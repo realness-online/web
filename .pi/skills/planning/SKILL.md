@@ -75,7 +75,7 @@ flowchart LR
   a["a research angle"] --> b["b pick sources"]
   b --> d["d assemble"]
   c["c draft section 1"] --> d
-  d --> G{{"🚦 GATE 1<br/>shape approved"}}
+  d --> G{{"◆ GATE 1<br/>shape approved"}}
 
   classDef gate fill:#7e531c,stroke:#dfad6d,color:#e1be89;
   classDef done fill:none,stroke:#525252,stroke-dasharray:3 3,color:#525252;
@@ -98,26 +98,56 @@ Before showing a DAG in chat, run `bin/mermaid-fit.js <file>`. Pi's feed shows
 the raw fence when a diagram is wider than the pane. Show a short-label copy in
 chat until it passes; the plan file keeps its labels.
 
-The four `classDef` lines are fixed. Copy the block above; do not invent fills.
+The `classDef` lines are fixed: these four, plus `focus`, `next`, and `place` for graphics. `bin/lib/palette.js` derives them from the Realness palette. Do not invent fills.
 
-**Status is color plus emoji**, so it reads in any renderer and in plain text:
+**Status is color plus a text symbol**, so it reads in any renderer and in plain text. Symbols are plain text, not color emoji, so they take the text color and dim with finished work:
 
-| Status      | Emoji | classDef                |
-| ----------- | ----- | ----------------------- |
-| done        | ✅    | `done` (dimmed, dashed) |
-| in progress | 🔄    | `active` (blue)         |
-| blocked     | ⛔    | `blocked` (red)         |
-| not started | none  | default                 |
-| gate        | 🚦    | `gate` (amber)          |
+| Status      | Symbol | classDef                |
+| ----------- | ------ | ----------------------- |
+| done        | ✓      | `done` (dimmed, dashed) |
+| in progress | ◐      | `active` (blue)         |
+| blocked     | ✕      | `blocked` (red)         |
+| not started | none   | default                 |
+| gate        | ◆      | `gate` (amber)          |
 
-The emoji leads the label (`"✅ a1 research angle"`) and matches the node's
+The symbol leads the label (`"✓ a1 research angle"`) and matches the node's
 `class` line. Update both as work moves. Finished work dims so the eye lands on
 what is left.
 
 **The node list dims too.** A finished row's id is struck through,
-`| ~~a1~~ ✅ |`. Markdown renders that as `<del>`, so any viewer dims the
+`| ~~a1~~ ✓ |`. Markdown renders that as `<del>`, so any viewer dims the
 whole row with `tr:has(del) { opacity: 0.45 }` and GitHub shows it crossed
 out. One line above the table names the legend.
+
+**Explanatory graphics** show how the parts fit. They sit under the work DAG.
+
+- Five to eight boxes. `flowchart LR`.
+- No node ids in the visible label.
+- A bold name, then a short grey line: `n["**freeze**<br/><small>a snapshot</small>"]`.
+- One `focus` box: the thing the section is about.
+- Dashed is next, solid works today: `-.->` and `next`.
+- Nesting is a `subgraph`. Dashed outer for the place, solid inner for the machine.
+- A boundary's label carries the facts: `"GCP instance - 4 vCPU, 16 GB"`.
+- Repeats show as `1`, `2`, `...`, `n`.
+- Clients sit left, outside. Storage sits below, outside.
+- Arrows only where something flows.
+- One grey caption under it: the fact the picture can't show.
+
+```
+  classDef focus fill:none,stroke:#ed8b8b,color:#ed8b8b;
+  classDef next fill:none,stroke:#dfad6d,stroke-dasharray:3 3,color:#e1be89;
+  classDef place fill:none,stroke:#525252,stroke-dasharray:3 3;
+```
+
+`bin/plan-shape.js` accepts only these lines.
+
+Prose around a graphic:
+
+- Lead with one sentence that says what it is.
+- Definitions as a two-column table: bold term, one short line.
+- Who uses it: term, one line each.
+- Status tags beside names: `WORKS`, `IN PROGRESS`, `NEXT`.
+- Close the section on one line.
 
 ASCII only for a throwaway sketch that will never persist.
 
@@ -276,4 +306,6 @@ Summarize what ran. Ask whether it meets the plan. Done is your call.
 - Plan lines: seven to ten words; apply the rule during reviews.
 - Skip what reference repos already teach. Labels beat pane fit.
 - Independent nodes still run one at a time.
-- Run `npm run plans` after plan edits.
+- Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.
+- Other links: a `## Links` section at the end, grouped by kind (Watch, Read, GitHub, Demos, Local). The header doesn't repeat them.
+- After plan edits: run `npm run plans`, then confirm the change at http://127.0.0.1:4323 (`npm run plans:serve`).

@@ -231,7 +231,7 @@ test('http_request_from_entry reads every shape an entry uses', () => {
   assert.equal(http_request_from_entry(null), null)
 })
 
-test('referer_host names a host, and says when there is none', () => {
+test('referer_host names a halo, and says when there is none', () => {
   assert.equal(
     referer_host('https://news.ycombinator.com/item?id=1'),
     'news.ycombinator.com'

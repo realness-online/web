@@ -2,7 +2,7 @@ import {
   createServer as create_server,
   request as http_request
 } from 'node:http'
-import { issue_host_pass } from '#root/src/sign-on/node/host-pass.js'
+import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { accept, open_pty, pump, refuse } from '#root/lib/websocket.js'
 import { HTTP } from '#root/lib/http.js'
 
@@ -35,10 +35,10 @@ export const offered_token = header => {
   return protocol === PROTOCOL && token && !extra ? token : null
 }
 
-/** Every person's sessions on one host, until hosts are chosen per person. */
-export const one_host = (address, api_port = API_PORT) => {
+/** Every person's sessions on one halo, until halos are chosen per person. */
+export const one_halo = (address, api_port = API_PORT) => {
   const [host, port] = String(address ?? '').split(':')
-  if (!host || !Number(port)) throw new Error('gate host must be host:port')
+  if (!host || !Number(port)) throw new Error('gate halo must be halo:port')
   return () => ({ host, port: Number(port), api_port: Number(api_port) })
 }
 
@@ -50,7 +50,7 @@ const NDJSON = {
 }
 
 /**
- * Forward one browser call to the host API under a host pass; streams both ways.
+ * Forward one browser call to the halo API under a halo pass; streams both ways.
  * @param {import('node:http').IncomingMessage} request
  * @param {import('node:http').ServerResponse} response
  * @param {{ host: string, port: number, api_port: number }} where
@@ -105,14 +105,14 @@ const forward = (request, response, where, pass, streaming = false) =>
       )
       upstream.on('error', () => {
         if (streaming) {
-          response.end(record({ type: 'error', text: 'host unreachable' }))
+          response.end(record({ type: 'error', text: 'halo unreachable' }))
           return done()
         }
         if (!response.headersSent)
           response.writeHead(HTTP.BAD_GATEWAY, {
             'content-type': 'text/plain; charset=utf-8'
           })
-        response.end('host unreachable\n')
+        response.end('halo unreachable\n')
         done()
       })
       response.on('close', () => upstream.destroy())
@@ -123,7 +123,7 @@ const forward = (request, response, where, pass, streaming = false) =>
 /**
  * @param {{
  *   identify: (token: string) => Promise<{ phone: string }>,
- *   host_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number } | Promise<{ host: string, port: number, api_port: number }>,
+ *   halo_for: (who: { phone: string, actor?: string }) => { host: string, port: number, api_port: number } | Promise<{ host: string, port: number, api_port: number }>,
  *   secret: string,
  *   origins: string[],
  *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
@@ -132,7 +132,7 @@ const forward = (request, response, where, pass, streaming = false) =>
  */
 export const make_gate = ({
   identify,
-  host_for,
+  halo_for,
   secret,
   origins,
   wake = async () => {},
@@ -188,14 +188,14 @@ export const make_gate = ({
       await forward(
         request,
         response,
-        await host_for({ phone: who.phone }),
-        issue_host_pass(who, secret),
+        await halo_for({ phone: who.phone }),
+        issue_halo_pass(who, secret),
         response.headersSent
       )
     } catch (error) {
       log(`gate: api refused: ${error.message}`)
       if (!response.headersSent)
-        plain(response, HTTP.BAD_GATEWAY, 'host unreachable\n')
+        plain(response, HTTP.BAD_GATEWAY, 'halo unreachable\n')
     }
   })
 
@@ -234,10 +234,10 @@ export const make_gate = ({
 
     let pty
     try {
-      const where = await host_for({ phone: who.phone, actor })
+      const where = await halo_for({ phone: who.phone, actor })
       pty = await open_pty(where, {
         actor,
-        pass: issue_host_pass(who, secret),
+        pass: issue_halo_pass(who, secret),
         cols: Number(url.searchParams.get('cols') ?? DEFAULT_COLS),
         rows: Number(url.searchParams.get('rows') ?? DEFAULT_ROWS)
       })

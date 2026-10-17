@@ -36,7 +36,7 @@ const node_ids = (body) => {
   const ids = []
   for (const line of body.split("\n")) {
     if (line.includes("classDef") || line.trim().startsWith("class ")) continue
-    for (const m of line.matchAll(/(?:^|[\s>])([a-zA-Z][a-zA-Z0-9_]*)\s*(?:\[|{{)/g)) ids.push(m[1])
+    for (const m of line.matchAll(/(?:^|[\s>])([a-zA-Z][a-zA-Z0-9_-]*)\s*(?:\[|{{)/g)) ids.push(m[1])
   }
   return ids
 }
@@ -51,7 +51,7 @@ const table_ids = (text) => {
     const line = lines[i]
     if (!line.trimStart().startsWith("|")) break
     const cell = line.split("|")[1]?.trim() ?? ""
-    const id = cell.match(/^~~([a-zA-Z][a-zA-Z0-9_]*)~~|^([a-zA-Z][a-zA-Z0-9_]*)/)
+    const id = cell.match(/^~~([a-zA-Z][a-zA-Z0-9_-]*)~~|^([a-zA-Z][a-zA-Z0-9_-]*)/)
     if (id) ids.push(id[1] ?? id[2])
   }
   return ids
@@ -94,7 +94,7 @@ const check = (name, text) => {
       const t = line.trim()
       if (t.startsWith("classDef") && !LEGEND.has(t)) bad("legend", `line ${g.line}, not a fixed classDef: ${t.slice(0, 50)}`)
     }
-    const stray = g.body.replace(/[✅🔄⛔🚦]/g, "")
+    const stray = g.body.replace(/[✅🔄⛔🚦✓◐✕◆]/g, "")
     if (/[^\x00-\x7F]/.test(stray)) bad("ascii", `non-ASCII character in the fence at line ${g.line}`)
   }
 

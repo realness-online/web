@@ -1,9 +1,9 @@
 /**
  * The dev environment's own commands: setup and build.
  *
- * `host up`, `host down`, `host restart`, and `host drain` are the same verbs in
+ * `halo up`, `halo down`, `halo restart`, and `halo drain` are the same verbs in
  * every environment and live in host-gcp.js and host-lima.js. What is left here
- * is the two things only a local host needs: making the Linux VM and its
+ * is the two things only a local halo needs: making the Linux VM and its
  * artifacts, and building the template.
  *
  * The steps stay bash. Node is not installed in the guest, and these are root
@@ -27,7 +27,7 @@ export const setup = async lima => {
 
   step('boot check')
   await lima.streamScript('tools/control/scripts/boot-check.sh')
-  return { host: lima.config.vm, ready: true }
+  return { halo: lima.config.vm, ready: true }
 }
 
 /** Stage the harness and build template.ext4. */
@@ -45,6 +45,6 @@ export const build = async lima => {
     user: 'root'
   })
 
-  note('after a rebuild the seed is stale: realness local host up --fresh')
+  note('after a rebuild the seed is stale: realness local halo up --fresh')
   return { rebuilt: true }
 }

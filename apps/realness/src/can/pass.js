@@ -55,7 +55,11 @@ export const open_pass = (
   const [body, signature] = parts
   const expected = mac(body, secret)
   const actual = Buffer.from(signature, 'base64url')
-  if (actual.length !== expected.length || !timing_safe_equal(actual, expected))
+  if (
+    actual.length !== expected.length ||
+    actual.toString('base64url') !== signature ||
+    !timing_safe_equal(actual, expected)
+  )
     throw new Error(`bad ${name}`)
   const claims = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'))
   const seconds = now / MS_PER_SECOND

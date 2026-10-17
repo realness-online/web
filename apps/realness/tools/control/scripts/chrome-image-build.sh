@@ -6,7 +6,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 TREE="${TREE:-$ROOT/chrome-tree}"
 IMG="${IMG:-$ROOT/chrome.ext4}"
 SIZE="${SIZE:-2G}"
-GUEST_SRC="$REPO/server/host/guest"
+GUEST_SRC="$REPO/server/halo/guest"
 REVISION=1194
 case "$(uname -m)" in
   x86_64) ZIP=chromium-headless-shell-linux.zip SUM=d745c7210cc88b73c7991a22c9624819960d84bc3de77ac7336d2de841a8c91f ;;

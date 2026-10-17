@@ -30,21 +30,21 @@ export const cli_families = [
     ],
   },
   {
-    name: 'Actor Chrome', entry: 'apps/realness/server/host/guest/realness-chrome', source: 'apps/realness/server/host/guest/realness-chrome', launcher: 'realness chrome',
+    name: 'Actor Chrome', entry: 'apps/realness/server/halo/guest/realness-chrome', source: 'apps/realness/server/halo/guest/realness-chrome', launcher: 'realness chrome',
     routes: [
       ['lease', 'Actor commands', 'Lease a Chrome VM.', '', 'Actor only; starts a browser VM.'],
       ['return', 'Actor commands', 'Return the leased Chrome VM.', '', 'Actor only; destroys the browser copy.'],
     ],
   },
   {
-    name: 'Actor loop', entry: 'apps/realness/server/host/guest/realness-loop', source: 'apps/realness/server/host/guest/realness-loop', launcher: 'realness loop',
+    name: 'Actor loop', entry: 'apps/realness/server/halo/guest/realness-loop', source: 'apps/realness/server/halo/guest/realness-loop', launcher: 'realness loop',
     routes: [
       ['"<goal>"', 'Actor commands', 'Start an autonomous loop.', '', 'Actor only; starts work and can incur model cost.'],
       ['report <id>', 'Actor commands', 'Read the loop status and log tail.', '', 'Actor only.'],
     ],
   },
   {
-    name: 'Actor site', entry: 'apps/realness/server/host/guest/realness-site', source: 'apps/realness/server/host/guest/realness-site', launcher: 'realness-site',
+    name: 'Actor site', entry: 'apps/realness/server/halo/guest/realness-site', source: 'apps/realness/server/halo/guest/realness-site', launcher: 'realness-site',
     routes: [
       ['versions', 'Actor commands', 'List published site versions.', '', 'Actor only.'],
       ['restore <version>', 'Actor commands', 'Restore a published site version.', '', 'Actor only; changes publication.'],
@@ -52,7 +52,7 @@ export const cli_families = [
     ],
   },
   {
-    name: 'Actor publish', entry: 'apps/realness/server/host/guest/realness-publish', source: 'apps/realness/server/host/guest/realness-publish', launcher: 'realness publish',
+    name: 'Actor publish', entry: 'apps/realness/server/halo/guest/realness-publish', source: 'apps/realness/server/halo/guest/realness-publish', launcher: 'realness publish',
     routes: [['<directory>', 'Actor commands', 'Publish a built site through the host.', '', 'Actor only; changes publication.']],
   },
   {

@@ -33,8 +33,8 @@ before(async () => {
   await mkdir(dir, { recursive: true })
   await storage.put('admins.html', `<a href="tel:${admin}">Admin</a>`)
   await storage.put(
-    'hosts/realness-1/status.html',
-    `<article itemscope itemtype="/host"><meta itemprop="name" content="realness-1"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="${loop_id}"><meta itemprop="owner" content="${owner}"><meta itemprop="state" content="idle"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-ffffffffffff"><meta itemprop="owner" content="${admin}"><meta itemprop="state" content="running"></article>\n`
+    'halos/realness-1/status.html',
+    `<article itemscope itemtype="/halo"><meta itemprop="name" content="realness-1"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="${loop_id}"><meta itemprop="owner" content="${owner}"><meta itemprop="state" content="idle"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-ffffffffffff"><meta itemprop="owner" content="${admin}"><meta itemprop="state" content="running"></article>\n`
   )
   await storage.put(
     `loops/${loop_id}/record.html`,
@@ -75,11 +75,11 @@ after(async () => {
 const as = phone =>
   reader('local', { url, token: async () => issuer.token(phone) })
 
-test("actor list and show come from the host's last report", async () => {
+test("actor list and show come from the halo's last report", async () => {
   const sync = await as(admin)
   assert.equal((await actors(sync, null, now)).length, 2)
   const [actor] = await actors(sync, loop_id, now)
-  assert.equal(actor.host, 'realness-1')
+  assert.equal(actor.halo, 'realness-1')
   assert.equal(actor.age_s, 60)
   await assert.rejects(actors(sync, 'a-000000000000', now), /no actor/)
 })
@@ -122,16 +122,16 @@ test("non-admins cannot read other people's records", async () => {
   )
 })
 
-test('actor idle writes a request only the host can read; loop stop writes stop.html', async () => {
+test('actor idle writes a request only the halo can read; loop stop writes stop.html', async () => {
   const { request_actor, request_loop_stop } =
     await import('../../src/control/reads.js')
   const { read_request } = await import('#root/src/sync/actor-request.js')
   const sync = await as(admin)
   const done = await request_actor(sync, 'a-ffffffffffff', 'idle', now)
-  assert.equal(done.host, 'realness-1')
+  assert.equal(done.halo, 'realness-1')
   const stored = read_request(
     (
-      await storage.get('hosts/realness-1/requests/a-ffffffffffff.html')
+      await storage.get('halos/realness-1/requests/a-ffffffffffff.html')
     ).body.toString()
   )
   assert.equal(stored.action, 'idle')

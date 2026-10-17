@@ -485,7 +485,7 @@ const bind_keyboard = ({
 
 /**
  * Draw a live actor terminal into `stage`, which holds a canvas and an output.
- * `base` is where the host's `ticket` and `pty` routes live. `open`, when
+ * `base` is where the halo's `ticket` and `pty` routes live. `open`, when
  * given, makes the socket instead: ({ cols, rows }) => WebSocket; a thrown
  * error with status 401 or 403 stops reconnecting. Returns { close }.
  */

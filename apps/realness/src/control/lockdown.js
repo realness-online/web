@@ -1,10 +1,10 @@
 /**
- * pr3: lock a project's hosts down. Hosts take ssh only through Identity-Aware
- * Proxy (IAP), the host API only from the gate's subnet, and the default rules
+ * pr3: lock a project's halos down. Halos take ssh only through Identity-Aware
+ * Proxy (IAP), the halo API only from the gate's subnet, and the default rules
  * that open ssh and RDP to the internet are removed.
  *
- *   realness <env> host lockdown            print the plan
- *   realness <env> host lockdown --apply    run it
+ *   realness <env> halo lockdown            print the plan
+ *   realness <env> halo lockdown --apply    run it
  */
 
 import { note } from './exec.js'
@@ -13,13 +13,13 @@ import { note } from './exec.js'
 /** Google's published source range for IAP TCP forwarding. */
 export const IAP_RANGE = '35.235.240.0/20'
 /** The default network's subnet per region, where the gate's VPC egress lands. */
-export const GATE_RANGES = {
+const GATE_RANGES = {
   'us-central1': '10.128.0.0/20',
   'us-west1': '10.138.0.0/20',
   'us-west2': '10.168.0.0/20',
   'us-east1': '10.142.0.0/20'
 }
-const TAG = 'realness-host'
+const TAG = 'realness-halo'
 const OPEN_DEFAULTS = [
   'default-allow-ssh',
   'default-allow-rdp',
@@ -45,8 +45,8 @@ export const lockdown_plan = ({ project, cloud, gate_range }) => {
     `--target-tags=${TAG}`
   ]
   return [
-    rule('realness-host-iap-ssh', 'tcp:22', IAP_RANGE),
-    rule('realness-host-api', 'tcp:8080,tcp:8081', range),
+    rule('realness-halo-iap-ssh', 'tcp:22', IAP_RANGE),
+    rule('realness-halo-api', 'tcp:8080,tcp:8081', range),
     ...OPEN_DEFAULTS.map(name => [
       'compute',
       'firewall-rules',

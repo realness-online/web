@@ -41,7 +41,7 @@ export const inline_documentation_icons = html =>
   )
 
 /** @param {string} title */
-export const heading_id = title => {
+const heading_id = title => {
   const title_str = String(title || '')
   return title_str
     .toLowerCase()

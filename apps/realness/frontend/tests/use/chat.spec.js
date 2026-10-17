@@ -105,7 +105,7 @@ describe('chat watch', () => {
     chat.stop()
   })
 
-  it('does not hide host errors behind Starting and clears them on recovery', async () => {
+  it('does not hide halo errors behind Starting and clears them on recovery', async () => {
     watch_chat.mockRejectedValueOnce(new Error('Realness answered 502'))
     const chat = use_chat(ref('actor-1'))
     await chat.watch()
@@ -152,11 +152,11 @@ describe('chat watch', () => {
           previous = resolve
         })
     )
-    const host_id = ref(null)
+    const halo_id = ref(null)
     const chat = use_chat(ref('actor-1'), {
-      get_startup_id: () => host_id.value
+      get_startup_id: () => halo_id.value
     })
-    host_id.value = 'host-startup'
+    halo_id.value = 'host-startup'
     const old_watch = chat.watch()
     watch_chat.mockResolvedValueOnce([
       { type: 'history', messages: [{ role: 'user', text: 'Current' }] }
@@ -286,7 +286,7 @@ describe('chat watch', () => {
   })
 })
 
-describe('chat while the host wakes', () => {
+describe('chat while the halo wakes', () => {
   it('shows a message sent during startup at once and delivers it when history arrives', async () => {
     let open_bridge
     watch_chat.mockImplementationOnce(
@@ -323,7 +323,7 @@ describe('chat while the host wakes', () => {
   })
 
   it('keeps the message in the composer when the wake fails', async () => {
-    watch_chat.mockRejectedValueOnce(new Error('the host did not wake in time'))
+    watch_chat.mockRejectedValueOnce(new Error('the halo did not wake in time'))
     const chat = use_chat(ref('actor-1'))
     chat.draft.value = 'still there?'
     await chat.send()

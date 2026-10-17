@@ -13,7 +13,7 @@ const UNAVAILABLE = 503
 const refused = (status, message) =>
   Object.assign(new Error(message), { status })
 
-/** One host API call through the gate; resolves to the response, or throws. */
+/** One halo API call through the gate; resolves to the response, or throws. */
 export const gate_fetch = async (user, path, init = {}) => {
   const response = await fetch(`${gate_url()}${path}`, {
     ...init,
@@ -32,7 +32,7 @@ export const gate_fetch = async (user, path, init = {}) => {
   return response
 }
 
-/** One host API call through the gate; resolves to its JSON. */
+/** One halo API call through the gate; resolves to its JSON. */
 export const gate_api = async (user, path, init = {}) =>
   (await gate_fetch(user, path, init)).json()
 

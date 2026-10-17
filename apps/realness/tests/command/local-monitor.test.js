@@ -49,7 +49,7 @@ test('a frame names the stack, the url, and one panel per service', () => {
   assert.match(frame, /PID 42/)
   assert.match(frame, /listen 8080/)
   assert.match(frame, /Ctrl-C\/q stop local children {2}r refresh/)
-  assert.match(frame, /The host and reused services stay running\.\n$/)
+  assert.match(frame, /The halo and reused services stay running\.\n$/)
 })
 
 test('a frame is plain text until colour is asked for', () => {
@@ -71,7 +71,7 @@ test('a frame stops at the height it is given', () => {
   assert.ok(short.split('\n').length < tall.split('\n').length)
   assert.ok(short.split('\n').length <= 6)
   assert.match(short, /svc0/)
-  assert.match(short, /The host and reused services stay running\./)
+  assert.match(short, /The halo and reused services stay running\./)
 })
 
 test('a frame with no services still says what the keys do', () => {

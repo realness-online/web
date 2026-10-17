@@ -1,5 +1,5 @@
 /**
- * hs-mem: the measurement says what a host must hold and what an actor uses.
+ * hs-mem: the measurement says what a halo must hold and what an actor uses.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -27,15 +27,15 @@ const fixture = readings => {
 
 test('each stage is run and then measured', async () => {
   const one = fixture([
-    { host_mib: 140, guest_used_mib: 50, top: ['36M MainThread'] },
-    { host_mib: 233, guest_used_mib: 104, top: ['106M pi'] }
+    { halo_mib: 140, guest_used_mib: 50, top: ['36M MainThread'] },
+    { halo_mib: 233, guest_used_mib: 104, top: ['106M pi'] }
   ])
   const result = await measure(one)
   assert.deepEqual(
     result.rows.map(row => row.stage),
     ['created', 'pi running']
   )
-  assert.equal(result.peak, 233, 'the host must hold the largest it gave up')
+  assert.equal(result.peak, 233, 'the halo must hold the largest it gave up')
   assert.equal(
     result.floor_mib,
     128,
@@ -49,15 +49,15 @@ test('each stage is run and then measured', async () => {
 })
 
 test('a stage that needs no command is still measured', async () => {
-  const one = fixture([{ host_mib: 100, guest_used_mib: 10, top: [] }])
+  const one = fixture([{ halo_mib: 100, guest_used_mib: 10, top: [] }])
   await measure({ ...one, stages: [{ name: 'created', run: '' }] })
   assert.deepEqual(one.ran, ['sample a-111111111111'])
 })
 
 test('the floor rounds up in whole steps, and never below what was used', async () => {
   const one = fixture([
-    { host_mib: 400, guest_used_mib: 65, top: [] },
-    { host_mib: 500, guest_used_mib: 96, top: [] }
+    { halo_mib: 400, guest_used_mib: 65, top: [] },
+    { halo_mib: 500, guest_used_mib: 96, top: [] }
   ])
   const result = await measure(one)
   assert.equal(result.floor_mib, 128)
@@ -68,21 +68,21 @@ test('the floor rounds up in whole steps, and never below what was used', async 
 test('the summary names the peak, the floor, and the biggest process', async () => {
   const one = fixture([
     {
-      host_mib: 140,
+      halo_mib: 140,
       guest_used_mib: 50,
       top: ['36M MainThread', '11M systemd']
     }
   ])
   const text = memory_text(await measure(one))
-  assert.match(text, /peak host 140 MiB, floor 64 MiB/)
+  assert.match(text, /peak halo 140 MiB, floor 64 MiB/)
   assert.match(
     text,
-    /created: host 140 MiB, guest 50 MiB \(36M MainThread, 11M systemd\)/
+    /created: halo 140 MiB, guest 50 MiB \(36M MainThread, 11M systemd\)/
   )
 })
 
 test('a missing actor or no stages is refused', async () => {
-  const one = fixture([{ host_mib: 1, guest_used_mib: 1, top: [] }])
+  const one = fixture([{ halo_mib: 1, guest_used_mib: 1, top: [] }])
   await assert.rejects(measure({ ...one, actor: '' }), MemoryError)
   await assert.rejects(
     measure({ ...one, stages: [] }),

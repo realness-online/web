@@ -1,0 +1,139 @@
+pre.mermaid {
+  .node {
+    --tone: var(--muted-text);
+
+    :is(rect, polygon) {
+      fill: color-mix(in srgb, var(--text) 7%, var(--surface)) !important;
+      stroke: color-mix(in srgb, var(--text) 24%, var(--surface)) !important;
+      stroke-width: 1.5px;
+      rx: 10px;
+      ry: 10px;
+      filter: none !important;
+    }
+
+    .nodeLabel {
+      color: var(--text);
+      fill: var(--text);
+      line-height: 1.3;
+
+      b {
+        color: inherit;
+        font-weight: 700;
+      }
+    }
+
+    .nodeLabel small {
+      color: var(--muted-text);
+      font-size: 0.8em;
+    }
+
+    &.focus {
+      --tone: var(--emphasis);
+
+      :is(rect, polygon) {
+        fill: color-mix(in srgb, var(--tone) 9%, var(--surface)) !important;
+        stroke: var(--emphasis) !important;
+        filter: none !important;
+      }
+
+      .nodeLabel {
+        color: var(--emphasis);
+      }
+    }
+
+    &.next {
+      :is(rect, polygon) {
+        fill: none !important;
+        stroke: var(--warning) !important;
+        stroke-dasharray: 3 3 !important;
+        filter: none !important;
+      }
+
+      .nodeLabel {
+        color: var(--warning);
+      }
+    }
+
+    &.done {
+      opacity: 0.45;
+    }
+
+    &.active,
+    &.out {
+      --tone: var(--accent);
+    }
+
+    &.gate {
+      --tone: var(--warning);
+
+      :is(rect, polygon) {
+        stroke-width: 2px !important;
+      }
+    }
+
+    &.blocked,
+    &.no {
+      --tone: var(--emphasis);
+    }
+
+    &:is(.active, .out, .gate, .blocked, .no) :is(rect, polygon) {
+      fill: color-mix(in srgb, var(--tone) 11%, var(--surface)) !important;
+      stroke: color-mix(in srgb, var(--tone) 45%, var(--surface)) !important;
+    }
+
+    &.no .nodeLabel,
+    &.gate .nodeLabel {
+      color: var(--emphasis);
+    }
+
+    &.out .nodeLabel,
+    &.active .nodeLabel {
+      color: var(--accent) !important;
+    }
+
+    &.active :is(rect, polygon) {
+      fill: var(--water-darken) !important;
+      stroke: var(--accent) !important;
+      stroke-width: 2px !important;
+    }
+  }
+
+  .edgeLabel,
+  .edgeLabel p,
+  .labelBkg {
+    background: var(--surface) !important;
+    color: var(--muted-text);
+  }
+
+  .flowchart-link {
+    stroke: var(--muted-text) !important;
+    stroke-width: 1px !important;
+    opacity: 0.7;
+  }
+
+  .marker {
+    fill: var(--muted-text) !important;
+    stroke: none !important;
+  }
+
+  .cluster {
+    rect {
+      fill: color-mix(in srgb, var(--emphasis) 3%, var(--surface)) !important;
+      stroke: color-mix(
+        in srgb,
+        var(--emphasis) 65%,
+        var(--surface)
+      ) !important;
+      stroke-width: 1px !important;
+      rx: 6px;
+      ry: 6px;
+    }
+
+    .cluster-label,
+    .cluster-label span,
+    .cluster-label p {
+      color: var(--emphasis) !important;
+      fill: var(--emphasis) !important;
+    }
+  }
+}

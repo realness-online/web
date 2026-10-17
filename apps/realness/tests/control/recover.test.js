@@ -1,6 +1,6 @@
 /**
- * hs-f3: a failed host's actors come back on the hosts still up, and the
- * failed host loses its authority first.
+ * hs-f3: a failed halo's actors come back on the halos still up, and the
+ * failed halo loses its authority first.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -19,32 +19,32 @@ const actors = [
 const fixture = ({
   bundles = {},
   refuse = {},
-  hosts = ['realness-2', 'realness-3']
+  halos = ['realness-2', 'realness-3']
 } = {}) => {
   const order = []
   const load = { 'realness-2': 2, 'realness-3': 0 }
   return {
     order,
-    hosts,
+    halos,
     api: () => ({}),
-    revoke: async host => {
-      order.push(`revoke ${host}`)
+    revoke: async halo => {
+      order.push(`revoke ${halo}`)
       return { revoked_at: '2026-10-15T00:00:00.000Z' }
     },
     bundle: async id => {
       order.push(`bundle ${id}`)
       return bundles[id] === null ? null : { bundle: `gs://b/${id}.tgz` }
     },
-    restore: async (host, id, owner) => {
-      order.push(`restore ${host} ${id}`)
-      if (refuse[id]) throw new Error('host full')
+    restore: async (halo, id, owner) => {
+      order.push(`restore ${halo} ${id}`)
+      if (refuse[id]) throw new Error('halo full')
       return { id: `a-${id.slice(2, 10)}ffff` }
     },
-    place: async (owner, host) => {
-      order.push(`place ${owner} ${host}`)
-      return { host }
+    place: async (owner, halo) => {
+      order.push(`place ${owner} ${halo}`)
+      return { halo }
     },
-    load: async host => load[host] ?? 0
+    load: async halo => load[halo] ?? 0
   }
 }
 
@@ -69,17 +69,17 @@ test('authority is revoked before anything is restored', async () => {
   assert.equal(one.order.filter(line => line.startsWith('revoke')).length, 1)
 })
 
-test('an actor goes to the host with the fewest actors', async () => {
+test('an actor goes to the halo with the fewest actors', async () => {
   const one = fixture()
   const result = await recover('realness-1', { reason: 'x', actors, ...one })
-  assert.ok(result.recovered.every(actor => actor.host === 'realness-3'))
+  assert.ok(result.recovered.every(actor => actor.halo === 'realness-3'))
   assert.match(
     recover_text(result),
     /\+14156660001: a-111111111111 -> a-11111111ffff on realness-3/
   )
 })
 
-test('an actor with no bundle, or a refusing host, is reported lost', async () => {
+test('an actor with no bundle, or a refusing halo, is reported lost', async () => {
   const one = fixture({
     bundles: { 'a-222222222222': null },
     refuse: { 'a-111111111111': true }
@@ -93,8 +93,8 @@ test('an actor with no bundle, or a refusing host, is reported lost', async () =
   )
 })
 
-test('one host cannot recover from itself', async () => {
-  const one = fixture({ hosts: ['realness-1'] })
+test('one halo cannot recover from itself', async () => {
+  const one = fixture({ halos: ['realness-1'] })
   await assert.rejects(
     recover('realness-1', { reason: 'x', actors, ...one }),
     error => {
@@ -110,10 +110,10 @@ test('one host cannot recover from itself', async () => {
   )
 })
 
-test('a host that reuses the old actor id stops the run', async () => {
+test('a halo that reuses the old actor id stops the run', async () => {
   const one = fixture()
-  one.restore = async host => {
-    one.order.push(`restore ${host}`)
+  one.restore = async halo => {
+    one.order.push(`restore ${halo}`)
     return { id: 'a-111111111111' }
   }
   await assert.rejects(
@@ -122,10 +122,10 @@ test('a host that reuses the old actor id stops the run', async () => {
   )
 })
 
-test('no host name is refused', async () => {
+test('no halo name is refused', async () => {
   const one = fixture()
   await assert.rejects(
     recover('', { reason: 'x', actors, ...one }),
-    /needs the failed host name/
+    /needs the failed halo name/
   )
 })

@@ -375,7 +375,7 @@ export const use_chat = (
   })
 
   /**
-   * A command runs now; an ordinary message waits for the host when it is still
+   * A command runs now; an ordinary message waits for the halo when it is still
    * waking. Returns the text to send, or null when nothing is left to send.
    */
   const prepare = async message => {

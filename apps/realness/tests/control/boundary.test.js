@@ -8,8 +8,8 @@ import { product_paths } from '#root/src/settings/layout.js'
 
 const root = file_url_to_path(new URL('../../', import.meta.url))
 const control = join(root, 'tools', 'control')
-const host = join(root, 'server', 'host')
-const { host: host_source, control: control_source } = product_paths()
+const halo = join(root, 'server', 'halo')
+const { halo: halo_source, control: control_source } = product_paths()
 
 const files = async dir => {
   const found = []
@@ -23,7 +23,7 @@ const files = async dir => {
   return found
 }
 
-/** Follow the actual source imports, including shared files outside server/host/. */
+/** Follow the actual source imports, including shared files outside server/halo/. */
 const trace = async (
   path,
   forbidden,
@@ -54,9 +54,9 @@ const trace = async (
   }
 }
 
-test('the host does not know the control plane exists', async () => {
+test('the halo does not know the control plane exists', async () => {
   const offences = []
-  for (const path of [...(await files(host)), ...(await files(host_source))]) {
+  for (const path of [...(await files(halo)), ...(await files(halo_source))]) {
     const source = await read_file(path, 'utf8')
     for (const line of source.split('\n')) {
       const code = line.trim()
@@ -68,20 +68,20 @@ test('the host does not know the control plane exists', async () => {
   assert.deepEqual(offences, [])
 })
 
-test('the host and its shared imports use only the standard library', async () => {
-  await trace(join(host, 'main.js'), [control, control_source], true)
-  for (const path of await files(join(host, 'clients'))) {
+test('the halo and its shared imports use only the standard library', async () => {
+  await trace(join(halo, 'main.js'), [control, control_source], true)
+  for (const path of await files(join(halo, 'clients'))) {
     if (path.endsWith('.js')) await trace(path, [control, control_source], true)
   }
 })
 
 test('the control plane reaches actors only over HTTP', async () => {
-  await trace(join(control, 'bin/webspace.js'), [host, host_source])
+  await trace(join(control, 'bin/webspace.js'), [halo, halo_source])
 })
 
 test('both runtime boundaries hold code', async () => {
   assert.ok((await files(control)).some(path => path.endsWith('.js')))
   assert.ok(
-    (await files(host_source)).some(path => path.endsWith('/actors.js'))
+    (await files(halo_source)).some(path => path.endsWith('/actors.js'))
   )
 })

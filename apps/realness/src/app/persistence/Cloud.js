@@ -1,1 +1,1 @@
-export { Cloud, sync_later } from './store.js'
+export { Cloud } from './store.js'

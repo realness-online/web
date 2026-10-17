@@ -255,7 +255,7 @@ const run_git_credential = async (
   return 0
 }
 
-/** Watch host health on the desktop harness until interrupted. */
+/** Watch halo health on the desktop harness until interrupted. */
 const run_watch_command = async (
   args,
   { actor, get_token, json, service_url, state, stdin, stdout }
@@ -297,7 +297,7 @@ const run_watch_command = async (
       named,
       records,
       service: service_url ?? SYNC_URL,
-      cloud: cloud_sources(),
+      cloud: cloud_sources({ store }),
       interval_ms,
       signal: controller.signal,
       stdout,

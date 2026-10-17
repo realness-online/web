@@ -28,7 +28,7 @@ step() {
 
 step image-build   0    bash "$S/app-image-build.sh"
 step runtime-build 0    bash "$S/runtime-build.sh"
-step net-up        0    bash "$REPO/server/host/scripts/net-up.sh"
+step net-up        0    bash "$REPO/server/halo/scripts/net-up.sh"
 step image-verify  0    bash "$S/app-image-verify.sh"
 step boot          0    bash "$S/app-boot-check.sh"
 step escape        0    bash "$S/app-escape-check.sh"
@@ -36,7 +36,7 @@ step escape-ctrl   fail env CONTROL=1 bash "$S/app-escape-check.sh"
 if [ "$(uname -m)" = x86_64 ]; then mibs="96 80 72 64" must="96"; else mibs="96 64" must="96 64"; fi
 step floor         0    env MIBS="$mibs" bash "$S/app-memory-floor.sh"
 step floor-holds   0    sh -c "for m in $must; do awk -F'\t' -v m=\$m '\$2 == m && \$3 == \"ok\"' $RUN/app-memory-floor-*/floor.tsv | grep -q . || exit 1; done; echo '$must MiB serve; floor:' \$(awk -F'\t' '\$3 == \"ok\" {print \$2}' $RUN/app-memory-floor-*/floor.tsv | sort -n | head -1)"
-for check in "$REPO"/host/checks/app-*.check.js; do
+for check in "$REPO"/server/halo/checks/app-*.check.js; do
   step "$(basename "$check" .check.js)" 0 node "$check"
 done
 

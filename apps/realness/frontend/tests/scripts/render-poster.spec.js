@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { artifacts_dir } from '../../scripts/lib/artifacts.js'
 import {
   image_data_url,
+  list_images,
   main,
   poster_stem,
   preflight
@@ -151,6 +152,61 @@ describe('main', () => {
       '| debug:',
       'null'
     )
+  })
+
+  it('converts a folder in one browser, named by image', async () => {
+    const folder = path.join(root, 'shoot')
+    mkdirSync(folder)
+    writeFileSync(path.join(folder, 'b.PNG'), 'b')
+    writeFileSync(path.join(folder, 'a.jpg'), 'a')
+    writeFileSync(path.join(folder, 'notes.txt'), 'x')
+    expect(list_images(folder).map(f => path.basename(f))).toEqual([
+      'a.jpg',
+      'b.PNG'
+    ])
+    const { launched, launch } = browser()
+    const files = await main({
+      input_path: folder,
+      chrome_path,
+      poll_ms: 0,
+      launch,
+      page: page_with(async () => ({ itemid: 'x', svg: '<svg/>' }))
+    })
+    expect(files).toEqual([
+      path.join(folder, 'posters', 'a.svg'),
+      path.join(folder, 'posters', 'b.svg')
+    ])
+    expect(launched.filter(l => l !== 'killed')).toHaveLength(1)
+  })
+
+  it('skips a failed image and reports it after the rest', async () => {
+    const folder = path.join(root, 'shoot')
+    mkdirSync(folder)
+    writeFileSync(path.join(folder, 'a.jpg'), 'a')
+    writeFileSync(path.join(folder, 'b.jpg'), 'b')
+    const { launch } = browser()
+    await expect(
+      run({
+        input_path: folder,
+        launch,
+        page: page_with(async expression =>
+          expression.includes(Buffer.from('a').toString('base64'))
+            ? null
+            : { itemid: 'x', svg: '<svg/>' }
+        )
+      })
+    ).rejects.toThrow('1 of 2 failed: a.jpg')
+    expect(existsSync(path.join(out_dir, 'b.svg'))).toBe(true)
+  })
+
+  it('fails on a folder with no images', async () => {
+    const folder = path.join(root, 'empty')
+    mkdirSync(folder)
+    const { launched, launch } = browser()
+    await expect(run({ input_path: folder, launch })).rejects.toThrow(
+      /no images/
+    )
+    expect(launched).toEqual([])
   })
 
   it('checks inputs before launching', async () => {

@@ -8,19 +8,19 @@ import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
-const secret_path = out_path('host-pass-secret')
+const secret_path = out_path('halo-pass-secret')
 const secret =
-  process.env.HOST_PASS_SECRET ??
+  process.env.HALO_PASS_SECRET ??
   (exists_sync(secret_path) ? read_file_sync(secret_path, 'utf8').trim() : null)
 const reply_limit_ms = Number(process.env.PI_REPLY_LIMIT_MS ?? 120000)
 const exit_limit_ms = Number(process.env.PI_EXIT_LIMIT_MS ?? 5000)
 
-const host_pass = () => {
+const halo_pass = () => {
   if (!secret || Buffer.byteLength(secret) < 32)
-    throw new Error('HOST_PASS_SECRET required for check:pi-exit')
+    throw new Error('HALO_PASS_SECRET required for check:pi-exit')
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'realness-host',
+      aud: 'realness-halo',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -31,7 +31,7 @@ const host_pass = () => {
 const request = async (path, options = {}) => {
   const response = await fetch(`${API}${path}`, {
     ...options,
-    headers: { ...options.headers, authorization: `Bearer ${host_pass()}` }
+    headers: { ...options.headers, authorization: `Bearer ${halo_pass()}` }
   })
   const body = response.status === 204 ? null : await response.json()
   if (!response.ok)
@@ -41,7 +41,7 @@ const request = async (path, options = {}) => {
 
 const main = async () => {
   const health = await request('/v1/health')
-  if (!health.seed?.matches) throw new Error('host seed is not ready')
+  if (!health.seed?.matches) throw new Error('halo seed is not ready')
   let actor
   try {
     actor = (await request('/v1/actors', { method: 'POST' })).id

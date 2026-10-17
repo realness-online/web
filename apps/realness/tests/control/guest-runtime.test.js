@@ -18,7 +18,7 @@ const RUNTIME = '/usr/local/lib/realness/'
 const read = path => read_file_sync(`${ROOT}/${path}`, 'utf8')
 const build = read('tools/control/scripts/template-build.sh')
 const copied = actor_folders()
-const called = [build, read('server/host/guest/realness-recover')].flatMap(
+const called = [build, read('server/halo/guest/realness-recover')].flatMap(
   text =>
     [
       ...text.matchAll(/\/usr\/local\/lib\/(realness[\w-]*\/[\w./-]+\.js)/g)

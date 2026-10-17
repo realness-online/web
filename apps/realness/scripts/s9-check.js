@@ -1,5 +1,5 @@
 /**
- * s9 live check: wake the production host through the gate, start an actor,
+ * s9 live check: wake the production halo through the gate, start an actor,
  * and have its guest answer one vsock exec with 200 KB of output, the reply
  * shape a large final sync returns. Passes when every byte arrives.
  *   node scripts/s9-check.js [actor-id]
@@ -35,7 +35,7 @@ const ssh = command =>
   )
 
 const probe = [
-  "import { execInGuest } from './src/host/vsock.js'",
+  "import { execInGuest } from './src/halo/vsock.js'",
   `const { code, out, err } = await execInGuest('/opt/fc/actors/mnt/${actor}/vsock.sock', ['head', '-c', '${BYTES}', '/dev/zero'])`,
   'console.log(JSON.stringify({ code, bytes: out.length, intact: out.every(byte => byte === 0), err: err.toString().slice(-200) }))'
 ].join('\n')

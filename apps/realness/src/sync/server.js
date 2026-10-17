@@ -20,14 +20,14 @@ import {
 import { createServer as create_server } from 'node:http'
 import { can, identify } from '#root/src/can/index.js'
 import {
-  issue_host_pass,
-  verify_host_pass,
+  issue_halo_pass,
+  verify_halo_pass,
   verify_record_pass,
-  record_host
-} from '#root/src/sign-on/node/host-pass.js'
+  record_halo
+} from '#root/src/sign-on/node/halo-pass.js'
 import { verify_gate_pass } from '#root/src/sign-on/node/gate-pass.js'
-import { run_host_alerts } from './host-alerts.js'
-import { host_health } from './host-watch.js'
+import { run_halo_alerts } from './halo-alerts.js'
+import { halo_health } from './halo-watch.js'
 import { site_request } from './sites.js'
 import { read_changes, record_change } from './changes.js'
 import {
@@ -122,7 +122,7 @@ const PREFLIGHT = {
 
 /**
  * A harness pass reaches only the owner's harness paths; a recovery pass is
- * read-only and stays in its own tree; a host pass is limited to its site;
+ * read-only and stays in its own tree; a halo pass is limited to its site;
  * everyone else goes through `can()`.
  */
 const caller_allowed = ({ action, grants, path, who }) => {
@@ -132,7 +132,7 @@ const caller_allowed = ({ action, grants, path, who }) => {
       ['get', 'list'].includes(action) &&
       recovery_path(path, who.recovery, who.paths)
     )
-  if (who?.host)
+  if (who?.halo)
     return (
       path.startsWith(`people/${who.phone}/work/site/`) &&
       can(who, action, path, grants)
@@ -177,14 +177,14 @@ const answer_get = async (storage, response, path) => {
 const request_line = (who, request, path, status, started) =>
   `${new Date().toISOString()} ${who && 'phone' in who ? who.phone : '-'} ${request.method} /${path ?? '(bad encoding)'} ${status} ${Date.now() - started}ms`
 
-/** A two-part pass: recovery, harness, owner, or a host record; a fenced host is refused. */
-const pass_identity = async (token, { host_pass_secret, storage, fenced }) => {
-  if (!host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
-  const recovery = attempt(() => verify_recovery_pass(token, host_pass_secret))
+/** A two-part pass: recovery, harness, owner, or a halo record; a fenced halo is refused. */
+const pass_identity = async (token, { halo_pass_secret, storage, fenced }) => {
+  if (!halo_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
+  const recovery = attempt(() => verify_recovery_pass(token, halo_pass_secret))
   const harness = recovery
     ? null
-    : attempt(() => verify_harness_pass(token, host_pass_secret))
-  if (await fenced((recovery ?? harness)?.host))
+    : attempt(() => verify_harness_pass(token, halo_pass_secret))
+  if (await fenced((recovery ?? harness)?.halo))
     throw new Status(HTTP.UNAUTHORIZED)
   if (recovery)
     return {
@@ -194,10 +194,10 @@ const pass_identity = async (token, { host_pass_secret, storage, fenced }) => {
     }
   if (harness)
     return { harness: harness.phone, id: harness.id, paths: harness.paths }
-  const gate = attempt(() => verify_gate_pass(token, host_pass_secret))
+  const gate = attempt(() => verify_gate_pass(token, halo_pass_secret))
   if (gate) return gate
-  const host = attempt(() => verify_host_pass(token, host_pass_secret))
-  if (host) return { ...host, host: true }
+  const halo = attempt(() => verify_halo_pass(token, halo_pass_secret))
+  if (halo) return { ...halo, halo: true }
   return record_identity(token, storage, fenced)
 }
 
@@ -210,30 +210,30 @@ const attempt = verify => {
   }
 }
 
-/** hs-f2: a revoked host's fence; read through a short cache so each sync call is not a storage read. */
+/** hs-f2: a revoked halo's fence; read through a short cache so each sync call is not a storage read. */
 const FENCE_CACHE_MS = 10_000
 export const fence_reader = (storage, now = Date.now) => {
   const seen = new Map()
-  return async host => {
-    if (!host) return false
-    const hit = seen.get(host)
+  return async halo => {
+    if (!halo) return false
+    const hit = seen.get(halo)
     if (hit && now() - hit.at < FENCE_CACHE_MS) return hit.fenced
-    const fenced = Boolean(await storage.get(`host-fences/${host}`))
-    seen.set(host, { fenced, at: now() })
+    const fenced = Boolean(await storage.get(`halo-fences/${halo}`))
+    seen.set(halo, { fenced, at: now() })
     return fenced
   }
 }
 
-/** A host's record pass, checked against the key it registered. */
+/** A halo's record pass, checked against the key it registered. */
 const record_identity = async (token, storage, fenced) => {
   try {
-    const host = record_host(token)
-    if (await fenced(host)) throw new Status(HTTP.UNAUTHORIZED)
-    const key = await storage.get(`host-keys/${host}`)
+    const halo = record_halo(token)
+    if (await fenced(halo)) throw new Status(HTTP.UNAUTHORIZED)
+    const key = await storage.get(`halo-keys/${halo}`)
     if (!key) throw new Status(HTTP.UNAUTHORIZED)
     return {
-      host_name: verify_record_pass(token, key.body.toString('utf8').trim())
-        .host
+      halo_name: verify_record_pass(token, key.body.toString('utf8').trim())
+        .halo
     }
   } catch {
     throw new Status(HTTP.UNAUTHORIZED)
@@ -274,44 +274,44 @@ const answer_git_token = async (
   }
 }
 
-/** POST /v1/host-pass: a short-lived owner pass. */
-const answer_host_pass = (response, who, host_pass_secret) => {
-  if (!host_pass_secret) throw new Status(HTTP.UNAVAILABLE)
+/** POST /v1/halo-pass: a short-lived owner pass. */
+const answer_halo_pass = (response, who, halo_pass_secret) => {
+  if (!halo_pass_secret) throw new Status(HTTP.UNAVAILABLE)
   response.writeHead(HTTP.OK, {
     'content-type': 'application/json',
     'cache-control': 'no-store'
   })
   response.end(
     JSON.stringify({
-      pass: issue_host_pass(who, host_pass_secret),
+      pass: issue_halo_pass(who, halo_pass_secret),
       expires_in: 300
     })
   )
 }
 
 /** The caller behind a `v1/sites/` request, if any; plain `sites/` is public. */
-const site_caller = (path, request, host_pass_secret) => {
+const site_caller = (path, request, halo_pass_secret) => {
   if (!path.startsWith('v1/sites/')) return null
   const pass = /^Bearer (\S+)$/.exec(request.headers.authorization ?? '')?.[1]
-  if (!pass || !host_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
+  if (!pass || !halo_pass_secret) throw new Status(HTTP.UNAUTHORIZED)
   try {
-    return verify_host_pass(pass, host_pass_secret)
+    return verify_halo_pass(pass, halo_pass_secret)
   } catch {
     throw new Status(HTTP.UNAUTHORIZED)
   }
 }
 
-/** POST /v1/host-watch/run: send the queued host alerts. */
-const answer_host_alerts = async (
+/** POST /v1/halo-watch/run: send the queued halo alerts. */
+const answer_halo_alerts = async (
   request,
   response,
-  { alert_call, alert_webhook, host_statuses, log, storage }
+  { alert_call, alert_webhook, halo_statuses, log, storage }
 ) => {
   if (!alert_call(request)) throw new Status(HTTP.UNAUTHORIZED)
-  const sent = await run_host_alerts({
+  const sent = await run_halo_alerts({
     storage,
     webhook: alert_webhook,
-    statuses: host_statuses,
+    statuses: halo_statuses,
     warn: message => log(hash_phones(message))
   })
   response.writeHead(HTTP.OK, {
@@ -321,11 +321,11 @@ const answer_host_alerts = async (
   response.end(JSON.stringify({ sent }))
 }
 
-/** GET /hosts/quiet.json: the admin's host health report. */
+/** GET /halos/quiet.json: the admin's halo health report. */
 const answer_quiet = async (
   response,
   who,
-  { admins, host_statuses, storage }
+  { admins, halo_statuses, storage }
 ) => {
   if (!(await admins.has(who.phone))) throw new Status(HTTP.FORBIDDEN)
   response.writeHead(HTTP.OK, {
@@ -333,7 +333,7 @@ const answer_quiet = async (
     'cache-control': 'no-store'
   })
   response.end(
-    JSON.stringify(await host_health(storage, { statuses: host_statuses }))
+    JSON.stringify(await halo_health(storage, { statuses: halo_statuses }))
   )
 }
 
@@ -344,10 +344,10 @@ const answer_quiet = async (
  * @param {{ grants: (owner: string) => Promise<{ grants: object[] }>, forget: (owner: string) => void }} options.rights
  * @param {string} options.project
  * @param {() => Promise<Record<string, string>>} options.certs
- * @param {string | undefined} options.host_pass_secret enables the pass routes
+ * @param {string | undefined} options.halo_pass_secret enables the pass routes
  * @param {string | null} [options.alert_token]
  * @param {string | null} [options.alert_webhook]
- * @param {(() => Promise<Map<string, string>>) | null} [options.host_statuses] provider status per host name
+ * @param {(() => Promise<Map<string, string>>) | null} [options.halo_statuses] provider status per halo name
  * @param {string[]} [options.origins] sites allowed to read and write
  * @param {{ app_id: string, private_key: string } | null} [options.git_app]
  * @param {typeof fetch} [options.git_fetch]
@@ -358,10 +358,10 @@ export const sync_service = ({
   rights,
   project,
   certs,
-  host_pass_secret,
+  halo_pass_secret,
   alert_token = null,
   alert_webhook = null,
-  host_statuses = null,
+  halo_statuses = null,
   origins = [],
   git_app = null,
   git_fetch = fetch,
@@ -382,14 +382,14 @@ export const sync_service = ({
 
   const fenced = fence_reader(storage)
 
-  /** A host's record pass, checked against the key it registered. */
+  /** A halo's record pass, checked against the key it registered. */
   const who_is = async request => {
     const header = request.headers.authorization
     if (!header) return null
     const token = /^Bearer (\S+)$/.exec(header)?.[1]
     if (!token) throw new Status(HTTP.UNAUTHORIZED)
     if (token.split('.').length === 2)
-      return pass_identity(token, { host_pass_secret, storage, fenced })
+      return pass_identity(token, { halo_pass_secret, storage, fenced })
     try {
       return await identify(token, { project, certs, pins })
     } catch {
@@ -401,7 +401,7 @@ export const sync_service = ({
 
   const handle = async (request, response, path, action, caller) => {
     const who =
-      ['loops', 'hosts', 'usage', 'billing'].includes(path.split('/')[0]) &&
+      ['loops', 'halos', 'usage', 'billing'].includes(path.split('/')[0]) &&
       caller?.phone
         ? { ...caller, admin: await admins.has(caller.phone) }
         : caller
@@ -447,7 +447,7 @@ export const sync_service = ({
     const { method } = request
     if (path === null) throw new Status(HTTP.BAD_REQUEST)
     if (path.startsWith('sites/') || path.startsWith('v1/sites/')) {
-      const who = site_caller(path, request, host_pass_secret)
+      const who = site_caller(path, request, halo_pass_secret)
       await site_request({
         storage,
         method,
@@ -458,20 +458,20 @@ export const sync_service = ({
       })
       return who
     }
-    if (path === 'v1/host-watch/run' && method === 'POST') {
-      await answer_host_alerts(request, response, {
+    if (path === 'v1/halo-watch/run' && method === 'POST') {
+      await answer_halo_alerts(request, response, {
         alert_call,
         alert_webhook,
-        host_statuses,
+        halo_statuses,
         log,
         storage
       })
       return null
     }
-    if (path === 'hosts/quiet.json' && method === 'GET') {
+    if (path === 'halos/quiet.json' && method === 'GET') {
       const who = await who_is(request)
       if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
-      await answer_quiet(response, who, { admins, host_statuses, storage })
+      await answer_quiet(response, who, { admins, halo_statuses, storage })
       return who
     }
     if (path === 'v1/git-token' && method === 'POST') {
@@ -485,10 +485,10 @@ export const sync_service = ({
       })
       return who
     }
-    if (path === 'v1/host-pass' && method === 'POST') {
+    if (path === 'v1/halo-pass' && method === 'POST') {
       const who = await who_is(request)
       if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
-      answer_host_pass(response, who, host_pass_secret)
+      answer_halo_pass(response, who, halo_pass_secret)
       return who
     }
     const record = path.startsWith('v1/') ? path.slice(3) : path
@@ -503,7 +503,7 @@ export const sync_service = ({
     const started = Date.now()
     const path = request_path(request.url)
     const { origin } = request.headers
-    /** @type {{ phone: string } | { host_name: string } | { recovery: string, id: string, paths: string[] | null } | { harness: string, id: string, paths: string[] | null } | null} */
+    /** @type {{ phone: string } | { halo_name: string } | { recovery: string, id: string, paths: string[] | null } | { harness: string, id: string, paths: string[] | null } | null} */
     let who = null
     /** @type {number} */
     let status = HTTP.OK

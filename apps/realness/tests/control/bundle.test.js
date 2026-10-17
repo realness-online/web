@@ -1,5 +1,5 @@
 /**
- * hs-f3: a drained bundle is put back on a host before a restore reads it.
+ * hs-f3: a drained bundle is put back on a halo before a restore reads it.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -65,7 +65,7 @@ test('the bundle comes down, goes up, and is unpacked as an export', async () =>
   )
 })
 
-test('a missing bundle names the actor and does not touch the host', async () => {
+test('a missing bundle names the actor and does not touch the halo', async () => {
   const one = fixture({ pull: false })
   await assert.rejects(
     place_bundle(one.cloud, config, 'realness-2', 'a-111111111111', {

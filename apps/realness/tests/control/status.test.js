@@ -6,7 +6,7 @@ import { disk } from '#root/src/can/disk.js'
 import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
-import { host_status, format_status } from '../../src/control/status.js'
+import { halo_status, format_status } from '../../src/control/status.js'
 import { out_path } from '#root/lib/output.js'
 
 const dir = out_path(`control-status-test-${randomUUID()}`)
@@ -19,8 +19,8 @@ before(async () => {
   await mkdir(dir, { recursive: true })
   await storage.put('admins.html', `<a href="tel:${phone}">Admin</a>`)
   await storage.put(
-    'hosts/realness-1/status.html',
-    `<article itemscope itemtype="/host"><meta itemprop="name" content="realness-1"><meta itemprop="seed" content="ready"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"><meta itemprop="actors_running" content="1"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-0123456789ab"><meta itemprop="owner" content="${phone}"></article>\n`
+    'halos/realness-1/status.html',
+    `<article itemscope itemtype="/halo"><meta itemprop="name" content="realness-1"><meta itemprop="seed" content="ready"><meta itemprop="checked" content="2026-09-30T12:00:00.000Z"><meta itemprop="actors_running" content="1"></article>\n<article itemscope itemtype="/actor"><meta itemprop="id" content="a-0123456789ab"><meta itemprop="owner" content="${phone}"></article>\n`
   )
   server = sync_service({
     storage,
@@ -38,8 +38,8 @@ after(async () => {
   await rm(dir, { recursive: true, force: true })
 })
 
-test("operator lists status through sync and sees a stopped host's last report", async () => {
-  const rows = await host_status('local', null, {
+test("operator lists status through sync and sees a stopped halo's last report", async () => {
+  const rows = await halo_status('local', null, {
     url,
     token: async () => issuer.token(phone),
     now: Date.parse('2026-09-30T12:01:00Z')
@@ -54,9 +54,9 @@ test("operator lists status through sync and sees a stopped host's last report",
   )
 })
 
-test('non-admin cannot read host status', async () => {
+test('non-admin cannot read halo status', async () => {
   await assert.rejects(
-    host_status('local', null, {
+    halo_status('local', null, {
       url,
       token: async () => issuer.token('+15555550101')
     }),

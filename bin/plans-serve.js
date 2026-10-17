@@ -38,7 +38,10 @@ export const serve = (root) =>
       response.writeHead(404, { 'content-type': TYPES['.html'] })
       return response.end('<!doctype html><title>Not found</title><h1>Not found</h1>')
     }
-    response.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' })
+    response.writeHead(200, {
+      'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
+      'cache-control': 'no-store'
+    })
     response.end(await readFile(file))
   })
 

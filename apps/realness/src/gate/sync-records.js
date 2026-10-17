@@ -8,16 +8,16 @@ const key_path = key => key.split('/').map(encodeURIComponent).join('/')
 /**
  * The gate's records, read and written through sync with a gate pass, so
  * sync's rules decide what the gate may touch.
- * @param {{ url: string, secret: string, host: string, fetcher?: typeof fetch }} options
+ * @param {{ url: string, secret: string, halo: string, fetcher?: typeof fetch }} options
  */
-export const sync_records = ({ url, secret, host, fetcher = fetch }) => {
-  if (!url || !secret || !host)
-    throw new Error('gate records need SYNC_URL, HOST_PASS_SECRET, and a host')
+export const sync_records = ({ url, secret, halo, fetcher = fetch }) => {
+  if (!url || !secret || !halo)
+    throw new Error('gate records need SYNC_URL, HALO_PASS_SECRET, and a halo')
   const base = url.replace(/\/$/, '')
   const call = (method, key, body) =>
     fetcher(`${base}/${key_path(key)}`, {
       method,
-      headers: { authorization: `Bearer ${issue_gate_pass(host, secret)}` },
+      headers: { authorization: `Bearer ${issue_gate_pass(halo, secret)}` },
       ...(body !== undefined && { body }),
       signal: AbortSignal.timeout(SYNC_TIMEOUT_MS)
     })

@@ -10,14 +10,14 @@ echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": fal
   > "$stage/lifecycle.json"
 gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
 
-secrets="HOST_PASS_SECRET=HOST_PASS_SECRET:latest"
-env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins@HOST_POWER_PROJECT=$project"
+secrets="HALO_PASS_SECRET=HALO_PASS_SECRET:latest"
+env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins@HALO_POWER_PROJECT=$project"
 if gcloud secrets describe ALERT_TOKEN --project "$project" > /dev/null 2>&1 &&
-  gcloud secrets describe HOST_ALERT_WEBHOOK --project "$project" > /dev/null 2>&1; then
-  secrets="$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HOST_ALERT_WEBHOOK=HOST_ALERT_WEBHOOK:latest"
-  echo "host alerts: on"
+  gcloud secrets describe HALO_ALERT_WEBHOOK --project "$project" > /dev/null 2>&1; then
+  secrets="$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HALO_ALERT_WEBHOOK=HALO_ALERT_WEBHOOK:latest"
+  echo "halo alerts: on"
 else
-  echo "host alerts: off (run server/sync/scripts/alert-schedule.sh)"
+  echo "halo alerts: off (run server/sync/scripts/alert-schedule.sh)"
 fi
 if gcloud secrets describe GITHUB_APP_ID --project "$project" > /dev/null 2>&1 &&
   gcloud secrets describe GITHUB_APP_KEY --project "$project" > /dev/null 2>&1; then

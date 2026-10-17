@@ -1,23 +1,23 @@
 import { connect } from 'node:net'
 import { HTTP } from '#root/lib/http.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
-import { WAKE_DEADLINE_MS, intent_now } from '#root/src/sync/host-lifecycle.js'
+import { WAKE_DEADLINE_MS, intent_now } from '#root/src/sync/halo-lifecycle.js'
 
 const POLL_MS = 2 * MS_PER_SECOND
 /**
- * A start sent while the host is still stopping is dropped by Compute Engine,
- * so the starter repeats it. A start on a running host does nothing.
+ * A start sent while the halo is still stopping is dropped by Compute Engine,
+ * so the starter repeats it. A start on a running halo does nothing.
  */
 const RESTART_SECONDS = 15
 const RESTART_MS = RESTART_SECONDS * MS_PER_SECOND
 const PROBE_TIMEOUT_MS = 2 * MS_PER_SECOND
 
-/** The host missed the wake deadline; the caller shows a failure with retry. */
+/** The halo missed the wake deadline; the caller shows a failure with retry. */
 export class WakeTimeout extends Error {
   status = HTTP.UNAVAILABLE
 }
 
-/** Whether the host API accepts a connection. Never throws. */
+/** Whether the halo API accepts a connection. Never throws. */
 export const tcp_probe = ({ host, api_port }, timeout_ms = PROBE_TIMEOUT_MS) =>
   /** @type {Promise<boolean>} */
   (
@@ -46,11 +46,11 @@ export const gce_start =
       method: 'POST',
       headers: { authorization: `Bearer ${await token()}` }
     })
-    if (!reply.ok) throw new Error(`host start refused: ${reply.status}`)
+    if (!reply.ok) throw new Error(`halo start refused: ${reply.status}`)
   }
 
 /**
- * Wake one host on demand. Concurrent callers in this instance share one
+ * Wake one halo on demand. Concurrent callers in this instance share one
  * wake; other instances see the `starting` intent and wait instead of
  * starting again. Every wait ends by the deadline.
  * @param {object} options
@@ -115,7 +115,7 @@ export const make_waker = ({
       })
       await write_intent(record)
       until = Date.parse(record.until)
-      emit('starting', 'starting host')
+      emit('starting', 'starting halo')
       await start()
       started_at = now()
     }
@@ -131,16 +131,16 @@ export const make_waker = ({
       if (await probe()) {
         // eslint-disable-next-line no-await-in-loop -- terminal write runs once after readiness
         await write_intent(intent_now('running', { now: now(), by: 'gate' }))
-        emit('complete', 'host ready')
+        emit('complete', 'halo ready')
         return
       }
     }
-    emit('failed', 'host did not wake')
-    throw new WakeTimeout('the host did not wake in time; try again')
+    emit('failed', 'halo did not wake')
+    throw new WakeTimeout('the halo did not wake in time; try again')
   }
 
   /**
-   * Resolves once the host answers; the cheap path is one probe. A watcher
+   * Resolves once the halo answers; the cheap path is one probe. A watcher
    * sees the shared wake's stages, starting with the latest one.
    * @param {{ watch?: (event: WakeEvent) => void }} [options]
    */

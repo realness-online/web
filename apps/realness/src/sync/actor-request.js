@@ -10,8 +10,8 @@ const unesc = value =>
     .replace(/&amp;/g, '&')
 
 export const ACTOR_ACTIONS = new Set(['idle', 'stop'])
-export const request_key = (host, actor) =>
-  `hosts/${host}/requests/${actor}.html`
+export const request_key = (halo, actor) =>
+  `halos/${halo}/requests/${actor}.html`
 
 export const request_html = ({ id, action, requested }) => {
   if (!ACTOR_ACTIONS.has(action))

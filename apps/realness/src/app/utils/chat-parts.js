@@ -1,6 +1,7 @@
 import {
   card_html,
-  mermaid_config
+  mermaid_config,
+  plain_shapes
 } from '#root/tools/publish/renderer/static/scripts/parts.js'
 
 const load_mermaid = async () => (await import('mermaid')).default
@@ -45,6 +46,7 @@ export const create_parts = (load = load_mermaid) => {
   const place = (pre, svg) => {
     if (svg === null) return pre.removeAttribute('aria-busy')
     pre.innerHTML = svg
+    plain_shapes(pre)
     pre.removeAttribute('aria-busy')
     pre.setAttribute('data-processed', 'true')
   }

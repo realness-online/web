@@ -10,7 +10,9 @@ import assert from 'node:assert/strict'
 import {
   card_html,
   draw_diagrams,
-  mermaid_config
+  mermaid_config,
+  plain_shapes,
+  without_class_defs
 } from '../../../tools/publish/renderer/static/scripts/parts.js'
 
 const fence = fields =>
@@ -98,14 +100,14 @@ test('a cardlink fence becomes a link card', () => {
   )
 })
 
-test('a card falls back to the url for host and title', () => {
+test('a card falls back to the url for halo and title', () => {
   const html = card_html(fence({ url: 'https://example.com/a/b' }))
   assert.match(html, /itemprop="provider">example\.com</)
   assert.match(html, /itemprop="name">https:\/\/example\.com\/a\/b</)
   assert.doesNotMatch(html, /description/)
 })
 
-test('a card keeps the reader off remote hosts when images are off', () => {
+test('a card keeps the reader off remote halos when images are off', () => {
   const html = card_html(
     fence({
       url: 'https://example.com/a',
@@ -159,13 +161,12 @@ test('a card reads quoted values, ignores prose, and lowercases its keys', () =>
   assert.doesNotMatch(html, /not a field/)
 })
 
-test('the Mermaid theme comes from the page roles', t => {
+test('the Mermaid theme takes the colors Mermaid cannot read from CSS', t => {
   install_dom(t, {
     roles: {
       '--surface': '#ffffff',
       '--text': '#111111',
-      '--accent': '#ff8800',
-      '--blue': '#0000ff'
+      '--muted-text': '#888888'
     }
   })
   const config = mermaid_config()
@@ -173,27 +174,13 @@ test('the Mermaid theme comes from the page roles', t => {
   assert.equal(config.startOnLoad, false)
   assert.equal(config.themeVariables.background, '#ffffff')
   assert.equal(config.themeVariables.textColor, '#111111')
-  assert.equal(config.themeVariables.lineColor, '#ff8800')
-  assert.equal(config.themeVariables.fontFamily, 'Realness Sans')
-  assert.match(
-    config.themeCSS,
-    /\.node\.no rect \{ stroke: var\(--emphasis\); \}/
-  )
-  assert.deepEqual(config.flowchart, { curve: 'basis', padding: 12 })
+  assert.equal(config.themeVariables.lineColor, '#888888')
+  assert.deepEqual(config.flowchart, { curve: 'basis', padding: 18 })
 })
 
-test('the theme falls back to blue when there is no accent', t => {
-  install_dom(t, {
-    roles: {
-      '--surface': '#fff',
-      '--text': '#000',
-      '--accent': '',
-      '--blue': '#00ff00'
-    }
-  })
-  const config = mermaid_config()
-  assert.equal(config.themeVariables.lineColor, '#00ff00')
-  assert.equal(config.themeVariables.background, '#ffffff')
+test('styles stay out of the Mermaid config, where CSS cannot retune them', t => {
+  install_dom(t, { roles: { '--surface': '#fff', '--text': '#000' } })
+  assert.equal('themeCSS' in mermaid_config(), false)
 })
 
 test('a canvas without a 2D context is refused, not silently uncoloured', t => {
@@ -212,7 +199,9 @@ test('drawing no diagrams never loads Mermaid', async () => {
 
 test('drawing diagrams configures Mermaid and runs the given nodes', async t => {
   install_dom(t, { roles: { '--text': '#000' } })
-  const nodes = [{ id: 'one' }, { id: 'two' }]
+  const nodes = [
+    { id: 'one', textContent: 'flowchart LR', querySelectorAll: () => [] }
+  ]
   const used = []
   const mermaid = {
     initialize: config => used.push(['initialize', config]),
@@ -228,4 +217,44 @@ test('drawing diagrams configures Mermaid and runs the given nodes', async t => 
   )
   assert.equal(used[1][1].securityLevel, 'strict')
   assert.deepEqual(used[2][1].nodes, nodes)
+})
+
+test('a source keeps its class names and loses its inline colors', () => {
+  const source = [
+    'flowchart LR',
+    '  a["a1 one"] --> G{{"GATE 1"}}',
+    '  classDef gate fill:#7e531c,stroke:#dfad6d,color:#e1be89;',
+    '  classDef done fill:none,stroke:#525252;',
+    '  class G gate'
+  ].join('\n')
+  const out = without_class_defs(source)
+  assert.doesNotMatch(out, /classDef|7e531c|525252/)
+  assert.match(out, /class G gate/)
+  assert.match(out, /flowchart LR/)
+})
+
+test('drawing strips classDefs before Mermaid sees the source', async t => {
+  install_dom(t, { roles: { '--text': '#000' } })
+  const node = {
+    textContent: 'flowchart LR\n  a["a1 x"]\n  classDef done fill:#525252;',
+    querySelectorAll: () => []
+  }
+  let ran = ''
+  await draw_diagrams([node], async () => ({
+    initialize() {},
+    run: options => {
+      ran = options.nodes[0].textContent
+    }
+  }))
+  assert.doesNotMatch(ran, /classDef/)
+})
+
+test('a drawn node drops the inline fills so the stylesheet can style it', () => {
+  const shape = {
+    style: 'fill:#7e531c',
+    removeAttribute: name => name === 'style' && (shape.style = undefined)
+  }
+  const node = { querySelectorAll: () => [shape] }
+  plain_shapes(node)
+  assert.equal(shape.style, undefined)
 })

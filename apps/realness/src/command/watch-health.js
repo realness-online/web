@@ -5,9 +5,9 @@ import {
 import { phone_of } from '#root/src/files/client.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 import {
-  host_state as lifecycle_state,
+  halo_state as lifecycle_state,
   read_lifecycle
-} from '#root/src/sync/host-lifecycle.js'
+} from '#root/src/sync/halo-lifecycle.js'
 /* eslint-disable no-await-in-loop -- reads are paced one at a time to keep the sync service quiet */
 
 const unesc = value =>
@@ -17,22 +17,23 @@ const unesc = value =>
     .replace(/&amp;/g, '&')
 
 /**
- * One host record as `{ host, actors, apps }`; unknown fields are ignored.
+ * One halo record as `{ halo, actors, apps }`; unknown fields are ignored.
+ * Records written under the older `/halo` name still read, as `halo`.
  * @typedef {Record<string, string>} StatusFields
- * @returns {{ host: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }}
+ * @returns {{ halo: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }}
  */
 export const read_status = html => {
-  /** @type {{ host: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }} */
-  const read = { host: null, actors: [], apps: [] }
+  /** @type {{ halo: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }} */
+  const read = { halo: null, actors: [], apps: [] }
   for (const [, type, body] of html.matchAll(
-    /<article itemscope itemtype="\/(host|actor|app)">(.*?)<\/article>/g
+    /<article itemscope itemtype="\/(halo|actor|app)">(.*?)<\/article>/g
   )) {
     const values = {}
     for (const [, name, value] of body.matchAll(
       /itemprop="(\w+)" content="([^"]*)"/g
     ))
       values[name] = unesc(value)
-    if (type === 'host') read.host = values
+    if (type === 'halo') read.halo = values
     else read[`${type}s`].push(values)
   }
   return read
@@ -49,8 +50,8 @@ const number = value => (Number.isFinite(Number(value)) ? Number(value) : null)
 export const people_for = (who, named = []) =>
   named.length ? named : [who?.phone].filter(Boolean)
 
-/** A host's state word from its age and actor counts, busiest first. */
-const host_state = ({ quiet, running, idle, stopped }) => {
+/** A halo's state word from its age and actor counts, busiest first. */
+const halo_state = ({ quiet, running, idle, stopped }) => {
   if (quiet) return 'quiet'
   if (running > 0) return 'running'
   if (idle > 0) return 'idle'
@@ -74,20 +75,20 @@ const attempt = async (read, at = () => new Date().toISOString()) => {
   }
 }
 
-/** Host records: running, sleeping, or quiet, from the stored record's age. */
-const hosts_panel = async ({ store, now = Date.now(), quiet_ms }) => {
-  const listed = await store.ls('can://hosts/')
+/** Halo records: running, sleeping, or quiet, from the stored record's age. */
+const halos_panel = async ({ store, now = Date.now(), quiet_ms }) => {
+  const listed = await store.ls('can://halos/')
   const names = listed
     .filter(name => name.endsWith('/'))
     .map(name => name.slice(0, -1))
   const rows = []
   for (const name of names) {
     const page = await store
-      .cat(`can://hosts/${name}/status.html`)
+      .cat(`can://halos/${name}/status.html`)
       .catch(() => null)
-    const values = page ? (read_status(page.toString('utf8')).host ?? {}) : null
+    const values = page ? (read_status(page.toString('utf8')).halo ?? {}) : null
     const life = await store
-      .cat(`can://hosts/${name}/lifecycle.html`)
+      .cat(`can://halos/${name}/lifecycle.html`)
       .catch(() => null)
     const planned = lifecycle_state({
       lifecycle: life ? read_lifecycle(life.toString('utf8')) : null,
@@ -125,7 +126,7 @@ const hosts_panel = async ({ store, now = Date.now(), quiet_ms }) => {
     const running = number(values.actors_running) ?? 0
     const idle = number(values.actors_idle) ?? 0
     const stopped = number(values.actors_stopped) ?? 0
-    const state = host_state({ quiet, running, idle, stopped })
+    const state = halo_state({ quiet, running, idle, stopped })
     rows.push({
       name,
       state,
@@ -135,7 +136,9 @@ const hosts_panel = async ({ store, now = Date.now(), quiet_ms }) => {
       loops: number(values.loops_running),
       apps: number(values.apps),
       mem_free: number(values.mem_available) ?? number(values.mem_free),
+      mem_total: number(values.mem_total),
       volume_free: number(values.volume_free),
+      volume_size: number(values.volume_size),
       detail: quiet ? `quiet for ${age_s}s` : null,
       errors: values.resource_error ? [values.resource_error] : []
     })
@@ -269,7 +272,7 @@ const publish_panel = async ({ store, people }) => {
  * @param {number} [options.quiet_ms]
  * @param {number} [options.now]
  * @param {() => string} [options.at]
- * @param {{ billing: () => Promise<object>, services: () => Promise<object>, resources?: () => Promise<object> } | null} [options.cloud]
+ * @param {{ billing: () => Promise<object>, services: () => Promise<object>, resources?: () => Promise<object>, traffic?: () => Promise<object>, plans?: () => Promise<object> } | null} [options.cloud]
  */
 export const health_snapshot = async ({
   store,
@@ -286,7 +289,7 @@ export const health_snapshot = async ({
   const who = who_from(token)
   const people = people_for(who, named)
   const panels = /** @type {Record<string, unknown>} */ ({
-    hosts: await attempt(() => hosts_panel({ store, now, quiet_ms }), at),
+    hosts: await attempt(() => halos_panel({ store, now, quiet_ms }), at),
     cost: await attempt(() => cost_panel({ store, people, ledger, named }), at),
     sync: await attempt(() => sync_panel({ store, who, records }), at),
     sign_on: await attempt(() => sign_on_panel({ who, service }), at),
@@ -318,6 +321,8 @@ export const health_snapshot = async ({
   panels.billing = billing
   panels.services = services
   panels.resources = resources
+  if (cloud?.traffic) panels.traffic = await attempt(cloud.traffic, at)
+  if (cloud?.plans) panels.plans = await attempt(cloud.plans, at)
   return { checked: new Date(now).toISOString(), who, people, panels }
 }
 

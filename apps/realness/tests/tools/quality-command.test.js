@@ -58,7 +58,7 @@ test('product npm test runs quality once before the frontend and Functions suite
   assert.equal(typeof manifest.scripts['check:quality'], 'string')
   assert.match(
     manifest.scripts['check:quality'],
-    /fallow -- dead-code --fail-on-issues/
+    /fallow -- dead-code --fail-on-regression/
   )
   const result = exercise()
   assert.equal(result.status, 0, result.output)

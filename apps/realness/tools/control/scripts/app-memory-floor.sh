@@ -16,7 +16,7 @@ export default { fetch: () => new Response(`${Math.round(freemem() / 1024)}`) }'
 
 measure() {
   node --input-type=module -e '
-    import { AppStore } from "'"$REPO"'/host/src/apps.js"
+    import { AppStore } from "'"$REPO"'/src/halo/apps.js"
     const [dir, mib, requests] = process.argv.slice(1)
     const store = new AppStore({ volume: "/opt/fc/actors/mnt", kernel: "/opt/fc/vmlinux-6.1.155", firecracker: "/opt/fc/firecracker", mib: Number(mib), bootTimeout: 45 })
     let record

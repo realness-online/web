@@ -86,16 +86,6 @@ const CURVE_BUDGET = 1600
 export const DEFAULT_PRECISION = 1
 
 /**
- * @param {number} count How many contours the set has to carry
- * @returns {number}
- */
-export const segments_for = count =>
-  Math.min(
-    DEFAULT_SEGMENTS,
-    Math.max(MIN_SEGMENTS, Math.round(CURVE_BUDGET / Math.max(1, count)))
-  )
-
-/**
  * Cubics per slot, weighted by how much perimeter that slot actually carries.
  * An even split per contour starves a large, branching shape of the curves it
  * needs while wasting them on simple ones the same rank - which is what

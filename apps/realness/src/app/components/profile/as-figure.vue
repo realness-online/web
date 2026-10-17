@@ -1,7 +1,8 @@
 <script setup>
   import icon from '@/components/icon'
   import AsAvatar from '@/components/posters/as-avatar'
-  import PosterAsFigure from '@/components/posters/as-figure'
+  import AsProfileChip from '@/components/posters/as-profile-chip'
+  import AsFigure from '@/components/posters/as-figure'
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
   import { useRouter as use_router } from 'vue-router'
@@ -23,6 +24,10 @@
       type: String,
       default: 'phonebook',
       validator: v => ['label', 'phonebook', 'page'].includes(v)
+    },
+    profile_display: {
+      type: String,
+      default: undefined
     },
     poster_itemid: {
       type: String,
@@ -67,29 +72,30 @@
 </script>
 
 <template>
-  <router-link
-    v-if="display === 'label'"
-    :to="person.id"
-    :data-display="display">
-    <as-avatar v-if="display_itemid" :itemid="display_itemid" />
+  <template v-if="display === 'label'">
+    <router-link
+      v-if="!profile_display"
+      :to="person.id"
+      :data-display="display">
+      <as-avatar v-if="display_itemid" :itemid="display_itemid" />
+      <icon v-else name="silhouette" />
+      <span>{{ person.name }}</span>
+    </router-link>
+    <as-profile-chip
+      v-else
+      :person="person"
+      :display="profile_display"
+      :poster_itemid="poster_itemid"
+      :itemid="itemid" />
+  </template>
+  <template v-else-if="display === 'page'">
+    <as-profile-chip
+      v-if="person.avatar || display_itemid"
+      :person="person"
+      display="label"
+      :poster_itemid="display_itemid" />
     <icon v-else name="silhouette" />
-    <span>{{ person.name }}</span>
-  </router-link>
-  <div v-else-if="display === 'page' && person.avatar">
-    <poster-as-figure
-      :itemid="person.avatar"
-      :menu="!is_me"
-      :menu_always_visible="!is_me"
-      pin
-      @show="on_poster_hero_show">
-      <menu v-if="!is_me">
-        <as-messenger :itemid="person.id" />
-      </menu>
-    </poster-as-figure>
-  </div>
-  <div v-else-if="display === 'page'">
-    <icon name="silhouette" />
-  </div>
+  </template>
   <figure v-if="display === 'phonebook'" :data-display="display">
     <as-avatar
       v-if="person.avatar"

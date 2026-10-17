@@ -82,7 +82,7 @@ describe('terminal reconnects', () => {
     it('retries at once instead of waiting on a held-back timer', async () => {
       const open = vi
         .fn()
-        .mockRejectedValueOnce(new Error('host waking'))
+        .mockRejectedValueOnce(new Error('halo waking'))
         .mockImplementation(async () => new WebSocket('wss://gate/pty'))
       await mount(env.stage, { ...mount_options, actor: 'a1', open })
       await new Promise(resolve => setImmediate(resolve))
@@ -97,7 +97,7 @@ describe('terminal reconnects', () => {
       let finish
       const open = vi
         .fn()
-        .mockRejectedValueOnce(new Error('host waking'))
+        .mockRejectedValueOnce(new Error('halo waking'))
         .mockImplementation(() => new Promise(resolve => (finish = resolve)))
       await mount(env.stage, { ...mount_options, actor: 'a1', open })
       await new Promise(resolve => setImmediate(resolve))

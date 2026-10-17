@@ -65,8 +65,8 @@ for (const service of ['sync', 'proxy', 'gate']) {
               SYNC_DIR: join(directory, 'data'),
               PINS_BUCKET: 'test-bucket',
               IDENTITY_PROJECT: 'stage-test',
-              GATE_HOST: '127.0.0.1:1',
-              HOST_PASS_SECRET: 'test-secret-123456789012345678901234567890',
+              GATE_HALO: '127.0.0.1:1',
+              HALO_PASS_SECRET: 'test-secret-123456789012345678901234567890',
               MODEL_PASS_SECRET: 'test-secret-123456789012345678901234567890',
               OPENROUTER_API_KEY: 'test-key',
               K_SERVICE: ''

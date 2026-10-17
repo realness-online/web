@@ -86,7 +86,7 @@ const patch_hit_paths = wrapper => {
 }
 
 const mount_mask_pen = mask_pen => {
-  const Host = defineComponent({
+  const Halo = defineComponent({
     setup() {
       return () =>
         h('figure', { class: 'poster' }, [
@@ -126,7 +126,7 @@ const mount_mask_pen = mask_pen => {
     }
   })
 
-  return mount(Host, {
+  return mount(Halo, {
     global: {
       provide: {
         'mask-pen': mask_pen,

@@ -12,9 +12,9 @@ const cli = (...args) =>
     })
   )
 
-test('JSON host list contains only one result despite progress', () => {
-  const value = cli('local', 'host', 'list', '--json')
-  assert.equal(typeof value.host, 'string')
+test('halo list returns one JSON result', () => {
+  const value = cli('local', 'halo', 'list', '--json')
+  assert.equal(typeof value.halo, 'string')
 })
 
 test('streamed progress stays off JSON stdout and masks split phones', () => {
@@ -36,7 +36,10 @@ test('streamed progress stays off JSON stdout and masks split phones', () => {
 })
 
 test('JSON help is a result', () => {
-  assert.match(cli('--help', '--json').usage, /admin login/)
+  const usage = cli('--help', '--json').usage
+  assert.match(usage, /admin login/)
+  assert.match(usage, /halo up/)
+  assert.doesNotMatch(usage, /compatibility alias/)
 })
 
 test('JSON errors mask phone numbers', () => {

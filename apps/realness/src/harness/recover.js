@@ -32,7 +32,7 @@ export const door_pass = (op = 'recovery-pass') =>
         const answer = JSON.parse(stdout.split('\n')[0])
         if (!answer.ok)
           return reject(
-            new Error(answer.error || 'host door did not issue a pass')
+            new Error(answer.error || 'halo door did not issue a pass')
           )
         resolve(answer.pass)
       }

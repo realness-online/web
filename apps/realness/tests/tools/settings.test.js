@@ -161,9 +161,9 @@ test('settings CLI rejects missing fields before Bash can use them', () => {
   for (const args of [
     ['shell', 'deploy'],
     ['shell', 'deploy', '--env', 'prod'],
-    ['shell', 'host'],
-    ['shell', 'host', '--env', ''],
-    ['shell', 'host', '--env', 'local'],
+    ['shell', 'halo'],
+    ['shell', 'halo', '--env', ''],
+    ['shell', 'halo', '--env', 'local'],
     ['folders', 'service'],
     ['folders', 'other']
   ]) {
@@ -196,10 +196,10 @@ test('settings CLI rejects missing fields before Bash can use them', () => {
   assert.equal(actual, env.ORIGINS)
 })
 
-test('a cloud host reads only the services of its own environment', () => {
+test('a cloud halo reads only the services of its own environment', () => {
   const read = env =>
     Object.fromEntries(
-      exec_file_sync(process.execPath, [cli, 'shell', 'host', '--env', env], {
+      exec_file_sync(process.execPath, [cli, 'shell', 'halo', '--env', env], {
         encoding: 'utf8'
       })
         .trim()

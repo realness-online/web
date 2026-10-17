@@ -2,8 +2,8 @@ import { afterEach as after_each, test } from 'node:test'
 import assert from 'node:assert/strict'
 import { connect, createServer as create_server } from 'node:net'
 import { createServer as create_http_server } from 'node:http'
-import { make_gate, offered_token, one_host } from '#root/src/gate/gate.js'
-import { verify_host_pass } from '#root/src/sign-on/node/host-pass.js'
+import { make_gate, offered_token, one_halo } from '#root/src/gate/gate.js'
+import { verify_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { Lines } from '#root/lib/lines.js'
 import { TEXT, frame, parse } from '#root/lib/websocket.js'
 
@@ -11,15 +11,15 @@ const secret = 'g'.repeat(32)
 const origin = 'https://realness-development.web.app'
 const phone = '+14155550123'
 
-/** A stand-in for a host's framed terminal: checks the hello, then echoes. */
-const fake_host = async () => {
+/** A stand-in for a halo's framed terminal: checks the hello, then echoes. */
+const fake_halo = async () => {
   const hellos = []
   const server = create_server(async client => {
     const lines = new Lines(client)
     const hello = JSON.parse((await lines.read(5)).toString())
     hellos.push(hello)
     try {
-      if (verify_host_pass(hello.pass, secret).phone !== phone)
+      if (verify_halo_pass(hello.pass, secret).phone !== phone)
         throw new Error('wrong owner')
     } catch (error) {
       return client.end(`${JSON.stringify({ error: error.message })}\n`)
@@ -33,7 +33,7 @@ const fake_host = async () => {
 }
 
 const start_gate = async (
-  host_address,
+  halo_address,
   identify = async token =>
     token === 'good.id.token'
       ? { phone }
@@ -41,7 +41,7 @@ const start_gate = async (
 ) => {
   const gate = make_gate({
     identify,
-    host_for: one_host(host_address),
+    halo_for: one_halo(halo_address),
     secret,
     origins: [origin],
     log: () => {}
@@ -106,8 +106,8 @@ const next_text = (socket, rest) =>
     check()
   })
 
-test("a signed-in browser reaches its host's terminal through the gate", async () => {
-  const host = await fake_host()
+test("a signed-in browser reaches its halo's terminal through the gate", async () => {
+  const host = await fake_halo()
   const gate = await start_gate(host.address)
   try {
     const { socket, status, head, rest } = await open(gate)
@@ -117,7 +117,7 @@ test("a signed-in browser reaches its host's terminal through the gate", async (
       { ...host.hellos[0], pass: undefined },
       { actor: 'a-000000000001', cols: 100, rows: 30, pass: undefined }
     )
-    assert.equal(verify_host_pass(host.hellos[0].pass, secret).phone, phone)
+    assert.equal(verify_halo_pass(host.hellos[0].pass, secret).phone, phone)
     socket.write(frame(TEXT, Buffer.from('{"op":"data","data_b64":"aGk="}')))
     assert.equal(
       await next_text(socket, rest),
@@ -130,8 +130,8 @@ test("a signed-in browser reaches its host's terminal through the gate", async (
   }
 })
 
-test('the browser token never reaches the host', async () => {
-  const host = await fake_host()
+test('the browser token never reaches the halo', async () => {
+  const host = await fake_halo()
   const gate = await start_gate(host.address)
   try {
     const { socket } = await open(gate)
@@ -143,8 +143,8 @@ test('the browser token never reaches the host', async () => {
   }
 })
 
-test('another origin, no token, or a bad token is refused before any host', async () => {
-  const host = await fake_host()
+test('another origin, no token, or a bad token is refused before any halo', async () => {
+  const host = await fake_halo()
   const gate = await start_gate(host.address)
   try {
     assert.equal(
@@ -164,8 +164,8 @@ test('another origin, no token, or a bad token is refused before any host', asyn
   }
 })
 
-test('a host that refuses the pass is a 502, not a blank terminal', async () => {
-  const host = await fake_host()
+test('a halo that refuses the pass is a 502, not a blank terminal', async () => {
+  const host = await fake_halo()
   const gate = await start_gate(host.address, async () => ({
     phone: '+14155550199'
   }))
@@ -185,7 +185,7 @@ test('only a realness subprotocol carries a token', () => {
   assert.equal(offered_token('realness, a.b.c, extra'), null)
 })
 
-/** A stand-in host API: records what arrives, answers JSON, or streams on /v1/stream. */
+/** A stand-in halo API: records what arrives, answers JSON, or streams on /v1/stream. */
 const fake_api = async () => {
   const seen = []
   const server = create_http_server((request, response) => {
@@ -210,7 +210,7 @@ const fake_api = async () => {
       })
       response.end(
         JSON.stringify({
-          owner: verify_host_pass(
+          owner: verify_halo_pass(
             request.headers.authorization.slice(7),
             secret
           ).phone
@@ -229,7 +229,7 @@ const api_gate = async (api, wake) => {
       : Promise.reject(new Error('bad token'))
   const gate = make_gate({
     identify,
-    host_for: one_host('127.0.0.1:1', api.port),
+    halo_for: one_halo('127.0.0.1:1', api.port),
     secret,
     origins: [origin],
     wake,
@@ -239,7 +239,7 @@ const api_gate = async (api, wake) => {
   return { gate, at: `http://127.0.0.1:${gate.address().port}` }
 }
 
-test('r2a: a signed-in call reaches the host API under a host pass, not the token', async () => {
+test('r2a: a signed-in call reaches the halo API under a halo pass, not the token', async () => {
   const api = await fake_api()
   const { gate, at } = await api_gate(api)
   const reply = await fetch(`${at}/v1/actors?x=1`, {
@@ -309,7 +309,7 @@ test('r2a: other origins, no token, bad tokens, and other paths stop at the gate
   api.server.close()
 })
 
-test('r2a: a stream passes through, and leaving closes the host call', async () => {
+test('r2a: a stream passes through, and leaving closes the halo call', async () => {
   const api = await fake_api()
   const { gate, at } = await api_gate(api)
   const controller = new AbortController()
@@ -330,7 +330,7 @@ test('r2a: a stream passes through, and leaving closes the host call', async () 
   api.server.close()
 })
 
-test('r2a: an unreachable host is a 502', async () => {
+test('r2a: an unreachable halo is a 502', async () => {
   const { gate, at } = await api_gate({ port: 1 })
   assert.equal(
     (
@@ -343,7 +343,7 @@ test('r2a: an unreachable host is a 502', async () => {
   gate.close()
 })
 
-test('z3: only a signed-in call wakes the host, before it is forwarded', async () => {
+test('z3: only a signed-in call wakes the halo, before it is forwarded', async () => {
   const api = await fake_api()
   const order = []
   const { gate, at } = await api_gate(api, async () => {
@@ -375,7 +375,7 @@ test('z3: only a signed-in call wakes the host, before it is forwarded', async (
 test('z3: a failed wake is a 503 with a retry time, and nothing is forwarded', async () => {
   const api = await fake_api()
   const { gate, at } = await api_gate(api, async () => {
-    throw new Error('the host did not wake in time; try again')
+    throw new Error('the halo did not wake in time; try again')
   })
   const reply = await fetch(`${at}/v1/actors`, {
     headers: { authorization: 'Bearer good.id.token', origin }
@@ -414,7 +414,7 @@ const wake_with =
     for (const event of events) watch?.(event)
   }
 
-test('z5: startup progress begins with the gate wake, then the host stages', async () => {
+test('z5: startup progress begins with the gate wake, then the halo stages', async () => {
   const api = await ndjson_api(200)
   const { gate, at } = await api_gate(
     api,
@@ -467,7 +467,7 @@ test('z5: a wake that fails mid-stream ends with an error record', async () => {
   const api = await ndjson_api(200)
   const { gate, at } = await api_gate(api, async ({ watch } = {}) => {
     watch?.({ stage: 'starting_host', state: 'failed', elapsed_ms: 90_000 })
-    throw new Error('the host did not wake in time; try again')
+    throw new Error('the halo did not wake in time; try again')
   })
   const reply = await fetch(`${at}/v1/startup`, {
     method: 'POST',
@@ -478,7 +478,7 @@ test('z5: a wake that fails mid-stream ends with an error record', async () => {
   assert.equal(events[0].state, 'failed')
   assert.deepEqual(events.at(-1), {
     type: 'error',
-    text: 'the host did not wake in time; try again'
+    text: 'the halo did not wake in time; try again'
   })
   gate.close()
   api.server.close()

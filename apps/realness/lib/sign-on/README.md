@@ -8,7 +8,7 @@ This folder keeps the pieces other code imports.
   profile adapter, which owns loading and saving.
 - `src/node/login.js`: `realness login`, the waiting program, and keychain
   credentials.
-- `src/node/host-pass.js`: host and record passes.
+- `src/node/halo-pass.js`: halo and record passes.
 
 The root package exports the Node entries only for Node. Browser builds can't
 import them.

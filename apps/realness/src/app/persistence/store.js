@@ -6,7 +6,7 @@ import { backend } from './store-backend.js'
 import { paths } from './store-paths.js'
 import { vocabulary } from './store-vocabulary.js'
 
-export const store = create_store({ backend, paths, vocabulary })
+const store = create_store({ backend, paths, vocabulary })
 
 export const { Storage, Local, Large, Cloud } = store
 export const {
@@ -20,4 +20,3 @@ export const {
   as_archive
 } = store
 export { as_directory_id } from './store-paths.js'
-export { sync_later } from './store-backend.js'

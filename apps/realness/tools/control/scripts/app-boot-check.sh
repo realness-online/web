@@ -14,7 +14,7 @@ bad() { printf '  FAIL %s\n' "$*" >&2; FAIL=$((FAIL + 1)); }
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 iptables -S INPUT | grep -q -- "-i fc-app+ -j REALNESS-APP-IN" \
-  || { echo "no app rules: run 'sudo bash server/host/scripts/net-up.sh' first" >&2; exit 1; }
+  || { echo "no app rules: run 'sudo bash server/halo/scripts/net-up.sh' first" >&2; exit 1; }
 
 for name in one two; do
   mkdir -p "$APPS/$name"
@@ -29,12 +29,12 @@ export default new Hono()' > "$APPS/deps/server.js"
 
 : > "$RUN/started"
 cleanup() {
-  while read -r id; do node "$REPO/server/host/app.js" stop "$id" > /dev/null 2>&1 || true; done < "$RUN/started"
+  while read -r id; do node "$REPO/server/halo/app.js" stop "$id" > /dev/null 2>&1 || true; done < "$RUN/started"
 }
 trap cleanup EXIT
 
 for name in one two; do
-  record="$(node "$REPO/server/host/app.js" start "$APPS/$name" 2> "$RUN/$name.err" | tail -n 1)" || true
+  record="$(node "$REPO/server/halo/app.js" start "$APPS/$name" 2> "$RUN/$name.err" | tail -n 1)" || true
   if ! jq -e .id <<< "$record" > /dev/null 2>&1; then
     bad "$name: did not start ($(tail -3 "$RUN/$name.err" | tr '\n' ' '))"
     continue
@@ -50,7 +50,7 @@ for name in one two; do
   fi
 done
 
-site="$(node "$REPO/server/host/app.js" start "$APPS/site" | tail -n 1)"
+site="$(node "$REPO/server/halo/app.js" start "$APPS/site" | tail -n 1)"
 if [ "$(jq -r .kind <<< "$site")" = site ] && [ "$(jq -r '.tap // empty' <<< "$site")" = "" ]; then
   ok "site gets no VM"
 else
@@ -58,7 +58,7 @@ else
 fi
 
 for name in python binary deps; do
-  if node "$REPO/server/host/app.js" start "$APPS/$name" > "$RUN/$name.out" 2>&1; then
+  if node "$REPO/server/halo/app.js" start "$APPS/$name" > "$RUN/$name.out" 2>&1; then
     bad "$name started"
   elif grep -qE "fetch handler|standard library only" "$RUN/$name.out"; then
     ok "$name refused: $(grep -oE "python \(main.py\)|an executable \(busybox\)|imports 'hono'" "$RUN/$name.out" | head -1)"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Service accounts, roles, and pass secrets the sync, proxy, and gate deploys expect.
 # Each service builds its own source with its own account; sync also reads
-# compute so it can label quiet hosts (hs-m7b).
+# compute so it can label quiet halos (hs-m7b).
 # Safe to rerun: existing accounts, secrets, and bindings are kept.
 #   bash tools/control/scripts/service-accounts.sh production
 set -euo pipefail
@@ -14,9 +14,12 @@ echo "apis"
 g services enable cloudbuild.googleapis.com artifactregistry.googleapis.com run.googleapis.com \
   secretmanager.googleapis.com compute.googleapis.com iap.googleapis.com
 
-for name in HOST_PASS_SECRET MODEL_PASS_SECRET; do
+for name in HALO_PASS_SECRET MODEL_PASS_SECRET; do
   if gcloud secrets describe "$name" --project "$project" > /dev/null 2>&1; then
     echo "secret $name: kept"
+  elif [ "$name" = HALO_PASS_SECRET ] && gcloud secrets describe HALO_PASS_SECRET --project "$project" > /dev/null 2>&1; then
+    gcloud secrets versions access latest --secret=HALO_PASS_SECRET --project "$project" | g secrets create "$name" --data-file=-
+    echo "secret $name: migrated"
   else
     openssl rand -hex 32 | tr -d '\n' | g secrets create "$name" --data-file=-
     echo "secret $name: created"
@@ -33,8 +36,8 @@ for service in sync proxy gate; do
   echo "account $account: ready"
 done
 
-secret_access "realness-sync@$project.iam.gserviceaccount.com" HOST_PASS_SECRET
-secret_access "realness-gate@$project.iam.gserviceaccount.com" HOST_PASS_SECRET
+secret_access "realness-sync@$project.iam.gserviceaccount.com" HALO_PASS_SECRET
+secret_access "realness-gate@$project.iam.gserviceaccount.com" HALO_PASS_SECRET
 for name in MODEL_PASS_SECRET OPENROUTER_API_KEY STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET; do
   gcloud secrets describe "$name" --project "$project" > /dev/null 2>&1 &&
     secret_access "realness-proxy@$project.iam.gserviceaccount.com" "$name"

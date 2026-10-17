@@ -1,10 +1,10 @@
 /**
- * hs-f3: put one drained bundle back on a host, so restore can find it.
+ * hs-f3: put one drained bundle back on a halo, so restore can find it.
  *
- * Drain removes the export folder from the host it came from, so the bundle in
+ * Drain removes the export folder from the halo it came from, so the bundle in
  * the bucket is the only copy left. `restore` reads a local export folder, so
- * the bundle has to be on the target host first. The Mac holds the storage
- * credentials and the host does not, so the copy passes through here, the same
+ * the bundle has to be on the target halo first. The Mac holds the storage
+ * credentials and the halo does not, so the copy passes through here, the same
  * way drain ships one the other direction.
  */
 import { mkdir, rm } from 'node:fs/promises'
@@ -19,8 +19,8 @@ const PARTS = ['artifacts.tar.gz', 'manifest.json']
 
 /**
  * @param {{ sshArgs: (name: string, command: string) => string[] }} cloud
- * @param {{ zone: string, bucket: string, hostExports?: string }} config
- * @param {string} name the target host
+ * @param {{ zone: string, bucket: string, haloExports?: string }} config
+ * @param {string} name the target halo
  * @param {string} id the actor, which is also the export folder name
  * @param {{ object?: string, scratch?: string, run?: (argv: string[]) => Promise<{ ok: boolean, out: string, err: string }> }} [options]
  */
@@ -46,7 +46,7 @@ export const place_bundle = async (
     throw new BundleError(`no bundle for ${id}: ${last_line(pulled.err)}`)
 
   step(`unpack ${id} on ${name}`)
-  const exports = config.hostExports ?? '/opt/fc/actors/mnt/exports'
+  const exports = config.haloExports ?? '/opt/fc/actors/mnt/exports'
   const unpacked = await run([
     ...cloud.sshArgs(
       name,
@@ -92,7 +92,7 @@ export const place_bundle = async (
 
   await rm(here, { recursive: true, force: true })
   note(`${id}: in ${exports} on ${name}`)
-  return { id, host: name, export_dir: `${exports}/${id}` }
+  return { id, halo: name, export_dir: `${exports}/${id}` }
 }
 
 const last_line = text => String(text).trim().split('\n').at(-1) ?? ''

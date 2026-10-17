@@ -87,7 +87,7 @@ async function fixture(type = 'blog') {
     rights: rights(storage),
     project: issuer.project,
     certs: issuer.certs,
-    host_pass_secret: 'publish-test-secret-at-least-thirty-two-bytes',
+    halo_pass_secret: 'publish-test-secret-at-least-thirty-two-bytes',
     log: () => {}
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -341,7 +341,7 @@ test('publish rejects secret files before uploading, and renews an expired site 
     const result = await publish_app(f.root, 'test', {
       ...f.options,
       fetcher: (url, options) => {
-        if (url.endsWith('/v1/host-pass')) authorizations++
+        if (url.endsWith('/v1/halo-pass')) authorizations++
         if (!refused && options.method === 'PUT') {
           refused = true
           return new Response('', { status: 401 })

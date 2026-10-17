@@ -4,6 +4,7 @@ import { mkdir, rm } from 'node:fs/promises'
 import { after, before, test } from 'node:test'
 import { disk } from '#root/src/can/disk.js'
 import { rights } from '#root/src/sync/rights.js'
+import { sign_pass } from '#root/src/can/pass.js'
 import {
   harness_path,
   issue_harness_pass,
@@ -37,7 +38,7 @@ before(async () => {
     rights: rights(storage),
     project: 'none',
     certs: async () => ({}),
-    host_pass_secret: secret,
+    halo_pass_secret: secret,
     log: () => {}
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -83,7 +84,7 @@ test('a pass reads, never writes, anything its owner holds', async () => {
   )
   assert.equal((await call(pass, `${folder}test.jsonl`, 'PUT')).status, 403)
   assert.equal((await call(pass, `${folder}test.jsonl`, 'DELETE')).status, 403)
-  assert.equal((await call(pass, 'v1/host-pass', 'POST')).status, 401)
+  assert.equal((await call(pass, 'v1/halo-pass', 'POST')).status, 401)
   assert.equal(
     recovery_path(
       `people/${phone}/.pi/agent/sessions/../vault/secret.md`,
@@ -149,7 +150,7 @@ test("a harness pass writes only its owner's safe harness paths", async () => {
     `people/${phone}/harness/artifacts/note.md`
   ])
     assert.equal((await call(pass, path, 'PUT')).status, 403, path)
-  assert.equal((await call(pass, 'v1/host-pass', 'POST')).status, 401)
+  assert.equal((await call(pass, 'v1/halo-pass', 'POST')).status, 401)
   assert.equal(
     harness_path(`people/${phone}/harness/vault/%2e%2e/note.md`, phone),
     false
@@ -228,24 +229,35 @@ test('a pass limited to paths reads only those', async () => {
   )
 })
 
-test('hs-f2: a pass names the host that issued it, when given', async () => {
+test('hs-f2: a pass names the halo that issued it, when given', async () => {
   const { issue_harness_pass, verify_harness_pass } =
     await import('#root/src/sign-on/node/recovery-pass.js')
   const key = 'pass-host-secret-at-least-thirty-two-bytes!!'
   const claims = { phone: '+14155550100', id: 'a-000000000001' }
   assert.equal(
     verify_harness_pass(
-      issue_harness_pass({ ...claims, host: 'realness-1' }, key),
+      issue_harness_pass({ ...claims, halo: 'realness-1' }, key),
       key
-    ).host,
+    ).halo,
     'realness-1'
   )
   assert.equal(
-    verify_harness_pass(issue_harness_pass(claims, key), key).host,
+    verify_harness_pass(issue_harness_pass(claims, key), key).halo,
     undefined
   )
   assert.throws(
-    () => issue_harness_pass({ ...claims, host: '../x' }, key),
-    /bad host name/
+    () => issue_harness_pass({ ...claims, halo: '../x' }, key),
+    /bad halo name/
   )
+})
+
+test('a recovery pass names its halo only as halo', () => {
+  const old = sign_pass(
+    { aud: 'realness-recovery', phone, id, host: 'realness-1' },
+    secret,
+    { life_s: 300 }
+  )
+  assert.equal(verify_recovery_pass(old, secret).halo, undefined)
+  const pass = issue_recovery_pass({ phone, id, halo: 'realness-1' }, secret)
+  assert.equal(verify_recovery_pass(pass, secret).halo, 'realness-1')
 })

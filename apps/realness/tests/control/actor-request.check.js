@@ -6,11 +6,11 @@ import { out_path } from '#root/lib/output.js'
 
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
-const secret = read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
 const pass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'realness-host',
+      aud: 'realness-halo',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -43,7 +43,7 @@ const { id } = await call('POST', '/v1/actors', {})
 console.log(`created ${id}`)
 try {
   await wait_for(id, 'running')
-  console.log('host reports it running')
+  console.log('halo reports it running')
   let asked = Date.now()
   console.log(await request_actor(sync, id, 'idle'))
   console.log(
@@ -55,7 +55,7 @@ try {
     `stop obeyed in ${Math.round(((await wait_for(id, 'stopped')) - asked) / 1000)}s`
   )
   assert.equal((await call('GET', `/v1/actors/${id}`)).state, 'stopped')
-  console.log('PASS: idle then stop reached the host through sync')
+  console.log('PASS: idle then stop reached the halo through sync')
 } finally {
   await call('DELETE', `/v1/actors/${id}`).catch(error =>
     console.log(`cleanup: ${error.message}`)

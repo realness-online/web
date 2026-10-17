@@ -76,6 +76,7 @@ describe('@/component/profile/as-figure.vue', () => {
         global: {
           stubs: {
             'as-avatar': true,
+            'as-profile-chip': true,
             icon: true,
             'router-link': {
               template: '<a :href="to"><slot /></a>',

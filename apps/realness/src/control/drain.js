@@ -1,19 +1,19 @@
 /**
- * Move a host's actors to a bucket, and only then let the host go.
+ * Move a halo's actors to a bucket, and only then let the halo go.
  *
- *   realness development host drain realness-2            # export and ship, host stays
- *   realness development host drain realness-2 --delete   # ... and delete it after
+ *   realness development halo drain realness-2            # export and ship, halo stays
+ *   realness development halo drain realness-2 --delete   # ... and delete it after
  *
- * Runs on the control plane, not the host: the host has no credentials at all
- * (`host up` creates it with --no-service-account), so it cannot upload its own
+ * Runs on the control plane, not the halo: the halo has no credentials at all
+ * (`halo up` creates it with --no-service-account), so it cannot upload its own
  * bundles and cannot be trusted to decide it is safe to die. This does both
  * from the outside.
  *
  * The order is the point. Every actor is exported, streamed to
  * `gs://<bucket>/actors/<id>/bundle.tar.gz`, and checked against what the
- * bucket says it stored; the bundle is then dropped from the host's volume. The
+ * bucket says it stored; the bundle is then dropped from the halo's volume. The
  * delete happens last and only if every actor came back confirmed. Anything
- * else leaves the host up, so a re-run is the retry.
+ * else leaves the halo up, so a re-run is the retry.
  *
  * The shell version was 235 lines, and about 60 of them existed to work around
  * two bash properties: a command substitution is a subshell, so state cannot
@@ -45,15 +45,15 @@ class DrainError extends Error {}
 const PARTS = ['artifacts.tar.gz', 'trace.jsonl', 'manifest.json']
 
 /**
- * Drain one host: export every actor, then remove or stop the VM. hs-n5: a
+ * Drain one halo: export every actor, then remove or stop the VM. hs-n5: a
  * bundle in the bucket is not a home, so a delete asks the fleet first.
  * @param {{ exists: (argv: string[]) => Promise<boolean>, sshArgs: (name: string, command: string) => string[], stream: (argv: string[]) => Promise<unknown>, try: (argv: string[]) => Promise<unknown>, value: (argv: string[], format: string) => Promise<string> }} cloud
- * @param {{ project?: string, zone: string, bucket: string, host: string, hostExports?: string }} config
+ * @param {{ project?: string, zone: string, bucket: string, haloExports?: string }} config
  * @param {string} name
  * @param {object} [options]
  * @param {boolean} [options.delete] remove the instance after draining
  * @param {string} [options.runDir] where the bundles land; a stamp folder by default
- * @param {(leaving: { name: string, api: object }) => Promise<{ name: string, actors: { id: string, state: string }[] }[]>} [options.fleet] hs-n5: read the other hosts before a delete
+ * @param {(leaving: { name: string, api: object }) => Promise<{ name: string, actors: { id: string, state: string }[] }[]>} [options.fleet] hs-n5: read the other halos before a delete
  */
 export const drain = async (
   cloud,
@@ -76,13 +76,13 @@ export const drain = async (
   const health = await probeHealth(api)
   if (!health)
     throw new DrainError(
-      'no host answering - start it with server/host/scripts/host-restart.sh'
+      'no halo answering - start it with server/halo/scripts/halo-restart.sh'
     )
 
   note('health: seed and actors answered')
 
   const actors = JSON.parse(await api.call('/v1/actors')).actors ?? []
-  step('actors on the host')
+  step('actors on the halo')
   if (actors.length === 0) note('none')
   for (const actor of actors) note(`${actor.id}: ${actor.state}`)
 
@@ -112,7 +112,7 @@ export const drain = async (
   )
   if (counts.failed > 0)
     throw new DrainError(
-      'the host is left up: fix and re-run, or the delete takes actors with it'
+      'the halo is left up: fix and re-run, or the delete takes actors with it'
     )
 
   if (!drop) {
@@ -127,7 +127,7 @@ export const drain = async (
     note(confirm_text(name)(homes))
   }
 
-  await deleteHostAndDisks(cloud, config, name)
+  await deleteHaloAndDisks(cloud, config, name)
   return { ...counts, run, deleted: true }
 }
 
@@ -187,7 +187,7 @@ const shipOne = async ({ cloud, config, name, api, run }, id) => {
     'gcloud',
     cloud.sshArgs(
       name,
-      `sudo rm -rf ${config.hostExports ?? '/opt/fc/actors/mnt/exports'}/${id}`
+      `sudo rm -rf ${config.haloExports ?? '/opt/fc/actors/mnt/exports'}/${id}`
     )
   )
   if (!removed.ok)
@@ -241,7 +241,7 @@ const storedProof = async (archive, object, id) => {
  * descriptor instead, the way the shell's `>` did.
  */
 const streamToFile = async (cloud, config, name, target, id) => {
-  const exports = config.hostExports ?? '/opt/fc/actors/mnt/exports'
+  const exports = config.haloExports ?? '/opt/fc/actors/mnt/exports'
   const args = cloud.sshArgs(name, `sudo tar -C ${exports} -czf - ${id}`)
   const handle = await open(target, 'w')
   try {
@@ -267,14 +267,14 @@ const streamToFile = async (cloud, config, name, target, id) => {
 }
 
 /**
- * Delete the host and the disks it actually has.
+ * Delete the halo and the disks it actually has.
  *
  * Enumerated, not guessed. Assuming `<name>-actors` is wrong for
  * realness-1, whose volume is named `realness-sessions`: the guess deletes the
  * instance and leaves a 30 GB disk behind, unattached and still billed.
  */
-const deleteHostAndDisks = async (cloud, config, name) => {
-  step('delete the host and the disks it has')
+const deleteHaloAndDisks = async (cloud, config, name) => {
+  step('delete the halo and the disks it has')
   const disks = await attachedDisks(cloud, name)
   note(`attached: ${disks.join(' ')}`)
 
@@ -307,7 +307,7 @@ const deleteHostAndDisks = async (cloud, config, name) => {
  *
  * Read from JSON, not from `--format=value(disks[].source.basename())`. That
  * format looks right and returns the *instance* name - so a delete loop over it
- * removes nothing and a 30 GB actors disk keeps billing after its host is
+ * removes nothing and a 30 GB actors disk keeps billing after its halo is
  * gone. `source` is a full URL to the disk itself; this takes its last path
  * segment. Verified against realness-1, whose two disks are the boot disk and
  * a volume whose name does not match any pattern.

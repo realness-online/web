@@ -4,7 +4,7 @@ set -euo pipefail
 project="${PROJECT:-realness-development}"
 region="${REGION:-us-central1}"
 service="realness-sync"
-job="realness-host-watch"
+job="realness-halo-watch"
 webhook="${1:-}"
 
 if [ -z "$webhook" ]; then
@@ -30,13 +30,13 @@ else
   echo "ALERT_TOKEN: kept"
 fi
 
-ensure_secret HOST_ALERT_WEBHOOK
+ensure_secret HALO_ALERT_WEBHOOK
 printf '%s' "$webhook" |
-  gcloud secrets versions add HOST_ALERT_WEBHOOK --project "$project" --data-file=- > /dev/null
-echo "HOST_ALERT_WEBHOOK: stored a new version"
+  gcloud secrets versions add HALO_ALERT_WEBHOOK --project "$project" --data-file=- > /dev/null
+echo "HALO_ALERT_WEBHOOK: stored a new version"
 
 token="$(gcloud secrets versions access latest --secret ALERT_TOKEN --project "$project")"
-target="$url/v1/host-watch/run"
+target="$url/v1/halo-watch/run"
 common=(--project "$project" --location "$region" --schedule "* * * * *" --uri "$target" --http-method POST --headers "Authorization=Bearer $token")
 
 if gcloud scheduler jobs describe "$job" --project "$project" --location "$region" > /dev/null 2>&1; then

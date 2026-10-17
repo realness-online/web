@@ -18,7 +18,7 @@ import { current_user } from '@/utils/serverless'
 import { read_loop } from '@/utils/loops'
 
 const record = (id, status, started) =>
-  `<article itemscope itemtype="/loop"><meta itemprop="id" content="${id}"><meta itemprop="host" content="realness-1"><meta itemprop="owner" content="+14155550123"><meta itemprop="status" content="${status}"><meta itemprop="runs" content="3"><meta itemprop="tokens" content="900"><meta itemprop="started" content="${started}"><p itemprop="goal">faster tests</p></article>`
+  `<article itemscope itemtype="/loop"><meta itemprop="id" content="${id}"><meta itemprop="halo" content="realness-1"><meta itemprop="owner" content="+14155550123"><meta itemprop="status" content="${status}"><meta itemprop="runs" content="3"><meta itemprop="tokens" content="900"><meta itemprop="started" content="${started}"><p itemprop="goal">faster tests</p></article>`
 
 let files
 before_each(() => {
@@ -83,7 +83,7 @@ describe('loops admin page', () => {
     expect(page.find('tbody tr output').text()).toBe('30s')
   })
 
-  it('counts down while stopping and clears when the host reports stopped', async () => {
+  it('counts down while stopping and clears when the halo reports stopped', async () => {
     vi.useFakeTimers()
     try {
       const page = mount(LoopsAdmin)

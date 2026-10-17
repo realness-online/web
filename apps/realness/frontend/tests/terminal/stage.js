@@ -53,7 +53,7 @@ export const make_stage = () => {
   const sockets = []
   const page_events = new EventTarget()
   vi.stubGlobal('document', {
-    baseURI: 'http://host.test/term/',
+    baseURI: 'http://halo.test/term/',
     visibilityState: 'visible',
     addEventListener: page_events.addEventListener.bind(page_events),
     removeEventListener: page_events.removeEventListener.bind(page_events),
@@ -73,9 +73,9 @@ export const make_stage = () => {
   })
   vi.stubGlobal('location', {
     protocol: 'http:',
-    host: 'host.test',
+    host: 'halo.test',
     search: '',
-    href: 'http://host.test/term/'
+    href: 'http://halo.test/term/'
   })
   vi.stubGlobal('window', {
     addEventListener: (type, fn) => {

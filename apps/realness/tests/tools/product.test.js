@@ -87,7 +87,7 @@ test('product imports resolve through the root instead of retired packages', asy
         /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\(\s*)["']([^"']+)["']/g
       )) {
         if (
-          /^realness-(can|out|sync|proxy|host|publish|cli)(\/|$)/.test(
+          /^realness-(can|out|sync|proxy|halo|publish|cli)(\/|$)/.test(
             specifier
           )
         )
@@ -134,7 +134,7 @@ test('the reference renderer reuses dependencies from the root install', async (
 test('browser conditions cannot resolve the secret-bearing Node sign-on entries', async () => {
   for (const specifier of [
     'realness/sign-on/login',
-    'realness/sign-on/host-pass'
+    'realness/sign-on/halo-pass'
   ]) {
     await assert.rejects(
       run(

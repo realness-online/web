@@ -45,7 +45,7 @@ after_each(() => {
 })
 
 describe('realness gate', () => {
-  it('calls the host API through the gate with the Firebase token', async () => {
+  it('calls the halo API through the gate with the Firebase token', async () => {
     await gate_api(user, '/v1/actors')
     expect(calls[0].url).toBe(`${cloud_gate}/v1/actors`)
     expect(calls[0].init.headers.authorization).toBe('Bearer id.token')
@@ -168,22 +168,22 @@ describe('realness gate', () => {
   it('a wake that fails mid-stream is a 503 with the gate message', async () => {
     fetch.mockResolvedValueOnce(
       new Response(
-        `${JSON.stringify({ type: 'startup-stage', source: 'gate', stage: 'starting_host', state: 'failed' })}\n${JSON.stringify({ type: 'error', text: 'the host did not wake in time; try again' })}\n`
+        `${JSON.stringify({ type: 'startup-stage', source: 'gate', stage: 'starting_host', state: 'failed' })}\n${JSON.stringify({ type: 'error', text: 'the halo did not wake in time; try again' })}\n`
       )
     )
     await expect(start_actor(user)).rejects.toMatchObject({
       status: 503,
-      message: 'the host did not wake in time; try again'
+      message: 'the halo did not wake in time; try again'
     })
   })
 
-  it('a 503 before streaming says the host is starting, keeping the status', async () => {
+  it('a 503 before streaming says the halo is starting, keeping the status', async () => {
     fetch.mockResolvedValueOnce(
-      new Response('the host is parking; try again\n', { status: 503 })
+      new Response('the halo is parking; try again\n', { status: 503 })
     )
     await expect(gate_api(user, '/v1/actors')).rejects.toMatchObject({
       status: 503,
-      message: 'the host is parking; try again'
+      message: 'the halo is parking; try again'
     })
   })
 

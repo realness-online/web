@@ -9,7 +9,7 @@ cd "$repo"
 harness="$OUT/realness-harness.tar.gz"
 runtime_folders="$(node "$repo/src/settings/cli.js" folders actor)"
 inputs="$({
-  find package.json tools/control/scripts/template-build.sh tools/control/scripts/stage-runtime.sh server/host/guest $runtime_folders -type f -print0 | sort -z | xargs -0 sha256sum
+  find package.json tools/control/scripts/template-build.sh tools/control/scripts/stage-runtime.sh server/halo/guest $runtime_folders -type f -print0 | sort -z | xargs -0 sha256sum
   tar -tzf "$harness" | sort
   tar -xzOf "$harness" | sha256sum
 } | sha256sum | cut -d' ' -f1)"

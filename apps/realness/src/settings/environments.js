@@ -19,7 +19,7 @@ const environments = {
     project: 'realness-online',
     public_url: 'https://realness.online',
     services: {
-      /** Next to the hosts, so the gate-to-host hop stays inside one region. */
+      /** Next to the halos, so the gate-to-host hop stays inside one region. */
       region: 'us-west2',
       bucket: 'realness-online.appspot.com',
       sync_url: 'https://realness-sync-276668807926.us-west2.run.app',
@@ -59,7 +59,7 @@ export const browser_settings = mode => {
 
 export const local_settings = {
   cloud: environments.development,
-  host_port: 8080,
+  halo_port: 8080,
   api_port: 18080,
   terminal_port: 18081,
   gate_port: 8792,

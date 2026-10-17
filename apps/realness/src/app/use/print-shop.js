@@ -8,7 +8,7 @@ import { thought_for_poster, thought_text } from '@realness.online/thoughts'
 
 const CENTS_PER_DOLLAR = 100
 
-export const OPEN_AMOUNT = 50000
+const OPEN_AMOUNT = 50000
 
 /** Amounts arrive in cents and read as whole dollars. */
 export const as_money = (amount, code) =>

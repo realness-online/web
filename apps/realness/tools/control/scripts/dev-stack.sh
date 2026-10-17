@@ -10,7 +10,7 @@ VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
 SIZE="${SIZE:-6G}"
-PORT="${PORT:-$host_port}"
+PORT="${PORT:-$halo_port}"
 
 [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
 
@@ -28,7 +28,7 @@ already=0
 if [ -e "$IMAGE" ]; then already="$(du -B1 "$IMAGE" | cut -f1)"; fi
 want=$((size_bytes - already))
 if [ "$want" -gt "$host_free" ]; then
-  printf 'actors volume wants %s but %s MiB is free on the host disk\n' \
+  printf 'actors volume wants %s but %s MiB is free on the halo disk\n' \
     "$SIZE" "$((host_free / 1024 / 1024))" >&2
   printf 'lower SIZE, or free space - finished work dirs live in /opt/fc\n' >&2
   exit 1
@@ -50,16 +50,16 @@ fstrim "$MOUNT" || true
 
 echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
-ACTOR_HOST_PORTS="18095 $site_port" bash "$DIR/server/host/scripts/net-up.sh"
+ACTOR_HOST_PORTS="18095 $site_port" bash "$DIR/server/halo/scripts/net-up.sh"
 
-secret_file="$OUT/host-pass-secret"
+secret_file="$OUT/halo-pass-secret"
 if [ ! -f "$secret_file" ]; then
-  echo "missing $secret_file: generate a 32-byte secret before starting the local host" >&2
+  echo "missing $secret_file: generate a 32-byte secret before starting the local halo" >&2
   exit 1
 fi
-export HOST_PASS_SECRET="$(< "$secret_file")"
+export HALO_PASS_SECRET="$(< "$secret_file")"
 export RECORD_SECRET_FILE=/etc/realness/record-secret
-SYNC_DIR="$OUT/site-sync" node "$DIR/server/host/scripts/record-key-dev.js"
+SYNC_DIR="$OUT/site-sync" node "$DIR/server/halo/scripts/record-key-dev.js"
 site_sync_pid="$OUT/site-sync.pid"
 if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
   kill "$(< "$site_sync_pid")"
@@ -71,7 +71,7 @@ if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
 fi
 if ! [ -s "$site_sync_pid" ] || ! kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
   mkdir -p "$OUT/site-sync"
-  nohup env HOST_PASS_SECRET="$HOST_PASS_SECRET" PROJECT="$dev_project" LISTEN=0.0.0.0 PORT="$site_port" SYNC_DIR="$OUT/site-sync" \
+  nohup env HALO_PASS_SECRET="$HALO_PASS_SECRET" PROJECT="$dev_project" LISTEN=0.0.0.0 PORT="$site_port" SYNC_DIR="$OUT/site-sync" \
     node "$DIR/server/sync/bin/sync-service.js" > "$OUT/site-sync.log" 2>&1 &
   echo $! > "$site_sync_pid"
 fi
@@ -89,5 +89,5 @@ export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 
 cd "$DIR"
-exec node server/host/main.js serve --environment development --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
+exec node server/halo/main.js serve --environment development --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
   --site-url "${SYNC_SITE_PUBLIC_URL%/}/sites/{id}/"

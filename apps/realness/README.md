@@ -16,20 +16,20 @@ Product imports use `#root/`; other apps use the root package's public exports.
 The shared sign-in flow uses the package self-import `realness/sign-on/flow`.
 The harness resolves installed product exports through the package's declared name.
 Use `npm run realness -- --help` for the product CLI; the old command remains an alias.
-Node login and host-pass exports are unavailable to browser builds.
+Node login and halo-pass exports are unavailable to browser builds.
 
-Hosted actors. One host runs many microVM actors, all forked from one booted
+Hosted actors. One halo runs many microVM actors, all forked from one booted
 snapshot. Each one is reachable three ways, idle in three tiers, and costs
-nothing while it sleeps. Hosts are VMs in their environment's project; development hosts run in
+nothing while it sleeps. Halos are VMs in their environment's project; development halos run in
 `realness-development`. This is the code that builds and serves them.
 
-- `src/control/`: Node. The control plane: makes hosts exist, puts the code on them,
+- `src/control/`: Node. The control plane: makes halos exist, puts the code on them,
   takes them away. Reaches the live side only over its HTTP API. Run
   `npm run realness -- <env> <command>`. Its `scripts/` are the Mac and Lima build/run steps.
-- `src/host/`: the actor API, exec, PTY, browser terminal, door (Node, standard
-  library only). The live side: it runs on the host and owns actors. Its
-  `scripts/` are the host syscalls, its `guest/` runs inside an actor, and its
-  `clients/` are the host-shell tools. `npm run check:host` is its
+- `src/halo/`: the actor API, exec, PTY, browser terminal, door (Node, standard
+  library only). The live side: it runs on the halo and owns actors. Its
+  `scripts/` are the halo syscalls, its `guest/` runs inside an actor, and its
+  `clients/` are the halo-shell tools. `npm run check:halo` is its
   contract.
 - `src/can/`: Node, no dependencies. `can()`, rights pages, and phone identity,
   which every door imports; and where the paths `can()` asks about live, one
@@ -48,13 +48,13 @@ nothing while it sleeps. Hosts are VMs in their environment's project; developme
 - `tools/desktop/`: the signed download that boots pi with the harness inside.
 - `server/lima/fc-local.yaml`: the dev loop on this Mac.
 - `frontend/`: imported Realness app, profiles, artwork, and tests.
-- `src/sign-on/node/`: Node login and host passes; `src/sign-on/browser/`: browser flow; the page is Realness `/sign-on`.
+- `src/sign-on/node/`: Node login and halo passes; `src/sign-on/browser/`: browser flow; the page is Realness `/sign-on`.
 - `lib/output.js` and `lib/output.sh`: one output rule for Node and shell.
-  Output goes to `artifacts/realness` in a harness, or `dist` on a host.
+  Output goes to `artifacts/realness` in a harness, or `dist` on a halo.
   Staging and hosting-config scripts accept an explicit output-root path.
   Output selection is a helper, not a package.
 
-`src/control/` and `src/host/` are separate worlds and a test enforces it: the host must
+`src/control/` and `src/halo/` are separate worlds and a test enforces it: the halo must
 not know the control plane exists, and control may only reach it through the
 API. Root `npm test` follows their actual source imports to enforce this.
 
@@ -99,8 +99,8 @@ Commands run on the Mac unless a step says otherwise.
 | ------------------ | ---------------------- | ---------------------------------------- |
 | Build the template | `dev build`            | stage the harness, build `template.ext4` |
 | Run it locally     | `dev setup`, `dev up`  | Lima guest, then volume + TAP + API      |
-| Run a host         | `cloud host up <name>` | create, bootstrap, check, serve          |
-| Move actors        | `cloud host drain`     | export every actor to GCS                |
+| Run a halo         | `cloud halo up <name>` | create, bootstrap, check, serve          |
+| Move actors        | `cloud halo drain`     | export every actor to GCS                |
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections in
@@ -138,16 +138,16 @@ from `firecracker-ci/v1.15/aarch64`; artifacts live in the guest at `/opt/fc`.
 
 ```bash
 node tools/cli/bin/realness.js local setup   # once: Lima, firecracker, kernel, rootfs, boot check
-node tools/cli/bin/realness.js local host up  # each time: volume, TAP, API; waits for the seed
+node tools/cli/bin/realness.js local halo up  # each time: volume, TAP, API; waits for the seed
 ```
 
 - API `http://127.0.0.1:18080/v1/health` (chat under `/v1/actors/<id>/chat/`),
   framed terminal `127.0.0.1:18081`, site sync `http://127.0.0.1:18096/`.
-- `local host down` stops it, `local host restart` reloads the current code; a
+- `local halo down` stops it, `local halo restart` reloads the current code; a
   changed template fingerprint rebuilds the seed on the next serve.
 - The log is `dist/dev-up.log`; the guest side is
   `tools/control/scripts/dev-stack.sh`.
-- `local host up` waits for `seed.built`, not just for health: the API answers
+- `local halo up` waits for `seed.built`, not just for health: the API answers
   `ok` as soon as it is listening, before the seed exists, so waiting on `ok`
   reports a stack as up when it cannot make an actor.
 
@@ -156,16 +156,16 @@ network and a control channel (f2), snapshot and restore (f4), the actor-disk
 mechanics (f5a-c, f6), and the API (r3a-r5) with idle tiers (r4) and the pages
 an actor dirties (m1).
 
-## Run a host
+## Run a halo
 
-A host is a GCP VM in the environment's project, `realness-development` for
+A halo is a GCP VM in the environment's project, `realness-development` for
 development, that boots the fleet image and serves actors. Everything below runs from the Mac.
 
 ```bash
-node tools/cli/bin/realness.js development host up realness-2 --smoke    # create, bootstrap, check, serve
-node tools/cli/bin/realness.js development host restart realness-2       # push the current code, re-serve
-node tools/cli/bin/realness.js development host down realness-2          # park: stop, disks kept ($0.80/mo)
-node tools/cli/bin/realness.js development host down realness-2 --delete # drain actors, then delete ($0)
+node tools/cli/bin/realness.js development halo up realness-2 --smoke    # create, bootstrap, check, serve
+node tools/cli/bin/realness.js development halo restart realness-2       # push the current code, re-serve
+node tools/cli/bin/realness.js development halo down realness-2          # park: stop, disks kept ($0.80/mo)
+node tools/cli/bin/realness.js development halo down realness-2 --delete # drain actors, then delete ($0)
 ```
 
 - The API is loopback-only; tunnel it with
@@ -178,10 +178,10 @@ node tools/cli/bin/realness.js development host down realness-2 --delete # drain
 - `node tools/cli/bin/realness.js development probe` says which zone and machine type can
   create now (the default list is us-central1 a/b/c, us-west1 a/b, us-east1-b;
   it exits non-zero when none can).
-- The idle guard stops the host when nothing has run for 30 minutes.
+- The idle guard stops the halo when nothing has run for 30 minutes.
 
-Record in [documentation.md](documentation.md#what-is-proven): the cloud host
-(d3), a host from the image and one that can be deleted (r8, r9), and the loop
+Record in [documentation.md](documentation.md#what-is-proven): the cloud halo
+(d3), a halo from the image and one that can be deleted (r8, r9), and the loop
 on x86_64 (x1).
 
 ## Move actors

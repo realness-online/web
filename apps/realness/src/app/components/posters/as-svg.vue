@@ -113,7 +113,7 @@
       default: false
     }
   })
-  const emit = defineEmits(['focus', 'click', 'show', 'intersecting'])
+  const emit = defineEmits(['click', 'show', 'intersecting'])
   const mask_pen = inject('mask-pen', null)
   const mask_pen_active = computed(() => mask_pen?.active.value ?? false)
   const poster_label = computed(() => {

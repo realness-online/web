@@ -61,7 +61,7 @@ const pick = arr => arr[Math.floor(Math.random() * arr.length)]
 /** Cap on rerolls before falling back to a numbered subject. */
 const NAME_REROLLS = 24
 
-export const fresh_subject_name = () => {
+const fresh_subject_name = () => {
   for (let i = 0; i < NAME_REROLLS; i++) {
     const name = `${pick(NAME_STARTERS)} ${pick(NAME_ENDERS)}`
     if (!used_names.has(name)) {

@@ -1,5 +1,5 @@
 /**
- * hs-n3: an actor moves to another host with its files and its identity.
+ * hs-n3: an actor moves to another halo with its files and its identity.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -25,7 +25,7 @@ const fixture = ({
       if (path.endsWith('/export')) return JSON.stringify(manifest)
       return ''
     },
-    json: async () => ({ host: { name: 'realness-1' } })
+    json: async () => ({ halo: { name: 'realness-1' } })
   }
   const to = {
     call: async (path, options) => {
@@ -39,10 +39,10 @@ const fixture = ({
     if (bundle_fails) throw new Error('upload failed')
     return { object: `gs://bucket/actors/${actor}/bundle.tar.gz` }
   }
-  const place = async (phone, host) => {
-    asked.push(`place ${phone} ${host}`)
+  const place = async (phone, halo) => {
+    asked.push(`place ${phone} ${halo}`)
     if (place_fails) throw new Error('placement refused')
-    return { phone, host, placed: true }
+    return { phone, halo, placed: true }
   }
   return { asked, from, to, bundle, place }
 }
@@ -54,12 +54,12 @@ test('an actor is exported, restored, placed, and only then removed', async () =
     to: one.to,
     bundle: one.bundle,
     place: one.place,
-    host: 'realness-2'
+    halo: 'realness-2'
   })
   assert.deepEqual(result, {
     from_actor: id,
     to_actor: 'a-999999999999',
-    host: 'realness-2',
+    halo: 'realness-2',
     placed: 'realness-2'
   })
   assert.deepEqual(one.asked, [
@@ -74,12 +74,12 @@ test('an actor is exported, restored, placed, and only then removed', async () =
 test('a restore that reuses the old id, or changes owner, is refused', async () => {
   const reused = fixture({ restore: { id } })
   await assert.rejects(
-    move(id, owner, { ...reused, host: 'realness-2' }),
+    move(id, owner, { ...reused, halo: 'realness-2' }),
     /reused the old actor id/
   )
   const stranger = fixture({ restore: { owner: '+14155550000' } })
   await assert.rejects(
-    move(id, owner, { ...stranger, host: 'realness-2' }),
+    move(id, owner, { ...stranger, halo: 'realness-2' }),
     /belongs to \+14155550000/
   )
   assert.ok(
@@ -91,7 +91,7 @@ test('a restore that reuses the old id, or changes owner, is refused', async () 
 test('nothing is moved when the bundle never reaches the bucket', async () => {
   const one = fixture({ bundle_fails: true })
   await assert.rejects(
-    move(id, owner, { ...one, host: 'realness-2' }),
+    move(id, owner, { ...one, halo: 'realness-2' }),
     /upload failed/
   )
   assert.deepEqual(one.asked, [
@@ -103,7 +103,7 @@ test('nothing is moved when the bundle never reaches the bucket', async () => {
 test('the old actor stays when the placement refuses', async () => {
   const one = fixture({ place_fails: true })
   await assert.rejects(
-    move(id, owner, { ...one, host: 'realness-2' }),
+    move(id, owner, { ...one, halo: 'realness-2' }),
     /placement refused/
   )
   assert.ok(
@@ -112,21 +112,21 @@ test('the old actor stays when the placement refuses', async () => {
   )
 })
 
-test('a bad id or a missing host is refused before anything runs', async () => {
+test('a bad id or a missing halo is refused before anything runs', async () => {
   const one = fixture()
   await assert.rejects(
-    move('../etc', owner, { ...one, host: 'realness-2' }),
+    move('../etc', owner, { ...one, halo: 'realness-2' }),
     MoveError
   )
   await assert.rejects(
-    move(id, owner, { ...one, host: '' }),
-    /needs a target host/
+    move(id, owner, { ...one, halo: '' }),
+    /needs a target halo/
   )
   assert.deepEqual(one.asked, [])
 })
 
 test('release false keeps the old actor for a caller that removes it later', async () => {
   const one = fixture()
-  await move(id, owner, { ...one, host: 'realness-2', release: false })
+  await move(id, owner, { ...one, halo: 'realness-2', release: false })
   assert.ok(one.asked.every(line => !line.startsWith('from DELETE')))
 })

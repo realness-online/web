@@ -1,5 +1,5 @@
 /**
- * Which (machine type, zone) can actually make a host right now.
+ * Which (machine type, zone) can actually make a halo right now.
  *
  *   realness development probe
  *   realness development probe n2-standard-4:us-west1-b n2-standard-8:us-east1-b
@@ -10,7 +10,7 @@
  * error is printed, because "not available in this zone" and "out of stock"
  * want different answers.
  *
- * Exits non-zero when no candidate can make a host, so this is usable as a
+ * Exits non-zero when no candidate can make a halo, so this is usable as a
  * check. The shell version took its candidates only from `$@` and so probed
  * nothing when called bare, printing a summary that read like a pass.
  */
@@ -87,13 +87,13 @@ export const probe = async (config, candidates = []) => {
   }
 
   if (ok.length === 0) {
-    process.stderr.write(`\nno candidate zone can make a host right now\n`)
+    process.stderr.write(`\nno candidate zone can make a halo right now\n`)
     process.stderr.write(
       `try more: realness development probe <type>:<zone> ...\n`
     )
     return { ok: [], failed: list.length }
   }
-  note(`${ok.length} of ${list.length} can make a host: ${ok.join(' ')}`)
+  note(`${ok.length} of ${list.length} can make a halo: ${ok.join(' ')}`)
   return { ok, failed: list.length - ok.length }
 }
 

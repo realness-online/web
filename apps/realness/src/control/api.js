@@ -1,11 +1,11 @@
 /**
- * The host's API, as seen from outside the host.
+ * The halo's API, as seen from outside the halo.
  *
  * Control may only reach the live side through this. Nothing here imports,
- * reads, or writes anything under server/host/ - it starts the server and then talks to
+ * reads, or writes anything under server/halo/ - it starts the server and then talks to
  * it over HTTP. That boundary is what keeps the two worlds from mixing.
  *
- * On a host the API is loopback-only until h1 exists, so a call is an ssh
+ * On a halo the API is loopback-only until h1 exists, so a call is an ssh
  * command running curl. In dev it is Lima's port forward, so it is plain
  * fetch. Both are behind `call()`.
  */
@@ -55,7 +55,7 @@ const sleep = ms =>
   })
 
 /**
- * The API as reached over ssh, for a host.
+ * The API as reached over ssh, for a halo.
  *
  * Returns a `curl` invocation quoted for the remote shell. The API is only
  * bound to loopback there, so this is the only way in without a tunnel.
@@ -77,7 +77,7 @@ export const remoteApi = (name, { zone }) => {
     sshArgs,
 
     /**
-     * curl the API on the host and return stdout. Throws on a bad exit.
+     * curl the API on the halo and return stdout. Throws on a bad exit.
      * @param {string} path
      * @param {{ method?: string, body?: object | null, timeout?: number }} [options]
      * @returns {Promise<string>}

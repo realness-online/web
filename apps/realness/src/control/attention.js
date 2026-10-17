@@ -5,21 +5,21 @@ const pct = (free, total) =>
   Number(total) > 0 ? (PERCENT * Number(free)) / Number(total) : PERCENT
 const gb = bytes => (Number(bytes) / GIB).toFixed(2)
 
-const host_attention = (view, limits, now, flag) => {
-  for (const { host, actors } of view.hosts ?? []) {
-    if (host.seed !== 'ready')
-      flag('seed', host.name, `${host.name} seed is ${host.seed}`)
-    const disk = pct(host.volume_free, host.volume_size)
+const halo_attention = (view, limits, now, flag) => {
+  for (const { halo, actors } of view.halos ?? []) {
+    if (halo.seed !== 'ready')
+      flag('seed', halo.name, `${halo.name} seed is ${halo.seed}`)
+    const disk = pct(halo.volume_free, halo.volume_size)
     if (disk < limits.free_pct)
-      flag('disk', host.name, `${host.name} volume ${disk.toFixed(0)}% free`)
-    const memory = pct(host.mem_free, host.mem_total)
+      flag('disk', halo.name, `${halo.name} volume ${disk.toFixed(0)}% free`)
+    const memory = pct(halo.mem_free, halo.mem_total)
     if (memory < limits.free_pct)
       flag(
         'memory',
-        host.name,
-        `${host.name} memory ${memory.toFixed(0)}% free`
+        halo.name,
+        `${halo.name} memory ${memory.toFixed(0)}% free`
       )
-    const available = Number(host.mem_available)
+    const available = Number(halo.mem_available)
     if (
       Number.isFinite(available) &&
       available > 0 &&
@@ -27,22 +27,22 @@ const host_attention = (view, limits, now, flag) => {
     )
       flag(
         'memory',
-        host.name,
-        `${host.name} has ${gb(available)} GiB available`
+        halo.name,
+        `${halo.name} has ${gb(available)} GiB available`
       )
-    const taps_used = Number(host.actor_taps_used)
-    const taps_limit = Number(host.actor_taps_limit)
+    const taps_used = Number(halo.actor_taps_used)
+    const taps_limit = Number(halo.actor_taps_limit)
     if (Number.isFinite(taps_used) && taps_used >= taps_limit)
       flag(
         'taps',
-        host.name,
-        `${host.name} has no free actor TAP (${taps_used} of ${taps_limit})`
+        halo.name,
+        `${halo.name} has no free actor TAP (${taps_used} of ${taps_limit})`
       )
-    if (host.resource_error)
+    if (halo.resource_error)
       flag(
         'resources',
-        host.name,
-        `${host.name} cannot read its resources: ${host.resource_error}`
+        halo.name,
+        `${halo.name} cannot read its resources: ${halo.resource_error}`
       )
     for (const actor of actors) {
       const quiet_h = (now - Date.parse(actor.last_activity)) / MS_PER_HOUR
@@ -56,13 +56,13 @@ const host_attention = (view, limits, now, flag) => {
         flag(
           'incomplete',
           actor.id,
-          `${actor.id} on ${host.name} is a half-made actor`
+          `${actor.id} on ${halo.name} is a half-made actor`
         )
       if (actor.probe_status === 'failed')
         flag(
           'probe',
           actor.id,
-          `${actor.id} on ${host.name} did not answer: ${actor.probe_error || 'no response'}`
+          `${actor.id} on ${halo.name} did not answer: ${actor.probe_error || 'no response'}`
         )
     }
   }
@@ -95,10 +95,10 @@ export const attention = (view, limits, now = Date.now()) => {
       `could not read ${failed.source}: ${failed.error}`
     )
 
-  host_attention(view, limits, now, flag)
+  halo_attention(view, limits, now, flag)
 
   if (view.quiet?.setup)
-    flag('watch', 'hosts', `host health is not reported: ${view.quiet.setup}`)
+    flag('watch', 'halos', `halo health is not reported: ${view.quiet.setup}`)
   for (const quiet of view.quiet?.quiet ?? [])
     flag(
       'down',

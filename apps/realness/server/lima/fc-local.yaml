@@ -1,4 +1,4 @@
-# Local stand-in for the prod host (plan node d3). An aarch64 Linux guest with
+# Local stand-in for the prod halo (plan node d3). An aarch64 Linux guest with
 # nested virtualization, so /dev/kvm exists and Firecracker runs inside it.
 # Needs an M3 or newer Mac on macOS 15+.
 vmType: vz
@@ -19,7 +19,7 @@ mounts:
   - location: "{{out}}"
     mountPoint: /artifacts/realness
     writable: true
-# Mac-facing ports for the dev host (r3d). Explicit because Lima's automatic
+# Mac-facing ports for the dev halo (r3d). Explicit because Lima's automatic
 # forward skips a guest port whose host number is taken - the Mac's 8080 is
 # often an unrelated service - and the failure is silent. From the Mac:
 #   API       http://127.0.0.1:18080

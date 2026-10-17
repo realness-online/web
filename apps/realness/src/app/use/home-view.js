@@ -3,7 +3,7 @@ import { home_view } from '@/utils/preference'
 import { computed, ref } from 'vue'
 import { useRoute as use_route } from 'vue-router'
 
-export const DISPLAY_BEGINS = '(min-width: 80rem)'
+const DISPLAY_BEGINS = '(min-width: 80rem)'
 
 /** Pane arrangements; page shortcuts select their routes. */
 export const HOME_VIEWS = [

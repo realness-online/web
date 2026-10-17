@@ -81,7 +81,7 @@ test('one command works from another directory and leaves npm start as the harne
   ])
   assert.equal(frontend.env, undefined)
   assert.equal(new URL(frontend.url).hostname, '127.0.0.1')
-  assert.ok(!result.stdout.includes('HOST_PASS_SECRET'))
+  assert.ok(!result.stdout.includes('HALO_PASS_SECRET'))
 })
 
 test('starts existing service commands and stops only its children in reverse order', async () => {
@@ -107,23 +107,23 @@ test('never restarts or stops an already running service', async () => {
   assert.ok(services.every(service => service.reused))
 })
 
-test('waits for an existing host to finish becoming ready without starting another', async () => {
+test('waits for an existing halo to finish becoming ready without starting another', async () => {
   const { services, launched, options } = fixture([
     'workers',
     'gate',
     'frontend'
   ])
-  let host_reads = 0
+  let halo_reads = 0
   const original = options.probe
   options.probe = async service =>
     service.name === 'host'
-      ? { running: true, ready: ++host_reads > 2 }
+      ? { running: true, ready: ++halo_reads > 2 }
       : original(service)
   options.pause = async () => {}
   const cleanup = await start_local(services, options)
   await cleanup()
   assert.deepEqual(launched, [])
-  assert.equal(host_reads, 3)
+  assert.equal(halo_reads, 3)
 })
 
 test('an occupied port fails before any processes are started', async () => {

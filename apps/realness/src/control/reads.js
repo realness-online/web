@@ -1,10 +1,10 @@
 import { client } from '#root/src/files/client.js'
-import { read_status } from '#root/src/sync/host-status.js'
+import { read_status } from '#root/src/sync/halo-status.js'
 import {
   intent_now,
   lifecycle_html,
   lifecycle_key
-} from '#root/src/sync/host-lifecycle.js'
+} from '#root/src/sync/halo-lifecycle.js'
 import {
   day_files,
   days_since,
@@ -34,7 +34,7 @@ const MONEY_PLACES = 4
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const LOOP = /^a-[a-f0-9]{12}$/
-const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
+const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 const unesc = value =>
   value
@@ -59,51 +59,51 @@ const folders = async (sync, path) =>
     .filter(name => name.endsWith('/'))
     .map(name => name.slice(0, -1))
 
-/** Unmasked host records; output masks phones on the way out. */
+/** Unmasked halo records; output masks phones on the way out. */
 export const hosts = async (sync, name, now = Date.now()) => {
-  const names = name ? [name] : await folders(sync, 'can://hosts/')
+  const names = name ? [name] : await folders(sync, 'can://halos/')
   const out = []
-  for (const host_name of names) {
-    if (!HOST.test(host_name)) throw new Error('invalid host name')
+  for (const halo_name of names) {
+    if (!HALO.test(halo_name)) throw new Error('invalid halo name')
     const record = read_status(
-      (await sync.cat(`can://hosts/${host_name}/status.html`)).toString('utf8')
+      (await sync.cat(`can://halos/${halo_name}/status.html`)).toString('utf8')
     )
-    const { host } = record
+    const { halo } = record
     if (
-      !host ||
-      host.name !== host_name ||
-      !Number.isFinite(Date.parse(host.checked))
+      !halo ||
+      halo.name !== halo_name ||
+      !Number.isFinite(Date.parse(halo.checked))
     )
-      throw new Error(`invalid status for ${host_name}`)
+      throw new Error(`invalid status for ${halo_name}`)
     out.push({
       ...record,
       age_s: Math.max(
         0,
-        Math.floor((now - Date.parse(host.checked)) / MS_PER_SECOND)
+        Math.floor((now - Date.parse(halo.checked)) / MS_PER_SECOND)
       )
     })
   }
   return out
 }
 
-/** m7: sync's own verdict on which hosts have stopped reporting. */
-export const quiet_hosts = async sync => {
+/** m7: sync's own verdict on which halos have stopped reporting. */
+export const quiet_halos = async sync => {
   try {
     return JSON.parse(
-      (await sync.cat('can://hosts/quiet.json')).toString('utf8')
+      (await sync.cat('can://halos/quiet.json')).toString('utf8')
     )
   } catch (error) {
     if (error.status === HTTP.NOT_FOUND)
-      return { setup: 'sync does not report host health yet' }
+      return { setup: 'sync does not report halo health yet' }
     throw error
   }
 }
 
-/** Every actor any host last reported, tagged with that host. */
+/** Every actor any halo last reported, tagged with that halo. */
 export const actors = async (sync, id, now) => {
   const rows = (await hosts(sync, null, now)).flatMap(
-    ({ host, age_s, actors }) =>
-      actors.map(actor => ({ ...actor, host: host.name, age_s }))
+    ({ halo, age_s, actors }) =>
+      actors.map(actor => ({ ...actor, halo: halo.name, age_s }))
   )
   if (!id) return rows
   const found = rows.filter(actor => actor.id === id)
@@ -126,6 +126,8 @@ const read_loop = html => {
   for (const name of ['depth', 'runs', 'tokens'])
     if (loop[name] !== undefined && loop[name] !== '')
       loop[name] = Number(loop[name])
+  /** A loop record written before the rename carries `halo`; both name a halo. */
+  loop.halo = loop.halo ?? loop.host ?? ''
   return loop
 }
 
@@ -252,7 +254,7 @@ const table = (rows, line) => (rows.length ? rows.map(line).join('\n') : 'none')
 export const text = {
   actors: rows =>
     table(rows, a =>
-      `${a.id}  ${a.host}  owner ${a.owner || '-'}  ${a.state ?? a.status ?? ''}`.trimEnd()
+      `${a.id}  ${a.halo}  owner ${a.owner || '-'}  ${a.state ?? a.status ?? ''}`.trimEnd()
     ),
   loops: rows =>
     table(
@@ -290,7 +292,7 @@ export const text = {
     ].join('\n')
 }
 
-/** Ask the actor's host to idle or stop it; returns the request. */
+/** Ask the actor's halo to idle or stop it; returns the request. */
 export const request_actor = async (sync, id, action, now = Date.now()) => {
   if (!ACTOR_ACTIONS.has(action))
     throw new Error(`usage: realness <env> actor idle|stop <id>`)
@@ -299,26 +301,26 @@ export const request_actor = async (sync, id, action, now = Date.now()) => {
     actor.state === 'stopped' ||
     (action === 'idle' && actor.state === 'idle')
   )
-    return { id, host: actor.host, action, already: actor.state }
+    return { id, halo: actor.halo, action, already: actor.state }
   const request = {
     id: random_uuid(),
     action,
     requested: new Date(now).toISOString()
   }
   await sync.put(
-    `can://${request_key(actor.host, id)}`,
+    `can://${request_key(actor.halo, id)}`,
     Buffer.from(request_html(request))
   )
   return {
     id,
-    host: actor.host,
+    halo: actor.halo,
     action,
     request: request.id,
-    obeyed: "on the host's next pass, within a minute"
+    obeyed: "on the halo's next pass, within a minute"
   }
 }
 
-/** Ask a running loop to stop; the host checks on its next probe. */
+/** Ask a running loop to stop; the halo checks on its next probe. */
 export const request_loop_stop = async (sync, id) => {
   const [loop] = await loops(sync, id)
   if (!loop) throw new Error(`no loop ${id}`)
@@ -328,12 +330,12 @@ export const request_loop_stop = async (sync, id) => {
     `can://loops/${id}/stop.html`,
     Buffer.from(`<p>stop requested ${new Date().toISOString()}</p>\n`)
   )
-  return { id, action: 'stop', obeyed: "on the host's next probe" }
+  return { id, action: 'stop', obeyed: "on the halo's next probe" }
 }
 
-/** Record what the operator is doing to a host, so monitors can tell parking from failure. */
+/** Record what the operator is doing to a halo, so monitors can tell parking from failure. */
 export const record_intent = async (sync, name, intent, options = {}) => {
-  if (!HOST.test(name)) throw new Error('invalid host name')
+  if (!HALO.test(name)) throw new Error('invalid halo name')
   const record = intent_now(intent, { by: 'operator', ...options })
   await sync.put(
     `can://${lifecycle_key(name)}`,

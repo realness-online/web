@@ -143,7 +143,7 @@ test('exists refuses a bare prefix, which gcloud would read as absent', async ()
   )
 })
 
-test('ip returns the address, and nothing when the host has none', async () => {
+test('ip returns the address, and nothing when the halo has none', async () => {
   const ready = fake({
     try: { ok: true, out: ' 34.1.2.3 \n', err: '', code: 0 }
   })

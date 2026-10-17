@@ -1,5 +1,5 @@
 /**
- * Lima, as an object with the methods a local host needs.
+ * Lima, as an object with the methods a local halo needs.
  *
  * Every guest call passes --workdir: `limactl shell` mirrors the Mac's cwd into
  * the guest, so a deep path fails with `cd: No such file or directory` before
@@ -16,7 +16,7 @@ import { ROOT } from './paths.js'
 import { out_root } from '#root/src/settings/output.js'
 
 /**
- * The VM template names its host folders as {{project}} and {{out}}, so no
+ * The VM template names its halo folders as {{project}} and {{out}}, so no
  * checkout path is written into the repository. Each must be filled.
  */
 export const render_vm_config = (

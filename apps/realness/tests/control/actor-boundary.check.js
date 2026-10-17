@@ -13,23 +13,23 @@ import { development_settings } from '#root/src/settings/environments.js'
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PROXY = development_settings.services.starter_proxy_url
 const owner = '+14156667777'
-const secret_path = out_path('host-pass-secret')
+const secret_path = out_path('halo-pass-secret')
 const secret =
-  process.env.HOST_PASS_SECRET ??
+  process.env.HALO_PASS_SECRET ??
   (exists_sync(secret_path) ? read_file_sync(secret_path, 'utf8').trim() : null)
 
 const made = new Set()
 let actor, neighbour
 
-/** A short-lived pass naming one owner. The host door checks the signature. */
-const host_pass = (phone = owner) => {
+/** A short-lived pass naming one owner. The halo door checks the signature. */
+const halo_pass = (phone = owner) => {
   assert.ok(
     secret && Buffer.byteLength(secret) >= 32,
-    'HOST_PASS_SECRET required for check:boundary'
+    'HALO_PASS_SECRET required for check:boundary'
   )
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'realness-host',
+      aud: 'realness-halo',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -38,7 +38,7 @@ const host_pass = (phone = owner) => {
 }
 
 const call = async (method, path, body) => {
-  const init = { method, headers: { authorization: `Bearer ${host_pass()}` } }
+  const init = { method, headers: { authorization: `Bearer ${halo_pass()}` } }
   if (body !== undefined) {
     init.headers['content-type'] = 'application/json'
     init.body = JSON.stringify(body)
@@ -129,7 +129,7 @@ describe("g2d: the actor's boundaries", () => {
     assert.match(probe.all, /SHADOW_DENIED/, probe.all)
   })
 
-  test('egress: the internet answers, the neighbour, host, and metadata do not', async () => {
+  test('egress: the internet answers, the neighbour, halo, and metadata do not', async () => {
     const mine = await run(
       actor,
       as_realness(

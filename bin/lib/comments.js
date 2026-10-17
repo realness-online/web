@@ -16,7 +16,7 @@ const KEEP_PATTERNS = [
   /^\s*eslint-(disable|enable|env)/,
   /^\s*(oxlint|biome)-ignore/,
   /^\s*(tslint|deno-lint)[-:](ignore|disable)/,
-  /^\s*@ts-(check|nocheck|ignore|expect-error)/,
+  /^\s*@ts-(check|nocheck|ignore|expect-error|self-types)/,
   /^\s*@jsx/,
   /^\s*@vue-(ignore|expect-error|generic)/,
   /vite-ignore/,
@@ -46,12 +46,91 @@ const keep_comment = (raw, lang) => {
   return KEEP_PATTERNS.some((pattern) => pattern.test(raw) || pattern.test(body))
 }
 
+const DOCUMENTED = new Set([
+  "FunctionDeclaration", "ClassDeclaration", "VariableDeclaration",
+  "ExportNamedDeclaration", "ExportDefaultDeclaration", "ExportAllDeclaration",
+  "ObjectProperty", "ObjectMethod", "ClassMethod", "ClassPrivateMethod",
+  "ClassProperty", "ClassPrivateProperty", "ClassAccessorProperty",
+  "FunctionExpression", "ArrowFunctionExpression",
+  "TSInterfaceDeclaration", "TSTypeAliasDeclaration", "TSEnumDeclaration",
+  "TSModuleDeclaration", "TSPropertySignature", "TSMethodSignature", "TSDeclareFunction",
+])
+
+const FUNCTIONS = new Set(["FunctionExpression", "ArrowFunctionExpression"])
+
+/**
+ * A statement that assigns, registers, or returns a function documents that
+ * function: `exports.x = ...`, `describe('...', () => {})`, `return async () => {}`.
+ * @param {{type: string, expression?: any, argument?: any}} node
+ */
+const hands_on_a_function = node => {
+  const value = node.type === "ExpressionStatement" ? node.expression : node.type === "ReturnStatement" ? node.argument : null
+  if (!value) return false
+  const call = value.type === "AwaitExpression" ? value.argument : value
+  if (call?.type === "AssignmentExpression") return true
+  if (FUNCTIONS.has(call?.type)) return true
+  return call?.type === "CallExpression" && call.arguments.some(arg => FUNCTIONS.has(arg.type))
+}
+
+/**
+ * Start offsets of every node a doc comment can describe: declarations,
+ * properties, functions, and assignments such as `exports.name = ...`.
+ * @param {object} ast
+ * @returns {Set<number>}
+ */
+const documented_starts = ast => {
+  const starts = new Set()
+  const visit = node => {
+    if (Array.isArray(node)) return node.forEach(visit)
+    if (!node || typeof node.type !== "string") return
+    if (DOCUMENTED.has(node.type) || hands_on_a_function(node)) starts.add(node.start)
+    for (const key of Object.keys(node)) {
+      if (key === "loc" || key === "comments" || key === "leadingComments" || key === "trailingComments") continue
+      const value = node[key]
+      if (value && typeof value === "object") visit(value)
+    }
+  }
+  visit(ast.program)
+  return starts
+}
+
+/**
+ * A `/**` block is JSDoc when it carries a tag, opens the file, or sits
+ * directly above something it documents. Anywhere else it is a plain comment.
+ * @param {string} text
+ * @param {{start: number, end: number}} comment
+ * @param {{start: number}[]} comments
+ * @param {Set<number>} starts
+ * @param {number} first_code
+ */
+const is_jsdoc = (text, comment, comments, starts, first_code) => {
+  const raw = text.slice(comment.start, comment.end)
+  if (/(^|\s)@[a-zA-Z]/.test(raw)) return true
+  if (comment.start < first_code) return true
+  let next = comment.end
+  for (;;) {
+    while (/\s/.test(text[next] ?? "")) next++
+    const stacked = comments.find(other => other.start === next)
+    if (!stacked) break
+    next = stacked.end
+  }
+  return starts.has(next)
+}
+
 const js_ranges = (text, lang, base = 0) => {
   if (!parser) return []
   const plugins = ["jsx"]
   if (lang === "ts" || lang === "tsx") plugins.push("typescript")
   const ast = parser.parse(text, { sourceType: "unambiguous", plugins, attachComment: false, errorRecovery: true })
-  return (ast.comments || []).map((comment) => ({ start: base + comment.start, end: base + comment.end, keep: keep_comment(text.slice(comment.start, comment.end), "js") }))
+  const comments = ast.comments || []
+  const starts = documented_starts(ast)
+  const first_code = ast.program.body[0]?.start ?? text.length
+  return comments.map((comment) => {
+    const raw = text.slice(comment.start, comment.end)
+    const doc = /^\/\*\*(?!\/)/.test(raw)
+    const keep = doc ? is_jsdoc(text, comment, comments, starts, first_code) : keep_comment(raw, "js")
+    return { start: base + comment.start, end: base + comment.end, keep }
+  })
 }
 
 const css_ranges = (text, lang, base = 0) => {
@@ -82,8 +161,26 @@ const css_ranges = (text, lang, base = 0) => {
   return ranges
 }
 
+/**
+ * End offset of a shell script's header: the block of `#` lines that opens
+ * the file, after any shebang. The header documents the script.
+ * @param {string} text
+ * @returns {number}
+ */
+const sh_header_end = text => {
+  let at = text.startsWith("#!") ? text.indexOf("\n") + 1 : 0
+  if (at === 0 && text.startsWith("#!")) return text.length
+  for (;;) {
+    if (text[at] !== "#") return at
+    const eol = text.indexOf("\n", at)
+    if (eol === -1) return text.length
+    at = eol + 1
+  }
+}
+
 const sh_ranges = (text, base = 0) => {
   const ranges = []
+  const header_end = sh_header_end(text)
   let i = 0
   let heredoc = null
   while (i < text.length) {
@@ -105,8 +202,10 @@ const sh_ranges = (text, base = 0) => {
       const strip_tabs = text[j] === "-"
       if (strip_tabs) j++
       while (text[j] === " " || text[j] === "\t") j++
+      const quote = text[j] === "'" || text[j] === '"' ? text[j++] : ""
       let delim = ""
       while (j < text.length && /[\w.-]/.test(text[j])) { delim += text[j]; j++ }
+      if (quote && text[j] === quote) j++
       if (delim) { heredoc = { delim, strip_tabs }; i = j; continue }
     }
     if (c === "#" && i === 0 && text[1] === "!") {
@@ -119,7 +218,7 @@ const sh_ranges = (text, base = 0) => {
     if (c === "#" && (i === 0 || /[\s;&|()]/.test(text[i - 1]))) {
       const eol = text.indexOf("\n", i)
       const stop = eol === -1 ? text.length : eol
-      ranges.push({ start: base + i, end: base + stop, keep: keep_comment(text.slice(i, stop), "sh") })
+      ranges.push({ start: base + i, end: base + stop, keep: i < header_end || keep_comment(text.slice(i, stop), "sh") })
       i = stop
       continue
     }

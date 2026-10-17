@@ -110,7 +110,7 @@ export const publish_app = async (
   const authorize = async () => {
     const token = await get_token()
     if (!token) throw new Error('not signed in; run realness-store login')
-    const response = await fetcher(`${base}/v1/host-pass`, {
+    const response = await fetcher(`${base}/v1/halo-pass`, {
       method: 'POST',
       headers: { authorization: `Bearer ${token}` }
     })
@@ -171,7 +171,7 @@ export const unpublish_app = async (
   const token = await get_token()
   if (!token) throw new Error('not signed in; run realness-store login')
   const base = url.replace(/\/$/, '')
-  const authorized = await fetcher(`${base}/v1/host-pass`, {
+  const authorized = await fetcher(`${base}/v1/halo-pass`, {
     method: 'POST',
     headers: { authorization: `Bearer ${token}` }
   })

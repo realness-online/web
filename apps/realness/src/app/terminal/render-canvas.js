@@ -1,3 +1,5 @@
+import { draw_glyph } from './glyphs.js'
+
 const LINE_HEIGHT = 1.4
 const FONT_SIZE = 14
 const SELECTION_OPACITY = 0.6
@@ -83,8 +85,18 @@ export const draw_frame = (ctx, frame, opts = {}) => {
         ctx.fillRect(px, py, metrics.width, metrics.height)
       }
       if (!cell.text) return
-      ctx.font = `${f.italic ? 'italic ' : ''}${f.bold ? 'bold ' : ''}${font_size}px ${MONO}`
       ctx.fillStyle = rgb(fg)
+      if (
+        draw_glyph(ctx, cell.text, {
+          x: px,
+          y: py,
+          w: metrics.width,
+          h: metrics.height,
+          font_size
+        })
+      )
+        return
+      ctx.font = `${f.italic ? 'italic ' : ''}${f.bold ? 'bold ' : ''}${font_size}px ${MONO}`
       ctx.fillText(cell.text, px, py)
       if (f.underline)
         ctx.fillRect(px, py + metrics.height - 2, metrics.width, 1)

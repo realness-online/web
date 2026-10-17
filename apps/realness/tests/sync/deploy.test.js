@@ -16,17 +16,17 @@ const service = readFileSync(
   'utf8'
 )
 
-test('the deploy gives the service its host pass secret', () => {
-  assert.match(deploy, /secrets="HOST_PASS_SECRET=HOST_PASS_SECRET:latest"/)
+test('the deploy gives the service its halo pass secret', () => {
+  assert.match(deploy, /secrets="HALO_PASS_SECRET=HALO_PASS_SECRET:latest"/)
   assert.match(deploy, /--set-secrets "\$secrets"/)
 })
 
-test('the deploy turns host alerts on only when both secrets exist', () => {
+test('the deploy turns halo alerts on only when both secrets exist', () => {
   assert.match(deploy, /gcloud secrets describe ALERT_TOKEN/)
-  assert.match(deploy, /gcloud secrets describe HOST_ALERT_WEBHOOK/)
+  assert.match(deploy, /gcloud secrets describe HALO_ALERT_WEBHOOK/)
   assert.match(
     deploy,
-    /secrets="\$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HOST_ALERT_WEBHOOK=HOST_ALERT_WEBHOOK:latest"/
+    /secrets="\$secrets,ALERT_TOKEN=ALERT_TOKEN:latest,HALO_ALERT_WEBHOOK=HALO_ALERT_WEBHOOK:latest"/
   )
 })
 
@@ -44,7 +44,7 @@ test('every request-driven service is scaled to zero, never left at an old floor
 
 test('the service reads the alert secrets the deploy sets', () => {
   assert.match(service, /alert_token: process\.env\.ALERT_TOKEN/)
-  assert.match(service, /alert_webhook: process\.env\.HOST_ALERT_WEBHOOK/)
+  assert.match(service, /alert_webhook: process\.env\.HALO_ALERT_WEBHOOK/)
 })
 
 const service_env = readFileSync(
@@ -102,7 +102,7 @@ test('the gate deploy may start one instance and writes its record through sync'
   const access = read('../../server/gate/scripts/wake-access.sh')
   assert.match(gate, /wake-access\.sh/)
   assert.match(access, /--permissions compute\.instances\.start /)
-  assert.match(access, /compute instances add-iam-policy-binding "\$host_name"/)
+  assert.match(access, /compute instances add-iam-policy-binding "\$halo_name"/)
   assert.doesNotMatch(access, /buckets add-iam-policy-binding/)
   assert.match(gate, /SYNC_URL=\$sync_url/)
   assert.doesNotMatch(access, /projects add-iam-policy-binding/)

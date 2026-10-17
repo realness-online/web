@@ -8,7 +8,7 @@ import {
   tcp_probe
 } from '#root/src/gate/wake.js'
 
-/** A fake clock and host: `up_after` probes fail before the host answers. */
+/** A fake clock and halo: `up_after` probes fail before the halo answers. */
 const world = ({ up_after = 2, intent = null } = {}) => {
   const seen = { starts: 0, writes: [], probes: 0, stages: [] }
   let clock = Date.parse('2026-10-15T12:00:00Z')
@@ -34,18 +34,18 @@ const world = ({ up_after = 2, intent = null } = {}) => {
   }
 }
 
-test('an awake host costs one probe and no writes', async () => {
+test('an awake halo costs one probe and no writes', async () => {
   const { seen, options } = world({ up_after: 0 })
   await make_waker(options)()
   assert.deepEqual([seen.probes, seen.starts, seen.writes], [1, 0, []])
 })
 
-test('a parked host is started once, then recorded running', async () => {
+test('a parked halo is started once, then recorded running', async () => {
   const { seen, options } = world()
   await make_waker(options)()
   assert.equal(seen.starts, 1)
   assert.deepEqual(seen.writes, ['starting', 'running'])
-  assert.deepEqual(seen.stages, ['starting host', 'host ready'])
+  assert.deepEqual(seen.stages, ['starting halo', 'halo ready'])
 })
 
 test('concurrent requests share one wake', async () => {
@@ -73,7 +73,7 @@ test('a stale starting intent past its deadline starts again', async () => {
   assert.equal(seen.starts, 1)
 })
 
-test('a host that never answers fails at the deadline, and the next call retries', async () => {
+test('a halo that never answers fails at the deadline, and the next call retries', async () => {
   const { seen, options } = world({ up_after: Infinity })
   const wake = make_waker({ ...options, deadline_ms: 10_000, poll_ms: 2000 })
   await assert.rejects(wake(), WakeTimeout)
@@ -82,10 +82,10 @@ test('a host that never answers fails at the deadline, and the next call retries
   assert.equal(seen.starts, 2)
 })
 
-test('a start lost to a host still stopping is repeated until the host answers', async () => {
+test('a start lost to a halo still stopping is repeated until the halo answers', async () => {
   const { seen, options } = world({ up_after: Infinity })
   let stopped = false
-  // The first start lands while the host is stopping and is dropped; a later one boots it.
+  // The first start lands while the halo is stopping and is dropped; a later one boots it.
   options.start = async () => {
     seen.starts += 1
     if (seen.starts === 1) return

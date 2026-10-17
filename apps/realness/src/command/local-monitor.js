@@ -82,7 +82,7 @@ export const local_frame = (
     url,
     ...lines.slice(0, capacity),
     'Ctrl-C/q stop local children  r refresh  u 15s  m 60s  h 5m',
-    'The host and reused services stay running.'
+    'The halo and reused services stay running.'
   ].join('\n')}\n`
 }
 
@@ -113,7 +113,7 @@ export const monitor_local = async (
           const state = health.ready ? 'running' : 'starting'
           let ownership = `PID ${service.pid}`
           if (service.reused) ownership = 'already running'
-          if (service.persistent) ownership = 'host stays up'
+          if (service.persistent) ownership = 'halo stays up'
           return { name: service.name, state, ownership, lines }
         })
       )

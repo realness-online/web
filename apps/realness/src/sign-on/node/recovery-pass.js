@@ -11,8 +11,8 @@ const MAX_PATHS = 100
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const ID = /^a-[a-f0-9]{12}$/
-/** hs-f2: the issuing host, so sync can fence a failed one. Older passes omit it. */
-const HOST = /^[a-z0-9][a-z0-9-]{0,62}$/
+/** hs-f2: the issuing halo, so sync can fence a failed one. Older passes omit it. */
+const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const NAME = 'recovery pass'
 const LIFE_S = 300
 
@@ -22,18 +22,18 @@ export const issue_harness_pass = (claims, secret, now = Date.now()) =>
   issue_pass(claims, secret, now, 'realness-harness')
 
 /**
- * @param {{ phone: string, id: string, paths?: string[] | null, host?: string }} claims
+ * @param {{ phone: string, id: string, paths?: string[] | null, halo?: string }} claims
  * @param {string} secret
  * @param {number} now
  * @param {string} audience
  */
 const issue_pass = (
-  { phone, id, paths = null, host },
+  { phone, id, paths = null, halo },
   secret,
   now,
   audience
 ) => {
-  if (host !== undefined && !HOST.test(host)) throw new Error('bad host name')
+  if (halo !== undefined && !HALO.test(halo)) throw new Error('bad halo name')
   check_secret(secret, 'recovery')
   if (!PHONE.test(phone) || !ID.test(id))
     throw new Error('recovery needs a verified owner and session')
@@ -50,7 +50,7 @@ const issue_pass = (
       phone,
       id,
       ...(paths && { paths }),
-      ...(host && { host })
+      ...(halo && { halo })
     },
     secret,
     { life_s: LIFE_S, now }
@@ -77,13 +77,13 @@ const verify_pass = (pass, secret, now, audience) => {
     (!Array.isArray(claims.paths) || !claims.paths.every(limit_path))
   )
     throw new Error(`bad ${NAME}`)
-  if (claims.host !== undefined && !HOST.test(claims.host))
-    throw new Error(`bad ${NAME}`)
+  const { halo } = claims
+  if (halo !== undefined && !HALO.test(halo)) throw new Error(`bad ${NAME}`)
   return {
     phone: claims.phone,
     id: claims.id,
     paths: claims.paths ?? null,
-    ...(claims.host && { host: claims.host })
+    ...(halo && { halo })
   }
 }
 

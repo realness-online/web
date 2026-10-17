@@ -13,8 +13,8 @@ const limits = {
 }
 const now = Date.parse('2026-09-30T12:00:00Z')
 const ago = minutes => new Date(now - minutes * 60e3).toISOString()
-const host = (over = {}, actors = []) => ({
-  host: {
+const halo = (over = {}, actors = []) => ({
+  halo: {
     name: 'h1',
     seed: 'ready',
     volume_free: 50,
@@ -27,8 +27,8 @@ const host = (over = {}, actors = []) => ({
   actors
 })
 const clean = {
-  hosts: [
-    host({}, [
+  halos: [
+    halo({}, [
       { id: 'a-1', state: 'running', last_activity: ago(5) },
       { id: 'a-2', state: 'idle', last_activity: ago(600) }
     ])
@@ -52,7 +52,7 @@ test('a clean picture needs no attention', () => {
   assert.match(overview_text(clean, []), /attention: none/)
 })
 
-test('a quiet host is named, with its age or the lack of one', () => {
+test('a quiet halo is named, with its age or the lack of one', () => {
   const view = {
     ...clean,
     quiet: {
@@ -74,31 +74,31 @@ test('a quiet host is named, with its age or the lack of one', () => {
   assert.match(lines[1].text, /realness-2 stopped reporting \(200s ago\)/)
 })
 
-test('host health shows in the picture, and an undeployed watch is called out', () => {
-  assert.match(overview_text(clean, []), /hosts not reporting: none/)
+test('halo health shows in the picture, and an undeployed watch is called out', () => {
+  assert.match(overview_text(clean, []), /halos not reporting: none/)
   const late = {
     ...clean,
     quiet: { quiet: [{ name: 'realness-1', age_s: 400 }] }
   }
   assert.match(
     overview_text(late, []),
-    /hosts not reporting: realness-1 \(400s\)/
+    /halos not reporting: realness-1 \(400s\)/
   )
   const old = {
     ...clean,
-    quiet: { setup: 'sync does not report host health yet' }
+    quiet: { setup: 'sync does not report halo health yet' }
   }
   assert.match(
     overview_text(old, []),
-    /host watch: not available \(sync does not report host health yet\)/
+    /halo watch: not available \(sync does not report halo health yet\)/
   )
 })
 
 test("an idle actor's skipped probe is not a failure", () => {
   const idle = {
     ...clean,
-    hosts: [
-      host({}, [
+    halos: [
+      halo({}, [
         {
           id: 'a-2',
           state: 'idle',
@@ -111,11 +111,11 @@ test("an idle actor's skipped probe is not a failure", () => {
   assert.deepEqual(attention(idle, limits, now), [])
 })
 
-test('the host line carries available memory, disk, TAPs, and failed probes', () => {
+test('the halo line carries available memory, disk, TAPs, and failed probes', () => {
   const view = {
     ...clean,
-    hosts: [
-      host(
+    halos: [
+      halo(
         {
           mem_available: 3 * 1024 ** 3,
           volume_free: 20 * 1024 ** 3,
@@ -140,11 +140,11 @@ test('the host line carries available memory, disk, TAPs, and failed probes', ()
   )
 })
 
-test('the host line carries boot, guest, and turn percentiles', () => {
+test('the halo line carries boot, guest, and turn percentiles', () => {
   const view = {
     ...clean,
-    hosts: [
-      host({
+    halos: [
+      halo({
         create_vm_ms_count: 12,
         create_vm_ms_p50: 1294,
         create_vm_ms_p99: 4100,
@@ -164,28 +164,28 @@ test('the host line carries boot, guest, and turn percentiles', () => {
   )
 })
 
-test('a host with no timings prints no timing line', () => {
+test('a halo with no timings prints no timing line', () => {
   const text = overview_text(clean, [])
   assert.equal(text.includes('p50'), false)
 })
 
 test('each rule flags its own case', () => {
   const cases = [
-    [{ hosts: [host({ seed: 'stale' })] }, 'seed'],
-    [{ hosts: [host({ volume_free: 14 })] }, 'disk'],
-    [{ hosts: [host({ mem_free: 10 })] }, 'memory'],
+    [{ halos: [halo({ seed: 'stale' })] }, 'seed'],
+    [{ halos: [halo({ volume_free: 14 })] }, 'disk'],
+    [{ halos: [halo({ mem_free: 10 })] }, 'memory'],
     [
       {
-        hosts: [
-          host({}, [{ id: 'a-1', state: 'running', last_activity: ago(121) }])
+        halos: [
+          halo({}, [{ id: 'a-1', state: 'running', last_activity: ago(121) }])
         ]
       },
       'long'
     ],
     [
       {
-        hosts: [
-          host({}, [{ id: 'a-1', state: 'incomplete', last_activity: '' }])
+        halos: [
+          halo({}, [{ id: 'a-1', state: 'incomplete', last_activity: '' }])
         ]
       },
       'incomplete'
@@ -221,13 +221,13 @@ test('each rule flags its own case', () => {
       'errors'
     ],
     [{ spend: { cost: 5.01 } }, 'spend'],
-    [{ hosts: [host({ mem_available: 1024 ** 3 })] }, 'memory'],
-    [{ hosts: [host({ actor_taps_used: 63, actor_taps_limit: 63 })] }, 'taps'],
-    [{ hosts: [host({ resource_error: 'no meminfo' })] }, 'resources'],
+    [{ halos: [halo({ mem_available: 1024 ** 3 })] }, 'memory'],
+    [{ halos: [halo({ actor_taps_used: 63, actor_taps_limit: 63 })] }, 'taps'],
+    [{ halos: [halo({ resource_error: 'no meminfo' })] }, 'resources'],
     [
       {
-        hosts: [
-          host({}, [
+        halos: [
+          halo({}, [
             {
               id: 'a-1',
               state: 'running',
@@ -242,7 +242,7 @@ test('each rule flags its own case', () => {
     ],
     [{ unread: [{ source: 'errors', error: 'gcloud: auth' }] }, 'unread'],
     [{ quiet: { quiet: [{ name: 'realness-1', age_s: 400 }] } }, 'down'],
-    [{ quiet: { setup: 'sync does not report host health yet' } }, 'watch']
+    [{ quiet: { setup: 'sync does not report halo health yet' } }, 'watch']
   ]
   for (const [view, kind] of cases)
     assert.deepEqual(kinds({ ...clean, ...view }), [kind], kind)

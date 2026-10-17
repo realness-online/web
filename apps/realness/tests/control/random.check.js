@@ -8,13 +8,13 @@ import { out_path } from '#root/lib/output.js'
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const owner = '+14156667777'
 const root = new URL('../..', import.meta.url).pathname
-const secret = read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
 const made = []
 
-const hostPass = () => {
+const haloPass = () => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'realness-host',
+      aud: 'realness-halo',
       phone: owner,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -25,7 +25,7 @@ const call = async (method, path, body) => {
   const response = await fetch(`${API}${path}`, {
     method,
     headers: {
-      authorization: `Bearer ${hostPass()}`,
+      authorization: `Bearer ${haloPass()}`,
       ...(body && { 'content-type': 'application/json' })
     },
     body: body && JSON.stringify(body)

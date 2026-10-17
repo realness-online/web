@@ -11,7 +11,7 @@ const OPEN_ANGLE = 60
  * or an archive folder one level deeper once the app has paged the oldest
  * posters away. The sale has to land wherever the app put the file.
  * @param {string} poster_id - e.g. `/+16282281824/posters/1712000000000`
- * @returns {Promise<import('@google-cloud/storage').File | null>}
+ * @returns {Promise<ReturnType<typeof bucket.file> | null>}
  */
 export const poster_file = async poster_id => {
   const [, author, type, created] = poster_id.split('/')

@@ -1,7 +1,7 @@
 /**
- * z8 live check: start the production host, wait for it to park itself, and
+ * z8 live check: start the production halo, wait for it to park itself, and
  * send an authenticated gate request while Compute Engine still says STOPPING.
- * Passes when the gate answers with anything but a wake failure and the host
+ * Passes when the gate answers with anything but a wake failure and the halo
  * is RUNNING afterward.
  *   node scripts/z8-check.js
  */
@@ -51,7 +51,7 @@ const main = async () => {
   let last = ''
   for (;;) {
     if (Date.now() - began > PARK_LIMIT_MS)
-      throw new Error('host never began parking')
+      throw new Error('halo never began parking')
     const now = await status()
     if (now !== last) console.log(`${at(began)} ${now}`)
     last = now

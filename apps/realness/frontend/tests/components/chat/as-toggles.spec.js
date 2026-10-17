@@ -14,7 +14,6 @@ vi.mock('@/utils/serverless', async () => {
 })
 
 import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
-import AsSideToggle from '@/components/chat/as-side-toggle.vue'
 import { use_home_view } from '@/use/home-view'
 import { home_view } from '@/utils/preference'
 
@@ -42,14 +41,5 @@ describe('chat toggles', () => {
     home_view.value = 'chat-tui'
     await mount(AsChatToggle).trigger('click')
     expect(home_view.value).toBe('tui')
-  })
-
-  it("chat's header toggle swaps thoughts and the terminal", async () => {
-    home_view.value = 'chat-thoughts'
-    const side = mount(AsSideToggle)
-    expect(side.attributes('aria-label')).toBe('Show the terminal beside chat')
-    await side.trigger('click')
-    expect(home_view.value).toBe('chat-tui')
-    expect(side.attributes('aria-label')).toBe('Show your thoughts beside chat')
   })
 })

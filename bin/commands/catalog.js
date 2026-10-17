@@ -123,7 +123,7 @@ export const collect_commands = async root => {
     else if (extension === '.sh' || /^#!.*\bbash\b/.test(text)) launcher = 'bash '
     let platform = ''
     if (source.includes('/guest/')) platform = 'Actor VM only. '
-    else if (source.includes('/server/host/scripts/')) platform = 'Linux host VM; elevated permissions may be required. '
+    else if (source.includes('/server/halo/scripts/')) platform = 'Linux host VM; elevated permissions may be required. '
     entries.push({
       id: source,
       kind: 'Entry file',

@@ -60,7 +60,7 @@ export const actor_url = async (root = '/realness', state_option) => {
 }
 
 /**
- * Sync one actor through its own host pass.
+ * Sync one actor through its own halo pass.
  * @param {object} options
  * @param {string} options.url
  * @param {string} [options.root]

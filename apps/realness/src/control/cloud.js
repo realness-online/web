@@ -21,7 +21,7 @@ import { run, attempt, stream } from './exec.js'
  * them.
  */
 export const gcloud = config => {
-  /** pr3: a locked-down host takes ssh only through IAP. */
+  /** pr3: a locked-down halo takes ssh only through IAP. */
   const tunnel = args =>
     config.iap && ['ssh', 'scp'].includes(args[0])
       ? [...args, '--tunnel-through-iap']
@@ -95,7 +95,7 @@ export const gcloud = config => {
       return result.ok ? result.out.trim() : ''
     },
 
-    /** Run a command on the host over ssh, output streaming. */
+    /** Run a command on the halo over ssh, output streaming. */
     ssh: (name, command) =>
       stream('gcloud', module_sshArgs(config, name, command), {
         env: { ...process.env, ...env }
@@ -104,7 +104,7 @@ export const gcloud = config => {
     /** Build an ssh argv without running it. */
     sshArgs: (name, command) => module_sshArgs(config, name, command),
 
-    /** scp into the host. */
+    /** scp into the halo. */
     scpArgs: (source, destination, { recurse = false } = {}) => {
       const args = ['compute', 'scp']
       if (config.zone) args.push(`--zone=${config.zone}`)

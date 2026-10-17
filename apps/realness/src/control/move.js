@@ -1,5 +1,5 @@
 /**
- * hs-n3: move one actor from one host to another.
+ * hs-n3: move one actor from one halo to another.
  *
  * The order is the point, and it is the same order drain and retire use:
  * export from A, prove the bundle reached the bucket, restore from that bundle
@@ -21,17 +21,17 @@ const SHOWN = 200
 /**
  * @param {string} id the actor
  * @param {string} owner the person it belongs to
- * @param {{ from: { call: (path: string, options?: object) => Promise<string>, json: (path: string) => Promise<any> }, to: { call: (path: string, options?: object) => Promise<string> }, bundle: (id: string) => Promise<{ object: string }>, place: (owner: string, host: string) => Promise<{ host: string }>, host: string, release?: boolean }} options
- *   from and to are host APIs; bundle ships the export and proves it
+ * @param {{ from: { call: (path: string, options?: object) => Promise<string>, json: (path: string) => Promise<any> }, to: { call: (path: string, options?: object) => Promise<string> }, bundle: (id: string) => Promise<{ object: string }>, place: (owner: string, halo: string) => Promise<{ halo: string }>, halo: string, release?: boolean }} options
+ *   from and to are halo APIs; bundle ships the export and proves it
  */
 export const move = async (
   id,
   owner,
-  { from, to, bundle, place, host, release = true }
+  { from, to, bundle, place, halo, release = true }
 ) => {
   if (!id || !/^a-[a-f0-9]{12}$/.test(id))
     throw new MoveError('move needs an actor id')
-  if (!host) throw new MoveError('move needs a target host')
+  if (!halo) throw new MoveError('move needs a target halo')
 
   step(`export ${id} from ${await name_of(from)}`)
   const manifest = parse_manifest(
@@ -40,7 +40,7 @@ export const move = async (
   const { object } = await bundle(id)
   note(`bundle: ${object}`)
 
-  step(`restore ${id} on ${host}`)
+  step(`restore ${id} on ${halo}`)
   const restored = JSON.parse(
     await to.call('/v1/actors', {
       method: 'POST',
@@ -48,30 +48,30 @@ export const move = async (
     })
   )
   if (!restored.id)
-    throw new MoveError('the target host did not return an actor')
+    throw new MoveError('the target halo did not return an actor')
   if (restored.id === id)
-    throw new MoveError('the target host reused the old actor id')
+    throw new MoveError('the target halo reused the old actor id')
   if (restored.owner !== owner)
     throw new MoveError(`the restored actor belongs to ${restored.owner}`)
 
-  step(`place ${owner} on ${host}`)
-  const held = await place(owner, host)
+  step(`place ${owner} on ${halo}`)
+  const held = await place(owner, halo)
 
   if (release) {
-    step(`stop ${id} on the source host`)
+    step(`stop ${id} on the source halo`)
     await from.call(`/v1/actors/${id}`, { method: 'DELETE' }).catch(error => {
       note(`the old actor could not be removed: ${error.message}`)
     })
   }
-  return { from_actor: id, to_actor: restored.id, host, placed: held.host }
+  return { from_actor: id, to_actor: restored.id, halo, placed: held.halo }
 }
 
 const name_of = async api => {
   try {
     const health = await api.json('/v1/health')
-    return health.host?.name ?? health.hostname ?? 'the source host'
+    return health.halo?.name ?? health.hostname ?? 'the source halo'
   } catch {
-    return 'the source host'
+    return 'the source halo'
   }
 }
 

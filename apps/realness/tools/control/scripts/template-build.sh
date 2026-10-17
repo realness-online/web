@@ -9,7 +9,7 @@ IMG="${IMG:-$ROOT/template.ext4}"
 SIZE="${SIZE:-4G}"
 STAGE="${STAGE:-full}"
 HARNESS_TAR="${HARNESS_TAR:-$OUT/realness-harness.tar.gz}"
-GUEST_SRC="${GUEST_SRC:-$REPO/server/host/guest}"
+GUEST_SRC="${GUEST_SRC:-$REPO/server/halo/guest}"
 RUNS="${RUNS_DIR:-$OUT}"
 RUN="$RUNS/template-$(date -u +%Y%m%dT%H%M%SZ)"
 

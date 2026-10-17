@@ -40,5 +40,3 @@ export const Folder = superclass =>
       await enqueue_folder_sync(itemid, 'delete')
     }
   }
-
-export default Folder

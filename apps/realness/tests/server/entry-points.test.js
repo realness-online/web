@@ -88,17 +88,17 @@ test('the gate needs its secret, then listens', async t => {
     process.execPath,
     [entry('server/gate/bin/gate-service.js')],
     {
-      env: { ...process.env, HOST_PASS_SECRET: '' },
+      env: { ...process.env, HALO_PASS_SECRET: '', HALO_PASS_SECRET: '' },
       encoding: 'utf8'
     }
   )
-  assert.match(missing.stderr, /gate needs HOST_PASS_SECRET/)
+  assert.match(missing.stderr, /gate needs HALO_PASS_SECRET/)
   const port = await free_port()
   await start(t, 'server/gate/bin/gate-service.js', {
     env: {
       PORT: String(port),
-      HOST_PASS_SECRET: 'entry-test-secret-at-least-thirty-two',
-      GATE_HOST: '127.0.0.1:1',
+      HALO_PASS_SECRET: 'entry-test-secret-at-least-thirty-two',
+      GATE_HALO: '127.0.0.1:1',
       IDENTITY_PROJECT: 'entry-test',
       PINS_BUCKET: 'entry-test'
     },
@@ -146,30 +146,30 @@ test('the realness commands print usage through their entry points', () => {
   assert.match(store.stderr, /usage: realness login\|logout/)
 })
 
-test('the host app command names its usage', () => {
-  const result = spawn_sync(process.execPath, [entry('server/host/app.js')], {
+test('the halo app command names its usage', () => {
+  const result = spawn_sync(process.execPath, [entry('server/halo/app.js')], {
     encoding: 'utf8'
   })
   assert.equal(result.status, 2)
   assert.match(result.stderr, /usage: app\.js start <files-dir> \| stop <id>/)
 })
 
-test('the host main and login client name their usage', () => {
-  const host = spawn_sync(process.execPath, [entry('server/host/main.js')], {
+test('the halo main and login client name their usage', () => {
+  const host = spawn_sync(process.execPath, [entry('server/halo/main.js')], {
     encoding: 'utf8'
   })
   assert.equal(host.status, 2)
   assert.match(host.stderr, /usage: main\.js serve\|seed/)
   const login = spawn_sync(
     process.execPath,
-    [entry('server/host/clients/login.js'), '--help'],
+    [entry('server/halo/clients/login.js'), '--help'],
     { encoding: 'utf8' }
   )
   assert.equal(login.status, 0, login.stderr)
   assert.match(login.stdout, /usage: login\.js --phone \+E164/)
   const no_phone = spawn_sync(
     process.execPath,
-    [entry('server/host/clients/login.js')],
+    [entry('server/halo/clients/login.js')],
     { encoding: 'utf8' }
   )
   assert.notEqual(no_phone.status, 0)

@@ -37,7 +37,7 @@ export const read_loop = html => {
   return loop
 }
 
-/** Every loop on every host, running first, then newest. 403: not an admin. */
+/** Every loop on every halo, running first, then newest. 403: not an admin. */
 export const list_loops = async token => {
   const headers = { authorization: `Bearer ${token}` }
   const listing = await fetch('/v1/loops/?deep', { headers })
@@ -73,7 +73,7 @@ export const list_loops = async token => {
     )
 }
 
-/** Ask the loop's host to stop it on its next probe. */
+/** Ask the loop's halo to stop it on its next probe. */
 export const stop_loop = async (token, id) => {
   const response = await fetch(`/v1/loops/${id}/stop.html`, {
     method: 'PUT',

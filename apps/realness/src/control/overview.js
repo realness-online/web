@@ -5,8 +5,8 @@ import { GIB, ISO_DATE } from '#root/lib/units.js'
 
 /** Each source takes { sync, config, now } and returns plain data. */
 const SOURCES = {
-  hosts: ({ sync, now }) => reads.hosts(sync, null, now),
-  quiet: ({ sync }) => reads.quiet_hosts(sync),
+  halos: ({ sync, now }) => reads.hosts(sync, null, now),
+  quiet: ({ sync }) => reads.quiet_halos(sync),
   loops: ({ sync }) => reads.loops(sync),
   services: ({ config }) => cloud.services(config.cloud),
   errors: ({ config }) =>
@@ -67,11 +67,11 @@ const service_state = (service, missing) => {
 const sum = (rows, key) => rows.reduce((total, row) => total + row[key], 0)
 
 /** m5: VM start, guest response, and first turn, as p50/p99 milliseconds. */
-const timing_line = host => {
+const timing_line = halo => {
   const phase = (name, label) => {
-    const p50 = Number(host[`${name}_p50`])
-    const p99 = Number(host[`${name}_p99`])
-    const count = Number(host[`${name}_count`])
+    const p50 = Number(halo[`${name}_p50`])
+    const p99 = Number(halo[`${name}_p99`])
+    const count = Number(halo[`${name}_count`])
     return Number.isFinite(p50) && Number.isFinite(p99)
       ? `${label} p50 ${p50}ms p99 ${p99}ms (n=${count})`
       : null
@@ -113,33 +113,33 @@ export const gather = async (
 /** One screen: a line per area, attention last. */
 export const overview_text = (view, lines) => {
   const out = []
-  for (const { host, age_s, actors } of view.hosts ?? []) {
+  for (const { halo, age_s, actors } of view.halos ?? []) {
     out.push(
-      `host ${host.name}: seed ${host.seed}, ${host.actors_running} running, ${actors.length} actors, seen ${age_s}s ago`
+      `halo ${halo.name}: seed ${halo.seed}, ${halo.actors_running} running, ${actors.length} actors, seen ${age_s}s ago`
     )
     const free_gb =
-      Number(host.mem_available) > 0
-        ? `${(Number(host.mem_available) / GIB).toFixed(2)} GiB free`
+      Number(halo.mem_available) > 0
+        ? `${(Number(halo.mem_available) / GIB).toFixed(2)} GiB free`
         : 'memory unknown'
-    const taps = Number.isFinite(Number(host.actor_taps_used))
-      ? `${host.actor_taps_used} of ${host.actor_taps_limit} actor TAPs`
+    const taps = Number.isFinite(Number(halo.actor_taps_used))
+      ? `${halo.actor_taps_used} of ${halo.actor_taps_limit} actor TAPs`
       : 'TAPs unknown'
     const failed = actors.filter(
       actor => actor.probe_status === 'failed'
     ).length
     out.push(
-      `  ${free_gb}, disk ${(Number(host.volume_free) / GIB).toFixed(2)} GiB free, ${taps}${failed ? `, ${failed} not answering` : ''}`
+      `  ${free_gb}, disk ${(Number(halo.volume_free) / GIB).toFixed(2)} GiB free, ${taps}${failed ? `, ${failed} not answering` : ''}`
     )
-    const timings = timing_line(host)
+    const timings = timing_line(halo)
     if (timings) out.push(`  ${timings}`)
   }
   if (view.quiet?.setup)
-    out.push(`host watch: not available (${view.quiet.setup})`)
+    out.push(`halo watch: not available (${view.quiet.setup})`)
   else if (view.quiet)
     out.push(
       view.quiet.quiet.length
-        ? `hosts not reporting: ${view.quiet.quiet.map(h => `${h.name}${h.age_s === null ? ' (no readable time)' : ` (${h.age_s}s)`}`).join(', ')}`
-        : 'hosts not reporting: none'
+        ? `halos not reporting: ${view.quiet.quiet.map(h => `${h.name}${h.age_s === null ? ' (no readable time)' : ` (${h.age_s}s)`}`).join(', ')}`
+        : 'halos not reporting: none'
     )
   if (view.loops)
     out.push(

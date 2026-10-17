@@ -1,30 +1,43 @@
-import { mkdirSync as mkdir_sync, readFileSync as read_file_sync, rmSync as rm_sync, statSync as stat_sync } from "node:fs"
-import { join } from "node:path"
-import * as firecracker from "#root/src/host/firecracker.js"
-import * as host from "#root/src/host/host.js"
+import {
+  mkdirSync as mkdir_sync,
+  readFileSync as read_file_sync,
+  rmSync as rm_sync,
+  statSync as stat_sync
+} from 'node:fs'
+import { join } from 'node:path'
+import * as firecracker from '#root/src/halo/firecracker.js'
+import * as host from '#root/src/halo/syscalls.js'
 
-const NET = "172.18"
+const NET = '172.18'
 const PORT = 9222
-const FC = "/opt/fc/firecracker"
-const KERNEL = "/opt/fc/vmlinux-6.1.155"
-const IMAGE = "/opt/fc/chrome.ext4"
-const BLOCKED = /just a moment|attention required|verify you are human|access denied|are you a robot|captcha|enable javascript and cookies/i
+const FC = '/opt/fc/firecracker'
+const KERNEL = '/opt/fc/vmlinux-6.1.155'
+const IMAGE = '/opt/fc/chrome.ext4'
+const BLOCKED =
+  /just a moment|attention required|verify you are human|access denied|are you a robot|captcha|enable javascript and cookies/i
 
-const sleep = (ms) => new Promise((done) => setTimeout(done, ms))
-export const seconds = (since) => Number(((performance.now() - since) / 1000).toFixed(2))
-export const mib = (bytes) => Math.round(bytes / 1048576)
+const sleep = ms => new Promise(done => setTimeout(done, ms))
+export const seconds = since =>
+  Number(((performance.now() - since) / 1000).toFixed(2))
+export const mib = bytes => Math.round(bytes / 1048576)
 
 /** A process's resident memory, bytes. @param {number} pid */
-export const rss = (pid) => {
-  const match = /VmRSS:\s+(\d+)/.exec(read_file_sync(`/proc/${pid}/status`, "utf8"))
+export const rss = pid => {
+  const match = /VmRSS:\s+(\d+)/.exec(
+    read_file_sync(`/proc/${pid}/status`, 'utf8')
+  )
   if (!match) throw new Error(`no VmRSS for pid ${pid}`)
   return Number(match[1]) * 1024
 }
 
-/** A process's user plus system CPU, seconds: what the host paid for the VM. */
-export const cpu = (pid) => {
-  const stat = read_file_sync(`/proc/${pid}/stat`, "utf8")
-  const [utime, stime] = stat.slice(stat.lastIndexOf(") ") + 2).split(" ").slice(11, 13).map(Number)
+/** A process's user plus system CPU, seconds: what the halo paid for the VM. */
+export const cpu = pid => {
+  const stat = read_file_sync(`/proc/${pid}/stat`, 'utf8')
+  const [utime, stime] = stat
+    .slice(stat.lastIndexOf(') ') + 2)
+    .split(' ')
+    .slice(11, 13)
+    .map(Number)
   return (utime + stime) / 100
 }
 
@@ -53,35 +66,40 @@ export class ChromeVm {
   api_sock
   /** @type {import('node:child_process').ChildProcess | undefined} */
   child
-  /** @type {import('#root/src/host/firecracker.js').Api | undefined} */
+  /** @type {import('#root/src/halo/firecracker.js').Api | undefined} */
   api
 
   /** @param {{ work: string, mib?: number, vcpus?: number, huge_pages?: string }} options */
   constructor({ work, mib = 1024, vcpus = 2, huge_pages }) {
-    host.requireRoot("creating TAPs and Firecracker")
+    host.requireRoot('creating TAPs and Firecracker')
     mkdir_sync(work, { recursive: true })
     Object.assign(this, { work, mib, vcpus, huge_pages, pids: [] })
-    this.tap = host.freeTap("fc-chrome")
+    this.tap = host.freeTap('fc-chrome')
     this.address = host.tapGuest(this.tap, NET)
     const index = /\d+$/.exec(this.tap)
     if (!index) throw new Error(`tap name ${this.tap} has no trailing number`)
-    this.mac = `06:00:AC:12:${Number(index[0]).toString(16).padStart(2, "0").toUpperCase()}:02`
-    this.state = join(work, "chrome.state")
-    this.mem = join(work, "chrome.mem")
+    this.mac = `06:00:AC:12:${Number(index[0]).toString(16).padStart(2, '0').toUpperCase()}:02`
+    this.state = join(work, 'chrome.state')
+    this.mem = join(work, 'chrome.mem')
     host.createTap(this.tap, NET)
   }
 
   spawn() {
-    const api_sock = join(this.work, "api.sock")
+    const api_sock = join(this.work, 'api.sock')
     rm_sync(api_sock, { force: true })
-    this.child = firecracker.spawn(FC, this.work, api_sock, join(this.work, "firecracker.log"))
+    this.child = firecracker.spawn(
+      FC,
+      this.work,
+      api_sock,
+      join(this.work, 'firecracker.log')
+    )
     this.pids.push(this.pid)
     this.api_sock = api_sock
   }
 
   /** The Firecracker pid, for CPU and RSS reads. Fails loudly before spawn. */
   get pid() {
-    if (!this.child?.pid) throw new Error("the VM has not been spawned")
+    if (!this.child?.pid) throw new Error('the VM has not been spawned')
     return this.child.pid
   }
 
@@ -90,22 +108,36 @@ export class ChromeVm {
     const deadline = Date.now() + limit * 1000
     for (;;) {
       try {
-        const reply = await fetch(`http://${this.address}:${PORT}/json/version`, { signal: AbortSignal.timeout(1000) })
+        const reply = await fetch(
+          `http://${this.address}:${PORT}/json/version`,
+          { signal: AbortSignal.timeout(1000) }
+        )
         if (reply.ok) return await reply.json()
       } catch {}
-      if (Date.now() > deadline) throw new Error(`no DevTools on ${this.address}:${PORT} after ${limit}s`)
+      if (Date.now() > deadline)
+        throw new Error(
+          `no DevTools on ${this.address}:${PORT} after ${limit}s`
+        )
       await sleep(100)
     }
   }
 
   /** A cold boot from a fresh copy of the image, until DevTools answers. */
   async boot() {
-    const disk = join(this.work, "rootfs.ext4")
-    host.run(["cp", "--reflink=auto", "--sparse=always", IMAGE, disk])
+    const disk = join(this.work, 'rootfs.ext4')
+    host.run(['cp', '--reflink=auto', '--sparse=always', IMAGE, disk])
     this.spawn()
     await firecracker.waitForApiSocket(this.api_sock)
     this.api = new firecracker.Api(this.api_sock)
-    await firecracker.boot(this.api, { kernel: KERNEL, disk, tap: this.tap, mac: this.mac, vcpus: this.vcpus, mib: this.mib, huge_pages: this.huge_pages })
+    await firecracker.boot(this.api, {
+      kernel: KERNEL,
+      disk,
+      tap: this.tap,
+      mac: this.mac,
+      vcpus: this.vcpus,
+      mib: this.mib,
+      huge_pages: this.huge_pages
+    })
     return this.devtools(120)
   }
 
@@ -121,7 +153,12 @@ export class ChromeVm {
   async restore() {
     this.spawn()
     await firecracker.waitForApiSocket(this.api_sock)
-    await firecracker.loadSnapshot(new firecracker.Api(this.api_sock), this.state, this.mem, this.tap)
+    await firecracker.loadSnapshot(
+      new firecracker.Api(this.api_sock),
+      this.state,
+      this.mem,
+      this.tap
+    )
     return this.devtools(30)
   }
 
@@ -136,12 +173,15 @@ export class ChromeVm {
    * @param {{ limit?: number, screenshot?: boolean, keep_text?: boolean }} [options]
    * @returns {Promise<{ ok: boolean, reason: string | null, status?: number, load: number, title?: string, chars?: number, png?: Buffer | null, text?: string }>}
    */
-  async render(url, { limit = 30_000, screenshot = true, keep_text = false } = {}) {
+  async render(
+    url,
+    { limit = 30_000, screenshot = true, keep_text = false } = {}
+  ) {
     const { webSocketDebuggerUrl } = await this.devtools()
     const socket = new WebSocket(webSocketDebuggerUrl)
     await new Promise((done, fail) => {
       socket.onopen = done
-      socket.onerror = () => fail(new Error("DevTools socket failed"))
+      socket.onerror = () => fail(new Error('DevTools socket failed'))
     })
     let next = 0
     const waiting = new Map()
@@ -151,7 +191,9 @@ export class ChromeVm {
       if (message.id && waiting.has(message.id)) {
         const { done, fail } = waiting.get(message.id)
         waiting.delete(message.id)
-        message.error ? fail(new Error(message.error.message)) : done(message.result)
+        message.error
+          ? fail(new Error(message.error.message))
+          : done(message.result)
       } else if (message.method) events.push(message)
     }
     const send = (method, params = {}, sessionId) =>
@@ -161,35 +203,97 @@ export class ChromeVm {
           waiting.delete(id)
           fail(new Error(`${method}: no reply in 15s`))
         }, 15_000)
-        waiting.set(id, { done: (value) => (clearTimeout(timer), done(value)), fail: (error) => (clearTimeout(timer), fail(error)) })
-        socket.send(JSON.stringify({ id, method, params, ...(sessionId && { sessionId }) }))
+        waiting.set(id, {
+          done: value => (clearTimeout(timer), done(value)),
+          fail: error => (clearTimeout(timer), fail(error))
+        })
+        socket.send(
+          JSON.stringify({
+            id,
+            method,
+            params,
+            ...(sessionId && { sessionId })
+          })
+        )
       })
     const start = performance.now()
     let targetId
     try {
-      ;({ targetId } = await send("Target.createTarget", { url: "about:blank" }))
-      const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true })
-      await send("Page.enable", {}, sessionId)
-      await send("Network.enable", {}, sessionId)
-      await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false }, sessionId)
-      await send("Page.navigate", { url }, sessionId)
+      ;({ targetId } = await send('Target.createTarget', {
+        url: 'about:blank'
+      }))
+      const { sessionId } = await send('Target.attachToTarget', {
+        targetId,
+        flatten: true
+      })
+      await send('Page.enable', {}, sessionId)
+      await send('Network.enable', {}, sessionId)
+      await send(
+        'Emulation.setDeviceMetricsOverride',
+        { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false },
+        sessionId
+      )
+      await send('Page.navigate', { url }, sessionId)
       const deadline = Date.now() + limit
-      while (!events.some((event) => event.sessionId === sessionId && event.method === "Page.loadEventFired")) {
-        if (Date.now() > deadline) return { ok: false, reason: "timeout", load: seconds(start) }
+      while (
+        !events.some(
+          event =>
+            event.sessionId === sessionId &&
+            event.method === 'Page.loadEventFired'
+        )
+      ) {
+        if (Date.now() > deadline)
+          return { ok: false, reason: 'timeout', load: seconds(start) }
         await sleep(20)
       }
       const load = seconds(start)
-      const status = events.find((event) => event.sessionId === sessionId && event.method === "Network.responseReceived" && event.params.type === "Document")?.params.response.status
-      const { result } = await send("Runtime.evaluate", { expression: "JSON.stringify({ title: document.title, text: document.body?.innerText ?? '' })", returnByValue: true }, sessionId)
+      const status = events.find(
+        event =>
+          event.sessionId === sessionId &&
+          event.method === 'Network.responseReceived' &&
+          event.params.type === 'Document'
+      )?.params.response.status
+      const { result } = await send(
+        'Runtime.evaluate',
+        {
+          expression:
+            "JSON.stringify({ title: document.title, text: document.body?.innerText ?? '' })",
+          returnByValue: true
+        },
+        sessionId
+      )
       const { title, text } = JSON.parse(result.value)
-      const png = screenshot ? Buffer.from((await send("Page.captureScreenshot", { format: "png" }, sessionId)).data, "base64") : null
+      const png = screenshot
+        ? Buffer.from(
+            (await send('Page.captureScreenshot', { format: 'png' }, sessionId))
+              .data,
+            'base64'
+          )
+        : null
       const blocked = BLOCKED.test(`${title} ${text.slice(0, 2000)}`)
-      const reason = status >= 400 ? `HTTP ${status}` : blocked ? "blocked" : text.length < 200 ? "thin" : null
-      return { ok: !reason, reason, status, load, title, chars: text.length, png, ...(keep_text && { text }) }
+      const reason =
+        status >= 400
+          ? `HTTP ${status}`
+          : blocked
+            ? 'blocked'
+            : text.length < 200
+              ? 'thin'
+              : null
+      return {
+        ok: !reason,
+        reason,
+        status,
+        load,
+        title,
+        chars: text.length,
+        png,
+        ...(keep_text && { text })
+      }
     } catch (error) {
       return { ok: false, reason: error.message, load: seconds(start) }
     } finally {
-      if (targetId) await send("Target.closeTarget", { targetId }).catch(() => {})
+      if (targetId)
+        await send('Target.closeTarget', { targetId }).catch(() => {})
       socket.close()
     }
   }
@@ -198,6 +302,12 @@ export class ChromeVm {
   async stop() {
     for (const pid of this.pids) await firecracker.terminate(pid)
     host.deleteTap(this.tap)
-    for (const file of ["rootfs.ext4", "chrome.mem", "chrome.state", "api.sock"]) rm_sync(join(this.work, file), { force: true })
+    for (const file of [
+      'rootfs.ext4',
+      'chrome.mem',
+      'chrome.state',
+      'api.sock'
+    ])
+      rm_sync(join(this.work, file), { force: true })
   }
 }

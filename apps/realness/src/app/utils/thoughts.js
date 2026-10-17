@@ -2,14 +2,9 @@
 /** @typedef {import('@/types').Thought} Thought */
 
 import {
-  THOUGHT_WINDOW_MS,
   thoughts_for_author as rulebook_thoughts_for_author,
-  thought_feed_slots as rulebook_thought_feed_slots,
-  thought_for_poster as rulebook_thought_for_poster,
-  thought_text as rulebook_thought_text
+  thought_feed_slots as rulebook_thought_feed_slots
 } from '@realness.online/thoughts'
-
-export { THOUGHT_WINDOW_MS }
 
 /** @type {(items: Item[]) => Thought[]} */
 export const thoughts_for_author = /** @type {any} */ (
@@ -20,11 +15,3 @@ export const thoughts_for_author = /** @type {any} */ (
 export const thought_feed_slots = /** @type {any} */ (
   rulebook_thought_feed_slots
 )
-
-/** @type {(items: Item[], poster_id: string) => Thought | null} */
-export const thought_for_poster = /** @type {any} */ (
-  rulebook_thought_for_poster
-)
-
-/** @type {(thought: Thought | null) => string} */
-export const thought_text = /** @type {any} */ (rulebook_thought_text)

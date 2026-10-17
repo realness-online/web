@@ -25,7 +25,7 @@ if (
   !config.sample_argv.length ||
   config.sample_argv.some(arg => typeof arg !== 'string')
 )
-  throw new Error('sample_argv must name a host resource sampler')
+  throw new Error('sample_argv must name a halo resource sampler')
 if (!values.run)
   process.stdout.write(
     `${JSON.stringify({ validated: true, execution: false, config }, null, 2)}\n`

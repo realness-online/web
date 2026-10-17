@@ -11,7 +11,7 @@ export const source_folders = {
   command: 'src/command',
   control: 'src/control',
   publish: 'src/publish',
-  host: 'src/host',
+  halo: 'src/halo',
   sync: 'src/sync',
   proxy: 'src/proxy',
   gate: 'src/gate',
@@ -50,14 +50,17 @@ const shared_folders = () => [
 
 export const actor_folders = () => [
   ...shared_folders(),
+  'themes',
   source_folders.command,
   source_folders.sync,
+  source_folders.proxy,
   'tools/cli/bin',
   source_folders.control,
-  'tools/control'
+  'tools/control',
+  'tools/ops'
 ]
 
-export const host_files = [
+export const halo_files = [
   'package.json',
   'lib/http.js',
   'lib/path-parts.js',
@@ -69,16 +72,16 @@ export const host_files = [
   'tools/control/webspace.config.js'
 ]
 
-/** A pushed host carries the same actor dependencies as a locally built template. */
-export const host_folders = () => {
+/** A pushed halo carries the same actor dependencies as a locally built template. */
+export const halo_folders = () => {
   const folders = [
     ...actor_folders().filter(
       folder => !['lib', 'tools/control'].includes(folder)
     ),
-    source_folders.host,
+    source_folders.halo,
     source_folders.sync,
     source_folders.proxy,
-    'server/host',
+    'server/halo',
     'server/sync',
     'server/proxy',
     'server/scripts',

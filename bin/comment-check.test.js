@@ -45,7 +45,33 @@ test('a heredoc body is not scanned', () => {
   assert.equal(found.length, 1)
 })
 
+test('a quoted heredoc body is not scanned', () => {
+  for (const open of ["<<'SH'", '<<"SH"', "<<-'SH'"]) {
+    const found = wav(`cat > f ${open}\n#!/usr/bin/env bash\n# not a comment\nSH\n# yes\n`, '.sh')
+    assert.equal(found.length, 1, open)
+  }
+})
+
 test('a block comment in css is not kept', () => {
   const found = wav('/* section */\np { color: red }\n', '.css')
   assert.equal(found[0].keep, false)
+})
+test('jsdoc above what it documents is kept; the same block inside code is not', () => {
+  const found = wav('/** file */\nimport a from "a"\n/** sum */\nconst f = () => {\n  /** why */\n  a()\n  return { /** part */ x: 1 }\n}\n', '.js')
+  assert.deepEqual(found.map(range => range.keep), [true, true, false, true])
+})
+
+test('a tagged block is kept anywhere, as a type cast is', () => {
+  const found = wav('const f = () => {\n  const x = /** @type {number} */ (y)\n  return x\n}\n', '.js')
+  assert.equal(found[0].keep, true)
+})
+
+test('a shell header documents the script; later comments do not', () => {
+  const found = wav('#!/usr/bin/env bash\n# what this does\n# usage: x\nset -e\n# why\necho\n', '.sh')
+  assert.deepEqual(found.map(range => range.keep), [true, true, true, false])
+})
+
+test('jsdoc above a call that registers a function, or a returned function, is kept', () => {
+  const found = wav('const f = () => {\n  /** effect */\n  watch(() => 1)\n  /** runner */\n  return async c => c\n}\n/** suite */\ndescribe("x", () => {})\n', '.js')
+  assert.deepEqual(found.map(range => range.keep), [true, true, true])
 })

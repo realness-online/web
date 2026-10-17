@@ -1,8 +1,8 @@
 /**
- * The host API as control sees it.
+ * The halo API as control sees it.
  *
  * `waitForHealth` shells out to curl, so a real HTTP server on a loopback port
- * answers it without a host. `remoteApi` is only read for its argv and for the
+ * answers it without a halo. `remoteApi` is only read for its argv and for the
  * `json` wrapper: its `call` runs `gcloud compute ssh`, so that one is left
  * alone and `json` is driven through its own `this.call` seam.
  */
@@ -97,7 +97,7 @@ test('sshArgs carries the zone when there is one, and one quoted command', () =>
   ])
 })
 
-test('json parses what the host answered', async () => {
+test('json parses what the halo answered', async () => {
   const api = remoteApi('realness-1', {})
   const seen = []
   api.call = async (path, options) => {

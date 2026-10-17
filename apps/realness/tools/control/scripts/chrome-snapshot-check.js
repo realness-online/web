@@ -1,13 +1,25 @@
 #!/usr/bin/env node
-import { writeFileSync as write_file_sync } from "node:fs"
-import { join } from "node:path"
-import { out_path } from "#root/lib/output.js"
-import { ChromeVm, mib, rss, seconds } from "./chrome-vm.js"
+import { writeFileSync as write_file_sync } from 'node:fs'
+import { join } from 'node:path'
+import { out_path } from '#root/lib/output.js'
+import { ChromeVm, mib, rss, seconds } from './chrome-vm.js'
 
-const URL = process.env.URL ?? "https://example.com/"
-const run = out_path(`chrome-snapshot-${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "")}`)
-const vm = new ChromeVm({ work: join(run, "vm"), mib: Number(process.env.MIB ?? 1024), vcpus: Number(process.env.VCPUS ?? 2) })
-const result = { url: URL, mib: vm.mib, vcpus: vm.vcpus, tap: vm.tap, address: vm.address }
+const URL = process.env.URL ?? 'https://example.com/'
+const run = out_path(
+  `chrome-snapshot-${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`
+)
+const vm = new ChromeVm({
+  work: join(run, 'vm'),
+  mib: Number(process.env.MIB ?? 1024),
+  vcpus: Number(process.env.VCPUS ?? 2)
+})
+const result = {
+  url: URL,
+  mib: vm.mib,
+  vcpus: vm.vcpus,
+  tap: vm.tap,
+  address: vm.address
+}
 
 try {
   let clock = performance.now()
@@ -30,14 +42,17 @@ try {
   result.restore_rss_after_render_mib = mib(rss(vm.pid))
   result.title = page.title
   result.png_bytes = page.png?.length ?? 0
-  if (page.png) write_file_sync(join(run, "page.png"), page.png)
+  if (page.png) write_file_sync(join(run, 'page.png'), page.png)
 } catch (error) {
   result.error = error.message
 } finally {
   await vm.stop()
 }
 
-write_file_sync(join(run, "result.json"), `${JSON.stringify(result, null, 2)}\n`)
+write_file_sync(
+  join(run, 'result.json'),
+  `${JSON.stringify(result, null, 2)}\n`
+)
 console.log(JSON.stringify(result, null, 2))
 console.log(`run: ${run}`)
 process.exit(result.png_bytes > 1000 ? 0 : 1)

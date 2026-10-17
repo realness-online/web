@@ -1,6 +1,6 @@
 import { readFileSync as read_file_sync } from "node:fs"
 import { join } from "node:path"
-import { oklch_hex } from "../../../bin/lib/palette.js"
+import { oklch_hex } from "../lib/oklch.js"
 
 const required = "background surface raised text document-text muted accent success error warning working secondary cursor selection selection-text syntax-comment syntax-secondary-text syntax-strong-text syntax-bright-text syntax-string syntax-number syntax-keyword syntax-special syntax-cyan terminal-black terminal-white terminal-bright-black terminal-bright-white terminal-bright-error terminal-bright-success terminal-bright-warning terminal-bright-working terminal-bright-secondary surface-glass contrast code-surface muted-text success-tint error-tint warning-tint".split(" ")
 

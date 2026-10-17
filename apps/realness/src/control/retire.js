@@ -1,12 +1,12 @@
 /**
- * hs-n4: stop a host once its actors have moved.
+ * hs-n4: stop a halo once its actors have moved.
  *
- * A move exports an actor, restores it on another host, and reassigns the
- * person's placement. Only then may the old host go. This refuses to do
- * anything while the host still reports an actor, because an actor on the old
- * host is work that has not moved, and losing it would be silent.
+ * A move exports an actor, restores it on another halo, and reassigns the
+ * person's placement. Only then may the old halo go. This refuses to do
+ * anything while the halo still reports an actor, because an actor on the old
+ * halo is work that has not moved, and losing it would be silent.
  *
- * Runs on the control plane. The host has no credentials of its own, so the
+ * Runs on the control plane. The halo has no credentials of its own, so the
  * delete comes from here, after the placement records no longer name it.
  */
 import { note, step } from './exec.js'
@@ -14,16 +14,16 @@ import { note, step } from './exec.js'
 class RetireError extends Error {}
 
 /**
- * @param {{ call: (path: string) => Promise<string> }} api the old host's API
- * @param {{ release: (host: string) => Promise<number> }} placements
- * @param {{ stop: (name: string) => Promise<void>, drop: (name: string) => Promise<void> }} host
+ * @param {{ call: (path: string) => Promise<string> }} api the old halo's API
+ * @param {{ release: (halo: string) => Promise<number> }} placements
+ * @param {{ stop: (name: string) => Promise<void>, drop: (name: string) => Promise<void> }} halo
  * @param {string} name
  * @param {{ delete?: boolean }} [options]
  */
 export const retire = async (
   api,
   placements,
-  host,
+  halo,
   name,
   { delete: drop = false } = {}
 ) => {
@@ -43,12 +43,12 @@ export const retire = async (
 
   if (drop) {
     step(`delete ${name}`)
-    await host.drop(name)
+    await halo.drop(name)
   } else {
     step(`stop ${name}`)
-    await host.stop(name)
+    await halo.stop(name)
   }
-  return { host: name, actors: actors.length, released, deleted: drop }
+  return { halo: name, actors: actors.length, released, deleted: drop }
 }
 
 export { RetireError }

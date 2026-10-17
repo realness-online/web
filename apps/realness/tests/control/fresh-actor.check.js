@@ -21,17 +21,17 @@ const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PORT = Number(process.env.SYNC_PORT ?? 18095)
 const owner = '+14156667777'
 const root = new URL('../..', import.meta.url).pathname
-const secret = read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
+const secret = read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
 const run = `fresh-actor-${random_uuid().slice(0, 8)}`
 const data = out_path(run)
 const hash = text => create_hash('sha256').update(text).digest('hex')
 const made = new Map()
 let sync
 
-const hostPass = (phone = owner) => {
+const haloPass = (phone = owner) => {
   const body = Buffer.from(
     JSON.stringify({
-      aud: 'realness-host',
+      aud: 'realness-halo',
       phone,
       exp: Math.floor(Date.now() / 1000) + 240
     })
@@ -45,7 +45,7 @@ const call = async (method, path, body, phone = owner) => {
   const response = await fetch(`${API}${path}`, {
     method,
     headers: {
-      authorization: `Bearer ${hostPass(phone)}`,
+      authorization: `Bearer ${haloPass(phone)}`,
       ...(body && { 'content-type': 'application/json' })
     },
     body: body && JSON.stringify(body)
@@ -162,7 +162,7 @@ before(async () => {
       '--',
       'sh',
       '-c',
-      `echo $$ > /artifacts/realness/${run}/sync.pid; exec env HOST_PASS_SECRET=${secret} LISTEN=0.0.0.0 PORT=${PORT} SYNC_DIR=/artifacts/realness/${run} node /mnt/fc/server/sync/bin/sync-service.js --dev`
+      `echo $ > /artifacts/realness/${run}/sync.pid; exec env HALO_PASS_SECRET=${secret} LISTEN=0.0.0.0 PORT=${PORT} SYNC_DIR=/artifacts/realness/${run} node /mnt/fc/server/sync/bin/sync-service.js --dev`
     ],
     { stdio: ['ignore', 'pipe', 'inherit'] }
   )
@@ -225,7 +225,7 @@ test('a limited actor pulls only its listed paths', async () => {
   assert.notEqual((await sh(id, 'test -e /realness/work/notes/doc.md')).code, 0)
 })
 
-test('the host refuses a path list that names secrets', async () => {
+test('the halo refuses a path list that names secrets', async () => {
   const result = await call('POST', '/v1/actors', {
     paths: ['.pi/agent/auth.json']
   })

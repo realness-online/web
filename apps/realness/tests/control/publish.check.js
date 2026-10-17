@@ -116,7 +116,7 @@ const run = async n => {
 
 const health = await fetch(`${API}/v1/health`).then(r => r.json())
 if (!health.ok || !health.seed?.built || !health.seed?.matches) {
-  console.error(`local host not ready: ${JSON.stringify(health.seed)}`)
+  console.error(`local halo not ready: ${JSON.stringify(health.seed)}`)
   process.exit(1)
 }
 

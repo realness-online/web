@@ -13,11 +13,11 @@ test('the plan opens the narrow paths before it closes the wide ones', () => {
   const plan = lockdown_plan(config).map(argv => argv.join(' '))
   assert.match(
     plan[0],
-    /create realness-host-iap-ssh .*--allow=tcp:22 --source-ranges=35\.235\.240\.0\/20 --target-tags=realness-host/
+    /create realness-halo-iap-ssh .*--allow=tcp:22 --source-ranges=35\.235\.240\.0\/20 --target-tags=realness-halo/
   )
   assert.match(
     plan[1],
-    /create realness-host-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.168\.0\.0\/20/
+    /create realness-halo-api .*--allow=tcp:8080,tcp:8081 --source-ranges=10\.168\.0\.0\/20/
   )
   assert.match(
     plan[2],

@@ -27,7 +27,7 @@ test('an actor edit reaches a desktop through normal sync, renewing an expired p
   const server = sync_service({
     storage,
     rights: rights(storage),
-    host_pass_secret: secret,
+    halo_pass_secret: secret,
     log: () => {}
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))

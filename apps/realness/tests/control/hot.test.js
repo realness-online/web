@@ -1,12 +1,12 @@
 /**
- * hs-hot: a crowded host is relieved by moving the busiest actor off it.
+ * hs-hot: a crowded halo is relieved by moving the busiest actor off it.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   HotError,
   busiest,
-  hot_hosts,
+  hot_halos,
   hot_text,
   relieve
 } from '../../src/control/hot.js'
@@ -16,8 +16,8 @@ const cool = { cpu_fraction: 0.1, mem_used_fraction: 0.2, actors: 3 }
 const busy = { cpu_fraction: 0.95, mem_used_fraction: 0.4, actors: 5 }
 const full = { cpu_fraction: 0.2, mem_used_fraction: 0.2, actors: 30 }
 
-test('a host is named for the limit it crossed, and quiet hosts are left alone', () => {
-  const hot = hot_hosts(
+test('a halo is named for the limit it crossed, and quiet halos are left alone', () => {
+  const hot = hot_halos(
     [
       { name: 'realness-1', ...busy },
       { name: 'realness-2', ...cool },
@@ -26,24 +26,24 @@ test('a host is named for the limit it crossed, and quiet hosts are left alone',
     limits
   )
   assert.deepEqual(
-    hot.map(({ host, because }) => [host, because]),
+    hot.map(({ halo, because }) => [halo, because]),
     [
       ['realness-1', 'cpu'],
       ['realness-3', 'actors']
     ]
   )
   assert.ok(hot[0].over_by > hot[1].over_by, 'worst first')
-  assert.deepEqual(hot_hosts([{ name: 'realness-1', ...cool }], limits), [])
+  assert.deepEqual(hot_halos([{ name: 'realness-1', ...cool }], limits), [])
   assert.deepEqual(
-    hot_hosts([{ name: 'realness-1', ...cool }], limits, ['realness-9']),
+    hot_halos([{ name: 'realness-1', ...cool }], limits, ['realness-9']),
     [],
-    'only the named hosts are considered'
+    'only the named halos are considered'
   )
 })
 
 test('an unknown reading is not a limit crossed', () => {
   assert.deepEqual(
-    hot_hosts(
+    hot_halos(
       [
         {
           name: 'realness-1',
@@ -75,7 +75,7 @@ test('the busiest actors are chosen first', () => {
   )
 })
 
-test('relief moves one of the person\u2019s busiest actors to the coolest host', () => {
+test('relief moves one of the person\u2019s busiest actors to the coolest halo', () => {
   const plan = relieve(
     [
       { name: 'realness-1', ...busy },
@@ -84,7 +84,7 @@ test('relief moves one of the person\u2019s busiest actors to the coolest host',
     ],
     limits,
     {
-      host: 'realness-1',
+      halo: 'realness-1',
       actors: [
         { id: 'a-000000000001', owner: '+14156660001', cpu_fraction: 0.9 },
         { id: 'a-000000000002', owner: '+14156660002', cpu_fraction: 0.2 }
@@ -113,7 +113,7 @@ test('only that person\u2019s actors are moved', () => {
     ],
     limits,
     {
-      host: 'realness-1',
+      halo: 'realness-1',
       actors: [
         { id: 'a-000000000001', owner: '+14156660002', cpu_fraction: 0.99 },
         { id: 'a-000000000002', owner: '+14156660001', cpu_fraction: 0.5 }
@@ -126,7 +126,7 @@ test('only that person\u2019s actors are moved', () => {
 
 test('a person with no actor there, or a full fleet, is refused plainly', () => {
   const crowded = {
-    host: 'realness-1',
+    halo: 'realness-1',
     actors: [{ id: 'a-000000000001', owner: '+14156660001' }]
   }
   assert.throws(
@@ -153,13 +153,13 @@ test('a person with no actor there, or a full fleet, is refused plainly', () => 
         crowded,
         '+14156660001'
       ),
-    /every other host is at its limit; add a host/
+    /every other halo is at its limit; add a halo/
   )
 })
 
-test('the fields host hot reads are the fields a host reports', async () => {
-  const { read_status } = await import('#root/src/sync/host-status.js')
-  const { HostStatus } = await import('#root/src/host/status.js')
+test('the fields halo hot reads are the fields a halo reports', async () => {
+  const { read_status } = await import('#root/src/sync/halo-status.js')
+  const { HaloStatus } = await import('#root/src/halo/status.js')
   let written = ''
   const store = {
     list: () => [],
@@ -167,8 +167,8 @@ test('the fields host hot reads are the fields a host reports', async () => {
     volume: '/tmp',
     activity: () => null
   }
-  const status = new HostStatus(store, {
-    host: 'realness-1',
+  const status = new HaloStatus(store, {
+    halo: 'realness-1',
     mirror: {
       put: async (key, body) => {
         written = body
@@ -184,9 +184,9 @@ test('the fields host hot reads are the fields a host reports', async () => {
   assert.equal(await status.publish(), true)
   const record = read_status(written)
   for (const name of ['mem_total', 'mem_free', 'actors_running', 'actors_idle'])
-    assert.ok(Object.hasOwn(record.host, name), `a host record carries ${name}`)
+    assert.ok(Object.hasOwn(record.halo, name), `a halo record carries ${name}`)
   assert.ok(
-    Number(record.host.mem_total) > 0,
+    Number(record.halo.mem_total) > 0,
     'mem_total is bytes, which is what the share in use is computed from'
   )
 })

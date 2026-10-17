@@ -34,11 +34,16 @@ export const cached_read = (read, interval_ms, now = Date.now) => {
   }
 }
 
-/** Billing covers configured exports; inventory includes their billed projects. */
+/**
+ * Billing covers configured exports; inventory includes their billed projects.
+ * Plans read from `store`; without one they are unknown.
+ * @param {{ environments?: object, run?: typeof attempt, now?: () => number, store?: Parameters<typeof import('./watch-traffic.js').read_plans>[0] | null }} [options]
+ */
 export const cloud_sources = ({
   environments = ENVIRONMENTS,
   run = attempt,
-  now = Date.now
+  now = Date.now,
+  store = null
 } = {}) => {
   const clouds = [
     ...new Map(
@@ -99,6 +104,18 @@ export const cloud_sources = ({
         return { rows: rows.flat() }
       },
       HEALTH_EVERY_MINUTES * MS_PER_MINUTE,
+      now
+    ),
+    plans: cached_read(
+      async () =>
+        store ? (await import('./watch-traffic.js')).read_plans(store) : null,
+      HEALTH_EVERY_MINUTES * MS_PER_MINUTE,
+      now
+    ),
+    traffic: cached_read(
+      async () =>
+        (await import('./watch-traffic.js')).read_traffic({ now: now() }),
+      MS_PER_MINUTE,
       now
     )
   }

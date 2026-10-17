@@ -1,7 +1,7 @@
 import {
   actor_folders,
-  host_files,
-  host_folders,
+  halo_files,
+  halo_folders,
   project_root,
   service_folders
 } from './layout.js'
@@ -30,10 +30,10 @@ else if (command === 'output' && target === 'frontend-notes' && !args.length)
   process.stdout.write(`${out_path('frontend', 'release-notes.md')}\n`)
 else if (command === 'folders' && target === 'actor' && !args.length)
   process.stdout.write(`${actor_folders().join('\n')}\n`)
-else if (command === 'folders' && target === 'host' && !args.length)
-  process.stdout.write(`${host_folders().join('\n')}\n`)
-else if (command === 'files' && target === 'host' && !args.length)
-  process.stdout.write(`${host_files.join('\n')}\n`)
+else if (command === 'folders' && target === 'halo' && !args.length)
+  process.stdout.write(`${halo_folders().join('\n')}\n`)
+else if (command === 'files' && target === 'halo' && !args.length)
+  process.stdout.write(`${halo_files.join('\n')}\n`)
 else if (command === 'folders' && target === 'service' && args.length === 1)
   process.stdout.write(`${service_folders(args[0]).join('\n')}\n`)
 else if (
@@ -47,7 +47,7 @@ else if (
   )
 else if (
   command === 'shell' &&
-  target === 'host' &&
+  target === 'halo' &&
   args.length === 2 &&
   args[0] === '--env'
 ) {
@@ -65,7 +65,7 @@ else if (
       sync_url_default: local_settings.cloud.services.sync_url,
       sites_url_default: local_settings.cloud.services.sites_url,
       api_port: local_settings.api_port,
-      host_port: local_settings.host_port,
+      halo_port: local_settings.halo_port,
       terminal_port: local_settings.terminal_port,
       gate_port: local_settings.gate_port,
       site_port: local_settings.site_port
@@ -73,5 +73,5 @@ else if (
   )
 else
   throw Error(
-    'usage: settings output [frontend|frontend-notes|--root path] | folders actor|host | files host | folders service sync|proxy|gate | shell deploy|host --env development|production | shell local'
+    'usage: settings output [frontend|frontend-notes|--root path] | folders actor|halo | files halo | folders service sync|proxy|gate | shell deploy|halo --env development|production | shell local'
   )

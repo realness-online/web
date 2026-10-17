@@ -1,5 +1,5 @@
 /**
- * hs-n4: a host stops only after its actors have moved off it.
+ * hs-n4: a halo stops only after its actors have moved off it.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -9,24 +9,24 @@ const fixtures = (actors = []) => {
   const asked = []
   const api = { call: async () => JSON.stringify({ actors }) }
   const placements = {
-    release: async host => {
-      asked.push(`release ${host}`)
+    release: async halo => {
+      asked.push(`release ${halo}`)
       return actors.length
     }
   }
-  const host = {
+  const halo = {
     stop: async name => asked.push(`stop ${name}`),
     drop: async name => asked.push(`drop ${name}`)
   }
-  return { asked, api, placements, host }
+  return { asked, api, placements, halo }
 }
 
-test('a host still holding an actor is not retired', async () => {
-  const { asked, api, placements, host } = fixtures([
+test('a halo still holding an actor is not retired', async () => {
+  const { asked, api, placements, halo } = fixtures([
     { id: 'a-1', state: 'running' },
     { id: 'a-2', state: 'idle' }
   ])
-  await assert.rejects(retire(api, placements, host, 'realness-1'), error => {
+  await assert.rejects(retire(api, placements, halo, 'realness-1'), error => {
     assert.ok(error instanceof RetireError)
     assert.match(error.message, /realness-1 still holds 2 actor\(s\): a-1, a-2/)
     return true
@@ -34,13 +34,13 @@ test('a host still holding an actor is not retired', async () => {
   assert.deepEqual(asked, [], 'nothing is released or stopped')
 })
 
-test('a host with no live actor stops, and its people are released to move', async () => {
-  const { asked, api, placements, host } = fixtures([
+test('a halo with no live actor stops, and its people are released to move', async () => {
+  const { asked, api, placements, halo } = fixtures([
     { id: 'a-1', state: 'incomplete' }
   ])
-  const result = await retire(api, placements, host, 'realness-1')
+  const result = await retire(api, placements, halo, 'realness-1')
   assert.deepEqual(result, {
-    host: 'realness-1',
+    halo: 'realness-1',
     actors: 1,
     released: 1,
     deleted: false
@@ -48,24 +48,24 @@ test('a host with no live actor stops, and its people are released to move', asy
   assert.deepEqual(asked, ['release realness-1', 'stop realness-1'])
 })
 
-test('--delete takes the host away instead of stopping it', async () => {
-  const { asked, api, placements, host } = fixtures([])
-  const result = await retire(api, placements, host, 'realness-2', {
+test('--delete takes the halo away instead of stopping it', async () => {
+  const { asked, api, placements, halo } = fixtures([])
+  const result = await retire(api, placements, halo, 'realness-2', {
     delete: true
   })
   assert.equal(result.deleted, true)
   assert.deepEqual(asked, ['release realness-2', 'drop realness-2'])
 })
 
-test('a host that does not answer is an error, not a retirement', async () => {
+test('a halo that does not answer is an error, not a retirement', async () => {
   const api = {
     call: async () => {
       throw new Error('ssh refused')
     }
   }
-  const { asked, placements, host } = fixtures([])
+  const { asked, placements, halo } = fixtures([])
   await assert.rejects(
-    retire(api, placements, host, 'realness-1'),
+    retire(api, placements, halo, 'realness-1'),
     /ssh refused/
   )
   assert.deepEqual(asked, [])

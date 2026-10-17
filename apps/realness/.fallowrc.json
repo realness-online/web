@@ -8,18 +8,31 @@
     "**/*.check.js",
     "tests/**/*.check.js",
     "src/settings/cli.js",
-    "server/host/app.js",
-    "server/host/clients/login.js",
+    "server/halo/app.js",
+    "server/halo/main.js",
+    "server/halo/clients/login.js",
     "server/*/scripts/*.js",
     "tools/control/scripts/*.js",
     "tools/control/bin/capacity-sample.js",
     "tools/desktop/entry.ts",
     "tools/publish/renderer/serve.js",
-    "server/host/guest/realness-serve.js",
+    "server/halo/guest/realness-serve.js",
     "tools/control/escape-probe/server.js",
     "themes/load.js",
     "themes/adapters/*.js",
-    "themes/*/palette.css"
+    "themes/*/palette.css",
+    "frontend/vite.config.js",
+    "frontend/vite.prerender.config.js",
+    "frontend/workers.config.js",
+    "frontend/public/push-handlers.js",
+    "src/app/prerender/entry-server.js",
+    "server/sync/bin/realness.js",
+    "tools/cli/bin/*.js",
+    "frontend/packages/*/src/index.js",
+    "frontend/packages/store/src/firebase.js",
+    "frontend/packages/store/src/local-only.js",
+    "scripts/s9-check.js",
+    "scripts/z8-check.js"
   ],
   "ignorePatterns": [
     "**/artifacts/**",
@@ -29,22 +42,35 @@
     "**/public/wasm/**",
     "**/docs/generated/**"
   ],
-  "ignoreDependencies": ["stylus", "vue-eslint-parser"],
+  "ignoreDependencies": [
+    "stylus",
+    "vue-eslint-parser",
+    "eslint-plugin-compat",
+    "@lhci/cli",
+    "@earendil-works/pi-ai",
+    "@earendil-works/pi-coding-agent",
+    "@realness.online/itemid",
+    "@realness.online/store",
+    "@realness.online/thoughts",
+    "template-for-polyfill"
+  ],
+  "ignoreUnresolvedImports": [
+    "/scripts/template-for-polyfill.js",
+    "/scripts/watch-for-updates.js",
+    "**/targets.json"
+  ],
   "rules": {
     "unused-files": "warn",
     "unused-exports": "warn",
     "unused-types": "off",
+    "unused-class-members": "warn",
+    "duplicate-exports": "warn",
+    "circular-dependencies": "warn",
     "unresolved-imports": "warn"
   },
   "overrides": [
     {
-      "files": [
-        "frontend/tests/**/*.js",
-        "frontend/tests/**/*.spec.js",
-        "**/test/**/*.js",
-        "**/*.test.js",
-        "**/tests/mocks/**"
-      ],
+      "files": ["**/tests/**", "**/test/**", "**/*.spec.js", "**/*.test.js"],
       "rules": {
         "unused-exports": "off",
         "unused-files": "off"
@@ -73,10 +99,6 @@
   },
   "ignoreExports": [
     {
-      "file": "src/app/use/layer.js",
-      "exports": ["*"]
-    },
-    {
       "file": "src/app/utils/opacity.js",
       "exports": ["*"]
     },
@@ -86,14 +108,6 @@
     },
     {
       "file": "src/app/utils/colors.js",
-      "exports": ["*"]
-    },
-    {
-      "file": "src/app/use/directory-processor.js",
-      "exports": ["*"]
-    },
-    {
-      "file": "src/app/use/optimize.js",
       "exports": ["*"]
     },
     {
@@ -128,5 +142,38 @@
       "file": "src/app/use/vectorize.js",
       "exports": ["*"]
     }
-  ]
+  ],
+  "regression": {
+    "baseline":     {
+      "analysisIdentity": {
+        "mode": "syntactic",
+        "semantic_schema_version": 1,
+        "capabilities": [],
+        "project_config_hash": "",
+        "backend_family": "",
+        "completeness": "complete"
+      },
+      "totalIssues": 42,
+      "unusedFiles": 0,
+      "unusedExports": 0,
+      "unusedTypes": 0,
+      "unusedDependencies": 0,
+      "unusedDevDependencies": 0,
+      "unusedOptionalDependencies": 0,
+      "unusedEnumMembers": 0,
+      "unusedClassMembers": 19,
+      "unresolvedImports": 0,
+      "unlistedDependencies": 0,
+      "duplicateExports": 10,
+      "circularDependencies": 10,
+      "reExportCycles": 0,
+      "typeOnlyDependencies": 0,
+      "testOnlyDependencies": 0,
+      "devDependenciesInProduction": 3,
+      "boundaryViolations": 0,
+      "boundaryCoverageViolations": 0,
+      "boundaryCallViolations": 0,
+      "policyViolations": 0
+    }
+  }
 }

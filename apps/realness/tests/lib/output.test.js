@@ -9,7 +9,7 @@ const scratch = new URL(
   import.meta.url
 ).pathname
 
-test('a harness gets its artifacts and a host keeps dist', () => {
+test('a harness gets its artifacts and a halo keeps dist', () => {
   rm_sync(scratch, { recursive: true, force: true })
   const harness = join(scratch, 'harness')
   const project = join(harness, 'work', 'realness')

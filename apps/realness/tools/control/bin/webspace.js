@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 /**
- * realness - run hosts, and the actors in them.
+ * realness - run halos, and the actors in them.
  *
- * An environment says *where hosts live*, not *which command you may run*:
+ * An environment says *where halos live*, not *which command you may run*:
  *
  *   local        a Linux VM on this Mac, made by Lima
  *   development  a VM in realness-development, made by gcloud
  *
  * Both implement the same verbs, so every command works in either and only the
- * meaning of "a host" changes.
+ * meaning of "a halo" changes.
  *
  *   realness local setup                      once per Mac: the Lima VM and artifacts
  *   realness local build                      stage the harness, build the template
  *
- *   realness <env> host up [<name>] [--smoke]     make a host, put the code on it, serve
- *   realness <env> host restart <name>            push the code and re-serve
- *   realness <env> host down <name> [--delete] [--no-drain]
- *   realness <env> host drain <name> [--delete]   export every actor to the bucket
- *   realness <env> host list
- *   realness <env> host status [<name>] [--json]
- *   realness <env> probe [<type>:<zone> ...]      which zones can make a host now
+ *   realness <env> halo up [<name>] [--smoke]     make a halo, put the code on it, serve
+ *   realness <env> halo restart <name>            push the code and re-serve
+ *   realness <env> halo down <name> [--delete] [--no-drain]
+ *   realness <env> halo drain <name> [--delete]   export every actor to the bucket
+ *   realness <env> halo list
+ *   realness <env> halo status [<name>] [--json]
+ *   realness <env> probe [<type>:<zone> ...]      which zones can make a halo now
  *
  * The environment is the first word and is required: no default and no
  * environment variable, so a typo fails instead of running somewhere unintended.
@@ -43,15 +43,15 @@ import {
   down as gcp_down,
   restart as gcp_restart,
   revoke as gcp_revoke
-} from '../../../src/control/host-gcp.js'
+} from '../../../src/control/halo-gcp.js'
 import {
   up as lima_up,
   down as lima_down,
   restart as lima_restart
-} from '../../../src/control/host-lima.js'
+} from '../../../src/control/halo-lima.js'
 import * as drain from '../../../src/control/drain.js'
 import { probe } from '../../../src/control/probe.js'
-import { host_status, format_status } from '../../../src/control/status.js'
+import { halo_status, format_status } from '../../../src/control/status.js'
 import {
   set_json_output,
   result,
@@ -63,7 +63,7 @@ import {
   admin_logout
 } from '../../../src/control/auth.js'
 import * as reads from '../../../src/control/reads.js'
-import { OPERATOR_START_MS } from '../../../src/sync/host-lifecycle.js'
+import { OPERATOR_START_MS } from '../../../src/sync/halo-lifecycle.js'
 import * as cloud from '../../../src/control/cloud-reads.js'
 import { gather, overview_text } from '../../../src/control/overview.js'
 import { attention } from '../../../src/control/attention.js'
@@ -82,35 +82,37 @@ import { out_path } from '#root/src/settings/output.js'
 
 let json_output = false
 
-const USAGE = `usage: realness <local|development> <command> [options]
+const USAGE = `usage: realness <local|development|production> <command> [options]
 
   setup                        local only: the Lima VM, artifacts, a boot check
   build                        local only: stage the harness, build the template
 
-  host up [<name>] [--smoke] [--expire=2h]  make a host, put the code on it, serve (~3 min in GCP)
-  host restart <name>          push the code and re-serve
-  host down <name> [--delete]  park it, or drain and delete
-  host recover <name> [--yes]  recreate a failed host's actors elsewhere (hs-f3)
-  host memory <actor>          what one actor costs the host, by stage (hs-mem)
-  host hot                     which hosts are over their limits (hs-hot)
-  host scale --report <file>   one host or a swarm, from measured capacity (hs-d1)
-  host move <phone> <host>     move one actor to another host (hs-n3)
-  host retire <name> [--delete] stop a host whose actors have moved (hs-n4)
-  host lockdown [--apply]      ssh through IAP only; host API from the gate subnet (pr3)
-  host revoke <name>           fence a failed host: sync refuses its writes (hs-f2)
-  host drain <name> [--delete] export every actor to the bucket
-  host list                    the hosts this environment has
-  host status [<name>] [--json] read last-seen host records through sync
+  halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
+  halo restart <name>          push the code and re-serve
+  halo down <name> [--delete]  park it, or drain and delete
+  halo recover <name> [--yes]  recreate a failed halo's actors elsewhere (hs-f3)
+  halo memory <actor>          what one actor costs the halo, by stage (hs-mem)
+  halo hot                     which halos are over their limits (hs-hot)
+  halo scale --report=<file>   one halo or a swarm, from measured capacity (hs-d1)
+  halo move <phone> <halo>     move one actor to another halo (hs-n3)
+  halo retire <name> [--delete] stop a halo whose actors have moved (hs-n4)
+  halo lockdown [--apply]      ssh through IAP only; halo API from the gate subnet (pr3)
+  halo revoke <name>           fence a failed halo: sync refuses its writes (hs-f2)
+  halo drain <name> [--delete] export every actor to the bucket
+  halo migrate                 copy legacy records and keys to halo paths
+  halo list                    the halos this environment has
+  halo status [<name>] [--json] read last-seen halo records through sync
+
 
   admin login|logout|whoami    browser sign-in; sync verifies admin access
   admins list                  who sync treats as a global admin (admins.html)
   admins init                  first admin from person.local.html, only if none exist
   admins add <phone> [name] [--yes]   dry-run unless --yes; bucket credentials
   admins remove <phone> [--yes]       refuses to remove the last admin
-  actor list | actor show <id> actors from the hosts' last reports
-  actor idle|stop <id>         ask its host; idle keeps memory, stop keeps disk
+  actor list | actor show <id> actors from the halos' last reports
+  actor idle|stop <id>         ask its halo; idle keeps memory, stop keeps disk
   loop list | loop show <id>   loop records
-  loop stop <id>               ask the host to stop the loop
+  loop stop <id>               ask the halo to stop the loop
   person <phone>               one person's actors, loops, and usage
   usage <phone> [--day=DATE]   one UTC day of the ledger; default today
   limit <phone>                limits, use, and what is left: today and month
@@ -122,26 +124,26 @@ const USAGE = `usage: realness <local|development> <command> [options]
   reconcile                    ledger vs OpenRouter; GCP bill vs expected services and spikes
   --json                      one JSON result; progress goes to stderr
 
-  probe [<type>:<zone> ...]    development only: which zones can make a host right now
+  probe [<type>:<zone> ...]    development only: which zones can make a halo right now
 
-  local: host up                       lima start, guest-setup, dev-stack
-  development: host up realness-2 --smoke    disk, instance, volume, bootstrap, smoke, serve
+  local: halo up                       lima start, guest-setup, dev-stack
+  development: halo up realness-2 --smoke    disk, instance, volume, bootstrap, smoke, serve
 `
 
 /** Flags come after the subcommand; only a few are booleans. */
 const parseFlags = args => {
   const flags = {}
   const rest = []
-  for (const arg of args) {
+  for (const arg of args)
     if (arg.startsWith('--')) {
       const [key, ...value] = arg.slice(2).split('=')
       flags[key] = value.length ? value.join('=') : true
     } else rest.push(arg)
-  }
+
   return { flags, rest }
 }
 
-/** A host name is required for everything but `up`. */
+/** A halo name is required for everything but `up`. */
 /** hs-mem: the stages an actor is measured in. */
 const MEMORY_STAGES = [
   { name: 'as created', run: '' },
@@ -149,20 +151,20 @@ const MEMORY_STAGES = [
 ]
 
 /**
- * hs-mem: one reading of an actor. The host side is the Firecracker process
- * Pss, which is what the host cannot give to another actor; the guest side is
+ * hs-mem: one reading of an actor. The halo side is the Firecracker process
+ * Pss, which is what the halo cannot give to another actor; the guest side is
  * its own MemAvailable, read through the actor API.
  */
-const sample_actor = async (cloud, config, host, actor, api) => {
+const sample_actor = async (cloud, config, halo, actor, api) => {
   const pid = (
     await cloud.call([
-      ...cloud.sshArgs(host, `pgrep -f 'firecracker.*${actor}' | head -1`),
+      ...cloud.sshArgs(halo, `pgrep -f 'firecracker.*${actor}' | head -1`),
       '--quiet'
     ])
   ).trim()
   if (!/^\d+$/.test(pid)) throw new Error(`no firecracker process for ${actor}`)
   const rolled = await cloud.call([
-    ...cloud.sshArgs(host, `cat /proc/${pid}/smaps_rollup`),
+    ...cloud.sshArgs(halo, `cat /proc/${pid}/smaps_rollup`),
     '--quiet'
   ])
   const pss = /^Pss:\s+(\d+)/m.exec(rolled)
@@ -184,7 +186,7 @@ const sample_actor = async (cloud, config, host, actor, api) => {
   ).toString()
   const [total, available, ...top] = text.trim().split('\n')
   return {
-    host_mib: Math.round(Number(pss[1]) / 1024),
+    halo_mib: Math.round(Number(pss[1]) / 1024),
     guest_used_mib: Math.round((Number(total) - Number(available)) / 1024),
     top: top.map(line =>
       line
@@ -199,14 +201,14 @@ const fraction = value =>
   Number.isFinite(Number(value)) ? Number(value) : null
 
 /** The record reports bytes; the share in use is what a limit compares. */
-const used_fraction = host => {
-  const total = Number(host.mem_total)
-  const free = Number(host.mem_free)
+const used_fraction = halo => {
+  const total = Number(halo.mem_total)
+  const free = Number(halo.mem_free)
   if (!total || !Number.isFinite(free)) return null
   return 1 - free / total
 }
 
-/** hs-hot: when a host counts as crowded. */
+/** hs-hot: when a halo counts as crowded. */
 const HOT_LIMITS = { cpu_fraction: 0.9, mem_used_fraction: 0.9, actors: 30 }
 
 /** The placement records live in sync's bucket, in the list/read/remove shape. */
@@ -232,7 +234,7 @@ const placement_of = async (phone, gcs) => {
   const held = await gcs.get(placement_key(phone))
   const placement = held ? read_placement(held.body.toString('utf8')) : null
   if (!placement) throw new Error(`no placement for ${phone}`)
-  return placement.host
+  return placement.halo
 }
 
 /** The one live actor this person owns, from what the fleet last reported. */
@@ -247,8 +249,8 @@ const running_actor = async (envName, phone) => {
 }
 
 /**
- * hs-n3: bring the export down from the source host and put it in the bucket,
- * the way drain ships one. The host holds no storage credentials, so the copy
+ * hs-n3: bring the export down from the source halo and put it in the bucket,
+ * the way drain ships one. The halo holds no storage credentials, so the copy
  * passes through here.
  */
 const ship_bundle = async (name, config, actor, object) => {
@@ -258,7 +260,7 @@ const ship_bundle = async (name, config, actor, object) => {
   const pulled = await attempt('gcloud', [
     'compute',
     'scp',
-    `${name}:${config.hostExports ?? '/opt/fc/actors/mnt/exports'}/${actor}/artifacts.tar.gz`,
+    `${name}:${config.haloExports ?? '/opt/fc/actors/mnt/exports'}/${actor}/artifacts.tar.gz`,
     archive,
     `--zone=${config.zone}`,
     '--quiet'
@@ -277,18 +279,18 @@ const ship_bundle = async (name, config, actor, object) => {
 }
 
 /**
- * hs-n5: the actors every host last reported through sync, for the drain
- * confirmation. A host that has not reported is simply absent.
+ * hs-n5: the actors every halo last reported through sync, for the drain
+ * confirmation. A halo that has not reported is simply absent.
  */
 const fleet_reader = envName => async () => {
   const sync = await reads.reader(envName)
   const rows = await reads.actors(sync)
-  const by_host = new Map()
+  const by_halo = new Map()
   for (const actor of rows) {
-    if (!by_host.has(actor.host)) by_host.set(actor.host, [])
-    by_host.get(actor.host).push(actor)
+    if (!by_halo.has(actor.halo)) by_halo.set(actor.halo, [])
+    by_halo.get(actor.halo).push(actor)
   }
-  return [...by_host].map(([name, actors]) => ({ name, actors }))
+  return [...by_halo].map(([name, actors]) => ({ name, actors }))
 }
 
 const requireName = (rest, usage) => {
@@ -348,12 +350,12 @@ const main = async argv => {
     case 'build':
       if (!local)
         throw new Error(
-          'build makes the local template; cloud hosts boot the fleet image'
+          'build makes the local template; cloud halos boot the fleet image'
         )
       return finish(await dev.build(hosts.target))
 
-    case 'host':
-      return finish(await hostCommand(hosts, config, args, flags, envName))
+    case 'halo':
+      return finish(await halo_command(hosts, config, args, flags, envName))
 
     case 'admin': {
       if (args.length !== 1)
@@ -540,7 +542,7 @@ const main = async argv => {
     case 'probe':
       if (local)
         throw new Error(
-          'probe asks GCP which zones have capacity; dev has one local host'
+          'probe asks GCP which zones have capacity; dev has one local halo'
         )
       return finish(await probe(config, args))
 
@@ -561,8 +563,8 @@ const with_intent = async (envName, name, work) => {
   return done
 }
 
-/** Host verbs that create, change, or remove cloud resources. */
-export const CHANGES = [
+/** Halo verbs that create, change, or remove cloud resources. */
+const CHANGES = [
   'up',
   'restart',
   'down',
@@ -571,16 +573,17 @@ export const CHANGES = [
   'lockdown',
   'retire',
   'move',
-  'recover'
+  'recover',
+  'migrate'
 ]
 
-const hostCommand = async (hosts, config, args, flags, envName) => {
+const halo_command = async (hosts, config, args, flags, envName) => {
   const [action, ...rest] = args
   const changes =
     CHANGES.includes(action) && !(action === 'lockdown' && !flags.apply)
   if (config.approval && changes && !flags.approved)
     throw new Error(
-      `${envName} host ${action} changes production; rerun with --approved`
+      `${envName} halo ${action} changes production; rerun with --approved`
     )
   const { target, mod } = hosts
 
@@ -603,12 +606,12 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     case 'memory': {
       const actor = requireName(
         rest,
-        'usage: realness <env> host memory <actor> [host]'
+        'usage: realness <env> halo memory <actor> [halo]'
       )
       const host_name = rest[1] ?? config.hostName ?? 'realness-1'
       const { measure } = await import('../../../src/control/memory.js')
       const { remoteApi } = await import('../../../src/control/api.js')
-      if (is_local(config)) throw new Error('memory measures a cloud host')
+      if (is_local(config)) throw new Error('memory measures a cloud halo')
       const api = remoteApi(host_name, { zone: config.zone })
       return finish(
         await measure({
@@ -619,7 +622,7 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
               method: 'POST',
               body: { argv, timeout: 120 }
             }),
-          /** The host's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
+          /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
           sample: async () =>
             await sample_actor(target, config, host_name, actor, api)
         })
@@ -632,13 +635,13 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
       const report = typeof flags.report === 'string' ? flags.report : null
       if (!report)
         throw new Error(
-          'usage: realness <env> host scale --report <capacity report json> [--demand N]'
+          'usage: realness <env> halo scale --report=<capacity report json> [--demand=N]'
         )
       const measured = JSON.parse(await read_file(report, 'utf8'))
-      const actors_per_host =
-        Number(flags.demand) || Number(measured.actors_per_host ?? 0)
       const choice = scale_choice({
-        actors_per_host: Number(measured.actors_per_host ?? actors_per_host),
+        actors_per_halo: Number(
+          measured.actors_per_halo ?? measured.actors_per_host ?? 0
+        ),
         hourly_cost: Number(
           flags['hourly-cost'] ??
             measured.hourly_cost ??
@@ -651,41 +654,41 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     }
 
     case 'hot': {
-      const { hot_hosts, hot_text, relieve } =
+      const { hot_halos, hot_text, relieve } =
         await import('../../../src/control/hot.js')
       const sync = await reads.reader(envName)
       const fleet = await reads.hosts(sync)
       const rows = fleet.map(row => ({
-        name: row.host.name,
-        cpu_fraction: fraction(row.host.cpu_fraction),
+        name: row.halo.name,
+        cpu_fraction: fraction(row.halo.cpu_fraction),
         /** The record carries bytes, not a fraction: mem_free of mem_total. */
-        mem_used_fraction: used_fraction(row.host),
+        mem_used_fraction: used_fraction(row.halo),
         actors: row.actors.length
       }))
-      const hot = hot_hosts(rows, HOT_LIMITS)
+      const hot = hot_halos(rows, HOT_LIMITS)
       if (!flags.owner)
         return finish({
-          hosts: hot,
-          text: hot.length ? hot_text(hot) : 'no host is over its limits'
+          halos: hot,
+          text: hot.length ? hot_text(hot) : 'no halo is over its limits'
         })
-      const crowded = fleet.find(row => row.host.name === hot[0]?.host)
-      if (!crowded) throw new Error('no crowded host to relieve')
+      const crowded = fleet.find(row => row.halo.name === hot[0]?.halo)
+      if (!crowded) throw new Error('no crowded halo to relieve')
       const plan = relieve(
         rows,
         HOT_LIMITS,
-        { host: crowded.host.name, actors: crowded.actors },
+        { halo: crowded.halo.name, actors: crowded.actors },
         String(flags.owner)
       )
       return finish({
         ...plan,
-        text: `${hot_text([plan])}\n\nrun: realness ${envName} host move ${plan.owner} ${plan.to}`
+        text: `${hot_text([plan])}\n\nrun: realness ${envName} halo move ${plan.owner} ${plan.to}`
       })
     }
 
     case 'recover': {
       const name = requireName(
         rest,
-        'usage: realness <env> host recover <name> [--yes]'
+        'usage: realness <env> halo recover <name> [--yes]'
       )
       if (!flags.yes)
         throw new Error(
@@ -694,28 +697,28 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
         )
       const { remoteApi } = await import('../../../src/control/api.js')
       const { recover } = await import('../../../src/control/recover.js')
-      const { revoke } = await import('../../../src/control/host-gcp.js')
+      const { revoke } = await import('../../../src/control/halo-gcp.js')
       const { reassign } = await import('../../../src/gate/placement.js')
       const sync = await reads.reader(envName)
       const fleet = await reads.hosts(sync)
-      const failed = fleet.find(host => host.host.name === name)
-      if (!failed) throw new Error(`no host record for ${name}`)
+      const failed = fleet.find(row => row.halo.name === name)
+      if (!failed) throw new Error(`no halo record for ${name}`)
       const alive = fleet
-        .filter(host => host.host.name !== name)
-        .map(host => host.host.name)
-      const survivors = alive.map(host => ({
-        name: host,
-        actors: fleet.find(row => row.host.name === host)?.actors?.length ?? 0
+        .filter(row => row.halo.name !== name)
+        .map(row => row.halo.name)
+      const survivors = alive.map(halo => ({
+        name: halo,
+        actors: fleet.find(row => row.halo.name === halo)?.actors?.length ?? 0
       }))
       const gcs = placement_store(envName)
-      const by_host = new Map(survivors.map(host => [host.name, host.actors]))
+      const by_halo = new Map(survivors.map(halo => [halo.name, halo.actors]))
       return finish(
         await recover(name, {
           reason: `last reported ${failed.age_s}s ago`,
           actors: failed.actors,
-          hosts: alive,
-          api: host => remoteApi(host, { zone: config.zone }),
-          revoke: host => revoke(config, host),
+          halos: alive,
+          api: halo => remoteApi(halo, { zone: config.zone }),
+          revoke: halo => revoke(config, halo),
           bundle: async id => {
             const object = `gs://${config.bucket}/actors/${id}/bundle.tar.gz`
             const found = await attempt('gcloud', [
@@ -727,23 +730,28 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
             ])
             return found.ok && found.out.trim() ? { bundle: object } : null
           },
-          /** Drain removed the export folder from the host it came from, so the bundle is put back before restore reads it. */
-          restore: async (host, id, owner, bundle) => {
+          /** Drain removed the export folder from the halo it came from, so the bundle is put back before restore reads it. */
+          restore: async (report_halo, id, owner, bundle) => {
             const { remoteApi: api_for } =
               await import('../../../src/control/api.js')
             const { place_bundle } =
               await import('../../../src/control/bundle.js')
-            await place_bundle(target, config, host, id, { object: bundle })
+            await place_bundle(target, config, report_halo, id, {
+              object: bundle
+            })
             return JSON.parse(
-              await api_for(host, { zone: config.zone }).call('/v1/actors', {
-                method: 'POST',
-                body: { owner, restore_from: id }
-              })
+              await api_for(report_halo, { zone: config.zone }).call(
+                '/v1/actors',
+                {
+                  method: 'POST',
+                  body: { owner, restore_from: id }
+                }
+              )
             )
           },
-          place: (who, host) =>
-            reassign(who, host, { read: gcs.read, write: gcs.write }),
-          load: async host => by_host.get(host) ?? 0
+          place: (who, halo) =>
+            reassign(who, halo, { read: gcs.read, write: gcs.write }),
+          load: async halo => by_halo.get(halo) ?? 0
         })
       )
     }
@@ -751,7 +759,7 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     case 'move': {
       const [phone, target_host] = rest
       if (!phone || !target_host)
-        throw new Error('usage: realness <env> host move <phone> <host>')
+        throw new Error('usage: realness <env> halo move <phone> <halo>')
       const { remoteApi } = await import('../../../src/control/api.js')
       const { move } = await import('../../../src/control/move.js')
       const { reassign } = await import('../../../src/gate/placement.js')
@@ -769,9 +777,9 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
               ...(await ship_bundle(where, config, id, object))
             }
           },
-          place: (who, host) =>
-            reassign(who, host, { read: gcs.read, write: gcs.write }),
-          host: target_host,
+          place: (who, halo) =>
+            reassign(who, halo, { read: gcs.read, write: gcs.write }),
+          halo: target_host,
           release: true
         })
       )
@@ -780,7 +788,7 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     case 'retire': {
       const name = requireName(
         rest,
-        'usage: realness <env> host retire <name> [--delete]'
+        'usage: realness <env> halo retire <name> [--delete]'
       )
       const { remoteApi } = await import('../../../src/control/api.js')
       const { retire } = await import('../../../src/control/retire.js')
@@ -791,8 +799,8 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
         await retire(
           remoteApi(name, { zone: config.zone }),
           {
-            release: host =>
-              release_placements(host, {
+            release: halo =>
+              release_placements(halo, {
                 list: () => store.list(),
                 read: key => store.get(key),
                 remove: key => store.delete(key)
@@ -819,22 +827,22 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     }
 
     case 'revoke': {
-      const name = requireName(rest, `usage: realness <env> host revoke <name>`)
-      if (is_local(config)) throw new Error('revoke is for cloud hosts')
+      const name = requireName(rest, `usage: realness <env> halo revoke <name>`)
+      if (is_local(config)) throw new Error('revoke is for cloud halos')
       return mod.revoke(config, name)
     }
 
     case 'down': {
       const name = requireName(
         rest,
-        `usage: realness <env> host down <name> [--delete]`
+        `usage: realness <env> halo down <name> [--delete]`
       )
-      if (flags.delete && !flags['no-drain'] && !is_local(config)) {
+      if (flags.delete && !flags['no-drain'] && !is_local(config))
         return drain.drain(target, config, name, {
           delete: true,
           fleet: fleet_reader(envName)
         })
-      }
+
       if (flags.delete)
         return mod.down(target, config, name, { mode: 'delete' })
       const sync = await reads.reader(envName)
@@ -847,20 +855,20 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     case 'restart': {
       const name = requireName(
         rest,
-        'usage: realness <env> host restart <name>'
+        'usage: realness <env> halo restart <name>'
       )
       return with_intent(envName, name, () => mod.restart(target, config, name))
     }
 
     case 'drain': {
-      if (is_local(config)) {
+      if (is_local(config))
         throw new Error(
-          "there is nothing to drain in dev: the host is this Mac's VM"
+          "there is nothing to drain in dev: the halo is this Mac's VM"
         )
-      }
+
       const name = requireName(
         rest,
-        'usage: realness development host drain <name> [--delete]'
+        'usage: realness development halo drain <name> [--delete]'
       )
       return drain.drain(target, config, name, {
         delete: Boolean(flags.delete)
@@ -868,21 +876,21 @@ const hostCommand = async (hosts, config, args, flags, envName) => {
     }
 
     case 'list':
-      return listHosts(target, config, hosts.kind)
+      return listHalos(target, config, hosts.kind)
 
     case 'status': {
-      const records = await host_status(envName, rest[0])
+      const records = await halo_status(envName, rest[0])
       return { records, text: format_status(records) }
     }
 
     default:
-      throw new Error(`unknown host command "${action ?? ''}"\n\n${USAGE}`)
+      throw new Error(`unknown halo command "${action ?? ''}"\n\n${USAGE}`)
   }
 }
 
-const listHosts = async (target, config, kind) => {
-  step(`${kind} hosts in ${config.project ?? config.vm}`)
-  if (kind === 'lima') return { host: config.vm }
+const listHalos = async (target, config, kind) => {
+  step(`${kind} halos in ${config.project ?? config.vm}`)
+  if (kind === 'lima') return { halo: config.vm }
 
   const names = await target.value(
     ['instances', 'list', '--filter=labels.app=realness'],

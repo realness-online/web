@@ -447,12 +447,12 @@ test('a global admin reads every loop and may only request a stop', async () => 
   )
 })
 
-test('a global admin reads host status; a person and a forger cannot', async () => {
-  const key = 'hosts/realness-1/status.html'
+test('a global admin reads halo status; a person and a forger cannot', async () => {
+  const key = 'halos/realness-1/status.html'
   await storage.put('admins.html', `<a href="tel:${B}">admin</a>`)
-  await storage.put(key, '<article itemscope itemtype="/host"></article>\n')
+  await storage.put(key, '<article itemscope itemtype="/halo"></article>\n')
   assert.equal(await status('GET', key, { headers: as(B) }), 200)
-  const hosts = await (await call('GET', 'hosts/', { headers: as(B) })).json()
+  const hosts = await (await call('GET', 'halos/', { headers: as(B) })).json()
   assert.deepEqual(hosts.folders, ['realness-1'])
   assert.equal(await status('GET', key, { headers: as(A) }), 403)
   assert.equal(

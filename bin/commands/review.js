@@ -11,7 +11,7 @@ export const reviewed = {
 
   'apps/realness/package.json#scripts.deploy:sync': ['Keep', 'Deploys the record service; documented by script path in .tooling.md.'],
   'apps/realness/package.json#scripts.deploy:proxy': ['Keep', 'Deploys the model proxy; documented by script path in .tooling.md.'],
-  'apps/realness/package.json#scripts.serve:host': ['Keep', 'Runs the host service locally.'],
+  'apps/realness/package.json#scripts.serve:halo': ['Keep', 'Runs the host service locally.'],
   'apps/realness/package.json#scripts.start:sync': ['Keep', 'Runs the record service locally.'],
   'apps/realness/package.json#scripts.start:proxy': ['Keep', 'Runs the model proxy locally.'],
   'apps/realness/package.json#scripts.check:google': ['Keep', 'Live check for Google sign-in.'],
@@ -38,10 +38,10 @@ export const reviewed = {
   'bin/pi-fork.js#rollback': ['Keep', 'Documented in work/pi/FORK.md; restores the prior launcher.'],
   'bin/session-format.js#convert': ['Keep', 'Four JSONL session files and two recovery backups remain.'],
 
-  'apps/realness/server/host/guest/realness-chrome#lease': ['Keep', 'Agent-browser leases a Chrome VM through this route.'],
-  'apps/realness/server/host/guest/realness-site#versions': ['Keep', 'Described in server/host/guest/realness-chat.md.'],
-  'apps/realness/server/host/guest/realness-site#restore <version>': ['Keep', 'Described in server/host/guest/realness-chat.md.'],
-  'apps/realness/server/host/guest/realness-site#remove': ['Keep', 'Described in server/host/guest/realness-chat.md.'],
+  'apps/realness/server/halo/guest/realness-chrome#lease': ['Keep', 'Agent-browser leases a Chrome VM through this route.'],
+  'apps/realness/server/halo/guest/realness-site#versions': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
+  'apps/realness/server/halo/guest/realness-site#restore <version>': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
+  'apps/realness/server/halo/guest/realness-site#remove': ['Keep', 'Described in server/halo/guest/realness-chat.md.'],
 
   'apps/realness/tools/cli/bin/realness.js#frontend build': ['Keep', 'Desktop frontend build; runs the pipeline in src/command/frontend-command.js.'],
   'apps/realness/tools/cli/bin/realness.js#frontend deploy --env <environment>': ['Keep', 'Desktop frontend deploy; used by the root ship script.'],

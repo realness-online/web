@@ -16,6 +16,9 @@ const SKIP = new Set([
   ".venv", "site-packages", "__pycache__", ".pytest_cache", ".mypy_cache", "tmp", "public",
 ])
 
+/** Files written by a tool, checked by their generator rather than by hand. */
+const GENERATED = ["apps/realness/src/app/wasm/tracer.js"]
+
 const EXT = new Set([".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx", ".vue", ".rs", ".css", ".styl", ".scss", ".html", ".sh", ".bash", ".zsh", ".py", ".lua"])
 
 const is_minified = (text) => {
@@ -32,6 +35,7 @@ const is_minified = (text) => {
 const hits = []
 const scan = (file) => {
   if (/\.test\.(js|ts|mjs|cjs)$/.test(file) || file.endsWith(".d.ts")) return
+  if (GENERATED.some(path => file.endsWith(path))) return
   const text = read_file_sync(file, "utf8")
   if (text.includes("\0") || is_minified(text)) return
   for (const range of comment_ranges(text, parse(file).ext)) {

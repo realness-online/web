@@ -20,21 +20,21 @@ import {
   sum_rows as proxy_sum_rows,
   usage_row
 } from '#root/src/proxy/usage.js'
-import { read_status as sync_read_status } from '#root/src/sync/host-status.js'
-import { status_html } from '#root/src/host/status.js'
-import { intent_now, lifecycle_html } from '#root/src/sync/host-lifecycle.js'
+import { read_status as sync_read_status } from '#root/src/sync/halo-status.js'
+import { status_html } from '#root/src/halo/status.js'
+import { intent_now, lifecycle_html } from '#root/src/sync/halo-lifecycle.js'
 import {
   billing_lines,
   cost_bars,
   frame,
-  host_lines,
+  halo_lines,
   interval_for,
   panel,
   resource_lines,
   spend_chart,
   sync_lines
 } from '../../src/command/watch-terminal.js'
-import { watch } from '../../src/command/watch-loop.js'
+import { in_place, watch } from '../../src/command/watch-loop.js'
 import { sync_records } from '../../src/command/command.js'
 
 const phone = '+15555550123'
@@ -60,7 +60,7 @@ const status_page = ({
   idle = '0',
   stopped = '0'
 } = {}) =>
-  `<article itemscope itemtype="/host"><meta itemprop="name" content="host-1"><meta itemprop="checked" content="${checked}"><meta itemprop="actors_running" content="${running}"><meta itemprop="actors_idle" content="${idle}"><meta itemprop="actors_stopped" content="${stopped}"></article>\n`
+  `<article itemscope itemtype="/halo"><meta itemprop="name" content="host-1"><meta itemprop="checked" content="${checked}"><meta itemprop="actors_running" content="${running}"><meta itemprop="actors_idle" content="${idle}"><meta itemprop="actors_stopped" content="${stopped}"></article>\n`
 
 const ledger = spent => ({ spent: async () => spent })
 
@@ -122,10 +122,10 @@ test("the watch reads the proxy's ledger rows exactly as the proxy writes them",
   )
 })
 
-test('the watch reads a host record exactly as the sync service does', () => {
+test('the watch reads a halo record exactly as the sync service does', () => {
   const html = status_html({
-    host: {
-      name: 'host-1',
+    halo: {
+      name: 'halo-1',
       checked: '2026-10-09T17:00:00.000Z',
       actors_running: 2
     },
@@ -182,13 +182,13 @@ test('the token names the person a watch reads, unless a person is named', () =>
   assert.equal(who_from(null), null)
 })
 
-test('a host record with no recent report is quiet, and its age is shown', async () => {
+test('a halo record with no recent report is quiet, and its age is shown', async () => {
   const now = Date.now()
   const old = new Date(now - 300_000).toISOString()
   const snapshot = await health_snapshot({
     store: store({
-      'can://hosts/': ['host-1/'],
-      'can://hosts/host-1/status.html': status_page({ checked: old })
+      'can://halos/': ['host-1/'],
+      'can://halos/host-1/status.html': status_page({ checked: old })
     }),
     token: claims(),
     ledger: ledger({
@@ -208,9 +208,9 @@ test('a planned park reads parked, never quiet', async () => {
   const old = new Date(now - 3_600_000).toISOString()
   const snapshot = await health_snapshot({
     store: store({
-      'can://hosts/': ['host-1/'],
-      'can://hosts/host-1/status.html': status_page({ checked: old }),
-      'can://hosts/host-1/lifecycle.html': lifecycle_html(
+      'can://halos/': ['host-1/'],
+      'can://halos/host-1/status.html': status_page({ checked: old }),
+      'can://halos/host-1/lifecycle.html': lifecycle_html(
         intent_now('parked', { now: now - 3_000_000 })
       )
     }),
@@ -224,12 +224,12 @@ test('a planned park reads parked, never quiet', async () => {
   assert.equal(snapshot.panels.hosts.rows[0].state, 'parked')
 })
 
-test('a host with running actors reports running, and no actors reports sleeping', async () => {
+test('a halo with running actors reports running, and no actors reports sleeping', async () => {
   const now = Date.now()
   const running = await health_snapshot({
     store: store({
-      'can://hosts/': ['host-1/'],
-      'can://hosts/host-1/status.html': status_page({
+      'can://halos/': ['host-1/'],
+      'can://halos/host-1/status.html': status_page({
         checked: new Date(now).toISOString()
       })
     }),
@@ -243,8 +243,8 @@ test('a host with running actors reports running, and no actors reports sleeping
   assert.equal(running.panels.hosts.rows[0].state, 'running')
   const asleep = await health_snapshot({
     store: store({
-      'can://hosts/': ['host-1/'],
-      'can://hosts/host-1/status.html': status_page({
+      'can://halos/': ['host-1/'],
+      'can://halos/host-1/status.html': status_page({
         checked: new Date(now).toISOString(),
         running: '0',
         stopped: '2'
@@ -263,8 +263,8 @@ test('a host with running actors reports running, and no actors reports sleeping
 test('one failing read fails only its own panel', async () => {
   const snapshot = await health_snapshot({
     store: store({
-      'can://hosts/': ['host-1/'],
-      'can://hosts/host-1/status.html': status_page()
+      'can://halos/': ['host-1/'],
+      'can://halos/host-1/status.html': status_page()
     }),
     token: claims(),
     ledger: {
@@ -410,8 +410,8 @@ test('a failed panel prints its error and the time of the last read', () => {
   assert.match(text, /last read 16:59:00Z/)
 })
 
-test("host lines carry each state's own color when color is on", () => {
-  const lines = host_lines(
+test("halo lines carry each state's own color when color is on", () => {
+  const lines = halo_lines(
     [
       {
         name: 'host-1',
@@ -575,7 +575,7 @@ test('missing billing data never presents a zero-dollar cloud total', () => {
   ).join('\n')
   assert.match(present, /MONTH \$5.47/)
   assert.match(present, /Firebase Hosting/)
-  assert.match(present, /Billing .* behind/)
+  assert.doesNotMatch(present, /behind/)
 })
 
 test('sync shows a summary and wraps full problem paths', () => {
@@ -665,18 +665,16 @@ test('main view shows charts and cloud power state without diagnostic noise', ()
     now: Date.parse('2026-10-11T18:00:00Z')
   })
   assert.match(text, /MONTH \$37.11/)
-  assert.match(text, /Billing 9h behind/)
+  assert.doesNotMatch(text, /behind/)
   assert.match(text, /Compute Engine \$36.32 #/)
-  assert.match(text, /chat-ui  RUNNING/)
+  assert.match(text, /chat-ui +\S+ RUNNING/)
   assert.match(text, /20 GB retained/)
   for (const noise of [
     'realness.billing.export',
-    'sleeping',
     'practice/',
     '2026-10',
     'UTC',
-    'No recorded model cost',
-    'HOSTS'
+    'No recorded model cost'
   ])
     assert.ok(!text.includes(noise), noise)
   assert.ok(!text.includes('j/k scroll'))
@@ -876,4 +874,49 @@ test('the loop draws a first frame, refreshes on the interval, and stops', async
   assert.ok(
     written.filter(text => text.includes('REALNESS SERVICE WATCH')).length >= 2
   )
+})
+
+test('frames draw in place without blanking the screen', () => {
+  const text = in_place('a\nb\n')
+  assert.equal(text, '\x1b[H\x1b[2Ka\n\x1b[2Kb\x1b[J')
+  assert.ok(!text.endsWith('\n'))
+  assert.ok(!text.includes('\x1b[2J'))
+})
+
+test('a resize redraws at the new width without reading services again', async () => {
+  const { EventEmitter } = await import('node:events')
+  const stdout = Object.assign(new EventEmitter(), {
+    columns: 100,
+    rows: 30,
+    written: [],
+    write(text) {
+      this.written.push(text)
+    }
+  })
+  const stdin = Object.assign(new EventEmitter(), {
+    setRawMode: () => {},
+    resume: () => {},
+    pause: () => {}
+  })
+  const controller = new AbortController()
+  let reads = 0
+  const loop = watch({
+    interval_ms: 60_000,
+    stdout,
+    stdin,
+    signal: controller.signal,
+    read: async () => {
+      reads++
+      return { panels: {} }
+    }
+  })
+  await new Promise(resolve => setImmediate(resolve))
+  stdout.columns = 30
+  stdout.emit('resize')
+  controller.abort()
+  await loop
+  assert.equal(reads, 1)
+  const resized = stdout.written[1].replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
+  assert.ok(resized.split('\n').every(line => [...line].length <= 30))
+  assert.equal(stdout.listenerCount('resize'), 0)
 })

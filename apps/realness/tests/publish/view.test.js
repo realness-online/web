@@ -151,7 +151,7 @@ test('an Obsidian cardlink fences renders as one link card, not source text', as
     'url: https://example.com/a-post',
     'title: "A Post & More"',
     'description: "What it says"',
-    'host: example.com',
+    'halo: example.com',
     'favicon: https://example.com/favicon.svg',
     'image: https://example.com/og.png',
     '```',

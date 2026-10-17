@@ -1,5 +1,5 @@
 /**
- * hs-n5: every actor has a home before its old host goes.
+ * hs-n5: every actor has a home before its old halo goes.
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
@@ -22,14 +22,14 @@ const fleet = [
   { name: 'realness-2', actors: [{ id: 'a-2', state: 'running' }] }
 ]
 
-test('an actor on the host being drained must appear on another host', () => {
+test('an actor on the halo being drained must appear on another halo', () => {
   const result = confirm('realness-1', leaving, fleet)
   assert.deepEqual(result.confirmed, [{ id: 'a-2', on: 'realness-2' }])
   assert.deepEqual(result.lost, ['a-1'])
   assert.deepEqual(result.skipped, ['a-3'], 'no disk means nothing to move')
 })
 
-test('a host with no home for an actor is refused, and names it', () => {
+test('a halo with no home for an actor is refused, and names it', () => {
   assert.throws(
     () => require_homes('realness-1', leaving, fleet),
     error => {
@@ -48,7 +48,7 @@ test('a host with no home for an actor is refused, and names it', () => {
   assert.deepEqual(require_homes('realness-1', whole, fleet).lost, [])
 })
 
-test('an actor still listed on its own host does not count as recovered', () => {
+test('an actor still listed on its own halo does not count as recovered', () => {
   const only_self = [
     { name: 'realness-1', actors: [{ id: 'a-1', state: 'running' }] }
   ]
@@ -57,7 +57,7 @@ test('an actor still listed on its own host does not count as recovered', () => 
   assert.deepEqual(result.confirmed, [])
 })
 
-test('the summary names each confirmed actor and its host', () => {
+test('the summary names each confirmed actor and its halo', () => {
   const text = confirm_text('realness-1')(confirm('realness-1', leaving, fleet))
   assert.match(text, /realness-1: 1 confirmed, 1 incomplete/)
   assert.match(text, /a-2 on realness-2/)

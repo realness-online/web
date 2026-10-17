@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test'
 import { randomUUID } from 'node:crypto'
 import { mkdir, rm } from 'node:fs/promises'
 import { disk } from '#root/src/can/disk.js'
-import { issue_host_pass } from '#root/src/sign-on/node/host-pass.js'
+import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { rights } from '../../src/sync/rights.js'
 import { sync_service } from '../../src/sync/server.js'
 import { out_path } from '#root/lib/output.js'
@@ -15,7 +15,7 @@ const stranger = '+15555550101'
 const dir = out_path(`sites-test-${randomUUID()}`)
 let server, base
 const pass = phone => ({
-  authorization: `Bearer ${issue_host_pass({ phone }, secret)}`
+  authorization: `Bearer ${issue_halo_pass({ phone }, secret)}`
 })
 const call = (method, path, { phone, body } = {}) =>
   fetch(`${base}/${path}`, { method, headers: phone ? pass(phone) : {}, body })
@@ -29,7 +29,7 @@ before(async () => {
     rights: rights(storage),
     project: 'none',
     certs: async () => ({}),
-    host_pass_secret: secret,
+    halo_pass_secret: secret,
     log: () => {}
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -147,7 +147,7 @@ test('revision, restore and removal keep the site ID and previous files', async 
   assert.equal(await (await call('GET', `sites/${id}/`)).text(), 'second')
 })
 
-test("a host pass writes only its owner's site source", async () => {
+test("a halo pass writes only its owner's site source", async () => {
   const source = `people/${owner}/work/site/index.html`
   assert.equal(
     await status('PUT', source, { phone: owner, body: 'editable' }),

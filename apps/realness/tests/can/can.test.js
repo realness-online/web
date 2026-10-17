@@ -159,75 +159,75 @@ test('loops: admins read all and may only request a stop', () => {
   assert.equal(can(admin, 'write', 'admins.html'), false)
 })
 
-test('hosts: a global admin reads host status; nobody writes it through sync', () => {
+test('halos: a global admin reads halo status; nobody writes it through sync', () => {
   const admin = { phone: B, admin: true }
-  assert.equal(can(admin, 'list', 'hosts/'), true)
-  assert.equal(can(admin, 'get', 'hosts/realness-1/status.html'), true)
-  assert.equal(can(admin, 'write', 'hosts/realness-1/status.html'), false)
-  assert.equal(can(admin, 'delete', 'hosts/realness-1/status.html'), false)
-  assert.equal(can(scott, 'get', 'hosts/realness-1/status.html'), false)
-  assert.equal(can(stranger, 'list', 'hosts/'), false)
-  assert.equal(can(box, 'list', 'hosts/'), false)
+  assert.equal(can(admin, 'list', 'halos/'), true)
+  assert.equal(can(admin, 'get', 'halos/realness-1/status.html'), true)
+  assert.equal(can(admin, 'write', 'halos/realness-1/status.html'), false)
+  assert.equal(can(admin, 'delete', 'halos/realness-1/status.html'), false)
+  assert.equal(can(scott, 'get', 'halos/realness-1/status.html'), false)
+  assert.equal(can(stranger, 'list', 'halos/'), false)
+  assert.equal(can(box, 'list', 'halos/'), false)
 })
 
-test('lifecycle: admins and the named host record intent; nobody deletes it', () => {
+test('lifecycle: admins and the named halo record intent; nobody deletes it', () => {
   const admin = { phone: B, admin: true }
-  const key = 'hosts/realness-1/lifecycle.html'
+  const key = 'halos/realness-1/lifecycle.html'
   assert.equal(can(admin, 'write', key), true)
   assert.equal(can(admin, 'get', key), true)
   assert.equal(can(admin, 'delete', key), false)
-  assert.equal(can({ host_name: 'realness-1' }, 'write', key), true)
-  assert.equal(can({ host_name: 'realness-2' }, 'write', key), false)
+  assert.equal(can({ halo_name: 'realness-1' }, 'write', key), true)
+  assert.equal(can({ halo_name: 'realness-2' }, 'write', key), false)
   assert.equal(can(scott, 'write', key), false)
   assert.equal(can(scott, 'get', key), false)
 })
 
-test('actor requests: admins write them, only the named host reads them', () => {
+test('actor requests: admins write them, only the named halo reads them', () => {
   const admin = { phone: B, admin: true }
-  const host = { host_name: 'realness-1' }
-  const key = 'hosts/realness-1/requests/a-0123456789ab.html'
+  const halo = { halo_name: 'realness-1' }
+  const key = 'halos/realness-1/requests/a-0123456789ab.html'
   assert.equal(can(admin, 'write', key), true)
   assert.equal(can(admin, 'delete', key), false)
   assert.equal(
-    can(admin, 'write', 'hosts/realness-1/requests/../status.html'),
+    can(admin, 'write', 'halos/realness-1/requests/../status.html'),
     false
   )
   assert.equal(
-    can(admin, 'write', 'hosts/realness-1/requests/not-an-actor.html'),
+    can(admin, 'write', 'halos/realness-1/requests/not-an-actor.html'),
     false
   )
   assert.equal(can(scott, 'write', key), false)
-  assert.equal(can(host, 'get', key), true)
-  assert.equal(can(host, 'write', key), false)
-  assert.equal(can({ host_name: 'realness-2' }, 'get', key), false)
+  assert.equal(can(halo, 'get', key), true)
+  assert.equal(can(halo, 'write', key), false)
+  assert.equal(can({ halo_name: 'realness-2' }, 'get', key), false)
 })
 
-test('a host writes its own status and loop records; nothing more', () => {
-  const host = { host_name: 'realness-1' }
+test('a halo writes its own status and loop records; nothing more', () => {
+  const halo = { halo_name: 'realness-1' }
   const id = 'a-0123456789ab'
-  assert.equal(can(host, 'write', 'hosts/realness-1/status.html'), true)
-  assert.equal(can(host, 'get', 'hosts/realness-1/status.html'), true)
-  assert.equal(can(host, 'write', 'hosts/realness-2/status.html'), false)
-  assert.equal(can(host, 'write', 'hosts/realness-1/x.html'), false)
-  assert.equal(can(host, 'list', 'hosts/'), false)
-  assert.equal(can(host, 'delete', 'hosts/realness-1/status.html'), false)
-  assert.equal(can(host, 'write', `loops/${id}/record.html`), true)
-  assert.equal(can(host, 'get', `loops/${id}/stop.html`), true)
-  assert.equal(can(host, 'write', `loops/${id}/stop.html`), false)
-  assert.equal(can(host, 'write', 'loops/not-an-id/record.html'), false)
-  assert.equal(can(host, 'list', 'loops/'), false)
-  assert.equal(can(host, 'get', `usage/${A}/x`), false)
-  assert.equal(can(host, 'get', `people/${A}/posters/p.svg`), true)
-  assert.equal(can(host, 'get', `people/${A}/vault/x.md`), false)
+  assert.equal(can(halo, 'write', 'halos/realness-1/status.html'), true)
+  assert.equal(can(halo, 'get', 'halos/realness-1/status.html'), true)
+  assert.equal(can(halo, 'write', 'halos/realness-2/status.html'), false)
+  assert.equal(can(halo, 'write', 'halos/realness-1/x.html'), false)
+  assert.equal(can(halo, 'list', 'halos/'), false)
+  assert.equal(can(halo, 'delete', 'halos/realness-1/status.html'), false)
+  assert.equal(can(halo, 'write', `loops/${id}/record.html`), true)
+  assert.equal(can(halo, 'get', `loops/${id}/stop.html`), true)
+  assert.equal(can(halo, 'write', `loops/${id}/stop.html`), false)
+  assert.equal(can(halo, 'write', 'loops/not-an-id/record.html'), false)
+  assert.equal(can(halo, 'list', 'loops/'), false)
+  assert.equal(can(halo, 'get', `usage/${A}/x`), false)
+  assert.equal(can(halo, 'get', `people/${A}/posters/p.svg`), true)
+  assert.equal(can(halo, 'get', `people/${A}/vault/x.md`), false)
   assert.equal(
-    can({ host_name: '../x' }, 'write', 'hosts/../x/status.html'),
+    can({ halo_name: '../x' }, 'write', 'halos/../x/status.html'),
     false
   )
   assert.equal(
     can(
-      { host_name: 'realness-1', phone: A },
+      { halo_name: 'realness-1', phone: A },
       'write',
-      'hosts/realness-1/status.html'
+      'halos/realness-1/status.html'
     ),
     false
   )

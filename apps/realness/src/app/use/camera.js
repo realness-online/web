@@ -7,7 +7,7 @@ export const CAMERA_LIMIT = 1.5
 /** Held-key repeats arrive about this often. */
 export const CAMERA_REPEAT_MS = 260
 /** How much a held key gains per repeat, and where the gain stops. */
-export const CAMERA_RAMP = 1.12
+const CAMERA_RAMP = 1.12
 export const CAMERA_RAMP_MAX = 1.7
 
 /**

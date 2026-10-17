@@ -14,25 +14,25 @@ were close.
 - **Self-host Firecracker.** Boot once, snapshot, fork.
 - **Nested virt on GCP.** Actors wait on model calls, so density comes from
   oversubscription; bare metal is priced for CPU this is not.
-- **Each environment is one project.** Development hosts, sync, proxy, sign-in,
+- **Each environment is one project.** Development halos, sync, proxy, sign-in,
   and storage share `realness-development`; production waits in
-  `realness-online`. Early hosts ran in `realness-online`; the proofs below say
+  `realness-online`. Early halos ran in `realness-online`; the proofs below say
   so where it matters.
 - **Realness owns its proxy.** `realness-proxy` runs in `realness-development`
   beside `realness-sync`, sharing its phone pins; `realness-ops` keeps no agent
   handler and no `AGENT_PASS`.
-- **The d3 host is `n2-standard-4` in `us-central1-a`**: a 20 GB `pd-standard`
+- **The d3 halo is `n2-standard-4` in `us-central1-a`**: a 20 GB `pd-standard`
   boot disk plus a 30 GB `pd-standard` PD for actors: about
   $0.20/h running,
   $0.80/mo parked. Spot is unavailable (`PREEMPTIBLE_CPUS` in
   us-central1 is 0) and nested virt rules out every cheap family (E2, all ARM,
   the memory-optimized M1/M2/M3, and every AMD but N4D).
-- **The prod host idles stopped, itself.** `gcloud compute instances stop` keeps
+- **The prod halo idles stopped, itself.** `gcloud compute instances stop` keeps
   the boot disk, the xfs volume (`/etc/fstab` by UUID) and `/dev/kvm`; the disks
   are the only floor, $0.80/mo. A systemd timer checks every 5 minutes and stops
-  the host after 30 with no `firecracker`, no `node server/host/main.js` and no
+  the halo after 30 with no `firecracker`, no `node server/halo/main.js` and no
   interactive login; `/run/realness-hold` (tmpfs) holds it open for work that is
-  not a running VM. h3 folds host lifecycle into the host.
+  not a running VM. h3 folds halo lifecycle into the halo.
 - **The artifact set is the actor's home directory and the trace is its event
   log** (r7). Files come back and processes do not, and nothing replays a
   command. A bundle is `artifacts.tar.gz` (of `/realness`) plus `trace.jsonl`
@@ -41,45 +41,45 @@ were close.
   behind, so restoring one export twice is two actors with the same files and
   different identities. Bundles go to the environment's bucket,
   `gs://realness-development-realness/actors/<id>/bundle.tar.gz`, moved by the
-  control plane because the host has no credentials.
+  control plane because the halo has no credentials.
 - **Idle holds no rented capacity.** An actor is its trace, its artifacts and
   its actors directory; the microVM disk and memory are caches that can be
   rebuilt. 30 GB-months of standard PD is free, so the actors volume sits inside
   the free tier; bytes that outgrow it go to GCS at $0.02/GiB-mo, first 5 GiB
   free.
-- **Idle per host is
-  $0: a parked host has no disk.** A parked host is deleted
+- **Idle per halo is
+  $0: a parked halo has no disk.** A parked halo is deleted
   and rebuilt from one shared image; the durable state is the actors' traces and
   artifacts in GCS. The guest has no credentials, so the delete comes from the
-  control plane, never the host's own timer. Per-host provisioned disks are the
-  whole bill at hundreds of hosts (20 GB standard is $0.80/mo
+  control plane, never the halo's own timer. Per-halo provisioned disks are the
+  whole bill at hundreds of halos (20 GB standard is $0.80/mo
   each), and the 30 GB-months allowance is shared and per account, so it does
-  not scale. The fleet image exists: `realness-host`, family `realness-host`, 20
-  GB geometry. A stopped host is a 20 GB boot plus a 30 GB actors volume, both
+  not scale. The fleet image exists: `realness-halo`, family `realness-halo`, 20
+  GB geometry. A stopped halo is a 20 GB boot plus a 30 GB actors volume, both
   standard, and `host-down.sh --delete` returns it to nothing but the image.
 - **A $20/mo Compute Engine budget on `realness-online`** alerts at 50/90/100%.
-  Leaving the host up trips it in about four days.
+  Leaving the halo up trips it in about four days.
 - **The Lima loop is the dev loop; prod is x86_64.** Snapshots are
   per-architecture and pinned to the Firecracker data format, so arm64 proves
   the lifecycle only (x1).
 - **ubuntu-base plus the CI kernel, not the CI rootfs.** The CI rootfs has an
   empty dpkg and is a boot fixture, not an actor image.
-- **The host is ours, Node standard library**, in `server/host/`; rejected
-  firecracker-go-sdk, Kata, and flintlock. It began as Python (`server/host/`, gone
-  after h4b); `check:host` is the contract both passed.
+- **The halo is ours, Node standard library**, in `server/halo/`; rejected
+  firecracker-go-sdk, Kata, and flintlock. It began as Python (`server/halo/`, gone
+  after h4b); `check:halo` is the contract both passed.
 - **Actors get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
   `host-drain.sh <host> [--delete]` exports every actor, streams each bundle to
   `gs://<bucket>/actors/<id>/bundle.tar.gz`, checks the object the bucket stored
   against the bundle that was sent, drops the bundle from the volume, and only
   then deletes the instance together with the disks it actually has. Anything
-  unconfirmed leaves the host up, and nothing schedules a drain yet.
+  unconfirmed leaves the halo up, and nothing schedules a drain yet.
 - **What shipped is the bucket object, not a ledger.** No local record, so a
   re-run re-exports and re-uploads; an actor with no disk (a create that died
   mid-flight) is reported and skipped rather than blocking a delete forever.
-- **The drain reaches the host over `gcloud compute ssh --command="curl ..."`**:
+- **The drain reaches the halo over `gcloud compute ssh --command="curl ..."`**:
   the API is loopback-only until h1 exists, and a tunnel would cost a background
-  process and a fixed local port per host to save a second a call.
+  process and a fixed local port per halo to save a second a call.
 - **The density branch is dropped.** m1 measured it: a restored actor dirties
   20-26 MiB of its 512 MiB. The win is density, and density is not the critical
   path. RAM binds, and storage is the cheapest dimension. The measurement script
@@ -92,7 +92,7 @@ Gotchas that bit; carry them through the h4 port.
 - A Pi tool allowlist is not a security boundary.
 - Pi runs as a plain user; boot setup and the command runner stay root.
 - System tools come baked in the template; actors never `apt install`.
-- Egress is filtered on the host, where guest root cannot reach.
+- Egress is filtered on the halo, where guest root cannot reach.
 - The terminal page draws libghostty-vt on a canvas; the relay stays blind.
 - Pi outlives the connection; a reload reattaches, never `/new`.
 - `TMPDIR=/var/tmp` keeps jiti's cache; wipes skip it.
@@ -108,9 +108,9 @@ Gotchas that bit; carry them through the h4 port.
 - Pi JSONL alone never restores a lost working tree.
 - Prove saved files on a fresh actor before deleting any disk:
   `check:fresh-actor`.
-- Secrets never sync; the host injects them.
+- Secrets never sync; the halo injects them.
 - Actors read Realness-owned folders, never write or sync them.
-- The host pass is read-only, renews itself, may list paths.
+- The halo pass is read-only, renews itself, may list paths.
 - Sync is the only key holder; hosted actors cannot switch checks off.
 - Sync merges Pi sessions entry by entry; other files changed on both sides keep both copies.
 - Each folder has one writer: Realness or the harness.
@@ -139,31 +139,31 @@ runbook.
 - r4: idle tiers; workspace persists across a cold boot (23/23)
 - r5: browser terminal; page, websocket frames, real browser typing (13/13),
   including a bare URL that makes its own actor and redirects to it
-- d3: GCP x86_64 host, nested virt, xfs actors volume, self-stopping idle guard
+- d3: GCP x86_64 halo, nested virt, xfs actors volume, self-stopping idle guard
   (6/6), plus stop/start + a guest poweroff leaving it `TERMINATED` + the volume
   swapped to 30 GB standard with reflink green again
 - x1: the loop on x86_64, with template 19/19, restore 7/7, actor over the API
   11/11
 - r7: a destroyed actor comes back: export, destroy, restore, 24 checks on the
-  host, then the same restore from a bundle that went to
+  halo, then the same restore from a bundle that went to
   `gs://realness-online-realness` and back byte for byte (13 + 11 checks), with
   the 3 MiB file intact and the new actor holding its own identity
-- r8: the host loop is one command each way: `host-up.sh realness-2 --smoke`
-  made a 20 GB host from the image and had it serving an actor in 2m50s (seed
-  36s, smoke 5/5), and `host-down.sh realness-2 --delete` took the host and its
-  volume away. A deleted host leaves the image as the fleet's only standing cost
-- r9: a host is deleted with a live actor on it and the actor comes back: 20
+- r8: the halo loop is one command each way: `host-up.sh realness-2 --smoke`
+  made a 20 GB halo from the image and had it serving an actor in 2m50s (seed
+  36s, smoke 5/5), and `host-down.sh realness-2 --delete` took the halo and its
+  volume away. A deleted halo leaves the image as the fleet's only standing cost
+- r9: a halo is deleted with a live actor on it and the actor comes back: 20
   checks, run in us-west1-b because us-central1 had no n2 capacity. The drain
   exported the actor, put its 3 MB bundle in
   `gs://realness-online-realness/actors/<id>/bundle.tar.gz` with a matching
-  md5Hash, and took the instance and both disks away; `host-up.sh` built a host
+  md5Hash, and took the instance and both disks away; `host-up.sh` built a halo
   whose creation time is new and whose volume held none of it; the bundle came
   back, the 3 MiB payload hashed identically, the identity did not, and the
   trace opens with the drained actor's own events
 - a1: an actor with no network builds a site from its own markdown, renders and
   highlights it, and the site lands in the home directory an export bundles
   (16/16)
-- a2: the host takes that tree out of the running actor and serves it at
+- a2: the halo takes that tree out of the running actor and serves it at
   `/s/<id>/`, a real browser loads it and draws the diagram (17/17 plus the
   browser). c1e moved the live site to sync, where the URL outlives the actor
 - u2: a `fetch` handler runs in its own stripped VM. One `app-check.sh` run from
@@ -182,15 +182,15 @@ and e2fsprogs 1.47 needs the size spelled out as a block count with `-d`.
 Two things an actor needs before anything else: a way out, and a way in that is
 not the serial console.
 
-**Out.** The host gets a tap on `172.16.0.0/30`, NAT'd to its uplink
+**Out.** The halo gets a tap on `172.16.0.0/30`, NAT'd to its uplink
 (`net-up.sh`). Guest addressing comes from Firecracker CI's own
 `fcnet-setup.sh`, which is already in the rootfs: it turns the MAC into an
 address, so `06:00:AC:10:00:02` is `172.16.0.2/30`. That script is also all it
 does - **no default route, no resolver**, so `realness-net-up` adds both. The
 gateway is the other address in the /30.
 
-**In.** A vsock device (`guest_cid` 3) and a host-local unix socket. Firecracker
-maps guest vsock ports 1:1 onto unix sockets: the host connects to `uds_path`,
+**In.** A vsock device (`guest_cid` 3) and a halo-local unix socket. Firecracker
+maps guest vsock ports 1:1 onto unix sockets: the halo connects to `uds_path`,
 writes `CONNECT 52\n`, reads `OK <port>\n`, and gets a byte stream to the
 guest's listener. `realness-vsock.service` runs `socat VSOCK-LISTEN:52,fork` in
 the guest, handing each connection to `realness-agent`, which takes one JSON
@@ -199,7 +199,7 @@ request per line (`argv`, `cwd`, `stdin_b64`) and answers with one (`exit_code`,
 channel; no shell, so `argv` is exec'd directly and an actor that wants a shell
 asks for one.
 
-`server/host/clients/vsock-exec.py` is the host-side client. It exits with the guest
+`server/halo/clients/vsock-exec.py` is the halo-side client. It exits with the guest
 command's own exit code, so shell composition works:
 
 ```bash
@@ -240,7 +240,7 @@ an API socket and no boot config (the snapshot is the config), and its vsock
 original's socket. Two loads of one memory image are two forks: they must not
 produce the same random bytes. Both clones are the same boot (`boot_id`), and
 `/dev/urandom` differs between them, so resume reseeds. The device tree carries
-a `vmgenid` node. The guest also resumes at snapshot time, so the host sets its
+a `vmgenid` node. The guest also resumes at snapshot time, so the halo sets its
 clock over the vsock channel, the same mechanism an actor start will use.
 
 Clones run one at a time. A snapshot is memory and device state, not disk, so a
@@ -259,7 +259,7 @@ namespace.
 
 ### xfs and reflink (f5b)
 
-On ext4 an actor disk is a real copy (1.8 GiB, ~2.5s). We build the prod host,
+On ext4 an actor disk is a real copy (1.8 GiB, ~2.5s). We build the prod halo,
 so its actors directory can be xfs, where `cp --reflink=always` clones the disk
 instantly and shares the template's extents until the actor writes. `f5b` mounts
 a loopback xfs and measures it: two clones in 3ms, no free-space change, a write
@@ -293,19 +293,19 @@ TAPs). `boot_id` stays shared: it is the kernel's, not the actor's, and identity
 is machine-id plus actor id.
 
 `realness-actor-init` is installed by the template builder and called by the
-host over the f2 channel, which is the one call r3's actor API makes.
+halo over the f2 channel, which is the one call r3's actor API makes.
 
 ### The actor API (r3a)
 
-`tools/control/scripts/dev-stack.sh` is the dev host: an xfs loopback volume at
+`tools/control/scripts/dev-stack.sh` is the dev halo: an xfs loopback volume at
 `/opt/fc/actors` (persistent across runs, `FRESH=1` to wipe), TAP0 and its NAT,
-and `server/host/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
+and `server/halo/` serving HTTP on 8080. `scripts/r3a-verify.sh` drives the API with
 curl and asks the guest over the f2 channel.
 
-The host builds the seed itself (boot the template, pause, snapshot) and records
+The halo builds the seed itself (boot the template, pause, snapshot) and records
 what it built from in `seed/seed.json`, so a start with a mismatched kernel,
 template or Firecracker rebuilds and `create` refuses a seed that does not
-match. In `src/host/`, `host.js` owns TAPs and the volume, `firecracker.js` the
+match. In `src/halo/`, `host.js` owns TAPs and the volume, `firecracker.js` the
 unix-socket REST calls, `vsock.js` the guest channel, `actors.js` the
 create/destroy cycle, `server.js` the routes: `GET /v1/health`,
 `GET|POST /v1/actors`, `GET|DELETE /v1/actors/{id}`.
@@ -327,7 +327,7 @@ limactl shell fc-local sh -c 'curl -sS -X POST http://127.0.0.1:8080/v1/actors'
 `POST /v1/actors/{id}/exec` takes
 `{"argv": [...], "cwd": "...", "stdin_b64": "..."}` and answers
 `{"exit_code", "stdout_b64", "stderr_b64"}`. It is the f2 channel addressed by
-actor id instead of socket path: the host resolves the id to one directory and
+actor id instead of socket path: the halo resolves the id to one directory and
 one `vsock.sock`, so there is no route to another actor's disk. argv is exec'd,
 not shell-expanded (the guest agent has no shell); a non-zero exit code is a
 200, because the exec ran. Output stays base64 so binary survives JSON.
@@ -340,7 +340,7 @@ goes.
 
 ### A terminal (r3c)
 
-`src/host/pty.js` listens on 8081 for a framed terminal stream, one TCP
+`src/halo/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
 `{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}`. The pass is
 the same five-minute bearer the API takes, so the pty is not a second door. The
@@ -356,13 +356,13 @@ The other end is `realness-pty` (vsock port 53, socat fork per connection),
 which runs `/bin/bash` on a `pty.fork()` slave and copies between the master and
 the pipe. `TIOCSWINSZ` on the master is what makes a resize reach the shell. The
 relay never parses a frame, so the protocol has one definition and the browser
-websocket (r5) can speak the same one. `server/host/clients/login.js` is the shell
+websocket (r5) can speak the same one. `server/halo/clients/login.js` is the shell
 client: it mints a pass for one phone, creates an actor when none is named, and
 releases it when the terminal exits (`KEEP=1` idles it instead). One command, no
 browser:
 
 ```bash
-node server/host/clients/login.js --phone +14155550100
+node server/halo/clients/login.js --phone +14155550100
 ```
 
 That leaves VT state on the client, so r5 picks an engine. Undecided: xterm.js,
@@ -380,7 +380,7 @@ through the forwarded ports, so the API is a real network service and not
 something only reachable over `limactl shell`. `server/lima/fc-local.yaml` maps the
 Mac's 18080 to the guest's 8080, 18081 to 8081, and 18096 to 18096. It maps them
 explicitly because the Mac's 8080 is often another service and Lima's automatic
-forward skips a taken host port without saying so.
+forward skips a taken halo port without saying so.
 
 An instance created before the rule existed needs it applied and a restart:
 
@@ -415,8 +415,8 @@ checks hid this by calling `sync` after every write by hand.
 
 #### The idle sweep (h3)
 
-The host steps actors down on its own (`src/host/lifecycle.js`, run each minute
-from `server/host/main.js`):
+The halo steps actors down on its own (`src/halo/lifecycle.js`, run each minute
+from `server/halo/main.js`):
 
 - running and quiet for 15 minutes -> memory
 - idle for 2 hours -> disk
@@ -425,39 +425,39 @@ from `server/host/main.js`):
 Activity is `last_activity` in `actor.json`, written at most once a minute by
 exec and by a live terminal. An actor with no verified owner is never retired.
 The export is checked (manifest and bundle agree) before the destroy; there is
-no remote copy yet, so nothing leaves the host volume.
+no remote copy yet, so nothing leaves the halo volume.
 
 ### The terminal and chat (r5, c1, x1)
 
-Hosts take no internet traffic and serve no pages. Realness serves the
+Halos take no internet traffic and serve no pages. Realness serves the
 terminal and chat; the gate (`src/gate/gate.js`) checks the Firebase
-token, finds the person's host, and carries:
+token, finds the person's halo, and carries:
 
-- `/pty` websockets to the framed terminal on 8081, under a short host pass.
-- `/v1/actors/<id>/chat/{message,events,limit}` to the host API.
+- `/pty` websockets to the framed terminal on 8081, under a short halo pass.
+- `/v1/actors/<id>/chat/{message,events,limit}` to the halo API.
 
 The framed terminal and the API each verify the pass and the actor's owner,
 so an actor id alone cannot attach or send. The terminal page is the example
 `tools/examples/terminal`: Ghostty's libghostty-vt as WebAssembly on a canvas.
 
-### A host restart and a woken actor (x4)
+### A halo restart and a woken actor (x4)
 
-A host restart drops every actor TAP. A woken actor keeps its TAP name, because
+A halo restart drops every actor TAP. A woken actor keeps its TAP name, because
 its address is baked in, so reload rebuilds that TAP with its gateway first;
 otherwise Firecracker opens a bare one and the actor has no network. A TAP held
 by another running actor refuses the reload.
 
 ### Sites and admin (a1j)
 
-Pi runs with the guest prompt `server/host/guest/realness-chat.md`. It keeps editable
+Pi runs with the guest prompt `server/halo/guest/realness-chat.md`. It keeps editable
 site source under `/realness/work/site`, publishes with `realness publish`, and
 lists, restores, or removes with `realness-site versions|restore|remove`.
 Published sites live in sync, so the URL outlives the actor (see "Publish it at
 a URL").
 
-Loops: a host mirrors `loops/<id>/record.html` to Storage. `/admin` on the
-Realness frontend lists every loop across hosts; a stop is a Storage write at
-`loops/<id>/stop.html` that the host obeys on its next 30-second probe. Sync
+Loops: a halo mirrors `loops/<id>/record.html` to Storage. `/admin` on the
+Realness frontend lists every loop across halos; a stop is a Storage write at
+`loops/<id>/stop.html` that the halo obeys on its next 30-second probe. Sync
 serves the view, and `can()` admits only the admins named in `admins.html`.
 Each bucket needs its own `admins.html`; without it admin login fails with 403.
 Manage it with `npm run webspace -- <env> admins list|add <phone> [name]|remove <phone>`;
@@ -493,11 +493,11 @@ is the head of the trace that replaced it.
 harness, so harness edits, Pi transcripts, and `work/` travel together. Identity
 (`/etc/machine-id`, the actor id) does not: restoring an identity would make two
 actors share one. An actor that writes outside `/realness` is outside the
-contract, and `ARTIFACT_PATHS` in `src/host/actors.js` is the one place that
+contract, and `ARTIFACT_PATHS` in `src/halo/actors.js` is the one place that
 decides. Files come back; processes do not; nothing replays.
 
 The mechanism is a loop mount, not a channel into the guest. A stopped actor's
-disk is a file on the actors volume, so the host mounts it, tars `/realness`,
+disk is a file on the actors volume, so the halo mounts it, tars `/realness`,
 and unmounts, with no size limit, no guest-side code, and no credentials. Export
 stops the actor first, because a live guest writes under the mount and mounting
 rw replays its journal for it, and leaves it stopped; `reload` brings it back.
@@ -506,9 +506,9 @@ boots: the fresh actor starts, stops for the files, and starts again. Two
 restores of one export are two actors with the same files and different
 identities.
 
-`scripts/r7-verify.sh` is the check on the host (export, destroy, restore, 21
+`scripts/r7-verify.sh` is the check on the halo (export, destroy, restore, 21
 checks), and `scripts/r7-gcs-verify.sh` runs the same thing from the Mac with a
-GCS round trip in the middle, because the host has no credentials. The bundle is
+GCS round trip in the middle, because the halo has no credentials. The bundle is
 deleted from the volume before the restore, so what comes back is what the
 bucket held: `gs://realness-online-realness/actors/<id>/bundle.tar.gz`,
 us-central1, standard.
@@ -524,37 +524,37 @@ it, 24-26 MiB after light use, and 171 MiB with node holding 100 MiB (two runs).
 So a sleep that stored the difference would write ~20-26 MiB instead of 512,
 while the actor's own disk writes stay what caps density. `KEEP=1` leaves the
 actors up. The branch is closed: the win is density, and RAM, not storage, is
-what caps a host, so storing less per sleep does not buy an actor. The script
+what caps a halo, so storing less per sleep does not buy an actor. The script
 stays as the measurement.
 
-### A host from the image, and one that can be deleted (r8, r9)
+### A halo from the image, and one that can be deleted (r8, r9)
 
-`host-up.sh <name>` makes a host from the fleet image: boot disk, instance with
-nested virt and no service account, actors volume, then `host-bootstrap.sh` on
-it (`--smoke` also runs `host-smoke.sh`). `host-down.sh <name>` stops it with
+`host-up.sh <name>` makes a halo from the fleet image: boot disk, instance with
+nested virt and no service account, actors volume, then `halo-bootstrap.sh` on
+it (`--smoke` also runs `halo-smoke.sh`). `host-down.sh <name>` stops it with
 its disks; `--delete` takes the disks too and leaves the image as the only cost.
 
-`host-down.sh --delete` does not ask what is on the host.
+`host-down.sh --delete` does not ask what is on the halo.
 `host-drain.sh <name> [--delete]` does: it exports every actor, streams each
 bundle to `gs://realness-online-realness/actors/<id>/bundle.tar.gz`, checks what
 the bucket stored against what was sent, drops the bundle from the volume, and
 only then deletes the instance and the disks it actually has. It runs on the
-control plane, not the host, because the host has no credentials, so it cannot
+control plane, not the halo, because the halo has no credentials, so it cannot
 upload a bundle or decide it is safe to die.
 
-`r9-verify.sh` is the proof, on the Mac: build a host, write 3 MiB in an actor,
-drain and delete the host, check the instance and both disks are gone, build a
-_second_ host (different creation time, empty volume), land the bundle from the
+`r9-verify.sh` is the proof, on the Mac: build a halo, write 3 MiB in an actor,
+drain and delete the halo, check the instance and both disks are gone, build a
+_second_ halo (different creation time, empty volume), land the bundle from the
 bucket, restore, and check the payload hash matches, the identity does not, and
 the drained actor's trace opens the trace that replaced it. 20 checks.
-`probe-capacity.sh` answers which zone can make a host when `host-up.sh` reports
+`probe-capacity.sh` answers which zone can make a halo when `host-up.sh` reports
 a stockout.
 
-### The prod host (d3)
+### The prod halo (d3)
 
 `realness-1` in `realness-online` (us-central1-a, `n2-standard-4`, nested virt
-on). Every command runs from here and reaches the host over gcloud; the account
-is `sfryxell@gmail.com`. The host mirrors the Lima layout: `/opt/fc` holds the
+on). Every command runs from here and reaches the halo over gcloud; the account
+is `sfryxell@gmail.com`. The halo mirrors the Lima layout: `/opt/fc` holds the
 artifacts and `/opt/fc/actors/mnt` is the xfs actors volume.
 
 ```bash
@@ -570,66 +570,66 @@ gcloud compute instances start realness-1 --zone=us-central1-a
 ```
 
 `d3-fetch-x86_64.sh` is `guest-setup.sh` with the x86_64 SHA pinned; the f3
-scripts now pick their arch from `uname -m`, so both hosts share them.
+scripts now pick their arch from `uname -m`, so both halos share them.
 `actors-volume.sh` formats the actors PD (once), mounts it by UUID, and re-runs
 f5b's reflink checks against real storage: 6/6, two clones in 5ms, free space up
 8K. It is 30 GB `pd-standard`, inside the free tier, and reads at 350 MB/s
 sequential, fast enough to boot an actor from. Stop/start is verified: the
 disks, the mount and `/dev/kvm` all come back.
 
-`idle-guard.sh` installs the timer that stops the host when nothing is
+`idle-guard.sh` installs the timer that stops the halo when nothing is
 happening: every 5 minutes, stop after 30 with no `firecracker`, no
-`node server/host/main.js` and no interactive login. `gcloud compute ssh --command`
+`node server/halo/main.js` and no interactive login. `gcloud compute ssh --command`
 actors are `@notty` and do not count, so work that is not a running VM has to
 hold it open:
 
 ```bash
-sudo bash ~/realness/server/host/scripts/idle-guard.sh
+sudo bash ~/realness/server/halo/scripts/idle-guard.sh
 sudo touch /run/realness-hold     # tmpfs; cleared by a boot
 ```
 
-A guest `poweroff` does become `TERMINATED`: with the hold removed and the host
-stopped, the timer stopped the host 2.5 minutes later, no API call involved.
+A guest `poweroff` does become `TERMINATED`: with the hold removed and the halo
+stopped, the timer stopped the halo 2.5 minutes later, no API call involved.
 Resume with `gcloud compute instances start realness-1`.
 
-#### A host from the image
+#### A halo from the image
 
-The family `realness-host` bakes /opt/fc (pinned Node included), the scripts and
-the idle guard into a 20 GB-geometry image, so a host is one command:
+The family `realness-halo` bakes /opt/fc (pinned Node included), the scripts and
+the idle guard into a 20 GB-geometry image, so a halo is one command:
 
 ```bash
-node tools/control/bin/webspace.js development host up realness-2 --smoke
+node tools/control/bin/webspace.js development halo up realness-2 --smoke
 ```
 
 It creates the boot disk and the instance by name, waits for ssh, adds a 30 GB
-actors volume, copies `server/host/`, and runs its `scripts/host-bootstrap.sh` on the
-host: grow the root partition if it lags, `net-up.sh`, `actors-volume.sh`,
+actors volume, copies `server/halo/`, and runs its `scripts/halo-bootstrap.sh` on the
+halo: grow the root partition if it lags, `net-up.sh`, `actors-volume.sh`,
 `idle-guard.sh`, then one state line per resource. `--smoke` then runs
-`host-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
+`halo-smoke.sh`, which builds the seed, serves on loopback, creates an actor,
 execs in it, destroys it, and checks the actor's machine-id is not the seed's.
-It predates the host secrets and now kills the serving host, so deployed hosts
-are checked with `check:host` through a tunnel instead (`.tooling.md`).
+It predates the halo secrets and now kills the serving halo, so deployed halos
+are checked with `check:halo` through a tunnel instead (`.tooling.md`).
 
-Measured: **2m50s** from nothing to a host that serves an actor (the seed is 36s
+Measured: **2m50s** from nothing to a halo that serves an actor (the seed is 36s
 of that), and 5/5 on the smoke test.
-`webspace development host down realness-2 --delete` takes it back to the image and
+`webspace development halo down realness-2 --delete` takes it back to the image and
 leaves no disk behind.
 
-Bake a new image from a stopped host that has the change; the family serves the
+Bake a new image from a stopped halo that has the change; the family serves the
 newest, and older images stay for rollback:
 
 ```bash
-gcloud compute images create realness-host-v<N> --family realness-host \
+gcloud compute images create realness-halo-v<N> --family realness-halo \
   --source-disk realness-1-boot --source-disk-zone us-central1-a
 ```
 
-v3 carries Node and a source tree with only `server/host/`; a fresh host from it
+v3 carries Node and a source tree with only `server/halo/`; a fresh halo from it
 printed `node v22.23.3 present` at bootstrap. Delete older images once a new one
 passes `--smoke`.
 
 The image already carries a grown root partition, so `growpart` reports NOCHANGE
-on a host built from it; 20 GB is the floor because an image cannot be smaller
-than the disk it was taken from. `net-up.sh` has to run before the host can
+on a halo built from it; 20 GB is the floor because an image cannot be smaller
+than the disk it was taken from. `net-up.sh` has to run before the halo can
 build a seed, or `build_seed` stops with `no fc-tap0`.
 
 ### The loop on x86_64 (x1)
@@ -645,7 +645,7 @@ own path instead of `/mnt/fc`.
 sudo bash ~/realness/scripts/template-build.sh
 bash ~/realness/scripts/f3-verify.sh          # 19/19
 sudo bash ~/realness/scripts/f4-verify.sh     # 7/7, the x1 done-when
-sudo node server/host/main.js serve --volume /opt/fc/actors/mnt &
+sudo node server/halo/main.js serve --volume /opt/fc/actors/mnt &
 bash ~/realness/scripts/x1-verify.sh          # 11/11
 ```
 
@@ -653,7 +653,7 @@ Two bugs the arm64 runs had hidden, both teardown races: `f4-verify.sh` loads
 the clone onto the snapshot's TAP before the base has released it (x86_64 lost
 the race, `Resource busy` on `fc-tap0`), and `boot-lib.sh`'s EXIT trap ended on
 a short-circuited `declare -F`, so a passing run exited 1. Both fixed for both
-hosts.
+halos.
 
 ### An actor builds a site (a1)
 
@@ -679,7 +679,7 @@ With sync configured, a site lives in sync, not on an actor:
 - Sync serves `sites/<id>/` to anyone, with no actor alive. Versions are private
   until active; restore re-points the pointer; remove clears it and keeps
   history.
-- The host writes through a signed owner pass that reaches only that owner's
+- The halo writes through a signed owner pass that reaches only that owner's
   `people/+A/work/site/`, so the same source tree comes back on a fresh actor
   and the URL stays the same.
 
@@ -688,7 +688,7 @@ into `published/<id>/` and the actor's own server serves `/s/<id>/`. That copy
 dies with the actor; it is for the offline unit tests, not the live loop.
 
 In the dev loop sync listens on `127.0.0.1:18096` and the URL is
-`http://127.0.0.1:18096/sites/<id>/`. Hosts take no internet traffic; live app origins are x9.
+`http://127.0.0.1:18096/sites/<id>/`. Halos take no internet traffic; live app origins are x9.
 
 ### An app runs in its own VM (u2)
 
@@ -703,7 +703,7 @@ export default {
 };
 ```
 
-Our server (`server/host/guest/realness-serve.js`, on the node runtime disk) turns HTTP
+Our server (`server/halo/guest/realness-serve.js`, on the node runtime disk) turns HTTP
 on 8080 into a web `Request` and streams the `Response` back. Node runs it under
 `--permission`: it reads only the handler's files and itself. A plain
 `index.html` is a site: files, no VM. Anything else (a Procfile, python, a
@@ -735,7 +735,7 @@ under `dist/app-check-<time>/`. Its `escape-ctrl` step passes by failing.
 - **Start.** `realness-app.service` mounts as root, then runs our server as
   `app` with `NoNewPrivileges`. No shell parses the command. No getty, no login.
 - **Network.** App TAPs are `fc-appN` on `172.17.N.0/30`; the MAC carries the
-  address. The host may open 8080 and gets replies only from it. Nothing an app
+  address. The halo may open 8080 and gets replies only from it. Nothing an app
   starts leaves, and nothing is routed to one. No vsock device is attached.
 - **Memory.** The guest OS takes about 54 MiB. A handler serves at 64 MiB with 6
   left; the cap is 96, leaving about 37. On x86_64 (prod) the floor is 80 MiB,
@@ -744,11 +744,11 @@ under `dist/app-check-<time>/`. Its `escape-ctrl` step passes by failing.
 
 What this taught:
 
-- The Lima host's INPUT policy is ACCEPT. A TAP no chain names is open to the
-  host, so each TAP prefix needs its own chains before its first VM.
+- The Lima halo's INPUT policy is ACCEPT. A TAP no chain names is open to the
+  halo, so each TAP prefix needs its own chains before its first VM.
 - A Node process that spawns Firecracker waits on it forever; `unref()` the
   child, or a CLI never exits.
-- The host logger writes to stdout, so a CLI's JSON record is its last line.
+- The halo logger writes to stdout, so a CLI's JSON record is its last line.
 - `start()` in `$(...)` runs in a subshell: ids appended to an array there never
   reach the cleanup trap. The checks write ids to a file.
 - The kernel makes `/dev/vsock` with no device attached; probe a connect to CID
@@ -757,13 +757,13 @@ What this taught:
 - Under `--permission` a handler cannot read `/proc`, but `os.freemem()` works:
   libuv reads MemAvailable itself, outside the fs module.
 - The permission model refuses first, so an inside probe cannot reach the
-  read-only disks beneath it; those are checked from the host.
+  read-only disks beneath it; those are checked from the halo.
 - A refusal proves nothing until a control opens the hole. `CONTROL=1` opens
   only the probe's own TAP, so other apps keep strict rules mid-run.
 - In Lima, a VM's TCP SYN leaves through the NAT but no reply comes back, even
   with every rule lifted; UDP DNS works. The internet control proves packets
   leave, not that a connection completes.
-- The control opens 3 of the 21 probes: host services, actors, and DNS. Siblings
+- The control opens 3 of the 21 probes: halo services, actors, and DNS. Siblings
   stay shut by their own TAP rules; internet by Lima's NAT; metadata has no
   route. The rest are file, process, user, and device refusals.
 - The floor script reports sizes and exits 0 below the floor; the one-run check
@@ -840,9 +840,9 @@ Proven: `proxy` tests, and one real call to OpenRouter wrote a row to
 
 Cost and design facts. Build and runtime gotchas are below.
 
-- Memory per actor, measured on the dev host: 86MB restored and idle, 125MB with
+- Memory per actor, measured on the dev halo: 86MB restored and idle, 125MB with
   node running, 230MB with pi up. The 384MB this plan used to carry was never
-  measured. Density is bounded by RAM: ~30 busy actors on a 4-vCPU/16GB host,
+  measured. Density is bounded by RAM: ~30 busy actors on a 4-vCPU/16GB halo,
   more when they idle. The template carries ~1.0 GiB of `node_modules`, but
   reflink shares it, so it sets the seed's size and not each actor's.
 - A memory sleep is a Full snapshot: 512MB on the volume every time, fully
@@ -870,10 +870,10 @@ Cost and design facts. Build and runtime gotchas are below.
 - `probe-capacity.sh` took its candidates only from `$@`, so with no arguments
   it probed nothing and still printed its summary and exited 0, a silent no-op
   that reads like a passing run. It now defaults to a candidate list and exits
-  non-zero when none of them can make a host. Found while proving host-up.
+  non-zero when none of them can make a halo. Found while proving halo-up.
 - `us-central1-a` has no `n2-standard-4` capacity right now; a stockout refuses
   both `instances create` and `instances start`, so `realness-1` cannot be woken
-  and a new host has to go to `us-west1-b` or `us-east1-b` (probed, both OK).
+  and a new halo has to go to `us-west1-b` or `us-east1-b` (probed, both OK).
 
 - comark 0.4.0 moved `language` onto `<pre>`
   (`<pre language="js"><code class="language-js">`), so a highlighter regex that
@@ -892,9 +892,9 @@ Cost and design facts. Build and runtime gotchas are below.
   `iptables -t nat -C ...` works, `iptables -C -t nat ...` dies with
   `Bad argument 'nat'`.
 - `fcnet-setup.sh`, the MAC-to-address script `realness-net-up` calls, is
-  Firecracker CI's and is not in ubuntu-base. It is vendored in `server/host/guest/`
+  Firecracker CI's and is not in ubuntu-base. It is vendored in `server/halo/guest/`
   rather than read out of `squashfs-root`, which is a leftover of the f1 fetch
-  and may not exist on a fresh host.
+  and may not exist on a fresh halo.
 - Run the tap and NAT setup with `sudo`; Firecracker here runs as root, so the
   tap needs no owner set.
 - Don't mount `rootfs.ext4` while a VM has it open (`f2-provision-guest.sh`
@@ -912,7 +912,7 @@ Cost and design facts. Build and runtime gotchas are below.
   not filter what it synthesizes. The shipped template had `._models.json`
   beside `models.json` while the repo and the tarball had neither. The build
   purges `._*` and `.DS_Store` from the tree; `debugfs` on the image confirms.
-- A sparse volume image bigger than the host's free space does not fail as
+- A sparse volume image bigger than the halo's free space does not fail as
   `ENOSPC`: the write past the last backed block comes back as `EIO`, and
   Firecracker reports it as
   `Cannot perform sync_all on the memory backing file: I/O error (os error 5)`
@@ -942,7 +942,7 @@ Cost and design facts. Build and runtime gotchas are below.
 
 - `cp --reflink=always` cannot cross a filesystem: cloning the seed from the
   ext4 boot disk fails with `Invalid cross-device link`. The seed has to live on
-  the actors volume, which is also where the host keeps it (d3e).
+  the actors volume, which is also where the halo keeps it (d3e).
 - `pgrep -f "sshd: "` matches the always-running listener
   (`sshd: /usr/sbin/sshd -D [listener] ...`), so an activity check written that
   way is always true; and `pgrep -f <pattern>` matches any argv containing the
@@ -966,18 +966,18 @@ Cost and design facts. Build and runtime gotchas are below.
   twice over: once plainly, and once when the same command also contains the
   text the pattern matches (a restart one-liner holds both the `pkill` and the
   `nohup ... serve`). Put it in a script and run it with `bash -s`
-  (`server/host/scripts/host-restart.sh`) so the pattern is never on the remote command
+  (`server/halo/scripts/halo-restart.sh`) so the pattern is never on the remote command
   line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
   process named `firecracker`, and that is what every leftover check and the
   idle guard count. One would hold a host awake forever. Reaping has to poll:
   `waitpid(pid, WNOHANG)` issued right after SIGKILL returns 0 while the process
-  is still dying, and nothing else ever collects it. `host-smoke.sh` and
+  is still dying, and nothing else ever collects it. `halo-smoke.sh` and
   `r7-verify.sh` both check for leftovers, which is how this was caught.
 - The Python host ran as root and left root-owned `__pycache__` in the source
   tree, and the next `scp` of the code over it failed for the login user with
   `failed to upload directory`. Chown the tree before copying
-  (`host-bootstrap.sh` does).
+  (`halo-bootstrap.sh` does).
 - A disk whose name collides with an instance's is attached rather than created:
   asking for a 20 GB boot disk while the 100 GB `realness-1` still existed
   booted the instance from the 100 GB disk and reported success. Check `lsblk`.
@@ -1026,9 +1026,9 @@ Cost and design facts. Build and runtime gotchas are below.
   `host-up.sh` removes the boot disk it just made when a create fails. Before
   that, one refusal left 20 GB billing unattached.
 - The host's first serve on a fresh host builds the seed (~36s of boot) before
-  the listener answers, so `host-restart.sh` waits three minutes, not one.
+  the listener answers, so `halo-restart.sh` waits three minutes, not one.
 - A host refuses to start without both root-only secret files, 0600 root:
-  `/etc/realness/model-pass-secret` and `/etc/realness/host-pass-secret`. The
+  `/etc/realness/model-pass-secret` and `/etc/realness/halo-pass-secret`. The
   host pass secret is fleet-wide: the sync service mints a pass with the same
   value from Secret Manager, and any host accepts it at its terminal.
 
@@ -1046,7 +1046,7 @@ block and net, and worth revisiting when r3 measures anything.
 
 ## Proven how
 
-Deployed on 2026-10-07 (x4): `check:host` 28/28 and `check:chat` passed against
+Deployed on 2026-10-07 (x4): `check:halo` 28/28 and `check:chat` passed against
 `realness-demo` through a tunnel, and a phone sign-in reached Pi in the browser
 terminal.
 

@@ -50,7 +50,7 @@ test('dev setup starts the VM, sets the guest up, and checks it boots', () => {
     }`)
   )
 
-  assert.deepEqual(result, { host: 'realness-dev', ready: true })
+  assert.deepEqual(result, { halo: 'realness-dev', ready: true })
   assert.deepEqual(
     asked.map(([kind]) => kind),
     ['start', 'streamScript', 'streamScript']
@@ -71,7 +71,7 @@ test('the steps go to stderr, so stdout carries only the answer', () => {
     start: async () => 'started',
     streamScript: async () => {}
   }`)
-  assert.deepEqual(parse(child).result, { host: 'other-dev', ready: true })
+  assert.deepEqual(parse(child).result, { halo: 'other-dev', ready: true })
   assert.equal(child.stdout.trim().split('\n').length, 1)
   assert.match(child.stderr, /==> lima: other-dev/)
   assert.match(child.stderr, /==> firecracker, kernel, rootfs/)

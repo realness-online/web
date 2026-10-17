@@ -24,7 +24,7 @@ const SCANNED = [
   'package.json'
 ]
 const SKIP = new Set(['node_modules', 'dist', '.vite', 'coverage', 'fixtures'])
-const NOT_REPO = new Set(['tests/host/infer.test.js: lib/page.js'])
+const NOT_REPO = new Set(['tests/halo/infer.test.js: lib/page.js'])
 const SOURCE = /\.(sh|js|ts|json|vue)$/
 const TOP = `(?:server|tools|lib|frontend|src/settings|${Object.values(source_folders).join('|')})`
 const FILE = '[\\w./-]+?\\.(?:sh|js|ts|json|vue)(?![\\w.])'

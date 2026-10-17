@@ -8,6 +8,7 @@ export const startup_stages = Object.freeze({
   starting_pi: 'Starting Pi',
   connecting_chat: 'Connecting',
   connecting_terminal: 'Connecting',
+  starting_halo: 'Waking up',
   starting_host: 'Waking up'
 })
 

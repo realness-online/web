@@ -22,7 +22,7 @@ const after = await cpu()
 const memory = await read_file('/proc/meminfo', 'utf8')
 const available = memory.match(/^MemAvailable:\s+(\d+) kB$/m)
 if (!available || after.total <= before.total)
-  throw new Error('host resources unavailable')
+  throw new Error('halo resources unavailable')
 const fs = await statfs(disk)
 process.stdout.write(
   `${JSON.stringify({

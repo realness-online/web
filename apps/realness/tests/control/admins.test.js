@@ -206,7 +206,7 @@ test('realness local admins init reads person.local.html from the harness', asyn
 
 test("local seeding keeps the test operator and adds the checkout's person once", async t => {
   const { seed_local_admins, DEV_OPERATOR } =
-    await import('../../src/control/host-lima.js')
+    await import('../../src/control/halo-lima.js')
   const storage = disk(await scratch(t))
   const harness = await scratch(t)
   await seed_local_admins({ storage, harness })

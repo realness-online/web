@@ -211,8 +211,8 @@ test('a 404 is not sent to Firecrawl', async () => {
 
 test('web-md and the host engine read the same cache-time rules', () => {
   const here = readFileSync(new URL('./web-md-cache-times.json', import.meta.url), 'utf8')
-  const host = readFileSync(new URL('../../apps/realness/src/host/web-times.json', import.meta.url), 'utf8')
-  assert.equal(host, here, 'copy bin/lib/web-md-cache-times.json to apps/realness/src/host/web-times.json')
+  const host = readFileSync(new URL('../../apps/realness/src/halo/web-times.json', import.meta.url), 'utf8')
+  assert.equal(host, here, 'copy bin/lib/web-md-cache-times.json to apps/realness/src/halo/web-times.json')
 })
 
 test('the command names its usage when given no url', async () => {

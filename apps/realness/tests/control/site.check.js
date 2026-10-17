@@ -6,11 +6,11 @@ import { out_path } from '#root/lib/output.js'
 const api = process.env.API ?? 'http://127.0.0.1:18080'
 const phone = '+14156667777'
 const secret =
-  process.env.HOST_PASS_SECRET ??
-  read_file_sync(out_path('host-pass-secret'), 'utf8').trim()
+  process.env.HALO_PASS_SECRET ??
+  read_file_sync(out_path('halo-pass-secret'), 'utf8').trim()
 const body = Buffer.from(
   JSON.stringify({
-    aud: 'realness-host',
+    aud: 'realness-halo',
     phone,
     exp: Math.floor(Date.now() / 1000) + 240
   })

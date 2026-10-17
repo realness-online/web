@@ -67,7 +67,7 @@ before(async () => {
     rights: rights(storage),
     project: 'none',
     certs: async () => ({}),
-    host_pass_secret: secret,
+    halo_pass_secret: secret,
     git_app: app,
     git_fetch: github,
     log: () => {}

@@ -25,18 +25,18 @@ run passed 12 of 12 steps.
 
 ### What we removed
 
-| Removed                                             | Check                                                 |
-| --------------------------------------------------- | ----------------------------------------------------- |
-| Node from the base image; it rides a read-only disk | `app-image-verify.sh`: absent `node`                  |
-| Python and Perl                                     | same: absent `python3`, `perl`                        |
-| The harness, Pi, git, socat                         | same: absent `/realness`, `pi`, `git`, `socat`        |
-| The vsock agent and the terminal                    | same, from the boot: no `realness-vsock`, `-pty`      |
-| Every getty: serial, virtual terminals, the target  | same: no `getty@`, `serial-getty`, `getty.target`     |
-| e2scrub timers                                      | same: no `e2scrub`                                    |
-| Procfiles, Python apps, other stacks                | `tests/host/infer.test.js`; `app-boot-check.sh` |
-| Author binaries                                     | same: an executable is refused                        |
-| npm dependencies, `node_modules`, bare imports      | `infer.test.js`: standard library only                |
-| Author servers; we run the only one                 | `infer.test.js`: no default export is refused         |
+| Removed                                             | Check                                             |
+| --------------------------------------------------- | ------------------------------------------------- |
+| Node from the base image; it rides a read-only disk | `app-image-verify.sh`: absent `node`              |
+| Python and Perl                                     | same: absent `python3`, `perl`                    |
+| The harness, Pi, git, socat                         | same: absent `/realness`, `pi`, `git`, `socat`    |
+| The vsock agent and the terminal                    | same, from the boot: no `realness-vsock`, `-pty`  |
+| Every getty: serial, virtual terminals, the target  | same: no `getty@`, `serial-getty`, `getty.target` |
+| e2scrub timers                                      | same: no `e2scrub`                                |
+| Procfiles, Python apps, other stacks                | `tests/halo/infer.test.js`; `app-boot-check.sh`   |
+| Author binaries                                     | same: an executable is refused                    |
+| npm dependencies, `node_modules`, bare imports      | `infer.test.js`: standard library only            |
+| Author servers; we run the only one                 | `infer.test.js`: no default export is refused     |
 
 ### The VM
 
@@ -45,7 +45,7 @@ run passed 12 of 12 steps.
 | No interpreter in the base image: no node, python, perl       | `tools/control/scripts/app-image-verify.sh` reads the image offline |
 | No harness, Pi, git, socat, sshd, or vsock agent              | same script                                                         |
 | No login anywhere: no getty on serial or a terminal; no scrub | same script reads the boot                                          |
-| No vsock device: the host's only ways in are 8080 and serial  | `app-escape-check.sh` reads Firecracker's `vm/config`               |
+| No vsock device: the halo's only ways in are 8080 and serial  | `app-escape-check.sh` reads Firecracker's `vm/config`               |
 | Exactly three drives; code and runtime read-only              | same, from `vm/config`                                              |
 | A memory cap on every VM: 96 MiB, 1 vCPU                      | same; `app-memory-floor.sh` measured the floor at 64                |
 
@@ -53,8 +53,8 @@ run passed 12 of 12 steps.
 
 | Claim                                                          | Check                                                               |
 | -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| An app reaches nothing: no internet, no host, no actor, no app | `server/host/scripts/net-up.sh`, chains `REALNESS-APP-*`            |
-| The host may open 8080; only replies come back                 | `REALNESS-APP-IN` accepts sport 8080, ESTABLISHED only              |
+| An app reaches nothing: no internet, no halo, no actor, no app | `server/halo/scripts/net-up.sh`, chains `REALNESS-APP-*`            |
+| The halo may open 8080; only replies come back                 | `REALNESS-APP-IN` accepts sport 8080, ESTABLISHED only              |
 | Nothing is routed to an app                                    | `FORWARD -o fc-app+ -j DROP`                                        |
 | Apps and actors never share an address range or rule           | apps on `172.17/16` and `fc-app*`; actors on `172.16` and `fc-tap*` |
 
@@ -62,24 +62,24 @@ run passed 12 of 12 steps.
 
 | Claim                                                                               | Check                                                           |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Only a handler or a site is accepted; every other stack is refused                  | `src/host/infer.js`, `app-boot-check.sh`                        |
+| Only a handler or a site is accepted; every other stack is refused                  | `src/halo/infer.js`, `app-boot-check.sh`                        |
 | Standard library only: no dependencies, no bare imports                             | `infer.js`; and no modules folder reaches the disk              |
 | The handler runs as `app`, never root, with no new privileges                       | `app-boot-check.sh` asserts a non-root uid                      |
-| Node's permission model: reads only its code; no writes, processes, workers, addons | `src/host/infer.js` `START`; `app-escape-check.sh`              |
-| Code and runtime are read-only disks beneath that                                   | `server/host/guest/realness-app-mount` mounts `ro,nosuid,nodev` |
+| Node's permission model: reads only its code; no writes, processes, workers, addons | `src/halo/infer.js` `START`; `app-escape-check.sh`              |
+| Code and runtime are read-only disks beneath that                                   | `server/halo/guest/realness-app-mount` mounts `ro,nosuid,nodev` |
 
 ### Escape probes
 
 `tools/control/scripts/app-escape-check.sh` boots a probe handler beside a live
 sibling. From inside, the probe tries each route below; every one must be
 refused. `CONTROL=1` opens only the probe's own TAP first; that run must fail.
-It opens 3 probes: host services, actors, and DNS. Sibling apps stay shut by
+It opens 3 probes: halo services, actors, and DNS. Sibling apps stay shut by
 their own TAP rules, metadata has no route, and the internet is lost to Lima's
 NAT, so those three have no working control.
 
 | Route tried from inside an app                        | Refused by                                |
 | ----------------------------------------------------- | ----------------------------------------- |
-| Every port the host listens on, at every host address | `REALNESS-APP-IN`                         |
+| Every port the halo listens on, at every halo address | `REALNESS-APP-IN`                         |
 | A running sibling app's 8080                          | `FORWARD -o fc-app+ -j DROP`              |
 | Actors and their gateways                             | `REALNESS-APP-OUT`                        |
 | Cloud metadata, 169.254.169.254                       | `REALNESS-APP-OUT`                        |
@@ -87,7 +87,7 @@ NAT, so those three have no working control.
 | Writing its code, `/tmp`, or anywhere                 | Node permissions, then read-only disks    |
 | Reading `/etc/shadow`, `/proc`, the runtime           | Node permissions                          |
 | Spawning a process, starting a worker                 | Node permissions                          |
-| A second port reached from the host                   | replies only from 8080                    |
+| A second port reached from the halo                   | replies only from 8080                    |
 
 Rejected: nsjail, bubblewrap, systemd-run. Code we did not write needs a kernel
 boundary, not a namespace.
@@ -95,11 +95,11 @@ boundary, not a namespace.
 ## Known gaps
 
 - Node's permission model refuses first, so the probe cannot reach the layers
-  beneath it: read-only disks and the non-root user are checked from the host
+  beneath it: read-only disks and the non-root user are checked from the halo
   and in the mount script, not exercised from inside.
 - Each app's writable root is a 1G copy; a shared read-only root is smaller.
 - In Lima, TCP from a VM gets no answer upstream even with rules lifted, so the
-  internet control proves packets leave the host, not that a reply returns.
+  internet control proves packets leave the halo, not that a reply returns.
 - The sibling, metadata, and internet refusals have no control that opens them.
 - Apps get no egress; model calls will need a narrow door.
-- Everything above is proven in a Lima development host, not yet production.
+- Everything above is proven in a Lima development halo, not yet production.

@@ -8,7 +8,7 @@ TREE="${TREE:-$ROOT/app-tree}"
 IMG="${IMG:-$ROOT/app.ext4}"
 SIZE="${SIZE:-1G}"
 STAGE="${STAGE:-full}"
-GUEST_SRC="${GUEST_SRC:-$REPO/server/host/guest}"
+GUEST_SRC="${GUEST_SRC:-$REPO/server/halo/guest}"
 RUNS="${RUNS_DIR:-$OUT}"
 RUN="$RUNS/app-image-$(date -u +%Y%m%dT%H%M%SZ)"
 
