@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import {
-  as_filename,
   as_download_url,
   is_itemid,
   as_poster_id,
@@ -16,6 +15,7 @@ import {
   list_history_page,
   feed_slot_itemid
 } from '@/utils/itemid'
+import { as_filename } from '@/persistence/store-paths'
 import { as_archive } from '@/persistence/Directory'
 import { get, set, del } from 'idb-keyval'
 vi.mock('idb-keyval')

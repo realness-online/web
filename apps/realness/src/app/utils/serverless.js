@@ -79,7 +79,7 @@ export const remove = async (/** @type {string} */ path) => {
   }
 }
 
-export const init_serverless = async () => {
+export const init_serverless = () => {
   me.value = /** @type {Item} */ (/** @type {unknown} */ (default_person))
   const init = {
     apiKey: String(import.meta.env.VITE_API_KEY || ''),
@@ -101,8 +101,7 @@ export const init_serverless = async () => {
 
     if (app.value) storage.value = get_storage(app.value)
 
-    const { init_auth } = await import('@/utils/serverless-auth')
-    return init_auth(firebase_app)
+    return firebase_app
   } finally {
     resolve_storage_ready()
   }

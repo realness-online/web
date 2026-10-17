@@ -156,6 +156,7 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin npm install -g \
 chmod 0755 "$TREE"/usr/local/lib/node_modules/agent-browser/bin/agent-browser-linux-*
 rm -f "$TREE/usr/local/bin/agent-browser"
 cat > "$TREE/usr/local/bin/agent-browser" <<'WRAPPER'
+#!/bin/sh
 REAL=/usr/local/lib/node_modules/agent-browser/bin/agent-browser.js
 case "${1:-}" in ""|--version|-V|--help|-h|help|install|skills) exec /usr/local/bin/node "$REAL" "$@" ;; esac
 LEASE="/tmp/realness-chrome-$(id -u)"
@@ -189,6 +190,7 @@ chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
   npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /realness prettier@3.9.9
 
 cat > "$TREE/usr/local/bin/realness" <<'WRAPPER'
+#!/bin/sh
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/realness-publish "$@"; fi
 if [ "${1:-}" = chrome ]; then shift; exec /usr/local/bin/realness-chrome "$@"; fi
 case "${1:-}" in sync|turn-start|turn-end|fetch|git-credential|files|store|login|logout|whoami|ls|cat|cp|rm|example)

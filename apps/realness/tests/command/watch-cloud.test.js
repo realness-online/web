@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { cached_read, cloud_sources } from '../../src/command/watch-cloud.js'
+import {
+  cached_read,
+  cloud_sources,
+  sync_traffic
+} from '../../src/command/watch-cloud.js'
 import { month_cost } from '#root/src/control/cloud-reads.js'
 import { health_snapshot } from '../../src/command/watch-health.js'
 
@@ -189,4 +193,54 @@ test('cloud read failures leave local health usable', async () => {
   assert.equal(snapshot.panels.billing.status, 'failed')
   assert.equal(snapshot.panels.services.status, 'ok')
   assert.equal(snapshot.panels.sign_on.status, 'ok')
+})
+
+test('traffic sync runs forward from the newest row and reports what it added', async () => {
+  const calls = []
+  const found = sync_traffic({
+    project: 'realness-online',
+    host: 'realness.online',
+    now: () => now.getTime(),
+    sync: options => {
+      calls.push(options)
+      return { added: 3, pages: 1 }
+    }
+  })
+  assert.equal(found.state, 'ok')
+  assert.equal(found.added, 3)
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].refresh, false)
+  assert.equal(calls[0].cache_only, false)
+  assert.equal(calls[0].all_paths, false)
+  assert.equal(calls[0].days, 14)
+  assert.match(calls[0].cache_path, /hosting-traffic/)
+  assert.match(
+    calls[0].cache_path,
+    /realness-online_realness\.online_marketing\.jsonl/
+  )
+})
+
+test('a traffic sync that fails keeps the archive and names the reason', () => {
+  const found = sync_traffic({
+    project: 'realness-online',
+    host: 'realness.online',
+    now: () => now.getTime(),
+    sync: () => {
+      throw new Error('gcloud not found. Install Google Cloud SDK')
+    }
+  })
+  assert.equal(found.state, 'failed')
+  assert.match(found.error, /gcloud not found/)
+  assert.equal(sync_traffic({ project: 'p', host: 'h' }).state, 'failed')
+})
+
+test('watch traffic reads the archive after refreshing it', async () => {
+  const sources = cloud_sources({
+    environments: { local: { cloud } },
+    now: () => now.getTime(),
+    sync: () => ({ added: 0, pages: 1 })
+  })
+  const traffic = await sources.traffic()
+  assert.equal(traffic.refresh.state, 'ok')
+  assert.equal(traffic.refresh.added, 0)
 })

@@ -3,12 +3,12 @@
 /** @typedef {import('@/types').Sync_Offline_Item} Sync_Offline_Item */
 import { get, del, set } from 'idb-keyval'
 import {
-  as_filename,
   as_created_at,
   load,
   load_from_network,
   type_as_list
 } from '@/utils/itemid'
+import { as_filename } from '@/persistence/store-paths'
 import { get_item } from '@/utils/item'
 import {
   as_directory,

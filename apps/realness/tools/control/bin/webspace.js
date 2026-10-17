@@ -39,6 +39,10 @@ import { mkdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import * as dev from '../../../src/control/dev.js'
 import {
+  prepare_workloads,
+  workload_timeout
+} from '../../../src/control/capacity-workloads.js'
+import {
   up as gcp_up,
   down as gcp_down,
   restart as gcp_restart,
@@ -91,7 +95,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   halo restart <name>          push the code and re-serve
   halo down <name> [--delete]  park it, or drain and delete
   halo recover <name> [--yes]  recreate a failed halo's actors elsewhere (hs-f3)
-  halo memory <actor>          what one actor costs the halo, by stage (hs-mem)
+  halo memory <actor> --stages=<file>  sample explicit workloads (hs-mem)
   halo hot                     which halos are over their limits (hs-hot)
   halo scale --report=<file>   one halo or a swarm, from measured capacity (hs-d1)
   halo move <phone> <halo>     move one actor to another halo (hs-n3)
@@ -144,12 +148,6 @@ const parseFlags = args => {
 }
 
 /** A halo name is required for everything but `up`. */
-/** hs-mem: the stages an actor is measured in. */
-const MEMORY_STAGES = [
-  { name: 'as created', run: '' },
-  { name: 'after a page fetch', run: 'true' }
-]
-
 /**
  * hs-mem: one reading of an actor. The halo side is the Firecracker process
  * Pss, which is what the halo cannot give to another actor; the guest side is
@@ -180,11 +178,16 @@ const sample_actor = async (cloud, config, halo, actor, api) => {
       timeout: 60
     }
   })
-  const text = Buffer.from(
-    JSON.parse(inside).stdout_b64 ?? '',
-    'base64'
-  ).toString()
+  const result = JSON.parse(inside)
+  if (result.exit_code !== 0) throw new Error('guest memory sample failed')
+  const text = Buffer.from(result.stdout_b64 ?? '', 'base64').toString()
   const [total, available, ...top] = text.trim().split('\n')
+  if (
+    !/^\d+$/.test(total) ||
+    !/^\d+$/.test(available) ||
+    Number(available) > Number(total)
+  )
+    throw new Error('invalid guest memory sample')
   return {
     halo_mib: Math.round(Number(pss[1]) / 1024),
     guest_used_mib: Math.round((Number(total) - Number(available)) / 1024),
@@ -606,27 +609,54 @@ const halo_command = async (halos, config, args, flags, envName) => {
     case 'memory': {
       const actor = requireName(
         rest,
-        'usage: realness <env> halo memory <actor> [halo]'
+        'usage: realness <env> halo memory <actor> [halo] --stages=<file>'
       )
       const host_name = rest[1] ?? config.hostName ?? 'realness-1'
       const { measure } = await import('../../../src/control/memory.js')
       const { remoteApi } = await import('../../../src/control/api.js')
       if (is_local(config)) throw new Error('memory measures a cloud halo')
       const api = remoteApi(host_name, { zone: config.zone })
-      return finish(
-        await measure({
-          actor,
-          stages: MEMORY_STAGES,
-          run: argv =>
-            api.call(`/v1/actors/${actor}/exec`, {
-              method: 'POST',
-              body: { argv, timeout: 120 }
-            }),
-          /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
-          sample: async () =>
-            await sample_actor(target, config, host_name, actor, api)
-        })
+      if (typeof flags.stages !== 'string')
+        throw new Error(
+          'memory needs --stages=<JSON file with named workload argv>'
+        )
+      const source = JSON.parse(await read_file(flags.stages, 'utf8'))
+      const definitions = source?.workloads ?? source
+      if (
+        !Array.isArray(definitions) ||
+        !definitions.length ||
+        definitions.some(stage => !Array.isArray(stage.argv))
       )
+        throw new Error(
+          'memory stages must be a nonempty array with explicit argv'
+        )
+      const stages = await prepare_workloads(definitions, flags.stages)
+      return measure({
+        actor,
+        stages,
+        ...(flags['sample-ms'] !== undefined && {
+          sample_ms: Number(flags['sample-ms'])
+        }),
+        run: async (argv, stage) => {
+          const timeout_s = workload_timeout(stage)
+          const result = JSON.parse(
+            await api.call(`/v1/actors/${actor}/exec`, {
+              method: 'POST',
+              body: {
+                argv,
+                timeout: timeout_s,
+                ...(stage.cwd ? { cwd: stage.cwd } : {}),
+                ...(stage.stdin_b64 ? { stdin_b64: stage.stdin_b64 } : {})
+              },
+              timeout: timeout_s + 10
+            })
+          )
+          if (result.exit_code !== 0) throw new Error('memory workload failed')
+        },
+        /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
+        sample: async () =>
+          await sample_actor(target, config, host_name, actor, api)
+      })
     }
 
     case 'scale': {
@@ -635,7 +665,7 @@ const halo_command = async (halos, config, args, flags, envName) => {
       const report = typeof flags.report === 'string' ? flags.report : null
       if (!report)
         throw new Error(
-          'usage: realness <env> halo scale --report=<capacity report json> [--demand=N]'
+          'usage: realness <env> halo scale --report=<capacity report json> [--demand=N] [--monthly-hours=N]'
         )
       const measured = JSON.parse(await read_file(report, 'utf8'))
       const choice = scale_choice({
@@ -648,9 +678,15 @@ const halo_command = async (halos, config, args, flags, envName) => {
             config.hourly_cost ??
             0
         ),
-        ...(flags.demand && { demand: Number(flags.demand) })
+        ...(flags.demand && { demand: Number(flags.demand) }),
+        ...((flags['monthly-hours'] ?? measured.monthly_hours) !==
+          undefined && {
+          monthly_hours: Number(
+            flags['monthly-hours'] ?? measured.monthly_hours
+          )
+        })
       })
-      return finish({ ...choice, text: scale_text(choice) })
+      return { ...choice, text: scale_text(choice) }
     }
 
     case 'hot': {

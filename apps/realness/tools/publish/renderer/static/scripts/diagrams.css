@@ -1,139 +1,90 @@
 pre.mermaid {
-  .node {
-    --tone: var(--muted-text);
+  svg.pele {
+    fill: var(--text);
 
-    :is(rect, polygon) {
-      fill: color-mix(in srgb, var(--text) 7%, var(--surface)) !important;
-      stroke: color-mix(in srgb, var(--text) 24%, var(--surface)) !important;
-      stroke-width: 1.5px;
-      rx: 10px;
-      ry: 10px;
-      filter: none !important;
+    :is(rect, polygon, circle, path, line) {
+      vector-effect: non-scaling-stroke;
     }
 
-    .nodeLabel {
-      color: var(--text);
-      fill: var(--text);
-      line-height: 1.3;
+    .pele-node :is(rect, polygon, circle) {
+      fill: color-mix(in srgb, var(--text) 8%, var(--surface)) !important;
+      stroke: none !important;
+      rx: 6px !important;
+      ry: 6px !important;
+    }
 
-      b {
-        color: inherit;
+    .pele-node[class*=" active"],
+    .pele-node[class*=" out"] {
+      --tone: var(--accent);
+    }
+
+    .pele-node[class*=" gate"],
+    .pele-node[class*=" next"] {
+      --tone: var(--warning);
+    }
+
+    .pele-node[class*=" blocked"],
+    .pele-node[class*=" no"],
+    .pele-node[class*=" focus"] {
+      --tone: var(--emphasis);
+    }
+
+    .pele-node:is([class*=" active"], [class*=" out"], [class*=" gate"], [class*=" next"], [class*=" blocked"], [class*=" no"], [class*=" focus"]) {
+      :is(rect, polygon, circle) {
+        fill: color-mix(in srgb, var(--tone) 14%, var(--surface)) !important;
+        stroke: var(--tone) !important;
+        stroke-width: 1.5px !important;
+      }
+
+      .pele-label {
+        fill: color-mix(in srgb, var(--tone) 55%, var(--text)) !important;
         font-weight: 700;
       }
     }
 
-    .nodeLabel small {
-      color: var(--muted-text);
-      font-size: 0.8em;
+    .pele-node[class*=" next"] :is(rect, polygon) {
+      stroke-dasharray: 4 3 !important;
     }
 
-    &.focus {
-      --tone: var(--emphasis);
-
-      :is(rect, polygon) {
-        fill: color-mix(in srgb, var(--tone) 9%, var(--surface)) !important;
-        stroke: var(--emphasis) !important;
-        filter: none !important;
-      }
-
-      .nodeLabel {
-        color: var(--emphasis);
-      }
-    }
-
-    &.next {
-      :is(rect, polygon) {
-        fill: none !important;
-        stroke: var(--warning) !important;
-        stroke-dasharray: 3 3 !important;
-        filter: none !important;
-      }
-
-      .nodeLabel {
-        color: var(--warning);
-      }
-    }
-
-    &.done {
+    .pele-node[class*=" done"] {
       opacity: 0.45;
     }
 
-    &.active,
-    &.out {
-      --tone: var(--accent);
+    .pele-label {
+      fill: color-mix(in srgb, var(--text) 82%, var(--surface));
     }
 
-    &.gate {
-      --tone: var(--warning);
-
-      :is(rect, polygon) {
-        stroke-width: 2px !important;
-      }
+    .pele-edge {
+      stroke: var(--muted-text) !important;
+      stroke-width: 1.25px !important;
+      opacity: 0.8;
     }
 
-    &.blocked,
-    &.no {
-      --tone: var(--emphasis);
+    .pele-marker {
+      fill: var(--muted-text) !important;
+      stroke: none !important;
     }
 
-    &:is(.active, .out, .gate, .blocked, .no) :is(rect, polygon) {
-      fill: color-mix(in srgb, var(--tone) 11%, var(--surface)) !important;
-      stroke: color-mix(in srgb, var(--tone) 45%, var(--surface)) !important;
+    .pele-edge-label rect {
+      fill: var(--surface) !important;
     }
 
-    &.no .nodeLabel,
-    &.gate .nodeLabel {
-      color: var(--emphasis);
+    .pele-edge-label :is(text, tspan) {
+      fill: var(--muted-text) !important;
     }
 
-    &.out .nodeLabel,
-    &.active .nodeLabel {
-      color: var(--accent) !important;
-    }
-
-    &.active :is(rect, polygon) {
-      fill: var(--water-darken) !important;
-      stroke: var(--accent) !important;
-      stroke-width: 2px !important;
-    }
-  }
-
-  .edgeLabel,
-  .edgeLabel p,
-  .labelBkg {
-    background: var(--surface) !important;
-    color: var(--muted-text);
-  }
-
-  .flowchart-link {
-    stroke: var(--muted-text) !important;
-    stroke-width: 1px !important;
-    opacity: 0.7;
-  }
-
-  .marker {
-    fill: var(--muted-text) !important;
-    stroke: none !important;
-  }
-
-  .cluster {
-    rect {
-      fill: color-mix(in srgb, var(--emphasis) 3%, var(--surface)) !important;
-      stroke: color-mix(
-        in srgb,
-        var(--emphasis) 65%,
-        var(--surface)
-      ) !important;
+    .pele-cluster > :is(rect, polygon) {
+      fill: none !important;
+      stroke: color-mix(in srgb, var(--text) 25%, var(--surface)) !important;
       stroke-width: 1px !important;
-      rx: 6px;
-      ry: 6px;
+      stroke-dasharray: 4 3 !important;
+      rx: 8px !important;
+      ry: 8px !important;
     }
 
-    .cluster-label,
-    .cluster-label span,
-    .cluster-label p {
-      color: var(--emphasis) !important;
-      fill: var(--emphasis) !important;
+    :is(.pele-cluster-title, .pele-cluster-label) {
+      fill: var(--text) !important;
+      font-weight: 700;
     }
   }
 }

@@ -1,6 +1,6 @@
 /**
- * The renderer's own parts: the cardlink fence, the Mermaid theme read from
- * the page's Realness roles, and the diagram run.
+ * The renderer's own parts: the cardlink fence, the Pele theme read from the
+ * page's Realness roles, the diagram run, and chat's Mermaid theme.
  *
  * parts.js is a browser script, so the DOM parts get a small canvas and
  * computed-style stand-in rather than a whole browser.
@@ -10,6 +10,7 @@ import assert from 'node:assert/strict'
 import {
   card_html,
   draw_diagrams,
+  match_theme,
   mermaid_config,
   plain_shapes,
   without_class_defs
@@ -188,35 +189,76 @@ test('a canvas without a 2D context is refused, not silently uncoloured', t => {
   assert.throws(mermaid_config, /Mermaid colors require a 2D canvas context/)
 })
 
-test('drawing no diagrams never loads Mermaid', async () => {
+/** A pre.mermaid stand-in that records the style Pele would inherit. */
+const diagram = text => {
+  const style = new Map()
+  return {
+    textContent: text,
+    cleared: false,
+    style: { setProperty: (name, value) => style.set(name, value) },
+    replaceChildren() {
+      this.cleared = true
+    },
+    styles: style
+  }
+}
+
+test('drawing no diagrams never loads Pele', async () => {
   const asked = []
   await draw_diagrams([], async () => {
     asked.push('loaded')
-    return { initialize() {}, run() {} }
+    return { mount() {} }
   })
   assert.deepEqual(asked, [])
 })
 
-test('drawing diagrams configures Mermaid and runs the given nodes', async t => {
+test('drawing mounts each diagram with its zoom buttons off', async t => {
   install_dom(t, { roles: { '--text': '#000' } })
-  const nodes = [
-    { id: 'one', textContent: 'flowchart LR', querySelectorAll: () => [] }
-  ]
-  const used = []
-  const mermaid = {
-    initialize: config => used.push(['initialize', config]),
-    run: options => used.push(['run', options])
-  }
-  await draw_diagrams(nodes, async () => {
-    used.push(['load'])
-    return mermaid
-  })
+  const nodes = [diagram('flowchart LR\n  a --> b'), diagram('flowchart TD')]
+  const mounted = []
+  await draw_diagrams(nodes, async () => ({
+    mount: (node, source, options) => mounted.push([node, source, options])
+  }))
   assert.deepEqual(
-    used.map(entry => entry[0]),
-    ['load', 'initialize', 'run']
+    mounted.map(([node, source, options]) => [node, source, options]),
+    [
+      [nodes[0], 'flowchart LR\n  a --> b', { zoom: false }],
+      [nodes[1], 'flowchart TD', { zoom: false }]
+    ]
   )
-  assert.equal(used[1][1].securityLevel, 'strict')
-  assert.deepEqual(used[2][1].nodes, nodes)
+  assert.ok(nodes.every(node => node.cleared))
+})
+
+test('a diagram takes its colors from Realness roles and the page font', t => {
+  install_dom(t, {
+    roles: {
+      '--surface': 'oklch(0.29 0.01 107)',
+      '--text': 'oklch(0.89 0.01 107)',
+      '--muted-text': 'gray',
+      '--accent': 'teal',
+      '--emphasis': 'red'
+    }
+  })
+  const node = diagram('')
+  match_theme(node)
+  assert.equal(node.styles.get('--pele-bg'), 'oklch(0.29 0.01 107)')
+  assert.equal(node.styles.get('--pele-fg'), 'oklch(0.89 0.01 107)')
+  assert.equal(node.styles.get('--pele-line'), 'gray')
+  assert.equal(node.styles.get('--pele-accent'), 'teal')
+  assert.equal(node.styles.get('--pele-error'), 'red')
+  assert.equal(node.styles.get('--pele-font'), 'Realness Sans')
+})
+
+test('the theme is set before Pele measures the diagram', async t => {
+  install_dom(t, { roles: { '--text': '#000' } })
+  const node = diagram('flowchart LR')
+  let font = null
+  await draw_diagrams([node], async () => ({
+    mount: target => {
+      font = target.styles.get('--pele-font')
+    }
+  }))
+  assert.equal(font, 'Realness Sans')
 })
 
 test('a source keeps its class names and loses its inline colors', () => {
@@ -233,20 +275,19 @@ test('a source keeps its class names and loses its inline colors', () => {
   assert.match(out, /flowchart LR/)
 })
 
-test('drawing strips classDefs before Mermaid sees the source', async t => {
+test('drawing strips classDefs before Pele sees the source', async t => {
   install_dom(t, { roles: { '--text': '#000' } })
-  const node = {
-    textContent: 'flowchart LR\n  a["a1 x"]\n  classDef done fill:#525252;',
-    querySelectorAll: () => []
-  }
-  let ran = ''
+  const node = diagram(
+    'flowchart LR\n  a["a1 x"]\n  classDef done fill:#525252;'
+  )
+  let drawn = ''
   await draw_diagrams([node], async () => ({
-    initialize() {},
-    run: options => {
-      ran = options.nodes[0].textContent
+    mount: (_, source) => {
+      drawn = source
     }
   }))
-  assert.doesNotMatch(ran, /classDef/)
+  assert.doesNotMatch(drawn, /classDef/)
+  assert.match(drawn, /a1 x/)
 })
 
 test('a drawn node drops the inline fills so the stylesheet can style it', () => {

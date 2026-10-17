@@ -1,0 +1,60 @@
+{
+  "api": "http://127.0.0.1:8080",
+  "owner": "+14155550000",
+  "levels": [4, 8, 12],
+  "concurrency": 4,
+  "mixed": true,
+  "repetitions": 3,
+  "min_guest_overlap": 2,
+  "verify_cleanup": true,
+  "duration_ms": 3600000,
+  "request_ms": 160000,
+  "sample_ms": 1000,
+  "min_memory_bytes": 2684354560,
+  "min_disk_bytes": 5368709120,
+  "max_cpu_fraction": 0.95,
+  "hourly_cost": 1,
+  "budget": 5,
+  "sample_argv": [
+    "node",
+    "tools/control/bin/capacity-sample.js",
+    "/var/lib/realness/actors"
+  ],
+  "workloads": [
+    {
+      "name": "memory",
+      "argv": ["node", "-", "memory", "384", "5000"],
+      "stdin_file": "bin/capacity-workload.js",
+      "guest_evidence": true,
+      "timeout_s": 15,
+      "max_ms": 15000
+    },
+    {
+      "name": "cpu",
+      "argv": ["node", "-", "cpu", "100", "5000"],
+      "stdin_file": "bin/capacity-workload.js",
+      "guest_evidence": true,
+      "timeout_s": 15,
+      "max_ms": 15000
+    },
+    {
+      "name": "pi",
+      "argv": ["node", "-", "pi", "1", "125000"],
+      "cwd": "/realness",
+      "stdin_file": "bin/capacity-workload.js",
+      "pi_reply": "ready",
+      "guest_evidence": true,
+      "timeout_s": 150,
+      "max_ms": 145000
+    },
+    {
+      "name": "browser",
+      "argv": ["node", "-", "browser", "1", "125000"],
+      "cwd": "/realness",
+      "stdin_file": "bin/capacity-workload.js",
+      "guest_evidence": true,
+      "timeout_s": 150,
+      "max_ms": 145000
+    }
+  ]
+}

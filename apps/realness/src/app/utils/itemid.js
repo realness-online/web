@@ -4,8 +4,7 @@
 /** @typedef {import('@/types').Author} Author */
 /** @typedef {import('@/types').Item} Item */
 /** @typedef {import('@/types').Statements} Statements */
-import { has_archive, has_history } from '@/types.js'
-
+import { get, set, del } from 'idb-keyval'
 import {
   as_path_parts,
   as_author,
@@ -13,7 +12,6 @@ import {
   as_created_at,
   is_itemid
 } from './itemid-parse.js'
-import { get, set, del } from 'idb-keyval'
 import { DOES_NOT_EXIST, is_sync_index_missing } from '@/utils/sync-file'
 import { decompress_html } from '@/utils/upload-processor'
 import { mutex_for } from '@/utils/algorithms'
@@ -160,51 +158,6 @@ const storage_me = () => {
 
 /**
  * @param {Id} itemid
- * @param {{ search_archives?: boolean }} [options] - passed through to
- *   `as_archive`; probes the archives rather than trusting the cached directory.
- * @returns {Promise<string>}
- */
-export const as_filename = async (itemid, options) => {
-  const { as_archive } = await import('@/persistence/Directory')
-  const poster_id = as_poster_id(itemid)
-  if (poster_id) {
-    let poster_filename = poster_id
-    if (poster_id.startsWith('/+')) poster_filename = `people${poster_id}`
-
-    const layer_name = as_layer_name(itemid)
-    const archive = await as_archive(poster_id, options)
-
-    if (archive) {
-      const suffix = layer_name ? `-${layer_name}` : ''
-      return `${archive}${suffix}.html`
-    }
-
-    const suffix = layer_name ? `-${layer_name}` : ''
-    return `${poster_filename}${suffix}.html`
-  }
-
-  let filename = itemid
-  if (itemid.startsWith('/+')) filename = `people${itemid}`
-
-  const item_type = as_type(itemid)
-  if (
-    item_type &&
-    has_archive.includes(/** @type {typeof has_archive[number]} */ (item_type))
-  ) {
-    const archive = await as_archive(itemid, options)
-    if (archive) return `${archive}.html`
-    return `${filename}.html`
-  } else if (is_history(itemid)) return `${filename}.html`
-  else if (item_type === 'relations') {
-    const base = filename.replace(/\/relations$/, '')
-    return `${base}/relations.html`
-  }
-
-  return `${filename}/index.html`
-}
-
-/**
- * @param {Id} itemid
  * @returns {Promise<Item | null>}
  */
 export const load_from_network = async itemid => {
@@ -334,20 +287,25 @@ const is_storage_not_found = e =>
   )
 
 /**
- * Poster or layer filename at the pre-archive location.
- * @param {Id} itemid
- * @returns {string | null} null when the itemid is not a poster or layer
+ * Itemid to storage filename. `persistence/store-paths.js` lends it here so
+ * this module does not import the store's path implementation.
+ * @type {{
+ *   as_filename: (itemid: Id, options?: { search_archives?: boolean }) => Promise<string>,
+ *   as_top_level_filename: (itemid: Id) => string | null
+ * }}
  */
-const as_top_level_filename = itemid => {
-  const poster_id =
-    as_poster_id(itemid) ?? (as_type(itemid) === 'posters' ? itemid : null)
-  if (!poster_id) return null
-  const poster_filename = poster_id.startsWith('/+')
-    ? `people${poster_id}`
-    : poster_id
-  const layer_name = as_layer_name(itemid)
-  const suffix = layer_name ? `-${layer_name}` : ''
-  return `${poster_filename}${suffix}.html`
+let filename_seam = {
+  /** @type {(itemid: Id, options?: { search_archives?: boolean }) => Promise<string>} */
+  as_filename: itemid => Promise.resolve(String(itemid)),
+  /** @type {(itemid: Id) => string | null} */
+  as_top_level_filename: () => null
+}
+
+/**
+ * @param {typeof filename_seam} seam
+ */
+export const use_filename_seam = seam => {
+  filename_seam = seam
 }
 
 /**
@@ -369,6 +327,7 @@ export const as_download_url = async itemid => {
       if (is_sync_index_missing(idx[itemid])) return null
       const { url, storage_ready } = await import('@/utils/serverless')
       await storage_ready
+      const { as_filename, as_top_level_filename } = filename_seam
       const filename = await as_filename(itemid)
       const remembered = await cached_download_url(itemid, filename)
       if (remembered) return remembered
@@ -446,23 +405,6 @@ export const type_as_list = item => {
     return [as_item]
   }
   return []
-}
-/**
- * @param {Id} itemid
- * @returns {boolean}
- */
-const is_history = itemid => {
-  const parts = as_path_parts(itemid)
-  const item_type = as_type(itemid)
-  if (
-    item_type &&
-    has_history.includes(
-      /** @type {typeof has_history[number]} */ (item_type)
-    ) &&
-    parts.length === 3
-  )
-    return true
-  return false
 }
 
 /**

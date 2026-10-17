@@ -32,13 +32,15 @@ class ScaleError extends Error {}
  * @param {number} [options.budget_usd] monthly ceiling
  * @param {number} [options.taps] actor addresses on one halo
  * @param {number} [options.demand] actors needed now; defaults to what one halo holds
+ * @param {number} [options.monthly_hours] running hours per halo; defaults to nonstop
  */
 export const scale_choice = ({
   actors_per_halo,
   hourly_cost,
   budget_usd = BUDGET_USD,
   taps = ACTOR_TAPS,
-  demand = actors_per_halo
+  demand = actors_per_halo,
+  monthly_hours = HOURS
 }) => {
   if (!(actors_per_halo > 0))
     throw new ScaleError('scale needs a measured actor count above zero')
@@ -48,9 +50,16 @@ export const scale_choice = ({
       `one halo cannot address ${demand} actors: ${taps} TAPs is the ceiling`
     )
 
+  if (
+    !Number.isFinite(monthly_hours) ||
+    monthly_hours <= 0 ||
+    monthly_hours > HOURS
+  )
+    throw new ScaleError('monthly hours must be above zero and at most 730')
+
   const halos = Math.max(1, Math.ceil(demand / actors_per_halo))
-  const monthly = halos * hourly_cost * HOURS
-  const room = Math.floor(budget_usd / (hourly_cost * HOURS))
+  const monthly = halos * hourly_cost * monthly_hours
+  const room = Math.floor(budget_usd / (hourly_cost * monthly_hours))
 
   /** What runs out first, in the order a halo would hit it. Memory is what fills a halo, so it comes before the budget; addresses are per halo, so they come last. */
   const binding = first_limit({ demand, actors_per_halo, halos, room, taps })
@@ -60,6 +69,7 @@ export const scale_choice = ({
     actors_per_halo,
     demand,
     monthly_usd: round(monthly),
+    monthly_hours,
     budget_room_halos: room,
     taps,
     binding,
@@ -71,7 +81,7 @@ export const scale_choice = ({
           } each (${binding} binds first)`,
     because: [
       `${demand} actors / ${actors_per_halo} per halo = ${halos} halo(s)`,
-      `$${round(monthly)} a month at $${hourly_cost}/hour, ceiling $${budget_usd}`,
+      `$${round(monthly)} a month at $${hourly_cost}/hour for ${monthly_hours} hours per halo, ceiling $${budget_usd}; compute only`,
       `${
         binding === 'none today'
           ? 'no measured limit binds at this demand'

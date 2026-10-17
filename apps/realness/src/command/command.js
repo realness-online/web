@@ -284,6 +284,8 @@ const run_watch_command = async (
   const { watch } = await import('./watch-loop.js')
   const { ledger } = await import('./watch-ledger.js')
   const { cloud_sources } = await import('./watch-cloud.js')
+  const { sync_traffic_cache } =
+    await import('#root/tools/ops/hosting-traffic.js')
   const store = client({ url: service_url ?? SYNC_URL, token })
   const controller = new AbortController()
   process.once('SIGINT', () => controller.abort())
@@ -297,7 +299,7 @@ const run_watch_command = async (
       named,
       records,
       service: service_url ?? SYNC_URL,
-      cloud: cloud_sources({ store }),
+      cloud: cloud_sources({ store, sync: sync_traffic_cache }),
       interval_ms,
       signal: controller.signal,
       stdout,

@@ -49,8 +49,13 @@ vi.mock('idb-keyval', () => ({
   keys: vi.fn(() => Promise.resolve([]))
 }))
 
+vi.mock('@/persistence/store-paths', async importOriginal => ({
+  ...(await importOriginal()),
+  as_filename: vi.fn(id => id.replace(/[/+]/g, ''))
+}))
+
 vi.mock('@/utils/itemid', () => ({
-  as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
+  use_filename_seam: vi.fn(),
   as_author: vi.fn(id => id.split('/')[0]),
   load: vi.fn(() => Promise.resolve(null)),
   is_itemid: vi.fn(id => typeof id === 'string' && id.includes('/')),

@@ -67,8 +67,13 @@ vi.mock('idb-keyval', () => ({
   keys: vi.fn(() => Promise.resolve([]))
 }))
 
+vi.mock('@/persistence/store-paths', async importOriginal => ({
+  ...(await importOriginal()),
+  as_filename: vi.fn(id => id.replace(/[/+]/g, ''))
+}))
+
 vi.mock('@/utils/itemid', () => ({
-  as_filename: vi.fn(id => id.replace(/[/+]/g, '')),
+  use_filename_seam: vi.fn(),
   as_author: vi.fn(id => id.split('/')[0]),
   as_created_at: vi.fn(id => {
     const created = Number(String(id).split('/').pop())
@@ -375,7 +380,7 @@ describe('sync composable', () => {
 
     it('marks missing after one lookup of the only stored name', async () => {
       const { metadata } = await import('@/utils/serverless')
-      const { as_filename } = await import('@/utils/itemid')
+      const { as_filename } = await import('@/persistence/store-paths')
       const not_found = Object.assign(new Error('Not found'), {
         code: 'storage/object-not-found'
       })
@@ -391,7 +396,7 @@ describe('sync composable', () => {
 
     it('does not try the other suffix after a permission failure', async () => {
       const { metadata } = await import('@/utils/serverless')
-      const { as_filename } = await import('@/utils/itemid')
+      const { as_filename } = await import('@/persistence/store-paths')
       as_filename.mockResolvedValueOnce('people/+1234/relations.html')
       metadata.mockReset()
       const denied = Object.assign(new Error('denied'), {

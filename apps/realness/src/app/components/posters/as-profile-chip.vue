@@ -1,7 +1,6 @@
 <script setup>
   import icon from '@/components/icon'
   import AsAvatar from '@/components/posters/as-avatar'
-  import AsFigure from '@/components/profile/as-figure'
   import { useRouter as use_router } from 'vue-router'
   import { computed } from 'vue'
   import { use_me, is_person } from '@/use/people'
@@ -54,10 +53,6 @@
     <icon v-else name="silhouette" />
     <span>{{ person.name }}</span>
   </router-link>
-  <template v-else-if="display === 'page'">
-    <as-figure v-if="person.avatar" :person="person" display="page" />
-    <icon v-else name="silhouette" />
-  </template>
 </template>
 
 <style lang="stylus">

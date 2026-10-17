@@ -34,6 +34,18 @@ vi.mock('@/utils/serverless', () => ({
 
 const id = /** @type {import('@/types').Id} */ ('/+14155550142')
 
+/**
+ * Real filename rules, so archived lookups resolve as they do in the app.
+ */
+const lend_filename_seam = async () => {
+  const { use_filename_seam } = await import('@/utils/itemid')
+  const { as_filename, as_top_level_filename, set_directory_lookup } =
+    await import('@/persistence/store-paths')
+  const { as_directory } = await import('@/persistence/store')
+  set_directory_lookup(as_directory)
+  use_filename_seam({ as_filename, as_top_level_filename })
+}
+
 /** @param {{ok: boolean, body?: string}} options */
 const as_response = ({ ok, body = '<address></address>' }) => ({
   ok,
@@ -48,6 +60,7 @@ describe('download url cache', () => {
     const { url } = await import('@/utils/serverless')
     url.mockReset()
     url.mockResolvedValue('https://storage/profile.html.gz?token=a')
+    await lend_filename_seam()
   })
 
   it('never asks for the retired .html.gz name', async () => {

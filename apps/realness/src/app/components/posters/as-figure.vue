@@ -855,7 +855,7 @@
               <as-figure
                 v-if="person"
                 :person="person"
-                :display="profile_display"
+                display="label"
                 :itemid="profile_chip_itemid" />
               <span role="group">
                 <as-download :itemid="/** @type {Id} */ (itemid)" />

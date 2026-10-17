@@ -46,6 +46,14 @@ const check_imports = (path, seen = new Set()) => {
   }
 }
 
+for (const binary of ['realness', 'agent-browser'])
+  test(`the generated ${binary} launcher declares its shell for direct execution`, () => {
+    const opening = `cat > "$TREE/usr/local/bin/${binary}" <<'WRAPPER'\n`
+    const wrapper = build.split(opening)[1]?.split('\nWRAPPER')[0]
+    assert.ok(wrapper, `expected the generated ${binary} launcher`)
+    assert.equal(wrapper.split('\n')[0], '#!/bin/sh')
+  })
+
 test('every runtime file a guest wrapper calls is copied into the template', () => {
   assert.ok(called.length >= 2, 'expected the actor sync and recovery wrappers')
   assert.match(

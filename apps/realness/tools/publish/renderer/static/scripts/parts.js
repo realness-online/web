@@ -57,9 +57,9 @@ export const to_hex = value => {
 }
 
 /**
- * The colors Mermaid cannot read from CSS. Every other style lives in
- * scripts/diagrams.css, so the page keeps one source of truth. Strict
- * security: labels stay text and click handlers never bind.
+ * The colors Mermaid cannot read from CSS. Chat still draws with Mermaid;
+ * published pages use Pele. Strict security: labels stay text and click
+ * handlers never bind.
  */
 export const mermaid_config = () => {
   const css = getComputedStyle(document.documentElement)
@@ -87,9 +87,40 @@ export const mermaid_config = () => {
 }
 
 /**
- * Drop the `classDef` lines a source carries. Mermaid turns them into
- * `!important` rules that no stylesheet can override, and the colors they hold
- * are diagrams.css's to choose. `class` lines stay: they name the status.
+ * Pele's color variables, each read from a Realness role on the page. Pele
+ * writes its fallbacks on the svg, so the values go on the node above it.
+ */
+const PELE_ROLES = {
+  '--pele-bg': '--surface',
+  '--pele-surface': '--surface',
+  '--pele-surface-alt': '--surface',
+  '--pele-fg': '--text',
+  '--pele-muted': '--muted-text',
+  '--pele-line': '--muted-text',
+  '--pele-border': '--muted-text',
+  '--pele-accent': '--accent',
+  '--pele-critical': '--emphasis',
+  '--pele-error': '--emphasis'
+}
+
+/**
+ * Point a diagram at the page's color roles and body font, so Pele measures
+ * the type the reader sees.
+ * @param {HTMLElement} node
+ */
+export const match_theme = node => {
+  const root = getComputedStyle(document.documentElement)
+  for (const [name, role] of Object.entries(PELE_ROLES))
+    node.style.setProperty(name, root.getPropertyValue(role).trim())
+  const font = getComputedStyle(document.body).fontFamily
+  node.style.setProperty('--pele-font', font)
+  node.style.setProperty('--pele-font-mono', font)
+}
+
+/**
+ * Drop the `classDef` lines a source carries. Their colors would become
+ * inline styles; diagrams.css chooses status colors from the `class` lines,
+ * which stay.
  * @param {string} source
  * @returns {string}
  */
@@ -100,24 +131,25 @@ export const without_class_defs = source =>
     .join('\n')
 
 /**
- * Draw `pre.mermaid` parts into SVG. The caller supplies mermaid, so a page
- * can load its own copy and a bundle can import one.
- * @param {Element[]} nodes
- * @param {() => Promise<{initialize: Function, run: Function}>} load
+ * Draw `pre.mermaid` parts into SVG with Pele. The caller supplies Pele, so a
+ * page can load its own copy and a bundle can import one. Pele's zoom buttons
+ * stay off; plan pages expand a diagram on click instead.
+ * @param {HTMLElement[]} nodes
+ * @param {() => Promise<{mount: Function}>} load
  */
 export const draw_diagrams = async (nodes, load) => {
   if (!nodes.length) return
-  for (const node of nodes)
-    node.textContent = without_class_defs(node.textContent)
-  const mermaid = await load()
-  mermaid.initialize(mermaid_config())
-  await mermaid.run({ nodes })
-  for (const node of nodes) plain_shapes(node)
+  const pele = await load()
+  for (const node of nodes) {
+    const source = without_class_defs(node.textContent)
+    node.replaceChildren()
+    match_theme(node)
+    pele.mount(node, source, { zoom: false })
+  }
 }
 
 /**
- * Drop the inline fills Mermaid writes, so diagrams.css styles every node
- * from the class names in the source.
+ * Drop the inline fills Mermaid writes in chat, so the theme colors show.
  * @param {ParentNode} root
  */
 export const plain_shapes = root => {

@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer as create_server } from 'node:http'
 import { createHmac as create_hmac } from 'node:crypto'
+import { existsSync as exists_sync } from 'node:fs'
 import {
   mkdir,
   mkdtemp,
@@ -56,6 +57,20 @@ const host = async (t, options = {}) => {
         options.cleanup_failure && id === 'actor-2' ? 500 : 204
       return response.end()
     }
+    if (request.url === '/v1/actors' && request.method === 'GET')
+      return response.end(
+        JSON.stringify({
+          actors: [
+            ...(options.preexisting ?? []),
+            ...state.created.filter(
+              id =>
+                !state.deleted.includes(id) ||
+                options.keep_actor === id ||
+                (options.cleanup_failure && id === 'actor-2')
+            )
+          ].map(id => ({ id }))
+        })
+      )
     if (request.url === '/v1/actors') {
       if (options.create_failure && state.created.length === 1) {
         response.statusCode = 500
@@ -135,6 +150,118 @@ test('multiple levels reuse actors and never exceed configured concurrency', asy
     report.levels.map(level => level.workloads[0].samples),
     [2, 3]
   )
+})
+
+test('mixed capacity overlaps distinct workloads through HTTP within the concurrency limit', async t => {
+  const { api, state } = await host(t, { barrier: true })
+  const config = configuration(api)
+  config.mixed = true
+  config.workloads.push({
+    ...config.workloads[0],
+    name: 'memory',
+    argv: ['node', 'memory.js']
+  })
+  const { report } = await execute(config)
+  assert.equal(report.complete, true)
+  assert.equal(state.maximum, 2)
+  assert.deepEqual(
+    state.execs
+      .slice(0, 2)
+      .map(exec => exec.argv[1])
+      .sort(),
+    ['memory.js', 'workload.js']
+  )
+  assert.equal(report.levels[0].max_workload_overlap, 2)
+  assert.deepEqual(
+    report.levels[0].workloads.map(workload => workload.samples),
+    [2, 2]
+  )
+  assert.deepEqual(state.deleted, ['actor-2', 'actor-1'])
+  assert.equal(report.safe_count, null)
+})
+
+test('repeated mixed rounds keep their sample counts and verify owned cleanup through HTTP', async t => {
+  const { api, state } = await host(t, { barrier: true })
+  const config = configuration(api)
+  config.mixed = true
+  config.repetitions = 3
+  config.verify_cleanup = true
+  config.workloads.push({
+    ...config.workloads[0],
+    name: 'memory',
+    argv: ['node', 'memory.js']
+  })
+  const { report, events } = await execute(config)
+  assert.equal(report.complete, true)
+  assert.equal(report.cleanup_verified, true)
+  assert.deepEqual(report.cleanup_remaining, [])
+  assert.equal(state.maximum, 2)
+  assert.equal(state.execs.length, 12)
+  assert.deepEqual(
+    report.levels[0].workloads.map(workload => workload.samples),
+    [6, 6]
+  )
+  assert.deepEqual(
+    [
+      ...new Set(
+        events
+          .filter(event => event.type === 'workload')
+          .map(event => event.repetition)
+      )
+    ],
+    [1, 2, 3]
+  )
+})
+
+test('successful DELETE responses do not hide an actor left behind', async t => {
+  const { api, state } = await host(t, { keep_actor: 'actor-2' })
+  const config = { ...configuration(api), verify_cleanup: true }
+  const { report } = await execute(config)
+  assert.deepEqual(state.deleted, ['actor-2', 'actor-1'])
+  assert.equal(report.complete, false)
+  assert.equal(report.cleanup_verified, false)
+  assert.deepEqual(report.cleanup_remaining, ['actor-2'])
+})
+
+test('cleanup verification refuses a nonempty test identity without deleting existing actors', async t => {
+  const { api, state } = await host(t, { preexisting: ['personal-actor'] })
+  const { report } = await execute({
+    ...configuration(api),
+    verify_cleanup: true
+  })
+  assert.match(report.stop, /empty dedicated test identity/)
+  assert.deepEqual(state.created, [])
+  assert.deepEqual(state.deleted, [])
+})
+
+test('pending requests cannot pass a required guest overlap check', async t => {
+  const { api } = await host(t, {
+    output: JSON.stringify({
+      type: 'capacity_workload',
+      kind: 'cpu',
+      elapsed_ms: 0.000001,
+      guest_peak_mib: 10,
+      memory_source: 'proc-meminfo'
+    })
+  })
+  const config = configuration(api)
+  config.mixed = true
+  config.min_guest_overlap = 1
+  config.workloads[0].guest_evidence = true
+  const { report } = await execute(config)
+  assert.equal(report.complete, false)
+  assert.match(report.stop, /insufficient guest execution overlap/)
+})
+
+test('mixed guest failure still cleans every owned actor', async t => {
+  const { api, state } = await host(t, { guest_failure: true })
+  const config = configuration(api)
+  config.mixed = true
+  config.workloads.push({ ...config.workloads[0], name: 'memory' })
+  const { report } = await execute(config)
+  assert.equal(report.complete, false)
+  assert.match(report.stop, /guest exit 2/)
+  assert.deepEqual(state.deleted, ['actor-2', 'actor-1'])
 })
 
 test('slow successful guest responses still fail the latency limit', async t => {
@@ -292,6 +419,100 @@ test('public capacity command defaults to offline validation and journals a loca
   assert.equal(state.created.length, 2)
 })
 
+test('public capacity command prepares a standalone verified bundle and rejects modified bytes', async t => {
+  const { api, state } = await host(t)
+  const root = file_url_to_path(
+    new URL('../../../../artifacts/realness/quality/', import.meta.url)
+  )
+  await mkdir(root, { recursive: true })
+  const directory = await mkdtemp(join(root, 'capacity-bundle-'))
+  const config = { ...configuration(api), verify_cleanup: true }
+  config.sample_argv = [
+    process.execPath,
+    '-p',
+    `JSON.stringify(${JSON.stringify(resources)})`
+  ]
+  config.workloads[0].stdin_file = 'workload.js'
+  const config_path = join(directory, 'input.json')
+  await write_file(config_path, JSON.stringify(config))
+  await write_file(
+    join(directory, 'workload.js'),
+    'process.stdout.write("ready")\n'
+  )
+  const command = file_url_to_path(
+    new URL('../../tools/control/bin/capacity.js', import.meta.url)
+  )
+  const execute = promisify(exec_file)
+  const output = join(directory, 'bundle')
+  const prepared = JSON.parse(
+    (
+      await execute(process.execPath, [
+        command,
+        '--config',
+        config_path,
+        '--prepare',
+        output
+      ])
+    ).stdout
+  )
+  assert.equal(prepared.prepared, true)
+  assert.ok(prepared.files['package.json'])
+  assert.equal(state.authorizations.length, 0)
+  const staged_command = join(output, 'tools/control/bin/capacity.js')
+  const staged_config = join(output, 'capacity.json')
+  const manifest = join(output, 'manifest.json')
+  const preview = JSON.parse(
+    (
+      await execute(
+        process.execPath,
+        [staged_command, '--config', staged_config, '--manifest', manifest],
+        { cwd: output }
+      )
+    ).stdout
+  )
+  assert.equal(preview.execution, false)
+  const secret_path = join(directory, 'secret')
+  const journal = join(directory, 'journal.jsonl')
+  await write_file(secret_path, secret, { mode: 0o600 })
+  const run_args = [
+    staged_command,
+    '--config',
+    staged_config,
+    '--run',
+    '--manifest',
+    manifest,
+    '--secret-file',
+    secret_path,
+    '--journal',
+    journal
+  ]
+  const report = JSON.parse(
+    (await execute(process.execPath, run_args, { cwd: output })).stdout
+  )
+  assert.equal(report.complete, true)
+  assert.equal(report.build_id, prepared.build_id)
+  assert.equal(
+    JSON.parse((await read_file(journal, 'utf8')).trim().split('\n').at(-1))
+      .build_id,
+    prepared.build_id
+  )
+  await write_file(staged_config, `${await read_file(staged_config, 'utf8')}\n`)
+  await assert.rejects(
+    execute(process.execPath, run_args, { cwd: output }),
+    /capacity build mismatch/
+  )
+  await assert.rejects(
+    execute(process.execPath, [
+      command,
+      '--config',
+      config_path,
+      '--prepare',
+      output
+    ]),
+    /EEXIST/
+  )
+})
+
 test('Pi workload requires a completed reply and settled agent through HTTP', async t => {
   const reply = {
     type: 'message_end',
@@ -321,11 +542,39 @@ test('memory and CPU workload commands run locally and reject unsafe arguments',
   const execute = promisify(exec_file)
   for (const kind of ['memory', 'cpu']) {
     const result = await execute(process.execPath, [script, kind, '1', '20'])
-    assert.equal(JSON.parse(result.stdout).kind, kind)
+    const measured = JSON.parse(result.stdout)
+    assert.equal(measured.kind, kind)
+    assert.equal(measured.type, 'capacity_workload')
+    assert.ok(measured.elapsed_ms > 0)
+    assert.ok(measured.guest_peak_mib > 0)
+    assert.equal(
+      measured.memory_source,
+      process.platform === 'linux' ? 'proc-meminfo' : 'os-freemem'
+    )
   }
   await assert.rejects(
     execute(process.execPath, [script, 'memory', '2048', '20']),
     /max 1024/
+  )
+})
+
+test('Pi workload reaches guest binary lookup with an integer child timeout', async t => {
+  if (exists_sync('/usr/local/bin/realness'))
+    return t.skip(
+      'guest executable is present; this check must not call a model'
+    )
+  const command = file_url_to_path(
+    new URL('../../tools/control/bin/capacity-workload.js', import.meta.url)
+  )
+  await assert.rejects(
+    promisify(exec_file)(process.execPath, [command, 'pi', '1', '1000']),
+    error => {
+      assert.equal(error.code, 1)
+      assert.match(error.stderr, /ENOENT/)
+      assert.match(error.stderr, /\/usr\/local\/bin\/realness/)
+      assert.doesNotMatch(error.stderr, /ERR_OUT_OF_RANGE/)
+      return true
+    }
   )
 })
 
@@ -334,6 +583,14 @@ test('invalid and over-budget configurations fail before requests', () => {
   for (const change of [
     { levels: [2, 1] },
     { concurrency: 0 },
+    { mixed: 'yes' },
+    { repetitions: 0 },
+    { repetitions: 101 },
+    { repetitions: 1.5 },
+    { verify_cleanup: 'yes' },
+    { min_guest_overlap: 2 },
+    { mixed: true, min_guest_overlap: 1 },
+    { workloads: [{ ...config.workloads[0], guest_evidence: 'yes' }] },
     { duration_ms: 0.5 },
     { sample_ms: 2147483648 },
     { budget: 0.000001 },

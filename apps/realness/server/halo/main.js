@@ -21,7 +21,7 @@ import { SyncMirror } from '../../src/halo/sync-mirror.js'
 import { logger } from '../../src/halo/log.js'
 import * as pty from '../../src/halo/pty.js'
 import * as server from '../../src/halo/server.js'
-import { ActorStore } from '../../src/halo/actors.js'
+import { ActorStore, ACTOR_MIB } from '../../src/halo/actors.js'
 import { AppStore } from '../../src/halo/apps.js'
 import { Parker } from '../../src/halo/parking.js'
 import { execFile as exec_file } from 'node:child_process'
@@ -48,7 +48,7 @@ const { positionals, values } = parse_args({
     'guest-cid': { type: 'string', default: '3' },
     'vsock-port': { type: 'string', default: '52' },
     vcpu: { type: 'string', default: '2' },
-    'mem-mib': { type: 'string', default: '512' },
+    'mem-mib': { type: 'string', default: String(ACTOR_MIB) },
     'tap-prefix': { type: 'string', default: 'fc-tap' },
     'seed-tap': { type: 'string', default: 'fc-tap0' },
     'boot-timeout': { type: 'string', default: '60' },

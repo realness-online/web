@@ -52,7 +52,8 @@
     "@realness.online/itemid",
     "@realness.online/store",
     "@realness.online/thoughts",
-    "template-for-polyfill"
+    "template-for-polyfill",
+    "pele"
   ],
   "ignoreUnresolvedImports": [
     "/scripts/template-for-polyfill.js",
@@ -65,7 +66,7 @@
     "unused-types": "off",
     "unused-class-members": "warn",
     "duplicate-exports": "warn",
-    "circular-dependencies": "warn",
+    "circular-dependencies": "error",
     "unresolved-imports": "warn"
   },
   "overrides": [
@@ -144,7 +145,7 @@
     }
   ],
   "regression": {
-    "baseline":     {
+    "baseline": {
       "analysisIdentity": {
         "mode": "syntactic",
         "semantic_schema_version": 1,
@@ -153,7 +154,7 @@
         "backend_family": "",
         "completeness": "complete"
       },
-      "totalIssues": 42,
+      "totalIssues": 32,
       "unusedFiles": 0,
       "unusedExports": 0,
       "unusedTypes": 0,
@@ -165,7 +166,7 @@
       "unresolvedImports": 0,
       "unlistedDependencies": 0,
       "duplicateExports": 10,
-      "circularDependencies": 10,
+      "circularDependencies": 0,
       "reExportCycles": 0,
       "typeOnlyDependencies": 0,
       "testOnlyDependencies": 0,

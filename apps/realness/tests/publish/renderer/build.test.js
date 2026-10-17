@@ -109,10 +109,8 @@ test('plans mode sorts by modification time and copies the installed Mermaid bun
     assert.doesNotMatch(index, /<details>/)
     assert.match(index, /href="\/plans.css"/)
     assert.deepEqual(
-      await readFile(join(f.root, 'dist/scripts/mermaid.min.js')),
-      await readFile(
-        new URL(import.meta.resolve('mermaid/dist/mermaid.min.js'))
-      )
+      await readFile(join(f.root, 'dist/scripts/pele.global.js')),
+      await readFile(new URL(import.meta.resolve('pele/global')))
     )
   } finally {
     await rm(f.root, { recursive: true, force: true })
@@ -181,7 +179,7 @@ test('an enabled PWA caches the selected snapshot, fragments, and diagrams', asy
     for (const path of [
       'blog/note/index.html',
       'partials/header.fragment',
-      'scripts/mermaid.min.js'
+      'scripts/pele.global.js'
     ])
       assert.ok(worker.includes(path), path)
     assert.match(

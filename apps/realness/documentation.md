@@ -666,7 +666,7 @@ realness publish dist
 ```
 
 Articles are Markdown in `content/articles/`. The output is plain HTML with its
-own scripts; a page with a diagram gets `scripts/mermaid.min.js` copied in.
+own scripts; a page with a diagram gets `scripts/pele.global.js` copied in.
 `/app` does the same with the app example.
 
 ### Publish it at a URL (a2, c1e)

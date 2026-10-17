@@ -5,7 +5,10 @@ import AsProfileChip from '@/components/posters/as-profile-chip.vue'
 describe('as-profile-chip', () => {
   it('renders a label row with avatar, name, link', () => {
     const wrapper = mount(AsProfileChip, {
-      props: { person: { id: '/+1', name: 'S' }, display: 'label' },
+      props: {
+        person: { id: '/+1', type: 'person', name: 'S' },
+        display: 'label'
+      },
       global: {
         stubs: {
           'as-avatar': true,
@@ -19,7 +22,7 @@ describe('as-profile-chip', () => {
   it('renders with poster_itemid when no avatar', () => {
     const wrapper = mount(AsProfileChip, {
       props: {
-        person: { id: '/+1', name: 'S', avatar: undefined },
+        person: { id: '/+1', type: 'person', name: 'S', avatar: undefined },
         display: 'label',
         poster_itemid: '/+1/posters/123'
       },

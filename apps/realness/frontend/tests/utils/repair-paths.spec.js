@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { as_filename } from '@/utils/itemid'
+import { as_filename } from '@/persistence/store-paths'
 
 describe('storage paths a repair tool has to write', () => {
   it('names the profile and the statements file', async () => {

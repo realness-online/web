@@ -12,15 +12,22 @@ import {
   Shadow
 } from '@/persistence/Storage'
 
+vi.mock('@/persistence/store-paths', async importOriginal => ({
+  ...(await importOriginal()),
+  as_filename: vi.fn(() => 'test-filename')
+}))
+
 vi.mock('@/utils/itemid', () => ({
+  use_filename_seam: vi.fn(),
   as_type: vi.fn(() => 'posters'),
-  as_filename: vi.fn(() => 'test-filename'),
   as_created_at: vi.fn(() => 1234567890),
   as_query_id: vi.fn(() => 'test-query-id'),
   is_itemid: vi.fn(() => true),
   as_path_parts: vi.fn(id => String(id).split('/').filter(Boolean)),
   as_author: vi.fn(() => '/+1234567890'),
-  as_layer_id: vi.fn(() => '/+1234567890/shadows/1234567890')
+  as_layer_id: vi.fn(() => '/+1234567890/shadows/1234567890'),
+  as_poster_id: vi.fn(() => null),
+  as_layer_name: vi.fn(() => null)
 }))
 
 const { mock_me, mock_current_user } = vi.hoisted(() => ({

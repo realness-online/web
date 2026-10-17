@@ -29,6 +29,7 @@ vi.mock('@/use/poster', () => ({
 }))
 
 vi.mock('@/utils/itemid', () => ({
+  use_filename_seam: vi.fn(),
   as_author: vi.fn(() => null),
   as_created_at: vi.fn(id => {
     const parts = id.split('/')
@@ -454,15 +455,43 @@ describe('vectorize composable', () => {
       const optimized_handler =
         created_workers[3].addEventListener.mock.calls[0][1]
 
-      await optimized_handler({
-        data: {
-          vector: '<svg itemid="' + itemid + '"><path /></svg>'
-        }
-      })
+      const poster = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'svg'
+      )
+      poster.setAttribute('itemid', itemid)
+      for (const layer of [
+        'shadows',
+        'sediment',
+        'sand',
+        'gravel',
+        'rocks',
+        'boulders'
+      ]) {
+        const symbol = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'symbol'
+        )
+        symbol.setAttribute('itemid', itemid.replace('/posters/', `/${layer}/`))
+        symbol.innerHTML = '<path d="M0 0" />'
+        poster.appendChild(symbol)
+      }
+      document.body.appendChild(poster)
 
-      expect(Queue.remove).toHaveBeenCalledWith(itemid)
-      expect(vectorize_instance.is_processing.value).toBe(false)
-      expect(vectorize_instance.current_processing.value).toBeNull()
+      try {
+        await optimized_handler({
+          data: {
+            vector: '<svg itemid="' + itemid + '"><path /></svg>'
+          }
+        })
+
+        expect(mock_poster_constructor).toHaveBeenCalledWith(itemid)
+        expect(Queue.remove).toHaveBeenCalledWith(itemid)
+        expect(vectorize_instance.is_processing.value).toBe(false)
+        expect(vectorize_instance.current_processing.value).toBeNull()
+      } finally {
+        poster.remove()
+      }
     })
 
     it('leaves the optimized handler alone with nothing in flight', async () => {

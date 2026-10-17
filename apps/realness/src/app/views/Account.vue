@@ -10,11 +10,17 @@
     HISTORY_PAUSE_DETAIL
   } from '@/use/sync-folder'
   import { use_me } from '@/use/people'
+  import { defineAsyncComponent as define_async_component } from 'vue'
   import { current_user } from '@/utils/serverless'
   import { sign_off } from '@/utils/serverless-auth'
   import { ref, computed, onMounted as mounted } from 'vue'
 
   defineOptions({ name: 'Account' })
+
+  /** Folder sync renders posters off-screen; only this page asks for it. */
+  const PosterFigure = define_async_component(
+    () => import('@/components/posters/as-figure')
+  )
 
   const { is_valid_name } = use_me()
   const sync_folder_supported_value = sync_folder_supported()
@@ -26,7 +32,7 @@
     folder_sync_last_at,
     folder_sync_error,
     folder_sync_progress
-  } = use_sync_folder()
+  } = use_sync_folder({ figure: PosterFigure })
 
   const is_brave = ref(false)
   mounted(async () => {

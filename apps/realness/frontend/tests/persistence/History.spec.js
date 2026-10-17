@@ -18,7 +18,7 @@ vi.mock('@/utils/upload-processor', () => ({
   prepare_upload_html: (...args) => mock_prepare(...args)
 }))
 
-vi.mock('@/utils/itemid', async importOriginal => ({
+vi.mock('@/persistence/store-paths', async importOriginal => ({
   ...(await importOriginal()),
   as_filename: () => Promise.resolve('history.html.gz')
 }))

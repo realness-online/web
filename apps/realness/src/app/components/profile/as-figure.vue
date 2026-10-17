@@ -2,7 +2,6 @@
   import icon from '@/components/icon'
   import AsAvatar from '@/components/posters/as-avatar'
   import AsProfileChip from '@/components/posters/as-profile-chip'
-  import AsFigure from '@/components/posters/as-figure'
   import AsAddress from '@/components/profile/as-address'
   import AsMessenger from '@/components/profile/as-messenger'
   import { useRouter as use_router } from 'vue-router'
@@ -24,10 +23,6 @@
       type: String,
       default: 'phonebook',
       validator: v => ['label', 'phonebook', 'page'].includes(v)
-    },
-    profile_display: {
-      type: String,
-      default: undefined
     },
     poster_itemid: {
       type: String,
@@ -72,22 +67,14 @@
 </script>
 
 <template>
-  <template v-if="display === 'label'">
-    <router-link
-      v-if="!profile_display"
-      :to="person.id"
-      :data-display="display">
-      <as-avatar v-if="display_itemid" :itemid="display_itemid" />
-      <icon v-else name="silhouette" />
-      <span>{{ person.name }}</span>
-    </router-link>
-    <as-profile-chip
-      v-else
-      :person="person"
-      :display="profile_display"
-      :poster_itemid="poster_itemid"
-      :itemid="itemid" />
-  </template>
+  <router-link
+    v-if="display === 'label'"
+    :to="person.id"
+    :data-display="display">
+    <as-avatar v-if="display_itemid" :itemid="display_itemid" />
+    <icon v-else name="silhouette" />
+    <span>{{ person.name }}</span>
+  </router-link>
   <template v-else-if="display === 'page'">
     <as-profile-chip
       v-if="person.avatar || display_itemid"

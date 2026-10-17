@@ -104,8 +104,8 @@ export const build_site = async (
     )
   )
     await cp(
-      new URL(import.meta.resolve('mermaid/dist/mermaid.min.js')),
-      join(output, 'scripts/mermaid.min.js')
+      new URL(import.meta.resolve('pele/global')),
+      join(output, 'scripts/pele.global.js')
     )
   await pages.build_index(articles)
   await pages.build_sitemap(articles, await pages.build_pages())

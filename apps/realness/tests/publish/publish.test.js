@@ -251,12 +251,12 @@ test('a plans publication keeps covers, script paths, and page navigation under 
     )
     const published = await publish_app(f.root, 'test', f.options)
     const vendor = await (
-      await fetch(`${published.url}scripts/mermaid.min.js`)
+      await fetch(`${published.url}scripts/pele.global.js`)
     ).arrayBuffer()
     assert.deepEqual(
       Buffer.from(vendor),
       await readFile(
-        join(f.root, 'artifacts/apps/test/dist/scripts/mermaid.min.js')
+        join(f.root, 'artifacts/apps/test/dist/scripts/pele.global.js')
       ),
       'vendor code is not rewritten'
     )
@@ -268,7 +268,7 @@ test('a plans publication keeps covers, script paths, and page navigation under 
     ).text()
     assert.match(
       script,
-      new RegExp(`script.src = '/sites/${id}/scripts/mermaid.min.js'`)
+      new RegExp(`script.src = '/sites/${id}/scripts/pele.global.js'`)
     )
     assert.equal(
       (await fetch(`${published.url}scripts/plan-diagrams.js`)).status,

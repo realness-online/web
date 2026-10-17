@@ -546,6 +546,13 @@ const status_lines = (panels, width, on) => {
       )
   if (panels.cost?.status === 'failed')
     status.push('Model cost unavailable - see details')
+  if (panels.traffic?.refresh?.state === 'failed')
+    status.push(
+      ...wrap(
+        `Site traffic not refreshing: ${panels.traffic.refresh.error}`,
+        width
+      ).map(line => paint(line, 'failed', on))
+    )
   return status
 }
 
@@ -801,8 +808,9 @@ export const health_lights = (panels, on = true, width = DEFAULT_WIDTH) => {
 }
 
 /**
- * Human page views this week against last week, a daily trend, and how old
- * the local archive is when it needs a refresh.
+ * Human page views this week against last week, a daily trend, and how the
+ * local archive stands: quiet when Cloud Logging has no newer requests, or
+ * not refreshing when the last gcloud read failed.
  * @param {any} traffic
  * @param {number} width
  * @param {boolean} on
@@ -815,19 +823,21 @@ export const traffic_lines = (traffic, width, on = true, now = Date.now()) => {
   let change = ''
   if (traffic.previous)
     change = `  ${traffic.people >= traffic.previous ? '↑' : '↓'}${Math.abs(Math.round(((traffic.people - traffic.previous) / traffic.previous) * PERCENT))}%`
+  const rejected = traffic.refresh?.state === 'failed'
+  const reading = traffic.refresh?.state === 'ok'
   const stale = now - Date.parse(traffic.newest ?? '')
-  const age_note =
+  const stale_note =
     stale > STALE_TRAFFIC_MS
-      ? paint(
-          `  archive ${age(Math.floor(stale / MS_PER_SECOND))} old`,
-          'idle',
-          on
-        )
+      ? `archive ${age(Math.floor(stale / MS_PER_SECOND))} old${reading ? ', still reading' : ''}`
       : ''
+  const refresh_note = rejected ? 'not refreshing' : stale_note
+  const notes = refresh_note
+    ? [paint(refresh_note, rejected ? 'unknown' : 'idle', on)]
+    : []
   return [
     fit_first(
       [
-        `7d ${traffic.people} people${change}  ${traffic.deeper} went deeper  ${traffic.outside} from other sites${age_note}`,
+        `7d ${traffic.people} people${change}  ${traffic.deeper} went deeper  ${traffic.outside} from other sites`,
         `7d ${traffic.people} people${change}  ${traffic.deeper} went deeper  ${traffic.outside} from other sites`,
         `7d ${traffic.people} people${change}  ${traffic.deeper} deeper  ${traffic.outside} referred`,
         `${traffic.people} people${change}`
@@ -842,6 +852,7 @@ export const traffic_lines = (traffic, width, on = true, now = Date.now()) => {
       'running',
       on
     ),
+    ...notes,
     traffic.daily?.length
       ? paint(
           `${traffic.daily[0].date.slice(5)} to ${traffic.daily.at(-1).date.slice(5)}; people per day`,

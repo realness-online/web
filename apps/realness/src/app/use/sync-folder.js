@@ -6,17 +6,13 @@
 /** @typedef {import('@/types').Statement} Statement */
 
 import {
-  createApp as create_app,
-  h,
   inject,
-  nextTick as tick,
   ref,
   onMounted as mounted,
   onUnmounted as dismount,
   watch
 } from 'vue'
 import { get, set, keys } from 'idb-keyval'
-import PosterAsFigure from '@/components/posters/as-figure'
 import {
   as_directory,
   build_local_directory,
@@ -27,8 +23,8 @@ import {
   revalidate_poster_files,
   wait_for_poster_export_ready
 } from '@/utils/export-poster'
+import { mount_poster, poster_container } from '@/utils/poster-render'
 import {
-  as_query_id,
   as_created_at,
   list,
   list_history_page,
@@ -71,7 +67,6 @@ const SYNC_FOLDER_MANIFEST_KEY = 'sync:folder-manifest'
  * and the manifest, so stale output is never mistaken for current output.
  */
 const SYNC_FORMAT_VERSION = 2
-const SVG_WAIT_TIMEOUT_MS = 30000
 const DRAIN_DEBOUNCE_MS = 400
 /** Newest-first history walk: this many thoughts per pass. */
 const HISTORY_BATCH_SIZE = 20
@@ -222,70 +217,6 @@ const clean_aborted_run = async (root, run) => {
     try {
       await remove_path(root, path)
     } catch {}
-}
-
-/**
- * Mount the poster off-screen and resolve with its `<svg>` once the figure
- * emits `show` — event-driven, no polling, so it settles (or times out) even
- * in a backgrounded tab. Rejects on `missing`, cancel, or timeout. The caller
- * unmounts the returned app.
- * @param {Id} itemid
- * @param {HTMLElement} container
- * @param {Folder_Sync_Run} run
- * @returns {{ app: import('vue').App, shown: Promise<SVGSVGElement> }}
- */
-const mount_poster_until_shown = (itemid, container, run) => {
-  /** @type {(svg: SVGSVGElement) => void} */
-  let resolve
-  /** @type {(error: Error) => void} */
-  let reject
-  /** @type {Promise<SVGSVGElement>} */
-  const shown = new Promise((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  let settled = false
-  /** @type {ReturnType<typeof setTimeout> | null} */
-  let timer = null
-  /**
-   * @param {Error | null} error
-   * @param {SVGSVGElement} [svg]
-   */
-  const finish = (error, svg) => {
-    if (settled) return
-    settled = true
-    if (timer) clearTimeout(timer)
-    run.on_cancel.delete(on_cancel)
-    if (error) reject(error)
-    else resolve(/** @type {SVGSVGElement} */ (svg))
-  }
-  const on_cancel = () => finish(folder_sync_cancelled_error())
-  run.on_cancel.add(on_cancel)
-  timer = setTimeout(
-    () => finish(new Error(`Timeout waiting for poster: ${itemid}`)),
-    SVG_WAIT_TIMEOUT_MS
-  )
-  const app = create_app({
-    name: 'SyncFolderPoster',
-    render: () =>
-      h(PosterAsFigure, {
-        itemid,
-        menu: false,
-        /** Off-screen mount never intersects the viewport; pin forces cutout symbols to load. */
-        pin: true,
-        onShow: async () => {
-          await tick()
-          const svg = document.getElementById(as_query_id(itemid))
-          if (svg instanceof SVGSVGElement) finish(null, svg)
-          else finish(new Error(`Poster SVG missing after show: ${itemid}`))
-        },
-        onMissing: () => finish(new Error(`Poster reported missing: ${itemid}`))
-      })
-  })
-  app.provide('set_working', () => {})
-  app.component('router-link', (_props, { slots }) => h('a', slots.default?.()))
-  app.mount(container)
-  return { app, shown }
 }
 
 /**
@@ -603,7 +534,7 @@ const select_history_batch = (thoughts, manifest_thoughts) => {
 
 /**
  * @param {number} remaining_unsynced
- * @param {{ set_working?: (v: boolean) => void }} [opts]
+ * @param {{ set_working?: (v: boolean) => void, figure?: import('vue').Component }} [opts]
  */
 const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
   if (remaining_unsynced <= 0) return
@@ -618,7 +549,11 @@ const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
   drain_timer = setTimeout(() => {
     drain_timer = null
     if (!sync_folder_pref.value) return
-    void drain_folder_queue({ force: true, set_working: opts.set_working })
+    void drain_folder_queue({
+      force: true,
+      set_working: opts.set_working,
+      figure: opts.figure
+    })
   }, HISTORY_BATCH_PAUSE_MS)
 }
 
@@ -629,6 +564,7 @@ const schedule_history_continuation = (remaining_unsynced, opts = {}) => {
  * @property {Folder_Sync_Run} run
  * @property {Set<string>} prior_paths
  * @property {boolean} force_export
+ * @property {import('vue').Component} [figure] - poster component; the caller supplies it
  */
 
 /**
@@ -718,27 +654,34 @@ const sync_one_thought = async (session, thought, container, progress) => {
       skipped++
       continue
     }
-    const { app, shown } = mount_poster_until_shown(itemid, container, run)
+    const mounted = mount_poster(
+      itemid,
+      /** @type {import('vue').Component} */ (session.figure),
+      container,
+      run
+    )
 
     try {
       set_folder_sync_progress({ detail: `Waiting for ${filename}` })
-      const svg = await shown
-      assert_run_active(run)
-      await wait_for_poster_export_ready(svg, itemid)
-      assert_run_active(run)
-      set_folder_sync_progress({ detail: `Writing ${filename}` })
-      const download_svg = build_download_svg(svg)
-      const svg_string = new XMLSerializer().serializeToString(download_svg)
-      const blob = new Blob([svg_string], { type: 'image/svg+xml' })
-      await write_file(thought_dir, filename, blob)
+      const { svg, unmount } = await mounted
+      try {
+        assert_run_active(run)
+        await wait_for_poster_export_ready(svg, itemid)
+        assert_run_active(run)
+        set_folder_sync_progress({ detail: `Writing ${filename}` })
+        const download_svg = build_download_svg(svg)
+        const svg_string = new XMLSerializer().serializeToString(download_svg)
+        const blob = new Blob([svg_string], { type: 'image/svg+xml' })
+        await write_file(thought_dir, filename, blob)
+      } finally {
+        unmount()
+      }
     } catch (error) {
       if (error instanceof Error && error.name === 'FolderSyncCancelled')
         throw error
       console.error('[sync-folder] skipped poster', itemid, error)
       set_folder_sync_progress({ detail: `Skipped ${filename}` })
       skipped++
-    } finally {
-      app.unmount()
     }
   }
 
@@ -807,10 +750,12 @@ const remove_orphan_thoughts = async (root, manifest_thoughts, keep) => {
 
 /**
  * Full mirror reconcile of the library into the sync folder.
- * @param {{ set_working?: (v: boolean) => void }} [opts]
+ * @param {{ set_working?: (v: boolean) => void, figure?: import('vue').Component }} [opts]
  * @returns {Promise<boolean>}
  */
 const run_folder_sync = async (opts = {}) => {
+  if (sync_svg.value && !opts.figure)
+    throw new Error('sync-folder needs a poster figure to export svg')
   if (!sync_folder_pref.value) {
     console.warn('[sync-folder] abort: sync_folder preference is off')
     return false
@@ -852,13 +797,7 @@ const run_folder_sync = async (opts = {}) => {
   })
   opts.set_working?.(true)
 
-  const containers = Array.from({ length: PARALLEL_EXPORTS }, () => {
-    const container = document.createElement('div')
-    container.style.cssText =
-      'position:fixed;left:-9999px;top:0;width:24rem;height:36rem;overflow:hidden;visibility:hidden'
-    document.body.appendChild(container)
-    return container
-  })
+  const containers = Array.from({ length: PARALLEL_EXPORTS }, poster_container)
 
   const root = /** @type {FileSystemDirectoryHandle} */ (handle)
   const mutex = mutex_for('sync:folder')
@@ -889,7 +828,14 @@ const run_folder_sync = async (opts = {}) => {
     set_folder_sync_progress({ current: 0, total, detail: batch_detail() })
 
     /** @type {Thought_Sync_Session} */
-    const session = { root, manifest_thoughts, run, prior_paths, force_export }
+    const session = {
+      root,
+      manifest_thoughts,
+      run,
+      prior_paths,
+      force_export,
+      figure: opts.figure
+    }
     const pending_thoughts = batch.values()
     let completed = 0
     const worker = async container => {
@@ -997,7 +943,7 @@ const schedule_folder_drain = () => {
 
 /**
  * Drain the folder queue by running a full mirror reconcile.
- * @param {{ set_working?: (v: boolean) => void, force?: boolean }} [opts]
+ * @param {{ set_working?: (v: boolean) => void, force?: boolean, figure?: import('vue').Component }} [opts]
  */
 export const drain_folder_queue = async (opts = {}) => {
   if (drain_inflight) return drain_inflight
@@ -1055,7 +1001,9 @@ const choose_sync_folder = async () => {
   return dir
 }
 
-export const use = () => {
+export const use = (
+  /** @type {{ figure?: import('vue').Component }} */ { figure } = {}
+) => {
   const set_working = inject('set_working', undefined)
 
   const refresh_name = async () => {
@@ -1098,7 +1046,7 @@ export const use = () => {
       }
       await await_folder_sync_idle()
       clear_failed_thoughts()
-      void drain_folder_queue({ force: true, set_working })
+      void drain_folder_queue({ force: true, set_working, figure })
     }
   )
 
@@ -1106,13 +1054,13 @@ export const use = () => {
     await choose_sync_folder()
     if (sync_folder_pref.value) {
       clear_failed_thoughts()
-      await drain_folder_queue({ force: true, set_working })
+      await drain_folder_queue({ force: true, set_working, figure })
     }
   }
 
   const sync_now = () => {
     clear_failed_thoughts()
-    return drain_folder_queue({ force: true, set_working })
+    return drain_folder_queue({ force: true, set_working, figure })
   }
 
   /** @deprecated Prefer choose_folder / sync_now */

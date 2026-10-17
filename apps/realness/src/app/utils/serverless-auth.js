@@ -6,7 +6,7 @@ import {
   signOut as sign_out
 } from 'firebase/auth'
 import { from_e64 } from '@/utils/person-identity'
-import { auth, current_user, me } from '@/utils/serverless'
+import { auth, current_user, me, init_serverless } from '@/utils/serverless'
 
 export const Recaptcha = RecaptchaVerifier
 export const sign_in = sign_in_with_phone_number
@@ -15,10 +15,8 @@ export const sign_off = () => {
   if (auth.value) sign_out(auth.value)
 }
 
-/**
- * @param {import('firebase/app').FirebaseApp | undefined} firebase_app
- */
-export const init_auth = firebase_app => {
+export const init_auth = async () => {
+  const firebase_app = await init_serverless()
   if (!firebase_app) {
     current_user.value = null
     return Promise.resolve(undefined)

@@ -22,12 +22,16 @@ vi.mock('@/utils/upload-processor', () => ({
   )
 }))
 
+vi.mock('@/persistence/store-paths', async importOriginal => ({
+  ...(await importOriginal()),
+  as_filename: vi.fn(() =>
+    Promise.resolve('people/+15551234567/posters/1720119797893.html.gz')
+  )
+}))
+
 vi.mock('@/utils/itemid', () => ({
   load: vi.fn(() => Promise.resolve('<svg>poster</svg>')),
   load_from_network: vi.fn(() => Promise.resolve(null)),
-  as_filename: vi.fn(() =>
-    Promise.resolve('people/+15551234567/posters/1720119797893.html.gz')
-  ),
   as_poster_id: vi.fn(() => '/+15551234567/posters/1720119797893')
 }))
 
@@ -53,12 +57,12 @@ describe('@/utils/serverless', () => {
     uploadBytes.mockResolvedValue({})
     deleteObject.mockResolvedValue(undefined)
 
-    const { init_serverless, auth, current_user, me } =
-      await import('@/utils/serverless')
+    const { auth, current_user, me } = await import('@/utils/serverless')
+    const { init_auth } = await import('@/utils/serverless-auth')
     auth.value = undefined
     current_user.value = undefined
     me.value = undefined
-    await init_serverless()
+    await init_auth()
   })
 
   describe('sign_off', () => {
@@ -121,7 +125,18 @@ describe('@/utils/serverless', () => {
     })
   })
 
-  describe('init_serverless', () => {
+  describe('initialization', () => {
+    it('initializes storage without starting authentication', async () => {
+      vi.clearAllMocks()
+      const { init_serverless } = await import('@/utils/serverless')
+      const firebase_app = await init_serverless()
+
+      expect(firebase_app).toEqual({ name: 'test-app' })
+      expect(getStorage).toHaveBeenCalledWith(firebase_app)
+      expect(getAuth).not.toHaveBeenCalled()
+      expect(onAuthStateChanged).not.toHaveBeenCalled()
+    })
+
     it('logs when firebase app initialization returns null', async () => {
       vi.resetModules()
       initializeApp.mockReturnValueOnce(null)
@@ -156,9 +171,9 @@ describe('@/utils/serverless', () => {
         return () => {}
       })
 
-      const { init_serverless, current_user, me } =
-        await import('@/utils/serverless')
-      await init_serverless()
+      const { current_user, me } = await import('@/utils/serverless')
+      const { init_auth } = await import('@/utils/serverless-auth')
+      await init_auth()
 
       expect(localStorage.me).toBe('/+15551234567')
       expect(current_user.value).toEqual({ phoneNumber: '+15551234567' })
@@ -176,9 +191,9 @@ describe('@/utils/serverless', () => {
         return () => {}
       })
 
-      const { init_serverless, current_user } =
-        await import('@/utils/serverless')
-      await init_serverless()
+      const { current_user } = await import('@/utils/serverless')
+      const { init_auth } = await import('@/utils/serverless-auth')
+      await init_auth()
 
       expect(current_user.value).toBeNull()
     })

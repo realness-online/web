@@ -60,19 +60,21 @@ test('traffic tile shows change, trend, and a stale archive', () => {
     newest: '2026-10-13T12:00:00Z'
   }
   const lines = traffic_lines(traffic, 44, false, now)
-  assert.equal(lines.length, 3)
+  assert.equal(lines.length, 4)
   assert.equal(traffic_lines(traffic, 30, false, now)[0], '120 people  ↑20%')
   assert.equal(lines[0], '7d 120 people  ↑20%  9 deeper  4 referred')
   assert.equal(
     lines[1],
     `${'▂'.repeat(11)}${'▅'.repeat(11)}${'▄'.repeat(11)}${'█'.repeat(11)}`
   )
-  assert.equal(lines[2], '10-10 to 10-13; people per day')
+  assert.equal(lines[2], 'archive 72h old')
+  assert.equal(lines[3], '10-10 to 10-13; people per day')
   const wide = traffic_lines(traffic, 90, false, now)
   assert.equal(
     wide[0],
-    '7d 120 people  ↑20%  9 went deeper  4 from other sites  archive 72h old'
+    '7d 120 people  ↑20%  9 went deeper  4 from other sites'
   )
+  assert.equal(wide[2], 'archive 72h old')
   const fresh = traffic_lines(
     { ...traffic, newest: '2026-10-16T11:00:00Z' },
     40,
@@ -112,4 +114,66 @@ test('dashboard places site traffic in the left column', () => {
   })
   assert.match(text, /╭─ SITE TRAFFIC {2}homepage ─+╮│/)
   assert.match(text, /│ 7d 7 people {2}1 went deeper {2}0 from other sites +│/)
+})
+
+test('traffic tile names a refresh that stopped', () => {
+  const traffic = {
+    people: 12,
+    deeper: 1,
+    outside: 0,
+    previous: null,
+    daily: [],
+    newest: '2026-10-13T12:00:00Z',
+    refresh: {
+      state: 'failed',
+      error: 'gcloud not found',
+      at: '2026-10-16T11:59:00Z'
+    }
+  }
+  const wide = traffic_lines(traffic, 120, false, now)
+  assert.equal(wide[0], '7d 12 people  1 went deeper  0 from other sites')
+  assert.equal(wide[2], 'not refreshing')
+})
+
+test('a read archive that is old says it is still reading', () => {
+  const traffic = {
+    people: 12,
+    deeper: 1,
+    outside: 0,
+    previous: null,
+    daily: [],
+    newest: '2026-10-13T12:00:00Z',
+    refresh: { state: 'ok', added: 0, pages: 1, at: '2026-10-16T11:59:00Z' }
+  }
+  const wide = traffic_lines(traffic, 120, false, now)
+  assert.equal(wide[0], '7d 12 people  1 went deeper  0 from other sites')
+  assert.equal(wide[2], 'archive 72h old, still reading')
+})
+
+test('dashboard names a traffic read that stopped in STATUS', () => {
+  const text = frame({
+    snapshot: {
+      panels: {
+        traffic: {
+          people: 7,
+          deeper: 1,
+          outside: 0,
+          previous: null,
+          daily: [],
+          newest: new Date(now).toISOString(),
+          refresh: {
+            state: 'failed',
+            error: 'ERROR: no credentials',
+            at: new Date(now).toISOString()
+          }
+        }
+      }
+    },
+    width: 110,
+    height: 30,
+    on: false,
+    now
+  })
+  assert.match(text, /Site traffic not refreshing: ERROR: no/)
+  assert.match(text, /credentials/)
 })

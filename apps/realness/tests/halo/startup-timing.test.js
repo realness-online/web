@@ -403,7 +403,7 @@ test('hs-over: a create past free memory fails clearly before any disk or TAP', 
   store.memAvailable = () => 2.25 * GIB
   await assert.rejects(store.create('+14156667777'), error => {
     assert.ok(error instanceof Full)
-    assert.match(error.message, /^halo full: 2\.25 GiB free, 2\.50 GiB needed/)
+    assert.match(error.message, /^halo full: 2\.25 GiB free, 2\.75 GiB needed/)
     return true
   })
   assert.deepEqual(created_dirs(store), [])

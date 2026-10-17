@@ -4,7 +4,7 @@ import { Cloud } from '@/persistence/Cloud'
 import { Storage } from '@/persistence/Repository'
 import { current_user, upload } from '@/utils/serverless'
 import { prepare_upload_html } from '@/utils/upload-processor'
-import { as_filename } from '@/utils/itemid'
+import { as_filename } from '@/persistence/store-paths'
 
 /** @extends {Storage} */
 export class History extends Cloud(Storage) {

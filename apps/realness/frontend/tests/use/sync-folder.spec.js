@@ -79,19 +79,17 @@ vi.mock('@/utils/preference', () => ({
   sync_folder: mock_sync_folder_pref
 }))
 
-vi.mock('@/components/posters/as-figure', () => ({
-  default: {
-    name: 'PosterAsFigure',
-    props: ['itemid', 'menu', 'pin'],
-    emits: ['show', 'missing', 'remove', 'vector-click'],
-    mounted() {
-      mock_figure_props.push({ ...this.$props })
-      if (mock_figure_missing.value) this.$emit('missing', this.itemid)
-      else if (mock_figure_show.value) this.$emit('show', { id: this.itemid })
-    },
-    template: '<div class="poster-stub" />'
-  }
-}))
+const poster_figure = {
+  name: 'PosterAsFigure',
+  props: ['itemid', 'menu', 'pin'],
+  emits: ['show', 'missing', 'remove', 'vector-click'],
+  mounted() {
+    mock_figure_props.push({ ...this.$props })
+    if (mock_figure_missing.value) this.$emit('missing', this.itemid)
+    else if (mock_figure_show.value) this.$emit('show', { id: this.itemid })
+  },
+  template: '<div class="poster-stub" />'
+}
 
 import {
   sync_folder_supported,
@@ -246,9 +244,12 @@ describe('@/use/sync-folder', () => {
   })
 
   it('loads saved folder name on mount', async () => {
-    const { sync_folder_name } = with_setup(() => use(), {
-      provide: { set_working }
-    })
+    const { sync_folder_name } = with_setup(
+      () => use({ figure: poster_figure }),
+      {
+        provide: { set_working }
+      }
+    )
     await flushPromises()
     expect(sync_folder_name.value).toBe('Exports')
   })
@@ -256,7 +257,7 @@ describe('@/use/sync-folder', () => {
   it('choose_folder stores the handle without requiring me', async () => {
     const warn = silence_console('warn')
     delete localStorage.me
-    const { choose_folder } = with_setup(() => use(), {
+    const { choose_folder } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -269,7 +270,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('sync_now exports poster svg into a named thought folder', async () => {
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -302,7 +303,7 @@ describe('@/use/sync-folder', () => {
         ]
       }
     ])
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -327,7 +328,7 @@ describe('@/use/sync-folder', () => {
   it('groups posters and statements into thoughts', async () => {
     const statement = { id: `${me}/statements/1001`, statement: 'hi' }
     mock_list.mockResolvedValueOnce([statement])
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -347,7 +348,7 @@ describe('@/use/sync-folder', () => {
     mock_list.mockResolvedValueOnce([recent])
     mock_as_directory.mockResolvedValue({ items: [1000, 'index'], archive: [] })
     mock_list_history_page.mockResolvedValue([recent, archived])
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -361,7 +362,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('mounts the poster pinned so cutouts load off-screen', async () => {
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -382,7 +383,7 @@ describe('@/use/sync-folder', () => {
         statements: [{ id: `${me}/statements/1001`, statement: 'hi' }]
       }
     ])
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -399,7 +400,7 @@ describe('@/use/sync-folder', () => {
   it('skips posters that cannot be confirmed instead of waiting to timeout', async () => {
     const warn = silence_console('warn')
     mock_load.mockResolvedValue(null)
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -430,7 +431,7 @@ describe('@/use/sync-folder', () => {
         createWritable: vi.fn(async () => ({ write: vi.fn(), close: vi.fn() }))
       })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -456,7 +457,7 @@ describe('@/use/sync-folder', () => {
         )
       })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -485,7 +486,7 @@ describe('@/use/sync-folder', () => {
         )
       })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -512,7 +513,7 @@ describe('@/use/sync-folder', () => {
         createWritable: vi.fn(async () => ({ write: vi.fn(), close: vi.fn() }))
       })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -540,7 +541,7 @@ describe('@/use/sync-folder', () => {
       return null
     })
     get_directory_handle.mockRejectedValueOnce(new Error('NotFoundError'))
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -564,7 +565,11 @@ describe('@/use/sync-folder', () => {
         expect.objectContaining({ id: poster_id, action: 'save' })
       ])
     )
-    const drain = drain_folder_queue({ set_working, force: true })
+    const drain = drain_folder_queue({
+      set_working,
+      force: true,
+      figure: poster_figure
+    })
     await vi.runAllTimersAsync()
     await drain
     await flushPromises()
@@ -575,7 +580,7 @@ describe('@/use/sync-folder', () => {
   it('cancels an in-flight sync and removes folders created this run', async () => {
     mock_figure_show.value = false
     const { sync_now, cancel_folder_sync, folder_sync_status } = with_setup(
-      () => use(),
+      () => use({ figure: poster_figure }),
       { provide: { set_working } }
     )
     await flushPromises()
@@ -601,7 +606,7 @@ describe('@/use/sync-folder', () => {
   it('skips the poster when the figure emits missing', async () => {
     const error = silence_console('error')
     mock_figure_missing.value = true
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -622,7 +627,11 @@ describe('@/use/sync-folder', () => {
     const warn = silence_console('warn')
     mock_sync_folder_pref.value = false
 
-    const result = await drain_folder_queue({ force: true, set_working })
+    const result = await drain_folder_queue({
+      force: true,
+      set_working,
+      figure: poster_figure
+    })
 
     expect(result).toBeUndefined()
     expect(warn).toHaveBeenCalledWith(
@@ -633,12 +642,19 @@ describe('@/use/sync-folder', () => {
   it('asks for permission when no folder handle is stored', async () => {
     const warn = silence_console('warn')
     folder_handle = null
-    const { folder_sync_status } = with_setup(() => use(), {
-      provide: { set_working }
-    })
+    const { folder_sync_status } = with_setup(
+      () => use({ figure: poster_figure }),
+      {
+        provide: { set_working }
+      }
+    )
     await flushPromises()
 
-    await drain_folder_queue({ force: true, set_working })
+    await drain_folder_queue({
+      force: true,
+      set_working,
+      figure: poster_figure
+    })
 
     expect(warn).toHaveBeenCalledWith(
       '[sync-folder] drain skip: no folder handle'
@@ -650,9 +666,12 @@ describe('@/use/sync-folder', () => {
     const warn = silence_console('warn')
     folder_handle.queryPermission = vi.fn(() => Promise.resolve('denied'))
     folder_handle.requestPermission = vi.fn(() => Promise.resolve('denied'))
-    const { folder_sync_status, sync_now } = with_setup(() => use(), {
-      provide: { set_working }
-    })
+    const { folder_sync_status, sync_now } = with_setup(
+      () => use({ figure: poster_figure }),
+      {
+        provide: { set_working }
+      }
+    )
     await flushPromises()
 
     await sync_now()
@@ -672,9 +691,12 @@ describe('@/use/sync-folder', () => {
       requestPermission: vi.fn(() => Promise.resolve('granted'))
     }
     folder_handle = handle
-    const { sync_now, folder_sync_status } = with_setup(() => use(), {
-      provide: { set_working }
-    })
+    const { sync_now, folder_sync_status } = with_setup(
+      () => use({ figure: poster_figure }),
+      {
+        provide: { set_working }
+      }
+    )
     await flushPromises()
 
     await sync_now()
@@ -692,7 +714,7 @@ describe('@/use/sync-folder', () => {
       getDirectoryHandle: get_directory_handle,
       removeEntry: remove_entry
     }
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -708,7 +730,7 @@ describe('@/use/sync-folder', () => {
     mock_as_directory.mockRejectedValue(new Error('storage offline'))
     mock_build_local_directory.mockRejectedValue(new Error('storage offline'))
     const { sync_now, folder_sync_status, folder_sync_error } = with_setup(
-      () => use(),
+      () => use({ figure: poster_figure }),
       { provide: { set_working } }
     )
     await flushPromises()
@@ -735,7 +757,7 @@ describe('@/use/sync-folder', () => {
           ]
         : []
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -767,7 +789,7 @@ describe('@/use/sync-folder', () => {
       statement: 'stranded',
       type: 'statements'
     })
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -786,7 +808,7 @@ describe('@/use/sync-folder', () => {
     const warn = silence_console('warn')
     mock_as_directory.mockResolvedValue({ items: [1000, 900], archive: [] })
     mock_list_history_page.mockRejectedValueOnce(new Error('page gone'))
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -816,7 +838,7 @@ describe('@/use/sync-folder', () => {
     get_file_handle.mockImplementation(() =>
       Promise.resolve({ createWritable: vi.fn() })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -840,7 +862,7 @@ describe('@/use/sync-folder', () => {
     get_directory_handle.mockImplementation(() =>
       Promise.resolve({ getFileHandle: get_file_handle })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -858,7 +880,9 @@ describe('@/use/sync-folder', () => {
       cancel_folder_sync,
       folder_sync_status,
       folder_sync_error
-    } = with_setup(() => use(), { provide: { set_working } })
+    } = with_setup(() => use({ figure: poster_figure }), {
+      provide: { set_working }
+    })
     await flushPromises()
 
     const pending = sync_now()
@@ -882,7 +906,7 @@ describe('@/use/sync-folder', () => {
       }
     ])
     const { sync_now, sync_folder_name, folder_sync_last_at } = with_setup(
-      () => use(),
+      () => use({ figure: poster_figure }),
       { provide: { set_working } }
     )
     await flushPromises()
@@ -911,9 +935,12 @@ describe('@/use/sync-folder', () => {
         ]
       }))
       mock_thoughts_for_author.mockReturnValueOnce(thoughts)
-      const { sync_now, folder_sync_status } = with_setup(() => use(), {
-        provide: { set_working }
-      })
+      const { sync_now, folder_sync_status } = with_setup(
+        () => use({ figure: poster_figure }),
+        {
+          provide: { set_working }
+        }
+      )
       await flushPromises()
 
       await sync_now()
@@ -949,7 +976,7 @@ describe('@/use/sync-folder', () => {
     get_file_handle.mockImplementation(() =>
       Promise.resolve({ createWritable: vi.fn() })
     )
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -976,7 +1003,7 @@ describe('@/use/sync-folder', () => {
         statements: [{ id: `${me}/statements/900`, statement: 'newer' }]
       }
     ])
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -998,9 +1025,12 @@ describe('@/use/sync-folder', () => {
         statements: [{ id: `${me}/statements/1`, statement: 'one' }]
       }
     ])
-    const { sync_now, folder_sync_progress } = with_setup(() => use(), {
-      provide: { set_working }
-    })
+    const { sync_now, folder_sync_progress } = with_setup(
+      () => use({ figure: poster_figure }),
+      {
+        provide: { set_working }
+      }
+    )
     await flushPromises()
 
     await sync_now()
@@ -1020,7 +1050,9 @@ describe('@/use/sync-folder', () => {
         : { items: [], archive: ['1000'] }
     )
     load_directory_from_network.mockResolvedValueOnce({ items: [2000] })
-    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
+      provide: { set_working }
+    })
     await flushPromises()
 
     await sync_now()
@@ -1040,7 +1072,9 @@ describe('@/use/sync-folder', () => {
     const { load_directory_from_network } =
       await import('@/persistence/Directory')
     load_directory_from_network.mockResolvedValue(null)
-    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
+      provide: { set_working }
+    })
     await flushPromises()
 
     await expect(sync_now()).resolves.toBeUndefined()
@@ -1054,7 +1088,9 @@ describe('@/use/sync-folder', () => {
     mock_build_local_directory.mockResolvedValue({ items: [], archive: [] })
     keys.mockResolvedValue([])
     load_directory_from_network.mockRejectedValue(new Error('offline'))
-    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
+      provide: { set_working }
+    })
     await flushPromises()
 
     await sync_now()
@@ -1067,7 +1103,9 @@ describe('@/use/sync-folder', () => {
 
   it('skips an archive id that is not a page number', async () => {
     mock_as_directory.mockResolvedValue({ items: ['index'], archive: [] })
-    const { sync_now } = with_setup(() => use(), { provide: { set_working } })
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
+      provide: { set_working }
+    })
     await flushPromises()
 
     await sync_now()
@@ -1076,8 +1114,16 @@ describe('@/use/sync-folder', () => {
   })
 
   it('shows a shared drain instead of starting a second one', async () => {
-    const first = drain_folder_queue({ force: true, set_working })
-    const second = drain_folder_queue({ force: true, set_working })
+    const first = drain_folder_queue({
+      force: true,
+      set_working,
+      figure: poster_figure
+    })
+    const second = drain_folder_queue({
+      force: true,
+      set_working,
+      figure: poster_figure
+    })
     await Promise.all([first, second])
     await flushPromises()
 
@@ -1111,6 +1157,7 @@ describe('@/use/sync-folder', () => {
   })
 
   it('picks a folder on the first sync and reuses it afterwards', async () => {
+    const warn = silence_console('warn')
     let stored = null
     get.mockImplementation(async k => {
       if (k === 'sync_folder_handle') return stored
@@ -1121,21 +1168,27 @@ describe('@/use/sync-folder', () => {
     set.mockImplementation(async (k, v) => {
       if (k === 'sync_folder_handle') stored = v
     })
-    const { sync_folder } = with_setup(() => use(), {
+    const { sync_folder } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
 
+    expect(warn).toHaveBeenCalledWith(
+      '[sync-folder] drain skip: no folder handle'
+    )
+    warn.mockClear()
+
     await sync_folder()
     expect(show_directory_picker).toHaveBeenCalledTimes(1)
 
     await sync_folder()
     await flushPromises()
     expect(show_directory_picker).toHaveBeenCalledTimes(1)
+    expect(warn).not.toHaveBeenCalled()
   })
 
   it('keeps a watching tab in step when it becomes visible again', async () => {
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -1172,7 +1225,7 @@ describe('@/use/sync-folder', () => {
   it('does not retry a failed thought until the next user-triggered sync', async () => {
     const error = silence_console('error')
     mock_export_ready.mockRejectedValue(new Error('symbols never loaded'))
-    const { sync_now } = with_setup(() => use(), {
+    const { sync_now } = with_setup(() => use({ figure: poster_figure }), {
       provide: { set_working }
     })
     await flushPromises()
@@ -1182,7 +1235,11 @@ describe('@/use/sync-folder', () => {
     expect(mock_figure_props.length).toBe(1)
     expect(write).not.toHaveBeenCalled()
 
-    await drain_folder_queue({ force: true, set_working })
+    await drain_folder_queue({
+      force: true,
+      set_working,
+      figure: poster_figure
+    })
     await flushPromises()
     expect(mock_figure_props.length).toBe(1)
 
@@ -1200,7 +1257,9 @@ describe('@/use/sync-folder', () => {
 
   it('turning the preference off cancels the run, clears the queue, and stops', async () => {
     vi.useFakeTimers()
-    const { folder_sync_status } = with_setup(() => use())
+    const { folder_sync_status } = with_setup(() =>
+      use({ figure: poster_figure })
+    )
     await flushPromises()
     mock_sync_folder_pref.value = false
     await flushPromises()
@@ -1212,7 +1271,7 @@ describe('@/use/sync-folder', () => {
 
   it('turning the preference back on clears past failures and drains at once', async () => {
     vi.useFakeTimers()
-    with_setup(() => use())
+    with_setup(() => use({ figure: poster_figure }))
     await flushPromises()
     mock_sync_folder_pref.value = false
     await flushPromises()
@@ -1224,7 +1283,9 @@ describe('@/use/sync-folder', () => {
   })
 
   it('a visible page schedules a drain only while the preference is on', async () => {
-    const { folder_sync_status } = with_setup(() => use())
+    const { folder_sync_status } = with_setup(() =>
+      use({ figure: poster_figure })
+    )
     await flushPromises()
     const set_visibility = state => {
       Object.defineProperty(document, 'visibilityState', {
@@ -1256,8 +1317,8 @@ describe('@/use/sync-folder', () => {
       if (key === 'sync:folder-queue') runs += 1
       return null
     })
-    const first = drain_folder_queue({ force: true })
-    const second = drain_folder_queue({ force: true })
+    const first = drain_folder_queue({ force: true, figure: poster_figure })
+    const second = drain_folder_queue({ force: true, figure: poster_figure })
     await Promise.all([first, second])
     await flushPromises()
     expect(get_directory_handle).toHaveBeenCalledTimes(1)

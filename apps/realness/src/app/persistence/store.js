@@ -3,7 +3,11 @@
  * bindings so existing imports do not move. */
 import { create_store } from '@realness.online/store'
 import { backend } from './store-backend.js'
-import { paths } from './store-paths.js'
+import {
+  paths,
+  set_directory_lookup,
+  set_remember_archive_locations
+} from './store-paths.js'
 import { vocabulary } from './store-vocabulary.js'
 
 const store = create_store({ backend, paths, vocabulary })
@@ -19,4 +23,8 @@ export const {
   as_directory,
   as_archive
 } = store
+
+set_directory_lookup(as_directory)
+set_remember_archive_locations(remember_archive_locations)
+
 export { as_directory_id } from './store-paths.js'

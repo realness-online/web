@@ -274,8 +274,8 @@ test('vault pages keep public and itemid routes, selected files, and survive mov
     const html = await readFile(join(built.dist, 'maps/map.html'), 'utf8')
     assert.ok(html.includes(`itemid="${id}"`))
     assert.ok(
-      existsSync(join(built.dist, 'scripts/mermaid.min.js')),
-      'a vault-only diagram also ships Mermaid'
+      existsSync(join(built.dist, 'scripts/pele.global.js')),
+      'a vault-only diagram also ships Pele'
     )
     assert.equal(
       await readFile(join(built.dist, id.slice(1), 'index.html'), 'utf8'),

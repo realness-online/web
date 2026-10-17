@@ -74,8 +74,11 @@ const CHEAP_FIELDS = [
   'firecracker',
   'template_size',
   'template_mtime_ns',
-  'vcpu_count'
+  'vcpu_count',
+  'mem_size_mib'
 ]
+/** Measured in hs-mem: a 512 MiB guest was killed by a 384 MiB workload; 768 MiB held every stage. */
+export const ACTOR_MIB = 768
 const ARTIFACT_PATHS = ['realness']
 const TRACES = 'traces'
 const EXPORTS = 'exports'
@@ -423,7 +426,7 @@ export class ActorStore {
       guestCid: 3,
       vsockPort: vsock.VSOCK_PORT,
       vcpus: 2,
-      mib: 512,
+      mib: ACTOR_MIB,
       tapPrefix: 'fc-tap',
       seedTap: 'fc-tap0',
       bootTimeout: 60,
@@ -465,7 +468,8 @@ export class ActorStore {
       firecracker: this.firecrackerVersion,
       template_size: Number(stat.size),
       template_mtime_ns: Number(stat.mtimeNs),
-      vcpu_count: this.vcpus
+      vcpu_count: this.vcpus,
+      mem_size_mib: this.mib
     }
   }
 
