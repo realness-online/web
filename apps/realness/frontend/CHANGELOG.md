@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Sharper terminal graphs** - Braille dots, bar blocks, and box lines draw
+  to the cell edges, so charts in the terminal join up cleanly.
+- **Faces on posters** - A poster's author shows as a small profile chip.
+- **Halo, by name** - Waking and the loops view call the machine a halo.
+
 ## v3.0.0-e - 2026-10-17
 
 - **Two tabs, one terminal** - A tab that loses the terminal to another tab
