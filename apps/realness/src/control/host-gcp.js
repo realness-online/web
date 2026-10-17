@@ -19,6 +19,7 @@ import {
   mkdtemp,
   mkdir,
   readdir,
+  readFile as read_file,
   writeFile as write_file,
   rm
 } from 'node:fs/promises'
@@ -26,6 +27,16 @@ import { step, note, run } from './exec.js'
 import { ROOT } from './paths.js'
 import { out_path } from '#root/lib/output.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
+import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
+
+/** Copy a local file to gs://bucket/key with the storage client; gcloud storage crashes on Python 3.14. */
+const upload_file = async (file, destination) => {
+  const [bucket, ...key] = destination.slice('gs://'.length).split('/')
+  await create_gcs({ bucket, token: gcloud_token() }).put(
+    key.join('/'),
+    await read_file(file)
+  )
+}
 /* eslint-disable no-await-in-loop -- readiness polling waits between tries */
 
 const SSH_TRIES = 40
@@ -386,14 +397,7 @@ export const provision_record_key = async (
   config,
   name,
   {
-    upload = (file, destination) =>
-      run('gcloud', [
-        'storage',
-        'cp',
-        file,
-        destination,
-        `--project=${config.project}`
-      ]),
+    upload = upload_file,
     scratch = join(ROOT, '../../artifacts/realness'),
     read_secret = () =>
       cloud.call([
