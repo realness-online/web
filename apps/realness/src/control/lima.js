@@ -92,6 +92,11 @@ export const limaTarget = config => {
       return 'started'
     },
 
+    /** Stop the VM, keeping its disks. */
+    stop() {
+      return run('limactl', ['stop', config.vm])
+    },
+
     /** Run a shell string in the guest and return its output. */
     run(command, options = {}) {
       return run(

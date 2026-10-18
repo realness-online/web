@@ -48,11 +48,11 @@ export const gce_statuses =
 
 /**
  * Label each failed halo. A listing failure labels every halo unknown.
- * @param {{ name: string }[]} hosts
+ * @param {{ name: string }[]} halos
  * @param {(() => Promise<Map<string, string>>) | null} statuses
  */
-export const with_causes = async (hosts, statuses) => {
-  if (!hosts.length) return hosts
+export const with_causes = async (halos, statuses) => {
+  if (!halos.length) return halos
   /** @type {Map<string, string> | null} */
   let known = null
   if (statuses)
@@ -61,8 +61,8 @@ export const with_causes = async (hosts, statuses) => {
     } catch {
       known = null
     }
-  return hosts.map(host => ({
-    ...host,
-    cause: known ? power_cause(known.get(host.name) ?? 'MISSING') : 'unknown'
+  return halos.map(halo => ({
+    ...halo,
+    cause: known ? power_cause(known.get(halo.name) ?? 'MISSING') : 'unknown'
   }))
 }

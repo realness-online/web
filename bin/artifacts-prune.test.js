@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync, utimesSync, truncateSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -127,6 +127,45 @@ test('recent work is left alone unless --all is asked, and stays inside the grac
   })
   assert.equal(forced.status, 0, forced.stderr)
   assert.ok(!existsSync(join(dir, 'fresh', 'node_modules')), '--all with no age limit takes it')
+})
+
+test('seven-day cleanup keeps recent files and live folders', t => {
+  const dir = scratch('retention')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  mkdirSync(join(dir, 'running'))
+  writeFileSync(join(dir, 'running', '.live'), String(process.pid))
+  const old = new Date(Date.now() - 8 * 86_400_000)
+  for (const name of ['old.txt', 'running/old.txt']) {
+    writeFileSync(join(dir, name), 'old')
+    utimesSync(join(dir, name), old, old)
+  }
+  writeFileSync(join(dir, 'recent.txt'), 'recent')
+  const invoke = args => spawnSync(process.execPath, [script, ...args], {
+    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
+  })
+  const dry = invoke([])
+  assert.equal(dry.status, 0, dry.stderr)
+  assert.match(dry.stdout, /old.txt \(older than 7 days/)
+  assert.ok(existsSync(join(dir, 'old.txt')))
+  const applied = invoke(['--apply'])
+  assert.equal(applied.status, 0, applied.stderr)
+  assert.ok(!existsSync(join(dir, 'old.txt')))
+  assert.ok(existsSync(join(dir, 'running/old.txt')))
+  assert.ok(existsSync(join(dir, 'recent.txt')))
+})
+
+test('above 500 MB warns without removing recent data', t => {
+  const dir = scratch('budget')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  const path = join(dir, 'large.bin')
+  writeFileSync(path, '')
+  truncateSync(path, 500_000_001)
+  const result = spawnSync(process.execPath, [script, '--apply', '--quiet'], {
+    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
+  })
+  assert.equal(result.status, 0, result.stderr)
+  assert.match(result.stdout, /warning: artifacts exceed 500 MB/)
+  assert.ok(existsSync(path))
 })
 
 test('a root that does not exist yet is quiet and successful', t => {

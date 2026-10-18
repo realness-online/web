@@ -2,8 +2,7 @@
  * Artifacts Prune Extension
  *
  * Runs `bin/artifacts-prune.js --apply` once a run settles, so scratch under
- * `artifacts/` does not grow without bound. The script removes only
- * regenerable things, and a failure never disturbs the session.
+ * `artifacts/` is cleaned after seven days. Warns above 500 MB.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile } from 'node:child_process'
@@ -37,6 +36,8 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
         cwd: root,
         timeout: 60_000,
       })
+      const warning = /^warning: (.+)$/m.exec(stdout)
+      if (warning) ctx.ui.notify(warning[1], 'warning')
       const match = /freed (\d+) bytes/.exec(stdout)
       const freed = match ? Number(match[1]) : 0
       if (freed > 0) {

@@ -20,6 +20,33 @@ const https_port = 443
 const http_port = 5173
 import wasm from 'vite-plugin-wasm'
 
+/** The durable bundle is built by `build:durable`; dev serves it from the output folder. */
+const durable_bundle = () => ({
+  name: 'durable-bundle',
+  apply: 'serve',
+  configureServer(server) {
+    server.middlewares.use((request, response, next) => {
+      const [url] = (request.url ?? '').split('?')
+      if (
+        url !== '/pi-durable.browser.js' &&
+        url !== '/pi-durable.browser.js.map'
+      )
+        return next()
+      const file = frontend_out(url.slice(1))
+      if (!exists_sync(file)) {
+        response.statusCode = 404
+        response.end('missing durable bundle: run npm run build:durable\n')
+        return
+      }
+      response.setHeader(
+        'content-type',
+        url.endsWith('.map') ? 'application/json' : 'text/javascript'
+      )
+      response.end(read_file_sync(file))
+    })
+  }
+})
+
 const package_version = JSON.parse(
   read_file_sync(new URL('../package.json', import.meta.url), 'utf8')
 ).version
@@ -65,7 +92,7 @@ export default define_config(({ mode }) => ({
     host: '0.0.0.0',
     allowedHosts: ['realness.local'],
     proxy: {
-      ...(mode === 'local' && {
+      ...(mode === 'dev-local' && {
         '/gate': {
           target: `http://127.0.0.1:${local_settings.gate_port}`,
           ws: true,
@@ -73,7 +100,10 @@ export default define_config(({ mode }) => ({
         }
       }),
       '/v1/': {
-        target: 'https://realness-sync-639469569733.us-central1.run.app',
+        target:
+          mode === 'dev-local'
+            ? `http://127.0.0.1:${local_settings.sync_port}`
+            : 'https://realness-sync-639469569733.us-central1.run.app',
         changeOrigin: true
       },
       '/pay/': {
@@ -128,6 +158,7 @@ export default define_config(({ mode }) => ({
       }
     }),
     wasm(),
+    durable_bundle(),
     vite_pwa({
       devOptions: { enabled: false },
       filename: 'service.worker.js',

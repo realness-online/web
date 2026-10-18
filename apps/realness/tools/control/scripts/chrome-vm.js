@@ -6,7 +6,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import * as firecracker from '#root/src/halo/firecracker.js'
-import * as host from '#root/src/halo/syscalls.js'
+import * as syscalls from '#root/src/halo/syscalls.js'
 
 const NET = '172.18'
 const PORT = 9222
@@ -71,17 +71,17 @@ export class ChromeVm {
 
   /** @param {{ work: string, mib?: number, vcpus?: number, huge_pages?: string }} options */
   constructor({ work, mib = 1024, vcpus = 2, huge_pages }) {
-    host.requireRoot('creating TAPs and Firecracker')
+    syscalls.requireRoot('creating TAPs and Firecracker')
     mkdir_sync(work, { recursive: true })
     Object.assign(this, { work, mib, vcpus, huge_pages, pids: [] })
-    this.tap = host.freeTap('fc-chrome')
-    this.address = host.tapGuest(this.tap, NET)
+    this.tap = syscalls.freeTap('fc-chrome')
+    this.address = syscalls.tapGuest(this.tap, NET)
     const index = /\d+$/.exec(this.tap)
     if (!index) throw new Error(`tap name ${this.tap} has no trailing number`)
     this.mac = `06:00:AC:12:${Number(index[0]).toString(16).padStart(2, '0').toUpperCase()}:02`
     this.state = join(work, 'chrome.state')
     this.mem = join(work, 'chrome.mem')
-    host.createTap(this.tap, NET)
+    syscalls.createTap(this.tap, NET)
   }
 
   spawn() {
@@ -125,7 +125,7 @@ export class ChromeVm {
   /** A cold boot from a fresh copy of the image, until DevTools answers. */
   async boot() {
     const disk = join(this.work, 'rootfs.ext4')
-    host.run(['cp', '--reflink=auto', '--sparse=always', IMAGE, disk])
+    syscalls.run(['cp', '--reflink=auto', '--sparse=always', IMAGE, disk])
     this.spawn()
     await firecracker.waitForApiSocket(this.api_sock)
     this.api = new firecracker.Api(this.api_sock)
@@ -301,7 +301,7 @@ export class ChromeVm {
   /** Stop every Firecracker, drop the TAP, keep only the serial log. */
   async stop() {
     for (const pid of this.pids) await firecracker.terminate(pid)
-    host.deleteTap(this.tap)
+    syscalls.deleteTap(this.tap)
     for (const file of [
       'rootfs.ext4',
       'chrome.mem',

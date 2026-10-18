@@ -19,7 +19,7 @@ const environments = {
     project: 'realness-online',
     public_url: 'https://realness.online',
     services: {
-      /** Next to the halos, so the gate-to-host hop stays inside one region. */
+      /** Next to the halos, so the gate-to-halo hop stays inside one region. */
       region: 'us-west2',
       bucket: 'realness-online.appspot.com',
       sync_url: 'https://realness-sync-276668807926.us-west2.run.app',
@@ -48,6 +48,8 @@ export const person_settings = environments.production
  * What the browser build talks to. `dev-local` is the local gate in front of the
  * development cloud services, so model calls still reach the real proxy.
  */
+const local_proxy_port = 8788
+
 const browser_modes = {
   development: {
     gate_url: development_settings.services.gate_url,
@@ -59,7 +61,7 @@ const browser_modes = {
   },
   'dev-local': {
     gate_url: '/gate',
-    proxy_url: development_settings.services.proxy_url
+    proxy_url: `http://127.0.0.1:${local_proxy_port}`
   }
 }
 
@@ -75,6 +77,8 @@ export const local_settings = {
   halo_port: 8080,
   api_port: 18080,
   terminal_port: 18081,
+  sync_port: 8787,
+  proxy_port: local_proxy_port,
   gate_port: 8792,
   site_port: 18096,
   https_port: 443,

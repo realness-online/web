@@ -6,6 +6,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 local_values="$(node "$DIR/src/settings/cli.js" shell local)"
 eval "$local_values"
 unset local_values
+sync_url_default="${sync_url_default//127.0.0.1/host.lima.internal}"
 VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
@@ -59,7 +60,7 @@ if [ ! -f "$secret_file" ]; then
 fi
 export HALO_PASS_SECRET="$(< "$secret_file")"
 export RECORD_SECRET_FILE=/etc/realness/record-secret
-SYNC_DIR="$OUT/site-sync" node "$DIR/server/halo/scripts/record-key-dev.js"
+SYNC_DIR="$OUT/sync-data" node "$DIR/server/halo/scripts/record-key-dev.js"
 site_sync_pid="$OUT/site-sync.pid"
 if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
   kill "$(< "$site_sync_pid")"

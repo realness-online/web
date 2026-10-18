@@ -62,7 +62,7 @@ else if (
   process.stdout.write(
     `${shell_values({
       dev_project: local_settings.cloud.project,
-      sync_url_default: local_settings.cloud.services.sync_url,
+      sync_url_default: `http://127.0.0.1:${local_settings.sync_port}`,
       sites_url_default: local_settings.cloud.services.sites_url,
       api_port: local_settings.api_port,
       halo_port: local_settings.halo_port,

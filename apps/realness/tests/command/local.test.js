@@ -57,7 +57,7 @@ test('one command works from another directory and leaves npm start as the harne
   const plan = JSON.parse(result.stdout)
   assert.deepEqual(
     plan.services.map(service => service.name),
-    ['host', 'workers', 'gate', 'frontend']
+    ['sync', 'halo', 'proxy', 'workers', 'gate', 'frontend']
   )
   assert.ok(
     plan.services.every(service => service.cwd === root + 'apps/realness/')
@@ -71,13 +71,24 @@ test('one command works from another directory and leaves npm start as the harne
     plan.services.find(service => service.name === 'gate').env.GATE_API_PORT,
     '18080'
   )
+  const sync = plan.services.find(service => service.name === 'sync')
+  assert.equal(sync.env.STORE, 'disk')
+  assert.ok(sync.env.SYNC_DIR.includes('artifacts'))
+  const proxy = plan.services.find(service => service.name === 'proxy')
+  assert.equal(proxy.env.STORE, 'disk')
+  assert.ok(proxy.env.PROXY_DIR.includes('artifacts'))
+  assert.match(proxy.env.ORIGINS, /https:\/\/realness\.local/)
+  assert.equal(
+    plan.services.find(service => service.name === 'gate').env.SYNC_URL,
+    `http://127.0.0.1:${new URL(sync.url).port}`
+  )
   const frontend = plan.services.find(service => service.name === 'frontend')
   assert.deepEqual(frontend.args, [
     'run',
     'dev:frontend',
     '--',
     '--mode',
-    'local'
+    'dev-local'
   ])
   assert.equal(frontend.env, undefined)
   assert.equal(new URL(frontend.url).hostname, '127.0.0.1')
@@ -87,15 +98,46 @@ test('one command works from another directory and leaves npm start as the harne
 test('starts existing service commands and stops only its children in reverse order', async () => {
   const { services, launched, stopped, options } = fixture()
   const cleanup = await start_local(services, options)
-  assert.deepEqual(launched, ['host', 'workers', 'gate', 'frontend'])
+  assert.deepEqual(launched, [
+    'sync',
+    'halo',
+    'proxy',
+    'workers',
+    'gate',
+    'frontend'
+  ])
   assert.ok(services.every(service => service.state === 'running'))
   await cleanup()
-  assert.deepEqual(stopped, ['frontend', 'gate', 'workers'])
+  assert.deepEqual(stopped, ['frontend', 'gate', 'workers', 'proxy', 'sync'])
+})
+
+test('a slow halo does not hold the other services back', async () => {
+  const { services, stopped, options } = fixture()
+  const seen = []
+  let halo_reads = 0
+  const probe = options.probe
+  options.probe = async service =>
+    service.name === 'halo'
+      ? { running: true, ready: ++halo_reads > 3 }
+      : probe(service)
+  options.pause = async () => {}
+  const cleanup = await start_local(services, {
+    ...options,
+    changed: service => seen.push(`${service.name}:${service.state}`)
+  })
+  await cleanup()
+  assert.ok(
+    seen.indexOf('frontend:running') < seen.indexOf('halo:running'),
+    seen.join(' ')
+  )
+  assert.deepEqual(stopped, ['frontend', 'gate', 'workers', 'proxy', 'sync'])
 })
 
 test('never restarts or stops an already running service', async () => {
   const { services, launched, stopped, options } = fixture([
-    'host',
+    'sync',
+    'halo',
+    'proxy',
     'workers',
     'gate',
     'frontend'
@@ -109,6 +151,8 @@ test('never restarts or stops an already running service', async () => {
 
 test('waits for an existing halo to finish becoming ready without starting another', async () => {
   const { services, launched, options } = fixture([
+    'sync',
+    'proxy',
     'workers',
     'gate',
     'frontend'
@@ -116,7 +160,7 @@ test('waits for an existing halo to finish becoming ready without starting anoth
   let halo_reads = 0
   const original = options.probe
   options.probe = async service =>
-    service.name === 'host'
+    service.name === 'halo'
       ? { running: true, ready: ++halo_reads > 2 }
       : original(service)
   options.pause = async () => {}
@@ -138,19 +182,19 @@ test('an occupied port fails before any processes are started', async () => {
 })
 
 test('startup failure cleans up earlier children and leaves reused services alone', async () => {
-  const { services, launched, stopped, options } = fixture(['host'])
+  const { services, launched, stopped, options } = fixture(['halo'])
   const original = options.launch
   options.launch = async service => {
     if (service.name === 'gate') throw new Error('gate cannot start')
     return original(service)
   }
   await assert.rejects(start_local(services, options), /gate cannot start/)
-  assert.deepEqual(launched, ['workers'])
-  assert.deepEqual(stopped, ['workers'])
+  assert.deepEqual(launched, ['sync', 'proxy', 'workers'])
+  assert.deepEqual(stopped, ['workers', 'proxy', 'sync'])
 })
 
 test('cancellation during startup cleans up only owned processes', async () => {
-  const { services, stopped, options } = fixture(['host'])
+  const { services, stopped, options } = fixture(['halo'])
   const controller = new AbortController()
   const original = options.launch
   options.launch = async service => {
@@ -162,19 +206,19 @@ test('cancellation during startup cleans up only owned processes', async () => {
     start_local(services, { ...options, signal: controller.signal }),
     { name: 'AbortError' }
   )
-  assert.deepEqual(stopped, ['workers'])
+  assert.deepEqual(stopped, ['sync'])
 })
 
 test('a child that exits during startup cannot be reported as ready', async () => {
-  const { services, stopped, options } = fixture(['host'])
+  const { services, stopped, options } = fixture(['halo'])
   const original = options.launch
   options.launch = async service => {
     const child = await original(service)
-    service.error = 'workers exited'
+    service.error = 'sync exited'
     return child
   }
-  await assert.rejects(start_local(services, options), /workers exited/)
-  assert.deepEqual(stopped, ['workers'])
+  await assert.rejects(start_local(services, options), /sync exited/)
+  assert.deepEqual(stopped, ['sync'])
 })
 
 test(
@@ -248,7 +292,7 @@ test('readiness reads a real HTTP endpoint and distinguishes connection refusal'
 })
 
 test('frontend reuse checks the running Vite mode without restarting it', async context => {
-  let mode = 'local'
+  let mode = 'dev-local'
   const server = create_server((request, response) => {
     response.setHeader('X-Vite-Mode', mode)
     response.end('<script type="module" src="/@vite/client"></script>')

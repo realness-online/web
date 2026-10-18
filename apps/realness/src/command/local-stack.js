@@ -18,11 +18,14 @@ const { root, frontend } = product_paths()
 const project = `${root}/`
 export const local_artifacts = out_path('local')
 const secret_file = out_path('halo-pass-secret')
+const model_secret_file = out_path('model-pass-secret')
 const REQUEST_TIMEOUT_MS = 3000
 const START_TIMEOUT_MS = 300_000
 const POLL_MS = 500
 const STOP_TIMEOUT_MS = 5000
 const HTTP_OK = 200
+/** The default HTTPS port, used when a URL leaves it out. */
+const HTTPS_PORT = 443
 
 /** Existing commands own each service; the launcher owns only its child process groups. */
 export const local_plan = () => {
@@ -37,21 +40,51 @@ export const local_plan = () => {
     url,
     services: [
       {
-        name: 'host',
-        args: ['run', 'realness', '--', 'local', 'host', 'up'],
+        name: 'sync',
+        args: ['run', 'start:sync'],
+        url: `http://127.0.0.1:${local_settings.sync_port}/health`,
+        env: {
+          PORT: String(local_settings.sync_port),
+          LISTEN: '0.0.0.0',
+          STORE: 'disk',
+          SYNC_DIR: out_path('sync-data'),
+          PROJECT: local_settings.cloud.project,
+          ORIGINS: local_settings.cloud.services.origins
+        }
+      },
+      {
+        name: 'halo',
+        args: ['run', 'realness', '--', 'local', 'halo', 'up'],
         url: `http://127.0.0.1:${local_settings.api_port}/v1/health`,
         persistent: true
+      },
+      {
+        name: 'proxy',
+        args: ['run', 'start:proxy'],
+        url: `http://127.0.0.1:${local_settings.proxy_port}/health`,
+        env: {
+          PORT: String(local_settings.proxy_port),
+          LISTEN: '127.0.0.1',
+          STORE: 'disk',
+          PROXY_DIR: out_path('proxy-data'),
+          IDENTITY_PROJECT: local_settings.cloud.project,
+          OPENROUTER_API_KEY_FILE: out_path('openrouter-key'),
+          ORIGINS: local_settings.cloud.services.origins
+        }
       },
       { name: 'workers', args: ['run', 'dev:frontend:workers'] },
       {
         name: 'gate',
         args: ['run', 'dev:gate'],
         url: `http://127.0.0.1:${local_settings.gate_port}/health`,
-        env: { GATE_API_PORT: String(local_settings.api_port) }
+        env: {
+          GATE_API_PORT: String(local_settings.api_port),
+          SYNC_URL: `http://127.0.0.1:${local_settings.sync_port}`
+        }
       },
       {
         name: 'frontend',
-        args: ['run', 'dev:frontend', '--', '--mode', 'local'],
+        args: ['run', 'dev:frontend', '--', '--mode', 'dev-local'],
         url: probe_url
       }
     ].map(service => ({ command: 'npm', cwd: project, ...service }))
@@ -125,6 +158,32 @@ const worker_pid = () => {
   return null
 }
 
+/**
+ * Whoever holds a port, as `pid (directory)`, so a refusal names the blocker.
+ * @param {string} url
+ */
+const port_holder = url => {
+  const port = Number(new URL(url).port || HTTPS_PORT)
+  const listing = exec_file_sync(
+    'lsof',
+    ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'],
+    { encoding: 'utf8' }
+  ).trim()
+  const [pid] = listing.split('\n')
+  if (!pid) return null
+  const directory = exec_file_sync(
+    'lsof',
+    ['-a', '-p', pid, '-d', 'cwd', '-Fn'],
+    {
+      encoding: 'utf8'
+    }
+  )
+    .split('\n')
+    .find(line => line.startsWith('n'))
+    ?.slice(1)
+  return directory ? `${pid} (${directory})` : pid
+}
+
 export const probe_local = async service => {
   if (service.name === 'workers') {
     const pid = worker_pid()
@@ -132,11 +191,16 @@ export const probe_local = async service => {
   }
   const reply = await local_request(service.url)
   if (!reply) return { running: false, ready: false }
-  if (reply.status !== HTTP_OK)
+  if (reply.status !== HTTP_OK) {
+    const holder = port_holder(service.url)
+    const port = new URL(service.url).port || String(HTTPS_PORT)
     throw new Error(
-      `${service.name}: ${service.url} answered ${reply.status}; leave the existing service untouched`
+      holder
+        ? `Port ${port} is taken by ${holder}, which answered ${reply.status}. Stop it, then run npm run local again.`
+        : `${service.name} at ${service.url} answered ${reply.status}. Stop it, then run npm run local again.`
     )
-  if (service.name === 'host')
+  }
+  if (service.name === 'halo')
     return { running: true, ready: Boolean(JSON.parse(reply.body).seed?.built) }
   if (service.name === 'gate' && reply.body.trim() !== 'ok')
     throw new Error(
@@ -145,7 +209,7 @@ export const probe_local = async service => {
   if (service.name === 'frontend') {
     if (!reply.body.includes('/@vite/client'))
       throw new Error(`${service.url} is not the Vite development server`)
-    if (reply.headers['x-vite-mode'] !== 'local')
+    if (reply.headers['x-vite-mode'] !== 'dev-local')
       throw new Error(
         'The frontend is already running with another gate. Stop that dev server, then run npm run local again.'
       )
@@ -156,10 +220,19 @@ export const probe_local = async service => {
 const launch_local = async service => {
   await mkdir(local_artifacts, { recursive: true })
   const env = { ...process.env, ...service.env }
-  if (service.name === 'gate') {
+  if (
+    service.name === 'gate' ||
+    service.name === 'sync' ||
+    service.name === 'proxy'
+  ) {
     env.HALO_PASS_SECRET = (await read_file(secret_file, 'utf8')).trim()
     if (!env.HALO_PASS_SECRET)
       throw new Error('The local halo pass secret is empty')
+  }
+  if (service.name === 'proxy') {
+    env.MODEL_PASS_SECRET = (await read_file(model_secret_file, 'utf8')).trim()
+    if (!env.MODEL_PASS_SECRET)
+      throw new Error('The local model pass secret is empty')
   }
   const child = spawn(service.command, service.args, {
     cwd: service.cwd,
@@ -243,6 +316,21 @@ export const start_local = async (
     for (const { child, service } of owned.toReversed())
       await stop(child, service)
   }
+  const wait_ready = async service => {
+    const deadline = now() + START_TIMEOUT_MS
+    while (!(await probe(service)).ready) {
+      signal?.throwIfAborted()
+      if (service.error) throw new Error(service.error)
+      if (now() >= deadline)
+        throw new Error(
+          `${service.name} did not become ready; see ${local_artifacts}`
+        )
+      await pause(POLL_MS, null, { signal })
+    }
+    if (service.error) throw new Error(service.error)
+    service.state = 'running'
+    changed(service)
+  }
   try {
     const initial = await Promise.all(services.map(service => probe(service)))
     for (const [index, service] of services.entries()) {
@@ -257,20 +345,13 @@ export const start_local = async (
         if (!service.persistent) owned.push({ child, service })
         else owned.push({ child, service, bootstrap: true })
       }
-      const deadline = now() + START_TIMEOUT_MS
-      while (!(await probe(service)).ready) {
-        signal?.throwIfAborted()
-        if (service.error) throw new Error(service.error)
-        if (now() >= deadline)
-          throw new Error(
-            `${service.name} did not become ready; see ${local_artifacts}`
-          )
-        await pause(POLL_MS, null, { signal })
-      }
-      if (service.error) throw new Error(service.error)
-      service.state = 'running'
-      changed(service)
+      if (service.name === 'sync') await wait_ready(service)
     }
+    await Promise.all(
+      services
+        .filter(service => service.name !== 'sync')
+        .map(service => wait_ready(service))
+    )
     return async () => {
       const transient = owned.filter(
         item => !item.bootstrap || !item.service.exited

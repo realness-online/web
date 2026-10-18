@@ -205,10 +205,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage, { recursive: true })
   write_file_sync(join(stage, '.pi-version'), `${pi_version}\n`)
-  for (const path of INCLUDE) 
+  for (const path of INCLUDE)
     if (exists_sync(join(root, path)))
       copy(join(root, path), join(stage, path), root)
-  
 
   mkdir_sync(join(stage, 'apps'), { recursive: true })
   write_file_sync(join(stage, '.ignore'), '')
@@ -274,7 +273,7 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   return stage
 }
 
-if (process.argv[1] === file_url_to_path(import.meta.url)) 
+if (process.argv[1] === file_url_to_path(import.meta.url))
   try {
     const env = process.argv[process.argv.indexOf('--env') + 1]
     if (!process.argv.includes('--env'))
@@ -294,4 +293,3 @@ if (process.argv[1] === file_url_to_path(import.meta.url))
     console.error(error.message)
     process.exit(1)
   }
-

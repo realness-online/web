@@ -36,7 +36,7 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness files sync <local-folder> <can://~/folder/> [--json]
        realness files cat <can://~/file> [--json]
 
-Desktop uses sign-in; actors use their host-issued, path-limited passes.
+Desktop uses sign-in; actors use their halo-issued, path-limited passes.
 File sync is two-way. realness-store remains a compatibility alias.
 `
 

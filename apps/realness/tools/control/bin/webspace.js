@@ -15,7 +15,7 @@
  *
  *   realness <env> halo up [<name>] [--smoke]     make a halo, put the code on it, serve
  *   realness <env> halo restart <name>            push the code and re-serve
- *   realness <env> halo down <name> [--delete] [--no-drain]
+ *   realness <env> halo down <name> [--delete] [--no-drain] [--vm]
  *   realness <env> halo drain <name> [--delete]   export every actor to the bucket
  *   realness <env> halo list
  *   realness <env> halo status [<name>] [--json]
@@ -93,7 +93,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
 
   halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
   halo restart <name>          push the code and re-serve
-  halo down <name> [--delete]  park it, or drain and delete
+  halo down <name> [--delete] [--vm]  park it; --vm also stops the local Lima VM
   halo recover <name> [--yes]  recreate a failed halo's actors elsewhere (hs-f3)
   halo memory <actor> --stages=<file>  sample explicit workloads (hs-mem)
   halo hot                     which halos are over their limits (hs-hot)
@@ -381,7 +381,7 @@ const main = async argv => {
         throw new Error(usage)
       const storage = local
         ? disk(
-            typeof flags.dir === 'string' ? flags.dir : out_path('site-sync')
+            typeof flags.dir === 'string' ? flags.dir : out_path('sync-data')
           )
         : create_gcs({
             bucket: deployment_settings(envName, process.env).bucket,
@@ -611,11 +611,11 @@ const halo_command = async (halos, config, args, flags, envName) => {
         rest,
         'usage: realness <env> halo memory <actor> [halo] --stages=<file>'
       )
-      const host_name = rest[1] ?? config.hostName ?? 'realness-1'
+      const halo_name = rest[1] ?? config.haloName ?? 'realness-1'
       const { measure } = await import('../../../src/control/memory.js')
       const { remoteApi } = await import('../../../src/control/api.js')
       if (is_local(config)) throw new Error('memory measures a cloud halo')
-      const api = remoteApi(host_name, { zone: config.zone })
+      const api = remoteApi(halo_name, { zone: config.zone })
       if (typeof flags.stages !== 'string')
         throw new Error(
           'memory needs --stages=<JSON file with named workload argv>'
@@ -655,7 +655,7 @@ const halo_command = async (halos, config, args, flags, envName) => {
         },
         /** The halo's cost is the Firecracker process; the guest's own use comes from its MemAvailable, so nothing new is reported at rest. */
         sample: async () =>
-          await sample_actor(target, config, host_name, actor, api)
+          await sample_actor(target, config, halo_name, actor, api)
       })
     }
 
@@ -869,10 +869,12 @@ const halo_command = async (halos, config, args, flags, envName) => {
     }
 
     case 'down': {
-      const name = requireName(
-        rest,
-        `usage: realness <env> halo down <name> [--delete]`
-      )
+      const name = is_local(config)
+        ? (rest[0] ?? config.vm)
+        : requireName(
+            rest,
+            `usage: realness <env> halo down <name> [--delete] [--vm]`
+          )
       if (flags.delete && !flags['no-drain'] && !is_local(config))
         return drain.drain(target, config, name, {
           delete: true,
@@ -881,10 +883,20 @@ const halo_command = async (halos, config, args, flags, envName) => {
 
       if (flags.delete)
         return mod.down(target, config, name, { mode: 'delete' })
-      const sync = await reads.reader(envName)
-      await reads.record_intent(sync, name, 'stopping')
-      const done = await mod.down(target, config, name, { mode: 'stop' })
-      await reads.record_intent(sync, name, 'parked')
+      const intent = async state => {
+        try {
+          const sync = await reads.reader(envName)
+          await reads.record_intent(sync, name, state)
+        } catch (error) {
+          process.stderr.write(`halo record skipped: ${error.message}\n`)
+        }
+      }
+      await intent('stopping')
+      const done = await mod.down(target, config, name, {
+        mode: 'stop',
+        stop_vm: flags.vm === true
+      })
+      await intent('parked')
       return done
     }
 

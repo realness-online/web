@@ -97,16 +97,26 @@ export const up = async (
 const serve = (lima, config, name) => startStack(lima, config)
 
 /** Stop the halo and any microVM it left running. */
-export const down = async (lima, config, name, { mode = 'stop' } = {}) => {
-  step(`stopping the dev stack${mode === 'delete' ? ' and the Lima VM' : ''}`)
+export const down = async (
+  lima,
+  config,
+  name,
+  { mode = 'stop', stop_vm = false } = {}
+) => {
+  const stops_vm = mode === 'delete' || stop_vm
+  step(`stopping the dev stack${stops_vm ? ' and the Lima VM' : ''}`)
   await lima.run(
-    'pkill -f "[n]ode server/halo/main.js" || true; pkill -x firecracker || true',
+    'pkill -f "[n]ode server/(halo|host)/main[.]js" || true; pkill -x firecracker || true',
     { user: 'root' }
   )
 
-  if (mode === 'delete') {
-    await attempt('limactl', ['stop', config.vm])
-    note(`${config.vm} stopped (not deleted: it is the dev environment)`)
+  if (stops_vm) {
+    await lima.stop()
+    note(
+      mode === 'delete'
+        ? `${config.vm} stopped (not deleted: it is the dev environment)`
+        : `${config.vm} stopped`
+    )
   }
   return { stopped: true, deleted: mode === 'delete' }
 }

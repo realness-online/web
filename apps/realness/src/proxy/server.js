@@ -260,6 +260,10 @@ export const proxy_handler =
       /\/+$/,
       ''
     )
+    if (path === '/health' && request.method === 'GET')
+      return response
+        .writeHead(HTTP.OK, { 'content-type': 'text/plain' })
+        .end('ok')
     const { origin } = request.headers
     const browser = path !== '/pay/webhook'
     if (browser && origin && origins.includes(origin)) {

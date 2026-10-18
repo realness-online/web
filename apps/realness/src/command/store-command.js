@@ -105,7 +105,7 @@ export const run_store = async (
   }
   try {
     if (actor && ['login', 'logout'].includes(command))
-      throw new Error('actors use host-issued passes')
+      throw new Error('actors use halo-issued passes')
     if (command === 'login') {
       print(
         `Opening ${sign_on}/sign-on in your browser. Click to sign Realness in.`

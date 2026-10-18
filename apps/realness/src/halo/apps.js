@@ -11,7 +11,7 @@ import { connect } from 'node:net'
 import { join } from 'node:path'
 import { BadRequest, HaloError, NotFound } from './errors.js'
 import * as firecracker from './firecracker.js'
-import * as host from './syscalls.js'
+import * as syscalls from './syscalls.js'
 import { APP_PORT, infer } from './infer.js'
 import { logger } from './log.js'
 import { ID_BYTES, KIB, MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
@@ -67,18 +67,24 @@ const buildCodeDisk = (files, disk, start, work) => {
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage)
   try {
-    host.run(['cp', '-a', '--reflink=auto', `${files}/.`, join(stage, 'code')])
+    syscalls.run([
+      'cp',
+      '-a',
+      '--reflink=auto',
+      `${files}/.`,
+      join(stage, 'code')
+    ])
     write_file_sync(join(stage, 'argv'), argvText(start))
-    host.run(['chown', '-R', '0:0', stage])
-    host.run(['chmod', '-R', 'a+rX,go-w', stage])
-    const kib = Number(host.run(['du', '-sk', stage]).output.split(/\s/)[0])
-    host.run([
+    syscalls.run(['chown', '-R', '0:0', stage])
+    syscalls.run(['chmod', '-R', 'a+rX,go-w', stage])
+    const kib = Number(syscalls.run(['du', '-sk', stage]).output.split(/\s/)[0])
+    syscalls.run([
       'truncate',
       '-s',
       `${Math.max(MIN_DISK_MIB * KIB, Math.ceil(kib * DISK_GROWTH) + 8 * KIB)}K`,
       disk
     ])
-    host.run(['mkfs.ext4', '-q', '-F', '-L', 'app-code', '-d', stage, disk])
+    syscalls.run(['mkfs.ext4', '-q', '-F', '-L', 'app-code', '-d', stage, disk])
   } finally {
     rm_sync(stage, { recursive: true, force: true })
   }
@@ -167,7 +173,7 @@ export class AppStore {
       ...options
     })
     this.dir = join(this.volume, 'apps')
-    host.requireRoot('creating TAPs and Firecracker')
+    syscalls.requireRoot('creating TAPs and Firecracker')
   }
 
   path(id, ...rest) {
@@ -281,8 +287,8 @@ export class AppStore {
     let tap = ''
     try {
       buildCodeDisk(files, join(dir, CODE), needs.start, dir)
-      tap = host.freeTap(this.tapPrefix)
-      host.createTap(tap, NET)
+      tap = syscalls.freeTap(this.tapPrefix)
+      syscalls.createTap(tap, NET)
       this.write({
         id,
         ...meta,
@@ -291,7 +297,7 @@ export class AppStore {
         start: needs.start,
         tap,
         pid: 0,
-        address: host.tapGuest(tap, NET),
+        address: syscalls.tapGuest(tap, NET),
         port: APP_PORT,
         vcpus: this.vcpus,
         mib: mibFor(needs, this.mib),
@@ -302,7 +308,7 @@ export class AppStore {
       await firecracker.terminate(
         firecracker.pidForApiSock(join(dir, 'api.sock'))
       )
-      if (tap) host.deleteTap(tap)
+      if (tap) syscalls.deleteTap(tap)
       rm_sync(dir, { recursive: true, force: true })
       throw error
     }
@@ -320,8 +326,8 @@ export class AppStore {
     const log = join(dir, 'firecracker.log')
     await firecracker.terminate(firecracker.pidForApiSock(apiSock))
     rm_sync(apiSock, { force: true })
-    if (!host.tapExists(record.tap)) host.createTap(record.tap, NET)
-    host.run([
+    if (!syscalls.tapExists(record.tap)) syscalls.createTap(record.tap, NET)
+    syscalls.run([
       'cp',
       '--reflink=auto',
       '--sparse=always',
@@ -434,7 +440,7 @@ export class AppStore {
       await firecracker.terminate(
         firecracker.pidForApiSock(this.path(id, 'api.sock'))
       )
-      host.deleteTap(tap)
+      syscalls.deleteTap(tap)
       rm_sync(this.path(id), { recursive: true, force: true })
     })
   }

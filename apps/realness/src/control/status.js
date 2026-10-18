@@ -1,14 +1,17 @@
 import { client } from '#root/src/files/client.js'
 import { keychain_for, token_source } from '#root/src/sign-on/node/login.js'
 import { read_status } from '#root/src/sync/halo-status.js'
-import { environment_settings } from '#root/src/settings/environments.js'
+import {
+  environment_settings,
+  local_settings
+} from '#root/src/settings/environments.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- halos are read one at a time to keep the sync service quiet */
 
 const SHOWN_DIGITS = 2
 
 export const URLS = {
-  local: environment_settings('development').services.sync_url,
+  local: `http://127.0.0.1:${local_settings.sync_port}`,
   development: environment_settings('development').services.sync_url,
   production: environment_settings('production').services.sync_url
 }

@@ -23,8 +23,8 @@ const routing = mode => {
 }
 
 test('local mode routes HTTP and terminal sockets through the same-origin gate', () => {
-  assert.deepEqual(routing('local'), {
-    mode: 'local',
+  assert.deepEqual(routing('dev-local'), {
+    mode: 'dev-local',
     gate: {
       target: 'http://127.0.0.1:8792',
       ws: true,

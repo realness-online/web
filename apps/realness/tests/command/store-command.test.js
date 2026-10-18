@@ -60,11 +60,11 @@ test('an unknown command prints the usage and exits 2', async () => {
   )
 })
 
-test('an actor may not log in or out; it uses host-issued passes', async () => {
+test('an actor may not log in or out; it uses halo-issued passes', async () => {
   for (const command of ['login', 'logout']) {
     const { code, stderr } = await run([command], { actor: true })
     assert.equal(code, 1)
-    assert.match(stderr, /actors use host-issued passes/)
+    assert.match(stderr, /actors use halo-issued passes/)
   }
 })
 

@@ -256,6 +256,17 @@ async function routed({ paid = null, cost = 0, stripe = null }) {
   }
 }
 
+test('health answers without a token, for readiness', async () => {
+  const app = await routed({})
+  try {
+    const result = await fetch(`${app.at}/health`)
+    assert.equal(result.status, 200)
+    assert.equal((await result.text()).trim(), 'ok')
+  } finally {
+    await app.close()
+  }
+})
+
 test('b1d: the house model is asked for by name', () => {
   assert.equal(wants_house({ model: 'house' }), true)
   assert.equal(wants_house({ model: 'realness/deepseek' }), true)

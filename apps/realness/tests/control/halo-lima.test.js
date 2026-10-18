@@ -48,6 +48,9 @@ const fake_lima = (answers = {}) => {
     },
     streamScript: async (script, options) => {
       asked.push(['streamScript', script, options])
+    },
+    stop: async () => {
+      asked.push(['stop'])
     }
   }
 }
@@ -115,6 +118,17 @@ test('down stops the halo and any microVM it left behind', async t => {
   const stopped = await down(lima, config, 'realness-dev')
   assert.deepEqual(stopped, { stopped: true, deleted: false })
   assert.equal(lima.asked.length, 1)
-  assert.match(lima.asked[0][1], /pkill -f "\[n\]ode server\/halo\/main\.js"/)
+  assert.match(
+    lima.asked[0][1],
+    /pkill -f "\[n\]ode server\/\(halo\|host\)\/main\[\.\]js"/
+  )
   assert.deepEqual(lima.asked[0][2], { user: 'root' })
+  assert.ok(!lima.asked.some(([verb]) => verb === 'stop'))
+})
+
+test('down with --vm also stops the Lima VM', async t => {
+  const lima = fake_lima()
+  const stopped = await down(lima, config, 'realness-dev', { stop_vm: true })
+  assert.deepEqual(stopped, { stopped: true, deleted: false })
+  assert.ok(lima.asked.some(([verb]) => verb === 'stop'))
 })

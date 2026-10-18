@@ -70,7 +70,7 @@ test('each browser mode reaches its own gate and local stays local', () => {
   })
   assert.deepEqual(browser_settings('dev-local'), {
     gate_url: '/gate',
-    proxy_url: development.proxy_url
+    proxy_url: 'http://127.0.0.1:8788'
   })
   for (const mode of ['dev', 'local', 'toString', undefined])
     assert.throws(() => browser_settings(mode), /unknown browser mode/)

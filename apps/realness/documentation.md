@@ -56,7 +56,7 @@ were close.
   each), and the 30 GB-months allowance is shared and per account, so it does
   not scale. The fleet image exists: `realness-halo`, family `realness-halo`, 20
   GB geometry. A stopped halo is a 20 GB boot plus a 30 GB actors volume, both
-  standard, and `host-down.sh --delete` returns it to nothing but the image.
+  standard, and `halo down --delete` returns it to nothing but the image.
 - **A $20/mo Compute Engine budget on `realness-online`** alerts at 50/90/100%.
   Leaving the halo up trips it in about four days.
 - **The Lima loop is the dev loop; prod is x86_64.** Snapshots are
@@ -69,7 +69,7 @@ were close.
   after h4b); `check:halo` is the contract both passed.
 - **Actors get a TAP and no NAT.** Egress is h2's.
 - **The safe delete is the drain, and it ships before it deletes** (r9).
-  `host-drain.sh <host> [--delete]` exports every actor, streams each bundle to
+  `halo drain <halo> [--delete]` exports every actor, streams each bundle to
   `gs://<bucket>/actors/<id>/bundle.tar.gz`, checks the object the bucket stored
   against the bundle that was sent, drops the bundle from the volume, and only
   then deletes the instance together with the disks it actually has. Anything
@@ -148,15 +148,15 @@ runbook.
   halo, then the same restore from a bundle that went to
   `gs://realness-online-realness` and back byte for byte (13 + 11 checks), with
   the 3 MiB file intact and the new actor holding its own identity
-- r8: the halo loop is one command each way: `host-up.sh realness-2 --smoke`
+- r8: the halo loop is one command each way: `halo up realness-2 --smoke`
   made a 20 GB halo from the image and had it serving an actor in 2m50s (seed
-  36s, smoke 5/5), and `host-down.sh realness-2 --delete` took the halo and its
+  36s, smoke 5/5), and `halo down realness-2 --delete` took the halo and its
   volume away. A deleted halo leaves the image as the fleet's only standing cost
 - r9: a halo is deleted with a live actor on it and the actor comes back: 20
   checks, run in us-west1-b because us-central1 had no n2 capacity. The drain
   exported the actor, put its 3 MB bundle in
   `gs://realness-online-realness/actors/<id>/bundle.tar.gz` with a matching
-  md5Hash, and took the instance and both disks away; `host-up.sh` built a halo
+  md5Hash, and took the instance and both disks away; `halo up` built a halo
   whose creation time is new and whose volume held none of it; the bundle came
   back, the 3 MiB payload hashed identically, the identity did not, and the
   trace opens with the drained actor's own events
@@ -203,7 +203,7 @@ asks for one.
 command's own exit code, so shell composition works:
 
 ```bash
-sudo python3 /mnt/fc/host/clients/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
+sudo python3 /mnt/fc/server/halo/clients/vsock-exec.py --uds /tmp/f2-v.sock -- uname -r
 ```
 
 Needs root: Firecracker creates the socket as root and the socket mode does not
@@ -305,7 +305,7 @@ curl and asks the guest over the f2 channel.
 The halo builds the seed itself (boot the template, pause, snapshot) and records
 what it built from in `seed/seed.json`, so a start with a mismatched kernel,
 template or Firecracker rebuilds and `create` refuses a seed that does not
-match. In `src/halo/`, `host.js` owns TAPs and the volume, `firecracker.js` the
+match. In `src/halo/`, `syscalls.js` owns TAPs and the volume, `firecracker.js` the
 unix-socket REST calls, `vsock.js` the guest channel, `actors.js` the
 create/destroy cycle, `server.js` the routes: `GET /v1/health`,
 `GET|POST /v1/actors`, `GET|DELETE /v1/actors/{id}`.
@@ -342,7 +342,7 @@ goes.
 
 `src/halo/pty.js` listens on 8081 for a framed terminal stream, one TCP
 connection per terminal. The client's first line is
-`{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<host pass>"}`. The pass is
+`{"actor": "a-...", "cols": 80, "rows": 24, "pass": "<halo pass>"}`. The pass is
 the same five-minute bearer the API takes, so the pty is not a second door. The
 server answers `{"ok": true}`, then relays the guest agent's frames byte for
 byte:
@@ -478,7 +478,7 @@ A bundle is three files in the volume's `exports/<id>/`:
 
 ```
 artifacts.tar.gz   the actor's harness and work (/realness), gzipped
-trace.jsonl        every event the host saw
+trace.jsonl        every event the halo saw
 manifest.json      sha256 and size of both, the identity it had, the seed it forked from
 ```
 
@@ -529,13 +529,13 @@ stays as the measurement.
 
 ### A halo from the image, and one that can be deleted (r8, r9)
 
-`host-up.sh <name>` makes a halo from the fleet image: boot disk, instance with
+`halo up <name>` makes a halo from the fleet image: boot disk, instance with
 nested virt and no service account, actors volume, then `halo-bootstrap.sh` on
-it (`--smoke` also runs `halo-smoke.sh`). `host-down.sh <name>` stops it with
+it (`--smoke` also runs `halo-smoke.sh`). `halo down <name>` stops it with
 its disks; `--delete` takes the disks too and leaves the image as the only cost.
 
-`host-down.sh --delete` does not ask what is on the halo.
-`host-drain.sh <name> [--delete]` does: it exports every actor, streams each
+`halo down --delete` does not ask what is on the halo.
+`halo drain <name> [--delete]` does: it exports every actor, streams each
 bundle to `gs://realness-online-realness/actors/<id>/bundle.tar.gz`, checks what
 the bucket stored against what was sent, drops the bundle from the volume, and
 only then deletes the instance and the disks it actually has. It runs on the
@@ -547,7 +547,7 @@ drain and delete the halo, check the instance and both disks are gone, build a
 _second_ halo (different creation time, empty volume), land the bundle from the
 bucket, restore, and check the payload hash matches, the identity does not, and
 the drained actor's trace opens the trace that replaced it. 20 checks.
-`probe-capacity.sh` answers which zone can make a halo when `host-up.sh` reports
+`probe-capacity.sh` answers which zone can make a halo when `halo up` reports
 a stockout.
 
 ### The prod halo (d3)
@@ -716,7 +716,7 @@ it.
 ```bash
 sudo bash /mnt/fc/control/scripts/app-image-build.sh      # the image
 sudo bash /mnt/fc/control/scripts/runtime-build.sh        # node + our server, read-only
-sudo bash /mnt/fc/host/scripts/net-up.sh                  # fc-app rules
+sudo bash /mnt/fc/server/halo/scripts/net-up.sh                  # fc-app rules
 sudo bash /mnt/fc/control/scripts/app-image-verify.sh     # 17 checks
 sudo bash /mnt/fc/control/scripts/app-boot-check.sh       # 7 checks
 sudo bash /mnt/fc/control/scripts/app-escape-check.sh     # 21 refusals
@@ -951,13 +951,13 @@ Cost and design facts. Build and runtime gotchas are below.
 - A GCP disk's `deviceName` decides its `/dev/disk/by-id` path, and defaults to
   `persistent-disk-1` rather than the resource name. Create it with an explicit
   `--device-name=realness-actors` or the path will not match the script. The
-  name is per-instance, so every host can use the same one.
+  name is per-instance, so every halo can use the same one.
 - `--zone` and `--project` are not accepted above a subcommand:
   `gcloud --project=p --zone=z compute disks create` and
   `gcloud compute --zone=z disks create` both die with
   `unrecognized arguments: --zone=z`. Pass them per call, or set
   `CLOUDSDK_COMPUTE_ZONE` and `CLOUDSDK_CORE_PROJECT`, which is what
-  `host-up.sh` does.
+  `halo up` does.
 - Piping a gcloud call to `tail -1` hides the reason it failed: the error's
   useful line is the first of four, and the last is always
   `gcloud help -- SEARCH_TERMS`. `tail -5` keeps the message.
@@ -970,11 +970,11 @@ Cost and design facts. Build and runtime gotchas are below.
   line.
 - A killed Firecracker that is not reaped is a _zombie_, and a zombie is still a
   process named `firecracker`, and that is what every leftover check and the
-  idle guard count. One would hold a host awake forever. Reaping has to poll:
+  idle guard count. One would hold a halo awake forever. Reaping has to poll:
   `waitpid(pid, WNOHANG)` issued right after SIGKILL returns 0 while the process
   is still dying, and nothing else ever collects it. `halo-smoke.sh` and
   `r7-verify.sh` both check for leftovers, which is how this was caught.
-- The Python host ran as root and left root-owned `__pycache__` in the source
+- The Python halo ran as root and left root-owned `__pycache__` in the source
   tree, and the next `scp` of the code over it failed for the login user with
   `failed to upload directory`. Chown the tree before copying
   (`halo-bootstrap.sh` does).
@@ -985,7 +985,7 @@ Cost and design facts. Build and runtime gotchas are below.
   together, and a `&&` chain will happily run the next command anyway if you do
   not check the exit status.
 - `realness-online`'s `default-allow-ssh` rule is open to `0.0.0.0/0`; key-only
-  ssh is the only thing gating port 22 on the prod host.
+  ssh is the only thing gating port 22 on the prod halo.
 - A `set -eu` script with an EXIT trap exits **0** when it dies on an unbound
   variable, and `$?` is already 0 inside the trap. Exit status is not evidence:
   have the script mark its own success and make the trap return non-zero without
@@ -1009,7 +1009,7 @@ Cost and design facts. Build and runtime gotchas are below.
   mounted at the short `/opt/fc/actors/mnt`.
 - Firecracker does no network filtering. Host egress rules are mandatory; the
   guest's own rules are not a boundary.
-- Snapshot files are trusted, with no host-side protection.
+- Snapshot files are trusted, with no halo-side protection.
 - Replacing a disk leaves a second `/etc/fstab` line pointed at the same mount
   point. `actors-volume.sh` deletes other entries for the mount before adding
   its own.
@@ -1017,26 +1017,26 @@ Cost and design facts. Build and runtime gotchas are below.
   `seed.json` fingerprint instead: template size and mtime, kernel, firecracker,
   arch.
 - Lima's automatic port-forward skips a guest port whose host number is taken,
-  silently. The dev host's ports are explicit in `server/lima/fc-local.yaml` (18080 ->
+  silently. The dev halo's ports are explicit in `server/lima/fc-local.yaml` (18080 ->
   8080, 18081 -> 8081, 18096 -> 18096).
 - A zone stocks out across machine types, not one of them, and a stockout also
-  refuses to _start_ a parked host: us-central1 took nine refusals across four
-  machine types while us-west1-b took the host. `scripts/probe-capacity.sh` asks
+  refuses to _start_ a parked halo: us-central1 took nine refusals across four
+  machine types while us-west1-b took the halo. `scripts/probe-capacity.sh` asks
   each candidate for real, and r9 ran in us-west1-b for that reason.
-  `host-up.sh` removes the boot disk it just made when a create fails. Before
+  `halo up` removes the boot disk it just made when a create fails. Before
   that, one refusal left 20 GB billing unattached.
-- The host's first serve on a fresh host builds the seed (~36s of boot) before
+- The halo's first serve on a fresh halo builds the seed (~36s of boot) before
   the listener answers, so `halo-restart.sh` waits three minutes, not one.
-- A host refuses to start without both root-only secret files, 0600 root:
+- A halo refuses to start without both root-only secret files, 0600 root:
   `/etc/realness/model-pass-secret` and `/etc/realness/halo-pass-secret`. The
-  host pass secret is fleet-wide: the sync service mints a pass with the same
-  value from Secret Manager, and any host accepts it at its terminal.
+  halo pass secret is fleet-wide: the sync service mints a pass with the same
+  value from Secret Manager, and any halo accepts it at its terminal.
 
 ## Scope
 
-This loop is arm64; the prod host is x86_64. It validates the VM lifecycle, the
+This loop is arm64; the prod halo is x86_64. It validates the VM lifecycle, the
 network path, and the control channel. d3 carries the same work onto the prod
-host, minus snapshots. Snapshots are per-architecture and pinned to the
+halo, minus snapshots. Snapshots are per-architecture and pinned to the
 Firecracker data format version, so the x86_64 boot-and-snapshot proof (x1) is
 still required.
 
@@ -1060,12 +1060,12 @@ walkthrough are in `artifacts/firecracker/probe-20260918/`:
 - `dev-setup.sh`: booted a microVM (`dist/boot-<utc>/`, 473 serial lines,
   `PASS: guest reached userspace`)
 - `dev-up.sh`: `--fresh` wiped the volume and rebuilt the seed; health `ok`
-- `host-up.sh probe-realness-2 --smoke --zone=us-west1-b`: host created,
+- `halo up probe-realness-2 --smoke --zone=us-west1-b`: halo created,
   bootstrapped, 5/5 smoke, serving
-- `host-drain.sh` and `host-down.sh --delete`: an actor with a 100 KB payload
+- `halo drain` and `halo down --delete`: an actor with a 100 KB payload
   exported to
   `gs://realness-online-realness/actors/a-2c3939d4a288/bundle.tar.gz` (103,375
-  bytes, md5 `pFK6XsalyMdOkOmpzOKTHQ==`), then the host and both its disks
+  bytes, md5 `pFK6XsalyMdOkOmpzOKTHQ==`), then the halo and both its disks
   deleted; `gcloud compute instances list` back to `realness-1` alone
 - `probe-capacity.sh`: us-central1 a/b/c and us-west1-a: no n2-standard-4;
   us-west1-b and us-east1-b: OK

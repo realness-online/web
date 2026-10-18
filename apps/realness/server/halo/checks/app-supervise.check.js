@@ -9,7 +9,7 @@ import {
 import { join } from 'node:path'
 import { AppStore } from '../../../src/halo/apps.js'
 import * as firecracker from '../../../src/halo/firecracker.js'
-import * as host from '../../../src/halo/syscalls.js'
+import * as syscalls from '../../../src/halo/syscalls.js'
 
 const sleep = ms => new Promise(done => setTimeout(done, ms))
 const get = (record, path = '/') =>
@@ -107,7 +107,7 @@ try {
   )
 
   await firecracker.terminate(vmPid(record.id))
-  host.deleteTap(record.tap)
+  syscalls.deleteTap(record.tap)
   apps = new AppStore(options)
   boot = await returns(record, boot)
   console.log('  ok   halo restart brings the app back')

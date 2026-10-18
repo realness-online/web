@@ -446,6 +446,11 @@ export const sync_service = ({
   const dispatch = async (request, response, path) => {
     const { method } = request
     if (path === null) throw new Status(HTTP.BAD_REQUEST)
+    if (path === 'health' && method === 'GET') {
+      response.writeHead(HTTP.OK, { 'content-type': 'text/plain' })
+      response.end('ok')
+      return null
+    }
     if (path.startsWith('sites/') || path.startsWith('v1/sites/')) {
       const who = site_caller(path, request, halo_pass_secret)
       await site_request({

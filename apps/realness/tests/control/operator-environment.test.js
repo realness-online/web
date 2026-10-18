@@ -10,7 +10,12 @@ test('production operators sign in and read sync in production only', () => {
   assert.match(URLS.production, /276668807926/)
   assert.doesNotMatch(SIGN_ON.production + URLS.production, DEVELOPMENT)
   assert.match(URLS.development, DEVELOPMENT)
-  assert.equal(URLS.local, URLS.development)
+  assert.equal(URLS.local, 'http://127.0.0.1:8787')
+})
+
+test('a local operator reads a local filesystem sync', () => {
+  assert.equal(URLS.local, 'http://127.0.0.1:8787')
+  assert.doesNotMatch(URLS.local, DEVELOPMENT)
 })
 
 test('a production sign-in never reads the development keychain entry', () => {

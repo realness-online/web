@@ -40,6 +40,9 @@ const live = (dir) => {
   }
 }
 
+const contains_live = dir => live(dir) || readdir_sync(dir, { withFileTypes: true })
+  .some(entry => entry.isDirectory() && contains_live(join(dir, entry.name)))
+
 /** Walk artifacts/, collecting whole directories and leaf files to judge. */
 const collect = (dir, dirs, files) => {
   for (const entry of readdir_sync(dir, { withFileTypes: true })) {
@@ -47,8 +50,8 @@ const collect = (dir, dirs, files) => {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
       if (live(path)) continue
-      if (entry.name === "node_modules" || entry.name === ".git") dirs.push(path)
-      else if (entry.name === "dist" && exists_sync(join(dir, "package.json"))) dirs.push(path)
+      if ((entry.name === "node_modules" || entry.name === ".git") && !contains_live(path)) dirs.push(path)
+      else if (entry.name === "dist" && exists_sync(join(dir, "package.json")) && !contains_live(path)) dirs.push(path)
       else collect(path, dirs, files)
     } else if (entry.isFile()) {
       if (entry.name === ".DS_Store") dirs.push(path)
@@ -80,9 +83,13 @@ const add = (path, why) => {
 
 const dirs = []
 const files = []
-if (exists_sync(ROOT)) collect(ROOT, dirs, files)
+if (exists_sync(ROOT) && !live(ROOT)) collect(ROOT, dirs, files)
 for (const path of dirs) add(path, "regenerable")
 for (const path of files) {
+  if (Date.now() - lstat_sync(path).mtimeMs >= 7 * 86_400_000) {
+    add(path, "older than 7 days")
+    continue
+  }
   const lower = twin_of(path)
   if (lower) add(path, `twin of ${relative(ROOT, lower)}`)
 }
@@ -95,3 +102,6 @@ if (!quiet) {
 }
 if (apply) for (const item of items) rm_sync(item.path, { recursive: true, force: true })
 console.log(`${apply ? "pruned" : "would prune"} ${items.length} item(s), freed ${total} bytes`)
+const remaining = exists_sync(ROOT) ? size_of(ROOT) : 0
+console.log(`artifacts size: ${remaining} bytes`)
+if (remaining > 500_000_000) console.log(`warning: artifacts exceed 500 MB (${(remaining / 1_000_000).toFixed(1)} MB)`)
