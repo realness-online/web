@@ -86,6 +86,67 @@ export const execInGuest = async (
   }
 }
 
+/**
+ * Run argv in the guest and report output as it arrives. The agent sends
+ * `stdout` and `stderr` frames, then one `exit` frame. Destroying the socket
+ * stops the command in the guest.
+ * @param {string} udsPath
+ * @param {string[]} argv
+ * @param {object} [options]
+ * @param {string | null} [options.cwd]
+ * @param {Buffer} [options.stdin]
+ * @param {number} [options.timeout] seconds; the guest stops the command
+ * @param {number} [options.port]
+ * @param {(chunk: { stream: 'stdout' | 'stderr', data: Buffer }) => void} [options.on_output]
+ * @param {AbortSignal} [options.signal]
+ * @returns {Promise<{ code: number }>}
+ */
+export const execInGuestStream = async (
+  udsPath,
+  argv,
+  {
+    cwd = null,
+    stdin = Buffer.alloc(0),
+    timeout = 90,
+    port = VSOCK_PORT,
+    on_output = () => {},
+    signal = undefined
+  } = {}
+) => {
+  const { socket, lines } = await connect(udsPath, port)
+  const stop = () => socket.destroy()
+  if (signal?.aborted) stop()
+  else signal?.addEventListener('abort', stop, { once: true })
+  try {
+    socket.write(
+      `${JSON.stringify({
+        argv,
+        cwd,
+        stdin_b64: Buffer.from(stdin).toString('base64'),
+        stream: true,
+        timeout
+      })}\n`
+    )
+    for (;;) {
+      const line = await lines.read(timeout)
+      if (!line?.length)
+        throw new VsockError(
+          `agent closed the channel (argv=${JSON.stringify(argv)})`
+        )
+      const event = JSON.parse(line.toString())
+      if (event.type === 'exit') return { code: event.exit_code }
+      if (event.type === 'stdout' || event.type === 'stderr')
+        on_output({
+          stream: event.type,
+          data: Buffer.from(event.data_b64 ?? '', 'base64')
+        })
+    }
+  } finally {
+    signal?.removeEventListener('abort', stop)
+    socket.destroy()
+  }
+}
+
 /** Run argv and return stdout as text, throwing if it failed. */
 export const runOk = async (udsPath, argv, options = {}) => {
   const { code, out, err } = await execInGuest(udsPath, argv, options)

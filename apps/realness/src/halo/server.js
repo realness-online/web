@@ -164,8 +164,10 @@ const health = store => {
   }
 }
 
-const exec = async (store, request, id) => {
+const exec = async (store, request, id, response) => {
   const payload = await readJson(request)
+  if (payload.stream !== undefined && typeof payload.stream !== 'boolean')
+    throw new BadRequest('stream must be a boolean')
   const stdinB64 = payload.stdin_b64 || ''
   if (typeof stdinB64 !== 'string')
     throw new BadRequest('stdin_b64 must be a base64 string')
@@ -184,11 +186,44 @@ const exec = async (store, request, id) => {
       `timeout must be seconds, 0 < t <= ${EXEC_TIMEOUT_MAX}`
     )
 
-  return store.exec(id, payload.argv, {
+  const options = {
     cwd: payload.cwd ?? null,
     stdin: Buffer.from(stdinB64, 'base64'),
     timeout
+  }
+  if (payload.stream !== true) return store.exec(id, payload.argv, options)
+
+  const stopping = new AbortController()
+  const stop = () => {
+    if (!response.writableEnded) stopping.abort()
+  }
+  response.on('close', stop)
+  response.writeHead(HTTP.OK, {
+    'content-type': 'application/x-ndjson',
+    'cache-control': 'no-store'
   })
+  try {
+    const result = await store.execStream(id, payload.argv, {
+      ...options,
+      signal: stopping.signal,
+      on_output: chunk => {
+        response.write(
+          `${JSON.stringify({
+            type: 'output',
+            stream: chunk.stream,
+            data_b64: chunk.data.toString('base64')
+          })}\n`
+        )
+      }
+    })
+    response.end(
+      `${JSON.stringify({ type: 'exit', exit_code: result.exit_code })}\n`
+    )
+  } catch (error) {
+    if (!stopping.signal.aborted) throw error
+  } finally {
+    response.off('close', stop)
+  }
 }
 
 const APP_HALO = /^(app-[0-9a-f]{12})\.localhost$/
@@ -555,7 +590,8 @@ const route_actor_writes = async ({
   if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
     throw new NotFound(id)
   if (action === 'exec') {
-    json(response, HTTP.OK, await exec(store, request, id))
+    const result = await exec(store, request, id, response)
+    if (result !== undefined) json(response, HTTP.OK, result)
     return true
   }
   if (action === 'idle') {

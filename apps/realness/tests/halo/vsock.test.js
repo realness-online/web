@@ -15,6 +15,7 @@ import {
   VSOCK_PORT,
   connect,
   execInGuest,
+  execInGuestStream,
   runOk,
   waitForAgent
 } from '../../src/halo/vsock.js'
@@ -52,6 +53,8 @@ const fake_agent = async (t, { ack = 'OK 52', respond } = {}) => {
         seen.push({ kind: 'request', request })
         const reply = respond ? respond(request, seen) : undefined
         if (reply === null) socket.destroy()
+        else if (Array.isArray(reply))
+          for (const line of reply) socket.write(`${JSON.stringify(line)}\n`)
         else if (reply !== undefined) socket.write(`${JSON.stringify(reply)}\n`)
       }
     })
@@ -176,4 +179,41 @@ test('a reused port reaches the same agent', async t => {
     'on 52'
   )
   assert.equal(agent.seen[0].line, 'CONNECT 52')
+})
+
+test('execInGuestStream reports each frame, then the exit', async t => {
+  const agent = await fake_agent(t, {
+    respond: () => [
+      { type: 'stdout', data_b64: Buffer.from('one\n').toString('base64') },
+      { type: 'stderr', data_b64: Buffer.from('bad\n').toString('base64') },
+      { type: 'stdout', data_b64: Buffer.from('two\n').toString('base64') },
+      { type: 'exit', exit_code: 3 }
+    ]
+  })
+  const chunks = []
+  const result = await execInGuestStream(
+    agent.path,
+    ['/bin/sh', '-c', 'true'],
+    {
+      on_output: chunk => chunks.push([chunk.stream, chunk.data.toString()])
+    }
+  )
+  assert.equal(result.code, 3)
+  assert.deepEqual(chunks, [
+    ['stdout', 'one\n'],
+    ['stderr', 'bad\n'],
+    ['stdout', 'two\n']
+  ])
+  assert.equal(agent.seen.at(-1).request.stream, true)
+})
+
+test('cancelling the call closes the channel', async t => {
+  const agent = await fake_agent(t, { respond: () => null })
+  const stopping = new AbortController()
+  const pending = execInGuestStream(agent.path, ['/bin/sh', '-c', 'sleep 9'], {
+    timeout: 5,
+    signal: stopping.signal
+  })
+  setTimeout(() => stopping.abort(), 20)
+  await assert.rejects(pending, /agent closed the channel/)
 })

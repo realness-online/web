@@ -1005,6 +1005,73 @@ export class ActorStore {
     }
   }
 
+  /**
+   * Run argv in one actor and report output as it arrives. A cancelled call
+   * stops the command in the guest; the work slot closes either way.
+   * @param {string} id
+   * @param {string[]} argv
+   * @param {object} [options]
+   * @param {string | null} [options.cwd]
+   * @param {Buffer} [options.stdin]
+   * @param {number | null} [options.timeout]
+   * @param {AbortSignal} [options.signal]
+   * @param {(chunk: { stream: 'stdout' | 'stderr', data: Buffer }) => void} [options.on_output]
+   * @returns {Promise<{ exit_code: number, stdout_bytes: number, stderr_bytes: number }>}
+   */
+  async execStream(
+    id,
+    argv,
+    {
+      cwd = null,
+      stdin = Buffer.alloc(0),
+      timeout = null,
+      signal = undefined,
+      on_output = () => {}
+    } = {}
+  ) {
+    if (
+      !Array.isArray(argv) ||
+      !argv.length ||
+      !argv.every(item => typeof item === 'string' && item)
+    )
+      throw new BadRequest('argv must be a non-empty list of strings')
+    if (cwd !== null && typeof cwd !== 'string')
+      throw new BadRequest('cwd must be a string')
+    const record = await this.ensureRunning(id)
+    const started = Date.now()
+    const work = `exec:${random_uuid()}`
+    let stdout_bytes = 0
+    let stderr_bytes = 0
+    this.beginWork(id, work)
+    try {
+      const { code } = await vsock.execInGuestStream(record.vsockPath, argv, {
+        cwd,
+        stdin,
+        timeout: timeout || this.apiTimeout,
+        port: this.vsockPort,
+        signal,
+        on_output: chunk => {
+          if (chunk.stream === 'stdout') stdout_bytes += chunk.data.length
+          else stderr_bytes += chunk.data.length
+          on_output(chunk)
+        }
+      })
+      await this.#flush(record)
+      this.trace(record.id, 'exec', {
+        argv,
+        cwd,
+        exit_code: code,
+        ms: Date.now() - started,
+        stdout_bytes,
+        stderr_bytes,
+        streamed: true
+      })
+      return { exit_code: code, stdout_bytes, stderr_bytes }
+    } finally {
+      this.endWork(id, work)
+    }
+  }
+
   /** Guest page cache to its disk. A memory snapshot keeps it; a crash or cold boot does not. */
   async #flush(record) {
     try {
