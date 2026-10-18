@@ -21,7 +21,8 @@ import {
 import { arch } from 'node:os'
 import { performance } from 'node:perf_hooks'
 import { pi_start_argv } from './pi-start.js'
-import { basename, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
+import { update_harness } from './harness-update.js'
 import {
   BadRequest,
   Busy,
@@ -32,7 +33,7 @@ import {
   VsockError
 } from './errors.js'
 import * as firecracker from './firecracker.js'
-import * as host from './syscalls.js'
+import * as syscalls from './syscalls.js'
 import { logger } from './log.js'
 import * as vsock from './vsock.js'
 import { next_step } from './lifecycle.js'
@@ -335,7 +336,7 @@ const warmPi = async (uds, seconds = PI_WARM_SECONDS) => {
 }
 
 /**
- * The host-side actor store. `Object.assign` fills the options, so they are
+ * The halo-side actor store. `Object.assign` fills the options, so they are
  * declared here for the type checker and the reader.
  * @typedef {object} ActorStoreOptions
  * @property {string} volume
@@ -413,7 +414,7 @@ export class ActorStore {
   /** hs-over: the last TAP taken reads as a full halo, not a halo failure. */
   #freeTap() {
     try {
-      return host.freeTap(this.tapPrefix)
+      return syscalls.freeTap(this.tapPrefix)
     } catch (error) {
       if (error instanceof HaloError && /no free TAP/.test(error.message))
         throw new Full(`halo full: ${error.message}`)
@@ -448,19 +449,19 @@ export class ActorStore {
     this.busy = new Map()
     this.turned = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
-    host.requireRoot('creating TAPs and Firecracker')
-    host.requireMount(
+    syscalls.requireRoot('creating TAPs and Firecracker')
+    syscalls.requireMount(
       this.volume,
       'mount the actors volume (the dev stack script)'
     )
-    if (!host.shortEnoughForUnix(join(this.volume, mintId(), 'vsock.sock')))
+    if (!syscalls.shortEnoughForUnix(join(this.volume, mintId(), 'vsock.sock')))
       throw new HaloError(
         `${this.volume} is too long for AF_UNIX socket paths (108 bytes); mount the actors volume somewhere shorter`
       )
   }
 
   reflinkWarning() {
-    return host.reflinkWarning(this.volume)
+    return syscalls.reflinkWarning(this.volume)
   }
 
   cheapFingerprint() {
@@ -526,8 +527,8 @@ export class ActorStore {
     LOG.info(`building the seed from ${this.template}`)
     rm_sync(target, { recursive: true, force: true })
     mkdir_sync(target, { recursive: true })
-    host.run(['cp', '--sparse=always', this.template, join(target, DISK)])
-    if (!host.tapExists(this.seedTap))
+    syscalls.run(['cp', '--sparse=always', this.template, join(target, DISK)])
+    if (!syscalls.tapExists(this.seedTap))
       throw new HaloError(
         `no ${this.seedTap}: run 'sudo bash server/halo/scripts/net-up.sh' first`
       )
@@ -784,7 +785,7 @@ export class ActorStore {
       mkdir_sync(record.dir, { recursive: true })
       this.#reflinkSeedDisk(record.dir)
       record.tap = this.#freeTap()
-      host.createTap(record.tap)
+      syscalls.createTap(record.tap)
       const timings = await this.#start(
         record,
         join(this.seedDir, STATE),
@@ -823,7 +824,7 @@ export class ActorStore {
   #reflinkSeedDisk(dir) {
     const source = join(this.seedDir, DISK)
     try {
-      host.run(['cp', '--reflink=always', source, join(dir, DISK)])
+      syscalls.run(['cp', '--reflink=always', source, join(dir, DISK)])
     } catch (error) {
       throw new HaloError(
         `reflink failed: ${error.message}\nactor disks are reflinks of ${source}, which needs xfs (or btrfs) at ${this.volume}`
@@ -914,7 +915,7 @@ export class ActorStore {
       ACTOR_INIT,
       record.id,
       String(Math.floor(Date.now() / MS_PER_SECOND)),
-      `${host.tapGuest(record.tap)}/30`,
+      `${syscalls.tapGuest(record.tap)}/30`,
       ...(pi_after_recovery ? ['--after-recovery'] : [])
     ]
     const { code, out, err } = await vsock.execInGuest(record.vsockPath, argv, {
@@ -1175,6 +1176,38 @@ export class ActorStore {
     return this.get(id)
   }
 
+  /**
+   * A stopped actor's harness follows the current template's release before
+   * its disk boots. Files the person changed stay; a failure leaves the old
+   * harness and the boot goes on.
+   * @param {{ id: string, dir: string }} record
+   */
+  async #updateHarness(record) {
+    if (!this.template) return
+    const release = join(dirname(this.template), 'template.inputs')
+    const applied = join(record.dir, 'harness.inputs')
+    const read = path =>
+      exists_sync(path) ? read_file_sync(path, 'utf8').trim() : null
+    const wanted = read(release)
+    if (!wanted || read(applied) === wanted) return
+    try {
+      const { updated, removed, kept } = await syscalls.mounted(
+        this.template,
+        fresh =>
+          syscalls.mounted(join(record.dir, DISK), actor =>
+            update_harness({ fresh, actor })
+          ),
+        { readonly: true }
+      )
+      write_file_sync(applied, `${wanted}\n`)
+      LOG.info(
+        `actor ${record.id} harness updated: ${updated.length} changed, ${removed.length} removed, ${kept.length} kept as the person left them`
+      )
+    } catch (error) {
+      LOG.warn(`actor ${record.id} harness not updated: ${error.message}`)
+    }
+  }
+
   /** A memory snapshot is a restore; without one the actor's own disk boots. */
   reload(id, { startup = null } = {}) {
     return this.lock.run(() => this.#reload(id, startup))
@@ -1196,13 +1229,14 @@ export class ActorStore {
     )
     if (holder)
       throw new HaloError(`${record.tap} is held by running actor ${holder.id}`)
-    if (host.ensureTap(record.tap))
+    if (syscalls.ensureTap(record.tap))
       LOG.info(`rebuilt ${record.tap} for actor ${id}`)
     if (fromMemory) {
       LOG.info(`reloading actor ${id} from its memory snapshot`)
       timings = await this.#start(record, state, mem, startup)
     } else {
       LOG.info(`booting actor ${id} from its disk`)
+      await this.#updateHarness(record)
       timings = await this.#bootActor(record, startup)
     }
     const init_started = performance.now()
@@ -1244,7 +1278,7 @@ export class ActorStore {
     await firecracker.terminate(
       firecracker.pidForApiSock(record.apiSock) ?? record.pid
     )
-    if (record.tap) host.deleteTap(record.tap)
+    if (record.tap) syscalls.deleteTap(record.tap)
     rm_sync(record.dir, { recursive: true, force: true })
     rm_sync(join(this.publishedDir, record.id), {
       recursive: true,
@@ -1453,7 +1487,7 @@ export class ActorStore {
     rm_sync(dest, { recursive: true, force: true })
     mkdir_sync(dest, { recursive: true })
     try {
-      host.run(
+      syscalls.run(
         [
           'tar',
           '-xzf',
@@ -1504,10 +1538,10 @@ export class ActorStore {
     let manifest
     try {
       const artifacts = join(staging, 'artifacts.tar.gz')
-      await host.mounted(disk, tree =>
-        host.run(['tar', '-czf', artifacts, '-C', tree, ...ARTIFACT_PATHS])
+      await syscalls.mounted(disk, tree =>
+        syscalls.run(['tar', '-czf', artifacts, '-C', tree, ...ARTIFACT_PATHS])
       )
-      const listed = host.run(['tar', '-tzf', artifacts]).output
+      const listed = syscalls.run(['tar', '-tzf', artifacts]).output
       const tracePath = this.#tracePath(id)
       const traceText = exists_sync(tracePath)
         ? read_file_sync(tracePath, 'utf8')
@@ -1582,8 +1616,15 @@ export class ActorStore {
         let record = await this.#create(owner)
         try {
           await this.#idle(record.id, 'disk')
-          await host.mounted(join(record.dir, DISK), tree =>
-            host.run(['tar', '-xzf', artifacts, '-C', tree, '--no-same-owner'])
+          await syscalls.mounted(join(record.dir, DISK), tree =>
+            syscalls.run([
+              'tar',
+              '-xzf',
+              artifacts,
+              '-C',
+              tree,
+              '--no-same-owner'
+            ])
           )
           const tracePath = this.#tracePath(record.id)
           const current = exists_sync(tracePath)
