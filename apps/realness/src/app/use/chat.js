@@ -447,7 +447,7 @@ export const use_chat = (
     const context = get_context()
     const sent_message = contextual_message(message, context)
     if (actor.value && startup.ready_now()) return sent_message
-    if (!actor.value && current_user.value)
+    if (current_user.value)
       return explorer_turn({
         message,
         messages,

@@ -64,7 +64,7 @@ const modules = {
     export const execInGuest = async (_, argv) => {
       state.guest_argv.push(argv)
       state.clock += 50
-      return { code: argv.includes("/usr/local/bin/realness-recover") ? state.recover_code : 0, out: Buffer.from("ready"), err: Buffer.alloc(0) }
+      return { code: argv.includes("/usr/local/bin/realness-recover") ? state.recover_code : argv.includes("start-pi") ? state.pi_code : 0, out: Buffer.from("ready"), err: Buffer.alloc(0) }
     }
     export const runOk = async () => { state.clock += 5; return "machine actor boot 1" }
   `
@@ -105,6 +105,7 @@ const fixture = t => {
   state.running = false
   state.fail_agent = false
   state.recover_code = 0
+  state.pi_code = 0
   state.no_tap = false
   const volume = mkdtempSync(join(scratch, 'timing-'))
   t.after(() => rmSync(volume, { recursive: true, force: true }))
@@ -437,14 +438,27 @@ test('hs-over: the last TAP taken reads as a full halo', async t => {
   })
 })
 
+test('a failed Pi launch refuses startup instead of reporting success', async t => {
+  const store = fixture(t)
+  const actor = await store.create('+14156667777')
+  state.running = false
+  state.pi_code = 1
+  await assert.rejects(store.reload(actor.id), /Pi did not start/)
+  const stages = store
+    .traceOf(actor.id)
+    .filter(event => event.stage === 'starting_pi')
+  assert.ok(stages.some(event => event.state === 'failed'))
+  assert.ok(!stages.some(event => event.state === 'complete'))
+})
+
 test('z12: a reconnect leaves Pi to start-pi, so the opener is typed once', async t => {
   const store = fixture(t)
   const actor = await store.create('+14156667777')
   state.running = false
   state.guest_argv = []
   await store.reload(actor.id)
-  const init = state.guest_argv.filter(
-    args => args[0] === '/usr/local/bin/realness-actor-init'
+  const init = state.guest_argv.filter(args =>
+    args.includes('/usr/local/bin/realness-actor-init')
   )
   assert.deepEqual(
     init.map(args => args.at(-1)),

@@ -20,6 +20,7 @@ import {
 } from 'node:fs'
 import { arch } from 'node:os'
 import { performance } from 'node:perf_hooks'
+import { pi_start_argv } from './pi-start.js'
 import { basename, join } from 'node:path'
 import {
   BadRequest,
@@ -89,6 +90,7 @@ const VERSIONS = 'published-versions'
 const NON_ACTOR_DIRS = new Set([
   'seed',
   'apps',
+  'web-cache',
   TRACES,
   EXPORTS,
   PUBLISHED,
@@ -675,19 +677,20 @@ export class ActorStore {
       const { code, err } = await startup.run(
         'starting_pi',
         () =>
-          vsock.execInGuest(record.vsockPath, [ACTOR_INIT, 'start-pi'], {
+          vsock.execInGuest(record.vsockPath, pi_start_argv(ACTOR_INIT), {
             timeout: this.bootTimeout,
             port: this.vsockPort
           }),
         { succeeded: result => result.code === 0 }
       )
       if (code !== 0)
-        LOG.warn(
-          `actor ${record.id} Pi start exited ${code}: ${err.toString().trim().slice(-ERROR_TAIL)}`
+        throw new HaloError(
+          `Pi did not start: ${err.toString().trim().slice(-ERROR_TAIL) || `exit ${code}`}`
         )
       this.trace(record.id, 'pi-start', { ms: performance.now() - pi_started })
     } catch (error) {
       LOG.warn(`actor ${record.id} Pi start failed: ${error.message}`)
+      throw error
     }
   }
 
