@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v3.0.0-h - 2026-10-18
+
+- **Chat starts in your browser** - Answers begin at once, before a terminal
+  wakes.
+- **Bash hands over to the terminal** - When a request needs a shell, the
+  conversation moves to terminal Pi and continues there.
+- **Terminal trouble stays in the terminal** - Chat keeps working when the
+  terminal fails to start.
+
 ## v3.0.0-g - 2026-10-17
 
 - **Halo in the monitor** - The service watch labels its machine panel HALOS.
