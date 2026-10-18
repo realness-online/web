@@ -268,7 +268,18 @@ export const proxy_handler =
       if (request.method === 'OPTIONS') {
         response.writeHead(HTTP.NO_CONTENT, {
           'access-control-allow-methods': 'GET, POST',
-          'access-control-allow-headers': 'authorization, content-type',
+          'access-control-allow-headers': [
+            'authorization',
+            'content-type',
+            'x-stainless-lang',
+            'x-stainless-package-version',
+            'x-stainless-os',
+            'x-stainless-arch',
+            'x-stainless-runtime',
+            'x-stainless-runtime-version',
+            'x-stainless-retry-count',
+            'x-stainless-timeout'
+          ].join(', '),
           'access-control-max-age': '600'
         })
         return response.end()

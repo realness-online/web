@@ -307,6 +307,42 @@ test('b1d: paid people reach the house model until the credit is spent', async (
   await spent.close()
 })
 
+test('browser model preflight allows the OpenAI SDK headers', async () => {
+  const s = await routed({})
+  try {
+    const headers = [
+      'authorization',
+      'content-type',
+      'x-stainless-lang',
+      'x-stainless-package-version',
+      'x-stainless-os',
+      'x-stainless-arch',
+      'x-stainless-runtime',
+      'x-stainless-runtime-version',
+      'x-stainless-retry-count',
+      'x-stainless-timeout'
+    ]
+    const response = await fetch(`${s.at}/chat/completions`, {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://realness-development.web.app',
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': headers.join(', ')
+      }
+    })
+    assert.equal(response.status, 204)
+    const allowed = response.headers
+      .get('access-control-allow-headers')
+      .toLowerCase()
+      .split(',')
+      .map(value => value.trim())
+    for (const header of headers)
+      assert.ok(allowed.includes(header), `missing ${header}`)
+  } finally {
+    await s.close()
+  }
+})
+
 test('b1c: GET /limit answers the caller, with CORS for the pay page', async () => {
   const s = await routed({ paid: paid_plan, cost: 4.5 })
   const reply = await fetch(`${s.at}/limit`, {

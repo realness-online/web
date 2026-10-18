@@ -12,12 +12,19 @@ import {
   mount
 } from '@vue/test-utils'
 
+vi.mock('@/utils/explorer', () => ({
+  ask: vi.fn(async () => ({ text: 'Hello' })),
+  give_log: vi.fn()
+}))
 vi.mock('@/utils/serverless', async () => {
   const { ref } = await import('vue')
-  return { current_user: ref({ getIdToken: async () => 'id.token' }) }
+  return {
+    current_user: ref({ uid: 'person-1', getIdToken: async () => 'id.token' })
+  }
 })
 
 import AsPanel from '@/components/chat/as-panel.vue'
+import { ask } from '@/utils/explorer'
 import { home_view, info } from '@/utils/preference'
 import { use_home_view } from '@/use/home-view'
 
@@ -102,13 +109,15 @@ describe('@/components/chat/as-panel', () => {
     expect(panel.find('aside').attributes('data-open')).toBeUndefined()
   })
 
-  it('connects when chat shows and draws the conversation', async () => {
+  it('answers in browser chat without opening the actor stream', async () => {
     home_view.value = 'chat'
     const panel = open_panel()
     await flush_promises()
-    expect(calls.some(url => url.endsWith('/chat/events'))).toBe(true)
+    await panel.get('textarea').setValue('Hi')
+    await panel.get('form').trigger('submit')
+    await flush_promises()
+    expect(calls.some(url => url.endsWith('/chat/events'))).toBe(false)
     expect(panel.find('aside').attributes('data-open')).toBeDefined()
-    expect(panel.find('aside').attributes('data-alone')).toBeDefined()
     expect(panel.find('aside').attributes('inert')).toBeUndefined()
     expect(panel.find('ol > li').text()).toBe('Hi')
     expect(
@@ -157,41 +166,29 @@ describe('@/components/chat/as-panel', () => {
     panel.unmount()
   })
 
-  it('waits for an actor before connecting', async () => {
+  it('does not connect chat when a terminal actor becomes available', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null })
     await flush_promises()
-    expect(calls).toHaveLength(0)
     await panel.setProps({ actor: 'a-mine00000000' })
     await flush_promises()
-    expect(calls.some(url => url.endsWith('/chat/events'))).toBe(true)
+    expect(calls).toHaveLength(0)
+    expect(panel.find('textarea').exists()).toBe(true)
   })
 
-  it('keeps the input open while a lookup failure offers Retry', async () => {
+  it('does not show terminal errors or a terminal retry inside chat', async () => {
     home_view.value = 'chat'
     const panel = open_panel({ actor: null, problem: 'Realness answered 502' })
     await flush_promises()
-    const feedback = panel.get('section[aria-label="Connection status"]')
-    expect(feedback.get('[role="alert"]').text()).toBe('Realness answered 502')
-    expect(panel.find('textarea').exists()).toBe(true)
-    await feedback.get('button').trigger('click')
-    expect(panel.emitted('retry')).toHaveLength(1)
-    await panel.setProps({ problem: '', finding: true })
+    expect(panel.find('[role="alert"]').exists()).toBe(false)
     expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
       false
     )
     expect(panel.find('textarea').exists()).toBe(true)
   })
 
-  it('looks ready while chat starts, with no startup display', async () => {
+  it('looks ready while the terminal starts', async () => {
     home_view.value = 'chat'
-    let finish
-    fetch.mockImplementationOnce(
-      () =>
-        new Promise(resolve => {
-          finish = resolve
-        })
-    )
     const panel = open_panel({
       actor: 'a-mine00000000',
       startup_id: 'host-startup'
@@ -202,25 +199,21 @@ describe('@/components/chat/as-panel', () => {
       false
     )
     expect(panel.get('[role="status"]').text()).toBe('')
-    finish(ndjson({ type: 'history', messages: [] }))
-    await flush_promises()
-    expect(panel.find('textarea').exists()).toBe(true)
+    expect(calls).toHaveLength(0)
   })
 
-  it('retries an initial chat failure beside the open input', async () => {
+  it('shows a browser model failure and leaves its message available to retry', async () => {
     home_view.value = 'chat'
-    fetch.mockResolvedValueOnce(new Response('', { status: 502 }))
+    ask.mockRejectedValueOnce(new Error('Model connection failed'))
     const panel = open_panel()
+    await panel.get('textarea').setValue('Hi')
+    await panel.get('form').trigger('submit')
     await flush_promises()
-    expect(panel.get('[role="alert"]').text()).toBe('Realness answered 502')
-    expect(panel.find('textarea').exists()).toBe(true)
-    await panel
-      .get('section[aria-label="Connection status"] button')
-      .trigger('click')
+    expect(panel.get('[role="status"]').text()).toBe('Model connection failed')
+    expect(panel.get('textarea').element.value).toBe('Hi')
+    await panel.get('form').trigger('submit')
     await flush_promises()
-    expect(panel.find('section[aria-label="Connection status"]').exists()).toBe(
-      false
-    )
+    expect(panel.get('ol').text()).toContain('Hello')
   })
 
   it('shows the status in the box below the conversation', async () => {

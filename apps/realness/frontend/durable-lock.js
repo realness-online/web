@@ -20,7 +20,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 const HERE = dirname(file_url_to_path(import.meta.url))
 const LOCK = join(HERE, 'durable.lock.json')
 const FORK = join(HERE, '../../../work/pi')
-const ADAPTER = join(HERE, '../../../artifacts/durable/pi-durable-storage-idb')
+const ADAPTER = join(HERE, '../../../work/pi-durable-storage-idb')
 
 const git = (cwd, ...args) =>
   exec_file_sync('git', ['-C', cwd, ...args], { encoding: 'utf8' }).trim()

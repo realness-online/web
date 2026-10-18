@@ -16,8 +16,10 @@ export {
 export {
   Harness,
   createRegistry,
-  watchEvents
+  watchEvents,
+  defineExtension
 } from '@earendil-works/pi-durable'
 export { createModels, createProvider } from '@earendil-works/pi-ai'
 export { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
 export { openIndexedDbStorage } from 'pi-durable-storage-idb'
+export { createBashTool } from '@earendil-works/pi-durable/tools'

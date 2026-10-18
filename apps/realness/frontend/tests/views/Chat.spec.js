@@ -17,6 +17,7 @@ import SupportLayout from '@/components/support-layout.vue'
 import { home_view } from '@/utils/preference'
 import { wide } from '@/use/home-view'
 import { read_contextual_message } from '@/utils/chat-context'
+import { ask } from '@/utils/explorer'
 
 const { mock_replace } = vi.hoisted(() => ({ mock_replace: vi.fn() }))
 const mock_route = reactive({ path: '/chat', query: {}, meta: {} })
@@ -25,68 +26,43 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ replace: mock_replace })
 }))
 vi.mock('@/utils/serverless', () => ({
-  current_user: { value: { getIdToken: async () => 'id.token' } }
+  current_user: {
+    value: { uid: 'person-1', getIdToken: async () => 'id.token' }
+  }
 }))
+vi.mock('@/utils/explorer', () => ({ ask: vi.fn(), give_log: vi.fn() }))
 
-const ndjson = (...records) =>
-  new Response(records.map(record => `${JSON.stringify(record)}\n`).join(''), {
-    headers: { 'content-type': 'application/x-ndjson' }
-  })
-
-let calls, watch_replies
+let calls
 before_each(() => {
   vi.stubEnv('MODE', 'development')
   mock_route.query = { actor: 'a-0123456789ab' }
   home_view.value = 'thoughts'
   wide.value = false
   calls = []
-  watch_replies = [
-    ndjson(
-      {
-        type: 'history',
-        messages: [
-          { role: 'user', text: 'Hi' },
-          { role: 'assistant', text: 'One.\n\nSee https://example.com.' }
-        ]
-      },
-      { type: 'user', text: 'More' },
-      { type: 'delta', text: 'Two' },
-      { type: 'delta', text: ' parts' },
-      { type: 'assistant_end', text: 'Two parts' }
-    )
-  ]
+  ask.mockReset().mockImplementation(async ({ on_delta }) => {
+    on_delta('Hello')
+    return { text: 'Hello' }
+  })
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url, init = {}) => {
-      calls.push({ url, method: init.method ?? 'GET', init })
+      calls.push({ url, init })
       if (url.endsWith('/v1/startup'))
-        return ndjson(
-          { type: 'startup', startup_id: 'chat-startup', sequence: 0 },
-          {
-            type: 'actor-ready',
-            startup_id: 'chat-startup',
-            sequence: 1,
-            actor_id: JSON.parse(init.body).actor ?? 'a-mine00000000',
-            created: false
-          }
+        return new Response(
+          `${JSON.stringify({ type: 'actor-ready', actor_id: JSON.parse(init.body).actor ?? 'a-mine00000000', startup_id: 'chat-startup', created: false })}\n`
         )
-      if (url.endsWith('/chat/events'))
-        return watch_replies.shift() ?? new Promise(() => {})
-      if (url.endsWith('/chat/message')) return ndjson({ type: 'done' })
       if (url.endsWith('/chat/limit'))
         return new Response(JSON.stringify({ warn: null }))
       throw new Error(`Unexpected request: ${url}`)
     })
   )
 })
-
 after_each(() => {
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
   localStorage.clear()
   home_view.value = 'thoughts'
 })
-
 enable_auto_unmount(after_each)
 
 const open = async () => {
@@ -102,10 +78,21 @@ const open = async () => {
   await flush_promises()
   return page
 }
+const submit = async (page, message) => {
+  const box = page.get('textarea')
+  await box.setValue(message)
+  await box.trigger('keydown', { key: 'Enter' })
+  await flush_promises()
+}
 
 describe('chat page', () => {
-  it('draws history, then live turns, as Messages with linked statements', async () => {
+  it('draws browser turns as Messages with linked statements without subscribing to VM history', async () => {
+    ask
+      .mockResolvedValueOnce({ text: 'One.\n\nSee https://example.com.' })
+      .mockResolvedValueOnce({ text: 'Two parts' })
     const page = await open()
+    await submit(page, 'Hi')
+    await submit(page, 'More')
     const items = page.findAll('li[itemtype="https://schema.org/Message"]')
     expect(
       items.map(item => item.find('[itemprop="sender"]').attributes('content'))
@@ -113,41 +100,23 @@ describe('chat page', () => {
     expect(items[1].findAll('[itemprop="text"] > p')).toHaveLength(2)
     expect(items[1].find('a').attributes('href')).toBe('https://example.com')
     expect(items[3].text()).toContain('Two parts')
-    expect(calls[0]).toMatchObject({
-      url: 'https://realness-gate-639469569733.us-central1.run.app/v1/startup',
-      method: 'POST'
-    })
-    expect(JSON.parse(calls[0].init.body)).toEqual({ actor: 'a-0123456789ab' })
-    expect(calls[0].init.headers.authorization).toBe('Bearer id.token')
-    const watch = calls.find(call => call.url.endsWith('/chat/events'))
-    expect(watch.url).toBe(
-      'https://realness-gate-639469569733.us-central1.run.app/v1/actors/a-0123456789ab/chat/events'
-    )
-    expect(watch.init.headers.authorization).toBe('Bearer id.token')
+    expect(calls.some(call => call.url.endsWith('/chat/events'))).toBe(false)
   })
 
-  it('sends on Enter through the gate and keeps the draft on failure', async () => {
+  it('sends on Enter with page context and restores the draft after a browser failure', async () => {
     const page = await open()
-    const box = page.find('textarea')
-    await box.setValue('Hello there')
-    await box.trigger('keydown', { key: 'Enter' })
-    await flush_promises()
-    const sent = calls.find(call => call.url.endsWith('/chat/message'))
-    expect(sent.method).toBe('POST')
-    expect(
-      read_contextual_message(JSON.parse(sent.init.body).message)
-    ).toMatchObject({
+    await submit(page, 'Hello there')
+    expect(read_contextual_message(ask.mock.calls[0][0].text)).toMatchObject({
       text: 'Hello there',
       context: { path: '/chat' }
     })
-    expect(box.element.value).toBe('')
-
-    fetch.mockImplementationOnce(async () => new Response('', { status: 502 }))
-    await box.setValue('Again')
-    await box.trigger('keydown', { key: 'Enter' })
-    await flush_promises()
-    expect(box.element.value).toBe('Again')
-    expect(page.find('[role="status"]').text()).toContain('502')
+    expect(page.get('textarea').element.value).toBe('')
+    ask.mockRejectedValueOnce(new Error('Model connection failed'))
+    await submit(page, 'Again')
+    expect(page.get('textarea').element.value).toBe('Again')
+    expect(page.get('#chat-panel [role="status"]').text()).toBe(
+      'Model connection failed'
+    )
   })
 
   it('shows the message box without connecting the TUI when narrow', async () => {
@@ -165,32 +134,25 @@ describe('chat page', () => {
     expect(calls.some(call => call.url.includes('/pty'))).toBe(false)
   })
 
-  it('chooses an actor when none is named', async () => {
+  it('does not switch chat to an automatically selected terminal actor', async () => {
     mock_route.query = {}
-    await open()
+    const page = await open()
     expect(JSON.parse(calls[0].init.body)).toEqual({})
     expect(mock_replace).not.toHaveBeenCalled()
-    expect(
-      calls.some(call => call.url.includes('a-mine00000000/chat/events'))
-    ).toBe(true)
+    await submit(page, 'Hello')
+    expect(ask).toHaveBeenCalledOnce()
+    expect(calls.some(call => call.url.includes('/chat/events'))).toBe(false)
   })
 })
 
 describe('chat markdown', () => {
-  it('formats Pi markdown and shows raw HTML as text', async () => {
-    watch_replies = [
-      ndjson({
-        type: 'history',
-        messages: [
-          {
-            role: 'assistant',
-            text: 'Run `ls`.\n\n<img src=x onerror=alert(1)>'
-          }
-        ]
-      })
-    ]
+  it('formats browser markdown and shows raw HTML as text', async () => {
+    ask.mockResolvedValueOnce({
+      text: 'Run `ls`.\n\n<img src=x onerror=alert(1)>'
+    })
     const page = await open()
-    const text = page.find('[itemprop="text"]')
+    await submit(page, 'Show me')
+    const text = page.findAll('[itemprop="text"]').at(-1)
     expect(text.find('code').text()).toBe('ls')
     expect(text.find('img').exists()).toBe(false)
     expect(text.text()).toContain('<img src=x onerror=alert(1)>')
@@ -200,6 +162,7 @@ describe('chat markdown', () => {
 describe('chat keys', () => {
   it('Cmd+K clears the conversation view', async () => {
     const page = await open()
+    await submit(page, 'Hello')
     expect(page.findAll('ol > li').length).toBeGreaterThan(0)
     await page.get('textarea').trigger('keydown', { key: 'k', metaKey: true })
     await page.vm.$nextTick()

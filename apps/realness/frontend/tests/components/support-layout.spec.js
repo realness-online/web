@@ -22,13 +22,19 @@ import { key_commands_plugin } from '@/plugins/key-commands'
 import { current_user } from '@/utils/serverless'
 import { home_view } from '@/utils/preference'
 import { wide } from '@/use/home-view'
+import { ask } from '@/utils/explorer'
+
+vi.mock('@/utils/explorer', () => ({
+  ask: vi.fn(async () => ({ text: 'Answer' })),
+  give_log: vi.fn()
+}))
 
 vi.mock('vue-router', async () => await vi.importActual('vue-router'))
 
 vi.mock('@/utils/serverless', async () => {
   const { ref } = await import('vue')
   return {
-    current_user: ref({ getIdToken: async () => 'id.token' }),
+    current_user: ref({ uid: 'person-1', getIdToken: async () => 'id.token' }),
     me: ref(null)
   }
 })
@@ -40,7 +46,8 @@ const ndjson = (...records) =>
   })
 let requests
 before_each(() => {
-  current_user.value = { getIdToken: async () => 'id.token' }
+  current_user.value = { uid: 'person-1', getIdToken: async () => 'id.token' }
+  ask.mockClear()
   home_view.value = 'thoughts'
   wide.value = true
   vi.stubEnv('MODE', 'development')
@@ -130,17 +137,14 @@ describe('app-wide chat', () => {
     )
     await page.get('form[data-chat]').trigger('submit')
     await flush_promises()
-    const sent = JSON.parse(
-      requests.find(request => request.url.endsWith('/chat/message')).options
-        .body
-    ).message
+    const sent = ask.mock.calls[0][0].text
     expect(sent).toContain('/about')
     expect(sent).toContain('Realness')
     expect(sent).not.toContain('Poster controls')
     expect(sent).toContain('Explain this page')
     expect(
       requests.filter(request => request.url.endsWith('/chat/events'))
-    ).toHaveLength(1)
+    ).toHaveLength(0)
     expect(
       requests.filter(request => request.url.endsWith('/v1/startup'))
     ).toHaveLength(1)

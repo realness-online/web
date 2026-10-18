@@ -1415,12 +1415,17 @@ export class ActorStore {
    */
   async receiveLog(id, log) {
     await this.ensureRunning(id)
+    const bytes = Buffer.from(JSON.stringify(log), 'utf8')
+    const digest = create_hash('sha256').update(bytes).digest('hex')
+    const snapshot = `${HANDS_OVER}.${digest}`
     const result = await this.exec(
       id,
-      ['sh', '-c', `mkdir -p $(dirname ${HANDS_OVER}) && tee ${HANDS_OVER}`],
-      {
-        stdin: Buffer.from(JSON.stringify(log), 'utf8')
-      }
+      [
+        'sh',
+        '-c',
+        `mkdir -p $(dirname ${HANDS_OVER}) && tee ${snapshot} >/dev/null && ln -sfn ${snapshot} ${HANDS_OVER}.next && mv -Tf ${HANDS_OVER}.next ${HANDS_OVER}`
+      ],
+      { stdin: bytes }
     )
     if (result.exit_code !== 0)
       throw new BadRequest(

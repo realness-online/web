@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { connect } from "node:net"
 import { join } from "node:path"
 import { bridge, history_of, prints_only } from "./index.js"
@@ -54,14 +54,21 @@ function fake_pi() {
       options?.onComplete?.({})
     },
     modelRegistry: { getAvailable: () => MODELS, find: (provider, id) => MODELS.find((m) => m.provider === provider && m.id === id) },
-    sessionManager: { getBranch: () => pi.entries },
+    sessionManager: {
+      getBranch: () => pi.entries,
+      appendMessage: message => pi.entries.push({ type: 'message', message }),
+      appendCustomEntry: (customType, data) => pi.entries.push({ type: 'custom', customType, data })
+    },
   }
   pi.command_ctx = {
     ...pi.ctx,
-    newSession: async () => {
+    newSession: async (options = {}) => {
       pi.calls.push(["new"])
+      if (pi.cancel_new) return { cancelled: true }
       pi.entries = []
+      await options.setup?.(pi.ctx.sessionManager)
       pi.emit("session_start")
+      await options.withSession?.(pi.ctx)
       return { cancelled: false }
     },
   }
@@ -94,14 +101,35 @@ function setup() {
   const dir = mkdtempSync(join(scratch, "chat-bridge-"))
   const path = join(dir, "pi.sock")
   const pi = fake_pi()
-  const server = bridge(pi, { socket_path: path, chat_prompt: "CHAT" })
+  const handover_path = join(dir, 'handover.json')
+  const server = bridge(pi, { socket_path: path, chat_prompt: "CHAT", handover_path })
   pi.emit("session_start")
   const close = () => {
     server.close()
     rmSync(dir, { recursive: true, force: true })
   }
-  return { pi, path, close }
+  return { pi, path, close, handover_path }
 }
+
+test('handover imports exact browser messages before issuing a receipt and is retry-safe', async () => {
+  const { pi, path, close, handover_path } = setup()
+  const message = { role: 'user', content: 'Remember cedar', timestamp: 1 }
+  writeFileSync(handover_path, JSON.stringify({ version: 1, handover_id: 'handover-1', conversation_id: 1, stores: { entries: [{ value: { id: 7, commitSeq: 2, entry: { id: 7, conversationId: 1, model: [message] } } }] } }))
+  try {
+    assert.deepEqual(await command(path, 'handover'), [{ type: 'done', resumed: true, handover_id: 'handover-1' }])
+    assert.deepEqual(pi.entries[0].message, message)
+    assert.deepEqual(await command(path, 'handover'), [{ type: 'done', resumed: true, handover_id: 'handover-1' }])
+    assert.deepEqual(pi.calls, [['new']])
+    assert.deepEqual(pi.sent, [])
+  } finally { close() }
+})
+
+test('cancelled handover never returns a resumed receipt', async () => {
+  const { pi, path, close, handover_path } = setup()
+  pi.cancel_new = true
+  writeFileSync(handover_path, JSON.stringify({ version: 1, handover_id: 'handover-2', conversation_id: 1, stores: { entries: [{ value: { id: 7, commitSeq: 2, entry: { id: 7, conversationId: 1, model: [{ role: 'user', content: 'pwd', timestamp: 1 }] } } }] } }))
+  try { assert.deepEqual(await command(path, 'handover'), [{ type: 'error', text: 'Session handover cancelled' }]) } finally { close() }
+})
 
 test("a chat message runs in the same Pi and streams back", async () => {
   const { pi, path, close } = setup()

@@ -22,12 +22,10 @@
 
   const props = defineProps({
     actor: { type: String, default: null },
-    problem: { type: String, default: '' },
-    finding: { type: Boolean, default: false },
-    progress: { type: Object, default: null },
-    startup_id: { type: String, default: null }
+    startup_id: { type: String, default: null },
+    request_vm: { type: Function, default: () => Promise.resolve(null) }
   })
-  const emit = defineEmits(['leave', 'retry'])
+  const emit = defineEmits(['leave'])
 
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
   const route = use_route()
@@ -40,6 +38,7 @@
     on_change: () => talk.value?.to_end(),
     set_working: inject('set_working', () => {}),
     get_startup_id: () => props.startup_id,
+    request_vm: () => props.request_vm(),
     get_context: () => (route ? page_context(route) : null)
   })
   let started = false
@@ -76,14 +75,12 @@
     }
   }
 
-  const failed = computed(
-    () => Boolean(props.problem) || Boolean(chat.connection_problem.value)
-  )
+  const failed = computed(() => Boolean(chat.connection_problem.value))
   const status_line = computed(() =>
     failed.value || chat.status.value === 'Starting...' ? '' : chat.status.value
   )
 
-  const retry = () => (props.problem ? emit('retry') : chat.retry())
+  const retry = () => chat.retry()
   on_before_unmount(() => chat.stop())
 </script>
 
@@ -108,10 +105,8 @@
     <aside aria-label="Status">
       <as-connection-feedback
         v-if="failed"
-        :problem="problem || chat.connection_problem.value"
-        :progress="
-          !actor || finding ? progress : chat.startup_events.value.at(-1)
-        "
+        :problem="chat.connection_problem.value"
+        :progress="chat.startup_events.value.at(-1)"
         @retry="retry" />
       <p role="status">{{ status_line }}</p>
       <as-fps v-if="fps_mounted" :data-leaving="fps_leaving || undefined" />

@@ -3,7 +3,6 @@ const ALREADY_STOPPING = 412
 
 const FIELDS = [
   'id',
-  'host',
   'owner',
   'parent',
   'depth',

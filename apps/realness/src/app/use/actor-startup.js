@@ -47,7 +47,7 @@ export const use_actor_startup = (user, { set_working = () => {} } = {}) => {
       startup_id.value = event.startup_id
       if (event.type === 'startup') progress.value = null
       if (event.type === 'startup-stage')
-        progress.value = { ...event, source: 'host' }
+        progress.value = { ...event, source: 'halo' }
       if (event.type === 'error') failed = true
     }
     const request = () =>

@@ -1,10 +1,28 @@
 import { describe, expect, it } from 'vitest'
 import {
   assistant_text,
+  assistant_failure,
   explorer_provider
 } from '../../../src/app/utils/explorer-provider.js'
 
 describe('Explorer provider', () => {
+  it('reports provider errors from committed assistant records', () => {
+    const entries = [
+      {
+        model: [
+          {
+            role: 'assistant',
+            stopReason: 'error',
+            errorMessage: 'Connection error.'
+          }
+        ]
+      }
+    ]
+    expect(assistant_failure(entries)).toBe('Connection error.')
+    entries.push({ model: [{ role: 'assistant', stopReason: 'stop' }] })
+    expect(assistant_failure(entries)).toBeNull()
+  })
+
   it('uses the proxy model and provider-level completions API', async () => {
     const api = { stream: () => {} }
     const pi = {

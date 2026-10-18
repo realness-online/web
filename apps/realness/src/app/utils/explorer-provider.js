@@ -31,6 +31,16 @@ export const explorer_provider = (pi, url, token) =>
     ]
   })
 
+/** Surface provider failures stored as assistant messages after a completed task. */
+export const assistant_failure = entries => {
+  const message = entries
+    .flatMap(entry => entry.model ?? [])
+    .findLast(message => message.role === 'assistant')
+  return message?.stopReason === 'error' || message?.stopReason === 'aborted'
+    ? message.errorMessage || 'The model did not answer'
+    : null
+}
+
 /** Read assistant messages without treating user or tool text as a reply. */
 export const assistant_text = ({ model = [] }) =>
   model

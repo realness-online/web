@@ -9,7 +9,12 @@
  */
 import { browser_settings } from '../../settings/environments.js'
 import { gate_url } from './gate.js'
-import { explorer_provider, assistant_text } from './explorer-provider.js'
+import { needs_actor } from './session-handover.js'
+import {
+  explorer_provider,
+  assistant_text,
+  assistant_failure
+} from './explorer-provider.js'
 import { export_log, import_log, open_db } from './session-log.js'
 
 const DB_NAME = 'realness-explorer'
@@ -59,9 +64,13 @@ export const explorer = async (token, user_id) => {
   const storage = await pi.openIndexedDbStorage(database)
   const models = pi.createModels()
   models.setProvider(proxy_provider(token, pi))
+  const registry = pi.createRegistry()
+  registry.install(
+    pi.defineExtension({ name: 'vm-tools', tools: [pi.createBashTool()] })
+  )
   const harness = await pi.Harness.open(
     storage,
-    { models, registry: pi.createRegistry() },
+    { models, registry },
     pi.BACKGROUND_CONTEXT
   )
   const root = await harness.root(pi.BACKGROUND_CONTEXT, {
@@ -99,7 +108,8 @@ export const ask = async ({ text, token, user_id, on_delta = () => {} }) => {
   const { value } = view
   const wanted_env = needs_actor(value)
   const reply = last_reply(value.entries)
-  const failed = value.docs?.['pi.live']?.failure
+  const failed =
+    value.docs?.['pi.live']?.failure ?? assistant_failure(value.entries)
   view.dispose()
   if (wanted_env) return { hand_over: await hand_over() }
   if (failed) throw new Error(String(failed.message ?? failed))
@@ -116,36 +126,19 @@ const last_reply = entries => {
 }
 
 /**
- * Whether the turn ended wanting what the tab cannot give. A bash call with no
- * environment returns an error result, and `pi.live` records the slot.
- * @param {{ docs?: Record<string, unknown> }} view
- */
-export const needs_actor = ({ docs = {} }) => {
-  const { tools = [] } =
-    /** @type {{ tools?: { status?: string, output?: string }[] }} */ (
-      docs['pi.live'] ?? {}
-    )
-  return tools.some(
-    slot =>
-      slot.status === 'error' &&
-      /environment|cannot be built|not found|ENOENT/i.test(slot.output ?? '')
-  )
-}
-
-/**
  * Close the tab's harness and return its log, so an actor imports it and
  * continues at the tail. The tab stops writing once this resolves.
  */
 export const hand_over = async () => {
   if (!open_now) throw new Error('No session to hand over')
-  const { pi, storage, harness, database } = open_now
+  const { pi, storage, harness, database, root } = open_now
   await harness.close(pi.BACKGROUND_CONTEXT)
   await storage.close(pi.BACKGROUND_CONTEXT)
   open_now = null
   const db = await open_db(database)
   const log = await export_log(db)
   db.close()
-  return log
+  return { ...log, conversation_id: root.id, handover_id: crypto.randomUUID() }
 }
 
 /**
@@ -194,4 +187,5 @@ export const give_log = async (user, actor, log) => {
   )
   if (!response.ok)
     throw new Error(`The machine did not take the session: ${response.status}`)
+  return response.json()
 }

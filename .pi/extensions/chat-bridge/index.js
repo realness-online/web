@@ -15,6 +15,7 @@
  */
 import { readFileSync, rmSync } from "node:fs"
 import { createServer } from "node:net"
+import { append_handover, handover_receipt, read_handover } from "./handover.js"
 
 const SOCKET = "/run/realness/pi-chat.sock"
 const CHAT_PROMPT = "/usr/local/share/realness-chat.md"
@@ -52,7 +53,7 @@ export function history_of(entries) {
 /**
  * Wire the bridge into one Pi. Returns the server so tests can close it.
  * @param {import("@earendil-works/pi-coding-agent").ExtensionAPI} pi
- * @param {{ socket_path: string, chat_prompt?: string | null }} options
+ * @param {{ socket_path: string, chat_prompt?: string | null, handover_path?: string }} options
  */
 /**
  * A shell command that only prints text: `cat` of a heredoc, `echo`, or
@@ -72,13 +73,15 @@ export const prints_only = (command) => {
 const THINKING_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max"]
 /** Registered so `new` runs with a command context; session replacement is command-only. */
 const NEW_SESSION_COMMAND = "realness-chat-new"
+const HANDOVER_COMMAND = "realness-chat-handover"
+const HANDOVER_PATH = "/realness/.handover/log.json"
 
 const model_name = (model) => (model ? `${model.provider}/${model.id}` : "none")
 
 const PRINT_REASON =
   "This is a chat turn. The browser never sees tool output; write this text in your reply instead."
 
-export function bridge(pi, { socket_path, chat_prompt = null }) {
+export function bridge(pi, { socket_path, chat_prompt = null, handover_path = HANDOVER_PATH }) {
   /** @type {any} */
   let ctx = null
   /** The browser waiting on the current chat turn, if any. */
@@ -113,8 +116,41 @@ export function bridge(pi, { socket_path, chat_prompt = null }) {
     },
   })
 
+  const transfers = []
+  pi.registerCommand(HANDOVER_COMMAND, {
+    description: "Continue the browser conversation in terminal Pi",
+    handler: async (_args, command_ctx) => {
+      const waiting = transfers.splice(0)
+      if (!waiting.length) return
+      try {
+        const handover = read_handover(handover_path)
+        let receipt = handover_receipt(command_ctx.sessionManager, handover.id)
+        if (!receipt) {
+          const result = await command_ctx.newSession({
+            parentSession: command_ctx.sessionManager.getSessionFile?.(),
+            setup: manager => append_handover(manager, handover),
+            withSession: async replacement => {
+              receipt = handover_receipt(replacement.sessionManager, handover.id)
+            }
+          })
+          if (result.cancelled) throw new Error("Session handover cancelled")
+        }
+        if (!receipt) throw new Error("Pi did not load the browser conversation")
+        for (const socket of waiting) finish(socket, { type: "done", ...receipt })
+        broadcast({ type: "history", messages: history_of(ctx.sessionManager.getBranch()) })
+      } catch (error) {
+        for (const socket of waiting) finish(socket, { type: "error", text: error instanceof Error ? error.message : "Session handover failed" })
+      }
+    }
+  })
+
   /** One command line from the browser: a reply, then the socket ends. */
   const commands = {
+    handover: socket => {
+      if (!ctx.isIdle() || active || starting) return finish(socket, { type: "error", text: "Stop Pi before handing over this session" })
+      transfers.push(socket)
+      pi.sendUserMessage(`/${HANDOVER_COMMAND}`, { expandPromptTemplates: true })
+    },
     stop: (socket) => {
       if (ctx.isIdle()) return finish(socket, { type: "done", text: "Nothing to stop" })
       ctx.abort()

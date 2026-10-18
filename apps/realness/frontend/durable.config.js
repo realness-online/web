@@ -18,7 +18,7 @@ import { product_paths } from '#root/src/settings/layout.js'
 const HERE = process.cwd()
 const ROOT = file_url_to_path(new URL('../../../', new URL(`file://${HERE}/`)))
 const FORK = `${ROOT}work/pi/packages`
-const ADAPTER = `${ROOT}artifacts/durable/pi-durable-storage-idb`
+const ADAPTER = `${ROOT}work/pi-durable-storage-idb`
 const { app: app_root } = product_paths()
 
 const lock = command =>

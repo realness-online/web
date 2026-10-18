@@ -14,9 +14,17 @@ const auth = phone => ({
 })
 
 const start = async ({
-  limits = async record => ({ warn: null, owner: record.owner })
+  limits = async record => ({ warn: null, owner: record.owner }),
+  receipt = { type: 'done', resumed: true, handover_id: 'handover-1' }
 } = {}) => {
-  const seen = { hellos: [], wakes: 0, work: [], closed: 0, turns: [] }
+  const seen = {
+    hellos: [],
+    wakes: 0,
+    work: [],
+    closed: 0,
+    turns: [],
+    logs: []
+  }
   const records = {
     'a-alice0000000': { id: 'a-alice0000000', owner: alice },
     'a-bob000000000': { id: 'a-bob000000000', owner: bob }
@@ -31,7 +39,10 @@ const start = async ({
     ensureRunning: id => (seen.wakes++, records[id]),
     beginWork: id => seen.work.push(`begin ${id}`),
     endWork: id => seen.work.push(`end ${id}`),
-    firstTurn: id => seen.turns.push(id)
+    firstTurn: id => seen.turns.push(id),
+    receiveLog: async (id, log) => {
+      seen.logs.push({ id, log })
+    }
   }
   const connectChat = async () => {
     const socket = new Duplex({
@@ -41,6 +52,9 @@ const start = async ({
         seen.hellos.push(hello)
         if (hello.message) {
           this.push('{"type":"delta","text":"Hello"}\n{"type":"done"}\n')
+          this.push(null)
+        } else if (hello.command === 'handover') {
+          this.push(`${JSON.stringify(receipt)}\n`)
           this.push(null)
         } else if (hello.command) {
           this.push(
@@ -68,6 +82,46 @@ const start = async ({
     at: `http://127.0.0.1:${server.address().port}/v1/actors`
   }
 }
+
+test('handover responds only after terminal Pi confirms this exact session', async () => {
+  const { server, seen, at } = await start()
+  const log = { version: 1, handover_id: 'handover-1', stores: { entries: [] } }
+  try {
+    const response = await fetch(`${at}/a-alice0000000/session/log`, {
+      method: 'POST',
+      headers: { ...auth(alice), 'content-type': 'application/json' },
+      body: JSON.stringify(log)
+    })
+    assert.equal(response.status, 200)
+    assert.deepEqual(await response.json(), {
+      type: 'done',
+      resumed: true,
+      handover_id: 'handover-1'
+    })
+    assert.deepEqual(seen.logs, [{ id: 'a-alice0000000', log }])
+    assert.deepEqual(seen.hellos, [{ command: 'handover' }])
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
+
+test('a receipt for another session does not release the browser log', async () => {
+  const { server, at } = await start({
+    receipt: { type: 'done', resumed: true, handover_id: 'another-session' }
+  })
+  try {
+    const response = await fetch(`${at}/a-alice0000000/session/log`, {
+      method: 'POST',
+      headers: { ...auth(alice), 'content-type': 'application/json' },
+      body: JSON.stringify({ handover_id: 'handover-1', stores: {} })
+    })
+    assert.equal(response.status, 502)
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})
 
 test('an owner sends a message and reads the streamed turn', async () => {
   const { server, seen, at } = await start()

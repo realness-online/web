@@ -70,6 +70,11 @@
     { immediate: true }
   )
 
+  const request_vm = async () =>
+    actor.value ??
+    (await startup.prepare(requested_actor).catch(() => null))?.id ??
+    null
+
   const key_commands = inject('key-commands', null)
   const LAYOUT_COMMANDS = [
     'Thoughts',
@@ -129,11 +134,8 @@
 <template>
   <as-panel
     :actor="actor"
-    :problem="problem"
-    :finding="finding"
-    :progress="progress"
     :startup_id="startup_id"
-    @retry="find_actor"
+    :request_vm="request_vm"
     @leave="toggle_chat">
     <as-chat-toggle v-if="view === 'chat' && route?.path !== '/chat'" />
   </as-panel>

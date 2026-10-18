@@ -253,13 +253,13 @@ describe('realness gate', () => {
   })
 
   it('uses the current origin for the local gate', async () => {
-    vi.stubEnv('MODE', 'local')
+    vi.stubEnv('MODE', 'dev-local')
     await gate_api(user, '/v1/actors')
     expect(calls[0].url).toBe(`${window.location.origin}/gate/v1/actors`)
   })
 
   it('opens local terminal sockets on the current origin', async () => {
-    vi.stubEnv('MODE', 'local')
+    vi.stubEnv('MODE', 'dev-local')
     vi.stubGlobal('WebSocket', vi.fn())
     await open_terminal(user, 'a-local', { cols: 80, rows: 24 })
     const [url, protocols] = WebSocket.mock.calls[0]

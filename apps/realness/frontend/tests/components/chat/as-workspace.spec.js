@@ -15,10 +15,14 @@ import { reactive } from 'vue'
 
 const mock_route = reactive({ query: {} })
 vi.mock('vue-router', () => ({ useRoute: () => mock_route }))
+vi.mock('@/utils/explorer', () => ({
+  ask: vi.fn(async () => ({ text: 'Batman lives in Gotham' })),
+  give_log: vi.fn()
+}))
 vi.mock('@/utils/serverless', async () => {
   const { ref } = await import('vue')
   return {
-    current_user: ref({ getIdToken: async () => 'id.token' }),
+    current_user: ref({ uid: 'person-1', getIdToken: async () => 'id.token' }),
     me: ref({ name: 'Scott' })
   }
 })
@@ -155,8 +159,9 @@ describe('@/components/chat/as-workspace', () => {
     expect(terminal.props('actor')).toBe('a-mine00000000')
   })
 
-  it('shares lookup progress and failure with terminal, then retries', async () => {
+  it('keeps terminal failure and retry separate from a working browser conversation', async () => {
     mock_route.path = '/terminal'
+    home_view.value = 'chat-tui'
     let finish
     fetch.mockImplementationOnce(
       () =>
@@ -173,10 +178,23 @@ describe('@/components/chat/as-workspace', () => {
     expect(terminal.props('finding')).toBe(false)
     expect(terminal.props('problem')).toBe('Realness answered 502')
     expect(set_working).toHaveBeenLastCalledWith(false)
+    expect(page.find('#chat-panel [role="alert"]').exists()).toBe(false)
+    expect(
+      page.find('#chat-panel section[aria-label="Connection status"]').exists()
+    ).toBe(false)
+    await page.get('#chat-panel textarea').setValue('Who is Batman?')
+    await page.get('#chat-panel form').trigger('submit')
+    await flush_promises()
+    expect(page.get('#chat-panel ol').text()).toContain(
+      'Batman lives in Gotham'
+    )
     terminal.vm.$emit('retry')
     await flush_promises()
     expect(terminal.props('actor')).toBe('a-mine00000000')
     expect(terminal.props('problem')).toBe('')
+    expect(page.get('#chat-panel ol').text()).toContain(
+      'Batman lives in Gotham'
+    )
   })
 
   it('finds the actor only once chat or the TUI shows', async () => {
@@ -209,7 +227,8 @@ describe('@/components/chat/as-workspace', () => {
     mock_route.query = { actor: 'a-named0000000' }
     home_view.value = 'chat'
     await open()
-    expect(calls.some(url => url.includes('a-named0000000'))).toBe(true)
+    const start = fetch.mock.calls.find(([url]) => url.endsWith('/v1/startup'))
+    expect(JSON.parse(start[1].body).actor).toBe('a-named0000000')
   })
 
   it('registers the layouts and the chat toggle; unmounting removes them', async () => {

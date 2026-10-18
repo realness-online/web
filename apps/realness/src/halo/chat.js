@@ -3,7 +3,7 @@ import { logger } from './log.js'
 import { HTTP } from '#root/lib/http.js'
 import { MIB } from '#root/lib/units.js'
 
-const LOG = logger('host')
+const LOG = logger('halo')
 const MESSAGE_LIMIT = 16_384
 /** The chat bridge's commands; anything else never reaches the guest. */
 const COMMANDS = new Set(['stop', 'new', 'compact', 'model', 'thinking'])
@@ -73,6 +73,7 @@ const read_log = async request => {
  * @param {{ store: import('./server.js').RouteStore, connect: (record: any) => Promise<{ socket: any, lines: any }>, limits?: ((record: any) => Promise<any>) | null }} options
  */
 export const chat_handlers = ({ store, connect, limits = null }) => {
+  const receiving = new Set()
   /** Hand one request to the guest's chat bridge; the actor is working until it answers. */
   const relay = async (id, response, hello) => {
     let guest
@@ -163,13 +164,39 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
       } catch {
         return text(response, HTTP.NOT_FOUND, 'no actor\n')
       }
+      if (receiving.has(record.id))
+        return text(
+          response,
+          HTTP.CONFLICT,
+          'another session transfer is running\n'
+        )
+      receiving.add(record.id)
       try {
         await store.receiveLog(record.id, log)
+        const guest = await connect(record)
+        let receipt
+        try {
+          guest.socket.write(`${JSON.stringify({ command: 'handover' })}\n`)
+          const line = await guest.lines.read(60)
+          if (!line) throw new Error('Pi did not confirm session handover')
+          receipt = JSON.parse(line)
+          if (
+            receipt.resumed !== true ||
+            receipt.handover_id !== log.handover_id
+          )
+            throw new Error(receipt.text || 'Pi did not load this session')
+        } finally {
+          guest.socket.destroy()
+        }
+        const body = JSON.stringify(receipt)
+        response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
+        return response.end(body)
       } catch (error) {
         LOG.warn(`session log refused for ${id}: ${error.message}`)
         return text(response, HTTP.BAD_GATEWAY, 'the machine did not take it\n')
+      } finally {
+        receiving.delete(record.id)
       }
-      return response.writeHead(HTTP.NO_CONTENT).end()
     }
   }
 }
