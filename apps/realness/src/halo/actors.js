@@ -59,6 +59,8 @@ const LOG = logger('actors')
 const RECOVER_SECONDS = 300
 
 const DISK = 'rootfs.ext4'
+/** Where a handover log waits for the actor's next turn. */
+const HANDS_OVER = '/realness/.handover/log.json'
 const STATE = 'state'
 const MEM = 'mem'
 const ACTOR_INIT = '/usr/local/bin/realness-actor-init'
@@ -1399,6 +1401,29 @@ export class ActorStore {
       this.trace(id, 'unpublish', { version })
       return { version }
     })
+  }
+
+  /**
+   * Leave the tab's session log where the actor's next turn will find it. The
+   * file is the whole IndexedDB export, so the actor imports it at the tail
+   * rather than starting a new session.
+   * @param {string} id
+   * @param {object} log
+   */
+  async receiveLog(id, log) {
+    await this.ensureRunning(id)
+    const result = await this.exec(
+      id,
+      ['sh', '-c', `mkdir -p $(dirname ${HANDS_OVER}) && tee ${HANDS_OVER}`],
+      {
+        stdin: Buffer.from(JSON.stringify(log), 'utf8')
+      }
+    )
+    if (result.exit_code !== 0)
+      throw new BadRequest(
+        `could not leave the session log: ${result.exit_code}`
+      )
+    return { written: true }
   }
 
   /** Copy an actor's directory into a fresh `dest`; only plain entries survive. */

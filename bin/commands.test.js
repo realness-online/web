@@ -59,7 +59,6 @@ test('every package script has exactly one full copy command and a source', asyn
     'apps/realness/frontend/packages/thoughts/package.json',
     'apps/realness/functions/package.json',
     'apps/realness/package.json',
-    '.pi/examples/app/package.json',
     '.pi/examples/static/package.json',
   ])
   assert.equal(new Set(catalog.entries.map(entry => entry.id)).size, catalog.entries.length)

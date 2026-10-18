@@ -4,19 +4,18 @@ Optional references; Pi starts without them. The product reads them through
 the compatibility link `apps/realness/tools/examples`.
 
 One folder per example. Each is a complete npm package that runs on its own.
-`static` and `app` ship in the starter; `chat` and `terminal` build into the
-host. Try one with:
+`static` ships in the starter. Try it with:
 
 ```sh
 cd .pi/examples/<name> && npm install && npm run dev
 ```
 
-| Example    | What it is                                                                          |
-| ---------- | ----------------------------------------------------------------------------------- |
-| `terminal` | A terminal in the browser: libghostty-vt as WASM, drawn on a canvas                 |
-| `chat`     | HTML chat with hosted Pi, streamed through the actor's chat bridge                  |
-| `static`   | Markdown articles as semantic HTML: partials, microdata, previews, sitemap          |
-| `app`      | A Vue notes app; each note is a microdata article saved by `@realness.online/store` |
+| Example  | What it is                                                                 |
+| -------- | -------------------------------------------------------------------------- |
+| `static` | Markdown articles as semantic HTML: partials, microdata, previews, sitemap |
+
+An app starter is the product itself, not a copy: `apps/realness/frontend`.
+`future/` holds ideas, not runnable packages.
 
 ## Decisions
 

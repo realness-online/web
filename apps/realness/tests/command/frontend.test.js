@@ -26,7 +26,7 @@ const plan = args => {
 test('frontend builds default to development without deploying', () => {
   const result = plan(['build'])
   assert.equal(result.environment, 'development')
-  assert.equal(result.steps.length, 6)
+  assert.equal(result.steps.length, 7)
   assert.equal(
     result.steps.filter(step => step.args.includes('--mode')).length,
     2
@@ -43,6 +43,7 @@ test('production keeps wasm, CSS checks, prerender and manifest', () => {
       ['run', 'build:wasm'],
       ['scripts/generate-toc.js'],
       ['exec', '--', 'vp', 'build'],
+      ['run', 'build:durable'],
       ['scripts/check-interaction-css.js'],
       ['exec', '--', 'vp', 'build', '-c', 'vite.prerender.config.js'],
       ['scripts/prerender.js'],

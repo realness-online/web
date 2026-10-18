@@ -60,6 +60,7 @@ const actors = {
   list: unreached('list'),
   publish: unreached('publish'),
   publishedSite: unreached('publishedSite'),
+  receiveLog: unreached('receiveLog'),
   reload: unreached('reload'),
   restore: unreached('restore'),
   seedStatus: unreached('seedStatus'),

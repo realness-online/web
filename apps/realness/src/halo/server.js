@@ -361,6 +361,30 @@ const route_chat = (
   throw new NotFound(id)
 }
 
+/**
+ * The tab's session log, offered to an actor so it continues the same session.
+ * The log lands in the actor's harness before the next chat message arrives.
+ */
+const route_session_log = ({
+  chat,
+  extra,
+  id,
+  kind,
+  method,
+  owner,
+  request,
+  response,
+  store,
+  what
+}) => {
+  if (kind !== 'session' || what !== 'log' || extra !== undefined) return false
+  if (method !== 'POST') throw new NotFound(id)
+  if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
+    throw new NotFound(id)
+  chat.session_log(id, request, response)
+  return true
+}
+
 /** The loop API: list and stop. */
 const route_loops = async (loops, { actor, method, owner, path, response }) => {
   if (!path.startsWith('/v1/loops')) return false
@@ -622,6 +646,7 @@ const route = async (
     ? path.slice('/v1/actors/'.length).split('/')
     : []
   if (route_chat(chat, { ...context, extra, id, kind, what })) return
+  if (route_session_log({ ...context, chat, extra, id, kind, what })) return
   if (await route_loops(loops, context)) return
   if (await route_apps(apps, context)) return
 
@@ -663,7 +688,7 @@ const route = async (
  * fourteen, startup adds `ensureRunning`, and chat adds `beginWork`,
  * `endWork`, and `firstTurn`. Derived from ActorStore, so a renamed method
  * fails here rather than at runtime.
- * @typedef {Pick<import('./actors.js').ActorStore, 'beginWork' | 'copyOut' | 'create' | 'destroy' | 'endWork' | 'ensureRunning' | 'exec' | 'export' | 'firstTurn' | 'get' | 'idle' | 'list' | 'publish' | 'publishedSite' | 'reload' | 'restore' | 'seedStatus' | 'traceOf'>} RouteStore
+ * @typedef {Pick<import('./actors.js').ActorStore, 'beginWork' | 'copyOut' | 'create' | 'destroy' | 'endWork' | 'ensureRunning' | 'exec' | 'export' | 'firstTurn' | 'get' | 'idle' | 'list' | 'publish' | 'publishedSite' | 'receiveLog' | 'reload' | 'restore' | 'seedStatus' | 'traceOf'>} RouteStore
  */
 
 /**

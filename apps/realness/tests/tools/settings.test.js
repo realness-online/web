@@ -58,14 +58,21 @@ test('frontend targets retain Firebase aliases; local services keep development 
 })
 
 test('each browser mode reaches its own gate and local stays local', () => {
-  const gate_url = environment_settings('development').services.gate_url
+  const development = environment_settings('development').services
   for (const mode of ['development', 'test'])
-    assert.deepEqual(browser_settings(mode), { gate_url })
+    assert.deepEqual(browser_settings(mode), {
+      gate_url: development.gate_url,
+      proxy_url: development.proxy_url
+    })
   assert.deepEqual(browser_settings('production'), {
-    gate_url: environment_settings('production').services.gate_url
+    gate_url: environment_settings('production').services.gate_url,
+    proxy_url: environment_settings('production').services.proxy_url
   })
-  assert.deepEqual(browser_settings('local'), { gate_url: '/gate' })
-  for (const mode of ['dev', 'toString', undefined])
+  assert.deepEqual(browser_settings('dev-local'), {
+    gate_url: '/gate',
+    proxy_url: development.proxy_url
+  })
+  for (const mode of ['dev', 'local', 'toString', undefined])
     assert.throws(() => browser_settings(mode), /unknown browser mode/)
 })
 

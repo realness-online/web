@@ -137,7 +137,8 @@
     "pre-commit": "npm run check:frontend:fix && npm run type && npm run test:frontend && npm run test:rules",
     "start:gate": "node server/gate/bin/gate-service.js",
     "dev:gate": "IDENTITY_PROJECT=realness-development PINS_BUCKET=realness-development.firebasestorage.app ORIGINS=https://realness.local,http://localhost:5173 GATE_HALO=127.0.0.1:18081 node server/gate/bin/gate-service.js",
-    "deploy:gate": "bash server/gate/scripts/deploy.sh"
+    "deploy:gate": "bash server/gate/scripts/deploy.sh",
+    "build:durable": "cd frontend && node durable-lock.js check && vp build -c durable.config.js"
   },
   "engines": {
     "node": ">=22.19.0"

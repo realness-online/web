@@ -94,6 +94,7 @@ export const run_frontend = async (
   node('scripts/generate-toc.js')
   const mode = production ? [] : ['--mode', 'development']
   vp(['build', ...mode])
+  npm('build:durable')
   if (production) node('scripts/check-interaction-css.js')
   vp(['build', '-c', 'vite.prerender.config.js', ...mode])
   node('scripts/prerender.js')

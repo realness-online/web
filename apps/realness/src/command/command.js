@@ -24,7 +24,7 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness turn-end --session <file> --turn <n>
        realness login|logout|whoami|ls|cat|cp|rm ...
        realness frontend build|deploy [--env development|production] [--dry-run]
-       realness example static|app <destination>
+       realness example static <destination>
        realness fold [--dry-run]       (merge .conflict session copies into their originals)
        realness fetch <harness-path>   (light VM: pull a file left in storage)
        realness git-credential get     (VM: git's helper for GitHub repos)

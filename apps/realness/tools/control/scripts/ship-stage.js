@@ -73,7 +73,7 @@ const PROXY_URL = /^https?:\/\/[^/\s]+(\/\S*)?$/
 /** Where the harness sits in every actor. */
 export const ACTOR_HARNESS = '/realness'
 
-export const SHIPPED_EXAMPLES = ['static', 'app']
+export const SHIPPED_EXAMPLES = ['static']
 
 /** The starter's identity, written last so it never hashes itself. */
 export const STARTER = 'starter.json'

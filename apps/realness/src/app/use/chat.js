@@ -1,4 +1,5 @@
 import { current_user } from '@/utils/serverless'
+import { ask, give_log } from '@/utils/explorer'
 import { create_startup_trace } from '../../harness/startup.js'
 import {
   chat_warning,
@@ -241,6 +242,45 @@ const create_startup_status = (status, set_working, get_startup_id) => {
 }
 
 /**
+ * Explorer answers in the tab while the halo wakes. A turn that wanted an
+ * environment hands its log over, and the message travels on to the actor.
+ */
+const explorer_turn = async ({
+  message,
+  messages,
+  draft,
+  status,
+  working,
+  set_log
+}) => {
+  working.value = true
+  messages.value.push({ sender: 'You', text: message })
+  draft.value = ''
+  messages.value.push({ sender: 'Realness', text: '' })
+  const reply = messages.value.at(-1)
+  try {
+    const outcome = await ask({
+      text: message,
+      user_id: current_user.value.uid,
+      token: () => current_user.value.getIdToken(),
+      on_delta: text => (reply.text += text)
+    })
+    if (outcome.text) reply.text = outcome.text
+    if (outcome.hand_over) {
+      set_log(outcome.hand_over)
+      status.value = 'Handing this session to a machine'
+    }
+    return null
+  } catch (thrown) {
+    status.value = readable_error(thrown.message)
+    if (!draft.value) draft.value = message
+    return null
+  } finally {
+    working.value = false
+  }
+}
+
+/**
  * Near a model-use limit, say so once per step per day.
  * @param {import('vue').Ref<string | null>} actor
  * @param {import('vue').Ref<string>} status
@@ -261,40 +301,10 @@ const check_limit = async (actor, status) => {
  * @param {import('vue').Ref<string | null>} actor
  * @param {{ on_change?: () => void, get_context?: () => {path: string, title: string, text: string} | null, set_working?: (active: boolean) => void, get_startup_id?: () => string | null }} [options]
  */
-export const use_chat = (
-  actor,
-  {
-    on_change = () => {},
-    get_context = () => null,
-    set_working = () => {},
-    get_startup_id = () => null
-  } = {}
-) => {
-  const messages = ref(
-    /** @type {Array<{sender: string, text: string, context?: {path: string, title: string, text?: string}}>} */ ([])
-  )
-  const draft = ref('')
-  const status = ref('')
-  const working = ref(false)
-  const startup = create_startup_status(status, set_working, get_startup_id)
-  const waiting_state = make_waiting({
-    actor,
-    draft,
-    status,
-    messages,
-    working,
-    open_watch: () => (in_flight ? undefined : watch())
-  })
-  let in_flight = false
-  /** @type {ReturnType<typeof setTimeout> | undefined} */
-  let watch_timer = undefined
-  let watch_generation = 0
-  /** @type {AbortController | null} */
-  let watching = null
-  let stopped = false
-
-  /** One watch record onto the page; returns the reply still streaming. */
-  const apply = (record, streaming) => {
+/** Apply streamed actor records to the current chat view. */
+const make_record_handler =
+  ({ actor, messages, working, status, startup, waiting_state }) =>
+  (record, streaming) => {
     let reply = streaming
     if (record.type === 'history') {
       startup.ready()
@@ -333,6 +343,50 @@ export const use_chat = (
     if (record.type === 'error') throw new Error(record.text)
     return reply
   }
+
+export const use_chat = (
+  actor,
+  {
+    on_change = () => {},
+    get_context = () => null,
+    set_working = () => {},
+    get_startup_id = () => null
+  } = {}
+) => {
+  const messages = ref(
+    /** @type {Array<{sender: string, text: string, context?: {path: string, title: string, text?: string}}>} */ ([])
+  )
+  const draft = ref('')
+  const status = ref('')
+  const working = ref(false)
+  const startup = create_startup_status(status, set_working, get_startup_id)
+  const waiting_state = make_waiting({
+    actor,
+    draft,
+    status,
+    messages,
+    working,
+    open_watch: () => (in_flight ? undefined : watch())
+  })
+  let in_flight = false
+  /** The tab's session log, waiting for an actor to import it after a handover. */
+  /** @type {object | null} */
+  let handover_log = null
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  let watch_timer = undefined
+  let watch_generation = 0
+  /** @type {AbortController | null} */
+  let watching = null
+  let stopped = false
+
+  const apply = make_record_handler({
+    actor,
+    messages,
+    working,
+    status,
+    startup,
+    waiting_state
+  })
 
   const watch = async () => {
     const actor_id = actor.value
@@ -375,8 +429,9 @@ export const use_chat = (
   })
 
   /**
-   * A command runs now; an ordinary message waits for the halo when it is still
-   * waking. Returns the text to send, or null when nothing is left to send.
+   * A command runs now; an ordinary message goes to the tab's Explorer when no
+   * actor is awake, then waits for the halo when one is. Returns the text to
+   * send, or null when nothing is left to send.
    */
   const prepare = async message => {
     const command = parse_chat_command(message)
@@ -392,6 +447,15 @@ export const use_chat = (
     const context = get_context()
     const sent_message = contextual_message(message, context)
     if (actor.value && startup.ready_now()) return sent_message
+    if (!actor.value && current_user.value)
+      return explorer_turn({
+        message,
+        messages,
+        draft,
+        status,
+        working,
+        set_log: log => (handover_log = log)
+      })
     waiting_state.hold(message, context)
     return null
   }
@@ -404,6 +468,11 @@ export const use_chat = (
     if (!sent_message) return
     draft.value = ''
     status.value = ''
+    if (handover_log) {
+      const log = handover_log
+      handover_log = null
+      await give_log(current_user.value, actor.value, log).catch(() => {})
+    }
     try {
       const outcome = await send_chat(
         current_user.value,

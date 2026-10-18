@@ -16,12 +16,15 @@ export const run_example = async (
   [kind, destination_arg],
   { actor = false, root, export_static, stdout = process.stdout } = {}
 ) => {
-  if (!['static', 'app'].includes(kind) || !destination_arg)
-    throw new Error('usage: realness example static|app <destination>')
+  if (kind !== 'static' || !destination_arg)
+    throw new Error(
+      'usage: realness example static <destination>\n' +
+        'An app starter is the product itself: see apps/realness/frontend.'
+    )
   const destination = resolve(destination_arg)
   if (exists_sync(destination))
     throw new Error(`destination exists: ${destination}`)
-  if (!actor && kind === 'static') {
+  if (!actor) {
     if (!export_static)
       throw new Error('static export requires the desktop command')
     await export_static(destination)

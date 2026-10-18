@@ -109,8 +109,8 @@ The per-node proofs behind all four are archived with their runs in
 ## Build the template
 
 The template is the Ubuntu 24.04 image every actor forks from: pi, git, node,
-and the stock harness. The starter carries `.pi/examples/static` and `.pi/examples/app`;
-`/site` and `/app` copy one and install its dependencies in the actor.
+and the stock harness. The starter carries `.pi/examples/static`; `/site` copies
+it and installs its dependencies in the actor.
 
 ```bash
 node tools/cli/bin/realness.js local build

@@ -44,10 +44,23 @@ export const development_settings = environments.development
 /** The environment people sign on to, sync with, and pay in. */
 export const person_settings = environments.production
 
+/**
+ * What the browser build talks to. `dev-local` is the local gate in front of the
+ * development cloud services, so model calls still reach the real proxy.
+ */
 const browser_modes = {
-  development: { gate_url: development_settings.services.gate_url },
-  production: { gate_url: environments.production.services.gate_url },
-  local: { gate_url: '/gate' }
+  development: {
+    gate_url: development_settings.services.gate_url,
+    proxy_url: development_settings.services.proxy_url
+  },
+  production: {
+    gate_url: environments.production.services.gate_url,
+    proxy_url: environments.production.services.proxy_url
+  },
+  'dev-local': {
+    gate_url: '/gate',
+    proxy_url: development_settings.services.proxy_url
+  }
 }
 
 export const browser_settings = mode => {

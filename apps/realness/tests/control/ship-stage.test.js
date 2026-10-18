@@ -70,14 +70,12 @@ test('the ship tree carries the harness, prompts, and starting examples', () => 
       readFileSync(join(ship, `.pi/prompts/${name}.md`), 'utf8'),
       /giget/
     )
-  for (const path of [
-    '.pi/examples/static/src/build.js',
-    '.pi/examples/app/package.json'
-  ])
+  for (const path of ['.pi/examples/static/src/build.js'])
     assert.ok(existsSync(join(ship, path)), path)
   for (const path of [
     '.pi/examples/static/node_modules',
     '.pi/examples/static/dist',
+    '.pi/examples/app',
     '.pi/examples/chat',
     '.pi/examples/terminal'
   ])

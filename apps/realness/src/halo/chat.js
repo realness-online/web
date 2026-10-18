@@ -1,6 +1,7 @@
 import { randomUUID as random_uuid } from 'node:crypto'
 import { logger } from './log.js'
 import { HTTP } from '#root/lib/http.js'
+import { MIB } from '#root/lib/units.js'
 
 const LOG = logger('host')
 const MESSAGE_LIMIT = 16_384
@@ -34,6 +35,10 @@ const stream = (response, guest, hello) => {
  */
 const TOO_LONG = Symbol('too long')
 
+/** The log travels whole; one actor's session is far under this. */
+const LOG_MIB = 64
+const LOG_LIMIT = LOG_MIB * MIB
+
 /** The request body as JSON; TOO_LONG past the limit, null when it is not JSON. */
 const read_json = async request => {
   let body = ''
@@ -43,6 +48,22 @@ const read_json = async request => {
   }
   try {
     return JSON.parse(body)
+  } catch {
+    return null
+  }
+}
+
+/** The session log as JSON; TOO_LONG past its own, larger limit. */
+const read_log = async request => {
+  const chunks = []
+  let size = 0
+  for await (const chunk of request) {
+    size += chunk.length
+    if (size > LOG_LIMIT) return TOO_LONG
+    chunks.push(chunk)
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'))
   } catch {
     return null
   }
@@ -124,6 +145,31 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
         'cache-control': 'no-store'
       })
       response.end(body)
+    },
+
+    /**
+     * Take the tab's session log. The actor writes it where its harness reads on
+     * the next turn, so the session continues instead of starting again.
+     */
+    async session_log(id, request, response) {
+      const log = await read_log(request)
+      if (log === TOO_LONG)
+        return text(response, HTTP.PAYLOAD_TOO_LARGE, 'session log too long\n')
+      if (!log || typeof log !== 'object' || !log.stores)
+        return text(response, HTTP.BAD_REQUEST, 'invalid session log\n')
+      let record
+      try {
+        record = await store.ensureRunning(id)
+      } catch {
+        return text(response, HTTP.NOT_FOUND, 'no actor\n')
+      }
+      try {
+        await store.receiveLog(record.id, log)
+      } catch (error) {
+        LOG.warn(`session log refused for ${id}: ${error.message}`)
+        return text(response, HTTP.BAD_GATEWAY, 'the machine did not take it\n')
+      }
+      return response.writeHead(HTTP.NO_CONTENT).end()
     }
   }
 }
