@@ -184,11 +184,12 @@ export const make_gate = ({
       response.setHeader('retry-after', String(RETRY_AFTER_S))
       return plain(response, HTTP.UNAVAILABLE, `${error.message}\n`)
     }
+    const actor = /^\/v1\/actors\/([^/]+)(?:\/|$)/.exec(path)?.[1]
     try {
       await forward(
         request,
         response,
-        await halo_for({ phone: who.phone }),
+        await halo_for({ phone: who.phone, ...(actor ? { actor } : {}) }),
         issue_halo_pass(who, secret),
         response.headersSent
       )
