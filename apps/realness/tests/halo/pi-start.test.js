@@ -15,7 +15,7 @@ const scratch = file_url_to_path(
   new URL('../../../../artifacts/realness/pi-start-tests/', import.meta.url)
 )
 
-const launch = (t, running, exit_code = 0) => {
+const launch = (t, running, exit_code = 0, starts_on = 1) => {
   mkdir_sync(scratch, { recursive: true })
   const directory = mkdtemp_sync(join(scratch, 'launch-'))
   t.after(() => rm_sync(directory, { recursive: true, force: true }))
@@ -26,11 +26,11 @@ const launch = (t, running, exit_code = 0) => {
   }
   const initializer = executable(
     'init',
-    `test "$1" = start-pi || exit 99\nexit ${exit_code}`
+    `test "$1" = start-pi || exit 99\necho x >> "${directory}/starts"\nexit ${exit_code}`
   )
   executable(
     'pgrep',
-    `test "$1 $2" = "-x pi" || exit 99\nexit ${running ? 0 : 1}`
+    `test "$1 $2" = "-x pi" || exit 99\ntest ${running ? 1 : 0} = 1 && test "$(wc -l < "${directory}/starts")" -ge ${starts_on}`
   )
   executable('sleep', 'exit 0')
   const [command, ...args] = pi_start_argv(initializer)
@@ -52,4 +52,8 @@ test('a successful initializer without Pi is a startup failure', t => {
 
 test('terminal startup preserves initializer failure', t => {
   assert.equal(launch(t, true, 7).status, 7)
+})
+
+test('a start typed before the terminal is ready is typed again', t => {
+  assert.equal(launch(t, true, 0, 2).status, 0)
 })

@@ -21,7 +21,7 @@ set -eu
 # o0: `realness-actor-init start-pi` starts the terminal's Pi, once the halo
 # has recovered the harness: extensions read plans and memory when Pi starts.
 type_opener() {
-  for _ in $(seq 50); do [ -e /run/realness-pty.sock ] || break; sleep 0.1; done
+  for _ in $(seq 50); do [ -e /run/realness-pty.sock ] && break; sleep 0.1; done
   opener="$(printf 'exec realness\r' | base64)"
   printf '{"op":"data","data_b64":"%s"}\n' "$opener" | /usr/local/bin/realness-pty > /dev/null 2>&1 || true
 }
