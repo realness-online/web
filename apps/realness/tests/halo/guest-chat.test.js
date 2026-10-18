@@ -5,6 +5,7 @@ import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { out_path } from '#root/src/settings/output.js'
+import { python_command } from '#root/lib/python.js'
 
 const program = new URL(
   '../../server/halo/guest/realness-chat',
@@ -34,7 +35,7 @@ const bridge = async reply => {
 
 const run = (path, line) =>
   new Promise((resolve, reject) => {
-    const child = spawn('python3', [program, path])
+    const child = spawn(python_command(), [program, path])
     let out = ''
     child.stdout.on('data', chunk => (out += chunk))
     child.on('error', reject)

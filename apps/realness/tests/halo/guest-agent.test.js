@@ -2,16 +2,19 @@ import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
 import { test } from 'node:test'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { python_command } from '#root/lib/python.js'
 
 const agent = file_url_to_path(
   new URL('../../server/halo/guest/realness-agent.py', import.meta.url)
 )
-const has_python = spawnSync('python3', ['--version']).status === 0
+const has_python = spawnSync(python_command(), ['--version']).status === 0
 
 /** Runs the agent with stdin held open until the frames end. */
 const frames = (t, request, { close_stdin = false } = {}) =>
   new Promise((resolve, reject) => {
-    const child = spawn('python3', [agent], { stdio: ['pipe', 'pipe', 'pipe'] })
+    const child = spawn(python_command(), [agent], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
     let out = ''
     let err = ''
     const timer = setTimeout(() => {
@@ -105,7 +108,9 @@ test(
   'closing the channel stops the command',
   { skip: !has_python },
   async t => {
-    const child = spawn('python3', [agent], { stdio: ['pipe', 'pipe', 'pipe'] })
+    const child = spawn(python_command(), [agent], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
     let out = ''
     t.after(() => child.kill())
     child.stdout.on('data', chunk => {

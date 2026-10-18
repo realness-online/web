@@ -30,6 +30,7 @@ Identity and egress constraints are in vault/Projects/realness.md.
 import base64
 import json
 import os
+import select
 import signal
 import subprocess
 import sys
@@ -77,6 +78,7 @@ def stream(request):
         start_new_session=True,
     )
     timed_out = threading.Event()
+    finished = threading.Event()
 
     def kill():
         try:
@@ -102,12 +104,14 @@ def stream(request):
             pass
 
     def cancel():
-        try:
-            while sys.stdin.buffer.read(CHUNK):
-                pass
-        except (ValueError, OSError):
-            pass
-        kill()
+        while not finished.is_set():
+            try:
+                ready, _, _ = select.select([sys.stdin], [], [], 0.2)
+                if ready and not sys.stdin.buffer.read(CHUNK):
+                    kill()
+                    return
+            except (ValueError, OSError):
+                return
 
     def expire():
         timed_out.set()
@@ -131,6 +135,8 @@ def stream(request):
     code = proc.wait()
     for thread in threads[1:3]:
         thread.join()
+    finished.set()
+    threads[3].join(1)
     if timer:
         timer.cancel()
     emit({"type": "exit", "exit_code": TIMEOUT_EXIT if timed_out.is_set() else code})

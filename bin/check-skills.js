@@ -5,6 +5,7 @@ import { existsSync as exists_sync, readdirSync as readdir_sync, readFileSync as
 import { basename, dirname, extname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { promisify } from 'node:util'
+import { python_command } from './lib/python.js'
 
 const run = promisify(exec_file)
 const root = join(dirname(file_url_to_path(import.meta.url)), '..')
@@ -81,7 +82,7 @@ const SYNTAX = {
   '.js': file => ['node', ['--check', file]],
   '.cjs': file => ['node', ['--check', file]],
   '.sh': file => ['bash', ['-n', file]],
-  '.py': file => ['python3', ['-c', 'import ast,sys; ast.parse(open(sys.argv[1]).read())', file]]
+  '.py': file => [python_command(), ['-c', 'import ast,sys; ast.parse(open(sys.argv[1]).read())', file]]
 }
 
 const script_files = dir =>
