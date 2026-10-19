@@ -171,6 +171,7 @@ export default define_config(({ mode }) => ({
       devOptions: { enabled: false },
       filename: 'service.worker.js',
       workbox: {
+        clientsClaim: true,
         maximumFileSizeToCacheInBytes: 4000000,
         globIgnores: ['**/ghostty-vt-*.wasm'],
         navigateFallbackDenylist: [/\.(?:xml|txt|md|json)$/i],

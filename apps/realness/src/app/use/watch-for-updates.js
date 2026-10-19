@@ -72,7 +72,7 @@ export const watch_for_updates = ({ workers, doc, is_working, reload }) => {
       reload()
       return
     }
-    const found = controlled ? await registration() : null
+    const found = await registration()
     await found?.update().catch(() => {})
     await installed(found?.installing)
     const waiting = found?.waiting

@@ -128,8 +128,8 @@ describe('@/use/watch-for-updates', () => {
     expect(reload).not.toHaveBeenCalled()
   })
 
-  it('does not activate for a page no worker controls yet', async () => {
-    const { workers, registration } = fake_workers({
+  it('still looks for a build on a page no worker controls yet', async () => {
+    const { workers, update, registration } = fake_workers({
       controlled: false,
       waiting: true
     })
@@ -137,8 +137,8 @@ describe('@/use/watch-for-updates', () => {
     const doc = fake_doc()
     start(workers, doc)
     await hide(doc)
-    expect(waiting.postMessage).not.toHaveBeenCalled()
-    expect(reload).not.toHaveBeenCalled()
+    expect(update).toHaveBeenCalled()
+    expect(waiting.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
   })
 
   it('waits while anything is working, then updates on a later hide', async () => {

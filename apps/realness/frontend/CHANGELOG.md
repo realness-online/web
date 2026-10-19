@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **An open tab picks up a new build** - The worker claims the page it installs
+  on, and a page it has never controlled still looks for a newer build, so
+  leaving and returning loads the newest build.
+
 ## v3.0.0-l - 2026-10-19
 
 - **Reading back through chat keeps your place** - A new message no longer pulls
