@@ -17,9 +17,6 @@
     ],
     "themes": [
       "./.pi/agent/themes"
-    ],
-    "sessions": [
-      "./sessions"
     ]
   },
   "realness": {
@@ -44,7 +41,9 @@
     "watch": "npm --prefix apps/realness run realness -- watch",
     "test": "npm run test:harness && npm run check:harness && npm run test:product",
     "test:harness": "node --test 'bin/**/*.test.js' '.pi/extensions/**/*.test.js' '.pi/skills/**/*.test.js'",
-    "check:harness": "npm run check:ext && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette",
+    "check:harness": "npm run check:tooling && npm run check:ext && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette",
+    "fallow": "npm run fallow:harness && npm run -C apps/realness fallow -- dead-code",
+    "fallow:harness": "apps/realness/node_modules/.bin/fallow dead-code",
     "test:product": "npm --prefix apps/realness test",
     "test:node": "npm --prefix apps/realness run test:node",
     "test:frontend": "npm --prefix apps/realness run test:frontend",
@@ -57,6 +56,8 @@
     "check:site": "node ./bin/soundness-check.js --site",
     "check:ext": "node ./bin/no-mjs.js",
     "check:skills": "node ./bin/check-skills.js",
+    "check:tooling": "node ./bin/check-tooling.js",
+    "test:tooling": "node --test bin/check-tooling.test.js",
     "pi:update": "node bin/install-pi.js",
     "pi:list": "./bin/pi list",
     "test:sessions": "./bin/test-sessions.sh",
