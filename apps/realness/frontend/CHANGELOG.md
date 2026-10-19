@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **One build per release** - The release publishes the file list of the build
+  it deployed, not of a separate build that ran before.
+
 ## v3.0.0-n - 2026-10-19
 
 - **The working ring reaches the top of the screen** - The ring was pinned to

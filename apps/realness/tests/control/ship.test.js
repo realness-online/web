@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   choose,
   next_version,
+  release_plan,
   touches
 } from '../../tools/control/scripts/ship.js'
 
@@ -64,4 +65,25 @@ test('a frontend-only change deploys the frontend', () => {
 
 test('a release with no changes still deploys the frontend', () => {
   assert.deepEqual(choose(['']), ['frontend'])
+})
+
+test('the release uploads the build the deploy shipped', () => {
+  assert.deepEqual(release_plan(['frontend']), [
+    'version',
+    'deploy:frontend',
+    'release',
+    'verify'
+  ])
+  assert.deepEqual(release_plan(['frontend', 'proxy']), [
+    'version',
+    'deploy:frontend',
+    'deploy:proxy',
+    'release',
+    'verify'
+  ])
+  assert.equal(
+    release_plan(['frontend']).includes('build'),
+    false,
+    'no build before the deploy: it would not be the deployed build'
+  )
 })

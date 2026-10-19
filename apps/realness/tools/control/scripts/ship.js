@@ -126,6 +126,14 @@ const report = (before, after) =>
     return `${name.padEnd(NAME_WIDTH)} ${from} -> ${to} ${state}`
   }).join('\n')
 
+/** The frontend deploy builds the site once, so the release uploads that build. */
+export const release_plan = targets => [
+  'version',
+  ...targets.map(target => `deploy:${target}`),
+  'release',
+  ...(targets.includes('frontend') ? ['verify'] : [])
+]
+
 export const main = () => {
   gcloud_python()
   const args = process.argv.slice(2)
@@ -160,18 +168,17 @@ export const main = () => {
     return 0
   }
 
-  run('npm', ['version', next])
-  run('npm', ['run', 'build'])
-  run('npm', ['run', 'release:gh'])
-
   const before = revisions(settings)
-  for (const target of targets) {
-    out(`\n==> ${target}`)
-    deploy(target, settings, halo ?? 'realness-1')
+  for (const step of release_plan(targets)) {
+    if (step === 'version') run('npm', ['version', next])
+    else if (step === 'release') run('npm', ['run', 'release:gh'])
+    else if (step === 'verify') run('npm', ['run', 'verify', '--', '--release'])
+    else {
+      const target = step.slice('deploy:'.length)
+      out(`\n==> ${target}`)
+      deploy(target, settings, halo ?? 'realness-1')
+    }
   }
-
-  if (targets.includes('frontend'))
-    run('npm', ['run', 'verify', '--', '--release'])
 
   const after = revisions(settings)
   out(`\n${report(before, after)}`)
