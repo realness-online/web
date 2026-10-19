@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-l - 2026-10-19
+
 - **Reading back through chat keeps your place** - A new message no longer pulls
   you to the input. A button and the G key take you to the newest message when
   you are ready.
