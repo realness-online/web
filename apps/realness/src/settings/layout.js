@@ -14,6 +14,7 @@ export const source_folders = {
   halo: 'src/halo',
   sync: 'src/sync',
   proxy: 'src/proxy',
+  telemetry: 'src/telemetry',
   gate: 'src/gate',
   app: 'src/app'
 }
@@ -104,7 +105,9 @@ export const service_folders = service => {
     ...shared_folders(),
     source_folders.sync,
     `server/${service}/bin`,
-    ...(service === 'sync' ? [] : [source_folders.proxy]),
+    ...(service === 'sync'
+      ? []
+      : [source_folders.proxy, source_folders.telemetry]),
     ...(service === 'gate' ? [source_folders.gate] : [])
   ]
 }

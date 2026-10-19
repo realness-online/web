@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **One command releases** - `npm run ship` takes the next version, tags it,
+  releases it, deploys every target whose inputs changed, and verifies. It
+  refuses a worktree that does not match its tag.
+- **The proxy reports a day of calls** - `GET /usage` returns every person's
+  rows for one day with totals, or a daily series for up to 31 days, behind an
+  operator bearer secret.
+- **A person's calls read as a report** - `realness <environment> report` groups
+  calls by model, provider, and client with p50 and p95 latency, cache hit rate,
+  and cost.
+- **Each model call can export a span** - The proxy writes one OTLP/HTTP span
+  per call when an endpoint is set, and leaves out the payer phone.
+
 ## v3.0.0-j - 2026-10-19
 
 - **Every call records who made it and how slow it started** - Usage rows keep

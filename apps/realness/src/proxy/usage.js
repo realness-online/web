@@ -14,6 +14,7 @@ import {
   read_rows as parse_rows,
   sum_rows
 } from './rows.js'
+import { usage_stats } from './report.js'
 /* eslint-disable no-await-in-loop -- compaction retries wait between tries */
 
 export { day_files, sum_rows }
@@ -23,7 +24,6 @@ const DATA_PREFIX = 'data: '.length
 const TRIES = 12
 const JITTER_FLOOR = 0.5
 const MAX_BACKOFF = 4
-const ROUND = 1e6
 
 const LIMIT = LIMIT_MIB * MIB
 const FIELDS = [
@@ -212,24 +212,6 @@ export const usage_key = (phone, actor, now = new Date()) => {
 
 const today = (now = new Date()) => now.toISOString().slice(0, ISO_DATE)
 
-/** Totals for a set of rows, including how many read from the cache. */
-export const row_totals = rows => {
-  const sum = name =>
-    Math.round(
-      rows.reduce((total, row) => total + (row[name] ?? 0), 0) * ROUND
-    ) / ROUND
-  return {
-    calls: rows.length,
-    prompt_tokens: sum('prompt_tokens'),
-    completion_tokens: sum('completion_tokens'),
-    cached_tokens: sum('cached_tokens'),
-    cache_write_tokens: sum('cache_write_tokens'),
-    cache_hits: rows.filter(row => row.cached_tokens > 0).length,
-    cost: sum('cost'),
-    latency_ms: rows.length ? Math.round(sum('latency_ms') / rows.length) : 0
-  }
-}
-
 /** Every UTC day from `start` (YYYY-MM-DD) through `now`'s day. */
 export const days_since = (start, now = new Date()) => {
   const days = []
@@ -327,16 +309,23 @@ export const usage_ledger = (storage, append = {}) => {
       return {
         day,
         people: folders.length,
-        totals: row_totals(rows),
+        ...usage_stats(rows),
         rows
       }
     },
     /** Totals per day, oldest first, for the given days. */
     report_days(days) {
       return Promise.all(
-        days.map(async at => {
-          const day = await ledger.report(at)
-          return { day: at, people: day.people, totals: day.totals }
+        days.map(async day => {
+          const report = await ledger.report(day)
+          return {
+            day,
+            people: report.people,
+            totals: report.totals,
+            by_model: report.by_model,
+            by_provider: report.by_provider,
+            by_client: report.by_client
+          }
         })
       )
     },

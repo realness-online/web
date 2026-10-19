@@ -6,6 +6,13 @@ import {
   sync_traffic
 } from '../../src/command/watch-cloud.js'
 import { month_cost } from '#root/src/control/cloud-reads.js'
+import {
+  append_jsonl_cache,
+  compact_entry,
+  default_cache_path,
+  default_host
+} from '#root/tools/ops/hosting-traffic.js'
+import { rm } from 'node:fs/promises'
 import { health_snapshot } from '../../src/command/watch-health.js'
 
 const billing = 'realness-development.billing.export'
@@ -234,13 +241,38 @@ test('a traffic sync that fails keeps the archive and names the reason', () => {
   assert.equal(sync_traffic({ project: 'p', host: 'h' }).state, 'failed')
 })
 
-test('watch traffic reads the archive after refreshing it', async () => {
+test('watch traffic reads the archive it just refreshed', async () => {
+  const project = 'realness-watch-traffic-test'
+  const cache_path = default_cache_path(project, default_host, false)
   const sources = cloud_sources({
-    environments: { local: { cloud } },
+    environments: { local: { cloud: { ...cloud, project } } },
+    traffic_project: project,
     now: () => now.getTime(),
-    sync: () => ({ added: 0, pages: 1 })
+    sync: options => {
+      assert.equal(options.project, project)
+      assert.equal(options.cache_path, cache_path)
+      append_jsonl_cache(options.cache_path, [
+        compact_entry({
+          insertId: 'one-visit',
+          timestamp: '2026-10-10T10:00:00Z',
+          httpRequest: {
+            requestMethod: 'GET',
+            requestUrl: 'https://realness.online/',
+            status: 200,
+            remoteIp: '1.1.1.1',
+            userAgent: 'Mozilla/5.0 Safari'
+          }
+        })
+      ])
+      return { added: 1, pages: 1 }
+    }
   })
-  const traffic = await sources.traffic()
-  assert.equal(traffic.refresh.state, 'ok')
-  assert.equal(traffic.refresh.added, 0)
+  try {
+    const traffic = await sources.traffic()
+    assert.equal(traffic.refresh.state, 'ok')
+    assert.equal(traffic.people, 1)
+    assert.equal(traffic.newest, '2026-10-10T10:00:00Z')
+  } finally {
+    await rm(cache_path, { force: true })
+  }
 })

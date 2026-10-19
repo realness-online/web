@@ -378,6 +378,42 @@ const spend_lines = (rows = [], width = 80) =>
       ])
     : ['no ledger for this token']
 
+const percent = value => `${(Number(value) * PERCENT).toFixed(1)}%`
+const millis = value => `${Math.round(value)}ms`
+
+export const model_summary = report => {
+  const totals = report?.totals
+  if (!totals?.calls) return 'no model calls today'
+  const errors = `${totals.errors} ${totals.errors === 1 ? 'error' : 'errors'} (${percent(totals.error_rate)})`
+  return `${totals.calls} calls  ${errors}  p50 ${millis(totals.p50_ms)}  p95 ${millis(totals.p95_ms)}  cache ${percent(totals.cache_hit_rate)}  ${usd(totals.cost)}`
+}
+
+/** Today's calls across people, plus the busiest models and clients. */
+export const model_lines = (report, on = true, width = DEFAULT_WIDTH) => {
+  if (report?.status === 'failed')
+    return [paint(`FAILED ${report.error}`, 'failed', on)]
+  if (!report?.totals) return ['no model report']
+  const lines = [
+    paint(
+      model_summary(report),
+      report.totals.errors ? 'failed' : 'running',
+      on
+    )
+  ]
+  const group = (label, rows = []) =>
+    rows
+      .slice(0, 3)
+      .map(row =>
+        clip(
+          `${label} ${row.name}  ${row.calls} calls  ${row.errors} errors  p95 ${millis(row.p95_ms)}  ${usd(row.cost)}`,
+          width
+        )
+      )
+  lines.push(...group('model', report.by_model))
+  lines.push(...group('client', report.by_client))
+  return lines
+}
+
 export const sync_lines = (rows = [], on = true, width = DEFAULT_WIDTH) => {
   if (!rows.length) return ['no folders configured']
   const unread = rows.filter(row => !row.listing)
@@ -474,6 +510,10 @@ const detail_rows = (panels, width, on, now) => {
   )
   section('AGENT REPORT HISTORY', error_lines(panels.halos, on).concat(reports))
   section(
+    'MODEL CALLS - today, all people',
+    model_lines(panels.model, on, width)
+  )
+  section(
     'MODEL SPEND - account ledger only',
     error_lines(panels.cost, on).concat(spend_lines(panels.cost?.rows, width))
   )
@@ -493,23 +533,24 @@ const detail_rows = (panels, width, on, now) => {
 }
 
 /** One line per cloud, sync, halo, and cost problem. */
-const status_lines = (panels, width, on) => {
-  const status = []
+/** One line per cloud service, naming each one that is not ready. */
+const cloud_service_lines = (panels, on) => {
   if (panels.services?.status !== 'ok')
-    status.push(paint('Cloud service status unavailable', 'failed', on))
-  else {
-    const services = panels.services.rows ?? []
-    const problems = services.filter(row => !row.found || !row.ready)
-    if (!problems.length) status.push(`${services.length} cloud services ready`)
-    for (const row of problems)
-      status.push(
-        paint(
-          `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
-          'failed',
-          on
-        )
-      )
-  }
+    return [paint('Cloud service status unavailable', 'failed', on)]
+  const services = panels.services.rows ?? []
+  const problems = services.filter(row => !row.found || !row.ready)
+  if (!problems.length) return [`${services.length} cloud services ready`]
+  return problems.map(row =>
+    paint(
+      `${row.name}: ${row.found ? 'NOT READY' : 'MISSING'} in ${row.project}`,
+      'failed',
+      on
+    )
+  )
+}
+
+const status_lines = (panels, width, on) => {
+  const status = [...cloud_service_lines(panels, on)]
   if (panels.sync?.status === 'failed')
     status.push(paint('Sync read failed - see details', 'failed', on))
   else
@@ -546,6 +587,12 @@ const status_lines = (panels, width, on) => {
       )
   if (panels.cost?.status === 'failed')
     status.push('Model cost unavailable - see details')
+  if (panels.model?.status === 'failed')
+    status.push('Model call stats unavailable - see details')
+  else if (panels.model?.totals?.errors)
+    status.push(
+      paint(`Model calls: ${model_summary(panels.model)}`, 'failed', on)
+    )
   if (panels.traffic?.refresh?.state === 'failed')
     status.push(
       ...wrap(
@@ -583,6 +630,11 @@ export const frame_rows = (
   )
   const status = status_lines(panels, width, on)
   section('STATUS', status)
+  if (panels.model?.status === 'ok' && panels.model.totals?.calls)
+    section(
+      'MODEL CALLS - today, all people',
+      model_lines(panels.model, on, width)
+    )
   const model_cost = panels.cost?.rows ?? []
   if (model_cost.some(row => row.month.cost !== 0))
     section('MODEL SPEND - separate from cloud', [
@@ -1063,7 +1115,20 @@ const dashboard = (panels, width, height, on, now) => {
     machine_lines.length + 2,
     Math.floor(height / 2)
   )
-  const model_lines = model_panel_lines(panels.cost, right - BOX_SIDES, on)
+  const calls =
+    panels.model?.status === 'ok' && panels.model.totals?.calls
+      ? [
+          paint(
+            `CALLS ${model_summary(panels.model)}`,
+            panels.model.totals.errors ? 'failed' : 'running',
+            on
+          )
+        ]
+      : []
+  const model_lines = [
+    ...model_panel_lines(panels.cost, right - BOX_SIDES, on),
+    ...calls
+  ]
   const lights = health_lights(panels, on, right - BOX_SIDES)
   const halo_lines = halo_panel_lines(panels.halos, on, right - BOX_SIDES)
   const model_height = model_lines.length + 2

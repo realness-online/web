@@ -9,12 +9,12 @@ import {
   month_days,
   over_limit,
   read_rows,
-  row_totals,
   usage_key,
   usage_ledger,
   usage_meter,
   usage_row
 } from '../../src/proxy/usage.js'
+import { call_stats, usage_stats } from '../../src/proxy/report.js'
 import { out_path } from '#root/lib/output.js'
 
 const base = out_path(`usage-test-${randomUUID()}/`)
@@ -139,21 +139,54 @@ test('rows written before the new fields read as zero and empty', () => {
   )
 })
 
-test('totals count cache hits and average latency', () => {
+test('stats count cache hits, errors, and the latency tail', () => {
   const rows = [
-    { cached_tokens: 0, prompt_tokens: 10, latency_ms: 100, cost: 1 },
-    { cached_tokens: 5, prompt_tokens: 10, latency_ms: 200, cost: 2 }
+    {
+      status: 200,
+      cached_tokens: 0,
+      prompt_tokens: 10,
+      latency_ms: 100,
+      cost: 1
+    },
+    {
+      status: 200,
+      cached_tokens: 5,
+      prompt_tokens: 10,
+      latency_ms: 200,
+      cost: 2
+    },
+    {
+      status: 429,
+      cached_tokens: 0,
+      prompt_tokens: 0,
+      latency_ms: 900,
+      cost: 0
+    }
   ]
-  assert.deepEqual(row_totals(rows), {
-    calls: 2,
+  assert.deepEqual(call_stats(rows), {
+    calls: 3,
+    errors: 1,
+    error_rate: 0.3333,
     prompt_tokens: 20,
     completion_tokens: 0,
     cached_tokens: 5,
     cache_write_tokens: 0,
     cache_hits: 1,
+    cache_hit_rate: 0.3333,
     cost: 3,
-    latency_ms: 150
+    latency_ms: 400,
+    p50_ms: 200,
+    p95_ms: 900
   })
+  const groups = usage_stats(rows)
+  assert.deepEqual(
+    [
+      groups.by_model.length,
+      groups.by_provider[0].name,
+      groups.by_client[0].name
+    ],
+    [1, 'unknown', 'unknown']
+  )
 })
 
 test('a report spans people and days, and totals their rows', async () => {
@@ -191,9 +224,10 @@ test('a report spans people and days, and totals their rows', async () => {
       report.people,
       report.totals.calls,
       report.totals.cached_tokens,
-      report.totals.cache_hits
+      report.totals.cache_hits,
+      report.by_provider[0].name
     ],
-    [2, 2, 5, 1]
+    [2, 2, 5, 1, 'DeepInfra']
   )
   assert.deepEqual(new Set(report.rows.map(row => row.payer)).size, 2)
   const series = await ledger.report_days(['2026-09-30', '2026-10-01'])

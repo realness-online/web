@@ -119,6 +119,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   loop stop <id>               ask the halo to stop the loop
   person <phone>               one person's actors, loops, and usage
   usage <phone> [--day=DATE]   one UTC day of the ledger; default today
+  report [--day=DATE] [--days=N]   all people: errors, p50/p95, cache, cost by model/provider/client
   limit <phone>                limits, use, and what is left: today and month
   plan grant <phone> --credit=<dollars> --days=<n>   house-model credit, starting today
   status                       everything at once, attention last; exits 2 on attention
@@ -473,6 +474,14 @@ const main = async argv => {
         flags.day
       )
       return finish({ records: found, text: reads.text.usage(found) })
+    }
+
+    case 'report': {
+      const found = await reads.report(await reads.reader(envName), {
+        day: flags.day,
+        days: flags.days
+      })
+      return finish({ records: found, text: reads.text.report(found) })
     }
 
     case 'status': {

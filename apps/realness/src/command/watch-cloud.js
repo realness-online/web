@@ -8,7 +8,8 @@ import { attempt } from '#root/src/control/exec.js'
 import { MS_PER_MINUTE } from '#root/lib/units.js'
 import {
   default_cache_path,
-  default_host
+  default_host,
+  default_project_id
 } from '#root/tools/ops/hosting-traffic.js'
 
 const SPEND_EVERY_MINUTES = 15
@@ -83,14 +84,15 @@ export const sync_traffic = ({ sync, project, host, now = Date.now }) => {
  * Billing covers configured exports; inventory includes their billed projects.
  * Plans read from `store`; without one they are unknown. Traffic reads the
  * local archive; without a `sync` reader it is never refreshed.
- * @param {{ environments?: object, run?: typeof attempt, now?: () => number, store?: Parameters<typeof import('./watch-traffic.js').read_plans>[0] | null, sync?: (options: object) => { added: number, pages: number } }} [options]
+ * @param {{ environments?: object, run?: typeof attempt, now?: () => number, store?: Parameters<typeof import('./watch-traffic.js').read_plans>[0] | null, sync?: (options: object) => { added: number, pages: number }, traffic_project?: string }} [options]
  */
 export const cloud_sources = ({
   environments = ENVIRONMENTS,
   run = attempt,
   now = Date.now,
   store = null,
-  sync
+  sync,
+  traffic_project = default_project_id()
 } = {}) => {
   const clouds = [
     ...new Map(
@@ -107,7 +109,6 @@ export const cloud_sources = ({
     )
   ]
   const projects = new Set(clouds.map(cloud => cloud.project))
-  const site = clouds[0] ?? {}
   const bounded_run = (command, args) => run(command, args, { timeout: 60_000 })
   const billing = cached_read(
     async () => {
@@ -164,12 +165,15 @@ export const cloud_sources = ({
       async () => {
         const refreshed = sync_traffic({
           sync,
-          project: site.project,
+          project: traffic_project,
           host: default_host,
           now
         })
         const { read_traffic } = await import('./watch-traffic.js')
-        const summary = read_traffic({ now: now() })
+        const summary = read_traffic({
+          path: default_cache_path(traffic_project, default_host, false),
+          now: now()
+        })
         return { ...summary, refresh: refreshed }
       },
       TRAFFIC_EVERY_MINUTES * MS_PER_MINUTE,

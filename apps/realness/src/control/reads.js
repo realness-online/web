@@ -19,6 +19,7 @@ import {
   paid_now,
   read_plan
 } from '#root/src/proxy/billing.js'
+import { usage_stats } from '#root/src/proxy/report.js'
 import { env_token, URLS } from './status.js'
 import { randomUUID as random_uuid } from 'node:crypto'
 import {
@@ -31,11 +32,13 @@ import { ISO_DATE, MS_PER_SECOND } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- records are read one at a time to keep the sync service quiet */
 
 const MONEY_PLACES = 4
+const PERCENT = 100
 
 const PHONE = /^\+[1-9]\d{6,14}$/
 const LOOP = /^a-[a-f0-9]{12}$/
 const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const DAY = /^\d{4}-\d{2}-\d{2}$/
+const MAX_REPORT_DAYS = 31
 const unesc = value =>
   value
     .replace(/&lt;/g, '<')
@@ -219,6 +222,55 @@ export const limit = async (sync, phone, now = new Date()) => {
   return { phone, ...limit_status({ free: free_limits(), paid }, spent) }
 }
 
+const days_ending = (end, count) => {
+  const at = new Date(`${end}T00:00:00Z`)
+  const days = []
+  for (let back = count - 1; back >= 0; back--) {
+    const day = new Date(at)
+    day.setUTCDate(day.getUTCDate() - back)
+    days.push(day.toISOString().slice(0, ISO_DATE))
+  }
+  return days
+}
+
+/**
+ * Every person's calls, errors, latency, cache use, and cost for a range of
+ * UTC days, grouped by model, provider, and client. Summary only: no rows.
+ *
+ * @param {object} sync
+ * @param {{ day?: string, days?: string | number, now?: Date }} [options]
+ */
+export const report = async (sync, { day, days, now = new Date() } = {}) => {
+  const end = day ?? now.toISOString().slice(0, ISO_DATE)
+  const count = days === undefined ? 1 : Number(days)
+  if (!DAY.test(end))
+    throw new Error(
+      'usage: realness <env> report [--day=YYYY-MM-DD] [--days=N]'
+    )
+  if (!Number.isInteger(count) || count < 1 || count > MAX_REPORT_DAYS)
+    throw new Error(`days must be 1 to ${MAX_REPORT_DAYS}`)
+  const wanted = days_ending(end, count)
+  const people = await folders(sync, 'can://usage/').catch(() => [])
+  const rows = []
+  const daily = []
+  for (const at of wanted) {
+    const day_rows = []
+    for (const phone of people)
+      day_rows.push(...(await usage(sync, phone, at)).rows)
+    rows.push(...day_rows)
+    daily.push({ day: at, ...call_stats_only(day_rows) })
+  }
+  return {
+    from: wanted[0],
+    to: end,
+    people: people.length,
+    ...usage_stats(rows),
+    daily
+  }
+}
+
+const call_stats_only = rows => usage_stats(rows).totals
+
 /**
  * What an admin may see of one person: actors, loops, today's usage.
  * @param {object} sync
@@ -263,6 +315,22 @@ export const text = {
     ),
   usage: u =>
     `${u.phone} ${u.day}: ${u.calls} calls, ${u.tokens} tokens, $${u.cost.toFixed(MONEY_PLACES)}`,
+  report: r => {
+    const pct = value => `${(value * PERCENT).toFixed(1)}%`
+    const stat = s =>
+      `${s.calls} calls, ${s.errors} errors (${pct(s.error_rate)}), p50 ${s.p50_ms}ms, p95 ${s.p95_ms}ms, $${s.cost.toFixed(MONEY_PLACES)}, cache ${pct(s.cache_hit_rate)}`
+    const lines = [`${r.from}..${r.to}, ${r.people} people: ${stat(r.totals)}`]
+    if (r.daily.length > 1)
+      lines.push(...r.daily.map(day => `${day.day}: ${stat(day)}`))
+    for (const [label, groups] of [
+      ['model', r.by_model],
+      ['provider', r.by_provider],
+      ['client', r.by_client]
+    ])
+      for (const group of groups.slice(0, 5))
+        lines.push(`${label} ${group.name}: ${stat(group)}`)
+    return lines.join('\n')
+  },
   limit: l => {
     const n = value =>
       value === null || value === undefined

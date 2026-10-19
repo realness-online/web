@@ -21,6 +21,7 @@ import {
   price_lookup,
   stripe_api
 } from '../../../src/proxy/billing.js'
+import { export_traces, otel_config } from '#root/src/telemetry/otlp.js'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { out_path } from '#root/lib/output.js'
@@ -58,6 +59,8 @@ const origins = (env.ORIGINS ?? '')
   .map(origin => origin.trim())
   .filter(Boolean)
 const operator_secret = env.OPERATOR_SECRET?.trim()
+const traces = otel_config(env)
+const telemetry = traces ? span => export_traces([span], traces) : undefined
 
 const handler = proxy_handler({
   agent: agent_handler({
@@ -66,7 +69,8 @@ const handler = proxy_handler({
     key,
     ledger,
     plan_for,
-    pay_url
+    pay_url,
+    telemetry
   }),
   limit: limit_handler({ identify_phone, secret, ledger, plan_for, pay_url }),
   pay: checkout_handler({ identify_phone, secret, stripe, price, pay_url }),
@@ -80,6 +84,6 @@ const port = Number(env.PORT ?? 8788)
 const listen = env.LISTEN ?? (env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')
 create_server(handler).listen(port, listen, () =>
   console.log(
-    `proxy on ${listen}:${port}${stripe ? ', payments on' : ''}${operator_secret ? ', usage report on' : ''}`
+    `proxy on ${listen}:${port}${stripe ? ', payments on' : ''}${operator_secret ? ', usage report on' : ''}${traces ? `, traces to ${traces.url}` : ''}`
   )
 )

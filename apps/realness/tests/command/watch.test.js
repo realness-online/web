@@ -348,6 +348,40 @@ test('panel labels stay dim while data keeps its contrast', () => {
   )
 })
 
+test("the wide dashboard shows today's calls in the model tile", () => {
+  const text = frame({
+    snapshot: {
+      checked: '2026-10-09T17:00:00.000Z',
+      who: { phone },
+      panels: {
+        model: {
+          status: 'ok',
+          totals: {
+            calls: 2,
+            errors: 0,
+            error_rate: 0,
+            p50_ms: 100,
+            p95_ms: 300,
+            cache_hit_rate: 0.5,
+            cost: 0.01
+          },
+          by_model: [],
+          by_client: []
+        },
+        cost: {
+          status: 'ok',
+          rows: [{ phone, day: { cost: 0 }, month: { cost: 0 } }]
+        }
+      }
+    },
+    width: 120,
+    height: 40,
+    on: false
+  })
+  assert.match(text, /MODEL SPEND/)
+  assert.match(text, /CALLS 2 calls  0 errors \(0\.0%\)/)
+})
+
 test('the frame holds the panels, interval, and controls', () => {
   const text = frame({
     snapshot: {
@@ -391,7 +425,21 @@ test('the frame holds the panels, interval, and controls', () => {
           state: 'running',
           rows: [{ phone, expires_at: '2026-10-09T18:00:00.000Z' }]
         },
-        publish: { status: 'ok', rows: [{ phone, sites: 1 }] }
+        publish: { status: 'ok', rows: [{ phone, sites: 1 }] },
+        model: {
+          status: 'ok',
+          totals: {
+            calls: 2,
+            errors: 1,
+            error_rate: 0.5,
+            p50_ms: 100,
+            p95_ms: 900,
+            cache_hit_rate: 0,
+            cost: 0.02
+          },
+          by_model: [],
+          by_client: []
+        }
       }
     },
     width: 100,
@@ -499,6 +547,91 @@ test('daily spend reaches the frame through the ledger and health snapshot', asy
   )
   assert.ok(!spend_chart(spent.daily).join('\n').includes('UTC'))
   assert.match(text, /# #/)
+})
+
+test('the watch report sums every person and reaches the frame', async () => {
+  const other = '+15555550999'
+  const day = '2026-10-09'
+  const page = (actor, latency, status) =>
+    usage_row({
+      model: 'm',
+      actor,
+      client: 'pi/1.0',
+      provider: 'DeepInfra',
+      latency_ms: latency,
+      status,
+      request_bytes: 1,
+      reply_bytes: 1,
+      usage: { prompt_tokens: 5, completion_tokens: 1, cost: 0.01 }
+    })
+  const keys = {
+    'can://usage/': [`${phone}/`, `${other}/`],
+    [`can://usage/${phone}/${day}/`]: ['index.html'],
+    [`can://usage/${phone}/${day}/index.html`]: page(
+      'a-abcdef123456',
+      100,
+      200
+    ),
+    [`can://usage/${other}/${day}/`]: ['index.html'],
+    [`can://usage/${other}/${day}/index.html`]: page('a-abcdef123456', 900, 429)
+  }
+  const found = await usage_ledger(store(keys)).report(day)
+  assert.deepEqual(
+    [
+      found.people,
+      found.totals.calls,
+      found.totals.errors,
+      found.totals.p95_ms,
+      found.by_client[0].name
+    ],
+    [2, 2, 1, 900, 'pi/1.0']
+  )
+  const snapshot = await health_snapshot({
+    store: store(keys),
+    token: claims(),
+    ledger: {
+      spent: async () => ({
+        day: { tokens: 0, cost: 0 },
+        month: { tokens: 0, cost: 0 },
+        daily: []
+      }),
+      report: async () => found
+    },
+    now: Date.parse('2026-10-09T12:00:00Z')
+  })
+  assert.equal(snapshot.panels.model.totals.calls, 2)
+  const text = frame({
+    snapshot,
+    on: false,
+    width: 100,
+    height: 60,
+    details: true
+  })
+  assert.match(text, /MODEL CALLS - today, all people/)
+  assert.match(text, /2 calls  1 error \(50\.0%\)  p50 100ms  p95 900ms/)
+  assert.match(text, /model m  2 calls  1 errors  p95 900ms/)
+  const compact = frame({ snapshot, on: false, width: 100, height: 40 })
+  assert.match(compact, /Model calls: 2 calls  1 error/)
+})
+
+test('a failed watch report is visible, not a zero', async () => {
+  const snapshot = await health_snapshot({
+    store: store({}),
+    token: claims(),
+    ledger: {
+      spent: async () => ({
+        day: { tokens: 0, cost: 0 },
+        month: { tokens: 0, cost: 0 },
+        daily: []
+      }),
+      report: async () => {
+        throw new Error('ledger down')
+      }
+    }
+  })
+  assert.equal(snapshot.panels.model.status, 'failed')
+  const text = frame({ snapshot, on: false, width: 100, height: 40 })
+  assert.match(text, /Model call stats unavailable/)
 })
 
 test('model ledger failures do not turn into a zero-dollar balance', async () => {

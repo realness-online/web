@@ -3,7 +3,7 @@ import {
   runtime_sessions_path
 } from '#root/src/harness/settings.js'
 import { phone_of } from '#root/src/files/client.js'
-import { MS_PER_SECOND } from '#root/lib/units.js'
+import { ISO_DATE, MS_PER_SECOND } from '#root/lib/units.js'
 import {
   halo_state as lifecycle_state,
   read_lifecycle
@@ -124,11 +124,12 @@ const halos_panel = async ({ store, now = Date.now(), quiet_ms }) => {
 /**
  * @typedef {{ tokens: number, cost: number }} SpendSum
  * @typedef {{ day: SpendSum, month: SpendSum, daily: SpendSum[] }} Spend
+ * @typedef {{ day: string, people: number, totals: object, by_model: object[], by_provider: object[], by_client: object[] }} ModelReport
  *
  * @param {object} options
  * @param {object} options.store
  * @param {string[]} options.people
- * @param {{ spent: (phone: string) => Promise<Spend> }} options.ledger
+ * @param {{ spent: (phone: string) => Promise<Spend>, report?: (day: string) => Promise<ModelReport> }} options.ledger
  * @param {string[]} [options.named]
  */
 const cost_panel = async ({ store, people, ledger, named = [] }) => {
@@ -145,6 +146,9 @@ const cost_panel = async ({ store, people, ledger, named = [] }) => {
   }
   return { rows }
 }
+
+/** All people's model calls today: errors, latency tail, cache use. */
+const model_panel = ({ ledger, day }) => ledger.report(day)
 
 /**
  * When the newest session in a listing began, from its name's timestamp.
@@ -239,7 +243,7 @@ const publish_panel = async ({ store, people }) => {
  * @param {object} options
  * @param {object} options.store
  * @param {string | null} [options.token]
- * @param {{ spent: (phone: string) => Promise<Spend> }} options.ledger
+ * @param {{ spent: (phone: string) => Promise<Spend>, report?: (day: string) => Promise<ModelReport> }} options.ledger
  * @param {string[]} [options.named]
  * @param {object} [options.records]
  * @param {string | null} [options.service]
@@ -295,6 +299,15 @@ export const health_snapshot = async ({
   panels.billing = billing
   panels.services = services
   panels.resources = resources
+  if (ledger?.report)
+    panels.model = await attempt(
+      () =>
+        model_panel({
+          ledger,
+          day: new Date(now).toISOString().slice(0, ISO_DATE)
+        }),
+      at
+    )
   if (cloud?.traffic) panels.traffic = await attempt(cloud.traffic, at)
   if (cloud?.plans) panels.plans = await attempt(cloud.plans, at)
   return { checked: new Date(now).toISOString(), who, people, panels }

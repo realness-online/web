@@ -2,6 +2,7 @@ import { createServer as create_server } from 'node:http'
 import { timingSafeEqual as timing_safe_equal } from 'node:crypto'
 import { ISO_DATE } from '#root/lib/units.js'
 import { MODEL, HOUSE_MODEL, call_upstream, read_body } from './agent.js'
+import { call_span } from '#root/src/telemetry/otlp.js'
 import { verify_model_pass } from './model-pass.js'
 import { over_limit, usage_meter } from './usage.js'
 import {
@@ -69,6 +70,7 @@ export const agent_handler = ({
   ledger,
   plan_for,
   pay_url = PAY_URL,
+  telemetry,
   warn = console.error
 }) => {
   if (!key) throw new Error('upstream key required')
@@ -152,6 +154,7 @@ export const agent_handler = ({
       ledger
         ?.record(who.phone, row)
         .catch(error => warn(`usage not recorded: ${error.message}`))
+      telemetry?.(call_span({ row, started }))
       response.end()
     } catch (error) {
       if (!response.headersSent) response.writeHead(HTTP.BAD_GATEWAY).end()

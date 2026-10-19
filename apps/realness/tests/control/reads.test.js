@@ -15,6 +15,7 @@ import {
   usage,
   person,
   limit,
+  report,
   text
 } from '../../src/control/reads.js'
 import { redact } from '../../src/control/output.js'
@@ -190,6 +191,57 @@ test('b1e: limit sums today and the month against free limits', async () => {
   const fresh = await limit(sync, '+15555550109', new Date(now))
   assert.equal(fresh.free.month.used, 0)
   await assert.rejects(limit(sync, 'nope'), /limit <phone>/)
+})
+
+test('report sums every person, by day and by model and client', async () => {
+  for (const [index, [day, client, latency, status]] of [
+    ['2026-09-28', 'pi/1.0', 100, 200],
+    ['2026-09-28', 'pi/1.0', 900, 200],
+    ['2026-09-29', 'browser', 300, 429]
+  ].entries())
+    await storage.put(
+      `usage/${owner}/${day}/12000000${index}Z-a-abcdef123456-abc123.html`,
+      usage_row({
+        model: 'm',
+        actor: 'a-abcdef123456',
+        client,
+        provider: 'DeepInfra',
+        latency_ms: latency,
+        status,
+        request_bytes: 1,
+        reply_bytes: 1
+      })
+    )
+  const sync = await as(admin)
+  const found = await report(sync, { day: '2026-09-29', days: 2 })
+  assert.deepEqual([found.from, found.to], ['2026-09-28', '2026-09-29'])
+  assert.deepEqual(
+    [
+      found.totals.calls,
+      found.totals.errors,
+      found.totals.p95_ms,
+      found.totals.cache_hit_rate
+    ],
+    [3, 1, 900, 0]
+  )
+  assert.deepEqual(
+    [
+      found.daily.map(day => day.calls),
+      found.by_client.map(group => [group.name, group.errors])
+    ],
+    [
+      [2, 1],
+      [
+        ['pi/1.0', 0],
+        ['browser', 1]
+      ]
+    ]
+  )
+  assert.match(
+    text.report(found),
+    /2026-09-28\.\.2026-09-29, 1 people: 3 calls, 1 errors \(33\.3%\), p50 300ms, p95 900ms/
+  )
+  await assert.rejects(report(sync, { days: 99 }), /days must be 1 to 31/)
 })
 
 test('b1e: a paid plan shows its credit from the period start', async () => {

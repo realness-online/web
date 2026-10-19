@@ -5,17 +5,19 @@ import { QUOTA_MESSAGES, agent_service } from '../../src/proxy/server.js'
 import { issue_model_pass } from '../../src/proxy/model-pass.js'
 
 const secret = 'model-pass-server-test-secret-at-least-thirty-two-bytes'
-let server, url, calls, rows
+let server, url, calls, rows, spans
 const settle = () => new Promise(resolve => setTimeout(resolve, 10))
 before(async () => {
   calls = []
   rows = []
+  spans = []
   server = agent_service({
     identify_phone: async token =>
       token === 'phone.token.signature' ? { phone: '+14155550123' } : null,
     secret,
     key: 'test-key',
     ledger: { record: async (phone, row) => rows.push({ phone, ...row }) },
+    telemetry: span => spans.push(span),
     fetcher: async (_url, options) => {
       calls.push(options)
       return new Response('data: done\n', {
@@ -61,6 +63,10 @@ test('an identified person receives the streamed reply', async () => {
   assert.equal(rows[0].request_bytes, 15)
   assert.equal(rows[0].client, 'pi/1.0 (darwin)')
   assert.ok(rows[0].latency_ms >= 0)
+  assert.equal(spans.length, 1)
+  assert.doesNotMatch(JSON.stringify(spans[0]), /14155550123/)
+  assert.equal(spans[0].name, 'model.call')
+  assert.equal(spans[0].status.code, 1)
 })
 
 test('the operator usage report needs the operator secret', async () => {

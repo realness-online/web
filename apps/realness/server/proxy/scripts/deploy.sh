@@ -22,10 +22,18 @@ else
   echo "usage report: off (add OPERATOR_SECRET to turn it on)"
 fi
 
+traces=""
+if [ -n "${OTEL_EXPORTER_OTLP_ENDPOINT:-}" ]; then
+  traces="@OTEL_EXPORTER_OTLP_ENDPOINT=$OTEL_EXPORTER_OTLP_ENDPOINT"
+  echo "traces: on ($OTEL_EXPORTER_OTLP_ENDPOINT)"
+else
+  echo "traces: off (set OTEL_EXPORTER_OTLP_ENDPOINT to send spans)"
+fi
+
 gcloud run deploy realness-proxy \
   --project "$project" --region "$region" --source "$stage" \
   --service-account "$account" --build-service-account "projects/$project/serviceAccounts/$account" \
-  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins" \
+  --set-env-vars "^@^IDENTITY_PROJECT=$identity@PINS_BUCKET=$bucket@ORIGINS=$origins$traces" \
   --set-secrets "$secrets" \
   --min-instances 0 \
   --allow-unauthenticated --quiet
