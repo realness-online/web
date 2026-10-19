@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## v3.0.0-i - 2026-10-19
+
+- **Chat is a pane, not a page** - The chat view is gone; the chevron opens and
+  closes chat beside whatever you are reading.
+- **Sessions live in your vault** - Every session reads and writes the vault,
+  with no separate local store to drift out of step.
+- **A stuck poster can be removed** - An upload that fails or goes quiet for
+  90 seconds is marked as an error, and you can drop it from the queue.
+- **A lone poster sits centred** - A day with one poster shows it centred at
+  two thirds width.
+- **The compose box centres itself** - It spans the page, then narrows to one
+  column and centres when you start typing.
+
 ## v3.0.0-h - 2026-10-18
 
 - **Chat starts in your browser** - Answers begin at once, before a terminal
