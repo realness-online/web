@@ -1,5 +1,4 @@
 import { connect } from 'node:net'
-import { HTTP } from '#root/lib/http.js'
 import { MS_PER_SECOND } from '#root/lib/units.js'
 import { WAKE_DEADLINE_MS, intent_now } from '#root/src/sync/halo-lifecycle.js'
 
@@ -13,9 +12,7 @@ const RESTART_MS = RESTART_SECONDS * MS_PER_SECOND
 const PROBE_TIMEOUT_MS = 2 * MS_PER_SECOND
 
 /** The halo missed the wake deadline; the caller shows a failure with retry. */
-export class WakeTimeout extends Error {
-  status = HTTP.UNAVAILABLE
-}
+export class WakeTimeout extends Error {}
 
 /** Whether the halo API accepts a connection. Never throws. */
 export const tcp_probe = ({ host, api_port }, timeout_ms = PROBE_TIMEOUT_MS) =>

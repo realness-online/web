@@ -12,7 +12,6 @@ import {
   mount
 } from '@vue/test-utils'
 import { reactive } from 'vue'
-import Chat from '@/views/Chat.vue'
 import SupportLayout from '@/components/support-layout.vue'
 import { home_view } from '@/utils/preference'
 import { wide } from '@/use/home-view'
@@ -20,7 +19,7 @@ import { read_contextual_message } from '@/utils/chat-context'
 import { ask } from '@/utils/explorer'
 
 const { mock_replace } = vi.hoisted(() => ({ mock_replace: vi.fn() }))
-const mock_route = reactive({ path: '/chat', query: {}, meta: {} })
+const mock_route = reactive({ path: '/', query: {}, meta: {} })
 vi.mock('vue-router', () => ({
   useRoute: () => mock_route,
   useRouter: () => ({ replace: mock_replace })
@@ -30,13 +29,18 @@ vi.mock('@/utils/serverless', () => ({
     value: { uid: 'person-1', getIdToken: async () => 'id.token' }
   }
 }))
-vi.mock('@/utils/explorer', () => ({ ask: vi.fn(), give_log: vi.fn() }))
+vi.mock('@/utils/explorer', () => ({
+  ask: vi.fn(),
+  history: vi.fn(async () => []),
+  stop: vi.fn(async () => {}),
+  command: vi.fn()
+}))
 
 let calls
 before_each(() => {
   vi.stubEnv('MODE', 'development')
   mock_route.query = { actor: 'a-0123456789ab' }
-  home_view.value = 'thoughts'
+  home_view.value = 'chat'
   wide.value = false
   calls = []
   ask.mockReset().mockImplementation(async ({ on_delta }) => {
@@ -71,7 +75,7 @@ const open = async () => {
     global: {
       stubs: {
         RouterLink: true,
-        'router-view': { components: { Chat }, template: '<Chat />' }
+        'router-view': { template: '<div />' }
       }
     }
   })
@@ -85,7 +89,7 @@ const submit = async (page, message) => {
   await flush_promises()
 }
 
-describe('chat page', () => {
+describe('browser chat', () => {
   it('draws browser turns as Messages with linked statements without subscribing to VM history', async () => {
     ask
       .mockResolvedValueOnce({ text: 'One.\n\nSee https://example.com.' })
@@ -108,7 +112,7 @@ describe('chat page', () => {
     await submit(page, 'Hello there')
     expect(read_contextual_message(ask.mock.calls[0][0].text)).toMatchObject({
       text: 'Hello there',
-      context: { path: '/chat' }
+      context: { path: '/' }
     })
     expect(page.get('textarea').element.value).toBe('')
     ask.mockRejectedValueOnce(new Error('Model connection failed'))
@@ -137,7 +141,9 @@ describe('chat page', () => {
   it('does not switch chat to an automatically selected terminal actor', async () => {
     mock_route.query = {}
     const page = await open()
-    expect(JSON.parse(calls[0].init.body)).toEqual({})
+    expect(calls.filter(call => call.url.endsWith('/v1/startup'))).toHaveLength(
+      1
+    )
     expect(mock_replace).not.toHaveBeenCalled()
     await submit(page, 'Hello')
     expect(ask).toHaveBeenCalledOnce()

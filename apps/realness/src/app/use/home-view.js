@@ -1,7 +1,6 @@
 import { current_user } from '@/utils/serverless'
 import { home_view } from '@/utils/preference'
 import { computed, ref } from 'vue'
-import { useRoute as use_route } from 'vue-router'
 
 const DISPLAY_BEGINS = '(min-width: 80rem)'
 
@@ -45,8 +44,6 @@ export const fit_view = (wanted, is_wide) => {
 }
 
 export const use_home_view = () => {
-  const route = use_route()
-  const chat_toggle_disabled = computed(() => route?.path === '/chat')
   measure()
   const signed_in = computed(() => Boolean(current_user.value))
   const views = computed(() => {
@@ -56,6 +53,7 @@ export const use_home_view = () => {
   const view = computed(() =>
     signed_in.value ? fit_view(home_view.value, wide.value) : 'thoughts'
   )
+  measure()
   const shows = computed(() => ({
     thoughts: view.value === 'thoughts' || view.value === 'chat-thoughts',
     chat: view.value.startsWith('chat'),
@@ -65,7 +63,6 @@ export const use_home_view = () => {
     home_view.value = wanted
   }
   const toggle_chat = () => {
-    if (chat_toggle_disabled.value) return
     set_view(WITH_OR_WITHOUT_CHAT[view.value])
   }
   /** Beside chat, thoughts or the terminal. */
@@ -79,7 +76,6 @@ export const use_home_view = () => {
     wide,
     set_view,
     toggle_chat,
-    toggle_side,
-    chat_toggle_disabled
+    toggle_side
   }
 }

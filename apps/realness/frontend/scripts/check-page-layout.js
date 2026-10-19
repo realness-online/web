@@ -146,7 +146,6 @@ export const main = async ({ exec = exec_file_sync, css } = {}) => {
         'Header icons must align with the question mark'
       )
     }
-    browser('screenshot', path.join(path.dirname(fixture), 'header-after.png'))
     console.info(
       'Page layout: Thoughts and documentation fit, chat open/closed, 390-1920px; header icons align without focus outlines'
     )

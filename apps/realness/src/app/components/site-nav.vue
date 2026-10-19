@@ -17,7 +17,7 @@
     itemscope
     itemtype="https://schema.org/SiteNavigationElement"
     aria-label="Site">
-    <logo-as-link />
+    <as-chat-toggle v-if="current_user" />
     <menu>
       <router-link to="/about" replace>About</router-link>
       <router-link to="/docs" replace>Docs</router-link>
@@ -31,7 +31,7 @@
       <router-link to="/terms" replace>Legal</router-link>
       <router-link to="/account" replace>{{ account_label }}</router-link>
     </menu>
-    <as-chat-toggle v-if="current_user" />
+    <logo-as-link />
   </nav>
 </template>
 

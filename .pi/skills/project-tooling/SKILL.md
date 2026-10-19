@@ -35,8 +35,14 @@ The scripts, `scripts/`, and `tools/` dirs are still authoritative - read `packa
 
 For questions that span projects ("which ones can deploy?"), run `node <skill-dir>/scripts/find-scripts.js deploy`. It matches npm script names in every `work/` project and its subpackages, file names in `scripts/` and `tools/`, and lines of `.tooling.md`. With no pattern it lists script counts per project. For one project, the `project_tooling` tool is enough.
 
-## Curated files known to exist
+## Keep `.tooling.md` small
 
-- `apps/realness/frontend/.tooling.md` - `vp` toolchain (`check`, `check:fix`), coverage and risk reports, rules tests, deploy verification.
-- `apps/realness/tools/ops/.tooling.md` - proxy to the product's `functions/` + ops tools (`traffic`, `ads`).
-- `apps/realness/.tooling.md` - the control/live split, the `webspace` CLI in `control/`, and the four directions.
+- Limit each file to 40 lines and 400 words. This is a ceiling, not a target.
+- State the command working directory and any separate installs. When it differs from the nearest package, declare `Package: \`path/from/harness\`.` on its own line.
+- Keep only command choices, required setup, and cost or safety warnings that change how a command is run.
+- Verify command names against the current package scripts. Prefer npm scripts over direct entry points.
+- Do not repeat the script inventory. Group related commands on one line.
+- Link to existing procedures for releases, deployment, and troubleshooting; verify the links exist.
+- Exclude architecture, implementation details, release history, archived checks, general learnings, and UI rules.
+- On regeneration, replace stale notes rather than appending. Do not move removed text into a new catch-all file.
+- Run `npm run check:tooling` from the harness root before reporting completion. It also requires staged notes when a documented npm script definition changes; unrelated scripts and helpers do not require edits. Notes are optional. Review flagged notes and stage a meaningful update.

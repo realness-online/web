@@ -205,34 +205,6 @@ describe('@/persistence/Storage', () => {
       expect(statements).toBeInstanceOf(Storage)
       expect(statements.id).toBe('/+1234567890/statements')
     })
-
-    it('save_statement stores matching element outerHTML', () => {
-      const scope = document.createElement('div')
-      const statement = document.createElement('div')
-      statement.setAttribute('itemid', '/+1234567890/statements/1000')
-      statement.textContent = 'hello'
-      scope.appendChild(statement)
-
-      const ok = statements.save_statement(
-        /** @type {import('@/types').Id} */ ('/+1234567890/statements/1000'),
-        scope
-      )
-
-      expect(ok).toBe(true)
-      expect(window.localStorage.setItem).toHaveBeenCalledWith(
-        '/+1234567890/statements/1000',
-        statement.outerHTML
-      )
-    })
-
-    it('save_statement returns false when element is missing', () => {
-      const scope = document.createElement('div')
-      const ok = statements.save_statement(
-        /** @type {import('@/types').Id} */ ('/+1234567890/statements/missing'),
-        scope
-      )
-      expect(ok).toBe(false)
-    })
   })
 
   describe('Cutout and Shadow', () => {

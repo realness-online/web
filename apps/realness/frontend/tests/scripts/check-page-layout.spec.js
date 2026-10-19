@@ -26,8 +26,6 @@ const browser = (answers = {}) => {
     if (source.includes('#about > span')) result = answers.header ?? header
     else if (source.includes('Documentation')) result = answers.docs ?? docs
     else if (source) result = answers.thoughts ?? thoughts
-    if (args.includes('screenshot') && answers.fail_screenshot)
-      return JSON.stringify({ success: false, error: 'no screen' })
     return JSON.stringify({ success: true, data: { result } })
   }
   return { exec, calls }
@@ -36,7 +34,7 @@ const browser = (answers = {}) => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('check-page-layout', () => {
-  it('opens, checks every width, screenshots, and closes', async () => {
+  it('opens, checks every width, and closes', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {})
     const { exec, calls } = browser()
     await main({ exec, css: 'body{}' })
@@ -45,7 +43,6 @@ describe('check-page-layout', () => {
     expect(calls[0].args).toContain('open')
     expect(verbs.filter(verb => verb === 'set')).toHaveLength(7)
     expect(verbs.filter(verb => verb === 'eval')).toHaveLength(6 * 4 + 1)
-    expect(verbs.at(-2)).toBe('screenshot')
     expect(verbs.at(-1)).toBe('close')
     expect(console.info).toHaveBeenCalledWith(
       expect.stringMatching(/^Page layout/)
@@ -81,7 +78,7 @@ describe('check-page-layout', () => {
   })
 
   it('reports a failed browser command', async () => {
-    const { exec } = browser({ fail_screenshot: true })
-    await expect(main({ exec, css: '' })).rejects.toThrow('no screen')
+    const { exec } = browser({ thoughts: { left: -500, expected_left: 0 } })
+    await expect(main({ exec, css: '' })).rejects.toThrow(/chat offset/)
   })
 })

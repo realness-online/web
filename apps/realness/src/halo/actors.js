@@ -1016,7 +1016,10 @@ export class ActorStore {
    * @param {number | null} [options.timeout]
    * @param {AbortSignal} [options.signal]
    * @param {(chunk: { stream: 'stdout' | 'stderr', data: Buffer }) => void} [options.on_output]
-   * @returns {Promise<{ exit_code: number, stdout_bytes: number, stderr_bytes: number }>}
+   * @param {Record<string, string>} [options.env]
+   * @param {boolean} [options.inherit_env]
+   * @param {{ afterBytes: number, afterLines: number }} [options.spill]
+   * @returns {Promise<{ exit_code: number, stdout_bytes: number, stderr_bytes: number, error?: string, spill_path?: string }>}
    */
   async execStream(
     id,
@@ -1026,15 +1029,21 @@ export class ActorStore {
       stdin = Buffer.alloc(0),
       timeout = null,
       signal = undefined,
-      on_output = () => {}
+      on_output = () => {},
+      env = undefined,
+      inherit_env = undefined,
+      spill = undefined
     } = {}
   ) {
     if (
       !Array.isArray(argv) ||
       !argv.length ||
-      !argv.every(item => typeof item === 'string' && item)
+      !argv[0] ||
+      !argv.every(item => typeof item === 'string' && !item.includes('\0'))
     )
-      throw new BadRequest('argv must be a non-empty list of strings')
+      throw new BadRequest(
+        'argv must start with a program and contain only strings'
+      )
     if (cwd !== null && typeof cwd !== 'string')
       throw new BadRequest('cwd must be a string')
     const record = await this.ensureRunning(id)
@@ -1044,18 +1053,25 @@ export class ActorStore {
     let stderr_bytes = 0
     this.beginWork(id, work)
     try {
-      const { code } = await vsock.execInGuestStream(record.vsockPath, argv, {
-        cwd,
-        stdin,
-        timeout: timeout || this.apiTimeout,
-        port: this.vsockPort,
-        signal,
-        on_output: chunk => {
-          if (chunk.stream === 'stdout') stdout_bytes += chunk.data.length
-          else stderr_bytes += chunk.data.length
-          on_output(chunk)
+      const { code, error, spill_path } = await vsock.execInGuestStream(
+        record.vsockPath,
+        argv,
+        {
+          cwd,
+          stdin,
+          timeout: timeout ?? this.apiTimeout,
+          env,
+          inherit_env,
+          spill,
+          port: this.vsockPort,
+          signal,
+          on_output: chunk => {
+            if (chunk.stream === 'stdout') stdout_bytes += chunk.data.length
+            else stderr_bytes += chunk.data.length
+            on_output(chunk)
+          }
         }
-      })
+      )
       await this.#flush(record)
       this.trace(record.id, 'exec', {
         argv,
@@ -1066,7 +1082,13 @@ export class ActorStore {
         stderr_bytes,
         streamed: true
       })
-      return { exit_code: code, stdout_bytes, stderr_bytes }
+      return {
+        exit_code: code,
+        stdout_bytes,
+        stderr_bytes,
+        ...(error ? { error } : {}),
+        ...(spill_path ? { spill_path } : {})
+      }
     } finally {
       this.endWork(id, work)
     }

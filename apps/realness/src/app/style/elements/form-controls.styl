@@ -12,6 +12,10 @@ fieldset {
   @media (prefers-color-scheme: dark) {
     standard-border: var(--emphasis);
   }
+  input:not([type=checkbox]):not([type=radio]),
+  textarea {
+    outline: none;
+  }
   legend {
     color: var(--muted-text);
     &[data-valid] {

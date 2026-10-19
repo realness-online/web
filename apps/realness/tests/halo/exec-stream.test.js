@@ -12,7 +12,7 @@ const auth = {
   'content-type': 'application/json'
 }
 
-const start = async () => {
+const start = async (result = {}) => {
   const seen = { exec: [], stream: [] }
   const record = { id, owner: alice }
   const store = {
@@ -31,7 +31,7 @@ const start = async () => {
       options.on_output({ stream: 'stdout', data: Buffer.from('one\n') })
       options.on_output({ stream: 'stderr', data: Buffer.from('bad\n') })
       options.on_output({ stream: 'stdout', data: Buffer.from('two\n') })
-      return { exit_code: 4, stdout_bytes: 8, stderr_bytes: 4 }
+      return { exit_code: 4, stdout_bytes: 8, stderr_bytes: 4, ...result }
     }
   }
   const server = makeServer(store, null, undefined, null, {})
@@ -80,6 +80,72 @@ test('a streamed exec answers output frames and then the exit', async () => {
     ])
     assert.deepEqual(seen.stream[0].argv, ['sh', '-c', 'two'])
     assert.equal(seen.exec.length, 0)
+  } finally {
+    close()
+  }
+})
+
+test('the stream carries shell options, timeout errors and spill paths', async () => {
+  const { at, seen, close } = await start({
+    exit_code: 124,
+    error: 'timeout',
+    spill_path: '/realness/artifacts/realness/exec.log'
+  })
+  try {
+    const response = await fetch(at, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        argv: ['/bin/sh', '-c', 'echo "$VALUE"'],
+        stream: true,
+        timeout: 0,
+        env: { VALUE: 'a b' },
+        inherit_env: false,
+        spill: { afterBytes: 5, afterLines: 2, directory: '/must-not-pass' }
+      })
+    })
+    assert.equal(response.status, 200)
+    const frames = (await response.text())
+      .trim()
+      .split('\n')
+      .map(line => JSON.parse(line))
+    assert.deepEqual(frames.at(-1), {
+      type: 'exit',
+      exit_code: 124,
+      error: 'timeout',
+      spill_path: '/realness/artifacts/realness/exec.log'
+    })
+    const options = seen.stream[0].options
+    assert.equal(options.timeout, 0)
+    assert.deepEqual(options.env, { VALUE: 'a b' })
+    assert.equal(options.inherit_env, false)
+    assert.deepEqual(options.spill, { afterBytes: 5, afterLines: 2 })
+  } finally {
+    close()
+  }
+})
+
+test('invalid streamed shell options never reach the actor', async () => {
+  const { at, seen, close } = await start()
+  try {
+    for (const options of [
+      { env: null },
+      { env: [] },
+      { env: { VALUE: 5 } },
+      { env: { 'A=B': 'value' } },
+      { inherit_env: 'yes' },
+      { spill: {} },
+      { spill: { afterBytes: -1, afterLines: 1 } },
+      { timeout: -1 }
+    ]) {
+      const response = await fetch(at, {
+        method: 'POST',
+        headers: auth,
+        body: JSON.stringify({ argv: ['true'], stream: true, ...options })
+      })
+      assert.equal(response.status, 400, JSON.stringify(options))
+    }
+    assert.equal(seen.stream.length, 0)
   } finally {
     close()
   }

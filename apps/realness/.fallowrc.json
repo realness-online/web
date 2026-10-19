@@ -32,7 +32,9 @@
     "frontend/packages/store/src/firebase.js",
     "frontend/packages/store/src/local-only.js",
     "scripts/s9-check.js",
-    "scripts/z8-check.js"
+    "scripts/z8-check.js",
+    "frontend/durable.config.js",
+    "src/app/utils/durable-entry.js"
   ],
   "ignorePatterns": [
     "**/artifacts/**",
@@ -53,9 +55,13 @@
     "@realness.online/store",
     "@realness.online/thoughts",
     "template-for-polyfill",
-    "pele"
+    "pele",
+    "@earendil-works/chord",
+    "@earendil-works/pi-durable",
+    "pi-durable-storage-idb"
   ],
   "ignoreUnresolvedImports": [
+    "/pi-durable.browser.js",
     "/scripts/template-for-polyfill.js",
     "/scripts/watch-for-updates.js",
     "**/targets.json"
@@ -142,6 +148,22 @@
     {
       "file": "src/app/use/vectorize.js",
       "exports": ["*"]
+    },
+    {
+      "file": "src/halo/vsock.js",
+      "exports": ["Lines"]
+    },
+    {
+      "file": "src/halo/pty.js",
+      "exports": ["makeServer"]
+    },
+    {
+      "file": "src/control/halo-gcp.js",
+      "exports": ["up", "down", "restart"]
+    },
+    {
+      "file": "src/control/halo-lima.js",
+      "exports": ["up", "down", "restart"]
     }
   ],
   "regression": {

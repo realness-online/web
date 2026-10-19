@@ -51,6 +51,8 @@ export const use_vectorize_deferred = ({ enabled = true } = {}) => {
     /** @param {ClipboardItem[]} items */
     queue_supported_clipboard_items: items =>
       api.value?.queue_supported_clipboard_items(items) ?? false,
-    init_processing_queue: async () => await api.value?.init_processing_queue()
+    init_processing_queue: async () => await api.value?.init_processing_queue(),
+    /** @param {string} id */
+    remove_from_queue: async id => await api.value?.remove_from_queue(id)
   }
 }

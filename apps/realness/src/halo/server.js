@@ -164,6 +164,48 @@ const health = store => {
   }
 }
 
+const shell_options = payload => {
+  if (
+    payload.env !== undefined &&
+    (payload.env === null ||
+      Array.isArray(payload.env) ||
+      typeof payload.env !== 'object' ||
+      !Object.entries(payload.env).every(
+        ([key, value]) =>
+          key.length > 0 &&
+          !key.includes('=') &&
+          !key.includes('\0') &&
+          typeof value === 'string' &&
+          !value.includes('\0')
+      ))
+  )
+    throw new BadRequest(
+      'env must contain string values and valid environment names'
+    )
+  if (
+    payload.inherit_env !== undefined &&
+    typeof payload.inherit_env !== 'boolean'
+  )
+    throw new BadRequest('inherit_env must be a boolean')
+  if (
+    payload.spill !== undefined &&
+    (!payload.spill ||
+      !Number.isInteger(payload.spill.afterBytes) ||
+      payload.spill.afterBytes < 0 ||
+      !Number.isInteger(payload.spill.afterLines) ||
+      payload.spill.afterLines < 0)
+  )
+    throw new BadRequest('spill thresholds must be non-negative integers')
+  return {
+    env: payload.env,
+    inherit_env: payload.inherit_env,
+    spill: payload.spill && {
+      afterBytes: payload.spill.afterBytes,
+      afterLines: payload.spill.afterLines
+    }
+  }
+}
+
 const exec = async (store, request, id, response) => {
   const payload = await readJson(request)
   if (payload.stream !== undefined && typeof payload.stream !== 'boolean')
@@ -180,7 +222,10 @@ const exec = async (store, request, id, response) => {
   if (
     timeout !== null &&
     (typeof timeout !== 'number' ||
-      !(timeout > 0 && timeout <= EXEC_TIMEOUT_MAX))
+      !(
+        (timeout > 0 || (payload.stream === true && timeout === 0)) &&
+        timeout <= EXEC_TIMEOUT_MAX
+      ))
   )
     throw new BadRequest(
       `timeout must be seconds, 0 < t <= ${EXEC_TIMEOUT_MAX}`
@@ -189,7 +234,8 @@ const exec = async (store, request, id, response) => {
   const options = {
     cwd: payload.cwd ?? null,
     stdin: Buffer.from(stdinB64, 'base64'),
-    timeout
+    timeout,
+    ...(payload.stream === true ? shell_options(payload) : {})
   }
   if (payload.stream !== true) return store.exec(id, payload.argv, options)
 
@@ -217,7 +263,12 @@ const exec = async (store, request, id, response) => {
       }
     })
     response.end(
-      `${JSON.stringify({ type: 'exit', exit_code: result.exit_code })}\n`
+      `${JSON.stringify({
+        type: 'exit',
+        exit_code: result.exit_code,
+        ...(result.error ? { error: result.error } : {}),
+        ...(result.spill_path ? { spill_path: result.spill_path } : {})
+      })}\n`
     )
   } catch (error) {
     if (!stopping.signal.aborted) throw error

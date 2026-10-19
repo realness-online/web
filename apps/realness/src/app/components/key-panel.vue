@@ -144,7 +144,6 @@
         </ol>
       </li>
     </ol>
-    <p>One key, Shift for the lower label. Escape closes.</p>
   </dialog>
 </template>
 

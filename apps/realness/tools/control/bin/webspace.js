@@ -25,7 +25,7 @@
  * environment variable, so a typo fails instead of running somewhere unintended.
  */
 import {
-  cloud_text as reconcile_cloud_text,
+  bill_text,
   reconcile_cloud,
   reconcile_models,
   reconcile_text
@@ -530,10 +530,9 @@ const main = async argv => {
         r.error ? `  not checked: ${r.error}` : text(r)
       result(
         found,
-        [
-          part(found.models, reconcile_text),
-          part(found.gcp, reconcile_cloud_text)
-        ].join('\n')
+        [part(found.models, reconcile_text), part(found.gcp, bill_text)].join(
+          '\n'
+        )
       )
       return found.models.gaps?.length || found.gcp.gaps?.length
         ? 2

@@ -25,7 +25,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { state_path, harness_root } from '../../../bin/lib/harness-settings.js'
 
 /** @param {string} root */
-export const useHarnessState = (root) => join(root, state_path(root))
+const useHarnessState = (root) => join(root, state_path(root))
 
 export const stateDir = (cwd = process.cwd()) => {
   const root = harness_root(cwd)

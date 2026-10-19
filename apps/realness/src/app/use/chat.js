@@ -1,6 +1,10 @@
 import { current_user } from '@/utils/serverless'
-import { ask, give_log } from '@/utils/explorer'
-import { create_handover } from '@/utils/session-handover'
+import {
+  ask,
+  history as explorer_history,
+  stop as stop_explorer,
+  command as explorer_command
+} from '@/utils/explorer'
 import { create_startup_trace } from '../../harness/startup.js'
 import {
   chat_warning,
@@ -48,12 +52,14 @@ const make_command_runner = ({ actor, messages, status, set_messages }) => {
         status.value = 'Copied'
         return
       }
-      const reply = await run_chat_command(
-        current_user.value,
-        actor.value,
-        command.name,
-        command.args
-      )
+      const user = current_user.value
+      const reply = user
+        ? await explorer_command({
+            ...command,
+            user_id: user.uid,
+            token: () => user.getIdToken()
+          })
+        : await run_chat_command(user, actor.value, command.name, command.args)
       if (command.name === 'new') set_messages([])
       status.value = reply_status(reply)
     } catch (thrown) {
@@ -242,20 +248,19 @@ const create_startup_status = (status, set_working, get_startup_id) => {
   }
 }
 
-/**
- * Explorer answers in the tab while the halo wakes. A turn that wanted an
- * environment hands its log over, and the message travels on to the actor.
- */
 const explorer_turn = async ({
   message,
   messages,
   draft,
   status,
   working,
-  set_log,
+  on_change,
   context = null
 }) => {
+  const user = current_user.value
+  if (!user) return null
   working.value = true
+  status.value = ''
   messages.value.push({
     sender: 'You',
     text: message,
@@ -267,15 +272,14 @@ const explorer_turn = async ({
   try {
     const outcome = await ask({
       text: contextual_message(message, context),
-      user_id: current_user.value.uid,
-      token: () => current_user.value.getIdToken(),
-      on_delta: text => (reply.text += text)
+      user_id: user.uid,
+      token: () => user.getIdToken(),
+      on_delta: text => {
+        reply.text += text
+        on_change()
+      }
     })
     if (outcome.text) reply.text = outcome.text
-    if (outcome.hand_over) {
-      status.value = 'Handing this session to a machine'
-      await set_log(outcome.hand_over)
-    }
     return null
   } catch (thrown) {
     status.value = readable_error(thrown.message)
@@ -283,6 +287,7 @@ const explorer_turn = async ({
     return null
   } finally {
     working.value = false
+    on_change()
   }
 }
 
@@ -350,38 +355,13 @@ const make_record_handler =
     return reply
   }
 
-/** One confirmed transfer starts one terminal continuation, even when callers overlap. */
-const create_vm_resume = ({ actor, handover, status, watch, request_vm }) => {
-  let pending = null
-  return () => {
-    pending ??= (async () => {
-      const target = actor.value || (await request_vm())
-      if (!target) return false
-      await handover.transfer(current_user.value, target)
-      status.value = ''
-      void watch(target)
-      await send_chat(
-        current_user.value,
-        target,
-        'Continue the last request using the terminal tools.'
-      )
-      return true
-    })().finally(() => {
-      pending = null
-    })
-    return pending
-  }
-}
-
-/** Browser chat keeps ownership until a confirmed handover; commands use their existing route. */
 const create_message_preparer =
   ({
     actor,
     startup,
     run,
     get_context,
-    handover,
-    resume,
+    on_change,
     messages,
     draft,
     status,
@@ -401,15 +381,6 @@ const create_message_preparer =
     }
     const context = get_context()
     const sent_message = contextual_message(message, context)
-    if (handover.pending)
-      try {
-        if (!(await resume())) return null
-      } catch (error) {
-        status.value = readable_error(error.message)
-        return null
-      }
-
-    if (handover.resumed) return sent_message
     if (current_user.value)
       return explorer_turn({
         message,
@@ -418,10 +389,7 @@ const create_message_preparer =
         draft,
         status,
         working,
-        set_log: async log => {
-          handover.hold(log)
-          await resume()
-        }
+        on_change
       })
     if (actor.value && startup.ready_now()) return sent_message
     waiting_state.hold(message, context)
@@ -434,8 +402,7 @@ export const use_chat = (
     on_change = () => {},
     get_context = () => null,
     set_working = () => {},
-    get_startup_id = () => null,
-    request_vm = () => Promise.resolve(null)
+    get_startup_id = () => null
   } = {}
 ) => {
   const messages = ref(
@@ -454,7 +421,6 @@ export const use_chat = (
     open_watch: () => (in_flight ? undefined : watch())
   })
   let in_flight = false
-  const handover = create_handover(give_log)
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   let watch_timer = undefined
   let watch_generation = 0
@@ -471,27 +437,29 @@ export const use_chat = (
     waiting_state
   })
 
-  const resume = create_vm_resume({
-    actor,
-    handover,
-    status,
-    watch: () => watch(),
-    request_vm
-  })
-
   const watch = async (target = null) => {
-    const actor_id = target ?? actor.value
-    if (stopped || !actor_id) return
-    if (current_user.value && !handover.resumed) {
-      if (handover.pending)
-        try {
-          await resume()
-        } catch (error) {
-          status.value = readable_error(error.message)
-        }
-
+    if (stopped) return
+    const user = current_user.value
+    if (user) {
+      try {
+        const history = await explorer_history({
+          user_id: user.uid,
+          token: () => user.getIdToken()
+        })
+        if (!stopped && !working.value)
+          messages.value = history.map(message => ({
+            sender: message.role === 'user' ? 'You' : 'Realness',
+            ...(message.role === 'user'
+              ? read_contextual_message(message.text)
+              : { text: message.text })
+          }))
+      } catch (error) {
+        status.value = readable_error(error.message)
+      }
       return
     }
+    const actor_id = target ?? actor.value
+    if (!actor_id) return
     const generation = ++watch_generation
     clearTimeout(watch_timer)
     watching?.abort()
@@ -534,8 +502,7 @@ export const use_chat = (
     startup,
     run,
     get_context,
-    handover,
-    resume,
+    on_change,
     messages,
     draft,
     status,
@@ -552,7 +519,6 @@ export const use_chat = (
     draft.value = ''
     status.value = ''
     try {
-      await handover.transfer(current_user.value, actor.value)
       const outcome = await send_chat(
         current_user.value,
         actor.value,
@@ -582,6 +548,11 @@ export const use_chat = (
     clearTimeout(watch_timer)
     watching?.abort()
     startup.stop()
+    if (current_user.value)
+      return stop_explorer().catch(error => {
+        status.value = readable_error(error.message)
+      })
+    return Promise.resolve()
   }
 
   return {

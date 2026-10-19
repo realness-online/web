@@ -1,13 +1,24 @@
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import {
+  afterEach as after_each,
+  describe,
+  expect,
+  it,
+  vi
+} from 'vite-plus/test'
 import { ref } from 'vue'
 import { use_chat } from '@/use/chat'
-import { ask, give_log } from '@/utils/explorer'
+import { ask, history, stop, command } from '@/utils/explorer'
 import { send_chat, watch_chat } from '@/utils/chat'
 
 vi.mock('@/utils/serverless', () => ({
   current_user: { value: { uid: 'person-1', getIdToken: async () => 'bearer' } }
 }))
-vi.mock('@/utils/explorer', () => ({ ask: vi.fn(), give_log: vi.fn() }))
+vi.mock('@/utils/explorer', () => ({
+  ask: vi.fn(),
+  history: vi.fn(async () => []),
+  stop: vi.fn(async () => {}),
+  command: vi.fn()
+}))
 vi.mock('@/utils/chat', () => ({
   watch_chat: vi.fn(async () => []),
   send_chat: vi.fn(),
@@ -15,58 +26,9 @@ vi.mock('@/utils/chat', () => ({
   readable_error: text => text
 }))
 
-afterEach(() => vi.clearAllMocks())
+after_each(() => vi.clearAllMocks())
 
 describe('browser chat during actor startup', () => {
-  it('loads the browser conversation before asking terminal Pi to continue', async () => {
-    const log = { handover_id: 'handover-1', entries: [] }
-    ask.mockResolvedValueOnce({ hand_over: log })
-    give_log.mockResolvedValueOnce({ resumed: true, handover_id: 'handover-1' })
-    watch_chat.mockResolvedValueOnce([
-      {
-        type: 'history',
-        messages: [
-          { role: 'user', text: 'Run pwd' },
-          { role: 'assistant', text: '/realness' }
-        ]
-      }
-    ])
-    const chat = use_chat(ref('ready-actor'))
-    chat.draft.value = 'Run pwd'
-    await chat.send()
-    expect(give_log).toHaveBeenCalledWith(expect.anything(), 'ready-actor', log)
-    expect(send_chat).toHaveBeenCalledWith(
-      expect.anything(),
-      'ready-actor',
-      'Continue the last request using the terminal tools.'
-    )
-    expect(give_log.mock.invocationCallOrder.at(-1)).toBeLessThan(
-      send_chat.mock.invocationCallOrder.at(-1)
-    )
-    expect(chat.messages.value.map(message => message.text)).toEqual([
-      'Run pwd',
-      '/realness'
-    ])
-    chat.stop()
-  })
-
-  it('retries a pending transfer without opening another browser session', async () => {
-    const log = { handover_id: 'handover-2', entries: [] }
-    ask.mockResolvedValueOnce({ hand_over: log })
-    give_log
-      .mockRejectedValueOnce(new Error('Pi unavailable'))
-      .mockRejectedValueOnce(new Error('Still unavailable'))
-    const chat = use_chat(ref('ready-actor'))
-    chat.draft.value = 'Run pwd'
-    await chat.send()
-    expect(chat.status.value).toBe('Pi unavailable')
-    await chat.send()
-    expect(chat.status.value).toBe('Still unavailable')
-    expect(ask).toHaveBeenCalledTimes(1)
-    expect(send_chat).not.toHaveBeenCalled()
-    chat.stop()
-  })
-
   it('keeps browser ownership and history when the terminal actor becomes available', async () => {
     ask.mockResolvedValueOnce({ text: 'I remember the plan' })
     ask.mockResolvedValueOnce({ text: 'Still the same conversation' })
@@ -75,7 +37,10 @@ describe('browser chat during actor startup', () => {
     chat.draft.value = 'Remember our plan'
     await chat.send()
     actor.value = 'ready-actor'
-    watch_chat.mockResolvedValueOnce([{ type: 'history', messages: [] }])
+    history.mockResolvedValueOnce([
+      { role: 'user', text: 'Remember our plan' },
+      { role: 'assistant', text: 'I remember the plan' }
+    ])
     await chat.watch()
     chat.draft.value = 'Where are we?'
     await chat.send()
@@ -88,7 +53,7 @@ describe('browser chat during actor startup', () => {
       'Where are we?',
       'Still the same conversation'
     ])
-    chat.stop()
+    await chat.stop()
   })
 
   it('answers through Explorer when an actor is assigned but its bridge is not ready', async () => {
@@ -96,23 +61,54 @@ describe('browser chat during actor startup', () => {
       on_delta('Hello')
       return { text: 'Hello' }
     })
-    const chat = use_chat(ref('booting-actor'))
+    const changed = vi.fn()
+    const chat = use_chat(ref('booting-actor'), { on_change: changed })
     chat.draft.value = 'how is it going'
     await chat.send()
     expect(ask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        text: 'how is it going',
-        user_id: 'person-1'
-      })
+      expect.objectContaining({ text: 'how is it going', user_id: 'person-1' })
     )
     expect(chat.messages.value).toEqual([
       { sender: 'You', text: 'how is it going' },
       { sender: 'Realness', text: 'Hello' }
     ])
     expect(send_chat).not.toHaveBeenCalled()
+    expect(changed).toHaveBeenCalled()
     expect(chat.waiting.value).toBe(false)
     expect(chat.working.value).toBe(false)
     expect(chat.draft.value).toBe('')
-    chat.stop()
+    await chat.stop()
+    expect(stop).toHaveBeenCalled()
+  })
+
+  it('runs chat commands against Durable instead of terminal Pi', async () => {
+    command.mockResolvedValueOnce({ text: 'New session' })
+    const chat = use_chat(ref('terminal-actor'))
+    chat.messages.value = [{ sender: 'You', text: 'previous' }]
+    chat.draft.value = '/new'
+    await chat.send()
+    expect(command).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'new', user_id: 'person-1' })
+    )
+    expect(chat.messages.value).toEqual([])
+    expect(send_chat).not.toHaveBeenCalled()
+    expect(watch_chat).not.toHaveBeenCalled()
+    await chat.stop()
+  })
+
+  it('shows a failed browser operation and retains the conversation', async () => {
+    ask.mockRejectedValueOnce(new Error('VM unavailable'))
+    ask.mockResolvedValueOnce({ text: 'We can still talk' })
+    const chat = use_chat(ref('terminal-actor'))
+    chat.draft.value = 'Run pwd'
+    await chat.send()
+    expect(chat.status.value).toBe('VM unavailable')
+    expect(chat.messages.value[0].text).toBe('Run pwd')
+    chat.draft.value = 'Can we still talk?'
+    await chat.send()
+    expect(ask).toHaveBeenCalledTimes(2)
+    expect(send_chat).not.toHaveBeenCalled()
+    expect(chat.messages.value.at(-1).text).toBe('We can still talk')
+    await chat.stop()
   })
 })

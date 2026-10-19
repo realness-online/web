@@ -1,29 +1,26 @@
 <script setup>
+  import Icon from '@/components/icon.vue'
   import { use_home_view } from '@/use/home-view'
 
-  const { shows, toggle_chat, chat_toggle_disabled } = use_home_view()
+  const { shows, toggle_chat } = use_home_view()
 </script>
 
 <template>
   <button
     type="button"
     data-chat-toggle
-    :disabled="chat_toggle_disabled"
+    tabindex="-1"
     :aria-pressed="String(shows.chat)"
     :aria-label="shows.chat ? 'Close chat' : 'Open chat'"
     aria-keyshortcuts="Alt+`"
     :title="(shows.chat ? 'Close' : 'Open') + ' chat (Option+`)'"
     @click="toggle_chat">
-    <svg viewBox="0 0 16 14" aria-hidden="true">
-      <path
-        d="M2.5 1.5h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7l-3.5 2.5v-2.5h-1a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z" />
-    </svg>
+    <icon name="chevron" />
   </button>
 </template>
 
 <style lang="stylus">
-  button[data-chat-toggle],
-  button[data-side-toggle] {
+  button[data-chat-toggle] {
     padding: 0;
     border: 0;
     background: none;
@@ -33,10 +30,6 @@
     block-size: 1.33em;
     display: grid;
     place-items: center;
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
     &:focus {
       outline: none;
     }

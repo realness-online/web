@@ -8,36 +8,10 @@ import {
   halo_state as lifecycle_state,
   read_lifecycle
 } from '#root/src/sync/halo-lifecycle.js'
+import { read_status } from '#root/src/sync/halo-status.js'
 /* eslint-disable no-await-in-loop -- reads are paced one at a time to keep the sync service quiet */
 
-const unesc = value =>
-  value
-    .replace(/&lt;/g, '<')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-
-/**
- * One halo record as `{ halo, actors, apps }`; unknown fields are ignored.
- * Records written under the older `/halo` name still read, as `halo`.
- * @typedef {Record<string, string>} StatusFields
- * @returns {{ halo: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }}
- */
-export const read_status = html => {
-  /** @type {{ halo: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }} */
-  const read = { halo: null, actors: [], apps: [] }
-  for (const [, type, body] of html.matchAll(
-    /<article itemscope itemtype="\/(halo|actor|app)">(.*?)<\/article>/g
-  )) {
-    const values = {}
-    for (const [, name, value] of body.matchAll(
-      /itemprop="(\w+)" content="([^"]*)"/g
-    ))
-      values[name] = unesc(value)
-    if (type === 'halo') read.halo = values
-    else read[`${type}s`].push(values)
-  }
-  return read
-}
+export { read_status }
 
 const QUIET_AFTER_MS = 120_000
 

@@ -5,6 +5,7 @@
   import AsPanel from '@/components/chat/as-panel.vue'
   import AsTui from '@/components/chat/as-tui.vue'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
+  import AsTuiNav from '@/components/chat/as-tui-nav.vue'
   import SiteNav from '@/components/site-nav.vue'
   import {
     inject,
@@ -45,9 +46,7 @@
   watch(
     () => route?.path,
     path => {
-      if (path === '/chat') set_view('chat')
-      else if (path === '/terminal')
-        set_view(shows.value.chat ? 'chat-tui' : 'tui')
+      if (path === '/terminal') set_view(shows.value.chat ? 'chat-tui' : 'tui')
       else if (path === '/')
         set_view(shows.value.chat ? 'chat-thoughts' : 'thoughts')
       else if (view.value === 'chat') set_view('chat-thoughts')
@@ -63,17 +62,12 @@
   }
 
   watch(
-    () => shows.value.chat || shows.value.tui,
-    needed => {
+    () => [shows.value.chat || shows.value.tui, current_user.value?.uid],
+    ([needed]) => {
       if (needed) find_actor()
     },
     { immediate: true }
   )
-
-  const request_vm = async () =>
-    actor.value ??
-    (await startup.prepare(requested_actor).catch(() => null))?.id ??
-    null
 
   const key_commands = inject('key-commands', null)
   const LAYOUT_COMMANDS = [
@@ -132,12 +126,8 @@
 </script>
 
 <template>
-  <as-panel
-    :actor="actor"
-    :startup_id="startup_id"
-    :request_vm="request_vm"
-    @leave="toggle_chat">
-    <as-chat-toggle v-if="view === 'chat' && route?.path !== '/chat'" />
+  <as-panel :actor="actor" :startup_id="startup_id" @leave="toggle_chat">
+    <as-chat-toggle v-if="view === 'chat'" />
   </as-panel>
   <as-tui
     :actor="actor"
@@ -145,7 +135,7 @@
     :problem="problem"
     :progress="progress"
     @retry="find_actor">
-    <site-nav v-if="route?.path === '/terminal'" />
+    <as-tui-nav v-if="route?.path === '/terminal'" />
     <as-chat-toggle v-else />
   </as-tui>
 </template>

@@ -29,17 +29,7 @@ describe('@/utils/keys-overview', () => {
     const groups = key_overview()
     const keys = id => groups.find(g => g.id === id).entries.map(e => e.key)
     expect(keys('home')).toEqual(['`'])
-    expect(keys('navigation')).toEqual([
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9'
-    ])
+    expect(keys('navigation')).toEqual(['1', '2', '3', '4', '5', '6', '7', '8'])
   })
 
   it('reports a command with no binding instead of dropping it', () => {
@@ -57,7 +47,6 @@ describe('@/utils/keys-overview', () => {
     const navigation = key_overview().find(g => g.id === 'navigation')
     expect(navigation.entries.map(e => e.command)).toEqual([
       'nav::Go_Thoughts',
-      'nav::Go_Chat',
       'nav::Go_Terminal',
       'nav::Go_Account',
       'nav::Go_About',
@@ -92,7 +81,7 @@ describe('keyboard_layers', async () => {
 
   it('gives each number-row key one owner', () => {
     const plain = keyboard_layers().plain
-    for (const cap of ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+    for (const cap of ['`', '1', '2', '3', '4', '5', '6', '7', '8'])
       expect(plain[cap]).toHaveLength(1)
   })
 })

@@ -41,10 +41,17 @@ const load_queue = async () => {
  * @param {Function} deps.vectorize
  * @param {Function} deps.reset
  * @param {Function} deps.resize_to_blob
+ * @param {(item: QueueItem) => void} deps.cleanup_queue_item
  */
 export const use_queue = deps => {
-  const { mount_workers, unmount_workers, vectorize, reset, resize_to_blob } =
-    deps
+  const {
+    mount_workers,
+    unmount_workers,
+    vectorize,
+    reset,
+    resize_to_blob,
+    cleanup_queue_item
+  } = deps
 
   const mutex = mutex_for('vectorize')
 
@@ -175,6 +182,24 @@ export const use_queue = deps => {
     }
   }
 
+  /**
+   * Drop one item, whether pending, failed, or stuck mid-run, and keep going.
+   * @param {Id} id
+   */
+  const remove_from_queue = async id => {
+    const item = queue_items.value.find(entry => entry.id === id)
+    if (item) cleanup_queue_item(item)
+    await Queue.remove(id)
+    queue_items.value = queue_items.value.filter(entry => entry.id !== id)
+
+    if (current_processing.value?.id === id) {
+      current_processing.value = null
+      is_processing.value = false
+      reset()
+      await process_queue()
+    }
+  }
+
   const init_processing_queue = async () => {
     await load_queue()
 
@@ -200,6 +225,7 @@ export const use_queue = deps => {
     add_to_queue,
     process_queue,
     init_processing_queue,
+    remove_from_queue,
     update_progress
   }
 }

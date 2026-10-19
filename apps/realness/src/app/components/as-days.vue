@@ -373,7 +373,7 @@
       height: 100vh;
       min-height: 100vh;
       align-items: center;
-      justify-content: start;
+      justify-content: safe center;
       flex: 1;
       & > section {
         height: 100vh;
@@ -439,6 +439,13 @@
       }
       @media (min-width: page-width-4k) {
         grid-template-columns: repeat(auto-fit, minmax(poster-wide-min, 1fr));
+      }
+      @media (min-width: page-width) {
+        &:has(> figure):not(:has(> figure:nth-of-type(2))) > figure {
+          grid-column: 1 / -1;
+          justify-self: center;
+          inline-size: s('calc(66.66% - %s)', base-line / 2);
+        }
       }
     }
   }

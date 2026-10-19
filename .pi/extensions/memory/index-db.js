@@ -111,7 +111,7 @@ const HIGHLIGHT_CLOSE = '\u0002'
  * @param {string} [root]
  * @returns {string[]}
  */
-export const listSessionFiles = (root = SESSIONS_DIR) => {
+const listSessionFiles = (root = SESSIONS_DIR) => {
   if (!existsSync(root)) return []
   /** @type {string[]} */
   const found = []

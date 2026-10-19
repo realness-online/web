@@ -41,6 +41,7 @@ const make_queue = (overrides = {}) => {
     resize_to_blob: vi.fn(() =>
       Promise.resolve({ blob: new Blob(['x']), width: 10, height: 10 })
     ),
+    cleanup_queue_item: vi.fn(),
     ...overrides
   }
   return { queue: use_queue(deps), deps }
@@ -201,6 +202,39 @@ describe('@/use/vectorize/queue', () => {
         'plain text failure'
       )
       error.mockRestore()
+    })
+  })
+
+  describe('remove_from_queue', () => {
+    it('drops a stuck item and clears the pipeline', async () => {
+      const stuck = item('/+1/posters/16', { status: 'processing' })
+      queue_items.value = [stuck]
+      current_processing.value = stuck
+      is_processing.value = true
+      Queue.get_next.mockResolvedValue(null)
+      const { queue, deps } = make_queue()
+
+      await queue.remove_from_queue(stuck.id)
+
+      expect(Queue.remove).toHaveBeenCalledWith(stuck.id)
+      expect(deps.cleanup_queue_item).toHaveBeenCalledWith(stuck)
+      expect(queue_items.value).toEqual([])
+      expect(current_processing.value).toBeNull()
+      expect(deps.reset).toHaveBeenCalled()
+    })
+
+    it('leaves the running item alone when removing another', async () => {
+      const stuck = item('/+1/posters/17', { status: 'processing' })
+      const pending = item('/+1/posters/18')
+      queue_items.value = [stuck, pending]
+      current_processing.value = stuck
+      const { queue, deps } = make_queue()
+
+      await queue.remove_from_queue(pending.id)
+
+      expect(Queue.remove).toHaveBeenCalledWith(pending.id)
+      expect(current_processing.value?.id).toBe(stuck.id)
+      expect(deps.reset).not.toHaveBeenCalled()
     })
   })
 

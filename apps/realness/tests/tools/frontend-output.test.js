@@ -44,6 +44,31 @@ test('Vite, prerender, and settings select the same external frontend directory'
   )
 })
 
+test('the dev server resolves the separate Durable bundle before transforming Explorer', context => {
+  const { env, run } = fixture(context)
+  mkdir_sync(env.DIST_DIR, { recursive: true })
+  write_file_sync(
+    join(env.DIST_DIR, 'pi-durable.browser.js'),
+    'export const ready = true'
+  )
+  const source = `
+    import { createServer as create_server } from 'vite-plus'
+    const server = await create_server({
+      mode: 'development', logLevel: 'silent',
+      server: { middlewareMode: true, hmr: false, watch: null },
+      optimizeDeps: { noDiscovery: true, include: [] }
+    })
+    try {
+      const resolved = await server.pluginContainer.resolveId('/pi-durable.browser.js')
+      const transformed = await server.transformRequest('/src/app/utils/explorer.js')
+      process.stdout.write(JSON.stringify({ id: resolved?.id, code: transformed?.code }))
+    } finally { await server.close() }
+  `
+  const result = JSON.parse(run('--input-type=module', '-e', source))
+  assert.equal(result.id, join(env.DIST_DIR, 'pi-durable.browser.js'))
+  assert.match(result.code, /pi-durable\.browser\.js/)
+})
+
 test('hosting configuration retains targets, rules and secondary hosting paths', context => {
   const { env, output_root, run } = fixture(context)
   run('scripts/build-hosting-config.js', output_root)

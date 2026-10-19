@@ -30,6 +30,7 @@
   })
 
   const thumbnail_url = ref('')
+  const remove_from_queue = inject('remove_from_queue', async () => {})
   const new_vector = inject('new_vector', ref(null))
   const current_processing = inject('current_processing', ref(null))
   const is_processing = computed(() => props.queue_item.status === 'processing')
@@ -88,6 +89,13 @@
       :width="`${image_width}px`"
       :height="`${image_height}px`" />
     <icon v-if="is_currently_processing" name="working" />
+    <button
+      type="button"
+      class="cancel"
+      aria-label="Remove from queue"
+      @click="remove_from_queue(queue_item.id)">
+      <icon name="close" />
+    </button>
 
     <as-svg
       v-if="show_processing_svg"
@@ -208,6 +216,22 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    & > button.cancel {
+      grid-area: overlay;
+      justify-self: end;
+      align-self: start;
+      z-index: 4;
+      padding: calc(var(--base-line) * 0.25);
+      border: 0;
+      outline: 0;
+      background: none;
+      color: var(--accent);
+      cursor: pointer;
+      & > svg {
+        width: var(--base-line);
+        height: var(--base-line);
+      }
     }
     & > svg.icon {
       grid-area: overlay;

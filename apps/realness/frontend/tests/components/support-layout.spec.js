@@ -26,7 +26,9 @@ import { ask } from '@/utils/explorer'
 
 vi.mock('@/utils/explorer', () => ({
   ask: vi.fn(async () => ({ text: 'Answer' })),
-  give_log: vi.fn()
+  history: vi.fn(async () => []),
+  stop: vi.fn(async () => {}),
+  command: vi.fn()
 }))
 
 vi.mock('vue-router', async () => await vi.importActual('vue-router'))
@@ -121,7 +123,7 @@ const open = async () => {
 }
 
 describe('app-wide chat', () => {
-  it('opens beside documentation, keeps its draft and actor on navigation, and sends the new page context', async () => {
+  it('warms the VM beside documentation, keeps its draft on navigation, and sends the new page context', async () => {
     const { page, router } = await open()
     await page.get('button[aria-label="Open chat"]').trigger('click')
     await flush_promises()

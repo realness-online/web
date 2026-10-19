@@ -154,7 +154,7 @@ test('o8: status notes missing setup without failing', async () => {
 import {
   check_bill,
   bill_days,
-  cloud_text
+  bill_text
 } from '../../src/control/reconcile.js'
 
 const bill = (day, service, net) => ({ day, service, net })
@@ -182,7 +182,7 @@ test('o8 gcp: a normal day against expected services matches', () => {
     [found.latest, found.total.toFixed(2), found.baseline, found.gaps],
     ['2026-10-01', '1.70', 1, []]
   )
-  assert.match(cloud_text(found), /matches/)
+  assert.match(bill_text(found), /matches/)
 })
 
 test('o8 gcp: a planted spike and an unexpected service are caught', () => {

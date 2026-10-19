@@ -14,13 +14,7 @@ import {
   read_rows,
   sum_rows
 } from '../../src/command/watch-ledger.js'
-import {
-  day_files as proxy_day_files,
-  read_rows as proxy_read_rows,
-  sum_rows as proxy_sum_rows,
-  usage_row
-} from '#root/src/proxy/usage.js'
-import { read_status as sync_read_status } from '#root/src/sync/halo-status.js'
+import { usage_row } from '#root/src/proxy/usage.js'
 import { status_html } from '#root/src/halo/status.js'
 import { intent_now, lifecycle_html } from '#root/src/sync/halo-lifecycle.js'
 import {
@@ -111,15 +105,31 @@ test("the watch reads the proxy's ledger rows exactly as the proxy writes them",
       call: 'c1'
     })
   ].join('')
-  assert.deepEqual(read_rows(page, phone), proxy_read_rows(page, phone))
-  assert.deepEqual(
-    sum_rows(proxy_read_rows(page, phone)),
-    proxy_sum_rows(proxy_read_rows(page, phone))
-  )
-  assert.deepEqual(
-    day_files(['b.html', 'a.html', 'index.html']),
-    proxy_day_files(['b.html', 'a.html', 'index.html'])
-  )
+  const rows = read_rows(page, phone)
+  assert.equal(rows.length, 3)
+  assert.deepEqual(rows[0], {
+    model: 'm',
+    actor: 'a-1',
+    payer: phone,
+    via: 'actor',
+    plan: 'free',
+    status: 200,
+    request_bytes: 10,
+    reply_bytes: 20,
+    prompt_tokens: 3,
+    completion_tokens: 4,
+    cost: 0.01,
+    call: 'c1'
+  })
+  assert.equal(rows[2].model, 'm:free')
+  const total = sum_rows(rows)
+  assert.equal(total.tokens, 7)
+  assert.equal(Number(total.cost.toFixed(2)), 0.03)
+  assert.deepEqual(day_files(['b.html', 'a.html', 'index.html']), [
+    'a.html',
+    'b.html',
+    'index.html'
+  ])
 })
 
 test('the watch reads a halo record exactly as the sync service does', () => {
@@ -132,7 +142,15 @@ test('the watch reads a halo record exactly as the sync service does', () => {
     actors: [{ id: 'a-1', state: 'running' }],
     apps: []
   })
-  assert.deepEqual(read_status(html), sync_read_status(html))
+  assert.deepEqual(read_status(html), {
+    halo: {
+      name: 'halo-1',
+      checked: '2026-10-09T17:00:00.000Z',
+      actors_running: '2'
+    },
+    actors: [{ id: 'a-1', state: 'running' }],
+    apps: []
+  })
 })
 
 test('sync records become the folders the panel names, newest time winning', async () => {

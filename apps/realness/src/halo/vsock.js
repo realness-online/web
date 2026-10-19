@@ -99,7 +99,10 @@ export const execInGuest = async (
  * @param {number} [options.port]
  * @param {(chunk: { stream: 'stdout' | 'stderr', data: Buffer }) => void} [options.on_output]
  * @param {AbortSignal} [options.signal]
- * @returns {Promise<{ code: number }>}
+ * @param {Record<string, string>} [options.env]
+ * @param {boolean} [options.inherit_env]
+ * @param {{ afterBytes: number, afterLines: number }} [options.spill]
+ * @returns {Promise<{ code: number, error?: string, spill_path?: string }>}
  */
 export const execInGuestStream = async (
   udsPath,
@@ -110,7 +113,10 @@ export const execInGuestStream = async (
     timeout = 90,
     port = VSOCK_PORT,
     on_output = () => {},
-    signal = undefined
+    signal = undefined,
+    env = undefined,
+    inherit_env = undefined,
+    spill = undefined
   } = {}
 ) => {
   const { socket, lines } = await connect(udsPath, port)
@@ -124,17 +130,25 @@ export const execInGuestStream = async (
         cwd,
         stdin_b64: Buffer.from(stdin).toString('base64'),
         stream: true,
-        timeout
+        timeout,
+        env,
+        inherit_env,
+        spill
       })}\n`
     )
     for (;;) {
-      const line = await lines.read(timeout)
+      const line = await lines.read()
       if (!line?.length)
         throw new VsockError(
           `agent closed the channel (argv=${JSON.stringify(argv)})`
         )
       const event = JSON.parse(line.toString())
-      if (event.type === 'exit') return { code: event.exit_code }
+      if (event.type === 'exit')
+        return {
+          code: event.exit_code,
+          ...(event.error ? { error: event.error } : {}),
+          ...(event.spill_path ? { spill_path: event.spill_path } : {})
+        }
       if (event.type === 'stdout' || event.type === 'stderr')
         on_output({
           stream: event.type,

@@ -24,6 +24,10 @@ import wasm from 'vite-plugin-wasm'
 const durable_bundle = () => ({
   name: 'durable-bundle',
   apply: 'serve',
+  resolveId(source) {
+    if (source === '/pi-durable.browser.js')
+      return frontend_out('pi-durable.browser.js')
+  },
   configureServer(server) {
     server.middlewares.use((request, response, next) => {
       const [url] = (request.url ?? '').split('?')
@@ -52,6 +56,10 @@ const package_version = JSON.parse(
 ).version
 const icon_version = package_version
 const { app: app_root } = product_paths()
+const test_aliases = {
+  '/scripts/watch-for-updates.js': `${app_root}/use/watch-for-updates.js`,
+  '/pi-durable.browser.js': frontend_out('pi-durable.browser.js')
+}
 const manual_chunk_rules = {
   firebase_auth: ['@firebase/auth'],
   vendor: [
@@ -210,9 +218,7 @@ export default define_config(({ mode }) => ({
   ],
   test: {
     root: '.',
-    alias: {
-      '/scripts/watch-for-updates.js': `${app_root}/use/watch-for-updates.js`
-    },
+    alias: test_aliases,
     globals: true,
     environment: 'happy-dom',
     reporters: ['default'],

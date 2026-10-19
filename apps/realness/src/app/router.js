@@ -46,12 +46,6 @@ const routes = [
     beforeEnter: signed_in_first
   },
   {
-    path: '/chat',
-    component: () => import('@/views/Chat'),
-    meta: { session: true },
-    beforeEnter: signed_in_first
-  },
-  {
     path: '/terminal',
     component: () => import('@/views/Terminal'),
     meta: { session: true },

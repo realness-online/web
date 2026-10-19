@@ -114,20 +114,6 @@ export class Statements extends Folder(Paged(Cloud(Local(Storage)))) {
   constructor() {
     super(/** @type {Id} */ (`${localStorage.me}/statements`))
   }
-
-  /**
-   * Save a single statement by finding it in the given scope (sync aside)
-   * @param {Id} statement_id - e.g. /+me/statements/1234567890
-   * @param {Document|Element} [scope] - Container to search within (sync aside)
-   */
-  save_statement(statement_id, scope = document) {
-    const el = scope.querySelector(`[itemid="${statement_id}"]`)
-    if (el) {
-      localStorage.setItem(statement_id, el.outerHTML)
-      return true
-    }
-    return false
-  }
 }
 
 /** @extends {Storage} */

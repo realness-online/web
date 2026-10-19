@@ -193,7 +193,7 @@ export const reconcile_cloud = async (config, { run = attempt } = {}) => {
   })
 }
 
-export const cloud_text = c =>
+export const bill_text = c =>
   [
     c.latest
       ? `gcp ${c.latest}: $${c.total.toFixed(2)} (7-day average $${c.baseline.toFixed(2)})`

@@ -78,7 +78,12 @@
     padding: base-line;
     margin: 0;
     border: none;
+    inline-size: 100%;
     min-inline-size: 0;
+    &:focus-within {
+      inline-size: page-width;
+      margin-inline: auto;
+    }
     & > textarea#wat {
       line-height: 1.5;
       padding: base-line;
@@ -90,6 +95,7 @@
       color: var(--rocks);
       caret-color: var(--rocks);
       outline: 0;
+      inline-size: 100%;
       min-height: base-line;
       @media (prefers-color-scheme: light) {
         background-color: transparent;

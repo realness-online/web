@@ -1,17 +1,10 @@
 import { isUtf8 as is_utf8 } from 'node:buffer'
 import { HTTP } from '#root/lib/http.js'
 import { ISO_DATE } from '#root/lib/units.js'
+import { day_files, read_rows, sum_rows } from '#root/src/proxy/rows.js'
 /* eslint-disable no-await-in-loop -- ledger pages are read one at a time to keep the sync service quiet */
 
-const INDEX = 'index.html'
-const NUMBERS = [
-  'status',
-  'request_bytes',
-  'reply_bytes',
-  'prompt_tokens',
-  'completion_tokens',
-  'cost'
-]
+export { day_files, read_rows, sum_rows }
 
 /** Every UTC day of `now`'s month, up to and including today. */
 const month_days = (now = new Date()) => {
@@ -26,49 +19,8 @@ const month_days = (now = new Date()) => {
   return days
 }
 
-/** A day folder's pieces first, then index.html; index is written last. */
-export const day_files = files => [
-  ...files.filter(name => name.endsWith('.html') && name !== INDEX).sort(),
-  INDEX
-]
-
 /** The ledger path for one person and day, under `usage/`. */
 const usage_day = (phone, day) => `usage/${phone}/${day}/`
-
-/** Rows as the proxy writes them; unknown text is ignored, one row per call. */
-export const read_rows = (html, payer = '') => {
-  const rows = []
-  const seen = new Set()
-  for (const [row] of html.matchAll(
-    /<p itemscope itemtype="\/usage">.*?<\/p>/g
-  )) {
-    const values = {}
-    for (const [, name, value] of row.matchAll(
-      /itemprop="(\w+)" content="([^"]*)"/g
-    ))
-      values[name] = value
-    if (values.call) {
-      if (seen.has(values.call)) continue
-      seen.add(values.call)
-    }
-    for (const name of NUMBERS) values[name] = Number(values[name])
-    values.payer ||= payer
-    rows.push(values)
-  }
-  return rows
-}
-
-const free_tokens = row =>
-  row.plan === 'paid' ||
-  (typeof row.model === 'string' && row.model.endsWith(':free'))
-    ? 0
-    : (row.prompt_tokens ?? 0) + (row.completion_tokens ?? 0)
-
-/** Free-plan tokens and all cost; paid rows and free models spend no tokens. */
-export const sum_rows = rows => ({
-  tokens: rows.reduce((sum, row) => sum + free_tokens(row), 0),
-  cost: rows.reduce((sum, row) => sum + (row.cost ?? 0), 0)
-})
 
 const add = (a, b) => ({ tokens: a.tokens + b.tokens, cost: a.cost + b.cost })
 

@@ -50,6 +50,33 @@ import {
  * @param {Object} path_data
  * @returns {SVGPathElement}
  */
+/** Milliseconds without a worker reply before the item is failed. */
+const STALL_SECONDS = 90
+const MS_PER_SECOND = 1000
+/** @type {ReturnType<typeof setTimeout> | null} */
+let stall_timer = null
+/** @type {((id: Id, error: unknown) => Promise<void>) | null} */
+let stall_fail = null
+
+const clear_stall = () => {
+  if (stall_timer !== null) clearTimeout(stall_timer)
+  stall_timer = null
+}
+
+/** @param {Id | null} id */
+const arm_stall = id => {
+  clear_stall()
+  if (!id || !stall_fail) return
+  stall_timer = setTimeout(() => {
+    stall_timer = null
+    stall_fail?.(id, `No worker reply in ${STALL_SECONDS}s`)
+  }, STALL_SECONDS * MS_PER_SECOND)
+}
+
+const touch_stall = () => {
+  if (stall_timer !== null) arm_stall(current_item_id.value)
+}
+
 export const make_path = path_data => {
   const path = create_path_element()
   path.setAttribute('d', path_data.d)
@@ -569,8 +596,9 @@ const create_pipeline = (workers, working, tracer) => {
       const image_url = URL.createObjectURL(image)
       const img = new Image()
       img.src = image_url
-      await new Promise(resolve => {
+      await new Promise((resolve, reject) => {
         img.onload = resolve
+        img.onerror = () => reject(new Error('Image failed to decode'))
       })
       const bitmap = await createImageBitmap(img)
 
@@ -591,14 +619,16 @@ const create_pipeline = (workers, working, tracer) => {
     const t = workers.tracer.value
     if (!v || !g || !t) {
       working.value = false
-      return
+      throw new Error('Vector workers unavailable')
     }
     v.postMessage({ route: 'make:vector', image_data })
     g.postMessage({ route: 'make:gradient', image_data })
     t.postMessage({ route: 'make:trace', image_data })
+    arm_stall(current_item_id.value)
   }
 
   const reset = () => {
+    clear_stall()
     cleanup_memory_references()
     tracer.clear()
     new_vector.value = null
@@ -628,6 +658,7 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
    * @param {unknown} error
    */
   const fail_current_item = async (id, error) => {
+    clear_stall()
     console.error('[vectorize] Worker error, skipping item:', error)
     await Queue.update(id, { status: 'error' })
     const item_to_remove = queue_items.value.find(item => item.id === id)
@@ -639,11 +670,14 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
     await run_queue()
   }
 
+  stall_fail = fail_current_item
+
   /**
    * @param {VectorResponse} response
    */
   const vectorized = async response => {
     if (!is_mounted.value) return
+    touch_stall()
     const cid = current_item_id.value
     if (!cid) return
 
@@ -652,7 +686,12 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
       return
     }
 
-    const { vector } = response.data
+    const { vector } = response.data || {}
+    const weights = ['light', 'regular', 'medium', 'bold']
+    if (!vector || weights.some(weight => !vector[weight]?.d)) {
+      await fail_current_item(cid, 'Worker returned no vector')
+      return
+    }
     vector.id = cid
     vector.type = 'posters'
     vector.light = make_path(vector.light)
@@ -674,6 +713,7 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
 
   const gradientized = message => {
     if (!is_mounted.value) return
+    touch_stall()
     if (message.data?.error) {
       console.error('[vectorize] Gradient worker error:', message.data.error)
       return
@@ -686,6 +726,7 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
    */
   const traced = async message => {
     if (!is_mounted.value) return
+    touch_stall()
     switch (message.data.type) {
       case 'progress':
         progress.value = message.data.progress
@@ -723,6 +764,7 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
 
   const optimized = async message => {
     if (!is_mounted.value) return
+    touch_stall()
     const id = current_item_id.value
     const vec = new_vector.value
     if (!id || !vec) return
@@ -769,7 +811,14 @@ const create_worker_handlers = ({ is_mounted, tracer, reset, run_queue }) => {
     await run_queue()
   }
 
-  return { vectorized, gradientized, traced, optimized }
+  /** @param {ErrorEvent} event */
+  const worker_error = async event => {
+    const cid = current_item_id.value
+    console.error('[vectorize] Worker threw:', event.message)
+    if (cid) await fail_current_item(cid, event.message)
+  }
+
+  return { vectorized, gradientized, traced, optimized, error: worker_error }
 }
 
 /**
@@ -816,7 +865,8 @@ export const use = provided_image_picker => {
     unmount_workers: workers.unmount_workers,
     vectorize,
     reset,
-    resize_to_blob
+    resize_to_blob,
+    cleanup_queue_item
   })
 
   run_queue = queue.process_queue
@@ -851,6 +901,7 @@ export const use = provided_image_picker => {
     queue_supported_files: file_input.queue_supported_files,
     queue_supported_clipboard_items: file_input.queue_supported_clipboard_items,
     init_processing_queue: queue.init_processing_queue,
+    remove_from_queue: queue.remove_from_queue,
     cleanup_queue_item
   }
 }

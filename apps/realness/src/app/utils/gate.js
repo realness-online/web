@@ -2,7 +2,7 @@ import { records } from '@/utils/stream-records'
 import { browser_settings } from '../../settings/environments.js'
 
 /** The gate's base URL for this build's environment. */
-export const gate_url = () =>
+const gate_url = () =>
   new URL(
     browser_settings(import.meta.env.MODE).gate_url,
     window.location.origin

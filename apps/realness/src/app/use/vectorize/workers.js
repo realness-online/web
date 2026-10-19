@@ -12,7 +12,7 @@ export const use_workers = () => {
   const optimizer = ref(/** @type {Worker | null} */ (null))
   const workers_mounted = ref(false)
 
-  /** @type {{ vectorized?: EventListener, gradientized?: EventListener, traced?: EventListener, optimized?: EventListener }} */
+  /** @type {{ vectorized?: EventListener, gradientized?: EventListener, traced?: EventListener, optimized?: EventListener, error?: EventListener }} */
   let _handlers = {}
 
   const set_handlers = handlers => {
@@ -48,6 +48,10 @@ export const use_workers = () => {
     if (optimizer.value && _handlers.optimized)
       optimizer.value.addEventListener('message', _handlers.optimized)
 
+    if (_handlers.error)
+      for (const worker of [vectorizer, gradienter, tracer, optimizer])
+        worker.value?.addEventListener('error', _handlers.error)
+
     workers_mounted.value = true
   }
 
@@ -74,6 +78,10 @@ export const use_workers = () => {
         optimizer.value.removeEventListener('message', _handlers.optimized)
       terminate_one(optimizer)
     }
+
+    if (_handlers.error)
+      for (const worker of [vectorizer, gradienter, tracer, optimizer])
+        worker.value?.removeEventListener('error', _handlers.error)
 
     workers_mounted.value = false
   }

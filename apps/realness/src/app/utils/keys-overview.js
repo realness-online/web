@@ -147,7 +147,6 @@ const KEY_GROUPS = [
     ],
     commands: [
       'nav::Go_Thoughts',
-      'nav::Go_Chat',
       'nav::Go_Terminal',
       'nav::Go_Account',
       'nav::Go_About',

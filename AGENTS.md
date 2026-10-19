@@ -108,8 +108,11 @@ start as Explorer.
 - We like our existing code.
 - Read any URL with `bin/web-md.js <url> --max 4000` (`web-md` skill), never
   `curl` or agent-browser. To find one fact, add `--grep <word>`, never
-  `curl | grep`. agent-browser is for interaction - clicking, forms, logins,
-  screenshots.
+  `curl | grep`. agent-browser is for interaction - clicking, forms, logins.
+- Observe a browser page in this order: `eval` a specific computed value or
+  geometry, then `snapshot`, then screenshot. A screenshot must be the only
+  way to answer the question - one per state change, read once, never re-shot
+  for a look-alike state. See the `agent-browser` skill.
 - Unit tests that fit the feature touched.
 - `console.log` while debugging is fine; strip before commit.
 - Commit messages carry no agent credit. Claude Code and Cursor append

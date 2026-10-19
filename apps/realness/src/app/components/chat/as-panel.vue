@@ -3,7 +3,6 @@
   import { use_home_view } from '@/use/home-view'
   import AsConnectionFeedback from '@/components/chat/as-connection-feedback.vue'
   import AsConversation from '@/components/chat/as-conversation.vue'
-  import SiteNav from '@/components/site-nav.vue'
   import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
   import { only_mine, info } from '@/utils/preference'
   import { use_deferred_flag } from '@/use/deferred-unmount'
@@ -22,8 +21,7 @@
 
   const props = defineProps({
     actor: { type: String, default: null },
-    startup_id: { type: String, default: null },
-    request_vm: { type: Function, default: () => Promise.resolve(null) }
+    startup_id: { type: String, default: null }
   })
   const emit = defineEmits(['leave'])
 
@@ -38,16 +36,15 @@
     on_change: () => talk.value?.to_end(),
     set_working: inject('set_working', () => {}),
     get_startup_id: () => props.startup_id,
-    request_vm: () => props.request_vm(),
     get_context: () => (route ? page_context(route) : null)
   })
   let started = false
 
   watch(
     () => [shows.value.chat, props.actor, chat.starting.value],
-    async ([open, actor]) => {
+    async ([open]) => {
       if (!open) return
-      if (actor && !started) {
+      if (!started) {
         started = true
         chat.watch()
       }
@@ -94,7 +91,6 @@
     @keydown="on_key"
     @transitionstart.self="on_reveal"
     @transitionend.self="on_reveal">
-    <site-nav v-if="view === 'chat' || route?.path === '/chat'" />
     <header>
       <as-feed-toggle
         v-if="shows.thoughts && (route?.path ?? '/') === '/'"

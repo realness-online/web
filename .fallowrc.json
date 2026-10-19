@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "bin/*.js",
+    "bin/commands/*.js",
+    ".pi/extensions/*/index.js",
+    ".pi/skills/**/scripts/*.js"
+  ],
+  "ignorePatterns": [
+    "apps/**",
+    "work/**",
+    "vault/**",
+    "artifacts/**",
+    "plans/**",
+    "bin/fixtures/**",
+    ".pi/agent/**",
+    ".pi/runtime/**",
+    ".pi/starter/**",
+    ".pi/examples/**",
+    ".pi/skills/**/references/**",
+    ".pi/skills/**/templates/**",
+    ".pi/skills/**/assets/**"
+  ],
+  "ignoreDependencies": [
+    "@babel/parser",
+    "@earendil-works/pi-ai",
+    "@earendil-works/pi-coding-agent",
+    "@vue/compiler-sfc",
+    "istanbul-lib-coverage",
+    "typebox",
+    "yaml"
+  ],
+  "ignoreExports": [
+    {
+      "file": ".pi/extensions/memory/index-db.js",
+      "exports": ["SESSIONS_DIR"]
+    }
+  ],
+  "ignoreUnresolvedImports": [
+    "/color.css",
+    "/commands.css",
+    "/commands.js",
+    "/font.css",
+    "/palette.css",
+    "/scripts/pwa.js"
+  ],
+  "rules": {
+    "unused-files": "warn",
+    "unused-exports": "warn",
+    "unused-class-members": "warn",
+    "duplicate-exports": "warn",
+    "unresolved-imports": "warn",
+    "unlisted-dependencies": "error",
+    "circular-dependencies": "error"
+  }
+}

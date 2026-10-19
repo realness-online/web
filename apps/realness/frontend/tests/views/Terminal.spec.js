@@ -3,8 +3,10 @@ import { mount } from '@vue/test-utils'
 import Terminal from '@/views/Terminal.vue'
 
 describe('Terminal', () => {
-  it('shows the site navigation; the workspace draws the terminal', () => {
-    const page = mount(Terminal, { global: { stubs: { SiteNav: true } } })
-    expect(page.findComponent({ name: 'SiteNav' }).exists()).toBe(true)
+  it('renders an empty page; the workspace draws the terminal and its header', () => {
+    const page = mount(Terminal)
+    const section = page.get('section[aria-label="Terminal"]')
+    expect(section.attributes('tabindex')).toBe('-1')
+    expect(page.find('nav').exists()).toBe(false)
   })
 })

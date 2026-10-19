@@ -207,6 +207,45 @@ test('execInGuestStream reports each frame, then the exit', async t => {
   assert.equal(agent.seen.at(-1).request.stream, true)
 })
 
+test('streamed shell options and result metadata cross the guest channel', async t => {
+  const agent = await fake_agent(t, {
+    respond: () => [
+      {
+        type: 'exit',
+        exit_code: 124,
+        error: 'timeout',
+        spill_path: '/realness/artifacts/realness/exec.log'
+      }
+    ]
+  })
+  const result = await execInGuestStream(
+    agent.path,
+    ['/bin/sh', '-c', 'command'],
+    {
+      cwd: '/realness',
+      timeout: 0,
+      env: { NAME: 'value' },
+      inherit_env: false,
+      spill: { afterBytes: 100, afterLines: 2 }
+    }
+  )
+  assert.deepEqual(result, {
+    code: 124,
+    error: 'timeout',
+    spill_path: '/realness/artifacts/realness/exec.log'
+  })
+  assert.deepEqual(agent.seen.at(-1).request, {
+    argv: ['/bin/sh', '-c', 'command'],
+    cwd: '/realness',
+    stdin_b64: '',
+    stream: true,
+    timeout: 0,
+    env: { NAME: 'value' },
+    inherit_env: false,
+    spill: { afterBytes: 100, afterLines: 2 }
+  })
+})
+
 test('cancelling the call closes the channel', async t => {
   const agent = await fake_agent(t, { respond: () => null })
   const stopping = new AbortController()

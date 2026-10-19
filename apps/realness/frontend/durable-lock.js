@@ -55,7 +55,7 @@ export const current = ({ fork = FORK, adapter = ADAPTER } = {}) => {
 }
 
 /** The pin on disk, or null. */
-export const locked = () =>
+const locked = () =>
   exists_sync(LOCK) ? JSON.parse(read_file_sync(LOCK, 'utf8')) : null
 
 /**
@@ -63,7 +63,7 @@ export const locked = () =>
  * @param {object} pin
  * @param {{ fork: object, adapter: object }} now
  */
-export const mismatches = (pin, now) =>
+const mismatches = (pin, now) =>
   ['fork', 'adapter'].flatMap(name =>
     ['commit', 'version'].flatMap(field => {
       const pinned = pin?.[name]?.[field]

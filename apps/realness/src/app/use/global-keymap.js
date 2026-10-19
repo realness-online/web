@@ -234,7 +234,6 @@ export const use_global_keymap = ({ documentation, preferences }) => {
   register('nav::Go_Home', () => router.push('/'))
   register('nav::Go_Statements', () => router.push('/'))
   register('nav::Go_Thoughts', () => router.push('/'))
-  register('nav::Go_Chat', () => router.push('/chat'))
   register('nav::Go_Terminal', () => router.push('/terminal'))
   register('nav::Go_Account', () => router.push('/account'))
   register('nav::Go_Docs', () => router.push('/docs'))

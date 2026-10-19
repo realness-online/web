@@ -17,7 +17,9 @@ const mock_route = reactive({ query: {} })
 vi.mock('vue-router', () => ({ useRoute: () => mock_route }))
 vi.mock('@/utils/explorer', () => ({
   ask: vi.fn(async () => ({ text: 'Batman lives in Gotham' })),
-  give_log: vi.fn()
+  history: vi.fn(async () => []),
+  stop: vi.fn(async () => {}),
+  command: vi.fn()
 }))
 vi.mock('@/utils/serverless', async () => {
   const { ref } = await import('vue')
@@ -31,6 +33,7 @@ import AsWorkspace from '@/components/chat/as-workspace.vue'
 import { use_key_commands } from '@/use/key-commands'
 import { use_home_view } from '@/use/home-view'
 import { home_view } from '@/utils/preference'
+import { current_user } from '@/utils/serverless'
 
 let calls
 const set_working = vi.fn()
@@ -38,6 +41,7 @@ before_each(() => {
   vi.stubEnv('MODE', 'development')
   mock_route.query = {}
   mock_route.path = undefined
+  current_user.value = { uid: 'person-1', getIdToken: async () => 'id.token' }
   home_view.value = 'thoughts'
   use_home_view().wide.value = true
   calls = []
@@ -197,13 +201,16 @@ describe('@/components/chat/as-workspace', () => {
     )
   })
 
-  it('finds the actor only once chat or the TUI shows', async () => {
+  it('warms the VM when chat opens and reuses it when the terminal opens', async () => {
     await open()
     expect(calls).toHaveLength(0)
     key_commands.run_command('view::Toggle_Chat')
     await flush_promises()
     expect(home_view.value).toBe('chat-thoughts')
-    expect(calls.some(url => url.endsWith('/v1/startup'))).toBe(true)
+    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
+    key_commands.run_command('view::Layout_Tui')
+    await flush_promises()
+    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
   })
 
   for (const [path, saved, expected] of [
@@ -223,9 +230,20 @@ describe('@/components/chat/as-workspace', () => {
     })
   }
 
+  it('starts warm-up when sign-in finishes with chat already open', async () => {
+    current_user.value = null
+    home_view.value = 'chat-thoughts'
+    await open()
+    expect(calls).toHaveLength(0)
+    current_user.value = { uid: 'person-1', getIdToken: async () => 'id.token' }
+    await flush_promises()
+    expect(calls.filter(url => url.endsWith('/v1/startup'))).toHaveLength(1)
+  })
+
   it('takes the actor from the address when named', async () => {
     mock_route.query = { actor: 'a-named0000000' }
-    home_view.value = 'chat'
+    mock_route.path = '/terminal'
+    home_view.value = 'tui'
     await open()
     const start = fetch.mock.calls.find(([url]) => url.endsWith('/v1/startup'))
     expect(JSON.parse(start[1].body).actor).toBe('a-named0000000')
@@ -246,7 +264,7 @@ describe('@/components/chat/as-workspace', () => {
   })
 
   it('Option+Tab switches inputs; Tab and Shift+Tab stay with Pi', async () => {
-    mock_route.path = '/chat'
+    mock_route.path = '/'
     const page = await open()
     home_view.value = 'chat-tui'
     await flush_promises()
@@ -299,10 +317,12 @@ describe('@/components/chat/as-workspace', () => {
     }
   })
 
-  it('opens chat alone and terminal alone through their routes', async () => {
-    mock_route.path = '/chat'
-    await open()
+  it('opens chat alone and terminal beside it through their views', async () => {
+    const page = await open()
+    home_view.value = 'chat'
+    await flush_promises()
     expect(home_view.value).toBe('chat')
+    expect(page.get('#chat-panel').attributes('data-alone')).toBeDefined()
     mock_route.path = '/terminal'
     await flush_promises()
     expect(home_view.value).toBe('chat-tui')
@@ -313,32 +333,43 @@ describe('@/components/chat/as-workspace', () => {
     expect(home_view.value).toBe('thoughts')
   })
 
-  it('disables the chat toggle on /chat and enables it on other pages', async () => {
-    mock_route.path = '/chat'
+  it('toggles chat on every page', async () => {
+    mock_route.path = '/'
     const page = await open()
     key_commands.run_command('view::Toggle_Chat')
-    expect(home_view.value).toBe('chat')
-    expect(page.findAll('#chat-panel button[data-chat-toggle]')).toHaveLength(1)
-    expect(page.get('button[data-chat-toggle]').element.disabled).toBe(true)
+    expect(home_view.value).toBe('chat-thoughts')
     await page.get('textarea').trigger('keydown', { key: 'Escape' })
-    expect(home_view.value).toBe('chat')
+    expect(home_view.value).toBe('thoughts')
 
     mock_route.path = '/terminal'
     await flush_promises()
     expect(page.get('button[data-chat-toggle]').element.disabled).toBe(false)
     key_commands.run_command('view::Toggle_Chat')
+    expect(home_view.value).toBe('chat-tui')
+    key_commands.run_command('view::Toggle_Chat')
     expect(home_view.value).toBe('tui')
   })
 
-  it('shows site navigation and one chat toggle in the terminal header', async () => {
+  it('gives the terminal its own header: chat and home', async () => {
     mock_route.path = '/terminal'
     const page = await open()
-    const terminal = page
-      .findAll('section')
-      .find(section => section.find('nav[aria-label="Site"]').exists())
-    expect(terminal).toBeDefined()
-    expect(terminal.findAll('button[data-chat-toggle]')).toHaveLength(1)
-    expect(terminal.get('nav[aria-label="Site"]').text()).toContain('About')
+    const header = page.get('nav[aria-label="Terminal"]')
+    expect(header.findAll('button[data-chat-toggle]')).toHaveLength(1)
+    expect(page.find('button[data-side-toggle]').exists()).toBe(false)
+    expect(header.get('a[aria-label="Realness home"]').attributes('href')).toBe(
+      '/'
+    )
+    expect(page.find('nav[aria-label="Site"]').exists()).toBe(false)
+  })
+
+  it('closes chat on the terminal view without hiding the terminal', async () => {
+    mock_route.path = '/terminal'
+    home_view.value = 'chat-tui'
+    const page = await open()
+    await page
+      .get('nav[aria-label="Terminal"] button[data-chat-toggle]')
+      .trigger('click')
+    expect(home_view.value).toBe('tui')
   })
 
   it('does not offer a terminal switch beside chat on Thoughts', async () => {

@@ -1,7 +1,3 @@
-<script setup>
-  import SiteNav from '@/components/site-nav'
-</script>
-
 <template>
-  <site-nav />
+  <section aria-label="Terminal" tabindex="-1" />
 </template>

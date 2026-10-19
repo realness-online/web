@@ -292,6 +292,9 @@
         flex-wrap: wrap;
         align-items: stretch;
 
+        &:focus-within {
+          border-color: var(--accent);
+        }
         & > legend {
           flex: 0 0 100%;
         }
@@ -318,6 +321,9 @@
         input#mobile {
           flex: 1;
           min-width: 0;
+          &:focus-visible {
+            outline: none;
+          }
         }
         select#country {
           flex: 0 0 100%;

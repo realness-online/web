@@ -29,7 +29,7 @@
   } from '@/persistence/Directory'
   import { as_day_time_year } from '@/utils/date'
   import { Poster } from '@/persistence/Storage'
-  import { current_user } from '@/utils/serverless'
+  import { current_user, me } from '@/utils/serverless'
   import { use as use_statements } from '@/use/statements'
   import { use as use_people } from '@/use/people'
   import { use_posters, geology_layers } from '@/use/poster'
@@ -557,9 +557,12 @@
     :data-chat="home_view === 'chat-thoughts' || undefined"
     :inert="!shows.thoughts || undefined">
     <header>
-      <as-feed-toggle v-if="!current_user" v-model="only_mine" />
       <as-chat-toggle v-if="current_user" />
+      <as-feed-toggle v-else v-model="only_mine" />
       <a v-if="from_blog" :href="from_blog">←</a>
+      <router-link v-if="current_user" id="account" to="/account" tabindex="-1">
+        {{ me?.name || 'Account' }}
+      </router-link>
       <router-link id="about" to="/about" tabindex="-1">
         <span>{{ version_parts[0] }}</span>
         <span>?</span>
@@ -627,10 +630,10 @@
   }
   section#thoughts {
     position: relative;
-    transition: padding-inline-start var(--duration-subject, 0.3s) var(--ease-reveal, ease-out);
+    transition: padding-inline var(--duration-subject, 0.3s) var(--ease-reveal, ease-out);
     @media (min-width: display-begins) {
       &[data-chat] {
-        padding-inline-start: page-width;
+        padding-inline: page-width;
       }
     }
     display: flex;
@@ -692,6 +695,7 @@
       align-items: center;
       justify-content: flex-start;
       gap: base-line;
+      padding-block: round((base-line / 2), 2);
       color: var(--accent);
       & > h1 {
         width: auto;
@@ -699,8 +703,16 @@
       & > a > svg {
        fill: var(--accent);
       }
-      & > button[data-chat-toggle] {
-        align-self: flex-start;
+      & > a#account {
+        margin-left: auto;
+        color: var(--accent);
+        text-decoration: none;
+        &:hover {
+          color: var(--emphasis);
+        }
+      }
+      & > a#account + a#about {
+        margin-left: 0;
       }
       & > a#about {
         margin-left: auto;

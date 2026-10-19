@@ -6,7 +6,17 @@ import {
   MS_PER_DAY,
   MS_PER_SECOND
 } from '#root/lib/units.js'
+import {
+  INDEX,
+  NUMBERS,
+  day_files,
+  free_tokens,
+  read_rows as parse_rows,
+  sum_rows
+} from './rows.js'
 /* eslint-disable no-await-in-loop -- compaction retries wait between tries */
+
+export { day_files, sum_rows }
 
 const LIMIT_MIB = 10
 const DATA_PREFIX = 'data: '.length
@@ -15,16 +25,7 @@ const JITTER_FLOOR = 0.5
 const MAX_BACKOFF = 4
 
 const LIMIT = LIMIT_MIB * MIB
-const NUMBERS = [
-  'status',
-  'request_bytes',
-  'reply_bytes',
-  'prompt_tokens',
-  'completion_tokens',
-  'cost'
-]
 const FIELDS = ['model', 'actor', 'payer', 'via', 'plan', ...NUMBERS, 'call']
-const INDEX = 'index.html'
 
 /** How a call came, from the caller's id. */
 const via_of = actor => {
@@ -106,43 +107,17 @@ export const usage_row = ({
 }
 
 /**
- * Reads rows back; unknown text is ignored. `payer` fills older rows. A row
- * seen twice (composed, its piece not yet deleted) counts once.
+ * Reads rows back with the defaults the proxy fills in. `payer` fills older
+ * rows. A row seen twice (composed, its piece not yet deleted) counts once.
  */
-export const read_rows = (html, payer = '') => {
-  const rows = []
-  const seen = new Set()
-  for (const [row] of html.matchAll(
-    /<p itemscope itemtype="\/usage">.*?<\/p>/g
-  )) {
-    const values = {}
-    for (const [, name, value] of row.matchAll(
-      /itemprop="(\w+)" content="([^"]*)"/g
-    ))
-      values[name] = value
-    if (values.call) {
-      if (seen.has(values.call)) continue
-      seen.add(values.call)
-    }
-    for (const name of NUMBERS) values[name] = Number(values[name])
-    values.payer ||= payer
-    values.via ||= via_of(values.actor)
-    values.plan ||= 'free'
-    rows.push(values)
-  }
-  return rows
-}
+export const read_rows = (html, payer = '') =>
+  parse_rows(html, payer).map(row => ({
+    ...row,
+    via: row.via || via_of(row.actor),
+    plan: row.plan || 'free'
+  }))
 
 const usage_day = (phone, day) => `usage/${phone}/${day}/`
-
-/**
- * A day folder's pieces, then index.html, listed or not. Read in this
- * order: a piece deleted after the list has already been composed in.
- */
-export const day_files = files => [
-  ...files.filter(name => name.endsWith('.html') && name !== INDEX).sort(),
-  INDEX
-]
 
 /** Google takes about one write a second per file; compose up to 32. */
 const BATCH = 31
@@ -218,21 +193,6 @@ export const month_days = (now = new Date()) =>
 
 const add = (a, b) => ({ tokens: a.tokens + b.tokens, cost: a.cost + b.cost })
 const KEEP_DAYS = 62
-
-/** A zero-price upstream model, e.g. "thinkingmachines/inkling:free". */
-const free_model = model => typeof model === 'string' && model.endsWith(':free')
-
-/** Tokens a row spends of the free limit: free plan, priced model only. */
-const free_tokens = row =>
-  row.plan === 'paid' || free_model(row.model)
-    ? 0
-    : row.prompt_tokens + row.completion_tokens
-
-/** Free-plan tokens and all cost; paid rows and free models spend none. */
-export const sum_rows = rows => ({
-  tokens: rows.reduce((sum, row) => sum + free_tokens(row), 0),
-  cost: rows.reduce((sum, row) => sum + row.cost, 0)
-})
 
 /**
  * Storage-backed ledger for the proxy. Each day folder is read once, then

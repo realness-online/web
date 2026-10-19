@@ -34,21 +34,26 @@ import select
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 
 TIMEOUT_EXIT = 124
 CHUNK = 65536
 
 
-def env():
-    return {**os.environ, "HOME": "/realness"}
+def env(request):
+    inherited = {**os.environ, "HOME": "/realness"}
+    return {
+        **(inherited if request.get("inherit_env", True) else {}),
+        **request.get("env", {}),
+    }
 
 
 def run(request):
     proc = subprocess.run(
         request["argv"],
         cwd=request.get("cwd") or "/realness",
-        env=env(),
+        env=env(request),
         input=base64.b64decode(request.get("stdin_b64") or ""),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -62,16 +67,45 @@ def run(request):
 
 def stream(request):
     write_lock = threading.Lock()
+    spill = request.get("spill")
+    prefix = bytearray()
+    output_bytes = 0
+    output_lines = 0
+    spill_file = None
+    spill_path = None
+    output_errors = []
 
-    def emit(event):
+    def emit(event, chunk=None):
+        nonlocal output_bytes, output_lines, spill_file, spill_path
         with write_lock:
+            if spill and chunk:
+                output_bytes += len(chunk)
+                output_lines += chunk.count(b"\n")
+                if spill_file is None:
+                    prefix.extend(chunk)
+                    lines = output_lines + (0 if chunk.endswith(b"\n") else 1)
+                    if (output_bytes > spill["afterBytes"] or
+                            lines > spill["afterLines"]):
+                        directory = os.path.join(
+                            os.environ.get("REALNESS_ROOT", "/realness"),
+                            "artifacts", "realness"
+                        )
+                        os.makedirs(directory, exist_ok=True)
+                        fd, spill_path = tempfile.mkstemp(
+                            prefix="exec-", suffix=".log", dir=directory
+                        )
+                        spill_file = os.fdopen(fd, "wb")
+                        spill_file.write(prefix)
+                        prefix.clear()
+                else:
+                    spill_file.write(chunk)
             sys.stdout.write(json.dumps(event) + "\n")
             sys.stdout.flush()
 
     proc = subprocess.Popen(
         request["argv"],
         cwd=request.get("cwd") or "/realness",
-        env=env(),
+        env=env(request),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -99,9 +133,10 @@ def stream(request):
                 chunk = source.read1(CHUNK)
                 if not chunk:
                     break
-                emit({"type": kind, "data_b64": base64.b64encode(chunk).decode()})
-        except (ValueError, OSError):
-            pass
+                emit({"type": kind, "data_b64": base64.b64encode(chunk).decode()}, chunk)
+        except (ValueError, OSError) as error:
+            output_errors.append(str(error))
+            kill()
 
     def cancel():
         while not finished.is_set():
@@ -139,7 +174,19 @@ def stream(request):
     threads[3].join(1)
     if timer:
         timer.cancel()
-    emit({"type": "exit", "exit_code": TIMEOUT_EXIT if timed_out.is_set() else code})
+    if spill_file:
+        try:
+            spill_file.close()
+        except OSError as error:
+            output_errors.append(str(error))
+    result = {"type": "exit", "exit_code": TIMEOUT_EXIT if timed_out.is_set() else code}
+    if timed_out.is_set():
+        result["error"] = "timeout"
+    elif output_errors:
+        result["error"] = "unknown"
+    if spill_path:
+        result["spill_path"] = spill_path
+    emit(result)
 
 
 def main():
@@ -166,7 +213,7 @@ def main():
                     )
                     + "\n"
                 )
-                sys.stdout.write(json.dumps({"type": "exit", "exit_code": 127}) + "\n")
+                sys.stdout.write(json.dumps({"type": "exit", "exit_code": 127, "error": "spawn_error"}) + "\n")
                 sys.stdout.flush()
                 return
             response = {

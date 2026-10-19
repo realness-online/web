@@ -62,8 +62,8 @@ describe('@/router', () => {
     })
   })
 
-  it('signs on before /pay, /admin, and /chat, then returns', async () => {
-    for (const path of ['/pay', '/admin', '/chat', '/terminal']) {
+  it('signs on before /pay, /admin, and /terminal, then returns', async () => {
+    for (const path of ['/pay', '/admin', '/terminal']) {
       const enter = route_for(path).beforeEnter
       current_user.value = null
       expect(await enter({ fullPath: `${path}?paid` })).toEqual({
@@ -79,19 +79,21 @@ describe('@/router', () => {
   it('waits for a reload to restore the session instead of asking again', async () => {
     current_user.value = undefined
     let settled = null
-    const entered = route_for('/chat')
-      .beforeEnter({ fullPath: '/chat' })
+    const entered = route_for('/terminal')
+      .beforeEnter({ fullPath: '/terminal' })
       .then(result => (settled = result))
     await Promise.resolve()
     expect(settled).toBe(null)
     current_user.value = { uid: 'u' }
     expect(await entered).toBe(true)
     current_user.value = undefined
-    const refused = route_for('/chat').beforeEnter({ fullPath: '/chat' })
+    const refused = route_for('/terminal').beforeEnter({
+      fullPath: '/terminal'
+    })
     current_user.value = null
     expect(await refused).toEqual({
       path: '/sign-on',
-      query: { next: '/chat' }
+      query: { next: '/terminal' }
     })
   })
 

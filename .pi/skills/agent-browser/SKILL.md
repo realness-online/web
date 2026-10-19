@@ -49,6 +49,20 @@ agent-browser skills get agentcore         # AWS Bedrock AgentCore cloud browser
 Run `agent-browser skills list` to see everything available on the
 installed version.
 
+## Observation order
+
+The CLI guide covers screenshot workflows. This workspace limits them:
+
+1. `eval` a specific value - `getComputedStyle`, `getBoundingClientRect`,
+   font metrics, `scrollWidth`. Answers layout questions with a number.
+2. `snapshot` the accessible structure when the question is about elements,
+   roles, or text.
+3. `screenshot` only when the pixel result itself is the question: color,
+   anti-aliasing, a painted effect. One per state change, read it once. Do not
+   re-shoot a state that only differs by a value an `eval` reports.
+
+Write screenshots under `artifacts/<project>`, never beside the code.
+
 ## Observability Dashboard
 
 The dashboard runs independently of browser sessions on port 4848 and can also be opened through a proxied or forwarded URL such as `https://dashboard.agent-browser.localhost`. Agents should stay on the dashboard origin: session tabs, status, and stream traffic are proxied internally, so session ports do not need to be exposed.

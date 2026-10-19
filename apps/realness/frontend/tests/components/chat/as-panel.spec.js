@@ -14,7 +14,9 @@ import {
 
 vi.mock('@/utils/explorer', () => ({
   ask: vi.fn(async () => ({ text: 'Hello' })),
-  give_log: vi.fn()
+  history: vi.fn(async () => []),
+  stop: vi.fn(async () => {}),
+  command: vi.fn()
 }))
 vi.mock('@/utils/serverless', async () => {
   const { ref } = await import('vue')

@@ -71,7 +71,8 @@
     open_camera,
     queue_supported_files,
     queue_supported_clipboard_items,
-    init_processing_queue
+    init_processing_queue,
+    remove_from_queue
   } = use_vectorize_deferred({
     enabled: router.currentRoute.value.path !== '/poster-driver'
   })
@@ -83,6 +84,7 @@
   provide('select_photo', select_photo)
   provide('init_processing_queue', init_processing_queue)
   provide('queue_items', queue_items)
+  provide('remove_from_queue', remove_from_queue)
 
   const documentation = ref(null)
   provide('documentation', documentation)
