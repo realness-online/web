@@ -630,10 +630,10 @@
   }
   section#thoughts {
     position: relative;
-    transition: padding-inline var(--duration-subject, 0.3s) var(--ease-reveal, ease-out);
+    transition: padding-inline-start var(--duration-subject, 0.3s) var(--ease-reveal, ease-out);
     @media (min-width: display-begins) {
       &[data-chat] {
-        padding-inline: page-width;
+        padding-inline-start: page-width;
       }
     }
     display: flex;
