@@ -22,10 +22,7 @@
     --sweep-gap-end: 304deg;
 
     position: fixed;
-    top: env(safe-area-inset-top, 0px);
-    right: env(safe-area-inset-right, 0px);
-    bottom: env(safe-area-inset-bottom, 0px);
-    left: env(safe-area-inset-left, 0px);
+    inset: 0;
     box-sizing: border-box;
     padding: var(--ring);
     border-radius: var(--ring-corner);
