@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Reading back through chat keeps your place** - A new message no longer pulls
+  you to the input. A button and the G key take you to the newest message when
+  you are ready.
+
 ## v3.0.0-k - 2026-10-19
 
 - **One command releases** - `npm run ship` takes the next version, tags it,

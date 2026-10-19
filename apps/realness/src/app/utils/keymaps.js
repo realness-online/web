@@ -50,6 +50,7 @@ export const default_keymap = [
       M: 'pref::Toggle_Menu',
       h: 'pref::Toggle_Footer',
       p: 'ui::Toggle_Presentation',
+      G: 'view::Chat_Latest',
 
       'Home Row': '',
       a: 'pref::Toggle_Animate',
@@ -83,6 +84,7 @@ export const default_keymap = [
     },
     descriptions: {
       'view::Toggle_Chat': 'Bring chat in or out',
+      'view::Chat_Latest': 'Chat: jump to the newest message',
       'view::Layout_Thoughts': 'Thoughts alone',
       'view::Layout_Chat_Thoughts': 'Chat beside thoughts',
       'view::Layout_Chat': 'Chat alone',

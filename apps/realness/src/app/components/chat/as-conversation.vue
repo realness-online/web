@@ -3,10 +3,13 @@
   import { message_html } from '@/utils/message-markdown'
   import { create_parts } from '@/utils/chat-parts'
   import { matching_commands } from '@/utils/chat-commands'
+  import { is_at_end } from '@/utils/chat-scroll'
   import {
     computed,
+    inject,
     nextTick as next_tick,
     onMounted as on_mounted,
+    onUnmounted as on_unmounted,
     ref,
     watch
   } from 'vue'
@@ -17,23 +20,47 @@
 
   const list = ref(null)
   const input = ref(null)
+  /** Reading the newest message, so new ones may follow it. */
+  const at_end = ref(true)
 
   const to_end = async () => {
     await next_tick()
     list.value?.lastElementChild?.scrollIntoView({ block: 'end' })
+    at_end.value = true
   }
 
-  watch(() => props.chat.messages.value.length, to_end)
+  const on_scroll = () => {
+    if (list.value) at_end.value = is_at_end(list.value)
+  }
+
+  const send = () => {
+    at_end.value = true
+    props.chat.send()
+  }
+
   const draw_parts = create_parts()
   watch(
     () => [
       props.chat.messages.value.length,
       props.chat.messages.value.at(-1)?.text
     ],
-    () => list.value && draw_parts(list.value),
+    () => {
+      if (list.value) draw_parts(list.value)
+      if (at_end.value) void to_end()
+    },
     { flush: 'post' }
   )
-  on_mounted(() => draw_parts(list.value))
+  on_mounted(() => {
+    draw_parts(list.value)
+    void to_end()
+  })
+
+  const key_commands = inject('key-commands', null)
+  key_commands?.register_handler('view::Chat_Latest', {
+    handler: () => void to_end(),
+    context: 'global'
+  })
+  on_unmounted(() => key_commands?.unregister_handler('view::Chat_Latest'))
 
   const suggestions = computed(() => matching_commands(props.chat.draft.value))
 
@@ -45,14 +72,19 @@
   const on_key = event => {
     if (event.isComposing || event.key !== 'Enter' || event.shiftKey) return
     event.preventDefault()
-    props.chat.send()
+    send()
   }
 
   defineExpose({ focus: () => input.value?.focus(), to_end, input })
 </script>
 
 <template>
-  <ol ref="list" data-chat aria-label="Conversation" aria-live="polite">
+  <ol
+    ref="list"
+    data-chat
+    aria-label="Conversation"
+    aria-live="polite"
+    @scroll.passive="on_scroll">
     <li
       v-for="(message, index) in chat.messages.value"
       :key="index"
@@ -65,7 +97,10 @@
   <form
     data-chat
     :aria-busy="chat.working.value ? 'true' : null"
-    @submit.prevent="chat.send">
+    @submit.prevent="send">
+    <button v-if="!at_end" type="button" data-latest @click="to_end()">
+      Newest message
+    </button>
     <menu v-if="suggestions.length" aria-label="Commands">
       <li v-for="command in suggestions" :key="command.name">
         <button type="button" @click="pick(command)">
@@ -221,6 +256,17 @@
         font: inherit;
         color: var(--accent);
       }
+    }
+    & > button[data-latest] {
+      position: absolute;
+      inset-block-end: 100%;
+      inset-inline-end: base-line;
+      margin-block-end: (base-line / 2);
+      padding: (base-line / 4) base-line;
+      border: round(base-line * 0.1, 2) solid var(--emphasis);
+      border-radius: base-line;
+      color: var(--text);
+      background: var(--surface);
     }
     & > textarea {
       box-sizing: border-box;

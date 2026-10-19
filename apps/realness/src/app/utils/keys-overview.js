@@ -44,7 +44,8 @@ const LISTENERS = [
       ['Option+Tab', 'Move between chat and the terminal'],
       ['Escape', 'Leave chat'],
       ['Cmd+K', 'Clear the conversation'],
-      ['/', 'Chat commands: stop, new, compact, model, thinking, copy']
+      ['/', 'Chat commands: stop, new, compact, model, thinking, copy'],
+      ['G', 'Jump to the newest message']
     ]
   },
   {
