@@ -146,6 +146,7 @@ export const main = () => {
   }
 
   run('npm', ['version', next])
+  run('npm', ['run', 'build'])
   run('npm', ['run', 'release:gh'])
 
   const before = revisions(settings)
