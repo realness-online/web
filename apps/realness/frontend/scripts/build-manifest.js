@@ -60,6 +60,21 @@ const hash_dist_files = (dir, base_dir) => {
   return files
 }
 
+/**
+ * Workbox writes its worker into a temp folder whose name changes every build,
+ * so the source map named a different path each time and no two builds matched.
+ * Name the folder once, before hashing.
+ */
+export const stable_worker_map = dist_dir => {
+  const map_path = path.join(dist_dir, 'service.worker.js.map')
+  if (!fs.existsSync(map_path)) return
+  const map = JSON.parse(fs.readFileSync(map_path, 'utf8'))
+  map.sources = map.sources.map(source =>
+    source.replace(/^.*\/artifacts\/pi\/[0-9a-f]+\//, 'workbox/')
+  )
+  fs.writeFileSync(map_path, JSON.stringify(map))
+}
+
 /** Hash the built site into dist/build-manifest.json. */
 export const main = () => {
   const dist_dir = frontend_out()
@@ -71,6 +86,7 @@ export const main = () => {
     fs.readFileSync(path.join(project_root, '..', 'package.json'), 'utf8')
   )
 
+  stable_worker_map(dist_dir)
   const files = hash_dist_files(dist_dir, dist_dir)
   const paths = Object.keys(files).sort()
   const bundle_digest = create_hash('sha256')

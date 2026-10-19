@@ -3,7 +3,10 @@ import {
   execFileSync as exec_file_sync,
   spawnSync as spawn_sync
 } from 'node:child_process'
-import { readFileSync as read_file_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  readFileSync as read_file_sync
+} from 'node:fs'
 import { environment_settings } from '#root/src/settings/environments.js'
 import {
   halo_files,
@@ -29,6 +32,17 @@ const run = (program, args) => {
   const result = spawn_sync(program, args, { stdio: 'inherit' })
   if (result.status !== 0)
     throw new Error(`${program} ${args.join(' ')} failed with ${result.status}`)
+}
+
+/** gcloud needs a Python that still has ssl.PROTOCOL_TLSv1 for bucket calls. */
+const gcloud_python = () => {
+  if (process.env.CLOUDSDK_PYTHON) return
+  const candidates = [
+    '/opt/homebrew/bin/python3.11',
+    '/usr/local/bin/python3.11'
+  ]
+  const found = candidates.find(candidate => exists_sync(candidate))
+  if (found) process.env.CLOUDSDK_PYTHON = found
 }
 
 const read = (program, args) =>
@@ -113,6 +127,7 @@ const report = (before, after) =>
   }).join('\n')
 
 export const main = () => {
+  gcloud_python()
   const args = process.argv.slice(2)
   const halo = args.find(arg => arg.startsWith('--halo='))?.slice(HALO_FLAG)
   const dry_run = args.includes('--dry-run')
