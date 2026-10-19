@@ -177,9 +177,14 @@ const describeProject = async name => {
 const projectToolingExtension = pi => {
   pi.registerCommand('ptooling', {
     description:
-      'Show tooling for a work/ or apps/ project (scripts, scripts/, tools/, .tooling.md). Usage: /ptooling [project|all]',
+      'Show tooling for a work/ or apps/ project (scripts, scripts/, tools/, .tooling.md). Usage: /ptooling [project|all]. With no argument, clears.',
     handler: async (args, ctx) => {
-      const want = (args || 'all').trim()
+      const want = (args || '').trim()
+      if (!want) {
+        ctx.ui.setWidget('ptooling', undefined)
+        ctx.ui.notify('project-tooling: results cleared', 'info')
+        return
+      }
       const projects = want === 'all' ? listProjects() : [want]
       const missing = projects.filter(p => !projectDir(p))
       /** @type {string[]} */

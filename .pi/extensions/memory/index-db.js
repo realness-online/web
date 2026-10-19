@@ -45,6 +45,7 @@
  * @property {number} [limit]
  * @property {string} [since]
  * @property {boolean} [partial]
+ * @property {string} [exclude_session]
  */
 import { DatabaseSync } from 'node:sqlite'
 import { execFile as exec_file } from 'node:child_process'
@@ -106,6 +107,7 @@ const MAX_TEXT_CHARS = 4000
 const TOKENIZE = `unicode61 remove_diacritics 2 tokenchars '_'`
 const HIGHLIGHT_OPEN = '\u0001'
 const HIGHLIGHT_CLOSE = '\u0002'
+
 /** Yield JSONL and HTML sessions, oldest first by mtime. */
 /**
  * @param {string} [root]
@@ -574,6 +576,10 @@ export const recall = (query, options = {}) => {
     if (options.since) {
       where.push('t.ts >= ?')
       args.push(options.since)
+    }
+    if (options.exclude_session) {
+      where.push('t.session_id != ?')
+      args.push(options.exclude_session)
     }
     args.push(options.limit ?? 10)
     const rows = /** @type {Array<Record<string, unknown>>} */ (

@@ -91,7 +91,7 @@ const memoryExtension = (pi) => {
         }),
       ),
     }),
-    async execute(_toolCallId, params, _signal, onUpdate, _ctx) {
+    async execute(_toolCallId, params, _signal, onUpdate, ctx) {
       const action = params.action ?? 'search'
       if (action === 'index') {
         onUpdate?.({
@@ -140,6 +140,7 @@ const memoryExtension = (pi) => {
         since: params.since,
         limit: params.limit ?? 10,
         partial: true,
+        exclude_session: ctx?.sessionManager?.getSessionId(),
       })
       return {
         content: [
@@ -154,7 +155,8 @@ const memoryExtension = (pi) => {
       }
     },
   })
-  pi.on('session_start', async () => {
+  pi.on('session_start', async (_event, ctx) => {
+    ctx.ui.setWidget('remember', undefined)
     try {
       await indexSessions({
         path: DB_PATH,
@@ -162,16 +164,19 @@ const memoryExtension = (pi) => {
     } catch {}
   })
   pi.registerCommand('remember', {
-    description: 'Search past sessions. Usage: /remember <words>',
+    description:
+      'Search past sessions. Usage: /remember <words>. With no words, clears the results.',
     handler: async (args, ctx) => {
       const query = (args || '').trim()
       if (!query) {
-        ctx.ui.notify('remember: give it something to search for', 'error')
+        ctx.ui.setWidget('remember', undefined)
+        ctx.ui.notify('remember: results cleared', 'info')
         return
       }
       const results = recall(query, {
         limit: 10,
         partial: true,
+        exclude_session: ctx.sessionManager.getSessionId(),
       })
       ctx.ui.setWidget('remember', formatResults(query, results).split('\n'))
       ctx.ui.notify(`remember: ${results.length} hit(s) for "${query}"`, 'info')

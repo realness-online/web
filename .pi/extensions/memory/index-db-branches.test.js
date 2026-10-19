@@ -158,6 +158,32 @@ test('a very long message is cut to the stored limit', async () => {
   }
 })
 
+test('recall can drop the session asking, so the answer is not the question', async () => {
+  const dir = scratch()
+  try {
+    const root = join(dir, 'sessions')
+    mkdirSync(root, { recursive: true })
+    writeSession(root, 'old.jsonl', [
+      { type: 'session', id: 'old', cwd: '/work/alpha' },
+      message('user', 'the journey workflow got fixed', { id: 'o1' }),
+    ])
+    writeSession(root, 'now.jsonl', [
+      { type: 'session', id: 'now', cwd: '/work/alpha' },
+      message('user', 'journey workflow journey workflow journey workflow', { id: 'n1' }),
+    ])
+    const db_path = join(dir, 'memory.db')
+    await indexSessions({ root, path: db_path })
+
+    const all = recall('journey workflow', { path: db_path })
+    assert.equal(all[0].session_id, 'now', 'without the option, the echoing session wins')
+    const hits = recall('journey workflow', { path: db_path, exclude_session: 'now' })
+    assert.equal(hits.length, 1)
+    assert.equal(hits[0].session_id, 'old')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('toMatchQuery quotes every token, drops stop words, and can prefix the last', () => {
   assert.equal(toMatchQuery(''), null)
   assert.equal(toMatchQuery('the of and'), null)
