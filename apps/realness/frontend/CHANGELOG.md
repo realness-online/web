@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-k - 2026-10-19
+
 - **One command releases** - `npm run ship` takes the next version, tags it,
   releases it, deploys every target whose inputs changed, and verifies. It
   refuses a worktree that does not match its tag.
