@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The working ring reaches the top of the screen** - The ring was pinned to
+  the phone safe area, so its top edge stopped below the clock and status
+  icons. It now sits on the screen edge on all four sides.
+
 ## v3.0.0-m - 2026-10-19
 
 - **An open tab picks up a new build** - The worker claims the page it installs
