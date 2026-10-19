@@ -23,9 +23,20 @@ const DATA_PREFIX = 'data: '.length
 const TRIES = 12
 const JITTER_FLOOR = 0.5
 const MAX_BACKOFF = 4
+const ROUND = 1e6
 
 const LIMIT = LIMIT_MIB * MIB
-const FIELDS = ['model', 'actor', 'payer', 'via', 'plan', ...NUMBERS, 'call']
+const FIELDS = [
+  'model',
+  'actor',
+  'payer',
+  'via',
+  'plan',
+  ...NUMBERS,
+  'client',
+  'provider',
+  'call'
+]
 
 /** How a call came, from the caller's id. */
 const via_of = actor => {
@@ -34,17 +45,33 @@ const via_of = actor => {
   return 'phone'
 }
 
-/** Watches a reply as it streams past; finish() returns its usage. */
+/** Watches a reply as it streams past; finish() returns its usage and provider. */
 export const usage_meter = () => {
   let pending = ''
   let bytes = 0
   let whole = ''
   let found = null
+  let provider = ''
   const read = text => {
+    let data
     try {
-      const data = JSON.parse(text)
-      if (data?.usage) found = { ...data.usage, model: data.model }
-    } catch {}
+      data = JSON.parse(text)
+    } catch {
+      return
+    }
+    const { provider: upstream } = data ?? {}
+    if (typeof upstream === 'string') provider = upstream
+    if (data?.usage)
+      found = {
+        ...data.usage,
+        model: data.model,
+        cached_tokens:
+          data.usage.prompt_tokens_details?.cached_tokens ??
+          data.usage.cached_tokens ??
+          0,
+        cache_write_tokens:
+          data.usage.prompt_tokens_details?.cache_write_tokens ?? 0
+      }
   }
   const decoder = new TextDecoder()
   return {
@@ -56,14 +83,17 @@ export const usage_meter = () => {
       const lines = pending.split('\n')
       pending = lines.pop() ?? ''
       for (const line of lines)
-        if (line.startsWith('data: ') && line.includes('"usage"'))
+        if (
+          line.startsWith('data: ') &&
+          (line.includes('"usage"') || line.includes('"provider"'))
+        )
           read(line.slice(DATA_PREFIX))
     },
     finish() {
       if (pending.startsWith('data: ')) read(pending.slice(DATA_PREFIX))
       if (!found) read(whole)
       whole = pending = ''
-      return { reply_bytes: bytes, usage: found }
+      return { reply_bytes: bytes, usage: found, provider }
     }
   }
 }
@@ -84,7 +114,10 @@ export const usage_row = ({
   request_bytes,
   reply_bytes,
   usage,
-  call = ''
+  call = '',
+  client = '',
+  provider = '',
+  latency_ms = 0
 }) => {
   const values = {
     model: usage?.model ?? model,
@@ -97,7 +130,12 @@ export const usage_row = ({
     reply_bytes,
     prompt_tokens: usage?.prompt_tokens ?? 0,
     completion_tokens: usage?.completion_tokens ?? 0,
+    cached_tokens: usage?.cached_tokens ?? 0,
+    cache_write_tokens: usage?.cache_write_tokens ?? 0,
+    latency_ms,
     cost: usage?.cost ?? 0,
+    client,
+    provider,
     call
   }
   const props = FIELDS.filter(name => name !== 'call' || call)
@@ -173,6 +211,24 @@ export const usage_key = (phone, actor, now = new Date()) => {
 }
 
 const today = (now = new Date()) => now.toISOString().slice(0, ISO_DATE)
+
+/** Totals for a set of rows, including how many read from the cache. */
+export const row_totals = rows => {
+  const sum = name =>
+    Math.round(
+      rows.reduce((total, row) => total + (row[name] ?? 0), 0) * ROUND
+    ) / ROUND
+  return {
+    calls: rows.length,
+    prompt_tokens: sum('prompt_tokens'),
+    completion_tokens: sum('completion_tokens'),
+    cached_tokens: sum('cached_tokens'),
+    cache_write_tokens: sum('cache_write_tokens'),
+    cache_hits: rows.filter(row => row.cached_tokens > 0).length,
+    cost: sum('cost'),
+    latency_ms: rows.length ? Math.round(sum('latency_ms') / rows.length) : 0
+  }
+}
 
 /** Every UTC day from `start` (YYYY-MM-DD) through `now`'s day. */
 export const days_since = (start, now = new Date()) => {
@@ -260,6 +316,29 @@ export const usage_ledger = (storage, append = {}) => {
       )
       await append_piece(storage, folder, piece, append).catch(() => false)
       return version
+    },
+    /** Every person's rows for one day, with totals. */
+    async report(day) {
+      const { folders } = await storage.list('usage/')
+      const days = await Promise.all(
+        folders.map(phone => ledger.day(phone, day))
+      )
+      const rows = days.flatMap(({ rows }) => rows)
+      return {
+        day,
+        people: folders.length,
+        totals: row_totals(rows),
+        rows
+      }
+    },
+    /** Totals per day, oldest first, for the given days. */
+    report_days(days) {
+      return Promise.all(
+        days.map(async at => {
+          const day = await ledger.report(at)
+          return { day: at, people: day.people, totals: day.totals }
+        })
+      )
     },
     async day(phone, day) {
       const folder = usage_day(phone, day)

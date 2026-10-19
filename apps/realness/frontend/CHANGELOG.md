@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v3.0.0-j - 2026-10-19
+
+- **Every call records who made it and how slow it started** - Usage rows keep
+  the caller's user agent, the upstream provider, the time to first reply chunk,
+  and cache reads and writes. Older rows read back as empty and zero.
+- **An operator can read a day of use** - `GET /usage` returns one day's rows
+  with totals, or a daily series for up to 31 days. It needs a bearer secret and
+  stays switched off until one is set.
+
 ## v3.0.0-i - 2026-10-19
 
 - **Chat is a pane, not a page** - The chat view is gone; the chevron opens and

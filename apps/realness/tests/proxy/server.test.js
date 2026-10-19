@@ -41,7 +41,10 @@ test('a stranger cannot spend upstream calls', async () => {
 test('an identified person receives the streamed reply', async () => {
   const result = await fetch(url, {
     method: 'POST',
-    headers: { authorization: 'Bearer phone.token.signature' },
+    headers: {
+      authorization: 'Bearer phone.token.signature',
+      'user-agent': 'pi/1.0 (darwin)'
+    },
     body: JSON.stringify({ messages: [] })
   })
   assert.equal(result.status, 200)
@@ -56,6 +59,70 @@ test('an identified person receives the streamed reply', async () => {
   assert.equal(rows[0].payer, '+14155550123')
   assert.equal(rows[0].reply_bytes, 11)
   assert.equal(rows[0].request_bytes, 15)
+  assert.equal(rows[0].client, 'pi/1.0 (darwin)')
+  assert.ok(rows[0].latency_ms >= 0)
+})
+
+test('the operator usage report needs the operator secret', async () => {
+  const secret = 'operator-secret-for-proxy-tests-at-least-32'
+  const reports = []
+  const ledger = {
+    report: async day => (reports.push(day), { day, people: 1, totals: {} }),
+    report_days: async days => days.map(day => ({ day, people: 1, totals: {} }))
+  }
+  const handler = proxy_handler({
+    agent: () => {},
+    usage: usage_handler({ secret, ledger, warn: () => {} })
+  })
+  const operator = createServer(handler)
+  await new Promise(done => operator.listen(0, '127.0.0.1', done))
+  const at = `http://127.0.0.1:${operator.address().port}`
+  try {
+    assert.equal((await fetch(`${at}/usage`)).status, 401)
+    assert.equal(
+      (
+        await fetch(`${at}/usage`, {
+          headers: { authorization: 'Bearer nope' }
+        })
+      ).status,
+      401
+    )
+    const auth = { authorization: `Bearer ${secret}` }
+    const today = await fetch(`${at}/usage?day=2026-10-01`, { headers: auth })
+    assert.equal(today.status, 200)
+    assert.equal((await today.json()).day, '2026-10-01')
+    assert.equal(
+      (await fetch(`${at}/usage?day=10-01-2026`, { headers: auth })).status,
+      400
+    )
+    assert.equal(
+      (await fetch(`${at}/usage?days=0`, { headers: auth })).status,
+      400
+    )
+    const series = await (
+      await fetch(`${at}/usage?day=2026-10-03&days=3`, { headers: auth })
+    ).json()
+    assert.deepEqual(
+      series.days.map(day => day.day),
+      ['2026-10-01', '2026-10-02', '2026-10-03']
+    )
+    assert.equal(series.from, '2026-10-01')
+    assert.equal(series.to, '2026-10-03')
+  } finally {
+    await new Promise(done => operator.close(done))
+  }
+})
+
+test('without an operator secret the usage route is not there', async () => {
+  const handler = proxy_handler({ agent: () => {} })
+  const server = createServer(handler)
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  try {
+    const reply = await fetch(`http://127.0.0.1:${server.address().port}/usage`)
+    assert.equal(reply.status, 404)
+  } finally {
+    await new Promise(done => server.close(done))
+  }
 })
 
 test('actor pass works; forged passes do not', async () => {
@@ -185,6 +252,7 @@ import {
   checkout_handler,
   limit_handler,
   proxy_handler,
+  usage_handler,
   wants_house,
   webhook_handler
 } from '../../src/proxy/server.js'

@@ -1,4 +1,6 @@
 import { createServer as create_server } from 'node:http'
+import { timingSafeEqual as timing_safe_equal } from 'node:crypto'
+import { ISO_DATE } from '#root/lib/units.js'
 import { MODEL, HOUSE_MODEL, call_upstream, read_body } from './agent.js'
 import { verify_model_pass } from './model-pass.js'
 import { over_limit, usage_meter } from './usage.js'
@@ -12,6 +14,9 @@ import {
 import { HTTP } from '#root/lib/http.js'
 
 const MIN_SECRET_BYTES = 32
+const MAX_CLIENT_CHARS = 120
+const DAY = /^\d{4}-\d{2}-\d{2}$/
+const MAX_REPORT_DAYS = 31
 
 const quota_messages = (pay_url = PAY_URL) => ({
   day: `Today's free model use is spent: quota exceeded. It resets at midnight UTC. Subscribe for more at ${pay_url}`,
@@ -92,6 +97,10 @@ export const agent_handler = ({
     } catch {
       return response.writeHead(HTTP.BAD_REQUEST).end()
     }
+    const client = String(request.headers['user-agent'] ?? '').slice(
+      0,
+      MAX_CLIENT_CHARS
+    )
     const house = wants_house(body)
     if (house && !(ledger && plan_for)) return refuse(response, 'plan')
     if (ledger && plan_for) {
@@ -114,7 +123,9 @@ export const agent_handler = ({
     }
     try {
       const model = house ? HOUSE_MODEL : MODEL
+      const started = Date.now()
       const upstream = await call_upstream(body, { key, fetcher, model })
+      let latency_ms = 0
       response.writeHead(upstream.status, {
         'content-type':
           upstream.headers.get('content-type') ?? 'application/json'
@@ -122,9 +133,11 @@ export const agent_handler = ({
       const meter = usage_meter()
       if (!upstream.body) throw new Error('upstream answered without a body')
       for await (const chunk of upstream.body) {
+        if (!latency_ms) latency_ms = Date.now() - started
         meter.add(chunk)
         response.write(chunk)
       }
+      if (!latency_ms) latency_ms = Date.now() - started
       const row = {
         model,
         actor: who.id ?? 'phone',
@@ -132,6 +145,8 @@ export const agent_handler = ({
         plan: house ? 'paid' : 'free',
         status: upstream.status,
         request_bytes,
+        latency_ms,
+        client,
         ...meter.finish()
       }
       ledger
@@ -171,6 +186,67 @@ export const limit_handler = ({
         limit_status(plan, { ...spent, period }, { pay_url })
       )
     } catch {
+      response.writeHead(HTTP.UNAVAILABLE).end()
+    }
+  }
+}
+
+const operator_gate = secret => {
+  const expected = Buffer.from(secret)
+  return request => {
+    const given = request.headers.authorization?.match(/^Bearer (\S+)$/)?.[1]
+    if (typeof given !== 'string') return false
+    const actual = Buffer.from(given)
+    return (
+      actual.length === expected.length && timing_safe_equal(actual, expected)
+    )
+  }
+}
+
+const days_ending = (end, count) => {
+  const at = new Date(`${end}T00:00:00Z`)
+  const days = []
+  for (let back = count - 1; back >= 0; back--) {
+    const day = new Date(at)
+    day.setUTCDate(day.getUTCDate() - back)
+    days.push(day.toISOString().slice(0, ISO_DATE))
+  }
+  return days
+}
+
+/**
+ * GET /usage?day=YYYY-MM-DD or ?days=N: every person's call rows and totals.
+ * An operator reads this with the operator secret, not a phone token.
+ */
+export const usage_handler = ({ ledger, secret, warn = console.error }) => {
+  if (!secret || Buffer.byteLength(secret) < MIN_SECRET_BYTES)
+    throw new Error('operator secret must be at least 32 bytes')
+  const allowed = operator_gate(secret)
+  return async (request, response) => {
+    if (request.method !== 'GET')
+      return response.writeHead(HTTP.METHOD_NOT_ALLOWED).end()
+    if (!allowed(request)) return response.writeHead(HTTP.UNAUTHORIZED).end()
+    const query = new URL(request.url ?? '/', 'http://proxy').searchParams
+    const end = query.get('day') ?? new Date().toISOString().slice(0, ISO_DATE)
+    const count = query.get('days') ? Number(query.get('days')) : 1
+    if (!DAY.test(end))
+      return json(response, HTTP.BAD_REQUEST, {
+        error: 'day must be YYYY-MM-DD'
+      })
+    if (!Number.isInteger(count) || count < 1 || count > MAX_REPORT_DAYS)
+      return json(response, HTTP.BAD_REQUEST, {
+        error: `days must be 1 to ${MAX_REPORT_DAYS}`
+      })
+    try {
+      if (count === 1) return json(response, HTTP.OK, await ledger.report(end))
+      const days = days_ending(end, count)
+      json(response, HTTP.OK, {
+        from: days[0],
+        to: end,
+        days: await ledger.report_days(days)
+      })
+    } catch (error) {
+      warn(`usage report unreadable: ${error.message}`)
       response.writeHead(HTTP.UNAVAILABLE).end()
     }
   }
@@ -243,18 +319,19 @@ export const webhook_handler =
   }
 
 /**
- * Routes: GET /limit (also /pay/limit, the app address), POST /pay/checkout,
- * POST /pay/webhook; every other POST is a model call. Browsers on `origins`
- * may call everything but the webhook.
+ * Routes: GET /limit (also /pay/limit, the app address), GET /usage (operator),
+ * POST /pay/checkout, POST /pay/webhook; every other POST is a model call.
+ * Browsers on `origins` may call everything but the webhook.
  * @param {object} handlers
  * @param {Function} handlers.agent
  * @param {Function} handlers.limit
  * @param {Function} handlers.pay
  * @param {Function} handlers.webhook
+ * @param {Function} [handlers.usage]
  * @param {string[]} [handlers.origins]
  */
 export const proxy_handler =
-  ({ agent, limit, pay, webhook, origins = [] }) =>
+  ({ agent, limit, pay, webhook, usage, origins = [] }) =>
   (request, response) => {
     const path = new URL(request.url ?? '/', 'http://proxy').pathname.replace(
       /\/+$/,
@@ -293,6 +370,10 @@ export const proxy_handler =
       return request.method === 'GET' && limit
         ? limit(request, response)
         : response.writeHead(HTTP.METHOD_NOT_ALLOWED).end()
+    if (path === '/usage')
+      return request.method === 'GET' && usage
+        ? usage(request, response)
+        : response.writeHead(HTTP.NOT_FOUND).end()
     if (path === '/pay/checkout')
       return request.method === 'POST' && pay
         ? pay(request, response)

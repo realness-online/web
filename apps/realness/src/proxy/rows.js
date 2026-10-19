@@ -6,6 +6,9 @@ export const NUMBERS = [
   'reply_bytes',
   'prompt_tokens',
   'completion_tokens',
+  'cached_tokens',
+  'cache_write_tokens',
+  'latency_ms',
   'cost'
 ]
 
@@ -31,7 +34,7 @@ export const read_rows = (html, payer = '') => {
       if (seen.has(values.call)) continue
       seen.add(values.call)
     }
-    for (const name of NUMBERS) values[name] = Number(values[name])
+    for (const name of NUMBERS) values[name] = Number(values[name] ?? 0)
     values.payer ||= payer
     rows.push(values)
   }

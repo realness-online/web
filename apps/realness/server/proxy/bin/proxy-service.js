@@ -10,6 +10,7 @@ import {
   checkout_handler,
   limit_handler,
   proxy_handler,
+  usage_handler,
   webhook_handler
 } from '../../../src/proxy/server.js'
 import { usage_ledger } from '../../../src/proxy/usage.js'
@@ -24,7 +25,7 @@ import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
 import { out_path } from '#root/lib/output.js'
 
-const {env} = process
+const { env } = process
 const project = env.IDENTITY_PROJECT ?? 'realness-online'
 const bucket = env.PINS_BUCKET
 const secret = env.MODEL_PASS_SECRET?.trim()
@@ -56,6 +57,7 @@ const origins = (env.ORIGINS ?? '')
   .split(',')
   .map(origin => origin.trim())
   .filter(Boolean)
+const operator_secret = env.OPERATOR_SECRET?.trim()
 
 const handler = proxy_handler({
   agent: agent_handler({
@@ -69,10 +71,15 @@ const handler = proxy_handler({
   limit: limit_handler({ identify_phone, secret, ledger, plan_for, pay_url }),
   pay: checkout_handler({ identify_phone, secret, stripe, price, pay_url }),
   webhook: webhook_handler({ stripe, billing, webhook_secret }),
+  usage: operator_secret
+    ? usage_handler({ ledger, secret: operator_secret })
+    : undefined,
   origins
 })
 const port = Number(env.PORT ?? 8788)
 const listen = env.LISTEN ?? (env.K_SERVICE ? '0.0.0.0' : '127.0.0.1')
 create_server(handler).listen(port, listen, () =>
-  console.log(`proxy on ${listen}:${port}${stripe ? ', payments on' : ''}`)
+  console.log(
+    `proxy on ${listen}:${port}${stripe ? ', payments on' : ''}${operator_secret ? ', usage report on' : ''}`
+  )
 )

@@ -15,6 +15,13 @@ else
   echo "payments: off (run server/proxy/scripts/stripe-setup.js)"
 fi
 
+if gcloud secrets describe OPERATOR_SECRET --project "$project" > /dev/null 2>&1; then
+  secrets="$secrets,OPERATOR_SECRET=OPERATOR_SECRET:latest"
+  echo "usage report: on"
+else
+  echo "usage report: off (add OPERATOR_SECRET to turn it on)"
+fi
+
 gcloud run deploy realness-proxy \
   --project "$project" --region "$region" --source "$stage" \
   --service-account "$account" --build-service-account "projects/$project/serviceAccounts/$account" \

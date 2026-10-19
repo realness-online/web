@@ -118,7 +118,12 @@ test("the watch reads the proxy's ledger rows exactly as the proxy writes them",
     reply_bytes: 20,
     prompt_tokens: 3,
     completion_tokens: 4,
+    cached_tokens: 0,
+    cache_write_tokens: 0,
+    latency_ms: 0,
     cost: 0.01,
+    client: '',
+    provider: '',
     call: 'c1'
   })
   assert.equal(rows[2].model, 'm:free')

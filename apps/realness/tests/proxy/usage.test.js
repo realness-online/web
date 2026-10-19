@@ -9,6 +9,7 @@ import {
   month_days,
   over_limit,
   read_rows,
+  row_totals,
   usage_key,
   usage_ledger,
   usage_meter,
@@ -32,8 +33,24 @@ test('meter finds usage in a stream split mid-line', () => {
     prompt_tokens: 7,
     completion_tokens: 3,
     cost: 0.002,
-    model: 'm/x'
+    model: 'm/x',
+    cached_tokens: 0,
+    cache_write_tokens: 0
   })
+})
+
+test('meter reads the provider and the cached tokens', () => {
+  const meter = usage_meter()
+  meter.add(
+    bytes(
+      'data: {"provider":"DeepInfra","model":"m/x"}\n\ndata: {"model":"m/x","usage":{"prompt_tokens":9,"completion_tokens":1,"prompt_tokens_details":{"cached_tokens":7}}}\n\n'
+    )
+  )
+  const { usage, provider } = meter.finish()
+  assert.deepEqual(
+    [provider, usage.cached_tokens, usage.cache_write_tokens],
+    ['DeepInfra', 7, 0]
+  )
 })
 
 test('meter reads a plain JSON reply; no usage is null', () => {
@@ -71,9 +88,122 @@ test('a row keeps sizes and cost, never text', () => {
       reply_bytes: 90,
       prompt_tokens: 7,
       completion_tokens: 3,
-      cost: 0.002
+      cached_tokens: 0,
+      cache_write_tokens: 0,
+      latency_ms: 0,
+      cost: 0.002,
+      client: '',
+      provider: ''
     }
   ])
+})
+
+test('a row keeps the caller, provider, latency, and cached tokens', () => {
+  const html = usage_row({
+    model: 'm',
+    actor: 'app-abcdef123456',
+    status: 200,
+    request_bytes: 1,
+    reply_bytes: 2,
+    client: 'pi/1.0 (darwin)',
+    provider: 'DeepInfra',
+    latency_ms: 412,
+    usage: { prompt_tokens: 9, completion_tokens: 1, cached_tokens: 7 }
+  })
+  const [row] = read_rows(html)
+  assert.deepEqual(
+    [
+      row.client,
+      row.provider,
+      row.latency_ms,
+      row.cached_tokens,
+      row.cache_write_tokens
+    ],
+    ['pi/1.0 (darwin)', 'DeepInfra', 412, 7, 0]
+  )
+})
+
+test('rows written before the new fields read as zero and empty', () => {
+  const old =
+    '<p itemscope itemtype="/usage"><meta itemprop="model" content="m"><meta itemprop="actor" content="phone"><meta itemprop="status" content="200"><meta itemprop="cost" content="0.5"></p>\n'
+  const [row] = read_rows(old)
+  assert.deepEqual(
+    [
+      row.cached_tokens,
+      row.cache_write_tokens,
+      row.latency_ms,
+      row.client,
+      row.provider
+    ],
+    [0, 0, 0, undefined, undefined]
+  )
+})
+
+test('totals count cache hits and average latency', () => {
+  const rows = [
+    { cached_tokens: 0, prompt_tokens: 10, latency_ms: 100, cost: 1 },
+    { cached_tokens: 5, prompt_tokens: 10, latency_ms: 200, cost: 2 }
+  ]
+  assert.deepEqual(row_totals(rows), {
+    calls: 2,
+    prompt_tokens: 20,
+    completion_tokens: 0,
+    cached_tokens: 5,
+    cache_write_tokens: 0,
+    cache_hits: 1,
+    cost: 3,
+    latency_ms: 150
+  })
+})
+
+test('a report spans people and days, and totals their rows', async () => {
+  const store = disk(`${base}${randomUUID()}`)
+  const ledger = usage_ledger(store)
+  const row = (tokens, cached) => ({
+    model: 'm',
+    actor: 'a-abcdef123456',
+    status: 200,
+    request_bytes: 1,
+    reply_bytes: 1,
+    client: 'pi',
+    provider: 'DeepInfra',
+    latency_ms: 10,
+    usage: {
+      prompt_tokens: tokens,
+      completion_tokens: 0,
+      cached_tokens: cached,
+      cost: 0
+    }
+  })
+  await ledger.record(
+    '+14155550123',
+    row(10, 0),
+    new Date('2026-10-01T12:00:00Z')
+  )
+  await ledger.record(
+    '+14155550199',
+    row(10, 5),
+    new Date('2026-10-01T13:00:00Z')
+  )
+  const report = await ledger.report('2026-10-01')
+  assert.deepEqual(
+    [
+      report.people,
+      report.totals.calls,
+      report.totals.cached_tokens,
+      report.totals.cache_hits
+    ],
+    [2, 2, 5, 1]
+  )
+  assert.deepEqual(new Set(report.rows.map(row => row.payer)).size, 2)
+  const series = await ledger.report_days(['2026-09-30', '2026-10-01'])
+  assert.deepEqual(
+    series.map(day => [day.day, day.totals.calls]),
+    [
+      ['2026-09-30', 0],
+      ['2026-10-01', 2]
+    ]
+  )
 })
 
 test('attribute values are escaped', () => {
