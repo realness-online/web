@@ -246,7 +246,7 @@
 
       button {
         padding: base-line * 0.25 base-line * 0.6;
-        border: calc(var(--base-line) * 0.06) solid var(--accent);
+        border: calc(var(--base-line) * 0.1) solid var(--accent);
         border-radius: base-line * 0.25;
         background: transparent;
         color: var(--text);
@@ -356,7 +356,7 @@
 
         li[data-owner="collision"]::before {
           background: repeating-linear-gradient(-45deg, var(--warning) 0 2px, transparent 2px 4px);
-          outline: 1px solid var(--warning);
+          outline: round(base-line * 0.1, 2) solid var(--warning);
         }
 
         li::before {

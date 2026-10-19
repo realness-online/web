@@ -123,7 +123,7 @@
     flex-direction: column;
     padding-top: env(safe-area-inset-top, 0px);
     background: var(--surface);
-    border-inline-end: 1px solid var(--code-surface);
+    border-inline-end: round(base-line * 0.1, 2) solid var(--code-surface);
     translate: -100% 0;
     visibility: hidden;
     transition-property: translate, visibility, inline-size, padding-inline;

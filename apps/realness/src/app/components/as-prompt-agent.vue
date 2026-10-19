@@ -61,7 +61,7 @@
     margin: calc(var(--base-line) * 2) auto;
     max-width: calc(var(--base-line) * 26);
     padding: var(--base-line);
-    border: 1px solid var(--accent);
+    border: round(base-line * 0.1, 2) solid var(--accent);
     border-radius: calc(var(--base-line) * 0.5);
     text-align: center;
 
@@ -78,7 +78,7 @@
 
     & > button {
       padding: calc(var(--base-line) * 0.5) calc(var(--base-line) * 1.5);
-      border: 1px solid var(--emphasis);
+      border: round(base-line * 0.1, 2) solid var(--emphasis);
       border-radius: calc(var(--base-line) * 0.33);
       background: none;
       color: var(--emphasis);

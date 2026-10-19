@@ -90,7 +90,7 @@
       border-radius: base-line;
       resize: none;
       appearance: none;
-      border: 1px solid var(--emphasis);
+      border: round(base-line * 0.1, 2) solid var(--emphasis);
       background-color: var(--basalt-transparent);
       color: var(--rocks);
       caret-color: var(--rocks);
@@ -99,8 +99,6 @@
       min-height: base-line;
       @media (prefers-color-scheme: light) {
         background-color: transparent;
-        border: none;
-        border: 1px solid var(--emphasis);
       }
       @media (prefers-color-scheme: dark) {
         color: var(--bone);

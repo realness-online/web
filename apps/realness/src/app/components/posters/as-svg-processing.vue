@@ -207,7 +207,7 @@
     width: fit-content;
     height: fit-content;
     grid-row-start: span 2;
-    outline: 1px solid var(--accent);
+    outline: round(base-line * 0.1, 2) solid var(--accent);
 
     & > img {
       grid-area: overlay;

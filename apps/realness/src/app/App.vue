@@ -456,7 +456,7 @@
   }
 
   main#realness {
-    border: (base-line / 16) solid transparent;
+    border: (base-line * 0.1) solid transparent;
     border-radius: (base-line / 16);
     &[data-offline] {
       border-color: var(--warning);

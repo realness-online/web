@@ -162,7 +162,7 @@
 
           td {
             padding: base-line * 0.4 0;
-            border-bottom: calc(var(--base-line) * 0.05) solid var(--accent);
+            border-bottom: calc(var(--base-line) * 0.1) solid var(--accent);
             vertical-align: top;
           }
 

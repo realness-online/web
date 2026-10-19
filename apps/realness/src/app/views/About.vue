@@ -1166,7 +1166,7 @@
           display: block;
           margin: 0 auto;
           padding: base-line * 0.5 base-line * 2;
-          border: 1px solid var(--emphasis);
+          border: round(base-line * 0.1, 2) solid var(--emphasis);
           border-radius: base-line * 0.33;
           background: none;
           color: var(--emphasis);

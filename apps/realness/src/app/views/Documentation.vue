@@ -151,7 +151,7 @@
         column-width: base-line * 8;
         column-gap: base-line;
         column-fill: balance;
-        column-rule: 1px solid var(--emphasis);
+        column-rule: round(base-line * 0.1, 2) solid var(--emphasis);
         margin-bottom: base-line * 2;
 
 
@@ -228,7 +228,7 @@
             float: right;
             margin-left: base-line;
             padding-inline: base-line;
-            border: 1px solid var(--emphasis);
+            border: round(base-line * 0.1, 2) solid var(--emphasis);
             border-radius: base-line * 0.33;
             background: none;
             color: var(--emphasis);
@@ -275,7 +275,7 @@
         top: var(--base-line);
         max-height: calc(100dvh - var(--base-line) * 4);
         overflow-y: auto;
-        border-right: 1px solid var(--emphasis);
+        border-right: round(base-line * 0.1, 2) solid var(--emphasis);
       }
 
       & > :not(nav) {

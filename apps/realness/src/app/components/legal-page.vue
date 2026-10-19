@@ -87,7 +87,7 @@
         display: block;
         column-width: base-line * 8;
         column-gap: base-line;
-        column-rule: 1px solid var(--emphasis);
+        column-rule: round(base-line * 0.1, 2) solid var(--emphasis);
         margin-bottom: base-line * 2;
 
         @media (min-width: pad-begins) {
@@ -100,7 +100,7 @@
           top: base-line;
           max-height: calc(100dvh - var(--base-line) * 4);
           overflow-y: auto;
-          border-right: 1px solid var(--emphasis);
+          border-right: round(base-line * 0.1, 2) solid var(--emphasis);
         }
 
         & > a {

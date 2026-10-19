@@ -154,7 +154,7 @@
     margin-inline: auto;
     z-index: 12;
     padding: base-line;
-    border: 1px solid var(--muted-text);
+    border: round(base-line * 0.1, 2) solid var(--muted-text);
     border-radius: (base-line / 2);
     background: var(--surface);
     box-shadow: 0 0 base-line var(--surface);

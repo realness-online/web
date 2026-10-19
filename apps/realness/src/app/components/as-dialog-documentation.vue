@@ -138,7 +138,7 @@
         column-width: 166px;
         column-gap: base-line;
         column-fill: balance;
-        column-rule: 1px solid var(--emphasis);
+        column-rule: round(base-line * 0.1, 2) solid var(--emphasis);
         padding-left: base-line * 1.33;
         margin-bottom: base-line * 2;
         & > a {
@@ -190,7 +190,7 @@
 
       & > section[itemprop='preferences'] {
         padding: 0 base-line * 0.5 base-line * 2;
-        border-top: 1px solid var(--emphasis);
+        border-top: round(base-line * 0.1, 2) solid var(--emphasis);
 
         & > header {
           margin-bottom: base-line;
@@ -208,7 +208,7 @@
           & > button {
             display: block;
             padding: base-line * 0.5 base-line * 2;
-            border: 1px solid var(--emphasis);
+            border: round(base-line * 0.1, 2) solid var(--emphasis);
             border-radius: base-line * 0.33;
             background: none;
             color: var(--emphasis);

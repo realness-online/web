@@ -1141,7 +1141,7 @@
           align-items: center;
           gap: base-line * 0.25;
           padding: base-line * 0.2;
-          border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
+          border: round(base-line * 0.1, 2) solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
           border-radius: base-line * 0.25;
           background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
           & > .mask-swatch {
@@ -1149,7 +1149,7 @@
             height: base-line * 0.75;
             border-radius: 50%;
             flex: none;
-            box-shadow: inset 0 0 0 1px unquote('color-mix(in srgb, var(--basalt) 30%, transparent)');
+            box-shadow: inset 0 0 0 round(base-line * 0.1, 2) unquote('color-mix(in srgb, var(--basalt) 30%, transparent)');
           }
           & > button {
             border: none;
@@ -1173,7 +1173,7 @@
             width: 7em;
             background: transparent;
             border: none;
-            border-bottom: 1px solid unquote('color-mix(in srgb, var(--bone) 40%, transparent)');
+            border-bottom: round(base-line * 0.1, 2) solid unquote('color-mix(in srgb, var(--bone) 40%, transparent)');
             color: var(--contrast);
             font: inherit;
             &:focus { outline: none; }
@@ -1237,7 +1237,7 @@
         & > button[aria-label='Toggle mask pen'],
         & > button[aria-label='Clear mask'] {
           background: unquote('color-mix(in srgb, var(--moonlight) 30%, transparent)');
-          border: 1px solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
+          border: round(base-line * 0.1, 2) solid unquote('color-mix(in srgb, var(--bone) 30%, transparent)');
           border-radius: base-line * 0.25;
           padding-inline: base-line * 0.5;
           cursor: pointer;

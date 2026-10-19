@@ -787,7 +787,7 @@
     gap: base-line * 0.15;
     padding: base-line;
     border-radius: base-line * 0.2;
-    border: 1px solid unquote('color-mix(in srgb, var(--text) 14%, transparent)');
+    border: round(base-line * 0.1, 2) solid unquote('color-mix(in srgb, var(--text) 14%, transparent)');
   }
 
   colors-weight-swatch-row() {
@@ -802,7 +802,7 @@
       padding: base-line;
       border-radius: base-line * 0.25;
       border: none;
-      box-shadow: inset 0 0 0 1px unquote('color-mix(in srgb, var(--text) 14%, transparent)');
+      box-shadow: inset 0 0 0 round(base-line * 0.1, 2) unquote('color-mix(in srgb, var(--text) 14%, transparent)');
       &[itemprop='fill'] {
         background: var(--paint);
         color: var(--ink, var(--bone));
@@ -941,7 +941,7 @@
         display: grid;
         gap: base-line * 0.5;
         & > li {
-          border: 1px solid var(--gravel);
+          border: round(base-line * 0.1, 2) solid var(--gravel);
           border-radius: base-line * 0.25;
           overflow: hidden;
           & > samp {
@@ -955,7 +955,7 @@
             margin: 0;
             padding: base-line (base-line * 0.4);
             font-size: smaller;
-            border-top: 1px solid var(--gravel);
+            border-top: round(base-line * 0.1, 2) solid var(--gravel);
             display: flex;
             justify-content: space-between;
             gap: base-line * 0.4;
@@ -1039,7 +1039,7 @@
                 display: block;
                 width: 100%;
                 padding: 0;
-                border: 1px solid transparent;
+                border: round(base-line * 0.1, 2) solid transparent;
                 border-radius: base-line * 0.25;
                 background: none;
                 cursor: pointer;
@@ -1078,7 +1078,7 @@
             margin: 0;
             standard-grid($mode: auto-fit, $min: base-line * 4.5, $min-large: base-line * 4.5, $gap: base-line * 0.5);
             & > li {
-              border: 1px solid var(--gravel);
+              border: round(base-line * 0.1, 2) solid var(--gravel);
               border-radius: base-line * 0.25;
               overflow: hidden;
               &[itemprop='ochre'] {
@@ -1100,7 +1100,7 @@
                 display: flex;
                 flex-direction: column;
                 gap: base-line * 0.1;
-                border-top: 1px solid var(--gravel);
+                border-top: round(base-line * 0.1, 2) solid var(--gravel);
                 & > data {
                   opacity: 0.55;
                 }
@@ -1128,7 +1128,7 @@
               min-height: base-line * 10;
               padding: base-line;
               border-radius: base-line * 0.25;
-              border: 1px solid var(--gravel);
+              border: round(base-line * 0.1, 2) solid var(--gravel);
               overflow: hidden;
               & > figcaption {
                 margin: base-line 0 0;
@@ -1266,7 +1266,7 @@
             display: grid;
             grid-template-rows: auto auto auto 1fr;
             gap: base-line * 0.35;
-            border: 1px solid var(--gravel);
+            border: round(base-line * 0.1, 2) solid var(--gravel);
             border-radius: base-line * 0.25;
             overflow: hidden;
             &[itemprop='accent'] {
@@ -1342,7 +1342,7 @@
             & > figure:last-of-type {
               grid-row: 4;
               padding: base-line;
-              border-top: 1px solid var(--gravel);
+              border-top: round(base-line * 0.1, 2) solid var(--gravel);
               background: var(--surface);
               display: flex;
               flex-wrap: wrap;

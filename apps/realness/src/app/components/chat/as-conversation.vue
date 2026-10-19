@@ -114,7 +114,7 @@
     & a[itemprop='url'] > figure {
       margin: 0 0 base-line;
       padding: (base-line / 2) base-line;
-      border: 1px solid var(--muted-text);
+      border: round(base-line * 0.1, 2) solid var(--muted-text);
       border-radius: (base-line / 2);
       & > figcaption {
         display: grid;
@@ -128,7 +128,7 @@
       color: transparent;
       user-select: none;
       min-block-size: base-line * 4;
-      border: 1px dashed var(--muted-text);
+      border: round(base-line * 0.1, 2) dashed var(--muted-text);
       border-radius: (base-line / 2);
     }
     & pre.mermaid[data-processed] {
@@ -166,7 +166,7 @@
         overflow-wrap: normal;
         min-inline-size: 8ch;
         padding: (base-line / 4) (base-line / 2);
-        border-block-end: 1px solid var(--muted-text);
+        border-block-end: round(base-line * 0.1, 2) solid var(--muted-text);
         text-align: start;
         vertical-align: top;
       }
@@ -228,7 +228,7 @@
       max-width: page-width;
       line-height: base-line;
       padding: (base-line / 2) base-line;
-      border: 1px solid var(--emphasis);
+      border: round(base-line * 0.1, 2) solid var(--emphasis);
       border-radius: base-line;
       color: var(--text);
       caret-color: var(--text);
