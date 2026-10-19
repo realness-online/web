@@ -169,7 +169,7 @@ export const main = () => {
   }
 
   const before = revisions(settings)
-  for (const step of release_plan(targets)) {
+  for (const step of release_plan(targets))
     if (step === 'version') run('npm', ['version', next])
     else if (step === 'release') run('npm', ['run', 'release:gh'])
     else if (step === 'verify') run('npm', ['run', 'verify', '--', '--release'])
@@ -178,7 +178,6 @@ export const main = () => {
       out(`\n==> ${target}`)
       deploy(target, settings, halo ?? 'realness-1')
     }
-  }
 
   const after = revisions(settings)
   out(`\n${report(before, after)}`)
