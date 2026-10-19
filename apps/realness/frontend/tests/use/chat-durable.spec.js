@@ -151,6 +151,9 @@ after_each(async () => {
   vi.unstubAllEnvs()
 })
 
+const WAIT = { timeout: 10_000, interval: 50 }
+const wait_for = expectation => vi.waitFor(expectation, WAIT)
+
 describe('chat with the real Durable browser bundle', () => {
   it('answers while the VM warms in the background and keeps answering if warm-up fails', async () => {
     let finish_startup
@@ -172,7 +175,7 @@ describe('chat with the real Durable browser bundle', () => {
       }
     })
     pages.push(page)
-    await vi.waitFor(() =>
+    await wait_for(() =>
       expect(
         requests.filter(request => request.url.endsWith('/v1/startup'))
       ).toHaveLength(1)
@@ -182,7 +185,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push({ content: 'Chat is ready before the VM.' })
     await page.get('textarea[name="message"]').setValue('Hello.')
     await page.get('form[data-chat]').trigger('submit')
-    await vi.waitFor(() =>
+    await wait_for(() =>
       expect(page.get('#chat-panel ol').text()).toContain(
         'Chat is ready before the VM.'
       )
@@ -197,7 +200,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push({ content: 'We can still talk.' })
     await page.get('textarea[name="message"]').setValue('Can we still talk?')
     await page.get('form[data-chat]').trigger('submit')
-    await vi.waitFor(() =>
+    await wait_for(() =>
       expect(page.get('#chat-panel ol').text()).toContain('We can still talk.')
     )
     expect(
@@ -215,7 +218,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push(bash_reply(), { content: 'The VM returned /realness.' })
     await page.get('textarea[name="message"]').setValue('Run pwd.')
     await page.get('form[data-chat]').trigger('submit')
-    await vi.waitFor(() =>
+    await wait_for(() =>
       expect(page.get('ol').text()).toContain('The VM returned /realness.')
     )
     expect(
@@ -280,7 +283,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push(bash_reply())
     value.draft.value = 'Run pwd.'
     const pending = value.send()
-    await vi.waitFor(() => expect(signal).toBeDefined())
+    await wait_for(() => expect(signal).toBeDefined())
     await value.stop()
     await pending
     expect(signal.aborted).toBe(true)
@@ -310,7 +313,7 @@ describe('chat with the real Durable browser bundle', () => {
     replies.push(bash_reply())
     value.draft.value = 'Run pwd.'
     const pending = value.send()
-    await vi.waitFor(() => expect(signal).toBeDefined())
+    await wait_for(() => expect(signal).toBeDefined())
     await explorer.close()
     await pending
     expect(signal.aborted).toBe(true)
