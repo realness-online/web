@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-o - 2026-10-19
+
 - **One build per release** - The release publishes the file list of the build
   it deployed, not of a separate build that ran before.
 
