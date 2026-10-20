@@ -184,3 +184,39 @@ test('a non-boolean stream is refused before any work starts', async () => {
     close()
   }
 })
+
+test('a stream that fails after output ends that reply and keeps the halo serving', async () => {
+  const record = { id, owner: alice }
+  const server = makeServer(
+    {
+      get: () => record,
+      list: () => [record],
+      execStream: async (actor, argv, options) => {
+        options.on_output({ stream: 'stdout', data: Buffer.from('tick\n') })
+        await new Promise(done => setTimeout(done, 20))
+        throw new Error('agent closed the channel')
+      }
+    },
+    null,
+    undefined,
+    null,
+    {}
+  )
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  const url = `http://127.0.0.1:${server.address().port}/v1/actors/${id}/exec`
+  const post = stream =>
+    fetch(url, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ argv: ['true'], stream })
+    })
+  try {
+    const response = await post(true)
+    assert.equal(response.status, 200)
+    await assert.rejects(response.text())
+    assert.equal((await post('yes')).status, 400)
+  } finally {
+    server.closeAllConnections()
+    server.close()
+  }
+})

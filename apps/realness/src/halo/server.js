@@ -809,6 +809,10 @@ export const makeServer = (
       )
     } catch (error) {
       request.resume()
+      if (response.headersSent) {
+        LOG.warn(`request failed mid-stream: ${error.message}`)
+        return response.destroy()
+      }
       if (error instanceof BadRequest)
         return json(response, HTTP.BAD_REQUEST, { error: error.message })
       if (error instanceof NotFound)
