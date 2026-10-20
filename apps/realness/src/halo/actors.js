@@ -1274,7 +1274,7 @@ export class ActorStore {
   async #updateHarness(record) {
     if (!this.template) return
     const release = join(dirname(this.template), 'template.inputs')
-    const applied = join(record.dir, 'harness.inputs')
+    const applied = join(record.dir, 'actor.inputs')
     const read = path =>
       exists_sync(path) ? read_file_sync(path, 'utf8').trim() : null
     const wanted = read(release)

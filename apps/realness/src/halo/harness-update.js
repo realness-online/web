@@ -14,6 +14,8 @@ import { dirname, join, relative } from 'node:path'
 
 export const STARTER = 'usr/local/share/realness-starter'
 export const WORKSPACE = 'realness'
+/** Guest programs the halo talks to; they always follow the release. */
+export const SYSTEM = ['usr/local/bin/realness-agent']
 const PI_RUNTIME = '.pi/runtime/'
 
 /**
@@ -123,6 +125,13 @@ export const update_harness = ({ fresh, actor }) => {
     const target = join(shipped, path)
     mkdir_sync(dirname(target), { recursive: true })
     install(join(release, path), target)
+  }
+  for (const path of SYSTEM) {
+    const next = bytes(join(fresh, path))
+    if (!next || bytes(join(actor, path))?.equals(next)) continue
+    install(join(fresh, path), join(actor, path))
+    chmod_sync(join(actor, path), stat_sync(join(fresh, path)).mode)
+    updated.push(path)
   }
   return { updated, removed, kept }
 }

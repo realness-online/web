@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import {
   STARTER,
+  SYSTEM,
   WORKSPACE,
   update_harness
 } from '../../src/halo/harness-update.js'
@@ -97,4 +98,13 @@ test('the Pi runtime is left to the template', t => {
   })
   assert.deepEqual(update_harness({ fresh, actor }).updated, [])
   assert.equal(read('.pi/runtime/package.json'), null)
+})
+
+test('the guest agent always follows the release', t => {
+  const { fresh, actor } = disks(t, { release: {}, shipped: {}, workspace: {} })
+  tree(fresh, { [SYSTEM[0]]: 'streams' })
+  tree(actor, { [SYSTEM[0]]: 'old' })
+  assert.deepEqual(update_harness({ fresh, actor }).updated, [SYSTEM[0]])
+  assert.equal(read_file_sync(join(actor, SYSTEM[0]), 'utf8'), 'streams')
+  assert.deepEqual(update_harness({ fresh, actor }).updated, [])
 })
