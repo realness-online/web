@@ -40,7 +40,7 @@
     }
     & > svg {
       display: block;
-      inline-size: base-line * 1.5;
+      inline-size: base-line * 0.75;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.25;

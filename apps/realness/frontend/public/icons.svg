@@ -136,7 +136,7 @@
     <symbol id="close" viewBox="0 0 16 16">
       <path d="M2.6 3.9 3.9 2.6 13.4 12.1 12.1 13.4Z M12.1 2.6 13.4 3.9 3.9 13.4 2.6 12.1Z" />
     </symbol>
-    <symbol id="chevron" viewBox="0 0 16 14">
+    <symbol id="chevron" viewBox="5 0 8 14">
       <path d="M6 2.5 11.5 7 6 11.5" />
     </symbol>
     <symbol id="message" viewBox="0 0 14 14">

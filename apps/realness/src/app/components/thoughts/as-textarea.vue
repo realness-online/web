@@ -81,7 +81,8 @@
     inline-size: 100%;
     min-inline-size: 0;
     &:focus-within {
-      inline-size: page-width;
+      inline-size: 100%;
+      max-inline-size: page-width;
       margin-inline: auto;
     }
     & > textarea#wat {

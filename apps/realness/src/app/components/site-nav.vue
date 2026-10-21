@@ -1,6 +1,7 @@
 <script setup>
   import LogoAsLink from '@/components/logo-as-link'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
+  import Icon from '@/components/icon.vue'
   import { computed } from 'vue'
   import { useRoute as use_route } from 'vue-router'
   import { current_user, me } from '@/utils/serverless'
@@ -28,8 +29,13 @@
         :aria-current="pricing_current ? 'page' : undefined"
         >Pricing</router-link
       >
-      <router-link to="/terms" replace>Legal</router-link>
-      <router-link to="/account" replace>{{ account_label }}</router-link>
+      <router-link
+        to="/account"
+        replace
+        :aria-label="account_label"
+        :title="account_label">
+        <icon name="silhouette" />
+      </router-link>
     </menu>
     <logo-as-link />
   </nav>
@@ -52,6 +58,16 @@
       flex-wrap: wrap;
       align-items: center;
       gap: calc(var(--base-line) * 0.5) var(--base-line);
+
+      @media (max-width: 40rem) {
+        justify-content: space-between;
+        column-gap: calc(var(--base-line) * 0.5);
+      }
+
+      & > a:last-child {
+        margin-left: auto;
+      }
+
       list-style: none;
 
       a {
@@ -68,19 +84,13 @@
         }
       }
 
-      a[href='/terms'] {
-        font-size: smaller;
-        opacity: 0.6;
-
-        &:hover,
-        &.router-link-active {
-          opacity: 1;
+      a[href='/account'] {
+        display: grid;
+        & > svg {
+          inline-size: calc(var(--base-line) * 1.1);
+          block-size: calc(var(--base-line) * 1.1);
+          fill: currentColor;
         }
-      }
-
-      & > a:last-child {
-        margin-left: auto;
-        text-align: right;
       }
     }
   }

@@ -48,7 +48,7 @@ describe('@/components/site-nav', () => {
     expect(wrapper.text()).toContain('Docs')
     expect(wrapper.text()).toContain('Pricing')
     expect(wrapper.text()).not.toContain('License')
-    expect(wrapper.text()).toContain('Legal')
+    expect(wrapper.text()).not.toContain('Legal')
   })
 
   it('marks Pricing current on each tier, but not on another page', () => {
@@ -81,7 +81,9 @@ describe('@/components/site-nav', () => {
 
   it('labels the account link Account when signed out', () => {
     const wrapper = mount()
-    expect(wrapper.text()).toContain('Account')
+    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
+      'Account'
+    )
     expect(wrapper.text()).not.toContain('Sign in')
   })
 
@@ -89,7 +91,9 @@ describe('@/components/site-nav', () => {
     mock_current_user.value = { uid: 'u1' }
     mock_me.value = { name: 'Scott' }
     const wrapper = mount()
-    expect(wrapper.text()).toContain('Scott')
+    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
+      'Scott'
+    )
     expect(wrapper.text()).not.toContain('Sign in')
   })
 
@@ -111,6 +115,8 @@ describe('@/components/site-nav', () => {
     mock_current_user.value = { uid: 'u1' }
     mock_me.value = {}
     const wrapper = mount()
-    expect(wrapper.text()).toContain('Account')
+    expect(wrapper.get('a[href="/account"]').attributes('aria-label')).toBe(
+      'Account'
+    )
   })
 })
