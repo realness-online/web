@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-p - 2026-10-21
+
 - **Account icon in the site nav** - The account link is now a
   silhouette icon, labelled with your name for screen readers. The Legal link
   left the nav.
