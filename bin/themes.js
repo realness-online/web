@@ -7,6 +7,7 @@ import { load_theme, theme_name } from "../apps/realness/themes/load.js"
 import { ghostty } from "../apps/realness/themes/adapters/ghostty.js"
 import { pi } from "../apps/realness/themes/adapters/pi.js"
 import { nvim } from "../apps/realness/themes/adapters/nvim.js"
+import { emacs } from "../apps/realness/themes/adapters/emacs.js"
 import { web } from "../apps/realness/themes/adapters/web.js"
 
 const ROOT = resolve(dirname(file_url_to_path(import.meta.url)), "..")
@@ -19,6 +20,7 @@ export const render_theme = theme => {
     ...["light", "dark"].flatMap(scheme => [
       [`ghostty/${name}-${scheme}`, ghostty(schemes[scheme])],
       [`pi/${name}-${scheme}.json`, JSON.stringify(pi(schemes[scheme]), null, 2) + "\n"],
+      [`emacs/${name}-${scheme}-theme.el`, emacs(schemes[scheme])],
     ]),
     [`nvim/${name}.lua`, nvim(name, schemes)],
   ])
@@ -31,6 +33,7 @@ const installed_paths = new Map([
   ...["light", "dark"].flatMap(scheme => [
     [`ghostty/realness-${scheme}`, `apps/realness/src/app/terminal/themes/realness-${scheme}`],
     [`pi/realness-${scheme}.json`, `.pi/agent/themes/realness-${scheme}.json`],
+    [`emacs/realness-${scheme}-theme.el`, `work/doom/themes/realness-${scheme}-theme.el`],
   ]),
   ["nvim/realness.lua", "work/nvim/colors/realness.lua"],
 ])
@@ -44,6 +47,7 @@ export const generate = ({ root = ROOT, name = "realness", output, check = false
   let stale = 0
   for (const [relative, want] of files) {
     if (!output && relative.startsWith("nvim/") && !exists_sync(join(root, "work/nvim"))) continue
+    if (!output && relative.startsWith("emacs/") && !exists_sync(join(root, "work/doom"))) continue
     const path = output ? join(destination, relative) : join(root, installed_paths.get(relative))
     if (exists_sync(path) && read_file_sync(path, "utf8") === want) continue
     if (check) {
