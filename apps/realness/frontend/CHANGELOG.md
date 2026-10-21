@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Account icon in the site nav** - The account link is now a
+  silhouette icon, labelled with your name for screen readers. The Legal link
+  left the nav.
+- **The halo keeps serving after a failed reply** - A streamed reply that fails
+  partway no longer takes the halo down.
+- **Existing actors get the current guest agent** - Actors created before an
+  update pick up the current guest agent when they boot.
+
 ## v3.0.0-o - 2026-10-19
 
 - **One build per release** - The release publishes the file list of the build
