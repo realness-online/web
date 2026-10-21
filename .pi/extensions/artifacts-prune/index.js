@@ -2,7 +2,7 @@
  * Artifacts Prune Extension
  *
  * Runs `bin/artifacts-prune.js --apply` once a run settles, so scratch under
- * `artifacts/` is cleaned after seven days. Warns above 500 MB.
+ * `artifacts/` stays under 500 MB, oldest files first.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile } from 'node:child_process'

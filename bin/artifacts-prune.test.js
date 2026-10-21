@@ -129,32 +129,55 @@ test('recent work is left alone unless --all is asked, and stays inside the grac
   assert.ok(!existsSync(join(dir, 'fresh', 'node_modules')), '--all with no age limit takes it')
 })
 
-test('seven-day cleanup keeps recent files and live folders', t => {
-  const dir = scratch('retention')
+test('over the cap, oldest files go first until under it; live folders and recent files stay', t => {
+  const dir = scratch('cap')
   t.after(() => rmSync(dir, { recursive: true, force: true }))
   mkdirSync(join(dir, 'running'))
   writeFileSync(join(dir, 'running', '.live'), String(process.pid))
-  const old = new Date(Date.now() - 8 * 86_400_000)
-  for (const name of ['old.txt', 'running/old.txt']) {
-    writeFileSync(join(dir, name), 'old')
-    utimesSync(join(dir, name), old, old)
+  const put = (name, mb, hoursAgo) => {
+    const path = join(dir, name)
+    writeFileSync(path, '')
+    truncateSync(path, mb * 1_000_000)
+    const when = new Date(Date.now() - hoursAgo * 3_600_000)
+    utimesSync(path, when, when)
   }
-  writeFileSync(join(dir, 'recent.txt'), 'recent')
-  const invoke = args => spawnSync(process.execPath, [script, ...args], {
+  put('oldest.bin', 1, 50)
+  put('older.bin', 1, 40)
+  put('old.bin', 1, 30)
+  put('running/held.bin', 1, 60)
+  put('fresh.bin', 1, 0)
+  const invoke = args => spawnSync(process.execPath, [script, '--cap-mb', '3.5', ...args], {
     env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
   })
   const dry = invoke([])
   assert.equal(dry.status, 0, dry.stderr)
-  assert.match(dry.stdout, /old.txt \(older than 7 days/)
-  assert.ok(existsSync(join(dir, 'old.txt')))
+  assert.match(dry.stdout, /oldest.bin \(oldest over 3.5 MB cap/)
+  assert.ok(existsSync(join(dir, 'oldest.bin')), 'a dry run changes nothing')
   const applied = invoke(['--apply'])
   assert.equal(applied.status, 0, applied.stderr)
-  assert.ok(!existsSync(join(dir, 'old.txt')))
-  assert.ok(existsSync(join(dir, 'running/old.txt')))
-  assert.ok(existsSync(join(dir, 'recent.txt')))
+  assert.ok(!existsSync(join(dir, 'oldest.bin')))
+  assert.ok(!existsSync(join(dir, 'older.bin')))
+  assert.ok(existsSync(join(dir, 'old.bin')), 'stops once under the cap')
+  assert.ok(existsSync(join(dir, 'running/held.bin')), 'live folder kept')
+  assert.ok(existsSync(join(dir, 'fresh.bin')), 'grace window kept')
+  assert.doesNotMatch(applied.stdout, /warning/)
 })
 
-test('above 500 MB warns without removing recent data', t => {
+test('under the cap nothing goes, however old', t => {
+  const dir = scratch('undercap')
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  const path = join(dir, 'ancient.txt')
+  writeFileSync(path, 'old')
+  const old = new Date(Date.now() - 90 * 86_400_000)
+  utimesSync(path, old, old)
+  const result = spawnSync(process.execPath, [script, '--apply', '--quiet'], {
+    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
+  })
+  assert.equal(result.status, 0, result.stderr)
+  assert.ok(existsSync(path))
+})
+
+test('data held only by the grace window still warns above the cap', t => {
   const dir = scratch('budget')
   t.after(() => rmSync(dir, { recursive: true, force: true }))
   const path = join(dir, 'large.bin')

@@ -15,6 +15,8 @@ const all = args.includes("--all")
 const quiet = args.includes("--quiet")
 const age_at = args.indexOf("--age-minutes")
 const grace_ms = (age_at >= 0 ? Number(args[age_at + 1]) : 60) * 60_000
+const cap_at = args.indexOf("--cap-mb")
+const cap = (cap_at >= 0 ? Number(args[cap_at + 1]) : 500) * 1_000_000
 
 const twin = /^(.*)-(\d{4})(\.[^.]*)?$/
 
@@ -86,12 +88,24 @@ const files = []
 if (exists_sync(ROOT) && !live(ROOT)) collect(ROOT, dirs, files)
 for (const path of dirs) add(path, "regenerable")
 for (const path of files) {
-  if (Date.now() - lstat_sync(path).mtimeMs >= 7 * 86_400_000) {
-    add(path, "older than 7 days")
-    continue
-  }
   const lower = twin_of(path)
   if (lower) add(path, `twin of ${relative(ROOT, lower)}`)
+}
+
+let over = (exists_sync(ROOT) ? size_of(ROOT) : 0) - items.reduce((sum, item) => sum + item.bytes, 0) - cap
+if (over > 0) {
+  const oldest = files
+    .filter(path => !seen.has(path))
+    .map(path => ({ path, mtime: lstat_sync(path).mtimeMs }))
+    .filter(file => all || Date.now() - file.mtime >= grace_ms)
+    .sort((a, b) => a.mtime - b.mtime)
+  for (const { path } of oldest) {
+    if (over <= 0) break
+    seen.add(path)
+    const bytes = lstat_sync(path).size
+    items.push({ path, why: `oldest over ${cap / 1_000_000} MB cap`, bytes })
+    over -= bytes
+  }
 }
 
 const total = items.reduce((sum, item) => sum + item.bytes, 0)
@@ -104,4 +118,4 @@ if (apply) for (const item of items) rm_sync(item.path, { recursive: true, force
 console.log(`${apply ? "pruned" : "would prune"} ${items.length} item(s), freed ${total} bytes`)
 const remaining = exists_sync(ROOT) ? size_of(ROOT) : 0
 console.log(`artifacts size: ${remaining} bytes`)
-if (remaining > 500_000_000) console.log(`warning: artifacts exceed 500 MB (${(remaining / 1_000_000).toFixed(1)} MB)`)
+if (remaining > cap) console.log(`warning: artifacts exceed ${cap / 1_000_000} MB (${(remaining / 1_000_000).toFixed(1)} MB)`)
