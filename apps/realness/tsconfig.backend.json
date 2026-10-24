@@ -33,7 +33,8 @@
     "src/terminal",
     "src/sign-on/browser",
     "**/dist/**",
-    "**/tests/**",
+    "**/specs/**",
+    "checks/**",
     "**/test/**"
   ]
 }

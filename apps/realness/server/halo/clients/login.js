@@ -3,7 +3,7 @@
  * A real terminal into one actor.
  *
  *   node server/halo/clients/login.js --phone +14156667777
- *   node server/halo/clients/login.js --actor a-abc123 --send 'exec realness'
+ *   node server/halo/clients/login.js --actor a-abc123 --send 'realness'
  *
  * Mints a halo pass for that phone, creates an actor when none is named, and
  * pipes this terminal through the actor's pty. The actor is destroyed when the
@@ -43,7 +43,7 @@ const value_of = (argv, name, fallback) => {
 
 const read_secret = () => {
   const tried = []
-  for (const path of SECRET_FILES) 
+  for (const path of SECRET_FILES)
     try {
       const secret = read_file_sync(path, 'utf8').trim()
       if (secret.length < 32)
@@ -53,7 +53,7 @@ const read_secret = () => {
       if (error.code !== 'ENOENT') throw error
       tried.push(path)
     }
-  
+
   throw new Error(`no halo pass secret; tried ${tried.join(', ')}`)
 }
 
@@ -133,7 +133,7 @@ const release = async ({ api, pass, actor, keep }) => {
 const main = async argv => {
   if (argv.includes('--help') || argv.includes('-h')) {
     process.stdout.write(
-      "usage: login.js --phone +E164 [--actor <id>] [--send 'exec realness'] [--api <url>] [--pty <halo:port>]\n"
+      "usage: login.js --phone +E164 [--actor <id>] [--send 'realness'] [--api <url>] [--pty <halo:port>]\n"
     )
     return 0
   }

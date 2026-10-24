@@ -24,19 +24,25 @@ import { DB_PATH, indexSessions, recall, stats } from './index-db.js'
  */
 const formatResults = (query, results) => {
   if (!results.length) {
-    return `No turns matched "${query}". If the index looks thin, run memory with action "index".`
+    return `No past sessions match "${query}".`
   }
+  const home = process.env.HOME ?? ''
   const blocks = results.map((hit, i) => {
     const when = hit.ts.slice(0, 16).replace('T', ' ')
     const project = hit.project.split('/').filter(Boolean).pop() ?? '?'
-    const session = hit.session_id.slice(0, 8)
-    return [
-      `${i + 1}. ${when} · ${project} · session ${session}`,
-      `   ${hit.text.replace(/\s+/g, ' ').trim()}`,
-      `   ${hit.session_file}`,
-    ].join('\n')
+    const text = hit.text
+      .replaceAll('**', '')
+      .replace(/[`#>*_]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    const snippet = text.length > 160 ? `${text.slice(0, 159)}…` : text
+    const file = home && hit.session_file.startsWith(home)
+      ? `~${hit.session_file.slice(home.length)}`
+      : hit.session_file
+    return `${i + 1}. ${when}  ${project}\n   ${snippet}\n   ${file}`
   })
-  return `${results.length} turn(s) for "${query}":\n\n${blocks.join('\n\n')}`
+  const noun = results.length === 1 ? 'match' : 'matches'
+  return `${results.length} ${noun} for "${query}"\n\n${blocks.join('\n\n')}`
 }
 /**
  * @param {string} label
@@ -155,8 +161,7 @@ const memoryExtension = (pi) => {
       }
     },
   })
-  pi.on('session_start', async (_event, ctx) => {
-    ctx.ui.setWidget('remember', undefined)
+  pi.on('session_start', async () => {
     try {
       await indexSessions({
         path: DB_PATH,
@@ -164,13 +169,11 @@ const memoryExtension = (pi) => {
     } catch {}
   })
   pi.registerCommand('remember', {
-    description:
-      'Search past sessions. Usage: /remember <words>. With no words, clears the results.',
+    description: 'Search past sessions. Usage: /remember <words>. Results post to the chat.',
     handler: async (args, ctx) => {
       const query = (args || '').trim()
       if (!query) {
-        ctx.ui.setWidget('remember', undefined)
-        ctx.ui.notify('remember: results cleared', 'info')
+        ctx.ui.notify('remember: usage /remember <words>', 'info')
         return
       }
       const results = recall(query, {
@@ -178,8 +181,15 @@ const memoryExtension = (pi) => {
         partial: true,
         exclude_session: ctx.sessionManager.getSessionId(),
       })
-      ctx.ui.setWidget('remember', formatResults(query, results).split('\n'))
-      ctx.ui.notify(`remember: ${results.length} hit(s) for "${query}"`, 'info')
+      pi.sendMessage({
+        customType: 'remember',
+        content: formatResults(query, results),
+        display: true,
+        details: {
+          query,
+          count: results.length,
+        },
+      })
     },
   })
   pi.on('agent_settled', async () => {

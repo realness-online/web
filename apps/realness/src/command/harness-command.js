@@ -1,5 +1,7 @@
-import { basename } from 'node:path'
-import { client, SYNC_URL } from '#root/src/files/client.js'
+import { existsSync as exists_sync } from 'node:fs'
+import { basename, join } from 'node:path'
+import { client } from '#root/src/files/client.js'
+import { sync_target } from '#root/src/files/target.js'
 import { actor_url, sync_actor } from '#root/src/harness/actor.js'
 import {
   find_root,
@@ -7,8 +9,9 @@ import {
   use_harness_state
 } from '#root/src/harness/harness.js'
 import { turn_end, turn_start } from '#root/src/harness/turns.js'
-import { token_source } from '#root/src/sign-on/node/login.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
+
+export const SYNC_PAUSED = 'sync-paused'
 
 const report_harness = (result, { command, json, stdout, stderr }) => {
   const { harness, synced, refused } = result
@@ -73,7 +76,7 @@ const harness_options = rest => {
 const end_turn = async ({
   actor,
   command,
-  env,
+  local,
   json,
   root,
   session,
@@ -85,7 +88,7 @@ const end_turn = async ({
   const logged = await turn_end({ root, state, session, turn })
   if (logged.length && !json && !actor)
     stdout.write(`turn ${turn}: ${logged.length} change(s) logged\n`)
-  if (!actor && env.REALNESS_TURN_SYNC !== '1') {
+  if (!actor && !local) {
     if (json)
       stdout.write(
         `${JSON.stringify({
@@ -106,12 +109,11 @@ const end_turn = async ({
  * @param {boolean} [options.actor]
  * @param {string} [options.root]
  * @param {string} [options.state]
- * @param {() => Promise<string | null>} [options.get_token]
+ * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> }>} [options.target] Where desktop sync goes: the local stack when it is up
  * @param {string} [options.service_url]
  * @param {() => Promise<string>} [options.issue]
  * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
  * @param {NodeJS.WriteStream & { fd: 2 }} [options.stderr]
- * @param {NodeJS.ProcessEnv} [options.env]
  */
 export const run_harness = async (
   args,
@@ -119,12 +121,11 @@ export const run_harness = async (
     actor = false,
     root: root_option,
     state: state_option,
-    get_token = token_source(),
+    target = sync_target,
     service_url,
     issue,
     stdout = process.stdout,
-    stderr = process.stderr,
-    env = process.env
+    stderr = process.stderr
   } = {}
 ) => {
   let root = root_option
@@ -155,10 +156,11 @@ export const run_harness = async (
       stdout.write(`${JSON.stringify({ ok: true, command, result: null })}\n`)
     return 0
   }
+  const where = actor ? null : await target()
   const early = await end_turn({
     actor,
     command,
-    env,
+    local: where?.local,
     json,
     root,
     session,
@@ -167,6 +169,15 @@ export const run_harness = async (
     turn
   })
   if (early !== null) return early
+  if (exists_sync(join(state, SYNC_PAUSED))) {
+    const message = `sync paused: remove ${join(state, SYNC_PAUSED)} to resume`
+    stdout.write(
+      json
+        ? `${JSON.stringify({ ok: true, command, result: { paused: true } })}\n`
+        : `${message}\n`
+    )
+    return 0
+  }
   if (actor) {
     const result = await sync_actor({
       root,
@@ -180,12 +191,12 @@ export const run_harness = async (
     )
     return 0
   }
-  const token = await get_token()
+  const token = await where.get_token()
   if (!token) throw new Error('not signed in; run realness login')
   const result = await sync_harness({
     root,
     state,
-    store: client({ url: service_url ?? SYNC_URL, token, state }),
+    store: client({ url: service_url ?? where.url, token, state }),
     plans: rest.filter(arg => !['--deletes', '--json'].includes(arg)),
     deletes: rest.includes('--deletes') ? 'all' : 'explained',
     defer_edits: command === 'turn-end'

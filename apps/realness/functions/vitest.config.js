@@ -5,7 +5,7 @@ export default define_config({
     environment: 'node',
     coverage: {
       include: ['src/**/*.js', 'index.js'],
-      exclude: ['tests/**', 'node_modules/**'],
+      exclude: ['specs/**', 'node_modules/**'],
       lines: 80,
       branches: 80,
       statements: 80,

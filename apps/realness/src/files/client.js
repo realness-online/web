@@ -37,7 +37,7 @@ import { starter_base, starter_bytes, starter_choice } from './starter.js'
 import { harness_root, state_path } from '#root/src/harness/settings.js'
 import { person_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
-import { MIB, MS_PER_DAY } from '#root/lib/units.js'
+import { MIB } from '#root/lib/units.js'
 import { unsafe_part } from '#root/lib/path-parts.js'
 /* eslint-disable no-await-in-loop -- a fixed pool of workers each takes the next file; tree walks bound open files */
 
@@ -46,9 +46,8 @@ const KEY_LENGTH = 16
 const MODE_BITS = 0o777
 const MAX_MIB = 10
 
-/** The development sync service, unless SYNC_URL says otherwise. */
-export const SYNC_URL =
-  process.env.SYNC_URL ?? person_settings.services.sync_url
+/** The person's own sync service. */
+export const SYNC_URL = person_settings.services.sync_url
 
 /** Sync records live here, never inside the folders they describe. */
 export const state_dir = (root = harness_root()) =>
@@ -128,8 +127,7 @@ const empty_report = () => ({
 
 /**
  * Work out what moved: the local files, the remote versions, and the union of
- * names worth looking at. Uses the change feed when the cursor is still good,
- * and falls back to a full walk.
+ * names worth looking at. The remote side is one full walk.
  */
 const plan_sync = async ({
   api,
@@ -150,30 +148,14 @@ const plan_sync = async ({
     exclude(relative(local, path).split(sep).join('/'), is_dir)
   ).catch(() => []))
     locals.set(relative(local, file).split(sep).join('/'), file)
-  const feed =
-    remote_files || pull_only
-      ? null
-      : await api.changes(folder, saved.cursor ?? '').catch(() => null)
-  const fresh_walk =
-    !saved.walked_at || Date.now() - Date.parse(saved.walked_at) > WALK_EVERY_MS
-  let remotes = remote_files
-  let { walked_at } = saved
-  if (!remotes && feed && saved.cursor && saved.remotes && !fresh_walk) {
-    remotes = { ...saved.remotes }
-    for (const [name, version] of Object.entries(feed.changes))
-      if (version === null) delete remotes[name]
-      else remotes[name] = version
-  }
-  if (!remotes) {
-    remotes = await api.walk(folder).catch(error => {
+  const remotes =
+    remote_files ??
+    (await api.walk(folder).catch(error => {
       if (error.status === HTTP.NOT_FOUND && !Object.keys(manifest).length)
         return {}
       throw error
-    })
-    walked_at = new Date().toISOString()
-  }
-  if (remote_files) report.listing = 'given'
-  else report.listing = walked_at === saved.walked_at ? 'feed' : 'walk'
+    }))
+  report.listing = remote_files ? 'given' : 'walk'
   const stock = await starter_base(api, folder, starter)
   const managed = new Set(
     [
@@ -196,7 +178,7 @@ const plan_sync = async ({
         (!selected || selected.has(name))
     )
   )
-  return { feed, locals, managed, names, remotes, selected, stock, walked_at }
+  return { locals, managed, names, remotes, selected, stock }
 }
 
 /**
@@ -245,25 +227,21 @@ const settle_starter = async ({
   if (!pull_only) agree('starter.json', bytes, version)
 }
 
-/** Save the sync cursor and per-file versions so the next run can skip work. */
+/** Save the per-file agreement and when this sync ran. */
 const save_sync_record = async ({
   baseline,
   deferred,
-  feed,
   manifest,
   pair,
   pull_only,
-  record_path,
-  remotes,
-  walked_at
+  record_path
 }) => {
   if (pull_only && !baseline) return
   await mkdir(dirname(record_path), { recursive: true })
-  const feed_state =
-    feed && !pull_only ? { cursor: feed.cursor, walked_at, remotes } : {}
+  const synced_at = new Date().toISOString()
   await write_file(
     record_path,
-    `${JSON.stringify({ ...pair, files: manifest, deferred, ...feed_state }, null, 2)}\n`
+    `${JSON.stringify({ ...pair, files: manifest, deferred, synced_at }, null, 2)}\n`
   )
 }
 
@@ -470,6 +448,14 @@ const both_moved = async (
   if (sha(theirs.bytes) === local_sha) {
     agree(name, bytes, theirs.version)
     return report.adopted.push(name)
+  }
+  if (base?.sha && sha(theirs.bytes) === base.sha) {
+    agree(
+      name,
+      bytes,
+      await api.put(`${folder}${name}`, bytes, conditional(theirs))
+    )
+    return report.pushed.push(name)
   }
   const rows =
     base?.at && replayable(log.since(file_of(name), base.at), local_sha)
@@ -925,21 +911,6 @@ const read_api = ({ call, expect, key }) => {
           `walk ${path}`
         )
       ).json()
-    },
-
-    /**
-     * h3: what moved under a folder since `cursor`, as `{ cursor, changes }`;
-     * an empty cursor starts one. Null when the service has no feed or the
-     * cursor expired, so the caller walks instead.
-     */
-    async changes(path, cursor = '') {
-      const folder = path.endsWith('/') ? path : `${path}/`
-      const response = await call('GET', folder, {
-        query: `changes=${encodeURIComponent(cursor)}`
-      })
-      if (response.status === HTTP.GONE) return null
-      const feed = await (await expect(response, `changes ${path}`)).json()
-      return typeof feed?.cursor === 'string' && feed.changes ? feed : null
     }
   }
   return api
@@ -1060,20 +1031,19 @@ export const client = ({
 
       const log = edit_log(edit_log_path(state))
       const session_folder = sessions && resolve(sessions)
-      const { feed, locals, managed, names, remotes, stock, walked_at } =
-        await plan_sync({
-          api,
-          exclude,
-          folder,
-          local,
-          manifest,
-          only,
-          pull_only,
-          remote_files,
-          report,
-          saved,
-          starter
-        })
+      const { locals, managed, names, remotes, stock } = await plan_sync({
+        api,
+        exclude,
+        folder,
+        local,
+        manifest,
+        only,
+        pull_only,
+        remote_files,
+        report,
+        saved,
+        starter
+      })
 
       const in_sessions = name =>
         Boolean(session_folder) &&
@@ -1138,13 +1108,10 @@ export const client = ({
       await save_sync_record({
         baseline,
         deferred,
-        feed,
         manifest,
         pair,
         pull_only,
-        record_path,
-        remotes,
-        walked_at
+        record_path
       })
       for (const list of Object.values(report))
         if (Array.isArray(list)) list.sort()
@@ -1208,9 +1175,6 @@ const safe_target = async (root, name) => {
     if (info?.isSymbolicLink()) throw new Error(`target is a link: ${target}`)
   }
 }
-
-/** Even with a feed, list everything once a day: a lost record cannot linger. */
-const WALK_EVERY_MS = MS_PER_DAY
 
 const version_of = response => response.headers.get('etag')?.replace(/"/g, '')
 

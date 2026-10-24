@@ -9,7 +9,7 @@ description: >-
   the Building an Advanced Agentic Harness article's Planner role, inverted so
   the harness plans and the human decides.
 metadata:
-  check: "node ../../../bin/check-skills.js planning"
+  check: "node ../../../bin/checks/check-skills.js planning"
   category: Workflow
   tags:
     - planning
@@ -94,7 +94,7 @@ effort in the table, not the graph.
 Inside a mermaid fence, ASCII only: `-` for dashes, `"` for quotes, `...` for an
 ellipsis, `-->` or `->` for an arrow. Prose keeps its wider characters.
 
-Before showing a DAG in chat, run `bin/mermaid-fit.js <file>`. Pi's feed shows
+Before showing a DAG in chat, run `bin/plans/mermaid-fit.js <file>`. Pi's feed shows
 the raw fence when a diagram is wider than the pane. Show a short-label copy in
 chat until it passes; the plan file keeps its labels.
 
@@ -139,7 +139,7 @@ out. One line above the table names the legend.
   classDef place fill:none,stroke:#525252,stroke-dasharray:3 3;
 ```
 
-`bin/plan-shape.js` accepts only these lines.
+`bin/plans/plan-shape.js` accepts only these lines.
 
 Prose around a graphic:
 
@@ -151,7 +151,7 @@ Prose around a graphic:
 
 ASCII only for a throwaway sketch that will never persist.
 
-`bin/plan-shape.js` checks these rules and runs in `npm test`.
+`bin/plans/plan-shape.js` checks these rules and runs in `npm test`.
 
 ### Plan file shape
 
@@ -308,4 +308,4 @@ Summarize what ran. Ask whether it meets the plan. Done is your call.
 - Independent nodes still run one at a time.
 - Header links: front matter `related:` (`title`, `href`) renders as the header nav. Eight at most, one-to-three-word titles, the links a reader opens first.
 - Other links: a `## Links` section at the end, grouped by kind (Watch, Read, GitHub, Demos, Local). The header doesn't repeat them.
-- After plan edits: run `npm run plans`, then confirm the change at http://127.0.0.1:4323 (`npm run plans:serve`).
+- After plan edits: run `npm run plans`, then confirm the change at http://127.0.0.1:4323 (`npm run vault:serve`).

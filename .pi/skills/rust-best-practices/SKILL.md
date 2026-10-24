@@ -7,7 +7,7 @@ description: >
 license: MIT
 compatibility: Rust 1.70+, Cargo
 metadata:
-  check: "node ../../../bin/check-skills.js rust-best-practices"
+  check: "node ../../../bin/checks/check-skills.js rust-best-practices"
   author: apollographql
   version: "1.1.0"
 allowed-tools: Bash(cargo:*) Bash(rustc:*) Bash(rustfmt:*) Bash(clippy:*) Read Write Edit Glob Grep
@@ -28,7 +28,7 @@ Before reviewing, familiarize yourself with Apollo's Rust best practices. Read A
 - [Chapter 5 - Automated Testing](references/chapter_05.md): Test naming, one assertion per test, snapshot testing
 
 Trimmed to the chapters that apply here. The only Rust in this workspace is
-`apps/realness/frontend/tracer`, a ~300-line WASM `cdylib` with no threads, no `unsafe`,
+`apps/realness/tracer`, a ~300-line WASM `cdylib` with no threads, no `unsafe`,
 no trait objects, and no published rustdoc API. Apollo's chapters 6-9 (generics
 and dispatch, type state, comments vs documentation, pointers and `Send`/`Sync`)
 were dropped as inapplicable. Pull them from the

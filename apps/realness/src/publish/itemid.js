@@ -8,7 +8,7 @@
 import {
   create_itemid,
   types as realness_types
-} from '#root/frontend/packages/itemid/src/index.js'
+} from '#root/packages/itemid/src/index.js'
 
 /** What the vault and apps hold beyond Realness's types. */
 const vault_types = ['plans', 'articles', 'diagrams', 'sources', 'pages']

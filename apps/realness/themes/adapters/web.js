@@ -1,6 +1,6 @@
 const web_roles = {
   warning: "warning", accent: "accent", emphasis: "error", working: "working",
-  "surface-glass": "surface-glass", text: "document-text", surface: "surface",
+  "surface-glass": "surface-glass", text: "document-text", surface: "surface", background: "background",
   "code-surface": "code-surface", "muted-text": "muted-text", contrast: "contrast",
 }
 

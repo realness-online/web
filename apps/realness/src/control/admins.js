@@ -77,7 +77,7 @@ export const plan_admins = (list, { verb, phone, name = '' }) => {
 /**
  * Read, plan, and (with `yes`) write. Without `yes` nothing is written and
  * the result says what would change.
- * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null } | null>, put: (key: string, body: string, options?: { if_version?: string | null }) => Promise<unknown> }} storage
+ * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string } | null>, put: (key: string, body: string, options?: { if_version?: string, if_absent?: boolean }) => Promise<unknown> }} storage
  * @param {object} [options]
  * @param {'list' | 'init' | 'add' | 'remove'} [options.verb]
  * @param {string} [options.phone]
@@ -108,9 +108,11 @@ export const manage_admins = async (
     !list.every(admin => written.has(admin.phone))
   )
     throw new Error('rendered admins page does not round-trip')
-  await storage.put('admins.html', html, {
-    if_version: page ? page.version : null
-  })
+  await storage.put(
+    'admins.html',
+    html,
+    page ? { if_version: page.version } : { if_absent: true }
+  )
   return { ...result, written: true }
 }
 
@@ -155,9 +157,11 @@ export const ensure_admins = async (
       written: false,
       note: 'admins already listed'
     }
-  await storage.put('admins.html', render_admins(after), {
-    if_version: page ? page.version : null
-  })
+  await storage.put(
+    'admins.html',
+    render_admins(after),
+    page ? { if_version: page.version } : { if_absent: true }
+  )
   return { before, after, changed: true, written: true }
 }
 

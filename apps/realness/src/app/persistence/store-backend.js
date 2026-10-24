@@ -4,6 +4,7 @@
 import { get, set } from 'idb-keyval'
 import { create_firebase_move } from '@realness.online/store/firebase'
 import { mutex_for } from '@/utils/algorithms'
+import { synced } from '@/utils/storage-mode'
 import { prepare_upload_html } from '@/utils/upload-processor'
 import { is_sync_index_missing } from '@/utils/sync-file'
 import { as_path_parts } from '@/utils/itemid'
@@ -110,7 +111,9 @@ export const backend = {
   upload: upload_unless_sold,
   remove: path => remove(path),
   move: (from, to) =>
-    create_firebase_move({ location: path => location(path) })(from, to),
+    synced
+      ? synced.move(from, to)
+      : create_firebase_move({ location: path => location(path) })(from, to),
   url: path => url(path),
   directory: path => directory(path),
   online: () => navigator.onLine,

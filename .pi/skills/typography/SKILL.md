@@ -3,7 +3,7 @@ name: typography
 description: Typography advisor for client projects - font selection, type scale, fluid sizing, baseline rhythm, and performance. Draws on the realness design system as a proven reference while adapting to each client's voice and context. Use for font pairing, scale decisions, web font implementation, and typographic hierarchy. Not for logo design, icon fonts, or general CSS unrelated to type.
 allowed-tools: Read,Write,Edit,WebFetch
 metadata:
-  check: 'node ../../../bin/check-skills.js typography'
+  check: 'node ../../../bin/checks/check-skills.js typography'
   category: Design & Creative
   pairs-with:
   - skill: soundness

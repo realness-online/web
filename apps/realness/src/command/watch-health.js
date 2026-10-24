@@ -167,7 +167,7 @@ export const newest_session = names => {
   return stamps.at(-1) ?? null
 }
 
-/** Sync: the change feed, plus what the last `realness sync` in this harness did. */
+/** Sync: each folder's listing, plus what the last `realness sync` in this harness did. */
 const sync_panel = async ({ store, who, records = {} }) => {
   const saved = Object.keys(records)
   const folders = saved.length
@@ -180,10 +180,6 @@ const sync_panel = async ({ store, who, records = {} }) => {
       error = thrown.message
       return null
     })
-    const feed =
-      typeof store.changes === 'function'
-        ? await store.changes(folder).catch(() => null)
-        : null
     const record = records[folder] ?? null
     rows.push({
       folder: folder.replace('can://~/', ''),
@@ -191,8 +187,6 @@ const sync_panel = async ({ store, who, records = {} }) => {
       listing: Boolean(listed),
       error,
       newest: newest_session(listed ?? []),
-      cursor: feed?.cursor ?? null,
-      changes: feed ? Object.keys(feed.changes).length : null,
       last_sync: record?.at ?? null,
       state: (record && 'running') || (listed && 'idle') || 'quiet'
     })

@@ -33,7 +33,7 @@ run passed 12 of 12 steps.
 | The vsock agent and the terminal                    | same, from the boot: no `realness-vsock`, `-pty`  |
 | Every getty: serial, virtual terminals, the target  | same: no `getty@`, `serial-getty`, `getty.target` |
 | e2scrub timers                                      | same: no `e2scrub`                                |
-| Procfiles, Python apps, other stacks                | `tests/halo/infer.test.js`; `app-boot-check.sh`   |
+| Procfiles, Python apps, other stacks                | `specs/halo/infer.spec.js`; `app-boot-check.sh`   |
 | Author binaries                                     | same: an executable is refused                    |
 | npm dependencies, `node_modules`, bare imports      | `infer.test.js`: standard library only            |
 | Author servers; we run the only one                 | `infer.test.js`: no default export is refused     |

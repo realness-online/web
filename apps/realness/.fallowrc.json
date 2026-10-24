@@ -1,12 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "entry": [
-    "frontend/index.html",
+    "index.html",
     "src/app/workers/*.js",
-    "frontend/scripts/*.js",
+    "scripts/*.js",
     "tools/publish/renderer/static/**",
     "**/*.check.js",
-    "tests/**/*.check.js",
+    "specs/**/*.spec.js",
     "src/settings/cli.js",
     "server/halo/app.js",
     "server/halo/main.js",
@@ -21,19 +21,17 @@
     "themes/load.js",
     "themes/adapters/*.js",
     "themes/*/palette.css",
-    "frontend/vite.config.js",
-    "frontend/vite.prerender.config.js",
-    "frontend/workers.config.js",
-    "frontend/public/push-handlers.js",
+    "vite.config.js",
+    "vite.prerender.config.js",
+    "workers.config.js",
+    "public/push-handlers.js",
     "src/app/prerender/entry-server.js",
     "server/sync/bin/realness.js",
     "tools/cli/bin/*.js",
-    "frontend/packages/*/src/index.js",
-    "frontend/packages/store/src/firebase.js",
-    "frontend/packages/store/src/local-only.js",
-    "scripts/s9-check.js",
-    "scripts/z8-check.js",
-    "frontend/durable.config.js",
+    "packages/*/src/index.js",
+    "packages/store/src/firebase.js",
+    "packages/store/src/local-only.js",
+    "durable.config.js",
     "src/app/utils/durable-entry.js"
   ],
   "ignorePatterns": [
@@ -77,7 +75,7 @@
   },
   "overrides": [
     {
-      "files": ["**/tests/**", "**/test/**", "**/*.spec.js", "**/*.test.js"],
+      "files": ["**/specs/**", "**/test/**", "**/*.spec.js", "**/*.test.js"],
       "rules": {
         "unused-exports": "off",
         "unused-files": "off"
@@ -87,7 +85,7 @@
       "files": [
         "src/app/components/icon.vue",
         "src/app/components/events/as-button.vue",
-        "frontend/tests/mocks/html/**"
+        "specs/app/mocks/html/**"
       ],
       "rules": {
         "unresolved-imports": "off"
@@ -100,7 +98,7 @@
     "minLines": 8
   },
   "health": {
-    "ignore": ["**/tests/**", "**/test/**", "**/*.test.js", "src/app/wasm/**"],
+    "ignore": ["**/specs/**", "**/test/**", "**/*.spec.js", "**/*.test.js", "src/app/wasm/**"],
     "maxCyclomatic": 20,
     "maxCognitive": 15
   },

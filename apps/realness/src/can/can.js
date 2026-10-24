@@ -22,7 +22,7 @@ const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LOOP = /^a-[a-f0-9]{12}$/
 /** hs-n2: `placements/<phone digits>.html`, written only by the gate. */
 const PLACEMENT = /^[1-9]\d{6,14}\.html$/
-const PUBLIC_FILES = new Set(['index.html.gz'])
+const PUBLIC_FILES = new Set(['index.html', 'index.html.gz'])
 const PUBLIC_FOLDERS = new Set(['posters', 'statements', 'thoughts'])
 const GRANTED = { read: new Set(['get', 'list']), write: ACTIONS }
 

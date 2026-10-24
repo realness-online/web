@@ -1,7 +1,7 @@
 # Capacity preparation
 
 For operators measuring one disposable halo. No deployment or provisioning is
-part of this command. The older `tests/control/capacity.check.js` is unchanged.
+part of this command. The older `checks/control/capacity.check.js` is unchanged.
 
 ## Offline check
 
@@ -65,7 +65,7 @@ see hs-d1 for what its price means against the monthly ceiling.
 - Pi: the live example runs a real Pi child only after proxy credentials and a
   provider-side spending limit exist. Set `pi_reply: "ready"`; the runner checks the completed
   assistant reply and settled-agent event, using the acceptance rules from
-  `tests/control/pi-exit.check.js`. Guest exit zero alone cannot pass this case.
+  `checks/control/pi-exit.check.js`. Guest exit zero alone cannot pass this case.
 - Browser: the live example uses the installed agent-browser wrapper to lease
   external Chrome and verify a page on its actor. Lease support and a reachable
   browser service are prerequisites. A

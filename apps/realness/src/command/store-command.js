@@ -6,15 +6,12 @@ import {
   SYNC_URL,
   SyncError
 } from '#root/src/files/client.js'
-import {
-  login,
-  person_keychain,
-  token_source
-} from '#root/src/sign-on/node/login.js'
+import { login, person_keychain } from '#root/src/sign-on/node/login.js'
 import { find_root, use_harness_state } from '#root/src/harness/harness.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
 import { person_settings } from '#root/src/settings/environments.js'
+import { local_owner, sync_target } from '#root/src/files/target.js'
 /* eslint-disable no-await-in-loop -- removes run in the order given */
 
 const SHOWN_DIGITS = 2
@@ -71,7 +68,8 @@ const run_store_command = async (command, rest, { print, store, stdout }) => {
  * @param {object} [options]
  * @param {boolean} [options.actor]
  * @param {string | null} [options.root]
- * @param {() => Promise<string | null>} [options.get_token]
+ * @param {() => Promise<string | null>} [options.get_token] A fixed sign-in; otherwise the target's
+ * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> }>} [options.target]
  * @param {string} [options.service_url]
  * @param {() => Promise<string>} [options.issue]
  * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
@@ -82,7 +80,10 @@ export const run_store = async (
   {
     actor = false,
     root: root_option,
-    get_token = token_source(),
+    get_token,
+    target = get_token
+      ? async () => ({ local: false, url: SYNC_URL, get_token })
+      : sync_target,
     service_url,
     issue,
     stdout = process.stdout,
@@ -106,6 +107,11 @@ export const run_store = async (
   try {
     if (actor && ['login', 'logout'].includes(command))
       throw new Error('actors use halo-issued passes')
+    const where = actor ? null : await target()
+    if (['login', 'logout'].includes(command) && where?.local) {
+      print(`Local stack: you are ${mask(local_owner())}. Nothing to sign.`)
+      return 0
+    }
     if (command === 'login') {
       print(
         `Opening ${sign_on}/sign-on in your browser. Click to sign Realness in.`
@@ -139,9 +145,9 @@ export const run_store = async (
         issue
       }))
     } else {
-      const token = await get_token()
+      const token = await where.get_token()
       store = client({
-        url: service_url ?? SYNC_URL,
+        url: service_url ?? where.url,
         token,
         state: root ? use_harness_state(root) : undefined
       })

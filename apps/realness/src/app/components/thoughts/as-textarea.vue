@@ -87,7 +87,7 @@
     }
     & > textarea#wat {
       line-height: 1.5;
-      padding: base-line;
+      padding: (base-line / 2) base-line;
       border-radius: base-line;
       resize: none;
       appearance: none;

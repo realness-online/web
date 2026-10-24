@@ -127,7 +127,7 @@
 
 <template>
   <as-panel :actor="actor" :startup_id="startup_id" @leave="toggle_chat">
-    <as-chat-toggle v-if="view === 'chat'" />
+    <as-chat-toggle inside />
   </as-panel>
   <as-tui
     :actor="actor"

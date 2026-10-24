@@ -1,27 +1,27 @@
 # realness - tests + coverage reference
 
-Project: `apps/realness/frontend` (`@realness.online/web`).
+Project: `apps/realness` (`@realness.online/web`).
 
-Read the nearest existing spec under `tests/**` before adding a new one.
+Read the nearest existing spec under `specs/app/**` before adding a new one.
 
 ## Thresholds (vite.config.js)
 
 - Global gate: **80%** lines, branches, statements, functions
-- `all: true` - untested `src/**` files count against you
-- Excluded: `src/main.js`, `src/router.js`, `src/wasm/**`
+- `all: true` - untested `src/app/**` files count against you
+- Excluded: `src/app/main.js`, `src/app/router.js`, `src/app/wasm/**`
 
 ## Architecture map (coverage priority)
 
 | Area | Path | Test home | Priority |
 | --- | --- | --- | --- |
-| Item IDs / sync | `src/utils/itemid.js`, `itemid-parse.js` | `tests/utils/`, `tests/sync-*` | **P0** |
-| Auth / me | `src/utils/serverless.js`, `src/persistence/` | `tests/components/`, `tests/use/` | **P0** |
-| Sponsorship / Stripe | `src/use/sponsor.js`, `src/components/sponsor/` | `tests/components/sponsor/` | **P0** |
-| Posters / SVG | `src/use/poster.js`, `src/components/posters/` | `tests/components/posters/` | **P1** |
-| 3D viewer | `src/3d/`, `as-viewer-3d.vue` | `tests/3d/` or component specs | **P1** |
-| Potrace | `src/potrace/` | `tests/potrace/` | **P1** |
-| Views | `src/views/` | `tests/views/` | **P1** |
-| Preferences | `src/utils/preference.js` | extend `tests/App.spec.js` mocks | **P2** |
+| Item IDs / sync | `src/app/utils/itemid.js`, `itemid-parse.js` | `specs/app/utils/`, `specs/app/sync-*` | **P0** |
+| Auth / me | `src/app/utils/serverless.js`, `src/app/persistence/` | `specs/app/components/`, `specs/app/use/` | **P0** |
+| Sponsorship / Stripe | `src/app/use/sponsor.js`, `src/app/components/sponsor/` | `specs/app/components/sponsor/` | **P0** |
+| Posters / SVG | `src/app/use/poster.js`, `src/app/components/posters/` | `specs/app/components/posters/` | **P1** |
+| 3D viewer | `src/app/3d/`, `as-viewer-3d.vue` | `specs/app/3d/` or component specs | **P1** |
+| Potrace | `src/app/potrace/` | `specs/app/potrace/` | **P1** |
+| Views | `src/app/views/` | `specs/app/views/` | **P1** |
+| Preferences | `src/app/utils/preference.js` | extend `specs/app/App.spec.js` mocks | **P2** |
 
 ## Stack
 
@@ -49,9 +49,9 @@ Pre-commit: `vp check --fix && vp run type && vp test run`.
 ## Layout
 
 ```
-apps/realness/frontend/
+apps/realness/
   src/
-  tests/
+  specs/app/
     setup.js
     mocks/default.js
     mocks/browser/          # fetch, localStorage, indexedDB, workers, ...
@@ -60,10 +60,10 @@ apps/realness/frontend/
 
 Rules:
 
-- `*.spec.js` only - not `.test.ts`, not `__tests__/`, not co-located with `src/`
-- Path mirrors `src/` under `tests/`
+- `*.spec.js` only - not `.test.ts`, not `__tests__/`, not co-located with `src/app/`
+- Path mirrors `src/app/` under `specs/app/`
 - `describe('@/utils/itemid', () => { ... })` or view/component name
-- `@/` -> `src/`; `@@/` -> `tests/mocks/`
+- `@/` -> `src/app/`; `@@/` -> `specs/app/mocks/`
 
 ## vite.config.js test block
 
@@ -72,7 +72,7 @@ test: {
   root: '.',
   globals: true,
   environment: 'happy-dom',
-  include: ['tests/**/*.spec.js'],
+  include: ['specs/app/**/*.spec.js'],
   exclude: [
     ...configDefaults.exclude,
     '**/setup.js',
@@ -82,9 +82,9 @@ test: {
   testTimeout: 30000,
   mockReset: false,
   setupFiles: [
-    './tests/setup.js',
-    './tests/mocks/default.js',
-    './tests/mocks/browser/console.js'
+    './specs/app/setup.js',
+    './specs/app/mocks/default.js',
+    './specs/app/mocks/browser/console.js'
     // fetch, worker, indexedDB, localStorage, ...
   ],
   coverage: {
@@ -92,39 +92,39 @@ test: {
     lines: 80, branches: 80, statements: 80, functions: 80,
     all: true,
     provider: 'v8',
-    exclude: ['tests/**', 'src/main.js', 'src/router.js', 'src/wasm/**']
+    exclude: ['specs/app/**', 'src/main.js', 'src/router.js', 'src/wasm/**']
   }
 }
 ```
 
-Global helpers from `tests/setup.js`: `resolve_mock_path`, `read_mock_file`.
+Global helpers from `specs/app/setup.js`: `resolve_mock_path`, `read_mock_file`.
 
-## tests/setup.js
+## specs/app/setup.js
 
 - `@testing-library/jest-dom`
 - VTU: stubs `router-link` / `router-view`, `set_working`, fake `$router` / `$route`
 - `matchMedia`, `IntersectionObserver`, `ResizeObserver`
 - Imports browser mocks
 
-## tests/mocks/default.js
+## specs/app/mocks/default.js
 
 Mocks: `vue-router`, Firebase, `idb-keyval`, heavy async SFCs (`as-dialog-preferences`, `as-dialog-documentation`).
 
-Do not mock `as-fps` globally - `tests/components/fps.spec.js` mounts the real component.
+Do not mock `as-fps` globally - `specs/app/components/fps.spec.js` mounts the real component.
 
 ## Spec file map
 
 | src area | tests home | Example |
 | --- | --- | --- |
-| `src/utils/` | `tests/utils/` | `itemid.spec.js` |
-| `src/use/` | `tests/use/` | `poster.spec.js` |
-| `src/components/` | `tests/components/` | `account/as-notifications.spec.js` |
-| `src/views/` | `tests/views/` | `Account.spec.js` |
-| `src/persistence/` | `tests/persistence/` | `Directory.spec.js` |
-| `src/3d/` | `tests/3d/` | `scenes/create-poster-scene.spec.js` |
-| `src/workers/` | `tests/workers/` | `vector.spec.js` |
-| `src/potrace/` | `tests/potrace/` | `index.spec.js` |
-| App shell | `tests/` | `App.spec.js` |
+| `src/app/utils/` | `specs/app/utils/` | `itemid.spec.js` |
+| `src/app/use/` | `specs/app/use/` | `poster.spec.js` |
+| `src/app/components/` | `specs/app/components/` | `account/as-notifications.spec.js` |
+| `src/app/views/` | `specs/app/views/` | `Account.spec.js` |
+| `src/app/persistence/` | `specs/app/persistence/` | `Directory.spec.js` |
+| `src/app/3d/` | `specs/app/3d/` | `scenes/create-poster-scene.spec.js` |
+| `src/app/workers/` | `specs/app/workers/` | `vector.spec.js` |
+| `src/app/potrace/` | `specs/app/potrace/` | `index.spec.js` |
+| App shell | `specs/app/` | `App.spec.js` |
 
 ## Patterns
 
@@ -219,18 +219,18 @@ url.mockRejectedValue(
 
 ### Browser / persistence
 
-- `localStorage` - `tests/mocks/browser/localStorage.js`; `localStorage.me = id`
+- `localStorage` - `specs/app/mocks/browser/localStorage.js`; `localStorage.me = id`
 - `idb-keyval` - `get.mockImplementation(...)`
-- `fetch` - per-test or `tests/mocks/browser/fetch.js`
+- `fetch` - per-test or `specs/app/mocks/browser/fetch.js`
 
 ### Workers / 3D
 
 - Worker exclusions in `vite.config.js` `test.exclude`
-- 3D: scene factories and settings under `tests/3d/` - not every render branch
+- 3D: scene factories and settings under `specs/app/3d/` - not every render branch
 
 ## itemid fixtures
 
-Reuse from `tests/utils/itemid.spec.js`:
+Reuse from `specs/app/utils/itemid.spec.js`:
 
 ```javascript
 const directory = {
@@ -253,13 +253,13 @@ Person prop: `{ id, name, type: 'person' }`.
 
 **Defer when**
 
-- Glue to APIs mocked in `tests/mocks/browser/`
+- Glue to APIs mocked in `specs/app/mocks/browser/`
 - Template-only UI covered by parent spec
 - Visual 3D scene graphs
 
 **Do not chase**
 
-- `src/main.js`, `src/router.js`, `src/wasm/**`
+- `src/app/main.js`, `src/app/router.js`, `src/app/wasm/**`
 - Generated or vendor-adjacent code
 - Fallow `unused-files` - delete or wire, not test
 
@@ -269,7 +269,7 @@ Person prop: `{ id, name, type: 'person' }`.
 | --- | --- |
 | Jest | `vite-plus/test` + `vp test` |
 | TypeScript test files | `.spec.js` + JSDoc |
-| Co-located `src/foo.test.ts` | `tests/foo.spec.js` |
+| Co-located `src/app/foo.test.ts` | `specs/app/foo.spec.js` |
 | React Testing Library | `@vue/test-utils` |
 | `@faker-js/faker` | Domain fixtures (item IDs, directories) |
 | supertest / live DB | Mock `idb-keyval`, `serverless` |
@@ -283,5 +283,5 @@ Person prop: `{ id, name, type: 'person' }`.
 
 ## Docs before recommending work
 
-- `apps/realness/frontend/AGENTS.md` - vp test, check commands
-- Nearest `tests/**` mirror for the uncovered file
+- `apps/realness/.tooling.md` - vp test, check commands
+- Nearest `specs/app/**` mirror for the uncovered file

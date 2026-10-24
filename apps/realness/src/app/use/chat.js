@@ -3,7 +3,10 @@ import {
   ask,
   history as explorer_history,
   stop as stop_explorer,
-  command as explorer_command
+  command as explorer_command,
+  take_back as take_back_explorer,
+  watch_owner,
+  follow
 } from '@/utils/explorer'
 import { create_startup_trace } from '../../harness/startup.js'
 import {
@@ -248,6 +251,21 @@ const create_startup_status = (status, set_working, get_startup_id) => {
   }
 }
 
+/**
+ * Durable's transcript as chat messages.
+ * @param {Array<{ role: string, text: string, thinking?: string }>} history
+ */
+const to_view = history =>
+  history.map(message => ({
+    sender: message.role === 'user' ? 'You' : 'Realness',
+    ...(message.role === 'user'
+      ? read_contextual_message(message.text)
+      : {
+          text: message.text,
+          ...(message.thinking ? { thinking: message.thinking } : {})
+        })
+  }))
+
 const explorer_turn = async ({
   message,
   messages,
@@ -277,12 +295,18 @@ const explorer_turn = async ({
       on_delta: text => {
         reply.text += text
         on_change()
+      },
+      on_thinking: text => {
+        reply.thinking = (reply.thinking ?? '') + text
+        on_change()
       }
     })
     if (outcome.text) reply.text = outcome.text
+    if (outcome.thinking) reply.thinking = outcome.thinking
     return null
   } catch (thrown) {
-    status.value = readable_error(thrown.message)
+    if (thrown.name !== 'TakenError')
+      status.value = readable_error(thrown.message)
     if (!draft.value) draft.value = message
     return null
   } finally {
@@ -411,6 +435,14 @@ export const use_chat = (
   const draft = ref('')
   const status = ref('')
   const working = ref(false)
+  const taken = ref(false)
+  const stop_owner = watch_owner(value => {
+    taken.value = value
+  })
+  const stop_following = follow(history => {
+    messages.value = to_view(history)
+    on_change()
+  })
   const startup = create_startup_status(status, set_working, get_startup_id)
   const waiting_state = make_waiting({
     actor,
@@ -446,15 +478,10 @@ export const use_chat = (
           user_id: user.uid,
           token: () => user.getIdToken()
         })
-        if (!stopped && !working.value)
-          messages.value = history.map(message => ({
-            sender: message.role === 'user' ? 'You' : 'Realness',
-            ...(message.role === 'user'
-              ? read_contextual_message(message.text)
-              : { text: message.text })
-          }))
+        if (!stopped && !working.value) messages.value = to_view(history)
       } catch (error) {
-        status.value = readable_error(error.message)
+        if (error.name !== 'TakenError')
+          status.value = readable_error(error.message)
       }
       return
     }
@@ -542,7 +569,15 @@ export const use_chat = (
     return watch()
   }
 
+  /** This tab takes the log back from whichever tab has it. */
+  const take_back = () => {
+    take_back_explorer()
+    return watch()
+  }
+
   const stop = () => {
+    stop_owner()
+    stop_following()
     stopped = true
     waiting_state.clear()
     clearTimeout(watch_timer)
@@ -560,6 +595,8 @@ export const use_chat = (
     draft,
     status,
     working,
+    taken,
+    take_back,
     starting: startup.starting,
     waiting: waiting_state.waiting,
     get startup_id() {

@@ -1,0 +1,90 @@
+pre.mermaid {
+  svg.pele {
+    fill: var(--text);
+
+    :is(rect, polygon, circle, path, line) {
+      vector-effect: non-scaling-stroke;
+    }
+
+    .pele-node :is(rect, polygon, circle) {
+      fill: color-mix(in srgb, var(--text) 8%, var(--surface)) !important;
+      stroke: none !important;
+      rx: 6px !important;
+      ry: 6px !important;
+    }
+
+    .pele-node[class*=" active"],
+    .pele-node[class*=" out"] {
+      --tone: var(--accent);
+    }
+
+    .pele-node[class*=" gate"],
+    .pele-node[class*=" next"] {
+      --tone: var(--warning);
+    }
+
+    .pele-node[class*=" blocked"],
+    .pele-node[class*=" no"],
+    .pele-node[class*=" focus"] {
+      --tone: var(--emphasis);
+    }
+
+    .pele-node:is([class*=" active"], [class*=" out"], [class*=" gate"], [class*=" next"], [class*=" blocked"], [class*=" no"], [class*=" focus"]) {
+      :is(rect, polygon, circle) {
+        fill: color-mix(in srgb, var(--tone) 14%, var(--surface)) !important;
+        stroke: var(--tone) !important;
+        stroke-width: 1.5px !important;
+      }
+
+      .pele-label {
+        fill: color-mix(in srgb, var(--tone) 55%, var(--text)) !important;
+        font-weight: 700;
+      }
+    }
+
+    .pele-node[class*=" next"] :is(rect, polygon) {
+      stroke-dasharray: 4 3 !important;
+    }
+
+    .pele-node[class*=" done"] {
+      opacity: 0.45;
+    }
+
+    .pele-label {
+      fill: color-mix(in srgb, var(--text) 82%, var(--surface));
+    }
+
+    .pele-edge {
+      stroke: var(--muted-text) !important;
+      stroke-width: 1.25px !important;
+      opacity: 0.8;
+    }
+
+    .pele-marker {
+      fill: var(--muted-text) !important;
+      stroke: none !important;
+    }
+
+    .pele-edge-label rect {
+      fill: var(--surface) !important;
+    }
+
+    .pele-edge-label :is(text, tspan) {
+      fill: var(--muted-text) !important;
+    }
+
+    .pele-cluster > :is(rect, polygon) {
+      fill: none !important;
+      stroke: color-mix(in srgb, var(--text) 25%, var(--surface)) !important;
+      stroke-width: 1px !important;
+      stroke-dasharray: 4 3 !important;
+      rx: 8px !important;
+      ry: 8px !important;
+    }
+
+    :is(.pele-cluster-title, .pele-cluster-label) {
+      fill: var(--text) !important;
+      font-weight: 700;
+    }
+  }
+}

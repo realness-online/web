@@ -10,7 +10,7 @@ import {
   environment_settings,
   local_settings
 } from './environments.js'
-import { frontend_out, out_path, out_root } from './output.js'
+import { frontend_out, out_path, out_root, sync_dir } from './output.js'
 
 /** Quote trusted settings for Bash without executing their values. */
 const shell_values = values =>
@@ -24,6 +24,8 @@ if (
   (!target || (target === '--root' && args.length === 1))
 )
   process.stdout.write(`${out_root({ root: args[0] || project_root })}\n`)
+else if (command === 'output' && target === 'sync' && !args.length)
+  process.stdout.write(`${sync_dir()}\n`)
 else if (command === 'output' && target === 'frontend' && !args.length)
   process.stdout.write(`${frontend_out()}\n`)
 else if (command === 'output' && target === 'frontend-notes' && !args.length)
@@ -49,7 +51,8 @@ else if (
   command === 'shell' &&
   target === 'halo' &&
   args.length === 2 &&
-  args[0] === '--env'
+  args[0] === '--env' &&
+  args[1] !== 'local'
 ) {
   const { services } = environment_settings(args[1])
   process.stdout.write(
@@ -63,12 +66,16 @@ else if (
     `${shell_values({
       dev_project: local_settings.cloud.project,
       sync_url_default: `http://127.0.0.1:${local_settings.sync_port}`,
-      sites_url_default: local_settings.cloud.services.sites_url,
+      sites_url_default: local_settings.cloud.services.sites_url ?? '',
       api_port: local_settings.api_port,
       halo_port: local_settings.halo_port,
       terminal_port: local_settings.terminal_port,
       gate_port: local_settings.gate_port,
-      site_port: local_settings.site_port
+      site_port: local_settings.site_port,
+      proxy_port: local_settings.proxy_port,
+      actor_proxy_port: local_settings.actor_proxy_port,
+      actor_sync_port: local_settings.actor_sync_port,
+      sync_port: local_settings.sync_port
     })}\n`
   )
 else

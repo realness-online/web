@@ -5,7 +5,6 @@
   "defaultThinkingLevel": "off",
   "packages": [
     "npm:pi-mono-btw",
-    "npm:pi-mono-auto-fix",
     "npm:pi-mono-loop",
     "npm:pi-rewind-hook",
     "npm:pi-autoresearch",

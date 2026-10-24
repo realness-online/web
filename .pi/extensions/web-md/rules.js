@@ -25,7 +25,7 @@ const curl_reads_page = command => {
 
 /**
  * @param {string} command
- * @param {string} web_md absolute path to bin/web-md.js
+ * @param {string} web_md absolute path to bin/web/web-md.js
  * @returns {string | null}
  */
 export const check = (command, web_md) => {

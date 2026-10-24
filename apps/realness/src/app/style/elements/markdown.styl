@@ -88,8 +88,11 @@ section[itemprop='content'],
 
   code {
     background: var(--code-surface);
-    padding: round((base-line / 4), 2) round((base-line / 2), 2);
+    padding: 0 round((base-line / 6), 2);
     border-radius: round((base-line / 4), 2);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    overflow-wrap: anywhere;
     font-family: 'Monaco', 'Menlo', monospace;
     font-size: 0.875rem;
   }

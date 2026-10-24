@@ -1,6 +1,6 @@
 import { client, state_dir, SYNC_URL } from '#root/src/files/client.js'
 import { is_actor } from '#root/src/harness/settings.js'
-import { token_source } from '#root/src/sign-on/node/login.js'
+import { person_target, sync_target } from '#root/src/files/target.js'
 import { CapabilityError, file_capabilities } from './files.js'
 import { run_harness } from './harness-command.js'
 import { run_store } from './store-command.js'
@@ -87,7 +87,7 @@ export const sync_records = async state => {
     const { remote } = saved
     if (!remote || remote.includes('/artifacts/')) continue
     const key = `can://~/${remote.replace(/^people\/\+\d+\//, '')}`
-    const at = saved.walked_at ?? null
+    const at = saved.synced_at ?? null
     if (!records[key] || (at && at > (records[key].at ?? '')))
       records[key] = { at }
   }
@@ -103,7 +103,7 @@ const read_stdin = async (stream = process.stdin) => {
 /** The store a files command talks to: an actor pass, or the signed-in keychain. */
 const open_store = async (
   args,
-  { actor, get_token, issue, root, service_url, state }
+  { actor, target, issue, root, service_url, state }
 ) => {
   if (actor) {
     const home = root ?? '/realness'
@@ -115,14 +115,15 @@ const open_store = async (
     })
     return store
   }
-  const token = await get_token()
+  const where = await target()
+  const token = await where.get_token()
   if (!token)
     throw new CapabilityError(
       'not_signed_in',
       'not signed in; run realness login'
     )
   return client({
-    url: service_url ?? SYNC_URL,
+    url: service_url ?? where.url,
     token,
     state: state ?? (root ? use_harness_state(root) : undefined)
   })
@@ -174,7 +175,7 @@ const report_failure = (error, { command, json, stderr, stdout }) => {
 /** Merge `.conflict` session copies on the desktop harness. */
 const run_fold = async (
   args,
-  { actor, get_token, json, root, service_url, state, stdout }
+  { actor, target, json, root, service_url, state, stdout }
 ) => {
   if (actor)
     throw new CapabilityError(
@@ -183,12 +184,13 @@ const run_fold = async (
     )
   const home = root ?? find_root()
   const sync_state = state ?? use_harness_state(home)
-  const token = await get_token()
+  const where = await target()
+  const token = await where.get_token()
   if (!token) throw new Error('not signed in; run realness login')
   const result = await fold_conflicts({
     root: home,
     state: sync_state,
-    store: client({ url: service_url ?? SYNC_URL, token }),
+    store: client({ url: service_url ?? where.url, token }),
     dry_run: args.includes('--dry-run')
   })
   if (json)
@@ -258,14 +260,15 @@ const run_git_credential = async (
 /** Watch halo health on the desktop harness until interrupted. */
 const run_watch_command = async (
   args,
-  { actor, get_token, json, service_url, state, stdin, stdout }
+  { actor, target, json, service_url, state, stdin, stdout }
 ) => {
   if (actor)
     throw new CapabilityError(
       'usage',
       'realness watch runs on the desktop harness'
     )
-  const token = await get_token()
+  const where = await target()
+  const token = await where.get_token()
   if (!token)
     throw new CapabilityError(
       'not_signed_in',
@@ -286,7 +289,7 @@ const run_watch_command = async (
   const { cloud_sources } = await import('./watch-cloud.js')
   const { sync_traffic_cache } =
     await import('#root/tools/ops/hosting-traffic.js')
-  const store = client({ url: service_url ?? SYNC_URL, token })
+  const store = client({ url: service_url ?? where.url, token })
   const controller = new AbortController()
   process.once('SIGINT', () => controller.abort())
   process.once('SIGTERM', () => controller.abort())
@@ -298,8 +301,11 @@ const run_watch_command = async (
       ledger: ledger(store),
       named,
       records,
-      service: service_url ?? SYNC_URL,
-      cloud: cloud_sources({ store, sync: sync_traffic_cache }),
+      service: service_url ?? where.url,
+      /** On the local stack nothing reads a cloud project. */
+      cloud: where.local
+        ? null
+        : cloud_sources({ store, sync: sync_traffic_cache }),
       interval_ms,
       signal: controller.signal,
       stdout,
@@ -317,7 +323,8 @@ const run_watch_command = async (
  * The product entry point: every realness subcommand starts here.
  * @param {string[]} args
  * @param {object} [options]
- * @param {() => Promise<string | null>} [options.get_token]
+ * @param {() => Promise<string | null>} [options.get_token] A fixed sign-in, for tests
+ * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> }>} [options.target]
  * @param {string} [options.service_url]
  * @param {boolean} [options.actor]
  * @param {string} [options.root]
@@ -331,8 +338,13 @@ const run_watch_command = async (
 export const run = async (
   args,
   {
-    get_token = token_source(),
+    get_token,
     service_url,
+    target = get_token
+      ? async () => ({ local: false, url: SYNC_URL, get_token })
+      : service_url
+        ? person_target
+        : sync_target,
     actor = is_actor(),
     root: root_option,
     state: state_option,
@@ -349,7 +361,7 @@ export const run = async (
   let command
   try {
     const options = {
-      get_token,
+      target,
       service_url,
       actor,
       root,
@@ -404,7 +416,7 @@ export const run = async (
     }
     const store = await open_store(args, {
       actor,
-      get_token,
+      target,
       issue,
       root,
       service_url,

@@ -18,6 +18,7 @@ import {
   mkdir,
   readFile as read_file,
   readdir,
+  rename,
   rm,
   symlink,
   writeFile as write_file
@@ -173,8 +174,76 @@ export const build_app = async (
   const app_dir = join(root, 'apps', name)
   const { app, sources, assets, pages } = await app_sources(app_dir)
   const example = await engine(root, local)
-  const output = join(root, 'artifacts/apps', name)
-  await rm(output, { recursive: true, force: true })
+  const target = join(root, 'artifacts/apps', name)
+  const output = `${target}.build-${process.pid}-${Date.now()}`
+  try {
+    await stage_app({
+      app,
+      sources,
+      assets,
+      pages,
+      app_dir,
+      example,
+      output,
+      drafts
+    })
+    await swap_in(output, target)
+  } finally {
+    await rm(output, { recursive: true, force: true })
+  }
+
+  return {
+    id: app.id,
+    type: app.type,
+    name,
+    dist: join(target, 'dist'),
+    sources: [
+      ...sources.map(({ id, slug, route }) => ({ id, slug, route })),
+      ...pages.map(({ id, path }) => ({
+        id,
+        route: `/${path.replace(/index\.html$/, '')}`
+      }))
+    ]
+  }
+}
+
+/**
+ * Replace `target` with `output`, retrying when an overlapping build swaps first.
+ * @param {string} output Finished staging folder.
+ * @param {string} target Live build folder.
+ */
+const swap_in = async (output, target) => {
+  for (let attempt = 0; ; attempt++) {
+    const old = `${output}.old-${attempt}`
+    await rename(target, old).catch(error => {
+      if (error.code !== 'ENOENT') throw error
+    })
+    await rm(old, { recursive: true, force: true })
+    try {
+      await rename(output, target)
+      return
+    } catch (error) {
+      if (!['ENOTEMPTY', 'EEXIST'].includes(error.code) || attempt > 5)
+        throw error
+    }
+  }
+}
+
+/**
+ * Write one app build into a private staging folder, so overlapping builds
+ * never delete each other's files.
+ * @param {{ app: any, sources: any[], assets: any[], pages: any[], app_dir: string, example: string, output: string, drafts: boolean }} build
+ */
+const stage_app = async ({
+  app,
+  sources,
+  assets,
+  pages,
+  app_dir,
+  example,
+  output,
+  drafts
+}) => {
   await mkdir(join(output, 'content/articles'), { recursive: true })
   for (const source of sources) {
     const page = join(output, 'content/articles', `${source.slug}.md`)
@@ -229,21 +298,6 @@ export const build_app = async (
     [join(example, 'build.js'), ...(drafts ? ['--drafts'] : [])],
     { cwd: output, maxBuffer: MAX }
   )
-
-  const dist = join(output, 'dist')
-  return {
-    id: app.id,
-    type: app.type,
-    name,
-    dist,
-    sources: [
-      ...sources.map(({ id, slug, route }) => ({ id, slug, route })),
-      ...pages.map(({ id, path }) => ({
-        id,
-        route: `/${path.replace(/index\.html$/, '')}`
-      }))
-    ]
-  }
 }
 
 export { app_assets } from './sources.js'

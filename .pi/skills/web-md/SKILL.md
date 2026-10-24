@@ -2,16 +2,16 @@
 name: web-md
 description: Read web pages as compact markdown instead of raw HTML or full browser snapshots. Use when you need to read, research, summarize, or quote content from a URL, compare several pages, or check docs online. A plain fetch runs first; agent-browser or Firecrawl renders the page only when it needs JavaScript. Not for clicking, filling forms, or logging in - use agent-browser for those.
 metadata:
-  check: "node ../../../bin/web-md.js 2>&1 | grep -q usage"
+  check: "node ../../../bin/web/web-md.js 2>&1 | grep -q usage"
 ---
 
 # web-md
 
-`bin/web-md.js` turns a URL into readable markdown. It strips scripts,
+`bin/web/web-md.js` turns a URL into readable markdown. It strips scripts,
 styles, images, nav, citation markers, and (by default) link URLs, so the model only sees text.
 
 ```bash
-bin/web-md.js <url> [--max 8000] [--grep word] [--browser] [--firecrawl] [--fresh] [--max-age 24] [--links]
+bin/web/web-md.js <url> [--max 8000] [--grep word] [--browser] [--firecrawl] [--fresh] [--max-age 24] [--links]
 ```
 
 | Flag          | Effect                                                        |
@@ -73,7 +73,7 @@ this machine never counts against a site.
 
 **Keeping the rules.** Add a kind of page to `web-md-cache-times.json` when
 a site's pages go stale too fast or re-render too often; first match wins.
-Run `node --test bin/lib/web-md-cache.test.js` after changing either file.
+Run `node --test bin/specs/lib/web-md-cache.spec.js` after changing either file.
 
 ## The read log
 
@@ -106,7 +106,7 @@ const urls = ["https://a.com/docs", "https://b.com/post"];
 const rs = await Promise.allSettled(
   urls.map((u) =>
     tools.bash({
-      command: `bin/web-md.js ${u} --max 4000 2>/dev/null`,
+      command: `bin/web/web-md.js ${u} --max 4000 2>/dev/null`,
       timeout: 60,
     }),
   ),

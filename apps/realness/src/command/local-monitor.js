@@ -14,7 +14,7 @@ import {
 
 const LOG_BYTES = 4096
 const LOG_LINES = 3
-const REFRESH_MS = 1000
+const REFRESH_MS = 15_000
 const FRAME_MARGIN = 5
 const DEFAULT_COLUMNS = 100
 const DEFAULT_ROWS = 30

@@ -19,7 +19,7 @@ export const run_example = async (
   if (kind !== 'static' || !destination_arg)
     throw new Error(
       'usage: realness example static <destination>\n' +
-        'An app starter is the product itself: see apps/realness/frontend.'
+        'An app starter is the product itself: see apps/realness/src/app.'
     )
   const destination = resolve(destination_arg)
   if (exists_sync(destination))

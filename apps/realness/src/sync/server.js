@@ -29,7 +29,6 @@ import { verify_gate_pass } from '#root/src/sign-on/node/gate-pass.js'
 import { run_halo_alerts } from './halo-alerts.js'
 import { halo_health } from './halo-watch.js'
 import { site_request } from './sites.js'
-import { read_changes, record_change } from './changes.js'
 import {
   harness_path,
   recovery_path,
@@ -60,23 +59,34 @@ const hash_phones = text =>
  * Pins live at `pins/+A`, written once; `can()` denies that root to everyone.
  * A pin never changes once written, so each is read from storage only once.
  */
-export const storage_pins = storage => {
+/**
+ * One uid per number, kept under `prefix`. Each issuer keeps its own pins,
+ * since a uid means something only to the issuer that made it.
+ * @param {any} storage A `can` store.
+ * @param {string} [prefix]
+ */
+export const storage_pins = (storage, prefix = 'pins') => {
   const known = new Map()
   return {
     async claim(phone, uid) {
       if (known.has(phone)) return known.get(phone)
       let pinned = uid
       try {
-        await storage.put(`pins/${phone}`, uid, { if_version: null })
+        await storage.put(`${prefix}/${phone}`, uid, { if_absent: true })
       } catch (error) {
         if (error.code !== 'conflict') throw error
-        pinned = (await storage.get(`pins/${phone}`))?.body.toString('utf8')
+        pinned = (await storage.get(`${prefix}/${phone}`))?.body.toString(
+          'utf8'
+        )
       }
       if (pinned) known.set(phone, pinned)
       return pinned
     }
   }
 }
+
+/** Where Realness sign-in keeps its pins, apart from Firebase's. */
+export const PINS_REALNESS = 'pins-realness'
 
 class Status extends Error {
   constructor(status) {
@@ -88,6 +98,7 @@ class Status extends Error {
 const action_for = (method, path) =>
   ({
     GET: path.endsWith('/') || path === '' ? 'list' : 'get',
+    HEAD: path.endsWith('/') || path === '' ? undefined : 'get',
     PUT: 'write',
     DELETE: 'delete'
   })[method]
@@ -113,10 +124,43 @@ const read_body = async request => {
   return Buffer.concat(chunks)
 }
 
+/**
+ * The meta a write may carry, each as an `x-meta-*` header: what we know
+ * about the data that its bytes cannot say. Anything else is refused.
+ */
+const META_HEADERS = {
+  sold: 'x-meta-sold',
+  fullLocale: 'x-meta-full-locale'
+}
+const META_LIST = Object.values(META_HEADERS).join(', ')
+
+/** A write's meta from its headers; an unknown `x-meta-*` is a bad request. */
+const meta_from = headers => {
+  const known = new Set(Object.values(META_HEADERS))
+  if (
+    Object.keys(headers).some(
+      name => name.startsWith('x-meta-') && !known.has(name)
+    )
+  )
+    throw new Status(HTTP.BAD_REQUEST)
+  return Object.fromEntries(
+    Object.entries(META_HEADERS)
+      .filter(([, header]) => typeof headers[header] === 'string')
+      .map(([key, header]) => [key, String(headers[header])])
+  )
+}
+
+/** A file's meta as response headers. */
+const meta_headers = (meta = {}) =>
+  Object.fromEntries(
+    Object.entries(META_HEADERS)
+      .filter(([key]) => typeof meta[key] === 'string')
+      .map(([key, header]) => [header, meta[key]])
+  )
+
 const PREFLIGHT = {
-  'access-control-allow-methods': 'GET, PUT, DELETE, POST',
-  'access-control-allow-headers':
-    'authorization, content-type, if-match, if-none-match',
+  'access-control-allow-methods': 'GET, HEAD, PUT, DELETE, POST',
+  'access-control-allow-headers': `authorization, content-type, if-match, if-none-match, ${META_LIST}`,
   'access-control-max-age': '600'
 }
 
@@ -140,18 +184,9 @@ const caller_allowed = ({ action, grants, path, who }) => {
   return can(who, action, path, grants)
 }
 
-/** List a folder, or the change feed, or every file below it. */
+/** List a folder, or every file below it. */
 const answer_list = async (storage, request, response, path) => {
   const query = new URLSearchParams((request.url ?? '').split('?')[1] ?? '')
-  if (query.has('changes')) {
-    const feed = await read_changes(storage, path, query.get('changes'))
-    if (!feed) throw new Status(HTTP.GONE)
-    response.writeHead(HTTP.OK, {
-      'content-type': 'application/json',
-      'cache-control': 'no-store'
-    })
-    return response.end(JSON.stringify(feed))
-  }
   response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   let listing = storage.list(path)
   if (query.get('deep') === 'meta') listing = storage.walk_meta(path)
@@ -159,16 +194,42 @@ const answer_list = async (storage, request, response, path) => {
   return response.end(JSON.stringify(await listing))
 }
 
+/**
+ * As storage.rules: a poster the prints webhook tagged sold is never
+ * overwritten by its owner. Deleting stays open; a move is copy, then delete.
+ */
+const refuse_sold = async (storage, path, who) => {
+  if (!path.startsWith('people/') || who?.admin) return
+  const stored = await storage.get(path)
+  if (stored?.meta?.sold === 'true') throw new Status(HTTP.FORBIDDEN)
+}
+
+/** The type and encoding come from the file: gzip bytes under an .html name. */
+const GZIP_MAGIC = Buffer.from('1f8b', 'hex')
+const gzipped_html = (path, body) =>
+  path.endsWith('.html') && body.subarray(0, 2).equals(GZIP_MAGIC)
+
 /** Send one file with its version as the etag. */
 const answer_get = async (storage, response, path) => {
   const file = await storage.get(path)
   if (!file) throw new Status(HTTP.NOT_FOUND)
   response.writeHead(HTTP.OK, {
     etag: `"${file.version}"`,
-    'content-type': 'application/octet-stream'
+    'content-type': 'application/octet-stream',
+    ...(gzipped_html(path, file.body) && {
+      'content-type': 'text/html; charset=utf-8',
+      'content-encoding': 'gzip'
+    }),
+    ...meta_headers(file.meta)
   })
   return response.end(file.body)
 }
+
+/** Health checks and halo heartbeats repeat all day; only their failures log. */
+const HEARTBEAT = /^halos\/[^/]+\/status\.html$/
+export const routine = (method, path) =>
+  (method === 'GET' && path === 'health') ||
+  (method === 'PUT' && HEARTBEAT.test(path ?? ''))
 
 /**
  * One log line per request, naming the caller's phone when the pass carries
@@ -340,10 +401,11 @@ const answer_quiet = async (
 /**
  * The sync service.
  * @param {object} options
- * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null } | null>, put: (key: string, body: Buffer | string, options?: object) => Promise<string>, delete: (key: string, options?: object) => Promise<void>, list: (path: string) => Promise<{ files: string[], folders: string[] }>, walk: (path: string) => Promise<Record<string, string>>, walk_meta: (path: string) => Promise<Record<string, { version: string, size: number, updated: string }>> }} options.storage
+ * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null, meta?: Record<string, string> } | null>, put: (key: string, body: Buffer | string, options?: object) => Promise<string>, delete: (key: string, options?: object) => Promise<void>, list: (path: string) => Promise<{ files: string[], folders: string[] }>, walk: (path: string) => Promise<Record<string, string>>, walk_meta: (path: string) => Promise<Record<string, { version: string, size: number, updated: string }>> }} options.storage
  * @param {{ grants: (owner: string) => Promise<{ grants: object[] }>, forget: (owner: string) => void }} options.rights
  * @param {string} options.project
  * @param {() => Promise<Record<string, string>>} options.certs
+ * @param {string} [options.issuer] the token issuer; Firebase's by default
  * @param {string | undefined} options.halo_pass_secret enables the pass routes
  * @param {string | null} [options.alert_token]
  * @param {string | null} [options.alert_webhook]
@@ -358,6 +420,7 @@ export const sync_service = ({
   rights,
   project,
   certs,
+  issuer,
   halo_pass_secret,
   alert_token = null,
   alert_webhook = null,
@@ -367,7 +430,7 @@ export const sync_service = ({
   git_fetch = fetch,
   log = console.info
 }) => {
-  const pins = storage_pins(storage)
+  const pins = storage_pins(storage, issuer ? PINS_REALNESS : undefined)
   const allowed = new Set(origins)
 
   /** Cloud Scheduler presents a shared secret; nothing else calls this. */
@@ -391,7 +454,7 @@ export const sync_service = ({
     if (token.split('.').length === 2)
       return pass_identity(token, { halo_pass_secret, storage, fenced })
     try {
-      return await identify(token, { project, certs, pins })
+      return await identify(token, { project, certs, issuer, pins })
     } catch {
       throw new Status(HTTP.UNAUTHORIZED)
     }
@@ -415,20 +478,20 @@ export const sync_service = ({
       return await answer_list(storage, request, response, path)
     if (action === 'get') return await answer_get(storage, response, path)
 
-    const if_version =
-      request.headers['if-none-match'] === '*'
-        ? null
-        : version_from(request.headers['if-match'])
+    const if_absent = request.headers['if-none-match'] === '*'
+    const if_version = version_from(request.headers['if-match'])
     try {
       if (action === 'write') {
-        const version = await storage.put(path, await read_body(request), {
-          if_version
+        const meta = meta_from(request.headers)
+        const body = await read_body(request)
+        await refuse_sold(storage, path, who)
+        const version = await storage.put(path, body, {
+          ...(if_absent ? { if_absent } : { if_version }),
+          meta
         })
-        await record_change(storage, path, version)
         response.writeHead(HTTP.OK, { etag: `"${version}"` })
       } else {
         await storage.delete(path, { if_version })
-        await record_change(storage, path, null)
         response.writeHead(HTTP.NO_CONTENT)
       }
     } catch (error) {
@@ -514,7 +577,7 @@ export const sync_service = ({
     let status = HTTP.OK
     if (origin && allowed.has(origin)) {
       response.setHeader('access-control-allow-origin', origin)
-      response.setHeader('access-control-expose-headers', 'etag')
+      response.setHeader('access-control-expose-headers', `etag, ${META_LIST}`)
     }
     response.setHeader('vary', 'origin')
     try {
@@ -536,7 +599,8 @@ export const sync_service = ({
         response.writeHead(status, { 'cache-control': 'no-store' }).end()
       else response.destroy()
     } finally {
-      log(hash_phones(request_line(who, request, path, status, started)))
+      if (!(status === HTTP.OK && routine(request.method, path)))
+        log(hash_phones(request_line(who, request, path, status, started)))
     }
   })
 }

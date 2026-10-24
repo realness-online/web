@@ -6,7 +6,7 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 account="realness-sync@$project.iam.gserviceaccount.com"
 stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
 
-echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } }, { "action": { "type": "Delete" }, "condition": { "age": 7, "matchesPrefix": ["changes/"] } } ] }' \
+echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } } ] }' \
   > "$stage/lifecycle.json"
 gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
 

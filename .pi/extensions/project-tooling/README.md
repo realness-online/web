@@ -44,7 +44,7 @@ Enterprise SaaS app - Firebase. Heavy diagnostic tooling:
 - Deploys: `npm run deploy`, at least `functions:js`.
 ```
 
-See `apps/realness/frontend/.tooling.md` and `work/seeq-app/.tooling.md` for examples.
+See `apps/realness/.tooling.md` and `work/seeq-app/.tooling.md` for examples.
 
 ## Setup
 

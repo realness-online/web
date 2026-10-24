@@ -2,7 +2,7 @@
  * Plan render: keeps the browser's plans current without relying on memory.
  *
  * After every tool result, any plan in the plans folder newer than its built
- * page is rebuilt with `bin/plans.js`, then fetched from the plans server and
+ * page is rebuilt with `bin/plans/plans.js`, then fetched from the plans server and
  * compared with the build. The outcome is appended to that tool result, so a
  * stale or unserved plan is reported in the same turn it was edited.
  */
@@ -54,7 +54,7 @@ export const served = async (plan, get = fetch) => {
     if (!response.ok) return `server returned ${response.status}`
     return (await response.text()) === readFileSync(plan.page, "utf8") ? null : "server page differs from the build"
   } catch {
-    return `no plans server at ${SERVER}; run npm run plans:serve`
+    return `no plans server at ${SERVER}; run npm run vault:serve`
   }
 }
 
@@ -66,7 +66,7 @@ export default function (pi) {
     if (building) await building
     const stale = stale_plans(folder, DIST)
     if (!stale.length) return
-    building = run(process.execPath, [join(ROOT, "bin/plans.js")], { cwd: ROOT, timeout: 120_000 })
+    building = run(process.execPath, [join(ROOT, "bin/plans/plans.js")], { cwd: ROOT, timeout: 120_000 })
     let note
     try {
       await building

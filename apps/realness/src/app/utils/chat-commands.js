@@ -13,6 +13,7 @@ export const chat_commands = [
     args: 'level',
     description: 'Show or set the thinking level'
   },
+  { name: 'upstream', description: 'Read what another device wrote' },
   { name: 'copy', description: 'Copy the last reply' }
 ]
 

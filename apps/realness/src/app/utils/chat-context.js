@@ -8,7 +8,7 @@ export const page_context = route => {
   const copy = /** @type {Element | undefined} */ (page?.cloneNode(true))
   copy
     ?.querySelectorAll(
-      'nav, form, input, textarea, select, [contenteditable], [hidden], [aria-hidden="true"], dialog:not([open]), script, style'
+      'header, footer, nav, menu, aside, button, svg, form, input, textarea, select, [contenteditable], [hidden], [aria-hidden="true"], dialog:not([open]), script, style'
     )
     .forEach(element => element.remove())
   copy

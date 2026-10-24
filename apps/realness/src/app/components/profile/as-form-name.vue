@@ -2,7 +2,7 @@
   import Icon from '@/components/icon'
   import { me } from '@/utils/serverless'
   import { use_me, name_error } from '@/use/people'
-  import { ref, watchEffect as watch_effect } from 'vue'
+  import { ref } from 'vue'
 
   const emit = defineEmits(['valid'])
   const { is_valid_name, save } = use_me()
@@ -11,10 +11,6 @@
   const has_focused = ref(false)
   const show_error = ref(false)
   const display_error = ref(null)
-
-  watch_effect(() => {
-    if (is_valid_name.value) emit('valid')
-  })
 
   const on_focus = () => {
     show_error.value = false
@@ -49,6 +45,7 @@
     saving.value = false
     show_error.value = false
     display_error.value = null
+    emit('valid')
   }
 </script>
 

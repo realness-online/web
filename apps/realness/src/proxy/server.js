@@ -71,6 +71,7 @@ export const agent_handler = ({
   plan_for,
   pay_url = PAY_URL,
   telemetry,
+  recorder,
   warn = console.error
 }) => {
   if (!key) throw new Error('upstream key required')
@@ -133,10 +134,13 @@ export const agent_handler = ({
           upstream.headers.get('content-type') ?? 'application/json'
       })
       const meter = usage_meter()
+      /** @type {Buffer[]} */
+      const heard = []
       if (!upstream.body) throw new Error('upstream answered without a body')
       for await (const chunk of upstream.body) {
         if (!latency_ms) latency_ms = Date.now() - started
         meter.add(chunk)
+        if (recorder) heard.push(Buffer.from(chunk))
         response.write(chunk)
       }
       if (!latency_ms) latency_ms = Date.now() - started
@@ -155,6 +159,15 @@ export const agent_handler = ({
         ?.record(who.phone, row)
         .catch(error => warn(`usage not recorded: ${error.message}`))
       telemetry?.(call_span({ row, started }))
+      recorder?.(who.phone, {
+        at: new Date(started).toISOString(),
+        actor: row.actor,
+        model,
+        status: upstream.status,
+        client,
+        request: body,
+        response: Buffer.concat(heard).toString('utf8')
+      }).catch(error => warn(`call not recorded: ${error.message}`))
       response.end()
     } catch (error) {
       if (!response.headersSent) response.writeHead(HTTP.BAD_GATEWAY).end()

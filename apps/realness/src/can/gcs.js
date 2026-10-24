@@ -5,8 +5,10 @@
  *
  * `token()` resolves to an OAuth access token: `metadata_token()` on Cloud
  * Run, `gcloud_token()` on a laptop. `prefix` scopes every key, so tests can
- * run inside a throwaway folder. Versions are object generations, and
- * `ifGenerationMatch=0` is a true create-only write.
+ * run inside a throwaway folder. A version is the bucket's hash of the stored
+ * bytes: MD5, or CRC32C for composed objects, which carry no MD5. A guarded
+ * write reads the object's hash and generation, then writes on that
+ * generation, so the check stays atomic. `meta` is the object's own metadata.
  *
  * Text keys are stored gzip (`contentEncoding`). Fetch decodes on the way
  * out, so `get` returns exactly what `put` was given.
@@ -15,7 +17,7 @@ import { randomUUID as random_uuid } from 'node:crypto'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { gzipSync as gzip_sync } from 'node:zlib'
-import { Conflict } from './disk.js'
+import { Conflict, guard } from './disk.js'
 import { HTTP } from '#root/lib/http.js'
 import { MS_PER_SECOND, SECONDS_PER_MINUTE } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- list pages follow the previous page's token */
@@ -52,18 +54,37 @@ const multipart = (resource, bytes) => {
   }
 }
 
+/** The adapter's own metadata key: gzip keeps the real size here. */
+const SIZE = 'size'
+
+/** An object's version: its hash, from the bytes the bucket holds. */
+const version_of = object =>
+  object.md5Hash ?? (object.crc32c ? `crc32c-${object.crc32c}` : null)
+
+/** The caller's meta, without the adapter's own key. */
+const meta_of = object => {
+  const meta = { ...object.metadata }
+  delete meta[SIZE]
+  return meta
+}
+
 /** The upload for one stored body: gzip carries its real size in metadata. */
-const upload_of = (name, body, stored) =>
-  stored.encoding
+const upload_of = (name, body, stored, meta = {}) => {
+  const metadata = {
+    ...meta,
+    ...(stored.encoding && { [SIZE]: String(Buffer.byteLength(body)) })
+  }
+  return stored.encoding || Object.keys(metadata).length
     ? multipart(
         {
           name,
-          contentEncoding: stored.encoding,
-          metadata: { size: String(Buffer.byteLength(body)) }
+          ...(stored.encoding && { contentEncoding: stored.encoding }),
+          ...(Object.keys(metadata).length && { metadata })
         },
         stored.body
       )
     : { type: 'application/octet-stream', body: stored.body }
+}
 
 /** Cache a token until a minute before it expires. */
 const cached = fetch_token => {
@@ -104,21 +125,12 @@ export const gcloud_token = () =>
   })
 
 /** Every page of an object listing, following `nextPageToken`. */
-const pages = async ({
-  bucket,
-  call,
-  fail,
-  fields,
-  label,
-  scope,
-  start_offset = ''
-}) => {
+const pages = async ({ bucket, call, fail, fields, label, scope }) => {
   const found = []
   const folders = []
   let page = ''
   do {
     const query = new URLSearchParams({ prefix: scope, fields })
-    if (start_offset) query.set('startOffset', start_offset)
     if (page) query.set('pageToken', page)
     const response = await call(`${API}/${bucket}/o?${query}`)
     if (!response.ok) await fail(label, response)
@@ -146,33 +158,54 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       `gcs ${what}: ${response.status} ${(await response.text()).slice(0, HTTP.OK)}`
     )
   }
-  const precondition = if_version =>
-    if_version === undefined
-      ? ''
-      : `ifGenerationMatch=${if_version === null ? 0 : encodeURIComponent(if_version)}`
+  /** The object's generation, hashes, and metadata, or null. */
+  const head = async key => {
+    const response = await call(
+      `${API}/${bucket}/o/${object(key)}?fields=generation,md5Hash,crc32c,metadata`
+    )
+    if (response.status === HTTP.NOT_FOUND) return null
+    if (!response.ok) await fail(`stat ${key}`, response)
+    return response.json()
+  }
+
+  /** The bucket's precondition for a guard: our hash, pinned to a generation. */
+  const precondition = async (key, options) => {
+    const { if_version, if_absent } = guard(options)
+    if (if_absent) return 'ifGenerationMatch=0'
+    if (if_version === undefined) return ''
+    const current = await head(key)
+    if (!current || version_of(current) !== if_version)
+      throw new Conflict(`${key} changed`)
+    return `ifGenerationMatch=${encodeURIComponent(current.generation)}`
+  }
 
   return {
     async get(key) {
-      const response = await call(`${API}/${bucket}/o/${object(key)}?alt=media`)
+      const current = await head(key)
+      if (!current) return null
+      const response = await call(
+        `${API}/${bucket}/o/${object(key)}?alt=media&generation=${encodeURIComponent(current.generation)}`
+      )
       if (response.status === HTTP.NOT_FOUND) return null
       if (!response.ok) await fail(`get ${key}`, response)
       const body = Buffer.from(await response.arrayBuffer())
-      return { body, version: response.headers.get('x-goog-generation') }
+      return { body, version: version_of(current), meta: meta_of(current) }
     },
 
     /**
      * @param {string} key
      * @param {Buffer | string} body
-     * @param {import('./contract.js').VersionGuard & import('./contract.js').Packing} [options]
+     * @param {import('./contract.js').VersionGuard & import('./contract.js').Packing & import('./contract.js').Described} [options]
      */
-    async put(key, body, { if_version, gzip } = {}) {
-      const stored = at_rest(key, body, gzip)
+    async put(key, body, options = {}) {
+      const stored = at_rest(key, body, options.gzip)
+      const upload = upload_of(`${prefix}${key}`, body, stored, options.meta)
+      const whole = upload.type.startsWith('multipart')
       const query = [
-        `uploadType=${stored.encoding ? 'multipart' : 'media'}`,
-        stored.encoding ? '' : `name=${object(key)}`,
-        precondition(if_version)
+        `uploadType=${whole ? 'multipart' : 'media'}`,
+        whole ? '' : `name=${object(key)}`,
+        await precondition(key, options)
       ].filter(Boolean)
-      const upload = upload_of(`${prefix}${key}`, body, stored)
       const response = await call(`${UPLOAD}/${bucket}/o?${query.join('&')}`, {
         method: 'POST',
         headers: { 'content-type': upload.type },
@@ -181,16 +214,12 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       if (response.status === HTTP.PRECONDITION_FAILED)
         throw new Conflict(`${key} changed`)
       if (!response.ok) await fail(`put ${key}`, response)
-      return String((await response.json()).generation)
+      return version_of(await response.json())
     },
 
     async stat(key) {
-      const response = await call(
-        `${API}/${bucket}/o/${object(key)}?fields=generation`
-      )
-      if (response.status === HTTP.NOT_FOUND) return null
-      if (!response.ok) await fail(`stat ${key}`, response)
-      return String((await response.json()).generation)
+      const current = await head(key)
+      return current ? version_of(current) : null
     },
 
     /**
@@ -203,8 +232,8 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
      * @param {string[]} sources
      * @param {import('./contract.js').VersionGuard} [options]
      */
-    async compose(key, sources, { if_version } = {}) {
-      const query = precondition(if_version)
+    async compose(key, sources, options = {}) {
+      const query = await precondition(key, options)
       const response = await call(
         `${API}/${bucket}/o/${object(key)}/compose${query ? `?${query}` : ''}`,
         {
@@ -224,15 +253,15 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       if (response.status === HTTP.TOO_MANY_REQUESTS)
         throw Object.assign(new Error(`${key} is busy`), { code: 'busy' })
       if (!response.ok) await fail(`compose ${key}`, response)
-      return String((await response.json()).generation)
+      return version_of(await response.json())
     },
 
     /**
      * @param {string} key
      * @param {import('./contract.js').VersionGuard} [options]
      */
-    async delete(key, { if_version } = {}) {
-      const query = precondition(if_version)
+    async delete(key, options = {}) {
+      const query = await precondition(key, options)
       const response = await call(
         `${API}/${bucket}/o/${object(key)}${query ? `?${query}` : ''}`,
         {
@@ -242,7 +271,8 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       if (response.status === HTTP.PRECONDITION_FAILED)
         throw new Conflict(`${key} changed`)
       if (response.status === HTTP.NOT_FOUND) {
-        if (typeof if_version === 'string') throw new Conflict(`${key} is gone`)
+        if (options.if_version !== undefined)
+          throw new Conflict(`${key} is gone`)
         return
       }
       if (!response.ok) await fail(`delete ${key}`, response)
@@ -265,43 +295,25 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
       }
     },
 
-    /** File names directly in a folder that sort after `after`, in order. */
-    async list_after(folder, after = '') {
-      const scope = `${prefix}${folder.replace(/\/?$/, '/')}`
-      const { items } = await pages({
-        bucket,
-        call,
-        fail,
-        fields: 'items(name),nextPageToken',
-        label: `list ${folder}`,
-        scope,
-        start_offset: after ? `${scope}${after}` : ''
-      })
-      return items
-        .map(item => item.name.slice(scope.length))
-        .filter(name => name > after)
-        .sort()
-    },
-
     async walk(folder) {
       const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
       const { items } = await pages({
         bucket,
         call,
         fail,
-        fields: 'items(name,generation),nextPageToken',
+        fields: 'items(name,md5Hash,crc32c),nextPageToken',
         label: `walk ${folder}`,
         scope
       })
       const found = {}
       for (const item of items) {
         const name = item.name.slice(scope.length)
-        if (name && !name.endsWith('/')) found[name] = item.generation
+        if (name && !name.endsWith('/')) found[name] = version_of(item)
       }
       return found
     },
 
-    /** Like walk, with each file's byte size and last update. */
+    /** Like walk, with each file's byte size, last update, and meta. */
     async walk_meta(folder) {
       const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
       const { items } = await pages({
@@ -309,7 +321,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         call,
         fail,
         fields:
-          'items(name,generation,size,updated,metadata/size),nextPageToken',
+          'items(name,md5Hash,crc32c,size,updated,metadata),nextPageToken',
         label: `walk ${folder}`,
         scope
       })
@@ -318,9 +330,10 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         const name = item.name.slice(scope.length)
         if (name && !name.endsWith('/'))
           found[name] = {
-            version: item.generation,
-            size: Number(item.metadata?.size ?? item.size),
-            updated: item.updated
+            version: version_of(item),
+            size: Number(item.metadata?.[SIZE] ?? item.size),
+            updated: item.updated,
+            meta: meta_of(item)
           }
       }
       return found

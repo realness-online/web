@@ -2,7 +2,10 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
-service="${1:?usage: stage-service.sh sync|proxy|gate [output-root]}"
+service="${1:?usage: stage-service.sh sync|proxy|gate [output-root] [environment]}"
+environment="${3:-}"
+args=""
+[ -n "$environment" ] && args=", \"--environment\", \"$environment\""
 case "$service" in sync|proxy|gate) ;; *) echo "unknown service: $service" >&2; exit 1 ;; esac
 . "$root/lib/output.sh"
 stage="${2:-$OUT}/$service-deploy"
@@ -19,6 +22,6 @@ FROM node:22-slim
 WORKDIR /app
 COPY . .
 ENV NODE_ENV=production
-CMD ["node", "server/$service/bin/$service-service.js"]
+CMD ["node", "server/$service/bin/$service-service.js"$args]
 EOF
 printf '%s\n' "$stage"

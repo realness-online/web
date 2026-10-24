@@ -109,8 +109,9 @@ const spec_paths = src_path => {
     .replace(/^src\/(?:app\/)?/, '')
     .replace(/\.vue$/, '')
     .replace(/\.js$/, '')
-  const prefix = src_path.startsWith('src/app/') ? 'frontend/' : ''
-  return [`${prefix}tests/${stem}.spec.js`, `${prefix}tests/${stem}.spec.ts`]
+  const folder = src_path.startsWith('src/app/') ? 'app' : src_path.split('/')[1]
+  const rest = src_path.startsWith('src/app/') ? stem : stem.split('/').slice(1).join('/')
+  return [`specs/${folder}/${rest}.spec.js`]
 }
 
 const has_spec = src_path =>
@@ -246,6 +247,6 @@ console.log('')
 console.log('## Workflow')
 console.log('')
 console.log('1. `npm run test:risk` — coverage + fallow + this report')
-console.log('2. Pick a **test-first** row; extend or add `tests/**` mirror spec')
+console.log('2. Pick a **test-first** row; extend or add the `specs/**` mirror spec')
 console.log('3. Re-run until cov% and CRAP improve, then refactor')
 console.log('4. Tune `.fallowrc.json` per `skills/test-coverage/references/fallow-integration.md`')

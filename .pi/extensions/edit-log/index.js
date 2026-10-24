@@ -5,12 +5,12 @@
  * fingerprint with the session and turn that made it. Sync uses the log to
  * decide: changes the log explains may delete or replay; the rest keep both.
  *
- * Formatters (pi-mono-auto-fix) rewrite files once the agent stops, so every
+ * Formatters (the auto-fix extension) rewrite files once the agent stops, so every
  * touched path is fingerprinted again once it holds still, as tool `settle`.
  *
  * Each agent run is bracketed by `realness turn-start` and `turn-end`, which
  * log whatever changed in synced folders during it (bash too). Desktop turns
- * upload only with REALNESS_TURN_SYNC=1 while sync is rebuilt; actors still sync.
+ * upload only while `npm run local` is up, to its sync; actors always sync.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { execFile, spawn } from 'node:child_process'

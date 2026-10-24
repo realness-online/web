@@ -3,8 +3,7 @@
   import { use_home_view } from '@/use/home-view'
   import AsConnectionFeedback from '@/components/chat/as-connection-feedback.vue'
   import AsConversation from '@/components/chat/as-conversation.vue'
-  import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
-  import { only_mine, info } from '@/utils/preference'
+  import { info } from '@/utils/preference'
   import { use_deferred_flag } from '@/use/deferred-unmount'
   import { page_context } from '@/utils/chat-context'
   import {
@@ -13,6 +12,7 @@
     inject,
     nextTick as next_tick,
     onBeforeUnmount as on_before_unmount,
+    onMounted as on_mounted,
     ref,
     toRef as to_ref,
     watch
@@ -24,6 +24,24 @@
     startup_id: { type: String, default: null }
   })
   const emit = defineEmits(['leave'])
+
+  /** Fit the panel to the visible viewport, so the phone keyboard cannot slide it away. */
+  const panel = ref(null)
+  const fit_viewport = () => {
+    const visible = globalThis.visualViewport
+    if (!visible || !panel.value) return
+    panel.value.style.setProperty('--visible-top', `${visible.offsetTop}px`)
+    panel.value.style.setProperty('--visible-height', `${visible.height}px`)
+  }
+  on_mounted(() => {
+    fit_viewport()
+    globalThis.visualViewport?.addEventListener('resize', fit_viewport)
+    globalThis.visualViewport?.addEventListener('scroll', fit_viewport)
+  })
+  on_before_unmount(() => {
+    globalThis.visualViewport?.removeEventListener('resize', fit_viewport)
+    globalThis.visualViewport?.removeEventListener('scroll', fit_viewport)
+  })
 
   const AsFps = define_async_component(() => import('@/components/as-fps.vue'))
   const route = use_route()
@@ -84,6 +102,7 @@
 <template>
   <aside
     id="chat-panel"
+    ref="panel"
     aria-label="Chat"
     :data-open="shows.chat || undefined"
     :data-alone="view === 'chat' || undefined"
@@ -92,9 +111,6 @@
     @transitionstart.self="on_reveal"
     @transitionend.self="on_reveal">
     <header>
-      <as-feed-toggle
-        v-if="shows.thoughts && (route?.path ?? '/') === '/'"
-        v-model="only_mine" />
       <slot />
     </header>
     <as-conversation ref="talk" :chat="chat" />
@@ -164,6 +180,10 @@
       border-radius: base-line;
       background: var(--code-surface);
       overflow: auto;
+      /* Nothing to say: no box at all. */
+      &:not(:has(> section, > p:not(:empty), > :not(section, p))) {
+        display: none;
+      }
       & > section[aria-label='Connection status'] {
         flex-direction: row;
         flex-wrap: wrap;
@@ -188,7 +208,7 @@
       padding-block: base-line * 0.5;
     }
   }
-  @media (orientation: landscape) {
+  @media (orientation: landscape), (max-width: (display-begins / 2)) {
     aside#chat-panel > aside {
       display: flex;
       flex-direction: column;
@@ -200,6 +220,36 @@
         block-size: auto;
         min-block-size: base-line * 3;
       }
+    }
+  }
+  @media (max-width: (display-begins / 2)) {
+    html:has(aside#chat-panel[data-open]),
+    html:has(aside#chat-panel[data-open]) body {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    aside#chat-panel {
+      overscroll-behavior: contain;
+      inset-block: auto;
+      top: var(--visible-top, 0px);
+      block-size: var(--visible-height, 100dvh);
+    }
+    aside#chat-panel > aside:not(:has(> p:not(:empty), > section, > *:not(p))) {
+      display: none;
+    }
+    aside#chat-panel > form[data-chat] {
+      padding-block-end: base-line * 0.25;
+      & > div.working-border {
+        inset-block-end: base-line * 0.25;
+        & > div {
+          width: base-line * 8;
+          height: base-line * 2;
+          filter: drop-shadow(0 0 (base-line / 2) var(--accent));
+        }
+      }
+    }
+    aside#chat-panel > header {
+      padding-block: base-line * 0.25;
     }
   }
   @media (min-width: display-begins) {

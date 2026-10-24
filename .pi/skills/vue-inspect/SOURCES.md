@@ -4,7 +4,7 @@
 
 **Trust tier:** canonical (first-hand, executed and verified in this repo)
 **Confidence:** high - every snippet in `references/api-surface.md` was run via
-`agent-browser eval` against the real `apps/realness/frontend` Vue 3.5.32 dev app
+`agent-browser eval` against the real `apps/realness` Vue 3.5.32 dev app
 (`https://localhost:*/colors`) and the returned output is recorded verbatim in the
 originating conversation.
 **Contribution:** all of `SKILL.md`, `references/api-surface.md` (sections 1-5),

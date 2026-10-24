@@ -1,4 +1,4 @@
-import icons_svg from '../../../frontend/public/icons.svg?raw'
+import icons_svg from '../../../public/icons.svg?raw'
 
 /** @param {string} svg */
 export const icon_names_from_svg = svg =>

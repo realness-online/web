@@ -12,7 +12,9 @@ const key_path = key => key.split('/').map(encodeURIComponent).join('/')
  */
 export const sync_records = ({ url, secret, halo, fetcher = fetch }) => {
   if (!url || !secret || !halo)
-    throw new Error('gate records need SYNC_URL, HALO_PASS_SECRET, and a halo')
+    throw new Error(
+      'gate records need a sync address, HALO_PASS_SECRET, and a halo'
+    )
   const base = url.replace(/\/$/, '')
   const call = (method, key, body) =>
     fetcher(`${base}/${key_path(key)}`, {

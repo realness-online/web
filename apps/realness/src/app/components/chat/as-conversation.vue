@@ -3,7 +3,7 @@
   import { message_html } from '@/utils/message-markdown'
   import { create_parts } from '@/utils/chat-parts'
   import { matching_commands } from '@/utils/chat-commands'
-  import { is_at_end } from '@/utils/chat-scroll'
+  import { is_at_end, is_far_from_end } from '@/utils/chat-scroll'
   import {
     computed,
     inject,
@@ -22,19 +22,25 @@
   const input = ref(null)
   /** Reading the newest message, so new ones may follow it. */
   const at_end = ref(true)
+  /** A screen or more above the newest message: show the jump. */
+  const far = ref(false)
 
   const to_end = async () => {
     await next_tick()
     list.value?.lastElementChild?.scrollIntoView({ block: 'end' })
     at_end.value = true
+    far.value = false
   }
 
   const on_scroll = () => {
-    if (list.value) at_end.value = is_at_end(list.value)
+    if (!list.value) return
+    at_end.value = is_at_end(list.value)
+    far.value = is_far_from_end(list.value)
   }
 
   const send = () => {
     at_end.value = true
+    far.value = false
     props.chat.send()
   }
 
@@ -42,7 +48,8 @@
   watch(
     () => [
       props.chat.messages.value.length,
-      props.chat.messages.value.at(-1)?.text
+      props.chat.messages.value.at(-1)?.text,
+      props.chat.messages.value.at(-1)?.thinking
     ],
     () => {
       if (list.value) draw_parts(list.value)
@@ -60,7 +67,17 @@
     handler: () => void to_end(),
     context: 'global'
   })
-  on_unmounted(() => key_commands?.unregister_handler('view::Chat_Latest'))
+  /** Ctrl+End returns to the newest message, as in the TUI. */
+  const on_latest_key = event => {
+    if (at_end.value || !event.ctrlKey || event.key !== 'End') return
+    event.preventDefault()
+    void to_end()
+  }
+  on_mounted(() => window.addEventListener('keydown', on_latest_key))
+  on_unmounted(() => {
+    window.removeEventListener('keydown', on_latest_key)
+    key_commands?.unregister_handler('view::Chat_Latest')
+  })
 
   const suggestions = computed(() => matching_commands(props.chat.draft.value))
 
@@ -69,9 +86,61 @@
     input.value?.focus()
   }
 
-  const on_key = event => {
-    if (event.isComposing || event.key !== 'Enter' || event.shiftKey) return
+  /** Every Thinking block opens and closes together. */
+  const thinking_open = ref(false)
+
+  /** Where ↑ has reached in what this person sent; null is the unsent draft. */
+  const recalled = ref(null)
+  let unsent = ''
+  const sent = () =>
+    props.chat.messages.value
+      .filter(message => message.sender === 'You')
+      .map(message => message.text)
+
+  /**
+   * Step through earlier inputs, as in a shell. Only from the first or last
+   * line, so arrows still move inside a multiline draft.
+   * @param {KeyboardEvent} event
+   * @param {-1 | 1} step
+   */
+  const recall = (event, step) => {
+    const field = event.target
+    const draft = props.chat.draft.value
+    const edge =
+      step < 0
+        ? !draft.slice(0, field.selectionStart).includes('\n')
+        : !draft.slice(field.selectionEnd).includes('\n')
+    const inputs = sent()
+    if (!edge || (recalled.value === null && step > 0) || !inputs.length) return
     event.preventDefault()
+    if (recalled.value === null) unsent = draft
+    const next = (recalled.value ?? inputs.length) + step
+    if (next < 0) return
+    recalled.value = next >= inputs.length ? null : next
+    props.chat.draft.value =
+      recalled.value === null ? unsent : inputs[recalled.value]
+  }
+
+  const on_key = event => {
+    if (event.isComposing) return
+    if (event.key === 'Tab' && !event.shiftKey && suggestions.value.length) {
+      event.preventDefault()
+      return pick(suggestions.value[0])
+    }
+    if (event.key === 'ArrowUp') return recall(event, -1)
+    if (event.key === 'ArrowDown') return recall(event, 1)
+    if (event.key !== 'Enter') return
+    if (event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return
+    event.preventDefault()
+    recalled.value = null
+    send()
+  }
+
+  /** Leaving the field sends what it holds, as a thought saves. */
+  const on_leave = event => {
+    if (event.currentTarget.form?.contains(event.relatedTarget)) return
+    if (!props.chat.draft.value?.trim()) return
+    recalled.value = null
     send()
   }
 
@@ -91,19 +160,39 @@
       itemscope
       itemtype="https://schema.org/Message">
       <meta itemprop="sender" :content="message.sender" />
+      <details
+        v-if="message.thinking"
+        data-thinking
+        :open="thinking_open"
+        @toggle="thinking_open = $event.target.open">
+        <summary>Thinking</summary>
+        <p>{{ message.thinking }}</p>
+      </details>
       <section itemprop="text" v-html="message_html(message.text)" />
     </li>
   </ol>
+  <section v-if="chat.taken?.value" data-taken aria-label="Chat in another tab">
+    <p>Another tab is using this chat.</p>
+    <button type="button" @click="chat.take_back()">Use here</button>
+  </section>
   <form
+    v-else
     data-chat
     :aria-busy="chat.working.value ? 'true' : null"
     @submit.prevent="send">
-    <button v-if="!at_end" type="button" data-latest @click="to_end()">
-      Newest message
+    <button
+      v-if="far"
+      type="button"
+      data-latest
+      aria-label="Jump to latest message"
+      title="Jump to latest message · Ctrl+End"
+      @mousedown.prevent
+      @click="to_end()">
+      ↓
     </button>
     <menu v-if="suggestions.length" aria-label="Commands">
       <li v-for="command in suggestions" :key="command.name">
-        <button type="button" @click="pick(command)">
+        <button type="button" @mousedown.prevent @click="pick(command)">
           <kbd>/{{ command.name }}</kbd> {{ command.description }}
         </button>
       </li>
@@ -116,6 +205,7 @@
       rows="1"
       aria-label="Message"
       required
+      @focusout="on_leave"
       @keydown="on_key" />
   </form>
 </template>
@@ -188,6 +278,21 @@
       }
       & > :last-child {
         margin-bottom: 0;
+      }
+      & ul,
+      & ol {
+        margin: 0 0 base-line;
+        padding-inline-start: base-line * 1.5;
+        list-style-position: outside;
+      }
+      & ul {
+        list-style-type: disc;
+      }
+      & ol {
+        list-style-type: decimal;
+      }
+      & li {
+        margin-block-end: (base-line / 4);
       }
     }
     & table {
@@ -262,9 +367,12 @@
       inset-block-end: 100%;
       inset-inline-end: base-line;
       margin-block-end: (base-line / 2);
-      padding: (base-line / 4) base-line;
+      inline-size: base-line * 1.5;
+      block-size: base-line * 1.5;
+      padding: 0;
       border: round(base-line * 0.1, 2) solid var(--emphasis);
-      border-radius: base-line;
+      border-radius: 50%;
+      line-height: 1;
       color: var(--text);
       background: var(--surface);
     }
@@ -283,8 +391,31 @@
       min-block-size: base-line * 2;
       max-block-size: 33dvh;
       overflow-y: auto;
+      &:focus-visible {
+        outline: none;
+      }
     }
 
+  }
+  details[data-thinking] {
+    color: var(--muted-text);
+    & > summary {
+      cursor: pointer;
+    }
+    & > p {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+  }
+  section[data-taken] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: base-line;
+    padding: base-line;
+    & > p {
+      margin: 0;
+    }
   }
 </style>
 

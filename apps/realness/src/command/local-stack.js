@@ -11,7 +11,7 @@ import { get as https_get } from 'node:https'
 import path from 'node:path'
 import { product_paths } from '#root/src/settings/layout.js'
 import { local_settings } from '#root/src/settings/environments.js'
-import { out_path } from '#root/src/settings/output.js'
+import { out_path, sync_dir } from '#root/src/settings/output.js'
 import { setTimeout as delay } from 'node:timers/promises'
 
 const { root, frontend } = product_paths()
@@ -36,9 +36,22 @@ export const local_plan = () => {
   const probe_url = secure
     ? `https://127.0.0.1:${local_settings.https_port}`
     : `http://127.0.0.1:${local_settings.http_port}`
+  const identity = local_settings.cloud.project
+  const sign_in_url = `http://127.0.0.1:${local_settings.sign_in_port}`
   return {
     url,
     services: [
+      {
+        name: 'sign-in',
+        args: ['run', 'start:sign-in'],
+        url: `${sign_in_url}/health`,
+        env: {
+          PORT: String(local_settings.sign_in_port),
+          LISTEN: '127.0.0.1',
+          SIGN_IN_DIR: out_path('sign-in'),
+          IDENTITY_PROJECT: identity
+        }
+      },
       {
         name: 'sync',
         args: ['run', 'start:sync'],
@@ -47,8 +60,9 @@ export const local_plan = () => {
           PORT: String(local_settings.sync_port),
           LISTEN: '0.0.0.0',
           STORE: 'disk',
-          SYNC_DIR: out_path('sync-data'),
-          PROJECT: local_settings.cloud.project,
+          SYNC_DIR: sync_dir(),
+          PROJECT: identity,
+          SIGN_IN_URL: sign_in_url,
           ORIGINS: local_settings.cloud.services.origins
         }
       },
@@ -60,14 +74,22 @@ export const local_plan = () => {
       },
       {
         name: 'proxy',
-        args: ['run', 'start:proxy'],
+        args: [
+          'run',
+          'start:proxy',
+          '--',
+          '--record',
+          out_path('proxy-traffic')
+        ],
         url: `http://127.0.0.1:${local_settings.proxy_port}/health`,
         env: {
           PORT: String(local_settings.proxy_port),
           LISTEN: '127.0.0.1',
           STORE: 'disk',
           PROXY_DIR: out_path('proxy-data'),
-          IDENTITY_PROJECT: local_settings.cloud.project,
+          PINS_DIR: sync_dir(),
+          IDENTITY_PROJECT: identity,
+          SIGN_IN_URL: sign_in_url,
           OPENROUTER_API_KEY_FILE: out_path('openrouter-key'),
           ORIGINS: local_settings.cloud.services.origins
         }
@@ -75,11 +97,16 @@ export const local_plan = () => {
       { name: 'workers', args: ['run', 'dev:frontend:workers'] },
       {
         name: 'gate',
-        args: ['run', 'dev:gate'],
+        args: ['run', 'start:gate', '--', '--environment', 'local'],
         url: `http://127.0.0.1:${local_settings.gate_port}/health`,
         env: {
-          GATE_API_PORT: String(local_settings.api_port),
-          SYNC_URL: `http://127.0.0.1:${local_settings.sync_port}`
+          PORT: String(local_settings.gate_port),
+          IDENTITY_PROJECT: identity,
+          SIGN_IN_URL: sign_in_url,
+          PINS_DIR: sync_dir(),
+          ORIGINS: local_settings.cloud.services.origins,
+          GATE_HALO: `127.0.0.1:${local_settings.terminal_port}`,
+          GATE_API_PORT: String(local_settings.api_port)
         }
       },
       {

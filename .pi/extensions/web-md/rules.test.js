@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { check } from './rules.js'
 
-const W = '/x/bin/web-md.js'
+const W = '/x/bin/web/web-md.js'
 const blocked = cmd => assert.ok(check(cmd, W), `should block: ${cmd}`)
 const allowed = cmd => assert.equal(check(cmd, W), null, `should allow: ${cmd}`)
 
@@ -16,7 +16,7 @@ test('blocks curl page reads seen in fresh sessions', () => {
 
 test('reason names web-md and the url', () => {
   const reason = check('curl -s https://example.com', W)
-  assert.match(reason, /\/x\/bin\/web-md\.js 'https:\/\/example\.com'/)
+  assert.match(reason, /\/x\/bin\/web\/web-md\.js 'https:\/\/example\.com'/)
   assert.match(reason, /# web-md: skip/)
 })
 
@@ -33,7 +33,7 @@ test('allows APIs, downloads, and local servers', () => {
 })
 
 test('allows web-md itself and the skip comment', () => {
-  allowed('/x/bin/web-md.js https://example.com --max 4000')
+  allowed('/x/bin/web/web-md.js https://example.com --max 4000')
   allowed('curl -s https://example.com # web-md: skip')
 })
 

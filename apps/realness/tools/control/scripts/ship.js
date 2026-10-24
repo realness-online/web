@@ -13,7 +13,7 @@ import {
   halo_folders,
   service_folders
 } from '#root/src/settings/layout.js'
-import { run_entry } from '#root/frontend/scripts/lib/entry.js'
+import { run_entry } from '#root/scripts/lib/entry.js'
 
 const SERVICES = ['proxy', 'gate', 'sync']
 const FUNCTIONS = 'functions'

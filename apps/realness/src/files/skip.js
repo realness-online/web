@@ -1,6 +1,6 @@
 /**
  * What never syncs: artifacts, local vault metadata, dependencies, builds,
- * auth files, secrets, and git. Names match any path segment.
+ * auth files, secrets, shell histories, and git. Names match any path segment.
  */
 const NAMES = new Set([
   '.obsidian',
@@ -29,8 +29,12 @@ const PATTERNS = [
   /\.(pem|key|p12|pfx)$/,
   /^id_(rsa|ed25519|ecdsa)(\.pub)?$/,
   /\.tmp$/,
+  /^\.[a-z_]+_history$/,
   /\.html\.gz\.(lock|writer-[^.]+|tail-[^.]+|before-rewrite-[^.]+|before-compaction-[^.]+|writing-[^.]+|compacting-[^.]+)$/
 ]
+
+/** Shell and REPL histories: personal, never synced or shipped. */
+export const is_history = name => /^\.[a-z_]+_history$/.test(name)
 
 export const skipped_name = name =>
   NAMES.has(name) || PATTERNS.some(pattern => pattern.test(name))

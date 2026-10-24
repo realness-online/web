@@ -27,7 +27,7 @@ const page = message =>
   `<!doctype html><meta charset="utf-8"><title>Realness</title><p style="font:1.2rem system-ui;margin:3rem">${message}</p>`
 
 /** The macOS keychain, driven through `security -i` so secrets stay off argv. */
-const keychain_entry = account => ({
+export const keychain_entry = account => ({
   async read() {
     try {
       const { stdout } = await promisify(exec_file)('security', [

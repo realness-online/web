@@ -13,9 +13,9 @@ if (typeof handle !== 'function') {
 
 const toRequest = req => {
   const headers = new Headers()
-  for (const [name, value] of Object.entries(req.headers)) 
+  for (const [name, value] of Object.entries(req.headers))
     for (const one of [value].flat()) headers.append(name, one)
-  
+
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD'
   /**
    * `duplex` is required by undici for a streaming request body, but the DOM

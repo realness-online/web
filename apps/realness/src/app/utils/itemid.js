@@ -112,7 +112,8 @@ const fetch_item = async itemid => {
   const remembered = await as_download_url(itemid)
   if (!remembered) return null
 
-  const response = await fetch(remembered)
+  const { fetch_file } = await import('@/utils/storage-mode')
+  const response = await fetch_file(remembered)
   if (response.ok) return response
   if (!was_remembered) return null
 
@@ -120,7 +121,7 @@ const fetch_item = async itemid => {
   const fresh = await as_download_url(itemid)
   if (!fresh || fresh === remembered) return null
 
-  const retried = await fetch(fresh)
+  const retried = await fetch_file(fresh)
   return retried.ok ? retried : null
 }
 

@@ -2,7 +2,7 @@ import { gate_fetch, start_actor } from '@/utils/gate'
 import { records } from '@/utils/stream-records'
 
 const failure = (code, cause, spill_path = undefined) => ({
-  ok: false,
+  ok: /** @type {const} */ (false),
   error: Object.assign(new Error(cause.message ?? String(cause)), {
     name: 'ExecutionError',
     code,
@@ -115,7 +115,7 @@ export const create_vm_env = (
               exitCode: frame.exit_code,
               ...(frame.spill_path ? { spillPath: frame.spill_path } : {})
             }
-            if (!frame.error) return { ok: true, value }
+            if (!frame.error) return { ok: /** @type {const} */ (true), value }
             return failure(
               frame.error,
               `Command failed: ${frame.error}`,

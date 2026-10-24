@@ -5,6 +5,9 @@ import { placed_halos } from '../../../src/gate/placement.js'
 import { gce_start, make_waker, tcp_probe } from '../../../src/gate/wake.js'
 import { phone_identity } from '#root/src/proxy/identity.js'
 import { gcloud_token, metadata_token } from '#root/src/can/gcs.js'
+import { disk } from '#root/src/can/disk.js'
+import { environment_settings } from '#root/src/settings/environments.js'
+import { parseArgs as parse_args } from 'node:util'
 import { sync_records } from '../../../src/gate/sync-records.js'
 import {
   lifecycle_html,
@@ -12,13 +15,19 @@ import {
   read_lifecycle
 } from '#root/src/sync/halo-lifecycle.js'
 
-const env = process.env
+const { env } = process
+/** The gate names its environment on the command line; sync's address comes from it. */
+const { values: args } = parse_args({
+  options: { environment: { type: 'string' } }
+})
+const { sync_url } = environment_settings(args.environment ?? '').services
 const secret = halo_pass_secret(env)?.trim()
 if (!secret) throw new Error('gate needs HALO_PASS_SECRET')
 const token = env.K_SERVICE ? metadata_token() : gcloud_token()
 const identify = phone_identity({
   project: env.IDENTITY_PROJECT,
   bucket: env.PINS_BUCKET,
+  storage: env.PINS_DIR ? disk(env.PINS_DIR) : undefined,
   token
 })
 const origins = (env.ORIGINS ?? '')
@@ -31,7 +40,7 @@ const origins = (env.ORIGINS ?? '')
  */
 const records = () =>
   sync_records({
-    url: String(env.SYNC_URL),
+    url: sync_url,
     secret,
     halo: String(env.GATE_HALO_NAME)
   })

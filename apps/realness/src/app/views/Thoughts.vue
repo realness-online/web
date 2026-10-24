@@ -46,7 +46,6 @@
   import { after_layout } from '@/utils/after-layout'
   import { poster_delete_log } from '@/utils/poster-delete-log'
   import AsTextarea from '@/components/thoughts/as-textarea.vue'
-  import AsFeedToggle from '@/components/thoughts/as-feed-toggle.vue'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
   import { use_home_view } from '@/use/home-view'
 
@@ -558,7 +557,6 @@
     :inert="!shows.thoughts || undefined">
     <header>
       <as-chat-toggle v-if="current_user" />
-      <as-feed-toggle v-else v-model="only_mine" />
       <a v-if="from_blog" :href="from_blog">←</a>
       <router-link v-if="current_user" id="account" to="/account" tabindex="-1">
         {{ me?.name || 'Account' }}

@@ -524,10 +524,6 @@
             outline: none;
             box-shadow: none;
           }
-          &:focus-visible + span {
-            outline-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent);
-          }
         }
         & > span {
           display: block;
@@ -550,6 +546,10 @@
         width: 100%;
         margin: base-line (base-line * 0.5);
         frosted-glass();
+        background-color: unquote('color-mix(in oklch, var(--background) 85%, transparent)');
+        @media (prefers-color-scheme: dark) {
+          background-color: unquote('color-mix(in oklch, var(--background) 50%, transparent)');
+        }
         border-radius: base-line;
         display: flex;
         align-items: center;
@@ -587,7 +587,6 @@
             outline: none;
             box-shadow: none;
           }
-          focus-ring();
         }
         & > label:has(input:checked) {
           color: var(--emphasis);
@@ -606,11 +605,6 @@
             &:focus-visible {
               outline: none;
               box-shadow: none;
-            }
-            &:focus-visible + span {
-              outline: 2px solid var(--accent);
-              outline-offset: 2px;
-              border-radius: base-line * 0.25;
             }
           }
           & > span {

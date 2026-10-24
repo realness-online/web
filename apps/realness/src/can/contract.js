@@ -3,10 +3,16 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
 /**
  * Options every adapter accepts on a write.
  *
- * `if_version` is the version the caller last read: a string matches it, and
- * `null` means create only when the key is absent. Leaving it undefined
- * writes without a precondition.
- * @typedef {{ if_version?: string | null }} VersionGuard
+ * `if_version` is the version the caller last read; the write lands only
+ * while the stored bytes still hash to it. `if_absent: true` creates only
+ * when the key is missing. Neither writes without a precondition.
+ * @typedef {{ if_version?: string, if_absent?: boolean }} VersionGuard
+ */
+
+/**
+ * What we know about the data that its bytes cannot say. A put replaces it;
+ * leaving it out stores none. Values are strings.
+ * @typedef {{ meta?: Record<string, string> }} Described
  */
 
 /**
@@ -15,15 +21,45 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
  * @typedef {{ gzip?: boolean }} Packing
  */
 
+/** Meta: what we know about the data, kept beside its bytes. */
+const meta_contract = ({ test, assert, make }) => {
+  test('meta rides with the bytes and never moves the version', async () => {
+    const store = await make()
+    const plain = await store.put('people/+1/p.html', 'poster')
+    const sold = await store.put('people/+1/p.html', 'poster', {
+      meta: { sold: 'true' }
+    })
+    assert.equal(sold, plain)
+    assert.deepEqual((await store.get('people/+1/p.html')).meta, {
+      sold: 'true'
+    })
+    const listed = await store.walk_meta('people/+1/')
+    assert.deepEqual(listed['p.html'].meta, { sold: 'true' })
+  })
+
+  test('a put replaces meta; delete takes it', async () => {
+    const store = await make()
+    await store.put('people/+1/p.html', 'one', { meta: { sold: 'true' } })
+    await store.put('people/+1/p.html', 'two')
+    assert.deepEqual((await store.get('people/+1/p.html')).meta, {})
+    await store.put('people/+1/p.html', 'three', { meta: { sold: 'true' } })
+    await store.delete('people/+1/p.html')
+    await store.put('people/+1/p.html', 'four')
+    assert.deepEqual((await store.get('people/+1/p.html')).meta, {})
+  })
+}
+
 /**
  * The contract every adapter passes. Each adapter's test calls:
  *
  *   contract({ test, assert, make })   make() resolves to a fresh, empty store
  *
- * Keys are relative, `/`-separated; versions are opaque strings.
+ * Keys are relative, `/`-separated. A version is an opaque hash of the
+ * stored bytes: equal bytes share one, and nothing stores it.
  */
 export const contract = ({ test, assert, make }) => {
   const text = file => file?.body.toString('utf8')
+  meta_contract({ test, assert, make })
 
   test('a missing key reads as null', async () => {
     const store = await make()
@@ -46,14 +82,29 @@ export const contract = ({ test, assert, make }) => {
     assert.notEqual(v1, v2)
   })
 
-  test('if_version null creates only when absent', async () => {
+  test('equal bytes share a version', async () => {
     const store = await make()
-    await store.put('people/+1/a.md', 'first', { if_version: null })
+    const v1 = await store.put('people/+1/a.md', 'same')
+    const v2 = await store.put('people/+1/b.md', 'same')
+    assert.equal(v1, v2)
+  })
+
+  test('if_absent creates only when absent', async () => {
+    const store = await make()
+    await store.put('people/+1/a.md', 'first', { if_absent: true })
     await assert.rejects(
-      store.put('people/+1/a.md', 'second', { if_version: null }),
+      store.put('people/+1/a.md', 'second', { if_absent: true }),
       { code: 'conflict' }
     )
     assert.equal(text(await store.get('people/+1/a.md')), 'first')
+  })
+
+  test('if_version null is refused', async () => {
+    const store = await make()
+    await assert.rejects(
+      store.put('people/+1/a.md', 'x', { if_version: null }),
+      TypeError
+    )
   })
 
   test('a matching version writes; a stale one conflicts', async () => {
@@ -138,7 +189,7 @@ export const contract = ({ test, assert, make }) => {
     const store = await make()
     const results = await Promise.allSettled(
       ['one', 'two', 'three'].map(body =>
-        store.put('pins/+1', body, { if_version: null })
+        store.put('pins/+1', body, { if_absent: true })
       )
     )
     assert.equal(results.filter(r => r.status === 'fulfilled').length, 1)
@@ -162,11 +213,11 @@ export const contract = ({ test, assert, make }) => {
     const v1 = await store.compose(
       'usage/+1/d/index.html',
       ['usage/+1/d/a.html'],
-      { if_version: null }
+      { if_absent: true }
     )
     await assert.rejects(
       store.compose('usage/+1/d/index.html', ['usage/+1/d/b.html'], {
-        if_version: null
+        if_absent: true
       }),
       { code: 'conflict' }
     )
@@ -192,16 +243,6 @@ export const contract = ({ test, assert, make }) => {
       store.compose('usage/+1/d/x.html', ['usage/+1/d/none.html']),
       { code: 'conflict' }
     )
-  })
-
-  test('list_after gives the names after a cursor, in order', async () => {
-    const store = await make()
-    for (const name of ['b', 'a', 'c'])
-      await store.put(`changes/+1/${name}`, '')
-    await store.put('changes/+1/deep/d', '')
-    assert.deepEqual(await store.list_after('changes/+1/', ''), ['a', 'b', 'c'])
-    assert.deepEqual(await store.list_after('changes/+1/', 'a'), ['b', 'c'])
-    assert.deepEqual(await store.list_after('changes/+1/', 'c'), [])
   })
 
   test('bytes survive untouched', async () => {

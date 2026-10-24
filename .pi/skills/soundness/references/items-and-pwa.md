@@ -49,7 +49,7 @@ modes; linked files alone do not prove that overrides preserve these values.
 
 Read the existing implementation before selecting an approach:
 
-- `apps/realness/frontend/vite.config.js`: `vite-plugin-pwa`, asset inclusion,
+- `apps/realness/vite.config.js`: `vite-plugin-pwa`, asset inclusion,
   cache-size limit, excluded online-only terminal WebAssembly, navigation
   fallback exclusions, manifest scope, and 192/512 icons.
 - `apps/realness/src/app/main.js`: registration after first paint.
@@ -73,7 +73,7 @@ vault files, authenticated API responses, or secrets in a public cache.
 Run from the harness root:
 
 ```
-node bin/soundness-check.js --site <built-directory>
+node bin/checks/soundness-check.js --site <built-directory>
 ```
 
 Every built HTML page must contain a primary addressed `html`, `main`, or

@@ -6,7 +6,7 @@ import { fileURLToPath as file_url_to_path } from 'node:url'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { validate_skill } from './quick-validate.js'
-import { spec_check } from '../../../../bin/check-skills.js'
+import { spec_check } from '../../../../bin/checks/check-skills.js'
 
 const scratch = file_url_to_path(new URL('../../../../artifacts/skill-writer/', import.meta.url))
 const script = file_url_to_path(new URL('./quick-validate.js', import.meta.url))

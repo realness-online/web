@@ -106,7 +106,7 @@ start as Explorer.
   run pre-commit is a good. The scripts exist for a reason.
 - Confirm requirements before writing code; pause multi-step work until asked.
 - We like our existing code.
-- Read any URL with `bin/web-md.js <url> --max 4000` (`web-md` skill), never
+- Read any URL with `bin/web/web-md.js <url> --max 4000` (`web-md` skill), never
   `curl` or agent-browser. To find one fact, add `--grep <word>`, never
   `curl | grep`. agent-browser is for interaction - clicking, forms, logins.
 - Observe a browser page in this order: `eval` a specific computed value or

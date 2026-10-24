@@ -29,6 +29,7 @@
         :aria-current="pricing_current ? 'page' : undefined"
         >Pricing</router-link
       >
+      <router-link to="/terms" replace>Legal</router-link>
       <router-link
         to="/account"
         replace
@@ -82,6 +83,10 @@
         &[aria-current='page'] {
           color: var(--emphasis);
         }
+      }
+
+      a[href='/terms'] {
+        font-size: smaller;
       }
 
       a[href='/account'] {

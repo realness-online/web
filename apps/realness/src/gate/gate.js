@@ -5,12 +5,16 @@ import {
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { accept, open_pty, pump, refuse } from '#root/lib/websocket.js'
 import { HTTP } from '#root/lib/http.js'
+import { make_views } from './views.js'
 
 const PROTOCOL = 'realness'
 const DEFAULT_COLS = 80
 const DEFAULT_ROWS = 24
 const API_PORT = 8080
 const RETRY_AFTER_S = 5
+const MIB = 1_048_576
+const VIEW_MIB = 4
+const VIEW_BYTES = VIEW_MIB * MIB
 const PREFLIGHT = {
   'access-control-allow-methods': 'GET, POST, DELETE',
   'access-control-allow-headers': 'authorization, content-type',
@@ -57,6 +61,67 @@ const NDJSON = {
  * @param {string} pass
  * @param {boolean} [streaming] headers are already sent: a refusal becomes an error record
  */
+/**
+ * A JSON body up to `limit` bytes, or null when it is larger or not JSON.
+ * @param {import('node:http').IncomingMessage} request
+ * @param {number} limit
+ */
+const json_body = (request, limit) =>
+  new Promise(done => {
+    const parts = []
+    let size = 0
+    request.on('data', part => {
+      size += part.length
+      if (size > limit) {
+        done(null)
+        request.destroy()
+      } else parts.push(part)
+    })
+    request.on('end', () => {
+      try {
+        done(JSON.parse(Buffer.concat(parts).toString('utf8')))
+      } catch {
+        done(null)
+      }
+    })
+    request.on('error', () => done(null))
+  })
+
+/**
+ * The live view routes: follow, publish, and claim the pen.
+ * @param {ReturnType<typeof make_views>} views
+ * @param {string} path
+ * @param {import('node:http').IncomingMessage} request
+ * @param {import('node:http').ServerResponse} response
+ * @param {string} phone
+ */
+const view_route = async (views, path, request, response, phone) => {
+  const json = (status, body) =>
+    response
+      .writeHead(status, { 'content-type': 'application/json' })
+      .end(JSON.stringify(body))
+  if (request.method === 'GET' && path === '/v1/view') {
+    response.writeHead(HTTP.OK, NDJSON)
+    response.write(record(views.current(phone)))
+    const stop = views.follow(phone, event => response.write(record(event)))
+    response.on('close', stop)
+    return
+  }
+  const body = await json_body(request, VIEW_BYTES)
+  const writer = typeof body?.writer === 'string' ? body.writer : ''
+  if (request.method !== 'POST' || !writer)
+    return json(HTTP.BAD_REQUEST, { error: 'needs a writer' })
+  if (path === '/v1/view/claim') {
+    views.claim(phone, writer)
+    return json(HTTP.OK, { writer })
+  }
+  if (!Array.isArray(body.lines) || !Number.isInteger(body.tail))
+    return json(HTTP.BAD_REQUEST, { error: 'needs lines and a tail' })
+  if (!views.publish(phone, { writer, tail: body.tail, lines: body.lines }))
+    return json(HTTP.CONFLICT, views.current(phone))
+  return json(HTTP.OK, { tail: body.tail })
+}
+
 const forward = (request, response, where, pass, streaming = false) =>
   /** @type {Promise<void>} */
   (
@@ -127,7 +192,8 @@ const forward = (request, response, where, pass, streaming = false) =>
  *   secret: string,
  *   origins: string[],
  *   wake?: (options?: { watch?: (event: object) => void }) => Promise<void>,
- *   log?: (line: string) => void
+ *   log?: (line: string) => void,
+ *   views?: ReturnType<typeof make_views>
  * }} options
  */
 export const make_gate = ({
@@ -136,7 +202,8 @@ export const make_gate = ({
   secret,
   origins,
   wake = async () => {},
-  log = console.info
+  log = console.info,
+  views = make_views()
 }) => {
   const plain = (response, status, text) =>
     response
@@ -165,6 +232,8 @@ export const make_gate = ({
     } catch {
       return plain(response, HTTP.UNAUTHORIZED, 'sign in first\n')
     }
+    if (path === '/v1/view' || path === '/v1/view/claim')
+      return view_route(views, path, request, response, who.phone)
     const streaming = request.method === 'POST' && path === '/v1/startup'
     /** Startup progress shows the wake as its first stage; other calls just wait. */
     const watch = streaming

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 project="$(cd "$(dirname "$0")/../../.." && pwd)"
-env="${1:?usage: harness-stage.sh development|production}"
+env="${1:?usage: harness-stage.sh local|development|production}"
 node "$project/tools/control/scripts/ship-stage.js" --env "$env"
 . "$project/lib/output.sh"
 out="$OUT"

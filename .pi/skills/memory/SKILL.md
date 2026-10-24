@@ -2,7 +2,7 @@
 name: memory
 description: "Store and retrieve durable learnings about how realness actually works - success patterns, failure modes, corrections, and next-time hints. Use before doing a task similar to a past one (check AGENTS.local.md Learnings first), and after a notable outcome or a user correction (append a general learning to AGENTS.local.md, which is injected into every session). Also runs the critical refinement loop: on a correction or repeated failure, prove it with evidence, note the root cause, and propose a fix to the skill/process at fault rather than mutating it directly."
 metadata:
-  check: "node ../../../bin/check-skills.js memory"
+  check: "node ../../../bin/checks/check-skills.js memory"
 ---
 
 # Memory

@@ -15,6 +15,25 @@ const environments = {
         'https://realness-development.web.app,https://realness-development.firebaseapp.com,https://realness.local,http://localhost:5173'
     }
   },
+  local: {
+    /** No cloud project has this name; local sign-in issues its tokens. */
+    project: 'demo-realness',
+    services: {
+      /** The halo reaches the Mac's proxy through Lima's host name. */
+      proxy_url: 'http://host.lima.internal:8788',
+      sync_url: 'http://127.0.0.1:8787',
+      /** The halo reaches the Mac's sync through Lima's host name. */
+      halo_sync_url: 'http://host.lima.internal:8787',
+      /** Actors reach it through a halo port the actor network allows. */
+      actor_sync_url: 'http://realness-halo:18098',
+      /** Published sites get their own sync folder so they never mix with people. */
+      site_sync_url: 'http://127.0.0.1:18096',
+      sites_url: 'http://127.0.0.1:18096',
+      /** Actors reach it through a halo port the actor network allows. */
+      actor_proxy_url: 'http://realness-halo:18097',
+      origins: 'https://realness.local,http://localhost:5173'
+    }
+  },
   production: {
     project: 'realness-online',
     public_url: 'https://realness.online',
@@ -45,8 +64,8 @@ export const development_settings = environments.development
 export const person_settings = environments.production
 
 /**
- * What the browser build talks to. `dev-local` is the local gate in front of the
- * development cloud services, so model calls still reach the real proxy.
+ * What the browser build talks to. `dev-local` reaches the Mac's own gate,
+ * model proxy, sign-in, and storage through the dev server.
  */
 const local_proxy_port = 8788
 
@@ -61,7 +80,9 @@ const browser_modes = {
   },
   'dev-local': {
     gate_url: '/gate',
-    proxy_url: `http://127.0.0.1:${local_proxy_port}`
+    proxy_url: '/model',
+    sign_in_url: '/sign-in',
+    sync_url: '/sync'
   }
 }
 
@@ -73,14 +94,17 @@ export const browser_settings = mode => {
 }
 
 export const local_settings = {
-  cloud: environments.development,
+  cloud: environments.local,
   halo_port: 8080,
   api_port: 18080,
   terminal_port: 18081,
   sync_port: 8787,
   proxy_port: local_proxy_port,
   gate_port: 8792,
+  sign_in_port: 8793,
   site_port: 18096,
+  actor_proxy_port: 18097,
+  actor_sync_port: 18098,
   https_port: 443,
   http_port: 5173,
   secure_origin: 'https://realness.local',

@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "entry": [
     "bin/*.js",
-    "bin/commands/*.js",
+    "bin/harness/commands/*.js",
     ".pi/extensions/*/index.js",
     ".pi/skills/**/scripts/*.js"
   ],
@@ -12,7 +12,7 @@
     "vault/**",
     "artifacts/**",
     "plans/**",
-    "bin/fixtures/**",
+    "bin/specs/fixtures/**",
     ".pi/agent/**",
     ".pi/runtime/**",
     ".pi/starter/**",

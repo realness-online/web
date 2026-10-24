@@ -132,6 +132,8 @@ const set_folder_sync_progress = patch => {
 let drain_timer = null
 /** @type {Promise<void> | null} */
 let drain_inflight = null
+/** @type {import('vue').Component | undefined} */
+let known_figure
 
 /**
  * @typedef {{
@@ -943,10 +945,16 @@ const schedule_folder_drain = () => {
 
 /**
  * Drain the folder queue by running a full mirror reconcile.
- * @param {{ set_working?: (v: boolean) => void, force?: boolean, figure?: import('vue').Component }} [opts]
+ * @param {{ set_working?: (v: boolean) => void, force?: boolean, figure?: import('vue').Component }} [given]
  */
-export const drain_folder_queue = async (opts = {}) => {
+export const drain_folder_queue = async (given = {}) => {
   if (drain_inflight) return drain_inflight
+  const opts =
+    !given.figure && known_figure ? { ...given, figure: known_figure } : given
+  if (sync_svg.value && !opts.figure) {
+    console.warn('[sync-folder] drain deferred: no poster figure yet')
+    return
+  }
   drain_inflight = (async () => {
     const mutex = mutex_for('sync:folder-queue')
     await mutex.lock()
@@ -1004,6 +1012,7 @@ const choose_sync_folder = async () => {
 export const use = (
   /** @type {{ figure?: import('vue').Component }} */ { figure } = {}
 ) => {
+  if (figure) known_figure = figure
   const set_working = inject('set_working', undefined)
 
   const refresh_name = async () => {

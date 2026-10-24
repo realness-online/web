@@ -12,12 +12,16 @@ memory: 8GiB
 disk: 20GiB
 mounts:
   # The two locations are filled from this checkout at creation (src/control/lima.js).
-  - location: "{{project}}"
+  - location: '{{project}}'
     mountPoint: /mnt/fc
     writable: true
   # Generated files (out/): /mnt/fc/../../artifacts/realness, as on the Mac.
-  - location: "{{out}}"
+  - location: '{{out}}'
     mountPoint: /artifacts/realness
+    writable: true
+  # Local sync's files: Realness-sync in iCloud Drive, or <out>/sync-data.
+  - location: '{{sync}}'
+    mountPoint: /sync-data
     writable: true
 # Mac-facing ports for the dev halo (r3d). Explicit because Lima's automatic
 # forward skips a guest port whose host number is taken - the Mac's 8080 is
@@ -40,5 +44,10 @@ provision:
       apt-get update -qq
       apt-get install -y -qq curl jq e2fsprogs squashfs-tools iptables iproute2
       usermod -aG kvm "${LIMA_CIDATA_USER:?}"
+      # Lima's guest agent sets the clock from the Mac; no NTP leaves it.
+      systemctl disable --now systemd-timesyncd
+      # Ubuntu's phone-home timers; packages install here, at provision, only.
+      systemctl disable --now motd-news.timer apt-daily.timer apt-daily-upgrade.timer \
+        fwupd-refresh.timer update-notifier-download.timer update-notifier-motd.timer
       test -e /dev/kvm || { echo "FAIL: no /dev/kvm, nested virtualization is off" >&2; exit 1; }
       echo "OK: /dev/kvm present"

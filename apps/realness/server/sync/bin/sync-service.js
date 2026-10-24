@@ -15,11 +15,12 @@ import { resolve } from 'node:path'
 import { google_certs } from '#root/src/can/index.js'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token, metadata_token } from '#root/src/can/gcs.js'
+import { token_trust } from '#root/src/sign-in/trust.js'
 import { dev_issuer } from '../../../src/sync/dev-token.js'
 import { rights } from '../../../src/sync/rights.js'
 import { sync_service } from '../../../src/sync/server.js'
 import { gce_statuses } from '../../../src/sync/halo-power.js'
-import { out_path } from '#root/lib/output.js'
+import { sync_dir } from '#root/src/settings/output.js'
 
 const dev = process.argv.includes('--dev')
 const port = Number(process.env.PORT ?? 8787)
@@ -29,7 +30,7 @@ const host =
 const open_store = () => {
   const kind = process.env.STORE ?? 'disk'
   if (kind === 'disk') {
-    const dir = resolve(process.env.SYNC_DIR ?? out_path('sync-data'))
+    const dir = sync_dir()
     return { storage: disk(dir), where: dir }
   }
   if (kind === 'gcs') {
@@ -48,15 +49,16 @@ const open_store = () => {
 const { storage, where } = open_store()
 let project = process.env.PROJECT
 let certs
+let issuer
 if (dev) {
-  const issuer = dev_issuer()
-  ;({ project, certs } = issuer)
+  const tokens = dev_issuer()
+  ;({ project, certs } = tokens)
   console.log('# dev tokens, valid one hour:')
-  console.log(`export A=${issuer.token('+15555550100')}`)
-  console.log(`export B=${issuer.token('+15555550101')}`)
+  console.log(`export A=${tokens.token('+15555550100')}`)
+  console.log(`export B=${tokens.token('+15555550101')}`)
 } else {
   if (!project) throw new Error('set PROJECT, e.g. realness-online')
-  certs = google_certs()
+  ;({ certs = google_certs(), issuer } = token_trust(project))
 }
 
 const origins = (process.env.ORIGINS ?? '').split(',').filter(Boolean)
@@ -85,6 +87,7 @@ sync_service({
   rights: rights(storage),
   project,
   certs,
+  issuer,
   origins,
   halo_pass_secret: halo_pass_secret(),
   git_app,

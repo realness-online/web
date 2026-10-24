@@ -59,7 +59,7 @@ export const migrate_sessions = (root = harness_root, { trial = false } = {}) =>
   atomic_write(config_path(root), config)
   journal.status = 'activated'
   atomic_write(journal_path(root), journal)
-  return { ...result, sessions: target_name, rollback: 'node bin/session-relocate.js rollback' }
+  return { ...result, sessions: target_name, rollback: 'node bin/harness/session-relocate.js rollback' }
 }
 
 /** Reverse history and references before changing the setting; preserve unrelated configuration edits. */

@@ -22,7 +22,7 @@ export class SyncMirror {
   constructor({ url, secret, halo }) {
     if (!url || !secret || !halo)
       throw new Error(
-        'sync mirror needs SYNC_URL, HALO_PASS_SECRET, and a halo name'
+        'sync mirror needs a sync address, HALO_PASS_SECRET, and a halo name'
       )
     Object.assign(this, { url: url.replace(/\/$/, ''), secret, halo })
   }

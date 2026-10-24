@@ -67,7 +67,7 @@ const STATE = 'state'
 const MEM = 'mem'
 const ACTOR_INIT = '/usr/local/bin/realness-actor-init'
 export const PTY_PORT = 53
-const PI_OPENER = Buffer.from('exec realness\r')
+const PI_OPENER = Buffer.from('realness\r')
 const PI_PROMPT = 'inkling'
 const PI_WARM_SECONDS = 300
 const FINGERPRINT_SCHEMA = 1
@@ -446,6 +446,8 @@ export class ActorStore {
     this.publishedDir = join(this.volume, PUBLISHED)
     this.versionsDir = join(this.volume, VERSIONS)
     this.lock = new Mutex()
+    /** Publishing only copies a tree out, so it waits on other publishes, never on a sync or boot. */
+    this.publishing = new Mutex()
     this.busy = new Map()
     this.turned = new Set()
     this.firecrackerVersion = firecracker.version(this.firecracker)
@@ -707,10 +709,10 @@ export class ActorStore {
         '-u',
         'realness',
         '--',
-        'env',
-        `SYNC_URL=${this.syncUrl}`,
         '/usr/local/bin/realness',
-        'sync'
+        'sync',
+        '--sync',
+        this.syncUrl
       ]
       const { code, err } = await vsock.execInGuest(record.vsockPath, argv, {
         timeout: RECOVER_SECONDS,
@@ -1428,7 +1430,7 @@ export class ActorStore {
    * refuses any path that resolves outside it.
    */
   publish(id, tree = '/realness/site', site = id) {
-    return this.lock.run(async () => {
+    return this.publishing.run(async () => {
       const target = join(this.publishedDir, id)
       const staging = join(this.publishedDir, `.${id}.part`)
       await this.copyOut(id, tree, staging)
@@ -1453,16 +1455,18 @@ export class ActorStore {
           rm_sync(source, { recursive: true, force: true })
         }
       }
-      const previous = this.saveSite(id)
-      try {
-        rename_sync(staging, target)
-      } catch (error) {
-        if (previous) {
-          rename_sync(join(this.versionsDir, id, previous), target)
-          unlink(join(this.versionsDir, id, `${previous}.json`))
+      await this.lock.run(() => {
+        const previous = this.saveSite(id)
+        try {
+          rename_sync(staging, target)
+        } catch (error) {
+          if (previous) {
+            rename_sync(join(this.versionsDir, id, previous), target)
+            unlink(join(this.versionsDir, id, `${previous}.json`))
+          }
+          throw error
         }
-        throw error
-      }
+      })
       const files = listFiles(target)
       const published = {
         id,

@@ -33,6 +33,14 @@ const markdown = new Marked({
       const busy = CLOSED.test(raw) ? '' : ' aria-busy="true"'
       return `<pre class="${part}"${busy}>${escape_html(text)}</pre>\n`
     },
+    /** A bare web address in inline code is still a link people can open. */
+    codespan: ({ text }) => {
+      const code = `<code>${text}</code>`
+      const href = text.replaceAll('&amp;', '&')
+      return /^https?:\/\/\S+$/i.test(href)
+        ? `<a href="${escape_html(href)}" rel="noopener noreferrer">${code}</a>`
+        : code
+    },
     link({ href, tokens }) {
       const text = this.parser.parseInline(tokens)
       if (!SAFE_LINK.test(href)) return text

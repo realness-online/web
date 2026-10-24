@@ -38,6 +38,9 @@ const SOURCES = {
   }
 }
 
+/** What the Mac can answer by itself: no cloud logs, services, or bills. */
+export const LOCAL_SOURCES = ['halos', 'quiet', 'loops', 'spend']
+
 SOURCES.reconcile = async ({ sync, config, now }) => {
   try {
     return await reconcile_models(sync, config, { now })

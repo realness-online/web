@@ -2,7 +2,7 @@
   import LegalPage from '@/components/legal-page.vue'
   import AsPromptAgent from '@/components/as-prompt-agent.vue'
   import license_md from '@/content/license.md?raw'
-  import gpl_text from '../../../frontend/LICENSE?raw'
+  import gpl_text from '../../../LICENSE?raw'
   import { markdown_html } from '@/utils/markdown'
   import { license_toc } from '@/prerender/toc'
 

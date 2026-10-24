@@ -9,7 +9,7 @@ description:
   and Progressive Web App build and browser checks. Defer motion to
   motion-systems and client type voice to typography.
 metadata:
-  check: "node ../../../bin/check-skills.js soundness"
+  check: "node ../../../bin/checks/check-skills.js soundness"
   category: Design & Frontend
   tags:
     - architecture
@@ -116,9 +116,9 @@ app's vocabulary. Do not invent IDs or use file timestamps to reconstruct them.
 Build first, then check the shipped directory:
 
 ```
-node bin/soundness-check.js --site <built-directory>
+node bin/checks/soundness-check.js --site <built-directory>
 # For a build with a different worker filename:
-node bin/soundness-check.js --site <built-directory> --worker sw.js
+node bin/checks/soundness-check.js --site <built-directory> --worker sw.js
 ```
 
 This gate checks item markup, linked Realness palette and color roles, light/dark
@@ -194,14 +194,14 @@ foundation. Details: [references/realness-instance.md](references/realness-insta
 
 ## Mechanical checks
 
-`bin/soundness-check.js` verifies the rules that are true or false with no
+`bin/checks/soundness-check.js` verifies the rules that are true or false with no
 judgement: a remote script, stylesheet, or import; a `#root/` import with no
 import map; a `scoped` style or `<Transition>` in a Vue SFC. A Deno project
 (`deno.json` or `deno.lock`) may import remotely - that is its pinned module
 system, not an ad-hoc CDN. Run the checker on the files you touched:
 
 ```
-node bin/soundness-check.js <paths...>
+node bin/checks/soundness-check.js <paths...>
 ```
 
 `npm run check:soundness` covers the projects that follow this skill, realness

@@ -12,6 +12,7 @@ import {
 import { initializeApp as initialize_firebase } from 'firebase/app'
 import { ref } from 'vue'
 import { default_person } from '@/utils/person-identity'
+import { synced, use_token } from '@/utils/storage-mode'
 
 /** @typedef {import('@/types').Id} Id */
 /** @typedef {import('@/types').Item} Item */
@@ -39,15 +40,19 @@ export const storage_ready = new Promise(resolve => {
 export const current_user = ref(
   /** @type {import('firebase/auth').User | null | undefined} */ (undefined)
 )
+use_token(async () => (await current_user.value?.getIdToken()) ?? null)
 
 /**
  * @param {string} path
  */
-export const location = path => {
+const firebase_location = path => {
   if (!storage.value) throw new Error('Storage not initialized')
   return reference(storage.value, path)
 }
-export const metadata = path => get_metadata(location(path))
+export const location = path =>
+  synced ? /** @type {any} */ (synced.location(path)) : firebase_location(path)
+export const metadata = place =>
+  synced ? synced.metadata(place) : get_metadata(location(place))
 /**
  * @param {string} path
  * @param {string | Blob} data
@@ -55,16 +60,20 @@ export const metadata = path => get_metadata(location(path))
  * @returns {Promise<import('firebase/storage').UploadResult>}
  */
 export const upload = (/** @type {string} */ path, data, meta) => {
+  if (synced) return /** @type {any} */ (synced.upload(path, data, meta))
   if (data instanceof Blob) return upload_bytes(location(path), data, meta)
   return upload_string(location(path), data, string_format.RAW, meta)
 }
-export const url = path => download_url(location(path))
-export const directory = path => list_directory(location(path))
+export const url = path =>
+  synced ? synced.url(path) : download_url(location(path))
+export const directory = path =>
+  synced ? synced.directory(path) : list_directory(location(path))
 /**
  * @param {string} path
  * @returns {Promise<void>}
  */
 export const remove = async (/** @type {string} */ path) => {
+  if (synced) return synced.remove(path)
   try {
     await delete_file(location(path))
   } catch (e) {

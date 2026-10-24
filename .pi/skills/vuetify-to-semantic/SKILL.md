@@ -2,7 +2,7 @@
 name: vuetify-to-semantic
 description: Refactor a Vue page or component from Vuetify to semantic HTML5 + Schema.org microdata + Stylus element selectors. Use when converting a seeq-app view or component file, removing v-* components, replacing utility classes with Stylus, or adding Schema.org microdata to an entity page. Triggers include "refactor this page", "convert this component", "remove vuetify from", "make this semantic".
 metadata:
-  check: "node ../../../bin/check-skills.js vuetify-to-semantic"
+  check: "node ../../../bin/checks/check-skills.js vuetify-to-semantic"
   category: Frontend & Refactoring
   tags:
     - vuetify
@@ -15,7 +15,7 @@ metadata:
 
 # Vuetify to Semantic
 
-Refactor a seeq-app Vue page or component from Vuetify to semantic HTML5, Schema.org microdata, and Stylus element selectors. Follows the `apps/realness/frontend` pattern: no utility classes, no replacement component library, styles applied via element and attribute selectors only.
+Refactor a seeq-app Vue page or component from Vuetify to semantic HTML5, Schema.org microdata, and Stylus element selectors. Follows the `apps/realness/src/app` pattern: no utility classes, no replacement component library, styles applied via element and attribute selectors only.
 
 ## Process
 

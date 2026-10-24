@@ -14,7 +14,7 @@ const VERSION = /^[a-f0-9]{12}$/
 export class SyncSites {
   constructor({ url, secret }) {
     if (!url || !secret)
-      throw new Error('sync sites need SYNC_URL and HALO_PASS_SECRET')
+      throw new Error('sync sites need a sync address and HALO_PASS_SECRET')
     this.url = url.replace(/\/$/, '')
     this.secret = secret
   }

@@ -32,8 +32,8 @@ import {
   me,
   metadata
 } from '@/utils/serverless'
+import { hash_of } from '@/utils/storage-mode'
 import { default_person } from '@/utils/person-identity'
-import { create_hash } from '@/utils/upload-processor'
 import { mutex_for } from '@/utils/algorithms'
 import {
   ref,
@@ -106,7 +106,7 @@ const sync_public_default_feed = async deps => {
   const index_entry = ((await get('sync:index')) || {})[id]
   const local_html = localStorage.getItem(id) ?? (await get(id))
   const local_hash =
-    typeof local_html === 'string' ? await create_hash(local_html) : null
+    typeof local_html === 'string' ? await hash_of(local_html) : null
 
   const profile_missing_on_server =
     index_entry &&
@@ -246,7 +246,7 @@ const sync_statements = async deps => {
     `[itemid="${itemid}"]`
   )
   if (!elements || !elements.outerHTML) return null
-  const hash = await create_hash(elements.outerHTML)
+  const hash = await hash_of(elements.outerHTML)
   if (index_hash !== hash) {
     const before = deps.my_statements.value ?? []
     const synced = (await persistence.sync()) || []
@@ -293,7 +293,7 @@ export const sync_contact_statements = async id => {
   }
 
   const entry = await fresh_metadata(itemid)
-  const local_hash = await create_hash(cached)
+  const local_hash = await hash_of(cached)
   const gone_from_server = is_sync_index_missing(entry)
 
   if (gone_from_server || local_hash !== entry?.customMetadata?.hash) {
@@ -311,7 +311,7 @@ const sync_relations = async deps => {
   const index_hash = await get_index_hash(itemid)
   const local_html = localStorage.getItem(itemid) ?? (await get(itemid))
   const local_hash =
-    typeof local_html === 'string' ? await create_hash(local_html) : null
+    typeof local_html === 'string' ? await hash_of(local_html) : null
 
   if (local_html && !index_hash) {
     const local_item = get_item(local_html, itemid)
@@ -380,7 +380,7 @@ export const sync_author_posters = async author_id => {
       const entry = await fresh_metadata(itemid)
       const stored_hash = entry?.customMetadata?.hash
       if (!stored_hash) return
-      if ((await create_hash(cached)) === stored_hash) return
+      if ((await hash_of(cached)) === stored_hash) return
       await del(itemid)
       changed = true
     })
@@ -416,7 +416,7 @@ export const sync_phonebook_people = async deps => {
     const index_entry = ((await get('sync:index')) || {})[id]
     const local_html = localStorage.getItem(id) ?? (await get(id))
     const local_hash =
-      typeof local_html === 'string' ? await create_hash(local_html) : null
+      typeof local_html === 'string' ? await hash_of(local_html) : null
 
     const profile_missing_on_server =
       index_entry &&
@@ -679,7 +679,7 @@ export const sync_me = async () => {
     return
   }
 
-  const local_hash = local_html ? await create_hash(local_html) : null
+  const local_hash = local_html ? await hash_of(local_html) : null
 
   if (!local_hash || local_hash !== index_hash) {
     profile_sync_log('sync_me_cleared_stale_local_html', {

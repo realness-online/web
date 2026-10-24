@@ -103,6 +103,9 @@
   /** A cap's own command, or its Shift one when that is all it has. */
   const main = cap => cap.plain ?? cap.shift
 
+  /** The command a cap runs now: its Shift one while Shift is held. */
+  const current = cap => (shift.value && cap.shift) || main(cap)
+
   const pressed = command => {
     const preference = preference_of[command]
     return preference ? String(Boolean(preference.value)) : undefined
@@ -130,8 +133,10 @@
               tabindex="-1"
               :value="cap"
               :disabled="!caps[cap] || undefined"
-              :data-group="caps[cap] ? group(main(caps[cap])) : undefined"
-              :aria-pressed="caps[cap] ? pressed(main(caps[cap])) : undefined"
+              :data-group="caps[cap] ? group(current(caps[cap])) : undefined"
+              :aria-pressed="
+                caps[cap] ? pressed(current(caps[cap])) : undefined
+              "
               @pointerdown.prevent
               @click="run(main(caps[cap]))">
               <kbd>{{ cap }}</kbd>

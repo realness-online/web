@@ -36,6 +36,9 @@ const measure = () => {
   })
 }
 
+/** When chat last opened or closed, so toggles can hand the motion off. */
+export const chat_toggled_at = ref(0)
+
 /** A wanted view as this screen can show it. */
 export const fit_view = (wanted, is_wide) => {
   const view = String(wanted ?? '')
@@ -63,6 +66,7 @@ export const use_home_view = () => {
     home_view.value = wanted
   }
   const toggle_chat = () => {
+    chat_toggled_at.value = Date.now()
     set_view(WITH_OR_WITHOUT_CHAT[view.value])
   }
   /** Beside chat, thoughts or the terminal. */

@@ -11,7 +11,7 @@ const handler = () => {
 test('a bash page read is blocked with the web-md command to run instead', () => {
   const result = handler()({ toolName: 'bash', input: { command: 'curl -sL https://example.com | grep title' } })
   assert.equal(result.block, true)
-  assert.match(result.reason, /bin\/web-md\.js 'https:\/\/example\.com'/)
+  assert.match(result.reason, /bin\/web\/web-md\.js 'https:\/\/example\.com'/)
 })
 
 test('other tools and allowed commands pass', () => {

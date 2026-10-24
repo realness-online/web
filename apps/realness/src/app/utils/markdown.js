@@ -1,6 +1,6 @@
 import documentation_md from '@/content/documentation.md?raw'
-import changelog_md from '../../../frontend/CHANGELOG.md?raw'
-import icons_svg from '../../../frontend/public/icons.svg?raw'
+import changelog_md from '../../../CHANGELOG.md?raw'
+import icons_svg from '../../../public/icons.svg?raw'
 import { marked } from 'marked'
 import { gfmHeadingId as gfm_heading_id } from 'marked-gfm-heading-id'
 

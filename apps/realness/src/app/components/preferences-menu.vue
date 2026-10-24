@@ -236,6 +236,7 @@
       <preference :show_icon="icon" name="grid" />
       <preference name="info" />
       <preference name="storytelling" />
+      <preference :show_icon="icon" name="only_mine" label="Only mine" />
       <h3 id="preferences-chrome">Chrome</h3>
       <preference name="menu" label="Island" />
     </article>

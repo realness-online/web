@@ -16,6 +16,7 @@ import {
 import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { out_path } from '#root/lib/output.js'
+import { is_history } from '#root/src/files/skip.js'
 import { cpSync as cp_sync } from 'node:fs'
 import { environment_settings } from '#root/src/settings/environments.js'
 import {
@@ -29,7 +30,9 @@ export const STAGE = out_path('ship')
 /** The model proxy baked into the image; each environment builds its own. */
 export const proxy_for = env => {
   const { services } = environment_settings(env)
-  return services.starter_proxy_url ?? services.proxy_url
+  return (
+    services.actor_proxy_url ?? services.starter_proxy_url ?? services.proxy_url
+  )
 }
 
 export const INCLUDE = [
@@ -55,7 +58,7 @@ export const STARTER_DEFAULTS = {
 }
 
 export const HOME_ONLY = {
-  'nvim-buffers': "reads Scott's Neovim",
+  editor: "reads Scott's Neovim and Emacs",
   'zoom-to-ableton': "carries Scott's effect rack",
   'vuetify-to-semantic': "carries a client's codebase (seeq-app)"
 }
@@ -85,6 +88,7 @@ export const ships = path => {
   if (
     name === '.DS_Store' ||
     name.startsWith('._') ||
+    is_history(name) ||
     parts.includes('node_modules')
   )
     return false
@@ -185,7 +189,9 @@ const realness_provider = proxy_url => ({
 /** @param {{ root?: string, stage?: string, proxy_url?: string }} [options] */
 export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   if (!proxy_url)
-    throw new Error('proxy_url is required: pass --env development|production')
+    throw new Error(
+      'proxy_url is required: pass --env local|development|production'
+    )
   let pi_version
   try {
     pi_version = exec_file_sync('pi', ['--version'], {
@@ -278,7 +284,7 @@ if (process.argv[1] === file_url_to_path(import.meta.url))
     const env = process.argv[process.argv.indexOf('--env') + 1]
     if (!process.argv.includes('--env'))
       throw new Error(
-        'usage: ship-stage.js --env development|production [--list]'
+        'usage: ship-stage.js --env local|development|production [--list]'
       )
     const stage = ship_stage({ proxy_url: proxy_for(env) })
     const starter = JSON.parse(read_file_sync(join(stage, STARTER), 'utf8'))

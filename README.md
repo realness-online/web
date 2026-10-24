@@ -13,7 +13,14 @@ The harness sits at the root. Personal state and build output stay local.
 ```
 realness/
 ├── apps/realness/       reference product and cloud tools
-├── bin/                 harness launcher and helpers
+├── bin/                 harness launcher (pi) and helpers
+│   ├── harness/         startup, sessions, pi fork, auto-fix, command catalog
+│   ├── checks/          repo checks: extensions, skills, tooling, comments, soundness
+│   ├── plans/           plan pages and plan shape
+│   ├── graphics/        themes, palette, posters, gallery
+│   ├── web/             web-md
+│   ├── lib/             shared modules
+│   └── specs/           specs for all of the above
 ├── vault/               personal notes (edit)
 │   └── Projects/        every plan, one file each (edit)
 ├── work/                projects (edit)
@@ -154,17 +161,17 @@ Entries carry source paths and execution limits; detection is not
 proof that a command runs. Work projects and external tool subcommands are outside
 this index.
 
-| Command                              | Purpose and requirements                                                                                               |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `npm start` / `npm run realness`     | Start through `bin/pi`; Node >= 22.19.                                                                                 |
-| `npm run pi:list`                    | List installed pi packages.                                                                                            |
-| `npm run pi:update`                  | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                   |
-| `npm test`                           | Run the memory index tests.                                                                                            |
-| `npm run check:ext`                  | Run `bin/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
-| `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                      |
-| `npm run make:animation -- clip.mov` | Run `bin/make-animation.js`; requirements below.                                                                       |
-| `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                          |
-| `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                            |
+| Command                              | Purpose and requirements                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `npm start` / `npm run realness`     | Start through `bin/pi`; Node >= 22.19.                                                                                        |
+| `npm run pi:list`                    | List installed pi packages.                                                                                                   |
+| `npm run pi:update`                  | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                          |
+| `npm test`                           | Run the memory index tests.                                                                                                   |
+| `npm run check:ext`                  | Run `bin/checks/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
+| `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                             |
+| `npm run make:animation -- clip.mov` | Run `bin/graphics/make-animation.js`; requirements below.                                                                     |
+| `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                                 |
+| `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                                   |
 
 `npm run realness` remains a compatibility alias for `npm run realness`.
 Configuration keys such as `realness.plans` remain compatible during migration;
@@ -177,7 +184,7 @@ The feeds row is not a standalone clean-checkout command.
 Close every Pi process. From a separate terminal in this folder:
 
 ```bash
-node bin/session-relocate.js migrate
+node bin/harness/session-relocate.js migrate
 ```
 
 The command verifies closed history copies before setting `realness.sessions`
@@ -188,7 +195,7 @@ Keep Pi closed until the command finishes. Restart through `bin/pi` afterward.
 To reverse the move, close Pi again and run:
 
 ```bash
-node bin/session-relocate.js rollback
+node bin/harness/session-relocate.js rollback
 ```
 
 Rollback preserves later entries and new sessions. It restores the legacy
@@ -222,11 +229,11 @@ This command traces video frames; it does not generate artwork.
 
 ### Web media copies
 
-`bin/for-web.sh` uses macOS file-size commands. Images require ImageMagick;
+`bin/web/for-web.sh` uses macOS file-size commands. Images require ImageMagick;
 videos require FFmpeg (`brew install imagemagick ffmpeg`).
 
 ```bash
-./bin/for-web.sh photo.jpg clip.mov
+./bin/web/for-web.sh photo.jpg clip.mov
 ```
 
 It writes `-web.jpg`, `-web.webp`, and `-web.mp4` beside the source files.

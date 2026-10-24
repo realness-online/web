@@ -1,16 +1,16 @@
 ---
 name: test-coverage
-description: Write Vitest specs for Vue 3 JavaScript (Vite Plus, happy-dom, @vue/test-utils) and analyze V8 coverage + Fallow health to prioritize test-first refactors. Reference implementation is apps/realness/frontend. Use when writing or fixing tests, mocking composables, improving coverage, or after test:coverage or npx fallow fails thresholds.
+description: Write Vitest specs for Vue 3 JavaScript (Vite Plus, happy-dom, @vue/test-utils) and analyze V8 coverage + Fallow health to prioritize test-first refactors. Reference implementation is apps/realness. Use when writing or fixing tests, mocking composables, improving coverage, or after test:coverage or npx fallow fails thresholds.
 metadata:
   check: 'node --check scripts/summarize-coverage.js && node --check scripts/prioritize-refactor-risk.js'
 ---
 
 # Tests, coverage, and refactor risk
 
-Canonical reference: **`apps/realness/frontend`** (`@realness.online/web`). Run every
+Canonical reference: **`apps/realness`** (`@realness.online/web`). Run every
 command below from that directory.
 
-Match `tests/**/*.spec.js` there. Do not introduce Jest, React Testing Library, TypeScript test files, or co-located `*.test.ts`.
+Match `specs/app/**/*.spec.js` there. Do not introduce Jest, React Testing Library, TypeScript test files, or co-located `*.test.ts`.
 
 Two jobs:
 
@@ -44,10 +44,10 @@ Pre-commit: `vp check --fix && vp run type && vp test run`.
 
 ### Layout
 
-- All specs in `tests/**/*.spec.js` mirroring `src/` (not co-located)
+- All specs in `specs/app/**/*.spec.js` mirroring `src/app/` (not co-located)
 - `describe('@/utils/itemid', ...)` or view/component name
-- `@/` -> `src/`; `@@/` -> `tests/mocks/`
-- Config: `vite.config.js` -> `test` block; setup: `tests/setup.js`, `tests/mocks/`
+- `@/` -> `src/app/`; `@@/` -> `specs/app/mocks/`
+- Config: `vite.config.js` -> `test` block; setup: `specs/app/setup.js`, `specs/app/mocks/`
 
 ### Skeleton
 
@@ -72,12 +72,12 @@ Test behavior, not internals (JS style: AGENTS.md).
 
 | Pattern | Approach | Reference spec |
 | --- | --- | --- |
-| Pure utils | Input/output, nested `describe` | `tests/utils/itemid.spec.js` |
-| Module mocks | Top-level `vi.mock()`; `vi.clearAllMocks()` in `beforeEach` | `tests/utils/itemid.spec.js` |
-| Vue components | `shallowMount`, stubs, semantic queries | `tests/components/account/as-notifications.spec.js` |
-| Composable mocks | `vi.hoisted()` refs for `vi.mock` closures | `tests/views/Account.spec.js` |
-| Composables | `with_setup()` + `mount(defineComponent(...))` | `tests/use/poster.spec.js` |
-| Async errors | `await expect(...).rejects.toThrow()` | `tests/utils/itemid.spec.js` |
+| Pure utils | Input/output, nested `describe` | `specs/app/utils/itemid.spec.js` |
+| Module mocks | Top-level `vi.mock()`; `vi.clearAllMocks()` in `beforeEach` | `specs/app/utils/itemid.spec.js` |
+| Vue components | `shallowMount`, stubs, semantic queries | `specs/app/components/account/as-notifications.spec.js` |
+| Composable mocks | `vi.hoisted()` refs for `vi.mock` closures | `specs/app/views/Account.spec.js` |
+| Composables | `with_setup()` + `mount(defineComponent(...))` | `specs/app/use/poster.spec.js` |
+| Async errors | `await expect(...).rejects.toThrow()` | `specs/app/utils/itemid.spec.js` |
 
 **Hoisted mocks** (reset `.value` in `beforeEach`):
 
@@ -95,7 +95,7 @@ vi.mock('@/use/push', () => ({
 }))
 ```
 
-Global mocks: `tests/mocks/default.js`, `tests/mocks/browser/*`. Per-spec mocks only when behavior differs.
+Global mocks: `specs/app/mocks/default.js`, `specs/app/mocks/browser/*`. Per-spec mocks only when behavior differs.
 
 `mockReset: false` in config - mocks keep implementations; clear call history each test.
 
@@ -187,7 +187,7 @@ When behavior changes, update `.fallowrc.json`, [references/fallow-integration.m
 - Cycles (`itemid` <-> `serverless`, `Directory`) -> characterize with tests, then break
 - Nuclear triad: typecheck + lint + tests; coverage supports refactors
 - Match existing spec style; extend specs over new files
-- Excluded from coverage: `src/main.js`, `src/router.js`, `src/wasm/**`
+- Excluded from coverage: `src/app/main.js`, `src/app/router.js`, `src/app/wasm/**`
 
 ## Scripts
 

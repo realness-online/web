@@ -24,10 +24,41 @@ functions/service-account*.json
 firebase-debug*.log
 firestore-debug.log
 
-# Browser generators write here; platform assets stay in frontend/.
+# Browser generators write here; platform assets stay in public/.
 src/app/prerender/toc.js
 src/app/wasm/
 
 # macOS
 .DS_Store
 tools/publish/renderer/.cache/
+
+# Local HTTPS certificates from npm run certs; the key is private.
+*.pem
+
+# Web app: local env, generated public assets, and tool caches.
+.env
+.env.local
+.env.*.local
+service-account.json
+scripts/service-account*
+/coverage/
+/public/**.worker.js
+/public/**.worker.js.map
+/public/**.wasm
+/public/192.png
+/public/512.png
+/public/*.mov
+*.wasm
+/tracer/tracer
+/tracer/pkg/
+/tracer/target/
+/tracer/Cargo.lock
+/docs/generated/
+/docs/keymap.md
+/docs/keymap.schema.json
+/docs/keymap.ref.json
+.firebase/
+.fallow/
+.lighthouseci
+.auto/
+fallow-report.json

@@ -15,7 +15,7 @@ and the shell; each connection is a thin relay to it over a unix socket. A new
 connection takes the terminal over from the old one, so a browser refresh
 reattaches to the running Pi instead of paying its startup again.
 
-The page opens every connection by typing `exec realness`. When Pi is already
+The page opens every connection by typing `realness`. When Pi is already
 running, the holder drops it: a refresh returns to the same conversation.
 
 No authentication and no egress policy: the channel is a halo-local unix socket.
@@ -49,7 +49,7 @@ KEYS_SOCKET = "/run/realness/pty-keys.sock"
 TERM_ENV = {"TERM": "xterm-256color", "COLORTERM": "truecolor"}
 DEFAULT_COLS = 80
 DEFAULT_ROWS = 24
-OPENER = b"exec realness\r"
+OPENER = b"realness\r"
 # Modes an app sets once at startup (Pi's fullscreen TUI: alternate screen,
 # mouse reports, focus, bracketed paste). A browser that attaches later never
 # saw them, so the holder remembers them and replays them on attach.
@@ -68,12 +68,20 @@ def set_window(master, cols, rows):
     fcntl.ioctl(master, termios.TIOCSWINSZ, struct.pack("HHHH", rows, cols, 0, 0))
 
 
-def running_command(pid):
-    """True once the shell has exec'd something else (Pi).
+def running_command(pid, master=None):
+    """True once the shell runs something else (Pi): exec'd into it, or holding
+    it in the foreground. Typing `realness` starts Pi as the shell's child, so
+    the shell's own exe stays bash; the terminal's foreground group tells.
 
     Right after pty.fork the child is still this Python, before it execs the
     shell; that is not a running command, or the first opener is dropped.
     """
+    if master is not None:
+        try:
+            if os.tcgetpgrp(master) != pid:
+                return True
+        except OSError:
+            pass
     try:
         exe = os.readlink(f"/proc/{pid}/exe")
     except OSError:
@@ -191,7 +199,7 @@ class Holder:
             data = base64.b64decode(message.get("data_b64") or "")
             opener = self.fresh and data == OPENER
             self.fresh = False
-            if opener and running_command(self.pid):
+            if opener and running_command(self.pid, self.master):
                 return
             os.write(self.master, data)
 
@@ -306,4 +314,5 @@ def main():
             holder.sendall(chunk)
 
 
-main()
+if __name__ == "__main__":
+    main()

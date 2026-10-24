@@ -189,7 +189,7 @@ const append_piece = async (
       await storage.compose(
         index,
         version === null ? sources : [index, ...sources],
-        { if_version: version }
+        version === null ? { if_absent: true } : { if_version: version }
       )
       await Promise.all(sources.map(key => storage.delete(key).catch(() => {})))
       return true
@@ -294,7 +294,7 @@ export const usage_ledger = (storage, append = {}) => {
       const version = await storage.put(
         key,
         usage_row({ ...row, call: piece }),
-        { if_version: null, gzip: true }
+        { if_absent: true, gzip: true }
       )
       await append_piece(storage, folder, piece, append).catch(() => false)
       return version

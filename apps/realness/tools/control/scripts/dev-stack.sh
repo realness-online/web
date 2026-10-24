@@ -6,7 +6,6 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 local_values="$(node "$DIR/src/settings/cli.js" shell local)"
 eval "$local_values"
 unset local_values
-sync_url_default="${sync_url_default//127.0.0.1/host.lima.internal}"
 VOL="${VOL:-/opt/fc/actors}"
 IMAGE="$VOL/xfs.img"
 MOUNT="$VOL/mnt"
@@ -51,7 +50,7 @@ fstrim "$MOUNT" || true
 
 echo "volume: $(stat -f -c %T "$MOUNT"), $(df -h --output=avail "$MOUNT" | tail -1) free"
 
-ACTOR_HOST_PORTS="18095 $site_port" bash "$DIR/server/halo/scripts/net-up.sh"
+ACTOR_HOST_PORTS="18095 $site_port $actor_proxy_port $actor_sync_port" bash "$DIR/server/halo/scripts/net-up.sh"
 
 secret_file="$OUT/halo-pass-secret"
 if [ ! -f "$secret_file" ]; then
@@ -60,7 +59,7 @@ if [ ! -f "$secret_file" ]; then
 fi
 export HALO_PASS_SECRET="$(< "$secret_file")"
 export RECORD_SECRET_FILE=/etc/realness/record-secret
-SYNC_DIR="$OUT/sync-data" node "$DIR/server/halo/scripts/record-key-dev.js"
+SYNC_DIR=/sync-data node "$DIR/server/halo/scripts/record-key-dev.js"
 site_sync_pid="$OUT/site-sync.pid"
 if [ -s "$site_sync_pid" ] && kill -0 "$(< "$site_sync_pid")" 2> /dev/null; then
   kill "$(< "$site_sync_pid")"
@@ -81,14 +80,19 @@ for attempt in {1..30}; do
   sleep 1
 done
 kill -0 "$(< "$site_sync_pid")" || { echo 'site sync failed to start' >&2; exit 1; }
-export SYNC_SITE_URL="${SYNC_SITE_URL:-http://127.0.0.1:$site_port}"
-export SYNC_URL="${SYNC_URL:-$sync_url_default}"
-export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-http://127.0.0.1:$site_port}"
 model_secret_file="$OUT/model-pass-secret"
 [ -s "$model_secret_file" ] || { echo "missing $model_secret_file: generate a 32-byte secret" >&2; exit 1; }
 export MODEL_PASS_SECRET="$(< "$model_secret_file")"
 [ "${#MODEL_PASS_SECRET}" -ge 32 ] || { echo "model pass secret is too short" >&2; exit 1; }
 
+proxy_forward_pid="$OUT/proxy-forward.pid"
+if [ -s "$proxy_forward_pid" ] && kill -0 "$(< "$proxy_forward_pid")" 2> /dev/null; then kill "$(< "$proxy_forward_pid")"; fi
+nohup node "$DIR/server/halo/scripts/port-forward.js" "$actor_proxy_port" host.lima.internal "$proxy_port" > "$OUT/proxy-forward.log" 2>&1 &
+echo $! > "$proxy_forward_pid"
+sync_forward_pid="$OUT/sync-forward.pid"
+if [ -s "$sync_forward_pid" ] && kill -0 "$(< "$sync_forward_pid")" 2> /dev/null; then kill "$(< "$sync_forward_pid")"; fi
+nohup node "$DIR/server/halo/scripts/port-forward.js" "$actor_sync_port" host.lima.internal "$sync_port" > "$OUT/sync-forward.log" 2>&1 &
+echo $! > "$sync_forward_pid"
+
 cd "$DIR"
-exec node server/halo/main.js serve --environment development --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT" \
-  --site-url "${SYNC_SITE_PUBLIC_URL%/}/sites/{id}/"
+exec node server/halo/main.js serve --environment local --volume "$MOUNT" --listen 0.0.0.0 --port "$PORT"

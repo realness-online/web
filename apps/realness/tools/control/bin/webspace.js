@@ -69,7 +69,11 @@ import {
 import * as reads from '../../../src/control/reads.js'
 import { OPERATOR_START_MS } from '../../../src/sync/halo-lifecycle.js'
 import * as cloud from '../../../src/control/cloud-reads.js'
-import { gather, overview_text } from '../../../src/control/overview.js'
+import {
+  gather,
+  LOCAL_SOURCES,
+  overview_text
+} from '../../../src/control/overview.js'
 import { attention } from '../../../src/control/attention.js'
 import {
   manage_admins,
@@ -81,8 +85,12 @@ import { project_root } from '#root/src/settings/layout.js'
 import { disk } from '../../../src/can/disk.js'
 import { create_gcs, gcloud_token } from '../../../src/can/gcs.js'
 import { billing_store, grant_plan } from '../../../src/proxy/billing.js'
-import { deployment_settings } from '#root/src/settings/environments.js'
-import { out_path } from '#root/src/settings/output.js'
+import {
+  deployment_settings,
+  local_settings
+} from '#root/src/settings/environments.js'
+import { sync_records } from '#root/src/gate/sync-records.js'
+import { out_path, sync_dir } from '#root/src/settings/output.js'
 
 let json_output = false
 
@@ -90,6 +98,8 @@ const USAGE = `usage: realness <local|development|production> <command> [options
 
   setup                        local only: the Lima VM, artifacts, a boot check
   build                        local only: stage the harness, build the template
+  code                         local only: the latest sign-in code
+  pull [<prefix> ...] [--from=production]  local only: copy people/, usage/, billing/ into sync-data; one way
 
   halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
   halo restart <name>          push the code and re-serve
@@ -358,6 +368,48 @@ const main = async argv => {
         )
       return finish(await dev.build(halos.target))
 
+    case 'code': {
+      if (!local)
+        throw new Error(
+          'code reads the local sign-in log; run it as realness local code'
+        )
+      const log = await read_file(out_path('local', 'sign-in.log'), 'utf8')
+      const line = log
+        .split('\n')
+        .findLast(text => text.startsWith('sign-in code for '))
+      if (!line)
+        throw new Error('no sign-in code yet; ask for one in the browser')
+      const [, phone, code] = line.match(/for (\S+): (\d+)/) ?? []
+      result({ phone, code }, `${code}  (${phone})`)
+      return 0
+    }
+
+    case 'pull': {
+      if (!local)
+        throw new Error(
+          'pull copies into the local sync-data; run it as realness local pull'
+        )
+      const from = typeof flags.from === 'string' ? flags.from : 'production'
+      const { pull, pull_text, PULL_PREFIXES } =
+        await import('../../../src/control/pull.js')
+      const report = await pull({
+        from: create_gcs({
+          bucket: deployment_settings(from, process.env).bucket,
+          token: gcloud_token()
+        }),
+        to: disk(typeof flags.dir === 'string' ? flags.dir : sync_dir()),
+        prefixes: args.length
+          ? args.map(prefix => prefix.replace(/\/?$/, '/'))
+          : PULL_PREFIXES,
+        on_file: (key, done, total) => {
+          if (done % 500 === 0 || done === total)
+            process.stderr.write(`pull ${done}/${total}\n`)
+        }
+      })
+      result(report, pull_text(report))
+      return report.failed.length ? 1 : 0
+    }
+
     case 'halo':
       return finish(await halo_command(halos, config, args, flags, envName))
 
@@ -381,9 +433,7 @@ const main = async argv => {
       )
         throw new Error(usage)
       const storage = local
-        ? disk(
-            typeof flags.dir === 'string' ? flags.dir : out_path('sync-data')
-          )
+        ? disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
         : create_gcs({
             bucket: deployment_settings(envName, process.env).bucket,
             token: gcloud_token()
@@ -488,7 +538,10 @@ const main = async argv => {
       if (args.length) throw new Error('usage: realness <env> status [--json]')
       const now = Date.now()
       const sync = await reads.reader(envName)
-      const view = await gather({ sync, config, now })
+      const view = await gather(
+        { sync, config, now },
+        local ? LOCAL_SOURCES : undefined
+      )
       const lines = attention(view, config.attention, now)
       result({ ...view, attention: lines }, overview_text(view, lines))
       return lines.length ? 2 : 0
@@ -562,15 +615,37 @@ const main = async argv => {
   }
 }
 
+/**
+ * Where an operator's halo intent goes. A cloud halo's record goes through
+ * the operator's sign-in; the Lima halo's goes to local sync under its own
+ * host name, with a halo pass, as the gate writes it.
+ */
+const intent_target = async (envName, config, name) => {
+  if (!is_local(config)) return { sync: await reads.reader(envName), name }
+  const halo = `lima-${config.vm}`
+  const secret = (await read_file(out_path('halo-pass-secret'), 'utf8')).trim()
+  const records = sync_records({
+    url: local_settings.cloud.services.sync_url,
+    secret,
+    halo
+  })
+  return {
+    name: halo,
+    sync: {
+      put: (key, body) => records.put(key.replace(/^can:\/\//, ''), body)
+    }
+  }
+}
+
 /** Starting before the work, running after; a failed start stays starting until its deadline. */
-const with_intent = async (envName, name, work) => {
+const with_intent = async (envName, config, name, work) => {
   if (!name) return work()
-  const sync = await reads.reader(envName)
-  await reads.record_intent(sync, name, 'starting', {
+  const target = await intent_target(envName, config, name)
+  await reads.record_intent(target.sync, target.name, 'starting', {
     deadline_ms: OPERATOR_START_MS
   })
   const done = await work()
-  await reads.record_intent(sync, name, 'running')
+  await reads.record_intent(target.sync, target.name, 'running')
   return done
 }
 
@@ -600,7 +675,7 @@ const halo_command = async (halos, config, args, flags, envName) => {
 
   switch (action) {
     case 'up':
-      return with_intent(envName, rest[0], () =>
+      return with_intent(envName, config, rest[0], () =>
         mod.up(target, config, rest[0], {
           smoke: Boolean(flags.smoke),
           fresh: Boolean(flags.fresh),
@@ -893,8 +968,8 @@ const halo_command = async (halos, config, args, flags, envName) => {
         return mod.down(target, config, name, { mode: 'delete' })
       const intent = async state => {
         try {
-          const sync = await reads.reader(envName)
-          await reads.record_intent(sync, name, state)
+          const target = await intent_target(envName, config, name)
+          await reads.record_intent(target.sync, target.name, state)
         } catch (error) {
           process.stderr.write(`halo record skipped: ${error.message}\n`)
         }
@@ -913,7 +988,9 @@ const halo_command = async (halos, config, args, flags, envName) => {
         rest,
         'usage: realness <env> halo restart <name>'
       )
-      return with_intent(envName, name, () => mod.restart(target, config, name))
+      return with_intent(envName, config, name, () =>
+        mod.restart(target, config, name)
+      )
     }
 
     case 'drain': {

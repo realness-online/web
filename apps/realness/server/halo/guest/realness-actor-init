@@ -20,13 +20,21 @@ set -eu
 
 # o0: `realness-actor-init start-pi` starts the terminal's Pi, once the halo
 # has recovered the harness: extensions read plans and memory when Pi starts.
+pty="${REALNESS_PTY:-/usr/local/bin/realness-pty}"
+pty_sock="${REALNESS_PTY_SOCK:-/run/realness-pty.sock}"
 type_opener() {
-  for _ in $(seq 50); do [ -e /run/realness-pty.sock ] && break; sleep 0.1; done
-  opener="$(printf 'exec realness\r' | base64)"
-  printf '{"op":"data","data_b64":"%s"}\n' "$opener" | /usr/local/bin/realness-pty > /dev/null 2>&1 || true
+  for _ in $(seq 50); do [ -e "$pty_sock" ] && break; sleep 0.1; done
+  opener="$(printf 'realness\r' | base64)"
+  printf '{"op":"data","data_b64":"%s"}\n' "$opener" | "$pty" > /dev/null 2>&1 || true
+}
+# A Pi still starting runs as its launcher scripts, not yet as `pi`; typing
+# again then lands `realness` in Pi's editor.
+pi_starting() {
+  pgrep -x pi > /dev/null ||
+    pgrep -f '(/usr/local/bin/realness|/realness/bin/pi)( |$)' > /dev/null
 }
 if [ "${1:-}" = start-pi ]; then
-  pgrep -x pi > /dev/null || type_opener
+  pi_starting || type_opener
   exit 0
 fi
 
@@ -60,6 +68,8 @@ network_up() {
     ip link set "$dev" up
     ip route replace default via "$gateway" dev "$dev"
   done
+  sed -i '/ realness-halo$/d' /etc/hosts
+  printf '%s realness-halo\n' "$gateway" >> /etc/hosts
 }
 network_up
 

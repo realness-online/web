@@ -5,6 +5,8 @@ export TMPDIR="$root/artifacts/pi"
 mkdir -p "$TMPDIR"
 actor=0
 if [[ "${1:-}" == "--actor" ]]; then actor=1; shift; fi
+local_stack=0
+if [[ "${1:-}" == "--local" ]]; then local_stack=1; shift; fi
 if [[ "$actor" == 1 || -r /etc/realness/actor || -r /usr/local/lib/realness/package.json ]]; then
   actor=1
 fi
@@ -61,12 +63,27 @@ fi
 export PATH="$(dirname "$best_node"):$PATH:$root/bin"
 
 if [[ -z "${PI_CODING_AGENT_SESSION_DIR:-}" ]]; then
-  PI_CODING_AGENT_SESSION_DIR="$("$best_node" "$root/bin/session-location.js" "$root")" || exit 1
+  PI_CODING_AGENT_SESSION_DIR="$("$best_node" "$root/bin/harness/session-location.js" "$root")" || exit 1
   export PI_CODING_AGENT_SESSION_DIR
 fi
 
 if [[ "$actor" == 1 && $# == 0 && -n "$(find "$PI_CODING_AGENT_SESSION_DIR" -type f -mmin -"$thought_minutes" 2>/dev/null | head -1)" ]]; then
   set -- --continue
+fi
+
+# --local runs `npm run local` beside Pi. exec keeps this PID, so a watcher
+# stops the stack with SIGTERM once Pi exits. Log: artifacts/local/local.log.
+if [[ "$local_stack" == 1 && "$actor" == 0 ]]; then
+  mkdir -p "$root/artifacts/local"
+  pi_pid=$$
+  (
+    "$best_node" "$root/bin/harness/local.js" < /dev/null >> "$root/artifacts/local/local.log" 2>&1 &
+    stack_pid=$!
+    while kill -0 "$pi_pid" 2>/dev/null && kill -0 "$stack_pid" 2>/dev/null; do sleep 2; done
+    kill -TERM "$stack_pid" 2>/dev/null
+    wait "$stack_pid"
+  ) < /dev/null > /dev/null 2>&1 &
+  echo "local stack starting; log: artifacts/local/local.log" >&2
 fi
 
 # No update checks at startup: pi otherwise runs `npm view` for every package
@@ -82,7 +99,7 @@ if [[ -f "$PI_CODING_AGENT_DIR/state/fork-path" ]]; then
   IFS= read -r fork_binary < "$PI_CODING_AGENT_DIR/state/fork-path"
   [[ "$fork_binary" == /* ]] || fork_binary="$root/$fork_binary"
   if [[ ! -x "$fork_binary" || ! -x "$(dirname "$fork_binary")/pi-session-read" ]]; then
-    echo "Selected fork is missing. Restore the previous route: node $root/bin/pi-fork.js rollback" >&2
+    echo "Selected fork is missing. Restore the previous route: node $root/bin/harness/pi-fork.js rollback" >&2
     exit 1
   fi
   export PI_SESSION_READER="$(dirname "$fork_binary")/pi-session-read"

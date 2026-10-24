@@ -71,11 +71,19 @@ export const key_commands_plugin = {
       event.stopImmediatePropagation()
     }
 
-    /** Open, the panel takes exactly one key: its binding, Escape, or nothing. */
+    /** Shift+Option+Space keeps the panel open across keys until Escape. */
+    let sticky = false
+
+    /** Open, the panel takes one key: its binding, Escape, or nothing. Sticky, it takes keys until Escape. */
     const handle_panel_key = event => {
       if (MODIFIER_KEYS.has(event.key)) return
       claim(event)
-      key_commands.panel_open.value = false
+      const closing =
+        !sticky || event.key === 'Escape' || event.ctrlKey || event.metaKey
+      if (closing) {
+        key_commands.panel_open.value = false
+        sticky = false
+      }
       if (event.key === 'Escape' || event.ctrlKey || event.metaKey) return
       run_leader_key(event)
     }
@@ -100,6 +108,7 @@ export const key_commands_plugin = {
       if (is_leader(event)) {
         claim(event)
         key_commands.panel_open.value = !key_commands.panel_open.value
+        sticky = key_commands.panel_open.value && event.shiftKey
         return
       }
       if (key_commands.panel_open.value) return handle_panel_key(event)

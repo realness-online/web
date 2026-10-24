@@ -13,17 +13,18 @@ import {
 import { basename, join } from 'node:path'
 import { run, attempt, stream } from './exec.js'
 import { ROOT } from './paths.js'
-import { out_root } from '#root/src/settings/output.js'
+import { out_root, sync_dir } from '#root/src/settings/output.js'
 
 /**
- * The VM template names its halo folders as {{project}} and {{out}}, so no
+ * The VM template names its halo folders as {{project}}, {{out}}, and
+ * {{sync}} (where local sync keeps files), so no
  * checkout path is written into the repository. Each must be filled.
  */
 export const render_vm_config = (
   template,
-  { project = ROOT, out = out_root() } = {}
+  { project = ROOT, out = out_root(), sync = sync_dir() } = {}
 ) => {
-  const values = { project, out }
+  const values = { project, out, sync }
   for (const [name, value] of Object.entries(values))
     if (typeof value !== 'string' || !value.startsWith('/'))
       throw new Error(`lima: ${name} folder must be an absolute path: ${value}`)
@@ -42,14 +43,16 @@ export const render_vm_config = (
  * @param {object} [options]
  * @param {string} [options.project] defaults to the checkout root
  * @param {string} [options.out]
+ * @param {string} [options.sync] defaults to sync_dir()
  */
 const write_vm_config = async (
   template_path,
-  { project = ROOT, out = out_root() } = {}
+  { project = ROOT, out = out_root(), sync = sync_dir() } = {}
 ) => {
   const filled = render_vm_config(await read_file(template_path, 'utf8'), {
     project,
-    out
+    out,
+    sync
   })
   const folder = join(out, 'lima')
   await mkdir(folder, { recursive: true })

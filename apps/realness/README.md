@@ -1,9 +1,9 @@
 # Realness
 
-Node source lives in `src/<domain>/`; command entries and platform assets keep their existing paths. `src/settings/` owns checkout paths, environment targets, output policy, and staging sets. Browser source remains in `frontend/` during migration.
+Node source lives in `src/<domain>/` and browser source in `src/app/`; command entries keep their existing paths. `src/settings/` owns checkout paths, environment targets, output policy, and staging sets. Specs mirror source in `specs/`, live checks sit in `checks/`, and docs in `docs/`.
 
-Services, publishing, and terminal builds reuse one root install. The Realness frontend lives in `frontend/` and uses
-the same install, with Vite+ for dev, test, lint, and build.
+Services, publishing, and terminal builds reuse one root install. The web app ([intro](docs/web-app.md)) builds from this folder with the same install,
+using Vite+ for dev, test, lint, and build.
 
 ```sh
 npm install
@@ -47,7 +47,7 @@ nothing while it sleeps. Halos are VMs in their environment's project; developme
 - `tools/publish/`: builds the recipes in a harness's `apps/` and publishes them.
 - `tools/desktop/`: the signed download that boots pi with the harness inside.
 - `server/lima/fc-local.yaml`: the dev loop on this Mac.
-- `frontend/`: imported Realness app, profiles, artwork, and tests.
+- `src/app/`, `public/`, `index.html`: the Realness web app; `packages/`: its published itemid, store, and thoughts packages.
 - `src/sign-on/node/`: Node login and halo passes; `src/sign-on/browser/`: browser flow; the page is Realness `/sign-on`.
 - `lib/output.js` and `lib/output.sh`: one output rule for Node and shell.
   Output goes to `artifacts/realness` in a harness, or `dist` on a halo.
@@ -104,7 +104,7 @@ Commands run on the Mac unless a step says otherwise.
 
 The per-node proofs behind all four are archived with their runs in
 `artifacts/firecracker/webspace-archive/`; the record sections in
-[documentation.md](documentation.md) carry what each one proved.
+[documentation.md](docs/documentation.md) carry what each one proved.
 
 ## Build the template
 
@@ -126,7 +126,7 @@ guest. After a rebuild the seed is stale. A seed whose template, kernel, or
 Firecracker fingerprint changed is not forked: `ensure_seed()` sees the mismatch
 and rebuilds it on the next serve, so a missed rebuild cannot fork an old image.
 
-Record in [documentation.md](documentation.md#what-is-proven): the template
+Record in [documentation.md](docs/documentation.md#what-is-proven): the template
 rootfs (f3), and the capability it carries, an actor that builds a site (a1).
 
 ## Run it locally
@@ -151,7 +151,7 @@ node tools/cli/bin/realness.js local halo up  # each time: volume, TAP, API; wai
   `ok` as soon as it is listening, before the seed exists, so waiting on `ok`
   reports a stack as up when it cannot make an actor.
 
-Record in [documentation.md](documentation.md#what-is-proven): boot (f1),
+Record in [documentation.md](docs/documentation.md#what-is-proven): boot (f1),
 network and a control channel (f2), snapshot and restore (f4), the actor-disk
 mechanics (f5a-c, f6), and the API (r3a-r5) with idle tiers (r4) and the pages
 an actor dirties (m1).
@@ -180,7 +180,7 @@ node tools/cli/bin/realness.js development halo down realness-2 --delete # drain
   it exits non-zero when none can).
 - The idle guard stops the halo when nothing has run for 30 minutes.
 
-Record in [documentation.md](documentation.md#what-is-proven): the cloud halo
+Record in [documentation.md](docs/documentation.md#what-is-proven): the cloud halo
 (d3), a halo from the image and one that can be deleted (r8, r9), and the loop
 on x86_64 (x1).
 
@@ -203,11 +203,11 @@ does not: restoring one export twice is two actors with the same files and
 different identities. Files come back, processes do not, and nothing replays a
 command.
 
-Record in [documentation.md](documentation.md#what-is-proven): export and
+Record in [documentation.md](docs/documentation.md#what-is-proven): export and
 restore (r7), and the drain proof in (r8, r9).
 
 ## More
 
-[documentation.md](documentation.md) holds the rest: the design decisions, what
+[documentation.md](docs/documentation.md) holds the rest: the design decisions, what
 each milestone proved with its commands, known costs, and the gotchas found
 along the way.

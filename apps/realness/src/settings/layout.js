@@ -8,6 +8,7 @@ export const source_folders = {
   files: 'src/files',
   harness: 'src/harness',
   sign_on: 'src/sign-on',
+  sign_in: 'src/sign-in',
   command: 'src/command',
   control: 'src/control',
   publish: 'src/publish',
@@ -23,6 +24,7 @@ export const source_folders = {
 /**
  * Every source folder under `root`, by the name used in `source_folders`.
  * @param {string} [root]
+ * `frontend` is the web app's build root, which is the app root.
  * @returns {{ root: string, frontend: string, themes: string, renderer: string, static_preset: string } & { [folder: string]: string }}
  */
 export const product_paths = (root = project_root) => {
@@ -32,7 +34,7 @@ export const product_paths = (root = project_root) => {
     folders[name] = join(root, folder)
   return {
     root,
-    frontend: join(root, 'frontend'),
+    frontend: root,
     themes: join(root, 'themes'),
     renderer: join(root, 'tools/publish/renderer'),
     static_preset: resolve(root, '../../.pi/examples/static'),
@@ -46,6 +48,7 @@ const shared_folders = () => [
   source_folders.can,
   source_folders.files,
   source_folders.harness,
+  source_folders.sign_in,
   `${source_folders.sign_on}/node`
 ]
 

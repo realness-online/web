@@ -38,9 +38,6 @@ esac
 halo_values="$(node src/settings/cli.js shell halo --env "$environment")" || exit $?
 eval "$halo_values"
 unset halo_values
-export SYNC_URL="${SYNC_URL:-$sync_url_default}"
-export SYNC_SITE_URL="${SYNC_SITE_URL:-$SYNC_URL}"
-export SYNC_SITE_PUBLIC_URL="${SYNC_SITE_PUBLIC_URL:-$sites_url_default}"
 private_ip="$(curl -sf -H Metadata-Flavor:Google http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)"
 if [ -z "$private_ip" ]; then echo "no private address from metadata" >&2; exit 1; fi
 sudo -E nohup node server/halo/main.js serve --environment "$environment" \

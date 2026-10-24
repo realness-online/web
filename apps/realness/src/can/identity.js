@@ -20,20 +20,21 @@ const SKEW = 60
 const base64url = text => Buffer.from(text, 'base64url')
 const json = text => JSON.parse(base64url(text).toString('utf8'))
 
-/** Fetch Google's signing certificates, cached until they say to refetch. */
 /**
- * Google's signing keys as `{ kid: pem }`, cached for the response's max-age.
+ * Signing keys as `{ kid: pem }`, cached for the response's max-age.
+ * Google's by default; Realness sign-in passes its own `/certs` URL.
  * @param {typeof fetch} [fetcher]
+ * @param {string} [url]
  * @returns {() => Promise<Record<string, string>>}
  */
-export const google_certs = (fetcher = fetch) => {
+export const google_certs = (fetcher = fetch, url = GOOGLE_CERTS) => {
   /** @type {Record<string, string> | null} */
   let cached = null
   let until = 0
   return async () => {
     const fresh = cached
     if (fresh && Date.now() < until) return fresh
-    const response = await fetcher(GOOGLE_CERTS)
+    const response = await fetcher(url)
     if (!response.ok) throw new Error(`certs: ${response.status}`)
     const age = Number(
       /max-age=(\d+)/.exec(response.headers.get('cache-control') ?? '')?.[1] ??
@@ -50,10 +51,16 @@ export const google_certs = (fetcher = fetch) => {
 /**
  * The verified `{ uid, phone }` behind a token, or a throw.
  * `certs` resolves to `{ kid: pem }`; `now` is seconds since the epoch.
+ * `issuer` defaults to Firebase's for the project.
  */
 export const verify_token = async (
   token,
-  { project, certs, now = Date.now() / MS_PER_SECOND }
+  {
+    project,
+    certs,
+    issuer = `https://securetoken.google.com/${project}`,
+    now = Date.now() / MS_PER_SECOND
+  }
 ) => {
   if (!project) throw new Error('token: no project')
   const parts = typeof token === 'string' ? token.split('.') : []
@@ -72,8 +79,7 @@ export const verify_token = async (
     throw new Error('token: bad signature')
 
   if (claims.aud !== project) throw new Error('token: wrong audience')
-  if (claims.iss !== `https://securetoken.google.com/${project}`)
-    throw new Error('token: wrong issuer')
+  if (claims.iss !== issuer) throw new Error('token: wrong issuer')
   if (!(claims.exp > now)) throw new Error('token: expired')
   if (!(claims.iat <= now + SKEW))
     throw new Error('token: issued in the future')
@@ -104,7 +110,7 @@ export const pin = async (identity, pins) => {
 /**
  * A token in, a `can()` subject out: `{ phone }`. Throws on anything doubtful.
  * @param {string} token
- * @param {{ pins: object, project: string, certs: () => Promise<object>, now?: number }} options
+ * @param {{ pins: object, project: string, certs: () => Promise<object>, issuer?: string, now?: number }} options
  */
 export const identify = async (token, { pins, ...options }) =>
   pin(await verify_token(token, options), pins)

@@ -5,7 +5,7 @@ already open with `agent-browser open <url>`.
 
 ## 1. Reading a single ref/computed value by name
 
-Verified live in `apps/realness/frontend` `/colors` against `Colors.vue`:
+Verified live in `apps/realness` `/colors` against `Colors.vue`:
 
 ```js
 (() => {

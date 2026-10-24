@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { createServer as create_server } from 'node:http'
+import { parseArgs as parse_args } from 'node:util'
+import { disk_recorder } from '#root/src/proxy/recorder.js'
 import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
@@ -46,7 +48,11 @@ const storage =
 const ledger = usage_ledger(storage)
 const billing = billing_store(storage)
 const plan_for = plan_source(billing, env)
-const identify_phone = phone_identity({ project, bucket, storage })
+const identify_phone = phone_identity({
+  project,
+  bucket,
+  storage: env.PINS_DIR ? disk(env.PINS_DIR) : storage
+})
 const pay_url = env.PAY_URL ?? PAY_URL
 const stripe = env.STRIPE_SECRET_KEY?.trim()
   ? stripe_api(env.STRIPE_SECRET_KEY.trim())
@@ -62,6 +68,12 @@ const operator_secret = env.OPERATOR_SECRET?.trim()
 const traces = otel_config(env)
 const telemetry = traces ? span => export_traces([span], traces) : undefined
 
+/** `--record <dir>`: keep every call whole on this Mac's disk (l11). */
+const { values: args } = parse_args({
+  options: { record: { type: 'string' } }
+})
+const recorder = args.record ? disk_recorder(args.record) : undefined
+
 const handler = proxy_handler({
   agent: agent_handler({
     identify_phone,
@@ -70,7 +82,8 @@ const handler = proxy_handler({
     ledger,
     plan_for,
     pay_url,
-    telemetry
+    telemetry,
+    recorder
   }),
   limit: limit_handler({ identify_phone, secret, ledger, plan_for, pay_url }),
   pay: checkout_handler({ identify_phone, secret, stripe, price, pay_url }),

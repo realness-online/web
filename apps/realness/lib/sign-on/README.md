@@ -1,6 +1,6 @@
 # Realness sign-on
 
-Signing in happens on the Realness frontend, `frontend/`, at `/sign-on`.
+Signing in happens on the Realness web app, `src/app/`, at `/sign-on`.
 Development serves it from `https://realness-development.web.app`.
 This folder keeps the pieces other code imports.
 

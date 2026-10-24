@@ -17,12 +17,12 @@ Run the commands below from the workspace root.
 ```sh
 npm run palette
 npm run check:palette
-node --test bin/themes.test.js
+node --test bin/specs/graphics/themes.spec.js
 ```
 
 Generation updates existing consumer paths, including nvim and pi. Ghostty's
 existing symlinks still work. CSS copies for publishing follow generation.
-`bin/ghostty-theme.js` remains a compatibility command.
+`bin/graphics/ghostty-theme.js` remains a compatibility command.
 
 Do not edit generated frontend `palette.css` or `color.css`, terminal theme
 files, pi JSON, or nvim Lua. Font settings remain in the frontend's `font.css`;
@@ -35,8 +35,8 @@ letters, digits, and dashes, starting with a letter. Supply all roles from
 Realness or the example; material names belong to the client.
 
 ```sh
-node bin/themes.js --theme example-client --out artifacts/themes/example-client
-node bin/themes.js --theme example-client --out artifacts/themes/example-client --check
+node bin/graphics/themes.js --theme example-client --out artifacts/themes/example-client
+node bin/graphics/themes.js --theme example-client --out artifacts/themes/example-client --check
 ```
 
 Exports contain `web/`, `ghostty/`, `pi/`, and `nvim/`. Export does not select or
@@ -49,5 +49,5 @@ names rather than role names in a mix. Panel tints accept
 `{"tint": "material-name"}`; they use the `raised` material's lightness and cap
 chroma at 0.04. Unsupported values and missing materials fail before writing.
 
-Tests pin pre-migration color values in `bin/fixtures/theme-baseline/`. A deliberate
+Tests pin pre-migration color values in `bin/specs/fixtures/theme-baseline/`. A deliberate
 Realness color change needs a reviewed baseline update.

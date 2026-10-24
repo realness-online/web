@@ -53,7 +53,7 @@ const put_version_file = async (
   if (!safe_path(name)) throw new SiteError(HTTP.FORBIDDEN)
   if (!owner)
     try {
-      await storage.put(owner_key(id), who.phone, { if_version: null })
+      await storage.put(owner_key(id), who.phone, { if_absent: true })
     } catch (error) {
       if (error.code !== 'conflict') throw error
       if (
@@ -63,7 +63,7 @@ const put_version_file = async (
     }
   try {
     await storage.put(file_key(id, version, name), await read_body(), {
-      if_version: null
+      if_absent: true
     })
   } catch (error) {
     if (error.code === 'conflict') throw new SiteError(HTTP.CONFLICT)
@@ -170,7 +170,7 @@ export const site_request = async ({
       throw new SiteError(HTTP.NOT_FOUND)
     await storage
       .put(`sites/${id}/versions/${version}/saved`, new Date().toISOString(), {
-        if_version: null
+        if_absent: true
       })
       .catch(error => {
         if (error.code !== 'conflict') throw error

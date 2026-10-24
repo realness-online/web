@@ -1,6 +1,7 @@
 import { client } from '#root/src/files/client.js'
 import { keychain_for, token_source } from '#root/src/sign-on/node/login.js'
 import { read_status } from '#root/src/sync/halo-status.js'
+import { local_token_source } from '#root/src/files/target.js'
 import {
   environment_settings,
   local_settings
@@ -23,8 +24,11 @@ export const SIGN_ON = {
   production: environment_settings('production').public_url
 }
 
-/** Tokens minted from the sign-in kept for this environment only. */
-export const env_token = env => token_source({ store: keychain_for(env) })
+/** Tokens minted from the sign-in kept for this environment only; local signs in to the Mac's own sign-in. */
+export const env_token = env =>
+  env === 'local'
+    ? local_token_source()
+    : token_source({ store: keychain_for(env) })
 
 const mask_phone = phone =>
   typeof phone === 'string' && /^\+[1-9]\d{6,14}$/.test(phone)

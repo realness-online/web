@@ -73,6 +73,13 @@ if (command !== 'serve' && command !== 'seed') {
 /** Serve names its environment; there is no default to fall back to. */
 const environment =
   command === 'serve' ? environment_settings(values.environment ?? '') : null
+/** Where this halo's sync, published sites, and their public address live. */
+const sync_url =
+  environment?.services?.halo_sync_url ??
+  environment?.services?.sync_url ??
+  null
+const site_sync_url = environment?.services?.site_sync_url ?? sync_url
+const site_public = environment?.services?.sites_url || site_sync_url
 
 const store = new ActorStore({
   volume: values.volume,
@@ -88,7 +95,7 @@ const store = new ActorStore({
   seedTap: values['seed-tap'],
   bootTimeout: Number(values['boot-timeout']),
   apiTimeout: Number(values['api-timeout']),
-  syncUrl: process.env.SYNC_URL ?? null
+  syncUrl: environment?.services?.actor_sync_url ?? sync_url
 })
 const warning = store.reflinkWarning()
 if (warning) LOG.warn(warning)
@@ -100,9 +107,9 @@ if (command === 'seed') {
 }
 
 await store.ensureSeed()
-if (process.env.SYNC_SITE_URL)
+if (site_sync_url)
   store.syncSites = new SyncSites({
-    url: process.env.SYNC_SITE_URL,
+    url: site_sync_url,
     secret: halo_pass_secret()
   })
 const listen = (what, port, address = values.listen) =>
@@ -136,21 +143,16 @@ const limits = process.env.MODEL_PASS_SECRET
   : null
 const halo = hostname().split('.')[0]
 const record_secret_file = process.env.RECORD_SECRET_FILE
-if (process.env.SYNC_URL && !record_secret_file)
-  throw new Error('SYNC_URL needs RECORD_SECRET_FILE')
-const mirror = process.env.SYNC_URL
+if (sync_url && !record_secret_file)
+  throw new Error('a halo with sync needs RECORD_SECRET_FILE')
+const mirror = sync_url
   ? new SyncMirror({
-      url: process.env.SYNC_URL,
+      url: sync_url,
       secret: read_file_sync(String(record_secret_file), 'utf8').trim(),
       halo
     })
   : null
 const loops = new Loops(store, { mirror, halo })
-/** An environment without a public sites domain exports an empty value; fall back to sync itself rather than refusing to serve. */
-const site_public =
-  process.env.SYNC_SITE_PUBLIC_URL || process.env.SYNC_SITE_URL
-if (store.syncSites && !site_public)
-  throw new Error('sync sites need SYNC_SITE_PUBLIC_URL or SYNC_SITE_URL')
 const site_url = store.syncSites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'

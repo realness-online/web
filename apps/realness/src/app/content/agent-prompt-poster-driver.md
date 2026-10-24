@@ -40,7 +40,7 @@ const poster = await window.poster_driver.render(data_url, {
 
 ## Video
 
-Realness traces photos. From the harness it traces movies, by starting a headless Chrome, opening this page, and calling `render` once per frame over the devtools protocol. ffmpeg reassembles the frames and keeps the original audio. The script lives in the realness harness as `bin/make-animation.js`.
+Realness traces photos. From the harness it traces movies, by starting a headless Chrome, opening this page, and calling `render` once per frame over the devtools protocol. ffmpeg reassembles the frames and keeps the original audio. The script lives in the realness harness as `bin/graphics/make-animation.js`.
 
 ```
 npm run make:animation clip.mp4 [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]
@@ -51,6 +51,6 @@ Runs from the realness root, against `https://realness.online` by default. Set `
 ## Where to read the code
 
 - `src/views/PosterDriver.vue` — the page and the `render` function
-- `bin/make-animation.js` in the realness harness — the reference driver, worth copying from
+- `bin/graphics/make-animation.js` in the realness harness — the reference driver, worth copying from
 
 Write your own script against `render`. The page is the contract; everything else is an example.

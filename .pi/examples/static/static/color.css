@@ -6,6 +6,7 @@
   --surface-glass: var(--chalk-transparent);
   --text: var(--graphite);
   --surface: var(--chalk);
+  --background: var(--chalk);
   --code-surface: color-mix(in srgb, var(--graphite) 6%, transparent);
   --muted-text: color-mix(in srgb, var(--graphite) 70%, var(--chalk));
   --contrast: var(--chalk);
@@ -21,6 +22,7 @@
     --surface-glass: var(--basalt-transparent);
     --text: var(--bone);
     --surface: var(--basalt);
+    --background: var(--tarpit);
     --code-surface: color-mix(in srgb, var(--bone) 8%, transparent);
     --muted-text: color-mix(in srgb, var(--graphite) 70%, var(--chalk));
     --contrast: var(--chalk);

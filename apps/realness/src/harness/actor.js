@@ -23,7 +23,7 @@ export const actor_client = async ({
   state
 }) => {
   if (!url || !/^https?:\/\//.test(url))
-    throw new Error('actor sync needs SYNC_URL')
+    throw new Error('actor sync needs a sync address')
   let pass = await issue()
   const claims = JSON.parse(
     Buffer.from(pass.split('.')[0], 'base64url').toString()
@@ -53,10 +53,7 @@ export const actor_client = async ({
 /** The recovered service URL stays with persistent state. */
 export const actor_url = async (root = '/realness', state_option) => {
   const state = await prepare_actor_state(root, { state: state_option })
-  return (
-    process.env.SYNC_URL ??
-    (await read_file(join(state, 'recovery/url'), 'utf8')).trim()
-  )
+  return (await read_file(join(state, 'recovery/url'), 'utf8')).trim()
 }
 
 /**
