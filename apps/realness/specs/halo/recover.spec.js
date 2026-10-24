@@ -261,8 +261,9 @@ it("starter updates preserve a managed file's pending session edits", async () =
   }
   await mkdir(directory, { recursive: true })
   await mkdir(root, { recursive: true })
+  await mkdir(join(directory, '.pi'), { recursive: true })
   await writeFile(
-    join(directory, 'starter.json'),
+    join(directory, '.pi/starter.json'),
     JSON.stringify(next_manifest)
   )
   await writeFile(join(directory, 'skill.md'), latest)
@@ -270,7 +271,7 @@ it("starter updates preserve a managed file's pending session edits", async () =
   const put = (path, body) =>
     storage.put(`people/${phone}/harness/${path}`, body)
   await put('.ignore', '')
-  await put('starter.json', JSON.stringify(old_manifest))
+  await put('.pi/starter.json', JSON.stringify(old_manifest))
   await put('skill.md', original)
   const call = {
     message: {
@@ -348,11 +349,12 @@ it('recovery removes a starter file deleted from the saved harness', async () =>
     await writeFile(join(folder, 'skills/critic/SKILL.md'), stock)
     await writeFile(join(folder, 'keep.md'), 'keep\n')
   }
-  await writeFile(join(directory, 'starter.json'), JSON.stringify(manifest))
+  await mkdir(join(directory, '.pi'), { recursive: true })
+  await writeFile(join(directory, '.pi/starter.json'), JSON.stringify(manifest))
   const put = (path, body) =>
     storage.put(`people/${phone}/harness/${path}`, body)
   await put('.ignore', '')
-  await put('starter.json', JSON.stringify(manifest))
+  await put('.pi/starter.json', JSON.stringify(manifest))
   await put('keep.md', 'keep\n')
   await recover(url, () => issue_recovery_pass({ phone, id }, secret), root, {
     starter: directory
@@ -381,11 +383,12 @@ for (const [name, gone] of [
       await mkdir(join(folder, 'skills/critic'), { recursive: true })
       await writeFile(join(folder, 'skills/critic/SKILL.md'), stock)
     }
-    await writeFile(join(starter, 'starter.json'), JSON.stringify(manifest))
+    await mkdir(join(starter, '.pi'), { recursive: true })
+    await writeFile(join(starter, '.pi/starter.json'), JSON.stringify(manifest))
     const put = (path, body) =>
       storage.put(`people/${phone}/harness/${path}`, body)
     await put('.ignore', 'artifacts/\n')
-    await put('starter.json', JSON.stringify(manifest))
+    await put('.pi/starter.json', JSON.stringify(manifest))
     await put('skills/critic/SKILL.md', stock)
     await put('notes/gone.md', 'delete me\n')
     await put('notes/kept.md', 'keep me\n')

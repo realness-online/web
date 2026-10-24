@@ -78,15 +78,15 @@ const prepare = async name => {
   const local = join(root, name, 'local')
   const remote = `can://~/${name}/`
   const next_manifest = JSON.stringify(manifest(latest))
-  await write(directory, { ...latest, 'starter.json': next_manifest })
+  await write(directory, { ...latest, '.pi/starter.json': next_manifest })
   await write(local, {
     ...latest,
-    'starter.json': next_manifest,
+    '.pi/starter.json': next_manifest,
     'note.md': 'local note'
   })
   for (const [path, bytes] of Object.entries({
     ...old,
-    'starter.json': JSON.stringify(manifest(old))
+    '.pi/starter.json': JSON.stringify(manifest(old))
   }))
     await store.put(`${remote}${path}`, bytes)
   await store.put(`${remote}edited.md`, 'personal edit')
@@ -125,7 +125,7 @@ it('recovery takes unchanged starter updates and keeps personal edits and deleti
     'recovery is read-only'
   )
   assert.deepEqual(
-    JSON.parse(await readFile(join(local, 'starter.json'), 'utf8')),
+    JSON.parse(await readFile(join(local, '.pi/starter.json'), 'utf8')),
     manifest(latest)
   )
 })
@@ -152,7 +152,7 @@ it('normal sync publishes starter updates through its existing file transport', 
   await assert.rejects(store.cat(`${remote}removed.md`), { status: 404 })
   await assert.rejects(store.cat(`${remote}gone.md`), { status: 404 })
   assert.deepEqual(
-    JSON.parse((await store.cat(`${remote}starter.json`)).toString()),
+    JSON.parse((await store.cat(`${remote}.pi/starter.json`)).toString()),
     manifest(latest)
   )
   const second = await store.sync(local, remote, options)
@@ -162,7 +162,7 @@ it('normal sync publishes starter updates through its existing file transport', 
   const fresh = join(root, 'writable', 'fresh')
   await write(fresh, {
     ...latest,
-    'starter.json': JSON.stringify(manifest(latest)),
+    '.pi/starter.json': JSON.stringify(manifest(latest)),
     'note.md': 'local note'
   })
   await store.sync(fresh, remote, { ...options, pull_only: true })
@@ -193,7 +193,7 @@ it('new executable starter files retain their distributed permissions', async ()
   const entries = { 'bin/run': '#!/bin/sh\necho ready\n' }
   await write(directory, {
     ...entries,
-    'starter.json': JSON.stringify(manifest(entries))
+    '.pi/starter.json': JSON.stringify(manifest(entries))
   })
   await chmod(join(directory, 'bin/run'), 0o755)
   await mkdir(local, { recursive: true })
@@ -222,11 +222,11 @@ it('an older VM cannot downgrade a newer saved starter', async () => {
   }
   await write(directory, {
     'skill.md': 'old',
-    'starter.json': JSON.stringify(old)
+    '.pi/starter.json': JSON.stringify(old)
   })
-  await write(local, { 'skill.md': 'old', 'starter.json': JSON.stringify(old) })
+  await write(local, { 'skill.md': 'old', '.pi/starter.json': JSON.stringify(old) })
   await store.put(`${remote}skill.md`, 'new')
-  await store.put(`${remote}starter.json`, JSON.stringify(newer))
+  await store.put(`${remote}.pi/starter.json`, JSON.stringify(newer))
   await store.sync(local, remote, {
     starter: directory,
     state: join(root, 'outdated-state')
@@ -234,7 +234,7 @@ it('an older VM cannot downgrade a newer saved starter', async () => {
   assert.equal(await readFile(join(local, 'skill.md'), 'utf8'), 'new')
   assert.equal((await store.cat(`${remote}skill.md`)).toString(), 'new')
   assert.deepEqual(
-    JSON.parse(await readFile(join(local, 'starter.json'), 'utf8')),
+    JSON.parse(await readFile(join(local, '.pi/starter.json'), 'utf8')),
     newer
   )
 })
@@ -250,22 +250,22 @@ it('a raced starter checkpoint keeps the old base until a safe retry', async () 
     url: `http://127.0.0.1:${server.address().port}`,
     token: issuer.token('+15555550200'),
     fetcher: (url, options) => {
-      if (url.endsWith('/starter.json') && options.method === 'PUT')
+      if (url.endsWith('/.pi/starter.json') && options.method === 'PUT')
         return Promise.resolve(new Response('', { status: 412 }))
       return fetch(url, options)
     }
   })
   const first = await racing.sync(local, remote, options)
-  assert.deepEqual(first.conflicts, ['starter.json'])
+  assert.deepEqual(first.conflicts, ['.pi/starter.json'])
   assert.notEqual(
-    JSON.parse((await store.cat(`${remote}starter.json`)).toString()).version,
+    JSON.parse((await store.cat(`${remote}.pi/starter.json`)).toString()).version,
     manifest(latest).version
   )
   const retry = await store.sync(local, remote, options)
   assert.deepEqual(retry.conflicts, [])
   assert.deepEqual(retry.held, [])
   assert.deepEqual(
-    JSON.parse((await store.cat(`${remote}starter.json`)).toString()),
+    JSON.parse((await store.cat(`${remote}.pi/starter.json`)).toString()),
     manifest(latest)
   )
   await verify_local(local)
@@ -275,7 +275,8 @@ it('starter bytes must match their hashes and local links remain links', async (
   const { directory, local, remote, latest } = await prepare('integrity')
   const next = manifest(latest)
   next.files['linked'] = 'link:skill.md'
-  await writeFile(join(directory, 'starter.json'), JSON.stringify(next))
+  await mkdir(join(directory, '.pi'), { recursive: true })
+  await writeFile(join(directory, '.pi/starter.json'), JSON.stringify(next))
   await symlink('skill.md', join(local, 'linked'))
   await writeFile(join(directory, 'skill.md'), 'corrupt distribution')
   await assert.rejects(

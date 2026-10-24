@@ -33,7 +33,12 @@ import { homedir } from 'node:os'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
 import { skipped, skipped_name } from './skip.js'
-import { starter_base, starter_bytes, starter_choice } from './starter.js'
+import {
+  STARTER_FILE,
+  starter_base,
+  starter_bytes,
+  starter_choice
+} from './starter.js'
 import { harness_root, state_path } from '#root/src/harness/settings.js'
 import { person_settings } from '#root/src/settings/environments.js'
 import { HTTP } from '#root/lib/http.js'
@@ -208,23 +213,23 @@ const settle_starter = async ({
       ? stock.previous
       : stock.latest
   const bytes = Buffer.from(`${JSON.stringify(current, null, 2)}\n`)
-  await safe_target(local, 'starter.json')
-  let version = remotes['starter.json']
+  await safe_target(local, STARTER_FILE)
+  let version = remotes[STARTER_FILE]
   if (!pull_only && !stock.previous_bytes?.equals(bytes))
     try {
       version = await api.put(
-        `${folder}starter.json`,
+        `${folder}${STARTER_FILE}`,
         bytes,
         conditional(version ? { version } : null)
       )
     } catch (error) {
       if (error.status !== HTTP.PRECONDITION_FAILED) throw error
-      report.conflicts.push('starter.json')
+      report.conflicts.push(STARTER_FILE)
     }
   if (report.conflicts.length) return
-  await mkdir(local, { recursive: true })
-  await write_file(join(local, 'starter.json'), bytes)
-  if (!pull_only) agree('starter.json', bytes, version)
+  await mkdir(join(local, '.pi'), { recursive: true })
+  await write_file(join(local, STARTER_FILE), bytes)
+  if (!pull_only) agree(STARTER_FILE, bytes, version)
 }
 
 /** Save the per-file agreement and when this sync ran. */
@@ -521,7 +526,7 @@ const transfer_one = async (run, name) => {
     stock,
     update_starter
   } = run
-  if (stock && name === 'starter.json') return
+  if (stock && name === STARTER_FILE) return
   const base = manifest[name]
   const file = locals.get(name)
   const bytes = file ? await read_file(file) : null

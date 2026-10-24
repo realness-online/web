@@ -6,6 +6,8 @@ import { limit_path } from './paths.js'
 import { HTTP } from '#root/lib/http.js'
 
 export const STARTER_DIRECTORY = '/usr/local/share/realness-starter'
+/** The shipped file list, inside the harness folder of every home. */
+export const STARTER_FILE = '.pi/starter.json'
 
 const hash = bytes =>
   bytes === null ? null : create_hash('sha256').update(bytes).digest('hex')
@@ -16,11 +18,11 @@ const regular = value =>
 export const starter_base = async (api, folder, directory) => {
   if (!directory) return null
   const latest = JSON.parse(
-    await read_file(join(directory, 'starter.json'), 'utf8')
+    await read_file(join(directory, STARTER_FILE), 'utf8')
   )
   let previous, previous_bytes
   try {
-    previous_bytes = await api.cat(`${folder}starter.json`)
+    previous_bytes = await api.cat(`${folder}${STARTER_FILE}`)
     previous = JSON.parse(previous_bytes.toString())
   } catch (error) {
     if (error.status !== HTTP.NOT_FOUND) throw error

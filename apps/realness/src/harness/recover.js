@@ -15,7 +15,7 @@ import { apply_deferred, syncs_of } from './harness.js'
 import { plans_path, state_path, runtime_sessions_path } from './settings.js'
 import { prepare_actor_state } from './state.js'
 import { limit_path } from '#root/src/files/paths.js'
-import { STARTER_DIRECTORY } from '#root/src/files/starter.js'
+import { STARTER_DIRECTORY, STARTER_FILE } from '#root/src/files/starter.js'
 import { light_policy, light_skips, write_skipped } from './light.js'
 import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- paths pull one at a time to bound memory on a small VM */
@@ -53,7 +53,7 @@ export const recover = async (
   {
     state: state_option = join(root, state_path(root)),
     fetcher = fetch,
-    starter = exists_sync(join(STARTER_DIRECTORY, 'starter.json'))
+    starter = exists_sync(join(STARTER_DIRECTORY, STARTER_FILE))
       ? STARTER_DIRECTORY
       : null
   } = {}

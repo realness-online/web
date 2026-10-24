@@ -236,7 +236,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   const id = await create()
   const installed = await sh(
     id,
-    'cat /usr/local/share/realness-starter/starter.json'
+    'cat /usr/local/share/realness-starter/.pi/starter.json'
   )
   assert.equal(installed.code, 0, installed.err)
   const latest = JSON.parse(installed.out)
@@ -249,7 +249,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   ).out
   put('harness/.ignore', '')
   put(
-    'harness/starter.json',
+    'harness/.pi/starter.json',
     JSON.stringify({
       version: hash('previous starter'),
       built_at: '2026-09-01T00:00:00.000Z',
@@ -267,7 +267,7 @@ test('a fresh actor updates stock files and keeps personal edits and deletions',
   assert.equal((await sh(id, 'cat /realness/LICENSE')).out, original)
   assert.equal((await sh(id, 'cat /realness/README.md')).out, 'personal readme')
   assert.notEqual((await sh(id, `test -e /realness/${removed}`)).code, 0)
-  const saved = (await sh(id, 'cat /realness/starter.json')).out
+  const saved = (await sh(id, 'cat /realness/.pi/starter.json')).out
   assert.equal(JSON.parse(saved).version, latest.version)
 })
 

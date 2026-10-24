@@ -79,7 +79,8 @@ export const ACTOR_HARNESS = '/realness'
 export const SHIPPED_EXAMPLES = ['static']
 
 /** The starter's identity, written last so it never hashes itself. */
-export const STARTER = 'starter.json'
+export { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
+import { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
 
 /** Whether a path, relative to the harness root, goes into the ship tree. */
 export const ships = path => {

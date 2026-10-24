@@ -27,7 +27,7 @@ import { skipped } from '#root/src/files/skip.js'
 import { state_path, harness_root } from './settings.js'
 import { state_dir } from '#root/src/files/client.js'
 import { plans_path, runtime_sessions_path } from './settings.js'
-import { STARTER_DIRECTORY } from '#root/src/files/starter.js'
+import { STARTER_DIRECTORY, STARTER_FILE } from '#root/src/files/starter.js'
 import { read_skipped } from './light.js'
 import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- harness paths sync one at a time so a failure stops the rest */
@@ -207,7 +207,7 @@ export const sync_harness = async ({
   state: sync_state = state_dir(root),
   deletes = 'explained',
   defer_edits = false,
-  starter = exists_sync(join(STARTER_DIRECTORY, 'starter.json'))
+  starter = exists_sync(join(STARTER_DIRECTORY, STARTER_FILE))
     ? STARTER_DIRECTORY
     : null
 }) => {

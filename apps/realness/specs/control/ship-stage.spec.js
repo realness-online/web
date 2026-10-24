@@ -333,7 +333,7 @@ it('the starter rides in the tarball new actors install', () => {
     { encoding: 'utf8' }
   )
   assert.ok(
-    listing.includes('./starter.json'),
+    listing.includes('./.pi/starter.json'),
     'the version and file list ship to the actor'
   )
   assert.ok(listing.includes('./apps/'), 'the empty apps folder ships')
