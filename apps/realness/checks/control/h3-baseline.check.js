@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, rm, writeFile as write_file } from 'node:fs/promises'
 import { join } from 'node:path'
 import { disk } from '#root/src/can/disk.js'
 import { create_gcs, gcloud_token } from '#root/src/can/gcs.js'
@@ -39,11 +39,11 @@ const store = client({
 })
 
 await mkdir(harness, { recursive: true })
-await writeFile(join(harness, '.ignore'), '')
+await write_file(join(harness, '.ignore'), '')
 for (let i = 0; i < FILES; i++) {
   const dir = join(harness, 'notes', String(i % 60))
   await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, `${i}.md`), `note ${i}\n`)
+  await write_file(join(dir, `${i}.md`), `note ${i}\n`)
 }
 const timed = async label => {
   requests = 0
@@ -60,7 +60,7 @@ const timed = async label => {
 await timed(`first sync, ${FILES} files`)
 await new Promise(done => setTimeout(done, 6000))
 await timed('no change')
-await writeFile(join(harness, 'notes/7/7.md'), 'changed\n')
+await write_file(join(harness, 'notes/7/7.md'), 'changed\n')
 await timed('one file changed')
 server.close()
 if (process.env.BUCKET) {

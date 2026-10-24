@@ -86,16 +86,16 @@ const store = new ActorStore({
   template: values.template,
   kernel: values.kernel,
   firecracker: values.firecracker,
-  guestMac: values['guest-mac'],
-  guestCid: Number(values['guest-cid']),
-  vsockPort: Number(values['vsock-port']),
+  guest_mac: values['guest-mac'],
+  guest_cid: Number(values['guest-cid']),
+  vsock_port: Number(values['vsock-port']),
   vcpus: Number(values.vcpu),
   mib: Number(values['mem-mib']),
-  tapPrefix: values['tap-prefix'],
-  seedTap: values['seed-tap'],
-  bootTimeout: Number(values['boot-timeout']),
-  apiTimeout: Number(values['api-timeout']),
-  syncUrl: environment?.services?.actor_sync_url ?? sync_url
+  tap_prefix: values['tap-prefix'],
+  seed_tap: values['seed-tap'],
+  boot_timeout: Number(values['boot-timeout']),
+  api_timeout: Number(values['api-timeout']),
+  sync_url: environment?.services?.actor_sync_url ?? sync_url
 })
 const warning = store.reflinkWarning()
 if (warning) LOG.warn(warning)
@@ -108,7 +108,7 @@ if (command === 'seed') {
 
 await store.ensureSeed()
 if (site_sync_url)
-  store.syncSites = new SyncSites({
+  store.sync_sites = new SyncSites({
     url: site_sync_url,
     secret: halo_pass_secret()
   })
@@ -153,7 +153,7 @@ const mirror = sync_url
     })
   : null
 const loops = new Loops(store, { mirror, halo })
-const site_url = store.syncSites
+const site_url = store.sync_sites
   ? `${String(site_public).replace(/\/$/, '')}/sites/{id}/`
   : '/s/{id}/'
 const chrome_image = '/opt/fc/chrome.ext4'

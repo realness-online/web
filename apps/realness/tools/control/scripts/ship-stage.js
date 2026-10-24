@@ -79,6 +79,8 @@ export const ACTOR_HARNESS = '/realness'
 
 export const SHIPPED_EXAMPLES = ['static']
 
+export const HOME_FOLDERS = ['apps', 'artifacts', 'vault', 'work']
+
 /** The starter's identity, written last so it never hashes itself. */
 export { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
 import { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
@@ -217,7 +219,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
     if (exists_sync(join(root, path)))
       copy(join(root, path), join(stage, path), root)
 
-  mkdir_sync(join(stage, 'apps'), { recursive: true })
+  /** The same visible folders as the Mac home. */
+  for (const folder of HOME_FOLDERS)
+    mkdir_sync(join(stage, folder), { recursive: true })
   write_file_sync(join(stage, '.ignore'), '')
   for (const name of SHIPPED_EXAMPLES) {
     const destination = join(stage, '.pi/examples', name)
@@ -248,9 +252,9 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
   edit_json(join(stage, 'package.json'), pkg => {
     if (pkg.realness) delete pkg.realness.examples
   })
-  mkdir_sync(join(stage, 'plans'), { recursive: true })
+  mkdir_sync(join(stage, 'vault/Projects'), { recursive: true })
   write_file_sync(
-    join(stage, 'plans/site.md'),
+    join(stage, 'vault/Projects/site.md'),
     '# Published site\n\n## Syncs\n\n- work/site\n'
   )
 

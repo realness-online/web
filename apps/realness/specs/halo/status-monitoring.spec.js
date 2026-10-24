@@ -17,7 +17,7 @@ const fixture = (actors, options = {}) => {
   const writes = []
   const store = {
     volume: '/',
-    vsockPort: 52,
+    vsock_port: 52,
     list: () => actors,
     seedStatus: () => ({ built: true, matches: true })
   }
@@ -201,7 +201,7 @@ it('probes never touch the store, so no actor is woken or has its idle timer res
   const calls = []
   const store = {
     volume: '/',
-    vsockPort: 52,
+    vsock_port: 52,
     list: () => actors,
     seedStatus: () => ({ built: true, matches: true }),
     touch: async id => calls.push(['touch', id]),

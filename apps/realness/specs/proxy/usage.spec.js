@@ -240,17 +240,17 @@ it('a report spans people and days, and totals their rows', async () => {
   )
 })
 
-it('attribute values are escaped', () => {
-  assert.match(
-    usage_row({
-      model: '"><script>',
-      actor: 'phone',
-      status: 200,
-      request_bytes: 0,
-      reply_bytes: 0
-    }),
-    /content="&quot;>&lt;script>"/
-  )
+it('values show as escaped text and read back unchanged', () => {
+  const row = usage_row({
+    model: '"><script>',
+    actor: 'phone',
+    status: 200,
+    request_bytes: 0,
+    reply_bytes: 0
+  })
+  assert.match(row, /<span itemprop="model">&quot;&gt;&lt;script&gt;<\/span>/)
+  assert.doesNotMatch(row, /<script>/)
+  assert.equal(read_rows(row)[0].model, '"><script>')
 })
 
 it("key sits under the person's day", () => {

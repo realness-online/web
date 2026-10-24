@@ -1,12 +1,12 @@
 <script setup>
   import { computed, onMounted as mounted, ref, watch } from 'vue'
-  import { useRoute } from 'vue-router'
+  import { useRoute as use_route } from 'vue-router'
   import AsFigure from '@/components/posters/as-figure'
   import { load } from '@/utils/itemid'
   import { poster_ratio } from '@/use/poster-aspect'
   import { as_money, print_thought, use_print_editions } from '@/use/print-shop'
 
-  const route = useRoute()
+  const route = use_route()
   const admin_id = import.meta.env.VITE_ADMIN_ID
   const contact_url = `sms:${admin_id.slice(1)}`
   const SHARE_STATE_MS = 2000

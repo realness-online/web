@@ -1,4 +1,9 @@
-import { client, state_dir, SYNC_URL } from '#root/src/files/client.js'
+import {
+  client,
+  phone_of,
+  state_dir,
+  SYNC_URL
+} from '#root/src/files/client.js'
 import { is_actor } from '#root/src/harness/settings.js'
 import { person_target, sync_target } from '#root/src/files/target.js'
 import { CapabilityError, file_capabilities } from './files.js'
@@ -122,9 +127,14 @@ const open_store = async (
       'not_signed_in',
       'not signed in; run realness login'
     )
+  let current = token
   return client({
     url: service_url ?? where.url,
-    token,
+    phone: phone_of(token),
+    token: async ({ refresh = false } = {}) => {
+      if (refresh) current = (await where.get_token()) ?? current
+      return current
+    },
     state: state ?? (root ? use_harness_state(root) : undefined)
   })
 }

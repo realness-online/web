@@ -1,7 +1,8 @@
 /**
  * The contract against a real bucket. Skipped unless GCS_TEST_BUCKET is set:
  *
- *   npm run test:gcs     realness-development, under realness-test/<run>/
+ *   GCS_TEST_BUCKET=realness-development.firebasestorage.app \
+ *     node --test specs/can/gcs.spec.js      under realness-test/<run>/
  *
  * Every run writes under its own prefix and deletes it afterwards.
  */
@@ -11,12 +12,17 @@ import { randomUUID } from 'node:crypto'
 import { gunzipSync } from 'node:zlib'
 import { contract } from '../../src/can/contract.js'
 import { create_gcs, gcloud_token } from '../../src/can/gcs.js'
+import { version_of } from '../../src/files/version.js'
 
 const bucket = process.env.GCS_TEST_BUCKET
 const run = `realness-test/${randomUUID()}/`
 const token = gcloud_token()
 const notes =
   '# Notes\n\n' + 'A line that repeats, the way markdown notes do.\n'.repeat(50)
+
+/** The upload requests, past the head a put reads first. */
+const uploads = calls =>
+  calls.filter(call => call.url.includes('uploadType=multipart'))
 
 /** Records uploads instead of sending them. */
 const fake_fetch = t => {
@@ -47,12 +53,15 @@ it('text is uploaded gzip, marked with contentEncoding and its real size', async
     'people/+1/notes.md',
     notes
   )
-  assert.match(calls[0].url, /[?&]uploadType=multipart(&|$)/)
-  const { resource, bytes } = parts(calls[0].init)
+  assert.match(uploads(calls)[0].url, /[?&]uploadType=multipart(&|$)/)
+  const { resource, bytes } = parts(uploads(calls)[0].init)
   assert.deepEqual(resource, {
     name: 'p/people/+1/notes.md',
     contentEncoding: 'gzip',
-    metadata: { size: String(Buffer.byteLength(notes)) }
+    metadata: {
+      version: await version_of(notes),
+      size: String(Buffer.byteLength(notes))
+    }
   })
   assert.equal(gunzipSync(bytes).toString('utf8'), notes)
 })
@@ -91,9 +100,11 @@ it('binary keys and tiny text are uploaded as given', async t => {
   const bytes = Buffer.from(notes)
   await store.put('people/+1/b.bin', bytes)
   await store.put('people/+1/a.md', 'hi')
-  for (const { url } of calls) assert.doesNotMatch(url, /contentEncoding/)
-  assert.equal(calls[0].init.body, bytes)
-  assert.equal(calls[1].init.body, 'hi')
+  const [binary, tiny] = uploads(calls).map(call => parts(call.init))
+  assert.equal(binary.resource.contentEncoding, undefined)
+  assert.equal(tiny.resource.contentEncoding, undefined)
+  assert.deepEqual(binary.bytes, bytes)
+  assert.equal(tiny.bytes.toString('utf8'), 'hi')
 })
 
 if (!bucket) {

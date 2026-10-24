@@ -1,5 +1,10 @@
 <script setup>
-  import { computed, onBeforeUnmount, ref, watch } from 'vue'
+  import {
+    computed,
+    onBeforeUnmount as on_before_unmount,
+    ref,
+    watch
+  } from 'vue'
   import { startup_stages } from '../../../harness/startup.js'
 
   const props = defineProps({
@@ -28,7 +33,7 @@
   const timer = setInterval(() => {
     now.value = Date.now()
   }, MS_PER_SECOND)
-  onBeforeUnmount(() => clearInterval(timer))
+  on_before_unmount(() => clearInterval(timer))
   const seconds = computed(() => {
     const reported = props.progress?.elapsed_ms
     const elapsed = Number.isFinite(reported) && reported >= 0 ? reported : 0

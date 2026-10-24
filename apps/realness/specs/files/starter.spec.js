@@ -224,7 +224,10 @@ it('an older VM cannot downgrade a newer saved starter', async () => {
     'skill.md': 'old',
     '.pi/starter.json': JSON.stringify(old)
   })
-  await write(local, { 'skill.md': 'old', '.pi/starter.json': JSON.stringify(old) })
+  await write(local, {
+    'skill.md': 'old',
+    '.pi/starter.json': JSON.stringify(old)
+  })
   await store.put(`${remote}skill.md`, 'new')
   await store.put(`${remote}.pi/starter.json`, JSON.stringify(newer))
   await store.sync(local, remote, {
@@ -258,7 +261,8 @@ it('a raced starter checkpoint keeps the old base until a safe retry', async () 
   const first = await racing.sync(local, remote, options)
   assert.deepEqual(first.conflicts, ['.pi/starter.json'])
   assert.notEqual(
-    JSON.parse((await store.cat(`${remote}.pi/starter.json`)).toString()).version,
+    JSON.parse((await store.cat(`${remote}.pi/starter.json`)).toString())
+      .version,
     manifest(latest).version
   )
   const retry = await store.sync(local, remote, options)

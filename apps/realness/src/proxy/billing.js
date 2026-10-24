@@ -5,6 +5,7 @@ import {
 import { free_limits } from './usage.js'
 import { person_settings } from '#root/src/settings/environments.js'
 import { ISO_DATE, MS_PER_SECOND, PERCENT } from '#root/lib/units.js'
+import { item_html, read_item } from '#root/lib/items.js'
 
 const FIRST_WARNING = 75
 const CACHE_MS = 30_000
@@ -20,12 +21,8 @@ export const PAY_URL = `${person_settings.public_url}/pay`
 
 export const billing_key = phone => `billing/${phone}/plan.html`
 
-const escape = value =>
-  String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
 const PLAN_FIELDS = [
+  'phone',
   'status',
   'credit',
   'start',
@@ -35,27 +32,16 @@ const PLAN_FIELDS = [
   'invoice'
 ]
 
-/** A plan as one `/plan` item. */
-export const plan_html = plan => {
-  const props = PLAN_FIELDS.map(
-    name => `<meta itemprop="${name}" content="${escape(plan[name] ?? '')}">`
-  ).join('')
-  return `<article itemscope itemtype="/plan">${props}</article>\n`
-}
+/** A plan as one `/plan` item. Its phone is for reading; the key `billing/+A/` decides whose it is. */
+export const plan_html = plan =>
+  item_html(
+    'plan',
+    Object.fromEntries(PLAN_FIELDS.map(name => [name, plan[name] ?? '']))
+  )
 
 export const read_plan = html => {
-  const item = html.match(
-    /<article itemscope itemtype="\/plan">.*?<\/article>/s
-  )?.[0]
-  if (!item) return null
-  const plan = {}
-  for (const [, name, value] of item.matchAll(
-    /itemprop="(\w+)" content="([^"]*)"/g
-  ))
-    plan[name] = value
-      .replace(/&lt;/g, '<')
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
+  const plan = read_item(html, 'plan')
+  if (!plan) return null
   plan.credit = Number(plan.credit)
   return plan
 }
@@ -83,8 +69,9 @@ export const billing_store = (storage, { ttl_ms = CACHE_MS } = {}) => {
     },
     async put(phone, plan) {
       if (!PHONE.test(phone ?? '')) throw new Error('plan needs a phone')
-      await storage.put(billing_key(phone), plan_html(plan))
-      cache.set(phone, { plan: read_plan(plan_html(plan)), at: Date.now() })
+      const html = plan_html({ ...plan, phone })
+      await storage.put(billing_key(phone), html)
+      cache.set(phone, { plan: read_plan(html), at: Date.now() })
     }
   }
 }

@@ -7,6 +7,7 @@ import { join } from 'node:path'
 import { hostname } from 'node:os'
 import { BadRequest } from './errors.js'
 import { MS_PER_MINUTE } from '#root/lib/units.js'
+import { escape, item_html } from '#root/lib/items.js'
 /* eslint-disable no-await-in-loop -- each loop run finishes before the next starts */
 
 const MAX_RUNS = 20
@@ -50,12 +51,12 @@ print(json.dumps({"state": status.get("state"), "tokens": status.get("tokens", 0
 export const stop_reason = (
   probe,
   loop,
-  { maxRuns, deadlineMs, now = Date.now() }
+  { max_runs, deadline_ms, now = Date.now() }
 ) => {
   if (probe.state === 'exited') return 'exited'
   if (probe.quota) return 'quota'
-  if (probe.runs >= maxRuns) return 'runs'
-  if (now - Date.parse(loop.started) >= deadlineMs) return 'deadline'
+  if (probe.runs >= max_runs) return 'runs'
+  if (now - Date.parse(loop.started) >= deadline_ms) return 'deadline'
   return null
 }
 
@@ -82,13 +83,13 @@ export class Loops {
   /** @type {string} */
   file
   /** @type {number} */
-  maxDepth
+  max_depth
   /** @type {number} */
-  maxChildren
+  max_children
   /** @type {number} */
-  maxRuns
+  max_runs
   /** @type {number} */
-  deadlineMs
+  deadline_ms
   /** @type {{ put: (path: string, body: string) => Promise<unknown>, get: (path: string) => Promise<unknown> } | null} */
   mirror
   /** @type {string} */
@@ -102,10 +103,10 @@ export class Loops {
    * @param {import('./actors.js').ActorStore} store
    * @param {object} [options]
    * @param {string} [options.file]
-   * @param {number} [options.maxDepth]
-   * @param {number} [options.maxChildren]
-   * @param {number} [options.maxRuns]
-   * @param {number} [options.deadlineMs]
+   * @param {number} [options.max_depth]
+   * @param {number} [options.max_children]
+   * @param {number} [options.max_runs]
+   * @param {number} [options.deadline_ms]
    * @param {{ put: (path: string, body: string) => Promise<unknown>, get: (path: string) => Promise<unknown> } | null} [options.mirror]
    * @param {string} [options.halo]
    */
@@ -113,10 +114,10 @@ export class Loops {
     store,
     {
       file = join(store.volume, 'loops.json'),
-      maxDepth = Number(process.env.LOOP_MAX_DEPTH ?? 1),
-      maxChildren = Number(process.env.LOOP_MAX_CHILDREN ?? 3),
-      maxRuns = Number(process.env.LOOP_MAX_RUNS ?? MAX_RUNS),
-      deadlineMs = Number(process.env.LOOP_DEADLINE_MIN ?? 60) * MS_PER_MINUTE,
+      max_depth = Number(process.env.LOOP_MAX_DEPTH ?? 1),
+      max_children = Number(process.env.LOOP_MAX_CHILDREN ?? 3),
+      max_runs = Number(process.env.LOOP_MAX_RUNS ?? MAX_RUNS),
+      deadline_ms = Number(process.env.LOOP_DEADLINE_MIN ?? 60) * MS_PER_MINUTE,
       mirror = null,
       halo = hostname()
     } = {}
@@ -124,10 +125,10 @@ export class Loops {
     Object.assign(this, {
       store,
       file,
-      maxDepth,
-      maxChildren,
-      maxRuns,
-      deadlineMs,
+      max_depth,
+      max_children,
+      max_runs,
+      deadline_ms,
       mirror,
       halo
     })
@@ -160,10 +161,10 @@ export class Loops {
     if (typeof goal !== 'string' || !goal.trim() || goal.length > GOAL_LIMIT)
       throw new BadRequest(`goal must be 1 to ${GOAL_LIMIT} characters`)
     const depth = this.depth(parent_id) + 1
-    if (depth > this.maxDepth)
-      throw new BadRequest(`loops may nest ${this.maxDepth} deep`)
-    if (this.children(parent_id).length >= this.maxChildren)
-      throw new BadRequest(`at most ${this.maxChildren} loops at once`)
+    if (depth > this.max_depth)
+      throw new BadRequest(`loops may nest ${this.max_depth} deep`)
+    if (this.children(parent_id).length >= this.max_children)
+      throw new BadRequest(`at most ${this.max_children} loops at once`)
     const record = await this.store.create(parent.owner)
     this.loops[record.id] = {
       parent: parent_id,
@@ -219,12 +220,7 @@ export class Loops {
       owner: this.store.get(id)?.owner ?? '',
       ...this.loops[id]
     }
-    const esc = v =>
-      String(v ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-    const props = [
+    const fields = [
       'id',
       'halo',
       'owner',
@@ -239,9 +235,11 @@ export class Loops {
       'checked',
       'error'
     ]
-      .map(name => `<meta itemprop="${name}" content="${esc(loop[name])}">`)
-      .join('')
-    return `<article itemscope itemtype="/loop">${props}<p itemprop="goal">${esc(loop.goal)}</p></article>\n`
+    return item_html(
+      'loop',
+      Object.fromEntries(fields.map(name => [name, loop[name] ?? ''])),
+      { extra: `<p itemprop="goal">${escape(loop.goal)}</p>` }
+    )
   }
 
   /** Mirror a loop to Storage; a failed write waits for the next change. */
@@ -305,8 +303,8 @@ export class Loops {
           checked: new Date(now).toISOString()
         })
         const reason = stop_reason(probe, loop, {
-          maxRuns: this.maxRuns,
-          deadlineMs: this.deadlineMs,
+          max_runs: this.max_runs,
+          deadline_ms: this.deadline_ms,
           now
         })
         if (reason) {

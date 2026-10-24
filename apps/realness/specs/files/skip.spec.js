@@ -6,6 +6,8 @@ it('dependencies, builds, auth, secrets, and git never sync', () => {
   for (const path of [
     'app/node_modules/x/index.js',
     'app/dist/a.js',
+    '.npm/_cacache/CACHEDIR.TAG',
+    'apps/realness/tracer/target/release/deps/x.rlib',
     '.git/HEAD',
     'work/app/.env',
     '.env.local',

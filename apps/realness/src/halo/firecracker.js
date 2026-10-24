@@ -84,10 +84,10 @@ export const version = binary => {
 }
 
 /** Start Firecracker with `cwd` as its working directory; the cwd picks the disk (f5a). */
-export const spawn = (binary, cwd, apiSock, logPath) => {
-  const log = open_sync(logPath, 'a')
+export const spawn = (binary, cwd, api_sock, log_path) => {
+  const log = open_sync(log_path, 'a')
   try {
-    return spawn_process(binary, ['--api-sock', apiSock], {
+    return spawn_process(binary, ['--api-sock', api_sock], {
       cwd,
       stdio: ['ignore', log, log]
     })
@@ -114,16 +114,16 @@ const real = path => {
 }
 
 /**
- * The Firecracker that owns `apiSock`, or null. The command line is the
+ * The Firecracker that owns `api_sock`, or null. The command line is the
  * identity, not a recorded pid: after a halo reboot a reused pid is a stranger.
  */
 /**
- * The pid holding `apiSock` open, or null when no process does.
- * @param {string} apiSock
+ * The pid holding `api_sock` open, or null when no process does.
+ * @param {string} api_sock
  * @returns {number | null}
  */
-export const pidForApiSock = apiSock => {
-  const want = real(apiSock)
+export const pidForApiSock = api_sock => {
+  const want = real(api_sock)
   for (const name of readdir_sync('/proc')) {
     if (!/^\d+$/.test(name)) continue
     let args

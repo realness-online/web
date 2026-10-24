@@ -131,3 +131,8 @@ it('harness extensions call the realness command, never a runtime file path', ()
     /turn-end\|fetch\|git-credential\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\)/
   )
 })
+
+it('the realness wrapper starts pi from the shipped harness', () => {
+  const [, path] = build.match(/^exec \/realness\/(\S+) "\$@"$/m)
+  assert.ok(exists_sync(join(ROOT, '../..', path)), path)
+})

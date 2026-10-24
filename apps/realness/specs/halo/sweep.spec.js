@@ -66,7 +66,7 @@ it('k1: with sync, sweep retires a synced idle actor instead of dropping it to d
     synced_at: new Date(now).toISOString()
   }
   const store = fake([synced, record('a-unsynced', 'idle', MEMORY_AFTER * 9)])
-  store.syncUrl = 'https://sync.test'
+  store.sync_url = 'https://sync.test'
   const applied = []
   await store.sweep({ now, apply: (r, step) => applied.push([r.id, step]) })
   assert.deepEqual(applied, [

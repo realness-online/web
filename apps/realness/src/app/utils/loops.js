@@ -1,3 +1,5 @@
+import { read_item } from '#root/lib/items.js'
+
 const FORBIDDEN = 403
 const ALREADY_STOPPING = 412
 
@@ -21,18 +23,11 @@ const FIELDS = [
  * @returns {Record<string, string> | null}
  */
 export const read_loop = html => {
-  const item = new DOMParser()
-    .parseFromString(html, 'text/html')
-    .querySelector('[itemtype="/loop"]')
+  const item = read_item(html, 'loop')
   if (!item) return null
   /** @type {Record<string, string>} */
-  const loop = {
-    goal: item.querySelector('[itemprop="goal"]')?.textContent ?? ''
-  }
-  for (const name of FIELDS)
-    loop[name] =
-      item.querySelector(`meta[itemprop="${name}"]`)?.getAttribute('content') ??
-      ''
+  const loop = { goal: item.goal ?? '' }
+  for (const name of FIELDS) loop[name] = item[name] ?? ''
   return loop
 }
 

@@ -6,7 +6,7 @@ import {
   MS_PER_SECOND
 } from '#root/lib/units.js'
 import { stripVTControlCharacters as strip_vt } from 'node:util'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath as file_u_r_l_to_path } from 'node:url'
 import { load_theme } from '#root/themes/load.js'
 import { oklch_hex } from '#root/lib/oklch.js'
 import {
@@ -55,7 +55,7 @@ const DAYS_FALLBACK = 30
 const FIXED_SPEND_ROWS = 4
 const HEX = 16
 const { palette } = load_theme(
-  fileURLToPath(new URL('../../themes/realness', import.meta.url)),
+  file_u_r_l_to_path(new URL('../../themes/realness', import.meta.url)),
   'realness'
 )
 /**

@@ -25,6 +25,7 @@ const base = out_path(`billing-test-${randomUUID()}/`)
 after(() => rm(base, { recursive: true, force: true }))
 const A = '+14155550123'
 const plan = {
+  phone: A,
   status: 'active',
   credit: 5,
   start: '2026-10-01',
@@ -326,4 +327,17 @@ it('a granted plan ends; only a subscription renews', () => {
     limit_status({ free: { day: 1, month: 1 }, paid: plan }, spent).paid.renews,
     plan.end
   )
+})
+
+it('a stored plan shows whose it is, taken from the key', async () => {
+  const pages = new Map()
+  const storage = {
+    get: async key => pages.get(key) && { body: Buffer.from(pages.get(key)) },
+    put: async (key, body) => pages.set(key, body)
+  }
+  const { phone: _, ...without } = plan
+  await billing_store(storage).put(A, { ...without, phone: '+19999999999' })
+  const html = pages.get(billing_key(A))
+  assert.ok(html.replace(/<[^>]*>/g, ' ').includes(A))
+  assert.ok(!html.includes('+19999999999'))
 })

@@ -8,7 +8,7 @@
     watch,
     watchEffect as watch_effect,
     inject,
-    nextTick,
+    nextTick as next_tick,
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
@@ -366,7 +366,7 @@
 
   watch(morph_group, group => {
     if (!group) return
-    nextTick(() => {
+    next_tick(() => {
       const leaves = group.querySelectorAll('animate')
       if (!leaves.length) return
       morph_epoch =

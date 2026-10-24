@@ -1,4 +1,4 @@
-import { appendFile, mkdir } from 'node:fs/promises'
+import { appendFile as append_file, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ISO_DATE } from '#root/lib/units.js'
 
@@ -13,5 +13,5 @@ export const disk_recorder = dir => async (phone, entry) => {
   const folder = join(dir, phone)
   await mkdir(folder, { recursive: true })
   const day = entry.at.slice(0, ISO_DATE)
-  await appendFile(join(folder, `${day}.jsonl`), `${JSON.stringify(entry)}\n`)
+  await append_file(join(folder, `${day}.jsonl`), `${JSON.stringify(entry)}\n`)
 }

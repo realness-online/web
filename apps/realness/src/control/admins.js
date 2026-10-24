@@ -3,35 +3,34 @@
  * Sync reads it (src/sync/admins.js) and `can()` denies the key to everyone,
  * so only the bucket owner's credentials write it. This is that writer.
  *
- *   <ul><li><a href="tel:+14156667777">Scott</a></li></ul>
+ *   <ul><li><a href="tel:+14156667777">+14156667777</a> Scott</li></ul>
+ *
+ * The phone shows as the link's text and the name follows it, so the page
+ * reads plainly. Who is an admin comes from `href` alone; text never grants.
  *
  * Writes are conditional on the version that was read, so two operators
  * cannot silently overwrite each other. Removing the last admin is refused.
  */
 import { read_admins } from '#root/src/sync/admins.js'
+import { escape, unescape } from '#root/lib/items.js'
 
 const PHONE = /^\+[1-9]\d{6,14}$/
-const ENTRY = /<a\b[^>]*href="tel:(\+[1-9]\d{6,14})"[^>]*>([\s\S]*?)<\/a>/g
+const ENTRY =
+  /<a\b[^>]*href="tel:(\+[1-9]\d{6,14})"[^>]*>([\s\S]*?)<\/a>([^<]*)/g
 const TAGS = /<[^>]*>/g
 
-const escape = text =>
-  text.replace(
-    /[&<>"]/g,
-    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]
-  )
-const unescape = text =>
-  text.replace(
-    /&(amp|lt|gt|quot);/g,
-    (_, name) => ({ amp: '&', lt: '<', gt: '>', quot: '"' })[name]
-  )
-
-/** Every admin with the name its link shows; the first link for a phone wins. */
+/**
+ * Every admin and its name; the first link for a phone wins. The name is the
+ * text after the link, or, in pages written before, the link's own text.
+ */
 export const parse_admins = html => {
   const found = new Map()
-  for (const [, phone, label] of html.matchAll(ENTRY))
-    if (!found.has(phone))
-      found.set(phone, unescape(label.replace(TAGS, '')).trim())
-
+  for (const [, phone, label, after] of html.matchAll(ENTRY)) {
+    if (found.has(phone)) continue
+    const shown = unescape(label.replace(TAGS, '')).trim()
+    const name = unescape(after).trim() || shown
+    found.set(phone, name)
+  }
   return [...found].map(([phone, name]) => ({ phone, name }))
 }
 
@@ -39,7 +38,7 @@ export const parse_admins = html => {
 export const render_admins = list => {
   const items = list.map(
     ({ phone, name }) =>
-      `  <li><a href="tel:${phone}">${escape(name || phone)}</a></li>`
+      `  <li><a href="tel:${phone}">${phone}</a>${name ? ` ${escape(name)}` : ''}</li>`
   )
   return `<!doctype html>\n<title>Admins</title>\n<ul>\n${items.join('\n')}\n</ul>\n`
 }

@@ -4,8 +4,11 @@
  *
  *   GET    /people/+A/posters/     list a folder (trailing slash)
  *   GET    /people/+A/vault/?deep  every file below, name to version
+ *   GET    /people/+A/?version=V   every file holding that version
  *   GET    /people/+A/index.html.gz
  *   PUT    /people/+A/vault/note.md   If-Match: "<version>" or If-None-Match: *
+ *          Content-Encoding: gzip and X-Version: "<plain hash>" optional; a
+ *          gzip body is unpacked as it streams in and checked against it
  *   DELETE /people/+A/vault/note.md   If-Match optional
  *
  * No token is a stranger; a bad token is 401. Denial is 403 whether or not
@@ -18,6 +21,7 @@ import {
   timingSafeEqual as timing_safe_equal
 } from 'node:crypto'
 import { createServer as create_server } from 'node:http'
+import { createGunzip as create_gunzip } from 'node:zlib'
 import { can, identify } from '#root/src/can/index.js'
 import {
   issue_halo_pass,
@@ -124,14 +128,69 @@ const read_body = async request => {
   return Buffer.concat(chunks)
 }
 
+const VERSION_LENGTH = 22
+
+/**
+ * A write's body, hashed as it arrives: `X-Version` must match the plain
+ * bytes' hash, which is `version_of` from src/files/version.js. A gzip body
+ * is unpacked on the way to the hash and kept packed; its plain size counts
+ * against the same limit.
+ */
+const read_write = async request => {
+  const encoding = request.headers['content-encoding'] ?? 'identity'
+  if (!['gzip', 'identity'].includes(encoding))
+    throw new Status(HTTP.UNSUPPORTED_MEDIA_TYPE)
+  const hash = create_hash('sha256')
+  const gunzip = encoding === 'gzip' ? create_gunzip() : null
+  gunzip?.on('error', () => {})
+  const unpacked = gunzip && unpack(gunzip, hash)
+  unpacked?.catch(() => {})
+  const chunks = []
+  let size = 0
+  for await (const chunk of request) {
+    size += chunk.length
+    if (size > LIMIT) throw new Status(HTTP.PAYLOAD_TOO_LARGE)
+    chunks.push(chunk)
+    if (gunzip) gunzip.write(chunk)
+    else hash.update(chunk)
+  }
+  if (gunzip) {
+    gunzip.end()
+    await unpacked
+  }
+  const claimed = version_from(request.headers['x-version'])
+  if (claimed && claimed !== hash.digest('base64url').slice(0, VERSION_LENGTH))
+    throw new Status(HTTP.BAD_REQUEST)
+  return { body: Buffer.concat(chunks), packed: Boolean(gunzip) }
+}
+
+/** Feed unpacked bytes to the hash; bad gzip is a 400, a bomb a 413. */
+const unpack = async (gunzip, hash) => {
+  let size = 0
+  try {
+    for await (const chunk of gunzip) {
+      size += chunk.length
+      if (size > LIMIT) throw new Status(HTTP.PAYLOAD_TOO_LARGE)
+      hash.update(chunk)
+    }
+  } catch (error) {
+    gunzip.destroy()
+    throw error instanceof Status ? error : new Status(HTTP.BAD_REQUEST)
+  }
+}
+
 /**
  * The meta a write may carry, each as an `x-meta-*` header: what we know
  * about the data that its bytes cannot say. Anything else is refused.
  */
 const META_HEADERS = {
   sold: 'x-meta-sold',
-  fullLocale: 'x-meta-full-locale'
+  fullLocale: 'x-meta-full-locale',
+  created: 'x-meta-created'
 }
+
+/** `created` is an ISO time; storage keeps the earliest. */
+const ISO_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 const META_LIST = Object.values(META_HEADERS).join(', ')
 
 /** A write's meta from its headers; an unknown `x-meta-*` is a bad request. */
@@ -141,6 +200,12 @@ const meta_from = headers => {
     Object.keys(headers).some(
       name => name.startsWith('x-meta-') && !known.has(name)
     )
+  )
+    throw new Status(HTTP.BAD_REQUEST)
+  const created = headers[META_HEADERS.created]
+  if (
+    created !== undefined &&
+    (!ISO_TIME.test(created) || Number.isNaN(Date.parse(created)))
   )
     throw new Status(HTTP.BAD_REQUEST)
   return Object.fromEntries(
@@ -160,7 +225,7 @@ const meta_headers = (meta = {}) =>
 
 const PREFLIGHT = {
   'access-control-allow-methods': 'GET, HEAD, PUT, DELETE, POST',
-  'access-control-allow-headers': `authorization, content-type, if-match, if-none-match, ${META_LIST}`,
+  'access-control-allow-headers': `authorization, content-type, content-encoding, if-match, if-none-match, x-version, ${META_LIST}`,
   'access-control-max-age': '600'
 }
 
@@ -187,9 +252,16 @@ const caller_allowed = ({ action, grants, path, who }) => {
 /** List a folder, or every file below it. */
 const answer_list = async (storage, request, response, path) => {
   const query = new URLSearchParams((request.url ?? '').split('?')[1] ?? '')
+  const version = query.get('version')
+  if (version && !/^people\/[^/]+\/$/.test(path))
+    throw new Status(HTTP.BAD_REQUEST)
   response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   let listing = storage.list(path)
-  if (query.get('deep') === 'meta') listing = storage.walk_meta(path)
+  if (version)
+    listing = storage.find(path, version).then(keys => ({
+      files: keys.map(key => key.slice(path.length))
+    }))
+  else if (query.get('deep') === 'meta') listing = storage.walk_meta(path)
   else if (query.has('deep')) listing = storage.walk(path)
   return response.end(JSON.stringify(await listing))
 }
@@ -401,7 +473,7 @@ const answer_quiet = async (
 /**
  * The sync service.
  * @param {object} options
- * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null, meta?: Record<string, string> } | null>, put: (key: string, body: Buffer | string, options?: object) => Promise<string>, delete: (key: string, options?: object) => Promise<void>, list: (path: string) => Promise<{ files: string[], folders: string[] }>, walk: (path: string) => Promise<Record<string, string>>, walk_meta: (path: string) => Promise<Record<string, { version: string, size: number, updated: string }>> }} options.storage
+ * @param {{ get: (key: string) => Promise<{ body: Buffer, version: string | null, meta?: Record<string, string> } | null>, put: (key: string, body: Buffer | string, options?: object) => Promise<string>, delete: (key: string, options?: object) => Promise<void>, list: (path: string) => Promise<{ files: string[], folders: string[] }>, walk: (path: string) => Promise<Record<string, string>>, walk_meta: (path: string) => Promise<Record<string, { version: string, size: number, updated: string }>>, find: (scope: string, version: string) => Promise<string[]> }} options.storage
  * @param {{ grants: (owner: string) => Promise<{ grants: object[] }>, forget: (owner: string) => void }} options.rights
  * @param {string} options.project
  * @param {() => Promise<Record<string, string>>} options.certs
@@ -483,10 +555,11 @@ export const sync_service = ({
     try {
       if (action === 'write') {
         const meta = meta_from(request.headers)
-        const body = await read_body(request)
+        const { body, packed } = await read_write(request)
         await refuse_sold(storage, path, who)
         const version = await storage.put(path, body, {
           ...(if_absent ? { if_absent } : { if_version }),
+          ...(packed && { encoding: 'gzip' }),
           meta
         })
         response.writeHead(HTTP.OK, { etag: `"${version}"` })

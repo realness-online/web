@@ -32,7 +32,10 @@ const split = pass => {
 export const sign_pass = (claims, secret, { life_s, now = Date.now() }) => {
   check_secret(secret)
   const body = Buffer.from(
-    JSON.stringify({ ...claims, exp: Math.floor(now / MS_PER_SECOND) + life_s })
+    JSON.stringify({
+      ...claims,
+      exp: Math.floor(now / MS_PER_SECOND) + life_s
+    })
   ).toString('base64url')
   return `${body}.${mac(body, secret).toString('base64url')}`
 }

@@ -1,6 +1,11 @@
 <script setup>
   import { KEY_LAYERS, keyboard_layers } from '@/utils/keys-overview'
-  import { computed, onMounted, onUnmounted, ref } from 'vue'
+  import {
+    computed,
+    onMounted as on_mounted,
+    onUnmounted as on_unmounted,
+    ref
+  } from 'vue'
 
   const props = defineProps({
     groups: { type: Array, required: true }
@@ -101,12 +106,12 @@
     selected.value = ''
   }
   const release = () => (pressed.value = '')
-  onMounted(() => {
+  on_mounted(() => {
     window.addEventListener('keydown', track)
     window.addEventListener('keyup', track)
     window.addEventListener('blur', release)
   })
-  onUnmounted(() => {
+  on_unmounted(() => {
     window.removeEventListener('keydown', track)
     window.removeEventListener('keyup', track)
     window.removeEventListener('blur', release)

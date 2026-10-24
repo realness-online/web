@@ -16,9 +16,9 @@
     inject
   } from 'vue'
   import {
-    useDocumentVisibility,
-    useMediaQuery,
-    useElementSize
+    useDocumentVisibility as use_document_visibility,
+    useMediaQuery as use_media_query,
+    useElementSize as use_element_size
   } from '@vueuse/core'
   import {
     use as use_poster,
@@ -176,7 +176,7 @@
   }
 
   const trigger = ref(null)
-  const visibility = useDocumentVisibility()
+  const visibility = use_document_visibility()
   const animate = computed(
     () =>
       animate_pref.value === true &&
@@ -280,14 +280,14 @@
 
   const hide_cursor = computed(() => poster_slice.value && storytelling.value)
 
-  const orientation_portrait = useMediaQuery('(orientation: portrait)')
+  const orientation_portrait = use_media_query('(orientation: portrait)')
   /**
    * Only a landscape poster overflows a portrait frame. Measuring the rect
    * can't answer this: `landscape` is not persisted on the item, so until the
    * vector loads the viewBox makes every poster look like it fits.
    */
   /**
-   * useElementSize starts at zero and only fills in after its observer runs,
+   * use_element_size starts at zero and only fills in after its observer runs,
    * which never happens in a test environment, so fall back to a live measure.
    */
   const measured_frame = computed(() => {
@@ -305,7 +305,7 @@
       !storytelling.value &&
       !props.behind_canvas
   )
-  const { width: frame_width, height: frame_height } = useElementSize(trigger)
+  const { width: frame_width, height: frame_height } = use_element_size(trigger)
 
   const max_pan_px = computed(() => {
     if (!can_pan.value || !trigger.value || !vector.value) return 0

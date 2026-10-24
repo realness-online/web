@@ -38,7 +38,7 @@ it('last terminal disconnect stops once, retains disk, and permits repeated reco
   const server = make_server({
     get: () => ({
       owner: phone,
-      vsockPath: { port: guest.address().port, host: '127.0.0.1' }
+      vsock_path: { port: guest.address().port, host: '127.0.0.1' }
     }),
     ensureRunning: async () => {},
     beginWork: () => {
@@ -95,7 +95,7 @@ it('a quiet terminal stops holding the halo; typing holds it again', async t => 
     {
       get: () => ({
         owner: phone,
-        vsockPath: { port: guest.address().port, host: '127.0.0.1' }
+        vsock_path: { port: guest.address().port, host: '127.0.0.1' }
       }),
       ensureRunning: async () => {},
       beginWork: () => {

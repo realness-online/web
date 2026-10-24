@@ -6,7 +6,8 @@
  *   can://~/vault/note.md            the same, for whoever the token names
  *
  * `sync` is two-way and merges only Pi sessions (s1). A record outside the folder holds each
- * file's hash and remote version at the last agreement. A side that moved
+ * file's version at the last agreement: one hash of the plain bytes, the same
+ * on disk, in the listing, and in the etag. A side that moved
  * from it wins. Both moving keeps both: theirs lands beside ours as
  * `x.conflict.ext`, and both travel. An edit beats a delete. A lost record is
  * safe: every file looks new, so identical ones match and the rest keep both.
@@ -14,7 +15,10 @@
  * `deletes: "all"`; the rest are held. Remote deletes move files to the Trash.
  * A remote change mid-run is left for the next run and reported as a conflict.
  */
-import { createHash as create_hash } from 'node:crypto'
+import { promisify } from 'node:util'
+import { gzip as gzip_callback } from 'node:zlib'
+import { version_sync } from './version-node.js'
+import { born, set_born } from './birth.js'
 import {
   chmod,
   copyFile as copy_file,
@@ -65,7 +69,21 @@ export class SyncError extends Error {
   }
 }
 
-const sha = bytes => create_hash('sha256').update(bytes).digest('hex')
+const sha = version_sync
+/** zlib's async gzip runs on libuv's worker pool, off the event loop. */
+const gzip = promisify(gzip_callback)
+
+/**
+ * The upload for one body: `X-Version` always, gzip only when it shrinks.
+ * @param {Buffer} bytes
+ */
+export const packed_upload = async bytes => {
+  const headers = { 'x-version': sha(bytes) }
+  const packed = await gzip(bytes)
+  return packed.length < bytes.length
+    ? { body: packed, headers: { ...headers, 'content-encoding': 'gzip' } }
+    : { body: bytes, headers }
+}
 
 /** The phone number a token names, read locally only to build paths. */
 export const phone_of = token => {
@@ -84,6 +102,8 @@ export const phone_of = token => {
 export const MAX_BYTES = MAX_MIB * MIB
 /** More remote-side removals than this in one run is a broken listing, not a cleanup. */
 export const MAX_REMOVALS = 25
+/** More conflict copies than this in one run is a broken sync, not edits; the rest are held. */
+export const MAX_CONFLICTS = 25
 
 export const is_remote = path => path.startsWith('can://')
 
@@ -97,6 +117,7 @@ export const is_remote = path => path.startsWith('can://')
  * @property {string[]} pulled
  * @property {string[]} deferred
  * @property {string[]} deleted
+ * @property {string[]} moved deletes sent because the bytes live on at a new path
  * @property {string[]} held
  * @property {string[]} removed
  * @property {string[]} adopted
@@ -109,6 +130,7 @@ export const is_remote = path => path.startsWith('can://')
  * @property {Record<string, object>} replay
  * @property {string} [listing]
  * @property {number} [mass_removal]
+ * @property {boolean} [mass_conflict]
  */
 
 /** An empty sync report, one list per outcome. */
@@ -118,6 +140,7 @@ const empty_report = () => ({
   pulled: [],
   deferred: [],
   deleted: [],
+  moved: [],
   held: [],
   removed: [],
   adopted: [],
@@ -259,13 +282,13 @@ const pull_only_transfer = async (
   run,
   { bytes, local_sha, name, remote_version }
 ) => {
-  const { agree, fetch_remote, local, pull, report, sha } = run
+  const { agree, fetch_remote, local, pull, report } = run
   await safe_target(local, name)
   if (!remote_version) return report.unchanged.push(name)
   const theirs = await fetch_remote(name)
   if (!theirs) return report.conflicts.push(name)
-  if (bytes && sha(theirs.bytes) === local_sha) {
-    agree(name, bytes, theirs.version)
+  if (bytes && remote_version === local_sha) {
+    agree(name, bytes, remote_version)
     return report.adopted.push(name)
   }
   await pull(name, theirs)
@@ -316,8 +339,10 @@ const local_moved_only = async (run, { base, bytes, local_sha, name }) => {
   )
     return report.deferred.push(name)
   if (!bytes) {
-    if (deletes !== 'all' && !log.explained(file_of(name), null))
+    const moved = await run.moved_away(base)
+    if (deletes !== 'all' && !moved && !log.explained(file_of(name), null))
       return report.held.push(name)
+    if (moved) report.moved.push(name)
     await expect(
       await call('DELETE', `${folder}${name}`, {
         headers: conditional(base)
@@ -358,10 +383,9 @@ const remote_moved_only = async (
     pull,
     remotes,
     report,
-    sha,
     trash
   } = run
-  if (deferred[name] && local_sha !== base?.sha) {
+  if (deferred[name] && local_sha !== base?.version) {
     if (!bytes) return report.held.push(name)
     if (!remote_version) {
       agree(
@@ -371,12 +395,13 @@ const remote_moved_only = async (
       )
       return report.pushed.push(name)
     }
-    const theirs = await fetch_remote(name)
-    if (!theirs) return report.conflicts.push(name)
-    if (sha(theirs.bytes) === local_sha) {
-      agree(name, bytes, theirs.version)
+    if (remote_version === local_sha) {
+      agree(name, bytes, remote_version)
       return report.adopted.push(name)
     }
+    const theirs = await fetch_remote(name)
+    if (!theirs) return report.conflicts.push(name)
+    if (!run.conflict_allowed()) return report.held.push(name)
     const copy = conflict_name(
       name,
       taken => locals.has(taken) || taken in remotes
@@ -433,9 +458,12 @@ const both_moved = async (
     log,
     pull,
     remotes,
-    report,
-    sha
+    report
   } = run
+  if (bytes && remote_version === local_sha) {
+    agree(name, bytes, remote_version)
+    return report.adopted.push(name)
+  }
   const theirs = remote_version ? await fetch_remote(name) : null
   if (!bytes && !theirs) return void forget(name)
   if (!bytes) {
@@ -450,11 +478,11 @@ const both_moved = async (
     )
     return report.pushed.push(name)
   }
-  if (sha(theirs.bytes) === local_sha) {
+  if (theirs.version === local_sha) {
     agree(name, bytes, theirs.version)
     return report.adopted.push(name)
   }
-  if (base?.sha && sha(theirs.bytes) === base.sha) {
+  if (base?.version && theirs.version === base.version) {
     agree(
       name,
       bytes,
@@ -491,6 +519,7 @@ const both_moved = async (
   const ours =
     log.explained(file_of(name), local_sha) && log.last(file_of(name))
   if (ours) report.sessions[name] = { session: ours.session, turn: ours.turn }
+  if (!run.conflict_allowed()) return report.held.push(name)
   const copy = conflict_name(
     name,
     taken => locals.has(taken) || taken in remotes
@@ -533,7 +562,7 @@ const transfer_one = async (run, name) => {
   if (bytes && bytes.length > max_bytes) return report.too_big.push(name)
   const local_sha = bytes ? sha(bytes) : null
   const remote_version = remotes[name] ?? null
-  const local_moved = local_sha !== (base?.sha ?? null)
+  const local_moved = local_sha !== (base?.version ?? null)
   const remote_moved = remote_version !== (base?.version ?? null)
 
   try {
@@ -675,8 +704,26 @@ const update_starter = async (run, name, { bytes, remote_version }) => {
   return false
 }
 
+/**
+ * `api` whose puts carry the local file's birth time as `x-meta-created`;
+ * the server keeps the earliest date anyone sent.
+ */
+const dated_api = (api, folder, locals) => ({
+  ...api,
+  async put(path, bytes, headers = {}) {
+    const file = path.startsWith(folder)
+      ? locals.get(path.slice(folder.length))
+      : undefined
+    const created = file ? await born(file) : null
+    return api.put(path, bytes, {
+      ...headers,
+      ...(created && { 'x-meta-created': created })
+    })
+  }
+})
+
 const make_transfer = ({
-  api,
+  api: plain_api,
   call,
   defer_edits,
   deferred,
@@ -702,6 +749,7 @@ const make_transfer = ({
   stock,
   trash
 }) => {
+  const api = dated_api(plain_api, folder, locals)
   const file_of = name => join(pair.local, ...name.split('/'))
   const read_replay = (name, base, bytes) => {
     if (!session_folder || !base?.at || !bytes || !base.version) return null
@@ -719,11 +767,22 @@ const make_transfer = ({
   }
   const agree = (name, bytes, version) => {
     delete deferred[name]
-    manifest[name] = {
-      sha: sha(bytes),
-      version,
-      at: new Date().toISOString()
-    }
+    manifest[name] = { version, at: new Date().toISOString() }
+  }
+  /**
+   * Versions of the files new to this folder since the last agreement, read
+   * once and only when a delete needs them. A file missing at its old path
+   * whose version lives on at a new one was moved, so its delete loses nothing.
+   */
+  let arrived = null
+  const moved_away = async base => {
+    if (!base?.version) return false
+    arrived ??= Promise.all(
+      [...locals]
+        .filter(([name]) => !manifest[name])
+        .map(async ([, path]) => sha(await read_file(path).catch(() => '')))
+    ).then(versions => new Set(versions))
+    return (await arrived).has(base.version)
   }
   const forget = name => {
     delete deferred[name]
@@ -738,7 +797,7 @@ const make_transfer = ({
     if (
       !original ||
       original.version !== base.version ||
-      sha(original.bytes) !== base.sha
+      sha(original.bytes) !== base.version
     )
       return false
     for (const session of new Set(rows.map(row => row.session))) {
@@ -760,7 +819,7 @@ const make_transfer = ({
     const replayed = apply(original.bytes.toString('utf8'), calls)
     if (replayed === null || !Buffer.from(replayed).equals(bytes)) return false
     report.replay[name] = {
-      base_sha: base.sha,
+      base_sha: base.version,
       target_sha: sha(bytes),
       calls: rows.map(row => ({
         session: relative(session_folder, row.session).split(sep).join('/'),
@@ -778,7 +837,8 @@ const make_transfer = ({
     if (response.status === HTTP.NOT_FOUND) return null
     return {
       bytes: Buffer.from(await response.arrayBuffer()),
-      version: version_of(response)
+      version: version_of(response),
+      created: response.headers.get('x-meta-created')
     }
   }
   const pull = async (name, theirs) => {
@@ -786,6 +846,7 @@ const make_transfer = ({
     const target = join(local, name)
     await mkdir(dirname(target), { recursive: true })
     await write_file(target, theirs.bytes)
+    if (theirs.created) await set_born(target, theirs.created)
     agree(name, theirs.bytes, theirs.version)
   }
   const conditional = base =>
@@ -796,8 +857,18 @@ const make_transfer = ({
    * false when the caller should keep deciding.
    */
 
+  let conflicts_left = MAX_CONFLICTS
+  /** One more conflict copy, unless this run already wrote too many. */
+  const conflict_allowed = () => {
+    if (conflicts_left > 0) return Boolean(conflicts_left--)
+    report.mass_conflict = true
+    return false
+  }
+
   /** Everything the transfer phases read, gathered once. */
   const run = {
+    conflict_allowed,
+    moved_away,
     agree,
     api,
     call,
@@ -847,8 +918,12 @@ const read_api = ({ call, expect, key }) => {
     },
 
     async put(path, bytes, headers = {}) {
+      const upload = await packed_upload(Buffer.from(bytes))
       const response = await expect(
-        await call('PUT', path, { body: bytes, headers }),
+        await call('PUT', path, {
+          body: upload.body,
+          headers: { ...headers, ...upload.headers }
+        }),
         `put ${path}`
       )
       return response.headers.get('etag')?.replace(/"/g, '')
@@ -924,7 +999,7 @@ const read_api = ({ call, expect, key }) => {
 /**
  * @param {object} options
  * @param {string} options.url
- * @param {string | null | (() => string | Promise<string>)} [options.token]
+ * @param {string | null | ((options?: { refresh?: boolean }) => string | null | Promise<string | null>)} [options.token] a function is asked again with `refresh` after a 401
  * @param {typeof fetch} [options.fetcher]
  * @param {string | null} [options.phone]
  * @param {string} [options.state]
@@ -948,22 +1023,34 @@ export const client = ({
   }
 
   /** @param {string} method @param {string} path @param {{ body?: BodyInit, headers?: Record<string, string>, query?: string }} [options] */
+  /**
+   * One request. A 401 asks `token({ refresh: true })`; when that gives a new token,
+   * sends the same request once more, so a write made as a token expires
+   * still lands.
+   */
   const call = async (
     method,
     path,
     { body, headers = {}, query = '' } = {}
   ) => {
-    const current_token = typeof token === 'function' ? await token() : token
-    /** @type {Record<string, string>} */
-    const auth = current_token
-      ? { authorization: `Bearer ${current_token}` }
-      : {}
     const encoded = key(path).split('/').map(encodeURIComponent).join('/')
-    return fetcher(`${url}/${encoded}${query && `?${query}`}`, {
-      method,
-      body,
-      headers: { ...auth, ...headers }
-    })
+    const send = current =>
+      fetcher(`${url}/${encoded}${query && `?${query}`}`, {
+        method,
+        body,
+        headers: {
+          ...(current && { authorization: `Bearer ${current}` }),
+          ...headers
+        }
+      })
+    const first = typeof token === 'function' ? await token() : token
+    const response = await send(first)
+    if (response.status !== HTTP.UNAUTHORIZED || typeof token !== 'function')
+      return response
+    const fresh = await token({ refresh: true })
+    if (!fresh || fresh === first) return response
+    await response.arrayBuffer().catch(() => {})
+    return send(fresh)
   }
 
   const expect = (response, what, ok = [HTTP.OK]) => {

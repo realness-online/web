@@ -28,6 +28,7 @@ import {
   request_key
 } from '#root/src/sync/actor-request.js'
 import { HTTP } from '#root/lib/http.js'
+import { read_item } from '#root/lib/items.js'
 import { ISO_DATE, MS_PER_SECOND } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- records are read one at a time to keep the sync service quiet */
 
@@ -39,12 +40,6 @@ const LOOP = /^a-[a-f0-9]{12}$/
 const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 const MAX_REPORT_DAYS = 31
-const unesc = value =>
-  value
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
 
 /** A signed-in sync client for one environment. */
 export const reader = async (
@@ -115,17 +110,9 @@ export const actors = async (sync, id, now) => {
 }
 
 const read_loop = html => {
-  const match = html.match(
-    /<article itemscope itemtype="\/loop">(.*?)<\/article>/s
-  )
-  if (!match) return null
-  const loop = {}
-  for (const [, name, value] of match[1].matchAll(
-    /itemprop="(\w+)" content="([^"]*)"/g
-  ))
-    loop[name] = unesc(value)
-  const goal = match[1].match(/<p itemprop="goal">(.*?)<\/p>/s)
-  loop.goal = goal ? unesc(goal[1]) : ''
+  const loop = read_item(html, 'loop')
+  if (!loop) return null
+  loop.goal ??= ''
   for (const name of ['depth', 'runs', 'tokens'])
     if (loop[name] !== undefined && loop[name] !== '')
       loop[name] = Number(loop[name])

@@ -20,8 +20,8 @@ it('publish, revise, restore, and unpublish keep reversible site versions', asyn
   const id = 'a-abcdef123456'
   let content = 'first'
   const store = {
-    publishedDir: join(root, 'published'),
-    versionsDir: join(root, 'versions'),
+    published_dir: join(root, 'published'),
+    versions_dir: join(root, 'versions'),
     lock: { run: work => work() },
     publishing: { run: work => work() },
     get: actor => {

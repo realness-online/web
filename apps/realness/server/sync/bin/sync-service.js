@@ -31,7 +31,7 @@ const open_store = () => {
   const kind = process.env.STORE ?? 'disk'
   if (kind === 'disk') {
     const dir = sync_dir()
-    return { storage: disk(dir), where: dir }
+    return { storage: disk(dir, { gzip_at_rest: true }), where: dir }
   }
   if (kind === 'gcs') {
     const bucket = process.env.GCS_BUCKET

@@ -4,7 +4,7 @@ const compress_html = html => {
     compressor_worker.onmessage = ({ data: result }) => {
       compressor_worker.terminate()
       if (result.error) reject(new Error(result.error))
-      else resolve(result.blob)
+      else resolve(result)
     }
     compressor_worker.onerror = error => {
       compressor_worker.terminate()
@@ -45,7 +45,7 @@ export const decompress_html = compressed => {
 
 export const prepare_upload_html = async items => {
   const html_string = items.outerHTML ?? items
-  const compressed = await compress_html(html_string)
+  const { blob: compressed, version } = await compress_html(html_string)
   const content_hash = await create_hash(html_string)
 
   const language = navigator.language?.split('-')[0].toLowerCase()
@@ -60,6 +60,7 @@ export const prepare_upload_html = async items => {
       contentLanguage: language,
       customMetadata: {
         hash: content_hash,
+        version,
         fullLocale: navigator.language
       }
     }

@@ -26,7 +26,7 @@ describe('storage mode', () => {
       await import('@/utils/storage-mode')
     expect(synced).not.toBeNull()
     expect(await hash_of('<p itemscope>hello</p>')).toBe(
-      'gBeeU7PnHEWVSFR_vLaxqc'
+      'cbH7B_H6f86SGDvYIHa_yh'
     )
     use_token(async () => 'tok')
     globalThis.fetch = vi.fn(async () => new Response('ok'))

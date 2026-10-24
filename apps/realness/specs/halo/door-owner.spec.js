@@ -23,7 +23,7 @@ it('VM-bound door ignores a claimed owner and denies actors without one', async 
   const record = {
     id: 'a-abcdef123456',
     owner: '+14155550123',
-    vsockPath: join(root, 'vsock.sock')
+    vsock_path: join(root, 'vsock.sock')
   }
   const published = []
   const store = {

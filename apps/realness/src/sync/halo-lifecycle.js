@@ -1,5 +1,6 @@
 import { read_status } from './halo-status.js'
 import { MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
+import { item_html, read_item } from '#root/lib/items.js'
 
 /** What an operator or halo intends; reports decide whether it happened. */
 const INTENTS = new Set(['starting', 'running', 'stopping', 'parked'])
@@ -12,12 +13,6 @@ export const OPERATOR_START_MS = OPERATOR_START_MINUTES * MS_PER_MINUTE
 
 const DEADLINES = { starting: WAKE_DEADLINE_MS, stopping: STOP_DEADLINE_MS }
 
-const esc = value =>
-  String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-
 export const lifecycle_key = name => `halos/${name}/lifecycle.html`
 
 /**
@@ -27,25 +22,19 @@ export const lifecycle_key = name => `halos/${name}/lifecycle.html`
  */
 export const lifecycle_html = ({ intent, at, until = '', by = '' }) => {
   if (!INTENTS.has(intent)) throw new Error(`unknown halo intent ${intent}`)
-  return `<article itemscope itemtype="/halo-lifecycle"><meta itemprop="intent" content="${esc(intent)}"><meta itemprop="at" content="${esc(at)}"><meta itemprop="until" content="${esc(until)}"><meta itemprop="by" content="${esc(by)}"></article>\n`
+  return item_html('halo-lifecycle', { intent, at, until, by })
 }
 
 /** @returns {{ intent: string, at: string, until: string, by: string } | null} */
 export const read_lifecycle = html => {
-  const body =
-    /<article itemscope itemtype="\/halo-lifecycle">(.*?)<\/article>/.exec(
-      html ?? ''
-    )?.[1]
-  if (!body) return null
-  const values = { intent: '', at: '', until: '', by: '' }
-  for (const [, name, value] of body.matchAll(
-    /itemprop="(\w+)" content="([^"]*)"/g
-  ))
-    if (name in values)
-      values[name] = value
-        .replace(/&lt;/g, '<')
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, '&')
+  const read = read_item(html ?? '', 'halo-lifecycle')
+  if (!read) return null
+  const values = {
+    intent: read.intent ?? '',
+    at: read.at ?? '',
+    until: read.until ?? '',
+    by: read.by ?? ''
+  }
   return INTENTS.has(values.intent) && Number.isFinite(Date.parse(values.at))
     ? values
     : null

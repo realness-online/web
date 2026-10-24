@@ -19,9 +19,9 @@ const store = handler => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('sync storage', () => {
-  it('pako output is pinned: this HTML always hashes the same', async () => {
+  it('content_hash is the plain HTML version, the same one Node computes', async () => {
     expect(await content_hash('<p itemscope>hello</p>')).toBe(
-      'gBeeU7PnHEWVSFR_vLaxqc'
+      'cbH7B_H6f86SGDvYIHa_yh'
     )
   })
 
@@ -36,9 +36,22 @@ describe('sync storage', () => {
     expect(calls[0].method).toBe('PUT')
     expect(calls[0].headers).toEqual({
       'x-meta-full-locale': 'en-US',
+      'x-version': 'LXEWQrcmsEQBYnyp-6wy9c',
       authorization: 'Bearer tok'
     })
     expect(result.metadata.customMetadata.hash).toBe('v1')
+  })
+
+  it('a gzip upload says so and carries the worker version', async () => {
+    const { calls, storage } = store(() =>
+      reply(200, { headers: { etag: '"v1"' } })
+    )
+    await storage.upload('people/+1/posters/1.html', new Blob(['packed']), {
+      contentEncoding: 'gzip',
+      customMetadata: { version: 'plain-version' }
+    })
+    expect(calls[0].headers['content-encoding']).toBe('gzip')
+    expect(calls[0].headers['x-version']).toBe('plain-version')
   })
 
   it('metadata reads the etag as the hash and the meta headers', async () => {

@@ -67,6 +67,7 @@ export const actor_folders = () => [
 export const halo_files = [
   'package.json',
   'lib/http.js',
+  'lib/items.js',
   'lib/path-parts.js',
   'lib/units.js',
   'lib/lines.js',

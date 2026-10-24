@@ -134,7 +134,7 @@ it('the door leases and returns Chrome for its own actor only', async () => {
     id: 'a-abcdef123456',
     owner: '+14155550123',
     tap: 'fc-tap4',
-    vsockPath: join(root, 'vsock.sock')
+    vsock_path: join(root, 'vsock.sock')
   }
   const store = { liveActors: () => [record], get: () => record }
   const pool = fake_pool()

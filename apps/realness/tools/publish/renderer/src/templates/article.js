@@ -1,6 +1,6 @@
 import { escape_html } from '../text.js'
 
-const path_of = (href) => href.replace(/\/+$/, '') || '/'
+const path_of = href => href.replace(/\/+$/, '') || '/'
 
 /**
  * A plan's front matter `related` (a list of `{ title, href }`) makes a group:
@@ -19,10 +19,25 @@ export const related_nav = (links, current) => {
   return `<nav aria-label="Related"><ul>${items.join('')}</ul></nav>`
 }
 
-export const article_body = (poster, data, title, html, notes, related = '') => {
-    return `<article itemscope${data.itemid ? ` itemid="${escape_html(data.itemid)}"` : ''} itemtype="http://schema.org/BlogPosting">
+/** The owner's phone from an itemid like /+14155551234/pages/1, shown, not hidden. */
+const byline = itemid => {
+  const phone = /^\/(\+[1-9]\d{6,14})\//.exec(itemid ?? '')?.[1]
+  if (!phone) return ''
+  return `<address itemprop="author" itemscope itemtype="http://schema.org/Person"><a itemprop="telephone" href="tel:${phone}">${phone}</a></address>`
+}
+
+export const article_body = (
+  poster,
+  data,
+  title,
+  html,
+  notes,
+  related = ''
+) => 
+  `<article itemscope${data.itemid ? ` itemid="${escape_html(data.itemid)}"` : ''} itemtype="http://schema.org/BlogPosting">
       ${related}
       ${poster(data, title, 'h1', null, { close_href: '/' })}
       <section itemprop="articleBody">${html}${notes}</section>
+      ${byline(data.itemid)}
     </article>`
-  }
+

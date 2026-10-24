@@ -15,6 +15,7 @@ import {
   sum_rows
 } from './rows.js'
 import { usage_stats } from './report.js'
+import { item_html } from '#root/lib/items.js'
 /* eslint-disable no-await-in-loop -- compaction retries wait between tries */
 
 export { day_files, sum_rows }
@@ -98,12 +99,6 @@ export const usage_meter = () => {
   }
 }
 
-const escape = value =>
-  String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-
 /** One call as an HTML Lines row. */
 export const usage_row = ({
   model,
@@ -138,10 +133,13 @@ export const usage_row = ({
     provider,
     call
   }
-  const props = FIELDS.filter(name => name !== 'call' || call)
-    .map(name => `<meta itemprop="${name}" content="${escape(values[name])}">`)
-    .join('')
-  return `<p itemscope itemtype="/usage">${props}</p>\n`
+  const shown = Object.fromEntries(
+    FIELDS.filter(name => name !== 'call' || call).map(name => [
+      name,
+      values[name]
+    ])
+  )
+  return item_html('usage', shown, { links: ['call'] })
 }
 
 /**

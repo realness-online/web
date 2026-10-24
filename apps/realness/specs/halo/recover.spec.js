@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { version_sync } from '#root/src/files/version-node.js'
 import { after, before, it } from 'node:test'
 import { disk } from '#root/src/can/disk.js'
 import { rights } from '#root/src/sync/rights.js'
@@ -67,8 +68,8 @@ before(async () => {
     '.pi/agent/deferred.json',
     JSON.stringify({
       'work/notes/doc.md': {
-        base_sha: hash('title\nbody\n'),
-        target_sha: hash('title\nBODY\n'),
+        base_sha: version_sync('title\nbody\n'),
+        target_sha: version_sync('title\nBODY\n'),
         calls: [{ session: 's.jsonl', tool_call: 'c1' }]
       }
     })
@@ -290,8 +291,8 @@ it("starter updates preserve a managed file's pending session edits", async () =
     '.pi/agent/deferred.json',
     JSON.stringify({
       'skill.md': {
-        base_sha: hash(original),
-        target_sha: hash(target),
+        base_sha: version_sync(original),
+        target_sha: version_sync(target),
         calls: [{ session: 's.jsonl', tool_call: 'pending' }]
       }
     })

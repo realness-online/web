@@ -4,12 +4,14 @@
  * Each grant is one Schema.org DigitalDocumentPermission:
  *
  *   <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
- *     <meta itemprop="grantee" content="/+A/harnesses/1726000000000">
- *     <meta itemprop="permissionType" content="https://schema.org/ReadPermission">
+ *     <data itemprop="grantee" value="/+A/harnesses/1726000000000">/+A/harnesses/1726000000000</data>
+ *     <a itemprop="permissionType" href="https://schema.org/ReadPermission">read</a>
  *     <a itemprop="about" href="/+A/plans/">plans</a>
  *   </li>
  *
- * Values come from `content`, `href`, or `src`; text content is never read.
+ * Every value shows on the page, but is read from `value`, `content`,
+ * `href`, or `src`; text content is never read, so what a page shows can
+ * never grant more than its attributes do.
  * Comments are dropped, so a commented-out grant is revoked.
  * Anything we cannot read with certainty throws. The caller denies on a throw.
  */
@@ -75,7 +77,7 @@ export const read_rights = source => {
     }
     const a = attributes(attrs)
     if (open && 'itemprop' in a) {
-      const value = a.content ?? a.href ?? a.src
+      const value = a.value ?? a.content ?? a.href ?? a.src
       if (value === undefined)
         throw new Error(`rights page: ${a.itemprop} has no value`)
       open.props[a.itemprop] = [...(open.props[a.itemprop] ?? []), value]

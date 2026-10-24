@@ -7,7 +7,11 @@ import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
 import { read_status, HaloStatus } from '../../src/halo/status.js'
-import { SyncMirror } from '../../src/halo/sync-mirror.js'
+import {
+  MISSING_CAP_MS,
+  MISSING_FIRST_MS,
+  SyncMirror
+} from '../../src/halo/sync-mirror.js'
 import { out_path } from '#root/lib/output.js'
 
 const secret = 'test-secret-123456789012345678901234567890'
@@ -55,15 +59,34 @@ it('halo status reaches storage through sync, with no storage key', async () => 
   )
 })
 
-it('loop records write, and a missing stop request reads as null', async () => {
-  const mirror = new SyncMirror({ url, secret, halo: 'realness-1' })
+it('a missing file is asked for again after 1 minute, then 2, capped at 4', async t => {
+  let clock = 0
+  const mirror = new SyncMirror({
+    url,
+    secret,
+    halo: 'realness-1',
+    now: () => clock
+  })
+  const key = 'loops/a-0123456789ab/stop.html'
   await mirror.put('loops/a-0123456789ab/record.html', '<article></article>')
-  assert.equal(await mirror.get('loops/a-0123456789ab/stop.html'), null)
-  await storage.put('loops/a-0123456789ab/stop.html', 'stop')
-  assert.equal(
-    (await mirror.get('loops/a-0123456789ab/stop.html')).body.toString(),
-    'stop'
-  )
+  const real = globalThis.fetch
+  let asked = 0
+  t.mock.method(globalThis, 'fetch', (target, init) => {
+    if (String(target).endsWith('stop.html')) asked++
+    return real(target, init)
+  })
+  assert.equal(await mirror.get(key), null)
+  assert.equal(await mirror.get(key), null)
+  assert.equal(asked, 1, 'the second ask waits')
+  clock += MISSING_FIRST_MS
+  assert.equal(await mirror.get(key), null)
+  clock += MISSING_FIRST_MS
+  assert.equal(await mirror.get(key), null)
+  assert.equal(asked, 2, 'the wait doubled')
+  await storage.put(key, 'stop')
+  clock += MISSING_CAP_MS
+  assert.equal((await mirror.get(key)).body.toString(), 'stop')
+  assert.equal(asked, 3)
 })
 
 it("a halo cannot write another halo's status, and a wrong secret is refused", async () => {

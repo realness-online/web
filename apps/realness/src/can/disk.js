@@ -10,17 +10,17 @@
  *   stat(key)                      version, or null when missing
  *   compose(key, sources, { if_version, if_absent })  key becomes sources' bytes joined
  *
- * The bytes are the truth: a version is their hash, never stored. Conflict
- * checks hash the bytes on disk at write time; listings reuse a hash while
- * the file's size and mtime hold, so they read no bodies.
+ * The bytes are the truth: a version is their hash, never stored. A body
+ * sent with `encoding: 'gzip'` is unpacked before it lands. With
+ * `gzip_at_rest` set, text that gzip shrinks is kept packed on disk and
+ * unpacked on the way out, so its version is still the plain bytes' hash.
+ * Conflict checks hash the bytes at write time; listings reuse a hash while
+ * the stored file's size and mtime hold, so they read no bodies.
  *
  * `meta` is what we know about the data that its bytes cannot say. It lives
  * under `.meta/`, which listings hide, and a write replaces it.
  */
-import {
-  createHash as create_hash,
-  randomUUID as random_uuid
-} from 'node:crypto'
+import { randomUUID as random_uuid } from 'node:crypto'
 import {
   mkdir,
   readFile as read_file,
@@ -31,6 +31,10 @@ import {
   writeFile as write_file
 } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
+import { gzipSync as gzip_sync, gunzipSync as gunzip_sync } from 'node:zlib'
+import { version_of } from '#root/src/files/version.js'
+import { merged_meta } from './contract.js'
+import { hash_index, index_scope } from './hash-index.js'
 /* eslint-disable no-await-in-loop -- tree walks go one entry at a time to bound open files */
 
 export class Conflict extends Error {
@@ -50,17 +54,21 @@ export const guard = ({ if_version, if_absent } = {}) => {
   return { if_version, if_absent: Boolean(if_absent) }
 }
 
-const VERSION_LENGTH = 22
 const META = '.meta'
-
-const version_of = body =>
-  create_hash('sha256')
-    .update(body)
-    .digest('base64url')
-    .slice(0, VERSION_LENGTH)
+const INDEX = '.index'
+const RESERVED = [META, INDEX]
 const missing = error => ['ENOENT', 'ENOTDIR', 'EISDIR'].includes(error.code)
 
-export const disk = root_path => {
+const TEXT = /\.(html|md|jsonl|json|svg|txt|css|js|xml|csv|ya?ml)$/i
+const GZIP_MAGIC = Buffer.from('1f8b', 'hex')
+
+/** Unpack a text body stored packed under gzip_at_rest; others pass through. */
+const to_plain = (key, body, gzip_at_rest) =>
+  gzip_at_rest && TEXT.test(key) && body.subarray(0, 2).equals(GZIP_MAGIC)
+    ? gunzip_sync(body)
+    : body
+
+export const disk = (root_path, { gzip_at_rest = false } = {}) => {
   const root = resolve(root_path)
   const locks = new Map()
   /** @type {Map<string, { size: number, mtime: number, version: string }>} */
@@ -70,7 +78,12 @@ export const disk = root_path => {
     const path = resolve(root, key)
     if (!path.startsWith(root + sep))
       throw new Error(`disk: ${key} escapes the root`)
-    if (path.startsWith(join(root, META) + sep) || path === join(root, META))
+    if (
+      RESERVED.some(
+        name =>
+          path === join(root, name) || path.startsWith(join(root, name) + sep)
+      )
+    )
       throw new Error(`disk: ${key} is reserved`)
     return path
   }
@@ -104,8 +117,13 @@ export const disk = root_path => {
 
   const get = async key => {
     try {
-      const body = await read_file(at(key))
-      return { body, version: version_of(body), meta: await read_meta(key) }
+      const stored = await read_file(at(key))
+      const body = to_plain(key, stored, gzip_at_rest)
+      return {
+        body,
+        version: await version_of(body),
+        meta: await read_meta(key)
+      }
     } catch (error) {
       if (missing(error)) return null
       throw error
@@ -117,9 +135,41 @@ export const disk = root_path => {
     const known = hashes.get(key)
     if (known && known.size === info.size && known.mtime === info.mtimeMs)
       return known.version
-    const version = version_of(await read_file(at(key)))
+    const plain = to_plain(key, await read_file(at(key)), gzip_at_rest)
+    const version = await version_of(plain)
     hashes.set(key, { size: info.size, mtime: info.mtimeMs, version })
     return version
+  }
+
+  /** A piece's text is its generation: a write lands only on what it read. */
+  const read_piece = async piece => {
+    try {
+      const text = await read_file(join(root, INDEX, piece), 'utf8')
+      return { entries: JSON.parse(text), generation: text }
+    } catch (error) {
+      if (missing(error)) return { entries: {}, generation: null }
+      throw error
+    }
+  }
+  const index = hash_index({
+    read: read_piece,
+    exclusive: (piece, work) => serial(`${INDEX}/${piece}`, work),
+    async write(piece, entries, generation) {
+      const path = join(root, INDEX, piece)
+      if ((await read_piece(piece)).generation !== generation)
+        throw new Conflict(`${piece} moved`)
+      if (!Object.keys(entries).length) return rm(path, { force: true })
+      await mkdir(dirname(path), { recursive: true })
+      const temp = join(dirname(path), `${random_uuid()}.tmp`)
+      await write_file(temp, JSON.stringify(entries))
+      await rename(temp, path)
+    }
+  })
+  /** The stored version before a change, read only for indexed keys. */
+  const before = async key => {
+    if (!index_scope(key)) return null
+    const info = await stat(at(key)).catch(() => null)
+    return info ? listed_version(key, info) : null
   }
 
   /** Hashes the bytes on disk now; the cache never decides a conflict. */
@@ -136,10 +186,17 @@ export const disk = root_path => {
     const path = at(key)
     await mkdir(dirname(path), { recursive: true })
     const temp = join(dirname(path), `${random_uuid()}.tmp`)
-    await write_file(temp, body)
+    const stored =
+      gzip_at_rest && TEXT.test(key)
+        ? (() => {
+            const packed = gzip_sync(Buffer.from(body))
+            return packed.length < Buffer.byteLength(body) ? packed : body
+          })()
+        : body
+    await write_file(temp, stored)
     await rename(temp, path)
     if (meta !== undefined) await write_meta(key, meta)
-    return version_of(body)
+    return version_of(Buffer.from(body))
   }
 
   return {
@@ -148,13 +205,21 @@ export const disk = root_path => {
     /**
      * @param {string} key
      * @param {Buffer | string} body
-     * @param {import('./contract.js').VersionGuard & import('./contract.js').Described} [options]
+     * @param {import('./contract.js').VersionGuard & import('./contract.js').Packing & import('./contract.js').Described} [options]
      */
     put: (key, body, options = {}) =>
       serial(key, async () => {
         await check(key, options)
-        return write(key, body, options.meta ?? {})
+        const plain = options.encoding === 'gzip' ? gunzip_sync(body) : body
+        const meta = merged_meta(await read_meta(key), options.meta)
+        const old = await before(key)
+        const version = await write(key, plain, meta)
+        await index.moved(key, old, version)
+        return version
       }),
+
+    /** Every key under a person's scope holding `version`. */
+    find: (scope, version) => index.find(scope, version),
 
     stat: async key => (await get(key))?.version ?? null,
 
@@ -169,10 +234,13 @@ export const disk = root_path => {
         const gone = sources.find((name, index) => !files[index])
         if (gone) throw new Conflict(`${gone} is missing`)
         await check(key, options)
-        return write(
+        const old = await before(key)
+        const version = await write(
           key,
           Buffer.concat(files.flatMap(file => (file ? [file.body] : [])))
         )
+        await index.moved(key, old, version)
+        return version
       }),
 
     /**
@@ -182,9 +250,11 @@ export const disk = root_path => {
     delete: (key, options = {}) =>
       serial(key, async () => {
         await check(key, options)
+        const old = await before(key)
         await rm(at(key), { force: true })
         await rm(meta_at(key), { force: true })
         hashes.delete(key)
+        await index.moved(key, old, null)
       }),
 
     async list(prefix) {
@@ -200,7 +270,8 @@ export const disk = root_path => {
       }
       const shown = entries.filter(
         entry =>
-          !entry.name.endsWith('.tmp') && !(!trimmed && entry.name === META)
+          !entry.name.endsWith('.tmp') &&
+          !(!trimmed && RESERVED.includes(entry.name))
       )
       const names = test =>
         shown

@@ -156,6 +156,13 @@ describe('load_directory_from_network', () => {
     expect(backend.directory).not.toHaveBeenCalled()
   })
 
+  it('a person has no type, so no folder is listed', async () => {
+    const { load_directory_from_network, backend } = make_store()
+
+    expect(await load_directory_from_network('/+1')).toBeNull()
+    expect(backend.directory).not.toHaveBeenCalled()
+  })
+
   it('does not read the backend when the item is not readable', async () => {
     const backend = make_backend({
       signed_in: () => true,

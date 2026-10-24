@@ -1,12 +1,14 @@
 /**
  * What never syncs: artifacts, local vault metadata, dependencies, builds,
- * auth files, secrets, shell histories, and git. Names match any path segment.
+ * caches (npm, Rust `target`), auth files, secrets, shell histories, and git. Names match any path segment.
  */
 const NAMES = new Set([
   '.obsidian',
   '.smart-env',
   '.git',
   'node_modules',
+  '.npm',
+  'target',
   '.venv',
   '__pycache__',
   '.DS_Store',

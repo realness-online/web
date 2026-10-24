@@ -100,7 +100,7 @@ const handle = async (
   try {
     await store.ensureRunning(id)
     if (ended || client.destroyed) return end()
-    guest = await vsock.connect(record.vsockPath, PTY_PORT)
+    guest = await vsock.connect(record.vsock_path, PTY_PORT)
     if (ended || client.destroyed) {
       guest.socket.destroy()
       return end()

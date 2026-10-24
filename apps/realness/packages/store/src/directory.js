@@ -185,6 +185,7 @@ export const create_directory = ({ backend, paths, itemid }) => {
    */
   const load_directory_from_network = async itemid => {
     if (itemid.startsWith('/+/')) return null
+    if (!as_path_parts(itemid)[1]) return null
     if (!online()) return null
     if (!can_read(itemid)) return null
 

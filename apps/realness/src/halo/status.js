@@ -8,6 +8,7 @@ import { metrics_from, metric_fields } from './metrics.js'
 import { connect } from './vsock.js'
 import { LAST_TAP as TAP_LIMIT } from './syscalls.js'
 import { KIB } from '#root/lib/units.js'
+import { item_html } from '#root/lib/items.js'
 /* eslint-disable no-await-in-loop -- guests are probed one at a time to bound halo load */
 
 const GUEST_PORT = 52
@@ -22,15 +23,7 @@ const seed_state = seed => {
   return seed.matches ? 'ready' : 'stale'
 }
 
-const esc = value =>
-  String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-const item = (type, values) =>
-  `<article itemscope itemtype="/${type}">${Object.entries(values)
-    .map(([name, value]) => `<meta itemprop="${name}" content="${esc(value)}">`)
-    .join('')}</article>\n`
+const item = (type, values) => item_html(type, values)
 
 const HELD_KINDS = ['connection', 'turn', 'loop', 'exec', 'browser']
 
@@ -147,7 +140,7 @@ export class HaloStatus {
       halo = hostname(),
       now = () => new Date(),
       warn = () => {},
-      resources = () => halo_resources(store.tapPrefix),
+      resources = () => halo_resources(store.tap_prefix),
       probe = null,
       clock = () => Date.now(),
       traces = null
@@ -191,8 +184,8 @@ export class HaloStatus {
       this.probe ??
       (async record => {
         const { socket } = await connect(
-          record.vsockPath,
-          this.store.vsockPort ?? GUEST_PORT
+          record.vsock_path,
+          this.store.vsock_port ?? GUEST_PORT
         )
         socket.destroy()
       })
@@ -201,7 +194,7 @@ export class HaloStatus {
       const started = this.clock()
       try {
         await Promise.race([
-          probe(record, this.store.vsockPort ?? GUEST_PORT),
+          probe(record, this.store.vsock_port ?? GUEST_PORT),
           new Promise((_, fail) => {
             setTimeout(
               () =>

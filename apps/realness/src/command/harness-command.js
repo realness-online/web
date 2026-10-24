@@ -12,6 +12,8 @@ import { turn_end, turn_start } from '#root/src/harness/turns.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
 
 export const SYNC_PAUSED = 'sync-paused'
+/** While this file exists, a harness sync goes to local sync or nowhere. */
+export const SYNC_LOCAL_ONLY = 'sync-local-only'
 
 const report_harness = (result, { command, json, stdout, stderr }) => {
   const { harness, synced, refused } = result
@@ -174,6 +176,15 @@ export const run_harness = async (
     stdout.write(
       json
         ? `${JSON.stringify({ ok: true, command, result: { paused: true } })}\n`
+        : `${message}\n`
+    )
+    return 0
+  }
+  if (!actor && !where.local && exists_sync(join(state, SYNC_LOCAL_ONLY))) {
+    const message = `local sync is down; skipped, not sent to ${where.url}. Remove ${join(state, SYNC_LOCAL_ONLY)} to allow it`
+    stdout.write(
+      json
+        ? `${JSON.stringify({ ok: true, command, result: { local_only: true } })}\n`
         : `${message}\n`
     )
     return 0

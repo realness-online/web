@@ -11,9 +11,9 @@ it('publishing to sync sites does not wait behind the actor lock', async () => {
   const store = {
     lock: held,
     publishing: free,
-    publishedDir: '/nowhere',
+    published_dir: '/nowhere',
     copyOut: async (id, tree) => copied.push(tree),
-    syncSites: { publish: async () => ({ files: 1, url: 'http://site/' }) },
+    sync_sites: { publish: async () => ({ files: 1, url: 'http://site/' }) },
     ownerOf: () => '+15555550100',
     trace: () => {}
   }

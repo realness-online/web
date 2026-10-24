@@ -5,7 +5,7 @@
   import AsThought from '@/components/thoughts/as-thought'
   import AsAuthorMenu from '@/components/posters/as-menu-author'
   import { defineAsyncComponent as define_async_component } from 'vue'
-  import { useMediaQuery } from '@vueuse/core'
+  import { useMediaQuery as use_media_query } from '@vueuse/core'
 
   const AsViewer3d = define_async_component(
     () => import('@/components/posters/as-viewer-3d.vue')
@@ -126,7 +126,7 @@
     typeof window !== 'undefined' &&
     window.matchMedia('(hover: hover)').matches
   const layer_view = ref('both')
-  const reduced_motion = useMediaQuery('(prefers-reduced-motion: reduce)')
+  const reduced_motion = use_media_query('(prefers-reduced-motion: reduce)')
   const focus_pull = ref(true)
   const focus_pull_active = computed(
     () =>

@@ -79,8 +79,10 @@ export const state_path = root => {
  * The untracked page that says who this checkout belongs to, never shared:
  *
  *   <p itemscope itemtype="https://schema.org/Person">
- *     <a itemprop="telephone" href="tel:+14155551234">Scott</a>
+ *     <a itemprop="telephone" href="tel:+14155551234">+14155551234</a> Scott
  *   </p>
+ *
+ * The name is the text after the link, or, in older pages, the link's text.
  */
 export const local_person_file = '.pi/person.local.html'
 
@@ -96,11 +98,12 @@ const read_text = file => {
 /** The person on a page: the telephone link's number and the name it shows. */
 export const read_person = html => {
   const link =
-    html.match(/<a\b[^>]*\bitemprop="telephone"[^>]*>([\s\S]*?)<\/a>/) ??
-    html.match(/<a\b[^>]*href="tel:[^"]*"[^>]*>([\s\S]*?)<\/a>/)
+    html.match(/<a\b[^>]*\bitemprop="telephone"[^>]*>([\s\S]*?)<\/a>([^<]*)/) ??
+    html.match(/<a\b[^>]*href="tel:[^"]*"[^>]*>([\s\S]*?)<\/a>([^<]*)/)
   if (!link) return null
   const phone = link[0].match(/href="tel:([^"]*)"/)?.[1]
-  return { phone, name: link[1].replace(/<[^>]*>/g, '').trim() }
+  const shown = link[1].replace(/<[^>]*>/g, '').trim()
+  return { phone, name: link[2].trim() || shown }
 }
 
 /** Who this checkout belongs to, from person.local.html, or null. */

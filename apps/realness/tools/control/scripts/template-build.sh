@@ -185,10 +185,6 @@ log "harness dependencies"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
   npm ci --ignore-scripts --no-fund --no-audit --prefix /realness/.pi
 
-log "prettier for auto-fix"
-chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin \
-  npm install --no-save --ignore-scripts --no-fund --no-audit --prefix /realness prettier@3.9.9
-
 cat > "$TREE/usr/local/bin/realness" <<'WRAPPER'
 #!/bin/sh
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/realness-publish "$@"; fi
@@ -210,7 +206,7 @@ export TMPDIR=/var/tmp
 export PI_SESSION_FORMAT=html.gz
 export PI_SESSION_READER=/usr/local/bin/pi-session-read
 export PI_HARDWARE_CURSOR=1
-exec /realness/bin/pi "$@"
+exec /realness/.pi/bin/pi "$@"
 WRAPPER
 chmod 0755 "$TREE/usr/local/bin/realness"
 
@@ -236,7 +232,8 @@ chroot "$TREE" /usr/bin/fdfind --version
 log "realness starts, and resolves pi without the network"
 chroot "$TREE" env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
   /usr/local/bin/realness --version
-chroot "$TREE" /realness/node_modules/.bin/prettier --version
+chroot "$TREE" /realness/.pi/node_modules/.bin/prettier --version
+test ! -e "$TREE/realness/node_modules"
 
 log "warm the extension caches"
 scratch=/realness/artifacts/pi

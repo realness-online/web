@@ -13,7 +13,7 @@ const root = mkdtempSync(
 
 it('restore rejects a different owner before reading artifacts or creating a VM', async () => {
   const store = Object.create(ActorStore.prototype)
-  store.exportsDir = root
+  store.exports_dir = root
   store.lock = { run: work => work() }
   const directory = join(root, 'a-export')
   mkdirSync(directory)

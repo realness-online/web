@@ -7,7 +7,8 @@ import {
   mkdtempSync,
   mkdirSync,
   rmSync,
-  writeFileSync
+  writeFileSync,
+  readdirSync
 } from 'node:fs'
 import { join } from 'node:path'
 import { it } from 'node:test'
@@ -48,10 +49,11 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
   )
   for (const path of ['.pi/prompts/app.md', '.pi/prompts/site.md'])
     assert.ok(existsSync(join(ship, path)), path)
-  assert.ok(
-    existsSync(join(ship, 'apps')),
-    'every new workspace has an apps folder'
-  )
+  for (const folder of ['apps', 'artifacts', 'vault', 'work'])
+    assert.ok(existsSync(join(ship, folder)), `home has ${folder}/`)
+  assert.deepEqual(readdirSync(join(ship, 'work')), [], 'no work ships')
+  assert.ok(existsSync(join(ship, 'vault/Projects/site.md')))
+  assert.ok(!existsSync(join(ship, 'plans')), 'plans live in the vault')
   assert.equal(
     readFileSync(join(ship, './.ignore'), 'utf8'),
     '',
@@ -148,7 +150,6 @@ it('the ship tree carries the harness, prompts, and starting examples', () => {
   for (const path of [
     'AGENTS.local.md',
     '.pi/agent/auth.json',
-    'work',
     'packages',
     '.pi/agent/sessions'
   ])

@@ -4,12 +4,12 @@
  * shape a large final sync returns. Passes when every byte arrives.
  *   node checks/halo/s9.check.js [actor-id]
  */
-import { execFile } from 'node:child_process'
+import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { env_token } from '#root/src/control/status.js'
 import { environment_settings } from '#root/src/settings/environments.js'
 
-const run = promisify(execFile)
+const run = promisify(exec_file)
 const PROJECT = 'realness-online'
 const ZONE = 'us-west2-a'
 const NAME = 'realness-1'

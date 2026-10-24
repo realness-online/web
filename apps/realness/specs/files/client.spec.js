@@ -8,10 +8,13 @@ import {
   readFile,
   readdir,
   rm,
+  rename,
   symlink,
   writeFile
 } from 'node:fs/promises'
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
+import { version_sync } from '#root/src/files/version-node.js'
+import { born, set_born } from '#root/src/files/birth.js'
 import { join, resolve } from 'node:path'
 import { sessionJsonlToHtml as session_jsonl_to_html } from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
 import { compress_session_chunk } from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js'
@@ -19,7 +22,12 @@ import { DatabaseSync } from 'node:sqlite'
 import { gunzipSync } from 'node:zlib'
 import { disk } from '#root/src/can/disk.js'
 import { homedir } from 'node:os'
-import { client, conflict_name, trash_dir } from '#root/src/files/client.js'
+import {
+  client,
+  conflict_name,
+  packed_upload,
+  trash_dir
+} from '#root/src/files/client.js'
 import { dev_issuer } from '#root/src/sync/dev-token.js'
 import { rights } from '#root/src/sync/rights.js'
 import { sync_service } from '#root/src/sync/server.js'
@@ -207,7 +215,9 @@ it('read-only recovery never uploads local files, deletes, or sync records', asy
   assert.equal(await readFile(join(dir, 'local.md'), 'utf8'), 'local')
   assert.ok(methods.every(method => method === 'GET'))
   await assert.rejects(readdir(state), { code: 'ENOENT' })
-  await assert.rejects(owner.cat('can://~/read-only/local.md'), { status: 404 })
+  await assert.rejects(owner.cat('can://~/read-only/local.md'), {
+    status: 404
+  })
 })
 
 it('recovery refuses symlink targets and remote traversal', async () => {
@@ -285,25 +295,64 @@ it('the folder holds only its own files; the record lives in state', async () =>
   assert.deepEqual(Object.keys(saved.files), ['note.md'])
 })
 
-it('a record of old generation versions pushes a local edit without a conflict copy', async () => {
-  const a = as(A)
-  const state = join(root, 'generation-state')
-  const dir = await local('generation', { 'note.md': 'first' })
-  await a.sync(dir, 'can://~/generation/', { state })
-  const records = join(state, 'sync')
-  for (const name of await readdir(records)) {
-    const record = JSON.parse(await readFile(join(records, name), 'utf8'))
-    for (const file of Object.values(record.files))
-      file.version = '1792188364363194'
-    await writeFile(join(records, name), JSON.stringify(record))
-  }
-  await writeFile(join(dir, 'note.md'), 'second')
-  const report = await a.sync(dir, 'can://~/generation/', { state })
-  assert.deepEqual(report.kept_both, [])
-  assert.deepEqual(report.pushed, ['note.md'])
-  assert.equal((await a.cat('can://~/generation/note.md')).toString(), 'second')
-  assert.deepEqual(await readdir(dir), ['note.md'])
+it('an upload carries its plain version, packed only when gzip shrinks it', async () => {
+  const text = Buffer.from('a line that repeats\n'.repeat(40))
+  const packed = await packed_upload(text)
+  assert.equal(packed.headers['x-version'], version_sync(text))
+  assert.equal(packed.headers['content-encoding'], 'gzip')
+  assert.deepEqual(gunzipSync(packed.body), text)
+  const tiny = await packed_upload(Buffer.from('hi'))
+  assert.equal(tiny.headers['content-encoding'], undefined)
+  assert.equal(tiny.body.toString(), 'hi')
 })
+
+it("a pushed file's etag is its local hash", async () => {
+  const a = as(A)
+  const dir = await local('etag', { 'note.md': 'a line\n'.repeat(40) })
+  await a.sync(dir, 'can://~/etag/', { state: join(root, 'etag-state') })
+  assert.equal(
+    await a.version('can://~/etag/note.md'),
+    version_sync('a line\n'.repeat(40))
+  )
+})
+
+it('equal bytes on both sides agree from the listing, with no download', async t => {
+  const a = as(A)
+  const dir = await local('agree', { 'same.md': 'same bytes' })
+  await a.put('can://~/agree/same.md', 'same bytes')
+  const real = globalThis.fetch
+  const reads = []
+  t.mock.method(globalThis, 'fetch', (target, init = {}) => {
+    if ((init.method ?? 'GET') === 'GET' && !String(target).includes('?'))
+      reads.push(String(target))
+    return real(target, init)
+  })
+  const report = await a.sync(dir, 'can://~/agree/', {
+    state: join(root, 'agree-state')
+  })
+  assert.deepEqual(report.adopted, ['same.md'])
+  assert.deepEqual(
+    reads.filter(url => url.endsWith('/same.md')),
+    []
+  )
+})
+
+it(
+  'the oldest create date travels and lands on a pulled Mac file',
+  { skip: process.platform !== 'darwin' },
+  async () => {
+    const a = as(A)
+    const laptop = await local('born/laptop', { 'old.md': 'from 2018' })
+    await set_born(join(laptop, 'old.md'), '2018-07-01T12:00:00.000Z')
+    await a.sync(laptop, 'can://~/born/', { state: join(root, 'born-1') })
+    const phone = await local('born/phone', {})
+    const report = await a.sync(phone, 'can://~/born/', {
+      state: join(root, 'born-2')
+    })
+    assert.deepEqual(report.pulled, ['old.md'])
+    assert.equal(await born(join(phone, 'old.md')), '2018-07-01T12:00:00.000Z')
+  }
+)
 
 it('a lost record deletes nothing: same files match, different ones keep both', async () => {
   const a = as(A)
@@ -561,7 +610,7 @@ for (const format of ['jsonl', 'html', 'html.gz'])
       "INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, ?, ?, 1, 'edit', 'edit', ?)"
     ).run(
       join(dir, 'doc.md'),
-      createHash('sha256').update('BODY\n').digest('hex'),
+      version_sync('BODY\n'),
       session,
       new Date(Date.now() + 1000).toISOString()
     )
@@ -628,7 +677,7 @@ for (const format of ['jsonl', 'html', 'html.gz'])
     const log = db.prepare(
       "INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, ?, ?, 4, 'edit', ?, ?)"
     )
-    const hash = text => createHash('sha256').update(text).digest('hex')
+    const hash = version_sync
     const later = new Date(Date.now() + 1000).toISOString()
     log.run(
       join(dir, 'doc.md'),
@@ -749,4 +798,67 @@ it('a folder the service has never seen syncs up from empty; a known one that go
   } finally {
     await front.close()
   }
+})
+
+it('a write refused for an expired token is sent again with a fresh one', async () => {
+  const good = issuer.token(A)
+  const asked = []
+  const store = client({
+    state: join(root, 'refresh-state'),
+    url,
+    phone: A,
+    token: ({ refresh = false } = {}) => {
+      asked.push(refresh)
+      return refresh ? good : 'expired.token'
+    }
+  })
+  await store.put('can://~/refresh/a.md', 'lands')
+  assert.equal((await as(A).cat('can://~/refresh/a.md')).toString(), 'lands')
+  assert.deepEqual(asked, [false, true])
+})
+
+it('a run writes at most 25 conflict copies and holds the rest', async () => {
+  const a = as(A)
+  const names = Array.from({ length: 30 }, (_, n) => `c${n}.md`)
+  const dir = await local(
+    'flood',
+    Object.fromEntries(names.map(name => [name, 'base']))
+  )
+  const state = join(root, 'flood-state')
+  await a.sync(dir, 'can://~/flood/', { state })
+  for (const name of names) {
+    await writeFile(join(dir, name), 'ours')
+    await a.put(`can://~/flood/${name}`, 'theirs')
+  }
+  const report = await a.sync(dir, 'can://~/flood/', { state })
+  assert.equal(report.kept_both.length, 25)
+  assert.equal(report.held.length, 5)
+  assert.equal(report.mass_conflict, true)
+})
+
+it('a file moved outside a session is a move: the old path goes, nothing is held', async () => {
+  const a = as(A)
+  const dir = await local('moves', {
+    'old/a.md': 'moved bytes',
+    'gone.md': 'no copy left',
+    'edited.md': 'before'
+  })
+  const state = join(root, 'moves-state')
+  await a.sync(dir, 'can://~/moves/', { state })
+  await mkdir(join(dir, 'new'), { recursive: true })
+  await rename(join(dir, 'old/a.md'), join(dir, 'new/a.md'))
+  await rm(join(dir, 'gone.md'))
+  await writeFile(join(dir, 'edited-moved.md'), 'after')
+  await rm(join(dir, 'edited.md'))
+  const report = await a.sync(dir, 'can://~/moves/', { state })
+  assert.deepEqual(report.moved, ['old/a.md'])
+  assert.deepEqual(report.deleted, ['old/a.md'])
+  assert.deepEqual(report.held.sort(), ['edited.md', 'gone.md'])
+  assert.deepEqual(report.pushed.sort(), ['edited-moved.md', 'new/a.md'])
+  const remote = await a.ls('can://~/moves/old/').catch(() => [])
+  assert.deepEqual(remote, [])
+  assert.equal(
+    (await a.cat('can://~/moves/gone.md')).toString(),
+    'no copy left'
+  )
 })

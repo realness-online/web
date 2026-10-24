@@ -381,3 +381,21 @@ it('b1d: billing is read-only: owner and admin read, nobody writes', () => {
     false
   )
 })
+
+it('a visible grant reads from its attributes; the text it shows never grants', () => {
+  const grantee = `/${A}/harnesses/1726000000000`
+  const visible = page(`
+  <li itemscope itemtype="https://schema.org/DigitalDocumentPermission">
+    <data itemprop="grantee" value="${grantee}">${grantee}</data>
+    <a itemprop="permissionType" href="https://schema.org/ReadPermission">read</a>
+    <a itemprop="about" href="/${A}/plans/">plans</a>
+  </li>`)
+  assert.deepEqual(read_rights(visible), [
+    { grantee, action: 'read', path: `/${A}/plans/` }
+  ])
+  const lying = visible.replace(
+    `>${grantee}</data>`,
+    `>/${B}/everything</data>`
+  )
+  assert.deepEqual(read_rights(lying), read_rights(visible))
+})

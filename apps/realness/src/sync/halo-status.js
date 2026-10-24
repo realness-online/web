@@ -1,8 +1,4 @@
-const unesc = value =>
-  value
-    .replace(/&lt;/g, '<')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
+import { read_items } from '#root/lib/items.js'
 
 /**
  * One halo record as `{ halo, actors, apps }`; unknown fields are ignored.
@@ -14,17 +10,8 @@ const unesc = value =>
 export const read_status = html => {
   /** @type {{ halo: StatusFields | null, actors: StatusFields[], apps: StatusFields[] }} */
   const read = { halo: null, actors: [], apps: [] }
-  for (const [, type, body] of html.matchAll(
-    /<article itemscope itemtype="\/(halo|actor|app)">(.*?)<\/article>/g
-  )) {
-    /** @type {StatusFields} */
-    const values = {}
-    for (const [, name, value] of body.matchAll(
-      /itemprop="(\w+)" content="([^"]*)"/g
-    ))
-      values[name] = unesc(value)
-    if (type === 'halo') read.halo = values
-    else read[`${type}s`].push(values)
-  }
+  read.halo = read_items(html, 'halo').at(-1) ?? null
+  read.actors = read_items(html, 'actor')
+  read.apps = read_items(html, 'app')
   return read
 }

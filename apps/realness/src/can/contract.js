@@ -1,3 +1,5 @@
+import { gzipSync as gzip_sync } from 'node:zlib'
+import { version_of } from '#root/src/files/version.js'
 import { MS_PER_MINUTE } from '#root/lib/units.js'
 /* eslint-disable no-await-in-loop -- writes are ordered so the change feed sees them in order */
 /**
@@ -11,14 +13,31 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
 
 /**
  * What we know about the data that its bytes cannot say. A put replaces it;
- * leaving it out stores none. Values are strings.
+ * leaving it out stores none. Values are strings. `created`, an ISO time,
+ * is the exception: it keeps the earliest ever put, and survives a put
+ * without one.
  * @typedef {{ meta?: Record<string, string> }} Described
  */
+
+/** The earlier of two ISO times; either may be missing. */
+export const earliest = (a, b) => {
+  if (!a) return b
+  if (!b) return a
+  return Date.parse(b) < Date.parse(a) ? b : a
+}
+
+/** Meta for a put: the new meta, with `created` the earliest known. */
+export const merged_meta = (stored = {}, given = {}) => {
+  const created = earliest(stored.created, given.created)
+  return created ? { ...given, created } : { ...given }
+}
 
 /**
  * `gzip: true` always packs the body, so it can be composed onto other gzip
  * files; leaving it undefined packs only when that makes the file smaller.
- * @typedef {{ gzip?: boolean }} Packing
+ * `encoding: 'gzip'` says the body arrives packed: `get` returns it unpacked,
+ * and the version is the unpacked bytes' hash.
+ * @typedef {{ gzip?: boolean, encoding?: 'gzip' }} Packing
  */
 
 /** Meta: what we know about the data, kept beside its bytes. */
@@ -35,6 +54,34 @@ const meta_contract = ({ test, assert, make }) => {
     })
     const listed = await store.walk_meta('people/+1/')
     assert.deepEqual(listed['p.html'].meta, { sold: 'true' })
+  })
+
+  test('created keeps the earliest date through every put', async () => {
+    const store = await make()
+    const key = 'people/+1/c.md'
+    await store.put(key, 'one', {
+      meta: { created: '2020-01-01T00:00:00.000Z' }
+    })
+    await store.put(key, 'two', {
+      meta: { created: '2024-01-01T00:00:00.000Z' }
+    })
+    assert.equal(
+      (await store.get(key)).meta.created,
+      '2020-01-01T00:00:00.000Z'
+    )
+    await store.put(key, 'three', { meta: { sold: 'true' } })
+    assert.deepEqual((await store.get(key)).meta, {
+      sold: 'true',
+      created: '2020-01-01T00:00:00.000Z'
+    })
+    await store.put(key, 'four', {
+      meta: { created: '2019-06-01T00:00:00.000Z' }
+    })
+    const listed = await store.walk_meta('people/+1/')
+    assert.equal(listed['c.md'].meta.created, '2019-06-01T00:00:00.000Z')
+    await store.delete(key)
+    await store.put(key, 'again')
+    assert.deepEqual((await store.get(key)).meta, {})
   })
 
   test('a put replaces meta; delete takes it', async () => {
@@ -54,12 +101,32 @@ const meta_contract = ({ test, assert, make }) => {
  *
  *   contract({ test, assert, make })   make() resolves to a fresh, empty store
  *
- * Keys are relative, `/`-separated. A version is an opaque hash of the
- * stored bytes: equal bytes share one, and nothing stores it.
+ * Keys are relative, `/`-separated. A version is `version_of` the plain
+ * bytes, however they are packed: equal bytes share one. A composed key is
+ * the exception: its version is opaque, good only for guards.
  */
 export const contract = ({ test, assert, make }) => {
   const text = file => file?.body.toString('utf8')
   meta_contract({ test, assert, make })
+
+  test('find gives every key in a person holding a version', async () => {
+    const store = await make()
+    const same = await store.put('people/+1/a/x.md', 'same')
+    await store.put('people/+1/b/y.md', 'same')
+    await store.put('people/+2/z.md', 'same')
+    assert.deepEqual(await store.find('people/+1/', same), [
+      'people/+1/a/x.md',
+      'people/+1/b/y.md'
+    ])
+    await store.put('people/+1/a/x.md', 'changed')
+    await store.delete('people/+2/z.md')
+    assert.deepEqual(await store.find('people/+1/', same), ['people/+1/b/y.md'])
+    assert.deepEqual(await store.find('people/+2/', same), [])
+    await store.delete('people/+1/b/y.md')
+    assert.deepEqual(await store.find('people/+1/', same), [])
+    assert.deepEqual(await store.list(''), { files: [], folders: ['people'] })
+    assert.deepEqual(Object.keys(await store.walk('')), ['people/+1/a/x.md'])
+  })
 
   test('a missing key reads as null', async () => {
     const store = await make()
@@ -80,6 +147,35 @@ export const contract = ({ test, assert, make }) => {
     const v1 = await store.put('people/+1/a.md', 'one')
     const v2 = await store.put('people/+1/a.md', 'two')
     assert.notEqual(v1, v2)
+  })
+
+  test('a version is the plain bytes hash', async () => {
+    const store = await make()
+    const body = '<p>one</p>\n'.repeat(40)
+    const expected = await version_of(body)
+    assert.equal(await store.put('people/+1/a.html', body), expected)
+    assert.equal(await store.stat('people/+1/a.html'), expected)
+    assert.equal(
+      await store.put('people/+1/b.html', body, { gzip: true }),
+      expected
+    )
+    assert.equal((await store.walk('people/+1/'))['b.html'], expected)
+  })
+
+  test('a body sent gzip reads back plain under the plain version', async () => {
+    const store = await make()
+    const body = '<p>sent packed</p>\n'.repeat(40)
+    const version = await store.put('people/+1/a.html', gzip_sync(body), {
+      encoding: 'gzip'
+    })
+    assert.equal(version, await version_of(body))
+    const file = await store.get('people/+1/a.html')
+    assert.equal(text(file), body)
+    assert.equal(file.version, version)
+    const listed = await store.walk_meta('people/+1/')
+    assert.equal(listed['a.html'].version, version)
+    assert.equal(listed['a.html'].size, Buffer.byteLength(body))
+    await store.put('people/+1/a.html', 'next', { if_version: version })
   })
 
   test('equal bytes share a version', async () => {
@@ -158,7 +254,10 @@ export const contract = ({ test, assert, make }) => {
       files: [],
       folders: ['+1']
     })
-    assert.deepEqual(await store.list('people/+2/'), { files: [], folders: [] })
+    assert.deepEqual(await store.list('people/+2/'), {
+      files: [],
+      folders: []
+    })
   })
 
   test('walk maps every file under a prefix to its version', async () => {

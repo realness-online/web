@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test'
 import * as compressor from '@/workers/compressor'
 import { OPEN_ANGLE } from '@/utils/numbers'
+import { version_of } from '#root/src/files/version.js'
 
 const html =
   '<address itemscope itemtype="/person"><span itemprop="first_name">Scott</span></address>'
@@ -15,7 +16,7 @@ const pako_2_bytes = new Uint8Array([
 
 describe('compressor round trip', () => {
   it('reads back what it wrote', async () => {
-    const { blob } = compressor.compress_html({ data: { html } })
+    const { blob } = await compressor.compress_html({ data: { html } })
     const compressed = new Uint8Array(await blob.arrayBuffer())
 
     expect(compressor.decompress_html({ data: { compressed } }).html).toBe(html)
@@ -29,8 +30,13 @@ describe('compressor round trip', () => {
     expect(result.html).toBe(html)
   })
 
+  it('names the version of the plain HTML, not of the gzip', async () => {
+    const { version } = await compressor.compress_html({ data: { html } })
+    expect(version).toBe(await version_of(html))
+  })
+
   it('writes gzip, which Storage and every reader decode', async () => {
-    const { blob } = compressor.compress_html({ data: { html } })
+    const { blob } = await compressor.compress_html({ data: { html } })
     const compressed = new Uint8Array(await blob.arrayBuffer())
 
     expect([compressed[0], compressed[1]]).toEqual([0x1f, 0x8b])
@@ -38,7 +44,7 @@ describe('compressor round trip', () => {
 
   it('writes something the passthrough will not mistake for plain html', async () => {
     const item = html.repeat(8)
-    const { blob } = compressor.compress_html({ data: { html: item } })
+    const { blob } = await compressor.compress_html({ data: { html: item } })
     const compressed = new Uint8Array(await blob.arrayBuffer())
 
     expect(compressed[0]).not.toBe(OPEN_ANGLE)

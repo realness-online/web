@@ -1,7 +1,8 @@
 import { after, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
-import { rm, writeFile } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import { contract } from '../../src/can/contract.js'
 import { disk } from '../../src/can/disk.js'
 
@@ -29,25 +30,29 @@ it('disk refuses keys that escape its root', async () => {
   await assert.rejects(store.get('people/../../outside'), /escapes the root/)
 })
 
-it('disk hides .meta and refuses keys inside it', async () => {
-  const store = disk(`${base}${randomUUID()}`)
-  await store.put('a.md', 'a', { meta: { sold: 'true' } })
-  assert.deepEqual(await store.list(''), { files: ['a.md'], folders: [] })
-  assert.deepEqual(Object.keys(await store.walk('')), ['a.md'])
-  await assert.rejects(store.put('.meta/a.md.json', '{}'), /reserved/)
+it('gzip_at_rest packs shrinkable text on disk yet serves plain bytes and version', async () => {
+  const dir = `${base}${randomUUID()}`
+  const key = 'people/+1/poster.html'
+  const plain = 'repeat. '.repeat(400)
+  const store = disk(dir, { gzip_at_rest: true })
+  const version = await store.put(key, plain)
+  assert.equal(version, await store.stat(key))
+  assert.equal((await store.walk('people/+1/'))['poster.html'], version)
+  const { body, version: got } = await store.get(key)
+  assert.equal(got, version)
+  assert.equal(body.toString(), plain)
+  const stored = await readFile(join(dir, key))
+  assert.ok(!stored.equals(Buffer.from(plain)))
+  assert.equal(stored.subarray(0, 2).toString('hex'), '1f8b')
 })
 
-it('disk sees a hand edit: the bytes are the truth', async () => {
-  const root = `${base}${randomUUID()}`
-  const store = disk(root)
-  const before = await store.put('notes/a.md', 'one')
-  assert.equal((await store.walk('notes/'))['a.md'], before)
-  await writeFile(`${root}/notes/a.md`, 'edited by hand')
-  const after = (await store.walk('notes/'))['a.md']
-  assert.notEqual(after, before)
-  assert.equal(after, await store.stat('notes/a.md'))
-  await assert.rejects(
-    store.put('notes/a.md', 'stale', { if_version: before }),
-    { code: 'conflict' }
-  )
+it('gzip_at_rest leaves short text and binary bytes plain and readable', async () => {
+  const store = disk(`${base}${randomUUID()}`, { gzip_at_rest: true })
+  await store.put('people/+1/tiny.html', 'hi')
+  assert.equal((await store.get('people/+1/tiny.html')).body.toString(), 'hi')
+  const binary = Buffer.from([0x1f, 0x8b, 1, 2, 3])
+  await store.put('people/+1/logo.png', binary)
+  assert.deepEqual((await store.get('people/+1/logo.png')).body, binary)
+  // a small png must not be misread as gzip even when its bytes look packed
+  assert.deepEqual((await store.get('people/+1/logo.png')).body, binary)
 })

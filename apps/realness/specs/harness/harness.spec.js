@@ -697,8 +697,7 @@ it('h1: without a .ignore, only listed folders and history sync', async () => {
 
 it('turn-end defers a saved-history edit and pushes a write', async () => {
   const { DatabaseSync } = await import('node:sqlite')
-  const { createHash } = await import('node:crypto')
-  const hash = text => createHash('sha256').update(text).digest('hex')
+  const { version_sync: hash } = await import('#root/src/files/version-node.js')
   const actor = await files(join(root, 'defer'), {
     'vault/plans/p.md': '# P\n\n## Syncs\n\n- work/notes\n',
     'work/notes/doc.md': 'title\nbody\n',
@@ -815,8 +814,7 @@ it('turn-end defers a saved-history edit and pushes a write', async () => {
 
 it('s1f: a crash at any upload loses only work after the last completed sync', async () => {
   const { DatabaseSync } = await import('node:sqlite')
-  const { createHash } = await import('node:crypto')
-  const hash = text => createHash('sha256').update(text).digest('hex')
+  const { version_sync: hash } = await import('#root/src/files/version-node.js')
   const url = `http://127.0.0.1:${server.address().port}`
   const plan = { 'vault/plans/p.md': '# P\n\n## Syncs\n\n- work/notes\n' }
   let completed = 0

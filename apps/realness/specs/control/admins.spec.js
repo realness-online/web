@@ -233,3 +233,11 @@ it('a signed-in non-admin is told who can add them', async () => {
     `${ADA} is signed in but is not an admin in development. An admin can run: realness development admins add ${ADA} --yes`
   )
 })
+
+it('the phone shows as text; who is admin still comes from href alone', () => {
+  const html = render_admins([{ phone: SCOTT, name: 'Scott' }])
+  assert.ok(html.replace(/<[^>]*>/g, ' ').includes(SCOTT))
+  assert.deepEqual(parse_admins(html), [{ phone: SCOTT, name: 'Scott' }])
+  const lying = html.replace(`>${SCOTT}</a>`, `>${ADA}</a>`)
+  assert.deepEqual([...read_admins(lying)], [SCOTT])
+})

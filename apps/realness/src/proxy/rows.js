@@ -1,3 +1,5 @@
+import { read_items } from '#root/lib/items.js'
+
 export const INDEX = 'index.html'
 
 export const NUMBERS = [
@@ -22,14 +24,7 @@ export const day_files = files => [
 export const read_rows = (html, payer = '') => {
   const rows = []
   const seen = new Set()
-  for (const [row] of html.matchAll(
-    /<p itemscope itemtype="\/usage">.*?<\/p>/g
-  )) {
-    const values = {}
-    for (const [, name, value] of row.matchAll(
-      /itemprop="(\w+)" content="([^"]*)"/g
-    ))
-      values[name] = value
+  for (const values of read_items(html, 'usage')) {
     if (values.call) {
       if (seen.has(values.call)) continue
       seen.add(values.call)

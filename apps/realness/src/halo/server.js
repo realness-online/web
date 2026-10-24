@@ -794,7 +794,7 @@ export const makeServer = (
   auth = apps && app_auth(halo_pass_secret()),
   loops = null,
   {
-    connectChat = record => vsock.connect(record.vsockPath, 55),
+    connectChat = record => vsock.connect(record.vsock_path, 55),
     limits = null
   } = {}
 ) => {

@@ -6,7 +6,7 @@
     onMounted as mounted,
     onUnmounted as unmounted
   } from 'vue'
-  import { useFps } from '@vueuse/core'
+  import { useFps as use_fps } from '@vueuse/core'
   import {
     animate,
     animation_speed,
@@ -24,7 +24,7 @@
   const FPS_SNAP_THRESHOLD = 59
   const SMOOTH_ALPHA = 0.35
 
-  const fps_raw = useFps()
+  const fps_raw = use_fps()
   const fps = ref(fps_raw.value)
 
   watch(

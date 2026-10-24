@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { read_item } from '#root/lib/items.js'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { after, it } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -66,7 +67,7 @@ it('a failed launch is recorded and frees the slot', async () => {
   })
   const loops = new Loops(store, {
     file: join(root, 'fail.json'),
-    maxChildren: 1
+    max_children: 1
   })
   await assert.rejects(loops.start('a-000000000001', 'goal'), /no systemd/)
   assert.equal(Object.values(loops.loops)[0].status, 'failed')
@@ -81,7 +82,10 @@ it('loops cannot start loops at depth 1', async () => {
 })
 
 it('depth 2 allows one more level', async () => {
-  const loops = new Loops(fake(), { file: join(root, 'two.json'), maxDepth: 2 })
+  const loops = new Loops(fake(), {
+    file: join(root, 'two.json'),
+    max_depth: 2
+  })
   const first = await loops.start('a-000000000001', 'goal')
   const second = await loops.start(first.id, 'goal')
   assert.equal(second.depth, 2)
@@ -91,7 +95,7 @@ it('depth 2 allows one more level', async () => {
 it('racing starts respect the fan-out cap', async () => {
   const loops = new Loops(fake(), {
     file: join(root, 'fan.json'),
-    maxChildren: 3
+    max_children: 3
   })
   const results = await Promise.allSettled(
     Array.from({ length: 5 }, () => loops.start('a-000000000001', 'goal'))
@@ -113,7 +117,7 @@ it('bad goals and unowned actors are refused before any actor starts', async () 
 
 const loop = { started: '2026-09-28T00:00:00Z' }
 const at = minutes => Date.parse(loop.started) + minutes * 60_000
-const limits = { maxRuns: 20, deadlineMs: 60 * 60_000 }
+const limits = { max_runs: 20, deadline_ms: 60 * 60_000 }
 
 it('stop reasons: exited, quota, runs, deadline', () => {
   const running = { state: 'running', runs: 3, quota: false }
@@ -143,8 +147,8 @@ it('watch stops a finished loop, idles it, and frees the slot', async () => {
   const store = fake()
   const loops = new Loops(store, {
     file: join(root, 'watch.json'),
-    maxChildren: 1,
-    maxRuns: 2
+    max_children: 1,
+    max_runs: 2
   })
   const { id } = await loops.start('a-000000000001', 'goal')
   assert.ok(store.work.has(id))
@@ -261,16 +265,18 @@ it('mirror: records go to Storage; an admin stop request is obeyed', async () =>
     'goal with "quotes" & <tags>'
   )
   const record = files.get(`loops/${id}/record.html`)
-  assert.match(record, /itemprop="halo" content="realness-1"/)
-  assert.match(record, /itemprop="owner" content="\+14155550123"/)
-  assert.match(record, /itemprop="status" content="running"/)
-  assert.match(record, /goal with &quot;quotes&quot; &amp; &lt;tags>/)
+  const shown = read_item(record, 'loop')
+  assert.equal(shown.halo, 'realness-1')
+  assert.equal(shown.owner, '+14155550123')
+  assert.equal(shown.status, 'running')
+  assert.equal(shown.goal, 'goal with "quotes" & <tags>')
+  assert.doesNotMatch(record, /<meta|<tags>/)
   files.set(`loops/${id}/stop.html`, 'stop')
   assert.deepEqual(await loops.watch(), [{ id, reason: 'admin' }])
   assert.deepEqual(store.execs.at(-1), [id, STOP_ARGV])
-  assert.match(
-    files.get(`loops/${id}/record.html`),
-    /itemprop="reason" content="admin"/
+  assert.equal(
+    read_item(files.get(`loops/${id}/record.html`), 'loop').reason,
+    'admin'
   )
 })
 

@@ -2,7 +2,11 @@ import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { mkdir, mkdtemp, rm, writeFile as write_file } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { run_harness, SYNC_PAUSED } from '../../src/command/harness-command.js'
+import {
+  run_harness,
+  SYNC_LOCAL_ONLY,
+  SYNC_PAUSED
+} from '../../src/command/harness-command.js'
 
 const scratch = resolve(
   import.meta.dirname,
@@ -84,6 +88,23 @@ it('a sync-paused file stops turn-end and sync from uploading', async t => {
     assert.equal(await run_harness(args, { root, state, target, ...io }), 0)
     assert.deepEqual(JSON.parse(output.at(-1)).result, { paused: true })
   }
+})
+
+it('sync-local-only never falls back to production', async t => {
+  const { root, state, output, io } = await harness(t)
+  await write_file(join(state, SYNC_LOCAL_ONLY), '')
+  const target = async () => ({
+    local: false,
+    url: 'https://sync.realness.online',
+    get_token: async () => {
+      throw new Error('production must not be reached')
+    }
+  })
+  assert.equal(
+    await run_harness(['sync', '--json'], { root, state, target, ...io }),
+    0
+  )
+  assert.deepEqual(JSON.parse(output.at(-1)).result, { local_only: true })
 })
 
 it('desktop turn-end syncs while the local stack is up', async t => {

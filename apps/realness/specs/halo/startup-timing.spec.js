@@ -110,8 +110,8 @@ const fixture = t => {
   const volume = mkdtempSync(join(scratch, 'timing-'))
   t.after(() => rmSync(volume, { recursive: true, force: true }))
   const store = new ActorStore({ volume, firecracker: 'test' })
-  mkdirSync(store.seedDir)
-  writeFileSync(join(store.seedDir, 'rootfs.ext4'), 'disk')
+  mkdirSync(store.seed_dir)
+  writeFileSync(join(store.seed_dir, 'rootfs.ext4'), 'disk')
   store.ensureSeed = async () => {
     state.clock += 7
     return { matches: true }
@@ -141,7 +141,7 @@ it('create separates VM load, guest response, initialization, and total', async 
 
 it('recovery defers Pi through an actor-init argument', async t => {
   const store = fixture(t)
-  store.syncUrl = 'https://sync.test'
+  store.sync_url = 'https://sync.test'
   await store.create('+14156667777')
   const argv = state.guest_argv.find(args =>
     args.includes('/usr/local/bin/realness-actor-init')
@@ -222,7 +222,7 @@ it('z12: a cold reconnect starts Pi as its own stage, after initialization', asy
 
 it('live progress keeps one request ID through recovery and includes queued time', async t => {
   const store = fixture(t)
-  store.syncUrl = 'https://sync.test'
+  store.sync_url = 'https://sync.test'
   state.clock = 5000
   const events = []
   const actor = await store.create('+14156667777', {
@@ -266,7 +266,7 @@ it('live progress keeps one request ID through recovery and includes queued time
 
 it('file recovery and Pi launch have separate durations', async t => {
   const store = fixture(t)
-  store.syncUrl = 'https://sync.test'
+  store.sync_url = 'https://sync.test'
   const actor = await store.create('+14156667777')
   const events = store.traceOf(actor.id)
   const completed = events.filter(
@@ -286,7 +286,7 @@ it('file recovery and Pi launch have separate durations', async t => {
 
 it('failed recovery is visible while Pi still launches', async t => {
   const store = fixture(t)
-  store.syncUrl = 'https://sync.test'
+  store.sync_url = 'https://sync.test'
   state.recover_code = 1
   const actor = await store.create('+14156667777')
   const stages = store
@@ -401,7 +401,7 @@ const created_dirs = store =>
 
 it('hs-over: a create past free memory fails clearly before any disk or TAP', async t => {
   const store = fixture(t)
-  store.memAvailable = () => 2.25 * GIB
+  store.mem_available = () => 2.25 * GIB
   await assert.rejects(store.create('+14156667777'), error => {
     assert.ok(error instanceof Full)
     assert.match(error.message, /^halo full: 2\.25 GiB free, 2\.75 GiB needed/)
@@ -413,7 +413,7 @@ it('hs-over: a create past free memory fails clearly before any disk or TAP', as
 
 it('hs-over: creates in flight hold their memory; a finished create gives it back', async t => {
   const store = fixture(t)
-  store.memAvailable = () => 2.75 * GIB
+  store.mem_available = () => 2.75 * GIB
   const first = store.create('+14156667777')
   await assert.rejects(store.create('+14156667777'), Full)
   await first
@@ -423,13 +423,13 @@ it('hs-over: creates in flight hold their memory; a finished create gives it bac
 
 it('hs-over: unknown memory does not refuse', async t => {
   const store = fixture(t)
-  store.memAvailable = () => null
+  store.mem_available = () => null
   await store.create('+14156667777')
 })
 
 it('hs-over: the last TAP taken reads as a full halo', async t => {
   const store = fixture(t)
-  store.memAvailable = () => 64 * GIB
+  store.mem_available = () => 64 * GIB
   state.no_tap = true
   await assert.rejects(store.create('+14156667777'), error => {
     assert.ok(error instanceof Full)

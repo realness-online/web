@@ -1,5 +1,10 @@
 :root {
   --base-line: 1.333rem;
+  /* Realness's h3 (src/app/style/base-line.styl): 1.25² to 1.414², 35rem to 80rem. */
+  --h3-min: 1.563rem;
+  --h3-max: 2rem;
+  --pad-begins: 35rem;
+  --display-begins: 80rem;
   --max-width: 48rem;
   --measure: 50ch;
   --wide: 64rem;
@@ -18,7 +23,6 @@ body {
   margin: 0;
   line-height: 1.6;
 }
-
 
 main {
   min-height: 100dvh;
@@ -95,7 +99,6 @@ nav {
     }
   }
 }
-
 
 figure {
   margin: 0;
@@ -174,7 +177,6 @@ b {
   color: var(--emphasis);
 }
 
-
 section {
   > article {
     border-bottom: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
@@ -196,7 +198,7 @@ details {
       padding-right: calc(var(--base-line) * 2.5);
 
       &::after {
-        content: "+";
+        content: '+';
         position: absolute;
         right: var(--base-line);
         bottom: var(--base-line);
@@ -289,7 +291,6 @@ details {
   }
 }
 
-
 article[itemscope] {
   > figure {
     img {
@@ -329,7 +330,7 @@ article[itemscope] {
       }
 
       &::before {
-        content: "+";
+        content: '+';
         position: absolute;
         left: 0;
         bottom: 0;
@@ -383,12 +384,12 @@ article[itemscope] {
     color: var(--text);
   }
 
-  section[itemprop="articleBody"] > .plate:has(img[src*="frontier-zone"]) {
+  section[itemprop='articleBody'] > .plate:has(img[src*='frontier-zone']) {
     grid-column: full;
   }
 }
 
-section[itemprop="articleBody"] {
+section[itemprop='articleBody'] {
   --gutter: var(--base-line);
   --bleed: calc((var(--wide) - var(--measure)) / 2);
 
@@ -496,6 +497,17 @@ section[itemprop="articleBody"] {
     color: transparent;
   }
 
+  h3 {
+    font-size: clamp(
+      var(--h3-min),
+      var(--h3-min) + (2 - 1.563) * (100dvw - var(--pad-begins)) / (80 - 35),
+      var(--h3-max)
+    );
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin-top: calc((var(--base-line) - 1em) + var(--base-line) * 2);
+  }
+
   a {
     color: var(--accent);
     text-decoration: none;
@@ -531,7 +543,7 @@ section[itemprop="articleBody"] {
   }
 
   code {
-    font-family: "Monaco", "Menlo", monospace;
+    font-family: 'Monaco', 'Menlo', monospace;
     font-size: 0.875em;
   }
 
@@ -554,7 +566,7 @@ section[itemprop="articleBody"] {
     }
 
     & td:first-child {
-      font-family: "Monaco", "Menlo", monospace;
+      font-family: 'Monaco', 'Menlo', monospace;
       font-size: 0.875em;
       white-space: nowrap;
     }
@@ -619,7 +631,7 @@ section[itemprop="articleBody"] {
 }
 
 @media (prefers-color-scheme: dark) {
-  section[itemprop="articleBody"] pre span {
+  section[itemprop='articleBody'] pre span {
     color: var(--shiki-dark);
     font-style: var(--shiki-dark-font-style, normal);
   }
@@ -634,8 +646,7 @@ footer {
   height: calc(var(--base-line) * 4);
 }
 
-
-section[itemtype*="Person"] > header {
+section[itemtype*='Person'] > header {
   display: grid;
   grid-template-rows: 1fr;
   height: min(56.25vw, 72dvh);
@@ -653,12 +664,12 @@ section[itemtype*="Person"] > header {
 }
 
 @media (min-width: 48rem) {
-  section[itemtype*="Person"] > header img {
+  section[itemtype*='Person'] > header img {
     width: calc(min(56.25vw, 72dvh) * var(--ratio, 1.78));
     animation: poster-fit 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  section[itemtype*="Person"] > header address {
+  section[itemtype*='Person'] > header address {
     align-self: stretch;
     flex-direction: column;
     justify-content: center;
@@ -668,11 +679,11 @@ section[itemtype*="Person"] > header {
     animation: fade-in 0.45s ease both;
   }
 
-  section[itemtype*="Person"] > header address > * {
+  section[itemtype*='Person'] > header address > * {
     animation: slide-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  section[itemtype*="Person"] > header address > *:nth-child(2) {
+  section[itemtype*='Person'] > header address > *:nth-child(2) {
     animation-delay: 0.15s;
   }
 }
@@ -683,7 +694,7 @@ section[itemtype*="Person"] > header {
   }
 }
 
-section[itemtype*="Person"] > header {
+section[itemtype*='Person'] > header {
   address {
     grid-area: 1 / 1;
     align-self: end;
@@ -799,7 +810,7 @@ section[itemtype*="Person"] > header {
   }
 }
 
-article[itemtype*="Job"] {
+article[itemtype*='Job'] {
   padding: calc(var(--base-line) * 1.5) 0;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
 
@@ -826,7 +837,7 @@ article[itemtype*="Job"] {
       letter-spacing: -0.01em;
       line-height: 1.2;
 
-      a[itemprop="url"] {
+      a[itemprop='url'] {
         color: var(--accent);
         text-decoration: none;
 
@@ -845,7 +856,7 @@ article[itemtype*="Job"] {
     }
   }
 
-  p[itemprop="description"] {
+  p[itemprop='description'] {
     margin: 0 0 calc(var(--base-line) * 0.75);
 
     &:last-child {
@@ -865,13 +876,10 @@ article[itemtype*="Job"] {
   }
 }
 
-time[itemprop="startdate"],
-time[itemprop="enddate"] {
+time[itemprop='startdate'],
+time[itemprop='enddate'] {
   font-variant-numeric: tabular-nums;
 }
-
-
-
 
 @page {
   margin: 18mm 16mm;
@@ -893,7 +901,7 @@ time[itemprop="enddate"] {
     line-height: 1.5;
   }
 
-  body:has(section[itemtype*="Person"]) {
+  body:has(section[itemtype*='Person']) {
     font-size: 10pt;
     line-height: 1.4;
   }
@@ -966,21 +974,21 @@ time[itemprop="enddate"] {
     color: black;
   }
 
-  section[itemprop="articleBody"] {
+  section[itemprop='articleBody'] {
     display: block;
     padding: 12pt 0 0;
   }
 
-  section[itemprop="articleBody"] > .plate,
-  section[itemprop="articleBody"] > pre,
-  section[itemprop="articleBody"] > table,
-  section[itemprop="articleBody"] > details {
+  section[itemprop='articleBody'] > .plate,
+  section[itemprop='articleBody'] > pre,
+  section[itemprop='articleBody'] > table,
+  section[itemprop='articleBody'] > details {
     max-width: none;
   }
 
-  section[itemprop="articleBody"] h1,
-  section[itemprop="articleBody"] h2,
-  section[itemprop="articleBody"] h3,
+  section[itemprop='articleBody'] h1,
+  section[itemprop='articleBody'] h2,
+  section[itemprop='articleBody'] h3,
   #skills h2,
   #experience > header h2 {
     background: none;
@@ -992,13 +1000,13 @@ time[itemprop="enddate"] {
     margin: 16pt 0 6pt;
   }
 
-  section[itemprop="articleBody"] h1 {
+  section[itemprop='articleBody'] h1 {
     font-size: 16pt;
   }
-  section[itemprop="articleBody"] h2 {
+  section[itemprop='articleBody'] h2 {
     font-size: 14pt;
   }
-  section[itemprop="articleBody"] h3 {
+  section[itemprop='articleBody'] h3 {
     font-size: 12pt;
   }
 
@@ -1009,11 +1017,11 @@ time[itemprop="enddate"] {
     widows: 3;
   }
 
-  section[itemprop="articleBody"] p {
+  section[itemprop='articleBody'] p {
     margin: 0 0 8pt;
   }
 
-  article[itemtype*="Job"] a[href^="http"]::after {
+  article[itemtype*='Job'] a[href^='http']::after {
     content: attr(href);
     display: block;
     font-size: 0.72em;
@@ -1045,24 +1053,24 @@ time[itemprop="enddate"] {
     margin-bottom: 2pt;
   }
 
-  section[itemprop="articleBody"] a,
-  article[itemtype*="Job"] a {
+  section[itemprop='articleBody'] a,
+  article[itemtype*='Job'] a {
     color: black;
     text-decoration: none;
     border-bottom: 0.5pt solid black;
   }
 
-  article[itemtype*="Job"] a[href^="http"] {
+  article[itemtype*='Job'] a[href^='http'] {
     border-bottom: none;
   }
 
-  section[itemprop="articleBody"] blockquote {
+  section[itemprop='articleBody'] blockquote {
     border-left: 1pt solid black;
     opacity: 1;
     break-inside: avoid;
   }
 
-  section[itemprop="articleBody"] pre {
+  section[itemprop='articleBody'] pre {
     border: 0.5pt solid color-mix(in srgb, var(--text) 30%, transparent);
     padding: 8pt;
     font-size: 8.5pt;
@@ -1077,7 +1085,7 @@ time[itemprop="enddate"] {
     }
   }
 
-  section[itemprop="articleBody"] table {
+  section[itemprop='articleBody'] table {
     break-inside: avoid;
     font-size: 9.5pt;
 
@@ -1092,7 +1100,7 @@ time[itemprop="enddate"] {
     }
   }
 
-  section[itemprop="articleBody"] thead {
+  section[itemprop='articleBody'] thead {
     display: table-header-group;
   }
 
@@ -1130,12 +1138,12 @@ time[itemprop="enddate"] {
     }
   }
 
-  section > article:not([itemtype*="Job"]) {
+  section > article:not([itemtype*='Job']) {
     border-bottom: none;
     break-before: page;
   }
 
-  section > article:not([itemtype*="Job"]):first-child {
+  section > article:not([itemtype*='Job']):first-child {
     break-before: auto;
   }
 
@@ -1151,29 +1159,28 @@ time[itemprop="enddate"] {
     font-size: 12pt;
   }
 
-
-  section[itemtype*="Person"] > header {
+  section[itemtype*='Person'] > header {
     display: block;
     height: auto;
     overflow: visible;
   }
 
-  section[itemtype*="Person"] > header img {
+  section[itemtype*='Person'] > header img {
     display: none;
   }
 
-  section[itemtype*="Person"] > header address {
+  section[itemtype*='Person'] > header address {
     display: block;
     padding: 0;
     color: black;
   }
 
-  section[itemtype*="Person"] > header address p {
+  section[itemtype*='Person'] > header address p {
     font-size: 18pt;
     margin: 0 0 3pt;
   }
 
-  section[itemtype*="Person"] > header address a {
+  section[itemtype*='Person'] > header address a {
     color: black;
     font-size: 10pt;
     margin-right: 12pt;
@@ -1185,24 +1192,24 @@ time[itemprop="enddate"] {
     padding: 8pt 0 0;
   }
 
-  article[itemtype*="Job"] {
+  article[itemtype*='Job'] {
     break-inside: auto;
     padding: 2.5pt 0;
     border-bottom: 0.5pt solid color-mix(in srgb, var(--text) 20%, transparent);
   }
 
-  article[itemtype*="Job"] h3 {
+  article[itemtype*='Job'] h3 {
     break-after: avoid;
     margin: 0 0 2pt;
   }
 
-  article[itemtype*="Job"] p {
+  article[itemtype*='Job'] p {
     margin: 0 0 4pt;
     orphans: 2;
     widows: 2;
   }
 
-  article[itemtype*="Job"]:nth-of-type(n + 11) {
+  article[itemtype*='Job']:nth-of-type(n + 11) {
     display: none;
   }
 
@@ -1212,8 +1219,7 @@ time[itemprop="enddate"] {
   }
 }
 
-
-nav[aria-label="Related"] {
+nav[aria-label='Related'] {
   justify-content: center;
   padding: calc(var(--base-line) / 2) var(--base-line);
   border-bottom: 1px solid var(--code-surface);
@@ -1227,7 +1233,7 @@ nav[aria-label="Related"] {
     padding: 0;
     list-style: none;
   }
-  a[aria-current="page"] {
+  a[aria-current='page'] {
     color: var(--text);
   }
 }

@@ -4,7 +4,7 @@ import { createServer as create_server } from 'node:net'
 import { logger } from './log.js'
 import { Loops } from './loops.js'
 import { Lines } from './vsock.js'
-import { tapGuest } from './syscalls.js'
+import { tapGuest as tap_guest } from './syscalls.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { can } from '#root/src/can/can.js'
 import {
@@ -120,7 +120,7 @@ export class Door {
   }
 
   #listen(record) {
-    const path = door_path(record.vsockPath)
+    const path = door_path(record.vsock_path)
     rm_sync(path, { force: true })
     const server = create_server(conn => this.#handle(record.id, conn))
     server.on('error', error =>
@@ -222,11 +222,11 @@ export class Door {
       if (!record.tap) throw new Error('actor has no network')
       return {
         ok: true,
-        ...(await this.chrome.lease(id, tapGuest(record.tap)))
+        ...(await this.chrome.lease(id, tap_guest(record.tap)))
       }
     }
     const site = request.site ?? id
-    if (!this.store.syncSites && site !== id)
+    if (!this.store.sync_sites && site !== id)
       throw new Error(
         'site belongs to another actor; sync sites are not configured'
       )

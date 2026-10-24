@@ -43,3 +43,19 @@ it('poster labels and attributes cannot insert new HTML attributes', () => {
   assert.match(html, /aria-label="Back &quot;home&quot;"/)
   assert.doesNotMatch(html, /" onerror="/)
 })
+
+it('an article shows its owner phone from the itemid, not only in attributes', async () => {
+  const { article_body } =
+    await import('../../../tools/publish/renderer/src/templates/article.js')
+  const poster = () => ''
+  const html = article_body(
+    poster,
+    { itemid: '/+14155551234/pages/1' },
+    'T',
+    '<p>x</p>',
+    ''
+  )
+  assert.ok(html.replace(/<[^>]*>/g, ' ').includes('+14155551234'))
+  assert.match(html, /<address itemprop="author"/)
+  assert.doesNotMatch(article_body(poster, {}, 'T', '', ''), /<address/)
+})

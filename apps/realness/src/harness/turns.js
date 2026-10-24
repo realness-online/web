@@ -7,7 +7,6 @@
  *
  * The edit log's schema is shared with `extensions/edit-log/log.js`.
  */
-import { createHash as create_hash } from 'node:crypto'
 import { mkdirSync as mkdir_sync } from 'node:fs'
 import {
   mkdir,
@@ -26,11 +25,12 @@ import {
   whole_enabled
 } from './harness.js'
 import { skipped_name } from '#root/src/files/skip.js'
+import { version_sync } from '#root/src/files/version-node.js'
 /* eslint-disable no-await-in-loop -- tree walks go one entry at a time to bound open files */
 
 const KEY_LENGTH = 16
 
-const sha = bytes => create_hash('sha256').update(bytes).digest('hex')
+const sha = version_sync
 const turn_file = (state, session) =>
   join(state, 'turns', `${sha(session).slice(0, KEY_LENGTH)}.json`)
 

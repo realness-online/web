@@ -9,11 +9,11 @@
  * a repo uses the installation of the article that lists it:
  *
  *   <article itemscope itemtype="https://schema.org/SoftwareApplication">
- *     <meta itemprop="identifier" content="12345678">  (the app installation)
+ *     <data itemprop="identifier" value="12345678">12345678</data>  (the app installation)
  *     <a itemprop="codeRepository" href="https://github.com/scott/realness">realness</a>
  *   </article>
  *   <article itemscope itemtype="https://schema.org/SoftwareApplication">
- *     <meta itemprop="identifier" content="87654321">
+ *     <data itemprop="identifier" value="87654321">87654321</data>
  *     <a itemprop="codeRepository" href="https://github.com/Share-More-Stories/seeq-app">seeq-app</a>
  *   </article>
  *
@@ -27,7 +27,8 @@ const TOKEN_LIFE_S = 540
 
 const API = 'https://api.github.com'
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/
-const INSTALLATION = /itemprop="identifier"\s+content="(\d{1,20})"/
+/** Read from an attribute only, `value` or the older `content`; text never grants. */
+const INSTALLATION = /itemprop="identifier"\s+(?:value|content)="(\d{1,20})"/
 const REPOSITORY =
   /itemprop="codeRepository"\s+href="https:\/\/github\.com\/([^"/]+\/[^"/]+?)(?:\.git)?\/?"/g
 

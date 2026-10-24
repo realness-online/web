@@ -6,7 +6,6 @@ import { client, state_dir } from '#root/src/files/client.js'
 import { door_pass } from './recover.js'
 import { harness_exclude, is_file_entry, sync_harness } from './harness.js'
 import { prepare_actor_state } from './state.js'
-import { HTTP } from '#root/lib/http.js'
 /* eslint-disable no-await-in-loop -- harness folders sync one at a time so a failure stops the rest */
 
 /**
@@ -33,19 +32,12 @@ export const actor_client = async ({
   const store = client({
     url,
     phone: claims.phone,
-    token: () => pass,
+    token: async ({ refresh = false } = {}) => {
+      if (refresh) pass = await issue()
+      return pass
+    },
     state,
-    fetcher: async (url, options) => {
-      let response = await fetcher(url, options)
-      if (response.status === HTTP.UNAUTHORIZED) {
-        pass = await issue()
-        response = await fetcher(url, {
-          ...options,
-          headers: { ...options.headers, authorization: `Bearer ${pass}` }
-        })
-      }
-      return response
-    }
+    fetcher
   })
   return { store, claims }
 }

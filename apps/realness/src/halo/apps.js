@@ -44,7 +44,7 @@ const sleep = ms =>
   new Promise(done => {
     setTimeout(done, ms)
   })
-const mintId = () => `app-${random_bytes(ID_BYTES).toString('hex')}`
+const mint_id = () => `app-${random_bytes(ID_BYTES).toString('hex')}`
 
 /** fc-app5 -> 06:00:AC:11:05:02; the guest reads 172.17.5.2 off its MAC. */
 export const macFor = tap => {
@@ -139,11 +139,11 @@ export class AppStore {
   /** @type {string} */
   runtimes
   /** @type {string} */
-  tapPrefix
+  tap_prefix
   /** @type {number} */
-  bootTimeout
+  boot_timeout
   /** @type {number} */
-  apiTimeout
+  api_timeout
   /** @type {number} */
   vcpus
   /** @type {string} */
@@ -166,9 +166,9 @@ export class AppStore {
     Object.assign(this, {
       image: '/opt/fc/app.ext4',
       runtimes: '/opt/fc/runtimes',
-      tapPrefix: 'fc-app',
-      bootTimeout: 60,
-      apiTimeout: 30,
+      tap_prefix: 'fc-app',
+      boot_timeout: 60,
+      api_timeout: 30,
       vcpus: CAPS.vcpus,
       ...options
     })
@@ -274,7 +274,7 @@ export class AppStore {
    */
   async start(files, meta = {}) {
     const needs = infer(files)
-    const id = mintId()
+    const id = mint_id()
     if (needs.kind === 'site')
       return /** @type {AppRecord} */ ({ id, kind: 'site', ...meta })
     const runtime = needs.runtime
@@ -287,7 +287,7 @@ export class AppStore {
     let tap = ''
     try {
       buildCodeDisk(files, join(dir, CODE), needs.start, dir)
-      tap = syscalls.freeTap(this.tapPrefix)
+      tap = syscalls.freeTap(this.tap_prefix)
       syscalls.createTap(tap, NET)
       this.write({
         id,
@@ -322,10 +322,10 @@ export class AppStore {
   async boot(id) {
     const record = this.record(id)
     const dir = this.path(id)
-    const apiSock = join(dir, 'api.sock')
+    const api_sock = join(dir, 'api.sock')
     const log = join(dir, 'firecracker.log')
-    await firecracker.terminate(firecracker.pidForApiSock(apiSock))
-    rm_sync(apiSock, { force: true })
+    await firecracker.terminate(firecracker.pidForApiSock(api_sock))
+    rm_sync(api_sock, { force: true })
     if (!syscalls.tapExists(record.tap)) syscalls.createTap(record.tap, NET)
     syscalls.run([
       'cp',
@@ -337,10 +337,10 @@ export class AppStore {
     const runtime = record.runtime
       ? join(this.runtimes, `${record.runtime}.ext4`)
       : null
-    const child = firecracker.spawn(this.firecracker, dir, apiSock, log)
+    const child = firecracker.spawn(this.firecracker, dir, api_sock, log)
     child.unref()
-    await firecracker.waitForApiSocket(apiSock)
-    await firecracker.boot(new firecracker.Api(apiSock, this.apiTimeout), {
+    await firecracker.waitForApiSocket(api_sock)
+    await firecracker.boot(new firecracker.Api(api_sock, this.api_timeout), {
       kernel: this.kernel,
       disk: join(dir, ROOT),
       tap: record.tap,
@@ -349,13 +349,13 @@ export class AppStore {
       mib: record.mib,
       readOnly: { code: join(dir, CODE), ...(runtime && { runtime }) }
     })
-    const deadline = Date.now() + this.bootTimeout * MS_PER_SECOND
+    const deadline = Date.now() + this.boot_timeout * MS_PER_SECOND
     while (!(await portOpen(record.address, record.port))) {
       if (!firecracker.alive(child.pid))
         throw new HaloError(`app VM exited during boot:\n${tail(log)}`)
       if (Date.now() > deadline)
         throw new HaloError(
-          `nothing on ${record.address}:${record.port} after ${this.bootTimeout}s:\n${tail(log)}`
+          `nothing on ${record.address}:${record.port} after ${this.boot_timeout}s:\n${tail(log)}`
         )
       await sleep(BOOT_POLL_MS)
     }

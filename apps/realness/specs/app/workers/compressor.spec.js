@@ -14,14 +14,15 @@ describe('compressor worker', () => {
   })
 
   describe('compress_html', () => {
-    it('compresses HTML string', () => {
+    it('compresses HTML string and names its plain version', async () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3, 4])
       gzip.mockReturnValue(mock_compressed)
 
       const message = { data: { html: mock_html } }
-      const result = compressor.compress_html(message)
+      const result = await compressor.compress_html(message)
 
+      expect(result.version).toBe('Xxq7KCIW1SLcaHubQ3RkOb')
       expect(gzip).toHaveBeenCalledWith(expect.any(Uint8Array), {
         level: 9
       })
@@ -60,18 +61,18 @@ describe('compressor worker', () => {
   })
 
   describe('route_message', () => {
-    it('routes compress:html message', () => {
+    it('routes compress:html message', async () => {
       const mock_html = '<html><body>test</body></html>'
       const mock_compressed = new Uint8Array([1, 2, 3])
       gzip.mockReturnValue(mock_compressed)
 
       const message = { data: { route: 'compress:html', html: mock_html } }
-      const result = compressor.route_message(message)
+      const result = await compressor.route_message(message)
 
       expect(result).toHaveProperty('blob')
     })
 
-    it('routes decompress:html message', () => {
+    it('routes decompress:html message', async () => {
       const mock_compressed = new Uint8Array([1, 2, 3])
       const mock_decompressed = '<html><body>test</body></html>'
       inflate.mockReturnValue(mock_decompressed)
@@ -79,15 +80,15 @@ describe('compressor worker', () => {
       const message = {
         data: { route: 'decompress:html', compressed: mock_compressed }
       }
-      const result = compressor.route_message(message)
+      const result = await compressor.route_message(message)
 
       expect(result).toHaveProperty('html')
       expect(result.html).toBe(mock_decompressed)
     })
 
-    it('handles unknown route', () => {
+    it('handles unknown route', async () => {
       const message = { data: { route: 'unknown:route' } }
-      const result = compressor.route_message(message)
+      const result = await compressor.route_message(message)
 
       expect(result).toHaveProperty('error')
       expect(result.error).toBe('Unknown route: unknown:route')

@@ -16,14 +16,14 @@ const seed_for = (t, record_mib) => {
   t.after(() => rm_sync(root, { recursive: true, force: true }))
   const template = join(root, 'template.ext4')
   write_file_sync(template, 'template')
-  const seedDir = join(root, 'seed')
-  mkdir_sync(seedDir)
-  write_file_sync(join(seedDir, 'state'), '')
+  const seed_dir = join(root, 'seed')
+  mkdir_sync(seed_dir)
+  write_file_sync(join(seed_dir, 'state'), '')
   const store = {
-    seedDir,
+    seed_dir,
     template,
     kernel: '/opt/fc/vmlinux-6.1.155',
-    firecrackerVersion: 'Firecracker v1.17.0',
+    firecracker_version: 'Firecracker v1.17.0',
     vcpus: 2,
     mib: ACTOR_MIB
   }
@@ -32,7 +32,7 @@ const seed_for = (t, record_mib) => {
   const record = { ...current }
   if (record_mib === undefined) delete record.mem_size_mib
   else record.mem_size_mib = record_mib
-  write_file_sync(join(seedDir, 'seed.json'), JSON.stringify(record))
+  write_file_sync(join(seed_dir, 'seed.json'), JSON.stringify(record))
   return ActorStore.prototype.seedStatus.call(store)
 }
 

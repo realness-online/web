@@ -22,7 +22,11 @@
     provide,
     watchEffect as watch_effect
   } from 'vue'
-  import { useFps, useFullscreen, useActiveElement } from '@vueuse/core'
+  import {
+    useFps as use_fps,
+    useFullscreen as use_fullscreen,
+    useActiveElement as use_active_element
+  } from '@vueuse/core'
   import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import { use_global_keymap } from '@/use/global-keymap'
   import { use_icon_settle } from '@/use/icon-settle'
@@ -46,7 +50,7 @@
   const router = use_router()
   const route = use_route()
 
-  const fps = useFps()
+  const fps = use_fps()
   provide('fps', fps)
 
   const working_count = ref(0)
@@ -89,8 +93,8 @@
   const documentation = ref(null)
   provide('documentation', documentation)
 
-  const { isFullscreen } = useFullscreen()
-  const active_el = useActiveElement()
+  const { isFullscreen } = use_fullscreen()
+  const active_el = use_active_element()
   /** Only on home (Thoughts): hide footer switch while focus is inside a thought (e.g. editor). Profile and other routes still render thoughts in the feed; do not steal the switch there. */
   const thought_hides_footer_switch = computed(() => {
     if (router.currentRoute.value.path !== '/') return false

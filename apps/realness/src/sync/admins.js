@@ -3,7 +3,7 @@
  * bucket root. `can()` denies that key to everyone, so only someone with
  * the bucket's own key edits it. Read at most every 30 seconds.
  *
- *   <a href="tel:+14156667777">Scott</a>
+ *   <a href="tel:+14156667777">+14156667777</a> Scott
  */
 const TEL = /href="tel:(\+[1-9]\d{6,14})"/g
 const FRESH_MS = 30_000

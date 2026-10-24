@@ -1,13 +1,12 @@
 /**
  * Storage over the sync service, in the shapes the app already reads from
  * Firebase Storage: `{ items, prefixes }` listings, `customMetadata.hash`,
- * and download URLs. The bytes are the truth, so `customMetadata.hash` is the
- * sync version, the stored bytes' hash, and `content_hash` hashes HTML the
- * way it will be stored: pako gzip at level 9, then SHA-256.
+ * and download URLs. `customMetadata.hash` is the sync version, the plain
+ * bytes' hash, so `content_hash` is `version_of` the HTML. A gzip upload
+ * says so and carries the version the worker took before packing.
  */
-import { gzip } from 'pako'
+import { version_of } from '#root/src/files/version.js'
 
-const VERSION_LENGTH = 22
 const NOT_FOUND = 404
 const FORBIDDEN = 403
 const META = { sold: 'x-meta-sold', fullLocale: 'x-meta-full-locale' }
@@ -16,22 +15,26 @@ const META = { sold: 'x-meta-sold', fullLocale: 'x-meta-full-locale' }
 const storage_error = (path, code) =>
   Object.assign(new Error(`${path}: ${code}`), { code })
 
-const base64url = bytes =>
-  btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-
-/** The disk store's version of these bytes. */
-const version_of = async bytes =>
-  base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).slice(
-    0,
-    VERSION_LENGTH
-  )
-
 /** The version this HTML will have once stored. */
-export const content_hash = html =>
-  version_of(gzip(new TextEncoder().encode(html), { level: 9 }))
+export const content_hash = html => version_of(html)
+
+/**
+ * `Content-Encoding` and `X-Version` for one upload: a gzip body names its
+ * plain version from the worker; a string is hashed here.
+ * @param {string | Blob} data
+ * @param {{ contentEncoding?: string, customMetadata?: Record<string, string> }} meta
+ */
+const packing_headers = async (data, meta) => {
+  if (meta?.contentEncoding === 'gzip')
+    return {
+      'content-encoding': 'gzip',
+      ...(meta.customMetadata?.version && {
+        'x-version': meta.customMetadata.version
+      })
+    }
+  if (typeof data === 'string') return { 'x-version': await version_of(data) }
+  return {}
+}
 
 const ref_of = path => ({
   fullPath: path,
@@ -103,7 +106,10 @@ export const sync_storage = ({ base, token }) => {
   const upload = async (path, data, meta = {}) => {
     const response = await call('PUT', path, {
       body: data,
-      headers: meta_headers(meta.customMetadata)
+      headers: {
+        ...meta_headers(meta.customMetadata),
+        ...(await packing_headers(data, meta))
+      }
     })
     if (!response.ok) await failed(path, response)
     const version = response.headers.get('etag')?.replace(/"/g, '') ?? null

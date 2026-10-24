@@ -1,12 +1,12 @@
 <script setup>
   import { computed, ref, watch } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
+  import { useRoute as use_route, useRouter as use_router } from 'vue-router'
   import SponsorCta from '@/components/sponsor/cta'
 
   defineOptions({ name: 'Pricing' })
 
-  const route = useRoute()
-  const router = useRouter()
+  const route = use_route()
+  const router = use_router()
 
   const tier_slugs = ['endorse', 'teams', 'enterprise']
 

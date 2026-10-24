@@ -19,7 +19,7 @@ import {
   resolve
 } from 'node:path'
 import { promisify } from 'node:util'
-import { createHash as create_hash } from 'node:crypto'
+import { version_sync } from '#root/src/files/version-node.js'
 import { writeFile as write_file } from 'node:fs/promises'
 import { apply, load_calls } from '#root/src/files/replay.js'
 import { ignorer, parse_ignore } from '#root/src/files/ignore.js'
@@ -59,7 +59,7 @@ const is_internal = (path, sessions) =>
       path.startsWith(`${name}/`) ||
       path.startsWith(`${name}-`)
   )
-const sha = bytes => create_hash('sha256').update(bytes).digest('hex')
+const sha = version_sync
 
 const run = promisify(exec_file)
 

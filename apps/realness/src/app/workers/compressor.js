@@ -1,13 +1,16 @@
 import { gzip, inflate } from 'pako'
 import { OPEN_ANGLE } from '@/utils/numbers'
+import { version_of } from '#root/src/files/version.js'
 
-export const compress_html = message => {
+/** Hash the plain bytes, then gzip them: the version never sees the gzip. */
+export const compress_html = async message => {
   const uint8_array = new TextEncoder().encode(message.data.html)
+  const version = await version_of(uint8_array)
   const result = gzip(uint8_array, {
     level: 9
   })
   const blob = new Blob([result], { type: 'application/octet-stream' })
-  return { blob }
+  return { blob, version }
 }
 
 export const decompress_html = message => {
@@ -22,13 +25,13 @@ export const decompress_html = message => {
   return { html }
 }
 
-export const route_message = message => {
+export const route_message = async message => {
   const { route } = message.data
   let reply = {}
 
   switch (route) {
     case 'compress:html':
-      reply = compress_html(message)
+      reply = await compress_html(message)
       break
     case 'decompress:html':
       reply = decompress_html(message)

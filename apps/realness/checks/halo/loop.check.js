@@ -50,7 +50,7 @@ const store = new ActorStore({
   kernel: '/opt/fc/vmlinux-6.1.155',
   firecracker: '/opt/fc/firecracker'
 })
-const loops = new Loops(store, { file, mirror, deadlineMs: 60 * 60_000 })
+const loops = new Loops(store, { file, mirror, deadline_ms: 60 * 60_000 })
 const door = new Door(store, '/s/{id}/', loops)
 const server = make_server(store, null, undefined, loops)
 /** @type {Promise<void>} */

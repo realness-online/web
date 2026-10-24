@@ -11,6 +11,8 @@ import { dev_issuer } from '../../src/sync/dev-token.js'
 import { rights } from '../../src/sync/rights.js'
 import { sync_service } from '../../src/sync/server.js'
 import { out_path } from '#root/lib/output.js'
+import { gzipSync as gzip_sync } from 'node:zlib'
+import { version_of } from '#root/src/files/version.js'
 
 const A = '+15555550100'
 const B = '+15555550101'
@@ -384,7 +386,7 @@ it('only allowed sites may call from a browser', async () => {
   )
   assert.equal(
     read.headers.get('access-control-expose-headers'),
-    'etag, x-meta-sold, x-meta-full-locale'
+    'etag, x-meta-sold, x-meta-full-locale, x-meta-created'
   )
   const stranger_site = await call('GET', `people/${A}/posters/`, {
     headers: { origin: 'https://evil.example' }
@@ -572,4 +574,101 @@ it('gzip HTML is served as gzip HTML; other bytes are left alone', async () => {
   })
   const raw = await call('GET', `people/${A}/vault/a.gz`, { headers: as(A) })
   assert.equal(raw.headers.get('content-encoding'), null)
+})
+
+it('a gzip write is checked against its plain hash, stored, and read back plain', async () => {
+  const plain = '<p>sent packed</p>\n'.repeat(40)
+  const version = await version_of(plain)
+  const put = await call('PUT', `people/${A}/vault/packed.md`, {
+    headers: {
+      ...as(A),
+      'content-encoding': 'gzip',
+      'x-version': `"${version}"`
+    },
+    body: gzip_sync(plain)
+  })
+  assert.equal(put.status, 200)
+  assert.equal(put.headers.get('etag'), `"${version}"`)
+  const read = await call('GET', `people/${A}/vault/packed.md`, {
+    headers: as(A)
+  })
+  assert.equal(await read.text(), plain)
+  assert.equal(read.headers.get('etag'), `"${version}"`)
+})
+
+it('a plain write with X-Version is checked too', async () => {
+  const version = await version_of('plain')
+  const put = await call('PUT', `people/${A}/vault/plain.md`, {
+    headers: { ...as(A), 'x-version': version },
+    body: 'plain'
+  })
+  assert.equal(put.headers.get('etag'), `"${version}"`)
+})
+
+it('a wrong hash, bad gzip, or unknown encoding writes nothing', async () => {
+  const path = `people/${A}/vault/refused.md`
+  const wrong = await status('PUT', path, {
+    headers: {
+      ...as(A),
+      'content-encoding': 'gzip',
+      'x-version': await version_of('other')
+    },
+    body: gzip_sync('mine')
+  })
+  assert.equal(wrong, 400)
+  const broken = await status('PUT', path, {
+    headers: { ...as(A), 'content-encoding': 'gzip' },
+    body: Buffer.from('not gzip at all')
+  })
+  assert.equal(broken, 400)
+  const unknown = await status('PUT', path, {
+    headers: { ...as(A), 'content-encoding': 'br' },
+    body: 'x'
+  })
+  assert.equal(unknown, 415)
+  assert.equal(await status('GET', path, { headers: as(A) }), 404)
+})
+
+it('a gzip bomb past the limit is refused', async () => {
+  const bomb = gzip_sync(Buffer.alloc(11 * 1024 * 1024))
+  const put = await status('PUT', `people/${A}/vault/bomb.bin`, {
+    headers: { ...as(A), 'content-encoding': 'gzip' },
+    body: bomb
+  })
+  assert.equal(put, 413)
+})
+
+it('x-meta-created keeps the earliest date and refuses anything but ISO time', async () => {
+  const path = `people/${A}/vault/dated.md`
+  const put = (body, created) =>
+    status('PUT', path, {
+      headers: { ...as(A), ...(created && { 'x-meta-created': created }) },
+      body
+    })
+  assert.equal(await put('one', '2021-05-01T10:00:00.000Z'), 200)
+  assert.equal(await put('two', '2023-05-01T10:00:00.000Z'), 200)
+  assert.equal(await put('three'), 200)
+  const read = await call('GET', path, { headers: as(A) })
+  assert.equal(read.headers.get('x-meta-created'), '2021-05-01T10:00:00.000Z')
+  assert.equal(await put('four', 'last tuesday'), 400)
+})
+
+it('?version= lists every file in a person holding that version', async () => {
+  for (const path of ['twin/a.md', 'twin/deep/b.md'])
+    await call('PUT', `people/${A}/${path}`, { headers: as(A), body: 'twin' })
+  const version = await version_of('twin')
+  const found = await (
+    await call('GET', `people/${A}/?version=${version}`, { headers: as(A) })
+  ).json()
+  assert.deepEqual(found.files, ['twin/a.md', 'twin/deep/b.md'])
+  assert.equal(
+    await status('GET', `people/${A}/twin/?version=${version}`, {
+      headers: as(A)
+    }),
+    400
+  )
+  assert.equal(
+    await status('GET', `people/${B}/?version=${version}`, { headers: as(A) }),
+    403
+  )
 })
