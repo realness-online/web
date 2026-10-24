@@ -23,7 +23,7 @@ import {
 
 const root = file_url_to_path(new URL('../../../../', import.meta.url))
 const entry = file_url_to_path(
-  new URL('../../../../bin/harness/local.js', import.meta.url)
+  new URL('../../../../.pi/bin/harness/local.js', import.meta.url)
 )
 
 const fixture = (running = []) => {
@@ -67,8 +67,8 @@ it('one command works from another directory and leaves npm start as the harness
   const { scripts } = JSON.parse(
     read_file_sync(new URL('../../../../package.json', import.meta.url), 'utf8')
   )
-  assert.equal(scripts.start, './bin/pi')
-  assert.equal(scripts.local, 'node bin/harness/local.js')
+  assert.equal(scripts.start, './.pi/bin/pi')
+  assert.equal(scripts.local, 'node .pi/bin/harness/local.js')
   assert.equal(
     plan.services.find(service => service.name === 'gate').env.GATE_API_PORT,
     '18080'

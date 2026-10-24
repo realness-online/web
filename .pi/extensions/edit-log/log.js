@@ -22,7 +22,7 @@ import { mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { state_path, harness_root } from '../../../bin/lib/harness-settings.js'
+import { state_path, harness_root } from '../../bin/lib/harness-settings.js'
 
 /** @param {string} root */
 const useHarnessState = (root) => join(root, state_path(root))

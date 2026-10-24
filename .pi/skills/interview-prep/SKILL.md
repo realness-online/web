@@ -2,7 +2,7 @@
 name: interview-prep
 description: Helps research a company and prepare for its hiring process -- company research, why-this-company/role fit exploration, behavioral (STAR) prep, technical/DSA prep, and tracking hiring stages through offer and negotiation. Use when asked to "research this company", "prepare for an interview at X", "help me get ready for an interview", "practice for a coding interview", "should I apply to X", "what's interesting about this company", "track my job search", or when the user names a target company/role they want to pursue.
 metadata:
-  check: "node ../../../bin/checks/check-skills.js interview-prep"
+  check: "node ../../bin/checks/check-skills.js interview-prep"
 ---
 
 # Interview Prep

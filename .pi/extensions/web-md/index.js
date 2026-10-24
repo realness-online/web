@@ -10,7 +10,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { check } from './rules.js'
 
-const web_md = resolve(dirname(fileURLToPath(import.meta.url)), '../../../bin/web/web-md.js')
+const web_md = resolve(dirname(fileURLToPath(import.meta.url)), '../../bin/web/web-md.js')
 
 export default function (pi) {
   pi.on('tool_call', event => {

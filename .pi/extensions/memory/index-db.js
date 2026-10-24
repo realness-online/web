@@ -66,7 +66,7 @@ const read_session_text = async (file) => {
   if (file.endsWith('.jsonl')) return readFile(file, 'utf8')
   const reader = process.env.PI_SESSION_READER
   if (!reader)
-    throw new Error('PI_SESSION_READER is required for HTML session recall; launch through bin/pi')
+    throw new Error('PI_SESSION_READER is required for HTML session recall; launch through .pi/bin/pi')
   const { stdout } = await decode_session(process.execPath, [reader, file], {
     encoding: 'utf8',
     timeout: 30_000,
@@ -78,7 +78,7 @@ const read_session_text = async (file) => {
 /**
  * Sessions live under the agent directory, which pi reports as
  * `PI_CODING_AGENT_DIR` - a project-local `.pi/agent` when realness runs through
- * `bin/pi`, and `~/.pi/agent` under a bare pi install. Both the tree and the
+ * `.pi/bin/pi`, and `~/.pi/agent` under a bare pi install. Both the tree and the
  * store follow it so a checkout and a global install keep separate memories.
  *
  * The fallback is deliberately `~/.pi/agent`: it is where pi itself would put

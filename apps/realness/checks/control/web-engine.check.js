@@ -54,7 +54,7 @@ const create = async () => {
   return result.json
 }
 const web_md = async (id, url, extra = '') => {
-  const command = `cd /realness && node bin/web/web-md.js '${url}' --max 300 ${extra}`
+  const command = `cd /realness && node .pi/bin/web/web-md.js '${url}' --max 300 ${extra}`
   const result = await call('POST', `/v1/actors/${id}/exec`, {
     argv: [
       'runuser',

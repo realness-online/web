@@ -461,7 +461,7 @@ export default define_config(({ mode }) => ({
           product_root,
           'tools/publish/renderer/static/scripts/**/*.js'
         ),
-        path.join(product_root, '..', 'bin/harness/commands/page.js')
+        path.join(product_root, '..', '.pi/bin/harness/commands/page.js')
       ],
       allowExternal: true,
       exclude: [

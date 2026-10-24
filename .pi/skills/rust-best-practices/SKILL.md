@@ -7,7 +7,7 @@ description: >
 license: MIT
 compatibility: Rust 1.70+, Cargo
 metadata:
-  check: "node ../../../bin/checks/check-skills.js rust-best-practices"
+  check: "node ../../bin/checks/check-skills.js rust-best-practices"
   author: apollographql
   version: "1.1.0"
 allowed-tools: Bash(cargo:*) Bash(rustc:*) Bash(rustfmt:*) Bash(clippy:*) Read Write Edit Glob Grep

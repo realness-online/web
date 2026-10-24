@@ -1,0 +1,37 @@
+{
+  "about": "Hours a kept page lasts when its own headers don't say, and hours past that it may be served stale while it refreshes. First matching pattern wins; 0 hours means never keep; 0 stale_hours means always wait for a fresh read. Patterns are regular expressions on the full URL. .pi/bin/lib/web-md-cache-times.json and apps/realness/src/halo/web-times.json must match (a test checks).",
+  "default_hours": 24,
+  "default_stale_hours": 24,
+  "rules": [
+    {
+      "kind": "search results",
+      "hours": 0,
+      "stale_hours": 0,
+      "pattern": "^https?://(www\\.)?(google|bing|duckduckgo)\\.[^/]+/(search|\\?|html)|[?&]q="
+    },
+    {
+      "kind": "pinned version",
+      "hours": 2160,
+      "stale_hours": 2160,
+      "pattern": "github\\.com/[^/]+/[^/]+/(blob|tree)/([0-9a-f]{7,40}|v?\\d+\\.\\d+[^/]*)/|arxiv\\.org/abs/[\\d.]+v\\d+|npmjs\\.com/package/.+/v/\\d|docs\\.rs/[^/]+/\\d+\\.\\d+"
+    },
+    {
+      "kind": "front page or listing",
+      "hours": 0.25,
+      "stale_hours": 0,
+      "pattern": "^https?://[^/]+/?$|news\\.ycombinator\\.com|reddit\\.com/r/[^/]+/?$|/(new|latest|trending|feed)/?$"
+    },
+    {
+      "kind": "product page",
+      "hours": 1,
+      "stale_hours": 0,
+      "pattern": "amazon\\.[^/]+/(dp|gp/product)/|/products?/"
+    },
+    {
+      "kind": "reference docs",
+      "hours": 168,
+      "stale_hours": 168,
+      "pattern": "wikipedia\\.org/wiki/|developer\\.mozilla\\.org|docs\\.[^/]+/|/docs?/|/documentation/|/reference/"
+    }
+  ]
+}

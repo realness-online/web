@@ -40,7 +40,7 @@ export const INCLUDE = [
   'README.md',
   'LICENSE',
   'package.json',
-  'bin',
+  '.pi/bin',
   '.pi/skills',
   '.pi/prompts',
   '.pi/extensions',

@@ -4,7 +4,7 @@ Stops `artifacts/` from growing without bound.
 
 ## Behavior
 
-On `agent_settled`, runs `bin/harness/artifacts-prune.js --apply --quiet` from the
+On `agent_settled`, runs `.pi/bin/harness/artifacts-prune.js --apply --quiet` from the
 harness root and notifies when it frees space. A missing script or a failed
 run is ignored, so a prune never disturbs the session.
 
@@ -28,10 +28,10 @@ recent data is holding the space. `--cap-mb N` changes the cap.
 ## Run it by hand
 
 ```sh
-node bin/harness/artifacts-prune.js               # dry run
-node bin/harness/artifacts-prune.js --apply       # delete
-node bin/harness/artifacts-prune.js --all         # ignore the 60-minute grace
-node bin/harness/artifacts-prune.js --age-minutes 0
+node .pi/bin/harness/artifacts-prune.js               # dry run
+node .pi/bin/harness/artifacts-prune.js --apply       # delete
+node .pi/bin/harness/artifacts-prune.js --all         # ignore the 60-minute grace
+node .pi/bin/harness/artifacts-prune.js --age-minutes 0
 ```
 
 ## Setup

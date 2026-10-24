@@ -2,7 +2,7 @@
 name: editor
 description: See what the user has open in their editor - Neovim or Emacs - and open files in it. Reads the open buffers, cursor, and visible lines so you can discuss their actual working files, and teaches their own nvim or Emacs keys in context. Use when the user mentions Emacs, Neovim, vim, or their editor, asks "talk about what I have open", mentions a file they're working on without naming it, asks "how do I do X" in their editor, or wants a file opened.
 metadata:
-  check: "node ../../../bin/checks/check-skills.js editor"
+  check: "node ../../bin/checks/check-skills.js editor"
 ---
 
 # Nvim Buffers

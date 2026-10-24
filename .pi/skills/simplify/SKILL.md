@@ -2,7 +2,7 @@
 name: simplify
 description: Simplify and refine recently modified code for clarity and consistency without changing behavior. Use when asked to "simplify this", "clean up the diff", "tidy this up", or as a post-edit pass after writing code.
 metadata:
-  check: 'node ../../../bin/checks/check-skills.js simplify'
+  check: 'node ../../bin/checks/check-skills.js simplify'
 ---
 
 # Simplify

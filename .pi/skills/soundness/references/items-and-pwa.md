@@ -73,7 +73,7 @@ vault files, authenticated API responses, or secrets in a public cache.
 Run from the harness root:
 
 ```
-node bin/checks/soundness-check.js --site <built-directory>
+node .pi/bin/checks/soundness-check.js --site <built-directory>
 ```
 
 Every built HTML page must contain a primary addressed `html`, `main`, or

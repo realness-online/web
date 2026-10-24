@@ -13,7 +13,7 @@ description:
   project", or producing design-system assets for a project from rules rather
   than hand-drawing.
 metadata:
-  check: 'node ../../../bin/checks/check-skills.js flexible-visual-system'
+  check: 'node ../../bin/checks/check-skills.js flexible-visual-system'
 ---
 
 # Flexible Visual System

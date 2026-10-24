@@ -18,8 +18,8 @@ import { mkdirSync, openSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { openLog, record, sha, stateDir, logPath } from './log.js'
-import { is_actor, harness_root } from '../../../bin/lib/harness-settings.js'
-import { product_entry } from '../../../bin/lib/product.js'
+import { is_actor, harness_root } from '../../bin/lib/harness-settings.js'
+import { product_entry } from '../../bin/lib/product.js'
 
 const in_actor = is_actor
 /** Desktop runs the repo's command; an actor runs its `realness` wrapper. */

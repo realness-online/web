@@ -13,7 +13,7 @@ The harness sits at the root. Personal state and build output stay local.
 ```
 realness/
 ├── apps/realness/       reference product and cloud tools
-├── bin/                 harness launcher (pi) and helpers
+├── .pi/bin/             harness launcher (pi) and helpers
 │   ├── harness/         startup, sessions, pi fork, auto-fix, command catalog
 │   ├── checks/          repo checks: extensions, skills, tooling, comments, soundness
 │   ├── plans/           plan pages and plan shape
@@ -46,7 +46,7 @@ it any time; `remember` rebuilds it from the original transcripts. Compressed
 sessions use the installed decoder, without a fork source checkout. The index
 is never synced.
 
-`bin/pi` keeps checkout state in `.pi/agent/`. An existing `~/.pi` stays separate;
+`.pi/bin/pi` keeps checkout state in `.pi/agent/`. An existing `~/.pi` stays separate;
 startup does not copy or delete its configuration or credentials.
 
 `.pi/skills/` and `.pi/extensions/` are the heart of the harness - they're where you teach the agent to work the way you do. Start with the ones you have, then build more as the need shows up.
@@ -79,7 +79,7 @@ An explicit local `fork-path` marker still takes priority for development.
 
 `.pi/agent/npm/node_modules/` holds **extra pi packages** listed in `.pi/agent/settings.json` (loop, btw, autoresearch, etc.).
 
-Update them: `./bin/pi update --extensions`
+Update them: `./.pi/bin/pi update --extensions`
 
 ### Why is there a folder called `npm/`?
 
@@ -163,13 +163,13 @@ this index.
 
 | Command                              | Purpose and requirements                                                                                                      |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `npm start` / `npm run realness`     | Start through `bin/pi`; Node >= 22.19.                                                                                        |
+| `npm start` / `npm run realness`     | Start through `.pi/bin/pi`; Node >= 22.19.                                                                                        |
 | `npm run pi:list`                    | List installed pi packages.                                                                                                   |
 | `npm run pi:update`                  | Reinstall the reviewed Pi fork pin; upstream updates require a new reviewed release.                                          |
 | `npm test`                           | Run the memory index tests.                                                                                                   |
-| `npm run check:ext`                  | Run `bin/checks/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
+| `npm run check:ext`                  | Run `.pi/bin/checks/no-mjs.js` to reject `.mjs` files across the workspace (excluding artifacts, dependencies, and git metadata). |
 | `npm run check:skills`               | Check every skill: spec rules via `uv`, stale paths, scripts that do not parse, long code blocks.                             |
-| `npm run make:animation -- clip.mov` | Run `bin/graphics/make-animation.js`; requirements below.                                                                     |
+| `npm run make:animation -- clip.mov` | Run `.pi/bin/graphics/make-animation.js`; requirements below.                                                                     |
 | `npm run feeds`                      | Rebuild personal vault feeds; requires the local vault setup.                                                                 |
 | `npm run plans`                      | Build every plan in the plans folder through `apps/plans` into `artifacts/apps/plans/dist`.                                   |
 
@@ -184,18 +184,18 @@ The feeds row is not a standalone clean-checkout command.
 Close every Pi process. From a separate terminal in this folder:
 
 ```bash
-node bin/harness/session-relocate.js migrate
+node .pi/bin/harness/session-relocate.js migrate
 ```
 
 The command verifies closed history copies before setting `realness.sessions`
 to `vault/Sessions`. Duplicate filenames receive path-based suffixes. Original
 files remain in `.pi/agent/sessions/`; the manifest records every original path.
-Keep Pi closed until the command finishes. Restart through `bin/pi` afterward.
+Keep Pi closed until the command finishes. Restart through `.pi/bin/pi` afterward.
 
 To reverse the move, close Pi again and run:
 
 ```bash
-node bin/harness/session-relocate.js rollback
+node .pi/bin/harness/session-relocate.js rollback
 ```
 
 Rollback preserves later entries and new sessions. It restores the legacy
@@ -229,11 +229,11 @@ This command traces video frames; it does not generate artwork.
 
 ### Web media copies
 
-`bin/web/for-web.sh` uses macOS file-size commands. Images require ImageMagick;
+`.pi/bin/web/for-web.sh` uses macOS file-size commands. Images require ImageMagick;
 videos require FFmpeg (`brew install imagemagick ffmpeg`).
 
 ```bash
-./bin/web/for-web.sh photo.jpg clip.mov
+./.pi/bin/web/for-web.sh photo.jpg clip.mov
 ```
 
 It writes `-web.jpg`, `-web.webp`, and `-web.mp4` beside the source files.

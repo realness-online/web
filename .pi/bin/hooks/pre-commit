@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -uo pipefail
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+logs="$root/artifacts/pre-commit"
+rm -rf "$logs"
+mkdir -p "$logs"
+roots='^(apps/realness|apps/blog|work/[^/]+|\.pi/bin|skills|\.pi/skills|\.pi/extensions)/'
+skip='/(node_modules|artifacts|vault|dist|build|coverage|vendor|public|tmp)/'
+files=()
+while IFS= read -r -d '' file; do
+  [[ "$file" =~ $roots && ! "/$file" =~ $skip ]] && files+=("$file")
+done < <({ git diff HEAD --name-only --diff-filter=ACMR -z; git ls-files --others --exclude-standard -z; } | sort -zu)
+
+app=(npm --prefix apps/realness run)
+failed=()
+check() {
+  local name="$1"
+  shift
+  if "$@" > "$logs/$name.log" 2>&1; then
+    printf '✔ %s\n' "$name"
+  else
+    printf '✖ %s\n' "$name"
+    failed+=("$name")
+  fi
+}
+
+if [[ "${1:-}" == --all ]]; then
+  check comments npm run check:comments
+elif (( ${#files[@]} )); then
+  check comments node .pi/bin/checks/comment-check.js "${files[@]}"
+fi
+check frontend-lint "${app[@]}" check:frontend
+check functions-lint "${app[@]}" check:functions
+check backend-lint "${app[@]}" check:backend
+check backend-types "${app[@]}" type:backend
+check dead-code "${app[@]}" fallow -- dead-code --fail-on-regression
+check frontend-types "${app[@]}" type
+check harness-tests npm run test:harness
+check tooling npm run check:tooling
+check skills npm run check:skills
+check extensions npm run check:ext
+check soundness npm run check:soundness:gate
+check plan-shape npm run plan-shape
+check palette npm run check:palette
+check node-tests "${app[@]}" test:coverage:node
+check frontend-tests "${app[@]}" test:coverage
+check functions-tests "${app[@]}" test:functions
+
+(( ${#failed[@]} )) || exit 0
+for name in "${failed[@]}"; do
+  printf '\n== %s ==\n' "$name"
+  grep -vE '^(npm notice|✔ |ℹ )' "$logs/$name.log" | tail -60
+done
+printf '\n%d to fix: %s\nfull logs: artifacts/pre-commit/\n' "${#failed[@]}" "${failed[*]}"
+exit 1

@@ -1,7 +1,7 @@
 /**
  * Artifacts Prune Extension
  *
- * Runs `bin/harness/artifacts-prune.js --apply` once a run settles, so scratch under
+ * Runs `.pi/bin/harness/artifacts-prune.js --apply` once a run settles, so scratch under
  * `artifacts/` stays under 500 MB, oldest files first.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
@@ -29,7 +29,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
   pi.on('agent_settled', async (_event, ctx) => {
     const root = findHarnessRoot(ctx.cwd)
     if (!root) return
-    const script = join(root, 'bin/harness/artifacts-prune.js')
+    const script = join(root, '.pi/bin/harness/artifacts-prune.js')
     if (!existsSync(script)) return
     try {
       const { stdout } = await run(process.execPath, [script, '--apply', '--quiet'], {

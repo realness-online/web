@@ -9,7 +9,7 @@ description: >-
   the Building an Advanced Agentic Harness article's Planner role, inverted so
   the harness plans and the human decides.
 metadata:
-  check: "node ../../../bin/checks/check-skills.js planning"
+  check: "node ../../bin/checks/check-skills.js planning"
   category: Workflow
   tags:
     - planning
@@ -94,11 +94,11 @@ effort in the table, not the graph.
 Inside a mermaid fence, ASCII only: `-` for dashes, `"` for quotes, `...` for an
 ellipsis, `-->` or `->` for an arrow. Prose keeps its wider characters.
 
-Before showing a DAG in chat, run `bin/plans/mermaid-fit.js <file>`. Pi's feed shows
+Before showing a DAG in chat, run `.pi/bin/plans/mermaid-fit.js <file>`. Pi's feed shows
 the raw fence when a diagram is wider than the pane. Show a short-label copy in
 chat until it passes; the plan file keeps its labels.
 
-The `classDef` lines are fixed: these four, plus `focus`, `next`, and `place` for graphics. `bin/lib/palette.js` derives them from the Realness palette. Do not invent fills.
+The `classDef` lines are fixed: these four, plus `focus`, `next`, and `place` for graphics. `.pi/bin/lib/palette.js` derives them from the Realness palette. Do not invent fills.
 
 **Status is color plus a text symbol**, so it reads in any renderer and in plain text. Symbols are plain text, not color emoji, so they take the text color and dim with finished work:
 
@@ -139,7 +139,7 @@ out. One line above the table names the legend.
   classDef place fill:none,stroke:#525252,stroke-dasharray:3 3;
 ```
 
-`bin/plans/plan-shape.js` accepts only these lines.
+`.pi/bin/plans/plan-shape.js` accepts only these lines.
 
 Prose around a graphic:
 
@@ -151,7 +151,7 @@ Prose around a graphic:
 
 ASCII only for a throwaway sketch that will never persist.
 
-`bin/plans/plan-shape.js` checks these rules and runs in `npm test`.
+`.pi/bin/plans/plan-shape.js` checks these rules and runs in `npm test`.
 
 ### Plan file shape
 

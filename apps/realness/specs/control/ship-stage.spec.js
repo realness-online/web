@@ -341,12 +341,12 @@ it('the starter rides in the tarball new actors install', () => {
 })
 
 it('the wrapper lets an installed pi win over the harness copy', () => {
-  const wrapper = readFileSync(join(ship, 'bin/pi'), 'utf8')
+  const wrapper = readFileSync(join(ship, '.pi/bin/pi'), 'utf8')
   assert.match(
     wrapper,
-    /^export PATH="\$\(dirname "\$best_node"\):\$PATH:\$root\/bin"$/m
+    /^export PATH="\$\(dirname "\$best_node"\):\$PATH:\$root\/\.pi\/bin"$/m
   )
-  assert.ok(existsSync(join(ship, 'bin/realness-model-pass')))
+  assert.ok(existsSync(join(ship, '.pi/bin/realness-model-pass')))
 })
 
 it('the ship tree rejects a malformed proxy URL', () => {

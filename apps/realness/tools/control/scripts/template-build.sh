@@ -258,7 +258,7 @@ TMPFILES
 if [ "$STAGE" != base ]; then
   log "skill checks"
   chroot "$TREE" runuser -u realness -- env PATH=/usr/local/bin:/usr/bin:/bin HOME=/realness \
-    sh -c 'cd /realness && node bin/checks/check-skills.js --run --no-browser' \
+    sh -c 'cd /realness && node .pi/bin/checks/check-skills.js --run --no-browser' \
     || { echo "a shipped skill's check failed" >&2; exit 1; }
 fi
 

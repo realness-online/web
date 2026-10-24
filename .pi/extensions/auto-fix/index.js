@@ -3,11 +3,11 @@
  *
  * Collects every file an `edit` or `write` touches during an agent run and,
  * once the run ends, fixes them with the project's own tools through
- * `bin/harness/auto-fix.js`. Configuration lives in that file, inside the repo.
+ * `.pi/bin/harness/auto-fix.js`. Configuration lives in that file, inside the repo.
  */
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 import { isAbsolute, relative, resolve } from 'node:path'
-import { fix } from '../../../bin/harness/auto-fix.js'
+import { fix } from '../../bin/harness/auto-fix.js'
 
 /**
  * Absolute path of a tool's file when it sits inside the working folder.

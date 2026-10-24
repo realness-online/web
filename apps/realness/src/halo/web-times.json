@@ -1,5 +1,5 @@
 {
-  "about": "Hours a kept page lasts when its own headers don't say, and hours past that it may be served stale while it refreshes. First matching pattern wins; 0 hours means never keep; 0 stale_hours means always wait for a fresh read. Patterns are regular expressions on the full URL. bin/lib/web-md-cache-times.json and apps/realness/src/halo/web-times.json must match (a test checks).",
+  "about": "Hours a kept page lasts when its own headers don't say, and hours past that it may be served stale while it refreshes. First matching pattern wins; 0 hours means never keep; 0 stale_hours means always wait for a fresh read. Patterns are regular expressions on the full URL. .pi/bin/lib/web-md-cache-times.json and apps/realness/src/halo/web-times.json must match (a test checks).",
   "default_hours": 24,
   "default_stale_hours": 24,
   "rules": [

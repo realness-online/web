@@ -75,7 +75,7 @@
     "realness": "node tools/cli/bin/realness.js",
     "publish": "node tools/publish/bin/publish.js",
     "check:google": "node checks/can/google.check.js",
-    "check:cli": "node ../../bin/checks/no-mjs.js && node --test 'specs/command/*.spec.js'",
+    "check:cli": "node ../../.pi/bin/checks/no-mjs.js && node --test 'specs/command/*.spec.js'",
     "check:pi-exit": "node checks/control/pi-exit.check.js",
     "check:capacity": "node tools/control/bin/capacity.js",
     "check:chat": "node checks/control/chat.check.js",

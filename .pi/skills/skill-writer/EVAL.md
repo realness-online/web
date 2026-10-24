@@ -70,7 +70,7 @@ template as the prompt:
 
 | Harness     | Command                                             |
 | ----------- | --------------------------------------------------- |
-| pi          | `./bin/pi -p --no-session "$(cat eval-prompt.txt)"` |
+| pi          | `./.pi/bin/pi -p --no-session "$(cat eval-prompt.txt)"` |
 | Claude Code | `claude -p "$(cat eval-prompt.txt)"`                |
 | Cursor      | `cursor-agent -p "$(cat eval-prompt.txt)"`          |
 

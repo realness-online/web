@@ -7,7 +7,7 @@ import { execFile } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
 import { isAbsolute, join, relative, resolve } from "node:path"
 import { promisify } from "node:util"
-import { is_actor, state_path } from "../../../bin/lib/harness-settings.js"
+import { is_actor, state_path } from "../../bin/lib/harness-settings.js"
 
 const run = promisify(execFile)
 

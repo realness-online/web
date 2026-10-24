@@ -27,7 +27,7 @@ const made = await call('POST', '/v1/actors', {})
 assert.equal(made.status, 201, made.text)
 const { id } = made.json
 try {
-  const command = 'cd /realness && node bin/checks/check-skills.js --run'
+  const command = 'cd /realness && node .pi/bin/checks/check-skills.js --run'
   const result = await call('POST', `/v1/actors/${id}/exec`, {
     argv: [
       'runuser',
