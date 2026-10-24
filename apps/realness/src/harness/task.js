@@ -17,7 +17,6 @@ export const TASK_BASICS = [
   '.pi/skills',
   '.ignore',
   'AGENTS.md',
-  'AGENTS.local.md',
   'package.json'
 ]
 

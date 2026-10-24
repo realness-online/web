@@ -163,7 +163,8 @@ it('a clean checkout stages the starter without personal Pi settings', () => {
     for (const path of [
       'package.json',
       '.pi/starter/settings.json',
-      '.pi/starter/npm/package.json'
+      '.pi/starter/npm/package.json',
+      '.pi/starter/AGENTS.md'
     ]) {
       mkdirSync(join(root, path, '..'), { recursive: true })
       writeFileSync(join(root, path), readFileSync(join(ROOT, path)))

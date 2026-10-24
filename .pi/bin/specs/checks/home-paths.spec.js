@@ -7,7 +7,7 @@ import { basename, join, relative, resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '../../../..')
 
 const skipped = new Set(['node_modules', '.git', 'dist', 'coverage', 'artifacts', 'work', 'vault', '.npm', '.auto'])
-const skipped_files = new Set(['person.local.html', 'AGENTS.local.md', 'package-lock.json'])
+const skipped_files = new Set(['person.local.html', 'AGENTS.md', 'package-lock.json'])
 
 const allowed = new Map([
   ['apps/realness/specs/app/terminal/capture/pi.tui', 'terminal recording; bytes are the fixture'],

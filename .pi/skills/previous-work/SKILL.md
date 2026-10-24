@@ -8,7 +8,7 @@ metadata:
 # Previous Work
 
 Raw transcript archaeology across pi, Cursor, and Claude Code. For distilled
-lessons, `AGENTS.local.md` Learnings is already in context (`memory`
+lessons, `AGENTS.md` Learnings is already in context (`memory`
 skill) - check it first; only dig transcripts when you need what actually
 happened.
 
@@ -85,5 +85,5 @@ recency when the user says "yesterday" or "last week".
   user can reopen the session.
 - Not found is a real answer: say which stores you searched and with what
   terms instead of guessing.
-- Durable lessons discovered while digging go to `AGENTS.local.md` Learnings
+- Durable lessons discovered while digging go to `AGENTS.md` Learnings
   (`memory` skill) so the next search is unnecessary.

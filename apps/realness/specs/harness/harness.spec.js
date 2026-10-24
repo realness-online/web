@@ -434,7 +434,7 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
   })
   const desktop = await files(join(root, 'h1-desktop'), {
     '.ignore': '# mine\nrenders/\n*.mov\n!keep.mov\n',
-    'AGENTS.local.md': 'memory\n',
+    'AGENTS.md': 'memory\n',
     '.pi/agent/settings.json': '{}\n',
     '.pi/agent/auth.json': 'SECRET',
     '.pi/agent/memory.db': 'derived index',
@@ -453,14 +453,14 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
   assert.deepEqual(Object.keys(await owner.walk('can://~/harness/')).sort(), [
     '.ignore',
     '.pi/agent/settings.json',
-    'AGENTS.local.md',
+    'AGENTS.md',
     'keep.mov',
     'notes/inbox/idea.md'
   ])
 
   const vm = await files(join(root, 'h1-vm'), {})
   await sync_harness({ root: vm, store: owner })
-  assert.equal(await readFile(join(vm, 'AGENTS.local.md'), 'utf8'), 'memory\n')
+  assert.equal(await readFile(join(vm, 'AGENTS.md'), 'utf8'), 'memory\n')
   assert.equal(
     await readFile(join(vm, 'notes/inbox/idea.md'), 'utf8'),
     'idea\n'
@@ -475,12 +475,12 @@ it('h1: a whole harness reaches a fresh VM, minus ignores, repos, and big files;
   ])
     await assert.rejects(readFile(join(vm, path)), { code: 'ENOENT' }, path)
 
-  await writeFile(join(vm, 'AGENTS.local.md'), 'memory\nlearned in VM\n')
+  await writeFile(join(vm, 'AGENTS.md'), 'memory\nlearned in VM\n')
   await sync_harness({ root: vm, store: owner })
   const back = await sync_harness({ root: desktop, store: owner })
-  assert.deepEqual(back.harness.files.pulled, ['AGENTS.local.md'])
+  assert.deepEqual(back.harness.files.pulled, ['AGENTS.md'])
   assert.equal(
-    await readFile(join(desktop, 'AGENTS.local.md'), 'utf8'),
+    await readFile(join(desktop, 'AGENTS.md'), 'utf8'),
     'memory\nlearned in VM\n'
   )
 })

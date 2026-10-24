@@ -17,7 +17,7 @@ const run = promisify(execFile)
 const findHarnessRoot = (cwd) => {
   let dir = resolve(cwd)
   while (true) {
-    if (existsSync(join(dir, 'AGENTS.md')) && existsSync(join(dir, 'work'))) {
+    if (existsSync(join(dir, '.pi', 'bin')) && existsSync(join(dir, 'work'))) {
       return dir
     }
     const parent = dirname(dir)

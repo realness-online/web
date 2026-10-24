@@ -1,8 +1,8 @@
 /**
  * Personal Context Extension
  *
- * Auto-loads `AGENTS.local.md` and keeps its `work/` project table in sync
- * with `work/` on disk each session.
+ * Keeps the `work/` project table in the root `AGENTS.md` in sync with disk.
+ * Pi loads that file itself; a missing one starts from `.pi/starter/AGENTS.md`.
  */
 /**
  * @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI
@@ -10,9 +10,10 @@
  * @property {string} label
  * @property {string} dir
  */
-import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
-const LOCAL_FILENAME = 'AGENTS.local.md'
+const LOCAL_FILENAME = 'AGENTS.md'
+const STARTER_FILENAME = '.pi/starter/AGENTS.md'
 const WORK_SECTION = '## work/ (projects)'
 const WORK_SYNC_START = '<!-- agents-local:work-sync -->'
 const WORK_SYNC_END = '<!-- /agents-local:work-sync -->'
@@ -24,7 +25,7 @@ const findHarnessRoot = (cwd) => {
   const root = resolve('/')
   let currentDir = resolve(cwd)
   while (true) {
-    if (existsSync(join(currentDir, 'AGENTS.md')) && existsSync(join(currentDir, 'work'))) {
+    if (existsSync(join(currentDir, '.pi', 'bin')) && existsSync(join(currentDir, 'work'))) {
       return currentDir
     }
     if (currentDir === root) break
@@ -34,28 +35,18 @@ const findHarnessRoot = (cwd) => {
   }
   return null
 }
-/** Nearest AGENTS.local.md, or harness root when cwd is inside a nested repo. */
 /**
+ * The person's AGENTS.md at the harness root, created from the starter if missing.
  * @param {string} cwd
  * @returns {string | null}
  */
 const findLocalContextFile = (cwd) => {
-  const root = resolve('/')
-  let currentDir = resolve(cwd)
-  while (true) {
-    const candidate = join(currentDir, LOCAL_FILENAME)
-    if (existsSync(candidate)) return candidate
-    const gitDir = join(currentDir, '.git')
-    if (existsSync(gitDir)) break
-    if (currentDir === root) break
-    const parent = dirname(currentDir)
-    if (parent === currentDir) break
-    currentDir = parent
-  }
   const harness = findHarnessRoot(cwd)
   if (!harness) return null
-  const harnessLocal = join(harness, LOCAL_FILENAME)
-  return existsSync(harnessLocal) ? harnessLocal : null
+  const file = join(harness, LOCAL_FILENAME)
+  const starter = join(harness, STARTER_FILENAME)
+  if (!existsSync(file) && existsSync(starter)) copyFileSync(starter, file)
+  return existsSync(file) ? file : null
 }
 /**
  * @param {string} filePath
@@ -220,7 +211,7 @@ const buildReadmeWithLocal = (harnessRoot, localPath) => {
   const personal = [
     '## Personal Context',
     '',
-    `From \`${LOCAL_FILENAME}\` (gitignored, machine-local):`,
+    `From \`${LOCAL_FILENAME}\`:`,
     '',
     local,
   ].join('\n')
@@ -230,7 +221,6 @@ const buildReadmeWithLocal = (harnessRoot, localPath) => {
 const agentsLocalExtension = (pi) => {
   /** @type {string | null} */
   let localFile = null
-  let localContent = ''
   /** @type {string | null} */
   let pendingInsert = null
   pi.on('resources_discover', async (event) => {
@@ -238,11 +228,10 @@ const agentsLocalExtension = (pi) => {
     if (!localFile) return
     const harnessRoot = findHarnessRoot(event.cwd) ?? dirname(localFile)
     syncWorkSection(harnessRoot, localFile)
-    localContent = readLocalContext(localFile)
   })
   pi.registerCommand('insert', {
     description:
-      'Splice AGENTS.local.md into README.md (before the last command block) for the next prompt',
+      'Splice AGENTS.md into README.md (before the last command block) for the next prompt',
     handler: async (_args, ctx) => {
       const harnessRoot = findHarnessRoot(ctx.cwd)
       if (!harnessRoot) {
@@ -262,7 +251,7 @@ const agentsLocalExtension = (pi) => {
         return
       }
       pendingInsert = combined
-      ctx.ui.notify('insert: README + AGENTS.local queued for next prompt', 'info')
+      ctx.ui.notify('insert: README + AGENTS.md queued for next prompt', 'info')
     },
   })
   pi.on('before_agent_start', async (event) => {
@@ -270,13 +259,9 @@ const agentsLocalExtension = (pi) => {
     if (pendingInsert) {
       systemPrompt +=
         `\n\n## README + Personal Context\n\n` +
-        `Loaded via /insert (AGENTS.local spliced into README before the last command block):\n\n` +
+        `Loaded via /insert (AGENTS.md spliced into README before the last command block):\n\n` +
         pendingInsert
       pendingInsert = null
-    } else if (localContent) {
-      systemPrompt +=
-        `\n\n## Personal Context\n\nLoaded from \`${localFile}\` (gitignored, machine-local):\n\n` +
-        localContent
     }
     if (systemPrompt === event.systemPrompt) return
     return {

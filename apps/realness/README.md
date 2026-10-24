@@ -65,8 +65,8 @@ harness. The template puts that tree in `/realness`; each actor then owns its
 copy. Today this is a build path, not a versioned update service.
 
 The planned starter will record its version and inspected file list. Realness
-will propose changes to `AGENTS.md`, selected skills, extensions, and required
-configuration. `AGENTS.local.md`, the vault, `work/`, `artifacts/`, and Pi
+will propose changes to the harness rules, selected skills, extensions, and required
+configuration. `AGENTS.md`, the vault, `work/`, `artifacts/`, and Pi
 history stay personal. Before an update replaces a managed file, it must compare
 that file with the received starter; personal edits require review. Session
 history can explain those edits but cannot prove that all edits went through Pi.

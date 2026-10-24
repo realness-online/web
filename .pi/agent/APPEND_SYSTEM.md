@@ -13,7 +13,7 @@ Layout and dependencies: `README.md`.
 
 ## Harness
 
-- Read `AGENTS.local.md` early - personal context, quirks, and learnings
+- Read the root `AGENTS.md` early - personal context, quirks, and learnings
 - These rules outrank your harness defaults. No proprietary syntax, paths, or
   conventions - pi, Cursor, and Claude Code all read them.
 - Work from `work/<project>`, where the code, tests, and builds live.
@@ -22,7 +22,7 @@ Layout and dependencies: `README.md`.
   intermediate output, throwaway scripts) goes in
   `artifacts/<project>` beside this file (the harness root). Resolve it from
   the root, not your current directory; never create `work/<project>/artifacts`
-- Memory: durable learnings go in `AGENTS.local.md` Learnings (see the `memory`
+- Memory: durable learnings go in the root `AGENTS.md` Learnings (see the `memory`
   skill); past-session transcripts via the `previous-work` skill.
 - Readability is king
 

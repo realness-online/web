@@ -57,18 +57,18 @@ it('a turn logs a selected single file', async () => {
   const harness = join(root, 'single')
   const state = join(root, 'single-state')
   await files(harness, {
-    'vault/plans/p.md': '## Syncs\n\n- AGENTS.local.md\n',
-    'AGENTS.local.md': 'a'
+    'vault/plans/p.md': '## Syncs\n\n- AGENTS.md\n',
+    'AGENTS.md': 'a'
   })
   await turn_start({ root: harness, state, session: 's.jsonl' })
-  await writeFile(join(harness, 'AGENTS.local.md'), 'changed')
+  await writeFile(join(harness, 'AGENTS.md'), 'changed')
   const logged = await turn_end({
     root: harness,
     state,
     session: 's.jsonl',
     turn: 1
   })
-  assert.deepEqual(logged, [join(harness, 'AGENTS.local.md')])
+  assert.deepEqual(logged, [join(harness, 'AGENTS.md')])
 })
 
 it('turn_end without a turn_start logs nothing', async () => {

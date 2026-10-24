@@ -1,30 +1,28 @@
 # agents-local
 
-Loads gitignored personal context and keeps `work/` in sync with
-`AGENTS.local.md`.
+Keeps the `work/` project table in the root `AGENTS.md` in sync with disk.
 
 ## Setup
 
 1. Registered in repo `package.json` under `pi.extensions`.
-2. Create `AGENTS.local.md` next to `AGENTS.md`.
-3. File is gitignored - never committed.
+2. The root `AGENTS.md` is personal and gitignored. When missing, it starts
+   as a copy of `.pi/starter/AGENTS.md`.
 
 ## Behavior
 
 On each session (`resources_discover`):
 
-- Finds `AGENTS.local.md` in cwd ancestors, or at the harness root when cwd
-  is inside a nested repo (e.g. `work/seeq-app`).
+- Finds the harness root: the nearest folder holding `.pi/bin` and `work/`.
 - Scans `work/` and rewrites the table between `<!-- agents-local:work-sync -->`
-  markers in `AGENTS.local.md`.
+  markers in `AGENTS.md`.
 - Preserves your description text for projects that still exist; adds new rows
   with README/package.json hints; drops removed directories.
 
-On `before_agent_start`, appends the file under `## Personal Context`.
+Pi loads `AGENTS.md` itself; this extension adds nothing to the prompt.
 
 ### `/insert`
 
-Splices `AGENTS.local.md` into `README.md` immediately before the last fenced
+Splices `AGENTS.md` into `README.md` immediately before the last fenced
 code block (the `npm start` command). Queues that combined document for the
 next prompt only - replaces the default personal-context load for that turn.
 

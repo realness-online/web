@@ -36,7 +36,6 @@ export const proxy_for = env => {
 }
 
 export const INCLUDE = [
-  'AGENTS.md',
   'README.md',
   'LICENSE',
   'package.json',
@@ -55,7 +54,8 @@ export const INCLUDE = [
 /** Tracked public Pi defaults; personal `.pi/agent` settings never ship. */
 export const STARTER_DEFAULTS = {
   '.pi/starter/settings.json': '.pi/agent/settings.json',
-  '.pi/starter/npm/package.json': '.pi/agent/npm/package.json'
+  '.pi/starter/npm/package.json': '.pi/agent/npm/package.json',
+  '.pi/starter/AGENTS.md': 'AGENTS.md'
 }
 
 export const HOME_ONLY = {

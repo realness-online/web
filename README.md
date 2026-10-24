@@ -91,7 +91,7 @@ Think of it as **the add-on cupboard**, not "npm".
 
 ## Starter and personal files
 
-The published starter includes `AGENTS.md`, selected skills, extensions, and required configuration. `AGENTS.local.md` is the personal place for agent instructions. The vault, `work/`, `artifacts/`, and Pi sessions belong to the person. A starter update must compare managed files with the version first received and show any personal edits before replacing them. Sessions help explain edits, but cannot detect all changes alone.
+The published starter includes the harness rules (`.pi/agent/APPEND_SYSTEM.md`), selected skills, extensions, and required configuration. The root `AGENTS.md` is the personal place for agent instructions. The vault, `work/`, `artifacts/`, and Pi sessions belong to the person. A starter update must compare managed files with the version first received and show any personal edits before replacing them. Sessions help explain edits, but cannot detect all changes alone.
 
 Plans live in a configured folder. This harness sets `realness.plans` to `vault/Projects` in `package.json`; the built-in default is `vault/plans`. `realness.plansIgnore` lists files in that folder that are not plans (here, `Todo's.md`). Readers do not fall back to top-level `plans/`.
 
@@ -104,11 +104,11 @@ Plans live in a configured folder. This harness sets `realness.plans` to `vault/
 | `.pi/prompts/`                             | everything else in `.pi/agent/` |
 | `vault/`                                   |                                 |
 | `.pi/agent/settings.json`                  |                                 |
-| `AGENTS.md`                                |                                 |
-| `AGENTS.local.md` (personal, gitignored)   |                                 |
+| `.pi/agent/APPEND_SYSTEM.md`               |                                 |
+| `AGENTS.md` (personal, gitignored)         |                                 |
 | `.pi/person.local.html` (personal, gitignored) |                                 |
 
-`AGENTS.local.md` holds your preferences and quirks for the agent; it stays out of git. `.pi/person.local.html` says who this checkout belongs to, the phone itemids are minted under:
+`AGENTS.md` holds your preferences and quirks for the agent; it stays out of git and starts from `.pi/starter/AGENTS.md`. `.pi/person.local.html` says who this checkout belongs to, the phone itemids are minted under:
 
 ```html
 <p itemscope itemtype="https://schema.org/Person">
@@ -129,7 +129,7 @@ across projects and belong in the vault.
 
 ## Personal context on demand
 
-`/insert` splices `AGENTS.local.md` into `README.md` right before the last
+`/insert` splices `AGENTS.md` into `README.md` right before the last
 command block and loads that combined view on your next prompt. Use it when you
 want harness docs plus personal context in one shot instead of the default
 session load.
