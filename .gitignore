@@ -23,6 +23,7 @@ node_modules/
 !/.pi/agent/
 /.pi/agent/*
 !/.pi/agent/themes/
+!/.pi/agent/APPEND_SYSTEM.md
 
 # temp file written by .auto/warnings.sh
 apps/realness/.oxlintrc.tmp.json

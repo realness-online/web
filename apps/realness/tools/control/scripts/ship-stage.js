@@ -46,6 +46,7 @@ export const INCLUDE = [
   '.pi/extensions',
   'themes',
   '.pi/agent/themes',
+  '.pi/agent/APPEND_SYSTEM.md',
   '.pi/package.json',
   '.pi/package-lock.json',
   '.pi/runtime'
