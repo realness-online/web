@@ -106,9 +106,9 @@ Plans live in a configured folder. This harness sets `realness.plans` to `vault/
 | `.pi/agent/settings.json`                  |                                 |
 | `AGENTS.md`                                |                                 |
 | `AGENTS.local.md` (personal, gitignored)   |                                 |
-| `person.local.html` (personal, gitignored) |                                 |
+| `.pi/person.local.html` (personal, gitignored) |                                 |
 
-`AGENTS.local.md` holds your preferences and quirks for the agent; it stays out of git. `person.local.html` says who this checkout belongs to, the phone itemids are minted under:
+`AGENTS.local.md` holds your preferences and quirks for the agent; it stays out of git. `.pi/person.local.html` says who this checkout belongs to, the phone itemids are minted under:
 
 ```html
 <p itemscope itemtype="https://schema.org/Person">

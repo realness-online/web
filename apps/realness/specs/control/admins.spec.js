@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { execFile as exec_file } from 'node:child_process'
-import { mkdtemp, readFile as read_file, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile as read_file, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { promisify } from 'node:util'
@@ -187,7 +187,8 @@ it('realness local admins init reads person.local.html from the harness', async 
   const dir = await scratch(t)
   const harness = await scratch(t)
   const { writeFile: write_file } = await import('node:fs/promises')
-  await write_file(join(harness, 'person.local.html'), person_page(ADA, 'Ada'))
+  await mkdir(join(harness, '.pi'), { recursive: true })
+  await write_file(join(harness, '.pi/person.local.html'), person_page(ADA, 'Ada'))
   const run = (...args) =>
     promisify(exec_file)(process.execPath, [
       webspace,
@@ -215,7 +216,8 @@ it("local seeding keeps the test operator and adds the checkout's person once", 
     [DEV_OPERATOR.phone]
   )
   const { writeFile: write_file } = await import('node:fs/promises')
-  await write_file(join(harness, 'person.local.html'), person_page(ADA, 'Ada'))
+  await mkdir(join(harness, '.pi'), { recursive: true })
+  await write_file(join(harness, '.pi/person.local.html'), person_page(ADA, 'Ada'))
   await seed_local_admins({ storage, harness })
   assert.equal((await seed_local_admins({ storage, harness })).written, false)
   assert.deepEqual(

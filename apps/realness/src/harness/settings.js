@@ -82,7 +82,7 @@ export const state_path = root => {
  *     <a itemprop="telephone" href="tel:+14155551234">Scott</a>
  *   </p>
  */
-export const local_person_file = 'person.local.html'
+export const local_person_file = '.pi/person.local.html'
 
 const read_text = file => {
   try {

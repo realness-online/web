@@ -63,8 +63,9 @@ const scratch_dir = async t => {
 
 it('the local owner comes from person.local.html', async t => {
   const dir = await scratch_dir(t)
+  await mkdir(join(dir, '.pi'), { recursive: true })
   await write_file(
-    join(dir, 'person.local.html'),
+    join(dir, '.pi/person.local.html'),
     '<a itemprop="telephone" href="tel:+15555550100">Owner</a>'
   )
   assert.equal(local_owner(dir), '+15555550100')

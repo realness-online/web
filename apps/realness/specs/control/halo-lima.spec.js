@@ -74,8 +74,9 @@ it('the local admins page gets the dev operator, and says who is missing', async
 
 it('a local person file adds the checkout owner to the admins', async t => {
   const harness = scratch(t, 'lima-person')
+  mkdirSync(join(harness, '.pi'), { recursive: true })
   writeFileSync(
-    join(harness, 'person.local.html'),
+    join(harness, '.pi/person.local.html'),
     '<a itemprop="telephone" href="tel:+14155551234">Scott</a>\n'
   )
   const storage = disk(join(scratch(t, 'lima-sync2'), 'site-sync'))

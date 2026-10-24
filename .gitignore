@@ -1,5 +1,5 @@
 # Personal to one checkout; never shared. Full boundary is decided at G2.
-/person.local.html
+/.pi/person.local.html
 /AGENTS.local.md
 /.pi/agent/
 node_modules/
