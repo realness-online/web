@@ -24,7 +24,12 @@ it('outcomes come from the source line', () => {
 
 it('a line carries hashes, never the URL or host', () => {
   const url = 'https://example.com/private/path?q=secret'
-  const line = read_line({ url, source: 'static', attempts: [{ method: 'static', outcome: 'ok', ms: 5, chars: 9, extra: 'x' }], seen_before: false })
+  const line = read_line({
+    url,
+    source: 'static',
+    attempts: [{ method: 'static', outcome: 'ok', ms: 5, chars: 9, extra: 'x' }],
+    seen_before: false
+  })
   const text = JSON.stringify(line)
   assert.equal(line.url, hash(url))
   assert.equal(line.site, hash('example.com'))
@@ -37,8 +42,14 @@ it('a day counts by outcome, method, and repeat', () => {
   const report = summarize([
     line('https://a.test/', 'static', [{ method: 'static', outcome: 'ok', ms: 100 }]),
     line('https://a.test/', 'cached static, not modified', [{ method: 'static', outcome: 'ok', ms: 50 }], true),
-    line('https://b.test/', 'browser', [{ method: 'static', outcome: 'thin', ms: 80 }, { method: 'browser', outcome: 'ok', ms: 4000 }]),
-    line('https://c.test/', 'failed', [{ method: 'static', outcome: 'timeout', ms: 15000 }, { method: 'browser', outcome: 'blocked', ms: 9000 }])
+    line('https://b.test/', 'browser', [
+      { method: 'static', outcome: 'thin', ms: 80 },
+      { method: 'browser', outcome: 'ok', ms: 4000 }
+    ]),
+    line('https://c.test/', 'failed', [
+      { method: 'static', outcome: 'timeout', ms: 15000 },
+      { method: 'browser', outcome: 'blocked', ms: 9000 }
+    ])
   ])
   assert.equal(report.reads, 4)
   assert.equal(report.urls, 3)
@@ -68,21 +79,29 @@ it('web-md logs each run; the report counts the day', async () => {
   mkdirSync(ARTIFACTS, { recursive: true })
   const dir = mkdtempSync(join(ARTIFACTS, 'log-test-'))
   try {
-  const env = { ...process.env, WEB_MD_CACHE: join(dir, 'cache'), PATH: '/usr/bin:/bin', FIRECRAWL_API_KEY: '' }
-  await run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/doc`], { env })
-  await run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/doc`], { env })
-  await assert.rejects(run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/thin`], { env }), { code: 3 })
+    const env = { ...process.env, WEB_MD_CACHE: join(dir, 'cache'), PATH: '/usr/bin:/bin', FIRECRAWL_API_KEY: '' }
+    await run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/doc`], { env })
+    await run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/doc`], { env })
+    await assert.rejects(run(process.execPath, [join(BIN, 'web/web-md.js'), `${base}/thin`], { env }), { code: 3 })
 
-  const day = new Date().toISOString().slice(0, 10)
-  const lines = read_day(join(dir, 'log'), day)
-  assert.deepEqual(lines.map(l => l.outcome), ['static', 'not-modified', 'failed'])
-  assert.deepEqual(lines.map(l => l.seen_before), [false, true, false])
-  assert.ok(!readFileSync(join(dir, 'log', `${day}.jsonl`), 'utf8').includes('127.0.0.1'))
+    const day = new Date().toISOString().slice(0, 10)
+    const lines = read_day(join(dir, 'log'), day)
+    assert.deepEqual(
+      lines.map(l => l.outcome),
+      ['static', 'not-modified', 'failed']
+    )
+    assert.deepEqual(
+      lines.map(l => l.seen_before),
+      [false, true, false]
+    )
+    assert.ok(!readFileSync(join(dir, 'log', `${day}.jsonl`), 'utf8').includes('127.0.0.1'))
 
-  const report = JSON.parse((await run(process.execPath, [join(BIN, 'web/web-md-report.js'), day, '--json'], { env })).stdout)
-  assert.equal(report.reads, 3)
-  assert.equal(report.repeats_today, 1)
-  assert.deepEqual(report.by_outcome, { static: 1, 'not-modified': 1, failed: 1 })
+    const report = JSON.parse(
+      (await run(process.execPath, [join(BIN, 'web/web-md-report.js'), day, '--json'], { env })).stdout
+    )
+    assert.equal(report.reads, 3)
+    assert.equal(report.repeats_today, 1)
+    assert.deepEqual(report.by_outcome, { static: 1, 'not-modified': 1, failed: 1 })
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

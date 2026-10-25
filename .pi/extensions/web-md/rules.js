@@ -1,10 +1,11 @@
-
 const SKIP = /#\s*web-md:\s*skip/
 const URL = /https?:\/\/[^\s'"|;&)]+/g
 
-const CURL_FLAGS = /\s(-X|--request|-d|--data[\w-]*|-F|--form|-o|-O|--output|--remote-name|-I|--head|-T|--upload-file|-u|--user)\b/
+const CURL_FLAGS =
+  /\s(-X|--request|-d|--data[\w-]*|-F|--form|-o|-O|--output|--remote-name|-I|--head|-T|--upload-file|-u|--user)\b/
 const CURL_AUTH = /-H\s*['"]?(authorization|accept:\s*application\/(json|vnd))/i
-const DATA_URL = /\/api\/|\/api\.|^https?:\/\/api\.|\.(json|xml|txt|csv|ya?ml|md|tar|gz|tgz|zip|sh|js|css|svg|png|jpe?g|webp|pdf)(\?|$)|raw\.githubusercontent|registry\.npmjs|\/raw\/|\?format=json|\/rss|\/feed|\.rss|localhost|127\.0\.0\.1|0\.0\.0\.0/i
+const DATA_URL =
+  /\/api\/|\/api\.|^https?:\/\/api\.|\.(json|xml|txt|csv|ya?ml|md|tar|gz|tgz|zip|sh|js|css|svg|png|jpe?g|webp|pdf)(\?|$)|raw\.githubusercontent|registry\.npmjs|\/raw\/|\?format=json|\/rss|\/feed|\.rss|localhost|127\.0\.0\.1|0\.0\.0\.0/i
 
 const AB_READ = /agent-browser\b[^|;&]*\bget\s+(text|html)(\s+(['"]?)(body|html|main|article|:root)\3)?\s*($|[|;&>])/m
 

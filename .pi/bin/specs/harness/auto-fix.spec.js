@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  rmSync as rm_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fix, fixer_for } from '../../harness/auto-fix.js'
 
@@ -73,5 +78,9 @@ it('files under node_modules or missing files are never fixed', async t => {
   t.after(() => rm_sync(dir, { recursive: true, force: true }))
   vp_project(dir)
   write_file_sync(join(dir, 'node_modules/x.js'), '')
-  assert.deepEqual(await fix([join(dir, 'node_modules/x.js'), join(dir, 'src/gone.js')]), { total: 0, changed: [], failed: [] })
+  assert.deepEqual(await fix([join(dir, 'node_modules/x.js'), join(dir, 'src/gone.js')]), {
+    total: 0,
+    changed: [],
+    failed: []
+  })
 })

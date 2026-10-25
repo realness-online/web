@@ -47,9 +47,7 @@ if (!coverage_only) {
   fallow = JSON.parse(readFileSync(fallow_path, 'utf8'))
 }
 
-const unused_files = new Set(
-  (fallow?.check?.unused_files ?? []).map(f => f.path.replace(/\\/g, '/'))
-)
+const unused_files = new Set((fallow?.check?.unused_files ?? []).map(f => f.path.replace(/\\/g, '/')))
 
 /** @type {Map<string, object>} */
 const file_scores = new Map()
@@ -114,8 +112,7 @@ const spec_paths = src_path => {
   return [`specs/${folder}/${rest}.spec.js`]
 }
 
-const has_spec = src_path =>
-  spec_paths(src_path).some(p => existsSync(join(project_root, p)))
+const has_spec = src_path => spec_paths(src_path).some(p => existsSync(join(project_root, p)))
 
 /**
  * @param {string} path
@@ -189,16 +186,12 @@ const test_first = ranked
   .filter(r => r.score >= 0)
   .sort((a, b) => b.score - a.score)
 
-const delete_or_wire = ranked
-  .filter(r => r.verdict === 'delete-or-wire')
-  .sort((a, b) => a.path.localeCompare(b.path))
+const delete_or_wire = ranked.filter(r => r.verdict === 'delete-or-wire').sort((a, b) => a.path.localeCompare(b.path))
 
 const istanbul = fallow?.health?.summary
 const fmt_row = r => {
   const crap =
-    r.crap_max != null
-      ? `${r.crap_max.toFixed(0)}${r.crap_untested ? ` (${r.crap_untested} untested)` : ''}`
-      : '-'
+    r.crap_max != null ? `${r.crap_max.toFixed(0)}${r.crap_untested ? ` (${r.crap_untested} untested)` : ''}` : '-'
   const spec = r.has_spec ? 'yes' : 'no'
   const note = r.fallow_note ? r.fallow_note.slice(0, 60) : '-'
   return `| ${r.path} | ${r.priority} | ${r.coverage_pct.toFixed(0)} | ${r.score.toFixed(0)} | ${crap} | ${r.fan_in ?? '-'} | ${r.hotspot?.toFixed(1) ?? '-'} | ${spec} | ${r.verdict} | ${note} |`
@@ -209,39 +202,28 @@ console.log('')
 console.log(`- Project: ${project_root}`)
 console.log(`- Coverage gate: ${threshold}%`)
 if (fallow) {
-  console.log(
-    `- Fallow CRAP match: ${istanbul?.istanbul_matched ?? '?'}/${istanbul?.istanbul_total ?? '?'} functions`
-  )
+  console.log(`- Fallow CRAP match: ${istanbul?.istanbul_matched ?? '?'}/${istanbul?.istanbul_total ?? '?'} functions`)
   if ((istanbul?.istanbul_matched ?? 0) < 100)
-    console.log(
-      '- Tip: re-run `npm run test:coverage` then `npx fallow` if CRAP match is low'
-    )
+    console.log('- Tip: re-run `npm run test:coverage` then `npx fallow` if CRAP match is low')
 }
 console.log('')
 
 if (delete_or_wire.length) {
   console.log('## Delete or wire (fallow unused-files — do not add tests)')
   console.log('')
-  for (const r of delete_or_wire.slice(0, top_n))
-    console.log(`- \`${r.path}\``)
-  if (delete_or_wire.length > top_n)
-    console.log(`\n… and ${delete_or_wire.length - top_n} more.`)
+  for (const r of delete_or_wire.slice(0, top_n)) console.log(`- \`${r.path}\``)
+  if (delete_or_wire.length > top_n) console.log(`\n… and ${delete_or_wire.length - top_n} more.`)
   console.log('')
 }
 
 console.log('## Test before refactor (highest risk)')
 console.log('')
-console.log(
-  '| file | pri | cov% | risk | CRAP | fan-in | hotspot | spec | verdict | fallow |'
-)
-console.log(
-  '| --- | --- | ---: | ---: | --- | ---: | ---: | --- | --- | --- |'
-)
+console.log('| file | pri | cov% | risk | CRAP | fan-in | hotspot | spec | verdict | fallow |')
+console.log('| --- | --- | ---: | ---: | --- | ---: | ---: | --- | --- | --- |')
 
 for (const r of test_first.slice(0, top_n)) console.log(fmt_row(r))
 
-if (test_first.length > top_n)
-  console.log(`\n… and ${test_first.length - top_n} more.`)
+if (test_first.length > top_n) console.log(`\n… and ${test_first.length - top_n} more.`)
 
 console.log('')
 console.log('## Workflow')

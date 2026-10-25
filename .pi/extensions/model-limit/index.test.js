@@ -9,14 +9,7 @@ test('each warning shows once per limit per day', () => {
   const status = { warn: { limit: 'day', message: '92% ... pay' } }
   assert.equal(next_warning(status, shown, '2026-10-01'), '92% ... pay')
   assert.equal(next_warning(status, shown, '2026-10-01'), null)
-  assert.equal(
-    next_warning(
-      { warn: { limit: 'month', message: 'm' } },
-      shown,
-      '2026-10-01'
-    ),
-    'm'
-  )
+  assert.equal(next_warning({ warn: { limit: 'month', message: 'm' } }, shown, '2026-10-01'), 'm')
   assert.equal(next_warning(status, shown, '2026-10-02'), '92% ... pay')
   assert.equal(next_warning({ warn: null }, shown), null)
 })

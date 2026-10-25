@@ -11,7 +11,8 @@ import { spec_check } from '../../../bin/checks/check-skills.js'
 const scratch = file_url_to_path(new URL('../../../../artifacts/skill-writer/', import.meta.url))
 const script = file_url_to_path(new URL('./quick-validate.js', import.meta.url))
 const execute = promisify(exec_file)
-const front = (fields = 'name: sample-skill\ndescription: Use when sorting notes.', body = '# Notes') => `---\n${fields}\n---\n${body}\n`
+const front = (fields = 'name: sample-skill\ndescription: Use when sorting notes.', body = '# Notes') =>
+  `---\n${fields}\n---\n${body}\n`
 const fixture = async (content = front(), name = 'sample-skill') => {
   await mkdir(scratch, { recursive: true })
   const parent = await mkdtemp(join(scratch, 'validator-'))
@@ -27,7 +28,8 @@ const put = async (path, file, content) => {
 }
 
 const integration = 'name: sample-skill\ndescription: Use when integrating a library for downstream consumers.'
-const sources = status => `## Coverage matrix\n\n| Dimension | Coverage status |\n| --- | --- |\n| API surface | complete |\n| Config/runtime options | complete |\n| Common use cases | ${status} |\n| Known issues/workarounds | complete |\n| Version/migration variance | complete |\n\n## Open gaps\n\n- Collect missing usage examples.\n`
+const sources = status =>
+  `## Coverage matrix\n\n| Dimension | Coverage status |\n| --- | --- |\n| API surface | complete |\n| Config/runtime options | complete |\n| Common use cases | ${status} |\n| Known issues/workarounds | complete |\n| Version/migration variance | complete |\n\n## Open gaps\n\n- Collect missing usage examples.\n`
 const fill_integration = async (path, status = 'complete') => {
   await put(path, 'SOURCES.md', sources(status))
   await put(path, 'references/api-surface.md', '# API')
@@ -36,11 +38,21 @@ const fill_integration = async (path, status = 'complete') => {
 }
 
 test('valid skill preserves the result contract', async () => {
-  assert.deepEqual(validate_skill(await fixture()), { valid: true, skill_class: 'generic', strict_depth: false, errors: [], warnings: [] })
+  assert.deepEqual(validate_skill(await fixture()), {
+    valid: true,
+    skill_class: 'generic',
+    strict_depth: false,
+    errors: [],
+    warnings: []
+  })
 })
 
 test('YAML parser handles quoted, folded, nested and list metadata', async () => {
-  const path = await fixture(front('name: sample-skill\ndescription: >-\n  Use when sorting notes:\n  preserve quoted values.\nallowed-tools: [Read, Bash]\nmetadata:\n  check: "node --check script.js"\n  nested:\n    choices: [yes, no]\nlicense: MIT'))
+  const path = await fixture(
+    front(
+      'name: sample-skill\ndescription: >-\n  Use when sorting notes:\n  preserve quoted values.\nallowed-tools: [Read, Bash]\nmetadata:\n  check: "node --check script.js"\n  nested:\n    choices: [yes, no]\nlicense: MIT'
+    )
+  )
   assert.equal(validate_skill(path).valid, true)
 })
 
@@ -61,11 +73,12 @@ for (const [content, expected] of [
   [front('name: 5\ndescription: Use when sorting.'), /name must be a string, got int/],
   [front('name: sample-skill\ndescription: []'), /description must be a string, got list/],
   [front('name: sample-skill\ndescription: Use when <sorting>.'), /must not contain angle brackets/]
-]) test(`rejects malformed skill: ${expected}`, async () => {
-  const result = validate_skill(await fixture(content))
-  assert.equal(result.valid, false)
-  assert.match(result.errors.join('\n'), expected)
-})
+])
+  test(`rejects malformed skill: ${expected}`, async () => {
+    const result = validate_skill(await fixture(content))
+    assert.equal(result.valid, false)
+    assert.match(result.errors.join('\n'), expected)
+  })
 
 for (const [name, expected] of [
   ['""', /must not be empty/],
@@ -75,16 +88,23 @@ for (const [name, expected] of [
   ['two--names', /consecutive/],
   ['different', /does not match directory/],
   ['a'.repeat(65), /too long/]
-]) test(`rejects invalid name ${name}`, async () => {
-  const result = validate_skill(await fixture(front(`name: ${name}\ndescription: Use when sorting.`)))
-  assert.match(result.errors.join('\n'), expected)
-})
+])
+  test(`rejects invalid name ${name}`, async () => {
+    const result = validate_skill(await fixture(front(`name: ${name}\ndescription: Use when sorting.`)))
+    assert.match(result.errors.join('\n'), expected)
+  })
 
 test('description, unknown fields and long bodies retain warnings', async () => {
-  const path = await fixture(front('name: sample-skill\ndescription: I can sort notes.\nextra: value', Array.from({ length: 501 }, () => 'text').join('\n')))
+  const path = await fixture(
+    front(
+      'name: sample-skill\ndescription: I can sort notes.\nextra: value',
+      Array.from({ length: 501 }, () => 'text').join('\n')
+    )
+  )
   const result = validate_skill(path)
   assert.equal(result.valid, true)
-  for (const pattern of [/Unexpected frontmatter/, /trigger phrases/, /third person/, /501 lines/]) assert.ok(result.warnings.some(warning => pattern.test(warning)))
+  for (const pattern of [/Unexpected frontmatter/, /trigger phrases/, /third person/, /501 lines/])
+    assert.ok(result.warnings.some(warning => pattern.test(warning)))
   const long = validate_skill(await fixture(front(`name: sample-skill\ndescription: ${'x'.repeat(1025)}`)))
   assert.match(long.errors.join('\n'), /description is too long/)
 })
@@ -119,9 +139,13 @@ for (const [description, expected] of [
   ['Use when doing a security audit.', 'security-review'],
   ['Use when following a CI checklist.', 'workflow-process'],
   ['Use when sorting notes.', 'generic']
-]) test(`infers ${expected} without substring false positives`, async () => {
-  assert.equal(validate_skill(await fixture(front(`name: sample-skill\ndescription: ${description}`))).skill_class, expected)
-})
+])
+  test(`infers ${expected} without substring false positives`, async () => {
+    assert.equal(
+      validate_skill(await fixture(front(`name: sample-skill\ndescription: ${description}`))).skill_class,
+      expected
+    )
+  })
 
 test('integration depth runs only when strict and accepts explicit class selection', async () => {
   const path = await fixture(front(integration))
@@ -135,7 +159,11 @@ test('integration depth runs only when strict and accepts explicit class selecti
 test('strict integration rejects missing dimensions and nonactionable gaps', async () => {
   const path = await fixture(front(integration))
   await fill_integration(path)
-  await put(path, 'SOURCES.md', '## Coverage matrix\n| Dimension | Status |\n| --- | --- |\n| API surface | partial |\n\n## Open gaps\nUnknown.\n')
+  await put(
+    path,
+    'SOURCES.md',
+    '## Coverage matrix\n| Dimension | Status |\n| --- | --- |\n| API surface | partial |\n\n## Open gaps\nUnknown.\n'
+  )
   const result = validate_skill(path, 'auto', true)
   assert.match(result.errors.join('\n'), /missing required integration dimensions/)
   assert.match(result.errors.join('\n'), /lacks actionable/)
@@ -144,7 +172,11 @@ test('strict integration rejects missing dimensions and nonactionable gaps', asy
 test('strict reference counts exclude fenced examples', async () => {
   const path = await fixture(front(integration))
   await fill_integration(path)
-  await put(path, 'references/common-use-cases.md', '```md\n- Not a case\n```\n~~~\n1. Not a case\n~~~\n- One real case\n')
+  await put(
+    path,
+    'references/common-use-cases.md',
+    '```md\n- Not a case\n```\n~~~\n1. Not a case\n~~~\n- One real case\n'
+  )
   assert.match(validate_skill(path, 'auto', true).errors.join('\n'), /has 1 list items; expected at least 6/)
 })
 
@@ -164,12 +196,15 @@ test('public CLI works with no Python or uv on PATH and retains nonzero invalid 
 
 test('CLI supports strict class flags, help and missing directory diagnostics', async () => {
   const path = await fixture(front(integration))
-  await assert.rejects(execute(process.execPath, [script, path, '--strict-depth', '--skill-class', 'integration-documentation']), error => {
-    const result = JSON.parse(error.stdout)
-    assert.equal(result.strict_depth, true)
-    assert.equal(result.skill_class, 'integration-documentation')
-    return true
-  })
+  await assert.rejects(
+    execute(process.execPath, [script, path, '--strict-depth', '--skill-class', 'integration-documentation']),
+    error => {
+      const result = JSON.parse(error.stdout)
+      assert.equal(result.strict_depth, true)
+      assert.equal(result.skill_class, 'integration-documentation')
+      return true
+    }
+  )
   assert.match((await execute(process.execPath, [script, '--help'])).stdout, /Usage:/)
   assert.equal(validate_skill(join(path, 'absent')).valid, false)
 })

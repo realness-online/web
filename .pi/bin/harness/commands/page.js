@@ -14,12 +14,8 @@ export const wire_page = document => {
 
   const filter_commands = () => {
     const terms = search.value.toLowerCase().trim().split(/\s+/)
-    const group = filters
-      .querySelector('[aria-pressed="true"]')
-      .getAttribute('value')
-    const review = review_filters
-      .querySelector('[aria-pressed="true"]')
-      .getAttribute('value')
+    const group = filters.querySelector('[aria-pressed="true"]').getAttribute('value')
+    const review = review_filters.querySelector('[aria-pressed="true"]').getAttribute('value')
     let count = 0
     for (const section of sections) {
       const heading = section.querySelector('h2').textContent
@@ -28,19 +24,14 @@ export const wire_page = document => {
       for (const row of section.querySelectorAll('li')) {
         const text =
           `${heading} ${row.querySelector('header').textContent} ${row.querySelector('strong').textContent} ${row.querySelector('details').textContent} ${row.querySelector('button').getAttribute('value')}`.toLowerCase()
-        const review_excluded =
-          review !== 'all' &&
-          row.querySelector('strong').textContent !== review
-        row.hidden =
-          excluded || review_excluded || !terms.every(term => text.includes(term))
+        const review_excluded = review !== 'all' && row.querySelector('strong').textContent !== review
+        row.hidden = excluded || review_excluded || !terms.every(term => text.includes(term))
         if (!row.hidden) visible++
       }
       section.hidden = visible === 0
       count += visible
     }
-    output.textContent = count
-      ? `${count} command${count === 1 ? '' : 's'}`
-      : 'No commands found'
+    output.textContent = count ? `${count} command${count === 1 ? '' : 's'}` : 'No commands found'
   }
 
   search.addEventListener('input', filter_commands)

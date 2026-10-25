@@ -64,8 +64,7 @@ const GALLERY_JS = `for (const summary of document.querySelectorAll('main > sect
 `
 
 const KB = 1024
-const run = (command, args, cwd = SITE) =>
-  exec_file_sync(command, args, { cwd, stdio: 'inherit' })
+const run = (command, args, cwd = SITE) => exec_file_sync(command, args, { cwd, stdio: 'inherit' })
 
 const fail = message => {
   console.error(`gallery: ${message}`)
@@ -86,8 +85,7 @@ const setup = async () => {
     rm_sync(SITE, { recursive: true, force: true })
     await export_static(SITE)
   }
-  if (!exists_sync(join(SITE, 'node_modules')))
-    run('npm', ['install', '--no-fund', '--no-audit'])
+  if (!exists_sync(join(SITE, 'node_modules'))) run('npm', ['install', '--no-fund', '--no-audit'])
   const style = join(SITE, 'static/style.css')
   const css = read_file_sync(style, 'utf8')
   const at = css.indexOf(MARK)
@@ -97,8 +95,7 @@ const setup = async () => {
 
 const load = posters_dir => {
   const records_file = join(posters_dir, 'posters.json')
-  if (!exists_sync(records_file))
-    fail(`no posters.json in ${posters_dir} - run npm run make:posters first`)
+  if (!exists_sync(records_file)) fail(`no posters.json in ${posters_dir} - run npm run make:posters first`)
   return JSON.parse(read_file_sync(records_file, 'utf8')).filter(record => record.poster)
 }
 
@@ -112,7 +109,9 @@ const write_content = (posters_dir, records) => {
   for (const record of records) {
     const slug = slug_of(record.source)
     copy_file_sync(join(posters_dir, record.poster), join(posters, `${slug}.svg`))
-    const title = basename(record.source).replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
+    const title = basename(record.source)
+      .replace(/\.[^.]+$/, '')
+      .replace(/[-_]+/g, ' ')
     write_file_sync(
       join(articles, `${slug}.md`),
       `---
@@ -149,15 +148,12 @@ const write_site = (name, cover) => {
   const header = join(SITE, 'partials/header.html')
   write_file_sync(
     header,
-    read_file_sync(header, 'utf8')
-      .replace('Your Name', name)
-      .replace('What you do', 'Posters from iCloud')
+    read_file_sync(header, 'utf8').replace('Your Name', name).replace('What you do', 'Posters from iCloud')
   )
 }
 
 const [, , folder] = process.argv
-if (!folder || folder.startsWith('--'))
-  fail('usage: npm run gallery <artifacts/posters/folder> [--build]')
+if (!folder || folder.startsWith('--')) fail('usage: npm run gallery <artifacts/posters/folder> [--build]')
 const posters_dir = resolve(folder)
 if (!exists_sync(posters_dir)) fail(`not found: ${posters_dir}`)
 

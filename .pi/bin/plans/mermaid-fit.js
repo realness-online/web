@@ -1,5 +1,11 @@
 #!/usr/bin/env node
-import { readFileSync as read_file_sync, readdirSync as readdir_sync, copyFileSync as copy_file_sync, appendFileSync as append_file_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  readFileSync as read_file_sync,
+  readdirSync as readdir_sync,
+  copyFileSync as copy_file_sync,
+  appendFileSync as append_file_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { join, dirname } from 'node:path'
 import { execFileSync as exec_file_sync } from 'node:child_process'
 import { fileURLToPath as file_url_to_path } from 'node:url'
@@ -22,21 +28,35 @@ const paneWidth = () => {
 
 const args = process.argv.slice(2)
 const maxAt = args.indexOf('--max')
-const max = maxAt >= 0 ? Number(args.splice(maxAt, 2)[1]) : paneWidth() ?? 70
+const max = maxAt >= 0 ? Number(args.splice(maxAt, 2)[1]) : (paneWidth() ?? 70)
 const input = args[0] && args[0] !== '-' ? read_file_sync(args[0], 'utf8') : read_file_sync(0, 'utf8')
 const fence = input.match(/```mermaid\n([\s\S]*?)```/)
 const src = (fence ? fence[1] : input).trim()
 
-const chunk = readdir_sync(chunks).find(f =>
-  f.endsWith('.js') && read_file_sync(join(chunks, f), 'utf8').includes('function createMermaidMarkdownTransformer'))
-if (!chunk) { console.error('pi mermaid renderer not found'); process.exit(2) }
+const chunk = readdir_sync(chunks).find(
+  f =>
+    f.endsWith('.js') && read_file_sync(join(chunks, f), 'utf8').includes('function createMermaidMarkdownTransformer')
+)
+if (!chunk) {
+  console.error('pi mermaid renderer not found')
+  process.exit(2)
+}
 const probe = join(chunks, `zz-mermaid-fit-${process.pid}.js`)
 copy_file_sync(join(chunks, chunk), probe)
 append_file_sync(probe, ';export {render as __mermaidFit};')
 let art
-try { art = (await import(probe)).__mermaidFit(src) } finally { rm_sync(probe, { force: true }) }
+try {
+  art = (await import(probe)).__mermaidFit(src)
+} finally {
+  rm_sync(probe, { force: true })
+}
 
-if (!art) { console.log('unparseable: pi shows the raw fence'); process.exit(1) }
+if (!art) {
+  console.log('unparseable: pi shows the raw fence')
+  process.exit(1)
+}
 const ok = art.width <= max && art.warnings.length === 0
-console.log(`width ${art.width} / max ${max}${art.warnings.length ? ` warnings: ${art.warnings.join('; ')}` : ''} -> ${ok ? 'renders' : 'raw fence'}`)
+console.log(
+  `width ${art.width} / max ${max}${art.warnings.length ? ` warnings: ${art.warnings.join('; ')}` : ''} -> ${ok ? 'renders' : 'raw fence'}`
+)
 process.exit(ok ? 0 : 1)

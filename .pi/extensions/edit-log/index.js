@@ -27,10 +27,8 @@ const in_actor = is_actor
  * @param {string[]} args
  * @returns {[string, string[]]}
  */
-const sync_command = (args) =>
-  !in_actor()
-    ? [process.execPath, [product_entry('command'), ...args]]
-    : ['realness', args]
+const sync_command = args =>
+  !in_actor() ? [process.execPath, [product_entry('command'), ...args]] : ['realness', args]
 
 /**
  * @param {string} cwd
@@ -38,14 +36,14 @@ const sync_command = (args) =>
  */
 const harness = harness_root
 /** @param {ExtensionAPI} pi */
-const editLog = (pi) => {
+const editLog = pi => {
   /** @type {ReturnType<typeof openLog> | undefined} */
   let db
   let turn = 0
   /** @type {Map<string, { session: string; turn: number; sha: string | null; }>} */
   const touched = new Map()
   /** @param {string} path */
-  const fingerprint = (path) => {
+  const fingerprint = path => {
     try {
       return sha(readFileSync(path))
     } catch {
@@ -64,7 +62,7 @@ const editLog = (pi) => {
       ctx.ui.notify(`edit-log: ${/** @type {Error} */ (error).message}`, 'warning')
     }
   }
-  pi.on('turn_start', (event) => {
+  pi.on('turn_start', event => {
     turn = event.turnIndex
   })
   pi.on('tool_result', (event, ctx) => {
@@ -77,7 +75,7 @@ const editLog = (pi) => {
     touched.set(path, {
       session,
       turn,
-      sha: now,
+      sha: now
     })
     log(ctx, {
       path,
@@ -86,7 +84,7 @@ const editLog = (pi) => {
       turn,
       tool: event.toolName,
       tool_call: event.toolCallId,
-      ts: new Date().toISOString(),
+      ts: new Date().toISOString()
     })
   })
   /** @typedef {Parameters<typeof log>[0]} Ctx */
@@ -101,26 +99,20 @@ const editLog = (pi) => {
     const { root, session } = open
     open = undefined
     mkdirSync(stateDir(root), {
-      recursive: true,
+      recursive: true
     })
     const out = openSync(join(stateDir(root), 'sync.log'), 'a')
-    const [command, args] = sync_command([
-      'turn-end',
-      '--session',
-      session,
-      '--turn',
-      String(turn),
-    ])
+    const [command, args] = sync_command(['turn-end', '--session', session, '--turn', String(turn)])
     spawn(command, args, {
       cwd: root,
       detached: true,
-      stdio: ['ignore', out, out],
+      stdio: ['ignore', out, out]
     }).unref()
   }
 
   /** Fingerprint touched files again; anything a formatter changed is logged as `settle`. */
   /** @param {Ctx} ctx */
-  const settle = (ctx) => {
+  const settle = ctx => {
     clearTimeout(waiting)
     waiting = undefined
     for (const [path, was] of touched) {
@@ -133,13 +125,13 @@ const editLog = (pi) => {
         turn: was.turn,
         tool: 'settle',
         tool_call: '',
-        ts: new Date().toISOString(),
+        ts: new Date().toISOString()
       })
     }
     touched.clear()
     endTurn()
   }
-  const stamp = () => [...touched.keys()].map((path) => fingerprint(path)).join()
+  const stamp = () => [...touched.keys()].map(path => fingerprint(path)).join()
   pi.on('agent_end', (_event, ctx) => {
     if (!touched.size) return settle(ctx)
     let last = stamp()
@@ -162,17 +154,14 @@ const editLog = (pi) => {
     try {
       const [command, args] = sync_command(['turn-start', '--session', session])
       await promisify(execFile)(command, args, {
-        cwd: root,
+        cwd: root
       })
       open = {
         root,
-        session,
+        session
       }
     } catch (error) {
-      ctx.ui.notify(
-        `edit-log: turn-start failed: ${/** @type {Error} */ (error).message}`,
-        'warning',
-      )
+      ctx.ui.notify(`edit-log: turn-start failed: ${/** @type {Error} */ (error).message}`, 'warning')
     }
   })
   pi.on('session_shutdown', (_event, ctx) => {

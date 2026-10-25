@@ -6,7 +6,7 @@ import { last, openLog, record, sha } from './log.js'
 import edit_log_extension from './index.js'
 const scratch = resolve(import.meta.dirname, '../../../artifacts/realness')
 mkdirSync(scratch, {
-  recursive: true,
+  recursive: true
 })
 test('the newest edit to a path wins; other paths stay apart', () => {
   const dir = mkdtempSync(join(scratch, 'edit-log-'))
@@ -15,28 +15,28 @@ test('the newest edit to a path wins; other paths stay apart', () => {
     const base = {
       session: 's.jsonl',
       tool: 'edit',
-      ts: '2026-09-27T00:00:00Z',
+      ts: '2026-09-27T00:00:00Z'
     }
     record(db, {
       ...base,
       path: '/h/a.md',
       sha: sha(Buffer.from('one')),
       turn: 1,
-      tool_call: 't1',
+      tool_call: 't1'
     })
     record(db, {
       ...base,
       path: '/h/a.md',
       sha: sha(Buffer.from('two')),
       turn: 2,
-      tool_call: 't2',
+      tool_call: 't2'
     })
     record(db, {
       ...base,
       path: '/h/b.md',
       sha: null,
       turn: 3,
-      tool_call: 't3',
+      tool_call: 't3'
     })
     assert.equal(last(db, '/h/a.md')?.sha, sha(Buffer.from('two')))
     assert.equal(last(db, '/h/a.md')?.turn, 2)
@@ -46,13 +46,13 @@ test('the newest edit to a path wins; other paths stay apart', () => {
   } finally {
     rmSync(dir, {
       recursive: true,
-      force: true,
+      force: true
     })
   }
 })
 test('successful edits retain JSONL, HTML, and compressed HTML session paths', () => {
   mkdirSync(scratch, {
-    recursive: true,
+    recursive: true
   })
   const dir = mkdtempSync(join(scratch, 'edit-format-'))
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ realness: {} }))
@@ -64,12 +64,10 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
        * @param {string} name
        * @param {(event: unknown, ctx: unknown) => void} handler
        */
-      (name, handler) => handlers.set(name, handler),
+      (name, handler) => handlers.set(name, handler)
   }
   try {
-    edit_log_extension(
-      /** @type {Parameters<typeof edit_log_extension>[0]} */ (/** @type {unknown} */ (pi)),
-    )
+    edit_log_extension(/** @type {Parameters<typeof edit_log_extension>[0]} */ (/** @type {unknown} */ (pi)))
     for (const suffix of ['jsonl', 'html', 'html.gz']) {
       const file = join(dir, `${suffix}.md`)
       writeFileSync(file, 'edited')
@@ -77,23 +75,23 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
       const ctx = {
         cwd: dir,
         sessionManager: {
-          getSessionFile: () => session,
+          getSessionFile: () => session
         },
         ui: {
-          notify: () => {},
-        },
+          notify: () => {}
+        }
       }
       ;/** @type {NonNullable<ReturnType<typeof handlers.get>>} */
       (handlers.get('tool_result'))(
         {
           toolName: 'edit',
           input: {
-            path: file,
+            path: file
           },
           toolCallId: 'call',
-          isError: false,
+          isError: false
         },
-        ctx,
+        ctx
       )
       const db = openLog(join(dir, '.pi/agent/state/edits.db'))
       try {
@@ -107,18 +105,15 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
       {},
       {
         ui: {
-          notify: () => {},
-        },
-      },
+          notify: () => {}
+        }
+      }
     )
     rmSync(dir, {
-      recursive: true,
+      recursive: true
     })
   }
 })
 test("fingerprints match sync's sha256 hex", () => {
-  assert.equal(
-    sha(Buffer.from('')),
-    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-  )
+  assert.equal(sha(Buffer.from('')), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 })

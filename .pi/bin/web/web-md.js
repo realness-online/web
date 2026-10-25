@@ -27,8 +27,7 @@ const CHROME_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 const BLOCKED =
   /just a moment|attention required|performing security verification|been blocked|access denied|are you a robot|verify you are human|enable javascript and cookies|captcha|continue shopping|unusual traffic/i
-const OVERLAY =
-  /cookie|consent|gdpr|onetrust|modal|overlay|popup|signup|sign-up|newsletter|paywall|login-wall/i
+const OVERLAY = /cookie|consent|gdpr|onetrust|modal|overlay|popup|signup|sign-up|newsletter|paywall|login-wall/i
 
 if (!url) {
   console.error(
@@ -55,7 +54,15 @@ const fetch_browser = () => {
   const ab = (...a) =>
     exec_file_sync(
       'agent-browser',
-      ['--session', session, '--user-agent', CHROME_UA, '--args', '--disable-blink-features=AutomationControlled', ...a],
+      [
+        '--session',
+        session,
+        '--user-agent',
+        CHROME_UA,
+        '--args',
+        '--disable-blink-features=AutomationControlled',
+        ...a
+      ],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 45000, maxBuffer: 50 * 1024 * 1024 }
     )
   try {
@@ -130,7 +137,10 @@ const to_markdown = html => {
   const td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' })
   td.remove(['script', 'style', 'noscript', 'iframe', 'svg', 'form', 'img', 'figure', 'sup'])
   td.addRule('no-images', { filter: 'img', replacement: () => '' })
-  const markdown = td.turndown(body).replace(/\n{3,}/g, '\n\n').trim()
+  const markdown = td
+    .turndown(body)
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
   return { title: article?.title ?? document.title ?? '', markdown }
 }
 
@@ -158,17 +168,28 @@ const print = (page, source) => {
   const total = present(page.markdown).length
   const truncated = md.length > max
   if (truncated) md = md.slice(0, max)
-  console.log(`# ${page.title}\n<!-- ${url} | ${source} | ${total} chars${truncated ? `, cut to ${max}` : ''} -->\n\n${md}`)
+  console.log(
+    `# ${page.title}\n<!-- ${url} | ${source} | ${total} chars${truncated ? `, cut to ${max}` : ''} -->\n\n${md}`
+  )
 }
 
 const ENGINE = process.env.WEB_MD_ENGINE ?? '/usr/local/bin/realness-read'
 if (!forced && existsSync(ENGINE)) {
   let reply = null
   try {
-    const out = exec_file_sync(ENGINE, [url, ...(fresh ? ['--fresh'] : [])], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 200_000, maxBuffer: 64 * 1024 * 1024 })
+    const out = exec_file_sync(ENGINE, [url, ...(fresh ? ['--fresh'] : [])], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 200_000,
+      maxBuffer: 64 * 1024 * 1024
+    })
     reply = JSON.parse(out)
   } catch (error) {
-    console.error(`web-md: render failed: engine: ${String(error.stderr || error.message).trim().replace(/^realness-read: /, '')}`)
+    console.error(
+      `web-md: render failed: engine: ${String(error.stderr || error.message)
+        .trim()
+        .replace(/^realness-read: /, '')}`
+    )
     process.exit(3)
   }
   const page = reply.kind === 'html' ? to_markdown(reply.body) : { title: reply.title, markdown: reply.body }

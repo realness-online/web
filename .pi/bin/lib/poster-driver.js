@@ -1,4 +1,3 @@
-
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -29,9 +28,7 @@ const BROWSER_CANDIDATES = [
 ].filter(fs.existsSync)
 
 export const chrome_path =
-  (process.env.CHROME_PATH &&
-    fs.existsSync(process.env.CHROME_PATH) &&
-    process.env.CHROME_PATH) ||
+  (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH) && process.env.CHROME_PATH) ||
   BROWSER_CANDIDATES[0]
 
 export const sleep = ms =>
@@ -73,12 +70,9 @@ const page_socket_url = async debug_port => {
     try {
       const response = await fetch(`http://127.0.0.1:${debug_port}/json/list`)
       const targets = await response.json()
-      const page = targets.find(
-        target => target.type === 'page' && target.webSocketDebuggerUrl
-      )
+      const page = targets.find(target => target.type === 'page' && target.webSocketDebuggerUrl)
       if (page) return page.webSocketDebuggerUrl
-    } catch {
-    }
+    } catch {}
     await sleep(BROWSER_POLL_MS)
   }
   throw new Error('browser never exposed a page target')
@@ -106,8 +100,7 @@ const devtools = (socket, name) => {
     if (message.method === 'Runtime.exceptionThrown')
       console.error(
         `${name}: page error`,
-        message.params?.exceptionDetails?.exception?.description ??
-          message.params?.exceptionDetails?.text
+        message.params?.exceptionDetails?.exception?.description ?? message.params?.exceptionDetails?.text
       )
   }
   const send = (method, params = {}) =>
@@ -124,9 +117,7 @@ const devtools = (socket, name) => {
     })
     if (result.exceptionDetails)
       throw new Error(
-        result.exceptionDetails.exception?.description ??
-          result.exceptionDetails.text ??
-          'evaluate failed'
+        result.exceptionDetails.exception?.description ?? result.exceptionDetails.text ?? 'evaluate failed'
       )
     return result.result?.value
   }
@@ -144,10 +135,7 @@ const devtools = (socket, name) => {
  * @returns {Promise<{ evaluate: (expression: string) => Promise<any>, shutdown: () => void }>}
  */
 export const open_driver = async ({ debug_port, name }) => {
-  if (!chrome_path)
-    throw new Error(
-      'no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)'
-    )
+  if (!chrome_path) throw new Error('no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)')
   const profile_dir = mkdtemp_sync(path.join(tmpdir(), `${name}-prof-`))
   const browser = spawn(
     chrome_path,
@@ -187,8 +175,7 @@ export const open_driver = async ({ debug_port, name }) => {
     await send('Runtime.enable')
     const deadline = Date.now() + READY_TIMEOUT_MS
     while (Date.now() < deadline) {
-      if (await evaluate('window.poster_driver?.ready === true'))
-        return { evaluate, shutdown }
+      if (await evaluate('window.poster_driver?.ready === true')) return { evaluate, shutdown }
       await sleep(POLL_MS)
     }
     throw new Error('poster driver never became ready')
@@ -209,11 +196,7 @@ export const open_driver = async ({ debug_port, name }) => {
  * @param {{ label: string, want_png?: boolean, status?: (message: string) => void }} options
  * @returns {Promise<{ svg: string, png?: string }>}
  */
-export const trace = async (
-  evaluate,
-  data_url,
-  { label, want_png = true, status = console.info }
-) => {
+export const trace = async (evaluate, data_url, { label, want_png = true, status = console.info }) => {
   const options = want_png ? '' : `, { formats: [] }`
   for (let attempt = 1; attempt <= RENDER_RETRIES; attempt++)
     try {

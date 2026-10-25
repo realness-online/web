@@ -23,7 +23,10 @@ it('the plan checker reads either configured folder', async () => {
   await mkdir(`${fixture}/.pi/bin/lib`, { recursive: true })
   await mkdir(`${fixture}/.pi/bin/plans`, { recursive: true })
   await copyFile(new URL('../../plans/plan-shape.js', import.meta.url), `${fixture}/.pi/bin/plans/plan-shape.js`)
-  await copyFile(new URL('../../lib/harness-settings.js', import.meta.url), `${fixture}/.pi/bin/lib/harness-settings.js`)
+  await copyFile(
+    new URL('../../lib/harness-settings.js', import.meta.url),
+    `${fixture}/.pi/bin/lib/harness-settings.js`
+  )
   await copyFile(new URL('../../lib/product.js', import.meta.url), `${fixture}/.pi/bin/lib/product.js`)
   await copyFile(new URL('../../lib/palette.js', import.meta.url), `${fixture}/.pi/bin/lib/palette.js`)
   await mkdir(`${fixture}/apps`, { recursive: true })
@@ -31,7 +34,10 @@ it('the plan checker reads either configured folder', async () => {
   for (const plans of ['plans', 'vault/plans']) {
     await mkdir(`${fixture}/${plans}`, { recursive: true })
     await writeFile(`${fixture}/package.json`, JSON.stringify({ type: 'module', realness: { plans } }))
-    await writeFile(`${fixture}/${plans}/p.md`, '# P\n\n```mermaid\nflowchart TD\n a["a test"]\n```\n\n## Nodes\n\n## Notes\n')
+    await writeFile(
+      `${fixture}/${plans}/p.md`,
+      '# P\n\n```mermaid\nflowchart TD\n a["a test"]\n```\n\n## Nodes\n\n## Notes\n'
+    )
     const { stdout } = await promisify(execFile)(process.execPath, [`${fixture}/.pi/bin/plans/plan-shape.js`])
     assert.match(stdout, /1 plans, 0 failed/)
   }
@@ -66,7 +72,10 @@ it('p1: person.local.html names the person; package.json is only a fallback', as
   assert.equal(person(dir), null)
   await writeFile(`${dir}/package.json`, JSON.stringify({ realness: { person: '+14155550123' } }))
   assert.equal(person(dir), '/+14155550123')
-  await writeFile(`${dir}/.pi/person.local.html`, '<p itemscope itemtype="https://schema.org/Person"><a itemprop="telephone" href="tel:+14156667777">Ada <b>L</b></a></p>')
+  await writeFile(
+    `${dir}/.pi/person.local.html`,
+    '<p itemscope itemtype="https://schema.org/Person"><a itemprop="telephone" href="tel:+14156667777">Ada <b>L</b></a></p>'
+  )
   assert.equal(person(dir), '/+14156667777')
   assert.deepEqual(local_person(dir), { phone: '+14156667777', name: 'Ada L' })
   await writeFile(`${dir}/.pi/person.local.html`, '<a href="tel:+14155550999">Plain</a>')

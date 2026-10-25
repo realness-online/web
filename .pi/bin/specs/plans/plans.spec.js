@@ -8,8 +8,14 @@ const { parseHTML: parse_html } = harness_require('linkedom')
 
 import { size_diagrams } from '../../../../apps/realness/tools/publish/renderer/static/scripts/plan-diagrams.js'
 
-const css = readFileSync(new URL('../../../../apps/realness/tools/publish/renderer/static/plans.css', import.meta.url), 'utf8')
-const covers = readFileSync(new URL('../../../../apps/realness/tools/publish/renderer/static/scripts/plan-covers.js', import.meta.url), 'utf8')
+const css = readFileSync(
+  new URL('../../../../apps/realness/tools/publish/renderer/static/plans.css', import.meta.url),
+  'utf8'
+)
+const covers = readFileSync(
+  new URL('../../../../apps/realness/tools/publish/renderer/static/scripts/plan-covers.js', import.meta.url),
+  'utf8'
+)
 
 it('plan diagrams keep their native size instead of shrinking to the viewport', () => {
   const section = css.slice(css.indexOf('section {\n  pre.mermaid {'))
@@ -59,7 +65,12 @@ it('diagrams load fitted; click and keyboard expand, then restore scroll positio
   assert.equal(diagram.scrollLeft, 0)
   assert.equal(diagram.scrollTop, 0)
   let prevented = false
-  handlers.get('keydown')({ key: 'Enter', preventDefault: () => { prevented = true } })
+  handlers.get('keydown')({
+    key: 'Enter',
+    preventDefault: () => {
+      prevented = true
+    }
+  })
   assert.ok(prevented)
   assert.equal(attributes.get('aria-pressed'), 'true')
   assert.equal(diagram.scrollLeft, 900)
@@ -86,10 +97,16 @@ it('plan list copies every DAG onto its cover', () => {
     HTMLTemplateElement,
     requestAnimationFrame: callback => callback()
   })
-  assert.deepEqual([...document.querySelectorAll('article')].map(article => article.id), ['old', 'recent'])
+  assert.deepEqual(
+    [...document.querySelectorAll('article')].map(article => article.id),
+    ['old', 'recent']
+  )
   const copies = [...document.querySelectorAll('figure pre.mermaid')]
   assert.equal(copies.length, 4)
-  assert.deepEqual(copies.map(node => node.textContent), ['First', 'Second', 'Third', 'Fourth'])
+  assert.deepEqual(
+    copies.map(node => node.textContent),
+    ['First', 'Second', 'Third', 'Fourth']
+  )
   for (const article of document.querySelectorAll('article')) {
     const original = article.querySelector('template').content.querySelector('pre')
     assert.notEqual(article.querySelector('figure pre'), original)
@@ -109,19 +126,40 @@ it('the plans app follows the plans folder and keeps chosen slugs', async () => 
     await mkdir(join(root, 'vault/Projects'), { recursive: true })
     await mkdir(join(root, 'vault/Areas'), { recursive: true })
     await mkdir(join(root, 'apps/plans'), { recursive: true })
-    await writeFile(join(root, 'package.json'), JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects', plansIgnore: ['Todo.md'] } }))
-    await writeFile(join(root, 'apps/plans/app.json'), JSON.stringify({ id: 'a-0123456789ab', type: 'plans', vault: '../../vault', sources: [] }))
-    for (const name of ['one.md', 'two.md', 'Todo.md']) await writeFile(join(root, 'vault/Projects', name), `# ${name}\n`)
+    await writeFile(
+      join(root, 'package.json'),
+      JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects', plansIgnore: ['Todo.md'] } })
+    )
+    await writeFile(
+      join(root, 'apps/plans/app.json'),
+      JSON.stringify({ id: 'a-0123456789ab', type: 'plans', vault: '../../vault', sources: [] })
+    )
+    for (const name of ['one.md', 'two.md', 'Todo.md'])
+      await writeFile(join(root, 'vault/Projects', name), `# ${name}\n`)
     const first = await select_plans(root)
-    assert.deepEqual(first.map(source => source.slug), ['one', 'two'])
+    assert.deepEqual(
+      first.map(source => source.slug),
+      ['one', 'two']
+    )
     const app = await read_app(join(root, 'apps/plans'))
-    await writeFile(join(root, 'apps/plans/app.json'), JSON.stringify({ ...app, sources: app.sources.map(source => source.slug === 'one' ? { ...source, slug: 'renamed' } : source) }))
+    await writeFile(
+      join(root, 'apps/plans/app.json'),
+      JSON.stringify({
+        ...app,
+        sources: app.sources.map(source => (source.slug === 'one' ? { ...source, slug: 'renamed' } : source))
+      })
+    )
     await rename(join(root, 'vault/Projects/two.md'), join(root, 'vault/Areas/two.md'))
     await writeFile(join(root, 'vault/Projects/three.md'), '# three\n')
     const second = await select_plans(root)
-    assert.deepEqual(second.map(source => source.slug), ['renamed', 'three'])
+    assert.deepEqual(
+      second.map(source => source.slug),
+      ['renamed', 'three']
+    )
     assert.equal(second[0].id, first[0].id)
-  } finally { await rm(root, { recursive: true, force: true }) }
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
 })
 
 it('h5: a plan keeps its chosen slug and itemid with no catalog file', async () => {
@@ -134,11 +172,24 @@ it('h5: a plan keeps its chosen slug and itemid with no catalog file', async () 
   try {
     await mkdir(join(root, 'vault/Projects'), { recursive: true })
     await mkdir(join(root, 'apps/plans'), { recursive: true })
-    await writeFile(join(root, 'package.json'), JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects' } }))
+    await writeFile(
+      join(root, 'package.json'),
+      JSON.stringify({ realness: { person: '+15550001111', plans: 'vault/Projects' } })
+    )
     const itemid = '/+15550001111/plans/1791571682897'
     await writeFile(join(root, 'vault/Projects/one.md'), `---\nitemid: "${itemid}"\n---\n# one\n`)
-    await writeFile(join(root, 'apps/plans/app.json'), JSON.stringify({ id: 'a-0123456789ab', type: 'plans', vault: '../../vault', sources: [{ id: itemid, slug: 'chosen' }] }))
+    await writeFile(
+      join(root, 'apps/plans/app.json'),
+      JSON.stringify({
+        id: 'a-0123456789ab',
+        type: 'plans',
+        vault: '../../vault',
+        sources: [{ id: itemid, slug: 'chosen' }]
+      })
+    )
     assert.deepEqual(await select_plans(root), [{ id: itemid, slug: 'chosen' }])
     await assert.rejects(stat(join(root, 'vault/catalog.json')), { code: 'ENOENT' })
-  } finally { await rm(root, { recursive: true, force: true }) }
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
 })

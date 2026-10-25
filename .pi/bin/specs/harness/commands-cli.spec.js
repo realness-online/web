@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { spawnSync as spawn_sync } from 'node:child_process'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  rmSync as rm_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { join, resolve } from 'node:path'
 import { it } from 'node:test'
 
@@ -19,7 +24,10 @@ const scratch = t => {
 
 it('comment-check fails on a plain comment and passes JSDoc and directives', t => {
   const dir = scratch(t)
-  write_file_sync(join(dir, 'kept.js'), '/** Why this exists. */\nexport const a = 1\n/* eslint-disable no-console */\n')
+  write_file_sync(
+    join(dir, 'kept.js'),
+    '/** Why this exists. */\nexport const a = 1\n/* eslint-disable no-console */\n'
+  )
   const clean = run('checks/comment-check.js', [dir])
   assert.equal(clean.status, 0, clean.stdout)
   assert.match(clean.stdout, /comments: 0 hit/)

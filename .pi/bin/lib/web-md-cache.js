@@ -1,6 +1,11 @@
-
 import { createHash as create_hash } from 'node:crypto'
-import { mkdirSync as mkdir_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, renameSync as rename_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  readdirSync as readdir_sync,
+  readFileSync as read_file_sync,
+  renameSync as rename_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { dirname, join } from 'node:path'
 
 export const METHODS = ['static', 'browser', 'firecrawl']
@@ -48,8 +53,7 @@ export const cache_time = ({ url, caller_hours = null, headers = {}, learned_hou
 }
 
 /** A re-check that finds the page unchanged doubles its time; a change halves it. */
-export const learn = (hours, changed) =>
-  Math.min(MAX_HOURS, Math.max(MIN_HOURS, changed ? hours / 2 : hours * 2))
+export const learn = (hours, changed) => Math.min(MAX_HOURS, Math.max(MIN_HOURS, changed ? hours / 2 : hours * 2))
 
 /** Methods worth trying on a site, in order: skip one that keeps failing there, for a while. */
 export const route = (site, now = Date.now()) =>

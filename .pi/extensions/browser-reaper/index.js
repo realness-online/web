@@ -20,7 +20,7 @@ export const applyBrowserEnv = (env, pid) => {
   env.AGENT_BROWSER_SESSION ??= `pi-${pid}`
   return env.AGENT_BROWSER_SESSION
 }
-export default /** @param {ExtensionAPI} pi */ (pi) => {
+export default /** @param {ExtensionAPI} pi */ pi => {
   const session = applyBrowserEnv(process.env, process.pid)
   pi.on('session_shutdown', async () => {
     try {

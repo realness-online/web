@@ -7,12 +7,7 @@ import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { mkdtempSync as mkdtemp_sync, rmSync as rm_sync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import {
-  chrome_path,
-  data_url_of,
-  open_driver,
-  trace
-} from '../lib/poster-driver.js'
+import { chrome_path, data_url_of, open_driver, trace } from '../lib/poster-driver.js'
 
 const __dirname = path.dirname(file_url_to_path(import.meta.url))
 const __filename = file_url_to_path(import.meta.url)
@@ -56,10 +51,7 @@ const IHDR_HEADER_BYTES = 24
 const poster_raster_size = (svg, target_width = 0) => {
   const viewbox = /viewBox="([^"]+)"/.exec(svg ?? '')?.[1]
   if (!viewbox) return null
-  const [, , traced_width, traced_height] = viewbox
-    .trim()
-    .split(/\s+/)
-    .map(Number)
+  const [, , traced_width, traced_height] = viewbox.trim().split(/\s+/).map(Number)
   if (!(traced_width > 0) || !(traced_height > 0)) return null
   const even = value => Math.round(value / 2) * 2
   const width = even(target_width > 0 ? target_width : traced_width)
@@ -76,10 +68,8 @@ const poster_raster_size = (svg, target_width = 0) => {
  */
 const read_png_size = buffer => {
   if (!buffer || buffer.length < IHDR_HEADER_BYTES) return null
-  if (!buffer.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE))
-    return null
-  if (buffer.toString('ascii', CHUNK_TYPE_AT, CHUNK_TYPE_END) !== 'IHDR')
-    return null
+  if (!buffer.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) return null
+  if (buffer.toString('ascii', CHUNK_TYPE_AT, CHUNK_TYPE_END) !== 'IHDR') return null
   return {
     width: buffer.readUInt32BE(WIDTH_AT),
     height: buffer.readUInt32BE(HEIGHT_AT)
@@ -143,13 +133,8 @@ else {
     if (token === '--keep-frames') keep_frames = true
   }
   if (!input_path)
-    fail(
-      'usage: npm run make:animation <video> [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]'
-    )
-  if (!chrome_path)
-    fail(
-      'no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)'
-    )
+    fail('usage: npm run make:animation <video> [--fps N] [--workers N] [--width N] [--crf N] [--keep-frames]')
+  if (!chrome_path) fail('no Chromium browser found - set CHROME_PATH (Brave, Chrome, Chromium, or Edge)')
   if (!fs.existsSync(input_path)) fail(`video not found: ${input_path}`)
 }
 
@@ -162,8 +147,7 @@ const exec = (cmd, args) =>
     })
     child.on('close', code => {
       if (code === 0) resolve()
-      else
-        reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
+      else reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
     })
   })
 
@@ -193,8 +177,7 @@ const extract_frames = (video_path, fps, pattern, on_progress) =>
     })
     child.on('close', code => {
       if (code === 0) resolve()
-      else
-        reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
+      else reject(new Error(stderr.split('\n').slice(-ERR_TAIL_LINES).join('\n')))
     })
   })
 
@@ -247,15 +230,7 @@ const rasterize = async (evaluate, svg, { width, height }) => {
 }
 
 const run_worker = async opts => {
-  const {
-    source_dir,
-    poster_dir,
-    start,
-    end,
-    debug_port,
-    worker_id,
-    target_width
-  } = opts
+  const { source_dir, poster_dir, start, end, debug_port, worker_id, target_width } = opts
   const frame_files = fs
     .readdirSync(source_dir)
     .filter(name => name.endsWith('.png'))
@@ -275,14 +250,11 @@ const run_worker = async opts => {
 
       if (!svg) {
         const frame = frame_files[index]
-        status(
-          `tracing ${index + 1}/${frame_files.length} (worker ${worker_id})`
-        )
-        const traced = await trace(
-          evaluate,
-          data_url_of(path.join(source_dir, frame)),
-          { label: `frame ${index + 1}`, status }
-        )
+        status(`tracing ${index + 1}/${frame_files.length} (worker ${worker_id})`)
+        const traced = await trace(evaluate, data_url_of(path.join(source_dir, frame)), {
+          label: `frame ${index + 1}`,
+          status
+        })
         svg = traced.svg
         fs.writeFileSync(out_svg, svg)
       }
@@ -295,9 +267,7 @@ const run_worker = async opts => {
         continue
       }
 
-      status(
-        `rastering ${index + 1}/${frame_files.length} at ${size.width}x${size.height} (worker ${worker_id})`
-      )
+      status(`rastering ${index + 1}/${frame_files.length} at ${size.width}x${size.height} (worker ${worker_id})`)
       fs.writeFileSync(out_png, await rasterize(evaluate, svg, size))
     }
   } finally {
@@ -318,32 +288,18 @@ const run_master = async () => {
   const poster_dir = path.join(out_dir, `${stem}-frames`)
   fs.mkdirSync(source_dir, { recursive: true })
   fs.mkdirSync(poster_dir, { recursive: true })
-  const traced = fs
-    .readdirSync(poster_dir)
-    .filter(name => name.endsWith('.svg')).length
-  if (traced > 0)
-    console.info(
-      `make-animation: resuming - ${traced} frame(s) already traced will be reused`
-    )
+  const traced = fs.readdirSync(poster_dir).filter(name => name.endsWith('.svg')).length
+  if (traced > 0) console.info(`make-animation: resuming - ${traced} frame(s) already traced will be reused`)
   if (width > 0) console.info(`make-animation: rastering posters ${width}px wide`)
 
-  console.info(
-    `make-animation: extracting ${fps}fps frames from ${path.basename(input_path)}`
-  )
+  console.info(`make-animation: extracting ${fps}fps frames from ${path.basename(input_path)}`)
   let last_tick = 0
-  await extract_frames(
-    input_path,
-    fps,
-    `${source_dir}/frame-%05d.png`,
-    (frame, seconds) => {
-      const now = Date.now()
-      if (now - last_tick < PROGRESS_TICK_MS) return
-      last_tick = now
-      process.stderr.write(
-        `\rmake-animation: extracting ${frame} frames (${seconds.toFixed(1)}s)   `
-      )
-    }
-  )
+  await extract_frames(input_path, fps, `${source_dir}/frame-%05d.png`, (frame, seconds) => {
+    const now = Date.now()
+    if (now - last_tick < PROGRESS_TICK_MS) return
+    last_tick = now
+    process.stderr.write(`\rmake-animation: extracting ${frame} frames (${seconds.toFixed(1)}s)   `)
+  })
   process.stderr.write(`\r${' '.repeat(STATUS_PAD)}\r`)
   mark('extract')
   const frame_files = fs
@@ -353,9 +309,7 @@ const run_master = async () => {
   if (!frame_files.length) throw new Error('no frames extracted')
   console.info(`make-animation: ${frame_files.length} frames`)
   const n_workers = Math.min(workers, frame_files.length)
-  console.info(
-    `make-animation: ${n_workers} worker(s), ${os.availableParallelism?.() ?? '?'} cores`
-  )
+  console.info(`make-animation: ${n_workers} worker(s), ${os.availableParallelism?.() ?? '?'} cores`)
 
   const slices = []
   const base = Math.floor(frame_files.length / n_workers)
@@ -391,8 +345,7 @@ const run_master = async () => {
   }
   for (const sig of ['SIGINT', 'SIGTERM'])
     process.once(sig, () => {
-      for (const child of children)
-        child.kill(sig === 'SIGINT' ? 'SIGINT' : 'SIGTERM')
+      for (const child of children) child.kill(sig === 'SIGINT' ? 'SIGINT' : 'SIGTERM')
       cleanup_tmp()
       process.exit(sig === 'SIGINT' ? SIGINT_EXIT : SIGTERM_EXIT)
     })
@@ -408,21 +361,14 @@ const run_master = async () => {
     )
     mark('render')
     const failed = exit_codes.filter(code => code !== 0).length
-    if (failed > 0)
-      throw new Error(
-        `${failed}/${n_workers} workers failed (codes ${exit_codes.join(',')})`
-      )
+    if (failed > 0) throw new Error(`${failed}/${n_workers} workers failed (codes ${exit_codes.join(',')})`)
 
     const out_file = path.join(out_dir, `${stem}.mp4`)
     if (path.resolve(out_file) === path.resolve(input_path))
       throw new Error(`refusing to overwrite the source clip at ${out_file}`)
     fs.mkdirSync(out_dir, { recursive: true })
-    const rendered_frames = fs
-      .readdirSync(poster_dir)
-      .filter(name => name.endsWith('.png')).length
-    console.info(
-      `make-animation: encoding ${rendered_frames} frames -> ${path.basename(out_file)}`
-    )
+    const rendered_frames = fs.readdirSync(poster_dir).filter(name => name.endsWith('.png')).length
+    console.info(`make-animation: encoding ${rendered_frames} frames -> ${path.basename(out_file)}`)
     await exec('ffmpeg', [
       '-y',
       '-framerate',

@@ -55,9 +55,7 @@ console.log(`- Files under src/: ${files.length}`)
 console.log(`- Below threshold: ${below.length}`)
 console.log(`- HTML report: ${join(coverage_dir, 'index.html')}`)
 console.log('')
-console.log(
-  '- Combined with fallow: `npm run test:risk` or see skills/test-coverage/references/fallow-integration.md'
-)
+console.log('- Combined with fallow: `npm run test:risk` or see skills/test-coverage/references/fallow-integration.md')
 console.log('')
 
 if (below.length === 0) {
@@ -77,5 +75,4 @@ for (const f of below.slice(0, top_n)) {
   )
 }
 
-if (below.length > top_n)
-  console.log(`\n… and ${below.length - top_n} more below threshold.`)
+if (below.length > top_n) console.log(`\n… and ${below.length - top_n} more below threshold.`)

@@ -33,7 +33,6 @@ const fail = message => {
   process.exit(1)
 }
 
-
 const is_darwin = process.platform === 'darwin'
 
 /** @param {string} file */
@@ -51,8 +50,7 @@ const free_bytes = dir => {
 /** Download an evicted file and wait until its bytes are on disk. */
 const make_local = async file => {
   const need = fs.statSync(file).size + DISK_RESERVE_BYTES
-  if (free_bytes(path.dirname(file)) < need)
-    throw new Error('not enough free disk to download it')
+  if (free_bytes(path.dirname(file)) < need) throw new Error('not enough free disk to download it')
   spawn_sync('brctl', ['download', file])
   const deadline = Date.now() + DOWNLOAD_TIMEOUT_MS
   while (Date.now() < deadline) {
@@ -63,7 +61,6 @@ const make_local = async file => {
 }
 
 const evict = file => spawn_sync('brctl', ['evict', file])
-
 
 const sha256_of = file =>
   new Promise((resolve, reject) => {
@@ -76,23 +73,14 @@ const sha256_of = file =>
 
 const run = (cmd, args) => {
   const out = spawn_sync(cmd, args, { encoding: 'utf8' })
-  if (out.status !== 0)
-    throw new Error(`${cmd} failed: ${(out.stderr || '').trim().split('\n').pop()}`)
+  if (out.status !== 0) throw new Error(`${cmd} failed: ${(out.stderr || '').trim().split('\n').pop()}`)
   return out.stdout
 }
 
 /** One frame a quarter of the way in, as a png in scratch. */
 const video_frame = (file, scratch) => {
   const duration = Number(
-    run('ffprobe', [
-      '-v',
-      'error',
-      '-show_entries',
-      'format=duration',
-      '-of',
-      'csv=p=0',
-      file
-    ]).trim()
+    run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file]).trim()
   )
   const at = Number.isFinite(duration) ? duration * FRAME_AT : 0
   const out = path.join(scratch, 'frame.png')
@@ -116,13 +104,11 @@ const video_frame = (file, scratch) => {
 /** The image to hand the tracer: the original, or a smaller copy of it. */
 const traceable_image = (source, scratch) => {
   if (source.kind === 'video') return video_frame(source.abs, scratch)
-  if (!is_darwin || fs.statSync(source.abs).size <= PRESCALE_OVER_BYTES)
-    return source.abs
+  if (!is_darwin || fs.statSync(source.abs).size <= PRESCALE_OVER_BYTES) return source.abs
   const out = path.join(scratch, `scaled${path.extname(source.abs)}`)
   run('sips', ['-Z', String(MAX_TRACE_SIDE), source.abs, '--out', out])
   return out
 }
-
 
 const run_worker = async ({ out_root, sources, debug_port, worker_id }) => {
   const scratch = mkdtemp_sync(path.join(tmpdir(), 'make-posters-'))
@@ -191,7 +177,6 @@ const run_worker = async ({ out_root, sources, debug_port, worker_id }) => {
   }
 }
 
-
 /** A source is done once its record exists without a problem to retry. */
 const is_done = record_file => {
   if (!fs.existsSync(record_file)) return false
@@ -219,11 +204,8 @@ const run_master = async (folder, { workers, dry_run }) => {
   status(JSON.stringify(summarize(sources)))
   if (dry_run) return
 
-  const todo = sources.filter(
-    source => !is_done(poster_paths_for(out_root, source.rel).record)
-  )
-  if (todo.length < sources.length)
-    status(`resuming - ${sources.length - todo.length} already done`)
+  const todo = sources.filter(source => !is_done(poster_paths_for(out_root, source.rel).record))
+  if (todo.length < sources.length) status(`resuming - ${sources.length - todo.length} already done`)
   fs.mkdirSync(out_root, { recursive: true })
 
   const traceable = todo.filter(source => source.kind !== 'other')
@@ -248,18 +230,13 @@ const run_master = async (folder, { workers, dry_run }) => {
       for (const child of children) child.kill(sig)
       process.exit(sig === 'SIGINT' ? SIGINT_EXIT : SIGTERM_EXIT)
     })
-  const codes = await Promise.all(
-    children.map(child => new Promise(resolve => child.on('exit', resolve)))
-  )
+  const codes = await Promise.all(children.map(child => new Promise(resolve => child.on('exit', resolve))))
 
   const records = sources
     .map(source => poster_paths_for(out_root, source.rel).record)
     .filter(file => fs.existsSync(file))
     .map(file => JSON.parse(fs.readFileSync(file, 'utf8')))
-  fs.writeFileSync(
-    path.join(out_root, 'posters.json'),
-    `${JSON.stringify(records, null, 2)}\n`
-  )
+  fs.writeFileSync(path.join(out_root, 'posters.json'), `${JSON.stringify(records, null, 2)}\n`)
   const traced = records.filter(record => record.poster)
   const problems = records.filter(record => record.problem)
   const sum = key => traced.reduce((total, record) => total + record[key], 0)
@@ -269,7 +246,6 @@ const run_master = async (folder, { workers, dry_run }) => {
   status(`wrote ${path.join(out_root, 'posters.json')}`)
   if (codes.some(code => code !== 0)) fail(`a worker failed (codes ${codes.join(',')})`)
 }
-
 
 const [, , first, second] = process.argv
 if (first === WORKER_FLAG)
@@ -287,8 +263,7 @@ else {
     const n = Number(rest[index + 1])
     if (Number.isInteger(n) && n > 0) workers = n
   }
-  if (!first || first.startsWith('--'))
-    fail('usage: npm run make:posters <folder> [--workers N] [--dry-run]')
+  if (!first || first.startsWith('--')) fail('usage: npm run make:posters <folder> [--workers N] [--dry-run]')
   if (!fs.existsSync(first)) fail(`folder not found: ${first}`)
   if (!chrome_path) fail('no Chromium browser found - set CHROME_PATH')
   run_master(first, { workers, dry_run: rest.includes('--dry-run') })

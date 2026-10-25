@@ -25,7 +25,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { state_path, harness_root } from '../../bin/lib/harness-settings.js'
 
 /** @param {string} root */
-const useHarnessState = (root) => join(root, state_path(root))
+const useHarnessState = root => join(root, state_path(root))
 
 export const stateDir = (cwd = process.cwd()) => {
   const root = harness_root(cwd)
@@ -33,14 +33,14 @@ export const stateDir = (cwd = process.cwd()) => {
 }
 export const logPath = (cwd = process.cwd()) => join(stateDir(cwd), 'edits.db')
 /** @param {Uint8Array} bytes */
-export const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
+export const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 /**
  * @param {string} [path]
  * @returns {DatabaseSync}
  */
 export const openLog = (path = logPath()) => {
   mkdirSync(dirname(path), {
-    recursive: true,
+    recursive: true
   })
   const db = new DatabaseSync(path)
   db.exec(`
@@ -64,9 +64,15 @@ export const openLog = (path = logPath()) => {
  * @param {Edit} edit
  */
 export const record = (db, edit) => {
-  db.prepare(
-    'INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, ?, ?, ?, ?, ?, ?)',
-  ).run(edit.path, edit.sha, edit.session, edit.turn, edit.tool, edit.tool_call, edit.ts)
+  db.prepare('INSERT INTO edit (path, sha, session, turn, tool, tool_call, ts) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+    edit.path,
+    edit.sha,
+    edit.session,
+    edit.turn,
+    edit.tool,
+    edit.tool_call,
+    edit.ts
+  )
 }
 
 /** The newest logged edit to a path, or undefined. */
@@ -78,9 +84,7 @@ export const record = (db, edit) => {
 export const last = (db, path) => {
   return /** @type {Edit | undefined} */ (
     db
-      .prepare(
-        'SELECT path, sha, session, turn, tool, tool_call, ts FROM edit WHERE path = ? ORDER BY id DESC LIMIT 1',
-      )
+      .prepare('SELECT path, sha, session, turn, tool, tool_call, ts FROM edit WHERE path = ? ORDER BY id DESC LIMIT 1')
       .get(path)
   )
 }

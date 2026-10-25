@@ -21,7 +21,7 @@ const WORK_SYNC_END = '<!-- /agents-local:work-sync -->'
  * @param {string} cwd
  * @returns {string | null}
  */
-const findHarnessRoot = (cwd) => {
+const findHarnessRoot = cwd => {
   const root = resolve('/')
   let currentDir = resolve(cwd)
   while (true) {
@@ -40,7 +40,7 @@ const findHarnessRoot = (cwd) => {
  * @param {string} cwd
  * @returns {string | null}
  */
-const findLocalContextFile = (cwd) => {
+const findLocalContextFile = cwd => {
   const harness = findHarnessRoot(cwd)
   if (!harness) return null
   const file = join(harness, LOCAL_FILENAME)
@@ -52,7 +52,7 @@ const findLocalContextFile = (cwd) => {
  * @param {string} filePath
  * @returns {string}
  */
-const readLocalContext = (filePath) => {
+const readLocalContext = filePath => {
   try {
     return readFileSync(filePath, 'utf-8').trim()
   } catch {
@@ -63,14 +63,14 @@ const readLocalContext = (filePath) => {
  * @param {string} content
  * @returns {Map<string, string>}
  */
-const parseWorkDescriptions = (content) => {
+const parseWorkDescriptions = content => {
   /** @type {Map<string, string>} */
   const descriptions = new Map()
   const block =
     content.match(
       new RegExp(
-        `${WORK_SYNC_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([\\s\\S]*?)${WORK_SYNC_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
-      ),
+        `${WORK_SYNC_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([\\s\\S]*?)${WORK_SYNC_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+      )
     )?.[1] ?? content
   for (const line of block.split('\n')) {
     const match = line.match(/^\|\s*`([^`]+)`\s*\|\s*(.+?)\s*\|$/)
@@ -82,13 +82,11 @@ const parseWorkDescriptions = (content) => {
  * @param {string} projectDir
  * @returns {string}
  */
-const projectHint = (projectDir) => {
+const projectHint = projectDir => {
   const pkgPath = join(projectDir, 'package.json')
   if (existsSync(pkgPath)) {
     try {
-      const pkg = /** @type {{ description?: string; name?: string; }} */ (
-        JSON.parse(readFileSync(pkgPath, 'utf-8'))
-      )
+      const pkg = /** @type {{ description?: string; name?: string; }} */ (JSON.parse(readFileSync(pkgPath, 'utf-8')))
       if (pkg.description && pkg.description !== pkg.name) return pkg.description
       if (pkg.name) return pkg.name
     } catch {}
@@ -122,7 +120,7 @@ const buildWorkSyncBlock = (projects, descriptions) => {
 |---------|------------|
 ${rows.join('\n')}
 
-No git: ${noGit.map((name) => `\`${name}\``).join(', ')}.
+No git: ${noGit.map(name => `\`${name}\``).join(', ')}.
 ${WORK_SYNC_END}`
 }
 /**
@@ -135,10 +133,10 @@ const syncWorkSection = (harnessRoot, localPath) => {
   if (!existsSync(workPath)) return
   /** @type {Project[]} */
   const projects = readdirSync(workPath)
-    .filter((name) => !name.startsWith('.') && statSync(join(workPath, name)).isDirectory())
-    .map((name) => ({
+    .filter(name => !name.startsWith('.') && statSync(join(workPath, name)).isDirectory())
+    .map(name => ({
       label: name,
-      dir: join(workPath, name),
+      dir: join(workPath, name)
     }))
   const appsPath = join(harnessRoot, 'apps')
   if (existsSync(appsPath)) {
@@ -147,7 +145,7 @@ const syncWorkSection = (harnessRoot, localPath) => {
       if (!name.startsWith('.') && existsSync(join(dir, 'package.json')))
         projects.push({
           label: `apps/${name}`,
-          dir,
+          dir
         })
     }
   }
@@ -157,9 +155,9 @@ const syncWorkSection = (harnessRoot, localPath) => {
   if (content.includes(WORK_SYNC_START)) {
     content = content.replace(
       new RegExp(
-        `${WORK_SYNC_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${WORK_SYNC_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+        `${WORK_SYNC_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${WORK_SYNC_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
       ),
-      syncBlock,
+      syncBlock
     )
   } else if (content.includes(WORK_SECTION)) {
     content = content.replace(
@@ -168,7 +166,7 @@ const syncWorkSection = (harnessRoot, localPath) => {
 
 Code and client work live in \`work/<project>/\`; shipped code apps in \`apps/<name>/\`. Synced from disk by agents-local each session - edit descriptions in the table; rows add and remove automatically.
 
-${syncBlock}`,
+${syncBlock}`
     )
   } else {
     const anchor = content.indexOf('\n## ')
@@ -177,8 +175,7 @@ ${syncBlock}`,
 Code and client work live in \`work/<project>/\`; shipped code apps in \`apps/<name>/\`. Synced from disk by agents-local each session - edit descriptions in the table; rows add and remove automatically.
 
 ${syncBlock}\n`
-    content =
-      anchor === -1 ? content + insert : content.slice(0, anchor) + insert + content.slice(anchor)
+    content = anchor === -1 ? content + insert : content.slice(0, anchor) + insert + content.slice(anchor)
   }
   writeFileSync(localPath, content, 'utf-8')
 }
@@ -208,30 +205,23 @@ const buildReadmeWithLocal = (harnessRoot, localPath) => {
   const local = readLocalContext(localPath)
   if (!local) return null
   const readme = readFileSync(readmePath, 'utf-8')
-  const personal = [
-    '## Personal Context',
-    '',
-    `From \`${LOCAL_FILENAME}\`:`,
-    '',
-    local,
-  ].join('\n')
+  const personal = ['## Personal Context', '', `From \`${LOCAL_FILENAME}\`:`, '', local].join('\n')
   return insertBeforeLastCodeBlock(readme, personal)
 }
 /** @param {ExtensionAPI} pi */
-const agentsLocalExtension = (pi) => {
+const agentsLocalExtension = pi => {
   /** @type {string | null} */
   let localFile = null
   /** @type {string | null} */
   let pendingInsert = null
-  pi.on('resources_discover', async (event) => {
+  pi.on('resources_discover', async event => {
     localFile = findLocalContextFile(event.cwd)
     if (!localFile) return
     const harnessRoot = findHarnessRoot(event.cwd) ?? dirname(localFile)
     syncWorkSection(harnessRoot, localFile)
   })
   pi.registerCommand('insert', {
-    description:
-      'Splice AGENTS.md into README.md (before the last command block) for the next prompt',
+    description: 'Splice AGENTS.md into README.md (before the last command block) for the next prompt',
     handler: async (_args, ctx) => {
       const harnessRoot = findHarnessRoot(ctx.cwd)
       if (!harnessRoot) {
@@ -239,8 +229,7 @@ const agentsLocalExtension = (pi) => {
         return
       }
       const localPath =
-        localFile ??
-        (existsSync(join(harnessRoot, LOCAL_FILENAME)) ? join(harnessRoot, LOCAL_FILENAME) : null)
+        localFile ?? (existsSync(join(harnessRoot, LOCAL_FILENAME)) ? join(harnessRoot, LOCAL_FILENAME) : null)
       if (!localPath) {
         ctx.ui.notify(`insert: no ${LOCAL_FILENAME}`, 'error')
         return
@@ -252,9 +241,9 @@ const agentsLocalExtension = (pi) => {
       }
       pendingInsert = combined
       ctx.ui.notify('insert: README + AGENTS.md queued for next prompt', 'info')
-    },
+    }
   })
-  pi.on('before_agent_start', async (event) => {
+  pi.on('before_agent_start', async event => {
     let systemPrompt = event.systemPrompt
     if (pendingInsert) {
       systemPrompt +=
@@ -265,7 +254,7 @@ const agentsLocalExtension = (pi) => {
     }
     if (systemPrompt === event.systemPrompt) return
     return {
-      systemPrompt,
+      systemPrompt
     }
   })
 }

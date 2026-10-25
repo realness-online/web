@@ -3,7 +3,23 @@ import { basename, dirname, extname, join, relative, resolve } from 'node:path'
 import { cli_families } from './cli.js'
 import { reviewed } from './review.js'
 
-const excluded = new Set(['node_modules', '.git', 'dist', 'target', 'vendor', '.vite-hooks', 'coverage', '.output', '.cache', 'fixtures', 'capture', 'test', 'tests', 'specs', 'references'])
+const excluded = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'target',
+  'vendor',
+  '.vite-hooks',
+  'coverage',
+  '.output',
+  '.cache',
+  'fixtures',
+  'capture',
+  'test',
+  'tests',
+  'specs',
+  'references'
+])
 const group_for = name => {
   if (/^(deploy|release|ship|.*version|verify)/.test(name)) return 'Deploy and release'
   if (/^test/.test(name)) return 'Test'
@@ -25,7 +41,7 @@ const walk = async (root, directory, skip = excluded) => {
   for (const entry of entries) {
     if (skip.has(entry.name) || entry.name.startsWith('.DS_Store')) continue
     const path = `${directory}/${entry.name}`
-    if (entry.isDirectory()) files.push(...await walk(root, path, skip))
+    if (entry.isDirectory()) files.push(...(await walk(root, path, skip)))
     else if (entry.isFile()) files.push(path)
   }
   return files.sort()
@@ -33,7 +49,14 @@ const walk = async (root, directory, skip = excluded) => {
 
 /** Inventory source entry points without running services, helpers, or remote commands. */
 export const collect_commands = async root => {
-  const files = ['package.json', ...await walk(root, 'apps'), ...await walk(root, '.pi/bin'), ...await walk(root, '.pi/skills'), ...await walk(root, '.pi/examples'), ...await walk(root, 'skills')]
+  const files = [
+    'package.json',
+    ...(await walk(root, 'apps')),
+    ...(await walk(root, '.pi/bin')),
+    ...(await walk(root, '.pi/skills')),
+    ...(await walk(root, '.pi/examples')),
+    ...(await walk(root, 'skills'))
+  ]
   const texts = new Map()
   const text_of = async path => {
     if (!texts.has(path)) texts.set(path, await read_file(join(root, path), 'utf8'))
@@ -55,14 +78,23 @@ export const collect_commands = async root => {
         const command_text = segment.trim()
         const cd = command_text.match(/^cd ([\w./-]+)$/)
         if (cd) cwd = resolve(cwd, cd[1])
-        const target = command_text.match(/^(?:node|bash) ([\w./-]+\.(?:js|sh))\b/)?.[1] ?? command_text.match(/^(\.\/[\w./-]+\.sh)\b/)?.[1]
+        const target =
+          command_text.match(/^(?:node|bash) ([\w./-]+\.(?:js|sh))\b/)?.[1] ??
+          command_text.match(/^(\.\/[\w./-]+\.sh)\b/)?.[1]
         if (!target) continue
         const file = resolve(cwd, target)
-        const exists = await stat(file).then(() => true, error => {
-          if (error.code === 'ENOENT') return false
-          throw error
-        })
-        if (!exists && !folder.startsWith('.pi/examples')) missing_targets.push({ source: `${source}#scripts.${name}`, message: `Missing script target: ${relative(root, file)}. Defined script needs repair or generated template files.` })
+        const exists = await stat(file).then(
+          () => true,
+          error => {
+            if (error.code === 'ENOENT') return false
+            throw error
+          }
+        )
+        if (!exists && !folder.startsWith('.pi/examples'))
+          missing_targets.push({
+            source: `${source}#scripts.${name}`,
+            message: `Missing script target: ${relative(root, file)}. Defined script needs repair or generated template files.`
+          })
       }
       entries.push({
         id: `${source}#scripts.${name}`,
@@ -75,10 +107,12 @@ export const collect_commands = async root => {
         package: folder === '.' ? 'Harness' : folder.replace('apps/realness/', ''),
         definition: script,
         options: 'Append -- before script arguments.',
-        context: 'Defined in package.json; execution not verified by this inventory.',
+        context: 'Defined in package.json; execution not verified by this inventory.'
       })
     }
-    for (const [name, entry] of Object.entries(typeof manifest.bin === 'string' ? { [manifest.name]: manifest.bin } : manifest.bin ?? {})) {
+    for (const [name, entry] of Object.entries(
+      typeof manifest.bin === 'string' ? { [manifest.name]: manifest.bin } : (manifest.bin ?? {})
+    )) {
       bins.push({ name, source, entry: relative(root, join(root, folder, entry)) })
     }
   }
@@ -97,7 +131,7 @@ export const collect_commands = async root => {
         package: family.name,
         definition: description,
         options,
-        context: `${context}${family.name === 'Webspace' ? ' Environments: local or development; --json available. Old dev/prod names are rejected.' : ''}`,
+        context: `${context}${family.name === 'Webspace' ? ' Environments: local or development; --json available. Old dev/prod names are rejected.' : ''}`
       })
     }
   }
@@ -111,11 +145,18 @@ export const collect_commands = async root => {
     if (!['', '.js', '.ts', '.sh', '.py'].includes(extension)) continue
     if ((await stat(join(root, source))).size > 500_000) continue
     const text = await text_of(source)
-    if (extension === '.sh' && (source.includes('/lib/') || source.endsWith('/lib.sh') || source.endsWith('/service-env.sh'))) {
+    if (
+      extension === '.sh' &&
+      (source.includes('/lib/') || source.endsWith('/lib.sh') || source.endsWith('/service-env.sh'))
+    ) {
       shell_libraries.push(source)
       continue
     }
-    const detected = extension === '.sh' || text.startsWith('#!') || (extension === '.js' && (/process\.argv/.test(text) || source.includes('/scripts/') && !/(?:^|\n)export\s/.test(text)))
+    const detected =
+      extension === '.sh' ||
+      text.startsWith('#!') ||
+      (extension === '.js' &&
+        (/process\.argv/.test(text) || (source.includes('/scripts/') && !/(?:^|\n)export\s/.test(text))))
     if (!detected) continue
     candidates.push(source)
     let launcher = ''
@@ -123,7 +164,8 @@ export const collect_commands = async root => {
     else if (extension === '.sh' || /^#!.*\bbash\b/.test(text)) launcher = 'bash '
     let platform = ''
     if (source.includes('/guest/')) platform = 'Actor VM only. '
-    else if (source.includes('/server/halo/scripts/')) platform = 'Linux host VM; elevated permissions may be required. '
+    else if (source.includes('/server/halo/scripts/'))
+      platform = 'Linux host VM; elevated permissions may be required. '
     entries.push({
       id: source,
       kind: 'Entry file',
@@ -133,20 +175,23 @@ export const collect_commands = async root => {
       source,
       group: 'Internal helpers',
       package: dirname(source),
-      definition: 'Detected by shebang, process.argv or a script-directory entry. This is a source candidate, not a verified desktop command.',
+      definition:
+        'Detected by shebang, process.argv or a script-directory entry. This is a source candidate, not a verified desktop command.',
       options: 'Read the source for required arguments.',
-      context: `${platform}Working directory, arguments and side effects need review before running.`,
+      context: `${platform}Working directory, arguments and side effects need review before running.`
     })
   }
   const references = []
-  const reference_files = [...new Set([
-    ...files,
-    'README.md',
-    'AGENTS.md',
-    ...await walk(root, '.pi/prompts'),
-    ...await walk(root, '.pi/extensions'),
-    ...await walk(root, '.pi/skills', new Set()),
-  ])]
+  const reference_files = [
+    ...new Set([
+      ...files,
+      'README.md',
+      'AGENTS.md',
+      ...(await walk(root, '.pi/prompts')),
+      ...(await walk(root, '.pi/extensions')),
+      ...(await walk(root, '.pi/skills', new Set()))
+    ])
+  ]
   for (const source of reference_files) {
     if (source.startsWith('.pi/bin/commands') || /\.(test|spec)\./.test(source)) continue
     if (!['.js', '.ts', '.sh', '.py', '.json', '.md', '.html', ''].includes(extname(source))) continue
@@ -154,7 +199,12 @@ export const collect_commands = async root => {
     references.push({ source, text: await text_of(source) })
   }
   /** Instruction files a maintainer keeps current; changelogs and plans are history. */
-  const is_curated_doc = path => extname(path) === '.md' && (/(^|\/)(README|FORK|documentation|SECURITY|SIGNING|SOURCES)\.md$/.test(path) || path.endsWith('.tooling.md') || path.endsWith('SKILL.md') || /(^|\/)(docs|references)\/|\.auto\//.test(path))
+  const is_curated_doc = path =>
+    extname(path) === '.md' &&
+    (/(^|\/)(README|FORK|documentation|SECURITY|SIGNING|SOURCES)\.md$/.test(path) ||
+      path.endsWith('.tooling.md') ||
+      path.endsWith('SKILL.md') ||
+      /(^|\/)(docs|references)\/|\.auto\//.test(path))
   const mentions = (text, needle) => {
     if (!needle) return false
     let position = text.indexOf(needle)
@@ -168,9 +218,18 @@ export const collect_commands = async root => {
   for (const entry of entries) {
     const script_name = entry.id.split('#scripts.')[1]
     const route = entry.kind === 'CLI command' ? entry.display.split(' <')[0].split(' --')[0] : null
-    const needles = entry.kind === 'Entry file'
-      ? [entry.source, basename(entry.source)]
-      : script_name ? [`npm run ${script_name}`, `npm --prefix ${dirname(entry.source)} run ${script_name}`, `run ${script_name}`, `'${script_name}'`, `"${script_name}"`] : [route]
+    const needles =
+      entry.kind === 'Entry file'
+        ? [entry.source, basename(entry.source)]
+        : script_name
+          ? [
+              `npm run ${script_name}`,
+              `npm --prefix ${dirname(entry.source)} run ${script_name}`,
+              `run ${script_name}`,
+              `'${script_name}'`,
+              `"${script_name}"`
+            ]
+          : [route]
     const callers = references.filter(reference => {
       if (reference.source === entry.source && entry.kind !== 'npm script') return
       let text = reference.text
@@ -181,9 +240,16 @@ export const collect_commands = async root => {
     const documented = callers.filter(reference => is_curated_doc(reference.source))
     entry.review = runtime.length || documented.length ? 'Keep' : 'Unknown'
     entry.review_reason = runtime.length
-      ? `Called by ${runtime.slice(0, 3).map(reference => reference.source).join(', ')}.${runtime.length > 3 ? ` ${runtime.length} callers total.` : ''}`
-      : documented.length ? `Documented in ${documented.slice(0, 3).map(reference => reference.source).join(', ')}.`
-      : 'No caller or maintained note found; decide by hand.'
+      ? `Called by ${runtime
+          .slice(0, 3)
+          .map(reference => reference.source)
+          .join(', ')}.${runtime.length > 3 ? ` ${runtime.length} callers total.` : ''}`
+      : documented.length
+        ? `Documented in ${documented
+            .slice(0, 3)
+            .map(reference => reference.source)
+            .join(', ')}.`
+        : 'No caller or maintained note found; decide by hand.'
     if (entry.id.startsWith('.pi/bin/harness/session-format.js#')) {
       entry.review_reason = 'Migration ran, but four JSONL files and two recovery backups remain.'
       if (entry.id.endsWith('#rollback <manifest>')) entry.review = 'Keep'
@@ -205,8 +271,23 @@ export const collect_commands = async root => {
   }
   const warnings = [
     ...missing_targets,
-    { source: 'package.json#scripts.start', message: 'npm start and npm run realness start Pi; npm run realness remains an alias. The app package has a separate operator command.' },
-    ...(JSON.parse(await text_of('package.json')).scripts.local ? [] : [{ source: 'npm run local', message: 'Planned only. No local launcher script exists yet.' }]),
+    {
+      source: 'package.json#scripts.start',
+      message:
+        'npm start and npm run realness start Pi; npm run realness remains an alias. The app package has a separate operator command.'
+    },
+    ...(JSON.parse(await text_of('package.json')).scripts.local
+      ? []
+      : [{ source: 'npm run local', message: 'Planned only. No local launcher script exists yet.' }])
   ]
-  return { scope: 'Harness root .pi/bin/, apps/, .pi/skills/ and skills/. Work projects, dependencies, builds, fixtures and individual tests are excluded. External tool subcommands are delegated to their own help.', packages, bins, candidates, shell_libraries, warnings, entries }
+  return {
+    scope:
+      'Harness root .pi/bin/, apps/, .pi/skills/ and skills/. Work projects, dependencies, builds, fixtures and individual tests are excluded. External tool subcommands are delegated to their own help.',
+    packages,
+    bins,
+    candidates,
+    shell_libraries,
+    warnings,
+    entries
+  }
 }

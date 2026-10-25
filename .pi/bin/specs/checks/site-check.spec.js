@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict'
 import { spawnSync as spawn } from 'node:child_process'
-import { copyFileSync as copy, mkdirSync as mkdir, mkdtempSync as mkdtemp, readFileSync as read_file, rmSync as rm, writeFileSync as write_file } from 'node:fs'
+import {
+  copyFileSync as copy,
+  mkdirSync as mkdir,
+  mkdtempSync as mkdtemp,
+  readFileSync as read_file,
+  rmSync as rm,
+  writeFileSync as write_file
+} from 'node:fs'
 import { join } from 'node:path'
 import { it } from 'node:test'
 
@@ -16,12 +23,23 @@ const fixture = t => {
   const root = mkdtemp(join(scratch, 'site-'))
   t.after(() => rm(root, { recursive: true, force: true }))
   write_file(join(root, 'index.html'), page)
-  for (const name of ['palette.css', 'color.css']) copy(new URL(`../../../../apps/realness/src/app/style/${name}`, import.meta.url), join(root, name))
-  write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ name: 'Site', start_url: '/', scope: '/', display: 'standalone', icons: [
-    { src: '192.png', sizes: '192x192', type: 'image/png' },
-    { src: '512.png', sizes: '512x512', type: 'image/png' }
-  ] }))
-  for (const size of [192, 512]) copy(new URL(`../fixtures/site-${size}.png`, import.meta.url), join(root, `${size}.png`))
+  for (const name of ['palette.css', 'color.css'])
+    copy(new URL(`../../../../apps/realness/src/app/style/${name}`, import.meta.url), join(root, name))
+  write_file(
+    join(root, 'manifest.webmanifest'),
+    JSON.stringify({
+      name: 'Site',
+      start_url: '/',
+      scope: '/',
+      display: 'standalone',
+      icons: [
+        { src: '192.png', sizes: '192x192', type: 'image/png' },
+        { src: '512.png', sizes: '512x512', type: 'image/png' }
+      ]
+    })
+  )
+  for (const size of [192, 512])
+    copy(new URL(`../fixtures/site-${size}.png`, import.meta.url), join(root, `${size}.png`))
   write_file(join(root, 'main.js'), "import './register.js'\n")
   write_file(join(root, 'register.js'), "navigator.serviceWorker.register('/service.worker.js')\n")
   write_file(join(root, 'service.worker.js'), "self.addEventListener('fetch', () => {})\n")
@@ -43,14 +61,26 @@ const controls = [
   ['itemid', root => write_file(join(root, 'index.html'), page.replace('/pages/1791571682897', '/pages/../../secret'))],
   ['itemid', root => write_file(join(root, 'index.html'), page.replace(' itemscope', ''))],
   ['palette', root => write_file(join(root, 'palette.css'), ':root { --water-fill: red }')],
-  ['light-mode', root => write_file(join(root, 'color.css'), '@media (prefers-color-scheme: dark) { :root { --surface: black } }')],
-  ['dark-mode', root => write_file(join(root, 'color.css'), ':root { --surface: var(--chalk); --text: var(--graphite) }')],
-  ['pwa-manifest', root => write_file(join(root, 'index.html'), page.replace('<link rel="manifest" href="/manifest.webmanifest">', ''))],
+  [
+    'light-mode',
+    root => write_file(join(root, 'color.css'), '@media (prefers-color-scheme: dark) { :root { --surface: black } }')
+  ],
+  [
+    'dark-mode',
+    root => write_file(join(root, 'color.css'), ':root { --surface: var(--chalk); --text: var(--graphite) }')
+  ],
+  [
+    'pwa-manifest',
+    root => write_file(join(root, 'index.html'), page.replace('<link rel="manifest" href="/manifest.webmanifest">', ''))
+  ],
   ['pwa-manifest', root => write_file(join(root, 'manifest.webmanifest'), '{')],
   ['pwa-icons', root => rm(join(root, '512.png'))],
   ['pwa-registration', root => write_file(join(root, 'register.js'), 'const x = 1')],
   ['pwa-worker', root => rm(join(root, 'service.worker.js'))],
-  ['palette', root => write_file(join(root, 'index.html'), page.replace('/palette.css', 'https://example.org/palette.css'))]
+  [
+    'palette',
+    root => write_file(join(root, 'index.html'), page.replace('/palette.css', 'https://example.org/palette.css'))
+  ]
 ]
 for (const [index, [rule, mutate]] of controls.entries()) {
   it(`h7 negative control ${index + 1}: ${rule}`, t => {

@@ -12,16 +12,15 @@ export const read_handover = path => {
     .sort((left, right) => left.value.commitSeq - right.value.commitSeq || left.value.id - right.value.id)
     .map(row => row.value.entry)
   const messages = entries.flatMap(entry => entry.model ?? [])
-  if (!messages.some(message => message.role === 'user'))
-    throw new Error('Browser handover has no user conversation')
+  if (!messages.some(message => message.role === 'user')) throw new Error('Browser handover has no user conversation')
   return { id: log.handover_id, conversation_id: log.conversation_id, entries, messages, snapshot: realpath_sync(path) }
 }
 
 /** A receipt exists only after the imported transcript is part of the active Pi session. */
 export const handover_receipt = (manager, id) =>
-  manager.getBranch().some(entry =>
-    entry.type === 'custom' && entry.customType === 'durable-handover' && entry.data?.id === id
-  )
+  manager
+    .getBranch()
+    .some(entry => entry.type === 'custom' && entry.customType === 'durable-handover' && entry.data?.id === id)
     ? { resumed: true, handover_id: id }
     : null
 

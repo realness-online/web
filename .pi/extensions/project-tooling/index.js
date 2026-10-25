@@ -36,9 +36,7 @@ const PROJECT_DIRS = [join(root, 'work'), join(root, 'apps')]
  * @returns {string | undefined}
  */
 const projectDir = name => {
-  return PROJECT_DIRS.map(dir => join(dir, name)).find(dir =>
-    existsSync(join(dir, 'package.json'))
-  )
+  return PROJECT_DIRS.map(dir => join(dir, name)).find(dir => existsSync(join(dir, 'package.json')))
 }
 const TOOLING_FILE = '.tooling.md'
 
@@ -46,16 +44,7 @@ const TOOLING_FILE = '.tooling.md'
  * Group script names by intent so the output reads as a menu, not a flat
  * dump. High-value diagnostic buckets first.
  */
-const GROUP_ORDER = [
-  'test',
-  'lint',
-  'type',
-  'build',
-  'deploy',
-  'logs',
-  'dev',
-  'other'
-]
+const GROUP_ORDER = ['test', 'lint', 'type', 'build', 'deploy', 'logs', 'dev', 'other']
 /**
  * @param {string} name
  * @returns {string}
@@ -65,8 +54,7 @@ const classifyScript = name => {
   if (/(^|:)test|cover(coverage)?|fallow|risk/.test(n)) return 'test'
   if (/(^|:)lint/.test(n)) return 'lint'
   if (/(^|:)type|check/.test(n)) return 'type'
-  if (/(^|:)build|wasm|worker|icons|toc|prerender|manifest/.test(n))
-    return 'build'
+  if (/(^|:)build|wasm|worker|icons|toc|prerender|manifest/.test(n)) return 'build'
   if (/(^|:)deploy|ship|release|verify|publish/.test(n)) return 'deploy'
   if (/(^|:)log/.test(n)) return 'logs'
   if (/(^|:)dev|serve|watch|emu/.test(n)) return 'dev'
@@ -99,9 +87,7 @@ const readProjectScripts = async projectDir => {
   /** @type {Record<string, string>} */
   let scripts
   try {
-    const pkg = /** @type {{ scripts?: Record<string, string>; }} */ (
-      JSON.parse(await readFile(pkgFile, 'utf-8'))
-    )
+    const pkg = /** @type {{ scripts?: Record<string, string>; }} */ (JSON.parse(await readFile(pkgFile, 'utf-8')))
     if (!pkg.scripts) return []
     scripts = pkg.scripts
   } catch {
@@ -196,8 +182,7 @@ const projectToolingExtension = pi => {
       let text = blocks.join('\n\n---\n\n')
       if (missing.length) {
         text +=
-          `\n\nNot found under work/ or apps/: ${missing.join(', ')}. ` +
-          `Available: ${listProjects().join(', ')}`
+          `\n\nNot found under work/ or apps/: ${missing.join(', ')}. ` + `Available: ${listProjects().join(', ')}`
       }
       const lines = text.split('\n')
       ctx.ui.notify(`project-tooling: ${want}`, 'info')
@@ -212,8 +197,7 @@ const projectToolingExtension = pi => {
       '(package.json scripts grouped by purpose, scripts/ and tools/ dirs, and any ' +
       '.tooling.md). Use before working in, diagnosing, deploying, or running tests for ' +
       'a project so you use its existing tooling instead of guessing.',
-    promptSnippet:
-      'List project scripts and tooling for a work/ or apps/ project',
+    promptSnippet: 'List project scripts and tooling for a work/ or apps/ project',
     promptGuidelines: [
       'Before editing, diagnosing, testing, building, or deploying a project in work/ or apps/, ' +
         'call project_tooling to see its existing scripts and helpers. Mention the ' +
@@ -228,13 +212,7 @@ const projectToolingExtension = pi => {
         })
       )
     }),
-    /** @param {{ project?: string; }} params */ async execute(
-      _toolCallId,
-      params,
-      _signal,
-      onUpdate,
-      _ctx
-    ) {
+    /** @param {{ project?: string; }} params */ async execute(_toolCallId, params, _signal, onUpdate, _ctx) {
       const want = params.project?.trim()
       const projects = want && want !== 'all' ? [want] : listProjects()
       if (!projects.length) {
@@ -257,8 +235,7 @@ const projectToolingExtension = pi => {
         ],
         details: {}
       })
-      const missing =
-        want && want !== 'all' ? projects.filter(p => !projectDir(p)) : []
+      const missing = want && want !== 'all' ? projects.filter(p => !projectDir(p)) : []
       /** @type {string[]} */
       const blocks = []
       for (const project of projects) {
@@ -268,8 +245,7 @@ const projectToolingExtension = pi => {
       let text = blocks.join('\n\n---\n\n')
       if (missing.length) {
         text +=
-          `\n\nNot found under work/ or apps/: ${missing.join(', ')}. ` +
-          `Available: ${listProjects().join(', ')}`
+          `\n\nNot found under work/ or apps/: ${missing.join(', ')}. ` + `Available: ${listProjects().join(', ')}`
       }
       return {
         content: [

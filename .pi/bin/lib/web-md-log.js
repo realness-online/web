@@ -1,4 +1,3 @@
-
 import { appendFileSync as append_file_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync } from 'node:fs'
 import { join } from 'node:path'
 import { hash } from './web-md-cache.js'
@@ -12,7 +11,16 @@ export const outcome_of = source => {
 }
 
 /** One run's line. attempts are this run's only, without page sizes beyond chars. */
-export const read_line = ({ url, source, attempts, seen_before, chars = null, forced = null, kept = null, at = new Date() }) => ({
+export const read_line = ({
+  url,
+  source,
+  attempts,
+  seen_before,
+  chars = null,
+  forced = null,
+  kept = null,
+  at = new Date()
+}) => ({
   at: at.toISOString(),
   url: hash(url),
   site: hash(new URL(url).host),
@@ -33,7 +41,15 @@ export const read_line = ({ url, source, attempts, seen_before, chars = null, fo
  *   validators the kept copy had an ETag or Last-Modified
  *   matched    re-read: did the site's validators still match? (matched + changed = a lying validator)
  */
-export const kept_line = ({ prior, read, hash: digest = null, method = null, validators = {}, ttl, now = Date.now() }) => {
+export const kept_line = ({
+  prior,
+  read,
+  hash: digest = null,
+  method = null,
+  validators = {},
+  ttl,
+  now = Date.now()
+}) => {
   if (!prior) return null
   const had = Boolean(prior.validators?.etag || prior.validators?.last_modified)
   const same = read && method === prior.method && prior.hash && digest
@@ -120,9 +136,13 @@ export const reuse = lines => {
     if (line.outcome === 'cache' || line.outcome === 'not-modified') p.reused += 1
     pages.set(line.url, p)
   }
-  const bands = { never: 0, '1': 0, '2_5': 0, over_5: 0 }
-  for (const p of pages.values()) bands[p.reused === 0 ? 'never' : p.reused === 1 ? '1' : p.reused <= 5 ? '2_5' : 'over_5'] += 1
-  const top = [...pages.values()].filter(p => p.reused > 0).sort((a, b) => b.reused - a.reused).slice(0, 10)
+  const bands = { never: 0, 1: 0, '2_5': 0, over_5: 0 }
+  for (const p of pages.values())
+    bands[p.reused === 0 ? 'never' : p.reused === 1 ? '1' : p.reused <= 5 ? '2_5' : 'over_5'] += 1
+  const top = [...pages.values()]
+    .filter(p => p.reused > 0)
+    .sort((a, b) => b.reused - a.reused)
+    .slice(0, 10)
   return { pages: pages.size, bands, top }
 }
 

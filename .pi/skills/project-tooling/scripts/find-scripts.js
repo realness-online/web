@@ -38,10 +38,7 @@ const npm_scripts = dir => {
 const skip = new Set(['node_modules', 'dist', 'coverage', 'artifacts'])
 const subpackages = project_dir =>
   list(project_dir).filter(
-    name =>
-      !name.startsWith('.') &&
-      !skip.has(name) &&
-      existsSync(join(project_dir, name, 'package.json'))
+    name => !name.startsWith('.') && !skip.has(name) && existsSync(join(project_dir, name, 'package.json'))
   )
 
 const projects = list(work).filter(name => is_dir(join(work, name)))
@@ -50,9 +47,7 @@ let shown = 0
 for (const project of projects) {
   const project_dir = join(work, project)
   const tooling_path = join(project_dir, '.tooling.md')
-  const tooling = existsSync(tooling_path)
-    ? readFileSync(tooling_path, 'utf8')
-    : null
+  const tooling = existsSync(tooling_path) ? readFileSync(tooling_path, 'utf8') : null
   const places = ['', ...subpackages(project_dir)]
 
   if (!want) {
@@ -61,9 +56,7 @@ for (const project of projects) {
       .filter(([, count]) => count)
       .map(([sub, count]) => (sub === '.' ? `${count}` : `${sub} ${count}`))
     const flag = tooling ? '  [.tooling.md]' : ''
-    console.log(
-      `${project}${flag}  npm scripts: ${counts.join(', ') || 'none'}`
-    )
+    console.log(`${project}${flag}  npm scripts: ${counts.join(', ') || 'none'}`)
     continue
   }
 
@@ -78,18 +71,13 @@ for (const project of projects) {
       if (files.length) found.push(`${prefix}${folder}/: ${files.join(', ')}`)
     }
   }
-  const mentions = tooling
-    ? tooling.split('\n').filter(line => want.test(line)).length
-    : 0
+  const mentions = tooling ? tooling.split('\n').filter(line => want.test(line)).length : 0
   if (!found.length && !mentions) continue
 
   shown++
-  const flag = mentions
-    ? `  [.tooling.md: ${mentions} line${mentions === 1 ? '' : 's'}]`
-    : ''
+  const flag = mentions ? `  [.tooling.md: ${mentions} line${mentions === 1 ? '' : 's'}]` : ''
   console.log(`${project}${flag}`)
   for (const line of found) console.log(`  ${line}`)
 }
 
-if (want && !shown)
-  console.log(`no match for ${want} in ${projects.length} work/ projects`)
+if (want && !shown) console.log(`no match for ${want} in ${projects.length} work/ projects`)

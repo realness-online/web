@@ -24,16 +24,15 @@
 /** @typedef {import("@earendil-works/pi-coding-agent").ExtensionAPI} ExtensionAPI */
 const DEFAULT_TARGET = 'deepseek/deepseek-v4-flash'
 const TODO_PATTERN = /(?:^|[\\/])(?:TODO|todo|TASK|task|PLAN|plan|CHECKLIST|checklist)\.(?:md|txt)$/
-export default /** @param {ExtensionAPI} pi */ (pi) => {
+export default /** @param {ExtensionAPI} pi */ pi => {
   let armed = false
   let handoffDone = false
   let targetModelId = DEFAULT_TARGET
   let todoCreated = false
   let editOrWriteThisTurn = false
-  pi.on('tool_call', (event) => {
+  pi.on('tool_call', event => {
     if (handoffDone || !armed) return
-    const isTodoWrite =
-      event.toolName === 'write' && event.input.path && TODO_PATTERN.test(String(event.input.path))
+    const isTodoWrite = event.toolName === 'write' && event.input.path && TODO_PATTERN.test(String(event.input.path))
     if (isTodoWrite) {
       todoCreated = true
       return
@@ -59,7 +58,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
     await pi.setModel(targetModel)
     ctx.ui.notify(`Prewalk: switched to ${targetModelId}`, 'info')
   })
-  pi.on('before_agent_start', (event) => {
+  pi.on('before_agent_start', event => {
     if (!armed) return
     if (!handoffDone) {
       return {
@@ -67,7 +66,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
           event.systemPrompt +
           '\n\n' +
           'Start by writing a concrete plan. Create a TODO.md breaking down the ' +
-          'work into small, verifiable items. Then start implementing.',
+          'work into small, verifiable items. Then start implementing.'
       }
     }
     return {
@@ -75,7 +74,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
         event.systemPrompt +
         '\n\n' +
         'Before finishing, go through the TODO.md and verify every item is complete. ' +
-        'Mark items as done once verified.',
+        'Mark items as done once verified.'
     }
   })
   pi.on('session_start', () => {
@@ -113,10 +112,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
         const [sp, ...sr] = smartModelId.split('/')
         const smartModel = ctx.modelRegistry.find(sp, sr.join('/'))
         if (!smartModel) {
-          ctx.ui.notify(
-            `Prewalk: smart model "${smartModelId}" not found in model catalog`,
-            'error',
-          )
+          ctx.ui.notify(`Prewalk: smart model "${smartModelId}" not found in model catalog`, 'error')
           return
         }
         const ok = await pi.setModel(smartModel)
@@ -125,13 +121,12 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
           return
         }
       }
-      const smart =
-        smartModelId || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : 'current')
+      const smart = smartModelId || (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : 'current')
       armed = true
       handoffDone = false
       todoCreated = false
       editOrWriteThisTurn = false
       ctx.ui.notify(`Prewalk armed: ${smart} → ${targetModelId}`, 'info')
-    },
+    }
   })
 }

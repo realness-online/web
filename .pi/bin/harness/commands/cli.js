@@ -5,133 +5,454 @@ const publisher = 'apps/realness/tools/publish/bin/publish.js'
 
 export const cli_families = [
   {
-    name: 'Pi fork', entry: '.pi/bin/harness/pi-fork.js', source: '.pi/bin/harness/pi-fork.js',
+    name: 'Pi fork',
+    entry: '.pi/bin/harness/pi-fork.js',
+    source: '.pi/bin/harness/pi-fork.js',
     routes: [
-      ['enable <verified-install>', 'Tools', 'Select a verified Pi install.', '', 'Changes the launcher for future sessions.'],
-      ['rollback', 'Tools', 'Restore the previous Pi launcher.', '', 'Changes the launcher; preserves history.'],
-    ],
+      [
+        'enable <verified-install>',
+        'Tools',
+        'Select a verified Pi install.',
+        '',
+        'Changes the launcher for future sessions.'
+      ],
+      ['rollback', 'Tools', 'Restore the previous Pi launcher.', '', 'Changes the launcher; preserves history.']
+    ]
   },
   {
-    name: 'Session location', entry: '.pi/bin/harness/session-relocate.js', source: '.pi/bin/harness/session-relocate.js',
+    name: 'Session location',
+    entry: '.pi/bin/harness/session-relocate.js',
+    source: '.pi/bin/harness/session-relocate.js',
     routes: [
-      ['migrate', 'Internal helpers', 'Move runtime session storage into the vault.', '', 'Close all Pi processes first; copies and verifies history before activating settings.'],
-      ['rollback', 'Internal helpers', 'Return runtime storage to the legacy folder.', '', 'Close all Pi processes first; preserves later entries, originals, and unrelated settings.'],
-      ['trial-migrate <harness>', 'Internal helpers', 'Test migration and settings activation on a copied harness.', '', 'Isolated copies inside artifacts only.'],
-      ['trial-rollback <harness>', 'Internal helpers', 'Test history and settings rollback on a copied harness.', '', 'Isolated copies inside artifacts only.'],
-      ['trial-copy <harness> <source> <target>', 'Internal helpers', 'Copy closed history into a flat session folder.', '[state] [deferred]', 'Isolated copies inside artifacts only; live history and settings stay unchanged.'],
-      ['trial-restore <manifest>', 'Internal helpers', 'Restore trial history and path references.', '', 'Keeps later entries and both locations; changed originals block restoration.'],
-    ],
+      [
+        'migrate',
+        'Internal helpers',
+        'Move runtime session storage into the vault.',
+        '',
+        'Close all Pi processes first; copies and verifies history before activating settings.'
+      ],
+      [
+        'rollback',
+        'Internal helpers',
+        'Return runtime storage to the legacy folder.',
+        '',
+        'Close all Pi processes first; preserves later entries, originals, and unrelated settings.'
+      ],
+      [
+        'trial-migrate <harness>',
+        'Internal helpers',
+        'Test migration and settings activation on a copied harness.',
+        '',
+        'Isolated copies inside artifacts only.'
+      ],
+      [
+        'trial-rollback <harness>',
+        'Internal helpers',
+        'Test history and settings rollback on a copied harness.',
+        '',
+        'Isolated copies inside artifacts only.'
+      ],
+      [
+        'trial-copy <harness> <source> <target>',
+        'Internal helpers',
+        'Copy closed history into a flat session folder.',
+        '[state] [deferred]',
+        'Isolated copies inside artifacts only; live history and settings stay unchanged.'
+      ],
+      [
+        'trial-restore <manifest>',
+        'Internal helpers',
+        'Restore trial history and path references.',
+        '',
+        'Keeps later entries and both locations; changed originals block restoration.'
+      ]
+    ]
   },
   {
-    name: 'Session format', entry: '.pi/bin/harness/session-format.js', source: '.pi/bin/harness/session-format.js',
+    name: 'Session format',
+    entry: '.pi/bin/harness/session-format.js',
+    source: '.pi/bin/harness/session-format.js',
     routes: [
-      ['convert', 'Internal helpers', 'Convert live session history.', '', 'Requires all Pi sessions closed; writes history and backup.'],
-      ['rollback <manifest>', 'Internal helpers', 'Restore session history from a backup.', '', 'Requires all Pi sessions closed.'],
-    ],
+      [
+        'convert',
+        'Internal helpers',
+        'Convert live session history.',
+        '',
+        'Requires all Pi sessions closed; writes history and backup.'
+      ],
+      [
+        'rollback <manifest>',
+        'Internal helpers',
+        'Restore session history from a backup.',
+        '',
+        'Requires all Pi sessions closed.'
+      ]
+    ]
   },
   {
-    name: 'Actor Chrome', entry: 'apps/realness/server/halo/guest/realness-chrome', source: 'apps/realness/server/halo/guest/realness-chrome', launcher: 'realness chrome',
+    name: 'Actor Chrome',
+    entry: 'apps/realness/server/halo/guest/realness-chrome',
+    source: 'apps/realness/server/halo/guest/realness-chrome',
+    launcher: 'realness chrome',
     routes: [
       ['lease', 'Actor commands', 'Lease a Chrome VM.', '', 'Actor only; starts a browser VM.'],
-      ['return', 'Actor commands', 'Return the leased Chrome VM.', '', 'Actor only; destroys the browser copy.'],
-    ],
+      ['return', 'Actor commands', 'Return the leased Chrome VM.', '', 'Actor only; destroys the browser copy.']
+    ]
   },
   {
-    name: 'Actor loop', entry: 'apps/realness/server/halo/guest/realness-loop', source: 'apps/realness/server/halo/guest/realness-loop', launcher: 'realness loop',
+    name: 'Actor loop',
+    entry: 'apps/realness/server/halo/guest/realness-loop',
+    source: 'apps/realness/server/halo/guest/realness-loop',
+    launcher: 'realness loop',
     routes: [
-      ['"<goal>"', 'Actor commands', 'Start an autonomous loop.', '', 'Actor only; starts work and can incur model cost.'],
-      ['report <id>', 'Actor commands', 'Read the loop status and log tail.', '', 'Actor only.'],
-    ],
+      [
+        '"<goal>"',
+        'Actor commands',
+        'Start an autonomous loop.',
+        '',
+        'Actor only; starts work and can incur model cost.'
+      ],
+      ['report <id>', 'Actor commands', 'Read the loop status and log tail.', '', 'Actor only.']
+    ]
   },
   {
-    name: 'Actor site', entry: 'apps/realness/server/halo/guest/realness-site', source: 'apps/realness/server/halo/guest/realness-site', launcher: 'realness-site',
+    name: 'Actor site',
+    entry: 'apps/realness/server/halo/guest/realness-site',
+    source: 'apps/realness/server/halo/guest/realness-site',
+    launcher: 'realness-site',
     routes: [
       ['versions', 'Actor commands', 'List published site versions.', '', 'Actor only.'],
-      ['restore <version>', 'Actor commands', 'Restore a published site version.', '', 'Actor only; changes publication.'],
-      ['remove', 'Actor commands', 'Take the published site offline.', '', 'Actor only; retains site versions.'],
-    ],
+      [
+        'restore <version>',
+        'Actor commands',
+        'Restore a published site version.',
+        '',
+        'Actor only; changes publication.'
+      ],
+      ['remove', 'Actor commands', 'Take the published site offline.', '', 'Actor only; retains site versions.']
+    ]
   },
   {
-    name: 'Actor publish', entry: 'apps/realness/server/halo/guest/realness-publish', source: 'apps/realness/server/halo/guest/realness-publish', launcher: 'realness publish',
-    routes: [['<directory>', 'Actor commands', 'Publish a built site through the host.', '', 'Actor only; changes publication.']],
-  },
-  {
-    name: 'Realness', entry: person, source: 'apps/realness/src/command/command.js',
+    name: 'Actor publish',
+    entry: 'apps/realness/server/halo/guest/realness-publish',
+    source: 'apps/realness/server/halo/guest/realness-publish',
+    launcher: 'realness publish',
     routes: [
-      ['watch', 'Monitor', 'Service health, cloud billing and model spend.', '--interval <seconds>; --person <phone> (repeatable); --json', 'Desktop; sign-in; cloud reads.'],
-      ['frontend build', 'Build', 'Build the frontend.', '--env development|production; --dry-run', 'Desktop; defaults to development.'],
-      ['frontend deploy --env <environment>', 'Deploy and release', 'Build and deploy the frontend.', '--env development|production; --dry-run', 'Changes remote services; environment required.'],
+      [
+        '<directory>',
+        'Actor commands',
+        'Publish a built site through the host.',
+        '',
+        'Actor only; changes publication.'
+      ]
+    ]
+  },
+  {
+    name: 'Realness',
+    entry: person,
+    source: 'apps/realness/src/command/command.js',
+    routes: [
+      [
+        'watch',
+        'Monitor',
+        'Service health, cloud billing and model spend.',
+        '--interval <seconds>; --person <phone> (repeatable); --json',
+        'Desktop; sign-in; cloud reads.'
+      ],
+      [
+        'frontend build',
+        'Build',
+        'Build the frontend.',
+        '--env development|production; --dry-run',
+        'Desktop; defaults to development.'
+      ],
+      [
+        'frontend deploy --env <environment>',
+        'Deploy and release',
+        'Build and deploy the frontend.',
+        '--env development|production; --dry-run',
+        'Changes remote services; environment required.'
+      ],
       ['login', 'Sign-in and files', 'Sign in through the browser.', '', 'Desktop; network; writes keychain.'],
       ['logout', 'Sign-in and files', 'Remove saved sign-in.', '', 'Desktop; changes keychain.'],
       ['whoami', 'Sign-in and files', 'Show the current identity.', '', 'Desktop or actor.'],
       ['ls <can-url>', 'Sign-in and files', 'List stored files.', '', 'Sign-in; network.'],
       ['cat <can-url>', 'Sign-in and files', 'Read a stored file.', '', 'Sign-in; network.'],
-      ['cp <source> <destination>', 'Sign-in and files', 'Copy files through the store.', '', 'Can write local or remote files.'],
+      [
+        'cp <source> <destination>',
+        'Sign-in and files',
+        'Copy files through the store.',
+        '',
+        'Can write local or remote files.'
+      ],
       ['rm <can-url>', 'Sign-in and files', 'Remove stored files.', '', 'Deletes remote files.'],
-      ['sync', 'Sign-in and files', 'Sync the harness and selected plans.', '[plan ...]; --deletes; --json', 'Writes local and remote files.'],
-      ['files sync <folder> <can-url>', 'Sign-in and files', 'Sync a folder through file capabilities.', '--json', 'Writes local and remote files.'],
+      [
+        'sync',
+        'Sign-in and files',
+        'Sync the harness and selected plans.',
+        '[plan ...]; --deletes; --json',
+        'Writes local and remote files.'
+      ],
+      [
+        'files sync <folder> <can-url>',
+        'Sign-in and files',
+        'Sync a folder through file capabilities.',
+        '--json',
+        'Writes local and remote files.'
+      ],
       ['files cat <can-url>', 'Sign-in and files', 'Read through file capabilities.', '--json', 'Sign-in; network.'],
-      ['store sync <folder> <can-url>', 'Sign-in and files', 'Sync a folder through the store.', '--deletes', 'Writes local and remote files.'],
+      [
+        'store sync <folder> <can-url>',
+        'Sign-in and files',
+        'Sync a folder through the store.',
+        '--deletes',
+        'Writes local and remote files.'
+      ],
       ['example static <destination>', 'Tools', 'Create a static-site starter.', '', 'Writes a new folder.'],
       ['example app <destination>', 'Tools', 'Create a Vue app starter.', '', 'Writes a new folder.'],
-      ['task <plan>', 'Tools', 'List the files selected by a plan.', '--start; --json', '--start creates a remote actor.'],
-      ['fold', 'Tools', 'Merge session conflict copies.', '--dry-run; --json', 'Desktop; sign-in; changes local history.'],
-      ['fetch <harness-path>', 'Internal helpers', 'Fetch a file into a light actor.', '--json', 'Actor only; writes a local file.'],
+      [
+        'task <plan>',
+        'Tools',
+        'List the files selected by a plan.',
+        '--start; --json',
+        '--start creates a remote actor.'
+      ],
+      [
+        'fold',
+        'Tools',
+        'Merge session conflict copies.',
+        '--dry-run; --json',
+        'Desktop; sign-in; changes local history.'
+      ],
+      [
+        'fetch <harness-path>',
+        'Internal helpers',
+        'Fetch a file into a light actor.',
+        '--json',
+        'Actor only; writes a local file.'
+      ],
       ['local --help', 'Hosts and services', 'List local operator commands.', '', 'Desktop; no service changes.'],
-      ['development --help', 'Hosts and services', 'List development operator commands.', '', 'Desktop; no service changes.'],
-      ['production --help', 'Hosts and services', 'List production operator commands.', '', 'Desktop; no service changes.'],
-      ['git-credential get', 'Internal helpers', 'Read a Git credential for an actor.', '', 'Actor only; prints a credential.'],
-      ['turn-start --session <file>', 'Internal helpers', 'Record the start of a harness turn.', '--json', 'Writes local state.'],
-      ['turn-end --session <file> --turn <number>', 'Internal helpers', 'Record and sync a completed turn.', '--json', 'Writes local and remote state.'],
-    ],
+      [
+        'development --help',
+        'Hosts and services',
+        'List development operator commands.',
+        '',
+        'Desktop; no service changes.'
+      ],
+      [
+        'production --help',
+        'Hosts and services',
+        'List production operator commands.',
+        '',
+        'Desktop; no service changes.'
+      ],
+      [
+        'git-credential get',
+        'Internal helpers',
+        'Read a Git credential for an actor.',
+        '',
+        'Actor only; prints a credential.'
+      ],
+      [
+        'turn-start --session <file>',
+        'Internal helpers',
+        'Record the start of a harness turn.',
+        '--json',
+        'Writes local state.'
+      ],
+      [
+        'turn-end --session <file> --turn <number>',
+        'Internal helpers',
+        'Record and sync a completed turn.',
+        '--json',
+        'Writes local and remote state.'
+      ]
+    ]
   },
   {
-    name: 'Realness control', entry: operator, source: operator, launcher: 'realness',
+    name: 'Realness control',
+    entry: operator,
+    source: operator,
+    launcher: 'realness',
     routes: [
       ['local setup', 'Hosts and services', 'Set up the local Lima host.', '', 'Mac; installs and changes the VM.'],
       ['local build', 'Build', 'Build the local host template.', '', 'Mac; writes VM images.'],
-      ['<environment> host up <name>', 'Hosts and services', 'Create or start a host.', '--smoke; --fresh (local only)', 'Starts services; may create billed resources.'],
-      ['<environment> host restart <name>', 'Hosts and services', 'Update and restart a host.', '', 'Interrupts running host sessions.'],
-      ['<environment> host down <name>', 'Hosts and services', 'Park or delete a host.', '--delete; --no-drain', 'Stops services; can delete resources.'],
-      ['<environment> host drain <name>', 'Hosts and services', 'Export actors before removing a cloud host.', '--delete', 'Cloud only; writes exports.'],
+      [
+        '<environment> host up <name>',
+        'Hosts and services',
+        'Create or start a host.',
+        '--smoke; --fresh (local only)',
+        'Starts services; may create billed resources.'
+      ],
+      [
+        '<environment> host restart <name>',
+        'Hosts and services',
+        'Update and restart a host.',
+        '',
+        'Interrupts running host sessions.'
+      ],
+      [
+        '<environment> host down <name>',
+        'Hosts and services',
+        'Park or delete a host.',
+        '--delete; --no-drain',
+        'Stops services; can delete resources.'
+      ],
+      [
+        '<environment> host drain <name>',
+        'Hosts and services',
+        'Export actors before removing a cloud host.',
+        '--delete',
+        'Cloud only; writes exports.'
+      ],
       ['<environment> host list', 'Hosts and services', 'List hosts.', '', 'Local or cloud read.'],
       ['<environment> host status', 'Monitor', 'Read last-seen host records.', '[name]; --json', 'Sync read.'],
-      ['<environment> admin login', 'Sign-in and files', 'Sign in as an administrator.', '', 'Browser; network; saves identity.'],
-      ['<environment> admins list', 'Sign-in and files', 'List global admins from admins.html.', '--json', 'Bucket read with your gcloud credentials; local reads the dev sync folder. Phones masked.'],
-      ['<environment> admins init', 'Sign-in and files', 'Give a new environment its first admin from person.local.html.', '--dir and --harness for local', 'Bucket write only when admins.html is missing; never edits an existing list. Sync deploy runs it.'],
-      ['<environment> admins add <phone> [name]', 'Sign-in and files', 'Make someone a global admin.', '--yes (dry-run without it); --dir for local', 'Bucket write; conditional on the version read. Development needs approval per run.'],
-      ['<environment> admins remove <phone>', 'Sign-in and files', 'Remove a global admin.', '--yes (dry-run without it)', 'Bucket write; refuses to remove the last admin.'],
-      ['<environment> admin logout', 'Sign-in and files', 'Remove administrator identity.', '', 'Changes saved identity.'],
+      [
+        '<environment> admin login',
+        'Sign-in and files',
+        'Sign in as an administrator.',
+        '',
+        'Browser; network; saves identity.'
+      ],
+      [
+        '<environment> admins list',
+        'Sign-in and files',
+        'List global admins from admins.html.',
+        '--json',
+        'Bucket read with your gcloud credentials; local reads the dev sync folder. Phones masked.'
+      ],
+      [
+        '<environment> admins init',
+        'Sign-in and files',
+        'Give a new environment its first admin from person.local.html.',
+        '--dir and --harness for local',
+        'Bucket write only when admins.html is missing; never edits an existing list. Sync deploy runs it.'
+      ],
+      [
+        '<environment> admins add <phone> [name]',
+        'Sign-in and files',
+        'Make someone a global admin.',
+        '--yes (dry-run without it); --dir for local',
+        'Bucket write; conditional on the version read. Development needs approval per run.'
+      ],
+      [
+        '<environment> admins remove <phone>',
+        'Sign-in and files',
+        'Remove a global admin.',
+        '--yes (dry-run without it)',
+        'Bucket write; refuses to remove the last admin.'
+      ],
+      [
+        '<environment> admin logout',
+        'Sign-in and files',
+        'Remove administrator identity.',
+        '',
+        'Changes saved identity.'
+      ],
       ['<environment> admin whoami', 'Sign-in and files', 'Show administrator identity.', '', 'Reads saved identity.'],
       ['<environment> actor list', 'Hosts and services', 'List reported actors.', '', 'Sync read.'],
       ['<environment> actor show <id>', 'Hosts and services', 'Read one actor record.', '', 'Sync read.'],
-      ['<environment> actor idle <id>', 'Hosts and services', 'Ask the host to idle an actor.', '', 'Writes a control request.'],
-      ['<environment> actor stop <id>', 'Hosts and services', 'Ask the host to stop an actor.', '', 'Writes a control request.'],
+      [
+        '<environment> actor idle <id>',
+        'Hosts and services',
+        'Ask the host to idle an actor.',
+        '',
+        'Writes a control request.'
+      ],
+      [
+        '<environment> actor stop <id>',
+        'Hosts and services',
+        'Ask the host to stop an actor.',
+        '',
+        'Writes a control request.'
+      ],
       ['<environment> loop list', 'Hosts and services', 'List loop records.', '', 'Sync read.'],
       ['<environment> loop show <id>', 'Hosts and services', 'Read one loop record.', '', 'Sync read.'],
-      ['<environment> loop stop <id>', 'Hosts and services', 'Ask the host to stop a loop.', '', 'Writes a control request.'],
-      ['<environment> person <phone>', 'Monitor', 'Show actors, loops and use for a person.', '--day=DATE', 'Sync read.'],
+      [
+        '<environment> loop stop <id>',
+        'Hosts and services',
+        'Ask the host to stop a loop.',
+        '',
+        'Writes a control request.'
+      ],
+      [
+        '<environment> person <phone>',
+        'Monitor',
+        'Show actors, loops and use for a person.',
+        '--day=DATE',
+        'Sync read.'
+      ],
       ['<environment> usage <phone>', 'Monitor', 'Read one day of model use.', '--day=DATE', 'Sync read.'],
       ['<environment> limit <phone>', 'Monitor', 'Read model limits and credit.', '', 'Sync read.'],
-      ['<environment> status', 'Monitor', 'Show combined service status.', '--json', 'Cloud and sync reads; exit 2 means attention.'],
+      [
+        '<environment> status',
+        'Monitor',
+        'Show combined service status.',
+        '--json',
+        'Cloud and sync reads; exit 2 means attention.'
+      ],
       ['<environment> service list', 'Monitor', 'Read Cloud Run service status.', '', 'Cloud read.'],
-      ['<environment> logs <service>', 'Monitor', 'Read cloud service logs.', '--since=1h; --errors; --limit=50', 'Cloud read.'],
+      [
+        '<environment> logs <service>',
+        'Monitor',
+        'Read cloud service logs.',
+        '--since=1h; --errors; --limit=50',
+        'Cloud read.'
+      ],
       ['<environment> cost', 'Monitor', 'Read billed cloud cost.', '--days=7', 'Cloud billing read.'],
-      ['<environment> reconcile', 'Monitor', 'Compare recorded use and cloud billing.', '', 'Cloud and model-provider reads.'],
-      ['<environment> probe', 'Hosts and services', 'Check cloud host capacity.', '[type:zone ...]', 'Cloud only; probes can create resources.'],
-    ],
+      [
+        '<environment> reconcile',
+        'Monitor',
+        'Compare recorded use and cloud billing.',
+        '',
+        'Cloud and model-provider reads.'
+      ],
+      [
+        '<environment> probe',
+        'Hosts and services',
+        'Check cloud host capacity.',
+        '[type:zone ...]',
+        'Cloud only; probes can create resources.'
+      ]
+    ]
   },
   {
-    name: 'Publish', entry: publisher, source: publisher,
+    name: 'Publish',
+    entry: publisher,
+    source: publisher,
     routes: [
       ['items list', 'Tools', 'List vault items and duplicate identities.', '', 'Local vault read.'],
-      ['items mint <vault-file> --type <type>', 'Tools', 'Give a vault file an identity.', '', 'Changes a source file.'],
+      [
+        'items mint <vault-file> --type <type>',
+        'Tools',
+        'Give a vault file an identity.',
+        '',
+        'Changes a source file.'
+      ],
       ['items settle', 'Tools', 'Give copied items separate identities.', '', 'Changes source files.'],
-      ['app add <name> --type <type>', 'Tools', 'Create a blog or plans recipe.', '--source <id>=<slug> (repeatable); --vault <path>', 'Writes an app recipe; type is blog or plans.'],
+      [
+        'app add <name> --type <type>',
+        'Tools',
+        'Create a blog or plans recipe.',
+        '--source <id>=<slug> (repeatable); --vault <path>',
+        'Writes an app recipe; type is blog or plans.'
+      ],
       ['app build <name>', 'Build', 'Build a selected app locally.', '--drafts', 'Writes generated files.'],
       ['app list', 'Tools', 'List harness app recipes.', '', 'Local read.'],
-      ['app publish <name>', 'Deploy and release', 'Publish a selected app.', '--url <sync-url>; --site-url <public-url>; --github <owner/repo>; --branch <branch>; --dry-run (GitHub only)', 'Publishes selected content; GitHub dry-run still builds locally.'],
-      ['app unpublish <name>', 'Deploy and release', 'Remove a published app.', '--url <sync-url>', 'Changes remote publication.'],
-    ],
-  },
+      [
+        'app publish <name>',
+        'Deploy and release',
+        'Publish a selected app.',
+        '--url <sync-url>; --site-url <public-url>; --github <owner/repo>; --branch <branch>; --dry-run (GitHub only)',
+        'Publishes selected content; GitHub dry-run still builds locally.'
+      ],
+      [
+        'app unpublish <name>',
+        'Deploy and release',
+        'Remove a published app.',
+        '--url <sync-url>',
+        'Changes remote publication.'
+      ]
+    ]
+  }
 ]

@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync as spawn_sync } from 'node:child_process'
-import { existsSync as exists_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  mkdirSync as mkdir_sync,
+  readFileSync as read_file_sync,
+  rmSync as rm_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
@@ -23,16 +29,12 @@ const NODE_INCLUDE = [
   'apps/realness/themes/**/*.js',
   'apps/realness/scripts/**/*.js'
 ]
-const NODE_EXCLUDE = [
-  '**/*.test.js',
-  '**/*.spec.js',
-  '**/node_modules/**',
-  '**/dist/**',
-  'apps/realness/src/app/**'
-]
+const NODE_EXCLUDE = ['**/*.test.js', '**/*.spec.js', '**/node_modules/**', '**/dist/**', 'apps/realness/src/app/**']
 
 /** The test globs `npm run test:harness` runs, read from its script so the two never drift. */
-export const harness_files = (script = JSON.parse(read_file_sync(join(root, 'package.json'), 'utf8')).scripts['test:harness']) =>
+export const harness_files = (
+  script = JSON.parse(read_file_sync(join(root, 'package.json'), 'utf8')).scripts['test:harness']
+) =>
   script
     .split(/\s+/)
     .map(word => word.replace(/^'|'$/g, ''))
@@ -72,7 +74,12 @@ const npm_part = (name, script, lcov, base) => ({
 const parts = () => [
   node_part('harness', harness_files()),
   node_part('backend', ['apps/realness/specs/!(app)/**/*.spec.js']),
-  npm_part('functions', 'test:functions:coverage', join(product, 'functions/coverage/lcov.info'), join(product, 'functions')),
+  npm_part(
+    'functions',
+    'test:functions:coverage',
+    join(product, 'functions/coverage/lcov.info'),
+    join(product, 'functions')
+  ),
   npm_part('frontend', 'test:coverage', join(root, 'artifacts/realness/frontend/coverage/lcov.info'), product)
 ]
 
@@ -136,11 +143,15 @@ const row = (name, sum) =>
   `${name.padEnd(10)}${String(sum.files).padStart(6)}${percent(sum.lines)}${percent(sum.branches).padStart(10)}${percent(sum.functions).padStart(11)}`
 
 const SOURCE_ROOTS = ['.pi/bin', '.pi/extensions', '.pi/skills', 'apps/realness']
-const NOT_SOURCE = /(^|\/)(tests?|specs|checks|node_modules|dist|coverage|fixtures|mocks)\/|\.(test|spec|check)\.js$|\.d\.ts$|(^|\/)[\w.-]*config(\.[\w-]+)*\.js$/
+const NOT_SOURCE =
+  /(^|\/)(tests?|specs|checks|node_modules|dist|coverage|fixtures|mocks)\/|\.(test|spec|check)\.js$|\.d\.ts$|(^|\/)[\w.-]*config(\.[\w-]+)*\.js$/
 
 /** Tracked and new source files under the measured roots, relative to the harness root. */
-export const source_files = (list = () =>
-  spawn_sync('git', ['ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], { cwd: root, encoding: 'utf8' }).stdout) =>
+export const source_files = (
+  list = () =>
+    spawn_sync('git', ['ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], { cwd: root, encoding: 'utf8' })
+      .stdout
+) =>
   list()
     .split('\n')
     .filter(path => /\.(js|vue|sh|py|rs|ts)$/.test(path) && !NOT_SOURCE.test(path))
@@ -162,7 +173,10 @@ export const untested = (sources, whole) => {
 export const summary = (rows, whole) =>
   [
     `${'part'.padEnd(10)}${'files'.padStart(6)}${'lines'.padStart(8)}${'branches'.padStart(10)}${'functions'.padStart(11)}  result`,
-    ...rows.map(({ name, files, ok }) => `${files ? row(name, totals(files)) : `${name.padEnd(10)}${'no report'.padStart(14)}`.padEnd(45)}  ${ok ? 'ok' : 'FAILED'}`),
+    ...rows.map(
+      ({ name, files, ok }) =>
+        `${files ? row(name, totals(files)) : `${name.padEnd(10)}${'no report'.padStart(14)}`.padEnd(45)}  ${ok ? 'ok' : 'FAILED'}`
+    ),
     row('all', totals(whole))
   ].join('\n')
 

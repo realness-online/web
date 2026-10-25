@@ -3,7 +3,14 @@ import assert from 'node:assert/strict'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { check_command, check_needs, check_skill, path_claims, run_check, split_fences } from '../../checks/check-skills.js'
+import {
+  check_command,
+  check_needs,
+  check_skill,
+  path_claims,
+  run_check,
+  split_fences
+} from '../../checks/check-skills.js'
 
 const artifacts = fileURLToPath(new URL('../../../../artifacts/', import.meta.url))
 const root = join(artifacts, `check-skills-test-${process.pid}`)
@@ -12,7 +19,10 @@ const skill = (name, body, files = {}, check = 'true') => {
   const dir = join(root, 'skills', name)
   mkdirSync(dir, { recursive: true })
   const meta = check ? `\nmetadata:\n  check: ${check}` : ''
-  writeFileSync(join(dir, 'SKILL.md'), `---\nname: ${name}\ndescription: Test. Use when testing.${meta}\n---\n\n${body}\n`)
+  writeFileSync(
+    join(dir, 'SKILL.md'),
+    `---\nname: ${name}\ndescription: Test. Use when testing.${meta}\n---\n\n${body}\n`
+  )
   for (const [path, text] of Object.entries(files)) {
     mkdirSync(join(dir, path, '..'), { recursive: true })
     writeFileSync(join(dir, path), text)

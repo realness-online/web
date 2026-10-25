@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, readFileSync as read_file_sync, writeFileSync as write_file_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  readFileSync as read_file_sync,
+  writeFileSync as write_file_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { join, resolve } from 'node:path'
 import { spawnSync as spawn_sync } from 'node:child_process'
 import { migrate_sessions, rollback_sessions } from '../../lib/session-cutover.js'
@@ -11,7 +17,14 @@ const fixture = t => {
   const root = mkdtemp_sync(join(scratch, 'trial-'))
   t.after(() => rm_sync(root, { recursive: true, force: true }))
   mkdir_sync(join(root, '.pi/agent/sessions/project'), { recursive: true })
-  const bytes = JSON.stringify({ type: 'session', id: 'one', version: 3, cwd: '/original/project', timestamp: '2026-10-01T00:00:00Z' }) + '\n'
+  const bytes =
+    JSON.stringify({
+      type: 'session',
+      id: 'one',
+      version: 3,
+      cwd: '/original/project',
+      timestamp: '2026-10-01T00:00:00Z'
+    }) + '\n'
   write_file_sync(join(root, '.pi/agent/sessions/project/one.jsonl'), bytes)
   write_file_sync(join(root, 'package.json'), JSON.stringify({ type: 'module', realness: { person: '+15555550100' } }))
   return { root, bytes }
@@ -64,7 +77,11 @@ it('live command refuses a detected Pi process even without agent environment', 
   const env = { ...process.env, PATH: `${tools}:${process.env.PATH}` }
   delete env.PI_SESSION_FILE
   const before = read_file_sync(join(root, 'package.json'))
-  const result = spawn_sync(process.execPath, [join(root, '.pi/bin/harness/session-relocate.js'), 'migrate'], { env, encoding: 'utf8', timeout: 20000 })
+  const result = spawn_sync(process.execPath, [join(root, '.pi/bin/harness/session-relocate.js'), 'migrate'], {
+    env,
+    encoding: 'utf8',
+    timeout: 20000
+  })
   assert.notEqual(result.status, 0)
   assert.match(result.stderr, /Close all Pi processes first/)
   assert.deepEqual(read_file_sync(join(root, 'package.json')), before)
@@ -73,7 +90,11 @@ it('live command refuses a detected Pi process even without agent environment', 
 it('live command refuses an agent session before changing settings', () => {
   const root = resolve(import.meta.dirname, '../../../..')
   const before = read_file_sync(join(root, 'package.json'))
-  const result = spawn_sync(process.execPath, [join(root, '.pi/bin/harness/session-relocate.js'), 'migrate'], { env: { ...process.env, PI_SESSION_FILE: join(root, 'current.html.gz') }, encoding: 'utf8', timeout: 20000 })
+  const result = spawn_sync(process.execPath, [join(root, '.pi/bin/harness/session-relocate.js'), 'migrate'], {
+    env: { ...process.env, PI_SESSION_FILE: join(root, 'current.html.gz') },
+    encoding: 'utf8',
+    timeout: 20000
+  })
   assert.notEqual(result.status, 0)
   assert.match(result.stderr, /Close Pi/)
   assert.deepEqual(read_file_sync(join(root, 'package.json')), before)

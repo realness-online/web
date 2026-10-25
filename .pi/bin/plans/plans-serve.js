@@ -15,10 +15,10 @@ const TYPES = {
   '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.xml': 'application/xml',
-  '.txt': 'text/plain',
+  '.txt': 'text/plain'
 }
 
-const is_file = async (path) => (await stat(path).catch(() => null))?.isFile() ?? false
+const is_file = async path => (await stat(path).catch(() => null))?.isFile() ?? false
 
 /** The file a URL path names: exact, then x.html, then x/index.html. Never outside root. */
 export const resolve_file = async (root, url_path) => {
@@ -85,5 +85,6 @@ if (process.argv[1] === file_url_to_path(import.meta.url)) {
   const apps = resolve(dirname(file_url_to_path(import.meta.url)), '../../../artifacts/apps')
   const port = Number(process.env.PORT ?? 4323)
   serve(join(apps, 'plans/dist'), join(apps, 'blog/dist')).listen(port, '127.0.0.1', () =>
-    console.log(`vault -> http://127.0.0.1:${port}/  articles -> http://127.0.0.1:${port}/articles/`))
+    console.log(`vault -> http://127.0.0.1:${port}/  articles -> http://127.0.0.1:${port}/articles/`)
+  )
 }

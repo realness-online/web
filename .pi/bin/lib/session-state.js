@@ -1,26 +1,46 @@
-import { existsSync as exists_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, lstatSync as lstat_sync, readdirSync as readdir_sync, renameSync as rename_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  mkdirSync as mkdir_sync,
+  readFileSync as read_file_sync,
+  lstatSync as lstat_sync,
+  readdirSync as readdir_sync,
+  renameSync as rename_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { randomUUID as random_uuid } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 import { isDeepStrictEqual as is_deep_strict_equal } from 'node:util'
 
 /** Accept only known session paths; unrelated strings and sync baseline keys stay unchanged. */
-const aliases = (root, mapping, target_root = root, harness) => new Map([...mapping].flatMap(([from, to]) => {
-  const old_name = relative(root, from).split('\\').join('/')
-  const new_name = relative(target_root, to).split('\\').join('/')
-  const harness_paths = harness ? [[relative(harness, from).split('\\').join('/'), relative(harness, to).split('\\').join('/')]] : [[`.pi/agent/sessions/${old_name}`, `.pi/agent/sessions/${new_name}`]]
-  return [[from, to], [old_name, new_name], ...harness_paths]
-}))
+const aliases = (root, mapping, target_root = root, harness) =>
+  new Map(
+    [...mapping].flatMap(([from, to]) => {
+      const old_name = relative(root, from).split('\\').join('/')
+      const new_name = relative(target_root, to).split('\\').join('/')
+      const harness_paths = harness
+        ? [[relative(harness, from).split('\\').join('/'), relative(harness, to).split('\\').join('/')]]
+        : [[`.pi/agent/sessions/${old_name}`, `.pi/agent/sessions/${new_name}`]]
+      return [[from, to], [old_name, new_name], ...harness_paths]
+    })
+  )
 const rewrite = (value, kind, mapping) => {
-  if (kind === 'light') return value.skipped == null ? value : { ...value, skipped: value.skipped.map(path => mapping.get(path) ?? path) }
+  if (kind === 'light')
+    return value.skipped == null ? value : { ...value, skipped: value.skipped.map(path => mapping.get(path) ?? path) }
   if (kind !== 'deferred') return value
-  return Object.fromEntries(Object.entries(value).map(([path, pending]) => [path, {
-    ...pending,
-    calls: pending.calls.map(call => ({ ...call, session: mapping.get(call.session) ?? call.session })),
-  }]))
+  return Object.fromEntries(
+    Object.entries(value).map(([path, pending]) => [
+      path,
+      {
+        ...pending,
+        calls: pending.calls.map(call => ({ ...call, session: mapping.get(call.session) ?? call.session }))
+      }
+    ])
+  )
 }
 const plain_path = path => {
-  if (lstat_sync(path, { throwIfNoEntry: false })?.isSymbolicLink()) throw new Error(`State path must not be a symlink: ${path}`)
+  if (lstat_sync(path, { throwIfNoEntry: false })?.isSymbolicLink())
+    throw new Error(`State path must not be a symlink: ${path}`)
 }
 
 /** Validate known records before retiring any history file. */
@@ -31,24 +51,33 @@ export const prepare_session_state = ({ state, deferred }) => {
   if (edit_path) plain_path(edit_path)
   if (edit_path && exists_sync(edit_path)) {
     const db = new DatabaseSync(edit_path, { readOnly: true })
-    try { db.prepare('SELECT session FROM edit LIMIT 0').all() } finally { db.close() }
+    try {
+      db.prepare('SELECT session FROM edit LIMIT 0').all()
+    } finally {
+      db.close()
+    }
   }
   if (state && exists_sync(state)) {
-    if (exists_sync(join(state, 'light.json'))) records.push({ path: join(state, 'light.json'), name: 'light.json', kind: 'light' })
+    if (exists_sync(join(state, 'light.json')))
+      records.push({ path: join(state, 'light.json'), name: 'light.json', kind: 'light' })
     const sync = join(state, 'sync')
     plain_path(sync)
     if (exists_sync(sync)) {
-      for (const name of readdir_sync(sync).filter(name => name.endsWith('.json'))) records.push({ path: join(sync, name), name: `sync/${name}`, kind: 'sync' })
+      for (const name of readdir_sync(sync).filter(name => name.endsWith('.json')))
+        records.push({ path: join(sync, name), name: `sync/${name}`, kind: 'sync' })
     }
   }
   if (deferred && exists_sync(deferred)) records.push({ path: deferred, name: 'deferred.json', kind: 'deferred' })
-  return { edit_path, records: records.map(record => {
-    plain_path(record.path)
-    const bytes = read_file_sync(record.path)
-    const value = JSON.parse(bytes.toString('utf8'))
-    rewrite(value, record.kind, new Map())
-    return { ...record, bytes, value }
-  }) }
+  return {
+    edit_path,
+    records: records.map(record => {
+      plain_path(record.path)
+      const bytes = read_file_sync(record.path)
+      const value = JSON.parse(bytes.toString('utf8'))
+      rewrite(value, record.kind, new Map())
+      return { ...record, bytes, value }
+    })
+  }
 }
 const save = (path, bytes) => {
   mkdir_sync(dirname(path), { recursive: true, mode: 0o700 })
@@ -58,7 +87,17 @@ const save = (path, bytes) => {
 }
 
 /** Snapshot WAL-aware edit rows, then rewrite only references. Later rows survive reverse migration. */
-export const rewrite_session_state = ({ root, target_root, harness, state, deferred, mapping, archive, originals, prepared = prepare_session_state({ state, deferred }) }) => {
+export const rewrite_session_state = ({
+  root,
+  target_root,
+  harness,
+  state,
+  deferred,
+  mapping,
+  archive,
+  originals,
+  prepared = prepare_session_state({ state, deferred })
+}) => {
   const references = aliases(root, mapping, target_root, harness)
   mkdir_sync(archive, { recursive: true, mode: 0o700 })
   let edits = 0
@@ -81,14 +120,18 @@ export const rewrite_session_state = ({ root, target_root, harness, state, defer
         db.exec('ROLLBACK')
         throw error
       }
-    } finally { db.close() }
+    } finally {
+      db.close()
+    }
   }
   let changed = 0
   for (const { path, name, kind, bytes, value: original } of records) {
     const updated = rewrite(original, kind, references)
     save(join(archive, name), bytes)
     if (is_deep_strict_equal(original, updated)) continue
-    let output = Buffer.from(`${JSON.stringify(updated, (_, value) => Object.is(value, -0) ? JSON.rawJSON('-0') : value, 2)}\n`)
+    let output = Buffer.from(
+      `${JSON.stringify(updated, (_, value) => (Object.is(value, -0) ? JSON.rawJSON('-0') : value), 2)}\n`
+    )
     const prior = originals && join(originals, name)
     if (prior && exists_sync(prior)) {
       const saved = read_file_sync(prior)

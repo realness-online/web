@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
 import { execFile as exec_file } from 'node:child_process'
-import { existsSync as exists_sync, readdirSync as readdir_sync, readFileSync as read_file_sync, statSync as stat_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  readdirSync as readdir_sync,
+  readFileSync as read_file_sync,
+  statSync as stat_sync
+} from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { promisify } from 'node:util'
@@ -43,13 +48,13 @@ export const path_claims = prose => {
   const spans = [...prose.matchAll(/`([^`\n]+)`/g)].map(m => m[1])
   const links = [...prose.matchAll(/\]\(([^)\s]+)\)/g)].map(m => m[1].split('#')[0])
   return [...new Set([...spans, ...links])]
-    .map(text => text.trim().replace(/:\d+$/, '').replace(/[.,;]$/, ''))
-    .filter(
-      text =>
-        text.includes('/') &&
-        !/[\s<>*$~{}|?=@"'()]/.test(text) &&
-        !/^(\/|\.\.|[a-z]+:)/i.test(text)
+    .map(text =>
+      text
+        .trim()
+        .replace(/:\d+$/, '')
+        .replace(/[.,;]$/, '')
     )
+    .filter(text => text.includes('/') && !/[\s<>*$~{}|?=@"'()]/.test(text) && !/^(\/|\.\.|[a-z]+:)/i.test(text))
 }
 
 /**
@@ -65,8 +70,7 @@ export const missing_paths = (skill_dir, harness_root, claims) =>
     if (is_derived(clean)) return false
     const bases = [skill_dir, harness_root].filter(base => exists_sync(join(base, first)))
     if (!bases.length) return false
-    if (first === 'work' && second && !exists_sync(join(harness_root, 'work', second)))
-      return false
+    if (first === 'work' && second && !exists_sync(join(harness_root, 'work', second))) return false
     return !bases.some(base => exists_sync(join(base, clean)))
   })
 
@@ -88,8 +92,7 @@ const SYNTAX = {
 const script_files = dir =>
   readdir_sync(dir, { withFileTypes: true }).flatMap(entry => {
     const path = join(dir, entry.name)
-    if (entry.isDirectory())
-      return ['node_modules', 'published', '.git'].includes(entry.name) ? [] : script_files(path)
+    if (entry.isDirectory()) return ['node_modules', 'published', '.git'].includes(entry.name) ? [] : script_files(path)
     return SYNTAX[extname(entry.name)] ? [path] : []
   })
 
@@ -118,7 +121,13 @@ export const run_check = async (skill_dir, command, { timeout = 60_000 } = {}) =
     return null
   } catch (error) {
     const killed = error.killed || error.signal ? `killed by ${error.signal ?? 'timeout'}` : null
-    const detail = killed ?? String(error.stderr || error.stdout || '').trim().split('\n').filter(Boolean).at(-1)
+    const detail =
+      killed ??
+      String(error.stderr || error.stdout || '')
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .at(-1)
     return `check failed: ${command}${detail ? ` (${detail})` : ''}`
   }
 }
@@ -148,7 +157,10 @@ export const check_skill = async (skill_dir, harness_root = root) => {
       try {
         await run(command, args)
       } catch (error) {
-        const detail = String(error.stderr || error.message).trim().split('\n').find(Boolean)
+        const detail = String(error.stderr || error.message)
+          .trim()
+          .split('\n')
+          .find(Boolean)
         errors.push(`${file.slice(skill_dir.length + 1)} does not parse: ${detail}`)
       }
     })
@@ -213,7 +225,12 @@ const main = async () => {
   for (const [declared, group] of by_name)
     if (declared && group.length > 1)
       for (const r of group)
-        r.errors.push(`name "${declared}" is also used by ${group.filter(g => g !== r).map(g => g.name).join(', ')}`)
+        r.errors.push(
+          `name "${declared}" is also used by ${group
+            .filter(g => g !== r)
+            .map(g => g.name)
+            .join(', ')}`
+        )
 
   for (const { name, errors, warnings } of results) {
     if (!errors.length && !warnings.length) continue

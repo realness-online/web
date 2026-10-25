@@ -36,9 +36,8 @@ const formatResults = (query, results) => {
       .replace(/\s+/g, ' ')
       .trim()
     const snippet = text.length > 160 ? `${text.slice(0, 159)}…` : text
-    const file = home && hit.session_file.startsWith(home)
-      ? `~${hit.session_file.slice(home.length)}`
-      : hit.session_file
+    const file =
+      home && hit.session_file.startsWith(home) ? `~${hit.session_file.slice(home.length)}` : hit.session_file
     return `${i + 1}. ${when}  ${project}\n   ${snippet}\n   ${file}`
   })
   const noun = results.length === 1 ? 'match' : 'matches'
@@ -53,7 +52,7 @@ const formatStats = (label, line) => {
   return `${label}\n${line}`
 }
 /** @param {ExtensionAPI} pi */
-const memoryExtension = (pi) => {
+const memoryExtension = pi => {
   pi.registerTool({
     name: 'remember',
     label: 'Remember',
@@ -66,36 +65,35 @@ const memoryExtension = (pi) => {
     promptGuidelines: [
       'Use remember when the user asks "what did we do about X", "did we already ' +
         'try X", or when a task smells like a repeat of earlier work. Prefer it ' +
-        'over reading session JSONL directly.',
+        'over reading session JSONL directly.'
     ],
     parameters: Type.Object({
       action: StringEnum(/** @type {const} */ (['search', 'index', 'stats'])),
       query: Type.Optional(
         Type.String({
-          description:
-            'Words to search for. Typos are tolerated; the last word is also matched as a prefix.',
-        }),
+          description: 'Words to search for. Typos are tolerated; the last word is also matched as a prefix.'
+        })
       ),
       project: Type.Optional(
         Type.String({
-          description: 'Filter by part of the working directory, e.g. realness, seeq, realness.',
-        }),
+          description: 'Filter by part of the working directory, e.g. realness, seeq, realness.'
+        })
       ),
       since: Type.Optional(
         Type.String({
-          description: 'ISO date lower bound, e.g. 2026-09-01.',
-        }),
+          description: 'ISO date lower bound, e.g. 2026-09-01.'
+        })
       ),
       limit: Type.Optional(
         Type.Number({
-          description: 'Maximum hits (default 10).',
-        }),
+          description: 'Maximum hits (default 10).'
+        })
       ),
       full: Type.Optional(
         Type.Boolean({
-          description: 'For action index: re-read every session file, not just changed ones.',
-        }),
-      ),
+          description: 'For action index: re-read every session file, not just changed ones.'
+        })
+      )
     }),
     async execute(_toolCallId, params, _signal, onUpdate, ctx) {
       const action = params.action ?? 'search'
@@ -104,27 +102,27 @@ const memoryExtension = (pi) => {
           content: [
             {
               type: 'text',
-              text: 'Indexing sessions...',
-            },
+              text: 'Indexing sessions...'
+            }
           ],
-          details: {},
+          details: {}
         })
         const result = await indexSessions({
-          full: params.full,
+          full: params.full
         })
         const after = stats()
         const text = formatStats(
           `Indexed ${result.indexed} of ${result.scanned} session file(s); ${result.turns} turn(s) read.`,
-          `Store: ${after.path} - ${after.turns} turns across ${after.sessions} sessions.`,
+          `Store: ${after.path} - ${after.turns} turns across ${after.sessions} sessions.`
         )
         return {
           content: [
             {
               type: 'text',
-              text,
-            },
+              text
+            }
           ],
-          details: result,
+          details: result
         }
       }
       if (action === 'stats') {
@@ -133,10 +131,10 @@ const memoryExtension = (pi) => {
           content: [
             {
               type: 'text',
-              text: `${s.path}\n${s.turns} turns, ${s.sessions} sessions, ${(s.bytes / 1048576).toFixed(1)} MB`,
-            },
+              text: `${s.path}\n${s.turns} turns, ${s.sessions} sessions, ${(s.bytes / 1048576).toFixed(1)} MB`
+            }
           ],
-          details: s,
+          details: s
         }
       }
       const query = params.query?.trim()
@@ -146,25 +144,25 @@ const memoryExtension = (pi) => {
         since: params.since,
         limit: params.limit ?? 10,
         partial: true,
-        exclude_session: ctx?.sessionManager?.getSessionId(),
+        exclude_session: ctx?.sessionManager?.getSessionId()
       })
       return {
         content: [
           {
             type: 'text',
-            text: formatResults(query, results),
-          },
+            text: formatResults(query, results)
+          }
         ],
         details: {
-          count: results.length,
-        },
+          count: results.length
+        }
       }
-    },
+    }
   })
   pi.on('session_start', async () => {
     try {
       await indexSessions({
-        path: DB_PATH,
+        path: DB_PATH
       })
     } catch {}
   })
@@ -179,7 +177,7 @@ const memoryExtension = (pi) => {
       const results = recall(query, {
         limit: 10,
         partial: true,
-        exclude_session: ctx.sessionManager.getSessionId(),
+        exclude_session: ctx.sessionManager.getSessionId()
       })
       pi.sendMessage({
         customType: 'remember',
@@ -187,16 +185,16 @@ const memoryExtension = (pi) => {
         display: true,
         details: {
           query,
-          count: results.length,
-        },
+          count: results.length
+        }
       })
-    },
+    }
   })
   pi.on('agent_settled', async () => {
     try {
       await indexSessions({
         root: undefined,
-        path: DB_PATH,
+        path: DB_PATH
       })
     } catch {}
   })

@@ -20,10 +20,12 @@ if (args.includes('--prune')) {
 } else if (args.includes('--times')) {
   const days = option('--days', 30)
   const lines = []
-  for (let i = days - 1; i >= 0; i--) lines.push(...read_day(root, new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10)))
+  for (let i = days - 1; i >= 0; i--)
+    lines.push(...read_day(root, new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10)))
   const hosts = {}
   try {
-    for (const f of readdir_sync(join(cache_root, 'sites'))) hosts[hash(f.replace(/\.json$/, ''))] = f.replace(/\.json$/, '')
+    for (const f of readdir_sync(join(cache_root, 'sites')))
+      hosts[hash(f.replace(/\.json$/, ''))] = f.replace(/\.json$/, '')
   } catch {}
   const urls = {}
   try {
@@ -53,10 +55,17 @@ if (args.includes('--prune')) {
     }
     const b = used.bands
     const share = n => (used.pages ? `${Math.round((100 * n) / used.pages)}%` : '-')
-    console.log(`reuse: ${used.pages} pages; reused never ${b.never} (${share(b.never)}), once ${b['1']}, 2-5 times ${b['2_5']}, over 5 ${b.over_5}`)
-    for (const p of used.top) console.log(`  ${String(p.reused).padStart(4)} of ${String(p.reads).padStart(4)} reads  ${urls[p.url] ?? p.url.slice(0, 12)}`)
+    console.log(
+      `reuse: ${used.pages} pages; reused never ${b.never} (${share(b.never)}), once ${b['1']}, 2-5 times ${b['2_5']}, over 5 ${b.over_5}`
+    )
+    for (const p of used.top)
+      console.log(
+        `  ${String(p.reused).padStart(4)} of ${String(p.reads).padStart(4)} reads  ${urls[p.url] ?? p.url.slice(0, 12)}`
+      )
     console.log('  Mostly unchanged rereads: the time is too short. Often changed: too long.')
-    console.log('  Few reads past 30d: the idle window can shrink. Validators that lie: stop trusting that site\'s ETag.')
+    console.log(
+      "  Few reads past 30d: the idle window can shrink. Validators that lie: stop trusting that site's ETag."
+    )
   }
 } else {
   const day = args.find(a => /^\d{4}-\d{2}-\d{2}$/.test(a)) ?? new Date().toISOString().slice(0, 10)
@@ -66,7 +75,9 @@ if (args.includes('--prune')) {
   } else {
     const pct = n => (report.reads ? `${Math.round((100 * n) / report.reads)}%` : '-')
     console.log(`web-md ${day}: ${report.reads} reads of ${report.urls} pages`)
-    console.log(`  repeats today ${report.repeats_today} (${pct(report.repeats_today)}), read before ${report.seen_before} (${pct(report.seen_before)})`)
+    console.log(
+      `  repeats today ${report.repeats_today} (${pct(report.repeats_today)}), read before ${report.seen_before} (${pct(report.seen_before)})`
+    )
     console.log(`  rendered ${report.rendered} (${pct(report.rendered)})`)
     for (const [outcome, n] of Object.entries(report.by_outcome).sort((a, b) => b[1] - a[1])) {
       console.log(`  ${outcome.padEnd(13)} ${String(n).padStart(4)}  ${pct(n)}`)

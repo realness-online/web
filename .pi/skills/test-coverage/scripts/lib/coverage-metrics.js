@@ -38,7 +38,10 @@ export const file_metrics = file => {
  * @param {string} [json_path]
  * @returns {Map<string, { pct: number, statements: object, branches: object, functions: object, lines: object }>}
  */
-export const load_coverage_by_src = (project_root, json_path = join(project_root, 'coverage', 'coverage-final.json')) => {
+export const load_coverage_by_src = (
+  project_root,
+  json_path = join(project_root, 'coverage', 'coverage-final.json')
+) => {
   if (!existsSync(json_path)) return null
 
   /** @type {Record<string, import('istanbul-lib-coverage').FileCoverageData>} */

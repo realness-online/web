@@ -9,11 +9,12 @@ const skipped = new Set(['node_modules', '.git', 'artifacts', 'dist', 'build', '
 const read_json = path => JSON.parse(read_file_sync(path, 'utf8'))
 const git = (root, args) => exec_file_sync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim()
 
-const find_notes = dir => readdir_sync(dir, { withFileTypes: true }).flatMap(entry => {
-  const path = join(dir, entry.name)
-  if (entry.isDirectory() && !skipped.has(entry.name)) return find_notes(path)
-  return entry.isFile() && entry.name === '.tooling.md' ? [path] : []
-})
+const find_notes = dir =>
+  readdir_sync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory() && !skipped.has(entry.name)) return find_notes(path)
+    return entry.isFile() && entry.name === '.tooling.md' ? [path] : []
+  })
 
 const package_dir = dir => {
   if (exists_sync(join(dir, 'package.json'))) return dir
@@ -36,7 +37,12 @@ export const check_notes = (file, root) => {
     const dir = prefix ? resolve(owner ?? root, prefix) : owner
     const name = command.match(/\brun ([\w:.-]+)/)?.[1] ?? (command === 'npm test' ? 'test' : null)
     if (!name) continue
-    if (!dir || !exists_sync(join(dir, 'package.json')) || !Object.hasOwn(read_json(join(dir, 'package.json')).scripts ?? {}, name)) errors.push(`unknown script: ${command}`)
+    if (
+      !dir ||
+      !exists_sync(join(dir, 'package.json')) ||
+      !Object.hasOwn(read_json(join(dir, 'package.json')).scripts ?? {}, name)
+    )
+      errors.push(`unknown script: ${command}`)
   }
   for (const match of text.matchAll(/\]\(([^)\s]+)\)/g)) {
     const target = match[1].split('#')[0]
@@ -48,7 +54,9 @@ export const check_notes = (file, root) => {
 
 /** Changed documented script definitions require review of their notes. */
 export const check_drift = (root, notes) => {
-  const changed = git(root, ['diff', '--cached', '--name-only', '--diff-filter=ACMRD', '-z']).split('\0').filter(Boolean)
+  const changed = git(root, ['diff', '--cached', '--name-only', '--diff-filter=ACMRD', '-z'])
+    .split('\0')
+    .filter(Boolean)
   const errors = []
   for (const path of changed) {
     if (!(path.endsWith('/package.json') || path === 'package.json')) continue
@@ -67,14 +75,15 @@ export const check_drift = (root, notes) => {
       })
       const documented = [...text.matchAll(/`npm run ([\w:.-]+)/g)].map(match => match[1])
       if (text.includes('`npm test`')) documented.push('test')
-      if (documented.some(name => versions[0][name] !== versions[1][name])) errors.push(`${path}: review and stage ${relative(root, scope)}`)
+      if (documented.some(name => versions[0][name] !== versions[1][name]))
+        errors.push(`${path}: review and stage ${relative(root, scope)}`)
     }
   }
   return errors
 }
 
 export const check_tooling = root => {
-  const notes = ['apps', 'work'].flatMap(dir => exists_sync(join(root, dir)) ? find_notes(join(root, dir)) : [])
+  const notes = ['apps', 'work'].flatMap(dir => (exists_sync(join(root, dir)) ? find_notes(join(root, dir)) : []))
   const errors = notes.flatMap(file => check_notes(file, root).map(error => `${relative(root, file)}: ${error}`))
   errors.push(...check_drift(root, notes))
   return { count: notes.length, errors }

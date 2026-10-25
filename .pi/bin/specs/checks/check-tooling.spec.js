@@ -1,7 +1,12 @@
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync as exec_file_sync } from 'node:child_process'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  rmSync as rm_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
@@ -42,10 +47,14 @@ it('real command accepts valid notes and optional missing notes', t => {
 
 it('real command rejects excessive text, stale scripts, and broken links', t => {
   const { write, run } = fixture(t)
-  write('apps/example/.tooling.md', '# Tooling\n' + '\n'.repeat(40) + 'word '.repeat(401) + '\n`npm run gone`\n[missing](gone.md)\n')
+  write(
+    'apps/example/.tooling.md',
+    '# Tooling\n' + '\n'.repeat(40) + 'word '.repeat(401) + '\n`npm run gone`\n[missing](gone.md)\n'
+  )
   const result = run()
   assert.equal(result.status, 1)
-  for (const message of ['over 40 lines', 'over 400 words', 'unknown script', 'missing link']) assert.ok(result.output.includes(message), result.output)
+  for (const message of ['over 40 lines', 'over 400 words', 'unknown script', 'missing link'])
+    assert.ok(result.output.includes(message), result.output)
 })
 
 it('documented script changes need review; other scripts and helpers do not', t => {
@@ -65,6 +74,9 @@ it('documented script changes need review; other scripts and helpers do not', t 
 
 it('declared packages and npm prefixes resolve from the command directory', t => {
   const { write, run } = fixture(t)
-  write('apps/example/frontend/.tooling.md', 'Package: `apps/example`.\n\n`npm run build`\n`npm --prefix ../../apps/example run test`\n')
+  write(
+    'apps/example/frontend/.tooling.md',
+    'Package: `apps/example`.\n\n`npm run build`\n`npm --prefix ../../apps/example run test`\n'
+  )
   assert.equal(run().status, 0)
 })

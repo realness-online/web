@@ -7,18 +7,18 @@
  * generators draw at startup; `control/test/random.check.js` compares clones.
  * Inert outside a hosted guest.
  */
-import { randomBytes, randomUUID } from "node:crypto"
-import { existsSync, rmSync, writeFileSync } from "node:fs"
+import { randomBytes, randomUUID } from 'node:crypto'
+import { existsSync, rmSync, writeFileSync } from 'node:fs'
 
-const GUEST = "/run/realness"
-const PID_FILE = "/run/realness/pi.pid"
-const RANDOM_FILE = "/run/realness/pi-random"
+const GUEST = '/run/realness'
+const PID_FILE = '/run/realness/pi.pid'
+const RANDOM_FILE = '/run/realness/pi-random'
 
 /** @param {import("@earendil-works/pi-coding-agent").ExtensionAPI} _pi */
 export default function (_pi) {
   if (!existsSync(GUEST)) return
-  const draws = { math: Math.random(), uuid: randomUUID(), bytes: randomBytes(16).toString("hex") }
+  const draws = { math: Math.random(), uuid: randomUUID(), bytes: randomBytes(16).toString('hex') }
   writeFileSync(RANDOM_FILE, `${JSON.stringify(draws)}\n`)
   writeFileSync(PID_FILE, `${process.pid}\n`)
-  process.on("exit", () => rmSync(PID_FILE, { force: true }))
+  process.on('exit', () => rmSync(PID_FILE, { force: true }))
 }

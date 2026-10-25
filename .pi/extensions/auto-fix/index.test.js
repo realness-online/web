@@ -12,7 +12,11 @@ test('only files inside the working folder are collected', () => {
 test('a run that edits nothing fixes nothing and says nothing', async () => {
   const handlers = {}
   const notes = []
-  auto_fix({ on: (name, fn) => { handlers[name] = fn } })
+  auto_fix({
+    on: (name, fn) => {
+      handlers[name] = fn
+    }
+  })
   const ctx = { cwd: '/repo', ui: { notify: (...args) => notes.push(args) } }
   handlers.agent_start()
   await handlers.tool_result({ toolName: 'bash', input: { command: 'ls' } }, ctx)

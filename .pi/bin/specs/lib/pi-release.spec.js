@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { createHash as create_hash } from 'node:crypto'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, writeFileSync as write_file_sync, rmSync as rm_sync, symlinkSync as symlink_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  writeFileSync as write_file_sync,
+  rmSync as rm_sync,
+  symlinkSync as symlink_sync
+} from 'node:fs'
 import { join, resolve } from 'node:path'
 import { verify_release, verify_install } from '../../lib/pi-release.js'
 
@@ -13,20 +19,36 @@ const fixture = () => {
   const archive = 'tarballs/pi-test.tgz'
   const bytes = Buffer.from('test archive bytes')
   write_file_sync(join(runtime, archive), bytes)
-  const release = { version: '0.99.1', source_commit: 'a'.repeat(40), upstream_commit: 'b'.repeat(40), upstream_tag: 'v0.99.1', archives: { [archive]: create_hash('sha256').update(bytes).digest('hex') } }
+  const release = {
+    version: '0.99.1',
+    source_commit: 'a'.repeat(40),
+    upstream_commit: 'b'.repeat(40),
+    upstream_tag: 'v0.99.1',
+    archives: { [archive]: create_hash('sha256').update(bytes).digest('hex') }
+  }
   const manifest = { dependencies: { '@earendil-works/pi-coding-agent': `file:./${archive}` } }
   const save = () => {
     write_file_sync(join(runtime, 'release.json'), JSON.stringify(release))
     write_file_sync(join(runtime, 'package.json'), JSON.stringify(manifest))
   }
   save()
-  return { runtime, archive, release, manifest, save, cleanup: () => rm_sync(runtime, { recursive: true, force: true }) }
+  return {
+    runtime,
+    archive,
+    release,
+    manifest,
+    save,
+    cleanup: () => rm_sync(runtime, { recursive: true, force: true })
+  }
 }
 
 it('a release pin records source, upstream, and exact archive bytes', () => {
   const f = fixture()
-  try { assert.deepEqual(verify_release(f.runtime), f.release) }
-  finally { f.cleanup() }
+  try {
+    assert.deepEqual(verify_release(f.runtime), f.release)
+  } finally {
+    f.cleanup()
+  }
 })
 
 it('a changed archive is refused before installation', () => {
@@ -34,7 +56,9 @@ it('a changed archive is refused before installation', () => {
   try {
     write_file_sync(join(f.runtime, f.archive), 'changed bytes')
     assert.throws(() => verify_release(f.runtime), /Fork archive changed/)
-  } finally { f.cleanup() }
+  } finally {
+    f.cleanup()
+  }
 })
 
 it('unapproved registry dependencies are refused before installation', () => {
@@ -43,7 +67,9 @@ it('unapproved registry dependencies are refused before installation', () => {
     f.manifest.dependencies['@earendil-works/pi-coding-agent'] = 'latest'
     f.save()
     assert.throws(() => verify_release(f.runtime))
-  } finally { f.cleanup() }
+  } finally {
+    f.cleanup()
+  }
 })
 
 it('archive paths cannot leave the pinned runtime', () => {
@@ -52,7 +78,9 @@ it('archive paths cannot leave the pinned runtime', () => {
     f.release.archives = { '../outside.tgz': 'a'.repeat(64) }
     f.save()
     assert.throws(() => verify_release(f.runtime))
-  } finally { f.cleanup() }
+  } finally {
+    f.cleanup()
+  }
 })
 
 it('installed commands must link inside their own runtime', t => {

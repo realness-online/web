@@ -41,7 +41,10 @@ it('route skips a method failing three times in a row, then retries after a week
   const site = at => ({ methods: { static: { fails_in_row: 3, last_at: new Date(at).toISOString() } } })
   assert.deepEqual(route(site(now - HOUR), now), ['browser', 'firecrawl'])
   assert.deepEqual(route(site(now - 8 * 24 * HOUR), now), ['static', 'browser', 'firecrawl'])
-  assert.deepEqual(route({ methods: { static: { fails_in_row: 2, last_at: new Date(now).toISOString() } } }, now).length, 3)
+  assert.deepEqual(
+    route({ methods: { static: { fails_in_row: 2, last_at: new Date(now).toISOString() } } }, now).length,
+    3
+  )
 })
 
 it('a kept page is current by its validator first, then by age', () => {
@@ -72,13 +75,15 @@ before(async () => {
       if (req.headers['if-none-match'] === '"v1"') return res.writeHead(304).end()
       return res.writeHead(200, { etag: '"v1"', 'content-type': 'text/html' }).end(article)
     }
-    if (req.url === '/short-lived') return res.writeHead(200, { 'cache-control': 'max-age=1', 'content-type': 'text/html' }).end(article)
+    if (req.url === '/short-lived')
+      return res.writeHead(200, { 'cache-control': 'max-age=1', 'content-type': 'text/html' }).end(article)
     if (req.url === '/liar') {
       hits.liar_body = (hits.liar_body ?? 0) + 1
       const body = article.replace('<p>Words', `<p>Version ${hits.liar_body}. Words`)
       return res.writeHead(200, { etag: '"same"', 'content-type': 'text/html' }).end(body)
     }
-    if (req.url === '/thin') return res.writeHead(200, { 'content-type': 'text/html' }).end('<html><body><div id="app"></div></body></html>')
+    if (req.url === '/thin')
+      return res.writeHead(200, { 'content-type': 'text/html' }).end('<html><body><div id="app"></div></body></html>')
     res.writeHead(404).end()
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
@@ -117,7 +122,10 @@ const run_alone = (label, ...args) =>
     )
   )
 const log_lines = () => read_day(join(scratch, 'log'), new Date().toISOString().slice(0, 10))
-const last_line = url => log_lines().filter(l => l.url === hash(url)).at(-1)
+const last_line = url =>
+  log_lines()
+    .filter(l => l.url === hash(url))
+    .at(-1)
 const site_record = () => JSON.parse(readFileSync(join(cache_root, 'sites', new URL(base).host + '.json'), 'utf8'))
 
 it('a static page is kept, then served on 304 Not Modified', async () => {
@@ -129,7 +137,10 @@ it('a static page is kept, then served on 304 Not Modified', async () => {
   assert.match(second.stdout, /cached static, not modified/)
   assert.match(second.stdout, /\[Next\]\(/, 'the kept page still has its links')
   const kept = JSON.parse(readFileSync(join(cache_root, 'pages', `${hash(`${base}/etag`)}.json`), 'utf8'))
-  assert.deepEqual(kept.attempts.map(a => a.outcome), ['ok', 'ok'])
+  assert.deepEqual(
+    kept.attempts.map(a => a.outcome),
+    ['ok', 'ok']
+  )
 })
 
 it('an expired page read again unchanged teaches its cache time', async () => {
@@ -137,7 +148,10 @@ it('an expired page read again unchanged teaches its cache time', async () => {
   await new Promise(done => setTimeout(done, 1100))
   assert.equal((await run(`${base}/short-lived`)).code, 0)
   const kept = JSON.parse(readFileSync(join(cache_root, 'pages', `${hash(`${base}/short-lived`)}.json`), 'utf8'))
-  assert.deepEqual(kept.checks.map(c => c.changed), [false])
+  assert.deepEqual(
+    kept.checks.map(c => c.changed),
+    [false]
+  )
   assert.equal(kept.learned_hours, 0.25, 'one second doubled, held at the fifteen-minute floor')
   const line = last_line(`${base}/short-lived`)
   assert.equal(line.kept.changed, false, 'the log records the reread found no change')
@@ -176,7 +190,10 @@ it('idle pages without validators are pruned; validated ones stay', () => {
   const root = join(scratch, 'prune')
   mkdirSync(join(root, 'pages'), { recursive: true })
   writeFileSync(join(root, 'pages', 'a.json'), JSON.stringify({ url: 'a', attempts: [1], page }))
-  writeFileSync(join(root, 'pages', 'b.json'), JSON.stringify({ url: 'b', attempts: [], page, validators: { etag: '"b"' } }))
+  writeFileSync(
+    join(root, 'pages', 'b.json'),
+    JSON.stringify({ url: 'b', attempts: [], page, validators: { etag: '"b"' } })
+  )
   assert.equal(prune(root, { now }), 1)
   const a = JSON.parse(readFileSync(join(root, 'pages', 'a.json'), 'utf8'))
   assert.deepEqual([a.page, a.attempts], [undefined, [1]], 'text dropped, history kept')
@@ -200,7 +217,7 @@ it('a 404 is not sent to Firecrawl', async () => {
   const r = await new Promise(done =>
     execFile(
       'node',
-      [web_md, `${base.replace("127.0.0.1", "localhost")}/gone`],
+      [web_md, `${base.replace('127.0.0.1', 'localhost')}/gone`],
       { env: { PATH: `${node_only}:/usr/bin:/bin`, WEB_MD_CACHE: cache_root, FIRECRAWL_API_KEY: 'fc-test' } },
       (error, stdout, stderr) => done({ code: error?.code ?? 0, stderr })
     )
@@ -324,7 +341,9 @@ it('the actor engine reports its own failure and stops', async t => {
 it('a bot check is reported as blocked, with the page it saw', async t => {
   const server = createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'text/html' })
-    res.end('<html><head><title>Just a moment...</title></head><body><p>Checking your browser before accessing.</p></body></html>')
+    res.end(
+      '<html><head><title>Just a moment...</title></head><body><p>Checking your browser before accessing.</p></body></html>'
+    )
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   t.after(() => server.close())

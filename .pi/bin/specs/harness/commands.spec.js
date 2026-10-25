@@ -33,12 +33,14 @@ const load_page = async () => {
   return {
     document,
     copied: () => copied,
-    click(button) { button.dispatchEvent(new window.Event('click', { bubbles: true })) },
+    click(button) {
+      button.dispatchEvent(new window.Event('click', { bubbles: true }))
+    },
     search(text) {
       const input = document.querySelector('input[type="search"]')
       input.value = text
       input.dispatchEvent(new window.Event('input'))
-    },
+    }
   }
 }
 
@@ -59,7 +61,7 @@ it('every package script has exactly one full copy command and a source', async 
     'apps/realness/packages/itemid/package.json',
     'apps/realness/packages/store/package.json',
     'apps/realness/packages/thoughts/package.json',
-    '.pi/examples/static/package.json',
+    '.pi/examples/static/package.json'
   ])
   assert.equal(new Set(catalog.entries.map(entry => entry.id)).size, catalog.entries.length)
 })
@@ -67,20 +69,35 @@ it('every package script has exactly one full copy command and a source', async 
 it('audit recommendations are visible on command cards', async () => {
   const { document } = await load_page()
   for (const entry of catalog.entries) {
-    const button = [...document.querySelectorAll('button[value]')].find(button => button.getAttribute('value') === entry.command)
+    const button = [...document.querySelectorAll('button[value]')].find(
+      button => button.getAttribute('value') === entry.command
+    )
     assert.ok(button, entry.id)
     const card = button.closest('li')
     assert.equal(card.querySelector('strong').textContent, entry.review)
     assert.ok(card.textContent.includes(entry.review_reason))
   }
-  assert.ok(!catalog.entries.some(entry => entry.review_reason.startsWith('Missing script target')), 'no false missing-target findings')
-  for (const id of ['apps/realness/package.json#scripts.certs', 'apps/realness/package.json#scripts.test:risk:report', 'apps/realness/package.json#scripts.test:coverage:summary']) {
+  assert.ok(
+    !catalog.entries.some(entry => entry.review_reason.startsWith('Missing script target')),
+    'no false missing-target findings'
+  )
+  for (const id of [
+    'apps/realness/package.json#scripts.certs',
+    'apps/realness/package.json#scripts.test:risk:report',
+    'apps/realness/package.json#scripts.test:coverage:summary'
+  ]) {
     assert.equal(catalog.entries.find(entry => entry.id === id).review, 'Keep', id)
   }
-  for (const id of ['apps/realness/package.json#scripts.build:frontend', 'apps/realness/package.json#scripts.deploy:frontend:dev']) {
+  for (const id of [
+    'apps/realness/package.json#scripts.build:frontend',
+    'apps/realness/package.json#scripts.deploy:frontend:dev'
+  ]) {
     assert.ok(!catalog.entries.some(entry => entry.id === id), `${id} is folded into the CLI`)
   }
-  assert.ok(!catalog.entries.some(entry => entry.id === '.pi/bin/harness/commands/catalog.js'), 'imported modules are not listed')
+  assert.ok(
+    !catalog.entries.some(entry => entry.id === '.pi/bin/harness/commands/catalog.js'),
+    'imported modules are not listed'
+  )
   assert.ok(!catalog.entries.some(entry => entry.id.includes('/renderer/static/')), 'browser scripts are not listed')
   const generator = catalog.entries.find(entry => entry.id === '.pi/bin/harness/commands.js')
   assert.equal(generator.review, 'Keep')
@@ -94,7 +111,10 @@ it('watch is a first-class monitor command; local follows the current manifest',
   assert.equal(watch.group, 'Monitor')
   assert.equal(watch.command, 'node apps/realness/tools/cli/bin/realness.js watch')
   const { scripts } = JSON.parse(await read_file(join(root, 'package.json'), 'utf8'))
-  assert.equal(catalog.entries.some(entry => entry.command === 'npm run local'), Boolean(scripts.local))
+  assert.equal(
+    catalog.entries.some(entry => entry.command === 'npm run local'),
+    Boolean(scripts.local)
+  )
 })
 
 it('CLI entries and package binaries all resolve to source files', async () => {
@@ -109,7 +129,9 @@ it('all direct desktop Realness dispatch commands have reviewed routes', async (
   const text = await read_file(join(root, 'apps/realness/src/command/command.js'), 'utf8')
   const routes = cli_families.find(family => family.name === 'Realness').routes.map(([route]) => route.split(' ')[0])
   const direct = [...text.matchAll(/args\[0\] === '([^']+)'/g)].map(match => match[1])
-  const lists = [...text.matchAll(/\[([^\]\n]+)\]\.includes\(args\[0\]\)/g)].flatMap(match => [...match[1].matchAll(/'([^']+)'/g)].map(word => word[1]))
+  const lists = [...text.matchAll(/\[([^\]\n]+)\]\.includes\(args\[0\]\)/g)].flatMap(match =>
+    [...match[1].matchAll(/'([^']+)'/g)].map(word => word[1])
+  )
   for (const command of [...direct, ...lists]) assert.ok(routes.includes(command), `Missing CLI route: ${command}`)
   assert.ok(routes.includes('files'))
 })
@@ -118,15 +140,35 @@ it('every authored shell file is either a helper or a sourced library', async ()
   const scan = async directory => {
     const files = []
     for (const entry of await readdir(join(root, directory), { withFileTypes: true })) {
-      if (['node_modules', '.git', 'dist', 'target', 'vendor', '.vite-hooks', 'test', 'tests', 'specs', 'references', 'fixtures', 'capture'].includes(entry.name)) continue
+      if (
+        [
+          'node_modules',
+          '.git',
+          'dist',
+          'target',
+          'vendor',
+          '.vite-hooks',
+          'test',
+          'tests',
+          'specs',
+          'references',
+          'fixtures',
+          'capture'
+        ].includes(entry.name)
+      )
+        continue
       const path = `${directory}/${entry.name}`
-      if (entry.isDirectory()) files.push(...await scan(path))
+      if (entry.isDirectory()) files.push(...(await scan(path)))
       else if (entry.isFile() && entry.name.endsWith('.sh')) files.push(path)
     }
     return files
   }
   const shells = (await Promise.all(['.pi/bin', 'apps', '.pi/skills'].map(scan))).flat()
-  for (const path of shells) assert.ok(catalog.candidates.includes(path) || catalog.shell_libraries.includes(path), `Missing shell file: ${path}`)
+  for (const path of shells)
+    assert.ok(
+      catalog.candidates.includes(path) || catalog.shell_libraries.includes(path),
+      `Missing shell file: ${path}`
+    )
   assert.ok(catalog.shell_libraries.includes('apps/realness/lib/output.sh'))
   assert.ok(catalog.candidates.includes('apps/realness/tools/control/scripts/dev-stack.sh'))
 })
@@ -151,7 +193,10 @@ it('review filters combine with task and search filters', async () => {
   for (const review of ['Keep', 'Remove', 'Unknown']) {
     page.click(page.document.querySelector(`#review-filters button[value="${review}"]`))
     assert.equal(visible_rows().length, catalog.entries.filter(entry => entry.review === review).length, review)
-    assert.ok(visible_rows().every(row => row.querySelector('strong').textContent === review), review)
+    assert.ok(
+      visible_rows().every(row => row.querySelector('strong').textContent === review),
+      review
+    )
   }
   assert.equal(page.copied(), null)
   page.click(page.document.querySelector('#review-filters button[value="all"]'))
@@ -169,7 +214,10 @@ it('task buttons filter rows and expose exactly one selected task', async () => 
   const page = await load_page()
   page.click(page.document.querySelector('#command-filters button[value="Monitor"]'))
   const visible = [...page.document.querySelectorAll('#command-list section')].filter(section => !section.hidden)
-  assert.deepEqual(visible.map(section => section.querySelector('h2').textContent), ['Monitor'])
+  assert.deepEqual(
+    visible.map(section => section.querySelector('h2').textContent),
+    ['Monitor']
+  )
   assert.equal(page.document.querySelectorAll('#command-filters [aria-pressed="true"]').length, 1)
   assert.equal(page.copied(), null)
   page.click(page.document.querySelector('#command-filters button[value="all"]'))

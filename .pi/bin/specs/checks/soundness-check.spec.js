@@ -12,19 +12,25 @@ const script = fileURLToPath(new URL('../../checks/soundness-check.js', import.m
 const run = cwd => spawnSync(process.execPath, [script, cwd], { cwd, encoding: 'utf8' })
 
 it('a remote script or stylesheet is a hit', () => {
-  const found = check_text('page.html', [
-    '<script src="https://cdn.example.com/x.js"></script>',
-    '<link rel="stylesheet" href="https://cdn.example.com/x.css">',
-    'import x from "https://deno.land/std/mod.ts"',
-  ].join('\n'))
+  const found = check_text(
+    'page.html',
+    [
+      '<script src="https://cdn.example.com/x.js"></script>',
+      '<link rel="stylesheet" href="https://cdn.example.com/x.css">',
+      'import x from "https://deno.land/std/mod.ts"'
+    ].join('\n')
+  )
   assert.equal(found.filter(h => h.rule === 'remote-asset').length, 3)
 })
 
 it('a canonical link or preconnect is not a hit', () => {
-  const found = check_text('page.html', [
-    '<link rel="canonical" href="https://example.com/" />',
-    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
-  ].join('\n'))
+  const found = check_text(
+    'page.html',
+    [
+      '<link rel="canonical" href="https://example.com/" />',
+      '<link rel="preconnect" href="https://fonts.googleapis.com" />'
+    ].join('\n')
+  )
   assert.equal(found.length, 0)
 })
 
@@ -40,10 +46,13 @@ it('a #root string that is not an import is not a hit', () => {
 })
 
 it('scoped styles and Transition are hits', () => {
-  const found = check_text('Button.vue', [
-    '<template><Transition name="fade"><slot /></Transition></template>',
-    '<style scoped>button { color: red }</style>',
-  ].join('\n'))
+  const found = check_text(
+    'Button.vue',
+    [
+      '<template><Transition name="fade"><slot /></Transition></template>',
+      '<style scoped>button { color: red }</style>'
+    ].join('\n')
+  )
   assert.equal(found.filter(h => h.rule === 'vue-scoping').length, 2)
 })
 
@@ -85,11 +94,14 @@ it('an arrow function is not a hit', () => {
 })
 
 it('function in a comment or a string is not a hit', () => {
-  const found = check_text('src/page.js', [
-    '/** @param {function(): Promise<void>} build */',
-    '// call a function later',
-    'const kind = typeof build === "function"',
-  ].join('\n'))
+  const found = check_text(
+    'src/page.js',
+    [
+      '/** @param {function(): Promise<void>} build */',
+      '// call a function later',
+      'const kind = typeof build === "function"'
+    ].join('\n')
+  )
   assert.equal(found.filter(h => h.rule === 'function-keyword').length, 0)
 })
 
@@ -104,7 +116,10 @@ it('a nested selector is not a miss', () => {
 })
 
 it('a selector inside a media query is not a miss', () => {
-  const found = check_text('style.css', 'main { color: red }\n@media (min-width: 1px) {\n  main > header { color: blue }\n}')
+  const found = check_text(
+    'style.css',
+    'main { color: red }\n@media (min-width: 1px) {\n  main > header { color: blue }\n}'
+  )
   assert.equal(found.filter(h => h.rule === 'css-nesting').length, 0)
 })
 
@@ -114,11 +129,10 @@ it('an identical duplicate is not a nesting miss', () => {
 })
 
 it('soundness-allow excuses a line and the line after it', () => {
-  const found = check_text('Button.vue', [
-    '<!-- soundness-allow: framework mechanic -->',
-    '<Transition name="fade">',
-    '<style scoped>',
-  ].join('\n'))
+  const found = check_text(
+    'Button.vue',
+    ['<!-- soundness-allow: framework mechanic -->', '<Transition name="fade">', '<style scoped>'].join('\n')
+  )
   assert.equal(found.length, 1)
   assert.equal(found[0].line, 3)
 })

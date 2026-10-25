@@ -62,15 +62,14 @@ const decode_session = promisify(exec_file)
  * @param {string} file
  * @returns {Promise<string>}
  */
-const read_session_text = async (file) => {
+const read_session_text = async file => {
   if (file.endsWith('.jsonl')) return readFile(file, 'utf8')
   const reader = process.env.PI_SESSION_READER
-  if (!reader)
-    throw new Error('PI_SESSION_READER is required for HTML session recall; launch through .pi/bin/pi')
+  if (!reader) throw new Error('PI_SESSION_READER is required for HTML session recall; launch through .pi/bin/pi')
   const { stdout } = await decode_session(process.execPath, [reader, file], {
     encoding: 'utf8',
     timeout: 30_000,
-    maxBuffer: 64 * 1024 * 1024,
+    maxBuffer: 64 * 1024 * 1024
   })
   return stdout
 }
@@ -118,17 +117,13 @@ const listSessionFiles = (root = SESSIONS_DIR) => {
   /** @type {string[]} */
   const found = []
   /** @param {string} dir */
-  const walk = (dir) => {
+  const walk = dir => {
     for (const entry of readdirSync(dir, {
-      withFileTypes: true,
+      withFileTypes: true
     })) {
       const path = join(dir, entry.name)
       if (entry.isDirectory()) walk(path)
-      else if (
-        entry.name.endsWith('.jsonl') ||
-        entry.name.endsWith('.html') ||
-        entry.name.endsWith('.html.gz')
-      )
+      else if (entry.name.endsWith('.jsonl') || entry.name.endsWith('.html') || entry.name.endsWith('.html.gz'))
         found.push(path)
     }
   }
@@ -139,7 +134,7 @@ const listSessionFiles = (root = SESSIONS_DIR) => {
  * @param {unknown} content
  * @returns {string}
  */
-const textOf = (content) => {
+const textOf = content => {
   if (typeof content === 'string') return content
   if (!Array.isArray(content)) return ''
   /** @type {string[]} */
@@ -191,7 +186,7 @@ const targetOf = (name, args) => {
  * @param {Record<string, unknown>} message
  * @returns {string}
  */
-const searchableOf = (message) => {
+const searchableOf = message => {
   const role = message.role
   if (role === 'user') return textOf(message.content).trim()
   if (role === 'assistant') {
@@ -219,7 +214,7 @@ const searchableOf = (message) => {
         textOf(message.content)
           .trim()
           .split('\n')
-          .find((l) => l.trim()) ?? ''
+          .find(l => l.trim()) ?? ''
       return detail ? `${name} error ${detail}` : `${name} error`
     }
     return ''
@@ -238,7 +233,7 @@ const searchableOf = (message) => {
  * @param {string} file
  * @returns {Promise<Turn[]>}
  */
-export const readSession = async (file) => {
+export const readSession = async file => {
   const raw = await read_session_text(file)
   /** @type {Turn[]} */
   const turns = []
@@ -258,7 +253,7 @@ export const readSession = async (file) => {
         session_file: file,
         project,
         ts: pendingUser.ts,
-        text: pair.slice(0, MAX_TEXT_CHARS),
+        text: pair.slice(0, MAX_TEXT_CHARS)
       })
     }
     pendingUser = null
@@ -291,7 +286,7 @@ export const readSession = async (file) => {
           session_file: file,
           project,
           ts,
-          text: failure.slice(0, MAX_TEXT_CHARS),
+          text: failure.slice(0, MAX_TEXT_CHARS)
         })
         index += 1
       }
@@ -307,7 +302,7 @@ export const readSession = async (file) => {
       pendingUser = {
         turn_id: id,
         ts,
-        text,
+        text
       }
       continue
     }
@@ -321,7 +316,7 @@ export const readSession = async (file) => {
       session_file: file,
       project,
       ts,
-      text: text.slice(0, MAX_TEXT_CHARS),
+      text: text.slice(0, MAX_TEXT_CHARS)
     })
   }
   flush()
@@ -333,7 +328,7 @@ export const readSession = async (file) => {
  */
 export const openIndex = (path = DB_PATH) => {
   mkdirSync(dirname(path), {
-    recursive: true,
+    recursive: true
   })
   const db = new DatabaseSync(path)
   db.exec('PRAGMA journal_mode = WAL')
@@ -374,9 +369,7 @@ export const openIndex = (path = DB_PATH) => {
 			INSERT INTO turn_fts(rowid, text) VALUES (new.rowid, new.text);
 		END;
 	`)
-  db.prepare("INSERT OR IGNORE INTO index_meta(key, value) VALUES ('schema', ?)").run(
-    String(SCHEMA_VERSION),
-  )
+  db.prepare("INSERT OR IGNORE INTO index_meta(key, value) VALUES ('schema', ?)").run(String(SCHEMA_VERSION))
   return db
 }
 
@@ -424,21 +417,17 @@ export const indexSessions = async (options = {}) => {
       db.exec('BEGIN')
       try {
         const insert = db.prepare(
-          'INSERT OR REPLACE INTO turn(turn_id, session_id, session_file, project, ts, text) VALUES (?,?,?,?,?,?)',
+          'INSERT OR REPLACE INTO turn(turn_id, session_id, session_file, project, ts, text) VALUES (?,?,?,?,?,?)'
         )
         for (const turn of turns) {
-          insert.run(
-            turn.turn_id,
-            turn.session_id,
-            turn.session_file,
-            turn.project,
-            turn.ts,
-            turn.text,
-          )
+          insert.run(turn.turn_id, turn.session_id, turn.session_file, turn.project, turn.ts, turn.text)
         }
-        db.prepare(
-          'INSERT OR REPLACE INTO session_file(path, mtime_ms, turns, indexed_at) VALUES (?,?,?,?)',
-        ).run(file, mtime, turns.length, new Date().toISOString())
+        db.prepare('INSERT OR REPLACE INTO session_file(path, mtime_ms, turns, indexed_at) VALUES (?,?,?,?)').run(
+          file,
+          mtime,
+          turns.length,
+          new Date().toISOString()
+        )
         db.exec('COMMIT')
       } catch (error) {
         db.exec('ROLLBACK')
@@ -467,7 +456,7 @@ export const indexSessions = async (options = {}) => {
   return {
     scanned,
     indexed,
-    turns: total,
+    turns: total
   }
 }
 const STOP_WORDS = new Set([
@@ -526,7 +515,7 @@ const STOP_WORDS = new Set([
   'will',
   'with',
   'you',
-  'your',
+  'your'
 ])
 
 /**
@@ -545,14 +534,14 @@ export const toMatchQuery = (text, partial = false) => {
   const tokens = text
     .toLowerCase()
     .split(/[^a-z0-9_]+/)
-    .filter((t) => t.length > 1 && !STOP_WORDS.has(t))
+    .filter(t => t.length > 1 && !STOP_WORDS.has(t))
   const unique = [...new Set(tokens)]
   if (!unique.length) return null
   if (partial) {
     const last = unique[unique.length - 1]
     unique[unique.length - 1] = `${last}*`
   }
-  return unique.map((t) => `"${t.replace(/"/g, '')}"`).join(' OR ')
+  return unique.map(t => `"${t.replace(/"/g, '')}"`).join(' OR ')
 }
 
 /** Rank turns against a query, newest first within equal relevance. */
@@ -584,7 +573,8 @@ export const recall = (query, options = {}) => {
     args.push(options.limit ?? 10)
     const rows = /** @type {Array<Record<string, unknown>>} */ (
       db
-        .prepare(`
+        .prepare(
+          `
 			SELECT t.turn_id, t.session_id, t.session_file, t.project, t.ts,
 				snippet(turn_fts, 0, ?, ?, ' ... ', 24) AS snippet
 			FROM turn_fts
@@ -592,10 +582,11 @@ export const recall = (query, options = {}) => {
 			WHERE ${where.join(' AND ')}
 			ORDER BY bm25(turn_fts), t.ts DESC
 			LIMIT ?
-		`)
+		`
+        )
         .all(HIGHLIGHT_OPEN, HIGHLIGHT_CLOSE, ...args)
     )
-    return rows.map((row) => ({
+    return rows.map(row => ({
       turn_id: String(row.turn_id),
       session_id: String(row.session_id),
       session_file: String(row.session_file),
@@ -603,7 +594,7 @@ export const recall = (query, options = {}) => {
       ts: String(row.ts),
       text: String(row.snippet ?? '')
         .replaceAll(HIGHLIGHT_OPEN, '**')
-        .replaceAll(HIGHLIGHT_CLOSE, '**'),
+        .replaceAll(HIGHLIGHT_CLOSE, '**')
     }))
   } finally {
     db.close()
@@ -619,21 +610,19 @@ export const stats = (path = DB_PATH) => {
       path,
       turns: 0,
       sessions: 0,
-      bytes: 0,
+      bytes: 0
     }
   const db = openIndex(path)
   try {
-    const turns = Number(
-      /** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM turn').get()).n,
-    )
+    const turns = Number(/** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM turn').get()).n)
     const sessions = Number(
-      /** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM session_file').get()).n,
+      /** @type {{ n: number; }} */ (db.prepare('SELECT COUNT(*) AS n FROM session_file').get()).n
     )
     return {
       path,
       turns,
       sessions,
-      bytes: statSync(path).size,
+      bytes: statSync(path).size
     }
   } finally {
     db.close()
@@ -645,6 +634,6 @@ export const stats = (path = DB_PATH) => {
  * @param {string} path
  * @returns {string}
  */
-export const fingerprint = (path) => {
+export const fingerprint = path => {
   return createHash('sha1').update(path).digest('hex').slice(0, 12)
 }

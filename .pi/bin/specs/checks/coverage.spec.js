@@ -25,7 +25,21 @@ it('lcov paths resolve against the folder each report is relative to', () => {
 it('totals count lines, branches, and functions, hit when run at least once', () => {
   const files = parse_lcov(
     report([
-      { path: 'a.js', lines: [[1, 2], [2, 0]], branches: [['1,0,0', 1], ['1,0,1', '-']], functions: [['f', 1], ['g', 0]] }
+      {
+        path: 'a.js',
+        lines: [
+          [1, 2],
+          [2, 0]
+        ],
+        branches: [
+          ['1,0,0', 1],
+          ['1,0,1', '-']
+        ],
+        functions: [
+          ['f', 1],
+          ['g', 0]
+        ]
+      }
     ]),
     '/repo'
   )
@@ -33,10 +47,27 @@ it('totals count lines, branches, and functions, hit when run at least once', ()
 })
 
 it('merging counts a shared file once and keeps any part that ran a line', () => {
-  const harness = parse_lcov(report([{ path: 'shared.js', lines: [[1, 1], [2, 0]] }]), '/repo')
+  const harness = parse_lcov(
+    report([
+      {
+        path: 'shared.js',
+        lines: [
+          [1, 1],
+          [2, 0]
+        ]
+      }
+    ]),
+    '/repo'
+  )
   const backend = parse_lcov(
     report([
-      { path: 'shared.js', lines: [[1, 0], [2, 3]] },
+      {
+        path: 'shared.js',
+        lines: [
+          [1, 0],
+          [2, 3]
+        ]
+      },
       { path: 'only.js', lines: [[1, 0]] }
     ]),
     '/repo'
@@ -45,7 +76,18 @@ it('merging counts a shared file once and keeps any part that ran a line', () =>
 })
 
 it('the summary shows each part, a missing report, and the merged whole', () => {
-  const files = parse_lcov(report([{ path: 'a.js', lines: [[1, 1], [2, 0]] }]), '/repo')
+  const files = parse_lcov(
+    report([
+      {
+        path: 'a.js',
+        lines: [
+          [1, 1],
+          [2, 0]
+        ]
+      }
+    ]),
+    '/repo'
+  )
   const text = summary(
     [
       { name: 'harness', files, ok: true },
@@ -59,15 +101,37 @@ it('the summary shows each part, a missing report, and the merged whole', () => 
 })
 
 it('source files skip tests, fixtures, configs, and types', () => {
-  const listed = ['.pi/bin/a.js', '.pi/bin/a.test.js', 'apps/realness/specs/x.js', 'apps/realness/checks/y.js', 'apps/realness/vite.config.js', 'apps/realness/src/b.vue', 'apps/realness/x.d.ts', 'apps/realness/s.sh', 'README.md'].join('\n')
-  assert.deepEqual(source_files(() => listed), ['.pi/bin/a.js', 'apps/realness/src/b.vue', 'apps/realness/s.sh'])
+  const listed = [
+    '.pi/bin/a.js',
+    '.pi/bin/a.test.js',
+    'apps/realness/specs/x.js',
+    'apps/realness/checks/y.js',
+    'apps/realness/vite.config.js',
+    'apps/realness/src/b.vue',
+    'apps/realness/x.d.ts',
+    'apps/realness/s.sh',
+    'README.md'
+  ].join('\n')
+  assert.deepEqual(
+    source_files(() => listed),
+    ['.pi/bin/a.js', 'apps/realness/src/b.vue', 'apps/realness/s.sh']
+  )
 })
 
 it('untested files are the sources no report mentions, scripts apart from other languages', () => {
-  const whole = parse_lcov(report([{ path: '.pi/bin/a.js', lines: [[1, 1]] }]), resolve(import.meta.dirname, '../../../..'))
-  assert.deepEqual(untested(['.pi/bin/a.js', '.pi/bin/b.js', 'x.sh'], whole), { scripts: ['.pi/bin/b.js'], other: ['x.sh'] })
+  const whole = parse_lcov(
+    report([{ path: '.pi/bin/a.js', lines: [[1, 1]] }]),
+    resolve(import.meta.dirname, '../../../..')
+  )
+  assert.deepEqual(untested(['.pi/bin/a.js', '.pi/bin/b.js', 'x.sh'], whole), {
+    scripts: ['.pi/bin/b.js'],
+    other: ['x.sh']
+  })
 })
 
 it('harness coverage runs the same test globs as npm run test:harness', () => {
-  assert.deepEqual(harness_files("node --test '.pi/bin/**/*.test.js' '.pi/extensions/**/*.test.js'"), ['.pi/bin/**/*.test.js', '.pi/extensions/**/*.test.js'])
+  assert.deepEqual(harness_files("node --test '.pi/bin/**/*.test.js' '.pi/extensions/**/*.test.js'"), [
+    '.pi/bin/**/*.test.js',
+    '.pi/extensions/**/*.test.js'
+  ])
 })

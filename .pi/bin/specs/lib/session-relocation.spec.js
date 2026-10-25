@@ -1,12 +1,25 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, writeFileSync as write_file_sync, readFileSync as read_file_sync, existsSync as exists_sync, rmSync as rm_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  writeFileSync as write_file_sync,
+  readFileSync as read_file_sync,
+  existsSync as exists_sync,
+  rmSync as rm_sync
+} from 'node:fs'
 import { join, resolve } from 'node:path'
 import { hostname } from 'node:os'
 import { spawnSync as spawn_sync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
-import { compress_session_chunk, read_session_gzip } from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js'
-import { entryToHtmlLine as entry_to_html_line, sessionHtmlToEntries as session_html_to_entries } from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
+import {
+  compress_session_chunk,
+  read_session_gzip
+} from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-gzip.js'
+import {
+  entryToHtmlLine as entry_to_html_line,
+  sessionHtmlToEntries as session_html_to_entries
+} from '../../../../.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/core/session-html.js'
 import { relocate_history, restore_history } from '../../lib/session-relocation.js'
 
 const fixture = t => {
@@ -17,7 +30,14 @@ const fixture = t => {
   const source = join(harness, '.pi/agent/sessions')
   const target = join(harness, 'vault/Sessions')
   mkdir_sync(source, { recursive: true })
-  const bytes = JSON.stringify({ type: 'session', id: 'original', version: 3, cwd: '/original/project', timestamp: '2026-10-01T00:00:00Z' }) + '\n'
+  const bytes =
+    JSON.stringify({
+      type: 'session',
+      id: 'original',
+      version: 3,
+      cwd: '/original/project',
+      timestamp: '2026-10-01T00:00:00Z'
+    }) + '\n'
   write_file_sync(join(source, 'original.jsonl'), bytes)
   return { harness, source, target, bytes }
 }
@@ -42,7 +62,14 @@ it('location trial flattens discovery, rewrites parent and state paths, then res
   const project = join(f.source, '--old-project--')
   mkdir_sync(project)
   const child = join(project, 'child.html.gz')
-  const header = { type: 'session', id: 'child', version: 3, cwd: '/other/project', timestamp: '2026-10-01T00:00:00Z', parentSession: join(f.source, 'original.jsonl') }
+  const header = {
+    type: 'session',
+    id: 'child',
+    version: 3,
+    cwd: '/other/project',
+    timestamp: '2026-10-01T00:00:00Z',
+    parentSession: join(f.source, 'original.jsonl')
+  }
   const packed = compress_session_chunk(entry_to_html_line(header, 'child') + '\n')
   write_file_sync(child, packed)
   const state = join(f.harness, '.pi/agent/state')
@@ -56,9 +83,14 @@ it('location trial flattens discovery, rewrites parent and state paths, then res
   const result = relocate_history({ ...f, state })
   const migrated = join(f.target, 'child.html.gz')
   assert.ok(exists_sync(migrated))
-  assert.equal(session_html_to_entries(read_session_gzip(read_file_sync(migrated)).text)[0].parentSession, join(f.target, 'original.jsonl'))
+  assert.equal(
+    session_html_to_entries(read_session_gzip(read_file_sync(migrated)).text)[0].parentSession,
+    join(f.target, 'original.jsonl')
+  )
   assert.equal(db.prepare('SELECT session FROM edit').get().session, migrated)
-  assert.deepEqual(JSON.parse(read_file_sync(join(state, 'light.json'), 'utf8')).skipped, ['vault/Sessions/child.html.gz'])
+  assert.deepEqual(JSON.parse(read_file_sync(join(state, 'light.json'), 'utf8')).skipped, [
+    'vault/Sessions/child.html.gz'
+  ])
   restore_history(result.manifest)
   assert.deepEqual(read_file_sync(child), packed)
   assert.equal(db.prepare('SELECT session FROM edit').get().session, child)
@@ -80,7 +112,10 @@ it('rollback restores parent paths when a copied parent is missing', t => {
 
 it('location trial refuses live writers without creating a destination', t => {
   const f = fixture(t)
-  write_file_sync(join(f.source, `original.jsonl.writer-${process.pid}`), JSON.stringify({ pid: process.pid, host: hostname() }))
+  write_file_sync(
+    join(f.source, `original.jsonl.writer-${process.pid}`),
+    JSON.stringify({ pid: process.pid, host: hostname() })
+  )
   assert.throws(() => relocate_history(f), /live writer/)
   assert.ok(!exists_sync(f.target))
 })
@@ -96,7 +131,10 @@ it('location trial renames duplicate basenames and restores both original paths'
   assert.equal(new Set(manifest.files.map(file => file.target_name)).size, 2)
   for (const file of manifest.files) {
     assert.ok(file.target_name.endsWith('.jsonl'))
-    assert.equal(read_file_sync(join(f.target, file.target_name), 'utf8'), file.name.startsWith('project/') ? other : f.bytes)
+    assert.equal(
+      read_file_sync(join(f.target, file.target_name), 'utf8'),
+      file.name.startsWith('project/') ? other : f.bytes
+    )
   }
   restore_history(result.manifest)
   assert.equal(read_file_sync(join(f.source, 'original.jsonl'), 'utf8'), f.bytes)

@@ -18,10 +18,7 @@ it('harness settings are the product functions, not copied implementations', asy
   assert.equal(plans_ignore, settings.plans_ignore)
 })
 
-const scratch = resolve(
-  import.meta.dirname,
-  '../../../../artifacts/realness/product-path-tests'
-)
+const scratch = resolve(import.meta.dirname, '../../../../artifacts/realness/product-path-tests')
 
 for (const package_name of ['realness', 'test-product']) {
   for (const layout of ['apps/realness']) {
@@ -39,10 +36,7 @@ for (const package_name of ['realness', 'test-product']) {
             exports: { './command': './command.js' }
           })
         )
-        write_file_sync(
-          join(folder, 'command.js'),
-          'export const ready = true\n'
-        )
+        write_file_sync(join(folder, 'command.js'), 'export const ready = true\n')
         assert.equal(product_entry('command', root), join(folder, 'command.js'))
       } finally {
         rm_sync(root, { recursive: true, force: true })
@@ -58,13 +52,16 @@ it('product export changes resolve without restarting the process', () => {
   try {
     mkdir_sync(folder, { recursive: true })
     const manifest = join(folder, 'package.json')
-    const save = entry => write_file_sync(manifest, JSON.stringify({
-      name: 'realness',
-      type: 'module',
-      exports: { './command': { node: `./${entry}.js` } }
-    }))
-    for (const entry of ['first', 'second'])
-      write_file_sync(join(folder, `${entry}.js`), 'export const ready = true\n')
+    const save = entry =>
+      write_file_sync(
+        manifest,
+        JSON.stringify({
+          name: 'realness',
+          type: 'module',
+          exports: { './command': { node: `./${entry}.js` } }
+        })
+      )
+    for (const entry of ['first', 'second']) write_file_sync(join(folder, `${entry}.js`), 'export const ready = true\n')
     save('first')
     assert.equal(product_entry('command', root), join(folder, 'first.js'))
     save('second')
@@ -89,11 +86,7 @@ it('the harness resolves commands through the public product export', async () =
   const manifest = await import(path_to_file_url(product_manifest()), {
     with: { type: 'json' }
   })
-  assert.ok(
-    product_entry('command').endsWith(
-      manifest.default.exports['./command'].node.slice(1)
-    )
-  )
+  assert.ok(product_entry('command').endsWith(manifest.default.exports['./command'].node.slice(1)))
   assert.throws(() => product_entry('private-source'), {
     code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
   })

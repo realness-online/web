@@ -1,4 +1,3 @@
-
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -32,8 +31,7 @@ export const list_sources = root => {
       if (entry.name.startsWith('.')) continue
       const abs = path.join(dir, entry.name)
       if (entry.isDirectory()) walk(abs)
-      else if (entry.isFile())
-        found.push({ rel: path.relative(root, abs), abs, kind: kind_of(abs) })
+      else if (entry.isFile()) found.push({ rel: path.relative(root, abs), abs, kind: kind_of(abs) })
     }
   }
   walk(root)

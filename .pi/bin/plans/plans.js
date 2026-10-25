@@ -13,7 +13,7 @@ const { build_app } = await product_import('publish/view')
  * The plans app's selection, refreshed from the plans folder.
  * @param {string} root Harness root.
  */
-export const select_plans = async (root) => {
+export const select_plans = async root => {
   const app_dir = join(root, 'apps/plans')
   const app = await read_app(app_dir)
   const vault = resolve(app_dir, app.vault)

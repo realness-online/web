@@ -1,20 +1,13 @@
 import { execFile as exec_file } from 'node:child_process'
-import {
-  existsSync as exists_sync,
-  readFileSync as read_file_sync
-} from 'node:fs'
+import { existsSync as exists_sync, readFileSync as read_file_sync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 const GUEST = '/etc/realness'
 
-export const proxy_origin = (
-  models_path = join(homedir(), '.pi/agent/models.json')
-) => {
+export const proxy_origin = (models_path = join(homedir(), '.pi/agent/models.json')) => {
   try {
-    return new URL(
-      JSON.parse(read_file_sync(models_path, 'utf8')).providers.realness.baseUrl
-    ).origin
+    return new URL(JSON.parse(read_file_sync(models_path, 'utf8')).providers.realness.baseUrl).origin
   } catch {
     return null
   }
@@ -27,11 +20,7 @@ const model_pass = () =>
     )
   )
 
-export const next_warning = (
-  status,
-  shown,
-  today = new Date().toISOString().slice(0, 10)
-) => {
+export const next_warning = (status, shown, today = new Date().toISOString().slice(0, 10)) => {
   const warn = status?.warn
   if (!warn?.message) return null
   const key = `${today} ${warn.limit} ${warn.at ?? ''}`

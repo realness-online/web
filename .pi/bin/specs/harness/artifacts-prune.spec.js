@@ -18,7 +18,10 @@ function folder(name, marker) {
 }
 
 const prune = (env = { ARTIFACTS_ROOT: root }) =>
-  spawnSync(process.execPath, [script, '--apply', '--all', '--quiet'], { env: { ...process.env, ...env }, encoding: 'utf8' })
+  spawnSync(process.execPath, [script, '--apply', '--all', '--quiet'], {
+    env: { ...process.env, ...env },
+    encoding: 'utf8'
+  })
 
 it('a .live folder is kept only while its pid runs', t => {
   t.after(() => rmSync(root, { recursive: true, force: true }))
@@ -146,9 +149,11 @@ it('over the cap, oldest files go first until under it; live folders and recent 
   put('old.bin', 1, 30)
   put('running/held.bin', 1, 60)
   put('fresh.bin', 1, 0)
-  const invoke = args => spawnSync(process.execPath, [script, '--cap-mb', '3.5', ...args], {
-    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
-  })
+  const invoke = args =>
+    spawnSync(process.execPath, [script, '--cap-mb', '3.5', ...args], {
+      env: { ...process.env, ARTIFACTS_ROOT: dir },
+      encoding: 'utf8'
+    })
   const dry = invoke([])
   assert.equal(dry.status, 0, dry.stderr)
   assert.match(dry.stdout, /oldest.bin \(oldest over 3.5 MB cap/)
@@ -171,7 +176,8 @@ it('under the cap nothing goes, however old', t => {
   const old = new Date(Date.now() - 90 * 86_400_000)
   utimesSync(path, old, old)
   const result = spawnSync(process.execPath, [script, '--apply', '--quiet'], {
-    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
+    env: { ...process.env, ARTIFACTS_ROOT: dir },
+    encoding: 'utf8'
   })
   assert.equal(result.status, 0, result.stderr)
   assert.ok(existsSync(path))
@@ -184,7 +190,8 @@ it('data held only by the grace window still warns above the cap', t => {
   writeFileSync(path, '')
   truncateSync(path, 500_000_001)
   const result = spawnSync(process.execPath, [script, '--apply', '--quiet'], {
-    env: { ...process.env, ARTIFACTS_ROOT: dir }, encoding: 'utf8'
+    env: { ...process.env, ARTIFACTS_ROOT: dir },
+    encoding: 'utf8'
   })
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /warning: artifacts exceed 500 MB/)

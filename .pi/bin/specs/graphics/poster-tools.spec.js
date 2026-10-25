@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import { spawnSync as spawn_sync } from 'node:child_process'
-import { mkdirSync as mkdir_sync, mkdtempSync as mkdtemp_sync, rmSync as rm_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  mkdirSync as mkdir_sync,
+  mkdtempSync as mkdtemp_sync,
+  rmSync as rm_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { once } from 'node:events'
 import { join, resolve } from 'node:path'
 import { it } from 'node:test'
@@ -26,14 +31,21 @@ it('sources sort by path, skip dotfiles, and name what each file is', t => {
   for (const name of ['b/clip.MOV', 'a.jpg', '.hidden.png', 'notes.txt']) write_file_sync(join(dir, name), 'x')
   assert.deepEqual(
     list_sources(dir).map(({ rel, kind }) => [rel, kind]),
-    [['a.jpg', 'image'], ['b/clip.MOV', 'video'], ['notes.txt', 'other']]
+    [
+      ['a.jpg', 'image'],
+      ['b/clip.MOV', 'video'],
+      ['notes.txt', 'other']
+    ]
   )
   assert.equal(kind_of('photo.webp'), 'image')
   assert.deepEqual(poster_paths_for('/out', 'a/b.jpg'), { svg: '/out/a/b.jpg.svg', record: '/out/a/b.jpg.json' })
 })
 
 it('slices split work into near-equal runs and never more slices than items', () => {
-  assert.deepEqual(slices_of([1, 2, 3, 4, 5], 2), [[1, 2, 3], [4, 5]])
+  assert.deepEqual(slices_of([1, 2, 3, 4, 5], 2), [
+    [1, 2, 3],
+    [4, 5]
+  ])
   assert.deepEqual(slices_of([1], 4), [[1]])
   assert.deepEqual(slices_of([], 3), [[]])
 })

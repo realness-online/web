@@ -4,8 +4,7 @@ import { comment_ranges, has_parser } from '../../lib/comments.js'
 
 const ranges = (text, ext) => comment_ranges(text, ext)
 const kept = (text, ext) => ranges(text, ext).map(range => range.keep)
-const bodies = (text, ext) =>
-  ranges(text, ext).map(range => text.slice(range.start, range.end))
+const bodies = (text, ext) => ranges(text, ext).map(range => text.slice(range.start, range.end))
 
 it('the parsers are installed, so JS and Vue are really checked', () => {
   assert.equal(has_parser(), true)
@@ -98,8 +97,7 @@ it('js tool directives are kept, by their first line or their body', () => {
     '// @jest-environment node',
     '/*! banner */'
   ]
-  for (const line of directives)
-    assert.deepEqual(kept(`${line}\nconst a = 1\n`, '.js'), [true], line)
+  for (const line of directives) assert.deepEqual(kept(`${line}\nconst a = 1\n`, '.js'), [true], line)
   assert.deepEqual(kept('// just prose\nconst a = 1\n', '.js'), [false])
 })
 

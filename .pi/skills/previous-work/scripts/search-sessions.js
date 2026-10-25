@@ -29,9 +29,7 @@ const recent = take_flag('--recent')
 const limit = Number(take_value('--limit', '3'))
 const term = args.join(' ').trim()
 if (!term || !(limit > 0)) {
-  console.error(
-    'usage: search-sessions.js "<exact string>" [--limit N] [--recent]'
-  )
+  console.error('usage: search-sessions.js "<exact string>" [--limit N] [--recent]')
   process.exit(2)
 }
 
@@ -90,8 +88,7 @@ const snippet = async file => {
     .slice(0, 200)
 }
 
-const show = path =>
-  path.startsWith(`${root}/`) ? relative(root, path) : path.replace(home, '~')
+const show = path => (path.startsWith(`${root}/`) ? relative(root, path) : path.replace(home, '~'))
 
 const results = await Promise.all(stores.map(search))
 const snippets = await Promise.all(

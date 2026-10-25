@@ -14,7 +14,7 @@ const run = promisify(execFile)
  * @param {string} cwd
  * @returns {string | null}
  */
-const findHarnessRoot = (cwd) => {
+const findHarnessRoot = cwd => {
   let dir = resolve(cwd)
   while (true) {
     if (existsSync(join(dir, '.pi', 'bin')) && existsSync(join(dir, 'work'))) {
@@ -25,7 +25,7 @@ const findHarnessRoot = (cwd) => {
     dir = parent
   }
 }
-export default /** @param {ExtensionAPI} pi */ (pi) => {
+export default /** @param {ExtensionAPI} pi */ pi => {
   pi.on('agent_settled', async (_event, ctx) => {
     const root = findHarnessRoot(ctx.cwd)
     if (!root) return
@@ -34,7 +34,7 @@ export default /** @param {ExtensionAPI} pi */ (pi) => {
     try {
       const { stdout } = await run(process.execPath, [script, '--apply', '--quiet'], {
         cwd: root,
-        timeout: 60_000,
+        timeout: 60_000
       })
       const warning = /^warning: (.+)$/m.exec(stdout)
       if (warning) ctx.ui.notify(warning[1], 'warning')

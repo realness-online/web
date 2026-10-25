@@ -5,8 +5,7 @@ import { it } from 'node:test'
 
 const root = join(import.meta.dirname, '../../../..')
 const app = 'apps/realness'
-const scripts = folder =>
-  JSON.parse(read_file_sync(join(root, folder, 'package.json'), 'utf8')).scripts ?? {}
+const scripts = folder => JSON.parse(read_file_sync(join(root, folder, 'package.json'), 'utf8')).scripts ?? {}
 
 /**
  * The scripts a command ends up running, as `folder#script`, following
@@ -44,6 +43,12 @@ it('the git hook and npm test run the same checks, so neither can drop one', () 
   const tested = [...leaves('.', 'test')].sort()
   const hooked = [...hook_checks()].sort()
   assert.deepEqual(hooked, tested)
-  for (const required of [`${app}#type`, `${app}#check:frontend`, `${app}#fallow`, `${app}#test:coverage`, '.#check:skills'])
+  for (const required of [
+    `${app}#type`,
+    `${app}#check:frontend`,
+    `${app}#fallow`,
+    `${app}#test:coverage`,
+    '.#check:skills'
+  ])
     assert.ok(tested.includes(required), `${required} must run in npm test`)
 })

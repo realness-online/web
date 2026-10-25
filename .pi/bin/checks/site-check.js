@@ -46,7 +46,11 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       const id = node.getAttribute('itemid') ?? ''
       const type = id.split('/')[2]
       const parser = create_itemid({ types: [type], requires_timestamp: [type] })
-      if (!parser.is_itemid(id) || !node.hasAttribute('itemscope') || !/^https?:\/\/schema\.org\/[A-Za-z]+$/.test(node.getAttribute('itemtype') ?? ''))
+      if (
+        !parser.is_itemid(id) ||
+        !node.hasAttribute('itemscope') ||
+        !/^https?:\/\/schema\.org\/[A-Za-z]+$/.test(node.getAttribute('itemtype') ?? '')
+      )
         report(file, 'itemid', 'primary items need a valid itemid, itemscope, and Schema.org itemtype')
     }
 
@@ -60,7 +64,8 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       for (const match of text.matchAll(/@import\s+(?:url\(\s*)?["']([^"']+)["']/g))
         read_css(asset(match[1], path, 'palette'))
     }
-    for (const link of document.querySelectorAll('link[rel="stylesheet"]')) read_css(asset(link.getAttribute('href'), file, 'palette'))
+    for (const link of document.querySelectorAll('link[rel="stylesheet"]'))
+      read_css(asset(link.getAttribute('href'), file, 'palette'))
     const styles = without_comments(css.join('\n'))
     for (const name of ['palette.css', 'color.css']) {
       const reference = without_comments(read_file(new URL(name, style_root), 'utf8'))
@@ -77,7 +82,12 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
     if (manifest_file) {
       try {
         const manifest = JSON.parse(read_file(manifest_file, 'utf8'))
-        if (!manifest.name || !manifest.start_url || !manifest.scope || !['standalone', 'minimal-ui', 'fullscreen'].includes(manifest.display))
+        if (
+          !manifest.name ||
+          !manifest.start_url ||
+          !manifest.scope ||
+          !['standalone', 'minimal-ui', 'fullscreen'].includes(manifest.display)
+        )
           report(file, 'pwa-manifest', 'manifest needs name, start_url, scope, and installed display mode')
         for (const size of ['192x192', '512x512']) {
           const icon = manifest.icons?.find(icon => icon.sizes?.split(' ').includes(size))
@@ -96,9 +106,13 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       const imports = [...text.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?)["']([^"']+)["']/g)]
       return [text, ...imports.map(match => read_script(asset(match[1], path, 'pwa-registration')))].join('\n')
     }
-    const scripts = [...document.querySelectorAll('script')].map(script => script.hasAttribute('src')
-      ? read_script(asset(script.getAttribute('src'), file, 'pwa-registration'))
-      : script.textContent).join('\n')
+    const scripts = [...document.querySelectorAll('script')]
+      .map(script =>
+        script.hasAttribute('src')
+          ? read_script(asset(script.getAttribute('src'), file, 'pwa-registration'))
+          : script.textContent
+      )
+      .join('\n')
     if (!/serviceWorker/.test(scripts) || !/\bregister\s*\(/.test(scripts))
       report(file, 'pwa-registration', 'no service worker registration in page scripts')
   }

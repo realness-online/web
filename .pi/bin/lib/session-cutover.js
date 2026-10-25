@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict'
-import { existsSync as exists_sync, lstatSync as lstat_sync, mkdirSync as mkdir_sync, readFileSync as read_file_sync, renameSync as rename_sync, writeFileSync as write_file_sync } from 'node:fs'
+import {
+  existsSync as exists_sync,
+  lstatSync as lstat_sync,
+  mkdirSync as mkdir_sync,
+  readFileSync as read_file_sync,
+  renameSync as rename_sync,
+  writeFileSync as write_file_sync
+} from 'node:fs'
 import { randomUUID as random_uuid } from 'node:crypto'
 import { dirname, isAbsolute as is_absolute, join, relative, resolve } from 'node:path'
 import { sessions_path, state_path } from '../../../apps/realness/src/harness/settings.js'
@@ -11,11 +18,13 @@ const root_check = (root, trial) => {
   root = resolve(root)
   const boundary = trial ? artifacts : harness_root
   const name = relative(boundary, root)
-  if (trial ? !name || name.startsWith('..') || is_absolute(name) : root !== harness_root) throw new Error('Cutover must use this harness or an isolated trial inside artifacts')
+  if (trial ? !name || name.startsWith('..') || is_absolute(name) : root !== harness_root)
+    throw new Error('Cutover must use this harness or an isolated trial inside artifacts')
   let path = boundary
   for (const part of name.split('/').filter(Boolean)) {
     path = join(path, part)
-    if (lstat_sync(path, { throwIfNoEntry: false })?.isSymbolicLink()) throw new Error('Cutover paths must not contain symlinks')
+    if (lstat_sync(path, { throwIfNoEntry: false })?.isSymbolicLink())
+      throw new Error('Cutover paths must not contain symlinks')
   }
   if (!trial) assert_no_live_pi()
   return root
@@ -26,7 +35,8 @@ const atomic_write = (path, value) => {
   let checked = harness_root
   for (const part of name.split('/')) {
     checked = join(checked, part)
-    if (lstat_sync(checked, { throwIfNoEntry: false })?.isSymbolicLink()) throw new Error('Cutover paths must not contain symlinks')
+    if (lstat_sync(checked, { throwIfNoEntry: false })?.isSymbolicLink())
+      throw new Error('Cutover paths must not contain symlinks')
   }
   mkdir_sync(dirname(path), { recursive: true, mode: 0o700 })
   const temporary = `${path}.writing-${random_uuid()}`
@@ -42,18 +52,41 @@ export const migrate_sessions = (root = harness_root, { trial = false } = {}) =>
   root = root_check(root, trial)
   const config_bytes = read_file_sync(config_path(root))
   const config = JSON.parse(config_bytes)
-  if (config.realness?.sessions !== undefined) throw new Error('Vault sessions are already configured; no migration performed')
+  if (config.realness?.sessions !== undefined)
+    throw new Error('Vault sessions are already configured; no migration performed')
   const target_name = sessions_path(root)
   const state_name = state_path(root)
-  if (!state_name || state_name.startsWith('/') || state_name.split('/').some(part => !part || part === '.' || part === '..')) throw new Error('Invalid harness state folder')
+  if (
+    !state_name ||
+    state_name.startsWith('/') ||
+    state_name.split('/').some(part => !part || part === '.' || part === '..')
+  )
+    throw new Error('Invalid harness state folder')
   const deferred = join(root, '.pi/agent/deferred.json')
-  if (exists_sync(join(root, target_name))) throw new Error('Session destination already exists; inspect the previous cutover before retrying')
-  const journal = { version: 1, manifest: join(root, target_name, 'location-manifest.json'), target: target_name, previous: null, status: 'planned' }
+  if (exists_sync(join(root, target_name)))
+    throw new Error('Session destination already exists; inspect the previous cutover before retrying')
+  const journal = {
+    version: 1,
+    manifest: join(root, target_name, 'location-manifest.json'),
+    target: target_name,
+    previous: null,
+    status: 'planned'
+  }
   atomic_write(journal_path(root), journal)
-  const result = relocate_history({ harness: root, source: join(root, '.pi/agent/sessions'), target: join(root, target_name), state: join(root, state_name), deferred: exists_sync(deferred) ? deferred : undefined, live: !trial })
+  const result = relocate_history({
+    harness: root,
+    source: join(root, '.pi/agent/sessions'),
+    target: join(root, target_name),
+    state: join(root, state_name),
+    deferred: exists_sync(deferred) ? deferred : undefined,
+    live: !trial
+  })
   journal.status = 'copied'
   atomic_write(journal_path(root), journal)
-  assert.ok(read_file_sync(config_path(root)).equals(config_bytes), 'Harness settings changed during migration; copies retained, activation refused')
+  assert.ok(
+    read_file_sync(config_path(root)).equals(config_bytes),
+    'Harness settings changed during migration; copies retained, activation refused'
+  )
   if (!trial) assert_no_live_pi()
   config.realness = { ...config.realness, sessions: target_name }
   atomic_write(config_path(root), config)
@@ -66,12 +99,22 @@ export const migrate_sessions = (root = harness_root, { trial = false } = {}) =>
 export const rollback_sessions = (root = harness_root, { trial = false } = {}) => {
   root = root_check(root, trial)
   const journal = JSON.parse(read_file_sync(journal_path(root), 'utf8'))
-  if (journal.version !== 1 || journal.previous !== null || journal.target !== 'vault/Sessions' || resolve(journal.manifest) !== join(root, journal.target, 'location-manifest.json')) throw new Error('Invalid session cutover journal')
+  if (
+    journal.version !== 1 ||
+    journal.previous !== null ||
+    journal.target !== 'vault/Sessions' ||
+    resolve(journal.manifest) !== join(root, journal.target, 'location-manifest.json')
+  )
+    throw new Error('Invalid session cutover journal')
   const config_bytes = read_file_sync(config_path(root))
   const config = JSON.parse(config_bytes)
-  if (config.realness?.sessions !== undefined && config.realness.sessions !== journal.target) throw new Error('Session settings changed after cutover; rollback refused')
+  if (config.realness?.sessions !== undefined && config.realness.sessions !== journal.target)
+    throw new Error('Session settings changed after cutover; rollback refused')
   const result = restore_history(journal.manifest, { live: !trial })
-  assert.ok(read_file_sync(config_path(root)).equals(config_bytes), 'Harness settings changed during rollback; activation unchanged')
+  assert.ok(
+    read_file_sync(config_path(root)).equals(config_bytes),
+    'Harness settings changed during rollback; activation unchanged'
+  )
   if (!trial) assert_no_live_pi()
   if (config.realness) delete config.realness.sessions
   atomic_write(config_path(root), config)
