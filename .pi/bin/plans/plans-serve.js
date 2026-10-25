@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { createServer } from 'node:http'
-import { readFile, stat } from 'node:fs/promises'
+import { createServer as create_server } from 'node:http'
+import { readFile as read_file, stat } from 'node:fs/promises'
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
@@ -54,7 +54,7 @@ const from_blog = async (blog, path) => {
  * @param {string} [blog] blog dist
  */
 export const serve = (plans, blog) =>
-  createServer(async (request, response) => {
+  create_server(async (request, response) => {
     const url = request.url ?? '/'
     const path = url.split('?')[0]
     if (path === '/service.worker.js') {
@@ -78,7 +78,7 @@ export const serve = (plans, blog) =>
       'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
       'cache-control': 'no-store'
     })
-    response.end(await readFile(file))
+    response.end(await read_file(file))
   })
 
 if (process.argv[1] === file_url_to_path(import.meta.url)) {

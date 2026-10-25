@@ -45,7 +45,7 @@ it('plan-shape names each broken rule and counts failed plans', () => {
   assert.match(result.stdout, /FAIL bad\.md/)
   assert.match(result.stdout, /title first/)
   assert.match(result.stdout, /dag present/)
-  assert.match(result.stdout, /no other ## headings: line 9: ## Extra/)
+  assert.match(result.stdout, /no other ## headings: use ### or lower: line 9: ## Extra/)
   assert.doesNotMatch(result.stdout, /good\.md/)
   assert.match(result.stdout, /2 plans, 1 failed/)
   assert.equal(run('plans/plan-shape.js', ['--plans', join(root, '.pi/bin/specs/fixtures/plans'), '--warn']).status, 0)

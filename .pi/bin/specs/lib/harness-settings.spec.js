@@ -78,6 +78,11 @@ it('p1: person.local.html names the person; package.json is only a fallback', as
   )
   assert.equal(person(dir), '/+14156667777')
   assert.deepEqual(local_person(dir), { phone: '+14156667777', name: 'Ada L' })
+  await writeFile(
+    `${dir}/.pi/person.local.html`,
+    '<a itemprop="telephone" href="tel:+14156667777">+14156667777</a> Ada</p>'
+  )
+  assert.deepEqual(local_person(dir), { phone: '+14156667777', name: 'Ada' })
   await writeFile(`${dir}/.pi/person.local.html`, '<a href="tel:+14155550999">Plain</a>')
   assert.equal(person(dir), '/+14155550999')
   await writeFile(`${dir}/.pi/person.local.html`, '<a itemprop="telephone" href="tel:4155550123">Bad</a>')

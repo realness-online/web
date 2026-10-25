@@ -43,6 +43,7 @@ check extensions npm run check:ext
 check soundness npm run check:soundness:gate
 check plan-shape npm run plan-shape
 check palette npm run check:palette
+check ds-store npm run check:ds-store
 check node-tests "${app[@]}" test:coverage:node
 check frontend-tests "${app[@]}" test:coverage
 check functions-tests "${app[@]}" test:functions

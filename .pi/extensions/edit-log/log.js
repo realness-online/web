@@ -4,7 +4,8 @@
  * Sync reads it to tell an explained change from an unexplained one: a file
  * whose current hash matches its last logged hash was last touched by a
  * session, and the log says which. Lives beside the sync records, never in
- * synced folders. `sha` is sha256 hex of the bytes, as sync computes it; null
+ * synced folders. `sha` is the sync version of the bytes (sha256, base64url,
+ * 22 characters; apps/realness/src/files/version.js); null
  * means the edit left no file.
  */
 /**
@@ -33,7 +34,7 @@ export const stateDir = (cwd = process.cwd()) => {
 }
 export const logPath = (cwd = process.cwd()) => join(stateDir(cwd), 'edits.db')
 /** @param {Uint8Array} bytes */
-export const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+export const sha = bytes => createHash('sha256').update(bytes).digest('base64url').slice(0, 22)
 /**
  * @param {string} [path]
  * @returns {DatabaseSync}

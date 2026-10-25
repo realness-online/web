@@ -19,4 +19,4 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-npx --no-install prettier "${args[@]}" --ignore-path /dev/null --write "$@"
+"$(dirname "$0")/../../../node_modules/.bin/prettier" "${args[@]}" --ignore-path /dev/null --write "$@"

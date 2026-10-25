@@ -136,3 +136,13 @@ it('soundness-allow excuses a line and the line after it', () => {
   assert.equal(found.length, 1)
   assert.equal(found[0].line, 3)
 })
+
+it('flags camelCase import bindings and accepts snake_case aliases', () => {
+  const text =
+    "import { createHash } from 'node:crypto'\nimport {\n  readFile as read_file,\n  join,\n} from 'node:fs'\n"
+  const found = check_text('a.js', text).filter(h => h.rule === 'import-snake-case')
+  assert.deepEqual(
+    found.map(h => h.text),
+    ['createHash -> createHash']
+  )
+})

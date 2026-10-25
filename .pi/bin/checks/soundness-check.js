@@ -96,9 +96,21 @@ const PROSE_RULES = [
   'invented wrappers',
   'output escaping',
   'dependency choice',
-  'markup over map',
-  'import snake_case'
+  'markup over map'
 ]
+
+const import_case_hits = text => {
+  const found = []
+  for (const match of text.matchAll(/^\s*import\s+(?:type\s+)?(?:[\w$]+\s*,\s*)?\{([^}]*)\}\s*from/gm)) {
+    const line = text.slice(0, match.index).split('\n').length + (match[0].match(/^\s*/)[0].split('\n').length - 1)
+    for (const part of match[1].split(',')) {
+      const [name, alias] = part.trim().split(/\s+as\s+/)
+      const bound = (alias ?? name)?.trim()
+      if (bound && /^[a-z][a-z0-9]*[A-Z]/.test(bound)) found.push({ line, text: `${name.trim()} -> ${bound}` })
+    }
+  }
+  return found
+}
 
 const strip_comments = text => {
   let out = ''
@@ -234,7 +246,10 @@ export const check_text = (file, text) => {
     })
   }
 
-  if (CODE.test(file) && !file.endsWith('.d.ts')) add('function-keyword', function_hits(text))
+  if (CODE.test(file) && !file.endsWith('.d.ts')) {
+    add('function-keyword', function_hits(text))
+    add('import-snake-case', import_case_hits(text))
+  }
   if (/\.css$/.test(file)) add('css-nesting', css_nesting_hits(text))
 
   return out

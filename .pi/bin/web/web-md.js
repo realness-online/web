@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync as exec_file_sync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync as exists_sync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { parse_html, Readability, TurndownService } from '../lib/harness-dependencies.js'
@@ -174,7 +174,7 @@ const print = (page, source) => {
 }
 
 const ENGINE = process.env.WEB_MD_ENGINE ?? '/usr/local/bin/realness-read'
-if (!forced && existsSync(ENGINE)) {
+if (!forced && exists_sync(ENGINE)) {
   let reply = null
   try {
     const out = exec_file_sync(ENGINE, [url, ...(fresh ? ['--fresh'] : [])], {

@@ -114,6 +114,6 @@ test('successful edits retain JSONL, HTML, and compressed HTML session paths', (
     })
   }
 })
-test("fingerprints match sync's sha256 hex", () => {
-  assert.equal(sha(Buffer.from('')), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+test("fingerprints match sync's version: sha256, base64url, 22 characters", () => {
+  assert.equal(sha(Buffer.from('')), '47DEQpj8HBSa-_TImW-5JC')
 })

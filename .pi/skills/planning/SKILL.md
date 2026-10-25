@@ -176,8 +176,9 @@ One order, every time. Text above the nodes does not get read.
 - `## Nodes` and `## Notes` are the only `##` headings, plus an optional
   `## Syncs` between them: the folders a task on this plan may touch, one
   per bullet. Everything else goes in one `## Notes` section, below the nodes.
-- Decisions, open questions, definitions, gates, and verification are `###`
-  subheads inside Notes.
+- Every other heading is `###` or lower: node groups inside Nodes;
+  decisions, open questions, definitions, gates, and verification inside Notes.
+  Rendered plans style `###` as Realness's h3.
 - Every table id appears in the DAG, and every DAG id in the table.
 - Explanatory graphics beside the work DAG sit between the DAG and `## Nodes`,
   each with a caption. They are not checked for size.

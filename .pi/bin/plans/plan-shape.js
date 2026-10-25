@@ -89,7 +89,8 @@ const check = (name, text) => {
   const others = lines
     .map((l, i) => (/^## /.test(l) ? { line: i + 1, text: l } : null))
     .filter(h => h && !/^## (Nodes|Syncs|Notes)\b/.test(h.text))
-  if (others.length && nodes_at) bad('no other ## headings', others.map(h => `line ${h.line}: ${h.text}`).join('; '))
+  if (others.length && nodes_at)
+    bad('no other ## headings', `use ### or lower: ${others.map(h => `line ${h.line}: ${h.text}`).join('; ')}`)
 
   for (const g of graphs) {
     for (const line of g.body.split('\n')) {
