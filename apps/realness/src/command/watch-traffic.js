@@ -72,7 +72,7 @@ export const read_plans = async (store, now = Date.now()) => {
     rows.filter(Boolean)
   ).filter(
     plan =>
-      ['active', 'canceled'].includes(plan.status) &&
+      ['active', 'canceled'].includes(String(plan.status)) &&
       (plan.credit ?? 0) > 0 &&
       !(plan.start && at < new Date(`${plan.start}T00:00:00Z`)) &&
       !(plan.end && at >= new Date(plan.end))

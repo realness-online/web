@@ -53,7 +53,7 @@ let viewing = null
 /** @type {(() => Promise<string>) | null} */
 let view_token = null
 
-export class TakenError extends Error {
+class TakenError extends Error {
   name = 'TakenError'
   constructor() {
     super('Another tab is using this chat')

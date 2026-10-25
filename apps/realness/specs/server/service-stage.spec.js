@@ -53,7 +53,8 @@ for (const service of ['sync', 'proxy', 'gate']) {
           process.execPath,
           [
             `server/${service}/bin/${service}-service.js`,
-            ...(service === 'sync' ? ['--dev'] : [])
+            ...(service === 'sync' ? ['--dev'] : []),
+            ...(service === 'gate' ? ['--environment', 'local'] : [])
           ],
           {
             cwd: stage,

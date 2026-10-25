@@ -8,7 +8,7 @@ const OK_MIN = 200
 const OK_MAX = 400
 
 /** Nearest-rank percentile of a list of numbers; 0 when the list is empty. */
-export const percentile = (values, rank) => {
+const percentile = (values, rank) => {
   if (!values.length) return 0
   const sorted = [...values].sort((a, b) => a - b)
   const at = Math.ceil((rank / PERCENT) * sorted.length) - 1
@@ -25,7 +25,7 @@ const sum = (rows, name) =>
   )
 
 /** A failed call is any status outside 2xx; aborted calls have no status. */
-export const is_error = row => row.status < OK_MIN || row.status >= OK_MAX
+const is_error = row => row.status < OK_MIN || row.status >= OK_MAX
 
 /**
  * Calls, errors, latency percentiles, tokens, cache use, and cost for a set

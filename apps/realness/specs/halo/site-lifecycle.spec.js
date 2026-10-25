@@ -28,7 +28,7 @@ it('publish, revise, restore, and unpublish keep reversible site versions', asyn
       assert.equal(actor, id)
       return { id }
     },
-    copyOut: async (actor, path, dest) => {
+    copy_out: async (actor, path, dest) => {
       assert.equal(actor, id)
       mkdirSync(dest, { recursive: true })
       writeFileSync(join(dest, 'index.html'), content)
@@ -39,28 +39,28 @@ it('publish, revise, restore, and unpublish keep reversible site versions', asyn
   try {
     await store.publish(id)
     assert.equal(
-      readFileSync(join(store.publishedSite(id), 'index.html'), 'utf8'),
+      readFileSync(join(store.published_site(id), 'index.html'), 'utf8'),
       'first'
     )
     content = 'second'
     await store.publish(id)
-    const [first] = store.siteVersions(id)
+    const [first] = store.site_versions(id)
     assert.ok(first.id)
     assert.equal(
-      readFileSync(join(store.publishedSite(id), 'index.html'), 'utf8'),
+      readFileSync(join(store.published_site(id), 'index.html'), 'utf8'),
       'second'
     )
-    await store.restoreSite(id, first.id)
+    await store.restore_site(id, first.id)
     assert.equal(
-      readFileSync(join(store.publishedSite(id), 'index.html'), 'utf8'),
+      readFileSync(join(store.published_site(id), 'index.html'), 'utf8'),
       'first'
     )
-    assert.equal(store.siteVersions(id).length, 1)
-    const saved = await store.unpublishSite(id)
-    assert.equal(store.publishedSite(id), null)
-    await store.restoreSite(id, saved.version)
+    assert.equal(store.site_versions(id).length, 1)
+    const saved = await store.unpublish_site(id)
+    assert.equal(store.published_site(id), null)
+    await store.restore_site(id, saved.version)
     assert.equal(
-      readFileSync(join(store.publishedSite(id), 'index.html'), 'utf8'),
+      readFileSync(join(store.published_site(id), 'index.html'), 'utf8'),
       'first'
     )
   } finally {

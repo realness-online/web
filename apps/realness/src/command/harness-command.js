@@ -180,7 +180,7 @@ export const run_harness = async (
     )
     return 0
   }
-  if (!actor && !where.local && exists_sync(join(state, SYNC_LOCAL_ONLY))) {
+  if (where && !where.local && exists_sync(join(state, SYNC_LOCAL_ONLY))) {
     const message = `local sync is down; skipped, not sent to ${where.url}. Remove ${join(state, SYNC_LOCAL_ONLY)} to allow it`
     stdout.write(
       json
@@ -202,12 +202,14 @@ export const run_harness = async (
     )
     return 0
   }
-  const token = await where.get_token()
+  // An actor returned above, so a person's target is here.
+  const to = /** @type {NonNullable<typeof where>} */ (where)
+  const token = await to.get_token()
   if (!token) throw new Error('not signed in; run realness login')
   const result = await sync_harness({
     root,
     state,
-    store: client({ url: service_url ?? where.url, token, state }),
+    store: client({ url: service_url ?? to.url, token, state }),
     plans: rest.filter(arg => !['--deletes', '--json'].includes(arg)),
     deletes: rest.includes('--deletes') ? 'all' : 'explained',
     defer_edits: command === 'turn-end'

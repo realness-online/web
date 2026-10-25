@@ -121,12 +121,8 @@ export const create_directory = ({ backend, paths, itemid }) => {
    * @param {string} str
    * @returns {boolean}
    */
-  const is_directory_id = str => {
-    if (typeof str !== 'string' || !str.endsWith('/')) return false
-    const base_id = str.slice(0, -1)
-    if (!is_itemid(base_id)) return false
-    return true
-  }
+  const is_directory_id = str =>
+    typeof str === 'string' && str.endsWith('/') && is_itemid(str.slice(0, -1))
 
   /**
    * idb key for the archive location map of an author+type:

@@ -2,7 +2,7 @@
  * The app store's bookkeeping: records, listing, the per-app queue, and the
  * two ways `start` finishes without a VM.
  *
- * `requireRoot` is stubbed because these are the parts that do not touch a
+ * `require_root` is stubbed because these are the parts that do not touch a
  * TAP or Firecracker. A site needs neither, and a handler without its runtime
  * disk is refused before either is reached.
  */
@@ -101,12 +101,12 @@ it('list over a volume with no apps folder is empty', t => {
   assert.deepEqual(store.list(), [])
 })
 
-it('setPublic flips only the flag and keeps the rest of the record', t => {
+it('set_public flips only the flag and keeps the rest of the record', t => {
   const { store } = make_store(t)
   mkdirSync(store.path(RECORD.id), { recursive: true })
   store.write(RECORD)
 
-  return store.setPublic(RECORD.id, true).then(() => {
+  return store.set_public(RECORD.id, true).then(() => {
     const opened = store.record(RECORD.id)
     assert.equal(opened.public, true)
     assert.deepEqual(
@@ -114,7 +114,7 @@ it('setPublic flips only the flag and keeps the rest of the record', t => {
       { ...RECORD, public: undefined }
     )
 
-    return store.setPublic(RECORD.id, false).then(() => {
+    return store.set_public(RECORD.id, false).then(() => {
       assert.equal(store.record(RECORD.id).public, false)
     })
   })
@@ -168,10 +168,10 @@ it('a handler without its runtime disk is refused by name', async t => {
   )
 })
 
-it('startFrom stages the copy, starts it, and clears the stage folder', async t => {
+it('start_from stages the copy, starts it, and clears the stage folder', async t => {
   const { store } = make_store(t)
   const staged = []
-  const started = await store.startFrom(
+  const started = await store.start_from(
     async dest => {
       staged.push(dest)
       mkdirSync(dest, { recursive: true })
@@ -210,11 +210,11 @@ it('stop refuses an app it has no record for', async t => {
   await assert.rejects(store.stop('app-ffffffffffff'), NotFound)
 })
 
-it('startFrom clears the stage folder even when the start refuses', async t => {
+it('start_from clears the stage folder even when the start refuses', async t => {
   const { store } = make_store(t)
   const staged = []
   await assert.rejects(
-    store.startFrom(async dest => {
+    store.start_from(async dest => {
       staged.push(dest)
       mkdirSync(dest, { recursive: true })
       writeFileSync(join(dest, 'server.js'), HANDLER)

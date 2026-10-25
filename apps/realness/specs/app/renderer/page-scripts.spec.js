@@ -16,8 +16,8 @@ const load_push_handlers = () => {
 
 const load_commands_page = () => {
   vi.resetModules()
-  return import('../../../../../.pi/bin/harness/commands/page.js').then(module =>
-    module.wire_page(document)
+  return import('../../../../../.pi/bin/harness/commands/page.js').then(
+    module => module.wire_page(document)
   )
 }
 

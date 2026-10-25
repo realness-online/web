@@ -4,7 +4,7 @@ import { createServer as create_server } from 'node:net'
 import { logger } from './log.js'
 import { Loops } from './loops.js'
 import { Lines } from './vsock.js'
-import { tapGuest as tap_guest } from './syscalls.js'
+import { tap_guest } from './syscalls.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { can } from '#root/src/can/can.js'
 import {
@@ -52,28 +52,28 @@ export const wait_for_door = async (
 export class Door {
   /**
    * @param {import('./actors.js').ActorStore} store
-   * @param {string} [siteUrl]
+   * @param {string} [site_url]
    * @param {import('./loops.js').Loops | null} [loops]
    * @param {import('./chrome-leases.js').ChromeLeases | null} [chrome]
    * @param {import('./web-engine.js').WebEngine | null} [web]
    */
   constructor(
     store,
-    siteUrl = '/s/{id}/',
+    site_url = '/s/{id}/',
     loops = null,
     chrome = null,
     web = null
   ) {
     this.web = web
     this.store = store
-    this.siteUrl = siteUrl
+    this.site_url = site_url
     this.loops = loops
     this.chrome = chrome
     this.listeners = new Map()
   }
 
   start() {
-    this.#watchLoops()
+    this.#watch_loops()
     const tick = () => {
       try {
         this.reconcile()
@@ -85,7 +85,7 @@ export class Door {
     tick()
   }
 
-  #watchLoops() {
+  #watch_loops() {
     const tick = async () => {
       try {
         for (const { id, reason } of await (this.loops ??= new Loops(
@@ -102,7 +102,7 @@ export class Door {
 
   reconcile() {
     const live = new Map(
-      this.store.liveActors().map(record => [record.id, record])
+      this.store.live_actors().map(record => [record.id, record])
     )
     for (const [id, { path, server }] of this.listeners)
       if (!live.has(id) || !exists_sync(path)) {
@@ -232,21 +232,25 @@ export class Door {
       )
     if (request.op === 'site-versions') {
       permit('actor cannot read site versions', 'get', '/site')
-      return { ok: true, versions: await this.store.siteVersions(id, site) }
+      return { ok: true, versions: await this.store.site_versions(id, site) }
     }
     if (request.op === 'site-restore' || request.op === 'site-remove') {
       permit('actor cannot manage site', 'write', '/site')
       const result =
         request.op === 'site-restore'
-          ? await this.store.restoreSite(id, request.version, site)
-          : await this.store.unpublishSite(id, site)
-      return { ok: true, ...result, url: this.siteUrl.replaceAll('{id}', site) }
+          ? await this.store.restore_site(id, request.version, site)
+          : await this.store.unpublish_site(id, site)
+      return {
+        ok: true,
+        ...result,
+        url: this.site_url.replaceAll('{id}', site)
+      }
     }
     if (request.op !== 'publish') throw new Error(`unknown op '${request.op}'`)
     permit('actor cannot publish', 'write', '/site')
     const path = request.path || '/realness/site'
     await this.store.publish(id, path, site)
     LOG.info(`door: ${id} published ${path}`)
-    return { ok: true, site, url: this.siteUrl.replaceAll('{id}', site) }
+    return { ok: true, site, url: this.site_url.replaceAll('{id}', site) }
   }
 }

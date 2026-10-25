@@ -3,7 +3,7 @@
  *
  * The protocol is two lines: `CONNECT <port>` and an `OK` ack, then one JSON
  * request line and one JSON reply line. A server that speaks those four
- * covers `connect`, `execInGuest`, `runOk`, and `waitForAgent` without a VM.
+ * covers `connect`, `exec_in_guest`, `run_ok`, and `wait_for_agent` without a VM.
  */
 import { it } from 'node:test'
 import assert from 'node:assert/strict'
@@ -14,10 +14,10 @@ import { out_path } from '#root/lib/output.js'
 import {
   VSOCK_PORT,
   connect,
-  execInGuest,
-  execInGuestStream,
-  runOk,
-  waitForAgent
+  exec_in_guest,
+  exec_in_guest_stream,
+  run_ok,
+  wait_for_agent
 } from '../../src/halo/vsock.js'
 
 /**
@@ -75,7 +75,7 @@ const answer = ({ code = 0, out = '', err = '' } = {}) => ({
   stderr_b64: Buffer.from(err).toString('base64')
 })
 
-it('connect shakes hands, and execInGuest carries argv across', async t => {
+it('connect shakes hands, and exec_in_guest carries argv across', async t => {
   const agent = await fake_agent(t, { respond: () => answer({ out: 'hello' }) })
 
   const { socket, lines } = await connect(agent.path)
@@ -83,7 +83,7 @@ it('connect shakes hands, and execInGuest carries argv across', async t => {
   assert.equal(typeof lines.read, 'function')
   socket.destroy()
 
-  const result = await execInGuest(agent.path, ['/bin/echo', 'hi'], {
+  const result = await exec_in_guest(agent.path, ['/bin/echo', 'hi'], {
     cwd: '/app/code',
     stdin: 'typed in'
   })
@@ -100,7 +100,7 @@ it('connect shakes hands, and execInGuest carries argv across', async t => {
 
 it('an empty cwd and no stdin travel as null and empty', async t => {
   const agent = await fake_agent(t, { respond: () => answer() })
-  await execInGuest(agent.path, ['/bin/true'])
+  await exec_in_guest(agent.path, ['/bin/true'])
   assert.deepEqual(agent.seen.find(entry => entry.kind === 'request').request, {
     argv: ['/bin/true'],
     cwd: null,
@@ -112,20 +112,20 @@ it('a non-zero exit comes back as code, out, and err', async t => {
   const agent = await fake_agent(t, {
     respond: () => answer({ code: 2, err: 'no such file' })
   })
-  const result = await execInGuest(agent.path, ['/bin/cat', '/missing'])
+  const result = await exec_in_guest(agent.path, ['/bin/cat', '/missing'])
   assert.equal(result.code, 2)
   assert.equal(result.err.toString().trim(), 'no such file')
 })
 
-it('runOk returns stdout and refuses a failed command by name', async t => {
+it('run_ok returns stdout and refuses a failed command by name', async t => {
   const ok = await fake_agent(t, { respond: () => answer({ out: 'fine\n' }) })
-  assert.equal(await runOk(ok.path, ['/bin/true']), 'fine\n')
+  assert.equal(await run_ok(ok.path, ['/bin/true']), 'fine\n')
 
   const bad = await fake_agent(t, {
     respond: () => answer({ code: 127, err: 'not found' })
   })
   await assert.rejects(
-    runOk(bad.path, ['/bin/nope']),
+    run_ok(bad.path, ['/bin/nope']),
     /\["\/bin\/nope"\] exited 127: not found/
   )
 })
@@ -150,7 +150,7 @@ it('a socket that is not there is named with its code', async t => {
 it('a silent agent times out as a VsockError', async t => {
   const agent = await fake_agent(t, { respond: () => undefined })
   await assert.rejects(
-    execInGuest(agent.path, ['/bin/true'], { timeout: 1 }),
+    exec_in_guest(agent.path, ['/bin/true'], { timeout: 1 }),
     /timed out after 1s/
   )
 })
@@ -158,14 +158,14 @@ it('a silent agent times out as a VsockError', async t => {
 it('a closed channel is named rather than parsed', async t => {
   const agent = await fake_agent(t, { respond: () => null })
   await assert.rejects(
-    execInGuest(agent.path, ['/bin/true']),
+    exec_in_guest(agent.path, ['/bin/true']),
     /agent closed the channel \(argv=\["\/bin\/true"\]\)/
   )
 })
 
-it('waitForAgent returns once the agent answers', async t => {
+it('wait_for_agent returns once the agent answers', async t => {
   const agent = await fake_agent(t, { respond: () => answer() })
-  await waitForAgent(agent.path, 5)
+  await wait_for_agent(agent.path, 5)
   assert.deepEqual(
     agent.seen.find(entry => entry.kind === 'request').request.argv,
     ['/bin/true']
@@ -175,13 +175,15 @@ it('waitForAgent returns once the agent answers', async t => {
 it('a reused port reaches the same agent', async t => {
   const agent = await fake_agent(t, { respond: () => answer({ out: 'on 52' }) })
   assert.equal(
-    (await execInGuest(agent.path, ['/bin/true'], { port: 52 })).out.toString(),
+    (
+      await exec_in_guest(agent.path, ['/bin/true'], { port: 52 })
+    ).out.toString(),
     'on 52'
   )
   assert.equal(agent.seen[0].line, 'CONNECT 52')
 })
 
-it('execInGuestStream reports each frame, then the exit', async t => {
+it('exec_in_guest_stream reports each frame, then the exit', async t => {
   const agent = await fake_agent(t, {
     respond: () => [
       { type: 'stdout', data_b64: Buffer.from('one\n').toString('base64') },
@@ -191,7 +193,7 @@ it('execInGuestStream reports each frame, then the exit', async t => {
     ]
   })
   const chunks = []
-  const result = await execInGuestStream(
+  const result = await exec_in_guest_stream(
     agent.path,
     ['/bin/sh', '-c', 'true'],
     {
@@ -218,7 +220,7 @@ it('streamed shell options and result metadata cross the guest channel', async t
       }
     ]
   })
-  const result = await execInGuestStream(
+  const result = await exec_in_guest_stream(
     agent.path,
     ['/bin/sh', '-c', 'command'],
     {
@@ -249,10 +251,14 @@ it('streamed shell options and result metadata cross the guest channel', async t
 it('cancelling the call closes the channel', async t => {
   const agent = await fake_agent(t, { respond: () => null })
   const stopping = new AbortController()
-  const pending = execInGuestStream(agent.path, ['/bin/sh', '-c', 'sleep 9'], {
-    timeout: 5,
-    signal: stopping.signal
-  })
+  const pending = exec_in_guest_stream(
+    agent.path,
+    ['/bin/sh', '-c', 'sleep 9'],
+    {
+      timeout: 5,
+      signal: stopping.signal
+    }
+  )
   setTimeout(() => stopping.abort(), 20)
   await assert.rejects(pending, /agent closed the channel/)
 })

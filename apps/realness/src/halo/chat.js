@@ -78,16 +78,16 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
   const relay = async (id, response, hello) => {
     let guest
     try {
-      guest = await connect(await store.ensureRunning(id))
+      guest = await connect(await store.ensure_running(id))
     } catch (error) {
       LOG.warn(`chat bridge failed for ${id}: ${error.message}`)
       return text(response, HTTP.BAD_GATEWAY, 'chat is unavailable\n')
     }
     const turn = `turn:${random_uuid()}`
-    store.beginWork(id, turn)
+    store.begin_work(id, turn)
     response.once('close', () => {
       guest.socket.destroy()
-      store.endWork(id, turn)
+      store.end_work(id, turn)
     })
     stream(response, guest, hello)
   }
@@ -100,7 +100,7 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
       const message = body?.message
       if (typeof message !== 'string' || !message.trim())
         return text(response, HTTP.BAD_REQUEST, 'invalid message\n')
-      store.firstTurn?.(id)
+      store.first_turn?.(id)
       return relay(id, response, { message })
     },
 
@@ -117,7 +117,7 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
     async events(id, response) {
       let record
       try {
-        record = await store.ensureRunning(id)
+        record = await store.ensure_running(id)
       } catch {
         return text(response, HTTP.NOT_FOUND, 'no actor\n')
       }
@@ -160,7 +160,7 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
         return text(response, HTTP.BAD_REQUEST, 'invalid session log\n')
       let record
       try {
-        record = await store.ensureRunning(id)
+        record = await store.ensure_running(id)
       } catch {
         return text(response, HTTP.NOT_FOUND, 'no actor\n')
       }
@@ -172,7 +172,7 @@ export const chat_handlers = ({ store, connect, limits = null }) => {
         )
       receiving.add(record.id)
       try {
-        await store.receiveLog(record.id, log)
+        await store.receive_log(record.id, log)
         const guest = await connect(record)
         let receipt
         try {

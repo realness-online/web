@@ -19,8 +19,18 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
  * @typedef {{ meta?: Record<string, string> }} Described
  */
 
+/** A write whose precondition no longer holds. */
+export class Conflict extends Error {
+  code = 'conflict'
+}
+
 /** The earlier of two ISO times; either may be missing. */
-export const earliest = (a, b) => {
+/** Enough repeats that a body is worth compressing. */
+const REPEATS = 40
+
+const text = file => file?.body.toString('utf8')
+
+const earliest = (a, b) => {
   if (!a) return b
   if (!b) return a
   return Date.parse(b) < Date.parse(a) ? b : a
@@ -96,95 +106,8 @@ const meta_contract = ({ test, assert, make }) => {
   })
 }
 
-/**
- * The contract every adapter passes. Each adapter's test calls:
- *
- *   contract({ test, assert, make })   make() resolves to a fresh, empty store
- *
- * Keys are relative, `/`-separated. A version is `version_of` the plain
- * bytes, however they are packed: equal bytes share one. A composed key is
- * the exception: its version is opaque, good only for guards.
- */
-export const contract = ({ test, assert, make }) => {
-  const text = file => file?.body.toString('utf8')
-  meta_contract({ test, assert, make })
-
-  test('find gives every key in a person holding a version', async () => {
-    const store = await make()
-    const same = await store.put('people/+1/a/x.md', 'same')
-    await store.put('people/+1/b/y.md', 'same')
-    await store.put('people/+2/z.md', 'same')
-    assert.deepEqual(await store.find('people/+1/', same), [
-      'people/+1/a/x.md',
-      'people/+1/b/y.md'
-    ])
-    await store.put('people/+1/a/x.md', 'changed')
-    await store.delete('people/+2/z.md')
-    assert.deepEqual(await store.find('people/+1/', same), ['people/+1/b/y.md'])
-    assert.deepEqual(await store.find('people/+2/', same), [])
-    await store.delete('people/+1/b/y.md')
-    assert.deepEqual(await store.find('people/+1/', same), [])
-    assert.deepEqual(await store.list(''), { files: [], folders: ['people'] })
-    assert.deepEqual(Object.keys(await store.walk('')), ['people/+1/a/x.md'])
-  })
-
-  test('a missing key reads as null', async () => {
-    const store = await make()
-    assert.equal(await store.get('people/+1/none.md'), null)
-  })
-
-  test('put then get returns the bytes and the same version', async () => {
-    const store = await make()
-    const version = await store.put('people/+1/a.md', 'hello')
-    const file = await store.get('people/+1/a.md')
-    assert.equal(text(file), 'hello')
-    assert.equal(typeof version, 'string')
-    assert.equal(file.version, version)
-  })
-
-  test('a new write gets a new version', async () => {
-    const store = await make()
-    const v1 = await store.put('people/+1/a.md', 'one')
-    const v2 = await store.put('people/+1/a.md', 'two')
-    assert.notEqual(v1, v2)
-  })
-
-  test('a version is the plain bytes hash', async () => {
-    const store = await make()
-    const body = '<p>one</p>\n'.repeat(40)
-    const expected = await version_of(body)
-    assert.equal(await store.put('people/+1/a.html', body), expected)
-    assert.equal(await store.stat('people/+1/a.html'), expected)
-    assert.equal(
-      await store.put('people/+1/b.html', body, { gzip: true }),
-      expected
-    )
-    assert.equal((await store.walk('people/+1/'))['b.html'], expected)
-  })
-
-  test('a body sent gzip reads back plain under the plain version', async () => {
-    const store = await make()
-    const body = '<p>sent packed</p>\n'.repeat(40)
-    const version = await store.put('people/+1/a.html', gzip_sync(body), {
-      encoding: 'gzip'
-    })
-    assert.equal(version, await version_of(body))
-    const file = await store.get('people/+1/a.html')
-    assert.equal(text(file), body)
-    assert.equal(file.version, version)
-    const listed = await store.walk_meta('people/+1/')
-    assert.equal(listed['a.html'].version, version)
-    assert.equal(listed['a.html'].size, Buffer.byteLength(body))
-    await store.put('people/+1/a.html', 'next', { if_version: version })
-  })
-
-  test('equal bytes share a version', async () => {
-    const store = await make()
-    const v1 = await store.put('people/+1/a.md', 'same')
-    const v2 = await store.put('people/+1/b.md', 'same')
-    assert.equal(v1, v2)
-  })
-
+/** Guards: writes that only land on the version they expect. */
+const guard_contract = ({ test, assert, make }) => {
   test('if_absent creates only when absent', async () => {
     const store = await make()
     await store.put('people/+1/a.md', 'first', { if_absent: true })
@@ -235,7 +158,10 @@ export const contract = ({ test, assert, make }) => {
     assert.equal(await store.get('people/+1/a.md'), null)
     await store.delete('people/+1/a.md')
   })
+}
 
+/** Listing, walking, racing, and composing. */
+const listing_contract = ({ test, assert, make }) => {
   test('list shows direct files and folders only', async () => {
     const store = await make()
     await store.put('people/+1/posters/1.html.gz', 'p')
@@ -349,5 +275,96 @@ export const contract = ({ test, assert, make }) => {
     const bytes = Buffer.from('00ff0a0d1f8b', 'hex')
     await store.put('people/+1/b.bin', bytes)
     assert.deepEqual((await store.get('people/+1/b.bin')).body, bytes)
+  })
+}
+
+/**
+ * The contract every adapter passes. Each adapter's test calls:
+ *
+ *   contract({ test, assert, make })   make() resolves to a fresh, empty store
+ *
+ * Keys are relative, `/`-separated. A version is `version_of` the plain
+ * bytes, however they are packed: equal bytes share one. A composed key is
+ * the exception: its version is opaque, good only for guards.
+ */
+export const contract = ({ test, assert, make }) => {
+  meta_contract({ test, assert, make })
+  guard_contract({ test, assert, make })
+  listing_contract({ test, assert, make })
+
+  test('find gives every key in a person holding a version', async () => {
+    const store = await make()
+    const same = await store.put('people/+1/a/x.md', 'same')
+    await store.put('people/+1/b/y.md', 'same')
+    await store.put('people/+2/z.md', 'same')
+    assert.deepEqual(await store.find('people/+1/', same), [
+      'people/+1/a/x.md',
+      'people/+1/b/y.md'
+    ])
+    await store.put('people/+1/a/x.md', 'changed')
+    await store.delete('people/+2/z.md')
+    assert.deepEqual(await store.find('people/+1/', same), ['people/+1/b/y.md'])
+    assert.deepEqual(await store.find('people/+2/', same), [])
+    await store.delete('people/+1/b/y.md')
+    assert.deepEqual(await store.find('people/+1/', same), [])
+    assert.deepEqual(await store.list(''), { files: [], folders: ['people'] })
+    assert.deepEqual(Object.keys(await store.walk('')), ['people/+1/a/x.md'])
+  })
+
+  test('a missing key reads as null', async () => {
+    const store = await make()
+    assert.equal(await store.get('people/+1/none.md'), null)
+  })
+
+  test('put then get returns the bytes and the same version', async () => {
+    const store = await make()
+    const version = await store.put('people/+1/a.md', 'hello')
+    const file = await store.get('people/+1/a.md')
+    assert.equal(text(file), 'hello')
+    assert.equal(typeof version, 'string')
+    assert.equal(file.version, version)
+  })
+
+  test('a new write gets a new version', async () => {
+    const store = await make()
+    const v1 = await store.put('people/+1/a.md', 'one')
+    const v2 = await store.put('people/+1/a.md', 'two')
+    assert.notEqual(v1, v2)
+  })
+
+  test('a version is the plain bytes hash', async () => {
+    const store = await make()
+    const body = '<p>one</p>\n'.repeat(REPEATS)
+    const expected = await version_of(body)
+    assert.equal(await store.put('people/+1/a.html', body), expected)
+    assert.equal(await store.stat('people/+1/a.html'), expected)
+    assert.equal(
+      await store.put('people/+1/b.html', body, { gzip: true }),
+      expected
+    )
+    assert.equal((await store.walk('people/+1/'))['b.html'], expected)
+  })
+
+  test('a body sent gzip reads back plain under the plain version', async () => {
+    const store = await make()
+    const body = '<p>sent packed</p>\n'.repeat(REPEATS)
+    const version = await store.put('people/+1/a.html', gzip_sync(body), {
+      encoding: 'gzip'
+    })
+    assert.equal(version, await version_of(body))
+    const file = await store.get('people/+1/a.html')
+    assert.equal(text(file), body)
+    assert.equal(file.version, version)
+    const listed = await store.walk_meta('people/+1/')
+    assert.equal(listed['a.html'].version, version)
+    assert.equal(listed['a.html'].size, Buffer.byteLength(body))
+    await store.put('people/+1/a.html', 'next', { if_version: version })
+  })
+
+  test('equal bytes share a version', async () => {
+    const store = await make()
+    const v1 = await store.put('people/+1/a.md', 'same')
+    const v2 = await store.put('people/+1/b.md', 'same')
+    assert.equal(v1, v2)
   })
 }

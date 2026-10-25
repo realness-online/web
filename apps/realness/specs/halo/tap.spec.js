@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { ensureTap } from '../../src/halo/syscalls.js'
+import { ensure_tap } from '../../src/halo/syscalls.js'
 
 const recorder = ready => {
   const calls = []
@@ -14,7 +14,7 @@ const recorder = ready => {
 
 it("a woken actor's bare TAP is rebuilt with its gateway", () => {
   const { calls, options } = recorder(false)
-  assert.equal(ensureTap('fc-tap1', options), true)
+  assert.equal(ensure_tap('fc-tap1', options), true)
   assert.deepEqual(calls, [
     ['remove', 'fc-tap1'],
     ['create', 'fc-tap1']
@@ -23,6 +23,6 @@ it("a woken actor's bare TAP is rebuilt with its gateway", () => {
 
 it('a ready TAP is left alone', () => {
   const { calls, options } = recorder(true)
-  assert.equal(ensureTap('fc-tap1', options), false)
+  assert.equal(ensure_tap('fc-tap1', options), false)
   assert.deepEqual(calls, [])
 })

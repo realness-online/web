@@ -102,7 +102,7 @@ const account = gcloud([
   `--region=${region}`,
   '--format=value(spec.template.spec.serviceAccountName)'
 ])
-for (const name of ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']) 
+for (const name of ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'])
   gcloud([
     'secrets',
     'add-iam-policy-binding',

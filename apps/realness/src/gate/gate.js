@@ -31,7 +31,11 @@ const DROPPED = new Set([
   'origin'
 ])
 
-/** The token a browser offers as its second subprotocol, or null. */
+/**
+ * The token a browser offers as its second subprotocol, or null.
+ * @param {string | undefined} header - Sec-WebSocket-Protocol
+ * @returns {string | null}
+ */
 export const offered_token = header => {
   const [protocol, token, extra] = (header ?? '')
     .split(',')
@@ -39,13 +43,19 @@ export const offered_token = header => {
   return protocol === PROTOCOL && token && !extra ? token : null
 }
 
-/** Every person's sessions on one halo, until halos are chosen per person. */
+/**
+ * Every person's sessions on one halo, until halos are chosen per person.
+ * @param {string} address - halo:port, the terminal port
+ * @param {number | string} [api_port]
+ * @returns {() => { host: string, port: number, api_port: number }}
+ */
 export const one_halo = (address, api_port = API_PORT) => {
   const [host, port] = String(address ?? '').split(':')
   if (!host || !Number(port)) throw new Error('gate halo must be halo:port')
   return () => ({ host, port: Number(port), api_port: Number(api_port) })
 }
 
+/** @param {object} event - one NDJSON line */
 const record = event => `${JSON.stringify(event)}\n`
 const NDJSON = {
   'content-type': 'application/x-ndjson; charset=utf-8',
@@ -53,14 +63,6 @@ const NDJSON = {
   'x-accel-buffering': 'no'
 }
 
-/**
- * Forward one browser call to the halo API under a halo pass; streams both ways.
- * @param {import('node:http').IncomingMessage} request
- * @param {import('node:http').ServerResponse} response
- * @param {{ host: string, port: number, api_port: number }} where
- * @param {string} pass
- * @param {boolean} [streaming] headers are already sent: a refusal becomes an error record
- */
 /**
  * A JSON body up to `limit` bytes, or null when it is larger or not JSON.
  * @param {import('node:http').IncomingMessage} request
@@ -122,6 +124,14 @@ const view_route = async (views, path, request, response, phone) => {
   return json(HTTP.OK, { tail: body.tail })
 }
 
+/**
+ * Forward one browser call to the halo API under a halo pass; streams both ways.
+ * @param {import('node:http').IncomingMessage} request
+ * @param {import('node:http').ServerResponse} response
+ * @param {{ host: string, port: number, api_port: number }} where
+ * @param {string} pass
+ * @param {boolean} [streaming] headers are already sent: a refusal becomes an error record
+ */
 const forward = (request, response, where, pass, streaming = false) =>
   /** @type {Promise<void>} */
   (

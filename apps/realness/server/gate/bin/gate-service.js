@@ -63,7 +63,7 @@ const halo_for = env.GATE_HALOS
   : /** @type {(who: { phone: string, actor?: string }) => Promise<{ host: string, port: number, api_port: number }>} */ (
       (() => {
         const one = one_halo(
-          env.GATE_HALO,
+          /** @type {string} */ (env.GATE_HALO),
           env.GATE_API_PORT ? Number(env.GATE_API_PORT) : undefined
         )
         return async () => one()

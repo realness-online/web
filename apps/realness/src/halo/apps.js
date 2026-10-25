@@ -34,7 +34,7 @@ const ID = /^app-[0-9a-f]{12}$/
 export const CAPS = { vcpus: 1, mib: 96 }
 
 /** Memory for an app: the store's override, else the cap. */
-export const mibFor = (needs, override) => override ?? CAPS.mib
+export const mib_for = (needs, override) => override ?? CAPS.mib
 
 const MISSES = 3
 const CRASHES = 5
@@ -47,7 +47,7 @@ const sleep = ms =>
 const mint_id = () => `app-${random_bytes(ID_BYTES).toString('hex')}`
 
 /** fc-app5 -> 06:00:AC:11:05:02; the guest reads 172.17.5.2 off its MAC. */
-export const macFor = tap => {
+export const mac_for = tap => {
   const index = Number(/(\d+)$/.exec(tap)?.[1])
   if (!(index >= 1 && index <= MAX_TAP_INDEX))
     throw new HaloError(`no app index in TAP ${tap}`)
@@ -55,14 +55,14 @@ export const macFor = tap => {
 }
 
 /** The start command as realness-app-start reads it: one argument per line. */
-export const argvText = start => {
+export const argv_text = start => {
   if (!start?.length || start.some(arg => !arg || /\n/.test(arg)))
     throw new BadRequest(`bad start command: ${JSON.stringify(start)}`)
   return `${start.join('\n')}\n`
 }
 
 /** A read-only ext4 of the files plus argv; everything readable by `app`, nothing writable. */
-const buildCodeDisk = (files, disk, start, work) => {
+const build_code_disk = (files, disk, start, work) => {
   const stage = join(work, 'stage')
   rm_sync(stage, { recursive: true, force: true })
   mkdir_sync(stage)
@@ -74,7 +74,7 @@ const buildCodeDisk = (files, disk, start, work) => {
       `${files}/.`,
       join(stage, 'code')
     ])
-    write_file_sync(join(stage, 'argv'), argvText(start))
+    write_file_sync(join(stage, 'argv'), argv_text(start))
     syscalls.run(['chown', '-R', '0:0', stage])
     syscalls.run(['chmod', '-R', 'a+rX,go-w', stage])
     const kib = Number(syscalls.run(['du', '-sk', stage]).output.split(/\s/)[0])
@@ -90,7 +90,7 @@ const buildCodeDisk = (files, disk, start, work) => {
   }
 }
 
-const portOpen = (address, port, ms = MS_PER_SECOND) =>
+const port_open = (address, port, ms = MS_PER_SECOND) =>
   new Promise(done => {
     const socket = connect({ host: address, port, timeout: ms })
     const finish = open => {
@@ -173,7 +173,7 @@ export class AppStore {
       ...options
     })
     this.dir = join(this.volume, 'apps')
-    syscalls.requireRoot('creating TAPs and Firecracker')
+    syscalls.require_root('creating TAPs and Firecracker')
   }
 
   path(id, ...rest) {
@@ -189,7 +189,7 @@ export class AppStore {
   }
 
   /** Private is the default; public lets anyone with the id reach the app. */
-  setPublic(id, open) {
+  set_public(id, open) {
     return this.serial(id, () =>
       this.write({ ...this.record(id), public: open })
     )
@@ -208,12 +208,12 @@ export class AppStore {
   async status(id) {
     const record = this.record(id)
     const running = firecracker.alive(
-      firecracker.pidForApiSock(this.path(id, 'api.sock'))
+      firecracker.pid_for_api_sock(this.path(id, 'api.sock'))
     )
     return {
       ...record,
       running,
-      answering: running && (await portOpen(record.address, record.port))
+      answering: running && (await port_open(record.address, record.port))
     }
   }
 
@@ -223,7 +223,7 @@ export class AppStore {
    * @param {{ owner: string, state?: string, actor?: string, path?: string, public?: boolean }} meta
    * @returns {Promise<AppRecord>}
    */
-  async startFrom(copy, meta) {
+  async start_from(copy, meta) {
     mkdir_sync(this.dir, { recursive: true })
     const stage = join(
       this.dir,
@@ -286,9 +286,9 @@ export class AppStore {
     mkdir_sync(dir, { recursive: true })
     let tap = ''
     try {
-      buildCodeDisk(files, join(dir, CODE), needs.start, dir)
-      tap = syscalls.freeTap(this.tap_prefix)
-      syscalls.createTap(tap, NET)
+      build_code_disk(files, join(dir, CODE), needs.start, dir)
+      tap = syscalls.free_tap(this.tap_prefix)
+      syscalls.create_tap(tap, NET)
       this.write({
         id,
         ...meta,
@@ -297,18 +297,18 @@ export class AppStore {
         start: needs.start,
         tap,
         pid: 0,
-        address: syscalls.tapGuest(tap, NET),
+        address: syscalls.tap_guest(tap, NET),
         port: APP_PORT,
         vcpus: this.vcpus,
-        mib: mibFor(needs, this.mib),
+        mib: mib_for(needs, this.mib),
         created: new Date().toISOString()
       })
       return await this.serial(id, () => this.boot(id))
     } catch (error) {
       await firecracker.terminate(
-        firecracker.pidForApiSock(join(dir, 'api.sock'))
+        firecracker.pid_for_api_sock(join(dir, 'api.sock'))
       )
-      if (tap) syscalls.deleteTap(tap)
+      if (tap) syscalls.delete_tap(tap)
       rm_sync(dir, { recursive: true, force: true })
       throw error
     }
@@ -324,9 +324,9 @@ export class AppStore {
     const dir = this.path(id)
     const api_sock = join(dir, 'api.sock')
     const log = join(dir, 'firecracker.log')
-    await firecracker.terminate(firecracker.pidForApiSock(api_sock))
+    await firecracker.terminate(firecracker.pid_for_api_sock(api_sock))
     rm_sync(api_sock, { force: true })
-    if (!syscalls.tapExists(record.tap)) syscalls.createTap(record.tap, NET)
+    if (!syscalls.tap_exists(record.tap)) syscalls.create_tap(record.tap, NET)
     syscalls.run([
       'cp',
       '--reflink=auto',
@@ -339,18 +339,18 @@ export class AppStore {
       : null
     const child = firecracker.spawn(this.firecracker, dir, api_sock, log)
     child.unref()
-    await firecracker.waitForApiSocket(api_sock)
+    await firecracker.wait_for_api_socket(api_sock)
     await firecracker.boot(new firecracker.Api(api_sock, this.api_timeout), {
       kernel: this.kernel,
       disk: join(dir, ROOT),
       tap: record.tap,
-      mac: macFor(record.tap),
+      mac: mac_for(record.tap),
       vcpus: record.vcpus,
       mib: record.mib,
-      readOnly: { code: join(dir, CODE), ...(runtime && { runtime }) }
+      read_only: { code: join(dir, CODE), ...(runtime && { runtime }) }
     })
     const deadline = Date.now() + this.boot_timeout * MS_PER_SECOND
-    while (!(await portOpen(record.address, record.port))) {
+    while (!(await port_open(record.address, record.port))) {
       if (!firecracker.alive(child.pid))
         throw new HaloError(`app VM exited during boot:\n${tail(log)}`)
       if (Date.now() > deadline)
@@ -392,9 +392,9 @@ export class AppStore {
     if (!exists_sync(this.path(id, 'app.json'))) return null
     const record = this.record(id)
     const running = firecracker.alive(
-      firecracker.pidForApiSock(this.path(id, 'api.sock'))
+      firecracker.pid_for_api_sock(this.path(id, 'api.sock'))
     )
-    if (running && (await portOpen(record.address, record.port))) {
+    if (running && (await port_open(record.address, record.port))) {
       this.misses.delete(id)
       return null
     }
@@ -406,7 +406,7 @@ export class AppStore {
     )
     if (restarts.length >= CRASHES) {
       await firecracker.terminate(
-        firecracker.pidForApiSock(this.path(id, 'api.sock'))
+        firecracker.pid_for_api_sock(this.path(id, 'api.sock'))
       )
       this.write({
         ...record,
@@ -438,9 +438,9 @@ export class AppStore {
     return this.serial(id, async () => {
       const { tap } = this.record(id)
       await firecracker.terminate(
-        firecracker.pidForApiSock(this.path(id, 'api.sock'))
+        firecracker.pid_for_api_sock(this.path(id, 'api.sock'))
       )
-      syscalls.deleteTap(tap)
+      syscalls.delete_tap(tap)
       rm_sync(this.path(id), { recursive: true, force: true })
     })
   }

@@ -24,14 +24,14 @@ export const content_hash = html => version_of(html)
  * @param {string | Blob} data
  * @param {{ contentEncoding?: string, customMetadata?: Record<string, string> }} meta
  */
+/** @returns {Promise<Record<string, string>>} */
 const packing_headers = async (data, meta) => {
-  if (meta?.contentEncoding === 'gzip')
-    return {
-      'content-encoding': 'gzip',
-      ...(meta.customMetadata?.version && {
-        'x-version': meta.customMetadata.version
-      })
-    }
+  if (meta?.contentEncoding === 'gzip') {
+    const version = meta.customMetadata?.version
+    return version
+      ? { 'content-encoding': 'gzip', 'x-version': version }
+      : { 'content-encoding': 'gzip' }
+  }
   if (typeof data === 'string') return { 'x-version': await version_of(data) }
   return {}
 }

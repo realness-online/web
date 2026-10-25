@@ -8,6 +8,9 @@ const RETRY_MS = 500
 
 export const VSOCK_PORT = 52
 const HANDSHAKE_SECONDS = 10
+const EXEC_TIMEOUT_SECONDS = 90
+const AGENT_WAIT_SECONDS = 60
+const AGENT_PROBE_SECONDS = 10
 const sleep = ms =>
   new Promise(done => {
     setTimeout(done, ms)
@@ -20,15 +23,20 @@ export class Lines extends SharedLines {
   }
 }
 
-/** A socket wired to the guest's `port`, handshake done, with its line reader. */
-export const connect = async (udsPath, port = VSOCK_PORT) => {
-  const socket = connect_unix(udsPath)
+/**
+ * A socket wired to the guest's `port`, handshake done, with its line reader.
+ * @param {string} uds_path - Firecracker's vsock Unix socket
+ * @param {number} [port]
+ * @returns {Promise<{ socket: import('node:net').Socket, lines: Lines }>}
+ */
+export const connect = async (uds_path, port = VSOCK_PORT) => {
+  const socket = connect_unix(uds_path)
   await new Promise((done, fail) => {
     socket.once('connect', done)
     socket.once('error', error =>
       fail(
         new VsockError(
-          `cannot reach ${udsPath} (${/** @type {NodeJS.ErrnoException} */ (error).code ?? error.message})`
+          `cannot reach ${uds_path} (${/** @type {NodeJS.ErrnoException} */ (error).code ?? error.message})`
         )
       )
     )
@@ -51,20 +59,26 @@ export const connect = async (udsPath, port = VSOCK_PORT) => {
 
 /**
  * Run argv in the guest: { code, out, err } with Buffers.
- * @param {string} udsPath
+ * @param {string} uds_path
  * @param {string[]} argv
  * @param {object} [options]
  * @param {string | null} [options.cwd] null runs in the agent's own directory
  * @param {Buffer | string} [options.stdin]
- * @param {number} [options.timeout]
+ * @param {number} [options.timeout] seconds
  * @param {number} [options.port]
+ * @returns {Promise<{ code: number, out: Buffer, err: Buffer }>}
  */
-export const execInGuest = async (
-  udsPath,
+export const exec_in_guest = async (
+  uds_path,
   argv,
-  { cwd = null, stdin = Buffer.alloc(0), timeout = 90, port = VSOCK_PORT } = {}
+  {
+    cwd = null,
+    stdin = Buffer.alloc(0),
+    timeout = EXEC_TIMEOUT_SECONDS,
+    port = VSOCK_PORT
+  } = {}
 ) => {
-  const { socket, lines } = await connect(udsPath, port)
+  const { socket, lines } = await connect(uds_path, port)
   let line
   try {
     socket.write(
@@ -90,7 +104,7 @@ export const execInGuest = async (
  * Run argv in the guest and report output as it arrives. The agent sends
  * `stdout` and `stderr` frames, then one `exit` frame. Destroying the socket
  * stops the command in the guest.
- * @param {string} udsPath
+ * @param {string} uds_path
  * @param {string[]} argv
  * @param {object} [options]
  * @param {string | null} [options.cwd]
@@ -104,22 +118,22 @@ export const execInGuest = async (
  * @param {{ afterBytes: number, afterLines: number }} [options.spill]
  * @returns {Promise<{ code: number, error?: string, spill_path?: string }>}
  */
-export const execInGuestStream = async (
-  udsPath,
+export const exec_in_guest_stream = async (
+  uds_path,
   argv,
   {
     cwd = null,
     stdin = Buffer.alloc(0),
-    timeout = 90,
+    timeout = EXEC_TIMEOUT_SECONDS,
     port = VSOCK_PORT,
     on_output = () => {},
-    signal = undefined,
-    env = undefined,
-    inherit_env = undefined,
-    spill = undefined
+    signal,
+    env,
+    inherit_env,
+    spill
   } = {}
 ) => {
-  const { socket, lines } = await connect(udsPath, port)
+  const { socket, lines } = await connect(uds_path, port)
   const stop = () => socket.destroy()
   if (signal?.aborted) stop()
   else signal?.addEventListener('abort', stop, { once: true })
@@ -161,9 +175,15 @@ export const execInGuestStream = async (
   }
 }
 
-/** Run argv and return stdout as text, throwing if it failed. */
-export const runOk = async (udsPath, argv, options = {}) => {
-  const { code, out, err } = await execInGuest(udsPath, argv, options)
+/**
+ * Run argv and return stdout as text, throwing if it failed.
+ * @param {string} uds_path
+ * @param {string[]} argv
+ * @param {Parameters<typeof exec_in_guest>[2]} [options]
+ * @returns {Promise<string>}
+ */
+export const run_ok = async (uds_path, argv, options = {}) => {
+  const { code, out, err } = await exec_in_guest(uds_path, argv, options)
   if (code !== 0)
     throw new VsockError(
       `${JSON.stringify(argv)} exited ${code}: ${err.toString().trim()}`
@@ -171,17 +191,25 @@ export const runOk = async (udsPath, argv, options = {}) => {
   return out.toString()
 }
 
-/** Wait until /bin/true answers: the guest is up and its agent started. */
-export const waitForAgent = async (
-  udsPath,
-  seconds = 60,
+/**
+ * Wait until /bin/true answers: the guest is up and its agent started.
+ * @param {string} uds_path
+ * @param {number} [seconds]
+ * @param {number} [port]
+ */
+export const wait_for_agent = async (
+  uds_path,
+  seconds = AGENT_WAIT_SECONDS,
   port = VSOCK_PORT
 ) => {
   const deadline = Date.now() + seconds * MS_PER_SECOND
   let last
   while (Date.now() < deadline) {
     try {
-      await execInGuest(udsPath, ['/bin/true'], { timeout: 10, port })
+      await exec_in_guest(uds_path, ['/bin/true'], {
+        timeout: AGENT_PROBE_SECONDS,
+        port
+      })
       return
     } catch (error) {
       last = error
@@ -189,6 +217,6 @@ export const waitForAgent = async (
     await sleep(RETRY_MS)
   }
   throw new VsockError(
-    `no agent on ${udsPath} after ${seconds}s (${last?.message})`
+    `no agent on ${uds_path} after ${seconds}s (${last?.message})`
   )
 }

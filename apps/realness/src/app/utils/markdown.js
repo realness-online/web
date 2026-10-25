@@ -40,58 +40,6 @@ export const inline_documentation_icons = html =>
     }
   )
 
-/** @param {string} title */
-const heading_id = title => {
-  const title_str = String(title || '')
-  return title_str
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
-/** @type {Array<{ id: string, title: string, level: number }>} */
-export const documentation_preferences_toc = [
-  { id: 'preferences', title: 'Preferences', level: 2 },
-  { id: 'preferences-mosaic', title: 'Mosaic', level: 3 },
-  { id: 'preferences-shadow', title: 'Shadow', level: 3 },
-  { id: 'preferences-motion', title: 'Motion', level: 3 },
-  { id: 'preferences-view', title: 'View', level: 3 },
-  { id: 'preferences-chrome', title: 'Chrome', level: 3 }
-]
-
-/** @type {Array<{ id: string, title: string, level: number }>} */
-export const documentation_changelog_toc = [
-  { id: 'changelog', title: 'Changelog', level: 2 }
-]
-
-/**
- * Build a table of contents from any markdown's h2–h6 headings.
- * @param {string} content
- * @returns {Array<{ id: string, title: string, level: number }>}
- */
-export const markdown_toc = content => {
-  const toc = []
-  for (const line of content.split('\n')) {
-    const heading_match = line.match(/^(#{2,6})\s+(.+)$/)
-    if (!heading_match) continue
-    const level = heading_match[1].length
-    const title = heading_match[2].trim()
-    toc.push({ id: heading_id(title), title: String(title || ''), level })
-  }
-  return toc
-}
-
-/**
- * @param {string} [content]
- * @returns {Array<{ id: string, title: string, level: number }>}
- */
-export const documentation_toc = (content = documentation_md) => [
-  ...markdown_toc(content),
-  ...documentation_preferences_toc,
-  ...documentation_changelog_toc
-]
-
 /**
  * @param {string} [content]
  * @returns {string}

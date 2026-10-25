@@ -84,8 +84,9 @@ export const sync_target = async ({ fetcher = fetch } = {}) =>
     : person_target()
 
 /** The person's own sync with their saved sign-in. */
-export const person_target = async () => ({
-  local: false,
-  url: SYNC_URL,
-  get_token: token_source({ store: person_keychain })
-})
+export const person_target = () =>
+  Promise.resolve({
+    local: false,
+    url: SYNC_URL,
+    get_token: token_source({ store: person_keychain })
+  })

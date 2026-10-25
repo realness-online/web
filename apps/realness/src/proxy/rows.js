@@ -24,7 +24,9 @@ export const day_files = files => [
 export const read_rows = (html, payer = '') => {
   const rows = []
   const seen = new Set()
-  for (const values of read_items(html, 'usage')) {
+  for (const item of read_items(html, 'usage')) {
+    /** @type {Record<string, string | number>} */
+    const values = { ...item }
     if (values.call) {
       if (seen.has(values.call)) continue
       seen.add(values.call)

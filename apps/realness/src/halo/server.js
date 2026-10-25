@@ -14,11 +14,7 @@ import { BadRequest, Full, HALO_FAILURES, NotFound, Parking } from './errors.js'
 import { verify_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
 import { limit_path } from '#root/src/files/paths.js'
 import { can } from '#root/src/can/can.js'
-import {
-  app_auth,
-  ENTER,
-  withoutAppCookie as without_app_cookie
-} from './app-auth.js'
+import { app_auth, ENTER, without_app_cookie } from './app-auth.js'
 import { logger } from './log.js'
 import { chat_handlers } from './chat.js'
 import { startup_handlers } from './startup.js'
@@ -31,6 +27,8 @@ const MAX_PATHS = 100
 const LOG = logger('server')
 const EXEC_TIMEOUT_MAX = 1800
 const PARKING_RETRY_S = 5
+/** realness-chat listens here in the guest (realness-chat.service). */
+const CHAT_PORT = 55
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -72,7 +70,7 @@ const plain = (response, status, message) =>
     Buffer.from(`${message}\n`)
   )
 
-const readBody = request =>
+const read_body = request =>
   new Promise((done, fail) => {
     const chunks = []
     request.on('data', chunk => chunks.push(chunk))
@@ -81,8 +79,8 @@ const readBody = request =>
   })
 
 /** The body as a JSON object; an empty body is {}. */
-const readJson = async request => {
-  const raw = await readBody(request)
+const read_json = async request => {
+  const raw = await read_body(request)
   if (!raw.length) return {}
   let payload
   try {
@@ -97,11 +95,11 @@ const readJson = async request => {
 
 /** A file from a published tree. A directory serves index.html; a bare name its .html. */
 const site = (store, response, id, rel) => {
-  const root = store.publishedSite(id)
+  const root = store.published_site(id)
   if (!root)
     return plain(response, HTTP.NOT_FOUND, `nothing published for ${id}`)
-  const realRoot = realpath_sync(root)
-  const inside = path => path === realRoot || path.startsWith(realRoot + sep)
+  const real_root = realpath_sync(root)
+  const inside = path => path === real_root || path.startsWith(real_root + sep)
   const is = (path, kind) => {
     try {
       return stat_sync(path)[kind]()
@@ -111,7 +109,7 @@ const site = (store, response, id, rel) => {
   }
   let target
   try {
-    target = join(realRoot, decodeURIComponent(rel))
+    target = join(real_root, decodeURIComponent(rel))
   } catch {
     return plain(response, HTTP.BAD_REQUEST, 'bad path encoding')
   }
@@ -146,7 +144,7 @@ const site = (store, response, id, rel) => {
 }
 
 const health = store => {
-  const seed = store.seedStatus()
+  const seed = store.seed_status()
   const counts = {}
   for (const record of store.list())
     counts[record.state] = (counts[record.state] ?? 0) + 1
@@ -207,15 +205,15 @@ const shell_options = payload => {
 }
 
 const exec = async (store, request, id, response) => {
-  const payload = await readJson(request)
+  const payload = await read_json(request)
   if (payload.stream !== undefined && typeof payload.stream !== 'boolean')
     throw new BadRequest('stream must be a boolean')
-  const stdinB64 = payload.stdin_b64 || ''
-  if (typeof stdinB64 !== 'string')
+  const stdin_b64 = payload.stdin_b64 || ''
+  if (typeof stdin_b64 !== 'string')
     throw new BadRequest('stdin_b64 must be a base64 string')
   if (
-    !/^[A-Za-z0-9+/]*={0,2}$/.test(stdinB64) ||
-    stdinB64.length % BASE64_BLOCK
+    !/^[A-Za-z0-9+/]*={0,2}$/.test(stdin_b64) ||
+    stdin_b64.length % BASE64_BLOCK
   )
     throw new BadRequest('stdin_b64 is not base64')
   const timeout = payload.timeout ?? null
@@ -233,7 +231,7 @@ const exec = async (store, request, id, response) => {
 
   const options = {
     cwd: payload.cwd ?? null,
-    stdin: Buffer.from(stdinB64, 'base64'),
+    stdin: Buffer.from(stdin_b64, 'base64'),
     timeout,
     ...(payload.stream === true ? shell_options(payload) : {})
   }
@@ -249,7 +247,7 @@ const exec = async (store, request, id, response) => {
     'cache-control': 'no-store'
   })
   try {
-    const result = await store.execStream(id, payload.argv, {
+    const result = await store.exec_stream(id, payload.argv, {
       ...options,
       signal: stopping.signal,
       on_output: chunk => {
@@ -278,25 +276,29 @@ const exec = async (store, request, id, response) => {
 }
 
 const APP_HALO = /^(app-[0-9a-f]{12})\.localhost$/
-const appOfHost = header =>
+const app_of_host = header =>
   APP_HALO.exec((header ?? '').split(':')[0])?.[1] ?? null
 
 /**
  * The app's record if this request may reach it now; otherwise the reason.
  * A private app is 404 to everyone but its owner, so strangers learn nothing.
  */
-const appTarget = (apps, auth, id, request) => {
+const app_target = (apps, auth, id, request) => {
   let record
   try {
     record = apps.record(id)
   } catch {
-    return { status: 404, message: `no app ${id}` }
+    return { status: HTTP.NOT_FOUND, message: `no app ${id}` }
   }
-  if (record.kind === 'site') return { status: 404, message: `no app ${id}` }
+  if (record.kind === 'site')
+    return { status: HTTP.NOT_FOUND, message: `no app ${id}` }
   if (!record.public && auth.owner(request.headers.cookie, id) !== record.owner)
-    return { status: 404, message: `no app ${id}` }
+    return { status: HTTP.NOT_FOUND, message: `no app ${id}` }
   if (record.state === 'crashed')
-    return { status: 503, message: `${id} crashed; see its status` }
+    return {
+      status: HTTP.UNAVAILABLE,
+      message: `${id} crashed; see its status`
+    }
   return { record }
 }
 
@@ -314,7 +316,7 @@ const forwarded = request => {
 }
 
 /** A ticket from POST /v1/apps/<id>/enter becomes the owner's cookie, on the app's halo. */
-const enterApp = (auth, id, url, response) => {
+const enter_app = (auth, id, url, response) => {
   const cookie = auth.enter(url.searchParams.get('ticket') ?? '', id)
   if (!cookie)
     return plain(
@@ -330,13 +332,13 @@ const enterApp = (auth, id, url, response) => {
   )
 }
 
-const proxyApp = (apps, auth, id, request, response) => {
+const proxy_app = (apps, auth, id, request, response) => {
   const url = new URL(request.url, 'http://app')
   if (url.pathname === ENTER) {
     request.resume()
-    return enterApp(auth, id, url, response)
+    return enter_app(auth, id, url, response)
   }
-  const { record, status, message } = appTarget(apps, auth, id, request)
+  const { record, status, message } = app_target(apps, auth, id, request)
   if (!record) {
     request.resume()
     return plain(response, status, message)
@@ -366,9 +368,9 @@ const proxyApp = (apps, auth, id, request, response) => {
 }
 
 /** A WebSocket (or any) upgrade: replay the request head, then splice the sockets. */
-const upgradeApp = (apps, auth, request, socket, head) => {
-  const id = appOfHost(request.headers.host)
-  const { record } = id ? appTarget(apps, auth, id, request) : {}
+const upgrade_app = (apps, auth, request, socket, head) => {
+  const id = app_of_host(request.headers.host)
+  const { record } = id ? app_target(apps, auth, id, request) : {}
   if (!record)
     return socket.end('HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n')
   const upstream = connect(record.port, record.address, () => {
@@ -395,8 +397,8 @@ const in_app_tree = path =>
   path.startsWith(APP_TREE) &&
   !path.includes('\0')
 
-const startApp = async (store, apps, owner, actor, request) => {
-  const payload = await readJson(request)
+const start_app = async (store, apps, owner, actor, request) => {
+  const payload = await read_json(request)
   const { path } = payload
   if (typeof payload.actor !== 'string')
     throw new BadRequest('actor must be an actor id')
@@ -411,7 +413,7 @@ const startApp = async (store, apps, owner, actor, request) => {
   const { id } = actor(payload.actor)
   if (!can({ phone: owner }, 'write', `people/${owner}/harnesses/${id}`))
     throw new NotFound(id)
-  return apps.startFrom(dest => store.copyOut(id, path, dest), {
+  return apps.start_from(dest => store.copy_out(id, path, dest), {
     owner,
     actor: id,
     path
@@ -517,7 +519,7 @@ const route_apps = async (
     json(
       response,
       HTTP.CREATED,
-      await startApp(store, apps, owner, actor, request)
+      await start_app(store, apps, owner, actor, request)
     )
     return true
   }
@@ -538,10 +540,10 @@ const route_apps = async (
     return true
   }
   if (method === 'POST' && action === 'visibility') {
-    const payload = await readJson(request)
+    const payload = await read_json(request)
     if (typeof payload.public !== 'boolean')
       throw new BadRequest('public must be true or false')
-    json(response, HTTP.OK, await apps.setPublic(id, payload.public))
+    json(response, HTTP.OK, await apps.set_public(id, payload.public))
     return true
   }
   if (method === 'DELETE' && !action) {
@@ -589,7 +591,7 @@ const route_reads = ({
   const [id, action] = path.slice('/v1/actors/'.length).split('/')
   actor(id)
   if (action === 'trace') {
-    json(response, HTTP.OK, { events: store.traceOf(id) })
+    json(response, HTTP.OK, { events: store.trace_of(id) })
     return true
   }
   if (action === undefined) {
@@ -611,7 +613,7 @@ const route_actor_writes = async ({
 }) => {
   if (method !== 'POST') return false
   if (path === '/v1/actors') {
-    const payload = await readJson(request)
+    const payload = await read_json(request)
     if (!can({ phone: owner }, 'write', `people/${owner}/harnesses`))
       throw new NotFound('actor')
     const paths = payload.paths ?? null
@@ -646,7 +648,7 @@ const route_actor_writes = async ({
     return true
   }
   if (action === 'idle') {
-    const payload = await readJson(request)
+    const payload = await read_json(request)
     const tier = payload.tier || 'memory'
     if (typeof tier !== 'string') throw new BadRequest('tier must be a string')
     json(response, HTTP.OK, await store.idle(id, tier))
@@ -661,7 +663,7 @@ const route_actor_writes = async ({
     return true
   }
   if (action === 'publish') {
-    const payload = await readJson(request)
+    const payload = await read_json(request)
     const tree = payload.path ?? '/realness/site'
     if (typeof tree !== 'string') throw new BadRequest('path must be a string')
     json(response, HTTP.OK, await store.publish(id, tree || '/realness/site'))
@@ -679,8 +681,8 @@ const route = async (
   const path = url.pathname.replace(/\/+$/, '') || '/'
   const { method } = request
 
-  const appId = apps && appOfHost(request.headers.host)
-  if (appId) return proxyApp(apps, auth, appId, request, response)
+  const app_id = apps && app_of_host(request.headers.host)
+  if (app_id) return proxy_app(apps, auth, app_id, request, response)
   const [label, ...rest] = (request.headers.host ?? '').split(':')[0].split('.')
   if (
     method === 'GET' &&
@@ -717,7 +719,7 @@ const route = async (
   }
 
   if (method === 'POST' && path === '/v1/startup')
-    return startup.start(owner, await readJson(request), response)
+    return startup.start(owner, await read_json(request), response)
 
   const context = {
     actor,
@@ -770,12 +772,12 @@ const route = async (
  * The store methods the halo server asks for, and nothing else.
  *
  * `ActorStore` satisfies this as written, so nothing at the call site changes.
- * Naming it lets a stand-in provide these eighteen rather than all of
- * ActorStore's fields, and it documents the seam: routes use the first
- * fourteen, startup adds `ensureRunning`, and chat adds `beginWork`,
- * `endWork`, and `firstTurn`. Derived from ActorStore, so a renamed method
+ * Naming it lets a stand-in provide just these rather than all of
+ * ActorStore's fields, and it documents the seam: routes use most of them,
+ * startup adds `ensure_running`, and chat adds `begin_work`,
+ * `end_work`, and `first_turn`. Derived from ActorStore, so a renamed method
  * fails here rather than at runtime.
- * @typedef {Pick<import('./actors.js').ActorStore, 'beginWork' | 'copyOut' | 'create' | 'destroy' | 'endWork' | 'ensureRunning' | 'exec' | 'export' | 'firstTurn' | 'get' | 'idle' | 'list' | 'publish' | 'publishedSite' | 'receiveLog' | 'reload' | 'restore' | 'seedStatus' | 'traceOf'>} RouteStore
+ * @typedef {Pick<import('./actors.js').ActorStore, 'begin_work' | 'copy_out' | 'create' | 'destroy' | 'end_work' | 'ensure_running' | 'exec' | 'export' | 'first_turn' | 'get' | 'idle' | 'list' | 'publish' | 'published_site' | 'receive_log' | 'reload' | 'restore' | 'seed_status' | 'trace_of'>} RouteStore
  */
 
 /**
@@ -785,20 +787,20 @@ const route = async (
  * @param {object | null} [auth]
  * @param {import('./loops.js').Loops | null} [loops]
  * @param {object} [options]
- * @param {(record: import('./actors.js').Actor) => Promise<{ socket: object, lines: object }>} [options.connectChat]
+ * @param {(record: import('./actors.js').Actor) => Promise<{ socket: object, lines: object }>} [options.connect_chat]
  * @param {((record: import('./actors.js').Actor) => Promise<object>) | null} [options.limits]
  */
-export const makeServer = (
+export const make_server = (
   store,
   apps = null,
   auth = apps && app_auth(halo_pass_secret()),
   loops = null,
   {
-    connectChat = record => vsock.connect(record.vsock_path, 55),
+    connect_chat = record => vsock.connect(record.vsock_path, CHAT_PORT),
     limits = null
   } = {}
 ) => {
-  const chat = chat_handlers({ store, connect: connectChat, limits })
+  const chat = chat_handlers({ store, connect: connect_chat, limits })
   const startup = startup_handlers({ store })
   const server = create_server(async (request, response) => {
     try {
@@ -834,7 +836,7 @@ export const makeServer = (
     }
   })
   server.on('upgrade', (request, socket, head) =>
-    apps ? upgradeApp(apps, auth, request, socket, head) : socket.destroy()
+    apps ? upgrade_app(apps, auth, request, socket, head) : socket.destroy()
   )
   return server
 }

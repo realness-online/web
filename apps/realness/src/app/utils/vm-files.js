@@ -31,7 +31,7 @@ const ok = value => ({ ok: true, value })
  * @param {string} message
  * @param {string} [path]
  */
-export const file_error = (code, message, path) => ({
+const file_error = (code, message, path) => ({
   ok: false,
   error: Object.assign(new Error(message), { name: 'FileError', code, path })
 })

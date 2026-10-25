@@ -14,7 +14,7 @@ import { AppStore } from '../../src/halo/apps.js'
 import { Actor } from '../../src/halo/actors.js'
 import { NotFound } from '../../src/halo/errors.js'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { makeServer as make_server } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = (process.env.HALO_PASS_SECRET ||=
   random_bytes(32).toString('hex'))
@@ -34,7 +34,7 @@ write_file_sync(join(fixtures, 'page/index.html'), '<p>site</p>\n')
 
 /**
  * The routes reach a store for these eighteen methods; this check exercises
- * `get` and `copyOut` only. A named throw keeps an accidental reach loud
+ * `get` and `copy_out` only. A named throw keeps an accidental reach loud
  * instead of answering wrongly.
  */
 const unreached = name => () => {
@@ -48,7 +48,7 @@ const actors = {
     if (id !== actor.id) throw new NotFound(id)
     return actor
   },
-  copyOut: async (id, tree, dest) =>
+  copy_out: async (id, tree, dest) =>
     cp_sync(join(fixtures, tree.slice('/realness/work/'.length)), dest, {
       recursive: true
     }),
@@ -59,16 +59,16 @@ const actors = {
   idle: unreached('idle'),
   list: unreached('list'),
   publish: unreached('publish'),
-  publishedSite: unreached('publishedSite'),
-  receiveLog: unreached('receiveLog'),
+  published_site: unreached('published_site'),
+  receive_log: unreached('receive_log'),
   reload: unreached('reload'),
   restore: unreached('restore'),
-  seedStatus: unreached('seedStatus'),
-  traceOf: unreached('traceOf'),
-  ensureRunning: unreached('ensureRunning'),
-  beginWork: unreached('beginWork'),
-  endWork: unreached('endWork'),
-  firstTurn: unreached('firstTurn')
+  seed_status: unreached('seed_status'),
+  trace_of: unreached('trace_of'),
+  ensure_running: unreached('ensure_running'),
+  begin_work: unreached('begin_work'),
+  end_work: unreached('end_work'),
+  first_turn: unreached('first_turn')
 }
 const apps = new AppStore({
   volume: fixtures,

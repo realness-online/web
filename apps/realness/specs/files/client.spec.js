@@ -862,3 +862,66 @@ it('a file moved outside a session is a move: the old path goes, nothing is held
     'no copy left'
   )
 })
+
+it('sync records are kept per server, so switching servers sends no deletes', async () => {
+  const other_storage = disk(join(root, 'bucket-other'))
+  const other = sync_service({
+    storage: other_storage,
+    rights: rights(other_storage),
+    project: issuer.project,
+    certs: issuer.certs,
+    log: () => {}
+  })
+  await new Promise(done => other.listen(0, '127.0.0.1', done))
+  try {
+    const state = join(root, 'per-server-state')
+    const on = server_url =>
+      client({
+        state,
+        trash: join(root, 'trash'),
+        url: server_url,
+        token: issuer.token(A)
+      })
+    const dir = await local('per-server', { 'a.md': 'a', 'b.md': 'b' })
+    assert.deepEqual((await on(url).sync(dir, 'can://~/per-server/')).pushed, [
+      'a.md',
+      'b.md'
+    ])
+    const second = await on(`http://127.0.0.1:${other.address().port}`).sync(
+      dir,
+      'can://~/per-server/'
+    )
+    assert.deepEqual(second.pushed, ['a.md', 'b.md'])
+    assert.deepEqual(second.deleted ?? [], [])
+    assert.equal(await readFile(join(dir, 'a.md'), 'utf8'), 'a')
+    const back = await on(url).sync(dir, 'can://~/per-server/')
+    assert.deepEqual(back.unchanged, ['a.md', 'b.md'])
+  } finally {
+    other.close()
+  }
+})
+
+it('a record from before server keys is adopted once, then removed', async () => {
+  const state = join(root, 'legacy-state')
+  const store = client({
+    state,
+    trash: join(root, 'trash'),
+    url,
+    token: issuer.token(A)
+  })
+  const dir = await local('legacy', { 'a.md': 'a' })
+  await store.sync(dir, 'can://~/legacy/')
+  const records = join(state, 'sync')
+  const [name] = await readdir(records)
+  const record = JSON.parse(await readFile(join(records, name), 'utf8'))
+  assert.equal(record.server, url)
+  delete record.server
+  const legacy = `${version_sync(`${record.local}\n${record.remote}`).slice(0, 16)}.json`
+  await rm(join(records, name))
+  await writeFile(join(records, legacy), JSON.stringify(record))
+  assert.deepEqual((await store.sync(dir, 'can://~/legacy/')).unchanged, [
+    'a.md'
+  ])
+  const after_adopt = await readdir(records)
+  assert.deepEqual(after_adopt, [name])
+})

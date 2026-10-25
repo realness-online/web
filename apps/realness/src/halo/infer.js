@@ -44,12 +44,12 @@ function* walk(dir, rel = '') {
 }
 
 /** Every reason the files reach past the standard library. */
-const outsideStdlib = dir => {
+const outside_stdlib = dir => {
   const found = []
-  for (const { path, dir: isDir } of walk(dir)) {
-    if (isDir && path.split('/').pop() === MODULES)
+  for (const { path, dir: is_dir } of walk(dir)) {
+    if (is_dir && path.split('/').pop() === MODULES)
       found.push(`${path}/: apps take no dependencies`)
-    if (isDir || !SOURCE.test(path)) continue
+    if (is_dir || !SOURCE.test(path)) continue
     for (const [, spec] of read_file_sync(join(dir, path), 'utf8').matchAll(
       SPECIFIER
     )) {
@@ -83,7 +83,7 @@ const outsideStdlib = dir => {
   return found
 }
 
-const isElf = path => {
+const is_elf = path => {
   const fd = open_sync(path, 'r')
   try {
     const head = Buffer.alloc(ELF_MAGIC.length)
@@ -105,7 +105,7 @@ const refusals = dir => {
     if (!stat.isFile()) continue
     if (name === 'Procfile') found.push('a Procfile')
     else if (name.endsWith('.py')) found.push(`python (${name})`)
-    else if (stat.mode & EXECUTABLE_BITS && isElf(path))
+    else if (stat.mode & EXECUTABLE_BITS && is_elf(path))
       found.push(`an executable (${name})`)
   }
   return found
@@ -119,7 +119,7 @@ export const infer = dir => {
   if (exists_sync(handler)) {
     if (!/^\s*export\s+default\b/m.test(read_file_sync(handler, 'utf8')))
       throw new InferError(`${HANDLER} has no default export: ${EXPORT}`)
-    const outside = outsideStdlib(dir)
+    const outside = outside_stdlib(dir)
     if (outside.length)
       throw new InferError(`standard library only:\n  ${outside.join('\n  ')}`)
     return { kind: 'handler', runtime: 'node', start: START, port: APP_PORT }

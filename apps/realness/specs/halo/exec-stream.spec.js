@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = 'exec-stream-test-secret-at-least-thirty-two-bytes'
 process.env.HALO_PASS_SECRET = secret
@@ -26,7 +26,7 @@ const start = async (result = {}) => {
         stderr_b64: ''
       }
     },
-    execStream: async (actor, argv, options) => {
+    exec_stream: async (actor, argv, options) => {
       seen.stream.push({ actor, argv, options })
       options.on_output({ stream: 'stdout', data: Buffer.from('one\n') })
       options.on_output({ stream: 'stderr', data: Buffer.from('bad\n') })
@@ -34,7 +34,7 @@ const start = async (result = {}) => {
       return { exit_code: 4, stdout_bytes: 8, stderr_bytes: 4, ...result }
     }
   }
-  const server = makeServer(store, null, undefined, null, {})
+  const server = make_server(store, null, undefined, null, {})
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   return {
     seen,
@@ -187,11 +187,11 @@ it('a non-boolean stream is refused before any work starts', async () => {
 
 it('a stream that fails after output ends that reply and keeps the halo serving', async () => {
   const record = { id, owner: alice }
-  const server = makeServer(
+  const server = make_server(
     {
       get: () => record,
       list: () => [record],
-      execStream: async (actor, argv, options) => {
+      exec_stream: async (actor, argv, options) => {
         options.on_output({ stream: 'stdout', data: Buffer.from('tick\n') })
         await new Promise(done => setTimeout(done, 20))
         throw new Error('agent closed the channel')

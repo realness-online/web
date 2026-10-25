@@ -1,6 +1,6 @@
 import { randomBytes as random_bytes } from 'node:crypto'
 
-export const SERVICE = 'realness-proxy'
+const SERVICE = 'realness-proxy'
 const SCOPE = 'realness.proxy'
 const TIMEOUT_MS = 3000
 const NANOS = 1_000_000n

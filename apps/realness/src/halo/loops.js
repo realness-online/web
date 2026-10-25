@@ -2,7 +2,7 @@ import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
-import { writeFileDurable as write_file_durable } from './durable.js'
+import { write_file_durable } from './durable.js'
 import { join } from 'node:path'
 import { hostname } from 'node:os'
 import { BadRequest } from './errors.js'
@@ -188,7 +188,7 @@ export class Loops {
             .trim() || `exit ${exit_code}`
         )
       loop.status = 'running'
-      this.store.beginWork(record.id, 'loop')
+      this.store.begin_work(record.id, 'loop')
     } catch (error) {
       Object.assign(loop, { status: 'failed', error: error.message })
       throw error
@@ -282,7 +282,7 @@ export class Loops {
     const stopped = []
     for (const [id, loop] of Object.entries(this.loops)) {
       if (loop.status !== 'running') continue
-      this.store.beginWork(id, 'loop')
+      this.store.begin_work(id, 'loop')
       try {
         if (await this.#stop_requested(id)) {
           await this.stop(id, 'admin')
@@ -330,7 +330,7 @@ export class Loops {
     })
     this.#save()
     await this.#publish(id)
-    this.store.endWork(id, 'loop')
+    this.store.end_work(id, 'loop')
     await this.store.idle(id)
   }
 

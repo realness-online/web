@@ -3,7 +3,7 @@ import { createHmac } from 'node:crypto'
 import { connect } from 'node:net'
 import { Duplex } from 'node:stream'
 import { it } from 'node:test'
-import { makeServer as makePty } from '../../src/halo/pty.js'
+import { make_server as make_pty } from '../../src/halo/pty.js'
 import { Lines } from '../../src/halo/vsock.js'
 
 const secret = 'terminal-door-test-secret-at-least-thirty-two-bytes'
@@ -24,9 +24,9 @@ const close = server => new Promise(done => server.close(done))
 
 it('framed terminal refuses missing and foreign passes before waking the guest', async () => {
   let wakes = 0
-  const server = makePty({
+  const server = make_pty({
     get: () => ({ id: 'a-one', owner: phone }),
-    ensureRunning: () => {
+    ensure_running: () => {
       wakes++
       throw new Error('should not wake')
     }

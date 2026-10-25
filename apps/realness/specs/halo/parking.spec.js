@@ -150,7 +150,7 @@ it('a failed parked record never powers off', async () => {
   assert.equal(seen.reopened, 1)
 })
 
-/** A store with no volume: park needs lock, liveActors, busy, and two hooks. */
+/** A store with no volume: park needs lock, live_actors, busy, and two hooks. */
 const store_with = (records, { synced = () => true } = {}) => {
   const store = Object.create(ActorStore.prototype)
   store.lock = { run: work => work() }
@@ -165,14 +165,14 @@ const store_with = (records, { synced = () => true } = {}) => {
 it('the store refuses new starts while closed for parking', async () => {
   const { store } = store_with([])
   store.closed = true
-  assert.throws(() => store.ensureRunning('a-1'), Parking)
+  assert.throws(() => store.ensure_running('a-1'), Parking)
   store.reopen()
   assert.equal(store.closed, false)
 })
 
 it('a busy actor stops the store pass and reopens it', async () => {
   const { store } = store_with([{ id: 'a-1', state: 'running' }])
-  store.beginWork('a-1', 'turn:1')
+  store.begin_work('a-1', 'turn:1')
   assert.deepEqual(await store.park(), { ok: false, reason: 'a-1 is busy' })
   assert.equal(store.closed, false)
 })

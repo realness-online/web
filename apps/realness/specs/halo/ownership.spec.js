@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
 import { it } from 'node:test'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = 'ownership-test-secret-at-least-thirty-two-bytes'
 process.env.HALO_PASS_SECRET = secret
@@ -19,7 +19,7 @@ function pass(phone) {
 
 it('create and restore use only a verified owner', async () => {
   const calls = []
-  const server = makeServer({
+  const server = make_server({
     create: async owner => {
       calls.push(['create', owner])
       return { id: 'a-one', owner }

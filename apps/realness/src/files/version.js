@@ -14,6 +14,9 @@ const base64url = bytes => {
 /** @param {string | ArrayBuffer | ArrayBufferView} body */
 export const version_of = async body => {
   const bytes = typeof body === 'string' ? new TextEncoder().encode(body) : body
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    /** @type {BufferSource} */ (bytes)
+  )
   return base64url(new Uint8Array(digest)).slice(0, LENGTH)
 }

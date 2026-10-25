@@ -2,7 +2,7 @@ import {
   existsSync as exists_sync,
   readFileSync as read_file_sync
 } from 'node:fs'
-import { writeFileDurable as write_file_durable } from './durable.js'
+import { write_file_durable } from './durable.js'
 import { join } from 'node:path'
 import { read_request, request_key } from '#root/src/sync/actor-request.js'
 import { MS_PER_HOUR } from '#root/lib/units.js'

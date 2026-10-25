@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
 import { it } from 'node:test'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = 'loops-api-test-secret-at-least-thirty-two-bytes'
 process.env.HALO_PASS_SECRET = secret
@@ -60,7 +60,7 @@ const setup = async () => {
       Object.assign(this.loops[id], { status: 'stopped', reason })
     }
   }
-  const server = makeServer(store, null, undefined, loops)
+  const server = make_server(store, null, undefined, loops)
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   const url = `http://127.0.0.1:${server.address().port}`
   const call = (method, path, who = alice) =>
@@ -100,7 +100,7 @@ it('owners list and stop only their own loops', async () => {
 })
 
 it('no loops store: the route is 404', async () => {
-  const server = makeServer({ get: () => null })
+  const server = make_server({ get: () => null })
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   try {
     const reply = await fetch(

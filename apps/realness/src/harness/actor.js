@@ -4,7 +4,13 @@ import { readFile as read_file } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { client, state_dir } from '#root/src/files/client.js'
 import { door_pass } from './recover.js'
-import { harness_exclude, is_file_entry, sync_harness } from './harness.js'
+import {
+  harness_exclude,
+  is_file_entry,
+  org_path,
+  sync_harness,
+  sync_org
+} from './harness.js'
 import { prepare_actor_state } from './state.js'
 /* eslint-disable no-await-in-loop -- harness folders sync one at a time so a failure stops the rest */
 
@@ -71,6 +77,19 @@ export const sync_actor = async ({
     const exclude = await harness_exclude(root, state)
     const reports = {}
     for (const path of claims.paths) {
+      if (org_path(path)) {
+        const { report, refused } = await sync_org(
+          store,
+          join(root, path),
+          path,
+          {
+            state,
+            exclude: (name, is_dir) => exclude(`${path}/${name}`, is_dir)
+          }
+        )
+        reports[path] = report ?? { refused }
+        continue
+      }
       if (await is_file_entry(root, path)) {
         if (exclude(path, false)) continue
         const folder = dirname(path)

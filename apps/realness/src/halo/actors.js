@@ -3,7 +3,7 @@ import {
   randomBytes as random_bytes,
   randomUUID as random_uuid
 } from 'node:crypto'
-import { writeFileDurable as write_file_durable } from './durable.js'
+import { write_file_durable } from './durable.js'
 import {
   createReadStream as create_read_stream,
   existsSync as exists_sync,
@@ -412,9 +412,9 @@ export class ActorStore {
   /** @type {Set<string>} */
   turned = new Set()
   /** hs-over: the last TAP taken reads as a full halo, not a halo failure. */
-  #freeTap() {
+  #free_tap() {
     try {
-      return syscalls.freeTap(this.tap_prefix)
+      return syscalls.free_tap(this.tap_prefix)
     } catch (error) {
       if (error instanceof HaloError && /no free TAP/.test(error.message))
         throw new Full(`halo full: ${error.message}`)
@@ -451,24 +451,26 @@ export class ActorStore {
     this.busy = new Map()
     this.turned = new Set()
     this.firecracker_version = firecracker.version(this.firecracker)
-    syscalls.requireRoot('creating TAPs and Firecracker')
-    syscalls.requireMount(
+    syscalls.require_root('creating TAPs and Firecracker')
+    syscalls.require_mount(
       this.volume,
       'mount the actors volume (the dev stack script)'
     )
     if (
-      !syscalls.shortEnoughForUnix(join(this.volume, mint_id(), 'vsock.sock'))
+      !syscalls.short_enough_for_unix(
+        join(this.volume, mint_id(), 'vsock.sock')
+      )
     )
       throw new HaloError(
         `${this.volume} is too long for AF_UNIX socket paths (108 bytes); mount the actors volume somewhere shorter`
       )
   }
 
-  reflinkWarning() {
-    return syscalls.reflinkWarning(this.volume)
+  reflink_warning() {
+    return syscalls.reflink_warning(this.volume)
   }
 
-  cheapFingerprint() {
+  cheap_fingerprint() {
     const stat = stat_sync(this.template, { bigint: true })
     return {
       schema: FINGERPRINT_SCHEMA,
@@ -483,7 +485,7 @@ export class ActorStore {
   }
 
   /** Whether a seed exists and matches the build; a stale seed forks quietly, so say so. */
-  seedStatus() {
+  seed_status() {
     /** @type {{ built: boolean, matches: boolean, mismatches: string[], record: Record<string, number> | null }} */
     const status = {
       built: false,
@@ -495,7 +497,7 @@ export class ActorStore {
     if (!exists_sync(record_path) || !exists_sync(join(this.seed_dir, STATE)))
       return status
     const record = read_json(record_path)
-    const current = this.cheapFingerprint()
+    const current = this.cheap_fingerprint()
     status.built = true
     status.record = record
     for (const key of CHEAP_FIELDS) {
@@ -510,19 +512,19 @@ export class ActorStore {
     return status
   }
 
-  async ensureSeed({ rebuild = false } = {}) {
-    const status = this.seedStatus()
+  async ensure_seed({ rebuild = false } = {}) {
+    const status = this.seed_status()
     if (status.matches && !rebuild) return status
-    if (rebuild && this.liveActors().length)
+    if (rebuild && this.live_actors().length)
       throw new Busy(
         'actors are running from this seed; destroy them before --rebuild'
       )
-    await this.buildSeed(status)
-    return this.seedStatus()
+    await this.build_seed(status)
+    return this.seed_status()
   }
 
   /** Boot the template once, warm Pi, snapshot, stop (f4, f6). */
-  async buildSeed(status = this.seedStatus()) {
+  async build_seed(status = this.seed_status()) {
     const target = this.seed_dir
     if (status.built)
       LOG.warn(
@@ -532,7 +534,7 @@ export class ActorStore {
     rm_sync(target, { recursive: true, force: true })
     mkdir_sync(target, { recursive: true })
     syscalls.run(['cp', '--sparse=always', this.template, join(target, DISK)])
-    if (!syscalls.tapExists(this.seed_tap))
+    if (!syscalls.tap_exists(this.seed_tap))
       throw new HaloError(
         `no ${this.seed_tap}: run 'sudo bash server/halo/scripts/net-up.sh' first`
       )
@@ -550,7 +552,7 @@ export class ActorStore {
     )
     let identity
     try {
-      await firecracker.waitForApiSocket(api_sock)
+      await firecracker.wait_for_api_socket(api_sock)
       const api = new firecracker.Api(api_sock, this.api_timeout)
       await firecracker.boot(api, {
         kernel: this.kernel,
@@ -562,8 +564,8 @@ export class ActorStore {
         vcpus: this.vcpus,
         mib: this.mib
       })
-      await vsock.waitForAgent(uds, this.boot_timeout, this.vsock_port)
-      await vsock.execInGuest(
+      await vsock.wait_for_agent(uds, this.boot_timeout, this.vsock_port)
+      await vsock.exec_in_guest(
         uds,
         [
           '/bin/sh',
@@ -577,7 +579,7 @@ export class ActorStore {
       await warm_pi(uds)
       LOG.info('pausing and snapshotting')
       await firecracker.pause(api)
-      await firecracker.createSnapshot(
+      await firecracker.create_snapshot(
         api,
         join(target, STATE),
         join(target, MEM)
@@ -586,7 +588,7 @@ export class ActorStore {
       await firecracker.terminate(child.pid)
     }
     const record = {
-      ...this.cheapFingerprint(),
+      ...this.cheap_fingerprint(),
       template_sha256: await sha256_file(this.template),
       created: now_iso(),
       machine_id: identity.machine_id,
@@ -597,8 +599,8 @@ export class ActorStore {
     return record
   }
 
-  seedFingerprint() {
-    const record = this.seedStatus().record ?? {}
+  seed_fingerprint() {
+    const record = this.seed_status().record ?? {}
     return Object.fromEntries(
       [...CHEAP_FIELDS, 'template_sha256'].map(key => [
         key,
@@ -615,7 +617,7 @@ export class ActorStore {
    */
   async create(owner, { paths = null, startup = null } = {}) {
     if (this.closed) throw new Parking('the halo is parking; try again')
-    this.#claimMemory()
+    this.#claim_memory()
     try {
       const record = await this.lock.run(() =>
         this.#create(owner, { paths, startup })
@@ -649,7 +651,7 @@ export class ActorStore {
         async () => {
           if (!(await wait_for_door(record.vsock_path)))
             LOG.warn(`actor ${record.id} door not open before recovery`)
-          const result = await vsock.execInGuest(
+          const result = await vsock.exec_in_guest(
             record.vsock_path,
             ['/usr/local/bin/realness-recover', this.sync_url ?? ''],
             { timeout: RECOVER_SECONDS, port: this.vsock_port }
@@ -672,17 +674,17 @@ export class ActorStore {
     } catch (error) {
       LOG.warn(`actor ${record.id} recovery failed: ${error.message}`)
     }
-    await this.#startPi(record, startup)
+    await this.#start_pi(record, startup)
   }
 
   /** o0: start the terminal's Pi as its own traced stage; a Pi already running is left alone. */
-  async #startPi(record, startup) {
+  async #start_pi(record, startup) {
     try {
       const pi_started = performance.now()
       const { code, err } = await startup.run(
         'starting_pi',
         () =>
-          vsock.execInGuest(record.vsock_path, pi_start_argv(ACTOR_INIT), {
+          vsock.exec_in_guest(record.vsock_path, pi_start_argv(ACTOR_INIT), {
             timeout: this.boot_timeout,
             port: this.vsock_port
           }),
@@ -716,7 +718,7 @@ export class ActorStore {
         '--sync',
         this.sync_url
       ]
-      const { code, err } = await vsock.execInGuest(record.vsock_path, argv, {
+      const { code, err } = await vsock.exec_in_guest(record.vsock_path, argv, {
         timeout: RECOVER_SECONDS,
         port: this.vsock_port
       })
@@ -745,7 +747,7 @@ export class ActorStore {
   #claimed = 0
 
   /** hs-over: refuse before any disk or TAP when memory would run out. Unknown memory does not refuse. */
-  #claimMemory() {
+  #claim_memory() {
     const available = this.mem_available()
     const need = this.memory_reserve + this.#claimed + this.mib * MIB
     if (available !== null && available < need)
@@ -768,7 +770,7 @@ export class ActorStore {
     const id = mint_id()
     const startup = this.#startup(id, progress ?? {})
     await startup.run('checking_seed', async () => {
-      const seed = await this.ensureSeed()
+      const seed = await this.ensure_seed()
       if (!seed.matches)
         throw new Busy(
           `seed does not match the current build: ${seed.mismatches.join('; ')}`
@@ -787,9 +789,9 @@ export class ActorStore {
     })
     try {
       mkdir_sync(record.dir, { recursive: true })
-      this.#reflinkSeedDisk(record.dir)
-      record.tap = this.#freeTap()
-      syscalls.createTap(record.tap)
+      this.#reflink_seed_disk(record.dir)
+      record.tap = this.#free_tap()
+      syscalls.create_tap(record.tap)
       const timings = await this.#start(
         record,
         join(this.seed_dir, STATE),
@@ -800,7 +802,9 @@ export class ActorStore {
       Object.assign(
         record,
         await startup.run('initializing_actor', () =>
-          this.#initActor(record, { pi_after_recovery: Boolean(this.sync_url) })
+          this.#init_actor(record, {
+            pi_after_recovery: Boolean(this.sync_url)
+          })
         )
       )
       const init_ms = performance.now() - init_started
@@ -825,7 +829,7 @@ export class ActorStore {
     return record
   }
 
-  #reflinkSeedDisk(dir) {
+  #reflink_seed_disk(dir) {
     const source = join(this.seed_dir, DISK)
     try {
       syscalls.run(['cp', '--reflink=always', source, join(dir, DISK)])
@@ -851,9 +855,9 @@ export class ActorStore {
           join(record.dir, 'firecracker.log')
         )
         record.pid = child.pid
-        await firecracker.waitForApiSocket(record.api_sock)
+        await firecracker.wait_for_api_socket(record.api_sock)
         const api = new firecracker.Api(record.api_sock, this.api_timeout)
-        await firecracker.loadSnapshot(
+        await firecracker.load_snapshot(
           api,
           state,
           mem,
@@ -864,7 +868,7 @@ export class ActorStore {
       const vm_ms = performance.now() - started
       const agent_started = performance.now()
       await startup.run('waiting_guest', () =>
-        vsock.waitForAgent(
+        vsock.wait_for_agent(
           record.vsock_path,
           this.boot_timeout,
           this.vsock_port
@@ -878,7 +882,7 @@ export class ActorStore {
   }
 
   /** Cold tier: boot the actor's own disk; the seed's memory would see a stale /realness. */
-  async #bootActor(record, startup) {
+  async #boot_actor(record, startup) {
     const started = performance.now()
     unlink(record.api_sock)
     unlink(record.vsock_path)
@@ -892,7 +896,7 @@ export class ActorStore {
           join(record.dir, 'firecracker.log')
         )
         record.pid = child.pid
-        await firecracker.waitForApiSocket(record.api_sock)
+        await firecracker.wait_for_api_socket(record.api_sock)
         const api = new firecracker.Api(record.api_sock, this.api_timeout)
         await firecracker.boot(api, {
           kernel: this.kernel,
@@ -908,7 +912,7 @@ export class ActorStore {
       const vm_ms = performance.now() - started
       const agent_started = performance.now()
       await startup.run('waiting_guest', () =>
-        vsock.waitForAgent(
+        vsock.wait_for_agent(
           record.vsock_path,
           this.boot_timeout,
           this.vsock_port
@@ -922,15 +926,15 @@ export class ActorStore {
   }
 
   /** Turn the resumed clone into this actor (f6): clock, identity, address. */
-  async #initActor(record, { pi_after_recovery = false } = {}) {
+  async #init_actor(record, { pi_after_recovery = false } = {}) {
     const argv = [
       ACTOR_INIT,
       record.id,
       String(Math.floor(Date.now() / MS_PER_SECOND)),
-      `${syscalls.tapGuest(record.tap)}/30`,
+      `${syscalls.tap_guest(record.tap)}/30`,
       ...(pi_after_recovery ? ['--after-recovery'] : [])
     ]
-    const { code, out, err } = await vsock.execInGuest(
+    const { code, out, err } = await vsock.exec_in_guest(
       record.vsock_path,
       argv,
       {
@@ -950,7 +954,7 @@ export class ActorStore {
   }
 
   async identity(uds) {
-    const output = await vsock.runOk(
+    const output = await vsock.run_ok(
       uds,
       [
         '/bin/sh',
@@ -987,12 +991,12 @@ export class ActorStore {
 
     if (cwd !== null && typeof cwd !== 'string')
       throw new BadRequest('cwd must be a string')
-    const record = await this.ensureRunning(id)
+    const record = await this.ensure_running(id)
     const started = Date.now()
     const work = `exec:${random_uuid()}`
-    this.beginWork(id, work)
+    this.begin_work(id, work)
     try {
-      const { code, out, err } = await vsock.execInGuest(
+      const { code, out, err } = await vsock.exec_in_guest(
         record.vsock_path,
         argv,
         {
@@ -1017,7 +1021,7 @@ export class ActorStore {
         stderr_b64: err.toString('base64')
       }
     } finally {
-      this.endWork(id, work)
+      this.end_work(id, work)
     }
   }
 
@@ -1037,7 +1041,7 @@ export class ActorStore {
    * @param {{ afterBytes: number, afterLines: number }} [options.spill]
    * @returns {Promise<{ exit_code: number, stdout_bytes: number, stderr_bytes: number, error?: string, spill_path?: string }>}
    */
-  async execStream(
+  async exec_stream(
     id,
     argv,
     {
@@ -1062,14 +1066,14 @@ export class ActorStore {
       )
     if (cwd !== null && typeof cwd !== 'string')
       throw new BadRequest('cwd must be a string')
-    const record = await this.ensureRunning(id)
+    const record = await this.ensure_running(id)
     const started = Date.now()
     const work = `exec:${random_uuid()}`
     let stdout_bytes = 0
     let stderr_bytes = 0
-    this.beginWork(id, work)
+    this.begin_work(id, work)
     try {
-      const { code, error, spill_path } = await vsock.execInGuestStream(
+      const { code, error, spill_path } = await vsock.exec_in_guest_stream(
         record.vsock_path,
         argv,
         {
@@ -1106,14 +1110,14 @@ export class ActorStore {
         ...(spill_path ? { spill_path } : {})
       }
     } finally {
-      this.endWork(id, work)
+      this.end_work(id, work)
     }
   }
 
   /** Guest page cache to its disk. A memory snapshot keeps it; a crash or cold boot does not. */
   async #flush(record) {
     try {
-      await vsock.runOk(record.vsock_path, ['/bin/sync'], {
+      await vsock.run_ok(record.vsock_path, ['/bin/sync'], {
         timeout: this.api_timeout,
         port: this.vsock_port
       })
@@ -1125,11 +1129,11 @@ export class ActorStore {
   }
 
   /** Flush every running actor: bounds what a hard stop loses from terminal writes. */
-  async flushAll() {
-    await Promise.all(this.liveActors().map(record => this.#flush(record)))
+  async flush_all() {
+    await Promise.all(this.live_actors().map(record => this.#flush(record)))
   }
 
-  ensureRunning(id, options = {}) {
+  ensure_running(id, options = {}) {
     if (this.closed) throw new Parking('the halo is parking; try again')
     return this.reload(id, options)
   }
@@ -1143,8 +1147,8 @@ export class ActorStore {
   park() {
     this.closed = true
     return this.lock.run(async () => {
-      for (const record of this.liveActors()) {
-        if (this.isBusy(record.id)) return unpark(this, `${record.id} is busy`)
+      for (const record of this.live_actors()) {
+        if (this.is_busy(record.id)) return unpark(this, `${record.id} is busy`)
         if (!(await this.#final_sync(record)))
           return unpark(this, `${record.id} did not sync`)
         await this.#idle(record.id, 'disk')
@@ -1163,21 +1167,21 @@ export class ActorStore {
    * Hold an actor busy under one key, so the idle sweep and parking leave it
    * alone. The key's kind is the text before `:`; holding a key twice is one hold.
    */
-  beginWork(id, key = 'work') {
+  begin_work(id, key = 'work') {
     const held = this.busy.get(id) ?? new Set()
     held.add(key)
     this.busy.set(id, held)
   }
 
   /** Release one key; releasing a key not held does nothing. */
-  endWork(id, key = 'work') {
+  end_work(id, key = 'work') {
     const held = this.busy.get(id)
     if (!held?.delete(key)) return
     if (!held.size) this.busy.delete(id)
     this.touch(id).catch(() => {})
   }
 
-  isBusy(id) {
+  is_busy(id) {
     return this.busy.has(id)
   }
 
@@ -1219,7 +1223,7 @@ export class ActorStore {
     return this.lock.run(async () => {
       const done = []
       for (const record of this.list()) {
-        if (this.isBusy(record.id)) continue
+        if (this.is_busy(record.id)) continue
         const step = next_step(record, now, { synced: Boolean(this.sync_url) })
         if (!step) continue
         if (apply) await apply(record, step)
@@ -1229,7 +1233,7 @@ export class ActorStore {
           await this.#idle(record.id, step)
         } else if (step === 'export') {
           await this.#export(record.id)
-          if (!this.#exportVerified(record.id)) {
+          if (!this.#export_verified(record.id)) {
             LOG.warn(`actor ${record.id} exported but not verified; keeping it`)
             continue
           }
@@ -1243,7 +1247,7 @@ export class ActorStore {
   }
 
   /** An export is safe to retire when its manifest and bundle agree. */
-  #exportVerified(id) {
+  #export_verified(id) {
     const dir = join(this.exports_dir, id)
     if (!exists_sync(join(dir, 'manifest.json'))) return false
     const manifest = read_json(join(dir, 'manifest.json'))
@@ -1266,7 +1270,7 @@ export class ActorStore {
       )
     const record = this.get(id)
     if (record.state === 'running') {
-      const pid = firecracker.pidForApiSock(record.api_sock) ?? record.pid
+      const pid = firecracker.pid_for_api_sock(record.api_sock) ?? record.pid
       await this.#flush(record)
       const api = new firecracker.Api(record.api_sock, this.api_timeout)
       await firecracker.pause(api)
@@ -1287,7 +1291,7 @@ export class ActorStore {
    * harness and the boot goes on.
    * @param {{ id: string, dir: string }} record
    */
-  async #updateHarness(record) {
+  async #update_harness(record) {
     if (!this.template) return
     const release = join(dirname(this.template), 'template.inputs')
     const applied = join(record.dir, 'actor.inputs')
@@ -1334,21 +1338,21 @@ export class ActorStore {
     )
     if (holder)
       throw new HaloError(`${record.tap} is held by running actor ${holder.id}`)
-    if (syscalls.ensureTap(record.tap))
+    if (syscalls.ensure_tap(record.tap))
       LOG.info(`rebuilt ${record.tap} for actor ${id}`)
     if (from_memory) {
       LOG.info(`reloading actor ${id} from its memory snapshot`)
       timings = await this.#start(record, state, mem, startup)
     } else {
       LOG.info(`booting actor ${id} from its disk`)
-      await this.#updateHarness(record)
-      timings = await this.#bootActor(record, startup)
+      await this.#update_harness(record)
+      timings = await this.#boot_actor(record, startup)
     }
     const init_started = performance.now()
     Object.assign(
       record,
       await startup.run('initializing_actor', () =>
-        this.#initActor(record, { pi_after_recovery: true })
+        this.#init_actor(record, { pi_after_recovery: true })
       )
     )
     const init_ms = performance.now() - init_started
@@ -1362,7 +1366,7 @@ export class ActorStore {
       ms: performance.now() - started
     })
     LOG.info(`actor ${id} is up, ${record.hostname}`)
-    await this.#startPi(record, startup)
+    await this.#start_pi(record, startup)
     return this.get(id)
   }
 
@@ -1381,9 +1385,9 @@ export class ActorStore {
   /** The process has to be gone before its disk is removed. */
   async #teardown(record) {
     await firecracker.terminate(
-      firecracker.pidForApiSock(record.api_sock) ?? record.pid
+      firecracker.pid_for_api_sock(record.api_sock) ?? record.pid
     )
-    if (record.tap) syscalls.deleteTap(record.tap)
+    if (record.tap) syscalls.delete_tap(record.tap)
     rm_sync(record.dir, { recursive: true, force: true })
     rm_sync(join(this.published_dir, record.id), {
       recursive: true,
@@ -1395,7 +1399,7 @@ export class ActorStore {
     })
   }
 
-  #tracePath(id) {
+  #trace_path(id) {
     return join(this.traces_dir, `${id}.jsonl`)
   }
 
@@ -1408,14 +1412,14 @@ export class ActorStore {
     )
     try {
       mkdir_sync(this.traces_dir, { recursive: true })
-      append_file_sync(this.#tracePath(id), `${JSON.stringify(line)}\n`)
+      append_file_sync(this.#trace_path(id), `${JSON.stringify(line)}\n`)
     } catch (error) {
       LOG.warn(`could not trace ${id} ${event}: ${error.message}`)
     }
   }
 
-  traceOf(id, limit) {
-    const path = this.#tracePath(id)
+  trace_of(id, limit) {
+    const path = this.#trace_path(id)
     if (!exists_sync(path)) return []
     const events = read_file_sync(path, 'utf8')
       .split('\n')
@@ -1428,10 +1432,10 @@ export class ActorStore {
    * m3: time from create to the first accepted turn, the moment user code runs.
    * Recorded once; a halo restart re-reads the trace rather than trusting memory.
    */
-  firstTurn(id, now = Date.now()) {
+  first_turn(id, now = Date.now()) {
     if (this.turned.has(id)) return null
     this.turned.add(id)
-    if (this.traceOf(id).some(row => row.event === 'first-turn')) return null
+    if (this.trace_of(id).some(row => row.event === 'first-turn')) return null
     const created = Date.parse(this.get(id).created)
     const ms = Number.isFinite(created) ? now - created : null
     this.trace(id, 'first-turn', ms === null ? {} : { ms })
@@ -1447,7 +1451,7 @@ export class ActorStore {
     return this.publishing.run(async () => {
       const target = join(this.published_dir, id)
       const staging = join(this.published_dir, `.${id}.part`)
-      await this.copyOut(id, tree, staging)
+      await this.copy_out(id, tree, staging)
       if (this.sync_sites) {
         const source = join(this.published_dir, `.${id}.source.part`)
         try {
@@ -1455,9 +1459,9 @@ export class ActorStore {
             tree === '/realness/work/site' ||
             tree.startsWith('/realness/work/site/')
           )
-            await this.copyOut(id, '/realness/work/site', source)
+            await this.copy_out(id, '/realness/work/site', source)
           const published = await this.sync_sites.publish(
-            this.ownerOf(id),
+            this.owner_of(id),
             site,
             staging,
             exists_sync(source) ? source : staging
@@ -1470,7 +1474,7 @@ export class ActorStore {
         }
       }
       await this.lock.run(() => {
-        const previous = this.saveSite(id)
+        const previous = this.save_site(id)
         try {
           rename_sync(staging, target)
         } catch (error) {
@@ -1495,7 +1499,7 @@ export class ActorStore {
   }
 
   /** Move the live site into private version storage, if one exists. */
-  saveSite(id) {
+  save_site(id) {
     const target = join(this.published_dir, id)
     if (!exists_sync(target)) return null
     const version = random_bytes(ID_BYTES).toString('hex')
@@ -1509,8 +1513,9 @@ export class ActorStore {
     return version
   }
 
-  siteVersions(id, site = id) {
-    if (this.sync_sites) return this.sync_sites.versions(this.ownerOf(id), site)
+  site_versions(id, site = id) {
+    if (this.sync_sites)
+      return this.sync_sites.versions(this.owner_of(id), site)
     const directory = join(this.versions_dir, id)
     if (!exists_sync(directory)) return []
     return readdir_sync(directory)
@@ -1519,17 +1524,17 @@ export class ActorStore {
       .sort((a, b) => b.saved.localeCompare(a.saved))
   }
 
-  restoreSite(id, version, site = id) {
+  restore_site(id, version, site = id) {
     return this.lock.run(() => {
       if (this.sync_sites)
-        return this.sync_sites.restore(this.ownerOf(id), site, version)
+        return this.sync_sites.restore(this.owner_of(id), site, version)
       if (typeof version !== 'string' || !/^[0-9a-f]{12}$/.test(version))
         throw new BadRequest('invalid site version')
       const directory = join(this.versions_dir, id)
       const source = join(directory, version)
       if (!exists_sync(source)) throw new NotFound(version)
       const target = join(this.published_dir, id)
-      this.saveSite(id)
+      this.save_site(id)
       rename_sync(source, target)
       unlink(join(directory, `${version}.json`))
       this.trace(id, 'restore-site', { version })
@@ -1537,10 +1542,11 @@ export class ActorStore {
     })
   }
 
-  unpublishSite(id, site = id) {
+  unpublish_site(id, site = id) {
     return this.lock.run(() => {
-      if (this.sync_sites) return this.sync_sites.remove(this.ownerOf(id), site)
-      const version = this.saveSite(id)
+      if (this.sync_sites)
+        return this.sync_sites.remove(this.owner_of(id), site)
+      const version = this.save_site(id)
       if (!version) throw new NotFound(id)
       this.trace(id, 'unpublish', { version })
       return { version }
@@ -1554,8 +1560,8 @@ export class ActorStore {
    * @param {string} id
    * @param {object} log
    */
-  async receiveLog(id, log) {
-    await this.ensureRunning(id)
+  async receive_log(id, log) {
+    await this.ensure_running(id)
     const bytes = Buffer.from(JSON.stringify(log), 'utf8')
     const digest = create_hash('sha256').update(bytes).digest('hex')
     const snapshot = `${HANDS_OVER}.${digest}`
@@ -1576,7 +1582,7 @@ export class ActorStore {
   }
 
   /** Copy an actor's directory into a fresh `dest`; only plain entries survive. */
-  async copyOut(id, tree, dest) {
+  async copy_out(id, tree, dest) {
     if (
       typeof tree !== 'string' ||
       !tree.startsWith('/') ||
@@ -1613,7 +1619,7 @@ export class ActorStore {
     }
   }
 
-  publishedSite(id) {
+  published_site(id) {
     if (!ID.test(id)) return null
     const root = join(this.published_dir, id)
     return exists_sync(root) && stat_sync(root).isDirectory() ? root : null
@@ -1651,7 +1657,7 @@ export class ActorStore {
         syscalls.run(['tar', '-czf', artifacts, '-C', tree, ...ARTIFACT_PATHS])
       )
       const listed = syscalls.run(['tar', '-tzf', artifacts]).output
-      const trace_path = this.#tracePath(id)
+      const trace_path = this.#trace_path(id)
       const trace_text = exists_sync(trace_path)
         ? read_file_sync(trace_path, 'utf8')
         : ''
@@ -1679,7 +1685,7 @@ export class ActorStore {
           events: trace_text.split('\n').filter(line => line.trim()).length,
           bytes: Buffer.byteLength(trace_text)
         },
-        seed: this.seedFingerprint()
+        seed: this.seed_fingerprint()
       }
       write_json(join(staging, 'manifest.json'), manifest)
       rm_sync(target, { recursive: true, force: true })
@@ -1720,7 +1726,7 @@ export class ActorStore {
           `export ${export_id} is corrupt: ${digest.slice(0, DIGEST_SHOWN)} != ${manifest.artifacts.sha256.slice(0, DIGEST_SHOWN)}`
         )
 
-      this.#claimMemory()
+      this.#claim_memory()
       try {
         let record = await this.#create(owner)
         try {
@@ -1735,7 +1741,7 @@ export class ActorStore {
               '--no-same-owner'
             ])
           )
-          const trace_path = this.#tracePath(record.id)
+          const trace_path = this.#trace_path(record.id)
           const current = exists_sync(trace_path)
             ? read_file_sync(trace_path, 'utf8')
             : ''
@@ -1743,7 +1749,7 @@ export class ActorStore {
             trace_path,
             read_file_sync(join(export_dir, 'trace.jsonl'), 'utf8') + current
           )
-          const seed = this.seedFingerprint()
+          const seed = this.seed_fingerprint()
           this.trace(record.id, 'restore', {
             source: export_id,
             artifacts_sha256: digest,
@@ -1808,7 +1814,7 @@ export class ActorStore {
       paths: stored.paths ?? null,
       last_activity: stored.last_activity ?? stored.created ?? ''
     })
-    if (firecracker.pidForApiSock(record.api_sock)) record.state = 'running'
+    if (firecracker.pid_for_api_sock(record.api_sock)) record.state = 'running'
     else if (exists_sync(join(dir, STATE)) && exists_sync(join(dir, MEM)))
       record.state = 'idle'
     else record.state = 'stopped'
@@ -1828,7 +1834,7 @@ export class ActorStore {
    * @param {string} id
    * @returns {string}
    */
-  ownerOf(id) {
+  owner_of(id) {
     const { owner } = this.get(id)
     if (!owner) throw new NotFound(id)
     return owner
@@ -1857,7 +1863,7 @@ export class ActorStore {
     return records
   }
 
-  liveActors() {
+  live_actors() {
     return this.list().filter(record => record.state === 'running')
   }
 }

@@ -21,7 +21,10 @@ import {
   timingSafeEqual as timing_safe_equal
 } from 'node:crypto'
 import { createServer as create_server } from 'node:http'
-import { createGunzip as create_gunzip } from 'node:zlib'
+import {
+  createGunzip as create_gunzip,
+  gunzipSync as gunzip_sync
+} from 'node:zlib'
 import { can, identify } from '#root/src/can/index.js'
 import {
   issue_halo_pass,
@@ -40,7 +43,12 @@ import {
   verify_recovery_pass
 } from '#root/src/sign-on/node/recovery-pass.js'
 import { rights_key } from './rights.js'
+import { skipped } from '#root/src/files/skip.js'
+import { org_route, RouteStatus } from './org-routes.js'
+import { members_key, orgs_of, read_org, read_org_along } from './orgs.js'
+import { read_members } from '#root/src/can/members.js'
 import { admins as admin_list } from './admins.js'
+import { keeper } from './trash.js'
 import { git_token, GitRefused } from './git.js'
 import { HTTP } from '#root/lib/http.js'
 import { MIB } from '#root/lib/units.js'
@@ -234,7 +242,31 @@ const PREFLIGHT = {
  * read-only and stays in its own tree; a halo pass is limited to its site;
  * everyone else goes through `can()`.
  */
-const caller_allowed = ({ action, grants, path, who }) => {
+/**
+ * A harness reaches an org's files only while its owner is a member, with
+ * the owner's rights, and never the members page. A pass limited to paths
+ * names orgs as `orgs/+name` or deeper; one with no limit reaches every org
+ * its owner is in.
+ */
+const harness_org_allowed = ({ action, org, path, who }) => {
+  const rest = path.split('/').slice(2).join('/')
+  if (rest.split('/').at(-1) === 'members.html' || skipped(rest)) return false
+  const { paths } = who
+  if (
+    paths &&
+    !paths.some(
+      allowed =>
+        allowed.startsWith('orgs/+') &&
+        (path === allowed || path.startsWith(`${allowed}/`))
+    )
+  )
+    return false
+  return can({ phone: who.harness }, action, path, [], org)
+}
+
+const caller_allowed = ({ action, grants, org, path, who }) => {
+  if (who?.harness && path.startsWith('orgs/'))
+    return harness_org_allowed({ action, org, path, who })
   if (who?.harness) return harness_path(path, who.harness, who.paths)
   if (who?.recovery)
     return (
@@ -246,16 +278,61 @@ const caller_allowed = ({ action, grants, path, who }) => {
       path.startsWith(`people/${who.phone}/work/site/`) &&
       can(who, action, path, grants)
     )
-  return can(who, action, path, grants)
+  return can(who, action, path, grants, org)
+}
+
+/** A members page must read cleanly; the org's top page keeps the writer as founder. */
+const check_members = (body, packed, who, top) => {
+  try {
+    const html = (packed ? gunzip_sync(body) : body).toString('utf8')
+    const page = read_members(html)
+    if (!top || page.founder === who?.phone) return
+  } catch {
+    // falls through to the refusal
+  }
+  throw new Status(HTTP.BAD_REQUEST)
+}
+
+/* eslint-disable no-await-in-loop -- each folder's lists are read once, then cached */
+/**
+ * sh3 in listings: under an org, drop what a narrower `members.html` keeps
+ * from the caller, so a list never names a file they cannot read.
+ */
+const org_visible = async (storage, path, who, listing) => {
+  if (!path.startsWith('orgs/') || !listing) return listing
+  const reader = who?.harness ? { phone: who.harness } : who
+  const seen = new Map()
+  const allowed = async key => {
+    const folder = key.slice(0, key.lastIndexOf('/') + 1)
+    if (!seen.has(folder))
+      seen.set(
+        folder,
+        read_org_along(storage, `${folder}x`).then(org =>
+          can(reader, 'get', `${folder}x`, [], org)
+        )
+      )
+    const hidden = who?.harness && key.endsWith('/members.html')
+    return !hidden && (await seen.get(folder))
+  }
+  if (Array.isArray(listing.files) && Array.isArray(listing.folders)) {
+    const folders = []
+    for (const name of listing.folders)
+      if (await allowed(`${path}${name.replace(/\/$/, '')}/x`))
+        folders.push(name)
+    return { ...listing, folders }
+  }
+  const kept = {}
+  for (const [name, value] of Object.entries(listing))
+    if (await allowed(`${path}${name}`)) kept[name] = value
+  return kept
 }
 
 /** List a folder, or every file below it. */
-const answer_list = async (storage, request, response, path) => {
+const answer_list = async (storage, request, response, path, who) => {
   const query = new URLSearchParams((request.url ?? '').split('?')[1] ?? '')
   const version = query.get('version')
   if (version && !/^people\/[^/]+\/$/.test(path))
     throw new Status(HTTP.BAD_REQUEST)
-  response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
   let listing = storage.list(path)
   if (version)
     listing = storage.find(path, version).then(keys => ({
@@ -263,7 +340,9 @@ const answer_list = async (storage, request, response, path) => {
     }))
   else if (query.get('deep') === 'meta') listing = storage.walk_meta(path)
   else if (query.has('deep')) listing = storage.walk(path)
-  return response.end(JSON.stringify(await listing))
+  const visible = await org_visible(storage, path, who, await listing)
+  response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
+  return response.end(JSON.stringify(visible))
 }
 
 /**
@@ -408,6 +487,41 @@ const answer_git_token = async (
 }
 
 /** POST /v1/halo-pass: a short-lived owner pass. */
+/**
+ * sh6: publish copies one org file to `commons/+name/`, at the same place
+ * below the org. The copy stays frozen until it is published again. A
+ * person publishes; a harness, halo, or recovery pass never does.
+ */
+const answer_publish = async (request, response, who, storage) => {
+  if (!who?.phone || who.halo || who.harness || who.recovery)
+    throw new Status(HTTP.UNAUTHORIZED)
+  let from
+  try {
+    from = JSON.parse((await read_body(request)).toString('utf8')).path
+  } catch {
+    throw new Status(HTTP.BAD_REQUEST)
+  }
+  const parts = typeof from === 'string' ? from.split('/') : []
+  const [root, name, ...rest] = parts
+  const inside = rest.join('/')
+  if (root !== 'orgs' || !name || !inside || inside === 'members.html')
+    throw new Status(HTTP.BAD_REQUEST)
+  if (skipped(inside)) throw new Status(HTTP.FORBIDDEN)
+  const to = `commons/${name}/${inside}`
+  const org = await read_org(storage, name)
+  if (!can(who, 'get', from, [], org) || !can(who, 'write', to, [], org))
+    throw new Status(HTTP.FORBIDDEN)
+  const file = await storage.get(from)
+  if (!file) throw new Status(HTTP.NOT_FOUND)
+  const version = await storage.put(to, file.body, { meta: file.meta ?? {} })
+  response.writeHead(HTTP.OK, {
+    'content-type': 'application/json',
+    'cache-control': 'no-store',
+    etag: `"${version}"`
+  })
+  response.end(JSON.stringify({ path: to, version }))
+}
+
 const answer_halo_pass = (response, who, halo_pass_secret) => {
   if (!halo_pass_secret) throw new Status(HTTP.UNAVAILABLE)
   response.writeHead(HTTP.OK, {
@@ -470,6 +584,94 @@ const answer_quiet = async (
   )
 }
 
+/** Cloud Scheduler presents a shared secret; nothing else calls this. */
+const alert_caller = alert_token => request => {
+  if (!alert_token) return false
+  const given = Buffer.from(
+    /^Bearer (\S+)$/.exec(request.headers.authorization ?? '')?.[1] ?? ''
+  )
+  const wanted = Buffer.from(alert_token)
+  return given.length === wanted.length && timing_safe_equal(given, wanted)
+}
+
+/** A signed-in person, not a halo, harness, or recovery pass. */
+const person_only = who => {
+  if (!who?.phone || who.halo || who.harness || who.recovery)
+    throw new Status(HTTP.UNAUTHORIZED)
+  return who
+}
+
+const answer_json = (response, value) => {
+  response.writeHead(HTTP.OK, {
+    'content-type': 'application/json',
+    'cache-control': 'no-store'
+  })
+  response.end(JSON.stringify(value))
+}
+
+/** One org route: a JSON body in, a JSON answer out. */
+const answer_org_call = async ({
+  request,
+  response,
+  org_call,
+  who,
+  storage
+}) => {
+  let body = {}
+  try {
+    const text = (await read_body(request)).toString('utf8')
+    body = text ? JSON.parse(text) : {}
+  } catch {
+    throw new Status(HTTP.BAD_REQUEST)
+  }
+  try {
+    answer_json(
+      response,
+      await org_call.route({ storage, who, name: org_call.name, body })
+    )
+  } catch (error) {
+    if (error instanceof RouteStatus) throw new Status(error.status)
+    throw error
+  }
+}
+
+/** A guarded write or delete of one record. */
+const change_record = async ({
+  storage,
+  request,
+  response,
+  path,
+  owner,
+  action,
+  who,
+  keep
+}) => {
+  const if_absent = request.headers['if-none-match'] === '*'
+  const if_version = version_from(request.headers['if-match'])
+  try {
+    if (action === 'write') {
+      const meta = meta_from(request.headers)
+      const { body, packed } = await read_write(request)
+      await refuse_sold(storage, path, who)
+      if (owner && path.startsWith('orgs/') && path.endsWith('/members.html'))
+        check_members(body, packed, who, path === members_key(owner))
+      const version = await storage.put(path, body, {
+        ...(if_absent ? { if_absent } : { if_version }),
+        ...(packed && { encoding: 'gzip' }),
+        meta
+      })
+      response.writeHead(HTTP.OK, { etag: `"${version}"` })
+    } else {
+      await keep(path, if_version)
+      await storage.delete(path, { if_version })
+      response.writeHead(HTTP.NO_CONTENT)
+    }
+  } catch (error) {
+    if (error.code === 'conflict') throw new Status(HTTP.PRECONDITION_FAILED)
+    throw error
+  }
+}
+
 /**
  * The sync service.
  * @param {object} options
@@ -505,15 +707,7 @@ export const sync_service = ({
   const pins = storage_pins(storage, issuer ? PINS_REALNESS : undefined)
   const allowed = new Set(origins)
 
-  /** Cloud Scheduler presents a shared secret; nothing else calls this. */
-  const alert_call = request => {
-    if (!alert_token) return false
-    const given = Buffer.from(
-      /^Bearer (\S+)$/.exec(request.headers.authorization ?? '')?.[1] ?? ''
-    )
-    const wanted = Buffer.from(alert_token)
-    return given.length === wanted.length && timing_safe_equal(given, wanted)
-  }
+  const alert_call = alert_caller(alert_token)
 
   const fenced = fence_reader(storage)
 
@@ -533,44 +727,43 @@ export const sync_service = ({
   }
 
   const admins = admin_list(storage)
+  const keep = keeper(storage)
 
   const handle = async (request, response, path, action, caller) => {
     const who =
-      ['loops', 'halos', 'usage', 'billing'].includes(path.split('/')[0]) &&
-      caller?.phone
+      ['loops', 'halos', 'usage', 'billing', 'orgs'].includes(
+        path.split('/')[0]
+      ) && caller?.phone
         ? { ...caller, admin: await admins.has(caller.phone) }
         : caller
     const [, owner] = path.split('/')
     const grants =
       who?.instance && owner ? (await rights.grants(owner)).grants : []
-    if (!caller_allowed({ action, grants, path, who }))
+    /** @type {{ founder: string | null, members: string[] } | null} */
+    let org = null
+    if (owner && path.startsWith('orgs/'))
+      org = await read_org_along(storage, path)
+    else if (owner && path.startsWith('commons/'))
+      org = await read_org(storage, owner)
+    else if (path.startsWith('trash/orgs/+'))
+      org = await read_org(storage, path.split('/')[2])
+    if (!caller_allowed({ action, grants, org, path, who }))
       throw new Status(HTTP.FORBIDDEN)
 
     if (action === 'list')
-      return await answer_list(storage, request, response, path)
+      return await answer_list(storage, request, response, path, who)
     if (action === 'get') return await answer_get(storage, response, path)
 
-    const if_absent = request.headers['if-none-match'] === '*'
-    const if_version = version_from(request.headers['if-match'])
-    try {
-      if (action === 'write') {
-        const meta = meta_from(request.headers)
-        const { body, packed } = await read_write(request)
-        await refuse_sold(storage, path, who)
-        const version = await storage.put(path, body, {
-          ...(if_absent ? { if_absent } : { if_version }),
-          ...(packed && { encoding: 'gzip' }),
-          meta
-        })
-        response.writeHead(HTTP.OK, { etag: `"${version}"` })
-      } else {
-        await storage.delete(path, { if_version })
-        response.writeHead(HTTP.NO_CONTENT)
-      }
-    } catch (error) {
-      if (error.code === 'conflict') throw new Status(HTTP.PRECONDITION_FAILED)
-      throw error
-    }
+    await change_record({
+      storage,
+      request,
+      response,
+      path,
+      owner,
+      action,
+      who,
+      keep
+    })
     if (owner && path === rights_key(owner)) rights.forget(owner)
     response.end()
   }
@@ -613,6 +806,23 @@ export const sync_service = ({
       const who = await who_is(request)
       if (!who?.phone) throw new Status(HTTP.UNAUTHORIZED)
       await answer_quiet(response, who, { admins, halo_statuses, storage })
+      return who
+    }
+    if (path === 'v1/orgs' && method === 'GET') {
+      const who = person_only(await who_is(request))
+      answer_json(response, { orgs: await orgs_of(storage, who.phone) })
+      return who
+    }
+    const org_call = org_route(path, method)
+    if (org_call) {
+      const caller = person_only(await who_is(request))
+      const who = { ...caller, admin: await admins.has(caller.phone) }
+      await answer_org_call({ request, response, org_call, who, storage })
+      return caller
+    }
+    if (path === 'v1/publish' && method === 'POST') {
+      const who = await who_is(request)
+      await answer_publish(request, response, who, storage)
       return who
     }
     if (path === 'v1/git-token' && method === 'POST') {

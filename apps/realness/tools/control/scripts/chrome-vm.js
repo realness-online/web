@@ -71,17 +71,17 @@ export class ChromeVm {
 
   /** @param {{ work: string, mib?: number, vcpus?: number, huge_pages?: string }} options */
   constructor({ work, mib = 1024, vcpus = 2, huge_pages }) {
-    syscalls.requireRoot('creating TAPs and Firecracker')
+    syscalls.require_root('creating TAPs and Firecracker')
     mkdir_sync(work, { recursive: true })
     Object.assign(this, { work, mib, vcpus, huge_pages, pids: [] })
-    this.tap = syscalls.freeTap('fc-chrome')
-    this.address = syscalls.tapGuest(this.tap, NET)
+    this.tap = syscalls.free_tap('fc-chrome')
+    this.address = syscalls.tap_guest(this.tap, NET)
     const index = /\d+$/.exec(this.tap)
     if (!index) throw new Error(`tap name ${this.tap} has no trailing number`)
     this.mac = `06:00:AC:12:${Number(index[0]).toString(16).padStart(2, '0').toUpperCase()}:02`
     this.state = join(work, 'chrome.state')
     this.mem = join(work, 'chrome.mem')
-    syscalls.createTap(this.tap, NET)
+    syscalls.create_tap(this.tap, NET)
   }
 
   spawn() {
@@ -127,7 +127,7 @@ export class ChromeVm {
     const disk = join(this.work, 'rootfs.ext4')
     syscalls.run(['cp', '--reflink=auto', '--sparse=always', IMAGE, disk])
     this.spawn()
-    await firecracker.waitForApiSocket(this.api_sock)
+    await firecracker.wait_for_api_socket(this.api_sock)
     this.api = new firecracker.Api(this.api_sock)
     await firecracker.boot(this.api, {
       kernel: KERNEL,
@@ -144,7 +144,7 @@ export class ChromeVm {
   /** Pause, write state and memory, stop this Firecracker. */
   async snapshot() {
     await firecracker.pause(this.api)
-    await firecracker.createSnapshot(this.api, this.state, this.mem)
+    await firecracker.create_snapshot(this.api, this.state, this.mem)
     await firecracker.terminate(this.pid)
     return { mem_mib: mib(stat_sync(this.mem).size) }
   }
@@ -152,8 +152,8 @@ export class ChromeVm {
   /** A fresh Firecracker resumes the snapshot on the same TAP, until DevTools answers. */
   async restore() {
     this.spawn()
-    await firecracker.waitForApiSocket(this.api_sock)
-    await firecracker.loadSnapshot(
+    await firecracker.wait_for_api_socket(this.api_sock)
+    await firecracker.load_snapshot(
       new firecracker.Api(this.api_sock),
       this.state,
       this.mem,
@@ -301,7 +301,7 @@ export class ChromeVm {
   /** Stop every Firecracker, drop the TAP, keep only the serial log. */
   async stop() {
     for (const pid of this.pids) await firecracker.terminate(pid)
-    syscalls.deleteTap(this.tap)
+    syscalls.delete_tap(this.tap)
     for (const file of [
       'rootfs.ext4',
       'chrome.mem',

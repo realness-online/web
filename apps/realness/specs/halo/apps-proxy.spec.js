@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createServer, request } from 'node:http'
 import { it } from 'node:test'
 import { NotFound } from '../../src/halo/errors.js'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 import { app_auth } from '../../src/halo/app-auth.js'
 
 process.env.HALO_PASS_SECRET ||=
@@ -74,7 +74,7 @@ async function setup(t) {
       })()
   }
   const auth = app_auth(process.env.HALO_PASS_SECRET)
-  const server = makeServer({}, apps, auth)
+  const server = make_server({}, apps, auth)
   const port = await listen(server)
   t.after(() => {
     for (const s of [server, upstream]) {

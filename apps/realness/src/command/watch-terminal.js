@@ -381,7 +381,7 @@ const spend_lines = (rows = [], width = 80) =>
 const percent = value => `${(Number(value) * PERCENT).toFixed(1)}%`
 const millis = value => `${Math.round(value)}ms`
 
-export const model_summary = report => {
+const model_summary = report => {
   const totals = report?.totals
   if (!totals?.calls) return 'no model calls today'
   const errors = `${totals.errors} ${totals.errors === 1 ? 'error' : 'errors'} (${percent(totals.error_rate)})`
@@ -389,7 +389,7 @@ export const model_summary = report => {
 }
 
 /** Today's calls across people, plus the busiest models and clients. */
-export const model_lines = (report, on = true, width = DEFAULT_WIDTH) => {
+const model_lines = (report, on = true, width = DEFAULT_WIDTH) => {
   if (report?.status === 'failed')
     return [paint(`FAILED ${report.error}`, 'failed', on)]
   if (!report?.totals) return ['no model report']

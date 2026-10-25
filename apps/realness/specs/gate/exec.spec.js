@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
 import { make_gate } from '#root/src/gate/gate.js'
-import { makeServer as make_halo } from '#root/src/halo/server.js'
+import { make_server as make_halo } from '#root/src/halo/server.js'
 
 const secret = 'exec-relay-secret-at-least-thirty-two-bytes'
 process.env.HALO_PASS_SECRET = secret
@@ -21,7 +21,7 @@ const start = async (t, execute) => {
   const halo = make_halo({
     get: id => records[id],
     list: () => Object.values(records),
-    execStream: async (id, argv, options) => {
+    exec_stream: async (id, argv, options) => {
       seen.push({ id, argv, options })
       return execute(options)
     }

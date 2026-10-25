@@ -5,7 +5,7 @@ import { create_gcs } from '#root/src/can/gcs.js'
 import { ActorStore } from '../../src/halo/actors.js'
 import { Door } from '../../src/halo/door.js'
 import { Loops } from '../../src/halo/loops.js'
-import { makeServer as make_server } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 import { out_path } from '#root/lib/output.js'
 
 const owner = '+14156667777'
@@ -99,7 +99,7 @@ const stopped = (id, reason) => {
 
 const made = []
 try {
-  await store.ensureSeed()
+  await store.ensure_seed()
   const parent = (await store.create(owner)).id
   made.push(parent)
   ok(`parent ${parent}`)

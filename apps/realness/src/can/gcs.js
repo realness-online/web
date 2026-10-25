@@ -18,7 +18,8 @@ import { randomUUID as random_uuid } from 'node:crypto'
 import { execFile as exec_file } from 'node:child_process'
 import { promisify } from 'node:util'
 import { gunzipSync as gunzip_sync, gzipSync as gzip_sync } from 'node:zlib'
-import { Conflict, guard } from './disk.js'
+import { guard } from './disk.js'
+import { Conflict } from './contract.js'
 import { merged_meta } from './contract.js'
 import { hash_index, index_scope } from './hash-index.js'
 import { version_of as hash_of } from '#root/src/files/version.js'
@@ -128,7 +129,10 @@ export const gcloud_token = () =>
     }
   })
 
-/** Every page of an object listing, following `nextPageToken`. */
+/**
+ * Every page of an object listing, following `nextPageToken`.
+ * @param {{ bucket: string, call: Function, fail: Function, fields: string, label: string, scope: string, delimiter?: string }} options
+ */
 const pages = async ({
   bucket,
   call,
@@ -154,6 +158,128 @@ const pages = async ({
   } while (page)
   return { folders, items: found }
 }
+
+/** Index pieces live under `.index/`, beside every scope, never inside one. */
+const INDEX = '.index/'
+const hidden = name => name.startsWith(INDEX)
+
+/** The hash index, kept as JSON pieces in the bucket. */
+const gcs_index = ({ bucket, call, fail, object }) =>
+  hash_index({
+    async read(piece) {
+      const response = await call(
+        `${API}/${bucket}/o/${object(`${INDEX}${piece}`)}?alt=media`
+      )
+      if (response.status === HTTP.NOT_FOUND)
+        return { entries: {}, generation: '0' }
+      if (!response.ok) await fail(`index ${piece}`, response)
+      return {
+        entries: await response.json(),
+        generation: response.headers.get('x-goog-generation') ?? '0'
+      }
+    },
+    async write(piece, entries, generation) {
+      const name = object(`${INDEX}${piece}`)
+      const match = `ifGenerationMatch=${encodeURIComponent(String(generation))}`
+      const response = Object.keys(entries).length
+        ? await call(
+            `${UPLOAD}/${bucket}/o?uploadType=media&name=${name}&${match}`,
+            {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(entries)
+            }
+          )
+        : await call(`${API}/${bucket}/o/${name}?${match}`, {
+            method: 'DELETE'
+          })
+      if (
+        response.status === HTTP.PRECONDITION_FAILED ||
+        (response.status === HTTP.NOT_FOUND && generation !== '0')
+      )
+        throw new Conflict(`${piece} moved`)
+      if (!response.ok && response.status !== HTTP.NOT_FOUND)
+        await fail(`index ${piece}`, response)
+    }
+  })
+
+/** list, walk, and walk_meta over the bucket, hiding the index. */
+const gcs_listing = ({ bucket, call, fail, prefix }) => ({
+  async list(folder) {
+    const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
+    const { folders, items } = await pages({
+      bucket,
+      call,
+      fail,
+      fields: 'items(name),prefixes,nextPageToken',
+      label: `list ${folder}`,
+      delimiter: '/',
+      scope
+    })
+    const files = items
+      .filter(item => !hidden(item.name.slice(prefix.length)))
+      .map(item => item.name.slice(scope.length))
+    return {
+      files: files.filter(Boolean).sort(),
+      folders: folders
+        .filter(name => !hidden(name.slice(prefix.length)))
+        .map(name => name.slice(scope.length, -1))
+        .sort()
+    }
+  },
+
+  async walk(folder) {
+    const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
+    const { items } = await pages({
+      bucket,
+      call,
+      fail,
+      fields: 'items(name,crc32c,metadata),nextPageToken',
+      label: `walk ${folder}`,
+      scope
+    })
+    const found = {}
+    for (const item of items) {
+      const name = item.name.slice(scope.length)
+      if (
+        name &&
+        !name.endsWith('/') &&
+        !hidden(item.name.slice(prefix.length))
+      )
+        found[name] = version_of(item)
+    }
+    return found
+  },
+
+  /** Like walk, with each file's byte size, last update, and meta. */
+  async walk_meta(folder) {
+    const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
+    const { items } = await pages({
+      bucket,
+      call,
+      fail,
+      fields: 'items(name,crc32c,size,updated,metadata),nextPageToken',
+      label: `walk ${folder}`,
+      scope
+    })
+    const found = {}
+    for (const item of items) {
+      const name = item.name.slice(scope.length)
+      if (
+        name &&
+        !name.endsWith('/') &&
+        !hidden(item.name.slice(prefix.length))
+      )
+        found[name] = {
+          version: version_of(item),
+          size: Number(item.metadata?.[SIZE] ?? item.size),
+          updated: item.updated,
+          meta: meta_of(item)
+        }
+    }
+    return found
+  }
+})
 
 export const create_gcs = ({ bucket, token, prefix = '' }) => {
   if (!bucket) throw new Error('create_gcs needs a bucket')
@@ -186,7 +312,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
    * Without a guard the write is pinned to the object it read, so a merged
    * `created` never lands on top of a write it did not see.
    */
-  const precondition = async (key, options, current) => {
+  const precondition = (key, options, current) => {
     const { if_version, if_absent } = guard(options)
     if (if_absent) return 'ifGenerationMatch=0'
     if (
@@ -197,46 +323,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
     return `ifGenerationMatch=${encodeURIComponent(current?.generation ?? 0)}`
   }
 
-  /** Index pieces live under `.index/`, beside every scope, never inside one. */
-  const INDEX = '.index/'
-  const index = hash_index({
-    async read(piece) {
-      const response = await call(
-        `${API}/${bucket}/o/${object(`${INDEX}${piece}`)}?alt=media`
-      )
-      if (response.status === HTTP.NOT_FOUND)
-        return { entries: {}, generation: '0' }
-      if (!response.ok) await fail(`index ${piece}`, response)
-      return {
-        entries: await response.json(),
-        generation: response.headers.get('x-goog-generation') ?? '0'
-      }
-    },
-    async write(piece, entries, generation) {
-      const name = object(`${INDEX}${piece}`)
-      const match = `ifGenerationMatch=${encodeURIComponent(generation)}`
-      const response = Object.keys(entries).length
-        ? await call(
-            `${UPLOAD}/${bucket}/o?uploadType=media&name=${name}&${match}`,
-            {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(entries)
-            }
-          )
-        : await call(`${API}/${bucket}/o/${name}?${match}`, {
-            method: 'DELETE'
-          })
-      if (
-        response.status === HTTP.PRECONDITION_FAILED ||
-        (response.status === HTTP.NOT_FOUND && generation !== '0')
-      )
-        throw new Conflict(`${piece} moved`)
-      if (!response.ok && response.status !== HTTP.NOT_FOUND)
-        await fail(`index ${piece}`, response)
-    }
-  })
-  const hidden = name => name.startsWith(INDEX)
+  const index = gcs_index({ bucket, call, fail, object })
 
   return {
     /** Every key under a person's scope holding `version`. */
@@ -368,79 +455,6 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         await index.moved(key, version_of(current), null)
     },
 
-    async list(folder) {
-      const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
-      const { folders, items } = await pages({
-        bucket,
-        call,
-        fail,
-        fields: 'items(name),prefixes,nextPageToken',
-        label: `list ${folder}`,
-        delimiter: '/',
-        scope
-      })
-      const files = items
-        .filter(item => !hidden(item.name.slice(prefix.length)))
-        .map(item => item.name.slice(scope.length))
-      return {
-        files: files.filter(Boolean).sort(),
-        folders: folders
-          .filter(name => !hidden(name.slice(prefix.length)))
-          .map(name => name.slice(scope.length, -1))
-          .sort()
-      }
-    },
-
-    async walk(folder) {
-      const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
-      const { items } = await pages({
-        bucket,
-        call,
-        fail,
-        fields: 'items(name,crc32c,metadata),nextPageToken',
-        label: `walk ${folder}`,
-        scope
-      })
-      const found = {}
-      for (const item of items) {
-        const name = item.name.slice(scope.length)
-        if (
-          name &&
-          !name.endsWith('/') &&
-          !hidden(item.name.slice(prefix.length))
-        )
-          found[name] = version_of(item)
-      }
-      return found
-    },
-
-    /** Like walk, with each file's byte size, last update, and meta. */
-    async walk_meta(folder) {
-      const scope = `${prefix}${folder.replace(/\/?$/, '/').replace(/^\/$/, '')}`
-      const { items } = await pages({
-        bucket,
-        call,
-        fail,
-        fields: 'items(name,crc32c,size,updated,metadata),nextPageToken',
-        label: `walk ${folder}`,
-        scope
-      })
-      const found = {}
-      for (const item of items) {
-        const name = item.name.slice(scope.length)
-        if (
-          name &&
-          !name.endsWith('/') &&
-          !hidden(item.name.slice(prefix.length))
-        )
-          found[name] = {
-            version: version_of(item),
-            size: Number(item.metadata?.[SIZE] ?? item.size),
-            updated: item.updated,
-            meta: meta_of(item)
-          }
-      }
-      return found
-    }
+    ...gcs_listing({ bucket, call, fail, prefix })
   }
 }

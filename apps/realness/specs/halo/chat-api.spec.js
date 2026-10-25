@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { Duplex } from 'node:stream'
 import { it } from 'node:test'
 import { issue_halo_pass } from '#root/src/sign-on/node/halo-pass.js'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 import { Lines } from '../../src/halo/vsock.js'
 
 const secret = 'chat-api-test-secret-at-least-thirty-two-bytes'
@@ -36,15 +36,15 @@ const start = async ({
         throw new Error('no actor')
       })(),
     list: () => Object.values(records),
-    ensureRunning: id => (seen.wakes++, records[id]),
-    beginWork: id => seen.work.push(`begin ${id}`),
-    endWork: id => seen.work.push(`end ${id}`),
-    firstTurn: id => seen.turns.push(id),
-    receiveLog: async (id, log) => {
+    ensure_running: id => (seen.wakes++, records[id]),
+    begin_work: id => seen.work.push(`begin ${id}`),
+    end_work: id => seen.work.push(`end ${id}`),
+    first_turn: id => seen.turns.push(id),
+    receive_log: async (id, log) => {
       seen.logs.push({ id, log })
     }
   }
-  const connectChat = async () => {
+  const connect_chat = async () => {
     const socket = new Duplex({
       read() {},
       write(chunk, encoding, done) {
@@ -71,8 +71,8 @@ const start = async ({
     })
     return { socket, lines: new Lines(socket) }
   }
-  const server = makeServer(store, null, undefined, null, {
-    connectChat,
+  const server = make_server(store, null, undefined, null, {
+    connect_chat,
     limits
   })
   await new Promise(done => server.listen(0, '127.0.0.1', done))

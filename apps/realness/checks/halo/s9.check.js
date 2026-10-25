@@ -35,8 +35,8 @@ const ssh = command =>
   )
 
 const probe = [
-  "import { execInGuest } from './src/halo/vsock.js'",
-  `const { code, out, err } = await execInGuest('/opt/fc/actors/mnt/${actor}/vsock.sock', ['head', '-c', '${BYTES}', '/dev/zero'])`,
+  "import { exec_in_guest } from './src/halo/vsock.js'",
+  `const { code, out, err } = await exec_in_guest('/opt/fc/actors/mnt/${actor}/vsock.sock', ['head', '-c', '${BYTES}', '/dev/zero'])`,
   'console.log(JSON.stringify({ code, bytes: out.length, intact: out.every(byte => byte === 0), err: err.toString().slice(-200) }))'
 ].join('\n')
 const encoded = Buffer.from(probe).toString('base64')

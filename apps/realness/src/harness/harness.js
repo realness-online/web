@@ -107,6 +107,33 @@ export const refused = path => {
   return null
 }
 
+/** o3: a Syncs entry naming an org folder, `orgs/+name` or deeper. */
+export const org_path = path =>
+  /^orgs\/\+[a-z][a-z0-9-]{0,62}(\/[^/]+)*\/?$/.test(path)
+
+/**
+ * Sync one org folder at `can://orgs/+name/...`. Sync decides access: the
+ * Syncs list only narrows it. When the owner is no longer a member, sync
+ * refuses, the folder stops syncing, and files already here stay.
+ * No `members.html` travels; the founder edits them through sync directly.
+ */
+export const sync_org = async (store, local, path, options) => {
+  const folder = path.replace(/\/$/, '')
+  const exclude = options.exclude ?? (() => false)
+  try {
+    const report = await store.sync(local, `can://${folder}/`, {
+      ...options,
+      exclude: (name, is_dir) =>
+        name.split('/').at(-1) === 'members.html' || exclude(name, is_dir)
+    })
+    return { report }
+  } catch (error) {
+    if (error.status === HTTP.FORBIDDEN || error.status === HTTP.NOT_FOUND)
+      return { refused: 'not a member of this org' }
+    throw error
+  }
+}
+
 /** The repo a path sits in, checked from its nearest existing folder. */
 const repo_of = async path => {
   let dir = resolve(path)
@@ -314,7 +341,19 @@ const sync_listed = async ({
     const reason =
       refused(path) ?? ((await repo_of(local)) ? 'inside a git repo' : null)
     if (reason) refusals[path] = `${reason} (${plan})`
-    else if (await is_file_entry(root, path)) {
+    else if (org_path(path)) {
+      const { report, refused: why } = await sync_org(store, local, path, {
+        state,
+        deletes,
+        defer_edits,
+        exclude: (name, is_dir) => exclude(`${path}/${name}`, is_dir)
+      })
+      if (why) refusals[path] = `${why} (${plan})`
+      else {
+        synced[path] = report
+        bases[path] = path
+      }
+    } else if (await is_file_entry(root, path)) {
       const folder = dirname(path)
       const remote = folder === '.' ? 'can://~/' : `can://~/${folder}/`
       synced[path] = await store.sync(dirname(local), remote, {

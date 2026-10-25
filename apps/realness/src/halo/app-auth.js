@@ -55,7 +55,7 @@ export const app_auth = (secret, { now = Date.now } = {}) => {
 }
 
 /** The Cookie header without ours; undefined when nothing else is left. */
-export const withoutAppCookie = header => {
+export const without_app_cookie = header => {
   const rest = (header ?? '')
     .split(/;\s*/)
     .filter(part => part && !part.startsWith(`${COOKIE}=`))

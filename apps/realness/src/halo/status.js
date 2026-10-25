@@ -161,8 +161,8 @@ export class HaloStatus {
     this.traces =
       traces ??
       (() =>
-        typeof store.traceOf === 'function'
-          ? store.list().map(actor => store.traceOf(actor.id, TRACE_WINDOW))
+        typeof store.trace_of === 'function'
+          ? store.list().map(actor => store.trace_of(actor.id, TRACE_WINDOW))
           : [])
     this.#next_probe = 0
   }
@@ -237,7 +237,7 @@ export class HaloStatus {
   async snapshot() {
     const actors = this.store.list()
     const count = state => actors.filter(actor => actor.state === state).length
-    const seed = this.store.seedStatus()
+    const seed = this.store.seed_status()
     const volume = volume_space(this.store.volume)
     const resources = this.resources()
     const checked = this.now().toISOString()

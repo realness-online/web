@@ -18,7 +18,7 @@ const get = (record, path = '/') =>
   })
     .then(r => r.text())
     .catch(() => null)
-const vmPid = id => firecracker.pidForApiSock(apps.path(id, 'api.sock'))
+const vm_pid = id => firecracker.pid_for_api_sock(apps.path(id, 'api.sock'))
 
 /** Sweep until the app answers with a new boot id, or fail after `seconds`. */
 const returns = async (record, before, seconds = 90) => {
@@ -74,7 +74,7 @@ try {
   assert.ok(boot)
   console.log(`  ok   ${record.id} answers at ${record.address}`)
 
-  const pid = vmPid(record.id)
+  const pid = vm_pid(record.id)
   assert.ok(pid, "the app's VM is running")
   process.kill(pid, 'SIGKILL')
   boot = await returns(record, boot)
@@ -87,7 +87,7 @@ try {
   await get(record, '/oom')
   let peak = 0
   const watch = setInterval(() => {
-    const pid = vmPid(record.id)
+    const pid = vm_pid(record.id)
     const status =
       pid &&
       read_file_sync(`/proc/${pid}/status`, 'utf8').match(/VmRSS:\s+(\d+)/)
@@ -106,8 +106,8 @@ try {
     `  ok   out-of-memory app returns; VM peaked at ${peak} MiB (cap ${record.mib})`
   )
 
-  await firecracker.terminate(vmPid(record.id))
-  syscalls.deleteTap(record.tap)
+  await firecracker.terminate(vm_pid(record.id))
+  syscalls.delete_tap(record.tap)
   apps = new AppStore(options)
   boot = await returns(record, boot)
   console.log('  ok   halo restart brings the app back')
@@ -124,7 +124,7 @@ try {
   }
   assert.equal(state, 'crashed')
   assert.equal(apps.record(looping.id).restarts?.length, 5)
-  assert.equal(vmPid(looping.id), null)
+  assert.equal(vm_pid(looping.id), null)
   console.log('  ok   a crash loop stops at crashed after five restarts')
   console.log('app-supervise-check: all green')
 } finally {

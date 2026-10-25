@@ -7,6 +7,9 @@
  * the file's meta.
  */
 import { stat, utimes } from 'node:fs/promises'
+import { MS_PER_SECOND } from '#root/lib/units.js'
+
+const NS_PER_S = 1e9
 
 /** The birth time as ISO, or null where the filesystem keeps none. */
 export const born = async path => {
@@ -28,8 +31,8 @@ export const set_born = async (path, iso, platform = process.platform) => {
   if (Number.isNaN(when)) return false
   const info = await stat(path, { bigint: true }).catch(() => null)
   if (!info || Number(info.birthtimeMs) <= when) return false
-  const atime = Number(info.atimeNs) / 1e9
-  await utimes(path, atime, when / 1000)
-  await utimes(path, atime, Number(info.mtimeNs) / 1e9)
+  const atime = Number(info.atimeNs) / NS_PER_S
+  await utimes(path, atime, when / MS_PER_SECOND)
+  await utimes(path, atime, Number(info.mtimeNs) / NS_PER_S)
   return true
 }

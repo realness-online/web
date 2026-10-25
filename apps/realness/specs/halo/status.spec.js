@@ -11,7 +11,7 @@ const A = '+14155550123'
 
 const fake_store = (volume = '/') => ({
   volume,
-  seedStatus: () => ({ built: true, matches: true }),
+  seed_status: () => ({ built: true, matches: true }),
   list: () => [
     {
       id: 'a-000000000001',

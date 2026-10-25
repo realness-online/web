@@ -33,13 +33,9 @@ import {
 import { dirname, join, resolve, sep } from 'node:path'
 import { gzipSync as gzip_sync, gunzipSync as gunzip_sync } from 'node:zlib'
 import { version_of } from '#root/src/files/version.js'
-import { merged_meta } from './contract.js'
+import { Conflict, merged_meta } from './contract.js'
 import { hash_index, index_scope } from './hash-index.js'
 /* eslint-disable no-await-in-loop -- tree walks go one entry at a time to bound open files */
-
-export class Conflict extends Error {
-  code = 'conflict'
-}
 
 /**
  * A write's preconditions, checked for shape. `if_version: null` was the old
@@ -68,52 +64,96 @@ const to_plain = (key, body, gzip_at_rest) =>
     ? gunzip_sync(body)
     : body
 
-export const disk = (root_path, { gzip_at_rest = false } = {}) => {
-  const root = resolve(root_path)
+/** The path for a key, refusing escapes and the reserved folders. */
+const path_in = (root, key) => {
+  const path = resolve(root, key)
+  if (!path.startsWith(root + sep))
+    throw new Error(`disk: ${key} escapes the root`)
+  const reserved = name =>
+    path === join(root, name) || path.startsWith(join(root, name) + sep)
+  if (RESERVED.some(reserved)) throw new Error(`disk: ${key} is reserved`)
+  return path
+}
+
+/** Runs work for one key at a time, in arrival order. */
+const serializer = () => {
   const locks = new Map()
-  /** @type {Map<string, { size: number, mtime: number, version: string }>} */
-  const hashes = new Map()
-
-  const at = key => {
-    const path = resolve(root, key)
-    if (!path.startsWith(root + sep))
-      throw new Error(`disk: ${key} escapes the root`)
-    if (
-      RESERVED.some(
-        name =>
-          path === join(root, name) || path.startsWith(join(root, name) + sep)
-      )
-    )
-      throw new Error(`disk: ${key} is reserved`)
-    return path
-  }
-  const meta_at = key => `${join(root, META, key)}.json`
-
-  const serial = (key, work) => {
+  return (key, work) => {
     const run = (locks.get(key) ?? Promise.resolve()).then(work)
     const settled = run.catch(() => {})
     locks.set(key, settled)
     settled.then(() => locks.get(key) === settled && locks.delete(key))
     return run
   }
+}
 
-  const read_meta = async key => {
-    try {
-      return JSON.parse(await read_file(meta_at(key), 'utf8'))
-    } catch (error) {
-      if (missing(error)) return {}
-      throw error
-    }
-  }
+/** Writes beside the target, then renames over it. */
+const atomic_write = async (path, data) => {
+  await mkdir(dirname(path), { recursive: true })
+  const temp = join(dirname(path), `${random_uuid()}.tmp`)
+  await write_file(temp, data)
+  await rename(temp, path)
+}
 
-  const write_meta = async (key, meta) => {
-    const path = meta_at(key)
-    if (!meta || !Object.keys(meta).length) return rm(path, { force: true })
-    await mkdir(dirname(path), { recursive: true })
-    const temp = join(dirname(path), `${random_uuid()}.tmp`)
-    await write_file(temp, JSON.stringify(meta))
-    await rename(temp, path)
+/** JSON from a file, or `{}` when it is missing. */
+const read_json = async path => {
+  try {
+    return JSON.parse(await read_file(path, 'utf8'))
+  } catch (error) {
+    if (missing(error)) return {}
+    throw error
   }
+}
+
+/** Text bodies packed when gzip_at_rest and packing makes them smaller. */
+const packed = (key, body, gzip_at_rest) => {
+  if (!gzip_at_rest || !TEXT.test(key)) return body
+  const small = gzip_sync(Buffer.from(body))
+  return small.length < Buffer.byteLength(body) ? small : body
+}
+
+/** A folder's direct files and folders, hiding temp files and reserved ones. */
+const list_in = async (root, at, prefix) => {
+  const trimmed = prefix.replace(/\/$/, '')
+  let entries
+  try {
+    entries = await readdir(trimmed ? at(trimmed) : root, {
+      withFileTypes: true
+    })
+  } catch (error) {
+    if (missing(error)) return { files: [], folders: [] }
+    throw error
+  }
+  const shown = entries.filter(
+    entry =>
+      !entry.name.endsWith('.tmp') &&
+      !(!trimmed && RESERVED.includes(entry.name))
+  )
+  const names = test =>
+    shown
+      .filter(test)
+      .map(entry => entry.name)
+      .sort()
+  return {
+    files: names(e => e.isFile()),
+    folders: names(e => e.isDirectory())
+  }
+}
+
+export const disk = (root_path, { gzip_at_rest = false } = {}) => {
+  const root = resolve(root_path)
+  const serial = serializer()
+  /** @type {Map<string, { size: number, mtime: number, version: string }>} */
+  const hashes = new Map()
+
+  const at = key => path_in(root, key)
+  const meta_at = key => `${join(root, META, key)}.json`
+
+  const read_meta = key => read_json(meta_at(key))
+  const write_meta = (key, meta) =>
+    meta && Object.keys(meta).length
+      ? atomic_write(meta_at(key), JSON.stringify(meta))
+      : rm(meta_at(key), { force: true })
 
   const get = async key => {
     try {
@@ -159,10 +199,7 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
       if ((await read_piece(piece)).generation !== generation)
         throw new Conflict(`${piece} moved`)
       if (!Object.keys(entries).length) return rm(path, { force: true })
-      await mkdir(dirname(path), { recursive: true })
-      const temp = join(dirname(path), `${random_uuid()}.tmp`)
-      await write_file(temp, JSON.stringify(entries))
-      await rename(temp, path)
+      await atomic_write(path, JSON.stringify(entries))
     }
   })
   /** The stored version before a change, read only for indexed keys. */
@@ -183,18 +220,7 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
   }
 
   const write = async (key, body, meta) => {
-    const path = at(key)
-    await mkdir(dirname(path), { recursive: true })
-    const temp = join(dirname(path), `${random_uuid()}.tmp`)
-    const stored =
-      gzip_at_rest && TEXT.test(key)
-        ? (() => {
-            const packed = gzip_sync(Buffer.from(body))
-            return packed.length < Buffer.byteLength(body) ? packed : body
-          })()
-        : body
-    await write_file(temp, stored)
-    await rename(temp, path)
+    await atomic_write(at(key), packed(key, body, gzip_at_rest))
     if (meta !== undefined) await write_meta(key, meta)
     return version_of(Buffer.from(body))
   }
@@ -257,32 +283,7 @@ export const disk = (root_path, { gzip_at_rest = false } = {}) => {
         await index.moved(key, old, null)
       }),
 
-    async list(prefix) {
-      const trimmed = prefix.replace(/\/$/, '')
-      let entries
-      try {
-        entries = await readdir(trimmed ? at(trimmed) : root, {
-          withFileTypes: true
-        })
-      } catch (error) {
-        if (missing(error)) return { files: [], folders: [] }
-        throw error
-      }
-      const shown = entries.filter(
-        entry =>
-          !entry.name.endsWith('.tmp') &&
-          !(!trimmed && RESERVED.includes(entry.name))
-      )
-      const names = test =>
-        shown
-          .filter(test)
-          .map(entry => entry.name)
-          .sort()
-      return {
-        files: names(e => e.isFile()),
-        folders: names(e => e.isDirectory())
-      }
-    },
+    list: prefix => list_in(root, at, prefix),
 
     async walk(prefix) {
       const listed = await this.walk_meta(prefix)

@@ -56,7 +56,7 @@ it('an unknown command prints the usage and exits 2', async () => {
   assert.equal(code, 2)
   assert.match(
     stderr,
-    /usage: realness login\|logout\|whoami\|ls\|cat\|cp\|rm\|store sync/
+    /usage: realness login\|logout\|whoami\|ls\|cat\|cp\|rm\|trash\|restore\|store sync/
   )
 })
 

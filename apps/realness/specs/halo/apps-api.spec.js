@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
 import { it } from 'node:test'
 import { NotFound } from '../../src/halo/errors.js'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = 'apps-api-test-secret-at-least-thirty-two-bytes-long'
 process.env.HALO_PASS_SECRET = secret
@@ -34,7 +34,7 @@ async function serve(t) {
       if (id !== actor.id) throw new NotFound(id)
       return actor
     },
-    copyOut: async (id, tree, dest) => calls.push(['copyOut', id, tree])
+    copy_out: async (id, tree, dest) => calls.push(['copy_out', id, tree])
   }
   const apps = {
     record: id => {
@@ -47,13 +47,13 @@ async function serve(t) {
       return { ...app, running: true, answering: true }
     },
     stop: async id => calls.push(['stop', id]),
-    startFrom: async (copy, meta) => {
+    start_from: async (copy, meta) => {
       await copy('/stage')
       calls.push(['start', meta])
       return { id: 'app-000000000002', kind: 'node', ...meta }
     }
   }
-  const server = makeServer(store, apps)
+  const server = make_server(store, apps)
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   t.after(
     () =>
@@ -141,13 +141,13 @@ it("apps start from the owner's work folder only", async t => {
   assert.equal(response.status, 201)
   assert.equal((await response.json()).owner, alice)
   assert.deepEqual(calls, [
-    ['copyOut', 'a-alice', '/realness/work/demo'],
+    ['copy_out', 'a-alice', '/realness/work/demo'],
     ['start', { owner: alice, actor: 'a-alice', path: '/realness/work/demo' }]
   ])
 })
 
 it('without an app store, /v1/apps is 404', async () => {
-  const server = makeServer({})
+  const server = make_server({})
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   try {
     const response = await fetch(

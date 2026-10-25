@@ -12,9 +12,9 @@ it('publishing to sync sites does not wait behind the actor lock', async () => {
     lock: held,
     publishing: free,
     published_dir: '/nowhere',
-    copyOut: async (id, tree) => copied.push(tree),
+    copy_out: async (id, tree) => copied.push(tree),
     sync_sites: { publish: async () => ({ files: 1, url: 'http://site/' }) },
-    ownerOf: () => '+15555550100',
+    owner_of: () => '+15555550100',
     trace: () => {}
   }
   const published = await Promise.race([

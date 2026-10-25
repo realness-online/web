@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { it } from 'node:test'
-import { makeServer as make_server } from '#root/src/halo/server.js'
+import { make_server } from '#root/src/halo/server.js'
 import { make_gate } from '#root/src/gate/gate.js'
 import { create_startup_trace } from '#root/src/harness/startup.js'
 import { records } from '#root/src/app/utils/stream-records.js'
@@ -35,7 +35,7 @@ const fixture = async t => {
       actors.push(record)
       return record
     },
-    async ensureRunning(id, { startup }) {
+    async ensure_running(id, { startup }) {
       calls.push('reload')
       const trace = create_startup_trace({
         ...startup,

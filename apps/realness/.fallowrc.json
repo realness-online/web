@@ -40,6 +40,7 @@
     "**/coverage/**",
     "src/app/wasm/**",
     "**/public/wasm/**",
+    "public/*.worker.js",
     "**/docs/generated/**"
   ],
   "ignoreDependencies": [
@@ -62,7 +63,8 @@
     "/pi-durable.browser.js",
     "/scripts/template-for-polyfill.js",
     "/scripts/watch-for-updates.js",
-    "**/targets.json"
+    "**/targets.json",
+    "**/pi-ai/dist/utils/retry.js"
   ],
   "rules": {
     "unused-files": "warn",
@@ -98,7 +100,13 @@
     "minLines": 8
   },
   "health": {
-    "ignore": ["**/specs/**", "**/test/**", "**/*.spec.js", "**/*.test.js", "src/app/wasm/**"],
+    "ignore": [
+      "**/specs/**",
+      "**/test/**",
+      "**/*.spec.js",
+      "**/*.test.js",
+      "src/app/wasm/**"
+    ],
     "maxCyclomatic": 20,
     "maxCognitive": 15
   },
@@ -153,7 +161,7 @@
     },
     {
       "file": "src/halo/pty.js",
-      "exports": ["makeServer"]
+      "exports": ["make_server"]
     },
     {
       "file": "src/control/halo-gcp.js",

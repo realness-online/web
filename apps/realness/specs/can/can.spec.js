@@ -399,3 +399,102 @@ it('a visible grant reads from its attributes; the text it shows never grants', 
   )
   assert.deepEqual(read_rights(lying), read_rights(visible))
 })
+
+const C = '+14155550003'
+const org = { founder: A, members: [A, B] }
+const FAMILY = '+family'
+const OTHER = '+client-b'
+
+it('org members reach every file in their org; others reach none', () => {
+  const file = `orgs/${FAMILY}/notes.md`
+  for (const action of ['get', 'list', 'write', 'delete']) {
+    assert.equal(can(scott, action, file, [], org), true)
+    assert.equal(can(other, action, file, [], org), action !== 'delete')
+    assert.equal(can({ phone: C }, action, file, [], org), false)
+    assert.equal(can(stranger, action, file, [], org), false)
+    assert.equal(can(box, action, file, [], org), false)
+  }
+})
+
+it('one org never opens another', () => {
+  assert.equal(can(other, 'get', `orgs/${OTHER}/x.md`, [], null), false)
+  assert.equal(
+    can(other, 'get', `orgs/${OTHER}/x.md`, [], { founder: A, members: [A] }),
+    false
+  )
+})
+
+it('only the founder rewrites the members page; members read it', () => {
+  const page = `orgs/${FAMILY}/members.html`
+  assert.equal(can(scott, 'write', page, [], org), true)
+  assert.equal(can(other, 'get', page, [], org), true)
+  assert.equal(can(other, 'write', page, [], org), false)
+  assert.equal(can(scott, 'delete', page, [], org), false)
+  assert.equal(can({ phone: C }, 'get', page, [], org), false)
+})
+
+it('only the founder deletes org files', () => {
+  assert.equal(can(scott, 'delete', `orgs/${FAMILY}/a/b.md`, [], org), true)
+  assert.equal(can(other, 'delete', `orgs/${FAMILY}/a/b.md`, [], org), false)
+})
+
+it('only a global admin starts an org, and admin opens no org files', () => {
+  const page = `orgs/${OTHER}/members.html`
+  const admin = { phone: C, admin: true }
+  assert.equal(can(admin, 'write', page, [], null), true)
+  assert.equal(can(other, 'write', page, [], null), false)
+  assert.equal(can(admin, 'get', `orgs/${FAMILY}/notes.md`, [], org), false)
+  assert.equal(
+    can(admin, 'write', `orgs/${FAMILY}/members.html`, [], org),
+    false
+  )
+})
+
+it('an org without a members page admits nobody', () => {
+  const page = `orgs/${OTHER}/members.html`
+  assert.equal(can(other, 'get', page, [], null), false)
+  assert.equal(can(other, 'write', `orgs/${OTHER}/x.md`, [], null), false)
+  assert.equal(can(stranger, 'write', page, [], null), false)
+})
+
+it('org names are +lowercase; phones, bare names, and the root are refused', () => {
+  assert.equal(can(scott, 'list', 'orgs/', [], org), false)
+  assert.equal(can(scott, 'get', 'orgs/family/x.md', [], org), false)
+  assert.equal(can(scott, 'get', 'orgs/+Family/x.md', [], org), false)
+  assert.equal(can(scott, 'get', `orgs/${A}/x.md`, [], org), false)
+  assert.equal(can(scott, 'get', `org/${FAMILY}/x.md`, [], org), false)
+})
+
+it("anyone reads an org's commons; only its founder publishes", () => {
+  const file = `commons/${FAMILY}/recipe.html`
+  for (const who of [stranger, scott, other, { phone: C }]) {
+    assert.equal(can(who, 'get', file, [], org), true)
+    assert.equal(can(who, 'list', `commons/${FAMILY}/`, [], org), true)
+  }
+  assert.equal(can(scott, 'write', file, [], org), true)
+  assert.equal(can(scott, 'delete', file, [], org), true)
+  for (const who of [stranger, other, { phone: C }, box]) {
+    assert.equal(can(who, 'write', file, [], org), false)
+    assert.equal(can(who, 'delete', file, [], org), false)
+  }
+  assert.equal(can(scott, 'write', `commons/${OTHER}/x.html`, [], null), false)
+  assert.equal(can(stranger, 'list', 'commons/', [], null), false)
+  assert.equal(can(stranger, 'get', 'commons/family/x.html', [], null), false)
+})
+
+it("sy15: the trash is the owner's, or the org founder's, to read and empty", () => {
+  const mine = `trash/people/${A}/2026-10-25/101500000/vault/a.md`
+  for (const action of ['get', 'list', 'delete'])
+    assert.equal(can(scott, action, mine, [], null), true)
+  assert.equal(can(scott, 'write', mine, [], null), false)
+  for (const who of [stranger, other, box])
+    for (const action of ['get', 'list', 'delete', 'write'])
+      assert.equal(can(who, action, mine, [], null), false)
+  const theirs = `trash/orgs/${FAMILY}/2026-10-25/101500000/notes.md`
+  assert.equal(can(scott, 'get', theirs, [], org), true)
+  assert.equal(can(scott, 'delete', theirs, [], org), true)
+  assert.equal(can(other, 'get', theirs, [], org), false)
+  assert.equal(can(scott, 'write', theirs, [], org), false)
+  assert.equal(can(scott, 'list', 'trash/', [], null), false)
+  assert.equal(can(scott, 'list', 'trash/people/', [], null), false)
+})

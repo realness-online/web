@@ -86,15 +86,16 @@ it('the sync service refuses an unknown store or a bucket-less gcs', () => {
 it('the gate needs its secret, then listens', async t => {
   const missing = spawn_sync(
     process.execPath,
-    [entry('server/gate/bin/gate-service.js')],
+    [entry('server/gate/bin/gate-service.js'), '--environment', 'local'],
     {
-      env: { ...process.env, HALO_PASS_SECRET: '', HALO_PASS_SECRET: '' },
+      env: { ...process.env, HALO_PASS_SECRET: '' },
       encoding: 'utf8'
     }
   )
   assert.match(missing.stderr, /gate needs HALO_PASS_SECRET/)
   const port = await free_port()
   await start(t, 'server/gate/bin/gate-service.js', {
+    args: ['--environment', 'local'],
     env: {
       PORT: String(port),
       HALO_PASS_SECRET: 'entry-test-secret-at-least-thirty-two',

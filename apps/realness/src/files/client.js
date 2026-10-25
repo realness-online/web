@@ -37,6 +37,7 @@ import { homedir } from 'node:os'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
 import { skipped, skipped_name } from './skip.js'
+import { trashed_from } from '#root/src/can/trash-keys.js'
 import {
   STARTER_FILE,
   starter_base,
@@ -255,10 +256,32 @@ const settle_starter = async ({
   if (!pull_only) agree(STARTER_FILE, bytes, version)
 }
 
+/**
+ * Read the per-file agreement for one folder with one server. Records are keyed
+ * by server, so local and production never share an agreement. A record from
+ * before that (no `server`) is adopted once by the first server to read it,
+ * then removed, so a second server starts from nothing instead of trusting it.
+ */
+const read_sync_record = async ({ state, server, record_key, pull_only }) => {
+  const at = key => join(state, 'sync', `${sha(key).slice(0, KEY_LENGTH)}.json`)
+  const record_path = at(`${server}\n${record_key}`)
+  if (pull_only) return { record_path, legacy_path: null, saved: {} }
+  const read = async path =>
+    JSON.parse(await read_file(path, 'utf8').catch(() => 'null'))
+  const current = await read(record_path)
+  if (current) return { record_path, legacy_path: null, saved: current }
+  const legacy_path = at(record_key)
+  const legacy = await read(legacy_path)
+  if (legacy && !legacy.server)
+    return { record_path, legacy_path, saved: legacy }
+  return { record_path, legacy_path: null, saved: {} }
+}
+
 /** Save the per-file agreement and when this sync ran. */
 const save_sync_record = async ({
   baseline,
   deferred,
+  legacy_path,
   manifest,
   pair,
   pull_only,
@@ -271,6 +294,7 @@ const save_sync_record = async ({
     record_path,
     `${JSON.stringify({ ...pair, files: manifest, deferred, synced_at }, null, 2)}\n`
   )
+  if (legacy_path) await rm(legacy_path, { force: true })
 }
 
 /**
@@ -774,6 +798,7 @@ const make_transfer = ({
    * once and only when a delete needs them. A file missing at its old path
    * whose version lives on at a new one was moved, so its delete loses nothing.
    */
+  /** @type {Promise<Set<string>> | null} */
   let arrived = null
   const moved_away = async base => {
     if (!base?.version) return false
@@ -904,6 +929,8 @@ const make_transfer = ({
 
 /** The plain read and write calls, without the sync machinery. */
 const read_api = ({ call, expect, key }) => {
+  const trash_root = org =>
+    org ? `can://trash/orgs/${org}/` : `can://trash/${key('can://~/')}`
   const api = {
     async ls(path) {
       const folder = path.endsWith('/') ? path : `${path}/`
@@ -943,6 +970,26 @@ const read_api = ({ call, expect, key }) => {
 
     async rm(path) {
       await expect(await call('DELETE', path), `rm ${path}`, [HTTP.NO_CONTENT])
+    },
+
+    /**
+     * sy15: what sync kept from deletes, `<day>/<time>/<path>` to version.
+     * Yours by default; an org's (`+name`) for its founder.
+     */
+    trash(org = null) {
+      return api.walk(trash_root(org))
+    },
+
+    /** Put one trashed file back where it was; refuses if that path is taken. */
+    async restore(name, org = null) {
+      const from = `${trash_root(org)}${name}`
+      const to = trashed_from(key(from))
+      if (!to) throw new Error(`not a trashed file: ${name}`)
+      await api.put(`can://${to}`, await api.cat(from), {
+        'if-none-match': '*'
+      })
+      await api.rm(from)
+      return `can://${to}`
     },
 
     /** Local file to remote, or remote file to local. Folders take the basename. */
@@ -996,43 +1043,25 @@ const read_api = ({ call, expect, key }) => {
   return api
 }
 
-/**
- * @param {object} options
- * @param {string} options.url
- * @param {string | null | ((options?: { refresh?: boolean }) => string | null | Promise<string | null>)} [options.token] a function is asked again with `refresh` after a 401
- * @param {typeof fetch} [options.fetcher]
- * @param {string | null} [options.phone]
- * @param {string} [options.state]
- * @param {string} [options.trash]
- */
-export const client = ({
-  url,
-  token,
-  fetcher = fetch,
-  phone = phone_of(token),
-  state: default_state,
-  trash: default_trash
-}) => {
-  const key = path => {
-    let rest = path.replace(/^can:\/\//, '')
-    if (rest === '~' || rest.startsWith('~/')) {
-      if (!phone) throw new Error('can://~ needs a token with a phone number')
-      rest = `people/${phone}${rest.slice(1)}`
-    }
-    return rest
+/** A `can://` path as a store key; `~` is the signed-in person. */
+const key_for = phone => path => {
+  let rest = path.replace(/^can:\/\//, '')
+  if (rest === '~' || rest.startsWith('~/')) {
+    if (!phone) throw new Error('can://~ needs a token with a phone number')
+    rest = `people/${phone}${rest.slice(1)}`
   }
+  return rest
+}
 
-  /** @param {string} method @param {string} path @param {{ body?: BodyInit, headers?: Record<string, string>, query?: string }} [options] */
-  /**
-   * One request. A 401 asks `token({ refresh: true })`; when that gives a new token,
-   * sends the same request once more, so a write made as a token expires
-   * still lands.
-   */
-  const call = async (
-    method,
-    path,
-    { body, headers = {}, query = '' } = {}
-  ) => {
+/**
+ * One request. A 401 asks `token({ refresh: true })`; when that gives a new token,
+ * sends the same request once more, so a write made as a token expires
+ * still lands.
+ * @returns {(method: string, path: string, options?: { body?: BodyInit, headers?: Record<string, string>, query?: string }) => Promise<Response>}
+ */
+const caller =
+  ({ url, token, fetcher, key }) =>
+  async (method, path, { body, headers = {}, query = '' } = {}) => {
     const encoded = key(path).split('/').map(encodeURIComponent).join('/')
     const send = current =>
       fetcher(`${url}/${encoded}${query && `?${query}`}`, {
@@ -1052,6 +1081,38 @@ export const client = ({
     await response.arrayBuffer().catch(() => {})
     return send(fresh)
   }
+
+/** Runs `work` on each item, at most `concurrency` at a time. */
+const in_pool = async (all, concurrency, work) => {
+  let next = 0
+  const worker = async () => {
+    while (next < all.length) await work(all[next++])
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, all.length) }, worker)
+  )
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.url
+ * @param {string | null | ((options?: { refresh?: boolean }) => string | null | Promise<string | null>)} [options.token] a function is asked again with `refresh` after a 401
+ * @param {typeof fetch} [options.fetcher]
+ * @param {string | null} [options.phone]
+ * @param {string} [options.state]
+ * @param {string} [options.trash]
+ */
+export const client = ({
+  url,
+  token,
+  fetcher = fetch,
+  phone = phone_of(token),
+  state: default_state,
+  trash: default_trash
+}) => {
+  const key = key_for(phone)
+  const call = caller({ url, token, fetcher, key })
+  const server = String(url).replace(/\/+$/, '')
 
   const expect = (response, what, ok = [HTTP.OK]) => {
     if (!ok.includes(response.status))
@@ -1109,14 +1170,12 @@ export const client = ({
       const pair = { local: resolve(local), remote: key(folder) }
       const selected = only && new Set(only)
       const record_key = `${pair.local}\n${pair.remote}${selected ? `\n${[...selected].sort().join('\n')}` : ''}`
-      const record_path = join(
+      const { record_path, legacy_path, saved } = await read_sync_record({
         state,
-        'sync',
-        `${sha(record_key).slice(0, KEY_LENGTH)}.json`
-      )
-      const saved = pull_only
-        ? {}
-        : JSON.parse(await read_file(record_path, 'utf8').catch(() => '{}'))
+        server,
+        record_key,
+        pull_only
+      })
       const manifest = saved.files ?? {}
       const deferred = saved.deferred ?? {}
       const report = empty_report()
@@ -1177,14 +1236,7 @@ export const client = ({
         stock,
         trash
       })
-      const all = [...names].sort()
-      let next = 0
-      const worker = async () => {
-        while (next < all.length) await one(all[next++])
-      }
-      await Promise.all(
-        Array.from({ length: Math.min(concurrency, all.length) }, worker)
-      )
+      await in_pool([...names].sort(), concurrency, one)
       log.close()
       await settle_starter({
         agree,
@@ -1200,8 +1252,9 @@ export const client = ({
       await save_sync_record({
         baseline,
         deferred,
+        legacy_path,
         manifest,
-        pair,
+        pair: { ...pair, server },
         pull_only,
         record_path
       })

@@ -28,9 +28,9 @@ const sleep = ms =>
   })
 
 export class Api {
-  constructor(socketPath, timeoutSeconds = API_TIMEOUT_S) {
-    this.socketPath = socketPath
-    this.timeout = timeoutSeconds * MS_PER_SECOND
+  constructor(socket_path, timeout_seconds = API_TIMEOUT_S) {
+    this.socket_path = socket_path
+    this.timeout = timeout_seconds * MS_PER_SECOND
   }
 
   call(method, path, body) {
@@ -39,7 +39,7 @@ export class Api {
     return new Promise((done, fail) => {
       const call = request(
         {
-          socketPath: this.socketPath,
+          socketPath: this.socket_path,
           method,
           path,
           headers: payload
@@ -96,7 +96,7 @@ export const spawn = (binary, cwd, api_sock, log_path) => {
   }
 }
 
-export const waitForApiSocket = async (path, seconds = WAIT_S) => {
+export const wait_for_api_socket = async (path, seconds = WAIT_S) => {
   const deadline = Date.now() + seconds * MS_PER_SECOND
   while (Date.now() < deadline) {
     if (exists_sync(path)) return
@@ -122,7 +122,7 @@ const real = path => {
  * @param {string} api_sock
  * @returns {number | null}
  */
-export const pidForApiSock = api_sock => {
+export const pid_for_api_sock = api_sock => {
   const want = real(api_sock)
   for (const name of readdir_sync('/proc')) {
     if (!/^\d+$/.test(name)) continue
@@ -175,7 +175,7 @@ export const terminate = async (pid, seconds = WAIT_S) => {
 }
 
 /**
- * A fresh VM: the seed from the template disk, or an app. `readOnly` maps
+ * A fresh VM: the seed from the template disk, or an app. `read_only` maps
  * drive ids to extra disks attached read-only; an app has no `uds`, so no vsock.
  * @param {Api} api
  * @param {object} options
@@ -188,11 +188,11 @@ export const terminate = async (pid, seconds = WAIT_S) => {
  * @param {string} [options.uds]
  * @param {number} [options.cid]
  * @param {string} [options.huge_pages]
- * @param {Record<string, string>} [options.readOnly]
+ * @param {Record<string, string>} [options.read_only]
  */
 export const boot = async (
   api,
-  { kernel, disk, tap, uds, mac, cid, vcpus, mib, huge_pages, readOnly = {} }
+  { kernel, disk, tap, uds, mac, cid, vcpus, mib, huge_pages, read_only = {} }
 ) => {
   await api.put('/boot-source', {
     kernel_image_path: kernel,
@@ -204,7 +204,7 @@ export const boot = async (
     is_root_device: true,
     is_read_only: false
   })
-  for (const [id, path] of Object.entries(readOnly))
+  for (const [id, path] of Object.entries(read_only))
     await api.put(`/drives/${id}`, {
       drive_id: id,
       path_on_host: path,
@@ -228,7 +228,7 @@ export const boot = async (
 
 export const pause = api => api.patch('/vm', { state: 'Paused' })
 
-export const createSnapshot = (api, state, mem) =>
+export const create_snapshot = (api, state, mem) =>
   api.put('/snapshot/create', {
     snapshot_type: 'Full',
     snapshot_path: state,
@@ -236,7 +236,7 @@ export const createSnapshot = (api, state, mem) =>
   })
 
 /** Resume a snapshot, running on return. Actors pass a vsock; a Chrome VM has none (c1). */
-export const loadSnapshot = (api, state, mem, tap, uds) =>
+export const load_snapshot = (api, state, mem, tap, uds) =>
   api.put('/snapshot/load', {
     snapshot_path: state,
     mem_backend: { backend_path: mem, backend_type: 'File' },

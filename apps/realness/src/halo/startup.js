@@ -76,7 +76,7 @@ export const startup_handlers = ({
       const created = operation.actor_id === null
       const record = created
         ? await store.create(operation.owner, { startup })
-        : await store.ensureRunning(operation.actor_id, { startup })
+        : await store.ensure_running(operation.actor_id, { startup })
       publish(operation, {
         type: 'actor-ready',
         actor_id: record.id,

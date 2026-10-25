@@ -136,7 +136,7 @@ it('the door leases and returns Chrome for its own actor only', async () => {
     tap: 'fc-tap4',
     vsock_path: join(root, 'vsock.sock')
   }
-  const store = { liveActors: () => [record], get: () => record }
+  const store = { live_actors: () => [record], get: () => record }
   const pool = fake_pool()
   const { open, firewall } = fake_firewall()
   const door = new Door(
@@ -187,8 +187,8 @@ it('the door leases and returns Chrome for its own actor only', async () => {
 it('a lease holds its actor busy until returned, released once', async () => {
   const held = []
   const work = {
-    beginWork: (id, key) => held.push(`+${id} ${key}`),
-    endWork: (id, key) => held.push(`-${id} ${key}`)
+    begin_work: (id, key) => held.push(`+${id} ${key}`),
+    end_work: (id, key) => held.push(`-${id} ${key}`)
   }
   const leases = new ChromeLeases(fake_pool(), {
     firewall: fake_firewall().firewall,

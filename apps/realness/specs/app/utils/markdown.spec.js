@@ -2,35 +2,23 @@ import { describe, it, expect } from 'vite-plus/test'
 import {
   documentation_html,
   documentation_html_parts,
-  documentation_preferences_toc,
-  documentation_changelog_toc,
-  documentation_toc,
   inline_documentation_icons,
   markdown_html,
-  markdown_toc,
   changelog_html,
   strip_changelog_unreleased,
   INSTALL_GUIDE_MARKER,
   INSTANCE_PROMPT_MARKER
 } from '@/utils/markdown'
+import { markdown_toc } from '../../../scripts/generate-toc.js'
+import documentation_md from '@/content/documentation.md?raw'
 
 describe('markdown', () => {
-  it('builds a table of contents from headings', () => {
-    const toc = documentation_toc('## Overview\n\n## Posters\n')
-    expect(toc).toEqual([
-      { id: 'overview', title: 'Overview', level: 2 },
-      { id: 'posters', title: 'Posters', level: 2 },
-      ...documentation_preferences_toc,
-      ...documentation_changelog_toc
-    ])
-  })
-
-  it('builds a generic toc without the preferences section', () => {
-    const toc = markdown_toc('## Terms\n\n### Eligibility\n')
-    expect(toc).toEqual([
-      { id: 'terms', title: 'Terms', level: 2 },
-      { id: 'eligibility', title: 'Eligibility', level: 3 }
-    ])
+  it('renders every heading at the id the generated toc links to', () => {
+    const html = documentation_html(documentation_md)
+    const missing = markdown_toc(documentation_md)
+      .map(({ id }) => id)
+      .filter(id => !html.includes(`id="${id}"`))
+    expect(missing).toEqual([])
   })
 
   it('renders arbitrary markdown via markdown_html', () => {

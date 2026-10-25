@@ -6,8 +6,7 @@
  * placed. Only `reassign` moves someone, and it is what hs-n3 and hs-n4 call
  * when an actor has been recreated elsewhere.
  */
-import { createHash as create_hash } from 'node:crypto'
-import { item_html, read_item } from '#root/lib/items.js'
+import { createHash } from 'node:crypto'
 /* eslint-disable no-await-in-loop -- placements are read and removed one at a time so a failure names its key */
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -16,17 +15,33 @@ const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 /** The record that fixes a person's halo. */
 export const placement_key = phone => `placements/${phone.slice(1)}.html`
 
+const esc = value =>
+  String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+
 /** Writes both field names; the halo field goes once no reader needs it. */
 export const placement_html = ({ phone, halo, placed }) => {
   if (!PHONE.test(phone)) throw new Error('bad phone number')
   if (!HALO.test(halo)) throw new Error('bad halo name')
-  return item_html('placement', { phone, halo, host: halo, placed })
+  const props = Object.entries({ phone, halo, host: halo, placed })
+    .map(([name, value]) => `<meta itemprop="${name}" content="${esc(value)}">`)
+    .join('')
+  return `<article itemscope itemtype="/placement">${props}</article>\n`
 }
 
 /** The placement, or null for anything malformed. */
 export const read_placement = html => {
-  const values = read_item(String(html), 'placement')
-  if (!values) return null
+  const match = String(html).match(
+    /<article itemscope itemtype="\/placement">(.*?)<\/article>/s
+  )
+  if (!match) return null
+  const values = {}
+  for (const [, name, value] of match[1].matchAll(
+    /itemprop="(\w+)" content="([^"]*)"/g
+  ))
+    values[name] = value
+      .replace(/&lt;/g, '<')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
   const halo = values.halo ?? values.host
   if (!PHONE.test(values.phone ?? '') || !HALO.test(halo ?? '')) return null
   return { phone: values.phone, halo, placed: values.placed }
@@ -37,7 +52,7 @@ const ranked = (phone, halos) =>
   [...halos].sort((left, right) => score(phone, left) - score(phone, right))
 
 const score = (phone, halo) =>
-  create_hash('sha256').update(`${phone}/${halo}`).digest().readUInt32BE(0)
+  createHash('sha256').update(`${phone}/${halo}`).digest().readUInt32BE(0)
 
 /**
  * The halo already serving this person, or the one the name picks.

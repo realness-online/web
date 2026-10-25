@@ -228,7 +228,10 @@ export const probe_local = async service => {
     )
   }
   if (service.name === 'halo')
-    return { running: true, ready: Boolean(JSON.parse(reply.body).seed?.built) }
+    return {
+      running: true,
+      ready: Boolean(JSON.parse(reply.body).seed?.built)
+    }
   if (service.name === 'gate' && reply.body.trim() !== 'ok')
     throw new Error(
       `Port ${local_settings.gate_port} is occupied by another service`

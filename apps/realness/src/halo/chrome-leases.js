@@ -105,7 +105,7 @@ export class ChromeLeases {
   minutes
   /** @type {() => number} */
   now
-  /** @type {{ beginWork: (id: string, key: string) => void, endWork: (id: string, key: string) => void } | null} */
+  /** @type {{ begin_work: (id: string, key: string) => void, end_work: (id: string, key: string) => void } | null} */
   work
   /**
    * A `{ ready: null }` placeholder while the pool restores, then the lease.
@@ -157,7 +157,7 @@ export class ChromeLeases {
     }
     this.firewall.open(actor_ip, copy.address)
     this.leases.set(actor_id, lease)
-    this.work?.beginWork(actor_id, 'browser')
+    this.work?.begin_work(actor_id, 'browser')
     LOG.info(
       `${actor_id} leased chrome copy ${copy.n} (${copy.address}) for ${this.minutes} min`
     )
@@ -171,7 +171,7 @@ export class ChromeLeases {
     const lease = this.leases.get(actor_id)
     if (!lease) return false
     this.leases.delete(actor_id)
-    this.work?.endWork(actor_id, 'browser')
+    this.work?.end_work(actor_id, 'browser')
     if (!('n' in lease)) return true
     if (lease.n === null || lease.n === undefined) return true
     this.firewall.close(lease.actor_ip, lease.address)

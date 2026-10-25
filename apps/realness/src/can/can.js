@@ -10,6 +10,8 @@ import { has_escape, unsafe_part } from '#root/lib/path-parts.js'
  * path    a storage key: `people/+A/...`, `subscriptions/+A/...`, `usage/+A/...`, `billing/+A/...`,
  *         `loops/<id>/...`, or `halos/<name>/...`.
  * grants  triples read from the owner's rights page (see rights.js).
+ * org     for `orgs/+name/...` and `commons/+name/...`: `{ founder, members }` from that org's
+ *         members page (see members.js), or null when it has none.
  *
  * Deny by default. Ownership comes from the path, never from stored data.
  * Lessons carried over from Realness `storage.rules` are in test/can.test.js.
@@ -20,6 +22,8 @@ const PHONE = /^\+[1-9]\d{6,14}$/
 const INSTANCE = /^\/(\+[1-9]\d{6,14})\/harnesses\/([\w.-]+)$/
 const HALO = /^[a-z0-9][a-z0-9-]{0,62}$/
 const LOOP = /^a-[a-f0-9]{12}$/
+/** An org's name is its id, `+family`; it never changes once made. */
+const ORG = /^\+[a-z][a-z0-9-]{0,62}$/
 /** hs-n2: `placements/<phone digits>.html`, written only by the gate. */
 const PLACEMENT = /^[1-9]\d{6,14}\.html$/
 const PUBLIC_FILES = new Set(['index.html', 'index.html.gz'])
@@ -129,7 +133,48 @@ const people_allowed = (action, owner, rest, me, grants) => {
   return granted(action, owner, ['people', owner, ...rest], me, grants)
 }
 
-export const can = (who, action, path, grants = []) => {
+/**
+ * Members of an org read, list, and write its files; only the founder
+ * deletes. Only the founder writes a members page, at the top or in a
+ * subfolder; `org.members` is already narrowed along the path (sh2, sh3). Only a global admin
+ * starts an org, by writing its first members page, and sync checks that
+ * the page names them as founder. Being an admin opens no org's files.
+ */
+const orgs_allowed = (action, name, rest, me, org) => {
+  if (!me.phone || !ORG.test(name ?? '')) return false
+  if (rest.at(-1) === 'members.html') {
+    if (!org) return rest.length === 1 && action === 'write' && me.admin
+    if (action === 'get') return org.members.includes(me.phone)
+    return action === 'write' && org.founder === me.phone
+  }
+  if (!org?.members.includes(me.phone)) return false
+  return action !== 'delete' || org.founder === me.phone
+}
+
+/**
+ * `commons/+name/` is what an org has published: anyone reads it, signed in
+ * or not. Only the org's founder publishes or withdraws, until sh6 gives
+ * publishing its own grant. Nobody lists the commons root.
+ */
+const commons_allowed = (action, name, rest, me, org) => {
+  if (!ORG.test(name ?? '')) return false
+  if (action === 'get') return rest.length > 0
+  if (action === 'list') return true
+  return rest.length > 0 && Boolean(me.phone) && org?.founder === me.phone
+}
+
+/**
+ * sy15: `trash/people/+A/` is yours and `trash/orgs/+name/` the founder's,
+ * to read, list, and empty. Nobody writes it; sync files deletes there.
+ */
+const trash_allowed = (action, kind, [owner], me, org) => {
+  if (!me.phone || !['get', 'list', 'delete'].includes(action)) return false
+  if (kind === 'people') return owner === me.phone
+  return kind === 'orgs' && ORG.test(owner ?? '') && org?.founder === me.phone
+}
+
+/** @param {{ founder: string | null, members: string[] } | null} [org] */
+export const can = (who, action, path, grants = [], org = null) => {
   if (!ACTIONS.has(action)) return false
   const parts = segments(path)
   if (!parts) return false
@@ -146,6 +191,9 @@ export const can = (who, action, path, grants = []) => {
       PLACEMENT.test(owner ?? '') &&
       (action === 'get' || action === 'write')
     )
+  if (root === 'orgs') return orgs_allowed(action, owner, rest, me, org)
+  if (root === 'commons') return commons_allowed(action, owner, rest, me, org)
+  if (root === 'trash') return trash_allowed(action, owner, rest, me, org)
   if (root === 'usage') return owns_row(action, owner, me)
   if (root === 'billing') return owns_row(action, owner, me)
   if (root !== 'people') return false

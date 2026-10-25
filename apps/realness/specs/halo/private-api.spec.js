@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { createHmac } from 'node:crypto'
 import { it } from 'node:test'
-import { makeServer } from '../../src/halo/server.js'
+import { make_server } from '../../src/halo/server.js'
 
 const secret = 'private-api-test-secret-at-least-thirty-two-bytes'
 process.env.HALO_PASS_SECRET = secret
@@ -29,7 +29,7 @@ it('private API hides other owners before actor work', async () => {
     },
     list: () => [record],
     exports: () => [{ id: record.id, actor: { owner: alice } }],
-    traceOf: () => {
+    trace_of: () => {
       calls.push('trace')
       return []
     },
@@ -57,7 +57,7 @@ it('private API hides other owners before actor work', async () => {
       calls.push('destroy')
     }
   }
-  const server = makeServer(store)
+  const server = make_server(store)
   await new Promise(done => server.listen(0, '127.0.0.1', done))
   const url = `http://127.0.0.1:${server.address().port}`
   const request = (method, path, authorization) =>

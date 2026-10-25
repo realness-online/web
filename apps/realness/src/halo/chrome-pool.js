@@ -208,7 +208,7 @@ export class ChromePool {
     )
     const started = performance.now()
     try {
-      await firecracker.waitForApiSocket(api_sock)
+      await firecracker.wait_for_api_socket(api_sock)
       const api = new firecracker.Api(api_sock)
       await firecracker.boot(api, {
         kernel: this.kernel,
@@ -221,7 +221,7 @@ export class ChromePool {
       const version = await devtools(address, SEED_BOOT_S)
       const boot_s = (performance.now() - started) / MS_PER_SECOND
       await firecracker.pause(api)
-      await firecracker.createSnapshot(api, 'chrome.state', 'chrome.mem')
+      await firecracker.create_snapshot(api, 'chrome.state', 'chrome.mem')
       return {
         browser: version.Browser,
         boot_s,
@@ -275,8 +275,8 @@ export class ChromePool {
       const copy = this.copies.get(n)
       if (!copy) throw new Error(`chrome copy ${n} vanished before it started`)
       copy.pid = child.pid ?? null
-      await firecracker.waitForApiSocket(api_sock)
-      await firecracker.loadSnapshot(
+      await firecracker.wait_for_api_socket(api_sock)
+      await firecracker.load_snapshot(
         new firecracker.Api(api_sock),
         join(this.seed_dir, 'chrome.state'),
         join(this.seed_dir, 'chrome.mem'),

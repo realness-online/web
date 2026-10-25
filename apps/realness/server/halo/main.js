@@ -97,16 +97,16 @@ const store = new ActorStore({
   api_timeout: Number(values['api-timeout']),
   sync_url: environment?.services?.actor_sync_url ?? sync_url
 })
-const warning = store.reflinkWarning()
+const warning = store.reflink_warning()
 if (warning) LOG.warn(warning)
 
 if (command === 'seed') {
-  const status = await store.ensureSeed({ rebuild: values.rebuild })
+  const status = await store.ensure_seed({ rebuild: values.rebuild })
   LOG.info(`seed ready: ${JSON.stringify(status.record)}`)
   process.exit(0)
 }
 
-await store.ensureSeed()
+await store.ensure_seed()
 if (site_sync_url)
   store.sync_sites = new SyncSites({
     url: site_sync_url,
@@ -121,7 +121,7 @@ const addresses = list =>
     .map(part => part.trim())
     .filter(Boolean)
 for (const address of addresses(values['pty-listen'])) {
-  await listen(pty.makeServer(store), values['pty-port'], address)
+  await listen(pty.make_server(store), values['pty-port'], address)
   LOG.info(`pty stream on ${address}:${values['pty-port']}`)
 }
 const proxy_url = (
@@ -198,7 +198,7 @@ const apps = new AppStore({
 })
 for (const address of addresses(values['api-listen'])) {
   await listen(
-    server.makeServer(store, apps, undefined, loops, { limits }),
+    server.make_server(store, apps, undefined, loops, { limits }),
     values.port,
     address
   )
@@ -238,7 +238,7 @@ const sweep = async () => {
 
 const flush = async () => {
   try {
-    await store.flushAll()
+    await store.flush_all()
   } catch (error) {
     LOG.warn(`flush failed: ${error.message}`)
   }

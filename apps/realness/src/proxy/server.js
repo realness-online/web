@@ -86,6 +86,14 @@ export const agent_handler = ({
         message: messages[limit]
       }
     })
+  /** Which limit a call would break, if any. */
+  const limit_for = async (phone, house) => {
+    const plan = await plan_for(phone)
+    if (!house) return over_limit(await ledger.spent(phone), plan.free)
+    if (!plan.paid) return 'plan'
+    const { cost } = await ledger.spent_since(phone, plan.paid.start)
+    return cost >= plan.paid.credit ? 'credit' : undefined
+  }
   return async (request, response) => {
     if (request.method !== 'POST')
       return response.writeHead(HTTP.METHOD_NOT_ALLOWED).end()
@@ -109,15 +117,7 @@ export const agent_handler = ({
     if (ledger && plan_for) {
       let limit
       try {
-        const plan = await plan_for(who.phone)
-        if (house) {
-          if (!plan.paid) limit = 'plan'
-          else if (
-            (await ledger.spent_since(who.phone, plan.paid.start)).cost >=
-            plan.paid.credit
-          )
-            limit = 'credit'
-        } else limit = over_limit(await ledger.spent(who.phone), plan.free)
+        limit = await limit_for(who.phone, house)
       } catch (error) {
         warn(`usage unreadable: ${error.message}`)
         return response.writeHead(HTTP.UNAVAILABLE).end()

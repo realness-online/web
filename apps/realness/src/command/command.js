@@ -28,6 +28,8 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness turn-start --session <file>
        realness turn-end --session <file> --turn <n>
        realness login|logout|whoami|ls|cat|cp|rm ...
+       realness trash [+org]           (what sync kept from deletes, 30 days)
+       realness restore <day/time/path> [+org]
        realness frontend build|deploy [--env development|production] [--dry-run]
        realness example static <destination>
        realness fold [--dry-run]       (merge .conflict session copies into their originals)
@@ -329,6 +331,13 @@ const run_watch_command = async (
   return 0
 }
 
+/** Where sync goes when no target is given. */
+const default_target = ({ get_token, service_url }) => {
+  if (get_token)
+    return () => Promise.resolve({ local: false, url: SYNC_URL, get_token })
+  return service_url ? person_target : sync_target
+}
+
 /**
  * The product entry point: every realness subcommand starts here.
  * @param {string[]} args
@@ -350,11 +359,7 @@ export const run = async (
   {
     get_token,
     service_url,
-    target = get_token
-      ? async () => ({ local: false, url: SYNC_URL, get_token })
-      : service_url
-        ? person_target
-        : sync_target,
+    target = default_target({ get_token, service_url }),
     actor = is_actor(),
     root: root_option,
     state: state_option,
@@ -407,7 +412,17 @@ export const run = async (
     if (args[0] === 'watch') return await run_watch_command(args, common)
     if (args[0] === 'store') return await run_store(args.slice(1), options)
     if (
-      ['login', 'logout', 'whoami', 'ls', 'cat', 'cp', 'rm'].includes(args[0])
+      [
+        'login',
+        'logout',
+        'whoami',
+        'ls',
+        'cat',
+        'cp',
+        'rm',
+        'trash',
+        'restore'
+      ].includes(args[0])
     )
       return await run_store(args, options)
     const request = parse(args)

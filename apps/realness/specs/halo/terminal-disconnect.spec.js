@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { createHmac as create_hmac } from 'node:crypto'
 import { connect, createServer as create_server } from 'node:net'
 import { it } from 'node:test'
-import { makeServer as make_server } from '../../src/halo/pty.js'
+import { make_server } from '../../src/halo/pty.js'
 import { Lines } from '../../src/halo/vsock.js'
 
 const secret = 'terminal-disconnect-secret-at-least-thirty-two-bytes'
@@ -40,11 +40,11 @@ it('last terminal disconnect stops once, retains disk, and permits repeated reco
       owner: phone,
       vsock_path: { port: guest.address().port, host: '127.0.0.1' }
     }),
-    ensureRunning: async () => {},
-    beginWork: () => {
+    ensure_running: async () => {},
+    begin_work: () => {
       work++
     },
-    endWork: () => {
+    end_work: () => {
       work--
     },
     idle: async (id, tier) => {
@@ -97,11 +97,11 @@ it('a quiet terminal stops holding the halo; typing holds it again', async t => 
         owner: phone,
         vsock_path: { port: guest.address().port, host: '127.0.0.1' }
       }),
-      ensureRunning: async () => {},
-      beginWork: () => {
+      ensure_running: async () => {},
+      begin_work: () => {
         work++
       },
-      endWork: () => {
+      end_work: () => {
         work--
       },
       idle: async () => {}

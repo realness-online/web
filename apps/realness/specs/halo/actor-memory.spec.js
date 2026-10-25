@@ -27,13 +27,13 @@ const seed_for = (t, record_mib) => {
     vcpus: 2,
     mib: ACTOR_MIB
   }
-  store.cheapFingerprint = ActorStore.prototype.cheapFingerprint.bind(store)
-  const current = store.cheapFingerprint()
+  store.cheap_fingerprint = ActorStore.prototype.cheap_fingerprint.bind(store)
+  const current = store.cheap_fingerprint()
   const record = { ...current }
   if (record_mib === undefined) delete record.mem_size_mib
   else record.mem_size_mib = record_mib
   write_file_sync(join(seed_dir, 'seed.json'), JSON.stringify(record))
-  return ActorStore.prototype.seedStatus.call(store)
+  return ActorStore.prototype.seed_status.call(store)
 }
 
 it('actors default to the measured 768 MiB guest', () => {

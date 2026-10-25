@@ -116,6 +116,8 @@ Gotchas that bit; carry them through the h4 port.
 - Each folder has one writer: Realness or the harness.
 - Each sync deploy trusts only its own project's sign-in.
 - Phone numbers never appear in app URLs, logs, or referrers.
+- Sync records are kept per server; switching servers starts fresh and sends no deletes.
+- A delete keeps the file in `trash/people/+A/<day>/<time>/` (or `trash/orgs/+name/`, founder only) for 30 days. `realness trash` lists it; `realness restore <day/time/path>` puts it back and never overwrites.
 
 ## What is proven
 

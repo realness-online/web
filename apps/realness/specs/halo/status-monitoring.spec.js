@@ -19,7 +19,7 @@ const fixture = (actors, options = {}) => {
     volume: '/',
     vsock_port: 52,
     list: () => actors,
-    seedStatus: () => ({ built: true, matches: true })
+    seed_status: () => ({ built: true, matches: true })
   }
   const status = new HaloStatus(store, {
     mirror: { put: async (key, body) => writes.push(read_status(body)) },
@@ -203,10 +203,10 @@ it('probes never touch the store, so no actor is woken or has its idle timer res
     volume: '/',
     vsock_port: 52,
     list: () => actors,
-    seedStatus: () => ({ built: true, matches: true }),
+    seed_status: () => ({ built: true, matches: true }),
     touch: async id => calls.push(['touch', id]),
-    ensureRunning: async id => calls.push(['ensureRunning', id]),
-    beginWork: id => calls.push(['beginWork', id])
+    ensure_running: async id => calls.push(['ensure_running', id]),
+    begin_work: id => calls.push(['begin_work', id])
   }
   const status = new HaloStatus(store, {
     mirror: { put: async () => {} },

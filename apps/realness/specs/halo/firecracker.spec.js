@@ -15,8 +15,8 @@ import { out_path } from '#root/lib/output.js'
 import {
   Api,
   boot,
-  createSnapshot,
-  loadSnapshot,
+  create_snapshot,
+  load_snapshot,
   pause
 } from '../../src/halo/firecracker.js'
 
@@ -176,7 +176,7 @@ it('boot attaches each read-only drive and only asks for huge pages when told', 
     vcpus: 1,
     mib: 96,
     huge_pages: '2M',
-    readOnly: { code: '/opt/fc/code.ext4', app: '/opt/fc/app.ext4' }
+    read_only: { code: '/opt/fc/code.ext4', app: '/opt/fc/app.ext4' }
   })
 
   const drives = api.calls.filter(([, path]) => path.startsWith('/drives/'))
@@ -226,11 +226,11 @@ it('boot wires the vsock only when there is one', async () => {
   })
 })
 
-it('pause, createSnapshot, and loadSnapshot send the shapes Firecracker wants', async () => {
+it('pause, create_snapshot, and load_snapshot send the shapes Firecracker wants', async () => {
   const api = fake_api()
   await pause(api)
-  await createSnapshot(api, '/run/state', '/run/mem')
-  await loadSnapshot(
+  await create_snapshot(api, '/run/state', '/run/mem')
+  await load_snapshot(
     api,
     '/run/state',
     '/run/mem',
@@ -261,9 +261,9 @@ it('pause, createSnapshot, and loadSnapshot send the shapes Firecracker wants', 
   ])
 })
 
-it('loadSnapshot leaves the vsock alone for a VM that has none', async () => {
+it('load_snapshot leaves the vsock alone for a VM that has none', async () => {
   const api = fake_api()
-  await loadSnapshot(api, '/run/state', '/run/mem', 'fc-tap2')
+  await load_snapshot(api, '/run/state', '/run/mem', 'fc-tap2')
   const [, , body] = api.calls[0]
   assert.equal('vsock_override' in body, false)
   assert.equal(body.resume_vm, true)

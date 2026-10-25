@@ -163,7 +163,7 @@ it('the fields halo hot reads are the fields a halo reports', async () => {
   let written = ''
   const store = {
     list: () => [],
-    seedStatus: () => ({ built: true, matches: true }),
+    seed_status: () => ({ built: true, matches: true }),
     volume: '/tmp',
     activity: () => null
   }

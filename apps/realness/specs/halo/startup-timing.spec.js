@@ -26,30 +26,30 @@ const modules = {
     const state = globalThis.startup_timing_test
     export const version = () => "test"
     export const spawn = () => { state.clock += 10; state.running = true; return { pid: 123 } }
-    export const waitForApiSocket = async () => { state.clock += 20 }
+    export const wait_for_api_socket = async () => { state.clock += 20 }
     export class Api {}
-    export const loadSnapshot = async () => { state.clock += 30; state.calls.push("snapshot") }
+    export const load_snapshot = async () => { state.clock += 30; state.calls.push("snapshot") }
     export const boot = async () => { state.clock += 60; state.calls.push("boot") }
-    export const pidForApiSock = () => state.running ? 123 : null
+    export const pid_for_api_sock = () => state.running ? 123 : null
     export const terminate = async () => { state.running = false }
     export const pause = async () => { state.calls.push("pause") }
-    export const createSnapshot = async () => { state.calls.push("save snapshot") }
+    export const create_snapshot = async () => { state.calls.push("save snapshot") }
   `,
   'syscalls.js': `
     import { copyFileSync } from "node:fs"
-    export const requireRoot = () => {}
-    export const requireMount = () => {}
-    export const shortEnoughForUnix = () => true
+    export const require_root = () => {}
+    export const require_mount = () => {}
+    export const short_enough_for_unix = () => true
     export const run = argv => { if (argv[0] === "cp") copyFileSync(argv[2], argv[3]); return { code: 0, output: "" } }
-    export const freeTap = () => {
+    export const free_tap = () => {
       const state = globalThis.startup_timing_test
       if (state.no_tap) throw new state.HaloError("no free TAP in fc-tap1..254")
       return "fc-tap1"
     }
-    export const createTap = () => {}
-    export const deleteTap = () => {}
-    export const ensureTap = () => false
-    export const tapGuest = () => "172.16.1.2"
+    export const create_tap = () => {}
+    export const delete_tap = () => {}
+    export const ensure_tap = () => false
+    export const tap_guest = () => "172.16.1.2"
   `,
   'door.js': `
     export const wait_for_door = async () => { globalThis.startup_timing_test.clock += 11; return true }
@@ -57,16 +57,16 @@ const modules = {
   'vsock.js': `
     const state = globalThis.startup_timing_test
     export const VSOCK_PORT = 52
-    export const waitForAgent = async () => {
+    export const wait_for_agent = async () => {
       state.clock += 40
       if (state.fail_agent) throw new Error("guest unavailable")
     }
-    export const execInGuest = async (_, argv) => {
+    export const exec_in_guest = async (_, argv) => {
       state.guest_argv.push(argv)
       state.clock += 50
       return { code: argv.includes("/usr/local/bin/realness-recover") ? state.recover_code : argv.includes("start-pi") ? state.pi_code : 0, out: Buffer.from("ready"), err: Buffer.alloc(0) }
     }
-    export const runOk = async () => { state.clock += 5; return "machine actor boot 1" }
+    export const run_ok = async () => { state.clock += 5; return "machine actor boot 1" }
   `
 }
 const hooks = registerHooks({
@@ -112,7 +112,7 @@ const fixture = t => {
   const store = new ActorStore({ volume, firecracker: 'test' })
   mkdirSync(store.seed_dir)
   writeFileSync(join(store.seed_dir, 'rootfs.ext4'), 'disk')
-  store.ensureSeed = async () => {
+  store.ensure_seed = async () => {
     state.clock += 7
     return { matches: true }
   }
@@ -120,7 +120,7 @@ const fixture = t => {
 }
 
 const fields = (store, id, event) => {
-  const trace = store.traceOf(id).find(row => row.event === event)
+  const trace = store.trace_of(id).find(row => row.event === event)
   assert.ok(trace, `${event} trace exists`)
   return Object.fromEntries(
     ['vm_ms', 'agent_ms', 'init_ms', 'ms'].map(key => [key, trace[key]])
@@ -169,7 +169,7 @@ for (const from_memory of [true, false]) {
       ms: vm_ms + 95
     })
     assert.equal(
-      store.traceOf(actor.id).find(row => row.event === 'reload').from_memory,
+      store.trace_of(actor.id).find(row => row.event === 'reload').from_memory,
       false
     )
     assert.deepEqual(state.calls, ['boot'])
@@ -180,7 +180,7 @@ it('z12: a cold reconnect starts Pi as its own stage, after initialization', asy
   const store = fixture(t)
   const actor = await store.create('+14156667777')
   const completed = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(
       event => event.event === 'startup-stage' && event.state === 'complete'
     )
@@ -202,7 +202,7 @@ it('z12: a cold reconnect starts Pi as its own stage, after initialization', asy
   state.running = false
   await store.reload(actor.id)
   const events = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(
       event => event.event === 'startup-stage' && event.state === 'complete'
     )
@@ -247,13 +247,13 @@ it('live progress keeps one request ID through recovery and includes queued time
     50
   )
   const traced = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(event => event.event === 'startup-stage')
   assert.equal(traced.length, events.length)
   assert.ok(traced.every(event => event.startup_id === 'request-startup'))
   state.running = false
   const reconnect = []
-  await store.ensureRunning(actor.id, {
+  await store.ensure_running(actor.id, {
     startup: {
       id: 'reconnect-startup',
       started_at: state.clock - 100,
@@ -268,7 +268,7 @@ it('file recovery and Pi launch have separate durations', async t => {
   const store = fixture(t)
   store.sync_url = 'https://sync.test'
   const actor = await store.create('+14156667777')
-  const events = store.traceOf(actor.id)
+  const events = store.trace_of(actor.id)
   const completed = events.filter(
     event => event.event === 'startup-stage' && event.state === 'complete'
   )
@@ -290,7 +290,7 @@ it('failed recovery is visible while Pi still launches', async t => {
   state.recover_code = 1
   const actor = await store.create('+14156667777')
   const stages = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(
       event => event.event === 'startup-stage' && event.state !== 'starting'
     )
@@ -310,7 +310,7 @@ it('failed guest readiness records failure, not initialization success', async t
   state.fail_agent = true
   await assert.rejects(store.reload(actor.id), /guest unavailable/)
   const event = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(event => event.event === 'startup-stage')
     .at(-1)
   assert.equal(event.stage, 'waiting_guest')
@@ -341,7 +341,7 @@ it('reconnect queues behind shutdown while the actor still appears running', asy
   )
   await new Promise(done => setImmediate(done))
   let resumed = false
-  const reconnect = Promise.resolve(store.ensureRunning(actor.id)).then(() => {
+  const reconnect = Promise.resolve(store.ensure_running(actor.id)).then(() => {
     resumed = true
   })
   await new Promise(done => setImmediate(done))
@@ -379,7 +379,7 @@ it('failed guest restore does not produce a successful reload measurement', asyn
   state.fail_agent = true
   await assert.rejects(store.reload(actor.id), /guest unavailable/)
   assert.equal(
-    store.traceOf(actor.id).filter(row => row.event === 'reload').length,
+    store.trace_of(actor.id).filter(row => row.event === 'reload').length,
     0
   )
   assert.equal(state.running, false)
@@ -390,7 +390,7 @@ it('already running actors do not produce a restore measurement', async t => {
   const actor = await store.create('+14156667777')
   await store.reload(actor.id)
   assert.equal(
-    store.traceOf(actor.id).filter(row => row.event === 'reload').length,
+    store.trace_of(actor.id).filter(row => row.event === 'reload').length,
     0
   )
 })
@@ -445,7 +445,7 @@ it('a failed Pi launch refuses startup instead of reporting success', async t =>
   state.pi_code = 1
   await assert.rejects(store.reload(actor.id), /Pi did not start/)
   const stages = store
-    .traceOf(actor.id)
+    .trace_of(actor.id)
     .filter(event => event.stage === 'starting_pi')
   assert.ok(stages.some(event => event.state === 'failed'))
   assert.ok(!stages.some(event => event.state === 'complete'))

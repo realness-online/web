@@ -9,11 +9,13 @@ export const oklch_hex = (L, C, H) => {
   const rgb = [
     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
   ]
-  const byte = (x) => {
+  const byte = x => {
     const v = x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055
-    return Math.round(Math.min(1, Math.max(0, v)) * 255).toString(16).padStart(2, "0")
+    return Math.round(Math.min(1, Math.max(0, v)) * 255)
+      .toString(16)
+      .padStart(2, '0')
   }
-  return `#${rgb.map(byte).join("")}`
+  return `#${rgb.map(byte).join('')}`
 }

@@ -39,11 +39,11 @@ export const plan_html = plan =>
     Object.fromEntries(PLAN_FIELDS.map(name => [name, plan[name] ?? '']))
   )
 
+/** @returns {{ credit: number, [name: string]: string | number } | null} */
 export const read_plan = html => {
   const plan = read_item(html, 'plan')
   if (!plan) return null
-  plan.credit = Number(plan.credit)
-  return plan
+  return { ...plan, credit: Number(plan.credit) }
 }
 
 /** Paid now: the period has started and not ended. A canceled plan keeps its period. */

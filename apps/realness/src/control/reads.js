@@ -110,8 +110,10 @@ export const actors = async (sync, id, now) => {
 }
 
 const read_loop = html => {
-  const loop = read_item(html, 'loop')
-  if (!loop) return null
+  const item = read_item(html, 'loop')
+  if (!item) return null
+  /** @type {Record<string, string | number>} */
+  const loop = { ...item }
   loop.goal ??= ''
   for (const name of ['depth', 'runs', 'tokens'])
     if (loop[name] !== undefined && loop[name] !== '')

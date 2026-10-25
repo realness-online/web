@@ -42,7 +42,7 @@ after(async () => {
 
 const store = {
   volume: '/',
-  seedStatus: () => ({ built: true, matches: true }),
+  seed_status: () => ({ built: true, matches: true }),
   list: () => []
 }
 

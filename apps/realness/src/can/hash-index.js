@@ -11,16 +11,21 @@
  * files share a piece, so a burst of them races on it; a race that never
  * settles is an error, never a Conflict, so it cannot pass for a stale write.
  */
-import { Conflict } from './disk.js'
+import { Conflict } from './contract.js'
 
 const PIECE_CHARS = 2
 const RETRIES = 12
 const BACKOFF_MS = 20
+const MAX_DOUBLINGS = 6
+const HEX = 16
 
 const pause = attempt =>
-  new Promise(done =>
-    setTimeout(done, Math.random() * BACKOFF_MS * 2 ** Math.min(attempt, 6))
-  )
+  new Promise(done => {
+    setTimeout(
+      done,
+      Math.random() * BACKOFF_MS * 2 ** Math.min(attempt, MAX_DOUBLINGS)
+    )
+  })
 
 /** `people/+A/` for a person's key, else null. */
 export const index_scope = key => {
@@ -35,13 +40,14 @@ export const index_scope = key => {
  */
 export const piece_of = (scope, version) =>
   `${scope}${Array.from(version.slice(0, PIECE_CHARS), char =>
-    char.charCodeAt(0).toString(16)
+    char.charCodeAt(0).toString(HEX)
   ).join('')}.json`
 
 /**
  * @param {{
  *   read: (piece: string) => Promise<{ entries: Record<string, string[]>, generation: unknown }>,
- *   write: (piece: string, entries: Record<string, string[]>, generation: unknown) => Promise<void>
+ *   write: (piece: string, entries: Record<string, string[]>, generation: unknown) => Promise<void>,
+ *   exclusive?: <T>(piece: string, work: () => Promise<T>) => Promise<T>
  * }} pieces
  */
 export const hash_index = ({

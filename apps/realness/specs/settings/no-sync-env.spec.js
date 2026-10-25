@@ -8,12 +8,11 @@ it('no code reads SYNC_URL, SYNC_SITE_URL, SYNC_SITE_PUBLIC_URL, or REALNESS_TUR
   let found = ''
   try {
     found = execFileSync(
-      'git',
+      'grep',
       [
-        'grep',
-        '-nE',
+        '-rnE',
+        '--exclude-dir=node_modules',
         '(process\\.env|env)\\.(SYNC_URL|SYNC_SITE_URL|SYNC_SITE_PUBLIC_URL|REALNESS_TURN_SYNC)|export (SYNC_URL|SYNC_SITE_URL|SYNC_SITE_PUBLIC_URL)=|SYNC_URL=',
-        '--',
         'src',
         'server',
         'tools',

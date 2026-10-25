@@ -29,7 +29,7 @@ export const render_vm_config = (
     if (typeof value !== 'string' || !value.startsWith('/'))
       throw new Error(`lima: ${name} folder must be an absolute path: ${value}`)
 
-  return template.replace(/"?\{\{(\w+)\}\}"?/g, (token, name) => {
+  return template.replace(/["']?\{\{(\w+)\}\}["']?/g, (token, name) => {
     if (!Object.hasOwn(values, name))
       throw new Error(`lima: unknown placeholder ${token}`)
     return JSON.stringify(values[name])

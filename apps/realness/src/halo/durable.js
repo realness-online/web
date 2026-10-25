@@ -11,7 +11,7 @@ import { dirname } from 'node:path'
  * Replace a file so a crash leaves the old copy or the new, never an empty one.
  * Rename without fsync can land before the data on XFS: a 0-byte file.
  */
-export const writeFileDurable = (path, text) => {
+export const write_file_durable = (path, text) => {
   const tmp = `${path}.tmp`
   const fd = open_sync(tmp, 'w')
   try {

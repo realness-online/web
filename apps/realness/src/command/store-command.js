@@ -49,6 +49,17 @@ const run_store_command = async (command, rest, { print, store, stdout }) => {
     for (const path of rest) await store.rm(path)
     return null
   }
+  if (command === 'trash') {
+    for (const name of Object.keys(await store.trash(rest[0] ?? null))
+      .sort()
+      .reverse())
+      print(name)
+    return null
+  }
+  if (command === 'restore') {
+    print(await store.restore(rest[0], rest[1] ?? null))
+    return null
+  }
   const [local, remote] = rest.filter(arg => arg !== '--deletes')
   const report = await store.sync(local, remote, {
     deletes: rest.includes('--deletes') ? 'all' : 'explained'
@@ -82,7 +93,7 @@ export const run_store = async (
     root: root_option,
     get_token,
     target = get_token
-      ? async () => ({ local: false, url: SYNC_URL, get_token })
+      ? () => Promise.resolve({ local: false, url: SYNC_URL, get_token })
       : sync_target,
     service_url,
     issue,
@@ -95,12 +106,21 @@ export const run_store = async (
   const print = text => stdout.write(`${text}\n`)
   const sign_on = process.env.SIGN_ON_URL ?? person_settings.public_url
   if (
-    !['login', 'logout', 'whoami', 'ls', 'cat', 'cp', 'rm', 'sync'].includes(
-      command
-    )
+    ![
+      'login',
+      'logout',
+      'whoami',
+      'ls',
+      'cat',
+      'cp',
+      'rm',
+      'trash',
+      'restore',
+      'sync'
+    ].includes(command)
   ) {
     stderr.write(
-      'usage: realness login|logout|whoami|ls|cat|cp|rm|store sync ...\n'
+      'usage: realness login|logout|whoami|ls|cat|cp|rm|trash|restore|store sync ...\n'
     )
     return 2
   }
@@ -145,6 +165,7 @@ export const run_store = async (
         issue
       }))
     } else {
+      if (!where) throw new Error('no sync target')
       const token = await where.get_token()
       store = client({
         url: service_url ?? where.url,

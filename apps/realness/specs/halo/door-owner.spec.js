@@ -27,17 +27,19 @@ it('VM-bound door ignores a claimed owner and denies actors without one', async 
   }
   const published = []
   const store = {
-    liveActors: () => [record],
+    live_actors: () => [record],
     get: () => record,
     publish: async (id, path) => {
       published.push([id, path])
     },
-    siteVersions: () => [{ id: '012345abcdef', saved: '2026-09-29T00:00:00Z' }],
-    restoreSite: async (id, version) => {
+    site_versions: () => [
+      { id: '012345abcdef', saved: '2026-09-29T00:00:00Z' }
+    ],
+    restore_site: async (id, version) => {
       published.push([id, version])
       return { url: `/s/${id}/` }
     },
-    unpublishSite: async id => {
+    unpublish_site: async id => {
       published.push([id, 'remove'])
       return { version: '012345abcdef' }
     }

@@ -25,14 +25,14 @@ const reject = (client, message) => {
 const handle = async (
   store,
   client,
-  { helloSeconds, quiet_ms },
+  { hello_seconds, quiet_ms },
   terminal_clients
 ) => {
   client.setNoDelay(true)
   const lines = new vsock.Lines(client, HELLO_LIMIT)
   let hello
   try {
-    hello = await lines.read(helloSeconds)
+    hello = await lines.read(hello_seconds)
   } catch {
     return client.destroy()
   }
@@ -87,7 +87,7 @@ const handle = async (
     if (remaining) terminal_clients.set(id, remaining)
     else terminal_clients.delete(id)
     clearTimeout(quiet_timer)
-    if (working) store.endWork(id, connection)
+    if (working) store.end_work(id, connection)
     if (!remaining)
       store
         .idle(id, 'disk')
@@ -98,7 +98,7 @@ const handle = async (
   client.on('close', end)
   client.on('error', end)
   try {
-    await store.ensureRunning(id)
+    await store.ensure_running(id)
     if (ended || client.destroyed) return end()
     guest = await vsock.connect(record.vsock_path, PTY_PORT)
     if (ended || client.destroyed) {
@@ -113,12 +113,12 @@ const handle = async (
   LOG.info(`pty attached to ${id} from ${client.remoteAddress}`)
   const active = () => {
     if (ended) return
-    if (!working) store.beginWork(id, connection)
+    if (!working) store.begin_work(id, connection)
     working = true
     clearTimeout(quiet_timer)
     quiet_timer = setTimeout(() => {
       working = false
-      store.endWork(id, connection)
+      store.end_work(id, connection)
     }, quiet_ms)
   }
   const leftover = lines.rest()
@@ -137,13 +137,13 @@ const handle = async (
   guest.socket.once('close', () => LOG.info(`pty detached from ${id}`))
 }
 
-export const makeServer = (
+export const make_server = (
   store,
-  { helloSeconds = HELLO_SECONDS, quiet_ms = QUIET_MS } = {}
+  { hello_seconds = HELLO_SECONDS, quiet_ms = QUIET_MS } = {}
 ) => {
   const terminal_clients = new Map()
   return create_server(client => {
-    handle(store, client, { helloSeconds, quiet_ms }, terminal_clients).catch(
+    handle(store, client, { hello_seconds, quiet_ms }, terminal_clients).catch(
       error => {
         LOG.error(`pty failed`, error)
         client.destroy()
