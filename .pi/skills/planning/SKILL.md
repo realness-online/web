@@ -295,8 +295,7 @@ Summarize what ran. Ask whether it meets the plan. Done is your call.
 
 - "Building an Advanced Agentic Harness" (data4sci, 2026-07-15), clipped to
   the vault at `Resources/Engineering/Tools/Building an Advanced Agentic Harness.md`.
-- "The Harness Is the Thing" -
-  <https://scott-fryxell.github.io/blog/the-harness-is-the-thing/>
+- "The Harness Is the Thing" - Realness's own planning article (source clipped to the vault).
 
 ## Plan conventions
 
