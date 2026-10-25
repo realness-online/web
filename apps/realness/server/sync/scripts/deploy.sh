@@ -6,9 +6,22 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 account="realness-sync@$project.iam.gserviceaccount.com"
 stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
 
-echo '{ "rule": [ { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 30 } } ] }' \
-  > "$stage/lifecycle.json"
-gcloud storage buckets update "gs://$bucket" --project "$project" --versioning --lifecycle-file="$stage/lifecycle.json"
+# The bucket is set up once, not per deploy: rewriting its lifecycle would
+# drop rules added beside ours. Refuse to deploy unless deletes stay
+# recoverable: versioning on, noncurrent copies kept 30 days.
+bucket_json="$(curl -sf -H "authorization: Bearer $(gcloud auth print-access-token)" \
+  "https://storage.googleapis.com/storage/v1/b/$bucket?fields=versioning,lifecycle")"
+BUCKET_JSON="$bucket_json" node -e '
+  const b = JSON.parse(process.env.BUCKET_JSON)
+  const kept = (b.lifecycle?.rule ?? []).some(r =>
+    r.action?.type === "Delete" && r.condition?.isLive === false &&
+    r.condition?.daysSinceNoncurrentTime === 30)
+  if (!b.versioning?.enabled || !kept) {
+    console.error("bucket needs versioning and a 30-day noncurrent delete rule; set it once by hand")
+    process.exit(1)
+  }
+  console.log("bucket: versioned, noncurrent kept 30 days")
+'
 
 secrets="HALO_PASS_SECRET=HALO_PASS_SECRET:latest"
 env_vars="^@^PROJECT=$identity@STORE=gcs@GCS_BUCKET=$bucket@ORIGINS=$origins@HALO_POWER_PROJECT=$project"

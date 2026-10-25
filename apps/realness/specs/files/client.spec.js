@@ -925,3 +925,45 @@ it('a record from before server keys is adopted once, then removed', async () =>
   const after_adopt = await readdir(records)
   assert.deepEqual(after_adopt, [name])
 })
+
+it('sy16: a dry run lists every push, pull, delete, and conflict; writes nothing', async () => {
+  const store = as(A)
+  const remote = 'can://~/dry-run/'
+  const here = await local('dry-run', {
+    'gone.md': 'gone',
+    'both.md': 'base',
+    'theirs.md': 'base'
+  })
+  await store.sync(here, remote)
+  await writeFile(join(here, 'mine.md'), 'new here')
+  await writeFile(join(here, 'both.md'), 'ours')
+  await rm(join(here, 'gone.md'))
+  await store.put(`${remote}both.md`, Buffer.from('theirs'))
+  await store.put(`${remote}theirs.md`, Buffer.from('changed there'))
+  await store.put(`${remote}fresh.md`, Buffer.from('new there'))
+  const snapshot = async () => ({
+    files: (await readdir(here)).sort(),
+    both: await readFile(join(here, 'both.md'), 'utf8'),
+    remote: await store.walk(remote),
+    state: (await readdir(join(root, 'state', 'sync'))).sort(),
+    records: await Promise.all(
+      (await readdir(join(root, 'state', 'sync')))
+        .sort()
+        .map(name => readFile(join(root, 'state', 'sync', name), 'utf8'))
+    )
+  })
+  const before_run = await snapshot()
+
+  const dry = await store.sync(here, remote, { deletes: 'all', dry_run: true })
+
+  assert.equal(dry.dry_run, true)
+  assert.deepEqual(dry.pushed, ['mine.md'])
+  assert.deepEqual(dry.pulled, ['fresh.md', 'theirs.md'])
+  assert.deepEqual(dry.deleted, ['gone.md'])
+  assert.deepEqual(dry.kept_both, ['both.md'])
+  assert.deepEqual(await snapshot(), before_run)
+
+  const real = await store.sync(here, remote, { deletes: 'all' })
+  for (const kind of ['pushed', 'pulled', 'deleted', 'kept_both'])
+    assert.deepEqual(real[kind], dry[kind], kind)
+})

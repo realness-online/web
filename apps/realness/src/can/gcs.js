@@ -281,6 +281,50 @@ const gcs_listing = ({ bucket, call, fail, prefix }) => ({
   }
 })
 
+/**
+ * o10: give an object written outside sync (the Firebase SDK) a sync
+ * version. Only metadata changes, pinned to the generation and
+ * metageneration it read, so a write in between wins and this reports a
+ * Conflict. An object that already has a version is left alone.
+ * @returns {(key: string) => Promise<{ version: string, adopted: boolean } | null>}
+ */
+const adopter =
+  ({ bucket, call, fail, head, index, object }) =>
+  async key => {
+    const current = await head(key)
+    if (!current) return null
+    if (current.metadata?.[VERSION])
+      return { version: current.metadata[VERSION], adopted: false }
+    const response = await call(
+      `${API}/${bucket}/o/${object(key)}?alt=media&generation=${encodeURIComponent(current.generation)}`
+    )
+    if (response.status === HTTP.NOT_FOUND) throw new Conflict(`${key} is gone`)
+    if (!response.ok) await fail(`get ${key}`, response)
+    const plain = Buffer.from(await response.arrayBuffer())
+    const version = await hash_of(plain)
+    const match = new URLSearchParams({
+      ifGenerationMatch: String(current.generation),
+      ifMetagenerationMatch: String(current.metageneration)
+    })
+    const patched = await call(`${API}/${bucket}/o/${object(key)}?${match}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        metadata: {
+          [VERSION]: version,
+          ...(current.contentEncoding === 'gzip' && {
+            [SIZE]: String(plain.length)
+          })
+        }
+      })
+    })
+    if (patched.status === HTTP.PRECONDITION_FAILED)
+      throw new Conflict(`${key} changed`)
+    if (!patched.ok) await fail(`adopt ${key}`, patched)
+    if (index_scope(key)) await index.moved(key, null, version)
+    return { version, adopted: true }
+  }
+
 export const create_gcs = ({ bucket, token, prefix = '' }) => {
   if (!bucket) throw new Error('create_gcs needs a bucket')
   if (typeof token !== 'function') throw new Error('create_gcs needs token()')
@@ -300,7 +344,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
   /** The object's generation, hashes, and metadata, or null. */
   const head = async key => {
     const response = await call(
-      `${API}/${bucket}/o/${object(key)}?fields=generation,crc32c,metadata`
+      `${API}/${bucket}/o/${object(key)}?fields=generation,metageneration,contentEncoding,crc32c,metadata`
     )
     if (response.status === HTTP.NOT_FOUND) return null
     if (!response.ok) await fail(`stat ${key}`, response)
@@ -324,6 +368,7 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
   }
 
   const index = gcs_index({ bucket, call, fail, object })
+  const adopt = adopter({ bucket, call, fail, head, index, object })
 
   return {
     /** Every key under a person's scope holding `version`. */
@@ -377,6 +422,8 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         await index.moved(key, current ? version_of(current) : null, version)
       return version
     },
+
+    adopt: key => adopt(key),
 
     async stat(key) {
       const current = await head(key)

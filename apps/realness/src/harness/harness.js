@@ -226,10 +226,12 @@ export const plan_syncs = async (root, names = []) => {
  * @param {'all' | 'explained'} [options.deletes]
  * @param {boolean} [options.defer_edits]
  * @param {string | null} [options.starter]
+ * @param {boolean} [options.dry_run] sy16: report what would move, write nothing
  */
 export const sync_harness = async ({
   root,
-  store,
+  store: live_store,
+  dry_run = false,
   plans = [],
   state: sync_state = state_dir(root),
   deletes = 'explained',
@@ -238,6 +240,9 @@ export const sync_harness = async ({
     ? STARTER_DIRECTORY
     : null
 }) => {
+  const store = dry_run ? dry_store(live_store) : live_store
+  const settled = (location, reports) =>
+    dry_run ? [] : settle(root, store, location, reports)
   if (!(await whole_enabled(root, store))) {
     const listed = await sync_listed({
       root,
@@ -251,10 +256,10 @@ export const sync_harness = async ({
       harness: null,
       synced: listed.synced,
       refused: listed.refused,
-      applied: await settle(root, store, DEFERRED, listed.reports)
+      applied: await settled(DEFERRED, listed.reports)
     }
   }
-  await mkdir(join(root, 'apps'), { recursive: true })
+  if (!dry_run) await mkdir(join(root, 'apps'), { recursive: true })
   const exclude = await harness_exclude(root, sync_state)
   const SESSIONS = runtime_sessions_path(root)
   const sessions = join(root, SESSIONS)
@@ -278,7 +283,7 @@ export const sync_harness = async ({
     exclude: (path, is_dir) =>
       is_internal(path, SESSIONS) || own_state(path) || exclude(path, is_dir)
   })
-  const applied = await settle(root, store, HARNESS_DEFERRED, [['', files]])
+  const applied = await settled(HARNESS_DEFERRED, [['', files]])
   return {
     harness: { sessions: history, files },
     synced: {},
@@ -286,6 +291,14 @@ export const sync_harness = async ({
     applied: [...new Set(applied)].sort()
   }
 }
+
+/** sy16: a store whose syncs are dry runs and whose writes do nothing. */
+const dry_store = store => ({
+  ...store,
+  sync: (local, remote, options = {}) =>
+    store.sync(local, remote, { ...options, dry_run: true }),
+  put: () => Promise.resolve(null)
+})
 
 /** Retire pending edits real bytes now settle, record new ones, then replay any pending. */
 const settle = async (root, store, location, reports) => {

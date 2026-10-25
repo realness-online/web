@@ -53,7 +53,10 @@ it('get pins the media read to the generation it read, and 404 is absence', asyn
   assert.equal(got.body.toString('utf8'), 'body-bytes')
   assert.equal(got.version, 'v1')
   assert.deepEqual(got.meta, { sold: 'true' })
-  assert.match(calls[0].url, /\?fields=generation,crc32c,metadata$/)
+  assert.match(
+    calls[0].url,
+    /\?fields=generation,metageneration,contentEncoding,crc32c,metadata$/
+  )
   assert.match(
     calls[1].url,
     /\/o\/people%2F%2B1%2Fa\.md\?alt=media&generation=7$/
@@ -317,4 +320,59 @@ it('the metadata token is cached until a minute before it expires', async t => {
 it('a metadata token refusal names its status', async t => {
   routed_fetch(t, () => reply('', { status: 403 }))
   await assert.rejects(metadata_token()(), /metadata token: 403/)
+})
+
+/** o10: adopt answers. `object` is the stored object's head. */
+const adopt_fetch = (t, object, { patch_status = 200 } = {}) =>
+  routed_fetch(t, (url, init) => {
+    if (init.method === 'PATCH') return json({}, { status: patch_status })
+    if (url.includes('.index'))
+      return init.method === 'POST' ? json({}) : json({}, { status: 404 })
+    if (url.includes('alt=media')) return reply('<p>hi</p>')
+    return json(object)
+  })
+
+it('adopt writes the plain version into metadata, pinned to what it read', async t => {
+  const calls = adopt_fetch(t, {
+    generation: '7',
+    metageneration: '3',
+    contentEncoding: 'gzip',
+    metadata: { hash: 'firebase', firebaseStorageDownloadTokens: 'tok' }
+  })
+  const result = await store().adopt('people/+1/statements/index.html')
+  const version = await version_of(Buffer.from('<p>hi</p>'))
+  assert.deepEqual(result, { version, adopted: true })
+  const patch = calls.find(call => call.init.method === 'PATCH')
+  assert.match(patch.url, /ifGenerationMatch=7/)
+  assert.match(patch.url, /ifMetagenerationMatch=3/)
+  assert.deepEqual(JSON.parse(patch.init.body), {
+    metadata: { version, size: '9' }
+  })
+})
+
+it('adopt leaves an object that already has a version', async t => {
+  const calls = adopt_fetch(t, {
+    generation: '7',
+    metageneration: '1',
+    metadata: { version: 'ours' }
+  })
+  assert.deepEqual(await store().adopt('people/+1/a.html'), {
+    version: 'ours',
+    adopted: false
+  })
+  assert.equal(calls.filter(call => call.init.method === 'PATCH').length, 0)
+})
+
+it('adopt reports a write that landed in between as a conflict', async t => {
+  adopt_fetch(
+    t,
+    { generation: '7', metageneration: '1', metadata: {} },
+    { patch_status: 412 }
+  )
+  await assert.rejects(store().adopt('people/+1/a.html'), { code: 'conflict' })
+})
+
+it('adopt on a missing object is null', async t => {
+  routed_fetch(t, () => json({}, { status: 404 }))
+  assert.equal(await store().adopt('people/+1/gone.html'), null)
 })

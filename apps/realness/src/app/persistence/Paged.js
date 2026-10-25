@@ -6,6 +6,7 @@ import { current_user } from '@/utils/serverless'
 import { get_item, get_itemprops, hydrate } from '@/utils/item'
 import {
   as_created_at,
+  as_path_parts,
   list,
   load_from_network,
   type_as_list
@@ -19,10 +20,11 @@ import { recent_item_first } from '@/utils/sorting'
 
 const get_oldest = (elements, prop_name) => {
   const list = get_itemprops(elements)
-  const props = list[prop_name]
+  // One match comes back bare, none as undefined.
+  const props = [list[prop_name]].flat().filter(Boolean)
   props.sort(recent_item_first)
   const oldest = props[props.length - 1]
-  const created = as_created_at(oldest.id) ?? 0
+  const created = (oldest && as_created_at(oldest.id)) ?? 0
   return new Date(created)
 }
 const is_fat = (items, prop_name) => {
@@ -51,11 +53,15 @@ export const Paged = superclass =>
         if (!frag) return
         const [current] = frag.childNodes
         if (!current) return
-        const oldest = get_oldest(current, this.type)
+        // The itemid's own segment, not `type`: `statements` reads as type `thoughts`.
+        const [, segment] = as_path_parts(this.id)
+        if (!segment) return
+        const oldest = get_oldest(current, segment)
+        if (!oldest.getTime()) return
         const offload = document.createDocumentFragment()
         const original_size = elements_as_kilobytes(current)
         let amount_moved = 0
-        while (is_fat(current, this.type) && amount_moved <= SIZE.MID) {
+        while (is_fat(current, segment) && amount_moved <= SIZE.MID) {
           const fatty = current.childNodes[current.childNodes.length - 1]
           const new_sibling = offload.childNodes[0] || null
           offload.insertBefore(current.removeChild(fatty), new_sibling)
@@ -69,10 +75,10 @@ export const Paged = superclass =>
           /** @type {unknown} */ (current_user.value)
         )
         if (!user?.phoneNumber) return
-        const { type } = this
-        if (!type) return
         const me_val = from_e64(user.phoneNumber)
-        const id = /** @type {Id} */ (`${me_val}/${type}/${oldest.getTime()}`)
+        const id = /** @type {Id} */ (
+          `${me_val}/${segment}/${oldest.getTime()}`
+        )
 
         const history = new History(id)
         const success = await history.save(div)

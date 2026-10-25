@@ -60,14 +60,22 @@ const run_store_command = async (command, rest, { print, store, stdout }) => {
     print(await store.restore(rest[0], rest[1] ?? null))
     return null
   }
-  const [local, remote] = rest.filter(arg => arg !== '--deletes')
+  const [local, remote] = rest.filter(
+    arg => !['--deletes', '--dry-run'].includes(arg)
+  )
+  const dry_run = rest.includes('--dry-run')
   const report = await store.sync(local, remote, {
-    deletes: rest.includes('--deletes') ? 'all' : 'explained'
+    deletes: rest.includes('--deletes') ? 'all' : 'explained',
+    dry_run
   })
+  if (dry_run) print('dry run: nothing written')
   for (const [kind, names] of Object.entries(report)) {
     if (!Array.isArray(names) || !names.length) continue
+    const listed =
+      (dry_run && kind !== 'unchanged') ||
+      ['conflicts', 'kept_both', 'held'].includes(kind)
     print(
-      `${kind}: ${names.length}${['conflicts', 'kept_both', 'held'].includes(kind) ? `\n  ${names.join('\n  ')}` : ''}`
+      `${kind}: ${names.length}${listed ? `\n  ${names.join('\n  ')}` : ''}`
     )
   }
   return report.conflicts.length ? 1 : 0

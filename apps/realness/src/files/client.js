@@ -132,7 +132,14 @@ export const is_remote = path => path.startsWith('can://')
  * @property {string} [listing]
  * @property {number} [mass_removal]
  * @property {boolean} [mass_conflict]
+ * @property {boolean} [dry_run] nothing was written, here or remotely
  */
+
+/** The report with every list in name order. */
+const sorted = report => {
+  for (const list of Object.values(report)) if (Array.isArray(list)) list.sort()
+  return report
+}
 
 /** An empty sync report, one list per outcome. */
 const empty_report = () => ({
@@ -430,7 +437,7 @@ const remote_moved_only = async (
       name,
       taken => locals.has(taken) || taken in remotes
     )
-    await write_file(join(local, copy), theirs.bytes)
+    await run.fx.write_file(join(local, copy), theirs.bytes)
     agree(
       copy,
       theirs.bytes,
@@ -453,7 +460,7 @@ const remote_moved_only = async (
       return report.pushed.push(name)
     }
     if (mass_removal) return report.held.push(name)
-    await to_trash(join(local, name), trash)
+    await run.fx.to_trash(join(local, name), trash)
     forget(name)
     return report.removed.push(name)
   }
@@ -520,7 +527,7 @@ const both_moved = async (
     rows && apply(theirs.bytes.toString('utf8'), await load_calls(rows))
   if (typeof replayed === 'string') {
     const merged = Buffer.from(replayed)
-    await write_file(join(local, name), merged)
+    await run.fx.write_file(join(local, name), merged)
     agree(
       name,
       merged,
@@ -532,7 +539,7 @@ const both_moved = async (
   if (session) {
     if (!(await read_file(file)).equals(bytes))
       return report.conflicts.push(name)
-    if (!session.equals(bytes)) await write_file(file, session)
+    if (!session.equals(bytes)) await run.fx.write_file(file, session)
     agree(
       name,
       session,
@@ -549,7 +556,7 @@ const both_moved = async (
     taken => locals.has(taken) || taken in remotes
   )
   locals.set(copy, join(local, copy))
-  await write_file(join(local, copy), theirs.bytes)
+  await run.fx.write_file(join(local, copy), theirs.bytes)
   agree(
     copy,
     theirs.bytes,
@@ -693,7 +700,7 @@ const update_starter = async (run, name, { bytes, remote_version }) => {
     }
     if (bytes) {
       await safe_target(local, name)
-      await to_trash(join(local, name), trash)
+      await run.fx.to_trash(join(local, name), trash)
       report.removed.push(name)
     }
     forget(name)
@@ -703,8 +710,9 @@ const update_starter = async (run, name, { bytes, remote_version }) => {
     const updated = await starter_bytes(stock, name)
     if (updated.length > max_bytes) return report.too_big.push(name)
     await safe_target(local, name)
-    await mkdir(dirname(join(local, name)), { recursive: true })
-    if (!bytes?.equals(updated)) await write_file(join(local, name), updated)
+    await run.fx.mkdir(dirname(join(local, name)), { recursive: true })
+    if (!bytes?.equals(updated))
+      await run.fx.write_file(join(local, name), updated)
     if (!bytes)
       await chmod(
         join(local, name),
@@ -746,10 +754,49 @@ const dated_api = (api, folder, locals) => ({
   }
 })
 
+/** Local writes a transfer may make; a dry run swaps in no-ops. */
+const real_fx = { write_file, to_trash: (...a) => to_trash(...a), mkdir }
+const nothing = () => Promise.resolve()
+const dry_fx = { write_file: nothing, to_trash: nothing, mkdir: nothing }
+
+/**
+ * sy16: the remote side of a dry run. Reads pass through; a PUT returns the
+ * version it would have made, a DELETE succeeds, and a guard that the listed
+ * remote version would fail is reported as a 412, as the server would.
+ */
+const dry_remote = ({ api, call, folder, remotes }) => {
+  const current = path =>
+    path.startsWith(folder) ? remotes[path.slice(folder.length)] : undefined
+  const guard = (path, headers = {}) => {
+    const now = current(path)
+    const match = headers['if-match']?.replace(/"/g, '')
+    if (match && now && match !== now)
+      throw new SyncError(HTTP.PRECONDITION_FAILED, `put ${path}`)
+    if (headers['if-none-match'] === '*' && now)
+      throw new SyncError(HTTP.PRECONDITION_FAILED, `put ${path}`)
+  }
+  return {
+    api: {
+      ...api,
+      put: (path, bytes, headers = {}) =>
+        new Promise(resolve => {
+          if (path.startsWith(folder)) guard(path, headers)
+          resolve(sha(Buffer.from(bytes)))
+        }),
+      rm: nothing
+    },
+    call: (method, path, options) =>
+      method === 'GET' || method === 'HEAD'
+        ? call(method, path, options)
+        : Promise.resolve(new Response(null, { status: HTTP.NO_CONTENT }))
+  }
+}
+
 const make_transfer = ({
   api: plain_api,
   call,
   defer_edits,
+  dry_run = false,
   deferred,
   deletes,
   expect,
@@ -869,6 +916,7 @@ const make_transfer = ({
   const pull = async (name, theirs) => {
     await safe_target(local, name)
     const target = join(local, name)
+    if (dry_run) return agree(name, theirs.bytes, theirs.version)
     await mkdir(dirname(target), { recursive: true })
     await write_file(target, theirs.bytes)
     if (theirs.created) await set_born(target, theirs.created)
@@ -892,6 +940,7 @@ const make_transfer = ({
 
   /** Everything the transfer phases read, gathered once. */
   const run = {
+    fx: dry_run ? dry_fx : real_fx,
     conflict_allowed,
     moved_away,
     agree,
@@ -1145,6 +1194,7 @@ export const client = ({
      * @param {boolean} [options.baseline]
      * @param {Record<string, string> | null} [options.remote_files]
      * @param {object | null} [options.starter]
+     * @param {boolean} [options.dry_run] sy16: decide everything, write nothing
      */
     async sync(
       local,
@@ -1163,7 +1213,8 @@ export const client = ({
         pull_only = false,
         baseline = false,
         remote_files = null,
-        starter = null
+        starter = null,
+        dry_run = false
       } = {}
     ) {
       const folder = remote.endsWith('/') ? remote : `${remote}/`
@@ -1209,10 +1260,15 @@ export const client = ({
       ).length
       const mass_removal = vanished > MAX_REMOVALS
       if (mass_removal) report.mass_removal = vanished
+      if (dry_run) report.dry_run = true
+      const side = dry_run
+        ? dry_remote({ api, call, folder, remotes })
+        : { api, call }
       const { one, agree, conditional } = make_transfer({
-        api,
-        call,
-        defer_edits,
+        api: side.api,
+        call: side.call,
+        defer_edits: defer_edits && !dry_run,
+        dry_run,
         deferred,
         deletes,
         expect,
@@ -1238,6 +1294,7 @@ export const client = ({
       })
       await in_pool([...names].sort(), concurrency, one)
       log.close()
+      if (dry_run) return sorted(report)
       await settle_starter({
         agree,
         api,
@@ -1258,9 +1315,7 @@ export const client = ({
         pull_only,
         record_path
       })
-      for (const list of Object.values(report))
-        if (Array.isArray(list)) list.sort()
-      return report
+      return sorted(report)
     }
   }
   return api

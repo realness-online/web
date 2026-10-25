@@ -24,7 +24,7 @@ import { MS_PER_MINUTE, MS_PER_SECOND } from '#root/lib/units.js'
 
 const FILES_SYNC_WORDS = 4
 
-const USAGE = `usage: realness sync [--deletes] [plan ...]
+const USAGE = `usage: realness sync [--deletes] [--dry-run] [plan ...]
        realness turn-start --session <file>
        realness turn-end --session <file> --turn <n>
        realness login|logout|whoami|ls|cat|cp|rm ...
@@ -39,7 +39,7 @@ const USAGE = `usage: realness sync [--deletes] [plan ...]
        realness watch [--interval <seconds>] [--person +1...]...
        realness <local|development|production> <command> [options]
        realness <local|development|production> --help
-       realness store sync <local-folder> <can://~/folder/> [--deletes]
+       realness store sync <local-folder> <can://~/folder/> [--deletes] [--dry-run]
        realness files sync <local-folder> <can://~/folder/> [--json]
        realness files cat <can://~/file> [--json]
 

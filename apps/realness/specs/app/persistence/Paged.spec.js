@@ -17,11 +17,14 @@ vi.mock('@/utils/itemid', async importOriginal => {
   }
 })
 
+const histories = vi.hoisted(() => [])
 vi.mock('@/persistence/History', () => {
   return {
     History: class MockHistory {
-      constructor() {
+      constructor(id) {
+        this.id = id
         this.save = vi.fn().mockResolvedValue(true)
+        histories.push(this)
       }
     }
   }
@@ -217,6 +220,30 @@ describe('@/persistence/Paged', () => {
       await paged.optimize()
 
       expect(true).toBe(true)
+    })
+
+    it('statements archive under statements/, though their type reads thoughts', async () => {
+      histories.length = 0
+      class Statements extends Paged(Storage) {}
+      const statements = new Statements('/+15551234567/statements')
+      expect(statements.type).toBe('thoughts')
+      const day = 24 * 60 * 60 * 1000
+      const old = new Date('2025-01-01T12:00:00Z').getTime()
+      const rows = Array.from(
+        { length: 400 },
+        (_, i) =>
+          `<article><div itemscope itemid="/+15551234567/statements/${old - i * day}" itemprop="statements"><p itemprop="statement">old thought number ${i} padded with words</p></div></article>`
+      ).join('')
+      localStorage.setItem(
+        statements.id,
+        `<section itemscope itemid="${statements.id}">${rows}</section>`
+      )
+      vi.restoreAllMocks()
+      await statements.optimize()
+      expect(histories.length).toBeGreaterThan(0)
+      for (const history of histories)
+        expect(history.id).toMatch(/^\/\+15551234567\/statements\/\d+$/)
+      expect(histories[0].save).toHaveBeenCalledOnce()
     })
   })
 })

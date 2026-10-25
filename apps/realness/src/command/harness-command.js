@@ -36,6 +36,7 @@ const report_harness = (result, { command, json, stdout, stderr }) => {
     stdout.write(`${JSON.stringify({ ok: !failed, command, result })}\n`)
     return failed ? 1 : 0
   }
+  if (result.dry_run) stdout.write('dry run: nothing written\n')
   for (const name of harness?.files.too_big ?? [])
     stdout.write(`  too big, left home: ${name}\n`)
   for (const [path, report] of Object.entries(reports)) {
@@ -46,7 +47,10 @@ const report_harness = (result, { command, json, stdout, stderr }) => {
     stdout.write(
       `${path}: ${moved.map(([kind, names]) => `${kind} ${names.length}`).join(', ') || 'unchanged'}\n`
     )
-    for (const kind of ['kept_both', 'held', 'conflicts'])
+    const named = result.dry_run
+      ? moved.map(([kind]) => kind)
+      : ['kept_both', 'held', 'conflicts']
+    for (const kind of named)
       for (const name of report[kind]) {
         const ours = report.sessions[name]
         stdout.write(
@@ -105,6 +109,25 @@ const end_turn = async ({
 }
 
 /**
+ * Why this sync should not run: paused, or local-only with production as the
+ * target. A dry run writes nothing, so it is never held.
+ * @returns {{ message: string, result: object } | null}
+ */
+const held_back = (state, where) => {
+  if (exists_sync(join(state, SYNC_PAUSED)))
+    return {
+      message: `sync paused: remove ${join(state, SYNC_PAUSED)} to resume`,
+      result: { paused: true }
+    }
+  if (where && !where.local && exists_sync(join(state, SYNC_LOCAL_ONLY)))
+    return {
+      message: `local sync is down; skipped, not sent to ${where.url}. Remove ${join(state, SYNC_LOCAL_ONLY)} to allow it`,
+      result: { local_only: true }
+    }
+  return null
+}
+
+/**
  * Run the same harness command on desktop and actors, with their own credentials.
  * @param {string[]} args
  * @param {object} [options]
@@ -134,6 +157,7 @@ export const run_harness = async (
   let state = state_option
   const [command, ...rest] = args
   const json = rest.includes('--json')
+  const dry_run = command === 'sync' && rest.includes('--dry-run')
   const { session, turn } = harness_options(rest)
   if (command.startsWith('turn') && !session) {
     const message = 'turn commands need --session <file>'
@@ -171,21 +195,12 @@ export const run_harness = async (
     turn
   })
   if (early !== null) return early
-  if (exists_sync(join(state, SYNC_PAUSED))) {
-    const message = `sync paused: remove ${join(state, SYNC_PAUSED)} to resume`
+  const held = dry_run ? null : held_back(state, where)
+  if (held) {
     stdout.write(
       json
-        ? `${JSON.stringify({ ok: true, command, result: { paused: true } })}\n`
-        : `${message}\n`
-    )
-    return 0
-  }
-  if (where && !where.local && exists_sync(join(state, SYNC_LOCAL_ONLY))) {
-    const message = `local sync is down; skipped, not sent to ${where.url}. Remove ${join(state, SYNC_LOCAL_ONLY)} to allow it`
-    stdout.write(
-      json
-        ? `${JSON.stringify({ ok: true, command, result: { local_only: true } })}\n`
-        : `${message}\n`
+        ? `${JSON.stringify({ ok: true, command, result: held.result })}\n`
+        : `${held.message}\n`
     )
     return 0
   }
@@ -210,9 +225,13 @@ export const run_harness = async (
     root,
     state,
     store: client({ url: service_url ?? to.url, token, state }),
-    plans: rest.filter(arg => !['--deletes', '--json'].includes(arg)),
+    plans: rest.filter(
+      arg => !['--deletes', '--json', '--dry-run'].includes(arg)
+    ),
     deletes: rest.includes('--deletes') ? 'all' : 'explained',
-    defer_edits: command === 'turn-end'
+    defer_edits: command === 'turn-end',
+    dry_run
   })
+  if (dry_run) result.dry_run = true
   return report_harness(result, { command, json, stdout, stderr })
 }
