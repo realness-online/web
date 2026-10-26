@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-q - 2026-10-26
+
 - **The harness syncs zipped** - Every harness file is stored and sent as
   `name.gz`, and its version is the hash of those bytes, so stores pass files
   through untouched. Your checkout stays plain.
