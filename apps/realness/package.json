@@ -1,6 +1,6 @@
 {
   "name": "realness",
-  "version": "3.0.0-q",
+  "version": "3.0.0-r",
   "private": true,
   "type": "module",
   "description": "Realness: sign-on, private sync, hosted VMs, models, and publishing",

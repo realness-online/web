@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v3.0.0-r - 2026-10-26
+
 - **Services prove what they run** - Sync, proxy, and gate answer
   `/v1/release` with their version and a hash of their files, and every
   release checks it.
