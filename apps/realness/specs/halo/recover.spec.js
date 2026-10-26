@@ -1,3 +1,4 @@
+import { zipped_storage } from '../harness/zipped-storage.js'
 import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
@@ -27,7 +28,7 @@ const hash = text => createHash('sha256').update(text).digest('hex')
 let storage, server, url
 
 before(async () => {
-  storage = disk(join(dir, 'bucket'))
+  storage = zipped_storage(disk(join(dir, 'bucket')))
   const put = (path, body) => storage.put(`people/${phone}/${path}`, body)
   const call = {
     type: 'message',
@@ -139,7 +140,7 @@ it('vault session settings survive whole and listed recovery', async () => {
     await storage.put(`${prefix}vault/Sessions/s.jsonl`, body)
     const stored = new Date('2026-01-02T03:04:05Z')
     await utimes(
-      join(dir, 'bucket', `${prefix}vault/Sessions/s.jsonl`),
+      join(dir, 'bucket', `${prefix}vault/Sessions/s.jsonl${whole ? '.gz' : ''}`),
       stored,
       stored
     )

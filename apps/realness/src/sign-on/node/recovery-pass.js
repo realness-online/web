@@ -96,8 +96,9 @@ const verify_pass = (pass, secret, now, audience) => {
 export const harness_path = (path, phone, paths = null) => {
   const prefix = `people/${phone}/harness/`
   if (!path.startsWith(prefix)) return false
+  // sy18: harness files are stored as `.gz`; rights and skips read the plain name
   return recovery_path(
-    `people/${phone}/${path.slice(prefix.length)}`,
+    `people/${phone}/${path.slice(prefix.length).replace(/\.gz$/, '')}`,
     phone,
     paths
   )
@@ -111,7 +112,8 @@ export const harness_path = (path, phone, paths = null) => {
 export const recovery_path = (path, phone, paths = null) => {
   const prefix = `people/${phone}/`
   if (!path.startsWith(prefix)) return false
-  const rest = path.slice(prefix.length)
+  const raw = path.slice(prefix.length)
+  const rest = raw.startsWith('harness/') ? raw.replace(/\.gz$/, '') : raw
   const parts = rest.split('/')
   if (parts.at(-1) === '') parts.pop()
   if (!parts.length) return paths === null

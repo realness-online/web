@@ -1,5 +1,6 @@
+import { zipped_storage } from '../harness/zipped-storage.js'
 import assert from 'node:assert/strict'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, utimes } from 'node:fs/promises'
 import { join } from 'node:path'
 import { after, before, it } from 'node:test'
@@ -33,7 +34,7 @@ const BIG = 'work/big.bin'
 let storage, server, url
 
 before(async () => {
-  storage = disk(join(dir, 'bucket'))
+  storage = zipped_storage(disk(join(dir, 'bucket')))
   const put = (path, body) =>
     storage.put(`people/${phone}/harness/${path}`, body)
   await put('.ignore', '')
@@ -44,10 +45,10 @@ before(async () => {
   await put('vault/plans/p.md', '# Plan\n')
   await put(NEW, '{"type":"session"}\n')
   await put(OLD, '{"type":"session","old":true}\n')
-  await put(BIG, 'x'.repeat(2000))
+  await put(BIG, randomBytes(2000))
   const month_ago = new Date(Date.now() - 30 * DAY)
   await utimes(
-    join(dir, 'bucket', `people/${phone}/harness/${OLD}`),
+    join(dir, 'bucket', `people/${phone}/harness/${OLD}.gz`),
     month_ago,
     month_ago
   )
@@ -83,7 +84,7 @@ it('vault history stays remote on a light VM until fetched', async () => {
   await storage.put(`${prefix}${old}`, '{"type":"session","id":"old"}\n')
   await storage.put(`${prefix}${recent}`, '{"type":"session","id":"recent"}\n')
   const month_ago = new Date(Date.now() - 30 * DAY)
-  await utimes(join(dir, 'bucket', `${prefix}${old}`), month_ago, month_ago)
+  await utimes(join(dir, 'bucket', `${prefix}${old}.gz`), month_ago, month_ago)
   const root = join(dir, 'vault-vm')
   const state = join(root, '.pi/agent/state')
   await mkdir(root, { recursive: true })

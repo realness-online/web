@@ -17,6 +17,9 @@ const BYTES_PER_MB = 1e6
 
 export const PULL_PREFIXES = ['people/', 'usage/', 'billing/']
 
+/** A person's poster files: `people/+A/posters/...`. */
+export const is_poster = key => /^people\/\+[^/]+\/posters\//.test(key)
+
 /** True when `source` should overwrite what `target` holds, if anything. */
 export const stale = (source, target) =>
   !target ||
@@ -26,6 +29,7 @@ export const stale = (source, target) =>
 /**
  * @param {{
  *   from: any, to: any, prefixes?: string[], workers?: number,
+ *   only?: (key: string) => boolean, overwrite?: boolean, dry_run?: boolean,
  *   on_file?: (key: string, done: number, total: number) => void
  * }} options
  */
@@ -34,6 +38,9 @@ export const pull = async ({
   to,
   prefixes = PULL_PREFIXES,
   workers = WORKERS,
+  only = () => true,
+  overwrite = false,
+  dry_run = false,
   on_file = () => {}
 }) => {
   /** @type {{ copied: string[], skipped: number, failed: { key: string, error: string }[], bytes: number }} */
@@ -46,9 +53,16 @@ export const pull = async ({
       from.walk_meta(prefix),
       to.walk_meta(prefix)
     ])
-    for (const [name, info] of Object.entries(source))
-      if (stale(info, target[name])) queue.push(`${prefix}${name}`)
+    for (const [name, info] of Object.entries(source)) {
+      const key = `${prefix}${name}`
+      if (!only(key)) continue
+      if (overwrite || stale(info, target[name])) queue.push(key)
       else report.skipped += 1
+    }
+  }
+  if (dry_run) {
+    report.copied = queue
+    return report
   }
   const total = queue.length
   let done = 0

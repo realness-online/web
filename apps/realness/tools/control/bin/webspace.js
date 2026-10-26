@@ -100,6 +100,8 @@ const USAGE = `usage: realness <local|development|production> <command> [options
   build                        local only: stage the harness, build the template
   code                         local only: the latest sign-in code
   pull [<prefix> ...] [--from=production]  local only: copy people/, usage/, billing/ into sync-data; one way
+  pack [--dir=...] [--dry-run]  local only: gzip every plain text file in the store
+  pull posters [--dry-run]     local only: production's posters overwrite local ones
 
   halo up [<name>] [--smoke] [--expire=2h]  make a halo, put the code on it, serve (~3 min in GCP)
   halo restart <name>          push the code and re-serve
@@ -384,22 +386,45 @@ const main = async argv => {
       return 0
     }
 
+    case 'pack': {
+      if (!local)
+        throw new Error(
+          'pack zips the local store; run it as realness local pack'
+        )
+      const { pack } = await import('../../../src/can/disk.js')
+      const dir = typeof flags.dir === 'string' ? flags.dir : sync_dir()
+      const report = await pack(dir, { dry_run: Boolean(flags['dry-run']) })
+      result(
+        { packed: report.packed.length, saved: report.saved },
+        `${report.packed.length} packed, ${(report.saved / 1e6).toFixed(1)} MB saved${flags['dry-run'] ? ' (dry run)' : ''}\n`
+      )
+      return 0
+    }
+
     case 'pull': {
       if (!local)
         throw new Error(
           'pull copies into the local sync-data; run it as realness local pull'
         )
       const from = typeof flags.from === 'string' ? flags.from : 'production'
-      const { pull, pull_text, PULL_PREFIXES } =
+      const { pull, pull_text, PULL_PREFIXES, is_poster } =
         await import('../../../src/control/pull.js')
+      // `pull posters`: production's posters only, and they win over local.
+      const posters = args[0] === 'posters'
+      const wanted = posters ? ['people'] : args
       const report = await pull({
+        only: posters ? is_poster : undefined,
+        overwrite: posters,
+        dry_run: Boolean(flags['dry-run']),
         from: create_gcs({
           bucket: deployment_settings(from, process.env).bucket,
           token: gcloud_token()
         }),
-        to: disk(typeof flags.dir === 'string' ? flags.dir : sync_dir()),
-        prefixes: args.length
-          ? args.map(prefix => prefix.replace(/\/?$/, '/'))
+        to: disk(typeof flags.dir === 'string' ? flags.dir : sync_dir(), {
+          gzip_at_rest: true
+        }),
+        prefixes: wanted.length
+          ? wanted.map(prefix => prefix.replace(/\/?$/, '/'))
           : PULL_PREFIXES,
         on_file: (key, done, total) => {
           if (done % 500 === 0 || done === total)

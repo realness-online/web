@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import { disk } from '../../src/can/disk.js'
-import { pull, stale } from '../../src/control/pull.js'
+import { is_poster, pull, stale } from '../../src/control/pull.js'
 
 const base = new URL(
   `../../../../artifacts/realness/pull-test-${randomUUID()}/`,
@@ -47,4 +47,33 @@ it('stale when missing, resized, or updated later', () => {
     stale(source, { size: 3, updated: '2026-01-03T00:00:00Z' }),
     false
   )
+})
+
+it('pull posters takes only posters and overwrites local copies', async () => {
+  const from = disk(`${base}posters-from`)
+  const to = disk(`${base}posters-to`)
+  await from.put('people/+1/posters/1.html', 'production')
+  await from.put('people/+1/thoughts/a.html', 'not a poster')
+  await to.put('people/+1/posters/1.html', 'local, newer and longer')
+  const options = {
+    from,
+    to,
+    prefixes: ['people/'],
+    only: is_poster,
+    overwrite: true
+  }
+
+  const dry = await pull({ ...options, dry_run: true })
+  assert.deepEqual(dry.copied, ['people/+1/posters/1.html'])
+  assert.equal(
+    (await to.get('people/+1/posters/1.html')).body.toString(),
+    'local, newer and longer'
+  )
+
+  await pull(options)
+  assert.equal(
+    (await to.get('people/+1/posters/1.html')).body.toString(),
+    'production'
+  )
+  assert.equal(await to.get('people/+1/thoughts/a.html'), null)
 })

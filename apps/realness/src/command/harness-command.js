@@ -1,7 +1,7 @@
 import { existsSync as exists_sync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { client } from '#root/src/files/client.js'
-import { sync_target } from '#root/src/files/target.js'
+import { person_target, sync_target } from '#root/src/files/target.js'
 import { actor_url, sync_actor } from '#root/src/harness/actor.js'
 import {
   find_root,
@@ -15,7 +15,10 @@ export const SYNC_PAUSED = 'sync-paused'
 /** While this file exists, a harness sync goes to local sync or nowhere. */
 export const SYNC_LOCAL_ONLY = 'sync-local-only'
 
-const report_harness = (result, { command, json, stdout, stderr }) => {
+const report_harness = (
+  result,
+  { command, json, stdout, stderr, label = null }
+) => {
   const { harness, synced, refused } = result
   const reports = {
     ...(harness && {
@@ -33,9 +36,12 @@ const report_harness = (result, { command, json, stdout, stderr }) => {
     Object.values(reports).some(report => report.conflicts.length) ||
     Object.keys(refused).length > 0
   if (json) {
-    stdout.write(`${JSON.stringify({ ok: !failed, command, result })}\n`)
+    stdout.write(
+      `${JSON.stringify({ ok: !failed, command, ...(label && { target: label }), result })}\n`
+    )
     return failed ? 1 : 0
   }
+  if (label) stdout.write(`${label}\n`)
   if (result.dry_run) stdout.write('dry run: nothing written\n')
   for (const name of harness?.files.too_big ?? [])
     stdout.write(`  too big, left home: ${name}\n`)
@@ -127,6 +133,43 @@ const held_back = (state, where) => {
   return null
 }
 
+/** Production after an explicit sync to the local stack, unless held home. */
+const second_target = async ({ also, command, state, to }) =>
+  command === 'sync' &&
+  to.local &&
+  also &&
+  !exists_sync(join(state, SYNC_LOCAL_ONLY))
+    ? await also()
+    : null
+
+/**
+ * Report the local sync, then run the same sync against production.
+ * Not signed in to production skips it; local already holds the files.
+ */
+const then_production = async (
+  result,
+  second,
+  sync_to,
+  { command, dry_run, json, stdout, stderr, to_url }
+) => {
+  const io = { command, json, stdout, stderr }
+  const code = report_harness(dry_run ? { ...result, dry_run } : result, {
+    ...io,
+    label: `local (${to_url})`
+  })
+  const token = await second.get_token()
+  if (!token) {
+    stderr.write('production skipped: not signed in; run realness login\n')
+    return code
+  }
+  const cloud = await sync_to(second.url, token)
+  if (dry_run) cloud.dry_run = true
+  return Math.max(
+    code,
+    report_harness(cloud, { ...io, label: `production (${second.url})` })
+  )
+}
+
 /**
  * Run the same harness command on desktop and actors, with their own credentials.
  * @param {string[]} args
@@ -135,6 +178,7 @@ const held_back = (state, where) => {
  * @param {string} [options.root]
  * @param {string} [options.state]
  * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> }>} [options.target] Where desktop sync goes: the local stack when it is up
+ * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> } | null>} [options.also] After an explicit sync to the local stack, a second target: production, so iCloud and the cloud both hold the files
  * @param {string} [options.service_url]
  * @param {() => Promise<string>} [options.issue]
  * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]
@@ -147,6 +191,7 @@ export const run_harness = async (
     root: root_option,
     state: state_option,
     target = sync_target,
+    also = target === sync_target ? person_target : null,
     service_url,
     issue,
     stdout = process.stdout,
@@ -217,21 +262,32 @@ export const run_harness = async (
     )
     return 0
   }
-  // An actor returned above, so a person's target is here.
   const to = /** @type {NonNullable<typeof where>} */ (where)
+  const sync_to = (url, token) =>
+    sync_harness({
+      root,
+      state,
+      store: client({ url: service_url ?? url, token, state }),
+      plans: rest.filter(
+        arg => !['--deletes', '--json', '--dry-run'].includes(arg)
+      ),
+      deletes: rest.includes('--deletes') ? 'all' : 'explained',
+      defer_edits: command === 'turn-end',
+      dry_run
+    })
   const token = await to.get_token()
   if (!token) throw new Error('not signed in; run realness login')
-  const result = await sync_harness({
-    root,
-    state,
-    store: client({ url: service_url ?? to.url, token, state }),
-    plans: rest.filter(
-      arg => !['--deletes', '--json', '--dry-run'].includes(arg)
-    ),
-    deletes: rest.includes('--deletes') ? 'all' : 'explained',
-    defer_edits: command === 'turn-end',
-    dry_run
-  })
+  const result = await sync_to(to.url, token)
+  const second = await second_target({ also, command, state, to })
+  if (second)
+    return then_production(result, second, sync_to, {
+      to_url: to.url,
+      command,
+      dry_run,
+      json,
+      stdout,
+      stderr
+    })
   if (dry_run) result.dry_run = true
   return report_harness(result, { command, json, stdout, stderr })
 }

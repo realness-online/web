@@ -28,6 +28,7 @@ import {
   rename,
   rm,
   stat,
+  utimes,
   writeFile as write_file
 } from 'node:fs/promises'
 import { dirname, join, resolve, sep } from 'node:path'
@@ -138,6 +139,40 @@ const list_in = async (root, at, prefix) => {
     files: names(e => e.isFile()),
     folders: names(e => e.isDirectory())
   }
+}
+
+/**
+ * Pack every plain text file under root in place, as gzip_at_rest would have.
+ * Versions hash the plain bytes, so nothing re-syncs; mtimes are kept.
+ * @returns {Promise<{ packed: string[], saved: number }>}
+ */
+export const pack = async (root_path, { dry_run = false } = {}) => {
+  const root = resolve(root_path)
+  const report = { packed: [], saved: 0 }
+  const entries = await readdir(root, { recursive: true, withFileTypes: true })
+  for (const entry of entries) {
+    const path = join(entry.parentPath, entry.name)
+    const key = path.slice(root.length + 1)
+    if (!entry.isFile() || !TEXT.test(key) || entry.name.endsWith('.tmp'))
+      continue
+    if (RESERVED.some(name => key === name || key.startsWith(name + sep)))
+      continue
+    // eslint-disable-next-line no-await-in-loop -- one file in memory at a time
+    const body = await read_file(path)
+    if (body.subarray(0, 2).equals(GZIP_MAGIC)) continue
+    const small = packed(key, body, true)
+    if (small === body) continue
+    report.packed.push(key)
+    report.saved += body.length - small.length
+    if (dry_run) continue
+    // eslint-disable-next-line no-await-in-loop -- keep the write beside its read
+    const { atime, mtime } = await stat(path)
+    // eslint-disable-next-line no-await-in-loop -- one file at a time
+    await atomic_write(path, small)
+    // eslint-disable-next-line no-await-in-loop -- restore the time it had
+    await utimes(path, atime, mtime)
+  }
+  return report
 }
 
 export const disk = (root_path, { gzip_at_rest = false } = {}) => {

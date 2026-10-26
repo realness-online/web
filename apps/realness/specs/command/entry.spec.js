@@ -1,3 +1,4 @@
+import { zipped_storage } from '../harness/zipped-storage.js'
 import assert from 'node:assert/strict'
 import {
   mkdir,
@@ -84,7 +85,7 @@ it('the same file command renews an actor pass and respects its path limit', asy
   await mkdir(artifacts, { recursive: true })
   const root = await mkdtemp(join(artifacts, 'actor-'))
   t.after(() => rm(root, { recursive: true, force: true }))
-  const storage = disk(join(root, 'storage'))
+  const storage = zipped_storage(disk(join(root, 'storage')))
   const phone = '+15555550123'
   const secret = 'actor-entry-test-secret-with-thirty-two-bytes'
   await storage.put(`people/${phone}/harness/vault/note.md`, 'saved note')

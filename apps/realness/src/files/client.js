@@ -36,6 +36,7 @@ import { apply, is_session_file, load_calls, replayable } from './replay.js'
 import { homedir } from 'node:os'
 import { basename, dirname, join, relative, resolve, sep } from 'node:path'
 import { merge_session } from './session-merge.js'
+import { is_zipped, zip, zipped_call } from './zip.js'
 import { skipped, skipped_name } from './skip.js'
 import { trashed_from } from '#root/src/can/trash-keys.js'
 import {
@@ -318,7 +319,7 @@ const pull_only_transfer = async (
   if (!remote_version) return report.unchanged.push(name)
   const theirs = await fetch_remote(name)
   if (!theirs) return report.conflicts.push(name)
-  if (bytes && remote_version === local_sha) {
+  if (bytes && (remote_version === local_sha || theirs.bytes.equals(bytes))) {
     agree(name, bytes, remote_version)
     return report.adopted.push(name)
   }
@@ -416,7 +417,7 @@ const remote_moved_only = async (
     report,
     trash
   } = run
-  if (deferred[name] && local_sha !== base?.version) {
+  if (deferred[name] && local_sha !== (base?.local ?? base?.version)) {
     if (!bytes) return report.held.push(name)
     if (!remote_version) {
       agree(
@@ -509,7 +510,7 @@ const both_moved = async (
     )
     return report.pushed.push(name)
   }
-  if (theirs.version === local_sha) {
+  if (theirs.version === local_sha || theirs.bytes.equals(bytes)) {
     agree(name, bytes, theirs.version)
     return report.adopted.push(name)
   }
@@ -522,7 +523,7 @@ const both_moved = async (
     return report.pushed.push(name)
   }
   const rows =
-    base?.at && replayable(log.since(file_of(name), base.at), local_sha)
+    base?.at && replayable(log.since(file_of(name), base.at), run.plain(bytes))
   const replayed =
     rows && apply(theirs.bytes.toString('utf8'), await load_calls(rows))
   if (typeof replayed === 'string') {
@@ -548,7 +549,7 @@ const both_moved = async (
     return report.merged.push(name)
   }
   const ours =
-    log.explained(file_of(name), local_sha) && log.last(file_of(name))
+    log.explained(file_of(name), run.plain(bytes)) && log.last(file_of(name))
   if (ours) report.sessions[name] = { session: ours.session, turn: ours.turn }
   if (!run.conflict_allowed()) return report.held.push(name)
   const copy = conflict_name(
@@ -593,7 +594,7 @@ const transfer_one = async (run, name) => {
   if (bytes && bytes.length > max_bytes) return report.too_big.push(name)
   const local_sha = bytes ? sha(bytes) : null
   const remote_version = remotes[name] ?? null
-  const local_moved = local_sha !== (base?.version ?? null)
+  const local_moved = local_sha !== (base?.local ?? base?.version ?? null)
   const remote_moved = remote_version !== (base?.version ?? null)
 
   try {
@@ -764,7 +765,7 @@ const dry_fx = { write_file: nothing, to_trash: nothing, mkdir: nothing }
  * version it would have made, a DELETE succeeds, and a guard that the listed
  * remote version would fail is reported as a 412, as the server would.
  */
-const dry_remote = ({ api, call, folder, remotes }) => {
+const dry_remote = ({ api, call, folder, remotes, ver = sha }) => {
   const current = path =>
     path.startsWith(folder) ? remotes[path.slice(folder.length)] : undefined
   const guard = (path, headers = {}) => {
@@ -781,7 +782,7 @@ const dry_remote = ({ api, call, folder, remotes }) => {
       put: (path, bytes, headers = {}) =>
         new Promise(resolve => {
           if (path.startsWith(folder)) guard(path, headers)
-          resolve(sha(Buffer.from(bytes)))
+          resolve(ver(Buffer.from(bytes)))
         }),
       rm: nothing
     },
@@ -817,6 +818,7 @@ const make_transfer = ({
   session_folder,
   sessions_remote,
   sha,
+  plain = sha,
   stock,
   trash
 }) => {
@@ -824,7 +826,7 @@ const make_transfer = ({
   const file_of = name => join(pair.local, ...name.split('/'))
   const read_replay = (name, base, bytes) => {
     if (!session_folder || !base?.at || !bytes || !base.version) return null
-    const rows = replayable(log.since(file_of(name), base.at), sha(bytes))
+    const rows = replayable(log.since(file_of(name), base.at), plain(bytes))
     if (
       !rows?.length ||
       rows.some(
@@ -838,7 +840,12 @@ const make_transfer = ({
   }
   const agree = (name, bytes, version) => {
     delete deferred[name]
-    manifest[name] = { version, at: new Date().toISOString() }
+    const ours = bytes ? sha(Buffer.from(bytes)) : version
+    manifest[name] = {
+      version,
+      at: new Date().toISOString(),
+      ...(ours !== version && { local: ours })
+    }
   }
   /**
    * Versions of the files new to this folder since the last agreement, read
@@ -854,7 +861,7 @@ const make_transfer = ({
         .filter(([name]) => !manifest[name])
         .map(async ([, path]) => sha(await read_file(path).catch(() => '')))
     ).then(versions => new Set(versions))
-    return (await arrived).has(base.version)
+    return (await arrived).has(base.local ?? base.version)
   }
   const forget = name => {
     delete deferred[name]
@@ -968,6 +975,7 @@ const make_transfer = ({
     remotes,
     report,
     sha,
+    plain,
     stock,
     trash,
     update_starter
@@ -1160,7 +1168,7 @@ export const client = ({
   trash: default_trash
 }) => {
   const key = key_for(phone)
-  const call = caller({ url, token, fetcher, key })
+  const call = zipped_call(caller({ url, token, fetcher, key }), key, sha)
   const server = String(url).replace(/\/+$/, '')
 
   const expect = (response, what, ok = [HTTP.OK]) => {
@@ -1261,8 +1269,10 @@ export const client = ({
       const mass_removal = vanished > MAX_REMOVALS
       if (mass_removal) report.mass_removal = vanished
       if (dry_run) report.dry_run = true
+      // sy18: harness versions hash the zip; the edit log keeps plain hashes
+      const ver = is_zipped(key(folder)) ? bytes => sha(zip(bytes)) : sha
       const side = dry_run
-        ? dry_remote({ api, call, folder, remotes })
+        ? dry_remote({ api, call, folder, remotes, ver })
         : { api, call }
       const { one, agree, conditional } = make_transfer({
         api: side.api,
@@ -1288,7 +1298,8 @@ export const client = ({
         saved,
         session_folder,
         sessions_remote,
-        sha,
+        sha: ver,
+        plain: sha,
         stock,
         trash
       })
