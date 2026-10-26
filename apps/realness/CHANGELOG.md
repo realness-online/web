@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Services prove what they run** - Sync, proxy, and gate answer
+  `/v1/release` with their version and a hash of their files, and every
+  release checks it.
+- **Verify waits out a slow deploy** - A file or service that has not landed
+  yet is checked again for up to three minutes before the release fails.
+- **A stopped release can finish** - `npm run ship -- --resume` picks up
+  where a release stopped, without a new version.
+
 ## v3.0.0-q - 2026-10-26
 
 - **The harness syncs zipped** - Every harness file is stored and sent as

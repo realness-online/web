@@ -1,3 +1,4 @@
+import { answer_release } from '#root/lib/release.js'
 import {
   createServer as create_server,
   request as http_request
@@ -220,6 +221,7 @@ export const make_gate = ({
       .writeHead(status, { 'content-type': 'text/plain; charset=utf-8' })
       .end(text)
   const server = create_server(async (request, response) => {
+    if (answer_release(request, response)) return
     const path = new URL(request.url ?? '/', 'http://gate').pathname
     if (request.method === 'GET' && path === '/health')
       return plain(response, HTTP.OK, 'ok\n')

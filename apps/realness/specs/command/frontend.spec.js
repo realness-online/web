@@ -110,6 +110,8 @@ it('production deploy explicitly selects production, builds once, then verifies'
     '--manifest',
     frontend_out('build-manifest.json'),
     '--url',
-    'https://realness.online'
+    'https://realness.online',
+    '--settle',
+    '180'
   ])
 })

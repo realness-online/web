@@ -126,19 +126,39 @@ const report = (before, after) =>
     return `${name.padEnd(NAME_WIDTH)} ${from} -> ${to} ${state}`
   }).join('\n')
 
-/** The frontend deploy builds the site once, so the release uploads that build. */
-export const release_plan = targets => [
-  'version',
+/** How long verify re-checks a deploy that has not landed yet. */
+const SETTLE_SECONDS = '180'
+
+/**
+ * The frontend deploy builds the site once, so the release uploads that build.
+ * Verify covers the site against the release and the services against their
+ * staged bytes. `resume` skips the version step: the tag already exists.
+ */
+export const release_plan = (targets, { resume = false } = {}) => [
+  ...(resume ? [] : ['version']),
   ...targets.map(target => `deploy:${target}`),
   'release',
-  ...(targets.includes('frontend') ? ['verify'] : [])
+  ...(targets.includes('frontend') ? ['verify'] : []),
+  ...(targets.some(target => SERVICES.includes(target))
+    ? ['verify:services']
+    : [])
 ]
+
+/** True when HEAD carries the tag for `version`: a release that stopped partway. */
+const tagged = version =>
+  git(['tag', '--points-at', 'HEAD']).split('\n').includes(`v${version}`)
+
+/** The release already on GitHub is left alone when resuming. */
+const released = version =>
+  spawn_sync('gh', ['release', 'view', `v${version}`], { stdio: 'ignore' })
+    .status === 0
 
 export const main = () => {
   gcloud_python()
   const args = process.argv.slice(2)
   const halo = args.find(arg => arg.startsWith('--halo='))?.slice(HALO_FLAG)
   const dry_run = args.includes('--dry-run')
+  const resume = args.includes('--resume')
   const dirty = git(['status', '--porcelain'])
   if (dirty && !dry_run) {
     err('uncommitted changes; a release must match its tag')
@@ -149,8 +169,17 @@ export const main = () => {
   const { version: current } = JSON.parse(
     read_file_sync('package.json', 'utf8')
   )
-  const next = next_version(current)
-  const previous = git(['describe', '--tags', '--abbrev=0'])
+  if (resume && !tagged(current)) {
+    err(`--resume needs HEAD tagged v${current}`)
+    return 1
+  }
+  const next = resume ? current : next_version(current)
+  const previous = git([
+    'describe',
+    '--tags',
+    '--abbrev=0',
+    resume ? 'HEAD^' : 'HEAD'
+  ])
   const changed = git([
     'diff',
     '--name-only',
@@ -160,7 +189,7 @@ export const main = () => {
   const targets = choose(changed)
   const settings = environment_settings(ENVIRONMENT)
 
-  out(`release    ${current} -> ${next}`)
+  out(resume ? `resume     ${current}` : `release    ${current} -> ${next}`)
   out(`changes    ${changed.length} files since ${previous}`)
   out(`deploys    ${targets.join(', ')}`)
   if (dry_run) {
@@ -169,10 +198,29 @@ export const main = () => {
   }
 
   const before = revisions(settings)
-  for (const step of release_plan(targets))
+  for (const step of release_plan(targets, { resume }))
     if (step === 'version') run('npm', ['version', next])
-    else if (step === 'release') run('npm', ['run', 'release:gh'])
-    else if (step === 'verify') run('npm', ['run', 'verify', '--', '--release'])
+    else if (step === 'release') {
+      if (!(resume && released(next))) run('npm', ['run', 'release:gh'])
+    } else if (step === 'verify')
+      run('npm', [
+        'run',
+        'verify',
+        '--',
+        '--release',
+        '--settle',
+        SETTLE_SECONDS
+      ])
+    else if (step === 'verify:services')
+      run('npm', [
+        'run',
+        'verify',
+        '--',
+        '--services',
+        targets.filter(target => SERVICES.includes(target)).join(','),
+        '--settle',
+        SETTLE_SECONDS
+      ])
     else {
       const target = step.slice('deploy:'.length)
       out(`\n==> ${target}`)

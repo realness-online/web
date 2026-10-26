@@ -1,3 +1,4 @@
+import { answer_release } from '#root/lib/release.js'
 import { createServer as create_server } from 'node:http'
 import { timingSafeEqual as timing_safe_equal } from 'node:crypto'
 import { ISO_DATE } from '#root/lib/units.js'
@@ -349,6 +350,7 @@ export const webhook_handler =
 export const proxy_handler =
   ({ agent, limit, pay, webhook, usage, origins = [] }) =>
   (request, response) => {
+    if (answer_release(request, response)) return
     const path = new URL(request.url ?? '/', 'http://proxy').pathname.replace(
       /\/+$/,
       ''

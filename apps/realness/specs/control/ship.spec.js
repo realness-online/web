@@ -79,11 +79,27 @@ it('the release uploads the build the deploy shipped', () => {
     'deploy:frontend',
     'deploy:proxy',
     'release',
-    'verify'
+    'verify',
+    'verify:services'
   ])
   assert.equal(
     release_plan(['frontend']).includes('build'),
     false,
     'no build before the deploy: it would not be the deployed build'
   )
+})
+
+it('services are verified after they deploy; a resume skips the version', () => {
+  assert.deepEqual(release_plan(['sync']), [
+    'version',
+    'deploy:sync',
+    'release',
+    'verify:services'
+  ])
+  assert.deepEqual(release_plan(['frontend', 'halo'], { resume: true }), [
+    'deploy:frontend',
+    'deploy:halo',
+    'release',
+    'verify'
+  ])
 })

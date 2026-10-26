@@ -129,7 +129,9 @@ export const run_frontend = async (
         '--manifest',
         frontend_out('build-manifest.json'),
         '--url',
-        environment_settings(environment).public_url
+        environment_settings(environment).public_url,
+        '--settle',
+        '180'
       ])
   }
   if (dry_run) {

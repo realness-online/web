@@ -16,6 +16,7 @@
  *
  * Browsers may call it only from `origins`, the sites allowed to read and write.
  */
+import { answer_release } from '#root/lib/release.js'
 import {
   createHash as create_hash,
   timingSafeEqual as timing_safe_equal
@@ -851,6 +852,7 @@ export const sync_service = ({
   }
 
   return create_server(async (request, response) => {
+    if (answer_release(request, response)) return
     const started = Date.now()
     const path = request_path(request.url)
     const { origin } = request.headers

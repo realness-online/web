@@ -15,7 +15,7 @@ cp "$root/package.json" "$stage/package.json"
 folders="$(node "$root/src/settings/cli.js" folders service "$service")"
 for folder in $folders; do
   mkdir -p "$stage/$folder"
-  rsync -a --exclude test/ --exclude browser/ "$root/$folder/" "$stage/$folder/"
+  rsync -a --exclude test/ --exclude browser/ --exclude .DS_Store "$root/$folder/" "$stage/$folder/"
 done
 cat > "$stage/Dockerfile" <<EOF
 FROM node:22-slim
@@ -24,4 +24,5 @@ COPY . .
 ENV NODE_ENV=production
 CMD ["node", "server/$service/bin/$service-service.js"$args]
 EOF
+node "$root/scripts/release-stamp.js" "$stage" > /dev/null
 printf '%s\n' "$stage"

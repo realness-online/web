@@ -4,9 +4,10 @@ import path from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { is_release_junk } from './release-junk.js'
 import { run_entry } from './lib/entry.js'
-import { frontend_out } from '#root/src/settings/output.js'
+import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const default_repo = 'realness-online/web'
+const SERVICES = ['sync', 'proxy', 'gate']
 const default_url = 'https://realness.online'
 const manifest_asset = 'build-manifest.json'
 const script_path = file_url_to_path(import.meta.url)
@@ -28,6 +29,10 @@ Options:
   --repo owner/name   GitHub repo (default: ${default_repo})
   --manifest PATH     Local build-manifest.json (operator / deploy gate)
   --from-site         Instance's own manifesto only (not independent evidence)
+  --settle SECONDS    Re-check failures until they match or time runs out
+                      (a CDN or a new revision can lag a deploy)
+  --services [list]   Check services (default sync,proxy,gate) run this
+                      checkout's staged bytes
   --help              Show this help
 
 Operators: after deploy, attach the same dist manifesto to the release:
@@ -43,12 +48,20 @@ export const parse_args = (argv = process.argv.slice(2)) => {
   let release = null
   let from_site = false
   let repo = default_repo
+  let settle = 0
+  let services = null
 
   for (let i = 0; i < args.length; i++)
     if (args[i] === '--url' && args[i + 1]) base_url = args[++i]
     else if (args[i] === '--manifest' && args[i + 1]) manifest_path = args[++i]
     else if (args[i] === '--repo' && args[i + 1]) repo = args[++i]
     else if (args[i] === '--from-site') from_site = true
+    else if (args[i] === '--settle' && args[i + 1]) settle = Number(args[++i])
+    else if (args[i] === '--services')
+      services =
+        args[i + 1] && !args[i + 1].startsWith('--')
+          ? args[++i].split(',')
+          : SERVICES
     else if (args[i] === '--release') {
       const next = args[i + 1]
       if (next && !next.startsWith('--')) {
@@ -65,7 +78,9 @@ export const parse_args = (argv = process.argv.slice(2)) => {
     manifest_path,
     release,
     from_site,
-    repo
+    repo,
+    settle,
+    services
   }
 }
 
@@ -256,6 +271,85 @@ export const verify_file = async (base_url, file_path, expected) => {
   }
 }
 
+const SETTLE_STEP_MS = 15_000
+
+/**
+ * Check every item, then re-check only the failures every 15 seconds until
+ * they pass or `settle` seconds run out. A deploy can lag its check.
+ * @template T
+ * @param {T[]} items
+ * @param {(item: T) => Promise<{ ok: boolean }>} check
+ * @param {number} settle seconds
+ * @param {(ms: number) => Promise<void>} [wait]
+ */
+export const settled = async (items, check, settle, wait = sleep) => {
+  const results = new Map()
+  let pending = items
+  const until = Date.now() + settle * ms_per_second
+  for (;;) {
+    const round = await Promise.all(pending.map(check))
+    round.forEach((result, i) => results.set(pending[i], result))
+    pending = pending.filter((_, i) => !round[i].ok)
+    if (!pending.length || Date.now() >= until) break
+    console.info(`Settling:  ${pending.length} not yet live; again in 15s`)
+    await wait(SETTLE_STEP_MS)
+  }
+  return items.map(item => results.get(item))
+}
+
+/** sync, proxy, and gate: each running stamp against this checkout's staged one. */
+export const verify_services = async ({
+  services = SERVICES,
+  settle,
+  environment = 'production'
+}) => {
+  const { environment_settings } =
+    await import('#root/src/settings/environments.js')
+  const { execFileSync } = await import('node:child_process')
+  const { stamp_of } = await import('#root/lib/release.js')
+  const urls = environment_settings(environment).services
+  const root = path.resolve(path.dirname(script_path), '..')
+  const out = out_path('verify-services')
+  const want = Object.fromEntries(
+    services.map(service => {
+      const stage = execFileSync(
+        'bash',
+        [path.join(root, 'server/scripts/stage-service.sh'), service, out],
+        { encoding: 'utf8' }
+      ).trim()
+      return [service, stamp_of(stage)]
+    })
+  )
+  fs.rmSync(out, { recursive: true, force: true })
+  const check = async service => {
+    const expected = want[service]
+    try {
+      const response = await fetch(`${urls[`${service}_url`]}/v1/release`, {
+        cache: 'no-store'
+      })
+      if (!response.ok)
+        return { service, ok: false, message: `HTTP ${response.status}` }
+      const got = await response.json()
+      return {
+        service,
+        ok: got.version === expected.version && got.bundle === expected.bundle,
+        message: `expected ${expected.version} ${expected.bundle}\n  actual   ${got.version} ${got.bundle}`
+      }
+    } catch (error) {
+      return { service, ok: false, message: String(error?.message ?? error) }
+    }
+  }
+  const results = await settled(services, check, settle)
+  for (const result of results)
+    if (result.ok)
+      console.info(`PASS ${result.service} ${want[result.service].version}`)
+    else console.error(`FAIL ${result.service} - ${result.message}`)
+  const failed = results.filter(result => !result.ok).length
+  console.info(`Services:  ${results.length - failed}/${results.length} match`)
+  console.info(failed ? 'Result:    NOT LEGIT' : 'Result:    LEGIT')
+  return failed ? 1 : 0
+}
+
 export const main = async (
   argv = process.argv.slice(2),
   { load = load_manifest, verify = verify_file } = {}
@@ -265,7 +359,9 @@ export const main = async (
     console.info(help_text)
     return 0
   }
-  const { base_url, manifest_path, release, from_site, repo } = parsed
+  const { base_url, manifest_path, release, from_site, repo, settle } = parsed
+  if (parsed.services)
+    return verify_services({ services: parsed.services, settle })
   const { manifest, source } = await load({
     base_url,
     manifest_path,
@@ -300,10 +396,10 @@ export const main = async (
       `Skipping:  ${skipped.length} junk path(s): ${skipped.join(', ')}`
     )
 
-  const results = await Promise.all(
-    entries.map(([file_path, expected]) =>
-      verify(base_url, file_path, expected)
-    )
+  const results = await settled(
+    entries,
+    ([file_path, expected]) => verify(base_url, file_path, expected),
+    settle
   )
 
   let passed = 0
