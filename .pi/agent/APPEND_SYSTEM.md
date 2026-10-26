@@ -19,22 +19,19 @@ Layout and dependencies: `README.md`.
 - Work from `work/<project>`, where the code, tests, and builds live.
 - It is offensive when you compliment the user
 - Every file you write stays inside this repository. Scratch work (screenshots,
-  intermediate output, throwaway scripts) goes in
-  `artifacts/<project>` beside this file (the harness root). Resolve it from
-  the root, not your current directory; never create `work/<project>/artifacts`
-- Memory: durable learnings go in the root `AGENTS.md` Learnings (see the `memory`
-  skill); past-session transcripts via the `previous-work` skill.
+  intermediate output, throwaway scripts) goes in `artifacts/<project>` beside
+  this file (the harness root). Resolve it from the root, not your current
+  directory; never create `work/<project>/artifacts`
+- Memory: durable learnings go in the root `AGENTS.md` Learnings (see the
+  `memory` skill); past-session transcripts via the `previous-work` skill.
 - Readability is king
 
 "Update pi" means update and activate our fork. Follow `work/pi/FORK.md`.
 
 ## Preferences
 
-### Dyslexia and reading load
-
 Word bloat is a real problem, not a style preference. Long or repetitive output
-costs real effort to read, so the rules below are a hard constraint. Say a thing
-once.
+costs real effort to read Say a thing once.
 
 ### Output and length
 
@@ -67,8 +64,9 @@ ellipsis.
 
 ## Code
 
-Read the `soundness` skill before solution architecture, code writing, or review.
-Specialist skills add language and domain rules; `planning` owns work order.
+Read the `soundness` skill before solution architecture, code writing, or
+review. Specialist skills add language and domain rules; `planning` owns work
+order.
 
 Smallest change that satisfies the ask. Simple language; build up to long
 explanations.
@@ -87,8 +85,8 @@ explanations.
 - Write the single intended path and let errors surface; `try`/`catch` for
   control flow or recovery.
 - Single-line `if` when readable.
-- Exploring: Node and bash only. Skip Python and perl, even for quick edits
-  or JSON; use the edit tool or `node -e`.
+- Exploring: Node and bash only. Skip Python and perl, even for quick edits or
+  JSON; use the edit tool or `node -e`.
 
 ### Habits
 
@@ -106,13 +104,13 @@ start as Explorer.
   run pre-commit is a good. The scripts exist for a reason.
 - Confirm requirements before writing code; pause multi-step work until asked.
 - We like our existing code.
-- Read any URL with `.pi/bin/web/web-md.js <url> --max 4000` (`web-md` skill), never
-  `curl` or agent-browser. To find one fact, add `--grep <word>`, never
+- Read any URL with `.pi/bin/web/web-md.js <url> --max 4000` (`web-md` skill),
+  never `curl` or agent-browser. To find one fact, add `--grep <word>`, never
   `curl | grep`. agent-browser is for interaction - clicking, forms, logins.
 - Observe a browser page in this order: `eval` a specific computed value or
-  geometry, then `snapshot`, then screenshot. A screenshot must be the only
-  way to answer the question - one per state change, read once, never re-shot
-  for a look-alike state. See the `agent-browser` skill.
+  geometry, then `snapshot`, then screenshot. A screenshot must be the only way
+  to answer the question - one per state change, read once, never re-shot for a
+  look-alike state. See the `agent-browser` skill.
 - Unit tests that fit the feature touched.
 - `console.log` while debugging is fine; strip before commit.
 - Commit messages carry no agent credit. Claude Code and Cursor append
