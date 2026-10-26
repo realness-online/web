@@ -8,6 +8,7 @@ import { frontend_out, out_path } from '#root/src/settings/output.js'
 
 const default_repo = 'realness-online/web'
 const SERVICES = ['sync', 'proxy', 'gate']
+const STAGED_WITH_ENVIRONMENT = ['gate']
 const default_url = 'https://realness.online'
 const manifest_asset = 'build-manifest.json'
 const script_path = file_url_to_path(import.meta.url)
@@ -314,7 +315,13 @@ export const verify_services = async ({
     services.map(service => {
       const stage = execFileSync(
         'bash',
-        [path.join(root, 'server/scripts/stage-service.sh'), service, out],
+        [
+          path.join(root, 'server/scripts/stage-service.sh'),
+          service,
+          out,
+          // stage as each deploy.sh does: only the gate bakes in its environment
+          ...(STAGED_WITH_ENVIRONMENT.includes(service) ? [environment] : [])
+        ],
         { encoding: 'utf8' }
       ).trim()
       return [service, stamp_of(stage)]
