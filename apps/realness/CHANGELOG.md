@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- **The harness syncs zipped** - Every harness file is stored and sent as
+  `name.gz`, and its version is the hash of those bytes, so stores pass files
+  through untouched. Your checkout stays plain.
+- **Deletes go to a server trash** - A deleted file is kept for 30 days;
+  `realness trash` lists it and `realness restore` puts it back.
+- **Sync dry run** - `realness sync --dry-run` names every push, pull, delete,
+  and conflict without writing anything.
+- **Sync records know their server** - Switching servers starts a fresh
+  record instead of deleting files.
+- **Local, then production** - An explicit sync to the local stack runs again
+  against production unless the harness is held local.
+- **Posters from production** - `realness local pull posters` brings
+  production posters down, replacing local copies.
+- **Statement history fixed** - Older statements show again.
+- **Harness layout** - Tools moved to `.pi/bin`, harness rules to
+  `.pi/agent/APPEND_SYSTEM.md`, and your own rules to the root `AGENTS.md`.
+
 ## v3.0.0-p - 2026-10-21
 
 - **Account icon in the site nav** - The account link is now a
