@@ -59,8 +59,8 @@ const collect = (dir, dirs, files) => {
     if (entry.isSymbolicLink()) continue
     const path = join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (live(path)) continue
-      if ((entry.name === 'node_modules' || entry.name === '.git') && !contains_live(path)) dirs.push(path)
+      if (live(path) || exists_sync(join(path, '.git'))) continue
+      if (entry.name === 'node_modules' && !contains_live(path)) dirs.push(path)
       else if (entry.name === 'dist' && exists_sync(join(dir, 'package.json')) && !contains_live(path)) dirs.push(path)
       else collect(path, dirs, files)
     } else if (entry.isFile()) {

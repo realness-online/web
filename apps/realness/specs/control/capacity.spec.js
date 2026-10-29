@@ -326,7 +326,8 @@ it('request timeout still allows independent cleanup', async t => {
 it('sampling during hung work aborts it before its request timeout', async t => {
   const { api, state } = await host(t, { hang: true })
   let samples = 0
-  const { report } = await execute(configuration(api), {
+  const config = { ...configuration(api), request_ms: 60_000 }
+  const { report } = await execute(config, {
     sample: async () => {
       samples += 1
       return {

@@ -15,7 +15,8 @@ when `artifacts/` is over its cap and what the next commit will prune.
 
 ## What the script removes
 
-`node_modules`, a build `dist` beside a `package.json`, `.git`, `.DS_Store`,
+A git checkout or worktree (a folder holding `.git`) is never touched. Elsewhere:
+`node_modules`, a build `dist` beside a `package.json`, `.DS_Store`,
 and numbered screenshot twins (`shot-4402.png` when `shot-4401.png` sits
 beside it at the same size). When `artifacts/` is over 2 GB, it then
 removes files oldest first until the total is under 2 GB. There is no

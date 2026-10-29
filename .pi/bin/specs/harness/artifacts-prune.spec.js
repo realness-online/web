@@ -38,6 +38,23 @@ it('a .live folder is kept only while its pid runs', t => {
   assert.ok(!existsSync(join(junk, 'node_modules')), 'unreadable marker pruned')
 })
 
+it('a git checkout or worktree is never touched, its .git included', t => {
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  const worktree = folder('worktree')
+  writeFileSync(join(worktree, '.git'), 'gitdir: /elsewhere/.git/worktrees/w\n')
+  mkdirSync(join(worktree, 'packages/a/dist'), { recursive: true })
+  writeFileSync(join(worktree, 'packages/a/package.json'), '{}')
+  const clone = folder('clone')
+  mkdirSync(join(clone, '.git/objects'), { recursive: true })
+
+  assert.equal(prune().status, 0)
+  assert.ok(existsSync(join(worktree, '.git')), 'worktree link kept')
+  assert.ok(existsSync(join(worktree, 'node_modules/pkg')), 'worktree node_modules kept')
+  assert.ok(existsSync(join(worktree, 'packages/a/dist')), 'worktree builds kept')
+  assert.ok(existsSync(join(clone, '.git/objects')), 'clone kept')
+  assert.ok(existsSync(join(clone, 'node_modules/pkg')), 'clone node_modules kept')
+})
+
 it('ARTIFACTS_ROOT outside artifacts/ is refused', () => {
   const result = prune({ ARTIFACTS_ROOT: fileURLToPath(new URL('../plans/', import.meta.url)) })
   assert.equal(result.status, 2)
