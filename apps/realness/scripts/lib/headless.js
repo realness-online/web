@@ -34,7 +34,7 @@ export const sleep = ms =>
   })
 
 /**
- * Static server over dist with an SPA fallback, so app routes resolve.
+ * Static server over dist: exact file, then x.html, then the SPA fallback.
  * @param {string} dist_dir
  * @param {number} port
  * @returns {Promise<http.Server>}
@@ -51,6 +51,8 @@ export const serve_dist = (dist_dir, port) =>
         response.end()
         return
       }
+      if (!fs.existsSync(file) && fs.existsSync(`${file}.html`))
+        file = `${file}.html`
       if (!fs.existsSync(file) || fs.statSync(file).isDirectory())
         file = path.join(dist_dir, 'index.html')
       response.writeHead(HTTP_OK, {

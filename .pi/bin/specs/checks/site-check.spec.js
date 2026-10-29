@@ -132,3 +132,18 @@ it('h7: worker filename can match an existing build configuration', t => {
   const result = spawn(process.execPath, [script, '--site', root, '--worker', 'sw.js'], { encoding: 'utf8' })
   assert.equal(result.status, 0, result.stdout + result.stderr)
 })
+
+it('pw9: an unminified document-profile worker passes with pages fetched network first', t => {
+  const root = fixture(t)
+  const assets = precache.filter(url => !url.endsWith('.html'))
+  write_file(
+    join(root, 'service.worker.js'),
+    `self.addEventListener('message', e => { e.data && 'SKIP_WAITING' === e.data.type && self.skipWaiting() })
+clientsClaim()
+precacheAndRoute([${assets.map(url => `{ "url": "${url}", "revision": "1" }`).join(', ')}])
+registerRoute(({ request }) => request.mode === "navigate", new NetworkFirst({ cacheName: "pages" }))
+`
+  )
+  const result = run(root)
+  assert.equal(result.status, 0, result.stdout + result.stderr)
+})

@@ -176,12 +176,13 @@ it('an enabled PWA caches the selected snapshot, fragments, and diagrams', async
       join(f.root, 'dist/service.worker.js'),
       'utf8'
     )
-    for (const path of [
-      'blog/note.html',
-      'partials/header.fragment',
-      'scripts/pele.global.js'
-    ])
+    for (const path of ['partials/header.fragment', 'scripts/pele.global.js'])
       assert.ok(worker.includes(path), path)
+    assert.ok(
+      !worker.includes('blog/note.html'),
+      'pages are not precached; a reader gets the current page'
+    )
+    assert.match(worker, /NetworkFirst/, 'pages come from the network first')
     assert.match(
       worker,
       /event\.data\.type === ['"]SKIP_WAITING['"]/,
@@ -189,8 +190,8 @@ it('an enabled PWA caches the selected snapshot, fragments, and diagrams', async
     )
     assert.match(
       await readFile(join(f.root, 'dist/scripts/pwa.js'), 'utf8'),
-      /from '\/scripts\/watch-for-updates\.js'/,
-      'the page leaves updates to the shared update rule'
+      /from '\/scripts\/register\.js'/,
+      'the page registers through the PWA kit'
     )
     assert.match(
       await readFile(join(f.root, 'dist/scripts/watch-for-updates.js'), 'utf8'),

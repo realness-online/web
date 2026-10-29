@@ -26,30 +26,34 @@ const runs = (online, control) =>
 describe('check-pwa-offline', () => {
   it('passes when offline renders and the control fails', async () => {
     const run = runs([], ['reload offline did not render'])
-    await main({ dist_dir, chrome_path, run })
+    await main({ args: ['--dir', dist_dir], chrome_path, run })
     expect(run).toHaveBeenCalledTimes(2)
   })
 
   it('fails when the page does not survive offline', async () => {
     const run = runs(['reload offline did not render'], ['x'])
-    await expect(main({ dist_dir, chrome_path, run })).rejects.toThrow(
-      'offline failed'
-    )
+    await expect(
+      main({ args: ['--dir', dist_dir], chrome_path, run })
+    ).rejects.toThrow('offline failed')
   })
 
   it('fails when the control passes without a worker', async () => {
     await expect(
-      main({ dist_dir, chrome_path, run: runs([], []) })
+      main({ args: ['--dir', dist_dir], chrome_path, run: runs([], []) })
     ).rejects.toThrow('check is blind')
   })
 
   it('needs a built worker and a browser', async () => {
     await expect(
-      main({ dist_dir, chrome_path: '/nope', run: runs([], ['x']) })
+      main({
+        args: ['--dir', dist_dir],
+        chrome_path: '/nope',
+        run: runs([], ['x'])
+      })
     ).rejects.toThrow('CHROME_PATH')
     rmSync(path.join(dist_dir, 'service.worker.js'))
     await expect(
-      main({ dist_dir, chrome_path, run: runs([], ['x']) })
+      main({ args: ['--dir', dist_dir], chrome_path, run: runs([], ['x']) })
     ).rejects.toThrow('no built worker')
   })
 })

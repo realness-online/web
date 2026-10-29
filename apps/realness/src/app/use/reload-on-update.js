@@ -1,5 +1,5 @@
 import { onMounted as on_mounted, onUnmounted as on_unmounted } from 'vue'
-import { watch_for_updates } from './watch-for-updates.js'
+import { watch_for_updates } from '#root/packages/pwa/src/watch-for-updates.js'
 
 /** @param {() => boolean} is_working */
 export const use_reload_on_update = is_working => {

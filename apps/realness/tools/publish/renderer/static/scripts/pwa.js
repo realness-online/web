@@ -1,17 +1,9 @@
-/** Realness's update rule: look on return, activate and reload while hidden and idle. */
-import { watch_for_updates } from '/scripts/watch-for-updates.js'
+/** The Realness PWA kit: register the worker, then update silently while hidden. */
+import { register_pwa } from '/scripts/register.js'
 
-if ('serviceWorker' in navigator)
-  window.addEventListener(
-    'load',
-    async () => {
-      await navigator.serviceWorker.register('/service.worker.js')
-      watch_for_updates({
-        workers: navigator.serviceWorker,
-        doc: document,
-        is_working: () => false,
-        reload: () => location.reload()
-      })
-    },
-    { once: true }
-  )
+// Rooted URLs here, so a site published under a prefix gets them prefixed.
+window.addEventListener(
+  'load',
+  () => register_pwa({ url: '/service.worker.js', start: '/', warm: true }),
+  { once: true }
+)

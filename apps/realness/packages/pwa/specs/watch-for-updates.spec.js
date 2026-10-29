@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { is_typing, watch_for_updates } from '@/use/watch-for-updates'
+import { is_typing, watch_for_updates } from '../src/watch-for-updates.js'
 
 /**
  * Behaves like the built worker (vite-plugin-pwa, prompt mode): a new build

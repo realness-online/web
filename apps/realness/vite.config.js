@@ -3,7 +3,6 @@ import {
   defineConfig as define_config
 } from 'vite-plus'
 import vue from '@vitejs/plugin-vue'
-import { VitePWA as vite_pwa } from 'vite-plugin-pwa'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 import { existsSync as exists_sync, readFileSync as read_file_sync } from 'fs'
 import path from 'path'
@@ -12,11 +11,7 @@ import {
   project_root as product_root
 } from '#root/src/settings/layout.js'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
-import {
-  pwa_manifest,
-  pwa_plugin,
-  pwa_workbox
-} from '#root/src/settings/pwa.js'
+import { realness_pwa } from '#root/packages/pwa/src/vite.js'
 import { local_settings } from '#root/src/settings/environments.js'
 
 const cert_key = path.join(product_root, 'realness.local-key.pem')
@@ -69,7 +64,10 @@ const icon_version_in_html = () => ({
   transformIndexHtml: html => html.replaceAll('%ICON_VERSION%', icon_version)
 })
 const test_aliases = {
-  '/scripts/watch-for-updates.js': `${app_root}/use/watch-for-updates.js`,
+  '/scripts/register.js': path.resolve('packages/pwa/src/register.js'),
+  '/scripts/watch-for-updates.js': path.resolve(
+    'packages/pwa/src/watch-for-updates.js'
+  ),
   '/pi-durable.browser.js': frontend_out('pi-durable.browser.js')
 }
 const manual_chunk_rules = {
@@ -397,35 +395,31 @@ export default define_config(({ mode }) => ({
     wasm(),
     durable_bundle(),
     icon_version_in_html(),
-    vite_pwa({
-      ...pwa_plugin,
-      devOptions: { enabled: false },
+    realness_pwa({
+      profile: 'app',
+      name: 'Realness',
+      description: 'Realness',
+      icon_version,
+      manifest: { orientation: 'portrait' },
       workbox: {
-        ...pwa_workbox,
         maximumFileSizeToCacheInBytes: 4000000,
         globIgnores: ['**/ghostty-vt-*.wasm'],
-        navigateFallbackDenylist: [/\.(?:xml|txt|md|json)$/i],
         importScripts: ['/push-handlers.js']
       },
-      minify: true,
-      includeAssets: [
-        'vector.worker.js',
-        'fonts/*.woff2',
-        'icons.svg',
-        'brands/*.svg',
-        'brands/*.png',
-        'sitemap.xml',
-        'robots.txt',
-        'llms.txt',
-        'documentation.md'
-      ],
-      manifest: {
-        ...pwa_manifest({
-          name: 'Realness',
-          description: 'Realness',
-          icon_version
-        }),
-        orientation: 'portrait'
+      plugin: {
+        devOptions: { enabled: false },
+        minify: true,
+        includeAssets: [
+          'vector.worker.js',
+          'fonts/*.woff2',
+          'icons.svg',
+          'brands/*.svg',
+          'brands/*.png',
+          'sitemap.xml',
+          'robots.txt',
+          'llms.txt',
+          'documentation.md'
+        ]
       }
     })
   ],

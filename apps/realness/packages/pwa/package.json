@@ -1,0 +1,35 @@
+{
+  "name": "@realness.online/pwa",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Realness PWA kit: settings, app and document profiles, a Vite plugin, and silent updates",
+  "license": "GPL-2.0-only",
+  "author": "Scott Fryxell <sfryxell@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realness-online/web.git",
+    "directory": "packages/pwa"
+  },
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./vite": "./src/vite.js",
+    "./register": "./src/register.js",
+    "./watch-for-updates": "./src/watch-for-updates.js"
+  },
+  "peerDependencies": {
+    "vite-plugin-pwa": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vp test run",
+    "check": "vp check"
+  },
+  "devDependencies": {
+    "vite-plus": "0.2.8"
+  }
+}

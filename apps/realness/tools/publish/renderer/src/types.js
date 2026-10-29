@@ -18,6 +18,7 @@
  * @property {Object<string, PageMetadata>} [pages]
  * @property {string[]} [selected_pages] Public routes of selected full HTML pages.
  * @property {boolean} [pwa] Generate the public snapshot's manifest and worker.
+ * @property {'app'|'document'} [pwa_profile] How the worker caches; default document.
  */
 
 /**

@@ -79,10 +79,11 @@ export const build_site = async (
     join(output, 'scripts/template-for-polyfill.js')
   )
   if (site.pwa)
-    await cp(
-      new URL('../../../../src/app/use/watch-for-updates.js', import.meta.url),
-      join(output, 'scripts/watch-for-updates.js')
-    )
+    for (const name of ['register.js', 'profiles.js', 'watch-for-updates.js'])
+      await cp(
+        new URL(`../../../../packages/pwa/src/${name}`, import.meta.url),
+        join(output, `scripts/${name}`)
+      )
   const images = create_images(site.poster)
   await images.load_poster_sizes()
   const templates = create_templates(site, images.poster_sizes, watch)

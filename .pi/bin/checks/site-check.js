@@ -7,11 +7,14 @@ import {
 } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { parse_html } from '../lib/harness-dependencies.js'
-import { check_worker, precached } from './pwa-worker.js'
+import { check_worker, navigation_offline, precached } from './pwa-worker.js'
 import { create_itemid } from '../../../apps/realness/packages/itemid/src/index.js'
 
 const style_root = new URL('../../../apps/realness/src/app/style/', import.meta.url)
 const without_comments = text => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, '')
+/** Search engines' ownership files must stay exactly as issued. */
+const SEARCH_VERIFICATION = /^google[0-9a-f]+\.html$/
+
 /** Check shipped HTML and local assets. This does not execute CSS or a worker. */
 export const check_site = (directory, { worker = 'service.worker.js' } = {}) => {
   const root = realpath(directory)
@@ -46,7 +49,8 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
     for (const entry of readdir(dir, { withFileTypes: true })) {
       const file = join(dir, entry.name)
       if (entry.isDirectory()) walk(file)
-      else if (entry.isFile() && entry.name.endsWith('.html')) html_files.push(file)
+      else if (entry.isFile() && entry.name.endsWith('.html') && !SEARCH_VERIFICATION.test(entry.name))
+        html_files.push(file)
     }
   }
   walk(root)
@@ -163,10 +167,10 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
     const text = read_file(worker_file, 'utf8')
     for (const hit of check_worker(text)) report(worker_file, hit.rule, hit.text)
     const cached = precached(text)
-    const falls_back = /createHandlerBoundToURL|NavigationRoute/.test(text)
+    const falls_back = navigation_offline(text)
     for (const page of pages) {
       const path = relative(root, page.file)
-      if (!falls_back && !cached.has(path)) report(page.file, 'pwa-precache', 'page is not precached and no navigation fallback')
+      if (!falls_back && !cached.has(path)) report(page.file, 'pwa-precache', 'page is not precached and no navigation route answers offline')
       for (const href of page.assets) {
         const file = local_file_or_null(href, page.file)
         if (file && !cached.has(relative(root, file)))

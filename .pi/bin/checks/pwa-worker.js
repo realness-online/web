@@ -3,7 +3,15 @@ const SKIP_WAITING_HANDLER = /["'`]SKIP_WAITING["'`][^;}]*?skipWaiting\(\)/g
 
 /** Precached paths in a generated worker, site-relative with no query. */
 export const precached = text =>
-  new Set([...text.matchAll(/\burl:\s*["']([^"']+)["']/g)].map(([, url]) => url.replace(/^\/+/, '').split('?')[0]))
+  new Set([...text.matchAll(/["']?\burl["']?:\s*["']([^"']+)["']/g)].map(([, url]) => url.replace(/^\/+/, '').split('?')[0]))
+
+/**
+ * Navigations answer offline: the app profile's shell fallback, or the
+ * document profile's network-first page cache.
+ */
+export const navigation_offline = text =>
+  /createHandlerBoundToURL|NavigationRoute/.test(text) ||
+  (/NetworkFirst/.test(text) && /["']navigate["']/.test(text))
 
 /**
  * Worker rules every Realness PWA keeps: it waits until told (prompt mode),
