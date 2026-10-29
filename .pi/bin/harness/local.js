@@ -2,7 +2,7 @@
 import { spawnSync as spawn_sync } from 'node:child_process'
 import { product_import } from '../lib/product.js'
 
-const { local_plan, start_local } = await product_import('local/stack')
+const { local_plan, start_local, refresh_host_name } = await product_import('local/stack')
 const { monitor_local } = await product_import('local/monitor')
 
 /** Stop the halo and its Lima VM only when this run started them. */
@@ -24,6 +24,7 @@ if (args[0] === '--help') {
     'npm run local starts the local sync, halo, worker watchers, gate, and frontend.\nCtrl-C stops its local child processes and, when it started it, the halo and the Lima VM.\nA halo it reused stays up.\nnpm start still starts Pi; npm start -- --local starts both and stops the stack when Pi exits.\n'
   )
 } else {
+  await refresh_host_name()
   const plan = local_plan()
   if (args[0] === '--dry-run') process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`)
   else {

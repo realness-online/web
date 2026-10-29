@@ -13,10 +13,23 @@ import {
 import { frontend_out, out_path } from '#root/src/settings/output.js'
 import { realness_pwa } from '#root/packages/pwa/src/vite.js'
 import { local_settings } from '#root/src/settings/environments.js'
+import { cert_paths, host_label } from '#root/src/control/host-name.js'
 
-const cert_key = path.join(product_root, 'realness.local-key.pem')
-const cert = path.join(product_root, 'realness.local.pem')
-const has_certs = exists_sync(cert_key) && exists_sync(cert)
+/** lc3: this host's Let's Encrypt wildcard for <host>.realness.online, or null. */
+const host_cert = (() => {
+  try {
+    const host = host_label()
+    const paths = cert_paths(host)
+    if (!exists_sync(paths.key) || !exists_sync(paths.cert)) return null
+    return {
+      name: `${host}.realness.online`,
+      key: read_file_sync(paths.key),
+      cert: read_file_sync(paths.cert)
+    }
+  } catch {
+    return null
+  }
+})()
 const https_port = 443
 const http_port = 5173
 import wasm from 'vite-plugin-wasm'
@@ -322,7 +335,7 @@ export default define_config(({ mode }) => ({
   },
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['realness.local'],
+    allowedHosts: host_cert ? [host_cert.name, `.${host_cert.name}`] : [],
     proxy: {
       ...(mode === 'dev-local' && local_routes),
       '/v1/': {
@@ -337,7 +350,7 @@ export default define_config(({ mode }) => ({
         changeOrigin: true
       }
     },
-    port: has_certs ? https_port : http_port,
+    port: host_cert ? https_port : http_port,
     watch: {
       ignored: [
         '**/artifacts/**',
@@ -350,16 +363,9 @@ export default define_config(({ mode }) => ({
         'checks/**'
       ]
     },
-    ...(has_certs && {
-      https: {
-        key: read_file_sync(cert_key),
-        cert: read_file_sync(cert)
-      },
-      hmr: {
-        host: 'realness.local',
-        port: https_port,
-        protocol: 'wss'
-      }
+    ...(host_cert && {
+      https: { key: host_cert.key, cert: host_cert.cert },
+      hmr: { port: https_port, protocol: 'wss' }
     }),
     headers: {
       'Access-Control-Allow-Private-Network': 'true',

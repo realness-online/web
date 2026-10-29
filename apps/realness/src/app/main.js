@@ -24,8 +24,7 @@ create_app(App).use(router).use(key_commands_plugin).mount(mount_el)
 document.getElementById('site')?.remove()
 
 requestAnimationFrame(async () => {
-  if (import.meta.env.PROD && location.hostname !== 'realness.local')
-    register_sw({ onOfflineReady() {} })
+  if (import.meta.env.PROD) register_sw({ onOfflineReady() {} })
   const { init_auth } = await import('@/utils/serverless-auth')
   init_auth()
   void log_storage_estimate()

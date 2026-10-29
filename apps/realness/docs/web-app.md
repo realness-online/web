@@ -37,34 +37,13 @@ This starts a plain HTTP dev server on `http://localhost:5173`.
 
 ### Local HTTPS (optional)
 
-Some features (camera, service workers, secure contexts) need HTTPS. To serve over HTTPS on `realness.local`:
+Some features (camera, service workers, secure contexts) need HTTPS. Each host serves itself at `<host>.realness.online` with a real Let's Encrypt certificate:
 
-1. Install [mkcert](https://github.com/FiloSottile/mkcert) and create a local CA
+1. Set `host` in the local settings (`src/settings/environments.js`), e.g. `haight`
+2. Put a Cloudflare API token for the `realness.online` zone in the secrets folder as `cloudflare-token`
+3. Run `npm run local` - it points `<host>.realness.online` at this machine's LAN address and issues or renews the certificate
 
-```bash
-brew install mkcert
-mkcert -install
-```
-
-2. Generate certs in the project root
-
-```bash
-mkcert realness.local
-```
-
-3. Add `realness.local` to `/etc/hosts`
-
-```bash
-echo "127.0.0.1 realness.local" | sudo tee -a /etc/hosts
-```
-
-4. Run the dev server - it detects the certs and serves HTTPS on port 443
-
-```bash
-npm run dev
-```
-
-Visit `https://realness.local`.
+The dev server then serves HTTPS on port 443 at `https://<host>.realness.online`. Without a certificate it stays on `http://localhost:5173`.
 
 ### Configure firebase
 

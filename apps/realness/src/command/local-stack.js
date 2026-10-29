@@ -14,6 +14,12 @@ import { local_settings } from '#root/src/settings/environments.js'
 import { out_path, sync_dir } from '#root/src/settings/output.js'
 import { secret_path, sign_in_dir } from '#root/src/settings/secrets.js'
 import { setTimeout as delay } from 'node:timers/promises'
+import {
+  cert_paths,
+  host_label,
+  host_names,
+  keep_host_name
+} from '#root/src/control/host-name.js'
 
 const { root, frontend } = product_paths()
 const project = `${root}/`
@@ -28,12 +34,50 @@ const HTTP_OK = 200
 /** The default HTTPS port, used when a URL leaves it out. */
 const HTTPS_PORT = 443
 
+/** lc3: `https://<host>.realness.online` once this host holds its certificate, else null. */
+const host_origin = () => {
+  try {
+    const host = host_label()
+    return exists_sync(cert_paths(host).cert)
+      ? `https://${host_names(host).app}`
+      : null
+  } catch {
+    return null
+  }
+}
+
+/** With the host's certificate, its name is an allowed origin too. */
+const origins = () => {
+  const base = local_settings.cloud.services.origins
+  const named = host_origin()
+  return named ? `${base},${named}` : base
+}
+
+/**
+ * lc3: point this host's names at its address and renew the certificate if
+ * due. Never stops a start: no token, no network, or a refusal is a note.
+ * REALNESS_HOST_REFRESH=off skips it, so tests never touch DNS or certificates.
+ */
+export const refresh_host_name = async (
+  note = console.warn,
+  env = process.env
+) => {
+  if (env.REALNESS_HOST_REFRESH === 'off') return null
+  try {
+    const kept = await keep_host_name()
+    return kept
+  } catch (error) {
+    note(`host name not refreshed: ${error.message}`)
+    return null
+  }
+}
+
 /** Existing commands own each service; the launcher owns only its child process groups. */
 export const local_plan = () => {
-  const secure =
-    exists_sync(path.join(frontend, 'realness.local-key.pem')) &&
-    exists_sync(path.join(frontend, 'realness.local.pem'))
-  const url = secure ? local_settings.secure_origin : local_settings.origin
+  // lc3: with its certificate, the app is served at the host's own name.
+  const named = host_origin()
+  const secure = Boolean(named)
+  const url = named ?? local_settings.origin
   const probe_url = secure
     ? `https://127.0.0.1:${local_settings.https_port}`
     : `http://127.0.0.1:${local_settings.http_port}`
@@ -64,7 +108,7 @@ export const local_plan = () => {
           SYNC_DIR: sync_dir(),
           PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
-          ORIGINS: local_settings.cloud.services.origins
+          ORIGINS: origins()
         }
       },
       {
@@ -92,10 +136,21 @@ export const local_plan = () => {
           IDENTITY_PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
           OPENROUTER_API_KEY_FILE: secret_path('openrouter-key'),
-          ORIGINS: local_settings.cloud.services.origins
+          ORIGINS: origins()
         }
       },
       { name: 'workers', args: ['run', 'dev:frontend:workers'] },
+      // lc3: http on port 80 forwards to the host's https name.
+      ...(named
+        ? [
+            {
+              name: 'redirect',
+              args: ['run', 'start:redirect'],
+              url: 'http://127.0.0.1:80/health',
+              env: { PORT: '80', LISTEN: '0.0.0.0', HTTPS_ORIGIN: named }
+            }
+          ]
+        : []),
       {
         name: 'gate',
         args: ['run', 'start:gate', '--', '--environment', 'local'],
@@ -105,7 +160,7 @@ export const local_plan = () => {
           IDENTITY_PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
           PINS_DIR: sync_dir(),
-          ORIGINS: local_settings.cloud.services.origins,
+          ORIGINS: origins(),
           GATE_HALO: `127.0.0.1:${local_settings.terminal_port}`,
           GATE_API_PORT: String(local_settings.api_port)
         }

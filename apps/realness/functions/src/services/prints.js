@@ -6,7 +6,9 @@ export const CURRENCY = 'usd'
 
 const PRODUCT = 'print'
 
-const ALLOWED_ORIGINS = /^https:\/\/realness\.(online|local)(:\d+)?$|^http:\/\/localhost(:\d+)?$/
+/** realness.online and its host names (haight.realness.online), plus local dev. */
+const ALLOWED_ORIGINS =
+  /^https:\/\/(?:[a-z0-9-]+\.)*realness\.online(:\d+)?$|^http:\/\/localhost(:\d+)?$/
 const PRODUCTION_ORIGIN = 'https://realness.online'
 
 /**

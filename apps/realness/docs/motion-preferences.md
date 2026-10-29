@@ -1,6 +1,6 @@
 # Preference motion audit
 
-Measured against `https://realness.local` with agent-browser, toggling each
+Measured against `https://haight.realness.online` with agent-browser, toggling each
 preference and reading the DOM immediately after the flip (well inside any
 declared transition) and again once settled.
 

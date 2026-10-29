@@ -12,7 +12,7 @@ const environments = {
       starter_proxy_url: 'https://realness-proxy-yelzvhhngq-uc.a.run.app',
       hosting_routes: ['realness-sync', 'realness-proxy'],
       origins:
-        'https://realness-development.web.app,https://realness-development.firebaseapp.com,https://realness.local,http://localhost:5173'
+        'https://realness-development.web.app,https://realness-development.firebaseapp.com,http://localhost:5173'
     }
   },
   local: {
@@ -31,7 +31,7 @@ const environments = {
       sites_url: 'http://127.0.0.1:18096',
       /** Actors reach it through a halo port the actor network allows. */
       actor_proxy_url: 'http://realness-halo:18097',
-      origins: 'https://realness.local,http://localhost:5173'
+      origins: 'http://localhost:5173'
     }
   },
   production: {
@@ -109,7 +109,8 @@ export const local_settings = {
   actor_sync_port: 18098,
   https_port: 443,
   http_port: 5173,
-  secure_origin: 'https://realness.local',
+  /** lc3: this Mac's name, <host>.realness.online, served over its own certificate. */
+  host: 'haight',
   origin: 'http://localhost:5173'
 }
 

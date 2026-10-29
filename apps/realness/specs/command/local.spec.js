@@ -18,9 +18,16 @@ import {
   local_request,
   probe_local,
   start_local,
-  local_artifacts
+  local_artifacts,
+  refresh_host_name
 } from '../../src/command/local-stack.js'
 
+/**
+ * A host with no certificate, so the plan does not depend on this machine's
+ * lc3 state; and no refresh, so no spec ever touches real DNS or certificates.
+ */
+process.env.REALNESS_HOST = 'spec-no-cert'
+process.env.REALNESS_HOST_REFRESH = 'off'
 const root = file_url_to_path(new URL('../../../../', import.meta.url))
 const entry = file_url_to_path(
   new URL('../../../../.pi/bin/harness/local.js', import.meta.url)
@@ -84,7 +91,8 @@ it('one command works from another directory and leaves npm start as the harness
     plan.services.find(service => service.name === 'gate').env.PINS_DIR,
     sync_dir()
   )
-  assert.match(proxy.env.ORIGINS, /https:\/\/realness\.local/)
+  assert.match(proxy.env.ORIGINS, /http:\/\/localhost:5173/)
+  assert.doesNotMatch(proxy.env.ORIGINS, /realness\.local/)
   const gate = plan.services.find(service => service.name === 'gate')
   assert.deepEqual(gate.args.slice(-2), ['--environment', 'local'])
   assert.equal(gate.env.SYNC_URL, undefined)
@@ -333,4 +341,15 @@ it('frontend reuse checks the running Vite mode without restarting it', async co
   assert.deepEqual(await probe_local(service), { running: true, ready: true })
   mode = 'development'
   await assert.rejects(probe_local(service), /another gate/)
+})
+
+it('lc3: REALNESS_HOST_REFRESH=off never reaches DNS or certificates', async () => {
+  const notes = []
+  assert.equal(
+    await refresh_host_name(note => notes.push(note), {
+      REALNESS_HOST_REFRESH: 'off'
+    }),
+    null
+  )
+  assert.deepEqual(notes, [])
 })

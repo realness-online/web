@@ -66,9 +66,12 @@ describe('#services/prints', () => {
   describe('return_origin', () => {
     it('keeps realness origins and falls back to production', () => {
       expect(return_origin('https://realness.online')).toBe('https://realness.online')
-      expect(return_origin('https://realness.local:5173')).toBe('https://realness.local:5173')
+      expect(return_origin('https://haight.realness.online')).toBe('https://haight.realness.online')
       expect(return_origin('http://localhost:5173')).toBe('http://localhost:5173')
       expect(return_origin('https://evil.example')).toBe('https://realness.online')
+      expect(return_origin('https://evilrealness.online')).toBe('https://realness.online')
+      expect(return_origin('https://realness.online.evil.example')).toBe('https://realness.online')
+      expect(return_origin('https://realness.local')).toBe('https://realness.online')
       expect(return_origin(undefined)).toBe('https://realness.online')
     })
   })
