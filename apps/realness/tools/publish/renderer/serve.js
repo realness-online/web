@@ -34,8 +34,10 @@ for (const signal of ['SIGINT', 'SIGTERM'])
 const resolve = async url => {
   const path = join(OUT, normalize(decodeURIComponent(url.split('?')[0])))
   const info = await stat(path).catch(() => null)
-  if (info?.isDirectory()) return join(path, 'index.html')
-  return path
+  if (info?.isFile()) return path
+  const page = `${path}.html`
+  if (await stat(page).catch(() => null)) return page
+  return info?.isDirectory() ? join(path, 'index.html') : path
 }
 
 create_server(async (request, response) => {

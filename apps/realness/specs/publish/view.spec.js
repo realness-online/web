@@ -69,7 +69,7 @@ it('a blog app renders a selected vault note with its own microdata', async () =
   try {
     const built = await build_app(root, 'blog', { example })
     const page = await readFile(
-      join(built.dist, 'blog/note/index.html'),
+      join(built.dist, 'blog/note.html'),
       'utf8'
     )
     assert.match(page, /<article itemscope/)
@@ -163,7 +163,7 @@ it('an Obsidian cardlink fences renders as one link card, not source text', asyn
   try {
     const built = await build_app(root, 'blog', { example })
     const page = await readFile(
-      join(built.dist, 'blog/note/index.html'),
+      join(built.dist, 'blog/note.html'),
       'utf8'
     )
     assert.match(
@@ -191,7 +191,7 @@ it('a plans app renders a plan with its diagram rules and covers', async () => {
   try {
     const built = await build_app(root, 'plans', { example })
     const page = await readFile(
-      join(built.dist, 'blog/note/index.html'),
+      join(built.dist, 'blog/note.html'),
       'utf8'
     )
     const css = await readFile(join(built.dist, 'plans.css'), 'utf8')
@@ -324,7 +324,7 @@ it('vault page files refuse traversal and public route collisions', async () => 
     const { id } = await add(vault, 'map.html', 'pages')
     const app_dir = join(root, 'apps/plans')
     const app = await read_app(app_dir)
-    for (const path of ['../map.html', 'blog/note/index.html', 'index.html']) {
+    for (const path of ['../map.html', 'blog/note.html', 'index.html']) {
       await write_app(app_dir, { ...app, pages: [{ id, path }] })
       await assert.rejects(
         build_app(root, 'plans', { example }),
@@ -351,7 +351,7 @@ it('a build starts from an empty tree, so a dropped source leaves no page', asyn
   const root = await harness('empty', '# Hello\n', { type: 'blog' })
   try {
     const first = await build_app(root, 'blog', { example })
-    assert.ok(existsSync(join(first.dist, 'blog/note/index.html')))
+    assert.ok(existsSync(join(first.dist, 'blog/note.html')))
     await write_app(join(root, 'apps', 'blog'), {
       id: 'a-0123456789ab',
       type: 'blog',
@@ -359,7 +359,7 @@ it('a build starts from an empty tree, so a dropped source leaves no page', asyn
       sources: []
     })
     const second = await build_app(root, 'blog', { example })
-    assert.equal(existsSync(join(second.dist, 'blog/note/index.html')), false)
+    assert.equal(existsSync(join(second.dist, 'blog/note.html')), false)
   } finally {
     await rm(root, { recursive: true, force: true })
   }

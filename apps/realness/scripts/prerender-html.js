@@ -40,6 +40,19 @@ const set_or_drop = (html, pattern, tag) =>
  * @param {{ title?: string, description?: string, og_title?: string, og_description?: string, og_url?: string, og_image?: string, og_image_alt?: string, og_image_type?: string | null, og_image_width?: number | null, og_image_height?: number | null, og_site_name?: string, twitter_title?: string, twitter_description?: string, twitter_image?: string, twitter_image_alt?: string, canonical?: string, robots?: string }} meta
  * @returns {string}
  */
+/**
+ * The shell Firebase serves for routes with no file of their own: app routes
+ * and URLs that do not exist. No canonical, so none claims to be the home
+ * page; noindex, so none is indexed.
+ * @param {string} template the built index.html
+ * @returns {string}
+ */
+export const app_shell_html = template =>
+  apply_page_meta(template, { robots: 'noindex' }).replace(
+    /\s*<link rel="canonical"[\s\S]*?\/?>/i,
+    ''
+  )
+
 export const apply_page_meta = (html, meta) => {
   let out = html
   if (meta.title)

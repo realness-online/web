@@ -142,8 +142,7 @@ export const publish_app = async (
   const reads = reads_from
   const sources = built.sources.map(source => {
     const route = source.route.slice(1)
-    const suffix = route.endsWith('.html') || route.endsWith('/') ? '' : '/'
-    return { id: source.id, url: `${reads}${prefix}${route}${suffix}` }
+    return { id: source.id, url: `${reads}${prefix}${route}` }
   })
   return {
     id: built.id,

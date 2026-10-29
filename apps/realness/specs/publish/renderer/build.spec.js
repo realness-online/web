@@ -57,7 +57,7 @@ it('a real rebuild removes stale pages and rereads settings and images', async (
     )
     await f.build()
     const page = await readFile(
-      join(f.root, 'dist/blog/note/index.html'),
+      join(f.root, 'dist/blog/note.html'),
       'utf8'
     )
     assert.match(
@@ -73,7 +73,7 @@ it('a real rebuild removes stale pages and rereads settings and images', async (
       JSON.stringify({ ...f.site, name: 'Changed' })
     )
     await f.build()
-    assert.equal(existsSync(join(f.root, 'dist/blog/note/index.html')), false)
+    assert.equal(existsSync(join(f.root, 'dist/blog/note.html')), false)
     assert.notDeepEqual(
       await readFile(join(f.root, 'dist/og/portrait.jpg')),
       before
@@ -177,7 +177,7 @@ it('an enabled PWA caches the selected snapshot, fragments, and diagrams', async
       'utf8'
     )
     for (const path of [
-      'blog/note/index.html',
+      'blog/note.html',
       'partials/header.fragment',
       'scripts/pele.global.js'
     ])

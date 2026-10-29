@@ -8,7 +8,7 @@ import {
   stat
 } from 'node:fs/promises'
 import { existsSync as exists_sync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { highlight, plate, footnote, strip_tags } from './markdown.js'
 import { title_case } from './text.js'
 
@@ -26,6 +26,18 @@ export const create_pages = (site, templates, images, drafts = false) => {
   const pages_directory = 'pages'
   const output_directory = 'dist'
   const leading_h1 = /^\s*<h1[^>]*>([\s\S]*?)<\/h1>/
+
+  /**
+   * Write a route as `<route>.html`: hosts serve `/blog/x` from it with no
+   * redirect, so the canonical URL is the URL served.
+   * @param {string} route like `/blog/x`
+   * @param {string} page
+   */
+  const write_route = async (route, page) => {
+    const file = join(output_directory, `${route.slice(1)}.html`)
+    await mkdir(dirname(file), { recursive: true })
+    await write_file(file, page)
+  }
 
   const article_slug = file => {
     const parts = relative(articles_directory, file)
@@ -89,7 +101,6 @@ export const create_pages = (site, templates, images, drafts = false) => {
         notes,
         related_nav(groups.get(`/blog/${slug}`), `/blog/${slug}`)
       )
-      await mkdir(join(output_directory, 'blog', slug), { recursive: true })
       const description =
         data.description || strip_tags(html).slice(0, 160).trim()
       const og_image_path = await raster_og_image(data.img)
@@ -99,7 +110,7 @@ export const create_pages = (site, templates, images, drafts = false) => {
         description,
         type: 'article'
       })
-      await write_file(join(output_directory, 'blog', slug, 'index.html'), page)
+      await write_route(`/blog/${slug}`, page)
       if (data.itemid) {
         if (!/^\/\+\d+\/[a-z][a-z-]*\/\d+$/.test(data.itemid))
           throw new Error(`unsafe itemid: ${data.itemid}`)
@@ -153,9 +164,8 @@ export const create_pages = (site, templates, images, drafts = false) => {
         const body =
           related_nav(groups.get(`/${name}`), `/${name}`) +
           (await read_file(join(pages_directory, `${name}.html`), 'utf8'))
-        await mkdir(join(output_directory, name), { recursive: true })
-        await write_file(
-          join(output_directory, name, 'index.html'),
+        await write_route(
+          `/${name}`,
           shell(meta.title || title_case(name.replace(/-/g, ' ')), body, {
             url: `/${name}`,
             og_image_path,

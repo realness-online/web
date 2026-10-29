@@ -107,6 +107,10 @@ const serve_public = async (storage, response, { id, parts }) => {
   if (!VERSION.test(version)) throw new SiteError(HTTP.INTERNAL_ERROR)
   let file = await storage.get(file_key(id, version, name))
   let served = name
+  if (!file && relative.endsWith('/') && relative.length > 1) {
+    served = `${relative.slice(0, -1)}.html`
+    file = await storage.get(file_key(id, version, served))
+  }
   if (!file && !name.includes('.') && !relative.endsWith('/')) {
     served = `${name}/index.html`
     file = await storage.get(file_key(id, version, served))

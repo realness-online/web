@@ -318,7 +318,7 @@ export const app_sources = async app_dir => {
     'index.html',
     'sitemap.xml',
     'robots.txt',
-    ...sources.map(source => `blog/${source.slug}/index.html`)
+    ...sources.map(source => `blog/${source.slug}.html`)
   ])
   const reserve = path => {
     relative_path(path)

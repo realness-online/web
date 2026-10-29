@@ -12,6 +12,11 @@ import {
   project_root as product_root
 } from '#root/src/settings/layout.js'
 import { frontend_out, out_path } from '#root/src/settings/output.js'
+import {
+  pwa_manifest,
+  pwa_plugin,
+  pwa_workbox
+} from '#root/src/settings/pwa.js'
 import { local_settings } from '#root/src/settings/environments.js'
 
 const cert_key = path.join(product_root, 'realness.local-key.pem')
@@ -57,6 +62,12 @@ const package_version = JSON.parse(
 ).version
 const icon_version = package_version
 const { app: app_root } = product_paths()
+
+/** index.html icon links carry the same ?v= as the manifest icons. */
+const icon_version_in_html = () => ({
+  name: 'icon-version',
+  transformIndexHtml: html => html.replaceAll('%ICON_VERSION%', icon_version)
+})
 const test_aliases = {
   '/scripts/watch-for-updates.js': `${app_root}/use/watch-for-updates.js`,
   '/pi-durable.browser.js': frontend_out('pi-durable.browser.js')
@@ -385,11 +396,12 @@ export default define_config(({ mode }) => ({
     }),
     wasm(),
     durable_bundle(),
+    icon_version_in_html(),
     vite_pwa({
+      ...pwa_plugin,
       devOptions: { enabled: false },
-      filename: 'service.worker.js',
       workbox: {
-        clientsClaim: true,
+        ...pwa_workbox,
         maximumFileSizeToCacheInBytes: 4000000,
         globIgnores: ['**/ghostty-vt-*.wasm'],
         navigateFallbackDenylist: [/\.(?:xml|txt|md|json)$/i],
@@ -408,30 +420,12 @@ export default define_config(({ mode }) => ({
         'documentation.md'
       ],
       manifest: {
-        display: 'standalone',
-        lang: 'en',
-        start_url: '/',
-        background_color: '#2c2c26',
-        name: 'Realness',
-        short_name: 'Realness',
-        description: 'Realness',
-        scope: '/',
-        orientation: 'portrait',
-        theme_color: '#2c2c26',
-        icons: [
-          {
-            src: `192.png?v=${icon_version}`,
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: `512.png?v=${icon_version}`,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
+        ...pwa_manifest({
+          name: 'Realness',
+          description: 'Realness',
+          icon_version
+        }),
+        orientation: 'portrait'
       }
     })
   ],

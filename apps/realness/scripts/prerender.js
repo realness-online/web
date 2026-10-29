@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL as path_to_file_url } from 'node:url'
 import {
+  app_shell_html,
   apply_page_meta,
   build_sitemap_xml,
   inject_app_html,
@@ -61,6 +62,9 @@ export const main = async ({
     )
 
   const template = fs.readFileSync(template_path, 'utf8')
+  const shell_path = path.join(dist_dir, 'app.html')
+  fs.writeFileSync(shell_path, app_shell_html(template))
+  console.info(`prerender: wrote ${shell_path}`)
   const { render } = await load(path_to_file_url(server_entry).href)
   const pages = [...prerender_pages, ...(await fetch_prints(prints_url))]
 

@@ -132,16 +132,16 @@ for (const type of ['blog', 'plans'])
         }
       )
       assert.match(result.stdout, new RegExp(`/sites/${id}/`))
-      const page_url = `${f.url}/sites/${id}/blog/public/`
+      const page_url = `${f.url}/sites/${id}/blog/public`
       const page = await fetch(page_url)
       assert.equal(page.status, 200)
       assert.match(await page.text(), /Selected content/)
       const index = await (await fetch(`${f.url}/sites/${id}/`)).text()
       assert.match(index, new RegExp(`href="/sites/${id}/blog/public"`))
       assert.equal(
-        (await fetch(`${f.url}/sites/${id}/blog/public`)).status,
+        (await fetch(`${f.url}/sites/${id}/blog/public/`)).status,
         200,
-        'the index link works without a trailing slash'
+        'old trailing-slash links still work'
       )
       assert.equal((await fetch(`${f.url}/sites/${id}/style.css`)).status, 200)
       assert.match(
@@ -179,7 +179,7 @@ for (const type of ['blog', 'plans'])
       })
       assert.equal(
         elsewhere.sources[0].url,
-        `https://sites.example/sites/${id}/blog/public/`,
+        `https://sites.example/sites/${id}/blog/public`,
         's1: links use the public site address'
       )
       assert.match(await (await fetch(page_url)).text(), /Moved source/)
