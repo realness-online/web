@@ -1,0 +1,3 @@
+#!/bin/sh
+# Git for the Realness root: the repo lives at work/realness.git (core.worktree = root).
+exec git --git-dir="$(cd "$(dirname "$0")/../.." && pwd)/work/realness.git" "$@"
