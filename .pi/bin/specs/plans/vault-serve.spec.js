@@ -26,7 +26,7 @@ it('vault:serve answers every route: plans, articles, blog posts, and pages', as
   write(join(plans, 'index.html'), 'plans index')
   write(join(plans, '+1/plans/1/index.html'), 'a plan')
   write(join(blog, 'index.html'), 'articles')
-  write(join(blog, 'blog/family-money/index.html'), 'family money')
+  write(join(blog, 'blog/family-money.html'), 'family money')
   write(join(blog, 'resume.html'), 'resume')
 
   const server = serve(plans, blog).listen(0, '127.0.0.1')

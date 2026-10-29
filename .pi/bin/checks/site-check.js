@@ -1,4 +1,10 @@
-import { readFileSync as read_file, readdirSync as readdir, realpathSync as realpath } from 'node:fs'
+import {
+  existsSync as exists,
+  readFileSync as read_file,
+  readdirSync as readdir,
+  realpathSync as realpath,
+  statSync as stat
+} from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { parse_html } from '../lib/harness-dependencies.js'
 import { check_worker, precached } from './pwa-worker.js'
@@ -46,8 +52,18 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
   walk(root)
   if (!html_files.length) report(join(root, 'index.html'), 'site-html', 'no built HTML pages')
 
+  /** The file a host serves for a URL path with no redirect, or null. */
+  const served = pathname => {
+    const path = join(root, decodeURIComponent(pathname).slice(1))
+    if (pathname.endsWith('/')) return exists(join(path, 'index.html')) ? join(path, 'index.html') : null
+    if (exists(path) && stat(path).isFile()) return path
+    return exists(`${path}.html`) ? `${path}.html` : null
+  }
   for (const file of html_files) {
     const { document } = parse_html(read_file(file, 'utf8'))
+    const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href')
+    if (canonical && !served(new URL(canonical, 'https://site.invalid/').pathname))
+      report(file, 'canonical', `${canonical} has no file served without a redirect`)
     const primary = [...document.querySelectorAll('html[itemid], main[itemid], article[itemid]')]
     if (!primary.length) report(file, 'itemid', 'page has no primary itemid')
     for (const node of [...primary, ...document.querySelectorAll('article[itemscope]:not([itemid])')]) {
@@ -158,5 +174,9 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       }
     }
   }
+  const sitemap = join(root, 'sitemap.xml')
+  if (exists(sitemap))
+    for (const [, loc] of read_file(sitemap, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g))
+      if (!served(new URL(loc).pathname)) report(sitemap, 'canonical', `${loc} has no file served without a redirect`)
   return hits
 }

@@ -85,6 +85,15 @@ const controls = [
   ['pwa-icons', root => rm(join(root, '512.png'))],
   ['pwa-registration', root => write_file(join(root, 'register.js'), 'const x = 1')],
   ['pwa-worker', root => rm(join(root, 'service.worker.js'))],
+  [
+    'canonical',
+    root =>
+      write_file(join(root, 'index.html'), page.replace('</head>', '<link rel="canonical" href="https://x.example/gone"></head>'))
+  ],
+  [
+    'canonical',
+    root => write_file(join(root, 'sitemap.xml'), '<urlset><url><loc>https://x.example/gone</loc></url></urlset>')
+  ],
   ['pwa-manifest', root => write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ ...manifest, theme_color: undefined }))],
   ['pwa-icons', root => write_file(join(root, 'manifest.webmanifest'), JSON.stringify({ ...manifest, icons: manifest.icons.map(({ purpose, ...icon }) => icon) }))],
   ['pwa-update', root => write_file(join(root, 'register.js'), "navigator.serviceWorker.register('/service.worker.js')\n")],

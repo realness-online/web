@@ -20,12 +20,13 @@ const TYPES = {
 
 const is_file = async path => (await stat(path).catch(() => null))?.isFile() ?? false
 
-/** The file a URL path names: exact, then x.html, then x/index.html. Never outside root. */
+/** The file a URL path names: exact, then x.html (x/ too), then x/index.html. Never outside root. */
 export const resolve_file = async (root, url_path) => {
   const path = normalize(decodeURIComponent(url_path.split('?')[0]))
   const base = join(root, path)
   if (base !== root && !base.startsWith(root + sep)) return null
-  for (const candidate of [base, `${base}.html`, join(base, 'index.html')]) {
+  const page = `${base.replace(/[\\/]$/, '')}.html`
+  for (const candidate of [base, page, join(base, 'index.html')]) {
     if (await is_file(candidate)) return candidate
   }
   return null
@@ -44,7 +45,7 @@ self.addEventListener('activate', event => event.waitUntil((async () => {
 const from_blog = async (blog, path) => {
   if (path === '/articles' || path.startsWith('/articles/')) return true
   const slug = path.match(/^\/blog\/([^/]+)/)?.[1]
-  return !!slug && (await is_file(join(blog, 'blog', slug, 'index.html')))
+  return !!slug && (await is_file(join(blog, 'blog', `${slug}.html`)))
 }
 
 /**
