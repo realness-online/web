@@ -18,33 +18,40 @@ beforeEach(() => {
     exists: async () => [objects.has(name)]
   }))
   bucket.getFiles.mockReset()
-  bucket.getFiles.mockImplementation(async () => [[
-    ...objects.keys()
-  ].map(name => ({ name }))])
+  bucket.getFiles.mockImplementation(async () => [
+    [...objects.keys()].map(name => ({ name }))
+  ])
 })
 
 describe('poster_file', () => {
-  it('reads a live poster', async () => {
+  it('reads a live poster as sync stores it', async () => {
+    const name = `${prefix}456.html.gz`
+    objects.set(name, true)
+    expect((await poster_file(id)).name).toBe(name)
+    expect(bucket.getFiles).not.toHaveBeenCalled()
+  })
+
+  it('reads an archived poster as sync stores it', async () => {
+    const name = `${prefix}123/456.html.gz`
+    objects.set(name, true)
+    expect((await poster_file(id)).name).toBe(name)
+  })
+
+  it('falls back to the plain copy until gz6 removes it', async () => {
     const name = `${prefix}456.html`
     objects.set(name, true)
     expect((await poster_file(id)).name).toBe(name)
     expect(bucket.getFiles).not.toHaveBeenCalled()
   })
 
-  it('reads an archived poster', async () => {
-    const name = `${prefix}123/456.html`
-    objects.set(name, true)
-    expect((await poster_file(id)).name).toBe(name)
-  })
-
-  it('never answers with a retired .html.gz copy', async () => {
+  it('prefers the sync copy when both exist', async () => {
+    objects.set(`${prefix}456.html`, true)
     objects.set(`${prefix}456.html.gz`, true)
-    objects.set(`${prefix}123/456.html.gz`, true)
-    expect(await poster_file(id)).toBeNull()
+    expect((await poster_file(id)).name).toBe(`${prefix}456.html.gz`)
   })
 
   it('does not mistake another poster for the requested one', async () => {
-    objects.set(`${prefix}123/1456.html`, true)
+    objects.set(`${prefix}123/1456.html.gz`, true)
     expect(await poster_file(id)).toBeNull()
   })
 })

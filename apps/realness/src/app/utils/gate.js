@@ -11,6 +11,7 @@ const gate_url = () =>
 /** A refusal the caller can tell apart from a dropped network. */
 const UNAUTHORIZED = 401
 const UNAVAILABLE = 503
+const STARTING = new Set([502, UNAVAILABLE, 504])
 const refused = (status, message) =>
   Object.assign(new Error(message), { status })
 
@@ -23,7 +24,8 @@ export const gate_fetch = async (user, path, init = {}) => {
       authorization: `Bearer ${await user.getIdToken()}`
     }
   })
-  if (response.status === UNAVAILABLE)
+  // box6: a gateway that cannot reach the halo is a start in progress.
+  if (STARTING.has(response.status))
     throw refused(
       UNAVAILABLE,
       (await response.text()).trim() || 'Realness is starting; try again'
@@ -31,7 +33,7 @@ export const gate_fetch = async (user, path, init = {}) => {
   if (!response.ok)
     throw refused(
       response.status,
-      (await response.text()).trim() || `Realness answered ${response.status}`
+      (await response.text()).trim() || 'Realness could not do that; try again'
     )
   return response
 }

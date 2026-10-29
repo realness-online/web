@@ -5,6 +5,7 @@
  * bytes' hash, so `content_hash` is `version_of` the HTML. A gzip upload
  * says so and carries the version the worker took before packing.
  */
+import { can } from '#root/src/can/can.js'
 import { version_of } from '#root/src/files/version.js'
 
 const NOT_FOUND = 404
@@ -42,19 +43,35 @@ const ref_of = path => ({
 })
 
 /**
- * @param {{ base: string, token: () => Promise<string | null | undefined> }} options
+ * m2: a public read of someone else's file goes without the token, so a CDN
+ * can share it. Your own files stay signed, so you always see your latest.
+ * @param {string} method
+ * @param {string} path
+ * @param {string | null | undefined} me - `/+<e164>`, as `localStorage.me`
  */
-export const sync_storage = ({ base, token }) => {
+export const is_shared_read = (method, path, me) => {
+  if (method !== 'GET' && method !== 'HEAD') return false
+  if (me && path.startsWith(`people${me}/`)) return false
+  const action = method === 'GET' && path.endsWith('/') ? 'list' : 'get'
+  return can(null, action, path)
+}
+
+/**
+ * @param {{ base: string, token: () => Promise<string | null | undefined>, me?: () => string | null | undefined }} options
+ */
+export const sync_storage = ({ base, token, me = () => null }) => {
   const root = base.replace(/\/$/, '')
   const address = path =>
     `${root}/${path.split('/').map(encodeURIComponent).join('/')}`
+  const signed = (method, path) =>
+    is_shared_read(method, path, me()) ? null : token()
   /**
    * @param {string} method
    * @param {string} path
    * @param {{ headers?: Record<string, string>, body?: BodyInit }} [options]
    */
   const call = async (method, path, { headers = {}, body } = {}) => {
-    const bearer = await token()
+    const bearer = await signed(method, path)
     const init = {
       method,
       headers: {
@@ -128,10 +145,17 @@ export const sync_storage = ({ base, token }) => {
     await failed(path, response)
   }
 
-  /** The URL a signed-in `fetch_file` reads; checks the file is there. */
+  /**
+   * The URL `fetch_file` reads; checks the file is there. A shared read names
+   * the version it saw, so the CDN keeps that URL forever and a new version
+   * is a new URL.
+   */
   const url = async path => {
-    await metadata(path)
-    return address(path)
+    const { customMetadata } = await metadata(path)
+    const version = customMetadata.hash
+    return is_shared_read('GET', path, me()) && version
+      ? `${address(path)}?v=${encodeURIComponent(version)}`
+      : address(path)
   }
 
   const directory = async path => {
@@ -160,9 +184,17 @@ export const sync_storage = ({ base, token }) => {
     return false
   }
 
-  /** Reads a URL from `url`, signed in. */
+  /** Reads a URL from `url`; signed in unless it is a shared read. */
   const fetch_file = async address => {
-    const bearer = await token()
+    const path = address.startsWith(`${root}/`)
+      ? address
+          .slice(root.length + 1)
+          .split('?')[0]
+          .split('/')
+          .map(decodeURIComponent)
+          .join('/')
+      : null
+    const bearer = path === null ? await token() : await signed('GET', path)
     return fetch(address, {
       headers: bearer ? { authorization: `Bearer ${bearer}` } : {}
     })

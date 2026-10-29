@@ -13,6 +13,7 @@ import { run_example } from './example-command.js'
 import { run_frontend } from './frontend-command.js'
 import { run_control } from './control-command.js'
 import { run_task } from './task-command.js'
+import { run_vault } from './vault-command.js'
 import { actor_client, actor_url } from '#root/src/harness/actor.js'
 import { prepare_actor_state } from '#root/src/harness/state.js'
 import { fetch_skipped } from '#root/src/harness/light.js'
@@ -391,6 +392,10 @@ export const run = async (
     if (args[0] === 'frontend')
       return await run_frontend(args.slice(1), { stdout, stderr, actor })
     if (args[0] === 'example') return await run_example(args.slice(1), options)
+    if (args[0] === 'vault') {
+      command = 'vault'
+      return await run_vault(args.slice(1), { stdout })
+    }
     if (args[0] === 'task') {
       command = 'task'
       return await run_task(args.slice(1), {

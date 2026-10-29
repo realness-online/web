@@ -20,7 +20,9 @@ describe('parse_args', () => {
       manifest_path: null,
       release: 'latest',
       from_site: false,
-      repo: 'realness-online/web'
+      repo: 'realness-online/web',
+      settle: 0,
+      services: null
     })
   })
 

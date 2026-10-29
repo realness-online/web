@@ -297,8 +297,14 @@ export const make_gate = ({
       )
     } catch (error) {
       log(`gate: api refused: ${error.message}`)
-      if (!response.headersSent)
-        plain(response, HTTP.BAD_GATEWAY, 'halo unreachable\n')
+      // box6: never a bare status; say what the halo is doing and retry.
+      if (!response.headersSent) {
+        response.writeHead(HTTP.UNAVAILABLE, {
+          'content-type': 'text/plain; charset=utf-8',
+          'retry-after': String(RETRY_AFTER_S)
+        })
+        response.end(`${unreachable()}\n`)
+      }
     }
   })
 

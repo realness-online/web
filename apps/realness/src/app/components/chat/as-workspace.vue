@@ -3,6 +3,8 @@
   import { use_actor_startup } from '@/use/actor-startup'
   import { HOME_VIEWS, use_home_view } from '@/use/home-view'
   import AsPanel from '@/components/chat/as-panel.vue'
+  /** sp2: the pane used last, else the first. */
+  const PANE_CANVAS = '#tui-pane [data-focused] > canvas, #tui-pane canvas'
   import AsTui from '@/components/chat/as-tui.vue'
   import AsChatToggle from '@/components/chat/as-chat-toggle.vue'
   import AsTuiNav from '@/components/chat/as-tui-nav.vue'
@@ -36,8 +38,7 @@
       await next_tick()
       if (previous_focus?.isConnected && !previous_focus.closest('[inert]'))
         previous_focus.focus()
-      else if (shows.value.tui)
-        document.querySelector('#tui-pane canvas')?.focus()
+      else if (shows.value.tui) document.querySelector(PANE_CANVAS)?.focus()
       else document.querySelector('section[aria-label="Current page"]')?.focus()
     },
     { flush: 'sync' }
@@ -102,9 +103,9 @@
     )
       return
     const input = document.querySelector('#chat-panel textarea[name="message"]')
-    const canvas = document.querySelector('#tui-pane canvas')
+    const canvas = document.querySelector(PANE_CANVAS)
     const from_input = event.target === input
-    const from_canvas = event.target === canvas
+    const from_canvas = Boolean(event.target?.matches?.('#tui-pane canvas'))
     const hop = event.altKey
       ? from_input || from_canvas
       : !event.shiftKey && from_input

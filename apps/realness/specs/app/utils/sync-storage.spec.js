@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { content_hash, sync_storage } from '@/utils/sync-storage'
+import {
+  content_hash,
+  is_shared_read,
+  sync_storage
+} from '@/utils/sync-storage'
 
 const reply = (status, { headers = {}, body = null } = {}) =>
   new Response(body, { status, headers })
@@ -158,5 +162,48 @@ describe('sync storage', () => {
     expect(await storage.url('a/1.html')).toBe('/sync/a/1.html')
     await storage.fetch_file('/sync/a/1.html')
     expect(calls.map(call => call.headers)).toEqual([{}, {}])
+  })
+})
+
+describe('m2: shared reads', () => {
+  const A = '/+15555550100'
+  const B = '/+15555550101'
+
+  it("reads someone else's public files without the token", () => {
+    expect(is_shared_read('GET', `people${B}/posters/1.html`, A)).toBe(true)
+    expect(is_shared_read('HEAD', `people${B}/posters/1.html`, A)).toBe(true)
+    expect(is_shared_read('GET', `people${B}/posters/`, A)).toBe(true)
+    expect(is_shared_read('GET', `people${B}/index.html`, null)).toBe(true)
+  })
+
+  it('signs your own files, private files, and every write', () => {
+    expect(is_shared_read('GET', `people${A}/posters/1.html`, A)).toBe(false)
+    expect(is_shared_read('GET', `people${B}/relations.html`, A)).toBe(false)
+    expect(is_shared_read('GET', `subscriptions${B}/x.json`, A)).toBe(false)
+    expect(is_shared_read('PUT', `people${B}/posters/1.html`, A)).toBe(false)
+  })
+
+  it('sends no authorization on a shared read, and the token on your own', async () => {
+    const calls = []
+    globalThis.fetch = vi.fn(async (url, init = {}) => {
+      calls.push({ url, ...init })
+      return reply(200, { headers: { etag: '"v"' } })
+    })
+    const storage = sync_storage({
+      base: '/sync',
+      token: async () => 'tok',
+      me: () => A
+    })
+    const theirs = await storage.url(`people${B}/posters/1.html`)
+    expect(theirs).toBe('/sync/people/%2B15555550101/posters/1.html?v=v')
+    await storage.fetch_file(theirs)
+    await storage.fetch_file(await storage.url(`people${A}/posters/1.html`))
+    expect(calls.map(call => call.headers.authorization)).toEqual([
+      undefined,
+      undefined,
+      'Bearer tok',
+      'Bearer tok'
+    ])
+    expect(calls[3].url).toBe('/sync/people/%2B15555550100/posters/1.html')
   })
 })

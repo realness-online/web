@@ -189,8 +189,12 @@ describe('sign-on flow', () => {
   const make = ({ user = null, valid = false, loaded = true } = {}) => {
     const emit = vi.fn()
     const profile = {
+      loaded: ref(loaded),
       is_valid_name: ref(valid),
-      load: vi.fn(async () => loaded),
+      load: vi.fn(async () => {
+        profile.loaded.value = true
+        return loaded
+      }),
       save: vi.fn(async () => {})
     }
     const current_user = ref(user)

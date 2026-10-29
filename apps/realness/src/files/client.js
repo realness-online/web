@@ -1233,6 +1233,7 @@ export const client = ({
      * @param {number} [options.concurrency]
      * @param {string} [options.state]
      * @param {'all' | 'explained'} [options.deletes]
+     * @param {boolean} [options.repair] forget record entries the store lost; push them again
      * @param {string} [options.trash]
      * @param {boolean} [options.defer_edits]
      * @param {string} [options.sessions]
@@ -1253,6 +1254,7 @@ export const client = ({
         concurrency = CONCURRENCY,
         state = default_state ?? state_dir(),
         deletes = 'explained',
+        repair = false,
         trash = default_trash ?? trash_dir(state),
         defer_edits = false,
         sessions,
@@ -1301,13 +1303,20 @@ export const client = ({
         Boolean(session_folder) &&
         is_session_file(join(pair.local, ...name.split('/'))) &&
         join(pair.local, ...name.split('/')).startsWith(session_folder + sep)
-      const vanished = [...names].filter(
+      const lost = [...names].filter(
         name =>
           manifest[name] &&
           !remotes[name] &&
           locals.has(name) &&
           !in_sessions(name)
-      ).length
+      )
+      // vlt2: the store lost files the record still knows. This Mac is the
+      // source, so forget those entries: each file pushes again as new.
+      if (repair && lost.length) {
+        for (const name of lost) delete manifest[name]
+        report.repaired = lost.length
+      }
+      const vanished = repair ? 0 : lost.length
       const mass_removal = vanished > MAX_REMOVALS
       if (mass_removal) report.mass_removal = vanished
       if (dry_run) report.dry_run = true

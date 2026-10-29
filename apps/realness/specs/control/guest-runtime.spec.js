@@ -128,7 +128,7 @@ it('harness extensions call the realness command, never a runtime file path', ()
   assert.doesNotMatch(build, /export REALNESS_ACTOR=/)
   assert.match(
     build,
-    /turn-end\|fetch\|git-credential\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\)/
+    /turn-end\|fetch\|git-credential\|files\|store\|login\|logout\|whoami\|ls\|cat\|cp\|rm\|example\|vault\)/
   )
 })
 

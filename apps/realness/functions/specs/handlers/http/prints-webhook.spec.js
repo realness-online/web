@@ -2,20 +2,25 @@ import { createHash, createHmac } from 'node:crypto'
 import { deflateSync, gunzipSync, gzipSync } from 'node:zlib'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mock_file, mock_get_files, mock_log_error, mock_log_info, mock_log_warn } =
-  vi.hoisted(() => ({
-    mock_file: {
-      download: vi.fn(),
-      getMetadata: vi.fn(),
-      save: vi.fn(),
-      setMetadata: vi.fn(),
-      exists: vi.fn()
-    },
-    mock_get_files: vi.fn(),
-    mock_log_error: vi.fn(),
-    mock_log_info: vi.fn(),
-    mock_log_warn: vi.fn()
-  }))
+const {
+  mock_file,
+  mock_get_files,
+  mock_log_error,
+  mock_log_info,
+  mock_log_warn
+} = vi.hoisted(() => ({
+  mock_file: {
+    download: vi.fn(),
+    getMetadata: vi.fn(),
+    save: vi.fn(),
+    setMetadata: vi.fn(),
+    exists: vi.fn()
+  },
+  mock_get_files: vi.fn(),
+  mock_log_error: vi.fn(),
+  mock_log_info: vi.fn(),
+  mock_log_warn: vi.fn()
+}))
 
 vi.mock('#utils/firebase.js', () => ({
   bucket: { file: vi.fn(() => mock_file), getFiles: mock_get_files }
@@ -28,9 +33,8 @@ vi.mock('#utils/log.js', () => ({
 }))
 
 const { bucket } = await import('#utils/firebase.js')
-const { prints_webhook_handler } = await import(
-  '#handlers/http/prints-webhook.js'
-)
+const { prints_webhook_handler } =
+  await import('#handlers/http/prints-webhook.js')
 
 const SECRET = 'whsec_test'
 const AUTHOR = '/+14155550142'
@@ -69,12 +73,14 @@ const completed = (poster_id = POSTER) => ({
   }
 })
 
-const saved_html = () => gunzipSync(mock_file.save.mock.calls[0][0]).toString('utf8')
+const saved_html = () =>
+  gunzipSync(mock_file.save.mock.calls[0][0]).toString('utf8')
 
 beforeEach(() => {
   vi.clearAllMocks()
   process.env.STRIPE_WEBHOOK_SECRET = SECRET
   process.env.PRINTS_AUTHOR = AUTHOR
+  mock_file.name = `people${POSTER}.html`
   mock_file.exists.mockResolvedValue([true])
   mock_get_files.mockResolvedValue([[]])
   mock_file.download.mockResolvedValue([deflateSync(poster_html())])
@@ -95,7 +101,10 @@ beforeEach(() => {
 describe('#handlers/http/prints-webhook', () => {
   it('rejects an event without a valid Stripe signature', async () => {
     const res = fake_res()
-    await prints_webhook_handler(signed_request(completed(), 'whsec_forged'), res)
+    await prints_webhook_handler(
+      signed_request(completed(), 'whsec_forged'),
+      res
+    )
 
     expect(res.status).toHaveBeenCalledWith(400)
     expect(mock_file.download).not.toHaveBeenCalled()
@@ -149,7 +158,9 @@ describe('#handlers/http/prints-webhook', () => {
   })
 
   it('tags an already sold poster that lacks the sold tag', async () => {
-    mock_file.download.mockResolvedValue([deflateSync(poster_html(sold_for(500)))])
+    mock_file.download.mockResolvedValue([
+      deflateSync(poster_html(sold_for(500)))
+    ])
     const res = fake_res()
     await prints_webhook_handler(signed_request(completed()), res)
 
@@ -160,7 +171,7 @@ describe('#handlers/http/prints-webhook', () => {
     expect(res.status).toHaveBeenCalledWith(200)
   })
 
-  it('ignores posters that are not the prints author\'s', async () => {
+  it("ignores posters that are not the prints author's", async () => {
     const res = fake_res()
     await prints_webhook_handler(
       signed_request(completed('/+15551234567/posters/1')),
@@ -215,6 +226,11 @@ describe('#handlers/http/prints-webhook recording', () => {
       metadata: {
         fullLocale: 'en-US',
         hash: createHash('sha256').update(html).digest('base64'),
+        version: createHash('sha256')
+          .update(html)
+          .digest('base64url')
+          .slice(0, 22),
+        size: String(Buffer.byteLength(html)),
         sold: 'true'
       }
     })
@@ -254,7 +270,9 @@ describe('#handlers/http/prints-webhook recording', () => {
   })
 
   it('records the $100 edition after the $5 edition of the same poster', async () => {
-    mock_file.download.mockResolvedValue([deflateSync(poster_html(sold_for(500)))])
+    mock_file.download.mockResolvedValue([
+      deflateSync(poster_html(sold_for(500)))
+    ])
     const event = completed()
     event.data.object.amount_total = 10000
     const res = fake_res()
@@ -266,7 +284,9 @@ describe('#handlers/http/prints-webhook recording', () => {
   })
 
   it('ignores a repeated $5 sale for the same poster', async () => {
-    mock_file.download.mockResolvedValue([deflateSync(poster_html(sold_for(500)))])
+    mock_file.download.mockResolvedValue([
+      deflateSync(poster_html(sold_for(500)))
+    ])
     const res = fake_res()
     await prints_webhook_handler(signed_request(completed()), res)
 
@@ -278,7 +298,9 @@ describe('#handlers/http/prints-webhook recording', () => {
   })
 
   it('records another $500 sale without closing that edition', async () => {
-    mock_file.download.mockResolvedValue([deflateSync(poster_html(sold_for(50000)))])
+    mock_file.download.mockResolvedValue([
+      deflateSync(poster_html(sold_for(50000)))
+    ])
     const event = completed()
     event.data.object.amount_total = 50000
     const res = fake_res()
@@ -288,7 +310,11 @@ describe('#handlers/http/prints-webhook recording', () => {
 
   it('does not record a webhook retry of the same session', async () => {
     mock_file.download.mockResolvedValue([
-      deflateSync(poster_html(`<metadata itemprop="sale" itemscope=""><data itemprop="price" value="50000"></data><data itemprop="session" value="cs_1"></data></metadata>`))
+      deflateSync(
+        poster_html(
+          `<metadata itemprop="sale" itemscope=""><data itemprop="price" value="50000"></data><data itemprop="session" value="cs_1"></data></metadata>`
+        )
+      )
     ])
     const event = completed()
     event.data.object.amount_total = 50000

@@ -17,6 +17,7 @@ import {
   local_plan,
   local_request,
   probe_local,
+  signal_group,
   start_local,
   local_artifacts,
   refresh_host_name
@@ -341,6 +342,44 @@ it('frontend reuse checks the running Vite mode without restarting it', async co
   assert.deepEqual(await probe_local(service), { running: true, ready: true })
   mode = 'development'
   await assert.rejects(probe_local(service), /another gate/)
+})
+
+it('a process group already gone is not an error, on Linux or macOS', () => {
+  const fails = code => () => {
+    throw Object.assign(new Error(code), { code })
+  }
+  const sent = []
+  signal_group(42, 'SIGTERM', (pid, signal) => sent.push([pid, signal]))
+  assert.deepEqual(sent, [[-42, 'SIGTERM']])
+  signal_group(42, 'SIGTERM', fails('ESRCH'))
+  signal_group(42, 'SIGTERM', fails('EPERM'))
+  assert.throws(() => signal_group(42, 'SIGTERM', fails('EINVAL')), /EINVAL/)
+})
+
+it('a halo on another runtime is not reused', async context => {
+  let health = { runtime: 'firecracker', seed: { built: true } }
+  const server = create_server((request, response) =>
+    response.end(JSON.stringify(health))
+  )
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  context.after(() => new Promise(resolve => server.close(resolve)))
+  const service = {
+    name: 'halo',
+    url: `http://127.0.0.1:${server.address().port}/v1/health`
+  }
+  const runtime = process.env.RUNTIME
+  const halo_runtime = process.env.HALO_RUNTIME
+  delete process.env.RUNTIME
+  delete process.env.HALO_RUNTIME
+  context.after(() => {
+    if (runtime !== undefined) process.env.RUNTIME = runtime
+    if (halo_runtime !== undefined) process.env.HALO_RUNTIME = halo_runtime
+  })
+  assert.deepEqual(await probe_local(service), { running: false, ready: false })
+  health = { seed: { built: true } }
+  assert.deepEqual(await probe_local(service), { running: false, ready: false })
+  health = { runtime: 'box', seed: { built: true } }
+  assert.deepEqual(await probe_local(service), { running: true, ready: true })
 })
 
 it('lc3: REALNESS_HOST_REFRESH=off never reaches DNS or certificates', async () => {

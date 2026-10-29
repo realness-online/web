@@ -12,6 +12,7 @@
  *
  *   realness local setup                      once per Mac: the Lima VM and artifacts
  *   realness local build                      stage the harness, build the template
+ *   realness local name [--no-cert]           lc3: point <host>.realness.online here; renew its certificate
  *
  *   realness <env> halo up [<name>] [--smoke]     make a halo, put the code on it, serve
  *   realness <env> halo restart <name>            push the code and re-serve
@@ -99,6 +100,7 @@ const USAGE = `usage: realness <local|development|production> <command> [options
 
   setup                        local only: the Lima VM, artifacts, a boot check
   build                        local only: stage the harness, build the template
+  name [--no-cert]             local only: keep <host>.realness.online on this host, with a certificate
   code                         local only: the latest sign-in code
   pull [<prefix> ...] [--from=production]  local only: copy people/, usage/, billing/ into sync-data; one way
   pull posters [--dry-run]     local only: production's posters overwrite local ones
@@ -369,6 +371,31 @@ const main = async argv => {
           'build makes the local template; cloud halos boot the fleet image'
         )
       return finish(await dev.build(halos.target))
+
+    case 'name': {
+      if (!local)
+        throw new Error(
+          "name keeps this computer's address; run it as realness local name"
+        )
+      const { keep_host_name } = await import('#root/src/control/host-name.js')
+      const kept = await keep_host_name({
+        cert: !flags['no-cert'],
+        log: line => process.stderr.write(`${line}\n`)
+      })
+      const lines = [
+        ...Object.entries(kept.records).map(
+          ([name, change]) => `${name} -> ${kept.address}: ${change}`
+        ),
+        ...(kept.certificate
+          ? [
+              `certificate ${kept.wildcard}: ${kept.certificate.renewed ? 'renewed' : 'current'}, ${kept.certificate.days_left} days left`
+            ]
+          : []),
+        `app: https://${kept.app}`
+      ]
+      result(kept, lines.join('\n'))
+      return 0
+    }
 
     case 'code': {
       if (!local)

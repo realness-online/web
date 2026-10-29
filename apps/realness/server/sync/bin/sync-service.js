@@ -11,6 +11,7 @@
  * On Cloud Run (K_SERVICE is set) tokens come from the metadata server.
  */
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
+import { vault_door } from '#root/src/sync/vault.js'
 import { resolve } from 'node:path'
 import { google_certs } from '#root/src/can/index.js'
 import { disk } from '#root/src/can/disk.js'
@@ -93,6 +94,12 @@ sync_service({
   issuer,
   origins,
   halo_pass_secret: halo_pass_secret(),
+  // vlt1: on the Mac, the owner's actors search this vault's index here.
+  vault: vault_door({
+    dir: process.env.VAULT_DIR ?? null,
+    index: process.env.VAULT_INDEX ?? null,
+    owner: process.env.VAULT_OWNER ?? null
+  }),
   git_app,
   halo_statuses,
   ...alerts

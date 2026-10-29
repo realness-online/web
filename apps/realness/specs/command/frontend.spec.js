@@ -97,7 +97,7 @@ it('production deploy explicitly selects production, builds once, then verifies'
   assert.deepEqual(steps.at(-2).args.slice(3), [
     'deploy',
     '--only',
-    'hosting:app,storage',
+    'hosting:app',
     '--project',
     'realness-online',
     '-m',

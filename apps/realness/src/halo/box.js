@@ -279,6 +279,8 @@ const CAPS = [
 ]
 
 export class BoxStore {
+  runtime = 'box'
+
   constructor(options) {
     Object.assign(this, {
       volume: options.volume,

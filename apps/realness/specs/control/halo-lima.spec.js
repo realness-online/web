@@ -14,7 +14,9 @@ import { out_path } from '#root/lib/output.js'
 import { disk } from '#root/src/can/disk.js'
 import {
   DEV_OPERATOR,
+  STOP_STACK,
   down,
+  probeHealth,
   seed_local_admins,
   up
 } from '../../src/control/halo-lima.js'
@@ -119,12 +121,43 @@ it('down stops the halo and any microVM it left behind', async t => {
   const stopped = await down(lima, config, 'realness-dev')
   assert.deepEqual(stopped, { stopped: true, deleted: false })
   assert.equal(lima.asked.length, 1)
-  assert.match(
-    lima.asked[0][1],
-    /pkill -f "\[n\]ode server\/\(halo\|host\)\/main\[\.\]js"/
-  )
+  assert.equal(lima.asked[0][1], STOP_STACK)
+  assert.match(STOP_STACK, /pkill -x firecracker/)
+  assert.match(STOP_STACK, /runc delete --force/)
   assert.deepEqual(lima.asked[0][2], { user: 'root' })
   assert.ok(!lima.asked.some(([verb]) => verb === 'stop'))
+})
+
+it('down matches every node the stack leaves, and not itself', () => {
+  const pattern = new RegExp(STOP_STACK.match(/pkill -f "([^"]+)"/)[1])
+  for (const line of [
+    'node server/halo/main.js serve --runtime box --port 8080',
+    '/usr/local/bin/node server/halo/main.js serve --runtime box --port 18085',
+    'node /mnt/fc/server/sync/bin/sync-service.js',
+    'node /mnt/fc/server/halo/scripts/port-forward.js 18097 host.lima.internal 8788'
+  ])
+    assert.match(line, pattern, line)
+  assert.doesNotMatch(`sh -c ${STOP_STACK}`, pattern)
+})
+
+it('probeHealth reads what attempt returns, so a running halo is seen', async () => {
+  const health = { runtime: 'box', seed: { built: true } }
+  const answer = reply => async () => reply
+  assert.deepEqual(
+    await probeHealth(
+      'http://x',
+      answer({ ok: true, out: JSON.stringify(health) })
+    ),
+    health
+  )
+  assert.equal(
+    await probeHealth('http://x', answer({ ok: false, out: '' })),
+    null
+  )
+  assert.equal(
+    await probeHealth('http://x', answer({ ok: true, out: '{"seed":{}}' })),
+    null
+  )
 })
 
 it('down with --vm also stops the Lima VM', async t => {

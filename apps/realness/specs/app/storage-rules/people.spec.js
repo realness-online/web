@@ -1,7 +1,6 @@
 import { describe, it, beforeAll, afterAll, beforeEach } from 'vitest'
 import {
   initializeTestEnvironment,
-  assertSucceeds,
   assertFails
 } from '@firebase/rules-unit-testing'
 import {
@@ -22,16 +21,13 @@ const STORAGE_PORT = emulator_host
 
 const OWNER = '+15551110000'
 const STRANGER = '+15552220000'
-
-const relations = `people/${OWNER}/relations.html.gz`
-const profile = `people/${OWNER}/index.html.gz`
-const poster = `people/${OWNER}/posters/1712000000000.html.gz`
-const statements = `people/${OWNER}/statements/1712000000000.html.gz`
-const subscription = `subscriptions/${OWNER}/endpoint-abc`
-const archived = `people/${OWNER}/posters/1600000000000/1712000000000.html.gz`
-const sold = `people/${OWNER}/posters/1789000000000.html.gz`
-const sold_archived = `people/${OWNER}/posters/1600000000000/1789000000000.html.gz`
-const loose = 'loose.txt'
+const files = [
+  `people/${OWNER}/index.html.gz`,
+  `people/${OWNER}/relations.html.gz`,
+  `people/${OWNER}/posters/1712000000000.html.gz`,
+  `subscriptions/${OWNER}/endpoint-abc.json`,
+  'loose.txt'
+]
 
 let test_env
 let anonymous
@@ -40,12 +36,10 @@ let stranger
 
 beforeAll(async () => {
   const rules = readFileSync(join(process.cwd(), 'storage.rules'), 'utf8')
-
   test_env = await initializeTestEnvironment({
     projectId: PROJECT_ID,
     storage: { rules, host: '127.0.0.1', port: STORAGE_PORT }
   })
-
   anonymous = test_env.unauthenticatedContext().storage()
   owner = test_env
     .authenticatedContext('owner-uid', { phone_number: OWNER })
@@ -63,205 +57,28 @@ beforeEach(async () => {
   await test_env.clearStorage()
   await test_env.withSecurityRulesDisabled(async context => {
     const seed = context.storage()
-    const paths = [
-      relations,
-      `people/${OWNER}/relations.html`,
-      profile,
-      poster,
-      statements,
-      subscription,
-      archived,
-      loose
-    ]
-    for (const path of paths)
+    for (const path of files)
       await uploadString(ref(seed, path), 'seeded', 'raw')
-    for (const path of [sold, sold_archived])
-      await uploadString(ref(seed, path), 'sale', 'raw', {
-        customMetadata: { sold: 'true' }
-      })
   })
 })
 
-describe.each(['relations.html', 'relations.html.gz'])(
-  '%s is private',
-  filename => {
-    const relations = `people/${OWNER}/${filename}`
-    it('denies an anonymous read', async () => {
-      await assertFails(getBytes(ref(anonymous, relations)))
-    })
-
-    it('denies another signed-in person a read', async () => {
-      await assertFails(getBytes(ref(stranger, relations)))
-    })
-
-    it('allows the owner to read', async () => {
-      await assertSucceeds(getBytes(ref(owner, relations)))
-    })
-
-    it('allows the owner to write', async () => {
-      await assertSucceeds(uploadString(ref(owner, relations), 'mine', 'raw'))
-    })
-
-    it('allows the owner to delete', async () => {
-      await assertSucceeds(deleteObject(ref(owner, relations)))
-    })
-
-    it('denies another signed-in person a write', async () => {
-      await assertFails(uploadString(ref(stranger, relations), 'theirs', 'raw'))
-    })
-
-    it('denies an anonymous delete', async () => {
-      await assertFails(deleteObject(ref(anonymous, relations)))
-    })
-  }
-)
-
-describe('the rest of a person is public to read', () => {
-  it('allows an anonymous profile read', async () => {
-    await assertSucceeds(getBytes(ref(anonymous, profile)))
+describe('m3: no client reaches Firebase Storage', () => {
+  it.each(files)('denies every client a read of %s', async path => {
+    await assertFails(getBytes(ref(anonymous, path)))
+    await assertFails(getBytes(ref(owner, path)))
+    await assertFails(getBytes(ref(stranger, path)))
   })
 
-  it('allows an anonymous poster read', async () => {
-    await assertSucceeds(getBytes(ref(anonymous, poster)))
+  it('denies writes and deletes, including the owner', async () => {
+    const path = files[0]
+    await assertFails(uploadString(ref(owner, path), 'mine', 'raw'))
+    await assertFails(uploadString(ref(anonymous, path), 'theirs', 'raw'))
+    await assertFails(deleteObject(ref(owner, path)))
+    await assertFails(deleteObject(ref(stranger, path)))
   })
 
-  it('allows an anonymous read of nested statements', async () => {
-    await assertSucceeds(getBytes(ref(anonymous, statements)))
-  })
-
-  it('allows another signed-in person a poster read', async () => {
-    await assertSucceeds(getBytes(ref(stranger, poster)))
-  })
-})
-
-describe('only the owner writes their own tree', () => {
-  it('allows the owner to write a poster', async () => {
-    await assertSucceeds(uploadString(ref(owner, poster), 'mine', 'raw'))
-  })
-
-  it('allows the owner to delete a poster', async () => {
-    await assertSucceeds(deleteObject(ref(owner, poster)))
-  })
-
-  it('denies an anonymous profile write', async () => {
-    await assertFails(uploadString(ref(anonymous, profile), 'theirs', 'raw'))
-  })
-
-  it('denies another signed-in person a poster write', async () => {
-    await assertFails(uploadString(ref(stranger, poster), 'theirs', 'raw'))
-  })
-
-  it('denies another signed-in person a poster delete', async () => {
-    await assertFails(deleteObject(ref(stranger, poster)))
-  })
-})
-
-describe('a sold poster keeps its sale', () => {
-  it('refuses the owner an overwrite', async () => {
-    await assertFails(uploadString(ref(owner, sold), 'edited', 'raw'))
-    await assertFails(uploadString(ref(owner, sold_archived), 'edited', 'raw'))
-  })
-
-  it('lets the owner delete it, which is how an archive move ends', async () => {
-    await assertSucceeds(deleteObject(ref(owner, sold)))
-  })
-
-  it('lets the owner create the archive copy, tag and all', async () => {
-    const copy = `people/${OWNER}/posters/1700000000000/1789000000000.html.gz`
-    await assertSucceeds(
-      uploadString(ref(owner, copy), 'sale', 'raw', {
-        customMetadata: { sold: 'true' }
-      })
-    )
-  })
-
-  it('still refuses a stranger', async () => {
-    await assertFails(deleteObject(ref(stranger, sold)))
-  })
-})
-
-describe('subscriptions never leave their owner', () => {
-  it('denies an anonymous read', async () => {
-    await assertFails(getBytes(ref(anonymous, subscription)))
-  })
-
-  it('denies another signed-in person a read', async () => {
-    await assertFails(getBytes(ref(stranger, subscription)))
-  })
-
-  it('allows the owner to read', async () => {
-    await assertSucceeds(getBytes(ref(owner, subscription)))
-  })
-
-  it('allows the owner to write', async () => {
-    await assertSucceeds(uploadString(ref(owner, subscription), 'sub', 'raw'))
-  })
-
-  it('allows the owner to delete', async () => {
-    await assertSucceeds(deleteObject(ref(owner, subscription)))
-  })
-
-  it('denies another signed-in person a write', async () => {
-    await assertFails(uploadString(ref(stranger, subscription), 'sub', 'raw'))
-  })
-})
-
-describe('listing', () => {
-  it('lets a signed-in person list the phonebook', async () => {
-    await assertSucceeds(listAll(ref(owner, 'people')))
-  })
-
-  it('refuses an anonymous listing of the phonebook', async () => {
-    await assertFails(listAll(ref(anonymous, 'people')))
-  })
-
-  it('lets anyone list a posters folder, signed in or not', async () => {
-    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}/posters`)))
-    await assertSucceeds(listAll(ref(anonymous, `people/${OWNER}/posters`)))
-  })
-
-  it('lets anyone list an archive folder inside posters', async () => {
-    await assertSucceeds(
-      listAll(ref(anonymous, `people/${OWNER}/posters/1600000000000`))
-    )
-  })
-
-  it('lets anyone list a statements folder', async () => {
-    await assertSucceeds(listAll(ref(anonymous, `people/${OWNER}/statements`)))
-  })
-
-  it('refuses an anonymous listing of a person', async () => {
-    await assertFails(listAll(ref(anonymous, `people/${OWNER}`)))
-  })
-
-  it('lets a signed-in person list a person', async () => {
-    await assertSucceeds(listAll(ref(stranger, `people/${OWNER}`)))
-    await assertSucceeds(listAll(ref(owner, `people/${OWNER}`)))
-  })
-
-  it('refuses everyone a listing of the bucket root', async () => {
-    await assertFails(listAll(ref(anonymous, '')))
-    await assertFails(listAll(ref(owner, '')))
-  })
-})
-
-describe('subscriptions cannot be enumerated', () => {
-  it('refuses everyone a listing of subscriptions', async () => {
-    await assertFails(listAll(ref(anonymous, 'subscriptions')))
-    await assertFails(listAll(ref(owner, 'subscriptions')))
-    await assertFails(listAll(ref(stranger, 'subscriptions')))
-  })
-
-  it('refuses a stranger a listing of somebody else subscriptions', async () => {
-    await assertFails(listAll(ref(stranger, `subscriptions/${OWNER}`)))
-    await assertFails(listAll(ref(anonymous, `subscriptions/${OWNER}`)))
-  })
-})
-
-describe('paths outside the tree', () => {
-  it('refuses a read and a write to a loose file', async () => {
-    await assertFails(getBytes(ref(anonymous, loose)))
-    await assertFails(getBytes(ref(owner, loose)))
-    await assertFails(uploadString(ref(owner, loose), 'x', 'raw'))
+  it('denies listings', async () => {
+    await assertFails(listAll(ref(owner, 'people')))
+    await assertFails(listAll(ref(anonymous, `people/${OWNER}/posters`)))
   })
 })

@@ -151,6 +151,7 @@ const health = store => {
     counts[record.state] = (counts[record.state] ?? 0) + 1
   return {
     ok: true,
+    runtime: store.runtime,
     seed: {
       built: seed.built,
       matches: seed.matches,

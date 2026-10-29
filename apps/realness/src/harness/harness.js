@@ -267,6 +267,7 @@ export const plan_syncs = async (root, names = []) => {
  * @param {string[]} [options.plans]
  * @param {string} [options.state]
  * @param {'all' | 'explained'} [options.deletes]
+ * @param {boolean} [options.repair] vlt2: forget record entries the store lost, and push those files again
  * @param {boolean} [options.defer_edits]
  * @param {string | null} [options.starter]
  * @param {boolean} [options.dry_run] sy16: report what would move, write nothing
@@ -278,6 +279,7 @@ export const sync_harness = async ({
   plans = [],
   state: sync_state = state_dir(root),
   deletes = 'explained',
+  repair = false,
   defer_edits = false,
   starter = exists_sync(join(STARTER_DIRECTORY, STARTER_FILE))
     ? STARTER_DIRECTORY
@@ -293,6 +295,7 @@ export const sync_harness = async ({
       plans,
       state: sync_state,
       deletes,
+      repair,
       defer_edits
     })
     return {
@@ -309,6 +312,7 @@ export const sync_harness = async ({
   const options = {
     state: sync_state,
     deletes,
+    repair,
     sessions,
     sessions_remote: `${HARNESS}${SESSIONS}/`
   }
@@ -401,6 +405,7 @@ const sync_listed = async ({
   plans,
   state,
   deletes,
+  repair,
   defer_edits
 }) => {
   const SESSIONS = runtime_sessions_path(root)
@@ -423,6 +428,7 @@ const sync_listed = async ({
       const { report, refused: why } = await sync_org(store, local, path, {
         state,
         deletes,
+        repair,
         defer_edits,
         exclude: (name, is_dir) => exclude(`${path}/${name}`, is_dir)
       })
@@ -437,6 +443,7 @@ const sync_listed = async ({
       synced[path] = await store.sync(dirname(local), remote, {
         state,
         deletes,
+        repair,
         defer_edits,
         sessions: join(root, SESSIONS),
         sessions_remote: `can://~/${SESSIONS}/`,
@@ -448,6 +455,7 @@ const sync_listed = async ({
       synced[path] = await store.sync(local, `can://~/${path}/`, {
         state,
         deletes,
+        repair,
         defer_edits: defer_edits && path !== SESSIONS,
         sessions: join(root, SESSIONS),
         sessions_remote: `can://~/${SESSIONS}/`,

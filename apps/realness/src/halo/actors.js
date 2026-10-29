@@ -361,6 +361,7 @@ const warm_pi = async (uds, seconds = PI_WARM_SECONDS) => {
  */
 
 export class ActorStore {
+  runtime = 'firecracker'
   /** @type {string} */
   volume
   /** @type {string} */

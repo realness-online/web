@@ -99,6 +99,21 @@ export const forget_download_url = async itemid => {
 }
 
 /**
+ * m2: on sync, a remembered URL names one version (`?v=`) and the CDN keeps
+ * it forever, so after the file changes it still answers the old bytes. The
+ * sync index holds the version last seen on the server; a response whose
+ * etag differs is behind, and the URL is looked up again.
+ * @param {Id} itemid
+ * @param {Response} response
+ * @returns {Promise<boolean>}
+ */
+const behind = async (itemid, response) => {
+  const etag = response.headers.get('etag')?.replace(/"/g, '')
+  const known = ((await get('sync:index')) || {})[itemid]?.customMetadata?.hash
+  return Boolean(etag && known && etag !== known)
+}
+
+/**
  * Fetch an item's blob, repairing a remembered URL whose token has rotated. Only a
  * remembered URL can be stale, so one resolved fresh in this call is taken at its
  * word — items that were never posted 404 here routinely and must stay one lookup.
@@ -112,17 +127,21 @@ const fetch_item = async itemid => {
   const remembered = await as_download_url(itemid)
   if (!remembered) return null
 
-  const { fetch_file } = await import('@/utils/storage-mode')
+  const { fetch_file, synced } = await import('@/utils/storage-mode')
   const response = await fetch_file(remembered)
-  if (response.ok) return response
+  const stale =
+    synced && was_remembered && response.ok && (await behind(itemid, response))
+  if (response.ok && !stale) return response
   if (!was_remembered) return null
 
   await forget_download_url(itemid)
   const fresh = await as_download_url(itemid)
-  if (!fresh || fresh === remembered) return null
+  // A stale copy beats nothing when the lookup has not caught up yet.
+  if (!fresh || fresh === remembered) return stale ? response : null
 
   const retried = await fetch_file(fresh)
-  return retried.ok ? retried : null
+  if (retried.ok) return retried
+  return stale ? response : null
 }
 
 /**

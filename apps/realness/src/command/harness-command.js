@@ -270,9 +270,10 @@ export const run_harness = async (
       state,
       store: client({ url: service_url ?? url, token, state }),
       plans: rest.filter(
-        arg => !['--deletes', '--json', '--dry-run'].includes(arg)
+        arg => !['--deletes', '--json', '--dry-run', '--repair'].includes(arg)
       ),
       deletes: rest.includes('--deletes') ? 'all' : 'explained',
+      repair: rest.includes('--repair'),
       defer_edits: command === 'turn-end',
       dry_run
     })

@@ -1,3 +1,4 @@
+import { gunzipSync } from 'node:zlib'
 import webpush from 'web-push'
 import { defineSecret as define_secret } from 'firebase-functions/params'
 import { bucket } from '#utils/firebase.js'
@@ -20,37 +21,76 @@ const configure = () => {
   configured = true
 }
 
+/** `subscriptions/+A/id.json` (Firebase) or `people/+A/subscriptions/id.json.gz` (sync). */
+const FIREBASE = /^subscriptions\/(\+\d+)\/([^/]+)\.json$/
+const SYNC = /^people\/(\+\d+)\/subscriptions\/([^/]+)\.json\.gz$/
+
 /**
- * Send a payload to every stored subscription. Subscription files live at
- * `subscriptions/+<e164>/<id>.json` (owner-only via storage rules; the admin
- * SDK here bypasses them). Dead subscriptions (404/410) are pruned.
+ * Every stored subscription, one per person and id. Until gz6 a subscription
+ * may sit in both places; sync's copy wins and both are pruned together.
+ */
+const subscriptions = async () => {
+  const [[firebase], [sync]] = await Promise.all([
+    bucket.getFiles({ prefix: 'subscriptions/' }),
+    bucket.getFiles({ matchGlob: 'people/*/subscriptions/*.json.gz' })
+  ])
+  /** @type {Map<string, { read: any, copies: any[] }>} */
+  const found = new Map()
+  for (const [pattern, files] of [
+    [SYNC, sync],
+    [FIREBASE, firebase]
+  ]) 
+    for (const file of files) {
+      const match = pattern.exec(file.name)
+      if (!match) continue
+      const key = `${match[1]}/${match[2]}`
+      const entry = found.get(key)
+      if (entry) entry.copies.push(file)
+      else found.set(key, { read: file, copies: [file] })
+    }
+  
+  return [...found.values()]
+}
+
+/** Stored bytes, unzipped when they are gzip (GCS may or may not unzip on download). */
+const read_json = async file => {
+  const [contents] = await file.download()
+  const gzip = contents[0] === 0x1f && contents[1] === 0x8b
+  return JSON.parse((gzip ? gunzipSync(contents) : contents).toString())
+}
+
+/**
+ * Send a payload to every stored subscription, wherever it is stored (see
+ * `subscriptions`). The admin SDK bypasses storage rules. Dead subscriptions
+ * (404/410) are pruned, every copy.
  * @param {{ title: string, body?: string, url?: string, tag?: string }} payload
  * @returns {Promise<{ sent: number, removed: number, failed: number }>}
  */
 export const broadcast = async payload => {
   configure()
-  const [files] = await bucket.getFiles({ prefix: 'subscriptions/' })
+  const found = await subscriptions()
   const message = JSON.stringify(payload)
   let sent = 0
   let removed = 0
   let failed = 0
 
   await Promise.all(
-    files.map(async file => {
-      if (!file.name.endsWith('.json')) return
+    found.map(async ({ read, copies }) => {
       try {
-        const [contents] = await file.download()
-        const subscription = JSON.parse(contents.toString())
+        const subscription = await read_json(read)
         await webpush.sendNotification(subscription, message)
         sent++
       } catch (error) {
         const code = error?.statusCode
         if (code === 404 || code === 410) {
-          await file.delete().catch(() => {})
+          await Promise.all(copies.map(copy => copy.delete().catch(() => {})))
           removed++
         } else {
           failed++
-          log_error('push send failed', { file: file.name, code: code ?? error?.message })
+          log_error('push send failed', {
+            file: read.name,
+            code: code ?? error?.message
+          })
         }
       }
     })

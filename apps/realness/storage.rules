@@ -1,66 +1,11 @@
 rules_version = '2';
+
+// m3: sync is the only storage door. The Admin SDK in Cloud Functions and
+// Cloud Run bypasses these rules; every client read, write, and delete stops.
 service firebase.storage {
   match /b/{bucket}/o {
-    function owns(mobile) {
-      return request.auth != null
-        && request.auth.token.phone_number == mobile;
-    }
-
-    function is_private_name(name) {
-      return name in ['relations.html', 'relations.html.gz'];
-    }
-
-    // Push subscriptions live outside the public `people/` tree so endpoints
-    // are never world-readable. Owner-only; the admin SDK (functions send
-    // path) bypasses these rules to read across all subscribers.
-    match /subscriptions/{mobile}/{sub} {
-      allow read, write, delete: if owns(mobile);
-    }
-
-    // The phonebook is a listAll on `people/`, and a list is evaluated against
-    // a wildcard rather than the literal segment. `read` is `get` plus `list`,
-    // and it was granting both here that handed out relations.html.gz; `list`
-    // alone returns the names under a prefix and never the bytes of a file.
-    match /people/{path=**} {
-      allow list: if request.auth != null;
-    }
-
-    match /people/{mobile} {
-      // Every match that could reach relations.html.gz has to exclude it by
-      // name. Rules OR together, so one permissive match undoes every
-      // restriction above it — a single-segment wildcard binds a string and
-      // can be compared, where `{path=**}` binds a Path and cannot.
-      // Files sitting directly under a person: index.html.gz and friends.
-      // `get`, not `read`: on a list `{file}` never binds, and comparing a null
-      // segment to a string throws. A thrown rule denies, so this read the way
-      // it was meant to while logging an evaluation error every time.
-      match /{file} {
-        allow get: if !is_private_name(file) || owns(mobile);
-        allow write, delete: if owns(mobile);
-      }
-
-      // posters/, statements/, events/ and anything nested inside them. `read`
-      // here is what lets a signed-out visitor list a folder for the public
-      // feed, so it cannot narrow to `get` the way the rule above does.
-      //
-      // Listing a person's root reaches this match with `{folder}` unbound, and
-      // referencing an unbound wildcard throws — `is string` and `!= null` throw
-      // on the reference too, so there is no guard to write. A throw denies,
-      // which is the answer we want, and the app never lists a person's root:
-      // it lists `people/` and `people/{author}/{type}/`.
-      //
-      // A poster the prints webhook tagged `sold` cannot be overwritten: a
-      // re-save from a device that never saw the sale once wiped it out.
-      // Overwriting bytes is a `create` here; `update` is metadata alone.
-      // Delete stays open, because an archive move is copy, then delete.
-      match /{folder}/{path=**} {
-        allow read: if !is_private_name(folder);
-        allow create, update: if owns(mobile)
-          && (resource == null
-            || resource.metadata == null
-            || resource.metadata.get('sold', '') != 'true');
-        allow delete: if owns(mobile);
-      }
+    match /{path=**} {
+      allow read, write, delete: if false;
     }
   }
 }

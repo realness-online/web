@@ -73,4 +73,13 @@ describe('build-hosting-config', () => {
     expect(services(config)).toEqual([])
     expect(config.hosting.some(hosting => hosting.rewrites?.length)).toBe(true)
   })
+
+  it("routes to Cloud Run in the environment's region", () => {
+    const regions = env =>
+      build('--env', env)
+        .config.hosting.flatMap(hosting => hosting.rewrites ?? [])
+        .filter(rewrite => rewrite.run)
+        .map(rewrite => rewrite.run.region)
+    expect(new Set(regions('development'))).toEqual(new Set(['us-central1']))
+  })
 })

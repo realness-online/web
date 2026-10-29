@@ -17,7 +17,8 @@ const routes_to = deployed => rewrite =>
   !rewrite.run || deployed.has(rewrite.run.serviceId)
 
 /**
- * Write Firebase hosting config with absolute paths under the output root.
+ * Write Firebase hosting config. A route to Cloud Run takes the environment's
+ * region: production's services run in us-west2, development's in us-central1. with absolute paths under the output root.
  * @param {string[]} [argv]
  */
 export const main = (argv = process.argv.slice(2)) => {
@@ -27,9 +28,8 @@ export const main = (argv = process.argv.slice(2)) => {
   if (env_at !== -1) args.splice(env_at, 2)
   const [given] = args
   const output_root = given ? resolve(given) : out_root()
-  const deployed = new Set(
-    environment_settings(environment).services?.hosting_routes ?? []
-  )
+  const { services } = environment_settings(environment)
+  const deployed = new Set(services?.hosting_routes ?? [])
   const { frontend } = product_paths()
   const config = JSON.parse(
     read_file_sync(resolve(frontend, 'firebase.json'), 'utf8')
@@ -42,7 +42,13 @@ export const main = (argv = process.argv.slice(2)) => {
   config.storage.rules = resolve(frontend, config.storage.rules)
   for (const hosting of config.hosting)
     if (hosting.rewrites)
-      hosting.rewrites = hosting.rewrites.filter(routes_to(deployed))
+      hosting.rewrites = hosting.rewrites
+        .filter(routes_to(deployed))
+        .map(rewrite =>
+          rewrite.run && services?.region
+            ? { ...rewrite, run: { ...rewrite.run, region: services.region } }
+            : rewrite
+        )
   mkdir_sync(resolve(output_root, 'frontend'), { recursive: true })
   write_file_sync(
     resolve(output_root, 'frontend', 'firebase.json'),

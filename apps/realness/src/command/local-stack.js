@@ -14,12 +14,14 @@ import { local_settings } from '#root/src/settings/environments.js'
 import { out_path, sync_dir } from '#root/src/settings/output.js'
 import { secret_path, sign_in_dir } from '#root/src/settings/secrets.js'
 import { setTimeout as delay } from 'node:timers/promises'
+import { person } from '#root/src/harness/settings.js'
 import {
   cert_paths,
   host_label,
   host_names,
   keep_host_name
 } from '#root/src/control/host-name.js'
+import { runtime_matches } from '#root/src/control/local-runtime.js'
 
 const { root, frontend } = product_paths()
 const project = `${root}/`
@@ -72,6 +74,19 @@ export const refresh_host_name = async (
   }
 }
 
+/** vlt1: sync answers the owner's actors from this Mac's vault index. */
+const vault_env = () => {
+  const home = path.resolve(root, '..', '..')
+  const owner = person(home)?.slice(1)
+  const index = path.join(home, '.pi', 'agent', 'memory.db')
+  if (!owner || !exists_sync(index)) return {}
+  return {
+    VAULT_DIR: path.join(home, 'vault'),
+    VAULT_INDEX: index,
+    VAULT_OWNER: owner
+  }
+}
+
 /** Existing commands own each service; the launcher owns only its child process groups. */
 export const local_plan = () => {
   // lc3: with its certificate, the app is served at the host's own name.
@@ -108,7 +123,8 @@ export const local_plan = () => {
           SYNC_DIR: sync_dir(),
           PROJECT: identity,
           SIGN_IN_URL: sign_in_url,
-          ORIGINS: origins()
+          ORIGINS: origins(),
+          ...vault_env()
         }
       },
       {
@@ -283,11 +299,12 @@ export const probe_local = async service => {
         : `${service.name} at ${service.url} answered ${reply.status}. Stop it, then run npm run local again.`
     )
   }
-  if (service.name === 'halo')
-    return {
-      running: true,
-      ready: Boolean(JSON.parse(reply.body).seed?.built)
-    }
+  if (service.name === 'halo') {
+    const health = JSON.parse(reply.body)
+    /** A halo on the other runtime is not reused: `halo up` replaces it. */
+    if (!runtime_matches(health)) return { running: false, ready: false }
+    return { running: true, ready: Boolean(health.seed?.built) }
+  }
   if (service.name === 'gate' && reply.body.trim() !== 'ok')
     throw new Error(
       `Port ${local_settings.gate_port} is occupied by another service`
@@ -345,16 +362,22 @@ const launch_local = async service => {
   return child
 }
 
+/**
+ * Signal a child's process group. macOS answers EPERM, not ESRCH, when the
+ * group is gone but a zombie member is left, so both mean nothing to stop.
+ */
+export const signal_group = (pid, signal, kill = process.kill) => {
+  try {
+    kill(-pid, signal)
+  } catch (error) {
+    if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error
+  }
+}
+
 const stop_local = async (child, service) => {
   service.stopping = true
   if (!child.pid) return
-  const kill = signal => {
-    try {
-      process.kill(-child.pid, signal)
-    } catch (error) {
-      if (error.code !== 'ESRCH') throw error
-    }
-  }
+  const kill = signal => signal_group(child.pid, signal)
   kill('SIGTERM')
   const deadline = Date.now() + STOP_TIMEOUT_MS
   while (!service.exited && Date.now() < deadline) await delay(POLL_MS)

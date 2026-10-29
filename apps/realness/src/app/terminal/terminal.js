@@ -638,7 +638,8 @@ export const mount = async (
   bind_keyboard({ state, canvas, encoder, engine, listen, send, ...selection })
   const { clear_scrollback, copy_selection } = selection
   let resize_timer = 0
-  listen(window, 'resize', () => {
+  // A pane resizes with its split, not only with the window.
+  const on_resize = () => {
     clearTimeout(resize_timer)
     resize_timer = setTimeout(() => {
       const next = size_terminal()
@@ -648,7 +649,13 @@ export const mount = async (
       send_resize()
       redraw()
     }, RESIZE_MS)
-  })
+  }
+  listen(window, 'resize', on_resize)
+  if (globalThis.ResizeObserver) {
+    const observer = new ResizeObserver(on_resize)
+    observer.observe(stage)
+    removers.push(() => observer.disconnect())
+  }
   window.realness = {
     frame: () => term.frame(),
     screen_text: () => term.screen_text(),

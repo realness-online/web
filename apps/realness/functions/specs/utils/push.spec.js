@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const {
@@ -29,11 +30,18 @@ process.env.VAPID_PRIVATE_KEY = 'test-private-key'
 
 const { broadcast } = await import('#utils/push.js')
 
-const fake_file = (name, { contents, download_error, delete_error } = {}) => ({
+const fake_file = (
+  name,
+  { contents, download_error, delete_error, gzip = false } = {}
+) => ({
   name,
   download: download_error
     ? vi.fn().mockRejectedValue(download_error)
-    : vi.fn().mockResolvedValue([Buffer.from(JSON.stringify(contents ?? {}))]),
+    : vi
+        .fn()
+        .mockResolvedValue([
+          (gzip ? gzipSync : Buffer.from)(JSON.stringify(contents ?? {}))
+        ]),
   delete: delete_error
     ? vi.fn().mockRejectedValue(delete_error)
     : vi.fn().mockResolvedValue(undefined)
@@ -162,12 +170,12 @@ describe('#utils/push', () => {
     })
     mock_get_files.mockResolvedValue([[ok, dead, flaky]])
     mock_send_notification.mockImplementation(sub => {
-      if (sub.endpoint === 'dead')
-        {return Promise.reject(
+      if (sub.endpoint === 'dead') {
+        return Promise.reject(
           Object.assign(new Error('Gone'), { statusCode: 404 })
-        )}
-      if (sub.endpoint === 'flaky')
-        return Promise.reject(new Error('boom'))
+        )
+      }
+      if (sub.endpoint === 'flaky') return Promise.reject(new Error('boom'))
       return Promise.resolve()
     })
 
@@ -175,5 +183,93 @@ describe('#utils/push', () => {
 
     expect(result).toEqual({ sent: 1, removed: 1, failed: 1 })
     console_error.mockRestore()
+  })
+
+  /** First getFiles call lists Firebase's `subscriptions/`, the second sync's copies. */
+  const listed = (firebase, sync) =>
+    mock_get_files.mockImplementation(async options =>
+      options.prefix === 'subscriptions/' ? [firebase] : [sync]
+    )
+
+  it('reads gzip subscriptions where sync stores them', async () => {
+    const sub = { endpoint: 'https://push.example/sync' }
+    const file = fake_file('people/+1555/subscriptions/abc.json.gz', {
+      contents: sub,
+      gzip: true
+    })
+    listed([], [file])
+
+    const result = await broadcast({ title: 'hi' })
+
+    expect(mock_get_files).toHaveBeenCalledWith({
+      matchGlob: 'people/*/subscriptions/*.json.gz'
+    })
+    expect(mock_send_notification).toHaveBeenCalledWith(sub, expect.any(String))
+    expect(result).toEqual({ sent: 1, removed: 0, failed: 0 })
+  })
+
+  it('reads a sync copy that GCS already unzipped', async () => {
+    const sub = { endpoint: 'https://push.example/plain' }
+    listed(
+      [],
+      [fake_file('people/+1555/subscriptions/abc.json.gz', { contents: sub })]
+    )
+
+    expect(await broadcast({ title: 'hi' })).toEqual({
+      sent: 1,
+      removed: 0,
+      failed: 0
+    })
+    expect(mock_send_notification).toHaveBeenCalledWith(sub, expect.any(String))
+  })
+
+  it("sends once when both copies exist, reading sync's", async () => {
+    const plain = fake_file('subscriptions/+1555/abc.json', {
+      contents: { endpoint: 'https://push.example/old' }
+    })
+    const synced = fake_file('people/+1555/subscriptions/abc.json.gz', {
+      contents: { endpoint: 'https://push.example/new' },
+      gzip: true
+    })
+    listed([plain], [synced])
+
+    const result = await broadcast({ title: 'hi' })
+
+    expect(plain.download).not.toHaveBeenCalled()
+    expect(mock_send_notification).toHaveBeenCalledTimes(1)
+    expect(mock_send_notification).toHaveBeenCalledWith(
+      { endpoint: 'https://push.example/new' },
+      expect.any(String)
+    )
+    expect(result).toEqual({ sent: 1, removed: 0, failed: 0 })
+  })
+
+  it('prunes every copy of a dead subscription', async () => {
+    const plain = fake_file('subscriptions/+1555/dead.json')
+    const synced = fake_file('people/+1555/subscriptions/dead.json.gz', {
+      gzip: true
+    })
+    listed([plain], [synced])
+    mock_send_notification.mockRejectedValue(
+      Object.assign(new Error('Gone'), { statusCode: 410 })
+    )
+
+    const result = await broadcast({ title: 'hi' })
+
+    expect(plain.delete).toHaveBeenCalled()
+    expect(synced.delete).toHaveBeenCalled()
+    expect(result).toEqual({ sent: 0, removed: 1, failed: 0 })
+  })
+
+  it('ignores other files under people', async () => {
+    const poster = fake_file('people/+1555/posters/1.html.gz')
+    listed([], [poster])
+
+    expect(await broadcast({ title: 'hi' })).toEqual({
+      sent: 0,
+      removed: 0,
+      failed: 0
+    })
+    expect(poster.download).not.toHaveBeenCalled()
   })
 })

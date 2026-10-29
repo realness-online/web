@@ -203,7 +203,7 @@ cat > "$TREE/usr/local/bin/realness" <<'WRAPPER'
 #!/bin/sh
 if [ "${1:-}" = publish ]; then shift; exec /usr/local/bin/realness-publish "$@"; fi
 if [ "${1:-}" = chrome ]; then shift; exec /usr/local/bin/realness-chrome "$@"; fi
-case "${1:-}" in sync|turn-start|turn-end|fetch|git-credential|files|store|login|logout|whoami|ls|cat|cp|rm|example)
+case "${1:-}" in sync|turn-start|turn-end|fetch|git-credential|files|store|login|logout|whoami|ls|cat|cp|rm|example|vault)
   exec /usr/local/bin/node /usr/local/lib/realness/tools/cli/bin/actor.js "$@" ;;
 esac
 if [ "${1:-}" = loop ]; then shift; exec /usr/local/bin/realness-loop "$@"; fi

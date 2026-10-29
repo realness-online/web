@@ -682,3 +682,45 @@ it('?version= lists every file in a person holding that version', async () => {
     403
   )
 })
+
+it('m2: a public read with no token may be shared by a CDN; a signed read never', async () => {
+  const put = await call('PUT', `people/${A}/posters/1.html`, {
+    headers: as(A),
+    body: 'p'
+  })
+  const version = put.headers.get('etag').replace(/"/g, '')
+  const cache = async (method, path, headers = {}) =>
+    (await call(method, path, { headers })).headers.get('cache-control')
+  const poster = `people/${A}/posters/1.html`
+  const forever = 'public, max-age=31536000, immutable'
+  const short = 'public, max-age=0, s-maxage=60'
+  assert.equal(await cache('GET', `${poster}?v=${version}`), forever)
+  assert.equal(await cache('GET', `${poster}?v=old`), short)
+  assert.equal(await cache('GET', poster), short)
+  assert.equal(await cache('HEAD', `${poster}?v=${version}`), short)
+  assert.equal(await cache('GET', `people/${A}/posters/`), short)
+  assert.equal(await cache('GET', `${poster}?v=${version}`, as(A)), null)
+  assert.equal(await cache('GET', `${poster}?v=${version}`, as(B)), null)
+  assert.equal(
+    await cache('GET', `people/${A}/posters/missing.html`),
+    'no-store'
+  )
+  assert.equal(await status('GET', `people/${A}/relations.html`), 403)
+  assert.equal(await cache('GET', `people/${A}/relations.html`), 'no-store')
+})
+
+it('m2: a rewrite at the same path gets a new versioned URL', async () => {
+  const path = `people/${A}/posters/2.html`
+  const first = await call('PUT', path, { headers: as(A), body: 'before sale' })
+  const second = await call('PUT', path, { headers: as(A), body: 'after sale' })
+  const [v1, v2] = [first, second].map(r =>
+    r.headers.get('etag').replace(/"/g, '')
+  )
+  assert.notEqual(v1, v2)
+  const read = await call('GET', `${path}?v=${v1}`)
+  assert.equal(await read.text(), 'after sale')
+  assert.equal(
+    read.headers.get('cache-control'),
+    'public, max-age=0, s-maxage=60'
+  )
+})

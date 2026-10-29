@@ -24,6 +24,16 @@ import { disk } from '#root/src/can/disk.js'
 import { store_of } from '#root/src/can/store.js'
 import { local_person } from '#root/src/harness/settings.js'
 import { out_path } from '#root/src/settings/output.js'
+import { local_runtime, runtime_matches } from './local-runtime.js'
+
+/**
+ * Everything dev-stack.sh leaves in the VM: the halo, its sync and port
+ * forwards (all node under server/), firecracker microVMs, and runc boxes.
+ */
+export const STOP_STACK =
+  'pkill -f "[n]ode (/mnt/fc/)?server/(halo|host|sync)/" || true; ' +
+  'pkill -x firecracker || true; ' +
+  'runc list -q 2>/dev/null | xargs -r -n1 runc delete --force || true'
 
 /** Local checks sign in as this test number; it stays an admin in the dev sync. */
 export const DEV_OPERATOR = { phone: '+14156667777', name: 'Dev operator' }
@@ -138,10 +148,7 @@ export const down = async (
   const stops_vm = mode === 'delete' || stop_vm
   step(`stopping the dev stack${stops_vm ? ' and the Lima VM' : ''}`)
   write_halo_status('stopped', 'stopping')
-  await lima.run(
-    'pkill -f "[n]ode server/(halo|host)/main[.]js" || true; pkill -x firecracker || true',
-    { user: 'root' }
-  )
+  await lima.run(STOP_STACK, { user: 'root' })
 
   if (stops_vm) {
     await lima.stop()
@@ -174,17 +181,24 @@ export const restart = async (lima, config, name) => {
  */
 const startStack = async (lima, config, { fresh = false } = {}) => {
   const health = await probeHealth(config.api)
-  if (health && !fresh) return { alreadyUp: true, health }
+  if (health && !fresh && runtime_matches(health))
+    return { alreadyUp: true, health }
+  const runtime = local_runtime()
+  if (health && !fresh) {
+    note(
+      `halo runs ${health.runtime ?? 'an older build'}; restarting on ${runtime}`
+    )
+    await down(lima, config, config.vm)
+  }
 
   await seed_local_admins()
   await install_secrets(lima)
-  const runtime = process.env.HALO_RUNTIME ?? process.env.RUNTIME
   /** The Mac's owner: only their box works on this Mac's vault. */
   const owner = person(join(ROOT, '..', '..'))?.slice(1)
   const flags = [
     fresh && 'FRESH=1',
     owner && `HOST_OWNER=${owner}`,
-    runtime && /^(box|firecracker)$/.test(runtime) && `RUNTIME=${runtime}`
+    `RUNTIME=${runtime}`
   ].filter(Boolean)
   const prefix = flags.length ? `env ${flags.join(' ')} ` : ''
   const command =
@@ -197,15 +211,16 @@ const startStack = async (lima, config, { fresh = false } = {}) => {
   }
 }
 
-const probeHealth = async api => {
+export const probeHealth = async (api, run = attempt) => {
   try {
-    const { stdout } = await attempt('curl', [
+    const { ok, out } = await run('curl', [
       '-sf',
       '--max-time',
       '3',
       `${api}/v1/health`
     ])
-    const health = JSON.parse(stdout)
+    if (!ok) return null
+    const health = JSON.parse(out)
     return health.seed?.built ? health : null
   } catch {
     return null

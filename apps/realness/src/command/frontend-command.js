@@ -114,7 +114,7 @@ export const run_frontend = async (
         'firebase',
         'deploy',
         '--only',
-        production ? 'hosting:app,storage' : 'hosting',
+        production ? 'hosting:app' : 'hosting',
         '--project',
         target,
         '-m',

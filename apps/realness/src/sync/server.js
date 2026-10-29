@@ -383,11 +383,12 @@ const gzipped_html = (path, body) =>
  * Send one file with its version as the etag. A file stored as `.gz` goes
  * out as its stored bytes with `Content-Encoding: gzip`, so a browser reads it.
  */
-const answer_get = async (storage, response, path) => {
+const answer_get = async (storage, response, path, shared = null) => {
   const file = await storage.get(path, { raw: true })
   if (!file) throw new Status(HTTP.NOT_FOUND)
   const packed = file.packed ?? gzipped_html(path, file.body)
   response.writeHead(HTTP.OK, {
+    ...(shared && { 'cache-control': shared_cache(shared, file.version) }),
     etag: `"${file.version}"`,
     'content-type': packed ? type_of(path) : 'application/octet-stream',
     ...(packed && { 'content-encoding': 'gzip' }),
@@ -395,6 +396,23 @@ const answer_get = async (storage, response, path) => {
   })
   return response.end(file.body)
 }
+
+/**
+ * m2: a read with no caller passed `can` as public, so it is the same for
+ * everyone and a CDN may keep it. A read that names the version it wants
+ * (`?v=`) and gets it can never change, so it keeps a year; anything else -
+ * HEAD, listings, unversioned reads - keeps a minute. Any file may change at
+ * its path (a sale rewrites a poster), so no path is trusted to be fixed.
+ * A signed-in read sets nothing and is never shared.
+ */
+export const SHORT = 'public, max-age=0, s-maxage=60'
+export const FOREVER = 'public, max-age=31536000, immutable'
+export const shared_cache = ({ method, wanted }, version) =>
+  method === 'GET' && wanted && wanted === version ? FOREVER : SHORT
+
+/** The version a shared read asks for, from `?v=`. */
+const wanted_version = url =>
+  new URLSearchParams((url ?? '').split('?')[1] ?? '').get('v')
 
 /** Health checks and halo heartbeats repeat all day; only their failures log. */
 const HEARTBEAT = /^halos\/[^/]+\/status\.html$/
@@ -722,6 +740,7 @@ export const sync_service = ({
   origins = [],
   git_app = null,
   git_fetch = fetch,
+  vault = null,
   log = console.info
 }) => {
   const pins = storage_pins(storage, issuer ? PINS_REALNESS : undefined)
@@ -770,9 +789,18 @@ export const sync_service = ({
     if (!caller_allowed({ action, grants, org, path, who }))
       throw new Status(HTTP.FORBIDDEN)
 
+    if (!caller && action === 'list') response.setHeader('cache-control', SHORT)
     if (action === 'list')
       return await answer_list(storage, request, response, path, who)
-    if (action === 'get') return await answer_get(storage, response, path)
+    if (action === 'get')
+      return await answer_get(
+        storage,
+        response,
+        path,
+        caller
+          ? null
+          : { method: request.method, wanted: wanted_version(request.url) }
+      )
 
     await change_record({
       storage,
@@ -854,6 +882,27 @@ export const sync_service = ({
         log,
         storage
       })
+      return who
+    }
+    if (path.startsWith('v1/vault/') && method === 'GET') {
+      const who = await who_is(request)
+      if (!vault?.allows(who)) throw new Status(HTTP.NOT_FOUND)
+      const query = new URL(request.url ?? '/', 'http://sync').searchParams
+      let body
+      if (path === 'v1/vault/search')
+        body = {
+          notes: vault.search(
+            query.get('q') ?? '',
+            Number(query.get('limit') ?? 10)
+          )
+        }
+      else if (path === 'v1/vault/note') {
+        const text = await vault.note(query.get('path'))
+        if (text === null) throw new Status(HTTP.NOT_FOUND)
+        body = { path: query.get('path'), text }
+      } else throw new Status(HTTP.NOT_FOUND)
+      response.writeHead(HTTP.OK, { 'content-type': 'application/json' })
+      response.end(JSON.stringify(body))
       return who
     }
     if (path === 'v1/halo-pass' && method === 'POST') {

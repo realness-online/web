@@ -30,7 +30,8 @@ export const use_token = source => {
 export const synced = sync_url
   ? sync_storage({
       base: sync_url,
-      token: () => token_source()
+      token: () => token_source(),
+      me: () => localStorage.me
     })
   : null
 

@@ -66,6 +66,7 @@
     "build": "node tools/cli/bin/realness.js frontend build --env production",
     "test:node": "npm run spec:node",
     "deploy:sync": "bash server/sync/scripts/deploy.sh",
+    "deploy:storage": "firebase deploy --only storage --project realness-online",
     "deploy:proxy": "bash server/proxy/scripts/deploy.sh",
     "serve:halo": "node server/halo/main.js serve",
     "start:sync": "node server/sync/bin/sync-service.js",

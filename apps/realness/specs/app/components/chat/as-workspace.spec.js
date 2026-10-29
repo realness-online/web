@@ -180,10 +180,11 @@ describe('@/components/chat/as-workspace', () => {
     const terminal = page.findComponent({ name: 'AsTui' })
     expect(terminal.props('finding')).toBe(true)
     expect(set_working).toHaveBeenLastCalledWith(true)
-    finish(new Response('halo unreachable', { status: 502 }))
+    // box6: 502 is start-in-progress now, so use a genuine gateway failure.
+    finish(new Response('halo unreachable', { status: 500 }))
     await flush_promises()
     expect(terminal.props('finding')).toBe(false)
-    expect(terminal.props('problem')).toBe('Realness answered 502')
+    expect(terminal.props('problem')).toBe('halo unreachable')
     expect(set_working).toHaveBeenLastCalledWith(false)
     expect(page.find('#chat-panel [role="alert"]').exists()).toBe(false)
     expect(
