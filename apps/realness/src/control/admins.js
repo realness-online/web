@@ -16,7 +16,7 @@
  * cannot silently overwrite each other. Removing the last admin is refused.
  */
 import { read_admins } from '#root/src/sync/admins.js'
-import { read_members } from '#root/src/can/members.js'
+import { read_people } from '#root/src/can/members.js'
 import { escape, unescape } from '#root/lib/items.js'
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -40,12 +40,7 @@ const legacy_admins = html => {
  * Reads the microdata page, and an older tel: page when there are no people.
  */
 export const parse_admins = html => {
-  let people = []
-  try {
-    people = read_members(html).people
-  } catch {
-    people = []
-  }
+  const people = read_people(html)
   const admins = people.map(({ phone, name }) => ({ phone, name }))
   return admins.length ? admins : legacy_admins(html)
 }

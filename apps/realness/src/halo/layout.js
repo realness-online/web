@@ -6,9 +6,11 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { BadRequest } from './errors.js'
+import { KIB } from '#root/lib/units.js'
 
 /** The page's pane layout is small; anything larger is not a layout. */
-export const LAYOUT_BYTES = 16 * 1024
+const LAYOUT_KIB = 16
+export const LAYOUT_BYTES = LAYOUT_KIB * KIB
 const FILE = 'layout.json'
 
 /**

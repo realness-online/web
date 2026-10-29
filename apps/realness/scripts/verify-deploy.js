@@ -319,7 +319,6 @@ export const verify_services = async ({
           path.join(root, 'server/scripts/stage-service.sh'),
           service,
           out,
-          // stage as each deploy.sh does: only the gate bakes in its environment
           ...(STAGED_WITH_ENVIRONMENT.includes(service) ? [environment] : [])
         ],
         { encoding: 'utf8' }

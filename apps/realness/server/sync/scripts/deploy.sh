@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Deploy sync to Cloud Run. The bucket is set up once, not per deploy:
+# rewriting its lifecycle would drop rules added beside ours. So this refuses
+# to deploy unless deletes stay recoverable: versioning on, noncurrent copies
+# kept 30 days.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -6,9 +10,6 @@ root="$(cd "$(dirname "$0")/../../.." && pwd)"
 account="realness-sync@$project.iam.gserviceaccount.com"
 stage="$(bash "$root/server/scripts/stage-service.sh" sync)"
 
-# The bucket is set up once, not per deploy: rewriting its lifecycle would
-# drop rules added beside ours. Refuse to deploy unless deletes stay
-# recoverable: versioning on, noncurrent copies kept 30 days.
 bucket_json="$(curl -sf -H "authorization: Bearer $(gcloud auth print-access-token)" \
   "https://storage.googleapis.com/storage/v1/b/$bucket?fields=versioning,lifecycle")"
 BUCKET_JSON="$bucket_json" node -e '

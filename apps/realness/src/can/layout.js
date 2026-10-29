@@ -24,7 +24,7 @@ const PERSONAL = new Set(['usage', 'billing', 'subscriptions'])
 const PERSON = /^\+[1-9]\d{6,14}$/
 
 /** A key that only a per-person key may reach. */
-export class Reserved extends Error {
+class Reserved extends Error {
   code = 'reserved'
 }
 

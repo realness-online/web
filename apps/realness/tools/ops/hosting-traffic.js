@@ -305,7 +305,7 @@ export const entry_timestamp = entry => {
   const ts = /** @type {Record<string, unknown>} */ (entry).timestamp
   if (typeof ts === 'string' && ts) return ts
   if (ts && typeof ts === 'object') {
-    const { seconds } = ts
+    const { seconds } = /** @type {{ seconds?: unknown }} */ (ts)
     if (typeof seconds === 'number' || typeof seconds === 'string') {
       const ms = Number(seconds) * 1000
       if (Number.isFinite(ms)) return new Date(ms).toISOString()
@@ -589,7 +589,8 @@ export const aggregate_window = (
     else inner_keys.add(key)
 
     if (arrivals.has(key)) continue
-    const { referer } = http_request
+    const referer =
+      typeof http_request.referer === 'string' ? http_request.referer : null
     arrivals.set(key, {
       kind: classify_referer(referer, host),
       host: referer_host(referer)

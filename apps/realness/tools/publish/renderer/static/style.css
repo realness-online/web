@@ -1,6 +1,6 @@
 :root {
   --base-line: 1.333rem;
-  /* Realness's h3 (src/app/style/base-line.styl): 1.25² to 1.414², 35rem to 80rem. */
+  /** Realness's h3 (src/app/style/base-line.styl): 1.25² to 1.414², 35rem to 80rem. */
   --h3-min: 1.563rem;
   --h3-max: 2rem;
   --pad-begins: 35rem;

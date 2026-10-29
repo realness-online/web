@@ -21,6 +21,7 @@ import { MS_PER_MINUTE } from '#root/lib/units.js'
 
 /** A write whose precondition no longer holds. */
 export class Conflict extends Error {
+  // fallow-ignore-next-line unused-class-member -- callers test `error.code` in untyped catch blocks
   code = 'conflict'
 }
 

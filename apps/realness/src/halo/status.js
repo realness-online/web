@@ -118,7 +118,7 @@ export class HaloStatus {
   traces
 
   /**
-   * @param {import('./actors.js').ActorStore} store
+   * @param {import('./actors.js').HaloStore} store
    * @param {object} [options]
    * @param {{ get: (path: string) => Promise<unknown>, put: (path: string, body: string) => Promise<unknown> } | null} [options.mirror]
    * @param {import('./apps.js').AppStore | null} [options.apps]
@@ -140,7 +140,8 @@ export class HaloStatus {
       halo = hostname(),
       now = () => new Date(),
       warn = () => {},
-      resources = () => halo_resources(store.tap_prefix),
+      resources = () =>
+        halo_resources('tap_prefix' in store ? store.tap_prefix : undefined),
       probe = null,
       clock = () => Date.now(),
       traces = null

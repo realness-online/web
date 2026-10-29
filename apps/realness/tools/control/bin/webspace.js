@@ -421,7 +421,7 @@ const main = async argv => {
       const from = typeof flags.from === 'string' ? flags.from : 'production'
       const { pull, pull_text, PULL_PREFIXES, is_poster } =
         await import('../../../src/control/pull.js')
-      // `pull posters`: production's posters only, and they win over local.
+      /** `pull posters`: production's posters only, and they win over local. */
       const posters = args[0] === 'posters'
       const wanted = posters ? ['people'] : args
       const report = await pull({
@@ -432,7 +432,7 @@ const main = async argv => {
           bucket: deployment_settings(from, process.env).bucket,
           token: gcloud_token()
         }),
-        // gz1: local files land as `name.gz`, as sync serves them
+        /** gz1: local files land as `name.gz`, as sync serves them. */
         to: store_of(
           disk(typeof flags.dir === 'string' ? flags.dir : sync_dir())
         ),

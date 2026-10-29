@@ -11,7 +11,7 @@ const ICON_SIZES = [192, 512]
  * The manifest names a 192 and a 512 icon; make whichever is missing from
  * the one the site has. A site may ship its own sharper 512.png in static/.
  */
-export const fill_icons = async (dir = 'dist') => {
+const fill_icons = async (dir = 'dist') => {
   const have = ICON_SIZES.find(size => exists(join(dir, `${size}.png`)))
   if (!have) throw new Error('a PWA needs 192.png or 512.png in static/')
   for (const size of ICON_SIZES)

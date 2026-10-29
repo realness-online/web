@@ -50,6 +50,9 @@ import { create_startup_trace } from '#root/src/harness/startup.js'
 import { issue_recovery_pass } from '#root/src/sign-on/node/recovery-pass.js'
 import { halo_pass_secret } from '#root/src/sign-on/node/halo-secret.js'
 import { hostname } from 'node:os'
+import { Mutex, PTY_PORT, check_command } from '#root/src/halo/actors.js'
+import { ID_BYTES, MIB, MS_PER_SECOND } from '#root/lib/units.js'
+/* eslint-disable no-await-in-loop -- lifecycle steps run in order, as in actors.js; the Pi poll waits each turn */
 
 const LOG = logger('box')
 const RECOVER_SECONDS = 300
@@ -69,7 +72,6 @@ const VERSIONS = 'published-versions'
 const EXPORTS = 'exports'
 const ARTIFACT_PATHS = ['realness']
 /** Per-box cgroup limits: one runaway box cannot starve the others. */
-const MIB = 1024 * 1024
 const BOX_MIB = 1536
 const BOX_CPUS = 2
 const BOX_PIDS = 1024
@@ -92,7 +94,16 @@ const run = promisify(exec_file)
 const sh = (argv, options = {}) =>
   spawn_sync(argv[0], argv.slice(1), { encoding: 'utf8', ...options })
 const now_iso = () => new Date().toISOString().replace(/\.\d+Z$/, '+00:00')
-const mint_id = () => `a-${random_bytes(6).toString('hex')}`
+const BOOT_TIMEOUT_S = 60
+const API_TIMEOUT_S = 30
+/** Boxes take 172.16.<n>.0/30 for n in 1..254, as Firecracker TAPs do. */
+const LAST_SUBNET = 254
+/** rwxr-xr-x: the box's own user reads and runs what the halo lays down. */
+const EVERYONE_READS = 0o755
+/** How much of a failed command's output a log or error keeps. */
+const OUTPUT_TAIL = 200
+
+const mint_id = () => `a-${random_bytes(ID_BYTES).toString('hex')}`
 const MINTED = /^a-[0-9a-f]{12}$/
 const write_json = (path, value) =>
   write_file_sync(path, `${JSON.stringify(value, null, 2)}\n`)
@@ -174,14 +185,25 @@ const HANDSHAKE_RESPONDER = [
   'while True: time.sleep(3600)'
 ].join('\n')
 
-class Mutex {
-  #tail = Promise.resolve()
-  run(work) {
-    const next = this.#tail.then(work, work)
-    this.#tail = next.catch(() => {})
-    return next
-  }
-}
+/**
+ * The box's /sys. sysfs cannot be mounted fresh from a user namespace that
+ * does not own the netns; a read-only bind of the VM's shows the same.
+ * @param {boolean} userns
+ */
+const sys_mount = userns =>
+  userns
+    ? {
+        destination: '/sys',
+        type: 'none',
+        source: '/sys',
+        options: ['rbind', 'nosuid', 'noexec', 'nodev', 'ro']
+      }
+    : {
+        destination: '/sys',
+        type: 'sysfs',
+        source: 'sysfs',
+        options: ['nosuid', 'noexec', 'nodev', 'ro']
+      }
 
 /** A process that still runs and is not a zombie. */
 const alive = pid => {
@@ -222,7 +244,39 @@ const PUBLIC_FIELDS = [
   'synced_at'
 ]
 
+/**
+ * A box record: the fields a Firecracker actor has, plus the box's own host
+ * veth and harness folder. `Object.assign` fills them; the declarations are for
+ * the type checker and the reader.
+ * @typedef {import('./actors.js').ActorFields & { host_veth?: string, realness?: string }} BoxActorFields
+ */
+
 class Actor {
+  /** @type {string} */ id
+  /** @type {import('./actors.js').StartupTrace | null | undefined} */ startup
+  /** @type {string} */ state
+  /** @type {string} */ created
+  /** @type {number} */ pid
+  /** @type {string} */ hostname
+  /** @type {string} */ machine_id
+  /** @type {string} */ dir
+  /** @type {string | null} */ owner
+  /** @type {string[] | null} */
+  paths
+  /**
+   * Boxes have no TAP; they reach the world through `host_veth`. A chrome
+   * lease needs a TAP, so boxes do not get one yet.
+   * @type {undefined}
+   */
+  tap
+  /** @type {string} */ last_activity
+  /** @type {string} */ synced_at
+  /** @type {string} */ vsock_path
+  /** @type {string} */ pty_path
+  /** @type {string | undefined} veth on the halo side of the box's netns */ host_veth
+  /** @type {string} the actor's harness folder */ realness
+
+  /** @param {Partial<BoxActorFields>} fields */
   constructor(fields) {
     Object.assign(this, { pid: 0, synced_at: '' }, fields)
   }
@@ -278,24 +332,44 @@ const CAPS = [
   'CAP_BLOCK_SUSPEND'
 ]
 
+/**
+ * @typedef {object} BoxStoreOptions
+ * @property {string} volume where actor folders live
+ * @property {string} template the root filesystem every box starts from
+ * @property {string} [runc] runc binary
+ * @property {string | null} [sync_url]
+ * @property {number} [vsock_port]
+ * @property {number} [boot_timeout] seconds
+ * @property {number} [api_timeout] seconds
+ * @property {{ owner: string, path: string } | null} [host_vault] the owner's own vault, mounted into their box
+ * @property {boolean} [userns] run the box in its own user namespace
+ * @property {number} [mib] memory limit
+ * @property {number} [cpus] cpu limit
+ * @property {number} [pids] process limit
+ */
+
 export class BoxStore {
   runtime = 'box'
+  /**
+   * Publishes sites through sync; main.js sets it when sync is configured.
+   * @type {import('./actors.js').ActorStore['sync_sites']}
+   */
+  sync_sites = null
 
+  /** @param {BoxStoreOptions} options */
   constructor(options) {
-    Object.assign(this, {
-      volume: options.volume,
-      template: options.template,
-      runc_bin: options.runc ?? 'runc',
-      sync_url: options.sync_url ?? null,
-      vsock_port: options.vsock_port ?? vsock.VSOCK_PORT,
-      boot_timeout: options.boot_timeout ?? 60,
-      api_timeout: options.api_timeout ?? 30,
-      host_vault: options.host_vault ?? null,
-      userns: options.userns ?? true,
-      mib: options.mib ?? BOX_MIB,
-      cpus: options.cpus ?? BOX_CPUS,
-      pids: options.pids ?? BOX_PIDS
-    })
+    this.volume = options.volume
+    this.template = options.template
+    this.runc_bin = options.runc ?? 'runc'
+    this.sync_url = options.sync_url ?? null
+    this.vsock_port = options.vsock_port ?? vsock.VSOCK_PORT
+    this.boot_timeout = options.boot_timeout ?? BOOT_TIMEOUT_S
+    this.api_timeout = options.api_timeout ?? API_TIMEOUT_S
+    this.host_vault = options.host_vault ?? null
+    this.userns = options.userns ?? true
+    this.mib = options.mib ?? BOX_MIB
+    this.cpus = options.cpus ?? BOX_CPUS
+    this.pids = options.pids ?? BOX_PIDS
     this.traces_dir = join(this.volume, TRACES)
     this.published_dir = join(this.volume, PUBLISHED)
     this.versions_dir = join(this.volume, VERSIONS)
@@ -322,7 +396,12 @@ export class BoxStore {
     }
   }
 
-  /** Create the box's netns and veth pair; the guest end goes into the netns. */
+  /**
+   * Create the box's netns and veth pair; the guest end goes into the netns.
+   * The halo addresses the guest end itself: the netns belongs to the VM's
+   * root, which root in a user namespace cannot reach, so actor-init finds the
+   * network already set.
+   */
   #network(record, index) {
     const ns = `box-${record.id}`
     const host = `veth-${record.id.slice(2, 8)}`
@@ -334,8 +413,6 @@ export class BoxStore {
     sh(['ip', 'addr', 'add', `${addr.gateway}/30`, 'dev', host])
     sh(['ip', 'link', 'set', host, 'up'])
     sh(['ip', 'netns', 'exec', ns, 'ip', 'link', 'set', 'lo', 'up'])
-    // The netns belongs to the VM's root, so root in a user namespace cannot
-    // address it; the halo does, and actor-init finds it already right.
     const inside = ['ip', 'netns', 'exec', ns, 'ip']
     sh([...inside, 'addr', 'add', `${addr.guest}/${addr.prefix}`, 'dev', guest])
     sh([...inside, 'link', 'set', guest, 'up'])
@@ -447,7 +524,7 @@ export class BoxStore {
       /inet (\d+\.\d+\.(\d+)\.1)\/30/g
     ))
       if (match[1].startsWith('172.16.')) used.add(Number(match[2]))
-    for (let i = 1; i <= 254; i++) if (!used.has(i)) return i
+    for (let i = 1; i <= LAST_SUBNET; i++) if (!used.has(i)) return i
     throw new HaloError('no free box network index')
   }
 
@@ -480,7 +557,7 @@ export class BoxStore {
 
   runc(id, args) {
     return run(this.runc_bin, [...args, id], {
-      timeout: this.api_timeout * 1000
+      timeout: this.api_timeout * MS_PER_SECOND
     })
   }
 
@@ -518,21 +595,19 @@ export class BoxStore {
       join(dir, 'work')
     ])
       mkdir_sync(d, { recursive: true })
-    // A host vault is virtiofs, which cannot be idmapped: the owner's own box
-    // that mounts it keeps the VM's uids. Every other box gets a user namespace.
-    record.userns = this.userns && !this.#vault_mounts(record).length
+    /**
+     * A host vault is virtiofs, which cannot be idmapped: the owner's own box
+     * that mounts it keeps the VM's uids. Every other box gets a user namespace.
+     */
+    const userns = this.userns && !this.#vault_mounts(record).length
+    record.userns = userns
     const loop = record.userns ? join(dir, 'base-raw') : base
     mkdir_sync(loop, { recursive: true })
     await run('mount', ['-o', 'loop,ro', this.template, loop])
     if (record.userns) {
-      // The template's root files show as the box's root, uid 100000 on the VM.
-      await run('mount', [
-        '--bind',
-        '-o',
-        `X-mount.idmap=b:0:${USERNS_BASE}:${USERNS_SIZE}`,
-        loop,
-        base
-      ])
+      /** The template's root files show as the box's root, uid 100000 on the VM. */
+      const idmap = `X-mount.idmap=b:0:${USERNS_BASE}:${USERNS_SIZE}`
+      await run('mount', ['--bind', '-o', idmap, loop, base])
       await run('chown', [
         `${USERNS_BASE}:${USERNS_BASE}`,
         join(dir, 'upper'),
@@ -563,7 +638,7 @@ export class BoxStore {
     for (const name of GUEST_COPIES) {
       const target = join(record.root, 'usr', 'local', 'bin', name)
       copy_file_sync(join(GUEST, name), target)
-      chmod_sync(target, 0o755)
+      chmod_sync(target, EVERYONE_READS)
       if (record.userns) chown_sync(target, USERNS_BASE, USERNS_BASE)
     }
     const netns_path = this.#network(record, index)
@@ -575,8 +650,9 @@ export class BoxStore {
    * `realness` user takes that uid, so Pi writes notes the owner can edit.
    */
   async #owner_uid(record, etc, realness) {
-    if (!this.#vault_mounts(record).length) return
-    const { uid } = stat_sync(this.host_vault.path)
+    const vault = this.host_vault
+    if (!vault || !this.#vault_mounts(record).length) return
+    const { uid } = stat_sync(vault.path)
     const passwd = join(etc, 'passwd')
     const lines = read_file_sync(passwd, 'utf8').split('\n')
     const changed = lines.map(line => {
@@ -687,21 +763,7 @@ export class BoxStore {
           source: 'mqueue',
           options: ['nosuid', 'noexec', 'nodev']
         },
-        // sysfs cannot be mounted fresh from a user namespace that does not
-        // own the netns; a read-only bind of the VM's shows the same.
-        record.userns
-          ? {
-              destination: '/sys',
-              type: 'none',
-              source: '/sys',
-              options: ['rbind', 'nosuid', 'noexec', 'nodev', 'ro']
-            }
-          : {
-              destination: '/sys',
-              type: 'sysfs',
-              source: 'sysfs',
-              options: ['nosuid', 'noexec', 'nodev', 'ro']
-            },
+        sys_mount(record.userns),
         {
           destination: '/run',
           type: 'tmpfs',
@@ -811,7 +873,8 @@ export class BoxStore {
 
   /** k1: a new box pulls its owner's work back from sync before first use. */
   async #recover(record, startup) {
-    if (!this.sync_url) return
+    const { sync_url } = this
+    if (!sync_url) return
     const started = Date.now()
     try {
       const { code, out, err } = await startup.run(
@@ -837,7 +900,7 @@ export class BoxStore {
                 ? ['REALNESS_KEEP_LOCAL=vault']
                 : []),
               '/usr/local/bin/realness-recover',
-              this.sync_url
+              sync_url
             ],
             { timeout: RECOVER_SECONDS, port: this.vsock_port }
           )
@@ -849,12 +912,12 @@ export class BoxStore {
       this.trace(record.id, 'recover', {
         exit_code: code,
         ms: Date.now() - started,
-        out: out.toString().trim().slice(-200),
-        err: err.toString().trim().slice(-200)
+        out: out.toString().trim().slice(-OUTPUT_TAIL),
+        err: err.toString().trim().slice(-OUTPUT_TAIL)
       })
       if (code !== 0)
         LOG.warn(
-          `actor ${record.id} recovery exited ${code}: ${err.toString().trim().slice(-200)}`
+          `actor ${record.id} recovery exited ${code}: ${err.toString().trim().slice(-OUTPUT_TAIL)}`
         )
     } catch (error) {
       LOG.error(`actor ${record.id} recovery threw`, error)
@@ -877,7 +940,7 @@ export class BoxStore {
   }
 
   async #type_until_pi(record) {
-    const deadline = Date.now() + this.boot_timeout * 1000
+    const deadline = Date.now() + this.boot_timeout * MS_PER_SECOND
     let typed = 0
     while (Date.now() < deadline) {
       const { out } = await vsock
@@ -898,7 +961,7 @@ export class BoxStore {
   }
 
   async #type_opener(record) {
-    const pty = await vsock.connect(record.pty_path, 53)
+    const pty = await vsock.connect(record.pty_path, PTY_PORT)
     const frame = {
       op: 'data',
       data_b64: Buffer.from('realness\r').toString('base64')
@@ -916,7 +979,7 @@ export class BoxStore {
       [
         ACTOR_INIT,
         record.id,
-        String(Math.floor(Date.now() / 1000)),
+        String(Math.floor(Date.now() / MS_PER_SECOND)),
         `${addr.guest}/${addr.prefix}`,
         ...(pi_after_recovery ? ['--after-recovery'] : [])
       ],
@@ -976,6 +1039,7 @@ export class BoxStore {
     argv,
     { cwd = null, stdin = Buffer.alloc(0), timeout = null } = {}
   ) {
+    check_command(argv, cwd)
     const record = await this.ensure_running(id)
     const started = Date.now()
     const work = `exec:${random_uuid()}`
@@ -1007,16 +1071,31 @@ export class BoxStore {
     }
   }
 
+  /**
+   * Run a command in the box and stream its output, as ActorStore does: the
+   * byte counts, and `spill_path` when output was too big to stream whole.
+   * @param {string} id
+   * @param {string[]} argv
+   * @param {Parameters<import('./actors.js').ActorStore['exec_stream']>[2]} [options]
+   * @returns {ReturnType<import('./actors.js').ActorStore['exec_stream']>}
+   */
   async exec_stream(id, argv, options = {}) {
+    check_command(argv, options.cwd ?? null)
     const record = await this.ensure_running(id)
     const work = `exec:${random_uuid()}`
+    let stdout_bytes = 0
+    let stderr_bytes = 0
     this.begin_work(id, work)
     try {
       const result = await vsock.exec_in_guest_stream(record.vsock_path, argv, {
         timeout: options.timeout ?? this.api_timeout,
         port: this.vsock_port,
         signal: options.signal,
-        on_output: options.on_output,
+        on_output: chunk => {
+          if (chunk.stream === 'stdout') stdout_bytes += chunk.data.length
+          else stderr_bytes += chunk.data.length
+          options.on_output?.(chunk)
+        },
         cwd: options.cwd ?? null,
         stdin: options.stdin ?? Buffer.alloc(0),
         env: options.env,
@@ -1025,7 +1104,10 @@ export class BoxStore {
       })
       return {
         exit_code: result.code,
-        ...(result.error ? { error: result.error } : {})
+        stdout_bytes,
+        stderr_bytes,
+        ...(result.error ? { error: result.error } : {}),
+        ...(result.spill_path ? { spill_path: result.spill_path } : {})
       }
     } finally {
       this.end_work(id, work)
@@ -1085,8 +1167,10 @@ export class BoxStore {
     this.closed = true
     return this.lock.run(async () => {
       for (const record of this.live_actors()) {
-        if (this.is_busy(record.id))
+        if (this.is_busy(record.id)) {
+          this.reopen()
           return { ok: false, reason: `${record.id} is busy` }
+        }
         await this.#idle(record.id, 'disk')
       }
       return { ok: true }
@@ -1172,10 +1256,9 @@ export class BoxStore {
 
   async #reload(id) {
     const record = this.get(id)
-    // Right after a hard stop the init can still look alive; only an agent
-    // that answers is a running box.
-    if (record.state === 'running' && (await this.#answers(record)))
-      return record
+    /** Right after a hard stop the init can still look alive; only an agent that answers is a running box. */
+    const running = record.state === 'running' && (await this.#answers(record))
+    if (running) return record
     record.last_activity = now_iso()
     if (record.state === 'idle') {
       record.state = 'running'
@@ -1252,10 +1335,6 @@ export class BoxStore {
     if (record.state !== 'stopped' && record.pid && !alive(record.pid))
       record.state = 'stopped'
     return record
-  }
-
-  owner_of(id) {
-    return this.get(id).owner
   }
 
   list() {
@@ -1395,7 +1474,12 @@ export class BoxStore {
   }
 
   seed_status() {
-    return { built: exists_sync(this.template), matches: true, mismatches: [] }
+    return {
+      built: exists_sync(this.template),
+      matches: true,
+      /** @type {string[]} */ mismatches: [],
+      record: null
+    }
   }
 
   /** Boxes use the template rootfs directly; there is no reflink to warn about. */
@@ -1516,9 +1600,5 @@ export class BoxStore {
 
   unpublish_site() {
     throw new NotFound('no site')
-  }
-
-  save_site() {
-    return null
   }
 }

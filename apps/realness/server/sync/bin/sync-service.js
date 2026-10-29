@@ -94,7 +94,7 @@ sync_service({
   issuer,
   origins,
   halo_pass_secret: halo_pass_secret(),
-  // vlt1: on the Mac, the owner's actors search this vault's index here.
+  /** vlt1: on the Mac, the owner's actors search this vault's index here. */
   vault: vault_door({
     dir: process.env.VAULT_DIR ?? null,
     index: process.env.VAULT_INDEX ?? null,

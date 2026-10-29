@@ -1,4 +1,4 @@
-import { gunzipSync } from 'node:zlib'
+import { gunzipSync as gunzip_sync } from 'node:zlib'
 import webpush from 'web-push'
 import { defineSecret as define_secret } from 'firebase-functions/params'
 import { bucket } from '#utils/firebase.js'
@@ -10,7 +10,10 @@ const vapid_public_key =
   'BJAznHSd3bIvqCrP8qOA0RdzLiSuU5lKhWMXLa1t8Sd1aSvXRYbHJGOlewp6Sp7iY8UGP3092sWz_Zu-WHO4cUQ'
 const vapid_subject = 'mailto:security@realness.online'
 
+/** A stored object, as the admin SDK's bucket lists it. @typedef {Awaited<ReturnType<typeof bucket.getFiles>>[0][number]} File */
+
 let configured = false
+/** Set the VAPID keys once, on the first broadcast (the secret is only readable at runtime). */
 const configure = () => {
   if (configured) return
   webpush.setVapidDetails(
@@ -28,18 +31,19 @@ const SYNC = /^people\/(\+\d+)\/subscriptions\/([^/]+)\.json\.gz$/
 /**
  * Every stored subscription, one per person and id. Until gz6 a subscription
  * may sit in both places; sync's copy wins and both are pruned together.
+ * @returns {Promise<{ read: File, copies: File[] }[]>}
  */
 const subscriptions = async () => {
   const [[firebase], [sync]] = await Promise.all([
     bucket.getFiles({ prefix: 'subscriptions/' }),
     bucket.getFiles({ matchGlob: 'people/*/subscriptions/*.json.gz' })
   ])
-  /** @type {Map<string, { read: any, copies: any[] }>} */
+  /** @type {Map<string, { read: File, copies: File[] }>} */
   const found = new Map()
   for (const [pattern, files] of [
     [SYNC, sync],
     [FIREBASE, firebase]
-  ]) 
+  ]) {
     for (const file of files) {
       const match = pattern.exec(file.name)
       if (!match) continue
@@ -48,15 +52,20 @@ const subscriptions = async () => {
       if (entry) entry.copies.push(file)
       else found.set(key, { read: file, copies: [file] })
     }
-  
+  }
+
   return [...found.values()]
 }
 
-/** Stored bytes, unzipped when they are gzip (GCS may or may not unzip on download). */
+/**
+ * Stored bytes, unzipped when they are gzip (GCS may or may not unzip on download).
+ * @param {File} file
+ * @returns {Promise<import('web-push').PushSubscription>}
+ */
 const read_json = async file => {
   const [contents] = await file.download()
   const gzip = contents[0] === 0x1f && contents[1] === 0x8b
-  return JSON.parse((gzip ? gunzipSync(contents) : contents).toString())
+  return JSON.parse((gzip ? gunzip_sync(contents) : contents).toString())
 }
 
 /**

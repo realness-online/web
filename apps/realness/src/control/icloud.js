@@ -54,7 +54,7 @@ export const parse_icloud_status = text => {
  * @param {{ run?: (command: string, args: string[]) => Promise<string> }} [options]
  * @returns {Promise<IcloudStatus>}
  */
-export const icloud_status = async ({ run = run_command } = {}) =>
+const icloud_status = async ({ run = run_command } = {}) =>
   parse_icloud_status(await run('brctl', ['status']))
 
 /**

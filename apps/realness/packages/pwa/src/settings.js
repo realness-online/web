@@ -9,7 +9,10 @@
 export const PWA_COLOR = '#2c2c26'
 const ICON_SIZES = ['192', '512']
 
-/** vite-plugin-pwa options both builds share. */
+/**
+ * vite-plugin-pwa options both builds share.
+ * @type {{ filename: string, registerType: 'prompt' }}
+ */
 export const pwa_plugin = {
   filename: 'service.worker.js',
   registerType: 'prompt'
@@ -19,7 +22,10 @@ export const pwa_plugin = {
 export const pwa_workbox = { clientsClaim: true }
 
 /**
+ * The web app manifest both builds write; `display` is a manifest keyword,
+ * not any string.
  * @param {{ name: string, description: string, icon_version?: string }} site
+ * @returns {Partial<import('vite-plugin-pwa').ManifestOptions>}
  */
 export const pwa_manifest = ({ name, description, icon_version }) => ({
   name,

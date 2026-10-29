@@ -14,8 +14,11 @@ import { after, before, describe, test } from 'node:test'
 const API = process.env.API ?? 'http://127.0.0.1:18080'
 const PTY = process.env.PTY ?? '127.0.0.1:18081'
 const KILL = process.env.KILL ?? 'limactl shell fc-local sudo kill -9 {pid}'
-// A Firecracker actor on the Mac is a VM inside Lima: Pi takes ~40 s to draw
-// there. DRAW_MS=90000 for that run; GCP and boxes draw well inside 30 s.
+/**
+ * How long Pi gets to draw. A Firecracker actor on the Mac is a VM inside
+ * Lima, where Pi takes ~40 s: run that with DRAW_MS=90000. GCP and boxes draw
+ * well inside 30 s.
+ */
 const DRAW_MS = Number(process.env.DRAW_MS ?? 30000)
 
 const made = new Set()

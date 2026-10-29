@@ -3,13 +3,13 @@
 # from the current checkout, and start clean. The VM is the only persistent
 # sink (mounts, actors, seed), so deleting it removes every previous build.
 # Never touches iCloud data (Realness-sync-2 is the store). Ctrl-C stops the
-# stack it starts; calling the script again rebuilds from scratch.
+# stack it starts; calling the script again rebuilds from scratch. Staging
+# resolves `pi` from PATH, so the repo's own launcher goes first.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 APP="$(cd "$DIR/../../.." && pwd)"
 ROOT="$(cd "$APP/../.." && pwd)"
-# The staging step resolves `pi` from PATH; use the repo's own launcher.
 export PATH="$ROOT/.pi/bin:$PATH"
 
 echo "==> stopping the local stack"

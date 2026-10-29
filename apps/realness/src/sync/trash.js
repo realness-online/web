@@ -13,7 +13,7 @@
 import { Conflict } from '#root/src/can/contract.js'
 import { trash_day, trash_key, trash_owner } from '#root/src/can/trash-keys.js'
 
-export const KEEP_DAYS = 30
+const KEEP_DAYS = 30
 const DAY_MS = 86_400_000
 const SWEEP_MS = 3_600_000
 

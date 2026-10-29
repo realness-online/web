@@ -27,6 +27,7 @@
     "public/push-handlers.js",
     "src/app/prerender/entry-server.js",
     "server/sync/bin/realness.js",
+    "server/*/bin/*.js",
     "tools/cli/bin/*.js",
     "packages/*/src/index.js",
     "packages/store/src/firebase.js",
@@ -62,6 +63,7 @@
   "ignoreUnresolvedImports": [
     "/pi-durable.browser.js",
     "/scripts/template-for-polyfill.js",
+    "/scripts/register.js",
     "/scripts/watch-for-updates.js",
     "**/targets.json",
     "**/pi-ai/dist/utils/retry.js"
@@ -70,6 +72,7 @@
     "unused-files": "warn",
     "unused-exports": "warn",
     "unused-types": "off",
+    "private-type-leaks": "off",
     "unused-class-members": "warn",
     "duplicate-exports": "warn",
     "circular-dependencies": "error",
@@ -199,6 +202,78 @@
       "typeOnlyDependencies": 0,
       "testOnlyDependencies": 0,
       "devDependenciesInProduction": 3,
+      "boundaryViolations": 0,
+      "boundaryCoverageViolations": 0,
+      "boundaryCallViolations": 0,
+      "policyViolations": 0
+    }
+  },
+  "regression": {
+    "baseline":     {
+      "analysisIdentity": {
+        "mode": "type-aware",
+        "semantic_schema_version": 2,
+        "capabilities": [
+          "symbol-use",
+          "api-surface"
+        ],
+        "project_config_hash": "sha256:826a02edfb7dd473152057faa33e2296b91246d6b4a9823a190cd2bc58d2e368",
+        "backend_family": "typescript-go",
+        "completeness": "unavailable"
+      },
+      "totalIssues": 43,
+      "unusedFiles": 0,
+      "unusedExports": 0,
+      "unusedTypes": 0,
+      "unusedDependencies": 0,
+      "unusedDevDependencies": 0,
+      "unusedOptionalDependencies": 0,
+      "unusedEnumMembers": 0,
+      "unusedClassMembers": 39,
+      "unresolvedImports": 0,
+      "unlistedDependencies": 0,
+      "duplicateExports": 0,
+      "circularDependencies": 0,
+      "reExportCycles": 0,
+      "typeOnlyDependencies": 0,
+      "testOnlyDependencies": 0,
+      "devDependenciesInProduction": 2,
+      "boundaryViolations": 0,
+      "boundaryCoverageViolations": 0,
+      "boundaryCallViolations": 0,
+      "policyViolations": 0
+    }
+  },
+  "regression": {
+    "baseline":     {
+      "analysisIdentity": {
+        "mode": "type-aware",
+        "semantic_schema_version": 2,
+        "capabilities": [
+          "symbol-use",
+          "api-surface"
+        ],
+        "project_config_hash": "sha256:37053c1cd33e667d948b216141575654d7fe3e8f92231f29ec3187a4169b6667",
+        "backend_family": "typescript-go",
+        "completeness": "partial"
+      },
+      "totalIssues": 10,
+      "unusedFiles": 0,
+      "unusedExports": 0,
+      "unusedTypes": 0,
+      "unusedDependencies": 0,
+      "unusedDevDependencies": 0,
+      "unusedOptionalDependencies": 0,
+      "unusedEnumMembers": 0,
+      "unusedClassMembers": 0,
+      "unresolvedImports": 0,
+      "unlistedDependencies": 0,
+      "duplicateExports": 0,
+      "circularDependencies": 0,
+      "reExportCycles": 0,
+      "typeOnlyDependencies": 0,
+      "testOnlyDependencies": 0,
+      "devDependenciesInProduction": 2,
       "boundaryViolations": 0,
       "boundaryCoverageViolations": 0,
       "boundaryCallViolations": 0,

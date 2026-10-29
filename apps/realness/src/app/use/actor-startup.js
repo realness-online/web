@@ -75,7 +75,7 @@ export const use_actor_startup = (user, { set_working = () => {} } = {}) => {
       })
     /** While Realness is not answering yet, say why and ask again. */
     const request = async () => {
-      for (;;) {
+      for (;;)
         try {
           const ready = await ask()
           problem.value = ''
@@ -86,7 +86,6 @@ export const use_actor_startup = (user, { set_working = () => {} } = {}) => {
           problem.value = readable_error(error.message)
           await pause(RETRY_MS, observing.signal)
         }
-      }
     }
     pending = (async () => {
       try {

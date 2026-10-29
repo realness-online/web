@@ -68,10 +68,7 @@ it('a blog app renders a selected vault note with its own microdata', async () =
   })
   try {
     const built = await build_app(root, 'blog', { example })
-    const page = await readFile(
-      join(built.dist, 'blog/note.html'),
-      'utf8'
-    )
+    const page = await readFile(join(built.dist, 'blog/note.html'), 'utf8')
     assert.match(page, /<article itemscope/)
     assert.match(page, /Body text\./)
     const { id } = built.sources[0]
@@ -162,10 +159,7 @@ it('an Obsidian cardlink fences renders as one link card, not source text', asyn
   const root = await harness('card', note, { type: 'blog' })
   try {
     const built = await build_app(root, 'blog', { example })
-    const page = await readFile(
-      join(built.dist, 'blog/note.html'),
-      'utf8'
-    )
+    const page = await readFile(join(built.dist, 'blog/note.html'), 'utf8')
     assert.match(
       page,
       /<a itemprop="url" href="https:\/\/example\.com\/a-post">/
@@ -190,10 +184,7 @@ it('a plans app renders a plan with its diagram rules and covers', async () => {
   const root = await harness('plans', plan, { type: 'plans' })
   try {
     const built = await build_app(root, 'plans', { example })
-    const page = await readFile(
-      join(built.dist, 'blog/note.html'),
-      'utf8'
-    )
+    const page = await readFile(join(built.dist, 'blog/note.html'), 'utf8')
     const css = await readFile(join(built.dist, 'plans.css'), 'utf8')
     const covers = await readFile(
       join(built.dist, 'scripts/plan-covers.js'),

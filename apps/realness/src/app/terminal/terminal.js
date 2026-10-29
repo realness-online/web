@@ -638,7 +638,7 @@ export const mount = async (
   bind_keyboard({ state, canvas, encoder, engine, listen, send, ...selection })
   const { clear_scrollback, copy_selection } = selection
   let resize_timer = 0
-  // A pane resizes with its split, not only with the window.
+  /** A pane resizes with its split, not only with the window. */
   const on_resize = () => {
     clearTimeout(resize_timer)
     resize_timer = setTimeout(() => {

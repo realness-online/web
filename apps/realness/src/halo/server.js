@@ -94,7 +94,13 @@ const read_json = async request => {
   return payload
 }
 
-/** A file from a published tree. A directory serves index.html; a bare name its .html. */
+/**
+ * A file from a published tree. A directory serves index.html; a bare name its .html.
+ * @param {RouteStore} store
+ * @param {import('node:http').ServerResponse} response
+ * @param {string} id
+ * @param {string} rel
+ */
 const site = (store, response, id, rel) => {
   const root = store.published_site(id)
   if (!root)
@@ -144,6 +150,7 @@ const site = (store, response, id, rel) => {
   )
 }
 
+/** @param {RouteStore} store */
 const health = store => {
   const seed = store.seed_status()
   const counts = {}
@@ -206,6 +213,12 @@ const shell_options = payload => {
   }
 }
 
+/**
+ * @param {RouteStore} store
+ * @param {import('node:http').IncomingMessage} request
+ * @param {string} id
+ * @param {import('node:http').ServerResponse} response
+ */
 const exec = async (store, request, id, response) => {
   const payload = await read_json(request)
   if (payload.stream !== undefined && typeof payload.stream !== 'boolean')
@@ -556,7 +569,10 @@ const route_apps = async (
   return false
 }
 
-/** GET /v1/actors, /v1/exports, /s/<id>/..., and one actor's trace or record. */
+/**
+ * GET /v1/actors, /v1/exports, /s/<id>/..., and one actor's trace or record.
+ * @param {Omit<RouteCall, 'request'> & { owns: (record: { owner: string | null }) => boolean, url: URL }} call
+ */
 const route_reads = ({
   actor,
   method,
@@ -607,7 +623,10 @@ const route_reads = ({
   return false
 }
 
-/** POST /v1/actors to create or restore, and the per-actor actions. */
+/**
+ * POST /v1/actors to create or restore, and the per-actor actions.
+ * @param {RouteCall} call
+ */
 const route_actor_writes = async ({
   actor,
   method,
@@ -790,7 +809,20 @@ const route = async (
  * startup adds `ensure_running`, and chat adds `begin_work`,
  * `end_work`, and `first_turn`. Derived from ActorStore, so a renamed method
  * fails here rather than at runtime.
- * @typedef {Pick<import('./actors.js').ActorStore, 'begin_work' | 'copy_out' | 'create' | 'destroy' | 'end_work' | 'ensure_running' | 'exec' | 'export' | 'first_turn' | 'get' | 'idle' | 'list' | 'publish' | 'published_site' | 'receive_log' | 'reload' | 'restore' | 'seed_status' | 'trace_of'>} RouteStore
+ * @typedef {Pick<import('./actors.js').HaloStore, 'begin_work' | 'copy_out' | 'create' | 'destroy' | 'end_work' | 'ensure_running' | 'exec' | 'exec_stream' | 'export' | 'exports' | 'first_turn' | 'get' | 'idle' | 'list' | 'publish' | 'published_site' | 'receive_log' | 'reload' | 'restore' | 'runtime' | 'seed_status' | 'trace_of'>} RouteStore
+ */
+
+/**
+ * What every actor route is handed: the request, who asked, and the store.
+ * `actor(id)` reads a record the owner holds, or throws NotFound.
+ * @typedef {object} RouteCall
+ * @property {(id: string) => import('./actors.js').Actor} actor
+ * @property {string} method
+ * @property {string} owner
+ * @property {string} path
+ * @property {import('node:http').IncomingMessage} request
+ * @property {import('node:http').ServerResponse} response
+ * @property {RouteStore} store
  */
 
 /**

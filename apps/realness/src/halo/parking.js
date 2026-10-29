@@ -32,7 +32,7 @@ export const park_blockers = (
 export class Parker {
   /**
    * @param {object} options
-   * @param {{ activity: () => { actors: number, kinds: Record<string, number> }, park: () => Promise<{ ok: boolean, reason?: string }>, reopen: () => void }} options.store
+   * @param {Pick<import('./actors.js').HaloStore, 'activity' | 'park' | 'reopen'>} options.store
    * @param {{ all: () => { status: string }[] } | null} [options.loops]
    * @param {() => Promise<number>} [options.apps_running]
    * @param {() => boolean} [options.held] an operator hold, such as /run/realness-hold

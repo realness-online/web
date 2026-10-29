@@ -76,7 +76,7 @@ const guarded =
   }
 
 /** sh4: an admin starts an org as its founder. */
-export const create_org = async ({ storage, who, body }) => {
+const create_org = async ({ storage, who, body }) => {
   if (!who.admin) refuse(HTTP.FORBIDDEN)
   const { name, founder_name = '', members = [] } = body ?? {}
   if (typeof name !== 'string' || !ORG.test(name)) refuse(HTTP.BAD_REQUEST)
@@ -91,7 +91,7 @@ export const create_org = async ({ storage, who, body }) => {
 }
 
 /** sh5: the founder adds and removes members. */
-export const change_members = async ({ storage, who, name, body }) => {
+const change_members = async ({ storage, who, name, body }) => {
   const { version, org } = await read_page(storage, name)
   if (org.founder !== who.phone) refuse(HTTP.FORBIDDEN)
   const { add = [], remove = [] } = body ?? {}
@@ -111,7 +111,7 @@ export const change_members = async ({ storage, who, name, body }) => {
 }
 
 /** o7: a member other than the founder takes themselves off the list. */
-export const leave_org = async ({ storage, who, name }) => {
+const leave_org = async ({ storage, who, name }) => {
   const { version, org } = await read_page(storage, name)
   if (!org.members.includes(who.phone)) refuse(HTTP.FORBIDDEN)
   if (org.founder === who.phone) refuse(HTTP.CONFLICT)
@@ -125,13 +125,7 @@ export const leave_org = async ({ storage, who, name }) => {
 }
 
 /** o7: the founder closes the org; its files move into their archive. */
-export const close_org = async ({
-  storage,
-  who,
-  name,
-  body,
-  now = Date.now
-}) => {
+const close_org = async ({ storage, who, name, body, now = Date.now }) => {
   const { org } = await read_page(storage, name)
   if (org.founder !== who.phone) refuse(HTTP.FORBIDDEN)
   if (body?.confirm !== name) refuse(HTTP.BAD_REQUEST)

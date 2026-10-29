@@ -142,13 +142,23 @@ const UNREACHABLE = new Set([
   'ETIMEDOUT'
 ])
 
+/**
+ * Pass one API call to the actor's halo with a halo pass in place of the
+ * person's. Resolves when the reply is sent; rejects when the halo cannot be
+ * reached, saying why through `unreachable`.
+ * @param {import('node:http').IncomingMessage} request
+ * @param {import('node:http').ServerResponse} response
+ * @param {{ host: string, api_port: number }} where the halo serving the actor
+ * @param {string} pass halo pass for this call
+ * @param {{ streaming?: boolean, unreachable?: () => string }} [options] streaming: the reply is already a record stream
+ * @returns {Promise<void>}
+ */
 const forward = (
   request,
   response,
   where,
   pass,
-  streaming = false,
-  unreachable = () => 'halo unreachable'
+  { streaming = false, unreachable = () => 'halo unreachable' } = {}
 ) =>
   /** @type {Promise<void>} */
   (
@@ -292,12 +302,10 @@ export const make_gate = ({
         response,
         await halo_for({ phone: who.phone, ...(actor ? { actor } : {}) }),
         issue_halo_pass(who, secret),
-        response.headersSent,
-        unreachable
+        { streaming: response.headersSent, unreachable }
       )
     } catch (error) {
       log(`gate: api refused: ${error.message}`)
-      // box6: never a bare status; say what the halo is doing and retry.
       if (!response.headersSent) {
         response.writeHead(HTTP.UNAVAILABLE, {
           'content-type': 'text/plain; charset=utf-8',

@@ -7,6 +7,8 @@ import { gunzipSync as gunzip_sync, gzipSync as gzip_sync } from 'node:zlib'
 
 const LEVEL = 6
 const OS_BYTE = 9
+/** The gzip header's 4-byte mtime starts here (RFC 1952). */
+const MTIME_AT = 4
 const UNIX = 3
 
 /**
@@ -15,7 +17,7 @@ const UNIX = 3
  */
 export const zip = bytes => {
   const packed = gzip_sync(bytes, { level: LEVEL })
-  packed.writeUInt32LE(0, 4)
+  packed.writeUInt32LE(0, MTIME_AT)
   packed[OS_BYTE] = UNIX
   return packed
 }

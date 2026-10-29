@@ -15,6 +15,15 @@ export const SYNC_PAUSED = 'sync-paused'
 /** While this file exists, a harness sync goes to local sync or nowhere. */
 export const SYNC_LOCAL_ONLY = 'sync-local-only'
 
+/** @typedef {Awaited<ReturnType<typeof sync_harness>> & { dry_run?: boolean }} HarnessResult */
+/** @typedef {{ local: boolean, url: string, get_token: () => Promise<string | null> }} SyncTarget */
+
+/**
+ * Print one sync's moves, conflicts, and refusals, or one JSON line.
+ * @param {HarnessResult} result
+ * @param {{ command: string, json: boolean, stdout: NodeJS.WritableStream, stderr: NodeJS.WritableStream, label?: string | null }} io label names the target when a run syncs two
+ * @returns {0 | 1} the exit code: 1 when anything conflicted or was refused
+ */
 const report_harness = (
   result,
   { command, json, stdout, stderr, label = null }
@@ -178,8 +187,8 @@ const then_production = async (
  * @param {boolean} [options.actor]
  * @param {string} [options.root]
  * @param {string} [options.state]
- * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> }>} [options.target] Where desktop sync goes: the local stack when it is up
- * @param {() => Promise<{ local: boolean, url: string, get_token: () => Promise<string | null> } | null>} [options.also] After an explicit sync to the local stack, a second target: production, so iCloud and the cloud both hold the files
+ * @param {() => Promise<SyncTarget>} [options.target] Where desktop sync goes: the local stack when it is up
+ * @param {(() => Promise<SyncTarget | null>) | null} [options.also] After an explicit sync to the local stack, a second target: production, so iCloud and the cloud both hold the files
  * @param {string} [options.service_url]
  * @param {() => Promise<string>} [options.issue]
  * @param {NodeJS.WriteStream & { fd: 1 }} [options.stdout]

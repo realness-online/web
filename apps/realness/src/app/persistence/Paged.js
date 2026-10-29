@@ -20,7 +20,7 @@ import { recent_item_first } from '@/utils/sorting'
 
 const get_oldest = (elements, prop_name) => {
   const list = get_itemprops(elements)
-  // One match comes back bare, none as undefined.
+  /** One match comes back bare, none as undefined. */
   const props = [list[prop_name]].flat().filter(Boolean)
   props.sort(recent_item_first)
   const oldest = props[props.length - 1]
@@ -53,7 +53,7 @@ export const Paged = superclass =>
         if (!frag) return
         const [current] = frag.childNodes
         if (!current) return
-        // The itemid's own segment, not `type`: `statements` reads as type `thoughts`.
+        /** The itemid's own segment, not `type`: `statements` reads as type `thoughts`. */
         const [, segment] = as_path_parts(this.id)
         if (!segment) return
         const oldest = get_oldest(current, segment)

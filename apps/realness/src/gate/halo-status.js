@@ -7,7 +7,7 @@ import { dirname } from 'node:path'
 import { out_path } from '#root/src/settings/output.js'
 
 /** Where `realness local halo up` says what it is doing, for the gate to repeat. */
-export const halo_status_path = () => out_path('local', 'halo-status.json')
+const halo_status_path = () => out_path('local', 'halo-status.json')
 
 /**
  * Record the local halo's current step.
@@ -24,7 +24,7 @@ export const write_halo_status = (state, doing = '') => {
 }
 
 /** The recorded step, or null when nothing has been recorded. */
-export const read_halo_status = () => {
+const read_halo_status = () => {
   try {
     return JSON.parse(read_file_sync(halo_status_path(), 'utf8'))
   } catch {

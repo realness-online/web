@@ -16,18 +16,13 @@
  * Pages written before microdata, with `<a href="tel:...">` links, still
  * grant their admins. A malformed page grants nobody.
  */
-import { read_members } from '#root/src/can/members.js'
+import { read_people } from '#root/src/can/members.js'
 
 const TEL = /href="tel:(\+[1-9]\d{6,14})"/g
 
 /** Every admin phone on the page; nobody when the page cannot be read. */
 export const read_admins = html => {
-  let people = []
-  try {
-    people = read_members(html).people
-  } catch {
-    people = []
-  }
+  const people = read_people(html)
   if (people.length) return new Set(people.map(person => person.phone))
   return new Set([...html.matchAll(TEL)].map(([, phone]) => phone))
 }

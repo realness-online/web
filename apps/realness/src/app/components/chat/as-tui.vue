@@ -163,6 +163,10 @@
     terminals.clear()
   }
 
+  /**
+   * The panes the person left open on this actor. No saved layout yet, or an
+   * older halo, keeps what is shown: one pane on first open.
+   */
   const restore_layout = async (user, actor) => {
     try {
       const layout = await load_layout(user, actor)
@@ -174,9 +178,7 @@
       )
         panes.value = saved.map(({ session }) => ({ session: session ?? null }))
       if (layout?.direction === 'column') direction.value = 'column'
-    } catch {
-      // No saved layout yet, or an older halo: one pane.
-    }
+    } catch {}
   }
 
   const keep_layout = () => {
@@ -200,6 +202,7 @@
       await next_tick()
       const { mount } = await import('@/terminal/terminal.js')
       if (left) return
+      // eslint-disable-next-line no-await-in-loop -- panes mount in layout order, one terminal socket at a time
       for (const pane of panes.value) await mount_pane(mount, user, actor, pane)
     } catch (thrown) {
       mount_problem.value = `TUI: ${thrown.message}`

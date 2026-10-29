@@ -100,7 +100,7 @@ export class Loops {
   tail = Promise.resolve()
 
   /**
-   * @param {import('./actors.js').ActorStore} store
+   * @param {import('./actors.js').HaloStore} store
    * @param {object} [options]
    * @param {string} [options.file]
    * @param {number} [options.max_depth]

@@ -242,8 +242,28 @@ export class Actor {
   }
 }
 
+/**
+ * A command an actor may run: a program, then string arguments (empty ones
+ * allowed, as `printf ''` needs), none with a NUL; `cwd` a string or null.
+ * Both runtimes check it before anything reaches the guest.
+ * @param {unknown} argv
+ * @param {unknown} cwd
+ */
+export const check_command = (argv, cwd) => {
+  if (
+    !Array.isArray(argv) ||
+    !argv[0] ||
+    !argv.every(item => typeof item === 'string' && !item.includes('\0'))
+  )
+    throw new BadRequest(
+      'argv must start with a program and contain only strings'
+    )
+  if (cwd !== null && cwd !== undefined && typeof cwd !== 'string')
+    throw new BadRequest('cwd must be a string')
+}
+
 /** One lock for everything that changes an actor; exec and reads stay outside it. */
-class Mutex {
+export class Mutex {
   /** @type {Promise<unknown>} */
   #tail = Promise.resolve()
 
@@ -338,6 +358,12 @@ const warm_pi = async (uds, seconds = PI_WARM_SECONDS) => {
 }
 
 /**
+ * Either runtime's store: Firecracker microVMs (ActorStore) or runc boxes
+ * (BoxStore). The halo's parts take whichever this halo runs.
+ * @typedef {ActorStore | import('./box.js').BoxStore} HaloStore
+ */
+
+/**
  * The halo-side actor store. `Object.assign` fills the options, so they are
  * declared here for the type checker and the reader.
  * @typedef {object} ActorStoreOptions
@@ -394,7 +420,7 @@ export class ActorStore {
   mem_available
   /** @type {string | null} */
   sync_url = null
-  /** @type {{ publish: (owner: string, site: string, staging: string, source: string) => Promise<object>, versions: (owner: string, site: string) => Promise<object[]>, restore: (owner: string, site: string, version: string) => Promise<object>, remove: (owner: string, site: string) => Promise<object> } | null} */
+  /** @type {import('./sync-sites.js').SyncSites | null} */
   sync_sites
   /** @type {string} */
   seed_dir
@@ -983,15 +1009,7 @@ export class ActorStore {
     argv,
     { cwd = null, stdin = Buffer.alloc(0), timeout = null } = {}
   ) {
-    if (
-      !Array.isArray(argv) ||
-      !argv.length ||
-      !argv.every(item => typeof item === 'string' && item)
-    )
-      throw new BadRequest('argv must be a non-empty list of strings')
-
-    if (cwd !== null && typeof cwd !== 'string')
-      throw new BadRequest('cwd must be a string')
+    check_command(argv, cwd)
     const record = await this.ensure_running(id)
     const started = Date.now()
     const work = `exec:${random_uuid()}`
@@ -1056,17 +1074,7 @@ export class ActorStore {
       spill = undefined
     } = {}
   ) {
-    if (
-      !Array.isArray(argv) ||
-      !argv.length ||
-      !argv[0] ||
-      !argv.every(item => typeof item === 'string' && !item.includes('\0'))
-    )
-      throw new BadRequest(
-        'argv must start with a program and contain only strings'
-      )
-    if (cwd !== null && typeof cwd !== 'string')
-      throw new BadRequest('cwd must be a string')
+    check_command(argv, cwd)
     const record = await this.ensure_running(id)
     const started = Date.now()
     const work = `exec:${random_uuid()}`

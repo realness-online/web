@@ -85,6 +85,13 @@ export const HOME_FOLDERS = ['apps', 'artifacts', 'vault', 'work']
 export { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
 import { STARTER_FILE as STARTER } from '#root/src/files/starter.js'
 
+/**
+ * Scratch from a test run inside .pi; it is never part of the harness.
+ * @param {string[]} parts
+ */
+const is_test_scratch = parts =>
+  parts[0] === '.pi' && parts.includes('artifacts')
+
 /** Whether a path, relative to the harness root, goes into the ship tree. */
 export const ships = path => {
   const parts = path.split(sep)
@@ -94,8 +101,7 @@ export const ships = path => {
     name.startsWith('._') ||
     is_history(name) ||
     parts.includes('node_modules') ||
-    // Scratch from a test run inside .pi; it is never part of the harness.
-    (parts[0] === '.pi' && parts.includes('artifacts'))
+    is_test_scratch(parts)
   )
     return false
   if (
@@ -221,7 +227,6 @@ export const ship_stage = ({ root = ROOT, stage = STAGE, proxy_url } = {}) => {
     if (exists_sync(join(root, path)))
       copy(join(root, path), join(stage, path), root)
 
-  /** The same visible folders as the Mac home. */
   for (const folder of HOME_FOLDERS)
     mkdir_sync(join(stage, folder), { recursive: true })
   write_file_sync(join(stage, '.ignore'), '')

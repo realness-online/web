@@ -51,7 +51,7 @@ export const wait_for_door = async (
 
 export class Door {
   /**
-   * @param {import('./actors.js').ActorStore} store
+   * @param {import('./actors.js').HaloStore} store
    * @param {string} [site_url]
    * @param {import('./loops.js').Loops | null} [loops]
    * @param {import('./chrome-leases.js').ChromeLeases | null} [chrome]

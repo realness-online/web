@@ -5,17 +5,20 @@
  * source again and compares, so a pass means the running bytes are the tag's.
  */
 import { createHash as create_hash } from 'node:crypto'
-import { readFileSync as read_file_sync, readdirSync } from 'node:fs'
+import {
+  readFileSync as read_file_sync,
+  readdirSync as readdir_sync
+} from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
 export const RELEASE_FILE = 'release.json'
-export const RELEASE_PATH = '/v1/release'
+const RELEASE_PATH = '/v1/release'
 
 const sha256 = bytes => create_hash('sha256').update(bytes).digest('hex')
 
 /** Every file under `dir` but the stamp itself, as sorted `/`-paths. */
 const files_in = dir =>
-  readdirSync(dir, { recursive: true, withFileTypes: true })
+  readdir_sync(dir, { recursive: true, withFileTypes: true })
     .filter(entry => entry.isFile())
     .map(entry =>
       relative(dir, join(entry.parentPath, entry.name)).split(sep).join('/')

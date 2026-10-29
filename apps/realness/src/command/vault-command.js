@@ -5,6 +5,8 @@
  */
 import { actor_url } from '#root/src/harness/actor.js'
 import { door_pass } from '#root/src/harness/recover.js'
+import { LIMIT_DEFAULT } from '#root/src/sync/vault.js'
+import { HTTP } from '#root/lib/http.js'
 
 const USAGE = 'usage: realness vault search <words> [--limit N] | note <path>'
 
@@ -23,7 +25,7 @@ export const run_vault = async (
 ) => {
   const json = args.includes('--json')
   const limit_at = args.indexOf('--limit')
-  const limit = limit_at === -1 ? 10 : Number(args[limit_at + 1])
+  const limit = limit_at === -1 ? LIMIT_DEFAULT : Number(args[limit_at + 1])
   const words = args.filter(
     (arg, i) => arg !== '--json' && i !== limit_at && i !== limit_at + 1
   )
@@ -41,7 +43,7 @@ export const run_vault = async (
   const response = await fetcher(address, {
     headers: { authorization: `Bearer ${await issue()}` }
   })
-  if (response.status === 404)
+  if (response.status === HTTP.NOT_FOUND)
     throw new Error(
       verb === 'note' ? `no note at ${text}` : 'this sync has no vault'
     )

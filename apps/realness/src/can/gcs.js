@@ -436,6 +436,8 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
      * and stacked gzip pieces read back as one text.
      */
     /**
+     * Join `sources` into `key`. Composed keys are usage logs, outside every
+     * index scope, so no index entry changes.
      * @param {string} key
      * @param {string[]} sources
      * @param {import('./contract.js').VersionGuard} [options]
@@ -468,7 +470,6 @@ export const create_gcs = ({ bucket, token, prefix = '' }) => {
         throw Object.assign(new Error(`${key} is busy`), { code: 'busy' })
       if (!response.ok) await fail(`compose ${key}`, response)
       return version_of(await response.json())
-      // Composed keys are usage logs, outside every index scope.
     },
 
     /**

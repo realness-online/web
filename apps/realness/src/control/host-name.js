@@ -17,7 +17,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { secret_path } from '#root/src/settings/secrets.js'
 import { local_settings } from '#root/src/settings/environments.js'
 
-export const ZONE = 'realness.online'
+const ZONE = 'realness.online'
 const API = 'https://api.cloudflare.com/client/v4'
 const TTL_S = 60
 /** Renew when fewer days than this remain. */
@@ -48,7 +48,7 @@ export const host_label = (env = process.env) => {
 }
 
 /** The host's LAN IPv4: the first non-internal address, preferring en0. */
-export const lan_address = (interfaces = network_interfaces()) => {
+const lan_address = (interfaces = network_interfaces()) => {
   const rest = Object.keys(interfaces)
     .filter(name => name !== 'en0')
     .sort()
@@ -78,7 +78,7 @@ export const cert_paths = host => {
   }
 }
 
-export const read_token = () => {
+const read_token = () => {
   const file = secret_path('cloudflare-token')
   if (!exists_sync(file))
     throw new Error(
@@ -88,7 +88,7 @@ export const read_token = () => {
 }
 
 /** A small Cloudflare DNS client for one zone. */
-export const cloudflare = (token, fetcher = fetch) => {
+const cloudflare = (token, fetcher = fetch) => {
   const call = async (method, path, body) => {
     const response = await fetcher(`${API}${path}`, {
       method,
@@ -124,8 +124,12 @@ export const cloudflare = (token, fetcher = fetch) => {
     async upsert(type, name, content) {
       const [current, ...extra] = await records(type, name)
       const want = { type, name, content, ttl: TTL_S, proxied: false }
-      for (const record of extra)
-        await call('DELETE', `/zones/${await zone()}/dns_records/${record.id}`)
+      const zone_id = await zone()
+      await Promise.all(
+        extra.map(record =>
+          call('DELETE', `/zones/${zone_id}/dns_records/${record.id}`)
+        )
+      )
       if (!current) {
         await call('POST', `/zones/${await zone()}/dns_records`, want)
         return 'created'
@@ -154,7 +158,7 @@ export const cloudflare = (token, fetcher = fetch) => {
 }
 
 /** Point this host's names at its address. */
-export const update_records = async ({ dns, host, address }) => {
+const update_records = async ({ dns, host, address }) => {
   const { base, wildcard } = host_names(host)
   return {
     [base]: await dns.upsert('A', base, address),
@@ -163,15 +167,19 @@ export const update_records = async ({ dns, host, address }) => {
 }
 
 /** Days left on a PEM certificate, or -1 when there is none. */
-export const days_left = async (file, now = Date.now()) => {
+const days_left = async (file, now = Date.now()) => {
   if (!exists_sync(file)) return -1
   const { X509Certificate } = await import('node:crypto')
   const cert = new X509Certificate(read_file_sync(file))
   return Math.floor((Date.parse(cert.validTo) - now) / DAY_MS)
 }
 
-/** Get or renew the host's wildcard from Let's Encrypt by DNS-01. */
-export const ensure_certificate = async ({
+/**
+ * Get or renew the host's wildcard from Let's Encrypt by DNS-01.
+ * @param {{ dns: ReturnType<typeof cloudflare>, host: string, email?: string, staging?: boolean, log?: (line: string) => void }} options
+ * @returns {Promise<{ renewed: boolean, days_left: number }>}
+ */
+const ensure_certificate = async ({
   dns,
   host,
   email,
@@ -211,7 +219,7 @@ export const ensure_certificate = async ({
       await delay(PROPAGATE_MS)
     },
     challengeRemoveFn: async () => {
-      for (const record of added.splice(0)) await dns.remove(record)
+      await Promise.all(added.splice(0).map(record => dns.remove(record)))
     }
   })
   write_file_sync(paths.key, key, { mode: 0o600 })
@@ -222,6 +230,7 @@ export const ensure_certificate = async ({
 /**
  * One pass: records follow the address, then the certificate renews if due.
  * Without a token, says what is missing and changes nothing.
+ * @param {{ env?: NodeJS.ProcessEnv, cert?: boolean, log?: (line: string) => void }} [options]
  */
 export const keep_host_name = async ({
   env = process.env,

@@ -131,6 +131,11 @@ const open_tag = (state, name, a, self) => {
   if (!empty) state.stack.push(name)
 }
 
+/**
+ * One person on a members page, as shown.
+ * @typedef {{ role: string, phone: string, name: string }} Member
+ */
+
 /** `{ founder, members, people }` from the page's text; `people` keeps each
  * shown name, so sync can write the page again.  Throws on a malformed page. */
 export const read_members = source => {
@@ -138,13 +143,13 @@ export const read_members = source => {
   const html = source.replace(/<!--[\s\S]*?(?:-->|$)/g, '')
   if (/<(script|style|template|textarea)\b/i.test(html))
     throw new Error('members page: raw or inert content')
-  /** @type {{ found: Record<string, string[]>, stack: string[], people: object[], person: { prop: string, depth: number, phones: string[], names: string[] } | null, phone: { depth: number, text: string, field: string } | null }} */
+  /** @type {{ found: Record<string, string[]>, stack: string[], people: Member[], person: { prop: string, depth: number, phones: string[], names: string[] } | null, phone: { depth: number, text: string, field: string } | null }} */
   const state = {
     found: { founder: [], member: [], employee: [] },
     stack: [],
     people: [],
-    person: null, // { prop, depth, phones: [], names: [] }
-    phone: null // { depth, text, field }
+    person: null,
+    phone: null
   }
   for (const [, closing, raw, attrs, self, text] of html.matchAll(TOKEN))
     if (text !== undefined) {
@@ -162,6 +167,19 @@ export const read_members = source => {
     founder,
     members: [...new Set([founder, ...found.member, ...found.employee])],
     people
+  }
+}
+
+/**
+ * The page's people, or nobody when the page cannot be read.
+ * @param {unknown} source
+ * @returns {Member[]}
+ */
+export const read_people = source => {
+  try {
+    return read_members(source).people
+  } catch {
+    return []
   }
 }
 

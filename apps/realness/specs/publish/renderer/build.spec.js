@@ -56,10 +56,7 @@ it('a real rebuild removes stale pages and rereads settings and images', async (
       '# A "quoted" title\n\nBody.\n'
     )
     await f.build()
-    const page = await readFile(
-      join(f.root, 'dist/blog/note.html'),
-      'utf8'
-    )
+    const page = await readFile(join(f.root, 'dist/blog/note.html'), 'utf8')
     assert.match(
       await readFile(join(f.root, 'dist/index.html'), 'utf8'),
       /content="A &quot;quoted&quot; site"/

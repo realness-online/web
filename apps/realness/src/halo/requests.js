@@ -28,7 +28,7 @@ export class ActorRequests {
   done = {}
 
   /**
-   * @param {import('./actors.js').ActorStore} store
+   * @param {import('./actors.js').HaloStore} store
    * @param {{ mirror: import('./sync-mirror.js').SyncMirror | null, halo: string, file?: string, now?: () => number, warn?: (message: string) => void }} options
    */
   constructor(

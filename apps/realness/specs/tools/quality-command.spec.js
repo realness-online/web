@@ -13,7 +13,12 @@ import { it } from 'node:test'
 const manifest = JSON.parse(
   read_file_sync(new URL('../../package.json', import.meta.url), 'utf8')
 )
-const checks = ['check:backend', 'type:backend', 'fallow', 'test:coverage:node']
+const checks = [
+  'check:backend',
+  'type:backend',
+  'dead-code',
+  'test:coverage:node'
+]
 const stages = [
   ...checks,
   'check:frontend',
@@ -63,9 +68,10 @@ const exercise = failed => {
 
 it('product npm test runs quality once before the frontend and Functions suites', () => {
   assert.equal(typeof manifest.scripts['check:quality'], 'string')
+  assert.match(manifest.scripts['check:quality'], /npm run dead-code/)
   assert.match(
-    manifest.scripts['check:quality'],
-    /fallow -- dead-code --fail-on-regression/
+    manifest.scripts['dead-code'],
+    /fallow dead-code --type-aware .*--fail-on-regression/
   )
   const result = exercise()
   assert.equal(result.status, 0, result.output)

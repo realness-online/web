@@ -10,8 +10,11 @@ const gate_url = () =>
 
 /** A refusal the caller can tell apart from a dropped network. */
 const UNAUTHORIZED = 401
+const BAD_GATEWAY = 502
 const UNAVAILABLE = 503
-const STARTING = new Set([502, UNAVAILABLE, 504])
+const GATEWAY_TIMEOUT = 504
+/** box6: a gateway that cannot reach the halo is a start in progress. */
+const STARTING = new Set([BAD_GATEWAY, UNAVAILABLE, GATEWAY_TIMEOUT])
 const refused = (status, message) =>
   Object.assign(new Error(message), { status })
 
@@ -24,7 +27,6 @@ export const gate_fetch = async (user, path, init = {}) => {
       authorization: `Bearer ${await user.getIdToken()}`
     }
   })
-  // box6: a gateway that cannot reach the halo is a start in progress.
   if (STARTING.has(response.status))
     throw refused(
       UNAVAILABLE,

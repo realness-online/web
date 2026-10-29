@@ -89,7 +89,7 @@ const vault_env = () => {
 
 /** Existing commands own each service; the launcher owns only its child process groups. */
 export const local_plan = () => {
-  // lc3: with its certificate, the app is served at the host's own name.
+  /** lc3: with its certificate, the app is served at the host's own name. */
   const named = host_origin()
   const secure = Boolean(named)
   const url = named ?? local_settings.origin
@@ -156,7 +156,6 @@ export const local_plan = () => {
         }
       },
       { name: 'workers', args: ['run', 'dev:frontend:workers'] },
-      // lc3: http on port 80 forwards to the host's https name.
       ...(named
         ? [
             {
@@ -302,7 +301,8 @@ export const probe_local = async service => {
   if (service.name === 'halo') {
     const health = JSON.parse(reply.body)
     /** A halo on the other runtime is not reused: `halo up` replaces it. */
-    if (!runtime_matches(health)) return { running: false, ready: false }
+    const reusable = runtime_matches(health)
+    if (!reusable) return { running: false, ready: false }
     return { running: true, ready: Boolean(health.seed?.built) }
   }
   if (service.name === 'gate' && reply.body.trim() !== 'ok')

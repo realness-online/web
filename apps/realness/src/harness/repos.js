@@ -43,7 +43,7 @@ export const find_repos = async (root, folder) => {
 }
 
 /** The note for one repo. */
-export const repo_note = ({ name, remote, branch }) =>
+const repo_note = ({ name, remote, branch }) =>
   [
     '---',
     MARK,

@@ -10,10 +10,16 @@ import { join, normalize, sep } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
 const LIMIT_MAX = 25
+/** Notes a search returns when the caller does not say. */
+export const LIMIT_DEFAULT = 10
 const OPEN = '\u0001'
 const CLOSE = '\u0002'
 
-/** The same token rule as the memory index: words, OR'd, last one a prefix. */
+/**
+ * The same token rule as the memory index: words, OR'd, last one a prefix.
+ * @param {unknown} text
+ * @returns {string | null} an FTS5 match, or null when no word is long enough
+ */
 const to_match = text => {
   const words = [
     ...new Set(
@@ -30,8 +36,12 @@ const to_match = text => {
     .join(' OR ')
 }
 
-/** A vault-relative `.md` path, or null when it would step outside. */
-export const note_path = path => {
+/**
+ * A vault-relative `.md` path, or null when it would step outside.
+ * @param {unknown} path
+ * @returns {string | null}
+ */
+const note_path = path => {
   const clean = normalize(String(path ?? '')).replace(/^\/+/, '')
   if (!clean.endsWith('.md') || clean.startsWith('..')) return null
   if (clean.split(sep).some(part => !part || part.startsWith('.'))) return null
@@ -39,17 +49,30 @@ export const note_path = path => {
 }
 
 /**
+ * @typedef {{ path: string, title: string, text: string }} VaultHit one ranked note; `text` marks matches with `**`
+ */
+
+/**
+ * The vault door sync serves at `/v1/vault/`; `ready` is false until all three are set.
  * @param {{ dir: string | null, index: string | null, owner: string | null }} config
  */
 export const vault_door = ({ dir, index, owner }) => {
   const ready = Boolean(dir && index && owner)
   return {
     ready,
-    /** The caller is the vault owner, through a person or harness pass. */
+    /**
+     * The caller is the vault owner, through a person or harness pass.
+     * @param {{ harness?: string, phone?: string } | null | undefined} who
+     */
     allows: who => ready && (who?.harness ?? who?.phone) === owner,
-    search(query, limit = 10) {
+    /**
+     * @param {unknown} query
+     * @param {number} [limit]
+     * @returns {VaultHit[]}
+     */
+    search(query, limit = LIMIT_DEFAULT) {
       const match = to_match(query)
-      if (!match || !exists_sync(index)) return []
+      if (!match || !index || !exists_sync(index)) return []
       const db = new DatabaseSync(index, { readOnly: true })
       try {
         return db
@@ -70,10 +93,14 @@ export const vault_door = ({ dir, index, owner }) => {
         db.close()
       }
     },
-    /** One note's text, or null when the path is not a note in the vault. */
+    /**
+     * One note's text, or null when the path is not a note in the vault.
+     * @param {unknown} path
+     * @returns {Promise<string | null>}
+     */
     async note(path) {
       const clean = note_path(path)
-      if (!clean) return null
+      if (!clean || !dir) return null
       try {
         const root = await realpath(dir)
         const full = await realpath(join(root, clean))

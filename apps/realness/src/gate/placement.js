@@ -6,7 +6,7 @@
  * placed. Only `reassign` moves someone, and it is what hs-n3 and hs-n4 call
  * when an actor has been recreated elsewhere.
  */
-import { createHash } from 'node:crypto'
+import { createHash as create_hash } from 'node:crypto'
 /* eslint-disable no-await-in-loop -- placements are read and removed one at a time so a failure names its key */
 
 const PHONE = /^\+[1-9]\d{6,14}$/
@@ -52,7 +52,7 @@ const ranked = (phone, halos) =>
   [...halos].sort((left, right) => score(phone, left) - score(phone, right))
 
 const score = (phone, halo) =>
-  createHash('sha256').update(`${phone}/${halo}`).digest().readUInt32BE(0)
+  create_hash('sha256').update(`${phone}/${halo}`).digest().readUInt32BE(0)
 
 /**
  * The halo already serving this person, or the one the name picks.

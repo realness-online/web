@@ -171,7 +171,8 @@ const commons_allowed = (action, name, rest, me, org) => {
  * sy15: `trash/people/+A/` is yours and `trash/orgs/+name/` the founder's,
  * to read, list, and empty. Nobody writes it; sync files deletes there.
  */
-const trash_allowed = (action, kind, [owner], me, org) => {
+const trash_allowed = (action, kind, rest, me, org) => {
+  const [owner] = rest
   if (!me.phone || !['get', 'list', 'delete'].includes(action)) return false
   if (kind === 'people') return owner === me.phone
   return kind === 'orgs' && ORG.test(owner ?? '') && org?.founder === me.phone

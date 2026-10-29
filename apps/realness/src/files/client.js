@@ -165,6 +165,50 @@ const empty_report = () => ({
 })
 
 /**
+ * Whether a name in this pair is a session file under the sessions folder;
+ * sessions sync on their own terms.
+ * @param {string} local the pair's local folder
+ * @param {string | null | undefined} session_folder
+ * @returns {(name: string) => boolean}
+ */
+const session_test = (local, session_folder) => name => {
+  if (!session_folder) return false
+  const path = join(local, ...name.split('/'))
+  return is_session_file(path) && path.startsWith(session_folder + sep)
+}
+
+/**
+ * Files the record knows and this side holds, but the store lost. With
+ * `repair` (vlt2) this Mac is the source: forget those entries so each file
+ * pushes again as new. Without it, losing more than MAX_REMOVALS at once is
+ * a mass removal, which holds deletes back.
+ * @param {{ names: Set<string>, manifest: Record<string, unknown>, remotes: Record<string, unknown>, locals: Map<string, unknown> | Set<string>, in_sessions: (name: string) => boolean, repair: boolean, report: Record<string, unknown> }} sync
+ * @returns {boolean} whether this is a mass removal
+ */
+const settle_lost = ({
+  names,
+  manifest,
+  remotes,
+  locals,
+  in_sessions,
+  repair,
+  report
+}) => {
+  const lost = [...names].filter(
+    name =>
+      manifest[name] && !remotes[name] && locals.has(name) && !in_sessions(name)
+  )
+  if (repair) {
+    for (const name of lost) delete manifest[name]
+    if (lost.length) report.repaired = lost.length
+    return false
+  }
+  if (lost.length <= MAX_REMOVALS) return false
+  report.mass_removal = lost.length
+  return true
+}
+
+/**
  * Work out what moved: the local files, the remote versions, and the union of
  * names worth looking at. The remote side is one full walk.
  */
@@ -1299,26 +1343,16 @@ export const client = ({
         starter
       })
 
-      const in_sessions = name =>
-        Boolean(session_folder) &&
-        is_session_file(join(pair.local, ...name.split('/'))) &&
-        join(pair.local, ...name.split('/')).startsWith(session_folder + sep)
-      const lost = [...names].filter(
-        name =>
-          manifest[name] &&
-          !remotes[name] &&
-          locals.has(name) &&
-          !in_sessions(name)
-      )
-      // vlt2: the store lost files the record still knows. This Mac is the
-      // source, so forget those entries: each file pushes again as new.
-      if (repair && lost.length) {
-        for (const name of lost) delete manifest[name]
-        report.repaired = lost.length
-      }
-      const vanished = repair ? 0 : lost.length
-      const mass_removal = vanished > MAX_REMOVALS
-      if (mass_removal) report.mass_removal = vanished
+      const in_sessions = session_test(pair.local, session_folder)
+      const mass_removal = settle_lost({
+        names,
+        manifest,
+        remotes,
+        locals,
+        in_sessions,
+        repair,
+        report
+      })
       if (dry_run) report.dry_run = true
       const ver = sha
       const side = dry_run

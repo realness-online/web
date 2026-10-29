@@ -23,6 +23,7 @@ import { types, has_archive, has_history } from '@realness.online/itemid'
  * @property {Id} id
  * @property {Type} type
  * @property {Id} [avatar] - Poster itemid when present (e.g. profile photo)
+ * @property {string} [name] - Shown name when present (e.g. a person)
  */
 
 /**

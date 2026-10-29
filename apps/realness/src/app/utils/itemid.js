@@ -136,8 +136,9 @@ const fetch_item = async itemid => {
 
   await forget_download_url(itemid)
   const fresh = await as_download_url(itemid)
-  // A stale copy beats nothing when the lookup has not caught up yet.
-  if (!fresh || fresh === remembered) return stale ? response : null
+  /** A stale copy beats nothing when the lookup has not caught up yet. */
+  const caught_up = fresh && fresh !== remembered
+  if (!caught_up) return stale ? response : null
 
   const retried = await fetch_file(fresh)
   if (retried.ok) return retried
