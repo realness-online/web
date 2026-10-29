@@ -1,11 +1,11 @@
 import { readFileSync as read_file, readdirSync as readdir, realpathSync as realpath } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { parse_html } from '../lib/harness-dependencies.js'
+import { check_worker, precached } from './pwa-worker.js'
 import { create_itemid } from '../../../apps/realness/packages/itemid/src/index.js'
 
 const style_root = new URL('../../../apps/realness/src/app/style/', import.meta.url)
 const without_comments = text => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, '')
-
 /** Check shipped HTML and local assets. This does not execute CSS or a worker. */
 export const check_site = (directory, { worker = 'service.worker.js' } = {}) => {
   const root = realpath(directory)
@@ -27,6 +27,14 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       return null
     }
   }
+  const local_file_or_null = (href, owner) => {
+    try {
+      return local_file(href, owner)
+    } catch {
+      return null
+    }
+  }
+  const pages = []
   const html_files = []
   const walk = dir => {
     for (const entry of readdir(dir, { withFileTypes: true })) {
@@ -86,9 +94,17 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
           !manifest.name ||
           !manifest.start_url ||
           !manifest.scope ||
+          !manifest.theme_color ||
+          !manifest.background_color ||
           !['standalone', 'minimal-ui', 'fullscreen'].includes(manifest.display)
         )
-          report(file, 'pwa-manifest', 'manifest needs name, start_url, scope, and installed display mode')
+          report(
+            file,
+            'pwa-manifest',
+            'manifest needs name, start_url, scope, theme and background colors, and installed display mode'
+          )
+        if (!manifest.icons?.some(icon => icon.purpose?.split(' ').includes('maskable')))
+          report(file, 'pwa-icons', 'no maskable icon')
         for (const size of ['192x192', '512x512']) {
           const icon = manifest.icons?.find(icon => icon.sizes?.split(' ').includes(size))
           if (!icon) report(file, 'pwa-icons', `missing ${size} icon`)
@@ -106,6 +122,14 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       const imports = [...text.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?)["']([^"']+)["']/g)]
       return [text, ...imports.map(match => read_script(asset(match[1], path, 'pwa-registration')))].join('\n')
     }
+    const local = href => href && !/^[a-z]+:|^\/\//i.test(href)
+    pages.push({
+      file,
+      assets: [
+        ...[...document.querySelectorAll('link[rel="stylesheet"]')].map(link => link.getAttribute('href')),
+        ...[...document.querySelectorAll('script[src]')].map(script => script.getAttribute('src'))
+      ].filter(local)
+    })
     const scripts = [...document.querySelectorAll('script')]
       .map(script =>
         script.hasAttribute('src')
@@ -115,7 +139,24 @@ export const check_site = (directory, { worker = 'service.worker.js' } = {}) => 
       .join('\n')
     if (!/serviceWorker/.test(scripts) || !/\bregister\s*\(/.test(scripts))
       report(file, 'pwa-registration', 'no service worker registration in page scripts')
+    if (!/SKIP_WAITING/.test(scripts) || !/visibilitychange/.test(scripts))
+      report(file, 'pwa-update', 'page scripts lack the update rule: activate on SKIP_WAITING while hidden')
   }
-  if (html_files.length) asset(`/${worker}`, join(root, 'index.html'), 'pwa-worker')
+  const worker_file = html_files.length ? asset(`/${worker}`, join(root, 'index.html'), 'pwa-worker') : null
+  if (worker_file) {
+    const text = read_file(worker_file, 'utf8')
+    for (const hit of check_worker(text)) report(worker_file, hit.rule, hit.text)
+    const cached = precached(text)
+    const falls_back = /createHandlerBoundToURL|NavigationRoute/.test(text)
+    for (const page of pages) {
+      const path = relative(root, page.file)
+      if (!falls_back && !cached.has(path)) report(page.file, 'pwa-precache', 'page is not precached and no navigation fallback')
+      for (const href of page.assets) {
+        const file = local_file_or_null(href, page.file)
+        if (file && !cached.has(relative(root, file)))
+          report(page.file, 'pwa-precache', `${href} is not precached; the page breaks offline`)
+      }
+    }
+  }
   return hits
 }
