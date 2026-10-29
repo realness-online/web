@@ -46,7 +46,7 @@ it('the git hook and npm test run the same checks, so neither can drop one', () 
   for (const required of [
     `${app}#type`,
     `${app}#check:frontend`,
-    `${app}#fallow`,
+    `${app}#dead-code`,
     `${app}#test:coverage`,
     '.#check:skills'
   ])

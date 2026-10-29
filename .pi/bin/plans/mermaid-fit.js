@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import {
+  existsSync as exists_sync,
   readFileSync as read_file_sync,
   readdirSync as readdir_sync,
   copyFileSync as copy_file_sync,
@@ -11,7 +12,15 @@ import { execFileSync as exec_file_sync } from 'node:child_process'
 import { fileURLToPath as file_url_to_path } from 'node:url'
 
 const root = join(dirname(file_url_to_path(import.meta.url)), '../../..')
-const chunks = join(root, '.pi/agent/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks')
+/** Pi's bundle where Realness installs and runs it (`.pi/runtime`), else an older npm install. */
+const chunks = [
+  join(root, '.pi/runtime/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks'),
+  join(root, '.pi/agent/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/chunks')
+].find(dir => exists_sync(dir))
+if (!chunks) {
+  console.error('mermaid-fit: no installed Pi bundle under .pi/runtime')
+  process.exit(2)
+}
 
 /** Bash tools have no tty; walk up to pi's terminal and ask its size. The feed
  * pads each side and keeps a scrollbar column, so leave 4 spare. */

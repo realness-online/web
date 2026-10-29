@@ -23,7 +23,7 @@ const quiet = args.includes('--quiet')
 const age_at = args.indexOf('--age-minutes')
 const grace_ms = (age_at >= 0 ? Number(args[age_at + 1]) : 60) * 60_000
 const cap_at = args.indexOf('--cap-mb')
-const cap = (cap_at >= 0 ? Number(args[cap_at + 1]) : 500) * 1_000_000
+const cap = (cap_at >= 0 ? Number(args[cap_at + 1]) : 2000) * 1_000_000
 
 const twin = /^(.*)-(\d{4})(\.[^.]*)?$/
 

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# After a commit lands, prune artifacts/ back under its cap (2 GB), oldest
+# first. Here and not mid-session: the work is saved, and the pre-commit checks
+# that need build outputs have already run. A failed prune never fails a commit.
+root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+script="$root/.pi/bin/harness/artifacts-prune.js"
+[[ -f "$script" ]] || exit 0
+report="$(node "$script" --apply --quiet 2>/dev/null)" || exit 0
+freed="$(sed -n 's/.*freed \([0-9]*\) bytes.*/\1/p' <<<"$report")"
+if [[ "${freed:-0}" -gt 0 ]]; then
+  printf 'artifacts prune: freed %s MiB\n' "$(( freed / 1048576 ))"
+fi
+grep '^warning:' <<<"$report" || true
+exit 0

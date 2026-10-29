@@ -451,7 +451,7 @@ test('a re-run does not duplicate turns', async () => {
   const second = stats(path).turns
   assert.equal(second, first, 'a full rebuild replaces rather than appends')
 })
-test('the index holds no copy of transcript content beyond the turn table', async () => {
+test('the index holds no copy of transcript or note text beyond its own table', async () => {
   const root = tempRoot()
   writeFixture(root)
   const path = join(root, 'memory.db')
@@ -465,14 +465,19 @@ test('the index holds no copy of transcript content beyond the turn table', asyn
       db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()
     ).map(t => t.name)
     assert.deepEqual(
-      tables.filter(t => !t.startsWith('turn_fts')).sort(),
-      ['index_meta', 'session_file', 'turn'],
-      'only the turn table stores text; fts is external-content'
+      tables.filter(t => !t.startsWith('turn_fts') && !t.startsWith('note_fts')).sort(),
+      ['index_meta', 'note', 'session_file', 'turn'],
+      'transcripts store text only in turn; vault notes (vlt1) only in note'
     )
-    const fts = /** @type {{ sql: string; }} */ (
-      db.prepare("SELECT sql FROM sqlite_master WHERE name='turn_fts'").get()
-    )
-    assert.match(fts.sql, /content\s*=\s*'turn'/, 'fts5 stores an index, not content')
+    for (const [fts_name, content] of [
+      ['turn_fts', 'turn'],
+      ['note_fts', 'note']
+    ]) {
+      const fts = /** @type {{ sql: string; }} */ (
+        db.prepare('SELECT sql FROM sqlite_master WHERE name = ?').get(fts_name)
+      )
+      assert.match(fts.sql, new RegExp(`content\\s*=\\s*'${content}'`), `${fts_name} stores an index, not content`)
+    }
   } finally {
     db.close()
   }

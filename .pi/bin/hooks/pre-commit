@@ -2,6 +2,10 @@
 set -uo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
+# Git exports GIT_DIR to hooks (the repo lives at work/realness.git); specs that make their own repos must not inherit it.
+git_dir="$(git rev-parse --absolute-git-dir)"
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+git() { command git --git-dir="$git_dir" "$@"; }
 logs="$root/artifacts/pre-commit"
 rm -rf "$logs"
 mkdir -p "$logs"
@@ -34,7 +38,7 @@ check frontend-lint "${app[@]}" check:frontend
 check functions-lint "${app[@]}" check:functions
 check backend-lint "${app[@]}" check:backend
 check backend-types "${app[@]}" type:backend
-check dead-code "${app[@]}" fallow -- dead-code --fail-on-regression
+check dead-code "${app[@]}" dead-code
 check frontend-types "${app[@]}" type
 check harness-tests npm run test:harness
 check tooling npm run check:tooling

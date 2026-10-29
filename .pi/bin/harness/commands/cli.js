@@ -208,6 +208,14 @@ export const cli_families = [
         '--deletes',
         'Writes local and remote files.'
       ],
+      [
+        'vault search <words>',
+        'Sign-in and files',
+        "Search the Mac's vault from an actor.",
+        '--limit <n>; --json',
+        "Actor; harness pass; reads the owner's vault through sync."
+      ],
+      ['vault note <path>', 'Sign-in and files', 'Read one vault note from an actor.', '--json', "Actor; harness pass; read-only."],
       ['example static <destination>', 'Tools', 'Create a static-site starter.', '', 'Writes a new folder.'],
       ['example app <destination>', 'Tools', 'Create a Vue app starter.', '', 'Writes a new folder.'],
       [

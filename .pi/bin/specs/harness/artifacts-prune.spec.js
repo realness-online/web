@@ -189,7 +189,7 @@ it('data held only by the grace window still warns above the cap', t => {
   const path = join(dir, 'large.bin')
   writeFileSync(path, '')
   truncateSync(path, 500_000_001)
-  const result = spawnSync(process.execPath, [script, '--apply', '--quiet'], {
+  const result = spawnSync(process.execPath, [script, '--apply', '--quiet', '--cap-mb', '500'], {
     env: { ...process.env, ARTIFACTS_ROOT: dir },
     encoding: 'utf8'
   })

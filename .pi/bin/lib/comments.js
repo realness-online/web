@@ -18,7 +18,7 @@ try {
 
 const KEEP_PATTERNS = [
   /^\s*eslint-(disable|enable|env)/,
-  /^\s*(oxlint|biome)-ignore/,
+  /^\s*(oxlint|biome|fallow)-ignore/,
   /^\s*(tslint|deno-lint)[-:](ignore|disable)/,
   /^\s*@ts-(check|nocheck|ignore|expect-error|self-types)/,
   /^\s*@jsx/,

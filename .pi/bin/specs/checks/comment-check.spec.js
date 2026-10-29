@@ -20,6 +20,14 @@ it('a tool directive is kept', () => {
   assert.equal(found[0].keep, true)
 })
 
+it('a fallow suppression is kept', () => {
+  const found = wav(
+    'class C {\n  // fallow-ignore-next-line unused-class-member -- read by callers\n  code = 1\n}\n',
+    '.js'
+  )
+  assert.equal(found[0].keep, true)
+})
+
 it('a shebang is kept', () => {
   const found = wav('#!/usr/bin/env python3\nprint(1)\n', '.py')
   assert.equal(found[0].keep, true)

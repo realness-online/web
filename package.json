@@ -43,7 +43,7 @@
     "test:harness": "node --test '.pi/bin/specs/**/*.spec.js' '.pi/extensions/**/*.test.js' '.pi/skills/**/*.test.js'",
     "check:harness": "npm run check:tooling && npm run check:skills && npm run check:ext && npm run check:soundness:gate && npm run check:comments && npm run plan-shape && npm run check:palette && npm run check:ds-store",
     "check:ds-store": "node ./.pi/bin/checks/ds-store.js",
-    "fallow": "npm run fallow:harness && npm run -C apps/realness fallow -- dead-code",
+    "fallow": "npm run fallow:harness && npm run -C apps/realness dead-code",
     "fallow:harness": "apps/realness/node_modules/.bin/fallow dead-code",
     "test:product": "npm --prefix apps/realness test",
     "test:node": "npm --prefix apps/realness run test:node",

@@ -9,6 +9,7 @@ import {
 } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { repo_args } from '../lib/repo-git.js'
 
 const root = resolve(file_url_to_path(new URL('../../..', import.meta.url)))
 const product = join(root, 'apps/realness')
@@ -149,7 +150,10 @@ const NOT_SOURCE =
 /** Tracked and new source files under the measured roots, relative to the harness root. */
 export const source_files = (
   list = () =>
-    spawn_sync('git', ['ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], { cwd: root, encoding: 'utf8' })
+    spawn_sync('git', [...repo_args(root), 'ls-files', '-co', '--exclude-standard', '--', ...SOURCE_ROOTS], {
+      cwd: root,
+      encoding: 'utf8'
+    })
       .stdout
 ) =>
   list()

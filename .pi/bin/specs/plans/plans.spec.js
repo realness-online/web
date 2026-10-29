@@ -26,7 +26,7 @@ it('plan diagrams keep their native size instead of shrinking to the viewport', 
 })
 
 it('fitted diagrams shrink to fit without enlarging small plans', () => {
-  const fitted = css.match(/&\[aria-pressed="false"\] svg \{([^}]+)\}/)[1]
+  const fitted = css.match(/&\[aria-pressed=["']false["']\] svg \{([^}]+)\}/)[1]
   assert.match(fitted, /width: auto/)
   assert.match(fitted, /max-width: 100% !important/)
 })

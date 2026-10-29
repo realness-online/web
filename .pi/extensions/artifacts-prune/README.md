@@ -4,16 +4,21 @@ Stops `artifacts/` from growing without bound.
 
 ## Behavior
 
-On `agent_settled`, runs `.pi/bin/harness/artifacts-prune.js --apply --quiet` from the
-harness root and notifies when it frees space. A missing script or a failed
-run is ignored, so a prune never disturbs the session.
+Pruning happens at check-in. `.pi/bin/hooks/post-commit` runs
+`.pi/bin/harness/artifacts-prune.js --apply --quiet` after each commit and
+prints what it freed; a failed prune never fails the commit. Build outputs
+(WASM, the durable bundle, deploy staging) live under `artifacts/` too, so
+nothing is deleted mid-session.
+
+On `agent_settled`, the extension runs a dry run and, once per session, says
+when `artifacts/` is over its cap and what the next commit will prune.
 
 ## What the script removes
 
 `node_modules`, a build `dist` beside a `package.json`, `.git`, `.DS_Store`,
 and numbered screenshot twins (`shot-4402.png` when `shot-4401.png` sits
-beside it at the same size). When `artifacts/` is over 500 MB, it then
-removes files oldest first until the total is under 500 MB. There is no
+beside it at the same size). When `artifacts/` is over 2 GB, it then
+removes files oldest first until the total is under 2 GB. There is no
 day limit. Empty folders remain. Files changed in the last 60 minutes are
 kept.
 

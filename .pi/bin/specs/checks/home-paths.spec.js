@@ -8,6 +8,7 @@ import {
   statSync as stat_sync
 } from 'node:fs'
 import { basename, join, relative, resolve } from 'node:path'
+import { has_repo, repo_args } from '../../lib/repo-git.js'
 
 const root = resolve(import.meta.dirname, '../../../..')
 
@@ -26,7 +27,7 @@ const allowed = new Map([
 const HOME = /(?:\/Users|\/home)\/(?!person\b|runner\b|<)[a-z][a-z0-9._-]*/i
 
 const shipped_by_git = directory =>
-  exec_file_sync('git', ['-C', directory, 'ls-files', '-co', '--exclude-standard', '-z'], {
+  exec_file_sync('git', [...repo_args(directory), 'ls-files', '-co', '--exclude-standard', '-z'], {
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024
   })
@@ -61,7 +62,7 @@ const walk = (directory, found = []) => {
 }
 
 const scanned = () =>
-  (exists_sync(join(root, '.git')) ? shipped_by_git(root) : walk(root)).filter(
+  (has_repo(root) ? shipped_by_git(root) : walk(root)).filter(
     path => !skipped_files.has(basename(path)) && !path.endsWith('.log') && stat_sync(path).size < 2_000_000
   )
 

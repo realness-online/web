@@ -4,10 +4,11 @@ import { execFileSync as exec_file_sync } from 'node:child_process'
 import { existsSync as exists_sync, readdirSync as readdir_sync, readFileSync as read_file_sync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath as file_url_to_path } from 'node:url'
+import { repo_args } from '../lib/repo-git.js'
 
 const skipped = new Set(['node_modules', '.git', 'artifacts', 'dist', 'build', 'coverage', 'vendor', '.pi'])
 const read_json = path => JSON.parse(read_file_sync(path, 'utf8'))
-const git = (root, args) => exec_file_sync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim()
+const git = (root, args) => exec_file_sync('git', [...repo_args(root), ...args], { encoding: 'utf8' }).trim()
 
 const find_notes = dir =>
   readdir_sync(dir, { withFileTypes: true }).flatMap(entry => {

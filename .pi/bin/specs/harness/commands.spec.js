@@ -59,6 +59,7 @@ it('every package script has exactly one full copy command and a source', async 
     'apps/realness/functions/package.json',
     'apps/realness/package.json',
     'apps/realness/packages/itemid/package.json',
+    'apps/realness/packages/pwa/package.json',
     'apps/realness/packages/store/package.json',
     'apps/realness/packages/thoughts/package.json',
     '.pi/examples/static/package.json'
@@ -82,7 +83,6 @@ it('audit recommendations are visible on command cards', async () => {
     'no false missing-target findings'
   )
   for (const id of [
-    'apps/realness/package.json#scripts.certs',
     'apps/realness/package.json#scripts.test:risk:report',
     'apps/realness/package.json#scripts.test:coverage:summary'
   ]) {
